@@ -71,6 +71,49 @@ final class GhostsSkinMesh {
         quad(p,v,light,overlay,colour,rect(0,4,2,5,-2.02F),47.25F,30.25F,47.75F,30.75F,0,0,-1);
         p.popPose();
     }
+    /**
+     * 0.4.328 (owner: "I don't see any mark on his hand"): John's right hand, drawn over his skin so that it reads at a distance and
+     * only on the right. On the second day, from the moment he is hurt, the wound is open across the back and outer edge of the hand,
+     * dark with blood. From the third day the hand and wrist are wrapped in gauze, with the blood come through on the back of the hand.
+     * Both sample the off-white of his own sheet (the white of an eye) and are tinted, so no new texture is needed.
+     */
+    static void rightHand(ModelPart arm,ModelPart elbow,PoseStack p,VertexConsumer v,int light,int overlay,int colour,boolean bandaged){
+        if(!arm.visible)return;p.pushPose();arm.translateAndRotate(p);elbow.translateAndRotate(p);
+        if(bandaged){
+            // The wrap, from the wrist over the knuckles; two folds a shade darker; the stain on the back and outer edge.
+            box(p,v,light,overlay,colour,-3.25F,3.0F,-2.25F,1.25F,6.15F,2.25F);
+            box(p,v,light,overlay,tint(colour,0xFFD2CCBE),-3.3F,3.55F,-2.3F,1.3F,3.85F,2.3F);
+            box(p,v,light,overlay,tint(colour,0xFFD2CCBE),-3.3F,4.85F,-2.3F,1.3F,5.15F,2.3F);
+            int stain=tint(colour,0xFF8E2F27);
+            face(p,v,light,overlay,stain,new float[][]{{-3.32F,4.75F,-.9F},{-3.32F,4.75F,.7F},{-3.32F,4.0F,.7F},{-3.32F,4.0F,-.9F}},-1,0,0);
+            face(p,v,light,overlay,stain,new float[][]{{-2.4F,4.75F,2.32F},{-1.2F,4.75F,2.32F},{-1.2F,4.1F,2.32F},{-2.4F,4.1F,2.32F}},0,0,1);
+        }else{
+            // The open wound: a gash across the back of the hand and down its outer edge, and the blood run to the wrist.
+            int wound=tint(colour,0xFF6E1813),blood=tint(colour,0xFF8C2219);
+            face(p,v,light,overlay,wound,new float[][]{{-3.04F,5.1F,-1.2F},{-3.04F,5.1F,.9F},{-3.04F,3.7F,.9F},{-3.04F,3.7F,-1.2F}},-1,0,0);
+            face(p,v,light,overlay,wound,new float[][]{{-2.8F,5.0F,2.04F},{-.4F,5.0F,2.04F},{-.4F,4.1F,2.04F},{-2.8F,4.1F,2.04F}},0,0,1);
+            face(p,v,light,overlay,blood,new float[][]{{-2.5F,4.1F,2.05F},{-1.7F,4.1F,2.05F},{-1.7F,3.0F,2.05F},{-2.5F,3.0F,2.05F}},0,0,1);
+            face(p,v,light,overlay,blood,new float[][]{{-3.05F,3.7F,-.4F},{-3.05F,3.7F,.3F},{-3.05F,2.8F,.3F},{-3.05F,2.8F,-.4F}},-1,0,0);
+        }
+        p.popPose();
+    }
+    /** The off-white of John's eye, inside its uniform patch of the sheet. */
+    private static final float GAUZE_U0=13.65F,GAUZE_V0=11.65F,GAUZE_U1=14.2F,GAUZE_V1=12.2F;
+    private static int tint(int colour,int with){
+        int a=(colour>>>24)*(with>>>24)/255,r=((colour>>16)&255)*((with>>16)&255)/255,g=((colour>>8)&255)*((with>>8)&255)/255,b=(colour&255)*(with&255)/255;
+        return a<<24|r<<16|g<<8|b;
+    }
+    /** One face, lit by its outward normal (the cast is drawn without back-face culling, so it shows from either side). */
+    private static void face(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float[][] points,float nx,float ny,float nz){
+        quad(p,v,light,overlay,colour,points,GAUZE_U0,GAUZE_V0,GAUZE_U1,GAUZE_V1,nx,ny,nz);
+    }
+    private static void box(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float x0,float y0,float z0,float x1,float y1,float z1){
+        face(p,v,light,overlay,colour,new float[][]{{x0,y1,z0},{x1,y1,z0},{x1,y0,z0},{x0,y0,z0}},0,0,-1);
+        face(p,v,light,overlay,colour,new float[][]{{x1,y1,z1},{x0,y1,z1},{x0,y0,z1},{x1,y0,z1}},0,0,1);
+        face(p,v,light,overlay,colour,new float[][]{{x0,y1,z1},{x0,y1,z0},{x0,y0,z0},{x0,y0,z1}},-1,0,0);
+        face(p,v,light,overlay,colour,new float[][]{{x1,y1,z0},{x1,y1,z1},{x1,y0,z1},{x1,y0,z0}},1,0,0);
+        face(p,v,light,overlay,colour,new float[][]{{x0,y1,z1},{x1,y1,z1},{x1,y1,z0},{x0,y1,z0}},0,1,0);
+    }
     private static float[][] rect(float x0,float y0,float x1,float y1,float z){return new float[][]{{x0,y1,z},{x1,y1,z},{x1,y0,z},{x0,y0,z}};}
     private static void walls(PoseStack p,VertexConsumer v,int light,int overlay,int colour,float top,float bottom,float uvTop,float uvBottom){
         quad(p,v,light,overlay,colour,new float[][]{{-4,bottom,4},{-4,bottom,-4},{-4,top,-4},{-4,top,4}},0,uvTop,8,uvBottom,-1,0,0);

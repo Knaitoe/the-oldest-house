@@ -57,7 +57,7 @@ LOOKS = {
     'borrasca_prescott': Look('#d5a38a','#aaa69c','receding','#88433b','#8a7d5c','flannel','#786049',eyes='#62717c',age=2,mark='borrasca_prescott',sleeve=10,logical=64),
     'borrasca_worker': Look('#bc9479','#4a3c31','close','#627174','#4a595d','crew','#be8748',eyes='#514e43',glasses=True,mark='borrasca_worker',sleeve=10,logical=64),
     # 0.4.262 (owner: "the construction workers shouldn't have identical textures"): the second man, older and heavier, in a canvas chore coat and a white hard hat.
-    'borrasca_worker_two': Look('#a7765a','#2d2621','close','#6a5a3a','#3b4450','crew','#d7d2c2',eyes='#3f3a33',age=1,beard='short',mark='borrasca_worker_two',sleeve=10,logical=64),
+    'borrasca_worker_two': Look('#a7765a','#2d2621','close','#6a5a3a','#3b4450','crew','#d7d2c2',eyes='#3f3a33',age=1,beard='chinstrap',mark='borrasca_worker_two',sleeve=10,logical=64),
     'borrasca_eli': Look('#bb8c69','#514031','close','#a76145','#80745c','tee','#aa8e6a',eyes='#635342',sleeve=4,logical=64),
     'borrasca_wren': Look('#dbb78e','#65513f','long','#526986','#514a44','cardigan','#8b9c9d',eyes='#6e7765',mark='freckles',sleeve=10,logical=64),
     'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
@@ -66,13 +66,13 @@ LOOKS = {
     'uncanny_peeler': Look('#c7a087','#8d8879','receding','#737766','#4f5145','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',sleeve=10,logical=64),
     'uncanny_peeler_exhausted': Look('#c79c82','#8d8879','receding','#5b6254','#484b40','shirt','#a99e7b',eyes='#665d4d',age=2,beard='stubble',mark='cellar_exhausted',sleeve=10,logical=64),
     'uncanny_visitor': Look('#cbb194','#473f37','part','#45494a','#343a3d','coat','#afa78e',eyes='#62685d',age=1,sleeve=11,logical=64),
-    'literary_paw_walter': Look('#d6a88a','#cecbc4','receding','#47513c','#5a4c3e','coat','#9e8350',eyes='#5c6c78',age=2,beard='short',glasses=True,mark='cottage_walter'),
+    'literary_paw_walter': Look('#d6a88a','#cecbc4','receding','#47513c','#5a4c3e','coat','#9e8350',eyes='#5c6c78',age=2,beard='chops',glasses=True,mark='cottage_walter'),
     'literary_paw_ruth': Look('#deb496','#76665a','bun','#523240','#5f4b4e','dress','#d8cebb',eyes='#544a3e',age=2,mark='cottage_apron'),
     'literary_paw_will': Look('#daac8a','#3e2c20','messy','#d6ceba','#585046','braces','#962e28',eyes='#465c42',mark='cottage_braces',sleeve=6),
-    'literary_paw_sergeant': Look('#c48868','#968c80','close','#282c3a','#5c5a58','coat','#b09250',eyes='#382c24',age=2,beard='moustache',mark='cottage_uniform'),
-    'literary_paw_messenger': Look('#dcbaa2','#2c241e','part','#201e20','#5b5a59','coat','#242226',eyes='#48423c',beard='moustache',mark='cottage_bowler'),
+    'literary_paw_sergeant': Look('#c48868','#968c80','close','#282c3a','#5c5a58','coat','#b09250',eyes='#382c24',age=2,beard='handlebar',mark='cottage_uniform'),
+    'literary_paw_messenger': Look('#dcbaa2','#2c241e','part','#201e20','#5b5a59','coat','#242226',eyes='#48423c',beard='pencil',mark='cottage_bowler'),
     # Movie Night (0.4.102): the projectionist, the ticket seller, the Pruitts on the beach and the two in the canoe.
-    'literary_movie_ray': Look('#c9a184','#8f887c','receding','#58664d','#3d3a33','cardigan','#c7b98e',eyes='#5d5e52',age=2,glasses=True,beard='moustache',mark='movie_cap'),
+    'literary_movie_ray': Look('#c9a184','#8f887c','receding','#58664d','#3d3a33','cardigan','#c7b98e',eyes='#5d5e52',age=2,glasses=True,beard='walrus',mark='movie_cap'),
     'literary_movie_dot': Look('#d9b096','#a4532f','bun','#a8404a','#423a3c','cardigan','#ecdcb4',eyes='#4e5a48',age=1,mark='movie_badge'),
     'literary_movie_frank': Look('#cf9f7d','#5b4130','part','#3a7c8a','#a08e6a','shirt','#f0d27a',eyes='#4f5f6e',age=1,mark='movie_hawaiian',sleeve=4),
     'literary_movie_june': Look('#e0b89a','#6c4a2e','long','#d6a248','#d6a248','dress','#f2ead2',eyes='#566a50',sleeve=0),
@@ -80,7 +80,7 @@ LOOKS = {
     'literary_movie_bobby': Look('#c99a78','#2c2219','part','#2d4878','#3a4d68','jacket','#e6d8b0',eyes='#4a3c30',mark='movie_letter'),
     'literary_movie_lynn': Look('#e2bea6','#d6b06a','long','#e8c6cf','#394c66','knit','#f6eef0',eyes='#5b7090',mark='freckles'),
     # Costume Night (0.4.103): Hank, who judges, and the twelve entrants, every one of them dressed as the Lake Witch.
-    'literary_costume_hank': Look('#cfa688','#bdb8ae','receding','#6a5a46','#3f3a34','cardigan','#d7c79e',eyes='#5a6066',age=2,glasses=True,beard='moustache',mark='movie_badge'),
+    'literary_costume_hank': Look('#cfa688','#bdb8ae','receding','#6a5a46','#3f3a34','cardigan','#d7c79e',eyes='#5a6066',age=2,glasses=True,beard='horseshoe',mark='movie_badge'),
     'literary_costume_tina': Look('#e0b89c','#18181a','long','#1d1e22','#26272b','dress','#4a4d55',eyes='#4e5a48',sleeve=6,costume='yarn bags',number=1),
     'literary_costume_danny': Look('#ddb294','#6a4a2c','messy','#d9d6ca','#4a5560','ragged','#5d7a3a',eyes='#5a6a7a',costume='sheet',number=2),
     'literary_costume_ron': Look('#c99a7a','#1e1d1c','long','#8f7a96','#3e4652','coat','#c9b9cc',costume='mask',number=3),
@@ -114,13 +114,13 @@ LOOKS = {
     'literary_swimmer_attendant': Look('#c39a7c','#b8b4ac','receding','#e8e4d8','#2e3a4a','tee','#2a3a5a',eyes='#5a5e58',age=2,mark='whistle',sleeve=4),
     'literary_swimmer_swimmer': Look('#e4ddd6','#1e1c1e','short','#1c2230','#1c2230','swim','#d8dcd8',eyes='#2a2e32',mark='swim_cap',sleeve=0),
     # The window cleaner (0.4.251): a navy boiler suit, a cloth cap, the harness's yellow straps over it.
-    'literary_window_cleaner': Look('#b68a6c','#3a2c22','short','#2e4a66','#24384e','crew','#d8b83a',eyes='#4a5650',age=1,beard='stubble',mark='movie_cap',sleeve=10),
+    'literary_window_cleaner': Look('#b68a6c','#3a2c22','short','#2e4a66','#24384e','crew','#d8b83a',eyes='#4a5650',age=1,beard='shadow',mark='movie_cap',sleeve=10),
     # The Night Operator (0.4.252): a cardigan over a blouse, reading glasses, hair pinned back; in a switchboard headset, and with it hung up.
     'literary_night_operator': Look('#c69c7e','#6a5a4c','bun','#5a4e5e','#33303a','cardigan','#d8ccb6',eyes='#4e5a58',age=2,glasses=True,mark='headset'),
     'literary_night_operator_bare': Look('#c69c7e','#6a5a4c','bun','#5a4e5e','#33303a','cardigan','#d8ccb6',eyes='#4e5a58',age=2,glasses=True),
     # After the People Lights (0.4.253): Kelly in her sweater and jeans, Mark in his work flannel, her father Stan in his jacket.
     'literary_people_kelly': Look('#d4ae94','#5a3a26','long','#7a6a88','#38404e','knit','#d8d0c4',eyes='#4a5a62'),
-    'literary_people_mark': Look('#c09878','#2e241c','short','#5a4a3a','#2e3640','flannel','#8a3a30',eyes='#4a4a40',beard='stubble'),
+    'literary_people_mark': Look('#c09878','#2e241c','short','#5a4a3a','#2e3640','flannel','#8a3a30',eyes='#4a4a40',beard='patchy'),
     'literary_people_stan': Look('#c8a088','#c2bcb2','receding','#5a5e48','#3a3a36','jacket','#a89a7a',eyes='#5a5c58',age=2),
     # A Place for You (0.4.257): Mara in her cardigan over a work dress, her hair pinned up; Kit in a jacket for going.
     'literary_place_mara': Look('#cfa088','#5c4030','bun','#6a7a5c','#3c3632','cardigan','#d8cbb0',eyes='#4e5a4c',age=1),
@@ -136,7 +136,7 @@ LOOKS = {
     # Dell, stubbled, in flannel, sits in the chair across the way on; Ruth, opposite the guest, is the one who looks at them.
     'literary_supper_joan': Look('#d6b098','#9a948c','short','#6a3a42','#3a3638','cardigan','#d8ccb6',eyes='#5a5a52',age=2),
     'literary_supper_pat': Look('#c4987c','#4a3a2c','receding','#3e5a4a','#33363c','knit','#c9bc9f',eyes='#4e5a50',age=1,glasses=True),
-    'literary_supper_dell': Look('#9a6a4c','#241c18','short','#7a3a2a','#2e3238','flannel','#d0c4a8',eyes='#3a3028',age=1,beard='stubble'),
+    'literary_supper_dell': Look('#9a6a4c','#241c18','short','#7a3a2a','#2e3238','flannel','#d0c4a8',eyes='#3a3028',age=1,beard='short'),
     'literary_supper_ruth': Look('#e0bea2','#2a2220','long','#4a5a7a','#2e3440','shirt','#d8d0c0',eyes='#4a5a6a'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
@@ -153,8 +153,8 @@ LOOKS = {
     'harrigan_mourner_0': Look('#ae7b59','#262320','close','#292e33','#26292f','suit','#343338',mark='mourner_flower',logical=64),
     'harrigan_mourner_1': Look('#d0ab8b','#7c7164','part','#454342','#343338','suit','#65544b',age=1,mark='mourner_pocket',logical=64),
     'harrigan_mourner_2': Look('#cfaa8b','#a7a295','receding','#34485d','#303e4e','suit','#603c46',age=2,glasses=True,mark='mourner_watch',logical=64),
-    'holloway': Look('#b98b69','#5a4230','part','#5b6148','#51483a','field','#b49355',age=1,beard='stubble',logical=64),
-    'finale_witness': Look('#c0a184','#ada794','receding','#615746','#484438','coat','#98846a',age=2,beard='full',logical=64),
+    'holloway': Look('#b98b69','#5a4230','part','#5b6148','#51483a','field','#b49355',age=1,beard='chinstrap',logical=64),
+    'finale_witness': Look('#c0a184','#ada794','receding','#615746','#484438','coat','#98846a',age=2,beard='walrus',logical=64),
     'caged_child': Look('#c9a283','#4b342a','messy','#79766b','#494a46','ragged','#b4aa8c',eyes='#6c6252',logical=64),
     'lake_boy': Look('#c39a77','#55402d','messy','#706248','#4b4e46','shirt','#b7a478',logical=64),
     # 0.4.101: the Shallows' other boys. Lonnie holds her feet; Hank and Clay stand on the bank with Bud.
@@ -180,7 +180,7 @@ LOOKS = {
     'literary_coffin_woman': Look('#d2b49b','#72523d','long','#d7c9a8','#aa9d85','dress','#9c8c6d',mark='dead'),
     'literary_lady': Look('#b7b2ac','#373735','long','#454849','#383c3f','dress','#8c8d87',mark='dead'),
     'literary_brother': Look('#c5a183','#62462e','messy','#5d778c','#444b50','shirt','#a7b5ae'),
-    'literary_father': Look('#b98f70','#4b3628','short','#695a42','#4b463a','field','#9b8460',age=1,beard='stubble'),
+    'literary_father': Look('#b98f70','#4b3628','short','#695a42','#4b463a','field','#9b8460',age=1,beard='full'),
     'literary_visitor': Look('#c8a381','#7b5c40','part','#75644d','#4e493c','coat','#b6a588',age=1),
     'literary_killer': Look('#b9ad8f','#282722','close','#484a38','#34362d','killer','#797354',mark='killer'),
     'literary_family_father': Look('#b8ad92','#514a3a','part','#505846','#3d4235','suit','#a49a7d',eyes='#797d67',age=1,mark='family_father'),
@@ -190,19 +190,19 @@ LOOKS = {
     'literary_stranger_0': Look('#c6a586','#6a533c','part','#62664a','#4b4e3a','coat','#b4aa86',age=1),
     'literary_stranger_1': Look('#c8aa8c','#674a39','part','#795944','#4c4035','shirt','#a98a6b',age=1,glasses=True),
     'literary_stranger_2': Look('#a77a5a','#30231d','bun','#733b4f','#49333d','dress','#b69b76'),
-    'literary_stranger_3': Look('#cbb29b','#b4ab98','receding','#3b4753','#343b44','suit','#a78e69',age=2,beard='full'),
+    'literary_stranger_3': Look('#cbb29b','#b4ab98','receding','#3b4753','#343b44','suit','#a78e69',age=2,beard='horseshoe'),
     'literary_bar_marla': Look('#a87554','#38251e','bun','#753e4c','#3c3932','apron','#a89e80',age=1),
     'literary_bar_russ': Look('#ba9875','#7f6b4b','part','#536e83','#444e54','flannel','#a3b0a9',age=1,beard='short'),
-    'literary_bar_denny': Look('#bd9270','#343030','close','#4c6170','#425f73','vest','#8ca1ad',beard='stubble',sleeve=0),
-    'literary_bar_wade': Look('#c7a18a','#75604c','receding','#854a45','#4f443e','flannel','#b58b76',age=1,beard='full'),
-    'literary_bar_hollis': Look('#c3a58b','#b0a793','receding','#655544','#4c4436','coat','#baa98a',age=2,beard='full'),
+    'literary_bar_denny': Look('#bd9270','#343030','close','#4c6170','#425f73','vest','#8ca1ad',beard='goatee',sleeve=0),
+    'literary_bar_wade': Look('#c7a18a','#75604c','receding','#854a45','#4f443e','flannel','#b58b76',age=1,beard='horseshoe'),
+    'literary_bar_hollis': Look('#c3a58b','#b0a793','receding','#655544','#4c4436','coat','#baa98a',age=2,beard='chops'),
     'literary_lake_tess': Look('#e0bda4','#28242a','long','#33445d','#33445d','swim','#d4d8d1',eyes='#415878',mark='freckles',sleeve=0),
     # 0.4.152: the young man in Tess's place for a reader the House reads as drawn to men. A navy swim shirt and trunks, barefoot.
     'literary_lake_theo': Look('#d6ae8f','#3b2b22','messy','#2f4058','#2f4058','tee','#d4d8d1',eyes='#5a4636',mark='trunks',sleeve=4),
     'literary_lake_wax': Look('#caba91','#746448','long','#575443','#514b38','dress','#d3c79f',mark='wax'),
     'seance_medium': Look('#c9a68a','#6a5040','bun','#533b50','#392f3c','dress','#d1bea0',age=1),
     'seance_mother': Look('#d2ae8e','#61442d','bun','#824954','#56393f','dress','#d0b999'),
-    'seance_father': Look('#c39a7a','#584535','part','#514a3f','#3d3b34','suit','#baa48a',age=1,beard='stubble'),
+    'seance_father': Look('#c39a7a','#584535','part','#514a3f','#3d3b34','suit','#baa48a',age=1,beard='shadow'),
     'seance_daughter': Look('#d9b69c','#6d4f38','long','#68869d','#4d6477','dress','#d7ceba'),
     # Miniatures (0.4.121): the mother in the upper corner, in a slept-in nightgown, the eyes turned up white.
     'literary_miniature_mother': Look('#d6c6b6','#231a16','long','#d3cbbb','#c9c1b0','dress','#a99f8f',eyes='#2a2624',mark='possessed'),
@@ -212,12 +212,12 @@ for group in ('crew', 'guest'):
     for i, (skin, hair, cloth) in enumerate([
         ('#c69b7b','#5e4632','#65724c'),('#ae825f','#453023','#57788e'),
         ('#c2a289','#b1a68c','#726653'),('#a67c5a','#2d241e','#52646c')]):
-        LOOKS[f'literary_{group}_{i}'] = Look(skin,hair,'receding' if i==2 else 'part',cloth,'#454941','field' if group=='crew' else 'shirt','#a99d7c',age=1 if i==2 else 0,beard='stubble' if i in (0,2) else '',mark='hardhat' if group=='crew' else '')
+        LOOKS[f'literary_{group}_{i}'] = Look(skin,hair,'receding' if i==2 else 'part',cloth,'#454941','field' if group=='crew' else 'shirt','#a99d7c',age=1 if i==2 else 0,beard={0:'stubble',2:'shadow'}.get(i,'') if group=='crew' else ('shadow' if i==2 else ''),mark='hardhat' if group=='crew' else '')
 
 # The passengers are distinct people, not the four road workers in different props.
 LOOKS.update({
     'literary_guest_0':Look('#d3ad92','#824e35','long','#7c4350','#4c393f','dress','#ba9a7d'),
-    'literary_guest_1':Look('#b88d6a','#4c3425','part','#56738b','#424c53','shirt','#b8ad90',beard='short'),
+    'literary_guest_1':Look('#b88d6a','#4c3425','part','#56738b','#424c53','shirt','#b8ad90',beard='goatee'),
     'literary_guest_2':Look('#c2a48b','#a79f8d','receding','#667052','#474a3c','suit','#b0a180',age=2),
     'literary_guest_3':Look('#c19b7e','#69503a','part','#75604c','#4b4439','coat','#beaa8a',age=1),
 })
@@ -235,8 +235,8 @@ for i, (skin, hair, cut, cloth, style) in enumerate([
     LOOKS[f'trailer_child_{i}'] = Look(skin,hair,cut,cloth,'#4e5b63',style,'#c4bb9d',eyes=('#596b62','#5a6377','#765e3d')[i%3],sleeve=4 if style=='tee' else 9,logical=64)
 
 HOTEL = [
-    Look('#b58c68','#35271f','part','#7d303c','#373a36','uniform','#c29c56',beard='moustache'),
-    Look('#c99c78','#3e2c22','part','#323a39','#303632','waistcoat','#d8c9a9',beard='moustache'),
+    Look('#b58c68','#35271f','part','#7d303c','#373a36','uniform','#c29c56',beard='pencil'),
+    Look('#c99c78','#3e2c22','part','#323a39','#303632','waistcoat','#d8c9a9',beard='handlebar'),
     Look('#c4a084','#6e5741','part','#5c5644','#454237','suit','#ac926c',mark='scar'),
     Look('#caa98d','#b1a18c','receding','#343d4a','#303746','suit','#ad9568',age=2,beard='moustache'),
     Look('#c5a083','#503225','part','#514034','#39372f','suit','#c0a47b'),
@@ -248,7 +248,7 @@ for prefix in ('hotel','stanley'):
 LOOKS['stanley_bath_ghost']=Look('#a3ab99','#aab1a5','long','#b8baa7','#9a9f90','dress','#76816e',eyes='#d4d6bb',age=3,sleeve=0)
 
 CLUB = [
-    ('male',Look('#c7a17c','#51392c','short','#434b50','#2f353a','tee','#8a9799',beard='short',sleeve=4)),
+    ('male',Look('#c7a17c','#51392c','short','#434b50','#2f353a','tee','#8a9799',beard='patchy',sleeve=4)),
     ('female',Look('#b58463','#482b24','long','#8a405a','#36323b','club_dress','#c09093',sleeve=0)),
     ('vest',Look('#9a7052','#29221d','close','#d8ccb6','#3a3935','tank','#9e927b',sleeve=0)),
     ('copper',Look('#d1a38a','#9a5635','short','#3c6b67','#353e3d','tank','#8ea79c',sleeve=0)),
@@ -440,6 +440,92 @@ def hollow_face(look):
     return im.resize((16,16),Image.Resampling.NEAREST)
 
 
+# 0.4.328 (owner: "many of them share that little chin strip"): the beards were all one thin line round the jaw. Each style
+# now has its own shape, drawn on the native face grid: eyes at rows 7-8, the nose down to row 10, the mouth on row 13.
+BEARDS=('stubble','shadow','patchy','goatee','short','full','chops','walrus','pencil','handlebar','horseshoe','chinstrap','moustache','jawline')
+# The jaw and upper lip that stubble and shadow darken: (row, first column, last column) spans.
+JAW=((11,1,4),(11,11,14),(12,1,15),(13,1,5),(13,10,14),(14,1,14),(15,1,14))
+
+
+def mix(a,b,t):
+    a=rgb(a) if isinstance(a,str) else a[:3];b=rgb(b) if isinstance(b,str) else b[:3]
+    return tuple(round(x+(y-x)*t) for x,y in zip(a,b))
+
+
+def beard(im,look):
+    """The beard on the front of the head, over the face's own lines; the mouth is drawn again where a beard covers it."""
+    d=ImageDraw.Draw(im);skin=rgb(look.skin);hair=rgb(look.hair);lo=shade(hair,-14);hi=shade(hair,15)
+    style=look.beard;assert style in BEARDS,style
+    def tint(x,y,t):im.putpixel((x,y),mix(im.getpixel((x,y)),hair,t)+(255,))
+    def spans(rows,c=hair):
+        for y,x0,x1 in rows:d.line((x0,y,x1,y),fill=c)
+    def dots(points,c):
+        for x,y in points:d.point((x,y),fill=c)
+    mouth=shade(skin,-58)
+    if style in ('stubble','shadow'):
+        # Stubble is a stipple over an even shadow; a shaved shadow is the even part alone, a little darker at the chin.
+        for y,x0,x1 in JAW:
+            for x in range(x0,x1+1):
+                if style=='stubble':tint(x,y,0.36 if (x*73+y*151+x*y*31)%7<3 else 0.14)
+                else:tint(x,y,{11:0.12,12:0.18}.get(y,0.3 if y==15 else 0.24))
+    elif style=='patchy':
+        # A young man's beard that has not come in: the chin and the corners of the jaw, a few hairs on the lip.
+        spans(((15,6,9),));dots(((5,15),(10,15),(7,14)),mix(skin,hair,0.55))
+        for x,y in ((2,13),(2,14),(3,14),(3,15),(13,13),(13,14),(12,14),(12,15),(6,12),(9,12)):tint(x,y,0.5)
+    elif style=='goatee':
+        spans(((12,6,9),(15,5,10)));dots(((5,13),(10,13),(5,14),(10,14),(7,14),(8,14)),hair)
+        dots(((7,12),(7,15)),hi);dots(((5,15),(10,15)),lo)
+    elif style=='short':
+        # Close-trimmed and boxed: sideburns, a jaw that fills to the chin, a moustache with clean cheek between.
+        d.line((0,6,0,11),fill=hair);d.line((15,6,15,11),fill=hair)
+        spans(((11,0,1),(11,14,15),(12,0,2),(12,5,10),(12,13,15),(13,0,5),(13,10,15),(14,0,15),(15,0,15)))
+        d.line((6,13,9,13),fill=mouth);d.line((6,14,9,14),fill=lo)
+        dots(((2,14),(13,14),(7,15)),hi);dots(((0,15),(15,15),(4,14),(11,14)),lo)
+    elif style=='full':
+        # Up the cheeks to the sideburns and over the lip, the mouth a dark gap in it; strands in two tones.
+        d.line((0,5,0,15),fill=hair);d.line((15,5,15,15),fill=hair)
+        spans(((9,0,1),(9,14,15),(10,0,2),(10,13,15),(11,0,3),(11,5,10),(11,12,15),(12,0,15),(13,0,5),(13,10,15),(14,0,15),(15,0,15)))
+        d.line((6,13,9,13),fill=mouth)
+        dots(((3,12),(12,12),(6,11),(9,11),(5,14),(10,14),(2,10),(13,10)),hi)
+        dots(((1,11),(2,13),(13,13),(4,15),(11,15),(7,14),(8,15),(14,12)),lo)
+    elif style=='chops':
+        # Side whiskers widening down to the jaw and joined across the lip; the chin is shaved.
+        spans(((10,0,2),(10,13,15),(11,0,3),(11,12,15),(12,0,15),(13,0,5),(13,10,15),(14,0,3),(14,12,15),(15,0,1),(15,14,15)))
+        d.line((0,5,0,9),fill=hair);d.line((1,6,1,9),fill=hair);d.line((15,5,15,9),fill=hair);d.line((14,6,14,9),fill=hair)
+        d.line((6,13,9,13),fill=mouth);dots(((2,11),(13,11),(7,12)),hi);dots(((1,14),(14,14),(4,13),(11,13)),lo)
+    elif style=='walrus':
+        # Heavy and drooping, down over the mouth: only a shadow of the lower lip shows under it.
+        spans(((11,5,10),(12,4,11),(13,4,11)));d.line((6,14,9,14),fill=shade(skin,-30))
+        dots(((6,11),(9,11),(5,12),(10,12)),hi);dots(((4,13),(11,13),(6,13),(9,13)),lo)
+    elif style=='pencil':
+        # A thin trimmed line just under the nose, lighter where it parts, with clean skin between it and the mouth.
+        spans(((11,5,6),(11,9,10)));dots(((7,11),(8,11)),mix(skin,hair,0.45))
+    elif style=='handlebar':
+        # Full under the nose, swept out and up at both ends.
+        spans(((11,6,9),(12,4,11)));dots(((3,11),(12,11)),hair);dots(((3,10),(12,10)),hi);dots(((5,12),(10,12)),lo)
+    elif style=='horseshoe':
+        # Over the lip and straight down past the corners of the mouth to the jaw.
+        spans(((11,6,9),(12,5,10),(13,4,5),(13,10,11),(14,4,5),(14,10,11),(15,4,5),(15,10,11)))
+        dots(((7,11),(4,14),(11,14)),hi);dots(((5,15),(10,15)),lo)
+    elif style=='chinstrap':
+        # The one thin line round the jaw, kept for the men who would wear it (and the Drisking sheet painted with it).
+        d.line((2,11,3,14,5,15,10,15,12,14,13,11),fill=hair)
+    elif style=='jawline':
+        # The old stubble, a lighter jaw line with no moustache: only the manor portraits, which keep the faces they were approved with.
+        d.line((2,11,3,14,5,15,10,15,12,14,13,11),fill=shade(hair,13))
+    if style in ('chinstrap','moustache'):
+        d.line((5,11,6,11,6,12,9,12,9,11,10,11),fill=hair)
+
+
+def beard_side(d,look,side):
+    """The jaw of a fuller beard carries round onto the sides of the head, under the ear."""
+    if look.beard not in ('full','short','chops') or look.cut in ('long','braids'):return
+    hair=rgb(look.hair);front=0 if side=='left' else 10
+    top={'full':12,'short':13,'chops':12}[look.beard];bottom=14 if look.beard=='chops' else 15
+    d.rectangle((front,top,front+5,bottom),fill=hair)
+    d.line((front+1,bottom,front+4,bottom),fill=shade(hair,-14));d.point((front+2,top),fill=shade(hair,15))
+
+
 def face(look):
     if look.face_style and look.face_style not in ('young_teen','child'):return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
@@ -503,12 +589,7 @@ def face(look):
         if look.age==2:
             d.line((5,11,5,12),fill=cheek);d.line((10,11,10,12),fill=cheek)
             d.line((6,1,10,1),fill=cheek)
-    if look.beard:
-        if look.beard in ('full','short','stubble'):
-            c=shade(hair,13) if look.beard=='stubble' else hair
-            d.line((2,11,3,14,5,15,10,15,12,14,13,11),fill=c,width=2 if look.beard=='full' else 1)
-        if look.beard in ('full','short','moustache'):
-            d.line((5,11,6,11,6,12,9,12,9,11,10,11),fill=hair)
+    if look.beard:beard(im,look)
     if look.glasses:
         c='#666250';d.rectangle((2,6,6,9),outline=c);d.rectangle((9,6,13,9),outline=c)
         d.line((6,7,9,7),fill=c);d.line((0,7,2,7),fill=c);d.line((13,7,15,7),fill=c)
@@ -806,7 +887,7 @@ def paint(look):
         for side,box in islands.items():put(box,panel((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),color,kind,side))
     # Face features belong only on the front; ears belong only on side faces.
     head=net(0,0,8,8,8);fill_net(head,look.hair,'hair')
-    put(head['front'],face(look));put(head['bottom'],panel((16,16),look.skin,'skin'))
+    put(head['front'],face(look));put(head['bottom'],panel((16,16),look.hair if look.beard=='full' else look.skin,'hair' if look.beard=='full' else 'skin'))
     if look.cut=='receding':
         art=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(art)
         d.rectangle((0,0,1,15),fill=rgb(look.hair));d.rectangle((14,0,15,15),fill=rgb(look.hair));d.rectangle((0,13,15,15),fill=rgb(look.hair));put(head['top'],art)
@@ -817,6 +898,7 @@ def paint(look):
             d.rectangle((front,5,front+5,15),fill=rgb(look.skin))
             d.rectangle((front+3,7,front+5,11),fill=shade(look.skin,-16));d.line((front+4,8,front+4,10),fill=shade(look.skin,-34))
             if look.glasses:d.line((front,7,front+5,7),fill='#666250')
+            beard_side(d,look,side)
         put(head[side],art)
     if look.cut=='ponytail':
         art=panel((16,16),look.hair,'hair','back');d=ImageDraw.Draw(art)

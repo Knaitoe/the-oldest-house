@@ -9,52 +9,52 @@ public final class GhostsConversations {
     // 0.4.242 (owner: "try to cut the ai-isms from the vignette"): people talking, not summing up.
     private static final String[][][] WORDS={
         {
-            {"Merry gets to veto the ending. That's the arrangement. She gives terrible notes.","Ask her about the ants. She'll say it was her idea. Let her."},
-            {"I already know where the little bug is on every page. I'm checking that he hasn't moved.","She tells it and I write it in. If I don't like the ending, she has to fix it.","Do you know what a narwhal is? Dad thought I'd made it up.","I put him in the corner on purpose. You're supposed to look for him.","If you take that book, bring it back. She writes in it.","I can do the interview here. I don't want everybody watching."},
-            {"Can you get both of them together? Before you ask about all the other stuff.","I'm home for now. They keep asking when I'm going back, like I wouldn't go tomorrow if I could."},
-            {"Those are Merry's actual books. Please don't carry them off with the other things.","Her appointments don't stop because you're here. Someone needs to remember that."},
-            {"Can you get Merry over here? We can do her bit while they finish upstairs.","If Merry looks into the lens, keep rolling. We can always ask her again."},
-            {"John asked me to come. I haven't examined his daughter yet.","I need to hear what they saw separately. A conversation round the table isn't that."}
+            {"She gets to pick how they end. She's a total dictator about it.","Ask her about the ants. It was my idea, but she'll say it was hers."},
+            {"I know where the bug is on every page. I'm just checking.","She makes it up and I write it in. If the ending's bad she has to do it again.","Do you know what a narwhal is? Dad thought I'd made it up.","I put him in the corner on purpose. You're supposed to look for him.","That's our book. You have to give it back.","I can do the interview here. I don't want everybody watching."},
+            {"Get the two of them together first. Before all the other stuff.","I'm between jobs right now. Everybody asks. I'd go back tomorrow."},
+            {"Those are Merry's books, not props. Don't pack them up with your things.","Marjorie sees the doctor on Thursday. I don't care what your schedule says."},
+            {"Grab Merry for me? We'll do hers while they're still upstairs.","She'll look right at the camera. Kids always do. Just stay on her."},
+            {"I'm here because John asked. I haven't really talked to Marjorie yet.","I'd like to talk to each of them on their own. Not all together like this."}
         },
         {
-            {"You'd think I'd promised her a crown. It's a hat, Merry.","Are you watching me or Dad? Pick one. You'll miss the other."},
-            {"Butter and cheese on mine. Mom knows. Everybody knows. They still ask.","She said I could borrow it. Well, she didn't actually say yes. She didn't say no either.","You don't have to point it at me while I'm chewing.","I wasn't making a face. I was looking at her hat.","Dad never used to make us do this before we could eat.","Don't put that bit in. The bit where he shouted."},
-            {"We can manage one meal together. Sit down, Merry. It'll be all right.","Don't come any closer with that. I can see my own hand, thanks."},
-            {"John, let her eat before you start. We can talk afterwards.","Move the chair. I want to sit beside her. You're all standing over her."},
-            {"Can we keep supper going a little longer? We haven't really got anything from Sarah.","John keeps looking over here. Could you ask him to look at the girls?"},
-            {"I wasn't at that meal. I won't pretend a recording puts me there.","John has told me about his hand. I still need to speak with his daughter."}
+            {"You'd think I'd promised her a crown. It's a hat, Merry.","Why are you filming me? Film Dad. He's the one doing all the praying."},
+            {"Just butter and cheese. Mom knows.","She didn't say no. That's almost yes.","You don't have to point it at me while I'm chewing.","I wasn't making a face. I was looking at her hat.","Dad never used to make us do this before we could eat.","Don't put that bit in. The bit where he shouted."},
+            {"Sit down, Merry. We're going to have one normal dinner.","Get that out of my face. It's a cut. It's fine."},
+            {"John. Let her eat first.","Move the chair. I want to sit beside her. You're all standing over her."},
+            {"Can we keep supper going a little longer? We haven't really got anything from Sarah.","John keeps looking at the camera. Tell him to look at the girls, would you?"},
+            {"I wasn't there that night. I've only seen the tape.","John showed me his hand. I'd still like to talk to Marjorie myself."}
         },
         {
-            {"You want it again? How high was I supposed to get last time? Ask Dad.","Merry. I'm talking to you. You can stop staring at the floor."},
-            {"Can I stay by the door? I can hear you from there.","When we do it again, am I supposed to be scared at the same bit?","Those holes were there before you came.","She's supposed to come down this time, isn't she?","I said I'd go upstairs. I didn't say I'd go in.","I can see from the landing. Why do I have to stand there?"},
-            {"I had hold of her. That's what I remember. I wasn't counting the marks in the wall.","I'm right here, Marjorie. Nobody's asking you to fall."},
-            {"No, Merry doesn't need to stand there again. You can get her from here.","She used her fingers on that plaster. Show that as well, if you're showing the rest."},
-            {"We'll need her back at the wall. Just where she was. We'll sort out the rest.","Is Merry coming up? Hang on, I'll get her mother."},
-            {"A reconstruction can't answer the questions I have about that night.","John, this isn't permission for the next thing. We haven't finished talking."}
+            {"You want it again? How high was I supposed to get last time? Ask Dad.","Merry. Look at me. The floor's not that interesting."},
+            {"Can I stay by the door? I can hear you from there.","When we do it again, am I supposed to be scared at the same bit?","Those holes were there before you came.","She's supposed to come down this time, isn't she?","Is she going to do the falling part too?","I can see from the landing. Why do I have to stand there?"},
+            {"I grabbed her ankle. That's all I remember. I don't know about the holes.","I'm right here, Marjorie. Nobody's asking you to fall."},
+            {"No, Merry doesn't need to stand there again. You can get her from here.","Look at her fingers. If you're filming the wall, film her fingers."},
+            {"Can we get her back up on the wall? Same spot. We'll fix the rest in the edit.","Is Merry coming up? Hang on, I'll get her mother."},
+            {"I don't see what doing it again for the camera shows us.","John, this doesn't mean yes. We still need to talk."}
         },
         {
-            {"I can put on a voice. That doesn't mean I can make the other ones shut up.","Merry knows when I'm kidding. Usually. Look, just give us a minute."},
-            {"I know when she's doing the voice for me. Not always. I used to know.","She can come in my house if she asks. She can't just climb on it.","She calls me monkey when she isn't cross with me too.","Don't tell her I told you. Marjorie, not Mom.","I liked the other story better. There was a way out of that one.","Can I sit here? I won't touch anything."},
-            {"The bills still turn up. I know you think about that when I say we're doing this for her.","I heard her laughing down there. I hadn't heard that for a while."},
-            {"The girls are downstairs together. Let them be downstairs together.","I'll put the food away. Apparently supper can wait as long as you need it to."},
+            {"Sure, I can do the voice. I can't make them stop, though.","Merry knows when I'm messing around. Can you give us a minute?"},
+            {"I can tell when she's doing it on purpose. Mostly.","She can come in my house if she asks. She can't just climb on it.","She calls me monkey when she isn't cross with me too.","Don't tell her I told you. Marjorie, not Mom.","I liked the other story. This one's too scary.","Can I sit here? I won't touch anything."},
+            {"Yes, they're paying us. That's not why we said yes.","Was that her laughing? I haven't heard that in months."},
+            {"Leave the girls alone down there. They're fine.","Supper's going cold. Again."},
             {"Are they still downstairs? How long have they been down there?","We still need that bit with the little house. Could you find Merry for me?"},
-            {"Someone saying they can perform doesn't tell us why they need to.","I'd rather hear her finish than start another argument over the first thing she said."}
+            {"So she can do the voices. That doesn't tell me why.","Let her finish, please. Then we can argue."}
         },
         {
-            {"I read the rules. Do I get a turn to ask you anything? No? Thought not.","When I say something boring, nobody asks me to repeat it."},
-            {"I can go in the little room when they ask me. When I want to talk, it's always later.","I read things too. She doesn't have to tell me everything.","You keep asking her the same thing. She already answered.","If I ask a question, will you write mine down?","Dad said not to interrupt. He keeps doing it.","I don't want to sit beside the door if people keep coming through it."},
-            {"We've tried the appointments. I can't keep watching her get worse and do nothing.","Don't make it sound like I'm glad any of this is happening."},
-            {"She has a computer, John. You know she has a computer. You bought it.","If you use his question, use my answer. Don't just leave me looking angry beside him."},
+            {"I read up on this. Do I get to ask you anything? Didn't think so.","Can I go now? I have homework."},
+            {"Nobody asks me anything. They just tell me to go in the other room.","I read things too. She doesn't have to tell me everything.","You keep asking her the same thing. She already answered.","If I ask a question, will you write mine down?","Dad said not to interrupt. He keeps doing it.","People keep coming through that door. I don't want to sit there."},
+            {"We tried the doctors. Three of them. She's worse.","Don't make it sound like I'm glad any of this is happening."},
+            {"She has a computer, John. You know she has a computer. You bought it.","Don't just film me shaking my head. I said something. Use that."},
             {"Could we have everybody back where they were? Father's ready.","Let him finish. We can ask Sarah afterwards."},
-            {"An examination isn't a performance. I object to the crew being here too.","I need her own answer, John. Please stop answering for her."}
+            {"I don't do this in front of cameras. I told John that on the phone.","I need her own answer, John. Please stop answering for her."}
         },
         {
             {"Could somebody sit here? You can pray sitting down, can't you?","I didn't pull it. Look at where my hands are."},
-            {"She said some of it was pretend. She didn't tell me which bits I was in.","If she asks me something, can I answer her? Mom?","Can you stand on this side? You're blocking Mom.","I don't like how hot it is in here.","I said I wasn't scared downstairs. That was downstairs.","You won't make me stay if I want to go, will you?"},
-            {"She's my daughter. I'm standing right here, whatever she says.","I thought we'd know by now. I thought somebody would know what to do."},
+            {"She said some of it was pretend. Which parts?","If she asks me something, can I answer her? Mom?","Can you stand on this side? You're blocking Mom.","I don't like how hot it is in here.","Can I go back downstairs? I don't want to be up here.","You won't make me stay if I want to go, will you?"},
+            {"She's my daughter. I'm not going anywhere.","Somebody should know what to do by now."},
             {"Look at me, Marjorie. You can tell me to stop.","John, move. I need to get beside her."},
             {"Just a minute. We're not set up in there yet.","Could you ask them to stay upstairs? We're nearly ready."},
-            {"Stay where she can see you. Don't all crowd the bed.","John, let me speak. We've already gone too far to start shouting at each other."}
+            {"Stay where she can see you. Don't all crowd the bed.","John, let me speak. Shouting won't help her."}
         },
         {
             {"Pass the pan over, will you? There's enough for me.","All that cheese and you won't try a little sauce? You're impossible, Merry."},
@@ -79,7 +79,7 @@ public final class GhostsConversations {
             };
         }
         if(speaker==3&&day>0&&day<6&&!own.getBoolean("SarahCut_"+day)&&own.getCompound("FilmLog"+day).getInt("Frames_Sarah")>=20){
-            own.putBoolean("SarahCut_"+day,true);return switch(day){case 1->"You cut me off. I was answering your question.";case 2->"I was trying to get her upstairs. Is that in there?";case 3->"She'd already come down. You know that, don't you?";case 4->"The girls were having a conversation. Can they have anything to themselves?";default->"I answered him. Did you leave that in?";};
+            own.putBoolean("SarahCut_"+day,true);return switch(day){case 1->"You cut me off. I was answering your question.";case 2->"I was trying to get her upstairs. Is that in there?";case 3->"She'd already come down. You know that, don't you?";case 4->"That was the girls talking. That wasn't for the show.";default->"I answered him. Did you leave that in?";};
         }
         String key="GhostTalk_"+(day+1)+"_"+speaker;int n=own.getInt(key);own.putInt(key,(n+1)%WORDS[day][speaker].length);
         if(day==6&&speaker==1&&own.getInt("ShotClock")>=630&&own.getInt("ShotClock")<820)return n%2==0?"You said we were going together.":"How long do I have to wait for you to wake up?";

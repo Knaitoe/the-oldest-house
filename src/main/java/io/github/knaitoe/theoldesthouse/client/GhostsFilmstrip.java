@@ -69,7 +69,11 @@ public final class GhostsFilmstrip extends Screen {
         new Page("floor","Merry in the basement: crouching with the jar, sitting on the floor, getting up (0.4.325)",List.of()),
         new Page("hand","John's injured hand: only the right (0.4.326)",List.of(
             new Row("John, hand, front",J,GhostsSet.HAND,180,false,2,0,10,false),new Row("John, hand, right side",J,GhostsSet.HAND,270,false,2,0,10,false),
-            new Row("John, hand, left side",J,GhostsSet.HAND,90,false,2,0,10,false),new Row("John flinches",J,GhostsSet.FLINCH,180,false,2,0,3,false))));
+            new Row("John, hand, left side",J,GhostsSet.HAND,90,false,2,0,10,false),new Row("John flinches",J,GhostsSet.FLINCH,180,false,2,0,3,false))),
+        new Page("bandage","John's right hand: the wound on day two, the bandage from day three (0.4.328)",List.of(
+            new Row("Day 2, hurt, right side",J,GhostsSet.HAND,270,false,2,0,10,false),new Row("Day 2, hurt, front",J,GhostsSet.HAND,180,false,2,0,10,false),
+            new Row("Day 4, standing, front",J,GhostsSet.STAND,180,false,4,0,10,false),new Row("Day 4, standing, right side",J,GhostsSet.STAND,270,false,4,0,10,false),
+            new Row("Day 4, sitting",J,GhostsSet.SIT,200,false,4,0,10,false),new Row("Day 6, flinching",J,GhostsSet.FLINCH,180,false,6,0,3,false))));
     static final int FRAMES=8;
     private int page,frames;private static boolean launched;
     public GhostsFilmstrip(){super(Component.literal("The Barrett home: filmstrips"));}

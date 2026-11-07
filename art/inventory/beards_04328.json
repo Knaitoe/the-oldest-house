@@ -1,0 +1,283 @@
+{
+  "note": "0.4.328: the owner asked for more variety in the cast's facial hair (\"many of them share that little chin strip\"). The painter's three bearded styles all drew one thin line round the jaw; it now draws thirteen (stubble, shadow, patchy, goatee, short, full, chops, walrus, pencil, handlebar, horseshoe, chinstrap and the original moustache), and the bearded looks are spread across them. Only the beard pixels on the front, sides and underside of the head change; every sheet keeps its size and opacity. The Drisking sheets are unchanged.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/finale_witness.png",
+      "previous_sha256": "8efed121a95b371971444289afdefd9758c2d6f655fe6377b389ca502141e180",
+      "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+      "sha256": "6d66c63cdac3463372aa9d5ff23f2d9671be2b86e2f07113d8164650edede232",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/holloway.png",
+      "previous_sha256": "3eb1eb0ed1bbefcb43d6f840c7998bd0e3b140e5a9fac5794cef234302e2b0f0",
+      "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+      "sha256": "3cd96b11e92a5e7811367b723796c18f2f7deb633d04c6cb36436adb044e7ff0",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_bartender.png",
+      "previous_sha256": "a06fdfd5fa87987b4e6afef7fff6f01f2852dc6025441a3192a48225713704ad",
+      "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+      "sha256": "1c352c4269a6f5f9448274cd9b153151ab69b5f564feced0668100c22de3ccf8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_porter.png",
+      "previous_sha256": "d4d1fb2c88df6e4ccf54b4e8f28831c1fd0e358a5013e322b2f95fd19e1292d4",
+      "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+      "sha256": "ee81d407c1cda413bc75f9becc6ff0c0b5d80ec4226a0930b45f9cd55f798b09",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_denny.png",
+      "previous_sha256": "4bf55d758dd1b250884e6d0ee9c09c96da0878b2015a89ded936d2db00160357",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "d7a6341f20bfde035e2b5f0fed721fe39c5c0886c339909f0168161dfd19ad99",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_hollis.png",
+      "previous_sha256": "1798e0d719e48339223b95e3ee86d73f1176677ea70f97b0e0d674b9fe882018",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "bdbcc6ac82706ea1cb1d58d79c07d6e8a12926ae2cd7b912ae23409e6491d0e0",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_russ.png",
+      "previous_sha256": "7902495c306be98ef944309260eb2600bdb8ce26abd4538cd31bdeefb9441920",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "6b4795a0cce2778dbff4ed41c233f64ecbee46632b34b0e2ee3f57205730e42a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_wade.png",
+      "previous_sha256": "d361a442e336d0f3d7f3eb25617e88b27e60b085a40ee72eba6d6e34807152c4",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "5ea295e9da84adc1e2d6991f72165633756a985a4c7444505099edb6bee1ef94",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_0.png",
+      "previous_sha256": "061cd5ab93f7f0b2068020e11be07ed586d6648cb039d67e603885bec6f87347",
+      "previous_alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+      "sha256": "4b84b5bb106dcd14949c6a68e799ede9a23dd4b2cc1464c14266bc3dcd989e8d",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_2.png",
+      "previous_sha256": "e32682324e6c5d44be361c722facf6f25c83091a7c4e615553a5c3ad6f9601d3",
+      "previous_alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+      "sha256": "3da8c0891ca8b3c640fc44f1ae05e8fd1988d42b34f45a6ac694583ecc789474",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father.png",
+      "previous_sha256": "820d4ae7dc0faf3d950b10e33a85a537b78467e8ae70861655ff548657d2df02",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "5114f0aba30ba26d24a78c1ad188a7a1f7da57194b1f86d52550271f3d39429a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_bandaged.png",
+      "previous_sha256": "9ce253c62fe6ad0b0c7b5c68f5fa6b25e29d1e0e3a14b2374ae9b56e46db0751",
+      "previous_alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+      "sha256": "ac005f680c54a97cc9852ecca9baaeb286ac625c102d1ee2cd046c1ca6e23638",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_mangled.png",
+      "previous_sha256": "e700c80cf8677deb76ee8478fcf3fa23e39fcebab1ba9fc152fdbee7361d6905",
+      "previous_alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+      "sha256": "4da626a497516a127f6e424eb5f5a88d31a6bff10960dca4f78ca564fa64a0aa",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_1.png",
+      "previous_sha256": "61dc74534cbd8fb63ac24755c793636d0a333d37965f0a9f9fd8c0044cf72d1c",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "8110d9cb98edff53e939d2eec3fa375c2856aca600e1fa636c2d72f9878ce37c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_old_man.png",
+      "previous_sha256": "abeeec3bb8b8dce2bdf05fb707174d85c325459f9904e0f901e275c5293e8525",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "e644db767614e81b45130e655eaa9a793be8b42b335630924fb31804304e4b1a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_messenger.png",
+      "previous_sha256": "6a7a667047894dcfa2512add18e8f5e53c0c99211aa7a56f0149c54a4e8e1e48",
+      "previous_alpha_sha256": "0f7443c03b2199f58b44a2af8c02744db79ddebf567a2c1e4d9cf8c3f1ba19e6",
+      "sha256": "26302180375374237d7566d2265e7b5585557bac16af2f98bd35831cddd937bd",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "0f7443c03b2199f58b44a2af8c02744db79ddebf567a2c1e4d9cf8c3f1ba19e6"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_sergeant.png",
+      "previous_sha256": "fa65ec441e5ef6ff58b3f0b7afe6aa7994a0a84af479f64b4e9f024f5662f1f9",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "4ed205335a20e249427348246d611eca537d8bc45db1ca4725a53a3a28577f4b",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_walter.png",
+      "previous_sha256": "0596396eb5f4db35a2da27fe418f61914cbdc7035ac2c2fbe12a3dc5bfe757c8",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "7fc24624e5212490af2a3e3bfd837ca1777996a4b4245cf4e05326f22728e0f4",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_3.png",
+      "previous_sha256": "287f9815729ba6b04fe849cd08bffeda73cd4912e0f26aa9e5d773a5e8cc8673",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "99c8f7347c6961b4dd88ffe051a8e25c1ed99a14c583101d06ba95dd60262ddd",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_male.png",
+      "previous_sha256": "6421018b62e7440fcb4a921628521fe9a8fc96be33ad56ef23dafb13f022b37c",
+      "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+      "sha256": "d183ef8930a9489272b9f24fe413bb75d9a762573343802a3fbec86f47cf89c8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_male_despair.png",
+      "previous_sha256": "3fd0932d15416741b497c5ef6f77207fbeb26db465928bd19d75db6a23a55fc8",
+      "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+      "sha256": "482bb517d0bb9986cd3f883d5ddd5d09b1ee9d59487516de23222dae8b9809c5",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_father.png",
+      "previous_sha256": "dede5c4eb73d5addc88e231370d5975fbb92ae00ad6b4ef25125b07783d1c41c",
+      "previous_alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+      "sha256": "8d831255994e2dc9e5da72c29a2ac67cb34d869198603332e82c1e7bc376186c",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_bartender.png",
+      "previous_sha256": "a06fdfd5fa87987b4e6afef7fff6f01f2852dc6025441a3192a48225713704ad",
+      "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+      "sha256": "1c352c4269a6f5f9448274cd9b153151ab69b5f564feced0668100c22de3ccf8",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_porter.png",
+      "previous_sha256": "d4d1fb2c88df6e4ccf54b4e8f28831c1fd0e358a5013e322b2f95fd19e1292d4",
+      "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+      "sha256": "ee81d407c1cda413bc75f9becc6ff0c0b5d80ec4226a0930b45f9cd55f798b09",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb"
+    }
+  ],
+  "also_repainted_unlisted": [
+    "literary_costume_hank.png",
+    "literary_costume_lyle.png",
+    "literary_movie_ray.png",
+    "literary_people_mark.png",
+    "literary_pitt_brad.png",
+    "literary_supper_dell.png",
+    "literary_truant.png",
+    "literary_truant_leer.png",
+    "literary_window_cleaner.png",
+    "nightclub_dancer_male_unsure.png",
+    "uncanny_peeler.png",
+    "uncanny_peeler_exhausted.png"
+  ]
+}
