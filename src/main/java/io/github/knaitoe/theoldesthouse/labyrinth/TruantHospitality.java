@@ -76,7 +76,7 @@ final class TruantHospitality {
         sc.hospitality=new Encounter(p.getUUID(),Beat.COFFEE_QUESTION,null);
         consumed(p,own,"Coffee");
         Truant.line(p,a,Truant.who(own),"I poured one for you. The cap's still hot.");
-        Talk.ask(p,Talk.reply("Take the cup.",q->takeCup(q,a,sc)),
+        Talk.ask(p,Talk.act("Take the cup.",q->takeCup(q,a,sc)),
                 Talk.reply("I'm going.",q->{finish(sc.hospitality,a);Talk.end(q);}));
         return true;
     }
@@ -122,13 +122,13 @@ final class TruantHospitality {
         Truant.line(p,a,Truant.who(Truant.record(p.server,p.getUUID())),accusation);
         heardByOthers(a,readers,p,accusation);
         e.beat=Beat.BREAD_WALK;
-        Talk.ask(p,Talk.reply("Call out to warn them.",q->{
+        Talk.ask(p,Talk.act("Call out to warn them.",q->{
             if(e.beat==Beat.BREAD_WALK){
                 var other=companion(q,e.departure);
                 if(other!=null)other.displayClientMessage(Component.literal(q.getGameProfile().getName()+" calls from the hall. \"Johnny's coming.\""),true);
             }
             Talk.end(q);
-        }),Talk.reply("Get in his way.",Talk::close));
+        }),Talk.act("Get in his way.",Talk::close));
     }
 
     private static void takeCup(ServerPlayer p,LiteraryActor a,Truant.Scene sc){
@@ -138,8 +138,8 @@ final class TruantHospitality {
         e.cupAt=p.position();
         e.beat=Beat.CUP;
         Truant.line(p,a,Truant.who(Truant.record(p.server,p.getUUID())),"Set it down if you need both hands. I'll wait.");
-        Talk.ask(p,Talk.reply("Set the cup down and go.",q->{reach(e,a,q);Talk.close(q);}),
-                Talk.reply("Stay a moment.",Talk::close));
+        Talk.ask(p,Talk.act("Set the cup down and go.",q->{reach(e,a,q);Talk.close(q);}),
+                Talk.act("Stay a moment.",Talk::close));
     }
 
     private static void reach(Encounter e,LiteraryActor a,ServerPlayer p){

@@ -53,7 +53,7 @@ A reader who touches any of them while the question is open has it put again. On
 
 ## Other readers
 
-If someone else is in the room, they see their own table and answer their own question. One reader's answer gives nobody else a voice, and each empty chair repeats only its own reader. The room's blocks are shared, so a chair one reader's Dell has moved stays moved. The owner asked that a reader's chosen lines be shown to other players; that is a change to the panel as a whole, and it comes next, outside this room.
+If someone else is in the room, they see their own table and answer their own question. One reader's answer gives nobody else a voice, and each empty chair repeats only its own reader. The room's blocks are shared, so a chair one reader's Dell has moved stays moved. The owner asked that a reader's chosen lines be shown to other players. Since 0.4.329 the panel does this everywhere ([details](PANEL_SPEECH_0_4_329.md)): a reader's answer here shows over their head for the other reader, while the chair's echo shows only over the chair.
 
 ## Leaving early
 
@@ -62,7 +62,7 @@ Walking out before "You can answer" leaves the reader without a voice, so a late
 ## Not in this slice
 
 - The HOME-DANGER whisper variant from Clearing the Throat.
-- Showing a reader's chosen lines to other players.
+- Showing a reader's chosen lines to other players (done in 0.4.329, for the whole panel).
 
 ## Validation
 

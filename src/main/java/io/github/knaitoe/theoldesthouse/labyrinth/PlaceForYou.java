@@ -446,9 +446,9 @@ public final class PlaceForYou {
     }
     static void spoon(ServerPlayer p,House h){
         Talk.begin(p,"spoon","Mara");line(p,h,"Mara","Take this off me. Would you? I can't seem to put it down.");
-        Talk.ask(p,Talk.reply("Take the spoon.",q->{PlaceForYouSite.spoon(q.serverLevel(),h.base,true);edit(q,o->o.putBoolean("SpoonTaken",true));line(q,h,"Mara","Thank you. Thank you. Sit down, all of you, it's getting cold.");Talk.end(q);
+        Talk.ask(p,Talk.act("Take the spoon.",q->{PlaceForYouSite.spoon(q.serverLevel(),h.base,true);edit(q,o->o.putBoolean("SpoonTaken",true));line(q,h,"Mara","Thank you. Thank you. Sit down, all of you, it's getting cold.");Talk.end(q);
                 if(own(q).getString("Promise").equals("company"))edit(q,o->o.putBoolean("PromiseKept",true));})
-            ,Talk.reply("Leave it.",q->{line(q,h,"Mara","There's one more. There's always one more.");Talk.end(q);}));
+            ,Talk.act("Leave it.",q->{line(q,h,"Mara","There's one more. There's always one more.");Talk.end(q);}));
     }
     static void confront(ServerPlayer p,House h){
         var own=own(p);Talk.begin(p,"confront","At the table");line(p,h,"Mara","Sit down, all of you. It's getting cold.");
@@ -512,8 +512,8 @@ public final class PlaceForYou {
     }
     static void roadAsk(ServerPlayer p,House h){
         Talk.begin(p,"road","The road");Talk.line(p,"","The road goes on into the trees both ways. Behind you, the house, and the people in it.");
-        Talk.ask(p,Talk.reply("Keep walking.",q->{edit(q,o->o.putString("Confront","road"));finish(q,"took_the_road");Talk.end(q);})
-            ,Talk.reply("Go back.",q->Talk.end(q)));
+        Talk.ask(p,Talk.act("Keep walking.",q->{edit(q,o->o.putString("Confront","road"));finish(q,"took_the_road");Talk.end(q);})
+            ,Talk.act("Go back.",q->Talk.end(q)));
     }
     /** Readies the account in the mailbox by the gate. */
     static void finish(ServerPlayer p,String outcome){

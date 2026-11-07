@@ -138,11 +138,15 @@ public final class SpeakUpTests {
                 h.assertTrue(!SpeakUp.voice(f.data(),p.getUUID()),"no voice before an answer");
                 // One reader asks to leave: Dell clears the way on. The other asks for water and is given a glass.
                 h.assertTrue(Talk.choose(p,"I'd like to leave"),"the first reader can ask to leave");
+                // 0.4.329: what a reader says from the panel shows over their head for the other reader, never for themselves.
+                h.assertTrue(Spoken.lastHeard(q,p).equals(SpeakUp.LEAVE),"the other reader sees the words over the first reader's head: \""+Spoken.lastHeard(q)+"\"");
+                h.assertTrue(Spoken.lastHeard(p).isEmpty(),"the speaker is not sent their own words: \""+Spoken.lastHeard(p)+"\"");
                 h.assertTrue(SpeakUp.voice(f.data(),p.getUUID())&&!SpeakUp.owed(f.data(),p.getUUID()),"the answer gives the reader a voice, and the table is no longer owed");
                 h.assertTrue(!SpeakUp.voice(f.data(),q.getUUID()),"one reader's answer is not the other's");
                 h.assertTrue(l.getBlockState(b.offset(SpeakUp.DELL_CHAIR)).isAir()&&l.getBlockState(b.offset(SpeakUp.DELL_MOVED)).is(HouseBlocks.HOUSEHOLD_FURNITURE.get()),"Dell's chair is dragged aside");
                 var at=Vec3.atBottomCenterOf(b.offset(SpeakUp.DELL_CHAIR));h.assertTrue(l.noCollision(null,new AABB(at.x-.3,at.y+.01,at.z-.3,at.x+.3,at.y+1.8,at.z+.3)),"and the way on is clear to walk to");
                 h.assertTrue(Talk.choose(q,"Some water"),"the second reader can ask for water");
+                h.assertTrue(Spoken.lastHeard(p,q).equals(SpeakUp.WATER),"and the first reader sees those words: \""+Spoken.lastHeard(p)+"\"");
                 h.assertTrue(q.getInventory().items.stream().anyMatch(s->s.is(Items.POTION)&&s.has(DataComponents.CUSTOM_NAME)&&s.getHoverName().getString().equals("A glass of water")),"and is handed a glass of water to keep");
                 for(var reader:List.of(p,q)){var t=rec.apply(reader);t.putInt("T2",190);f.data().setStateEntry(SpeakUp.STATE,reader.getUUID().toString(),t);}
             })
@@ -160,6 +164,10 @@ public final class SpeakUpTests {
                 h.assertTrue(cast.apply(p,SpeakUp.DELL).blockPosition().equals(b.offset(2,0,-11)),"Dell stands clear of the way on");
                 // Coming back with a voice, the table is already eating.
                 SpeakUp.arrived(p,place);h.assertTrue(rec.apply(p).getInt("Stage")==3&&SpeakUp.voice(f.data(),p.getUUID()),"a reader who has spoken finds them eating");
+                h.assertTrue(Spoken.lastHeard(p,q).equals(SpeakUp.WATER)&&Spoken.lastHeard(q,p).equals(SpeakUp.LEAVE),"the empty chairs' words are not the readers' own speech");
+                // A reply that is something done, not said, shows nothing over the reader's head.
+                Talk.begin(q,"spoken_probe","The table");Talk.ask(q,Talk.act("Take the glass.",Talk::end));
+                h.assertTrue(Talk.choose(q,"Take the glass")&&Spoken.lastHeard(p,q).equals(SpeakUp.WATER),"something done is not heard: \""+Spoken.lastHeard(p)+"\"");
             })
             .thenSucceed();
     }

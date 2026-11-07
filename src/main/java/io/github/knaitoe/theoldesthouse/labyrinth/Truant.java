@@ -499,8 +499,8 @@ public final class Truant {
         if(place==TruantPlaces.LAMP&&scene!=null&&scene.turn==Turn.HELP&&scene.lamp>=3&&p.getFoodData().getFoodLevel()<=16){
             line(p,a,who,TruantTexts.REFRESHMENT);
             Talk.ask(p,
-                    Talk.reply("Take some bread.",q->refreshment(q,a,"bread")),
-                    Talk.reply("Take the coffee.",q->refreshment(q,a,"coffee")),
+                    Talk.act("Take some bread.",q->refreshment(q,a,"bread")),
+                    Talk.act("Take the coffee.",q->refreshment(q,a,"coffee")),
                     Talk.reply("I'm all right.",q->refreshment(q,a,"")));
             return;
         }
@@ -527,7 +527,7 @@ public final class Truant {
     static void ask(ServerPlayer p,LiteraryActor a){
         var own=record(p.server,p.getUUID());String last=lastStory(p.server,p.getUUID());
         List<Talk.Reply> replies=new ArrayList<>();
-        if(!last.isEmpty())replies.add(Talk.reply("Tell him about "+StaircaseProse.place(last)+".",q->tell(q,a,last)));
+        if(!last.isEmpty())replies.add(Talk.act("Tell him about "+StaircaseProse.place(last)+".",q->tell(q,a,last)));
         replies.add(Talk.reply(last.isEmpty()?"Nothing I can put into words.":"I'd rather not.",q->decline(q,a)));
         if(!own.getBoolean("Named"))replies.add(Talk.reply("Who are you?",q->name(q,a)));
         Talk.ask(p,replies);
@@ -867,9 +867,9 @@ public final class Truant {
         List<Talk.Reply> replies=new ArrayList<>();
         if(read)replies.add(Talk.reply("That happened to me.",q->answer(q,a,"Corrected",TruantTexts.CORRECTED)));
         String last=lastStory(server,id);
-        if(!last.isEmpty()&&!has(own.getList("Told",Tag.TAG_STRING),last))replies.add(Talk.reply("Tell him about "+StaircaseProse.place(last)+".",q->tell(q,a,last,r->then(r,a))));
+        if(!last.isEmpty()&&!has(own.getList("Told",Tag.TAG_STRING),last))replies.add(Talk.act("Tell him about "+StaircaseProse.place(last)+".",q->tell(q,a,last,r->then(r,a))));
         if(!known.isEmpty()){
-            replies.add(Talk.reply("Tell him about "+StaircaseProse.place(known)+" again.",q->answer(q,a,"Retold",TruantTexts.RETOLD)));
+            replies.add(Talk.act("Tell him about "+StaircaseProse.place(known)+" again.",q->answer(q,a,"Retold",TruantTexts.RETOLD)));
             replies.add(Talk.reply("I already told you that.",q->challenged(q,a)));
         }
         replies.add(Talk.reply("That's all you get.",q->limited(q,a)));

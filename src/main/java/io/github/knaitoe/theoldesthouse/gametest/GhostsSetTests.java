@@ -267,6 +267,16 @@ public final class GhostsSetTests {
     }
     @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
     public static void TheLongestCentredSubjectChangesTheBroadcastStory(GameTestHelper h){var a=new CompoundTag();var l=new CompoundTag();l.putInt("Frames_Marjorie",40);l.putInt("Frames_Sarah",40);l.putInt("LeadTicks_Sarah",30);a.put("FilmLog2",l);String first=words(GhostsSet.edit("reader",a,2,false));l.putInt("LeadTicks_Marjorie",60);a.put("FilmLog2",l);String second=words(GhostsSet.edit("reader",a,2,false));h.assertTrue(first.contains("worry about the doctors")&&second.contains("possession story")&&!first.equals(second),"centring a different face changes the production's lead, even when both appear in the footage");h.succeed();}
+    /** 0.4.329 (owner: "You've got the bandage set for the rest of the days right?"): John's hand is hurt from the cut on day 2 to the last day. */
+    @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
+    public static void johnsHandStaysHurtFromTheCutToTheLastDay(GameTestHelper h){
+        var own=new CompoundTag();own.putInt("FilmDay",1);h.assertTrue(!GhostsSet.johnHurt(own),"his hand is whole on the first day");
+        own.putInt("FilmDay",2);own.putInt("ShotClock",500);h.assertTrue(!GhostsSet.johnHurt(own),"and on day 2 before supper");
+        own.putInt("ShotClock",880);h.assertTrue(GhostsSet.johnHurt(own),"cut at supper");
+        own.putInt("ShotClock",0);own.putBoolean("DayDone",true);h.assertTrue(GhostsSet.johnHurt(own),"and still cut once day 2's take is over");
+        for(int d=3;d<=GhostsSet.DAYS;d++){var later=new CompoundTag();later.putInt("FilmDay",d);h.assertTrue(GhostsSet.johnHurt(later),"bandaged on day "+d);}
+        h.succeed();
+    }
     /** 0.4.242 (owner: "cut recording dialogue from the seventh day"): nothing anyone says on the last day is about filming. */
     @GameTest(template="empty",batch="ghosts_lead",timeoutTicks=200)
     public static void theLastDayHasNoTalkOfFilming(GameTestHelper h){
