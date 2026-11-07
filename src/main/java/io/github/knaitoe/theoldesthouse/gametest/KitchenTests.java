@@ -32,6 +32,7 @@ public final class KitchenTests {
     private static void close(){if(active!=null){active.close();active=null;}KitchenFittings.clearAll();}
     @AfterBatch(batch="kitchen_cook") public static void doneCook(ServerLevel l){close();}
     @AfterBatch(batch="kitchen_visitors") public static void doneVisitors(ServerLevel l){close();}
+    @AfterBatch(batch="kitchen_weight") public static void doneWeight(ServerLevel l){close();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static ItemStack water(){return PotionContents.createItemStack(Items.POTION,Potions.WATER);}
 
@@ -154,4 +155,27 @@ public final class KitchenTests {
             .thenWaitUntil(()->h.assertTrue(KitchenVisitors.current(l)==null,"and is gone"))
             .thenSucceed();
     }
+    /** 0.4.332: the kitchen comes when it is wanted, and who comes in is weighted. */
+    @GameTest(template="empty",batch="kitchen_weight",timeoutTicks=200)
+    public static void theKitchenAndItsVisitorsComeByWeight(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=NativeTestPlayers.survival(h,"kitchen_weigher");f.players.add(p);var data=f.data();var id=p.getUUID();
+        java.util.function.BiConsumer<Integer,Integer> set=(visits,since)->{var own=data.stateEntry(FamiliarRoom.STATE,id.toString());own.putInt("Visits",visits);own.putInt("Since",since);data.setStateEntry(FamiliarRoom.STATE,id.toString(),own);};
+        FamiliarRoom.need(id,false);
+        set.accept(0,0);
+        h.assertTrue(FamiliarRoom.weight(data,id,2)==0&&FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT,"never found: from the third crossing, at its ordinary weight");
+        set.accept(1,0);h.assertTrue(FamiliarRoom.weight(data,id,5)==0,"not again straight after a visit");
+        set.accept(1,FamiliarRoom.SOON);h.assertTrue(FamiliarRoom.weight(data,id,5)==1,"back by degrees");
+        set.accept(1,FamiliarRoom.BACK);h.assertTrue(FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT,"then at its ordinary weight");
+        set.accept(1,FamiliarRoom.LONG);h.assertTrue(FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT*2,"twice as likely a long while after");
+        FamiliarRoom.need(id,true);h.assertTrue(FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT*6,"three times again for a reader hungry or hurt");
+        h.assertTrue(FamiliarRoom.weight(data,id,LabyrinthPacing.DEEP_DEPTH)==FamiliarRoom.WEIGHT*3,"half as likely in the deep halls");
+        FamiliarRoom.need(id,false);
+        var s=f.in.getServer();var here=List.of(p);
+        h.assertTrue(KitchenVisitors.weight(s,KitchenVisitors.TRAVELLER,here,-1,4)==8&&KitchenVisitors.weight(s,KitchenVisitors.JOHNNY,here,-1,4)==6&&KitchenVisitors.weight(s,KitchenVisitors.HOLLOWAY,here,-1,4)==4,"each visitor their own weight, doubled while nobody here has fed them");
+        var mem=data.stateEntry(KitchenVisitors.STATE,id.toString());var v=new CompoundTag();v.putInt("Fed",1);mem.put("V"+KitchenVisitors.JOHNNY,v);data.setStateEntry(KitchenVisitors.STATE,id.toString(),mem);
+        h.assertTrue(KitchenVisitors.weight(s,KitchenVisitors.JOHNNY,here,-1,4)==3,"met, Johnny is back to his own weight");
+        h.assertTrue(KitchenVisitors.weight(s,KitchenVisitors.JOHNNY,here,KitchenVisitors.JOHNNY,4)==0&&KitchenVisitors.weight(s,KitchenVisitors.JOHNNY,here,KitchenVisitors.JOHNNY,1)==3,"not straight back after leaving, unless nobody else could come");
+        h.succeed();
+    }
+
 }

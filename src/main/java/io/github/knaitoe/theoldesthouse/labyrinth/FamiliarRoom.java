@@ -111,12 +111,33 @@ public final class FamiliarRoom {
 
     // ------------------------------------------------------------------ pacing
     private static final Set<UUID> IN=new HashSet<>();
+    /** Readers who are hungry or hurt, refreshed with the room's own clock. */
+    private static final Set<UUID> NEED=new HashSet<>();
+    /** Crossings after a visit before the kitchen can come again, before it is back at its ordinary weight, and before it is twice as likely. */
+    public static final int SOON=4,BACK=10,LONG=24;
     /** A reader's weight for the kitchen: from the third crossing, and far more while somebody else is already there. */
-    public static int weight(UUID reader,int depth){
+    public static int weight(UUID reader,int depth){return weight(null,reader,depth);}
+    /**
+     * 0.4.332 (owner: "the kitchen should have a weighted frequency for appearance too"): the kitchen comes when it is wanted, not
+     * on a flat chance. Not again straight after a visit; back by degrees over the next few crossings; twice as likely once a reader
+     * has been a long time away from it; three times as likely while they are hungry or hurt; half as likely in the deep halls,
+     * where the House's rooms are further from home. Someone already in it still draws everyone else there.
+     */
+    public static int weight(@Nullable LabyrinthData data,UUID reader,int depth){
         if(depth<3)return 0;
         for(var other:IN)if(!other.equals(reader))return MEET;
-        return WEIGHT;
+        int w=WEIGHT;
+        if(data!=null){var own=own(data,reader);
+            if(own.getInt("Visits")>0){int since=own.getInt("Since");
+                if(since<SOON)return 0;
+                if(since<BACK)w=Math.max(1,WEIGHT*(since-SOON+1)/(BACK-SOON+1));
+                else if(since>=LONG)w=WEIGHT*2;}}
+        if(NEED.contains(reader))w*=3;
+        if(depth>=LabyrinthPacing.DEEP_DEPTH)w=Math.max(1,(w+1)/2);
+        return w;
     }
+    /** For tests: mark a reader hungry or hurt, or not. */
+    public static void need(UUID reader,boolean needs){if(needs)NEED.add(reader);else NEED.remove(reader);}
     public static boolean occupied(){return !IN.isEmpty();}
     /** 0.4.239: the kitchen through its door: its own rhythm (0.4.246: the fridge, the clock, the drip), or, while somebody else is in it, someone moving about. */
     public static DoorSounds.Through heard(UUID listener){
@@ -129,7 +150,10 @@ public final class FamiliarRoom {
     static void save(LabyrinthData data,UUID reader,net.minecraft.nbt.CompoundTag own){data.setStateEntry(STATE,reader.toString(),own);}
     /** An ordinary hall walked: remembered, latest last, for the window. */
     public static void walked(ServerPlayer p,LabyrinthPlace place){
-        if(p.isSpectator()||!LabyrinthPacing.ordinary(place))return;
+        if(p.isSpectator())return;
+        // Every crossing away from the kitchen counts toward its coming again.
+        if(place!=KITCHEN){var data=LabyrinthData.get(p.server);var own=own(data,p.getUUID());own.putInt("Since",Math.min(1000,own.getInt("Since")+1));save(data,p.getUUID(),own);}
+        if(!LabyrinthPacing.ordinary(place))return;
         var data=LabyrinthData.get(p.server);var own=own(data,p.getUUID());var list=own.getList("Walked",8);
         if(!list.isEmpty()&&list.getString(list.size()-1).equals(place.id()))return;
         for(int i=list.size()-1;i>=0;i--)if(list.getString(i).equals(place.id()))list.remove(i);
@@ -145,7 +169,7 @@ public final class FamiliarRoom {
     }
     /** Arriving in the kitchen: a visit counted, and the window's yard laid out for this reader. */
     public static void arrived(ServerPlayer p){
-        if(p.isSpectator())return;var data=LabyrinthData.get(p.server);var own=own(data,p.getUUID());own.putInt("Visits",own.getInt("Visits")+1);save(data,p.getUUID(),own);
+        if(p.isSpectator())return;var data=LabyrinthData.get(p.server);var own=own(data,p.getUUID());own.putInt("Visits",own.getInt("Visits")+1);own.putInt("Since",0);save(data,p.getUUID(),own);
         PENDING.put(p.getUUID(),p.server.getTickCount()+10);
     }
 
@@ -196,6 +220,7 @@ public final class FamiliarRoom {
         if(origin==null||l==null)return;
         if(now%10==0){
             IN.clear();for(var p:l.players())if(!p.isSpectator()&&LabyrinthPlaces.placeAt(origin,p.blockPosition())==KITCHEN)IN.add(p.getUUID());
+            for(var p:server.getPlayerList().getPlayers()){if(p.getFoodData().getFoodLevel()<=12||p.getHealth()<=p.getMaxHealth()/2)NEED.add(p.getUUID());else NEED.remove(p.getUUID());}
         }
         var b=LabyrinthPlaces.base(origin,KITCHEN);if(b==null||LabyrinthData.get(server).door(KITCHEN.entryDoorId())==null)return;
         if(!PENDING.isEmpty()){var it=PENDING.entrySet().iterator();while(it.hasNext()){var due=it.next();if(due.getValue()>now)continue;it.remove();var p=server.getPlayerList().getPlayer(due.getKey());if(p!=null&&p.serverLevel()==l&&l.isLoaded(b))show(p,l,origin,b);}}

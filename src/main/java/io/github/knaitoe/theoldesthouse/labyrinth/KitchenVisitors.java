@@ -156,6 +156,25 @@ public final class KitchenVisitors {
     }
     /** Who could come in now, by phase: for tests. */
     public static List<Integer> availablePhases(MinecraftServer s){return available(s,inKitchen(s)).stream().map(Visitor::phase).toList();}
+    /** How often each comes, before the rest: someone passing through most, Johnny often, Holloway and the tenant less. */
+    public static int baseWeight(int phase){return switch(phase){case TRAVELLER->4;case JOHNNY->3;default->2;};}
+    /**
+     * 0.4.332: who comes in is weighted, not taken in turn. Each has their own weight; someone nobody in the kitchen has fed yet is
+     * twice as likely, so a group comes to meet everyone; the one who just left does not come straight back while anyone else could.
+     */
+    public static int weight(MinecraftServer s,int phase,List<ServerPlayer> here,int last,int available){
+        if(phase==last&&available>1)return 0;
+        int w=baseWeight(phase);
+        boolean met=here.stream().anyMatch(p->memory(s,p.getUUID()).getCompound("V"+phase).getInt("Fed")>0);
+        return met?w:w*2;
+    }
+    static Visitor pick(MinecraftServer s,List<Visitor> pool,List<ServerPlayer> here,int last,net.minecraft.util.RandomSource random){
+        int total=0;int[] w=new int[pool.size()];
+        for(int i=0;i<pool.size();i++){w[i]=weight(s,pool.get(i).phase(),here,last,pool.size());total+=w[i];}
+        if(total<=0)return pool.get(0);int roll=random.nextInt(total);
+        for(int i=0;i<pool.size();i++){roll-=w[i];if(roll<0)return pool.get(i);}
+        return pool.get(pool.size()-1);
+    }
     static boolean movedOut(LabyrinthData data,UUID reader){var own=LiteraryVignettes.personal(data,reader,VacantPossession.PLACE);var outcome=own.getString("Outcome");return !outcome.isEmpty()&&!VacantPossession.kept(outcome);}
 
     // ------------------------------------------------------------------ the clock
@@ -177,8 +196,8 @@ public final class KitchenVisitors {
         }
         int occ=t.getInt("Occ")+1;t.putInt("Occ",occ);if(occ%5==1)ensureBook(l,b);if(!t.contains("Next"))t.putInt("Next",FIRST);
         if(!t.contains("Who")){
-            if(occ>=t.getInt("Next")){var pool=available(s,here);if(!pool.isEmpty()){int last=t.getInt("LastWho"),round=t.getInt("Round");
-                Visitor pick=pool.get(round%pool.size());if(pick.phase()==last&&pool.size()>1)pick=pool.get((round+1)%pool.size());
+            if(occ>=t.getInt("Next")){var pool=available(s,here);if(!pool.isEmpty()){
+                var pick=pick(s,pool,here,t.getInt("LastWho"),l.getRandom());
                 shared(s,t);arrive(l,b,pick.phase());return;}}
             shared(s,t);return;
         }

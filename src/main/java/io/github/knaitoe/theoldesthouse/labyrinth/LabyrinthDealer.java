@@ -565,7 +565,7 @@ public final class LabyrinthDealer {
 
     /** A reader's weight for a gray place: the puzzle rooms go by the reader's own pacing, everything else by depth. */
     public static int grayWeight(LabyrinthData data, UUID player, LabyrinthPlace place, int depth) {
-        if (place == LabyrinthPlace.FAMILIAR_KITCHEN) return FamiliarRoom.weight(player, depth);
+        if (place == LabyrinthPlace.FAMILIAR_KITCHEN) return FamiliarRoom.weight(data, player, depth);
         if (QuietRooms.is(place)) return QuietRooms.weight(data, player, place);
         if (TruantPlaces.is(place)) return TruantPlaces.weight(data, player, depth);
         if (YardCrossings.is(place)) return YardCrossings.weight(data, player, place, depth);
