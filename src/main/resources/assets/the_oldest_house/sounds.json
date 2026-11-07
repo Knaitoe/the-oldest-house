@@ -3817,5 +3817,86 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.ward.curtain"
+  },
+  "route.diesel": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/diesel",
+        "attenuation_distance": 40
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.diesel"
+  },
+  "route.hiss": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/hiss",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.hiss"
+  },
+  "route.horn": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/horn",
+        "attenuation_distance": 72
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.horn"
+  },
+  "route.pass": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/pass",
+        "attenuation_distance": 40
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.pass"
+  },
+  "route.wake": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/wake",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.wake"
+  },
+  "route.screech": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/screech",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.screech"
+  },
+  "route.tick": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/tick",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.tick"
+  },
+  "route.chord": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/chord",
+        "attenuation_distance": 96
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.chord"
+  },
+  "route.padlock": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/padlock",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.padlock"
   }
 }
