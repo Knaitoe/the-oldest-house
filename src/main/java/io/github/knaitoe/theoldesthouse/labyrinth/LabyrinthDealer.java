@@ -104,6 +104,8 @@ public final class LabyrinthDealer {
         places.removeIf(site->site==LabyrinthPlace.LAKE_HOUSE&&LakeHousePairs.waiting(data,player));
         // Only places that already stand can be dealt; deeper ones are still being built ahead of explorers.
         places.removeIf(site->site!=LabyrinthPlace.FAMILY_COPY&&site!=LabyrinthPlace.OLD_CABIN&&!LabyrinthBuilder.isPlaceReady(data,site));
+        // 0.4.327: the scenes that ask a reader to speak wait until they have spoken at Speak Up (SpeakUp).
+        if(SpeakUp.held(data,player))places.removeIf(SpeakUp::needsVoice);
         return places;
     }
 
@@ -111,6 +113,11 @@ public final class LabyrinthDealer {
         if (vignettesAvailable(data,player).isEmpty()) {
             return 0;
         }
+        return storyChance(data, player);
+    }
+
+    /** The chance that a hall's doors include a story door, whatever stories there are to put behind it. */
+    static int storyChance(LabyrinthData data, UUID player) {
         boolean rescue = rescueNeeded(data, player);
         int depth = data.returnDepth(player);
         if (!rescue && LabyrinthPacing.domestic(depth)) return 0;
@@ -490,6 +497,8 @@ public final class LabyrinthDealer {
         if (FinaleArchitecture.ID.equals(id)) return finaleOffered(data, player);
         LabyrinthPlace place = LabyrinthPlace.byId(id);
         if (place == null || !LabyrinthBuilder.isPlaceReady(data, place)) return false;
+        if (place == LabyrinthPlace.SPEAK_UP) return SpeakUp.owed(data, player);
+        if (SpeakUp.needsVoice(place) && SpeakUp.held(data, player)) return false;
         return !place.isVignette() || vignettesAvailable(data, player).contains(place);
     }
 
@@ -676,14 +685,23 @@ public final class LabyrinthDealer {
         // A deliberate scent or a lost pet still finds its story.
         boolean owing = !scent && !rescueNeeded(data, player) && HouseReadSites.owing(data, player);
         List<LabyrinthData.Door> quietDoors = owing ? doors : List.of();
-        if (!owing && !vignettes.isEmpty() && (scent || random.nextInt(100) < vignetteChance(data, player))) {
+        // 0.4.327 (owner: "the player can encounter unvoiced vignettes after the quiet rooms. But speak up is encountered/unlocks voiced
+        // vignettes"): once the quiet rooms are done, Speak Up (SpeakUp) is one of the stories a story door can open on, at the stories'
+        // own pace. It comes on one story door in three, and on the next one for certain once two other stories have been dealt.
+        boolean voiceOwed = !owing && !scent && !rescueNeeded(data, player) && LabyrinthBuilder.isPlaceReady(data, LabyrinthPlace.SPEAK_UP)
+                && SpeakUp.owed(data, player);
+        boolean voiceHere = false;
+        if (!owing && (!vignettes.isEmpty() || voiceOwed)
+                && (scent || random.nextInt(100) < (vignettes.isEmpty() ? storyChance(data, player) : vignetteChance(data, player)))) {
             lucky = doors.get(random.nextInt(doors.size()));
+            voiceHere = voiceOwed && (vignettes.isEmpty() || SpeakUp.due(data, player) || random.nextInt(3) == 0);
         }
 
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
         // Ordinary stretches do not repeatedly lead straight back into themselves,
         // nor ping-pong back into the hall the explorer has just come from.
         if (here != null) gray.remove(here);
+        if (SpeakUp.held(data, player)) gray.removeIf(SpeakUp::needsVoice);
         if (gray.stream().filter(p -> data.recentVisit(player, p) != 1).count() >= 2)
             gray.removeIf(p -> data.recentVisit(player, p) == 1);
         List<LabyrinthPlace> odd = gray.stream().filter(p->!HazardVariety.sibling(p)).filter(LabyrinthPacing::anomaly)
@@ -703,8 +721,11 @@ public final class LabyrinthDealer {
             restDoor = choices.get(random.nextInt(choices.size()));
         }
         for (LabyrinthData.Door door : doors) {
-            if (door == lucky) {
+            if (door == lucky && voiceHere) {
+                data.deal(player, door, LabyrinthPlace.SPEAK_UP.id(), false);
+            } else if (door == lucky) {
                 data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
+                if (voiceOwed) SpeakUp.storyDealt(data, player);
             } else if (door == oddDoor) {
                 data.deal(player, door, HazardVariety.routeVariant(weightedGray(odd,data,player,random),(here==null?0:data.nodeKey(player,here))^door.id.hashCode(),data).id(),
                         lyingLeak(data, player, random));
