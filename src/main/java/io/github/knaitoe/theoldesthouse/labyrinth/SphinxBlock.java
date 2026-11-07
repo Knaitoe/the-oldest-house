@@ -29,7 +29,7 @@ import net.minecraft.world.phys.shapes.*;
  * <li>Her foreleg coming down a wall out of the dark (her eye is {@link SphinxEyeBlock}).</li>
  * <li>0.4.335, the stair: a stair mouth's iron gate, shut (0), released and swung back (1), or bowed out by her hand (2); the tray of
  * loose chips; a chip; the landing's iron grating; her foreleg laid up a flight.</li>
- * <li>0.4.336, the shelf: a stone shelf, settled (0) or lifted as she breathes (1); an iron survey pin in the far wall; the short ladder
+ * <li>0.4.338, the shelf: a stone shelf, settled (0) or lifted as she breathes (1); an iron survey pin in the far wall; the short ladder
  * stowed (0), lowered (1) or dropped toward a false shelf (2); the ladder lying across the gap.</li>
  * <li>0.4.334: a survey socket on the wall beside a choice, empty (0), with one reader's pin in it (1), or with two or more (2).</li>
  * </ul>
@@ -87,7 +87,7 @@ public final class SphinxBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
-        return Sphinx.use(p,pos,s)||SphinxStair.use(p,pos,s)?InteractionResult.CONSUME:InteractionResult.PASS;
+        return Sphinx.use(p,pos,s)||SphinxStair.use(p,pos,s)||SphinxShelf.use(p,pos,s)?InteractionResult.CONSUME:InteractionResult.PASS;
     }
     /** A caught latch drops back. */
     @Override protected void tick(BlockState s,net.minecraft.server.level.ServerLevel l,BlockPos p,net.minecraft.util.RandomSource r){Sphinx.latchDown(l,p,s);}
