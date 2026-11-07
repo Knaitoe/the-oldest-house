@@ -48,7 +48,11 @@ public final class StateRouteTexts {
         }
         if(t.getInt("RouteCalls")>0)text.append("I watched the traffic from the gravel and called the gaps out loud, "+times(t.getInt("RouteCalls"))+". ");
         if(t.getBoolean("RouteHeld"))text.append("I held the gate as far open as the chain would let it, which was a hand's width. ");
-        if(t.getInt("RouteStruck")>0)text.append(t.getInt("RouteStruck")==1?"The first time I misjudged it. I heard brakes, and then nothing, and then the gravel against my cheek back where I had started. ":"I misjudged it "+times(t.getInt("RouteStruck"))+". Each time I heard brakes, and then nothing, and then the gravel back where I had started. ");
+        if(t.getInt("RouteStruck")>0){int n=t.getInt("RouteStruck");boolean bed=t.getInt("RouteAbed")>0;
+            text.append(n==1?"I misjudged it. I heard brakes, and then I was looking down at myself on the tar, at what the road had done to me, and one shoe a long way off. ":"I misjudged it "+times(n)+". Each time I heard brakes, and then I was looking down at what the road had left of me on the tar. ");
+            text.append(bed?"Then I woke in my own bed, wet through, with grit in my hair, and had to come all the way back. ":"Then I woke on cold ground, wet through, with grit in my hair, and had to come all the way back. ");}
+        if(t.getInt("RouteSawWrecks")>0&&!t.getString("RouteSawWreck").isEmpty())
+            text.append(t.getInt("RouteSawWrecks")==1?"I saw what the road left of "+t.getString("RouteSawWreck")+", out on the tar where the traffic kept going round it. ":"I saw what the road left of people on the tar "+times(t.getInt("RouteSawWrecks"))+", the last of them "+t.getString("RouteSawWreck")+". The traffic kept going round them. ");
         if(t.getInt("RoutePickup")>0)text.append("A pickup I had thought slow enough clipped me and put me down on the shoulder. ");
         if(t.getInt("RouteWake")>0)text.append(t.getInt("RouteWake")==1?"One truck missed me and still had me by the coat as it went by. ":"Even the trucks that missed me took hold of my coat as they went by. ");
         if(t.getBoolean("RouteCrossed")){

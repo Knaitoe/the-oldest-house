@@ -1202,5 +1202,7 @@
   "block.the_oldest_house.sphinx_flags": "Worn Flagstones",
   "block.the_oldest_house.sphinx_ashlar_seam": "Cracked Masonry",
   "block.the_oldest_house.sphinx_rock": "Dark Rock",
-  "block.the_oldest_house.sphinx_rock_seam": "Closed Rock"
+  "block.the_oldest_house.sphinx_rock_seam": "Closed Rock",
+  "death.attack.the_oldest_house.route_vehicle": "%1$s was struck on the 9",
+  "subtitles.the_oldest_house.route.impact": "A heavy impact on the road"
 }

@@ -3961,5 +3961,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.sphinx.settle"
+  },
+  "route.impact": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:route/impact",
+        "attenuation_distance": 40
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.route.impact"
   }
 }

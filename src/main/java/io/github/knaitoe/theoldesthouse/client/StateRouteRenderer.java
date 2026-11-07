@@ -29,7 +29,11 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class StateRouteRenderer implements BlockEntityRenderer<StateRouteScene> {
-    public StateRouteRenderer(BlockEntityRendererProvider.Context ignored){}
+    private final net.minecraft.client.model.PlayerModel<net.minecraft.client.player.AbstractClientPlayer> wide,slim;
+    public StateRouteRenderer(BlockEntityRendererProvider.Context ctx){
+        wide=new net.minecraft.client.model.PlayerModel<>(ctx.bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER),false);
+        slim=new net.minecraft.client.model.PlayerModel<>(ctx.bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER_SLIM),true);
+    }
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(StateRouteRegistry.SCENE.get(),StateRouteRenderer::new);}
     static ResourceLocation texture(String m){
         String path=m.startsWith("dr:")?"deer_road/"+m.substring(3):"state_route/"+m;
@@ -58,6 +62,7 @@ public final class StateRouteRenderer implements BlockEntityRenderer<StateRouteS
             }
             p.popPose();
         }
+        for(var w:s.wrecks)wreck(s,w,p,out,overlay,now);
         // The shine of a semi still behind the hedge, sliding down the wet tar of its lane ahead of it.
         if(lit)for(var c:s.coming){
             float left=c.arrives()-now;if(left>StateRoute.WARN||left<0)continue;int dir=StateRouteSite.dir(c.lane());
@@ -68,6 +73,65 @@ public final class StateRouteRenderer implements BlockEntityRenderer<StateRouteS
             flat(p,out,"shine",(float)from,(float)StateRouteSite.LANE_Z[c.lane()]-.25F,(float)to,(float)StateRouteSite.LANE_Z[c.lane()]+.25F,.03F,strength);
             p.popPose();
         }
+    }
+
+    // ------------------------------------------------------------------ 0.4.336, what the road leaves of a reader
+    /** The House's body the reader was wearing when they died; their own skin only when the House's bodies are off. */
+    static net.minecraft.client.resources.PlayerSkin skin(StateRouteScene.Wreck w){
+        if(w.body()!=null){var kept=HouseBodyClient.kept(w.reader(),w.body());if(kept!=null)return kept;}
+        var conn=Minecraft.getInstance().getConnection();var info=conn==null?null:conn.getPlayerInfo(w.reader());
+        return info!=null?info.getSkin():net.minecraft.client.resources.DefaultPlayerSkin.get(w.reader());
+    }
+    /**
+     * The body on its back at the edge of the lane, the head turned too far, one arm flung over it and the other bent out the wrong way, a
+     * leg folded back at the hip; torn and bloodied over the skin; a smear back up the lane to where it was struck, a shoe left there and a
+     * scatter of glass.
+     */
+    private void wreck(StateRouteScene s,StateRouteScene.Wreck w,PoseStack p,MultiBufferSource out,int overlay,float now){
+        if(s.getLevel()==null)return;var a=StateRouteSite.ANCHOR;var base=s.base();
+        int light=net.minecraft.client.renderer.LevelRenderer.getLightColor(s.getLevel(),base.offset((int)Math.floor(w.x()),0,(int)Math.floor(w.z())));
+        int dir=w.yaw()<0?1:-1;double carry=w.kind()==StateRouteScene.SEMI?7:3.5;
+        var rnd=new java.util.Random(w.reader().getLeastSignificantBits()^w.at());
+        p.pushPose();p.translate(-a.getX(),-a.getY(),-a.getZ());
+        // The smear back up the lane, the pool under the body, the shoe and the glass where it was struck.
+        float from=(float)Math.min(w.x(),w.x()-dir*carry),to=(float)Math.max(w.x(),w.x()-dir*carry);float zc=(float)w.z();
+        decal(p,out,"blood_smear",from,zc-.35F,to,zc+.35F,.012F,light);
+        decal(p,out,"blood_pool",(float)w.x()-1.2F,zc-.9F,(float)w.x()+1.2F,zc+.9F,.015F,light);
+        float hit=(float)(w.x()-dir*carry);
+        p.pushPose();p.translate(hit+(rnd.nextFloat()-.5F)*.6F,0,zc+(rnd.nextFloat()-.5F)*.8F);p.mulPose(Axis.YP.rotationDegrees(rnd.nextFloat()*360));
+        box(p,out,-2,0,-4,2,3,4,"shoe",light,overlay);p.popPose();
+        for(int i=0;i<7;i++){p.pushPose();p.translate(hit+(rnd.nextFloat()-.5F)*2.4F,0,zc+(rnd.nextFloat()-.5F)*1.6F);p.mulPose(Axis.YP.rotationDegrees(rnd.nextFloat()*360));
+            box(p,out,-.6F,0,-.6F,.6F,.3F,.6F,"glass",light,overlay);p.popPose();}
+        p.popPose();
+        // The body.
+        var skin=skin(w);var m=skin.model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM?slim:wide;
+        p.pushPose();p.translate(w.x()-a.getX(),.16-a.getY(),w.z()-a.getZ());
+        p.mulPose(Axis.YP.rotationDegrees(180-w.yaw()));p.translate(0,0,-.9);p.mulPose(Axis.XP.rotationDegrees(90));
+        p.scale(-1,-1,1);p.scale(.9375F,.9375F,.9375F);p.translate(0,-1.501,0);
+        pose(m,rnd);
+        int white=0xFFFFFFFF;
+        m.renderToBuffer(p,out.getBuffer(RenderType.entityTranslucent(skin.texture())),light,overlay,white);
+        p.pushPose();p.scale(1.015F,1.015F,1.015F);m.renderToBuffer(p,out.getBuffer(RenderType.entityTranslucent(texture("wounds"))),light,overlay,white);p.popPose();
+        p.popPose();
+    }
+    private static void pose(net.minecraft.client.model.PlayerModel<?> m,java.util.Random rnd){
+        m.young=false;m.crouching=false;m.riding=false;m.setAllVisible(true);
+        for(var part:new net.minecraft.client.model.geom.ModelPart[]{m.body,m.head,m.rightArm,m.leftArm,m.rightLeg,m.leftLeg})part.resetPose();
+        float j=rnd.nextFloat()*.3F;
+        m.head.xRot=-.35F;m.head.yRot=1.15F+j;m.head.zRot=.25F;
+        m.rightArm.xRot=-2.7F;m.rightArm.yRot=.3F;m.rightArm.zRot=-.6F-j;
+        m.leftArm.xRot=.5F;m.leftArm.yRot=.8F;m.leftArm.zRot=1.75F+j;
+        m.rightLeg.xRot=-.15F;m.rightLeg.yRot=-.5F;m.rightLeg.zRot=.45F;
+        m.leftLeg.xRot=1.25F;m.leftLeg.yRot=.9F;m.leftLeg.zRot=-.3F-j;
+        m.hat.copyFrom(m.head);m.jacket.copyFrom(m.body);m.rightSleeve.copyFrom(m.rightArm);m.leftSleeve.copyFrom(m.leftArm);m.rightPants.copyFrom(m.rightLeg);m.leftPants.copyFrom(m.leftLeg);
+    }
+    /** A stain flat on the tar, lit by the road, not glowing. */
+    static void decal(PoseStack p,MultiBufferSource buffers,String material,float x0,float z0,float x1,float z1,float y,int light){
+        var out=buffers.getBuffer(RenderType.entityTranslucent(texture(material)));var m=p.last();int ov=net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
+        out.addVertex(m,x0,y,z0).setColor(-1).setUv(0,0).setOverlay(ov).setLight(light).setNormal(m,0,1,0);
+        out.addVertex(m,x0,y,z1).setColor(-1).setUv(0,1).setOverlay(ov).setLight(light).setNormal(m,0,1,0);
+        out.addVertex(m,x1,y,z1).setColor(-1).setUv(1,1).setOverlay(ov).setLight(light).setNormal(m,0,1,0);
+        out.addVertex(m,x1,y,z0).setColor(-1).setUv(1,0).setOverlay(ov).setLight(light).setNormal(m,0,1,0);
     }
 
     // ------------------------------------------------------------------ the vehicles, front toward -Z, sixteen pixels to the block
