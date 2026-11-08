@@ -55,6 +55,20 @@ public final class RoomShell {
         TRAILER_LINO_DARK=cube("trailer_lino_dark",Blocks.LIGHT_GRAY_CONCRETE);
     public static final DeferredBlock<SlabBlock> TRAILER_ROOF=BLOCKS.registerBlock("room_shell_trailer_roof",SlabBlock::new,fixed(Blocks.SMOOTH_STONE_SLAB));
 
+    /**
+     * 0.4.396, the tenth release (docs/TEXTURE_PASS_MAPPING_0_4_396.md): Mapping the Interior, drawn by tools/draw_mapping_house_art.py.
+     * The outer wall is a skin, the house's siding outside and its wood panelling within; the partitions are the panelling; a popcorn
+     * ceiling; the three rooms' carpets and the kitchen's linoleum; vinyl skirting round the base; asphalt shingles on the roof, a
+     * shingle slab at the ridge and eaves with plywood under them; and below, the tunnel's trodden earth and the cistern's old brick.
+     */
+    public static final DeferredBlock<Skin> MAPPING_WALL=skin("mapping_wall",Blocks.OAK_PLANKS);
+    public static final DeferredBlock<Block> MAPPING_PANEL=cube("mapping_panel",Blocks.SPRUCE_PLANKS),MAPPING_CEILING=cube("mapping_ceiling",Blocks.WHITE_CONCRETE),
+        MAPPING_LINO=cube("mapping_lino",Blocks.WHITE_TERRACOTTA),MAPPING_SKIRT=cube("mapping_skirt",Blocks.WHITE_TERRACOTTA),
+        MAPPING_CARPET_FRONT=cube("mapping_carpet_front",Blocks.BROWN_WOOL),MAPPING_CARPET_BOYS=cube("mapping_carpet_boys",Blocks.BLUE_WOOL),
+        MAPPING_CARPET_BED=cube("mapping_carpet_bed",Blocks.LIGHT_GRAY_WOOL),MAPPING_SHINGLES=cube("mapping_shingles",Blocks.DEEPSLATE_TILES),
+        MAPPING_TUNNEL=cube("mapping_tunnel",Blocks.PACKED_MUD),MAPPING_CISTERN=cube("mapping_cistern",Blocks.MUD_BRICKS);
+    public static final DeferredBlock<SlabBlock> MAPPING_SHINGLE_SLAB=BLOCKS.registerBlock("room_shell_mapping_shingle_slab",SlabBlock::new,fixed(Blocks.DEEPSLATE_TILE_SLAB));
+
     /** A wall block of a skin one block thick: its outside faces the way it faces, its inside the other way. */
     public static final class Skin extends HorizontalDirectionalBlock {
         public static final MapCodec<Skin> CODEC=simpleCodec(Skin::new);
@@ -82,6 +96,12 @@ public final class RoomShell {
     public static boolean trailer(BlockState s){
         return s.is(TRAILER_SIDING.get())||s.is(TRAILER_BAND.get())||s.is(TRAILER_SKIRT.get())||s.is(TRAILER_EAVE.get())||s.is(TRAILER_CORNER.get())
             ||s.is(TRAILER_ROOF.get())||s.is(TRAILER_LINO.get())||s.is(TRAILER_LINO_DARK.get());
+    }
+    /** Whether a block is one of the brothers' house's own surfaces (Mapping the Interior). */
+    public static boolean mapping(BlockState s){
+        return s.is(MAPPING_WALL.get())||s.is(MAPPING_PANEL.get())||s.is(MAPPING_CEILING.get())||s.is(MAPPING_LINO.get())||s.is(MAPPING_SKIRT.get())
+            ||s.is(MAPPING_CARPET_FRONT.get())||s.is(MAPPING_CARPET_BOYS.get())||s.is(MAPPING_CARPET_BED.get())||s.is(MAPPING_SHINGLES.get())
+            ||s.is(MAPPING_SHINGLE_SLAB.get())||s.is(MAPPING_TUNNEL.get())||s.is(MAPPING_CISTERN.get());
     }
     /** Whether a block is one of the boiler room's own surfaces. */
     public static boolean boiler(BlockState s){

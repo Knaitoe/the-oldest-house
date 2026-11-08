@@ -152,6 +152,7 @@ jobs:
           python3 tools/draw_ordinary_hall_art.py --check
           python3 tools/draw_camp_chapel_art.py --check
           python3 tools/draw_trailer_art.py --check
+          python3 tools/draw_mapping_house_art.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

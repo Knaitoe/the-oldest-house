@@ -119,7 +119,7 @@ Two or three scenes per release, 4 to 8 textures each:
 8. Holloway's camp. Built in 0.4.381 with the preserved cave's pews (docs/TEXTURE_PASS_CAMP_0_4_381.md).
 9. The hotel basement (the boiler room). Built in 0.4.380 with the child's room.
 10. Goatman's trailer siding. Built in 0.4.382, outside and in, with its roof and floor (docs/TEXTURE_PASS_TRAILER_0_4_382.md).
-11. Mapping the Interior.
+11. Mapping the Interior. Built in 0.4.396, its walls, partitions, ceiling, floors, skirt, roof, tunnel and cistern (docs/TEXTURE_PASS_MAPPING_0_4_396.md).
 12. The preserved cave's pews. Built in 0.4.381 with Holloway's camp.
 
 ### Left as vanilla
@@ -140,6 +140,8 @@ Two or three scenes per release, 4 to 8 textures each:
 | 6 | Tier 3: the lake house's outside (built in 0.4.379, docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md) | 7 |
 | 7 | Tier 3: the child's room and the hotel's boiler room (built in 0.4.380, docs/TEXTURE_PASS_ROOMS_0_4_380.md) | 15 |
 | 8 | Tier 3: Holloway's camp and the cave's chapel (built in 0.4.381, docs/TEXTURE_PASS_CAMP_0_4_381.md) | 11 |
-| 9 onwards | The rest of Tier 3: Goatman's trailer siding and Mapping the Interior, then the cabin at the end of the world | 4–8 each |
+| 9 | Tier 3: Goatman's trailer (built in 0.4.382, docs/TEXTURE_PASS_TRAILER_0_4_382.md) | 15 |
+| 10 | Tier 3: Mapping the Interior (built in 0.4.396, docs/TEXTURE_PASS_MAPPING_0_4_396.md) | 12 |
+| 11 | The cabin at the end of the world | 4–8 |
 
 Each release keeps the architecture views, the texture CRC and decode check and the full suite. Any tier can be reordered or dropped.
