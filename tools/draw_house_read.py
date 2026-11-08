@@ -53,6 +53,34 @@ def outputs():
   for x in range(2,14,2):d.line((x,2,x,13),fill=(100,109,91,95))
   for y in range(2,14,2):d.line((2,y,13,y),fill=(100,109,91,95))
   tiles['screen_'+half]=im
+ # 0.4.397 (owner: "please improve the mailbox texture"): the porch's mailbox is a galvanised rural box, drawn as one atlas:
+ # the door (u0-6, v0-5) with a rolled rim, a rounded top and a pull latch; the back (u7-13, v0-4); the sides (u0-13, v5-9) and
+ # the top (u0-13, v9-15), pressed with ribs and spotted with rust; the painted flag (u13-16, v0-3) and its arm (u13-16, v5-6).
+ # The post is weathered cedar, not the oak the old box shared.
+ im=Image.new('RGBA',(16,16),(0,0,0,0));d=ImageDraw.Draw(im);rng=random.Random(397)
+ tin,shade,shine,rim,rust='#a9adaa','#808683','#c9ccc6','#6d7370','#8a5a3a'
+ d.rectangle((0,0,5,4),fill=tin);d.rectangle((0,0,5,4),outline=rim)
+ for x,y in [(0,0),(5,0)]:d.point((x,y),fill=(0,0,0,0))
+ d.line((1,1,4,1),fill=shine);d.rectangle((2,2,3,2),fill='#3f4441');d.point((2,3),fill=shade);d.point((3,3),fill=shade)
+ d.rectangle((7,0,12,3),fill=shade);d.line((7,0,12,0),fill=rim);d.point((9,1),fill=tin);d.point((11,2),fill=rust)
+ d.rectangle((0,5,12,8),fill=tin);d.line((0,5,12,5),fill=shine);d.line((0,8,12,8),fill=shade)
+ for x in [3,6,9]:d.line((x,5,x,8),fill=shade);d.line((x+1,6,x+1,7),fill=shine)
+ d.rectangle((0,9,12,14),fill=tin)
+ for y in [10,12,14]:d.line((0,y,12,y),fill=shade)
+ for y in [9,11,13]:d.line((0,y,12,y),fill=shine)
+ for _ in range(7):x,y=rng.randrange(13),rng.randrange(5,15);d.point((x,y),fill=rust)
+ for x,y in [(0,8),(12,8),(0,14),(12,14)]:d.point((x,y),fill=rim)
+ d.rectangle((13,0,15,2),fill='#b0372c');d.line((13,0,15,0),fill='#cf5543');d.line((13,2,15,2),fill='#7d2620');d.point((15,1),fill='#7d2620')
+ d.rectangle((13,5,15,5),fill='#8e2a22')
+ own={'mailbox':im}
+ im=Image.new('RGBA',(16,16),'#7d7468');d=ImageDraw.Draw(im);rng=random.Random(3970)
+ for x in [1,5,10,14]:d.line((x,0,x,15),fill='#5d564d')
+ for x in [3,8,12]:d.line((x,1,x,14),fill='#9a9183')
+ for _ in range(10):x,y=rng.randrange(16),rng.randrange(16);d.point((x,y),fill='#4f4942' if rng.randrange(2) else '#a39a8c')
+ d.line((0,0,15,0),fill='#5d564d')
+ own['mailbox_post']=im
+ for name,image in own.items():
+  buf=io.BytesIO();image.save(buf,format='PNG');out['textures/block/house_read/'+name+'.png']=buf.getvalue()
  more_tiles(tiles);rooms160.tiles(tiles);kitchen.tiles(tiles);wardrobe.tiles(tiles)
  for name,im in tiles.items():
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/block/house_read/'+name+'.png']=buf.getvalue()
@@ -105,7 +133,22 @@ def outputs():
    # 0.4.172 (owner: "The rope swing should be interactive"): while a reader swings, the seat and its ropes are drawn moving
    # with them (HouseReadSwing), and the still ones are hidden.
    model(n+'_turned',[],extra={'rope':ROPE})
-  elif n=='mailbox':model(n,[cube([7,0,7],[9,13,9],'oak'),cube([1,13,3],[15,18,13],'metal'),cube([1,13,2.6],[15,17.8,2.9],'metal'),cube([14.8,15,6],[15.1,21,7],'curtain')])
+  elif n=='mailbox':
+   # 0.4.397: a rural box on a cedar post and cross-board, the door to the north with a latch, a rounded top in two steps, and
+   # the flag down along its east side (the box is empty). Every face is mapped to its own part of the atlas, pixel for pixel.
+   def mb(a,b,t,**uv):return {'from':a,'to':b,'faces':{f:dict({'texture':'#'+t,'uv':u[:4]},**({'rotation':u[4]} if len(u)>4 else {})) for f,u in uv.items()}}
+   side,top,door,back=[0,5,13,9],[0,9,13,15,90],[0,1,6,5],[7,0,13,4]
+   model(n,[
+    mb([7,0,7],[9,12.5,9],'mailbox_post',north=[7,3.5,9,16],south=[7,3.5,9,16],east=[7,3.5,9,16],west=[7,3.5,9,16],down=[7,7,9,9]),
+    mb([5,12.5,3],[11,13,15],'mailbox_post',north=[5,0,11,.5],south=[5,0,11,.5],east=[1,0,13,.5],west=[1,0,13,.5],up=[5,1,11,13],down=[5,1,11,13]),
+    mb([5,13,2],[11,17,15],'mailbox',south=back,east=side,west=side,up=top,down=top),
+    mb([5.5,17,2],[10.5,17.75,15],'mailbox',north=[.5,0,5.5,.75],south=[7.5,0,12.5,.75],east=[0,5,13,5.75],west=[0,5,13,5.75],up=top),
+    mb([6.5,17.75,2],[9.5,18.25,15],'mailbox',north=[1.5,0,4.5,.5],south=[8.5,0,11.5,.5],east=[0,5,13,5.5],west=[0,5,13,5.5],up=top),
+    mb([5,13,1.6],[11,17,2],'mailbox',north=door,east=[0,1,.4,5],west=[5.6,1,6,5],up=[0,4,6,4.4],down=[0,4,6,4.4]),
+    mb([7.5,14.8,1.2],[8.5,15.6,1.6],'mailbox',north=[2,2,3,3],east=[2,2,3,3],west=[2,2,3,3],up=[2,2,3,3],down=[2,2,3,3]),
+    mb([11,15,6],[11.3,15.6,13],'mailbox',east=[13,5,16,5.6],west=[13,5,16,5.6],up=[13,5,16,5.3],down=[13,5,16,5.3]),
+    mb([11,14.4,3.2],[11.3,16.6,6],'mailbox',east=[13,0,16,2.2],west=[13,0,16,2.2],north=[13,0,13.3,2.2],south=[13,0,13.3,2.2],up=[13,0,16,.3],down=[13,2,16,2.3]),
+   ],layer='cutout',extra={k:'the_oldest_house:block/house_read/'+k for k in own})
   else:model(n,[cube([3,0,3],[13,.6,13],'cream'),cube([4,.65,4],[12,.9,12],'food')])
  more_models(out,model,cube);rooms160.models(model,cube,faced);kitchen.models(model,cube,faced);wardrobe.models(model,cube,faced)
  parts+=EXTRA_PARTS+rooms160.PARTS+kitchen.PARTS+wardrobe.PARTS

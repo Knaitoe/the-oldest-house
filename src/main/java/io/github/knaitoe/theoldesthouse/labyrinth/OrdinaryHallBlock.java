@@ -51,6 +51,13 @@ public final class OrdinaryHallBlock extends Block {
     /** A rail two pixels thick along one side of the block. */
     public static VoxelShape side(Direction f,int top){return switch(f){
         case NORTH->box(0,0,0,16,top,2);case SOUTH->box(0,0,14,16,top,16);case WEST->box(0,0,0,2,top,16);default->box(14,0,0,16,top,16);};}
+    /** 0.4.397: a basket of folded washing answers a hand (OrdinaryHalls.folded); nothing else here does. */
+    @Override protected net.minecraft.world.InteractionResult useWithoutItem(BlockState s,net.minecraft.world.level.Level l,BlockPos at,net.minecraft.world.entity.player.Player player,net.minecraft.world.phys.BlockHitResult hit){
+        if(s.getValue(KIND)!=Kind.BASKET)return net.minecraft.world.InteractionResult.PASS;
+        if(l.isClientSide)return net.minecraft.world.InteractionResult.SUCCESS;
+        if(player instanceof net.minecraft.server.level.ServerPlayer p)OrdinaryHalls.folded(p,at);
+        return net.minecraft.world.InteractionResult.CONSUME;
+    }
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
 }

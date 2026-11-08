@@ -64,14 +64,24 @@ public final class OrdinaryHalls {
     /** What a hand finds on a painted door, or on the shelves, and the lines a reader is given, in turn, for each. */
     public static final List<String> PAINTED=List.of("It is painted on.","This one is painted too.","The light on the handle is painted on as well.","Painted.");
     public static final List<String> BOUND=List.of("The books will not come out.","None of them come out. They are packed in too tight, or fixed.","Not one of them moves.","They will not come out.");
+    /** 0.4.397: the laundry corridor's baskets of folded washing, tried. The owner asked whether they should answer a hand; they do. */
+    public static final List<String> FOLDED=List.of("Folded sheets. They are still warm.","Someone has folded these since you came in.","The top one is folded the way you fold yours.","Still warm.");
     private static final Map<UUID,int[]> TRIED=new HashMap<>();
     /** A reader tries a painted door or a shelf: a dull knock, and the next of its lines, in grey. */
     public static void tried(ServerPlayer p,BlockPos at,HallFaceBlock.Kind kind){
-        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[2]);int which=kind.door()?0:1;var lines=kind.door()?PAINTED:BOUND;
+        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[3]);int which=kind.door()?0:1;var lines=kind.door()?PAINTED:BOUND;
         String line=lines.get(Math.min(counts[which],lines.size()-1));counts[which]++;
         p.level().playSound(null,at,kind.door()?SoundEvents.STONE_HIT:SoundEvents.CHISELED_BOOKSHELF_HIT,SoundSource.BLOCKS,.6F,kind.door()?.8F:1F);
         p.displayClientMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY),true);
     }
+    /** A basket of folded washing, tried: a soft sound and a line in turn, and nothing comes away. */
+    public static void folded(ServerPlayer p,BlockPos at){
+        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[3]);String line=FOLDED.get(Math.min(counts[2],FOLDED.size()-1));counts[2]++;
+        p.level().playSound(null,at,SoundEvents.WOOL_HIT,SoundSource.BLOCKS,.7F,.9F);
+        p.displayClientMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY),true);
+    }
+    /** How many times a reader has tried a basket of washing, for the tests. */
+    public static int folds(ServerPlayer p){var c=TRIED.get(p.getUUID());return c==null?0:c[2];}
     /** How many times a reader has tried a painted door (0) or the shelves (1), for the tests. */
     public static int tries(ServerPlayer p,boolean door){var c=TRIED.get(p.getUUID());return c==null?0:c[door?0:1];}
 

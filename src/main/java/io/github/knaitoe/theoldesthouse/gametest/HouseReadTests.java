@@ -151,9 +151,9 @@ public final class HouseReadTests {
               h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).equals(new HouseRead.Category(HouseReadKitchen.hex(4),HouseRead.Strength.TENTATIVE)),"the first face sets the tone, tentatively: "+HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE));
               pick(p,f.in,b[0],9);draw(p,f.in,b[0],8,5);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).strength()==HouseRead.Strength.UNCERTAIN,"a face coloured again in another crayon disagrees");
               draw(p,f.in,b[0],1,10);h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.TONE).equals(new HouseRead.Category(HouseReadKitchen.hex(9),HouseRead.Strength.SETTLED)),"hands in the face's crayon settle it");
-              pick(p,f.in,b[0],19);draw(p,f.in,b[0],7,1);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"green hair is play: the House's body keeps the account's own hair colour");
-              pick(p,f.in,b[0],12);draw(p,f.in,b[0],6,2);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"the hair on the table is a preview until the picture is hung");
-              var body=HouseBodies.body(f.data(),p.getUUID());h.assertTrue(body.tone()==HouseReadKitchen.rgb(9)&&body.hair()==-1,"the House keeps the previous hair while the picture is on the table");
+              pick(p,f.in,b[0],19);draw(p,f.in,b[0],7,1);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(19)&&HouseBodies.body(f.data(),p.getUUID()).hair()==HouseReadKitchen.rgb(19),"hair coloured green colours the reader's own hair green, at once");
+              pick(p,f.in,b[0],12);draw(p,f.in,b[0],6,2);h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(12),"coloured over, the hair takes the new crayon before the picture is hung");
+              var body=HouseBodies.body(f.data(),p.getUUID());h.assertTrue(body.tone()==HouseReadKitchen.rgb(9)&&body.hair()==HouseReadKitchen.rgb(12),"the reader wears the drawn hair while the picture is still on the table: "+body);
               var sheet=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.SHEET_AT));h.assertTrue(sheet.read().getInt("Face")==9&&sheet.read().getInt("Hands")==9&&sheet.read().getInt("Hair")==12&&sheet.read().getInt("Clothes")<0,"the drawing keeps each part's colour for the client to draw: "+sheet.read());
               // 0.4.196: the pencil down the margin draws the face and the body, a child's way, and the House keeps what was drawn.
               h.assertTrue(sheet.read().getInt("Mood")==0&&sheet.read().getInt("Body")==0&&!sheet.read().getBoolean("PencilTaken"),"the drawing begins with no face and nothing below the shirt, the pencil in the margin");
@@ -164,10 +164,10 @@ public final class HouseReadTests {
               draw(p,f.in,b[0],7,12);var drawnBody=HouseBodies.body(f.data(),p.getUUID());
               h.assertTrue(sheet.read().getInt("Body")==2&&drawnBody.presentation()==2&&drawnBody.face()==2&&drawnBody.tone()==HouseReadKitchen.rgb(9),"again, a dress: the House's body is the one drawn, with the face drawn: "+drawnBody);
               draw(p,f.in,b[0],7,1);h.assertTrue(sheet.read().getInt("Body")==2&&sheet.read().getInt("Mood")==2,"the pencil on the hair only goes over the lines");
-              var worn=HouseBodies.worn(p);h.assertTrue(worn!=null&&worn.presentation()==2&&worn.face()==2&&worn.tone()==HouseReadKitchen.rgb(9),"the reader wears the drawn tone, body and face on the House's body: "+worn);
+              var worn=HouseBodies.worn(p);h.assertTrue(worn!=null&&worn.presentation()==2&&worn.face()==2&&worn.tone()==HouseReadKitchen.rgb(9)&&worn.hair()==HouseReadKitchen.rgb(12),"the reader wears the drawn tone, hair, body and face on the House's body: "+worn);
               // The last crayon wins; a reader can change their mind before hanging the sheet.
               pick(p,f.in,b[0],16);draw(p,f.in,b[0],6,2);
-              h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==-1,"changing the drawn hair still leaves the body unchanged before the fridge");
+              h.assertTrue(HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(16),"changing the drawn hair changes the reader's hair with it");
               // The crayon goes back to the tin; the fridge takes the picture only from the reader's hand.
               pick(p,f.in,b[0],16);
               h.assertTrue(HouseReadKitchen.held(p)<0&&!HouseReadKitchen.carrying(p),"the crayon goes back to the tin");
@@ -181,7 +181,7 @@ public final class HouseReadTests {
               // Up on the fridge: the picture leaves the hand, the doors open.
               stand(p,f.in,b[0],3.5,0,-8.5);click(p,b[0].offset(HouseReadKitchen.FRIDGE_AT));
               var top=(HouseReadPropBlock.Fitting)f.in.getBlockEntity(b[0].offset(HouseReadKitchen.FRIDGE_AT.above()));
-              h.assertTrue(top.read().getInt("Hair")==16&&HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(16)&&HouseBodies.body(f.data(),p.getUUID()).hair()==HouseReadKitchen.rgb(16),"the fridge commits the final drawn hair to the body");
+              h.assertTrue(top.read().getInt("Hair")==16&&HouseReadKitchen.hair(f.data(),p.getUUID())==HouseReadKitchen.rgb(16)&&HouseBodies.body(f.data(),p.getUUID()).hair()==HouseReadKitchen.rgb(16),"the fridge keeps the final drawn hair on the body");
               h.assertTrue(HouseReadProse.kitchen(HouseRead.seen(f.data(),p.getUUID()).getCompound("kitchen")).contains("filled in the hair"),"the account remembers the act without naming a colour");
               h.assertTrue(visit(p,K).getBoolean("Hung")&&f.in.getBlockState(b[0].offset(HouseReadKitchen.SHEET_AT)).getValue(HouseReadPropBlock.TURNED)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.FRIDGE_AT.above())).getValue(HouseReadPropBlock.TURNED)&&top.read().getInt("Face")==9,"the picture goes up on the fridge door and leaves the table");
               h.assertTrue(HouseReadStory.ready(p,K)&&f.in.getBlockState(b[0].offset(HouseReadKitchen.EXIT)).getValue(DoorBlock.OPEN),"with the picture up, the hall door past the fridge opens");
@@ -338,6 +338,21 @@ public final class HouseReadTests {
           }).thenSucceed();
     }
 
+    /**
+     * 0.4.397 (owner: "the far door works for the kitchen vignette. the door inside the home does not work"): a reader who goes into
+     * the house before the whistle, and is still inside when it blows, has gone in, and the door inside the house opens.
+     */
+    @GameTest(template="empty",batch="read_porch_in",timeoutTicks=6000)
+    public static void aReaderAlreadyInThePorchHouseWhenTheWhistleBlowsHasGoneIn(GameTestHelper h){
+        var f=fixture(h);var p=player(h,f,"porch_early_in");var at=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(at).inflate(6));BlockPos[] b={null};LabyrinthData.Door[] from={null};h.onEachTick(()->transition(p));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the original House door is loaded")).thenExecute(()->{from[0]=source(f);stand(p,f.in,at,.5,0,2);HouseReadSites.prepare(p,HouseReadSites.Room.PORCH);})
+          .thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.PORCH),"the whole bounded private yard is complete"))
+          .thenExecute(()->{b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.PORCH);f.chunks.hold(f.out,HouseReadRooms.bounds(b[0],HouseReadSites.Room.PORCH));seed(p,HouseReadSites.Room.PORCH,from[0]);stand(p,f.out,b[0],.5,3,-12.5);})
+          .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.PORCH).getBoolean("WentIn"),"the reader is in the house before the whistle: "+visit(p,HouseReadSites.Room.PORCH)))
+          .thenExecute(()->h.assertTrue(!visit(p,HouseReadSites.Room.PORCH).contains("Whistle")&&!HouseReadStory.ready(p,HouseReadSites.Room.PORCH)&&HouseReadStory.waiting(p,HouseReadSites.Room.PORCH).contains("Supper isn't on the table yet"),"before the whistle the door inside is shut and says what it waits for"))
+          .thenWaitUntil(()->h.assertTrue(HouseRead.seen(f.data(),p.getUUID()).getCompound("porch").getString("First").equals("in"),"once the whistle blows, a reader already inside has gone in: "+HouseRead.seen(f.data(),p.getUUID()).getCompound("porch")))
+          .thenExecute(()->{h.assertTrue(HouseReadStory.ready(p,HouseReadSites.Room.PORCH),"and the door inside the house opens");h.assertTrue(HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.HOME).value().equals("HAVEN"),"going in reads as the house being a haven, as stepping in during the whistle always did");}).thenSucceed();
+    }
     @GameTest(template="empty",batch="read_porch",timeoutTicks=6000)
     public static void porchWhistleVoiceAndAllQuietWaysOnRemainPersonalAndTheRailWritesUnseen(GameTestHelper h){
         var f=fixture(h);var p=player(h,f,"porch_reader");var peer=player(h,f,"porch_peer");var at=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(at).inflate(6));BlockPos[] b={null};LabyrinthData.Door[] from={null};h.onEachTick(()->transition(p));
@@ -346,6 +361,7 @@ public final class HouseReadTests {
           .thenExecute(()->{b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.PORCH);f.chunks.hold(f.out,HouseReadRooms.bounds(b[0],HouseReadSites.Room.PORCH));HouseReadAudit.check(h,f.out,b[0],HouseReadSites.Room.PORCH);seed(p,HouseReadSites.Room.PORCH,from[0]);
               // 0.4.166: before the whistle has been answered the gate back to the House is locked.
               var entry=f.data().door("house_read/"+p.getUUID()+"/porch/entry");stand(p,f.out,b[0],.5,0,11.5);click(p,entry.lower);h.assertTrue(HouseReadSites.inside(p)==HouseReadSites.Room.PORCH&&!LabyrinthDoors.isBusy(p)&&!HouseReadStory.ready(p,HouseReadSites.Room.PORCH),"the porch's way back is locked until the House has its answer");
+              h.assertTrue(HouseReadStory.waiting(p,HouseReadSites.Room.PORCH).equals("The door won't open. Supper isn't on the table yet."),"before the whistle, the locked door says what it waits for: "+HouseReadStory.waiting(p,HouseReadSites.Room.PORCH));
               stand(p,f.out,b[0],.5,0,8.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,b[0].offset(HouseReadRooms.RAIL_AT).getCenter());HouseReadExport.save(f.out,b[0],HouseReadSites.Room.PORCH,"porch");})
           .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.PORCH).getInt("Age")>=435,"the actual ten-second whistle and quiet observation window finish"))
           .thenExecute(()->{
@@ -353,6 +369,8 @@ public final class HouseReadTests {
               // 0.4.201: the call in for supper is a line of text, not a voice.
               h.assertTrue(packets.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket c&&c.overlay()&&c.content().getString().equals("“"+HouseReadTexts.SUPPER+"”")),"the reader is called in for supper in words on the action bar");
               h.assertTrue(packets(peer).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket c&&c.content().getString().contains(HouseReadTexts.SUPPER)),"the other reader is not called in to this reader's supper");h.assertTrue(!visit(p,HouseReadSites.Room.PORCH).getBoolean("Written"),"watching the rail through the entire window keeps it plain");p.setYRot(0);p.setXRot(0);
+              // 0.4.397: after the whistle, the locked door says what it is waiting for.
+              h.assertTrue(HouseReadStory.waiting(p,HouseReadSites.Room.PORCH).contains("calling you in"),"after the whistle, the door says someone is calling the reader in: "+HouseReadStory.waiting(p,HouseReadSites.Room.PORCH));
           }).thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.PORCH).getBoolean("Written"),"the supplied carving appears only after the actual reader looks away"))
           .thenExecute(()->{
               for(var rel:List.of(new BlockPos(0,3,-24),new BlockPos(-15,0,-8),new BlockPos(14,0,-42)))h.assertTrue(f.data().doorAt(f.out.dimension(),b[0].offset(rel))!=null,"kitchen, side and road each have their own real way on");
@@ -488,6 +506,7 @@ public final class HouseReadTests {
               look[0]=null;p.interactOn(girl,InteractionHand.MAIN_HAND);var t=visit(p,HouseReadSites.Room.SHELTER);var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("shelter");
               h.assertTrue(t.getString("Dance").equals("woman")&&seen.getString("Stood").equals("woman")&&seen.getBoolean("Danced")&&HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.DRAWN_TO).equals(new HouseRead.Category("WOMEN",HouseRead.Strength.SETTLED)),"taking her hand is a dance, and settles the read: "+seen);
           }).thenWaitUntil(()->{var girl=(LiteraryActor)f.in.getEntity(cast[1]);h.assertTrue(girl.gesture()==HouseReadShelter.DANCE&&girl.distanceTo(p)<1.3,"she dances an arm's length from the reader: gesture "+girl.gesture()+", "+girl.distanceTo(p));})
+          .thenExecute(()->danceWeight(h))
           .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.SHELTER).getBoolean("Settled"),"the dance ends the song"))
           .thenExecute(()->{
               h.assertTrue(HouseReadMoments.canProceed(p,HouseReadSites.Room.SHELTER)&&visit(p,HouseReadSites.Room.SHELTER).getInt("SongAge")>=900,"after the dance the room is ready, without waiting out the song");
@@ -532,5 +551,33 @@ public final class HouseReadTests {
           .thenWaitUntil(()->h.assertTrue(visit(pair,HouseReadSites.Room.SHELTER).getBoolean("Settled")&&HouseReadMoments.canProceed(pair,HouseReadSites.Room.SHELTER),"the dance ends the song there too"))
           .thenExecute(()->h.assertTrue(HouseReadProse.shelter(HouseRead.seen(f.data(),pair.getUUID()).getCompound("shelter"),false).equals("danced with the two strangers under the eaves"),"the account: "+HouseReadProse.shelter(HouseRead.seen(f.data(),pair.getUUID()).getCompound("shelter"),false)))
           .thenSucceed();
+    }
+
+    /**
+     * 0.4.397 (owner: "the dancer in the personhood vignette needs weight, so the player swings when they move while dancing"):
+     * pushed round, the reader swings about the partner with the view turning with them, and carries on when let go; pulled away
+     * or pressed in, the partner's hands give a little and draw them back to arm's length (DanceWeight, run by DanceClient).
+     */
+    static void danceWeight(GameTestHelper h){
+        double[] at={io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.HOLD,0};double[] turn={0};double[] swung={0},looked={0};
+        java.util.function.BiFunction<Double,Double,io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.Step> step=(wx,wz)->{
+            var s=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.step(at[0],at[1],0,0,wx,wz,turn[0]);turn[0]=s.turn();
+            double before=Math.atan2(at[1],at[0]);at[0]+=s.vx();at[1]+=s.vz();double d=Math.atan2(at[1],at[0])-before;
+            swung[0]+=Math.atan2(Math.sin(d),Math.cos(d));looked[0]+=s.yaw();return s;};
+        double hold=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.HOLD,give=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.GIVE,closest=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.CLOSEST;
+        for(int i=0;i<30;i++){double r=Math.hypot(at[0],at[1]);step.apply(-at[1]/r,at[0]/r);r=Math.hypot(at[0],at[1]);
+            h.assertTrue(r>closest-.01&&r<hold+give+.01,"pushed round, the reader stays in the partner's hands: "+r);}
+        double degrees=Math.toDegrees(swung[0]);
+        h.assertTrue(degrees>90,"a second and a half of pushing round swings the reader a quarter turn or more about the partner: "+degrees);
+        h.assertTrue(Math.abs(looked[0]-degrees)<Math.max(8,degrees*.06),"the view turns with the swing, keeping the partner in front: "+looked[0]+" against "+degrees);
+        var carried=step.apply(0d,0d);h.assertTrue(Math.hypot(carried.vx(),carried.vz())>.08,"let go, the swing carries on: "+carried);
+        for(int i=0;i<60;i++)step.apply(0d,0d);
+        h.assertTrue(Math.abs(turn[0])<.002,"and dies away, as a weight does: "+turn[0]);
+        for(int i=0;i<40;i++){double r=Math.hypot(at[0],at[1]);step.apply(at[0]/r,at[1]/r);}
+        double leaned=Math.hypot(at[0],at[1]);h.assertTrue(leaned>hold+.05&&leaned<=hold+give+.01,"leaning away, the hands give a little and hold: "+leaned);
+        for(int i=0;i<30;i++)step.apply(0d,0d);
+        h.assertTrue(Math.abs(Math.hypot(at[0],at[1])-hold)<.05,"let go, they draw the reader back to arm's length: "+Math.hypot(at[0],at[1]));
+        for(int i=0;i<40;i++){double r=Math.hypot(at[0],at[1]);step.apply(-at[0]/r,-at[1]/r);}
+        double pressed=Math.hypot(at[0],at[1]);h.assertTrue(pressed>=closest-.01&&pressed<hold,"pressing in comes closer, never into the partner: "+pressed);
     }
 }

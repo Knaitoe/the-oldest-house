@@ -263,6 +263,8 @@ public final class HouseReadSites {
         own.put(room.key(),visit);save(p.server,p.getUUID(),own);
     }
     private static boolean underPorch(ServerPlayer p,BlockPos b){return p.getY()<b.getY()+1&&Math.abs(p.getX()-b.getX()-.5)<6.6&&p.getZ()>b.getZ()-8.5&&p.getZ()<b.getZ()-1.5;}
+    /** Indoors past the screen door, on the house's raised floor. */
+    private static boolean inHouse(ServerPlayer p,BlockPos b){return p.getZ()<b.getZ()-8&&Math.abs(p.getX()-b.getX())<5&&p.getY()>=b.getY()+2.8;}
     private static boolean onRoad(ServerPlayer p,BlockPos b){return p.getX()>b.getX()+10&&p.getX()<b.getX()+17&&p.getZ()<b.getZ()-18;}
     /** The porch (0.4.159): the 200 ticks after the whistle are its window; what the reader does first in them sets HOME. */
     private static void porch(ServerPlayer p,BlockPos b,CompoundTag visit,int age){
@@ -278,6 +280,9 @@ public final class HouseReadSites {
             if(age==cue+200&&!first&&visit.getBoolean("LookedIn")&&!visit.getBoolean("WentIn")){home(p,"window","DANGER");first=true;}
             // 0.4.166: the House needs the answer. A whistle nobody answered is blown again, five seconds later.
             if(age==cue+200&&!first){visit.remove("Whistle");visit.putInt("WhistleAgain",age+100);}
+            // 0.4.397 (owner: "the door inside the home does not work"): a reader already in the house when the whistle blows, or who
+            // went in before it, has gone in. Before, only the step through the screen door counted, so they were never let on.
+            if(window&&!first&&visit.getBoolean("WentIn")&&inHouse(p,b)){home(p,"in","HAVEN");first=true;}
             if(p.isPassenger()&&p.getZ()<b.getZ()-15&&p.getZ()>b.getZ()-20){remember(visit,"AtTable","sat at the warm table");if(seen.getString("First").equals("in")&&!seen.getBoolean("Table")){HouseRead.flag(p,Room.PORCH,"Table");HouseRead.signal(p,HouseRead.Trait.HOME,"HAVEN",true);}}
         }
         // 0.4.201 (owner: "just remove the voice lines for now ... and add text instead. it still sounds inhuman"): the call in from
@@ -287,7 +292,7 @@ public final class HouseReadSites {
         if(cue>0&&age>=cue+200){visit.putBoolean("NoteArmed",true);if(!visit.getBoolean("LightsOut")&&underPorch(p,b)){visit.putBoolean("LightsOut",true);for(var light:HouseReadRooms.PORCH_LIGHTS){var lamp=p.serverLevel().getBlockState(b.offset(light));if(lamp.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(b.offset(light),lamp.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);}for(var pos:List.of(b.offset(HouseReadRooms.SCREEN),b.offset(HouseReadRooms.SCREEN).above())){var door=p.serverLevel().getBlockState(pos);if(door.getBlock() instanceof DoorBlock)p.serverLevel().setBlock(pos,door.setValue(DoorBlock.OPEN,false),Block.UPDATE_CLIENTS);}sound(p,SoundEvents.WOODEN_DOOR_CLOSE,b.offset(HouseReadRooms.SCREEN),.5f);
             // Still hidden when the kitchen light goes off settles it.
             if(seen.getString("First").equals("lattice")||seen.getString("First").equals("window")){HouseRead.flag(p,Room.PORCH,"Hidden");HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",true);}}}
-        if(!visit.getBoolean("WentIn")&&p.getZ()<b.getZ()-8&&Math.abs(p.getX()-b.getX())<5&&p.getY()>=b.getY()+2.8){visit.putBoolean("WentIn",true);visit.putBoolean("NoteArmed",true);var actions=visit.getList("Actions",Tag.TAG_STRING);actions.add(StringTag.valueOf("went through the screen door"));visit.put("Actions",actions);if(window&&!first){home(p,"in","HAVEN");first=true;}}
+        if(!visit.getBoolean("WentIn")&&inHouse(p,b)){visit.putBoolean("WentIn",true);visit.putBoolean("NoteArmed",true);var actions=visit.getList("Actions",Tag.TAG_STRING);actions.add(StringTag.valueOf("went through the screen door"));visit.put("Actions",actions);if(window&&!first){home(p,"in","HAVEN");first=true;}}
         // 0.4.172 (owner: "Can you remove the sparkle effects too?"): no glow drifting over the yard.
     }
     private static void home(ServerPlayer p,String first,String value){HouseRead.first(p,Room.PORCH,"First",first);HouseRead.signal(p,HouseRead.Trait.HOME,value,false);}

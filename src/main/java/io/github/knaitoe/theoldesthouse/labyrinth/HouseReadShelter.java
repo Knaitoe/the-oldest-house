@@ -87,7 +87,10 @@ public final class HouseReadShelter {
             target=p.position().add(away.scale(reach)).add(both?side.scale(man?.6:-.6):Vec3.ZERO);
             if(after){t.putDouble(back+"X",target.x);t.putDouble(back+"Z",target.z);}
         }
-        var to=target.subtract(a.position()).multiply(1,0,1);if(to.length()>.02){var before=a.position();a.move(MoverType.SELF,to.length()>.12?to.normalize().scale(.12):to);a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4f);}
+        // 0.4.397: in the dance the partner has weight (DanceWeight): they keep their ground and close on the reader slowly, so the
+        // reader is the one who swings about them; stepping back after, they go at an ordinary pace.
+        double pace=after?.12:DanceWeight.SETTLE;
+        var to=target.subtract(a.position()).multiply(1,0,1);if(to.length()>.02){var before=a.position();a.move(MoverType.SELF,to.length()>pace?to.normalize().scale(pace):to);a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4f);}
         if(!after||p.distanceToSqr(a)<100)face(a,p,true);a.gesture(after?AFTER:DANCE);
     }
     private static void face(LiteraryActor a,ServerPlayer p,boolean body){
