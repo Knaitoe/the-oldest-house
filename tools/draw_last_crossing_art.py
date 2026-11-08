@@ -1,0 +1,594 @@
+"""The Last Crossing (0.4.351): the flood station where the keeper is trying to get the last cable ferry across.
+
+Draws, in native Minecraft pixels from fixed seeds, every fitting of the crossing_fitting block, its models facing north and turned by
+its facing (a wall fitting hangs on the wall south of its cell when it faces north): the porch table; Vera's clipboard with the roll,
+blank and signed; the work slate on the office wall; the handprint plate in its brass bracket and standing on its foot, clear, fogged by
+a clean palm on the near side, with a second print on the far side, and both; the empty bracket; the office stove with the kettle; the
+pump room's pressure gauge with its needle in each of the three bands and settled; the brake lever, set and held open; the three
+numbered valves and the red bypass wheel; the intake's bleed screw, shut and open; the service grate, whole and with its broken corner;
+the pump, idle and running; a speaking-pipe mouth; a cable roller, seated and unseated in its cradle; the fairlead, jammed and clear; the
+winch drum; the inspection hatch; the ramp sluice's wheel, free and pinned; the locking pin, up and seated; the mooring line, loose on the
+ramp, coiled on the porch and staged at the ramp; the lamp hook, empty and with the station lamp; the depth post; and the ferry's cast
+brass nameplate in two halves. Also the items' pictures: the plate carried, the mooring line, the station lamp and the wrench. Writes the
+models and block states and the blocks' and items' names. --check verifies everything.
+"""
+from pathlib import Path
+import argparse
+import json
+import random
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parents[1]
+A = ROOT / 'src/main/resources/assets/the_oldest_house'
+NS = 'the_oldest_house:'
+P = NS + 'block/crossing/'
+
+
+def rgb(c):
+    c = c.lstrip('#')
+    return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def shade(c, k, a=255):
+    r, g, b = rgb(c) if isinstance(c, str) else c[:3]
+    return (max(0, min(255, r + k)), max(0, min(255, g + k)), max(0, min(255, b + k)), a)
+
+
+def new(base=None, seed=0, spread=4):
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    if base:
+        rnd = random.Random(seed); px = im.load()
+        for y in range(16):
+            for x in range(16):
+                px[x, y] = shade(base, rnd.randint(-spread, spread))
+    return im
+
+
+def fill(im, x0, y0, x1, y1, colour, a=255):
+    px = im.load()
+    for y in range(max(0, y0), min(16, y1)):
+        for x in range(max(0, x0), min(16, x1)):
+            px[x, y] = shade(colour, 0, a)
+
+
+def dot(im, x, y, colour, a=255):
+    if 0 <= x < 16 and 0 <= y < 16:
+        im.putpixel((x, y), shade(colour, 0, a))
+
+
+def frame(im, x0, y0, x1, y1, colour):
+    for x in range(x0, x1):
+        dot(im, x, y0, colour); dot(im, x, y1 - 1, colour)
+    for y in range(y0, y1):
+        dot(im, x0, y, colour); dot(im, x1 - 1, y, colour)
+
+
+# A three-by-five pixel alphabet for the plates and the gauge, enough for the station's words and numbers.
+FONT = {
+    'C': ['111', '100', '100', '100', '111'], 'O': ['111', '101', '101', '101', '111'], 'R': ['110', '101', '110', '101', '101'],
+    'D': ['110', '101', '101', '101', '110'], 'E': ['111', '100', '110', '100', '111'], 'L': ['100', '100', '100', '100', '111'],
+    'I': ['111', '010', '010', '010', '111'], 'A': ['010', '101', '111', '101', '101'], '1': ['010', '110', '010', '010', '111'], '2': ['110', '001', '010', '100', '111'],
+    '3': ['110', '001', '010', '001', '110'],
+}
+
+
+def letter(im, ch, x, y, colour):
+    for row, bits in enumerate(FONT[ch]):
+        for col, bit in enumerate(bits):
+            if bit == '1':
+                dot(im, x + col, y + row, colour)
+
+
+# ------------------------------------------------------------------------------------------------ materials
+def deal():
+    # Painted deal boards, the station's grey-green, worn pale along the grain.
+    im = new(base='#7c8a78', seed=3700, spread=4)
+    for y in (0, 5, 10, 15):
+        for x in range(16):
+            dot(im, x, y, '#5e6a5c')
+    rnd = random.Random(3701)
+    for _ in range(10):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#9aa694')
+    return im
+
+
+def iron(base='#4c5452', seed=3702):
+    im = new(base=base, seed=seed, spread=5)
+    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        dot(im, x, y, shade(base, 28)[:3]); dot(im, x + 1, y + 1, shade(base, -18)[:3])
+    rnd = random.Random(seed + 1)
+    for _ in range(8):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#7a4a2e')
+    return im
+
+
+def brass():
+    im = new(base='#b08c3a', seed=3704, spread=8)
+    for x in range(16):
+        dot(im, x, 2, '#d8b860'); dot(im, x, 13, '#86682a')
+    return im
+
+
+def hardboard():
+    return new(base='#8a6a48', seed=3705, spread=5)
+
+
+def paper(signed):
+    # The roll: a ruled sheet, its heading in pencil; signed, a column of names down it and one at the foot ruled across.
+    im = new(base='#e6e0cc', seed=3706, spread=3)
+    for y in range(3, 16, 2):
+        for x in range(1, 15):
+            dot(im, x, y, '#c4c0b0')
+    for x in range(2, 11):
+        dot(im, x, 1, '#5a5a5e')
+    if signed:
+        rnd = random.Random(3707)
+        for y in range(4, 14, 2):
+            for x in range(2, 2 + rnd.randint(5, 10)):
+                if rnd.random() < .8:
+                    dot(im, x, y - 1, '#3e3e48')
+        for x in range(2, 9):
+            dot(im, x, 14, '#3e3e48')
+    return im
+
+
+def slate():
+    # The work slate: four chalked columns, ticks and initials, and a name with "present" by it on the last night's line.
+    im = new(base='#3a3e44', seed=3708, spread=3)
+    for x in (4, 8, 12):
+        for y in range(1, 15):
+            dot(im, x, y, '#6a6e72')
+    rnd = random.Random(3709)
+    for y in range(2, 14, 2):
+        for col in (0, 4, 8, 12):
+            for x in range(col + 1, col + 1 + rnd.randint(1, 3)):
+                dot(im, x, y, '#cfd0cc')
+    for x in range(1, 7):
+        dot(im, x, 14, '#e8e8e2')
+    return im
+
+
+def glass_plate(fog, second):
+    # The handprint plate's thick glass with a palm etched on the near side. A clean palm leaves a bloom of fog over the etching;
+    # an infection brings up a second print, darker, on the far side, its fingers closing round where the hand lies.
+    im = new(base='#9eb2b6', seed=3710, spread=3)
+    for i in range(12):
+        dot(im, 2 + i, 13 - i, '#c8d8da')
+    palm = [(6, 9), (7, 9), (8, 9), (9, 9), (6, 10), (7, 10), (8, 10), (9, 10), (6, 11), (7, 11), (8, 11), (9, 11), (7, 12), (8, 12)]
+    fingers = [(5, 4), (5, 5), (5, 6), (5, 7), (7, 3), (7, 4), (7, 5), (7, 6), (7, 7), (9, 4), (9, 5), (9, 6), (9, 7), (11, 6), (11, 7), (11, 8)]
+    for x, y in palm + fingers:
+        dot(im, x, y, '#86999e')
+    if fog:
+        for y in range(2, 14):
+            for x in range(3, 13):
+                d = ((x - 7.5) ** 2 + ((y - 8) * .8) ** 2) ** .5
+                if d < 5.5:
+                    dot(im, x, y, shade('#dfe8e8', -int(d * 4))[:3])
+    if second:
+        # Seen through the glass whether or not the near side is fogged.
+        for x, y in fingers:
+            dot(im, x + 1, y + 1, '#3e4a46')
+        for x, y in palm:
+            dot(im, x + 1, y + 1, '#4a5652')
+        for x, y in ((4, 9), (4, 10), (12, 9), (12, 10), (13, 8)):
+            dot(im, x, y, '#3e4a46')
+    return im
+
+
+def stove():
+    im = new(base='#2c2c2e', seed=3712, spread=4)
+    frame(im, 1, 1, 15, 15, '#4a4a4c')
+    fill(im, 4, 9, 12, 13, '#3a2418')
+    for x in range(5, 11, 2):
+        dot(im, x, 11, '#c86a2a')
+    return im
+
+
+def enamel():
+    im = new(base='#6a7e8a', seed=3713, spread=4)
+    for x in range(16):
+        dot(im, x, 1, '#8aa0aa')
+    return im
+
+
+def gauge_face(stage):
+    # A dial with three bands (one, two, three) round its lower half and the settled mark at the top; the needle in a band or settled.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if d < 7.6:
+                im.putpixel((x, y), shade('#e8e2cc' if d < 6.6 else '#3a3a3a', 0))
+    for (x, y) in ((3, 10), (2, 9), (3, 11)):
+        dot(im, x, y, '#b04a3a')
+    for (x, y) in ((7, 13), (8, 13), (7, 12)):
+        dot(im, x, y, '#c89a3a')
+    for (x, y) in ((12, 10), (13, 9), (12, 11)):
+        dot(im, x, y, '#5a7a4a')
+    for (x, y) in ((7, 2), (8, 2)):
+        dot(im, x, y, '#2a6a3a')
+    letter(im, '1', 3, 4, '#3a3a3a'); letter(im, '3', 10, 4, '#3a3a3a')
+    tip = {0: [(6, 8), (5, 9), (4, 10)], 1: [(8, 9), (8, 10), (8, 11)], 2: [(9, 8), (10, 9), (11, 10)], 3: [(8, 6), (8, 5), (8, 4), (8, 3)]}[stage]
+    for x, y in tip:
+        dot(im, x, y, '#1a1a1a')
+    dot(im, 7, 7, '#1a1a1a'); dot(im, 8, 7, '#1a1a1a'); dot(im, 7, 8, '#1a1a1a'); dot(im, 8, 8, '#1a1a1a')
+    return im
+
+
+def pipe_green():
+    im = new(base='#4a6a52', seed=3714, spread=4)
+    for x in range(16):
+        dot(im, x, 0, '#6a8a72'); dot(im, x, 15, '#34503c')
+    return im
+
+
+def handwheel(colour):
+    # A handwheel from above: rim and four spokes, gaps cut out.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if 6 < d < 7.8 or (abs(x - 7.5) < 1 or abs(y - 7.5) < 1) and d < 7 or d < 2:
+                im.putpixel((x, y), shade(colour, -10 if d > 7 else 6))
+    return im
+
+
+def number_plate(n):
+    im = new(base='#e8e2cc', seed=3715 + n, spread=2)
+    frame(im, 0, 0, 16, 16, '#3a3a3a')
+    letter(im, str(n), 6, 5, '#1a1a1a')
+    return im
+
+
+def grate(broken):
+    # The service grate: an iron frame round bars, the water dark between them; broken, its north-west corner gone.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            edge = x < 1 or x > 14 or y < 1 or y > 14
+            bar = x % 3 == 1 or y % 5 == 2
+            if edge or bar:
+                im.putpixel((x, y), shade('#4a4c4a', ((x * 7 + y * 3) % 5) - 2))
+            else:
+                im.putpixel((x, y), shade('#121a1c', 0))
+    if broken:
+        for y in range(6):
+            for x in range(6 - y):
+                im.putpixel((x, y), (0, 0, 0, 0))
+        for x, y in ((6, 0), (5, 1), (4, 2), (3, 3), (2, 4), (1, 5), (0, 6)):
+            dot(im, x, y, '#7a5a3a')
+    return im
+
+
+def lamp_light(on):
+    im = new(base='#e8c860' if on else '#5a5a50', seed=3716, spread=6)
+    return im
+
+
+def manila():
+    im = new(base='#b89a62', seed=3717, spread=6)
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 4 == 0:
+                dot(im, x, y, '#8a6e40')
+    return im
+
+
+def wire_rope():
+    im = new(base='#6a6c6a', seed=3718, spread=5)
+    for y in range(16):
+        for x in range(16):
+            if (x + 2 * y) % 5 == 0:
+                dot(im, x, y, '#4a4c4a')
+            elif (x + 2 * y) % 5 == 1:
+                dot(im, x, y, '#8a8c88')
+    return im
+
+
+def roller_steel():
+    im = new(base='#7a7e80', seed=3719, spread=5)
+    for x in range(16):
+        dot(im, x, 7, '#9a9ea0'); dot(im, x, 8, '#5a5e60')
+    rnd = random.Random(3720)
+    for _ in range(9):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#8a5a3a')
+    return im
+
+
+def depth_post():
+    # White-painted post with black depth marks, every foot a long mark and a number.
+    im = new(base='#d8d6cc', seed=3721, spread=3)
+    for y in range(0, 16, 4):
+        for x in range(0, 10):
+            dot(im, x, y, '#1e1e1e')
+    for y in range(2, 16, 4):
+        for x in range(0, 5):
+            dot(im, x, y, '#1e1e1e')
+    return im
+
+
+def nameplate(half):
+    # The ferry's name, CORDELIA, cast in brass across two halves, raised letters on a sunken ground, a bolt at each end.
+    im = new(base='#8a6a2a', seed=3722 + half, spread=4)
+    word = 'CORD' if half == 0 else 'ELIA'
+    for i, ch in enumerate(word):
+        letter(im, ch, 1 + i * 4, 6, '#e0c060')
+    for x, y in ((0, 2), (15, 2), (0, 13), (15, 13)):
+        dot(im, x, y, '#3a2a10')
+    return im
+
+
+def wood_grip():
+    return new(base='#6a4a2a', seed=3723, spread=6)
+
+
+def glass_lit():
+    im = new(base='#f4dc8a', seed=3724, spread=10)
+    fill(im, 6, 4, 10, 11, '#fff2c0')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ items
+def plate_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 2, 1, 14, 15, '#b08c3a'); fill(im, 3, 2, 13, 14, '#9eb2b6')
+    for x, y in ((6, 9), (7, 9), (8, 9), (9, 9), (6, 10), (7, 10), (8, 10), (9, 10), (7, 11), (8, 11), (5, 5), (5, 6), (7, 4), (7, 5), (7, 6), (9, 5), (9, 6), (11, 7)):
+        dot(im, x, y, '#86999e')
+    return im
+
+
+def line_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if 3 < d < 7 and int(d) % 2 == 0:
+                dot(im, x, y, '#b89a62' if (x + y) % 3 else '#8a6e40')
+    for i in range(5):
+        dot(im, 11 + i // 2, 11 + i, '#b89a62')
+    return im
+
+
+def lamp_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 5, 5, 11, 13, '#f4dc8a'); frame(im, 4, 4, 12, 14, '#2a2a2a'); fill(im, 6, 2, 10, 4, '#2a2a2a')
+    for x in range(6, 10):
+        dot(im, x, 0, '#3a3a3a')
+    dot(im, 6, 1, '#3a3a3a'); dot(im, 9, 1, '#3a3a3a')
+    return im
+
+
+def wrench_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i in range(10):
+        dot(im, 3 + i, 12 - i, '#8a8c90'); dot(im, 4 + i, 12 - i, '#6a6c70')
+    fill(im, 11, 1, 15, 5, '#8a8c90'); fill(im, 12, 2, 14, 4, (0, 0, 0, 0)[:3], 0)
+    fill(im, 1, 12, 5, 15, '#8a8c90')
+    return im
+
+
+def textures():
+    t = {
+        'deal': deal(), 'iron': iron(), 'iron_red': iron('#8a3a2e', 3726), 'brass': brass(), 'hardboard': hardboard(),
+        'paper': paper(False), 'paper_signed': paper(True), 'slate': slate(),
+        'plate_0': glass_plate(False, False), 'plate_1': glass_plate(True, False), 'plate_2': glass_plate(False, True), 'plate_3': glass_plate(True, True),
+        'stove': stove(), 'enamel': enamel(),
+        'gauge_0': gauge_face(0), 'gauge_1': gauge_face(1), 'gauge_2': gauge_face(2), 'gauge_3': gauge_face(3),
+        'pipe': pipe_green(), 'wheel_black': handwheel('#2e3032'), 'wheel_red': handwheel('#a83a2a'),
+        'number_1': number_plate(1), 'number_2': number_plate(2), 'number_3': number_plate(3),
+        'grate': grate(False), 'grate_broken': grate(True), 'lamp_on': lamp_light(True), 'lamp_off': lamp_light(False),
+        'manila': manila(), 'wire': wire_rope(), 'roller': roller_steel(), 'depth': depth_post(),
+        'name_0': nameplate(0), 'name_1': nameplate(1), 'grip': wood_grip(), 'glass_lit': glass_lit(),
+    }
+    out = {f'block/crossing/{k}.png': v for k, v in t.items()}
+    out['item/crossing_plate.png'] = plate_item()
+    out['item/crossing_line.png'] = line_item()
+    out['item/crossing_lamp.png'] = lamp_item()
+    out['item/crossing_wrench.png'] = wrench_item()
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ models
+def element(lo, hi, textures, uv=None, rot=None):
+    faces = {}
+    for f in ('north', 'south', 'east', 'west', 'up', 'down'):
+        name = textures.get(f, textures.get('all'))
+        if name is None:
+            continue
+        faces[f] = {'texture': '#' + name}
+        if uv and f in uv:
+            faces[f]['uv'] = uv[f]
+    e = {'from': lo, 'to': hi, 'faces': faces}
+    if rot:
+        e['rotation'] = rot
+    return e
+
+
+def model(elements, textures, particle):
+    return {'ambientocclusion': False, 'render_type': 'minecraft:cutout', 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
+
+
+def legs(top, leg, height=14, inset=1):
+    e = [element([0, height - 2, 0], [16, height, 16], {'all': top})]
+    for x in (inset, 16 - inset - 2):
+        for z in (inset, 16 - inset - 2):
+            e.append(element([x, 0, z], [x + 2, height - 2, z + 2], {'all': leg}))
+    return e
+
+
+def pane(lo, hi, face):
+    # A pane of the plate's glass, its etched face toward the reader (north before turning), edges in brass.
+    return element(lo, hi, {'north': face, 'south': face, 'east': 'b', 'west': 'b', 'up': 'b', 'down': 'b'})
+
+
+def fitting_models():
+    m = {}
+    m['table_0'] = model(legs('d', 'd'), {'d': 'deal'}, 'deal')
+    # Vera's clipboard, lying on whatever is below it: the board, the roll on it, the clip at its head.
+    for stage, sheet in enumerate(('paper', 'paper_signed')):
+        m[f'clipboard_{stage}'] = model([element([3, 0, 2], [13, .5, 14], {'all': 'h'}), element([3.5, .5, 2.5], [12.5, .8, 13.5], {'all': 'p', 'up': 'p'}),
+                                         element([6, .5, 2], [10, 1.4, 3.5], {'all': 'c'})], {'h': 'hardboard', 'p': sheet, 'c': 'brass'}, sheet)
+    # The work slate on the office wall, in a deal frame with a chalk tray.
+    m['slate_0'] = model([element([0, 2, 15], [16, 14, 16], {'all': 'd'}), element([1, 3, 14.6], [15, 13, 15], {'north': 's', 'south': 's', 'east': 'd', 'west': 'd', 'up': 'd', 'down': 'd'}),
+                          element([1, 2, 13.8], [15, 2.6, 15], {'all': 'd'})], {'d': 'deal', 's': 'slate'}, 'slate')
+    # The handprint plate in its bracket on the wall, and standing on its foot.
+    bracket = [element([1, 1, 14], [15, 2, 16], {'all': 'b'}), element([1, 2, 14], [2, 15, 16], {'all': 'b'}), element([14, 2, 14], [15, 15, 16], {'all': 'b'}),
+               element([1, 14, 14], [15, 15, 16], {'all': 'b'})]
+    m['bracket_0'] = model(bracket, {'b': 'brass'}, 'brass')
+    for stage in range(4):
+        m[f'plate_{stage}'] = model(bracket + [pane([2, 2, 14.6], [14, 14, 15.4], 'g')], {'b': 'brass', 'g': f'plate_{stage}'}, f'plate_{stage}')
+        m[f'plate_set_{stage}'] = model([element([3, 0, 6], [13, 1.5, 10], {'all': 'b'}), element([2, 0, 7], [3, 14, 9], {'all': 'b'}), element([13, 0, 7], [14, 14, 9], {'all': 'b'}),
+                                         pane([3, 1.5, 7.6], [13, 13.5, 8.4], 'g')], {'b': 'brass', 'g': f'plate_{stage}'}, f'plate_{stage}')
+    # The office stove, the kettle on it, its flue going up.
+    m['stove_0'] = model([element([2, 0, 3], [14, 10, 13], {'all': 's'}), element([10, 10, 9], [12, 16, 11], {'all': 'i'}),
+                          element([4, 10, 5], [9, 14, 10], {'all': 'k'}), element([3, 12, 7], [4, 13, 8], {'all': 'k'}), element([6, 14, 7], [7, 15, 8], {'all': 'i'})],
+                         {'s': 'stove', 'i': 'iron', 'k': 'enamel'}, 'stove')
+    # The pressure gauge on the pump room wall, its pipe running down into the floor.
+    for stage in range(4):
+        m[f'gauge_{stage}'] = model([element([3, 3, 15], [13, 13, 16], {'all': 'i'}), element([4, 4, 14.4], [12, 12, 15], {'north': 'g', 'south': 'i', 'east': 'b', 'west': 'b', 'up': 'b', 'down': 'b'}),
+                                     element([7, 0, 15], [9, 3, 16], {'all': 'p'})], {'i': 'iron', 'g': f'gauge_{stage}', 'b': 'brass', 'p': 'pipe'}, f'gauge_{stage}')
+    # The brake lever: set (leaning back) and held open (pulled forward).
+    for stage, angle in enumerate((22.5, -22.5)):
+        rot = {'origin': [8, 3, 8], 'axis': 'x', 'angle': angle}
+        m[f'brake_{stage}'] = model([element([5, 0, 5], [11, 3, 11], {'all': 'i'}), element([7, 3, 7], [9, 14, 9], {'all': 'i'}, rot=rot),
+                                     element([6.5, 12, 6.5], [9.5, 16, 9.5], {'all': 'w'}, rot=rot)], {'i': 'iron', 'w': 'grip'}, 'iron')
+    # The valves on the pump room's lower floor: a pipe run through, a stem, a handwheel, the number on the pipe; and the red bypass.
+    for stage in range(4):
+        wheel = 'wheel_red' if stage == 3 else 'wheel_black'
+        e = [element([0, 6, 6], [16, 10, 10], {'all': 'p'}), element([7, 10, 7], [9, 13, 9], {'all': 'i'}),
+             element([2, 13, 2], [14, 14, 14], {'up': 'w', 'down': 'w', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})]
+        tex = {'p': 'pipe', 'i': 'iron', 'w': wheel}
+        if stage < 3:
+            e.append(element([5, 6.5, 5.6], [11, 9.5, 6], {'north': 'n', 'south': 'n', 'east': 'n', 'west': 'n', 'up': 'n', 'down': 'n'}))
+            tex['n'] = f'number_{stage + 1}'
+        m[f'valve_{stage}'] = model(e, tex, 'pipe')
+    # A plain length of the intake pipe, flanged at both ends.
+    m['run_0'] = model([element([0, 6, 6], [16, 10, 10], {'all': 'p'}), element([0, 5, 5], [1, 11, 11], {'all': 'i'}), element([15, 5, 5], [16, 11, 11], {'all': 'i'})],
+                       {'p': 'pipe', 'i': 'iron'}, 'pipe')
+    # The bleed screw on the intake pipe, shut and backed out.
+    for stage in range(2):
+        top = 15.5 if stage else 14
+        m[f'bleed_{stage}'] = model([element([0, 4, 5], [16, 10, 11], {'all': 'p'}), element([6, 10, 6], [10, 12, 10], {'all': 'b'}),
+                                     element([7, 12, 7], [9, top, 9], {'all': 'b'}), element([6, top - 1, 7.5], [10, top, 8.5], {'all': 'i'})],
+                                    {'p': 'pipe', 'b': 'brass', 'i': 'iron'}, 'pipe')
+    # The service grate, set flush as the floor: whole, and with its broken corner.
+    for stage, tex in enumerate(('grate', 'grate_broken')):
+        m[f'grate_{stage}'] = model([element([0, 15, 0], [16, 16, 16], {'up': 'g', 'down': 'g', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})],
+                                    {'g': tex, 'i': 'iron'}, 'iron')
+    # The pump, its motor on top and its lamp: dark idle, lit running.
+    for stage, lamp in enumerate(('lamp_off', 'lamp_on')):
+        m[f'pump_{stage}'] = model([element([1, 0, 1], [15, 12, 15], {'all': 'i'}), element([4, 12, 4], [12, 16, 12], {'all': 'g'}),
+                                    element([11, 8, .4], [14, 11, 1], {'all': 'l'}), element([0, 3, 6], [1, 7, 10], {'all': 'p'}), element([15, 3, 6], [16, 7, 10], {'all': 'p'})],
+                                   {'i': 'iron', 'g': 'pipe', 'l': lamp, 'p': 'pipe'}, 'iron')
+    # A speaking pipe's mouth on the wall: the pipe up the wall and the brass horn turned out from it.
+    m['pipe_0'] = model([element([7, 0, 14], [9, 16, 16], {'all': 'p'}), element([5, 7, 11], [11, 13, 14], {'all': 'b', 'north': 'i'}),
+                         element([6.5, 8.5, 10.6], [9.5, 11.5, 11], {'all': 'i'})], {'p': 'pipe', 'b': 'brass', 'i': 'iron'}, 'brass')
+    # A cable roller in its cradle, its axle across the cable's run: seated, the cable lying over it; unseated, slewed off it.
+    cradle = [element([1, 0, 4], [3, 7, 12], {'all': 'i'}), element([13, 0, 4], [15, 7, 12], {'all': 'i'})]
+    m['roller_0'] = model(cradle + [element([3, 3, 5], [13, 8, 11], {'all': 'r'}), element([7.5, 8, 0], [8.5, 9, 16], {'all': 'w'})], {'i': 'iron', 'r': 'roller', 'w': 'wire'}, 'roller')
+    m['roller_1'] = model(cradle + [element([3, 0, 3], [12, 5, 9], {'all': 'r'}, rot={'origin': [8, 2, 6], 'axis': 'y', 'angle': 22.5}),
+                                    element([7.5, 8, 0], [8.5, 9, 16], {'all': 'w'})], {'i': 'iron', 'r': 'roller', 'w': 'wire'}, 'roller')
+    # The fairlead in the cable house's river wall: jammed, the cable kinked against its housing; clear, running straight out.
+    lead = [element([2, 4, 11], [14, 12, 16], {'all': 'i'}), element([5, 6, 10], [11, 10, 11], {'all': 'b'})]
+    m['fairlead_0'] = model(lead + [element([7, 7, 0], [9, 9, 6], {'all': 'w'}), element([6, 8, 3], [8, 10, 11], {'all': 'w'}, rot={'origin': [7, 9, 7], 'axis': 'y', 'angle': 45})],
+                            {'i': 'iron', 'b': 'brass', 'w': 'wire'}, 'iron')
+    m['fairlead_1'] = model(lead + [element([7, 7, 0], [9, 9, 11], {'all': 'w'})], {'i': 'iron', 'b': 'brass', 'w': 'wire'}, 'iron')
+    m['drum_0'] = model([element([1, 2, 2], [15, 14, 14], {'all': 'w'}), element([0, 0, 1], [1, 16, 15], {'all': 'i'}), element([15, 0, 1], [16, 16, 15], {'all': 'i'}),
+                         element([0, 7, 7], [16, 9, 9], {'all': 'r'})], {'w': 'wire', 'i': 'iron', 'r': 'roller'}, 'wire')
+    # The inspection hatch in the floor: shut, its ring flat; open, the lid standing against its hinge.
+    m['hatch_0'] = model([element([0, 14, 0], [16, 16, 16], {'all': 'i'}), element([6, 16, 6], [10, 16.5, 10], {'all': 'b'})], {'i': 'iron', 'b': 'brass'}, 'iron')
+    m['hatch_1'] = model([element([0, 14, 15], [16, 30, 16], {'all': 'i'}), element([0, 14, 0], [1, 16, 16], {'all': 'i'}), element([15, 14, 0], [16, 16, 16], {'all': 'i'})],
+                         {'i': 'iron'}, 'iron')
+    # The ramp sluice's wheel on its spindle: free, held, and pinned through its spokes.
+    wheel = [element([7, 0, 7], [9, 10, 9], {'all': 'i'}), element([0, 10, 0], [16, 11, 16], {'up': 'w', 'down': 'w', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})]
+    m['wheel_0'] = model(wheel, {'i': 'iron', 'w': 'wheel_black'}, 'iron')
+    m['wheel_1'] = model(wheel, {'i': 'iron', 'w': 'wheel_black'}, 'iron')
+    m['wheel_2'] = model(wheel + [element([7, 8, 0], [9, 13, 16], {'all': 'r'})], {'i': 'iron', 'w': 'wheel_black', 'r': 'roller'}, 'iron')
+    # The locking pin in its sleeve on the upper ramp: up, and seated.
+    sleeve = [element([5, 0, 5], [11, 8, 11], {'all': 'i'})]
+    m['pin_0'] = model(sleeve + [element([7, 8, 7], [9, 16, 9], {'all': 'r'}), element([4, 14, 7], [12, 15.5, 9], {'all': 'w'})], {'i': 'iron', 'r': 'roller', 'w': 'grip'}, 'iron')
+    m['pin_1'] = model(sleeve + [element([7, 8, 7], [9, 9.5, 9], {'all': 'r'}), element([4, 8.5, 7], [12, 10, 9], {'all': 'w'})], {'i': 'iron', 'r': 'roller', 'w': 'grip'}, 'iron')
+    # The mooring line: loose and trailing on the ramp, coiled down neat on the porch, and staged at the head of the ramp on a cleat.
+    m['coil_0'] = model([element([2, 0, 2], [14, 1.5, 14], {'all': 'm'}), element([4, 1.5, 4], [12, 2.5, 12], {'all': 'm'}), element([7, 0, 0], [9, 1, 2], {'all': 'm'})], {'m': 'manila'}, 'manila')
+    m['coil_1'] = model([element([3, 0, 3], [13, 3, 13], {'all': 'm'}), element([5, 3, 5], [11, 4, 11], {'all': 'm'})], {'m': 'manila'}, 'manila')
+    m['coil_2'] = model([element([3, 0, 3], [13, 3, 13], {'all': 'm'}), element([1, 0, 7], [15, 1.5, 9], {'all': 'i'}), element([7, 3, 2], [9, 5, 14], {'all': 'm'})], {'m': 'manila', 'i': 'iron'}, 'manila')
+    # The lamp hook on the wall, empty and with the station lamp hanging from it.
+    hook = [element([7, 13, 14], [9, 15, 16], {'all': 'i'}), element([7.5, 14, 9], [8.5, 15, 16], {'all': 'i'})]
+    m['hook_0'] = model(hook, {'i': 'iron'}, 'iron')
+    m['hook_1'] = model(hook + [element([5, 3, 6], [11, 10, 12], {'all': 'g', 'up': 'i', 'down': 'i'}), element([5.5, 10, 6.5], [10.5, 11.5, 11.5], {'all': 'i'}),
+                                element([7.5, 11.5, 8.5], [8.5, 14, 9.5], {'all': 'i'})], {'i': 'iron', 'g': 'glass_lit'}, 'glass_lit')
+    m['depth_0'] = model([element([6, 0, 6], [10, 16, 10], {'all': 'd'})], {'d': 'depth'}, 'depth')
+    # The ferry's nameplate, bolted to its rail in two halves.
+    for half in range(2):
+        m[f'nameplate_{half}'] = model([element([0, 5, 15], [16, 11, 16], {'all': 'b', 'north': 'n'})], {'b': 'brass', 'n': f'name_{half}'}, f'name_{half}')
+    return m
+
+
+KINDS = ['table', 'clipboard', 'slate', 'plate', 'plate_set', 'bracket', 'stove', 'gauge', 'brake', 'valve', 'run', 'bleed', 'grate', 'pump', 'pipe', 'roller',
+         'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate']
+STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 2, 'pump': 2, 'roller': 2, 'fairlead': 2,
+          'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 3, 'hook': 2, 'nameplate': 2}
+FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
+MAX_STAGE = 4
+NAMES = {'crossing_fitting': 'Station Fitting'}
+ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench'}
+
+
+def files():
+    out = {}
+    for key, obj in fitting_models().items():
+        out[f'models/block/crossing/{key}.json'] = obj
+    variants = {}
+    for kind in KINDS:
+        for facing, y in FACING_Y.items():
+            for stage in range(MAX_STAGE):
+                drawn = stage if stage < STAGES.get(kind, 1) else 0
+                v = {'model': NS + f'block/crossing/{kind}_{drawn}'}
+                if y:
+                    v['y'] = y
+                variants[f'facing={facing},kind={kind},stage={stage}'] = v
+    out['blockstates/crossing_fitting.json'] = {'variants': variants}
+    for item in ITEMS:
+        out[f'models/item/{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/{item}'}}
+    return out
+
+
+def main():
+    check = argparse.ArgumentParser()
+    check.add_argument('--check', action='store_true')
+    check = check.parse_args().check
+    images, data = textures(), files()
+    models = fitting_models()
+    for kind in KINDS:
+        for stage in range(STAGES.get(kind, 1)):
+            assert f'{kind}_{stage}' in models, (kind, stage)
+    for key, obj in models.items():
+        for tex in obj['textures'].values():
+            assert f'block/crossing/{tex.split("crossing/")[1]}.png' in images, (key, tex)
+    for rel, im in images.items():
+        path = A / 'textures' / rel
+        if check:
+            with Image.open(path) as actual:
+                assert actual.convert('RGBA').tobytes() == im.tobytes(), rel
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True); im.save(path, optimize=True)
+    for rel, obj in data.items():
+        path = A / rel
+        if check:
+            assert json.loads(path.read_text()) == obj, rel
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+    lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
+    wanted = {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()}}
+    for key, name in wanted.items():
+        if check:
+            assert lang.get(key) == name, key
+        else:
+            lang[key] = name
+    if not check:
+        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+    print(('Verified' if check else 'Drew') + f' the flood station: {len(images)} textures, {len(data)} models and states.')
+
+
+if __name__ == '__main__':
+    main()

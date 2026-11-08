@@ -4078,5 +4078,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.growing.shoots"
+  },
+  "crossing.knock": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:crossing/knock",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.crossing.knock"
+  },
+  "crossing.pump": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:crossing/pump",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.crossing.pump"
+  },
+  "crossing.tap": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:crossing/tap",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.crossing.tap"
+  },
+  "crossing.bleed": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:crossing/bleed",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.crossing.bleed"
   }
 }

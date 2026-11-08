@@ -1,0 +1,141 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/crossing/pipe",
+    "i": "the_oldest_house:block/crossing/iron",
+    "w": "the_oldest_house:block/crossing/wheel_black",
+    "n": "the_oldest_house:block/crossing/number_1",
+    "particle": "the_oldest_house:block/crossing/pipe"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        6,
+        6
+      ],
+      "to": [
+        16,
+        10,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        10,
+        7
+      ],
+      "to": [
+        9,
+        13,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        13,
+        2
+      ],
+      "to": [
+        14,
+        14,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        6.5,
+        5.6
+      ],
+      "to": [
+        11,
+        9.5,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    }
+  ]
+}

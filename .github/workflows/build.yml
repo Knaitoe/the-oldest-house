@@ -123,6 +123,8 @@ jobs:
           python3 tools/generate_tall_grass_audio.py --check
           python3 tools/draw_growing_things_art.py --check
           python3 tools/generate_growing_things_audio.py --check
+          python3 tools/draw_last_crossing_art.py --check
+          python3 tools/generate_last_crossing_audio.py --check
           python3 tools/generate_operator_audio.py --check
           python3 tools/draw_trace_fittings.py --check
           python3 tools/generate_staircase_leak_assets.py --check
