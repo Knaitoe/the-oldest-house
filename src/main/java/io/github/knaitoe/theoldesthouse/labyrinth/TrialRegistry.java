@@ -13,6 +13,7 @@ import net.neoforged.neoforge.registries.*;
 public final class TrialRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final Map<String,DeferredBlock<Block>> MATERIALS=new LinkedHashMap<>();
     /** The still light: its blackened wainscot, its smoke-dark ceiling, the boards worn pale where the way runs, and the wet brick under the floor. */
@@ -22,14 +23,21 @@ public final class TrialRegistry {
         /* 0.4.387, the rising stair: wet glazed tile, a vaulted ceiling, silted flags at the foot, dry flags at the head, and windows lit from behind. */
         "rising_wall","rising_ceiling","rising_floor","rising_landing","rising_window",
         /* 0.4.388, the hall of many lengths: distempered plaster, a measuring rail at waist height, boards measured off in brass, a coffered ceiling. */
-        "lengths_wall","lengths_ceiling","lengths_floor","lengths_rule");
-    private static Block like(String name){return switch(name){case "still_under","rising_wall","rising_ceiling","rising_floor","rising_landing","rising_window"->Blocks.STONE_BRICKS;case "soft_under"->Blocks.PACKED_MUD;default->Blocks.DARK_OAK_PLANKS;};}
+        "lengths_wall","lengths_ceiling","lengths_floor","lengths_rule",
+        /* 0.4.389, the door that follows: papered walls, a parquet floor, a plaster ceiling, the dark frames of nine doors, and the lath and plaster behind the walls. */
+        "follow_wall","follow_ceiling","follow_floor","follow_trim","follow_back");
+    private static Block like(String name){return switch(name){case "still_under","rising_wall","rising_ceiling","rising_floor","rising_landing","rising_window"->Blocks.STONE_BRICKS;case "soft_under"->Blocks.PACKED_MUD;case "follow_back"->Blocks.MUD_BRICKS;default->Blocks.DARK_OAK_PLANKS;};}
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("trial_"+name,name.equals("rising_window")?fixed(like(name)).lightLevel(s->12):fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static boolean isMaterial(net.minecraft.world.level.block.state.BlockState state){for(var block:MATERIALS.values())if(state.is(block.get()))return true;return false;}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TrialBlock>> FITTING_TYPE=CODECS.register("trial_fitting",()->TrialBlock.CODEC);
     /** The fittings a trial is played on: the still light's boards that give and its lamps; the soft floor's squares and beams; the rising stair's treads. */
     public static final DeferredBlock<TrialBlock> FITTING=BLOCKS.registerBlock("trial_fitting",TrialBlock::new,fixed(Blocks.DARK_OAK_PLANKS).lightLevel(TrialBlock::light));
+    /** 0.4.389: the door that follows' tall mirrors, true plane mirrors (TrialMirrorBlock). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TrialMirrorBlock>> MIRROR_TYPE=CODECS.register("trial_mirror",()->TrialMirrorBlock.CODEC);
+    public static final DeferredBlock<TrialMirrorBlock> MIRROR=BLOCKS.registerBlock("trial_mirror",TrialMirrorBlock::new,fixed(Blocks.DARK_OAK_PLANKS).noOcclusion());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<TrialMirrorBlock.Glass>> MIRROR_ENTITY=
+        BES.register("trial_mirror",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(TrialMirrorBlock.Glass::new,MIRROR.get()).build(null));
     private TrialRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);}
 }

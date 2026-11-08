@@ -45,16 +45,21 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  * bend aside, like the long hallway's. A reader who hurries through the second, third or fourth length (sprints or jumps in it) is
  * moved back to the start of it as they leave it, seamlessly, out of everyone else's sight; a reader who walks crosses in fixed
  * time. Readers who go in together come out apart, and the first through hear the others' steps in the walls.
+ *
+ * <p>0.4.389, the door that follows (docs/FOLLOWING_DOOR_0_4_389.md): a papered room with nine doors in three walls, all painted
+ * shut but one, and that one is always where nobody in the room is looking. Turn to it and it shuts, and another opens behind.
+ * A passage behind the walls leads from every door to the far one. Back into it, or watch it in one of the two tall mirrors.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TrialRooms {
     private TrialRooms(){}
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR||place==LabyrinthPlace.RISING_STAIR||place==LabyrinthPlace.MANY_LENGTHS;}
+    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR||place==LabyrinthPlace.RISING_STAIR||place==LabyrinthPlace.MANY_LENGTHS||place==LabyrinthPlace.FOLLOWING_DOOR;}
     static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){
         if(place==LabyrinthPlace.STILL_LIGHT)buildStillLight(level,base);else if(place==LabyrinthPlace.SOFT_FLOOR)buildSoftFloor(level,base);
         else if(place==LabyrinthPlace.RISING_STAIR)buildRisingStair(level,base);
         else if(place==LabyrinthPlace.MANY_LENGTHS)buildLengths(level,base);
+        else if(place==LabyrinthPlace.FOLLOWING_DOOR)buildFollowing(level,base);
     }
     static void tick(ServerLevel level,BlockPos base,LabyrinthPlace place,CompoundTag room,long clock,List<ServerPlayer> readers){
         // A room is ticked only while someone is in it. Coming back to one left empty, it is as it was before anyone came.
@@ -64,6 +69,7 @@ public final class TrialRooms {
         else if(place==LabyrinthPlace.SOFT_FLOOR)softFloor(level,base,clock,readers);
         else if(place==LabyrinthPlace.RISING_STAIR)risingStair(level,base,room,clock,readers);
         else if(place==LabyrinthPlace.MANY_LENGTHS)lengths(level,base,clock,readers);
+        else if(place==LabyrinthPlace.FOLLOWING_DOOR)following(level,base,room,readers);
     }
 
     /** Everything as it was before anyone came: the boards and squares whole and the lamps out, the shaft dry. */
@@ -71,6 +77,7 @@ public final class TrialRooms {
         if(place==LabyrinthPlace.STILL_LIGHT){settle(l,b);room.putInt("StillFade",0);if(lit(room))lamps(l,b,room,false);}
         else if(place==LabyrinthPlace.SOFT_FLOOR)softSettle(l,b,true);
         else if(place==LabyrinthPlace.RISING_STAIR){flood(l,b,0);room.putInt("RisingEmpty",0);}
+        else if(place==LabyrinthPlace.FOLLOWING_DOOR){for(int i=0;i<DOORWAYS.size();i++)shutDoorway(l,b,i);room.putInt("FollowOpen",-1);}
     }
 
     // ---- The still light ----
@@ -419,6 +426,74 @@ public final class TrialRooms {
         for(var o:l.players()){if(o==self||o.isSleeping())continue;var cam=o.getCamera();if(cam.level()!=l)continue;var eye=cam.getEyePosition();var look=cam.getLookAngle();
             for(var pt:points){var to=pt.subtract(eye);double d=to.length();if(d>48)continue;if(d<1.5)return true;if(look.dot(to.scale(1/d))<.26)continue;
                 var hit=l.clip(new net.minecraft.world.level.ClipContext(eye,pt,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,cam));
+                if(hit.getType()==net.minecraft.world.phys.HitResult.Type.MISS)return true;}}
+        return false;
+    }
+
+    // ---- The door that follows ----
+
+    /** The room is eleven by eleven (x -5..5, z -1..-11) and four high; behind its west, north and east walls a passage runs to the far door. */
+    public static final int FOLLOW_HALF=5,FOLLOW_FAR=-11;
+    /** The nine doors, three in each of the west, north and east walls: the lower cell of each doorway, in the wall. */
+    public static final List<BlockPos> DOORWAYS=List.of(new BlockPos(-6,0,-3),new BlockPos(-6,0,-6),new BlockPos(-6,0,-9),new BlockPos(-3,0,-12),
+        new BlockPos(0,0,-12),new BlockPos(3,0,-12),new BlockPos(6,0,-3),new BlockPos(6,0,-6),new BlockPos(6,0,-9));
+    /** Shut doors seen shutting before a reader is told once where the open one always is. */
+    public static final int FOLLOW_HINT=6;
+    /** The way into the room from a doorway. */
+    public static net.minecraft.core.Direction into(BlockPos doorway){return doorway.getZ()==-12?net.minecraft.core.Direction.SOUTH:doorway.getX()<0?net.minecraft.core.Direction.EAST:net.minecraft.core.Direction.WEST;}
+    /** The doorway standing open, or -1. */
+    public static int openDoorway(CompoundTag room){return room.contains("FollowOpen")?room.getInt("FollowOpen"):-1;}
+    public static boolean inFollowRoom(BlockPos b,net.minecraft.world.phys.Vec3 at){double x=at.x-b.getX(),z=at.z-b.getZ();return x>=-FOLLOW_HALF&&x<FOLLOW_HALF+1&&z>=FOLLOW_FAR&&z<0;}
+    /** A point just inside the room in front of a doorway, at a height: where anyone looking at the door would be looking. */
+    public static net.minecraft.world.phys.Vec3 doorwayFront(BlockPos b,BlockPos doorway,double y){var d=into(doorway);return net.minecraft.world.phys.Vec3.atLowerCornerOf(b.offset(doorway)).add(.5+d.getStepX()*.55,y,.5+d.getStepZ()*.55);}
+
+    private static void buildFollowing(ServerLevel l,BlockPos b){
+        var wall=mat("follow_wall");var floor=mat("follow_floor");var ceiling=mat("follow_ceiling");var trim=mat("follow_trim");var back=mat("follow_back");var air=Blocks.AIR.defaultBlockState();
+        box(l,b,-8,-1,-14,8,4,0,back);
+        box(l,b,-6,0,-12,6,3,0,wall);
+        box(l,b,-FOLLOW_HALF,0,FOLLOW_FAR,FOLLOW_HALF,3,-1,air);box(l,b,-FOLLOW_HALF,-1,FOLLOW_FAR,FOLLOW_HALF,-1,-1,floor);box(l,b,-FOLLOW_HALF,4,FOLLOW_FAR,FOLLOW_HALF,4,-1,ceiling);
+        // The passage behind the walls: down the west and east sides and across the north, to the far door.
+        box(l,b,-7,0,-13,-7,2,-1,air);box(l,b,7,0,-13,7,2,-1,air);box(l,b,-7,0,-13,7,2,-13,air);
+        box(l,b,-7,-1,-13,-7,-1,-1,trim);box(l,b,7,-1,-13,7,-1,-1,trim);box(l,b,-7,-1,-13,7,-1,-13,trim);
+        for(var d:DOORWAYS){var side=into(d).getClockWise();
+            for(int y=0;y<=2;y++){set(l,b,d.getX()+side.getStepX(),y,d.getZ()+side.getStepZ(),trim);set(l,b,d.getX()-side.getStepX(),y,d.getZ()-side.getStepZ(),trim);}
+            set(l,b,d.getX(),2,d.getZ(),trim);
+            set(l,b,d.getX(),0,d.getZ(),TrialBlock.of(TrialBlock.Kind.FOLLOW_PANEL,0));set(l,b,d.getX(),1,d.getZ(),TrialBlock.of(TrialBlock.Kind.FOLLOW_PANEL,1));
+        }
+        for(int x:new int[]{-3,3}){set(l,b,x,1,-1,TrialMirrorBlock.of(net.minecraft.core.Direction.NORTH,false));set(l,b,x,2,-1,TrialMirrorBlock.of(net.minecraft.core.Direction.NORTH,true));}
+        for(var lamp:List.of(new BlockPos(0,3,-6),new BlockPos(-3,3,-3),new BlockPos(3,3,-3),new BlockPos(-3,3,-9),new BlockPos(3,3,-9),new BlockPos(-7,2,-7),new BlockPos(7,2,-7),new BlockPos(0,2,-13)))
+            set(l,b,lamp.getX(),lamp.getY(),lamp.getZ(),TrialBlock.of(TrialBlock.Kind.STILL_LAMP,1));
+        LabyrinthBuilder.entrance(l,b,wall,floor,ceiling);
+    }
+    private static void shutDoorway(ServerLevel l,BlockPos b,int i){var d=b.offset(DOORWAYS.get(i));
+        if(!TrialBlock.is(l.getBlockState(d),TrialBlock.Kind.FOLLOW_PANEL))l.setBlock(d,TrialBlock.of(TrialBlock.Kind.FOLLOW_PANEL,0),FLAGS);
+        if(!TrialBlock.is(l.getBlockState(d.above()),TrialBlock.Kind.FOLLOW_PANEL))l.setBlock(d.above(),TrialBlock.of(TrialBlock.Kind.FOLLOW_PANEL,1),FLAGS);}
+    private static void openDoorwayAt(ServerLevel l,BlockPos b,int i){var d=b.offset(DOORWAYS.get(i));l.setBlock(d,Blocks.AIR.defaultBlockState(),FLAGS);l.setBlock(d.above(),Blocks.AIR.defaultBlockState(),FLAGS);}
+    /** Shut doors each reader has seen shutting. */
+    private static final Map<ServerPlayer,Integer> SHUT_SEEN=new WeakHashMap<>();
+
+    private static void following(ServerLevel l,BlockPos b,CompoundTag room,List<ServerPlayer> readers){
+        // Who could see a door: every camera in the room itself (spectators too), not anyone already through into the passage.
+        var watchers=new ArrayList<Entity>();
+        for(var o:l.players()){var cam=o.getCamera();if(!o.isSleeping()&&cam.level()==l&&inFollowRoom(b,cam.position()))watchers.add(cam);}
+        int open=openDoorway(room);
+        if(open>=0&&!doorwaySeen(l,watchers,b,DOORWAYS.get(open)))return;
+        if(open>=0&&!l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new AABB(b.offset(DOORWAYS.get(open))).expandTowards(0,1,0)).isEmpty())return;
+        int next=-1;double best=Double.MAX_VALUE;
+        for(int i=0;i<DOORWAYS.size();i++){if(i==open)continue;var d=DOORWAYS.get(i);if(doorwaySeen(l,watchers,b,d))continue;
+            double score=-1;for(var w:watchers){var to=doorwayFront(b,d,1).subtract(w.getEyePosition());score=Math.max(score,w.getLookAngle().dot(to.normalize()));}
+            if(score<best){best=score;next=i;}}
+        if(open>=0){shutDoorway(l,b,open);l.playSound(null,b.offset(DOORWAYS.get(open)),SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,.7F,.8F);
+            for(var w:watchers)if(w instanceof ServerPlayer p&&!p.isSpectator()){int n=SHUT_SEEN.merge(p,1,Integer::sum);if(n==FOLLOW_HINT)line(p,"It is always the one behind you.");}}
+        if(next>=0){openDoorwayAt(l,b,next);l.playSound(null,b.offset(DOORWAYS.get(next)),SoundEvents.WOODEN_DOOR_OPEN,SoundSource.BLOCKS,.7F,.8F);}
+        room.putInt("FollowOpen",next);
+    }
+    /** Whether any camera in the room could see a doorway: the room just in front of it, low or high, in a wide cone with nothing between. */
+    public static boolean doorwaySeen(ServerLevel l,List<? extends Entity> watchers,BlockPos b,BlockPos doorway){
+        for(var w:watchers){var eye=w.getEyePosition();var look=w.getLookAngle();
+            for(double y:new double[]{.5,1.5}){var pt=doorwayFront(b,doorway,y);var to=pt.subtract(eye);double d=to.length();if(d>48||d<1E-3)continue;
+                if(look.dot(to.scale(1/d))<.26)continue;
+                var hit=l.clip(new net.minecraft.world.level.ClipContext(eye,pt,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,w));
                 if(hit.getType()==net.minecraft.world.phys.HitResult.Type.MISS)return true;}}
         return false;
     }

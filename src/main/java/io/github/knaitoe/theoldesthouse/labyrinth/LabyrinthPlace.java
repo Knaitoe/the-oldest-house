@@ -645,7 +645,9 @@ public enum LabyrinthPlace {
     /** 0.4.387, the rising stair (TrialRooms, docs/RISING_STAIR_0_4_387.md): a shaft climbed round its walls while the water rises behind, with an undertow and two pockets of air. */
     RISING_STAIR("rising_stair",Kind.GRAY,225,new BoundingBox(-7,-1,-13,7,25,0),grayDoors(1,22,-13)),
     /** 0.4.388, the hall of many lengths (TrialRooms, docs/MANY_LENGTHS_0_4_388.md): five identical lengths with the long hallway's bends; whoever hurries through a middle length walks it again. */
-    MANY_LENGTHS("many_lengths",Kind.GRAY,226,new BoundingBox(-2,-1,-63,20,3,0),grayDoors(18,0,-63));
+    MANY_LENGTHS("many_lengths",Kind.GRAY,226,new BoundingBox(-2,-1,-63,20,3,0),grayDoors(18,0,-63)),
+    /** 0.4.389, the door that follows (TrialRooms, docs/FOLLOWING_DOOR_0_4_389.md): nine doors in three walls, all shut but the one nobody is looking at; a passage behind them to the far door. */
+    FOLLOWING_DOOR("following_door",Kind.GRAY,227,new BoundingBox(-8,-1,-14,8,4,0),grayDoors(0,0,-14));
 
     /** What a place is to the dealer. */
     public enum Kind {

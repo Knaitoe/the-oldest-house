@@ -59,6 +59,18 @@
     },
     "kind=rising_tread,stage=3": {
       "model": "the_oldest_house:block/trial_rising_tread_half"
+    },
+    "kind=follow_panel,stage=0": {
+      "model": "the_oldest_house:block/trial_follow_panel_0"
+    },
+    "kind=follow_panel,stage=1": {
+      "model": "the_oldest_house:block/trial_follow_panel_1"
+    },
+    "kind=follow_panel,stage=2": {
+      "model": "the_oldest_house:block/trial_follow_panel_0"
+    },
+    "kind=follow_panel,stage=3": {
+      "model": "the_oldest_house:block/trial_follow_panel_1"
     }
   }
 }

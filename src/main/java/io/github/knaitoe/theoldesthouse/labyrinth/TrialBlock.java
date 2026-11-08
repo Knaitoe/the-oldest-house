@@ -26,12 +26,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <p>The still light's dusty boards, which hold in the light and give way under a reader in the dark (stage 1: gone, nothing to
  * stand on), and its caged lamps (stage 1: lit). 0.4.386, the soft floor's sodden squares, sinking two pixels a stage under a
  * reader until at stage 3 they are gone, and its low beams, the top half of a block, to crouch under. 0.4.387, the rising stair's
- * treads (stage 0 a whole step, stage 1 a half), which the water closes over: every fitting can stand in water.
+ * treads (stage 0 a whole step, stage 1 a half), which the water closes over: every fitting can stand in water. 0.4.389, the door that
+ * follows' painted-shut doors (stage 0 the lower half, with its knob, stage 1 the upper).
  */
 public final class TrialBlock extends Block implements SimpleWaterloggedBlock {
     public static final MapCodec<TrialBlock> CODEC=simpleCodec(TrialBlock::new);
     public enum Kind implements StringRepresentable {
-        STILL_BOARD,STILL_LAMP,SOFT_PLATE,SOFT_BEAM,RISING_TREAD;
+        STILL_BOARD,STILL_LAMP,SOFT_PLATE,SOFT_BEAM,RISING_TREAD,FOLLOW_PANEL;
         @Override public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -56,6 +57,7 @@ public final class TrialBlock extends Block implements SimpleWaterloggedBlock {
         case SOFT_PLATE->switch(s.getValue(STAGE)){case 0->Shapes.block();case 1->box(0,0,0,16,14,16);case 2->box(0,0,0,16,12,16);default->Shapes.empty();};
         case SOFT_BEAM->box(0,8,0,16,16,16);
         case RISING_TREAD->s.getValue(STAGE)==1?box(0,0,0,16,8,16):Shapes.block();
+        case FOLLOW_PANEL->Shapes.block();
     };}
     @Override public VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return getShape(s,l,p,c);}
 }

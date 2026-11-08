@@ -532,4 +532,60 @@ public final class HazardVarietyTests {
     }
     @AfterBatch(batch="many_lengths") public static void manyLengthsDone(ServerLevel level){close();}
 
+    /**
+     * 0.4.389, the door that follows (docs/FOLLOWING_DOOR_0_4_389.md): nine framed doors in three walls with a passage behind
+     * every one to the far door, two tall mirrors facing into the room; exactly one door stands open and never one a reader in
+     * the room can see; turning to it shuts it and opens another out of sight; a reader standing in the doorway keeps it open
+     * against anyone's look; a reader through into the passage no longer counts.
+     */
+    @GameTest(template="empty",batch="following_door",timeoutTicks=600)
+    public static void theDoorThatFollowsIsNeverWhereAnyoneIsLooking(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.FOLLOWING_DOOR;var reader=f.player("following_reader",place);var friend=f.player("following_friend",place);var b=f.base(place);
+        var doors=TrialRooms.DOORWAYS;
+        java.util.function.Supplier<Integer> open=()->{int found=-1,count=0;for(int i=0;i<doors.size();i++)if(f.level.getBlockState(b.offset(doors.get(i))).isAir()){found=i;count++;}return count>1?-2:found;};
+        java.util.function.BiConsumer<ServerPlayer,Vec3> look=(p,target)->{var to=target.subtract(p.getEyePosition());float yaw=(float)Math.toDegrees(Math.atan2(-to.x,to.z));p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(0);};
+        java.util.function.BiConsumer<ServerPlayer,Float> face=(p,yaw)->{p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(0);};
+        var was=new int[2];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the door that follows is loaded"))
+                .thenExecute(()->{
+                    for(var d:doors){var side=TrialRooms.into(d).getClockWise();var trim=TrialRegistry.material("follow_trim");
+                        h.assertTrue(f.level.getBlockState(b.offset(d).above(2)).is(trim)&&f.level.getBlockState(b.offset(d).relative(side)).is(trim)&&f.level.getBlockState(b.offset(d).relative(side.getOpposite()).above()).is(trim),"a frame round the door at "+d);
+                        var behind=d.relative(TrialRooms.into(d).getOpposite());f.body(b,behind.getX()+.5,0,behind.getZ()+.5,1,"the passage behind the door at "+d);
+                        var front=d.relative(TrialRooms.into(d));f.body(b,front.getX()+.5,0,front.getZ()+.5,1,"room in front of the door at "+d);}
+                    for(int z=-1;z>=-13;z--){f.body(b,-6.5,0,z+.5,1,"the west passage at "+z);f.body(b,7.5,0,z+.5,1,"the east passage at "+z);}
+                    for(int x=-7;x<=7;x++)f.body(b,x+.5,0,-12.5,1,"the north passage at "+x);
+                    h.assertTrue(f.level.getBlockState(b.offset(0,0,-14)).getBlock() instanceof DoorBlock,"the far door, off the passage");
+                    for(int x:new int[]{-3,3}){var low=f.level.getBlockState(b.offset(x,1,-1));var high=f.level.getBlockState(b.offset(x,2,-1));
+                        h.assertTrue(low.is(TrialRegistry.MIRROR.get())&&low.getValue(TrialMirrorBlock.FACING)==Direction.NORTH&&!low.getValue(TrialMirrorBlock.UPPER)&&high.is(TrialRegistry.MIRROR.get())&&high.getValue(TrialMirrorBlock.UPPER)
+                            &&f.level.getBlockEntity(b.offset(x,1,-1)) instanceof TrialMirrorBlock.Glass,"a tall mirror on the entry wall at "+x+", facing into the room");}
+                    h.assertTrue(f.level.getBlockState(b.offset(0,3,-6)).getLightEmission()>0,"the room is lit");
+                    h.assertTrue(TrialMarks.kind(place)==place&&HazardVariety.tier(place)==2&&LabyrinthPacing.physicalTrial(place),"a second-tier physical trial, and a mark of its own");
+                    f.at(friend,place,.5,0,400);
+                    f.at(reader,place,.5,0,-6.5);reader.setOnGround(true);face.accept(reader,180f);
+                })
+                .thenIdle(3)
+                .thenExecute(()->{int o=open.get();h.assertTrue(o>=0,"exactly one door stands open ("+o+")");
+                    h.assertTrue(!TrialRooms.doorwaySeen(f.level,List.of(reader),b,doors.get(o)),"and not one the reader can see");was[0]=o;
+                    look.accept(reader,TrialRooms.doorwayFront(b,doors.get(o),1));})
+                .thenIdle(2)
+                .thenExecute(()->{int o=open.get();
+                    h.assertTrue(o>=0&&o!=was[0]&&TrialBlock.is(f.level.getBlockState(b.offset(doors.get(was[0]))),TrialBlock.Kind.FOLLOW_PANEL),"turning to it, it is shut and another stands open ("+was[0]+" to "+o+")");
+                    h.assertTrue(!TrialRooms.doorwaySeen(f.level,List.of(reader),b,doors.get(o)),"one the reader can't see");was[0]=o;
+                    look.accept(reader,TrialRooms.doorwayFront(b,doors.get(o),1));})
+                .thenIdle(2)
+                .thenExecute(()->{int o=open.get();h.assertTrue(o>=0&&o!=was[0]&&!TrialRooms.doorwaySeen(f.level,List.of(reader),b,doors.get(o)),"and again: it is always behind");
+                    // Backing into it: the reader stands in the doorway, the friend in the room looks straight at it.
+                    var d=doors.get(o);was[0]=o;f.at(reader,place,d.getX()+.5,0,d.getZ()+.5);reader.setOnGround(true);
+                    var front=d.relative(TrialRooms.into(d),3);f.at(friend,place,front.getX()+.5,0,front.getZ()+.5);friend.setOnGround(true);look.accept(friend,TrialRooms.doorwayFront(b,d,1));})
+                .thenIdle(3)
+                .thenExecute(()->{h.assertTrue(open.get()==was[0],"nobody's look shuts a door with someone standing in it");
+                    var behind=doors.get(was[0]).relative(TrialRooms.into(doors.get(was[0])).getOpposite());
+                    h.assertTrue(!TrialRooms.inFollowRoom(b,Vec3.atLowerCornerOf(b.offset(behind)).add(.5,1.6,.5)),"the passage behind the doors is not the room");
+                    f.at(reader,place,behind.getX()+.5,0,behind.getZ()+.5);reader.setOnGround(true);})
+                .thenIdle(3)
+                .thenExecute(()->{int o=open.get();h.assertTrue(o>=0&&o!=was[0]&&!TrialRooms.doorwaySeen(f.level,List.of(friend),b,doors.get(o)),"once it is empty, the friend's look shuts it, and another opens out of the friend's sight");})
+                .thenSucceed();
+    }
+    @AfterBatch(batch="following_door") public static void followingDoorDone(ServerLevel level){close();}
+
 }
