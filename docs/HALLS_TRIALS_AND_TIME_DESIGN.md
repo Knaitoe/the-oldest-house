@@ -10,7 +10,8 @@ Status: **being built (November 8)**. The owner left the open questions to judge
 - Trial 4, the door that follows: built in 0.4.389 ([FOLLOWING_DOOR_0_4_389.md](FOLLOWING_DOOR_0_4_389.md)), at the owner's request. The far door itself stays put; nine doors into a passage behind the walls do the moving, and the mirrors are true plane mirrors.
 - Hall 1, the laundry corridor: built in 0.4.390 ([LAUNDRY_CORRIDOR_0_4_390.md](LAUNDRY_CORRIDOR_0_4_390.md)), the first of five halls (1, 2, 5, 6 and 10). Two of its three ways on are behind the washing.
 - Halls 2, 5, 6 and 10, the long bedroom hall, the atrium, the cistern walk and the library stacks: built in 0.4.391 ([FOUR_HALLS_0_4_391.md](FOUR_HALLS_0_4_391.md)), at the owner's request ("go ahead and implement the four rooms please, then the rules"). The atrium's stair runs up beside the well, inside a wall that rises with it, rather than round the walls.
-- Next: R2 as the owner set it (from depth 20, one hall in four). R3 (only as fixed folds shared by everyone) and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
+- R2, trials in the way: built in 0.4.392 as the owner set it, from depth 20, about one ordinary hall in four ([TRIALS_IN_THE_WAY_0_4_392.md](TRIALS_IN_THE_WAY_0_4_392.md)).
+- Next: R3 (only as fixed folds shared by everyone) and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 
@@ -44,6 +45,7 @@ Each proposal is numbered so the owner can pick by number.
   - Nothing changes before depth 20.
   - From depth 20 on, about one hall in four has no ordinary way on, only a trial (or a story). The other three are dealt as now.
   - Going back still costs depth.
+- **Built in 0.4.392** ([TRIALS_IN_THE_WAY_0_4_392.md](TRIALS_IN_THE_WAY_0_4_392.md)).
 
 **R3. Folds.**
 - As first proposed:

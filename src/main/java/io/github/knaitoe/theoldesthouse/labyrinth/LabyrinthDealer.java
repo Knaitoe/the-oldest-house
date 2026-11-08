@@ -762,12 +762,25 @@ public final class LabyrinthDealer {
         if (!choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 35) {
             restDoor = choices.get(random.nextInt(choices.size()));
         }
+        // 0.4.392, R2 (LabyrinthPacing.TRIAL_ONLY_DEPTH): deep enough, about one ordinary hall in four leads on only by trials, and
+        // by its story door if it has one. Only when a trial is due at all (the trials' own spacing), and never in place of a scent,
+        // a lost pet's rescue or a quiet room owed. The random draw is made only that deep, so shallower deals are as they were.
+        List<LabyrinthPlace> dueTrials=trials.stream().filter(p->grayWeight(data,player,p,data.returnDepth(player))>0).toList();
+        boolean trialOnly=here!=null&&LabyrinthPacing.ordinary(here)&&data.returnDepth(player)>=LabyrinthPacing.TRIAL_ONLY_DEPTH
+                &&!owing&&!scent&&!rescueNeeded(data,player)&&!dueTrials.isEmpty()&&LabyrinthPacing.trialChance(data,player)>0
+                &&random.nextInt(LabyrinthPacing.TRIAL_ONLY_IN)==0;
+        List<LabyrinthPlace> trialsLeft=new ArrayList<>(dueTrials);
+        if(trialOnly){oddDoor=null;trialDoor=null;restDoor=null;}
         for (LabyrinthData.Door door : doors) {
             if (door == lucky && voiceHere) {
                 data.deal(player, door, LabyrinthPlace.SPEAK_UP.id(), false);
             } else if (door == lucky) {
                 data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
                 if (voiceOwed) SpeakUp.storyDealt(data, player);
+            } else if (trialOnly) {
+                // A different trial behind each door while there are trials enough.
+                LabyrinthPlace trial=weightedGray(trialsLeft,data,player,random);if(trialsLeft.size()>1)trialsLeft.remove(trial);
+                data.deal(player,door,HazardVariety.routeVariant(trial,(here==null?0:data.nodeKey(player,here))^door.id.hashCode(),data).id(),lyingLeak(data,player,random));
             } else if (door == oddDoor) {
                 data.deal(player, door, HazardVariety.routeVariant(weightedGray(odd,data,player,random),(here==null?0:data.nodeKey(player,here))^door.id.hashCode(),data).id(),
                         lyingLeak(data, player, random));
