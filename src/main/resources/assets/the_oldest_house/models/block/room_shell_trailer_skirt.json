@@ -1,0 +1,49 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "the_oldest_house:block/room_shell/trailer_skirt",
+    "out": "the_oldest_house:block/room_shell/trailer_skirt",
+    "in": "the_oldest_house:block/room_shell/trailer_panel_foot",
+    "edge": "the_oldest_house:block/room_shell/trailer_edge"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#out",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#in",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#out",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#out",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#edge",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#edge",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

@@ -4,6 +4,9 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.core.Direction;
+import com.mojang.serialization.MapCodec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.*;
 
@@ -40,6 +43,27 @@ public final class RoomShell {
     public static final DeferredBlock<StairBlock> PEW=BLOCKS.registerBlock("room_shell_pew",
         p->new StairBlock(Blocks.DARK_OAK_PLANKS.defaultBlockState(),p),fixed(Blocks.DARK_OAK_STAIRS));
 
+    /**
+     * 0.4.382, the ninth release (docs/TEXTURE_PASS_TRAILER_0_4_382.md): Goatman's trailer, drawn by tools/draw_trailer_art.py. Its
+     * walls are one block thick, so each wall block faces out: ribbed aluminium on the side it faces, the camper's veneer panelling
+     * on the side within. The skirt course, the stripe and the long sides' drip rail are the same block in their own skins; the
+     * corners are rounded trim; the roof is coated sheet over the camper's ceiling; the floor is linoleum laid as a checker.
+     */
+    public static final DeferredBlock<Skin> TRAILER_SIDING=skin("trailer_siding",Blocks.WHITE_TERRACOTTA),TRAILER_BAND=skin("trailer_band",Blocks.LIGHT_GRAY_CONCRETE),
+        TRAILER_SKIRT=skin("trailer_skirt",Blocks.CYAN_TERRACOTTA),TRAILER_EAVE=skin("trailer_eave",Blocks.IRON_BLOCK);
+    public static final DeferredBlock<Block> TRAILER_CORNER=cube("trailer_corner",Blocks.IRON_BLOCK),TRAILER_LINO=cube("trailer_lino",Blocks.WHITE_CONCRETE),
+        TRAILER_LINO_DARK=cube("trailer_lino_dark",Blocks.LIGHT_GRAY_CONCRETE);
+    public static final DeferredBlock<SlabBlock> TRAILER_ROOF=BLOCKS.registerBlock("room_shell_trailer_roof",SlabBlock::new,fixed(Blocks.SMOOTH_STONE_SLAB));
+
+    /** A wall block of a skin one block thick: its outside faces the way it faces, its inside the other way. */
+    public static final class Skin extends HorizontalDirectionalBlock {
+        public static final MapCodec<Skin> CODEC=simpleCodec(Skin::new);
+        public Skin(BlockBehaviour.Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH));}
+        @Override public MapCodec<Skin> codec(){return CODEC;}
+        @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING);}
+    }
+    private static DeferredBlock<Skin> skin(String id,Block like){return BLOCKS.registerBlock("room_shell_"+id,Skin::new,fixed(like));}
+
     private RoomShell(){}
     public static void register(IEventBus bus){BLOCKS.register(bus);}
 
@@ -53,6 +77,11 @@ public final class RoomShell {
     /** Whether a block is one of the camp's own surfaces. */
     public static boolean camp(BlockState s){
         return s.is(CAMP_ASHLAR.get())||s.is(CAMP_FLAGS.get())||s.is(CAMP_TIMBER.get())||s.is(CAMP_BOARDS.get())||s.is(CAMP_GRIT.get())||s.is(CAMP_SLATE.get());
+    }
+    /** Whether a block is one of the trailer's own surfaces. */
+    public static boolean trailer(BlockState s){
+        return s.is(TRAILER_SIDING.get())||s.is(TRAILER_BAND.get())||s.is(TRAILER_SKIRT.get())||s.is(TRAILER_EAVE.get())||s.is(TRAILER_CORNER.get())
+            ||s.is(TRAILER_ROOF.get())||s.is(TRAILER_LINO.get())||s.is(TRAILER_LINO_DARK.get());
     }
     /** Whether a block is one of the boiler room's own surfaces. */
     public static boolean boiler(BlockState s){

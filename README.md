@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.381** gives Holloway's hunt and the drowned congregation's chapel their own surfaces. The hunt's three rooms are rough ashlar, some of it cracked or mossed, over irregular flags, hewn timber and boards, packed grit and slate; the chapel's pews are worn pale where people sat, beside a dark board causeway. Nothing moves. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_CAMP_0_4_381.md](docs/TEXTURE_PASS_CAMP_0_4_381.md). The previous candidate, 0.4.380, gave the child's room and the hotel's boiler room theirs ([docs/TEXTURE_PASS_ROOMS_0_4_380.md](docs/TEXTURE_PASS_ROOMS_0_4_380.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
+Development candidate **0.4.382** gives Goatman's trailer its own skin. Outside, ribbed aluminium with a faded stripe, a mud-splashed skirt, a drip rail, rounded corner trim and a coated roof; inside, the camper's veneer panelling, a ceiling between battens and a linoleum floor. Nothing moves. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_TRAILER_0_4_382.md](docs/TEXTURE_PASS_TRAILER_0_4_382.md). The previous candidate, 0.4.381, gave Holloway's hunt and the cave's chapel theirs ([docs/TEXTURE_PASS_CAMP_0_4_381.md](docs/TEXTURE_PASS_CAMP_0_4_381.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
 
 ## Playing it
 

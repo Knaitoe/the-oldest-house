@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_lino_dark"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_lino_dark",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_lino_dark",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_lino_dark",
+        "y": 270
+      }
+    ]
+  }
+}

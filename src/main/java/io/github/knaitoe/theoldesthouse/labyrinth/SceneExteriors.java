@@ -150,14 +150,21 @@ public final class SceneExteriors {
     }
     private void trailer(){
         // Riveted, lightly weathered siding and a rounded stepped metal roof, rather than a white cube.
+        // 0.4.382 (docs/TEXTURE_PASS_TRAILER_0_4_382.md): the trailer's own skin, each wall block facing out. Every cell is given its
+        // final block at once, since this pass leaves the House's own blocks alone once they are laid.
         for(int x=-8;x<=8;x++)for(int z=-77;z<=-55;z++)if(Math.abs(x)==8||z==-77||z==-55){
+            boolean corner=Math.abs(x)==8&&(z==-77||z==-55);
+            var out=Math.abs(x)==8?(x<0?Direction.WEST:Direction.EAST):z==-77?Direction.NORTH:Direction.SOUTH;
             for(int y=1;y<=5;y++){
-                var old=l.getBlockState(p(x,y,z));if(old.is(Blocks.WHITE_TERRACOTTA)||old.is(Blocks.LIGHT_GRAY_TERRACOTTA))set(x,y,z,y==1?Blocks.CYAN_TERRACOTTA:y==4?Blocks.LIGHT_GRAY_CONCRETE:Blocks.WHITE_TERRACOTTA);
+                if(corner){reskin(x,y,z,RoomShell.TRAILER_CORNER.get().defaultBlockState());continue;}
+                if(Math.abs(x)==8&&y==5){reskin(x,y,z,skin(RoomShell.TRAILER_EAVE,out));continue;}
+                var old=l.getBlockState(p(x,y,z));
+                if(old.is(Blocks.WHITE_TERRACOTTA)||old.is(Blocks.LIGHT_GRAY_TERRACOTTA))reskin(x,y,z,skin(y==1?RoomShell.TRAILER_SKIRT:y==4?RoomShell.TRAILER_BAND:RoomShell.TRAILER_SIDING,out));
             }
-            if(Math.abs(x)==8){set(x,5,z,Blocks.IRON_BLOCK);set(x,6,z,Blocks.SMOOTH_STONE_SLAB);}
         }
-        for(int x=-7;x<=7;x++)for(int z=-77;z<=-55;z++)set(x,Math.abs(x)>5?6:7,z,Blocks.SMOOTH_STONE_SLAB);
-        for(int x:new int[]{-8,8})for(int z:new int[]{-77,-55})for(int y=1;y<=5;y++)set(x,y,z,Blocks.IRON_BLOCK);
+        // The rounded stepped roof: one course over the whole, the middle raised a half block more. Its underside is the ceiling.
+        var roof=RoomShell.TRAILER_ROOF.get().defaultBlockState();
+        for(int x=-8;x<=8;x++)for(int z=-77;z<=-55;z++){set(x,6,z,roof);if(Math.abs(x)<=5)set(x,7,z,roof);}
         for(int side:new int[]{-1,1})for(int z:new int[]{-59,-67,-73}){
             // 0.4.53: the east wall's last window became the bathroom's small awning window, framed by a sill alone.
             if(side>0&&z==-73)continue;
@@ -179,6 +186,21 @@ public final class SceneExteriors {
         for(int z=-54;z<=-51;z++)add(5,0,z,Blocks.IRON_BARS.defaultBlockState().setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true));
         add(5,-1,-51,Blocks.STONE_BRICK_WALL);prop(-4,0,-52,SceneDetailBlock.Kind.SHOES,Direction.NORTH);
         prop(6,0,-53,SceneDetailBlock.Kind.CRATE,Direction.NORTH);
+    }
+    /**
+     * A wall block traded for the trailer's own, a full face for a full face. Unlike {@link #set} it does not refuse a wall with a
+     * cupboard or a sign against it, since nothing standing against or hanging on the wall loses its support; it still leaves
+     * reserved cells, doors and anything that is not vanilla alone.
+     */
+    private void reskin(int x,int y,int z,BlockState st){
+        var at=p(x,y,z);var old=l.getBlockState(at);
+        if(reserved(at)||l.getBlockEntity(at)!=null||old.getBlock() instanceof DoorBlock||old.getBlock() instanceof TrapDoorBlock||old.getBlock() instanceof BedBlock)return;
+        if(!old.isAir()&&!net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(old.getBlock()).getNamespace().equals("minecraft"))return;
+        if(!st.isCollisionShapeFullBlock(l,at))return;
+        l.setBlock(at,st,LabyrinthBuilder.flags());
+    }
+    private static BlockState skin(net.neoforged.neoforge.registries.DeferredBlock<RoomShell.Skin> block,Direction out){
+        return block.get().defaultBlockState().setValue(RoomShell.Skin.FACING,out);
     }
     private void hut(){
         // A dirt-roofed dugout with a braced entrance and a stone toe, retaining Holloway's rough shelter.

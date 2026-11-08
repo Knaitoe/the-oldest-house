@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/room_shell_trailer_roof"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/room_shell_trailer_roof_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/room_shell_trailer_roof_double"
+    }
+  }
+}

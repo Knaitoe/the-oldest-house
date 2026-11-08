@@ -1388,5 +1388,13 @@
   "block.the_oldest_house.room_shell_camp_grit": "Packed Grit",
   "block.the_oldest_house.room_shell_camp_slate": "Slate Ceiling",
   "block.the_oldest_house.room_shell_pew": "Chapel Pew",
-  "block.the_oldest_house.room_shell_causeway": "Causeway Boards"
+  "block.the_oldest_house.room_shell_causeway": "Causeway Boards",
+  "block.the_oldest_house.room_shell_trailer_siding": "Trailer Siding",
+  "block.the_oldest_house.room_shell_trailer_band": "Trailer Stripe",
+  "block.the_oldest_house.room_shell_trailer_skirt": "Trailer Skirt",
+  "block.the_oldest_house.room_shell_trailer_eave": "Trailer Drip Rail",
+  "block.the_oldest_house.room_shell_trailer_corner": "Trailer Corner Trim",
+  "block.the_oldest_house.room_shell_trailer_roof": "Trailer Roof",
+  "block.the_oldest_house.room_shell_trailer_lino": "Camper Linoleum",
+  "block.the_oldest_house.room_shell_trailer_lino_dark": "Camper Linoleum Tile"
 }

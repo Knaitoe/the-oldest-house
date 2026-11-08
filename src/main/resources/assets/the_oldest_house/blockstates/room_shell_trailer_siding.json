@@ -1,0 +1,87 @@
+{
+  "variants": {
+    "facing=north": [
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding_streaked"
+      }
+    ],
+    "facing=east": [
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding_streaked",
+        "y": 90
+      }
+    ],
+    "facing=south": [
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding_streaked",
+        "y": 180
+      }
+    ],
+    "facing=west": [
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_trailer_siding_streaked",
+        "y": 270
+      }
+    ]
+  }
+}
