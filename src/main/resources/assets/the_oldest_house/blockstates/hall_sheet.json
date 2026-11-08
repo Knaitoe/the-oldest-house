@@ -1,0 +1,396 @@
+{
+  "variants": {
+    "axis=x,kind=linen,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_0"
+    },
+    "axis=z,kind=linen,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_0",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_1"
+    },
+    "axis=z,kind=linen,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_1",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_2"
+    },
+    "axis=z,kind=linen,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_2",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_3"
+    },
+    "axis=z,kind=linen,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_3",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_4"
+    },
+    "axis=z,kind=linen,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_4",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_5"
+    },
+    "axis=z,kind=linen,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_5",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_6"
+    },
+    "axis=z,kind=linen,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_linen_lower_6",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_0"
+    },
+    "axis=z,kind=linen,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_0",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_1"
+    },
+    "axis=z,kind=linen,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_1",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_2"
+    },
+    "axis=z,kind=linen,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_2",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_3"
+    },
+    "axis=z,kind=linen,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_3",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_4"
+    },
+    "axis=z,kind=linen,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_4",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_5"
+    },
+    "axis=z,kind=linen,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_5",
+      "y": 90
+    },
+    "axis=x,kind=linen,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_6"
+    },
+    "axis=z,kind=linen,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_linen_upper_6",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_0"
+    },
+    "axis=z,kind=ticking,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_0",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_1"
+    },
+    "axis=z,kind=ticking,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_1",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_2"
+    },
+    "axis=z,kind=ticking,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_2",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_3"
+    },
+    "axis=z,kind=ticking,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_3",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_4"
+    },
+    "axis=z,kind=ticking,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_4",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_5"
+    },
+    "axis=z,kind=ticking,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_5",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_6"
+    },
+    "axis=z,kind=ticking,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_lower_6",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_0"
+    },
+    "axis=z,kind=ticking,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_0",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_1"
+    },
+    "axis=z,kind=ticking,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_1",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_2"
+    },
+    "axis=z,kind=ticking,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_2",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_3"
+    },
+    "axis=z,kind=ticking,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_3",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_4"
+    },
+    "axis=z,kind=ticking,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_4",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_5"
+    },
+    "axis=z,kind=ticking,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_5",
+      "y": 90
+    },
+    "axis=x,kind=ticking,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_6"
+    },
+    "axis=z,kind=ticking,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_ticking_upper_6",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower"
+    },
+    "axis=z,kind=towel,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_towel_lower",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_0"
+    },
+    "axis=z,kind=towel,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_0",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_1"
+    },
+    "axis=z,kind=towel,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_1",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_2"
+    },
+    "axis=z,kind=towel,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_2",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_3"
+    },
+    "axis=z,kind=towel,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_3",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_4"
+    },
+    "axis=z,kind=towel,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_4",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_5"
+    },
+    "axis=z,kind=towel,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_5",
+      "y": 90
+    },
+    "axis=x,kind=towel,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_6"
+    },
+    "axis=z,kind=towel,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_towel_upper_6",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=0,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=1,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=2,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=3,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=4,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=5,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower"
+    },
+    "axis=z,kind=bare,sway=6,upper=false": {
+      "model": "the_oldest_house:block/hall_sheet_bare_lower",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=0,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=1,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=2,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=3,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=4,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=5,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    },
+    "axis=x,kind=bare,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper"
+    },
+    "axis=z,kind=bare,sway=6,upper=true": {
+      "model": "the_oldest_house:block/hall_sheet_bare_upper",
+      "y": 90
+    }
+  }
+}

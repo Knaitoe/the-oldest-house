@@ -731,6 +731,61 @@ public final class ExplorationPassTests {
         ArchitectureTests.export(l,c,hall);
         h.succeed();
     }
+    /**
+     * 0.4.390, the laundry corridor (OrdinaryHalls, docs/LAUNDRY_CORRIDOR_0_4_390.md): an ordinary hall crossed through washing hung
+     * across it, which stops nobody and swings behind whoever parts it; two of its ways on are behind the sheets.
+     */
+    @GameTest(template="empty")
+    public static void theLaundryCorridorIsCrossedThroughWashingThatSwingsBehindWhoeverPartsIt(GameTestHelper h) {
+        var hall=LabyrinthPlace.LAUNDRY_HALL;var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(4140,8,280);
+        h.assertTrue(OrdinaryHalls.is(hall)&&LabyrinthPacing.ordinary(hall)&&LabyrinthDealer.onward(hall)&&hall.authored()&&LabyrinthBuilder.requiredDepth(hall)==0,"the laundry corridor is an ordinary hall, built whole, ready from the start");
+        h.assertTrue(LabyrinthDealer.grayWeight(hall,0)>0&&LabyrinthDealer.grayWeight(hall,LabyrinthPacing.STONE_DEPTH)==0,"it is dealt among the domestic halls, until the halls turn to stone");
+        h.assertTrue(!StaircaseProse.place(hall.id()).equals(StaircaseProse.place("unnamed_room_for_test")),"it has a name in prose");
+        OrdinaryHalls.build(l,b,hall);
+        for(var door:hall.doors())h.assertTrue(l.getBlockState(b.offset(door.rel())).getBlock() instanceof DoorBlock,"the laundry corridor keeps its native "+door.name()+" door");
+        var reached=walk(l,b.offset(0,0,-1));
+        for(var door:hall.doors())if(!door.name().equals("entry"))h.assertTrue(reached.contains(b.offset(door.rel()).relative(door.facing())),"a body walks to the "+door.name()+" door, through the washing");
+        // The washing: every line hung across, both halves, and nothing of it stops a body.
+        for(int i=0;i<OrdinaryHalls.LINES.length;i++)for(int x=-OrdinaryHalls.LAUNDRY_HALF;x<=OrdinaryHalls.LAUNDRY_HALF;x++){int z=OrdinaryHalls.LINES[i];
+            var low=l.getBlockState(b.offset(x,0,z));var up=l.getBlockState(b.offset(x,1,z));
+            h.assertTrue(HallSheetBlock.is(low)&&HallSheetBlock.is(up)&&!low.getValue(HallSheetBlock.UPPER)&&up.getValue(HallSheetBlock.UPPER)&&low.getValue(HallSheetBlock.AXIS)==Direction.Axis.X,"a line is strung across at "+x+","+z);
+            h.assertTrue(l.getBlockState(b.offset(x,-1,z)).isCollisionShapeFullBlock(l,b.offset(x,-1,z))&&l.getBlockState(b.offset(x,2,z)).isAir()&&l.getBlockState(b.offset(x,4,z)).isCollisionShapeFullBlock(l,b.offset(x,4,z)),"a floor under the washing, head room over its line and a ceiling: "+x+","+z);}
+        for(int line:new int[]{3,5})for(var kind:OrdinaryHalls.WASHING.get(line))h.assertTrue(kind==HallSheetBlock.Kind.LINEN||kind==HallSheetBlock.Kind.TICKING,"line "+line+" is hung full, wall to wall, with nothing to see through");
+        h.assertTrue(OrdinaryHalls.LINES[3]>OrdinaryHalls.EAST_DOOR.getZ()&&OrdinaryHalls.LINES[4]<OrdinaryHalls.EAST_DOOR.getZ(),"the east door is in the bay behind a full line");
+        var front=OrdinaryHalls.WEST_DOOR.relative(Direction.EAST);var sheet=l.getBlockState(b.offset(front));
+        h.assertTrue(HallSheetBlock.is(sheet)&&sheet.getValue(HallSheetBlock.KIND).cloth()&&sheet.getValue(HallSheetBlock.AXIS)==Direction.Axis.Z&&HallSheetBlock.is(l.getBlockState(b.offset(front).above())),"the west door is behind washing hung along the wall");
+        h.assertTrue(l.getBlockState(b.offset(front)).getShape(l,b.offset(front)).isEmpty(),"and a hand reaches through it to the door");
+        for(int z:OrdinaryHalls.LAMPS)h.assertTrue(TrialBlock.is(l.getBlockState(b.offset(0,3,z)),TrialBlock.Kind.STILL_LAMP,1),"a lamp is lit between the lines at "+z);
+        for(var at:OrdinaryHalls.BASKETS)h.assertTrue(OrdinaryHallBlock.is(l.getBlockState(b.offset(at)),OrdinaryHallBlock.Kind.BASKET),"a basket of washing stands at "+at);
+        for(double side:new double[]{-.65,.65}){var at=b.offset(0,0,-4);
+            h.assertTrue(l.noCollision(null,new AABB(at.getX()+.5+side-.3,at.getY()+.01,at.getZ()+.2,at.getX()+.5+side+.3,at.getY()+1.81,at.getZ()+.8)),"two bodies walk side by side");}
+        // Parting a sheet: from the near side it goes ahead of the body, the sheets either side stir, and it swings back and settles.
+        int z=OrdinaryHalls.LINES[3];var cell=b.offset(0,0,z);
+        var reader=h.makeMockServerPlayerInLevel();reader.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        reader.teleportTo(l,cell.getX()+.5,cell.getY(),cell.getZ()+.85,180,0);HallSheetBlock.push(l,cell,reader);
+        h.assertTrue(l.getBlockState(cell).getValue(HallSheetBlock.SWAY)==4&&l.getBlockState(cell.above()).getValue(HallSheetBlock.SWAY)==4,"walking north into it pushes the whole sheet north: "+l.getBlockState(cell));
+        h.assertTrue(l.getBlockState(cell.west()).getValue(HallSheetBlock.SWAY)==6&&l.getBlockState(cell.east()).getValue(HallSheetBlock.SWAY)==6,"the sheets either side stir");
+        // The hall stands far from the test's own ground, where nothing is ticked, so the swing is stepped as its ticks would step it.
+        var sheetBlock=OrdinaryHallRegistry.SHEET.get();
+        h.assertTrue(l.getBlockTicks().hasScheduledTick(cell,sheetBlock),"the swing goes on by itself, on the block's own ticks");
+        HallSheetBlock.step(l,cell);
+        h.assertTrue(l.getBlockState(cell).getValue(HallSheetBlock.SWAY)==4&&l.getBlockTicks().hasScheduledTick(cell,sheetBlock),"it stays pushed while the body is in it");
+        reader.teleportTo(l,cell.getX()+.5,cell.getY(),cell.getZ()-3.5,180,0);
+        var seen=new ArrayList<Integer>();
+        for(int i=0;i<4;i++){HallSheetBlock.step(l,cell);seen.add(l.getBlockState(cell).getValue(HallSheetBlock.SWAY));}
+        h.assertTrue(seen.equals(List.of(5,6,0,0))&&l.getBlockState(cell.above()).getValue(HallSheetBlock.SWAY)==0,"once the body is through it swings back past where it hung, and settles, both halves: "+seen);
+        for(int i=0;i<2;i++)HallSheetBlock.step(l,cell.west());
+        h.assertTrue(l.getBlockState(cell.west()).getValue(HallSheetBlock.SWAY)==0,"its neighbours settle too");
+        // From the far side it goes the other way; a bare stretch of line never moves.
+        reader.teleportTo(l,cell.getX()+.5,cell.getY(),cell.getZ()+.15,0,0);HallSheetBlock.push(l,cell,reader);
+        h.assertTrue(l.getBlockState(cell).getValue(HallSheetBlock.SWAY)==1,"walking south into it pushes it south");
+        var bare=b.offset(0,0,OrdinaryHalls.LINES[0]);h.assertTrue(l.getBlockState(bare).getValue(HallSheetBlock.KIND)==HallSheetBlock.Kind.BARE,"the first line has a bare stretch in the middle");
+        reader.teleportTo(l,bare.getX()+.5,bare.getY(),bare.getZ()+.85,180,0);HallSheetBlock.push(l,bare,reader);
+        h.assertTrue(l.getBlockState(bare).getValue(HallSheetBlock.SWAY)==0,"a bare line does not swing");
+        reader.discard();
+        try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
+        h.succeed();
+    }
     private static void halls(GameTestHelper h,List<LabyrinthPlace> list,int x0)throws Exception {
         var l=h.getLevel();int i=0;
         for(var hall:list) {

@@ -1,0 +1,8 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "line": "the_oldest_house:block/ordinary_hall/line",
+    "particle": "the_oldest_house:block/ordinary_hall/line"
+  },
+  "elements": []
+}

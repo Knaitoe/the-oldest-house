@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "line": "the_oldest_house:block/ordinary_hall/line",
+    "particle": "the_oldest_house:block/ordinary_hall/line"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        15,
+        7.5
+      ],
+      "to": [
+        16,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#line",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#line",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#line",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#line",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#line",
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#line",
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}
