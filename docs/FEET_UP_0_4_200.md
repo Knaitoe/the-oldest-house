@@ -90,8 +90,8 @@ All House writing, so it never genders the reader and never names a colour or an
 - **One fitting block.** `feet_up_fitting` carries every fitting by kind and stage. The furniture is the House's own household set.
 - **The rail is the stair's east fence line.** The banister with missing balusters became a fence-top line along the void, with the long way round as the easier line.
 - **The chairs move one cell, not across the room.** Each has one far and one near place.
-- **No keepsake yet.** The chalk stub that forgives short falls is left for later, as the proposal's open question five suggested. Inside the house, short falls already do no harm.
-- **No second stage yet.** The house later, with no floors, is left for later.
+- **No keepsake yet.** The chalk stub that forgives short falls is left for later, as the proposal's open question five suggested. Inside the house, short falls already do no harm. (Built in 0.4.383: [FEET_UP_LATER_0_4_383.md](FEET_UP_LATER_0_4_383.md).)
+- **No second stage yet.** The house later, with no floors, is left for later. (Built in 0.4.383 as a deep puzzle room: [FEET_UP_LATER_0_4_383.md](FEET_UP_LATER_0_4_383.md).)
 - **Tests run in the literary namespace** rather than their own.
 
 ## Tests

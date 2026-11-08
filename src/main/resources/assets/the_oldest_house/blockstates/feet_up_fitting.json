@@ -1199,6 +1199,66 @@
     "facing=west,kind=cobweb_corner,stage=3": {
       "model": "the_oldest_house:block/feet_up/cobweb_corner_0",
       "y": 270
+    },
+    "facing=north,kind=chalk_jar,stage=0": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0"
+    },
+    "facing=north,kind=chalk_jar,stage=1": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_1"
+    },
+    "facing=north,kind=chalk_jar,stage=2": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0"
+    },
+    "facing=north,kind=chalk_jar,stage=3": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0"
+    },
+    "facing=east,kind=chalk_jar,stage=0": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 90
+    },
+    "facing=east,kind=chalk_jar,stage=1": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_1",
+      "y": 90
+    },
+    "facing=east,kind=chalk_jar,stage=2": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 90
+    },
+    "facing=east,kind=chalk_jar,stage=3": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 90
+    },
+    "facing=south,kind=chalk_jar,stage=0": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 180
+    },
+    "facing=south,kind=chalk_jar,stage=1": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_1",
+      "y": 180
+    },
+    "facing=south,kind=chalk_jar,stage=2": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 180
+    },
+    "facing=south,kind=chalk_jar,stage=3": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 180
+    },
+    "facing=west,kind=chalk_jar,stage=0": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 270
+    },
+    "facing=west,kind=chalk_jar,stage=1": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_1",
+      "y": 270
+    },
+    "facing=west,kind=chalk_jar,stage=2": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 270
+    },
+    "facing=west,kind=chalk_jar,stage=3": {
+      "model": "the_oldest_house:block/feet_up/chalk_jar_0",
+      "y": 270
     }
   }
 }

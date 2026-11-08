@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 122;
+    public static final int VERSION = 123;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -152,7 +152,7 @@ public final class LabyrinthBuilder {
             // 0.4.199: the early puzzle rooms stand with the halls, ready before anyone can be offered them (PuzzleRooms.weight paces them);
             // the deep ones are built ahead of the strange depths they are offered from.
             case ALCOVE_HALL, OFFSET_HALL, SERVICE_LANDING, JOGGED_HALL, FORKED_HALL, PILLAR_HALL, ZIGZAG_HALL, VAULTED_HALL, CRUMBLED_HALL, BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, DRAFT_ROOM, DUST_HALL, PROPPED_DOOR, FAMILIAR_KITCHEN, FOLDING_ROOM, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, HEADER_TANK, TENSION_ROOM, RESONANT_PIPE, CLOCKWORK_ATTIC, COLD_PANTRY, SPHINX_VESTIBULE, YARD_TURNAROUND, YARD_REUNION, YARD_SURVEY, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE, SPEAK_UP -> 0;
-            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, VENT_ROOMS, SPRUNG_ROOMS, AIRING_ROOMS, FOLDED_ROOMS, FUSE_ROOMS, HEADER_TANKS, TENSION_ROOMS, RESONANT_PIPES, SETTLING_FLOOR, CLOCKWORK_ATTICS, WAY_OUT, YARD_STOCK, YARD_SURVEY_DEEP -> LabyrinthPacing.STRANGE_DEPTH;
+            case LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, VENT_ROOMS, SPRUNG_ROOMS, AIRING_ROOMS, FOLDED_ROOMS, FUSE_ROOMS, HEADER_TANKS, TENSION_ROOMS, RESONANT_PIPES, SETTLING_FLOOR, CLOCKWORK_ATTICS, FEET_UP_LATER, WAY_OUT, YARD_STOCK, YARD_SURVEY_DEEP -> LabyrinthPacing.STRANGE_DEPTH;
             case HOTEL_HALLWAY, COMPRESSION_PASSAGE, GRAVITY_DRIFT, DUPLICATE_PASSAGE, HOTEL, HOTEL_GROUNDS -> 14;
             case ABYSS_MAZE -> LabyrinthPacing.ABYSS_DEPTH;
             case DARK_LONG, DARK_FORK, DARK_MAZE, DARK_SPIRAL, DARK_EDGE -> DarkHalls.DARK_DEPTH;
@@ -585,6 +585,8 @@ public final class LabyrinthBuilder {
             case CLOCKWORK_ATTIC -> Clockwork.buildEarly(level, base);
             case CLOCKWORK_ATTICS -> Clockwork.buildDeep(level, base);
             case COLD_PANTRY -> ColdPantry.build(level, base);
+            // 0.4.383: Feet Up's house later (FeetUpRooms.buildLater), a deep puzzle room.
+            case FEET_UP_LATER -> FeetUpRooms.buildLaterPlace(level, base);
             case TENSION_ROOM -> TensionRooms.build(level, base);
             case TENSION_ROOMS -> DeepTensionRooms.build(level, base);
             case SPHINX_VESTIBULE -> Sphinx.build(level, base);

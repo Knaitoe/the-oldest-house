@@ -30,6 +30,18 @@ public final class FeetUpTexts {
     private static final String[] CHALK={"BASE","JUMP FROM THE ARM NOT THE SEAT","DON'T LOOK AT THE CHAIRS. THEY COME IF YOU DON'T LOOK","SNEAK ON THE RAIL","THE BOARDS GO. KEEP GOING","WAIT FOR ME"};
     public static String chalk(int line){return "Chalk on the wall: "+CHALK[Math.floorMod(line,CHALK.length)];}
     public static final String[] COUNT={"One.","Two.","Out."};
+    /** 0.4.383, the house later: the same page, a line added under the fifth rule in the smallest hand. */
+    public static final String LATER_RULES="The rules are where they were, on the hall table. Under the fifth, in the smallest hand, someone has added a sixth: 6. If you're the last one, count for yourself.";
+    /** In the house later nobody whispers the count. */
+    public static final String[] COUNT_LATER={"One. Nobody says it but you.","Two.","Out."};
+    /** The chalk in the house later: the same words, rubbed faint, and two of them answered. */
+    public static String chalkLater(int line){
+        int i=Math.floorMod(line,CHALK.length);
+        String more=switch(i){case 4->". Under it, newer: THERE AREN'T MANY LEFT";case 5->". Under it, in a bigger hand: WE DID";default->"";};
+        return "Chalk on the wall, rubbed faint: "+CHALK[i]+more;
+    }
+    /** What the tally on the rafter says in the house later. */
+    public static final String LATER_TALLY="On the rafter the tally is where it was, your own column among the others. In the column with no name there is one mark now, low down, where a small hand would reach.";
     /** What whoever kept the count whispers after an out, for where the reader last stood off the floor. */
     public static String hint(String area){return switch(area){
         case "front"->"The chair by the mantel comes if you look away from it.";
@@ -41,6 +53,11 @@ public final class FeetUpTexts {
         case "long_way"->"Our bed throws you higher than you come down.";
         case "boards"->"The boards go. Keep going. The press is a base.";
         default->"Start on the big chair.";};}
+    /** 0.4.383: what the reader remembers after an out in the house later, where there is no floor and no stair. */
+    public static String hintLater(String area){return switch(area){
+        case "hall"->"From the mat, the stool, then the table. The big chair is a base.";
+        case "boards"->"The boards that are left go as soon as they're stood on. Keep going. The press is a base.";
+        default->hint(area);};}
     private static final int CHILD_PAGE=110,PAGE=145;
     static List<String> pages(String text,int limit){
         var out=new ArrayList<String>();

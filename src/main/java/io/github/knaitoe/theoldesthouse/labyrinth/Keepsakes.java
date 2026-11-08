@@ -131,6 +131,7 @@ public final class Keepsakes {
             case "plain/Photo" -> "Held still, nothing far off can keep its eyes on you. The bird waited the same way.";
             case "borrasca/Compass" -> "She kept it close so she could find her way back. Away from the House it points to where you last fell; inside, to where lost things are kept.";
             case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall away from the House, what is in your hand stays with you.";
+            case "feet_up/ChalkStub" -> "Worn to a stub. Carried in the House, a short fall costs you nothing, as if the floor only ever counted.";
             default -> Artifacts.line(place, key);
         };
     }
@@ -399,6 +400,16 @@ public final class Keepsakes {
         int blocks = (int) Math.round(Math.hypot(d.x, d.z));
         if (blocks < 4) return "The needle swings round and round. It is here.";
         return "The needle settles " + net.minecraft.core.Direction.getNearest(d.x, 0, d.z).getName() + ", toward " + what + ". About " + blocks + " blocks.";
+    }
+    /**
+     * 0.4.383: the children's chalk (Feet Up), carried anywhere in the House: a fall of up to {@link #CHALK_FALL} blocks costs
+     * its keeper nothing. Counted only when the fall would have hurt and nothing else had already forgiven it.
+     */
+    public static final float CHALK_FALL = 6;
+    @SubscribeEvent(priority = EventPriority.LOW) public static void chalkFall(net.neoforged.neoforge.event.entity.living.LivingFallEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || e.getDistance() <= 3 || e.getDistance() > CHALK_FALL || e.getDamageMultiplier() <= 0 || ownWorld(p)) return;
+        if (!carries(p, LabyrinthPlace.FEET_UP, FeetUp.CHALK_KEY)) return;
+        e.setDamageMultiplier(0);var own = record(p);own.putInt("ChalkKept", own.getInt("ChalkKept") + 1);save(p, own);
     }
     public static CompoundTag record(ServerPlayer p) { return LabyrinthData.get(p.server).stateEntry(STATE, p.getUUID().toString()); }
     static void save(ServerPlayer p, CompoundTag own) { LabyrinthData.get(p.server).setStateEntry(STATE, p.getUUID().toString(), own); }

@@ -23,12 +23,14 @@ import net.minecraft.world.phys.shapes.*;
  * reader, see FeetUp), the children's mattress (which throws a reader back up higher than they came down), the pots on the
  * kitchen rack (a hand's width to stand on), the dumbwaiter's cage, the window seat, the counters and the press. The stove
  * burns a foot that touches its top. The lamps light the rooms and go out together when the shouting peaks.
+ *
+ * 0.4.383: the chalk jar in the attic, from which a reader who reached it takes one stub (FeetUp.takeChalk).
  */
 public final class FeetUpBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<FeetUpBlock> CODEC=simpleCodec(FeetUpBlock::new);
     public enum Kind implements StringRepresentable {
         LOOSE_BOARD,MATTRESS,POT,POT_RAIL,CAGE,WINDOW_SEAT,COUNTER,STOVE,FRIDGE,PRESS,LAMP,FLOOR_LAMP,CEILING_LIGHT,BATH,
-        RULES_PAGE,NOTEBOOK,CHALK,TALLY,BLANKETS,COBWEB_CORNER;
+        RULES_PAGE,NOTEBOOK,CHALK,TALLY,BLANKETS,COBWEB_CORNER,CHALK_JAR;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -41,8 +43,8 @@ public final class FeetUpBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return FeetUpRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,stage);}
     public static boolean is(BlockState s,Kind kind){return s.is(FeetUpRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
-    /** Which stages a kind is drawn in: the two halves, a lamp lit or out (the floor lamp: its base, its shade lit, its shade out), the bath's two ends, the four chalk words; a loose board that has fallen lies flat (1). */
-    public static int stages(Kind k){return switch(k){case LOOSE_BOARD,FRIDGE,PRESS,LAMP,CEILING_LIGHT,BATH->2;case FLOOR_LAMP->3;case CHALK->4;default->1;};}
+    /** Which stages a kind is drawn in: the two halves, a lamp lit or out (the floor lamp: its base, its shade lit, its shade out), the bath's two ends, the four chalk words; a loose board that has fallen lies flat (1); the chalk jar with its stubs, or empty (1). */
+    public static int stages(Kind k){return switch(k){case LOOSE_BOARD,FRIDGE,PRESS,LAMP,CEILING_LIGHT,BATH,CHALK_JAR->2;case FLOOR_LAMP->3;case CHALK->4;default->1;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     public static int light(BlockState s){
@@ -79,6 +81,7 @@ public final class FeetUpBlock extends HorizontalDirectionalBlock {
             case BLANKETS->Block.box(0,0,0,16,5,16);
             case CHALK,TALLY->box(f,0,0,15,16,16,16);
             case COBWEB_CORNER->box(f,8,8,8,16,16,16);
+            case CHALK_JAR->Block.box(5,0,5,11,8,11);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

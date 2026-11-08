@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.382** gives Goatman's trailer its own skin. Outside, ribbed aluminium with a faded stripe, a mud-splashed skirt, a drip rail, rounded corner trim and a coated roof; inside, the camper's veneer panelling, a ceiling between battens and a linoleum floor. Nothing moves. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_TRAILER_0_4_382.md](docs/TEXTURE_PASS_TRAILER_0_4_382.md). The previous candidate, 0.4.381, gave Holloway's hunt and the cave's chapel theirs ([docs/TEXTURE_PASS_CAMP_0_4_381.md](docs/TEXTURE_PASS_CAMP_0_4_381.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
+Development candidate **0.4.383** finishes Feet Up. A reader who reaches the attic can take one stub of the children's chalk from a jar there; carried in the House, it keeps a short fall from costing anything. And deep in the House, once they have been up that attic, a reader may find the same house later: no floors at all, the furniture hanging over the dark, nobody counting but them. It is a deep puzzle room, not a story. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 123. See [docs/FEET_UP_LATER_0_4_383.md](docs/FEET_UP_LATER_0_4_383.md). The previous candidate, 0.4.382, gave Goatman's trailer its own skin ([docs/TEXTURE_PASS_TRAILER_0_4_382.md](docs/TEXTURE_PASS_TRAILER_0_4_382.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
 
 ## Playing it
 

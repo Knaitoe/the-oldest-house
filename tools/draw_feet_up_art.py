@@ -1,10 +1,11 @@
 """Feet Up (0.4.200): the family house the children's game is played in.
 
-Draws, in native Minecraft pixels from fixed seeds: nine wall, floor, ceiling and roof materials; every fitting the game is
+Draws, in native Minecraft pixels from fixed seeds: ten wall, floor, ceiling and roof materials (0.4.383: the dark under the
+house later); every fitting the game is
 played over or round (one feet_up_fitting block, its models facing north and turned by its facing): the loose boards, the
 mattress, the pots and their rail, the dumbwaiter's cage, the window seat, the counters, the stove, the fridge, the linen
 press, three kinds of lamp lit and out, the bath, the rules on the hall table, the notebook, the chalk's four words, the
-tally on the rafter, the blankets and the cobwebs. Writes the models and block states with them. --check verifies
+tally on the rafter, the blankets, the cobwebs and (0.4.383) the chalk jar, full and empty. Writes the models and block states with them. --check verifies
 everything already written.
 """
 from pathlib import Path
@@ -132,6 +133,14 @@ def roof():
     return im
 
 
+def under():
+    """0.4.383: the dark under the house later, where its floors were: packed earth that takes no light, a little grit in it."""
+    im = new(base='#16130f', seed=91, spread=3); px = im.load(); rnd = random.Random(92)
+    for _ in range(9):
+        x, y = rnd.randrange(16), rnd.randrange(16); px[x, y] = shade('#2a241d', rnd.randint(-6, 6))
+    return im
+
+
 def materials():
     return {
         'floor': planks('#5e3f27', '#3a261a', 11, spread=4, knots=2),
@@ -143,6 +152,7 @@ def materials():
         'plaster': plaster(),
         'brick': brick(),
         'roof': roof(),
+        'under': under(),
     }
 
 
@@ -460,6 +470,21 @@ def cobweb():
     return im
 
 
+def jar():
+    """0.4.383: the glazed jar the chalk lives in, a band round its middle and the glaze run thin at the foot."""
+    im = new(base='#b9ae93', seed=311 + 99, spread=4); px = im.load()
+    for x in range(16):
+        px[x, 6] = shade('#7f6f55', 0); px[x, 7] = shade('#8c7c60', 0); px[x, 15] = shade('#9d9078', 0)
+    return im
+
+
+def chalk_stub():
+    im = new(base=CHALK, seed=421, spread=3); px = im.load()
+    for y in range(16):
+        px[0, y] = shade('#cfc8b6', 0)
+    return im
+
+
 # ---------------------------------------------------------------------------------------------------- models
 def element(lo, hi, textures, rotation=None, uv=None):
     faces = {}
@@ -523,6 +548,11 @@ def fitting_models():
     m['blankets_0'] = model([element([0, 0, 0], [16, 5, 16], {'all': 's', 'up': 't'})], {'s': 'blankets_side', 't': 'blankets_top'}, 'blankets_top')
     half = 8 * 2 ** .5 / 2
     m['cobweb_corner_0'] = model([element([round(12 - half, 3), 8, 11.99], [round(12 + half, 3), 16, 12.01], {'north': 'w', 'south': 'w'}, {'angle': 45, 'axis': 'y', 'origin': [12, 8, 12]})], {'w': 'cobweb'}, 'cobweb')
+    # 0.4.383: the chalk jar, with its stubs standing in it, and empty.
+    pot_body = [element([5, 0, 5], [11, 7, 11], {'all': 'j', 'up': 'd'}), element([5.5, 7, 5.5], [10.5, 8, 10.5], {'north': 'j', 'south': 'j', 'east': 'j', 'west': 'j'})]
+    m['chalk_jar_0'] = model(pot_body + [element([6.5, 7, 7], [7.5, 10, 8], {'all': 'c'}), element([8, 7, 6.5], [9, 9, 7.5], {'all': 'c'}), element([8.5, 7, 8.5], [9.5, 9.5, 9.5], {'all': 'c'})],
+                             {'j': 'jar', 'd': 'under', 'c': 'chalk_stub'}, 'jar')
+    m['chalk_jar_1'] = model(pot_body, {'j': 'jar', 'd': 'under'}, 'jar')
     return m
 
 
@@ -553,12 +583,13 @@ def textures():
     out['block/feet_up/tally.png'] = tally()
     out['block/feet_up/blankets_top.png'] = blankets(True); out['block/feet_up/blankets_side.png'] = blankets(False)
     out['block/feet_up/cobweb.png'] = cobweb()
+    out['block/feet_up/jar.png'] = jar(); out['block/feet_up/chalk_stub.png'] = chalk_stub()
     return out
 
 
 KINDS = ['loose_board', 'mattress', 'pot', 'pot_rail', 'cage', 'window_seat', 'counter', 'stove', 'fridge', 'press', 'lamp', 'floor_lamp', 'ceiling_light', 'bath',
-         'rules_page', 'notebook', 'chalk', 'tally', 'blankets', 'cobweb_corner']
-STAGES = {'loose_board': 2, 'fridge': 2, 'press': 2, 'lamp': 2, 'ceiling_light': 2, 'bath': 2, 'floor_lamp': 3, 'chalk': 4}
+         'rules_page', 'notebook', 'chalk', 'tally', 'blankets', 'cobweb_corner', 'chalk_jar']
+STAGES = {'loose_board': 2, 'fridge': 2, 'press': 2, 'lamp': 2, 'ceiling_light': 2, 'bath': 2, 'floor_lamp': 3, 'chalk': 4, 'chalk_jar': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 

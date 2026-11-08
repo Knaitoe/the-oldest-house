@@ -24,9 +24,9 @@ public final class FeetUpRegistry {
     /**
      * The ground floor's varnished boards and the hall's tiles (the floor, which is lava), the first floor's boards that hold,
      * the attic's rough boards, the papered and the painted walls, the plaster ceilings, the brick of the chimney breast and
-     * the slates of the roof seen from inside.
+     * the slates of the roof seen from inside. 0.4.383: the dark under the house later, where its floors were.
      */
-    public static final List<String> MATERIAL_NAMES=List.of("floor","hall_tile","board","attic","paper","paper_dark","plaster","brick","roof");
+    public static final List<String> MATERIAL_NAMES=List.of("floor","hall_tile","board","attic","paper","paper_dark","plaster","brick","roof","under");
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("feet_up_"+name,fixed(Blocks.OAK_PLANKS)));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FeetUpBlock>> FITTING_TYPE=CODECS.register("feet_up_fitting",()->FeetUpBlock.CODEC);
