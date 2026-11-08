@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/pinehook/cooler",
+    "particle": "the_oldest_house:block/pinehook/cooler"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        3
+      ],
+      "to": [
+        15,
+        11,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

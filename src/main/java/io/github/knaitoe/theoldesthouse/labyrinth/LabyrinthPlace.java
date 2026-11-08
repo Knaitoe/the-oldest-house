@@ -633,7 +633,9 @@ public enum LabyrinthPlace {
     /** Its deep attics: three bays and three trains that need running in the right order. */
     CLOCKWORK_ATTICS("clockwork_attics",Kind.GRAY,219,new BoundingBox(-9,-1,-32,9,8,0),grayDoors(2,5,-31)),
     /** 0.4.363, the Cold Pantry (ColdPantry, docs/COLD_PANTRY_0_4_363.md): a larder kept cold by an ice-box and warmed by shutters, its cold store and its frozen far door. */
-    COLD_PANTRY("cold_pantry",Kind.GRAY,220,new BoundingBox(-6,-1,-20,6,5,0),grayDoors(3,0,-13));
+    COLD_PANTRY("cold_pantry",Kind.GRAY,220,new BoundingBox(-6,-1,-20,6,5,0),grayDoors(3,0,-13)),
+    /** 0.4.364, Last Weekend at Pinehook (Pinehook, docs/PINEHOOK_0_4_364.md): the cabin in the pines by the lake, a weekend with friends, a host with a plan and a prank that goes wrong. */
+    PINEHOOK("pinehook",Kind.ONE_SHOT,221,new BoundingBox(-36,-5,-96,36,18,1),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

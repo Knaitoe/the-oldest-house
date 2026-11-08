@@ -150,6 +150,15 @@ LOOKS = {
     'literary_crossing_vera': Look('#d6ae90','#a8a296','short','#4e5a44','#3a3834','coat','#cfc3a2',eyes='#566660',age=2),
     # 0.4.349, In the Tall Grass: the driver of the car that pulls over, in a work jacket, on stranger phase 115.
     'literary_grass_driver': Look('#c49a7a','#4a3a2e','short','#6a5a3e','#3a3c42','jacket','#cfc4a8',eyes='#4a4a42',age=1,beard='stubble'),
+    # Last Weekend at Pinehook (0.4.364), on stranger phases 117 to 122: Casey in a loud short-sleeved shirt; Jude in his jacket, and in the
+    # costume, a boiler suit and a pale full-head rubber mask with crooked eyeholes, and the costume with the mask pulled off; Nina in a knit;
+    # Len, the owner, in a work flannel. Whoever wears the costume looks the same in it.
+    'literary_pinehook_casey': Look('#d2a283','#5a3a22','messy','#3a6a8a','#3a3f48','shirt','#e8d8b0',eyes='#4e5a62',sleeve=4),
+    'literary_pinehook_jude': Look('#8e5f45','#1e1814','close','#4a4a52','#2e3238','jacket','#c8c0b0',eyes='#3a3029',beard='shadow'),
+    'literary_pinehook_masked': Look('#d8d2c0','#d8d2c0','close','#3a3c34','#3a3c34','crew','#5a5c52',eyes='#141414',costume='slasher',sleeve=10),
+    'literary_pinehook_coverall': Look('#8e5f45','#1e1814','close','#3a3c34','#3a3c34','crew','#5a5c52',eyes='#3a3029',beard='shadow',sleeve=10),
+    'literary_pinehook_nina': Look('#dcb49a','#2a2220','long','#5a4a5e','#2e3440','knit','#d8d0c0',eyes='#4a5a52'),
+    'literary_pinehook_len': Look('#c8a088','#a8a49a','receding','#6a5a3a','#3a3c40','flannel','#a89a7a',eyes='#5a5c58',age=2,beard='shadow'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
@@ -339,6 +348,14 @@ DIGITS={'0':['111','101','101','101','111'],'1':['010','110','010','010','111'],
 def costume_face(look):
     """A Lake Witch costume's face, if it covers or changes the wearer's own: a rubber mask, a cardboard one, face paint."""
     c=set(look.costume.split())
+    if 'slasher' in c:
+        # 0.4.364, Pinehook: a pale rubber slasher mask over the whole head, its eyeholes cut crooked, a slit for a mouth, a seam at the jaw.
+        im=panel((16,16),'#d8d2c0','skin');d=ImageDraw.Draw(im)
+        d.rectangle((3,6,5,8),fill='#141414');d.rectangle((10,7,12,9),fill='#141414')
+        d.line((7,9,8,9),fill='#bcb6a4');d.line((7,10,7,10),fill='#a8a290')
+        d.line((5,12,10,12),fill='#3a3830');d.line((1,14,14,14),fill='#bab4a2')
+        for y in (2,4):d.line((4,y,11,y),fill='#cac4b2')
+        return im
     if 'mask' in c:
         im=panel((16,16),'#7f8b6d','skin');d=ImageDraw.Draw(im)
         for x in (2,9):d.rectangle((x,5,x+4,9),fill='#22261e');d.point((x+2,7),fill='#c8c070')

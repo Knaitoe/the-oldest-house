@@ -4420,5 +4420,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pantry.seal"
+  },
+  "pinehook.knock": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pinehook/knock",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pinehook.knock"
+  },
+  "pinehook.breaker": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pinehook/breaker",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pinehook.breaker"
+  },
+  "pinehook.crash": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pinehook/crash",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pinehook.crash"
+  },
+  "pinehook.flash": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pinehook/flash",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pinehook.flash"
+  },
+  "pinehook.tape": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pinehook/tape",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pinehook.tape"
   }
 }

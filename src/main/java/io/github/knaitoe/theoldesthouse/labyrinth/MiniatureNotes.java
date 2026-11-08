@@ -192,6 +192,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.REPLACEMENT, "A street of matchbox houses, every window taped over but one house's, and on its door a collar no bigger than a ring."),
         Map.entry(LabyrinthPlace.PEOPLE_LIGHTS, "A doll's house three storeys high and one room wide, a tiny wheelchair at the foot of its stair, and a pinhead figure at the top rail."),
         Map.entry(LabyrinthPlace.TALL_GRASS, "A strip of road no longer than a hand, a toy wagon on its shoulder, and beyond the ditch a block of grass so tall the figure set in it is lost."),
+        Map.entry(LabyrinthPlace.PINEHOOK, "A cabin among pine needles stood on end for trees, a porch light no bigger than a seed, and a dock of matchsticks out over a glass lake, a speck standing at the far end of it."),
         Map.entry(LabyrinthPlace.LAST_CROSSING, "A flood station the size of a matchbox on a mound of plaster, a flat ferry no longer than a thumbnail against its landing, and a thread of wire run across a strip of glass to a pinhead lamp on the far side."),
         Map.entry(LabyrinthPlace.GROWING_THINGS, "A back yard the size of a palm behind a paper fence, a thread of washing line, and the lawn stippled so thick with tiny pins that the house at the end of it is up to its windows."),
         Map.entry(LabyrinthPlace.MARSH_SUPPER, "A farmhouse no bigger than a loaf in a square of corn cut into paths, its upstairs windows lit, a table inside laid for more chairs than it has."),

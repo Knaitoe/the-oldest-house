@@ -71,6 +71,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.TALL_GRASS&&!TallGrass.dealable(d,p))return false;
         if(place==LabyrinthPlace.GROWING_THINGS&&!GrowingThings.dealable(d,p))return false;
         if(place==LabyrinthPlace.LAST_CROSSING&&!LastCrossing.dealable(d,p))return false;
+        if(place==LabyrinthPlace.PINEHOOK&&!Pinehook.dealable(d,p))return false;
         // 0.4.218: the street is dealt only to a reader who has a companion following them.
         if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;
         // 0.4.209: the dark halls' horrors are dealt only in the dark band.
@@ -123,6 +124,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.TALL_GRASS){TallGrass.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.GROWING_THINGS){GrowingThings.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_CROSSING){LastCrossing.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.PINEHOOK){Pinehook.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.REPLACEMENT){Replacement.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
     }
     public static ItemStack mark(ServerPlayer p,LabyrinthPlace place,String key,ItemStack item){var s=VignetteYields.mark(item.copy(),place.id());CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(OWNER,p.getUUID());t.putString(KEY,key);t.putString(PLACE,place.id());});if(place==LabyrinthPlace.BORRASCA&&key.equals("Evidence"))BorrascaStory.markEvidence(p,s);Keepsakes.inscribe(s,place,key);return s;}
@@ -283,6 +285,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.TALL_GRASS)TallGrass.talk(p,actor);
         else if(place==LabyrinthPlace.GROWING_THINGS)GrowingThings.talk(p,actor);
         else if(place==LabyrinthPlace.LAST_CROSSING)LastCrossing.talk(p,actor);
+        else if(place==LabyrinthPlace.PINEHOOK)Pinehook.talk(p,actor);
         else if(place==LabyrinthPlace.PLACE_FOR_YOU)PlaceForYou.talk(p,actor);
         else if(place==LabyrinthPlace.SECOND_PERSON)SecondPerson.talk(p,actor);
         else if(place==PittGame.PLACE&&actor.role()==LiteraryActor.STRANGER&&PittGame.bradPhase(actor.phase()))PittGame.talk(p);
@@ -375,7 +378,7 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();MarshSupper.clearAll();TallGrass.clearAll();GrowingThings.clearAll();LastCrossing.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();LastSwimmer.clearAll();PeopleLights.clearAll();PlaceForYou.clearAll();SecondPerson.clearAll();DeerRoad.clearAll();StateRoute.clearAll();Talk.clearAll();SourceMark.clearAll();VacantPossession.clearAll();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();MarshSupper.clearAll();TallGrass.clearAll();GrowingThings.clearAll();LastCrossing.clearAll();Pinehook.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();LastSwimmer.clearAll();PeopleLights.clearAll();PlaceForYou.clearAll();SecondPerson.clearAll();DeerRoad.clearAll();StateRoute.clearAll();Talk.clearAll();SourceMark.clearAll();VacantPossession.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}
