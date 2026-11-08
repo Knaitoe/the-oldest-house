@@ -24,6 +24,11 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.gametest.*;
 
+/**
+ * The cases run in three batches of six. Every case builds its own staircase fixture and holds its chunks, and each ticket keeps a
+ * wide ring of part-loaded chunks round it; eighteen at once held some 22,000 interior chunks, which ran the full suite out of
+ * memory in run 1481.
+ */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_multiplayer_story")
 @PrefixGameTestTemplate(false)
 public final class MultiplayerStoryTests {
@@ -177,7 +182,7 @@ public final class MultiplayerStoryTests {
         f.reload();h.assertTrue(StaircaseFire.open(FinaleProgress.player(p.server,p.getUUID()))&&StaircaseFire.open(FinaleProgress.player(peer.server,peer.getUUID()))&&!StaircaseFire.take(p),"both personal descents survive native saved-data reload without another binding");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
     public static void OnlyTheExplorersOwnBoundLeafCanLightTheirFire(GameTestHelper h) { run(h,521000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_owner");var peer=f.player(h,"leaf_borrower");ready(p,f);ready(peer,f);var book=issued(p);
         p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(Items.PAPER,4));
@@ -194,7 +199,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(find(p,f,1)&&burn(p,f,1)&&StaircaseFire.flames(FinaleProgress.player(p.server,p.getUUID()))==2,"the held original continues after native saved-data reload");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
     public static void ALeafComesLooseOnlyInOrderIntoItsCarriedBindingAndTheDarkHoldsTheNext(GameTestHelper h) { run(h,521500,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_order");ready(p,f);
         h.assertTrue(StaircaseStory.leafState(p,0)==StaircaseStory.Take.NO_BINDING&&!find(p,f,0),"a leaf stays blank until the reader has their binding");
@@ -211,7 +216,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(!StaircaseFire.tick(p,f.origin,record)&&StaircaseStory.found(StaircaseStory.record(p))==2&&!find(p,f,1),"the lit hearth lets the actual nearby next leaf bind automatically, exactly once");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
     public static void ALostBindingIsBoundAgainWithoutRefillingAndTheOldCopyGoesCold(GameTestHelper h) { run(h,522000,MultiplayerStoryTests::holdLeaves,f->{
         StaircaseFire.dress(f.level,f.origin);layLeaves(f);var p=f.player(h,"leaf_lost");ready(p,f);var book=issued(p);p.setItemInHand(InteractionHand.OFF_HAND,book);
         h.assertTrue(find(p,f,0)&&burn(p,f,0)&&find(p,f,1),"the reader burns the first leaf and binds the second");
@@ -225,7 +230,7 @@ public final class MultiplayerStoryTests {
         p.setItemInHand(InteractionHand.OFF_HAND,again);h.assertTrue(burn(p,f,1)&&StaircaseStory.shelf(p)==StaircaseStory.Shelf.CARRIED,"the rebound original burns and the shelf gives nothing more while it is carried");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
     public static void EarlierOriginalsKeepTheLeavesTheyAlreadyHeld(GameTestHelper h) { run(h,526500,f->{
         StaircaseFire.dress(f.level,f.origin);var p=f.player(h,"legacy_leaf");var peer=f.player(h,"legacy_story");ready(p,f);ready(peer,f);
         var old=StaircaseFire.book(p.getUUID(),3);old.set(DataComponents.CUSTOM_NAME,Component.literal("An old original"));
@@ -243,7 +248,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(pages(earlier).size()==5&&pages(earlier).get(1).raw().getString().equals("Chapter 1")&&burn(peer,f,1),"a 0.4.44 account keeps its four written chapters, gains a title leaf and burns on");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
     public static void CancelingOneNativeStaircaseCrossingDoesNotCommitItOrCancelThePeer(GameTestHelper h) { run(h,522500,f->{
         var p=f.player(h,"cancel_cross");var peer=f.player(h,"live_cross");
         var from=new LabyrinthData.Door("fixture.outside",HouseDimensions.OUTSIDE,f.source,Direction.SOUTH,LabyrinthData.RETURN,false);
@@ -255,7 +260,7 @@ public final class MultiplayerStoryTests {
         HouseTransitionEvents.onPlayerTick(new PlayerTickEvent.Post(peer));h.assertTrue(f.data().returnDepth(peer.getUUID())==1,"a completed handoff cannot push another return");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
     public static void DyingDuringAFadeKeepsTheReturnRouteWhileTheLivePeerCompletes(GameTestHelper h) { run(h,523000,f->{
         var p=f.player(h,"dead_fade");var peer=f.player(h,"live_fade");for(var who:List.of(p,peer))who.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+.5,0,0);
         var target=new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(f.source.north(8)),180,false);
@@ -265,7 +270,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(peer.position().distanceToSqr(target.pos())<.01&&f.data().returnDepth(peer.getUUID())==0,"the living peer's independent fade arrives and consumes one route");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_c",timeoutTicks=2400)
     public static void AReconnectedNativePlayerCannotInheritTheOldConnectionsQueuedFade(GameTestHelper h) { run(h,523500,f->{
         var p=f.player(h,"reconnect_fade");p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+.5,0,0);
         var back=new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(f.source.north(8)),180,false);f.data().pushReturn(p.getUUID(),back);LabyrinthDoors.sendBack(p,1,1,1);
@@ -274,7 +279,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(replacement.position().equals(before)&&f.data().returnDepth(id)==1,"the same UUID on a new native connection keeps its route and cannot inherit the old entity's pending move");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_c",timeoutTicks=2400)
     public static void ACompletedFadeCarriesOnlyTheReadersLivingFollowingCompanion(GameTestHelper h) { run(h,524000,f->{
         var p=f.player(h,"fade_pet_owner");var peer=f.player(h,"fade_pet_peer");p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+.5,0,0);
         var dog=EntityType.WOLF.create(f.level);var stay=EntityType.CAT.create(f.level);var foreign=EntityType.WOLF.create(f.level);
@@ -286,7 +291,7 @@ public final class MultiplayerStoryTests {
         }finally{dog.discard();stay.discard();foreign.discard();}
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_c",timeoutTicks=2400)
     public static void AnActualOverworldBreakBelongsToItsMinerAndCanceledWorkAddsNoMemory(GameTestHelper h) { run(h,524500,f->{
         var p=f.player(h,"world_miner");var peer=f.player(h,"world_peer");var world=p.server.overworld();var at=new BlockPos(524500,80,524500);
         f.chunks.hold(world,new net.minecraft.world.phys.AABB(at).inflate(2));f.put(world,at,Blocks.STONE.defaultBlockState());p.teleportTo(world,at.getX()+.5,at.getY()+1,at.getZ()+.5,0,0);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.IRON_PICKAXE));
@@ -298,7 +303,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(broke.apply(other).isEmpty()&&world.getBlockState(at).is(Blocks.GOLD_BLOCK),"a canceled native break cannot become a recorded action");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_c",timeoutTicks=2400)
     public static void AFailedStaircaseRetreatKeepsItsPhaseAndWaypointUntilNativeArrival(GameTestHelper h) { run(h,525000,f->{
         var p=f.player(h,"return_retry");ready(p,f);f.data().clearReturns(p.getUUID());
         var back=new LabyrinthData.Waypoint(HouseDimensions.OUTSIDE,Vec3.atBottomCenterOf(f.source),180,false);f.data().pushReturn(p.getUUID(),back);
@@ -310,7 +315,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(p.serverLevel()==f.outside&&f.data().returnDepth(p.getUUID())==0&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.UNSEEN,"the confirmed native retreat consumes once and resets only this explorer's phase");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_c",timeoutTicks=2400)
     public static void AForeignArrivalCannotRerollTheSavedExplorersHallwayMap(GameTestHelper h) { run(h,525500,f->{
         var p=f.player(h,"map_owner");var peer=f.player(h,"map_peer");var place=LabyrinthPlace.JUNCTION;var base=LabyrinthPlaces.base(f.origin,place);
         var doors=new ArrayList<LabyrinthData.Door>();
@@ -325,7 +330,7 @@ public final class MultiplayerStoryTests {
         h.assertTrue(before.equals(after)&&before.stream().allMatch(Objects::nonNull),"a peer taking another route and a native reload do not reroll the original explorer's remembered door destinations");
     }); }
 
-    @GameTest(template="empty",batch="multiplayer_story",timeoutTicks=2400)
+    @GameTest(template="empty",batch="multiplayer_story_c",timeoutTicks=2400)
     public static void ANativeRespawnCannotCompleteTheDeadPlayersPreparedDoorCrossing(GameTestHelper h) { run(h,526000,f->{
         var p=f.player(h,"respawn_cross");p.teleportTo(f.outside,f.source.getX()+.5,f.source.getY(),f.source.getZ()-1.5,0,0);
         var from=new LabyrinthData.Door("fixture.respawn",HouseDimensions.OUTSIDE,f.source,Direction.SOUTH,LabyrinthData.RETURN,false);FinaleController.enter(p,from);
