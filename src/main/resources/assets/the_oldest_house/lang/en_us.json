@@ -1314,5 +1314,7 @@
   "item.the_oldest_house.pinehook_hook": "Boat hook",
   "item.the_oldest_house.pinehook_paddle": "Paddle",
   "item.the_oldest_house.pinehook_key": "Small key",
-  "item.the_oldest_house.pinehook_envelope": "Len's envelope"
+  "item.the_oldest_house.pinehook_envelope": "Len's envelope",
+  "advancements.the_oldest_house.account.pinehook.title": "The weekend at Pinehook",
+  "advancements.the_oldest_house.account.pinehook.description": "I spent a weekend at a cabin by a lake where the host had planned every scare, and somebody else had planned one more."
 }

@@ -200,7 +200,65 @@ public final class PinehookTexts {
         default->"Hiss.";
     };}
 
-    // ------------------------------------------------------------------------------------------------ the account (provisional)
+    // ------------------------------------------------------------------------------------------------ 0.4.367, the crisis
+    // Jude, cut and never dressed, through the night; asking someone to stay; taken across.
+    public static final String[] JUDE_COLD={"I'm all right. I'm all right. It's just cold in here.","Is it cold in here? Why is it so cold?","I think I'm going to sit down. I'm going to sit down on the floor for a bit."};
+    public static final String JUDE_STAY="Don't leave me in here on my own. Please.";
+    public static final String Q_STAY="I'll stay with you.",STAY_WOUNDED="It was Nina. In the shed. I didn't say before. I know her gloves.",
+        STAY_WITNESSED="You saw her too. Nina. With a knife. Don't let her near me.",STAY_PREVENTED="Thanks. Somebody stood behind that shed a long time tonight. I keep thinking about it.";
+    public static final String Q_ACROSS="The boat's ready. Casey can row you across to the store.",ACROSS_ANSWER="There's a phone at the store. Okay. Okay. Help me up.",
+        CASEY_TAKES_JUDE="I'll take him. Go on. I've got him.";
+    public static final String ACROSS_CUE="Casey and Jude go down the dock together, Jude leaning on him, and Casey rows them out toward the lights of the store.";
+    // Casey: owning up, or hiding it.
+    public static final String CASEY_CONFESS="Everybody listen. The mask was mine. I set all of it up: the knocking, the breaker, Jude in the costume. Not the shed. Not the knife. Somebody else did that, and I helped them by keeping my mouth shut.";
+    public static final String CASEY_SINK_CUE="Casey goes down the dock to the rowboat, lifts the bundle out from under the tarp and lets it go over the side.",
+        CASEY_GOES_CUE="Casey gets into the rowboat, fumbles the rope loose and rows out into the dark on his own, badly, toward the far shore.";
+    public static final String CASEY_HOLDS="I've got her arm. I've got her. Get the knife.";
+    // Nina.
+    public static final String NINA_GOES_CUE="Nina gets up without a word and goes out the back.",NINA_SLIP_CUE="Nina casts the rope off the cleat, hauls on it, and goes into the water. Across the way the slip gate swings open.",
+        NINA_LEAVES_CUE="Nina goes out through the slip with the envelope, into the black water, and doesn't come up anywhere you can see.";
+    public static final String NINA_GOING="Go back inside. This isn't anything to do with you.",NINA_CLEAT="Move. This isn't anything to do with you.",
+        NINA_STANDOFF="Get out of the way. This isn't about you. It was never about any of you.",NINA_WHERE="Where is it? It isn't in the safe. One of you has got it.",
+        NINA_GIVES_UP="...Fine. Keep him. He's all yours.",NINA_HELD="Let go of me. Let go. ...All right. All right.";
+    public static final String NINA_HELD_TALK="You can let go. I'm not going anywhere.",NINA_DISARMED_TALK="It's done. Whatever happens now, it's done.",NINA_GAVE_UP_TALK="Don't. Just don't.",
+        NINA_DAWN_TALK="I'm going to sit here until somebody tells me what happens next.";
+    public static final String Q_WHY="What did Len do to you?",WHY="He took pictures of my car outside a petrol station, the night it was robbed. Two winters ago. Every month since, he sends me a date, and I pay it. This weekend he wanted to watch me pay it.";
+    public static final String Q_KNIFE="Give me the knife.",KNIFE_NO="Not while he's still got it. You don't know what it's like.",KNIFE_YES="...Take it. Take it away from me.";
+    public static final String Q_BURNED="It's burned. I put it in the fire.",BURNED_ANSWER="...All of it? ...Then take this. Take it away from me.";
+    public static final String Q_OPEN="Everyone knows what's in it. Casey knows.",OPEN_ANSWER="Then it's not worth anything to him any more. Is it. ...Take it.";
+    public static final String Q_GIVE="Here. It's what you came for.",GIVE_ANSWER="...";
+    public static final String NINA_BURNS_CUE="Nina takes the envelope, crouches at the fire and feeds it in, page by page. She doesn't look at anyone.",
+        NINA_TEARS_CUE="Nina takes the envelope and tears it across, and across again, and lets the pieces go into the dark.";
+    public static final String Q_HELP="I'll open it for you.",HELP_ANSWER="Thank you. Don't watch.";
+    public static final String Q_HOLD="Get hold of her.";
+    public static final String KNIFE_GIVEN_CUE="She holds the knife out to you, handle first, and lets go of it.",HELD_CUE="You get hold of her, and hold on, until she stops pulling.",
+        CUT_CUE="She's quicker than you. Something hot opens along your arm, and she's past.";
+    public static final String ENVELOPE_BURN_CUE="The photographs curl first, then the cutting. The notebook takes longest.";
+    // Len.
+    public static final String LEN_RUNS="She's in! She's in here! Get out of my way!",LEN_ATTACKED="Who's there? No. No, no, no—",LEN_CRY="Help me! Somebody! She's in here!",
+        LEN_QUIET_CUE="Down at the boathouse, the shouting stops.";
+    public static final String LEN_AFTER="She'd have killed me. You all saw. She's not right in the head.",LEN_WANTS="Have you got my envelope? Somebody's been in my safe. Give it here.";
+    public static final String Q_GIVE_LEN="Give him his envelope back.",GIVE_LEN_ANSWER="Thank you. That's mine. That's nobody's business but mine.";
+    public static final String Q_REFUSE_LEN="No. It isn't yours to keep.",REFUSE_LEN_ANSWER="You don't know what that is. You don't know what she did.";
+    public static final String LEN_DEAD_LOOK="Len, on the boathouse floor. He isn't moving.",JUDE_DEAD_LOOK="Jude, on the kitchen floor where he sat down in the night. He isn't breathing.";
+    // First light.
+    public static final String DAWN_CUE="The sky goes grey over the far shore, and the lake comes up out of the dark.",JUDE_DEAD_CUE="Jude is on the kitchen floor where he sat down in the night. He isn't breathing.";
+    public static final String LEN_STORY="It was the actor. In the mask. You all saw the mask out on the dock. Whatever happened to him, he did it to himself.",
+        NINA_STORY="Casey said it himself. Jude was in the mask all night. It was Jude.";
+    public static final String Q_CHALLENGE="That isn't what happened.",CHALLENGE_ANSWER="Then you tell them what happened. See who believes you.",
+        Q_AGREE="That's what happened.",AGREE_ANSWER="That's right. That's what happened.";
+    public static final String CASEY_DAWN="I'm going to drive to the store and call somebody. All of it. The mask, the knife, the safe. I'm not leaving any of it out.",
+        JUDE_DAWN="Somebody's going to call somebody. All of it. The mask, the knife, the safe.",
+        CASEY_DAWN_PERFORMANCE="I can't. I can't say anything. I don't know what to say.",
+        CASEY_DAWN_PROTECTED="Len says it was just her. Is that right? Is that all it was?",
+        CASEY_WHO_OPENED="Who opened the slip? Somebody opened it. Somebody let her in there.",CASEY_DAWN_NINA="It's over. Isn't it? Somebody tell me it's over.";
+    public static final String Q_ADMIT="I did.",ADMIT_ANSWER="...Why? Why would you do that?";
+    public static final String LEN_DAWN="She went for me in the night. She's not right. That's all anyone needs to say about it.",
+        LEN_DAWN_EXPOSED="You've had your look. Happy? You don't know the half of what she did.",LEN_DAWN_NINA="My safe. Somebody's been in my safe.";
+    public static final String Q_NOT_ALL="That's not all that happened.",NOT_ALL_ANSWER="Prove it.";
+    public static final String JUDE_DAWN_TALK="I'm still here. I didn't think I would be.";
+
+    // ------------------------------------------------------------------------------------------------ the account
     /** What a reader's evening comes to, from their own record: the part they took, what they did and saw, and how the shed went. The last
      * slice writes the whole weekend's account; until then this is the evening as far as it goes. */
     public static ItemStack account(String name,net.minecraft.nbt.CompoundTag own){
@@ -241,8 +299,66 @@ public final class PinehookTexts {
         if(own.getBoolean("FinishedJunction"))lines.add("I stood out by the junction box in the dark until both ways were lit.");
         else if(own.getBoolean("ThrewDock"))lines.add("I threw the junction switch to light the dock.");
         else if(own.getBoolean("ThrewRear"))lines.add("I threw the junction switch to light the back of the cabin.");
-        lines.add("That was the first night.");
-        return book("The account: the weekend at Pinehook",name,List.of(String.join(" ",lines)));
+        if(!own.contains("Family")){lines.add("That was the first night.");return book("The account: the weekend at Pinehook",name,LookoutTexts.pages(String.join(" ",lines),150));}
+        crisis(lines,own);
+        morning(lines,own);
+        lines.add("Nobody went back to Pinehook after that.");
+        return book("The account: the weekend at Pinehook",name,LookoutTexts.pages(String.join(" ",lines),150));
+    }
+    /** 0.4.367: the crisis as this reader had it. */
+    static void crisis(List<String> lines,net.minecraft.nbt.CompoundTag own){
+        if(own.getBoolean("HeardConfession"))lines.add("When it came to it, Casey stood in the kitchen and told everyone the mask was his.");
+        if(own.getBoolean("SawCaseySink"))lines.add("I saw Casey go down to the rowboat and drop the bundle over the side.");
+        if(own.getBoolean("SawCaseyGo"))lines.add("Then he took the rowboat out into the dark on his own.");
+        if(own.getBoolean("StayedWithJude"))lines.add(own.getBoolean("HeardJudeName")?"I stayed with Jude. He told me it was Nina; he knew her gloves.":"I stayed with Jude.");
+        if(own.getBoolean("SentJudeAcross"))lines.add("The boat was ready, and Casey rowed Jude across to the store, where there's a phone.");
+        else if(own.getBoolean("SawJudeGo"))lines.add("Casey rowed Jude across to the store, where there's a phone.");
+        if(own.getBoolean("SawNinaGo"))lines.add("Nina got up without a word and went out the back.");
+        if(own.getBoolean("GuardedCleat"))lines.add("I stood by the cleat on the dock so she couldn't open the slip.");
+        if(own.getBoolean("AskedNinaWhy"))lines.add("I asked her what Len had done to her. She told me: a car, a petrol station, a year of paying for it.");
+        if(own.getBoolean("HelpedNina")&&!own.getBoolean("GaveNinaEnvelope"))lines.add("I opened the slip for her.");
+        if(own.getBoolean("HeardLenAttacked"))lines.add("From the boathouse, Len shouting for help.");
+        if(own.getBoolean("InterruptedAttack"))lines.add("I went in while she was at him, and she stopped.");
+        if(own.getBoolean("LetLenOut"))lines.add("I lifted the brace off the door and Len ran.");
+        else if(own.getBoolean("SawLenRun"))lines.add("Len came out of the boathouse running.");
+        if(own.getBoolean("HeardLenGoQuiet")&&own.getBoolean("AllLenDead"))lines.add("Then the shouting stopped.");
+        if(own.getBoolean("FacedNina")&&!own.getBoolean("InterruptedAttack"))lines.add("I stood in front of Nina while she had the knife.");
+        if(own.getBoolean("CutByNina"))lines.add("When I tried to get hold of her on my own, she cut me and went past.");
+        if(own.getBoolean("HeldNina"))lines.add("We got hold of her, and held on until she stopped.");
+        if(own.getBoolean("DisarmedNina"))lines.add(own.getBoolean("ToldNinaBurned")?"When I told her the envelope was ash, she gave me the knife.":own.getBoolean("ToldNinaOpen")?"When I told her everyone knew what was in the envelope, she gave me the knife.":"She gave me the knife.");
+        if(own.getBoolean("GaveNinaEnvelope"))lines.add("I gave her Len's envelope, and she destroyed it in front of me.");
+        else if(own.getBoolean("SawNinaBurn"))lines.add("Somebody gave Nina the envelope, and she destroyed it.");
+        if(own.getBoolean("BurnedEnvelope"))lines.add("I put Len's envelope in the fire myself.");
+        if(own.getBoolean("SawNinaLeave"))lines.add("She went out through the slip with the envelope, into the lake.");
+        if(own.getBoolean("GaveLenEnvelope"))lines.add("I gave Len his envelope back.");else if(own.getBoolean("RefusedLen"))lines.add("Len asked me for his envelope. I didn't give it to him.");
+    }
+    /** 0.4.367: the morning: what everyone could see, how it came out, and this reader's part in it. */
+    static void morning(List<String> lines,net.minecraft.nbt.CompoundTag own){
+        if(own.getBoolean("AllJudeDead"))lines.add("In the morning Jude was on the kitchen floor where he'd sat down in the night, and he wasn't breathing. Nobody had stopped the bleeding.");
+        switch(own.getString("Family")){
+            case "exposed"->{
+                lines.add("At first light Len's envelope was out where anyone could read it, and he wasn't going to get another month out of anybody.");
+                lines.add(own.getBoolean("AllNinaHeld")?"Nina sat on the porch steps where we'd put her, not fighting any more.":own.getBoolean("AllNinaDisarmed")?"Nina sat on the porch steps without her knife.":"Nina sat on the porch steps and didn't say anything.");
+                lines.add(own.getBoolean("AllCaseyGone")?"Casey was across the lake, telling it to somebody on the phone.":"Casey said sorry to everyone, one at a time. Nobody was saying it back yet.");}
+            case "nina"->{
+                if(own.getBoolean("AllLenDead")){
+                    lines.add("Len didn't come out of the boathouse.");
+                    lines.add(own.getBoolean("AllNinaEnvelope")?"Nina was gone, and the envelope with her.":"Nina came back up the path in the grey light, wet to the knees, and sat down on the porch.");
+                    if(own.getBoolean("HelpedNina"))lines.add("I'd opened the way in for her, and I knew what I was doing.");
+                    else if(own.getBoolean("BracedAgainstLen"))lines.add("I'd put the brace across his door so he'd stay where he was.");
+                    else if(!own.getBoolean("AllHelped"))lines.add("Nobody helped her. Nobody stopped her, either.");
+                    if(own.getBoolean("Admitted"))lines.add("When Casey asked who had opened the slip, I told him it was me.");}
+                else lines.add("Len was alive in the morning, shouting about his safe. Whatever he had on Nina was gone. She didn't thank anyone, and nobody wanted her to.");}
+            case "protected"->{
+                lines.add("In the morning Len told it his way: a guest who lost her head in the dark, nothing more. Nobody asked him about his safe.");
+                if(own.getBoolean("ChallengedLen"))lines.add("I told him that wasn't all of it. It won't be his way for long.");
+                else if(own.getBoolean("ReadEnvelope"))lines.add("I'd read what was in it, and I let him tell it.");}
+            case "performance"->{
+                lines.add("By morning the story was the mask: an actor in a costume, a prank that went too far. Len said it. Nina said it. Casey didn't say anything.");
+                if(own.getBoolean("ChallengedStory"))lines.add("I said it wasn't true, and told them what I'd seen. Somebody will have to listen.");
+                else if(own.getBoolean("ToldTheStory"))lines.add("When they asked me, I said it too.");}
+            default->{}
+        }
     }
     static String join(List<String> parts){if(parts.size()==1)return parts.get(0);return String.join(", ",parts.subList(0,parts.size()-1))+" and "+parts.get(parts.size()-1);}
 }

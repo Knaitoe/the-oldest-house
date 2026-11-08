@@ -77,6 +77,8 @@ public final class PinehookSite {
         BEACH_PRINTS=List.of(new BlockPos(-12,0,-47),new BlockPos(-4,0,-47),new BlockPos(3,0,-47),new BlockPos(10,0,-47)),
         SHED_PRINTS=List.of(new BlockPos(-15,0,-46),new BlockPos(-13,0,-45));
     public static final BlockPos DOCK_TIE=new BlockPos(3,0,-62),SHED_BLOOD=new BlockPos(-17,0,-40);
+    /** 0.4.367: the boathouse floor where Len lies, if nobody got to him. */
+    public static final BlockPos LEN_BLOOD=new BlockPos(14,0,-50);
     /** Where the cast are in the night: Jude against the kitchen counter, Casey by him; Len inside his boathouse. */
     public static final Vec3 JUDE_KITCHEN=new Vec3(5.5,0,-31.5),CASEY_KITCHEN=new Vec3(5.5,0,-29.5),BOAT_OUTSIDE=new Vec3(15.5,0,-43.8),BOAT_INSIDE=new Vec3(14.5,0,-48.5),
         AT_SUITCASE=new Vec3(-5.5,0,-29.5),AT_HEARTH=new Vec3(-6.5,0,-24.5);

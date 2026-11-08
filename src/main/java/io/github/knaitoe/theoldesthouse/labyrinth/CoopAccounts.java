@@ -122,6 +122,7 @@ final class CoopAccounts {
         together(TALL_GRASS,with("%s {was} on the road with me."));
         together(GROWING_THINGS,with("%s {was} at the Barretts' with me."));
         together(LAST_CROSSING,with("%s {was} on the roll with me."));
+        together(PINEHOOK,with("%s {was} at the cabin that weekend too."));
         together(DEER_ROAD,party("%s {was} on the road with me. We did not see the same things, and neither of us was wrong.",
             "%s {was} still on the road when I left it."));
         together(PLACE_FOR_YOU,with("%s {was} expected there too, at another table. Afterwards we compared our cards: the names were different and the handwriting was the same.")); // 0.4.257
