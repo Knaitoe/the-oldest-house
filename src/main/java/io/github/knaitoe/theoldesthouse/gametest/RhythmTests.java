@@ -72,11 +72,13 @@ public final class RhythmTests {
         LabyrinthBuilder.registerDoors(fixture,LabyrinthPlace.FLOODED_PASSAGE,new BlockPos(0,80,0));
         try{
             var entry=fixture.door(LabyrinthPlace.FLOODED_PASSAGE.entryDoorId());ExpeditionRhythm.crossedHazard(p,entry);
-            h.assertTrue(!ExpeditionRhythm.pending(d,p.getUUID()),"a retreat does not claim completion");
+            h.assertTrue(!ExpeditionRhythm.pending(d,p.getUUID())&&TrialMarks.count(d,p.getUUID())==0,"a retreat does not claim completion, or a mark");
             var far=fixture.door(LabyrinthPlace.FLOODED_PASSAGE.doorId(LabyrinthPlace.FLOODED_PASSAGE.doors().get(1)));
             p.setGameMode(GameType.SPECTATOR);ExpeditionRhythm.crossedHazard(p,far);h.assertTrue(!ExpeditionRhythm.pending(d,p.getUUID()),"an observer never banks a hazard beat");
             p.setGameMode(GameType.SURVIVAL);ExpeditionRhythm.crossedHazard(p,far);
-            h.assertTrue(ExpeditionRhythm.pending(d,p.getUUID())&&WitnessAccount.count(d,p.getUUID())==0,"the completed crossing grants a calm deal, never Witness credit");h.succeed();
+            h.assertTrue(ExpeditionRhythm.pending(d,p.getUUID())&&WitnessAccount.count(d,p.getUUID())==0,"the completed crossing grants a calm deal, never Witness credit");
+            h.assertTrue(TrialMarks.marks(d,p.getUUID()).equals(List.of("flooded_passage")),"and the reader's first mark, which the observer never had");
+            ExpeditionRhythm.crossedHazard(p,far);h.assertTrue(TrialMarks.count(d,p.getUUID())==1,"one mark for each kind of trial, however often it is crossed");h.succeed();
         }finally{NativeTestPlayers.remove(p);}
     }
     @GameTest(template="empty")

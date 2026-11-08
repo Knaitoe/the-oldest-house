@@ -251,6 +251,7 @@ public final class WitnessAccount {
         int resolved=count(data,player);
         pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,"THE ACCOUNT SO FAR\n\nI have heard "+words(resolved)
                 +(resolved==1?" room":" rooms")+" to the end.\n\n"+progress(data,player)));
+        for(String marks:TrialMarks.pages(data,player))pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,marks));
         Set<String> kinds=kinds(data,player);
         if(kinds.size()==1){String missing=switch(kinds.iterator().next()){
             case "survival"->"Everything here ends with me surviving.";

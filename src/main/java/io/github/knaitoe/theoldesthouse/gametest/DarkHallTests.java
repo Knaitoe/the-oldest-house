@@ -17,7 +17,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
  * 0.4.208, the dark halls: every one walkable to every way on and the way back, with no light in it; dealt from sixteen and the
- * only ordinary halls from twenty-one, the staircase from twenty-two; the House taking a light only out of everyone's sight; the
+ * only ordinary halls from twenty-one, the staircase from twenty-four (0.4.384); the House taking a light only out of everyone's sight; the
  * edge putting a reader who goes over back on the walkway; the Minotaur heard more often down there.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_exploration")
@@ -58,7 +58,7 @@ public final class DarkHallTests {
     private static int walkLength(LabyrinthPlace p){return -p.room().minZ();}
 
     @GameTest(template="empty")
-    public static void theDarkBandBeginsAtSixteenIsTheOnlyWayOnFromTwentyOneAndTheStaircaseWaitsForTwentyTwo(GameTestHelper h){
+    public static void theDarkBandBeginsAtSixteenIsTheOnlyWayOnFromTwentyOneAndTheStaircaseWaitsDeeper(GameTestHelper h){
         var data=new LabyrinthData();var player=UUID.randomUUID();
         for(int depth=1;depth<=24;depth++){
             data.pushReturn(player,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(depth,64,0),0F,true));
@@ -69,7 +69,7 @@ public final class DarkHallTests {
         for(var stone:List.of(LabyrinthPlace.STONE_GALLERY,LabyrinthPlace.STONE_CROSSING,LabyrinthPlace.STONE_DESCENT,LabyrinthPlace.STONE_ARCADE,LabyrinthPlace.STONE_BEND,LabyrinthPlace.STONE_LANDING)){
             h.assertTrue(LabyrinthDealer.grayWeight(stone,20)>0,stone.id()+" still comes at twenty");h.assertTrue(LabyrinthDealer.grayWeight(stone,21)==0,stone.id()+" stops at twenty-one");}
         h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.DARK_EDGE,19)==0&&LabyrinthDealer.grayWeight(LabyrinthPlace.DARK_EDGE,21)>0,"the edge is the last of the series, at the end of the band");
-        h.assertTrue(LabyrinthPacing.STAIRCASE_DEPTH==22,"the great staircase is offered from twenty-two");
+        h.assertTrue(LabyrinthPacing.STAIRCASE_DEPTH==24,"the great staircase is offered from twenty-four (0.4.384)");
         h.succeed();
     }
 

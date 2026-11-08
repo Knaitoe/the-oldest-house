@@ -39,7 +39,7 @@ HOUSE = [
     ('growl', 'Something below', 'You heard it breathe.', 'six_doors', 'task', True, 'minecraft:sculk_shrieker'),
     ('stone', 'Stone', 'The papered walls gave way to stone.', 'six_doors', 'task', False, 'minecraft:cobblestone'),
     ('dark', 'The dark halls', 'Smooth grey walls, no fixtures, and no light but what you brought.', 'stone', 'task', False, 'minecraft:gray_concrete'),
-    ('twenty_doors', 'Twenty-two doors deep', 'Deep enough to be offered the stairs.', 'dark', 'goal', False, 'minecraft:ladder'),
+    ('twenty_doors', 'Twenty-four doors deep', 'As deep as the stairs are kept.', 'dark', 'goal', False, 'minecraft:ladder'),
     ('camp', "The explorers' camp", 'Someone came this way before you and left their things.', 'twenty_doors', 'task', True, 'minecraft:campfire'),
     ('bound', 'Your own book', 'You bound the first leaf of your House of Leaves.', 'camp', 'task', True, 'minecraft:writable_book'),
     ('first_fire', 'The first fire', 'Your own words, burned for light.', 'bound', 'task', True, 'minecraft:flint_and_steel'),

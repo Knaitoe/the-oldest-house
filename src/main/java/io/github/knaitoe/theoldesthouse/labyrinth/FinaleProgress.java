@@ -26,7 +26,8 @@ public final class FinaleProgress {
     }
     public static boolean committed(Phase phase) { return phase == Phase.FIGHT || phase == Phase.COLLAPSE || phase == Phase.ESCAPE || phase == Phase.RELEASE || phase == Phase.HOMEWARD || phase == Phase.IMPRISONED; }
     public static boolean terminal(Phase phase) { return phase == Phase.LOCKED_OUT || phase == Phase.ESCAPED || phase == Phase.WITNESSED; }
+    /** 0.4.384 (docs/SEALS_0_4_384.md): three trial marks and four stories heard to their end, not two visited. */
     public static boolean eligible(LabyrinthData data, UUID player) {
-        return data.returnDepth(player) >= 12 && data.vignettesVisited(player) >= 2;
+        return data.returnDepth(player) >= 12 && TrialMarks.sealed(data, player);
     }
 }
