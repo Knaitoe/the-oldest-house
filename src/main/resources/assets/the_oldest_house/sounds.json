@@ -4285,5 +4285,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.resonance.latch"
+  },
+  "settling.creak": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:settling/creak",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.settling.creak"
+  },
+  "settling.give": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:settling/give",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.settling.give"
+  },
+  "settling.seam": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:settling/seam",
+        "attenuation_distance": 18
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.settling.seam"
+  },
+  "settling.scrape": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:settling/scrape",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.settling.scrape"
   }
 }

@@ -253,7 +253,8 @@ public final class DraftRooms {
     public static boolean use(ServerPlayer p,BlockPos pos,BlockState s){
         if(p.isSpectator())return false;
         var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return false;
-        var place=LabyrinthPlaces.placeAt(origin,pos);if(place!=DRYING&&place!=VENTS&&place!=AIRING)return false;
+        var place=LabyrinthPlaces.placeAt(origin,pos);if(place==LabyrinthPlace.SETTLING_FLOOR&&s.getValue(DraftBlock.KIND)==DraftBlock.Kind.SHEET)return SettlingFloor.useSheet(p,s);
+        if(place!=DRYING&&place!=VENTS&&place!=AIRING)return false;
         var b=LabyrinthPlaces.base(origin,place);var l=p.serverLevel();int stage=s.getValue(DraftBlock.STAGE);
         switch(s.getValue(DraftBlock.KIND)){
             case VENT->{l.setBlock(pos,s.setValue(DraftBlock.STAGE,stage==0?1:0),FLAGS);l.playSound(null,pos,SoundEvents.IRON_TRAPDOOR_OPEN,SoundSource.BLOCKS,.6F,stage==0?1.2F:.9F);

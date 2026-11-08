@@ -1274,5 +1274,10 @@
   "subtitles.the_oldest_house.resonance.middle": "A middle note hums in the pipes",
   "subtitles.the_oldest_house.resonance.high": "A high note hums in the pipes",
   "subtitles.the_oldest_house.resonance.buzz": "Reeds buzz",
-  "subtitles.the_oldest_house.resonance.latch": "A catch lifts"
+  "subtitles.the_oldest_house.resonance.latch": "A catch lifts",
+  "subtitles.the_oldest_house.settling.creak": "Floorboards creak",
+  "subtitles.the_oldest_house.settling.give": "Floorboards settle",
+  "subtitles.the_oldest_house.settling.seam": "Plaster cracks",
+  "subtitles.the_oldest_house.settling.scrape": "A cabinet scrapes",
+  "block.the_oldest_house.settling_fitting": "Gallery Fittings"
 }

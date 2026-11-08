@@ -74,6 +74,8 @@ public final class PuzzleRooms {
         // 0.4.360: the resonant pipes (ResonantPipes, docs/RESONANT_PIPES_0_4_360.md), early and deep. The far door is what waits: its catch is wired to the reeds.
         RESONANT_PIPE(LabyrinthPlace.RESONANT_PIPE,Family.RESONANCE,false,"The door won't give. A catch holds it, wired to the reeds beside it."),
         RESONANT_PIPES(LabyrinthPlace.RESONANT_PIPES,Family.RESONANCE,true,"The door won't give. A catch holds it, wired to the three reeds beside it."),
+        // 0.4.361: the settling floor (SettlingFloor, docs/SETTLING_FLOOR_0_4_361.md), the owner's hazard with nothing in it that hurts: built on the air and the traces. The far door waits behind a panel in plaster.
+        SETTLING_FLOOR(LabyrinthPlace.SETTLING_FLOOR,Family.AIR,true,"The door has no handle on this side.",LabyrinthPlace.DRAFT_ROOM,LabyrinthPlace.PROPPED_DOOR),
         YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null),
         // 0.4.345: the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md), reading the yard from above to set its gates from below. The far gate is ordinary: the herd is what waits.
         YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null),

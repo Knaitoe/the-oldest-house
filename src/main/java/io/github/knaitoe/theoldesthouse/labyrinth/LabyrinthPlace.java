@@ -625,7 +625,9 @@ public enum LabyrinthPlace {
     /** 0.4.360, the Resonant Pipes (ResonantPipes, docs/RESONANT_PIPES_0_4_360.md): a service corridor of singing pipes and a reed latch. */
     RESONANT_PIPE("resonant_pipe",Kind.GRAY,215,new BoundingBox(-4,-1,-22,4,5,0),grayDoors(2,0,-21)),
     /** Its deep rooms: three rooms sharing the pipework, three reeds on the last door. */
-    RESONANT_PIPES("resonant_pipes",Kind.GRAY,216,new BoundingBox(-7,-1,-34,7,6,0),grayDoors(5,0,-33));
+    RESONANT_PIPES("resonant_pipes",Kind.GRAY,216,new BoundingBox(-7,-1,-34,7,6,0),grayDoors(5,0,-33)),
+    /** 0.4.361, the Settling Floor (SettlingFloor, docs/SETTLING_FLOOR_0_4_361.md): a long gallery whose boards settle under weight, and a panel in its far wall. */
+    SETTLING_FLOOR("settling_floor",Kind.GRAY,217,new BoundingBox(-5,-3,-33,5,5,0),grayDoors(0,0,-32));
 
     /** What a place is to the dealer. */
     public enum Kind {
