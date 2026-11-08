@@ -1406,5 +1406,10 @@
   "block.the_oldest_house.trial_soft_wall": "Damp Wallpaper",
   "block.the_oldest_house.trial_soft_ceiling": "Stained Ceiling Tiles",
   "block.the_oldest_house.trial_soft_landing": "Quarry Tiles",
-  "block.the_oldest_house.trial_soft_under": "Packed Earth"
+  "block.the_oldest_house.trial_soft_under": "Packed Earth",
+  "block.the_oldest_house.trial_rising_wall": "Wet Glazed Tile",
+  "block.the_oldest_house.trial_rising_ceiling": "Brick Vault",
+  "block.the_oldest_house.trial_rising_floor": "Silted Flags",
+  "block.the_oldest_house.trial_rising_landing": "Stone Flags",
+  "block.the_oldest_house.trial_rising_window": "Lit Frosted Window"
 }

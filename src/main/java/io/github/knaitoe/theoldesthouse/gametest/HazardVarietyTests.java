@@ -379,4 +379,80 @@ public final class HazardVarietyTests {
     }
     @AfterBatch(batch="soft_floor") public static void softFloorDone(ServerLevel level){close();}
 
+    /**
+     * 0.4.387, the rising stair (docs/RISING_STAIR_0_4_387.md): the shaft is built as its plan says, every tread a walkable half
+     * step above the last and each gap a single stride; the water rises a layer every RISE ticks while anyone is in the shaft,
+     * closing over the treads; its undertow pulls a reader down; a reader out of air under it is back on the landing; the pockets
+     * keep their air when the shaft is full; and the water goes down once nobody is in the shaft.
+     */
+    @GameTest(template="empty",batch="rising_stair",timeoutTicks=1700)
+    public static void theRisingStairFloodsBehindAClimberAndPutsTheDrownedBackOnTheLanding(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.RISING_STAIR;var climber=f.player("rising_climber",place);var b=f.base(place);
+        java.util.function.BiConsumer<ServerPlayer,double[]> hold=(p,at)->{f.at(p,place,at[0],0,at[1]);p.setOnGround(true);};
+        var landing=new double[]{.5,-1.5};var floor=new double[]{-.5,-6.5};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the rising stair is loaded"))
+                .thenExecute(()->{
+                    int last=-1;
+                    for(int i=0;i<TrialRooms.TREADS;i++){var at=TrialRooms.tread(i);var s=f.level.getBlockState(b.offset(at));
+                        if(TrialRooms.GAPS.contains(i)){h.assertTrue(s.isAir()&&!TrialRooms.GAPS.contains(i+1),"a single stride's gap at tread "+i);continue;}
+                        h.assertTrue(TrialBlock.is(s,TrialBlock.Kind.RISING_TREAD,TrialRooms.halfTread(i)?1:0),"tread "+i+" stands at "+at);
+                        f.body(b,at.getX()+.5,TrialRooms.treadTop2(i)/2.0,at.getZ()+.5,1,"headroom over tread "+i);
+                        if(last>=0)h.assertTrue(TrialRooms.treadTop2(i)-TrialRooms.treadTop2(last)<=2&&TrialRooms.tread(i).distManhattan(TrialRooms.tread(last))<=4,"tread "+i+" is a step or a stride on from tread "+last);
+                        last=i;
+                    }
+                    h.assertTrue(TrialRooms.treadTop2(TrialRooms.TREADS-1)==44&&!TrialRooms.GAPS.contains(TrialRooms.TREADS-1),"the last tread is level with the landing at the head");
+                    for(int x=0;x<=3;x++)for(int z=TrialRooms.SHAFT_FAR;z<=TrialRooms.SHAFT_FAR+1;z++)h.assertTrue(f.level.getBlockState(b.offset(x,21,z)).is(TrialRegistry.material("rising_landing")),"the landing at the head at "+x+","+z);
+                    f.body(b,1.5,22,-11.5,1,"standing room on the landing at the head");
+                    h.assertTrue(f.level.getBlockState(b.offset(1,22,-13)).getBlock() instanceof DoorBlock&&f.level.getBlockState(b.offset(0,0,-3)).getBlock() instanceof DoorBlock,"the far door at the head, and a door between the landing at the foot and the shaft");
+                    f.body(b,.5,0,-1.5,1,"the landing at the foot");f.body(b,-.5,0,-6.5,1,"the shaft floor");
+                    for(var door:List.of(TrialRooms.POCKET_LOW,TrialRooms.POCKET_HIGH)){
+                        for(var at:TrialRooms.pocketWater(door))h.assertTrue(f.level.getBlockState(b.offset(at)).isAir(),"a pocket's way in at "+at);
+                        var top=TrialRooms.pocketAir(door);
+                        for(var at:top){h.assertTrue(f.level.getBlockState(b.offset(at)).isAir(),"a pocket's air at "+at);
+                            for(var d:List.of(net.minecraft.core.Direction.NORTH,net.minecraft.core.Direction.SOUTH,net.minecraft.core.Direction.EAST,net.minecraft.core.Direction.WEST))
+                                h.assertTrue(!f.level.getBlockState(b.offset(at).relative(d)).isAir(),"the pocket is closed round its air at "+at+" "+d);}
+                        h.assertTrue(!f.level.getBlockState(b.offset(top.getLast()).above()).isAir(),"and over it");
+                    }
+                    h.assertTrue(f.level.getBlockState(b.offset(TrialRooms.tread(7))).getValue(TrialBlock.KIND)==TrialBlock.Kind.RISING_TREAD&&TrialRooms.tread(7).above().east().equals(TrialRooms.POCKET_LOW)
+                            &&TrialRooms.tread(23).above().west().equals(TrialRooms.POCKET_HIGH),"each pocket opens off a tread, a step to the side");
+                    for(int y:List.of(2,8,14,20))h.assertTrue(f.level.getBlockState(b.offset(5,y,-11)).getLightEmission()>0,"a lit window at "+y);
+                    h.assertTrue(TrialRooms.water(f.level,b)==0&&TrialMarks.kind(place)==place&&HazardVariety.tier(place)==2&&LabyrinthPacing.physicalTrial(place),"dry to begin with; a second-tier physical trial, and a mark of its own");
+                    hold.accept(climber,floor);
+                })
+                .thenExecuteFor(TrialRooms.RISE*3+3,()->{})
+                .thenExecute(()->{int w=TrialRooms.water(f.level,b);
+                    h.assertTrue(w>=2&&w<=4,"with a reader in the shaft the water rises a layer every "+TrialRooms.RISE+" ticks ("+w+")");
+                    h.assertTrue(f.level.getBlockState(b.offset(TrialRooms.tread(0))).getValue(TrialBlock.WATERLOGGED)&&f.level.getBlockState(b.offset(TrialRooms.tread(1))).getValue(TrialBlock.WATERLOGGED),"and closes over the treads");
+                    h.assertTrue(climber.getDeltaMovement().y<0,"its undertow pulls a reader down");
+                    climber.setAirSupply(0);
+                })
+                .thenWaitUntil(()->h.assertTrue(climber.getZ()-b.getZ()>-2.5&&climber.getAirSupply()==climber.getMaxAirSupply(),"out of air under the water, the reader is back on the landing at the foot"))
+                .thenWaitUntil(()->h.assertTrue(TrialRooms.water(f.level,b)==0&&!f.level.getBlockState(b.offset(TrialRooms.tread(0))).getValue(TrialBlock.WATERLOGGED),"once nobody is in the shaft the water goes down"))
+                .thenExecute(()->{
+                    TrialRooms.flood(f.level,b,TrialRooms.LAYERS);
+                    h.assertTrue(TrialRooms.water(f.level,b)==TrialRooms.LAYERS&&!f.level.getFluidState(b.offset(1,22,-11)).is(net.minecraft.tags.FluidTags.WATER),"full, the water stops short of the landing at the head");
+                })
+                .thenExecuteFor(6,()->{})
+                .thenExecute(()->{for(var door:List.of(TrialRooms.POCKET_LOW,TrialRooms.POCKET_HIGH)){
+                        for(var at:TrialRooms.pocketWater(door))h.assertTrue(f.level.getBlockState(b.offset(at)).is(Blocks.WATER),"the water fills a pocket's way in at "+at);
+                        for(var at:TrialRooms.pocketAir(door))h.assertTrue(f.level.getBlockState(b.offset(at)).isAir(),"but not the air above it at "+at);}})
+                .thenWaitUntil(()->h.assertTrue(TrialRooms.water(f.level,b)==0,"and drains again with nobody in the shaft"))
+                .thenExecute(()->{var at=Vec3.atLowerCornerOf(b);var t=TrialRooms.tread(20);
+                    h.assertTrue(TrialRooms.onStair(b,at.add(-.5,0,-6.5))&&TrialRooms.onStair(b,at.add(t.getX()+.5,TrialRooms.treadTop2(20)/2.0,t.getZ()+.5)),"the shaft floor and the treads are the stair");
+                    h.assertTrue(!TrialRooms.onStair(b,at.add(6.5,4,-7.5))&&!TrialRooms.onStair(b,at.add(1.5,22,-11.5))&&!TrialRooms.onStair(b,at.add(.5,0,-1.5)),"a pocket, the landing at the head and the landing at the foot are not");
+                    f.at(climber,LabyrinthPlace.SOFT_FLOOR,.5,0,-1.5);
+                    TrialRooms.flood(f.level,b,TrialRooms.LAYERS);
+                })
+                .thenExecuteFor(10,()->{})
+                .thenExecute(()->{h.assertTrue(TrialRooms.water(f.level,b)==TrialRooms.LAYERS,"with nobody in the room, nothing in it changes");hold.accept(climber,landing);})
+                .thenExecuteFor(2,()->{})
+                .thenExecute(()->{h.assertTrue(TrialRooms.water(f.level,b)==0,"coming back to it, the shaft is as dry as before anyone came");
+                    f.at(climber,place,6.5,4,-7.5);climber.setOnGround(true);TrialRooms.flood(f.level,b,10);})
+                .thenExecuteFor(3,()->{})
+                .thenExecute(()->h.assertTrue(TrialRooms.water(f.level,b)==10&&f.level.getBlockState(b.offset(6,4,-8)).is(Blocks.WATER)&&f.level.getBlockState(b.offset(6,6,-8)).isAir(),"the water stands in the pocket's way in, under its air"))
+                .thenWaitUntil(()->h.assertTrue(TrialRooms.water(f.level,b)==0,"with its only reader in a pocket, the water goes down"))
+                .thenSucceed();
+    }
+    @AfterBatch(batch="rising_stair") public static void risingStairDone(ServerLevel level){close();}
+
 }
