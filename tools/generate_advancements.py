@@ -104,6 +104,7 @@ STORY_ICONS = {
     'state_route': NS + ':state_route_reflector',
     'marsh_supper': NS + ':marsh_clapper',
     'tall_grass': NS + ':tall_grass_cap',
+    'growing_things': NS + ':growing_seed_head',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

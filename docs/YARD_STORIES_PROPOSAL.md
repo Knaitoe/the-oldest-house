@@ -11,7 +11,7 @@ For each, the draft gives the yard's contribution (how a reader comes to it) and
 
 > *"Give each story its own door, gate, or clear decision to go farther. A player can see farmhouse light across the corn on an ordinary walk and still choose a different way on."*
 
-This proposal builds each story with its own approach, as one piece of work, because an approach with no story behind it is a dead end. The owner said to start running with it, so these are defaults to edit. The order of building is The Supper, In the Tall Grass, Growing Things, then The Last Crossing. The Last Crossing has its own design file, which cannot be opened from here; until its text is supplied, only its approach is drafted below.
+This proposal builds each story with its own approach, as one piece of work, because an approach with no story behind it is a dead end. The owner said to start running with it, so these are defaults to edit. The order of building is The Supper, In the Tall Grass, Growing Things, then The Last Crossing. The Last Crossing has its own design, "The Last Crossing" in the owner's Drive, and is built from it.
 
 ## What all four share
 
@@ -291,28 +291,15 @@ From the draft:
 
 > *"A farm road drops into floodwater. A power line carries the eye toward a station, a cable house, and a lamp on the far bank. Treat the flood station as its own crew crossing. Arrival through a readable yard route gives the party a place to gather before entering the three-day vignette."*
 
-The draft points at a separate design for The Last Crossing, a three-day vignette, that cannot be read from here. Only the approach is proposed until that text is supplied.
+The owner's own design for it, "The Last Crossing" (a multiplayer vignette for four to six readers, three days and three nights, about thirty-three minutes), was found in the owner's Drive on 8 November. It is built from that design, not from the draft above. In brief:
 
-### The approach
+- **The station and its keeper.** A House door opens onto a farm road dropping into floodwater. The crew follows the power line to a flood station: the keeper's office, the pump room and intake, the cable house across a narrow spillway, the lower service branches, and the ferry ramp and sluice. A lamp burns on the far bank. Vera, the keeper, takes the roll on a clipboard and still calls Ellis, the ferry hand who went under on a previous crossing.
+- **Three days and nights.** A seven-minute day of repair, talk and testing, then a four-minute night of work under attack. Day One: jobs (intake worker, gauge reader, cable lookout, landing hand, and a fifth and sixth when present) and the two-knock signal through the speaking pipe. Night One: the authored first infection at the intake, and the rescue. Day Two: the winch puzzle and the first day someone can lie. Night Two: the first transformation at sunset, the pull under attack, a possible second infection in a crew of six. Day Three: launch the ferry or destroy the source. Night Three: the final rise and the crossing.
+- **The handprint plate.** A clean palm fogs the near side; an infection grows a second print on the far side. It can be carried and set down, and near it a transformed reader chokes.
+- **Transformed readers.** Water breathing, claws, the Call, garbled speech after dark, and a throat that closes while holding a flooded route shut.
+- **Endings.** The ferry crosses, the station is cleared, or the source takes the crossing. The broken nameplate is shared out on a crew victory; the spare goes to a nominated reader; the Other Breath is the traitor's permanent bargain.
 
-- **The farm road.** From the House's door a farm road runs down between fences and drops into floodwater. The asphalt goes under brown water that moves.
-- **The bearing.** The power line along the road carries the eye over the flood to:
-  - a pumping station on a rise;
-  - a cable house;
-  - a lamp burning on the far bank.
-- **The gathering place.** A machine shed on the near bank above the water line. It is dry, with benches and a notice board.
-  - Here the party collects before going on. The door onward does not open until everyone in the party who is in the approach has reached the shed, or a short time has passed since the first arrived.
-  - This is the clear decision.
-- **The crossing.** From the shed a cable ferry crosses toward the station. It is a crew crossing: it needs hands on the cable, one to haul and one to steer, or one reader working both slowly.
-  - The far landing is the door into the three-day vignette.
-
-**Waiting on the owner:**
-
-- the three days;
-- the station;
-- the endings;
-- accounts and roles;
-- the Witness kind.
+The draft's approach above becomes the station's own: the farm road into the flood, the power line as the bearing, and the station porch, where Vera takes the roll, as the gathering place and clear decision. The cable ferry is the climax, not the approach. It is dealt only to a crew of four to six readers who cross together (a default to edit).
 
 ---
 
@@ -322,7 +309,11 @@ The draft points at a separate design for The Last Crossing, a three-day vignett
    1. The place, the maze, the drive and tree, the porch, the house and kitchen, the household and the guest, the ordinary meal, the chair and the kitchen view.
    2. Her name, the meat, the three endings, the keys, together, the accounts, the yield, and the tests.
 2. **In the Tall Grass,** in two slices: the shoulder and the field's movement; the calls, the end, and the accounts. *Built whole in 0.4.349 (`docs/TALL_GRASS_0_4_349.md`), both slices in one release; the road runs east and west with the wagon on the shoulder and the grass beyond the ditch, the House's door in the brush across the road.*
-3. **Growing Things,** in two slices: the yard and the chores; the clock, supper upstairs, the Ghosts Set drawing, and the accounts.
-4. **The Last Crossing:** the approach and the gathering place first. The rest follows the owner's design.
+3. **Growing Things,** in two slices: the yard and the chores; the clock, supper upstairs, the Ghosts Set drawing, and the accounts. *Built whole in 0.4.350 (`docs/GROWING_THINGS_0_4_350.md`), both slices in one release; the yard behind a garage alley, the house in the Ghosts Set's materials, and the drawing sent to the reader who finished alone.*
+4. **The Last Crossing,** from the owner's design, in four slices, each with its own version, documentation and tests:
+   1. The road, the station and its five places, Vera and the roll, the crew's reservation, the day clock, Day One's jobs, the speaking pipe and the handprint plate.
+   2. Night One: the surge, the authored infection and the rescue, the source's mobs, the infected reader's private symptoms, and the plate's reading.
+   3. Day Two and Night Two: the winch puzzle, branches and bypasses and the evidence they leave, the first transformation (water breathing, claws, the Call, garbled speech, the plate's ward, the choking gate), and the second slot.
+   4. Day Three and Night Three: the two plans, the launch and the gallery, the master bypass and the Other Breath, the three endings, roll calls, the nameplate and spare, each reader's account, and the Witness source.
 
 Each slice ships with its documentation and tests and its own version. A story's Witness source is added only in the slice that makes it fully playable, so the quota never counts a story that cannot be finished.
