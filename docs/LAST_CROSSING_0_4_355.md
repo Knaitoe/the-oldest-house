@@ -14,7 +14,7 @@ This half covers Day Three:
 - the live feed traced down to the old lower gallery, and the gallery made ready;
 - the master bypass, and the Other Breath offered to an exposed carrier.
 
-Night Three (the final rise, the launch and the gallery under pressure, siding with the source and the Other Breath taken, the roll calls and the three endings) is 0.4.356 (`docs/LAST_CROSSING_0_4_356.md`); until it was built, the station held at the third dusk. The nameplate and its spare, each reader's account, the Witness source and dealing are 0.4.357. It is still not dealt and adds no Witness source; the operator's test door reaches it.
+Night Three (the final rise, the launch and the gallery under pressure, siding with the source and the Other Breath taken, the roll calls and the three endings) is 0.4.356 (`docs/LAST_CROSSING_0_4_356.md`); until it was built, the station held at the third dusk. The nameplate and its spare, each reader's account, the Witness source and dealing are 0.4.357 (`docs/LAST_CROSSING_0_4_357.md`).
 
 Protocol 150: the station fitting gains ten kinds and a third state of the pin's sleeve, and there are two new items, the launch pin and the locking bar. Layout 112 is unchanged. The station gains the lower gallery under the ramp, the stair down to it from a rusted door in the intake's east wall, the flooded chamber with the source in it, and the passage to the upstream cutoff.
 

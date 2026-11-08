@@ -119,7 +119,8 @@ public final class WitnessAccount {
         HOUSEHOLD("household","The household","understanding","I put their things back in order. A household went down the stairs before me, and on a landing near the bottom I counted their cups, and read my own name at the end of their list."),
         GROWING_THINGS("growing_things","Growing things","understanding","I helped a family with their Saturday chores while something came up through their yard. Their father went out to clear the back step and didn't come back in, and at supper his daughter asked whether to bring his plate up."),
         TALL_GRASS("tall_grass","The tall grass","survival","I went into the grass by a county road after a boy who said he couldn't find it. The grass moved me whenever nobody could see, until another car pulled over and I had a chance to shout to the driver."),
-        MARSH_SUPPER("marsh_supper","The supper","understanding","I sat down to supper at a farmhouse at the end of a corn maze. The guest went out to look for her ride, and when I came back to the table her chair was gone and they said her ride had come.");
+        MARSH_SUPPER("marsh_supper","The supper","understanding","I sat down to supper at a farmhouse at the end of a corn maze. The guest went out to look for her ride, and when I came back to the table her chair was gone and they said her ride had come."),
+        LAST_CROSSING("last_crossing","The last crossing","survival","I worked three days and three nights at a flood station with a crew, for a keeper who called the roll every morning and one name more at the end of it. On the last night the river came up to the ramp, and we tried to get across.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

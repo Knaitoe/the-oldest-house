@@ -1447,10 +1447,10 @@
       "model": "the_oldest_house:block/crossing/nameplate_1"
     },
     "facing=north,kind=nameplate,stage=2": {
-      "model": "the_oldest_house:block/crossing/nameplate_0"
+      "model": "the_oldest_house:block/crossing/nameplate_2"
     },
     "facing=north,kind=nameplate,stage=3": {
-      "model": "the_oldest_house:block/crossing/nameplate_0"
+      "model": "the_oldest_house:block/crossing/nameplate_3"
     },
     "facing=east,kind=nameplate,stage=0": {
       "model": "the_oldest_house:block/crossing/nameplate_0",
@@ -1461,11 +1461,11 @@
       "y": 90
     },
     "facing=east,kind=nameplate,stage=2": {
-      "model": "the_oldest_house:block/crossing/nameplate_0",
+      "model": "the_oldest_house:block/crossing/nameplate_2",
       "y": 90
     },
     "facing=east,kind=nameplate,stage=3": {
-      "model": "the_oldest_house:block/crossing/nameplate_0",
+      "model": "the_oldest_house:block/crossing/nameplate_3",
       "y": 90
     },
     "facing=south,kind=nameplate,stage=0": {
@@ -1477,11 +1477,11 @@
       "y": 180
     },
     "facing=south,kind=nameplate,stage=2": {
-      "model": "the_oldest_house:block/crossing/nameplate_0",
+      "model": "the_oldest_house:block/crossing/nameplate_2",
       "y": 180
     },
     "facing=south,kind=nameplate,stage=3": {
-      "model": "the_oldest_house:block/crossing/nameplate_0",
+      "model": "the_oldest_house:block/crossing/nameplate_3",
       "y": 180
     },
     "facing=west,kind=nameplate,stage=0": {
@@ -1493,11 +1493,11 @@
       "y": 270
     },
     "facing=west,kind=nameplate,stage=2": {
-      "model": "the_oldest_house:block/crossing/nameplate_0",
+      "model": "the_oldest_house:block/crossing/nameplate_2",
       "y": 270
     },
     "facing=west,kind=nameplate,stage=3": {
-      "model": "the_oldest_house:block/crossing/nameplate_0",
+      "model": "the_oldest_house:block/crossing/nameplate_3",
       "y": 270
     },
     "facing=north,kind=bar,stage=0": {

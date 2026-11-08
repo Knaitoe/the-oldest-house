@@ -65,6 +65,8 @@ public final class LastCrossingNightThree {
     static final int LATE_ANSWER=70,ELLIS_WAIT=FAR_ANSWER+30;
     /** How the crossing ends: not yet; the ferry crossed; the station cleared; the source took it. */
     public static final int NONE=0,FERRY=1,GALLERY=2,SOURCE=3;
+    /** The crew's crossing's beat after the far roll, while the plate is broken and the spare named. */
+    static final int PIECES=3;
     /** The Other Breath: three more seconds of air. Air drains with a chance of 1/(1+bonus) a tick, so a bonus of 0.2 stretches fifteen
      * seconds to eighteen. */
     static final ResourceLocation OTHER_BREATH=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"other_breath");
@@ -84,6 +86,8 @@ public final class LastCrossingNightThree {
         int ending;long endingAt=-1;int beat,farCalling=-1,farTicks;boolean ended;final Set<UUID> farAnswered=new HashSet<>();
         /** When each clean reader of the crew was last seen standing at the station. */
         final Map<UUID,Long> lastClean=new HashMap<>();
+        /** 0.4.357: the nameplate broken, the spare's closing roll open and settled, when it opened, and who named whom. */
+        boolean broken,spareOpen,spareSettled;long spareAt=-1,settledAt=-1;final Map<UUID,UUID> nominations=new LinkedHashMap<>();
     }
     static Night n(Run r){return r.night3;}
     static boolean active(Run r){return r.phase==LastCrossing.DUSK&&r.dayNo>=3;}
@@ -102,7 +106,7 @@ public final class LastCrossingNightThree {
     public static int defenders(BlockPos b){var r=LastCrossing.run(b);return r==null?0:r.night3.defenders.size();}
     /** For tests: the night's own clocks run on by this many ticks (the sill, the crossing, the drain, the master's hold, the muster). */
     public static void hurry(BlockPos b,int ticks){var r=LastCrossing.run(b);if(r==null)return;var n=r.night3;
-        if(n.pinnedAt>=0)n.pinnedAt-=ticks;if(n.releasedAt>=0)n.releasedAt-=ticks;if(n.destroyedAt>=0)n.destroyedAt-=ticks;if(n.endingAt>=0)n.endingAt-=ticks;
+        if(n.pinnedAt>=0)n.pinnedAt-=ticks;if(n.spareAt>=0)n.spareAt-=ticks;if(n.settledAt>=0)n.settledAt-=ticks;if(n.releasedAt>=0)n.releasedAt-=ticks;if(n.destroyedAt>=0)n.destroyedAt-=ticks;if(n.endingAt>=0)n.endingAt-=ticks;
         if(n.cutoff&&!n.drained)n.drain=Math.min(DRAIN-1,n.drain+ticks);if(n.masterBy!=null)n.masterHeld=Math.min(BARGAIN_HOLD-1,n.masterHeld+ticks);}
     /** The Other Breath's bonus on a reader, for tests. */
     public static double breath(ServerPlayer p){var a=p.getAttribute(Attributes.OXYGEN_BONUS);var m=a==null?null:a.getModifier(OTHER_BREATH);return m==null?0:m.amount();}
@@ -283,7 +287,7 @@ public final class LastCrossingNightThree {
         LastCrossing.speak(l,r,LastCrossingTexts.MUSTER,64);
         for(var id:n.inGallery){var p=LastCrossing.player(l,id);if(p==null||!p.isAlive()||r.dead.contains(id))continue;LastCrossing.mark(p,"OutOfGallery");}
         for(var p:here)LastCrossing.mark(p,"HeardMuster");
-        if(n.ending==GALLERY){n.beat=1;n.endingAt=r.tick;}
+        if(n.ending==GALLERY){n.beat=1;n.endingAt=r.tick;LastCrossingNameplate.breakPlate(l,r,n);}
     }
 
     // ------------------------------------------------------------------------------------------------ the master bypass and the bargain
@@ -394,12 +398,16 @@ public final class LastCrossingNightThree {
     static void ending(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
         if(n.ended)return;
         switch(n.ending){
-            case FERRY->farRoll(l,r,n,here,false);
+            case FERRY->{
+                // The roll on the far bank, then the plate broken and the spare named, then morning.
+                if(n.beat==1)farRoll(l,r,n,here,false);
+                else if(n.beat==PIECES){LastCrossingNameplate.tick(l,r,n);if(n.spareSettled&&r.tick-n.settledAt>=BEAT)morning(l,r,n,here);}}
             case SOURCE->farRoll(l,r,n,here,true);
             case GALLERY->{
-                // The muster: the bell rung by one of the crew, or by Vera after a while; then morning.
+                // The muster: the bell rung by one of the crew, or by Vera after a while; the plate broken there and the spare named; then
+                // morning.
                 if(!n.mustered&&r.tick-n.destroyedAt>=MUSTER_WAIT)muster(l,r,n,here,null);
-                if(n.mustered&&n.beat==1&&r.tick-n.endingAt>=BEAT)morning(l,r,n,here);}
+                if(n.mustered&&n.beat==1){LastCrossingNameplate.tick(l,r,n);if(n.spareSettled&&r.tick-Math.max(n.endingAt,n.settledAt)>=BEAT)morning(l,r,n,here);}}
             default->{}
         }
     }
@@ -421,7 +429,8 @@ public final class LastCrossingNightThree {
             // a long breath later something answers from the far end of the boat.
             if(everyone&&n.farTicks==30){voice(l,r,"Here.");for(var q:here)LastCrossing.mark(q,"HeardEllisFar");}
             if(!everyone&&n.farTicks==LATE_ANSWER){voice(l,r,"Here.");for(var q:here)if(LastCrossingSite.farBank(LastCrossing.rel(q.position(),r.base)))LastCrossing.mark(q,"HeardEllisLate");}
-            if(n.farTicks>=(everyone?FAR_ANSWER:ELLIS_WAIT)){n.farCalling++;n.farTicks=0;morning(l,r,n,here);}
+            if(n.farTicks>=(everyone?FAR_ANSWER:ELLIS_WAIT)){n.farCalling++;n.farTicks=0;
+                if(everyone)morning(l,r,n,here);else{n.beat=PIECES;LastCrossingNameplate.breakPlate(l,r,n);}}
             return;}
     }
     static void farNext(ServerLevel l,Run r,Night n,List<Map.Entry<UUID,String>> names,boolean everyone){
@@ -454,6 +463,33 @@ public final class LastCrossingNightThree {
         n2.turned.clear();n2.choking.clear();r.phase=LastCrossing.END;
         LastCrossing.speak(l,r,n.ending==FERRY?LastCrossingTexts.MORNING_FERRY:n.ending==GALLERY?LastCrossingTexts.MORNING_GALLERY:LastCrossingTexts.MORNING_SOURCE,64);
         LastCrossing.sync(l,r);
+        resolveAll(l,r,n);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.357: each reader's account
+    static String outcome(Night n){return n.ending==FERRY?"ferry":n.ending==GALLERY?"gallery":"source";}
+    /** Morning: everyone on the roll resolved, the dead and the absent included; a reader who isn't online gets theirs when they are back. */
+    static void resolveAll(ServerLevel l,Run r,Night n){
+        String outcome=outcome(n);var d=LabyrinthData.get(l.getServer());
+        for(var id:r.crew.keySet()){var p=LastCrossing.player(l,id);
+            if(p!=null){resolve(p,outcome);continue;}
+            var own=LiteraryVignettes.personal(d,id,LastCrossing.PLACE);if(own.getBoolean("Completed"))continue;
+            own.putString("OwedEnding",outcome);if(own.getString("Ending").isEmpty())own.putString("Ending",outcome);LiteraryVignettes.save(d,id,LastCrossing.PLACE,own);}
+    }
+    /** One reader's crossing, finished: the Witness source, and their own account from their own record. */
+    static void resolve(ServerPlayer p,String outcome){
+        var own=LastCrossing.own(p);if(own.getBoolean("Completed"))return;
+        if(own.getString("Ending").isEmpty())own.putString("Ending",outcome);
+        own.putString("Outcome",own.getString("Ending"));own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putBoolean("Taken_Ending",true);own.putInt("Beat",own.getInt("Visit"));own.remove("OwedEnding");
+        LastCrossing.save(p,own);
+        WitnessAccount.resolve(p,WitnessAccount.Story.LAST_CROSSING,own.getString("Outcome"));
+        LabyrinthData.get(p.server).setCompleted(LastCrossing.PLACE.id(),true);
+        LiteraryVignettes.reward(p,LastCrossing.PLACE,own,"Ending",LastCrossingTexts.account(p.getGameProfile().getName(),own));
+    }
+    /** Back after the crossing ended without them: their result. */
+    @SubscribeEvent public static void owed(PlayerEvent.PlayerLoggedInEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LastCrossing.PLACE);
+        if(own.contains("OwedEnding"))resolve(p,own.getString("OwedEnding"));
     }
 
     // ------------------------------------------------------------------------------------------------ events

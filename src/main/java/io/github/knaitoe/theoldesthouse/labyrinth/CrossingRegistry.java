@@ -6,7 +6,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
@@ -48,6 +58,9 @@ public final class CrossingRegistry {
      * intake down to the feed gate in the lower gallery. */
     public static final DeferredItem<Item> PIN=ITEMS.registerSimpleItem("crossing_pin",new Item.Properties().stacksTo(1));
     public static final DeferredItem<Item> LOCKBAR=ITEMS.registerSimpleItem("crossing_lockbar",new Item.Properties().stacksTo(1));
+    /** 0.4.357: a piece of Cordelia's brass nameplate, broken along its bolt holes on a crew's victory, or the spare that broke away at one
+     * bolt. Tapped, it knocks softly through matching pieces nearby; the spare can be handed to a reader who turned. */
+    public static final DeferredItem<Fragment> FRAGMENT=ITEMS.registerItem("crossing_fragment",Fragment::new,new Item.Properties().stacksTo(1));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** A knock in the speaking pipe; the pump taking its load; something tapping back under the grate; the bleed screw letting go. */
     public static final DeferredHolder<SoundEvent,SoundEvent> KNOCK=sound("crossing.knock"),PUMP=sound("crossing.pump"),TAP=sound("crossing.tap"),BLEED=sound("crossing.bleed");
@@ -62,6 +75,25 @@ public final class CrossingRegistry {
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);TYPES.register(bus);bus.addListener(CrossingRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(UNDERTOW_TYPE.get(),Undertow.attributes().build());}
 
+    /** A piece of the nameplate: tapped in the air, it knocks; used on someone, the spare is handed over. */
+    public static final class Fragment extends Item {
+        public Fragment(Properties p){super(p);}
+        @Override public InteractionResultHolder<ItemStack> use(Level level,Player player,InteractionHand hand){
+            var stack=player.getItemInHand(hand);
+            if(player instanceof ServerPlayer p)LastCrossingNameplate.tap(p,stack);
+            return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
+        }
+        @Override public InteractionResult interactLivingEntity(ItemStack stack,Player player,LivingEntity target,InteractionHand hand){
+            if(player.level().isClientSide)return InteractionResult.SUCCESS;
+            if(!(player instanceof ServerPlayer p)||!(target instanceof ServerPlayer to))return InteractionResult.PASS;
+            return LastCrossingNameplate.hand(p,to,hand)?InteractionResult.CONSUME:InteractionResult.PASS;
+        }
+        @Override public Component getName(ItemStack s){return Component.literal(LastCrossingNameplate.spare(s)?"The spare piece of a nameplate":"A piece of a nameplate");}
+        @Override public void appendHoverText(ItemStack s,TooltipContext c,List<Component> lines,TooltipFlag f){
+            lines.add(Component.literal(LastCrossingNameplate.shown(s)).withStyle(ChatFormatting.GRAY));
+            lines.add(Component.literal(LastCrossingNameplate.spare(s)?"Cast brass, a single bolt hole. No letters on it.":"Cast brass, broken along its bolt holes.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
+        }
+    }
     /** The plate set down where its carrier points: on a floor, the station decides whether it can stand there. */
     public static final class Plate extends Item {
         public Plate(Properties p){super(p);}

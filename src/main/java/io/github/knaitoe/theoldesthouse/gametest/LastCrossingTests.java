@@ -7,6 +7,9 @@ import java.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -125,8 +128,8 @@ public final class LastCrossingTests {
             .thenIdle(40)
             .thenExecute(()->{
                 h.assertTrue(LiteraryRooms.isLiterary(P)&&LiteraryRooms.outside(P)&&P.isOneShot()&&P.authored()&&SceneClock.at(f.origin,b.offset(15,0,-40),io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE)==17,"a literary station outside, one visit, built whole, on its own clock");
-                h.assertTrue(WitnessAccount.Story.of(P.id())==null&&WitnessAccount.Story.values().length==WitnessPool.SOURCES,"no Witness source until the crossing can be finished");
-                var probe=UUID.randomUUID();h.assertTrue(!LastCrossing.dealable(f.data(),probe),"not dealt yet");
+                h.assertTrue(WitnessAccount.Story.of(P.id())==WitnessAccount.Story.LAST_CROSSING&&WitnessAccount.Story.values().length==WitnessPool.SOURCES,"a Witness source, now the crossing can be finished");
+                var probe=UUID.randomUUID();h.assertTrue(!LastCrossing.dealable(f.data(),probe),"not dealt to a reader who has walked none of the yard's crossings, alone");
                 // The road, the levee and its line, the station's places, the ferry, the far bank.
                 h.assertTrue(l.getBlockState(b.offset(0,-1,-5)).is(Blocks.DIRT_PATH)&&l.getBlockState(b.offset(0,-1,-20)).is(Blocks.WATER)&&l.getBlockState(b.offset(0,-2,-20)).is(Blocks.GRAVEL),"the farm road, and the water over it");
                 h.assertTrue(l.getBlockState(b.offset(LastCrossingSite.LEVEE_E,5,-16)).is(Blocks.STRIPPED_DARK_OAK_LOG)&&l.getBlockState(b.offset(LastCrossingSite.LEVEE_E,5,-18)).is(Blocks.CHAIN)&&l.getBlockState(b.offset(5,-1,-25)).is(Blocks.COARSE_DIRT),"the levee and the power line along it");
@@ -815,6 +818,14 @@ public final class LastCrossingTests {
             .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==3,"the third dusk"));
     }
     private static boolean farBank(LiteraryTests.Fixture f,ServerPlayer p){return LastCrossingSite.farBank(rel(f,p));}
+    /** 0.4.357: the pieces of the nameplate a reader carries, the account in their hands, and its words. */
+    private static List<CompoundTag> pieces(ServerPlayer p){var out=new ArrayList<CompoundTag>();var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++){var t=LastCrossingNameplate.data(inv.getItem(i));if(t!=null)out.add(t);}return out;}
+    private static int spares(ServerPlayer p){int n=0;for(var t:pieces(p))if(t.getBoolean("Spare"))n++;return n;}
+    private static void selectPiece(ServerPlayer p,boolean spare){for(int i=0;i<9;i++){var t=LastCrossingNameplate.data(p.getInventory().getItem(i));if(t!=null&&t.getBoolean("Spare")==spare){p.getInventory().selected=i;return;}}}
+    private static ItemStack account(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++){var s=inv.getItem(i);var c=s.get(DataComponents.WRITTEN_BOOK_CONTENT);if(c!=null&&c.title().raw().equals(LastCrossingTexts.TITLE))return s;}return ItemStack.EMPTY;}
+    private static String text(ItemStack book){var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return c==null?"":c.pages().stream().map(p->p.raw().getString()).reduce("",(a,b)->a+" "+b).replaceAll("\\s+"," ");}
+    private static String joined(ServerPlayer... crew){var all=new ArrayList<CompoundTag>();for(var p:crew)for(var t:pieces(p))if(!t.getBoolean("Spare"))all.add(t);all.sort(Comparator.comparingInt(t->t.getInt("Piece")));var out=new StringBuilder();for(var t:all)out.append(t.getString("Letters"));return out.toString();}
+    private static boolean resolved(LiteraryTests.Fixture f,ServerLevel l,ServerPlayer p){return f.own(p,P).getBoolean("Completed")&&WitnessAccount.has(LabyrinthData.get(l.getServer()),p.getUUID(),WitnessAccount.Story.LAST_CROSSING)&&!account(p).isEmpty();}
     private static void hereFar(ServerPlayer... crew){for(var p:crew)if(Talk.replies(p).contains("Here."))Talk.choose(p,"Here");}
     private static void expose(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer p){
         LastCrossing.carryForTest(p);f.at(p,P,16.5,0,-44.5);
@@ -850,14 +861,30 @@ public final class LastCrossingTests {
             .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"arrived")&&LastCrossingNightThree.ending(b)==LastCrossingNightThree.FERRY,"across: the crew's crossing"))
             .thenExecute(()->{h.assertTrue(farBank(f,c[0])&&farBank(f,c[3])&&!farBank(f,c[1]),"those aboard on the far landing");
                 h.assertTrue(f.own(c[2],P).getBoolean("CrossedOver")&&f.own(c[0],P).getString("Ending").equals("ferry"),"crossed, and the ending kept");})
-            .thenWaitUntil(()->{hereFar(c);h.assertTrue(LastCrossing.flag(b,"ended"),"the roll on the far bank, then morning");})
+            .thenWaitUntil(()->{hereFar(c);h.assertTrue(LastCrossing.flag(b,"broken"),"the roll on the far bank, then the nameplate broken");})
+            .thenExecute(()->{
+                for(var p:c)h.assertTrue(pieces(p).size()==1&&!pieces(p).get(0).getBoolean("Spare"),"a piece for every name on the roll: "+name(p));
+                h.assertTrue(joined(c).equals(LastCrossingNameplate.NAME)&&f.own(c[1],P).getBoolean("GotPiece"),"the pieces spell her name, the one left on the station's among them");
+                h.assertTrue(is(l,b,new BlockPos(32,2,-69),Kind.NAMEPLATE,2)&&is(l,b,new BlockPos(33,2,-69),Kind.NAMEPLATE,3),"bolt holes where the nameplate was");
+                var offered=Talk.replies(c[0]);h.assertTrue(!offered.isEmpty()&&offered.stream().allMatch(x->x.endsWith(".")),"who takes the spare: "+offered);
+                String pick=offered.get(offered.size()-1);for(var p:c)if(Talk.replies(p).contains(pick))Talk.choose(p,pick);
+                h.assertTrue(LastCrossing.flag(b,"spareSettled"),"everyone standing has said");
+                ServerPlayer holder=null;for(var p:c)if(spares(p)==1)holder=p;
+                h.assertTrue(holder!=null&&(name(holder)+".").equals(pick)&&f.own(holder,P).getBoolean("NamedForSpare"),"the spare to the one they named");
+                LastCrossingNightThree.hurry(b,LastCrossingNightThree.BEAT);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"ended"),"then morning"))
             .thenExecute(()->{h.assertTrue(LastCrossing.phase(b)==LastCrossing.END,"morning");
+                for(var p:c)h.assertTrue(resolved(f,l,p),"the crossing resolved, and an account: "+name(p));
+                h.assertTrue(text(account(c[1])).contains("moved off the landing without me")&&text(account(c[0])).contains("Mine says ")&&text(account(c[0])).contains("something at the far end of the boat said Here"),"each account from its own record");
+                selectPiece(c[0],false);LastCrossingNameplate.tap(c[0],c[0].getMainHandItem());
+                h.assertTrue(f.own(c[0],P).getBoolean("PieceAnswered")&&f.own(c[2],P).getBoolean("HeardPieceKnock"),"a tap, and an answering knock");
+                h.assertTrue(!LastCrossing.dealable(LabyrinthData.get(l.getServer()),c[0].getUUID())&&LastCrossing.crewAround(c[0].getUUID())>=LastCrossing.MIN_CREW,"not dealt again to one who has crossed; a crew stands together");
                 h.assertTrue(f.own(c[0],P).getBoolean("AnsweredFar")&&f.own(c[1],P).getBoolean("UnansweredFar")&&f.own(c[0],P).getString("HeardUnanswered").contains(name(c[1])),"a name unanswered, heard by those who answered");
                 h.assertTrue(f.own(c[0],P).getBoolean("HeardEllisLate")&&!f.own(c[0],P).getBoolean("HeardEllisFar"),"a late answer for Ellis from the far end of the boat");
                 h.assertTrue(farBank(f,c[1])&&f.own(c[1],P).getBoolean("BroughtAcross"),"the one left behind brought over in the morning");
                 for(var p:c)h.assertTrue(f.own(p,P).getBoolean("NightThree"),"Night Three, for "+name(p));
                 LastCrossing.resetNow(l,b);
-                h.assertTrue(is(l,b,LastCrossingSite.RELEASE,Kind.RELEASE,0)&&!l.getBlockState(b.offset(26,-5,-60)).is(Blocks.WATER),"the station set back");
+                h.assertTrue(is(l,b,LastCrossingSite.RELEASE,Kind.RELEASE,0)&&!l.getBlockState(b.offset(26,-5,-60)).is(Blocks.WATER)&&is(l,b,new BlockPos(32,2,-69),Kind.NAMEPLATE,0),"the station set back");
                 h.succeed();});
     }
 
@@ -894,9 +921,18 @@ public final class LastCrossingTests {
                 h.assertTrue(f.own(c[2],P).getBoolean("DestroyedSource")&&f.own(c[3],P).getBoolean("SawSourceDie"),"who killed it, who saw");
                 LastCrossing.bell(c[1]);h.assertTrue(LastCrossing.flag(b,"mustered")&&f.own(c[1],P).getBoolean("RangMuster"),"the muster bell");
                 h.assertTrue(f.own(c[2],P).getBoolean("OutOfGallery")&&f.own(c[3],P).getBoolean("OutOfGallery")&&!f.own(c[1],P).getBoolean("OutOfGallery"),"those who came out of the gallery");
+                for(var p:c)h.assertTrue(pieces(p).size()==1,"a piece each at the muster: "+name(p));
+                h.assertTrue(!Talk.replies(c[1]).contains(name(c[0])+".")&&Talk.replies(c[1]).contains(name(c[2])+"."),"the spare is for one who came through clean");
+                String pick=name(c[2])+".";for(var p:c)if(Talk.replies(p).contains(pick))Talk.choose(p,pick);
+                h.assertTrue(LastCrossing.flag(b,"spareSettled")&&spares(c[2])==1,"named, the spare to them");
+                // Handed on to the one who turned, whose own piece pairs with it.
+                selectPiece(c[2],true);h.assertTrue(LastCrossingNameplate.hand(c[2],c[0],InteractionHand.MAIN_HAND)&&spares(c[0])==1&&spares(c[2])==0&&pieces(c[0]).size()==2,"the spare handed to the one who turned");
+                h.assertTrue(f.own(c[2],P).getString("GaveSpareTo").equals(name(c[0]))&&f.own(c[0],P).getString("SpareFrom").equals(name(c[2])),"and who gave it to whom");
+                selectPiece(c[3],false);h.assertTrue(!LastCrossingNameplate.hand(c[3],c[1],InteractionHand.MAIN_HAND)&&pieces(c[1]).size()==1,"a main piece isn't handed over");
                 LastCrossingNightThree.hurry(b,LastCrossingNightThree.BEAT);})
             .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"ended")&&LastCrossing.phase(b)==LastCrossing.END,"morning"))
-            .thenExecute(()->{for(var p:c)h.assertTrue(farBank(f,p)&&f.own(p,P).getString("Ending").equals("gallery"),"across in the morning: "+name(p));
+            .thenExecute(()->{for(var p:c)h.assertTrue(farBank(f,p)&&f.own(p,P).getString("Ending").equals("gallery")&&resolved(f,l,p),"across in the morning, and resolved: "+name(p));
+                h.assertTrue(text(account(c[0])).contains("gave me the spare")&&text(account(c[2])).contains("I gave the spare to "+name(c[0]))&&text(account(c[2])).contains("I struck the source until it was dead"),"the accounts say it");
                 LastCrossing.resetNow(l,b);
                 h.assertTrue(is(l,b,LastCrossingSite.SOURCE,Kind.SOURCE,0)&&is(l,b,LastCrossingSite.FEED_GATE,Kind.FEED_GATE,0)&&l.getBlockState(b.offset(LastCrossingSite.SOURCE).east()).is(Blocks.WATER),"the chamber full again");
                 h.succeed();});
@@ -950,6 +986,8 @@ public final class LastCrossingTests {
             .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"ended")&&LastCrossing.phase(b)==LastCrossing.END,"every name answered, then morning"))
             .thenExecute(()->{for(var p:c){var own=f.own(c[1],P);h.assertTrue(own.getString("HeardAnsweredFor").contains(name(p)),"an answer for "+name(p));}
                 h.assertTrue(f.own(c[1],P).getBoolean("HeardEllisFar")&&f.own(c[2],P).getString("Ending").equals("source"),"Ellis answered too; the ending kept");
+                for(var p:c)h.assertTrue(resolved(f,l,p)&&pieces(p).isEmpty(),"resolved, and no pieces when the source has it: "+name(p));
+                h.assertTrue(!LastCrossing.flag(b,"broken")&&text(account(c[1])).contains("every name got an answer"),"the nameplate whole, and the account says how it ended");
                 h.assertTrue(LastCrossingNightTwo.turned(b).isEmpty(),"the turned themselves again in the morning");
                 h.succeed();});
     }

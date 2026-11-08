@@ -328,6 +328,18 @@ def nameplate(half):
     return im
 
 
+def nameplate_gone(half):
+    # 0.4.357: where a half of the nameplate was, once it is broken off along its bolt holes: a paler strip of the wheelhouse's paint where
+    # the plate kept the weather off, the four bolt holes, and at one end a sliver of brass still under its bolt.
+    im = new(base='#6e5a40', seed=3790 + half, spread=5)
+    fill(im, 0, 4, 15, 11, '#857052')
+    for x, y in ((1, 5), (14, 5), (1, 10), (14, 10)):
+        dot(im, x, y, '#1e1810')
+    sliver = 14 if half == 0 else 0
+    fill(im, sliver, 4, sliver + 1, 7, '#b08c3a')
+    return im
+
+
 def wood_grip():
     return new(base='#6a4a2a', seed=3723, spread=6)
 
@@ -656,6 +668,23 @@ def pin_item():
     return im
 
 
+def fragment_item():
+    # 0.4.357: a piece of the brass nameplate, broken along its bolt holes: a jagged slab, a raised letter stroke, a bolt hole.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rows = {3: (4, 10), 4: (3, 12), 5: (3, 13), 6: (2, 13), 7: (2, 12), 8: (3, 13), 9: (3, 14), 10: (2, 13), 11: (3, 11), 12: (4, 9)}
+    for y, (a, b) in rows.items():
+        for x in range(a, b + 1):
+            dot(im, x, y, '#9a7a32' if (x + y) % 5 else '#b08c3a')
+    for y in range(5, 11):
+        dot(im, 7, y, '#e0c060')
+    for x in range(7, 11):
+        dot(im, x, 5, '#e0c060')
+    dot(im, 4, 7, '#2a1e0c'); dot(im, 4, 8, '#2a1e0c')
+    for x, y in ((13, 5), (14, 9), (11, 11), (2, 6)):
+        dot(im, x, y, '#6a4e1c')
+    return im
+
+
 def lockbar_item():
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     for i in range(13):
@@ -675,7 +704,7 @@ def textures():
         'number_1': number_plate(1), 'number_2': number_plate(2), 'number_3': number_plate(3),
         'grate': grate(False), 'grate_broken': grate(True), 'lamp_on': lamp_light(True), 'lamp_off': lamp_light(False),
         'manila': manila(), 'wire': wire_rope(), 'roller': roller_steel(), 'depth': depth_post(),
-        'name_0': nameplate(0), 'name_1': nameplate(1), 'grip': wood_grip(), 'glass_lit': glass_lit(),
+        'name_0': nameplate(0), 'name_1': nameplate(1), 'name_gone_0': nameplate_gone(0), 'name_gone_1': nameplate_gone(1), 'grip': wood_grip(), 'glass_lit': glass_lit(),
         'flesh': flesh(), 'timber': timber(), 'frayed': frayed(),
         'grate_wet': grate_wet(False), 'grate_damp': grate_wet(True), 'tag_shut': tag('S', '#1a1a1a'), 'tag_open': tag('O', '#a83a2a'),
         'witness_greased': witness(False), 'witness_clean': witness(True), 'stain': stain(False), 'stain_dry': stain(True), 'canvas': canvas(),
@@ -690,6 +719,7 @@ def textures():
     out['item/crossing_tools.png'] = tools_item()
     out['item/crossing_pin.png'] = pin_item()
     out['item/crossing_lockbar.png'] = lockbar_item()
+    out['item/crossing_fragment.png'] = fragment_item()
     out['entity/crossing_undertow.png'] = undertow_skin()
     return out
 
@@ -942,6 +972,8 @@ def fitting_models():
     # The ferry's nameplate, bolted to its rail in two halves.
     for half in range(2):
         m[f'nameplate_{half}'] = model([element([0, 5, 15], [16, 11, 16], {'all': 'b', 'north': 'n'})], {'b': 'brass', 'n': f'name_{half}'}, f'name_{half}')
+        # 0.4.357: broken off along its bolt holes, a piece for every name on the roll.
+        m[f'nameplate_{2 + half}'] = model([element([0, 4, 15.8], [16, 12, 16], {'all': 'n'})], {'n': f'name_gone_{half}'}, f'name_gone_{half}')
     return m
 
 
@@ -950,7 +982,7 @@ KINDS = ['table', 'clipboard', 'slate', 'plate', 'plate_set', 'bracket', 'stove'
          'bypass', 'branch', 'floor_grate', 'witness', 'catch', 'stain', 'tools', 'prints', 'underside',
          'feed', 'gallery_door', 'feed_gate', 'debris', 'cutoff', 'source', 'master', 'release', 'downstream', 'rack']
 STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 3, 'pump': 2, 'roller': 2, 'fairlead': 2,
-          'hatch': 2, 'wheel': 3, 'pin': 3, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2,
+          'hatch': 2, 'wheel': 3, 'pin': 3, 'coil': 4, 'hook': 2, 'nameplate': 4, 'bar': 2, 'isolator': 2,
           'bypass': 2, 'branch': 3, 'floor_grate': 4, 'witness': 2, 'catch': 2, 'stain': 2, 'prints': 2, 'underside': 2,
           'feed': 2, 'gallery_door': 2, 'feed_gate': 4, 'debris': 2, 'cutoff': 2, 'source': 3, 'master': 2, 'release': 2, 'downstream': 2, 'rack': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
@@ -958,7 +990,7 @@ MAX_STAGE = 4
 NAMES = {'crossing_fitting': 'Station Fitting'}
 ENTITIES = {'crossing_undertow': 'Undertow'}
 ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench', 'crossing_tools': 'Cable Tools',
-         'crossing_pin': 'Launch Pin', 'crossing_lockbar': 'Locking Bar'}
+         'crossing_pin': 'Launch Pin', 'crossing_lockbar': 'Locking Bar', 'crossing_fragment': 'Piece of a Nameplate'}
 
 
 def files():
