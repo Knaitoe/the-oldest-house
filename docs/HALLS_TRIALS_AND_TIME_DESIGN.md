@@ -8,7 +8,7 @@ Status: **being built (November 8)**. The owner left the open questions to judge
 - Trial 6, the rising stair: built in 0.4.387 ([RISING_STAIR_0_4_387.md](RISING_STAIR_0_4_387.md)), in the listening room's place. The water rises faster than proposed, with an undertow, and the pockets let it fall.
 - Trial 10, the hall of many lengths: built in 0.4.388 ([MANY_LENGTHS_0_4_388.md](MANY_LENGTHS_0_4_388.md)), with T2 and P1. The bends hide each length from the next, so no private copies (T1) are needed.
 - Trial 4, the door that follows: built in 0.4.389 ([FOLLOWING_DOOR_0_4_389.md](FOLLOWING_DOOR_0_4_389.md)), at the owner's request. The far door itself stays put; nine doors into a passage behind the walls do the moving, and the mirrors are true plane mirrors.
-- Next: five halls, then R2. R3 and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
+- Next: five halls, then R2 as the owner set it (from depth 20, one hall in four). R3 (only as fixed folds shared by everyone) and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 
@@ -34,14 +34,27 @@ Each proposal is numbered so the owner can pick by number.
 - The staircase is dealt only after three marks, four personally resolved stories (not visits) and depth 24.
 
 **R2. Trials stand in the way.**
-- From depth 14 on, a hall's onward doors are at most one ordinary hall; the others lead to trials or stories.
-- From depth 18 on, about one hall in three has no ordinary way on, only a trial.
-- A reader can still go back, but going back costs depth.
+- As first proposed:
+  - From depth 14 on, a hall's onward doors are at most one ordinary hall; the others lead to trials or stories.
+  - From depth 18 on, about one hall in three has no ordinary way on, only a trial.
+  - A reader can still go back, but going back costs depth.
+- Owner (November 8): "I don't know that I would increase the frequency quite as much as R2 suggests", then "R2, try from depth 20 - one in four should be good." So R2 is built as:
+  - Nothing changes before depth 20.
+  - From depth 20 on, about one hall in four has no ordinary way on, only a trial (or a story). The other three are dealt as now.
+  - Going back still costs depth.
 
 **R3. Folds.**
-- From depth 12, about one ordinary door in seven is a fold: it opens onto a hall the reader has already passed, two to four crossings back, and their depth drops to match.
-- Folds are never dealt twice in a row, never right after a story, and never in a group crossing that would split friends.
-- The House is visibly undoing progress, which fits the book, but it can frustrate. **R3 is optional.**
+- As first proposed:
+  - From depth 12, about one ordinary door in seven is a fold: it opens onto a hall the reader has already passed, two to four crossings back, and their depth drops to match.
+  - Folds are never dealt twice in a row, never right after a story, and never in a group crossing that would split friends.
+- Owner (November 8): "R3 seems to undo a lot of the work we've done in creating a steady labyrinth the player can actually navigate - unless the door loops back around every time, and thus can be accounted for."
+- Then: "For R3, looping doors need to work for every player. They should teleport every player to the same general location, within a few hallways of each other. Or transfer all to the same spot. But it can't teleport one player while letting the others progress. That could break group play."
+- So if R3 is built, a fold is a fixed door, the same for everyone, not a chance on each crossing:
+  - The fold belongs to the door, not to a reader. Whoever goes through it, alone or together, lands in the same earlier hall. It is kept with the shared halls, not in one reader's route map.
+  - Readers who cross it together all go back together, to the same spot. It never moves one reader of a group crossing while the rest go on.
+  - Each reader's depth drops by the same amount, to match where they land.
+  - Taking it again lands where it did before, so it can be drawn on the map and chalked like any door.
+- **R3 waits for a playtest**, in this form only.
 
 **R4. A slower first stretch.** Domestic halls end at depth 8 rather than 6, and stone halls begin at 9. Stories are unchanged; this only adds walking.
 
