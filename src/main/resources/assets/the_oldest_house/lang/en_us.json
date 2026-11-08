@@ -1353,5 +1353,14 @@
   "block.the_oldest_house.proofrock_clapboard": "Clapboard",
   "block.the_oldest_house.proofrock_clapboard_painted": "Painted Clapboard",
   "block.the_oldest_house.proofrock_clapboard_weathered": "Weathered Clapboard",
-  "block.the_oldest_house.proofrock_cinder_block": "Painted Block"
+  "block.the_oldest_house.proofrock_cinder_block": "Painted Block",
+  "block.the_oldest_house.puzzle_shell_plaster": "Limewashed Plaster",
+  "block.the_oldest_house.puzzle_shell_boards": "Scrubbed Boards",
+  "block.the_oldest_house.puzzle_shell_boarding": "Beaded Boarding",
+  "block.the_oldest_house.puzzle_shell_shaft": "Shaft Brick",
+  "block.the_oldest_house.puzzle_shell_cistern": "Cistern Stone",
+  "block.the_oldest_house.puzzle_shell_cistern_floor": "Cistern Flags",
+  "block.the_oldest_house.puzzle_shell_landing": "Landing Boards",
+  "block.the_oldest_house.puzzle_shell_stair": "Landing Stair",
+  "block.the_oldest_house.puzzle_shell_lobby": "Lobby Brick"
 }

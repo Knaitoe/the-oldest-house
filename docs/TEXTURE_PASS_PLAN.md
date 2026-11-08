@@ -109,7 +109,8 @@ Two or three scenes per release, 4 to 8 textures each:
 2. Family copy: left as it is. It is the reader's own house, copied block for block from the Overworld; the stone brick the export
    counted was the test's stand-in house, so there is nothing of the House's own to dress.
 3. Mother of strays: left as it is, at the owner's word.
-4. The puzzle rooms (one shared set): lift shaft, worn stair and landing.
+4. The puzzle rooms (one shared set): lift shaft, worn stair and landing. Built in 0.4.378 for the three older rooms (docs/TEXTURE_PASS_PUZZLES_0_4_378.md);
+   the newer puzzle rooms already had their own.
 5. The lake house interior.
 6. The two cabins.
 7. The child's room.
@@ -133,6 +134,7 @@ Two or three scenes per release, 4 to 8 textures each:
 | 2 | The stone halls (built in 0.4.374, docs/TEXTURE_PASS_STONE_0_4_374.md), then the quiet and threshold halls (2b, built in 0.4.375, docs/TEXTURE_PASS_PAINT_0_4_375.md) | 12 |
 | 3 | The great staircase (well and rails built in 0.4.376, docs/TEXTURE_PASS_STAIRCASE_0_4_376.md) | 10, plus 2 models |
 | 4 | Tier 3: Proofrock (built in 0.4.377, docs/TEXTURE_PASS_PROOFROCK_0_4_377.md) | 16 |
-| 5 onwards | The rest of Tier 3, two or three scenes at a time | 4–8 each |
+| 5 | Tier 3: the puzzle rooms' shells (built in 0.4.378, docs/TEXTURE_PASS_PUZZLES_0_4_378.md) | 11 |
+| 6 onwards | The rest of Tier 3, two or three scenes at a time | 4–8 each |
 
 Each release keeps the architecture views, the texture CRC and decode check and the full suite. Any tier can be reordered or dropped.
