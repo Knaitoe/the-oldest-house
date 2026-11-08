@@ -78,6 +78,62 @@ public final class PersonalityTailoringTests {
           }).thenSucceed();
     }
 
+    @AfterBatch(batch="tailoring_age") public static void ageDone(ServerLevel l){HomeRead.clearAll();close();}
+    /** 0.4.372: a settled AGE opens the Wheel at the reader's stage with one object of their era; older readers get the handset and a telephone in later halls. */
+    @GameTest(template="empty",batch="tailoring_age",timeoutTicks=900)
+    public static void aSettledAgeOpensTheWheelAtTheReadersStageGivesTheHandsetAndRingsDownLaterHalls(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.WHEEL;var p=f.player("age_reader",place);var peer=f.player("age_peer",place);var b=LiteraryVignettes.base(p,place);
+        for(String age:List.of("DIGITAL","TRANSITIONAL","ANALOG"))for(var strength:HouseRead.Strength.values()){
+            profile(p,HouseRead.Trait.AGE,age,strength.name());boolean settled=strength==HouseRead.Strength.SETTLED,known=settled||strength==HouseRead.Strength.TENTATIVE;
+            int want=!settled?1:age.equals("DIGITAL")?3:age.equals("TRANSITIONAL")?5:6;
+            h.assertTrue(WheelHouse.startRoom(p)==want,"only a settled AGE moves the Wheel's front door, to the stage nearest the reader: "+age+"/"+strength);
+            h.assertTrue(HarriganVignette.handsetFor(f.data(),p)==(settled&&age.equals("ANALOG")),"only a settled older read makes the spare a handset: "+age+"/"+strength);
+            h.assertTrue(HomeRead.older(p)==(known&&age.equals("ANALOG")),"a tentative or settled older read hears the hall telephone: "+age+"/"+strength);
+        }
+        h.assertTrue(WheelHouse.startRoom(peer)==1&&!HarriganVignette.handsetFor(f.data(),peer)&&!HomeRead.older(peer),"no read is exactly today's Wheel, phone and halls");
+        for(var era:WheelHouse.ERAS){var room=WheelHouse.room(era.room());
+            h.assertTrue(room!=null&&WheelHouse.roomAt(Vec3.atCenterOf(era.at()))==era.room()&&era.at().getX()!=room.doorX(),"each era object stands in its own room, clear of the line between its doors: "+era.age());
+            h.assertTrue(!era.line().matches("(?i).*\\b(red|blue|green|yellow|white|black|grey|gray|pink|purple|orange|brown|years? old)\\b.*"),"the House names no colour and no age: "+era.line());}
+        var personal=HarriganVignette.playerState(f.data(),p.getUUID());personal.putBoolean(HarriganVignette.HANDSET,true);HarriganVignette.savePlayerState(f.data(),p.getUUID(),personal);
+        h.assertTrue(HarriganVignette.phoneState(p,null).getBoolean("Handset")&&!HarriganVignette.phoneState(peer,null).getBoolean("Handset"),"the screen is told it is the handset for that reader alone");
+        var caller=player(h,f,"age_hall");var friend=player(h,f,"age_hall_friend");
+        h.startSequence().thenWaitUntil(()->{
+            var cells=new ArrayList<BlockPos>();for(var r:WheelHouse.ROOMS){cells.add(r.back());cells.add(r.forward());}for(var era:WheelHouse.ERAS)cells.add(era.at());
+            for(var rel:cells){var cell=b.offset(rel);h.assertTrue(f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(cell.getX()>>4,cell.getZ()>>4)),"the Wheel's rooms are loaded");}
+        }).thenExecute(()->{
+            for(var era:WheelHouse.ERAS){
+                profile(p,HouseRead.Trait.AGE,era.age(),"SETTLED");WheelHouse.arrive(f.own(p,place));NativeTestPlayers.packets(p);NativeTestPlayers.packets(peer);
+                f.click(p,place,WheelHouse.FRONT_DOOR);var own=f.own(p,place);
+                h.assertTrue(own.getInt("WheelRoom")==era.room()&&own.getInt("WheelStart")==era.room()&&own.getBoolean("FrontLoop")&&!own.getBoolean("Memory")&&(own.getInt("WheelSeen")&1<<era.room())!=0,"the front door opens on the reader's own stage of her life, at their own height: "+era.age()+" "+own);
+                var cell=b.offset(era.at());h.assertTrue(f.in.getBlockState(cell).isAir(),"the era object is not in the world: the room stays hers");
+                var shown=WheelHouse.eraObject(p,b,f.own(p,place));
+                h.assertTrue(shown!=null&&shown.getBlock() instanceof HouseReadPropBlock&&shown.getValue(HouseReadPropBlock.PART)==era.part(),"that reader is shown one object of their era, on their screen only: "+era.age()+" "+shown);
+                var peerOwn=f.own(peer,place);peerOwn.putInt("WheelStart",era.room());peerOwn.putInt("WheelRoom",era.room());
+                h.assertTrue(WheelHouse.eraObject(peer,b,peerOwn)==null,"a friend with no read is shown nothing, even standing in that room");
+                f.click(p,place,era.at());h.assertTrue(f.own(p,place).getBoolean("WheelEra"),"and can look at it: "+era.age());
+            }
+            // From the hospital room the wheel still goes round to the nursery until a door has been gone back through and all six seen.
+            f.click(p,place,WheelHouse.ROOMS.get(5).forward());var own=f.own(p,place);
+            h.assertTrue(own.getInt("WheelRoom")==1&&!own.getBoolean("ReachedMother")&&own.getBoolean("Memory"),"starting late is not a way round the wheel: "+own);
+            f.click(peer,place,WheelHouse.FRONT_DOOR);h.assertTrue(f.own(peer,place).getInt("WheelRoom")==1&&f.own(peer,place).getBoolean("Memory"),"with no read the front door opens on the nursery, as a child");
+            // The telephone: tentative is enough, but only deep in. Two readers standing in an ordinary place in the House.
+            var spot=f.origin.offset(0,0,-5);at(caller,f.in,spot,.5,0,.5);at(friend,f.in,spot,1.5,0,.5);
+            profile(caller,HouseRead.Trait.AGE,"ANALOG","TENTATIVE");var d=f.data();var here=caller.position();
+            h.assertTrue(!HomeRead.hallCue(caller,d,here)&&!HomeRead.hallCue(caller,d,here)&&!HomeRead.ringing(caller),"nothing rings in the early halls");
+            for(int i=0;i<HomeRead.LANDLINE_DEPTH;i++){var w=new LabyrinthData.Waypoint(f.in.dimension(),here,0);d.pushReturn(caller.getUUID(),w);d.pushReturn(friend.getUUID(),w);}
+            NativeTestPlayers.packets(caller);NativeTestPlayers.packets(friend);
+            h.assertTrue(!HomeRead.hallCue(caller,d,here)&&HomeRead.hallCue(caller,d,here)&&HomeRead.ringing(caller),"deep in, the second hall cue rings for the older reader");
+            h.assertTrue(!HomeRead.hallCue(friend,d,here)&&!HomeRead.hallCue(friend,d,here)&&!HomeRead.ringing(friend),"and never for a reader with no such read");
+          }).thenIdle(HomeRead.RING_GAP*HomeRead.RINGS_EACH+20).thenExecute(()->{
+            var heard=new ArrayList<String>();var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(caller));
+            while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);
+                else if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)sound.getSound().unwrapKey().ifPresent(k->heard.add(k.location().getPath()));}
+            h.assertTrue(heard.stream().filter("literary.home_landline"::equals).count()==HomeRead.RINGS_EACH,"four rings, to that reader: "+heard);
+            h.assertTrue(!HomeRead.ringing(caller),"and then it stops; nobody answers");
+            h.assertTrue(NativeTestPlayers.packets(friend).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&sound.getSound().unwrapKey().map(k->k.location().getPath().equals("literary.home_landline")).orElse(false)),"a friend in the same hall hears no telephone");
+          }).thenSucceed();
+    }
+
     @GameTest(template="empty",batch="tailoring_read",timeoutTicks=200)
     public static void unknownUncertainTentativeAndUnseenNeverGuessAnAddressOrRewriteTheOriginalCard(GameTestHelper h){
         var f=fixture(h);var p=player(h,f,"read_strength");var original=LiteraryTexts.source(LabyrinthPlace.CHILD_ROOM);var state=f.data().state(HouseRead.STATE);

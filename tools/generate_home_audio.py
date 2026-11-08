@@ -1,7 +1,8 @@
 """Original sounds for the House's read of a reader's home (0.4.371): the authority figures who linger under a settled DANGER read.
 - a floorboard in the hall taking someone's weight;
 - one slow step on boards, played along the hall a step at a time so it moves;
-- a door handle turned partway, held, and let go, the latch tongue clicking back.
+- a door handle turned partway, held, and let go, the latch tongue clicking back;
+- (0.4.372, the read of a reader's age) a telephone with a bell, one ring of it, heard down a hall.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Existing files are kept.
 """
@@ -13,6 +14,7 @@ ROWS = {
     'home_floorboard': ('A floorboard creaks in the hall', 14),
     'home_step': ('Slow footsteps in the hall', 16),
     'home_handle': ('A door handle turns and is let go', 10),
+    'home_landline': ('A telephone rings down the hall', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -98,7 +100,27 @@ def home_handle():
     return out
 
 
-MAKERS = {'home_floorboard': home_floorboard, 'home_step': home_step, 'home_handle': home_handle}
+def home_landline():
+    """One ring of an old bell telephone: a clapper hammering between two small gongs, twenty strokes a second, for two seconds."""
+    n = seconds(2.5)
+    out = np.zeros(n)
+    k = seconds(0.22)
+    t = times(k)
+    gongs = []
+    for f0 in (1040.0, 1245.0):
+        partials = sum(np.sin(2 * np.pi * f0 * ratio * t) * amp * np.exp(-t * decay)
+                       for ratio, amp, decay in ((1.0, 1.0, 14.0), (2.76, 0.45, 22.0), (5.40, 0.2, 35.0)))
+        gongs.append(partials * envelope(k, 0.0008, 0.18))
+    strokes = int(2.0 * 20)
+    for i in range(strokes):
+        at = i / 20.0
+        swell = min(1.0, 0.55 + i / 8.0) * (1.0 if i < strokes - 3 else 0.7)
+        place(out, gongs[i % 2] * 0.5 * swell, at)
+    buzz = band(rng.standard_normal(n), 2500, 6000) * 0.02 * np.minimum(1.0, np.maximum(0.0, 2.05 - times(n)) * 4)
+    return out + buzz
+
+
+MAKERS = {'home_floorboard': home_floorboard, 'home_step': home_step, 'home_handle': home_handle, 'home_landline': home_landline}
 
 
 def main():
