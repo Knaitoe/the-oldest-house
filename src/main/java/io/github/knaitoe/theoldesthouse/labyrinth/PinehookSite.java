@@ -86,6 +86,22 @@ public final class PinehookSite {
     public static final Vec3[] LEN_TO_BOAT={new Vec3(1.5,0,-18.0),new Vec3(1.5,0,-15.5),new Vec3(10.5,0,-15.5),new Vec3(10.5,0,-37.5),new Vec3(8.5,0,-40.5),new Vec3(8.5,0,-44.3),BOAT_OUTSIDE};
     public static final Vec3[] TO_SUITCASE={new Vec3(4.5,0,-26.5),new Vec3(0.5,0,-26.5),new Vec3(0.5,0,-29.5),new Vec3(-1.0,0,-29.5),new Vec3(-3.5,0,-29.5),AT_SUITCASE};
     public static final Vec3[] SUITCASE_TO_HEARTH={new Vec3(-3.5,0,-29.5),new Vec3(-1.0,0,-29.5),new Vec3(0.5,0,-29.5),new Vec3(0.5,0,-26.5),new Vec3(-4.5,0,-26.5),AT_HEARTH};
+    /** 0.4.366: the junction box on the cabin's east wall by the kitchen, and the floodlights it feeds: over the back step, on a pole at
+     * the head of the beach, and on the T's east post. */
+    public static final BlockPos JUNCTION=new BlockPos(9,1,-31),FLOOD_REAR=new BlockPos(5,3,-35),FLOOD_BEACH=new BlockPos(9,3,-46),FLOOD_T=new BlockPos(11,1,-63);
+    public static final BlockPos TABLE=new BlockPos(4,0,-31);
+    /** 0.4.366: the brace bar leaning by the boathouse door and where it goes across it; the slip gate in the lake wall (two high); the
+     * release rope's cleat on its piling off the dock; the wall rack inside; the bench Len's key is under; the paddle in the woodshed. */
+    public static final BlockPos BRACE_LEANING=new BlockPos(14,0,-44),BRACE_ACROSS=new BlockPos(15,1,-44),GATE=new BlockPos(15,0,BOAT_N),RELEASE=new BlockPos(8,0,-52),
+        RACK=new BlockPos(13,1,-50),BENCH=new BlockPos(13,0,-47),PADDLE=new BlockPos(2,0,0);
+    /** The slip gate shut, or open onto the lake. */
+    public static void slip(ServerLevel l,BlockPos b,boolean open){
+        set(l,b,GATE,open?s(Blocks.AIR):fit(Kind.GATE,Direction.NORTH,0));set(l,b,GATE.above(),open?s(Blocks.AIR):fit(Kind.GATE,Direction.NORTH,0));
+    }
+    /** The floodlights: the dock's pair, the back step's, lit or dark. */
+    public static void floods(ServerLevel l,BlockPos b,boolean dock,boolean rear){
+        set(l,b,FLOOD_BEACH,fit(Kind.FLOOD,Direction.NORTH,dock?1:0));set(l,b,FLOOD_T,fit(Kind.FLOOD,Direction.NORTH,dock?1:0));set(l,b,FLOOD_REAR,fit(Kind.FLOOD,Direction.SOUTH,rear?1:0));
+    }
     public static boolean inBoathouse(Vec3 r){return r.x>BOAT_W&&r.x<BOAT_E&&r.z<BOAT_S&&r.z>BOAT_N&&r.y>-.5&&r.y<4;}
 
     public static boolean inCabin(Vec3 r){return r.x>CAB_W&&r.x<CAB_E+1&&r.z<CAB_S&&r.z>CAB_N&&r.y>-.5&&r.y<4;}
@@ -117,6 +133,8 @@ public final class PinehookSite {
         pines(l,b);
         pumpHouse(l,b);
         lights(l,b,true);
+        set(l,b,JUNCTION,fit(Kind.JUNCTION,Direction.EAST,0));
+        floods(l,b,true,true);
     }
     /** The ground: grass on dirt on stone, everywhere south of the beach. */
     static void ground(ServerLevel l,BlockPos b){
@@ -148,6 +166,7 @@ public final class PinehookSite {
         box(l,b,-3,-1,-3,3,-1,0,s(Blocks.SPRUCE_PLANKS));
         for(int z=0;z>=-2;z--)for(int y=0;y<=1;y++){set(l,b,-3,y,z,s(Blocks.OAK_LOG).setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));set(l,b,3,y,z,s(Blocks.OAK_LOG).setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));}
         set(l,b,-3,2,-1,s(Blocks.CHAIN));
+        set(l,b,PADDLE,fit(Kind.PADDLE,Direction.WEST,0));
     }
     /** The gravel drive to the apron, the lane east through the trees. */
     static void drive(ServerLevel l,BlockPos b){
@@ -262,7 +281,8 @@ public final class PinehookSite {
         for(int z=LAKE_S;z>DOCK_END;z-=4)for(int x:new int[]{DOCK_W,DOCK_E})for(int y=LAKE_FLOOR+1;y<=-2;y++)set(l,b,x,y,z,s(Blocks.SPRUCE_FENCE).setValue(FenceBlock.WATERLOGGED,true));
         for(int x:new int[]{T_W,T_E})for(int y=LAKE_FLOOR+1;y<=-2;y++)set(l,b,x,y,DOCK_END+1,s(Blocks.SPRUCE_FENCE).setValue(FenceBlock.WATERLOGGED,true));
         for(int x:new int[]{T_W,T_E})set(l,b,x,0,DOCK_END+1,s(Blocks.SPRUCE_FENCE));
-        set(l,b,T_E,1,DOCK_END+1,s(Blocks.LANTERN));
+        // The floodlights' pole at the head of the beach; the T's light on its east post.
+        for(int y=0;y<=2;y++)set(l,b,FLOOD_BEACH.getX(),y,FLOOD_BEACH.getZ(),s(Blocks.SPRUCE_FENCE));
         moorBoat(l,b,true,0);
     }
     /** The rowboat off the T, at its east end where Len keeps it, or at the west end where it is found, with its stern's stage. */
@@ -284,8 +304,14 @@ public final class PinehookSite {
         set(l,b,BOATHOUSE_DOOR,door.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));set(l,b,BOATHOUSE_DOOR.above(),door.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
         NovelRooms.sign(l,b.offset(BOATHOUSE_DOOR.getX()+1,1,BOAT_S+1),Direction.SOUTH,new String[]{"PRIVATE","","NO ENTRY",""});
         set(l,b,13,1,BOAT_S,s(Blocks.GLASS_PANE));set(l,b,17,1,BOAT_S,s(Blocks.GLASS_PANE));
-        // Inside: the safe in the far corner, a chair, a bench, a lantern.
+        // Inside: the safe in the far corner, a chair, a bench, a lantern, the wall rack with the oars and the hook; the slip gate in the
+        // lake wall; outside, the brace bar leaning by the door; off the dock, the slip's release rope on its piling.
         set(l,b,SAFE,fit(Kind.SAFE,Direction.WEST,0));
+        set(l,b,RACK,fit(Kind.RACK,Direction.EAST,0));
+        slip(l,b,false);
+        set(l,b,BRACE_LEANING,fit(Kind.BRACE,Direction.NORTH,0));
+        for(int y=LAKE_FLOOR+1;y<=-1;y++)set(l,b,RELEASE.getX(),y,RELEASE.getZ(),s(Blocks.SPRUCE_FENCE).setValue(FenceBlock.WATERLOGGED,true));
+        set(l,b,RELEASE,fit(Kind.RELEASE,Direction.WEST,0));
         set(l,b,13,0,-52,stairs(Blocks.SPRUCE_STAIRS,Direction.WEST));
         set(l,b,13,0,-47,top(Blocks.SPRUCE_SLAB));set(l,b,13,0,-48,top(Blocks.SPRUCE_SLAB));
         set(l,b,15,3,-50,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));

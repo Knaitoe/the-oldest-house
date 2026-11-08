@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/pinehook/junction_2",
+    "s": "the_oldest_house:block/pinehook/steel",
+    "particle": "the_oldest_house:block/pinehook/steel"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        2,
+        12
+      ],
+      "to": [
+        13,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

@@ -1309,5 +1309,10 @@
   "subtitles.the_oldest_house.pinehook.tape": "A tape slots into the deck",
   "item.the_oldest_house.pinehook_tie": "Coverall tie",
   "item.the_oldest_house.pinehook_costume": "Mask and coverall",
-  "item.the_oldest_house.pinehook_plan": "Casey's plan"
+  "item.the_oldest_house.pinehook_plan": "Casey's plan",
+  "item.the_oldest_house.pinehook_oars": "Oars",
+  "item.the_oldest_house.pinehook_hook": "Boat hook",
+  "item.the_oldest_house.pinehook_paddle": "Paddle",
+  "item.the_oldest_house.pinehook_key": "Small key",
+  "item.the_oldest_house.pinehook_envelope": "Len's envelope"
 }
