@@ -19,7 +19,8 @@ import net.neoforged.neoforge.registries.*;
 
 /**
  * 0.4.351, The Last Crossing (docs/LAST_CROSSING_0_4_351.md): the flood station's fittings, the things the crew carries about the station
- * (the handprint plate, the mooring line, the station lamp, the intake worker's wrench), and the station's sounds. Drawn by
+ * (the handprint plate, the mooring line, the station lamp, the intake worker's wrench, and from Day Two the cable tools), and the station's
+ * sounds. Drawn by
  * tools/draw_last_crossing_art.py; heard from tools/generate_last_crossing_audio.py. From 0.4.352, Night One: the things that come up out
  * of the water (Undertow) and the night's sounds.
  */
@@ -40,12 +41,16 @@ public final class CrossingRegistry {
     public static final DeferredItem<Item> LINE=ITEMS.registerSimpleItem("crossing_line",new Item.Properties().stacksTo(1));
     public static final DeferredItem<Item> LAMP=ITEMS.registerSimpleItem("crossing_lamp",new Item.Properties().stacksTo(1));
     public static final DeferredItem<Item> WRENCH=ITEMS.registerSimpleItem("crossing_wrench",new Item.Properties().stacksTo(1));
+    /** Day Two: the cable tools Vera lays on the desk for whoever takes the far end of the winch: a scraper, a marlinspike, rags. */
+    public static final DeferredItem<Item> TOOLS=ITEMS.registerSimpleItem("crossing_tools",new Item.Properties().stacksTo(1));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** A knock in the speaking pipe; the pump taking its load; something tapping back under the grate; the bleed screw letting go. */
     public static final DeferredHolder<SoundEvent,SoundEvent> KNOCK=sound("crossing.knock"),PUMP=sound("crossing.pump"),TAP=sound("crossing.tap"),BLEED=sound("crossing.bleed");
     /** Night One: the surge through the intake; the second breath an infected reader hears under their own; the things from the water; the
      * ferry straining at the first rise; the line snapping. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SURGE=sound("crossing.surge"),BREATH=sound("crossing.breath"),UNDERTOW=sound("crossing.undertow"),RISE=sound("crossing.rise"),SNAP=sound("crossing.snap");
+    /** Day Two: the winch drum ratcheting a notch; something answering through the pipes; water running behind a grate in a flooded branch. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> RATCHET=sound("crossing.ratchet"),SCRAPE=sound("crossing.scrape"),BRANCH=sound("crossing.branch");
     private CrossingRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);TYPES.register(bus);bus.addListener(CrossingRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(UNDERTOW_TYPE.get(),Undertow.attributes().build());}

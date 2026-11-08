@@ -63,6 +63,22 @@ public final class LastCrossingSite {
         FLOOD_OUT=new Vec3(15.5,0,-55.5),FAR_WATCH=new Vec3(33.5,0,-94.5);
     /** Where a reader pulled up through the landing comes over the rail: west, east or south of it. */
     public static final List<Vec3> PULLED_UP=List.of(new Vec3(14.5,0,-63.5),new Vec3(21.5,0,-63.5),new Vec3(17.5,0,-59.5));
+    /** 0.4.353, Day Two: where Vera reads the slate and lays the cable tools on the desk; the witness plate on the cable bed at the far end;
+     * the winch's parking catch beside the brake; the work bell by the roller bed; the two bypass wheels, the winch's in the cable house and
+     * the ramp's in the intake; the water stain's place under the fairlead. */
+    public static final BlockPos TOOLS=new BlockPos(18,1,-44),WITNESS=new BlockPos(46,0,-64),CATCH=new BlockPos(49,0,-56),WORK_BELL=new BlockPos(44,0,-64),
+        WINCH_BYPASS=new BlockPos(51,0,-59),RAMP_BYPASS=new BlockPos(23,-6,-62),STAIN=new BlockPos(48,0,-65);
+    public static final Vec3 VERA_SLATE=new Vec3(13.5,0,-43.5);
+    /** The ramp branch, the low tunnel from the sluice pit under the ramp and the spillway to the cable house's flooded passage: its grate
+     * into the pit and its grate into the passage, two high each. */
+    public static final List<BlockPos> PIT_GRATES=List.of(new BlockPos(27,-7,-60),new BlockPos(27,-6,-60)),PASSAGE_GRATES=List.of(new BlockPos(43,-7,-60),new BlockPos(43,-6,-60));
+    public static final int RAMP_BRANCH_W=28,RAMP_BRANCH_E=42,RAMP_BRANCH_Z=-60,BRANCH_LOW=-7,BRANCH_HIGH=-6;
+    /** The winch branch: a short spur off the passage, north under the cable house floor, coming up under a floor grate behind the brake.
+     * Its sluice (z -58) stands between it and the passage until its bypass is opened. */
+    public static final List<BlockPos> FLOOR_GRATES=List.of(new BlockPos(50,-1,-57),new BlockPos(51,-1,-57));
+    public static final int SPUR_W=50,SPUR_E=51,SPUR_Z=-57,SLUICE_Z=-58,SPUR_LOW=-7,SPUR_HIGH=-2;
+    /** Where one of the things from the water comes up when it is called to a grate by day: into the pit, or up through the floor grate. */
+    public static final Vec3 PIT_RISE=new Vec3(25.5,-7,-60.5),FLOOR_RISE=new Vec3(50.5,0,-56.5);
     /** The far bank: the landing, the lamp, the cable's anchor and the shelter whose door is the way on. */
     public static final BlockPos FAR_LAMP=new BlockPos(37,3,-95),ANCHOR=new BlockPos(47,0,-94),ONWARD=new BlockPos(43,0,-98);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -250,8 +266,9 @@ public final class LastCrossingSite {
         set(l,b,PIPE_A_DOWN,fit(Kind.PIPE,Direction.SOUTH));
         for(int[] c:new int[][]{{15,-56},{21,-56},{21,-60},{15,-60}})set(l,b,c[0],-2,c[1],s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
         set(l,b,22,LOWER,-54,s(Blocks.BARREL).setValue(BarrelBlock.FACING,Direction.UP));
-        // The way into the branches: a grate in the east wall, shut, the pit beyond it.
+        // The way into the branches: a grate in the east wall, shut, the pit beyond it; the ramp branch's bypass wheel beside it.
         for(int y=LOWER;y<=LOWER+1;y++)set(l,b,PUMP_E,y,-60,s(Blocks.IRON_BARS));
+        set(l,b,RAMP_BYPASS,fit(Kind.BYPASS,Direction.WEST));
     }
     /** The sluice pit beside the ramp: a ladder down to the wheel, the pin on its deck above, a speaking pipe between them. */
     static void pit(ServerLevel l,BlockPos b){
@@ -267,9 +284,13 @@ public final class LastCrossingSite {
     }
     /** The service branches under the apron, dry, their grates shut: from the pit east under the ramp and the spillway to the cable house. */
     static void branches(ServerLevel l,BlockPos b){
-        for(int y=-7;y<=-6;y++){set(l,b,27,y,-60,s(Blocks.IRON_BARS));box(l,b,28,y,-60,42,y,-60,s(Blocks.AIR));set(l,b,43,y,-60,s(Blocks.IRON_BARS));}
+        for(int y=BRANCH_LOW;y<=BRANCH_HIGH;y++)box(l,b,RAMP_BRANCH_W,y,RAMP_BRANCH_Z,RAMP_BRANCH_E,y,RAMP_BRANCH_Z,s(Blocks.AIR));
+        for(var g:PIT_GRATES)set(l,b,g,fit(Kind.BRANCH,Direction.EAST));for(var g:PASSAGE_GRATES)set(l,b,g,fit(Kind.BRANCH,Direction.EAST));
         box(l,b,28,-8,-60,42,-8,-60,s(Blocks.STONE_BRICKS));
         for(int x=30;x<=42;x+=4)set(l,b,x,-5,-60,s(Blocks.STONE_BRICKS));
+        // The winch branch: its floor and walls, dry behind its sluice; the floor grate over it in the cable house.
+        box(l,b,SPUR_W-1,SPUR_LOW-1,SPUR_Z-1,SPUR_E+1,SPUR_HIGH,SPUR_Z+1,s(Blocks.STONE_BRICKS));
+        box(l,b,SPUR_W,SPUR_LOW,SPUR_Z,SPUR_E,SPUR_HIGH,SPUR_Z,s(Blocks.AIR));
     }
     /** The ramp head and the landing where the ferry lies: the bell, the loose line, the depth post, the cut in the river wall and its sill. */
     static void landing(ServerLevel l,BlockPos b){
@@ -336,6 +357,11 @@ public final class LastCrossingSite {
         // The dry ledge along the west wall, out of the drum's way.
         for(int z=-56;z>=-64;z--)set(l,b,LEDGE_X,0,z,s(Blocks.STONE_BRICK_SLAB));
         set(l,b,CABLE_BRACKET,fit(Kind.BRACKET,Direction.WEST));set(l,b,BAR_REST,fit(Kind.BAR,Direction.NORTH));
+        // Day Two: the floor grate over the winch branch behind the brake, its bypass wheel by it, the parking catch, the witness plate on the
+        // bed at the far end, and the work bell by the roller bed.
+        for(var g:FLOOR_GRATES)set(l,b,g,fit(Kind.FLOOR_GRATE,Direction.NORTH));
+        set(l,b,WINCH_BYPASS,fit(Kind.BYPASS,Direction.WEST));set(l,b,CATCH,fit(Kind.CATCH,Direction.WEST));set(l,b,WITNESS,fit(Kind.WITNESS,Direction.EAST));
+        set(l,b,WORK_BELL,s(Blocks.BELL).setValue(BellBlock.FACING,Direction.EAST).setValue(BellBlock.ATTACHMENT,BellAttachType.FLOOR));
         for(int z:new int[]{-58,-63})set(l,b,46,4,z,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
         // The cable out over the river to its anchor on the far bank.
         for(int z=CABLE_N-1;z>ANCHOR.getZ();z--)set(l,b,CABLE_X,0,z,chain(Direction.Axis.Z));
@@ -373,6 +399,19 @@ public final class LastCrossingSite {
         for(int z=-35;z>PUMP_S;z--)set(l,b,23,5,z,chain(Direction.Axis.Z));
         set(l,b,23,6,PUMP_S,s(Blocks.LIGHTNING_ROD));
     }
+    /** Day Two: the ramp branch flooded from the river with its bypass open, and dry again with it shut. */
+    static void floodRamp(ServerLevel l,BlockPos b){for(int y=BRANCH_LOW;y<=BRANCH_HIGH;y++)box(l,b,RAMP_BRANCH_W,y,RAMP_BRANCH_Z,RAMP_BRANCH_E,y,RAMP_BRANCH_Z,water());}
+    static void drainRamp(ServerLevel l,BlockPos b){for(int y=BRANCH_LOW;y<=BRANCH_HIGH;y++)box(l,b,RAMP_BRANCH_W,y,RAMP_BRANCH_Z,RAMP_BRANCH_E,y,RAMP_BRANCH_Z,s(Blocks.AIR));}
+    /** The winch branch: its sluice drawn and the spur full of the passage's water, or the sluice dropped and the spur dry. A body in the
+     * sluice's way keeps it from dropping there. */
+    static void floodSpur(ServerLevel l,BlockPos b){
+        for(int y=SPUR_LOW;y<=SPUR_HIGH;y++)for(int x=SPUR_W;x<=SPUR_E;x++){set(l,b,x,y,SLUICE_Z,water());set(l,b,x,y,SPUR_Z,water());}
+    }
+    static void drainSpur(ServerLevel l,BlockPos b){
+        for(int y=SPUR_LOW;y<=SPUR_HIGH;y++)for(int x=SPUR_W;x<=SPUR_E;x++){
+            var at=b.offset(x,y,SLUICE_Z);if(l.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,new net.minecraft.world.phys.AABB(at)).isEmpty())set(l,b,x,y,SLUICE_Z,s(Blocks.STONE_BRICKS));}
+        for(int y=SPUR_LOW;y<=SPUR_HIGH;y++)for(int x=SPUR_W;x<=SPUR_E;x++)set(l,b,x,y,SPUR_Z,s(Blocks.AIR));
+    }
     /** Everything the crew can move or change, as it stands in the morning before anyone comes. */
     public static void living(ServerLevel l,BlockPos b){
         set(l,b,CLIPBOARD,fit(Kind.CLIPBOARD,Direction.SOUTH));
@@ -387,6 +426,14 @@ public final class LastCrossingSite {
         set(l,b,HATCH,fit(Kind.HATCH,Direction.NORTH));
         set(l,b,BAR_REST,fit(Kind.BAR,Direction.NORTH));set(l,b,BAR_ACROSS,s(Blocks.AIR));set(l,b,ISOLATOR,fit(Kind.ISOLATOR,Direction.SOUTH));set(l,b,STAIR_HOOK,fit(Kind.HOOK,Direction.EAST,0));
         set(l,b,GRATE,fit(Kind.GRATE,Direction.NORTH,1));
+        // Day Two: both bypasses shut and their branches dry, the grates dry, the witness plate greased, the catch off, no stain, the tools
+        // put away, the cable house's brake set.
+        set(l,b,RAMP_BYPASS,fit(Kind.BYPASS,Direction.WEST));set(l,b,WINCH_BYPASS,fit(Kind.BYPASS,Direction.WEST));
+        drainRamp(l,b);drainSpur(l,b);
+        for(var g:PIT_GRATES)set(l,b,g,fit(Kind.BRANCH,Direction.EAST));for(var g:PASSAGE_GRATES)set(l,b,g,fit(Kind.BRANCH,Direction.EAST));
+        for(var g:FLOOR_GRATES)set(l,b,g,fit(Kind.FLOOR_GRATE,Direction.NORTH));
+        set(l,b,WITNESS,fit(Kind.WITNESS,Direction.EAST));set(l,b,CATCH,fit(Kind.CATCH,Direction.WEST));set(l,b,STAIN,s(Blocks.AIR));set(l,b,TOOLS,s(Blocks.AIR));
+        set(l,b,CABLE_BRAKE,fit(Kind.BRAKE,Direction.WEST));
         // The lower floor dry again, whatever came up into it in the night.
         for(int x=PUMP_W+1;x<PUMP_E;x++)for(int y=LOWER;y<=-2;y++)for(int z=PUMP_S-1;z>PUMP_N;z--){var at=b.offset(x,y,z);if(l.getBlockState(at).is(Blocks.WATER))BuildBlocks.set(l,at,s(Blocks.AIR),F);}
     }
