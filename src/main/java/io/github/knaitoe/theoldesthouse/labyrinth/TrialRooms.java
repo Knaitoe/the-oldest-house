@@ -35,18 +35,35 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  * <p>0.4.386, the soft floor (docs/SOFT_FLOOR_0_4_386.md): squares of sodden carpet over a passage three down. A square sinks while
  * anyone stands on it and at two seconds gives way; two on one square sink it twice as fast. Low beams to crouch under and staggered
  * half-walls slow a reader down. The passage leads back to two steps up beside the entry. Keep moving.
+ *
+ * <p>0.4.387, the rising stair (docs/RISING_STAIR_0_4_387.md): a shaft climbed by treads let into its walls, a gap here and there.
+ * While anyone is on the stair the water rises a block every second and a half. It has an undertow, so nobody floats up on it, and
+ * nobody jumps a gap with it over their feet. Two pockets in the walls hold air, and while the only readers in the shaft are in
+ * them, or past the water on the landing at the head, the water goes down. Out of air, a reader is back on the landing at the foot.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TrialRooms {
     private TrialRooms(){}
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR;}
+    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR||place==LabyrinthPlace.RISING_STAIR;}
     static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){
         if(place==LabyrinthPlace.STILL_LIGHT)buildStillLight(level,base);else if(place==LabyrinthPlace.SOFT_FLOOR)buildSoftFloor(level,base);
+        else if(place==LabyrinthPlace.RISING_STAIR)buildRisingStair(level,base);
     }
     static void tick(ServerLevel level,BlockPos base,LabyrinthPlace place,CompoundTag room,long clock,List<ServerPlayer> readers){
+        // A room is ticked only while someone is in it. Coming back to one left empty, it is as it was before anyone came.
+        long now=level.getGameTime();boolean back=now-room.getLong("TrialSeen")>1;room.putLong("TrialSeen",now);
+        if(back)rest(level,base,place,room);
         if(place==LabyrinthPlace.STILL_LIGHT)stillLight(level,base,room,clock,readers);
         else if(place==LabyrinthPlace.SOFT_FLOOR)softFloor(level,base,clock,readers);
+        else if(place==LabyrinthPlace.RISING_STAIR)risingStair(level,base,room,clock,readers);
+    }
+
+    /** Everything as it was before anyone came: the boards and squares whole and the lamps out, the shaft dry. */
+    static void rest(ServerLevel l,BlockPos b,LabyrinthPlace place,CompoundTag room){
+        if(place==LabyrinthPlace.STILL_LIGHT){settle(l,b);room.putInt("StillFade",0);if(lit(room))lamps(l,b,room,false);}
+        else if(place==LabyrinthPlace.SOFT_FLOOR)softSettle(l,b,true);
+        else if(place==LabyrinthPlace.RISING_STAIR){flood(l,b,0);room.putInt("RisingEmpty",0);}
     }
 
     // ---- The still light ----
@@ -209,10 +226,15 @@ public final class TrialRooms {
             if(!TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE)||s.getValue(TrialBlock.STAGE)==3){it.remove();continue;}
             int load=e.getValue()-1;if(load<=0)it.remove();else e.setValue(load);sink(l,at,softStage(Math.max(0,load)));
         }
-        if(clock%60==0)for(int z=SOFT_FAR;z<=SOFT_NEAR;z++)for(int x=-SOFT_HALF;x<=SOFT_HALF;x++){
+        if(clock%60==0)softSettle(l,b,false);
+    }
+    /** Squares nobody is bearing down on are whole again; one that gave way only with nothing in its cell. Coming back, every square. */
+    private static void softSettle(ServerLevel l,BlockPos b,boolean all){
+        for(int z=SOFT_FAR;z<=SOFT_NEAR;z++)for(int x=-SOFT_HALF;x<=SOFT_HALF;x++){
             var at=b.offset(x,-1,z);var s=l.getBlockState(at);
+            if(all)LOAD.remove(at.asLong());
             if(!TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE)||s.getValue(TrialBlock.STAGE)==0||LOAD.containsKey(at.asLong()))continue;
-            if(s.getValue(TrialBlock.STAGE)==3&&!l.getEntitiesOfClass(Entity.class,new AABB(at)).isEmpty())continue;
+            if((all||s.getValue(TrialBlock.STAGE)==3)&&!l.getEntitiesOfClass(Entity.class,new AABB(at).expandTowards(0,1,0)).isEmpty())continue;
             l.setBlock(at,s.setValue(TrialBlock.STAGE,0),FLAGS);
         }
     }
@@ -222,6 +244,92 @@ public final class TrialRooms {
         if(stage==3){LOAD.remove(at.asLong());l.playSound(null,at,SoundEvents.MUD_BREAK,SoundSource.BLOCKS,1F,.6F);
             l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,mat("soft_under")),at.getX()+.5,at.getY()+.6,at.getZ()+.5,12,.35,.1,.35,.05);}
         else if(stage>was)l.playSound(null,at,SoundEvents.MUD_STEP,SoundSource.BLOCKS,.8F,.5F+.1F*stage);
+    }
+
+    // ---- The rising stair ----
+
+    /** The shaft is nine by nine (x -4..4, z -12..-4); the landing at its foot (z -1, -2) is behind a door in its south wall. */
+    public static final int SHAFT_HALF=4,SHAFT_NEAR=-4,SHAFT_FAR=-12,SHAFT_TOP=24;
+    /** The treads, one a cell round the walls, each half a block above the last: forty-four of them, up to the landing at the head. */
+    public static final int TREADS=44;
+    /** The treads missing, each a single stride to jump. */
+    public static final Set<Integer> GAPS=Set.of(6,14,22,30,38,41);
+    /** Ticks between one layer of water and the next; the layers the water fills, from the shaft floor up; ticks between draining layers. */
+    public static final int RISE=30,LAYERS=21,DRAIN=4;
+    /** The two pockets: the doorway a reader steps through from a tread, and the air trapped above the cell behind it. */
+    public static final BlockPos POCKET_LOW=new BlockPos(5,4,-8),POCKET_HIGH=new BlockPos(-5,12,-8);
+    /** Where the water is measured: the middle of the shaft, clear of every tread. */
+    public static final BlockPos PROBE=new BlockPos(-2,0,-8);
+    /** The cell of the ring at a step round it, clockwise from the foot of the stair beside the door. */
+    public static int[] ring(int i){
+        i=Math.floorMod(i,32);
+        if(i<4)return new int[]{1+i,SHAFT_NEAR};
+        if(i<12)return new int[]{SHAFT_HALF,SHAFT_NEAR-1-(i-4)};
+        if(i<20)return new int[]{SHAFT_HALF-1-(i-12),SHAFT_FAR};
+        if(i<28)return new int[]{-SHAFT_HALF,SHAFT_FAR+1+(i-20)};
+        return new int[]{-SHAFT_HALF+1+(i-28),SHAFT_NEAR};
+    }
+    /** A tread's top, in half blocks above the shaft floor. */
+    public static int treadTop2(int i){return i+1;}
+    /** Where a tread stands: its block and whether it is a half step. */
+    public static BlockPos tread(int i){int[] c=ring(i);int t2=treadTop2(i);return new BlockPos(c[0],t2%2==0?t2/2-1:(t2-1)/2,c[1]);}
+    public static boolean halfTread(int i){return treadTop2(i)%2==1;}
+    /** The pockets' cells: the doorway in the wall and the cell behind it fill with the water; the two above that never do. */
+    public static List<BlockPos> pocketWater(BlockPos door){int out=door.getX()>0?1:-1;return List.of(door,door.above(),door.offset(out,0,0),door.offset(out,1,0));}
+    public static List<BlockPos> pocketAir(BlockPos door){int out=door.getX()>0?1:-1;return List.of(door.offset(out,2,0),door.offset(out,3,0));}
+
+    private static void buildRisingStair(ServerLevel l,BlockPos b){
+        var wall=mat("rising_wall");var ceiling=mat("rising_ceiling");var floor=mat("rising_floor");var landing=mat("rising_landing");var window=mat("rising_window");var air=Blocks.AIR.defaultBlockState();
+        box(l,b,-7,-1,SHAFT_FAR-1,7,SHAFT_TOP+1,0,wall);
+        box(l,b,-SHAFT_HALF,SHAFT_TOP+1,SHAFT_FAR,SHAFT_HALF,SHAFT_TOP+1,SHAFT_NEAR,ceiling);
+        box(l,b,-SHAFT_HALF,0,SHAFT_FAR,SHAFT_HALF,SHAFT_TOP,SHAFT_NEAR,air);
+        box(l,b,-SHAFT_HALF,-1,SHAFT_FAR,SHAFT_HALF,-1,SHAFT_NEAR,floor);
+        box(l,b,-1,0,-2,1,3,-1,air);box(l,b,-1,-1,-2,1,-1,-1,landing);
+        box(l,b,0,0,-3,0,1,-3,air);LabyrinthBuilder.placeDoor(l,b.offset(0,0,-3),net.minecraft.core.Direction.SOUTH);
+        for(int i=0;i<TREADS;i++)if(!GAPS.contains(i)){var at=tread(i);set(l,b,at.getX(),at.getY(),at.getZ(),TrialBlock.of(TrialBlock.Kind.RISING_TREAD,halfTread(i)?1:0));}
+        box(l,b,0,21,SHAFT_FAR,3,21,SHAFT_FAR+1,landing);
+        for(var door:List.of(POCKET_LOW,POCKET_HIGH)){for(var at:pocketWater(door))set(l,b,at.getX(),at.getY(),at.getZ(),air);for(var at:pocketAir(door))set(l,b,at.getX(),at.getY(),at.getZ(),air);}
+        for(int y:List.of(2,8,14,20)){set(l,b,5,y,-11,window);set(l,b,-5,y,-5,window);set(l,b,-2,y,SHAFT_FAR-1,window);}
+        LabyrinthBuilder.entrance(l,b,wall,landing,ceiling);
+    }
+
+    /** How many layers the water stands at, measured in the middle of the shaft. */
+    public static int water(ServerLevel l,BlockPos b){int n=0;while(n<LAYERS&&l.getFluidState(b.offset(PROBE).above(n)).is(net.minecraft.tags.FluidTags.WATER))n++;return n;}
+    /** On the stair: in the shaft below the highest the water goes. Not in a pocket, and not on the landing at the head. */
+    public static boolean onStair(BlockPos b,net.minecraft.world.phys.Vec3 at){double x=at.x-b.getX(),z=at.z-b.getZ(),y=at.y-b.getY();return x>=-SHAFT_HALF&&x<SHAFT_HALF+1&&z>=SHAFT_FAR&&z<SHAFT_NEAR+1&&y>=-1&&y<LAYERS;}
+    /** Fills or drains one layer of the shaft: open cells to water, treads waterlogged, the pockets' lower cells with them. */
+    public static void layer(ServerLevel l,BlockPos b,int y,boolean wet){
+        var water=Blocks.WATER.defaultBlockState();var air=Blocks.AIR.defaultBlockState();
+        var cells=new ArrayList<BlockPos>();
+        for(int z=SHAFT_FAR;z<=SHAFT_NEAR;z++)for(int x=-SHAFT_HALF;x<=SHAFT_HALF;x++)cells.add(new BlockPos(x,y,z));
+        for(var door:List.of(POCKET_LOW,POCKET_HIGH))for(var at:pocketWater(door))if(at.getY()==y)cells.add(at);
+        for(var rel:cells){var at=b.offset(rel);var s=l.getBlockState(at);
+            if(s.is(TrialRegistry.FITTING.get())){if(s.getValue(TrialBlock.WATERLOGGED)!=wet)l.setBlock(at,s.setValue(TrialBlock.WATERLOGGED,wet),FLAGS);}
+            else if(wet&&s.isAir())l.setBlock(at,water,FLAGS);
+            else if(!wet&&s.is(Blocks.WATER))l.setBlock(at,air,FLAGS);
+        }
+    }
+    /** Test and command hook: the water at a given number of layers at once. */
+    public static void flood(ServerLevel l,BlockPos b,int layers){for(int y=0;y<LAYERS;y++)layer(l,b,y,y<layers);}
+
+    private static void risingStair(ServerLevel l,BlockPos b,CompoundTag room,long clock,List<ServerPlayer> readers){
+        boolean anyone=false;
+        for(var p:readers)if(onStair(b,p.position()))anyone=true;
+        int level=water(l,b);
+        if(anyone){room.putInt("RisingEmpty",0);
+            if(clock%RISE==0&&level<LAYERS){layer(l,b,level,true);l.playSound(null,b.offset(0,level,-8),SoundEvents.BUCKET_EMPTY,SoundSource.BLOCKS,.9F,.5F);}
+        }else{int empty=room.getInt("RisingEmpty")+1;room.putInt("RisingEmpty",empty);
+            if(empty>=20&&level>0&&clock%DRAIN==0){layer(l,b,level-1,false);if(level%4==1)l.playSound(null,b.offset(0,level,-8),SoundEvents.BUCKET_FILL,SoundSource.BLOCKS,.7F,.5F);}
+        }
+        for(var p:readers){
+            var rel=p.position().subtract(b.getX(),b.getY(),b.getZ());
+            boolean shaft=rel.x>=-SHAFT_HALF&&rel.x<SHAFT_HALF+1&&rel.z>=SHAFT_FAR&&rel.z<SHAFT_NEAR+1;
+            if(shaft&&l.getFluidState(p.blockPosition()).is(net.minecraft.tags.FluidTags.WATER)){p.push(0,-.05,0);p.hurtMarked=true;}
+            if(l.getFluidState(BlockPos.containing(p.getEyePosition())).is(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()<=0){
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);p.resetFallDistance();p.setAirSupply(p.getMaxAirSupply());
+                p.displayClientMessage(Component.literal("The landing again, and the taste of the water.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
+            }
+        }
     }
 
     /** Nothing that burns will stay alight in the still light: a torch, a lantern or a lamp set down there goes out in the hand. */

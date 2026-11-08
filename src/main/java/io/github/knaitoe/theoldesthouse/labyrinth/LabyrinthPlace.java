@@ -641,7 +641,9 @@ public enum LabyrinthPlace {
     /** 0.4.385, the still light (TrialRooms, docs/STILL_LIGHT_0_4_385.md): a dark board floor whose lamps come up only while someone stands still; off the worn way the boards give in the dark. */
     STILL_LIGHT("still_light",Kind.GRAY,223,new BoundingBox(-5,-4,-44,5,4,0),grayDoors(0,0,-44)),
     /** 0.4.386, the soft floor (TrialRooms, docs/SOFT_FLOOR_0_4_386.md): sodden squares that sink under a reader and give way after two seconds' standing. */
-    SOFT_FLOOR("soft_floor",Kind.GRAY,224,new BoundingBox(-4,-4,-42,4,4,0),grayDoors(0,0,-42));
+    SOFT_FLOOR("soft_floor",Kind.GRAY,224,new BoundingBox(-4,-4,-42,4,4,0),grayDoors(0,0,-42)),
+    /** 0.4.387, the rising stair (TrialRooms, docs/RISING_STAIR_0_4_387.md): a shaft climbed round its walls while the water rises behind, with an undertow and two pockets of air. */
+    RISING_STAIR("rising_stair",Kind.GRAY,225,new BoundingBox(-7,-1,-13,7,25,0),grayDoors(1,22,-13));
 
     /** What a place is to the dealer. */
     public enum Kind {

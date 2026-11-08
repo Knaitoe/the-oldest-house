@@ -8,6 +8,8 @@ Draws, in native Minecraft pixels from fixed seeds:
   ceiling lamp, dark and lit.
 - the soft floor (0.4.386): wallpaper gone soft and tide-marked with damp, a ceiling stained in brown rings, firm quarry tiles for
   the landings, packed earth and joists below, squares of sodden carpet (whole and sinking), and a low adzed beam.
+- the rising stair (0.4.387): glazed tile gone green and black where the water stands, a brick vault, silted flags at the foot of
+  the shaft and dry ones at its head, a frosted window lit from behind, and the worn stone of the treads.
 
 Writes the models and block states, and the blocks' names. --check verifies everything written.
 """
@@ -42,6 +44,13 @@ EARTH = '#4f3f30'
 CARPET = '#4d4a35'
 CARPET_WET = '#2f2e22'
 TIMBER = '#3d2b1d'
+GLAZE = '#5f7a6c'
+GLAZE_JOINT = '#2f3a33'
+VAULT = '#6a5545'
+FLAG = '#7d7a70'
+SILT = '#5d5a4a'
+FROST = '#d8cfa8'
+TREAD = '#8a8577'
 
 
 def rgb(c):
@@ -271,6 +280,87 @@ def beam(seed):
     return im
 
 
+def glazed(seed):
+    """Glazed tiles in a stack bond, four to a block, a highlight on each, crazed here and there, and green-black slime in the
+    joints."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = shade(GLAZE, rnd.randint(-4, 4))
+            if x % 8 in (1, 2) and y % 8 == 1:
+                c = shade(GLAZE, 22)
+            im.putpixel((x, y), c)
+    for i in range(16):
+        for j in (0, 8):
+            im.putpixel((i, j), shade(GLAZE_JOINT, rnd.randint(-3, 3)))
+            im.putpixel((j, i), shade(GLAZE_JOINT, rnd.randint(-3, 3)))
+    for _ in range(3):
+        x, y = rnd.randrange(1, 15), rnd.randrange(1, 15)
+        if x % 8 and y % 8:
+            im.putpixel((x, y), shade(GLAZE, -14))
+    return im
+
+
+def vault(seed):
+    """Brick laid in courses for a vault, soot along the joints."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            off = 4 if (y // 4) % 2 else 0
+            joint = y % 4 == 3 or (x + off) % 8 == 7
+            im.putpixel((x, y), shade('#2c2622', rnd.randint(-2, 2)) if joint else shade(VAULT, rnd.randint(-6, 6)))
+    return im
+
+
+def flags(seed, silted):
+    """Stone flags, two to a block in uneven sizes. Silted: a skin of grey-brown silt over them, gathered in the joints."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = shade(FLAG, rnd.randint(-6, 6) + (4 if x < 10 else -3))
+            if silted:
+                c = mix(c, SILT, .5 + rnd.random() * .15)
+            im.putpixel((x, y), c)
+    for i in range(16):
+        im.putpixel((10, i), shade('#3b3a35', 0) if not silted else shade(SILT, -16))
+        im.putpixel((i, 0), shade('#3b3a35', 0) if not silted else shade(SILT, -16))
+        if i < 10:
+            im.putpixel((i, 7), shade('#3b3a35', 0) if not silted else shade(SILT, -16))
+    return im
+
+
+def frosted(seed):
+    """Frosted glass in four panes, lit warm from behind, the glazing bars dark."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            d = abs(x - 7.5) + abs(y - 7.5)
+            im.putpixel((x, y), shade(mix(FROST, '#fff6d8', max(0.0, .6 - d * .05)), rnd.randint(-3, 3)))
+    for i in range(16):
+        for j in (0, 15, 7, 8):
+            im.putpixel((i, j), shade('#3a3329', 0))
+            im.putpixel((j, i), shade('#3a3329', 0))
+    return im
+
+
+def tread_stone(seed):
+    """The worn stone of a tread: pale and smooth where feet go, a darker nosing along one edge."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            c = shade(TREAD, rnd.randint(-5, 5))
+            c = mix(c, '#aaa597', max(0.0, .45 - abs(x - 7.5) * .05 - abs(y - 9) * .04))
+            im.putpixel((x, y), c)
+    for x in range(16):
+        im.putpixel((x, 0), shade(TREAD, -18)); im.putpixel((x, 1), shade(TREAD, -8))
+    return im
+
+
 MATERIALS = [
     ('still_wall', 'Blackened Wainscot'),
     ('still_ceiling', 'Smoke-Dark Plaster'),
@@ -280,6 +370,11 @@ MATERIALS = [
     ('soft_ceiling', 'Stained Ceiling Tiles'),
     ('soft_landing', 'Quarry Tiles'),
     ('soft_under', 'Packed Earth'),
+    ('rising_wall', 'Wet Glazed Tile'),
+    ('rising_ceiling', 'Brick Vault'),
+    ('rising_floor', 'Silted Flags'),
+    ('rising_landing', 'Stone Flags'),
+    ('rising_window', 'Lit Frosted Window'),
 ]
 def textures():
     return {
@@ -287,6 +382,8 @@ def textures():
         'still_board': boards(3852, False), 'still_under': brick(3853), 'still_lamp_off': lamp(False), 'still_lamp_on': lamp(True),
         'soft_wall': wallpaper(3860), 'soft_ceiling': stained_tile(3861), 'soft_landing': quarry(3862), 'soft_under': earth(3863),
         'soft_plate': carpet(3864), 'soft_beam': beam(3865),
+        'rising_wall': glazed(3870), 'rising_ceiling': vault(3871), 'rising_floor': flags(3872, True), 'rising_landing': flags(3872, False),
+        'rising_window': frosted(3873), 'rising_tread': tread_stone(3874),
     }
 
 
@@ -330,12 +427,15 @@ def files():
     for stage, top in ((0, 16), (1, 14), (2, 12)):
         out[f'models/block/trial_soft_plate_{stage}.json'] = slab_model('soft_plate', 0, top)
     out['models/block/trial_soft_beam.json'] = slab_model('soft_beam', 8, 16)
+    out['models/block/trial_rising_tread_full.json'] = slab_model('rising_tread', 0, 16)
+    out['models/block/trial_rising_tread_half.json'] = slab_model('rising_tread', 0, 8)
     # Every kind has a model at every stage; the stages a kind does not use repeat the ones it does.
     models = {
         'still_board': ['still_board', 'still_board_gone', 'still_board', 'still_board_gone'],
         'still_lamp': ['still_lamp_off', 'still_lamp_on', 'still_lamp_off', 'still_lamp_on'],
         'soft_plate': ['soft_plate_0', 'soft_plate_1', 'soft_plate_2', 'still_board_gone'],
         'soft_beam': ['soft_beam'] * 4,
+        'rising_tread': ['rising_tread_full', 'rising_tread_half', 'rising_tread_full', 'rising_tread_half'],
     }
     variants = {f'kind={kind},stage={stage}': {'model': NS + 'block/trial_' + names[stage]} for kind, names in models.items() for stage in range(4)}
     out['blockstates/trial_fitting.json'] = {'variants': variants}

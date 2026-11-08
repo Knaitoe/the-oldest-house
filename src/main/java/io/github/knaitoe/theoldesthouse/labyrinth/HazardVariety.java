@@ -72,7 +72,7 @@ public final class HazardVariety {
         case DUPLICATE_ROOMS->LabyrinthPlace.DUPLICATE_PASSAGE;case TURNING_GRAVITY->LabyrinthPlace.GRAVITY_DRIFT;default->p;};}
     public static int tier(LabyrinthPlace p){return switch(p){
         case COLD_STORE,LISTING_HALL,QUIET_HALL,BENT_CISTERN,RECEDING_HALL,STILL_LIGHT,SOFT_FLOOR->1;
-        case UNWATCHED_MAZE,MIRROR_HALL,HEAVY_AND_LIGHT,SPIRAL_WALKWAY,LAST_SCONCE,WATCHED_THRESHOLD,RETURN_AIR->2;
+        case UNWATCHED_MAZE,MIRROR_HALL,HEAVY_AND_LIGHT,SPIRAL_WALKWAY,LAST_SCONCE,WATCHED_THRESHOLD,RETURN_AIR,RISING_STAIR->2;
         case NESTED_ROOMS,COUNTING_STAIR,CORNER_PRESSURE,DUPLICATE_ROOMS,TURNING_GRAVITY,SETTLING_CELLAR->3;default->0;};}
     public static LabyrinthPlace routeVariant(LabyrinthPlace p,long route,LabyrinthData data){var a=switch(original(p)){
         case FLOODED_PASSAGE->LabyrinthPlace.BENT_CISTERN;case FRACTURED_WALKWAY->LabyrinthPlace.SPIRAL_WALKWAY;case COMPRESSION_PASSAGE->LabyrinthPlace.CORNER_PRESSURE;
@@ -110,7 +110,7 @@ public final class HazardVariety {
                 case LAST_SCONCE->{if(clock%20==0)sconce(l,b,world);}case WATCHED_THRESHOLD->{if(clock%70==0)threshold(l,b,world);}
                 case TURNING_GRAVITY->gravity(l,b,clock,here);
                 case RETURN_AIR,SETTLING_CELLAR->ServiceHazards.tick(l,b,place,world,clock,here.stream().map(r->r.player).toList());
-                case STILL_LIGHT,SOFT_FLOOR->TrialRooms.tick(l,b,place,world,clock,here.stream().map(r->r.player).toList());
+                case STILL_LIGHT,SOFT_FLOOR,RISING_STAIR->TrialRooms.tick(l,b,place,world,clock,here.stream().map(r->r.player).toList());
                 default->{}
             }
             for(var r:here){r.lastZ=r.player.getZ();if(clock%20==0)save(e,r);}if(clock%20==0)e.data.setStateEntry(ROOMS,key(b),world);

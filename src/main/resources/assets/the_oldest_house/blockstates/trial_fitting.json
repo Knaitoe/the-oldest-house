@@ -47,6 +47,18 @@
     },
     "kind=soft_beam,stage=3": {
       "model": "the_oldest_house:block/trial_soft_beam"
+    },
+    "kind=rising_tread,stage=0": {
+      "model": "the_oldest_house:block/trial_rising_tread_full"
+    },
+    "kind=rising_tread,stage=1": {
+      "model": "the_oldest_house:block/trial_rising_tread_half"
+    },
+    "kind=rising_tread,stage=2": {
+      "model": "the_oldest_house:block/trial_rising_tread_full"
+    },
+    "kind=rising_tread,stage=3": {
+      "model": "the_oldest_house:block/trial_rising_tread_half"
     }
   }
 }
