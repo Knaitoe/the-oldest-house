@@ -455,4 +455,81 @@ public final class HazardVarietyTests {
     }
     @AfterBatch(batch="rising_stair") public static void risingStairDone(ServerLevel level){close();}
 
+    /**
+     * 0.4.388, the hall of many lengths (docs/MANY_LENGTHS_0_4_388.md): five lengths, each the same block for block as the next,
+     * lit and walkable to the far door; a reader who walks the whole way is never moved back; one who sprints or jumps through a
+     * middle length walks it again, one length back and facing the same way; nobody is moved back while someone else can see it;
+     * the first and last lengths are free.
+     */
+    @GameTest(template="empty",batch="many_lengths",timeoutTicks=900)
+    public static void theHallOfManyLengthsSendsBackAReaderWhoHurries(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MANY_LENGTHS;var walker=f.player("lengths_walker",place);var runner=f.player("lengths_runner",place);var b=f.base(place);
+        var route=new ArrayList<Vec3>();
+        for(int k=0;k<TrialRooms.LENGTHS;k++){var o=TrialRooms.lengthOrigin(k);
+            for(double z=o.getZ()+.5;z>=o.getZ()-9.5;z-=.5)route.add(new Vec3(o.getX()+.5,0,z));
+            for(double x=o.getX()+1;x<=o.getX()+3.5;x+=.5)route.add(new Vec3(x,0,o.getZ()-9.5));
+            for(double z=o.getZ()-10;z>=o.getZ()-(k==TrialRooms.LENGTHS-1?10.5:11.5);z-=.5)route.add(new Vec3(o.getX()+3.5,0,z));}
+        var step=new int[]{0};
+        java.util.function.BiConsumer<ServerPlayer,BlockPos> at=(p,rel)->{f.at(p,place,rel.getX()+.5,0,rel.getZ()+.5);p.setOnGround(true);};
+        java.util.function.Function<Integer,BlockPos> start=k->TrialRooms.lengthOrigin(k);
+        java.util.function.Function<Integer,BlockPos> mid=k->TrialRooms.lengthOrigin(k).offset(0,0,-4);
+        java.util.function.Function<Integer,BlockPos> bend=k->TrialRooms.lengthOrigin(k).offset(3,0,-10);
+        var mark=new double[3];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall of many lengths is loaded"))
+                .thenExecute(()->{
+                    // The lengths a reader can be moved between (1 and 2, 2 and 3, 3 and 4) are the same; the first has the entry behind it and is never landed in.
+                    for(int k=TrialRooms.FIRST_FOLD-1;k<TrialRooms.LAST_FOLD;k++){var o=TrialRooms.lengthOrigin(k);var n=TrialRooms.lengthOrigin(k+1);
+                        for(int x=-2;x<=5;x++)for(int y=-1;y<=3;y++)for(int z=0;z>=-11;z--){var a=f.level.getBlockState(b.offset(o).offset(x,y,z));var c=f.level.getBlockState(b.offset(n).offset(x,y,z));
+                            h.assertTrue(a==c,"length "+k+" and length "+(k+1)+" are the same at "+x+","+y+","+z+": "+a+" / "+c);}}
+                    for(int k=0;k<TrialRooms.LENGTHS;k++){var o=TrialRooms.lengthOrigin(k);
+                        f.body(b,o.getX()+.5,0,o.getZ()-4.5,1,"the straight of length "+k);f.body(b,o.getX()+3.5,0,o.getZ()-9.5,1,"the bend of length "+k);
+                        h.assertTrue(f.level.getBlockState(b.offset(o).offset(0,2,-4)).getLightEmission()>0,"a lit lamp over length "+k);}
+                    var door=TrialRooms.lengthsDoor();
+                    h.assertTrue(f.level.getBlockState(b.offset(door)).getBlock() instanceof DoorBlock,"the far door round the last bend");f.body(b,door.getX()+.5,0,door.getZ()+1.5,1,"the way to the far door");
+                    h.assertTrue(TrialMarks.kind(place)==place&&HazardVariety.tier(place)==2&&LabyrinthPacing.physicalTrial(place),"a second-tier physical trial, and a mark of its own");
+                    f.at(runner,place,.5,0,400);
+                })
+                .thenExecuteFor(route.size(),()->{var v=route.get(Math.min(step[0],route.size()-1));step[0]++;f.at(walker,place,v.x,0,v.z);walker.setOnGround(true);})
+                .thenIdle(3)
+                .thenExecute(()->{h.assertTrue(TrialRooms.folds(walker)==0&&walker.getZ()-b.getZ()<TrialRooms.lengthOrigin(TrialRooms.LENGTHS-1).getZ()-9,"walking, a reader crosses every length once ("+TrialRooms.folds(walker)+" moved back)");
+                    f.at(walker,place,.5,0,400);at.accept(runner,mid.apply(1));})
+                .thenIdle(2).thenExecute(()->runner.setSprinting(true))
+                .thenIdle(2).thenExecute(()->at.accept(runner,bend.apply(1)))
+                .thenIdle(2).thenExecute(()->{mark[0]=runner.getYRot();at.accept(runner,start.apply(2));})
+                .thenIdle(2).thenExecute(()->{var back=start.apply(1);
+                    h.assertTrue(TrialRooms.folds(runner)==1&&Math.abs(runner.getX()-b.getX()-(back.getX()+.5))<.01&&Math.abs(runner.getZ()-b.getZ()-(back.getZ()+.5))<.01&&runner.getYRot()==(float)mark[0],
+                            "sprinting through the second length, the reader is back at its start, one length back and facing the same way ("+runner.position().subtract(Vec3.atLowerCornerOf(b))+")");
+                    runner.setSprinting(false);at.accept(runner,mid.apply(0));})
+                .thenIdle(2).thenExecute(()->at.accept(runner,mid.apply(1)))
+                .thenIdle(2).thenExecute(()->at.accept(runner,bend.apply(1)))
+                .thenIdle(2).thenExecute(()->at.accept(runner,start.apply(2)))
+                .thenIdle(2).thenExecute(()->{h.assertTrue(TrialRooms.folds(runner)==1&&TrialRooms.lengthOf(b,runner.getZ())==2,"walking it again, the reader goes on");runner.awardStat(net.minecraft.stats.Stats.JUMP);})
+                .thenIdle(2).thenExecute(()->at.accept(runner,bend.apply(2)))
+                .thenIdle(2).thenExecute(()->at.accept(runner,start.apply(3)))
+                .thenIdle(2).thenExecute(()->{h.assertTrue(TrialRooms.folds(runner)==2&&TrialRooms.lengthOf(b,runner.getZ())==2,"a jump in a length counts as hurrying it");
+                    at.accept(runner,mid.apply(2));runner.setSprinting(true);})
+                .thenIdle(2).thenExecute(()->{runner.setSprinting(false);at.accept(runner,bend.apply(2));
+                    f.at(walker,place,bend.apply(2).getX()+.5,0,bend.apply(2).getZ()+.5);walker.setYRot(180);walker.setYHeadRot(180);walker.setXRot(0);})
+                .thenIdle(2).thenExecute(()->at.accept(runner,start.apply(3).offset(0,0,-1)))
+                .thenExecuteFor(6,()->{})
+                .thenExecute(()->{h.assertTrue(TrialRooms.folds(runner)==2&&TrialRooms.lengthOf(b,runner.getZ())==3,"while someone else watches, nobody is moved back");
+                    walker.setYRot(-90);walker.setYHeadRot(-90);})
+                .thenIdle(3)
+                .thenExecute(()->{h.assertTrue(TrialRooms.folds(runner)==3&&TrialRooms.lengthOf(b,runner.getZ())==2,"once nobody sees it, the move back owed is made");
+                    f.at(walker,place,.5,0,400);at.accept(runner,bend.apply(-1));runner.setSprinting(true);})
+                .thenIdle(2).thenExecute(()->at.accept(runner,mid.apply(0)))
+                .thenIdle(2).thenExecute(()->at.accept(runner,bend.apply(0)))
+                .thenIdle(2).thenExecute(()->at.accept(runner,start.apply(1)))
+                .thenIdle(2).thenExecute(()->{h.assertTrue(TrialRooms.folds(runner)==3&&TrialRooms.lengthOf(b,runner.getZ())==1,"the first length is free");
+                    runner.setSprinting(false);at.accept(runner,mid.apply(3));})
+                .thenIdle(2).thenExecute(()->at.accept(runner,bend.apply(3)))
+                .thenIdle(2).thenExecute(()->at.accept(runner,start.apply(4)))
+                .thenIdle(2).thenExecute(()->{runner.setSprinting(true);at.accept(runner,mid.apply(4));})
+                .thenIdle(2).thenExecute(()->at.accept(runner,bend.apply(4)))
+                .thenIdle(2).thenExecute(()->{var door=TrialRooms.lengthsDoor();at.accept(runner,door.offset(0,0,1));})
+                .thenIdle(2).thenExecute(()->h.assertTrue(TrialRooms.folds(runner)==3&&runner.getZ()-b.getZ()<TrialRooms.lengthsDoor().getZ()+2.1,"and so is the last: the reader reaches the far door"))
+                .thenSucceed();
+    }
+    @AfterBatch(batch="many_lengths") public static void manyLengthsDone(ServerLevel level){close();}
+
 }

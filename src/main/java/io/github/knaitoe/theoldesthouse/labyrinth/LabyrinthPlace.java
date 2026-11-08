@@ -643,7 +643,9 @@ public enum LabyrinthPlace {
     /** 0.4.386, the soft floor (TrialRooms, docs/SOFT_FLOOR_0_4_386.md): sodden squares that sink under a reader and give way after two seconds' standing. */
     SOFT_FLOOR("soft_floor",Kind.GRAY,224,new BoundingBox(-4,-4,-42,4,4,0),grayDoors(0,0,-42)),
     /** 0.4.387, the rising stair (TrialRooms, docs/RISING_STAIR_0_4_387.md): a shaft climbed round its walls while the water rises behind, with an undertow and two pockets of air. */
-    RISING_STAIR("rising_stair",Kind.GRAY,225,new BoundingBox(-7,-1,-13,7,25,0),grayDoors(1,22,-13));
+    RISING_STAIR("rising_stair",Kind.GRAY,225,new BoundingBox(-7,-1,-13,7,25,0),grayDoors(1,22,-13)),
+    /** 0.4.388, the hall of many lengths (TrialRooms, docs/MANY_LENGTHS_0_4_388.md): five identical lengths with the long hallway's bends; whoever hurries through a middle length walks it again. */
+    MANY_LENGTHS("many_lengths",Kind.GRAY,226,new BoundingBox(-2,-1,-63,20,3,0),grayDoors(18,0,-63));
 
     /** What a place is to the dealer. */
     public enum Kind {

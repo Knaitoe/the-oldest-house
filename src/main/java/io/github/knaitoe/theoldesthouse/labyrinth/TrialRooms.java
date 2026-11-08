@@ -40,15 +40,21 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  * While anyone is on the stair the water rises a block every second and a half. It has an undertow, so nobody floats up on it, and
  * nobody jumps a gap with it over their feet. Two pockets in the walls hold air, and while the only readers in the shaft are in
  * them, or past the water on the landing at the head, the water goes down. Out of air, a reader is back on the landing at the foot.
+ *
+ * <p>0.4.388, the hall of many lengths (docs/MANY_LENGTHS_0_4_388.md): five identical lengths of hall, each nine blocks on and a
+ * bend aside, like the long hallway's. A reader who hurries through the second, third or fourth length (sprints or jumps in it) is
+ * moved back to the start of it as they leave it, seamlessly, out of everyone else's sight; a reader who walks crosses in fixed
+ * time. Readers who go in together come out apart, and the first through hear the others' steps in the walls.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TrialRooms {
     private TrialRooms(){}
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR||place==LabyrinthPlace.RISING_STAIR;}
+    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR||place==LabyrinthPlace.RISING_STAIR||place==LabyrinthPlace.MANY_LENGTHS;}
     static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){
         if(place==LabyrinthPlace.STILL_LIGHT)buildStillLight(level,base);else if(place==LabyrinthPlace.SOFT_FLOOR)buildSoftFloor(level,base);
         else if(place==LabyrinthPlace.RISING_STAIR)buildRisingStair(level,base);
+        else if(place==LabyrinthPlace.MANY_LENGTHS)buildLengths(level,base);
     }
     static void tick(ServerLevel level,BlockPos base,LabyrinthPlace place,CompoundTag room,long clock,List<ServerPlayer> readers){
         // A room is ticked only while someone is in it. Coming back to one left empty, it is as it was before anyone came.
@@ -57,6 +63,7 @@ public final class TrialRooms {
         if(place==LabyrinthPlace.STILL_LIGHT)stillLight(level,base,room,clock,readers);
         else if(place==LabyrinthPlace.SOFT_FLOOR)softFloor(level,base,clock,readers);
         else if(place==LabyrinthPlace.RISING_STAIR)risingStair(level,base,room,clock,readers);
+        else if(place==LabyrinthPlace.MANY_LENGTHS)lengths(level,base,clock,readers);
     }
 
     /** Everything as it was before anyone came: the boards and squares whole and the lamps out, the shaft dry. */
@@ -330,6 +337,90 @@ public final class TrialRooms {
                 p.displayClientMessage(Component.literal("The landing again, and the taste of the water.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
             }
         }
+    }
+
+    // ---- The hall of many lengths ----
+
+    /** One length of the hall: nine blocks on, then a bend three aside to the next, as in the long hallway (LabyrinthLoops). */
+    public static final BlockPos LENGTH=new BlockPos(3,0,-12);
+    /** Where the first length starts. The bend behind the entry door is length -1, so every length has the same bend behind it. */
+    public static final BlockPos FIRST_LENGTH=new BlockPos(3,0,-3);
+    public static final int LENGTH_STRAIGHT=9,LENGTHS=5;
+    /** Leaving a length into this one or later, up to the last, a reader who hurried through it walks it again. The first and last lengths are free. */
+    public static final int FIRST_FOLD=2,LAST_FOLD=4;
+    /** Ticks between the steps the first through hear in the walls. */
+    public static final int STEPS=7;
+    public static BlockPos lengthOrigin(int k){return FIRST_LENGTH.offset(LENGTH.getX()*k,0,LENGTH.getZ()*k);}
+    /** Which length a z coordinate lies in: -1 the bend behind the door, LENGTHS the far wall. */
+    public static int lengthOf(BlockPos b,double z){return (int)Math.floor((b.getZ()+FIRST_LENGTH.getZ()+1-z)/-LENGTH.getZ());}
+    /** Whether a column (relative to the base) is open floor: standing room inside the entry door, each length's straight, and every bend from the one behind the door to the last. */
+    public static boolean lengthOpen(int x,int z){
+        if(x>=-1&&x<=1&&z<=0&&z>=-3)return true;
+        for(int k=-1;k<LENGTHS;k++){var o=lengthOrigin(k);int lx=x-o.getX(),lz=z-o.getZ();
+            if(k>=0&&lx>=-1&&lx<=1&&lz<=0&&lz>=-(LENGTH_STRAIGHT-1))return true;
+            if(lx>=-1&&lx<=4&&lz<=-9&&lz>=-11)return true;}
+        return false;
+    }
+    /** The far door: where the sixth length would begin, round the last bend from the fifth's straight. */
+    public static BlockPos lengthsDoor(){return lengthOrigin(LENGTHS);}
+
+    private static void buildLengths(ServerLevel l,BlockPos b){
+        var wall=mat("lengths_wall");var rule=mat("lengths_rule");var floor=mat("lengths_floor");var ceiling=mat("lengths_ceiling");var air=Blocks.AIR.defaultBlockState();
+        var door=lengthsDoor();
+        box(l,b,-2,-1,door.getZ(),door.getX()+2,3,0,wall);
+        for(int x=-1;x<=door.getX()+1;x++)for(int z=door.getZ()+1;z<=0;z++){if(!lengthOpen(x,z))continue;
+            set(l,b,x,-1,z,floor);for(int y=0;y<=2;y++)set(l,b,x,y,z,air);set(l,b,x,3,z,ceiling);
+            for(var d:net.minecraft.core.Direction.Plane.HORIZONTAL){int nx=x+d.getStepX(),nz=z+d.getStepZ();
+                if(nz<=0&&nz>=door.getZ()&&!lengthOpen(nx,nz))set(l,b,nx,1,nz,rule);}
+        }
+        for(int k=0;k<LENGTHS;k++){var o=lengthOrigin(k);set(l,b,o.getX(),2,o.getZ()-4,TrialBlock.of(TrialBlock.Kind.STILL_LAMP,1));}
+        LabyrinthBuilder.entrance(l,b,wall,floor,ceiling);
+    }
+
+    /** Each reader's pace: the length they were last in, whether they hurried in it, a move back owed, their jumps and moves back so far. */
+    private static final class Pace{int length,jumps,folds;boolean hurried,owed;long seen;double x,z,moved;}
+    private static final Map<ServerPlayer,Pace> PACE=new WeakHashMap<>();
+    private static int jumps(ServerPlayer p){return p.getStats().getValue(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.JUMP));}
+    /** How many times the hall has moved a reader back, this time through. */
+    public static int folds(ServerPlayer p){var s=PACE.get(p);return s==null?0:s.folds;}
+
+    private static void lengths(ServerLevel l,BlockPos b,long clock,List<ServerPlayer> readers){
+        long now=l.getGameTime();
+        for(var p:readers){
+            int k=lengthOf(b,p.getZ());
+            var s=PACE.get(p);
+            if(s==null||now-s.seen>1){s=new Pace();s.length=k;s.jumps=jumps(p);s.x=p.getX();s.z=p.getZ();PACE.put(p,s);}
+            s.seen=now;s.moved=Math.hypot(p.getX()-s.x,p.getZ()-s.z);s.x=p.getX();s.z=p.getZ();
+            int j=jumps(p);if(p.isSprinting()||j>s.jumps)s.hurried=true;s.jumps=j;
+            if(k!=s.length){
+                if(k==s.length+1&&k>=FIRST_FOLD&&k<=LAST_FOLD&&s.hurried)s.owed=true;
+                else if(k<s.length)s.owed=false;
+                s.length=k;s.hurried=false;
+            }
+            if(!s.owed)continue;
+            // Owed a move back: only from inside the straight of a length that has one behind it, and only unseen.
+            if(k<FIRST_FOLD||k>LAST_FOLD||p.getZ()-b.getZ()<=lengthOrigin(k).getZ()-(LENGTH_STRAIGHT-1)){s.owed=false;continue;}
+            var to=p.position().subtract(LENGTH.getX(),0,LENGTH.getZ());
+            if(seenByAnother(l,p,p.getEyePosition(),p.position().add(0,1,0),to.add(0,p.getEyeHeight(),0),to.add(0,1,0)))continue;
+            io.github.knaitoe.theoldesthouse.house.HouseInternalTeleport.shift(p,to,p.getYRot());
+            s.x=to.x;s.z=to.z;s.length=k-1;s.hurried=false;s.owed=false;s.folds++;
+            if(s.folds==1)line(p,"The same bend, again.");else if(s.folds==3)line(p,"No nearer for hurrying.");
+        }
+        // The first through hear the others in the walls, as long as anyone behind them is still walking.
+        if(clock%STEPS==0)for(var ahead:readers){int ka=lengthOf(b,ahead.getZ());if(ka<LENGTHS-1)continue;
+            for(var behind:readers){var s=PACE.get(behind);if(behind==ahead||s==null||lengthOf(b,behind.getZ())>=LENGTHS-1||s.moved<.05)continue;
+                double side=(clock/STEPS)%2==0?2.5:-2.5;
+                LiteraryVignettes.heard(ahead,SoundEvents.WOOD_STEP,BlockPos.containing(ahead.getX()+side,ahead.getY(),ahead.getZ()),.35F,.75F+.1F*(float)((clock/STEPS)%3));
+                break;}}
+    }
+    private static void line(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+    /** Whether anyone else could see a point, a spectator's camera included: within 48 blocks, inside a wide cone, nothing solid between. */
+    static boolean seenByAnother(ServerLevel l,ServerPlayer self,net.minecraft.world.phys.Vec3... points){
+        for(var o:l.players()){if(o==self||o.isSleeping())continue;var cam=o.getCamera();if(cam.level()!=l)continue;var eye=cam.getEyePosition();var look=cam.getLookAngle();
+            for(var pt:points){var to=pt.subtract(eye);double d=to.length();if(d>48)continue;if(d<1.5)return true;if(look.dot(to.scale(1/d))<.26)continue;
+                var hit=l.clip(new net.minecraft.world.level.ClipContext(eye,pt,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,cam));
+                if(hit.getType()==net.minecraft.world.phys.HitResult.Type.MISS)return true;}}
+        return false;
     }
 
     /** Nothing that burns will stay alight in the still light: a torch, a lantern or a lamp set down there goes out in the hand. */

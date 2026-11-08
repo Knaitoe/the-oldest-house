@@ -6,7 +6,8 @@ Status: **being built (November 8)**. The owner left the open questions to judge
 - Trial 1, the still light: built in 0.4.385 ([STILL_LIGHT_0_4_385.md](STILL_LIGHT_0_4_385.md)).
 - Trial 2, the soft floor: built in 0.4.386 ([SOFT_FLOOR_0_4_386.md](SOFT_FLOOR_0_4_386.md)). Trial 3, the listening room, is set aside: the quiet hall of 0.4.80 already is one.
 - Trial 6, the rising stair: built in 0.4.387 ([RISING_STAIR_0_4_387.md](RISING_STAIR_0_4_387.md)), in the listening room's place. The water rises faster than proposed, with an undertow, and the pockets let it fall.
-- Next: the hall of many lengths (trial 10), five halls, then R2. R3 and R4 wait for a playtest.
+- Trial 10, the hall of many lengths: built in 0.4.388 ([MANY_LENGTHS_0_4_388.md](MANY_LENGTHS_0_4_388.md)), with T2 and P1. The bends hide each length from the next, so no private copies (T1) are needed.
+- Next: the door that follows (trial 4, which the owner asked for), five halls, then R2. R3 and R4 wait for a playtest.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 

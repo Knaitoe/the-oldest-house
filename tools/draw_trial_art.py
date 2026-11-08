@@ -10,6 +10,8 @@ Draws, in native Minecraft pixels from fixed seeds:
   the landings, packed earth and joists below, squares of sodden carpet (whole and sinking), and a low adzed beam.
 - the rising stair (0.4.387): glazed tile gone green and black where the water stands, a brick vault, silted flags at the foot of
   the shaft and dry ones at its head, a frosted window lit from behind, and the worn stone of the treads.
+- the hall of many lengths (0.4.388): pale distempered plaster, a walnut rail at waist height with a brass rule let into it, oak
+  boards measured off by a brass strip at every block, and a plain coffered ceiling.
 
 Writes the models and block states, and the blocks' names. --check verifies everything written.
 """
@@ -51,6 +53,11 @@ FLAG = '#7d7a70'
 SILT = '#5d5a4a'
 FROST = '#d8cfa8'
 TREAD = '#8a8577'
+DISTEMPER = '#9fa18e'
+WALNUT = '#3b2b1f'
+BRASS = '#a88a4c'
+OAK = '#86684a'
+COFFER = '#b2b0a0'
 
 
 def rgb(c):
@@ -361,6 +368,72 @@ def tread_stone(seed):
     return im
 
 
+def distemper(seed):
+    """Distempered plaster, pale and chalky, with the faint vertical drag of the brush."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    streak = [rnd.randint(-3, 3) for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(DISTEMPER, streak[x] + rnd.randint(-2, 2)))
+    for _ in range(4):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        im.putpixel((x, y), shade(DISTEMPER, -7))
+    return im
+
+
+def rule_rail(seed):
+    """A walnut rail with a brass rule let into it: a tick every two pixels, longer every four, longest every eight, so a run
+    of them reads as a measure."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            k = rnd.randint(-3, 3) + (4 if y in (1, 14) else 0) - (5 if y in (0, 15) else 0)
+            im.putpixel((x, y), shade(WALNUT, k + (2 if (x + y // 3) % 7 == 0 else 0)))
+    for y in range(5, 11):
+        for x in range(16):
+            im.putpixel((x, y), shade(BRASS, rnd.randint(-4, 4) + (10 if y == 5 else -12 if y == 10 else 0)))
+    for x in range(0, 16, 2):
+        n = 3 if x % 8 == 0 else 2 if x % 4 == 0 else 1
+        for y in range(6, 6 + n):
+            im.putpixel((x, y), shade(BRASS, -42))
+    return im
+
+
+def measured_boards(seed):
+    """Oak boards running the length of the hall, four to a block, and a strip of brass across them at every block."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    tones = [rnd.randint(-5, 5) for _ in range(4)]
+    for y in range(16):
+        for x in range(16):
+            k = tones[x // 4] + rnd.randint(-3, 3) + (2 if x % 4 in (1, 2) else 0)
+            im.putpixel((x, y), shade(OAK, k))
+    for y in range(16):
+        for x in (0, 4, 8, 12):
+            im.putpixel((x, y), shade(OAK, -30))
+    for x in range(16):
+        im.putpixel((x, 0), shade(BRASS, 8 if x % 4 else -10))
+    return im
+
+
+def coffered(seed):
+    """A plain coffered ceiling: one sunk panel to a block, lit along one edge of its frame and shadowed along the other."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            frame = x < 2 or y < 2 or x > 13 or y > 13
+            k = rnd.randint(-2, 2) + (6 if frame else -4)
+            if x == 2 or y == 2:
+                k -= 10
+            elif x == 13 or y == 13:
+                k += 4
+            im.putpixel((x, y), shade(COFFER, k))
+    return im
+
+
 MATERIALS = [
     ('still_wall', 'Blackened Wainscot'),
     ('still_ceiling', 'Smoke-Dark Plaster'),
@@ -375,6 +448,10 @@ MATERIALS = [
     ('rising_floor', 'Silted Flags'),
     ('rising_landing', 'Stone Flags'),
     ('rising_window', 'Lit Frosted Window'),
+    ('lengths_wall', 'Distempered Plaster'),
+    ('lengths_ceiling', 'Coffered Plaster'),
+    ('lengths_floor', 'Measured Boards'),
+    ('lengths_rule', 'Measuring Rail'),
 ]
 def textures():
     return {
@@ -384,6 +461,8 @@ def textures():
         'soft_plate': carpet(3864), 'soft_beam': beam(3865),
         'rising_wall': glazed(3870), 'rising_ceiling': vault(3871), 'rising_floor': flags(3872, True), 'rising_landing': flags(3872, False),
         'rising_window': frosted(3873), 'rising_tread': tread_stone(3874),
+        'lengths_wall': distemper(3880), 'lengths_ceiling': coffered(3881), 'lengths_floor': measured_boards(3882),
+        'lengths_rule': rule_rail(3883),
     }
 
 

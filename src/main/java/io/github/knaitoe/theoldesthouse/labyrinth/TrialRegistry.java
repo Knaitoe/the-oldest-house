@@ -20,7 +20,9 @@ public final class TrialRegistry {
         /* 0.4.386, the soft floor: wallpaper gone soft with damp, a ceiling stained brown, the firm landings and the packed earth below. */
         "soft_wall","soft_ceiling","soft_landing","soft_under",
         /* 0.4.387, the rising stair: wet glazed tile, a vaulted ceiling, silted flags at the foot, dry flags at the head, and windows lit from behind. */
-        "rising_wall","rising_ceiling","rising_floor","rising_landing","rising_window");
+        "rising_wall","rising_ceiling","rising_floor","rising_landing","rising_window",
+        /* 0.4.388, the hall of many lengths: distempered plaster, a measuring rail at waist height, boards measured off in brass, a coffered ceiling. */
+        "lengths_wall","lengths_ceiling","lengths_floor","lengths_rule");
     private static Block like(String name){return switch(name){case "still_under","rising_wall","rising_ceiling","rising_floor","rising_landing","rising_window"->Blocks.STONE_BRICKS;case "soft_under"->Blocks.PACKED_MUD;default->Blocks.DARK_OAK_PLANKS;};}
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("trial_"+name,name.equals("rising_window")?fixed(like(name)).lightLevel(s->12):fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
