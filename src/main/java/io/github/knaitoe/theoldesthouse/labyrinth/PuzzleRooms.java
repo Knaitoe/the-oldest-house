@@ -73,7 +73,9 @@ public final class PuzzleRooms {
         TENSION_ROOMS(LabyrinthPlace.TENSION_ROOMS,Family.TENSION,true,null),
         YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null),
         // 0.4.345: the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md), reading the yard from above to set its gates from below. The far gate is ordinary: the herd is what waits.
-        YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null);
+        YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null),
+        // 0.4.358: the Survey Stakes' deeper variant (YardFields.surveyDeep, docs/YARD_FINISHING_0_4_358.md): the stakes line up with a fence that has no gate. The far gate is ordinary: the fence is what waits.
+        YARD_SURVEY_DEEP(LabyrinthPlace.YARD_SURVEY_DEEP,Family.SURVEY,true,null);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;

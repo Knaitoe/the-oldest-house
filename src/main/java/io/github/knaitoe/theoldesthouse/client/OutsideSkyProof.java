@@ -36,9 +36,11 @@ public final class OutsideSkyProof extends Screen {
                 HouseInteriorEffects.drawSkyAt(net.minecraft.core.BlockPos.ZERO,stair,new Matrix4f(),new Vec3(.7,.8,1),.25F);
                 if(HouseInteriorEffects.blackAt(origin,origin.offset(13,4,12)))throw new IllegalStateException("The native domestic surroundings lost their outdoor sky");
             }else if(view<3)HouseOutsideEffects.drawSky(new Matrix4f().rotateX((float)Math.toRadians(new int[]{0,-45,25}[view])),new Vec3(.035,.05,.085),.5F);
+            // 0.4.358: the yard's night, home's stars a little out of place, looking up.
+            else if(view==5)HouseOutsideEffects.drawSky(new Matrix4f().rotateX((float)Math.toRadians(-50)),new Vec3(.035,.05,.085),.5F,true);
         }finally{RenderSystem.enableDepthTest();model.popMatrix();RenderSystem.applyModelViewMatrix();RenderSystem.setProjectionMatrix(previous,VertexSorting.ORTHOGRAPHIC_Z);}
         if(view==4){g.fill(0,0,width,height,0xFFFFEEAA);NovelSceneClient.drawCoveredDarkness(g);}
-        g.drawString(font,view==4?"Covered well: absolute darkness over a bright frame":view==3?"Native enclosed staircase: black background, no outside sky":"Native outside sky: "+new String[]{"horizon","above horizon","below horizon"}[view],12,12,0xFFE8E4D9,false);
+        g.drawString(font,view==5?"The yard at night: home's stars, fixed, a little out of place":view==4?"Covered well: absolute darkness over a bright frame":view==3?"Native enclosed staircase: black background, no outside sky":"Native outside sky: "+new String[]{"horizon","above horizon","below horizon"}[view],12,12,0xFFE8E4D9,false);
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof OutsideSkyProof s)||++s.frames<4)return;
@@ -50,19 +52,26 @@ public final class OutsideSkyProof extends Screen {
                 if((pixel&0xFFFFFF)!=0)nonblack++;
                 if(Math.min(Math.min(pixel&255,(pixel>>>8)&255),(pixel>>>16)&255)>60)lights++;
             }
-            image.writeToFile(folder.resolve(s.view==4?"native-covered-well-dark.png":s.view==3?"native-staircase-dark.png":"native-sky-"+s.view+".png"));
+            image.writeToFile(folder.resolve(s.view==5?"native-yard-sky.png":s.view==4?"native-covered-well-dark.png":s.view==3?"native-staircase-dark.png":"native-sky-"+s.view+".png"));
             // Looking down samples only the dim lower gradient; its 8-bit palette has fewer shades.
             // Text is outside this crop, so three distinct shades still reject a blank frame.
             int minimumColors=s.view==2?3:9;
             if(s.view<3&&colors.size()<minimumColors)throw new IllegalStateException("The native sky gradient is missing at view "+s.view+": colors="+colors.size());
             if(s.view==0&&lights<12)throw new IllegalStateException("The native horizon is missing stars/moon: lights="+lights);
-            if(s.view>=3&&nonblack>0)throw new IllegalStateException("Outdoor sky leaked into the native staircase background: "+nonblack+" pixels");
+            if(s.view==5){
+                if(lights<40)throw new IllegalStateException("The yard's night is missing home's stars: lights="+lights);
+                int n=YardSky.count();if(n<700)throw new IllegalStateException("The yard has too few of home's stars: "+n);
+                // Turned about one axis, a star near it moves least; most move a degree or more, none further than turn and drift together.
+                int moved=0;for(int i=0;i<n;i++){float off=YardSky.offset(i);if(off>YardSky.TURN+YardSky.DRIFT+.1F)throw new IllegalStateException("A yard star is "+off+" degrees from home's");if(off>=1F)moved++;}
+                if(moved<n*.8F)throw new IllegalStateException("Too few yard stars are out of place: "+moved+" of "+n);
+            }
+            else if(s.view>=3&&nonblack>0)throw new IllegalStateException("Outdoor sky leaked into the native staircase background: "+nonblack+" pixels");
         }
-        if(++s.view<5){s.frames=0;return;}
-        Files.writeString(folder.resolve("sky-passed.txt"),"Single outside sky mesh rendered at three camera elevations; actual pixels contain its gradient and stars/moon. Scene time is read-only and stable across native server clock updates and delayed cues.\n");
+        if(++s.view<6){s.frames=0;return;}
+        Files.writeString(folder.resolve("sky-passed.txt"),"Single outside sky mesh rendered at three camera elevations; actual pixels contain its gradient and stars/moon. Scene time is read-only and stable across native server clock updates and delayed cues. The yard's night shows home's stars, fixed, each turned a little off true.\n");
         Files.writeString(folder.resolve("staircase-dark-passed.txt"),"The shipped interior renderer suppresses outdoor sky; native staircase background pixels are black.\n");
         Files.writeString(folder.resolve("well-dark-passed.txt"),"The shipped covered-well compositor renders actual black pixels over a bright input frame.\n");
         TheOldestHouse.LOGGER.info("WELL DARK CHECK PASSED: covered wait compositor is opaque black");
-        TheOldestHouse.LOGGER.info("HOUSE SKY CHECK PASSED: three native sky screenshots and black staircase background saved");mc.setScreen(new WellVisualProof());
+        TheOldestHouse.LOGGER.info("HOUSE SKY CHECK PASSED: three native sky screenshots, the yard's night and the black staircase background saved");mc.setScreen(new WellVisualProof());
     }
 }

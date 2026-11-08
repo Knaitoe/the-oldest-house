@@ -323,7 +323,7 @@ Each slice ships with its documentation and tests and its own version. A story's
 Checked against the owner's draft on 8 November. Everything else in it is built: the turnaround and the shared apron for private departures (0.4.309, 0.4.314), the ditch and the clothesline (0.4.313), the Survey Stakes and the Flood Cut (0.4.314), Truant's toolshed, barn lantern and stock gate (0.4.316), the long drive, the porch turn and the joists over the state route (0.4.322), the Sphinx's field crossing (0.4.339), the Stock Gate and the Windbreak with its lean-to coming apart (0.4.345), the flash-flood ditch (0.4.346), the storm field (0.4.347) and the four stories' thresholds. What is left:
 
 1. ~~The Last Crossing's slice 4c (0.4.357): the nameplate and the spare, each reader's account, the Witness source and dealing.~~ Built in 0.4.357.
-2. A finishing release for the yard's small items:
+2. ~~A finishing release for the yard's small items~~ Built in 0.4.358 (`docs/YARD_FINISHING_0_4_358.md`):
    - the night variation of the sky, a fixed sky with a slightly displaced star pattern;
    - on a long straight, a silhouette under a distant streetlight that keeps its distance as the reader comes on;
    - the Survey Stakes' deeper variant, lined up with an opening in a fence that looks continuous until it is approached on that bearing;
