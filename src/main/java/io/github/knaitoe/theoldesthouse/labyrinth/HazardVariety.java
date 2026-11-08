@@ -63,7 +63,7 @@ public final class HazardVariety {
     private static String key(BlockPos b){return Long.toString(b.asLong());}
     private static String readerKey(ServerPlayer p,LabyrinthPlace place){return p.getUUID()+":"+place.id();}
     private static Engine engine(MinecraftServer s){var e=ENGINES.get(s);var origin=HouseSavedData.get(s).houseOrigin();if(e==null||e.data!=LabyrinthData.get(s)||!Objects.equals(e.origin,origin)){if(e!=null)for(var r:e.readers.values())clear(r.player);e=new Engine(s);ENGINES.put(s,e);}return e;}
-    public static boolean added(LabyrinthPlace p){return p!=null&&(p.slot()>=78&&p.slot()<=93||ServiceHazards.is(p));}
+    public static boolean added(LabyrinthPlace p){return p!=null&&(p.slot()>=78&&p.slot()<=93||ServiceHazards.is(p)||TrialRooms.is(p));}
     public static boolean newKind(LabyrinthPlace p){return added(p)&&!sibling(p);}
     public static boolean sibling(LabyrinthPlace p){return p!=null&&p.slot()>=86&&p.slot()<=93;}
     public static LabyrinthPlace original(LabyrinthPlace p){if(p==null)return null;return switch(p){
@@ -71,7 +71,7 @@ public final class HazardVariety {
         case RECEDING_HALL->LabyrinthPlace.FALSE_DISTANCE;case LAST_SCONCE->LabyrinthPlace.LIGHT_SINK;case WATCHED_THRESHOLD->LabyrinthPlace.MOVING_THRESHOLD;
         case DUPLICATE_ROOMS->LabyrinthPlace.DUPLICATE_PASSAGE;case TURNING_GRAVITY->LabyrinthPlace.GRAVITY_DRIFT;default->p;};}
     public static int tier(LabyrinthPlace p){return switch(p){
-        case COLD_STORE,LISTING_HALL,QUIET_HALL,BENT_CISTERN,RECEDING_HALL->1;
+        case COLD_STORE,LISTING_HALL,QUIET_HALL,BENT_CISTERN,RECEDING_HALL,STILL_LIGHT->1;
         case UNWATCHED_MAZE,MIRROR_HALL,HEAVY_AND_LIGHT,SPIRAL_WALKWAY,LAST_SCONCE,WATCHED_THRESHOLD,RETURN_AIR->2;
         case NESTED_ROOMS,COUNTING_STAIR,CORNER_PRESSURE,DUPLICATE_ROOMS,TURNING_GRAVITY,SETTLING_CELLAR->3;default->0;};}
     public static LabyrinthPlace routeVariant(LabyrinthPlace p,long route,LabyrinthData data){var a=switch(original(p)){
@@ -110,6 +110,7 @@ public final class HazardVariety {
                 case LAST_SCONCE->{if(clock%20==0)sconce(l,b,world);}case WATCHED_THRESHOLD->{if(clock%70==0)threshold(l,b,world);}
                 case TURNING_GRAVITY->gravity(l,b,clock,here);
                 case RETURN_AIR,SETTLING_CELLAR->ServiceHazards.tick(l,b,place,world,clock,here.stream().map(r->r.player).toList());
+                case STILL_LIGHT->TrialRooms.tick(l,b,place,world,clock,here.stream().map(r->r.player).toList());
                 default->{}
             }
             for(var r:here){r.lastZ=r.player.getZ();if(clock%20==0)save(e,r);}if(clock%20==0)e.data.setStateEntry(ROOMS,key(b),world);

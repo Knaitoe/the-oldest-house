@@ -28,7 +28,8 @@ public final class TrialMarks {
         Map.entry("unwatched_maze","the maze that moved while nobody watched"),Map.entry("mirror_hall","the mirror hall"),Map.entry("heavy_and_light","the rooms of weight"),
         Map.entry("nested_rooms","the rooms inside rooms"),Map.entry("counting_stair","the stair that counted"),Map.entry("return_air","the passage that drew breath"),
         Map.entry("settling_cellar","the settling cellar"),Map.entry("yard_flood","the flooded yard"),Map.entry("yard_windbreak","the windbreak"),
-        Map.entry("yard_ditch_flood","the ditch in flood"),Map.entry("yard_storm_field","the storm field"));
+        Map.entry("yard_ditch_flood","the ditch in flood"),Map.entry("yard_storm_field","the storm field"),
+        Map.entry("still_light","the room that lit for stillness"));
 
     /** The kind of trial a place is, if it is one: a sibling counts as the room it varies. */
     public static @Nullable LabyrinthPlace kind(@Nullable LabyrinthPlace place){

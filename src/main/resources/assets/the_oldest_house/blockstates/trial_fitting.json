@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "kind=still_board,stage=0": {
+      "model": "the_oldest_house:block/trial_still_board"
+    },
+    "kind=still_board,stage=1": {
+      "model": "the_oldest_house:block/trial_still_board_gone"
+    },
+    "kind=still_lamp,stage=0": {
+      "model": "the_oldest_house:block/trial_still_lamp_off"
+    },
+    "kind=still_lamp,stage=1": {
+      "model": "the_oldest_house:block/trial_still_lamp_on"
+    }
+  }
+}

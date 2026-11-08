@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.384** makes the great staircase harder to reach. It now waits twenty-four doors deep, and only for a reader who has come through three different kinds of trial by their far doors and heard four of the House's stories to their end. Each trial a reader comes through leaves a chalk mark on its frame, once for each kind, and the account keeps count of them. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 123. See [docs/SEALS_0_4_384.md](docs/SEALS_0_4_384.md). The previous candidate, 0.4.383, finished Feet Up ([docs/FEET_UP_LATER_0_4_383.md](docs/FEET_UP_LATER_0_4_383.md)). Full exact-commit CI is pending. 0.4.381 passed every job (run 1482).
+Development candidate **0.4.385** adds the still light, the first of the new trial rooms: a long dark room floored in boards over a trough, whose lamps come up only while someone in it stands still. One way across is worn pale and always holds; off it, the dusty boards give way in the dark. Stand still, look, then walk the next stretch from memory, or have a friend hold still and light it for you. It is a trial, so it counts toward the staircase's seals. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 124. See [docs/STILL_LIGHT_0_4_385.md](docs/STILL_LIGHT_0_4_385.md). The previous candidate, 0.4.384, made the staircase harder to reach: twenty-four doors deep, three trial marks and four stories heard to their end ([docs/SEALS_0_4_384.md](docs/SEALS_0_4_384.md)). Full exact-commit CI is pending. 0.4.381 passed every job (run 1482).
 
 ## Playing it
 
