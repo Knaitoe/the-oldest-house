@@ -81,7 +81,7 @@ public final class LiteraryTests {
                 NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,b.offset(-6,0,-23),Direction.EAST,PlayerInteractEvent.LeftClickBlock.Action.START));h.assertTrue(f.own(p,place).getInt("Knocks")==1,"a knock anywhere else is not an answer");h.succeed();});});}
     @AfterBatch(batch="literary_hill_answer") public static void hillAnswerDone(ServerLevel l){close();}
     /** 0.4.105: standing still through the chime costs nothing; moving puts the reader back a room, once a chime. */
-    @GameTest(template="empty",batch="literary_masque_chime",timeoutTicks=900)
+    @GameTest(template="empty",batch="literary_masque_chime",timeoutTicks=1300)
     public static void movingWhileTheClockSpeaksPutsTheReaderBackARoom(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.MASQUE;var p=f.player("masque_reader",place);var b=f.base(place);
         java.util.function.IntPredicate at=t->{long time=f.in.getGameTime()%400;return time>=t&&time<t+10;};
@@ -93,7 +93,11 @@ public final class LiteraryTests {
             .thenExecute(()->{h.assertTrue(Math.abs(p.getZ()-(b.getZ()-23.5))<.01&&Math.abs(p.getX()-(b.getX()+.5))<.01,"the reader is put back at the near door of the room before: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
                 h.assertTrue((f.own(p,place).getInt("Rooms")&~7)==0,"the rooms past it must be crossed again");f.at(p,place,.5,0,-27.5);})
             .thenIdle(12)
-            .thenExecute(()->h.assertTrue(Math.abs(p.getZ()-(b.getZ()-27.5))<.01||f.in.getGameTime()%400>=60,"one chime puts a reader back only once"))
+            .thenExecute(()->{h.assertTrue(Math.abs(p.getZ()-(b.getZ()-27.5))<.01||f.in.getGameTime()%400>=60,"one chime puts a reader back only once");
+                // 0.4.398 (owner: "his dialogue does not disappear"): the red figure's line is up to be read, then goes.
+                h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(96),a->a.role()==LiteraryActor.RED_FIGURE&&a.isCustomNameVisible()&&a.getCustomName()!=null&&a.getCustomName().getString().equals("The clock is speaking.")).size()==1,"a red figure says the clock is speaking");})
+            .thenIdle(LiteraryActor.SAY_LONGEST+5)
+            .thenExecute(()->h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(96),a->a.role()==LiteraryActor.RED_FIGURE&&a.isCustomNameVisible()).isEmpty(),"and the line goes once it has been read"))
             .thenSucceed();
     }
     @AfterBatch(batch="literary_masque_chime") public static void masqueChimeDone(ServerLevel l){close();}
