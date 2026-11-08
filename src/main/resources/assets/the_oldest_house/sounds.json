@@ -4231,5 +4231,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.yard.line_snap"
+  },
+  "truant_service.page": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:truant_service/page",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.truant_service.page"
   }
 }

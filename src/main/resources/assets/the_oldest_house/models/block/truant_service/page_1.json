@@ -1,0 +1,75 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/truant_service/paper_2",
+    "w": "the_oldest_house:block/truant_service/paper_1",
+    "particle": "the_oldest_house:block/truant_service/paper_1"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3.5
+      ],
+      "to": [
+        14,
+        0.25,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        0.25,
+        2.5
+      ],
+      "to": [
+        13,
+        0.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

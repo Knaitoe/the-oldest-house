@@ -1,0 +1,49 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/truant_service/blotter_0",
+    "o": "the_oldest_house:block/truant_service/oak",
+    "particle": "the_oldest_house:block/truant_service/blotter_0"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        0.5,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#o"
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#o"
+        }
+      }
+    }
+  ]
+}

@@ -25,12 +25,14 @@ import net.minecraft.world.phys.shapes.*;
  * <li>The lift brake on the landing: off (0), held (1).</li>
  * <li>The brake on the lift itself: off (0), on (1).</li>
  * <li>The lift's platform: an iron-bound floor across the shaft.</li>
+ * <li>0.4.359, his copying room (TruantSentence): a sheaf of pages on the desk, written (0), one line run by the wet (1), blank and
+ * ruled (2); the blotter, clean (0) or with a line taken off backwards (1); and pigeonholes stuffed with paper, a whole block.</li>
  * </ul>
  */
 public final class TruantFittingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<TruantFittingBlock> CODEC=simpleCodec(TruantFittingBlock::new);
     public enum Kind implements StringRepresentable {
-        ARROW,PIPE,BRAKE,CAR_BRAKE,PLATFORM,HASP,WEDGE,HATCH,SPLIT,STOCK_CHAIN,BOUGH;
+        ARROW,PIPE,BRAKE,CAR_BRAKE,PLATFORM,HASP,WEDGE,HATCH,SPLIT,STOCK_CHAIN,BOUGH,PAGE,BLOTTER,PIGEONHOLES;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -55,14 +57,18 @@ public final class TruantFittingBlock extends HorizontalDirectionalBlock {
             case HATCH->s.getValue(STAGE)==0?box(f,0,0,13,16,16,16):box(f,0,13,0,16,16,16);
             case SPLIT->Shapes.or(box(f,0,0,13,7,16,16),box(f,9,0,13,16,16,16));
             case BOUGH->box(f,0,1,6,16,15,10);
+            case PAGE->Block.box(2,0,2.5,14,1,14);
+            case BLOTTER->Block.box(1,0,2,15,1,14);
+            case PIGEONHOLES->Shapes.block();
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return s.getValue(KIND)==Kind.PLATFORM||s.getValue(KIND)==Kind.SPLIT||s.getValue(KIND)==Kind.HATCH&&s.getValue(STAGE)==0?getShape(s,l,p,c):Shapes.empty();
+        return s.getValue(KIND)==Kind.PLATFORM||s.getValue(KIND)==Kind.SPLIT||s.getValue(KIND)==Kind.PIGEONHOLES||s.getValue(KIND)==Kind.HATCH&&s.getValue(STAGE)==0?getShape(s,l,p,c):Shapes.empty();
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        if(TruantSentence.use(p,pos,s))return InteractionResult.CONSUME;
         if(TruantYard.use(p,pos,s))return InteractionResult.CONSUME;
         return TruantService.use(p,pos,s)?InteractionResult.CONSUME:InteractionResult.PASS;
     }
