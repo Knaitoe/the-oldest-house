@@ -88,7 +88,9 @@ public final class Pinehook {
     public static final int[] JUDE_COLD_AT={1200,2400,3600};
     /** 0.4.367, Nina's crisis: going down to the dock; at the slip's cleat; swimming in; inside the boathouse; at the safe; standing off a
      * reader; hunting the cabin for the envelope; gone into the lake; done (held, disarmed, given up). */
-    public static final int N_GOING=1,N_CLEAT=2,N_SWIM=3,N_INSIDE=4,N_SAFE=5,N_STANDOFF=6,N_HUNT=7,N_GONE=8,N_DONE=9;
+    public static final int N_GOING=1,N_CLEAT=2,N_SWIM=3,N_INSIDE=4,N_SAFE=5,N_STANDOFF=6,N_HUNT=7,N_GONE=8,N_DONE=9,N_ROWING=10;
+    /** 0.4.368: how long after Casey asks for help with the boat Jude answers him. */
+    public static final int JUDE_ANSWERS=40;
     /** 0.4.367, how the weekend ends (the proposal's four outcome families): both exposed; Nina helped to finish it, or left with the
      * evidence; Len protected and his account accepted; the performance made the story. */
     public static final String EXPOSED="exposed",NINA_FINISHED="nina",PROTECTED="protected",PERFORMANCE="performance";
@@ -149,6 +151,8 @@ public final class Pinehook {
          * written; everyone who came this weekend. */
         int crisis=-1,ninaCrisis,ninaClock,attack=-1,settled=-1,dawn=-1,caseyStep,coldSaid;long turnedAt=-1;boolean blockedSaid,huntSaid;
         boolean ninaHeld,ninaDisarmed,ninaGaveUp,ninaGone,ninaHasEnvelope,lenDead,lenFled,helped,judeDead,judeAcross,caseyGone,confessed,costumeSunk,envelopeBurned,envelopeBack,resolved;
+        /** 0.4.368: Nina killed, or rowed away; Len faced with his safe; Jude's refusal and when he gives it; Len's account undone at first light. */
+        boolean ninaDead,ninaRowed,lenConfronted,judeRefused,exposedAtDawn;int judeRefuseAt=-1;
         String family="";final Set<UUID> roll=new LinkedHashSet<>();
         final List<Event> events=new ArrayList<>();final Map<Long,Rec> recorders=new HashMap<>();Set<UUID> present=new HashSet<>();
         Run(BlockPos b,long id){base=b;this.id=id;}
@@ -171,7 +175,8 @@ public final class Pinehook {
         case "braced"->r.braced;case "slip"->r.slipOpen;case "envelope"->r.envelopeTaken;
         case "held"->r.ninaHeld;case "disarmed"->r.ninaDisarmed;case "gaveUp"->r.ninaGaveUp;case "ninaGone"->r.ninaGone;case "ninaEnvelope"->r.ninaHasEnvelope;case "lenDead"->r.lenDead;case "lenFled"->r.lenFled;
         case "helped"->r.helped;case "judeDead"->r.judeDead;case "judeAcross"->r.judeAcross;case "caseyGone"->r.caseyGone;case "confessed"->r.confessed;case "sunk"->r.costumeSunk;
-        case "envelopeBurned"->r.envelopeBurned;case "envelopeBack"->r.envelopeBack;case "open"->open(r);case "resolved"->r.resolved;default->false;};}
+        case "envelopeBurned"->r.envelopeBurned;case "envelopeBack"->r.envelopeBack;case "open"->open(r);case "resolved"->r.resolved;
+        case "ninaDead"->r.ninaDead;case "ninaRowed"->r.ninaRowed;case "lenConfronted"->r.lenConfronted;case "judeRefused"->r.judeRefused;case "exposedAtDawn"->r.exposedAtDawn;default->false;};}
     public static String family(BlockPos b){var r=run(b);return r==null?"":r.family;}
     public static int ninaCrisis(BlockPos b){var r=run(b);return r==null?-1:r.ninaCrisis;}
     /** For tests: a reader on this weekend's roll who is not online. */
@@ -284,7 +289,9 @@ public final class Pinehook {
         "BurnedEnvelope","HeardLenAttacked","InterruptedAttack","LetLenOut","SawLenRun","HeardLenGoQuiet","HeardConfession","SawCaseySink","SawCaseyGo","HeardJudeCold","StayedWithJude","HeardJudeName",
         "SentJudeAcross","SawJudeGo","SawJudeDead","GaveLenEnvelope","RefusedLen","ChallengedStory","ToldTheStory","ChallengedLen","Admitted","HeardDawn",
         "AllLenDead","AllLenFled","AllJudeDead","AllJudeAcross","AllNinaHeld","AllNinaDisarmed","AllNinaGaveUp","AllNinaGone","AllNinaEnvelope","AllOpen","AllEnvelopeBurned","AllEnvelopeBack",
-        "AllCaseyGone","AllConfessed","AllSunk","AllHelped","AllTurned","Family","OwedFamily");
+        "AllCaseyGone","AllConfessed","AllSunk","AllHelped","AllTurned",
+        "HeardJudeRefuse","LenStoppedSafe","ConfrontedLen","KilledNina","SawNinaDie","SentNinaAway","SawNinaRow","AdmittedTheory","ExposedLen","HeardLenExposed",
+        "AllNinaDead","AllNinaRowed","AllExposedAtDawn","AllJudeRefused","Family","OwedFamily");
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var l=p.serverLevel();var r=RUNS.computeIfAbsent(b.asLong(),k->new Run(b,l.getGameTime()));
         if(own.getLong("PinehookRun")!=r.id){for(var key:RUN_KEYS)own.remove(key);own.putLong("PinehookRun",r.id);}
@@ -406,6 +413,7 @@ public final class Pinehook {
         r.braced=r.slipOpen=r.keyTaken=r.envelopeTaken=r.paddleTaken=false;r.safePry=r.boatReady=0;
         r.crisis=r.attack=r.settled=r.dawn=-1;r.ninaCrisis=r.ninaClock=r.caseyStep=r.coldSaid=0;r.turnedAt=-1;r.blockedSaid=r.huntSaid=false;
         r.ninaHeld=r.ninaDisarmed=r.ninaGaveUp=r.ninaGone=r.ninaHasEnvelope=r.lenDead=r.lenFled=r.helped=r.judeDead=r.judeAcross=r.caseyGone=r.confessed=r.costumeSunk=r.envelopeBurned=r.envelopeBack=r.resolved=false;r.family="";
+        r.ninaDead=r.ninaRowed=r.lenConfronted=r.judeRefused=r.exposedAtDawn=false;r.judeRefuseAt=-1;
         set(l,b,PinehookSite.BRACE_ACROSS,Blocks.AIR.defaultBlockState());set(l,b,PinehookSite.BRACE_LEANING,PinehookBlock.of(Kind.BRACE,Direction.NORTH,0));
         PinehookSite.slip(l,b,false);set(l,b,PinehookSite.RELEASE,PinehookBlock.of(Kind.RELEASE,Direction.WEST,0));
         set(l,b,PinehookSite.RACK,PinehookBlock.of(Kind.RACK,Direction.EAST,0));set(l,b,PinehookSite.PADDLE,PinehookBlock.of(Kind.PADDLE,Direction.WEST,0));
@@ -729,6 +737,13 @@ public final class Pinehook {
     static final Vec3[] BOATHOUSE_TO_CABIN={new Vec3(15.5,0,-46.2),PinehookSite.BOAT_OUTSIDE,new Vec3(8.5,0,-44.3),new Vec3(8.5,0,-40.5),new Vec3(5.5,0,-39.5),PinehookSite.BACK_OUT,new Vec3(5.5,0,-33.5),new Vec3(4.5,0,-30.5),new Vec3(4.5,0,-26.5),new Vec3(2.5,0,-24.5)};
     static final Vec3[] KITCHEN_TO_DOCK={new Vec3(5.5,0,-33.5),PinehookSite.BACK_OUT,new Vec3(5.5,0,-39.5),new Vec3(6.5,0,-44.5),new Vec3(6.5,0,-50.5),new Vec3(6.5,0,-58.5),new Vec3(6.5,0,-62.5)};
     static Vec3[] toBoat(ServerLevel l,Run r){var pts=new ArrayList<>(List.of(KITCHEN_TO_DOCK));pts.add(boatWest(l,r)?PinehookSite.DOCK_WEST:PinehookSite.DOCK_EAST);return pts.toArray(Vec3[]::new);}
+    /** 0.4.368: down to the boat from wherever someone stands: from the cabin by Nina's own way down, from outside by the rest of the path. */
+    static Vec3[] toBoatFrom(ServerLevel l,Run r,Vec3 at){
+        var out=new ArrayList<Vec3>();
+        if(PinehookSite.inCabin(at)){out.addAll(List.of(CABIN_TO_CLEAT));out.remove(out.size()-1);out.add(new Vec3(6.5,0,-58.5));out.add(new Vec3(6.5,0,-62.5));}
+        else{var pts=List.of(KITCHEN_TO_DOCK);int best=0;double d=Double.MAX_VALUE;for(int i=0;i<pts.size();i++){double dd=pts.get(i).distanceTo(at);if(dd<d){d=dd;best=i;}}out.addAll(pts.subList(best,pts.size()));}
+        out.add(boatWest(l,r)?PinehookSite.DOCK_WEST:PinehookSite.DOCK_EAST);return out.toArray(Vec3[]::new);
+    }
     static Vec3[] fromBoat(){var pts=new ArrayList<>(List.of(KITCHEN_TO_DOCK));Collections.reverse(pts);pts.add(PinehookSite.CASEY_KITCHEN);return pts.toArray(Vec3[]::new);}
     /** Len's envelope is out in the open once Casey has been told what is in it. */
     static boolean open(Run r){return (r.caseyKnows&(1<<PinehookTexts.Tell.ENVELOPE.ordinal()))!=0;}
@@ -754,6 +769,8 @@ public final class Pinehook {
         if(r.caseyTurned&&casey!=null&&!r.caseyGone){r.confessed=true;speak(l,r,r.casey,"Casey",PinehookTexts.CASEY_CONFESS,24);for(var p:living(l,r.base))if(p.distanceTo(casey)<24)mark(p,"HeardConfession");}
         else if(casey!=null&&!r.caseyGone&&r.caseyStep==0&&(costumeInBoat(l,r)||r.boatReady>0&&boatHere(l,r)))r.caseyStep=1;
         if(!r.judeAcross)speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_STAY,12);
+        // 0.4.368: Len, shut in and never faced with it, means to keep his safe shut.
+        if(r.lenInside&&!r.lenDead&&!r.lenConfronted&&PinehookBlock.stage(at(l,r,PinehookSite.SAFE))==0)speak(l,r,r.len,"Len",PinehookTexts.LEN_GUARDS,24);
         var nina=actor(l,r.nina);
         if(nina==null||r.ninaHeld||r.ninaDisarmed||r.ninaHasEnvelope||r.ninaGaveUp){r.ninaCrisis=N_DONE;return;}
         r.ninaCrisis=N_GOING;skinOf(l,r.nina,NINA);
@@ -767,16 +784,21 @@ public final class Pinehook {
         if(r.burnStep>=1&&r.burnStep<4)burn(l,r);
         mend(l,r);
         caseyCrisis(l,r);
+        if(r.judeRefuseAt>=0&&r.crisis>=r.judeRefuseAt){r.judeRefuseAt=-1;judeRefuses(l,r);}
         ninaCrisis(l,r);
+        if(r.ninaDead)gesture(l,r.nina,DOWN);
         if(r.crisis%10==0){var safe=Vec3.atCenterOf(r.base.offset(PinehookSite.SAFE));for(var p:here)if(!p.isSpectator()){if(sees(p,safe,12,.6))mark(p,"SawSafe");if(r.slipOpen&&PinehookSite.inBoathouse(rel(p.position(),r.base)))mark(p,"WentInBySlip");}}
         if(r.settled<0&&(r.ninaCrisis==N_GONE||r.ninaCrisis==N_DONE)&&r.caseyStep!=1&&r.caseyStep!=2&&r.caseyStep!=5)r.settled=0;
+        if(r.ninaCrisis==N_ROWING)r.settled=-1;
         if(r.settled>=0&&++r.settled>=SETTLE)beginDawn(l,r);
     }
     /** Casey, who never owned up: down to the rowboat to sink the costume, and away in it if it is ready; or rowing Jude across. */
     static void caseyCrisis(ServerLevel l,Run r){
         var casey=actor(l,r.casey);if(casey==null)return;
         switch(r.caseyStep){
-            case 1->{if(r.burnStep>=1&&r.burnStep<4)return;r.caseyStep=2;route(r,r.casey,.13,toBoat(l,r));}
+            case 1->{if(r.burnStep>=1&&r.burnStep<4)return;r.caseyStep=2;
+                var jude=actor(l,r.jude);if(jude!=null&&!r.judeDead&&!r.judeAcross&&!r.judeRefused&&casey.distanceTo(jude)<10){speak(l,r,r.casey,"Casey",PinehookTexts.CASEY_ASKS_JUDE,24);r.judeRefuseAt=r.crisis+JUDE_ANSWERS;}
+                route(r,r.casey,.13,toBoat(l,r));}
             case 2->{if(walking(r,r.casey))return;
                 if(costumeInBoat(l,r)){stage(l,r,PinehookSite.STERN_WEST,3);r.costumeSunk=true;sound(l,r.base.offset(PinehookSite.STERN_WEST),SoundEvents.GENERIC_SPLASH,.7F,.9F);
                     for(var p:living(l,r.base))if(sees(p,casey.getEyePosition(),40,.4)){mark(p,"SawCaseySink");cue(p,PinehookTexts.CASEY_SINK_CUE);}}
@@ -826,6 +848,7 @@ public final class Pinehook {
                 if(!r.envelopeTaken&&PinehookBlock.stage(at(l,r,PinehookSite.SAFE))<2){stage(l,r,PinehookSite.SAFE,2);r.envelopeTaken=true;r.ninaHasEnvelope=true;leave(l,r);}
                 else hunt(l,r);}
             case N_STANDOFF->{var near=nearest(l,r,nina.position(),12);if(near!=null)SceneFootpaths.face(nina,near.getEyePosition(),30);if(r.ninaClock>=STANDOFF_MAX)giveUp(l,r);}
+            case N_ROWING->{if(!walking(r,r.nina))rowAway(l,r);}
             case N_HUNT->{
                 if(!walking(r,r.nina)&&!r.huntSaid){r.huntSaid=true;speak(l,r,r.nina,"Nina",PinehookTexts.NINA_WHERE,16);for(var p:living(l,r.base))if(p.distanceTo(nina)<16)mark(p,"FacedNina");}
                 if(r.ninaClock>=STANDOFF_MAX)giveUp(l,r);}
@@ -907,6 +930,58 @@ public final class Pinehook {
         if(r.ninaCrisis==N_CLEAT&&!r.slipOpen){castOff(l,r);swim(l,r);}
     }
 
+    /** 0.4.368: Jude, asked by Casey to help with the boat, won't. */
+    static void judeRefuses(ServerLevel l,Run r){
+        var jude=actor(l,r.jude);if(jude==null||r.judeDead||r.judeAcross)return;
+        r.judeRefused=true;speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_REFUSES,32);
+        for(var p:living(l,r.base))if(p.distanceTo(jude)<32)mark(p,"HeardJudeRefuse");
+    }
+    /** 0.4.368: whether Len is in the boathouse, alive, and still keeping his safe shut because nobody has faced him with it. */
+    static boolean lenGuards(ServerLevel l,Run r){
+        if(r.phase!=CRISIS||!r.lenInside||r.lenDead||r.lenConfronted)return false;
+        var len=actor(l,r.len);return len!=null&&PinehookSite.inBoathouse(rel(len.position(),r.base));
+    }
+    static boolean stopAtSafe(ServerPlayer p,Run r){
+        var l=p.serverLevel();if(!lenGuards(l,r))return false;
+        mark(p,"LenStoppedSafe");cue(p,PinehookTexts.LEN_STOPS_SAFE);var len=actor(l,r.len);if(len!=null)SceneFootpaths.face(len,p.getEyePosition(),30);return true;
+    }
+    /** 0.4.368: the boat can take Nina away once she has stopped: held, disarmed, given up, or with Len's hold on her gone. */
+    static boolean canSendNina(ServerLevel l,Run r){
+        if(r.ninaDead||r.ninaGone||r.ninaRowed||r.ninaCrisis==N_ROWING||r.ninaCrisis==N_SWIM||r.ninaCrisis==N_INSIDE||r.ninaCrisis==N_SAFE)return false;
+        if(r.boatReady<=0||!boatHere(l,r)||walking(r,r.casey)&&(r.caseyStep==2||r.caseyStep==5))return false;
+        return r.ninaHeld||r.ninaDisarmed||r.ninaGaveUp||leverageGone(r);
+    }
+    static void sendNina(ServerPlayer p,Run r){
+        var l=p.serverLevel();if(!canSendNina(l,r)){Talk.close(p);return;}
+        Talk.line(p,"Nina",r.ninaHeld?PinehookTexts.BOAT_NINA_HELD:PinehookTexts.BOAT_NINA_FREE);Talk.end(p);
+        if(r.ninaHeld){r.ninaHeld=false;for(var q:living(l,r.base))if(has(q,"HeldNina")&&q.distanceTo(p)<12)cue(q,PinehookTexts.BOAT_NINA_LET_GO_CUE);}
+        mark(p,"SentNinaAway");gesture(l,r.nina,0);r.ninaCrisis=N_ROWING;var nina=actor(l,r.nina);route(r,r.nina,.1,nina==null?toBoat(l,r):toBoatFrom(l,r,rel(nina.position(),r.base)));
+    }
+    /** At the boat: away across the lake, and the boat with her. */
+    static void rowAway(ServerLevel l,Run r){
+        var nina=actor(l,r.nina);r.ninaCrisis=N_GONE;r.ninaGone=true;r.ninaRowed=true;
+        for(var p:living(l,r.base))if(nina!=null&&sees(p,nina.getEyePosition(),48,.4)){mark(p,"SawNinaRow");cue(p,PinehookTexts.NINA_ROWS_CUE);}
+        boatGone(l,r);hide(l,r.nina,true);
+    }
+    /** 0.4.368: a reader with the boat hook, in front of her while she has the knife out: she goes down and doesn't get up. */
+    static void killNina(ServerPlayer p,Run r){
+        var l=p.serverLevel();var nina=actor(l,r.nina);Talk.close(p);
+        if(nina==null||r.ninaDead||!carries(p,"hook")||p.distanceTo(nina)>REACH){cue(p,"Too far to reach.");return;}
+        r.ninaDead=true;r.ninaCrisis=N_DONE;var w=r.walkers.get(r.nina);if(w!=null)w.route.clear();gesture(l,r.nina,DOWN);
+        mark(p,"KilledNina");cue(p,PinehookTexts.HOOK_CUE);sound(l,nina.blockPosition(),SoundEvents.PLAYER_ATTACK_STRONG,1F,.8F);
+        for(var q:living(l,r.base))if(q!=p&&sees(q,nina.getEyePosition(),24,.3)){mark(q,"SawNinaDie");cue(q,PinehookTexts.NINA_DIES_CUE);}
+    }
+    /** 0.4.368: Len's account, undone at first light by a reader who read his envelope. */
+    static void exposeAtDawn(ServerPlayer p,Run r){
+        var l=p.serverLevel();mark(p,"ChallengedLen");mark(p,"ExposedLen");Talk.line(p,"Len",PinehookTexts.NOT_ALL_ANSWER);Talk.end(p);cue(p,PinehookTexts.EXPOSE_CUE);
+        if(r.resolved||!r.family.equals(PROTECTED))return;
+        r.exposedAtDawn=true;r.family=EXPOSED;
+        for(var q:living(l,r.base))if(q!=p&&q.distanceTo(p)<32)mark(q,"HeardLenExposed");
+        var d=LabyrinthData.get(l.getServer());
+        for(var id:r.roll){var own=LiteraryVignettes.personal(d,id,PLACE);shared(r,own);LiteraryVignettes.save(d,id,PLACE,own);}
+        if(!r.caseyGone)speak(l,r,r.casey,"Casey",PinehookTexts.CASEY_DAWN,40);else if(!r.judeDead&&!r.judeAcross)speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_DAWN,40);
+    }
+
     // ------------------------------------------------------------------------------------------------ 0.4.367, first light
     /** How the weekend comes out, from what actually happened (the proposal's outcome families). */
     static String familyOf(Run r){
@@ -942,10 +1017,12 @@ public final class Pinehook {
         own.putBoolean("AllNinaHeld",r.ninaHeld);own.putBoolean("AllNinaDisarmed",r.ninaDisarmed);own.putBoolean("AllNinaGaveUp",r.ninaGaveUp);own.putBoolean("AllNinaGone",r.ninaGone);own.putBoolean("AllNinaEnvelope",r.ninaHasEnvelope);
         own.putBoolean("AllOpen",open(r));own.putBoolean("AllEnvelopeBurned",r.envelopeBurned);own.putBoolean("AllEnvelopeBack",r.envelopeBack);
         own.putBoolean("AllCaseyGone",r.caseyGone);own.putBoolean("AllConfessed",r.confessed);own.putBoolean("AllSunk",r.costumeSunk);own.putBoolean("AllHelped",r.helped);own.putBoolean("AllTurned",r.caseyTurned);
+        own.putBoolean("AllNinaDead",r.ninaDead);own.putBoolean("AllNinaRowed",r.ninaRowed);own.putBoolean("AllExposedAtDawn",r.exposedAtDawn);own.putBoolean("AllJudeRefused",r.judeRefused);
     }
     static void dawn(ServerLevel l,Run r,List<ServerPlayer> here){
         r.dawn++;
         if(r.judeDead)gesture(l,r.jude,DOWN);
+        if(r.ninaDead)gesture(l,r.nina,DOWN);
         if(!r.resolved&&r.dawn>=DAWN_HOLD)resolveAll(l,r);
     }
     /** Everyone who came this weekend, the absent included: their account. A reader who isn't online gets theirs when they are back. */
@@ -1076,6 +1153,7 @@ public final class Pinehook {
         replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
     }
     static void nina(ServerPlayer p,Run r){
+        if(r.ninaDead){cue(p,PinehookTexts.NINA_DEAD_LOOK);return;}
         if(r.phase==NIGHT){ninaNight(p,r);return;}
         if(r.phase==CRISIS){ninaCrisisTalk(p,r);return;}
         if(r.phase==DAWN){ninaDawn(p,r);return;}
@@ -1191,6 +1269,7 @@ public final class Pinehook {
         var replies=new ArrayList<Talk.Reply>();
         if(!active){Talk.begin(p,TALK,"Nina");Talk.line(p,"Nina",r.ninaHeld?PinehookTexts.NINA_HELD_TALK:r.ninaDisarmed||r.ninaHasEnvelope?PinehookTexts.NINA_DISARMED_TALK:r.ninaGaveUp?PinehookTexts.NINA_GAVE_UP_TALK:PinehookTexts.NINA_NIGHT_WOUNDED);
             if(!has(p,"AskedNinaWhy"))replies.add(Talk.reply(PinehookTexts.Q_WHY,q->{mark(q,"AskedNinaWhy");Talk.line(q,"Nina",PinehookTexts.WHY);Talk.end(q);}));
+            if(canSendNina(l,r))replies.add(Talk.reply(PinehookTexts.Q_BOAT_NINA,q->{var rr=runOf(q);if(rr!=null)sendNina(q,rr);}));
             replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);return;}
         if(p.distanceTo(nina)>REACH+2){cue(p,"Too far to reach.");return;}
         Talk.begin(p,TALK,"Nina");
@@ -1198,7 +1277,9 @@ public final class Pinehook {
         mark(p,"FacedNina");
         ninaDeal(p,r,replies);
         if(r.ninaCrisis==N_GOING||r.ninaCrisis==N_CLEAT)replies.add(Talk.reply(PinehookTexts.Q_HELP,q->{var rr=runOf(q);if(rr==null)return;Talk.line(q,"Nina",PinehookTexts.HELP_ANSWER);Talk.end(q);helpIn(q,rr);}));
+        if(canSendNina(l,r))replies.add(Talk.reply(PinehookTexts.Q_BOAT_NINA,q->{var rr=runOf(q);if(rr!=null)sendNina(q,rr);}));
         replies.add(Talk.act(PinehookTexts.Q_HOLD,q->{Talk.close(q);var rr=runOf(q);if(rr!=null)grab(q,rr);}));
+        if(carries(p,"hook"))replies.add(Talk.act(PinehookTexts.Q_HOOK,q->{var rr=runOf(q);if(rr!=null)killNina(q,rr);else Talk.close(q);}));
         replies.add(Talk.act("Let her be.",Talk::close));Talk.ask(p,replies);
     }
     /** 0.4.367: Nina at first light. */
@@ -1223,6 +1304,7 @@ public final class Pinehook {
         Talk.line(p,"Casey",switch(r.family){case EXPOSED->PinehookTexts.CASEY_DAWN;case PERFORMANCE->PinehookTexts.CASEY_DAWN_PERFORMANCE;case PROTECTED->PinehookTexts.CASEY_DAWN_PROTECTED;default->r.lenDead&&r.helped?PinehookTexts.CASEY_WHO_OPENED:PinehookTexts.CASEY_DAWN_NINA;});
         var replies=new ArrayList<Talk.Reply>();
         if(r.family.equals(NINA_FINISHED)&&r.lenDead&&has(p,"HelpedNina")&&!has(p,"Admitted"))replies.add(Talk.reply(PinehookTexts.Q_ADMIT,q->{mark(q,"Admitted");Talk.line(q,"Casey",PinehookTexts.ADMIT_ANSWER);Talk.end(q);}));
+        if(PinehookTexts.Part.FAN.name().equals(own(p).getString("Part"))&&!has(p,"AdmittedTheory"))replies.add(Talk.reply(PinehookTexts.Q_THEORY,q->{mark(q,"AdmittedTheory");Talk.line(q,"Casey",PinehookTexts.THEORY_ANSWER);Talk.end(q);}));
         replies.add(Talk.act("Leave him to it.",Talk::close));Talk.ask(p,replies);
     }
     /** 0.4.367: Len, out of his boathouse: wanting his envelope; at first light, telling it his way. */
@@ -1233,7 +1315,7 @@ public final class Pinehook {
         var replies=new ArrayList<Talk.Reply>();
         if(env){replies.add(Talk.reply(PinehookTexts.Q_GIVE_LEN,q->{var rr=runOf(q);if(rr==null||!carries(q,"envelope"))return;take(q,"envelope");rr.envelopeBack=true;mark(q,"GaveLenEnvelope");Talk.line(q,"Len",PinehookTexts.GIVE_LEN_ANSWER);Talk.end(q);}));
             if(!has(p,"RefusedLen"))replies.add(Talk.reply(PinehookTexts.Q_REFUSE_LEN,q->{mark(q,"RefusedLen");Talk.line(q,"Len",PinehookTexts.REFUSE_LEN_ANSWER);Talk.end(q);}));}
-        if(r.phase==DAWN&&r.family.equals(PROTECTED)&&has(p,"ReadEnvelope")&&!has(p,"ChallengedLen"))replies.add(Talk.reply(PinehookTexts.Q_NOT_ALL,q->{mark(q,"ChallengedLen");Talk.line(q,"Len",PinehookTexts.NOT_ALL_ANSWER);Talk.end(q);}));
+        if(r.phase==DAWN&&r.family.equals(PROTECTED)&&has(p,"ReadEnvelope")&&!has(p,"ChallengedLen"))replies.add(Talk.reply(PinehookTexts.Q_NOT_ALL,q->{var rr=runOf(q);if(rr!=null)exposeAtDawn(q,rr);else Talk.close(q);}));
         if(r.phase==DAWN&&r.family.equals(PERFORMANCE))storyReplies(p,r,replies,"Len");
         replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
     }
@@ -1260,7 +1342,9 @@ public final class Pinehook {
         var replies=new ArrayList<Talk.Reply>();
         if(!has(p,"AskedLenHelp"))replies.add(Talk.reply(PinehookTexts.LEN_Q_HELP,q->{mark(q,"AskedLenHelp");Talk.line(q,"Len",PinehookTexts.LEN_HELP);Talk.end(q);}));
         if(!has(p,"AskedLenSafe"))replies.add(Talk.reply(PinehookTexts.LEN_Q_SAFE,q->{mark(q,"AskedLenSafe");Talk.line(q,"Len",PinehookTexts.LEN_SAFE);Talk.end(q);}));
-        if(!has(p,"KnowsSafeKey")&&(has(p,"LenSlipped")||has(p,"Timeline")||r.caseyTurned))replies.add(Talk.reply(PinehookTexts.LEN_Q_OPEN,q->{mark(q,"KnowsSafeKey");Talk.line(q,"Len",PinehookTexts.LEN_OPEN);Talk.end(q);}));
+        if(!has(p,"KnowsSafeKey")&&(has(p,"LenSlipped")||has(p,"Timeline")||r.caseyTurned))replies.add(Talk.reply(PinehookTexts.LEN_Q_OPEN,q->{mark(q,"KnowsSafeKey");var rr=runOf(q);if(rr!=null)rr.lenConfronted=true;Talk.line(q,"Len",PinehookTexts.LEN_OPEN);Talk.end(q);}));
+        else if(r.phase==CRISIS&&!r.lenConfronted&&(has(p,"FacedNina")||has(p,"SawNinaGo")||has(p,"HeardJudeName")||has(p,"ReadEnvelope")||has(p,"HeardConfession")))
+            replies.add(Talk.reply(PinehookTexts.Q_CONFRONT_LEN,q->{var rr=runOf(q);if(rr!=null)rr.lenConfronted=true;mark(q,"ConfrontedLen");mark(q,"KnowsSafeKey");Talk.line(q,"Len",PinehookTexts.CONFRONT_LEN_ANSWER);Talk.end(q);}));
         replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
     }
     /** A knock on the boathouse's iron door: Len answers through it, once he is inside. */
@@ -1366,7 +1450,7 @@ public final class Pinehook {
                 else cue(p,"Casey's bag, open. Clothes, a phone charger, a bag of sweets.");}
             case SAFE->{
                 if(stage==0){if(PinehookSite.inBoathouse(rel(p.position(),r.base))){mark(p,"SawSafeBack");cue(p,PinehookTexts.SAFE_INSIDE);}else cue(p,"A safe, its door shut.");}
-                else if(stage==1){stage(l,r,relPos,2);r.envelopeTaken=true;give(p,thing("envelope"));mark(p,"TookEnvelope");cue(p,"In the safe, alone: a thick envelope. You take it.");}
+                else if(stage==1){if(stopAtSafe(p,r))return true;stage(l,r,relPos,2);r.envelopeTaken=true;give(p,thing("envelope"));mark(p,"TookEnvelope");cue(p,"In the safe, alone: a thick envelope. You take it.");}
                 else cue(p,"The safe, open and empty.");}
             case BRACE->{
                 if(stage==0){set(l,r.base,relPos,Blocks.AIR.defaultBlockState());set(l,r.base,PinehookSite.BRACE_ACROSS,PinehookBlock.of(Kind.BRACE,Direction.NORTH,1));r.braced=true;mark(p,"BracedDoor");sound(l,pos,SoundEvents.WOOD_PLACE,1F,.7F);cue(p,PinehookTexts.BRACE_SET);}
@@ -1477,6 +1561,7 @@ public final class Pinehook {
         }
         var st=l.getBlockState(pos);
         if(PinehookBlock.is(st,Kind.SAFE)&&PinehookBlock.stage(st)==0){
+            if((what(s).equals("key")||what(s).equals("hook"))&&stopAtSafe(p,r))return true;
             if(what(s).equals("key")){take(p,"key");stage(l,r,relPos,1);mark(p,"OpenedSafe");sound(l,pos,SoundEvents.IRON_TRAPDOOR_OPEN,.8F,1.2F);cue(p,PinehookTexts.SAFE_KEY);return true;}
             if(what(s).equals("hook")){
                 if(r.safePry==0&&r.lenInside&&PinehookSite.inBoathouse(rel(p.position(),r.base)))speak(l,r,r.len,"Len",PinehookTexts.LEN_PRY,12);

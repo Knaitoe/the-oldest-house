@@ -106,7 +106,7 @@ The family is worked out from what actually happened, in this order:
 Then at first light:
 
 - **Exposed:** Casey says he is driving to the store to tell someone everything. If Casey has gone, Jude says it.
-- **Protected:** Len tells it his way. A reader who read the envelope can tell him that isn't all of it.
+- **Protected:** Len tells it his way. A reader who read the envelope can tell him that isn't all of it. (From 0.4.368 this turns the weekend into both exposed; see `docs/PINEHOOK_0_4_368.md`.)
 - **Performance:** Len and Nina say it was the actor. A reader who saw anything (prints, the tape, the timeline, the strap, Jude's account) can say *"That isn't what happened"*, and anyone can say *"That's what happened."* *"Do not declare a false public story inevitable when someone has already shown the truth"*: the family needs the envelope untold and Casey never turned, and each account keeps who challenged it.
 - **Nina, with Len dead:** if anyone helped her in, Casey asks who opened the slip. A reader who did can say so.
 
