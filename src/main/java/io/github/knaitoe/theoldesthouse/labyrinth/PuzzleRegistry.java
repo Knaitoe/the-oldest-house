@@ -113,6 +113,11 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<SettlingBlock> SETTLING=BLOCKS.registerBlock("settling_fitting",SettlingBlock::new,fixed(Blocks.SPRUCE_PLANKS));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> SETTLING_CREAK=sound("settling.creak"),SETTLING_GIVE=sound("settling.give"),
         SETTLING_SEAM=sound("settling.seam"),SETTLING_SCRAPE=sound("settling.scrape");
+    /** 0.4.362, the Clockwork Attic (Clockwork): clocks, gears, levers, the weight, its catch and the bars (ClockworkBlock), drawn by tools/draw_clockwork_fittings.py, and their sounds (tools/generate_clockwork_audio.py). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ClockworkBlock>> CLOCKWORK_TYPE=CODECS.register("clockwork_fitting",()->ClockworkBlock.CODEC);
+    public static final DeferredBlock<ClockworkBlock> CLOCKWORK=BLOCKS.registerBlock("clockwork_fitting",ClockworkBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> CLOCKWORK_TICK=sound("clockwork.tick"),CLOCKWORK_TEETH=sound("clockwork.teeth"),
+        CLOCKWORK_LEVER=sound("clockwork.lever"),CLOCKWORK_RATCHET=sound("clockwork.ratchet"),CLOCKWORK_WEIGHT=sound("clockwork.weight"),CLOCKWORK_GATE=sound("clockwork.gate");
     /** 0.4.309, the House's yard (YardRooms): clapboard, wet gravel and the garage door; the porch bulb and the station wagon (YardBlock), drawn by tools/draw_yard_fittings.py; the engine, a passing car, a crow and the creek (tools/generate_yard_audio.py). */
     private static final java.util.Map<String,DeferredBlock<Block>> YARD_MATERIALS=new java.util.LinkedHashMap<>();
     public static final java.util.List<String> YARD_MATERIAL_NAMES=java.util.List.of("clapboard","wet_gravel","garage_door");

@@ -117,6 +117,8 @@ jobs:
           python3 tools/generate_resonance_audio.py --check
           python3 tools/draw_settling_fittings.py --check
           python3 tools/generate_settling_audio.py --check
+          python3 tools/draw_clockwork_fittings.py --check
+          python3 tools/generate_clockwork_audio.py --check
           python3 tools/draw_yard_fittings.py --check
           python3 tools/generate_yard_audio.py --check
           python3 tools/draw_deer_road_art.py --check
