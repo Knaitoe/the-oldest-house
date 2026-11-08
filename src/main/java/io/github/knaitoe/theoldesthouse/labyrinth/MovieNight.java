@@ -439,8 +439,9 @@ public final class MovieNight {
     private static void dock(Site s){
         s.fill(-1,-1,-3,1,-1,-18,board(MovieMaterialBlock.Kind.DOCK));
         for(int z=-14;z>=-18;z-=4)for(int x:new int[]{-1,1})for(int y=-2;y>=-11&&s.at(x,y,z).is(Blocks.WATER);y--)s.set(x,y,z,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WATERLOGGED,true));
-        // A piling with the life ring hung on its lake side, and the projectionist's film cans by the projector.
-        s.set(1,0,-11,PILING);s.set(1,1,-11,PILING);s.set(2,1,-11,prop(MoviePropBlock.Kind.LIFE_RING,Direction.EAST));
+        // A post with the life ring hung on it, on the sand beside the dock's foot by the blanket (0.4.398, the owner: off the pier,
+        // onto the sand), and the projectionist's film cans by the projector.
+        s.set(2,0,-11,PILING);s.set(2,1,-11,PILING);s.set(3,1,-11,prop(MoviePropBlock.Kind.LIFE_RING,Direction.EAST));
         s.set(-1,0,-17,prop(MoviePropBlock.Kind.FILM_CANS,Direction.EAST));
         // The projector at the end, its lens to the north and the screen.
         s.set(PROJECTOR.getX(),PROJECTOR.getY(),PROJECTOR.getZ(),MoviePropBlock.of(MoviePropBlock.Kind.PROJECTOR,Direction.NORTH));

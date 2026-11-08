@@ -85,7 +85,8 @@ public final class PetsAndClapTests {
         h.assertTrue(again.wasPlayerOffered(person)&&again.all().stream().filter(e->e.pet).count()==1,"a player payment persists without spawning an archived player");h.succeed();
     }
     @GameTest(template="empty") public static void playerOfferRequiresTheSameClosedRoomIncludingACeiling(GameTestHelper h) {
-        BlockPos base=h.absolutePos(new BlockPos(4,2,4));closedRoom(h.getLevel(),base);
+        // The empty template is one block, so the room stands high in open air: an opened wall must lead out into the sky, never into a pocket a neighbouring test built.
+        BlockPos base=h.absolutePos(new BlockPos(4,2,4)).above(110);closedRoom(h.getLevel(),base);
         BlockPos beside=base.east();
         h.assertTrue(MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"a small closed room really encloses both positions");
         h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,base.offset(4,0,0)),"someone outside the room is not a payment");
@@ -93,7 +94,8 @@ public final class PetsAndClapTests {
         h.getLevel().setBlock(base.offset(2,1,0),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
         h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"an open exit invalidates the trap immediately");
         closedRoom(h.getLevel(),base);h.getLevel().setBlock(base.above(3),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
-        h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"missing roofing is an escape, not an enclosed room");h.succeed();
+        h.assertTrue(!MotherOfferings.enclosedTogether(h.getLevel(),base,beside),"missing roofing is an escape, not an enclosed room");
+        for(int x=-2;x<=2;x++)for(int y=-1;y<=3;y++)for(int z=-2;z<=2;z++)h.getLevel().setBlock(base.offset(x,y,z),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);h.succeed();
     }
     private static void closedRoom(ServerLevel level,BlockPos base) {
         for(int x=-2;x<=2;x++)for(int y=-1;y<=3;y++)for(int z=-2;z<=2;z++)
