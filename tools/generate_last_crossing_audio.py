@@ -2,7 +2,8 @@
 tapping back under the service grate, and the intake's bleed screw letting go its air and then water. From 0.4.352, Night One: the surge
 coming through the intake, the second breath an infected reader hears under their own, the things that come up out of the water, the
 ferry straining on its line at the first rise, and the line snapping. From 0.4.353, Day Two: the winch drum ratcheting a notch,
-something answering through the pipes, and water running behind a grate in a flooded branch.
+something answering through the pipes, and water running behind a grate in a flooded branch. From 0.4.354, Night Two: a reader
+turning at sunset, a claw raking cloth, and a throat closing on a breath.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -24,6 +25,9 @@ ROWS = {
     'ratchet': ('The winch drum ratchets a notch', 16),
     'scrape': ('Something scrapes in the pipes', 24),
     'branch': ('Water runs in a branch', 10),
+    'turn': ('Someone turns, choking', 20),
+    'claw': ('A claw rakes through cloth', 16),
+    'choke': ('A throat closes on a breath', 8),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -227,8 +231,50 @@ def branch():
     return out
 
 
+def turn():
+    # A reader turning at sunset: a long wet in-breath that catches and cracks, a gulp like water going the wrong way, then a slow rasp out.
+    n = seconds(3.2)
+    out = np.zeros(n)
+    tk = times(n)
+    inhale = band(rng.standard_normal(n), 400, 2600) * np.clip(tk / 1.2, 0, 1) * (tk < 1.4)
+    crack = np.zeros(n)
+    for at in (1.35, 1.42, 1.5):
+        i = int(at * RATE)
+        crack[i:i + 400] += np.exp(-np.arange(400) / 60) * rng.standard_normal(400) * 1.6
+    gulp_f = 220 - 120 * np.clip((tk - 1.6) / .4, 0, 1)
+    gulp = np.sin(2 * np.pi * np.cumsum(gulp_f) / RATE) * ((tk > 1.6) & (tk < 2.0)) * .5
+    rasp = band(rng.standard_normal(n), 200, 1600) * (.6 + .4 * np.sin(2 * np.pi * 31 * tk)) * np.clip((tk - 2.0) / .3, 0, 1) * np.clip((3.2 - tk) / .8, 0, 1)
+    out += inhale * .5 + band(crack, 300, 4000) + gulp + rasp * .45
+    return out
+
+
+def claw():
+    # A claw raking through cloth: three short tearing strokes, the fabric giving, close.
+    n = seconds(.9)
+    out = np.zeros(n)
+    for k, at in enumerate((0.0, .09, .17)):
+        i = int(at * RATE)
+        m = int(.22 * RATE)
+        seg = band(rng.standard_normal(m), 1800, 7000) * np.exp(-np.arange(m) / (RATE * .05)) * (1 - k * .2)
+        out[i:i + m] += seg[:max(0, min(m, n - i))]
+    return out
+
+
+def choke():
+    # A throat closing on a breath: a short strangled pull of air that stops dead, and a tight click.
+    n = seconds(1.2)
+    out = np.zeros(n)
+    tk = times(n)
+    pull = band(rng.standard_normal(n), 700, 3000) * np.clip(tk / .3, 0, 1) * (tk < .55) * (1 - tk)
+    click = np.zeros(n)
+    i = int(.56 * RATE)
+    click[i:i + 200] = np.exp(-np.arange(200) / 30) * 1.2
+    out += pull * .6 + band(click, 800, 5000)
+    return out
+
+
 MAKERS = {'knock': knock, 'pump': pump, 'tap': tap, 'bleed': bleed, 'surge': surge, 'breath': breath, 'undertow': undertow, 'rise': rise, 'snap': snap,
-          'ratchet': ratchet, 'scrape': scrape, 'branch': branch}
+          'ratchet': ratchet, 'scrape': scrape, 'branch': branch, 'turn': turn, 'claw': claw, 'choke': choke}
 
 
 def main():

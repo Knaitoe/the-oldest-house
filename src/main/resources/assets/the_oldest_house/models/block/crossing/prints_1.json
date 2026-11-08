@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/crossing/prints_dry",
+    "particle": "the_oldest_house:block/crossing/prints_dry"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        0.1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

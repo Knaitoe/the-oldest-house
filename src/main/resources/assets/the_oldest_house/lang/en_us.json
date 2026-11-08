@@ -1257,5 +1257,8 @@
   "subtitles.the_oldest_house.crossing.ratchet": "The winch drum ratchets a notch",
   "subtitles.the_oldest_house.crossing.scrape": "Something scrapes in the pipes",
   "subtitles.the_oldest_house.crossing.branch": "Water runs in a branch",
-  "item.the_oldest_house.crossing_tools": "Cable Tools"
+  "item.the_oldest_house.crossing_tools": "Cable Tools",
+  "subtitles.the_oldest_house.crossing.turn": "Someone turns, choking",
+  "subtitles.the_oldest_house.crossing.claw": "A claw rakes through cloth",
+  "subtitles.the_oldest_house.crossing.choke": "A throat closes on a breath"
 }

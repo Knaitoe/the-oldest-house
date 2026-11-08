@@ -20,6 +20,8 @@ import net.minecraft.world.level.Level;
  *
  * <p>0.4.353: they pass a carrier by. One of the crew with a claw's worth of the source in them is not what they come up for; they go for
  * whoever else is nearest, and turn only on a carrier who hurts them.
+ *
+ * <p>0.4.354: one drawn by a turned reader's call after dark goes where it was called and takes nobody on the way.
  */
 public class Undertow extends Zombie {
     public Undertow(EntityType<? extends Zombie> type,Level level){super(type,level);setCanPickUpLoot(false);setCanBreakDoors(false);setPersistenceRequired();}
@@ -29,7 +31,7 @@ public class Undertow extends Zombie {
         goalSelector.addGoal(7,new net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal(this,1.0));
         targetSelector.addGoal(1,new net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal(this));
         targetSelector.addGoal(2,new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(this,net.minecraft.world.entity.player.Player.class,10,true,false,
-            t->!(t instanceof net.minecraft.server.level.ServerPlayer p&&LastCrossing.spared(p))));
+            t->!(t instanceof net.minecraft.server.level.ServerPlayer p&&LastCrossing.spared(p))&&!LastCrossingNightTwo.drawn(this)));
     }
     @Override protected boolean isSunSensitive(){return false;}
     @Override protected boolean convertsInWater(){return false;}

@@ -79,6 +79,14 @@ public final class LastCrossingSite {
     public static final int SPUR_W=50,SPUR_E=51,SPUR_Z=-57,SLUICE_Z=-58,SPUR_LOW=-7,SPUR_HIGH=-2;
     /** Where one of the things from the water comes up when it is called to a grate by day: into the pit, or up through the floor grate. */
     public static final Vec3 PIT_RISE=new Vec3(25.5,-7,-60.5),FLOOR_RISE=new Vec3(50.5,0,-56.5);
+    /** 0.4.354, Night Two: where Vera calls the roll from the cable house's doorway and where she stands for the pull; the fairlead's
+     * throat seen from below, at the north end of the flooded passage (pushed on under the fairlead); where a turned reader goes down
+     * through the hatch and comes up beside it, through the floor grate into the spur and up out of it, and either side of the branches'
+     * grates; where their wet prints are left when they come up onto a dry floor: by the hatch, by the floor grate, in the pit. */
+    public static final Vec3 VERA_DOOR=new Vec3(45.5,0,-52.5),VERA_PULL=new Vec3(44.5,0,-57.5),BELOW_HATCH=new Vec3(45.5,-3,-60.5),ABOVE_HATCH=new Vec3(44.5,0,-61.5),
+        BELOW_FLOOR=new Vec3(50.5,-4,-56.5),ABOVE_FLOOR=new Vec3(50.5,0,-56.5),PIT_SIDE=new Vec3(26.5,-7,-59.5),RAMP_BRANCH_WEST=new Vec3(28.5,-7,-59.5),
+        RAMP_BRANCH_EAST=new Vec3(42.5,-7,-59.5),PASSAGE_SIDE=new Vec3(44.5,-7,-59.5),LEDGE_SPOT=new Vec3(43.5,.5,-60.5);
+    public static final BlockPos UNDERSIDE=new BlockPos(47,-2,-65),HATCH_PRINTS=new BlockPos(44,0,-60),FLOOR_PRINTS=new BlockPos(50,0,-56),PIT_PRINTS=new BlockPos(25,-7,-59);
     /** The far bank: the landing, the lamp, the cable's anchor and the shelter whose door is the way on. */
     public static final BlockPos FAR_LAMP=new BlockPos(37,3,-95),ANCHOR=new BlockPos(47,0,-94),ONWARD=new BlockPos(43,0,-98);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -349,6 +357,10 @@ public final class LastCrossingSite {
         // The flooded inspection passage under the rollers, and the hatch down into it.
         box(l,b,44,-8,-63,50,-8,-59,s(Blocks.STONE_BRICKS));box(l,b,44,-7,-63,50,-2,-59,water());
         set(l,b,HATCH,fit(Kind.HATCH,Direction.NORTH));
+        // Night Two: the passage runs on north under the fairlead, where its throat can be reached from below.
+        box(l,b,45,-8,-66,49,-1,-64,s(Blocks.STONE_BRICKS));box(l,b,46,-7,-65,48,-2,-64,water());
+        box(l,b,43,-1,-65,51,-1,-64,s(Blocks.SPRUCE_PLANKS));
+        set(l,b,UNDERSIDE,fit(Kind.UNDERSIDE,Direction.NORTH));
         // The drum and the brake, the cable over the rollers to the fairlead, one roller off its cradle.
         set(l,b,DRUM,fit(Kind.DRUM,Direction.NORTH));set(l,b,CABLE_BRAKE,fit(Kind.BRAKE,Direction.WEST));
         for(var r:ROLLERS)set(l,b,r,fit(Kind.ROLLER,Direction.NORTH,r.equals(LOOSE_ROLLER)?1:0));
@@ -423,7 +435,8 @@ public final class LastCrossingSite {
         set(l,b,WHEEL,fit(Kind.WHEEL,Direction.SOUTH));set(l,b,PIN,fit(Kind.PIN,Direction.SOUTH));
         set(l,b,RAMP_COIL,fit(Kind.COIL,Direction.NORTH));set(l,b,PORCH_COIL,s(Blocks.AIR));set(l,b,STAGED_COIL,s(Blocks.AIR));
         set(l,b,LOOSE_ROLLER,fit(Kind.ROLLER,Direction.NORTH,1));set(l,b,FAIRLEAD,fit(Kind.FAIRLEAD,Direction.NORTH));
-        set(l,b,HATCH,fit(Kind.HATCH,Direction.NORTH));
+        set(l,b,HATCH,fit(Kind.HATCH,Direction.NORTH));set(l,b,UNDERSIDE,fit(Kind.UNDERSIDE,Direction.NORTH));
+        for(var at:List.of(HATCH_PRINTS,FLOOR_PRINTS,PIT_PRINTS))if(CrossingBlock.is(l.getBlockState(b.offset(at)),Kind.PRINTS))set(l,b,at,s(Blocks.AIR));
         set(l,b,BAR_REST,fit(Kind.BAR,Direction.NORTH));set(l,b,BAR_ACROSS,s(Blocks.AIR));set(l,b,ISOLATOR,fit(Kind.ISOLATOR,Direction.SOUTH));set(l,b,STAIR_HOOK,fit(Kind.HOOK,Direction.EAST,0));
         set(l,b,GRATE,fit(Kind.GRATE,Direction.NORTH,1));
         // Day Two: both bypasses shut and their branches dry, the grates dry, the witness plate greased, the catch off, no stain, the tools

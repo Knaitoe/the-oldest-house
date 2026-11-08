@@ -44,6 +44,21 @@ import net.neoforged.neoforge.gametest.*;
  * by a carrier and seen, the spur flooded and its grate wet, the stain under the fairlead, the gauge dipping sooner; the carrier's call at
  * the wet grate heard through the pipes, one of the things come up through it in daylight and passing the carrier by, a call smothered by
  * the plate; the ramp's bypass opened and shut; the winch's shut, its grate damp and drying.
+ *
+ * <p>0.4.354, Night Two. The turn and the roll: the carrier turned at the second dusk where they stand on the ramp, seen by a reader with a
+ * view and not by one below; water breathing; their "Here." and their chat broken (the rasp, the caught consonant, the hiss) while a clean
+ * reader's chat is untouched, and the panel showing the speaker the same broken words everyone heard; the roll from the cable house's
+ * doorway, the reader below absent and noted absent by the others; dawn, the turned back to themselves. The pull: lined up on the marks
+ * by day, the roller seated, the door barred; the brake taken off and held, the drum binding at the jammed fairlead halfway, the jam worked
+ * free from above with the marlinspike, the brake let go and the drum running back, caught by another, and the drum taken up, the catch
+ * dropped back in. The water and the grate: the winch's branch left open by day; the turned carrier down through the hatch, seen going;
+ * their call from the water drawing one of the things down into the branch, held under the floor grate while a clean reader stands on
+ * it, and up through it when they step off; the jam cleared from below in one shove, seen from above as the cable jumping free with
+ * nobody at it; up the hatch, leaving wet prints that another reader sees; the carrier holding the live grate shut and choking, their
+ * words choked worse, until a friend pins it; a claw, the splatter and the tear, kept through dawn with the prints dried to a tidemark;
+ * and the station set back. The grapple and the second slot: a crew of six, one caught on their own and pulled free by a friend, caught
+ * again and held through, the second slot filled in a full crew still standing; another held through with the slot full, a deep cut;
+ * the pull let go with nobody to catch it, the rollers thrown.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
 public final class LastCrossingTests {
@@ -64,6 +79,10 @@ public final class LastCrossingTests {
     @AfterBatch(batch="last_crossing_flood") public static void floodDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_day") public static void dayDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_bypass") public static void bypassDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_turn") public static void turnDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_pull") public static void pullDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_water") public static void waterDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_slot") public static void slotDone(ServerLevel l){close();}
     private static void look(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){var b=f.base(P);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z));}
     /** A crew through Day One and Night One untouched, into the morning and Day Two. */
     private static GameTestSequence dayTwo(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer[] c,String prefix,Runnable atStart){
@@ -473,5 +492,189 @@ public final class LastCrossingTests {
                 h.assertTrue(is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,2)&&is(l,b,LastCrossingSite.STAIN,Kind.STAIN,1),"damp, and drying");})
             .thenWaitUntil(()->h.assertTrue(is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,0)&&l.getBlockState(b.offset(LastCrossingSite.STAIN)).isAir()&&is(l,b,LastCrossingSite.PIT_GRATES.get(0),Kind.BRANCH,0),"dry again"))
             .thenExecute(h::succeed);
+    }
+
+    // ------------------------------------------------------------------------------------------------ Night Two (0.4.354)
+    private static String name(ServerPlayer p){return p.getGameProfile().getName();}
+    private static void heal(ServerPlayer... crew){for(var p:crew)if(p!=null)p.setHealth(p.getMaxHealth());}
+    private static void clearUndertows(ServerLevel l,LiteraryTests.Fixture f){for(var u:l.getEntitiesOfClass(Undertow.class,box(f)))u.discard();}
+
+    @GameTest(template="empty",batch="last_crossing_turn",timeoutTicks=14000)
+    public static void nightTwoTheTurnAndTheRoll(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        dayTwo(f,h,c,"lc_turn",()->{})
+            .thenExecute(()->{LastCrossing.carryForTest(c[0]);
+                // Before the light goes: the carrier out on the ramp with a reader watching; one gone below into the intake; one by the cable house.
+                f.at(c[0],P,33.5,0,-58.5);f.at(c[1],P,33.5,0,-53.5);look(f,c[1],new Vec3(33.5,1.6,-58.5));
+                f.at(c[2],P,18.5,-6,-58.5);f.at(c[3],P,44.5,0,-51.5);
+                LastCrossing.skip(b,LastCrossing.DAY_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==2,"the second dusk"))
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.turned(b).contains(c[0].getUUID()),"the carrier turns at sunset, where they stand"))
+            .thenExecute(()->{var own=f.own(c[0],P);
+                h.assertTrue(own.getBoolean("Turned")&&own.getString("TurnedWhere").equals("ramp")&&!own.getBoolean("TurnedUnseen"),"turned on the ramp, and seen doing it");
+                h.assertTrue(f.own(c[1],P).getString("SawTurn").contains(name(c[0])),"whoever had a view knows whose face it was");
+                h.assertTrue(f.own(c[2],P).getString("SawTurn").isEmpty(),"not from below");
+                // Their words come out broken: aloud, in the panel the speaker sees, and in chat; a clean reader's chat is their own.
+                h.assertTrue(Spoken.say(c[0],"Here.").equals("H-here.")&&Spoken.lastHeard(c[1],c[0]).equals("H-here."),"a name caught on its first sound, the same for the one who hears it");
+                Talk.begin(c[0],"lc_turn_test","test");Talk.ask(c[0],Talk.reply("Wait for me down by the ramp.",x->{}));Talk.choose(c[0],"Wait");
+                var said=Spoken.lastHeard(c[1],c[0]);
+                h.assertTrue(!said.equals("Wait for me down by the ramp.")&&said.contains("down")&&Talk.lines(c[0]).contains("you: "+said),"the speaker's panel shows what everyone heard: "+said);
+                Talk.close(c[0]);
+                var chat=new net.neoforged.neoforge.event.ServerChatEvent(c[0],"I'm under the ramp. Put the pin in when I knock.",net.minecraft.network.chat.Component.literal("I'm under the ramp. Put the pin in when I knock."));
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(chat);var heard=chat.getMessage().getString();
+                h.assertTrue(heard.contains(LastCrossingSpeech.HISS)&&heard.contains("under")&&!heard.equals(chat.getRawText()),"chat comes out broken, the direction kept: "+heard);
+                var clean=new net.neoforged.neoforge.event.ServerChatEvent(c[1],"I'm under the ramp.",net.minecraft.network.chat.Component.literal("I'm under the ramp."));
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(clean);h.assertTrue(clean.getMessage().getString().equals("I'm under the ramp."),"a clean reader's chat is untouched");
+                h.assertTrue(f.own(c[1],P).getString("HeardRasp").contains(name(c[0])),"heard the rasp");
+                LastCrossing.skip(b,LastCrossingNightTwo.ROLL_BY);})
+            .thenWaitUntil(()->h.assertTrue(c[0].hasEffect(net.minecraft.world.effect.MobEffects.WATER_BREATHING),"the turned breathe water"))
+            .thenWaitUntil(()->{clearUndertows(l,f);heal(c);answer(c);h.assertTrue(LastCrossing.flag(b,"rolled"),"the roll called from the cable house's doorway");})
+            .thenExecute(()->{h.assertTrue(f.own(c[2],P).getBoolean("AbsentNightRoll")&&!f.own(c[2],P).getBoolean("AnsweredNightRoll"),"the one below never heard it");
+                h.assertTrue(f.own(c[1],P).getBoolean("AnsweredNightRoll")&&f.own(c[1],P).getString("NotedAbsent").contains(name(c[2])),"the rest answered, and noted who didn't");
+                h.assertTrue(f.own(c[0],P).getBoolean("AnsweredNightRoll"),"the turned can answer too");
+                LastCrossing.skip(b,LastCrossing.NIGHT_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAWN&&LastCrossing.dayNo(b)==3,"the third morning"))
+            .thenExecute(()->{h.assertTrue(LastCrossingNightTwo.turned(b).isEmpty()&&f.own(c[0],P).getBoolean("BackAtDawn")&&!c[0].hasEffect(net.minecraft.world.effect.MobEffects.WATER_BREATHING),"back to themselves at dawn");
+                h.assertTrue(f.own(c[1],P).getBoolean("NightTwo")&&Spoken.say(c[0],"Here.").equals("Here."),"Night Two worked, and daylight speech is normal");
+                LastCrossing.resetNow(l,b);h.assertTrue(LastCrossing.phase(b)==-1,"the station set back");h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_pull",timeoutTicks=14000)
+    public static void nightTwoThePull(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        dayTwo(f,h,c,"lc_pull",()->{})
+            .thenExecute(()->{f.at(c[1],P,46.5,0,-60.5);h.assertTrue(use(f,c[1],LastCrossingSite.LOOSE_ROLLER),"the roller seated");
+                // Lined up on the marks by day: eased or cranked onto them, the catch dropped square.
+                f.at(c[1],P,48.5,0,-57.5);int o=LastCrossing.offset(b);c[1].setShiftKeyDown(o<0);for(int i=0;i<Math.abs(o);i++)use(f,c[1],LastCrossingSite.CABLE_BRAKE);c[1].setShiftKeyDown(false);
+                h.assertTrue(LastCrossing.offset(b)==0&&use(f,c[1],LastCrossingSite.CATCH)&&LastCrossing.flag(b,"lined"),"lined up on the marks");})
+            .thenWaitUntil(()->h.assertTrue(is(l,b,LastCrossingSite.TOOLS,Kind.TOOLS,0),"the tools on the desk"))
+            .thenExecute(()->{f.at(c[2],P,18.5,0,-43.5);h.assertTrue(use(f,c[2],LastCrossingSite.TOOLS)&&carries(c[2],"tools"),"the tools taken");
+                // Everyone into the cable house and the bar dropped across the door before dark.
+                f.at(c[0],P,46.5,0,-56.5);f.at(c[1],P,48.5,0,-57.5);f.at(c[2],P,47.5,0,-64.5);f.at(c[3],P,44.5,0,-56.5);
+                h.assertTrue(use(f,c[3],LastCrossingSite.BAR_REST)&&LastCrossing.flag(b,"barred"),"the door barred");
+                LastCrossing.skip(b,LastCrossing.DAY_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==2,"the second dusk"))
+            .thenExecute(()->LastCrossing.skip(b,LastCrossingNightTwo.PULL_BY))
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.CALLED&&!LastCrossing.flag(b,"catch"),"the pull called, the catch out of the drum's teeth"))
+            .thenExecute(()->{h.assertTrue(use(f,c[1],LastCrossingSite.CABLE_BRAKE)&&LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.HAULING,"the brake taken off and held");
+                h.assertTrue(f.own(c[1],P).getBoolean("HeldPull"),"remembered");
+                LastCrossingNightTwo.haul(b,600);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.BINDING,"binding at the jammed fairlead halfway"))
+            .thenExecute(()->{select(c[2],"tools");h.assertTrue(use(f,c[2],LastCrossingSite.FAIRLEAD),"the marlinspike to the kink");})
+            .thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD)).thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD))
+            .thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD)).thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD))
+            .thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD)).thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD))
+            .thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.FAIRLEAD))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"jam")&&is(l,b,LastCrossingSite.FAIRLEAD,Kind.FAIRLEAD,1)&&f.own(c[2],P).getBoolean("ClearedJam"),"worked free from above"))
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.HAULING,"hauling again"))
+            // The brake let go: the drum runs back, and another catches it.
+            .thenExecute(()->f.at(c[1],P,44.5,0,-63.5))
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.RUNNING_BACK&&f.own(c[3],P).getBoolean("SawRunBack"),"running back"))
+            .thenExecute(()->{f.at(c[3],P,48.5,0,-57.5);h.assertTrue(use(f,c[3],LastCrossingSite.CABLE_BRAKE)&&LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.HAULING,"caught");
+                h.assertTrue(f.own(c[3],P).getBoolean("CaughtBrake")&&f.own(c[1],P).getBoolean("LetGoBrake"),"who let go and who caught it");
+                LastCrossingNightTwo.haul(b,LastCrossingNightTwo.PULL_LINED);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"pulled"),"taken up"))
+            .thenExecute(()->{h.assertTrue(f.own(c[3],P).getBoolean("Pulled")&&f.own(c[1],P).getBoolean("Pulled")&&f.own(c[0],P).getBoolean("SawPull"),"everyone who held it, and who saw it");
+                h.assertTrue(is(l,b,LastCrossingSite.CATCH,Kind.CATCH,1)&&LastCrossing.flag(b,"catch"),"the catch dropped back in");
+                LastCrossing.skip(b,LastCrossing.NIGHT_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAWN&&LastCrossing.flag(b,"pulled"),"the third morning, still taken up"))
+            .thenExecute(h::succeed);
+    }
+
+    @GameTest(template="empty",batch="last_crossing_water",timeoutTicks=14000)
+    public static void nightTwoTheWaterAndTheGate(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        var cable=new AABB(b.getX()+43,b.getY()-8,b.getZ()-66,b.getX()+52,b.getY()+4,b.getZ()-55);
+        dayTwo(f,h,c,"lc_water",()->{})
+            .thenExecute(()->{LastCrossing.carryForTest(c[0]);f.at(c[0],P,50.5,0,-60.5);h.assertTrue(use(f,c[0],LastCrossingSite.WINCH_BYPASS)&&LastCrossing.flag(b,"winchOpen"),"the winch's branch left open");
+                f.at(c[0],P,45.5,0,-60.5);f.at(c[1],P,48.5,0,-58.5);f.at(c[2],P,44.5,0,-57.5);f.at(c[3],P,48.5,0,-62.5);
+                LastCrossing.skip(b,LastCrossing.DAY_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.turned(b).contains(c[0].getUUID()),"turned at the second dusk"))
+            // Down through the hatch, seen going.
+            .thenExecute(()->{look(f,c[1],new Vec3(45.5,1.6,-60.5));h.assertTrue(use(f,c[0],LastCrossingSite.HATCH)&&rel(f,c[0]).y<-1.5,"down through the hatch into the passage");
+                h.assertTrue(f.own(c[0],P).getBoolean("WentBelowHatch")&&f.own(c[1],P).getString("SawGoBelow").contains(name(c[0])),"seen going");
+                LastCrossing.skip(b,LastCrossingNightTwo.FIRST_SPAWN);})
+            .thenWaitUntil(()->h.assertTrue(!LastCrossingNightTwo.mobs(b).isEmpty(),"something up out of the spillway"))
+            // Called from the water: it goes down into the branch after the breath.
+            .thenExecute(()->c[0].setShiftKeyDown(true))
+            .thenWaitUntil(()->h.assertTrue(f.own(c[0],P).getBoolean("DrewIntoBranch")&&LastCrossingNightTwo.below(b)>=1,"called down into the branch"))
+            .thenExecute(()->{c[0].setShiftKeyDown(false);h.assertTrue(f.own(c[1],P).getBoolean("HeardScrape"),"the scrape through the pipes");clearUndertows(l,f);
+                // A clean reader stands on the grate behind the brake: what was called knocks under it and can't come up.
+                f.at(c[1],P,50.5,0,-56.5);h.assertTrue(use(f,c[1],LastCrossingSite.FLOOR_GRATES.get(0))&&LastCrossing.flag(b,"gateHeld"),"the grate held down");
+                h.assertTrue(f.own(c[1],P).getBoolean("ShutThemIn"),"shut them in");})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[1],P).getBoolean("FeltGrateKnock"),"something knocking under the iron"))
+            .thenExecute(()->{look(f,c[3],new Vec3(50.5,1,-56.5));h.assertTrue(use(f,c[1],LastCrossingSite.FLOOR_GRATES.get(0))&&!LastCrossing.flag(b,"gateHeld"),"stepped off the grate");})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[3],P).getBoolean("SawGrateRise")&&!l.getEntitiesOfClass(Undertow.class,cable).isEmpty(),"up through the grate behind the brake"))
+            // The jam from below, in one shove, seen from above as the cable jumping free with nobody at it.
+            .thenExecute(()->{clearUndertows(l,f);heal(c);f.at(c[0],P,47.5,-3,-64.5);
+                h.assertTrue(use(f,c[0],LastCrossingSite.UNDERSIDE)&&LastCrossing.flag(b,"jam")&&is(l,b,LastCrossingSite.FAIRLEAD,Kind.FAIRLEAD,1),"the jam cleared from below");
+                h.assertTrue(f.own(c[0],P).getBoolean("ClearedJamBelow")&&f.own(c[1],P).getBoolean("SawJamCleared")&&!f.own(c[1],P).getBoolean("ClearedJam"),"seen from above, with nobody at it");
+                // Up the hatch, leaving wet prints by it.
+                f.at(c[0],P,45.5,-3,-60.5);h.assertTrue(use(f,c[0],LastCrossingSite.HATCH)&&rel(f,c[0]).y>-.5&&is(l,b,LastCrossingSite.HATCH_PRINTS,Kind.PRINTS,0),"up through the hatch, running water");
+                f.at(c[2],P,44.5,0,-58.7);})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[2],P).getBoolean("SawPrints"),"the wet prints seen"))
+            // The turned carrier holds the live grate shut, and chokes on it, until a friend pins it.
+            .thenExecute(()->{f.at(c[0],P,50.5,0,-56.5);f.at(c[1],P,51.5,0,-55.5);h.assertTrue(use(f,c[0],LastCrossingSite.FLOOR_GRATES.get(0))&&LastCrossing.flag(b,"gateHeld"),"held down by the carrier");})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[0],P).getBoolean("Choked"),"the throat closes"))
+            .thenExecute(()->{var said=Spoken.say(c[0],"Pin it. I can't get a breath. Put the pin in now.");
+                h.assertTrue(said.contains(LastCrossingSpeech.HISS)&&said.contains("can't")&&Spoken.lastHeard(c[1],c[0]).equals(said),"choked words, the negation kept: "+said);})
+            .thenWaitUntil(()->h.assertTrue(c[0].getHealth()<c[0].getMaxHealth(),"choking"))
+            .thenExecute(()->{h.assertTrue(use(f,c[1],LastCrossingSite.FLOOR_GRATES.get(0))&&LastCrossing.flag(b,"pinned")&&!LastCrossing.flag(b,"gateHeld")&&is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,3),"pinned by a friend");
+                h.assertTrue(f.own(c[1],P).getString("PinnedFor").contains(name(c[0]))&&f.own(c[0],P).getString("PinnedBy").contains(name(c[1])),"who took the load off whom");
+                // A claw: the splatter and the tear.
+                f.at(c[3],P,49.5,0,-60.5);f.at(c[2],P,46.5,0,-60.5);look(f,c[2],new Vec3(49.5,1,-60.5));heal(c[3]);c[3].invulnerableTime=0;
+                h.assertTrue(LastCrossingNightTwo.claw(c[0],c[3]),"the claw comes down");
+                h.assertTrue(c[3].getHealth()<=c[3].getMaxHealth()-3.5F,"a claw hits harder than a fist");
+                h.assertTrue(LastCrossingNightTwo.torn(b).contains(c[3].getUUID())&&f.own(c[3],P).getString("ClawedBy").contains(name(c[0]))&&f.own(c[0],P).getInt("Claws")==1,"clawed, and torn");
+                h.assertTrue(f.own(c[2],P).getString("SawClaws").contains(name(c[0])),"seen");
+                LastCrossing.skip(b,LastCrossing.NIGHT_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAWN,"dawn"))
+            .thenExecute(()->{h.assertTrue(is(l,b,LastCrossingSite.HATCH_PRINTS,Kind.PRINTS,1)&&is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,3),"the prints dried to a tidemark, the pin still in");
+                h.assertTrue(LastCrossingNightTwo.torn(b).contains(c[3].getUUID()),"the tear carried through dawn");
+                LastCrossing.resetNow(l,b);
+                h.assertTrue(l.getBlockState(b.offset(LastCrossingSite.HATCH_PRINTS)).isAir()&&is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,0)&&is(l,b,LastCrossingSite.UNDERSIDE,Kind.UNDERSIDE,0),"the station set back");
+                h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_slot",timeoutTicks=16000)
+    public static void nightTwoTheGrappleAndTheSecondSlot(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[6];
+        dayTwo(f,h,c,"lc_slot",()->{})
+            .thenExecute(()->{LastCrossing.carryForTest(c[0]);for(int i=0;i<6;i++)if(i!=1)f.at(c[i],P,12.5+i,0,-36.5);f.at(c[1],P,33.5,0,-44.5);
+                LastCrossing.skip(b,LastCrossing.DAY_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==2,"the second dusk"))
+            .thenExecute(()->{heal(c);LastCrossing.skip(b,LastCrossingNightTwo.FIRST_SPAWN);})
+            // One on their own by the spillway: it gets its arms round them.
+            .thenWaitUntil(()->h.assertTrue(c[1].getUUID().equals(LastCrossingNightTwo.grappled(b)),"caught on their own"))
+            .thenExecute(()->{h.assertTrue(f.own(c[1],P).getBoolean("Grappled"),"remembered");
+                f.at(c[2],P,c[1].getX()-b.getX()+1,0,c[1].getZ()-b.getZ());h.assertTrue(LastCrossingNightTwo.pullFree(c[2],c[1])&&LastCrossingNightTwo.grappled(b)==null,"a friend hauls them free");
+                h.assertTrue(f.own(c[2],P).getBoolean("BrokeGrapple")&&f.own(c[1],P).getString("BrokenFreeBy").contains(name(c[2])),"who broke it");
+                f.at(c[2],P,14.5,0,-36.5);heal(c);})
+            .thenWaitUntil(()->h.assertTrue(c[1].getUUID().equals(LastCrossingNightTwo.grappled(b)),"caught again, alone"))
+            .thenExecute(()->{for(var p:c)p.setHealth(p.getMaxHealth());})
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.grappled(b)==null,"held through"))
+            .thenExecute(()->{h.assertTrue(c[1].getUUID().equals(LastCrossingNightTwo.secondSlot(b))&&f.own(c[1],P).getBoolean("SecondSlot")&&f.own(c[1],P).getInt("Slot")==2&&f.own(c[1],P).getBoolean("Infected"),"a full crew of six, all standing: the second slot");
+                h.assertTrue(LastCrossing.spared(c[1]),"the things pass the new carrier by");
+                clearUndertows(l,f);heal(c);
+                // Another, held through with the slot full: a deep cut.
+                f.at(c[4],P,43.5,0,-45.5);f.at(c[1],P,13.5,0,-38.5);LastCrossing.skip(b,LastCrossingNightTwo.SPAWN_EVERY);})
+            .thenWaitUntil(()->h.assertTrue(c[4].getUUID().equals(LastCrossingNightTwo.grappled(b)),"another caught on their own"))
+            .thenExecute(()->{for(var p:c)p.setHealth(p.getMaxHealth());})
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.grappled(b)==null,"held through"))
+            .thenExecute(()->{h.assertTrue(f.own(c[4],P).getBoolean("DeepCut")&&!f.own(c[4],P).getBoolean("Infected")&&c[1].getUUID().equals(LastCrossingNightTwo.secondSlot(b)),"the slot full: a deep cut, and nothing more");
+                clearUndertows(l,f);heal(c);for(int i=0;i<6;i++)f.at(c[i],P,44.5+i%3,0,-57.5-i/3);
+                LastCrossing.skip(b,LastCrossingNightTwo.PULL_BY);})
+            // The pull let go with nobody to catch it: the rollers thrown.
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.pull(b)==LastCrossingNightTwo.CALLED,"the pull called"))
+            .thenExecute(()->{f.at(c[3],P,48.5,0,-57.5);h.assertTrue(use(f,c[3],LastCrossingSite.CABLE_BRAKE),"the brake taken off");})
+            .thenExecute(()->{for(int i=0;i<6;i++)f.at(c[i],P,15.5+i,0,-36.5);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"pullFailed"),"nobody caught it"))
+            .thenExecute(()->{h.assertTrue(is(l,b,LastCrossingSite.LOOSE_ROLLER,Kind.ROLLER,1)&&is(l,b,LastCrossingSite.ROLLERS.get(2),Kind.ROLLER,1)&&!LastCrossing.flag(b,"roller"),"the rollers thrown");
+                h.assertTrue(f.own(c[3],P).getBoolean("PullFailed")&&f.own(c[3],P).getBoolean("LetGoBrake"),"remembered");
+                clearUndertows(l,f);h.succeed();});
     }
 }

@@ -546,6 +546,40 @@ def tools_item():
     return im
 
 
+def prints(dry):
+    # Wet prints on the boards where someone came up out of the water: two boot soles and the drips round them; dried, only the tidemarks.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(3751)
+    for ox, oy in ((3, 2), (9, 8)):
+        for y in range(6):
+            for x in range(3):
+                if (y == 0 or y == 5) and x != 1:
+                    continue
+                edge = x in (0, 2) or y in (0, 5)
+                if dry and not edge:
+                    continue
+                dot(im, ox + x, oy + y, '#1c2422' if not dry else '#6a665a', 170 if not dry else 120)
+    for _ in range(9 if not dry else 3):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#1c2422' if not dry else '#6a665a', 120 if not dry else 90)
+    return im
+
+
+def throat(kinked):
+    # The fairlead's throat from underneath: an iron collar in the passage roof, the cable through it; kinked hard into the housing, or clear.
+    im = iron('#3e4644', 3753)
+    frame(im, 2, 2, 14, 14, '#2a302e')
+    fill(im, 4, 4, 12, 12, '#141a1a')
+    if kinked:
+        for i in range(8):
+            dot(im, 4 + i, 6 + (i // 3), '#8c9294'); dot(im, 4 + i, 7 + (i // 3), '#5a6062')
+        for y in range(4, 12):
+            dot(im, 10, y, '#8c9294')
+    else:
+        for y in range(4, 12):
+            dot(im, 7, y, '#8c9294'); dot(im, 8, y, '#5a6062')
+    return im
+
+
 def textures():
     t = {
         'deal': deal(), 'iron': iron(), 'iron_red': iron('#8a3a2e', 3726), 'brass': brass(), 'hardboard': hardboard(),
@@ -561,6 +595,7 @@ def textures():
         'flesh': flesh(), 'timber': timber(), 'frayed': frayed(),
         'grate_wet': grate_wet(False), 'grate_damp': grate_wet(True), 'tag_shut': tag('S', '#1a1a1a'), 'tag_open': tag('O', '#a83a2a'),
         'witness_greased': witness(False), 'witness_clean': witness(True), 'stain': stain(False), 'stain_dry': stain(True), 'canvas': canvas(),
+        'prints': prints(False), 'prints_dry': prints(True), 'throat_kinked': throat(True), 'throat_clear': throat(False),
     }
     out = {f'block/crossing/{k}.png': v for k, v in t.items()}
     out['item/crossing_plate.png'] = plate_item()
@@ -740,6 +775,15 @@ def fitting_models():
     # The water stain on the boards under the fairlead, fresh and drying.
     for stage, tex in enumerate(('stain', 'stain_dry')):
         m[f'stain_{stage}'] = model([element([0, 0, 0], [16, .1, 16], {'up': 's'})], {'s': tex}, tex)
+    # Night Two: the floor grate pinned shut, a pin driven through its bars into the frame.
+    m['floor_grate_3'] = model([element([0, 0, 0], [16, 16, 16], {'up': 'g', 'down': 'g', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'}),
+                                element([1, 16, 7], [15, 17, 9], {'all': 'r'}), element([0, 16, 6.5], [2, 18, 9.5], {'all': 'i'})], {'g': 'grate_wet', 'i': 'iron', 'r': 'roller'}, 'iron')
+    # Wet prints on the boards, and dried to a tidemark.
+    for stage, tex in enumerate(('prints', 'prints_dry')):
+        m[f'prints_{stage}'] = model([element([0, 0, 0], [16, .1, 16], {'up': 'p'})], {'p': tex}, tex)
+    # The fairlead's throat seen from the flooded passage under it: a block of the passage roof, the collar and the cable in its underside.
+    for stage, tex in enumerate(('throat_kinked', 'throat_clear')):
+        m[f'underside_{stage}'] = model([element([0, 0, 0], [16, 16, 16], {'down': 't', 'up': 'i', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})], {'t': tex, 'i': 'iron'}, tex)
     # The cable tools rolled in their canvas, the handles out of one end.
     m['tools_0'] = model([element([2, 0, 5], [14, 3, 11], {'all': 'c'}), element([14, 1, 6], [16, 2, 7], {'all': 'i'}), element([14, 1, 8.5], [15.5, 2, 9.5], {'all': 'w'})],
                          {'c': 'canvas', 'i': 'iron', 'w': 'grip'}, 'canvas')
@@ -751,10 +795,10 @@ def fitting_models():
 
 KINDS = ['table', 'clipboard', 'slate', 'plate', 'plate_set', 'bracket', 'stove', 'gauge', 'brake', 'valve', 'run', 'bleed', 'grate', 'pump', 'pipe', 'roller',
          'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate', 'bar', 'isolator',
-         'bypass', 'branch', 'floor_grate', 'witness', 'catch', 'stain', 'tools']
+         'bypass', 'branch', 'floor_grate', 'witness', 'catch', 'stain', 'tools', 'prints', 'underside']
 STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 3, 'pump': 2, 'roller': 2, 'fairlead': 2,
           'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2,
-          'bypass': 2, 'branch': 3, 'floor_grate': 3, 'witness': 2, 'catch': 2, 'stain': 2}
+          'bypass': 2, 'branch': 3, 'floor_grate': 4, 'witness': 2, 'catch': 2, 'stain': 2, 'prints': 2, 'underside': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'crossing_fitting': 'Station Fitting'}

@@ -55,11 +55,13 @@ public final class LastCrossingTexts {
             case ISOLATOR->stage==1?"The isolation valve, shut. The upper floor's on its own pump now.":"The isolation valve for the lower floor. Open.";
             case BYPASS->stage==1?"A bypass wheel on its riser, turned open. The tin tag wired to it is turned to match.":"A bypass wheel on its riser, shut. A tin tag is wired to it.";
             case BRANCH->stage==1?"A grate into a service branch. Water's running behind it; the bars are wet.":stage==2?"A grate into a service branch. The bars are damp, beaded with water.":"A grate into a service branch, shut. Dry behind it.";
-            case FLOOR_GRATE->stage==1?"A grate in the floor. Water's standing right under it, and the bars are wet.":stage==2?"A grate in the floor, its bars damp.":"A grate in the floor. Dark and dry under it.";
+            case FLOOR_GRATE->stage==3?"A grate in the floor, a pin driven through its bars into the frame. Wet under it.":stage==1?"A grate in the floor. Water's standing right under it, and the bars are wet.":stage==2?"A grate in the floor, its bars damp.":"A grate in the floor. Dark and dry under it.";
             case WITNESS->stage==1?"The witness plate on the cable bed, scraped clean: a mark cut square across it.":"The witness plate on the cable bed, greased over.";
             case CATCH->stage==1?"The parking catch, down in the drum's teeth.":"The winch's parking catch, lifted clear of the drum.";
             case STAIN->stage==1?"A stain on the boards under the fairlead, drying.":"A dark wet stain on the boards under the fairlead.";
             case TOOLS->"The cable tools, rolled in canvas.";
+            case PRINTS->stage==1?"Prints on the boards, dried to a tidemark. Somebody came up out of the water here.":"Wet prints on the boards. Somebody came up out of the water here.";
+            case UNDERSIDE->stage==1?"The fairlead's throat from underneath, the cable running clear through it.":"The fairlead's throat from underneath, the cable kinked hard into it.";
         };
     }
 
@@ -111,4 +113,51 @@ public final class LastCrossingTexts {
     public static final String BRAKE_SET="Leave the brake set for the first pull. Whatever it's lined up on at dark, that's what we pull on.";
     public static final String ELLIS_VOICE="You'll want to know what it sounded like. It was Ellis's voice. Coming up the pipe a breath late, like it had been listening first.";
     public static final String BACK_DAY2="There you are. The drum's still to line up.";
+
+    // ------------------------------------------------------------------------------------------------ Night Two (0.4.354)
+    public static final String NIGHT_ROLL="Roll, before it's dark. Answer up.";
+    public static final String ROLL_ABSENT="Nothing. Somebody find them, and don't go looking on your own.";
+    public static final String ROLL_ALL="All here. Inside, then.";
+    public static final String PULL_LINED="Hands on the brake. Take it off when you're ready and hold it. We pull on the marks.";
+    public static final String PULL_OFF="Hands on the brake. She's not lined up, so it'll be a long haul. Take it off and hold it.";
+    public static final String PULL_HOLD="That's it. Hold it. Hold it.";
+    public static final String BINDING_JAM="She's binding at the fairlead! Somebody clear it!";
+    public static final String BINDING_ROLLER="She's riding up on the loose roller! Seat it!";
+    public static final String RUNNING_BACK="Brake! Somebody get on the brake!";
+    public static final String CAUGHT="Got her. Hold it now.";
+    public static final String PULLED="That's her taken up. Drop the catch in. She'll lie on that till morning.";
+    public static final String PULL_FAILED="She's thrown the rollers. Leave it. We'll reset them from the landing in the light.";
+    public static final String NIGHT_ANSWER2="Hold the winch through the pull. Watch the grate behind the brake. Keep the plate by one way in. It'll get light.";
+    public static final String DAWN_TWO="That's the light. Who's here? Come in where I can see you.";
+    /** What only the one who turns hears and knows. */
+    public static final String TURN_START="The light goes, and the second breath comes up under yours and takes it.";
+    public static final String TURNED="Your skin draws tight and slick. The air is thin in your throat; water would be easier. Your hands are still your hands, mostly.";
+    public static final String TURNED_DAWN="The light comes up and the second breath goes back down under yours. Your skin is your own again, and soaked.";
+    public static final String SECOND_SLOT="It lets go of you. Under your breath, slower, another breath answers. You'll change when the last light goes.";
+    public static final String GRAPPLE_WOUND="It lets go and slides off you, and leaves a deep cut.";
+    public static final String GATE_WARN="Holding it shut, your throat starts to close on the next breath.";
+    public static final String GATE_CHOKE="You can't get a breath past it.";
+    public static final String GATE_EASED="The weight comes off the grate, and your breath with it.";
+    public static final String PLATE_EDGE="Your breath shortens. The plate is near.";
+    public static final String PLATE_CHOKE="Near the plate the gills in your neck clamp shut.";
+    public static final String BREATH_BACK="The breath comes back.";
+    public static final String NIGHT_CALL="You crouch and breathe out, slow and long. Out in the dark, things turn toward you.";
+    public static final String NIGHT_CALL_BELOW="Down here your breath goes out through the water, and things come down into the branch after it.";
+    public static final String CLAWED_SOMEONE="Your hand comes down and opens something.";
+    public static final String RAKED="Something rakes across your shoulder. Cloth tears.";
+    public static final String GRAPPLED="It gets its arms round you from behind and drags you toward the water.";
+    public static final String GRAPPLE_BROKEN="Its hold breaks.";
+    public static final String JAM_BELOW="The fairlead's throat, from underneath: the cable kinked hard into it.";
+    public static final String JAM_CLEARED_BELOW="You get both hands on the kink and shove. Above you the cable jumps clear of the housing.";
+    public static final String JAM_SEEN="The cable jumps back into the fairlead with a bang. Nobody's at it.";
+    public static final String JAM_WORK="You get the marlinspike in under the kink and lever. It gives a little.";
+    public static final String JAM_WORKED="The kink comes free and the cable runs straight out through the fairlead.";
+    public static final String GATE_HOLD="You stand on the grate and bear down on it. Under it, something pushes back.";
+    public static final String GATE_DRY="Dry under it. Nothing's pushing.";
+    public static final String GATE_PINNED="You drive the pin through the grate's bars into the frame. It'll hold now.";
+    public static final String GATE_UNPINNED="You work the pin out of the grate.";
+    public static final String HATCH_DOWN="You lift the hatch and go down into the black water under the rollers. You can breathe it.";
+    public static final String HATCH_UP="You come up through the hatch onto the boards, running water.";
+    public static final String GRATE_THROUGH="You fold yourself through the bars of the grate.";
+    public static final String PRINTS_SEEN="Wet prints on the boards, by the hatch. Somebody came up out of the water.";
 }

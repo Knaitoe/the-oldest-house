@@ -98,10 +98,13 @@ public final class Talk {
     public static void reply(ServerPlayer p,int token,int index){
         var e=OPEN.get(p.getUUID());if(e==null||e.disconnectedAt>=0||e.token!=token||index<0||index>=e.replies.size())return;
         if(e.available!=null&&!e.available.test(p)){close(p);return;}
-        var chosen=e.replies.get(index);e.replies=List.of();e.token=tokens++;e.lines.add(new String[]{"",chosen.label()});
+        var chosen=e.replies.get(index);e.replies=List.of();e.token=tokens++;
+        // 0.4.354: what's said comes out as the reader's voice makes it, and the panel shows the reader the same words everyone heard.
+        String said=chosen.spoken()?Spoken.voice(p,chosen.label()):chosen.label();
+        e.lines.add(new String[]{"",said});
         // 0.4.275: kept marked as the reader's own reply, so it is never taken for a line of narration (the listener offers it back).
-        e.all.add(new String[]{"",chosen.label(),"R"});
-        if(chosen.spoken())Spoken.say(p,chosen.label());
+        e.all.add(new String[]{"",said,"R"});
+        if(chosen.spoken())Spoken.sayAsHeard(p,said);
         chosen.then().accept(p);
         // A reply that asked nothing further leaves the exchange to be read.
         var now=OPEN.get(p.getUUID());if(now==e&&e.replies.isEmpty()&&!e.ended){e.ended=true;send(p,e,false);}

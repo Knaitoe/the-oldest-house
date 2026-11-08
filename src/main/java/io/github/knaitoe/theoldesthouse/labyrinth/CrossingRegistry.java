@@ -51,6 +51,8 @@ public final class CrossingRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> SURGE=sound("crossing.surge"),BREATH=sound("crossing.breath"),UNDERTOW=sound("crossing.undertow"),RISE=sound("crossing.rise"),SNAP=sound("crossing.snap");
     /** Day Two: the winch drum ratcheting a notch; something answering through the pipes; water running behind a grate in a flooded branch. */
     public static final DeferredHolder<SoundEvent,SoundEvent> RATCHET=sound("crossing.ratchet"),SCRAPE=sound("crossing.scrape"),BRANCH=sound("crossing.branch");
+    /** 0.4.354, Night Two: a reader turning at sunset; a claw raking cloth; a throat closing on a breath. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> TURN=sound("crossing.turn"),CLAW=sound("crossing.claw"),CHOKE=sound("crossing.choke");
     private CrossingRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);TYPES.register(bus);bus.addListener(CrossingRegistry::attributes);}
     private static void attributes(EntityAttributeCreationEvent e){e.put(UNDERTOW_TYPE.get(),Undertow.attributes().build());}
