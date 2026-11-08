@@ -836,6 +836,9 @@ public final class GoatmanVignette {
             if(cookingLineTrue(k,r)){say(readers,forRunner(r,lines[k]));r.putInt("CookingChatLine0490",next+1);return;}}
         r.putInt("CookingChatLine0490",next);
     }
+    /** 0.4.371: the supper's mood for a reader whose home the House read as a haven, or as not safe. */
+    public static final String HOME_WARM="Somebody has a radio on low in the cab. A cousin is singing the half of it they know.",
+            HOME_WATCHFUL="The screen door bangs, and two of the cousins look up at the same time before they carry on.";
     private static void evening(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,int clock){
         boolean brisk=brisk(r);
         int supper=supperAt(r),leaves=fresh(r)?LEAVES0465:RUNNER_LEAVES,backAt=fresh(r)?BACK0465:RUNNER_BACK,silence=fresh(r)?SILENCE0465:SILENCE;
@@ -844,6 +847,9 @@ public final class GoatmanVignette {
         }else if(fresh(r)){
             if(clock==220)say(enrolled,"A cousin: You should've heard his story. The scary part was how long it took.");
             if(clock==520)say(enrolled,"A cousin: Can somebody pass the plates? We brought enough for all of us.");
+            // 0.4.371: the House's read of each reader's home gives the ordinary supper a mood, to that reader alone (HomeRead).
+            if(clock==680)for(var q:enrolled){String mood=HomeRead.mood(q,HOME_WARM,HOME_WATCHFUL);
+                if(!mood.isEmpty())q.displayClientMessage(net.minecraft.network.chat.Component.literal(mood).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);}
             if(clock==820&&GoatmanSupper.onGriddle(r))say(enrolled,"A cousin: You always burn them on one side. Turn them over this time.");
             if(clock==1340)say(enrolled,"A cousin: He knows where the gas is. He'll be back in a minute.");
         }

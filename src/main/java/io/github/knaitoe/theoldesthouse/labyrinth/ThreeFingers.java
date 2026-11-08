@@ -286,7 +286,7 @@ public final class ThreeFingers {
     /** Who is in the cottage for this thread, by where its story has reached. */
     private static void cast(Night n){
         int stage=stage(n.story);
-        seat(n,"CastFather",FATHER,FATHER_SEAT,Direction.NORTH);
+        if(!walterLingers(n))seat(n,"CastFather",FATHER,FATHER_SEAT,Direction.NORTH);
         seat(n,"CastMother",MOTHER,MOTHER_SEAT,Direction.SOUTH);
         if(!n.story.getBoolean("SonGone"))seat(n,"CastSon",SON,SON_SEAT,Direction.WEST);else dismiss(n,"CastSon");
         if(stage<=TAKEN&&!n.story.getBoolean("SergeantGone"))seat(n,"CastSergeant",SERGEANT,SERGEANT_SEAT,Direction.SOUTH);else dismiss(n,"CastSergeant");
@@ -296,6 +296,40 @@ public final class ThreeFingers {
             if(now>until){a.setCustomNameVisible(false);a.setCustomName(null);}
         }}
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.371, Walter in the doorway
+    /** Just inside the gap in the half wall, looking into the kitchen the reader comes in by. */
+    static final BlockPos WALTER_DOORWAY=new BlockPos(-3,0,-5);
+    public static final int WALTER_LINGER=160;
+    /**
+     * A reader the House has read as coming from a house that was not safe (a settled DANGER, HomeRead), alone in their thread, finds
+     * Walter standing in the gap between the kitchen and the parlour as they come in: before the sergeant's tale, or in the mourning.
+     * He says nothing. When they come near, or after eight seconds, he walks back to his chair. Once an evening; never in the news or
+     * the knocking, which belong to the paw; never quicker, and the front door is the way out as it always is. With anyone else in the
+     * thread he stays in his chair, so nobody's evening carries another reader's read. True while he is out of his chair.
+     */
+    private static boolean walterLingers(Night n){
+        if(n.story.getBoolean("WalterBack0371")){
+            var a=cast(n.l,n.story,"CastFather");
+            if(a==null||SceneFootpaths.walk(a,Vec3.atBottomCenterOf(n.b.offset(FATHER_SEAT)),.45)){n.story.remove("WalterBack0371");return false;}
+            return true;
+        }
+        if(n.story.getBoolean("WalterDoor0371")){
+            var a=seat(n,"CastFather",FATHER,WALTER_DOORWAY,Direction.SOUTH);int t=n.story.getInt("WalterDoorT0371")+5;n.story.putInt("WalterDoorT0371",t);
+            boolean near=n.here.size()==1&&a!=null&&n.here.get(0).distanceToSqr(a)<2.5*2.5;
+            if(t>=WALTER_LINGER||near||n.here.size()!=1){n.story.remove("WalterDoor0371");n.story.remove("WalterDoorT0371");n.story.putBoolean("WalterBack0371",true);}
+            return true;
+        }
+        int stage=stage(n.story),visit=n.thread.getInt("Visit");
+        if(n.here.size()!=1||n.story.getInt("WalterVisit0371")==visit||!(stage==TELLING&&n.story.getInt("Tale")==0||stage==MOURNING))return false;
+        var p=n.here.get(0);
+        // Only as they come in: still in the kitchen, south of the half wall.
+        if(!HomeRead.danger(p)||p.getZ()-n.b.getZ()<-4.2)return false;
+        n.story.putInt("WalterVisit0371",visit);n.story.putBoolean("WalterDoor0371",true);
+        hear(p,LiteraryRegistry.HOME_FLOORBOARD.get(),n.b.offset(WALTER_DOORWAY),.6F,.95F);
+        seat(n,"CastFather",FATHER,WALTER_DOORWAY,Direction.SOUTH);
+        return true;
+    }
+
     /** The latest companion the House saw the reader lose, by the name it answered to; null when there was none. */
     public static @Nullable String lostCompanion(LabyrinthData d,UUID reader){
         var lost=HotelVignette.personal(d,reader).getList("LostPets",net.minecraft.nbt.Tag.TAG_COMPOUND);

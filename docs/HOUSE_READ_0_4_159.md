@@ -109,7 +109,7 @@ Each room hands in **signals** as they happen, and `HouseRead` turns them into o
 
 ## Not built yet
 
-- Settled `DANGER` authority figures who linger rather than chase, and the warm or tense mood a tentative `HOME` gives domestic rooms.
+- ~~Settled `DANGER` authority figures who linger rather than chase, and the warm or tense mood a tentative `HOME` gives domestic rooms.~~ Built in 0.4.371 (`docs/HOUSE_READ_HOME_0_4_371.md`).
 - The larger `AGE` changes: the Wheel starting at the reader's stage of life, Harrigan's handset, a landline in later halls.
 - The silk wrap on a double asleep: no sleeping double exists yet.
 - The owner's two open proposals: Tom and Kate as grown names, and the narrator following `AGE`.

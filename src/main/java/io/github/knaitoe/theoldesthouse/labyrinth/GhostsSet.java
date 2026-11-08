@@ -523,7 +523,7 @@ public final class GhostsSet {
         boolean unattended=d==DAYS&&objectiveAccepted(own);
         if(!p.isAlive()||p.isSpectator()||!unattended&&(!own.getBoolean("Rolling")||!inRoom(p,b,d,own.getBoolean("BedroomPickup"))&&!GhostsJump.room(p,b,own))){for(var actor:cast)GhostsMotion.stop(actor);
             // 0.4.247: between takes on the earlier days, the family and Barry go about small errands of their own (GhostsErrands).
-            if(p.isAlive()&&!p.isSpectator())GhostsErrands.between(p,b,cast,own,d);
+            if(p.isAlive()&&!p.isSpectator()){GhostsErrands.between(p,b,cast,own,d);johnOutside(p,cast[2],own,d);}
             waiting(p,own,cast);display(p,own,b);return;}
         // 0.4.247: the take is called with someone still out on an errand: they come back to their place first, and the take waits.
         if(GhostsErrands.busy(own)){GhostsErrands.home(p,b,cast,own,d);display(p,own,b);return;}
@@ -635,6 +635,19 @@ public final class GhostsSet {
         text.append(GhostsLore.account(own));
         for(int d=1;d<=DAYS;d++){var book=edit(name,own,d,true).get(DataComponents.WRITTEN_BOOK_CONTENT);for(var page:book.pages())text.append(page.raw().getString());text.append("\n\n");}
         text.append("MY ACCOUNT\n\n").append(own.getString("Confession"));return text.toString();
+    }
+    /**
+     * 0.4.371: for a reader the House has read as coming from a house that was not safe (a settled DANGER, HomeRead), once a filming
+     * day, between takes and out of sight of John: a heavy tread in the hall stops outside the door nearest them, stays, tries the handle
+     * and lets it go. Theirs alone; the family's performances, the takes and every way out are as they were.
+     */
+    static void johnOutside(ServerPlayer p,LiteraryActor john,CompoundTag own,int day){
+        if(own.getInt("JohnHall0371")==day||!HomeRead.danger(p)||HomeRead.lingering(p))return;
+        if(own.getInt("BetweenDay0371")!=day){own.putInt("BetweenDay0371",day);own.putInt("BetweenT0371",0);}
+        int t=own.getInt("BetweenT0371")+5;own.putInt("BetweenT0371",t);if(t<300)return;
+        if(john.distanceToSqr(p)<8*8||p.hasLineOfSight(john))return;
+        var hall=HomeRead.nearestDoor(p,6);if(hall==null)return;
+        own.putInt("JohnHall0371",day);HomeRead.linger(p,hall[0],hall[1],hall[2],"A heavy tread in the hall. It stops outside the door.");
     }
     /** 0.4.329: John has cut his hand once day 2's supper is past the cut (or the day is done), and on every day after; the cast draws it. */
     public static boolean johnHurt(CompoundTag own){int d=day(own);return d>2||d==2&&(own.getBoolean("DayDone")||own.getInt("ShotClock")>=880);}

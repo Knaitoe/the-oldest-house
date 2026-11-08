@@ -9,7 +9,7 @@ What is built (see "Built so far" at the end):
 - the account opening, the House of Leaves, and the reader's look in glass and copies, written with the read (0.4.159);
 - the six scenes that read a category (0.4.142), the lake house partner (0.4.152), the shelter strangers' age and the road-taker's deal (0.4.159).
 
-What is not built: settled `DANGER` authority figures, the moods a tentative `HOME` gives, the larger `AGE` changes, and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only (section 6). The House's body for readers whose skins aren't human was decided the same day and is built in 0.4.163 ("The House's body").
+What is not built: the larger `AGE` changes and the two open proposals (see `docs/HOUSE_READ_0_4_159.md`). Settled `DANGER` authority figures and the moods a tentative `HOME` gives are built in 0.4.371 (`docs/HOUSE_READ_HOME_0_4_371.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only (section 6). The House's body for readers whose skins aren't human was decided the same day and is built in 0.4.163 ("The House's body").
 
 A review of the built rooms against this document, with a suggested order for what comes next, is in `docs/PERSONALITY_VIGNETTES_REVIEW.md` (October 28).
 
