@@ -256,6 +256,29 @@ public final class PinehookTexts {
     public static final String LEN_DAWN="She went for me in the night. She's not right. That's all anyone needs to say about it.",
         LEN_DAWN_EXPOSED="You've had your look. Happy? You don't know the half of what she did.",LEN_DAWN_NINA="My safe. Somebody's been in my safe.";
     public static final String Q_NOT_ALL="That's not all that happened.",NOT_ALL_ANSWER="Prove it.";
+    // 0.4.368: the proposal's last branches. Len keeps his safe shut until someone faces him with it.
+    public static final String LEN_GUARDS="Nobody's opening anything down here. Nobody.",
+        LEN_STOPS_SAFE="Len puts himself between you and the safe. \"Don't you touch that. That's mine.\"",
+        Q_CONFRONT_LEN="She's coming for what's in that safe. Step away from it.",
+        CONFRONT_LEN_ANSWER="...Then she can have the box. The key's under the bench. I'm not touching any of it.";
+    // Jude won't help Casey hide what he did.
+    public static final String CASEY_ASKS_JUDE="Jude. Give me a hand with the boat. Please. Before anybody looks.",
+        JUDE_REFUSES="No. Not this time. You carry it.";
+    // The boat can take Nina away: held, disarmed, or with nothing left to come for.
+    public static final String Q_BOAT_NINA="The boat's ready. Take it, and go.",
+        BOAT_NINA_HELD="Then let go of me.",BOAT_NINA_FREE="...All right. All right.",
+        BOAT_NINA_LET_GO_CUE="You let go of her. She doesn't run. She walks down the dock.",
+        NINA_ROWS_CUE="Nina rows out onto the dark water, badly, and keeps rowing until you can't hear the oars.";
+    // Or she can be stopped for good.
+    public static final String Q_HOOK="Swing the boat hook.",
+        HOOK_CUE="You swing the hook. It catches her, and she goes down on the boards and doesn't get up.",
+        NINA_DIES_CUE="The boat hook catches Nina, and she goes down on the boards and doesn't get up.",
+        NINA_DEAD_LOOK="Nina, on the boards where she fell. She isn't moving.";
+    // The Horror Fan at first light.
+    public static final String Q_THEORY="I had it all worked out. I had the wrong person.",
+        THEORY_ANSWER="Yeah. So did I. So did everybody.";
+    // Len's account, undone at first light.
+    public static final String EXPOSE_CUE="You tell them what was in the envelope: the car, the petrol station, a year of payments marked N. Everyone on the porch hears it.";
     public static final String JUDE_DAWN_TALK="I'm still here. I didn't think I would be.";
 
     // ------------------------------------------------------------------------------------------------ the account
@@ -331,14 +354,23 @@ public final class PinehookTexts {
         if(own.getBoolean("BurnedEnvelope"))lines.add("I put Len's envelope in the fire myself.");
         if(own.getBoolean("SawNinaLeave"))lines.add("She went out through the slip with the envelope, into the lake.");
         if(own.getBoolean("GaveLenEnvelope"))lines.add("I gave Len his envelope back.");else if(own.getBoolean("RefusedLen"))lines.add("Len asked me for his envelope. I didn't give it to him.");
+        // 0.4.368
+        if(own.getBoolean("HeardJudeRefuse"))lines.add("Casey asked Jude to help him with the boat. Jude said no.");
+        if(own.getBoolean("LenStoppedSafe"))lines.add(own.getBoolean("ConfrontedLen")?"Len stood in front of his safe until I told him what she was coming for. Then he stood aside.":"Len stood in front of his safe and wouldn't let me near it.");
+        else if(own.getBoolean("ConfrontedLen"))lines.add("I told Len what she was coming for, and he gave up the safe.");
+        if(own.getBoolean("KilledNina"))lines.add("I swung the boat hook. She went down on the boards and didn't get up.");
+        else if(own.getBoolean("SawNinaDie"))lines.add("Somebody swung the boat hook at Nina. She went down on the boards and didn't get up.");
+        if(own.getBoolean("SentNinaAway"))lines.add("The boat was ready, and I told Nina to take it. She rowed out onto the lake.");
+        else if(own.getBoolean("SawNinaRow"))lines.add("Nina took the rowboat out onto the lake.");
     }
     /** 0.4.367: the morning: what everyone could see, how it came out, and this reader's part in it. */
     static void morning(List<String> lines,net.minecraft.nbt.CompoundTag own){
         if(own.getBoolean("AllJudeDead"))lines.add("In the morning Jude was on the kitchen floor where he'd sat down in the night, and he wasn't breathing. Nobody had stopped the bleeding.");
         switch(own.getString("Family")){
             case "exposed"->{
+                if(own.getBoolean("AllExposedAtDawn"))lines.add(own.getBoolean("ExposedLen")?"In the morning Len started to tell it his way, and I told everyone what was in his envelope.":"In the morning Len started to tell it his way. Then somebody told everyone what was in his envelope.");
                 lines.add("At first light Len's envelope was out where anyone could read it, and he wasn't going to get another month out of anybody.");
-                lines.add(own.getBoolean("AllNinaHeld")?"Nina sat on the porch steps where we'd put her, not fighting any more.":own.getBoolean("AllNinaDisarmed")?"Nina sat on the porch steps without her knife.":"Nina sat on the porch steps and didn't say anything.");
+                lines.add(own.getBoolean("AllNinaDead")?"Nina was on the boards of the dock where she'd fallen.":own.getBoolean("AllNinaRowed")?"Nina was somewhere out on the lake in Len's boat.":own.getBoolean("AllNinaHeld")?"Nina sat on the porch steps where we'd put her, not fighting any more.":own.getBoolean("AllNinaDisarmed")?"Nina sat on the porch steps without her knife.":"Nina sat on the porch steps and didn't say anything.");
                 lines.add(own.getBoolean("AllCaseyGone")?"Casey was across the lake, telling it to somebody on the phone.":"Casey said sorry to everyone, one at a time. Nobody was saying it back yet.");}
             case "nina"->{
                 if(own.getBoolean("AllLenDead")){
@@ -351,12 +383,42 @@ public final class PinehookTexts {
                 else lines.add("Len was alive in the morning, shouting about his safe. Whatever he had on Nina was gone. She didn't thank anyone, and nobody wanted her to.");}
             case "protected"->{
                 lines.add("In the morning Len told it his way: a guest who lost her head in the dark, nothing more. Nobody asked him about his safe.");
+                if(own.getBoolean("AllNinaDead"))lines.add("Nina was on the boards of the dock where she'd fallen. Len said nobody would blame us. He said it more than once.");
+                else if(own.getBoolean("AllNinaRowed"))lines.add("Len's boat was gone, and Nina with it. He didn't seem to mind about the boat.");
                 if(own.getBoolean("ChallengedLen"))lines.add("I told him that wasn't all of it. It won't be his way for long.");
                 else if(own.getBoolean("ReadEnvelope"))lines.add("I'd read what was in it, and I let him tell it.");}
             case "performance"->{
                 lines.add("By morning the story was the mask: an actor in a costume, a prank that went too far. Len said it. Nina said it. Casey didn't say anything.");
                 if(own.getBoolean("ChallengedStory"))lines.add("I said it wasn't true, and told them what I'd seen. Somebody will have to listen.");
                 else if(own.getBoolean("ToldTheStory"))lines.add("When they asked me, I said it too.");}
+            default->{}
+        }
+        payoff(lines,own);
+    }
+    /** 0.4.368: the part Casey handed each reader, against what they actually did. The roles supply expectations; the acts supply the arc. */
+    static void payoff(List<String> lines,net.minecraft.nbt.CompoundTag own){
+        var part=Part.of(own.getString("Part"));if(part==null)return;
+        switch(part){
+            case ATHLETE->{
+                if(own.getBoolean("BracedForLen")||own.getBoolean("BracedAgainstLen")||own.getBoolean("BracedDoor"))lines.add("Casey had me down as the one who carries things. What I carried in the end was a length of timber across a door, and I never chased anybody.");
+                else if(own.getBoolean("HeldNina"))lines.add("Casey had me down as the one who carries things. What I did in the end was get hold of somebody and not let go.");
+                else if(own.getBoolean("GuardedCleat"))lines.add("Casey had me down as the one who carries things. What I did in the end was stand still on a dock.");}
+            case SKEPTIC->{
+                if(own.getBoolean("TurnedCasey"))lines.add("I came saying none of it was real. I was the one who got Casey to stop calling it a bit, and then I was the one saying the rest of it was real.");
+                else if(own.getBoolean("ChallengedStory")||own.getBoolean("ChallengedLen")||own.getBoolean("ExposedLen"))lines.add("I came saying none of it was real. In the morning I was the one saying it had happened.");}
+            case CHARMER->{
+                if(own.getBoolean("AskedNina")||own.getBoolean("AskedNinaWhy"))lines.add("I was there to keep everyone happy. Instead I asked Nina what Len had said to her, and the party was over after that.");}
+            case WILDCARD->{
+                String thing=own.getBoolean("TapeNina")?"the tape":own.getBoolean("StrapMismatch")?"a strap of elastic":own.getBoolean("Timeline")?"a buckle on a mask":own.getBoolean("SawWetPrints")?"a line of wet footprints":null;
+                if(thing!=null)lines.add("Nobody expected anything from me. It was "+thing+" that made them listen.");}
+            case FAN->{
+                if(own.getBoolean("AdmittedTheory"))lines.add("I said I knew how these go. I had it all worked out, and I had the wrong person, and in the morning I said so.");
+                else lines.add("I said I knew how these go. None of it went the way they go.");}
+            case RESPONSIBLE->{
+                boolean saved=own.getBoolean("HelpedJude")||own.getBoolean("SentJudeAcross");
+                boolean ugly=own.getBoolean("HelpedNina")||own.getBoolean("BracedAgainstLen")||own.getBoolean("GaveLenEnvelope")||own.getBoolean("KilledNina")||own.getBoolean("SentNinaAway")||own.getBoolean("ToldTheStory");
+                if(saved&&ugly)lines.add("Somebody had to be the responsible one. I kept Jude alive, and I did the other thing too, and both of those are mine.");
+                else if(saved)lines.add("Somebody had to be the responsible one. I kept Jude alive.");}
             default->{}
         }
     }
