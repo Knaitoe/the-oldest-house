@@ -23,9 +23,11 @@ public final class HouseOutsideEffects extends DimensionSpecialEffects {
     /** One complete sky, including below the horizon: no sea-level black hemisphere can overlap it. */
     @Override public boolean renderSky(ClientLevel level,int ticks,float partial,Matrix4f view,Camera camera,Matrix4f projection,boolean foggy,Runnable setupFog){
         setupFog.run();if(foggy||camera.getFluidInCamera()!=FogType.NONE)return true;
-        drawSky(view,level.getSkyColor(camera.getPosition(),partial),level.getTimeOfDay(partial));return true;
+        drawSky(view,level.getSkyColor(camera.getPosition(),partial),level.getTimeOfDay(partial),YardSky.here());return true;
     }
-    public static void drawSky(Matrix4f view,Vec3 color,float time){
+    public static void drawSky(Matrix4f view,Vec3 color,float time){drawSky(view,color,time,false);}
+    /** 0.4.358: over the yard the night shows home's own stars, fixed and a little out of place (YardSky). */
+    public static void drawSky(Matrix4f view,Vec3 color,float time,boolean yard){
         RenderSystem.depthMask(false);RenderSystem.disableCull();RenderSystem.enableBlend();RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1,1,1,1);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -47,7 +49,8 @@ public final class HouseOutsideEffects extends DimensionSpecialEffects {
             if(night>.05F){
                 builder=Tesselator.getInstance().begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR);
                 var random=new java.util.Random(48721);
-                for(int i=0;i<140;i++){
+                if(yard)YardSky.stars(builder,view,night);
+                else for(int i=0;i<140;i++){
                     double az=random.nextDouble()*Math.PI*2,alt=.12+random.nextDouble()*1.35;
                     float x=(float)(Math.cos(az)*Math.cos(alt)*80),y=(float)(Math.sin(alt)*80),z=(float)(Math.sin(az)*Math.cos(alt)*80),size=.045F+random.nextFloat()*.07F;
                     float light=(.4F+random.nextFloat()*.55F)*night;

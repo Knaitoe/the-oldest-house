@@ -36,12 +36,14 @@ import net.minecraft.world.phys.shapes.*;
  * stems, the blades, the seed heads), no collision, slow to push through; the same grass trampled flat (0), rising (1) and nearly up
  * again (2); a boy's cap lying wet on the flattened stems. A pickup's nose, its body under the cab (stage 1 with the front wheel), its cab,
  * and its bed (stage 0 with the back wheel, 1 the tailgate) (TallGrass).</li>
+ * <li>0.4.358: the loose edge of a hedge, sprigs standing off its face into a lane: still (stage 0), and blown one way (1) and the other
+ * (2) as the wind runs down the lane (YardConnectors.wind). No collision: the lane is as wide as it was.</li>
  * </ul>
  */
 public final class YardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<YardBlock> CODEC=simpleCodec(YardBlock::new);
     public enum Kind implements StringRepresentable {
-        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT,STOCK_LEAF,ROOF_SHEET,STALK,WINDSOCK,GRASS,TRAMPLED,CAP,PICKUP_NOSE,PICKUP_BODY,PICKUP_CAB,PICKUP_BED;
+        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT,STOCK_LEAF,ROOF_SHEET,STALK,WINDSOCK,GRASS,TRAMPLED,CAP,PICKUP_NOSE,PICKUP_BODY,PICKUP_CAB,PICKUP_BED,FRINGE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -70,10 +72,11 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             case TRAMPLED->Block.box(0,0,0,16,switch(s.getValue(STAGE)){case 0->2;case 1->9;default->13;},16);
             case CAP->Block.box(5,0,4,11,3,13);
             case PICKUP_CAB->Block.box(0,0,0,16,10,16);
+            case FRINGE->WorkPrintBlock.box(s.getValue(FACING),1,1,12,15,15,16);
             default->Block.box(0,0,0,16,14,16);
         };
     }
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);return k==Kind.BULB||k==Kind.SHEET||k==Kind.STALK||k==Kind.WINDSOCK||k==Kind.GRASS||k==Kind.TRAMPLED||k==Kind.CAP?Shapes.empty():getShape(s,l,p,c);}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);return k==Kind.BULB||k==Kind.SHEET||k==Kind.STALK||k==Kind.WINDSOCK||k==Kind.GRASS||k==Kind.TRAMPLED||k==Kind.CAP||k==Kind.FRINGE?Shapes.empty():getShape(s,l,p,c);}
     @Override protected void entityInside(BlockState s,Level l,BlockPos at,net.minecraft.world.entity.Entity e){
         if(e instanceof ServerPlayer p&&s.getValue(KIND)==Kind.SHEET)YardConnectors.brush(p,at);
         // Standing corn holds a body back until it goes over; once flat it is a track anyone can follow at a walk.
@@ -107,6 +110,7 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             case GRASS->"Grass, higher than your head.";
             case TRAMPLED->"Grass pressed flat. It is coming back up.";
             case CAP->"A small cap, wet through.";
+            case FRINGE->"The hedge's loose edge. It moves when the wind comes down the lane.";
             case PICKUP_NOSE,PICKUP_BODY,PICKUP_CAB,PICKUP_BED->"A pickup, its engine running.";
             default->"A station wagon, wood-panelled. Mud up the doors from the drive.";
         });

@@ -278,7 +278,7 @@ public final class YardCrossings {
     public static final BlockPos JOIST_EXIT=new BlockPos(0,0,-45);
     public static int joistSweep=-1000;
     public static long nextJoistCar=-1;
-    public static void clearAll(){joistSweep=-1000;nextJoistCar=-1;}
+    public static void clearAll(){joistSweep=-1000;nextJoistCar=-1;YardFigure.clearAll();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
     static void joists(ServerLevel l,BlockPos b){
         var rnd=new Random(b.asLong()^0x1015_0322L);
@@ -377,7 +377,7 @@ public final class YardCrossings {
             boolean trodden=false;for(var p:here)trodden|=print(l,p);
             if(trodden&&!s.getBoolean("Trodden")){s.putBoolean("Trodden",true);save(l,place,s);}
             switch(place){
-                case YARD_LONG_DRIVE->longTick(l,b,s,here,now);
+                case YARD_LONG_DRIVE->{longTick(l,b,s,here,now);YardFigure.tick(l,b,reach,here,now);}
                 case YARD_PORCH_TURN->porchTick(l,b,s,here,now);
                 case YARD_JOISTS->joistTick(l,b,s,here,now);
                 default->{}

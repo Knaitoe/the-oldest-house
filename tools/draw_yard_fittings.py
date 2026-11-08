@@ -7,8 +7,8 @@ footprints pressed into it. 0.4.345: a stockyard swing gate's leaf in three heig
 painted so the gates read from the loading platform; a sheet of corrugated barn roofing, rusted at its laps. 0.4.347: field corn three
 high (the stalk, the ear, the tassel) and the same corn pushed flat; a windsock, slack, lifting and full. 0.4.349: the wagon's hazard lamps
 lit at nose and tail; roadside grass higher than a head in thirds (the stems, the blades, the seed heads), the same grass trampled flat and
-springing back in two steps, a boy's cap lying wet on the flattened stems; and a pickup (nose, body, cab, bed) in faded paint. --check
-verifies everything.
+springing back in two steps, a boy's cap lying wet on the flattened stems; and a pickup (nose, body, cab, bed) in faded paint. 0.4.358:
+the loose edge of a hedge, four sprigs standing off its face, still and blown either way. --check verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -331,6 +331,22 @@ def cap():
     return im
 
 
+def fringe():
+    # 0.4.358: sprigs of hedge in a three-by-three of five-pixel cells, needles bunched thick at the base and thinning to a ragged tip,
+    # drawn already in the hedge's own green (the spruce leaves are tinted; this is not).
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(3580)
+    green = ['#3c5c3c', '#486d45', '#2f4a31', '#56804f']
+    for cell in range(4):
+        ox, oy = (cell % 3) * 5, (cell // 3) * 5
+        for u in range(5):
+            for v in range(5):
+                # Thick near the face (u high), ragged at the tip (u low); the middle row is the twig.
+                keep = 0.95 if v == 2 else max(0.15, (u + 1) / 5.5 - abs(v - 2) * 0.12)
+                if rnd.random() < keep:
+                    dot(im, ox + u, oy + v, '#4a3a26' if v == 2 and u > 2 and rnd.random() < .4 else green[rnd.randrange(4)])
+    return im
+
+
 def pickup_paint():
     return noisy(['#4e6a80', '#48647a', '#567288'], 3491)
 
@@ -418,6 +434,7 @@ def textures():
     t['grille_hazard'] = grille_hazard(); t['tailgate_hazard'] = tailgate_hazard()
     for stage in range(3): t[f'grass_{stage}'] = grass(stage, 3494 + stage)
     t['grass_flat'] = grass_flat(3497); t['cap'] = cap()
+    t['fringe'] = fringe()
     t.update({'pickup_paint': pickup_paint(), 'pickup_side': pickup_side(), 'pickup_grille': pickup_grille(), 'pickup_window': pickup_window(), 'pickup_bed': pickup_bed(), 'pickup_gate': pickup_gate()})
     out.update({f'block/yard/{k}.png': v for k, v in t.items()})
     out['item/tall_grass_cap.png'] = cap_item()
@@ -511,11 +528,27 @@ def fitting_models():
              element([0, 5, 0], [1, 14, 16], {'all': 's'}), element([15, 5, 0], [16, 14, 16], {'all': 's'})]
     m['pickup_bed_0'] = model(walls + [element([-0.5, 0, 3], [0.5, 9, 12], {'west': 'w', 'east': 'w'}), element([15.5, 0, 3], [16.5, 9, 12], {'west': 'w', 'east': 'w'})], {'b': 'pickup_bed', 's': 'pickup_side', 'p': 'pickup_paint', 'w': 'wheel'}, 'pickup_side')
     m['pickup_bed_1'] = model(walls + [element([0, 3, 15], [16, 14, 16], {'all': 's', 'south': 't'})], {'b': 'pickup_bed', 's': 'pickup_side', 'p': 'pickup_paint', 't': 'pickup_gate'}, 'pickup_side')
+    # 0.4.358: a hedge's loose edge, four sprigs off its face (drawn facing north, the hedge to the south): still, and leaning a quarter
+    # turn of a turn either way on the wind.
+    sprigs = ((3.5, 4, 0), (11, 6.5, 1), (6, 11, 2), (12.5, 12.5, 3))
+    for stage, angle in enumerate((0, 22.5, -22.5)):
+        els = []
+        for cx, cy, cell in sprigs:
+            u, v = (cell % 3) * 5, (cell // 3) * 5
+            upright = {'from': [cx, cy - 2.5, 11], 'to': [cx, cy + 2.5, 16], 'shade': False,
+                       'faces': {f: {'uv': [u, v, u + 5, v + 5], 'texture': '#f'} for f in ('east', 'west')}}
+            flat = {'from': [cx - 2.5, cy, 11], 'to': [cx + 2.5, cy, 16], 'shade': False,
+                    'faces': {f: {'uv': [u, v, u + 5, v + 5], 'texture': '#f'} for f in ('up', 'down')}}
+            for el in (upright, flat):
+                if angle:
+                    el['rotation'] = {'origin': [cx, cy, 16], 'axis': 'y', 'angle': angle}
+                els.append(el)
+        m[f'fringe_{stage}'] = {**model(els, {'f': 'fringe'}, 'fringe'), 'ambientocclusion': False}
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet', 'stalk', 'windsock', 'grass', 'trampled', 'cap', 'pickup_nose', 'pickup_body', 'pickup_cab', 'pickup_bed']
-STAGES = {'bulb': 1, 'nose': 2, 'body': 2, 'cabin': 1, 'tail': 2, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3, 'grass': 3, 'trampled': 3, 'cap': 1, 'pickup_nose': 1, 'pickup_body': 2, 'pickup_cab': 1, 'pickup_bed': 2}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet', 'stalk', 'windsock', 'grass', 'trampled', 'cap', 'pickup_nose', 'pickup_body', 'pickup_cab', 'pickup_bed', 'fringe']
+STAGES = {'bulb': 1, 'nose': 2, 'body': 2, 'cabin': 1, 'tail': 2, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3, 'grass': 3, 'trampled': 3, 'cap': 1, 'pickup_nose': 1, 'pickup_body': 2, 'pickup_cab': 1, 'pickup_bed': 2, 'fringe': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 

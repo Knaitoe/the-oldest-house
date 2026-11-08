@@ -256,6 +256,8 @@ public final class LabyrinthDealer {
         gray.add(LabyrinthPlace.YARD_DITCH_FLOOD);
         // 0.4.347: the storm field (YardStorm), a hazard in the deep halls.
         gray.add(LabyrinthPlace.YARD_STORM_FIELD);
+        // 0.4.358: the Survey Stakes' deeper variant (YardFields.surveyDeep), paced as a deep survey room.
+        gray.add(LabyrinthPlace.YARD_SURVEY_DEEP);
         // 0.4.322: the yard's exceptional crossings (YardCrossings), each once to a reader who has learned the ordinary yard.
         gray.addAll(YardCrossings.PLACES);
         // 0.4.232: the familiar room, from the third crossing, and far more readily while someone is in it (FamiliarRoom.weight).
@@ -621,7 +623,7 @@ public final class LabyrinthDealer {
             case SPHINX_FIELD -> 0;
             // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
             case YARD_TURNAROUND, YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
-            case YARD_SURVEY, YARD_STOCK, YARD_REUNION, YARD_LONG_DRIVE, YARD_PORCH_TURN, YARD_JOISTS -> 0;
+            case YARD_SURVEY, YARD_SURVEY_DEEP, YARD_STOCK, YARD_REUNION, YARD_LONG_DRIVE, YARD_PORCH_TURN, YARD_JOISTS -> 0;
             case YARD_FLOOD -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 3;
             case YARD_WINDBREAK -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 3;
             case YARD_DITCH_FLOOD -> depth < LabyrinthPacing.STRANGE_DEPTH ? 0 : 3;

@@ -1,5 +1,6 @@
 """Original sounds for the House's yard (0.4.309): a station wagon idling, a car passing on the state route beyond the trees, a crow in
-the dead tree, and the swollen creek at the end of the road. Synthesized; no recordings. Existing files are kept.
+the dead tree, and the swollen creek at the end of the road. 0.4.358 adds the clothesline's quiet return: a wet sheet's weight and the
+line snapping taut. Synthesized; no recordings. Existing files are kept.
 """
 import json
 import sys
@@ -12,6 +13,9 @@ ROWS = {
     'creek': ('A creek runs high', 16),
     'follow': ('Footsteps', 12),
     'wind': ('Wind bends the trees', 24),
+    # 0.4.358, the clothesline's quiet return: only the weight of wet fabric and the line, no footsteps.
+    'wet_sheet': ('Wet linen sags on the line', 12),
+    'line_snap': ('A washing line snaps taut', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -103,7 +107,29 @@ def wind():
     return (breath * .65 + leaves * .18) * envelope(n, .35, .45)
 
 
-MAKERS = {'idle' : idle, 'traffic': traffic, 'crow': crow, 'creek': creek, 'follow': follow, 'wind': wind}
+def wet_sheet():
+    # A sheet heavy with water gathered and let go: a dull, damp whump, the cloth slapping on itself, a few drips after.
+    n = seconds(1.2)
+    t = times(n)
+    out = band(rng.standard_normal(n), 60, 420) * np.exp(-t * 9) * .9
+    out += band(rng.standard_normal(n), 500, 2600) * np.exp(-((t - .06) / .05) ** 2) * .35
+    for _ in range(6):
+        k = seconds(.03)
+        tk = times(k)
+        place(out, np.sin(2 * np.pi * rng.uniform(900, 1600) * (1 + 3 * tk) * tk) * envelope(k, .002, .015) * .12, rng.uniform(.35, 1.1))
+    return out
+
+
+def line_snap():
+    # The line pulled taut when the sheet falls back: a short click, then a low thrum along the cord dying quickly.
+    n = seconds(.9)
+    t = times(n)
+    click = band(rng.standard_normal(n), 1500, 7000) * np.exp(-t * 160) * .6
+    thrum = sum(np.sin(2 * np.pi * 96 * h * t) / h ** 1.4 for h in range(1, 7)) * np.exp(-t * 7) * .55
+    return click + thrum * (1 + .15 * np.sin(2 * np.pi * 9 * t))
+
+
+MAKERS = {'idle' : idle, 'traffic': traffic, 'crow': crow, 'creek': creek, 'follow': follow, 'wind': wind, 'wet_sheet': wet_sheet, 'line_snap': line_snap}
 
 
 def main():

@@ -112,6 +112,8 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<YardBlock> YARD=BLOCKS.registerBlock("yard_fitting",YardBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(YardBlock::light));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_IDLE=sound("yard.idle"),YARD_TRAFFIC=sound("yard.traffic"),YARD_CROW=sound("yard.crow"),YARD_CREEK=sound("yard.creek");
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_FOLLOW=sound("yard.follow"),YARD_WIND=sound("yard.wind");
+    /** 0.4.358, the clothesline's quiet return: a wet sheet's weight, and the line pulled taut when it falls back. */
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> YARD_WET_SHEET=sound("yard.wet_sheet"),YARD_LINE_SNAP=sound("yard.line_snap");
     // 0.4.342, the Sphinx's dream: her whole body, and the piece of the stela she leaves at the door.
     private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);

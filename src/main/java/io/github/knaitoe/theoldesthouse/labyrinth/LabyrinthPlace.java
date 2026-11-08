@@ -617,7 +617,9 @@ public enum LabyrinthPlace {
     GROWING_THINGS("growing_things",Kind.ONE_SHOT,211,new BoundingBox(-30,-5,-60,30,16,1),literaryEntry()),
     /** 0.4.351, The Last Crossing (LastCrossing, docs/LAST_CROSSING_0_4_351.md): the flood station where the keeper is trying to get the
      * last cable ferry across, for a crew of four to six; built in slices, the first the road, the station, the roll and Day One. */
-    LAST_CROSSING("last_crossing",Kind.ONE_SHOT,212,new BoundingBox(-24,-13,-112,60,14,1),literaryEntry());
+    LAST_CROSSING("last_crossing",Kind.ONE_SHOT,212,new BoundingBox(-24,-13,-112,60,14,1),literaryEntry()),
+    /** 0.4.358, the Survey Stakes' deeper variant (YardFields.surveyDeep, docs/YARD_FINISHING_0_4_358.md): a fence with no gate, and a way through it that shows only on the stakes' bearing. Outside; the yard's survey, deep. */
+    YARD_SURVEY_DEEP("yard_survey_deep",Kind.GRAY,213,new BoundingBox(-18,-3,-50,18,10,0),grayDoors(0,0,-49));
 
     /** What a place is to the dealer. */
     public enum Kind {
