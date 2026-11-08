@@ -11,7 +11,7 @@ The second half of the third slice set out in `docs/YARD_STORIES_PROPOSAL.md`, b
 - the grate that chokes them when they hold it shut, and the plate that chokes them when they come near it;
 - the grapple, and the second slot.
 
-Day Three and Night Three (the final night, the endings, the Witness source and dealing) are the last slice. Until it is built, the station holds at the third morning. It is still not dealt and adds no Witness source; the operator's test door reaches it.
+Day Three and Night Three (the final night, the endings, the Witness source and dealing) are the last slice; Day Three is 0.4.355 (`docs/LAST_CROSSING_0_4_355.md`). Until it was built, the station held at the third morning. It is still not dealt and adds no Witness source; the operator's test door reaches it.
 
 Protocol 149: the station's clock packet also says who is turned and whose clothes are torn. The station fitting gains two kinds and a fourth state of the floor grate, and there are three new sounds. Layout 112 is unchanged; the flooded passage now runs on north under the fairlead.
 

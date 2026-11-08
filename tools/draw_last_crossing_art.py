@@ -13,7 +13,13 @@ brass nameplate in two halves. From 0.4.352, Night One: a hand come up through t
 (leaning by the door and dropped across it), the gauge room's isolation valve (open and shut), the mooring line snapped, and the skin of
 the things that come up out of the water at night. From 0.4.353, Day Two: the bypass wheels on their risers (shut and open), the service
 branches' grates in a wall and in a floor (dry, wet and damp), the witness plate on the cable bed (greased and scraped clean), the
-winch's parking catch (off and set), the water stain under the fairlead (fresh and drying), and the cable tools rolled in canvas. Also the items' pictures: the plate carried, the mooring line, the station lamp, the wrench and the cable tools. Writes the
+winch's parking catch (off and set), the water stain under the fairlead (fresh and drying), and the cable tools rolled in canvas. From 0.4.355,
+Day Three: the live feed's tagged sections (untraced and chalked), the rusted door in the intake's wall (shut and ground open), the feed
+gate with its bracket (empty, the bar staged, barred and drawn), the fallen debris (heaped and half cleared), the upstream cutoff (open and
+shut), the source in its flooded chamber (under water, exposed and destroyed), the master bypass (rusted fast and open), the launch rope on
+its bollard (fast and slipped), the downstream sluice (open and shut), the wall racks (empty, with the launch pin and with the locking bar)
+and the pin's sleeve standing empty. Also the items' pictures: the plate carried, the mooring line, the station lamp, the wrench, the cable
+tools, the launch pin and the locking bar. Writes the
 models and block states and the blocks' and items' names. --check verifies everything.
 """
 from pathlib import Path
@@ -72,7 +78,7 @@ FONT = {
     'C': ['111', '100', '100', '100', '111'], 'O': ['111', '101', '101', '101', '111'], 'R': ['110', '101', '110', '101', '101'],
     'D': ['110', '101', '101', '101', '110'], 'E': ['111', '100', '110', '100', '111'], 'L': ['100', '100', '100', '100', '111'],
     'I': ['111', '010', '010', '010', '111'], 'A': ['010', '101', '111', '101', '101'], '1': ['010', '110', '010', '010', '111'], '2': ['110', '001', '010', '100', '111'],
-    '3': ['110', '001', '010', '001', '110'], 'S': ['111', '100', '111', '001', '111'],
+    '3': ['110', '001', '010', '001', '110'], 'S': ['111', '100', '111', '001', '111'], 'F': ['111', '100', '110', '100', '100'],
 }
 
 
@@ -580,6 +586,84 @@ def throat(kinked):
     return im
 
 
+def rust():
+    # Iron gone to rust: brown and orange in flakes, the rivets standing out.
+    im = new(base='#7a4a2a', seed=3761, spread=8)
+    rnd = random.Random(3762)
+    for _ in range(26):
+        dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(('#9a5a2a', '#5a3420', '#b06a32')))
+    for x, y in ((2, 2), (13, 2), (2, 13), (13, 13), (2, 7), (13, 7)):
+        dot(im, x, y, '#a87048'); dot(im, x + 1, y + 1, '#3e2414')
+    return im
+
+
+def tag_traced():
+    # The feed's tag with a chalk arrow across it, pointing down.
+    im = tag('FEED', '#1a1a1a')
+    for y in range(1, 6):
+        dot(im, 8, y, '#f4f4ee')
+    for i in range(3):
+        dot(im, 8 - i, 5 - i, '#f4f4ee'); dot(im, 8 + i, 5 - i, '#f4f4ee')
+    for x in range(3, 14):
+        dot(im, x, 12, '#f4f4ee')
+    return im
+
+
+def rubble():
+    # Fallen brick and river silt packed together.
+    im = new(base='#5e5a4e', seed=3763, spread=6)
+    rnd = random.Random(3764)
+    for _ in range(9):
+        x, y = rnd.randrange(14), rnd.randrange(14)
+        fill(im, x, y, x + 2 + rnd.randrange(2), y + 1 + rnd.randrange(2), rnd.choice(('#7a7672', '#6a6662', '#8a5a4a')))
+    for _ in range(14):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#3e3a30')
+    return im
+
+
+def source_flesh():
+    # The source: something drowned and grown, swollen and slick, dark veins under it and weed knotted through.
+    im = new(base='#8e9a84', seed=3765, spread=9)
+    rnd = random.Random(3766)
+    for _ in range(4):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for _ in range(9):
+            dot(im, x, y, '#3e4a3a'); x = (x + rnd.choice((-1, 0, 1))) % 16; y = (y + 1) % 16
+    for _ in range(10):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#b4bea6')
+    return im
+
+
+def weed():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(3767)
+    for x in range(0, 16, 2):
+        x0 = x + rnd.randrange(2)
+        for y in range(rnd.randrange(4), 16):
+            dot(im, x0, y, rnd.choice(('#2e4a2a', '#3a5a2e', '#24382a')))
+            if rnd.random() < .3:
+                x0 = max(0, min(15, x0 + rnd.choice((-1, 1))))
+    return im
+
+
+def pin_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i in range(10):
+        dot(im, 4 + i, 13 - i, '#6a6e70'); dot(im, 5 + i, 13 - i, '#8a8e90')
+    for x, y in ((2, 13), (3, 12), (3, 14), (4, 15), (1, 14), (2, 15)):
+        dot(im, x, y, '#4a4e50')
+    dot(im, 14, 3, '#aeb2b4')
+    return im
+
+
+def lockbar_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i in range(13):
+        dot(im, 1 + i, 14 - i, '#8a3a2e'); dot(im, 2 + i, 14 - i, '#a84a3a'); dot(im, 1 + i, 13 - i, '#6a2a22')
+    fill(im, 12, 1, 15, 4, '#4c5452')
+    return im
+
+
 def textures():
     t = {
         'deal': deal(), 'iron': iron(), 'iron_red': iron('#8a3a2e', 3726), 'brass': brass(), 'hardboard': hardboard(),
@@ -596,6 +680,7 @@ def textures():
         'grate_wet': grate_wet(False), 'grate_damp': grate_wet(True), 'tag_shut': tag('S', '#1a1a1a'), 'tag_open': tag('O', '#a83a2a'),
         'witness_greased': witness(False), 'witness_clean': witness(True), 'stain': stain(False), 'stain_dry': stain(True), 'canvas': canvas(),
         'prints': prints(False), 'prints_dry': prints(True), 'throat_kinked': throat(True), 'throat_clear': throat(False),
+        'rust': rust(), 'tag_feed': tag('FEED', '#1a1a1a'), 'tag_traced': tag_traced(), 'rubble': rubble(), 'source': source_flesh(), 'weed': weed(),
     }
     out = {f'block/crossing/{k}.png': v for k, v in t.items()}
     out['item/crossing_plate.png'] = plate_item()
@@ -603,6 +688,8 @@ def textures():
     out['item/crossing_lamp.png'] = lamp_item()
     out['item/crossing_wrench.png'] = wrench_item()
     out['item/crossing_tools.png'] = tools_item()
+    out['item/crossing_pin.png'] = pin_item()
+    out['item/crossing_lockbar.png'] = lockbar_item()
     out['entity/crossing_undertow.png'] = undertow_skin()
     return out
 
@@ -787,6 +874,71 @@ def fitting_models():
     # The cable tools rolled in their canvas, the handles out of one end.
     m['tools_0'] = model([element([2, 0, 5], [14, 3, 11], {'all': 'c'}), element([14, 1, 6], [16, 2, 7], {'all': 'i'}), element([14, 1, 8.5], [15.5, 2, 9.5], {'all': 'w'})],
                          {'c': 'canvas', 'i': 'iron', 'w': 'grip'}, 'canvas')
+    # Day Three: the pin's sleeve standing empty.
+    m['pin_2'] = model(sleeve + [element([6.5, 7.6, 6.5], [9.5, 8, 9.5], {'all': 'r'})], {'i': 'iron', 'r': 'roller'}, 'iron')
+    # A tagged section of the live feed on its wall: the pipe up the wall, a flange, and the tag wired to it; traced, the tag chalked.
+    for stage, tex in enumerate(('tag_feed', 'tag_traced')):
+        m[f'feed_{stage}'] = model([element([7, 0, 14], [9, 16, 16], {'all': 'p'}), element([6, 5, 13], [10, 7, 16], {'all': 'i'}),
+                                    element([4, 8, 13.4], [12, 14, 13.8], {'north': 't', 'south': 't', 'east': 'i', 'west': 'i', 'up': 'i', 'down': 'i'})],
+                                   {'p': 'pipe', 'i': 'iron', 't': tex}, 'pipe')
+    # The rusted door in the intake's east wall, two cells high: shut flush with the wall, and ground open against its jamb.
+    m['gallery_door_0'] = model([element([0, 0, 13], [16, 32, 16], {'all': 'r'}), element([12, 13, 12], [14, 18, 13], {'all': 'i'}),
+                                 element([0, 30, 12.5], [16, 32, 13], {'all': 'i'})], {'r': 'rust', 'i': 'iron'}, 'rust')
+    m['gallery_door_1'] = model([element([0, 0, 0], [3, 32, 16], {'all': 'r'}), element([3, 13, 2], [4, 18, 4], {'all': 'i'})], {'r': 'rust', 'i': 'iron'}, 'rust')
+    # The feed gate in the gallery's wall, its plate toward the gallery (north before turning), the bracket for the locking bar beside it:
+    # empty, the bar staged upright in it, the bar dropped across the plate, and the plate drawn up off a black gap.
+    housing = [element([0, 0, 0], [16, 16, 16], {'north': 'r', 'south': 'i', 'east': 'i', 'west': 'i', 'up': 'i', 'down': 'i'}),
+               element([7, 9, -1], [9, 16, 0], {'all': 'i'}), element([12, 1, -1.5], [15, 3, 0], {'all': 'i'}), element([12, 12, -1.5], [15, 14, 0], {'all': 'i'})]
+    m['feed_gate_0'] = model(housing, {'r': 'rust', 'i': 'iron'}, 'rust')
+    m['feed_gate_1'] = model(housing + [element([12.5, 0, -1.3], [14.5, 16, -.3], {'all': 'b'})], {'r': 'rust', 'i': 'iron', 'b': 'iron_red'}, 'rust')
+    m['feed_gate_2'] = model(housing + [element([0, 7, -1.6], [16, 9, -.4], {'all': 'b'})], {'r': 'rust', 'i': 'iron', 'b': 'iron_red'}, 'rust')
+    m['feed_gate_3'] = model([element([0, 6, 0], [16, 16, 16], {'north': 'r', 'south': 'i', 'east': 'i', 'west': 'i', 'up': 'i', 'down': 'i'}),
+                              element([0, 0, 2], [16, 6, 16], {'north': 'k', 'up': 'k', 'south': 'i', 'east': 'i', 'west': 'i', 'down': 'i'}),
+                              element([12.5, 0, -1.3], [14.5, 16, -.3], {'all': 'b'})], {'r': 'rust', 'i': 'iron', 'b': 'iron_red', 'k': 'stain'}, 'rust')
+    # Fallen brick and silt heaped to the passage's roof, and half cleared.
+    m['debris_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'd'}), element([0, 16, 2], [16, 28, 14], {'all': 'd'}), element([2, 28, 4], [14, 32, 12], {'all': 'd'})],
+                          {'d': 'rubble'}, 'rubble')
+    m['debris_1'] = model([element([0, 0, 0], [16, 9, 16], {'all': 'd'}), element([2, 9, 3], [11, 14, 10], {'all': 'd'}), element([9, 9, 9], [14, 12, 14], {'all': 'd'})],
+                          {'d': 'rubble'}, 'rubble')
+    # The upstream cutoff: a big handwheel on a stem out of its wall, the feed going up out of it; shut, the wheel turned through.
+    for stage, angle in enumerate((0, 45)):
+        rot = {'origin': [8, 8, 11.5], 'axis': 'z', 'angle': angle} if angle else None
+        m[f'cutoff_{stage}'] = model([element([6, 6, 12], [10, 10, 16], {'all': 'i'}), element([7, 10, 14], [9, 16, 16], {'all': 'p'}),
+                                      element([1, 1, 11], [15, 15, 12], {'north': 'w', 'south': 'w', 'east': 'i', 'west': 'i', 'up': 'i', 'down': 'i'}, rot=rot)],
+                                     {'i': 'iron', 'p': 'pipe', 'w': 'wheel_black'}, 'iron')
+    # The source on the floor of its chamber, wrapped in weed; destroyed, torn open and sunk flat.
+    mass = [element([2, 0, 2], [14, 9, 14], {'all': 's'}), element([4, 8, 3], [12, 14, 11], {'all': 's'}), element([1, 0, 6], [3, 7, 12], {'all': 'g'}),
+            element([13, 0, 3], [15, 10, 8], {'all': 'g'}), element([5, 13, 9], [9, 16, 13], {'all': 'g'})]
+    m['source_0'] = model(mass, {'s': 'source', 'g': 'weed'}, 'source')
+    m['source_1'] = model(mass, {'s': 'source', 'g': 'weed'}, 'source')
+    m['source_2'] = model([element([1, 0, 1], [15, 3, 15], {'all': 's'}), element([3, 3, 4], [8, 5, 9], {'all': 'g'}), element([10, 3, 8], [13, 4, 13], {'all': 'k'})],
+                          {'s': 'source', 'g': 'weed', 'k': 'stain'}, 'source')
+    # The master bypass beside the sluice wheel: a rusted wheel on its riser, fast; and turned open.
+    for stage, angle in enumerate((0, 45)):
+        rot = {'origin': [8, 10.5, 8], 'axis': 'y', 'angle': angle} if angle else None
+        m[f'master_{stage}'] = model([element([5, 0, 5], [11, 2, 11], {'all': 'i'}), element([6, 2, 6], [10, 10, 10], {'all': 'r'}),
+                                      element([2, 10, 2], [14, 11, 14], {'up': 'w', 'down': 'w', 'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'}, rot=rot)],
+                                     {'i': 'iron', 'r': 'rust', 'w': 'wheel_red'}, 'rust')
+    # The launch rope made fast round its bollard, its tail running to the ferry and the tripping lever beside it; slipped, the bollard bare
+    # and the lever thrown.
+    bollard = [element([5, 0, 5], [11, 12, 11], {'all': 'i'}), element([4, 12, 4], [12, 13.5, 12], {'all': 'i'})]
+    m['release_0'] = model(bollard + [element([4.5, 6, 4.5], [11.5, 9, 11.5], {'all': 'm'}), element([7, 6.5, 0], [9, 8, 5], {'all': 'm'}),
+                                      element([12, 0, 7], [13.5, 13, 9], {'all': 'b'}, rot={'origin': [12.75, 0, 8], 'axis': 'z', 'angle': -22.5})],
+                           {'i': 'iron', 'm': 'manila', 'b': 'iron_red'}, 'iron')
+    m['release_1'] = model(bollard + [element([12, 0, 7], [13.5, 13, 9], {'all': 'b'}, rot={'origin': [12.75, 0, 8], 'axis': 'z', 'angle': 22.5})],
+                           {'i': 'iron', 'b': 'iron_red'}, 'iron')
+    # The downstream sluice: a big wheel on its frame over the outfall, its tag; shut, the wheel turned through.
+    for stage, angle in enumerate((0, 45)):
+        rot = {'origin': [8, 12.5, 8], 'axis': 'y', 'angle': angle} if angle else None
+        m[f'downstream_{stage}'] = model([element([1, 0, 1], [15, 4, 15], {'all': 'i'}), element([6, 4, 6], [10, 12, 10], {'all': 'p'}),
+                                          element([0, 12, 0], [16, 13, 16], {'up': 'w', 'down': 'w', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'}, rot=rot),
+                                          element([6.5, 6, 5.4], [9.5, 10, 6], {'all': 't'})], {'i': 'iron', 'p': 'pipe', 'w': 'wheel_red', 't': 'tag_open'}, 'iron')
+    # A wall rack: a board and two hooks; with the launch pin hanging from it, and with the locking bar laid across the hooks.
+    rack = [element([1, 6, 15], [15, 12, 16], {'all': 'd'}), element([3, 7, 12], [4, 9, 15], {'all': 'i'}), element([12, 7, 12], [13, 9, 15], {'all': 'i'})]
+    m['rack_0'] = model(rack, {'d': 'deal', 'i': 'iron'}, 'deal')
+    m['rack_1'] = model(rack + [element([7.5, 2, 13], [8.5, 12, 14], {'all': 'r'}), element([6.5, 11, 12.8], [9.5, 13.5, 14.2], {'all': 'i'})],
+                        {'d': 'deal', 'i': 'iron', 'r': 'roller'}, 'deal')
+    m['rack_2'] = model(rack + [element([0, 9, 12.5], [16, 11, 14.5], {'all': 'b'})], {'d': 'deal', 'i': 'iron', 'b': 'iron_red'}, 'deal')
     # The ferry's nameplate, bolted to its rail in two halves.
     for half in range(2):
         m[f'nameplate_{half}'] = model([element([0, 5, 15], [16, 11, 16], {'all': 'b', 'north': 'n'})], {'b': 'brass', 'n': f'name_{half}'}, f'name_{half}')
@@ -795,15 +947,18 @@ def fitting_models():
 
 KINDS = ['table', 'clipboard', 'slate', 'plate', 'plate_set', 'bracket', 'stove', 'gauge', 'brake', 'valve', 'run', 'bleed', 'grate', 'pump', 'pipe', 'roller',
          'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate', 'bar', 'isolator',
-         'bypass', 'branch', 'floor_grate', 'witness', 'catch', 'stain', 'tools', 'prints', 'underside']
+         'bypass', 'branch', 'floor_grate', 'witness', 'catch', 'stain', 'tools', 'prints', 'underside',
+         'feed', 'gallery_door', 'feed_gate', 'debris', 'cutoff', 'source', 'master', 'release', 'downstream', 'rack']
 STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 3, 'pump': 2, 'roller': 2, 'fairlead': 2,
-          'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2,
-          'bypass': 2, 'branch': 3, 'floor_grate': 4, 'witness': 2, 'catch': 2, 'stain': 2, 'prints': 2, 'underside': 2}
+          'hatch': 2, 'wheel': 3, 'pin': 3, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2,
+          'bypass': 2, 'branch': 3, 'floor_grate': 4, 'witness': 2, 'catch': 2, 'stain': 2, 'prints': 2, 'underside': 2,
+          'feed': 2, 'gallery_door': 2, 'feed_gate': 4, 'debris': 2, 'cutoff': 2, 'source': 3, 'master': 2, 'release': 2, 'downstream': 2, 'rack': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'crossing_fitting': 'Station Fitting'}
 ENTITIES = {'crossing_undertow': 'Undertow'}
-ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench', 'crossing_tools': 'Cable Tools'}
+ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench', 'crossing_tools': 'Cable Tools',
+         'crossing_pin': 'Launch Pin', 'crossing_lockbar': 'Locking Bar'}
 
 
 def files():

@@ -1260,5 +1260,7 @@
   "item.the_oldest_house.crossing_tools": "Cable Tools",
   "subtitles.the_oldest_house.crossing.turn": "Someone turns, choking",
   "subtitles.the_oldest_house.crossing.claw": "A claw rakes through cloth",
-  "subtitles.the_oldest_house.crossing.choke": "A throat closes on a breath"
+  "subtitles.the_oldest_house.crossing.choke": "A throat closes on a breath",
+  "item.the_oldest_house.crossing_pin": "Launch Pin",
+  "item.the_oldest_house.crossing_lockbar": "Locking Bar"
 }
