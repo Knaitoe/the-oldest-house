@@ -1490,5 +1490,45 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 101
+  },
+  {
+    "name": "literary_marsh_ida",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 110
+  },
+  {
+    "name": "literary_marsh_royce",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 111
+  },
+  {
+    "name": "literary_marsh_del",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 112
+  },
+  {
+    "name": "literary_marsh_nana",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 113
+  },
+  {
+    "name": "literary_marsh_corinne",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 114
   }
 ]

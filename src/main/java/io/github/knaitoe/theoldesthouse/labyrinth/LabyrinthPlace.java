@@ -605,7 +605,10 @@ public enum LabyrinthPlace {
     /** 0.4.346, the drainage ditch in flood (YardFlash, docs/YARD_DITCH_FLOOD_0_4_346.md): the quiet ditch with rain, a rising stream, a surge through the culvert and two cuts up the bank. Outside; a hazard. */
     YARD_DITCH_FLOOD("yard_ditch_flood",Kind.GRAY,207,new BoundingBox(-7,-2,-36,7,10,0),grayDoors(0,0,-35)),
     /** 0.4.347, the storm field (YardStorm, docs/YARD_STORM_0_4_347.md): a rise, corn over the head, a ditch that fills, an open edge under a power line, a dry shed midway, the farmhouse's back door. Outside; a hazard. */
-    YARD_STORM_FIELD("yard_storm_field",Kind.GRAY,208,new BoundingBox(-22,-4,-72,22,18,0),grayDoors(0,0,-62));
+    YARD_STORM_FIELD("yard_storm_field",Kind.GRAY,208,new BoundingBox(-22,-4,-72,22,18,0),grayDoors(0,0,-62)),
+    /** 0.4.348, The Supper (MarshSupper, docs/MARSH_SUPPER_0_4_348.md): the Marsh farm at dusk at the end of a corn maze, the oak across the only
+     * drive, the supper and the guest whose chair is gone; dealt once each after the House's yard, its way on the gate onto the county road. */
+    MARSH_SUPPER("marsh_supper",Kind.ONE_SHOT,209,new BoundingBox(-32,-5,-86,32,18,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

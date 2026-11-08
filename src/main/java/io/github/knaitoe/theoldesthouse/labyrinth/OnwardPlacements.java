@@ -56,6 +56,7 @@ final class OnwardPlacements {
         r.put(REPLACEMENT,ReplacementSite.EXIT_X,0,ReplacementSite.EXIT_Z,SOUTH,OnwardRegistry.PANEL); // 0.4.218: the open house's kitchen door
         r.put(PEOPLE_LIGHTS,PeopleLightsSite.WAY_X,PeopleLightsSite.YARD,PeopleLightsSite.WAY_Z,NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.253: a door at the back of the garage
         r.put(STATE_ROUTE,5,0,-3,NORTH,StateRouteRegistry.GATE); // 0.4.333: the padlocked gate in the chain-link fence
+        r.put(MARSH_SUPPER,MarshSupperSite.GATE.getX(),0,MarshSupperSite.GATE.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.348: the gate onto the county road past the oak
         r.put(DEER_ROAD,-4,-2,-84,SOUTH,DeerRoadRegistry.GATE); // 0.4.310: the drainage gate at the head of the ditch
         r.put(SECOND_PERSON,-6,0,0,NORTH,()->Blocks.DARK_OAK_DOOR); // 0.4.274: a neighbour's front door in the terrace, opened from the street
         r.put(PLACE_FOR_YOU,8,0,0,NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.257: a second door in the garden wall, further along the road, opened from the road

@@ -116,7 +116,8 @@ public final class WitnessAccount {
         LAST_SWIMMER("last_swimmer","The last swimmer","understanding","I helped close a pool. Someone was still swimming in the last lane, every length the same length on the clock, and we pulled the cover over them anyway, because the card said to. Then something walked across the cover toward me from underneath, and the attendant held the fire door, and I went."),
         DEER_ROAD("deer_road","A deer in the road","understanding","I hit a doe on a county road in the rain. A woman climbed out of her and stood up, taller than she should have, with the neck I knew from the tunnel. I got off the road."),
         STATE_ROUTE("state_route","The median","survival","I crossed four lanes of a state route on foot in the rain for a key in a mailbox, and came back between cars with nobody in them but one. Then every horn went at once, and the lights went out."),
-        HOUSEHOLD("household","The household","understanding","I put their things back in order. A household went down the stairs before me, and on a landing near the bottom I counted their cups, and read my own name at the end of their list.");
+        HOUSEHOLD("household","The household","understanding","I put their things back in order. A household went down the stairs before me, and on a landing near the bottom I counted their cups, and read my own name at the end of their list."),
+        MARSH_SUPPER("marsh_supper","The supper","understanding","I sat down to supper at a farmhouse at the end of a corn maze. The guest went out to look for her ride, and when I came back to the table her chair was gone and they said her ride had come.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

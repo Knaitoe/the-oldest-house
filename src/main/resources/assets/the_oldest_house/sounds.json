@@ -3970,5 +3970,32 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.route.impact"
+  },
+  "marsh.bell": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:marsh/bell",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.marsh.bell"
+  },
+  "marsh.swing": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:marsh/swing",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.marsh.swing"
+  },
+  "marsh.wipe": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:marsh/wipe",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.marsh.wipe"
   }
 }

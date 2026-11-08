@@ -140,6 +140,12 @@ LOOKS = {
     'literary_supper_ruth': Look('#e0bea2','#2a2220','long','#4a5a7a','#2e3440','shirt','#d8d0c0',eyes='#4a5a6a'),
     # The familiar kitchen's visitors (0.4.331): Holloway at the table, his own look on the cast's layout.
     'literary_kitchen_holloway': Look('#b98b69','#5a4230','part','#5b6148','#51483a','field','#b49355',age=1,beard='chinstrap'),
+    # The Supper (0.4.348): the Marsh household and their guest. Ida in her apron, Royce in his work flannel, Del, Nana in her cardigan, and Corinne in the jacket she walked up through the corn in.
+    'literary_marsh_ida': Look('#d9b49a','#6e5a48','bun','#7a4a3a','#3a3430','apron','#d8ccb0',eyes='#5a6050',age=1),
+    'literary_marsh_royce': Look('#c99a78','#8a8478','receding','#4a5a3e','#3a3e44','flannel','#c8bca0',eyes='#4a4a40',age=2,beard='walrus'),
+    'literary_marsh_del': Look('#d0a284','#7a5232','messy','#8a3a2e','#2e3a4a','flannel','#d0c4a8',eyes='#4e5a50',beard='stubble'),
+    'literary_marsh_nana': Look('#e2c2aa','#d8d4cc','bun','#5a4a6a','#3a3640','cardigan','#cfc4b0',eyes='#5a5a52',age=2,glasses=True),
+    'literary_marsh_corinne': Look('#8a5a40','#1e1814','ponytail','#3e6a6e','#2a2e38','jacket','#d8d0c0',eyes='#3a2a20'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

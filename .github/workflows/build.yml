@@ -118,6 +118,8 @@ jobs:
           python3 tools/draw_deer_road_art.py --check
           python3 tools/draw_state_route_art.py --check
           python3 tools/generate_state_route_audio.py --check
+          python3 tools/draw_marsh_supper_art.py --check
+          python3 tools/generate_marsh_supper_audio.py --check
           python3 tools/generate_operator_audio.py --check
           python3 tools/draw_trace_fittings.py --check
           python3 tools/generate_staircase_leak_assets.py --check

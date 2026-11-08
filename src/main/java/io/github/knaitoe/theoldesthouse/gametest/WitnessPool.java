@@ -11,8 +11,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.274, Second Person: 74 / 56 / 51.
  0.4.310, A Deer in the Road: 75 / 57 / 52.
  0.4.333, State Route 9: 76 / 57 / 53.
+ 0.4.348, The Supper: 77 / 58 / 54.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=76,REQUIRED=57,LITERARY=53;
+    static final int SOURCES=77,REQUIRED=58,LITERARY=54;
 }
