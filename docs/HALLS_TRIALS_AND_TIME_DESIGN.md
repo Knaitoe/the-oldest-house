@@ -1,6 +1,9 @@
 # More halls, more trials, a harder road down, and different times through the same space
 
-Status: **proposal for the owner's review (October 29)**. Nothing here is built.
+Status: **being built (November 8)**. The owner left the open questions to judgement ("go ahead and finish feet up, then the puzzles").
+
+- R1, the seals: built in 0.4.384 ([SEALS_0_4_384.md](SEALS_0_4_384.md)), with four stories heard to their end in place of two visited (question 4).
+- Next: the new trial rooms, then R2. R3 and R4 wait for a playtest.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 

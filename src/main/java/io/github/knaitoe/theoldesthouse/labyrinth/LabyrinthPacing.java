@@ -11,8 +11,8 @@ public final class LabyrinthPacing {
     public static final int STRANGE_DEPTH = 8;
     public static final int DEEP_DEPTH = 12;
     public static final int ABYSS_DEPTH = 16;
-    /** The great staircase is only found this deep. */
-    public static final int STAIRCASE_DEPTH = 22;
+    /** The great staircase is only found this deep (0.4.384: twenty-four, and only once the reader is sealed, TrialMarks). */
+    public static final int STAIRCASE_DEPTH = 24;
     private LabyrinthPacing() {}
     public static boolean domestic(int depth) { return depth < STORY_DEPTH; }
     public static boolean ordinary(LabyrinthPlace place) {

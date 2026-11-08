@@ -32,7 +32,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 /**
  * 0.4.208, the dark halls (docs/DARK_HALLS_0_4_208.md): the owner's third series of ordinary halls, on the road down to the great
  * staircase. They begin at depth sixteen, are the only ordinary halls from twenty-one, and the staircase is offered from
- * twenty-two. The house the book describes: smooth ash-grey walls, no fixtures, no light, cold; long, with forks, short real dead
+ * twenty-four (twenty-two before 0.4.384's seals). The house the book describes: smooth ash-grey walls, no fixtures, no light, cold; long, with forks, short real dead
  * ends and ceilings that rise as you go; always one true way on and the way back always open.
  *
  * <p>Five halls: the long hall, which just keeps going; the forking hall, three branches and one through; the ash maze, a small

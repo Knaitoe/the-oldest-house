@@ -24,7 +24,7 @@ public final class ExpeditionRhythm {
         if(!player.isAlive()||player.isSpectator()||!from.dimension.equals(HouseDimensions.INTERIOR))return;
         for(var place:LabyrinthPlace.values())if(LabyrinthPacing.physicalTrial(place))for(var spec:place.doors())
             if(LabyrinthData.DEALT.equals(spec.destination())&&place.doorId(spec).equals(from.id)){
-                request(LabyrinthData.get(player.server),player.getUUID());
+                request(LabyrinthData.get(player.server),player.getUUID());TrialMarks.crossed(player,place);
                 PlaytestLog.event(player,"hazard_resolve","place",place.id());return;
             }
     }

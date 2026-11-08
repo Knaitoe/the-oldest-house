@@ -78,7 +78,42 @@ public final class FinaleTests {
         for(int i=0;i<12;i++)data.pushReturn(player,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.ZERO,0));
         helper.assertTrue(!FinaleProgress.eligible(data,player),"depth alone never forces the climax");
         data.visit(player,LabyrinthPlace.HARRIGAN);data.visit(player,LabyrinthPlace.HIDE_AND_CLAP);
+        helper.assertTrue(!FinaleProgress.eligible(data,player),"rooms only visited no longer open the way (0.4.384)");
+        seal(data,player);
         helper.assertTrue(FinaleProgress.eligible(data,player)&&!FinaleProgress.eligible(data,other),"discovery belongs to each explorer");helper.succeed();
+    }
+    /** Three trial marks and four stories heard to their end: the staircase's seal (0.4.384). */
+    static void seal(LabyrinthData data,UUID player){
+        for(var place:List.of(LabyrinthPlace.FLOODED_PASSAGE,LabyrinthPlace.COLD_STORE,LabyrinthPlace.MIRROR_HALL))TrialMarks.mark(data,player,place);
+        for(var story:List.of(WitnessAccount.Story.HARRIGAN,WitnessAccount.Story.MODEL_HOME,WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.CLAP))WitnessAccount.resolve(data,player,story,"resolved");
+    }
+    @GameTest(template="empty") public static void threeTrialMarksAndFourStoriesSealTheStaircase(GameTestHelper h){
+        LabyrinthData data=new LabyrinthData();UUID reader=UUID.randomUUID(),every=UUID.randomUUID();int kinds=0;
+        for(var place:LabyrinthPlace.values()){var kind=TrialMarks.kind(place);
+            h.assertTrue((kind!=null)==LabyrinthPacing.physicalTrial(place),place.id()+" is a kind of trial exactly when it is a physical trial");
+            if(kind==null)continue;
+            h.assertTrue(!HazardVariety.sibling(kind)&&!TrialMarks.name(kind).equals("a room the House has not named"),place.id()+" counts as a named original");
+            if(TrialMarks.mark(data,every,place))kinds++;}
+        h.assertTrue(kinds==TrialMarks.count(data,every)&&kinds>=TrialMarks.SEALS,"every kind is its own mark ("+kinds+")");
+        for(String page:TrialMarks.pages(data,every))h.assertTrue(page.length()<=180,"every page of the marks fits a book page: "+page);
+        h.assertTrue(!TrialMarks.mark(data,reader,LabyrinthPlace.STRAIGHT_HALL)&&!TrialMarks.mark(data,reader,LabyrinthPlace.HARRIGAN)&&!TrialMarks.mark(data,reader,null)
+                &&TrialMarks.count(data,reader)==0,"halls and stories earn no mark");
+        h.assertTrue(TrialMarks.pages(data,reader).isEmpty(),"the account says nothing of marks before the first");
+        h.assertTrue(TrialMarks.mark(data,reader,LabyrinthPlace.BENT_CISTERN)&&!TrialMarks.mark(data,reader,LabyrinthPlace.FLOODED_PASSAGE)
+                &&TrialMarks.marks(data,reader).equals(List.of("flooded_passage")),"a sibling earns the mark of the room it varies, once");
+        h.assertTrue(String.join(" ",TrialMarks.pages(data,reader)).contains("fewer than three marks"),"one mark: the account says how many the stair wants");
+        TrialMarks.mark(data,reader,LabyrinthPlace.COLD_STORE);TrialMarks.mark(data,reader,LabyrinthPlace.YARD_STORM_FIELD);
+        h.assertTrue(TrialMarks.marks(data,reader).equals(List.of("flooded_passage","cold_store","yard_storm_field"))&&!TrialMarks.sealed(data,reader),"three marks in the order earned, and not yet a seal");
+        h.assertTrue(String.join(" ",TrialMarks.pages(data,reader)).contains("still waits on the rooms"),"the account says the stories are what is missing");
+        for(var story:List.of(WitnessAccount.Story.HARRIGAN,WitnessAccount.Story.MODEL_HOME,WitnessAccount.Story.DROWNED_TOWN))WitnessAccount.resolve(data,reader,story,"resolved");
+        data.visit(reader,LabyrinthPlace.FLOORBOARDS);
+        h.assertTrue(!TrialMarks.sealed(data,reader),"three stories and a fourth only visited are not a seal");
+        WitnessAccount.resolve(data,reader,WitnessAccount.Story.CLAP,"won");
+        var pages=TrialMarks.pages(data,reader);
+        h.assertTrue(TrialMarks.sealed(data,reader)&&!TrialMarks.told(data,reader)&&pages.getFirst().startsWith("THE MARKS")&&!String.join(" ",pages).contains("wait"),"the fourth story makes the seal, and the account stops asking");
+        for(int i=0;i<30;i++)for(UUID id:List.of(reader,every))data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.ZERO,0));
+        h.assertTrue(FinaleController.canOffer(data,reader)&&LabyrinthDealer.finaleOffered(data,reader)&&!LabyrinthDealer.finaleOffered(data,every),"sealed and deep, the stair is offered; every mark without stories is not enough");
+        h.succeed();
     }
     @GameTest(template="empty") public static void endingSurvivesWorldSaveAndDoesNotFinishVignettes(GameTestHelper helper){
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();CompoundTag record=new CompoundTag(),world=new CompoundTag();

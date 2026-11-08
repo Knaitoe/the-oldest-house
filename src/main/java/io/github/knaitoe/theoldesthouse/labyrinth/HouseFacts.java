@@ -28,7 +28,7 @@ public final class HouseFacts {
             new HouseAdvancements.Step("six_doors",p->deepest(p)>=LabyrinthPacing.STORY_DEPTH),
             new HouseAdvancements.Step("growl",p->Growl.GrowlData.get(p.server).heard(p.getUUID())>0),
             new HouseAdvancements.Step("stone",p->{for(String id:data(p).visited(p.getUUID())){var place=LabyrinthPlace.byId(id);if(place!=null&&StoneHalls.isStone(place))return true;}return false;}),
-            // 0.4.208: the dark halls from sixteen, and the staircase offered from twenty-two.
+            // 0.4.208: the dark halls from sixteen, and the staircase offered from twenty-two (twenty-four from 0.4.384).
             new HouseAdvancements.Step("dark",p->{for(String id:data(p).visited(p.getUUID())){var place=LabyrinthPlace.byId(id);if(place!=null&&DarkHalls.isDark(place))return true;}return false;}),
             new HouseAdvancements.Step("twenty_doors",p->deepest(p)>=LabyrinthPacing.STAIRCASE_DEPTH),
             new HouseAdvancements.Step("camp",p->finale(p).getBoolean("Discovered")),
