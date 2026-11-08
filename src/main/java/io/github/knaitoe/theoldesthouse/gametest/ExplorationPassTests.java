@@ -35,9 +35,9 @@ public final class ExplorationPassTests {
         h.assertTrue(l.getBlockState(b.offset(8,-1,9)).isCollisionShapeFullBlock(l,b.offset(8,-1,9))&&l.getBlockState(b.offset(8,-2,9)).is(Blocks.DIRT)&&l.getBlockState(edit).is(Blocks.DIAMOND_BLOCK),"the gap beside the arrival has rooted ground and retains player edits");h.succeed();
     }
     @GameTest(template="empty")
-    public static void sevenForwardPassesOfferOnlyStoneOrdinaryHallsAndRetainDrawnMaps(GameTestHelper h){
+    public static void nineForwardPassesOfferOnlyStoneOrdinaryHallsAndRetainDrawnMaps(GameTestHelper h){
         var d=new LabyrinthData();var room=LabyrinthPlace.CROSS_HALL;LabyrinthBuilder.registerDoors(d,room,new BlockPos(0,80,0));
-        for(int at:new int[]{7,12,20}){
+        for(int at:new int[]{LabyrinthPacing.STONE_DEPTH,12,20}){
             var p=UUID.randomUUID();depth(d,p,at);
             for(int seed=0;seed<300;seed++){
                 d.setDryDeals(p,0);LabyrinthDealer.dealPlace(d,p,room,RandomSource.create(seed));
@@ -47,10 +47,10 @@ public final class ExplorationPassTests {
                 }
             }
         }
-        var early=UUID.randomUUID();depth(d,early,6);int wooden=0;
+        var early=UUID.randomUUID();depth(d,early,LabyrinthPacing.STONE_DEPTH-1);int wooden=0;
         for(int seed=0;seed<100;seed++){LabyrinthDealer.dealPlace(d,early,room,RandomSource.create(seed));for(var id:map(d,early,room).values())if(LabyrinthPacing.ordinary(LabyrinthPlace.byId(id)))wooden++;}
-        h.assertTrue(wooden>0&&!LabyrinthDealer.grayAvailable(d,early).stream().anyMatch(StoneHalls::isStone),"the approach still has domestic halls before seven forward passes");
-        for(var p:LabyrinthPlace.values())if(StoneHalls.isStone(p))h.assertTrue(LabyrinthBuilder.requiredDepth(p)<=7,"stone construction happens ahead of its availability");
+        h.assertTrue(wooden>0&&!LabyrinthDealer.grayAvailable(d,early).stream().anyMatch(StoneHalls::isStone),"the approach still has domestic halls before nine forward passes (0.4.393, R4)");
+        for(var p:LabyrinthPlace.values())if(StoneHalls.isStone(p))h.assertTrue(LabyrinthBuilder.requiredDepth(p)<=LabyrinthPacing.STONE_DEPTH,"stone construction happens ahead of its availability");
         h.succeed();
     }
     @GameTest(template="empty")
