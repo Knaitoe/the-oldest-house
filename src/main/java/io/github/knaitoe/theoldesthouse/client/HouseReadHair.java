@@ -59,6 +59,10 @@ public final class HouseReadHair {
         new Style("set in rollers","straight",List.of(b(-4.5f,-8.7f,-4.5f,9f,3.6f,9f)),"rollers",List.of(b(-4.2f,-10.2f,-3f,2.6f,1.8f,2.6f),b(-1.3f,-10.2f,-3f,2.6f,1.8f,2.6f),b(1.6f,-10.2f,-3f,2.6f,1.8f,2.6f),b(-4.2f,-10.2f,.8f,2.6f,1.8f,2.6f),b(-1.3f,-10.2f,.8f,2.6f,1.8f,2.6f),b(1.6f,-10.2f,.8f,2.6f,1.8f,2.6f))),
         new Style("360 waves","wave",List.of(b(-4.25f,-8.35f,-4.25f,8.5f,1.9f,8.5f)),null,List.of()));
     public static String name(int style){return STYLES.get(style).name();}
+    /** The index of a style by its name, or -1. */
+    public static int index(String name){for(int i=0;i<STYLES.size();i++)if(STYLES.get(i).name().equals(name))return i;return -1;}
+    /** 0.4.373: the silk headwrap, which the reader's double wears asleep when the House reads their hair as wrapped for the night. */
+    public static final int SILK_WRAP=index("silk headwrap");
 
     public static LayerDefinition layer(){
         var mesh=new MeshDefinition();var root=mesh.getRoot();

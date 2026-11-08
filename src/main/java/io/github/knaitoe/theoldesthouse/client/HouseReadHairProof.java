@@ -70,7 +70,11 @@ public final class HouseReadHairProof extends Screen {
         var folder=Path.of("../build/house-read-hair");Files.createDirectories(folder);
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;return;}
-        Files.writeString(folder.resolve("passed.txt"),"Sixteen hair styles from the bathroom's tools, front and back, tinted to four crowns, and the eight two-tool routine blocks with the woven bath rug. Shipped native models.\n");
+        // 0.4.373: a double asleep wears the silk wrap for a reader whose hair is read as wrapped; awake, or for anyone else, what the glass kept.
+        var wrapped=new io.github.knaitoe.theoldesthouse.network.HouseReadLookPayload("",false,true,false,3);var plain=new io.github.knaitoe.theoldesthouse.network.HouseReadLookPayload("",false,false,false,3);
+        if(HouseReadHair.SILK_WRAP<0||HouseReadLookClient.style(wrapped,true)!=HouseReadHair.SILK_WRAP||HouseReadLookClient.style(wrapped,false)!=3||HouseReadLookClient.style(plain,true)!=3)
+            throw new IllegalStateException("the sleeping double's silk wrap follows the wrapped read and sleep only");
+        Files.writeString(folder.resolve("passed.txt"),"Sixteen hair styles from the bathroom's tools, front and back, tinted to four crowns, and the eight two-tool routine blocks with the woven bath rug. A double asleep wears the silk wrap for a reader whose hair is read as wrapped. Shipped native models.\n");
         mc.setScreen(new HouseReadKitchenProof());
     }
 }

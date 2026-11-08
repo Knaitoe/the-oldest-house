@@ -176,6 +176,11 @@ public final class HouseReadReaderTests {
             h.assertTrue(withB.leaves().get(1).contains("turned the glass")||withB.leaves().get(1).contains("pocket comb"),"another reader's hands are their own");h.assertTrue(withB.leaves().get(2).contains("lantern")&&withB.leaves().get(3).contains("gravel"),"and so are their eaves and their door");
             h.assertTrue(!withA.leaves().get(4).equals(plain.leaves().get(4))&&!withA.leaves().get(4).equals(withB.leaves().get(4)),"the last leaf changes with home");endings.add(withA.voice()+":"+withA.leaves().get(4));
             for(var story:List.of(withA,withB))for(String leaf:story.leaves())h.assertTrue(!GENDERED.matcher(leaf).find(),"the book never genders the reader: "+leaf);
+            // 0.4.373: the narrator follows AGE when it is known: the ledger, the letter, the witness or the survey; otherwise the seed's own.
+            h.assertTrue(StaircaseProse.compose("reader",facts,seed,a,"").equals(withA),"with no age read the voice is the seed's");
+            h.assertTrue(StaircaseProse.compose("reader",facts,seed,a,"ANALOG").voice()==StaircaseProse.Voice.LEDGER&&StaircaseProse.compose("reader",facts,seed,a,"TRANSITIONAL").voice()==StaircaseProse.Voice.LETTER,"an older reader's book is a ledger, a middle reader's a letter");
+            var young=StaircaseProse.compose("reader",facts,seed,a,"DIGITAL").voice();h.assertTrue(young==StaircaseProse.Voice.WITNESS||young==StaircaseProse.Voice.SURVEY,"a younger reader's book is a witness or a survey: "+young);
+            if(withA.voice()==StaircaseProse.Voice.WITNESS||withA.voice()==StaircaseProse.Voice.SURVEY)h.assertTrue(young==withA.voice(),"and the one the seed drew, when it is one of those");
         }
         h.assertTrue(StaircaseAccount.read(d,p.getUUID()).routine()==0&&StaircaseAccount.read(d,p.getUUID()).door().equals("in")&&StaircaseAccount.read(d,new UUID(159,1)).equals(StaircaseProse.Read.NONE),"the book takes only the reader's own observations");
         // The House's version of the reader, sent only to that reader.

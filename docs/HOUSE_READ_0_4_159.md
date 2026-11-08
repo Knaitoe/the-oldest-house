@@ -111,8 +111,8 @@ Each room hands in **signals** as they happen, and `HouseRead` turns them into o
 
 - ~~Settled `DANGER` authority figures who linger rather than chase, and the warm or tense mood a tentative `HOME` gives domestic rooms.~~ Built in 0.4.371 (`docs/HOUSE_READ_HOME_0_4_371.md`).
 - ~~The larger `AGE` changes: the Wheel starting at the reader's stage of life, Harrigan's handset, a landline in later halls.~~ Built in 0.4.372 (`docs/HOUSE_READ_AGE_0_4_372.md`).
-- The silk wrap on a double asleep: no sleeping double exists yet.
-- The owner's two open proposals: Tom and Kate as grown names, and the narrator following `AGE`.
+- ~~The silk wrap on a double asleep: no sleeping double exists yet.~~ Built in 0.4.373 on Second Person's resident (`docs/HOUSE_READ_LAST_0_4_373.md`).
+- ~~The owner's two open proposals: Tom and Kate as grown names, and the narrator following `AGE`.~~ Settled in 0.4.373: the narrator follows `AGE`; Tom and Kate are the rule for when a room names the shelter strangers.
 - From the October 28 review: caching each reader's active room per tick, and regrouping friends after the chain.
 
 ## Tests

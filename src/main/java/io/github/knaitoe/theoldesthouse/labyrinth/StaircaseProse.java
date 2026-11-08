@@ -300,8 +300,14 @@ public final class StaircaseProse {
 
     /** Five linked chapters. Counts choose memories; the prose does not reproduce a statistics screen. */
     public static Story compose(String name, List<Fact> facts, long seed) { return compose(name, facts, seed, Read.NONE); }
-    public static Story compose(String name, List<Fact> facts, long seed, Read read) {
-        var rng=new Random(mix(seed));Voice voice=Voice.values()[rng.nextInt(Voice.values().length)];
+    public static Story compose(String name, List<Fact> facts, long seed, Read read) { return compose(name, facts, seed, read, ""); }
+    /**
+     * 0.4.373: with the reader's AGE read known (tentative is enough), the voice follows it: the ledger for ANALOG, the letter for
+     * TRANSITIONAL, the witness or the survey for DIGITAL (whichever of the two the seed leans to). Without it the voice is drawn as
+     * before, so a book with no read is exactly today's.
+     */
+    public static Story compose(String name, List<Fact> facts, long seed, Read read, String age) {
+        var rng=new Random(mix(seed));Voice voice=voice(Voice.values()[rng.nextInt(Voice.values().length)],age);
         var remaining=new ArrayList<>(facts);
         remaining.sort(Comparator.comparingDouble((Fact f)->f.kind.base*(1+Math.min(1,f.count/f.kind.typical))).reversed());
         String[][] groups={{"move"},{"make","care","play","trade"},{"loss","harm","rest"},{"house"}};
@@ -326,6 +332,15 @@ public final class StaircaseProse {
         String ending=ending(voice,read.home);
         leaves.add(titles[4]+"\n\n"+ending);
         return new Story(voice,front(voice,name),List.copyOf(leaves));
+    }
+    /** The voice the seed drew, turned by the reader's AGE read when there is one. */
+    static Voice voice(Voice drawn, String age) {
+        return switch (age) {
+            case "ANALOG" -> Voice.LEDGER;
+            case "TRANSITIONAL" -> Voice.LETTER;
+            case "DIGITAL" -> drawn == Voice.WITNESS || drawn == Voice.SURVEY ? drawn : drawn == Voice.LETTER ? Voice.WITNESS : Voice.SURVEY;
+            default -> drawn;
+        };
     }
     /** The last leaf. With HOME known the letter writer knows where home is; the other three each change one sentence. */
     static String ending(Voice voice, String home) {

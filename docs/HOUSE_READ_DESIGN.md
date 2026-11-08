@@ -9,7 +9,7 @@ What is built (see "Built so far" at the end):
 - the account opening, the House of Leaves, and the reader's look in glass and copies, written with the read (0.4.159);
 - the six scenes that read a category (0.4.142), the lake house partner (0.4.152), the shelter strangers' age and the road-taker's deal (0.4.159).
 
-What is not built: the two open proposals (see `docs/HOUSE_READ_0_4_159.md`). Settled `DANGER` authority figures and the moods a tentative `HOME` gives are built in 0.4.371 (`docs/HOUSE_READ_HOME_0_4_371.md`); the larger `AGE` changes in 0.4.372 (`docs/HOUSE_READ_AGE_0_4_372.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only (section 6). The House's body for readers whose skins aren't human was decided the same day and is built in 0.4.163 ("The House's body").
+Every leftover of the read is now built or decided. Settled `DANGER` authority figures and the moods a tentative `HOME` gives are built in 0.4.371 (`docs/HOUSE_READ_HOME_0_4_371.md`); the larger `AGE` changes in 0.4.372 (`docs/HOUSE_READ_AGE_0_4_372.md`); the silk wrap on a sleeping double, the narrator following `AGE` and the decision on Tom and Kate in 0.4.373 (`docs/HOUSE_READ_LAST_0_4_373.md`). Proposed for the owner's review (October 29): a sixth room, the self-portrait at the kitchen table, which reads skin tone only (section 6). The House's body for readers whose skins aren't human was decided the same day and is built in 0.4.163 ("The House's body").
 
 A review of the built rooms against this document, with a suggested order for what comes next, is in `docs/PERSONALITY_VIGNETTES_REVIEW.md` (October 28).
 
@@ -638,7 +638,7 @@ As built, the order went the other way. All five rooms came first, and the payof
 
 The account opening is one flowing breath of prose (the owner's wording), not five separate sentences.
 
-Two small proposals remain for the owner: Tom and Kate as the grown-up names for older readers, and the House of Leaves narrator following `AGE`.
+The two small proposals are settled (0.4.373, `docs/HOUSE_READ_LAST_0_4_373.md`): the House of Leaves narrator follows `AGE`, and Tom and Kate are the grown-up names for older readers when a room needs to name the shelter strangers.
 
 ## The owner's direction (October 28)
 
