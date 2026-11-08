@@ -1292,5 +1292,19 @@
   "subtitles.the_oldest_house.pantry.shutter": "A shutter swings",
   "subtitles.the_oldest_house.pantry.drip": "Water drips",
   "subtitles.the_oldest_house.pantry.frost": "Frost cracks",
-  "subtitles.the_oldest_house.pantry.seal": "A seal gives"
+  "subtitles.the_oldest_house.pantry.seal": "A seal gives",
+  "block.the_oldest_house.pinehook_fitting": "Cabin Fittings",
+  "item.the_oldest_house.pinehook_cooler": "Cooler",
+  "item.the_oldest_house.pinehook_camera": "Camera",
+  "item.the_oldest_house.pinehook_torch": "Torch",
+  "item.the_oldest_house.pinehook_mixtape": "Mixtape",
+  "item.the_oldest_house.pinehook_player": "Portable player",
+  "item.the_oldest_house.pinehook_tape": "Rented film",
+  "item.the_oldest_house.pinehook_firstaid": "First-aid bag",
+  "item.the_oldest_house.pinehook_elastic": "Elastic strap",
+  "subtitles.the_oldest_house.pinehook.knock": "Knuckles rap on glass",
+  "subtitles.the_oldest_house.pinehook.breaker": "The power cuts out",
+  "subtitles.the_oldest_house.pinehook.crash": "Something crashes in the shed",
+  "subtitles.the_oldest_house.pinehook.flash": "A camera flashes",
+  "subtitles.the_oldest_house.pinehook.tape": "A tape slots into the deck"
 }

@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/pinehook/canvas",
+    "t": "the_oldest_house:block/pinehook/duffel_2",
+    "particle": "the_oldest_house:block/pinehook/canvas"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        4
+      ],
+      "to": [
+        14,
+        6,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

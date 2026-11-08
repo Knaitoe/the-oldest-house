@@ -1546,5 +1546,53 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 116
+  },
+  {
+    "name": "literary_pinehook_casey",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 117
+  },
+  {
+    "name": "literary_pinehook_jude",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 118
+  },
+  {
+    "name": "literary_pinehook_masked",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 119
+  },
+  {
+    "name": "literary_pinehook_coverall",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 120
+  },
+  {
+    "name": "literary_pinehook_nina",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 121
+  },
+  {
+    "name": "literary_pinehook_len",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 122
   }
 ]
