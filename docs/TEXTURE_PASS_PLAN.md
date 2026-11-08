@@ -129,7 +129,7 @@ Two or three scenes per release, 4 to 8 textures each:
 |---|---|---:|
 | 1 | The domestic halls (built in 0.4.219, docs/TEXTURE_PASS_HALLS_0_4_219.md) | 12 |
 | 2 | The stone halls (built in 0.4.374, docs/TEXTURE_PASS_STONE_0_4_374.md), then the quiet and threshold halls (2b, built in 0.4.375, docs/TEXTURE_PASS_PAINT_0_4_375.md) | 12 |
-| 3 | The great staircase | 10, plus 2 models |
+| 3 | The great staircase (well and rails built in 0.4.376, docs/TEXTURE_PASS_STAIRCASE_0_4_376.md) | 10, plus 2 models |
 | 4 onwards | Tier 3, two or three scenes at a time | 4–8 each |
 
 Each release keeps the architecture views, the texture CRC and decode check and the full suite. Any tier can be reordered or dropped.

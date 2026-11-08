@@ -163,14 +163,15 @@ public final class FinaleArchitecture {
         clearVolume(blocks,b,-SHAFT_RADIUS+1,SHAFT_RADIUS-1,-64,320,-SHAFT_RADIUS+1,SHAFT_RADIUS-1);
         clearVolume(blocks,b,-16,16,ARENA,ARENA+12,30,68);
         clearVolume(blocks,b,-30,30,-26,22,71,120);
-        // Tall black walls give scale without filling the entire shaft with blocks.
+        // Tall black walls give scale without filling the entire shaft with blocks. 0.4.376: the well's own stone, darker in each
+        // third of the descent, with a fluted pier every twelve blocks (docs/TEXTURE_PASS_STAIRCASE_0_4_376.md).
         for(int y=LOOP_BOTTOM-1;y<=TOP+14;y++) for(int i=-SHAFT_RADIUS;i<=SHAFT_RADIUS;i++) {
-            BlockState pier=Math.floorMod(i,12)==0?Blocks.CHISELED_DEEPSLATE.defaultBlockState():dark;
+            BlockState pier=Math.floorMod(i,12)==0?StairWell.pier(y):StairWell.stone(y);
             put(blocks,b,i,y,-SHAFT_RADIUS,pier);put(blocks,b,i,y,SHAFT_RADIUS,pier);put(blocks,b,-SHAFT_RADIUS,y,i,pier);put(blocks,b,SHAFT_RADIUS,y,i,pier);
         }
         // Both caps are real architecture; looking or falling down cannot reveal the ordinary world.
         for(int x=-SHAFT_RADIUS;x<=SHAFT_RADIUS;x++)for(int z=-SHAFT_RADIUS;z<=SHAFT_RADIUS;z++){
-            put(blocks,b,x,TOP+15,z,dark);put(blocks,b,x,LOOP_BOTTOM-1,z,dark);
+            put(blocks,b,x,TOP+15,z,StairWell.stone(TOP));put(blocks,b,x,LOOP_BOTTOM-1,z,StairWell.stone(LOOP_BOTTOM));
         }
         for(int y=LOOP_BOTTOM+16;y<TOP;y+=48)for(int i=-SHAFT_RADIUS+1;i<SHAFT_RADIUS;i++){
             put(blocks,b,i,y,-SHAFT_RADIUS+1,stone);put(blocks,b,i,y,SHAFT_RADIUS-1,stone);
@@ -280,7 +281,8 @@ public final class FinaleArchitecture {
     private static Block stairMaterial(int y){return switch(depthBand(y)){
         case 1->Blocks.TUFF_BRICK_STAIRS;case 2->Blocks.DEEPSLATE_BRICK_STAIRS;
         case 3->Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS;default->HouseBlocks.STAIRCASE_STAIRS.get();};}
-    private static BlockState rail(Direction along){var s=Blocks.IRON_BARS.defaultBlockState();return along.getAxis()==Direction.Axis.X
+    /** 0.4.376: the landings' and flights' rails are the well's own balustrade (iron bars underneath). */
+    private static BlockState rail(Direction along){var s=StairWell.BALUSTRADE.get().defaultBlockState();return along.getAxis()==Direction.Axis.X
         ?s.setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true)
         :s.setValue(BlockStateProperties.NORTH,true).setValue(BlockStateProperties.SOUTH,true);}
     private static void put(Map<BlockPos,BlockState> plan,BlockPos base,int x,int y,int z,BlockState block){plan.put(base.offset(x,y,z),block);}

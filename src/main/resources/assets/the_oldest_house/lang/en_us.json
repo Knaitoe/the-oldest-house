@@ -1336,5 +1336,12 @@
   "block.the_oldest_house.hall_paint_dado": "Dado",
   "block.the_oldest_house.hall_paint_panel": "Panelling",
   "block.the_oldest_house.hall_paint_panel_low": "Panelling with Skirting",
-  "block.the_oldest_house.hall_paint_ceiling": "Ceiling Tiles"
+  "block.the_oldest_house.hall_paint_ceiling": "Ceiling Tiles",
+  "block.the_oldest_house.stair_well_upper": "Upper Well Stone",
+  "block.the_oldest_house.stair_well_middle": "Middle Well Stone",
+  "block.the_oldest_house.stair_well_lower": "Lower Well Stone",
+  "block.the_oldest_house.stair_well_pier_upper": "Upper Well Pier",
+  "block.the_oldest_house.stair_well_pier_middle": "Middle Well Pier",
+  "block.the_oldest_house.stair_well_pier_lower": "Lower Well Pier",
+  "block.the_oldest_house.stair_well_balustrade": "Balustrade"
 }
