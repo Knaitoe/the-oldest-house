@@ -23,6 +23,8 @@ public final class HazardMaps {
     public static int underCeiling(LabyrinthPlace p){return p.room().maxY()-1;}
     public static void build(ServerLevel l,BlockPos b,LabyrinthPlace p){
         if(b==null||!HazardVariety.added(p))throw new IllegalArgumentException("Not an appended hazard: "+p);
+        // 0.4.385: the new trial rooms are built whole, their entrance in their own materials (TrialRooms).
+        if(TrialRooms.is(p)){TrialRooms.build(l,b,p);LabyrinthBuilder.doors(l,b,p);BuildBlocks.after(l,()->HazardVariety.fresh(l,b,p));return;}
         switch(p){
             case COLD_STORE->cold(l,b,p);case LISTING_HALL->listing(l,b,p);case QUIET_HALL->quiet(l,b,p);case UNWATCHED_MAZE->maze(l,b,p);
             case MIRROR_HALL->mirror(l,b,p);case HEAVY_AND_LIGHT->weight(l,b,p);case NESTED_ROOMS->nested(l,b,p);case COUNTING_STAIR->counting(l,b,p);

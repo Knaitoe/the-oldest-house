@@ -250,4 +250,74 @@ public final class HazardVarietyTests {
     }
     @AfterBatch(batch="settling_cellar") public static void settlingCellarDone(ServerLevel level){close();}
 
+    /**
+     * 0.4.385, the still light (docs/STILL_LIGHT_0_4_385.md): the room is built as its plan says; its lamps come up only while a
+     * reader holds still and go out a breath after they move; in the dark a dusty board gives way under a moving reader and the
+     * worn way never does; a friend holding still lights the room for someone walking; the board is back once nobody is there; and
+     * a torch will not stay alight, though anything else may be set down.
+     */
+    @GameTest(template="empty",batch="still_light",timeoutTicks=900)
+    public static void theStillLightLightsForStillnessAndItsDustyBoardsGiveInTheDark(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.STILL_LIGHT;var walker=f.player("still_walker",place);var b=f.base(place);
+        final ServerPlayer[] friend={null};final int[] step={0};
+        java.util.function.BiConsumer<ServerPlayer,double[]> hold=(p,at)->{f.at(p,place,at[0],0,at[1]);p.setOnGround(true);};
+        java.util.function.BiConsumer<Integer,Integer> walk=(x,z)->{f.at(walker,place,x+.5+(step[0]++%2==0?.2:-.2),0,z+.5);walker.setOnGround(true);};
+        java.util.function.IntPredicate lamps=stage->TrialRooms.LAMP_Z.stream().allMatch(z->TrialBlock.is(f.level.getBlockState(b.offset(0,3,z)),TrialBlock.Kind.STILL_LAMP,stage));
+        java.util.function.IntSupplier gone=()->{int n=0;for(int z=TrialRooms.FIELD_FAR;z<=TrialRooms.FIELD_NEAR;z++)for(int x=-TrialRooms.HALF;x<=TrialRooms.HALF;x++)if(TrialBlock.is(f.level.getBlockState(b.offset(x,-1,z)),TrialBlock.Kind.STILL_BOARD,1))n++;return n;};
+        var board=b.offset(-4,-1,-10);var held=b.offset(-4,-1,-20);var landing=new double[]{.5,-1.5};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the still light is loaded"))
+                .thenExecute(()->{
+                    for(int z=TrialRooms.FIELD_FAR;z<=TrialRooms.FIELD_NEAR;z++)for(int x=-TrialRooms.HALF;x<=TrialRooms.HALF;x++){
+                        var s=f.level.getBlockState(b.offset(x,-1,z));
+                        if(TrialRooms.stairWell(x,z))h.assertTrue(s.isAir(),"the well over the steps is open at "+x+","+z);
+                        else if(TrialRooms.onWay(x,z))h.assertTrue(s.is(TrialRegistry.material("still_path")),"the worn way at "+x+","+z);
+                        else h.assertTrue(TrialBlock.is(s,TrialBlock.Kind.STILL_BOARD,0),"a dusty board at "+x+","+z);
+                        if(!TrialRooms.stairWell(x,z))f.body(b,x+.5,-3,z+.5,1,"standing room in the trough under "+x+","+z);
+                    }
+                    var way=TrialRooms.wayInOrder();
+                    h.assertTrue(way.getFirst().getZ()==TrialRooms.FIELD_NEAR&&way.getLast().getZ()==TrialRooms.FIELD_FAR,"the way runs from the entry landing to the far one");
+                    for(int i=1;i<way.size();i++)h.assertTrue(way.get(i).distManhattan(way.get(i-1))==1,"the way is one unbroken walk at "+way.get(i));
+                    f.body(b,3.5,-2,-3.5,1,"the first step up out of the trough");f.body(b,3.5,-1,-2.5,1,"the second step up");
+                    f.body(b,3.5,0,-1.5,1,"the entry landing above the steps");f.body(b,.5,0,-42.5,1,"the far landing");
+                    h.assertTrue(f.level.getBlockState(b.offset(0,0,TrialRooms.FAR_WALL)).getBlock() instanceof DoorBlock,"the far door stands in the end wall");
+                    for(int z:TrialRooms.LAMP_Z)h.assertTrue(TrialBlock.is(f.level.getBlockState(b.offset(0,3,z)),TrialBlock.Kind.STILL_LAMP,0)
+                            &&TrialRegistry.isMaterial(f.level.getBlockState(b.offset(0,4,z))),"a dark lamp hangs from the ceiling at "+z);
+                    h.assertTrue(TrialMarks.kind(place)==place&&HazardVariety.tier(place)==1&&LabyrinthPacing.physicalTrial(place),"a first-tier physical trial, and a mark of its own");
+                    hold.accept(walker,landing);
+                })
+                .thenExecuteFor(TrialRooms.STILL+4,()->hold.accept(walker,landing))
+                .thenWaitUntil(()->{h.assertTrue(lamps.test(1),"holding still brings every lamp up");
+                    h.assertTrue(f.level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,b.offset(-4,0,-20))>=8,"and the middle of the room can be seen");})
+                .thenExecuteFor(TrialRooms.FADE+TrialRooms.GIVE+4,()->walk.accept(-4,-10))
+                .thenExecute(()->{
+                    h.assertTrue(lamps.test(0),"moving puts the lamps out a breath later");
+                    h.assertTrue(TrialBlock.is(f.level.getBlockState(board),TrialBlock.Kind.STILL_BOARD,1)&&gone.getAsInt()==1,"the dusty board under a reader in the dark gives way, and only that one");
+                    f.body(b,-3.5,-3,-9.5,1,"the trough the reader falls into");
+                })
+                .thenExecuteFor(12,()->walk.accept(2,-10))
+                .thenExecute(()->{
+                    h.assertTrue(gone.getAsInt()==1&&f.level.getBlockState(b.offset(2,-1,-10)).is(TrialRegistry.material("still_path")),"the worn way holds in the dark");
+                    friend[0]=f.player("still_friend",place);hold.accept(friend[0],landing);hold.accept(walker,new double[]{2.5,-9.5});
+                })
+                .thenExecuteFor(TrialRooms.STILL+2,()->{hold.accept(friend[0],landing);hold.accept(walker,new double[]{2.5,-9.5});})
+                .thenExecute(()->h.assertTrue(lamps.test(1),"the lamps are up"))
+                .thenExecuteFor(20,()->{hold.accept(friend[0],landing);walk.accept(-4,-20);})
+                .thenExecute(()->{
+                    h.assertTrue(lamps.test(1)&&TrialBlock.is(f.level.getBlockState(held),TrialBlock.Kind.STILL_BOARD,0),"while a friend holds still, a dusty board holds for someone walking on it");
+                    hold.accept(walker,landing);
+                })
+                .thenWaitUntil(()->h.assertTrue(gone.getAsInt()==0,"the board that gave is back once nobody is where it was"))
+                .thenExecute(()->{
+                    var at=b.offset(1,0,-1);
+                    // The House lets a reader set a torch down almost anywhere (LabyrinthLighting); here it goes out.
+                    h.assertTrue(LabyrinthLighting.allowsPlacing(f.level,at,Blocks.TORCH.defaultBlockState()),"the House's own rule would let a torch be set down here");
+                    f.level.setBlock(at,Blocks.TORCH.defaultBlockState(),3);
+                    var torch=new net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent(net.neoforged.neoforge.common.util.BlockSnapshot.create(f.level.dimension(),f.level,at),Blocks.AIR.defaultBlockState(),walker);
+                    net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(torch);
+                    f.level.setBlock(at,Blocks.AIR.defaultBlockState(),3);
+                    h.assertTrue(torch.isCanceled(),"but a torch will not stay alight in the still light");
+                }).thenSucceed();
+    }
+    @AfterBatch(batch="still_light") public static void stillLightDone(ServerLevel level){close();}
+
 }

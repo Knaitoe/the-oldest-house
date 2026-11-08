@@ -1,0 +1,14 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/trial_still_path"
+      },
+      {
+        "model": "the_oldest_house:block/trial_still_path",
+        "x": 0,
+        "y": 180
+      }
+    ]
+  }
+}

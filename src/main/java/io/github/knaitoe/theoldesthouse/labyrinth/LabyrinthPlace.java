@@ -637,7 +637,9 @@ public enum LabyrinthPlace {
     /** 0.4.364, Last Weekend at Pinehook (Pinehook, docs/PINEHOOK_0_4_364.md): the cabin in the pines by the lake, a weekend with friends, a host with a plan and a prank that goes wrong. */
     PINEHOOK("pinehook",Kind.ONE_SHOT,221,new BoundingBox(-36,-5,-96,36,18,1),literaryEntry()),
     /** 0.4.383, Feet Up's house later (FeetUpRooms.buildLater, docs/FEET_UP_LATER_0_4_383.md): the same house with no floors, the furniture hanging over the dark; a deep puzzle room, offered only to readers who reached the first house's attic. Not a story. */
-    FEET_UP_LATER("feet_up_later",Kind.GRAY,222,new BoundingBox(-11,-5,-27,11,14,0),grayDoors(0,11,-27));
+    FEET_UP_LATER("feet_up_later",Kind.GRAY,222,new BoundingBox(-11,-5,-27,11,14,0),grayDoors(0,11,-27)),
+    /** 0.4.385, the still light (TrialRooms, docs/STILL_LIGHT_0_4_385.md): a dark board floor whose lamps come up only while someone stands still; off the worn way the boards give in the dark. */
+    STILL_LIGHT("still_light",Kind.GRAY,223,new BoundingBox(-5,-4,-44,5,4,0),grayDoors(0,0,-44));
 
     /** What a place is to the dealer. */
     public enum Kind {
