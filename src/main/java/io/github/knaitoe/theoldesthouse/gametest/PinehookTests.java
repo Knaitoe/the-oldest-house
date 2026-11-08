@@ -28,7 +28,7 @@ import net.neoforged.neoforge.gametest.*;
  * so far tells the evening as that reader had it. Then two shorter evenings: a reader who stays in the shed with Jude, so Nina waits
  * behind it and gives up; and a reader who gets into the shed while she is at him, and sees her.
  */
-@GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
+@GameTestHolder(TheOldestHouse.MOD_ID+"_pinehook") @PrefixGameTestTemplate(false)
 public final class PinehookTests {
     private PinehookTests(){}
     private static final LabyrinthPlace P=LabyrinthPlace.PINEHOOK;
@@ -46,6 +46,10 @@ public final class PinehookTests {
     @AfterBatch(batch="pinehook_night") public static void nightDone(ServerLevel l){close();}
     @AfterBatch(batch="pinehook_burn") public static void burnDone(ServerLevel l){close();}
     @AfterBatch(batch="pinehook_boathouse") public static void boathouseDone(ServerLevel l){close();}
+    @AfterBatch(batch="pinehook_nina") public static void ninaDone(ServerLevel l){close();}
+    @AfterBatch(batch="pinehook_exposed") public static void exposedDone(ServerLevel l){close();}
+    @AfterBatch(batch="pinehook_performance") public static void performanceDone(ServerLevel l){close();}
+    @AfterBatch(batch="pinehook_protected") public static void protectedDone(ServerLevel l){close();}
     private static boolean near(LiteraryTests.Fixture f,String who,Vec3 rel,double d){var a=cast(f,who);var b=f.base(P);return a!=null&&a.position().distanceTo(new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z))<d;}
     private static String account(LiteraryTests.Fixture f,ServerPlayer p){return String.join(" ",LiteraryTexts.ending(p.getGameProfile().getName(),P,f.own(p,P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());}
     private static void look(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){var b=f.base(P);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z));}
@@ -69,6 +73,16 @@ public final class PinehookTests {
             .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.SHED&&Pinehook.flag(b,"judeIn"),"Jude in the shed, changing"));
     }
 
+    /** From the shed's outcome through the turn and the hold to the night: Len shut in, Jude and Casey in the kitchen. */
+    private static GameTestSequence toNight(GameTestSequence s,LiteraryTests.Fixture f,GameTestHelper h,int outcome){
+        var b=f.base(P);
+        s=s.thenWaitUntil(()->h.assertTrue(Pinehook.outcome(b)==outcome,"the shed: "+outcome));
+        if(outcome==Pinehook.WOUNDED)s=s.thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"figure"),"the figure across the dock")).thenExecute(()->Pinehook.skip(b,Pinehook.NINA_BACK));
+        return s.thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.HOLD,"the hold"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.NIGHT_AT))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.NIGHT&&Pinehook.flag(b,"lenInside")&&near(f,"jude",PinehookSite.JUDE_KITCHEN,1.2)&&near(f,"casey",PinehookSite.CASEY_KITCHEN,1.5),"the night: Len shut in, Jude and Casey in the kitchen"));
+    }
+
     @GameTest(template="empty",batch="pinehook",timeoutTicks=8000)
     public static void theWeekendOpensAndThePrankGoesWrong(GameTestHelper h){
         var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
@@ -78,7 +92,7 @@ public final class PinehookTests {
             .thenIdle(20)
             .thenExecute(()->{
                 h.assertTrue(LiteraryRooms.isLiterary(P)&&LiteraryRooms.outside(P)&&P.isOneShot()&&P.authored()&&SceneClock.at(f.origin,b.offset(0,0,-30),io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE)==3,"a literary cabin outside, one visit, built whole, at dusk");
-                h.assertTrue(WitnessAccount.Story.of(P.id())==null&&!Pinehook.dealable(f.data(),UUID.randomUUID()),"no Witness source yet, and not dealt until the weekend can be finished");
+                h.assertTrue(WitnessAccount.Story.of(P.id())==WitnessAccount.Story.PINEHOOK&&WitnessAccount.Story.PINEHOOK.kind.equals("understanding")&&!Pinehook.dealable(f.data(),UUID.randomUUID()),"an understanding Witness source, dealt only to readers standing together");
                 h.assertTrue(l.getBlockState(b.offset(0,-1,-8)).is(Blocks.GRAVEL)&&l.getBlockState(b.offset(0,-1,-24)).is(Blocks.SPRUCE_PLANKS)&&l.getBlockState(b.offset(0,-2,-70)).is(Blocks.WATER)&&l.getBlockState(b.offset(6,-1,-60)).is(Blocks.SPRUCE_PLANKS),"the drive, the cabin's floor, the lake and the dock");
                 h.assertTrue(l.getBlockState(b.offset(PinehookSite.BOATHOUSE_DOOR)).is(Blocks.IRON_DOOR)&&l.getBlockState(b.offset(PinehookSite.HEARTH)).is(Blocks.CAMPFIRE),"Len's boathouse shut, the fire lit");
                 for(var k:List.of(PinehookSite.STEREO,PinehookSite.TV,PinehookSite.BREAKER,PinehookSite.STOVE,PinehookSite.DUFFEL,PinehookSite.BAG,PinehookSite.KIT,PinehookSite.COOLER_START,PinehookSite.TAPES))h.assertTrue(stage(l,b,k)==0,"a fitting at "+k);
@@ -345,10 +359,155 @@ public final class PinehookTests {
                 h.assertTrue(use(f,c[0],PinehookSite.SAFE)&&!thing(c[0],"envelope").isEmpty()&&stage(l,b,PinehookSite.SAFE)==2,"the envelope out");
                 h.assertTrue(Pinehook.useThing(c[0],thing(c[0],"envelope"),null)&&f.own(c[0],P).getBoolean("ReadEnvelope"),"read");Talk.close(c[0]);
                 f.at(c[0],P,8.5,0,-62.5);
-                h.assertTrue(Pinehook.useThingOn(c[0],thing(c[0],"oars"),b.offset(PinehookSite.STERN_EAST))&&Pinehook.boatReady(b)==1&&stage(l,b,PinehookSite.BOW_EAST)==1&&thing(c[0],"oars").isEmpty(),"the oars in the rowboat: ready");
+                boolean used=Pinehook.useThingOn(c[0],thing(c[0],"oars"),b.offset(PinehookSite.STERN_EAST));
+                h.assertTrue(used&&Pinehook.boatReady(b)==1&&stage(l,b,PinehookSite.BOW_EAST)==1&&thing(c[0],"oars").isEmpty(),"the oars in the rowboat: ready ("+used+", ready "+Pinehook.boatReady(b)+", stern "+l.getBlockState(b.offset(PinehookSite.STERN_EAST))+", bow "+l.getBlockState(b.offset(PinehookSite.BOW_EAST))+", phase "+Pinehook.phase(b)+", oars "+!thing(c[0],"oars").isEmpty()+")");
                 f.at(c[0],P,1.5,0,-1.5);
                 h.assertTrue(use(f,c[0],PinehookSite.PADDLE)&&!thing(c[0],"paddle").isEmpty()&&l.getBlockState(b.offset(PinehookSite.PADDLE)).isAir(),"the paddle from the woodshed");
                 var acc=account(f,c[0]);h.assertTrue(acc.contains("keep her out")&&acc.contains("marked N")&&acc.contains("rowboat ready"),"the night on the record: "+acc);})
+            .thenSucceed();
+    }
+
+    /** 0.4.367, the crisis, Nina's way: Jude's cut dressed; the brace across Len's door to keep him in; a reader in Nina's way at the cleat
+     * who opens the slip for her instead; Len trapped with her, shouting, then quiet; the envelope with her into the lake; first light, and
+     * who opened the slip owned up to; every account written, and a reader who wasn't there owed theirs. */
+    @GameTest(template="empty",batch="pinehook_nina",timeoutTicks=9000)
+    public static void ninaFinishesItWhenTheSlipIsOpenedForHer(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[2];var absent=UUID.randomUUID();
+        toNight(toShed(parts(f,h,c,"pf","The Athlete","The Charmer"),f,h),f,h,Pinehook.WOUNDED)
+            .thenExecute(()->{
+                Pinehook.roll(b,absent);
+                f.at(c[1],P,1.5,0,-31.5);h.assertTrue(use(f,c[1],PinehookSite.KIT)&&!thing(c[1],"firstaid").isEmpty(),"the kit off the wall");
+                f.at(c[1],P,6.5,0,-31.5);h.assertTrue(Pinehook.useThing(c[1],thing(c[1],"firstaid"),cast(f,"jude"))&&Pinehook.flag(b,"bandaged"),"Jude's cut dressed");
+                f.at(c[0],P,14.5,0,-43.5);
+                h.assertTrue(use(f,c[0],PinehookSite.BRACE_LEANING)&&Pinehook.flag(b,"braced"),"the brace across the boathouse door");
+                h.assertTrue(Pinehook.knockAt(c[0])&&Talk.choose(c[0],"So you stay")&&f.own(c[0],P).getBoolean("BracedAgainstLen"),"to keep Len where he is");Talk.close(c[0]);
+                f.at(c[0],P,7.5,0,-51.5);f.at(c[1],P,4.5,0,-28.5);
+                Pinehook.skip(b,Pinehook.CRISIS_AT);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.CRISIS,"the crisis"))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.ninaCrisis(b)==Pinehook.N_CLEAT&&f.own(c[0],P).getBoolean("GuardedCleat"),"Nina down at the cleat, and someone in her way"))
+            .thenExecute(()->{Pinehook.talk(c[0],cast(f,"nina"));h.assertTrue(Talk.choose(c[0],"I'll open it for you")&&Pinehook.flag(b,"helped")&&Pinehook.flag(b,"slip")&&f.own(c[0],P).getBoolean("HelpedNina"),"the slip opened for her");Talk.close(c[0]);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.ninaCrisis(b)==Pinehook.N_INSIDE,"in by the water, and Len braced in with her"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.ATTACK))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"lenDead")&&f.own(c[0],P).getBoolean("HeardLenAttacked")&&f.own(c[0],P).getBoolean("HeardLenGoQuiet"),"Len shouting for help, then quiet"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.SAFE_TIME))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"ninaGone")&&Pinehook.flag(b,"ninaEnvelope"),"the envelope out of the safe and into the lake with her"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.SETTLE))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.DAWN&&Pinehook.family(b).equals(Pinehook.NINA_FINISHED),"first light: hers"))
+            .thenExecute(()->{
+                h.assertTrue(!Pinehook.flag(b,"judeDead"),"Jude, dressed, lived");
+                Pinehook.talk(c[0],cast(f,"casey"));h.assertTrue(Talk.choose(c[0],"I did.")&&f.own(c[0],P).getBoolean("Admitted"),"who opened the slip, owned up to");Talk.close(c[0]);
+                h.assertTrue(WitnessAccount.count(f.data(),c[0].getUUID())==0,"not written until the morning is over");
+                Pinehook.skip(b,Pinehook.DAWN_HOLD);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"resolved"),"every account written"))
+            .thenExecute(()->{
+                for(var p:c)h.assertTrue(f.own(p,P).getBoolean("Completed")&&WitnessAccount.count(f.data(),p.getUUID())==1,"a Witness source for "+p.getGameProfile().getName());
+                h.assertTrue(LiteraryVignettes.personal(f.data(),absent,P).getString("OwedFamily").equals(Pinehook.NINA_FINISHED),"a reader not online is owed theirs");
+                h.assertTrue(!Pinehook.dealable(f.data(),c[0].getUUID()),"not dealt again to one who has finished it");
+                var zero=account(f,c[0]);h.assertTrue(zero.contains("opened the slip for her")&&zero.contains("Len didn't come out")&&zero.contains("told him it was me")&&zero.contains("Nobody went back"),"the athlete's weekend: "+zero);
+                var one=account(f,c[1]);h.assertTrue(one.contains("held a dressing")&&one.contains("Len didn't come out")&&!one.contains("Nobody helped her"),"the charmer's: "+one);})
+            .thenSucceed();
+    }
+
+    /** 0.4.367: a watched shed; the envelope out of the safe by the slip and the hook, read, and told to Casey, so it is out in the open;
+     * Nina held off at the cleat and talked out of her knife by the one who knows; first light, both exposed. */
+    @GameTest(template="empty",batch="pinehook_exposed",timeoutTicks=9000)
+    public static void theEnvelopeInTheOpenExposesBoth(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[2];
+        toNight(toShed(parts(f,h,c,"px","The Skeptic","The Responsible One"),f,h)
+            .thenExecute(()->{f.at(c[0],P,-16.5,0,-41.5);Pinehook.skip(b,Pinehook.NINA_AFTER);}),f,h,Pinehook.PREVENTED)
+            .thenExecute(()->{
+                f.at(c[1],P,7.5,0,-51.5);h.assertTrue(use(f,c[1],PinehookSite.RELEASE)&&Pinehook.flag(b,"slip"),"the slip open");
+                f.at(c[1],P,15.5,0,-52.5);
+                h.assertTrue(use(f,c[1],PinehookSite.RACK)&&Talk.choose(c[1],"Take the boat hook")&&!thing(c[1],"hook").isEmpty(),"the boat hook");
+                for(int i=0;i<Pinehook.PRY;i++)Pinehook.useThingOn(c[1],thing(c[1],"hook"),b.offset(PinehookSite.SAFE));
+                h.assertTrue(use(f,c[1],PinehookSite.SAFE)&&!thing(c[1],"envelope").isEmpty(),"the envelope");
+                h.assertTrue(Pinehook.useThing(c[1],thing(c[1],"envelope"),null)&&f.own(c[1],P).getBoolean("ReadEnvelope"),"read");Talk.close(c[1]);
+                f.at(c[1],P,7.5,0,-51.5);h.assertTrue(use(f,c[1],PinehookSite.RELEASE)&&!Pinehook.flag(b,"slip"),"the slip made fast again");
+                f.at(c[1],P,6.5,0,-29.5);Pinehook.talk(c[1],cast(f,"casey"));h.assertTrue(Talk.choose(c[1],"Len has been taking")&&Pinehook.flag(b,"open")&&!Pinehook.flag(b,"turned"),"told to Casey: out in the open");Talk.close(c[1]);
+                f.at(c[0],P,7.5,0,-51.5);f.at(c[1],P,6.5,0,-50.5);
+                Pinehook.skip(b,Pinehook.CRISIS_AT);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.CRISIS,"the crisis"))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.ninaCrisis(b)==Pinehook.N_CLEAT&&f.own(c[0],P).getBoolean("GuardedCleat"),"Nina at the cleat, held off"))
+            .thenExecute(()->{
+                Pinehook.talk(c[1],cast(f,"nina"));h.assertTrue(Talk.choose(c[1],"Everyone knows what's in it")&&Pinehook.flag(b,"disarmed")&&f.own(c[1],P).getBoolean("DisarmedNina"),"the knife given up to the one who knows");Talk.close(c[1]);
+                Pinehook.skip(b,Pinehook.SETTLE);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.DAWN&&Pinehook.family(b).equals(Pinehook.EXPOSED),"first light: both exposed"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.DAWN_HOLD))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"resolved"),"every account written"))
+            .thenExecute(()->{
+                var one=account(f,c[1]);h.assertTrue(one.contains("everyone knew what was in the envelope")&&one.contains("out where anyone could read it")&&one.contains("without her knife"),"the responsible one's: "+one);
+                var zero=account(f,c[0]);h.assertTrue(zero.contains("stood by the cleat")&&zero.contains("stayed with Jude while he changed"),"the skeptic's: "+zero);
+                for(var p:c)h.assertTrue(WitnessAccount.count(f.data(),p.getUUID())==1,"a Witness source for "+p.getGameProfile().getName());})
+            .thenSucceed();
+    }
+
+    /** 0.4.367: Jude cut and never dressed, cold through the night; Nina held at the cleat by two; Casey, never told, sinking the costume;
+     * first light with Jude dead, and Len's and Nina's story the mask: challenged by one who saw the prints, gone along with by the other. */
+    @GameTest(template="empty",batch="pinehook_performance",timeoutTicks=9000)
+    public static void whenJudeDiesTheMaskBecomesTheStory(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[2];
+        toNight(toShed(parts(f,h,c,"pq","The Wildcard","The Horror Fan"),f,h),f,h,Pinehook.WOUNDED)
+            .thenExecute(()->{
+                f.at(c[0],P,5.5,0,-47.5);h.assertTrue(use(f,c[0],PinehookSite.WET_PRINTS.get(0))&&f.own(c[0],P).getBoolean("SawWetPrints"),"wet prints from the water");
+                f.at(c[1],P,6.5,0,-30.5);Pinehook.skip(b,Pinehook.JUDE_COLD_AT[0]);})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[1],P).getBoolean("HeardJudeCold"),"Jude, never dressed, getting cold"))
+            .thenExecute(()->{f.at(c[0],P,7.5,0,-51.5);f.at(c[1],P,6.5,0,-51.5);Pinehook.skip(b,Pinehook.CRISIS_AT);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.CRISIS,"the crisis"))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.ninaCrisis(b)==Pinehook.N_CLEAT,"Nina at the cleat"))
+            .thenExecute(()->{Pinehook.talk(c[1],cast(f,"nina"));h.assertTrue(Talk.choose(c[1],"Give me the knife")&&!Pinehook.flag(b,"disarmed"),"not while Len still has it");Talk.close(c[1]);
+                Pinehook.talk(c[0],cast(f,"nina"));h.assertTrue(Talk.choose(c[0],"Get hold of her")&&Pinehook.flag(b,"held")&&f.own(c[0],P).getBoolean("HeldNina")&&f.own(c[1],P).getBoolean("HeldNina"),"two of them: held");Talk.close(c[0]);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"sunk"),"Casey down at the rowboat, the costume over the side"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.SETTLE))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.DAWN&&Pinehook.flag(b,"judeDead")&&Pinehook.family(b).equals(Pinehook.PERFORMANCE),"first light: Jude dead, and the mask the story"))
+            .thenExecute(()->{
+                Pinehook.talk(c[0],cast(f,"len"));h.assertTrue(Talk.choose(c[0],"That isn't what happened")&&f.own(c[0],P).getBoolean("ChallengedStory"),"challenged with what was seen");Talk.close(c[0]);
+                Pinehook.talk(c[1],cast(f,"nina"));h.assertTrue(Talk.choose(c[1],"That's what happened")&&f.own(c[1],P).getBoolean("ToldTheStory"),"gone along with");Talk.close(c[1]);
+                Pinehook.skip(b,Pinehook.DAWN_HOLD);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"resolved"),"every account written"))
+            .thenExecute(()->{
+                var zero=account(f,c[0]);h.assertTrue(zero.contains("wasn't breathing")&&zero.contains("the story was the mask")&&zero.contains("I said it wasn't true")&&zero.contains("got hold of her"),"the wildcard's: "+zero);
+                var one=account(f,c[1]);h.assertTrue(one.contains("I said it too")&&one.contains("got hold of her"),"the horror fan's: "+one);})
+            .thenSucceed();
+    }
+
+    /** 0.4.367: one reader. The woodshed paddle in the rowboat and Casey rowing Jude across to the store; the envelope out of the safe and
+     * read; Nina in by the open slip, Len out of his unbraced door and running; the safe empty, so she hunts the cabin; Len given his
+     * envelope back; Nina giving up; first light, and Len telling it his way. */
+    @GameTest(template="empty",batch="pinehook_protected",timeoutTicks=9000)
+    public static void lenRunsAndTellsItHisWay(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[1];
+        toNight(toShed(parts(f,h,c,"pl","The Athlete"),f,h),f,h,Pinehook.WOUNDED)
+            .thenExecute(()->{
+                f.at(c[0],P,1.5,0,-1.5);h.assertTrue(use(f,c[0],PinehookSite.PADDLE)&&!thing(c[0],"paddle").isEmpty(),"the paddle from the woodshed");
+                f.at(c[0],P,4.5,0,-62.5);h.assertTrue(Pinehook.useThingOn(c[0],thing(c[0],"paddle"),b.offset(PinehookSite.STERN_WEST))&&Pinehook.boatReady(b)==2,"the rowboat ready, slowly");
+                f.at(c[0],P,6.5,0,-30.5);
+                Pinehook.talk(c[0],cast(f,"jude"));h.assertTrue(Talk.choose(c[0],"Casey. Let him"),"let him talk");Talk.close(c[0]);
+                Pinehook.talk(c[0],cast(f,"jude"));h.assertTrue(Talk.choose(c[0],"The boat's ready")&&f.own(c[0],P).getBoolean("SentJudeAcross"),"Casey to row him across");Talk.close(c[0]);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"judeAcross")&&Pinehook.flag(b,"caseyGone"),"Jude and Casey across the lake"))
+            .thenExecute(()->{
+                f.at(c[0],P,7.5,0,-51.5);h.assertTrue(use(f,c[0],PinehookSite.RELEASE)&&Pinehook.flag(b,"slip"),"the slip open");
+                f.at(c[0],P,15.5,0,-52.5);
+                h.assertTrue(use(f,c[0],PinehookSite.RACK)&&Talk.choose(c[0],"Take the boat hook"),"the boat hook");
+                for(int i=0;i<Pinehook.PRY;i++)Pinehook.useThingOn(c[0],thing(c[0],"hook"),b.offset(PinehookSite.SAFE));
+                h.assertTrue(use(f,c[0],PinehookSite.SAFE)&&!thing(c[0],"envelope").isEmpty(),"the envelope");
+                h.assertTrue(Pinehook.useThing(c[0],thing(c[0],"envelope"),null)&&f.own(c[0],P).getBoolean("ReadEnvelope"),"read");Talk.close(c[0]);
+                f.at(c[0],P,1.5,0,-23.5);Pinehook.skip(b,Pinehook.CRISIS_AT);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.CRISIS,"the crisis"))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"lenFled"),"Nina in by the open slip, and Len out of his door and running"))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.ninaCrisis(b)==Pinehook.N_HUNT,"the safe empty: she comes up to the cabin"))
+            .thenWaitUntil(()->h.assertTrue(near(f,"len",new Vec3(2.5,0,-24.5),1.5),"Len up in the cabin"))
+            .thenExecute(()->{Pinehook.talk(c[0],cast(f,"len"));h.assertTrue(Talk.choose(c[0],"Give him his envelope back")&&Pinehook.flag(b,"envelopeBack")&&f.own(c[0],P).getBoolean("GaveLenEnvelope"),"his envelope, back");Talk.close(c[0]);
+                Pinehook.skip(b,Pinehook.STANDOFF_MAX);})
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"gaveUp"),"she gives up"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.SETTLE))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.phase(b)==Pinehook.DAWN&&Pinehook.family(b).equals(Pinehook.PROTECTED)&&!Pinehook.flag(b,"judeDead"),"first light: Len's account, and Jude alive across the lake"))
+            .thenExecute(()->Pinehook.skip(b,Pinehook.DAWN_HOLD))
+            .thenWaitUntil(()->h.assertTrue(Pinehook.flag(b,"resolved"),"written"))
+            .thenExecute(()->{var acc=account(f,c[0]);h.assertTrue(acc.contains("Casey rowed Jude across")&&acc.contains("gave Len his envelope back")&&acc.contains("told it his way")&&acc.contains("let him tell it"),"the athlete's: "+acc);})
             .thenSucceed();
     }
 }

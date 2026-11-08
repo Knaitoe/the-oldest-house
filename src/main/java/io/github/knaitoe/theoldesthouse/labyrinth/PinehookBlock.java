@@ -9,6 +9,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.*;
@@ -37,7 +40,11 @@ import net.minecraft.world.phys.shapes.*;
  * rowboat's bow takes oars (1) or the paddle (2).</li>
  * </ul>
  */
-public final class PinehookBlock extends HorizontalDirectionalBlock {
+public final class PinehookBlock extends HorizontalDirectionalBlock implements LiquidBlockContainer {
+    /** 0.4.367: water never takes a fitting. The rowboat sits in the lake, and the water placed round it when it is moored would
+     * otherwise spread into its cells a few ticks later and wash it away. */
+    @Override public boolean canPlaceLiquid(@org.jetbrains.annotations.Nullable Player player,BlockGetter level,BlockPos pos,BlockState state,Fluid fluid){return false;}
+    @Override public boolean placeLiquid(LevelAccessor level,BlockPos pos,BlockState state,FluidState fluid){return false;}
     public static final MapCodec<PinehookBlock> CODEC=simpleCodec(PinehookBlock::new);
     public enum Kind implements StringRepresentable {
         STEREO,TV,BREAKER,LAMP,STOVE,DUFFEL,BAG,COOLER,TAPES,KIT,BOAT_BOW,BOAT_STERN,PRINTS,BLOOD,TIE,SUITCASE,SAFE,RECORDER,JUNCTION,FLOOD,BRACE,GATE,RELEASE,RACK,PADDLE;

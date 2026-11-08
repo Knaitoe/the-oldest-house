@@ -15,8 +15,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.349, In the Tall Grass: 78 / 59 / 55.
  0.4.350, Growing Things: 79 / 60 / 56.
  0.4.357, The Last Crossing: 80 / 60 / 57.
+ 0.4.367, Last Weekend at Pinehook: 81 / 61 / 58.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=80,REQUIRED=60,LITERARY=57;
+    static final int SOURCES=81,REQUIRED=61,LITERARY=58;
 }
