@@ -639,7 +639,9 @@ public enum LabyrinthPlace {
     /** 0.4.383, Feet Up's house later (FeetUpRooms.buildLater, docs/FEET_UP_LATER_0_4_383.md): the same house with no floors, the furniture hanging over the dark; a deep puzzle room, offered only to readers who reached the first house's attic. Not a story. */
     FEET_UP_LATER("feet_up_later",Kind.GRAY,222,new BoundingBox(-11,-5,-27,11,14,0),grayDoors(0,11,-27)),
     /** 0.4.385, the still light (TrialRooms, docs/STILL_LIGHT_0_4_385.md): a dark board floor whose lamps come up only while someone stands still; off the worn way the boards give in the dark. */
-    STILL_LIGHT("still_light",Kind.GRAY,223,new BoundingBox(-5,-4,-44,5,4,0),grayDoors(0,0,-44));
+    STILL_LIGHT("still_light",Kind.GRAY,223,new BoundingBox(-5,-4,-44,5,4,0),grayDoors(0,0,-44)),
+    /** 0.4.386, the soft floor (TrialRooms, docs/SOFT_FLOOR_0_4_386.md): sodden squares that sink under a reader and give way after two seconds' standing. */
+    SOFT_FLOOR("soft_floor",Kind.GRAY,224,new BoundingBox(-4,-4,-42,4,4,0),grayDoors(0,0,-42));
 
     /** What a place is to the dealer. */
     public enum Kind {

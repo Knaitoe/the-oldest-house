@@ -1402,5 +1402,9 @@
   "block.the_oldest_house.trial_still_ceiling": "Smoke-Dark Plaster",
   "block.the_oldest_house.trial_still_path": "Worn Boards",
   "block.the_oldest_house.trial_still_under": "Wet Brick",
-  "block.the_oldest_house.trial_fitting": "Trial Fitting"
+  "block.the_oldest_house.trial_fitting": "Trial Fitting",
+  "block.the_oldest_house.trial_soft_wall": "Damp Wallpaper",
+  "block.the_oldest_house.trial_soft_ceiling": "Stained Ceiling Tiles",
+  "block.the_oldest_house.trial_soft_landing": "Quarry Tiles",
+  "block.the_oldest_house.trial_soft_under": "Packed Earth"
 }

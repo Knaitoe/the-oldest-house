@@ -16,12 +16,14 @@ public final class TrialRegistry {
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final Map<String,DeferredBlock<Block>> MATERIALS=new LinkedHashMap<>();
     /** The still light: its blackened wainscot, its smoke-dark ceiling, the boards worn pale where the way runs, and the wet brick under the floor. */
-    public static final List<String> MATERIAL_NAMES=List.of("still_wall","still_ceiling","still_path","still_under");
-    static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("trial_"+name,fixed(name.endsWith("under")?Blocks.STONE_BRICKS:Blocks.DARK_OAK_PLANKS)));}
+    public static final List<String> MATERIAL_NAMES=List.of("still_wall","still_ceiling","still_path","still_under",
+        /* 0.4.386, the soft floor: wallpaper gone soft with damp, a ceiling stained brown, the firm landings and the packed earth below. */
+        "soft_wall","soft_ceiling","soft_landing","soft_under");
+    static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("trial_"+name,fixed(name.equals("still_under")?Blocks.STONE_BRICKS:name.equals("soft_under")?Blocks.PACKED_MUD:Blocks.DARK_OAK_PLANKS)));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static boolean isMaterial(net.minecraft.world.level.block.state.BlockState state){for(var block:MATERIALS.values())if(state.is(block.get()))return true;return false;}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TrialBlock>> FITTING_TYPE=CODECS.register("trial_fitting",()->TrialBlock.CODEC);
-    /** The fittings a trial is played on: the still light's boards that give and its lamps. */
+    /** The fittings a trial is played on: the still light's boards that give and its lamps; the soft floor's squares and beams. */
     public static final DeferredBlock<TrialBlock> FITTING=BLOCKS.registerBlock("trial_fitting",TrialBlock::new,fixed(Blocks.DARK_OAK_PLANKS).lightLevel(TrialBlock::light));
     private TrialRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);}
