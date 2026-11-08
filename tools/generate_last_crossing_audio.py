@@ -1,5 +1,7 @@
 """Original sounds for The Last Crossing (0.4.351): a knock carried down a speaking pipe, the station pump taking up its load, something
-tapping back under the service grate, and the intake's bleed screw letting go its air and then water.
+tapping back under the service grate, and the intake's bleed screw letting go its air and then water. From 0.4.352, Night One: the surge
+coming through the intake, the second breath an infected reader hears under their own, the things that come up out of the water, the
+ferry straining on its line at the first rise, and the line snapping.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -13,6 +15,11 @@ ROWS = {
     'pump': ('The station pump takes the load', 32),
     'tap': ('Something taps back under the grate', 12),
     'bleed': ('Air hisses from the bleed screw', 12),
+    'surge': ('The surge hits the intake', 40),
+    'breath': ('A second breath, under yours', 4),
+    'undertow': ('Something wet groans', 16),
+    'rise': ('The ferry strains at its line', 32),
+    'snap': ('The mooring line snaps', 32),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -98,7 +105,82 @@ def bleed():
     return out
 
 
-MAKERS = {'knock': knock, 'pump': pump, 'tap': tap, 'bleed': bleed}
+def surge():
+    # The surge through the intake: a deep slam on the pipe and the grate, then water gushing and roaring off into the pipes.
+    n = seconds(3.6)
+    out = np.zeros(n)
+    k = seconds(.4)
+    tk = times(k)
+    slam = (band(rng.standard_normal(k), 40, 900) * envelope(k, .002, .25) * 1.2 + np.sin(2 * np.pi * 46 * tk) * np.exp(-tk * 7) * .9)
+    place(out, slam, 0)
+    tk = times(n)
+    gush = band(rng.standard_normal(n), 150, 2400) * np.clip(tk / .25, 0, 1) * np.exp(-np.maximum(0, tk - .6) * .9) * .8
+    rumble = band(rng.standard_normal(n), 30, 160) * np.exp(-tk * .7) * .7
+    clank = np.zeros(n)
+    for at in (.3, .9, 1.7):
+        kk = seconds(.15)
+        place(clank, band(rng.standard_normal(kk), 600, 3000) * envelope(kk, .001, .06) * .35, at)
+    out += (gush + rumble + clank) * np.minimum(1, (3.6 - tk) / .5)
+    return out
+
+
+def breath():
+    # A breath drawn in and let out, low and wet, a beat behind where one's own would be: close, quiet, private.
+    n = seconds(2.6)
+    out = np.zeros(n)
+    tk = times(n)
+    inhale = band(rng.standard_normal(n), 300, 2200) * np.clip(np.sin(np.pi * np.clip(tk / 1.0, 0, 1)), 0, 1) * .5
+    exhale = band(rng.standard_normal(n), 120, 900) * np.clip(np.sin(np.pi * np.clip((tk - 1.25) / 1.2, 0, 1)), 0, 1) * .6
+    rattle = band(rng.standard_normal(n), 80, 400) * (np.sin(2 * np.pi * 23 * tk) > .6) * np.clip(np.sin(np.pi * np.clip((tk - 1.25) / 1.2, 0, 1)), 0, 1) * .5
+    out += inhale + exhale + rattle
+    return out
+
+
+def undertow():
+    # A groan through water in the throat: a low voiced moan that bubbles and gargles and gives out.
+    n = seconds(2.0)
+    out = np.zeros(n)
+    tk = times(n)
+    f = 92 - 18 * tk + 6 * np.sin(2 * np.pi * 3.1 * tk)
+    phase = 2 * np.pi * np.cumsum(f) / RATE
+    voice = (np.sin(phase) * .5 + np.sin(phase * 2) * .3 + np.sin(phase * 3) * .15) * (.6 + .4 * np.sin(2 * np.pi * 11 * tk))
+    gargle = band(rng.standard_normal(n), 200, 1200) * (rng.random(n) > .992) * 2.5
+    env = np.minimum(1, tk / .15) * np.minimum(1, (2.0 - tk) / .6)
+    out += (voice * .8 + band(gargle, 150, 1500)) * env
+    return out
+
+
+def rise():
+    # The first rise: water slapping the ferry's side, and its timbers and line groaning as it strains against the cut.
+    n = seconds(3.2)
+    out = np.zeros(n)
+    tk = times(n)
+    for at in (0, 1.1, 2.0):
+        k = seconds(.5)
+        place(out, band(rng.standard_normal(k), 200, 1600) * envelope(k, .01, .3) * .6, at)
+    f = 140 + 60 * np.sin(2 * np.pi * .4 * tk)
+    phase = 2 * np.pi * np.cumsum(f) / RATE
+    creak = np.sign(np.sin(phase)) * band(rng.standard_normal(n), 300, 2000) * (np.sin(2 * np.pi * .7 * tk) > .2) * .25
+    out += creak * np.minimum(1, (3.2 - tk) / .4)
+    return out
+
+
+def snap():
+    # The line parting: a sharp crack, the end whipping through the air, and a slap on the water.
+    n = seconds(1.6)
+    out = np.zeros(n)
+    k = seconds(.03)
+    place(out, band(rng.standard_normal(k), 1500, 9000) * envelope(k, .0003, .015) * 1.4, 0)
+    k = seconds(.35)
+    tk = times(k)
+    whip = band(rng.standard_normal(k), 800, 6000) * np.exp(-tk * 9) * .5
+    place(out, whip, .02)
+    k = seconds(.6)
+    place(out, band(rng.standard_normal(k), 200, 1800) * envelope(k, .005, .35) * .7, .55)
+    return out
+
+
+MAKERS = {'knock': knock, 'pump': pump, 'tap': tap, 'bleed': bleed, 'surge': surge, 'breath': breath, 'undertow': undertow, 'rise': rise, 'snap': snap}
 
 
 def main():

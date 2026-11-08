@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/crossing/timber",
+    "particle": "the_oldest_house:block/crossing/timber"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        13
+      ],
+      "to": [
+        11,
+        28,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

@@ -38,7 +38,7 @@ public final class LastCrossingTexts {
             case VALVE->stage==3?"A red bypass wheel. It won't turn.":"Valve "+(stage+1)+".";
             case RUN->"A length of the intake pipe.";
             case BLEED->stage==1?"The bleed screw, backed off. Water spits from it.":"The bleed screw on the intake pipe.";
-            case GRATE->"A service grate. One corner is broken off; below it, black water.";
+            case GRATE->stage==2?"A hand, up through the broken corner of the grate.":"A service grate. One corner is broken off; below it, black water.";
             case PUMP->stage==1?"The pump, running.":"The pump, idle.";
             case PIPE->"A speaking pipe. A knock on it carries to the other end.";
             case ROLLER->stage==1?"A cable roller, slewed off its cradle.":"A cable roller, the cable over it.";
@@ -47,10 +47,12 @@ public final class LastCrossingTexts {
             case HATCH->"The inspection hatch.";
             case WHEEL->stage==2?"The sluice wheel, pinned.":"The sluice wheel.";
             case PIN->stage==1?"The locking pin, seated.":"The locking pin, up in its sleeve.";
-            case COIL->"The ferry's mooring line.";
+            case COIL->stage==3?"The line's snapped. A frayed end trails off the cleat.":"The ferry's mooring line.";
             case HOOK->stage==1?"The station lamp, on its hook.":"An empty lamp hook.";
             case DEPTH->"The depth post, marked off in feet. The water's at the second mark.";
             case NAMEPLATE->"The ferry's nameplate, cast in brass: CORDELIA.";
+            case BAR->stage==1?"The bar's across the door.":"A heavy bar, leaning by the door. There are brackets either side of the frame to take it.";
+            case ISOLATOR->stage==1?"The isolation valve, shut. The upper floor's on its own pump now.":"The isolation valve for the lower floor. Open.";
         };
     }
 
@@ -74,4 +76,20 @@ public final class LastCrossingTexts {
     public static final String DUSK="That's the light going. Get to your places.";
     public static final String DUSK_CALL="It's on %s! Turn it!";
     public static final String BACK="There you are.";
+
+    // ------------------------------------------------------------------------------------------------ Night One (0.4.352)
+    public static final String SURGE_CALL="Below! Somebody get down to the intake!";
+    public static final String GRIPPED_CALL="It's got hold of someone! Get them up!";
+    public static final String UP_HERE="Get them up here, into the light.";
+    public static final String FLOODED_CALL="We've lost the lower floor. Shut the isolation valve by the landing!";
+    public static final String ISOLATED="That'll hold us. Stay up here.";
+    public static final String NIGHT_ANSWER="Keep the upper landing. Keep each other where you can see them. It'll get light.";
+    public static final String TOLD_ANSWER="Then you know what the plate will show. Show them or don't, that's yours. Just don't go near the water on your own.";
+    public static final String DAWN="That's the light. Come in and get warm.";
+    /** What only the one it took hold of hears and knows. */
+    public static final String CLAWED="Something comes up through the broken corner and a claw sinks into you. It holds.";
+    public static final String INFECTED_ONE="You take one breath, and under it another answers.";
+    public static final String INFECTED_TWO="You'll change at the next dusk. You know it the way you know your own hands.";
+    public static final List<String> SYMPTOMS=List.of("Your breath comes twice.","Under your own breathing, another breath, slower.","The water in the channel sounds almost like talk.");
+    public static final String DAWN_CARRIER="The light comes up. You're still yourself, for today.";
 }

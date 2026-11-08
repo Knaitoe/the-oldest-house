@@ -1247,5 +1247,11 @@
   "subtitles.the_oldest_house.crossing.knock": "A knock in the speaking pipe",
   "subtitles.the_oldest_house.crossing.pump": "The station pump takes the load",
   "subtitles.the_oldest_house.crossing.tap": "Something taps back under the grate",
-  "subtitles.the_oldest_house.crossing.bleed": "Air hisses from the bleed screw"
+  "subtitles.the_oldest_house.crossing.bleed": "Air hisses from the bleed screw",
+  "subtitles.the_oldest_house.crossing.surge": "The surge hits the intake",
+  "subtitles.the_oldest_house.crossing.breath": "A second breath, under yours",
+  "subtitles.the_oldest_house.crossing.undertow": "Something wet groans",
+  "subtitles.the_oldest_house.crossing.rise": "The ferry strains at its line",
+  "subtitles.the_oldest_house.crossing.snap": "The mooring line snaps",
+  "entity.the_oldest_house.crossing_undertow": "Undertow"
 }

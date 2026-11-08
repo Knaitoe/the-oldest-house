@@ -31,12 +31,15 @@ import net.minecraft.world.phys.shapes.*;
  * <li>WHEEL: the ramp sluice's wheel, free (0), held (1) and pinned (2). PIN: the locking pin, up (0) and seated (1). COIL: the mooring
  * line, loose on the ramp (0), coiled on the porch (1) and staged at the ramp (2). HOOK: the lamp hook, empty (0) and with the lamp (1).
  * DEPTH: the depth post. NAMEPLATE: the ferry's brass nameplate, its left (0) and right (1) halves.</li>
+ * <li>0.4.352, Night One: GRATE (2) with a hand come up through its broken corner; COIL (3), the line snapped at the first rise; BAR: the
+ * cable house's door bar, leaning by the door (0) and dropped across the doorway (1), where it stops anything coming through; ISOLATOR:
+ * the gauge room's isolation valve for the lower floor, open (0) and shut (1).</li>
  * </ul>
  */
 public final class CrossingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CrossingBlock> CODEC=simpleCodec(CrossingBlock::new);
     public enum Kind implements StringRepresentable {
-        TABLE,CLIPBOARD,SLATE,PLATE,PLATE_SET,BRACKET,STOVE,GAUGE,BRAKE,VALVE,RUN,BLEED,GRATE,PUMP,PIPE,ROLLER,FAIRLEAD,DRUM,HATCH,WHEEL,PIN,COIL,HOOK,DEPTH,NAMEPLATE;
+        TABLE,CLIPBOARD,SLATE,PLATE,PLATE_SET,BRACKET,STOVE,GAUGE,BRAKE,VALVE,RUN,BLEED,GRATE,PUMP,PIPE,ROLLER,FAIRLEAD,DRUM,HATCH,WHEEL,PIN,COIL,HOOK,DEPTH,NAMEPLATE,BAR,ISOLATOR;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -79,13 +82,17 @@ public final class CrossingBlock extends HorizontalDirectionalBlock {
             case HOOK->t(f,5,3,6,11,15,16);
             case DEPTH->Block.box(6,0,6,10,16,10);
             case NAMEPLATE->t(f,0,5,15,16,11,16);
+            case BAR->s.getValue(STAGE)==0?t(f,5,0,13,11,16,16):t(f,0,3,5,16,16,11);
+            case ISOLATOR->t(f,4,4,11,12,16,16);
         };
     }
     /** The grate and the shut hatch are walked on; wall things, the clipboard and the coil are walked through; the rest stand. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case CLIPBOARD,GAUGE,PIPE,HOOK,NAMEPLATE,SLATE,COIL->Shapes.empty();
+            case CLIPBOARD,GAUGE,PIPE,HOOK,NAMEPLATE,SLATE,COIL,ISOLATOR->Shapes.empty();
+            // The bar across the doorway stands higher than a jump, so nothing comes over it.
+            case BAR->s.getValue(STAGE)==0?t(f,5,0,13,11,16,16):t(f,0,0,5,16,24,11);
             case TABLE->Shapes.or(Block.box(0,12,0,16,14,16),Block.box(1,0,1,15,12,15));
             case GRATE->Shapes.block();
             case HATCH->s.getValue(STAGE)==0?Shapes.block():Shapes.empty();
