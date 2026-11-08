@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/pantry/thermo_1",
+    "o": "the_oldest_house:block/pantry/oak",
+    "particle": "the_oldest_house:block/pantry/oak"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        1,
+        15
+      ],
+      "to": [
+        11,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#o"
+        },
+        "down": {
+          "texture": "#o"
+        }
+      }
+    }
+  ]
+}

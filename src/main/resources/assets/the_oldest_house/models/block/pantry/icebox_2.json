@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/pantry/icebox_front",
+    "o": "the_oldest_house:block/pantry/oak",
+    "t": "the_oldest_house:block/pantry/icebox_top_2",
+    "particle": "the_oldest_house:block/pantry/oak"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        13,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#o"
+        }
+      }
+    }
+  ]
+}

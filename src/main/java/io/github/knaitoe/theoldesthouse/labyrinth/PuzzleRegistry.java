@@ -118,6 +118,11 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<ClockworkBlock> CLOCKWORK=BLOCKS.registerBlock("clockwork_fitting",ClockworkBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> CLOCKWORK_TICK=sound("clockwork.tick"),CLOCKWORK_TEETH=sound("clockwork.teeth"),
         CLOCKWORK_LEVER=sound("clockwork.lever"),CLOCKWORK_RATCHET=sound("clockwork.ratchet"),CLOCKWORK_WEIGHT=sound("clockwork.weight"),CLOCKWORK_GATE=sound("clockwork.gate");
+    /** 0.4.363, the Cold Pantry (ColdPantry): the ice-box, tub, shutters, pipes, thermometer, store door and cake (PantryBlock), drawn by tools/draw_pantry_fittings.py, and their sounds (tools/generate_pantry_audio.py). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PantryBlock>> PANTRY_TYPE=CODECS.register("pantry_fitting",()->PantryBlock.CODEC);
+    public static final DeferredBlock<PantryBlock> PANTRY=BLOCKS.registerBlock("pantry_fitting",PantryBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().lightLevel(PantryBlock::light));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> PANTRY_ICE=sound("pantry.ice"),PANTRY_SHUTTER=sound("pantry.shutter"),PANTRY_DRIP=sound("pantry.drip"),
+        PANTRY_FROST=sound("pantry.frost"),PANTRY_SEAL=sound("pantry.seal");
     /** 0.4.309, the House's yard (YardRooms): clapboard, wet gravel and the garage door; the porch bulb and the station wagon (YardBlock), drawn by tools/draw_yard_fittings.py; the engine, a passing car, a crow and the creek (tools/generate_yard_audio.py). */
     private static final java.util.Map<String,DeferredBlock<Block>> YARD_MATERIALS=new java.util.LinkedHashMap<>();
     public static final java.util.List<String> YARD_MATERIAL_NAMES=java.util.List.of("clapboard","wet_gravel","garage_door");

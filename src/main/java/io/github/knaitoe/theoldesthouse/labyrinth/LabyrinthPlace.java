@@ -631,7 +631,9 @@ public enum LabyrinthPlace {
     /** 0.4.362, the Clockwork Attic (Clockwork, docs/CLOCKWORK_ATTIC_0_4_362.md): one long gear train from a master clock to the lever that lets the loft's ladder down. */
     CLOCKWORK_ATTIC("clockwork_attic",Kind.GRAY,218,new BoundingBox(-5,-1,-26,5,8,0),grayDoors(0,5,-25)),
     /** Its deep attics: three bays and three trains that need running in the right order. */
-    CLOCKWORK_ATTICS("clockwork_attics",Kind.GRAY,219,new BoundingBox(-9,-1,-32,9,8,0),grayDoors(2,5,-31));
+    CLOCKWORK_ATTICS("clockwork_attics",Kind.GRAY,219,new BoundingBox(-9,-1,-32,9,8,0),grayDoors(2,5,-31)),
+    /** 0.4.363, the Cold Pantry (ColdPantry, docs/COLD_PANTRY_0_4_363.md): a larder kept cold by an ice-box and warmed by shutters, its cold store and its frozen far door. */
+    COLD_PANTRY("cold_pantry",Kind.GRAY,220,new BoundingBox(-6,-1,-20,6,5,0),grayDoors(3,0,-13));
 
     /** What a place is to the dealer. */
     public enum Kind {

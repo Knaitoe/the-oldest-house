@@ -1286,5 +1286,11 @@
   "subtitles.the_oldest_house.clockwork.ratchet": "A ratchet winds back",
   "subtitles.the_oldest_house.clockwork.weight": "A weight drops",
   "subtitles.the_oldest_house.clockwork.gate": "Bars draw up",
-  "block.the_oldest_house.clockwork_fitting": "Clockwork"
+  "block.the_oldest_house.clockwork_fitting": "Clockwork",
+  "block.the_oldest_house.pantry_fitting": "Pantry Fittings",
+  "subtitles.the_oldest_house.pantry.ice": "Ice scrapes",
+  "subtitles.the_oldest_house.pantry.shutter": "A shutter swings",
+  "subtitles.the_oldest_house.pantry.drip": "Water drips",
+  "subtitles.the_oldest_house.pantry.frost": "Frost cracks",
+  "subtitles.the_oldest_house.pantry.seal": "A seal gives"
 }

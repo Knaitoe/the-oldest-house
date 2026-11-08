@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY,RESONANCE,CLOCKWORK}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY,RESONANCE,CLOCKWORK,COLD}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -79,6 +79,8 @@ public final class PuzzleRooms {
         // 0.4.362: the clockwork attic (Clockwork, docs/CLOCKWORK_ATTIC_0_4_362.md), early and deep. The far doors are ordinary doors, up in the lofts: the ladders are what wait.
         CLOCKWORK_ATTIC(LabyrinthPlace.CLOCKWORK_ATTIC,Family.CLOCKWORK,false,null),
         CLOCKWORK_ATTICS(LabyrinthPlace.CLOCKWORK_ATTICS,Family.CLOCKWORK,true,null),
+        // 0.4.363: the cold pantry (ColdPantry, docs/COLD_PANTRY_0_4_363.md), the owner's temperature hazard with nothing in it that hurts. The far door waits frozen until the room has once been warm.
+        COLD_PANTRY(LabyrinthPlace.COLD_PANTRY,Family.COLD,false,"The door is frozen fast in its frame. Frost stands thick on the handle."),
         YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null),
         // 0.4.345: the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md), reading the yard from above to set its gates from below. The far gate is ordinary: the herd is what waits.
         YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null),
