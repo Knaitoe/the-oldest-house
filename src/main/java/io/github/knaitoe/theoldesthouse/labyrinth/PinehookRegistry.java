@@ -39,6 +39,8 @@ public final class PinehookRegistry {
         PLAYER=thing("pinehook_player"),TAPE=thing("pinehook_tape"),FIRSTAID=thing("pinehook_firstaid"),ELASTIC=thing("pinehook_elastic");
     /** 0.4.365, found in the night: the coverall's tie from the dock, the mask and coverall bundled under the rowboat's tarp, Casey's plan. */
     public static final DeferredItem<Thing> TIE=thing("pinehook_tie"),COSTUME=thing("pinehook_costume"),PLAN=thing("pinehook_plan");
+    /** 0.4.366: Len's oars and boat hook from the boathouse rack, the paddle from the woodshed, the safe's small key, Len's envelope. */
+    public static final DeferredItem<Thing> OARS=thing("pinehook_oars"),HOOK=thing("pinehook_hook"),PADDLE=thing("pinehook_paddle"),KEY=thing("pinehook_key"),ENVELOPE=thing("pinehook_envelope");
     private static DeferredItem<Thing> thing(String id){return ITEMS.registerItem(id,Thing::new,new Item.Properties().stacksTo(1));}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Knuckles on a window; the breaker going and the cabin's hum with it; something heavy going over in the shed; a camera's flash; a tape

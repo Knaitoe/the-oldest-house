@@ -1,6 +1,6 @@
 # Last Weekend at Pinehook: the owner's proposal
 
-Recorded verbatim from the owner on 8 November 2026. Slice 1 (arrival, one fake attack, an early unmasking branch and the real attempted attack on Jude) is built in 0.4.364: `docs/PINEHOOK_0_4_364.md`. Slice 2, the night's parallel scenes, is built in 0.4.365: `docs/PINEHOOK_0_4_365.md`. The rest is not implemented yet.
+Recorded verbatim from the owner on 8 November 2026. Slice 1 (arrival, one fake attack, an early unmasking branch and the real attempted attack on Jude) is built in 0.4.364: `docs/PINEHOOK_0_4_364.md`. Slice 2, the night's parallel scenes, is built in 0.4.365: `docs/PINEHOOK_0_4_365.md`. Slice 3, the puzzles with consequences, is built in 0.4.366: `docs/PINEHOOK_0_4_366.md`. The crisis, the outcome families and the accounts are not implemented yet.
 
 Build order: after the last of "The House Has a Yard" (The Last Crossing's slice 4c and the yard's remaining finishing items, listed in `docs/YARD_STORIES_PROPOSAL.md`), then the remainder of "Johnny Truant · Encounter Pairs" (the missing-sentence pair) and of "New Puzzle and Hazard Room Designs" (the Resonant Pipes, the Settling Floor, the Clockwork Attic and the Cold Pantry). The proposal's own first slice comes first: arrival, one fake attack, an early unmasking branch, and the real attempted attack on Jude.
 

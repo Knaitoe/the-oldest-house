@@ -121,7 +121,9 @@ public final class PinehookTexts {
         PLAN("Your plan puts a midnight scare on the end of the dock. Jude was standing right in front of you when someone walked out there.","That was Jude's bit. Jude was with me. Jude was with me."),
         STRAP("Someone cut their own strap for that mask. Jude ties his.","Why would anyone cut a—"),
         COSTUME("The mask and the coverall are in the rowboat, under the tarp.","Then who was wearing it?"),
-        TAPE("The player was running by the back door. Someone went out, and came back in wet, while Nina was in the bathroom.","Nina was in the bathroom. She said so.");
+        TAPE("The player was running by the back door. Someone went out, and came back in wet, while Nina was in the bathroom.","Nina was in the bathroom. She said so."),
+        TIMELINE("The mask went into the shed with Jude's knot in its strap. It came out of the lake on a strap somebody cut to fit before tonight.","Before tonight."),
+        ENVELOPE("Len has been taking money off Nina every month for over a year. It's all in his safe.","Len? Len's been—");
         public final String line,answer;
         Tell(String line,String answer){this.line=line;this.answer=answer;}
     }
@@ -147,6 +149,42 @@ public final class PinehookTexts {
         "4. J to the shed. Change. Back in normal clothes. Say he went to look at the lake.",
         "5. MIDNIGHT. J on the end of the dock in the mask. Just standing. Torch on him from the porch. Big finish.",
         "Mask, coverall, rubber knife in J's bag. Stage blood for no. 5 only.");
+    // 0.4.366, the junction box and the floodlights.
+    public static final String JUNCTION_LOOK="A junction box on the cabin wall, its cover hanging. One of the wires inside is burnt black. A switch: DOCK, or HOUSE.";
+    public static final String JUNCTION_MENDED="A junction box on the cabin wall, its wires twisted back together. Both ways are lit.";
+    public static final String THROW_DOCK="Throw it to the dock.",THROW_REAR="Throw it to the back of the cabin.",MEND="Work on the burnt wire.";
+    public static final String DOCK_LIT="The floods on the beach and the dock come on. The back of the cabin goes dark.",REAR_LIT="The flood over the back step comes on. The dock goes dark.";
+    public static final String MEND_STEP="You get one of the burnt wires stripped and twisted back. It's very dark out here.",
+        MEND_DONE="The last wire goes back. Everything comes on at once: the dock, the beach, the back step.",MEND_LEFT="You'd have to stay at it.";
+    // 0.4.366, the costume laid out on the kitchen table.
+    public static final List<String> TIMELINE=List.of("You lay the mask and the coverall out on the kitchen table, wet, and look at them properly.",
+        "Jude's mask has a knot in its strap: he ties it, he said, because the buckle broke in the spring.",
+        "This strap has no knot. It's the elastic with a buckle at each end, like the one from the bag behind the shed, cut to fit a head that isn't his.",
+        "Somebody wore it after Jude, and cut a strap for it before tonight.");
+    public static final String TIMELINE_SHORT="The mask and the coverall, wet, on the table. The mask's strap is buckled. Something about that.";
+    // 0.4.366, the boathouse: the brace, the slip, Len inside, the safe, the envelope.
+    public static final String BRACE_LOOK="A length of timber leaning by the boathouse door. There are brackets either side of the door it would drop into.";
+    public static final String BRACE_SET="You drop the timber into the brackets across the door. Nobody's opening it now, from either side.",BRACE_LIFT="You lift the timber out of the brackets and lean it back against the wall.";
+    public static final String LEN_BRACED="Is something against the door? Who's done that? I can't get the door open.";
+    public static final String BRACE_KEEP_OUT="It's to keep her out.",BRACE_KEEP_IN="So you stay where you are.";
+    public static final String LEN_KEEP_OUT="...All right. All right. Leave it there.",LEN_KEEP_IN="You can't do that. You can't shut me in here. Take it off.";
+    public static final String RELEASE_LOOK="A rope runs from this cleat across the water to the boathouse's slip gate. It's made fast.";
+    public static final String RELEASE_PULL="You cast the rope off the cleat and haul. Across the water the slip gate swings open onto the lake.",RELEASE_MAKE="You let the rope back and make it fast. The slip gate swings shut.";
+    public static final String LEN_GATE="The slip's open! Who opened the slip? Shut it! Shut it!";
+    public static final String LEN_INSIDE="Get out. Get out of here. How did you get in?";
+    public static final String LEN_Q_HELP="We're here to help.",LEN_HELP="Then go back up to the cabin and lock the door.";
+    public static final String LEN_Q_OPEN="Whatever's in that safe is why she's here. Open it and it's finished.",LEN_OPEN="...The key's under the bench. I'm not touching it. I'm not touching any of it.";
+    public static final String LEN_PRY="Leave that alone! That's mine!";
+    public static final String RACK_LOOK="A rack on the wall: a pair of oars, and a boat hook.";
+    public static final String SAFE_INSIDE="A safe, its door shut. Where it stands, the boards are always wet, and the back of it has rusted.";
+    public static final String SAFE_PRY="You get the boat hook into the rusted seam at the back of the safe and lean on it.",SAFE_PRIED="The back of the safe tears away from its rivets.";
+    public static final String SAFE_KEY="The small key turns. The safe door swings open.";
+    public static final List<String> ENVELOPE_PAGES=List.of("Inside: photographs, a newspaper cutting, a notebook.",
+        "The photographs are of a car parked outside a petrol station at night, taken from across the road. The number plate is circled.",
+        "The cutting: a petrol station on the county road, robbed two winters ago. The night clerk was hurt. Nobody was charged.",
+        "The notebook: dates and sums of money, one a month for more than a year. An N beside every one.");
+    public static final String PADDLE_LOOK="A canoe paddle, leaning in the corner of the woodshed.";
+    public static final String BOAT_READY_OARS="You ship the oars in the rowboat's rowlocks. It'll go now.",BOAT_READY_PADDLE="You lay the paddle in the rowboat. It'll go, slowly.";
     /** What the portable player hears, set down and recording. */
     public static String heard(String key){return switch(key){
         case "knock"->"Three knocks on glass.";
@@ -196,6 +234,13 @@ public final class PinehookTexts {
         if(own.getBoolean("TapeNina"))lines.add("On the tape the back door opened, and a long time later someone came back in, dripping.");
         if(own.getBoolean("LenSlipped"))lines.add("Through the boathouse door Len said she'd been round the back, and then said he hadn't said she.");
         if(own.getBoolean("TurnedCasey"))lines.add("I told Casey enough that he stopped saying it was a bit.");
+        if(own.getBoolean("Timeline"))lines.add("I laid the costume out on the kitchen table. Whoever wore it after Jude had cut a strap for it before tonight.");
+        if(own.getBoolean("ReadEnvelope"))lines.add("In Len's safe there was an envelope: photographs of a car outside a petrol station, a cutting about a robbery, and a year of payments marked N.");
+        if(own.getBoolean("BracedForLen"))lines.add("I put the brace across the boathouse door to keep her out.");else if(own.getBoolean("BracedAgainstLen"))lines.add("I put the brace across the boathouse door to keep Len in.");
+        if(own.getBoolean("ReadiedBoat"))lines.add("I got the rowboat ready.");
+        if(own.getBoolean("FinishedJunction"))lines.add("I stood out by the junction box in the dark until both ways were lit.");
+        else if(own.getBoolean("ThrewDock"))lines.add("I threw the junction switch to light the dock.");
+        else if(own.getBoolean("ThrewRear"))lines.add("I threw the junction switch to light the back of the cabin.");
         lines.add("That was the first night.");
         return book("The account: the weekend at Pinehook",name,List.of(String.join(" ",lines)));
     }

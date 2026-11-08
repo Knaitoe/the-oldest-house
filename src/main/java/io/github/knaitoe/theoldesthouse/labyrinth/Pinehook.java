@@ -79,6 +79,10 @@ public final class Pinehook {
     /** 0.4.365: the night begins this long into the hold; Casey goes for his plan this long into the night; Nina's wet return reaches the
      * back door this long after the splash; a player set down hears this far, and loud things from further. */
     public static final int NIGHT_AT=300,BURN_AT=2400,NINA_IN_DELAY=160,CASEY_FOLLOW=40,HEAR=14,HEAR_LOUD=28;
+    /** 0.4.366: each of the junction's three burnt wires takes this long, standing at the box. */
+    public static final int MEND_STEP=60,MENDS=3;
+    /** 0.4.366: the safe's rusted back gives after this many goes with the hook. */
+    public static final int PRY=3;
     /** What happened in the shed: nothing yet; Jude cut and the costume taken; the attack interrupted and seen; Nina never got in. */
     public static final int NONE=0,WOUNDED=1,WITNESSED=2,PREVENTED=3;
     /** Ticks: the wait for the rest after the first part is taken; Len's walk up the lane; the earliest and latest dusk; the burgers; the
@@ -114,6 +118,12 @@ public final class Pinehook {
          * spare player found; when Nina's wet return reaches the back door; the shed's back window broken. */
         int night=-1;boolean hushed,lenInside,planTaken,planBurned,caseyHasPlan,caseyTurned,costumeTaken,tieTaken,sparePlayer,evidence,shedWindowBroken;
         int caseyKnows,burnStep;long ninaInAt=-1;
+        /** 0.4.366: the junction (0 off, 1 the dock, 2 the back, 3 mended and both), how far it is mended, who is working on it and how
+         * long they have stood there; whether the costume has been laid out on the table. */
+        int junction,repair;final Map<UUID,Integer> repairing=new HashMap<>();boolean timeline;
+        /** 0.4.366, the boathouse: braced across its door, its slip open, the safe pried how far, its key and envelope taken, the paddle
+         * taken, the boat ready (0 not, 1 with the oars, 2 with the paddle). */
+        boolean braced,slipOpen,keyTaken,envelopeTaken,paddleTaken;int safePry,boatReady;
         final List<Event> events=new ArrayList<>();final Map<Long,Rec> recorders=new HashMap<>();Set<UUID> present=new HashSet<>();
         Run(BlockPos b,long id){base=b;this.id=id;}
     }
@@ -131,7 +141,11 @@ public final class Pinehook {
     public static int outcome(BlockPos b){var r=run(b);return r==null?-1:r.outcome;}
     public static boolean flag(BlockPos b,String name){var r=run(b);if(r==null)return false;return switch(name){case "len"->r.lenHere;case "music"->r.music;case "secret"->r.secretTold;case "unmasked"->r.unmasked;
         case "power"->!r.powerOff;case "figure"->r.figureCrossed;case "ninaBack"->r.ninaBack;case "judeIn"->r.judeIn>=0;case "bandaged"->r.bandaged;case "quiet"->r.ninaQuiet;
-        case "hushed"->r.hushed;case "turned"->r.caseyTurned;case "burned"->r.planBurned;case "planTaken"->r.planTaken;case "lenInside"->r.lenInside;case "costume"->r.costumeTaken;case "evidence"->r.evidence;default->false;};}
+        case "hushed"->r.hushed;case "turned"->r.caseyTurned;case "burned"->r.planBurned;case "planTaken"->r.planTaken;case "lenInside"->r.lenInside;case "costume"->r.costumeTaken;case "evidence"->r.evidence;case "timeline"->r.timeline;
+        case "braced"->r.braced;case "slip"->r.slipOpen;case "envelope"->r.envelopeTaken;default->false;};}
+    public static int boatReady(BlockPos b){var r=run(b);return r==null?-1:r.boatReady;}
+    public static int junction(BlockPos b){var r=run(b);return r==null?-1:r.junction;}
+    public static int mends(BlockPos b){var r=run(b);return r==null?-1:r.repair;}
     public static int caseyKnows(BlockPos b){var r=run(b);return r==null?-1:r.caseyKnows;}
     public static int burnStep(BlockPos b){var r=run(b);return r==null?-1:r.burnStep;}
     public static String cooler(BlockPos b){var r=run(b);return r==null?"":r.cooler;}
@@ -208,10 +222,15 @@ public final class Pinehook {
         case "tie"->item(PinehookRegistry.TIE.get(),"tie","Coverall tie");
         case "costume"->item(PinehookRegistry.COSTUME.get(),"costume","Mask and coverall");
         case "plan"->item(PinehookRegistry.PLAN.get(),"plan","Casey's plan");
+        case "oars"->item(PinehookRegistry.OARS.get(),"oars","Oars");
+        case "hook"->item(PinehookRegistry.HOOK.get(),"hook","Boat hook");
+        case "paddle"->item(PinehookRegistry.PADDLE.get(),"paddle","Paddle");
+        case "key"->item(PinehookRegistry.KEY.get(),"key","Small key");
+        case "envelope"->item(PinehookRegistry.ENVELOPE.get(),"envelope","Len's envelope");
         default->item(PinehookRegistry.ELASTIC.get(),"elastic","Elastic strap");
     };}
     /** Every weekend thing a reader carries out of the cabin's world stays here: taken when they leave the scene. */
-    static final List<String> THINGS=List.of("cooler","camera","torch","mixtape","player","tape","firstaid","elastic","tie","costume","plan");
+    static final List<String> THINGS=List.of("cooler","camera","torch","mixtape","player","tape","firstaid","elastic","tie","costume","plan","oars","hook","paddle","key","envelope");
 
     // ------------------------------------------------------------------------------------------------ arriving
     static final List<String> RUN_KEYS=List.of("Part","Greeted","Partway","Rejoined","CarriedCooler","SetCooler","KeptSecret","Objected","AskedJudeWho","PlayedMusic","Music","ChoseFilm","Film",
@@ -223,7 +242,9 @@ public final class Pinehook {
         "SawWetPrints","SawBeachPrints","SawShedPrints","SawPrints","SawDockBlood","SawShedBlood","FoundTie","SawBoatMoved","FoundCostume","TookCostume","SawBrokenWindow",
         "TookPlan","ReadPlan","BurnedPlan","SawCaseyBurn","TurnedCasey","HeardCaseyTurn","ToldPRINTS","ToldBLOOD","ToldPLAN","ToldSTRAP","ToldCOSTUME","ToldTAPE",
         "KnockedLen","LenSlipped","SawSafe","AskedLenWho","WatchLen","NinaDenied","ConfrontedNina","AskedNinaBoathouse","SetPlayer","RecordedTape","HeardTape","TapeNina",
-        "PhotoBlood","PhotoPrints","PhotoTie","PhotoBoat","CaseyAskedPlan","AskedLenSafe");
+        "PhotoBlood","PhotoPrints","PhotoTie","PhotoBoat","CaseyAskedPlan","AskedLenSafe","ThrewDock","ThrewRear","MendedJunction","FinishedJunction","Timeline","ToldTIMELINE",
+        "BracedDoor","AnsweredBrace","BracedForLen","BracedAgainstLen","OpenedSlip","HeardLenSlip","TookOars","TookHook","TookPaddle","SawSafeBack","PriedSafe","KnowsSafeKey",
+        "TookKey","OpenedSafe","TookEnvelope","ReadEnvelope","ReadiedBoat","ToldENVELOPE","WentInBySlip","AskedLenHelp");
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var l=p.serverLevel();var r=RUNS.computeIfAbsent(b.asLong(),k->new Run(b,l.getGameTime()));
         if(own.getLong("PinehookRun")!=r.id){for(var key:RUN_KEYS)own.remove(key);own.putLong("PinehookRun",r.id);}
@@ -333,6 +354,12 @@ public final class Pinehook {
         r.recorders.clear();r.events.clear();
         r.night=-1;r.hushed=r.lenInside=r.planTaken=r.planBurned=r.caseyHasPlan=r.caseyTurned=r.costumeTaken=r.tieTaken=r.sparePlayer=r.evidence=r.shedWindowBroken=false;
         r.caseyKnows=r.burnStep=0;r.ninaInAt=-1;
+        r.junction=r.repair=0;r.repairing.clear();r.timeline=false;
+        r.braced=r.slipOpen=r.keyTaken=r.envelopeTaken=r.paddleTaken=false;r.safePry=r.boatReady=0;
+        set(l,b,PinehookSite.BRACE_ACROSS,Blocks.AIR.defaultBlockState());set(l,b,PinehookSite.BRACE_LEANING,PinehookBlock.of(Kind.BRACE,Direction.NORTH,0));
+        PinehookSite.slip(l,b,false);set(l,b,PinehookSite.RELEASE,PinehookBlock.of(Kind.RELEASE,Direction.WEST,0));
+        set(l,b,PinehookSite.RACK,PinehookBlock.of(Kind.RACK,Direction.EAST,0));set(l,b,PinehookSite.PADDLE,PinehookBlock.of(Kind.PADDLE,Direction.WEST,0));
+        set(l,b,PinehookSite.JUNCTION,PinehookBlock.of(Kind.JUNCTION,Direction.EAST,0));PinehookSite.floods(l,b,true,true);
         r.phase=ARRIVAL;r.firstPart=-1;r.evening=0;r.lenHere=r.lenWalking=r.ninaQuiet=false;r.cooler="porch";r.coolerBy=null;r.music=r.secretTold=false;r.film=0;r.food=0;r.foodAt=-1;
         r.scare=r.unmaskedAt=r.judeLeft=-1;r.turnWait=0;r.unmasked=r.powerOff=false;r.unmaskedBy=null;r.shed=r.judeIn=r.struggle=r.turn=r.hold=-1;r.ninaStep=r.lurk=0;r.outcome=NONE;r.figureCrossed=r.ninaBack=r.bandaged=false;
     }
@@ -400,7 +427,7 @@ public final class Pinehook {
     }
     static void beginScare(ServerLevel l,Run r,List<ServerPlayer> here){
         r.phase=SCARE;r.scare=0;r.powerOff=true;
-        stage(l,r,PinehookSite.BREAKER,1);PinehookSite.lights(l,r.base,false);stopMusic(l,r);
+        stage(l,r,PinehookSite.BREAKER,1);PinehookSite.lights(l,r.base,false);PinehookSite.floods(l,r.base,false,false);stopMusic(l,r);
         sound(l,r.base.offset(PinehookSite.BREAKER),PinehookRegistry.BREAKER.get(),1F,1F);log(r,PinehookSite.BREAKER,"power_off");
         speak(l,r,r.casey,"Casey",PinehookTexts.BREAKER,24);
         for(var p:here){mark(p,"InScare");if(own(p).getBoolean("PredictedPower")){mark(p,"CalledIt");cue(p,"The lights go out, the way you said they would.");}}
@@ -589,7 +616,25 @@ public final class Pinehook {
         if(!r.lenInside&&len!=null&&!walking(r,r.len)){r.lenInside=true;sound(l,r.base.offset(PinehookSite.BOATHOUSE_DOOR),SoundEvents.IRON_DOOR_OPEN,.8F,1F);moveTo(l,r,r.len,PinehookSite.BOAT_INSIDE,180);sound(l,r.base.offset(PinehookSite.BOATHOUSE_DOOR),SoundEvents.IRON_DOOR_CLOSE,.8F,.9F);}
         gesture(l,r.jude,r.outcome==WOUNDED&&!r.bandaged?HURT:0);
         burn(l,r);
-        if(r.night%10==0){var safe=Vec3.atCenterOf(r.base.offset(PinehookSite.SAFE));for(var p:here)if(!p.isSpectator()&&sees(p,safe,12,.6))mark(p,"SawSafe");}
+        mend(l,r);
+        if(r.night%10==0){var safe=Vec3.atCenterOf(r.base.offset(PinehookSite.SAFE));for(var p:here)if(!p.isSpectator()){if(sees(p,safe,12,.6))mark(p,"SawSafe");if(r.slipOpen&&PinehookSite.inBoathouse(rel(p.position(),r.base)))mark(p,"WentInBySlip");}}
+    }
+    /** Whoever is working at the junction box: each burnt wire takes MEND_STEP ticks standing there; stepping away loses the wire. */
+    static void mend(ServerLevel l,Run r){
+        if(r.repairing.isEmpty())return;var box=Vec3.atCenterOf(r.base.offset(PinehookSite.JUNCTION));
+        for(var id:List.copyOf(r.repairing.keySet())){
+            var p=l.getServer().getPlayerList().getPlayer(id);
+            if(p==null||p.isSpectator()||p.position().distanceTo(box)>2.6||r.repair>=MENDS){r.repairing.remove(id);if(p!=null&&r.repair<MENDS)cue(p,PinehookTexts.MEND_LEFT);continue;}
+            int n=r.repairing.merge(id,1,Integer::sum);
+            if(n%10==0)l.sendParticles(ParticleTypes.ELECTRIC_SPARK,box.x,box.y,box.z,3,.2,.2,.2,.02);
+            if(n>=MEND_STEP){r.repairing.remove(id);r.repair++;mark(p,"MendedJunction");sound(l,r.base.offset(PinehookSite.JUNCTION),SoundEvents.COPPER_PLACE,.7F,1.4F);
+                if(r.repair>=MENDS){r.junction=3;stage(l,r,PinehookSite.JUNCTION,3);PinehookSite.floods(l,r.base,true,true);mark(p,"FinishedJunction");cue(p,PinehookTexts.MEND_DONE);}
+                else cue(p,PinehookTexts.MEND_STEP);}
+        }
+    }
+    static void throwJunction(ServerPlayer p,Run r,int way){
+        var l=p.serverLevel();if(r.junction==3)return;r.junction=way;stage(l,r,PinehookSite.JUNCTION,way);PinehookSite.floods(l,r.base,way==1,way==2);
+        sound(l,r.base.offset(PinehookSite.JUNCTION),SoundEvents.LEVER_CLICK,.8F,.8F);mark(p,way==1?"ThrewDock":"ThrewRear");cue(p,way==1?PinehookTexts.DOCK_LIT:PinehookTexts.REAR_LIT);
     }
     /** Casey goes for his plan and puts it in the fire, unless he has turned or someone has it first. */
     static void burn(ServerLevel l,Run r){
@@ -632,6 +677,11 @@ public final class Pinehook {
                 case "plan"->{if(!r.planBurned){stage(l,r,PinehookSite.SUITCASE,0);r.planTaken=false;}}
                 case "costume"->{r.costumeTaken=false;stage(l,r,PinehookSite.STERN_WEST,2);}
                 case "tie"->{r.tieTaken=false;decal(l,r,PinehookSite.DOCK_TIE,Kind.TIE,Direction.NORTH);}
+                case "oars"->{var st=at(l,r,PinehookSite.RACK);stage(l,r,PinehookSite.RACK,PinehookBlock.stage(st)&~1);}
+                case "hook"->{var st=at(l,r,PinehookSite.RACK);stage(l,r,PinehookSite.RACK,PinehookBlock.stage(st)&~2);}
+                case "paddle"->{r.paddleTaken=false;if(at(l,r,PinehookSite.PADDLE).isAir())set(l,r.base,PinehookSite.PADDLE,PinehookBlock.of(Kind.PADDLE,Direction.WEST,0));}
+                case "key"->r.keyTaken=false;
+                case "envelope"->{r.envelopeTaken=false;stage(l,r,PinehookSite.SAFE,1);}
                 default->{}
             }
         }
@@ -725,6 +775,7 @@ public final class Pinehook {
         replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);
     }
     static void len(ServerPlayer p,Run r){
+        if(r.lenInside&&PinehookSite.inBoathouse(rel(p.position(),r.base))){lenInsideTalk(p,r);return;}
         if(r.lenInside){lenDoor(p,r);return;}
         Talk.begin(p,TALK,"Len");Talk.line(p,"Len",PinehookTexts.LEN_TALK);
         var replies=new ArrayList<Talk.Reply>();
@@ -764,6 +815,8 @@ public final class Pinehook {
         case STRAP->has(p,"StrapMismatch");
         case COSTUME->has(p,"FoundCostume");
         case TAPE->has(p,"TapeNina");
+        case TIMELINE->has(p,"Timeline");
+        case ENVELOPE->has(p,"ReadEnvelope");
     };}
     static void caseyNight(ServerPlayer p,Run r){
         if(carries(p,"plan")&&!r.caseyTurned&&!has(p,"CaseyAskedPlan")){
@@ -805,6 +858,12 @@ public final class Pinehook {
     }
     /** Len, talking through his boathouse door. */
     static void lenDoor(ServerPlayer p,Run r){
+        if(r.braced&&!has(p,"AnsweredBrace")){
+            Talk.begin(p,TALK,"Len, through the door");Talk.line(p,"Len",PinehookTexts.LEN_BRACED);
+            Talk.ask(p,Talk.reply(PinehookTexts.BRACE_KEEP_OUT,q->{mark(q,"AnsweredBrace");mark(q,"BracedForLen");Talk.line(q,"Len",PinehookTexts.LEN_KEEP_OUT);Talk.end(q);}),
+                Talk.reply(PinehookTexts.BRACE_KEEP_IN,q->{mark(q,"AnsweredBrace");mark(q,"BracedAgainstLen");Talk.line(q,"Len",PinehookTexts.LEN_KEEP_IN);Talk.end(q);}));
+            return;
+        }
         Talk.begin(p,TALK,"Len, through the door");Talk.line(p,"Len",PinehookTexts.LEN_DOOR);
         var replies=new ArrayList<Talk.Reply>();
         replies.add(Talk.reply(PinehookTexts.LEN_Q_IN,q->{Talk.line(q,"Len",PinehookTexts.LEN_IN);Talk.end(q);}));
@@ -814,10 +873,20 @@ public final class Pinehook {
         if(!has(p,"WatchLen"))replies.add(Talk.reply(PinehookTexts.LEN_Q_WATCH,q->{mark(q,"WatchLen");Talk.line(q,"Len",PinehookTexts.LEN_WATCH);Talk.end(q);}));
         replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
     }
+    /** Len, with a reader inside the boathouse with him. */
+    static void lenInsideTalk(ServerPlayer p,Run r){
+        Talk.begin(p,TALK,"Len");Talk.line(p,"Len",PinehookTexts.LEN_INSIDE);
+        var replies=new ArrayList<Talk.Reply>();
+        if(!has(p,"AskedLenHelp"))replies.add(Talk.reply(PinehookTexts.LEN_Q_HELP,q->{mark(q,"AskedLenHelp");Talk.line(q,"Len",PinehookTexts.LEN_HELP);Talk.end(q);}));
+        if(!has(p,"AskedLenSafe"))replies.add(Talk.reply(PinehookTexts.LEN_Q_SAFE,q->{mark(q,"AskedLenSafe");Talk.line(q,"Len",PinehookTexts.LEN_SAFE);Talk.end(q);}));
+        if(!has(p,"KnowsSafeKey")&&(has(p,"LenSlipped")||has(p,"Timeline")||r.caseyTurned))replies.add(Talk.reply(PinehookTexts.LEN_Q_OPEN,q->{mark(q,"KnowsSafeKey");Talk.line(q,"Len",PinehookTexts.LEN_OPEN);Talk.end(q);}));
+        replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
+    }
     /** A knock on the boathouse's iron door: Len answers through it, once he is inside. */
     @SubscribeEvent public static void knock(PlayerInteractEvent.RightClickBlock e){
         if(e.getLevel().isClientSide()||e.getHand()!=InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||p.isSpectator())return;
         var r=runOf(p);if(r==null)return;var rel=e.getPos().subtract(r.base);
+        if(rel.equals(PinehookSite.BENCH)||rel.equals(PinehookSite.BENCH.north())){if(benchKey(p,r)){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);}return;}
         if(!rel.equals(PinehookSite.BOATHOUSE_DOOR)&&!rel.equals(PinehookSite.BOATHOUSE_DOOR.above()))return;
         e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
         knockAt(p,r);
@@ -828,6 +897,12 @@ public final class Pinehook {
         lenDoor(p,r);
     }
     public static boolean knockAt(ServerPlayer p){var r=runOf(p);if(r==null)return false;knockAt(p,r);return true;}
+    /** Under the bench, once Len has said so: the safe's small key. */
+    static boolean benchKey(ServerPlayer p,Run r){
+        if(!has(p,"KnowsSafeKey")||r.keyTaken)return false;
+        r.keyTaken=true;give(p,thing("key"));mark(p,"TookKey");cue(p,"Under the bench, taped to the boards: a small key.");return true;
+    }
+    public static boolean benchKey(ServerPlayer p){var r=runOf(p);return r!=null&&benchKey(p,r);}
 
     // ------------------------------------------------------------------------------------------------ hands on the cabin
     public static boolean use(ServerPlayer p,BlockPos pos,BlockState s){
@@ -898,9 +973,9 @@ public final class Pinehook {
                 else{mark(p,"SawDockBlood");cue(p,"Dark spots on the planks, a line of them along the T. Still tacky. Not paint.");}}
             case TIE->{set(l,r.base,relPos,Blocks.AIR.defaultBlockState());r.tieTaken=true;give(p,thing("tie"));mark(p,"FoundTie");cue(p,"A tie from a coverall, torn off and caught on the post. Wet through.");}
             case BOAT_BOW->{if(relPos.equals(PinehookSite.BOW_WEST)){mark(p,"SawBoatMoved");cue(p,"Len's rowboat, pulled round to this end of the dock and tied off with a knot nobody who ties boats would tie.");}
-                else cue(p,"Len's rowboat, tied off the end of the dock, oars shipped.");}
+                else cue(p,r.boatReady>0?"Len's rowboat, ready to go.":"Len's rowboat, tied off the end of the dock. No oars in it.");}
             case BOAT_STERN->{
-                if(stage==0){cue(p,"Len's rowboat, tied off the end of the dock, oars shipped.");return true;}
+                if(stage==0){cue(p,r.boatReady>0?"Len's rowboat, ready to go.":"Len's rowboat, tied off the end of the dock. No oars in it.");return true;}
                 mark(p,"SawBoatMoved");
                 if(stage==1){stage(l,r,relPos,2);mark(p,"FoundCostume");cue(p,"Under the tarp, bundled: the rubber mask, and the coverall rolled round it, soaked.");}
                 else if(stage==2){stage(l,r,relPos,3);r.costumeTaken=true;give(p,thing("costume"));mark(p,"TookCostume");cue(p,"You lift the bundle out of the boat. It's heavy with water.");}
@@ -908,7 +983,36 @@ public final class Pinehook {
             case SUITCASE->{
                 if(stage==0&&!r.planBurned){stage(l,r,relPos,1);r.planTaken=true;give(p,thing("plan"));mark(p,"TookPlan");cue(p,"Casey's bag. On top, folded in four, a sheet of paper in his capitals. You take it.");}
                 else cue(p,"Casey's bag, open. Clothes, a phone charger, a bag of sweets.");}
-            case SAFE->cue(p,stage==0?"A safe, its door shut.":"The safe, open.");
+            case SAFE->{
+                if(stage==0){if(PinehookSite.inBoathouse(rel(p.position(),r.base))){mark(p,"SawSafeBack");cue(p,PinehookTexts.SAFE_INSIDE);}else cue(p,"A safe, its door shut.");}
+                else if(stage==1){stage(l,r,relPos,2);r.envelopeTaken=true;give(p,thing("envelope"));mark(p,"TookEnvelope");cue(p,"In the safe, alone: a thick envelope. You take it.");}
+                else cue(p,"The safe, open and empty.");}
+            case BRACE->{
+                if(stage==0){set(l,r.base,relPos,Blocks.AIR.defaultBlockState());set(l,r.base,PinehookSite.BRACE_ACROSS,PinehookBlock.of(Kind.BRACE,Direction.NORTH,1));r.braced=true;mark(p,"BracedDoor");sound(l,pos,SoundEvents.WOOD_PLACE,1F,.7F);cue(p,PinehookTexts.BRACE_SET);}
+                else{set(l,r.base,relPos,Blocks.AIR.defaultBlockState());set(l,r.base,PinehookSite.BRACE_LEANING,PinehookBlock.of(Kind.BRACE,Direction.NORTH,0));r.braced=false;sound(l,pos,SoundEvents.WOOD_PLACE,1F,.9F);cue(p,PinehookTexts.BRACE_LIFT);}}
+            case GATE->cue(p,"The slip gate, shut. It opens from outside, by the rope off the dock.");
+            case RELEASE->{
+                if(stage==0){stage(l,r,relPos,1);r.slipOpen=true;PinehookSite.slip(l,r.base,true);mark(p,"OpenedSlip");sound(l,r.base.offset(PinehookSite.GATE),SoundEvents.WOODEN_TRAPDOOR_OPEN,1F,.7F);cue(p,PinehookTexts.RELEASE_PULL);
+                    if(r.lenInside){speak(l,r,r.len,"Len",PinehookTexts.LEN_GATE,24);var len=actor(l,r.len);for(var q:living(l,r.base))if(len!=null&&q.distanceTo(len)<24)mark(q,"HeardLenSlip");}}
+                else{var g=Vec3.atBottomCenterOf(r.base.offset(PinehookSite.GATE));for(var q:l.players())if(q.position().distanceTo(g)<1.4){cue(p,"Something's in the way of the gate.");return true;}
+                    stage(l,r,relPos,0);r.slipOpen=false;PinehookSite.slip(l,r.base,false);sound(l,r.base.offset(PinehookSite.GATE),SoundEvents.WOODEN_TRAPDOOR_CLOSE,1F,.7F);cue(p,PinehookTexts.RELEASE_MAKE);}}
+            case RACK->{
+                if(stage==3){cue(p,"An empty rack on the wall.");return true;}
+                Talk.begin(p,TALK,"The rack");Talk.line(p,"",PinehookTexts.RACK_LOOK);var replies=new ArrayList<Talk.Reply>();
+                if((stage&1)==0)replies.add(Talk.act("Take the oars.",q->{Talk.close(q);var rr=runOf(q);if(rr==null)return;stage(q.serverLevel(),rr,PinehookSite.RACK,PinehookBlock.stage(at(q.serverLevel(),rr,PinehookSite.RACK))|1);give(q,thing("oars"));mark(q,"TookOars");}));
+                if((stage&2)==0)replies.add(Talk.act("Take the boat hook.",q->{Talk.close(q);var rr=runOf(q);if(rr==null)return;stage(q.serverLevel(),rr,PinehookSite.RACK,PinehookBlock.stage(at(q.serverLevel(),rr,PinehookSite.RACK))|2);give(q,thing("hook"));mark(q,"TookHook");}));
+                replies.add(Talk.act("Leave it.",Talk::close));Talk.ask(p,replies);}
+            case PADDLE->{set(l,r.base,relPos,Blocks.AIR.defaultBlockState());r.paddleTaken=true;give(p,thing("paddle"));mark(p,"TookPaddle");cue(p,PinehookTexts.PADDLE_LOOK+" You take it.");}
+            case JUNCTION->{
+                if(r.phase<NIGHT){cue(p,"A junction box on the cabin wall. It hums.");return true;}
+                if(r.junction==3){cue(p,PinehookTexts.JUNCTION_MENDED);return true;}
+                Talk.begin(p,TALK,"The junction box");Talk.line(p,"",PinehookTexts.JUNCTION_LOOK);
+                var replies=new ArrayList<Talk.Reply>();
+                if(r.junction!=1)replies.add(Talk.act(PinehookTexts.THROW_DOCK,q->{Talk.close(q);var rr=runOf(q);if(rr!=null)throwJunction(q,rr,1);}));
+                if(r.junction!=2)replies.add(Talk.act(PinehookTexts.THROW_REAR,q->{Talk.close(q);var rr=runOf(q);if(rr!=null)throwJunction(q,rr,2);}));
+                replies.add(Talk.act(PinehookTexts.MEND,q->{Talk.close(q);var rr=runOf(q);if(rr!=null&&rr.repair<MENDS){rr.repairing.put(q.getUUID(),0);cue(q,"You pull the cover open and start on the burnt wire. Stay put.");}}));
+                replies.add(Talk.act("Leave it.",Talk::close));Talk.ask(p,replies);}
+            case FLOOD->cue(p,stage==1?"A floodlight, lit.":"A floodlight, dark.");
             case RECORDER->{
                 var rec=r.recorders.remove(relPos.asLong());set(l,r.base,relPos,Blocks.AIR.defaultBlockState());
                 var heard=new ListTag();String last="";
@@ -953,6 +1057,11 @@ public final class Pinehook {
             case "plan"->{if(on!=null)return false;mark(p,"ReadPlan");Talk.begin(p,TALK,"Casey's plan");for(var line:PinehookTexts.PLAN)Talk.line(p,"",line);Talk.end(p);return true;}
             case "costume"->{if(on!=null)return false;cue(p,"The rubber mask and the coverall, wet through. The mask's strap is elastic with a buckle at each end.");return true;}
             case "tie"->{if(on!=null)return false;cue(p,"A coverall's tie, torn off. Wet.");return true;}
+            case "envelope"->{if(on!=null)return false;mark(p,"ReadEnvelope");Talk.begin(p,TALK,"Len's envelope");for(var line:PinehookTexts.ENVELOPE_PAGES)Talk.line(p,"",line);Talk.end(p);return true;}
+            case "oars"->{if(on!=null)return false;cue(p,"A pair of oars. They go in the rowboat.");return true;}
+            case "paddle"->{if(on!=null)return false;cue(p,"A canoe paddle. It would move the rowboat, slowly.");return true;}
+            case "hook"->{if(on!=null)return false;cue(p,"A boat hook, its point rusty.");return true;}
+            case "key"->{if(on!=null)return false;cue(p,"A small key, the kind that opens a safe.");return true;}
             case "firstaid"->{if(on instanceof LiteraryActor a&&a.getUUID().equals(r.jude)&&r.outcome==WOUNDED&&!r.bandaged){
                     r.bandaged=true;mark(p,"HelpedJude");take(p,"firstaid");cue(p,"You get the dressing on the cut and press, hard. Jude hisses through his teeth and holds still.");
                     speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_BANDAGED,10);return true;}
@@ -983,11 +1092,30 @@ public final class Pinehook {
             r.recorders.put(at.subtract(r.base).asLong(),new Rec(p.getUUID(),r.tick));mark(p,"SetPlayer");sound(l,at,SoundEvents.LEVER_CLICK,.5F,1.4F);
             cue(p,"You set the player down and press record. The little light comes on.");return true;
         }
+        var st=l.getBlockState(pos);
+        if(PinehookBlock.is(st,Kind.SAFE)&&PinehookBlock.stage(st)==0){
+            if(what(s).equals("key")){take(p,"key");stage(l,r,relPos,1);mark(p,"OpenedSafe");sound(l,pos,SoundEvents.IRON_TRAPDOOR_OPEN,.8F,1.2F);cue(p,PinehookTexts.SAFE_KEY);return true;}
+            if(what(s).equals("hook")){
+                if(r.safePry==0&&r.lenInside&&PinehookSite.inBoathouse(rel(p.position(),r.base)))speak(l,r,r.len,"Len",PinehookTexts.LEN_PRY,12);
+                r.safePry++;sound(l,pos,SoundEvents.CHAIN_HIT,1F,.6F);
+                if(r.safePry>=PRY){stage(l,r,relPos,1);mark(p,"PriedSafe");cue(p,PinehookTexts.SAFE_PRIED);}else cue(p,PinehookTexts.SAFE_PRY);
+                return true;}
+        }
+        if((what(s).equals("oars")||what(s).equals("paddle"))&&(PinehookBlock.is(st,Kind.BOAT_BOW)||PinehookBlock.is(st,Kind.BOAT_STERN))){
+            if(r.boatReady==1){cue(p,"The oars are already in it.");return true;}
+            boolean oars=what(s).equals("oars");take(p,what(s));r.boatReady=oars?1:2;
+            var bow=PinehookBlock.is(at(l,r,PinehookSite.BOW_WEST),Kind.BOAT_BOW)?PinehookSite.BOW_WEST:PinehookSite.BOW_EAST;stage(l,r,bow,oars?1:2);
+            mark(p,"ReadiedBoat");sound(l,pos,SoundEvents.WOOD_PLACE,.8F,1.1F);cue(p,oars?PinehookTexts.BOAT_READY_OARS:PinehookTexts.BOAT_READY_PADDLE);return true;
+        }
+        if(what(s).equals("costume")&&(relPos.equals(PinehookSite.TABLE)||relPos.equals(PinehookSite.TABLE.north()))){
+            if(!has(p,"StrapMismatch")&&!carries(p,"elastic")){cue(p,PinehookTexts.TIMELINE_SHORT);return true;}
+            r.timeline=true;mark(p,"Timeline");Talk.begin(p,TALK,"The kitchen table");for(var line:PinehookTexts.TIMELINE)Talk.line(p,"",line);Talk.end(p);return true;
+        }
         if(what(s).equals("plan")&&relPos.closerThan(PinehookSite.HEARTH,1.5)){
             take(p,"plan");r.planBurned=true;r.planTaken=false;mark(p,"BurnedPlan");var h=r.base.offset(PinehookSite.HEARTH);l.sendParticles(ParticleTypes.FLAME,h.getX()+.5,h.getY()+.6,h.getZ()+.5,10,.2,.2,.2,.02);
             cue(p,"The paper catches at a corner, curls, and goes.");return true;
         }
-        if(what(s).equals("firstaid")||what(s).equals("torch")||what(s).equals("camera")||what(s).equals("plan")||what(s).equals("costume")||what(s).equals("tie"))return useThing(p,s,null);
+        if(List.of("firstaid","torch","camera","plan","costume","tie","envelope","oars","paddle","hook","key").contains(what(s)))return useThing(p,s,null);
         return false;
     }
     /** Casey's secret, told quietly to whoever carried the cooler in. */

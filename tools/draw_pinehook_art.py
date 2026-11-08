@@ -10,6 +10,9 @@
 0.4.365, the night: the rowboat's bow and stern with its tarp (over a bundle, and pulled back); wet footprints; dark spots; a coverall's
 tie; Casey's bag, shut and open; Len's safe, shut and open; the portable player set down, stopped and recording; and the coverall's tie,
 the mask and coverall bundled, and Casey's plan, carried.
+0.4.366: the junction box on the cabin wall (off, to the dock, to the house, mended) and a floodlight, dark and lit; the boathouse
+door's brace bar, leaning and across; the slip gate; the release rope's cleat; the wall rack with its oars and hook; the woodshed's paddle;
+the safe open and empty; the rowboat with oars or the paddle in it; and the oars, the hook, the paddle, the small key and Len's envelope.
 
 Writes the pinehook_fitting block's models and states, the items' models, and their names. --check verifies everything.
 """
@@ -289,6 +292,79 @@ def recorder(on):
     return im
 
 
+def junction(state):
+    im = noisy(['#7a7c7e', '#74767a', '#7e8084'], 6440)
+    frame(im, 0, 0, 16, 16, '#4a4c4e')
+    fill(im, 2, 2, 9, 14, '#2a2c2e')
+    for y, c in ((4, '#c8a040'), (7, '#3a3a3a' if state < 3 else '#c8a040'), (10, '#c8a040')):
+        for x in range(3, 9):
+            dot(im, x, y, c)
+    if state < 3:
+        for x in (5, 6):
+            dot(im, x, 7, '#1a1a1a'); dot(im, x, 8, '#2a2218')
+    fill(im, 11, 3, 14, 13, '#3a3c3e')
+    lever_y = {0: 8, 1: 4, 2: 11, 3: 4}[state]
+    fill(im, 11, lever_y, 14, lever_y + 2, '#d8d4cc')
+    if state == 3:
+        fill(im, 11, 11, 14, 13, '#d8d4cc')
+    return im
+
+
+def flood(lit):
+    im = noisy(['#3a3c3e', '#363a3c', '#3e4042'], 6441)
+    frame(im, 0, 0, 16, 16, '#22262a')
+    fill(im, 2, 2, 14, 14, '#f8f0c8' if lit else '#4a4c4e')
+    if lit:
+        fill(im, 5, 5, 11, 11, '#fffbe8')
+    else:
+        for x in range(3, 13, 3):
+            for y in range(3, 13):
+                dot(im, x, y, '#3a3c3e')
+    return im
+
+
+def safe_empty():
+    im = noisy(['#3a3e42', '#363a3e', '#3e4246'], 6428)
+    frame(im, 0, 0, 16, 16, '#22262a')
+    fill(im, 2, 2, 14, 14, '#141618')
+    return im
+
+
+def timber():
+    im = noisy(['#8a6a44', '#846440', '#906e48'], 6442)
+    for y in (5, 10):
+        for x in range(16):
+            dot(im, x, y, '#6a5034')
+    return im
+
+
+def gate():
+    im = noisy(['#5a4a3a', '#544636', '#60503e'], 6443)
+    frame(im, 0, 0, 16, 16, '#3a2e22')
+    for x in (4, 8, 12):
+        for y in range(16):
+            dot(im, x, y, '#3a2e22')
+    return im
+
+
+def rope():
+    im = clear()
+    for i in range(16):
+        dot(im, i, 7 + (i % 3 == 0), '#c8b088'); dot(im, i, 8, '#a89068')
+    return im
+
+
+def rack(state):
+    im = noisy(WOOD, 6444)
+    frame(im, 0, 0, 16, 16, '#4a3420')
+    if not state & 1:
+        for x in (3, 6):
+            fill(im, x, 1, x + 2, 15, '#b0905c'); fill(im, x - 1, 11, x + 3, 15, '#c8a870')
+    if not state & 2:
+        fill(im, 11, 1, 12, 15, '#8a6a44'); fill(im, 10, 1, 14, 3, '#7a7c7e'); dot(im, 13, 3, '#7a7c7e')
+    return im
+
+
 def oak():
     return noisy(WOOD, 6413)
 
@@ -417,10 +493,50 @@ def item_plan():
     return im
 
 
+def item_oars():
+    im = clear()
+    for i in range(10):
+        dot(im, 2 + i, 13 - i, '#b0905c'); dot(im, 4 + i, 13 - i, '#b0905c')
+    fill(im, 11, 1, 15, 5, '#c8a870')
+    return im
+
+
+def item_hook():
+    im = clear()
+    for i in range(11):
+        dot(im, 2 + i, 14 - i, '#8a6a44')
+    fill(im, 12, 1, 15, 3, '#7a7c7e'); dot(im, 15, 4, '#7a7c7e')
+    return im
+
+
+def item_paddle():
+    im = clear()
+    for i in range(8):
+        dot(im, 2 + i, 14 - i, '#a07a4a')
+    fill(im, 9, 2, 14, 7, '#b88a54'); frame(im, 9, 2, 14, 7, '#7a5a34')
+    return im
+
+
+def item_key():
+    im = clear()
+    frame(im, 3, 4, 8, 9, '#b0a070'); fill(im, 8, 6, 14, 7, '#b0a070'); dot(im, 12, 8, '#b0a070'); dot(im, 13, 8, '#b0a070')
+    return im
+
+
+def item_envelope():
+    im = clear()
+    fill(im, 2, 4, 14, 12, '#d8c8a0'); frame(im, 2, 4, 14, 12, '#a8986e')
+    for i in range(6):
+        dot(im, 2 + i, 4 + i, '#a8986e'); dot(im, 13 - i, 4 + i, '#a8986e')
+    return im
+
+
 ITEMS = {'pinehook_cooler': (item_cooler, 'Cooler'), 'pinehook_camera': (item_camera, 'Camera'), 'pinehook_torch': (item_torch, 'Torch'),
          'pinehook_mixtape': (item_mixtape, 'Mixtape'), 'pinehook_player': (item_player, 'Portable player'), 'pinehook_tape': (item_tape, 'Rented film'),
          'pinehook_firstaid': (item_firstaid, 'First-aid bag'), 'pinehook_elastic': (item_elastic, 'Elastic strap'),
-         'pinehook_tie': (item_tie, 'Coverall tie'), 'pinehook_costume': (item_costume, 'Mask and coverall'), 'pinehook_plan': (item_plan, "Casey's plan")}
+         'pinehook_tie': (item_tie, 'Coverall tie'), 'pinehook_costume': (item_costume, 'Mask and coverall'), 'pinehook_plan': (item_plan, "Casey's plan"),
+         'pinehook_oars': (item_oars, 'Oars'), 'pinehook_hook': (item_hook, 'Boat hook'), 'pinehook_paddle': (item_paddle, 'Paddle'),
+         'pinehook_key': (item_key, 'Small key'), 'pinehook_envelope': (item_envelope, "Len's envelope")}
 
 
 def textures():
@@ -438,6 +554,11 @@ def textures():
     t.update({f'suitcase_{n}': suitcase(n == 1) for n in range(2)})
     t.update({f'safe_{n}': safe(n == 1) for n in range(2)})
     t.update({f'recorder_{n}': recorder(n == 1) for n in range(2)})
+    t.update({f'junction_{n}': junction(n) for n in range(4)})
+    t.update({f'flood_{n}': flood(n == 1) for n in range(2)})
+    t.update({'safe_2': safe_empty(), 'timber': timber(), 'gate': gate(), 'rope': rope()})
+    t.update({f'rack_{n}': rack(n) for n in range(4)})
+    t.update({'paddle': item_paddle(), 'oars_top': item_oars()})
     out = {f'block/pinehook/{k}.png': v for k, v in t.items()}
     out.update({f'item/{k}.png': f() for k, (f, _) in ITEMS.items()})
     return out
@@ -480,14 +601,31 @@ def fitting_models():
         m[f'suitcase_{n}'] = model([element([1, 0, 4], [15, 8, 12], {'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l', 'down': 'l', 'up': 't'})], {'l': 'leather', 't': f'suitcase_{n}'}, 'leather')
         m[f'safe_{n}'] = model([element([1, 0, 1], [15, 16, 15], front('f', 'd'))], {'f': f'safe_{n}', 'd': 'black'}, 'black')
         m[f'recorder_{n}'] = model([element([4, 0, 5], [12, 4, 11], {'north': 'd', 'south': 'd', 'east': 'd', 'west': 'd', 'down': 'd', 'up': 't'})], {'d': 'black', 't': f'recorder_{n}'}, 'black')
+    m['safe_2'] = model([element([1, 0, 1], [15, 16, 15], front('f', 'd'))], {'f': 'safe_2', 'd': 'black'}, 'black')
+    m['boat_bow_1'] = model(bow + [element([3, 10, 4], [4, 11, 16], {'all': 't'}), element([12, 10, 4], [13, 11, 16], {'all': 't'})], {'h': 'hull', 't': 'timber'}, 'hull')
+    m['boat_bow_2'] = model(bow + [element([5, 7, 4], [11, 7.5, 15], {'all': 'h', 'up': 'p'})], {'h': 'hull', 'p': 'paddle'}, 'hull')
+    m['brace_0'] = model([element([7, 0, 12], [9, 16, 14], {'all': 't'})], {'t': 'timber'}, 'timber')
+    m['brace_1'] = model([element([0, 6, 0], [16, 10, 3], {'all': 't'}), element([-6, 6, 0], [0, 10, 3], {'all': 't'}), element([16, 6, 0], [22, 10, 3], {'all': 't'})], {'t': 'timber'}, 'timber')
+    m['gate_0'] = model([element([0, 0, 6], [16, 16, 10], {'all': 'g'})], {'g': 'gate'}, 'gate')
+    for n in range(2):
+        cleat = [element([6, 0, 6], [10, 8, 10], {'all': 't'}), element([4, 8, 7], [12, 10, 9], {'all': 't'})]
+        m[f'release_{n}'] = model(cleat + ([element([0, 9, 7.5], [8, 9.5, 8.5], {'up': 'r', 'down': 'r', 'north': 'r', 'south': 'r'})] if n == 0 else []), {'t': 'timber', 'r': 'rope'}, 'timber')
+    for n in range(4):
+        m[f'rack_{n}'] = model([element([0, 2, 13], [16, 14, 16], front('f', 'o'))], {'f': f'rack_{n}', 'o': 'oak'}, 'oak')
+    m['paddle_0'] = model([element([7, 0, 12], [9, 10, 14], {'all': 't'}), element([6, 10, 12.5], [10, 16, 13.5], {'all': 'p'})], {'t': 'timber', 'p': 'paddle'}, 'timber')
+    for n in range(4):
+        m[f'junction_{n}'] = model([element([3, 2, 12], [13, 14, 16], front('f', 's'))], {'f': f'junction_{n}', 's': 'steel'}, 'steel')
+    for n in range(2):
+        m[f'flood_{n}'] = model([element([4, 4, 8], [12, 12, 14], front('f', 'b')), element([7, 7, 14], [9, 9, 16], {'all': 'b'})], {'f': f'flood_{n}', 'b': 'black'}, 'black')
     m['cooler_0'] = model([element([1, 0, 3], [15, 11, 13], {'all': 'c'})], {'c': 'cooler'}, 'cooler')
     m['tapes_0'] = model([element([0, 0, 9], [16, 16, 16], front('f', 'o'))], {'f': 'tapes', 'o': 'oak'}, 'oak')
     return m
 
 
-KINDS = ['stereo', 'tv', 'breaker', 'lamp', 'stove', 'duffel', 'bag', 'cooler', 'tapes', 'kit', 'boat_bow', 'boat_stern', 'prints', 'blood', 'tie', 'suitcase', 'safe', 'recorder']
+KINDS = ['stereo', 'tv', 'breaker', 'lamp', 'stove', 'duffel', 'bag', 'cooler', 'tapes', 'kit', 'boat_bow', 'boat_stern', 'prints', 'blood', 'tie', 'suitcase', 'safe', 'recorder', 'junction', 'flood', 'brace', 'gate', 'release', 'rack', 'paddle']
 STAGES = {'stereo': 2, 'tv': 3, 'breaker': 2, 'lamp': 2, 'stove': 3, 'duffel': 3, 'bag': 2, 'cooler': 1, 'tapes': 1, 'kit': 2,
-          'boat_bow': 1, 'boat_stern': 4, 'prints': 1, 'blood': 1, 'tie': 1, 'suitcase': 2, 'safe': 2, 'recorder': 2}
+          'boat_bow': 3, 'boat_stern': 4, 'prints': 1, 'blood': 1, 'tie': 1, 'suitcase': 2, 'safe': 3, 'recorder': 2, 'junction': 4, 'flood': 2,
+          'brace': 2, 'gate': 1, 'release': 2, 'rack': 4, 'paddle': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 

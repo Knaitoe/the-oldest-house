@@ -30,12 +30,17 @@ import net.minecraft.world.phys.shapes.*;
  * again (3)); wet footprints and dark spots on the ground or the planks; a coverall's tie caught on a post; Casey's bag in the bedroom,
  * shut with his plan in it (0) or open and empty (1); Len's safe, shut (0) or open (1); the portable player set down, stopped (0) or
  * recording (1).</li>
+ * <li>0.4.366: the junction box on the cabin's side, its switch off (0), to the dock (1), to the back (2), or mended and feeding both (3);
+ * a floodlight, dark (0) or lit (1); the brace bar by the boathouse door, leaning (0) or across the door (1); the slip gate in the
+ * boathouse's lake wall, shut (0); the release rope's cleat by the dock, made fast (0) or pulled (1); the boathouse's wall rack, with oars
+ * and hook (0), the oars gone (1), the hook gone (2), both gone (3); the paddle in the woodshed. The safe also opens empty (2), and the
+ * rowboat's bow takes oars (1) or the paddle (2).</li>
  * </ul>
  */
 public final class PinehookBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<PinehookBlock> CODEC=simpleCodec(PinehookBlock::new);
     public enum Kind implements StringRepresentable {
-        STEREO,TV,BREAKER,LAMP,STOVE,DUFFEL,BAG,COOLER,TAPES,KIT,BOAT_BOW,BOAT_STERN,PRINTS,BLOOD,TIE,SUITCASE,SAFE,RECORDER;
+        STEREO,TV,BREAKER,LAMP,STOVE,DUFFEL,BAG,COOLER,TAPES,KIT,BOAT_BOW,BOAT_STERN,PRINTS,BLOOD,TIE,SUITCASE,SAFE,RECORDER,JUNCTION,FLOOD,BRACE,GATE,RELEASE,RACK,PADDLE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -45,7 +50,7 @@ public final class PinehookBlock extends HorizontalDirectionalBlock {
     public static boolean is(BlockState s,Kind kind){return s.is(PinehookRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static int stage(BlockState s){return s.is(PinehookRegistry.FITTING.get())?s.getValue(STAGE):-1;}
     /** A lit lamp lights the room; a playing television glows. */
-    public static int light(BlockState s){return switch(s.getValue(KIND)){case LAMP->s.getValue(STAGE)==1?13:0;case TV->s.getValue(STAGE)>=1?5:0;case STOVE->s.getValue(STAGE)==1?4:0;default->0;};}
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case LAMP->s.getValue(STAGE)==1?13:0;case TV->s.getValue(STAGE)>=1?5:0;case STOVE->s.getValue(STAGE)==1?4:0;case FLOOD->s.getValue(STAGE)==1?15:0;default->0;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}
@@ -69,11 +74,19 @@ public final class PinehookBlock extends HorizontalDirectionalBlock {
             case SUITCASE->box(f,1,0,4,15,8,12);
             case SAFE->Block.box(1,0,1,15,16,15);
             case RECORDER->box(f,4,0,5,12,4,11);
+            case JUNCTION->box(f,3,2,12,13,14,16);
+            case FLOOD->box(f,4,4,8,12,12,16);
+            case BRACE->s.getValue(STAGE)==1?box(f,0,6,0,16,10,4):box(f,6,0,12,10,16,16);
+            case GATE->Block.box(0,0,6,16,16,10);
+            case RELEASE->Block.box(5,0,5,11,12,11);
+            case RACK->box(f,0,2,13,16,14,16);
+            case PADDLE->box(f,6,0,12,10,16,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case STEREO,TV,STOVE,COOLER,TAPES,SUITCASE,SAFE->getShape(s,l,p,c);
+            case STEREO,TV,STOVE,COOLER,TAPES,SUITCASE,SAFE,GATE->getShape(s,l,p,c);
+            case BRACE->s.getValue(STAGE)==1?Block.box(0,0,0,16,16,4):Shapes.empty();
             default->Shapes.empty();
         };
     }
