@@ -81,6 +81,20 @@ public final class ChildRoom {
             "Mum: Sweetheart? We're still here.",
             "Dad, very quietly: Don't. Wait until morning. That isn't your mum.",
             "Both of them, together: We're awake now."};
+    /**
+     * 0.4.371, a reader the House has read as coming from a house that was not safe (a settled DANGER, HomeRead): the first and third
+     * lines are not words. Somebody comes along the hall and stops outside the door, and tries the handle, and lets it go; later they
+     * come back and stop where the door was. Nobody comes in and nothing is quicker; the way out under the bed is the same for everyone.
+     */
+    static final String[] PARENTS_DANGER={
+            "Footsteps in the hall, slow. They stop outside your door.",
+            PARENTS[1],
+            "The footsteps come back and stop where your door was. Nobody says anything.",
+            PARENTS[3],PARENTS[4],PARENTS[5]};
+    /** Which line a reader hears, by their read. */
+    public static String parent(int i,boolean danger){return danger?PARENTS_DANGER[i]:PARENTS[i];}
+    /** Outside the hall door (exit 2, in the west wall), and a few blocks along the hall the steps come from. */
+    static final Vec3 HALL_FROM=new Vec3(-12.2,.5,-5.5),HALL_OUTSIDE=new Vec3(-12.2,.5,-11.5),HALL_DOOR=new Vec3(-10.5,1,-11.5);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     private static final String[] SEEN={
             "Where the window was there is only wallpaper. It is cold to touch.",
@@ -208,8 +222,11 @@ public final class ChildRoom {
             if(mask==ALL&&own.getInt("Present")-own.getInt("ShutAt0119")>=400)due=5;
             if(mask==ALL&&own.getBoolean("UnderFloor0474"))due=PARENTS.length;
             int heard=own.getInt("Parents0119");
+            boolean danger=HomeRead.danger(p);var corner=Vec3.atLowerCornerOf(b);
             for(int i=0;i<due;i++)if((heard&(1<<i))==0&&(!own.contains("ParentsNext127")||l.getGameTime()>=own.getLong("ParentsNext127"))){own.putInt("Parents0119",heard|1<<i);own.putLong("ParentsNext127",l.getGameTime()+420+(i%2)*60);
-                p.displayClientMessage(Component.literal(PARENTS[i]).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),false);
+                // 0.4.371: spoken through the house, so on the action bar, never in chat; a settled DANGER reader's hall has somebody in it.
+                if(danger&&(i==0||i==2)){HomeRead.linger(p,corner.add(HALL_FROM),corner.add(HALL_OUTSIDE),i==0?corner.add(HALL_DOOR):null,parent(i,true));break;}
+                p.displayClientMessage(Component.literal(parent(i,danger)).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);
                 var at=Vec3.atCenterOf(b.offset(i==3||i==5?GAP:new BlockPos(0,-2,-12)));p.connection.send(new ClientboundSoundPacket(LiteraryRegistry.NURSERY_WHISPER,SoundSource.AMBIENT,at.x,at.y,at.z,.7F,.8F,p.getRandom().nextLong()));break;}
         }
         if(mask==ALL)dinnerbone(p,b,l);

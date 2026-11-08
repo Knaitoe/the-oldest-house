@@ -37,6 +37,24 @@ public final class StaircaseHouseholdTexts {
             default->"";
         };
     }
+    /**
+     * 0.4.371: what the House's read of the reader's home adds to the room as they come in (HomeRead): a mood, a sentence, no more.
+     * "HAVEN" warm, "DANGER" watchful; anything else adds nothing.
+     */
+    public static String mood(StaircaseLeakRooms.Kind kind,String mood){
+        boolean warm=mood.equals("HAVEN");if(!warm&&!mood.equals("DANGER"))return "";
+        return switch(kind){
+            case DINING->warm?"Whoever it is is singing under their breath.":"A pan goes down hard in there, and then it is quiet for a while.";
+            case BEDROOM->warm?"Downstairs a radio is on, and somebody laughs at it.":"Downstairs a door shuts hard. Nobody comes up.";
+            case MENDING->warm?"There's a cup of tea by the lamp, still too hot to drink.":"In the next room the television is on, turned up loud.";
+            case DAWN->warm?"Somebody has put a blanket over them.":"Their shoes are still on, and there's a glass on its side by the settee.";
+            case DRIVE->warm?"Mara hums along to the radio, out of tune.":"Mara drives with both hands and doesn't put the radio on.";
+            case YARD->warm?"Next door's kitchen window is open, and something is baking.":"In the house behind you a voice is raised, and then stops.";
+            case LAYBY->warm?"Somebody has cut the crusts off yours.":"Nobody has said anything since the last town.";
+            case LANDING->warm?"Somebody has left a cup out for you, upside down so the dust can't get in.":"Their boots are lined up against the wall, exactly.";
+            default->"";
+        };
+    }
     /** Sunday lunch, said around the table while the reader sits: speaker, then the line. {name} is the reader. */
     public static final List<String[]> LUNCH=List.of(
         new String[]{"Ruth","Pass the salt along, would you."},

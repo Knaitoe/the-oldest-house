@@ -26,6 +26,7 @@ public final class PersonalityTailoringTests {
     @AfterBatch(batch="tailoring_card") public static void cardDone(ServerLevel l){close();}
     @AfterBatch(batch="tailoring_words") public static void wordsDone(ServerLevel l){close();}
     @AfterBatch(batch="tailoring_props") public static void propsDone(ServerLevel l){close();}
+    @AfterBatch(batch="tailoring_home") public static void homeDone(ServerLevel l){HomeRead.clearAll();close();}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);p.setNoGravity(true);return p;}
     private static void profile(ServerPlayer p,HouseRead.Trait trait,String value,String strength){var d=LabyrinthData.get(p.server);var own=d.stateEntry(HouseRead.STATE,p.getUUID().toString());var read=new CompoundTag();read.putString("Value",value);read.putString("Strength",strength);own.put(trait.name(),read);d.setStateEntry(HouseRead.STATE,p.getUUID().toString(),own);}
@@ -42,6 +43,40 @@ public final class PersonalityTailoringTests {
     }
     private static LiteraryActor literary(LiteraryTests.Fixture f,LabyrinthPlace place,int role,int phase,UUID owner,BlockPos at){var a=LiteraryRegistry.ACTOR.get().create(f.level(place));a.appearance(role,phase);a.bind(place,owner);a.setNoGravity(true);a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);f.level(place).addFreshEntity(a);f.extras.add(a);return a;}
     private static HotelActor hotel(LiteraryTests.Fixture f,int role,BlockPos at){var a=HotelRegistry.ACTOR.get().create(f.in);a.appearance(role,false);a.setNoGravity(true);a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5);f.in.addFreshEntity(a);f.extras.add(a);return a;}
+
+    /** 0.4.371: only a settled DANGER makes anyone linger, and only for that reader; tentative reads give rooms a mood and nothing more. */
+    @GameTest(template="empty",batch="tailoring_home",timeoutTicks=900)
+    public static void aSettledDangerHallLingersForThatReaderAloneAndMoodsFollowTheHomeRead(GameTestHelper h){
+        var f=fixture(h);var p=player(h,f,"home_danger");var peer=player(h,f,"home_haven");
+        for(String home:List.of("HAVEN","DANGER","RUNAWAY"))for(var strength:HouseRead.Strength.values()){
+            profile(p,HouseRead.Trait.HOME,home,strength.name());boolean known=strength==HouseRead.Strength.TENTATIVE||strength==HouseRead.Strength.SETTLED;
+            h.assertTrue(HomeRead.danger(p)==(home.equals("DANGER")&&strength==HouseRead.Strength.SETTLED),"only a settled DANGER lingers: "+home+"/"+strength);
+            h.assertTrue(HomeRead.mood(p).equals(known&&!home.equals("RUNAWAY")?home:""),"a tentative or settled HAVEN or DANGER gives a mood, RUNAWAY none: "+home+"/"+strength);
+        }
+        for(var kind:List.of(StaircaseLeakRooms.Kind.DINING,StaircaseLeakRooms.Kind.BEDROOM,StaircaseLeakRooms.Kind.MENDING,StaircaseLeakRooms.Kind.DAWN,StaircaseLeakRooms.Kind.DRIVE,StaircaseLeakRooms.Kind.YARD,StaircaseLeakRooms.Kind.LAYBY,StaircaseLeakRooms.Kind.LANDING)){
+            String warm=StaircaseHouseholdTexts.mood(kind,"HAVEN"),tense=StaircaseHouseholdTexts.mood(kind,"DANGER");
+            h.assertTrue(!warm.isEmpty()&&!tense.isEmpty()&&!warm.equals(tense)&&StaircaseHouseholdTexts.mood(kind,"").isEmpty()&&StaircaseHouseholdTexts.mood(kind,"RUNAWAY").isEmpty(),"every household room has a warm and a watchful line, and nothing for no read: "+kind);
+            for(String line:List.of(warm,tense))h.assertTrue(!line.matches("(?i).*\\b(he|she|him|her|his|hers)\\b.*"),"the House never genders the reader: "+line);
+        }
+        h.assertTrue(!GoatmanVignette.HOME_WARM.equals(GoatmanVignette.HOME_WATCHFUL),"the supper has a warm and a watchful line");
+        for(int i=0;i<6;i++)h.assertTrue(ChildRoom.parent(i,true).equals(ChildRoom.parent(i,false))==(i!=0&&i!=2),"the child's room changes its first and third night lines for DANGER and keeps the rest: "+i);
+        profile(p,HouseRead.Trait.HOME,"DANGER","SETTLED");profile(peer,HouseRead.Trait.HOME,"HAVEN","SETTLED");
+        var at=f.origin.offset(0,0,-5);
+        h.startSequence().thenExecute(()->{
+            at(p,f.in,at,.5,0,.5);at(peer,f.in,at,1.5,0,.5);NativeTestPlayers.packets(p);NativeTestPlayers.packets(peer);
+            var c=Vec3.atBottomCenterOf(at);HomeRead.linger(p,c.add(-5,0,-3),c.add(0,0,-3),c.add(0,1,-2),"Footsteps stop.");
+            h.assertTrue(HomeRead.lingering(p)&&!HomeRead.lingering(peer),"the hall has somebody in it for the one reader only");
+          }).thenIdle(HomeRead.LENGTH+20).thenExecute(()->{
+            var heard=new ArrayList<net.minecraft.resources.ResourceLocation>();
+            var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));
+            while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);
+                else if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)sound.getSound().unwrapKey().ifPresent(k->heard.add(k.location()));}
+            long steps=heard.stream().filter(k->k.getPath().equals("literary.home_step")).count();
+            h.assertTrue(steps==9&&heard.stream().filter(k->k.getPath().equals("literary.home_handle")).count()==1&&heard.stream().filter(k->k.getPath().equals("literary.home_floorboard")).count()==2,"five steps up, the board, the handle, four steps away, to that reader: "+heard);
+            h.assertTrue(!HomeRead.lingering(p),"and then the hall is quiet");
+            h.assertTrue(NativeTestPlayers.packets(peer).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&sound.getSound().unwrapKey().map(k->k.location().getPath().startsWith("literary.home_")).orElse(false)),"a friend standing beside them hears an ordinary evening");
+          }).thenSucceed();
+    }
 
     @GameTest(template="empty",batch="tailoring_read",timeoutTicks=200)
     public static void unknownUncertainTentativeAndUnseenNeverGuessAnAddressOrRewriteTheOriginalCard(GameTestHelper h){

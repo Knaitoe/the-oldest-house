@@ -117,6 +117,7 @@ jobs:
           python3 tools/generate_resonance_audio.py --check
           python3 tools/draw_settling_fittings.py --check
           python3 tools/generate_settling_audio.py --check
+          python3 tools/generate_home_audio.py --check
           python3 tools/draw_clockwork_fittings.py --check
           python3 tools/generate_clockwork_audio.py --check
           python3 tools/draw_pantry_fittings.py --check
@@ -2421,7 +2422,7 @@ jobs:
           from pathlib import Path
           import re
           count=sum(len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/'+name).read_text())) for name in ('HouseReadTests.java','HouseReadReaderTests.java','EntrancePlaytestTests.java','PersonalityTailoringTests.java','CoopTests.java'))
-          assert count==42
+          assert count==43
           assert f'All {count} required tests passed' in Path('build/house-read-native.log').read_text()
           assert len(list(Path('build/house-read139-proof').glob('*.json')))==6
           PY

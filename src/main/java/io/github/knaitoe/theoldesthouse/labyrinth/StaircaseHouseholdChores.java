@@ -37,6 +37,15 @@ public final class StaircaseHouseholdChores {
             if(unlaid){own.putBoolean("Unlaid",true);var l=p.serverLevel();l.setBlock(b.offset(PLACES[5]),StaircaseHouseholdRooms.prop(TABLE_PLAIN,Direction.NORTH),F);l.setBlock(b.offset(CHAIRS[5]),Blocks.AIR.defaultBlockState(),F);}
             StaircaseLeaks.progress(p,own);StaircaseLeaks.caption(p,StaircaseHouseholdTexts.arrive(kind,unlaid));
         }else StaircaseLeaks.caption(p,StaircaseHouseholdTexts.arrive(kind,false));
+        // 0.4.371: the mood the House's read of the reader's home gives the room, a few seconds after its first line (HomeRead).
+        String mood=StaircaseHouseholdTexts.mood(kind,HomeRead.mood(p));
+        if(!mood.isEmpty()){var chore=StaircaseLeaks.progress(p);chore.putString(MOOD,mood);StaircaseLeaks.progress(p,chore);}
+    }
+    static final String MOOD="Mood0371";
+    /** The mood line, once, four seconds into the visit. */
+    static void mood(ServerPlayer p,long elapsed){
+        if(elapsed<80)return;var chore=StaircaseLeaks.progress(p);if(!chore.contains(MOOD))return;
+        StaircaseLeaks.caption(p,chore.getString(MOOD));chore.remove(MOOD);StaircaseLeaks.progress(p,chore);
     }
     public static boolean interact(ServerPlayer p,BlockPos b,BlockPos at,BlockState state,StaircaseLeakRooms.Kind kind){
         var own=StaircaseLeaks.progress(p);boolean done=switch(kind){
@@ -53,6 +62,7 @@ public final class StaircaseHouseholdChores {
         StaircaseLeaks.progress(p,own);return done;
     }
     static void tick(ServerPlayer p,BlockPos b,StaircaseLeakRooms.Kind kind,long elapsed){
+        mood(p,elapsed);
         switch(kind){
             case DINING->diningTick(p,b,elapsed);
             case BEDROOM->bedroomTick(p,b,elapsed);
