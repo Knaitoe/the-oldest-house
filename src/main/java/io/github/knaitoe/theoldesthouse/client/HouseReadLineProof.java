@@ -35,29 +35,18 @@ public final class HouseReadLineProof extends Screen {
         if(card==null){card=HouseReadLineScreen.still(CARDS[page],PAGES[page]);card.init(Minecraft.getInstance(),width,height);}
         card.render(g,x,y,0);
     }
-    private static Button button(HouseReadLineScreen card,String label){
-        for(var child:card.children())
-            if(child instanceof Button button&&button.getMessage().getString().equals(label))return button;
-        throw new IllegalStateException("Missing story card button: "+label);
-    }
-
-    private static void checkManualControls(){
+    /** 0.4.395: the card has no buttons, holds no reader, and closes itself once its pages have played. */
+    private static void checkPlaysThrough(){
         var mc=Minecraft.getInstance();
         String text=CARDS[0].text();
         HouseReadLineScreen.show(new HouseReadLinePayload(text,"",false,1,false));
         if(!(mc.screen instanceof HouseReadLineScreen card))throw new IllegalStateException("No story card opened");
-        button(card,"Read at my pace");
-        HouseReadLineScreen.show(new HouseReadLinePayload(text,"",false,1,true));
-        for(int i=0;i<HouseReadStory.ticks(text)+20;i++)card.tick();
-        if(mc.screen!=card||card.page()!=0||button(card,"Back").active)
-            throw new IllegalStateException("The manual card must stay on its first page");
-        button(card,"Continue").onPress();
-        if(card.page()!=1)throw new IllegalStateException("Continue must turn one page");
-        button(card,"Back").onPress();
-        if(card.page()!=0)throw new IllegalStateException("Back must restore the previous page");
-        button(card,"Continue").onPress();
-        button(card,"Done").onPress();
-        if(mc.screen==card)throw new IllegalStateException("Done must close the manual card");
+        for(var child:card.children())if(child instanceof Button)throw new IllegalStateException("The story card must have no buttons: "+((Button)child).getMessage().getString());
+        int pages=text.split(HouseReadStory.PAGE,-1).length;
+        for(int i=0;i<card.length()-1;i++){card.tick();if(mc.screen!=card)throw new IllegalStateException("The story card closed early, at tick "+i);}
+        if(card.page()!=pages-1)throw new IllegalStateException("The story card must reach its last page on its own");
+        card.tick();
+        if(mc.screen==card)throw new IllegalStateException("The story card must close itself once its pages have played");
     }
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
@@ -65,8 +54,8 @@ public final class HouseReadLineProof extends Screen {
         var folder=Path.of("../build/house-read-lines");Files.createDirectories(folder);
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;s.card=null;return;}
-        checkManualControls();
-        Files.writeString(folder.resolve("passed.txt"),"The House's lines between the quiet rooms on black: the welcome before the first room, the bathroom's closing line, and the warning after the last room. Manual controls hold, turn both ways and close.\n");
+        checkPlaysThrough();
+        Files.writeString(folder.resolve("passed.txt"),"The House's lines between the quiet rooms on black: the welcome before the first room, the bathroom's closing line, and the warning after the last room. The card has no buttons, plays through and closes itself.\n");
         mc.setScreen(new HouseReadHairProof());
     }
 }
