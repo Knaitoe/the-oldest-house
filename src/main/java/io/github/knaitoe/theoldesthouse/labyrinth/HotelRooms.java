@@ -351,13 +351,13 @@ public final class HotelRooms {
     }
 
     private static void basement(ServerLevel l,BlockPos b){
-        // The boiler room under the back porch: brick walls, a concrete floor, the joists of the floor above.
-        room(l,b,PLANT_X0,PLANT_X1,PLANT_Z0,PLANT_Z1,-4,-2,new Finish(Blocks.SMOOTH_STONE.defaultBlockState(),Blocks.BRICKS.defaultBlockState(),3,Blocks.BRICKS.defaultBlockState(),null,Blocks.SPRUCE_PLANKS.defaultBlockState()));
+        // The boiler room under the back porch: sooty brick walls, a concrete floor, the joists of the floor above (0.4.380: its own).
+        room(l,b,PLANT_X0,PLANT_X1,PLANT_Z0,PLANT_Z1,-4,-2,new Finish(RoomShell.BOILER_FLOOR.get().defaultBlockState(),RoomShell.BOILER_BRICK.get().defaultBlockState(),3,RoomShell.BOILER_BRICK.get().defaultBlockState(),null,RoomShell.BOILER_JOISTS.get().defaultBlockState()));
         // The service stair, down from the corridor through its own walled well.
         for(int z=-57;z>=-59;z--){fill(l,b,8,-5,z,8,4,z,st(Kind.PAINT));fill(l,b,12,-5,z,12,4,z,st(Kind.PAINT));}
         fill(l,b,9,0,-60,11,4,-60,st(Kind.PAINT));fill(l,b,9,4,-59,11,4,-57,st(Kind.PAINT));
-        for(int i=0;i<3;i++){int z=-57-i,y=-2-i;fill(l,b,9,-5,z,11,y-1,z,Blocks.STONE_BRICKS);
-            for(int x=9;x<=11;x++)stairs(l,b,x,y,z,Blocks.STONE_BRICK_STAIRS,Direction.SOUTH);fill(l,b,9,y+1,z,11,3,z,Blocks.AIR);}
+        for(int i=0;i<3;i++){int z=-57-i,y=-2-i;fill(l,b,9,-5,z,11,y-1,z,RoomShell.BOILER_STONE.get());
+            for(int x=9;x<=11;x++)stairs(l,b,x,y,z,RoomShell.BOILER_STAIR.get(),Direction.SOUTH);fill(l,b,9,y+1,z,11,3,z,Blocks.AIR);}
         fill(l,b,9,0,-56,11,3,-56,Blocks.AIR);fill(l,b,9,-1,-56,11,-1,-56,st(Kind.LINO));
         lantern(l,b,10,3,-58);
         // The plant: the boiler against the north wall with its gauge, the vent valve and the restart switch beside it.

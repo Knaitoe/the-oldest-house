@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_boiler_floor",
+        "weight": 6
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_boiler_floor_1",
+        "weight": 2
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_boiler_floor_2"
+      }
+    ]
+  }
+}

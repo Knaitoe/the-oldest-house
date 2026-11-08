@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_nursery_floor"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_nursery_floor",
+        "y": 180
+      }
+    ]
+  }
+}

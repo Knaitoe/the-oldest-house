@@ -208,6 +208,14 @@ public final class HotelTests {
     public static void theHotelIsOneBuildingItsCorridorIsTheNumberedOnesAndItsBackWallIsTheGroundsView(GameTestHelper h){routes=new Fixture(h,49700,true);var f=routes;
         var hb=LabyrinthPlaces.base(f.origin,LabyrinthPlace.HOTEL_HALLWAY);LabyrinthLoops.buildHallway(f.l,hb,LabyrinthPlace.HOTEL_HALLWAY);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.HOTEL_HALLWAY,hb);
         h.runAfterDelay(20,()->{
+            // 0.4.380: every face round the boiler room and its stair is the room's own (sooty brick, concrete, joists, worn stone).
+            {int own=0,vanilla=0;BlockPos first=null;var seen=new HashSet<BlockPos>();
+                for(int x=-10;x<=11;x++)for(int y=-4;y<=-2;y++)for(int z=-66;z<=-57;z++){var at=f.b.offset(x,y,z);if(!f.l.getBlockState(at).isAir())continue;
+                    for(var d:Direction.values()){var n=at.relative(d);if(!seen.add(n))continue;var s=f.l.getBlockState(n);
+                        if(RoomShell.boiler(s))own++;
+                        if(s.is(Blocks.BRICKS)||s.is(Blocks.SMOOTH_STONE)||s.is(Blocks.STONE_BRICKS)||s.is(Blocks.STONE_BRICK_STAIRS)){vanilla++;if(first==null)first=n.subtract(f.b);}}}
+                h.assertTrue(own>200&&vanilla==0,"the boiler room wears its own shell: "+own+" faces, "+vanilla+" vanilla, first at "+first);
+                h.assertTrue(f.l.getBlockState(f.b.offset(10,-3,-58)).is(RoomShell.BOILER_STAIR.get())&&f.l.getBlockState(f.b.offset(0,-1,-63)).is(RoomShell.BOILER_JOISTS.get()),"the service stair is worn stone and the porch floor stands on its joists");}
             // The grounds see the hotel's rear wall: siding, the porch windows and the back door, block for block.
             for(int x=-7;x<=7;x++)for(int y=0;y<=7;y++)h.assertTrue(f.l.getBlockState(f.b.offset(x,y,-67)).equals(f.outside.getBlockState(f.gb.offset(x,y,1))),"the grounds' wall is the hotel's rear wall at "+x+" "+y);
             h.assertTrue(StanleyBlock.is(f.l.getBlockState(f.b.offset(3,1,-67)),StanleyBlock.Kind.SIDING)&&f.l.getBlockState(f.b.offset(HotelRooms.BACK_DOOR)).getBlock() instanceof DoorBlock&&f.outside.getBlockState(f.gb.offset(0,0,1)).getBlock() instanceof DoorBlock,"the back door stands in the siding the grounds see");

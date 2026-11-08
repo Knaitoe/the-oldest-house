@@ -722,6 +722,15 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
     /** 0.4.74: posts a reader's own click where they stand, as the client sends it. */
     private static boolean use(ServerPlayer p,BlockPos at,InteractionHand hand){var e=new PlayerInteractEvent.RightClickBlock(p,hand,at,new BlockHitResult(at.getCenter(),Direction.UP,at,false));NeoForge.EVENT_BUS.post(e);return e.isCanceled();}
     private static int stage(ServerLevel l,BlockPos at){var s=l.getBlockState(at);return s.is(LiteraryRegistry.NURSERY.get())?s.getValue(NurseryBlock.STAGE):-1;}
+    /** 0.4.380: every face of the bedroom, crawlspace and cellar is the room's own, none of the vanilla it was laid in. */
+    private static void childRoomWearsItsOwnShell(GameTestHelper h,ServerLevel l,BlockPos b){
+        int own=0,vanilla=0;BlockPos first=null;var seen=new HashSet<BlockPos>();
+        for(int x=-10;x<=10;x++)for(int y=-4;y<=5;y++)for(int z=-23;z<=-1;z++){var at=b.offset(x,y,z);if(!l.getBlockState(at).isAir())continue;
+            for(var d:Direction.values()){var n=at.relative(d);if(!seen.add(n))continue;var s=l.getBlockState(n);
+                if(RoomShell.nursery(s))own++;
+                if(s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.SMOOTH_QUARTZ)||s.is(Blocks.STRIPPED_BIRCH_LOG)||s.is(Blocks.STRIPPED_BIRCH_WOOD)||s.is(Blocks.BRICKS)||s.is(Blocks.POLISHED_ANDESITE)){vanilla++;if(first==null)first=n.subtract(b);}}}
+        h.assertTrue(own>400&&vanilla==0,"the child's room wears its own shell: "+own+" faces, "+vanilla+" vanilla, first at "+first);
+    }
     /** Look at each sealed exit long enough to take it in, from where a child would stand. */
     private static void examine(GameTestHelper h,Fixture f,ServerPlayer p,int from){var place=LabyrinthPlace.CHILD_ROOM;var b=f.base(place);
         double[][] stands={{-6.5,0,-18.5},{6.5,0,-18.5},{-6.5,0,-11.5},{7.5,0,-7.5}};
@@ -732,10 +741,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         var f=new Fixture(h);var place=LabyrinthPlace.CHILD_ROOM;var p=f.player("child_reader",place);var peer=f.player("child_peer",place);var observer=f.player("child_spectator",place);observer.setGameMode(GameType.SPECTATOR);
         var b=f.base(place);var l=f.in;
         h.runAfterDelay(10,()->{
+            childRoomWearsItsOwnShell(h,l,b);
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY)
                     &&l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock,"the room stands whole: two windows, its own doors, the bear by the bed");
             h.assertTrue(l.noCollision(new AABB(b.getX()+.3,b.getY()+.01,b.getZ()-21.7,b.getX()+.7,b.getY()+.34,b.getZ()-21.3))&&!l.noCollision(new AABB(b.getX()+.3,b.getY()+.4,b.getZ()-21.7,b.getX()+.7,b.getY()+.9,b.getZ()-21.3))
-                    &&ChildRoom.besideBed(new BlockPos(0,0,-21))&&l.getBlockState(b.offset(ChildRoom.GAP)).is(Blocks.BIRCH_PLANKS)&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"the bed is low: a child lying flat fits under it, standing does not; the way down is a floorboard like the rest, and there is a basement below");
+                    &&ChildRoom.besideBed(new BlockPos(0,0,-21))&&l.getBlockState(b.offset(ChildRoom.GAP)).is(RoomShell.NURSERY_FLOOR.get())&&l.getBlockState(b.offset(ChildRoom.GAP.below())).is(Blocks.LADDER)&&l.getBlockState(b.offset(6,-3,-10)).isAir(),"the bed is low: a child lying flat fits under it, standing does not; the way down is a floorboard like the rest, and there is a basement below");
             h.assertTrue(!NurseryBlock.is(l.getBlockState(b.offset(-9,1,-20)),NurseryBlock.Kind.DOLL)&&NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(1))),NurseryBlock.Kind.DOLL),"one doll, on the shelf, and nothing on the toy chest");
             // 0.4.121: a hand on the desk finds the small card, and opening it starts the room, read to the end or not.
             f.click(p,place,ChildRoom.CARD.below());h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages&&ChildRoom.readCard(f.own(p,place))&&!f.own(p,place).getBoolean("Read_Source"),"the desk opens the bedtime card, and opening it is enough to start the room");p.closeContainer();
@@ -744,7 +754,7 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             f.at(observer,place,-8.5,0,-11.5);f.look(observer,b.offset(-11,0,-12));
         });
         h.runAfterDelay(430,()->{var world=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(world.getInt("Exits0474")==3&&l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.BIRCH_PLANKS)==false&&!l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).is(Blocks.GLASS),"after the card, the windows went unseen: "+world.getInt("Exits0474"));
+            h.assertTrue(world.getInt("Exits0474")==3&&l.getBlockState(b.offset(ChildRoom.EXITS.get(0).get(0))).equals(RoomShell.nurseryWall(ChildRoom.EXITS.get(0).get(0).getY())),"after the card, the windows went unseen: "+world.getInt("Exits0474"));
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.EXITS.get(2).get(0))).getBlock() instanceof DoorBlock&&f.own(observer,place).getInt("ExitSeen0474")==0,"a spectator's gaze keeps the hall door, and earns nothing");
             h.assertTrue(l.getBlockState(b.offset(ChildRoom.CEILING_SLOTS.get(0))).getValue(NurseryBlock.STAGE)==NurseryBlock.CEILING&&!NurseryBlock.is(l.getBlockState(b.offset(ChildRoom.TOY_HOMES.get(0))),NurseryBlock.Kind.TEDDY),"the bear has left the floor for the ceiling");
             h.assertTrue(Integer.bitCount(f.own(p,place).getInt("Parents0119"))==1&&f.own(p,place).getLong("ParentsNext127")>l.getGameTime(),"the parents leave a real pause after the first line while the exits continue disappearing");

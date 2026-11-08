@@ -111,6 +111,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.HallRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.StairWell.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.ProofrockSurface.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.RoomShell.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.ArtifactRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.PuzzleRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.TraceRegistry.register(modEventBus);
