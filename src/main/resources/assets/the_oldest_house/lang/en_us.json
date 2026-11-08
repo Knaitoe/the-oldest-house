@@ -1450,5 +1450,17 @@
   "block.the_oldest_house.hall_stacks_ceiling": "Beamed Ceiling",
   "block.the_oldest_house.hall_face": "Painted Door",
   "block.the_oldest_house.hall_door": "Bedroom Door",
-  "block.the_oldest_house.hall_cistern_drip": "Dripping Vault"
+  "block.the_oldest_house.hall_cistern_drip": "Dripping Vault",
+  "block.the_oldest_house.room_shell_mapping_wall": "Siding",
+  "block.the_oldest_house.room_shell_mapping_panel": "Wood Panelling",
+  "block.the_oldest_house.room_shell_mapping_ceiling": "Popcorn Ceiling",
+  "block.the_oldest_house.room_shell_mapping_lino": "Kitchen Linoleum",
+  "block.the_oldest_house.room_shell_mapping_skirt": "Vinyl Skirting",
+  "block.the_oldest_house.room_shell_mapping_carpet_front": "Front Room Carpet",
+  "block.the_oldest_house.room_shell_mapping_carpet_boys": "Boys' Room Carpet",
+  "block.the_oldest_house.room_shell_mapping_carpet_bed": "Bedroom Carpet",
+  "block.the_oldest_house.room_shell_mapping_shingles": "Asphalt Shingles",
+  "block.the_oldest_house.room_shell_mapping_shingle_slab": "Asphalt Shingle Slab",
+  "block.the_oldest_house.room_shell_mapping_tunnel": "Tunnel Floor",
+  "block.the_oldest_house.room_shell_mapping_cistern": "Cistern Brick"
 }

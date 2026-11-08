@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "the_oldest_house:block/room_shell/mapping_soffit",
+    "top": "the_oldest_house:block/room_shell/mapping_shingles",
+    "side": "the_oldest_house:block/room_shell/mapping_shingle_edge"
+  }
+}

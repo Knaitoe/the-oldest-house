@@ -497,6 +497,45 @@ public final class LiteraryTests {
     @GameTest(template="empty",batch="literary_frozen",timeoutTicks=100)
     public static void frozenNativeMachineryAndFarmKeepTheirMeshShapeAndNoPower(GameTestHelper h){var f=new Fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;f.build(place);var at=f.base(place).offset(18,0,-10);var original=Blocks.PISTON.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING,Direction.UP);f.out.setBlock(at,LiteraryRegistry.FROZEN.get().defaultBlockState(),3);var be=(LiteraryModelBlockEntity)f.out.getBlockEntity(at);var t=new CompoundTag();t.put("FrozenState",NbtUtils.writeBlockState(original));be.display(t);h.assertTrue(LiteraryFrozenBlock.original(f.out,at).equals(original)&&!f.out.getBlockState(at).isRandomlyTicking()&&!f.out.getBlockState(at).isSignalSource(),"the native captured piston retains its exact visual state without native activity");h.assertTrue(!f.out.getBlockState(at).getCollisionShape(f.out,at).isEmpty(),"frozen mechanisms retain physical collision");h.assertTrue(LiteraryFrozenBlock.freezes(Blocks.WHEAT.defaultBlockState())&&LiteraryFrozenBlock.freezes(Blocks.FARMLAND.defaultBlockState()),"both crops and their supporting farmland use the inactive native projection");var saved=be.saveWithFullMetadata(f.out.registryAccess());be.loadWithComponents(saved,f.out.registryAccess());h.assertTrue(LiteraryFrozenBlock.original(f.out,at).equals(original),"the original mesh state survives native block-entity serialization");h.succeed();}
     @AfterBatch(batch="literary_frozen") public static void frozenDone(ServerLevel l){close();}
+    /**
+     * 0.4.396, the texture pass's tenth release (docs/TEXTURE_PASS_MAPPING_0_4_396.md): the brothers' house in its own surfaces. The
+     * outer walls face out (siding outside, panelling within), the partitions are panelled, the ceiling is popcorn, the floors are the
+     * rooms' carpets and the kitchen's linoleum, the skirt is vinyl, the roof shingled, and the tunnel and cistern are their own; none of
+     * the vanilla blocks they replace is left.
+     */
+    @GameTest(template="empty",batch="literary_mapping_shell",timeoutTicks=100)
+    public static void theBrothersHouseStandsInItsOwnSurfaces(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MAPPING_INTERIOR;f.build(place);var l=f.level(place);var b=f.base(place);
+        int walls=0;
+        for(int y=1;y<=4;y++){
+            for(int x=-10;x<=10;x++)for(int z:new int[]{-12,-28}){var s=l.getBlockState(b.offset(x,y,z));
+                if(s.is(RoomShell.MAPPING_WALL.get())){walls++;h.assertTrue(s.getValue(RoomShell.Skin.FACING)==(z==-12?Direction.SOUTH:Direction.NORTH),"the outer wall faces out at "+x+","+y+","+z);}
+                else h.assertTrue(s.getBlock() instanceof IronBarsBlock||s.getBlock() instanceof DoorBlock||y==1&&x==-3&&z==-12,"the long walls are clad, glazed or a door at "+x+","+y+","+z+": "+s);}
+            for(int z=-27;z<=-13;z++)for(int x:new int[]{-10,10}){var s=l.getBlockState(b.offset(x,y,z));
+                if(s.is(RoomShell.MAPPING_WALL.get())){walls++;h.assertTrue(s.getValue(RoomShell.Skin.FACING)==(x<0?Direction.WEST:Direction.EAST),"the outer wall faces out at "+x+","+y+","+z);}
+                else h.assertTrue(s.getBlock() instanceof IronBarsBlock,"the short walls are clad or glazed at "+x+","+y+","+z+": "+s);}
+        }
+        h.assertTrue(walls>=150,"the house is clad all round: "+walls);
+        for(var at:new BlockPos[]{new BlockPos(0,2,-14),new BlockPos(-5,3,-19),new BlockPos(-1,3,-26),new BlockPos(2,2,-26),new BlockPos(5,4,-23)})
+            h.assertTrue(l.getBlockState(b.offset(at)).is(RoomShell.MAPPING_PANEL.get()),"the partitions are panelled: "+at);
+        for(int x=-9;x<=9;x++)for(int z=-27;z<=-13;z++)h.assertTrue(l.getBlockState(b.offset(x,5,z)).is(RoomShell.MAPPING_CEILING.get()),"the ceiling is the house's own over "+x+","+z);
+        h.assertTrue(l.getBlockState(b.offset(-5,1,-15)).is(RoomShell.MAPPING_CARPET_FRONT.get())&&l.getBlockState(b.offset(0,1,-22)).is(RoomShell.MAPPING_CARPET_FRONT.get())
+            &&l.getBlockState(b.offset(-5,1,-24)).is(RoomShell.MAPPING_CARPET_BOYS.get())&&l.getBlockState(b.offset(6,1,-21)).is(RoomShell.MAPPING_CARPET_BED.get())
+            &&l.getBlockState(b.offset(5,1,-15)).is(RoomShell.MAPPING_LINO.get())&&l.getBlockState(b.offset(5,1,-25)).is(RoomShell.MAPPING_LINO.get()),"each room has its own floor");
+        for(int x=-10;x<=10;x++)for(int z:new int[]{-12,-28})h.assertTrue(l.getBlockState(b.offset(x,0,z)).is(RoomShell.MAPPING_SKIRT.get()),"the skirt is vinyl at "+x+","+z);
+        int own=0;
+        for(var at:BlockPos.betweenClosed(b.offset(-11,0,-29),b.offset(11,7,-12))){var s=l.getBlockState(at);
+            if(RoomShell.mapping(s))own++;
+            h.assertTrue(!s.is(Blocks.WHITE_CONCRETE)&&!s.is(Blocks.WHITE_TERRACOTTA)&&!s.is(Blocks.BROWN_WOOL)&&!s.is(Blocks.BLUE_WOOL)&&!s.is(Blocks.LIGHT_GRAY_WOOL)
+                &&!s.is(Blocks.DEEPSLATE_TILES)&&!s.is(Blocks.DEEPSLATE_TILE_SLAB)&&!s.is(LiteraryRegistry.SIDING.get()),"no vanilla shell is left in the house: "+at.subtract(b)+" "+s);}
+        h.assertTrue(own>=1200,"the house is in its own surfaces: "+own);
+        int roof=0;for(var at:BlockPos.betweenClosed(b.offset(-11,5,-29),b.offset(11,7,-11)))if(l.getBlockState(at).is(RoomShell.MAPPING_SHINGLES.get())||l.getBlockState(at).is(RoomShell.MAPPING_SHINGLE_SLAB.get()))roof++;
+        h.assertTrue(roof>=19*23,"the roof is shingled end to end: "+roof);
+        h.assertTrue(l.getBlockState(b.offset(4,-3,-40)).is(RoomShell.MAPPING_TUNNEL.get())&&l.getBlockState(b.offset(1,-4,-64)).is(RoomShell.MAPPING_CISTERN.get()),"the tunnel and the cistern are their own");
+        for(var at:BlockPos.betweenClosed(b.offset(1,-6,-68),b.offset(9,-1,-22))){var s=l.getBlockState(at);h.assertTrue(!s.is(Blocks.PACKED_MUD)&&!s.is(Blocks.MUD_BRICKS),"no packed mud or mud brick is left under the yard: "+at.subtract(b));}
+        h.succeed();
+    }
+    @AfterBatch(batch="literary_mapping_shell") public static void mappingShellDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_registry",timeoutTicks=100)
     public static void eligibleSourcesAndOneOptionalClosureLeaveTheWitnessReachable(GameTestHelper h){var data=new LabyrinthData();var player=UUID.randomUUID();h.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"the quota derives from all eligible authored stories");h.assertTrue(WitnessAccount.Story.of("old_cabin")==null,"the recurring witness cabin is guidance, not another source");int sources=0;for(var place:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(place)&&place!=LabyrinthPlace.OLD_CABIN&&place!=LabyrinthPlace.PITT){h.assertTrue(WitnessAccount.Story.of(place.id())!=null&&LiteraryTexts.source(place).has(DataComponents.WRITTEN_BOOK_CONTENT),"every new eligible site has original discovery writing and its own resolution registration");sources++;}var unfinished=UUID.randomUUID();data.visit(unfinished,LabyrinthPlace.HILL_NURSERY);
         h.assertTrue(!LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HILL_NURSERY)&&!LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HOLLOWAY_CAMP),"offline unfinished readers and the finale shield route cannot be retired");

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/room_shell_mapping_shingle_slab"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/room_shell_mapping_shingle_slab_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/room_shell_mapping_shingles"
+    }
+  }
+}

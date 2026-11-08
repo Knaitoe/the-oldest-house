@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_tunnel"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_tunnel",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_tunnel",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_tunnel",
+        "y": 270
+      }
+    ]
+  }
+}

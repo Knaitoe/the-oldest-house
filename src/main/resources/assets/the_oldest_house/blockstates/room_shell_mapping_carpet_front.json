@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_carpet_front"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_carpet_front",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_carpet_front",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_mapping_carpet_front",
+        "y": 270
+      }
+    ]
+  }
+}

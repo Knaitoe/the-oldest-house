@@ -106,8 +106,9 @@ public final class MappingHouse {
     private static BlockState slab(Block block, SlabType type) { return block.defaultBlockState().setValue(SlabBlock.TYPE, type); }
 
     public static void build(ServerLevel l, BlockPos b) {
-        BlockState air = Blocks.AIR.defaultBlockState(), siding = LiteraryRegistry.SIDING.get().defaultBlockState();
-        BlockState panel = Blocks.SPRUCE_PLANKS.defaultBlockState(), ceiling = Blocks.WHITE_CONCRETE.defaultBlockState();
+        // 0.4.396, the texture pass's tenth release (docs/TEXTURE_PASS_MAPPING_0_4_396.md): the house's own surfaces (RoomShell).
+        BlockState air = Blocks.AIR.defaultBlockState();
+        BlockState panel = RoomShell.MAPPING_PANEL.get().defaultBlockState(), ceiling = RoomShell.MAPPING_CEILING.get().defaultBlockState();
 
         // ---- the lot: packed dirt and dry grass under a night sky, stone below, everything above cleared
         fill(l, b, -22, 0, -79, 22, 15, -1, air);
@@ -144,19 +145,23 @@ public final class MappingHouse {
 
         // ---- the house: a floor a block over the yard, siding walls, a white ceiling and a low roof
         fill(l, b, -10, 1, -28, 10, 1, -12, Blocks.SPRUCE_PLANKS);
-        for (int x = -10; x <= 10; x++) for (int y = 2; y <= 4; y++) { set(l, b, x, y, -12, siding);set(l, b, x, y, -28, siding); }
-        for (int z = -28; z <= -12; z++) for (int y = 2; y <= 4; y++) { set(l, b, -10, y, z, siding);set(l, b, 10, y, z, siding); }
+        // The outer walls are one block thick: each faces out, the siding outside and the panelling within.
+        for (int x = -10; x <= 10; x++) for (int y = 2; y <= 4; y++) { set(l, b, x, y, -12, wall(Direction.SOUTH));set(l, b, x, y, -28, wall(Direction.NORTH)); }
+        for (int z = -27; z <= -13; z++) for (int y = 2; y <= 4; y++) { set(l, b, -10, y, z, wall(Direction.WEST));set(l, b, 10, y, z, wall(Direction.EAST)); }
+        // The floor's edge between the skirt and the walls is clad too, all but the front door's sill.
+        for (int x = -10; x <= 10; x++) { if (x != -3) set(l, b, x, 1, -12, wall(Direction.SOUTH));set(l, b, x, 1, -28, wall(Direction.NORTH)); }
+        for (int z = -27; z <= -13; z++) { set(l, b, -10, 1, z, wall(Direction.WEST));set(l, b, 10, 1, z, wall(Direction.EAST)); }
         fill(l, b, -10, 5, -28, 10, 5, -12, ceiling);
         // The roof: a shallow gable along the length, eaves over the walls.
         for (int x = -11; x <= 11; x++) for (int z = -29; z <= -11; z++) {
             int d = Math.abs(x);
-            if (d >= 8) set(l, b, x, d == 11 ? 5 : 6, z, slab(Blocks.DEEPSLATE_TILE_SLAB, d == 11 ? SlabType.TOP : SlabType.BOTTOM));
-            else if (d >= 3) set(l, b, x, 6, z, Blocks.DEEPSLATE_TILES);
-            else { set(l, b, x, 6, z, Blocks.DEEPSLATE_TILES);set(l, b, x, 7, z, slab(Blocks.DEEPSLATE_TILE_SLAB, SlabType.BOTTOM)); }
+            if (d >= 8) set(l, b, x, d == 11 ? 5 : 6, z, slab(RoomShell.MAPPING_SHINGLE_SLAB.get(), d == 11 ? SlabType.TOP : SlabType.BOTTOM));
+            else if (d >= 3) set(l, b, x, 6, z, RoomShell.MAPPING_SHINGLES.get());
+            else { set(l, b, x, 6, z, RoomShell.MAPPING_SHINGLES.get());set(l, b, x, 7, z, slab(RoomShell.MAPPING_SHINGLE_SLAB.get(), SlabType.BOTTOM)); }
         }
         // The skirt round the base; one panel on the east side has come loose.
-        for (int x = -10; x <= 10; x++) { set(l, b, x, 0, -12, Blocks.WHITE_TERRACOTTA);set(l, b, x, 0, -28, Blocks.WHITE_TERRACOTTA); }
-        for (int z = -28; z <= -12; z++) { set(l, b, -10, 0, z, Blocks.WHITE_TERRACOTTA);set(l, b, 10, 0, z, Blocks.WHITE_TERRACOTTA); }
+        for (int x = -10; x <= 10; x++) { set(l, b, x, 0, -12, RoomShell.MAPPING_SKIRT.get());set(l, b, x, 0, -28, RoomShell.MAPPING_SKIRT.get()); }
+        for (int z = -28; z <= -12; z++) { set(l, b, -10, 0, z, RoomShell.MAPPING_SKIRT.get());set(l, b, 10, 0, z, RoomShell.MAPPING_SKIRT.get()); }
         set(l, b, PANEL.getX(), PANEL.getY(), PANEL.getZ(), trapdoor(Blocks.BIRCH_TRAPDOOR, Direction.WEST, Half.BOTTOM, true));
         // Under the floor: the crawl, a block high, cinderblock piers, a duct.
         fill(l, b, -9, 0, -27, 9, 0, -13, air);
@@ -164,28 +169,28 @@ public final class MappingHouse {
         // The slope at the back of the crawl, down two blocks in halves, toward where the house stops.
         for (int x = 4; x <= 5; x++) {
             set(l, b, x, -1, -22, slab(Blocks.MUD_BRICK_SLAB, SlabType.BOTTOM));
-            set(l, b, x, -1, -23, air);set(l, b, x, -2, -23, Blocks.PACKED_MUD);
+            set(l, b, x, -1, -23, air);set(l, b, x, -2, -23, RoomShell.MAPPING_TUNNEL.get());
             set(l, b, x, -1, -24, air);set(l, b, x, -2, -24, slab(Blocks.MUD_BRICK_SLAB, SlabType.BOTTOM));
-            for (int z = -27; z <= -25; z++) { set(l, b, x, -1, z, air);set(l, b, x, -2, z, air);set(l, b, x, -3, z, Blocks.PACKED_MUD); }
+            for (int z = -27; z <= -25; z++) { set(l, b, x, -1, z, air);set(l, b, x, -2, z, air);set(l, b, x, -3, z, RoomShell.MAPPING_TUNNEL.get()); }
         }
         // Past the roofline: one block high, two wide, under the yard's turf, to the plywood door.
-        for (int z = -63; z <= -28; z++) for (int x = 4; x <= 5; x++) { set(l, b, x, -2, z, air);set(l, b, x, -3, z, Blocks.PACKED_MUD); }
+        for (int z = -63; z <= -28; z++) for (int x = 4; x <= 5; x++) { set(l, b, x, -2, z, air);set(l, b, x, -3, z, RoomShell.MAPPING_TUNNEL.get()); }
         for (int x = 3; x <= 6; x++) set(l, b, x, -2, -28, x == 3 || x == 6 ? Blocks.DIRT.defaultBlockState() : air);
         // A wider pocket halfway, roots through its ceiling.
-        for (int x = 2; x <= 7; x++) for (int z = -44; z <= -40; z++) { set(l, b, x, -2, z, air);set(l, b, x, -3, z, Blocks.PACKED_MUD); }
+        for (int x = 2; x <= 7; x++) for (int z = -44; z <= -40; z++) { set(l, b, x, -2, z, air);set(l, b, x, -3, z, RoomShell.MAPPING_TUNNEL.get()); }
         for (int[] c : new int[][]{{3, -41}, {6, -43}, {2, -44}, {7, -40}}) set(l, b, c[0], -2, c[1], Blocks.HANGING_ROOTS);
         // The plywood door with its pull ring, shut over the water.
         // The water under it: a cistern, its old walls, a hand of water deep over a mud floor.
-        fill(l, b, 1, -6, -68, 8, -3, -60, Blocks.MUD_BRICKS);
+        fill(l, b, 1, -6, -68, 8, -3, -60, RoomShell.MAPPING_CISTERN.get());
         fill(l, b, 2, -6, -67, 7, -6, -61, Blocks.MUD);
         fill(l, b, 2, -5, -67, 7, -5, -61, Blocks.WATER);
         fill(l, b, 2, -4, -67, 7, -4, -61, air);
         set(l, b, PLYWOOD.getX(), PLYWOOD.getY(), PLYWOOD.getZ(), trapdoor(Blocks.SPRUCE_TRAPDOOR, Direction.NORTH, Half.TOP, false));
-        set(l, b, PLYWOOD.getX() + 1, PLYWOOD.getY(), PLYWOOD.getZ(), Blocks.MUD_BRICKS);
+        set(l, b, PLYWOOD.getX() + 1, PLYWOOD.getY(), PLYWOOD.getZ(), RoomShell.MAPPING_CISTERN.get());
         // The shaft from the water to the pole: a ladder up the east side, a lid in the yard.
         for (int y = -5; y <= -2; y++) {
             set(l, b, 8, y, -64, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST).setValue(LadderBlock.WATERLOGGED, y == -5));
-            set(l, b, 9, y, -64, Blocks.MUD_BRICKS);
+            set(l, b, 9, y, -64, RoomShell.MAPPING_CISTERN.get());
         }
         set(l, b, SHAFT_LID.getX(), SHAFT_LID.getY(), SHAFT_LID.getZ(), trapdoor(Blocks.IRON_TRAPDOOR, Direction.WEST, Half.TOP, false));
 
@@ -213,12 +218,12 @@ public final class MappingHouse {
         // Floors: wall-to-wall carpet in the front room, the hall and the bedrooms, linoleum in the kitchen and the utility room.
         // 0.4.202 (owner: "breaks in the carpet"): the carpet is the floor itself, so nothing set on it (a bed's legs, a chair, a
         // dresser) leaves a square of bare boards round it.
-        fill(l, b, -9, 1, -18, -1, 1, -13, Blocks.BROWN_WOOL);
-        fill(l, b, 0, 1, -24, 1, 1, -19, Blocks.BROWN_WOOL);
-        fill(l, b, -9, 1, -27, -2, 1, -20, Blocks.BLUE_WOOL);
-        fill(l, b, 3, 1, -22, 9, 1, -20, Blocks.LIGHT_GRAY_WOOL);
-        fill(l, b, 1, 1, -18, 9, 1, -13, Blocks.WHITE_TERRACOTTA);
-        fill(l, b, 3, 1, -27, 9, 1, -24, Blocks.WHITE_TERRACOTTA);
+        fill(l, b, -9, 1, -18, -1, 1, -13, RoomShell.MAPPING_CARPET_FRONT.get());
+        fill(l, b, 0, 1, -24, 1, 1, -19, RoomShell.MAPPING_CARPET_FRONT.get());
+        fill(l, b, -9, 1, -27, -2, 1, -20, RoomShell.MAPPING_CARPET_BOYS.get());
+        fill(l, b, 3, 1, -22, 9, 1, -20, RoomShell.MAPPING_CARPET_BED.get());
+        fill(l, b, 1, 1, -18, 9, 1, -13, RoomShell.MAPPING_LINO.get());
+        fill(l, b, 3, 1, -27, 9, 1, -24, RoomShell.MAPPING_LINO.get());
 
         // ---- the porch: a landing at the door, steps down to the drive
         fill(l, b, -5, 1, -11, -1, 1, -11, Blocks.SPRUCE_PLANKS);
@@ -265,6 +270,8 @@ public final class MappingHouse {
         light(l, b, 8, 3, -16, 6);light(l, b, -8, 2, -26, 4);light(l, b, -6, 3, -11, 9);light(l, b, 0, 4, -21, 3);light(l, b, 6, 4, -25, 3);
         light(l, b, 4, -1, -45, 2);light(l, b, 4, -4, -64, 3);
     }
+    /** An outer wall block, facing out: the siding on the side it faces, the panelling within. */
+    private static BlockState wall(Direction out) { return RoomShell.MAPPING_WALL.get().defaultBlockState().setValue(RoomShell.Skin.FACING, out); }
     private static void fencePost(ServerLevel l, BlockPos b, int x, int z) {
         boolean post = Math.floorMod(x + z, 4) == 0;
         set(l, b, x, 0, z, post ? Blocks.SPRUCE_FENCE.defaultBlockState() : Blocks.TRIPWIRE.defaultBlockState());
