@@ -1,6 +1,9 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -90,9 +93,42 @@ public final class HouseReadShelter {
         // 0.4.397: in the dance the partner has weight (DanceWeight): they keep their ground and close on the reader slowly, so the
         // reader is the one who swings about them; stepping back after, they go at an ordinary pace.
         double pace=after?.12:DanceWeight.SETTLE;
-        var to=target.subtract(a.position()).multiply(1,0,1);if(to.length()>.02){var before=a.position();a.move(MoverType.SELF,to.length()>pace?to.normalize().scale(pace):to);a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4f);}
+        var to=target.subtract(a.position()).multiply(1,0,1);
+        if(after)SWIRL.remove(a.getUUID());
+        else if(swirl(a,p,to)){face(a,p,true);a.gesture(DANCE);return;}
+        if(to.length()>.02){var before=a.position();a.move(MoverType.SELF,to.length()>pace?to.normalize().scale(pace):to);a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4f);}
         if(!after||p.distanceToSqr(a)<100)face(a,p,true);a.gesture(after?AFTER:DANCE);
     }
+    /** Each dancing partner's swirl: ticks pulled, the turn about the reader carried (radians), the reader's last bearing from them, which way the reader has been swinging, and where the reader stood last tick. */
+    private static final Map<UUID,double[]> SWIRL=new HashMap<>();
+    /**
+     * 0.4.399, the owner: "continuing to pull against the weight should swirl your partner". A reader who keeps leaning away has the
+     * partner pulled behind arm's length tick after tick; held long enough (DanceWeight.PULL_TICKS), the pull swings the partner round
+     * the reader, the way the reader was last swinging, faster the longer it is held, and carrying on a little after it is let go.
+     * While swirling the partner keeps the distance the reader holds them at, so the lean is not given up. Returns whether the
+     * partner was swirled this tick.
+     */
+    private static boolean swirl(LiteraryActor a,ServerPlayer p,Vec3 toTarget){
+        var st=SWIRL.computeIfAbsent(a.getUUID(),k->new double[]{0,0,Double.NaN,0,Double.NaN,Double.NaN});
+        var rel=a.position().subtract(p.position()).multiply(1,0,1);double r=rel.length();if(r<1e-3)return false;
+        double bearing=Math.atan2(p.getZ()-a.getZ(),p.getX()-a.getX());
+        if(!Double.isNaN(st[2])){double d=bearing-st[2];st[3]=st[3]*.95+Math.atan2(Math.sin(d),Math.cos(d));}st[2]=bearing;
+        // Pulled: arm's length lies between the partner and the reader, further than PULL from where the partner stands; or the reader
+        // keeps going away from them (a lean the partner is following, step for step, so the gap itself stays small).
+        double away=Double.isNaN(st[4])?0:-((p.getX()-st[4])*rel.x+(p.getZ()-st[5])*rel.z)/r;st[4]=p.getX();st[5]=p.getZ();
+        boolean pulling=toTarget.dot(rel.scale(1/r))<-DanceWeight.PULL||away>DanceWeight.DRIFT;
+        st[0]=pulling?st[0]+1:Math.max(0,st[0]-2);
+        st[1]=DanceWeight.swirl(st[1],pulling,(int)st[0],st[3]<0?-1:1);
+        if(st[1]==0)return false;
+        double c=Math.cos(st[1]),s=Math.sin(st[1]),hold=Math.max(DanceWeight.HOLD,Math.min(DanceWeight.HOLD+DanceWeight.GIVE,r))/r;
+        var at=p.position().add(new Vec3(rel.x*c-rel.z*s,0,rel.x*s+rel.z*c).scale(hold));
+        var before=a.position();a.move(MoverType.SELF,at.subtract(a.position()).multiply(1,0,1));a.walkAnimation.update((float)a.position().distanceTo(before)*4,.4f);
+        // The way the partner now goes round becomes the way the reader is swinging, so a swirl let go and taken up again goes on the same way.
+        st[2]=Math.atan2(p.getZ()-a.getZ(),p.getX()-a.getX());
+        return true;
+    }
+    /** For the tests: the partner's swirl about the reader (radians a tick), or 0. */
+    public static double swirling(LiteraryActor a){var st=SWIRL.get(a.getUUID());return st==null?0:st[1];}
     private static void face(LiteraryActor a,ServerPlayer p,boolean body){
         float yaw=(float)Math.toDegrees(Math.atan2(-(p.getX()-a.getX()),p.getZ()-a.getZ()));a.setYHeadRot(yaw);if(body){a.setYRot(yaw);a.yBodyRot=yaw;}
     }

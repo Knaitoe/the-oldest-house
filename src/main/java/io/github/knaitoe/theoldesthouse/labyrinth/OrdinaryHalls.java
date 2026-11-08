@@ -66,20 +66,31 @@ public final class OrdinaryHalls {
     public static final List<String> BOUND=List.of("The books will not come out.","None of them come out. They are packed in too tight, or fixed.","Not one of them moves.","They will not come out.");
     /** 0.4.397: the laundry corridor's baskets of folded washing, tried. The owner asked whether they should answer a hand; they do. */
     public static final List<String> FOLDED=List.of("Folded sheets. They are still warm.","Someone has folded these since you came in.","The top one is folded the way you fold yours.","Still warm.");
+    /** 0.4.399: the one book out of the stacks, open on the reading table in the clearing. The owner found it gave nothing to a hand. */
+    public static final List<String> OPEN_BOOK=List.of("The one book that came off the shelves. It is open at a plan of the stacks, with this table marked.",
+            "Someone has drawn the way out in pencil. It goes the long way round.","There is a pencil mark beside the table, where you are standing.","The plan of the stacks. The way out, the long way round.");
     private static final Map<UUID,int[]> TRIED=new HashMap<>();
     /** A reader tries a painted door or a shelf: a dull knock, and the next of its lines, in grey. */
     public static void tried(ServerPlayer p,BlockPos at,HallFaceBlock.Kind kind){
-        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[3]);int which=kind.door()?0:1;var lines=kind.door()?PAINTED:BOUND;
+        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[4]);int which=kind.door()?0:1;var lines=kind.door()?PAINTED:BOUND;
         String line=lines.get(Math.min(counts[which],lines.size()-1));counts[which]++;
         p.level().playSound(null,at,kind.door()?SoundEvents.STONE_HIT:SoundEvents.CHISELED_BOOKSHELF_HIT,SoundSource.BLOCKS,.6F,kind.door()?.8F:1F);
         p.displayClientMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY),true);
     }
     /** A basket of folded washing, tried: a soft sound and a line in turn, and nothing comes away. */
     public static void folded(ServerPlayer p,BlockPos at){
-        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[3]);String line=FOLDED.get(Math.min(counts[2],FOLDED.size()-1));counts[2]++;
+        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[4]);String line=FOLDED.get(Math.min(counts[2],FOLDED.size()-1));counts[2]++;
         p.level().playSound(null,at,SoundEvents.WOOL_HIT,SoundSource.BLOCKS,.7F,.9F);
         p.displayClientMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY),true);
     }
+    /** The book on the stacks' reading table, read: a page turned and a line in turn. It cannot be lifted, and it gives no mark and no credit. */
+    public static void readTable(ServerPlayer p,BlockPos at){
+        var counts=TRIED.computeIfAbsent(p.getUUID(),k->new int[4]);String line=OPEN_BOOK.get(Math.min(counts[3],OPEN_BOOK.size()-1));counts[3]++;
+        p.level().playSound(null,at,SoundEvents.BOOK_PAGE_TURN,SoundSource.BLOCKS,.8F,1F);
+        p.displayClientMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY),true);
+    }
+    /** How many times a reader has read the book on the reading table, for the tests. */
+    public static int readings(ServerPlayer p){var c=TRIED.get(p.getUUID());return c==null?0:c[3];}
     /** How many times a reader has tried a basket of washing, for the tests. */
     public static int folds(ServerPlayer p){var c=TRIED.get(p.getUUID());return c==null?0:c[2];}
     /** How many times a reader has tried a painted door (0) or the shelves (1), for the tests. */

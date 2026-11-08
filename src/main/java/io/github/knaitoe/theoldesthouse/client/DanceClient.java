@@ -16,6 +16,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -80,7 +81,32 @@ public final class DanceClient {
         turn = step.turn();
         input.forwardImpulse = input.leftImpulse = 0;input.up = input.down = input.left = input.right = false;player.setSprinting(false);
         player.setDeltaMovement(step.vx(), player.getDeltaMovement().y, step.vz());
-        player.setYRot(player.getYRot() + step.yaw());
+    }
+    /** The bearing from the reader to the partner at the last frame, in degrees, and how many partners it was taken from. */
+    private static float bearing = Float.NaN;
+    private static int held = 0;
+    /**
+     * 0.4.399, the owner: "dancing animation needs to be smoothed out". The view used to be turned once a tick by the swing's step,
+     * and the reader's own view is not interpolated between ticks, so it turned in jerks twenty times a second. Now every frame
+     * the view turns by exactly as much as the partner has gone round the reader since the last frame, taken from both of their
+     * drawn (interpolated) places: the partner stays in front through a swing or a swirl, smoothly, and the mouse still looks about.
+     */
+    @SubscribeEvent public static void follow(RenderFrameEvent.Pre e) {
+        var mc = Minecraft.getInstance();var player = mc.player;
+        if (player == null || mc.isPaused()) { bearing = Float.NaN;return; }
+        var partners = partners(player);
+        if (partners.isEmpty() || player.isPassenger() || player.isSpectator()) { bearing = Float.NaN;held = 0;return; }
+        float partial = e.getPartialTick().getGameTimeDeltaPartialTick(true);
+        double cx = 0, cz = 0;for (var a : partners) { var at = a.getPosition(partial);cx += at.x;cz += at.z; }
+        cx /= partners.size();cz /= partners.size();
+        var me = player.getPosition(partial);
+        if (Math.hypot(cx - me.x, cz - me.z) < 1e-3) return;
+        float now = (float) Math.toDegrees(Math.atan2(-(cx - me.x), cz - me.z));
+        if (!Float.isNaN(bearing) && held == partners.size()) {
+            float turned = Mth.wrapDegrees(now - bearing);
+            player.setYRot(player.getYRot() + turned);player.yRotO += turned;
+        }
+        bearing = now;held = partners.size();
     }
     /** The partner's sway, so the two move together. */
     static float sway(LiteraryActor partner, float partial) { return Mth.sin((partner.tickCount + partial) * .06F); }
