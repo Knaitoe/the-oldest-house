@@ -191,6 +191,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.POLYBIUS, "An arcade cabinet the size of a matchbox, painted black all over, with a screen no bigger than a fingernail and nothing written on it anywhere."),
         Map.entry(LabyrinthPlace.REPLACEMENT, "A street of matchbox houses, every window taped over but one house's, and on its door a collar no bigger than a ring."),
         Map.entry(LabyrinthPlace.PEOPLE_LIGHTS, "A doll's house three storeys high and one room wide, a tiny wheelchair at the foot of its stair, and a pinhead figure at the top rail."),
+        Map.entry(LabyrinthPlace.TALL_GRASS, "A strip of road no longer than a hand, a toy wagon on its shoulder, and beyond the ditch a block of grass so tall the figure set in it is lost."),
         Map.entry(LabyrinthPlace.MARSH_SUPPER, "A farmhouse no bigger than a loaf in a square of corn cut into paths, its upstairs windows lit, a table inside laid for more chairs than it has."),
         Map.entry(LabyrinthPlace.STATE_ROUTE, "Four lanes of road the width of a hand, a mailbox on the far side with its flag up, and every car on it stopped."),
         Map.entry(LabyrinthPlace.DEER_ROAD, "A strip of road the length of a finger, a car on it with its lamps on, and something lying in front of it no bigger than a grain of rice."),

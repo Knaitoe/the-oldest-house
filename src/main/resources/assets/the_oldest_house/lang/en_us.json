@@ -1219,5 +1219,13 @@
   "subtitles.the_oldest_house.marsh.swing": "A swing door flaps through and back",
   "subtitles.the_oldest_house.marsh.wipe": "Boots scrape on a doormat",
   "advancements.the_oldest_house.account.marsh_supper.title": "The supper",
-  "advancements.the_oldest_house.account.marsh_supper.description": "I sat down to supper at a farmhouse at the end of a corn maze."
+  "advancements.the_oldest_house.account.marsh_supper.description": "I sat down to supper at a farmhouse at the end of a corn maze.",
+  "item.the_oldest_house.tall_grass_cap": "Small Cap",
+  "subtitles.the_oldest_house.grass.boy": "A boy calls from the grass",
+  "subtitles.the_oldest_house.grass.hazard": "Hazard lights tick",
+  "subtitles.the_oldest_house.grass.call": "Someone shouts",
+  "subtitles.the_oldest_house.grass.car": "A car slows and pulls onto gravel",
+  "subtitles.the_oldest_house.grass.away": "A car pulls away",
+  "advancements.the_oldest_house.account.tall_grass.title": "The tall grass",
+  "advancements.the_oldest_house.account.tall_grass.description": "I went into the grass by a county road after a boy who said he couldn't find it."
 }

@@ -1,0 +1,149 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/yard/pickup_bed",
+    "s": "the_oldest_house:block/yard/pickup_side",
+    "p": "the_oldest_house:block/yard/pickup_paint",
+    "w": "the_oldest_house:block/yard/wheel",
+    "particle": "the_oldest_house:block/yard/pickup_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        16,
+        5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        5,
+        0
+      ],
+      "to": [
+        1,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        5,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.5,
+        0,
+        3
+      ],
+      "to": [
+        0.5,
+        9,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        15.5,
+        0,
+        3
+      ],
+      "to": [
+        16.5,
+        9,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

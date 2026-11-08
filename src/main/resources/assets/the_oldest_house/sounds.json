@@ -3997,5 +3997,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.marsh.wipe"
+  },
+  "grass.boy": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:grass/boy",
+        "attenuation_distance": 40
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.grass.boy"
+  },
+  "grass.hazard": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:grass/hazard",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.grass.hazard"
+  },
+  "grass.call": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:grass/call",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.grass.call"
+  },
+  "grass.car": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:grass/car",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.grass.car"
+  },
+  "grass.away": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:grass/away",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.grass.away"
   }
 }

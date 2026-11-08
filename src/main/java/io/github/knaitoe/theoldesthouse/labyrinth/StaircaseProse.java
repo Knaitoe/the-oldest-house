@@ -239,6 +239,7 @@ public final class StaircaseProse {
     static { PLACES.put("deer_road","the county road"); }
     static { PLACES.put("state_route","the state route"); }
     static { PLACES.put("marsh_supper","the Marsh farm"); }
+    static { PLACES.put("tall_grass","the grass by the county road"); }
     static { PLACES.put("household","the landing where the household camped"); }
     static {
         String[][] names = {

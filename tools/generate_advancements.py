@@ -103,6 +103,7 @@ STORY_ICONS = {
     'deer_road': NS + ':deer_road_triangle',
     'state_route': NS + ':state_route_reflector',
     'marsh_supper': NS + ':marsh_clapper',
+    'tall_grass': NS + ':tall_grass_cap',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

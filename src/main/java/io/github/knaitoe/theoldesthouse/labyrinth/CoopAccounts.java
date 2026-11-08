@@ -119,6 +119,7 @@ final class CoopAccounts {
         // 0.4.333: one road for the party; whoever crossed and whoever watched from the fence.
         together(STATE_ROUTE,with("%s {was} on the 9 with me that night."));
         together(MARSH_SUPPER,with("%s {was} at the table with me."));
+        together(TALL_GRASS,with("%s {was} on the road with me."));
         together(DEER_ROAD,party("%s {was} on the road with me. We did not see the same things, and neither of us was wrong.",
             "%s {was} still on the road when I left it."));
         together(PLACE_FOR_YOU,with("%s {was} expected there too, at another table. Afterwards we compared our cards: the names were different and the handwriting was the same.")); // 0.4.257

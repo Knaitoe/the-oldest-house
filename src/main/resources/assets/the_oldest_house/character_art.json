@@ -1530,5 +1530,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 114
+  },
+  {
+    "name": "literary_grass_driver",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 115
   }
 ]

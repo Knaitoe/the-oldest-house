@@ -12,8 +12,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.310, A Deer in the Road: 75 / 57 / 52.
  0.4.333, State Route 9: 76 / 57 / 53.
  0.4.348, The Supper: 77 / 58 / 54.
+ 0.4.349, In the Tall Grass: 78 / 59 / 55.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=77,REQUIRED=58,LITERARY=54;
+    static final int SOURCES=78,REQUIRED=59,LITERARY=55;
 }
