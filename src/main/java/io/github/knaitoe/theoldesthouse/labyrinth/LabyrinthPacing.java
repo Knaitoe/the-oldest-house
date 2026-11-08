@@ -28,6 +28,12 @@ public final class LabyrinthPacing {
     public static boolean calm(LabyrinthPlace place) {
         return quiet(place) || place==LabyrinthPlace.FAMILIAR_KITCHEN || place==LabyrinthPlace.YARD_REUNION;
     }
+    /**
+     * 0.4.392, R2 of docs/HALLS_TRIALS_AND_TIME_DESIGN.md (owner, November 8: "R2, try from depth 20 - one in four should be
+     * good"): from {@link #TRIAL_ONLY_DEPTH} on, about one ordinary hall in {@link #TRIAL_ONLY_IN} has no ordinary way on. Its doors
+     * lead to trials, and to its story, if one is dealt there. Nothing changes before. A reader can always go back.
+     */
+    public static final int TRIAL_ONLY_DEPTH=20,TRIAL_ONLY_IN=4;
     public static boolean physicalTrial(LabyrinthPlace place){if(HazardVariety.newKind(place)||place==LabyrinthPlace.YARD_FLOOD||place==LabyrinthPlace.YARD_WINDBREAK||place==LabyrinthPlace.YARD_DITCH_FLOOD||place==LabyrinthPlace.YARD_STORM_FIELD)return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
     public static int trialChance(LabyrinthData data,UUID player){
         int depth=data.returnDepth(player);if(domestic(depth))return 0;

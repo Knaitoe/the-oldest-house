@@ -911,6 +911,31 @@ public final class ExplorationPassTests {
         h.succeed();
     }
 
+    /**
+     * 0.4.392, R2 (owner: "R2, try from depth 20 - one in four should be good"): from depth twenty about one ordinary hall in four
+     * leads on only by trials, and by its story door if it has one; before that, never.
+     */
+    @GameTest(template="empty")
+    public static void fromDepthTwentyAboutOneHallInFourLeadsOnOnlyByTrials(GameTestHelper h) {
+        var data=LabyrinthData.get(h.getLevel().getServer());var random=RandomSource.create(3920L);int n=400;int[] only=new int[2];int[] distinct={0};
+        for(int k=0;k<2;k++){int depth=LabyrinthPacing.TRIAL_ONLY_DEPTH-1+k;
+            for(int i=0;i<n;i++){var id=UUID.randomUUID();
+                for(int d=0;d<depth;d++)data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(d,64,0),0F,true));
+                var doors=new ArrayList<LabyrinthData.Door>();
+                for(int j=0;j<3;j++)doors.add(new LabyrinthData.Door("r2_"+k+"_"+i+"_"+j,HouseDimensions.INTERIOR,new BlockPos(i,64,j),Direction.NORTH,LabyrinthData.DEALT,false));
+                LabyrinthDealer.deal(data,id,doors,LabyrinthPlace.STONE_GALLERY,random);
+                boolean ordinaryWayOn=false;var trials=new HashSet<String>();int trialDoors=0;
+                for(var door:doors){var place=LabyrinthPlace.byId(data.deal(id,door).place());
+                    if(place!=null&&LabyrinthPacing.physicalTrial(place)){trialDoors++;trials.add(place.id());}
+                    else if(place==null||!place.isVignette())ordinaryWayOn=true;}
+                if(!ordinaryWayOn&&trialDoors>0){only[k]++;if(trials.size()==trialDoors)distinct[0]++;}
+            }}
+        h.assertTrue(only[0]==0,"before depth twenty every hall has an ordinary way on: "+only[0]+" of "+n+" did not");
+        h.assertTrue(only[1]>=n*.15&&only[1]<=n*.35,"from depth twenty about one hall in four leads on only by trials, or by its story: "+only[1]+" of "+n);
+        h.assertTrue(distinct[0]*10>=only[1]*8,"behind its doors, different trials: "+distinct[0]+" of "+only[1]);
+        h.succeed();
+    }
+
     private static void halls(GameTestHelper h,List<LabyrinthPlace> list,int x0)throws Exception {
         var l=h.getLevel();int i=0;
         for(var hall:list) {
