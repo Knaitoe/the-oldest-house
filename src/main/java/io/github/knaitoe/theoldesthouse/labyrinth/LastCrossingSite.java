@@ -100,6 +100,12 @@ public final class LastCrossingSite {
     public static final int GALLERY_W=30,GALLERY_E=40,GALLERY_S=-49,GALLERY_N=-57,GALLERY_FLOOR=-12,CHAMBER_W=42,CHAMBER_E=46,CHAMBER_S=-50,CHAMBER_N=-56;
     /** Where the source shows through the glass, and where the gallery's stair comes down. */
     public static final Vec3 SOURCE_SEEN=new Vec3(44.5,-10.5,-52.5),GALLERY_FOOT=new Vec3(30.5,-11,-55.5);
+    /** 0.4.356, Night Three: where the things come up onto the landing with the master bypass open; where Vera stands aboard the ferry; the
+     * far landing, where those aboard step off and where everyone is brought at the end, and where Vera calls the last roll; the cells of
+     * the ramp's approach the master's water comes up over. */
+    public static final Vec3 LANDING_RISE=new Vec3(31.5,0,-59.5),VERA_FERRY=new Vec3(33.5,0,-67.5),FAR_VERA=new Vec3(33.5,0,-95.5);
+    public static final List<Vec3> FAR_LANDING=List.of(new Vec3(31.5,0,-94.5),new Vec3(33.5,0,-94.5),new Vec3(35.5,0,-94.5),new Vec3(31.5,0,-95.8),new Vec3(35.5,0,-95.8),new Vec3(32.5,0,-95.0),new Vec3(34.5,0,-95.0));
+    public static final List<BlockPos> APPROACH=List.of(new BlockPos(28,0,-59),new BlockPos(28,0,-60),new BlockPos(28,0,-61));
     /** The far bank: the landing, the lamp, the cable's anchor and the shelter whose door is the way on. */
     public static final BlockPos FAR_LAMP=new BlockPos(37,3,-95),ANCHOR=new BlockPos(47,0,-94),ONWARD=new BlockPos(43,0,-98);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -414,12 +420,7 @@ public final class LastCrossingSite {
         // The flooded chamber behind the gallery's east wall, the source in it, weed standing in the dark water; a strip of thick glass in the
         // wall either side of the feed gate.
         box(l,b,CHAMBER_W-1,GALLERY_FLOOR,CHAMBER_N-1,CHAMBER_E+1,-7,CHAMBER_S+1,s(Blocks.STONE_BRICKS));
-        box(l,b,CHAMBER_W,GALLERY_FLOOR+1,CHAMBER_N,CHAMBER_E,-8,CHAMBER_S,water());
-        for(int[] k:new int[][]{{42,-50},{46,-56},{42,-55},{46,-51},{45,-50}}){set(l,b,k[0],-11,k[1],s(Blocks.KELP_PLANT));set(l,b,k[0],-10,k[1],s(Blocks.KELP));}
-        for(int[] g:new int[][]{{43,-56},{45,-52},{43,-51}})set(l,b,g[0],-11,g[1],s(Blocks.SEAGRASS));
-        set(l,b,SOURCE,fit(Kind.SOURCE,Direction.WEST));
-        for(int z=CHAMBER_N;z<=CHAMBER_S;z++)if(z!=FEED_GATE.getZ())set(l,b,CHAMBER_W-1,-10,z,s(Blocks.GLASS));
-        set(l,b,FEED_GATE,fit(Kind.FEED_GATE,Direction.WEST));
+        chamber(l,b);
         // The live feed along the gallery's north wall under its roof, and its tag; a lantern or three hung from the roof.
         for(int x=GALLERY_W;x<=GALLERY_E;x++)set(l,b,x,-8,GALLERY_N,fit(Kind.RUN,Direction.SOUTH));
         set(l,b,FEED_GALLERY,fit(Kind.FEED,Direction.SOUTH));
@@ -469,6 +470,38 @@ public final class LastCrossingSite {
         for(int z=-35;z>PUMP_S;z--)set(l,b,23,5,z,chain(Direction.Axis.Z));
         set(l,b,23,6,PUMP_S,s(Blocks.LIGHTNING_ROD));
     }
+    /** The flooded chamber behind the feed gate as it stands before anyone bars the gate: full of black water, weed standing in it, the
+     * source at the bottom, the glass in the wall either side of the gate, and the gate shut in its housing. */
+    static void chamber(ServerLevel l,BlockPos b){
+        box(l,b,CHAMBER_W,GALLERY_FLOOR+1,CHAMBER_N,CHAMBER_E,-8,CHAMBER_S,water());
+        for(int[] k:new int[][]{{42,-50},{46,-56},{42,-55},{46,-51},{45,-50}}){set(l,b,k[0],-11,k[1],s(Blocks.KELP_PLANT));set(l,b,k[0],-10,k[1],s(Blocks.KELP));}
+        for(int[] g:new int[][]{{43,-56},{45,-52},{43,-51}})set(l,b,g[0],-11,g[1],s(Blocks.SEAGRASS));
+        set(l,b,SOURCE,fit(Kind.SOURCE,Direction.WEST));
+        for(int z=CHAMBER_N;z<=CHAMBER_S;z++)if(z!=FEED_GATE.getZ())set(l,b,CHAMBER_W-1,-10,z,s(Blocks.GLASS));
+        set(l,b,FEED_GATE,fit(Kind.FEED_GATE,Direction.WEST));set(l,b,FEED_GATE.above(),s(Blocks.STONE_BRICKS));set(l,b,FEED_GATE.above(2),s(Blocks.STONE_BRICKS));
+    }
+    /** 0.4.356: the chamber's water let down one layer, from the top (layer 0 is y -8, 3 is the floor's y -11); the weed goes with it. */
+    static void drainLayer(ServerLevel l,BlockPos b,int layer){
+        int y=-8-layer;
+        for(int x=CHAMBER_W;x<=CHAMBER_E;x++)for(int z=CHAMBER_N;z<=CHAMBER_S;z++){var at=b.offset(x,y,z);var st=l.getBlockState(at);
+            if(st.is(Blocks.WATER)||st.is(Blocks.KELP)||st.is(Blocks.KELP_PLANT)||st.is(Blocks.SEAGRASS))BuildBlocks.set(l,at,s(Blocks.AIR),F);}
+    }
+    /** The gate drawn up into its housing once the chamber is down: the way through into the chamber, two cells high, the plate above. */
+    static void gateDrawn(ServerLevel l,BlockPos b){set(l,b,FEED_GATE,s(Blocks.AIR));set(l,b,FEED_GATE.above(),s(Blocks.AIR));set(l,b,FEED_GATE.above(2),fit(Kind.FEED_GATE,Direction.WEST,3));}
+    /** 0.4.356, the final rise: the sluice pit full to below its deck, the ladder standing in the water; and empty again. */
+    static void floodPit(ServerLevel l,BlockPos b){
+        for(int x=25;x<=26;x++)for(int z=-61;z<=-59;z++)for(int y=-7;y<=-2;y++){var at=b.offset(x,y,z);var st=l.getBlockState(at);
+            if(st.isAir())BuildBlocks.set(l,at,water(),F);else if(st.is(Blocks.LADDER))BuildBlocks.set(l,at,st.setValue(LadderBlock.WATERLOGGED,true),F);}
+    }
+    static void drainPit(ServerLevel l,BlockPos b){
+        for(int x=25;x<=26;x++)for(int z=-61;z<=-59;z++)for(int y=-7;y<=-2;y++){var at=b.offset(x,y,z);var st=l.getBlockState(at);
+            if(st.is(Blocks.WATER))BuildBlocks.set(l,at,s(Blocks.AIR),F);else if(st.is(Blocks.LADDER)&&st.getValue(LadderBlock.WATERLOGGED))BuildBlocks.set(l,at,st.setValue(LadderBlock.WATERLOGGED,false),F);}
+    }
+    /** The master bypass's water up over the ramp's approach, and gone again. */
+    static void floodApproach(ServerLevel l,BlockPos b){for(var at:APPROACH)if(l.getBlockState(b.offset(at)).isAir())set(l,b,at,water());}
+    static void drainApproach(ServerLevel l,BlockPos b){
+        for(int x=26;x<=38;x++)for(int z=-64;z<=-54;z++){var at=b.offset(x,0,z);if(l.getBlockState(at).is(Blocks.WATER))BuildBlocks.set(l,at,s(Blocks.AIR),F);}
+    }
     /** Day Two: the ramp branch flooded from the river with its bypass open, and dry again with it shut. */
     static void floodRamp(ServerLevel l,BlockPos b){for(int y=BRANCH_LOW;y<=BRANCH_HIGH;y++)box(l,b,RAMP_BRANCH_W,y,RAMP_BRANCH_Z,RAMP_BRANCH_E,y,RAMP_BRANCH_Z,water());}
     static void drainRamp(ServerLevel l,BlockPos b){for(int y=BRANCH_LOW;y<=BRANCH_HIGH;y++)box(l,b,RAMP_BRANCH_W,y,RAMP_BRANCH_Z,RAMP_BRANCH_E,y,RAMP_BRANCH_Z,s(Blocks.AIR));}
@@ -510,9 +543,12 @@ public final class LastCrossingSite {
         // downstream sluice open.
         for(var r:ROLLERS)if(!r.equals(LOOSE_ROLLER))set(l,b,r,fit(Kind.ROLLER,Direction.NORTH));
         set(l,b,FEED_GAUGE,fit(Kind.FEED,Direction.WEST));set(l,b,FEED_INTAKE,fit(Kind.FEED,Direction.WEST));set(l,b,FEED_GALLERY,fit(Kind.FEED,Direction.SOUTH));
-        set(l,b,GALLERY_DOOR,fit(Kind.GALLERY_DOOR,Direction.EAST));set(l,b,FEED_GATE,fit(Kind.FEED_GATE,Direction.WEST));
+        set(l,b,GALLERY_DOOR,fit(Kind.GALLERY_DOOR,Direction.EAST));
         for(var d:DEBRIS)set(l,b,d,fit(Kind.DEBRIS,Direction.NORTH));
-        set(l,b,CUTOFF,fit(Kind.CUTOFF,Direction.NORTH));set(l,b,SOURCE,fit(Kind.SOURCE,Direction.WEST));
+        set(l,b,CUTOFF,fit(Kind.CUTOFF,Direction.NORTH));
+        // Night Three: the chamber full again with its source and the gate down, the pit and the ramp's approach drained, the bollard's
+        // rope made fast.
+        chamber(l,b);drainPit(l,b);drainApproach(l,b);
         set(l,b,PIN_RACK,fit(Kind.RACK,Direction.SOUTH));set(l,b,BAR_RACK,fit(Kind.RACK,Direction.WEST,2));
         set(l,b,MASTER,fit(Kind.MASTER,Direction.EAST));set(l,b,RELEASE,fit(Kind.RELEASE,Direction.NORTH));set(l,b,DOWNSTREAM,fit(Kind.DOWNSTREAM,Direction.WEST));
         // The lower floor dry again, whatever came up into it in the night.

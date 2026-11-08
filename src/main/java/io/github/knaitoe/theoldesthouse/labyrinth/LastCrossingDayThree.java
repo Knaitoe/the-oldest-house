@@ -34,8 +34,8 @@ import net.minecraft.world.phys.Vec3;
  * thick glass; the locking bar carried down from its rack in the intake and staged at the gate; the two heaps of fallen debris in the
  * passage south cleared to the upstream cutoff's alcove. The master bypass by the sluice wheel is rusted fast by day; a reader the plate
  * has exposed knows it will turn at high water, and once exposed, the source offers them the Other Breath under their own. Vera says where
- * things stand before dark, and asks whoever has the plate to decide where it stands tonight. At the end of the day the station holds at
- * the third dusk: Night Three, the endings and the accounts are the last slice.
+ * things stand before dark, and asks whoever has the plate to decide where it stands tonight. At the end of the day the third dusk falls:
+ * Night Three is LastCrossingNightThree (0.4.356).
  */
 public final class LastCrossingDayThree {
     private LastCrossingDayThree(){}
@@ -61,7 +61,7 @@ public final class LastCrossingDayThree {
         /** The source: the feed's tags traced, the door's shoves and open, the bar taken and staged, the debris strokes, the path, ready. */
         int feed,shoves;boolean doorOpen,barTaken,barStaged,pathCleared,galleryReady;final Map<BlockPos,Integer> strokes=new HashMap<>();
         final Map<BlockPos,Long> lastStroke=new HashMap<>();final LinkedHashSet<UUID> feedHands=new LinkedHashSet<>(),pathHands=new LinkedHashSet<>();
-        boolean briefed,held;final Set<UUID> offered=new HashSet<>();
+        boolean briefed;final Set<UUID> offered=new HashSet<>();
     }
     static boolean active(Run r){return r.phase==LastCrossing.DAY&&r.dayNo>=3;}
     public static int feed(BlockPos b){var r=LastCrossing.run(b);return r==null?0:r.dayThree.feed;}
@@ -93,7 +93,7 @@ public final class LastCrossingDayThree {
     // ------------------------------------------------------------------------------------------------ the day
     static void tick(ServerLevel l,Run r,List<ServerPlayer> here){
         var d=r.dayThree;
-        if(!d.held)r.day++;
+        r.day++;
         vera(l,r,here);
         LastCrossingDay.calls(l,r,here);
         LastCrossingNight.carrierBeat(l,r,r.night,here);
@@ -104,8 +104,8 @@ public final class LastCrossingDayThree {
         gallery(l,r,here);
         if(!d.briefed&&r.day>=LastCrossing.DAY_TICKS*5/6){d.briefed=true;LastCrossing.speak(l,r,LastCrossingTexts.DAY3_BRIEF,64);
             for(var p:here)if(r.crew.containsKey(p.getUUID()))LastCrossing.mark(p,"HeardBrief");}
-        // The third dusk holds: Night Three is the last slice.
-        if(!d.held&&r.day>=LastCrossing.DAY_TICKS){d.held=true;r.day=LastCrossing.DAY_TICKS;for(var p:here)if(r.crew.containsKey(p.getUUID()))LastCrossing.mark(p,"DayThree");}
+        // The third dusk: Night Three (LastCrossingNightThree, 0.4.356).
+        if(r.day>=LastCrossing.DAY_TICKS)LastCrossingNightThree.begin(l,r,here);
     }
     /** Vera at the ramp: the depth, the roll in the first day's order, Ellis, and the question; then back to her porch. */
     static void vera(ServerLevel l,Run r,List<ServerPlayer> here){
@@ -277,7 +277,7 @@ public final class LastCrossingDayThree {
             if(rel.equals(LastCrossingSite.PIN_RACK)&&LastCrossing.holds(p,"pin")){LastCrossing.drop(p,"pin");d.pinTaken=false;l.setBlock(at,LastCrossingSite.fit(Kind.RACK,Direction.SOUTH,1),Block.UPDATE_CLIENTS);LastCrossing.cue(p,"You hang the pin back on the rack.");return true;}
             if(rel.equals(LastCrossingSite.BAR_RACK)&&LastCrossing.holds(p,"lockbar")){LastCrossing.drop(p,"lockbar");d.barTaken=false;l.setBlock(at,LastCrossingSite.fit(Kind.RACK,Direction.WEST,2),Block.UPDATE_CLIENTS);LastCrossing.cue(p,"You lay the bar back on its hooks.");return true;}
             LastCrossing.cue(p,"An empty rack on the wall.");return true;}
-        if(!active(r)){LastCrossing.cue(p,stage==2?LastCrossingTexts.BAR_EARLY:"The launch pin, on its rack.");return true;}
+        if(r.dayNo<3||r.phase==LastCrossing.DAWN||r.phase==LastCrossing.END){LastCrossing.cue(p,stage==2?LastCrossingTexts.BAR_EARLY:"The launch pin, on its rack.");return true;}
         boolean pin=stage==1;
         if(!LastCrossing.give(p,LastCrossing.item(pin?CrossingRegistry.PIN.get():CrossingRegistry.LOCKBAR.get(),pin?"pin":"lockbar",null))){LastCrossing.cue(p,"Your hands are full.");return true;}
         l.setBlock(at,LastCrossingSite.fit(Kind.RACK,l.getBlockState(at).getValue(CrossingBlock.FACING),0),Block.UPDATE_CLIENTS);
