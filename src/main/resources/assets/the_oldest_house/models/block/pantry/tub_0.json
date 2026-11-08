@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "z": "the_oldest_house:block/pantry/zinc",
+    "t": "the_oldest_house:block/pantry/tub_0",
+    "particle": "the_oldest_house:block/pantry/zinc"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        7,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#z"
+        },
+        "south": {
+          "texture": "#z"
+        },
+        "east": {
+          "texture": "#z"
+        },
+        "west": {
+          "texture": "#z"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#z"
+        }
+      }
+    }
+  ]
+}

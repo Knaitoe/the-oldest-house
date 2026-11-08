@@ -4375,5 +4375,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.clockwork.gate"
+  },
+  "pantry.ice": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pantry/ice",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pantry.ice"
+  },
+  "pantry.shutter": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pantry/shutter",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pantry.shutter"
+  },
+  "pantry.drip": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pantry/drip",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pantry.drip"
+  },
+  "pantry.frost": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pantry/frost",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pantry.frost"
+  },
+  "pantry.seal": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pantry/seal",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pantry.seal"
   }
 }

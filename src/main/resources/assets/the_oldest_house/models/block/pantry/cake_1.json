@@ -1,0 +1,113 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "m": "the_oldest_house:block/pantry/marble",
+    "c": "the_oldest_house:block/pantry/cake_1",
+    "g": "the_oldest_house:block/pantry/glass",
+    "particle": "the_oldest_house:block/pantry/marble"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        2,
+        8
+      ],
+      "to": [
+        13,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        2,
+        3
+      ],
+      "to": [
+        8,
+        14,
+        13
+      ],
+      "faces": {
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        2
+      ],
+      "to": [
+        14,
+        15,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        }
+      }
+    }
+  ]
+}
