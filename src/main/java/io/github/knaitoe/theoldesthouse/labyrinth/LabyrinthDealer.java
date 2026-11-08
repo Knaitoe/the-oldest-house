@@ -142,7 +142,7 @@ public final class LabyrinthDealer {
         // 0.4.159: a reader the porch settled as one who takes the road is dealt roads and open air twice as often.
         if (NovelRooms.outside(place) && HouseRead.value(data, player, HouseRead.Trait.HOME, true).equals("RUNAWAY")) weight *= 2;
         // 0.4.333: the state route's reflector, carried, leans the dealing a little toward roads and open air.
-        if (NovelRooms.outside(place) && StateRoute.carriesReflector(player)) weight = (weight * 3 + 1) / 2;
+        if (NovelRooms.outside(place) && (StateRoute.carriesReflector(player) || MarshSupper.carriesClapper(player))) weight = (weight * 3 + 1) / 2;
         return weight;
     }
     private static int begunWeight(LabyrinthData data, UUID player, LabyrinthPlace place) {

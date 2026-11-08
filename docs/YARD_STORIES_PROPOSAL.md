@@ -103,7 +103,7 @@ The proof is what is on the side by the butcher's block: Corinne's car keys on t
 | Get up and leave with the proof unspoken | `left_before_the_meat` | understanding |
 | Lay the keys on the table in front of Ida (taken from the kitchen) | `put_her_keys_on_the_table` | understanding |
 
-All three resolve one source, `the_supper`.
+All three resolve one source, `the_supper` (built as `marsh_supper`, the place's id).
 
 - A reader who eats wakes in the House with the taste, and their account says so plainly, without detail.
 - A reader who lays the keys down ends the meal for everyone at the table.
@@ -318,7 +318,7 @@ The draft points at a separate design for The Last Crossing, a three-day vignett
 
 ## Build order and slices
 
-1. **The Supper,** in two slices:
+1. **The Supper,** in two slices. *Built whole in 0.4.348 (`docs/MARSH_SUPPER_0_4_348.md`), both slices in one release; its story id is `marsh_supper`, the place's id.*
    1. The place, the maze, the drive and tree, the porch, the house and kitchen, the household and the guest, the ordinary meal, the chair and the kitchen view.
    2. Her name, the meat, the three endings, the keys, together, the accounts, the yield, and the tests.
 2. **In the Tall Grass,** in two slices: the shoulder and the field's movement; the calls, the end, and the accounts.

@@ -1208,5 +1208,16 @@
   "block.the_oldest_house.sphinx_face": "Her Face in the Dark",
   "item.the_oldest_house.dream_stela": "Piece of the Dream Stela",
   "entity.the_oldest_house.sphinx_dream": "The Sphinx",
-  "block.the_oldest_house.stela_fill": "Parted Fill"
+  "block.the_oldest_house.stela_fill": "Parted Fill",
+  "block.the_oldest_house.marsh_fitting": "Farmhouse Fitting",
+  "block.the_oldest_house.marsh_wallpaper": "Faded Wallpaper",
+  "block.the_oldest_house.marsh_boards": "Farmhouse Boards",
+  "block.the_oldest_house.marsh_linoleum": "Kitchen Linoleum",
+  "item.the_oldest_house.marsh_keys": "Car Keys on a Fob",
+  "item.the_oldest_house.marsh_clapper": "Dinner Bell Clapper",
+  "subtitles.the_oldest_house.marsh.bell": "A dinner bell rings",
+  "subtitles.the_oldest_house.marsh.swing": "A swing door flaps through and back",
+  "subtitles.the_oldest_house.marsh.wipe": "Boots scrape on a doormat",
+  "advancements.the_oldest_house.account.marsh_supper.title": "The supper",
+  "advancements.the_oldest_house.account.marsh_supper.description": "I sat down to supper at a farmhouse at the end of a corn maze."
 }

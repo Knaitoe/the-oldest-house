@@ -40,6 +40,7 @@ public final class SceneClock {
             case PLACE_FOR_YOU->9; // 0.4.257: one evening in Mara's house
             case SPHINX_FIELD->3; // 0.4.339: dusk over the corn
             case STATE_ROUTE->9; // 0.4.333: midnight and rain on the state route
+            case MARSH_SUPPER->3; // 0.4.348: dusk over the corn at the Marsh farm
             case DEER_ROAD->9; // 0.4.310: midnight and rain on the county road
             case SECOND_PERSON->15; // 0.4.274: the flat's own year and hour, from the reader's record (SecondPersonClient)
             case PEOPLE_LIGHTS->9; // 0.4.253: the evening and the night, the people lights going off
