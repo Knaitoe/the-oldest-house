@@ -406,6 +406,12 @@ public final class LabyrinthData extends SavedData {
         setDirty();
     }
 
+    /** 0.4.394: this reader's way back, the latest crossing first (Folds). */
+    public List<Waypoint> returns(UUID player) {
+        Deque<Waypoint> stack = returns.get(player);
+        return stack == null ? List.of() : List.copyOf(stack);
+    }
+
     @Nullable
     public Waypoint peekReturn(UUID player) {
         Deque<Waypoint> stack = returns.get(player);

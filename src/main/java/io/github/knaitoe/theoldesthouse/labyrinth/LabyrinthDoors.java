@@ -174,6 +174,8 @@ public final class LabyrinthDoors {
 
         // 0.4.146: friends crossing one door together go into the same vignette, or split where they cannot.
         GroupCrossings.before(player, door);
+        // 0.4.394, R3: a fold takes whoever uses it, and the friends behind them, back to a hall already passed (Folds).
+        if (Folds.use(player, door)) return;
         String finaleDestination = LabyrinthData.DEALT.equals(door.destination)
                 ? (data.deal(player.getUUID(), door) == null ? "" : data.deal(player.getUUID(), door).place())
                 : door.destination;
@@ -781,6 +783,25 @@ public final class LabyrinthDoors {
             if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
             INSIDE.remove(p.getUUID());
             arrived.accept(p);
+        });
+        return true;
+    }
+
+    /**
+     * 0.4.394, R3 (Folds): through a fold, under the fade, out of the door this reader took {@code back} crossings ago, in front of it
+     * and facing into its hall, as if they had just come back through it. It has shut behind them.
+     */
+    static boolean fold(ServerPlayer player, LabyrinthData.Door door, LabyrinthData.Waypoint landing, int back) {
+        if (!player.isAlive() || isBusy(player) || player.server.getLevel(landing.dimension()) == null) return false;
+        BlockPos left = BlockPos.containing(landing.pos());
+        Direction into = Direction.fromYRot(landing.yaw());
+        var target = new LabyrinthData.Waypoint(landing.dimension(), Vec3.atBottomCenterOf(left.relative(into)), into.toYRot(), false);
+        setDoorOpen(player.serverLevel(), door.lower, false, player);
+        fadeTo(player, target, 4, 10, 24, p -> {
+            STEPS.remove(p.getUUID());
+            INSIDE.add(p.getUUID());
+            Folds.arrived(p, landing, back);
+            playTo(p, SoundEvents.WOODEN_DOOR_CLOSE, Vec3.atCenterOf(left), 0.9F, 0.9F);
         });
         return true;
     }

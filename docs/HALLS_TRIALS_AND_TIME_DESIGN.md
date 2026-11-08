@@ -12,7 +12,8 @@ Status: **being built (November 8)**. The owner left the open questions to judge
 - Halls 2, 5, 6 and 10, the long bedroom hall, the atrium, the cistern walk and the library stacks: built in 0.4.391 ([FOUR_HALLS_0_4_391.md](FOUR_HALLS_0_4_391.md)), at the owner's request ("go ahead and implement the four rooms please, then the rules"). The atrium's stair runs up beside the well, inside a wall that rises with it, rather than round the walls.
 - R2, trials in the way: built in 0.4.392 as the owner set it, from depth 20, about one ordinary hall in four ([TRIALS_IN_THE_WAY_0_4_392.md](TRIALS_IN_THE_WAY_0_4_392.md)).
 - R4, a slower first stretch: built in 0.4.393 ([SLOWER_FIRST_STRETCH_0_4_393.md](SLOWER_FIRST_STRETCH_0_4_393.md)), when the owner asked for "the rest of the rules". Domestic halls to depth eight, stone from nine.
-- Next: R3, only as fixed folds shared by everyone. Trials 5, 7, 8 and 9 are not scheduled.
+- R3, folds: built in 0.4.394 in the owner's form only ([FOLDS_0_4_394.md](FOLDS_0_4_394.md)). A fold is a fixed door, the same for everyone who comes that way, and friends who go through it together land together.
+- All four road changes are built. Trials 5, 7, 8 and 9 are not scheduled.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 
@@ -59,7 +60,7 @@ Each proposal is numbered so the owner can pick by number.
   - Readers who cross it together all go back together, to the same spot. It never moves one reader of a group crossing while the rest go on.
   - Each reader's depth drops by the same amount, to match where they land.
   - Taking it again lands where it did before, so it can be drawn on the map and chalked like any door.
-- **R3 waits for a playtest**, in this form only.
+- **Built in 0.4.394** in this form only ([FOLDS_0_4_394.md](FOLDS_0_4_394.md)), when the owner asked for "the rest of the rules".
 
 **R4. A slower first stretch.** Domestic halls end at depth 8 rather than 6, and stone halls begin at 9. Stories are unchanged; this only adds walking.
 - **Built in 0.4.393** ([SLOWER_FIRST_STRETCH_0_4_393.md](SLOWER_FIRST_STRETCH_0_4_393.md)).
