@@ -12,6 +12,9 @@ Draws, in native Minecraft pixels from fixed seeds:
   the shaft and dry ones at its head, a frosted window lit from behind, and the worn stone of the treads.
 - the hall of many lengths (0.4.388): pale distempered plaster, a walnut rail at waist height with a brass rule let into it, oak
   boards measured off by a brass strip at every block, and a plain coffered ceiling.
+- the door that follows (0.4.389): striped wallpaper, a basketweave parquet, a plaster ceiling, the dark frames of the doors,
+  the doors themselves painted shut (lower half with its knob, upper half), lath and plaster behind the walls, and a tall
+  mirror's frame and glass.
 
 Writes the models and block states, and the blocks' names. --check verifies everything written.
 """
@@ -58,6 +61,15 @@ WALNUT = '#3b2b1f'
 BRASS = '#a88a4c'
 OAK = '#86684a'
 COFFER = '#b2b0a0'
+PAPER2 = '#77705c'
+PAPER2_STRIPE = '#655e4b'
+PARQUET = '#7b5a3b'
+PLASTER = '#a9a596'
+TRIM = '#2e2622'
+LATH = '#7a6449'
+DOORPAINT = '#8a8371'
+GILT = '#6b5530'
+GLASS = '#3a4448'
 
 
 def rgb(c):
@@ -434,6 +446,114 @@ def coffered(seed):
     return im
 
 
+def striped_paper(seed):
+    """Wallpaper in a broad stripe, a small sprig printed down the paler bands, gone a little grubby at the seams."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            band = PAPER2_STRIPE if 5 <= x <= 10 else PAPER2
+            im.putpixel((x, y), shade(band, rnd.randint(-3, 3) - (4 if x in (0, 15) else 0)))
+    for y in (2, 10):
+        for dx, dy in ((2, 0), (1, 1), (3, 1), (2, 2), (2, 3)):
+            im.putpixel((dx, y + dy), shade(PAPER2, -14))
+            im.putpixel((dx + 11, (y + 4 + dy) % 16), shade(PAPER2, -14))
+    return im
+
+
+def basketweave(seed):
+    """Parquet in basketweave: four squares to a block, each three slats running the other way to its neighbours."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            across = ((x // 8) + (y // 8)) % 2 == 0
+            along = y % 8 if across else x % 8
+            slat = (along - 1) // 2 if along else 0
+            k = rnd.randint(-4, 4) + (slat - 1) * 5
+            seam = x % 8 == 0 or y % 8 == 0
+            gap = along in (3, 6)
+            im.putpixel((x, y), shade(PARQUET, -26 if seam else -13 if gap else k))
+    return im
+
+
+def plaster(seed):
+    """A plaster ceiling, flat and pale, with one hairline crack wandering across it."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(PLASTER, rnd.randint(-3, 3)))
+    y = 6
+    for x in range(16):
+        y = max(1, min(14, y + rnd.choice((-1, 0, 0, 1))))
+        im.putpixel((x, y), shade(PLASTER, -18))
+    return im
+
+
+def door_trim(seed):
+    """The frame of a door: dark painted wood with a moulding run down both edges."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            k = rnd.randint(-2, 2) + (10 if x in (2, 13) else -6 if x in (3, 12) else 0) + (4 if x in (0, 15) else 0)
+            im.putpixel((x, y), shade(TRIM, k))
+    return im
+
+
+def lath(seed):
+    """The back of a wall: laths nailed across, three to a block, with grey plaster pushed through the gaps."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            if y % 5 == 4:
+                im.putpixel((x, y), shade(PLASTER, rnd.randint(-12, 0)))
+            else:
+                im.putpixel((x, y), shade(LATH, rnd.randint(-5, 5) + (3 if y % 5 == 0 else 0) + (-10 if (x + 7 * (y // 5)) % 11 == 0 else 0)))
+    return im
+
+
+def door_panel(seed, upper):
+    """Half a door painted shut: stiles and rails round a sunk panel, the gap round the edge painted over. The lower half has
+    its knob, near the top on one side."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            sunk = 3 <= x <= 12 and ((2 <= y <= 15) if upper else (0 <= y <= 12))
+            k = rnd.randint(-2, 2) + (-6 if sunk else 2)
+            if sunk and (x in (3, 12) or y == (2 if upper else 12)):
+                k -= 10
+            im.putpixel((x, y), shade(DOORPAINT, k - (12 if x in (0, 15) else 0)))
+    if not upper:
+        for dx, dy in ((13, 1), (14, 1), (13, 2), (14, 2)):
+            im.putpixel((dx, dy), shade(GILT, 30 if dy == 1 else 0))
+    return im
+
+
+def mirror_frame(seed):
+    """A mirror's frame: dull gilt over dark wood, rubbed bright along its raised edge."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(GILT, rnd.randint(-8, 8) + (14 if (x + y) % 5 == 0 else 0)))
+    return im
+
+
+def mirror_glass(seed):
+    """Old glass with nothing in it: dark, a little silvering lost at the edges, one pale streak across."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            k = rnd.randint(-2, 2) + (16 if abs(x - y - 2) <= 1 else 0) + (-10 if rnd.random() < .05 else 0)
+            im.putpixel((x, y), shade(GLASS, k))
+    return im
+
+
 MATERIALS = [
     ('still_wall', 'Blackened Wainscot'),
     ('still_ceiling', 'Smoke-Dark Plaster'),
@@ -452,6 +572,11 @@ MATERIALS = [
     ('lengths_ceiling', 'Coffered Plaster'),
     ('lengths_floor', 'Measured Boards'),
     ('lengths_rule', 'Measuring Rail'),
+    ('follow_wall', 'Striped Wallpaper'),
+    ('follow_ceiling', 'Plaster Ceiling'),
+    ('follow_floor', 'Basketweave Parquet'),
+    ('follow_trim', 'Door Frame'),
+    ('follow_back', 'Lath and Plaster'),
 ]
 def textures():
     return {
@@ -463,6 +588,9 @@ def textures():
         'rising_window': frosted(3873), 'rising_tread': tread_stone(3874),
         'lengths_wall': distemper(3880), 'lengths_ceiling': coffered(3881), 'lengths_floor': measured_boards(3882),
         'lengths_rule': rule_rail(3883),
+        'follow_wall': striped_paper(3890), 'follow_ceiling': plaster(3891), 'follow_floor': basketweave(3892), 'follow_trim': door_trim(3893),
+        'follow_back': lath(3894), 'follow_panel_0': door_panel(3895, False), 'follow_panel_1': door_panel(3895, True),
+        'follow_mirror_frame': mirror_frame(3896), 'follow_mirror_glass': mirror_glass(3897),
     }
 
 
@@ -490,6 +618,18 @@ def lamp_model(tex):
     }
 
 
+def mirror_model(upper):
+    """Half of a tall mirror hung flat on a wall, facing south: the glass a pixel off the wall, the frame standing a little
+    proud of it round the edge. The reflection is drawn just in front of the glass (client.HouseReadReflection)."""
+    frame, glass = P + 'follow_mirror_frame', P + 'follow_mirror_glass'
+
+    def box(a, b, tex):
+        return {'from': a, 'to': b, 'faces': {f: {'texture': tex} for f in ('north', 'south', 'east', 'west', 'up', 'down')}}
+    els = [box([0, 0, 0], [16, 16, 0.5], '#glass'), box([0, 0, 0], [1, 16, 1.5], '#frame'), box([15, 0, 0], [16, 16, 1.5], '#frame')]
+    els.append(box([1, 15, 0], [15, 16, 1.5], '#frame') if upper else box([1, 0, 0], [15, 1, 1.5], '#frame'))
+    return {'ambientocclusion': False, 'textures': {'frame': frame, 'glass': glass, 'particle': frame}, 'elements': els}
+
+
 def files():
     out = {}
     for name, _ in MATERIALS:
@@ -508,6 +648,13 @@ def files():
     out['models/block/trial_soft_beam.json'] = slab_model('soft_beam', 8, 16)
     out['models/block/trial_rising_tread_full.json'] = slab_model('rising_tread', 0, 16)
     out['models/block/trial_rising_tread_half.json'] = slab_model('rising_tread', 0, 8)
+    for stage in (0, 1):
+        out[f'models/block/trial_follow_panel_{stage}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': P + f'follow_panel_{stage}'}}
+    out['models/block/trial_mirror_lower.json'] = mirror_model(False)
+    out['models/block/trial_mirror_upper.json'] = mirror_model(True)
+    turn = {'south': 0, 'west': 90, 'north': 180, 'east': 270}
+    out['blockstates/trial_mirror.json'] = {'variants': {f'facing={f},upper={str(u).lower()}': ({'model': NS + 'block/trial_mirror_' + ('upper' if u else 'lower')} | ({'y': turn[f]} if turn[f] else {}))
+                                                         for f in turn for u in (False, True)}}
     # Every kind has a model at every stage; the stages a kind does not use repeat the ones it does.
     models = {
         'still_board': ['still_board', 'still_board_gone', 'still_board', 'still_board_gone'],
@@ -515,6 +662,7 @@ def files():
         'soft_plate': ['soft_plate_0', 'soft_plate_1', 'soft_plate_2', 'still_board_gone'],
         'soft_beam': ['soft_beam'] * 4,
         'rising_tread': ['rising_tread_full', 'rising_tread_half', 'rising_tread_full', 'rising_tread_half'],
+        'follow_panel': ['follow_panel_0', 'follow_panel_1', 'follow_panel_0', 'follow_panel_1'],
     }
     variants = {f'kind={kind},stage={stage}': {'model': NS + 'block/trial_' + names[stage]} for kind, names in models.items() for stage in range(4)}
     out['blockstates/trial_fitting.json'] = {'variants': variants}
@@ -524,6 +672,7 @@ def files():
 def names():
     out = {f'block.the_oldest_house.trial_{name}': title for name, title in MATERIALS}
     out['block.the_oldest_house.trial_fitting'] = 'Trial Fitting'
+    out['block.the_oldest_house.trial_mirror'] = 'Tall Mirror'
     return out
 
 
