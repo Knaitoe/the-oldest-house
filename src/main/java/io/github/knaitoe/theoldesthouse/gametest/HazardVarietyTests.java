@@ -320,4 +320,63 @@ public final class HazardVarietyTests {
     }
     @AfterBatch(batch="still_light") public static void stillLightDone(ServerLevel level){close();}
 
+    /**
+     * 0.4.386, the soft floor (docs/SOFT_FLOOR_0_4_386.md): the room is built as its plan says, with beams to crouch under and
+     * half-walls to wind past; a square under a reader who stands still sinks a little, then more, and gives way at two seconds; a
+     * reader who keeps walking never sinks one past its first stage; two on one square sink it twice as fast; and every square is
+     * back once nobody is on it.
+     */
+    @GameTest(template="empty",batch="soft_floor",timeoutTicks=900)
+    public static void theSoftFloorGivesUnderAPauseAndHoldsAReaderWhoKeepsMoving(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.SOFT_FLOOR;var b=f.base(place);
+        java.util.function.BiConsumer<ServerPlayer,double[]> hold=(p,at)->{f.at(p,place,at[0],0,at[1]);p.setOnGround(true);};
+        var landing=new double[]{.5,-1.5};var still=b.offset(-2,-1,-6);var shared=b.offset(1,-1,-20);
+        final ServerPlayer[] who=new ServerPlayer[4];final long[] at={0};final double[] walked={-5.5};
+        for(int i=0;i<4;i++)who[i]=f.player("soft_reader_"+i,place);
+        java.util.function.Function<BlockPos,Integer> stageAt=pos->{var s=f.level.getBlockState(pos);return TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE)?s.getValue(TrialBlock.STAGE):-1;};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the soft floor is loaded"))
+                .thenExecute(()->{
+                    for(var p:who)hold.accept(p,landing);
+                    for(int z=TrialRooms.SOFT_FAR;z<=TrialRooms.SOFT_NEAR;z++)for(int x=-TrialRooms.SOFT_HALF;x<=TrialRooms.SOFT_HALF;x++){
+                        var s=f.level.getBlockState(b.offset(x,-1,z));
+                        if(TrialRooms.softWell(x,z))h.assertTrue(s.isAir(),"the well over the steps is open at "+x+","+z);
+                        else if(TrialRooms.halfWall(x,z))h.assertTrue(s.is(TrialRegistry.material("soft_wall"))&&f.level.getBlockState(b.offset(x,3,z)).is(TrialRegistry.material("soft_wall")),"a half-wall stands at "+x+","+z);
+                        else h.assertTrue(TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE,0),"a firm square at "+x+","+z);
+                        if(!TrialRooms.softWell(x,z))f.body(b,x+.5,-3,z+.5,1,"standing room in the passage under "+x+","+z);
+                    }
+                    for(int z:TrialRooms.BEAM_Z)for(int x=-TrialRooms.SOFT_HALF;x<=TrialRooms.SOFT_HALF;x++){
+                        h.assertTrue(TrialBlock.is(f.level.getBlockState(b.offset(x,1,z)),TrialBlock.Kind.SOFT_BEAM),"a beam across the room at "+x+","+z);
+                        f.body(b,x+.5,0,z+.5,1.5/1.8,"room to crouch under the beam at "+x+","+z);
+                        h.assertTrue(!f.level.noCollision(null,new AABB(b.getX()+x+.2,b.getY()+.005,b.getZ()+z+.2,b.getX()+x+.8,b.getY()+1.8,b.getZ()+z+.8)),"but not to walk upright under it at "+x+","+z);
+                    }
+                    f.body(b,2.5,0,-15.5,1,"the way past the first half-wall");f.body(b,-1.5,0,-27.5,1,"the way past the second, on the other side");
+                    f.body(b,2.5,-2,-3.5,1,"the first step up out of the passage");f.body(b,2.5,-1,-2.5,1,"the second step up");f.body(b,.5,0,-40.5,1,"the far landing");
+                    h.assertTrue(f.level.getBlockState(b.offset(0,0,TrialRooms.SOFT_FAR_WALL)).getBlock() instanceof DoorBlock,"the far door stands in the end wall");
+                    for(int z:TrialRooms.SOFT_LAMP_Z)h.assertTrue(TrialBlock.is(f.level.getBlockState(b.offset(0,3,z)),TrialBlock.Kind.STILL_LAMP,1)&&TrialRegistry.isMaterial(f.level.getBlockState(b.offset(0,4,z))),"a lit lamp hangs from the ceiling at "+z);
+                    h.assertTrue(TrialMarks.kind(place)==place&&HazardVariety.tier(place)==1&&LabyrinthPacing.physicalTrial(place),"a first-tier physical trial, and a mark of its own");
+                    hold.accept(who[0],new double[]{-1.5,-5.5});at[0]=h.getTick();
+                })
+                .thenExecuteFor(TrialRooms.SINK-4,()->{})
+                .thenExecute(()->h.assertTrue(stageAt.apply(still)==0,"a moment's standing does nothing yet"))
+                .thenWaitUntil(()->h.assertTrue(stageAt.apply(still)==1,"the square sinks a little"))
+                .thenWaitUntil(()->h.assertTrue(stageAt.apply(still)==2,"then more"))
+                .thenWaitUntil(()->h.assertTrue(stageAt.apply(still)==3,"then gives way"))
+                .thenExecute(()->{long took=h.getTick()-at[0];
+                    h.assertTrue(took>=TrialRooms.DROP-2&&took<=TrialRooms.DROP+6,"at two seconds' standing ("+took+" ticks)");
+                    f.body(b,-1.5,-3,-5.5,1,"the passage the reader drops into");hold.accept(who[0],landing);})
+                .thenExecuteFor(32,()->{walked[0]-=.22;hold.accept(who[1],new double[]{2.5,walked[0]});})
+                .thenExecute(()->{
+                    for(int z=-5;z>=-12;z--){int st=stageAt.apply(b.offset(2,-1,z));h.assertTrue(st>=0&&st<=1,"a reader who keeps walking never sinks a square past its first stage (z "+z+": "+st+")");}
+                    hold.accept(who[1],landing);hold.accept(who[2],new double[]{1.5,-19.5});hold.accept(who[3],new double[]{1.4,-19.6});at[0]=h.getTick();
+                })
+                .thenWaitUntil(()->h.assertTrue(stageAt.apply(shared)==3,"two on one square sink it through"))
+                .thenExecute(()->{long took=h.getTick()-at[0];
+                    h.assertTrue(took<=TrialRooms.DROP/2+6,"twice as fast ("+took+" ticks)");
+                    hold.accept(who[2],landing);hold.accept(who[3],landing);})
+                .thenWaitUntil(()->{for(int z=TrialRooms.SOFT_FAR;z<=TrialRooms.SOFT_NEAR;z++)for(int x=-TrialRooms.SOFT_HALF;x<=TrialRooms.SOFT_HALF;x++){
+                    int st=stageAt.apply(b.offset(x,-1,z));h.assertTrue(st<=0,"every square is back once nobody is on it ("+x+","+z+": "+st+")");}})
+                .thenSucceed();
+    }
+    @AfterBatch(batch="soft_floor") public static void softFloorDone(ServerLevel level){close();}
+
 }

@@ -6,6 +6,8 @@ Draws, in native Minecraft pixels from fixed seeds:
 - the still light: a wainscot of boards stained nearly black, a ceiling of smoke-dark plaster, floorboards worn pale down the
   middle where the way across runs, the same boards dusty and unworn where it does not, wet brick under the floor, and a caged
   ceiling lamp, dark and lit.
+- the soft floor (0.4.386): wallpaper gone soft and tide-marked with damp, a ceiling stained in brown rings, firm quarry tiles for
+  the landings, packed earth and joists below, squares of sodden carpet (whole and sinking), and a low adzed beam.
 
 Writes the models and block states, and the blocks' names. --check verifies everything written.
 """
@@ -30,6 +32,16 @@ BRICK = '#4b3e36'
 MORTAR = '#2a2622'
 DAMP = '#25302a'
 CAGE = '#2a2a28'
+PAPER = '#7d8670'
+PAPER_FIGURE = '#636b58'
+TIDE = '#4c4a3c'
+STAIN_TILE = '#b6ad96'
+QUARRY = '#7a4436'
+QUARRY_JOINT = '#4b2d25'
+EARTH = '#4f3f30'
+CARPET = '#4d4a35'
+CARPET_WET = '#2f2e22'
+TIMBER = '#3d2b1d'
 
 
 def rgb(c):
@@ -157,17 +169,134 @@ def lamp(lit):
     return im
 
 
+def wallpaper(seed):
+    """A small sprig repeated four to a block on faded green paper, a seam down one edge, and the paper gone dark along the bottom
+    where the damp has climbed, a tide-line at the top of it."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(PAPER, rnd.randint(-3, 3)))
+    for cx, cy in ((3, 3), (11, 3), (7, 9), (15, 9)):
+        for dx, dy in ((0, 0), (0, 1), (-1, 0), (1, 0), (0, -1)):
+            x, y = (cx + dx) % 16, cy + dy
+            im.putpixel((x, y), shade(PAPER_FIGURE, rnd.randint(-2, 2)))
+    for y in range(16):
+        im.putpixel((0, y), shade(PAPER, -9))
+    for y in range(11, 16):
+        for x in range(16):
+            im.putpixel((x, y), mix(im.getpixel((x, y)), TIDE, .25 + (y - 11) * .12))
+    for x in range(16):
+        im.putpixel((x, 11 + (1 if rnd.random() < .3 else 0)), shade(TIDE, -6))
+    return im
+
+
+def stained_tile(seed):
+    """Pressed ceiling tiles, four to a block, with a brown ring where water stood on the far side and dried."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(STAIN_TILE, rnd.randint(-3, 3)))
+    cx, cy, r = rnd.uniform(5, 11), rnd.uniform(5, 11), rnd.uniform(4, 6)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** .5
+            if d < r:
+                im.putpixel((x, y), mix(im.getpixel((x, y)), '#8d7a58', .25 if d < r - 1 else .55))
+    for i in range(16):
+        im.putpixel((i, 0), shade(STAIN_TILE, -12)); im.putpixel((i, 8), shade(STAIN_TILE, -12))
+        im.putpixel((0, i), shade(STAIN_TILE, -12)); im.putpixel((8, i), shade(STAIN_TILE, -12))
+    return im
+
+
+def quarry(seed):
+    """Red quarry tiles, four to a block, each its own fired tone, in dark joints; firm underfoot."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    tones = [rnd.randint(-8, 8) for _ in range(4)]
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(QUARRY, tones[(y // 8) * 2 + x // 8] + rnd.randint(-3, 3)))
+    for i in range(16):
+        for j in (0, 8):
+            im.putpixel((i, j), shade(QUARRY_JOINT, rnd.randint(-2, 2)))
+            im.putpixel((j, i), shade(QUARRY_JOINT, rnd.randint(-2, 2)))
+    return im
+
+
+def earth(seed):
+    """Packed earth, damp, with a stone or two in it."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            im.putpixel((x, y), shade(EARTH, rnd.randint(-7, 7)))
+    for _ in range(3):
+        x, y = rnd.randrange(1, 14), rnd.randrange(1, 14)
+        for dx in (0, 1):
+            im.putpixel((x + dx, y), shade('#6a6458', rnd.randint(-4, 4)))
+    return im
+
+
+def carpet(seed):
+    """A square of carpet, its loops in rows, sodden: darker in wet patches that spread from the middle, and a darker edge where
+    it meets the next square."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            k = rnd.randint(-4, 4) + (3 if (x + y) % 2 == 0 else -2)
+            c = shade(CARPET, k)
+            wet = max(0.0, .6 - ((x - 7.5) ** 2 + (y - 8.5) ** 2) ** .5 * .07) + (.2 if rnd.random() < .08 else 0)
+            im.putpixel((x, y), mix(c, CARPET_WET, min(1.0, wet)))
+    for i in range(16):
+        for x, y in ((i, 0), (i, 15), (0, i), (15, i)):
+            im.putpixel((x, y), mix(im.getpixel((x, y)), CARPET_WET, .5))
+    return im
+
+
+def beam(seed):
+    """A dark timber beam, the grain running its length, and the shallow scoops an adze left."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        k = rnd.randint(-3, 3)
+        for x in range(16):
+            im.putpixel((x, y), shade(TIMBER, k + rnd.randint(-2, 2) + (4 if y % 5 == 0 else 0)))
+    for _ in range(4):
+        x, y = rnd.randrange(1, 12), rnd.randrange(1, 15)
+        for dx in range(3):
+            im.putpixel((x + dx, y), shade(TIMBER, -9))
+    return im
+
+
 MATERIALS = [
     ('still_wall', 'Blackened Wainscot'),
     ('still_ceiling', 'Smoke-Dark Plaster'),
     ('still_path', 'Worn Boards'),
     ('still_under', 'Wet Brick'),
+    ('soft_wall', 'Damp Wallpaper'),
+    ('soft_ceiling', 'Stained Ceiling Tiles'),
+    ('soft_landing', 'Quarry Tiles'),
+    ('soft_under', 'Packed Earth'),
 ]
 def textures():
     return {
         'still_wall': wainscot(3850), 'still_ceiling': smoke(3851), 'still_path': boards(3852, True),
         'still_board': boards(3852, False), 'still_under': brick(3853), 'still_lamp_off': lamp(False), 'still_lamp_on': lamp(True),
+        'soft_wall': wallpaper(3860), 'soft_ceiling': stained_tile(3861), 'soft_landing': quarry(3862), 'soft_under': earth(3863),
+        'soft_plate': carpet(3864), 'soft_beam': beam(3865),
     }
+
+
+def slab_model(tex, y0, y1):
+    """A box the full width of the block from y0 to y1, its texture cropped to the height shown on the sides."""
+    t = P + tex
+    side = {'texture': '#all', 'uv': [0, 16 - y1, 16, 16 - y0]}
+    return {'textures': {'all': t, 'particle': t}, 'elements': [{'from': [0, y0, 0], 'to': [16, y1, 16], 'faces': {
+        'up': {'texture': '#all', 'uv': [0, 0, 16, 16]}, 'down': {'texture': '#all', 'uv': [0, 0, 16, 16]},
+        'north': side, 'south': side, 'east': side, 'west': side}}]}
 
 
 def lamp_model(tex):
@@ -198,12 +327,17 @@ def files():
     out['models/block/trial_still_board_gone.json'] = {'textures': {'particle': P + 'still_board'}, 'elements': []}
     out['models/block/trial_still_lamp_off.json'] = lamp_model('still_lamp_off')
     out['models/block/trial_still_lamp_on.json'] = lamp_model('still_lamp_on')
-    variants = {
-        'kind=still_board,stage=0': {'model': NS + 'block/trial_still_board'},
-        'kind=still_board,stage=1': {'model': NS + 'block/trial_still_board_gone'},
-        'kind=still_lamp,stage=0': {'model': NS + 'block/trial_still_lamp_off'},
-        'kind=still_lamp,stage=1': {'model': NS + 'block/trial_still_lamp_on'},
+    for stage, top in ((0, 16), (1, 14), (2, 12)):
+        out[f'models/block/trial_soft_plate_{stage}.json'] = slab_model('soft_plate', 0, top)
+    out['models/block/trial_soft_beam.json'] = slab_model('soft_beam', 8, 16)
+    # Every kind has a model at every stage; the stages a kind does not use repeat the ones it does.
+    models = {
+        'still_board': ['still_board', 'still_board_gone', 'still_board', 'still_board_gone'],
+        'still_lamp': ['still_lamp_off', 'still_lamp_on', 'still_lamp_off', 'still_lamp_on'],
+        'soft_plate': ['soft_plate_0', 'soft_plate_1', 'soft_plate_2', 'still_board_gone'],
+        'soft_beam': ['soft_beam'] * 4,
     }
+    variants = {f'kind={kind},stage={stage}': {'model': NS + 'block/trial_' + names[stage]} for kind, names in models.items() for stage in range(4)}
     out['blockstates/trial_fitting.json'] = {'variants': variants}
     return out
 

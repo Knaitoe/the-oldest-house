@@ -31,15 +31,22 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  * come up while any reader in it stands still and go out a breath after everyone moves. One way across is worn pale, and holds;
  * the dusty boards either side hold in the light and give way under a reader who stands on them in the dark. The trough runs back
  * under the floor to two steps up beside the entry. Nothing that burns will stay alight in the room.
+ *
+ * <p>0.4.386, the soft floor (docs/SOFT_FLOOR_0_4_386.md): squares of sodden carpet over a passage three down. A square sinks while
+ * anyone stands on it and at two seconds gives way; two on one square sink it twice as fast. Low beams to crouch under and staggered
+ * half-walls slow a reader down. The passage leads back to two steps up beside the entry. Keep moving.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TrialRooms {
     private TrialRooms(){}
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT;}
-    static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){if(place==LabyrinthPlace.STILL_LIGHT)buildStillLight(level,base);}
+    public static boolean is(LabyrinthPlace place){return place==LabyrinthPlace.STILL_LIGHT||place==LabyrinthPlace.SOFT_FLOOR;}
+    static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){
+        if(place==LabyrinthPlace.STILL_LIGHT)buildStillLight(level,base);else if(place==LabyrinthPlace.SOFT_FLOOR)buildSoftFloor(level,base);
+    }
     static void tick(ServerLevel level,BlockPos base,LabyrinthPlace place,CompoundTag room,long clock,List<ServerPlayer> readers){
         if(place==LabyrinthPlace.STILL_LIGHT)stillLight(level,base,room,clock,readers);
+        else if(place==LabyrinthPlace.SOFT_FLOOR)softFloor(level,base,clock,readers);
     }
 
     // ---- The still light ----
@@ -150,6 +157,73 @@ public final class TrialRooms {
             l.setBlock(at,s.setValue(TrialBlock.STAGE,0),FLAGS);
         }
     }
+    // ---- The soft floor ----
+
+    /** The squares run from the entry landing (z -1, -2) to the far landing (z -39 to -41), seven wide. */
+    public static final int SOFT_NEAR=-3,SOFT_FAR=-38,SOFT_HALF=3,SOFT_FAR_WALL=-42;
+    /** Ticks of weight (one a tick for each reader standing on it) at which a square sinks a little, sinks more, and gives way. */
+    public static final int SINK=10,SINK_MORE=25,DROP=40;
+    /** The low beams run across the room at these rows, at shoulder height (y 1, their lower half open). */
+    public static final List<Integer> BEAM_Z=List.of(-10,-22,-33);
+    public static final List<Integer> SOFT_LAMP_Z=List.of(-2,-8,-14,-20,-26,-32,-37);
+    /** The two half-walls: at z -16 from the west wall to x 0, at z -28 from x 0 to the east wall. */
+    public static boolean halfWall(int x,int z){return z==-16&&x<=0||z==-28&&x>=0;}
+    /** The two holes beside the entry, over the steps up out of the passage. */
+    public static boolean softWell(int x,int z){return x>=2&&(z==-3||z==-4);}
+    /** The stage a square's weight has brought it to. */
+    public static int softStage(int load){return load>=DROP?3:load>=SINK_MORE?2:load>=SINK?1:0;}
+
+    private static void buildSoftFloor(ServerLevel l,BlockPos b){
+        var wall=mat("soft_wall");var ceiling=mat("soft_ceiling");var landing=mat("soft_landing");var under=mat("soft_under");var air=Blocks.AIR.defaultBlockState();
+        box(l,b,-4,-4,SOFT_FAR_WALL,4,4,0,wall);
+        box(l,b,-SOFT_HALF,4,SOFT_FAR_WALL+1,SOFT_HALF,4,-1,ceiling);
+        box(l,b,-SOFT_HALF,0,SOFT_FAR_WALL+1,SOFT_HALF,3,-1,air);
+        box(l,b,-SOFT_HALF,-4,SOFT_FAR,SOFT_HALF,-4,SOFT_NEAR,under);
+        box(l,b,-SOFT_HALF,-3,SOFT_FAR,SOFT_HALF,-2,SOFT_NEAR,air);
+        box(l,b,-SOFT_HALF,-1,-2,SOFT_HALF,-1,-1,landing);
+        box(l,b,-SOFT_HALF,-1,SOFT_FAR_WALL+1,SOFT_HALF,-1,SOFT_FAR-1,landing);
+        for(int z=SOFT_FAR;z<=SOFT_NEAR;z++)for(int x=-SOFT_HALF;x<=SOFT_HALF;x++)
+            set(l,b,x,-1,z,softWell(x,z)?air:halfWall(x,z)?wall:TrialBlock.of(TrialBlock.Kind.SOFT_PLATE));
+        for(int z:List.of(-16,-28))for(int x=-SOFT_HALF;x<=SOFT_HALF;x++)if(halfWall(x,z))box(l,b,x,0,z,x,3,z,wall);
+        for(int z:BEAM_Z)box(l,b,-SOFT_HALF,1,z,SOFT_HALF,1,z,TrialBlock.of(TrialBlock.Kind.SOFT_BEAM));
+        box(l,b,2,-3,-4,SOFT_HALF,-3,-4,under);
+        box(l,b,2,-3,-3,SOFT_HALF,-2,-3,under);
+        for(int z:SOFT_LAMP_Z)set(l,b,0,3,z,TrialBlock.of(TrialBlock.Kind.STILL_LAMP,1));
+        LabyrinthBuilder.entrance(l,b,wall,landing,ceiling);
+    }
+
+    /** How much weight each square has borne, by position; squares nobody is on give it back a tick at a time. */
+    private static final Map<Long,Integer> LOAD=new HashMap<>();
+    public static int load(BlockPos at){return LOAD.getOrDefault(at.asLong(),0);}
+
+    private static void softFloor(ServerLevel l,BlockPos b,long clock,List<ServerPlayer> readers){
+        var weight=new HashMap<Long,Integer>();
+        for(var p:readers){
+            var on=p.getOnPos();var s=l.getBlockState(on);
+            if(p.onGround()&&TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE)&&s.getValue(TrialBlock.STAGE)<3)weight.merge(on.asLong(),1,Integer::sum);
+        }
+        for(var e:weight.entrySet()){int load=LOAD.merge(e.getKey(),e.getValue(),Integer::sum);sink(l,BlockPos.of(e.getKey()),softStage(load));}
+        for(var it=LOAD.entrySet().iterator();it.hasNext();){
+            var e=it.next();if(weight.containsKey(e.getKey()))continue;
+            var at=BlockPos.of(e.getKey());var s=l.getBlockState(at);
+            if(!TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE)||s.getValue(TrialBlock.STAGE)==3){it.remove();continue;}
+            int load=e.getValue()-1;if(load<=0)it.remove();else e.setValue(load);sink(l,at,softStage(Math.max(0,load)));
+        }
+        if(clock%60==0)for(int z=SOFT_FAR;z<=SOFT_NEAR;z++)for(int x=-SOFT_HALF;x<=SOFT_HALF;x++){
+            var at=b.offset(x,-1,z);var s=l.getBlockState(at);
+            if(!TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE)||s.getValue(TrialBlock.STAGE)==0||LOAD.containsKey(at.asLong()))continue;
+            if(s.getValue(TrialBlock.STAGE)==3&&!l.getEntitiesOfClass(Entity.class,new AABB(at)).isEmpty())continue;
+            l.setBlock(at,s.setValue(TrialBlock.STAGE,0),FLAGS);
+        }
+    }
+    private static void sink(ServerLevel l,BlockPos at,int stage){
+        var s=l.getBlockState(at);if(!TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE))return;int was=s.getValue(TrialBlock.STAGE);if(was==stage||was==3)return;
+        l.setBlock(at,s.setValue(TrialBlock.STAGE,stage),FLAGS);
+        if(stage==3){LOAD.remove(at.asLong());l.playSound(null,at,SoundEvents.MUD_BREAK,SoundSource.BLOCKS,1F,.6F);
+            l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,mat("soft_under")),at.getX()+.5,at.getY()+.6,at.getZ()+.5,12,.35,.1,.35,.05);}
+        else if(stage>was)l.playSound(null,at,SoundEvents.MUD_STEP,SoundSource.BLOCKS,.8F,.5F+.1F*stage);
+    }
+
     /** Nothing that burns will stay alight in the still light: a torch, a lantern or a lamp set down there goes out in the hand. */
     @SubscribeEvent public static void place(BlockEvent.EntityPlaceEvent event){
         if(!(event.getEntity() instanceof ServerPlayer p)||!(event.getLevel() instanceof ServerLevel l)||!l.dimension().equals(HouseDimensions.INTERIOR))return;
