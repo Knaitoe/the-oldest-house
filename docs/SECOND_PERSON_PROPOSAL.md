@@ -1,6 +1,6 @@
 # Second Person: a proposal
 
-Design proposal, 2 November 2026. Not built. Written for the owner's review on the request: "design an intensive choose your
+Design proposal, 2 November 2026. Built in part: summer, autumn and E1 in 0.4.274 (`docs/SECOND_PERSON_0_4_274.md`), winter in 0.4.369 (`docs/SECOND_PERSON_0_4_369.md`); spring, E2 to E4, the aftermath and the DANGER, RUNAWAY, AGE and DRAWN_TO variants are still to come. Written for the owner's review on the request: "design an intensive choose your
 own adventure vignette that leans heavily on the personhood vignettes while mixing melancholic human drama and horror."
 
 The owner asked for this draft to be written before their own proposal, *A Place for You*, was reviewed, so that neither

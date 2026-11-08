@@ -1,0 +1,96 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "e": "the_oldest_house:block/second/envelope",
+    "t": "the_oldest_house:block/second/ticket",
+    "particle": "the_oldest_house:block/second/envelope"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        0.25,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        0.25,
+        5
+      ],
+      "to": [
+        14,
+        0.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#t"
+        }
+      },
+      "rotation": {
+        "origin": [
+          11,
+          0,
+          6
+        ],
+        "axis": "y",
+        "angle": -22.5
+      }
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/second/wool",
+    "n": "the_oldest_house:block/second/needle",
+    "particle": "the_oldest_house:block/second/wool"
+  },
+  "elements": [
+    {
+      "from": [
+        13,
+        -4,
+        2
+      ],
+      "to": [
+        16,
+        -3.25,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            6,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        -3.25,
+        12
+      ],
+      "to": [
+        16.5,
+        -3,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        -3.25,
+        13
+      ],
+      "to": [
+        16.5,
+        -3,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    }
+  ]
+}

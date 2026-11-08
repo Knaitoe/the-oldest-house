@@ -28,7 +28,7 @@ public final class SecondPersonRegistry {
     public static final DeferredBlock<SecondPersonBlock> FITTING=BLOCKS.registerBlock("sp_fitting",SecondPersonBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion());
     /** What a reader carries for the resident: the routine item (custom model data 1-16, by its number), the coat (17), the drawing (18), the photograph (19). */
     public static final DeferredItem<Item> CARRIED=ITEMS.registerSimpleItem("sp_carried",new Item.Properties().stacksTo(1));
-    public static final int COAT_MODEL=17,SHEET_MODEL=18,PHOTO_MODEL=19;
+    public static final int COAT_MODEL=17,SHEET_MODEL=18,PHOTO_MODEL=19,TICKET_MODEL=20,SLEEVE_MODEL=21;
     private SecondPersonRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }

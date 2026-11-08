@@ -16,12 +16,15 @@ import net.minecraft.world.phys.shapes.*;
  * (1), open and empty (2) or flattened (3); the hall glass as it hangs (0) or turned to the wall (1); the bathroom mirror clear (0) or
  * steamed (1); the tank's lower (0) and upper (1) halves; the photograph standing (0) or face down (1); the routine item by its number
  * (0-15, as HouseReadMoments.ROUTINES); the fascia's three parts; the tablecloth rumpled (0), straight (1) or laid for two (2); the
- * telephone on its hook (0) or off it (1).
+ * telephone on its hook (0) or off it (1); 0.4.369: Iris's tin shut (0), open with the sleeve (1) or open without it (2); the sleeve on the
+ * armchair's arm (0, drawn down onto the arm from the cell above), finished and folded on the seat (1) or set down flat anywhere (2).
  */
 public final class SecondPersonBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<SecondPersonBlock> CODEC=simpleCodec(SecondPersonBlock::new);
     public enum Kind implements StringRepresentable {
-        BOOK,SHELF,BOX,GLASS,MIRROR,TANK,PHOTO,SHEET,COAT,ROUTINE,SIGN,STOP,ROTA,CLOTH,PHONE;
+        BOOK,SHELF,BOX,GLASS,MIRROR,TANK,PHOTO,SHEET,COAT,ROUTINE,SIGN,STOP,ROTA,CLOTH,PHONE,
+        /** 0.4.369, winter: Iris's sewing tin, the train ticket in its envelope, the sleeve she never finished. */
+        TIN,TICKET,SLEEVE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -53,6 +56,9 @@ public final class SecondPersonBlock extends HorizontalDirectionalBlock {
             case ROTA->box(f,3,2,15,13,14,16);
             case CLOTH->Block.box(0,0,0,16,1,16);
             case PHONE->box(f,2.5,0,4,13.5,5,12);
+            case TIN->stage==0?Block.box(3.5,0,3.5,12.5,5,12.5):Block.box(3,0,3,13,8,13);
+            case TICKET->Block.box(3,0,4,14,1,12);
+            case SLEEVE->stage==2?Block.box(3,0,2,13,1,14):Block.box(2,0,2,14,1,14);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

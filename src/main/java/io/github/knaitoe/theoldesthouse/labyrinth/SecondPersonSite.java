@@ -60,6 +60,13 @@ public final class SecondPersonSite {
     public static final BlockPos BEDSIDE=new BlockPos(-7,UP,-25),CHEST=new BlockPos(-5,UP,-25);
     // ------------------------------------------------------------------------------------------------ the airing cupboard
     public static final BlockPos CUPBOARD_DOOR=new BlockPos(-6,UP,-29),CUPBOARD=new BlockPos(-7,UP,-29),TANK=new BlockPos(-7,UP,-30);
+    // ------------------------------------------------------------------------------------------------ 0.4.369, winter
+    /** The hall table by the kitchen door, where the post goes unopened, and the ticket on it; the hall chair under the glass's corner. */
+    public static final BlockPos HALL_TABLE=new BlockPos(2,UP,-22),TICKET_HOME=new BlockPos(2,UP+1,-22),HALL_CHAIR=new BlockPos(2,UP,-24);
+    /** Iris's tin, on the kitchen counter by the fridge; the vanity under the basin, whose drawer the routine goes into in the worst of it. */
+    public static final BlockPos TIN_AT=new BlockPos(-2,UP+1,-23),VANITY=new BlockPos(-1,UP,-27);
+    /** The sleeve laid on the armchair's arm stands in the cell above the armchair. */
+    public static final BlockPos ARM=ARMCHAIR.above();
 
     public static boolean inside(Vec3 r){return r.x>=-17&&r.x<18&&r.z>=-32&&r.z<1&&r.y>=-3&&r.y<13;}
     /** Inside the flat itself (not the landing or the stair). */
@@ -76,6 +83,8 @@ public final class SecondPersonSite {
     public static boolean inBedroomDoorway(Vec3 r){return Math.abs(r.x-(BED_DOOR.getX()+.5))<.9&&r.z>=-29.5&&r.z<-26.5&&r.y>=UP-.5&&r.y<UP+3;}
     /** The thin wall to Iris's flat: the passage's back wall. */
     public static boolean irisWall(BlockPos rel){return rel.getZ()==-30&&rel.getX()>=-5&&rel.getX()<=2&&rel.getY()>=UP&&rel.getY()<=UP+2;}
+    /** By the front door, where a thing set down cannot be missed on the way out (the mat and the floor round it). */
+    public static boolean byTheDoor(BlockPos rel){return rel.getX()>=1&&rel.getX()<=2&&rel.getZ()<=-26&&rel.getZ()>=-28&&rel.getY()==UP;}
 
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     static BlockState mat(String name){return SecondPersonRegistry.material(name).defaultBlockState();}
@@ -149,8 +158,8 @@ public final class SecondPersonSite {
         set(l,b,PHONE_TABLE,read(HouseReadPropBlock.Part.SIDE_TABLE,Direction.EAST));set(l,b,LAMP_TABLE,read(HouseReadPropBlock.Part.SIDE_TABLE,Direction.SOUTH));
         set(l,b,SHELF_A,fit(SHELF,Direction.NORTH,0));set(l,b,SHELF_B,fit(SHELF,Direction.NORTH,0));
         set(l,b,-3,UP,-14,read(HouseReadPropBlock.Part.RADIATOR,Direction.NORTH));set(l,b,-3,UP+2,-16,light());
-        // The hall: the mat inside the door, its light.
-        set(l,b,1,UP+2,-24,light());
+        // The hall: the mat inside the door, its light; 0.4.369, a table by the kitchen door and a chair against the wall.
+        set(l,b,1,UP+2,-24,light());set(l,b,HALL_TABLE,read(HouseReadPropBlock.Part.SIDE_TABLE,Direction.WEST));set(l,b,HALL_CHAIR,furniture(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST));
         // The kitchen: tiles, lino, the table for two under its window, the counters with the sink and its tap, the fridge, cupboards over, the light.
         box(l,b,-7,UP-1,-23,-1,UP-1,-21,mat("lino"));box(l,b,-8,UP,-23,-8,UP+2,-21,mat("kitchen"));box(l,b,-7,UP,-24,-1,UP+2,-24,mat("kitchen"));
         window(l,b,-8,UP+1,-22,Direction.WEST);window(l,b,-8,UP+2,-22,Direction.WEST);
@@ -185,11 +194,12 @@ public final class SecondPersonSite {
         set(l,b,HOOK,read(HouseReadPropBlock.Part.EMPTY_HANGER,Direction.WEST));picture(l,b,drawing,false);set(l,b,GLASS,Blocks.AIR.defaultBlockState());
         set(l,b,BOOK,fit(SecondPersonBlock.Kind.BOOK,Direction.NORTH,0));set(l,b,PHOTO_HOME,Blocks.AIR.defaultBlockState());set(l,b,ROUTINE_HOME,Blocks.AIR.defaultBlockState());
         phone(l,b,false);lamp(l,b,false);mirror(l,b,false);set(l,b,CLOTH,Blocks.AIR.defaultBlockState());set(l,b,ROTA,Blocks.AIR.defaultBlockState());set(l,b,RADIO,Blocks.AIR.defaultBlockState());
-        set(l,b,BENCH_BOOK,Blocks.SPRUCE_SLAB.defaultBlockState());season(l,b,0);
+        set(l,b,BENCH_BOOK,Blocks.SPRUCE_SLAB.defaultBlockState());set(l,b,TIN_AT,Blocks.AIR.defaultBlockState());set(l,b,TICKET_HOME,Blocks.AIR.defaultBlockState());set(l,b,ARM,Blocks.AIR.defaultBlockState());season(l,b,0);
     }
-    /** The street through the window: in leaf (0), autumn with leaves down (1), the last morning, bare (2). */
+    /** The street through the window: in leaf (0), autumn with leaves down (1), winter, bare, with snow lying (2), the last morning, bare (3). */
     public static void season(ServerLevel l,BlockPos b,int season){
         var crown=season==0?leaves(Blocks.OAK_LEAVES):season==1?leaves(Blocks.DARK_OAK_LEAVES):Blocks.AIR.defaultBlockState();
+        snow(l,b,season==2);
         // 0.4.283: the crown rounded, its eight corners left open.
         for(int x=-2;x<=0;x++)for(int z=-11;z<=-9;z++)for(int y=3;y<=5;y++){if(x==-1&&z==-10&&y==3)continue;if(x!=-1&&z!=-10&&y!=4){set(l,b,x,y,z,Blocks.AIR.defaultBlockState());continue;}boolean edge=Math.abs(x+1)+Math.abs(z+10)+Math.abs(y-4)>2;set(l,b,x,y,z,season==1&&edge&&Math.floorMod(x*7+z*3+y,3)==0?Blocks.AIR.defaultBlockState():crown);}
         for(int x=-4;x<=3;x++)for(int z=-11;z<=-9;z++)if(x!=-1||z!=-10){var at=b.offset(x,0,z);if(l.getBlockState(at).isAir()||l.getBlockState(at).is(Blocks.BROWN_CARPET))set(l,b,x,0,z,season==1&&Math.floorMod(x*5+z*3,4)==0?Blocks.BROWN_CARPET.defaultBlockState():Blocks.AIR.defaultBlockState());}
@@ -198,6 +208,21 @@ public final class SecondPersonSite {
         set(l,b,RADIO,season>=1?read(HouseReadPropBlock.Part.RADIO,Direction.SOUTH):Blocks.AIR.defaultBlockState());
         if(season>=1){for(var at:List.of(PHOTO_BOX,COAT_BOX,DRAWING_BOX,LAST_BOX))set(l,b,at,Blocks.AIR.defaultBlockState());for(int x=-6;x<=-5;x++)for(int z=-16;z<=-15;z++)set(l,b,x,UP,z,Blocks.BROWN_CARPET.defaultBlockState());}
     }
+    /** 0.4.369: snow lying on both pavements in winter, in drifts against the walls, and gone again by the last morning. */
+    static void snow(ServerLevel l,BlockPos b,boolean lying){
+        for(int x=-16;x<=16;x++)for(int z:new int[]{-1,-2,-9,-10,-11}){
+            var at=b.offset(x,0,z);var s=l.getBlockState(at);
+            boolean drift=z==-1||z==-11||Math.floorMod(x*7+z*3,5)!=0;
+            if(lying&&drift&&s.isAir()&&l.getBlockState(at.below()).isFaceSturdy(l,at.below(),Direction.UP))BuildBlocks.set(l,at,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,z==-1||z==-11?2:1),F);
+            else if(!lying&&s.is(Blocks.SNOW))BuildBlocks.set(l,at,Blocks.AIR.defaultBlockState(),F);
+        }
+    }
+    /** Iris's sewing tin: none (-1), shut (0), open with the half-finished sleeve in it (1), open without it (2). */
+    public static void tin(ServerLevel l,BlockPos b,int stage){set(l,b,TIN_AT,stage<0?Blocks.AIR.defaultBlockState():fit(SecondPersonBlock.Kind.TIN,Direction.SOUTH,stage));}
+    public static int tin(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(TIN_AT));return SecondPersonBlock.is(s,SecondPersonBlock.Kind.TIN)?s.getValue(SecondPersonBlock.STAGE):-1;}
+    /** The sleeve on the armchair's arm: half-finished on its needles (0), or finished and folded on the seat (1), or not there (-1). */
+    public static void sleeve(ServerLevel l,BlockPos b,int stage){set(l,b,ARM,stage<0?Blocks.AIR.defaultBlockState():fit(SecondPersonBlock.Kind.SLEEVE,Direction.WEST,stage));}
+    public static int sleeve(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(ARM));return SecondPersonBlock.is(s,SecondPersonBlock.Kind.SLEEVE)?s.getValue(SecondPersonBlock.STAGE):-1;}
     /** The reader's picture on the fridge (their own kitchen drawing, or a blank sheet), or the fridge bare. */
     public static void picture(ServerLevel l,BlockPos b,CompoundTag drawing,boolean up){
         var top=b.offset(FRIDGE.above());var s=l.getBlockState(top);if(!s.is(HouseReadRegistry.FITTING.get()))return;
@@ -225,9 +250,10 @@ public final class SecondPersonSite {
     public static void box(ServerLevel l,BlockPos b,BlockPos at,int stage){set(l,b,at,stage<0?Blocks.AIR.defaultBlockState():fit(BOX,Direction.NORTH,stage));}
     /** A thing set down: the routine item by its number, the coat folded, the drawing as a sheet, the photograph standing. */
     public static void thing(ServerLevel l,BlockPos b,BlockPos at,String thing,int routine){set(l,b,at,thingState(thing,routine));}
-    static BlockState thingState(String thing,int routine){return switch(thing){case "routine"->fit(ROUTINE,Direction.NORTH,Math.floorMod(routine<0?11:routine,16));case "coat"->fit(SecondPersonBlock.Kind.COAT,Direction.NORTH,0);case "drawing"->fit(SHEET,Direction.NORTH,0);default->fit(PHOTO,Direction.NORTH,0);};}
+    static BlockState thingState(String thing,int routine){return switch(thing){case "routine"->fit(ROUTINE,Direction.NORTH,Math.floorMod(routine<0?11:routine,16));case "coat"->fit(SecondPersonBlock.Kind.COAT,Direction.NORTH,0);case "drawing"->fit(SHEET,Direction.NORTH,0);
+        case "ticket"->fit(SecondPersonBlock.Kind.TICKET,Direction.NORTH,0);case "sleeve"->fit(SecondPersonBlock.Kind.SLEEVE,Direction.NORTH,2);default->fit(PHOTO,Direction.NORTH,0);};}
     /** Which of the resident's things stands at a position, if any. */
-    public static @Nullable String thingAt(ServerLevel l,BlockPos at){var k=SecondPersonBlock.kind(l.getBlockState(at));if(k==null)return null;return switch(k){case ROUTINE->"routine";case COAT->"coat";case SHEET->"drawing";case PHOTO->"photo";default->null;};}
+    public static @Nullable String thingAt(ServerLevel l,BlockPos at){var k=SecondPersonBlock.kind(l.getBlockState(at));if(k==null)return null;return switch(k){case ROUTINE->"routine";case COAT->"coat";case SHEET->"drawing";case PHOTO->"photo";case TICKET->"ticket";case SLEEVE->"sleeve";default->null;};}
     /** The keepsake waiting on the bus-stop bench at the end. */
     public static void benchBook(ServerLevel l,BlockPos b,boolean there){set(l,b,BENCH_BOOK,there?fit(SecondPersonBlock.Kind.BOOK,Direction.SOUTH,1):Blocks.SPRUCE_SLAB.defaultBlockState());}
 }

@@ -114,6 +114,18 @@
         "custom_model_data": 19
       },
       "model": "the_oldest_house:item/sp_carried_photo"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 20
+      },
+      "model": "the_oldest_house:item/sp_carried_ticket"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 21
+      },
+      "model": "the_oldest_house:item/sp_carried_sleeve"
     }
   ]
 }
