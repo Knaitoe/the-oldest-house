@@ -758,6 +758,9 @@ public final class ExplorationPassTests {
         h.assertTrue(l.getBlockState(b.offset(front)).getShape(l,b.offset(front)).isEmpty(),"and a hand reaches through it to the door");
         for(int z:OrdinaryHalls.LAMPS)h.assertTrue(TrialBlock.is(l.getBlockState(b.offset(0,3,z)),TrialBlock.Kind.STILL_LAMP,1),"a lamp is lit between the lines at "+z);
         for(var at:OrdinaryHalls.BASKETS)h.assertTrue(OrdinaryHallBlock.is(l.getBlockState(b.offset(at)),OrdinaryHallBlock.Kind.BASKET),"a basket of washing stands at "+at);
+        {var folder=h.makeMockServerPlayerInLevel();folder.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);var basket=b.offset(OrdinaryHalls.BASKETS.get(0));folder.teleportTo(l,basket.getX()+.5,basket.getY(),basket.getZ()+1.8,180,0);
+            use(l,folder,basket);use(l,folder,basket);
+            h.assertTrue(OrdinaryHalls.folds(folder)==2&&folder.getInventory().isEmpty()&&OrdinaryHallBlock.is(l.getBlockState(basket),OrdinaryHallBlock.Kind.BASKET),"a basket of washing, tried, answers and gives nothing away");}
         for(double side:new double[]{-.65,.65}){var at=b.offset(0,0,-4);
             h.assertTrue(l.noCollision(null,new AABB(at.getX()+.5+side-.3,at.getY()+.01,at.getZ()+.2,at.getX()+.5+side+.3,at.getY()+1.81,at.getZ()+.8)),"two bodies walk side by side");}
         // Parting a sheet: from the near side it goes ahead of the body, the sheets either side stir, and it swings back and settles.

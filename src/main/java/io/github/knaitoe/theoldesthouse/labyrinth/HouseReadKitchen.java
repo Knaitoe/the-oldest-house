@@ -383,6 +383,10 @@ public final class HouseReadKitchen {
     public static int form(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return 0;return Mth.clamp(HouseRead.seen(d,reader).getCompound(KITCHEN.key()).getInt("Body"),0,BODIES.size());}
     /** 0.4.196: the face the reader drew, 1 to 5 in {@link #FACES}, or 0 for none drawn. */
     public static int mood(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return 0;return Mth.clamp(HouseRead.seen(d,reader).getCompound(KITCHEN.key()).getInt("Mood"),0,FACES.size());}
-    /** The hair colour the House's body wears: the drawing's hair, if it was drawn in a colour hair can be, or -1. */
-    public static int hair(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return -1;var s=HouseRead.seen(d,reader).getCompound(KITCHEN.key());return s.getBoolean("Hung")&&s.contains("Hair")&&hairColour(s.getInt("Hair"))?rgb(s.getInt("Hair")):-1;}
+    /**
+     * The hair colour the House's body wears: the drawing's hair, in whatever crayon it was coloured, or -1. 0.4.396, the owner:
+     * "coloring the hair in hair vignette should color the player's hair, too". The reader's own hair takes the colour as it is
+     * coloured in, as the drawn body and face already do, and a blue or green crayon dyes it blue or green.
+     */
+    public static int hair(LabyrinthData d,UUID reader){if(!HouseRead.enabled(HouseRead.Trait.TONE))return -1;var s=HouseRead.seen(d,reader).getCompound(KITCHEN.key());return s.contains("Hair")&&s.getInt("Hair")>=0?rgb(s.getInt("Hair")):-1;}
 }

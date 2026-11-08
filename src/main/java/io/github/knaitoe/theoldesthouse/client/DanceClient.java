@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -45,6 +46,41 @@ public final class DanceClient {
             if (d < nearest) { nearest = d;best = a; }
         }
         return best;
+    }
+    /** Every stranger dancing with this player within reach: one, or both of them in the dance with both. */
+    static java.util.List<LiteraryActor> partners(Player player) {
+        var out = new java.util.ArrayList<LiteraryActor>();
+        if (player == null || player.level() == null) return out;
+        for (var a : player.level().getEntitiesOfClass(LiteraryActor.class, player.getBoundingBox().inflate(REACH))) {
+            if ((a.role() != LiteraryActor.READ_MAN && a.role() != LiteraryActor.READ_WOMAN) || a.gesture() != HouseReadShelter.DANCE) continue;
+            if (a.owner().isPresent() && !a.owner().get().equals(player.getUUID())) continue;
+            if (a.distanceToSqr(player) < REACH * REACH) out.add(a);
+        }
+        return out;
+    }
+    /** The turn the swing carries from one tick to the next (DanceWeight). */
+    private static double turn;
+    /**
+     * 0.4.397, the owner: "the dancer in the personhood vignette needs weight, so the player swings when they move while dancing".
+     * Holding a partner, the keys push the reader round them instead of walking (DanceWeight.step): the turn carries on after the
+     * keys are let go, a push away leans against the partner's hands and is drawn back, and the view turns with the swing.
+     */
+    @SubscribeEvent public static void swing(MovementInputUpdateEvent e) {
+        var mc = Minecraft.getInstance();
+        if (e.getEntity() != mc.player) return;
+        var player = mc.player;var held = partners(player);
+        if (held.isEmpty() || player.isPassenger() || player.getAbilities().flying || player.isSpectator()) { turn = 0;return; }
+        double cx = 0, cz = 0;for (var a : held) { cx += a.getX();cz += a.getZ(); }
+        cx /= held.size();cz /= held.size();
+        var input = e.getInput();double f = input.forwardImpulse, s = input.leftImpulse, length = Math.sqrt(f * f + s * s);
+        if (length > 1) { f /= length;s /= length; }
+        // The keys turned into the world, as the game turns them for walking.
+        float yaw = player.getYRot() * Mth.DEG_TO_RAD;double sin = Mth.sin(yaw), cos = Mth.cos(yaw);
+        var step = io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.step(player.getX(), player.getZ(), cx, cz, s * cos - f * sin, f * cos + s * sin, turn);
+        turn = step.turn();
+        input.forwardImpulse = input.leftImpulse = 0;input.up = input.down = input.left = input.right = false;player.setSprinting(false);
+        player.setDeltaMovement(step.vx(), player.getDeltaMovement().y, step.vz());
+        player.setYRot(player.getYRot() + step.yaw());
     }
     /** The partner's sway, so the two move together. */
     static float sway(LiteraryActor partner, float partial) { return Mth.sin((partner.tickCount + partial) * .06F); }

@@ -80,7 +80,22 @@ public final class HouseReadStory {
     static boolean answered(CompoundTag seen){return seen.contains("Looked")||seen.contains("Stood")||seen.getBoolean("FirstLantern");}
     static void locked(ServerPlayer p,HouseReadSites.Room room,net.minecraft.core.BlockPos at){
         // 0.4.202 (owner, stuck at the kitchen's near door for ten minutes): the kitchen says what its door is waiting for.
-        p.displayClientMessage(Component.literal(room==HouseReadSites.Room.KITCHEN?HouseReadKitchen.waiting(p):"The door won't open."),true);HouseReadSites.sound(p,SoundEvents.CHEST_LOCKED,at,.6f);
+        p.displayClientMessage(Component.literal(waiting(p,room)),true);HouseReadSites.sound(p,SoundEvents.CHEST_LOCKED,at,.6f);
+    }
+    /**
+     * 0.4.397 (owner, at the porch's door inside the house: "The door won't open."): every room's locked door says, in a few plain
+     * words, what it is waiting for, as the kitchen's has since 0.4.202. None of them names an answer the reader should give.
+     */
+    public static String waiting(ServerPlayer p,HouseReadSites.Room room){
+        var visit=HouseReadSites.state(p.server,p.getUUID()).getCompound(room.key());
+        return switch(room){
+            case KITCHEN->HouseReadKitchen.waiting(p);
+            case WAITING->"The door won't open. They haven't called you yet.";
+            case BATHROOM->visit.contains("Held")?"The door won't open. What's in your hand is for the glass.":"The door won't open. Something by the glass is yours to use.";
+            case COATROOM->"The door won't open. Dry things hang on the rail.";
+            case SHELTER->visit.getBoolean("SongStarted")?"The door won't open. The song isn't over.":"The door won't open. Nobody has put a song on yet.";
+            case PORCH->visit.contains("Whistle")?"The door won't open. Someone is calling you in.":"The door won't open. Supper isn't on the table yet.";
+        };
     }
 
     private record Card(HouseReadLinePayload line,HouseReadSites.Room room,boolean closing,boolean forward,
