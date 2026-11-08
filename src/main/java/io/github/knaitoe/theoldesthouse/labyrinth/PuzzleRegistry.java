@@ -103,6 +103,11 @@ public final class PuzzleRegistry {
     public static final DeferredBlock<TruantFittingBlock> TRUANT_FITTING=BLOCKS.registerBlock("truant_fitting",TruantFittingBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TRUANT_CHALK=sound("truant_service.chalk"),TRUANT_KNOCK=sound("truant_service.knock"),TRUANT_RATTLE=sound("truant_service.rattle"),
         TRUANT_HISS=sound("truant_service.hiss"),TRUANT_BRAKE=sound("truant_service.brake"),TRUANT_LURCH=sound("truant_service.lurch"),TRUANT_PAGE=sound("truant_service.page");
+    /** 0.4.360, the Resonant Pipes (ResonantPipes): the singing pipework (ResonanceBlock), drawn by tools/draw_resonance_fittings.py, and its notes (tools/generate_resonance_audio.py). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<ResonanceBlock>> RESONANCE_TYPE=CODECS.register("resonance_fitting",()->ResonanceBlock.CODEC);
+    public static final DeferredBlock<ResonanceBlock> RESONANCE=BLOCKS.registerBlock("resonance_fitting",ResonanceBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> RESONANCE_LOW=sound("resonance.low"),RESONANCE_MIDDLE=sound("resonance.middle"),RESONANCE_HIGH=sound("resonance.high"),
+        RESONANCE_BUZZ=sound("resonance.buzz"),RESONANCE_LATCH=sound("resonance.latch");
     /** 0.4.309, the House's yard (YardRooms): clapboard, wet gravel and the garage door; the porch bulb and the station wagon (YardBlock), drawn by tools/draw_yard_fittings.py; the engine, a passing car, a crow and the creek (tools/generate_yard_audio.py). */
     private static final java.util.Map<String,DeferredBlock<Block>> YARD_MATERIALS=new java.util.LinkedHashMap<>();
     public static final java.util.List<String> YARD_MATERIAL_NAMES=java.util.List.of("clapboard","wet_gravel","garage_door");
