@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "the_oldest_house:block/ordinary_hall/shelf_b",
+    "south": "the_oldest_house:block/ordinary_hall/shelf_b",
+    "east": "the_oldest_house:block/ordinary_hall/shelf_b",
+    "west": "the_oldest_house:block/ordinary_hall/shelf_b",
+    "up": "the_oldest_house:block/ordinary_hall/stacks_floor",
+    "down": "the_oldest_house:block/ordinary_hall/stacks_floor",
+    "particle": "the_oldest_house:block/ordinary_hall/shelf_b"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "textures": {
+    "s": "the_oldest_house:block/ordinary_hall/atrium_step",
+    "particle": "the_oldest_house:block/ordinary_hall/atrium_step"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        },
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

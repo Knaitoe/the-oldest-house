@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=south,kind=painted_door": {
+      "model": "the_oldest_house:block/hall_painted_door"
+    },
+    "facing=west,kind=painted_door": {
+      "model": "the_oldest_house:block/hall_painted_door",
+      "y": 90
+    },
+    "facing=north,kind=painted_door": {
+      "model": "the_oldest_house:block/hall_painted_door",
+      "y": 180
+    },
+    "facing=east,kind=painted_door": {
+      "model": "the_oldest_house:block/hall_painted_door",
+      "y": 270
+    },
+    "facing=south,kind=painted_door_top": {
+      "model": "the_oldest_house:block/hall_painted_door_top"
+    },
+    "facing=west,kind=painted_door_top": {
+      "model": "the_oldest_house:block/hall_painted_door_top",
+      "y": 90
+    },
+    "facing=north,kind=painted_door_top": {
+      "model": "the_oldest_house:block/hall_painted_door_top",
+      "y": 180
+    },
+    "facing=east,kind=painted_door_top": {
+      "model": "the_oldest_house:block/hall_painted_door_top",
+      "y": 270
+    },
+    "facing=south,kind=shelf": {
+      "model": "the_oldest_house:block/hall_shelf"
+    },
+    "facing=west,kind=shelf": {
+      "model": "the_oldest_house:block/hall_shelf",
+      "y": 90
+    },
+    "facing=north,kind=shelf": {
+      "model": "the_oldest_house:block/hall_shelf",
+      "y": 180
+    },
+    "facing=east,kind=shelf": {
+      "model": "the_oldest_house:block/hall_shelf",
+      "y": 270
+    },
+    "facing=south,kind=shelf_b": {
+      "model": "the_oldest_house:block/hall_shelf_b"
+    },
+    "facing=west,kind=shelf_b": {
+      "model": "the_oldest_house:block/hall_shelf_b",
+      "y": 90
+    },
+    "facing=north,kind=shelf_b": {
+      "model": "the_oldest_house:block/hall_shelf_b",
+      "y": 180
+    },
+    "facing=east,kind=shelf_b": {
+      "model": "the_oldest_house:block/hall_shelf_b",
+      "y": 270
+    }
+  }
+}
