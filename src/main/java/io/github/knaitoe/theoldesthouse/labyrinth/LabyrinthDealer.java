@@ -278,7 +278,7 @@ public final class LabyrinthDealer {
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS, LabyrinthPlace.RESONANT_PIPES, LabyrinthPlace.SETTLING_FLOOR, LabyrinthPlace.CLOCKWORK_ATTICS, LabyrinthPlace.FEET_UP_LATER));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
         if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
-        // After seven forward crossings, newly discovered ordinary halls are stone.
+        // From nine forward crossings (0.4.393, R4; it was seven), newly discovered ordinary halls are stone.
         if (depth >= LabyrinthPacing.STONE_DEPTH) {
             gray.add(LabyrinthPlace.STONE_GALLERY);
             gray.add(LabyrinthPlace.STONE_CROSSING);

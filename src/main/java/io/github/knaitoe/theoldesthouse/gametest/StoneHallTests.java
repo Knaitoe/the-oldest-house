@@ -110,17 +110,20 @@ public final class StoneHallTests {
     }
 
     @GameTest(template = "empty")
-    public static void theSeventhPassStartsTheStoneTier(GameTestHelper h) {
+    public static void theNinthPassStartsTheStoneTier(GameTestHelper h) {
         LabyrinthData data = new LabyrinthData();
         UUID player = UUID.randomUUID();
         for (int depth = 1; depth <= 16; depth++) {
             data.pushReturn(player, new LabyrinthData.Waypoint(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR, new Vec3(depth, 64, 0), 0.0F, true));
             boolean stone = data.returnDepth(player) >= LabyrinthPacing.STONE_DEPTH;
             for (LabyrinthPlace hall : HALLS)
-                h.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(hall) == stone, hall.id() + " enters the middle at seven forward passes (depth " + depth + ")");
+                h.assertTrue(LabyrinthDealer.grayAvailable(data, player).contains(hall) == stone, hall.id() + " enters the middle at nine forward passes (depth " + depth + ")");
         }
-        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.STRAIGHT_HALL, 7) == 0 && LabyrinthDealer.grayWeight(LabyrinthPlace.STONE_GALLERY, 7) > 0,
-                "at seven passes the newly discovered ordinary way on is stone");
+        h.assertTrue(LabyrinthPacing.STONE_DEPTH == 9, "the stone halls begin at nine (0.4.393, R4)");
+        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.STRAIGHT_HALL, 8) > 0 && LabyrinthDealer.grayWeight(LabyrinthPlace.STONE_GALLERY, 8) == 0,
+                "at eight passes the ordinary way on is still domestic");
+        h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.STRAIGHT_HALL, 9) == 0 && LabyrinthDealer.grayWeight(LabyrinthPlace.STONE_GALLERY, 9) > 0,
+                "at nine passes the newly discovered ordinary way on is stone");
         for (int depth = 17; depth <= LabyrinthPacing.STAIRCASE_DEPTH; depth++)
             data.pushReturn(player, new LabyrinthData.Waypoint(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR, new Vec3(depth, 64, 0), 0.0F, true));
         h.assertTrue(data.returnDepth(player) == LabyrinthPacing.STAIRCASE_DEPTH, "the way back is remembered as deep as the great staircase");

@@ -7,7 +7,12 @@ import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 public final class LabyrinthPacing {
     /** Crossings from the hallway root. Shared story progress never shortens this approach. */
     public static final int STORY_DEPTH = 6;
-    public static final int STONE_DEPTH = 7;
+    /**
+     * 0.4.393, R4 of docs/HALLS_TRIALS_AND_TIME_DESIGN.md (owner: "continue with development now please. for the rest of the
+     * rules"): a slower first stretch. The domestic halls go on to depth eight and the stone halls begin at nine (it was seven).
+     * Stories, trials and the staircase keep their depths; this only adds walking in the domestic halls.
+     */
+    public static final int STONE_DEPTH = 9;
     public static final int STRANGE_DEPTH = 8;
     public static final int DEEP_DEPTH = 12;
     public static final int ABYSS_DEPTH = 16;

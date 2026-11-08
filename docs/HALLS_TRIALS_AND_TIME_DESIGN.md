@@ -11,7 +11,8 @@ Status: **being built (November 8)**. The owner left the open questions to judge
 - Hall 1, the laundry corridor: built in 0.4.390 ([LAUNDRY_CORRIDOR_0_4_390.md](LAUNDRY_CORRIDOR_0_4_390.md)), the first of five halls (1, 2, 5, 6 and 10). Two of its three ways on are behind the washing.
 - Halls 2, 5, 6 and 10, the long bedroom hall, the atrium, the cistern walk and the library stacks: built in 0.4.391 ([FOUR_HALLS_0_4_391.md](FOUR_HALLS_0_4_391.md)), at the owner's request ("go ahead and implement the four rooms please, then the rules"). The atrium's stair runs up beside the well, inside a wall that rises with it, rather than round the walls.
 - R2, trials in the way: built in 0.4.392 as the owner set it, from depth 20, about one ordinary hall in four ([TRIALS_IN_THE_WAY_0_4_392.md](TRIALS_IN_THE_WAY_0_4_392.md)).
-- Next: R3 (only as fixed folds shared by everyone) and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
+- R4, a slower first stretch: built in 0.4.393 ([SLOWER_FIRST_STRETCH_0_4_393.md](SLOWER_FIRST_STRETCH_0_4_393.md)), when the owner asked for "the rest of the rules". Domestic halls to depth eight, stone from nine.
+- Next: R3, only as fixed folds shared by everyone. Trials 5, 7, 8 and 9 are not scheduled.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 
@@ -61,6 +62,7 @@ Each proposal is numbered so the owner can pick by number.
 - **R3 waits for a playtest**, in this form only.
 
 **R4. A slower first stretch.** Domestic halls end at depth 8 rather than 6, and stone halls begin at 9. Stories are unchanged; this only adds walking.
+- **Built in 0.4.393** ([SLOWER_FIRST_STRETCH_0_4_393.md](SLOWER_FIRST_STRETCH_0_4_393.md)).
 
 Recommended: **R1 and R2**, with R3 left for a playtest. R1 alone already turns "walk twenty doors" into "survive three trials and finish four stories".
 

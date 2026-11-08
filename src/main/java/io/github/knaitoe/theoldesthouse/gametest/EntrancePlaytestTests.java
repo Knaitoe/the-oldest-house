@@ -149,7 +149,8 @@ public final class EntrancePlaytestTests {
             h.assertTrue(d.returnDepth(id)==0&&d.peekReturn(id)!=null,"with all five done the count starts again, and the way back is kept: "+d.returnDepth(id));
             for(int i=1;i<LabyrinthPacing.STORY_DEPTH;i++){d.pushReturn(id,spot);h.assertTrue(LabyrinthPacing.domestic(d.returnDepth(id)),"the halls after the quiet rooms are domestic again for a while: "+d.returnDepth(id));}
             d.pushReturn(id,spot);h.assertTrue(d.returnDepth(id)==LabyrinthPacing.STORY_DEPTH,"stories can begin six crossings after: "+d.returnDepth(id));
-            d.pushReturn(id,spot);h.assertTrue(d.returnDepth(id)==LabyrinthPacing.STONE_DEPTH,"and the stone a crossing later: "+d.returnDepth(id));
+            while(d.returnDepth(id)<LabyrinthPacing.STONE_DEPTH){h.assertTrue(!LabyrinthDealer.grayAvailable(d,id).stream().anyMatch(StoneHalls::isStone),"the halls stay domestic until the stone (0.4.393, R4): "+d.returnDepth(id));d.pushReturn(id,spot);}
+            h.assertTrue(d.returnDepth(id)==LabyrinthPacing.STONE_DEPTH&&LabyrinthDealer.grayAvailable(d,id).contains(LabyrinthPlace.STONE_GALLERY),"and the stone three crossings later: "+d.returnDepth(id));
             for(int i=0;i<LabyrinthPacing.STONE_DEPTH;i++)d.popReturn(id);h.assertTrue(d.returnDepth(id)==0&&d.peekReturn(id)!=null,"going back undoes those crossings and keeps the older way back");
             var copy=LabyrinthData.load(d.save(new net.minecraft.nbt.CompoundTag(),server.registryAccess()),server.registryAccess());
             h.assertTrue(copy.returnDepth(id)==0&&copy.peekReturn(id)!=null&&copy.peekReturn(id).held(),"and the held way back is saved");
