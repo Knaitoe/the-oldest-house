@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY,RESONANCE}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -71,6 +71,9 @@ public final class PuzzleRooms {
         // 0.4.306: the tension room (TensionRooms, docs/TENSION_ROOM_0_4_306.md), early only for now. The far door is ordinary: the pit is what waits.
         TENSION_ROOM(LabyrinthPlace.TENSION_ROOM,Family.TENSION,false,null),
         TENSION_ROOMS(LabyrinthPlace.TENSION_ROOMS,Family.TENSION,true,null),
+        // 0.4.360: the resonant pipes (ResonantPipes, docs/RESONANT_PIPES_0_4_360.md), early and deep. The far door is what waits: its catch is wired to the reeds.
+        RESONANT_PIPE(LabyrinthPlace.RESONANT_PIPE,Family.RESONANCE,false,"The door won't give. A catch holds it, wired to the reeds beside it."),
+        RESONANT_PIPES(LabyrinthPlace.RESONANT_PIPES,Family.RESONANCE,true,"The door won't give. A catch holds it, wired to the three reeds beside it."),
         YARD_SURVEY(LabyrinthPlace.YARD_SURVEY,Family.SURVEY,false,null),
         // 0.4.345: the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md), reading the yard from above to set its gates from below. The far gate is ordinary: the herd is what waits.
         YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null),

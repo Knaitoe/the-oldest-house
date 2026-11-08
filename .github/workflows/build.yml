@@ -113,6 +113,8 @@ jobs:
           python3 tools/draw_kitchen_dishes.py --check
           python3 tools/draw_truant_service_fittings.py --check
           python3 tools/generate_truant_service_audio.py --check
+          python3 tools/draw_resonance_fittings.py --check
+          python3 tools/generate_resonance_audio.py --check
           python3 tools/draw_yard_fittings.py --check
           python3 tools/generate_yard_audio.py --check
           python3 tools/draw_deer_road_art.py --check

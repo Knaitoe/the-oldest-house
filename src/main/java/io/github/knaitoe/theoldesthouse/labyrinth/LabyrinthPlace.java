@@ -621,7 +621,11 @@ public enum LabyrinthPlace {
     /** 0.4.358, the Survey Stakes' deeper variant (YardFields.surveyDeep, docs/YARD_FINISHING_0_4_358.md): a fence with no gate, and a way through it that shows only on the stakes' bearing. Outside; the yard's survey, deep. */
     YARD_SURVEY_DEEP("yard_survey_deep",Kind.GRAY,213,new BoundingBox(-18,-3,-50,18,10,0),grayDoors(0,0,-49)),
     /** 0.4.359, Johnny Truant's copying room (TruantSentence, docs/TRUANT_SENTENCE_0_4_359.md), the missing sentence, from the deep halls. */
-    TRUANT_SENTENCE("truant_sentence",Kind.GRAY,214,new BoundingBox(-7,-1,-22,7,5,0),grayDoors(4,0,-21));
+    TRUANT_SENTENCE("truant_sentence",Kind.GRAY,214,new BoundingBox(-7,-1,-22,7,5,0),grayDoors(4,0,-21)),
+    /** 0.4.360, the Resonant Pipes (ResonantPipes, docs/RESONANT_PIPES_0_4_360.md): a service corridor of singing pipes and a reed latch. */
+    RESONANT_PIPE("resonant_pipe",Kind.GRAY,215,new BoundingBox(-4,-1,-22,4,5,0),grayDoors(2,0,-21)),
+    /** Its deep rooms: three rooms sharing the pipework, three reeds on the last door. */
+    RESONANT_PIPES("resonant_pipes",Kind.GRAY,216,new BoundingBox(-7,-1,-34,7,6,0),grayDoors(5,0,-33));
 
     /** What a place is to the dealer. */
     public enum Kind {
