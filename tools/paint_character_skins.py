@@ -146,6 +146,8 @@ LOOKS = {
     'literary_marsh_del': Look('#d0a284','#7a5232','messy','#8a3a2e','#2e3a4a','flannel','#d0c4a8',eyes='#4e5a50',beard='stubble'),
     'literary_marsh_nana': Look('#e2c2aa','#d8d4cc','bun','#5a4a6a','#3a3640','cardigan','#cfc4b0',eyes='#5a5a52',age=2,glasses=True),
     'literary_marsh_corinne': Look('#8a5a40','#1e1814','ponytail','#3e6a6e','#2a2e38','jacket','#d8d0c0',eyes='#3a2a20'),
+    # The Last Crossing (0.4.351): Vera, the keeper of the flood station, in her work coat over a cardigan, her hair cut short and gone grey.
+    'literary_crossing_vera': Look('#d6ae90','#a8a296','short','#4e5a44','#3a3834','coat','#cfc3a2',eyes='#566660',age=2),
     # 0.4.349, In the Tall Grass: the driver of the car that pulls over, in a work jacket, on stranger phase 115.
     'literary_grass_driver': Look('#c49a7a','#4a3a2e','short','#6a5a3e','#3a3c42','jacket','#cfc4a8',eyes='#4a4a42',age=1,beard='stubble'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),

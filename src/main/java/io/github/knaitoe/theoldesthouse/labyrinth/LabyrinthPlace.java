@@ -614,7 +614,10 @@ public enum LabyrinthPlace {
     TALL_GRASS("tall_grass",Kind.ONE_SHOT,210,new BoundingBox(-56,-5,-112,56,16,1),literaryEntry()),
     /** 0.4.350, Growing Things (GrowingThings, docs/GROWING_THINGS_0_4_350.md): the Barretts' back yard and house on a Saturday, years before
      * the filming; the chores, the father who goes out to clear the back step, the kitchen floor lifting, and supper carried upstairs. */
-    GROWING_THINGS("growing_things",Kind.ONE_SHOT,211,new BoundingBox(-30,-5,-60,30,16,1),literaryEntry());
+    GROWING_THINGS("growing_things",Kind.ONE_SHOT,211,new BoundingBox(-30,-5,-60,30,16,1),literaryEntry()),
+    /** 0.4.351, The Last Crossing (LastCrossing, docs/LAST_CROSSING_0_4_351.md): the flood station where the keeper is trying to get the
+     * last cable ferry across, for a crew of four to six; built in slices, the first the road, the station, the roll and Day One. */
+    LAST_CROSSING("last_crossing",Kind.ONE_SHOT,212,new BoundingBox(-24,-13,-112,60,14,1),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

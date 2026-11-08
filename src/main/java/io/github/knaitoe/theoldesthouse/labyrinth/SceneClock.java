@@ -43,6 +43,7 @@ public final class SceneClock {
             case MARSH_SUPPER->3; // 0.4.348: dusk over the corn at the Marsh farm
             case TALL_GRASS->16; // 0.4.349: late afternoon on the county road, the sun low over the grass
             case GROWING_THINGS->16; // 0.4.350: a Saturday afternoon at the Barretts', going on to supper
+            case LAST_CROSSING->17; // 0.4.351: the flood station's own day, morning to dusk, sent by the station (CrossingPayload)
             case DEER_ROAD->9; // 0.4.310: midnight and rain on the county road
             case SECOND_PERSON->15; // 0.4.274: the flat's own year and hour, from the reader's record (SecondPersonClient)
             case PEOPLE_LIGHTS->9; // 0.4.253: the evening and the night, the people lights going off
@@ -55,6 +56,6 @@ public final class SceneClock {
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 11->1000;case 15->7000;case 16->10800;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 15->7000;case 17->1000;case 16->10800;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }
