@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "the_oldest_house:block/room_shell_trailer_skirt"
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/room_shell_trailer_skirt",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "the_oldest_house:block/room_shell_trailer_skirt",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/room_shell_trailer_skirt",
+      "y": 270
+    }
+  }
+}

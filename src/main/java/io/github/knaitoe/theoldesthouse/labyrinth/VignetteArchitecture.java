@@ -231,7 +231,8 @@ public final class VignetteArchitecture {
     }
     private void trailer(){
         // Trim and chassis outside; inside only the counter, the door and the end wall, clear of the bunks, the table and the bathroom (0.4.53).
-        for(int x=-7;x<=7;x++){add(x,6,-78,Blocks.SMOOTH_QUARTZ_SLAB);add(x,6,-54,Blocks.SMOOTH_QUARTZ_SLAB);}
+        // 0.4.382: the eaves over the end walls are the roof's own sheet run out a block.
+        for(int x=-7;x<=7;x++){add(x,6,-78,RoomShell.TRAILER_ROOF.get());add(x,6,-54,RoomShell.TRAILER_ROOF.get());}
         for(int z:new int[]{-60,-72})for(int x:new int[]{-7,7})add(x,0,z,Blocks.POLISHED_BLACKSTONE);
         furniture(6,1,-57,CHEST_OF_DRAWERS,Direction.WEST);
         detail(-4,2,-76,DISH_RACK);detail(-3,2,-76,CROCK);detail(-7,2,-76,TEA_SET);

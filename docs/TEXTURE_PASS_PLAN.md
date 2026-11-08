@@ -118,7 +118,7 @@ Two or three scenes per release, 4 to 8 textures each:
 7. The child's room. Built in 0.4.380 with the hotel's boiler room (docs/TEXTURE_PASS_ROOMS_0_4_380.md).
 8. Holloway's camp. Built in 0.4.381 with the preserved cave's pews (docs/TEXTURE_PASS_CAMP_0_4_381.md).
 9. The hotel basement (the boiler room). Built in 0.4.380 with the child's room.
-10. Goatman's trailer siding.
+10. Goatman's trailer siding. Built in 0.4.382, outside and in, with its roof and floor (docs/TEXTURE_PASS_TRAILER_0_4_382.md).
 11. Mapping the Interior.
 12. The preserved cave's pews. Built in 0.4.381 with Holloway's camp.
 

@@ -99,11 +99,11 @@ public final class SceneShells {
                     Blocks.SPRUCE_PLANKS, null, null,
                     Blocks.BIRCH_SLAB, Blocks.GLASS_PANE, Blocks.LIGHT_GRAY_WOOL, Blocks.WHITE_CONCRETE,
                     null, 0, true, 4));
-            // The trailer's single skin is also its outside: only its floor and ceiling change.
+            // The trailer's single skin is also its outside: only its floor changes here, to the camper's linoleum (0.4.382).
             case GOATMAN -> new Spec(-7, 1, -76, 7, 5, -56, new Palette(
                     null, null, null, 0, null,
                     null, 0, false, false, null,
-                    null, Blocks.LIGHT_GRAY_CONCRETE, Blocks.WHITE_CONCRETE,
+                    null, RoomShell.TRAILER_LINO_DARK.get(), RoomShell.TRAILER_LINO.get(),
                     Blocks.OAK_SLAB, Blocks.GLASS_PANE, null, Blocks.WHITE_CONCRETE,
                     null, 0, false, 0));
             default -> null;

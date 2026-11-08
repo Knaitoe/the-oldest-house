@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "the_oldest_house:block/room_shell/trailer_ceiling",
+    "top": "the_oldest_house:block/room_shell/trailer_roof",
+    "side": "the_oldest_house:block/room_shell/trailer_roof_side"
+  }
+}

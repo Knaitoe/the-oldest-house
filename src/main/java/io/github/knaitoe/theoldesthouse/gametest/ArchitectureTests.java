@@ -293,7 +293,23 @@ public final class ArchitectureTests {
         h.assertTrue(town.getBlockState(gap.above()).is(DrownedTownRegistry.FIXTURE.get())&&!town.noCollision(null,new AABB(gap.getX()+.2,gap.getY()+.01,gap.getZ()+.2,gap.getX()+.8,gap.getY()+1.8,gap.getZ()+.8))
             &&town.noCollision(null,new AABB(gap.getX()+.11,gap.getY()+.01,gap.getZ()+.03,gap.getX()+.89,gap.getY()+.95,gap.getZ()+.97)),"the bleachers leave a gap only the witch fits under");
         var interior=HouseTestLevel.get(server);var trailer=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var hut=LabyrinthPlaces.base(origin,LabyrinthPlace.HOLLOWAY_CAMP);var archive=LabyrinthPlaces.base(origin,LabyrinthPlace.ZAMPANO_COURTYARD);
-        h.assertTrue(interior.getBlockState(trailer.offset(0,7,-65)).is(Blocks.SMOOTH_STONE_SLAB)&&interior.getBlockState(trailer.offset(5,0,-51)).is(Blocks.IRON_BARS),"the trailer has a stepped metal roof and a physical tow frame");
+        h.assertTrue(interior.getBlockState(trailer.offset(0,7,-65)).is(io.github.knaitoe.theoldesthouse.labyrinth.RoomShell.TRAILER_ROOF.get())&&interior.getBlockState(trailer.offset(5,0,-51)).is(Blocks.IRON_BARS),"the trailer has a stepped metal roof and a physical tow frame");
+        // 0.4.382: the trailer wears its own skin. Every wall block faces away from the trailer, the roof is its own sheet over the
+        // whole, and the floor is linoleum; no vanilla terracotta, concrete, iron or smooth stone is left in its walls, roof or floor.
+        int[] skin=new int[3];List<String> vanilla=new ArrayList<>();
+        for(int x=-8;x<=8;x++)for(int z=-77;z<=-55;z++)for(int y=0;y<=7;y++){
+            boolean wall=(Math.abs(x)==8||z==-77||z==-55)&&y>=1&&y<=5,roof=y>=6,floor=y==0&&Math.abs(x)<=7&&z>-77&&z<-55;
+            if(!wall&&!roof&&!floor)continue;
+            var at=trailer.offset(x,y,z);var state=interior.getBlockState(at);
+            if(io.github.knaitoe.theoldesthouse.labyrinth.RoomShell.trailer(state))skin[wall?0:roof?1:2]++;
+            if(state.getBlock() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RoomShell.Skin){
+                var out=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoomShell.Skin.FACING);
+                h.assertTrue(Math.abs(x)==8?out==(x<0?Direction.WEST:Direction.EAST):out==(z==-77?Direction.NORTH:Direction.SOUTH),"the trailer's wall at "+x+","+y+","+z+" faces out, not "+out);
+            }
+            if(state.is(Blocks.WHITE_TERRACOTTA)||state.is(Blocks.LIGHT_GRAY_TERRACOTTA)||state.is(Blocks.CYAN_TERRACOTTA)||state.is(Blocks.IRON_BLOCK)
+                    ||state.is(Blocks.LIGHT_GRAY_CONCRETE)||state.is(Blocks.WHITE_CONCRETE)||state.is(Blocks.SMOOTH_STONE_SLAB))vanilla.add(x+","+y+","+z+"="+state.getBlock());
+        }
+        h.assertTrue(skin[0]>300&&skin[1]>600&&skin[2]>150&&vanilla.isEmpty(),"the trailer wears its own walls, roof and floor (walls "+skin[0]+", roof "+skin[1]+", floor "+skin[2]+"; vanilla left "+vanilla.size()+(vanilla.isEmpty()?"":", first "+vanilla.getFirst())+")");
         h.assertTrue(interior.getBlockState(hut.offset(3,3,0)).is(Blocks.STRIPPED_SPRUCE_LOG)&&!interior.getBlockState(hut.offset(0,8,-5)).isAir(),"the dugout has a braced entry and an earth-covered roof");
         // 0.4.201: Zampano's court is one apartment building, built whole: galleries on posts down both wings, a hood over his
         // door, the upper storey's windows, and no exterior pass of its own.
