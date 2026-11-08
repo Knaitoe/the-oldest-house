@@ -986,6 +986,8 @@ public final class GoatmanTests {
             for(var at:BlockPos.betweenClosed(floor.above(),floor.offset(40,4,40)))if(!f.l.getBlockState(at).isAir())f.l.setBlock(at,Blocks.AIR.defaultBlockState(),2);
             // A glimpse stands only where entities are loaded, so the floor's native sections are held and awaited first.
             f.chunks.hold(f.l,new AABB(floor.getX(),floor.getY(),floor.getZ(),floor.getX()+41,floor.getY()+5,floor.getZ()+41));
+            // Run 1483: the overworld's day is shared with the rest of the suite and can roll over while the glimpse is awaited,
+            // and it eats again on the new day, so the pack is checked against what the haunting has eaten.
             h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the home floor's native sections are loaded")).thenExecute(()->{
                 var own=GoatmanVignette.personal(data,a.getUUID());own.putLong("HauntDay",f.server.overworld().getDayTime()/24000-1);own.putLong("NextGlimpse",0);
                 CompoundTag all=data.state(GoatmanVignette.ID),players=all.getCompound("Players");players.put(a.getUUID().toString(),own);all.put("Players",players);data.setState(GoatmanVignette.ID,all);
@@ -994,7 +996,8 @@ public final class GoatmanTests {
     }
     /** Checked each tick until it holds: the haunting runs on its own once-a-second clock. Failures say what was there instead. */
     private static void home(GameTestHelper h,Fixture f,ServerPlayer a){
-        h.assertTrue(a.getInventory().countItem(Items.BREAD)==2,"one piece of food is gone from the pack for the day: "+a.getInventory().countItem(Items.BREAD));
+        int eaten=GoatmanVignette.personal(LabyrinthData.get(f.server),a.getUUID()).getInt("Eaten"),bread=a.getInventory().countItem(Items.BREAD);
+        h.assertTrue(eaten>=1&&bread==3-eaten,"a piece of food is gone from the pack for each day it has eaten with them: "+bread+" left, eaten "+eaten);
         var seen=f.l.getEntitiesOfClass(GoatmanFigure.class,a.getBoundingBox().inflate(20),s->s.viewer().filter(a.getUUID()::equals).isPresent());
         var any=f.l.getEntitiesOfClass(GoatmanFigure.class,a.getBoundingBox().inflate(64),s->true).stream().map(s->s.purpose+"@"+s.blockPosition().toShortString()+" for "+s.viewer().map(id->id.equals(a.getUUID())?"them":"another").orElse("nobody")).toList();
         var own=GoatmanVignette.personal(LabyrinthData.get(f.server),a.getUUID());
