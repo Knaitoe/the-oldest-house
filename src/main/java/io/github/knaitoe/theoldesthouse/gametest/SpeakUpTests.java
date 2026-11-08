@@ -121,6 +121,12 @@ public final class SpeakUpTests {
                 var ruth=cast.apply(p,SpeakUp.RUTH);h.assertTrue(ruth.blockPosition().equals(b.offset(SpeakUp.RUTH_CHAIR)),"Ruth sits opposite the reader's place");
                 h.assertTrue(cast.apply(p,SpeakUp.VOICE).fade()==100,"the empty chair's voice is not seen");
             })
+            // 0.4.398: the world closed and opened again with both readers at the table; the saved cast is taken up again, never doubled.
+            .thenExecute(SpeakUp::forget)
+            .thenIdle(5)
+            .thenExecute(()->{for(var reader:List.of(p,q)){
+                var own=l.getEntitiesOfClass(LiteraryActor.class,SpeakUp.room(b).inflate(2),x->x.scene().equals(place.id())&&x.owner().map(reader.getUUID()::equals).orElse(false));
+                h.assertTrue(own.size()==5&&own.stream().map(LiteraryActor::phase).distinct().count()==5,"still exactly one of each at "+reader.getScoreboardName()+"'s table after a reload: "+own.size());}})
             .thenWaitUntil(()->h.assertTrue(rec.apply(p).getInt("T")>165,"the table talks: "+rec.apply(p).getInt("T")))
             .thenExecute(()->{
                 var lines=Talk.lines(p);
@@ -161,7 +167,7 @@ public final class SpeakUpTests {
                 // They have turned to the empty chair.
                 var pat=cast.apply(p,SpeakUp.PAT);var to=Vec3.atCenterOf(b.offset(SpeakUp.EMPTY)).subtract(pat.getEyePosition());float yaw=(float)Math.toDegrees(Math.atan2(-to.x,to.z));
                 h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(pat.getYHeadRot()-yaw))<20,"Pat has turned to the empty chair: "+pat.getYHeadRot()+" vs "+yaw);
-                h.assertTrue(cast.apply(p,SpeakUp.DELL).blockPosition().equals(b.offset(2,0,-11)),"Dell stands clear of the way on");
+                h.assertTrue(cast.apply(p,SpeakUp.DELL).blockPosition().equals(b.offset(SpeakUp.DELL_STANDS)),"Dell stands clear of the way on");
                 // Coming back with a voice, the table is already eating.
                 SpeakUp.arrived(p,place);h.assertTrue(rec.apply(p).getInt("Stage")==3&&SpeakUp.voice(f.data(),p.getUUID()),"a reader who has spoken finds them eating");
                 h.assertTrue(Spoken.lastHeard(p,q).equals(SpeakUp.WATER)&&Spoken.lastHeard(q,p).equals(SpeakUp.LEAVE),"the empty chairs' words are not the readers' own speech");

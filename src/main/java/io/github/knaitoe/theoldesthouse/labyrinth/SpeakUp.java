@@ -48,10 +48,11 @@ public final class SpeakUp {
     public static String skin(int phase){return "supper_"+NAMES[phase-JOAN].toLowerCase(Locale.ROOT);}
 
     // The room: a two-by-three table, the guest's place in the middle of the west side, the empty chair north of it, Ruth opposite,
-    // Dell at the head in front of the way on.
-    public static final BlockPos GUEST=new BlockPos(-1,0,-9),EMPTY=new BlockPos(-1,0,-10),JOAN_CHAIR=new BlockPos(-1,0,-8),PAT_CHAIR=new BlockPos(2,0,-8),
-            RUTH_CHAIR=new BlockPos(2,0,-9),DELL_CHAIR=new BlockPos(1,0,-11),DELL_MOVED=new BlockPos(0,0,-11),GLASS=new BlockPos(0,1,-9),JUG=new BlockPos(-4,1,-10),
-            WAY_ON=new BlockPos(1,0,-12);
+    // Dell at the head, facing down the table from in front of the way on. 0.4.398 (the owner: "the table is also too near to the door
+    // for comfort"): the table and its chairs stand two blocks further from the way on, so two clear blocks lie between Dell's chair and it.
+    public static final BlockPos GUEST=new BlockPos(-1,0,-7),EMPTY=new BlockPos(-1,0,-8),JOAN_CHAIR=new BlockPos(-1,0,-6),PAT_CHAIR=new BlockPos(2,0,-6),
+            RUTH_CHAIR=new BlockPos(2,0,-7),DELL_CHAIR=new BlockPos(1,0,-9),DELL_MOVED=new BlockPos(0,0,-9),DELL_STANDS=new BlockPos(2,0,-9),GLASS=new BlockPos(0,1,-7),
+            JUG=new BlockPos(-4,1,-8),WAY_ON=new BlockPos(1,0,-12);
     static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
 
     // The reader's record. Stage: 0 being talked across, 1 asked, 2 answered, 3 done.
@@ -89,17 +90,17 @@ public final class SpeakUp {
         box(l,b,6,0,-7,6,3,-5,Blocks.BLACK_CONCRETE.defaultBlockState());
         for(int z=-7;z<=-5;z++)for(int y=1;y<=2;y++)set(l,b,5,y,z,Blocks.GLASS_PANE.defaultBlockState().setValue(IronBarsBlock.NORTH,z>-7).setValue(IronBarsBlock.SOUTH,z<-5));
         // The table and its six places.
-        for(int x=0;x<=1;x++)for(int z=-10;z<=-8;z++)set(l,b,x,0,z,chair(HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.NORTH));
+        for(int x=0;x<=1;x++)for(int z=EMPTY.getZ();z<=JOAN_CHAIR.getZ();z++)set(l,b,x,0,z,chair(HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.NORTH));
         for(var at:List.of(GUEST,EMPTY,JOAN_CHAIR))set(l,b,at,chair(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST));
         for(var at:List.of(PAT_CHAIR,RUTH_CHAIR))set(l,b,at,chair(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST));
         set(l,b,DELL_CHAIR,chair(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH));
         // Supper at the four places and at the empty one, set for someone; the guest's glass upside down.
-        for(var at:List.of(new BlockPos(0,1,-8),new BlockPos(1,1,-8),new BlockPos(1,1,-9),new BlockPos(1,1,-10),new BlockPos(0,1,-10)))set(l,b,at,GhostsSetBlock.of(GhostsSetBlock.Kind.MEAL_STEW,Direction.NORTH));
+        for(var at:List.of(new BlockPos(0,1,-6),new BlockPos(1,1,-6),new BlockPos(1,1,-7),new BlockPos(1,1,-8),new BlockPos(0,1,-8)))set(l,b,at,GhostsSetBlock.of(GhostsSetBlock.Kind.MEAL_STEW,Direction.NORTH));
         set(l,b,GLASS,GhostsSetBlock.of(GhostsSetBlock.Kind.EMPTY_JAR,Direction.EAST));
         // The sideboard on the west wall with a serving counter beside it and the jug of water on that; a lamp over the table.
-        set(l,b,-4,0,-9,BarrettHomeBlock.of(BarrettHomeBlock.Kind.SIDEBOARD_L,Direction.EAST));set(l,b,-4,0,-8,BarrettHomeBlock.of(BarrettHomeBlock.Kind.SIDEBOARD_R,Direction.EAST));
-        set(l,b,-4,0,-10,GhostsSetBlock.of(GhostsSetBlock.Kind.COUNTER,Direction.EAST));set(l,b,JUG,GhostsSetBlock.of(GhostsSetBlock.Kind.JUG,Direction.SOUTH));
-        set(l,b,0,3,-9,HouseReadRooms.part(HouseReadPropBlock.Part.PENDANT).setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING,Direction.SOUTH));
+        set(l,b,-4,0,-7,BarrettHomeBlock.of(BarrettHomeBlock.Kind.SIDEBOARD_L,Direction.EAST));set(l,b,-4,0,-6,BarrettHomeBlock.of(BarrettHomeBlock.Kind.SIDEBOARD_R,Direction.EAST));
+        set(l,b,-4,0,-8,GhostsSetBlock.of(GhostsSetBlock.Kind.COUNTER,Direction.EAST));set(l,b,JUG,GhostsSetBlock.of(GhostsSetBlock.Kind.JUG,Direction.SOUTH));
+        set(l,b,0,3,-7,HouseReadRooms.part(HouseReadPropBlock.Part.PENDANT).setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING,Direction.SOUTH));
         LabyrinthBuilder.entrance(l,b,paper,boards,plaster);
         LabyrinthBuilder.doors(l,b,PLACE);
         RoomActors.settlePanes(l,b,PLACE);
@@ -136,19 +137,30 @@ public final class SpeakUp {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,room(b).inflate(2),a->a.scene().equals(PLACE.id())&&a.owner().map(reader::equals).orElse(false)))a.discard();
         CAST.remove(reader);
     }
+    /** What a closed and reopened world forgets (the saved cast stays in the room). Fixtures only. */
+    public static void forget(){CAST.clear();}
     @Nullable static LiteraryActor actor(ServerLevel l,UUID reader,int phase){var ids=CAST.get(reader);if(ids==null||!ids.containsKey(phase))return null;var e=l.getEntity(ids.get(phase));return e instanceof LiteraryActor a&&a.isAlive()?a:null;}
     static BlockPos seat(int phase,CompoundTag t){return switch(phase){case JOAN->JOAN_CHAIR;case PAT->PAT_CHAIR;case RUTH->RUTH_CHAIR;case DELL->t.getBoolean("Moved")?null:DELL_CHAIR;default->EMPTY;};}
     static float yaw(BlockPos chair){return chair.getX()<0?-90:chair.getX()>=2?90:0;}
-    /** Puts the reader's four (and the voice in the empty chair) at the table if they are not there. */
+    /**
+     * Puts the reader's four (and the voice in the empty chair) at the table if they are not there. 0.4.398 (the owner: "two variants of
+     * the same NPC spawned?"): the cast is saved with the room, so after the world is closed and opened again with the reader at the table
+     * the ones already sitting there are taken up again rather than a second four set down over them, and any second of one is sent away.
+     */
     static void seatCast(ServerLevel l,BlockPos b,ServerPlayer p,CompoundTag t){
-        if(!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(b.offset(0,0,-9))))return;
+        if(!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(b.offset(GUEST)))||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(b.offset(DELL_STANDS))))return;
         var ids=CAST.computeIfAbsent(p.getUUID(),k->new HashMap<>());
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,room(b).inflate(2),a->a.scene().equals(PLACE.id())&&a.owner().map(p.getUUID()::equals).orElse(false))){
+            if(!cast(a.phase())){a.discard();continue;}
+            var kept=actor(l,p.getUUID(),a.phase());
+            if(kept==null)ids.put(a.phase(),a.getUUID());else if(kept!=a)a.discard();
+        }
         for(int phase=JOAN;phase<=VOICE;phase++){
             if(actor(l,p.getUUID(),phase)!=null)continue;
             var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return;
             a.bind(PLACE,p.getUUID());a.appearance(LiteraryActor.STRANGER,phase);
             var chair=seat(phase,t);Vec3 at;float facing;
-            if(chair==null){at=Vec3.atBottomCenterOf(b.offset(2,0,-11));facing=90;}else{at=Vec3.atBottomCenterOf(b.offset(chair));facing=yaw(chair);}
+            if(chair==null){at=Vec3.atBottomCenterOf(b.offset(DELL_STANDS));facing=90;}else{at=Vec3.atBottomCenterOf(b.offset(chair));facing=yaw(chair);}
             a.moveTo(at.x,at.y,at.z,facing,0);a.setYBodyRot(facing);a.setYHeadRot(facing);a.setNoGravity(true);a.setCustomNameVisible(false);
             if(phase==VOICE)a.fade(100);
             if(l.addFreshEntity(a))ids.put(phase,a.getUUID());
@@ -255,7 +267,7 @@ public final class SpeakUp {
     static void moveChair(ServerLevel l,BlockPos b,ServerPlayer p,CompoundTag t){
         set(l,b,DELL_CHAIR,Blocks.AIR.defaultBlockState());set(l,b,DELL_MOVED,chair(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH));
         l.playSound(null,b.offset(DELL_CHAIR),SoundEvents.WOOD_PLACE,net.minecraft.sounds.SoundSource.BLOCKS,.8F,.6F);
-        var dell=actor(l,p.getUUID(),DELL);if(dell!=null){var at=Vec3.atBottomCenterOf(b.offset(2,0,-11));dell.moveTo(at.x,at.y,at.z,90,0);dell.setYBodyRot(90);dell.setYHeadRot(90);}
+        var dell=actor(l,p.getUUID(),DELL);if(dell!=null){var at=Vec3.atBottomCenterOf(b.offset(DELL_STANDS));dell.moveTo(at.x,at.y,at.z,90,0);dell.setYBodyRot(90);dell.setYHeadRot(90);}
         t.putBoolean("Moved",true);
     }
     /** A hand on any of them brings the question back if the panel was closed before it was answered. */
