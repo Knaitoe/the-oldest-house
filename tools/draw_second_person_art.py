@@ -8,7 +8,9 @@ empty, and flattened; the hall glass as it hangs and turned to the wall; the bat
 cupboard's tank (lower and upper); the photograph from home, standing and face down; the drawing as a loose sheet; the coat folded
 over itself; the sixteen routine items lying flat, each from that item's own picture; the launderette's fascia (three parts); the
 bus stop flag on its pole; the shift rota on the wall; the tablecloth rumpled, straightened and laid for two; and the telephone on
-its hook and off it. Writes the models and block states, the carried thing's item models and the blocks' names. --check verifies
+its hook and off it. 0.4.369, winter: Iris's sewing tin, shut, open with the half-finished sleeve on its needles, and open with
+only buttons and needles left; the train ticket in its envelope; the sleeve lying on the armchair's arm, the finished cardigan folded
+on the seat, and the sleeve set down flat. Writes the models and block states, the carried thing's item models and the blocks' names. --check verifies
 everything.
 """
 from pathlib import Path
@@ -421,6 +423,99 @@ def dial():
     return im
 
 
+def tin_lid():
+    # A biscuit tin kept for sewing: a painted lid of flowers round a ring, its rim worn to metal.
+    im = new(base='#2c4a6a', seed=2810, spread=3)
+    for x in range(16):
+        for y in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if 6.2 < d < 7.4:
+                dot(im, x, y, '#c8b070')
+            elif d < 3:
+                dot(im, x, y, '#d8d0b8')
+    rnd = random.Random(2811)
+    for _ in range(9):
+        x, y = rnd.randrange(2, 14), rnd.randrange(2, 14)
+        if 3.5 < ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5 < 6:
+            dot(im, x, y, '#c85a5a'); dot(im, x + 1, y, '#e8a0a0')
+    return im
+
+
+def tin_side():
+    im = new(base='#2c4a6a', seed=2812, spread=3)
+    for x in range(16):
+        dot(im, x, 0, '#c8b070'); dot(im, x, 15, '#9a8a60')
+        if x % 4 == 1:
+            dot(im, x, 7, '#c85a5a'); dot(im, x, 8, '#e8a0a0')
+    return im
+
+
+def tin_in():
+    # Inside: a pincushion, buttons loose in the bottom, two needles and a card of thread.
+    im = new(base='#a8a294', seed=2813, spread=3)
+    fill(im, 2, 2, 6, 6, '#b84a4a'); dot(im, 3, 3, '#d8d8d8'); dot(im, 4, 4, '#d8d8d8')
+    rnd = random.Random(2814)
+    for c in ('#e8e0c8', '#3a3a3a', '#8a5a3a', '#c8c0b0', '#5a6a8a', '#e8e0c8'):
+        x, y = rnd.randrange(7, 14), rnd.randrange(2, 14)
+        dot(im, x, y, c); dot(im, x + 1, y, shade(c, -30))
+    for i in range(9):
+        dot(im, 2 + i, 12 - i // 3, '#d0d0d8')
+    fill(im, 2, 9, 5, 14, '#e8e4d8'); fill(im, 2, 10, 5, 13, '#7a3a5a')
+    return im
+
+
+def wool():
+    # Hand knitting: rows of little V stitches, a little uneven.
+    im = new(base='#8a7a9a', seed=2815, spread=4)
+    for y in range(16):
+        for x in range(16):
+            if (x + (y // 2) % 2) % 2 == 0 and y % 2 == 0:
+                dot(im, x, y, '#6a5a7a')
+            elif y % 2 == 1 and x % 2 == 1:
+                dot(im, x, y, '#a898b8')
+    return im
+
+
+def needle():
+    im = new(base='#c8c8d0', seed=2816, spread=2)
+    for y in range(16):
+        dot(im, 0, y, '#8a8a92')
+    return im
+
+
+def envelope():
+    # The post nobody opened: a brown envelope, its flap, a stamp and the address in a hand they know.
+    im = new(base='#c8b088', seed=2817, spread=3)
+    for i in range(8):
+        dot(im, i, i // 2 + 1, '#a89068'); dot(im, 15 - i, i // 2 + 1, '#a89068')
+    fill(im, 11, 9, 14, 13, '#c84a4a'); frame(im, 11, 9, 14, 13, '#e8e0c8')
+    for x in range(3, 10):
+        dot(im, x, 10, '#4a4a5a')
+        if x < 8:
+            dot(im, x, 12, '#4a4a5a')
+    return im
+
+
+def ticket():
+    im = new(base='#e8dcb8', seed=2818, spread=2)
+    fill(im, 0, 0, 16, 3, '#c86a3a')
+    for x in range(2, 14, 2):
+        dot(im, x, 6, '#3a3a4a'); dot(im, x, 9, '#3a3a4a')
+    for y in range(16):
+        if y % 2 == 0:
+            dot(im, 12, y, '#a89a80')
+    return im
+
+
+def knit_folded():
+    im = wool()
+    for x in range(16):
+        dot(im, x, 7, '#5a4a6a'); dot(im, x, 8, '#9888a8')
+    for y in range(16):
+        dot(im, 3, y, '#5a4a6a')
+    return im
+
+
 def textures():
     out = {f'block/sp_{k}.png': v for k, v in materials().items()}
     t = {
@@ -430,6 +525,8 @@ def textures():
         'coat': coat(), 'fascia_0': fascia(0), 'fascia_1': fascia(1), 'fascia_2': fascia(2), 'flag': stop_flag(),
         'pole': new(base='#6a6a6c', seed=2802, spread=2), 'rota': rota(), 'cloth': cloth(0), 'cloth_rumpled': cloth(1), 'plate': plate(),
         'bakelite': bakelite(), 'dial': dial(), 'cream': new(base='#e8e2d0', seed=2803, spread=2), 'frame': new(base='#3a2c22', seed=2804, spread=2),
+        'tin_lid': tin_lid(), 'tin_side': tin_side(), 'tin_in': tin_in(), 'wool': wool(), 'needle': needle(), 'envelope': envelope(),
+        'ticket': ticket(), 'knit_folded': knit_folded(),
     }
     out.update({f'block/second/{k}.png': v for k, v in t.items()})
     return out
@@ -502,11 +599,28 @@ def fitting_models():
     base = element([3, 0, 4], [13, 3, 12], {'all': 'k', 'up': 'd'}, uv={'up': [3, 4, 13, 12]})
     m['phone_0'] = model([base, element([2.5, 3, 6], [13.5, 5, 8], {'all': 'k'})], {'k': 'bakelite', 'd': 'dial'}, 'bakelite')
     m['phone_1'] = model([base, element([12, 0, 12], [15, 2, 15.5], {'all': 'k'}), element([3, 0, 13], [11, 2, 15], {'all': 'k'})], {'k': 'bakelite', 'd': 'dial'}, 'bakelite')
+    # Iris's tin: shut; open with the sleeve on its needles bunched in it and the lid leant against the back; open with only the bits.
+    can = element([4, 0, 4], [12, 4, 12], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's', 'up': 'i'}, uv={'up': [4, 4, 12, 12]})
+    m['tin_0'] = model([element([4, 0, 4], [12, 4, 12], {'all': 's'}), element([3.5, 4, 3.5], [12.5, 5, 12.5], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's', 'up': 'l'}, uv={'up': [0, 0, 16, 16]})],
+                       {'s': 'tin_side', 'l': 'tin_lid', 'i': 'tin_in'}, 'tin_lid')
+    lid = element([3.5, 0, 12.5], [12.5, 9, 13.5], {'north': 'l', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}, uv={'north': [0, 0, 16, 16]}, rot={'origin': [8, 0, 13], 'axis': 'x', 'angle': 22.5})
+    m['tin_1'] = model([can, lid, element([5, 3, 5], [11, 5, 10], {'all': 'w'}), element([6, 4.5, 4], [6.5, 5, 12], {'all': 'n'}), element([9, 4.5, 4], [9.5, 5, 12], {'all': 'n'})],
+                       {'s': 'tin_side', 'l': 'tin_lid', 'i': 'tin_in', 'w': 'wool', 'n': 'needle'}, 'tin_lid')
+    m['tin_2'] = model([can, lid], {'s': 'tin_side', 'l': 'tin_lid', 'i': 'tin_in'}, 'tin_lid')
+    m['ticket_0'] = model([element([3, 0, 4], [13, 0.25, 12], {'up': 'e', 'down': 'e', 'north': 'e', 'south': 'e', 'east': 'e', 'west': 'e'}, uv={'up': [0, 0, 16, 16]}),
+                           element([9, 0.25, 5], [14, 0.5, 8], {'up': 't', 'down': 't', 'north': 't', 'south': 't', 'east': 't', 'west': 't'}, uv={'up': [0, 0, 16, 7]}, rot={'origin': [11, 0, 6], 'axis': 'y', 'angle': -22.5})],
+                          {'e': 'envelope', 't': 'ticket'}, 'envelope')
+    # The sleeve along the armchair's right arm (arm tops at 12 in the cell below, so -4 here), its two needles through the last row.
+    sleeve = [element([13, -4, 2], [16, -3.25, 13], {'all': 'w'}, uv={'up': [0, 0, 6, 16]}), element([12.5, -3.25, 12], [16.5, -3, 12.5], {'all': 'n'}), element([12.5, -3.25, 13], [16.5, -3, 13.5], {'all': 'n'})]
+    m['sleeve_0'] = model(sleeve, {'w': 'wool', 'n': 'needle'}, 'wool')
+    m['sleeve_1'] = model([element([3, -8, 3], [13, -6, 12], {'up': 'f', 'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'}, uv={'up': [0, 0, 16, 16]})], {'f': 'knit_folded', 'w': 'wool'}, 'knit_folded')
+    m['sleeve_2'] = model([element([3, 0, 2], [13, 0.75, 13], {'all': 'w'}, uv={'up': [0, 0, 16, 16]}), element([2.5, 0.75, 12], [13.5, 1, 12.5], {'all': 'n'}), element([2.5, 0.75, 13], [13.5, 1, 13.5], {'all': 'n'})],
+                          {'w': 'wool', 'n': 'needle'}, 'wool')
     return m
 
 
-KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone']
-STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 2}
+KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve']
+STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 2, 'tin': 3, 'sleeve': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 DISPLAY = {
@@ -518,8 +632,9 @@ DISPLAY = {
     'firstperson_righthand': {'rotation': [20, 45, 0], 'translation': [0, 2, 0], 'scale': [0.7, 0.7, 0.7]},
     'firstperson_lefthand': {'rotation': [20, 225, 0], 'translation': [0, 2, 0], 'scale': [0.7, 0.7, 0.7]},
 }
-# What a reader carries: the routine item by its number (custom model data 1-16), the coat (17), the drawing (18), the photograph (19).
-CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0')]
+# What a reader carries: the routine item by its number (custom model data 1-16), the coat (17), the drawing (18), the photograph (19);
+# 0.4.369, the train ticket (20) and Iris's sleeve (21).
+CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0'), ('ticket', 'ticket_0'), ('sleeve', 'sleeve_2')]
 NAMES = {'sp_fitting': 'Things in the Flat', 'sp_brick': 'Stock Brick', 'sp_paving': 'Paving Slab', 'sp_road': 'Road', 'sp_kerb': 'Kerb',
          'sp_shopfront': 'Painted Shopfront', 'sp_paper': 'Faded Wallpaper', 'sp_kitchen': 'Kitchen Tiles', 'sp_carpet': 'Worn Carpet',
          'sp_lino': 'Chequered Lino', 'sp_tile': 'Avocado Tile', 'sp_ceiling': 'Artex Ceiling', 'sp_launderette': 'Launderette Floor'}

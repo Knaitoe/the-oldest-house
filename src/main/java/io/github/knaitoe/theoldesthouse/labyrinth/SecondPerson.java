@@ -49,6 +49,11 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.SecondPersonSite.*;
  * what people in houses like this have always done: move a thing, open or shut a door, turn a lamp on or off, make the air go cold,
  * knock, lift a ringing phone and listen, write a word in breath on cold glass, stand where glass or a camera might catch them. The
  * book on the shelf keeps up; the airing cupboard turns the season. Nothing here can hurt, and there is no failing.
+ * <p>
+ * 0.4.369 adds winter (docs/SECOND_PERSON_0_4_369.md) between autumn and the last morning: Iris dies and leaves the resident her sewing
+ * tin, "for you, and for your lodger"; three mornings of grief at the basin; a train ticket in the unopened post; a night they get up
+ * asleep and do, in the flat, what the reader did in the quiet rooms; once, in the bathroom mirror or the dark television, they see the
+ * reader; and when the reader goes into the cupboard again, the House carries on in the reader's name.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class SecondPerson {
@@ -57,21 +62,26 @@ public final class SecondPerson {
     /** The cast on stranger phases: Iris Dunne across the landing, and Sam from work. */
     public static final int IRIS=75,SAM=76;
     public static boolean cast(int phase){return phase==IRIS||phase==SAM;}
-    public static final int SUMMER=0,AUTUMN=1,MORNING=2;
+    public static final int SUMMER=0,AUTUMN=1,WINTER=2,MORNING=3;
     public static final int ARRIVE=0,UNPACK=1,GLASS_HUNG=2,BATH=3,NIGHT=4,SUMMER_DONE=5;
     public static final int IRIS_VISIT=0,ROUTINE=1,EVENING=2,PHOTO=3,CALL=4,STAY=5,AUTUMN_DONE=6;
+    public static final int W_FUNERAL=0,W_MORNING=1,W_DAY=2,W_EVENING=3,W_NIGHT=4,WINTER_DONE=5;
     public static final int LATCH=0,OUT=1,ON_BENCH=2;
     /** The four things that are theirs, in the order they unpack them. */
     public static final List<String> THINGS=List.of("photo","drawing","coat","routine");
+    /** Everything of theirs a reader can pick up from where it stands: the four, and in winter the train ticket. */
+    static final List<String> CARRYABLE=List.of("photo","drawing","coat","routine","ticket");
     static final String TAG="SecondPerson274";
     public static final int EMPTY_RESET=200,WAIT=400,NIGHT_WAIT=1200,RING=200,EVENING_LENGTH=1200;
+    /** Winter: how long a morning waits at the basin, a day, an evening in the armchair, a day away, and how long being seen lasts. */
+    public static final int CARE_WAIT=400,DAY_LENGTH=360,WINTER_EVENING=600,AWAY=400,SEEN_OPEN=200,SEEN_STILL=80;
     static final int G_SIT=1,G_PHONE=3,G_CAMERA=4,G_PERCH=5,G_CARRY=6,G_COLD=7;
 
     /** One flat in memory: its people and the counters between beats. Every fact lives in the reader's record. */
     static final class Flat {
         final BlockPos base;int empty;boolean cleared;
         @Nullable UUID resident,iris,sam;
-        int ring=-1,doorway,armchair,window,shut,near,knockBack=-1,unseen,wordWipe=-1,flash;
+        int ring=-1,doorway,armchair,window,shut,near,knockBack=-1,unseen,wordWipe=-1,flash,seenRun,seenAway,still;@Nullable Vec3 stillAt;
         boolean bedDoor;long sent=Long.MIN_VALUE;
         final Map<UUID,Long> said=new HashMap<>();final Set<String> once=new HashSet<>();
         Flat(BlockPos b){base=b;}
@@ -101,12 +111,13 @@ public final class SecondPerson {
     @Nullable static BlockPos placedAt(CompoundTag own,String thing){var t=thing(own,thing);return t.contains("At")?BlockPos.of(t.getLong("At")):null;}
     static void placedAt(CompoundTag own,String thing,@Nullable BlockPos at){var t=thing(own,thing);if(at==null)t.remove("At");else t.putLong("At",at.asLong());own.put("Thing_"+thing,t);}
     /** Is it dark in the flat? (Words on the street window, and the window behind the resident's chair.) */
-    static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING;}
+    static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING||s==WINTER&&st!=W_DAY&&st!=WINTER_DONE;}
     /** The flat's hour, from the year so far. */
     static long hour(CompoundTag own){
         int s=seasonOf(own),st=step(own);
         if(s==SUMMER)return switch(st){case ARRIVE,UNPACK->8200;case GLASS_HUNG->10800;case BATH->13200;case NIGHT->18000;default->23400;};
         if(s==AUTUMN)return switch(st){case IRIS_VISIT->11400;case ROUTINE->12100;case EVENING->13600;case PHOTO->14200;case CALL->15000;case STAY->16000;default->17500;};
+        if(s==WINTER)return switch(st){case W_FUNERAL->sub(own)>=2?18000:12700;case W_MORNING->23500;case W_DAY->4500;case W_EVENING->13400;case W_NIGHT->18500;default->2000;};
         return 900;
     }
 
@@ -123,6 +134,8 @@ public final class SecondPerson {
         if(kitchen.getBoolean("Hung")){var dr=new CompoundTag();for(var key:List.of("Face","Hands","Hair","Clothes"))dr.putInt(key,kitchen.contains(key)?kitchen.getInt(key):-1);dr.putInt("Body",kitchen.getInt("Body"));dr.putInt("Mood",kitchen.getInt("Mood"));t.put("Drawing",dr);}
         t.putString("Home",HouseRead.value(d,id,HouseRead.Trait.HOME,true));
         t.putBoolean("Unseen",HouseRead.value(d,id,HouseRead.Trait.SELF,false).equals("UNSEEN"));
+        // 0.4.369: the quiet rooms this reader went through, in the order the House showed them; the winter sleepwalk replays them.
+        var walk=new net.minecraft.nbt.ListTag();for(var room:HouseReadSites.CHAIN)if(!seen.getCompound(room.key()).isEmpty())walk.add(net.minecraft.nbt.StringTag.valueOf(room.key()));t.put("Walk",walk);
         return t;
     }
 
@@ -167,6 +180,8 @@ public final class SecondPerson {
         case "glass"->Mark.stand(1.5,-22.5,EAST);case "phone"->Mark.stand(-5.5,-18.5,WEST);case "sink"->Mark.stand(-2.5,-21.5,NORTH);case "bathdoor"->Mark.stand(1.5,-25.5,WEST);
         case "door"->Mark.stand(1.5,-26.5,EAST);case "window"->Mark.stand(-3.5,-14.5,SOUTH);case "photo_spot"->Mark.stand(1.5,-16.5,WEST);case "sofa"->new Mark(at(-4.5,UP,-18.5),SOUTH,G_SIT,false,true);
         case "hall_bag"->Mark.stand(1.5,-25.5,SOUTH);case "tub"->new Mark(at(-2.5,UP,-25.5),SOUTH,G_SIT,false,true);
+        // 0.4.369, winter.
+        case "basin"->Mark.stand(-1.5,-25.9,NORTH);case "hall_table"->Mark.stand(1.5,-21.6,EAST);case "lamp"->Mark.stand(-2.5,-17.8,NORTH);case "knock"->Mark.stand(-2.5,-29.3,NORTH);
         default->Mark.stand(-2.5,-17.5,WEST);};}
     static String boxOf(String thing){return switch(thing){case "photo"->"photo_box";case "coat"->"coat_box";case "drawing"->"drawing_box";default->"last_box";};}
     static BlockPos boxAt(String thing){return switch(thing){case "photo"->PHOTO_BOX;case "coat"->COAT_BOX;case "drawing"->DRAWING_BOX;default->LAST_BOX;};}
@@ -213,6 +228,19 @@ public final class SecondPerson {
             case STAY->{return own.getBoolean("SamStayed")?beside("sofa"):beside("door");}
             default->{return own.getBoolean("SamStayed")?beside("sofa"):seat(ARMCHAIR,WEST);}
         }
+        if(s==WINTER)switch(st){
+            case W_FUNERAL->{return sub==0?beside("sink"):sub==1?seat(RESIDENT_CHAIR,EAST):bed();}
+            case W_MORNING->{return sub==0&&dt(own)<40?bed():beside("basin");}
+            case W_DAY->{
+                if(own.getInt("Care")==0)return sub==0?beside("hall_table"):seat(ARMCHAIR,WEST);
+                String ticket=own.getString("Ticket");
+                if(ticket.equals("mat"))return switch(sub){case 0->beside("door");case 1->beside("hall_bag").pose(G_CARRY);case 2->Mark.gone();default->seat(ARMCHAIR,WEST);};
+                if(ticket.equals("left")&&sub==0){var m=state(own,"ticket").equals("placed")?nearThing(own,"ticket"):null;return m!=null?m:beside("hall_table");}
+                return seat(ARMCHAIR,WEST);
+            }
+            case W_NIGHT->{return sub>=2&&sub<100?station(own,(sub-2)/2):bed();}
+            default->{return seat(ARMCHAIR,WEST);}
+        }
         // The last morning.
         boolean stays=own.getString("Decision").equals("stay");
         if(st==LATCH)return stays?seat(RESIDENT_CHAIR,EAST):beside("hall_bag").pose(G_CARRY);
@@ -220,7 +248,17 @@ public final class SecondPerson {
         return sub==0?Mark.stand(5.5,0,-11.0,SOUTH).pose(G_CARRY):sub==1?Mark.stand(8.5,0,-11.0,EAST).pose(G_CARRY):sub==2?Mark.stand(15.5,0,-11.0,EAST).pose(G_CARRY):Mark.gone();
     }
     /** The resident first comes up the stairs with the last box; afterwards they are wherever the year left them. */
-    static @Nullable Vec3 residentFrom(CompoundTag own){return seasonOf(own)==SUMMER&&step(own)==UNPACK&&sub(own)==0?at(5.5,UP,-24.5):null;}
+    static @Nullable Vec3 residentFrom(CompoundTag own){
+        int s=seasonOf(own),st=step(own),sub=sub(own);
+        boolean landing=s==SUMMER&&st==UNPACK&&sub==0||s==WINTER&&(st==W_FUNERAL&&sub==0||st==W_DAY&&sub==3);
+        return landing?at(5.5,UP,-24.5):null;
+    }
+    /** Where the sleepwalk takes them, station by station: what the reader did in the quiet rooms, in that order, then the latch. */
+    static Mark station(CompoundTag own,int i){
+        var walk=SecondPersonStory.list(own,"WalkList");if(i<0||i>=walk.size())return bed();
+        return switch(walk.get(i)){case "kitchen"->seat(RESIDENT_CHAIR,EAST);case "waiting"->seat(HALL_CHAIR,WEST);case "bathroom"->beside("basin");case "coatroom"->beside("coat");
+            case "shelter"->beside("window");case "lamp"->beside("lamp");case "tap"->beside("sink");case "glass"->beside("glass");case "knock"->beside("knock");default->beside("door");};
+    }
     static Mark irisMark(CompoundTag own){
         int s=seasonOf(own),st=step(own),sub=sub(own);
         if(s==AUTUMN&&st==IRIS_VISIT&&sub>=1&&sub<=2)return Mark.stand(4.5,UP,-27.5,WEST);
@@ -328,7 +366,7 @@ public final class SecondPerson {
         ringing(l,f,p,own,resident);
         cupboard(l,f,p,own,r);
         int s=seasonOf(own);
-        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else morning(l,f,p,own,r,resident);
+        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else morning(l,f,p,own,r,resident);
     }
 
     static void summer(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,Vec3 r,@Nullable LiteraryActor a){
@@ -511,11 +549,234 @@ public final class SecondPerson {
     }
     static boolean inFrame(LiteraryActor a,ServerPlayer p){var d=p.getEyePosition().subtract(a.getEyePosition());if(d.lengthSqr()>100)return false;var look=Vec3.directionFromRotation(0,a.getYRot());return look.dot(d.normalize())>Math.cos(Math.toRadians(38));}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.369, winter
+    static void winter(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
+        var b=f.base;int st=step(own),sub=sub(own),dt=dt(own);
+        seen(l,f,p,own,a);
+        switch(st){
+            case W_FUNERAL->{
+                // They come back from the funeral with her tin, and read her note at the kitchen table.
+                if(sub==0){
+                    if(dt==20){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,1,.9F);}
+                    if(dt>20&&arrived(a,b,residentMark(own))||dt>400){tin(l,b,0);sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,TIN_AT,.8F,.8F);say(f,a,"She left me this.");open(l,b,FLAT_DOOR,false);next(own,1);}
+                }
+                else if(sub==1){
+                    if(dt==90)say(f,a,"\"For you, and for your lodger.\"");
+                    if(dt==170)cue(p,"They turn the note over, as if the rest of it might be on the back.");
+                    if(dt==200)say(f,a,"What lodger?");
+                    if(dt>=330)next(own,2);
+                }
+                else if(sub==2){if(a!=null&&a.isSleeping()||dt>600)next(own,3);}
+                else if(dt>=200)morningStart(l,f,own,0);
+            }
+            case W_MORNING->care(l,f,p,own,a);
+            case W_DAY->day(l,f,p,own,a);
+            case W_EVENING->{
+                if(sub==0){if(arrived(a,b,residentMark(own))||dt>300)next(own,1);return;}
+                // Iris's sleeve on the arm of the chair, found.
+                if(dt==20&&sleeve(l,b)==0&&state(own,"sleeve").equals("arm")&&!own.getBoolean("SleeveFound")){say(f,a,"...Iris's.");f.once.add("found_sleeve");}
+                if(dt==120&&f.once.contains("found_sleeve")&&!own.getBoolean("SleeveFound")){say(f,a,"She never finished anything. Look at this.");own.putBoolean("SleeveFound",true);own.putInt("SleeveEvening",own.getInt("Care"));}
+                if(dt==200&&own.getBoolean("SleeveFound")&&own.getInt("SleeveEvening")!=own.getInt("Care"))say(f,a,"I don't know how to do this. I'm doing it anyway.");
+                if(dt==320&&own.getInt("Care")==0)say(f,a,"It's so quiet without her through the wall.");
+                if(dt>=WINTER_EVENING&&!own.getBoolean("SeenOpen")){
+                    if(own.getInt("Care")==0)buildWalk(own);
+                    go(own,W_NIGHT);
+                }
+            }
+            case W_NIGHT->winterNight(l,f,p,own,a);
+            default->{
+                // The last of the winter: the sleeve finished, and, if they never went, the phone they will not answer.
+                if(dt==1&&own.getBoolean("SleeveFound")&&!own.getBoolean("SleeveFinished")){own.putBoolean("SleeveFinished",true);sleeve(l,b,1);state(own,"sleeve","finished");}
+                if(dt==120&&!own.getBoolean("Went")&&own.getString("Call3").isEmpty()){f.ring=RING;own.putInt("Ringing",3);}
+                unanswered(p,own,3);
+                if(own.getString("Call3").equals("unanswered")&&f.once.add("watched"))cue(p,"They watch it ring. They do not answer it.");
+                if(dt>=360&&f.ring<0&&f.once.add("winter_done"))cue(p,"The flat goes quiet. The airing cupboard at the end of the hall is warm.");
+            }
+        }
+    }
+    /** A winter morning begins: in the worst of it, their routine goes into the drawer under the basin at night. */
+    static void morningStart(ServerLevel l,Flat f,CompoundTag own,int care){
+        var b=f.base;go(own,W_MORNING);own.putInt("Care",care);own.remove("LaidToday");
+        String routine=state(own,"routine");
+        if(routine.equals("home")||routine.equals("homed")){var at=b.offset(ROUTINE_HOME);if("routine".equals(thingAt(l,at)))l.setBlock(at,Blocks.AIR.defaultBlockState(),3);state(own,"routine","drawer");}
+        if(own.getBoolean("LeftDoor")){open(l,b,FLAT_DOOR,false);own.remove("LeftDoor");}
+    }
+    /** The care scene: three mornings at the basin. Laid out, they go from leaving it, to using it and crying, to "All right." */
+    static void care(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
+        var b=f.base;int sub=sub(own),dt=dt(own),care=own.getInt("Care");String routine=SecondPersonStory.routine(own);
+        if(sub==0){
+            if(dt==60&&care==1&&own.getString("Sleepwalk").equals("left"))say(f,a,"I woke up at the door. I was standing at the door.");
+            if(dt==90&&care==1&&own.getBoolean("DrewAtNight"))cue(p,"On the kitchen table there is a drawing in pencil, done in the dark: a face. The one you drew at a kitchen table, before you ever came here.");
+            if(dt>40&&arrived(a,b,residentMark(own))||dt>500){mirror(l,b,true);own.putInt("SteamClock",own.getInt("Clock")+700);sound(p,HouseReadRegistry.TAP.get(),b,BASIN,.6F,1.1F);next(own,1);}
+            return;
+        }
+        if(sub==1){
+            if(own.getBoolean("SeenOpen"))return;
+            boolean laid=own.getBoolean("LaidToday");
+            if(!laid&&dt<CARE_WAIT)return;
+            if(laid){int n=own.getInt("LaidCount")+1;own.putInt("LaidCount",n);
+                switch(n){
+                    case 1->{cue(p,"They look at it a long time, and leave it where it is.");SecondPersonStory.turned(own,"You laid their "+routine+" out on a winter morning, and they left it where it was.");}
+                    case 2->{sound(p,HouseReadRegistry.TAP.get(),b,BASIN,.8F,1);cue(p,"They use it. Halfway through they are crying, and they keep going.");SecondPersonStory.turned(own,"You laid their "+routine+" out again, and they used it, and cried.");}
+                    default->{say(f,a,"All right. All right.");own.putBoolean("AllRight",true);SecondPersonStory.turned(own,"You laid their "+routine+" out a third morning, and they said \"All right.\"");}
+                }}
+            else cue(p,"They stand at the basin a long time, and do nothing, and go back to bed for an hour.");
+            own.putString("Care"+care,laid?"laid":"not");next(own,2);
+            return;
+        }
+        if(own.getBoolean("SeenOpen")||dt<200)return;
+        if(care>=2){go(own,WINTER_DONE);return;}
+        go(own,W_DAY);
+    }
+    /** Where the ticket is when the second day begins: by the door, where they cannot miss it; still on the table or out somewhere; or hidden. */
+    static String ticketWhere(CompoundTag own){
+        String state=state(own,"ticket");var at=placedAt(own,"ticket");
+        if(state.equals("placed")&&at!=null&&byTheDoor(at))return "mat";
+        if(state.equals("home")||state.equals("homed")||state.equals("placed"))return "left";
+        return "hidden";
+    }
+    static void clearTicket(ServerLevel l,BlockPos b,CompoundTag own){
+        for(var at:new BlockPos[]{placedAt(own,"ticket"),TICKET_HOME})if(at!=null&&"ticket".equals(thingAt(l,b.offset(at))))l.setBlock(b.offset(at),Blocks.AIR.defaultBlockState(),3);
+        placedAt(own,"ticket",null);
+    }
+    /** The two winter days: the post nobody opens, then whatever the ticket's place decides. */
+    static void day(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
+        var b=f.base;int sub=sub(own),dt=dt(own);
+        if(own.getInt("Care")==0){
+            if(sub==0){
+                if(dt==20){sound(p,SoundEvents.BOOK_PAGE_TURN,b,MAT,1,.7F);cue(p,"The post comes through the door.");}
+                if(dt>30&&arrived(a,b,residentMark(own))||dt>400){home(l,b,own,"ticket");state(own,"ticket","homed");sound(p,SoundEvents.BOOK_PUT,b,TICKET_HOME,.8F,1);say(f,a,"Later.");next(own,1);}
+            }
+            else if(dt>=DAY_LENGTH)go(own,W_EVENING);
+            return;
+        }
+        if(sub==0&&dt==1){own.putString("Ticket",ticketWhere(own));return;}
+        switch(own.getString("Ticket")){
+            case "mat"->{
+                if(sub==0){
+                    if(!f.once.contains("found_ticket")&&(arrived(a,b,residentMark(own))||dt>400)){f.once.add("found_ticket");clearTicket(l,b,own);state(own,"ticket","taken");say(f,a,"...Oh.");own.putInt("FoundAt",dt);}
+                    if(f.once.contains("found_ticket")&&dt-own.getInt("FoundAt")==80)say(f,a,SecondPersonStory.ticketLine(own));
+                    if(f.once.contains("found_ticket")&&dt-own.getInt("FoundAt")>=180)next(own,1);
+                }
+                else if(sub==1){if(dt>20&&arrived(a,b,residentMark(own))||dt>400){open(l,b,FLAT_DOOR,true);next(own,2);}}
+                else if(sub==2){if(dt==60){open(l,b,FLAT_DOOR,false);cue(p,"The flat is yours for a while. Nothing moves unless you move it.");}if(dt>=AWAY){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,1,1);next(own,3);}}
+                else{if(dt==80){open(l,b,FLAT_DOOR,false);say(f,a,SecondPersonStory.backLine(own));own.putBoolean("Went",true);}if(dt>=DAY_LENGTH/2)go(own,W_EVENING);}
+            }
+            case "left"->{
+                if(sub==0){if(dt>1&&arrived(a,b,residentMark(own))||dt>400){clearTicket(l,b,own);state(own,"ticket","pocket");say(f,a,"Next week.");cue(p,"They put the ticket in a pocket.");next(own,1);}}
+                else if(dt>=DAY_LENGTH)go(own,W_EVENING);
+            }
+            default->{if(dt>=DAY_LENGTH)go(own,W_EVENING);}
+        }
+    }
+    /** The quiet rooms this reader went through, then their own habit in the flat if they had one, then the latch. */
+    static void buildWalk(CompoundTag own){
+        var out=new net.minecraft.nbt.ListTag();var snap=own.getCompound("Snap");
+        for(var key:SecondPersonStory.list(snap,"Walk")){if(key.equals("porch"))continue;if(key.equals("kitchen")&&!snap.contains("Drawing"))continue;out.add(net.minecraft.nbt.StringTag.valueOf(key));}
+        String habit="";int best=1;for(var h:List.of("lamp","tap","glass","knock")){int n=own.getInt("Habit_"+h);if(n>best){best=n;habit=h;}}
+        if(!habit.isEmpty())out.add(net.minecraft.nbt.StringTag.valueOf(habit));
+        out.add(net.minecraft.nbt.StringTag.valueOf("latch"));own.put("WalkList",out);
+    }
+    static int holdFor(String station){return switch(station){case "kitchen","shelter"->140;case "waiting","bathroom"->120;case "coatroom"->80;case "latch"->240;default->60;};}
+    /** The winter nights: the first, they get up asleep and walk; the second, they sleep. */
+    static void winterNight(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
+        var b=f.base;int sub=sub(own),dt=dt(own),care=own.getInt("Care");
+        if(sub==0){if(a!=null&&a.isSleeping()||dt>600)next(own,1);return;}
+        if(care!=0){if(dt>=300)morningStart(l,f,own,care+1);return;}
+        if(sub==1){if(dt>=120){own.putBoolean("Walking",true);next(own,2);cue(p,"They get up. Their eyes are open, and they are asleep.");}return;}
+        if(sub>=100){if(a!=null&&a.isSleeping()&&dt>=200||dt>900)morningStart(l,f,own,1);return;}
+        var walk=SecondPersonStory.list(own,"WalkList");int i=(sub-2)/2;String station=i<walk.size()?walk.get(i):"";
+        // Brought back: the lamp, a knock, a hand.
+        String by=own.getString("BroughtBy");
+        if(!by.isEmpty()){own.putString("Sleepwalk","brought");own.putString("BroughtAt",station);own.remove("Walking");say(f,a,"...How did I get here?");
+            SecondPersonStory.turned(own,switch(by){case "lamp"->"You turned the lamp on while they walked asleep, and they woke.";case "knock"->"You knocked while they walked asleep, and they woke.";default->"You put a hand on them while they walked asleep, and they woke.";});
+            endWalk(l,b,own);next(own,100);return;}
+        if(i>=walk.size()){own.remove("Walking");endWalk(l,b,own);next(own,100);return;}
+        if(sub%2==0){if(arrived(a,b,residentMark(own))||dt>300)next(own,sub+1);return;}
+        switch(station){
+            case "kitchen"->{if(dt%30==10)sound(p,SoundEvents.BOOK_PAGE_TURN,b,TABLE,.4F,1.6F);}
+            case "waiting"->{if(dt==40)say(f,a,"Is it me next?");}
+            case "bathroom"->{if(dt==10||dt==70)sound(p,HouseReadRegistry.TAP.get(),b,BASIN,.4F,1);if(dt==10){String r=state(own,"routine");if(!(r.equals("home")||r.equals("homed")))own.putBoolean("WalkEmptyHands",true);}}
+            case "coatroom"->{if(dt==10&&coatHung(l,b)){coat(l,b,"",false);own.putBoolean("WoreCoat",true);}}
+            case "shelter"->{if(dt==40)say(f,a,"It'll stop in a minute.");}
+            case "lamp"->{if(dt==10){lamp(l,b,true);sound(p,SoundEvents.LEVER_CLICK,b,LAMP,.6F,1.2F);}}
+            case "tap"->{if(dt==10)sound(p,HouseReadRegistry.TAP.get(),b,TAP,1,1);}
+            case "glass"->{if(dt==10&&glass(l,b)>=0){glass(l,b,glass(l,b)==0?1:0);sound(p,SoundEvents.ITEM_FRAME_ROTATE_ITEM,b,GLASS,1,1);}}
+            case "knock"->{if(dt==10||dt==25||dt==40)sound(p,DoorSounds.KNOCK.get(),b,new BlockPos(-2,UP+1,-30),.8F,1);}
+            default->{
+                if(dt==60){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,.8F,1);say(f,a,SecondPersonStory.haven(own)?"Is that you? I've left it open for you.":"...");}
+            }
+        }
+        if(dt<holdFor(station))return;
+        // The station done: what it leaves behind, and one more of the reader's acts walked through.
+        if(station.equals("kitchen")){SecondPersonSite.thing(l,b,CLOTH,"drawing",0);own.putBoolean("DrewAtNight",true);}
+        if(station.equals("latch")){own.putString("Sleepwalk","left");own.putBoolean("LeftDoor",true);say(f,a,"...What—");cue(p,"They wake in the open doorway, cold, and do not know how they got there.");SecondPersonStory.turned(own,"You let them walk asleep, all the way to the front door.");}
+        own.putInt("WalkDone",i+1);next(own,sub+1);
+    }
+    static void endWalk(ServerLevel l,BlockPos b,CompoundTag own){if(own.getBoolean("WoreCoat")&&!coatHung(l,b))coat(l,b,own.getCompound("Snap").getString("Coat"),true);}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.369, being seen
+    /**
+     * Once this winter they see the reader: in the bathroom mirror, which faces the room, on a morning at the basin; failing that, in the
+     * dark television from the armchair of an evening. The reader is seen when they stand behind them where the glass would show them.
+     */
+    static void seen(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
+        if(a==null||a.isSleeping()||own.getBoolean("Walking"))return;
+        int st=step(own);var b=f.base;
+        if(!own.getBoolean("SeenOpen")){
+            String surface=st==W_MORNING&&sub(own)>=1?"mirror":st==W_EVENING&&sub(own)>=1?"tv":"";
+            if(own.contains("Seen")||surface.isEmpty()){f.seenRun=0;return;}
+            if(!reflected(b,surface,a,p)){f.seenRun=0;return;}
+            if(++f.seenRun<20)return;
+            own.putBoolean("SeenOpen",true);own.putString("SeenIn",surface);own.putInt("SeenClock",own.getInt("Clock"));own.remove("SeenHow");
+            say(f,a,"...That's my face.");f.stillAt=p.position();f.still=0;f.seenAway=0;
+            return;
+        }
+        String how=own.getString("SeenHow"),surface=own.getString("SeenIn");
+        if(how.isEmpty()){
+            boolean in=reflected(b,surface,a,p);
+            if(!in){if(++f.seenAway>=20)how="gone";}else f.seenAway=0;
+            if(f.stillAt!=null&&p.position().distanceToSqr(f.stillAt)<.04){if(++f.still>=SEEN_STILL&&how.isEmpty())how="still";}else{f.stillAt=p.position();f.still=0;}
+            if(how.isEmpty()&&own.getInt("Clock")-own.getInt("SeenClock")>=SEEN_OPEN)how=in?"still":"gone";
+        }
+        if(!how.isEmpty())resolveSeen(f,p,own,a,how);
+    }
+    /** The reader's eye behind theirs, where the glass in front of them would show it. */
+    static boolean reflected(BlockPos b,String surface,LiteraryActor a,ServerPlayer p){
+        boolean mirror=surface.equals("mirror");
+        var s=mirror?abs(b,at(MIRROR.getX()+.5,MIRROR.getY()+.5,MIRROR.getZ()+.25)):abs(b,at(TV.getX()+.75,TV.getY()+.55,TV.getZ()+.5));
+        var n=mirror?new Vec3(0,0,1):new Vec3(1,0,0);
+        // Only from inside the same room as the glass; a seated eye is lower than a standing one.
+        var pr=rel(p.position(),b);if(mirror?!inBathroom(pr):!inSitting(pr))return false;
+        var r=a.gesture()==G_SIT?a.getEyePosition().subtract(0,.6,0):a.getEyePosition();var e=p.getEyePosition();
+        double dr=r.subtract(s).dot(n),de=e.subtract(s).dot(n);
+        if(dr<.2||de<dr+.3||de>7)return false;
+        if(Vec3.directionFromRotation(0,a.getYRot()).dot(n)>-.3)return false;
+        double k=dr/(dr+de);var latR=r.subtract(s).subtract(n.scale(dr));var latE=e.subtract(s).subtract(n.scale(de));
+        var hit=latR.add(latE.subtract(latR).scale(k));
+        return Math.abs(hit.y)<.9&&Math.sqrt(hit.x*hit.x+hit.z*hit.z)<.7;
+    }
+    static void resolveSeen(Flat f,ServerPlayer p,CompoundTag own,LiteraryActor a,String how){
+        own.remove("SeenOpen");own.remove("SeenHow");
+        String glass=own.getString("SeenIn").equals("mirror")?"the bathroom mirror":"the dark television";
+        switch(how.split(":",2)[0]){
+            case "still"->{say(f,a,"Are you me?");own.putString("Seen","still");own.putInt("AskedClock",own.getInt("Clock"));SecondPersonStory.turned(own,"You stayed still in "+glass+" while they looked at you, and they asked if you were them.");}
+            case "gone"->{say(f,a,"...Gone.");cue(p,"In the glass there is only the room.");own.putString("Seen","gone");SecondPersonStory.turned(own,"You stepped out of "+glass+" while they looked at you.");}
+            case "touch"->{
+                boolean kind=SecondPersonStory.gentle(own)>=SecondPersonStory.fright(own);own.putString("Seen",kind?"touch_kind":"touch_afraid");
+                if(kind){say(f,a,"It's you. It's been you.");SecondPersonStory.turned(own,"You touched them while they looked at you in "+glass+", and they said it had been you all along.");}
+                else{say(f,a,"Don't. Don't touch me.");cue(p,"They back away from the glass until the wall stops them.");SecondPersonStory.turned(own,"You touched them while they looked at you in "+glass+", and they backed away to the wall.");}
+            }
+            default->{String w=how.length()>5?how.substring(5):"";own.putString("Seen","word");own.putString("SeenWord",w);say(f,a,SecondPersonStory.seenWord(w));SecondPersonStory.turned(own,"While they looked at you in "+glass+", you wrote "+w+" on the glass.");}
+        }
+    }
+
     static void morning(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,Vec3 r,@Nullable LiteraryActor a){
         var b=f.base;int st=step(own),sub=sub(own),dt=dt(own);
         boolean stays=own.getString("Decision").equals("stay");
         if(st==LATCH){
             if(t(own)==40)cue(p,"The front door is on the latch.");
+            if(t(own)==80&&!SecondPersonStory.list(own,"HousePages").isEmpty())say(f,a,SecondPersonStory.houseSays(own));
             if(onStreet(r)){go(own,OUT);if(stays)lamp(l,b,true);}
         }
         else if(st==OUT){
@@ -538,7 +799,8 @@ public final class SecondPerson {
         if(++f.unseen==20)sound(p,SoundEvents.COPPER_BULB_TURN_ON,f.base,TANK,.4F,.6F);
         if(f.unseen<60)return;
         int s=seasonOf(own),st=step(own);
-        boolean done=s==SUMMER&&st==SUMMER_DONE||s==AUTUMN&&st==AUTUMN_DONE&&(!own.getBoolean("IrisKnocked")||own.getBoolean("IrisTold"));
+        boolean done=s==SUMMER&&st==SUMMER_DONE||s==AUTUMN&&st==AUTUMN_DONE&&(!own.getBoolean("IrisKnocked")||own.getBoolean("IrisTold"))
+            ||s==WINTER&&st==WINTER_DONE&&f.ring<0&&(own.getBoolean("Went")||!own.getString("Call3").isEmpty());
         if(!done){if(f.unseen==60)cue(p,"It is warm in here, and the tank ticks. Not yet.");return;}
         turn(l,f,p,own);f.unseen=0;
     }
@@ -550,10 +812,17 @@ public final class SecondPerson {
         if(s==SUMMER){own.putInt("Season",AUTUMN);go(own,IRIS_VISIT);season(l,b,1);
             // What was never found stays lost; what the reader put where it lives stays where they put it.
             cue(p,SecondPersonStory.whileAway(own,1));SecondPersonStory.turned(own,"You let the summer go by in the cupboard.");}
-        else{own.putInt("Season",MORNING);go(own,LATCH);season(l,b,2);lamp(l,b,false);
+        else if(s==AUTUMN){own.putInt("Season",WINTER);go(own,W_FUNERAL);season(l,b,2);lamp(l,b,false);cloth(l,b,-1);
+            // They went to the funeral in a borrowed coat if theirs was lost; looking for their good shoes afterwards, they found what was under the bed.
+            String coat=state(own,"coat");own.putBoolean("BorrowedCoat",!(coat.equals("homed")||coat.equals("home")||coat.equals("placed")));
+            for(var th:THINGS)if(state(own,th).equals("hidden")&&thing(own,th).getString("Where").equals("under the bed")){state(own,th,"homed");home(l,b,own,th);SecondPersonStory.add(own,"Returned",th);}
+            cue(p,SecondPersonStory.whileAway(own,2));SecondPersonStory.turned(own,"You let the autumn go by in the cupboard.");}
+        else{own.putInt("Season",MORNING);go(own,LATCH);season(l,b,3);lamp(l,b,false);
+            // While the reader was in the cupboard, the House carried on in their name.
+            SecondPersonStory.housePages(own);
             own.putString("Decision",SecondPersonStory.stays(own)?"stay":"go");open(l,b,FLAT_DOOR,true);
-            cue(p,SecondPersonStory.whileAway(own,2));SecondPersonStory.turned(own,"You let the rest of the year go by in the cupboard.");}
-        f.once.clear();f.ring=-1;own.remove("Ringing");
+            cue(p,SecondPersonStory.whileAway(own,3));SecondPersonStory.turned(own,"You let the rest of the winter go by in the cupboard.");}
+        f.once.clear();f.ring=-1;own.remove("Ringing");own.remove("Walking");own.remove("SeenOpen");
         for(var id:new UUID[]{f.resident,f.iris,f.sam}){var a=actor(l,id);if(a!=null){if(a.isSleeping())a.stopSleeping();a.discard();}}
         f.resident=null;f.iris=null;f.sam=null;
     }
@@ -564,7 +833,7 @@ public final class SecondPerson {
         if(f.ring%40==0)sound(p,WorkPrintRegistry.RING.get(),f.base,PHONE,1,1);
         if(--f.ring<0){
             // Nobody lifted it: they catch it themselves.
-            String key="Call"+call;if(own.getString(key).isEmpty()){own.putString(key,"left");SecondPersonStory.turned(own,call==1?"You let the phone ring in the evening.":"You let the phone ring again.");}
+            String key="Call"+call;if(own.getString(key).isEmpty()){own.putString(key,call==3?"unanswered":"left");SecondPersonStory.turned(own,call==1?"You let the phone ring in the evening.":call==2?"You let the phone ring again.":"You let the phone ring at the end of the winter, and so did they.");}
             own.remove("Ringing");
         }
     }
@@ -572,8 +841,8 @@ public final class SecondPerson {
     static void lift(ServerPlayer p,BlockPos b,CompoundTag own){
         var f=flat(b);if(f==null)return;int call=own.getInt("Ringing");if(call==0)return;f.ring=-1;own.remove("Ringing");own.putInt("LiftedAt",t(own));own.putInt("LiftedCall",call);
         sound(p,PhoneSounds.PICKUP.get(),b,PHONE,1,1);
-        Talk.begin(p,"sp_call_"+call,SecondPersonStory.caller(own));
-        for(var line:SecondPersonStory.call(own,call))Talk.line(p,SecondPersonStory.caller(own),line);
+        Talk.begin(p,"sp_call_"+call,SecondPersonStory.caller(own,call));
+        for(var line:SecondPersonStory.call(own,call))Talk.line(p,SecondPersonStory.caller(own,call),line);
         Talk.ask(p,Talk.act("Put the receiver down.",q->answer(q,b,call,"put_down")),Talk.act("Leave it off the hook.",q->answer(q,b,call,"off")),Talk.act("Listen.",q->answer(q,b,call,"lifted")));
     }
     /** A receiver lifted and the panel stepped away from: after a while it counts as having listened, and is put back. */
@@ -587,7 +856,7 @@ public final class SecondPerson {
         switch(how){
             case "put_down"->{phone(l,b,false);Talk.close(p);SecondPersonStory.turned(own,"You lifted the phone and put it down again.");}
             case "off"->{phone(l,b,true);Talk.close(p);SecondPersonStory.turned(own,"You left the phone off the hook.");}
-            default->{for(var line:SecondPersonStory.listened(own,call))Talk.line(p,SecondPersonStory.caller(own),line);Talk.line(p,"","The line clicks, and purrs.");Talk.end(p);phone(l,b,false);SecondPersonStory.turned(own,"You lifted the phone and listened, and said nothing.");}
+            default->{for(var line:SecondPersonStory.listened(own,call))Talk.line(p,SecondPersonStory.caller(own,call),line);Talk.line(p,"","The line clicks, and purrs.");Talk.end(p);phone(l,b,false);SecondPersonStory.turned(own,"You lifted the phone and listened, and said nothing.");}
         }
         save(p,own);
     }
@@ -609,7 +878,11 @@ public final class SecondPerson {
     /** Hitting or touching someone in the flat: a flinch, never harm. */
     public static void touched(ServerPlayer p,LiteraryActor a){
         if(LiteraryVignettes.current(p)!=PLACE)return;var b=LiteraryVignettes.base(p,PLACE);var f=b==null?null:flat(b);if(f==null)return;var own=own(p);
-        if(a.role()==LiteraryActor.SP_RESIDENT){say(f,a,a.isSleeping()?"Mm.":"...Who's there?");SecondPersonStory.add(own,"Touched","them");}
+        if(a.role()==LiteraryActor.SP_RESIDENT){
+            // 0.4.369: a hand while they look at the reader in the glass, or while they walk asleep, is its own answer.
+            if(own.getBoolean("SeenOpen")){own.putString("SeenHow","touch");save(p,own);return;}
+            if(own.getBoolean("Walking")){if(own.getString("BroughtBy").isEmpty())own.putString("BroughtBy","hand");save(p,own);return;}
+            say(f,a,a.isSleeping()?"Mm.":own.contains("Seen")?"...Is that you?":"...Who's there?");SecondPersonStory.add(own,"Touched","them");}
         else if(a.phase()==IRIS){say(f,a,"Hello, you.");own.putBoolean("IrisMet",true);}
         else if(a.phase()==SAM){say(f,a,"Did you feel that?");if(seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("ColdBySam",true);}
         p.serverLevel().sendParticles(p,ParticleTypes.SNOWFLAKE,true,a.getX(),a.getY()+1.2,a.getZ(),6,.25,.4,.25,0);
@@ -630,17 +903,23 @@ public final class SecondPerson {
     /** Breath on cold or steamed glass holds one word. */
     static boolean write(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();boolean mirror=mirrorAt(rel);
-        boolean ready=mirror?steamed(l,b):dark(own)||seasonOf(own)==MORNING;
+        boolean ready=mirror?steamed(l,b):dark(own)||seasonOf(own)>=WINTER;
         if(!ready){cue(p,mirror?"The glass is dry. Nothing would hold.":"The glass is too warm to hold a breath.");return true;}
         String surface=mirror?"mirror":"window";if(own.contains("Word_"+surface)){cue(p,"There is a word on it already.");return true;}
         Talk.begin(p,"sp_word","Breath on the glass");Talk.line(p,"","You lean close and breathe, and the glass clouds. One word.");
-        var replies=new ArrayList<Talk.Reply>();for(var w:SecondPersonStory.WORDS)replies.add(Talk.act(w,q->word(q,b,surface,w)));replies.add(Talk.act("Nothing.",Talk::close));
+        var replies=new ArrayList<Talk.Reply>();for(var w:SecondPersonStory.words(own))replies.add(Talk.act(w,q->word(q,b,surface,w)));replies.add(Talk.act("Nothing.",Talk::close));
         Talk.ask(p,replies);return true;
     }
     static void word(ServerPlayer p,BlockPos b,String surface,String word){
         var own=own(p);var f=flat(b);if(f==null||own.contains("Word_"+surface)){Talk.close(p);return;}Talk.close(p);var l=p.serverLevel();
         own.putString("Word_"+surface,word);SecondPersonStory.add(own,"Words",word);SecondPersonStory.turned(own,"You wrote "+word+" on the "+(surface.equals("mirror")?"bathroom mirror":"street window")+".");
         if(seasonOf(own)==MORNING&&own.getString("LastAct").isEmpty())own.putString("LastAct","word");
+        // 0.4.369: a word written while they look at the reader in the glass, or as an answer to "Are you me?", is read at once.
+        var res=actor(l,f.resident);
+        if(own.getBoolean("SeenOpen")&&own.getString("SeenHow").isEmpty()){own.putString("SeenHow","word:"+word);own.putBoolean("WordSeen_"+surface,true);own.putInt("Wipe_"+surface,own.getInt("Clock")+200);}
+        else if(own.getString("Seen").equals("still")&&own.getString("SeenAnswer").isEmpty()&&(word.equals("YES")||word.equals("NO"))&&own.getInt("Clock")-own.getInt("AskedClock")<400){
+            own.putString("SeenAnswer",word);own.putBoolean("WordSeen_"+surface,true);own.putInt("Wipe_"+surface,own.getInt("Clock")+200);
+            say(f,res,word.equals("YES")?"...Yes.":"Then who are you?");SecondPersonStory.turned(own,"They asked if you were them. You wrote "+word+".");}
         var display=EntityType.TEXT_DISPLAY.create(l);
         if(display!=null){var tag=new CompoundTag();display.saveWithoutId(tag);tag.putString("text",Component.Serializer.toJson(Component.literal(word),p.registryAccess()));tag.putString("billboard","fixed");tag.putInt("background",0);tag.putInt("text_opacity",120);
             display.load(tag);boolean mirror=surface.equals("mirror");
@@ -653,29 +932,30 @@ public final class SecondPerson {
     static void words(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
         if(a==null||a.isSleeping())return;var b=f.base;
         for(var surface:List.of("mirror","window")){
-            if(!own.contains("Word_"+surface)||own.getBoolean("WordSeen_"+surface))continue;
+            if(!own.contains("Word_"+surface)||own.getBoolean("WordSeen_"+surface)||own.getBoolean("Walking"))continue;
             var target=surface.equals("mirror")?Vec3.atCenterOf(b.offset(MIRROR)):abs(b,at(-3,UP+1.5,-12.5));
             if(a.distanceToSqr(target)>25||!a.hasLineOfSight(p)&&a.getEyePosition().distanceToSqr(target)>9)continue;
             String w=own.getString("Word_"+surface);own.putBoolean("WordSeen_"+surface,true);SecondPersonStory.add(own,"WordsSeen",w);
-            say(f,a,SecondPersonStory.sawWord(w));own.putInt("Wipe_"+surface,t(own)+120);
+            say(f,a,SecondPersonStory.sawWord(w));own.putInt("Wipe_"+surface,own.getInt("Clock")+120);
         }
-        for(var surface:List.of("mirror","window")){int at=own.getInt("Wipe_"+surface);if(at>0&&t(own)>=at){own.remove("Wipe_"+surface);own.remove("Word_"+surface);own.remove("WordSeen_"+surface);
+        for(var surface:List.of("mirror","window")){int at=own.getInt("Wipe_"+surface);if(at>0&&own.getInt("Clock")>=at){own.remove("Wipe_"+surface);own.remove("Word_"+surface);own.remove("WordSeen_"+surface);
             for(var d:l.getEntitiesOfClass(Display.TextDisplay.class,bounds(b),d->d.getTags().contains("SpWord_"+surface)))d.discard();if(surface.equals("mirror"))mirror(l,b,false);}}
         if(own.getInt("SteamUntil")>0&&t(own)>=own.getInt("SteamUntil")&&seasonOf(own)==SUMMER){own.remove("SteamUntil");if(!own.contains("Word_mirror"))mirror(l,b,false);}
+        if(own.getInt("SteamClock")>0&&own.getInt("Clock")>=own.getInt("SteamClock")&&!own.getBoolean("SeenOpen")){own.remove("SteamClock");if(!own.contains("Word_mirror"))mirror(l,b,false);}
     }
     static void clearWords(ServerLevel l,Flat f){for(var d:l.getEntitiesOfClass(Display.TextDisplay.class,bounds(f.base),d->d.getTags().contains(TAG)))d.discard();}
 
     // ------------------------------------------------------------------------------------------------ the things
     static void found(CompoundTag own,String thing,String how){SecondPersonStory.add(own,"Found",thing+":"+how);}
-    static BlockPos homeAt(String thing){return switch(thing){case "photo"->PHOTO_HOME;case "drawing"->FRIDGE.above();case "coat"->HOOK;default->ROUTINE_HOME;};}
+    static BlockPos homeAt(String thing){return switch(thing){case "photo"->PHOTO_HOME;case "drawing"->FRIDGE.above();case "coat"->HOOK;case "ticket"->TICKET_HOME;case "sleeve"->ARM;default->ROUTINE_HOME;};}
     /** The resident puts a thing where it lives. */
     static void home(ServerLevel l,BlockPos b,CompoundTag own,String thing){
         var snap=own.getCompound("Snap");
         switch(thing){case "drawing"->picture(l,b,snap.getCompound("Drawing"),true);case "coat"->coat(l,b,snap.getString("Coat"),true);
             default->SecondPersonSite.thing(l,b,homeAt(thing),thing,snap.getInt("Routine"));}
     }
-    static int model(CompoundTag own,String thing){return switch(thing){case "coat"->SecondPersonRegistry.COAT_MODEL;case "drawing"->SecondPersonRegistry.SHEET_MODEL;case "photo"->SecondPersonRegistry.PHOTO_MODEL;default->1+Math.floorMod(own.getCompound("Snap").getInt("Routine")<0?11:own.getCompound("Snap").getInt("Routine"),16);};}
-    static String name(CompoundTag own,String thing){var s=SecondPersonStory.thing(own,thing);return Character.toUpperCase(s.charAt(4))+s.substring(5);}
+    static int model(CompoundTag own,String thing){return switch(thing){case "coat"->SecondPersonRegistry.COAT_MODEL;case "drawing"->SecondPersonRegistry.SHEET_MODEL;case "photo"->SecondPersonRegistry.PHOTO_MODEL;case "ticket"->SecondPersonRegistry.TICKET_MODEL;case "sleeve"->SecondPersonRegistry.SLEEVE_MODEL;default->1+Math.floorMod(own.getCompound("Snap").getInt("Routine")<0?11:own.getCompound("Snap").getInt("Routine"),16);};}
+    static String name(CompoundTag own,String thing){var s=SecondPersonStory.thing(own,thing);if(s.startsWith("the "))s=s.substring(4);return Character.toUpperCase(s.charAt(0))+s.substring(1);}
     static ItemStack carried(ServerPlayer p,CompoundTag own,String thing){
         var s=new ItemStack(SecondPersonRegistry.CARRIED.get());s.set(DataComponents.CUSTOM_NAME,Component.literal(name(own,thing)));s.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(model(own,thing)));
         var tag=new CompoundTag();tag.putString(TAG,thing);tag.putUUID("Owner",p.getUUID());s.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));return s;
@@ -692,14 +972,20 @@ public final class SecondPerson {
     static void setDown(ServerPlayer p,BlockPos b,CompoundTag own,String thing,String how,@Nullable BlockPos at){
         take(p);var l=p.serverLevel();
         switch(how){
-            case "home"->{state(own,thing,"home");placedAt(own,thing,null);home(l,b,own,thing);SecondPersonStory.add(own,"PutAway",thing);SecondPersonStory.turned(own,"You put "+SecondPersonStory.thing(own,thing)+" where it belongs.");
+            case "arm"->{state(own,thing,"arm");placedAt(own,thing,ARM);sleeve(l,b,0);own.putBoolean("SleeveOut",true);SecondPersonStory.turned(own,"You laid Iris's half-finished sleeve on the arm of the armchair.");}
+            case "tin"->{state(own,thing,"tin");placedAt(own,thing,null);tin(l,b,1);SecondPersonStory.turned(own,"You put Iris's sleeve back in her tin.");}
+            case "home"->{state(own,thing,"home");placedAt(own,thing,null);home(l,b,own,thing);SecondPersonStory.add(own,"PutAway",thing);
+                SecondPersonStory.turned(own,thing.equals("ticket")?"You put the train ticket back on the hall table.":"You put "+SecondPersonStory.thing(own,thing)+" where it belongs.");
                 if(thing.equals("routine"))own.putString("RoutineWhere","on the bathroom shelf, where you put it");}
             case "bed"->{state(own,thing,"hidden");thing(own,thing).putString("Where","under the bed");SecondPersonStory.add(own,"Hidden",thing);SecondPersonStory.turned(own,"You pushed "+SecondPersonStory.thing(own,thing)+" under the bed.");}
             case "cupboard"->{state(own,thing,"hidden");placedAt(own,thing,at);SecondPersonSite.thing(l,b,at,thing,own.getCompound("Snap").getInt("Routine"));SecondPersonStory.add(own,"Hidden",thing);SecondPersonStory.turned(own,"You hid "+SecondPersonStory.thing(own,thing)+" in the airing cupboard.");}
-            default->{state(own,thing,"placed");placedAt(own,thing,at);SecondPersonSite.thing(l,b,at,thing,own.getCompound("Snap").getInt("Routine"));SecondPersonStory.add(own,"PlacedThings",thing);SecondPersonStory.turned(own,"You put "+SecondPersonStory.thing(own,thing)+" somewhere else.");
+            default->{state(own,thing,"placed");placedAt(own,thing,at);SecondPersonSite.thing(l,b,at,thing,own.getCompound("Snap").getInt("Routine"));SecondPersonStory.add(own,"PlacedThings",thing);
+                SecondPersonStory.turned(own,thing.equals("ticket")&&at!=null&&byTheDoor(at)?"You put the train ticket on the mat by the door, where it could not be missed.":"You put "+SecondPersonStory.thing(own,thing)+" somewhere else.");
                 if(thing.equals("routine"))own.putString("RoutineWhere",where(at));}
         }
-        sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,at==null?b.subtract(b):at,.7F,1);
+        // 0.4.369: their routine set out in the bathroom on a winter morning, before they give up on it.
+        if(seasonOf(own)==WINTER&&step(own)==W_MORNING&&sub(own)<=1&&thing.equals("routine")&&(how.equals("home")||how.equals("placed")&&at!=null&&inBathroom(Vec3.atCenterOf(at))))own.putBoolean("LaidToday",true);
+        sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,at==null?homeAt(thing):at,.7F,1);
         if(seasonOf(own)==MORNING&&thing.equals("routine")&&own.getString("LastAct").isEmpty()&&!how.equals("bed")&&!how.equals("cupboard"))own.putString("LastAct","routine");
     }
     static String where(BlockPos at){var v=Vec3.atCenterOf(at);return inKitchen(v)?"in the kitchen, where you put it":inSitting(v)?"in the sitting room, where you put it":inBedroom(v)?"in the bedroom, where you put it":inBathroom(v)?"in the bathroom, where you put it":"in the hall, where you put it";}
@@ -711,6 +997,8 @@ public final class SecondPerson {
         String holding=held(p);
         // Carrying something of theirs: set it down.
         if(!holding.isEmpty()&&p.getMainHandItem().is(SecondPersonRegistry.CARRIED.get())){
+            if(holding.equals("sleeve")&&rel.equals(ARMCHAIR)){setDown(p,b,own,holding,"arm",null);return true;}
+            if(holding.equals("sleeve")&&rel.equals(TIN_AT)&&tin(l,b)==2){setDown(p,b,own,holding,"tin",null);return true;}
             if(s.getBlock() instanceof BedBlock){setDown(p,b,own,holding,"bed",null);return true;}
             if(holding.equals("drawing")&&(rel.equals(FRIDGE)||rel.equals(FRIDGE.above()))){setDown(p,b,own,holding,"home",null);return true;}
             if(holding.equals("coat")&&rel.equals(HOOK)){setDown(p,b,own,holding,"home",null);return true;}
@@ -731,21 +1019,29 @@ public final class SecondPerson {
         // One of their things where it was set down (by the reader, or by them).
         var standing=thingAt(l,b.offset(rel));
         if(standing!=null){
-            for(var th:THINGS)if(th.equals(standing)&&(rel.equals(placedAt(own,th))||rel.equals(homeAt(th))&&(state(own,th).equals("homed")||state(own,th).equals("home")))){
+            for(var th:CARRYABLE)if(th.equals(standing)&&(rel.equals(placedAt(own,th))||rel.equals(homeAt(th))&&(state(own,th).equals("homed")||state(own,th).equals("home")))){
                 if(!holding.isEmpty()){cue(p,"Your hands are full.");return true;}
                 l.setBlock(b.offset(rel),Blocks.AIR.defaultBlockState(),3);pickUp(p,own,th);return true;}
         }
         if(rel.equals(HOOK)&&coatHung(l,b)&&(state(own,"coat").equals("homed")||state(own,"coat").equals("home"))){if(!holding.isEmpty()){cue(p,"Your hands are full.");return true;}coat(l,b,"",false);pickUp(p,own,"coat");return true;}
         if((rel.equals(FRIDGE.above())||rel.equals(FRIDGE))&&pictureUp(l,b)&&(state(own,"drawing").equals("homed")||state(own,"drawing").equals("home"))){if(!holding.isEmpty()){cue(p,"Your hands are full.");return true;}picture(l,b,own.getCompound("Snap").getCompound("Drawing"),false);pickUp(p,own,"drawing");return true;}
+        // 0.4.369: Iris's tin, the sleeve on the armchair's arm, and the drawer their routine went into.
+        if(rel.equals(TIN_AT)&&tin(l,b)>=0){int stage=tin(l,b);
+            if(stage==0){tin(l,b,1);sound(p,SoundEvents.CHAIN_PLACE,b,TIN_AT,.6F,1.4F);cue(p,"Needles, buttons, a card of thread, and a sleeve half-finished on its needles.");if(!own.getBoolean("TinOpened")){own.putBoolean("TinOpened",true);SecondPersonStory.turned(own,"You opened Iris's tin.");}return true;}
+            if(stage==1&&holding.isEmpty()){tin(l,b,2);pickUp(p,own,"sleeve");return true;}
+            cue(p,stage==1?"Your hands are full.":"Needles and buttons.");return true;}
+        if(rel.equals(ARMCHAIR)&&sleeve(l,b)==0&&state(own,"sleeve").equals("arm")&&!own.getBoolean("SleeveFound")){if(!holding.isEmpty()){cue(p,"Your hands are full.");return true;}sleeve(l,b,-1);own.remove("SleeveOut");pickUp(p,own,"sleeve");return true;}
+        if(rel.equals(VANITY)&&state(own,"routine").equals("drawer")){if(!holding.isEmpty()){cue(p,"Your hands are full.");return true;}sound(p,SoundEvents.CHISELED_BOOKSHELF_PICKUP,b,VANITY,.7F,1);pickUp(p,own,"routine");return true;}
         // The hall glass turns to the wall and back.
-        if(rel.equals(GLASS)&&glass(l,b)>=0){int now=glass(l,b)==0?1:0;glass(l,b,now);sound(p,SoundEvents.ITEM_FRAME_ROTATE_ITEM,b,GLASS,1,1);
+        if(rel.equals(GLASS)&&glass(l,b)>=0){int now=glass(l,b)==0?1:0;glass(l,b,now);sound(p,SoundEvents.ITEM_FRAME_ROTATE_ITEM,b,GLASS,1,1);habit(own,"glass");
             if(now==1)SecondPersonStory.turned(own,"You turned the hall glass to the wall.");else SecondPersonStory.turned(own,"You turned the hall glass round again.");
             if(seasonOf(own)==MORNING&&own.getString("LastAct").isEmpty())own.putString("LastAct","glass");return true;}
         // The lamp.
-        if(rel.equals(LAMP)){boolean on=!lampOn(l,b);lamp(l,b,on);sound(p,SoundEvents.LEVER_CLICK,b,LAMP,.6F,on?1.2F:.9F);return true;}
+        if(rel.equals(LAMP)){boolean on=!lampOn(l,b);lamp(l,b,on);sound(p,SoundEvents.LEVER_CLICK,b,LAMP,.6F,on?1.2F:.9F);
+            if(on){habit(own,"lamp");if(own.getBoolean("Walking")&&own.getString("BroughtBy").isEmpty())own.putString("BroughtBy","lamp");}return true;}
         // The tap.
         if(rel.equals(TAP)){sound(p,HouseReadRegistry.TAP.get(),b,TAP,1,1);l.sendParticles(p,ParticleTypes.SPLASH,true,b.getX()+TAP.getX()+.5,b.getY()+TAP.getY()+.3,b.getZ()+TAP.getZ()+.5,10,.1,.05,.1,0);
-            if(seasonOf(own)==SUMMER&&step(own)==NIGHT&&sub(own)==1)own.putBoolean("TapRan",true);return true;}
+            if(seasonOf(own)==SUMMER&&step(own)==NIGHT&&sub(own)==1)own.putBoolean("TapRan",true);habit(own,"tap");return true;}
         // The phone.
         if(rel.equals(PHONE)){if(own.getInt("Ringing")>0){lift(p,b,own);return true;}if(phoneOff(l,b)){phone(l,b,false);sound(p,PhoneSounds.PICKUP.get(),b,PHONE,.6F,.8F);cue(p,"You put the receiver back.");return true;}cue(p,"The line purrs.");return true;}
         // Glass that holds a word.
@@ -758,14 +1054,18 @@ public final class SecondPerson {
         if(rel.equals(ARMCHAIR)){io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(ARMCHAIR));return true;}
         // Walls: a knock. The wall at the end of the passage is Iris's.
         if(inFlat(v)&&(s.is(SecondPersonRegistry.material("paper"))||s.is(SecondPersonRegistry.material("kitchen"))||s.is(SecondPersonRegistry.material("tile"))||s.is(SecondPersonRegistry.material("brick")))){
-            sound(p,DoorSounds.KNOCK.get(),b,rel,.9F,1.1F);
-            if(irisWall(rel)&&seasonOf(own)==AUTUMN){if(!own.getBoolean("IrisKnocked")){own.putBoolean("IrisKnocked",true);SecondPersonStory.turned(own,"You knocked on Iris's wall, and she knocked back.");}f.knockBack=30;}
+            sound(p,DoorSounds.KNOCK.get(),b,rel,.9F,1.1F);habit(own,"knock");
+            if(own.getBoolean("Walking")){if(own.getString("BroughtBy").isEmpty())own.putString("BroughtBy","knock");}
+            else if(irisWall(rel)&&seasonOf(own)==WINTER){cue(p,"Nobody knocks back.");if(!own.getBoolean("KnockedWinter")){own.putBoolean("KnockedWinter",true);SecondPersonStory.turned(own,"You knocked on Iris's wall in the winter, and nobody knocked back.");}}
+            else if(irisWall(rel)&&seasonOf(own)==AUTUMN){if(!own.getBoolean("IrisKnocked")){own.putBoolean("IrisKnocked",true);SecondPersonStory.turned(own,"You knocked on Iris's wall, and she knocked back.");}f.knockBack=30;}
             else if(seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("KnockedInEvening",true);
             else{var a=actor(l,f.resident);if(a!=null&&!a.isSleeping()&&f.once.add("knock"+(t(own)/600)))say(f,a,"Hello?");}
             return true;
         }
         return false;
     }
+    /** What the reader does again and again in the flat: the sleepwalk takes up the most worn habit. */
+    static void habit(CompoundTag own,String what){if(seasonOf(own)<WINTER||!own.getBoolean("Walking"))own.putInt("Habit_"+what,own.getInt("Habit_"+what)+1);}
     /** The book on the shelf, after its opening: always its latest page. */
     public static boolean book(ServerPlayer p,BlockPos b,CompoundTag own){
         var pages=SecondPersonTexts.printed(SecondPersonStory.latest(own));

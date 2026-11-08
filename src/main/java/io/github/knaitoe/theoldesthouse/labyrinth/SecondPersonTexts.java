@@ -33,6 +33,10 @@ public final class SecondPersonTexts {
 
     /** The account, written from the reader's record (filled in with the story). */
     public static ItemStack account(String reader,CompoundTag own){
-        return HouseWriting.book("The account: the flat",reader,printed(SecondPersonStory.account(own)));
+        var pages=new ArrayList<Component>(printed(SecondPersonStory.account(own)));
+        // 0.4.369: the pages the House turned in the reader's name come last, in a different type, apart from the reader's own.
+        var house=SecondPersonStory.list(own,"HousePages");
+        if(!house.isEmpty())for(String pg:LookoutTexts.pages("The pages you did not turn\n\n"+String.join("\n\n",house),PAGE))pages.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,pg).copy().withStyle(net.minecraft.ChatFormatting.ITALIC));
+        return HouseWriting.book("The account: the flat",reader,pages);
     }
 }

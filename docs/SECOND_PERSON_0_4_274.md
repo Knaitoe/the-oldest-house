@@ -51,7 +51,7 @@ last morning in which the door has been left on the latch.
 
 ## Left for later slices
 
-Winter (Iris's death, the sleepwalk, the care scene, being seen, the tin, the House's pages), spring (the agent, the application,
+Winter (Iris's death, the sleepwalk, the care scene, being seen, the tin, the House's pages; built in 0.4.369, `docs/SECOND_PERSON_0_4_369.md`), spring (the agent, the application,
 the question on the glass), E2, E3, E4 and the aftermath; the DANGER and RUNAWAY phone arcs; the AGE situations and the DRAWN_TO
 people (Dev, Hannah, both, Marcus). Readers whose read would choose those get the neutral version, which is a whole story. Stranger
 phases 75 to 81 are kept for this vignette's people.
