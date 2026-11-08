@@ -15,7 +15,8 @@ public final class StaircaseAccount {
     private StaircaseAccount() {}
 
     public static StaircaseProse.Story write(ServerPlayer p, CompoundTag work, long seed) {
-        return StaircaseProse.compose(p.getGameProfile().getName(), facts(p, work), seed, read(LabyrinthData.get(p.server), p.getUUID()));
+        var d=LabyrinthData.get(p.server);
+        return StaircaseProse.compose(p.getGameProfile().getName(), facts(p, work), seed, read(d, p.getUUID()), HouseRead.value(d, p.getUUID(), HouseRead.Trait.AGE, false));
     }
     /** What the quiet rooms saw this reader do (0.4.159), for the leaves; observations only, and HOME for the last leaf. */
     public static StaircaseProse.Read read(LabyrinthData d, UUID id) {

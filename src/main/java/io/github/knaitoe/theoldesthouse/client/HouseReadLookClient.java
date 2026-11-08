@@ -37,13 +37,19 @@ public final class HouseReadLookClient {
         String wear=coat!=null?coat:look.coat();if(wear!=null&&!wear.isEmpty())HouseReadClothes.coat(body,cloth,wear,pose,out,light);
         if(look.glasses()&&!look.unseen())HouseReadClothes.glasses(body,cloth,pose,out,light);if(look.unseen())HouseReadClothes.veil(body,cloth,pose,out,light);
     }
+    /**
+     * The hair a copy of the reader wears (0.4.373): asleep, the silk wrap, for a reader whose hair the House reads as wrapped for the
+     * night; otherwise what the House kept from the bathroom glass, or nothing.
+     */
+    public static int style(HouseReadLookPayload look,boolean asleep){return look.wrap()&&asleep?HouseReadHair.SILK_WRAP:look.hair();}
     /** A render layer for an owned copy of the reader (the doubles), drawn only on that reader's own client. */
     public static final class Layer<T extends LivingEntity,M extends PlayerModel<T>> extends RenderLayer<T,M> {
         private final ModelPart standard,slim;private final Function<T,Optional<UUID>> owner;
         public Layer(RenderLayerParent<T,M> parent,EntityModelSet models,Function<T,Optional<UUID>> owner){super(parent);standard=models.bakeLayer(HouseReadClothes.STANDARD);slim=models.bakeLayer(HouseReadClothes.SLIM);this.owner=owner;}
         @Override public void render(PoseStack pose,MultiBufferSource out,int light,T e,float walk,float amount,float partial,float age,float yaw,float pitch){
             if(e.isInvisible()||!mine(owner.apply(e)))return;var p=Minecraft.getInstance().player;boolean narrow=p!=null&&p.getSkin().model()==net.minecraft.client.resources.PlayerSkin.Model.SLIM;dress(getParentModel(),narrow?slim:standard,null,pose,out,light);
-            if(p!=null&&look.hair()>=0)HouseReadHair.draw(getParentModel(),look.hair(),HouseReadHair.colour(p),pose,out,light);
+            int style=style(look,e.getPose()==net.minecraft.world.entity.Pose.SLEEPING);
+            if(p!=null&&style>=0)HouseReadHair.draw(getParentModel(),style,HouseReadHair.colour(p),pose,out,light);
         }
     }
 }
