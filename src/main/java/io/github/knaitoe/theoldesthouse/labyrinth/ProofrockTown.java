@@ -89,16 +89,16 @@ public final class ProofrockTown {
 
     // ------------------------------------------------------------------------------------------------ streets
     private void roads(){
-        // Main Street: asphalt with a broken centre line, stone sidewalks and kerbs.
-        for(int z=-2;z>=-88;z--){for(int x=-3;x<=3;x++)set(x,-1,z,x==0&&Math.floorMod(z,4)<2?Blocks.YELLOW_CONCRETE:hash(x,z)%11==0?Blocks.ANDESITE:Blocks.GRAY_CONCRETE);
-            if(z<=-6)for(int x:new int[]{-5,-4,4,5})set(x,-1,z,Math.abs(x)==4?Blocks.POLISHED_ANDESITE:hash(x,z)%6==0?Blocks.CRACKED_STONE_BRICKS:Blocks.STONE_BRICKS);}
+        // Main Street: asphalt with a broken centre line, concrete sidewalks and granite kerbs (0.4.377: the town's own surfaces).
+        for(int z=-2;z>=-88;z--){for(int x=-3;x<=3;x++)set(x,-1,z,x==0&&Math.floorMod(z,4)<2?ProofrockSurface.line(Direction.Axis.Z):paving(x,z));
+            if(z<=-6)for(int x:new int[]{-5,-4,4,5})set(x,-1,z,Math.abs(x)==4?ProofrockSurface.KERB.get().defaultBlockState():sidewalk(x,z));}
         // School Street to the west, Lake Street to the east, each with a sidewalk either side.
-        for(int x=-6;x>=-63;x--){for(int z=-39;z>=-43;z--)set(x,-1,z,z==-41&&Math.floorMod(x,4)<2?Blocks.YELLOW_CONCRETE:hash(x,z)%11==0?Blocks.ANDESITE:Blocks.GRAY_CONCRETE);
-            set(x,-1,-38,Blocks.STONE_BRICKS);set(x,-1,-44,Blocks.STONE_BRICKS);}
-        for(int x=6;x<=41;x++){for(int z=-39;z>=-43;z--)set(x,-1,z,z==-41&&Math.floorMod(x,4)<2?Blocks.YELLOW_CONCRETE:hash(x,z)%11==0?Blocks.ANDESITE:Blocks.GRAY_CONCRETE);
-            if(x<=37){set(x,-1,-38,Blocks.STONE_BRICKS);set(x,-1,-44,Blocks.STONE_BRICKS);}}
+        for(int x=-6;x>=-63;x--){for(int z=-39;z>=-43;z--)set(x,-1,z,z==-41&&Math.floorMod(x,4)<2?ProofrockSurface.line(Direction.Axis.X):paving(x,z));
+            set(x,-1,-38,sidewalk(x,-38));set(x,-1,-44,sidewalk(x,-44));}
+        for(int x=6;x<=41;x++){for(int z=-39;z>=-43;z--)set(x,-1,z,z==-41&&Math.floorMod(x,4)<2?ProofrockSurface.line(Direction.Axis.X):paving(x,z));
+            if(x<=37){set(x,-1,-38,sidewalk(x,-38));set(x,-1,-44,sidewalk(x,-44));}}
         // Beach Road behind the east blocks, and the gravel lane and alleys.
-        for(int x=6;x<=37;x++)for(int z=-85;z>=-88;z--)set(x,-1,z,hash(x,z)%5==0?Blocks.ANDESITE:Blocks.GRAY_CONCRETE);
+        for(int x=6;x<=37;x++)for(int z=-85;z>=-88;z--)set(x,-1,z,(hash(x,z)%5==0?ProofrockSurface.PATCHED:ProofrockSurface.ASPHALT).get());
         for(int z=-2;z>=-38;z--)for(int x=-40;x<=-37;x++)set(x,-1,z,hash(x,z)%3==0?Blocks.COARSE_DIRT:Blocks.GRAVEL);
         for(int z=-6;z>=-37;z--){alley(-19,z);alley(-18,z);alley(18,z);alley(19,z);}
         for(int z=-45;z>=-84;z--){alley(18,z);alley(19,z);}
@@ -120,6 +120,10 @@ public final class ProofrockTown {
     }
     /** Two long, one wide, a lid on top: low enough that a reader standing on it is still within her reach. */
     private void dumpster(int x,int z){for(int i=0;i<2;i++){set(x,0,z-i,Blocks.GREEN_TERRACOTTA);set(x,1,z-i,Blocks.IRON_TRAPDOOR);}}
+    /** Asphalt, now and then patched. */
+    private static BlockState paving(int x,int z){return (hash(x,z)%11==0?ProofrockSurface.PATCHED:ProofrockSurface.ASPHALT).get().defaultBlockState();}
+    /** A sidewalk slab, about one in six of them cracked. */
+    private static BlockState sidewalk(int x,int z){return (hash(x,z)%6==0?ProofrockSurface.SIDEWALK_CRACKED:ProofrockSurface.SIDEWALK).get().defaultBlockState();}
     private void alley(int x,int z){set(x,-1,z,hash(x,z)%4==0?Blocks.COBBLESTONE:hash(x,z)%3==0?Blocks.COARSE_DIRT:Blocks.GRAVEL);}
     /** A pole with an arm, the lantern hung over the street on the side the arm reaches. */
     private void lamp(int x,int z,Direction arm){
@@ -193,9 +197,9 @@ public final class ProofrockTown {
 
     // ------------------------------------------------------------------------------------------------ Main Street's shops
     private void shopsWest(){
-        shop(-6,-6,-15,Direction.EAST,"general",Blocks.WHITE_TERRACOTTA,Blocks.STRIPPED_SPRUCE_LOG,true,true);
+        shop(-6,-6,-15,Direction.EAST,"general",ProofrockSurface.CLAPBOARD_WEATHERED.get(),Blocks.STRIPPED_SPRUCE_LOG,true,true);
         shop(-6,-17,-26,Direction.EAST,"post",Blocks.BRICKS,Blocks.STONE_BRICKS,true,true);
-        shop(-6,-28,-37,Direction.EAST,"laundry",Blocks.LIGHT_BLUE_TERRACOTTA,Blocks.STRIPPED_BIRCH_LOG,false,true);
+        shop(-6,-28,-37,Direction.EAST,"laundry",ProofrockSurface.CLAPBOARD_PAINTED.get(),Blocks.STRIPPED_BIRCH_LOG,false,true);
         // Inside: shelves and a till; pigeonholes behind the post counter; the machines along the wall.
         for(int z=-8;z>=-13;z-=2)for(int y=0;y<=1;y++)set(-11,y,z,Blocks.BOOKSHELF);
         counter(-8,-13,-15,Direction.EAST);detail(-8,1,-14,SceneDetailBlock.Kind.FILE_TRAY,Direction.EAST);
@@ -211,7 +215,7 @@ public final class ProofrockTown {
         shop(6,-28,-37,Direction.WEST,"diner",Blocks.RED_TERRACOTTA,Blocks.WHITE_TERRACOTTA,false,true);
         shop(6,-45,-58,Direction.WEST,"cinema",Blocks.DARK_OAK_PLANKS,Blocks.BLACKSTONE,false,false);
         shop(6,-60,-70,Direction.WEST,"bait",Blocks.MOSSY_COBBLESTONE,Blocks.STRIPPED_SPRUCE_LOG,true,true);
-        shop(6,-72,-83,Direction.WEST,"hall",Blocks.LIGHT_GRAY_TERRACOTTA,Blocks.STONE_BRICKS,true,true);
+        shop(6,-72,-83,Direction.WEST,"hall",ProofrockSurface.CLAPBOARD.get(),Blocks.STONE_BRICKS,true,true);
         // Hardware shelves; the sheriff's desk, notices and a barred cell; the diner's counter and stools.
         for(int z=-8;z>=-13;z-=2)for(int y=0;y<=1;y++)set(11,y,z,Blocks.BARREL);
         counter(8,-13,-15,Direction.WEST);
@@ -270,10 +274,10 @@ public final class ProofrockTown {
         int[][] plots={{-6,-15},{-17,-26},{-28,-37}};
         for(var p:plots){
             // East of the lane, facing west; back yards onto the alley fence.
-            house(-31,p[0]-2,Direction.WEST,hash(p[0],1)%2==0?Blocks.BIRCH_PLANKS:Blocks.WHITE_TERRACOTTA,hash(p[0],2)%3!=0);
+            house(-31,p[0]-2,Direction.WEST,(hash(p[0],1)%2==0?ProofrockSurface.CLAPBOARD:ProofrockSurface.CLAPBOARD_PAINTED).get(),hash(p[0],2)%3!=0);
             lawn(-36,-33,p[0]-1,p[1]+1);walk(-36,-33,p[0]-5);
             // West of the lane, facing east; sheds and woodpiles out back.
-            house(-46,p[0]-2,Direction.EAST,hash(p[0],3)%2==0?Blocks.OAK_PLANKS:Blocks.LIGHT_GRAY_TERRACOTTA,hash(p[0],4)%3!=0);
+            house(-46,p[0]-2,Direction.EAST,(hash(p[0],3)%2==0?ProofrockSurface.CLAPBOARD_WEATHERED:ProofrockSurface.CLAPBOARD).get(),hash(p[0],4)%3!=0);
             lawn(-44,-41,p[0]-1,p[1]+1);walk(-44,-41,p[0]-5);
             shed(-59,p[0]-3);
             for(int z=p[1]+2;z<=p[1]+4;z++)for(int y=0;y<=1;y++)set(-56,y,z,Blocks.OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
@@ -281,7 +285,7 @@ public final class ProofrockTown {
         }
         set(-55,0,-9,Blocks.SPRUCE_PLANKS);set(-55,1,-9,LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS,Direction.EAST));
         // Two houses north of the green, facing it.
-        house2(21,-75);house2(29,-75);
+        house2(21,-75,ProofrockSurface.CLAPBOARD_PAINTED.get());house2(29,-75,ProofrockSurface.CLAPBOARD_WEATHERED.get());
         lawn(21,35,-70,-73);
         for(int x=21;x<=35;x++)set(x,-1,-69,Blocks.GRAVEL);
         for(int x=20;x<=36;x++)for(int y=0;y<=1;y++)if(x!=28)set(x,y,-84,Blocks.SPRUCE_PLANKS);
@@ -315,13 +319,13 @@ public final class ProofrockTown {
         furniture(inner,0,z1-1,HouseholdFurnitureBlock.Kind.BLUE_SOFA,Direction.NORTH);
         if(lit)light((x0+x1)/2,3,(z0+z1)/2,9);
     }
-    /** A house facing south across the green. */
-    private void house2(int x0,int zFront){
+    /** A house facing south across the green, clad in {@code wall}. */
+    private void house2(int x0,int zFront,Block wall){
         int x1=x0+6,z0=zFront-6,z1=zFront;
         fill(x0,-1,z0,x1,-1,z1,Blocks.OAK_PLANKS);fill(x0,0,z0,x1,3,z1,Blocks.AIR);
-        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)for(int y=0;y<=3;y++)if(x==x0||x==x1||z==z0||z==z1)set(x,y,z,(x==x0||x==x1)&&(z==z0||z==z1)?Blocks.STRIPPED_SPRUCE_LOG:Blocks.BIRCH_PLANKS);
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)for(int y=0;y<=3;y++)if(x==x0||x==x1||z==z0||z==z1)set(x,y,z,(x==x0||x==x1)&&(z==z0||z==z1)?Blocks.STRIPPED_SPRUCE_LOG:wall);
         for(int k=0;k<=3;k++){int y=4+k;for(int x=x0-1;x<=x1+1;x++){if(k<3){set(x,y,z0+k,LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS,Direction.SOUTH));set(x,y,z1-k,LabyrinthBuilder.stairs(Blocks.SPRUCE_STAIRS,Direction.NORTH));}else set(x,y,z0+3,Blocks.SPRUCE_PLANKS);}
-            for(int z=z0+k+1;z<=z1-k-1;z++){set(x0,y,z,Blocks.BIRCH_PLANKS);set(x1,y,z,Blocks.BIRCH_PLANKS);}}
+            for(int z=z0+k+1;z<=z1-k-1;z++){set(x0,y,z,wall);set(x1,y,z,wall);}}
         NovelRooms.door(l,b.offset(x0+3,0,z1),Direction.NORTH,Blocks.OAK_DOOR,false);
         set(x0+1,1,z1,Blocks.GLASS_PANE);set(x1-1,1,z1,Blocks.GLASS_PANE);
         NovelRooms.bed(l,b.offset(x0+1,0,z0+1),Blocks.WHITE_BED,Direction.EAST);
@@ -345,13 +349,13 @@ public final class ProofrockTown {
     // ------------------------------------------------------------------------------------------------ the garage, the motel, the green
     private void garage(){
         // Forecourt, pumps and an abandoned flatbed she can lie under.
-        fill(21,-1,-6,27,-1,-19,Blocks.GRAY_CONCRETE);
+        fill(21,-1,-6,27,-1,-19,ProofrockSurface.ASPHALT.get());
         for(int z:new int[]{-9,-13}){set(24,0,z,Blocks.RED_CONCRETE);set(24,1,z,Blocks.WHITE_CONCRETE);set(24,2,z,Blocks.RED_CONCRETE_POWDER);}
         for(int x=21;x<=26;x++)for(int z=-16;z>=-18;z--)set(x,1,z,Blocks.SPRUCE_PLANKS);
         for(int[] wheel:new int[][]{{21,-16},{21,-18},{26,-16},{26,-18}})set(wheel[0],0,wheel[1],Blocks.POLISHED_BLACKSTONE_WALL);
         // The garage itself, its bay door open onto the forecourt.
-        int x0=28,x1=36,z0=-18,z1=-7;fill(x0,-1,z0,x1,-1,z1,Blocks.GRAY_CONCRETE);fill(x0,0,z0,x1,3,z1,Blocks.AIR);
-        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)for(int y=0;y<=3;y++)if(x==x0||x==x1||z==z0||z==z1)set(x,y,z,Blocks.LIGHT_GRAY_CONCRETE);
+        int x0=28,x1=36,z0=-18,z1=-7;fill(x0,-1,z0,x1,-1,z1,ProofrockSurface.SIDEWALK.get());fill(x0,0,z0,x1,3,z1,Blocks.AIR);
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)for(int y=0;y<=3;y++)if(x==x0||x==x1||z==z0||z==z1)set(x,y,z,ProofrockSurface.CINDER_BLOCK.get());
         fill(x0,4,z0,x1,4,z1,Blocks.SMOOTH_STONE);
         fill(x0,0,-14,x0,2,-10,Blocks.AIR);
         for(int z=-14;z<=-10;z++)set(x0,3,z,Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,false));
@@ -361,10 +365,10 @@ public final class ProofrockTown {
     }
     private void motel(){
         // Six rooms in a row facing the lot, the office at the north end.
-        fill(21,-1,-21,30,-1,-37,Blocks.GRAY_CONCRETE);
+        fill(21,-1,-21,30,-1,-37,ProofrockSurface.ASPHALT.get());
         int x0=31,x1=37;fill(x0,-1,-21,x1,-1,-37,Blocks.SPRUCE_PLANKS);fill(x0,0,-21,x1,3,-37,Blocks.AIR);
-        for(int z=-21;z>=-37;z--)for(int y=0;y<=3;y++){set(x0,y,z,Blocks.WHITE_TERRACOTTA);set(x1,y,z,Blocks.WHITE_TERRACOTTA);}
-        for(int x=x0;x<=x1;x++)for(int y=0;y<=3;y++)for(int z:new int[]{-21,-24,-27,-30,-33,-37})set(x,y,z,Blocks.WHITE_TERRACOTTA);
+        for(int z=-21;z>=-37;z--)for(int y=0;y<=3;y++){set(x0,y,z,ProofrockSurface.CINDER_BLOCK.get());set(x1,y,z,ProofrockSurface.CINDER_BLOCK.get());}
+        for(int x=x0;x<=x1;x++)for(int y=0;y<=3;y++)for(int z:new int[]{-21,-24,-27,-30,-33,-37})set(x,y,z,ProofrockSurface.CINDER_BLOCK.get());
         fill(x0,4,-21,x1,4,-37,Blocks.SMOOTH_STONE);
         for(int x=x0-1;x<=x1;x++)set(x,4,-20,slab(Blocks.BRICKS));
         int[][] rooms={{-22,-23},{-25,-26},{-28,-29},{-31,-32},{-34,-36}};

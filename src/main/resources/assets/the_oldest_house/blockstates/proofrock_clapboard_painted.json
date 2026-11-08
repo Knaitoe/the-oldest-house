@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/proofrock_clapboard_painted",
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_clapboard_painted_1"
+      }
+    ]
+  }
+}

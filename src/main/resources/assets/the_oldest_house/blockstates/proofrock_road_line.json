@@ -1,0 +1,14 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "the_oldest_house:block/proofrock_road_line",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "the_oldest_house:block/proofrock_road_line"
+    },
+    "axis=z": {
+      "model": "the_oldest_house:block/proofrock_road_line"
+    }
+  }
+}

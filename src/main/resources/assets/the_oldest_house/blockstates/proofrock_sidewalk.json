@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk",
+        "y": 270
+      }
+    ]
+  }
+}

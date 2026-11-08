@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk_cracked"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk_cracked_1"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk_cracked_2"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_sidewalk_cracked_3"
+      }
+    ]
+  }
+}
