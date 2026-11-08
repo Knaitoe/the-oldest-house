@@ -9,7 +9,7 @@ The first half of the third slice set out in `docs/YARD_STORIES_PROPOSAL.md`, bu
 - the infected reader's Call by daylight, and the plate smothering it;
 - Vera's admission, and what Ellis's answer sounded like.
 
-Night Two (the first transformation, the pull and the second slot) is the other half, 0.4.354. Until it is built, the station holds at the second dusk. It is still not dealt and adds no Witness source; the operator's test door reaches it.
+Night Two (the first transformation, the pull and the second slot) is the other half, 0.4.354 (`docs/LAST_CROSSING_0_4_354.md`). It is still not dealt and adds no Witness source; the operator's test door reaches it.
 
 Protocol 148: the station fitting's new kinds, the cable tools and three sounds. Layout 112 is unchanged; nothing standing is rebuilt.
 
@@ -88,7 +88,7 @@ A carrier crouching at a wet grate (over the winch branch, or the ramp branch's 
 
 - **Day Two's panel.** "What needs doing?" explains the drum, the far end, the brake, the spillway and the gauge. "Did anybody ever answer for Ellis?" She admits it: "Once. The night the ferry went over, I called the roll down the intake pipe, like a fool. Something answered. I took my ear off the pipe and I didn't put it back." The carrier can still tell her "It got a claw in me." aloud.
 - **Before dusk** (five sixths of the way through the day): "Leave the brake set for the first pull. Whatever it's lined up on at dark, that's what we pull on." Then: "You'll want to know what it sounded like. It was Ellis's voice. Coming up the pipe a breath late, like it had been listening first." Everyone within reach of her voice remembers it.
-- **The second dusk:** "That's the light going. Get to your places." Everyone on the roll who is there has worked Day Two.
+- **The second dusk:** "That's the light going. Get to your places." Everyone on the roll who is there has worked Day Two, and Night Two begins.
 
 The carrier's second breath keeps coming through the day, every forty-five seconds, heard by nobody else.
 

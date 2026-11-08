@@ -24,8 +24,15 @@ public final class Spoken {
     private record Heard(UUID speaker,String text){}
     private static final Map<UUID,Heard> LAST=new HashMap<>();
 
-    /** The reader says these words aloud: everyone else near enough to hear sees them over the reader's head. */
-    public static void say(ServerPlayer p,String text){
+    /** The reader says these words aloud: everyone else near enough to hear sees them over the reader's head, as they come out of the
+     * reader's mouth (0.4.354: broken, for a reader turned at the flood station after dark). Returns the words as they were heard. */
+    public static String say(ServerPlayer p,String text){
+        var said=voice(p,text);sayAsHeard(p,said);return said;
+    }
+    /** What a reader's words come out as: their own, unless something has got into their throat (0.4.354, LastCrossingNightTwo). */
+    public static String voice(ServerPlayer p,String text){return text==null?"":LastCrossingNightTwo.voice(p,text);}
+    /** Words already as they come out, shown over the reader's head to everyone near enough to hear. */
+    public static void sayAsHeard(ServerPlayer p,String text){
         if(p.isSpectator()||text.isBlank())return;
         var payload=new SpokenPayload(p.getId(),text,ticks(text));
         for(var other:p.serverLevel().players()){

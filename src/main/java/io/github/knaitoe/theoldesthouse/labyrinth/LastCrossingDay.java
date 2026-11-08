@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  * fairlead for the winch's, and the gauge dipping sooner than it did the day before. An infected reader crouching by a wet grate can call:
  * something scrapes an answer through the pipes, and a little later one of the things from the water comes up through that grate. They
  * pass a carrier by. Near the plate, the call catches in the throat. Before dusk Vera asks for the brake to be left set for the first pull,
- * and says what Ellis's answer sounded like in the pipe. At the second dusk the station holds until Night Two is built.
+ * and says what Ellis's answer sounded like in the pipe. At the second dusk Night Two begins (LastCrossingNightTwo, 0.4.354).
  */
 public final class LastCrossingDay {
     private LastCrossingDay(){}
@@ -55,8 +55,6 @@ public final class LastCrossingDay {
         /** The call: how long each carrier has crouched by a wet grate, when each last called, what is coming up, and what came up by day. */
         final Map<UUID,Integer> crouch=new HashMap<>();final Map<UUID,Long> calledAt=new HashMap<>();
         final List<Rise> rising=new ArrayList<>();final Map<UUID,Long> mobs=new HashMap<>();
-        /** Night Two's clock (its slice). */
-        int nightTick;
     }
     static boolean dayTwo(Run r){return r.phase==LastCrossing.DAY&&r.dayNo>=2;}
     static boolean open(Run r){return r.dayTwo.winchOpen||r.dayTwo.rampOpen;}
@@ -99,10 +97,11 @@ public final class LastCrossingDay {
     }
     /** The cable tools on the desk. */
     static void tools(ServerLevel l,Run r){r.dayTwo.toolsOut=true;l.setBlock(r.base.offset(LastCrossingSite.TOOLS),LastCrossingSite.fit(Kind.TOOLS,Direction.NORTH),Block.UPDATE_CLIENTS);}
-    /** The second dusk: everyone on the roll who is there has worked Day Two. The station holds here until Night Two is built. */
+    /** The second dusk: everyone on the roll who is there has worked Day Two, and Night Two begins (LastCrossingNightTwo). */
     static void dusk(ServerLevel l,Run r,List<ServerPlayer> here){
-        r.phase=LastCrossing.DUSK;r.dayTwo.nightTick=0;LastCrossing.speak(l,r,LastCrossingTexts.DUSK,64);
+        r.phase=LastCrossing.DUSK;r.night2.tick=0;LastCrossing.speak(l,r,LastCrossingTexts.DUSK,64);
         for(var p:here)if(r.crew.containsKey(p.getUUID()))LastCrossing.mark(p,"DayTwo");
+        LastCrossingNightTwo.begin(l,r);
     }
 
     // ------------------------------------------------------------------------------------------------ the winch
@@ -192,7 +191,8 @@ public final class LastCrossingDay {
         LastCrossing.sound(l,b.offset(rel),SoundEvents.IRON_TRAPDOOR_OPEN,.7F,.55F);
         if(winch){d.winchOpen=open;
             if(open){LastCrossingSite.floodSpur(l,b);d.winchShutAt=-1;}else{LastCrossingSite.drainSpur(l,b);d.winchShutAt=r.tick;}
-            for(var g:LastCrossingSite.FLOOR_GRATES)l.setBlock(b.offset(g),LastCrossingSite.fit(Kind.FLOOR_GRATE,Direction.NORTH,open?1:2),Block.UPDATE_CLIENTS);
+            // 0.4.354: a pin driven through the grate in the night stays there, wet or dry.
+            for(var g:LastCrossingSite.FLOOR_GRATES)l.setBlock(b.offset(g),LastCrossingSite.fit(Kind.FLOOR_GRATE,Direction.NORTH,r.night2.pinned?3:open?1:2),Block.UPDATE_CLIENTS);
             l.setBlock(b.offset(LastCrossingSite.STAIN),LastCrossingSite.fit(Kind.STAIN,Direction.NORTH,open?0:1),Block.UPDATE_CLIENTS);}
         else{d.rampOpen=open;
             if(open){LastCrossingSite.floodRamp(l,b);d.rampShutAt=-1;}else{LastCrossingSite.drainRamp(l,b);d.rampShutAt=r.tick;}
@@ -209,7 +209,7 @@ public final class LastCrossingDay {
     static void always(ServerLevel l,Run r,List<ServerPlayer> here){
         var d=r.dayTwo;var b=r.base;if(!d.started)return;
         if(!d.winchOpen&&d.winchShutAt>=0&&r.tick-d.winchShutAt>=DRY){d.winchShutAt=-1;
-            for(var g:LastCrossingSite.FLOOR_GRATES)l.setBlock(b.offset(g),LastCrossingSite.fit(Kind.FLOOR_GRATE,Direction.NORTH),Block.UPDATE_CLIENTS);
+            if(!r.night2.pinned)for(var g:LastCrossingSite.FLOOR_GRATES)l.setBlock(b.offset(g),LastCrossingSite.fit(Kind.FLOOR_GRATE,Direction.NORTH),Block.UPDATE_CLIENTS);
             l.setBlock(b.offset(LastCrossingSite.STAIN),Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);}
         if(!d.rampOpen&&d.rampShutAt>=0&&r.tick-d.rampShutAt>=DRY){d.rampShutAt=-1;
             for(var g:branchGrates())l.setBlock(b.offset(g),LastCrossingSite.fit(Kind.BRANCH,Direction.EAST),Block.UPDATE_CLIENTS);}
@@ -229,7 +229,7 @@ public final class LastCrossingDay {
             for(var g:all){var s=l.getBlockState(b.offset(g));int st=s.getValue(CrossingBlock.STAGE);var c=Vec3.atCenterOf(b.offset(g));
                 if(st==0||p.position().distanceToSqr(c)>1.6*1.6&&!LastCrossing.sees(p,c,5,.3))continue;
                 LastCrossing.mark(p,"SawWetGrate");
-                LastCrossing.cue(p,st==1?"The grate's wet. Water's running in the branch behind it.":"The grate's bars are damp, beaded with water. Something ran behind it not long ago.");break;}}
+                LastCrossing.cue(p,st==1||st==3?"The grate's wet. Water's running in the branch behind it.":"The grate's bars are damp, beaded with water. Something ran behind it not long ago.");break;}}
         if(!own.getBoolean("SawStain")){var at=b.offset(LastCrossingSite.STAIN);
             if(CrossingBlock.is(l.getBlockState(at),Kind.STAIN)&&LastCrossing.sees(p,Vec3.atBottomCenterOf(at),4.5,.3)){LastCrossing.mark(p,"SawStain");
                 LastCrossing.cue(p,l.getBlockState(at).getValue(CrossingBlock.STAGE)==0?"A dark wet stain on the boards under the fairlead, spreading.":"A stain on the boards under the fairlead, drying at its edges.");}}
