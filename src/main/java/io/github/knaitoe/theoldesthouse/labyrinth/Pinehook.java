@@ -11,6 +11,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +21,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -33,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -51,7 +57,13 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * can pull the mask off, and the evening turns into an awkward talk with Casey instead. Either way Jude goes to the shed to change. Nina
  * goes after him. If someone is with Jude she waits behind the shed and gives up; if she goes in, a reader who gets into the shed while
  * she is at him stops her and sees who it was; otherwise Jude comes back cut and without the costume, asks Casey who else he hired, and a
- * masked figure crosses the far end of the dock. Then the night holds: the rest is the next slices'.
+ * masked figure crosses the far end of the dock.
+ *
+ * <p>0.4.365, the night (docs/PINEHOOK_0_4_365.md): the proposal's parallel scenes. Jude in the kitchen, Casey talking over him until
+ * someone tells him to let Jude talk; what the dock shows (spots along the T, a coverall's tie, wet prints up to the back step, the rowboat
+ * moved with the costume under its tarp); Len locked in his boathouse, talking through the door; Casey's plan in his bag, which he burns
+ * himself if nobody finds it first; the portable player, set down to record; and telling Casey what was found until he stops calling it
+ * a bit. The rest is the next slices'.
  *
  * <p>One shared scene for everyone; each reader's own record keeps the part they played, what they did, saw, said and were told, for the
  * accounts the last slice writes. Nothing here grants Witness credit. Not dealt until the weekend can be finished; the operator's test
@@ -63,7 +75,10 @@ public final class Pinehook {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.PINEHOOK;
     public static final String TALK="pinehook";
     /** The weekend's evening: arriving and taking parts; the party; the fake attack; the shed; the turn; the night held for the next slice. */
-    public static final int ARRIVAL=0,EVENING=1,SCARE=2,SHED=3,TURN=4,HOLD=5;
+    public static final int ARRIVAL=0,EVENING=1,SCARE=2,SHED=3,TURN=4,HOLD=5,NIGHT=6;
+    /** 0.4.365: the night begins this long into the hold; Casey goes for his plan this long into the night; Nina's wet return reaches the
+     * back door this long after the splash; a player set down hears this far, and loud things from further. */
+    public static final int NIGHT_AT=300,BURN_AT=2400,NINA_IN_DELAY=160,CASEY_FOLLOW=40,HEAR=14,HEAR_LOUD=28;
     /** What happened in the shed: nothing yet; Jude cut and the costume taken; the attack interrupted and seen; Nina never got in. */
     public static final int NONE=0,WOUNDED=1,WITNESSED=2,PREVENTED=3;
     /** Ticks: the wait for the rest after the first part is taken; Len's walk up the lane; the earliest and latest dusk; the burgers; the
@@ -94,8 +109,18 @@ public final class Pinehook {
         int turn=-1,turnWait;boolean figureCrossed,ninaBack;int hold=-1;
         boolean bandaged;
         final Map<UUID,Long> torches=new HashMap<>();
+        /** 0.4.365, the night: its tick; whether Casey was told to let Jude talk; Len inside his boathouse; the plan taken, burned, in
+         * Casey's hands; what Casey has been told and whether he has turned; his walk to burn the plan; the costume and the tie taken; the
+         * spare player found; when Nina's wet return reaches the back door; the shed's back window broken. */
+        int night=-1;boolean hushed,lenInside,planTaken,planBurned,caseyHasPlan,caseyTurned,costumeTaken,tieTaken,sparePlayer,evidence,shedWindowBroken;
+        int caseyKnows,burnStep;long ninaInAt=-1;
+        final List<Event> events=new ArrayList<>();final Map<Long,Rec> recorders=new HashMap<>();Set<UUID> present=new HashSet<>();
         Run(BlockPos b,long id){base=b;this.id=id;}
     }
+    /** Something a set-down player could have heard: when, where and what. */
+    record Event(long tick,BlockPos at,String key){}
+    /** A player set down and recording: whose, and since when. */
+    record Rec(UUID owner,long start){}
     private static final Map<Long,Run> RUNS=new HashMap<>();
     public static void clearAll(){RUNS.clear();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
@@ -105,7 +130,10 @@ public final class Pinehook {
     public static int phase(BlockPos b){var r=run(b);return r==null?-1:r.phase;}
     public static int outcome(BlockPos b){var r=run(b);return r==null?-1:r.outcome;}
     public static boolean flag(BlockPos b,String name){var r=run(b);if(r==null)return false;return switch(name){case "len"->r.lenHere;case "music"->r.music;case "secret"->r.secretTold;case "unmasked"->r.unmasked;
-        case "power"->!r.powerOff;case "figure"->r.figureCrossed;case "ninaBack"->r.ninaBack;case "judeIn"->r.judeIn>=0;case "bandaged"->r.bandaged;case "quiet"->r.ninaQuiet;default->false;};}
+        case "power"->!r.powerOff;case "figure"->r.figureCrossed;case "ninaBack"->r.ninaBack;case "judeIn"->r.judeIn>=0;case "bandaged"->r.bandaged;case "quiet"->r.ninaQuiet;
+        case "hushed"->r.hushed;case "turned"->r.caseyTurned;case "burned"->r.planBurned;case "planTaken"->r.planTaken;case "lenInside"->r.lenInside;case "costume"->r.costumeTaken;case "evidence"->r.evidence;default->false;};}
+    public static int caseyKnows(BlockPos b){var r=run(b);return r==null?-1:r.caseyKnows;}
+    public static int burnStep(BlockPos b){var r=run(b);return r==null?-1:r.burnStep;}
     public static String cooler(BlockPos b){var r=run(b);return r==null?"":r.cooler;}
     public static int film(BlockPos b){var r=run(b);return r==null?-1:r.film;}
     public static int ninaStep(BlockPos b){var r=run(b);return r==null?-1:r.ninaStep;}
@@ -117,6 +145,8 @@ public final class Pinehook {
         case SCARE->r.scare+=ticks;
         case SHED->{r.shed+=ticks;if(r.judeIn>=0)r.judeIn+=ticks;if(r.struggle>=0)r.struggle+=ticks;r.lurk+=ticks;}
         case TURN->r.turn+=ticks;
+        case HOLD->r.hold+=ticks;
+        case NIGHT->r.night+=ticks;
         default->{}
     }}
     public static void resetNow(ServerLevel l,BlockPos b){var r=run(b);if(r!=null){reset(l,r);RUNS.remove(b.asLong());}}
@@ -175,17 +205,25 @@ public final class Pinehook {
         case "tape"->item(PinehookRegistry.TAPE.get(),"tape","Rented film");
         case "firstaid"->item(PinehookRegistry.FIRSTAID.get(),"firstaid","First-aid bag");
         case "kit"->item(PinehookRegistry.FIRSTAID.get(),"firstaid","First-aid kit");
+        case "tie"->item(PinehookRegistry.TIE.get(),"tie","Coverall tie");
+        case "costume"->item(PinehookRegistry.COSTUME.get(),"costume","Mask and coverall");
+        case "plan"->item(PinehookRegistry.PLAN.get(),"plan","Casey's plan");
         default->item(PinehookRegistry.ELASTIC.get(),"elastic","Elastic strap");
     };}
     /** Every weekend thing a reader carries out of the cabin's world stays here: taken when they leave the scene. */
-    static final List<String> THINGS=List.of("cooler","camera","torch","mixtape","player","tape","firstaid","elastic");
+    static final List<String> THINGS=List.of("cooler","camera","torch","mixtape","player","tape","firstaid","elastic","tie","costume","plan");
 
     // ------------------------------------------------------------------------------------------------ arriving
     static final List<String> RUN_KEYS=List.of("Part","Greeted","Partway","Rejoined","CarriedCooler","SetCooler","KeptSecret","Objected","AskedJudeWho","PlayedMusic","Music","ChoseFilm","Film",
         "WalkedDock","SawBoathouse","StartedFood","ServedFood","SawNinaQuiet","AskedNina","SatWithNina","AskedNinaBefore","AskedJude","MockedJude","AskedOwner","TookLenSeriously","DismissedLen",
         "PredictedPower","CalledIt","FoundElastic","SawPropBlade","SawMask","SawRubber","PhotographedMask","Photographed","Unmasked","SawUnmasking","AskedToldUs","AskedPower","PraisedBit",
         "WithJude","SawNinaLurking","SawNinaEnter","HeardCrash","InterruptedNina","WitnessedAttack","SawNinaFlee","HeardTurn","SawFigure","PhotographedFigure","HeardNinaBack","HeardJudeHurt",
-        "HelpedJude","Outcome","SawJudeHurt","InScare","SawBreaker","SawJudeChange","HeardJudeLeave");
+        "HelpedJude","Outcome","SawJudeHurt","InScare","SawBreaker","SawJudeChange","HeardJudeLeave",
+        "HeardLenGo","CaseyHushed","HeardJudeAccount","StrapMismatch","HeardCaseyToldNina","HeardJudeSawNina","AskedCaseyWho","AskedCaseyPlan","KnowsPlanWhere","GavePlanBack",
+        "SawWetPrints","SawBeachPrints","SawShedPrints","SawPrints","SawDockBlood","SawShedBlood","FoundTie","SawBoatMoved","FoundCostume","TookCostume","SawBrokenWindow",
+        "TookPlan","ReadPlan","BurnedPlan","SawCaseyBurn","TurnedCasey","HeardCaseyTurn","ToldPRINTS","ToldBLOOD","ToldPLAN","ToldSTRAP","ToldCOSTUME","ToldTAPE",
+        "KnockedLen","LenSlipped","SawSafe","AskedLenWho","WatchLen","NinaDenied","ConfrontedNina","AskedNinaBoathouse","SetPlayer","RecordedTape","HeardTape","TapeNina",
+        "PhotoBlood","PhotoPrints","PhotoTie","PhotoBoat","CaseyAskedPlan","AskedLenSafe");
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var l=p.serverLevel();var r=RUNS.computeIfAbsent(b.asLong(),k->new Run(b,l.getGameTime()));
         if(own.getLong("PinehookRun")!=r.id){for(var key:RUN_KEYS)own.remove(key);own.putLong("PinehookRun",r.id);}
@@ -207,6 +245,8 @@ public final class Pinehook {
             if(!l.isLoaded(anchor)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(anchor)))continue;
             if(r.fresh){r.fresh=false;reset(l,r);}
             ensureCast(l,r);
+            if(r.tick%10==0)leavers(l,r,here);
+            if(r.ninaInAt>=0&&r.tick>=r.ninaInAt){r.ninaInAt=-1;log(r,PinehookSite.BACK_DOOR,"nina_in");}
             for(var id:Arrays.asList(r.casey,r.jude,r.nina,r.len))walk(l,r,id);
             switch(r.phase){
                 case ARRIVAL->arrival(l,r,here);
@@ -215,6 +255,7 @@ public final class Pinehook {
                 case SHED->shed(l,r,here);
                 case TURN->turn(l,r,here);
                 case HOLD->hold(l,r,here);
+                case NIGHT->night(l,r,here);
                 default->{}
             }
             greet(l,r,here);
@@ -230,7 +271,7 @@ public final class Pinehook {
         if(actor(l,r.casey)==null)r.casey=spawn(l,r,CASEY,PinehookSite.CASEY_PORCH,180);
         if(actor(l,r.jude)==null)r.jude=spawn(l,r,JUDE,PinehookSite.JUDE_PORCH,180);
         if(actor(l,r.nina)==null)r.nina=spawn(l,r,NINA,PinehookSite.NINA_LIVING,90);
-        if(actor(l,r.len)==null&&r.lenHere)r.len=spawn(l,r,LEN,PinehookSite.LEN_PORCH,180);
+        if(actor(l,r.len)==null&&r.lenHere)r.len=spawn(l,r,LEN,r.lenInside?PinehookSite.BOAT_INSIDE:PinehookSite.LEN_PORCH,180);
     }
     @Nullable static UUID spawn(ServerLevel l,Run r,int phase,Vec3 at,float yaw){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
@@ -249,16 +290,21 @@ public final class Pinehook {
         var a=actor(l,id);if(a==null)return;var w=r.walkers.get(id);
         if(w==null||w.leg>=w.route.size()){if(!a.isInvisible()&&a.gesture()!=KNOCKING){var near=nearest(l,r,a.position(),10);if(near!=null)SceneFootpaths.face(a,near.getEyePosition(),20);}return;}
         var target=world(r.base,w.route.get(w.leg));
-        openDoors(l,r,a.position());
+        openDoors(l,r,a.position(),id);
         if(SceneFootpaths.walk(a,target,w.speed)||a.position().distanceToSqr(target)<.09||++w.ticks>200){if(w.ticks>200)a.moveTo(target.x,target.y,target.z,a.getYRot(),0);w.leg++;w.ticks=0;}
     }
     /** A door one of the cast walks up to opens for them; doors they have passed shut again behind them. */
-    static void openDoors(ServerLevel l,Run r,Vec3 at){
-        for(var d:List.of(PinehookSite.FRONT_DOOR,PinehookSite.BACK_DOOR,PinehookSite.SHED_DOOR,PinehookSite.BATH_DOOR)){
+    static void openDoors(ServerLevel l,Run r,Vec3 at,@Nullable UUID who){
+        for(var d:List.of(PinehookSite.FRONT_DOOR,PinehookSite.BACK_DOOR,PinehookSite.SHED_DOOR,PinehookSite.BATH_DOOR,PinehookSite.BED_DOOR)){
             var pos=r.base.offset(d);if(Vec3.atBottomCenterOf(pos).distanceToSqr(at)>2.6)continue;
-            var st=l.getBlockState(pos);if(st.getBlock() instanceof DoorBlock door&&!st.getValue(DoorBlock.OPEN))door.setOpen(null,l,st,pos,true);
+            var st=l.getBlockState(pos);if(st.getBlock() instanceof DoorBlock door&&!st.getValue(DoorBlock.OPEN)){
+                door.setOpen(null,l,st,pos,true);
+                if(d.equals(PinehookSite.BACK_DOOR))log(r,d,who!=null&&who.equals(r.nina)?"back_door_nina":"back_door");
+            }
         }
     }
+    /** Something a set-down player could hear. */
+    static void log(Run r,BlockPos rel,String key){r.events.add(new Event(r.tick,rel,key));if(r.events.size()>200)r.events.remove(0);}
     @Nullable static ServerPlayer nearest(ServerLevel l,Run r,Vec3 from,double reach){ServerPlayer best=null;double d=reach*reach;for(var p:living(l,r.base)){double q=p.position().distanceToSqr(from);if(q<d){d=q;best=p;}}return best;}
 
     // ------------------------------------------------------------------------------------------------ setting the cabin back
@@ -276,6 +322,17 @@ public final class Pinehook {
         for(var cell:r.torches.values()){var at=BlockPos.of(cell);if(l.getBlockState(at).is(Blocks.LIGHT))l.setBlock(at,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);}
         r.torches.clear();
         stopMusic(l,r);
+        // The night's evidence and the boat, the bag, the safe, the shed's window and any player left recording.
+        var decals=new ArrayList<BlockPos>();decals.addAll(PinehookSite.DOCK_BLOOD);decals.addAll(PinehookSite.WET_PRINTS);decals.addAll(PinehookSite.BEACH_PRINTS);decals.addAll(PinehookSite.SHED_PRINTS);
+        decals.add(PinehookSite.DOCK_TIE);decals.add(PinehookSite.SHED_BLOOD);
+        for(var rel:decals){var st=at(l,r,rel);if(PinehookBlock.is(st,Kind.PRINTS)||PinehookBlock.is(st,Kind.BLOOD)||PinehookBlock.is(st,Kind.TIE))set(l,b,rel,Blocks.AIR.defaultBlockState());}
+        PinehookSite.moorBoat(l,b,true,0);
+        set(l,b,PinehookSite.SUITCASE,PinehookBlock.of(Kind.SUITCASE,Direction.EAST,0));set(l,b,PinehookSite.SAFE,PinehookBlock.of(Kind.SAFE,Direction.WEST,0));
+        set(l,b,PinehookSite.SHED_BACK,Blocks.GLASS_PANE.defaultBlockState());
+        for(var key:r.recorders.keySet()){var rel=BlockPos.of(key);if(PinehookBlock.is(at(l,r,rel),Kind.RECORDER))set(l,b,rel,Blocks.AIR.defaultBlockState());}
+        r.recorders.clear();r.events.clear();
+        r.night=-1;r.hushed=r.lenInside=r.planTaken=r.planBurned=r.caseyHasPlan=r.caseyTurned=r.costumeTaken=r.tieTaken=r.sparePlayer=r.evidence=r.shedWindowBroken=false;
+        r.caseyKnows=r.burnStep=0;r.ninaInAt=-1;
         r.phase=ARRIVAL;r.firstPart=-1;r.evening=0;r.lenHere=r.lenWalking=r.ninaQuiet=false;r.cooler="porch";r.coolerBy=null;r.music=r.secretTold=false;r.film=0;r.food=0;r.foodAt=-1;
         r.scare=r.unmaskedAt=r.judeLeft=-1;r.turnWait=0;r.unmasked=r.powerOff=false;r.unmaskedBy=null;r.shed=r.judeIn=r.struggle=r.turn=r.hold=-1;r.ninaStep=r.lurk=0;r.outcome=NONE;r.figureCrossed=r.ninaBack=r.bandaged=false;
     }
@@ -344,7 +401,7 @@ public final class Pinehook {
     static void beginScare(ServerLevel l,Run r,List<ServerPlayer> here){
         r.phase=SCARE;r.scare=0;r.powerOff=true;
         stage(l,r,PinehookSite.BREAKER,1);PinehookSite.lights(l,r.base,false);stopMusic(l,r);
-        sound(l,r.base.offset(PinehookSite.BREAKER),PinehookRegistry.BREAKER.get(),1F,1F);
+        sound(l,r.base.offset(PinehookSite.BREAKER),PinehookRegistry.BREAKER.get(),1F,1F);log(r,PinehookSite.BREAKER,"power_off");
         speak(l,r,r.casey,"Casey",PinehookTexts.BREAKER,24);
         for(var p:here){mark(p,"InScare");if(own(p).getBoolean("PredictedPower")){mark(p,"CalledIt");cue(p,"The lights go out, the way you said they would.");}}
         // Casey goes to the box by the back door; Nina to the bathroom; Jude is already outside in the costume.
@@ -360,11 +417,11 @@ public final class Pinehook {
     static void scare(ServerLevel l,Run r,List<ServerPlayer> here){
         r.scare++;var jude=actor(l,r.jude);
         if(!r.unmasked){
-            if(r.scare==WINDOW_AT){hide(l,r.jude,false);gesture(l,r.jude,KNOCKING);}
+            if(r.scare==WINDOW_AT){hide(l,r.jude,false);gesture(l,r.jude,KNOCKING);log(r,PinehookSite.FRONT_WINDOW,"knock");}
             if(r.scare>=WINDOW_AT&&r.scare<WINDOW_AT+60&&(r.scare-WINDOW_AT)%20==0)sound(l,r.base.offset(PinehookSite.FRONT_WINDOW),PinehookRegistry.KNOCK.get(),1F,.95F+l.random.nextFloat()*.1F);
             if(r.scare==WINDOW_AT+80){gesture(l,r.jude,0);route(r,r.jude,.16,PinehookSite.WINDOW_TO_BACK);}
             if(r.scare>=BACK_AT&&r.scare<BACK_AT+60&&(r.scare-BACK_AT)%15==0&&jude!=null&&jude.position().distanceToSqr(world(r.base,PinehookSite.BACK_OUT))<4)
-                sound(l,r.base.offset(PinehookSite.BACK_DOOR),SoundEvents.WOODEN_DOOR_CLOSE,1F,.7F);
+                {sound(l,r.base.offset(PinehookSite.BACK_DOOR),SoundEvents.WOODEN_DOOR_CLOSE,1F,.7F);if(r.scare==BACK_AT)log(r,PinehookSite.BACK_DOOR,"rattle");}
             if(r.scare==RETREAT_AT)route(r,r.jude,.16,PinehookSite.TO_SHED);
             // Who sees the masked figure, and who sees through it.
             if(jude!=null&&!jude.isInvisible()&&r.scare%5==0)for(var p:living(l,r.base)){
@@ -395,7 +452,7 @@ public final class Pinehook {
         moveTo(l,r,r.casey,jude==null?PinehookSite.CASEY_PORCH:rel(jude.position().add(1.2,0,.5),r.base),180);
         speak(l,r,r.casey,"Casey",PinehookTexts.UNMASK_CASEY,24);
     }
-    static void powerBack(ServerLevel l,Run r){if(!r.powerOff)return;r.powerOff=false;stage(l,r,PinehookSite.BREAKER,0);PinehookSite.lights(l,r.base,true);sound(l,r.base.offset(PinehookSite.BREAKER),PinehookRegistry.BREAKER.get(),.8F,1.3F);}
+    static void powerBack(ServerLevel l,Run r){if(!r.powerOff)return;r.powerOff=false;stage(l,r,PinehookSite.BREAKER,0);PinehookSite.lights(l,r.base,true);sound(l,r.base.offset(PinehookSite.BREAKER),PinehookRegistry.BREAKER.get(),.8F,1.3F);log(r,PinehookSite.BREAKER,"power_on");}
 
     // ------------------------------------------------------------------------------------------------ the shed
     static void beginShed(ServerLevel l,Run r){
@@ -426,6 +483,7 @@ public final class Pinehook {
                 else if(r.lurk>=LURK_MAX||r.judeIn>=CHANGE)prevented(l,r);}
             // 3: in the shed with him.
             case 3->{r.struggle++;
+                if(r.struggle==1)log(r,PinehookSite.DUFFEL,"crash");
                 if(r.struggle==1||r.struggle==60){sound(l,r.base.offset(PinehookSite.DUFFEL),PinehookRegistry.CRASH.get(),1.2F,r.struggle==1?1F:.8F);for(var p:living(l,r.base))if(p.position().distanceToSqr(shedDoor)<24*24)mark(p,"HeardCrash");}
                 for(var p:living(l,r.base))if(PinehookSite.inShed(rel(p.position(),r.base))){witnessed(l,r,p);return;}
                 if(r.struggle>=STRUGGLE)wounded(l,r);}
@@ -446,6 +504,7 @@ public final class Pinehook {
         r.outcome=PREVENTED;r.ninaStep=4;
         route(r,r.nina,.12,PinehookSite.NINA_IN);
         for(var p:living(l,r.base))note(p,"Outcome","prevented");
+        for(var rel:PinehookSite.SHED_PRINTS)decal(l,r,rel,Kind.PRINTS,Direction.NORTH);r.evidence=true;
     }
     /** A reader got into the shed while she was at him: she runs, and they saw her. */
     static void witnessed(ServerLevel l,Run r,ServerPlayer by){
@@ -454,7 +513,9 @@ public final class Pinehook {
         for(var p:living(l,r.base)){note(p,"Outcome","witnessed");if(nina!=null&&sees(p,nina.getEyePosition(),10,.3)){mark(p,"WitnessedAttack");cue(p,"Nina, in the dark of the shed, a knife in her hand. She looks at you. Then she's through the back window.");}}
         gesture(l,r.nina,0);moveTo(l,r,r.nina,PinehookSite.BEHIND_SHED,0);
         route(r,r.nina,.2,new Vec3(-6.5,0,-46.5),new Vec3(10.5,0,-46.5),new Vec3(11.5,0,-44.5));
-        sound(l,r.base.offset(PinehookSite.SHED_BACK),SoundEvents.GLASS_BREAK,1F,1F);
+        sound(l,r.base.offset(PinehookSite.SHED_BACK),SoundEvents.GLASS_BREAK,1F,1F);log(r,PinehookSite.SHED_BACK,"glass");
+        set(l,r.base,PinehookSite.SHED_BACK,Blocks.AIR.defaultBlockState());r.shedWindowBroken=true;
+        for(var rel:PinehookSite.BEACH_PRINTS)decal(l,r,rel,Kind.PRINTS,Direction.EAST);r.evidence=true;
         r.judeIn=-1;skinOf(l,r.jude,COVERALL);
         route(r,r.jude,.12,PinehookSite.FROM_SHED);
         r.phase=TURN;r.turn=0;
@@ -463,7 +524,7 @@ public final class Pinehook {
     static void wounded(ServerLevel l,Run r){
         r.outcome=WOUNDED;r.ninaStep=6;
         for(var p:living(l,r.base))note(p,"Outcome","wounded");
-        stage(l,r,PinehookSite.DUFFEL,2);
+        stage(l,r,PinehookSite.DUFFEL,2);decal(l,r,PinehookSite.SHED_BLOOD,Kind.BLOOD,Direction.NORTH);
         // Nina, in the costume now, out of sight until the dock.
         skinOf(l,r.nina,MASKED);gesture(l,r.nina,0);hide(l,r.nina,true);moveTo(l,r,r.nina,PinehookSite.DOCK_EAST,90);
         r.judeIn=-1;skinOf(l,r.jude,JUDE);gesture(l,r.jude,HURT);
@@ -488,7 +549,8 @@ public final class Pinehook {
             if(r.turn==FIGURE_AT){hide(l,r.nina,false);route(r,r.nina,.09,PinehookSite.DOCK_WEST);}
             var nina=actor(l,r.nina);
             if(r.turn>FIGURE_AT&&!r.figureCrossed&&nina!=null&&!nina.isInvisible()&&nina.phase()==MASKED&&r.turn%5==0)for(var p:living(l,r.base))if(sees(p,nina.getEyePosition(),64,.6)&&!own(p).getBoolean("SawFigure")){mark(p,"SawFigure");cue(p,"Down at the far end of the dock a figure in a coverall and a rubber mask walks across the planks, without hurrying.");}
-            if(r.turn>FIGURE_AT&&!r.figureCrossed&&!walking(r,r.nina)&&nina!=null&&!nina.isInvisible()){r.figureCrossed=true;hide(l,r.nina,true);moveTo(l,r,r.nina,PinehookSite.BATHROOM,180);sound(l,r.base.offset(2,0,-63),SoundEvents.GENERIC_SPLASH,.6F,.8F);}
+            if(r.turn>FIGURE_AT&&!r.figureCrossed&&!walking(r,r.nina)&&nina!=null&&!nina.isInvisible()){r.figureCrossed=true;hide(l,r.nina,true);moveTo(l,r,r.nina,PinehookSite.BATHROOM,180);sound(l,r.base.offset(2,0,-63),SoundEvents.GENERIC_SPLASH,.6F,.8F);
+                log(r,new BlockPos(2,0,-63),"splash");dockEvidence(l,r);r.ninaInAt=r.tick+NINA_IN_DELAY;}
             if(r.turn>=FIGURE_AT+NINA_BACK&&!r.ninaBack){r.ninaBack=true;skinOf(l,r.nina,NINA);hide(l,r.nina,false);moveTo(l,r,r.nina,PinehookSite.BATHROOM,180);route(r,r.nina,.1,new Vec3(0.5,0,-29.5),PinehookSite.LIVING);}
             if(r.ninaBack&&!walking(r,r.nina)&&r.hold<0){speak(l,r,r.nina,"Nina",PinehookTexts.NINA_BACK);for(var p:living(l,r.base))if(nina!=null&&p.distanceTo(nina)<16)mark(p,"HeardNinaBack");r.phase=HOLD;r.hold=0;}
         }else if(r.turn>=1+lines.length*LINE_GAP){
@@ -504,6 +566,75 @@ public final class Pinehook {
         if(r.outcome==WOUNDED&&r.hold==80)speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_HURT,14);
         if(r.outcome==WOUNDED&&r.hold==80+LINE_GAP)speak(l,r,r.casey,"Casey",PinehookTexts.CASEY_MINIMISE,14);
         if(r.outcome==WOUNDED&&r.hold==80+2*LINE_GAP){speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_NOT,14);var jude=actor(l,r.jude);for(var p:living(l,r.base))if(jude!=null&&p.distanceTo(jude)<14)mark(p,"HeardJudeHurt");}
+        if(r.hold>=NIGHT_AT)beginNight(l,r);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.365, the night
+    static final Vec3[] KITCHEN_TO_HEARTH={new Vec3(4.5,0,-26.5),new Vec3(-4.5,0,-26.5),PinehookSite.AT_HEARTH};
+    static final Vec3[] HEARTH_TO_KITCHEN={new Vec3(-4.5,0,-26.5),new Vec3(4.5,0,-26.5),PinehookSite.CASEY_KITCHEN};
+    static final Vec3[] CASEY_IN={PinehookSite.BACK_OUT,new Vec3(5.5,0,-33.5),PinehookSite.CASEY_KITCHEN};
+    static void beginNight(ServerLevel l,Run r){
+        r.phase=NIGHT;r.night=0;
+        route(r,r.jude,.08,PinehookSite.INTO_KITCHEN);
+        if(r.outcome==PREVENTED)route(r,r.nina,.1,new Vec3(0.5,0,-29.5),PinehookSite.LIVING);
+        var len=actor(l,r.len);
+        if(len!=null){speak(l,r,r.len,"Len",PinehookTexts.LEN_GOES,16);for(var p:living(l,r.base))if(p.distanceTo(len)<16)mark(p,"HeardLenGo");route(r,r.len,.12,PinehookSite.LEN_TO_BOAT);}
+        else{r.lenInside=true;r.lenHere=true;r.len=spawn(l,r,LEN,PinehookSite.BOAT_INSIDE,180);}
+    }
+    static void night(ServerLevel l,Run r,List<ServerPlayer> here){
+        r.night++;
+        if(r.night==CASEY_FOLLOW)route(r,r.casey,.11,CASEY_IN);
+        // Len reaches his boathouse and locks himself in.
+        var len=actor(l,r.len);
+        if(!r.lenInside&&len!=null&&!walking(r,r.len)){r.lenInside=true;sound(l,r.base.offset(PinehookSite.BOATHOUSE_DOOR),SoundEvents.IRON_DOOR_OPEN,.8F,1F);moveTo(l,r,r.len,PinehookSite.BOAT_INSIDE,180);sound(l,r.base.offset(PinehookSite.BOATHOUSE_DOOR),SoundEvents.IRON_DOOR_CLOSE,.8F,.9F);}
+        gesture(l,r.jude,r.outcome==WOUNDED&&!r.bandaged?HURT:0);
+        burn(l,r);
+        if(r.night%10==0){var safe=Vec3.atCenterOf(r.base.offset(PinehookSite.SAFE));for(var p:here)if(!p.isSpectator()&&sees(p,safe,12,.6))mark(p,"SawSafe");}
+    }
+    /** Casey goes for his plan and puts it in the fire, unless he has turned or someone has it first. */
+    static void burn(ServerLevel l,Run r){
+        var casey=actor(l,r.casey);if(casey==null)return;
+        switch(r.burnStep){
+            case 0->{if(!r.caseyTurned&&!r.planTaken&&!r.planBurned&&r.night>=BURN_AT&&!walking(r,r.casey)){r.burnStep=1;route(r,r.casey,.11,PinehookSite.TO_SUITCASE);}}
+            case 1->{if(walking(r,r.casey))return;
+                if(!r.planTaken&&!r.planBurned&&PinehookBlock.stage(at(l,r,PinehookSite.SUITCASE))==0){stage(l,r,PinehookSite.SUITCASE,1);r.caseyHasPlan=true;r.burnStep=2;route(r,r.casey,.11,PinehookSite.SUITCASE_TO_HEARTH);}
+                else{for(var p:living(l,r.base))if(sees(p,casey.getEyePosition(),12,.5))cue(p,PinehookTexts.CASEY_BAG_EMPTY_CUE);r.burnStep=3;route(r,r.casey,.11,PinehookSite.SUITCASE_TO_HEARTH[0],PinehookSite.SUITCASE_TO_HEARTH[1],PinehookSite.SUITCASE_TO_HEARTH[2],PinehookSite.SUITCASE_TO_HEARTH[3],new Vec3(4.5,0,-26.5),PinehookSite.CASEY_KITCHEN);}}
+            case 2->{if(walking(r,r.casey))return;
+                if(r.caseyHasPlan){r.caseyHasPlan=false;r.planBurned=true;var h=r.base.offset(PinehookSite.HEARTH);l.sendParticles(ParticleTypes.FLAME,h.getX()+.5,h.getY()+.6,h.getZ()+.5,12,.2,.2,.2,.02);sound(l,h,SoundEvents.FIRECHARGE_USE,.4F,1.4F);
+                    for(var p:living(l,r.base))if(sees(p,casey.getEyePosition(),12,.5)||p.distanceTo(casey)<4){mark(p,"SawCaseyBurn");cue(p,PinehookTexts.CASEY_BURN_CUE);}}
+                r.burnStep=3;route(r,r.casey,.11,HEARTH_TO_KITCHEN);}
+            case 3->{if(!walking(r,r.casey))r.burnStep=4;}
+            default->{}
+        }
+    }
+    /** The dock after the figure has crossed it: spots along the T, the tie at the west post, the boat pulled round with the costume
+     * under its tarp, and wet prints from the shallows up the path. */
+    static void dockEvidence(ServerLevel l,Run r){
+        for(var rel:PinehookSite.DOCK_BLOOD)decal(l,r,rel,Kind.BLOOD,Direction.NORTH);
+        decal(l,r,PinehookSite.DOCK_TIE,Kind.TIE,Direction.NORTH);
+        PinehookSite.moorBoat(l,r.base,false,1);
+        for(var rel:PinehookSite.WET_PRINTS)decal(l,r,rel,Kind.PRINTS,Direction.SOUTH);
+        r.evidence=true;
+    }
+    static void decal(ServerLevel l,Run r,BlockPos rel,Kind kind,Direction f){if(at(l,r,rel).isAir())set(l,r.base,rel,PinehookBlock.of(kind,f,0));}
+    /** Whoever leaves the cabin's world leaves the weekend's things behind: the cooler goes back on the porch, the plan in Casey's bag, the
+     * costume under the tarp, the tie on the dock. */
+    static void leavers(ServerLevel l,Run r,List<ServerPlayer> here){
+        var now=new HashSet<UUID>();for(var p:here)now.add(p.getUUID());
+        for(var id:r.present)if(!now.contains(id)){var q=l.getServer().getPlayerList().getPlayer(id);if(q!=null)strip(l,r,q);}
+        r.present=now;
+    }
+    static void strip(ServerLevel l,Run r,ServerPlayer q){
+        var inv=q.getInventory();
+        for(int i=0;i<inv.getContainerSize();i++){var what=what(inv.getItem(i));if(!THINGS.contains(what))continue;inv.setItem(i,ItemStack.EMPTY);
+            switch(what){
+                case "cooler"->{if("carried".equals(r.cooler)){set(l,r.base,PinehookSite.COOLER_START,PinehookBlock.of(Kind.COOLER,Direction.SOUTH,0));r.cooler="porch";r.coolerBy=null;}}
+                case "plan"->{if(!r.planBurned){stage(l,r,PinehookSite.SUITCASE,0);r.planTaken=false;}}
+                case "costume"->{r.costumeTaken=false;stage(l,r,PinehookSite.STERN_WEST,2);}
+                case "tie"->{r.tieTaken=false;decal(l,r,PinehookSite.DOCK_TIE,Kind.TIE,Direction.NORTH);}
+                default->{}
+            }
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ the dock, the cooler, the torches, the idle talk
@@ -555,6 +686,7 @@ public final class Pinehook {
         else if(id.equals(r.len))len(p,r);
     }
     static void casey(ServerPlayer p,Run r){
+        if(r.phase==NIGHT){caseyNight(p,r);return;}
         if(!own(p).contains("Part")&&r.phase<SCARE){offerParts(p,r.phase>=EVENING?PinehookTexts.GREET_LATE:PinehookTexts.GREET);return;}
         Talk.begin(p,TALK,"Casey");Talk.line(p,"Casey",PinehookTexts.CASEY_TALK);
         var replies=new ArrayList<Talk.Reply>();
@@ -567,6 +699,7 @@ public final class Pinehook {
         replies.add(Talk.act("Leave him to it.",Talk::close));Talk.ask(p,replies);
     }
     static void jude(ServerPlayer p,Run r,LiteraryActor a){
+        if(r.phase==NIGHT){judeNight(p,r);return;}
         if(r.phase==SCARE&&!r.unmasked&&!a.isInvisible()){
             if(p.distanceTo(a)>3.5){cue(p,"Too far to reach.");return;}
             Talk.begin(p,TALK,"The figure");Talk.line(p,"","A rubber face a hand's width from yours. It doesn't move.");
@@ -583,6 +716,7 @@ public final class Pinehook {
         replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
     }
     static void nina(ServerPlayer p,Run r){
+        if(r.phase==NIGHT){ninaNight(p,r);return;}
         Talk.begin(p,TALK,"Nina");Talk.line(p,"Nina",r.ninaQuiet&&r.phase==EVENING?"…":PinehookTexts.NINA_TALK);
         var replies=new ArrayList<Talk.Reply>();
         if(r.phase==EVENING&&!own(p).getBoolean("SatWithNina"))replies.add(Talk.act(PinehookTexts.NINA_SIT,q->{mark(q,"SatWithNina");Talk.line(q,"Nina",PinehookTexts.NINA_SIT_ANSWER);Talk.end(q);}));
@@ -591,6 +725,7 @@ public final class Pinehook {
         replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);
     }
     static void len(ServerPlayer p,Run r){
+        if(r.lenInside){lenDoor(p,r);return;}
         Talk.begin(p,TALK,"Len");Talk.line(p,"Len",PinehookTexts.LEN_TALK);
         var replies=new ArrayList<Talk.Reply>();
         if(!own(p).getBoolean("TookLenSeriously")&&!own(p).getBoolean("DismissedLen")){
@@ -599,6 +734,100 @@ public final class Pinehook {
         }
         replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.365, talking in the night
+    static boolean has(ServerPlayer p,String key){return own(p).getBoolean(key);}
+    static void judeNight(ServerPlayer p,Run r){
+        var l=p.serverLevel();var jude=actor(l,r.jude);var casey=actor(l,r.casey);
+        boolean caseyNear=jude!=null&&casey!=null&&casey.distanceTo(jude)<8;
+        if(r.outcome!=PREVENTED&&caseyNear&&!r.hushed){
+            Talk.begin(p,TALK,"Jude");Talk.line(p,"Jude",PinehookTexts.JUDE_CUT);Talk.line(p,"Casey",PinehookTexts.CASEY_OVER);
+            Talk.ask(p,Talk.reply(PinehookTexts.HUSH,q->{var rr=runOf(q);if(rr!=null)rr.hushed=true;mark(q,"CaseyHushed");Talk.line(q,"Casey",PinehookTexts.HUSH_ANSWER);Talk.end(q);}),Talk.act("Leave him be.",Talk::close));
+            return;
+        }
+        Talk.begin(p,TALK,"Jude");
+        Talk.line(p,"Jude",switch(r.outcome){case WITNESSED->PinehookTexts.JUDE_NIGHT_WITNESSED;case PREVENTED->PinehookTexts.JUDE_NIGHT_PREVENTED;default->r.bandaged?PinehookTexts.JUDE_BANDAGED:PinehookTexts.JUDE_NIGHT_WOUNDED;});
+        var replies=new ArrayList<Talk.Reply>();
+        if(!has(p,"HeardJudeAccount"))replies.add(Talk.reply(r.outcome==PREVENTED?PinehookTexts.JUDE_Q_WHO_PREVENTED:PinehookTexts.JUDE_Q_WHO,q->{mark(q,"HeardJudeAccount");var rr=runOf(q);
+            Talk.line(q,"Jude",rr==null||rr.outcome==WOUNDED?PinehookTexts.JUDE_WHO_WOUNDED:rr.outcome==WITNESSED?PinehookTexts.JUDE_WHO_WITNESSED:PinehookTexts.JUDE_WHO_PREVENTED);Talk.end(q);}));
+        if(!has(p,"StrapMismatch")&&(has(p,"FoundElastic")||carries(p,"elastic")))replies.add(Talk.reply(PinehookTexts.JUDE_Q_STRAP,q->{mark(q,"StrapMismatch");Talk.line(q,"Jude",PinehookTexts.JUDE_STRAP);Talk.line(q,"",PinehookTexts.STRAP_CUE);Talk.end(q);}));
+        if(!has(p,"HeardCaseyToldNina"))replies.add(Talk.reply(PinehookTexts.JUDE_Q_KNEW,q->{Talk.line(q,"Jude",PinehookTexts.JUDE_KNEW);var rr=runOf(q);var c=rr==null?null:actor(q.serverLevel(),rr.casey);
+            if(c!=null&&c.distanceTo(q)<10){Talk.line(q,"Casey",PinehookTexts.CASEY_TOLD);mark(q,"HeardCaseyToldNina");}Talk.end(q);}));
+        if(!has(p,"HeardJudeSawNina"))replies.add(Talk.reply(PinehookTexts.JUDE_Q_BOAT,q->{mark(q,"HeardJudeSawNina");Talk.line(q,"Jude",PinehookTexts.JUDE_BOAT);Talk.end(q);}));
+        replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
+    }
+    /** What the reader knows that Casey could be told. */
+    static boolean knows(ServerPlayer p,Run r,PinehookTexts.Tell t){return switch(t){
+        case PRINTS->has(p,"SawWetPrints")||has(p,"SawBeachPrints");
+        case BLOOD->has(p,"SawDockBlood")||has(p,"SawShedBlood");
+        case PLAN->has(p,"ReadPlan")&&r.figureCrossed;
+        case STRAP->has(p,"StrapMismatch");
+        case COSTUME->has(p,"FoundCostume");
+        case TAPE->has(p,"TapeNina");
+    };}
+    static void caseyNight(ServerPlayer p,Run r){
+        if(carries(p,"plan")&&!r.caseyTurned&&!has(p,"CaseyAskedPlan")){
+            mark(p,"CaseyAskedPlan");Talk.begin(p,TALK,"Casey");Talk.line(p,"Casey",PinehookTexts.CASEY_WANTS_PLAN);
+            Talk.ask(p,Talk.reply(PinehookTexts.GIVE_PLAN,q->{var rr=runOf(q);if(rr==null)return;take(q,"plan");rr.planTaken=false;rr.caseyHasPlan=true;mark(q,"GavePlanBack");Talk.line(q,"Casey",PinehookTexts.CASEY_GOT_PLAN);Talk.end(q);
+                    rr.burnStep=2;route(rr,rr.casey,.11,KITCHEN_TO_HEARTH);}),
+                Talk.reply(PinehookTexts.KEEP_PLAN,q->{Talk.line(q,"Casey","Please.");Talk.end(q);}));
+            return;
+        }
+        Talk.begin(p,TALK,"Casey");
+        Talk.line(p,"Casey",r.caseyTurned?PinehookTexts.CASEY_NIGHT_TURNED:switch(r.outcome){case WITNESSED->PinehookTexts.CASEY_NIGHT_WITNESSED;case PREVENTED->PinehookTexts.CASEY_NIGHT_PREVENTED;default->PinehookTexts.CASEY_NIGHT_WOUNDED;});
+        var replies=new ArrayList<Talk.Reply>();
+        if(!has(p,"AskedCaseyWho"))replies.add(Talk.reply(PinehookTexts.CASEY_Q_WHO,q->{mark(q,"AskedCaseyWho");mark(q,"HeardCaseyToldNina");Talk.line(q,"Casey",PinehookTexts.CASEY_WHO);Talk.end(q);}));
+        if(!has(p,"AskedCaseyPlan")||r.caseyTurned&&!has(p,"KnowsPlanWhere")&&!r.planBurned&&!r.planTaken)replies.add(Talk.reply(PinehookTexts.CASEY_Q_PLAN,q->{mark(q,"AskedCaseyPlan");var rr=runOf(q);
+            if(rr!=null&&rr.caseyTurned&&!rr.planBurned){mark(q,"KnowsPlanWhere");Talk.line(q,"Casey",PinehookTexts.CASEY_PLAN_YES);}else Talk.line(q,"Casey",PinehookTexts.CASEY_PLAN_NO);Talk.end(q);}));
+        for(var tell:PinehookTexts.Tell.values()){int bit=1<<tell.ordinal();
+            if((r.caseyKnows&bit)!=0||!knows(p,r,tell))continue;
+            replies.add(Talk.reply(tell.line,q->{var rr=runOf(q);if(rr==null)return;rr.caseyKnows|=bit;mark(q,"Told"+tell.name());Talk.line(q,"Casey",tell.answer);
+                if(!rr.caseyTurned&&(Integer.bitCount(rr.caseyKnows)>=2||rr.outcome==WITNESSED)){turn(q,rr);}
+                Talk.end(q);}));
+        }
+        replies.add(Talk.act("Leave him to it.",Talk::close));Talk.ask(p,replies);
+    }
+    /** Casey stops calling it a bit. */
+    static void turn(ServerPlayer p,Run r){
+        var l=p.serverLevel();r.caseyTurned=true;mark(p,"TurnedCasey");Talk.line(p,"Casey",PinehookTexts.CASEY_TURNS);
+        var casey=actor(l,r.casey);
+        for(var q:living(l,r.base))if(casey!=null&&q.distanceTo(casey)<16)mark(q,"HeardCaseyTurn");
+        if(casey!=null){casey.say(PinehookTexts.CASEY_TURNS);casey.speaks(PinehookTexts.CASEY_TURNS);}
+        if(r.burnStep==1){var w=r.walkers.get(r.casey);if(w!=null)w.route.clear();r.burnStep=4;}
+    }
+    static void ninaNight(ServerPlayer p,Run r){
+        Talk.begin(p,TALK,"Nina");Talk.line(p,"Nina",r.outcome==PREVENTED?PinehookTexts.NINA_NIGHT_PREVENTED:PinehookTexts.NINA_NIGHT_WOUNDED);
+        var replies=new ArrayList<Talk.Reply>();
+        if(!has(p,"NinaDenied"))replies.add(Talk.reply(PinehookTexts.NINA_Q_OUT,q->{mark(q,"NinaDenied");Talk.line(q,"Nina",PinehookTexts.NINA_OUT);Talk.end(q);}));
+        if(!has(p,"ConfrontedNina")&&(has(p,"SawWetPrints")||has(p,"TapeNina")))replies.add(Talk.reply(PinehookTexts.NINA_Q_WET,q->{mark(q,"ConfrontedNina");Talk.line(q,"Nina",PinehookTexts.NINA_WET);Talk.end(q);}));
+        if(!has(p,"AskedNinaBoathouse")&&has(p,"HeardJudeSawNina"))replies.add(Talk.reply(PinehookTexts.NINA_Q_BOAT,q->{mark(q,"AskedNinaBoathouse");Talk.line(q,"Nina",PinehookTexts.NINA_BOAT);Talk.end(q);}));
+        replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);
+    }
+    /** Len, talking through his boathouse door. */
+    static void lenDoor(ServerPlayer p,Run r){
+        Talk.begin(p,TALK,"Len, through the door");Talk.line(p,"Len",PinehookTexts.LEN_DOOR);
+        var replies=new ArrayList<Talk.Reply>();
+        replies.add(Talk.reply(PinehookTexts.LEN_Q_IN,q->{Talk.line(q,"Len",PinehookTexts.LEN_IN);Talk.end(q);}));
+        if(!has(p,"AskedLenWho"))replies.add(Talk.reply(PinehookTexts.LEN_Q_WHO,q->{mark(q,"AskedLenWho");Talk.line(q,"Len",PinehookTexts.LEN_WHO);Talk.end(q);}));
+        if(!has(p,"LenSlipped")&&(has(p,"SawWetPrints")||has(p,"SawBeachPrints")))replies.add(Talk.reply(PinehookTexts.LEN_Q_PRINTS,q->{mark(q,"LenSlipped");Talk.line(q,"Len",PinehookTexts.LEN_PRINTS);Talk.line(q,"Len",PinehookTexts.LEN_SLIP);Talk.end(q);}));
+        if(!has(p,"AskedLenSafe")&&has(p,"SawSafe"))replies.add(Talk.reply(PinehookTexts.LEN_Q_SAFE,q->{mark(q,"AskedLenSafe");Talk.line(q,"Len",PinehookTexts.LEN_SAFE);Talk.end(q);}));
+        if(!has(p,"WatchLen"))replies.add(Talk.reply(PinehookTexts.LEN_Q_WATCH,q->{mark(q,"WatchLen");Talk.line(q,"Len",PinehookTexts.LEN_WATCH);Talk.end(q);}));
+        replies.add(Talk.act("Leave him be.",Talk::close));Talk.ask(p,replies);
+    }
+    /** A knock on the boathouse's iron door: Len answers through it, once he is inside. */
+    @SubscribeEvent public static void knock(PlayerInteractEvent.RightClickBlock e){
+        if(e.getLevel().isClientSide()||e.getHand()!=InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||p.isSpectator())return;
+        var r=runOf(p);if(r==null)return;var rel=e.getPos().subtract(r.base);
+        if(!rel.equals(PinehookSite.BOATHOUSE_DOOR)&&!rel.equals(PinehookSite.BOATHOUSE_DOOR.above()))return;
+        e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
+        knockAt(p,r);
+    }
+    public static void knockAt(ServerPlayer p,Run r){
+        sound(p.serverLevel(),r.base.offset(PinehookSite.BOATHOUSE_DOOR),PinehookRegistry.KNOCK.get(),.9F,.8F);mark(p,"KnockedLen");
+        if(!r.lenInside){cue(p,"Nobody answers. The boathouse is dark inside.");return;}
+        lenDoor(p,r);
+    }
+    public static boolean knockAt(ServerPlayer p){var r=runOf(p);if(r==null)return false;knockAt(p,r);return true;}
 
     // ------------------------------------------------------------------------------------------------ hands on the cabin
     public static boolean use(ServerPlayer p,BlockPos pos,BlockState s){
@@ -632,6 +861,7 @@ public final class Pinehook {
             }
             case TAPES->{
                 if(r.film==0&&!carries(p,"tape")&&!anyoneCarries(l,r,"tape")){give(p,thing("tape"));cue(p,"A shelf of rented films, most of them comedies. One isn't: a camp, a lake, a long knife on the box. You take it.");}
+                else if(!r.sparePlayer&&!anyoneCarries(l,r,"player")){r.sparePlayer=true;give(p,thing("player"));cue(p,"Behind the films, somebody's old portable player, a blank tape in it. You take it.");}
                 else cue(p,"A shelf of rented films, most of them comedies, all with the general store's sticker on.");
             }
             case STOVE->{
@@ -660,6 +890,32 @@ public final class Pinehook {
                 stage(l,r,relPos,1);give(p,thing("kit"));cue(p,"You take the first-aid kit down off the wall.");
             }
             case LAMP->cue(p,r.powerOff?"Dead.":"A lamp.");
+            case PRINTS->{mark(p,"SawPrints");
+                if(PinehookSite.WET_PRINTS.contains(relPos)){mark(p,"SawWetPrints");cue(p,"Bare footprints, wet, small, coming up out of the water and going up the path toward the back step.");}
+                else if(PinehookSite.BEACH_PRINTS.contains(relPos)){mark(p,"SawBeachPrints");cue(p,"Shoe prints in the sand, far apart, running, along the beach toward the boathouse.");}
+                else{mark(p,"SawShedPrints");cue(p,"Boot prints in the needles behind the shed, close together, as if someone stood here a long time.");}}
+            case BLOOD->{if(relPos.equals(PinehookSite.SHED_BLOOD)){mark(p,"SawShedBlood");cue(p,"On the shed floor, dark, and spreading into the boards.");}
+                else{mark(p,"SawDockBlood");cue(p,"Dark spots on the planks, a line of them along the T. Still tacky. Not paint.");}}
+            case TIE->{set(l,r.base,relPos,Blocks.AIR.defaultBlockState());r.tieTaken=true;give(p,thing("tie"));mark(p,"FoundTie");cue(p,"A tie from a coverall, torn off and caught on the post. Wet through.");}
+            case BOAT_BOW->{if(relPos.equals(PinehookSite.BOW_WEST)){mark(p,"SawBoatMoved");cue(p,"Len's rowboat, pulled round to this end of the dock and tied off with a knot nobody who ties boats would tie.");}
+                else cue(p,"Len's rowboat, tied off the end of the dock, oars shipped.");}
+            case BOAT_STERN->{
+                if(stage==0){cue(p,"Len's rowboat, tied off the end of the dock, oars shipped.");return true;}
+                mark(p,"SawBoatMoved");
+                if(stage==1){stage(l,r,relPos,2);mark(p,"FoundCostume");cue(p,"Under the tarp, bundled: the rubber mask, and the coverall rolled round it, soaked.");}
+                else if(stage==2){stage(l,r,relPos,3);r.costumeTaken=true;give(p,thing("costume"));mark(p,"TookCostume");cue(p,"You lift the bundle out of the boat. It's heavy with water.");}
+                else cue(p,"The rowboat, empty but for the tarp.");}
+            case SUITCASE->{
+                if(stage==0&&!r.planBurned){stage(l,r,relPos,1);r.planTaken=true;give(p,thing("plan"));mark(p,"TookPlan");cue(p,"Casey's bag. On top, folded in four, a sheet of paper in his capitals. You take it.");}
+                else cue(p,"Casey's bag, open. Clothes, a phone charger, a bag of sweets.");}
+            case SAFE->cue(p,stage==0?"A safe, its door shut.":"The safe, open.");
+            case RECORDER->{
+                var rec=r.recorders.remove(relPos.asLong());set(l,r.base,relPos,Blocks.AIR.defaultBlockState());
+                var heard=new ListTag();String last="";
+                if(rec!=null)for(var ev:r.events){if(ev.tick()<rec.start())continue;boolean loud=ev.key().equals("crash")||ev.key().equals("glass")||ev.key().equals("splash")||ev.key().startsWith("power");
+                    if(Vec3.atCenterOf(ev.at()).distanceTo(Vec3.atCenterOf(relPos))>(loud?HEAR_LOUD:HEAR))continue;if(ev.key().equals(last))continue;last=ev.key();heard.add(StringTag.valueOf(ev.key()));}
+                var s2=thing("player");var tag=s2.get(DataComponents.CUSTOM_DATA).copyTag();tag.put("Heard",heard);tag.putBoolean("Recorded",true);s2.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
+                give(p,s2);mark(p,"RecordedTape");sound(l,pos,SoundEvents.LEVER_CLICK,.5F,1.2F);cue(p,"You stop the tape and pick the player up.");}
         }
         return true;
     }
@@ -668,7 +924,7 @@ public final class Pinehook {
         Talk.close(p);var r=runOf(p);if(r==null)return;var l=p.serverLevel();
         stopMusic(l,r);stage(l,r,PinehookSite.STEREO,1);r.music=true;
         l.playSound(null,r.base.offset(PinehookSite.STEREO),song,SoundSource.RECORDS,1.4F,1F);
-        mark(p,"PlayedMusic");note(p,"Music",which);
+        mark(p,"PlayedMusic");note(p,"Music",which);log(r,PinehookSite.STEREO,"music");
         speak(l,r,r.casey,"Casey",PinehookTexts.MUSIC_ON,16);
         if(r.lenHere)speak(l,r,r.len,"Len",PinehookTexts.LEN_MUSIC,16);
     }
@@ -687,7 +943,16 @@ public final class Pinehook {
             case "torch"->{if(on!=null)return false;var tag=s.get(DataComponents.CUSTOM_DATA).copyTag();boolean lit=!tag.getBoolean("Lit");tag.putBoolean("Lit",lit);s.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
                 sound(l,p.blockPosition(),SoundEvents.LEVER_CLICK,.5F,lit?1.4F:1.1F);cue(p,lit?"You click the torch on.":"You click the torch off.");return true;}
             case "camera"->{photograph(p,r);return true;}
-            case "player"->{if(on!=null)return false;cue(p,"You put the headphones on. Somebody's tape, half a song, then hiss. You take them off again.");return true;}
+            case "player"->{if(on!=null)return false;var tag=s.get(DataComponents.CUSTOM_DATA).copyTag();
+                if(!tag.getBoolean("Recorded")){cue(p,"You put the headphones on. Somebody's tape, half a song, then hiss. You take them off again.");return true;}
+                var heard=tag.getList("Heard",Tag.TAG_STRING);mark(p,"HeardTape");
+                Talk.begin(p,TALK,"The portable player");Talk.line(p,"","You rewind it and listen.");
+                if(heard.isEmpty())Talk.line(p,"","Hiss. Your own breathing, once, close to it.");
+                for(int i=0;i<heard.size();i++){var key=heard.getString(i);Talk.line(p,"",PinehookTexts.heard(key));if(key.equals("nina_in"))mark(p,"TapeNina");}
+                Talk.end(p);return true;}
+            case "plan"->{if(on!=null)return false;mark(p,"ReadPlan");Talk.begin(p,TALK,"Casey's plan");for(var line:PinehookTexts.PLAN)Talk.line(p,"",line);Talk.end(p);return true;}
+            case "costume"->{if(on!=null)return false;cue(p,"The rubber mask and the coverall, wet through. The mask's strap is elastic with a buckle at each end.");return true;}
+            case "tie"->{if(on!=null)return false;cue(p,"A coverall's tie, torn off. Wet.");return true;}
             case "firstaid"->{if(on instanceof LiteraryActor a&&a.getUUID().equals(r.jude)&&r.outcome==WOUNDED&&!r.bandaged){
                     r.bandaged=true;mark(p,"HelpedJude");take(p,"firstaid");cue(p,"You get the dressing on the cut and press, hard. Jude hisses through his teeth and holds still.");
                     speak(l,r,r.jude,"Jude",PinehookTexts.JUDE_BANDAGED,10);return true;}
@@ -711,7 +976,18 @@ public final class Pinehook {
             if(!r.secretTold&&r.phase==EVENING&&casey!=null&&casey.distanceTo(p)<10){r.secretTold=true;secret(p);}
             return true;
         }
-        if(what(s).equals("firstaid")||what(s).equals("torch")||what(s).equals("camera"))return useThing(p,s,null);
+        if(what(s).equals("player")){
+            var at=pos.above();
+            if(!l.getBlockState(at).isAir()){cue(p,"There's no room to set it down there.");return true;}
+            take(p,"player");l.setBlock(at,PinehookBlock.of(Kind.RECORDER,p.getDirection().getOpposite(),1),Block.UPDATE_CLIENTS);
+            r.recorders.put(at.subtract(r.base).asLong(),new Rec(p.getUUID(),r.tick));mark(p,"SetPlayer");sound(l,at,SoundEvents.LEVER_CLICK,.5F,1.4F);
+            cue(p,"You set the player down and press record. The little light comes on.");return true;
+        }
+        if(what(s).equals("plan")&&relPos.closerThan(PinehookSite.HEARTH,1.5)){
+            take(p,"plan");r.planBurned=true;r.planTaken=false;mark(p,"BurnedPlan");var h=r.base.offset(PinehookSite.HEARTH);l.sendParticles(ParticleTypes.FLAME,h.getX()+.5,h.getY()+.6,h.getZ()+.5,10,.2,.2,.2,.02);
+            cue(p,"The paper catches at a corner, curls, and goes.");return true;
+        }
+        if(what(s).equals("firstaid")||what(s).equals("torch")||what(s).equals("camera")||what(s).equals("plan")||what(s).equals("costume")||what(s).equals("tie"))return useThing(p,s,null);
         return false;
     }
     /** Casey's secret, told quietly to whoever carried the cooler in. */
@@ -729,6 +1005,11 @@ public final class Pinehook {
         var jude=actor(l,r.jude);var nina=actor(l,r.nina);
         if(jude!=null&&!jude.isInvisible()&&jude.phase()==MASKED&&sees(p,jude.getEyePosition(),20,.8)){mark(p,"PhotographedMask");cue(p,"The flash catches the mask full on: rubber, crooked eyeholes, a seam at the jaw.");return;}
         if(nina!=null&&!nina.isInvisible()&&nina.phase()==MASKED&&sees(p,nina.getEyePosition(),64,.85)){mark(p,"PhotographedFigure");cue(p,"The flash goes off across the water. Too far. Maybe the picture will show something.");return;}
-        cue(p,"The flash goes off. The camera whirs.");
+        // The night's evidence, if it is in front of the lens: kept on the reader's record.
+        boolean any=false;
+        for(var e:List.of(Map.entry("PhotoBlood",PinehookSite.DOCK_BLOOD),Map.entry("PhotoPrints",PinehookSite.WET_PRINTS),Map.entry("PhotoPrints",PinehookSite.BEACH_PRINTS),Map.entry("PhotoTie",List.of(PinehookSite.DOCK_TIE)),Map.entry("PhotoBoat",List.of(PinehookSite.STERN_WEST)),Map.entry("PhotoBlood",List.of(PinehookSite.SHED_BLOOD))))
+            for(var rel:e.getValue()){var st=at(l,r,rel);if(!st.is(PinehookRegistry.FITTING.get()))continue;if(e.getKey().equals("PhotoBoat")&&PinehookBlock.stage(st)==0)continue;
+                if(sees(p,Vec3.atCenterOf(r.base.offset(rel)),12,.7)){mark(p,e.getKey());any=true;break;}}
+        cue(p,any?"The flash goes off. Whatever was in front of it is on the film now.":"The flash goes off. The camera whirs.");
     }
 }

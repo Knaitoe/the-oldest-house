@@ -48,7 +48,7 @@ public final class PinehookSite {
     /** Where the cast stand and go. */
     public static final Vec3 CASEY_PORCH=new Vec3(1.5,0,-18.5),JUDE_PORCH=new Vec3(-2.5,0,-18.5),NINA_LIVING=new Vec3(-4.5,0,-22.5),LEN_GATE=new Vec3(33.5,0,-13.5),LEN_PORCH=new Vec3(5.5,0,-18.5),
         WINDOW_OUT=new Vec3(-4.5,0,-18.6),BACK_OUT=new Vec3(5.5,0,-35.5),SHED_IN=new Vec3(-17.5,0,-40.5),SHED_OUT=new Vec3(-13.5,0,-40.5),BEHIND_SHED=new Vec3(-17.5,0,-44.5),
-        KITCHEN=new Vec3(4.5,0,-30.5),BATHROOM=new Vec3(0.5,0,-32.5),BREAKER_SPOT=new Vec3(3.5,0,-32.5),DOCK_EAST=new Vec3(10.5,0,-63.5),DOCK_WEST=new Vec3(2.5,0,-63.5),LIVING=new Vec3(0.5,0,-24.5);
+        KITCHEN=new Vec3(4.5,0,-30.5),BATHROOM=new Vec3(0.5,0,-32.5),BREAKER_SPOT=new Vec3(3.5,0,-32.5),DOCK_EAST=new Vec3(10.5,0,-62.5),DOCK_WEST=new Vec3(3.5,0,-62.5),LIVING=new Vec3(0.5,0,-24.5);
     /** The ways the cast walk, point by point: from the back step to the shed; from the porch round the west side to the shed; from the
      * front window round to the back door; from the shed back to the back step; Casey from the porch to the breaker box and to the
      * kitchen; from the box out to the back step; Nina from the living room to the bathroom, from the bathroom out to the shed, and back. */
@@ -63,6 +63,30 @@ public final class PinehookSite {
     public static final Vec3[] NINA_OUT={new Vec3(0.5,0,-29.5),new Vec3(0.5,0,-26.5),new Vec3(4.5,0,-26.5),new Vec3(4.5,0,-30.5),new Vec3(5.5,0,-33.5),BACK_OUT,new Vec3(5.5,0,-39.5),new Vec3(-10.5,0,-40.5),SHED_OUT};
     public static final Vec3[] NINA_IN={new Vec3(-13.5,0,-44.5),new Vec3(-10.5,0,-40.5),new Vec3(5.5,0,-39.5),BACK_OUT,new Vec3(5.5,0,-33.5),new Vec3(4.5,0,-30.5),new Vec3(4.5,0,-26.5),new Vec3(0.5,0,-26.5),new Vec3(0.5,0,-29.5),BATHROOM};
     public static final Vec3[] LEN_WALK={new Vec3(10.5,0,-13.5),new Vec3(1.5,0,-15.5),new Vec3(1.5,0,-18.0),LEN_PORCH};
+
+    // ------------------------------------------------------------------------------------------------ 0.4.365, the night
+    /** Casey's bag on the bedroom floor; Len's safe in the boathouse; the rowboat moored off the T's east end, and where it is found after
+     * the figure on the dock (off the west end). */
+    public static final BlockPos SUITCASE=new BlockPos(-7,0,-29),SAFE=new BlockPos(17,0,-52),
+        STERN_EAST=new BlockPos(9,-1,-64),BOW_EAST=new BlockPos(10,-1,-64),STERN_WEST=new BlockPos(3,-1,-64),BOW_WEST=new BlockPos(4,-1,-64);
+    /** The night's evidence: the spots along the T and on the shed floor, the tie caught at the west post, and the wet prints from the
+     * shallows up the path to the back step; after the shed, the prints along the beach toward the boathouse; after a watched shed, the prints
+     * behind it. */
+    public static final List<BlockPos> DOCK_BLOOD=List.of(new BlockPos(9,0,-63),new BlockPos(6,0,-62),new BlockPos(4,0,-63)),
+        WET_PRINTS=List.of(new BlockPos(5,0,-48),new BlockPos(6,0,-45),new BlockPos(6,0,-42),new BlockPos(5,0,-39),new BlockPos(5,0,-36)),
+        BEACH_PRINTS=List.of(new BlockPos(-12,0,-47),new BlockPos(-4,0,-47),new BlockPos(3,0,-47),new BlockPos(10,0,-47)),
+        SHED_PRINTS=List.of(new BlockPos(-15,0,-46),new BlockPos(-13,0,-45));
+    public static final BlockPos DOCK_TIE=new BlockPos(3,0,-62),SHED_BLOOD=new BlockPos(-17,0,-40);
+    /** Where the cast are in the night: Jude against the kitchen counter, Casey by him; Len inside his boathouse. */
+    public static final Vec3 JUDE_KITCHEN=new Vec3(5.5,0,-31.5),CASEY_KITCHEN=new Vec3(5.5,0,-29.5),BOAT_OUTSIDE=new Vec3(15.5,0,-43.8),BOAT_INSIDE=new Vec3(14.5,0,-48.5),
+        AT_SUITCASE=new Vec3(-5.5,0,-29.5),AT_HEARTH=new Vec3(-6.5,0,-24.5);
+    /** From the back step in to the kitchen; Len from the porch round the east side and down to the boathouse; Casey from the kitchen to
+     * his bag in the bedroom, and from there to the fire. */
+    public static final Vec3[] INTO_KITCHEN={BACK_OUT,new Vec3(5.5,0,-33.5),JUDE_KITCHEN};
+    public static final Vec3[] LEN_TO_BOAT={new Vec3(1.5,0,-18.0),new Vec3(1.5,0,-15.5),new Vec3(10.5,0,-15.5),new Vec3(10.5,0,-37.5),new Vec3(8.5,0,-40.5),new Vec3(8.5,0,-44.3),BOAT_OUTSIDE};
+    public static final Vec3[] TO_SUITCASE={new Vec3(4.5,0,-26.5),new Vec3(0.5,0,-26.5),new Vec3(0.5,0,-29.5),new Vec3(-1.0,0,-29.5),new Vec3(-3.5,0,-29.5),AT_SUITCASE};
+    public static final Vec3[] SUITCASE_TO_HEARTH={new Vec3(-3.5,0,-29.5),new Vec3(-1.0,0,-29.5),new Vec3(0.5,0,-29.5),new Vec3(0.5,0,-26.5),new Vec3(-4.5,0,-26.5),AT_HEARTH};
+    public static boolean inBoathouse(Vec3 r){return r.x>BOAT_W&&r.x<BOAT_E&&r.z<BOAT_S&&r.z>BOAT_N&&r.y>-.5&&r.y<4;}
 
     public static boolean inCabin(Vec3 r){return r.x>CAB_W&&r.x<CAB_E+1&&r.z<CAB_S&&r.z>CAB_N&&r.y>-.5&&r.y<4;}
     public static boolean inShed(Vec3 r){return r.x>SHED_W&&r.x<SHED_E&&r.z<SHED_S&&r.z>SHED_N&&r.y>-.5&&r.y<3;}
@@ -199,7 +223,7 @@ public final class PinehookSite {
         set(l,b,-1,0,-33,s(Blocks.CAULDRON));set(l,b,KIT,fit(Kind.KIT,Direction.WEST,0));set(l,b,1,0,-33,s(Blocks.QUARTZ_SLAB));
         // The bedroom: two beds, a chest of drawers.
         bed(l,b,-6,-32);bed(l,b,-4,-32);
-        set(l,b,-7,0,-29,s(Blocks.BARREL).setValue(BarrelBlock.FACING,Direction.UP));
+        set(l,b,SUITCASE,fit(Kind.SUITCASE,Direction.EAST,0));
         // The porch: its deck, posts and roof, a bench, the guest book on its stand, the cooler and the bags.
         box(l,b,CAB_W,-1,PORCH_S,CAB_E,-1,CAB_S+1,s(Blocks.SPRUCE_PLANKS));
         for(int y=0;y<=2;y++){set(l,b,CAB_W,y,PORCH_S,post);set(l,b,CAB_E,y,PORCH_S,post);set(l,b,-3,y,PORCH_S,post);set(l,b,3,y,PORCH_S,post);}
@@ -239,6 +263,12 @@ public final class PinehookSite {
         for(int x:new int[]{T_W,T_E})for(int y=LAKE_FLOOR+1;y<=-2;y++)set(l,b,x,y,DOCK_END+1,s(Blocks.SPRUCE_FENCE).setValue(FenceBlock.WATERLOGGED,true));
         for(int x:new int[]{T_W,T_E})set(l,b,x,0,DOCK_END+1,s(Blocks.SPRUCE_FENCE));
         set(l,b,T_E,1,DOCK_END+1,s(Blocks.LANTERN));
+        moorBoat(l,b,true,0);
+    }
+    /** The rowboat off the T, at its east end where Len keeps it, or at the west end where it is found, with its stern's stage. */
+    public static void moorBoat(ServerLevel l,BlockPos b,boolean east,int stern){
+        for(var at:List.of(STERN_EAST,BOW_EAST,STERN_WEST,BOW_WEST))set(l,b,at,water());
+        set(l,b,east?STERN_EAST:STERN_WEST,fit(Kind.BOAT_STERN,Direction.EAST,stern));set(l,b,east?BOW_EAST:BOW_WEST,fit(Kind.BOAT_BOW,Direction.EAST,0));
     }
     /** Len's boathouse: its door shut and locked, a sign. */
     static void boathouse(ServerLevel l,BlockPos b){
@@ -254,6 +284,11 @@ public final class PinehookSite {
         set(l,b,BOATHOUSE_DOOR,door.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));set(l,b,BOATHOUSE_DOOR.above(),door.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
         NovelRooms.sign(l,b.offset(BOATHOUSE_DOOR.getX()+1,1,BOAT_S+1),Direction.SOUTH,new String[]{"PRIVATE","","NO ENTRY",""});
         set(l,b,13,1,BOAT_S,s(Blocks.GLASS_PANE));set(l,b,17,1,BOAT_S,s(Blocks.GLASS_PANE));
+        // Inside: the safe in the far corner, a chair, a bench, a lantern.
+        set(l,b,SAFE,fit(Kind.SAFE,Direction.WEST,0));
+        set(l,b,13,0,-52,stairs(Blocks.SPRUCE_STAIRS,Direction.WEST));
+        set(l,b,13,0,-47,top(Blocks.SPRUCE_SLAB));set(l,b,13,0,-48,top(Blocks.SPRUCE_SLAB));
+        set(l,b,15,3,-50,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
     }
     /** The pines: thick round the edges, scattered between the buildings, clear of the paths. */
     static void pines(ServerLevel l,BlockPos b){

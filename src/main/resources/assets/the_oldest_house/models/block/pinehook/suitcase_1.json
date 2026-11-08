@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "l": "the_oldest_house:block/pinehook/leather",
+    "t": "the_oldest_house:block/pinehook/suitcase_1",
+    "particle": "the_oldest_house:block/pinehook/leather"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        4
+      ],
+      "to": [
+        15,
+        8,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    }
+  ]
+}
