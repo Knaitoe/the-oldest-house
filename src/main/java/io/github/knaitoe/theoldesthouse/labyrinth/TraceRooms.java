@@ -147,6 +147,8 @@ public final class TraceRooms {
         for(int z:new int[]{-7,-19,-31})hang(l,b,0,5,z);
         LabyrinthBuilder.entrance(l,b,brick,polished,brick);
         LabyrinthBuilder.doors(l,b,STONE);
+        // 0.4.374: the stone hall's own masonry, before the grit settles on its floor.
+        StoneFinish.finish(l,b,STONE);
         dust(l,b,-3,-1,3,-39,TraceBlock.grit());
     }
     public static void buildCloak(ServerLevel l,BlockPos b){
