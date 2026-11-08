@@ -936,6 +936,83 @@ public final class ExplorationPassTests {
         h.succeed();
     }
 
+    private static final List<LabyrinthPlace> FOLD_ROUTE=List.of(LabyrinthPlace.STONE_GALLERY,LabyrinthPlace.STONE_ARCADE,LabyrinthPlace.STONE_BEND,
+            LabyrinthPlace.STONE_LANDING,LabyrinthPlace.STONE_DUST,LabyrinthPlace.STONE_DESCENT,LabyrinthPlace.CISTERN_HALL,LabyrinthPlace.STACKS_HALL);
+    /** A way back of {@code depth} crossings through ordinary halls' real doors, the last out of {@code last} if given. */
+    private static void foldRoute(LabyrinthData d,UUID id,BlockPos origin,int depth,long seed,LabyrinthPlace last){
+        var r=new Random(seed);
+        for(int i=0;i<depth;i++){var place=i==depth-1&&last!=null?last:FOLD_ROUTE.get(r.nextInt(FOLD_ROUTE.size()));
+            var specs=place.doors().stream().filter(sp->!sp.name().equals("entry")).toList();var sp=specs.get(r.nextInt(specs.size()));
+            d.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(LabyrinthPlaces.base(origin,place).offset(sp.rel())),sp.facing().toYRot(),true));}
+    }
+    private static List<LabyrinthData.Door> foldDoors(LabyrinthData d,LabyrinthPlace here){
+        var out=new ArrayList<LabyrinthData.Door>();for(var sp:here.doors()){var door=d.door(here.doorId(sp));if(door!=null&&LabyrinthData.DEALT.equals(door.destination))out.add(door);}return out;
+    }
+
+    /**
+     * 0.4.394, R3 in the owner's form ("looping doors need to work for every player ... it can't teleport one player while letting the
+     * others progress"): a fold is a door of a hall as reached by its route, the same for everyone who comes that way; whoever follows a
+     * friend through it within the window lands where they did, and a friend who went on through a door takes the rest on.
+     */
+    @GameTest(template="empty")
+    public static void foldsAreDoorsKeptForEveryoneAndFriendsGoThroughThemTogether(GameTestHelper h) {
+        Folds.forget();
+        try{
+            var d=new LabyrinthData();var origin=new BlockPos(56000,80,56000);long salt=origin.asLong();var here=LabyrinthPlace.STONE_CROSSING;
+            LabyrinthBuilder.registerDoors(d,here,LabyrinthPlaces.base(origin,here));var doors=foldDoors(d,here);
+            h.assertTrue(doors.size()>=2,"the hall has ways on to fold: "+doors.size());
+            java.util.function.Consumer<UUID> deals=id->{for(var door:doors)d.deal(id,door,LabyrinthPlace.STONE_GALLERY.id(),false);};
+            int folds=0,halls=0,shallow=0;UUID withFold=null;long foldSeed=0;UUID without=null;
+            for(int i=0;i<400;i++){
+                var id=UUID.randomUUID();foldRoute(d,id,origin,Folds.FOLD_DEPTH+2,i,null);deals.accept(id);int here_=0;
+                for(var door:doors){int back=Folds.back(d,id,origin,here,door,salt,true);
+                    if(back>0){here_++;h.assertTrue(back>=Folds.MIN_BACK&&back<=Folds.MAX_BACK,"a fold goes two to four crossings back: "+back);
+                        var landing=Folds.landing(d,id,origin,here,back);h.assertTrue(landing!=null&&LabyrinthPacing.ordinary(LabyrinthPlaces.placeAt(origin,BlockPos.containing(landing.pos()))),"and lands in an ordinary hall");}}
+                h.assertTrue(here_<=1,"at most one fold a hall: "+here_);folds+=here_;halls++;
+                if(here_>0&&withFold==null){withFold=id;foldSeed=i;}if(here_==0&&without==null)without=id;
+                var low=UUID.randomUUID();foldRoute(d,low,origin,Folds.FOLD_DEPTH-1,i,null);deals.accept(low);
+                for(var door:doors)if(Folds.back(d,low,origin,here,door,salt,true)>0)shallow++;
+            }
+            double rate=folds/(double)(halls*doors.size());
+            h.assertTrue(shallow==0,"no folds before depth twelve: "+shallow);
+            h.assertTrue(rate>=.05&&rate<=.2,"about one ordinary door in seven, at most one a hall: "+folds+" of "+halls*doors.size()+" doors");
+            h.assertTrue(withFold!=null&&without!=null,"some halls fold and some do not");
+            // The same route, the same doors: a second reader who came the same way finds the same fold, kept even where their own deal differs.
+            var friend=UUID.randomUUID();foldRoute(d,friend,origin,Folds.FOLD_DEPTH+2,foldSeed,null);
+            for(var door:doors)d.deal(friend,door,LabyrinthPlace.SPHINX_VESTIBULE.id(),false);
+            LabyrinthData.Door fold=null;int back=0;
+            for(var door:doors){int a=Folds.back(d,withFold,origin,here,door,salt,true),b=Folds.back(d,friend,origin,here,door,salt,true);
+                h.assertTrue(a==b,"a fold is the same door for everyone who comes the same way: "+door.id+" "+a+" / "+b);if(a>0){fold=door;back=a;}}
+            h.assertTrue(fold!=null,"the fold is found again");
+            var landing=Folds.landing(d,withFold,origin,here,back);
+            h.assertTrue(landing.equals(Folds.landing(d,friend,origin,here,back)),"and lands both where it did before, at the same door");
+            // Never in a hall entered straight from a story.
+            LabyrinthPlace story=null;for(var p:LabyrinthPlace.values())if(p.isVignette()&&LabyrinthPlaces.base(origin,p)!=null&&p.doors().stream().anyMatch(sp->!sp.name().equals("entry"))){var sp=p.doors().stream().filter(x->!x.name().equals("entry")).findFirst().get();if(LabyrinthPlaces.placeAt(origin,LabyrinthPlaces.base(origin,p).offset(sp.rel()))==p){story=p;break;}}
+            h.assertTrue(story!=null,"a story's door to come out of");
+            int afterStory=0;for(int i=0;i<200;i++){var id=UUID.randomUUID();foldRoute(d,id,origin,Folds.FOLD_DEPTH+2,10000+i,story);deals.accept(id);for(var door:doors)if(Folds.back(d,id,origin,here,door,salt,true)>0)afterStory++;}
+            h.assertTrue(afterStory==0,"never straight after a story: "+afterStory);
+            // Friends go through together. A reader who came another way follows the first through the fold and lands where they did.
+            int now=1000;var first=Folds.plan(d,withFold,origin,here,fold,salt,now,true);
+            h.assertTrue(first.folds()&&first.back()==back&&first.landing().equals(landing),"the first through folds");
+            Folds.record(withFold,fold,first,null,now);
+            h.assertTrue(Folds.back(d,without,origin,here,fold,salt,true)==0,"for the other reader alone, the door does not fold");
+            var behind=Folds.plan(d,without,origin,here,fold,salt,now+40,true);
+            h.assertTrue(behind.folds()&&behind.back()==back&&behind.landing().equals(landing),"but following a friend through it, they land where the friend did, as many crossings back");
+            var later=Folds.plan(d,without,origin,here,fold,salt,now+Folds.WINDOW+5,true);
+            h.assertTrue(!later.folds(),"long after, their own door is their own again");
+            // A friend who went on through a door takes the rest on: nobody is folded back alone.
+            Folds.forget();Folds.record(without,fold,Folds.Plan.ON,LabyrinthPlace.STONE_ARCADE.id(),now);
+            var held=Folds.plan(d,withFold,origin,here,fold,salt,now+40,true);
+            h.assertTrue(!held.folds()&&LabyrinthPlace.STONE_ARCADE.id().equals(held.withLeader()),"following a friend who went on, a fold takes nobody back: "+held);
+            // Landing: the folded crossings are gone from the way back, as if walked back through them.
+            int depth=d.returnDepth(withFold);var under=d.returns(withFold).get(back);
+            Folds.landed(d,withFold,origin,landing,back);
+            h.assertTrue(d.returnDepth(withFold)==depth-back&&under.equals(d.peekReturn(withFold)),"depth drops to match the hall landed in: "+depth+" to "+d.returnDepth(withFold));
+            h.assertTrue(d.stateEntry(Folds.TAKEN,withFold.toString()).getInt("Taken")==1,"the fold is counted for the reader");
+        }finally{Folds.forget();}
+        h.succeed();
+    }
+
     private static void halls(GameTestHelper h,List<LabyrinthPlace> list,int x0)throws Exception {
         var l=h.getLevel();int i=0;
         for(var hall:list) {
