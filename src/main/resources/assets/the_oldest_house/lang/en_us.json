@@ -1421,5 +1421,11 @@
   "block.the_oldest_house.trial_follow_floor": "Basketweave Parquet",
   "block.the_oldest_house.trial_follow_trim": "Door Frame",
   "block.the_oldest_house.trial_follow_back": "Lath and Plaster",
-  "block.the_oldest_house.trial_mirror": "Tall Mirror"
+  "block.the_oldest_house.trial_mirror": "Tall Mirror",
+  "block.the_oldest_house.hall_laundry_wall": "Limewashed Brick",
+  "block.the_oldest_house.hall_laundry_wall_low": "Tarred Brick",
+  "block.the_oldest_house.hall_laundry_floor": "Quarry Tiles",
+  "block.the_oldest_house.hall_laundry_ceiling": "Boarded Ceiling",
+  "block.the_oldest_house.hall_sheet": "Washing",
+  "block.the_oldest_house.hall_fitting": "Hall Fitting"
 }

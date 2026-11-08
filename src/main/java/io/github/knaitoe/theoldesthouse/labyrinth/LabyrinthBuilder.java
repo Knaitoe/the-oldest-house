@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 128;
+    public static final int VERSION = 129;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -144,6 +144,8 @@ public final class LabyrinthBuilder {
     public static int requiredDepth(LabyrinthPlace place) {
         if (CORE.contains(place)) return 0;
         if(HazardVariety.added(place))return HazardVariety.tier(place)==1?6:HazardVariety.tier(place)==2?10:14;
+        // 0.4.390: the new ordinary halls stand with the other halls, ready before anyone can be offered them.
+        if(OrdinaryHalls.is(place))return OrdinaryHalls.stone(place)?LabyrinthPacing.STONE_DEPTH:0;
         return switch (place) {
             case FOLDED_MAZE -> LabyrinthPacing.STRANGE_DEPTH;
             case SPIRAL_STAIR, FRACTURED_WALKWAY, LIGHT_SINK, BLIND_STRETCH, MOVING_THRESHOLD -> 10;
@@ -305,6 +307,9 @@ public final class LabyrinthBuilder {
         }
         if(place!=null&&HazardVariety.added(place)){
             BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);geometry=BuildBlocks.record(interior,()->HazardMaps.build(interior,base,place));return;
+        }
+        if(place!=null&&OrdinaryHalls.is(place)){
+            BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);geometry=BuildBlocks.record(interior,()->OrdinaryHalls.build(interior,base,place));return;
         }
         if(place!=null&&HallVariations.added(place)) {
             BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);ScenePolish.forget(server,pendingOrigin,place);
@@ -552,6 +557,7 @@ public final class LabyrinthBuilder {
             if(place!=LabyrinthPlace.DROWNED_TOWN)LakeLandscape.dress(site,base,place);NovelRooms.safeApproach(site,base);registerDoors(dataFor(server),place,base);VignetteArchitecture.forget(site,origin,place);VignetteArchitecture.decorateOnce(site,origin,place);return;
         }
         if(HazardVariety.added(place)){fillSolid(level,slot);HazardMaps.build(level,base,place);registerDoors(dataFor(server),place,base);return;}
+        if(OrdinaryHalls.is(place)){fillSolid(level,slot);OrdinaryHalls.build(level,base,place);registerDoors(dataFor(server),place,base);return;}
         LabyrinthMaze.Migration migration = LabyrinthMaze.isMaze(place) ? LabyrinthMaze.capture(level, slot, base) : null;
         fillSolid(level, slot);
         LabyrinthData data = LabyrinthData.get(server);

@@ -647,7 +647,13 @@ public enum LabyrinthPlace {
     /** 0.4.388, the hall of many lengths (TrialRooms, docs/MANY_LENGTHS_0_4_388.md): five identical lengths with the long hallway's bends; whoever hurries through a middle length walks it again. */
     MANY_LENGTHS("many_lengths",Kind.GRAY,226,new BoundingBox(-2,-1,-63,20,3,0),grayDoors(18,0,-63)),
     /** 0.4.389, the door that follows (TrialRooms, docs/FOLLOWING_DOOR_0_4_389.md): nine doors in three walls, all shut but the one nobody is looking at; a passage behind them to the far door. */
-    FOLLOWING_DOOR("following_door",Kind.GRAY,227,new BoundingBox(-8,-1,-14,8,4,0),grayDoors(0,0,-14));
+    FOLLOWING_DOOR("following_door",Kind.GRAY,227,new BoundingBox(-8,-1,-14,8,4,0),grayDoors(0,0,-14)),
+    /** 0.4.390, the laundry corridor (OrdinaryHalls, docs/LAUNDRY_CORRIDOR_0_4_390.md): an ordinary hall hung with washing across its width, swinging behind whoever parts it; two of its ways on are behind the sheets. */
+    LAUNDRY_HALL("laundry_hall",Kind.GRAY,228,new BoundingBox(-4,-1,-42,4,4,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("west",new BlockPos(-3,0,-15),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("east",new BlockPos(3,0,-28),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT)));
 
     /** What a place is to the dealer. */
     public enum Kind {

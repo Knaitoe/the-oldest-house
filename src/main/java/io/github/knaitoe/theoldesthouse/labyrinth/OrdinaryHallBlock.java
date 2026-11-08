@@ -1,0 +1,44 @@
+package io.github.knaitoe.theoldesthouse.labyrinth;
+
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+/**
+ * 0.4.390, the new ordinary halls' fittings (OrdinaryHalls), drawn by tools/draw_ordinary_hall_art.py. {@link #FACING} is the way
+ * the fitting's front faces.
+ *
+ * <p>The laundry corridor's wicker baskets of folded washing, and the stool kept to reach the lines.
+ */
+public final class OrdinaryHallBlock extends Block {
+    public static final MapCodec<OrdinaryHallBlock> CODEC=simpleCodec(OrdinaryHallBlock::new);
+    public enum Kind implements StringRepresentable {
+        BASKET,STOOL;
+        @Override public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
+    }
+    public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
+    public static final DirectionProperty FACING=HorizontalDirectionalBlock.FACING;
+    public OrdinaryHallBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.BASKET).setValue(FACING,Direction.SOUTH));}
+    @Override protected MapCodec<? extends Block> codec(){return CODEC;}
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,FACING);}
+    public static BlockState of(Kind kind,Direction facing){return OrdinaryHallRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
+    public static boolean is(BlockState s,Kind kind){return s.is(OrdinaryHallRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
+        case BASKET->box(2,0,2,14,9,14);
+        case STOOL->box(3,0,3,13,11,13);
+    };}
+    @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
+    @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
+}

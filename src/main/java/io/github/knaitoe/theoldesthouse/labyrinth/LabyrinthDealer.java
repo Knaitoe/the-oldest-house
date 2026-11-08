@@ -216,6 +216,8 @@ public final class LabyrinthDealer {
         // 0.4.199: the vaulted hall and the crumbled hall.
         gray.add(LabyrinthPlace.VAULTED_HALL);
         gray.add(LabyrinthPlace.CRUMBLED_HALL);
+        // 0.4.390: the new ordinary halls (OrdinaryHalls).
+        gray.add(LabyrinthPlace.LAUNDRY_HALL);
         // 0.4.199: the puzzle rooms, offered by their own pacing (PuzzleRooms.weight); the deep ones only from the strange depths.
         gray.add(LabyrinthPlace.BORROWED_LIGHT);
         gray.add(LabyrinthPlace.SERVICE_LIFT);
@@ -636,6 +638,7 @@ public final class LabyrinthDealer {
             // 0.4.232: without a reader (the shared hall cache), the kitchen at its ordinary weight.
             case FAMILIAR_KITCHEN -> depth < 3 ? 0 : FamiliarRoom.WEIGHT;
             case VAULTED_HALL -> depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
+            case LAUNDRY_HALL -> OrdinaryHalls.weight(place, depth);
             case CRUMBLED_HALL -> depth < 3 || depth >= LabyrinthPacing.STONE_DEPTH ? 0 : 8;
             case STONE_GALLERY -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 26;
             case STONE_CROSSING -> depth < LabyrinthPacing.STONE_DEPTH || depth >= DarkHalls.ONLY_DEPTH ? 0 : 14;

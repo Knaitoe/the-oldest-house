@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=south,kind=basket": {
+      "model": "the_oldest_house:block/hall_basket"
+    },
+    "facing=west,kind=basket": {
+      "model": "the_oldest_house:block/hall_basket",
+      "y": 90
+    },
+    "facing=north,kind=basket": {
+      "model": "the_oldest_house:block/hall_basket",
+      "y": 180
+    },
+    "facing=east,kind=basket": {
+      "model": "the_oldest_house:block/hall_basket",
+      "y": 270
+    },
+    "facing=south,kind=stool": {
+      "model": "the_oldest_house:block/hall_stool"
+    },
+    "facing=west,kind=stool": {
+      "model": "the_oldest_house:block/hall_stool",
+      "y": 90
+    },
+    "facing=north,kind=stool": {
+      "model": "the_oldest_house:block/hall_stool",
+      "y": 180
+    },
+    "facing=east,kind=stool": {
+      "model": "the_oldest_house:block/hall_stool",
+      "y": 270
+    }
+  }
+}
