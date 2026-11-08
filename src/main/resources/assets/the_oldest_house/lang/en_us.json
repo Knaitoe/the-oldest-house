@@ -1411,5 +1411,9 @@
   "block.the_oldest_house.trial_rising_ceiling": "Brick Vault",
   "block.the_oldest_house.trial_rising_floor": "Silted Flags",
   "block.the_oldest_house.trial_rising_landing": "Stone Flags",
-  "block.the_oldest_house.trial_rising_window": "Lit Frosted Window"
+  "block.the_oldest_house.trial_rising_window": "Lit Frosted Window",
+  "block.the_oldest_house.trial_lengths_wall": "Distempered Plaster",
+  "block.the_oldest_house.trial_lengths_ceiling": "Coffered Plaster",
+  "block.the_oldest_house.trial_lengths_floor": "Measured Boards",
+  "block.the_oldest_house.trial_lengths_rule": "Measuring Rail"
 }
