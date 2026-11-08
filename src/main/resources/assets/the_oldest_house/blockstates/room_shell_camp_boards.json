@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_camp_boards"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_camp_boards",
+        "y": 180
+      }
+    ]
+  }
+}

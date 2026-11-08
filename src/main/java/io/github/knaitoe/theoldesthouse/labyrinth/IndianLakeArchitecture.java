@@ -23,11 +23,11 @@ public final class IndianLakeArchitecture {
         }
         // The entrance is a narrow causeway at the waterline. Rows face the lake behind it.
         for (int z=-10;z<=-2;z++) for (int x=-1;x<=1;x++)
-            level.setBlock(base.offset(x,-1,z),Blocks.DARK_OAK_PLANKS.defaultBlockState(),F);
+            level.setBlock(base.offset(x,-1,z),RoomShell.CAUSEWAY.get().defaultBlockState(),F);
         for (int row=0;row<6;row++) for (int x=-7;x<=7;x++) {
             if (Math.abs(x)<2) continue;
             int z=-15-row*4;
-            level.setBlock(base.offset(x,0,z),LabyrinthBuilder.stairs(Blocks.DARK_OAK_STAIRS,Direction.NORTH),F);
+            level.setBlock(base.offset(x,0,z),LabyrinthBuilder.stairs(RoomShell.PEW.get(),Direction.NORTH),F);
             if (Math.abs(x)==7) level.setBlock(base.offset(x,1,z),Blocks.DARK_OAK_FENCE.defaultBlockState(),F);
         }
         for (int z=-12;z>=-38;z-=6) for (int side:new int[]{-1,1}) {

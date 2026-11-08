@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_camp_ashlar",
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_camp_ashlar_1"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_camp_ashlar_2"
+      }
+    ]
+  }
+}

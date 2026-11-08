@@ -29,6 +29,17 @@ public final class RoomShell {
     public static final DeferredBlock<StairBlock> BOILER_STAIR=BLOCKS.registerBlock("room_shell_boiler_stair",
         p->new StairBlock(Blocks.STONE_BRICKS.defaultBlockState(),p),fixed(Blocks.STONE_BRICK_STAIRS));
 
+    /**
+     * 0.4.381, the fifth interior release (docs/TEXTURE_PASS_CAMP_0_4_381.md): Holloway's hunt and the drowned congregation's chapel,
+     * drawn by tools/draw_camp_chapel_art.py. Rough ashlar (plain, cracked or mossed by position), irregular flags, hewn timber, camp
+     * boards, packed grit and slate for the camp's three rooms; a pew worn smooth on its seat and the causeway's dark boards.
+     */
+    public static final DeferredBlock<Block> CAMP_ASHLAR=cube("camp_ashlar",Blocks.STONE_BRICKS),CAMP_FLAGS=cube("camp_flags",Blocks.STONE),
+        CAMP_TIMBER=cube("camp_timber",Blocks.STRIPPED_SPRUCE_WOOD),CAMP_BOARDS=cube("camp_boards",Blocks.SPRUCE_PLANKS),
+        CAMP_GRIT=cube("camp_grit",Blocks.TUFF),CAMP_SLATE=cube("camp_slate",Blocks.DEEPSLATE_TILES),CAUSEWAY=cube("causeway",Blocks.DARK_OAK_PLANKS);
+    public static final DeferredBlock<StairBlock> PEW=BLOCKS.registerBlock("room_shell_pew",
+        p->new StairBlock(Blocks.DARK_OAK_PLANKS.defaultBlockState(),p),fixed(Blocks.DARK_OAK_STAIRS));
+
     private RoomShell(){}
     public static void register(IEventBus bus){BLOCKS.register(bus);}
 
@@ -38,6 +49,10 @@ public final class RoomShell {
     public static boolean nursery(BlockState s){
         return s.is(NURSERY_FLOOR.get())||s.is(NURSERY_PANEL.get())||s.is(NURSERY_RAIL.get())||s.is(NURSERY_CEILING.get())||s.is(NURSERY_POST.get())
             ||s.is(CELLAR_BRICK.get())||s.is(CELLAR_FLOOR.get())||s.is(LiteraryRegistry.CHILD_WALLPAPER.get());
+    }
+    /** Whether a block is one of the camp's own surfaces. */
+    public static boolean camp(BlockState s){
+        return s.is(CAMP_ASHLAR.get())||s.is(CAMP_FLAGS.get())||s.is(CAMP_TIMBER.get())||s.is(CAMP_BOARDS.get())||s.is(CAMP_GRIT.get())||s.is(CAMP_SLATE.get());
     }
     /** Whether a block is one of the boiler room's own surfaces. */
     public static boolean boiler(BlockState s){

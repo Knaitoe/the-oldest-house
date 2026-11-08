@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_camp_flags"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_camp_flags",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_camp_flags",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_camp_flags",
+        "y": 270
+      }
+    ]
+  }
+}

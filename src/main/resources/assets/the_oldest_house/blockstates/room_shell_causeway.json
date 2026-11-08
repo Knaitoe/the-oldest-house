@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_causeway"
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_causeway",
+        "y": 180
+      }
+    ]
+  }
+}

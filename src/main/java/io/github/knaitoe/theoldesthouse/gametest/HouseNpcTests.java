@@ -58,6 +58,13 @@ public final class HouseNpcTests {
     @GameTest(template="empty",batch="npc_honest0505",timeoutTicks=120)
     public static void anHonestReaderIsToldOnceAndTheCampLeavesTheirDeals(GameTestHelper h){
         honest=new Fixture(h,44600);var f=honest;var a=f.player();var thief=f.player();
+        // 0.4.381: every face of the hunt's three rooms is the camp's own: ashlar, flags, timber, boards, grit and slate.
+        {int own=0,vanilla=0;BlockPos first=null;var seen=new HashSet<BlockPos>();
+            for(int x=-10;x<=10;x++)for(int y=0;y<=5;y++)for(int z=-69;z<=-13;z++){var at=f.b.offset(x,y,z);if(!f.l.getBlockState(at).isAir())continue;
+                for(var d:Direction.values()){var n=at.relative(d);if(!seen.add(n))continue;var s=f.l.getBlockState(n);
+                    if(RoomShell.camp(s))own++;
+                    if(s.is(Blocks.STONE_BRICKS)||s.is(Blocks.STONE)||s.is(Blocks.TUFF)||s.is(Blocks.DEEPSLATE_TILES)||s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.STRIPPED_SPRUCE_WOOD)){vanilla++;if(first==null)first=n.subtract(f.b);}}}
+            h.assertTrue(own>1000&&vanilla==0,"the hunt's rooms wear the camp's own shell: "+own+" faces, "+vanilla+" vanilla, first at "+first);}
         h.assertTrue(HollowayVignette.canDeal(f.data(),a.getUUID())&&!f.own(a).getBoolean("Honest0505"),"one honest visit is only the camp");
         for(int visit=2;visit<=HollowayVignette.HONEST_VISITS;visit++){f.at(a,0,19);HollowayVignette.depart(a);f.at(a,0,-3.5);HollowayVignette.enter(a);}
         h.assertTrue(f.own(a).getInt("Visits")==HollowayVignette.HONEST_VISITS&&f.own(a).getBoolean("Honest0505")&&!HollowayVignette.canDeal(f.data(),a.getUUID()),"visits without taking anything end the camp for that reader, once");
