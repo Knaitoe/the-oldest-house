@@ -428,6 +428,7 @@ public final class LabyrinthDoors {
             ClassicsVignettes.onArrive(p,place);
             HotelVignette.onArrive(p,place);
             LiteraryVignettes.onArrive(p,place);
+            FeetUp.onArrive(p,place);
             BlindStretch.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             TallGrass.arrived(p, place);

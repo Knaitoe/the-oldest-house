@@ -635,7 +635,9 @@ public enum LabyrinthPlace {
     /** 0.4.363, the Cold Pantry (ColdPantry, docs/COLD_PANTRY_0_4_363.md): a larder kept cold by an ice-box and warmed by shutters, its cold store and its frozen far door. */
     COLD_PANTRY("cold_pantry",Kind.GRAY,220,new BoundingBox(-6,-1,-20,6,5,0),grayDoors(3,0,-13)),
     /** 0.4.364, Last Weekend at Pinehook (Pinehook, docs/PINEHOOK_0_4_364.md): the cabin in the pines by the lake, a weekend with friends, a host with a plan and a prank that goes wrong. */
-    PINEHOOK("pinehook",Kind.ONE_SHOT,221,new BoundingBox(-36,-5,-96,36,18,1),literaryEntry());
+    PINEHOOK("pinehook",Kind.ONE_SHOT,221,new BoundingBox(-36,-5,-96,36,18,1),literaryEntry()),
+    /** 0.4.383, Feet Up's house later (FeetUpRooms.buildLater, docs/FEET_UP_LATER_0_4_383.md): the same house with no floors, the furniture hanging over the dark; a deep puzzle room, offered only to readers who reached the first house's attic. Not a story. */
+    FEET_UP_LATER("feet_up_later",Kind.GRAY,222,new BoundingBox(-11,-5,-27,11,14,0),grayDoors(0,11,-27));
 
     /** What a place is to the dealer. */
     public enum Kind {

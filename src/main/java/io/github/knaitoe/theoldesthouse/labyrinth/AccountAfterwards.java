@@ -27,6 +27,7 @@ public final class AccountAfterwards {
             case ELK_CARCASSES -> hides(d.stateEntry(ContestTrades.STATE, id.toString()));
             case SECOND_WAITRESS -> plate(LiteraryVignettes.personal(d, id, LabyrinthPlace.SECOND_WAITRESS));
             case BORRASCA -> patch(d.stateEntry(Keepsakes.STATE, id.toString()));
+            case FEET_UP -> chalk(d.stateEntry(Keepsakes.STATE, id.toString()));
             default -> "";
         };
         String manor = manor(d.stateEntry(HouseRemembers.STATE, id.toString()), story);
@@ -38,6 +39,12 @@ public final class AccountAfterwards {
     public static String patch(CompoundTag keepsakes) {
         int n = keepsakes.getInt("SewnCount");
         return n <= 0 ? "" : n == 1 ? "Afterwards, once, when I fell away from the House, her name kept what was in my hand." : "Afterwards, " + n + " times when I fell away from the House, her name kept what was in my hand.";
+    }
+
+    /** 0.4.383: how many short falls in the House the children's chalk kept from costing anything. */
+    public static String chalk(CompoundTag keepsakes) {
+        int n = keepsakes.getInt("ChalkKept");
+        return n <= 0 ? "" : "Afterwards, " + times(n) + ", a short fall in the House cost me nothing. The chalk was in my pocket.";
     }
 
     /** Kept, he is freed; buried, the rot goes as far as the names he has carried. */

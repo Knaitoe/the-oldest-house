@@ -646,6 +646,7 @@ public final class ArchitectureTests {
         if(name.equals("whistlers_towers")){minX=-38;maxX=38;minZ=LookoutTower.VZ-38;maxZ=LookoutTower.VZ+38;minY=LookoutTower.FLOOR-12;maxY=LookoutTower.ROOF-1;}
         if(name.equals("feet_up_upstairs")){minY=FeetUpRooms.FIRST-1;maxY=FeetUpRooms.ATTIC-2;}
         if(name.equals("feet_up_attic")){minY=FeetUpRooms.ATTIC-1;maxY=FeetUpRooms.ROOF-1;}
+        if(scene==LabyrinthPlace.FEET_UP_LATER){minY=FeetUpRooms.PIT;maxY=FeetUpRooms.FIRST-1;} // 0.4.383: the house later, down to the dark and up to its first floor's few boards
         if(scene==LabyrinthPlace.GHOSTS_SET){minY=-1;maxY=3;}
         if(scene==LabyrinthPlace.MISSING_SLEEP){minY=4;maxY=9;}
         if(name.equals("ghosts_upstairs")){minY=4;maxY=9;}

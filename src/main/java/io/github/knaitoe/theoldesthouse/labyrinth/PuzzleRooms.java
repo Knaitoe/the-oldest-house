@@ -38,7 +38,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * counts toward the Witness.
  */
 public final class PuzzleRooms {
-    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY,RESONANCE,CLOCKWORK,COLD}
+    public enum Family {LIGHT,LIFT,LANDING,AIR,HOLD,FOLD,WINCH,LINE,POWER,WATER,TENSION,SURVEY,RESONANCE,CLOCKWORK,COLD,FEET}
     public enum Puzzle {
         BORROWED_LIGHT(LabyrinthPlace.BORROWED_LIGHT,Family.LIGHT,false,"The door has no handle on this side. The sun beside it is cold."),
         SERVICE_LIFT(LabyrinthPlace.SERVICE_LIFT,Family.LIFT,false,null),
@@ -85,7 +85,11 @@ public final class PuzzleRooms {
         // 0.4.345: the Stock Gate (YardStock, docs/YARD_STOCK_0_4_345.md), reading the yard from above to set its gates from below. The far gate is ordinary: the herd is what waits.
         YARD_STOCK(LabyrinthPlace.YARD_STOCK,Family.SURVEY,true,null),
         // 0.4.358: the Survey Stakes' deeper variant (YardFields.surveyDeep, docs/YARD_FINISHING_0_4_358.md): the stakes line up with a fence that has no gate. The far gate is ordinary: the fence is what waits.
-        YARD_SURVEY_DEEP(LabyrinthPlace.YARD_SURVEY_DEEP,Family.SURVEY,true,null);
+        YARD_SURVEY_DEEP(LabyrinthPlace.YARD_SURVEY_DEEP,Family.SURVEY,true,null),
+        // 0.4.383: Feet Up's house later (FeetUpRooms.buildLater, docs/FEET_UP_LATER_0_4_383.md): built on the house where the floor
+        // was lava, which is a story, not a puzzle; its attic marks it solved (FeetUp.finish). Offered only to a reader who has
+        // been up there themselves (weight).
+        FEET_UP_LATER(LabyrinthPlace.FEET_UP_LATER,Family.FEET,true,null,LabyrinthPlace.FEET_UP);
         public final LabyrinthPlace place;public final Family family;public final boolean deep;
         /** What the far door says while the room is unsolved, if the far door itself is what waits. */
         @Nullable final String held;
@@ -125,6 +129,7 @@ public final class PuzzleRooms {
     /** A reader's weight for a puzzle room among the gray places. */
     public static int weight(LabyrinthData data,UUID reader,LabyrinthPlace place,int depth){
         var q=Puzzle.of(place);if(q==null||!open(data,q,depth))return 0;
+        if(place==LabyrinthPlace.FEET_UP_LATER&&!FeetUp.finished(data,reader))return 0;
         var own=own(data,reader);
         if(solved(data,place))return depth-own.getInt("Depth")>=AGAIN?REVISIT:0;
         if(WitnessAccount.count(data,reader)<=own.getInt("Stories")||depth-own.getInt("Depth")<AFTER)return 0;

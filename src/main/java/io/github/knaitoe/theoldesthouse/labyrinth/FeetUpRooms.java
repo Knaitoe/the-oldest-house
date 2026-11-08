@@ -24,11 +24,24 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.FeetUpBlock.Kind.*;
  *
  * The route the game is played over is {@link #ROUTE}, in order, each cell the reader stands on; FeetUpTests measures
  * every step of it against the built collision.
+ *
+ * 0.4.383: the attic's chalk jar ({@link #CHALK_JAR_AT}), and the same house later ({@link #buildLater}, place
+ * {@link #LATER}): built from the same plan, then its floors taken out over the dark, its stair gone, its lamps out and its
+ * parlour standing open, every piece of furniture hanging where it stood. The route is the same route.
  */
 public final class FeetUpRooms {
     private FeetUpRooms(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.FEET_UP;
     public static boolean is(LabyrinthPlace p){return p==PLACE;}
+    /** 0.4.383: the same house later, with no floors (a deep room among the puzzle rooms; not a story). */
+    public static final LabyrinthPlace LATER=LabyrinthPlace.FEET_UP_LATER;
+    public static boolean later(LabyrinthPlace p){return p==LATER;}
+    /** Either house: the game's controller runs in both. */
+    public static boolean house(LabyrinthPlace p){return p==PLACE||p==LATER;}
+    /** The later house's dark: its floor, five below the hall's, the walls running down to it. */
+    public static final int PIT=-5;
+    /** The attic's chalk jar, on the boards beside the chest the notebook lies on. */
+    public static final BlockPos CHALK_JAR_AT=new BlockPos(1,11,-22);
     /** The interior: x -10..10, z -26..0 on the ground floor and -26..-1 above, under the roof at 14. */
     public static final int X0=-10,X1=10,Z0=-26,ROOF=14;
     /** Standing levels: the ground floor's floor is at -1, the first floor's at 5, the attic's at 10. */
@@ -98,6 +111,14 @@ public final class FeetUpRooms {
         new BlockPos(-6,6,-25),new BlockPos(-8,7,-24),new BlockPos(-9,6,-22),new BlockPos(-8,6,-20),new BlockPos(-7,6,-18),new BlockPos(-7,6,-16),
         new BlockPos(-7,5,-14),new BlockPos(-7,5,-13),new BlockPos(-8,6,-12),new BlockPos(-7,5,-11),new BlockPos(-7,5,-10),
         new BlockPos(-7,5,-8),new BlockPos(-7,6,-6),new BlockPos(-7,6,-5),new BlockPos(-5,6,-4),new BlockPos(-2,5,-4),new BlockPos(-1,5,-4),new BlockPos(0,5,-4),new BlockPos(1,6,-4),PRESS_TOP);
+    /**
+     * 0.4.383: in the later house there is no hall floor to walk to the big chair over. From the doormat, the stool the house
+     * has left in the hall, the hall table, the bench, and through the arch to the big chair; then the route as before.
+     */
+    public static final List<BlockPos> LATER_START=List.of(new BlockPos(0,-1,-1),new BlockPos(0,0,-3),new BlockPos(0,0,-5),new BlockPos(-1,0,-5),new BlockPos(-2,0,-5),BIG_CHAIR);
+    /** Where the grey light comes in, in the later house: none of it from a lamp. */
+    static final List<BlockPos> LATER_LIGHT=List.of(new BlockPos(0,4,-7),new BlockPos(-7,4,-2),new BlockPos(-7,4,-18),new BlockPos(5,4,-7),new BlockPos(6,4,-12),new BlockPos(7,3,-22),
+        new BlockPos(-6,9,-20),new BlockPos(-9,9,-11),new BlockPos(-6,9,-2),new BlockPos(0,9,-7),new BlockPos(0,9,-22),new BlockPos(0,12,-12));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     private static Block mat(String name){return FeetUpRegistry.material(name);}
@@ -232,6 +253,7 @@ public final class FeetUpRooms {
         furniture(l,b,9,11,-17,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST);furniture(l,b,8,11,-24,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);
         for(int x=-1;x<=1;x++)set(l,b,x,11,-23,FeetUpBlock.of(BLANKETS,Direction.NORTH));
         furniture(l,b,0,11,-22,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);set(l,b,NOTEBOOK_AT,FeetUpBlock.of(NOTEBOOK,Direction.SOUTH));
+        set(l,b,CHALK_JAR_AT,FeetUpBlock.of(CHALK_JAR,Direction.SOUTH,0));
         fit(l,b,-1,12,-22,LAMP,Direction.SOUTH,1);
         fit(l,b,-1,12,-26,TALLY,Direction.SOUTH);
         // Cobwebs in the attic's corners (the web hangs across the cell's corner behind its facing) and two under the roof.
@@ -241,12 +263,65 @@ public final class FeetUpRooms {
         set(l,b,0,11,-25,Blocks.COBWEB.defaultBlockState());set(l,b,-4,11,-8,Blocks.COBWEB.defaultBlockState());
     }
 
+    // ------------------------------------------------------------------------------------------------ the house later
+    /**
+     * 0.4.383: the same house later. Built from the same plan, then: the walls run down five blocks into the dark, and every
+     * floor goes, the ground floor's boards and tiles, the stair, the cupboard under the landing and the first floor's boards,
+     * but for the loose boards the route crosses and the hall's doormat inside the front door. The furniture hangs where it
+     * stood. The chimney breast goes down into the dark in brick. The lamps are out and the fire is cold; a grey light comes
+     * in from nowhere in particular. The parlour door stands open on an empty room. The chalk jar in the attic is empty.
+     */
+    public static void buildLater(ServerLevel l,BlockPos b){
+        box(l,b,X0-1,PIT,Z0-1,X1+1,-2,0,mat("paper"));
+        build(l,b);
+        // The first floor's boards, wherever a room stands over them: the hall, the landing and the west rooms, but the walls'
+        // feet between those rooms (where no arch is) and every cell the route or the long way stands on (the rail included).
+        var keep=new java.util.HashSet<BlockPos>();
+        for(var route:List.of(ROUTE,LONG_WAY))for(var at:route)if(at.getY()==5)keep.add(at);
+        for(int z=Z0;z<=-1;z++){
+            for(int x=HALL_X0;x<=HALL_X1;x++)if(!keep.contains(new BlockPos(x,5,z)))set(l,b,x,5,z,Blocks.AIR.defaultBlockState());
+            for(int x=WEST_X0;x<=WEST_X1;x++){boolean wall=(z==-15||z==PART_Z)&&(x<-7||x>-6);if(!wall&&!keep.contains(new BlockPos(x,5,z)))set(l,b,x,5,z,Blocks.AIR.defaultBlockState());}
+        }
+        for(int z:new int[]{-20,-19,-5,-4})set(l,b,-3,5,z,Blocks.AIR.defaultBlockState()); // under the two arches in the hall's west wall
+        // The stair and the cupboard under the landing.
+        box(l,b,-2,0,STAIR_Z1,2,4,STAIR_Z0,Blocks.AIR);box(l,b,HALL_X0,0,Z0,HALL_X1,4,LANDING_Z,Blocks.AIR);
+        // The ground floor: every room's floor gone into the dark, the doormat kept inside the front door.
+        for(int[] room:new int[][]{{WEST_X0,FRONT_Z0,WEST_X1,0},{WEST_X0,Z0,WEST_X1,BACK_Z1},{EAST_X0,FRONT_Z0,EAST_X1,0},{EAST_X0,Z0,EAST_X1,BACK_Z1},{HALL_X0,Z0,HALL_X1,-2}}){
+            box(l,b,room[0],-4,room[1],room[2],-1,room[3],Blocks.AIR);box(l,b,room[0],PIT,room[1],room[2],PIT,room[3],mat("under"));
+        }
+        box(l,b,-10,PIT+1,-3,-10,-1,-1,mat("brick"));
+        // The lamps out, the fire cold, the parlour's lights gone and its door open, the jar empty, and a grey light.
+        for(var lamp:LAMPS)set(l,b,lamp.at(),FeetUpBlock.of(lamp.kind(),lamp.facing(),lamp.kind()==FLOOR_LAMP?2:1));
+        set(l,b,-5,1,-12,Blocks.AIR.defaultBlockState());set(l,b,-5,1,-13,Blocks.AIR.defaultBlockState());
+        set(l,b,FIRE,Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.FACING,Direction.EAST).setValue(CampfireBlock.LIT,false));
+        NovelRooms.door(l,b.offset(PARLOUR_DOOR),Direction.EAST,Blocks.DARK_OAK_DOOR,true);
+        set(l,b,CHALK_JAR_AT,FeetUpBlock.of(CHALK_JAR,Direction.SOUTH,1));
+        for(var at:LATER_LIGHT)set(l,b,at,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,7));
+        // The stool the house has left in the hall, a step in from the doormat.
+        furniture(l,b,0,0,-3,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.SOUTH);
+        // More web, in the corners of the rooms nobody stands in now.
+        set(l,b,-10,4,-26,FeetUpBlock.of(COBWEB_CORNER,Direction.SOUTH));set(l,b,10,4,-26,FeetUpBlock.of(COBWEB_CORNER,Direction.WEST));set(l,b,-10,9,-26,FeetUpBlock.of(COBWEB_CORNER,Direction.SOUTH));
+    }
+    /** The house later as the builder carves it: the house, its approach, the entrance and its doors (the way on at the attic gable). */
+    public static void buildLaterPlace(ServerLevel l,BlockPos b){
+        buildLater(l,b);NovelRooms.safeApproach(l,b);
+        LabyrinthBuilder.entrance(l,b,FeetUpRegistry.material("paper").defaultBlockState(),FeetUpRegistry.material("hall_tile").defaultBlockState(),FeetUpRegistry.material("plaster").defaultBlockState());
+        LabyrinthBuilder.doors(l,b,LATER);
+    }
+    /** Every lamp the house has, lit by the plan in {@link #build}; the house later has them all out. */
+    record Lamp(BlockPos at,FeetUpBlock.Kind kind,Direction facing){}
+    static final List<Lamp> LAMPS=List.of(new Lamp(new BlockPos(-2,1,-1),LAMP,Direction.EAST),new Lamp(new BlockPos(-10,1,-7),FLOOR_LAMP,Direction.EAST),new Lamp(new BlockPos(-9,1,-14),LAMP,Direction.EAST),
+        new Lamp(new BlockPos(10,1,-3),LAMP,Direction.WEST),new Lamp(new BlockPos(7,4,-14),CEILING_LIGHT,Direction.NORTH),new Lamp(new BlockPos(7,4,-22),CEILING_LIGHT,Direction.NORTH),
+        new Lamp(new BlockPos(-1,6,-26),LAMP,Direction.SOUTH),new Lamp(new BlockPos(-2,9,-6),CEILING_LIGHT,Direction.NORTH),new Lamp(new BlockPos(-9,7,-24),LAMP,Direction.EAST),
+        new Lamp(new BlockPos(-9,9,-3),CEILING_LIGHT,Direction.NORTH),new Lamp(new BlockPos(-7,9,-12),CEILING_LIGHT,Direction.NORTH),new Lamp(new BlockPos(-7,9,-22),CEILING_LIGHT,Direction.NORTH));
+
     // ------------------------------------------------------------------------------------------------ where things are
-    public static AABB bounds(BlockPos b){var r=PLACE.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX(),r.minY(),r.minZ())),Vec3.atLowerCornerOf(b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1)));}
-    /** The floor, which is lava: the ground floor's boards and tiles, the stair, the first floor's boards that hold, and a fallen board lying downstairs. */
+    public static AABB bounds(BlockPos b){return bounds(b,PLACE);}
+    public static AABB bounds(BlockPos b,LabyrinthPlace place){var r=place.room();return new AABB(Vec3.atLowerCornerOf(b.offset(r.minX(),r.minY(),r.minZ())),Vec3.atLowerCornerOf(b.offset(r.maxX()+1,r.maxY()+1,r.maxZ()+1)));}
+    /** The floor, which is lava: the ground floor's boards and tiles, the stair, the first floor's boards that hold, a fallen board lying downstairs, and (in the house later) the dark. */
     public static boolean floor(ServerLevel l,BlockPos b,BlockPos at){
         var s=l.getBlockState(at);
-        if(s.is(mat("floor"))||s.is(mat("hall_tile"))||s.is(mat("board"))||s.is(Blocks.DARK_OAK_STAIRS))return true;
+        if(s.is(mat("floor"))||s.is(mat("hall_tile"))||s.is(mat("board"))||s.is(mat("under"))||s.is(Blocks.DARK_OAK_STAIRS))return true;
         return FeetUpBlock.is(s,LOOSE_BOARD)&&at.getY()<b.getY()+5;
     }
     /** The attic: standing on the attic's boards, or anything above them. */
