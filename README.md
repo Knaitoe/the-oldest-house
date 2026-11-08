@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.397** takes five of the owner's notes on the quiet rooms and halls:
+Development candidate **0.4.398** fixes characters' lines that stayed over their heads: a line now stays up long enough to read, then goes. The Masque's red figure kept *The clock is speaking.* up for good. See [docs/LINES_GO_0_4_398.md](docs/LINES_GO_0_4_398.md).
+
+0.4.397 took five of the owner's notes on the quiet rooms and halls:
 
 - **The dance in the rain has weight.** The reader's keys swing them round their partner, the swing carries on and fades, and the view turns with it.
 - **Drawn hair colours the reader's hair.** The colour comes through at the kitchen table as soon as it is coloured, in any crayon.

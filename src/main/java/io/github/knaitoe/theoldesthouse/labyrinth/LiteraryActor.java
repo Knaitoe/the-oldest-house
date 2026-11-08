@@ -84,10 +84,18 @@ public final class LiteraryActor extends PathfinderMob {
         if(role()==UNCANNY_GIANT&&owner().filter(p.getUUID()::equals).isPresent())p.connection.send(new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(this));
     }
     @Override public boolean shouldRenderAtSqrDistance(double distance){return role()==SILHOUETTE&&phase()==4?distance<192D*192D:super.shouldRenderAtSqrDistance(distance);}
-    public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);}
+    /**
+     * A line over the actor's head. 0.4.398 (owner, of the Masque's red figure: "his dialogue does not disappear"): it stays up long
+     * enough to read, five seconds or longer for a long line, then goes; saying it again keeps it up.
+     */
+    public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Math.min(SAY_LONGEST,Math.max(SAY_SHORTEST,40+text.length()*3));}
+    public static final int SAY_SHORTEST=100,SAY_LONGEST=240;
+    /** Ticks the last line said stays up. */
+    private int spokenFor;
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
         if(!level().isClientSide&&entityData.get(SPEECH)>0)entityData.set(SPEECH,entityData.get(SPEECH)-1);
+        if(!level().isClientSide&&spokenFor>0&&--spokenFor==0)setCustomNameVisible(false);
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
         if(!level().isClientSide){DomesticGlimpses.actorTick(this);GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);}
         if(lakePartner(role()))setAirSupply(getMaxAirSupply());
@@ -157,6 +165,6 @@ public final class LiteraryActor extends PathfinderMob {
     }
     @Override public boolean isPushable(){return role()==UNCANNY_FALSE_WAITRESS&&phase()>=2;}
     @Override public boolean canBeCollidedWith(){if(role()==UNCANNY_FALSE_WAITRESS)return phase()>=2;return super.canBeCollidedWith();}
-    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());if(sceneHidden)t.putBoolean("SceneHidden",true);owner().ifPresent(id->t.putUUID("Reader",id));}
-    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));sceneHidden=t.getBoolean("SceneHidden");}
+    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);if(spokenFor>0)t.putInt("Said0398",spokenFor);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());if(sceneHidden)t.putBoolean("SceneHidden",true);owner().ifPresent(id->t.putUUID("Reader",id));}
+    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);spokenFor=t.getInt("Said0398");scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));sceneHidden=t.getBoolean("SceneHidden");}
 }
