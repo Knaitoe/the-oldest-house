@@ -7,23 +7,30 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.*;
 
 /**
  * 0.4.351, The Last Crossing (docs/LAST_CROSSING_0_4_351.md): the flood station's fittings, the things the crew carries about the station
  * (the handprint plate, the mooring line, the station lamp, the intake worker's wrench), and the station's sounds. Drawn by
- * tools/draw_last_crossing_art.py; heard from tools/generate_last_crossing_audio.py.
+ * tools/draw_last_crossing_art.py; heard from tools/generate_last_crossing_audio.py. From 0.4.352, Night One: the things that come up out
+ * of the water (Undertow) and the night's sounds.
  */
 public final class CrossingRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<EntityType<?>,EntityType<Undertow>> UNDERTOW_TYPE=TYPES.register("crossing_undertow",
+        ()->EntityType.Builder.<Undertow>of(Undertow::new,MobCategory.MONSTER).sized(.6F,1.95F).eyeHeight(1.74F).clientTrackingRange(8).build("crossing_undertow"));
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CrossingBlock>> FITTING_TYPE=CODECS.register("crossing_fitting",()->CrossingBlock.CODEC);
     public static final DeferredBlock<CrossingBlock> FITTING=BLOCKS.registerBlock("crossing_fitting",CrossingBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(CrossingBlock::light));
@@ -36,8 +43,12 @@ public final class CrossingRegistry {
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** A knock in the speaking pipe; the pump taking its load; something tapping back under the grate; the bleed screw letting go. */
     public static final DeferredHolder<SoundEvent,SoundEvent> KNOCK=sound("crossing.knock"),PUMP=sound("crossing.pump"),TAP=sound("crossing.tap"),BLEED=sound("crossing.bleed");
+    /** Night One: the surge through the intake; the second breath an infected reader hears under their own; the things from the water; the
+     * ferry straining at the first rise; the line snapping. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SURGE=sound("crossing.surge"),BREATH=sound("crossing.breath"),UNDERTOW=sound("crossing.undertow"),RISE=sound("crossing.rise"),SNAP=sound("crossing.snap");
     private CrossingRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);TYPES.register(bus);bus.addListener(CrossingRegistry::attributes);}
+    private static void attributes(EntityAttributeCreationEvent e){e.put(UNDERTOW_TYPE.get(),Undertow.attributes().build());}
 
     /** The plate set down where its carrier points: on a floor, the station decides whether it can stand there. */
     public static final class Plate extends Item {

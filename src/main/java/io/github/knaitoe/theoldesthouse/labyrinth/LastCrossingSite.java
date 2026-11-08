@@ -55,6 +55,14 @@ public final class LastCrossingSite {
     public static final BlockPos CABLE_DOOR=new BlockPos(45,0,-54),DRUM=new BlockPos(47,0,-56),CABLE_BRAKE=new BlockPos(49,0,-57),FAIRLEAD=new BlockPos(47,0,-66),HATCH=new BlockPos(45,-1,-61),CABLE_BRACKET=new BlockPos(51,1,-60);
     public static final List<BlockPos> ROLLERS=List.of(new BlockPos(47,0,-58),new BlockPos(47,0,-60),new BlockPos(47,0,-62),new BlockPos(47,0,-64));
     public static final BlockPos LOOSE_ROLLER=new BlockPos(47,0,-60);
+    /** 0.4.352, Night One: the cable house's door bar, leaning by the door and dropped across the doorway; the gauge room's isolation valve
+     * for the lower floor; a hook on the stairwell's foot for the lamp; where the things from the water come up over the spillway's banks
+     * and, with the lower floor lost and left open, up through the landing; where Vera keeps the night; where the far bank is watched from. */
+    public static final BlockPos BAR_REST=new BlockPos(44,0,-55),BAR_ACROSS=new BlockPos(45,0,-55),ISOLATOR=new BlockPos(21,1,-65),STAIR_HOOK=new BlockPos(13,-4,-60);
+    public static final Vec3 WEST_BANK=new Vec3(37.5,0,-47.5),EAST_BANK=new Vec3(43.5,0,-48.5),LANDING_UP=new Vec3(17.5,0,-59.5),VERA_NIGHT=new Vec3(14.5,0,-60.5),
+        FLOOD_OUT=new Vec3(15.5,0,-55.5),FAR_WATCH=new Vec3(33.5,0,-94.5);
+    /** Where a reader pulled up through the landing comes over the rail: west, east or south of it. */
+    public static final List<Vec3> PULLED_UP=List.of(new Vec3(14.5,0,-63.5),new Vec3(21.5,0,-63.5),new Vec3(17.5,0,-59.5));
     /** The far bank: the landing, the lamp, the cable's anchor and the shelter whose door is the way on. */
     public static final BlockPos FAR_LAMP=new BlockPos(37,3,-95),ANCHOR=new BlockPos(47,0,-94),ONWARD=new BlockPos(43,0,-98);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -229,7 +237,7 @@ public final class LastCrossingSite {
         for(int z=LANDING_S;z>=LANDING_N;z--){set(l,b,LANDING_W-1,0,z,s(Blocks.IRON_BARS));set(l,b,LANDING_E+1,0,z,s(Blocks.IRON_BARS));}
         // The gauge room: the gauge, the brake beside the landing, the speaking pipe's upper mouth, a bracket for the plate.
         set(l,b,GAUGE,fit(Kind.GAUGE,Direction.WEST));set(l,b,BRAKE,fit(Kind.BRAKE,Direction.WEST));set(l,b,PIPE_A_UP,fit(Kind.PIPE,Direction.WEST));
-        set(l,b,PUMP_BRACKET,fit(Kind.BRACKET,Direction.EAST));
+        set(l,b,PUMP_BRACKET,fit(Kind.BRACKET,Direction.EAST));set(l,b,ISOLATOR,fit(Kind.ISOLATOR,Direction.SOUTH));set(l,b,STAIR_HOOK,fit(Kind.HOOK,Direction.EAST,0));
         for(int z:new int[]{-56,-60,-64})set(l,b,18,4,z,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
         set(l,b,22,0,-54,s(Blocks.BARREL).setValue(BarrelBlock.FACING,Direction.UP));set(l,b,23,0,-54,s(Blocks.SMITHING_TABLE));
         // The intake: the pipe in from the west wall, the bleed screw, the three valves, the pump; the broken grate beside the screw.
@@ -327,7 +335,7 @@ public final class LastCrossingSite {
         set(l,b,FAIRLEAD,fit(Kind.FAIRLEAD,Direction.NORTH));
         // The dry ledge along the west wall, out of the drum's way.
         for(int z=-56;z>=-64;z--)set(l,b,LEDGE_X,0,z,s(Blocks.STONE_BRICK_SLAB));
-        set(l,b,CABLE_BRACKET,fit(Kind.BRACKET,Direction.WEST));
+        set(l,b,CABLE_BRACKET,fit(Kind.BRACKET,Direction.WEST));set(l,b,BAR_REST,fit(Kind.BAR,Direction.NORTH));
         for(int z:new int[]{-58,-63})set(l,b,46,4,z,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
         // The cable out over the river to its anchor on the far bank.
         for(int z=CABLE_N-1;z>ANCHOR.getZ();z--)set(l,b,CABLE_X,0,z,chain(Direction.Axis.Z));
@@ -377,5 +385,9 @@ public final class LastCrossingSite {
         set(l,b,RAMP_COIL,fit(Kind.COIL,Direction.NORTH));set(l,b,PORCH_COIL,s(Blocks.AIR));set(l,b,STAGED_COIL,s(Blocks.AIR));
         set(l,b,LOOSE_ROLLER,fit(Kind.ROLLER,Direction.NORTH,1));set(l,b,FAIRLEAD,fit(Kind.FAIRLEAD,Direction.NORTH));
         set(l,b,HATCH,fit(Kind.HATCH,Direction.NORTH));
+        set(l,b,BAR_REST,fit(Kind.BAR,Direction.NORTH));set(l,b,BAR_ACROSS,s(Blocks.AIR));set(l,b,ISOLATOR,fit(Kind.ISOLATOR,Direction.SOUTH));set(l,b,STAIR_HOOK,fit(Kind.HOOK,Direction.EAST,0));
+        set(l,b,GRATE,fit(Kind.GRATE,Direction.NORTH,1));
+        // The lower floor dry again, whatever came up into it in the night.
+        for(int x=PUMP_W+1;x<PUMP_E;x++)for(int y=LOWER;y<=-2;y++)for(int z=PUMP_S-1;z>PUMP_N;z--){var at=b.offset(x,y,z);if(l.getBlockState(at).is(Blocks.WATER))BuildBlocks.set(l,at,s(Blocks.AIR),F);}
     }
 }

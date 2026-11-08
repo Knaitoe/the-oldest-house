@@ -54,14 +54,19 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * the station holds: the night is the next slice. Each reader's record keeps what they did, learned, saw and were handed, for the
  * accounts the last slice writes. Nobody here is hurt; the flood's current puts a swimmer back on the landing. Not dealt until the
  * crossing can be finished.
+ *
+ * <p>0.4.352, Night One (docs/LAST_CROSSING_0_4_352.md): from dusk the night runs on LastCrossingNight: the surge, the authored first
+ * infection and its rescue, the things from the water, the cable house's bar, the first rise, the carrier's private beat; at dawn the
+ * station holds in the morning light until Day Two is built.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class LastCrossing {
     private LastCrossing(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.LAST_CROSSING;
     public static final String TALK="last_crossing";
-    /** The station's day: the crew gathering before the roll; Vera calling it; Day One; dusk, held until the night is built. */
-    public static final int GATHERING=0,ROLL=1,DAY=2,DUSK=3;
+    /** The station's day: the crew gathering before the roll; Vera calling it; Day One; Night One, from dusk; dawn, held until Day Two is
+     * built. */
+    public static final int GATHERING=0,ROLL=1,DAY=2,DUSK=3,DAWN=4;
     /** Ticks: a day of seven minutes and a night of four; how long Vera waits for the rest of the crew after the first name; how long
      * she waits for an answer, and after saying a name again, and after Ellis's; how long a turned valve holds before it creeps back;
      * how long the brake must be held open; the gauge's dip after priming, how often and for how long; how long a hand on the sluice
@@ -96,6 +101,8 @@ public final class LastCrossing {
         boolean routeCalled,dusk;int demo;long demoAt;boolean kettle;
         final List<Vec3> route=new ArrayList<>();int leg,legTicks;
         final Map<UUID,Long> greeted=new HashMap<>();final Map<UUID,Integer> current=new HashMap<>();
+        /** Night One, and those of the crew who have died at the station this crossing. */
+        LastCrossingNight.Night night=new LastCrossingNight.Night();final Set<UUID> dead=new HashSet<>();
         Run(BlockPos b,long id){base=b;this.id=id;}
     }
     private static final Map<Long,Run> RUNS=new HashMap<>();
@@ -110,11 +117,20 @@ public final class LastCrossing {
     public static List<String> crew(BlockPos b){var r=run(b);return r==null?List.of():List.copyOf(r.crew.values());}
     public static boolean flag(BlockPos b,String name){var r=run(b);if(r==null)return false;return switch(name){case "bleed"->r.bleedOpen;case "primed"->r.primed;case "roller"->r.rollerSeated;case "reported"->r.jamReported;
         case "line"->r.lineIn;case "returned"->r.lineReturned;case "staged"->r.lineStaged;case "pin"->r.pinSeated;case "rehearsed"->r.rehearsed;case "route"->r.routeCalled;case "dusk"->r.dusk;case "kettle"->r.kettle;
-        case "lamp"->r.lampHome;case "wrench"->r.wrenchHome;case "plate"->r.plateBy!=null;default->false;};}
+        case "lamp"->r.lampHome;case "wrench"->r.wrenchHome;case "plate"->r.plateBy!=null;
+        case "surged"->r.night.surged;case "grip"->r.night.gripped!=null;case "freed"->r.night.freed;case "flooded"->r.night.lowerFlooded;case "isolated"->r.night.isolated;
+        case "barred"->r.night.barred;case "rose"->r.night.rose;case "held"->r.night.held;case "loose"->r.night.loose;case "fouled"->r.night.fouled;case "dawn"->r.night.dawn;default->false;};}
+    /** For tests: the night's clock, how many of the things are up, and who carries the first slot. */
+    public static int night(BlockPos b){var r=run(b);return r==null?-1:r.night.tick;}
+    public static int undertows(BlockPos b){var r=run(b);return r==null?0:r.night.mobs.size();}
+    @Nullable public static UUID carrier(BlockPos b){var r=run(b);return r==null?null:r.night.carrier;}
+    /** A hand reached down through the landing's rail (a click on one of its bars); a blow on the hand in the grate. */
+    public static boolean reachDown(ServerPlayer p,BlockPos rel){return LastCrossingNight.reachDown(p,rel);}
+    public static boolean hit(ServerPlayer p){return LastCrossingNight.strike(p);}
     @Nullable public static BlockPos plateAt(BlockPos b){var r=run(b);return r==null?null:r.plateAt;}
     @Nullable public static LiteraryActor vera(ServerLevel l,BlockPos b){var r=run(b);return r==null?null:actor(l,r.vera);}
     /** For tests: the day moved on by this many ticks, or the gathering wait run out. */
-    public static void skip(BlockPos b,int ticks){var r=run(b);if(r==null)return;if(r.phase==DAY)r.day+=ticks;else if(r.phase==GATHERING&&r.firstSigned>=0)r.firstSigned-=ticks;else r.callTicks+=ticks;}
+    public static void skip(BlockPos b,int ticks){var r=run(b);if(r==null)return;if(r.phase==DAY)r.day+=ticks;else if(r.phase==DUSK)r.night.tick+=ticks;else if(r.phase==GATHERING&&r.firstSigned>=0)r.firstSigned-=ticks;else r.callTicks+=ticks;}
     public static void resetNow(ServerLevel l,BlockPos b){var r=run(b);if(r!=null){reset(l,r);RUNS.remove(b.asLong());}}
 
     // ------------------------------------------------------------------------------------------------ records and speech
@@ -182,10 +198,16 @@ public final class LastCrossing {
     static final List<String> RUN_KEYS=List.of("Signed","RollOrder","Answered","Unanswered","HeardEllis","AskedEllis","Committed","Job","Jobs","OpenedBleed","TurnedValve","WrongValve",
         "GaugeRead","GaugeDip","Primed","BothSides","BrokenCorner","Tapped","SawGrates","TookWrench","HandedIntake","TookIntake","SeatedRoller","HatchTried","SawJam","Fairlead","Reported",
         "DryLedge","LineIn","LineReturned","TookLineToStage","StagedLine","CheckedWheel","CheckedPin","Rehearsed","RehearsedWith","Knocked","HeardKnocks","TookLamp","LampBelow","LampCarried",
-        "SpillwayWalked","Crossed","RangBell","PlateReads","PlateClean","Readings","CarriedPlate","SetPlate","Handed","GotFrom","Route","RouteWalked","DayOne","Partway","Rejoined","SawVeraPlate","Swept");
+        "SpillwayWalked","Crossed","RangBell","PlateReads","PlateClean","Readings","CarriedPlate","SetPlate","Handed","GotFrom","Route","RouteWalked","DayOne","Partway","Rejoined","SawVeraPlate","Swept",
+        "HeardSurge","Gripped","Infected","Slot","Freed","FoughtFree","StruckHand","PulledUp","TookHand","Beat","Symptoms","SawClaw","SawSoaked","SawPressure","Latched","HeldBrake",
+        "LowerFlooded","Isolated","BarredDoor","UnbarredDoor","SawUndertow","Wounded","Wounds","SawFouled","SawSill","HeldFerry","SawFerryLoose","LampStair","Told","ToldBy","Exposed",
+        "SecondPrints","NightOne","Died","DiedNightOne","Watching");
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var l=p.serverLevel();var r=RUNS.computeIfAbsent(b.asLong(),k->new Run(b,l.getGameTime()));
         if(own.getLong("CrossingRun")!=r.id){for(var key:RUN_KEYS)own.remove(key);own.putLong("CrossingRun",r.id);}
+        // One of the crew who died here watches the rest of it from the far bank.
+        if(r.dead.contains(p.getUUID())){own.putBoolean("Watching",true);var to=world(b,LastCrossingSite.FAR_WATCH);p.teleportTo(l,to.x,to.y,to.z,180,0);
+            cue(p,"You watch from the far bank, across the water.");HousePackets.send(p,new CrossingPayload(skyTime(r)));return;}
         if(r.crew.containsKey(p.getUUID())){own.putBoolean("Rejoined",true);cue(p,"Vera looks up from the clipboard. “"+LastCrossingTexts.BACK+"”");}
         else if(r.phase>=DAY)own.putBoolean("Partway",true);
         cue(p,"A farm road, running north and down into floodwater. Beside it a power line on poles goes up a levee toward a station by a river.");
@@ -210,6 +232,7 @@ public final class LastCrossing {
                 case GATHERING->gather(l,r,here);
                 case ROLL->roll(l,r,here);
                 case DAY->day(l,r,here);
+                case DUSK->LastCrossingNight.tick(l,r,here);
                 default->{}
             }
             demo(l,r);
@@ -222,8 +245,8 @@ public final class LastCrossing {
             if(r.tick%40==0)for(var p:here)HousePackets.send(p,new CrossingPayload(skyTime(r)));
         }
     }
-    /** The sky's hour: morning until the roll; Day One running from morning to dusk; dusk. */
-    static long skyTime(Run r){return r.phase<DAY?1000:r.phase==DAY?1000+11500L*Math.min(DAY_TICKS,r.day)/DAY_TICKS:12500;}
+    /** The sky's hour: morning until the roll; Day One running from morning to dusk; Night One from dusk to first light; the morning after. */
+    static long skyTime(Run r){return r.phase<DAY?1000:r.phase==DAY?1000+11500L*Math.min(DAY_TICKS,r.day)/DAY_TICKS:r.phase==DUSK?12500+11000L*Math.min(NIGHT_TICKS,r.night.tick)/NIGHT_TICKS:24500;}
     /** Vera, on her porch unless she is on her way somewhere. */
     static void ensureVera(ServerLevel l,Run r){
         if(actor(l,r.vera)!=null)return;
@@ -314,9 +337,10 @@ public final class LastCrossing {
         if(r.day>=DAY_TICKS)dusk(l,r,here);
     }
     static boolean anyone(ServerLevel l,Run r,String key){for(var p:readers(l,r.base))if(own(p).getBoolean(key))return true;return false;}
-    /** Dusk: the light going. If the intake still isn't primed, Vera calls the valve down the pipe herself. The night is the next slice. */
+    /** Dusk: the light going. If the intake still isn't primed, Vera calls the valve down the pipe herself, and goes in to keep the night in
+     * the gauge room (LastCrossingNight). */
     static void dusk(ServerLevel l,Run r,List<ServerPlayer> here){
-        r.phase=DUSK;r.dusk=true;speak(l,r,LastCrossingTexts.DUSK,64);
+        r.phase=DUSK;r.dusk=true;speak(l,r,LastCrossingTexts.DUSK,64);LastCrossingNight.begin(l,r);
         if(!r.primed&&r.bleedOpen&&r.needle>=0)downPipe(l,r,LastCrossingSite.PIPE_A_DOWN,"Vera",String.format(LastCrossingTexts.DUSK_CALL,r.needle+1));
         for(var p:here)if(r.crew.containsKey(p.getUUID()))mark(p,"DayOne");
     }
@@ -348,8 +372,8 @@ public final class LastCrossing {
         if(!r.primed&&r.turnedAt>=0&&r.brakeBy==null&&r.tick-r.turnedAt>VALVE_DRIFT){r.turned=0;r.turnedAt=-1;
             for(var p:here){var q=rel(p.position(),b);if(LastCrossingSite.inIntake(q)||LastCrossingSite.inGaugeRoom(q))cue(p,"Below, the valve creeps back. The needle sinks in its band.");}}
         // Once primed, the needle dips now and then though the pump's note never changes.
-        if(r.primed){long since=r.tick-r.primedAt;boolean dip=since>=DIP_EVERY&&since%DIP_EVERY<DIP_FOR;
-            var want=LastCrossingSite.fit(Kind.GAUGE,Direction.WEST,dip?Math.floorMod(r.needle+1,3):3);var at=b.offset(LastCrossingSite.GAUGE);
+        if(r.primed){long since=r.tick-r.primedAt;boolean dip=since>=DIP_EVERY&&since%DIP_EVERY<DIP_FOR;int night=LastCrossingNight.gauge(r);
+            var want=LastCrossingSite.fit(Kind.GAUGE,Direction.WEST,night>=0?night:dip?Math.floorMod(r.needle+1,3):3);var at=b.offset(LastCrossingSite.GAUGE);
             if(!l.getBlockState(at).equals(want))l.setBlock(at,want,Block.UPDATE_CLIENTS);
             if(dip)for(var p:here){if(p.position().distanceToSqr(Vec3.atCenterOf(at))>3.5*3.5)continue;var own=own(p);if(own.getBoolean("GaugeDip"))continue;own.putBoolean("GaugeDip",true);save(p,own);
                 cue(p,"The needle dips, though the pump's note hasn't changed. Then it creeps back.");}}
@@ -400,11 +424,11 @@ public final class LastCrossing {
     static void touch(ServerPlayer p){
         Talk.close(p);var r=runOf(p);if(r==null||r.plateAt==null)return;var l=p.serverLevel();
         boolean infected=own(p).getBoolean("Infected");fog(l,r,infected);
-        var own=own(p);own.putInt("PlateReads",own.getInt("PlateReads")+1);if(!infected)own.putBoolean("PlateClean",true);save(p,own);
+        var own=own(p);own.putInt("PlateReads",own.getInt("PlateReads")+1);if(!infected)own.putBoolean("PlateClean",true);else own.putBoolean("Exposed",true);save(p,own);
         cue(p,infected?"A breath of fog on the near side, and on the far side a second print comes up and closes round your hand.":"Your palm leaves a breath of fog on the near side of the glass. Nothing comes up on the far side.");
         var at=Vec3.atCenterOf(r.base.offset(r.plateAt));
         for(var q:readers(l,r.base)){if(q==p||!sees(q,at,8,.4))continue;
-            cue(q,name(p)+" lays a palm on the plate: fog on the near side, "+(infected?"and a second print on the far.":"nothing on the far."));addName(q,"Readings",name(p));}
+            cue(q,name(p)+" lays a palm on the plate: fog on the near side, "+(infected?"and a second print on the far.":"nothing on the far."));addName(q,"Readings",name(p));if(infected)addName(q,"SecondPrints",name(p));}
     }
     static void lift(ServerPlayer p){
         Talk.close(p);var r=runOf(p);if(r==null||r.plateAt==null)return;var l=p.serverLevel();
@@ -546,6 +570,7 @@ public final class LastCrossing {
                 cue(p,"You take the wrench off the pipe.");return true;}
             case BLEED->{return bleed(p,r,stage);}
             case GRATE->{
+                if(stage==2){cue(p,"A hand, up through the broken corner, holding on. Hit it.");return true;}
                 var own=own(p);own.putBoolean("BrokenCorner",true);
                 if(holds(p,"wrench")){own.putBoolean("Tapped",true);save(p,own);r.tapAt=r.tick+20;sound(l,pos,SoundEvents.ANVIL_LAND,.25F,1.8F);
                     cue(p,"The wrench slips and rings on the grate. A moment later, something taps back.");return true;}
@@ -554,6 +579,7 @@ public final class LastCrossing {
             case VALVE->{return valve(p,r,stage);}
             case BRAKE->{
                 if(rel.equals(LastCrossingSite.CABLE_BRAKE)){cue(p,"The brake's set. Nobody's pulling today.");return true;}
+                if(LastCrossingNight.brakeUse(p))return true;
                 if(r.primed){cue(p,"The brake's off. The pump's holding.");return true;}
                 if(r.needle>=0&&r.turned==r.needle+1&&r.turnedAt>=0&&r.tick-r.turnedAt<=VALVE_DRIFT){
                     r.brakeBy=p.getUUID();r.brakeHeld=0;l.setBlock(pos,LastCrossingSite.fit(Kind.BRAKE,Direction.WEST,1),Block.UPDATE_CLIENTS);sound(l,pos,SoundEvents.IRON_DOOR_OPEN,.7F,.7F);
@@ -576,6 +602,7 @@ public final class LastCrossing {
                 cue(p,first?"The wheel's stiff, but it turns. It wants holding shut while someone pins it from above.":"You lean on the wheel and hold it shut.");return true;}
             case PIN->{return pin(p,r,pos);}
             case COIL->{
+                if(LastCrossingNight.holdLine(p,rel,stage))return true;
                 if(rel.equals(LastCrossingSite.RAMP_COIL)&&stage==0){
                     if(!give(p,item(CrossingRegistry.LINE.get(),"line",null))){cue(p,"Your hands are full.");return true;}
                     l.setBlock(pos,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);r.lineIn=true;mark(p,"LineIn");job(p,"landing");
@@ -589,8 +616,12 @@ public final class LastCrossing {
                 if(stage==1){if(!give(p,item(CrossingRegistry.LAMP.get(),"lamp",null))){cue(p,"Your hands are full.");return true;}
                     l.setBlock(pos,LastCrossingSite.fit(Kind.HOOK,s.getValue(CrossingBlock.FACING),0),Block.UPDATE_CLIENTS);r.lampHome=false;mark(p,"TookLamp");
                     cue(p,"You lift the station lamp off its hook.");return true;}
-                if(holds(p,"lamp")){drop(p,"lamp");l.setBlock(pos,LastCrossingSite.fit(Kind.HOOK,s.getValue(CrossingBlock.FACING),1),Block.UPDATE_CLIENTS);r.lampHome=true;cue(p,"You hang the lamp back on its hook.");return true;}
+                if(holds(p,"lamp")){drop(p,"lamp");l.setBlock(pos,LastCrossingSite.fit(Kind.HOOK,s.getValue(CrossingBlock.FACING),1),Block.UPDATE_CLIENTS);r.lampHome=true;
+                    if(rel.equals(LastCrossingSite.STAIR_HOOK)){if(r.phase==DUSK)mark(p,"LampStair");cue(p,"You hang the lamp at the foot of the stair. It lights the way up.");}
+                    else cue(p,"You hang the lamp back on its hook.");return true;}
                 return false;}
+            case BAR->{return LastCrossingNight.bar(p,rel,stage);}
+            case ISOLATOR->{return LastCrossingNight.isolate(p,pos,stage);}
             default->{return false;}
         }
     }
@@ -681,7 +712,12 @@ public final class LastCrossing {
         var r=runOf(p);if(r==null)return;var l=p.serverLevel();
         if(r.phase==GATHERING){speak(l,r,r.crew.containsKey(p.getUUID())?"We'll give the rest of you a minute.":"Sign the roll first. It's on the table.");return;}
         if(r.phase==ROLL){speak(l,r,"Wait for your name.");return;}
-        if(r.phase==DUSK){speak(l,r,LastCrossingTexts.DUSK);return;}
+        if(r.phase>=DUSK){
+            begin(p,"Vera");Talk.line(p,"Vera",r.phase==DUSK?"What is it?":"You made it to the light, then.");
+            var replies=new ArrayList<Talk.Reply>();
+            if(r.phase==DUSK)replies.add(Talk.reply("What do we do?",q->{Talk.line(q,"Vera",LastCrossingTexts.NIGHT_ANSWER);Talk.end(q);}));
+            if(own(p).getBoolean("Infected")&&!own(p).getBoolean("Told"))replies.add(Talk.reply("It got a claw in me.",q->{LastCrossingNight.told(q);Talk.line(q,"Vera",LastCrossingTexts.TOLD_ANSWER);Talk.end(q);}));
+            replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);return;}
         begin(p,"Vera");Talk.line(p,"Vera","What is it?");
         var replies=new ArrayList<Talk.Reply>();
         replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.JOBS+(r.crew.size()>=5?" "+LastCrossingTexts.JOBS_FIVE:"")+(r.crew.size()>=6?" "+LastCrossingTexts.JOBS_SIX:""));Talk.end(q);}));
@@ -704,15 +740,27 @@ public final class LastCrossing {
         if(!(e.getEntity() instanceof ServerPlayer p)||e.getHand()!=InteractionHand.MAIN_HAND)return;var r=runOf(p);if(r==null)return;
         var rel=e.getPos().subtract(r.base);
         if(rel.equals(LastCrossingSite.BELL)){bell(p);return;}
+        if(p.serverLevel().getBlockState(e.getPos()).is(Blocks.IRON_BARS)&&LastCrossingNight.reachDown(p,rel)){e.setCanceled(true);return;}
         if(stageLine(p,rel))e.setCanceled(true);
+    }
+    /** Night One: the hand in the grate struck. */
+    @SubscribeEvent public static void strike(PlayerInteractEvent.LeftClickBlock e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START)return;var r=runOf(p);if(r==null)return;
+        var s=p.serverLevel().getBlockState(e.getPos());if(!CrossingBlock.is(s,Kind.GRATE)||s.getValue(CrossingBlock.STAGE)!=2)return;
+        if(LastCrossingNight.strike(p))e.setCanceled(true);
+    }
+    /** Night One: a clean reader cut by one of the things from the water. */
+    @SubscribeEvent public static void cut(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post e){
+        if(e.getEntity() instanceof ServerPlayer p&&e.getSource().getEntity() instanceof Undertow&&runOf(p)!=null)LastCrossingNight.wounded(p);
     }
     /** The bell beside the ramp rung (it rings itself). */
     public static void bell(ServerPlayer p){if(runOf(p)==null)return;mark(p,"RangBell");job(p,"spillway");}
     /** The coiled line, carried back from Vera's porch, made fast at the head of the ramp for the night. */
     public static boolean stageLine(ServerPlayer p,BlockPos rel){
-        var r=runOf(p);if(r==null||!holds(p,"line")||!r.lineReturned||r.lineStaged||!LastCrossingSite.atRamp(Vec3.atCenterOf(rel.above())))return false;
-        drop(p,"line");r.lineStaged=true;p.serverLevel().setBlock(r.base.offset(LastCrossingSite.STAGED_COIL),LastCrossingSite.fit(Kind.COIL,Direction.NORTH,2),Block.UPDATE_CLIENTS);
-        mark(p,"StagedLine");job(p,"spillway");cue(p,"You make the line fast on the cleat at the head of the ramp, ready for the night.");return true;
+        var r=runOf(p);if(r==null||!holds(p,"line")||!(r.lineReturned||r.phase==DUSK)||r.lineStaged||!LastCrossingSite.atRamp(Vec3.atCenterOf(rel.above())))return false;
+        drop(p,"line");r.lineStaged=true;r.lineReturned=true;p.serverLevel().setBlock(r.base.offset(LastCrossingSite.STAGED_COIL),LastCrossingSite.fit(Kind.COIL,Direction.NORTH,2),Block.UPDATE_CLIENTS);
+        mark(p,"StagedLine");job(p,r.phase==DUSK?"landing":"spillway");cue(p,"You make the line fast on the cleat at the head of the ramp"+(r.phase==DUSK?".":", ready for the night."));
+        LastCrossingNight.madeFast(p,r);return true;
     }
     @SubscribeEvent public static void hand(PlayerInteractEvent.EntityInteract e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!(e.getTarget() instanceof ServerPlayer q)||e.getHand()!=InteractionHand.MAIN_HAND)return;
@@ -737,7 +785,11 @@ public final class LastCrossing {
         if(w.equals("wrench")&&p.position().distanceToSqr(Vec3.atCenterOf(r.base.offset(LastCrossingSite.GRATE)))<3*3){r.tapAt=r.tick+20;var own=own(p);own.putBoolean("Tapped",true);own.putBoolean("BrokenCorner",true);save(p,own);
             cue(p,"The wrench rings on the grate. A moment later, something taps back.");}
     }
-    @SubscribeEvent public static void died(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p&&carries(p,"plate")){var r=runOf(p);if(r!=null&&p.getUUID().equals(r.plateBy))putDownNear(p.serverLevel(),r,p);else drop(p,"plate");}}
+    @SubscribeEvent public static void died(LivingDeathEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p))return;var r=runOf(p);
+        if(r!=null&&r.crew.containsKey(p.getUUID())){r.dead.add(p.getUUID());var own=own(p);own.putBoolean("Died",true);if(r.phase==DUSK)own.putBoolean("DiedNightOne",true);save(p,own);}
+        if(carries(p,"plate")){if(r!=null&&p.getUUID().equals(r.plateBy))putDownNear(p.serverLevel(),r,p);else drop(p,"plate");}
+    }
     @SubscribeEvent public static void left(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p&&carries(p,"plate")){var r=runOf(p);if(r!=null&&p.getUUID().equals(r.plateBy))putDownNear(p.serverLevel(),r,p);else drop(p,"plate");}}
 
     // ------------------------------------------------------------------------------------------------ the reset
@@ -758,5 +810,7 @@ public final class LastCrossing {
         r.rollerSeated=false;r.jamReported=false;r.lineIn=false;r.lineReturned=false;r.lineStaged=false;r.wheelBy=null;r.pinSeated=false;r.pinAt=-1;r.twoKnocksB=-1;r.rehearsed=false;r.rehearsePrompted=false;r.rehearseAt=-1;
         r.knocks.clear();r.plateAt=LastCrossingSite.PLATE_HOME;r.plateBy=null;r.fogUntil=-1;r.lampHome=true;r.wrenchHome=true;r.wrenchDisplay=null;r.tapAt=-1;
         r.routeCalled=false;r.dusk=false;r.demo=0;r.kettle=false;r.route.clear();r.leg=0;r.legTicks=0;r.greeted.clear();r.current.clear();
+        LastCrossingNight.reset(l,r);r.dead.clear();
+        var cable=b.offset(LastCrossingSite.CABLE_DOOR);for(int y=0;y<=1;y++){var at=cable.above(y);var s=l.getBlockState(at);if(s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN))l.setBlock(at,s.setValue(DoorBlock.OPEN,false),Block.UPDATE_CLIENTS);}
     }
 }

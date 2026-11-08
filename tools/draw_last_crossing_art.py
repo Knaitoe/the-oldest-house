@@ -9,7 +9,9 @@ numbered valves and the red bypass wheel; the intake's bleed screw, shut and ope
 the pump, idle and running; a speaking-pipe mouth; a cable roller, seated and unseated in its cradle; the fairlead, jammed and clear; the
 winch drum; the inspection hatch; the ramp sluice's wheel, free and pinned; the locking pin, up and seated; the mooring line, loose on the
 ramp, coiled on the porch and staged at the ramp; the lamp hook, empty and with the station lamp; the depth post; and the ferry's cast
-brass nameplate in two halves. Also the items' pictures: the plate carried, the mooring line, the station lamp and the wrench. Writes the
+brass nameplate in two halves. From 0.4.352, Night One: a hand come up through the grate's broken corner, the cable house's door bar
+(leaning by the door and dropped across it), the gauge room's isolation valve (open and shut), the mooring line snapped, and the skin of
+the things that come up out of the water at night. Also the items' pictures: the plate carried, the mooring line, the station lamp and the wrench. Writes the
 models and block states and the blocks' and items' names. --check verifies everything.
 """
 from pathlib import Path
@@ -367,6 +369,95 @@ def wrench_item():
     return im
 
 
+def flesh():
+    # Waterlogged skin: grey going to green, the creases darker.
+    im = new(base='#8a9a86', seed=3731, spread=7)
+    for y in range(16):
+        for x in range(16):
+            if (x * 5 + y * 3) % 11 == 0:
+                dot(im, x, y, '#5e6e5c')
+    return im
+
+
+def timber():
+    # The door bar: a heavy squared timber, its grain along it.
+    im = new(base='#6e5034', seed=3732, spread=5)
+    for x in range(16):
+        dot(im, x, 0, '#86663f'); dot(im, x, 15, '#4c3622')
+    for y in (4, 9, 12):
+        for x in range(16):
+            if (x + y) % 3:
+                dot(im, x, y, '#5c422a')
+    return im
+
+
+def frayed():
+    # The snapped end of the line, its strands come apart.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(3733)
+    for x in range(16):
+        for y in range(16):
+            if (x + rnd.randint(0, 3)) % 4 == 0:
+                dot(im, x, y, '#b89a62' if rnd.random() < .6 else '#8a6e40')
+    return im
+
+
+def undertow_skin():
+    # The things that come up out of the water at night, on the humanoid layout (64 by 64): skin like the drowned's, sodden rags of what
+    # they once wore, weed and silt in the hair, eyes gone dark and the mouth hanging.
+    im = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+    rnd = random.Random(3740)
+    def paint(x0, y0, w, h, base, spread=8):
+        for y in range(y0, y0 + h):
+            for x in range(x0, x0 + w):
+                im.putpixel((x, y), shade(base, rnd.randint(-spread, spread)))
+    def box(u, v, w, h, d, base, spread=8):
+        paint(u + d, v, w, d, base, spread); paint(u + d + w, v, w, d, base, spread)
+        paint(u, v + d, d, h, base, spread); paint(u + d, v + d, w, h, base, spread)
+        paint(u + d + w, v + d, d, h, base, spread); paint(u + d + w + d, v + d, w, h, base, spread)
+    skin, rag, hair = '#7f907c', '#4e4a3c', '#2c3428'
+    box(0, 0, 8, 8, 8, skin)                       # head
+    box(16, 16, 8, 12, 4, rag, 10)                 # body, in rags
+    box(40, 16, 4, 12, 4, skin)                    # right arm
+    box(32, 48, 4, 12, 4, skin)                    # left arm
+    box(0, 16, 4, 12, 4, rag, 10)                  # right leg
+    box(16, 48, 4, 12, 4, rag, 10)                 # left leg
+    # Hair plastered flat with weed: the top and the back of the head, and down over the brow.
+    paint(8, 0, 8, 8, hair, 6); paint(24, 8, 8, 8, hair, 6)
+    for x in range(8, 16):
+        for y in range(8, 8 + 1 + (x * 7) % 3):
+            im.putpixel((x, y), shade(hair, rnd.randint(-6, 6)))
+    for x in range(0, 8):
+        for y in range(8, 11):
+            im.putpixel((x, y), shade(hair, rnd.randint(-6, 6)))
+    for x in range(16, 24):
+        for y in range(8, 11):
+            im.putpixel((x, y), shade(hair, rnd.randint(-6, 6)))
+    # The face (front of the head, 8..16 by 8..16): eyes sunk dark, the mouth hanging open.
+    for x, y in ((9, 11), (10, 11), (13, 11), (14, 11), (9, 12), (14, 12)):
+        im.putpixel((x, y), shade('#141a16', 0))
+    im.putpixel((10, 12), shade('#2a3a2c', 0)); im.putpixel((13, 12), shade('#2a3a2c', 0))
+    for x in range(10, 14):
+        im.putpixel((x, 14), shade('#1a1412', 0))
+    for x in range(11, 13):
+        im.putpixel((x, 15), shade('#1a1412', 0))
+    im.putpixel((11, 13), shade('#5e6e5c', 0)); im.putpixel((12, 13), shade('#5e6e5c', 0))
+    # Weed trailing from the shoulders and silt streaked down the rags.
+    for x in range(20, 28, 3):
+        for y in range(20, 20 + rnd.randint(3, 7)):
+            im.putpixel((x, y), shade('#3a5a2e', rnd.randint(-6, 6)))
+    for x in range(16, 40):
+        for y in range(20, 32):
+            if rnd.random() < .08:
+                im.putpixel((x, y), shade('#6a5a3a', rnd.randint(-6, 6)))
+    # Hands darker, the nails long.
+    for u, v in ((40, 16), (32, 48)):
+        for x in range(u, u + 16):
+            for y in (v + 14, v + 15):
+                im.putpixel((x, y), shade('#4e5e4a', rnd.randint(-4, 4)))
+    return im
+
+
 def textures():
     t = {
         'deal': deal(), 'iron': iron(), 'iron_red': iron('#8a3a2e', 3726), 'brass': brass(), 'hardboard': hardboard(),
@@ -379,12 +470,14 @@ def textures():
         'grate': grate(False), 'grate_broken': grate(True), 'lamp_on': lamp_light(True), 'lamp_off': lamp_light(False),
         'manila': manila(), 'wire': wire_rope(), 'roller': roller_steel(), 'depth': depth_post(),
         'name_0': nameplate(0), 'name_1': nameplate(1), 'grip': wood_grip(), 'glass_lit': glass_lit(),
+        'flesh': flesh(), 'timber': timber(), 'frayed': frayed(),
     }
     out = {f'block/crossing/{k}.png': v for k, v in t.items()}
     out['item/crossing_plate.png'] = plate_item()
     out['item/crossing_line.png'] = line_item()
     out['item/crossing_lamp.png'] = lamp_item()
     out['item/crossing_wrench.png'] = wrench_item()
+    out['entity/crossing_undertow.png'] = undertow_skin()
     return out
 
 
@@ -475,6 +568,12 @@ def fitting_models():
     for stage, tex in enumerate(('grate', 'grate_broken')):
         m[f'grate_{stage}'] = model([element([0, 15, 0], [16, 16, 16], {'up': 'g', 'down': 'g', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})],
                                     {'g': tex, 'i': 'iron'}, 'iron')
+    # Night One: a hand come up through the broken corner, the wrist out of the black water and the fingers hooked over the iron.
+    hand = [element([1, 15, 1], [4, 24, 4], {'all': 'f'}, rot={'origin': [2.5, 16, 2.5], 'axis': 'x', 'angle': 22.5}),
+            element([.5, 22, 3], [1.5, 27, 4], {'all': 'f'}), element([2, 23, 3.5], [3, 28, 4.5], {'all': 'f'}), element([3.5, 22, 3], [4.5, 27, 4], {'all': 'f'}),
+            element([.5, 26, 4], [1.5, 27, 6], {'all': 'f'}), element([2, 27, 4.5], [3, 28, 6.5], {'all': 'f'}), element([3.5, 26, 4], [4.5, 27, 6], {'all': 'f'})]
+    m['grate_2'] = model([element([0, 15, 0], [16, 16, 16], {'up': 'g', 'down': 'g', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})] + hand,
+                         {'g': 'grate_broken', 'i': 'iron', 'f': 'flesh'}, 'iron')
     # The pump, its motor on top and its lamp: dark idle, lit running.
     for stage, lamp in enumerate(('lamp_off', 'lamp_on')):
         m[f'pump_{stage}'] = model([element([1, 0, 1], [15, 12, 15], {'all': 'i'}), element([4, 12, 4], [12, 16, 12], {'all': 'g'}),
@@ -517,6 +616,17 @@ def fitting_models():
     m['hook_0'] = model(hook, {'i': 'iron'}, 'iron')
     m['hook_1'] = model(hook + [element([5, 3, 6], [11, 10, 12], {'all': 'g', 'up': 'i', 'down': 'i'}), element([5.5, 10, 6.5], [10.5, 11.5, 11.5], {'all': 'i'}),
                                 element([7.5, 11.5, 8.5], [8.5, 14, 9.5], {'all': 'i'})], {'i': 'iron', 'g': 'glass_lit'}, 'glass_lit')
+    # The line snapped at the first rise: a short coil left on the cleat and its frayed end.
+    m['coil_3'] = model([element([4, 0, 4], [12, 2, 12], {'all': 'm'}), element([1, 0, 7], [15, 1.5, 9], {'all': 'i'}), element([7, 0, 0], [9, 1, 5], {'all': 'm'}),
+                         element([6, 0, -1], [10, .5, 1], {'all': 'x'})], {'m': 'manila', 'i': 'iron', 'x': 'frayed'}, 'manila')
+    # The cable house's door bar: leaning on the wall by the door, and dropped across the doorway in its iron brackets.
+    m['bar_0'] = model([element([5, 0, 13], [11, 28, 16], {'all': 't'})], {'t': 'timber'}, 'timber')
+    m['bar_1'] = model([element([0, 5, 6], [16, 9, 10], {'all': 't'}), element([0, 14, 6], [16, 18, 10], {'all': 't'}),
+                        element([0, 3, 5], [1, 20, 11], {'all': 'i'}), element([15, 3, 5], [16, 20, 11], {'all': 'i'})], {'t': 'timber', 'i': 'iron'}, 'timber')
+    # The gauge room's isolation valve on the wall: a gate valve on a riser, its lever up (open) or across (shut).
+    riser = [element([7, 0, 14], [9, 16, 16], {'all': 'p'}), element([5, 5, 12], [11, 10, 16], {'all': 'i'}), element([7, 10, 13], [9, 11, 14], {'all': 'i'})]
+    m['isolator_0'] = model(riser + [element([7.5, 11, 12.5], [8.5, 17, 13.5], {'all': 'r'})], {'p': 'pipe', 'i': 'iron', 'r': 'iron_red'}, 'pipe')
+    m['isolator_1'] = model(riser + [element([2, 10, 12.5], [14, 11, 13.5], {'all': 'r'})], {'p': 'pipe', 'i': 'iron', 'r': 'iron_red'}, 'pipe')
     m['depth_0'] = model([element([6, 0, 6], [10, 16, 10], {'all': 'd'})], {'d': 'depth'}, 'depth')
     # The ferry's nameplate, bolted to its rail in two halves.
     for half in range(2):
@@ -525,12 +635,13 @@ def fitting_models():
 
 
 KINDS = ['table', 'clipboard', 'slate', 'plate', 'plate_set', 'bracket', 'stove', 'gauge', 'brake', 'valve', 'run', 'bleed', 'grate', 'pump', 'pipe', 'roller',
-         'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate']
-STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 2, 'pump': 2, 'roller': 2, 'fairlead': 2,
-          'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 3, 'hook': 2, 'nameplate': 2}
+         'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate', 'bar', 'isolator']
+STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 3, 'pump': 2, 'roller': 2, 'fairlead': 2,
+          'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'crossing_fitting': 'Station Fitting'}
+ENTITIES = {'crossing_undertow': 'Undertow'}
 ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench'}
 
 
@@ -579,7 +690,8 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
-    wanted = {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()}}
+    wanted = {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()},
+              **{f'entity.the_oldest_house.{k}': v for k, v in ENTITIES.items()}}
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key
