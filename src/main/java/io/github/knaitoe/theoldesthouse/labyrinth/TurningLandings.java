@@ -74,7 +74,7 @@ public final class TurningLandings {
             boolean edge=Math.abs(dx)==2||Math.abs(dz)==2;
             boolean gap=side!=null&&(g&bit(side))!=0;
             // Where feet cross, the boards are worn pale; elsewhere they are plain.
-            l.setBlock(b.offset(at),gap&&(dx==0||dz==0)?PuzzleFittingBlock.of(PuzzleFittingBlock.Kind.WORN,side.getOpposite()):Blocks.DARK_OAK_PLANKS.defaultBlockState(),FLAGS);
+            l.setBlock(b.offset(at),gap&&(dx==0||dz==0)?PuzzleFittingBlock.of(PuzzleFittingBlock.Kind.WORN,side.getOpposite()):PuzzleRegistry.shell("landing"),FLAGS);
             if(edge&&!gap)rails.add(at.above());else l.setBlock(b.offset(at.above()),Blocks.AIR.defaultBlockState(),FLAGS);
         }
         fences(l,b,rails);
@@ -83,7 +83,7 @@ public final class TurningLandings {
     /** Rails: dark oak fences, joined to each other along a run, each standing on a board where nothing else holds it up. */
     static void fences(ServerLevel l,BlockPos b,Collection<BlockPos> cells){
         var set=new HashSet<>(cells);
-        for(var c:cells){var under=b.offset(c.below());var s=l.getBlockState(under);if(s.isAir()||s.is(Blocks.WATER))l.setBlock(under,Blocks.DARK_OAK_PLANKS.defaultBlockState(),FLAGS);}
+        for(var c:cells){var under=b.offset(c.below());var s=l.getBlockState(under);if(s.isAir()||s.is(Blocks.WATER))l.setBlock(under,PuzzleRegistry.shell("landing"),FLAGS);}
         for(var c:cells){var f=Blocks.DARK_OAK_FENCE.defaultBlockState();
             f=f.setValue(FenceBlock.NORTH,set.contains(c.north())).setValue(FenceBlock.SOUTH,set.contains(c.south())).setValue(FenceBlock.EAST,set.contains(c.east())).setValue(FenceBlock.WEST,set.contains(c.west()));
             l.setBlock(b.offset(c),f,FLAGS);}
@@ -133,16 +133,16 @@ public final class TurningLandings {
     // ------------------------------------------------------------------ the early room
     public static void buildEarly(ServerLevel l,BlockPos b){
         var place=LabyrinthPlace.TURNING_LANDING;var box=place.room();
-        var wall=Blocks.STONE_BRICKS.defaultBlockState();var floor=Blocks.MOSSY_STONE_BRICKS.defaultBlockState();var ceiling=Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        var wall=PuzzleRegistry.shell("cistern");var floor=PuzzleRegistry.shell("cistern_floor");var ceiling=PuzzleRegistry.shell("landing");
         PuzzleRooms.shell(l,b,box,wall,floor,ceiling);
-        var water=Blocks.WATER.defaultBlockState();var planks=Blocks.DARK_OAK_PLANKS.defaultBlockState();var log=Blocks.DARK_OAK_LOG.defaultBlockState();
+        var water=Blocks.WATER.defaultBlockState();var planks=PuzzleRegistry.shell("landing");var log=Blocks.DARK_OAK_LOG.defaultBlockState();
         // The floor by the door, and the cistern under the whole stairwell beyond it.
         PuzzleRooms.fill(l,b,-4,-3,-3,4,-2,0,wall);PuzzleRooms.fill(l,b,-4,-1,-3,4,-1,0,planks);
         PuzzleRooms.fill(l,b,-4,-3,-17,4,-2,-4,water);
         // Plaster above the stone, from the landing's height up.
-        PuzzleRooms.fill(l,b,-5,6,-18,-5,11,0,Blocks.CALCITE.defaultBlockState());PuzzleRooms.fill(l,b,5,6,-18,5,11,0,Blocks.CALCITE.defaultBlockState());PuzzleRooms.fill(l,b,-4,6,-18,4,11,-18,Blocks.CALCITE.defaultBlockState());
+        PuzzleRooms.fill(l,b,-5,6,-18,-5,11,0,PuzzleRegistry.shell("plaster"));PuzzleRooms.fill(l,b,5,6,-18,5,11,0,PuzzleRegistry.shell("plaster"));PuzzleRooms.fill(l,b,-4,6,-18,4,11,-18,PuzzleRegistry.shell("plaster"));
         // The stair up from the door, on stone; the ledge at its top, scraped where the landing swings past.
-        for(int i=0;i<3;i++)for(int x=-1;x<=1;x++){PuzzleRooms.fill(l,b,x,-3,-4-i,x,i-1,-4-i,wall);l.setBlock(b.offset(x,i,-4-i),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),FLAGS);}
+        for(int i=0;i<3;i++)for(int x=-1;x<=1;x++){PuzzleRooms.fill(l,b,x,-3,-4-i,x,i-1,-4-i,wall);l.setBlock(b.offset(x,i,-4-i),PuzzleRegistry.stair(Direction.NORTH),FLAGS);}
         for(int x=-1;x<=1;x++){PuzzleRooms.fill(l,b,x,-3,-7,x,2,-7,wall);l.setBlock(b.offset(x,3,-7),x==0?PuzzleFittingBlock.of(PuzzleFittingBlock.Kind.SCRAPED,Direction.NORTH):planks,FLAGS);}
         // The bridge to the door on its north side, and a nook either side to stand in.
         for(int z=-13;z>=-17;z--)for(int x=-1;x<=1;x++)l.setBlock(b.offset(x,3,z),z==-13&&x==0?PuzzleFittingBlock.of(PuzzleFittingBlock.Kind.SCRAPED,Direction.SOUTH):planks,FLAGS);
@@ -159,7 +159,7 @@ public final class TurningLandings {
         fences(l,b,rails);
         // A ladder out of the cistern, and somewhere to sit in the east nook.
         for(int y=-3;y<=-1;y++)l.setBlock(b.offset(3,y,-4),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.NORTH),FLAGS);
-        l.setBlock(b.offset(4,4,-10),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST),FLAGS);
+        l.setBlock(b.offset(4,4,-10),PuzzleRegistry.stair(Direction.EAST),FLAGS);
         l.setBlock(b.offset(4,4,-9),Blocks.POTTED_FERN.defaultBlockState(),FLAGS);
         // Light: a lantern on a long chain over the landing, and one in each nook.
         PuzzleRooms.fill(l,b,0,9,-10,0,11,-10,Blocks.CHAIN.defaultBlockState());l.setBlock(b.offset(0,8,-10),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),FLAGS);
@@ -174,15 +174,15 @@ public final class TurningLandings {
     // ------------------------------------------------------------------ the deep room
     public static void buildDeep(ServerLevel l,BlockPos b){
         var place=LabyrinthPlace.TURNING_STAIR;var box=place.room();
-        var wall=Blocks.STONE_BRICKS.defaultBlockState();var floor=Blocks.MOSSY_STONE_BRICKS.defaultBlockState();var ceiling=Blocks.DARK_OAK_PLANKS.defaultBlockState();
+        var wall=PuzzleRegistry.shell("cistern");var floor=PuzzleRegistry.shell("cistern_floor");var ceiling=PuzzleRegistry.shell("landing");
         PuzzleRooms.shell(l,b,box,wall,floor,ceiling);
-        var water=Blocks.WATER.defaultBlockState();var planks=Blocks.DARK_OAK_PLANKS.defaultBlockState();var log=Blocks.DARK_OAK_LOG.defaultBlockState();
+        var water=Blocks.WATER.defaultBlockState();var planks=PuzzleRegistry.shell("landing");var log=Blocks.DARK_OAK_LOG.defaultBlockState();
         PuzzleRooms.fill(l,b,-9,-3,-2,9,-2,0,wall);PuzzleRooms.fill(l,b,-9,-1,-2,9,-1,0,planks);
         PuzzleRooms.fill(l,b,-9,-3,-21,9,-2,-3,water);
-        PuzzleRooms.fill(l,b,-10,6,-22,-10,14,0,Blocks.CALCITE.defaultBlockState());PuzzleRooms.fill(l,b,10,6,-22,10,14,0,Blocks.CALCITE.defaultBlockState());PuzzleRooms.fill(l,b,-9,6,-22,9,14,-22,Blocks.CALCITE.defaultBlockState());
+        PuzzleRooms.fill(l,b,-10,6,-22,-10,14,0,PuzzleRegistry.shell("plaster"));PuzzleRooms.fill(l,b,10,6,-22,10,14,0,PuzzleRegistry.shell("plaster"));PuzzleRooms.fill(l,b,-9,6,-22,9,14,-22,PuzzleRegistry.shell("plaster"));
         var rails=new ArrayList<BlockPos>();
         // The stair up from the door to the lower landing's south ledge.
-        for(int i=0;i<3;i++)for(int x=-5;x<=-3;x++){PuzzleRooms.fill(l,b,x,-3,-3-i,x,i-1,-3-i,wall);l.setBlock(b.offset(x,i,-3-i),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),FLAGS);
+        for(int i=0;i<3;i++)for(int x=-5;x<=-3;x++){PuzzleRooms.fill(l,b,x,-3,-3-i,x,i-1,-3-i,wall);l.setBlock(b.offset(x,i,-3-i),PuzzleRegistry.stair(Direction.NORTH),FLAGS);
             rails.add(new BlockPos(-6,i+1,-3-i));rails.add(new BlockPos(-2,i+1,-3-i));}
         for(int x=-5;x<=-3;x++){PuzzleRooms.fill(l,b,x,-3,-6,x,2,-6,wall);l.setBlock(b.offset(x,3,-6),x==-4?PuzzleFittingBlock.of(PuzzleFittingBlock.Kind.SCRAPED,Direction.NORTH):planks,FLAGS);}
         rails.add(new BlockPos(-6,4,-6));PuzzleRooms.fill(l,b,GEARED_HANDLE.getX(),-3,GEARED_HANDLE.getZ(),GEARED_HANDLE.getX(),GEARED_HANDLE.getY()-1,GEARED_HANDLE.getZ(),log);
@@ -196,7 +196,7 @@ public final class TurningLandings {
         for(int x=-1;x<=9;x++){rails.add(new BlockPos(x,4,-7));if(x<=6)rails.add(new BlockPos(x,4,-11));}
         for(int x:new int[]{1,5,8})PuzzleRooms.fill(l,b,x,-3,-9,x,2,-9,log);
         // The second stair, north up the east wall, to a landing beside the upper landing's east side.
-        for(int i=0;i<5;i++)for(int x=7;x<=9;x++){PuzzleRooms.fill(l,b,x,-3,-11-i,x,3+i,-11-i,wall);l.setBlock(b.offset(x,4+i,-11-i),Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH),FLAGS);
+        for(int i=0;i<5;i++)for(int x=7;x<=9;x++){PuzzleRooms.fill(l,b,x,-3,-11-i,x,3+i,-11-i,wall);l.setBlock(b.offset(x,4+i,-11-i),PuzzleRegistry.stair(Direction.NORTH),FLAGS);
             rails.add(new BlockPos(6,5+i,-11-i));}
         for(int x=6;x<=9;x++)for(int z=-16;z>=-18;z--)l.setBlock(b.offset(x,9,z),x==6&&z==-17?PuzzleFittingBlock.of(PuzzleFittingBlock.Kind.SCRAPED,Direction.WEST):planks,FLAGS);
         for(int x=6;x<=9;x++)rails.add(new BlockPos(x,10,-19));rails.add(new BlockPos(6,10,-15));

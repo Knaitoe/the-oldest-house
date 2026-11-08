@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/puzzle_shell_plaster",
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/puzzle_shell_plaster_1"
+      },
+      {
+        "model": "the_oldest_house:block/puzzle_shell_plaster_2"
+      }
+    ]
+  }
+}

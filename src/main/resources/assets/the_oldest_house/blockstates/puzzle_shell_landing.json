@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/puzzle_shell_landing"
+      },
+      {
+        "model": "the_oldest_house:block/puzzle_shell_landing",
+        "y": 180
+      }
+    ]
+  }
+}

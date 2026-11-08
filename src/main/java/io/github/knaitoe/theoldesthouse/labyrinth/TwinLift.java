@@ -71,7 +71,7 @@ public final class TwinLift {
     // ------------------------------------------------------------------ building
     public static void build(ServerLevel l,BlockPos b){
         var box=PLACE.room();
-        var brick=Blocks.BRICKS.defaultBlockState();var floor=Blocks.SPRUCE_PLANKS.defaultBlockState();var ceiling=Blocks.DARK_OAK_PLANKS.defaultBlockState();var sub=Blocks.STONE_BRICKS.defaultBlockState();
+        var brick=PuzzleRegistry.shell("lobby");var floor=PuzzleRegistry.shell("boards");var ceiling=PuzzleRegistry.shell("landing");var sub=PuzzleRegistry.shell("shaft");
         PuzzleRooms.shell(l,b,box,brick,sub,ceiling);
         PuzzleRooms.fill(l,b,-9,-2,-14,9,-2,0,sub);PuzzleRooms.fill(l,b,-9,-1,-14,9,-1,0,floor);
         // The two brick shafts, open where their lifts meet a floor.

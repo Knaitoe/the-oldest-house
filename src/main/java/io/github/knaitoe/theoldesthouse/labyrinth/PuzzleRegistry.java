@@ -140,5 +140,25 @@ public final class PuzzleRegistry {
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<SphinxDreamEntity>> SPHINX_DREAM=TYPES.register("sphinx_dream",
         ()->net.minecraft.world.entity.EntityType.Builder.<SphinxDreamEntity>of(SphinxDreamEntity::new,net.minecraft.world.entity.MobCategory.MISC).sized(10F,6F).noSave().clientTrackingRange(20).updateInterval(1).build("sphinx_dream"));
     public static final DeferredItem<DreamStelaItem> DREAM_STELA=ITEMS.registerItem("dream_stela",DreamStelaItem::new,new net.minecraft.world.item.Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON).fireResistant());
+    /**
+     * 0.4.378, the texture pass's second interior release (docs/TEXTURE_PASS_PUZZLES_0_4_378.md): the service lift's, the turning
+     * landings' and the twin lifts' own shells, drawn by tools/draw_puzzle_shell_art.py. Each keeps the collision and sound of the
+     * vanilla block it stands in for; the landing stair is a stair underneath, with its treads worn pale.
+     */
+    private static final java.util.Map<String,DeferredBlock<Block>> SHELL=new java.util.LinkedHashMap<>();
+    private static void shell(String name,Block like){SHELL.put(name,BLOCKS.registerSimpleBlock("puzzle_shell_"+name,fixed(like)));}
+    static{
+        shell("plaster",Blocks.CALCITE);shell("boards",Blocks.SPRUCE_PLANKS);shell("boarding",Blocks.STRIPPED_SPRUCE_WOOD);
+        shell("shaft",Blocks.STONE_BRICKS);shell("cistern",Blocks.STONE_BRICKS);shell("cistern_floor",Blocks.MOSSY_STONE_BRICKS);
+        shell("landing",Blocks.DARK_OAK_PLANKS);shell("lobby",Blocks.BRICKS);
+    }
+    public static final DeferredBlock<net.minecraft.world.level.block.StairBlock> SHELL_STAIR=BLOCKS.registerBlock("puzzle_shell_stair",
+        p->new net.minecraft.world.level.block.StairBlock(Blocks.DARK_OAK_PLANKS.defaultBlockState(),p),fixed(Blocks.DARK_OAK_STAIRS));
+    /** One of the three rooms' own surfaces, by name. */
+    public static net.minecraft.world.level.block.state.BlockState shell(String name){var block=SHELL.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get().defaultBlockState();}
+    /** The landing stair, facing the way a reader climbs it. */
+    public static net.minecraft.world.level.block.state.BlockState stair(net.minecraft.core.Direction facing){return SHELL_STAIR.get().defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING,facing);}
+    /** Any of the three rooms' own surfaces. */
+    public static boolean isShell(net.minecraft.world.level.block.state.BlockState s){if(s.is(SHELL_STAIR.get()))return true;for(var b:SHELL.values())if(s.is(b.get()))return true;return false;}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);TYPES.register(bus);ITEMS.register(bus);}
 }

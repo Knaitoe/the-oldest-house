@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/puzzle_shell_cistern_floor"
+      },
+      {
+        "model": "the_oldest_house:block/puzzle_shell_cistern_floor",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/puzzle_shell_cistern_floor",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/puzzle_shell_cistern_floor",
+        "y": 270
+      }
+    ]
+  }
+}

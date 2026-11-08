@@ -420,6 +420,21 @@ public final class ExplorationPassTests {
         return !below.isEmpty()&&below.max(Direction.Axis.Y)>=.5&&below.max(Direction.Axis.Y)<=1&&clear(l,at)&&clear(l,at.above());
     }
     /** Whether a body can walk from one spot to another inside a room, stepping or jumping one block, dropping no more than one, never climbing. */
+    /**
+     * 0.4.378: the room's own shell. Counts the faces of the room's box that show to air: its own surfaces, and any of the vanilla
+     * blocks it was laid in until then (which should be none). Fittings, rails, posts, lanterns and water are neither.
+     */
+    static void wearsItsOwnShell(GameTestHelper h,ServerLevel l,BlockPos b,LabyrinthPlace place,int least){
+        var box=place.room();int own=0,vanilla=0;BlockPos first=null;
+        var old=java.util.Set.of(Blocks.CALCITE,Blocks.SPRUCE_PLANKS,Blocks.STRIPPED_SPRUCE_WOOD,Blocks.STONE_BRICKS,Blocks.MOSSY_STONE_BRICKS,Blocks.DARK_OAK_PLANKS,Blocks.DARK_OAK_STAIRS,Blocks.BRICKS);
+        for(int x=box.minX();x<=box.maxX();x++)for(int y=box.minY();y<=box.maxY();y++)for(int z=box.minZ();z<=box.maxZ();z++){
+            var at=b.offset(x,y,z);var s=l.getBlockState(at);boolean shows=false;
+            for(Direction d:Direction.values())if(l.getBlockState(at.relative(d)).isAir()){shows=true;break;}
+            if(!shows)continue;
+            if(PuzzleRegistry.isShell(s))own++;else if(old.contains(s.getBlock())){vanilla++;if(first==null)first=new BlockPos(x,y,z);}
+        }
+        h.assertTrue(own>least&&vanilla==0,place.id()+" wears its own shell: "+own+" own faces, "+vanilla+" vanilla"+(first==null?"":" (first at "+first+")"));
+    }
     private static boolean walks(ServerLevel l,BlockPos b,LabyrinthPlace place,BlockPos from,BlockPos to){
         var box=place.room();var seen=new HashSet<BlockPos>(List.of(from));var queue=new ArrayDeque<BlockPos>(List.of(from));
         while(!queue.isEmpty()){
@@ -443,7 +458,7 @@ public final class ExplorationPassTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
             .thenExecute(()->{
                 h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
-                ServiceLift.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                ServiceLift.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);wearsItsOwnShell(h,l,b,place,200);
                 p.teleportTo(l,b.getX()+3.5,b.getY(),b.getZ()-8.5,90,0);
                 java.util.function.Function<BlockPos,net.minecraft.world.level.block.state.BlockState> at=rel->l.getBlockState(b.offset(rel));
                 java.util.function.Supplier<BlockPos> panAt=()->new BlockPos(ServiceLift.RECESS_X,ServiceLift.PAN_TOP-ServiceLift.lift(l),ServiceLift.WALL_Z);
@@ -489,7 +504,7 @@ public final class ExplorationPassTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the room is resident"))
             .thenExecute(()->{
                 h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
-                TurningLandings.buildEarly(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                TurningLandings.buildEarly(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);wearsItsOwnShell(h,l,b,place,200);
                 var land=TurningLandings.EARLY;int start=TurningLandings.rot(l,place,land);var handle=b.offset(TurningLandings.EARLY_HANDLE);var front=PuzzleRooms.farDoor(place).south();var entry=new BlockPos(0,0,-1);
                 h.assertTrue((start==0||start==2)&&!TurningLandings.through(l,place)&&!walks(l,b,place,entry,front),"it starts open to the stair or to the bridge, never both, and the far door cannot be walked to");
                 h.assertTrue(PuzzleFittingBlock.is(l.getBlockState(handle),PuzzleFittingBlock.Kind.HANDLE)&&l.getBlockState(b.offset(0,3,-7)).getValue(PuzzleFittingBlock.KIND)==PuzzleFittingBlock.Kind.SCRAPED,"the handle stands by the stair top, and the boards there are scraped where the landing swings past");
@@ -576,7 +591,7 @@ public final class ExplorationPassTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
             .thenExecute(()->{
                 h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
-                TwinLift.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);
+                TwinLift.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);wearsItsOwnShell(h,l,b,place,200);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);
                 int ax=TwinLift.AX,bx=TwinLift.BX,sz=TwinLift.SZ;var hall=new BlockPos(0,0,-1);var front=PuzzleRooms.farDoor(place).south();
                 Runnable settle=()->{for(int i=0;i<40&&TwinLift.moving(l);i++)TwinLift.step(l,b);};
                 int a=TwinLift.level(l);
@@ -640,7 +655,7 @@ public final class ExplorationPassTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the stairwell is resident"))
             .thenExecute(()->{
                 h.assertTrue(PuzzleRooms.is(place)&&!place.isVignette()&&!ScenePolish.applies(place)&&WitnessAccount.Story.of(place.id())==null,"a puzzle room, built whole, and no story");
-                TurningLandings.buildDeep(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);p.teleportTo(l,b.getX()-3.5,b.getY()+4,b.getZ()-5.5,0,0);
+                TurningLandings.buildDeep(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);wearsItsOwnShell(h,l,b,place,200);p.teleportTo(l,b.getX()-3.5,b.getY()+4,b.getZ()-5.5,0,0);
                 var lowerL=TurningLandings.LOWER;var upperL=TurningLandings.UPPER;var entry=new BlockPos(-4,0,-1);var front=PuzzleRooms.farDoor(place).south();
                 var geared=b.offset(TurningLandings.GEARED_HANDLE);var upper=b.offset(TurningLandings.UPPER_HANDLE);var nook=new BlockPos(-8,4,-9);
                 java.util.function.IntSupplier lo=()->TurningLandings.rot(l,place,lowerL),up=()->TurningLandings.rot(l,place,upperL);

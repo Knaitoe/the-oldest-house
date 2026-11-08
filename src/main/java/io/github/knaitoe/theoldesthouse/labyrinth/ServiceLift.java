@@ -54,13 +54,13 @@ public final class ServiceLift {
     // ------------------------------------------------------------------ building
     public static void build(ServerLevel l,BlockPos b){
         var box=PLACE.room();
-        var wall=Blocks.CALCITE.defaultBlockState();var floor=Blocks.SPRUCE_PLANKS.defaultBlockState();var ceiling=Blocks.STRIPPED_SPRUCE_WOOD.defaultBlockState();
+        var wall=PuzzleRegistry.shell("plaster");var floor=PuzzleRegistry.shell("boards");var ceiling=PuzzleRegistry.shell("boarding");
         PuzzleRooms.shell(l,b,box,wall,floor,ceiling);
         // The far wall of the pantry, with the shaft and the recess in it, and the cold passage behind.
         PuzzleRooms.fill(l,b,-5,0,WALL_Z,5,7,WALL_Z,wall);
-        PuzzleRooms.fill(l,b,-5,0,WALL_Z-1,5,7,box.minZ()+1,Blocks.STONE_BRICKS.defaultBlockState());
+        PuzzleRooms.fill(l,b,-5,0,WALL_Z-1,5,7,box.minZ()+1,PuzzleRegistry.shell("shaft"));
         PuzzleRooms.fill(l,b,-1,0,WALL_Z-1,1,1,box.minZ()+1,Blocks.AIR.defaultBlockState());
-        PuzzleRooms.fill(l,b,-1,-1,WALL_Z-1,1,-1,box.minZ()+1,Blocks.STONE_BRICKS.defaultBlockState());
+        PuzzleRooms.fill(l,b,-1,-1,WALL_Z-1,1,-1,box.minZ()+1,PuzzleRegistry.shell("shaft"));
         PuzzleRooms.fill(l,b,SHAFT_X,0,WALL_Z,SHAFT_X,PULLEY_Y,WALL_Z,Blocks.AIR.defaultBlockState());
         PuzzleRooms.fill(l,b,RECESS_X,1,WALL_Z,RECESS_X,PULLEY_Y,WALL_Z,Blocks.AIR.defaultBlockState());
         l.setBlock(b.offset(1,PULLEY_Y,WALL_Z),Blocks.AIR.defaultBlockState(),FLAGS);
@@ -68,7 +68,7 @@ public final class ServiceLift {
         PuzzleRooms.fill(l,b,-5,6,WALL_Z,-1,6,WALL_Z,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
         PuzzleRooms.fill(l,b,3,6,WALL_Z,5,6,WALL_Z,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
         // The counter the weights stand on, with a scale on it for show, and shelves of jars along the west wall.
-        for(int z=-6;z>=-10;z--)l.setBlock(b.offset(5,0,z),Blocks.STRIPPED_SPRUCE_WOOD.defaultBlockState(),FLAGS);
+        for(int z=-6;z>=-10;z--)l.setBlock(b.offset(5,0,z),PuzzleRegistry.shell("boarding"),FLAGS);
         for(int z=-4;z>=-12;z--){l.setBlock(b.offset(-5,2,z),Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),FLAGS);
             if(z%2==0)l.setBlock(b.offset(-5,3,z),Blocks.DECORATED_POT.defaultBlockState(),FLAGS);}
         for(int x:new int[]{-3,3})l.setBlock(b.offset(x,7,-8),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),FLAGS);
