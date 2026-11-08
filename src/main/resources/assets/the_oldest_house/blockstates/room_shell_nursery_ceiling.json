@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/room_shell_nursery_ceiling",
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/room_shell_nursery_ceiling_1"
+      }
+    ]
+  }
+}

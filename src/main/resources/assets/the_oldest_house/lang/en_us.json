@@ -1368,5 +1368,17 @@
   "block.the_oldest_house.lake_house_siding": "Weathered Siding",
   "block.the_oldest_house.lake_house_dock": "Dock Boards",
   "block.the_oldest_house.lake_house_culvert": "Culvert Concrete",
-  "block.the_oldest_house.lake_house_culvert_stained": "Stained Culvert Concrete"
+  "block.the_oldest_house.lake_house_culvert_stained": "Stained Culvert Concrete",
+  "block.the_oldest_house.room_shell_nursery_floor": "Nursery Floorboards",
+  "block.the_oldest_house.room_shell_nursery_panel": "Nursery Panelling",
+  "block.the_oldest_house.room_shell_nursery_rail": "Nursery Rail",
+  "block.the_oldest_house.room_shell_nursery_ceiling": "Nursery Ceiling",
+  "block.the_oldest_house.room_shell_nursery_post": "Nursery Corner Post",
+  "block.the_oldest_house.room_shell_cellar_brick": "Cellar Brick",
+  "block.the_oldest_house.room_shell_cellar_floor": "Cellar Floor",
+  "block.the_oldest_house.room_shell_boiler_brick": "Boiler Room Brick",
+  "block.the_oldest_house.room_shell_boiler_floor": "Boiler Room Floor",
+  "block.the_oldest_house.room_shell_boiler_joists": "Porch Floor Joists",
+  "block.the_oldest_house.room_shell_boiler_stone": "Service Stair Stone",
+  "block.the_oldest_house.room_shell_boiler_stair": "Service Stair"
 }

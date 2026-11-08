@@ -105,7 +105,7 @@ public final class ChildRoom {
 
     public static @Nullable BlockPos base(net.minecraft.server.MinecraftServer s){var origin=HouseSavedData.get(s).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,PLACE);}
     /** The wall each sealed cell becomes: panelling to the rail, the rail, then the paper. */
-    static BlockState wallAt(int y){return (y<=1?Blocks.BIRCH_PLANKS:y==2?Blocks.STRIPPED_BIRCH_WOOD:LiteraryRegistry.CHILD_WALLPAPER.get()).defaultBlockState();}
+    static BlockState wallAt(int y){return RoomShell.nurseryWall(y);}
 
     // ------------------------------------------------------------------------------------------------ building
     private static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,F);}
@@ -118,9 +118,9 @@ public final class ChildRoom {
         // Earth under the house first, so nothing beneath the floor is open but what is meant to be.
         fill(l,b,-12,-5,-25,12,-1,0,Blocks.DIRT.defaultBlockState());
         // The bedroom: panelled to the rail, papered above it, a pale ceiling.
-        fill(l,b,-11,-1,-24,11,-1,0,Blocks.BIRCH_PLANKS.defaultBlockState());fill(l,b,-11,6,-24,11,6,0,Blocks.SMOOTH_QUARTZ.defaultBlockState());
+        fill(l,b,-11,-1,-24,11,-1,0,RoomShell.NURSERY_FLOOR.get().defaultBlockState());fill(l,b,-11,6,-24,11,6,0,RoomShell.NURSERY_CEILING.get().defaultBlockState());
         for(int y=0;y<=5;y++){var wall=wallAt(y);for(int x=-11;x<=11;x++){set(l,b,x,y,-24,wall);set(l,b,x,y,0,wall);}for(int z=-24;z<=0;z++){set(l,b,-11,y,z,wall);set(l,b,11,y,z,wall);}}
-        for(int x:new int[]{-11,11})for(int z:new int[]{-24,0})fill(l,b,x,0,z,x,5,z,Blocks.STRIPPED_BIRCH_LOG.defaultBlockState());
+        for(int x:new int[]{-11,11})for(int z:new int[]{-24,0})fill(l,b,x,0,z,x,5,z,RoomShell.NURSERY_POST.get().defaultBlockState());
         fill(l,b,-10,0,-23,10,5,-1,air);
         // Two windows onto a night that is only dark, and two doors of the room's own.
         for(var w:EXITS.subList(0,2))for(var c:w){set(l,b,c,Blocks.GLASS.defaultBlockState());set(l,b,c.getX(),c.getY(),-25,Blocks.BLACK_CONCRETE.defaultBlockState());}
@@ -130,7 +130,7 @@ public final class ChildRoom {
         // The bed stands against the north wall on short legs. A child who gets down can crawl under it, to a gap in the boards.
         toy(l,b,BED_HEAD,Kind.BED_HEAD,Direction.NORTH);toy(l,b,BED_FOOT,Kind.BED_FOOT,Direction.NORTH);
         // The way down is a floorboard like the others until somebody gets down and looks under the bed.
-        set(l,b,GAP,Blocks.BIRCH_PLANKS.defaultBlockState());
+        set(l,b,GAP,RoomShell.NURSERY_FLOOR.get().defaultBlockState());
         toy(l,b,1,0,-23,Kind.NIGHT_LIGHT,Direction.SOUTH);toy(l,b,0,5,-22,Kind.MOBILE,Direction.NORTH);toy(l,b,0,5,-12,Kind.CEILING_LAMP,Direction.NORTH);toy(l,b,-6,5,-19,Kind.CEILING_LAMP,Direction.NORTH);toy(l,b,6,5,-19,Kind.CEILING_LAMP,Direction.NORTH);
         // Desk and chair, the bedtime card left on the desk.
         toy(l,b,8,0,-18,Kind.DESK,Direction.WEST);toy(l,b,7,0,-18,Kind.CHAIR,Direction.EAST);toy(l,b,CARD,Kind.CARD,Direction.WEST);
@@ -147,7 +147,7 @@ public final class ChildRoom {
         set(l,b,GAP.below(),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH));
         set(l,b,new BlockPos(3,-2,-20),Blocks.CANDLE.defaultBlockState());
         // The basement: brick walls, a stone floor, the boiler, the things that were put away. A child can stand up here.
-        fill(l,b,2,-5,-17,11,-2,-3,Blocks.BRICKS.defaultBlockState());fill(l,b,3,-5,-16,10,-5,-4,Blocks.POLISHED_ANDESITE.defaultBlockState());fill(l,b,3,-4,-16,10,-2,-4,air);
+        fill(l,b,2,-5,-17,11,-2,-3,RoomShell.CELLAR_BRICK.get().defaultBlockState());fill(l,b,3,-5,-16,10,-5,-4,RoomShell.CELLAR_FLOOR.get().defaultBlockState());fill(l,b,3,-4,-16,10,-2,-4,air);
         set(l,b,BASEMENT_DROP,air);
         set(l,b,10,-4,-15,Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.WEST).setValue(AbstractFurnaceBlock.LIT,true));
         set(l,b,6,-2,-10,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
@@ -330,7 +330,7 @@ public final class ChildRoom {
         if(!moveBedAside(p,l,b))return;
         var gap=b.offset(GAP);var s=l.getBlockState(gap);
         if(s.getBlock() instanceof TrapDoorBlock){p.displayClientMessage(Component.literal("The little door under the bed is open. The air coming up is colder than the room."),true);return;}
-        if(!s.is(Blocks.BIRCH_PLANKS)){p.displayClientMessage(Component.literal("The quilt is cold and smooth, as if nobody has slept under it."),true);return;}
+        if(!s.is(RoomShell.NURSERY_FLOOR.get())){p.displayClientMessage(Component.literal("The quilt is cold and smooth, as if nobody has slept under it."),true);return;}
         l.setBlock(gap,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,true),F);
         l.playSound(null,gap,net.minecraft.sounds.SoundEvents.WOODEN_TRAPDOOR_OPEN,SoundSource.BLOCKS,.7F,.8F);
         p.displayClientMessage(Component.literal("You get down and look under the bed. One of the boards has a finger hole. It lifts."),true);

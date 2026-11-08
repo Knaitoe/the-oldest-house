@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.379** dresses the lake house's outside. The drowned house's brick has silt in its joints and a film of algae, some of it further gone, over a silted foundation; the boathouse is weathered board-and-batten over bleached dock boards; the culvert is board-formed concrete, stained dark and green where the water stands, under an asphalt drive. Nothing moves. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md](docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md). The previous candidate, 0.4.378, gave the three older puzzle rooms their own shells ([docs/TEXTURE_PASS_PUZZLES_0_4_378.md](docs/TEXTURE_PASS_PUZZLES_0_4_378.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
+Development candidate **0.4.380** gives the child's room and the hotel's boiler room their own surfaces. The child's room has honey floorboards, cream beadboard to a painted rail and a plaster ceiling with a few pale stars stuck to it, over a cellar of old whitewashed brick; the boiler room has brick blackened by smoke, stained concrete, the porch floor's joists overhead and a stone stair worn pale in the middle. Nothing moves. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_ROOMS_0_4_380.md](docs/TEXTURE_PASS_ROOMS_0_4_380.md). The previous candidate, 0.4.379, dressed the lake house's outside ([docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md](docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
 
 ## Playing it
 
