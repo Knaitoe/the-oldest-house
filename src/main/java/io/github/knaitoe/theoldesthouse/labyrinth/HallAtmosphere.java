@@ -66,6 +66,8 @@ public final class HallAtmosphere {
                 long seed=l.getRandom().nextLong();net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> event=sound;
                 for(var p:listeners.getOrDefault(place,List.of())) {
                     var at=landmark(place,base,p.blockPosition());
+                    // 0.4.372: in the later halls an older reader sometimes hears a telephone there instead (HomeRead.hallCue).
+                    if(place!=LabyrinthPlace.QUIET_ROOM&&place!=LabyrinthPlace.EXPLORER_CAMP&&HomeRead.hallCue(p,data,net.minecraft.world.phys.Vec3.atCenterOf(at)))continue;
                     p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(event,SoundSource.AMBIENT,at.getX()+.5,at.getY()+.5,at.getZ()+.5,.32F,1F,seed));
                 }
             }

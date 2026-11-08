@@ -227,7 +227,7 @@ public final class HarriganPhoneScreen extends Screen {
         super.renderBackground(g, mouseX, mouseY, partial);
         g.fill(px - 5, py - 9, px + pw + 5, py + ph + 13, 0xFF0A0B0D);
         g.fill(px - 4, py - 8, px + pw + 4, py + ph + 12, 0xFF24272C);
-        g.fill(px, py, px + pw, py + ph, 0xFF10151C);
+        g.fill(px, py, px + pw, py + ph, handset() ? 0xFF9DAE8C : 0xFF10151C);
         g.fill(px + pw / 2 - 12, py - 5, px + pw / 2 + 12, py - 3, 0xFF3B4047);
         g.fill(px + pw / 2 - 6, py + ph + 4, px + pw / 2 + 6, py + ph + 6, 0xFF3B4047);
     }
@@ -242,18 +242,28 @@ public final class HarriganPhoneScreen extends Screen {
         }
     }
 
+    /** 0.4.372: a reader the House has settled on as older carries a handset with buttons, and its screen is plainer. */
+    private boolean handset() { return state.getBoolean("Handset"); }
+    /** On the handset every colour on the display becomes one of four shades of its liquid-crystal panel, by brightness. */
+    private int ink(int color) {
+        if (!handset()) return color;
+        int r = color >> 16 & 255, gr = color >> 8 & 255, b = color & 255;
+        double lum = (.3 * r + .59 * gr + .11 * b) / 255;
+        return lum > .7 ? 0xFF1E2A18 : lum > .45 ? 0xFF4B5C3E : lum > .3 ? 0xFF7D8E6C : 0xFF8FA07E;
+    }
+
     /** The time back home on the left; the signal, or the lack of it, on the right. */
     private void statusBar(GuiGraphics g) {
         String time = HarriganPhoneItem.homeTime(state.getLong("DayTime") + age);
-        g.drawString(font, time, px + 6, py + 4, 0xFFE8E8E8, false);
+        g.drawString(font, time, px + 6, py + 4, ink(0xFFE8E8E8), false);
         if (service()) {
             for (int bar = 0; bar < 4; bar++) {
                 int x = px + pw - 22 + bar * 4, h = 3 + bar * 2;
-                g.fill(x, py + 11 - h, x + 3, py + 11, 0xFFE8E8E8);
+                g.fill(x, py + 11 - h, x + 3, py + 11, ink(0xFFE8E8E8));
             }
         } else {
             String none = "No service";
-            g.drawString(font, none, px + pw - 6 - font.width(none), py + 4, 0xFF9AA0A8, false);
+            g.drawString(font, none, px + pw - 6 - font.width(none), py + 4, ink(0xFF9AA0A8), false);
         }
     }
 
@@ -262,22 +272,22 @@ public final class HarriganPhoneScreen extends Screen {
         g.pose().pushPose();
         g.pose().translate(px + pw / 2F, py + 34, 0);
         g.pose().scale(2.4F, 2.4F, 1);
-        g.drawString(font, time, -font.width(time) / 2, 0, 0xFFF2F2F2, false);
+        g.drawString(font, time, -font.width(time) / 2, 0, ink(0xFFF2F2F2), false);
         g.pose().popPose();
-        centered(g, state.getBoolean("WaitingRoom")?"One unread message":"Time back home", py + 60, 0xFF8C939C);
+        centered(g, state.getBoolean("WaitingRoom")?"One unread message":"Time back home", py + 60, ink(0xFF8C939C));
         if(state.getBoolean("WaitingRoom")){
-            int line=py+ph-106;g.fill(px+7,line,px+pw-7,line+62,0xFF1C2430);
-            g.drawString(font,"Message",px+13,line+8,0xFFCFD8DD,false);
-            g.drawWordWrap(font,Component.literal("Running late, sit tight"),px+13,line+25,pw-26,0xFFF2F2F2);
+            int line=py+ph-106;g.fill(px+7,line,px+pw-7,line+62,ink(0xFF1C2430));
+            g.drawString(font,"Message",px+13,line+8,ink(0xFFCFD8DD),false);
+            g.drawWordWrap(font,Component.literal("Running late, sit tight"),px+13,line+25,pw-26,ink(0xFFF2F2F2));
             return;
         }
         // The one contact.
         int top = py + ph - 96;
-        g.fill(px + 6, top, px + pw - 6, top + 38, 0xFF1C2430);
-        g.fill(px + 12, top + 7, px + 36, top + 31, 0xFF56606C);
-        g.drawString(font, "H", px + 21, top + 15, 0xFFF2F2F2, false);
-        g.drawString(font, "Harrigan", px + 42, top + 9, 0xFFF2F2F2, false);
-        g.drawString(font, preview(), px + 42, top + 22, 0xFF8C939C, false);
+        g.fill(px + 6, top, px + pw - 6, top + 38, ink(0xFF1C2430));
+        g.fill(px + 12, top + 7, px + 36, top + 31, ink(0xFF56606C));
+        g.drawString(font, "H", px + 21, top + 15, ink(0xFFF2F2F2), false);
+        g.drawString(font, "Harrigan", px + 42, top + 9, ink(0xFFF2F2F2), false);
+        g.drawString(font, preview(), px + 42, top + 22, ink(0xFF8C939C), false);
     }
 
     /** The last thing in the thread, cut to fit the contact card. */
@@ -292,12 +302,12 @@ public final class HarriganPhoneScreen extends Screen {
 
     /** The thread with him, newest at the bottom: the reader's lines on the right, his on the left, the phone's small print between. */
     private void conversation(GuiGraphics g) {
-        centered(g, "Harrigan", py + 19, 0xFFF2F2F2);
-        g.fill(px + 4, py + 33, px + pw - 4, py + 34, 0xFF2A313B);
+        centered(g, "Harrigan", py + 19, ink(0xFFF2F2F2));
+        g.fill(px + 4, py + 33, px + pw - 4, py + 34, ink(0xFF2A313B));
         int top = py + 38, bottom = py + ph - 36, wide = pw - 40;
         ListTag lines = thread();
         if (lines.isEmpty()) {
-            centered(g, "Text him a name.", (top + bottom) / 2, 0xFF8C939C);
+            centered(g, "Text him a name.", (top + bottom) / 2, ink(0xFF8C939C));
             return;
         }
         int y = bottom;
@@ -308,7 +318,7 @@ public final class HarriganPhoneScreen extends Screen {
             String text = line.getString("Text");
             if (who != ME && who != HIM) {
                 y -= 11;
-                centered(g, text, y, 0xFF7E858E);
+                centered(g, text, y, ink(0xFF7E858E));
                 continue;
             }
             List<FormattedCharSequence> rows = new ArrayList<>(font.split(Component.literal(text), wide));
@@ -317,16 +327,16 @@ public final class HarriganPhoneScreen extends Screen {
             int height = rows.size() * 10 + 6;
             y -= height + 3;
             int left = who == ME ? px + pw - 8 - width - 8 : px + 8;
-            g.fill(left, y, left + width + 8, y + height, who == ME ? 0xFF2F66C9 : 0xFF353B44);
-            for (int r = 0; r < rows.size(); r++) g.drawString(font, rows.get(r), left + 4, y + 4 + r * 10, 0xFFF2F2F2, false);
+            g.fill(left, y, left + width + 8, y + height, who == ME ? ink(0xFF2F66C9) : ink(0xFF353B44));
+            for (int r = 0; r < rows.size(); r++) g.drawString(font, rows.get(r), left + 4, y + 4 + r * 10, ink(0xFFF2F2F2), false);
         }
         g.disableScissor();
     }
 
     private void calling(GuiGraphics g) {
-        g.fill(px + pw / 2 - 18, py + 34, px + pw / 2 + 18, py + 70, 0xFF56606C);
-        centered(g, "H", py + 48, 0xFFF2F2F2);
-        centered(g, "Harrigan", py + 80, 0xFFF2F2F2);
+        g.fill(px + pw / 2 - 18, py + 34, px + pw / 2 + 18, py + 70, ink(0xFF56606C));
+        centered(g, "H", py + 48, ink(0xFFF2F2F2));
+        centered(g, "Harrigan", py + 80, ink(0xFFF2F2F2));
         String status;
         if (!revealed()) status = "Calling" + ".".repeat(1 + callAge / 10 % 3);
         else switch (result()) {
@@ -336,7 +346,7 @@ public final class HarriganPhoneScreen extends Screen {
             case "unanswered" -> status = callAge < UNANSWERED ? "Calling" + ".".repeat(1 + callAge / 10 % 3) : "No answer";
             default -> status = left ? "Message left" : beeped ? "Recording" : "Voicemail";
         }
-        centered(g, status, py + 92, 0xFF8C939C);
+        centered(g, status, py + 92, ink(0xFF8C939C));
         if (!revealed()) return;
         String words = switch (result()) {
             case "disconnected" -> "The number you have dialed is not in service.";
@@ -349,10 +359,10 @@ public final class HarriganPhoneScreen extends Screen {
         };
         int y = py + 110;
         for (var row : font.split(Component.literal(words), pw - 20)) {
-            g.drawString(font, row, px + pw / 2 - font.width(row) / 2, y, 0xFFC8CDD3, false);
+            g.drawString(font, row, px + pw / 2 - font.width(row) / 2, y, ink(0xFFC8CDD3), false);
             y += 10;
         }
-        if (voicemailOpen()) centered(g, "Leave a name after the tone.", py + ph - 70, 0xFF8C939C);
+        if (voicemailOpen()) centered(g, "Leave a name after the tone.", py + ph - 70, ink(0xFF8C939C));
     }
 
     private void centered(GuiGraphics g, String text, int y, int color) {

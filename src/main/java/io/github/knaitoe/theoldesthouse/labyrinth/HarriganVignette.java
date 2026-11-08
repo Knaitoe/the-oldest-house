@@ -668,7 +668,9 @@ public final class HarriganVignette {
         }
         if (!hasOwnedPhone(player)) {
             var spare=originalProp(player.serverLevel(),"player_phone");ItemStack phone=spare==null?ItemStack.EMPTY:spare.getItem().copy();
-            if(!phone.isEmpty()){CustomData.update(DataComponents.CUSTOM_DATA,phone,tag->tag.putUUID(OWNER,player.getUUID()));spare.setItem(ItemStack.EMPTY,false);propTaken(data,"player_phone");spare.discard();var personal=playerState(data,player.getUUID());personal.putBoolean("PhoneGiven0490",true);savePlayerState(data,player.getUUID(),personal);}
+            // 0.4.372: for a reader the House has settled on as older, the spare is a handset with buttons and a plainer screen.
+            boolean handset=handsetFor(data,player);
+            if(!phone.isEmpty()){CustomData.update(DataComponents.CUSTOM_DATA,phone,tag->{tag.putUUID(OWNER,player.getUUID());if(handset)tag.putBoolean(HANDSET,true);});if(handset)phone.set(DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));spare.setItem(ItemStack.EMPTY,false);propTaken(data,"player_phone");spare.discard();var personal=playerState(data,player.getUUID());personal.putBoolean("PhoneGiven0490",true);if(handset)personal.putBoolean(HANDSET,true);savePlayerState(data,player.getUUID(),personal);}
             if (!player.getInventory().add(phone)) {
                 player.drop(phone, false);
             }
@@ -680,8 +682,17 @@ public final class HarriganVignette {
         player.serverLevel().playSound(null, frame.blockPosition(), SoundEvents.BRUSH_GENERIC, SoundSource.PLAYERS, 0.8F, 1.25F);
         player.displayClientMessage(Component.literal("The silver coating curls away. Twelve emeralds.")
                 .withStyle(ChatFormatting.GREEN), false);
-        player.displayClientMessage(Component.literal("You take the spare phone. Its display keeps the time back home, even inside the House. Harrigan's number is saved, but there is no signal here.")
+        player.displayClientMessage(Component.literal(playerState(data,player.getUUID()).getBoolean(HANDSET)
+                ? "You take the spare phone, an old one with buttons. Its screen keeps the time back home, even inside the House. Harrigan's number is saved, but there is no signal here."
+                : "You take the spare phone. Its display keeps the time back home, even inside the House. Harrigan's number is saved, but there is no signal here.")
                 .withStyle(ChatFormatting.GRAY), false);
+    }
+
+    /** The custom-data flag on a handset spare, and the reader's personal record that theirs is one. */
+    public static final String HANDSET="Handset0372";
+    /** Whether this reader's spare should be the handset: a settled ANALOG read when they are given it. Chosen once. */
+    public static boolean handsetFor(LabyrinthData data, ServerPlayer player) {
+        return HouseRead.value(data, player.getUUID(), HouseRead.Trait.AGE, true).equals("ANALOG");
     }
 
     private static void takeHarriganPhone(ServerPlayer player, ItemFrame frame) {
@@ -843,6 +854,7 @@ public final class HarriganVignette {
                 : p.getBoolean("KeptHarriganPhone") ? "kept" : "none");
         state.putBoolean("Today", usedToday(p, player.server));
         state.put("Thread", p.getList("Thread0505", net.minecraft.nbt.Tag.TAG_COMPOUND).copy());
+        state.putBoolean("Handset", p.getBoolean(HANDSET));
         if (call != null) state.put("Call", call);
         return state;
     }

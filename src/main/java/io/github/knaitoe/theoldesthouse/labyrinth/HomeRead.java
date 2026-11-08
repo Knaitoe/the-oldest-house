@@ -42,8 +42,8 @@ public final class HomeRead {
     // ------------------------------------------------------------------------------------------------ someone in the hall
     /** One sound (or a line on the action bar) at a game time, for one reader. */
     record Beat(long at,@Nullable SoundEvent sound,Vec3 where,float volume,float pitch,String line){}
-    private static final Map<UUID,ArrayDeque<Beat>> PENDING=new HashMap<>();
-    public static void clearAll(){PENDING.clear();}
+    private static final Map<UUID,ArrayDeque<Beat>> PENDING=new HashMap<>(),RINGS=new HashMap<>();
+    public static void clearAll(){PENDING.clear();RINGS.clear();}
     /** Whether somebody is in this reader's hall now. */
     public static boolean lingering(ServerPlayer p){return PENDING.containsKey(p.getUUID());}
     /** How long the whole visit takes, from the first board to the last step away. */
@@ -88,10 +88,43 @@ public final class HomeRead {
         return new Vec3[]{outside.add(along.scale(5)),outside,door};
     }
 
+    // ------------------------------------------------------------------------------------------------ a telephone down the hall
+    /** 0.4.372 (docs/HOUSE_READ_AGE_0_4_372.md): the personal record of a reader's hall cues. */
+    public static final String AGE_STATE="home_read_0372";
+    /** Later halls: from the depth where the House starts to be strange. One shared hall cue in four rings instead, the second first. */
+    public static final int LANDLINE_DEPTH=LabyrinthPacing.STRANGE_DEPTH,LANDLINE_EVERY=4,RINGS_EACH=4,RING_GAP=120;
+    /** A reader the House reads as older, tentative or settled. */
+    public static boolean older(ServerPlayer p){return HouseRead.value(LabyrinthData.get(p.server),p.getUUID(),HouseRead.Trait.AGE,false).equals("ANALOG");}
+    /** Whether a telephone is ringing for this reader now. */
+    public static boolean ringing(ServerPlayer p){return RINGS.containsKey(p.getUUID());}
+
+    /**
+     * On a hall's shared cue, for one listener: an older reader deep enough in sometimes hears a telephone with a bell ring four times
+     * from where the cue would have come, and stop. Nobody answers it and there is nothing to answer. True when it rings, so the caller
+     * leaves out the ordinary cue for them; anyone else in the hall hears only the pipes.
+     */
+    public static boolean hallCue(ServerPlayer p,LabyrinthData d,Vec3 at){
+        if(!p.isAlive()||p.isSpectator()||ringing(p)||!older(p)||d.returnDepth(p.getUUID())<LANDLINE_DEPTH)return false;
+        String key=p.getUUID().toString();var own=d.stateEntry(AGE_STATE,key);int n=own.getInt("HallCues")+1;own.putInt("HallCues",n);
+        boolean ring=n%LANDLINE_EVERY==2;if(ring)own.putInt("Rang",own.getInt("Rang")+1);
+        d.setStateEntry(AGE_STATE,key,own);
+        if(ring)ring(p,at);
+        return ring;
+    }
+    /** Four rings of a telephone at {@code at}, six seconds apart, to this reader alone. */
+    public static void ring(ServerPlayer p,Vec3 at){
+        long now=p.serverLevel().getGameTime();var q=new ArrayDeque<Beat>();
+        for(int i=0;i<RINGS_EACH;i++)q.add(new Beat(now+(long)i*RING_GAP,LiteraryRegistry.HOME_LANDLINE.get(),at,.75F,1,""));
+        RINGS.put(p.getUUID(),q);
+    }
+
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
-        if(PENDING.isEmpty())return;
-        for(var it=PENDING.entrySet().iterator();it.hasNext();){
-            var entry=it.next();var p=e.getServer().getPlayerList().getPlayer(entry.getKey());
+        play(e.getServer(),PENDING);play(e.getServer(),RINGS);
+    }
+    private static void play(net.minecraft.server.MinecraftServer server,Map<UUID,ArrayDeque<Beat>> pending){
+        if(pending.isEmpty())return;
+        for(var it=pending.entrySet().iterator();it.hasNext();){
+            var entry=it.next();var p=server.getPlayerList().getPlayer(entry.getKey());
             if(p==null||!p.isAlive()||p.isSpectator()){it.remove();continue;}
             var q=entry.getValue();long now=p.serverLevel().getGameTime();
             while(!q.isEmpty()&&q.peek().at()<=now){

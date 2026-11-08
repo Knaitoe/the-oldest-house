@@ -86,6 +86,30 @@ public final class WheelHouse {
     public static final List<BlockPos> BIG_CHAIRS = List.of(new BlockPos(-13, 0, -12), new BlockPos(11, 0, -20));
     private WheelHouse() {}
 
+    /**
+     * 0.4.372, the House's read of the reader's age (docs/HOUSE_READ_AGE_0_4_372.md): a settled {@code AGE} read lets the front door
+     * open on the stage of her life nearest the reader's own, not on the nursery. The wheel and its gates are the same (every room
+     * still has to be seen, and a door gone back through, before the sixth opens on Mother), so it is an entry into the whole life,
+     * never a skip to its end. One object in that room, sent to that reader alone, belongs to their era; the shared furnishings stay
+     * hers.
+     */
+    public record Era(String age, int room, BlockPos at, HouseReadPropBlock.Part part, Direction facing, String line) {}
+    public static final List<Era> ERAS = List.of(
+            new Era("DIGITAL", 3, new BlockPos(-20, 0, -32), HouseReadPropBlock.Part.PHONE, Direction.EAST,
+                    "Her phone, on the floor by the bed, charging. It lights: Mum, three missed calls. It goes dark again."),
+            new Era("TRANSITIONAL", 5, new BlockPos(-13, 0, -49), HouseReadPropBlock.Part.CRT, Direction.SOUTH,
+                    "A small television on the floor in the corner, with the sound turned right down. Whatever was on when the baby finally slept is still on."),
+            new Era("ANALOG", 6, new BlockPos(18, 0, -47), HouseReadPropBlock.Part.PAPER, Direction.EAST,
+                    "Yesterday's paper by the visitor's chair, folded to the crossword. Most of the squares are filled in, in two different hands."));
+    /** The era a settled AGE read gives this reader, or null (the nursery, as before). */
+    public static @Nullable Era era(ServerPlayer p) {
+        var age = HouseRead.value(LabyrinthData.get(p.server), p.getUUID(), HouseRead.Trait.AGE, true);
+        for (var era : ERAS) if (era.age().equals(age)) return era;
+        return null;
+    }
+    /** The room the front door opens on for this reader: the nursery, or the stage of her life nearest their own. */
+    public static int startRoom(ServerPlayer p) { var era = era(p); return era == null ? 1 : era.room(); }
+
     public static @Nullable Room room(int id) { return id == 7 ? MOTHERS : id >= 1 && id <= 6 ? ROOMS.get(id - 1) : null; }
 
     // ------------------------------------------------------------------------------------------------ building
@@ -273,7 +297,14 @@ public final class WheelHouse {
         if (rel.equals(FRONT_DOOR)) {
             // The front door takes her to the beginning, until she has found Mother; then it is only a door.
             if (own.getBoolean("LeftMother")) return false;
-            if (go(p, b, own, 1, true)) own.putBoolean("FrontLoop", true);
+            int start = startRoom(p);
+            if (go(p, b, own, start, true)) { own.putBoolean("FrontLoop", true); own.putInt("WheelStart", start); eraObject(p, b, own); }
+            return true;
+        }
+        var era = era(p);
+        if (era != null && rel.equals(era.at()) && own.getInt("WheelStart") == era.room() && l.getBlockState(b.offset(rel)).isAir()) {
+            p.displayClientMessage(Component.literal(era.line()).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
+            own.putBoolean("WheelEra", true);
             return true;
         }
         if (rel.equals(MOTHERS.back())) {
@@ -315,6 +346,7 @@ public final class WheelHouse {
         if (id == 7) own.putBoolean("ReachedMother", true);
         p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.WOODEN_DOOR_CLOSE, SoundSource.BLOCKS, .6F, .9F);
         if (id <= 2) chairs(p, b, own);
+        eraObject(p, b, own);
         return true;
     }
 
@@ -356,11 +388,26 @@ public final class WheelHouse {
         // Somebody who walked out of their room some other way is their own height outside the rooms that make them small.
         if (here == 0 || here >= 3 && here <= 6) own.putBoolean("Memory", false);
         if ((here == 1 || here == 2) && !own.getBoolean("Memory") && own.getInt("Present") % 40 == 0) chairs(p, b, own);
+        if (here >= 3 && here == own.getInt("WheelStart") && own.getInt("Present") % 40 == 0) eraObject(p, b, own);
         double rx = p.getX() - b.getX(), rz = p.getZ() - b.getZ();
         if (own.getBoolean("LeftMother") && rx >= HALL_X0 && rx < HALL_X1 + 1 && rz > HALL_Z0 && rz < 1) {
             own.putBoolean("Memory", false);
             LiteraryVignettes.ready(p, PLACE, own, "left_after_finding_mothers_room");
         }
+    }
+
+    /**
+     * The reader's era object, if they came in by the front door at their own stage and are in that room. Only their client is told,
+     * and only over a cell that is really empty, so a friend in the room sees her room as it is. Returns what was shown, or null.
+     */
+    public static @Nullable BlockState eraObject(ServerPlayer p, BlockPos b, CompoundTag own) {
+        var era = era(p);
+        if (era == null || own.getInt("WheelStart") != era.room() || own.getInt("WheelRoom") != era.room()) return null;
+        var at = b.offset(era.at());
+        if (!p.serverLevel().getBlockState(at).isAir()) return null;
+        var shown = HouseReadRooms.part(era.part()).setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, era.facing());
+        p.connection.send(new ClientboundBlockUpdatePacket(at, shown));
+        return shown;
     }
 
     /**

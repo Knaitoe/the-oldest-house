@@ -4492,5 +4492,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.literary.home_handle"
+  },
+  "literary.home_landline": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:literary/home_landline",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.literary.home_landline"
   }
 }

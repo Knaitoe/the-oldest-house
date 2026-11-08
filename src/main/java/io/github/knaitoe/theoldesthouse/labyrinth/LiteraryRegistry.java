@@ -128,7 +128,7 @@ public final class LiteraryRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> LOT_ALARM=sound("lot_alarm"),LOT_HIGHWAY=sound("lot_highway"),LOT_POOL=sound("lot_pool"),LOT_CRASH=sound("lot_crash");
     public static final DeferredHolder<SoundEvent,SoundEvent> PAW_KNOCK=sound("paw_knock"),PAW_HAMMER=sound("paw_hammer"),PAW_WIND=sound("paw_wind"),PAW_TWIST=sound("paw_twist"),PAW_SCRATCH=sound("paw_scratch"),PAW_HISS=sound("paw_hiss");
     /** 0.4.371, the House's read of a reader's home: someone in the hall who stops outside the door and tries the handle (HomeRead). */
-    public static final DeferredHolder<SoundEvent,SoundEvent> HOME_FLOORBOARD=sound("home_floorboard"),HOME_STEP=sound("home_step"),HOME_HANDLE=sound("home_handle");
+    public static final DeferredHolder<SoundEvent,SoundEvent> HOME_FLOORBOARD=sound("home_floorboard"),HOME_STEP=sound("home_step"),HOME_HANDLE=sound("home_handle"),HOME_LANDLINE=sound("home_landline");
     public static final DeferredHolder<SoundEvent,SoundEvent> GHOST_LOW=sound("ghost_low"),GHOST_THIN=sound("ghost_thin"),GHOST_SCRAPE=sound("ghost_scrape"),GHOST_CARD=sound("ghost_card");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredItem<Item> item(String id){var props=new Item.Properties().stacksTo(1);if(id.startsWith("wax_cylinder_")||id.equals("family_film"))props.jukeboxPlayable(net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG,ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id.replace("one","1").replace("two","2").replace("three","3"))));return ITEMS.registerSimpleItem(id,props);}
