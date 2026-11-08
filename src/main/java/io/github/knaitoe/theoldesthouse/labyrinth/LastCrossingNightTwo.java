@@ -79,7 +79,7 @@ public final class LastCrossingNightTwo {
         /** The roll from the cable house's doorway: which name, how long, called twice, who answered, and done. */
         boolean rollStarted,rollDone;int calling=-1,callTicks;boolean calledTwice;long answerAt=-1;final Set<UUID> answered=new HashSet<>();final List<String> absent=new ArrayList<>();
         /** The pull: its state, how far it has hauled of how far it must, who is on the brake, when it was let go, the jam and its levers. */
-        int pull,progress,need;@Nullable UUID brakeBy;long dropAt=-1;long pullAt=-1;boolean jamCleared;int levers;long leverAt=-1;String binding="";
+        int pull,progress,need;@Nullable UUID brakeBy;long dropAt=-1;long pullAt=-1;boolean jamCleared,threw;int levers;long leverAt=-1;String binding="";
         final LinkedHashSet<UUID> pullHands=new LinkedHashSet<>();
         /** The floor grate over the winch spur held shut and by whom, pinned; and each turned reader's closing throat. */
         @Nullable UUID gateBy;boolean pinned;final Map<UUID,Integer> choking=new HashMap<>();final Map<UUID,Integer> edge=new HashMap<>();
@@ -285,7 +285,7 @@ public final class LastCrossingNightTwo {
     /** The pull failed: run back too far, it throws the rollers; or the night ran out before it was done. */
     static void failed(ServerLevel l,Run r,Night n,List<ServerPlayer> here,boolean thrown){
         var b=r.base;n.pull=FAILED;n.brakeBy=null;
-        if(thrown){r.rollerSeated=false;
+        if(thrown){r.rollerSeated=false;n.threw=true;
             for(var at:List.of(LastCrossingSite.LOOSE_ROLLER,LastCrossingSite.ROLLERS.get(2)))l.setBlock(b.offset(at),LastCrossingSite.fit(Kind.ROLLER,Direction.NORTH,1),Block.UPDATE_CLIENTS);
             LastCrossing.sound(l,b.offset(LastCrossingSite.LOOSE_ROLLER),SoundEvents.ANVIL_LAND,.8F,.6F);LastCrossing.speak(l,r,LastCrossingTexts.PULL_FAILED,24);}
         for(var p:here)if(LastCrossingSite.inCableHouse(LastCrossing.rel(p.position(),b))||n.pullHands.contains(p.getUUID()))LastCrossing.mark(p,"PullFailed");

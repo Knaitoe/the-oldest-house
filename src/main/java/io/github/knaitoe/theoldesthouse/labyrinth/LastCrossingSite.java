@@ -87,6 +87,19 @@ public final class LastCrossingSite {
         BELOW_FLOOR=new Vec3(50.5,-4,-56.5),ABOVE_FLOOR=new Vec3(50.5,0,-56.5),PIT_SIDE=new Vec3(26.5,-7,-59.5),RAMP_BRANCH_WEST=new Vec3(28.5,-7,-59.5),
         RAMP_BRANCH_EAST=new Vec3(42.5,-7,-59.5),PASSAGE_SIDE=new Vec3(44.5,-7,-59.5),LEDGE_SPOT=new Vec3(43.5,.5,-60.5);
     public static final BlockPos UNDERSIDE=new BlockPos(47,-2,-65),HATCH_PRINTS=new BlockPos(44,0,-60),FLOOR_PRINTS=new BlockPos(50,0,-56),PIT_PRINTS=new BlockPos(25,-7,-59);
+    /** 0.4.355, Day Three: the live feed's three tagged sections (the gauge room, the intake, the gallery), the rusted door in the intake's
+     * east wall and the stair down from it to the lower gallery (x 30 to 40, z -49 to -57, walked at y -11), the feed gate in the gallery's
+     * east wall with the flooded chamber behind it (x 42 to 46, z -50 to -56) and the source in it, the two heaps of fallen debris in the
+     * passage south to the upstream cutoff's alcove (x 32 to 34, z -43 to -45), the racks for the launch pin (on the porch) and the locking
+     * bar (in the intake), the master bypass beside the sluice wheel in the pit, the launch rope's bollard at the ramp's edge, and the
+     * downstream sluice east of the cable house, where the branches empty into the river. */
+    public static final BlockPos FEED_GAUGE=new BlockPos(23,1,-56),FEED_INTAKE=new BlockPos(23,-5,-57),FEED_GALLERY=new BlockPos(35,-9,-57),GALLERY_DOOR=new BlockPos(24,-6,-55),
+        FEED_GATE=new BlockPos(41,-11,-53),SOURCE=new BlockPos(44,-11,-53),CUTOFF=new BlockPos(33,-10,-43),PIN_RACK=new BlockPos(11,1,-37),BAR_RACK=new BlockPos(23,-5,-54),
+        MASTER=new BlockPos(25,-7,-61),RELEASE=new BlockPos(34,0,-63),DOWNSTREAM=new BlockPos(54,0,-58);
+    public static final List<BlockPos> FEEDS=List.of(FEED_GAUGE,FEED_INTAKE,FEED_GALLERY),DEBRIS=List.of(new BlockPos(33,-11,-48),new BlockPos(33,-11,-47));
+    public static final int GALLERY_W=30,GALLERY_E=40,GALLERY_S=-49,GALLERY_N=-57,GALLERY_FLOOR=-12,CHAMBER_W=42,CHAMBER_E=46,CHAMBER_S=-50,CHAMBER_N=-56;
+    /** Where the source shows through the glass, and where the gallery's stair comes down. */
+    public static final Vec3 SOURCE_SEEN=new Vec3(44.5,-10.5,-52.5),GALLERY_FOOT=new Vec3(30.5,-11,-55.5);
     /** The far bank: the landing, the lamp, the cable's anchor and the shelter whose door is the way on. */
     public static final BlockPos FAR_LAMP=new BlockPos(37,3,-95),ANCHOR=new BlockPos(47,0,-94),ONWARD=new BlockPos(43,0,-98);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -106,6 +119,9 @@ public final class LastCrossingSite {
     public static boolean onBridge(Vec3 r){return r.x>=SPILL_W-1&&r.x<SPILL_E+2&&Math.abs(r.z-(BRIDGE_Z+.5))<1.2&&r.y>-.6;}
     public static boolean inRiver(Vec3 r){return r.z<RIVER_S+1&&r.z>FAR_S+1&&!onFerry(r);}
     public static boolean farBank(Vec3 r){return r.z<=FAR_S+1;}
+    /** 0.4.355: the lower gallery, the stair down to it and the alcove at the cutoff. */
+    public static boolean inGallery(Vec3 r){return r.y<-6.5&&r.y>-12&&(r.x>=GALLERY_W&&r.x<GALLERY_E+1&&r.z<=GALLERY_S+1&&r.z>GALLERY_N||r.x>=25&&r.x<30&&r.z<=-54&&r.z>-55
+        ||r.x>=32&&r.x<35&&r.z<=-42&&r.z>-49);}
     /** The station: anywhere on the mound, in its buildings above or below, or on the ferry. */
     public static boolean atStation(Vec3 r){return onMound(r)||onPorch(r)||inIntake(r)||inPit(r)||onFerry(r);}
 
@@ -134,6 +150,7 @@ public final class LastCrossingSite {
         ferry(l,b);
         spillway(l,b);
         cableHouse(l,b);
+        gallery(l,b);
         farBank(l,b);
         powerLine(l,b);
         living(l,b);
@@ -378,6 +395,47 @@ public final class LastCrossingSite {
         // The cable out over the river to its anchor on the far bank.
         for(int z=CABLE_N-1;z>ANCHOR.getZ();z--)set(l,b,CABLE_X,0,z,chain(Direction.Axis.Z));
     }
+    /** 0.4.355, Day Three: the live feed traced from the gauge room down, the rusted door in the intake's east wall and the stair behind it
+     * to the old lower gallery under the ramp, the feed gate in its east wall with the flooded chamber and the source behind thick glass,
+     * the passage south to the upstream cutoff choked with fallen debris; the racks, the master bypass, the launch rope and the downstream
+     * sluice. */
+    static void gallery(ServerLevel l,BlockPos b){
+        var rnd=new Random(3760);
+        // The gallery, carved out of the mound's stone under the ramp, its brick old and stained.
+        box(l,b,GALLERY_W-1,GALLERY_FLOOR,GALLERY_N-1,GALLERY_E+1,-7,GALLERY_S+1,s(Blocks.STONE_BRICKS));
+        box(l,b,GALLERY_W,GALLERY_FLOOR+1,GALLERY_N,GALLERY_E,-8,GALLERY_S,s(Blocks.AIR));
+        for(int x=GALLERY_W-1;x<=GALLERY_E+1;x++)for(int z=GALLERY_N-1;z<=GALLERY_S+1;z++)for(int y=GALLERY_FLOOR;y<=-7;y++){
+            boolean shell=x==GALLERY_W-1||x==GALLERY_E+1||z==GALLERY_N-1||z==GALLERY_S+1||y==GALLERY_FLOOR||y==-7;
+            if(shell&&rnd.nextInt(5)==0)set(l,b,x,y,z,s(rnd.nextBoolean()?Blocks.CRACKED_STONE_BRICKS:Blocks.MOSSY_STONE_BRICKS));}
+        // The stair from the rusted door down east into it, a step at a time from the intake's floor.
+        set(l,b,25,-7,-55,s(Blocks.STONE_BRICKS));box(l,b,25,-6,-55,25,-4,-55,s(Blocks.AIR));
+        for(int i=1;i<=4;i++){int x=25+i,y=-7-i;set(l,b,x,y,-55,s(Blocks.STONE_BRICK_STAIRS).setValue(StairBlock.FACING,Direction.WEST));box(l,b,x,y+1,-55,x,y+3,-55,s(Blocks.AIR));}
+        set(l,b,GALLERY_DOOR,fit(Kind.GALLERY_DOOR,Direction.EAST));set(l,b,GALLERY_DOOR.above(),s(Blocks.AIR));
+        // The flooded chamber behind the gallery's east wall, the source in it, weed standing in the dark water; a strip of thick glass in the
+        // wall either side of the feed gate.
+        box(l,b,CHAMBER_W-1,GALLERY_FLOOR,CHAMBER_N-1,CHAMBER_E+1,-7,CHAMBER_S+1,s(Blocks.STONE_BRICKS));
+        box(l,b,CHAMBER_W,GALLERY_FLOOR+1,CHAMBER_N,CHAMBER_E,-8,CHAMBER_S,water());
+        for(int[] k:new int[][]{{42,-50},{46,-56},{42,-55},{46,-51},{45,-50}}){set(l,b,k[0],-11,k[1],s(Blocks.KELP_PLANT));set(l,b,k[0],-10,k[1],s(Blocks.KELP));}
+        for(int[] g:new int[][]{{43,-56},{45,-52},{43,-51}})set(l,b,g[0],-11,g[1],s(Blocks.SEAGRASS));
+        set(l,b,SOURCE,fit(Kind.SOURCE,Direction.WEST));
+        for(int z=CHAMBER_N;z<=CHAMBER_S;z++)if(z!=FEED_GATE.getZ())set(l,b,CHAMBER_W-1,-10,z,s(Blocks.GLASS));
+        set(l,b,FEED_GATE,fit(Kind.FEED_GATE,Direction.WEST));
+        // The live feed along the gallery's north wall under its roof, and its tag; a lantern or three hung from the roof.
+        for(int x=GALLERY_W;x<=GALLERY_E;x++)set(l,b,x,-8,GALLERY_N,fit(Kind.RUN,Direction.SOUTH));
+        set(l,b,FEED_GALLERY,fit(Kind.FEED,Direction.SOUTH));
+        for(int[] c:new int[][]{{31,-50},{39,-50},{35,-53}})set(l,b,c[0],-8,c[1],s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
+        // The passage south to the cutoff, two heaps of fallen brick and silt in it, and the alcove at its end with the cutoff on the wall.
+        box(l,b,31,GALLERY_FLOOR,-47,35,-8,-42,s(Blocks.STONE_BRICKS));
+        box(l,b,33,-11,-48,33,-10,-46,s(Blocks.AIR));box(l,b,32,-11,-45,34,-9,-43,s(Blocks.AIR));
+        for(var d:DEBRIS){set(l,b,d,fit(Kind.DEBRIS,Direction.NORTH));set(l,b,d.above(),s(Blocks.AIR));}
+        set(l,b,CUTOFF,fit(Kind.CUTOFF,Direction.NORTH));set(l,b,33,-9,-43,fit(Kind.RUN,Direction.NORTH));
+        // The feed's other two tags: in the gauge room by the gauge, and in the intake beside the rusted door.
+        set(l,b,FEED_GAUGE,fit(Kind.FEED,Direction.WEST));set(l,b,FEED_INTAKE,fit(Kind.FEED,Direction.WEST));
+        // The racks: the launch pin's on the porch wall, the locking bar's in the intake; the master bypass by the sluice wheel; the launch rope's
+        // bollard at the ramp's edge; the downstream sluice east of the cable house.
+        set(l,b,PIN_RACK,fit(Kind.RACK,Direction.SOUTH));set(l,b,BAR_RACK,fit(Kind.RACK,Direction.WEST,2));
+        set(l,b,MASTER,fit(Kind.MASTER,Direction.EAST));set(l,b,RELEASE,fit(Kind.RELEASE,Direction.NORTH));set(l,b,DOWNSTREAM,fit(Kind.DOWNSTREAM,Direction.WEST));
+    }
     /** The far bank: the landing, the lamp that burns there, the cable's anchor, the shelter with the way on, a line of trees. */
     static void farBank(ServerLevel l,BlockPos b){
         box(l,b,FERRY_W,-1,-96,FERRY_E,-1,FAR_S-1,s(Blocks.SPRUCE_PLANKS));
@@ -447,6 +505,16 @@ public final class LastCrossingSite {
         for(var g:FLOOR_GRATES)set(l,b,g,fit(Kind.FLOOR_GRATE,Direction.NORTH));
         set(l,b,WITNESS,fit(Kind.WITNESS,Direction.EAST));set(l,b,CATCH,fit(Kind.CATCH,Direction.WEST));set(l,b,STAIN,s(Blocks.AIR));set(l,b,TOOLS,s(Blocks.AIR));
         set(l,b,CABLE_BRAKE,fit(Kind.BRAKE,Direction.WEST));
+        // Day Three: every roller seated as built but the loose one, the feed untraced, the rusted door shut, the gate unbarred, the debris
+        // heaped, the cutoff open, the source under water, the pin in its sleeve and the bar on its rack, the master and the release fast, the
+        // downstream sluice open.
+        for(var r:ROLLERS)if(!r.equals(LOOSE_ROLLER))set(l,b,r,fit(Kind.ROLLER,Direction.NORTH));
+        set(l,b,FEED_GAUGE,fit(Kind.FEED,Direction.WEST));set(l,b,FEED_INTAKE,fit(Kind.FEED,Direction.WEST));set(l,b,FEED_GALLERY,fit(Kind.FEED,Direction.SOUTH));
+        set(l,b,GALLERY_DOOR,fit(Kind.GALLERY_DOOR,Direction.EAST));set(l,b,FEED_GATE,fit(Kind.FEED_GATE,Direction.WEST));
+        for(var d:DEBRIS)set(l,b,d,fit(Kind.DEBRIS,Direction.NORTH));
+        set(l,b,CUTOFF,fit(Kind.CUTOFF,Direction.NORTH));set(l,b,SOURCE,fit(Kind.SOURCE,Direction.WEST));
+        set(l,b,PIN_RACK,fit(Kind.RACK,Direction.SOUTH));set(l,b,BAR_RACK,fit(Kind.RACK,Direction.WEST,2));
+        set(l,b,MASTER,fit(Kind.MASTER,Direction.EAST));set(l,b,RELEASE,fit(Kind.RELEASE,Direction.NORTH));set(l,b,DOWNSTREAM,fit(Kind.DOWNSTREAM,Direction.WEST));
         // The lower floor dry again, whatever came up into it in the night.
         for(int x=PUMP_W+1;x<PUMP_E;x++)for(int y=LOWER;y<=-2;y++)for(int z=PUMP_S-1;z>PUMP_N;z--){var at=b.offset(x,y,z);if(l.getBlockState(at).is(Blocks.WATER))BuildBlocks.set(l,at,s(Blocks.AIR),F);}
     }

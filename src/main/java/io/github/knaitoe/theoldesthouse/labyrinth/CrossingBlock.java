@@ -42,13 +42,22 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.354, Night Two: FLOOR_GRATE (3) wet, with a pin driven through its bars into the frame, holding it shut; PRINTS: wet prints on
  * the boards where someone came up out of the water, wet (0) and dried to a tidemark (1); UNDERSIDE: the fairlead's throat seen from the
  * flooded passage under it, the cable kinked into it (0) and running clear (1). HATCH (1) is the hatch lifted.</li>
+ * <li>0.4.355, Day Three: FEED: a tagged section of the live feed, untraced (0) and chalked where someone traced it (1). GALLERY_DOOR: the
+ * rusted iron door in the intake's east wall, two cells high, rusted shut (0) and ground open (1). FEED_GATE: the feed gate in the lower
+ * gallery's east wall, its bracket empty (0), the locking bar staged in it (1), barred across (2) and drawn open (3). DEBRIS: fallen brick and
+ * silt heaped to the roof (0) and half cleared (1). CUTOFF: the upstream cutoff's wheel on its wall, open (0) and shut (1). SOURCE: the
+ * thing at the bottom of the flooded chamber, under water (0), exposed (1) and destroyed (2). MASTER: the master bypass beside the sluice
+ * wheel, rusted fast (0) and open (1). RELEASE: the launch rope made fast round its bollard (0) and slipped (1). DOWNSTREAM: the downstream
+ * sluice's wheel, open (0) and shut (1). RACK: a wall rack, empty (0), with the launch pin (1) and with the locking bar (2). PIN (2) is the
+ * pin's sleeve standing empty.</li>
  * </ul>
  */
 public final class CrossingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CrossingBlock> CODEC=simpleCodec(CrossingBlock::new);
     public enum Kind implements StringRepresentable {
         TABLE,CLIPBOARD,SLATE,PLATE,PLATE_SET,BRACKET,STOVE,GAUGE,BRAKE,VALVE,RUN,BLEED,GRATE,PUMP,PIPE,ROLLER,FAIRLEAD,DRUM,HATCH,WHEEL,PIN,COIL,HOOK,DEPTH,NAMEPLATE,BAR,ISOLATOR,
-        BYPASS,BRANCH,FLOOR_GRATE,WITNESS,CATCH,STAIN,TOOLS,PRINTS,UNDERSIDE;
+        BYPASS,BRANCH,FLOOR_GRATE,WITNESS,CATCH,STAIN,TOOLS,PRINTS,UNDERSIDE,
+        FEED,GALLERY_DOOR,FEED_GATE,DEBRIS,CUTOFF,SOURCE,MASTER,RELEASE,DOWNSTREAM,RACK;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -60,7 +69,7 @@ public final class CrossingBlock extends HorizontalDirectionalBlock {
     public static boolean plate(BlockState s){return is(s,Kind.PLATE)||is(s,Kind.PLATE_SET);}
     /** The lamp hung on its hook gives light; the pump's lamp a little while it runs. Read from the state's own properties: this is asked
      * while the block's states are being made, before the block is registered. */
-    public static int light(BlockState s){if(!s.hasProperty(KIND))return 0;var k=s.getValue(KIND);int st=s.getValue(STAGE);return k==Kind.HOOK&&st==1?13:k==Kind.PUMP&&st==1?4:0;}
+    public static int light(BlockState s){if(!s.hasProperty(KIND))return 0;var k=s.getValue(KIND);int st=s.getValue(STAGE);return k==Kind.HOOK&&st==1?13:k==Kind.PUMP&&st==1?4:k==Kind.SOURCE&&st<2?3:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     private static VoxelShape t(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){return MarshBlock.turned(f,x0,y0,z0,x1,y1,z1);}
@@ -101,13 +110,29 @@ public final class CrossingBlock extends HorizontalDirectionalBlock {
             case TOOLS->t(f,2,0,5,16,3,11);
             case PRINTS->Block.box(0,0,0,16,.2,16);
             case UNDERSIDE->Shapes.block();
+            case FEED->t(f,4,0,11,12,16,16);
+            case GALLERY_DOOR->s.getValue(STAGE)==0?t(f,0,0,13,16,32,16):t(f,0,0,13,3,32,16);
+            case FEED_GATE->Shapes.block();
+            case DEBRIS->s.getValue(STAGE)==0?Block.box(0,0,0,16,32,16):Block.box(0,0,0,16,20,16);
+            case CUTOFF->t(f,1,1,10,15,15,16);
+            case SOURCE->Block.box(1,0,1,15,14,15);
+            case MASTER->Block.box(3,0,3,13,12,13);
+            case RELEASE->Block.box(4,0,4,12,14,12);
+            case DOWNSTREAM->Block.box(1,0,1,15,15,15);
+            case RACK->t(f,1,4,12,15,14,16);
         };
     }
     /** The grate and the shut hatch are walked on; wall things, the clipboard and the coil are walked through; the rest stand. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case CLIPBOARD,GAUGE,PIPE,HOOK,NAMEPLATE,SLATE,COIL,ISOLATOR,WITNESS,STAIN,TOOLS,PRINTS->Shapes.empty();
+            case CLIPBOARD,GAUGE,PIPE,HOOK,NAMEPLATE,SLATE,COIL,ISOLATOR,WITNESS,STAIN,TOOLS,PRINTS,FEED,RACK,CUTOFF->Shapes.empty();
+            // The rusted door and the debris stand higher than a jump; the gate is the wall.
+            case GALLERY_DOOR->s.getValue(STAGE)==0?t(f,0,0,13,16,24,16):Shapes.empty();
+            case DEBRIS->Block.box(0,0,0,16,24,16);
+            case MASTER->Block.box(5,0,5,11,12,11);
+            case RELEASE->Block.box(5,0,5,11,12,11);
+            case DOWNSTREAM->Block.box(6,0,6,10,14,10);
             case BRANCH,FLOOR_GRATE,UNDERSIDE->Shapes.block();
             case BYPASS->Block.box(6,0,6,10,13,10);
             case CATCH->Block.box(6,0,6,10,11,10);

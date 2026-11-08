@@ -19,7 +19,8 @@ import net.neoforged.neoforge.registries.*;
 
 /**
  * 0.4.351, The Last Crossing (docs/LAST_CROSSING_0_4_351.md): the flood station's fittings, the things the crew carries about the station
- * (the handprint plate, the mooring line, the station lamp, the intake worker's wrench, and from Day Two the cable tools), and the station's
+ * (the handprint plate, the mooring line, the station lamp, the intake worker's wrench, from Day Two the cable tools, and from Day Three the
+ * launch pin and the locking bar), and the station's
  * sounds. Drawn by
  * tools/draw_last_crossing_art.py; heard from tools/generate_last_crossing_audio.py. From 0.4.352, Night One: the things that come up out
  * of the water (Undertow) and the night's sounds.
@@ -43,6 +44,10 @@ public final class CrossingRegistry {
     public static final DeferredItem<Item> WRENCH=ITEMS.registerSimpleItem("crossing_wrench",new Item.Properties().stacksTo(1));
     /** Day Two: the cable tools Vera lays on the desk for whoever takes the far end of the winch: a scraper, a marlinspike, rags. */
     public static final DeferredItem<Item> TOOLS=ITEMS.registerSimpleItem("crossing_tools",new Item.Properties().stacksTo(1));
+    /** 0.4.355, Day Three: the launch pin, carried down from the porch rack to its sleeve on the upper ramp; the locking bar, carried from the
+     * intake down to the feed gate in the lower gallery. */
+    public static final DeferredItem<Item> PIN=ITEMS.registerSimpleItem("crossing_pin",new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> LOCKBAR=ITEMS.registerSimpleItem("crossing_lockbar",new Item.Properties().stacksTo(1));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** A knock in the speaking pipe; the pump taking its load; something tapping back under the grate; the bleed screw letting go. */
     public static final DeferredHolder<SoundEvent,SoundEvent> KNOCK=sound("crossing.knock"),PUMP=sound("crossing.pump"),TAP=sound("crossing.tap"),BLEED=sound("crossing.bleed");

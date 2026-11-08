@@ -62,6 +62,16 @@ public final class LastCrossingTexts {
             case TOOLS->"The cable tools, rolled in canvas.";
             case PRINTS->stage==1?"Prints on the boards, dried to a tidemark. Somebody came up out of the water here.":"Wet prints on the boards. Somebody came up out of the water here.";
             case UNDERSIDE->stage==1?"The fairlead's throat from underneath, the cable running clear through it.":"The fairlead's throat from underneath, the cable kinked hard into it.";
+            case FEED->stage==1?"A section of the live feed, a chalk arrow beside its tag.":"A section of the live feed, a tin tag wired to it: FEED.";
+            case GALLERY_DOOR->stage==1?DOOR_OPEN_LOOK:DOOR_RUSTED;
+            case FEED_GATE->stage==1?GATE_STAGED_LOOK:stage==2?"The feed gate, barred across.":stage==3?"The feed gate, drawn open.":GATE_LOOK;
+            case DEBRIS->DEBRIS_LOOK;
+            case CUTOFF->stage==1?"The upstream cutoff, wound shut.":CUTOFF_LOOK;
+            case SOURCE->"Something at the bottom of the black water, wrapped in weed.";
+            case MASTER->stage==1?"The master bypass, open.":MASTER_LOOK;
+            case RELEASE->stage==1?"The launch rope's bollard, the rope slipped.":"The launch rope, made fast round its bollard.";
+            case DOWNSTREAM->stage==1?"The downstream sluice, wound shut.":DOWNSTREAM_LOOK;
+            case RACK->stage==1?"The launch pin, on its rack.":stage==2?"A locking bar for a sluice gate, on its hooks.":"An empty rack on the wall.";
         };
     }
 
@@ -160,4 +170,60 @@ public final class LastCrossingTexts {
     public static final String HATCH_UP="You come up through the hatch onto the boards, running water.";
     public static final String GRATE_THROUGH="You fold yourself through the bars of the grate.";
     public static final String PRINTS_SEEN="Wet prints on the boards, by the hatch. Somebody came up out of the water.";
+
+    // ------------------------------------------------------------------------------------------------ Day Three (0.4.355)
+    public static final String DEPTH_FIRST="Depth first. And the pin's on the porch rack; I had it in overnight to dress it. Somebody take it down to the ramp.";
+    public static final String DEPTH_READ="Third mark on the sill. On the next rise she'll clear it.";
+    public static final String DAY3_ROLL="Roll again. Answer up.";
+    public static final String PIPE_ANSWER="From the pipe, a breath late: “Here.”";
+    public static final String DAY3_QUESTION="Who's working the launch? Who's looking for the source? And who's still below?";
+    public static final String STILL_BELOW="Nothing from %s. Still below, or somewhere I can't see.";
+    public static final String DAY3_JOBS="Two ways off this bank. The launch: every roller seated, the pin carried down and set in its sleeve, the wheel tried, one of you on the rope and one on the pin. Or the feed: whatever comes up our pipes comes up it. Trace it down from the gauge and you'll find the old gallery. Get the bar to its gate and the way to the cutoff clear. Do one, or split it. Before dark.";
+    public static final String CROSS_ASK="Do you want to cross?";
+    public static final String CROSS_ANSWER="I want to hear everybody who's actually here.";
+    public static final String LAST_NIGHT_ASK="About last night.";
+    public static final String LAST_NIGHT_ANSWER="Then say it to them, not me. They're the ones who'll be next to you in the dark.";
+    public static final String DAY3_BRIEF="Last light soon. Launch crew at the ramp: one below on the wheel, one up top on the pin, one on the rope. Gallery crew down with the bar. And whoever has the plate, decide where it stands tonight. It can't be everywhere.";
+    public static final String HEAVE="You get your shoulder under the roller and heave. It shifts in its cradle and drops back.";
+    public static final String ROLLERS_SEATED="You heave the roller back into its cradle. Every roller's seated now, the cable lying true from the drum to the fairlead.";
+    public static final String SLEEVE_EMPTY="The pin's sleeve stands empty. Vera left the pin on the porch rack.";
+    public static final String PIN_TAKEN="You lift the launch pin off the rack: iron, oiled, a ring through its head.";
+    public static final String PIN_STAGED="You set the launch pin up in its sleeve over the sluice. It'll drop in when the wheel's held shut below.";
+    public static final String WHEEL_TESTED="You run the wheel through its whole travel and back. Stiff, but it'll hold, with somebody on it.";
+    public static final String ROPE_EARLY="The launch rope, made fast round its bollard. Nobody's going anywhere yet.";
+    public static final String ROPE="The launch rope: a slip line round the bollard, its tail to a tripping lever. Pull the lever and she's let go.";
+    public static final String LAUNCH_READY="The rollers seated, the pin up in its sleeve, the wheel tried, a hand for the rope and one for the pin. The launch is ready for dark.";
+    public static final String FEED_TRACED="Traced: from the gauge, down past the intake, through the wall and along the gallery to the feed gate.";
+    public static String feedLook(int bit){return switch(bit){
+        case LastCrossingDayThree.FEED_GAUGE->"A pipe out of the gauge's housing, a tin tag wired to it: FEED. It runs down through the floor.";
+        case LastCrossingDayThree.FEED_INTAKE->"The feed comes down the wall from the gauge room and goes into the stone beside the rusted door.";
+        default->"The feed runs along the gallery's roof and turns down into the feed gate's housing.";};}
+    public static String feedTrace(int bit){return switch(bit){
+        case LastCrossingDayThree.FEED_GAUGE->"You rub the grime off the tag: FEED. The pipe goes down through the floor. You chalk an arrow on the wall beside it.";
+        case LastCrossingDayThree.FEED_INTAKE->"The feed comes down the wall from above and goes into the stone, right beside a rusted door. You chalk an arrow.";
+        default->"Here it is again, along the roof, turning down into the gate's housing. You chalk an arrow.";};}
+    public static final String DOOR_RUSTED="A rusted iron door in the wall. Rusted shut; nobody's opened it in years.";
+    public static final String DOOR_SHOVE="You put your shoulder to it. Rust gives, a little.";
+    public static final String DOOR_OPENED="It grinds open on a stair going down into the dark, and a cold that smells of the river.";
+    public static final String DOOR_HEARD="Iron grinds on iron in the east wall. The rusted door's open.";
+    public static final String DOOR_OPEN_LOOK="The rusted door, open on the stair down.";
+    public static final String BAR_EARLY="A locking bar for a sluice gate, heavy, on its hooks. Nobody needs it yet.";
+    public static final String BAR_TAKEN="You lift the locking bar off its hooks. It's heavy.";
+    public static final String BAR_STAGED="You set the locking bar in its bracket beside the gate, ready to drop across.";
+    public static final String GATE_LOOK="The feed gate: an iron plate in the wall, the feed knocking behind it. A bracket beside it for a locking bar.";
+    public static final String GATE_STAGED_LOOK="The feed gate, the locking bar staged beside it.";
+    public static final String DEBRIS_LOOK="Fallen brick and silt, heaped to the roof of the passage.";
+    public static final String DEBRIS_FIRST="You drag a broken brick off the heap, and silt slides down after it.";
+    public static final String DEBRIS_MORE="You haul at the heap. It comes away an armful at a time.";
+    public static final String DEBRIS_CLEARED="The last of the heap comes away.";
+    public static final String PATH_CLEAR="The passage is clear to the cutoff.";
+    public static final String CUTOFF_LOOK="The upstream cutoff, a wheel on the alcove wall. Against the feed it won't move; with the gate barred it would.";
+    public static final String GALLERY_READY="The feed traced, the bar staged at the gate, the way to the cutoff clear. The gallery's ready for dark.";
+    public static final String SOURCE_SEEN="Through the thick glass, black water, and something at the bottom of it: wrapped in weed, the size of someone crouching. It moves when you breathe.";
+    public static final String MASTER_LOOK="The master bypass for the ramp channel. Rusted fast; it hasn't been turned in years.";
+    public static final String MASTER_KNOWN="The master bypass, rusted fast on this side. At high water the pressure will come round behind it and it'll turn. You know that the way you know your own hands.";
+    public static final String DOWNSTREAM_LOOK="The downstream sluice, where the branches empty into the river. Open. Wound shut, whatever runs in the branches would back up behind it.";
+    public static final String OTHER_BREATH="Under your own breath the other one speaks, nearly words: the master wheel, at high water. Hold it open till the water's at the ramp, and breathe like us.";
+    public static final String BRAKE_TAKEN_UP="The cable's taken up, the catch in the drum's teeth. Nothing to pull on today.";
+    public static final String BRAKE_THROWN="The brake's set. Nothing to pull on till the rollers are reset.";
 }
