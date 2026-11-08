@@ -1328,5 +1328,13 @@
   "block.the_oldest_house.hall_stone_damp_course": "Damp Course",
   "block.the_oldest_house.hall_stone_flags": "Flagstones",
   "block.the_oldest_house.hall_stone_flags_worn": "Worn Flagstones",
-  "block.the_oldest_house.hall_stone_carved": "Carved Band"
+  "block.the_oldest_house.hall_stone_carved": "Carved Band",
+  "block.the_oldest_house.hall_paint_lino": "Linoleum",
+  "block.the_oldest_house.hall_paint_lino_worn": "Worn Linoleum",
+  "block.the_oldest_house.hall_paint_wall": "Painted Plaster",
+  "block.the_oldest_house.hall_paint_wall_marked": "Marked Plaster",
+  "block.the_oldest_house.hall_paint_dado": "Dado",
+  "block.the_oldest_house.hall_paint_panel": "Panelling",
+  "block.the_oldest_house.hall_paint_panel_low": "Panelling with Skirting",
+  "block.the_oldest_house.hall_paint_ceiling": "Ceiling Tiles"
 }

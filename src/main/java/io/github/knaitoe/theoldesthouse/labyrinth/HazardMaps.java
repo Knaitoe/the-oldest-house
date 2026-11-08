@@ -32,6 +32,8 @@ public final class HazardMaps {
         LabyrinthBuilder.entrance(l,b,WALL,FLOOR,Blocks.STONE.defaultBlockState());
         if(p==LabyrinthPlace.WATCHED_THRESHOLD){LabyrinthBuilder.placeDoor(l,b.offset(0,0,1),Direction.SOUTH);var d=p.doors().get(1);LabyrinthBuilder.placeDoor(l,b.offset(d.rel()),d.facing());}
         else LabyrinthBuilder.doors(l,b,p);
+        // 0.4.375: the quiet and threshold halls' own linoleum, paint and panelling (docs/TEXTURE_PASS_PAINT_0_4_375.md).
+        PaintFinish.finish(l,b,p);
         BuildBlocks.after(l,()->HazardVariety.fresh(l,b,p));
     }
     private static void cold(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,HazardBlock.of(LOCKER_WALL));

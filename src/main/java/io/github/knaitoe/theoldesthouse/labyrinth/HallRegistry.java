@@ -31,6 +31,14 @@ public final class HallRegistry {
     static{
         for(String name:STONE_NAMES)STONE.put(name,BLOCKS.registerSimpleBlock("hall_stone_"+name,fixed(name.startsWith("flags")?Blocks.POLISHED_ANDESITE:Blocks.STONE_BRICKS)));
     }
+    /** 0.4.375, release 2b (docs/TEXTURE_PASS_PAINT_0_4_375.md): the quiet and threshold halls' own surfaces (tools/draw_paint_hall_art.py). */
+    public static final List<String> PAINT_NAMES=List.of("lino","lino_worn","wall","wall_marked","dado","panel","panel_low","ceiling");
+    private static final Map<String,DeferredBlock<Block>> PAINT=new LinkedHashMap<>();
+    static{
+        for(String name:PAINT_NAMES)PAINT.put(name,BLOCKS.registerSimpleBlock("hall_paint_"+name,fixed(name.startsWith("lino")?Blocks.SMOOTH_STONE:name.startsWith("panel")?Blocks.DARK_OAK_PLANKS:Blocks.LIGHT_GRAY_TERRACOTTA)));
+    }
+    public static Block paint(String name){var block=PAINT.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static boolean isPaint(net.minecraft.world.level.block.state.BlockState state){for(var block:PAINT.values())if(state.is(block.get()))return true;return false;}
     public static Block stone(String name){var block=STONE.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static boolean isStone(net.minecraft.world.level.block.state.BlockState state){for(var block:STONE.values())if(state.is(block.get()))return true;return false;}
     public static Block surface(String name){var block=SURFACES.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
