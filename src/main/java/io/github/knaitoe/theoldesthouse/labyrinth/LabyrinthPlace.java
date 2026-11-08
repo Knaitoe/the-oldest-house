@@ -619,7 +619,9 @@ public enum LabyrinthPlace {
      * last cable ferry across, for a crew of four to six; built in slices, the first the road, the station, the roll and Day One. */
     LAST_CROSSING("last_crossing",Kind.ONE_SHOT,212,new BoundingBox(-24,-13,-112,60,14,1),literaryEntry()),
     /** 0.4.358, the Survey Stakes' deeper variant (YardFields.surveyDeep, docs/YARD_FINISHING_0_4_358.md): a fence with no gate, and a way through it that shows only on the stakes' bearing. Outside; the yard's survey, deep. */
-    YARD_SURVEY_DEEP("yard_survey_deep",Kind.GRAY,213,new BoundingBox(-18,-3,-50,18,10,0),grayDoors(0,0,-49));
+    YARD_SURVEY_DEEP("yard_survey_deep",Kind.GRAY,213,new BoundingBox(-18,-3,-50,18,10,0),grayDoors(0,0,-49)),
+    /** 0.4.359, Johnny Truant's copying room (TruantSentence, docs/TRUANT_SENTENCE_0_4_359.md), the missing sentence, from the deep halls. */
+    TRUANT_SENTENCE("truant_sentence",Kind.GRAY,214,new BoundingBox(-7,-1,-22,7,5,0),grayDoors(4,0,-21));
 
     /** What a place is to the dealer. */
     public enum Kind {

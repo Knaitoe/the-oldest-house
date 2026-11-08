@@ -1,5 +1,6 @@
 """Original sounds for Johnny Truant's service halls (0.4.307): chalk on plaster, three knocks on an iron main, the main rattling as the
-pressure builds, steam venting, a lift brake hauled or let go, and the car lurching on its cable.
+pressure builds, steam venting, a lift brake hauled or let go, and the car lurching on its cable; and (0.4.359) a sheet of paper
+turned over in his copying room.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Existing files are kept.
 """
@@ -14,6 +15,7 @@ ROWS = {
     'hiss': ('Steam vents', 18),
     'brake': ('A lift brake grinds', 14),
     'lurch': ('A lift car lurches', 16),
+    'page': ('Paper is turned over', 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -96,7 +98,19 @@ def lurch():
     return out
 
 
-MAKERS = {'chalk': chalk, 'knock': knock, 'rattle': rattle, 'hiss': hiss, 'brake': brake, 'lurch': lurch}
+def page():
+    # 0.4.359, the copying room: a sheet lifted off a pile and turned over, two crisp flutters of dry paper.
+    n = seconds(.8)
+    out = np.zeros(n)
+    for at, length, gain in ((0.0, .26, .55), (.3, .34, .7)):
+        k = seconds(length)
+        t = times(k)
+        flutter = .55 + .45 * np.abs(np.sin(2 * np.pi * 23 * t + rng.uniform(0, 3)))
+        place(out, band(rng.standard_normal(k), 1800, 8500) * flutter * envelope(k, .01, .09) * gain, at)
+    return out
+
+
+MAKERS = {'chalk': chalk, 'knock': knock, 'rattle': rattle, 'hiss': hiss, 'brake': brake, 'lurch': lurch, 'page': page}
 
 
 def main():

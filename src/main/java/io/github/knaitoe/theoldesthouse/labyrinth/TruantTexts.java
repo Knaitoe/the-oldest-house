@@ -102,6 +102,7 @@ public final class TruantTexts {
     public static final String FOR_NOW="That'll do. For now.";
     public static final String PAGE_NOTE="He has a page in his hands, close to the light. He reads it out to you.";
     public static final String LAMP_OUT_NOTE="You reach past him and put the lamp out.";
+    public static final String LANTERN_OUT_NOTE="You reach across the desk and put the lantern out.";
     public static final List<String> CORRECTED=List.of("I got you through. Half of it's mine.","I'm only getting it down.");
     public static final List<String> RETOLD=List.of("Not that part.","I didn't ask for the part you could tell anybody.");
     public static final List<String> CHALLENGED=List.of("Did you? Then you left something out.");
@@ -172,6 +173,7 @@ public final class TruantTexts {
             case "false_wind_signal"->List.of("You could see the trees. I knew you were watching my hand instead.","I won't do that again.",nothing);
             case "stock_gate"->List.of("I let the chain go while you were in there.","Go ahead. I'll hold it this time.",nothing);
             case "coffee"->List.of("You could have gone. I should have let you.",nothing);
+            case "sentence"->List.of("I left a line out, reading it to them. I know which one.",nothing);
             default->List.of(nothing);
         };
     }
@@ -196,6 +198,7 @@ public final class TruantTexts {
             case "shed_hasp"->List.of("Lift the hasp for me before you go. From out there, you can reach it.");
             case "read_wind"->List.of("Look at those leaves for me. Let me know when it's dropped.");
             case "stock_chain"->List.of("Put the chain back through when you're clear. Don't leave them a gap.");
+            case "lantern_out"->List.of("Then do something for me.","Put the lantern out. I know these by heart. Do you?");
             default->List.of("Then do something for me.","Put the lamp out. I want to see what's past it.");
         };
     }

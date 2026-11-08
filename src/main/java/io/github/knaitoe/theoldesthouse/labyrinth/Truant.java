@@ -83,7 +83,7 @@ public final class Truant {
     public static final int PUSH=15,OVER=16,REACH=17,PAGE=18,FRAME=19;
     /** 0.4.282: what he is at a meeting. */
     /** 0.4.307: and the service halls' turns (TruantService): the arrow turned, the knock at the wrong time, the brake let go. */
-    public enum Turn{HELP,CLAIM,DOORWAY,COVER,SHOVE,ARROW,KNOCK,BRAKE,SHED,SIGNAL,HERD}
+    public enum Turn{HELP,CLAIM,DOORWAY,COVER,SHOVE,ARROW,KNOCK,BRAKE,SHED,SIGNAL,HERD,SENTENCE}
     /** The shove: how long he must have been coming before his hands can land, how long they rest there first, how long the reader must look back at him to stop him, how long he looks over. */
     public static final int APPROACH=24,HANDS=6,TURN_BACK=4,LOOK_OVER=30;
     /** The covered light: how long the lamp is out at most, and how long he holds the wrist. */
@@ -145,7 +145,7 @@ public final class Truant {
     /** Which side of the heavy door each reader was last on, wholly: +1 the near side, -1 through. */
     static final Map<UUID,Integer> SIDE=new HashMap<>();
     static final Set<LabyrinthPlace> OCCUPIED=EnumSet.noneOf(LabyrinthPlace.class);
-    @SubscribeEvent public static void stopped(ServerStoppedEvent e){scene=null;WITH.clear();HELPED.clear();WITHDRAWN.clear();ASKED.clear();NEAR.clear();SIDE.clear();OCCUPIED.clear();FORCED=null;TruantBody.clear();TruantYard.clearAll();}
+    @SubscribeEvent public static void stopped(ServerStoppedEvent e){scene=null;WITH.clear();HELPED.clear();WITHDRAWN.clear();ASKED.clear();NEAR.clear();SIDE.clear();OCCUPIED.clear();FORCED=null;TruantBody.clear();TruantYard.clearAll();TruantSentence.clearAll();}
     /** A lamp he put out is never lost to a stop. */
     @SubscribeEvent public static void stopping(ServerStoppingEvent e){var l=e.getServer().getLevel(HouseDimensions.INTERIOR);if(l!=null)relight(l,null,true);}
 
@@ -186,7 +186,7 @@ public final class Truant {
             var readers=entry.getValue().stream().filter(Truant::reader).toList();
             if(place==TruantPlaces.DOOR)closer(l,b,readers,place==at);
             if(place!=at){RoomActors.clear(l,box,Truant::isTruant);continue;}
-            if(scene==null||scene.place!=place){scene=new Scene(place);TruantService.newScene();TruantYard.newScene();}
+            if(scene==null||scene.place!=place){scene=new Scene(place);TruantService.newScene();TruantYard.newScene();TruantSentence.newScene();}
             s=state(server);var before=s.hasUUID("Body")?s.getUUID("Body"):null;var a=RoomActors.one(l,box,s,"Body",Truant::isTruant);
             if(a!=null&&!box.contains(a.position())){a.bind(place,null);place(a,b,home(place),0);}
             if(a==null&&!s.hasUUID("Body"))a=spawn(l,b,place,s);
@@ -205,7 +205,7 @@ public final class Truant {
                 case TRUANT_DOOR->{if(scene.turn==Turn.DOORWAY&&!scene.aside)doorway(l,b,a,readers);else door(l,b,a,readers,now);}
                 case TRUANT_LEDGE->{if(scene.turn==Turn.SHOVE)shove(l,b,a,readers);else ledge(l,b,a,readers);}
                 case TRUANT_LAMP->lamp(l,b,a,readers);
-                default->{if(TruantService.is(place))TruantService.tick(l,b,a,readers,scene);else if(TruantYard.is(place))TruantYard.tick(l,b,a,readers,scene);}
+                default->{if(TruantService.is(place))TruantService.tick(l,b,a,readers,scene);else if(TruantYard.is(place))TruantYard.tick(l,b,a,readers,scene);else if(TruantSentence.is(place))TruantSentence.tick(l,b,a,readers,scene);}
             }
             var bodyState=state(server);bodyState.putLong("BodyPos",a.blockPosition().asLong());save(server,bodyState);
             favours(l,b,a,readers);
@@ -219,7 +219,7 @@ public final class Truant {
             if(body!=null&&box.inflate(12,2,12).intersects(camera.getBoundingBox())){if(camera==body)return true;var hit=l.clip(new ClipContext(camera.getEyePosition(),body.getEyePosition(),ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,camera));if(hit.getType()==HitResult.Type.MISS)return true;}
         }return false;
     }
-    static Vec3 home(LabyrinthPlace place){if(TruantYard.is(place))return TruantYard.home(place);if(TruantService.is(place))return TruantService.home(place);return switch(place){case TRUANT_DOOR->TruantPlaces.DOOR_SPOT;case TRUANT_LEDGE->TruantPlaces.LEDGE_SPOT;default->TruantPlaces.PEEK_SPOT;};}
+    static Vec3 home(LabyrinthPlace place){if(TruantSentence.is(place))return TruantSentence.HOME;if(TruantYard.is(place))return TruantYard.home(place);if(TruantService.is(place))return TruantService.home(place);return switch(place){case TRUANT_DOOR->TruantPlaces.DOOR_SPOT;case TRUANT_LEDGE->TruantPlaces.LEDGE_SPOT;default->TruantPlaces.PEEK_SPOT;};}
     static @Nullable LiteraryActor spawn(ServerLevel l,BlockPos b,LabyrinthPlace place,CompoundTag s){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(place,null);a.appearance(LiteraryActor.STRANGER,place==TruantPlaces.LAMP?LEER:FACE);a.setNoGravity(true);
@@ -581,7 +581,8 @@ public final class Truant {
             TruantHospitality.struck(a,sc);
             if(sc.turn==Turn.DOORWAY&&!sc.aside){sc.aside=true;sc.holding=false;}
             if(sc.turn==Turn.COVER&&sc.cover>0&&sc.cover<4&&a.level() instanceof ServerLevel l){var b=base(l,TruantPlaces.LAMP);if(b!=null)release(l,b,a,sc.target==null?null:l.getServer().getPlayerList().getPlayer(sc.target));}
-            if(sc.turn==Turn.SHOVE&&sc.shove>=1&&sc.shove<=2){sc.shove=4;sc.shoveTicks=0;}}
+            if(sc.turn==Turn.SHOVE&&sc.shove>=1&&sc.shove<=2){sc.shove=4;sc.shoveTicks=0;}
+            if(sc.turn==Turn.SENTENCE)TruantSentence.struck();}
         a.gesture(FLINCH);say(a,TruantTexts.STRUCK);
         a.level().playSound(null,a.blockPosition(),SoundEvents.PLAYER_HURT,SoundSource.NEUTRAL,.6F,.9F);
     }
@@ -616,13 +617,15 @@ public final class Truant {
         for(var p:readers){if(withdrawn(p))continue;var own=record(p.server,p.getUUID());if(!collecting(own,deepest(p.server,p.getUUID())))continue;if(tOwn==null||meeting(own)>meeting(tOwn)){target=p;tOwn=own;}}
         if(target==null)return;
         var place=sc.place;
-        Turn hostile=switch(place){case TRUANT_DOOR->Turn.DOORWAY;case TRUANT_LAMP->Turn.COVER;case TRUANT_CHALK->Turn.ARROW;case TRUANT_KNOCK->Turn.KNOCK;case TRUANT_LIFT->Turn.BRAKE;case TRUANT_SHED->Turn.SHED;case TRUANT_LANTERN->Turn.SIGNAL;case TRUANT_STOCK_GATE->Turn.HERD;default->Turn.SHOVE;};
+        Turn hostile=switch(place){case TRUANT_DOOR->Turn.DOORWAY;case TRUANT_LAMP->Turn.COVER;case TRUANT_CHALK->Turn.ARROW;case TRUANT_KNOCK->Turn.KNOCK;case TRUANT_LIFT->Turn.BRAKE;case TRUANT_SHED->Turn.SHED;case TRUANT_LANTERN->Turn.SIGNAL;case TRUANT_STOCK_GATE->Turn.HERD;case TRUANT_SENTENCE->Turn.SENTENCE;default->Turn.SHOVE;};
         Turn want;
         if(FORCED!=null)want=FORCED;
         else if(tOwn.getInt("Revealed")==0)want=place==TruantPlaces.DOOR?Turn.DOORWAY:Turn.CLAIM;
         else if(harmed(tOwn))want=r.nextInt(10)<7?Turn.HELP:Turn.CLAIM;
         else{int k=r.nextInt(10);want=k<4?Turn.HELP:k<7?Turn.CLAIM:hostile;}
         if(want==Turn.SHOVE&&FORCED==null&&!shoveDue(tOwn))want=Turn.CLAIM;
+        // 0.4.359: with nothing in their account to leave out, the copying room's turn is a claim.
+        if(want==Turn.SENTENCE&&!TruantSentence.due(tOwn))want=Turn.CLAIM;
         if(want!=Turn.HELP&&want!=Turn.CLAIM&&want!=hostile)want=Turn.CLAIM;
         if(want==hostile&&(gated(readers)||TruantYard.is(place)&&!TruantYard.canCollect(tOwn,place)))want=Turn.CLAIM;
         sc.turn=want;if(want==Turn.HELP)return;
@@ -836,6 +839,7 @@ public final class Truant {
     // ------------------------------------------------------------------ the claimant's panel
     /** The one he has turned to this meeting gets the claimant; everyone else, the man they know. */
     static void converse(ServerPlayer p,LiteraryActor a){
+        if(TruantSentence.converse(p,a))return;
         var sc=scene;
         if(sc!=null&&sc.turn!=null&&sc.turn!=Turn.HELP&&sc.turn!=Turn.SHOVE&&p.getUUID().equals(sc.target))claim(p,a);else open(p,a);
     }
@@ -854,7 +858,7 @@ public final class Truant {
         if(TruantHospitality.offer(p,a))return;
         var sc=scene;var place=LabyrinthPlace.byId(a.scene());
         if(sc!=null&&sc.turn==Turn.DOORWAY&&!sc.aside)line(p,a,who,TruantTexts.NOT_YET);
-        var page=TruantTexts.page(own);boolean read=page!=null&&(place==TruantPlaces.LAMP||worn(own)>=2);
+        var page=TruantTexts.page(own);boolean read=page!=null&&(place==TruantPlaces.LAMP||TruantSentence.is(place)||worn(own)>=2);
         if(read){
             Talk.line(p,"",TruantTexts.PAGE_NOTE);for(var said:page.lines())line(p,a,who,said);
             var papers=own.getList("Papers",Tag.TAG_STRING);if(!has(papers,page.place()))papers.add(StringTag.valueOf(page.place()));own.put("Papers",papers);
@@ -906,7 +910,7 @@ public final class Truant {
     /** The greater price: something dangerous done for him, fitted to the place. */
     static void favour(ServerPlayer p,LiteraryActor a){
         var own=record(p.server,p.getUUID());String who=who(own);var place=LabyrinthPlace.byId(a.scene());
-        String what=TruantYard.is(place)?place==TruantYard.SHED?"shed_hasp":place==TruantYard.LANTERN?"read_wind":"stock_chain":place==TruantPlaces.DOOR?"go_back":place==TruantPlaces.LEDGE?"cross_alone":"lamp_out";
+        String what=TruantYard.is(place)?place==TruantYard.SHED?"shed_hasp":place==TruantYard.LANTERN?"read_wind":"stock_chain":TruantSentence.is(place)?"lantern_out":place==TruantPlaces.DOOR?"go_back":place==TruantPlaces.LEDGE?"cross_alone":"lamp_out";
         for(var said:TruantTexts.favour(what))line(p,a,who,said);
         Talk.ask(p,Talk.reply("All right.",q->favoured(q,a,what,true)),Talk.reply("No.",q->favoured(q,a,what,false)));
     }
@@ -915,9 +919,11 @@ public final class Truant {
         var list=own.getList("Favours",Tag.TAG_COMPOUND);var f=new CompoundTag();f.putString("What",what);f.putInt("At",meeting(own));f.putString("Answer",agreed?"agreed":"refused");list.add(f);while(list.size()>16)list.remove(0);own.put("Favours",list);record(p.server,p.getUUID(),own);
         if(!agreed){line(p,a,who,TruantTexts.STILL_MINE);Talk.end(p);return;}
         var sc=scene;if(sc!=null)sc.favour.put(p.getUUID(),what);
-        if(what.equals("lamp_out")){
-            Talk.line(p,"",TruantTexts.LAMP_OUT_NOTE);Talk.end(p);
-            if(a.level() instanceof ServerLevel l){var b=base(l,TruantPlaces.LAMP);if(b!=null)darken(l,b.offset(TruantPlaces.LAMP_LIGHT),TruantPlaces.LAMP,l.getGameTime()+FAVOUR_DARK);}
+        if(what.equals("lamp_out")||what.equals("lantern_out")){
+            boolean desk=what.equals("lantern_out");
+            Talk.line(p,"",desk?TruantTexts.LANTERN_OUT_NOTE:TruantTexts.LAMP_OUT_NOTE);Talk.end(p);
+            var at=desk?TruantSentence.PLACE:TruantPlaces.LAMP;
+            if(a.level() instanceof ServerLevel l){var b=base(l,at);if(b!=null)darken(l,b.offset(desk?TruantSentence.LANTERN_AT:TruantPlaces.LAMP_LIGHT),at,l.getGameTime()+FAVOUR_DARK);}
             if(sc!=null)sc.dark=true;did(p,what);return;
         }
         line(p,a,who,TruantTexts.agreed(what));Talk.end(p);
@@ -950,5 +956,5 @@ public final class Truant {
     /** Ends every reader's present meeting, as if they had been apart a long while. */
     public static void apart(){WITH.clear();HELPED.clear();WITHDRAWN.clear();ASKED.clear();NEAR.clear();}
     /** Forgets what he was doing, as a fresh arrival would find him. */
-    public static void fresh(){scene=null;OPENED_ALONE=-1;OCCUPIED.clear();}
+    public static void fresh(){scene=null;OPENED_ALONE=-1;OCCUPIED.clear();TruantSentence.clearAll();}
 }

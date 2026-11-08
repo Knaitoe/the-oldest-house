@@ -26,8 +26,9 @@ public final class TruantPlaces {
     private TruantPlaces(){}
     public static final LabyrinthPlace DOOR=LabyrinthPlace.TRUANT_DOOR,LEDGE=LabyrinthPlace.TRUANT_LEDGE,LAMP=LabyrinthPlace.TRUANT_LAMP;
     /** 0.4.307: with his three service-hall places (TruantService), dealt only from the stone halls. */
-    public static final List<LabyrinthPlace> PLACES=List.of(DOOR,LEDGE,LAMP,LabyrinthPlace.TRUANT_CHALK,LabyrinthPlace.TRUANT_KNOCK,LabyrinthPlace.TRUANT_LIFT,LabyrinthPlace.TRUANT_SHED,LabyrinthPlace.TRUANT_LANTERN,LabyrinthPlace.TRUANT_STOCK_GATE);
-    public static List<LabyrinthPlace> dealt(int depth){return depth<FROM_DEPTH?List.of():depth<LabyrinthPacing.STONE_DEPTH?List.of(DOOR,LEDGE,LAMP,LabyrinthPlace.TRUANT_SHED,LabyrinthPlace.TRUANT_LANTERN,LabyrinthPlace.TRUANT_STOCK_GATE):PLACES;}
+    public static final List<LabyrinthPlace> PLACES=List.of(DOOR,LEDGE,LAMP,LabyrinthPlace.TRUANT_CHALK,LabyrinthPlace.TRUANT_KNOCK,LabyrinthPlace.TRUANT_LIFT,LabyrinthPlace.TRUANT_SHED,LabyrinthPlace.TRUANT_LANTERN,LabyrinthPlace.TRUANT_STOCK_GATE,LabyrinthPlace.TRUANT_SENTENCE);
+    /** 0.4.359: and his copying room (TruantSentence), dealt only from the deep halls. */
+    public static List<LabyrinthPlace> dealt(int depth){return depth<FROM_DEPTH?List.of():depth<LabyrinthPacing.STONE_DEPTH?List.of(DOOR,LEDGE,LAMP,LabyrinthPlace.TRUANT_SHED,LabyrinthPlace.TRUANT_LANTERN,LabyrinthPlace.TRUANT_STOCK_GATE):depth<LabyrinthPacing.DEEP_DEPTH?PLACES.subList(0,PLACES.size()-1):PLACES;}
     public static boolean is(LabyrinthPlace place){return place!=null&&PLACES.contains(place);}
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
@@ -150,7 +151,7 @@ public final class TruantPlaces {
             case TRUANT_DOOR->buildDoor(l,b);
             case TRUANT_LEDGE->buildLedge(l,b);
             case TRUANT_LAMP->buildLamp(l,b);
-            default->{if(TruantYard.is(place))TruantYard.build(l,b,place);else TruantService.build(l,b,place);}
+            default->{if(TruantYard.is(place))TruantYard.build(l,b,place);else if(TruantSentence.is(place))TruantSentence.build(l,b);else TruantService.build(l,b,place);}
         }
     }
 }

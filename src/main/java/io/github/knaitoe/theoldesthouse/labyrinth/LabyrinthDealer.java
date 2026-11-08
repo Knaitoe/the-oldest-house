@@ -649,6 +649,7 @@ public final class LabyrinthDealer {
             case QUIET_ROOM, QUIET_READING, QUIET_BOOTROOM, QUIET_SUNROOM, QUIET_SPARE -> 1;
             case TRUANT_DOOR, TRUANT_LEDGE, TRUANT_LAMP -> depth < TruantPlaces.FROM_DEPTH ? 0 : TruantPlaces.WEIGHT;
             case TRUANT_CHALK, TRUANT_KNOCK, TRUANT_LIFT -> depth < LabyrinthPacing.STONE_DEPTH ? 0 : TruantPlaces.WEIGHT;
+            case TRUANT_SENTENCE -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : TruantPlaces.WEIGHT;
             case EXPLORER_CAMP -> depth < 3 ? 0 : 2;
             default -> depth < 4 ? 0 : place.grayWeight();
         };

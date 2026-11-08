@@ -41,7 +41,7 @@ import net.minecraft.world.phys.AABB;
  */
 public final class LabyrinthBuilder {
     /** Bump for a layout upgrade; start() chooses structural rebuilds or in-place decoration. */
-    public static final int VERSION = 113;
+    public static final int VERSION = 114;
 
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
@@ -592,7 +592,7 @@ public final class LabyrinthBuilder {
             case QUIET_SPARE -> QuietRooms.buildSpare(level, base);
             case SPEAK_UP -> SpeakUp.build(level, base);
             // 0.4.264: Johnny Truant's places (TruantPlaces).
-            case TRUANT_DOOR, TRUANT_LEDGE, TRUANT_LAMP, TRUANT_CHALK, TRUANT_KNOCK, TRUANT_LIFT -> TruantPlaces.build(level, base, place);
+            case TRUANT_DOOR, TRUANT_LEDGE, TRUANT_LAMP, TRUANT_CHALK, TRUANT_KNOCK, TRUANT_LIFT, TRUANT_SENTENCE -> TruantPlaces.build(level, base, place);
             case STONE_DUST -> TraceRooms.buildStoneDust(level, base);
             case TURNING_LANDING -> TurningLandings.buildEarly(level, base);
             case LAMP_ROOMS -> LampRooms.build(level, base);

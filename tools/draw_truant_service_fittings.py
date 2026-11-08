@@ -2,7 +2,9 @@
 
 16x16 textures from small palettes with per-pixel noise: chalk strokes (none, left, right) on a transparent plane; a cast-iron steam
 main, still, shivering (a pale blur along it) and venting (a white plume); a brake lever with a red grip, off and hauled on; the car's
-boards in an iron frame. Writes models, block states and the block's name. --check verifies everything.
+boards in an iron frame; and (0.4.359) his copying room's sheaf of pages (written, run by the wet, blank and ruled), its blotter (clean, and
+with a line taken off backwards), and the pigeonholes stuffed with papers. Writes models, block states and the block's name. --check
+verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -80,8 +82,76 @@ def boards():
     return im
 
 
+INK = '#2a2a3a'
+
+
+def paper(kind):
+    """A sheet of his papers, ruled: written in a small even hand (0), the same with one line run by a drip (1), or blank (2)."""
+    im = noisy(['#e8e2d0', '#e2dcc8', '#ece6d6'], 3590); rnd = random.Random(3591)
+    for y in (3, 6, 9, 12):
+        for x in range(1, 15):
+            dot(im, x, y + 1, '#c9c4b4')
+    if kind != 2:
+        for y in (3, 6, 9, 12):
+            x = 2
+            while x < 14:
+                word = rnd.randrange(1, 4)
+                for i in range(word):
+                    if x + i < 14:
+                        dot(im, x + i, y, INK, 220 if rnd.random() < .8 else 150)
+                x += word + 1
+    if kind == 1:
+        # The run: a drip landed on the third line and took its ink down the sheet in a streak.
+        for x in range(3, 13):
+            dot(im, x, 9, '#7a7a8c', 150)
+        for y in range(9, 16):
+            for x in (7, 8):
+                dot(im, x, y, '#5a5a70', max(60, 190 - (y - 9) * 18))
+    frame(im, 0, 0, 16, 16, '#bdb6a2')
+    return im
+
+
+def blotter(inked):
+    im = noisy(['#3f5a3c', '#3a5437', '#466243'], 3592)
+    for corner in ((0, 0), (12, 0), (0, 12), (12, 12)):
+        for dx in range(4):
+            for dy in range(4):
+                if dx + dy < 4:
+                    x = corner[0] + (dx if corner[0] == 0 else 3 - dx); y = corner[1] + (dy if corner[1] == 0 else 3 - dy)
+                    dot(im, x, y, '#5a3a24')
+    if inked:
+        # A line of writing taken off backwards where the wet page lay on it.
+        rnd = random.Random(3593); x = 13
+        while x > 2:
+            word = rnd.randrange(1, 4)
+            for i in range(word):
+                if x - i > 2:
+                    dot(im, x - i, 8, '#1e2030', 200)
+            x -= word + 1
+        for x in (7, 8):
+            dot(im, x, 9, '#1e2030', 120); dot(im, x, 10, '#1e2030', 80)
+    return im
+
+
+def pigeonholes():
+    """The front of a run of pigeonholes in dark oak, each stuffed with folded paper."""
+    im = noisy(['#3e2a18', '#382614', '#44301c'], 3594); rnd = random.Random(3595)
+    for cx in (1, 6, 11):
+        for cy in (1, 6, 11):
+            for x in range(cx, cx + 4):
+                for y in range(cy, cy + 4):
+                    dot(im, x, y, '#1c140c')
+            for x in range(cx, cx + 4):
+                if rnd.random() < .85:
+                    for y in range(cy + 1 + rnd.randrange(2), cy + 4):
+                        dot(im, x, y, shade('#e2dcc8', rnd.randint(-30, 0))[:3])
+    return im
+
+
 def textures():
     t = {f'arrow_{d}': arrow(d) for d in range(3)}
+    t.update({f'paper_{k}': paper(k) for k in range(3)})
+    t.update({'blotter_0': blotter(False), 'blotter_1': blotter(True), 'pigeonholes': pigeonholes(), 'oak': noisy(['#3e2a18', '#382614', '#44301c'], 3596)})
     t.update({'pipe_0': iron_pipe(0), 'pipe_1': iron_pipe(1), 'plume': plume(), 'iron': lever_iron(), 'grip': grip(), 'boards': boards(), 'leaf': noisy(['#324228','#3d502e','#4a5c36'],3161)})
     return {f'block/truant_service/{k}.png': v for k, v in t.items()}
 
@@ -121,11 +191,20 @@ def fitting_models():
         e=element([0,0,7],[16,16,9],{'all':'l'})
         if stage:e['rotation']={'origin':[8,0,8],'axis':'z','angle':-22.5 if stage==2 else 22.5,'rescale':False}
         m[f'bough_{stage}']=model([e],{'l':'leaf'},'leaf')
+    # 0.4.359, the copying room: a sheaf of pages lying on the desk, the blotter, and a run of pigeonholes (a whole block).
+    for k in range(3):
+        under = element([3, 0, 3.5], [14, .25, 14], {'up': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'})
+        top = element([2, .25, 2.5], [13, .5, 13], {'up': 'w', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [0, 0, 16, 16]})
+        m[f'page_{k}'] = model([under, top], {'b': 'paper_2', 'w': f'paper_{k}'}, f'paper_{k}')
+    for k in range(2):
+        m[f'blotter_{k}'] = model([element([1, 0, 2], [15, .5, 14], {'up': 'f', 'north': 'o', 'south': 'o', 'east': 'o', 'west': 'o', 'down': 'o'})], {'f': f'blotter_{k}', 'o': 'oak'}, f'blotter_{k}')
+        m[f'blotter_{k}']['elements'][0]['faces']['up']['uv'] = [0, 0, 16, 16]
+    m['pigeonholes_0'] = model([element([0, 0, 0], [16, 16, 16], {'north': 'p', 'south': 'o', 'east': 'o', 'west': 'o', 'up': 'o', 'down': 'o'})], {'p': 'pigeonholes', 'o': 'oak'}, 'oak')
     return m
 
 
-KINDS = ['arrow', 'pipe', 'brake', 'car_brake', 'platform', 'hasp', 'wedge', 'hatch', 'split', 'stock_chain', 'bough']
-STAGES = {'arrow': 3, 'pipe': 3, 'brake': 2, 'car_brake': 2, 'platform': 1, 'hasp': 2, 'wedge': 2, 'hatch': 2, 'split': 1, 'stock_chain': 2, 'bough': 3}
+KINDS = ['arrow', 'pipe', 'brake', 'car_brake', 'platform', 'hasp', 'wedge', 'hatch', 'split', 'stock_chain', 'bough', 'page', 'blotter', 'pigeonholes']
+STAGES = {'arrow': 3, 'pipe': 3, 'brake': 2, 'car_brake': 2, 'platform': 1, 'hasp': 2, 'wedge': 2, 'hatch': 2, 'split': 1, 'stock_chain': 2, 'bough': 3, 'page': 3, 'blotter': 2, 'pigeonholes': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 
 

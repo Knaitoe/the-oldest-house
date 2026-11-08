@@ -494,6 +494,141 @@
     "facing=west,kind=bough,stage=2": {
       "model": "the_oldest_house:block/truant_service/bough_2",
       "y": 270
+    },
+    "facing=north,kind=page,stage=0": {
+      "model": "the_oldest_house:block/truant_service/page_0"
+    },
+    "facing=north,kind=page,stage=1": {
+      "model": "the_oldest_house:block/truant_service/page_1"
+    },
+    "facing=north,kind=page,stage=2": {
+      "model": "the_oldest_house:block/truant_service/page_2"
+    },
+    "facing=east,kind=page,stage=0": {
+      "model": "the_oldest_house:block/truant_service/page_0",
+      "y": 90
+    },
+    "facing=east,kind=page,stage=1": {
+      "model": "the_oldest_house:block/truant_service/page_1",
+      "y": 90
+    },
+    "facing=east,kind=page,stage=2": {
+      "model": "the_oldest_house:block/truant_service/page_2",
+      "y": 90
+    },
+    "facing=south,kind=page,stage=0": {
+      "model": "the_oldest_house:block/truant_service/page_0",
+      "y": 180
+    },
+    "facing=south,kind=page,stage=1": {
+      "model": "the_oldest_house:block/truant_service/page_1",
+      "y": 180
+    },
+    "facing=south,kind=page,stage=2": {
+      "model": "the_oldest_house:block/truant_service/page_2",
+      "y": 180
+    },
+    "facing=west,kind=page,stage=0": {
+      "model": "the_oldest_house:block/truant_service/page_0",
+      "y": 270
+    },
+    "facing=west,kind=page,stage=1": {
+      "model": "the_oldest_house:block/truant_service/page_1",
+      "y": 270
+    },
+    "facing=west,kind=page,stage=2": {
+      "model": "the_oldest_house:block/truant_service/page_2",
+      "y": 270
+    },
+    "facing=north,kind=blotter,stage=0": {
+      "model": "the_oldest_house:block/truant_service/blotter_0"
+    },
+    "facing=north,kind=blotter,stage=1": {
+      "model": "the_oldest_house:block/truant_service/blotter_1"
+    },
+    "facing=north,kind=blotter,stage=2": {
+      "model": "the_oldest_house:block/truant_service/blotter_0"
+    },
+    "facing=east,kind=blotter,stage=0": {
+      "model": "the_oldest_house:block/truant_service/blotter_0",
+      "y": 90
+    },
+    "facing=east,kind=blotter,stage=1": {
+      "model": "the_oldest_house:block/truant_service/blotter_1",
+      "y": 90
+    },
+    "facing=east,kind=blotter,stage=2": {
+      "model": "the_oldest_house:block/truant_service/blotter_0",
+      "y": 90
+    },
+    "facing=south,kind=blotter,stage=0": {
+      "model": "the_oldest_house:block/truant_service/blotter_0",
+      "y": 180
+    },
+    "facing=south,kind=blotter,stage=1": {
+      "model": "the_oldest_house:block/truant_service/blotter_1",
+      "y": 180
+    },
+    "facing=south,kind=blotter,stage=2": {
+      "model": "the_oldest_house:block/truant_service/blotter_0",
+      "y": 180
+    },
+    "facing=west,kind=blotter,stage=0": {
+      "model": "the_oldest_house:block/truant_service/blotter_0",
+      "y": 270
+    },
+    "facing=west,kind=blotter,stage=1": {
+      "model": "the_oldest_house:block/truant_service/blotter_1",
+      "y": 270
+    },
+    "facing=west,kind=blotter,stage=2": {
+      "model": "the_oldest_house:block/truant_service/blotter_0",
+      "y": 270
+    },
+    "facing=north,kind=pigeonholes,stage=0": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0"
+    },
+    "facing=north,kind=pigeonholes,stage=1": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0"
+    },
+    "facing=north,kind=pigeonholes,stage=2": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0"
+    },
+    "facing=east,kind=pigeonholes,stage=0": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 90
+    },
+    "facing=east,kind=pigeonholes,stage=1": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 90
+    },
+    "facing=east,kind=pigeonholes,stage=2": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 90
+    },
+    "facing=south,kind=pigeonholes,stage=0": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 180
+    },
+    "facing=south,kind=pigeonholes,stage=1": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 180
+    },
+    "facing=south,kind=pigeonholes,stage=2": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 180
+    },
+    "facing=west,kind=pigeonholes,stage=0": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 270
+    },
+    "facing=west,kind=pigeonholes,stage=1": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 270
+    },
+    "facing=west,kind=pigeonholes,stage=2": {
+      "model": "the_oldest_house:block/truant_service/pigeonholes_0",
+      "y": 270
     }
   }
 }
