@@ -227,6 +227,11 @@ public final class IndianLakeLinkedTests {
     @GameTest(template="empty",batch="cave_originals0493",timeoutTicks=1200)
     public static void caveAdoptsLegacyOriginalsAndNeverReplacesLateBodiesOrAnotherCanoe(GameTestHelper h){
         originalCave=new Fixture(h,new BlockPos(46300,80,46300),LabyrinthPlace.PRESERVED_CAVE);var f=originalCave;
+        // 0.4.381: the six rows of pews and the causeway are the chapel's own.
+        {int pews=0,causeway=0,vanilla=0;
+            for(int x=-15;x<=15;x++)for(int y=-3;y<=10;y++)for(int z=-47;z<=0;z++){var s=f.level.getBlockState(f.base.offset(x,y,z));
+                if(s.is(RoomShell.PEW.get()))pews++;if(s.is(RoomShell.CAUSEWAY.get()))causeway++;if(s.is(Blocks.DARK_OAK_STAIRS)||s.is(Blocks.DARK_OAK_PLANKS))vanilla++;}
+            h.assertTrue(pews==72&&causeway==27&&vanilla==0,"the chapel's pews and causeway are its own: "+pews+" pews, "+causeway+" boards, "+vanilla+" vanilla");}
         var bounds=IndianLakeRooms.bounds(f.base,f.place);originalCaveChunks=new NativeTestChunks();originalCaveChunks.hold(f.level,bounds);
         var original=f.level.getEntitiesOfClass(LakeCongregantEntity.class,bounds,e->e.getTags().contains(PreservedCave.BODY+"0")).getFirst();
         original.setCustomName(Component.literal("The original in the front pew"));original.setHealth(13);original.preservedEra(3);var id=original.getUUID();

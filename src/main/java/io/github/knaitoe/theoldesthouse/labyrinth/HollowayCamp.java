@@ -14,11 +14,11 @@ public final class HollowayCamp {
     public static final BlockPos CACHE=new BlockPos(-4,0,-7),JOURNAL=new BlockPos(3,0,-8),LATCH=new BlockPos(-9,1,-66);
     private HollowayCamp(){}
     public static void build(ServerLevel level,BlockPos base){
-        var dirt=Blocks.DIRT.defaultBlockState();var stone=Blocks.STONE_BRICKS.defaultBlockState();
+        var dirt=Blocks.DIRT.defaultBlockState();var stone=RoomShell.CAMP_ASHLAR.get().defaultBlockState();
         LabyrinthBuilder.room(level,base,-6,6,4,-12,0,dirt,Blocks.COARSE_DIRT.defaultBlockState(),dirt);
-        LabyrinthBuilder.room(level,base,-10,10,5,-24,-13,stone,Blocks.STONE.defaultBlockState(),stone);
-        LabyrinthBuilder.room(level,base,-8,8,5,-46,-25,Blocks.STRIPPED_SPRUCE_WOOD.defaultBlockState(),Blocks.SPRUCE_PLANKS.defaultBlockState(),stone);
-        LabyrinthBuilder.room(level,base,-10,10,5,-69,-47,stone,Blocks.TUFF.defaultBlockState(),Blocks.DEEPSLATE_TILES.defaultBlockState());
+        LabyrinthBuilder.room(level,base,-10,10,5,-24,-13,stone,RoomShell.CAMP_FLAGS.get().defaultBlockState(),stone);
+        LabyrinthBuilder.room(level,base,-8,8,5,-46,-25,RoomShell.CAMP_TIMBER.get().defaultBlockState(),RoomShell.CAMP_BOARDS.get().defaultBlockState(),stone);
+        LabyrinthBuilder.room(level,base,-10,10,5,-69,-47,stone,RoomShell.CAMP_GRIT.get().defaultBlockState(),RoomShell.CAMP_SLATE.get().defaultBlockState());
         for(int z:new int[]{-12,-13,-24,-25,-46,-47})for(int x=-1;x<=1;x++)for(int y=0;y<=3;y++)level.setBlock(base.offset(x,y,z),Blocks.AIR.defaultBlockState(),3);
         for(int z=-3;z>=-61;z-=8)level.setBlock(base.offset(2,0,z),Blocks.TORCH.defaultBlockState(),3);
         // Real sight breaks: the route remains at least two blocks wide around each.

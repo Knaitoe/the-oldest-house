@@ -1380,5 +1380,13 @@
   "block.the_oldest_house.room_shell_boiler_floor": "Boiler Room Floor",
   "block.the_oldest_house.room_shell_boiler_joists": "Porch Floor Joists",
   "block.the_oldest_house.room_shell_boiler_stone": "Service Stair Stone",
-  "block.the_oldest_house.room_shell_boiler_stair": "Service Stair"
+  "block.the_oldest_house.room_shell_boiler_stair": "Service Stair",
+  "block.the_oldest_house.room_shell_camp_ashlar": "Rough Ashlar",
+  "block.the_oldest_house.room_shell_camp_flags": "Hunt Flags",
+  "block.the_oldest_house.room_shell_camp_timber": "Hewn Timber",
+  "block.the_oldest_house.room_shell_camp_boards": "Camp Boards",
+  "block.the_oldest_house.room_shell_camp_grit": "Packed Grit",
+  "block.the_oldest_house.room_shell_camp_slate": "Slate Ceiling",
+  "block.the_oldest_house.room_shell_pew": "Chapel Pew",
+  "block.the_oldest_house.room_shell_causeway": "Causeway Boards"
 }
