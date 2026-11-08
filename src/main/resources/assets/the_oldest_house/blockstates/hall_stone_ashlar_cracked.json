@@ -1,0 +1,24 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/hall_stone_ashlar_cracked"
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_ashlar_cracked_1"
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_ashlar_cracked_2"
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_ashlar_cracked_3"
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_ashlar_cracked_4"
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_ashlar_cracked_5"
+      }
+    ]
+  }
+}

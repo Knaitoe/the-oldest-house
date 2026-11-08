@@ -55,6 +55,8 @@ public final class StoneHalls {
         }
         LabyrinthBuilder.entrance(level, base, BRICK, POLISHED, BRICK);
         LabyrinthBuilder.doors(level, base, place);
+        // 0.4.374: the halls' own stone, laid over the vanilla masonry one for one (docs/TEXTURE_PASS_STONE_0_4_374.md).
+        StoneFinish.finish(level, base, place);
     }
 
     // ------------------------------------------------------------------

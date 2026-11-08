@@ -25,6 +25,14 @@ public final class HallRegistry {
             SURFACES.put(name,BLOCKS.registerSimpleBlock("hall_"+name,properties));
         }
     }
+    /** 0.4.374, the texture pass's second release (docs/TEXTURE_PASS_STONE_0_4_374.md): the stone halls' own surfaces (tools/draw_stone_hall_art.py). */
+    public static final List<String> STONE_NAMES=List.of("ashlar","ashlar_weathered","ashlar_cracked","ashlar_damp","damp_course","flags","flags_worn","carved");
+    private static final Map<String,DeferredBlock<Block>> STONE=new LinkedHashMap<>();
+    static{
+        for(String name:STONE_NAMES)STONE.put(name,BLOCKS.registerSimpleBlock("hall_stone_"+name,fixed(name.startsWith("flags")?Blocks.POLISHED_ANDESITE:Blocks.STONE_BRICKS)));
+    }
+    public static Block stone(String name){var block=STONE.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
+    public static boolean isStone(net.minecraft.world.level.block.state.BlockState state){for(var block:STONE.values())if(state.is(block.get()))return true;return false;}
     public static Block surface(String name){var block=SURFACES.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static boolean is(net.minecraft.world.level.block.state.BlockState state){for(var block:SURFACES.values())if(state.is(block.get()))return true;return false;}
     private HallRegistry(){}

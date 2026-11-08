@@ -1320,5 +1320,13 @@
   "subtitles.the_oldest_house.literary.home_floorboard": "A floorboard creaks in the hall",
   "subtitles.the_oldest_house.literary.home_step": "Slow footsteps in the hall",
   "subtitles.the_oldest_house.literary.home_handle": "A door handle turns and is let go",
-  "subtitles.the_oldest_house.literary.home_landline": "A telephone rings down the hall"
+  "subtitles.the_oldest_house.literary.home_landline": "A telephone rings down the hall",
+  "block.the_oldest_house.hall_stone_ashlar": "Ashlar",
+  "block.the_oldest_house.hall_stone_ashlar_weathered": "Weathered Ashlar",
+  "block.the_oldest_house.hall_stone_ashlar_cracked": "Cracked Ashlar",
+  "block.the_oldest_house.hall_stone_ashlar_damp": "Damp Ashlar",
+  "block.the_oldest_house.hall_stone_damp_course": "Damp Course",
+  "block.the_oldest_house.hall_stone_flags": "Flagstones",
+  "block.the_oldest_house.hall_stone_flags_worn": "Worn Flagstones",
+  "block.the_oldest_house.hall_stone_carved": "Carved Band"
 }

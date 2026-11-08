@@ -73,6 +73,42 @@ public final class StoneHallTests {
         h.succeed();
     }
 
+    /**
+     * 0.4.374 (docs/TEXTURE_PASS_STONE_0_4_374.md): all six stone halls wear their own stone. Walls and vaults are dressed ashlar
+     * with some cracked (never most), the floors flagstones worn down the middle, every wall's foot a damp course or a carved band,
+     * and none of the vanilla masonry they were laid in shows; the shapes stay, so every way on is still walked to.
+     */
+    @GameTest(template = "empty")
+    public static void stoneHallsWearTheirOwnStone(GameTestHelper h) {
+        ServerLevel level = h.getLevel();
+        var all = List.of(LabyrinthPlace.STONE_GALLERY, LabyrinthPlace.STONE_CROSSING, LabyrinthPlace.STONE_DESCENT,
+                LabyrinthPlace.STONE_ARCADE, LabyrinthPlace.STONE_BEND, LabyrinthPlace.STONE_LANDING);
+        for (int i = 0; i < all.size(); i++) {
+            LabyrinthPlace hall = all.get(i);
+            BlockPos base = h.absolutePos(BlockPos.ZERO).offset(4400 + i * 60, 12, 420);
+            StoneHalls.build(level, base, hall);
+            int ashlar = 0, cracked = 0, flags = 0, worn = 0, course = 0, carved = 0, vanilla = 0;
+            var box = hall.room();
+            for (BlockPos at : BlockPos.betweenClosed(base.offset(box.minX(), box.minY(), box.minZ()), base.offset(box.maxX(), box.maxY(), box.maxZ()))) {
+                var s = level.getBlockState(at);
+                if (s.is(HallRegistry.stone("flags_worn"))) { flags++; worn++; }
+                else if (s.is(HallRegistry.stone("flags"))) flags++;
+                else if (s.is(HallRegistry.stone("damp_course"))) course++;
+                else if (s.is(HallRegistry.stone("carved"))) carved++;
+                else if (s.is(HallRegistry.stone("ashlar_cracked"))) { ashlar++; cracked++; }
+                else if (s.is(HallRegistry.stone("ashlar")) || s.is(HallRegistry.stone("ashlar_weathered")) || s.is(HallRegistry.stone("ashlar_damp"))) ashlar++;
+                else if (s.is(Blocks.STONE_BRICKS) || s.is(Blocks.CRACKED_STONE_BRICKS) || s.is(Blocks.MOSSY_STONE_BRICKS) || s.is(Blocks.CHISELED_STONE_BRICKS)) vanilla++;
+            }
+            h.assertTrue(ashlar > 100 && cracked > 5 && cracked * 5 < ashlar && flags > 20 && worn > 0 && course + carved > 10 && vanilla == 0,
+                    hall.id() + " wears its own stone: ashlar " + ashlar + " (cracked " + cracked + "), flags " + flags + " (worn " + worn + "), damp course " + course + ", carved " + carved + ", vanilla masonry " + vanilla);
+            Set<BlockPos> reached = walk(level, base.offset(0, 0, -1));
+            for (var door : hall.doors())
+                if (!door.name().equals("entry"))
+                    h.assertTrue(reached.contains(base.offset(door.rel()).relative(door.facing())), hall.id() + ": the " + door.name() + " way on is still walked to");
+        }
+        h.succeed();
+    }
+
     @GameTest(template = "empty")
     public static void theSeventhPassStartsTheStoneTier(GameTestHelper h) {
         LabyrinthData data = new LabyrinthData();

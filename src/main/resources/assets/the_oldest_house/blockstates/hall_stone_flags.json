@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/hall_stone_flags"
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_flags",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_flags",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/hall_stone_flags",
+        "y": 270
+      }
+    ]
+  }
+}

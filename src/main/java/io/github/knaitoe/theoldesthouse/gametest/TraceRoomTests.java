@@ -200,7 +200,7 @@ public final class TraceRoomTests {
                 h.assertTrue(LabyrinthDealer.grayWeight(LabyrinthPlace.DUST_HALL,stone)==0,"where the shut-up rooms leave off");
                 TraceRooms.buildStoneDust(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
                 h.assertTrue(is(l,b.offset(0,0,-6),TraceBlock.Kind.GRIT)&&stage(l,b.offset(0,0,-6))==TraceBlock.CLEAN,"grit over the floor, clean");
-                h.assertTrue(l.getBlockState(b.offset(2,-1,-6)).is(Blocks.POLISHED_ANDESITE)&&l.getBlockState(b.offset(-4,2,-6)).is(net.minecraft.tags.BlockTags.STONE_BRICKS),"stone underfoot and masonry walls");
+                h.assertTrue(l.getBlockState(b.offset(2,-1,-6)).is(io.github.knaitoe.theoldesthouse.labyrinth.HallRegistry.stone("flags"))&&io.github.knaitoe.theoldesthouse.labyrinth.StoneFinish.is(l.getBlockState(b.offset(-4,2,-6))),"flagstones underfoot and the hall's own masonry walls: "+l.getBlockState(b.offset(2,-1,-6))+" / "+l.getBlockState(b.offset(-4,2,-6)));
                 h.assertTrue(is(l,b.offset(TraceRooms.STONE_TABLE),TraceBlock.Kind.TABLE)&&l.getBlockState(b.offset(TraceRooms.STONE_LAMP)).is(Blocks.LANTERN),"someone's table, and a lantern left on the floor by it");
                 h.assertTrue(l.getBlockState(b.offset(-2,5,TraceRooms.STONE_FALLEN_RIB)).is(Blocks.STONE_BRICK_SLAB)&&l.getBlockState(b.offset(0,5,TraceRooms.STONE_FALLEN_RIB)).isAir()&&l.getBlockState(b.offset(-1,0,TraceRooms.STONE_FALLEN_RIB)).is(Blocks.STONE_BRICK_SLAB),"a rib come down, its stones on the floor under the gap");
                 h.assertTrue(f.data().door(place.id()+"/side")!=null&&f.data().door(place.id()+"/far")!=null,"a side door and a far door lead on");
