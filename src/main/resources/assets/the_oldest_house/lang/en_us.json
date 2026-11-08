@@ -1306,5 +1306,8 @@
   "subtitles.the_oldest_house.pinehook.breaker": "The power cuts out",
   "subtitles.the_oldest_house.pinehook.crash": "Something crashes in the shed",
   "subtitles.the_oldest_house.pinehook.flash": "A camera flashes",
-  "subtitles.the_oldest_house.pinehook.tape": "A tape slots into the deck"
+  "subtitles.the_oldest_house.pinehook.tape": "A tape slots into the deck",
+  "item.the_oldest_house.pinehook_tie": "Coverall tie",
+  "item.the_oldest_house.pinehook_costume": "Mask and coverall",
+  "item.the_oldest_house.pinehook_plan": "Casey's plan"
 }

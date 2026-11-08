@@ -26,12 +26,16 @@ import net.minecraft.world.phys.shapes.*;
  * <li>Jude's duffel, zipped (0), open (1), and open with the costume gone (2); the bag behind the shed, with the strap in it (0) or
  * without (1).</li>
  * <li>The cooler set down; the shelf of rented tapes; the first-aid kit on the bathroom wall, full (0) or taken (1).</li>
+ * <li>0.4.365, the night: the rowboat's bow and stern (the stern empty (0), a tarp over a bundle (1), the tarp pulled back (2), empty
+ * again (3)); wet footprints and dark spots on the ground or the planks; a coverall's tie caught on a post; Casey's bag in the bedroom,
+ * shut with his plan in it (0) or open and empty (1); Len's safe, shut (0) or open (1); the portable player set down, stopped (0) or
+ * recording (1).</li>
  * </ul>
  */
 public final class PinehookBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<PinehookBlock> CODEC=simpleCodec(PinehookBlock::new);
     public enum Kind implements StringRepresentable {
-        STEREO,TV,BREAKER,LAMP,STOVE,DUFFEL,BAG,COOLER,TAPES,KIT;
+        STEREO,TV,BREAKER,LAMP,STOVE,DUFFEL,BAG,COOLER,TAPES,KIT,BOAT_BOW,BOAT_STERN,PRINTS,BLOOD,TIE,SUITCASE,SAFE,RECORDER;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -59,11 +63,17 @@ public final class PinehookBlock extends HorizontalDirectionalBlock {
             case COOLER->box(f,1,0,3,15,11,13);
             case TAPES->box(f,0,0,9,16,16,16);
             case KIT->box(f,3,3,13,13,13,16);
+            case BOAT_BOW,BOAT_STERN->Block.box(0,6,1,16,16,15);
+            case PRINTS,BLOOD->Block.box(1,0,1,15,1,15);
+            case TIE->Block.box(3,0,3,13,2,13);
+            case SUITCASE->box(f,1,0,4,15,8,12);
+            case SAFE->Block.box(1,0,1,15,16,15);
+            case RECORDER->box(f,4,0,5,12,4,11);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case STEREO,TV,STOVE,COOLER,TAPES->getShape(s,l,p,c);
+            case STEREO,TV,STOVE,COOLER,TAPES,SUITCASE,SAFE->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }

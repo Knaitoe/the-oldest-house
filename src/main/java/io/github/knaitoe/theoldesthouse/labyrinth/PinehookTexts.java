@@ -93,6 +93,75 @@ public final class PinehookTexts {
     public static final String JUDE_NOT="I didn't trip.";
     public static final String JUDE_BANDAGED="Thanks. That's — thanks. Keep pressing. It's not as bad as it looks. I think.";
 
+    // ------------------------------------------------------------------------------------------------ 0.4.365, the night
+    public static final String LEN_GOES="I'm going down to the boat. Lock your doors tonight. All of you.";
+    // Jude in the kitchen, with Casey talking over him until someone stops him.
+    public static final String JUDE_CUT="I was getting out of the—",CASEY_OVER="He's in shock. He doesn't know what he saw. Give him some air.";
+    public static final String HUSH="Casey. Let him talk.",HUSH_ANSWER="Fine. Fine. Talk.";
+    public static final String JUDE_NIGHT_WOUNDED="Okay. Ask me. While I can still think straight.",JUDE_NIGHT_WITNESSED="She had a knife. Nina had a real knife.",
+        JUDE_NIGHT_PREVENTED="Nothing happened. Somebody walked round behind the shed while I was changing. Then they went away.";
+    public static final String JUDE_Q_WHO="Who came into the shed?",JUDE_Q_WHO_PREVENTED="Who was behind the shed?";
+    public static final String JUDE_WHO_WOUNDED="Somebody small, in a coat and gloves. They didn't say a word. They went for my bag, not me. I got in the way.",
+        JUDE_WHO_WITNESSED="Nina. You saw her. She didn't even look surprised to see me.",JUDE_WHO_PREVENTED="I don't know. Len, maybe. They stood there a long time.";
+    public static final String JUDE_Q_STRAP="Do you tie the mask on, or buckle it?",JUDE_STRAP="Tie it. The buckle broke in the spring, so I knot it at the back. Why?";
+    public static final String STRAP_CUE="The strap from behind the shed has a buckle at each end, and it's cut to fit somebody's head. Not his.";
+    public static final String JUDE_Q_KNEW="Who knew you'd change in the shed?",JUDE_KNEW="Casey. And whoever Casey told.";
+    public static final String CASEY_TOLD="I didn't tell anyone. I— Nina asked what was in your bag. I told her. That's all.";
+    public static final String JUDE_Q_BOAT="Did you see anyone by the boathouse today?",JUDE_BOAT="Nina. Before we ate. Trying the door. I thought she was looking for the toilet.";
+    // Casey, in the night.
+    public static final String CASEY_NIGHT_WOUNDED="People trip. It's dark. Everybody calm down.",CASEY_NIGHT_WITNESSED="That was not part of it. Okay? That was not the plan.",
+        CASEY_NIGHT_PREVENTED="See? Everyone's fine. It's fine.",CASEY_NIGHT_TURNED="I didn't hire anyone else. I swear I didn't.";
+    public static final String CASEY_Q_WHO="Who else knew about the prank?",CASEY_WHO="Nobody. Jude. Me. ...Nina asked what was in Jude's bag. I told her it was a surprise. Then I told her what the surprise was.";
+    public static final String CASEY_Q_PLAN="Did you write any of this down?",CASEY_PLAN_NO="No. Why would I write it down?",CASEY_PLAN_YES="In my bag. In the bedroom. Take it. It's fine.";
+    public static final String CASEY_WANTS_PLAN="Is that my— give me that. Please. That's private.",GIVE_PLAN="Give it to him.",KEEP_PLAN="Not yet.",CASEY_GOT_PLAN="Thank you. It's nothing. It's just a list.";
+    /** What a reader can tell Casey, and what he says to each before it adds up. */
+    public enum Tell {
+        PRINTS("There are wet footprints from the lake up to the back door.","Somebody went swimming. People swim."),
+        BLOOD("There's blood on the dock. Real blood.","Jude's got stage blood in his bag. Hasn't he?"),
+        PLAN("Your plan puts a midnight scare on the end of the dock. Jude was standing right in front of you when someone walked out there.","That was Jude's bit. Jude was with me. Jude was with me."),
+        STRAP("Someone cut their own strap for that mask. Jude ties his.","Why would anyone cut a—"),
+        COSTUME("The mask and the coverall are in the rowboat, under the tarp.","Then who was wearing it?"),
+        TAPE("The player was running by the back door. Someone went out, and came back in wet, while Nina was in the bathroom.","Nina was in the bathroom. She said so.");
+        public final String line,answer;
+        Tell(String line,String answer){this.line=line;this.answer=answer;}
+    }
+    public static final String CASEY_TURNS="Okay. Okay. That's not a bit. That's not anything I did. I didn't hire anyone else. I swear to you.";
+    public static final String CASEY_BURN_CUE="Casey crouches at the fire and feeds a folded sheet of paper into it, and watches it go.",CASEY_BAG_EMPTY_CUE="Casey looks in his bag, then round the room, and doesn't say anything.";
+    // Len, through the boathouse door.
+    public static final String LEN_DOOR="Who's there? Go back to the cabin. Lock the doors. And nobody touches anything down here.";
+    public static final String LEN_Q_IN="Let me in.",LEN_IN="No. Nobody comes in. Not tonight.";
+    public static final String LEN_Q_WHO="Who would want to hurt you?",LEN_WHO="Nobody. Kids. I don't know. Go back up.";
+    public static final String LEN_Q_PRINTS="Somebody came up out of the water right by here.",LEN_PRINTS="Then she's been round the back.",LEN_SLIP="I didn't say she. I didn't say anything.";
+    public static final String LEN_Q_SAFE="What's in the safe?",LEN_SAFE="Nothing that's yours.";
+    public static final String LEN_Q_WATCH="We'll keep watch.",LEN_WATCH="All right. Thank you. Don't come in.";
+    // Nina, in the night.
+    public static final String NINA_NIGHT_WOUNDED="Is Jude okay? What happened out there?",NINA_NIGHT_PREVENTED="Can we put the film back on. Please.";
+    public static final String NINA_Q_OUT="Did you go outside tonight?",NINA_OUT="No. I was in the bathroom when it happened. I didn't hear a thing.";
+    public static final String NINA_Q_WET="Somebody came in the back door soaking wet.",NINA_WET="Then somebody else went swimming.";
+    public static final String NINA_Q_BOAT="Jude saw you trying the boathouse door.",NINA_BOAT="I was looking for the toilet. It isn't my place.";
+    /** Casey's plan, in his capitals. */
+    public static final List<String> PLAN=List.of("THE PLAN (DON'T LET ANYONE SEE THIS)",
+        "1. After dark. Breaker by the back door, main switch DOWN. Say it's the wiring.",
+        "2. J at the front window. Three knocks. Not too long.",
+        "3. J round the back. Rattle the back door. DON'T open it.",
+        "4. J to the shed. Change. Back in normal clothes. Say he went to look at the lake.",
+        "5. MIDNIGHT. J on the end of the dock in the mask. Just standing. Torch on him from the porch. Big finish.",
+        "Mask, coverall, rubber knife in J's bag. Stage blood for no. 5 only.");
+    /** What the portable player hears, set down and recording. */
+    public static String heard(String key){return switch(key){
+        case "knock"->"Three knocks on glass.";
+        case "rattle"->"A door handle, rattled hard.";
+        case "power_off"->"A heavy click. Everything that was humming stops.";
+        case "power_on"->"A click, and the fridge starts up again.";
+        case "crash"->"Far off, something heavy going over.";
+        case "glass"->"Glass breaking, a long way off.";
+        case "splash"->"Water. Something going into it, not far.";
+        case "back_door"->"The back door opening, and shutting.";
+        case "nina_in"->"The back door again, slowly. Someone breathing hard. Water dripping on the boards.";
+        case "music"->"Music, through a wall.";
+        default->"Hiss.";
+    };}
+
     // ------------------------------------------------------------------------------------------------ the account (provisional)
     /** What a reader's evening comes to, from their own record: the part they took, what they did and saw, and how the shed went. The last
      * slice writes the whole weekend's account; until then this is the evening as far as it goes. */
@@ -117,6 +186,16 @@ public final class PinehookTexts {
             default->{}
         }
         if(own.getBoolean("HelpedJude"))lines.add("I held a dressing on his cut until it stopped.");
+        if(own.getBoolean("CaseyHushed"))lines.add("When Casey kept talking over him I told him to let Jude talk.");
+        if(own.getBoolean("StrapMismatch"))lines.add("Jude knots his mask on. The strap from behind the shed had a buckle at each end.");
+        if(own.getBoolean("HeardCaseyToldNina"))lines.add("Casey said he'd told Nina what was in Jude's bag.");
+        if(own.getBoolean("SawWetPrints"))lines.add("There were wet footprints from the lake to the back step.");
+        if(own.getBoolean("FoundCostume"))lines.add("The mask and the coverall were in Len's rowboat, under the tarp.");
+        if(own.getBoolean("ReadPlan"))lines.add(own.getBoolean("BurnedPlan")?"I read Casey's plan, and then I burned it.":"I read Casey's plan. The dock was meant for midnight.");
+        else if(own.getBoolean("SawCaseyBurn"))lines.add("I watched Casey put a sheet of paper in the fire.");
+        if(own.getBoolean("TapeNina"))lines.add("On the tape the back door opened, and a long time later someone came back in, dripping.");
+        if(own.getBoolean("LenSlipped"))lines.add("Through the boathouse door Len said she'd been round the back, and then said he hadn't said she.");
+        if(own.getBoolean("TurnedCasey"))lines.add("I told Casey enough that he stopped saying it was a bit.");
         lines.add("That was the first night.");
         return book("The account: the weekend at Pinehook",name,List.of(String.join(" ",lines)));
     }

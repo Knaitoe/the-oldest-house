@@ -37,6 +37,8 @@ public final class PinehookRegistry {
      * first-aid bag. And what is found: the elastic strap from the bag behind the shed. */
     public static final DeferredItem<Thing> COOLER=thing("pinehook_cooler"),CAMERA=thing("pinehook_camera"),TORCH=thing("pinehook_torch"),MIXTAPE=thing("pinehook_mixtape"),
         PLAYER=thing("pinehook_player"),TAPE=thing("pinehook_tape"),FIRSTAID=thing("pinehook_firstaid"),ELASTIC=thing("pinehook_elastic");
+    /** 0.4.365, found in the night: the coverall's tie from the dock, the mask and coverall bundled under the rowboat's tarp, Casey's plan. */
+    public static final DeferredItem<Thing> TIE=thing("pinehook_tie"),COSTUME=thing("pinehook_costume"),PLAN=thing("pinehook_plan");
     private static DeferredItem<Thing> thing(String id){return ITEMS.registerItem(id,Thing::new,new Item.Properties().stacksTo(1));}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Knuckles on a window; the breaker going and the cabin's hum with it; something heavy going over in the shed; a camera's flash; a tape
