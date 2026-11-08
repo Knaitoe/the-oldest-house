@@ -76,13 +76,15 @@ public final class SecondPerson {
     /** Winter: how long a morning waits at the basin, a day, an evening in the armchair, a day away, and how long being seen lasts. */
     public static final int CARE_WAIT=400,DAY_LENGTH=360,WINTER_EVENING=600,AWAY=400,SEEN_OPEN=200,SEEN_STILL=80;
     static final int G_SIT=1,G_PHONE=3,G_CAMERA=4,G_PERCH=5,G_CARRY=6,G_COLD=7;
+    /** 0.4.370: looking down at their phone, a bag in one hand, knitting, walking asleep, a hand out to the latch (SecondPersonRenderers). */
+    static final int G_LOOK=8,G_BAG=9,G_KNIT=10,G_DRIFT=11,G_REACH=12;
 
     /** One flat in memory: its people and the counters between beats. Every fact lives in the reader's record. */
     static final class Flat {
         final BlockPos base;int empty;boolean cleared;
         @Nullable UUID resident,iris,sam;
         int ring=-1,doorway,armchair,window,shut,near,knockBack=-1,unseen,wordWipe=-1,flash,seenRun,seenAway,still;@Nullable Vec3 stillAt;
-        boolean bedDoor;long sent=Long.MIN_VALUE;
+        boolean bedDoor,drift;long sent=Long.MIN_VALUE;
         final Map<UUID,Long> said=new HashMap<>();final Set<String> once=new HashSet<>();
         Flat(BlockPos b){base=b;}
     }
@@ -171,7 +173,10 @@ public final class SecondPerson {
         Mark pose(int g){return new Mark(at,yaw,g,asleep,present);}
     }
     static final float SOUTH=0,WEST=90,NORTH=180,EAST=-90;
-    static Mark seat(BlockPos chair,float yaw){return new Mark(at(chair.getX()+.5,chair.getY(),chair.getZ()+.5),yaw,G_SIT,false,true);}
+    /** A chair: the cane chairs' seats stand a little higher than the armchair's and the sofa's, so the body sits up onto them. */
+    static Mark seat(BlockPos chair,float yaw){boolean cane=chair.equals(RESIDENT_CHAIR)||chair.equals(GUEST_CHAIR)||chair.equals(HALL_CHAIR);return new Mark(at(chair.getX()+.5,chair.getY()+(cane?.1:0),chair.getZ()+.5),yaw,G_SIT,false,true);}
+    /** The edge of the bed at its foot, facing the bedroom door; the mattress is higher than a chair's seat. */
+    static Mark bedEdge(){return new Mark(at(BED_FOOT.getX()+.5,UP+.12,BED_FOOT.getZ()+.2),NORTH,G_SIT,false,true);}
     static Mark bed(){return new Mark(at(BED_HEAD.getX()+.5,UP,BED_HEAD.getZ()+.5),EAST,0,true,true);}
     /** Somewhere to stand beside a fitting, from fixed places in the flat. */
     static Mark beside(String what){return switch(what){
@@ -210,7 +215,7 @@ public final class SecondPerson {
             }
             case NIGHT->{
                 if(sub==2&&own.getString("Night").equals("tap"))return beside("sink");
-                if(sub==2&&own.getString("Night").equals("doorway"))return new Mark(at(-5.5,UP,-26.5),EAST,G_PERCH,false,true);
+                if(sub==2&&own.getString("Night").equals("doorway"))return bedEdge();
                 return bed();
             }
             default->{return bed();}
@@ -223,7 +228,7 @@ public final class SecondPerson {
                 return beside("routine");
             }
             case EVENING->{return sub==0?beside("door"):seat(RESIDENT_CHAIR,EAST);}
-            case PHOTO->{return sub<=1?beside("photo_spot").pose(G_CAMERA):beside("photo_spot").pose(G_PHONE);}
+            case PHOTO->{return sub<=1?beside("photo_spot").pose(G_CAMERA):beside("photo_spot").pose(G_LOOK);}
             case CALL->{return own.getString("Call2").equals("left")?beside("phone").pose(G_PHONE):seat(RESIDENT_CHAIR,EAST);}
             case STAY->{return own.getBoolean("SamStayed")?beside("sofa"):beside("door");}
             default->{return own.getBoolean("SamStayed")?beside("sofa"):seat(ARMCHAIR,WEST);}
@@ -234,18 +239,19 @@ public final class SecondPerson {
             case W_DAY->{
                 if(own.getInt("Care")==0)return sub==0?beside("hall_table"):seat(ARMCHAIR,WEST);
                 String ticket=own.getString("Ticket");
-                if(ticket.equals("mat"))return switch(sub){case 0->beside("door");case 1->beside("hall_bag").pose(G_CARRY);case 2->Mark.gone();default->seat(ARMCHAIR,WEST);};
+                if(ticket.equals("mat"))return switch(sub){case 0->beside("door");case 1->beside("hall_bag").pose(G_BAG);case 2->Mark.gone();default->seat(ARMCHAIR,WEST);};
                 if(ticket.equals("left")&&sub==0){var m=state(own,"ticket").equals("placed")?nearThing(own,"ticket"):null;return m!=null?m:beside("hall_table");}
                 return seat(ARMCHAIR,WEST);
             }
+            case W_EVENING->{var m=seat(ARMCHAIR,WEST);return own.getBoolean("SleeveFound")?m.pose(G_KNIT):m;}
             case W_NIGHT->{return sub>=2&&sub<100?station(own,(sub-2)/2):bed();}
             default->{return seat(ARMCHAIR,WEST);}
         }
         // The last morning.
         boolean stays=own.getString("Decision").equals("stay");
-        if(st==LATCH)return stays?seat(RESIDENT_CHAIR,EAST):beside("hall_bag").pose(G_CARRY);
+        if(st==LATCH)return stays?seat(RESIDENT_CHAIR,EAST):beside("hall_bag").pose(G_BAG);
         if(stays)return beside("window");
-        return sub==0?Mark.stand(5.5,0,-11.0,SOUTH).pose(G_CARRY):sub==1?Mark.stand(8.5,0,-11.0,EAST).pose(G_CARRY):sub==2?Mark.stand(15.5,0,-11.0,EAST).pose(G_CARRY):Mark.gone();
+        return sub==0?Mark.stand(5.5,0,-11.0,SOUTH).pose(G_BAG):sub==1?Mark.stand(8.5,0,-11.0,EAST).pose(G_BAG):sub==2?Mark.stand(15.5,0,-11.0,EAST).pose(G_BAG):Mark.gone();
     }
     /** The resident first comes up the stairs with the last box; afterwards they are wherever the year left them. */
     static @Nullable Vec3 residentFrom(CompoundTag own){
@@ -256,8 +262,8 @@ public final class SecondPerson {
     /** Where the sleepwalk takes them, station by station: what the reader did in the quiet rooms, in that order, then the latch. */
     static Mark station(CompoundTag own,int i){
         var walk=SecondPersonStory.list(own,"WalkList");if(i<0||i>=walk.size())return bed();
-        return switch(walk.get(i)){case "kitchen"->seat(RESIDENT_CHAIR,EAST);case "waiting"->seat(HALL_CHAIR,WEST);case "bathroom"->beside("basin");case "coatroom"->beside("coat");
-            case "shelter"->beside("window");case "lamp"->beside("lamp");case "tap"->beside("sink");case "glass"->beside("glass");case "knock"->beside("knock");default->beside("door");};
+        return switch(walk.get(i)){case "kitchen"->seat(RESIDENT_CHAIR,EAST);case "waiting"->seat(HALL_CHAIR,WEST);case "bathroom"->beside("basin").pose(G_DRIFT);case "coatroom"->beside("coat").pose(G_DRIFT);
+            case "shelter"->beside("window").pose(G_DRIFT);case "lamp"->beside("lamp").pose(G_DRIFT);case "tap"->beside("sink").pose(G_DRIFT);case "glass"->beside("glass").pose(G_DRIFT);case "knock"->beside("knock").pose(G_DRIFT);default->beside("door").pose(G_REACH);};
     }
     static Mark irisMark(CompoundTag own){
         int s=seasonOf(own),st=step(own),sub=sub(own);
@@ -285,7 +291,8 @@ public final class SecondPerson {
         var to=abs(b,mark.at());
         if(a==null){a=spawn(l,b,p.getUUID(),role,phase,from==null?mark.at():from);if(a==null)return null;keep.accept(a.getUUID());}
         double dist=a.position().distanceToSqr(to);
-        boolean seated=mark.gesture()==G_SIT||mark.gesture()==G_PERCH||mark.asleep();
+        boolean seated=mark.gesture()==G_SIT||mark.gesture()==G_PERCH||mark.gesture()==G_KNIT||mark.asleep();
+        boolean resident=id!=null&&id.equals(f.resident);int stride=resident&&f.drift?G_DRIFT:0;
         if(mark.asleep()&&a.isSleeping()){a.gesture(0);return a;}
         if(a.isSleeping())a.stopSleeping();
         // A seat or the bed: walk up to it, then sit or lie down in it.
@@ -293,7 +300,7 @@ public final class SecondPerson {
             if(mark.asleep()){a.noPhysics=false;a.setNoGravity(false);a.gesture(0);a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.startSleeping(b.offset(BED_HEAD));return a;}
             a.gesture(mark.gesture());a.noPhysics=true;a.setNoGravity(true);a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setYHeadRot(mark.yaw());return a;
         }
-        a.gesture(seated?0:mark.gesture());
+        a.gesture(seated?stride:mark.gesture());
         if(dist<.09){a.noPhysics=false;a.setNoGravity(false);a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setYHeadRot(mark.yaw());return a;}
         a.noPhysics=false;a.setNoGravity(false);
         if(!p.hasLineOfSight(a)||dist>144){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());return a;}
@@ -301,9 +308,32 @@ public final class SecondPerson {
         var ahead=to.subtract(a.position()).normalize();var toReader=p.position().subtract(a.position());
         if(toReader.horizontalDistance()<1.1&&ahead.dot(toReader.normalize())>.4){if(f.once.add("stalled"+(l.getGameTime()/400)))say(f,a,"...");return a;}
         doorsFor(l,b,rel(a.position(),b),mark.at());openOnTheWay(l,f,b,a,to);
-        SceneFootpaths.walk(a,to,.12);
+        SceneFootpaths.walk(a,to,a.gesture()==G_DRIFT?.075:.12);
         return a;
     }
+    /**
+     * 0.4.370: what the resident has in their hand follows what they are doing: the landline's receiver, off its cradle, while they are on
+     * it; their phone to take the picture and look at it; a bag on their way out; Iris's sleeve while they knit, taken up off the chair's
+     * arm and laid back on it after.
+     */
+    static void props(ServerLevel l,Flat f,CompoundTag own,@Nullable LiteraryActor a){
+        if(a==null)return;var b=f.base;int g=a.gesture();
+        ItemStack want=switch(g){
+            case G_PHONE->prop(SecondPersonRegistry.RECEIVER_MODEL,"Receiver");
+            case G_CAMERA,G_LOOK->new ItemStack(HouseReadRegistry.PHONE.get());
+            case G_BAG->new ItemStack(Items.BUNDLE);
+            case G_KNIT->prop(SecondPersonRegistry.SLEEVE_MODEL,"Iris's sleeve");
+            default->ItemStack.EMPTY;};
+        if(!ItemStack.isSameItemSameComponents(a.getMainHandItem(),want))a.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,want);
+        boolean onLine=g==G_PHONE&&a.distanceToSqr(Vec3.atCenterOf(b.offset(PHONE)))<6;int stage=SecondPersonBlock.stage(l.getBlockState(b.offset(PHONE)));
+        if(onLine&&stage==0)set(l,b,PHONE,SecondPersonBlock.of(SecondPersonBlock.Kind.PHONE,Direction.EAST,2));else if(!onLine&&stage==2)phone(l,b,false);
+        boolean onArm=state(own,"sleeve").equals("arm")&&!own.getBoolean("SleeveFinished");
+        if(g==G_KNIT&&sleeve(l,b)==0)sleeve(l,b,-1);else if(g!=G_KNIT&&onArm&&sleeve(l,b)<0)sleeve(l,b,0);
+    }
+    static ItemStack prop(int model,String name){var s=new ItemStack(SecondPersonRegistry.CARRIED.get());s.set(DataComponents.CUSTOM_MODEL_DATA,new CustomModelData(model));s.set(DataComponents.CUSTOM_NAME,Component.literal(name));return s;}
+    static void set(ServerLevel l,BlockPos b,BlockPos at,BlockState s){l.setBlock(b.offset(at),s,3);}
+    /** A hand put to something: taking it out of a box, setting it down, turning the note over. */
+    static void handle(@Nullable LiteraryActor a){if(a!=null)a.swing(net.minecraft.world.InteractionHand.MAIN_HAND);}
     static boolean arrived(@Nullable LiteraryActor a,BlockPos b,Mark m){return a!=null&&(m.asleep()?a.isSleeping():a.position().distanceToSqr(abs(b,m.at()))<.2);}
     /** A door between them and where they are going is opened as they come to it; a door the reader shut on them is noticed once. */
     static void openOnTheWay(ServerLevel l,Flat f,BlockPos b,LiteraryActor a,Vec3 to){
@@ -356,7 +386,9 @@ public final class SecondPerson {
     static void story(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own){
         var b=f.base;var r=rel(p.position(),b);
         // Everyone at their marks.
+        f.drift=own.getBoolean("Walking");
         var resident=stage(l,f,p,f.resident,residentMark(own),residentFrom(own),LiteraryActor.SP_RESIDENT,0,id->f.resident=id);
+        props(l,f,own,resident);
         var iris=stage(l,f,p,f.iris,irisMark(own),at(5.5,UP,-30.5),LiteraryActor.STRANGER,IRIS,id->f.iris=id);
         var sam=stage(l,f,p,f.sam,samMark(own),at(5.5,UP,-24.5),LiteraryActor.STRANGER,SAM,id->f.sam=id);
         cold(l,f,p,own,resident,iris,sam);
@@ -373,7 +405,7 @@ public final class SecondPerson {
         var b=f.base;int st=step(own),sub=sub(own),dt=dt(own);
         switch(st){
             case ARRIVE->{
-                if(t(own)==20)cue(p,"Somebody's boxes. Somebody is coming up the stairs.");
+                if(t(own)==20){cue(p,"Someone is coming up the stairs.");sound(p,SoundEvents.WOOD_STEP,b,new BlockPos(5,2,-18),.8F,.9F);}
                 if(t(own)>=WAIT||own.getBoolean("Read_Source")&&t(own)>=60){go(own,UNPACK);open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,1,1);}
             }
             case UNPACK->{
@@ -385,14 +417,14 @@ public final class SecondPerson {
                     String th=THINGS.get(i);boolean toBox=(sub-2)%2==0;
                     if(toBox){if(!arrived(a,b,mark))return;
                         String state=state(own,th);
-                        if(state.equals("box")){box(l,b,boxAt(th),2);state(own,th,"resident");sound(p,SoundEvents.BUNDLE_REMOVE_ONE,b,boxAt(th),1,1);if(th.equals("drawing"))say(f,a,"Kettle. Where's the kettle.");next(own,sub+1);}
+                        if(state.equals("box")){box(l,b,boxAt(th),2);state(own,th,"resident");handle(a);sound(p,SoundEvents.BUNDLE_REMOVE_ONE,b,boxAt(th),1,1);if(th.equals("drawing"))say(f,a,"Kettle. Where's the kettle.");next(own,sub+1);}
                         else if(state.equals("home")){found(own,th,"put_away");next(own,sub+1);}
                         else if(state.equals("placed")){found(own,th,"moved");next(own,sub+1);}
                         else{if(!f.once.contains("hunt_"+th)){f.once.add("hunt_"+th);say(f,a,"It was here. It was in this box.");found(own,th,"hidden");next(own,sub);return;}
                             if(dt>=110){say(f,a,"It'll turn up.");f.once.remove("hunt_"+th);next(own,sub+2);}}
                     }else{if(!arrived(a,b,mark))return;
                         String state=state(own,th);
-                        if(state.equals("resident")){home(l,b,own,th);state(own,th,"homed");sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,homeAt(th),1,1);if(th.equals("photo"))say(f,a,"There.");if(th.equals("routine"))own.putString("RoutineWhere","on the bathroom shelf");next(own,sub+1);}
+                        if(state.equals("resident")){home(l,b,own,th);state(own,th,"homed");handle(a);sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,homeAt(th),1,1);if(th.equals("photo"))say(f,a,"There.");if(th.equals("routine"))own.putString("RoutineWhere","on the bathroom shelf");next(own,sub+1);}
                         else if(state.equals("home")){if(!f.once.contains("found_"+th)){f.once.add("found_"+th);say(f,a,"I didn't put that there.");next(own,sub);return;}
                             if(dt==60)say(f,a,"I must have.");if(dt>=100){f.once.remove("found_"+th);next(own,sub+1);}}
                         else if(state.equals("placed")){if(!f.once.contains("found_"+th)){f.once.add("found_"+th);say(f,a,"That's not where I'd have put it.");next(own,sub);return;}
@@ -402,7 +434,7 @@ public final class SecondPerson {
                 }
             }
             case GLASS_HUNG->{
-                if(sub==0){if(arrived(a,b,residentMark(own))){boolean unseen=own.getCompound("Snap").getBoolean("Unseen");glass(l,b,unseen?1:0);own.putBoolean("GlassHungTurned",unseen);sound(p,SoundEvents.ITEM_FRAME_PLACE,b,GLASS,1,1);if(unseen)say(f,a,"Not yet.");next(own,1);}}
+                if(sub==0){if(arrived(a,b,residentMark(own))){boolean unseen=own.getCompound("Snap").getBoolean("Unseen");glass(l,b,unseen?1:0);handle(a);own.putBoolean("GlassHungTurned",unseen);sound(p,SoundEvents.ITEM_FRAME_PLACE,b,GLASS,1,1);if(unseen)say(f,a,"Not yet.");next(own,1);}}
                 else{
                     if(dt>=200&&dt%50==0&&glass(l,b)==1&&!own.getBoolean("GlassHungTurned")&&!own.getBoolean("GlassTurned")){own.putBoolean("GlassTurned",true);say(f,a,"...Fine.");}
                     if(dt==120)say(f,a,"It's quiet.");
@@ -443,7 +475,7 @@ public final class SecondPerson {
             if(choice.isEmpty()&&dt>=NIGHT_WAIT)choice="alone";
             if(!choice.isEmpty()){own.putString("Night",choice);next(own,2);
                 switch(choice){case "doorway"->{say(f,a,"...hello?");SecondPersonStory.turned(own,"You stood in their doorway.");}case "tap"->SecondPersonStory.turned(own,"You ran the kitchen tap in the night.");
-                    case "armchair"->{cue(p,"Nothing happens. That is its own answer.");SecondPersonStory.turned(own,"You sat in the armchair in the dark.");}case "shut"->{say(f,a,"...Oh.");SecondPersonStory.turned(own,"You shut their door on them.");}
+                    case "armchair"->SecondPersonStory.turned(own,"You sat in the armchair in the dark.");case "shut"->{say(f,a,"...Oh.");SecondPersonStory.turned(own,"You shut their door on them.");}
                     default->cue(p,"They sleep at last, near dawn.");}}
             return;
         }
@@ -458,13 +490,13 @@ public final class SecondPerson {
         var b=f.base;int st=step(own),sub=sub(own),dt=dt(own);
         switch(st){
             case IRIS_VISIT->{
-                if(sub==0){if(dt==60)cue(p,"The radio is on low. Somebody lives here now.");if(dt>=200){sound(p,DoorSounds.KNOCK.get(),b,FLAT_DOOR,1,1);say(f,a,"Coming.");next(own,1);}}
-                else if(sub==1){if(arrived(a,b,residentMark(own))){open(l,b,FLAT_DOOR,true);open(l,b,IRIS_DOOR,true);next(own,2);}}
+                if(sub==0){if(dt>=200){sound(p,DoorSounds.KNOCK.get(),b,FLAT_DOOR,1,1);say(f,a,"Coming.");next(own,1);}}
+                else if(sub==1){if(arrived(a,b,residentMark(own))){handle(a);open(l,b,FLAT_DOOR,true);open(l,b,IRIS_DOOR,true);next(own,2);}}
                 else if(sub==2){
                     if(dt==20)say(f,iris,"I made too much again. It's only stew.");
                     if(dt==90)say(f,a,"You didn't have to. Thank you.");
                     if(dt==160)say(f,iris,"That was Ted's chair by your window. He liked to watch the buses.");
-                    if(dt==240){say(f,iris,"This flat's never been empty in my time. You're all right. Just don't frighten them.");cue(p,"She says it past them, into the room. To you.");SecondPersonStory.turned(own,"Iris spoke to you over their shoulder.");}
+                    if(dt==240){say(f,iris,"This flat's never been empty in my time. You're all right. Just don't frighten them.");cue(p,"She says it past them, into the room.");SecondPersonStory.turned(own,"Iris spoke to you over their shoulder.");}
                     if(dt>=330){open(l,b,FLAT_DOOR,false);open(l,b,IRIS_DOOR,false);next(own,3);}
                 }
                 else if(dt>=200)go(own,ROUTINE);
@@ -476,7 +508,7 @@ public final class SecondPerson {
                 else if(sub==2){if(dt==0||dt==1)say(f,a,"I had it. I had it this morning.");
                     if(state.equals("placed")||state.equals("home")){own.putBoolean("RoutineSet",true);next(own,3);SecondPersonStory.turned(own,"You set their "+SecondPersonStory.routine(own)+" out where they would see it.");}
                     else if(dt>=WAIT){say(f,a,"Never mind. Never mind.");next(own,4);}}
-                else if(sub==3){if(arrived(a,b,residentMark(own))&&!f.once.contains("thanks")){f.once.add("thanks");say(f,a,"Thanks.");cue(p,"To nobody.");}if(dt>=120){f.once.remove("thanks");next(own,4);}}
+                else if(sub==3){if(arrived(a,b,residentMark(own))&&!f.once.contains("thanks")){f.once.add("thanks");say(f,a,"Thanks.");}if(dt>=120){f.once.remove("thanks");next(own,4);}}
                 else if(dt>=60){go(own,EVENING);cloth(l,b,0);own.putBoolean("EveLamp",lampOn(l,b));own.putBoolean("EveKitchenDoor",isOpen(l,b,KITCHEN_DOOR));}
             }
             case EVENING->evening(l,f,p,own,r,a,sam);
@@ -510,7 +542,7 @@ public final class SecondPerson {
                     if(sub==0&&dt>=100){sound(p,DoorSounds.KNOCK.get(),b,FLAT_DOOR,1,1);open(l,b,FLAT_DOOR,true);open(l,b,IRIS_DOOR,true);next(own,1);}
                     else if(sub==1){if(dt==30)say(f,iris,"You've got company. I don't mind it. I like a bit of company.");if(dt>=130){own.putBoolean("IrisTold",true);open(l,b,FLAT_DOOR,false);open(l,b,IRIS_DOOR,false);next(own,2);}}
                 }
-                if(dt==20&&sub==0&&!f.once.contains("autumn_done")){f.once.add("autumn_done");cue(p,"The flat goes quiet. The airing cupboard at the end of the hall is warm.");}
+                if(dt==20&&sub==0&&!f.once.contains("autumn_done")){f.once.add("autumn_done");cue(p,"The flat goes quiet.");}
             }
         }
     }
@@ -558,11 +590,11 @@ public final class SecondPerson {
                 // They come back from the funeral with her tin, and read her note at the kitchen table.
                 if(sub==0){
                     if(dt==20){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,1,.9F);}
-                    if(dt>20&&arrived(a,b,residentMark(own))||dt>400){tin(l,b,0);sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,TIN_AT,.8F,.8F);say(f,a,"She left me this.");open(l,b,FLAT_DOOR,false);next(own,1);}
+                    if(dt>20&&arrived(a,b,residentMark(own))||dt>400){tin(l,b,0);handle(a);sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,TIN_AT,.8F,.8F);say(f,a,"She left me this.");open(l,b,FLAT_DOOR,false);next(own,1);}
                 }
                 else if(sub==1){
                     if(dt==90)say(f,a,"\"For you, and for your lodger.\"");
-                    if(dt==170)cue(p,"They turn the note over, as if the rest of it might be on the back.");
+                    if(dt==170){handle(a);cue(p,"They turn the note over, as if the rest of it might be on the back.");}
                     if(dt==200)say(f,a,"What lodger?");
                     if(dt>=330)next(own,2);
                 }
@@ -574,10 +606,10 @@ public final class SecondPerson {
             case W_EVENING->{
                 if(sub==0){if(arrived(a,b,residentMark(own))||dt>300)next(own,1);return;}
                 // Iris's sleeve on the arm of the chair, found.
-                if(dt==20&&sleeve(l,b)==0&&state(own,"sleeve").equals("arm")&&!own.getBoolean("SleeveFound")){say(f,a,"...Iris's.");f.once.add("found_sleeve");}
+                if(dt==20&&sleeve(l,b)==0&&state(own,"sleeve").equals("arm")&&!own.getBoolean("SleeveFound")){handle(a);say(f,a,"...Iris's.");f.once.add("found_sleeve");}
                 if(dt==120&&f.once.contains("found_sleeve")&&!own.getBoolean("SleeveFound")){say(f,a,"She never finished anything. Look at this.");own.putBoolean("SleeveFound",true);own.putInt("SleeveEvening",own.getInt("Care"));}
-                if(dt==200&&own.getBoolean("SleeveFound")&&own.getInt("SleeveEvening")!=own.getInt("Care"))say(f,a,"I don't know how to do this. I'm doing it anyway.");
-                if(dt==320&&own.getInt("Care")==0)say(f,a,"It's so quiet without her through the wall.");
+                if(dt==200&&own.getBoolean("SleeveFound")&&own.getInt("SleeveEvening")!=own.getInt("Care"))say(f,a,"I've dropped one. Where's it gone.");
+                if(dt==320&&own.getInt("Care")==0)say(f,a,"She had the radio on every night. You could hear it through the wall.");
                 if(dt>=WINTER_EVENING&&!own.getBoolean("SeenOpen")){
                     if(own.getInt("Care")==0)buildWalk(own);
                     go(own,W_NIGHT);
@@ -590,7 +622,7 @@ public final class SecondPerson {
                 if(dt==120&&!own.getBoolean("Went")&&own.getString("Call3").isEmpty()){f.ring=RING;own.putInt("Ringing",3);}
                 unanswered(p,own,3);
                 if(own.getString("Call3").equals("unanswered")&&f.once.add("watched"))cue(p,"They watch it ring. They do not answer it.");
-                if(dt>=360&&f.ring<0&&f.once.add("winter_done"))cue(p,"The flat goes quiet. The airing cupboard at the end of the hall is warm.");
+                if(dt>=360&&f.ring<0&&f.once.add("winter_done"))cue(p,"The flat goes quiet.");
             }
         }
     }
@@ -606,7 +638,7 @@ public final class SecondPerson {
         var b=f.base;int sub=sub(own),dt=dt(own),care=own.getInt("Care");String routine=SecondPersonStory.routine(own);
         if(sub==0){
             if(dt==60&&care==1&&own.getString("Sleepwalk").equals("left"))say(f,a,"I woke up at the door. I was standing at the door.");
-            if(dt==90&&care==1&&own.getBoolean("DrewAtNight"))cue(p,"On the kitchen table there is a drawing in pencil, done in the dark: a face. The one you drew at a kitchen table, before you ever came here.");
+            if(dt==90&&care==1&&own.getBoolean("DrewAtNight"))cue(p,"On the kitchen table, a face drawn in pencil in the dark. The one you drew.");
             if(dt>40&&arrived(a,b,residentMark(own))||dt>500){mirror(l,b,true);own.putInt("SteamClock",own.getInt("Clock")+700);sound(p,HouseReadRegistry.TAP.get(),b,BASIN,.6F,1.1F);next(own,1);}
             return;
         }
@@ -616,14 +648,16 @@ public final class SecondPerson {
             if(!laid&&dt<CARE_WAIT)return;
             if(laid){int n=own.getInt("LaidCount")+1;own.putInt("LaidCount",n);
                 switch(n){
-                    case 1->{cue(p,"They look at it a long time, and leave it where it is.");SecondPersonStory.turned(own,"You laid their "+routine+" out on a winter morning, and they left it where it was.");}
+                    case 1->{cue(p,"They look at it, and leave it where it is.");SecondPersonStory.turned(own,"You laid their "+routine+" out on a winter morning, and they left it where it was.");}
                     case 2->{sound(p,HouseReadRegistry.TAP.get(),b,BASIN,.8F,1);cue(p,"They use it. Halfway through they are crying, and they keep going.");SecondPersonStory.turned(own,"You laid their "+routine+" out again, and they used it, and cried.");}
                     default->{say(f,a,"All right. All right.");own.putBoolean("AllRight",true);SecondPersonStory.turned(own,"You laid their "+routine+" out a third morning, and they said \"All right.\"");}
                 }}
-            else cue(p,"They stand at the basin a long time, and do nothing, and go back to bed for an hour.");
+            else cue(p,"They stand at the basin, do nothing, and go back to bed for an hour.");
             own.putString("Care"+care,laid?"laid":"not");next(own,2);
             return;
         }
+        // Used, it is used with both hands at the basin for a while.
+        if(own.getString("Care"+care).equals("laid")&&own.getInt("LaidCount")>=2&&dt%20==5&&dt<130)handle(a);
         if(own.getBoolean("SeenOpen")||dt<200)return;
         if(care>=2){go(own,WINTER_DONE);return;}
         go(own,W_DAY);
@@ -645,7 +679,7 @@ public final class SecondPerson {
         if(own.getInt("Care")==0){
             if(sub==0){
                 if(dt==20){sound(p,SoundEvents.BOOK_PAGE_TURN,b,MAT,1,.7F);cue(p,"The post comes through the door.");}
-                if(dt>30&&arrived(a,b,residentMark(own))||dt>400){home(l,b,own,"ticket");state(own,"ticket","homed");sound(p,SoundEvents.BOOK_PUT,b,TICKET_HOME,.8F,1);say(f,a,"Later.");next(own,1);}
+                if(dt>30&&arrived(a,b,residentMark(own))||dt>400){home(l,b,own,"ticket");state(own,"ticket","homed");handle(a);sound(p,SoundEvents.BOOK_PUT,b,TICKET_HOME,.8F,1);say(f,a,"Later.");next(own,1);}
             }
             else if(dt>=DAY_LENGTH)go(own,W_EVENING);
             return;
@@ -654,16 +688,16 @@ public final class SecondPerson {
         switch(own.getString("Ticket")){
             case "mat"->{
                 if(sub==0){
-                    if(!f.once.contains("found_ticket")&&(arrived(a,b,residentMark(own))||dt>400)){f.once.add("found_ticket");clearTicket(l,b,own);state(own,"ticket","taken");say(f,a,"...Oh.");own.putInt("FoundAt",dt);}
+                    if(!f.once.contains("found_ticket")&&(arrived(a,b,residentMark(own))||dt>400)){f.once.add("found_ticket");clearTicket(l,b,own);handle(a);state(own,"ticket","taken");say(f,a,"...Oh.");own.putInt("FoundAt",dt);}
                     if(f.once.contains("found_ticket")&&dt-own.getInt("FoundAt")==80)say(f,a,SecondPersonStory.ticketLine(own));
                     if(f.once.contains("found_ticket")&&dt-own.getInt("FoundAt")>=180)next(own,1);
                 }
                 else if(sub==1){if(dt>20&&arrived(a,b,residentMark(own))||dt>400){open(l,b,FLAT_DOOR,true);next(own,2);}}
-                else if(sub==2){if(dt==60){open(l,b,FLAT_DOOR,false);cue(p,"The flat is yours for a while. Nothing moves unless you move it.");}if(dt>=AWAY){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,1,1);next(own,3);}}
+                else if(sub==2){if(dt==60){open(l,b,FLAT_DOOR,false);cue(p,"The door shuts behind them. The flat is empty but for you.");}if(dt>=AWAY){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,1,1);next(own,3);}}
                 else{if(dt==80){open(l,b,FLAT_DOOR,false);say(f,a,SecondPersonStory.backLine(own));own.putBoolean("Went",true);}if(dt>=DAY_LENGTH/2)go(own,W_EVENING);}
             }
             case "left"->{
-                if(sub==0){if(dt>1&&arrived(a,b,residentMark(own))||dt>400){clearTicket(l,b,own);state(own,"ticket","pocket");say(f,a,"Next week.");cue(p,"They put the ticket in a pocket.");next(own,1);}}
+                if(sub==0){if(dt>1&&arrived(a,b,residentMark(own))||dt>400){clearTicket(l,b,own);state(own,"ticket","pocket");handle(a);say(f,a,"Next week.");cue(p,"They put the ticket in a pocket.");next(own,1);}}
                 else if(dt>=DAY_LENGTH)go(own,W_EVENING);
             }
             default->{if(dt>=DAY_LENGTH)go(own,W_EVENING);}
@@ -697,14 +731,14 @@ public final class SecondPerson {
             case "kitchen"->{if(dt%30==10)sound(p,SoundEvents.BOOK_PAGE_TURN,b,TABLE,.4F,1.6F);}
             case "waiting"->{if(dt==40)say(f,a,"Is it me next?");}
             case "bathroom"->{if(dt==10||dt==70)sound(p,HouseReadRegistry.TAP.get(),b,BASIN,.4F,1);if(dt==10){String r=state(own,"routine");if(!(r.equals("home")||r.equals("homed")))own.putBoolean("WalkEmptyHands",true);}}
-            case "coatroom"->{if(dt==10&&coatHung(l,b)){coat(l,b,"",false);own.putBoolean("WoreCoat",true);}}
+            case "coatroom"->{if(dt==10&&coatHung(l,b)){handle(a);coat(l,b,"",false);own.putBoolean("WoreCoat",true);}}
             case "shelter"->{if(dt==40)say(f,a,"It'll stop in a minute.");}
-            case "lamp"->{if(dt==10){lamp(l,b,true);sound(p,SoundEvents.LEVER_CLICK,b,LAMP,.6F,1.2F);}}
+            case "lamp"->{if(dt==10){handle(a);lamp(l,b,true);sound(p,SoundEvents.LEVER_CLICK,b,LAMP,.6F,1.2F);}}
             case "tap"->{if(dt==10)sound(p,HouseReadRegistry.TAP.get(),b,TAP,1,1);}
-            case "glass"->{if(dt==10&&glass(l,b)>=0){glass(l,b,glass(l,b)==0?1:0);sound(p,SoundEvents.ITEM_FRAME_ROTATE_ITEM,b,GLASS,1,1);}}
-            case "knock"->{if(dt==10||dt==25||dt==40)sound(p,DoorSounds.KNOCK.get(),b,new BlockPos(-2,UP+1,-30),.8F,1);}
+            case "glass"->{if(dt==10&&glass(l,b)>=0){handle(a);glass(l,b,glass(l,b)==0?1:0);sound(p,SoundEvents.ITEM_FRAME_ROTATE_ITEM,b,GLASS,1,1);}}
+            case "knock"->{if(dt==10||dt==25||dt==40){handle(a);}if(dt==10||dt==25||dt==40)sound(p,DoorSounds.KNOCK.get(),b,new BlockPos(-2,UP+1,-30),.8F,1);}
             default->{
-                if(dt==60){open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,.8F,1);say(f,a,SecondPersonStory.haven(own)?"Is that you? I've left it open for you.":"...");}
+                if(dt==60){handle(a);open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,.8F,1);say(f,a,SecondPersonStory.haven(own)?"Is that you? I've left it open for you.":"...");}
             }
         }
         if(dt<holdFor(station))return;
@@ -775,7 +809,7 @@ public final class SecondPerson {
         var b=f.base;int st=step(own),sub=sub(own),dt=dt(own);
         boolean stays=own.getString("Decision").equals("stay");
         if(st==LATCH){
-            if(t(own)==40)cue(p,"The front door is on the latch.");
+            if(t(own)==120)cue(p,"The front door is on the latch.");
             if(t(own)==80&&!SecondPersonStory.list(own,"HousePages").isEmpty())say(f,a,SecondPersonStory.houseSays(own));
             if(onStreet(r)){go(own,OUT);if(stays)lamp(l,b,true);}
         }
@@ -811,17 +845,17 @@ public final class SecondPerson {
         clearWords(l,f);mirror(l,b,false);
         if(s==SUMMER){own.putInt("Season",AUTUMN);go(own,IRIS_VISIT);season(l,b,1);
             // What was never found stays lost; what the reader put where it lives stays where they put it.
-            cue(p,SecondPersonStory.whileAway(own,1));SecondPersonStory.turned(own,"You let the summer go by in the cupboard.");}
+            cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,1)));SecondPersonStory.turned(own,"You let the summer go by in the cupboard.");}
         else if(s==AUTUMN){own.putInt("Season",WINTER);go(own,W_FUNERAL);season(l,b,2);lamp(l,b,false);cloth(l,b,-1);
             // They went to the funeral in a borrowed coat if theirs was lost; looking for their good shoes afterwards, they found what was under the bed.
             String coat=state(own,"coat");own.putBoolean("BorrowedCoat",!(coat.equals("homed")||coat.equals("home")||coat.equals("placed")));
             for(var th:THINGS)if(state(own,th).equals("hidden")&&thing(own,th).getString("Where").equals("under the bed")){state(own,th,"homed");home(l,b,own,th);SecondPersonStory.add(own,"Returned",th);}
-            cue(p,SecondPersonStory.whileAway(own,2));SecondPersonStory.turned(own,"You let the autumn go by in the cupboard.");}
+            cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,2)));SecondPersonStory.turned(own,"You let the autumn go by in the cupboard.");}
         else{own.putInt("Season",MORNING);go(own,LATCH);season(l,b,3);lamp(l,b,false);
             // While the reader was in the cupboard, the House carried on in their name.
             SecondPersonStory.housePages(own);
             own.putString("Decision",SecondPersonStory.stays(own)?"stay":"go");open(l,b,FLAT_DOOR,true);
-            cue(p,SecondPersonStory.whileAway(own,3));SecondPersonStory.turned(own,"You let the rest of the winter go by in the cupboard.");}
+            cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,3)));SecondPersonStory.turned(own,"You let the rest of the winter go by in the cupboard.");}
         f.once.clear();f.ring=-1;own.remove("Ringing");own.remove("Walking");own.remove("SeenOpen");
         for(var id:new UUID[]{f.resident,f.iris,f.sam}){var a=actor(l,id);if(a!=null){if(a.isSleeping())a.stopSleeping();a.discard();}}
         f.resident=null;f.iris=null;f.sam=null;
@@ -895,7 +929,7 @@ public final class SecondPerson {
     static void glassGlimpse(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
         if(a==null||own.getBoolean("GlassSeen")||glass(l,f.base)!=0)return;var r=rel(p.position(),f.base);var ar=rel(a.position(),f.base);
         boolean readerIn=r.x>=1&&r.x<3&&r.z>=-24.6&&r.z<-21.4&&r.y>=UP-.5&&r.y<UP+2.5,residentPassing=ar.x>=1&&ar.x<3&&Math.abs(ar.z+22.5)<1.3;
-        if(readerIn&&residentPassing){own.putBoolean("GlassSeen",true);say(f,a,"...");SecondPersonStory.turned(own,"You stood where the hall glass faced you, and they looked into it a long time.");f.once.add("glassline");}
+        if(readerIn&&residentPassing){own.putBoolean("GlassSeen",true);say(f,a,"...");SecondPersonStory.turned(own,"You stood where the hall glass faced you, and they stopped and looked into it.");f.once.add("glassline");}
     }
     static final List<Integer> WINDOW_YS=List.of(UP+1,UP+2);
     static boolean streetPane(BlockPos rel){return rel.getZ()==-12&&rel.getX()>=WINDOW_X0&&rel.getX()<=WINDOW_X1&&WINDOW_YS.contains(rel.getY());}

@@ -599,6 +599,9 @@ def fitting_models():
     base = element([3, 0, 4], [13, 3, 12], {'all': 'k', 'up': 'd'}, uv={'up': [3, 4, 13, 12]})
     m['phone_0'] = model([base, element([2.5, 3, 6], [13.5, 5, 8], {'all': 'k'})], {'k': 'bakelite', 'd': 'dial'}, 'bakelite')
     m['phone_1'] = model([base, element([12, 0, 12], [15, 2, 15.5], {'all': 'k'}), element([3, 0, 13], [11, 2, 15], {'all': 'k'})], {'k': 'bakelite', 'd': 'dial'}, 'bakelite')
+    # 0.4.370: the cradle empty while the resident has the receiver at their ear; the receiver itself, for their hand.
+    m['phone_2'] = model([base, element([3, 3, 6], [4, 4, 8], {'all': 'k'}), element([12, 3, 6], [13, 4, 8], {'all': 'k'})], {'k': 'bakelite', 'd': 'dial'}, 'bakelite')
+    m['receiver'] = model([element([2.5, 0, 7], [13.5, 2, 9], {'all': 'k'}), element([2.5, 2, 7], [4.5, 3, 9], {'all': 'k'}), element([11.5, 2, 7], [13.5, 3, 9], {'all': 'k'})], {'k': 'bakelite'}, 'bakelite')
     # Iris's tin: shut; open with the sleeve on its needles bunched in it and the lid leant against the back; open with only the bits.
     can = element([4, 0, 4], [12, 4, 12], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's', 'up': 'i'}, uv={'up': [4, 4, 12, 12]})
     m['tin_0'] = model([element([4, 0, 4], [12, 4, 12], {'all': 's'}), element([3.5, 4, 3.5], [12.5, 5, 12.5], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's', 'up': 'l'}, uv={'up': [0, 0, 16, 16]})],
@@ -620,7 +623,7 @@ def fitting_models():
 
 
 KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve']
-STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 2, 'tin': 3, 'sleeve': 3}
+STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 DISPLAY = {
@@ -632,9 +635,13 @@ DISPLAY = {
     'firstperson_righthand': {'rotation': [20, 45, 0], 'translation': [0, 2, 0], 'scale': [0.7, 0.7, 0.7]},
     'firstperson_lefthand': {'rotation': [20, 225, 0], 'translation': [0, 2, 0], 'scale': [0.7, 0.7, 0.7]},
 }
+# The receiver in the resident's hand: solved for the phone gesture (the arm up beside the head, xRot -2.85, yRot -0.1, zRot 0.1),
+# so it runs from the hand at the temple down the side of the face to the mouth, its cups toward the head.
+RECEIVER_DISPLAY = dict(DISPLAY, thirdperson_righthand={'rotation': [146.7, 8.1, 92.8], 'translation': [-4.19, -3.64, 4.32], 'scale': [0.55, 0.55, 0.55]},
+                        thirdperson_lefthand={'rotation': [146.7, 8.1, 92.8], 'translation': [-4.19, -3.64, 4.32], 'scale': [0.55, 0.55, 0.55]})
 # What a reader carries: the routine item by its number (custom model data 1-16), the coat (17), the drawing (18), the photograph (19);
-# 0.4.369, the train ticket (20) and Iris's sleeve (21).
-CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0'), ('ticket', 'ticket_0'), ('sleeve', 'sleeve_2')]
+# 0.4.369, the train ticket (20) and Iris's sleeve (21); 0.4.370, the landline's receiver in the resident's hand (22).
+CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0'), ('ticket', 'ticket_0'), ('sleeve', 'sleeve_2'), ('receiver', 'receiver')]
 NAMES = {'sp_fitting': 'Things in the Flat', 'sp_brick': 'Stock Brick', 'sp_paving': 'Paving Slab', 'sp_road': 'Road', 'sp_kerb': 'Kerb',
          'sp_shopfront': 'Painted Shopfront', 'sp_paper': 'Faded Wallpaper', 'sp_kitchen': 'Kitchen Tiles', 'sp_carpet': 'Worn Carpet',
          'sp_lino': 'Chequered Lino', 'sp_tile': 'Avocado Tile', 'sp_ceiling': 'Artex Ceiling', 'sp_launderette': 'Launderette Floor'}
@@ -659,7 +666,7 @@ def files():
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/sp_fitting.json'] = {'variants': variants}
     for name, parent in CARRIED:
-        out[f'models/item/sp_carried_{name}.json'] = {'parent': NS + f'block/second/{parent}', 'display': DISPLAY}
+        out[f'models/item/sp_carried_{name}.json'] = {'parent': NS + f'block/second/{parent}', 'display': RECEIVER_DISPLAY if name == 'receiver' else DISPLAY}
     out['models/item/sp_carried.json'] = {'parent': NS + 'item/sp_carried_coat',
                                           'overrides': [{'predicate': {'custom_model_data': i + 1}, 'model': NS + f'item/sp_carried_{name}'} for i, (name, _) in enumerate(CARRIED)]}
     return out

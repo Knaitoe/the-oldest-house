@@ -17,7 +17,8 @@ public final class SecondPersonTexts {
     static final String TITLE="The Flat Above the Launderette";
     static List<Component> printed(String text){var out=new ArrayList<Component>();for(String p:LookoutTexts.pages(text,PAGE))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
 
-    public static final String HINT="Move something. They will find it. When you want the time to pass, the airing cupboard at the end of the hall is warm.";
+    /** Shown once after the opening: how to handle their things, which the opening does not say (the rest of what it says, it says already). */
+    public static final String HINT="Right-click something of theirs to pick it up, and a shelf, a table or the floor to set it down.";
 
     /** The book's opening, the vignette's first paper. */
     public static final String OPENING=

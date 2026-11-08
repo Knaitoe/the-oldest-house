@@ -74,7 +74,7 @@ public final class SecondPersonStory {
         int season=own.getInt("Season"),step=own.getInt("Step");var b=new StringBuilder();List<String> can;
         if(season==SecondPerson.SUMMER){switch(step){
             case SecondPerson.ARRIVE,SecondPerson.UNPACK->{b.append("Late summer. Boxes in every room. Somebody is moving in.\n\n");
-                can=List.of("Take a thing out of its box before they get to it.","Put it where it should go, or somewhere else, or where they will never look. The bed has an underneath. The cupboard has a dark.","Open a door. Shut one.");}
+                can=List.of("Take a thing out of its box before they get to it.","Put it where it should go, or somewhere else, or where they will never look: under the bed, or in the airing cupboard.","Open a door. Shut one.");}
             case SecondPerson.GLASS_HUNG->{b.append("The boxes are flat. They have hung a glass in the hall.\n\n");
                 can=List.of("Turn the glass to the wall.","Stand where the glass faces you.","Breathe on a cold pane.");}
             case SecondPerson.BATH->{b.append("Evening. They are running a bath, and the telephone is going to ring.\n\n");
@@ -104,16 +104,16 @@ public final class SecondPersonStory {
             case SecondPerson.W_FUNERAL->{b.append(whileAway(own,2)).append("\n\n");
                 can=List.of("Iris's tin is on the kitchen counter. Open it, if you like.","Knock on her wall.");}
             case SecondPerson.W_MORNING->{b.append("A winter morning. In the worst of it their ").append(r).append(own.getCompound("Thing_routine").getString("State").equals("drawer")?" has gone into the drawer under the basin.\n\n":" stays where it is.\n\n");
-                can=List.of("Lay their "+r+" out where they will see it, before they give up on the morning.","Stand behind them where the mirror faces them.");}
+                can=List.of("Lay their "+r+" out where they will see it, before they give up on the morning.","Stand behind them at the basin, where the mirror would show you.");}
             case SecondPerson.W_DAY->{
                 if(own.getInt("Care")==0){b.append("The post has come. They have put it on the hall table without opening it. In it there is ").append(ticketDesc(own)).append("\n\n");
                     can=List.of("Put the ticket on the mat by the door, where it cannot be missed.","Hide it.","Leave it where it is.");}
                 else if(own.getString("Ticket").equals("mat")){b.append("They found the ticket on the mat.\n\n");can=List.of("Wait.");}
-                else{b.append("A short grey day. They are home all of it.\n\n");can=List.of("Breathe on the street window. It is cold all winter, and holds a word.");}}
+                else{b.append("A short day. They are home all of it.\n\n");can=List.of("Breathe on the street window. It is cold all winter, and holds a word.");}}
             case SecondPerson.W_EVENING->{b.append("Evening. They sit in the armchair with the television off.\n\n");
-                can=own.getBoolean("TinOpened")&&!own.getBoolean("SleeveOut")&&!own.getBoolean("SleeveFound")?List.of("Stand behind them where the dark screen faces them.","Lay Iris's sleeve on the arm of the chair.")
-                        :List.of("Stand behind them where the dark screen faces them.","Breathe on the street window.");}
-            case SecondPerson.W_NIGHT->{b.append(own.getInt("Care")==0?"Night. They are asleep. Or they were.\n\n":"Night.\n\n");
+                can=own.getBoolean("TinOpened")&&!own.getBoolean("SleeveOut")&&!own.getBoolean("SleeveFound")?List.of("Stand behind their chair, where the dark screen would show you.","Lay Iris's sleeve on the arm of the chair.")
+                        :List.of("Stand behind their chair, where the dark screen would show you.","Breathe on the street window.");}
+            case SecondPerson.W_NIGHT->{b.append("Night.\n\n");
                 can=own.getInt("Care")==0?List.of("If they get up, bring them back: the lamp, a knock, a hand.","Or let them be."):List.of("Let them sleep.");}
             default->{b.append("The last of the winter.\n\n");
                 can=List.of("The airing cupboard is warm. Go in and shut the door.");}
@@ -127,9 +127,11 @@ public final class SecondPersonStory {
         if(!house.isEmpty()){b.append("\nThe pages you did not turn:\n");for(var h:house)b.append(h).append("\n");}
         return b.toString();
     }
+    /** The first sentence only: what a season's turn puts on the action bar, which holds one short line; the book keeps the whole page. */
+    static String first(String text){int i=text.indexOf(". ");return i<0?text:text.substring(0,i+1);}
     /** "While you were in the cupboard...": what happened in the season the reader let pass. */
     public static String whileAway(CompoundTag own,int season){
-        if(season==1){var b=new StringBuilder("While you were in the cupboard, the summer went on without you. They have a job now; the rota is on the fridge. There is a rug, and the radio on for company.");
+        if(season==1){var b=new StringBuilder("While you were in the cupboard, the summer went on without you. They have a job now; the rota is on the kitchen wall. There is a rug, and the radio on for company.");
             var placed=list(own,"PlacedThings");if(!placed.isEmpty())b.append(" Things you put where they live are still where you put them.");
             if(own.getString("Call1").equals("off"))b.append(" The phone was off the hook for a week before they noticed.");
             return b.toString();}
@@ -174,7 +176,7 @@ public final class SecondPersonStory {
         if(!list(own,"HousePages").isEmpty())return;
         var pages=switch(pattern(own)){
             case 1->List.of("74. You sat on the end of their bed while they slept. In the morning they said they had slept right through, for once. Turn to 80.",
-                    "80. You put the kettle on before they were up, every morning for a week. They thanked the kitchen.");
+                    "80. You put the kettle on before they were up, every morning for a week. They stopped asking who had.");
             case -1->List.of("74. You stood at the end of their bed all night. They lay very still so you would think they were asleep. Turn to 80.",
                     "80. You opened every door in the flat, one after another, while they lay awake and counted them.");
             default->List.of("74. You stood at the street window most nights, watching nothing. Turn to 80.",
@@ -231,7 +233,7 @@ public final class SecondPersonStory {
         b.append(callLine(own.getString("Call1"),1,own)).append(" ").append(callLine(own.getString("Call2"),2,own)).append("\n\n");
         // The first night.
         b.append(switch(own.getString("Night")){case "doorway"->"The first night you stood in their doorway, and they said \"...hello?\" into the dark.";case "tap"->"The first night you ran the kitchen tap, and they got up and turned it off, and stood a long time at the sink.";
-            case "armchair"->"The first night you sat in the armchair, and nothing happened, which was its own answer.";case "shut"->"The first night you shut their door on them, and they slept.";default->"The first night you left them alone, and they slept at last, near dawn.";}).append("\n\n");
+            case "armchair"->"The first night you sat in the armchair in the dark, and they never knew.";case "shut"->"The first night you shut their door on them, and they slept.";default->"The first night you left them alone, and they slept at last, near dawn.";}).append("\n\n");
         // Sam and the evening.
         b.append(switch(own.getString("Evening")){case "helped"->"When Sam came for supper you lit the lamp and straightened the cloth. ";case "interfered"->"When Sam came for supper you made yourself felt, and Sam laughed and said the flat was haunted. ";
             case "seen"->"When Sam came for supper you stood in the dark window behind their chair, and Sam saw somebody standing there, and the evening ended. ";case "alone"->"When Sam came for supper you went into the bedroom and shut the door on yourself. ";default->"When Sam came for supper you let the evening be. ";});
@@ -242,7 +244,7 @@ public final class SecondPersonStory {
         else b.append("Iris across the landing brought the ends of things she had cooked. She said the flat had never been empty in her time.");
         b.append("\n\n");
         // The photograph.
-        switch(own.getString("Photo")){case "in_kept"->b.append("They took a picture of the room, and you were in it. They looked at it a long time, and kept it.\n\n");case "in_deleted"->b.append("They took a picture of the room, and you were in it. They looked at it a long time, and deleted it.\n\n");default->{}}
+        switch(own.getString("Photo")){case "in_kept"->b.append("They took a picture of the room, and you were in it. They looked at it, and kept it.\n\n");case "in_deleted"->b.append("They took a picture of the room, and you were in it. They looked at it, and deleted it.\n\n");default->{}}
         // The words.
         var words=list(own,"Words");var seen=list(own,"WordsSeen");
         if(!words.isEmpty()){b.append("You wrote on glass: ").append(String.join(", ",words)).append(".");if(!seen.isEmpty())b.append(" They read ").append(seen.size()==words.size()?"every one":String.join(", ",seen)).append(".");b.append("\n\n");}
@@ -262,13 +264,13 @@ public final class SecondPersonStory {
          .append("She left them her sewing tin, with a note: For you, and for your lodger. They turned it over. \"What lodger?\"");
         var back=list(own,"Returned");if(!back.isEmpty())b.append(" Looking for their good shoes afterwards, they found ").append(thing(own,back.get(0))).append(" under the bed, where you had put it in the summer. \"There you are,\" they said.");
         b.append("\n\n");
-        if(own.getBoolean("SleeveFinished"))b.append("You took the half-finished sleeve out of her tin and laid it on the arm of the armchair. They found it, and sat up in the evenings finishing it, badly, and finished it.\n\n");
+        if(own.getBoolean("SleeveFinished"))b.append("You took the half-finished sleeve out of her tin and laid it on the arm of the armchair. They found it, and sat up in the evenings with it, dropping stitches, until it was done.\n\n");
         else if(own.getBoolean("SleeveOut"))b.append("You laid Iris's half-finished sleeve on the arm of the armchair. It was still there at the end of the winter.\n\n");
         else if(own.getBoolean("TinOpened"))b.append("You opened Iris's tin and left it open. Nobody finished the sleeve.\n\n");
         else b.append("Iris's tin stayed shut on the kitchen counter all winter.\n\n");
         b.append(switch(own.getInt("LaidCount")){
             case 0->"In the worst of it their "+routine+" stayed in the drawer under the basin, and you let it be.";
-            case 1->"In the worst of it their "+routine+" went into the drawer under the basin. Once you laid it out, and they looked at it a long time, and left it.";
+            case 1->"In the worst of it their "+routine+" went into the drawer under the basin. Once you laid it out, and they looked at it and left it.";
             case 2->"In the worst of it their "+routine+" went into the drawer under the basin. Twice you laid it out. The first time they left it. The second time they used it, and cried, and kept going.";
             default->"In the worst of it their "+routine+" went into the drawer under the basin. Three mornings you laid it out. The first they left it. The second they used it, and cried, and kept going. The third they said \"All right. All right.\"";
         }).append("\n\n");
@@ -276,9 +278,9 @@ public final class SecondPersonStory {
         if(!walk.isEmpty()){
             var acts=new ArrayList<String>();
             for(var station:walk.subList(0,Math.min(walk.size(),own.getInt("WalkDone"))))acts.add(switch(station){
-                case "kitchen"->"drew at the kitchen table without a light on";case "waiting"->"sat on the hall chair as if waiting to be called";
+                case "kitchen"->"drew at the kitchen table without a light on";case "waiting"->"sat on the hall chair and asked if it was them next";
                 case "bathroom"->own.getBoolean("WalkEmptyHands")?"did their "+routine+" twice at the basin in the dark, with nothing in their hands":"did their "+routine+" twice at the basin in the dark";
-                case "coatroom"->"put on the coat";case "shelter"->"stood at the street window as if waiting out rain";
+                case "coatroom"->"put on the coat";case "shelter"->"stood at the street window and said it would stop in a minute";
                 case "lamp"->"turned the lamp on, the way you always did";case "tap"->"ran the kitchen tap, the way you did";case "glass"->"turned the hall glass, the way you did";case "knock"->"knocked on the wall, the way you did";
                 default->"went to the front door and held the latch";});
             b.append("One night they got up asleep");

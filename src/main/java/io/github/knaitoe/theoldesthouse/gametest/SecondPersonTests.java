@@ -215,7 +215,7 @@ public final class SecondPersonTests {
                 street(f,p);})
             .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Ready"),"the book on the bench"))
             .thenExecute(()->{String text=account(f,p);
-                for(var want:List.of("What lodger?","a borrowed coat","There you are","and finished it","All right. All right.","drew at the kitchen table without a light on","brought them back with the lamp","They went.","That's my face","You wrote YES","These are not your pages","put the kettle on","decided to stay"))
+                for(var want:List.of("What lodger?","a borrowed coat","There you are","until it was done","All right. All right.","drew at the kitchen table without a light on","brought them back with the lamp","They went.","That's my face","You wrote YES","These are not your pages","put the kettle on","decided to stay"))
                     h.assertTrue(text.contains(want),"the account says \""+want+"\": "+text);
                 f.read(p,P,LiteraryRooms.ending(P));})
             .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Completed"),"the account read"))
