@@ -1,0 +1,72 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:solid",
+  "textures": {
+    "b": "the_oldest_house:block/settling/boards_1",
+    "e": "the_oldest_house:block/settling/board_ends",
+    "particle": "the_oldest_house:block/settling/boards_1"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#e",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#e",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#e",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#e",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

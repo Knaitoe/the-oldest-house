@@ -1,0 +1,48 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:solid",
+  "textures": {
+    "p": "the_oldest_house:block/draft/plaster",
+    "k": "the_oldest_house:block/settling/skirting_0",
+    "particle": "the_oldest_house:block/draft/plaster"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#p",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#p",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#p",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#p",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#p",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}
