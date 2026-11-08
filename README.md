@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.378** gives the three older puzzle rooms their own shells. The service lift's pantry is limewashed plaster over scrubbed boards under beaded boarding, with sooty brick round the shaft; the turning landings are damp cistern stone and mossy flags under plaster, with old dark landing boards and a stair worn pale in the middle of each tread; the twin lifts are red brick. No puzzle changes. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_PUZZLES_0_4_378.md](docs/TEXTURE_PASS_PUZZLES_0_4_378.md). The previous candidate, 0.4.377, gave Proofrock its own streets and houses ([docs/TEXTURE_PASS_PROOFROCK_0_4_377.md](docs/TEXTURE_PASS_PROOFROCK_0_4_377.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
+Development candidate **0.4.379** dresses the lake house's outside. The drowned house's brick has silt in its joints and a film of algae, some of it further gone, over a silted foundation; the boathouse is weathered board-and-batten over bleached dock boards; the culvert is board-formed concrete, stained dark and green where the water stands, under an asphalt drive. Nothing moves. Witness 81 / 61 / two kinds / three endings, protocol 163, layout 122. See [docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md](docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md). The previous candidate, 0.4.378, gave the three older puzzle rooms their own shells ([docs/TEXTURE_PASS_PUZZLES_0_4_378.md](docs/TEXTURE_PASS_PUZZLES_0_4_378.md)). Full exact-commit CI is pending. 0.4.371 passed every job (run 1480).
 
 ## Playing it
 

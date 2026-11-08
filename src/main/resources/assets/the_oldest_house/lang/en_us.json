@@ -1362,5 +1362,11 @@
   "block.the_oldest_house.puzzle_shell_cistern_floor": "Cistern Flags",
   "block.the_oldest_house.puzzle_shell_landing": "Landing Boards",
   "block.the_oldest_house.puzzle_shell_stair": "Landing Stair",
-  "block.the_oldest_house.puzzle_shell_lobby": "Lobby Brick"
+  "block.the_oldest_house.puzzle_shell_lobby": "Lobby Brick",
+  "block.the_oldest_house.lake_house_drowned_brick": "Drowned Brick",
+  "block.the_oldest_house.lake_house_silt_stone": "Silted Stone",
+  "block.the_oldest_house.lake_house_siding": "Weathered Siding",
+  "block.the_oldest_house.lake_house_dock": "Dock Boards",
+  "block.the_oldest_house.lake_house_culvert": "Culvert Concrete",
+  "block.the_oldest_house.lake_house_culvert_stained": "Stained Culvert Concrete"
 }

@@ -72,9 +72,24 @@ public final class LakeHouseTests {
             }
             h.assertTrue(leaks==0,"lake water is held on every side; "+leaks+" open faces, first at "+leak);
             // The house: brick walls, its roof under the surface, the half door open to the water and the raft over the chimney.
-            h.assertTrue(f.out.getBlockState(b.offset(-LakeHouse.HX,-24,-170)).is(Blocks.BRICKS)&&f.out.getFluidState(b.offset(LakeHouse.FRONT_DOOR)).is(Fluids.WATER),"the brick house stands with its front doorway open to the lake");
+            h.assertTrue(f.out.getBlockState(b.offset(-LakeHouse.HX,-24,-170)).is(LakeHouseRegistry.DROWNED_BRICK.get())&&f.out.getFluidState(b.offset(LakeHouse.FRONT_DOOR)).is(Fluids.WATER),"the brick house stands with its front doorway open to the lake");
             h.assertTrue(f.out.getFluidState(b.offset(0,-2,-170)).is(Fluids.WATER)&&f.solid(new BlockPos(0,-3,-170)),"the roof's ridge is two blocks under the surface");
-            h.assertTrue(f.solid(LakeHouse.RAFT)&&f.out.getBlockState(b.offset(LakeHouse.CHIMNEY)).is(Blocks.BRICKS),"the raft floats over the chimney it is tied to");
+            h.assertTrue(f.solid(LakeHouse.RAFT)&&f.out.getBlockState(b.offset(LakeHouse.CHIMNEY)).is(LakeHouseRegistry.DROWNED_BRICK.get()),"the raft floats over the chimney it is tied to");
+            // 0.4.379: the outside is the lake house's own, and none of the vanilla it was laid in is left.
+            h.assertTrue(f.out.getBlockState(b.offset(0,-1,-15)).is(LakeHouseRegistry.DOCK.get())&&f.out.getBlockState(b.offset(-6,1,-5)).is(LakeHouseRegistry.SIDING.get())
+                &&f.out.getBlockState(b.offset(-1,0,-112)).is(LakeHouseRegistry.CULVERT.get())&&f.out.getBlockState(b.offset(-1,-1,-112)).is(LakeHouseRegistry.CULVERT_STAINED.get()),"the dock's boards, the boathouse's siding and the culvert's concrete, stained where the water stands");
+            {
+                var kinds=new Block[]{LakeHouseRegistry.DROWNED_BRICK.get(),LakeHouseRegistry.SILT_STONE.get(),LakeHouseRegistry.SIDING.get(),LakeHouseRegistry.DOCK.get(),LakeHouseRegistry.CULVERT.get(),LakeHouseRegistry.CULVERT_STAINED.get()};
+                int[] laid=new int[kinds.length];int vanilla=0,drive=0;BlockPos first=null;
+                for(int x=LakeHouse.MIN_X;x<=LakeHouse.MAX_X;x++)for(int z=LakeHouse.MIN_Z;z<=0;z++)for(int y=LakeHouse.MIN_Y;y<=LakeHouse.MAX_Y;y++){
+                    var s=f.out.getBlockState(b.offset(x,y,z));
+                    for(int k=0;k<kinds.length;k++)if(s.is(kinds[k]))laid[k]++;
+                    if(ProofrockSurface.road(s))drive++;
+                    if(s.is(Blocks.BRICKS)||s.is(Blocks.LIGHT_GRAY_CONCRETE)||s.is(Blocks.GRAY_CONCRETE)){vanilla++;if(first==null)first=new BlockPos(x,y,z);}
+                }
+                h.assertTrue(vanilla==0,"no vanilla brick or concrete is left round the lake house; "+vanilla+", first at "+first);
+                h.assertTrue(laid[0]>600&&laid[1]>60&&laid[2]>150&&laid[3]>120&&laid[4]>60&&laid[5]>40&&drive>200,"every surface of the outside is laid, the drive in asphalt: "+java.util.Arrays.toString(laid)+", drive "+drive);
+            }
             h.assertTrue(f.out.getBlockState(b.offset(LakeHouse.COMPRESSOR)).is(LakeHouseRegistry.COMPRESSOR.get())&&!LakeHouseDive.running(f.out,b),"the compressor sits on the raft, idle until somebody minds it");
             h.succeed();
         }finally{f.close();}

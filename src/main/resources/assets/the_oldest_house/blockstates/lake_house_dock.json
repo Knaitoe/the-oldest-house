@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/lake_house_dock"
+      },
+      {
+        "model": "the_oldest_house:block/lake_house_dock",
+        "y": 180
+      }
+    ]
+  }
+}

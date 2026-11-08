@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/lake_house_drowned_brick",
+        "weight": 2
+      },
+      {
+        "model": "the_oldest_house:block/lake_house_drowned_brick_1"
+      }
+    ]
+  }
+}
