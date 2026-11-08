@@ -49,12 +49,23 @@ public final class HouseReadLineProof extends Screen {
         if(mc.screen==card)throw new IllegalStateException("The story card must close itself once its pages have played");
     }
 
+    /** 0.4.399: the last card, with the title, does not cut: it stays while the title fades and the black lifts, then closes. */
+    private static void checkTitleFades(){
+        var mc=Minecraft.getInstance();
+        HouseReadLineScreen.show(new HouseReadLinePayload(CARDS[CARDS.length-1].text(),"",true,2,false));
+        if(!(mc.screen instanceof HouseReadLineScreen card))throw new IllegalStateException("No title card opened");
+        int whole=card.length()+HouseReadLineScreen.CLEAR;
+        for(int i=0;i<whole-1;i++){card.tick();if(mc.screen!=card)throw new IllegalStateException("The title card must fade out, not cut: it closed at tick "+i+" of "+whole);}
+        card.tick();
+        if(mc.screen==card)throw new IllegalStateException("The title card must close once the black has lifted");
+    }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         var mc=Minecraft.getInstance();if(!(mc.screen instanceof HouseReadLineProof s)||++s.frames<12)return;
         var folder=Path.of("../build/house-read-lines");Files.createDirectories(folder);
         try(var image=net.minecraft.client.Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(folder.resolve(NAMES[s.page]+".png"));}
         if(++s.page<NAMES.length){s.frames=0;s.card=null;return;}
         checkPlaysThrough();
+        checkTitleFades();
         Files.writeString(folder.resolve("passed.txt"),"The House's lines between the quiet rooms on black: the welcome before the first room, the bathroom's closing line, and the warning after the last room. The card has no buttons, plays through and closes itself.\n");
         mc.setScreen(new HouseReadHairProof());
     }

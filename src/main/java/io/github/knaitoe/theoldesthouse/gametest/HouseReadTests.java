@@ -506,7 +506,21 @@ public final class HouseReadTests {
               look[0]=null;p.interactOn(girl,InteractionHand.MAIN_HAND);var t=visit(p,HouseReadSites.Room.SHELTER);var seen=HouseRead.seen(f.data(),p.getUUID()).getCompound("shelter");
               h.assertTrue(t.getString("Dance").equals("woman")&&seen.getString("Stood").equals("woman")&&seen.getBoolean("Danced")&&HouseRead.raw(f.data(),p.getUUID(),HouseRead.Trait.DRAWN_TO).equals(new HouseRead.Category("WOMEN",HouseRead.Strength.SETTLED)),"taking her hand is a dance, and settles the read: "+seen);
           }).thenWaitUntil(()->{var girl=(LiteraryActor)f.in.getEntity(cast[1]);h.assertTrue(girl.gesture()==HouseReadShelter.DANCE&&girl.distanceTo(p)<1.3,"she dances an arm's length from the reader: gesture "+girl.gesture()+", "+girl.distanceTo(p));})
-          .thenExecute(()->danceWeight(h))
+          .thenExecute(()->{danceWeight(h);var girl=(LiteraryActor)f.in.getEntity(cast[1]);start[0]=Math.atan2(girl.getZ()-p.getZ(),girl.getX()-p.getX());start[1]=0;})
+          // 0.4.399, the owner: "continuing to pull against the weight should swirl your partner". The reader keeps leaning away,
+          // held where the client's lean holds them (past arm's length, short of the hands' give), and she is swung round them.
+          .thenExecuteFor(44,()->{var girl=(LiteraryActor)f.in.getEntity(cast[1]);
+              // The way she has gone round the reader since the last tick, added up (she may go most of a turn).
+              double was=start[0],is=Math.atan2(girl.getZ()-p.getZ(),girl.getX()-p.getX());start[1]+=Math.atan2(Math.sin(is-was),Math.cos(is-was));start[0]=is;
+              var away=p.position().subtract(girl.position()).multiply(1,0,1);
+              away=away.lengthSqr()<1e-4?new net.minecraft.world.phys.Vec3(1,0,0):away.normalize();var lean=girl.position().add(away.scale(1.05));
+              p.teleportTo(f.in,lean.x,p.getY(),lean.z,p.getYRot(),0);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);})
+          .thenExecute(()->{
+              var girl=(LiteraryActor)f.in.getEntity(cast[1]);double d=Math.toDegrees(Math.abs(start[1]));
+              h.assertTrue(HouseReadShelter.swirling(girl)!=0&&d>25,"pulled against for two seconds, she is swirled round the reader: "+HouseReadShelter.swirling(girl)+" a tick, "+d+" degrees");
+              h.assertTrue(girl.distanceTo(p)>=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.HOLD-.05&&girl.distanceTo(p)<=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.HOLD+io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.GIVE+.05,"and stays in the reader's hands: "+girl.distanceTo(p));
+              h.assertTrue(girl.gesture()==HouseReadShelter.DANCE,"still dancing");
+          })
           .thenWaitUntil(()->h.assertTrue(visit(p,HouseReadSites.Room.SHELTER).getBoolean("Settled"),"the dance ends the song"))
           .thenExecute(()->{
               h.assertTrue(HouseReadMoments.canProceed(p,HouseReadSites.Room.SHELTER)&&visit(p,HouseReadSites.Room.SHELTER).getInt("SongAge")>=900,"after the dance the room is ready, without waiting out the song");
@@ -579,5 +593,12 @@ public final class HouseReadTests {
         h.assertTrue(Math.abs(Math.hypot(at[0],at[1])-hold)<.05,"let go, they draw the reader back to arm's length: "+Math.hypot(at[0],at[1]));
         for(int i=0;i<40;i++){double r=Math.hypot(at[0],at[1]);step.apply(-at[0]/r,-at[1]/r);}
         double pressed=Math.hypot(at[0],at[1]);h.assertTrue(pressed>=closest-.01&&pressed<hold,"pressing in comes closer, never into the partner: "+pressed);
+        // 0.4.399: the swirl. A short pull is only a lean; a long one swings the partner round, and let go it carries on, then dies away.
+        int wait=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.PULL_TICKS;
+        h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.swirl(0,true,wait-1,1)==0,"a short pull is only a lean");
+        double spin=0;for(int i=0;i<wait+40;i++)spin=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.swirl(spin,true,i,-1);
+        h.assertTrue(spin<-.15&&spin>=-io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.SWIRL_MOST,"held, the swirl builds the way the reader was swinging, to its fastest: "+spin);
+        double kept=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.swirl(spin,false,0,1);h.assertTrue(kept<0&&kept>spin,"let go, it carries on the same way: "+kept);
+        for(int i=0;i<90;i++)spin=io.github.knaitoe.theoldesthouse.labyrinth.DanceWeight.swirl(spin,false,0,1);h.assertTrue(spin==0,"and dies away: "+spin);
     }
 }

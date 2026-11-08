@@ -24,6 +24,12 @@ public final class HouseReadLineScreen extends Screen {
     private final String[] pages;
     private final int[] ends;
     private final boolean title;
+    /**
+     * 0.4.399, the owner: "can we make the 'This House Has Ghosts in It' text at the end of the personhood vignettes fade out,
+     * rather than cut out?" After the title's own time the card does not close at once: the title fades over TITLE_FADE ticks while
+     * the black lifts over CLEAR ticks, onto the House the reader has already been carried into.
+     */
+    static final int TITLE_FADE=30,CLEAR=50;
     private final int token;
     private int age;
     private boolean still;
@@ -52,16 +58,19 @@ public final class HouseReadLineScreen extends Screen {
     /** How long the card shows, in ticks (the proof). */
     int length(){return ends[ends.length-1];}
 
-    @Override public void tick(){if(!still&&++age>=ends[ends.length-1])onClose();}
+    @Override public void tick(){if(!still&&++age>=ends[ends.length-1]+(title?CLEAR:0))onClose();}
     @Override public boolean shouldCloseOnEsc(){return false;}
     @Override public boolean isPauseScreen(){return false;}
     @Override public void renderBackground(GuiGraphics g,int mouseX,int mouseY,float partial){}
     @Override public void render(GuiGraphics g,int mouseX,int mouseY,float partial){
-        g.fill(0,0,width,height,0xFF000000);
-        float now=age+partial;int index=page();
+        float now=age+partial;int index=page();boolean last=index==pages.length-1;
         float start=index==0?0:ends[index-1],end=ends[index],local=now-start;
-        // Each page rises out of the black and sinks back into it; the first beat of the card is black alone.
-        float alpha=Mth.clamp(Math.min((local-8)/14F,(end-now)/10F),0F,1F);if(alpha<=.02F){super.render(g,mouseX,mouseY,partial);return;}
+        // The black: whole, except at the end of a title card, where it lifts slowly after the title has had its time.
+        float black=title&&last?Mth.clamp(1-(now-end)/CLEAR,0F,1F):1F;
+        g.fill(0,0,width,height,((int)(black*255)<<24));
+        // Each page rises out of the black and sinks back into it; the first beat of the card is black alone. The title sinks slowly.
+        float out=title&&last?(end+TITLE_FADE-now)/TITLE_FADE:(end-now)/10F;
+        float alpha=Mth.clamp(Math.min((local-8)/14F,out),0F,1F);if(alpha<=.02F){super.render(g,mouseX,mouseY,partial);return;}
         int color=((int)(alpha*255)<<24)|0xD9D4CC;boolean big=title&&index==pages.length-1;float scale=big?2F:1F;
         var lines=font.split(Component.literal(pages[index]),(int)(Math.min(300,width-40)/scale));int lead=font.lineHeight+3;
         g.pose().pushPose();g.pose().translate(width/2F,height/2F-lines.size()*lead*scale/2F,0);g.pose().scale(scale,scale,1);

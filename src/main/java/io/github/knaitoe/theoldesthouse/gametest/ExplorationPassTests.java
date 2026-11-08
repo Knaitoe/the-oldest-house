@@ -908,6 +908,9 @@ public final class ExplorationPassTests {
         var reader=h.makeMockServerPlayerInLevel();reader.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);reader.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-2.5,180,0);
         var shelf=b.offset(shelves.iterator().next());use(l,reader,shelf);use(l,reader,shelf.above());
         h.assertTrue(OrdinaryHalls.tries(reader,false)==2&&reader.getInventory().isEmpty()&&l.getBlockState(shelf).getBlock() instanceof HallFaceBlock,"the books will not come out: nothing is taken");
+        // 0.4.399: the book open on the reading table answers a hand, in turn, and stays where it lies.
+        var table=b.offset(OrdinaryHalls.TABLE);reader.teleportTo(l,table.getX()+.5,table.getY(),table.getZ()+1.5,180,0);use(l,reader,table);use(l,reader,table);
+        h.assertTrue(OrdinaryHalls.readings(reader)==2&&reader.getInventory().isEmpty()&&OrdinaryHallBlock.is(l.getBlockState(table),OrdinaryHallBlock.Kind.TABLE),"the book on the reading table is read, and stays on the table");
         reader.discard();
         h.assertTrue(lit(l,b,hall)==OrdinaryHalls.STACKS_LAMPS.size(),"the lamps over the aisles are lit");
         try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
