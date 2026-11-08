@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import io.github.knaitoe.theoldesthouse.labyrinth.CrossingBlock.Kind;
 import java.util.*;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -50,7 +51,7 @@ public final class LastCrossingTexts {
             case COIL->stage==3?"The line's snapped. A frayed end trails off the cleat.":"The ferry's mooring line.";
             case HOOK->stage==1?"The station lamp, on its hook.":"An empty lamp hook.";
             case DEPTH->"The depth post, marked off in feet. The water's at the second mark.";
-            case NAMEPLATE->"The ferry's nameplate, cast in brass: CORDELIA.";
+            case NAMEPLATE->stage>=2?"Bolt holes in the wheelhouse front where the nameplate was.":"The ferry's nameplate, cast in brass: CORDELIA.";
             case BAR->stage==1?"The bar's across the door.":"A heavy bar, leaning by the door. There are brackets either side of the frame to take it.";
             case ISOLATOR->stage==1?"The isolation valve, shut. The upper floor's on its own pump now.":"The isolation valve for the lower floor. Open.";
             case BYPASS->stage==1?"A bypass wheel on its riser, turned open. The tin tag wired to it is turned to match.":"A bypass wheel on its riser, shut. A tin tag is wired to it.";
@@ -276,6 +277,117 @@ public final class LastCrossingTexts {
     public static final String SOURCE_DOCKS="The ferry's coming in. Listen.";
     public static final String FROM_THE_BOAT="From the far end of the boat:";
     public static final String BOAT_CALLS="Someone aboard, calling the roll:";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.357: what the readers carry home
+    public static final String PLATE_BREAKS="Her name comes off her now. A piece for every name on the roll, here or not.";
+    public static final String SPARE_ASK="There's a spare. It broke away at one bolt. It goes to one of you who came through clean. Say who.";
+    public static final String NOMINATED="You say the name. Vera writes it at the bottom of the roll.";
+    public static String spareTo(String name){return "The spare's for "+name+". That's what you said.";}
+    public static String spareFromVera(String name){return "Nobody's saying, so it goes by the roll. "+name+", it's yours.";}
+    public static final String SPARE_IN_HAND="The spare is put in your hand: a curl of brass with one bolt hole and no letters.";
+    public static String pieceInHand(String letters){return letters.isEmpty()?"A piece of the nameplate is put in your hand, with no letters on it.":"A piece of the nameplate is put in your hand. The letters on it: "+letters+".";}
+    public static final String PIECE_KNOCKS="The piece you carry knocks, softly, once.";
+    public static final String TAP_ANSWERED="You tap the brass. Somewhere, softly, another piece answers.";
+    public static final String TAP_QUIET="You tap the brass. Nothing answers.";
+    public static final String SPARE_NOT_YET="Not yet. It isn't over.";
+    public static final String SPARE_NOT_THEIRS="It isn't theirs to carry.";
+    public static final String SPARE_NOT_TURNED="It's meant for someone who turned.";
+    public static final String SPARE_GIVEN="You put the spare in their hand.";
+    public static String spareReceived(String name){return name+" puts the spare in your hand. Against your own piece, the bolt holes line up.";}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.357: each reader's account
+    public static final String TITLE="The account: the last crossing";
+    private static String names(String list){var all=new ArrayList<>(Arrays.asList(list.split(",")));all.removeIf(String::isBlank);
+        if(all.size()<=1)return String.join("",all);return String.join(", ",all.subList(0,all.size()-1))+" and "+all.get(all.size()-1);}
+    private static String job(String job){return switch(job){
+        case "intake"->"I worked the intake, down on the bleed screw.";case "gauge"->"I was up in the gauge room, reading the needle.";
+        case "lookout"->"I was the cable lookout.";case "landing"->"I worked the landing and the line on the ramp.";
+        case "spillway"->"I walked the spillway.";case "lamp"->"I carried the station lamp.";case "brake"->"I took the winch brake.";
+        default->"";};}
+    /** One reader's account of the crossing, from their own record. Every reader on the roll gets one, the dead and the absent included. */
+    public static ItemStack account(String name,CompoundTag t){
+        var text=new StringBuilder();
+        text.append("A farm road ran down into floodwater, and a power line went up a levee to a flood station by a river, where the last ferry sat at its ramp and a lamp burned on the far bank. ");
+        if(t.getBoolean("Partway")&&!t.getBoolean("Signed"))text.append("I came in after the roll had been called. ");
+        else{text.append("The keeper, Vera, had us sign a roll on the porch and called every name aloud. ");
+            if(t.getBoolean("HeardEllis"))text.append("Then she called one more, Ellis, and waited, and nobody answered. ");}
+        String j=job(t.getString("Job"));if(!j.isEmpty())text.append(j).append(' ');
+        if(t.getBoolean("PlateClean"))text.append("When I laid my palm on the handprint plate it left a breath of fog on the near side and nothing on the far. ");
+        // Night One.
+        if(t.getBoolean("Gripped")){text.append("On the first night a hand came up through the broken corner of the intake grate and took hold of me. ");
+            if(t.getBoolean("FoughtFree"))text.append("I beat it off myself. ");else if(t.getBoolean("PulledUp"))text.append("Somebody reached down through the landing's rail and pulled me up over it. ");else if(t.getBoolean("Freed"))text.append("Somebody beat it off me. ");
+            text.append("After that there was a second breath under my own. ");
+            if(t.getBoolean("Told"))text.append("I told Vera. ");
+            if(t.getBoolean("Exposed"))text.append("I laid my palm on the plate and let the others see a second print come up on the far side. ");}
+        else if(t.getBoolean("SawClaw"))text.append("On the first night I saw a hand come up through the intake grate and take hold of one of us. ");
+        if(t.getBoolean("SawUndertow"))text.append("Things came up out of the water at night and over the spillway's banks. ");
+        // Day Two and Night Two.
+        if(t.getBoolean("LinedUp"))text.append("On the second day I helped line the winch drum up on its marks. ");
+        if(t.getBoolean("OpenedBypass"))text.append("I opened a bypass wheel and flooded a service branch. ");
+        if(t.getBoolean("Turned")){String where=t.getString("TurnedWhere");
+            text.append(where.isEmpty()?"At the second dusk I turned where I stood. ":"At the second dusk I turned where I stood, "+where+". ");
+            text.append("I could breathe the water, and my hands were claws, and everything I said came out broken. ");}
+        else if(t.getBoolean("SawTurn"))text.append("At the second dusk I watched someone I knew turn, and knew whose face it was. ");
+        if(t.getBoolean("HeldPull")||t.getBoolean("Pulled"))text.append("I held the winch brake off through the pull. ");
+        if(t.getBoolean("PullFailed"))text.append("The pull failed, and the drum ran back and threw the rollers. ");
+        if(t.getBoolean("SecondSlot"))text.append("On the second night one of the things held me long enough, and I carried it too after that. ");
+        // Day Three.
+        String plan=t.getString("Plan");
+        if(plan.equals("launch"))text.append("On the third morning I said I would work the launch. ");else if(plan.equals("source"))text.append("On the third morning I said I would look for the source. ");else if(plan.equals("either"))text.append("On the third morning I said I would go wherever I was needed. ");
+        if(t.getBoolean("AskedCross"))text.append("I asked Vera whether she wanted to cross. She put the clipboard down and said she wanted to hear everybody who was actually there. ");
+        if(t.getBoolean("SawSource"))text.append("Through thick glass under the ramp I saw something at the bottom of the water, wrapped in weed, that moved when I breathed. ");
+        if(t.getBoolean("OfferedBreath"))text.append("Under my own breath the other one offered me the master wheel at high water. ");
+        // Night Three.
+        if(t.getBoolean("HeldWheelToPin"))text.append("On the last night I held the sluice wheel at the bottom of the flooded pit until the pin dropped home. ");
+        if(t.getBoolean("SeatedLaunchPin"))text.append("I dropped the launch pin from the deck. ");
+        if(t.getBoolean("PulledRelease"))text.append("I pulled the launch rope and let her go. ");
+        if(t.getBoolean("HeldGateToBar"))text.append("I held the feed gate in the gallery while "+(t.getString("BarredWith").isEmpty()?"someone":names(t.getString("BarredWith")))+" dropped the bar across it. ");
+        else if(t.getBoolean("BarredGate"))text.append("I dropped the bar across the feed gate while "+(t.getString("BarredWith").isEmpty()?"someone":names(t.getString("BarredWith")))+" held it. ");
+        if(t.getBoolean("ClosedCutoff"))text.append("I wound the upstream cutoff shut. ");
+        if(t.getBoolean("DestroyedSource"))text.append("When the things were off it, I struck the source until it was dead. ");
+        else if(t.getBoolean("StruckSource"))text.append("When the things were off it, I struck the source. ");
+        else if(t.getBoolean("SawSourceDie"))text.append("I was in the gallery when the source died. ");
+        if(t.getBoolean("ReleasedByFight"))text.append("When it died the second breath went out of me, and I was only myself. ");
+        if(t.getBoolean("OpenedMaster")){text.append("At high water I opened the master bypass and held it. The pipes hammered and the water came the wrong way. ");
+            if(t.getBoolean("BargainDenied"))text.append((t.getString("DeniedBy").isEmpty()?"Someone":names(t.getString("DeniedBy")))+" wound the downstream sluice shut before it was done, and whatever was opening in my throat closed again. ");
+            else if(t.getBoolean("OtherBreath"))text.append("I held it until the water was over the ramp's approach, and something let go of my throat for good. ");
+            else if(t.getBoolean("SidedWithSource"))text.append("I held it until the water was over the ramp's approach. ");}
+        else if(!t.getString("SawMasterOpened").isEmpty())text.append("I saw "+names(t.getString("SawMasterOpened"))+" open the master bypass. ");
+        if(t.getBoolean("DeniedBargain"))text.append("I wound the downstream sluice shut while the master was open, before it was done. ");
+        else if(t.getBoolean("DrainedLanding"))text.append("I wound the downstream sluice shut, too late for anything but the landing. ");
+        // Dying.
+        String died=t.getBoolean("DiedNightOne")?"on the first night":t.getBoolean("DiedNightTwo")?"on the second night":t.getBoolean("DiedDayThree")?"on the third day":t.getBoolean("DiedNightThree")?"on the last night":t.getBoolean("Died")?"there":"";
+        if(!died.isEmpty())text.append("I died "+died+", and watched the rest of it from the far bank. ");
+        // The ending.
+        String ending=t.getString("Ending");
+        if(ending.equals("ferry")){
+            if(t.getBoolean("CrossedOver"))text.append(t.getString("AboardWith").isEmpty()?"I was aboard when she crossed. ":"I was aboard when she crossed, with "+names(t.getString("AboardWith"))+". ");
+            else if(t.getBoolean("LeftOnStation"))text.append("The ferry moved off the landing without me. ");
+            else text.append("The ferry crossed. ");
+            text.append("On the far bank Vera called the roll. ");
+            if(t.getBoolean("AnsweredFar"))text.append("I answered. ");else if(t.getBoolean("UnansweredFar"))text.append("Nobody answered for me. ");
+            if(!t.getString("HeardUnanswered").isEmpty())text.append("Nobody answered for "+names(t.getString("HeardUnanswered"))+". ");
+            text.append(t.getBoolean("HeardEllisLate")?"After Ellis's name she waited, and a long breath later something at the far end of the boat said Here. ":"After Ellis's name she waited. ");}
+        else if(ending.equals("gallery")){
+            text.append("The water went still. ");
+            text.append(t.getBoolean("RangMuster")?"I rang the station bell for the muster. ":"The station bell rang for the muster. ");
+            text.append(t.getBoolean("OutOfGallery")?"Vera marked me down as one of the ones who came out of the gallery with her. ":"Vera marked down who came out of the gallery with her. ");}
+        else if(ending.equals("source")){
+            text.append("Nobody clean was left to stop it, and the night ran out. The ferry came in at the far landing anyway, by itself. Someone aboard called the roll in Vera's order, and every name got an answer from the far end of the boat");
+            text.append(t.getBoolean("HeardEllisFar")?", Ellis's too. ":". ");
+            text.append("Vera said she didn't know who answered them. ");}
+        if(t.getBoolean("BackAtMorning"))text.append("In the morning I was myself again. ");
+        // What was carried home.
+        if(t.getBoolean("GotPiece")){String letters=t.getString("PieceLetters");
+            text.append("\n\nVera broke the ferry's nameplate along its bolt holes, a piece for every name on the roll. ");
+            text.append(letters.isEmpty()?"Mine has no letters on it. ":"Mine says "+letters+". ");}
+        if(t.getBoolean("NamedForSpare")||t.getBoolean("GivenSpareByVera")||t.getBoolean("GotSpare")&&t.getString("SpareFrom").isEmpty())text.append(t.getBoolean("GivenSpareByVera")?"Nobody said who should have the spare, so Vera gave it to me, by the roll. ":"The spare came to me. ");
+        else if(!t.getString("SpareWentTo").isEmpty())text.append("The spare went to "+names(t.getString("SpareWentTo"))+". ");
+        if(!t.getString("SpareFrom").isEmpty())text.append(t.getString("SpareFrom")+" gave me the spare, and against my own piece the bolt holes lined up. ");
+        if(!t.getString("GaveSpareTo").isEmpty())text.append("I gave the spare to "+t.getString("GaveSpareTo")+". ");
+        if(t.getBoolean("OtherBreath")||t.getBoolean("OtherBreathKept"))text.append("Under water I hold my breath a little longer than I used to. ");
+        return HouseWriting.book(TITLE,name,pages(HouseWriting.WritingStyle.WILL,text.toString().trim()));
+    }
     public static final String MORNING_FERRY="That's the light. Whoever's here, you're across.";
     public static final String MORNING_GALLERY="That's the light. Water's still. We'll take her across in the morning, all of us that are left.";
     public static final String MORNING_SOURCE="That's the light. Every name answered. I don't know who answered them.";

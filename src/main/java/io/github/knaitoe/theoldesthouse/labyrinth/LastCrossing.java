@@ -147,7 +147,7 @@ public final class LastCrossing {
         case "barStaged"->r.dayThree.barStaged;case "pathCleared"->r.dayThree.pathCleared;case "galleryReady"->r.dayThree.galleryReady;case "briefed3"->r.dayThree.briefed;
         case "risen"->r.night3.risen;case "pinned3"->r.night3.pinned;case "floating"->r.night3.floating;case "released"->r.night3.released;case "arrived"->r.night3.arrived;
         case "gateBarred"->r.night3.barred;case "cutoff"->r.night3.cutoff;case "drained"->r.night3.drained;case "destroyed"->r.night3.destroyed;case "mustered"->r.night3.mustered;
-        case "masterOpen"->r.night3.masterOpen;case "bargained"->r.night3.bargained;case "denied"->r.night3.denied;case "ended"->r.night3.ended;default->false;};}
+        case "broken"->r.night3.broken;case "spareSettled"->r.night3.spareSettled;case "masterOpen"->r.night3.masterOpen;case "bargained"->r.night3.bargained;case "denied"->r.night3.denied;case "ended"->r.night3.ended;default->false;};}
     /** For tests: the night's clock, how many of the things are up, and who carries the first slot. */
     public static int night(BlockPos b){var r=run(b);return r==null?-1:r.night.tick;}
     public static int undertows(BlockPos b){var r=run(b);return r==null?0:r.night.mobs.size();}
@@ -253,7 +253,8 @@ public final class LastCrossing {
         "LetGoGate","HeldFeedGate","BarredGate","HeldGateToBar","BarredWith","ClosedCutoff","SawSourceBare","StruckSource","DestroyedSource","SawSourceDie","ReleasedByFight",
         "RangMuster","OutOfGallery","HeardMuster","OpenedMaster","SawMasterOpened","LetGoMaster","HeardHammer","SawApproachFlood","SidedWithSource","OtherBreath",
         "ShutDownstream","BargainDenied","DeniedBy","DeniedBargain","DrainedLanding","SawLandingRise","Ending","BroughtAcross","UnansweredFar","HeardUnanswered","HeardAnsweredFor",
-        "HeardEllisFar","HeardEllisLate","AnsweredFar","BackAtMorning","NightThree","DiedNightThree");
+        "HeardEllisFar","HeardEllisLate","AnsweredFar","BackAtMorning","NightThree","DiedNightThree",
+        "GotPiece","PieceLetters","GotSpare","NominatedFor","NamedForSpare","GivenSpareByVera","SpareWentTo","GaveSpare","GaveSpareTo","SpareFrom","Outcome");
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var l=p.serverLevel();var r=RUNS.computeIfAbsent(b.asLong(),k->new Run(b,l.getGameTime()));
         if(own.getLong("CrossingRun")!=r.id){for(var key:RUN_KEYS)own.remove(key);own.putLong("CrossingRun",r.id);}
@@ -265,8 +266,18 @@ public final class LastCrossing {
         cue(p,"A farm road, running north and down into floodwater. Beside it a power line on poles goes up a levee toward a station by a river.");
         HousePackets.send(p,payload(r));
     }
-    /** Not dealt until a crew can finish the crossing (its last slice); reached by the operator's test door until then. */
-    public static boolean dealable(LabyrinthData d,UUID p){return false;}
+    /** 0.4.357: dealt once each, after the yard's ordinary crossings, and only to a reader with a crew around them: four to six readers in
+     * the House standing together. */
+    public static boolean dealable(LabyrinthData d,UUID p){
+        if(LiteraryVignettes.personal(d,p,PLACE).getBoolean("Completed"))return false;
+        var seen=d.visited(p);boolean yard=false;for(var y:YardCrossings.ORDINARY)if(seen.contains(y.id())){yard=true;break;}
+        return yard&&crewAround(p)>=MIN_CREW;
+    }
+    /** How many readers stand together with this one (themselves included): in the same level, within twenty-four blocks, not watching. */
+    public static int crewAround(UUID id){
+        var server=net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();if(server==null)return 0;var p=server.getPlayerList().getPlayer(id);if(p==null)return 0;
+        int n=0;for(var q:p.serverLevel().players())if(!q.isSpectator()&&q.distanceToSqr(p)<24*24)n++;return n;
+    }
 
     // ------------------------------------------------------------------------------------------------ the station's clock
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){

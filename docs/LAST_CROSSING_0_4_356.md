@@ -17,7 +17,7 @@ This part covers Night Three:
 - the source taking the crossing;
 - the three endings and the morning on the far bank.
 
-The nameplate and its spare, each reader's account, the Witness source and dealing are slice 4c, 0.4.357. Until it is built, the crossing ends in the morning on the far bank with nothing given out. It is still not dealt and adds no Witness source; the operator's test door reaches it.
+The nameplate and its spare, each reader's account, the Witness source and dealing are slice 4c, 0.4.357 (`docs/LAST_CROSSING_0_4_357.md`); until it was built, the crossing ended in the morning on the far bank with nothing given out.
 
 Protocol 150 and layout 112 are unchanged: Night Three adds no fitting kinds, items or synced state. It uses the Day Three fittings and the cells of the gallery, the chamber and the pit.
 

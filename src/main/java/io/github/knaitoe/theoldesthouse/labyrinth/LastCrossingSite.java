@@ -549,6 +549,8 @@ public final class LastCrossingSite {
         // Night Three: the chamber full again with its source and the gate down, the pit and the ramp's approach drained, the bollard's
         // rope made fast.
         chamber(l,b);drainPit(l,b);drainApproach(l,b);
+        // 0.4.357: the nameplate whole again.
+        set(l,b,32,2,-69,fit(Kind.NAMEPLATE,Direction.SOUTH,0));set(l,b,33,2,-69,fit(Kind.NAMEPLATE,Direction.SOUTH,1));
         set(l,b,PIN_RACK,fit(Kind.RACK,Direction.SOUTH));set(l,b,BAR_RACK,fit(Kind.RACK,Direction.WEST,2));
         set(l,b,MASTER,fit(Kind.MASTER,Direction.EAST));set(l,b,RELEASE,fit(Kind.RELEASE,Direction.NORTH));set(l,b,DOWNSTREAM,fit(Kind.DOWNSTREAM,Direction.WEST));
         // The lower floor dry again, whatever came up into it in the night.
