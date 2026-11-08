@@ -1253,5 +1253,9 @@
   "subtitles.the_oldest_house.crossing.undertow": "Something wet groans",
   "subtitles.the_oldest_house.crossing.rise": "The ferry strains at its line",
   "subtitles.the_oldest_house.crossing.snap": "The mooring line snaps",
-  "entity.the_oldest_house.crossing_undertow": "Undertow"
+  "entity.the_oldest_house.crossing_undertow": "Undertow",
+  "subtitles.the_oldest_house.crossing.ratchet": "The winch drum ratchets a notch",
+  "subtitles.the_oldest_house.crossing.scrape": "Something scrapes in the pipes",
+  "subtitles.the_oldest_house.crossing.branch": "Water runs in a branch",
+  "item.the_oldest_house.crossing_tools": "Cable Tools"
 }

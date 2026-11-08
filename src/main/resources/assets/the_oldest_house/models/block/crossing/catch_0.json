@@ -1,0 +1,126 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "i": "the_oldest_house:block/crossing/iron",
+    "r": "the_oldest_house:block/crossing/roller",
+    "g": "the_oldest_house:block/crossing/grip",
+    "particle": "the_oldest_house:block/crossing/iron"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        10,
+        1
+      ],
+      "to": [
+        9,
+        12,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        },
+        "south": {
+          "texture": "#r"
+        },
+        "east": {
+          "texture": "#r"
+        },
+        "west": {
+          "texture": "#r"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          11,
+          8
+        ],
+        "axis": "x",
+        "angle": -45
+      }
+    },
+    {
+      "from": [
+        6.5,
+        9.5,
+        0
+      ],
+      "to": [
+        9.5,
+        12.5,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          11,
+          8
+        ],
+        "axis": "x",
+        "angle": -45
+      }
+    }
+  ]
+}

@@ -34,12 +34,18 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.352, Night One: GRATE (2) with a hand come up through its broken corner; COIL (3), the line snapped at the first rise; BAR: the
  * cable house's door bar, leaning by the door (0) and dropped across the doorway (1), where it stops anything coming through; ISOLATOR:
  * the gauge room's isolation valve for the lower floor, open (0) and shut (1).</li>
+ * <li>0.4.353, Day Two: BYPASS: a bypass wheel on its riser out of the floor, shut (0) and open (1), flooding its service branch. BRANCH: a
+ * branch's grate set in a wall, and FLOOR_GRATE: set in a floor, dry (0), wet with the branch flooded behind it (1) and damp after (2).
+ * WITNESS: the witness plate on the cable bed, greased over (0) and scraped clean (1). CATCH: the winch's parking catch beside the brake,
+ * off (0) and set in the drum's teeth (1). STAIN: the water stain on the boards under the fairlead, fresh (0) and drying (1). TOOLS: the
+ * cable tools, rolled in canvas, on the office desk.</li>
  * </ul>
  */
 public final class CrossingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CrossingBlock> CODEC=simpleCodec(CrossingBlock::new);
     public enum Kind implements StringRepresentable {
-        TABLE,CLIPBOARD,SLATE,PLATE,PLATE_SET,BRACKET,STOVE,GAUGE,BRAKE,VALVE,RUN,BLEED,GRATE,PUMP,PIPE,ROLLER,FAIRLEAD,DRUM,HATCH,WHEEL,PIN,COIL,HOOK,DEPTH,NAMEPLATE,BAR,ISOLATOR;
+        TABLE,CLIPBOARD,SLATE,PLATE,PLATE_SET,BRACKET,STOVE,GAUGE,BRAKE,VALVE,RUN,BLEED,GRATE,PUMP,PIPE,ROLLER,FAIRLEAD,DRUM,HATCH,WHEEL,PIN,COIL,HOOK,DEPTH,NAMEPLATE,BAR,ISOLATOR,
+        BYPASS,BRANCH,FLOOR_GRATE,WITNESS,CATCH,STAIN,TOOLS;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -84,13 +90,22 @@ public final class CrossingBlock extends HorizontalDirectionalBlock {
             case NAMEPLATE->t(f,0,5,15,16,11,16);
             case BAR->s.getValue(STAGE)==0?t(f,5,0,13,11,16,16):t(f,0,3,5,16,16,11);
             case ISOLATOR->t(f,4,4,11,12,16,16);
+            case BYPASS->Block.box(2,0,2,14,14,14);
+            case BRANCH,FLOOR_GRATE->Shapes.block();
+            case WITNESS->Block.box(2,0,2,14,2,14);
+            case CATCH->t(f,5,0,0,11,13,11);
+            case STAIN->Block.box(0,0,0,16,.2,16);
+            case TOOLS->t(f,2,0,5,16,3,11);
         };
     }
     /** The grate and the shut hatch are walked on; wall things, the clipboard and the coil are walked through; the rest stand. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case CLIPBOARD,GAUGE,PIPE,HOOK,NAMEPLATE,SLATE,COIL,ISOLATOR->Shapes.empty();
+            case CLIPBOARD,GAUGE,PIPE,HOOK,NAMEPLATE,SLATE,COIL,ISOLATOR,WITNESS,STAIN,TOOLS->Shapes.empty();
+            case BRANCH,FLOOR_GRATE->Shapes.block();
+            case BYPASS->Block.box(6,0,6,10,13,10);
+            case CATCH->Block.box(6,0,6,10,11,10);
             // The bar across the doorway stands higher than a jump, so nothing comes over it.
             case BAR->s.getValue(STAGE)==0?t(f,5,0,13,11,16,16):t(f,0,0,5,16,24,11);
             case TABLE->Shapes.or(Block.box(0,12,0,16,14,16),Block.box(1,0,1,15,12,15));

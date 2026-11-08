@@ -261,6 +261,10 @@ public final class LastCrossingNight {
             if(r.tick%20==0&&LastCrossingSite.inGaugeRoom(q))for(var w:here){if(w==p||!LastCrossingSite.inGaugeRoom(LastCrossing.rel(w.position(),b))||!LastCrossing.sees(w,p.position().add(0,1,0),12,.3))continue;
                 LastCrossing.addName(w,"SawSoaked",LastCrossing.name(p));}
         }
+        carrierBeat(l,r,n,here);
+    }
+    /** The carrier's private beat once clear, and the second breath now and then afterwards; through the day after too (0.4.353). */
+    static void carrierBeat(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
         // A carrier who died here has no beat and no second breath: they watch from the far bank.
         var c=LastCrossing.player(l,n.carrier);if(c==null||!here.contains(c)||r.dead.contains(c.getUUID()))return;
         if(n.beatAt>=0&&r.tick>=n.beatAt&&n.beat==0){n.beat=1;c.playNotifySound(CrossingRegistry.BREATH.get(),SoundSource.PLAYERS,1F,1F);LastCrossing.cue(c,LastCrossingTexts.INFECTED_ONE);}

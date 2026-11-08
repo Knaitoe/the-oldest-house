@@ -1,7 +1,8 @@
 """Original sounds for The Last Crossing (0.4.351): a knock carried down a speaking pipe, the station pump taking up its load, something
 tapping back under the service grate, and the intake's bleed screw letting go its air and then water. From 0.4.352, Night One: the surge
 coming through the intake, the second breath an infected reader hears under their own, the things that come up out of the water, the
-ferry straining on its line at the first rise, and the line snapping.
+ferry straining on its line at the first rise, and the line snapping. From 0.4.353, Day Two: the winch drum ratcheting a notch,
+something answering through the pipes, and water running behind a grate in a flooded branch.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -20,6 +21,9 @@ ROWS = {
     'undertow': ('Something wet groans', 16),
     'rise': ('The ferry strains at its line', 32),
     'snap': ('The mooring line snaps', 32),
+    'ratchet': ('The winch drum ratchets a notch', 16),
+    'scrape': ('Something scrapes in the pipes', 24),
+    'branch': ('Water runs in a branch', 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -180,7 +184,51 @@ def snap():
     return out
 
 
-MAKERS = {'knock': knock, 'pump': pump, 'tap': tap, 'bleed': bleed, 'surge': surge, 'breath': breath, 'undertow': undertow, 'rise': rise, 'snap': snap}
+def ratchet():
+    # The winch drum let round one notch: the pawl lifting, a heavy iron click as it drops into the next tooth, the drum settling.
+    n = seconds(1.0)
+    out = np.zeros(n)
+    k = seconds(.06)
+    place(out, band(rng.standard_normal(k), 900, 5000) * envelope(k, .0005, .02) * .5, 0)
+    k = seconds(.04)
+    place(out, band(rng.standard_normal(k), 400, 3200) * envelope(k, .0004, .015) * 1.2, .22)
+    tk = times(seconds(.6))
+    ring = sum(np.sin(2 * np.pi * f * tk) * np.exp(-tk * d) * a for f, d, a in ((210, 8, .45), (530, 11, .2), (1180, 16, .08)))
+    place(out, ring, .222)
+    k = seconds(.4)
+    place(out, band(rng.standard_normal(k), 60, 300) * envelope(k, .02, .3) * .35, .25)
+    return out
+
+
+def scrape():
+    # An answer through the pipes from somewhere under the station: something hard drawn slowly along iron, far off and hollow.
+    n = seconds(2.8)
+    out = np.zeros(n)
+    tk = times(n)
+    grit = band(rng.standard_normal(n), 600, 3800) * (.5 + .5 * np.sin(2 * np.pi * 9 * tk) ** 2)
+    f = 180 + 40 * np.sin(2 * np.pi * .6 * tk)
+    phase = 2 * np.pi * np.cumsum(f) / RATE
+    squeal = np.sin(phase) * .25 + np.sin(phase * 2.01) * .12
+    env = np.clip(tk / .6, 0, 1) * np.clip((2.8 - tk) / 1.0, 0, 1)
+    hollow = sum(np.sin(2 * np.pi * fr * tk) * a for fr, a in ((95, .12), (190, .06)))
+    out += (grit * .45 + squeal + hollow) * env
+    return out
+
+
+def branch():
+    # Water running behind a grate in a service branch: a steady trickle and gurgle, quiet, close to the iron.
+    n = seconds(3.0)
+    out = np.zeros(n)
+    tk = times(n)
+    trickle = band(rng.standard_normal(n), 900, 5000) * (.4 + .3 * np.sin(2 * np.pi * 1.3 * tk))
+    gurgle = band(rng.standard_normal(n), 150, 800) * (rng.random(n) > .996) * 3
+    env = np.clip(tk / .5, 0, 1) * np.clip((3.0 - tk) / .5, 0, 1)
+    out += (trickle * .4 + band(gurgle, 120, 900)) * env
+    return out
+
+
+MAKERS = {'knock': knock, 'pump': pump, 'tap': tap, 'bleed': bleed, 'surge': surge, 'breath': breath, 'undertow': undertow, 'rise': rise, 'snap': snap,
+          'ratchet': ratchet, 'scrape': scrape, 'branch': branch}
 
 
 def main():

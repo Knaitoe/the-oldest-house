@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/crossing/witness_clean",
+    "i": "the_oldest_house:block/crossing/iron",
+    "particle": "the_oldest_house:block/crossing/witness_clean"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        2,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    }
+  ]
+}

@@ -17,10 +17,20 @@ import net.minecraft.world.level.Level;
  * anything in the water, they don't break doors, they carry and drop nothing and call nobody else. LastCrossingNight brings them up out of
  * the spillway (and through the inspection landing when the lower floor is lost and left open) and sends them back into the water at
  * dawn.
+ *
+ * <p>0.4.353: they pass a carrier by. One of the crew with a claw's worth of the source in them is not what they come up for; they go for
+ * whoever else is nearest, and turn only on a carrier who hurts them.
  */
 public class Undertow extends Zombie {
     public Undertow(EntityType<? extends Zombie> type,Level level){super(type,level);setCanPickUpLoot(false);setCanBreakDoors(false);setPersistenceRequired();}
     public static AttributeSupplier.Builder attributes(){return Zombie.createAttributes().add(Attributes.MAX_HEALTH,16).add(Attributes.ATTACK_DAMAGE,3).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE,0).add(Attributes.FOLLOW_RANGE,28);}
+    @Override protected void addBehaviourGoals(){
+        goalSelector.addGoal(2,new net.minecraft.world.entity.ai.goal.ZombieAttackGoal(this,1.0,false));
+        goalSelector.addGoal(7,new net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal(this,1.0));
+        targetSelector.addGoal(1,new net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal(this));
+        targetSelector.addGoal(2,new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(this,net.minecraft.world.entity.player.Player.class,10,true,false,
+            t->!(t instanceof net.minecraft.server.level.ServerPlayer p&&LastCrossing.spared(p))));
+    }
     @Override protected boolean isSunSensitive(){return false;}
     @Override protected boolean convertsInWater(){return false;}
     @Override public boolean isBaby(){return false;}

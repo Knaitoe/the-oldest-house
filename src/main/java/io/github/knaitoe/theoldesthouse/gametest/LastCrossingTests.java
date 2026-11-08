@@ -36,6 +36,14 @@ import net.neoforged.neoforge.gametest.*;
  * that hold and the fourth that frees, the ferry swung off its sill when nobody makes the line fast, a clean reader cut and still clean.
  * The lower floor lost: a blow that isn't enough, the intake filling with nobody on the brake, everyone below come up the stair, the
  * things up through the landing while it's left open, and the isolation valve shut.
+ *
+ * <p>0.4.353, Day Two. The drum lined up: the morning, Vera at the slate and the cable tools on the desk, the tools taken for the far end,
+ * the witness plate scraped and read and the reading called aloud, a catch set off the marks that slips, the drum creeping with nobody on
+ * the brake, eased and cranked onto the marks and held there, the catch dropped square and holding with nobody on the brake, Vera asked
+ * about Ellis, her two words before dusk, the second dusk, and the station set back. A bypass and what it leaves: the winch's bypass opened
+ * by a carrier and seen, the spur flooded and its grate wet, the stain under the fairlead, the gauge dipping sooner; the carrier's call at
+ * the wet grate heard through the pipes, one of the things come up through it in daylight and passing the carrier by, a call smothered by
+ * the plate; the ramp's bypass opened and shut; the winch's shut, its grate damp and drying.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
 public final class LastCrossingTests {
@@ -54,6 +62,20 @@ public final class LastCrossingTests {
     @AfterBatch(batch="last_crossing_night") public static void nightDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_fight") public static void fightDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_flood") public static void floodDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_day") public static void dayDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_bypass") public static void bypassDone(ServerLevel l){close();}
+    private static void look(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){var b=f.base(P);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z));}
+    /** A crew through Day One and Night One untouched, into the morning and Day Two. */
+    private static GameTestSequence dayTwo(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer[] c,String prefix,Runnable atStart){
+        var b=f.base(P);
+        return crew(f,h,c,prefix)
+            .thenExecute(()->LastCrossing.skip(b,LastCrossing.DAY_TICKS))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK,"dusk"))
+            .thenExecute(()->LastCrossing.skip(b,LastCrossing.NIGHT_TICKS))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAWN,"the morning after"))
+            .thenExecute(()->{atStart.run();LastCrossing.skip(b,LastCrossingDay.MORNING);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAY&&LastCrossing.dayNo(b)==2,"Day Two"));
+    }
     private static Vec3 rel(LiteraryTests.Fixture f,ServerPlayer p){var b=f.base(P);return p.position().subtract(b.getX(),b.getY(),b.getZ());}
     private static void select(ServerPlayer p,String what){for(int i=0;i<9;i++){var c=p.getInventory().getItem(i).get(DataComponents.CUSTOM_DATA);if(c!=null&&c.copyTag().getString("Crossing").equals(what)){p.getInventory().selected=i;return;}}}
     /** A crew signed, called and answered, the day running. */
@@ -356,5 +378,100 @@ public final class LastCrossingTests {
             .thenExecute(()->{LastCrossing.resetNow(l,b);
                 h.assertTrue(l.getBlockState(b.offset(18,-6,-58)).isAir()&&is(l,b,LastCrossingSite.ISOLATOR,Kind.ISOLATOR,0)&&l.getBlockState(b.offset(16,-8,-63)).is(Blocks.WATER),"the lower floor dry again, the valve open, the water under the grate");
                 h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_day",timeoutTicks=12000)
+    public static void dayTwoTheDrumLinedUp(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];int[] seen={0};
+        dayTwo(f,h,c,"lc_day",()->{})
+            .thenExecute(()->f.at(c[0],P,14.5,0,-42.5))
+            .thenWaitUntil(()->h.assertTrue(is(l,b,LastCrossingSite.TOOLS,Kind.TOOLS,0),"Vera at the slate, the cable tools on the desk"))
+            .thenExecute(()->{h.assertTrue(f.own(c[0],P).getBoolean("HeardSlate"),"Ellis still on the slate, heard in the office");
+                f.at(c[0],P,17.5,0,-43.5);h.assertTrue(use(f,c[0],LastCrossingSite.TOOLS)&&carries(c[0],"tools")&&LastCrossing.flag(b,"tools"),"the tools taken");
+                h.assertTrue(f.own(c[0],P).getBoolean("FarEnd")&&l.getBlockState(b.offset(LastCrossingSite.TOOLS)).isAir(),"the far end taken");
+                // The far end: greased until scraped with the tools, then read.
+                f.at(c[0],P,45.5,0,-63.5);c[0].getInventory().selected=8;
+                h.assertTrue(use(f,c[0],LastCrossingSite.WITNESS)&&is(l,b,LastCrossingSite.WITNESS,Kind.WITNESS,0),"no reading through the grease bare-handed");
+                select(c[0],"tools");h.assertTrue(use(f,c[0],LastCrossingSite.WITNESS)&&is(l,b,LastCrossingSite.WITNESS,Kind.WITNESS,1)&&f.own(c[0],P).getBoolean("ScrapedMarks"),"scraped clean");
+                int o=LastCrossing.offset(b);h.assertTrue(o!=0,"the drum starts off the marks");
+                h.assertTrue(use(f,c[0],LastCrossingSite.WITNESS)&&Talk.replies(c[0]).get(0).endsWith(o>0?" short!":" past!"),"the marks read: "+Talk.replies(c[0]));Talk.close(c[0]);
+                // A catch dropped off the marks.
+                f.at(c[1],P,50.5,0,-57.5);seen[0]=o;
+                h.assertTrue(use(f,c[1],LastCrossingSite.CATCH)&&LastCrossing.flag(b,"catch")&&!LastCrossing.flag(b,"lined"),"the catch set off the marks");})
+            .thenWaitUntil(()->h.assertTrue(!LastCrossing.flag(b,"catch"),"it slips"))
+            .thenExecute(()->{h.assertTrue(LastCrossing.offset(b)==seen[0]-1&&f.own(c[1],P).getBoolean("CatchSlipped"),"the drum runs out a notch as it slips");
+                seen[0]=LastCrossing.offset(b);f.at(c[1],P,47.5,0,-61.5);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.offset(b)==seen[0]-1,"nobody on the brake: the drum creeps out"))
+            .thenExecute(()->{f.at(c[1],P,50.5,0,-57.5);
+                for(int i=0;i<12&&LastCrossing.offset(b)!=0;i++){boolean in=LastCrossing.offset(b)<0;c[1].setShiftKeyDown(in);h.assertTrue(use(f,c[1],LastCrossingSite.CABLE_BRAKE),"the brake");}
+                c[1].setShiftKeyDown(false);
+                h.assertTrue(LastCrossing.offset(b)==0,"eased and cranked onto the marks");
+                h.assertTrue(f.own(c[1],P).getBoolean("EasedDrum")||f.own(c[1],P).getBoolean("CrankedDrum"),"worked from the brake");seen[0]=0;})
+            .thenIdle(LastCrossingDay.CREEP+20)
+            .thenExecute(()->{h.assertTrue(LastCrossing.offset(b)==0,"held on the brake, it doesn't creep");
+                h.assertTrue(use(f,c[0],LastCrossingSite.WITNESS)&&Talk.replies(c[0]).get(0).startsWith("Marks meet"),"the marks meet");
+                h.assertTrue(Talk.choose(c[0],"Marks meet")&&f.own(c[0],P).getBoolean("CalledMarks")&&Spoken.lastHeard(c[1],c[0]).startsWith("Marks meet"),"called aloud and heard at the brake");
+                h.assertTrue(use(f,c[1],LastCrossingSite.CATCH)&&LastCrossing.flag(b,"lined")&&is(l,b,LastCrossingSite.CATCH,Kind.CATCH,1),"the catch dropped square");
+                for(int i=0;i<2;i++){var own=f.own(c[i],P);h.assertTrue(own.getBoolean("LinedUp")&&own.getString("LinedWith").contains(c[1-i].getGameProfile().getName()),"lined up together: "+own.getString("LinedWith"));}
+                f.at(c[1],P,44.5,0,-58.5);})
+            .thenIdle(LastCrossingDay.CREEP+20)
+            .thenExecute(()->{h.assertTrue(LastCrossing.offset(b)==0&&LastCrossing.flag(b,"catch"),"the catch holds on the marks with nobody on the brake");
+                var vera=LastCrossing.vera(l,b);h.assertTrue(vera!=null,"Vera");LastCrossing.talk(c[2],vera);
+                h.assertTrue(Talk.choose(c[2],"Did anybody")&&f.own(c[2],P).getBoolean("VeraAdmitted"),"Vera asked about Ellis, and admits it");Talk.close(c[2]);
+                LastCrossing.skip(b,LastCrossing.DAY_TICKS*5/6);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"briefed"),"before dusk: the brake left set, and what Ellis's answer sounded like"))
+            .thenExecute(()->{for(var p:c)h.assertTrue(f.own(p,P).getBoolean("HeardEllisVoice"),"heard by "+p.getGameProfile().getName());LastCrossing.skip(b,LastCrossing.DAY_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==2,"the second dusk"))
+            .thenExecute(()->{for(var p:c)h.assertTrue(f.own(p,P).getBoolean("DayTwo"),"Day Two worked");h.assertTrue(LastCrossing.flag(b,"lined"),"still lined up for the pull");
+                LastCrossing.resetNow(l,b);
+                h.assertTrue(is(l,b,LastCrossingSite.WITNESS,Kind.WITNESS,0)&&is(l,b,LastCrossingSite.CATCH,Kind.CATCH,0)&&l.getBlockState(b.offset(LastCrossingSite.TOOLS)).isAir(),"the station set back");
+                h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_bypass",timeoutTicks=12000)
+    public static void dayTwoABypassAndWhatItLeaves(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        var cable=new AABB(b.getX()+43,b.getY(),b.getZ()-65,b.getX()+52,b.getY()+4,b.getZ()-55);
+        dayTwo(f,h,c,"lc_bypass",()->{})
+            .thenExecute(()->{LastCrossing.carryForTest(c[0]);
+                f.at(c[1],P,47.5,0,-61.5);look(f,c[1],Vec3.atCenterOf(LastCrossingSite.WINCH_BYPASS));
+                f.at(c[2],P,22.5,0,-61.5);
+                f.at(c[0],P,50.5,0,-60.5);
+                h.assertTrue(use(f,c[0],LastCrossingSite.WINCH_BYPASS)&&LastCrossing.flag(b,"winchOpen")&&is(l,b,LastCrossingSite.WINCH_BYPASS,Kind.BYPASS,1),"the winch's bypass opened");
+                h.assertTrue(l.getBlockState(b.offset(50,-4,-57)).is(Blocks.WATER)&&l.getBlockState(b.offset(51,-3,-58)).is(Blocks.WATER),"the spur flooded through its sluice");
+                for(var g:LastCrossingSite.FLOOR_GRATES)h.assertTrue(is(l,b,g,Kind.FLOOR_GRATE,1),"its grate wet");
+                h.assertTrue(is(l,b,LastCrossingSite.STAIN,Kind.STAIN,0),"a stain spreading under the fairlead");
+                h.assertTrue(f.own(c[1],P).getString("SawBypassBy").contains(c[0].getGameProfile().getName())&&f.own(c[0],P).getBoolean("OpenedBypass"),"seen turning it");
+                f.at(c[3],P,48.5,0,-63.0);c[3].setYRot(180);c[3].setYHeadRot(180);c[3].setXRot(50);})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[3],P).getBoolean("SawStain"),"the stain seen"))
+            .thenWaitUntil(()->h.assertTrue(f.own(c[2],P).getBoolean("SawBypassDip"),"the gauge dips sooner than yesterday"))
+            // The carrier crouched by the wet grate: something answers, and comes up through it.
+            .thenExecute(()->{f.at(c[0],P,50.5,0,-56.5);c[0].setShiftKeyDown(true);f.at(c[1],P,46.5,0,-58.5);look(f,c[1],new Vec3(50.5,1,-56.5));})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[0],P).getBoolean("HeardScrape")&&f.own(c[1],P).getBoolean("HeardScrape"),"the scrape through the pipes"))
+            .thenExecute(()->{c[0].setShiftKeyDown(false);h.assertTrue(f.own(c[0],P).getInt("DayCalls")==1&&f.own(c[0],P).getBoolean("SawWetGrate"),"the call, at a grate seen wet");})
+            .thenWaitUntil(()->h.assertTrue(!l.getEntitiesOfClass(Undertow.class,cable).isEmpty(),"something up through the grate in daylight"))
+            .thenWaitUntil(()->{var u=l.getEntitiesOfClass(Undertow.class,cable).get(0);h.assertTrue(u.getTarget()!=null,"it goes for someone");h.assertTrue(u.getTarget()!=c[0],"not the carrier");})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[0],P).getBoolean("PassedBy")&&f.own(c[1],P).getString("SawPassedBy").contains(c[0].getGameProfile().getName()),"it passes the carrier by, and that is seen"))
+            .thenExecute(()->{for(var u:l.getEntitiesOfClass(Undertow.class,cable))u.discard();
+                // A second carrier calls with the plate carried close: it catches in the throat.
+                LastCrossing.carryForTest(c[3]);f.at(c[2],P,16.5,0,-44.5);h.assertTrue(use(f,c[2],LastCrossingSite.PLATE_HOME)&&Talk.choose(c[2],"Lift"),"the plate lifted");
+                f.at(c[2],P,49.5,0,-59.5);f.at(c[3],P,51.5,0,-56.5);c[3].setShiftKeyDown(true);})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[3],P).getBoolean("CallWarded"),"by the plate, nothing answers"))
+            .thenExecute(()->{c[3].setShiftKeyDown(false);h.assertTrue(f.own(c[3],P).getInt("DayCalls")==0,"no call made");
+                // The ramp's bypass, opened and shut again in the intake.
+                f.at(c[1],P,22.5,-6,-61.5);
+                h.assertTrue(use(f,c[1],LastCrossingSite.RAMP_BYPASS)&&LastCrossing.flag(b,"rampOpen")&&l.getBlockState(b.offset(35,-7,-60)).is(Blocks.WATER),"the ramp branch flooded");
+                for(var g:LastCrossingSite.PIT_GRATES)h.assertTrue(is(l,b,g,Kind.BRANCH,1),"its grate into the pit wet");
+                h.assertTrue(use(f,c[1],LastCrossingSite.RAMP_BYPASS)&&!LastCrossing.flag(b,"rampOpen")&&l.getBlockState(b.offset(35,-7,-60)).isAir()&&is(l,b,LastCrossingSite.PIT_GRATES.get(0),Kind.BRANCH,2),"shut again, the grate damp");
+                h.assertTrue(f.own(c[1],P).getString("Bypasses").contains("ramp shut"),"remembered");
+                // The winch's shut: the spur dry, its sluice down, the grate damp and the stain drying.
+                f.at(c[0],P,50.5,0,-60.5);
+                h.assertTrue(use(f,c[0],LastCrossingSite.WINCH_BYPASS)&&!LastCrossing.flag(b,"winchOpen"),"the winch's bypass shut");
+                h.assertTrue(l.getBlockState(b.offset(50,-4,-57)).isAir()&&l.getBlockState(b.offset(50,-4,-58)).is(Blocks.STONE_BRICKS),"the spur dry behind its sluice");
+                h.assertTrue(is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,2)&&is(l,b,LastCrossingSite.STAIN,Kind.STAIN,1),"damp, and drying");})
+            .thenWaitUntil(()->h.assertTrue(is(l,b,LastCrossingSite.FLOOR_GRATES.get(0),Kind.FLOOR_GRATE,0)&&l.getBlockState(b.offset(LastCrossingSite.STAIN)).isAir()&&is(l,b,LastCrossingSite.PIT_GRATES.get(0),Kind.BRANCH,0),"dry again"))
+            .thenExecute(h::succeed);
     }
 }

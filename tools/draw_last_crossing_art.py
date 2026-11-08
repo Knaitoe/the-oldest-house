@@ -11,7 +11,9 @@ winch drum; the inspection hatch; the ramp sluice's wheel, free and pinned; the 
 ramp, coiled on the porch and staged at the ramp; the lamp hook, empty and with the station lamp; the depth post; and the ferry's cast
 brass nameplate in two halves. From 0.4.352, Night One: a hand come up through the grate's broken corner, the cable house's door bar
 (leaning by the door and dropped across it), the gauge room's isolation valve (open and shut), the mooring line snapped, and the skin of
-the things that come up out of the water at night. Also the items' pictures: the plate carried, the mooring line, the station lamp and the wrench. Writes the
+the things that come up out of the water at night. From 0.4.353, Day Two: the bypass wheels on their risers (shut and open), the service
+branches' grates in a wall and in a floor (dry, wet and damp), the witness plate on the cable bed (greased and scraped clean), the
+winch's parking catch (off and set), the water stain under the fairlead (fresh and drying), and the cable tools rolled in canvas. Also the items' pictures: the plate carried, the mooring line, the station lamp, the wrench and the cable tools. Writes the
 models and block states and the blocks' and items' names. --check verifies everything.
 """
 from pathlib import Path
@@ -70,7 +72,7 @@ FONT = {
     'C': ['111', '100', '100', '100', '111'], 'O': ['111', '101', '101', '101', '111'], 'R': ['110', '101', '110', '101', '101'],
     'D': ['110', '101', '101', '101', '110'], 'E': ['111', '100', '110', '100', '111'], 'L': ['100', '100', '100', '100', '111'],
     'I': ['111', '010', '010', '010', '111'], 'A': ['010', '101', '111', '101', '101'], '1': ['010', '110', '010', '010', '111'], '2': ['110', '001', '010', '100', '111'],
-    '3': ['110', '001', '010', '001', '110'],
+    '3': ['110', '001', '010', '001', '110'], 'S': ['111', '100', '111', '001', '111'],
 }
 
 
@@ -458,6 +460,92 @@ def undertow_skin():
     return im
 
 
+def grate_wet(damp):
+    # A branch grate with water behind it: the bars dark and running, beads standing on them; damp, the beads drying in a fainter sheen.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(3741 + damp)
+    for y in range(16):
+        for x in range(16):
+            edge = x < 1 or x > 14 or y < 1 or y > 14
+            bar = x % 3 == 1 or y % 5 == 2
+            if edge or bar:
+                im.putpixel((x, y), shade('#3c4442' if not damp else '#464c4a', ((x * 7 + y * 3) % 5) - 2))
+            else:
+                im.putpixel((x, y), shade('#0c1a20' if not damp else '#141c1e', rnd.randint(-2, 2)))
+    for _ in range(14 if not damp else 6):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        if x % 3 == 1 or y % 5 == 2:
+            dot(im, x, y, '#9ab8c0' if not damp else '#7a8c90')
+    if not damp:
+        for x in (4, 10, 13):
+            for y in range(3 + x % 4, 15, 4):
+                dot(im, x, y, '#6a8a94')
+    return im
+
+
+def tag(letters, colour):
+    # A tin tag wired to a bypass riser, enamelled, its word stamped in.
+    im = new(base='#e4ddc6', seed=3743, spread=2)
+    frame(im, 0, 0, 16, 16, '#3a3a3a')
+    x = 8 - (len(letters) * 4 - 1) // 2
+    for ch in letters:
+        letter(im, ch, x, 6, colour); x += 4
+    return im
+
+
+def witness(clean):
+    # The witness plate on the cable bed: cast iron with a mark cut square across it; greased over, the mark lost under grit and black.
+    im = iron('#555c5a', 3745)
+    for y in range(16):
+        dot(im, 7, y, '#c8cccc'); dot(im, 8, y, '#8a9090')
+    for x in (3, 4, 11, 12):
+        dot(im, x, 7, '#8a9090')
+    if not clean:
+        rnd = random.Random(3746)
+        for y in range(16):
+            for x in range(16):
+                if rnd.random() < .78:
+                    im.putpixel((x, y), shade('#1e1c18', rnd.randint(-4, 6)))
+    return im
+
+
+def stain(drying):
+    # The water stain spreading over the boards under the fairlead: dark and wet at its heart, ragged at its edge; drying, paler and smaller.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(3747)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 8) ** 2 + (y - 9) ** 2) ** .5 + rnd.uniform(-1.6, 1.6)
+            reach = 5.5 if drying else 7.5
+            if d < reach:
+                a = 110 if drying else 170
+                im.putpixel((x, y), shade('#1a1e1c', 0, a if d < reach - 1.5 else a // 2))
+    return im
+
+
+def canvas():
+    # The cable tools' roll: heavy canvas, its weave showing, a strap round it.
+    im = new(base='#8a7a56', seed=3748, spread=5)
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 2 == 0:
+                dot(im, x, y, shade('#8a7a56', -10)[:3])
+    for y in range(16):
+        dot(im, 7, y, '#4a3a26'); dot(im, 8, y, '#5c4a30')
+    return im
+
+
+def tools_item():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 3, 6, 13, 12, '#8a7a56'); frame(im, 3, 6, 13, 12, '#6a5a3e')
+    fill(im, 7, 6, 9, 12, '#4a3a26')
+    for i in range(4):
+        dot(im, 5 + i, 5 - i, '#8a8c90')
+    fill(im, 10, 2, 12, 6, '#6a4a2a')
+    dot(im, 13, 4, '#8a8c90'); dot(im, 14, 3, '#8a8c90')
+    return im
+
+
 def textures():
     t = {
         'deal': deal(), 'iron': iron(), 'iron_red': iron('#8a3a2e', 3726), 'brass': brass(), 'hardboard': hardboard(),
@@ -471,12 +559,15 @@ def textures():
         'manila': manila(), 'wire': wire_rope(), 'roller': roller_steel(), 'depth': depth_post(),
         'name_0': nameplate(0), 'name_1': nameplate(1), 'grip': wood_grip(), 'glass_lit': glass_lit(),
         'flesh': flesh(), 'timber': timber(), 'frayed': frayed(),
+        'grate_wet': grate_wet(False), 'grate_damp': grate_wet(True), 'tag_shut': tag('S', '#1a1a1a'), 'tag_open': tag('O', '#a83a2a'),
+        'witness_greased': witness(False), 'witness_clean': witness(True), 'stain': stain(False), 'stain_dry': stain(True), 'canvas': canvas(),
     }
     out = {f'block/crossing/{k}.png': v for k, v in t.items()}
     out['item/crossing_plate.png'] = plate_item()
     out['item/crossing_line.png'] = line_item()
     out['item/crossing_lamp.png'] = lamp_item()
     out['item/crossing_wrench.png'] = wrench_item()
+    out['item/crossing_tools.png'] = tools_item()
     out['entity/crossing_undertow.png'] = undertow_skin()
     return out
 
@@ -628,6 +719,30 @@ def fitting_models():
     m['isolator_0'] = model(riser + [element([7.5, 11, 12.5], [8.5, 17, 13.5], {'all': 'r'})], {'p': 'pipe', 'i': 'iron', 'r': 'iron_red'}, 'pipe')
     m['isolator_1'] = model(riser + [element([2, 10, 12.5], [14, 11, 13.5], {'all': 'r'})], {'p': 'pipe', 'i': 'iron', 'r': 'iron_red'}, 'pipe')
     m['depth_0'] = model([element([6, 0, 6], [10, 16, 10], {'all': 'd'})], {'d': 'depth'}, 'depth')
+    # Day Two: a bypass wheel on its riser out of the floor, the tag wired to it saying which way it stands; open, the wheel turned through.
+    for stage, (label, angle) in enumerate((('tag_shut', 0), ('tag_open', 45))):
+        rot = {'origin': [8, 13.5, 8], 'axis': 'y', 'angle': angle} if angle else None
+        m[f'bypass_{stage}'] = model([element([6, 0, 6], [10, 13, 10], {'all': 'p'}), element([5, 0, 5], [11, 2, 11], {'all': 'i'}),
+                                      element([2, 13, 2], [14, 14, 14], {'up': 'w', 'down': 'w', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'}, rot=rot),
+                                      element([6.5, 6, 5.4], [9.5, 10, 6], {'all': 't'})], {'p': 'pipe', 'i': 'iron', 'w': 'wheel_red', 't': label}, 'pipe')
+    # A branch's grate set in a wall, the whole cell barred, and the same set in a floor: dry, wet and damp.
+    for stage, tex in enumerate(('grate', 'grate_wet', 'grate_damp')):
+        m[f'branch_{stage}'] = model([element([0, 0, 0], [16, 16, 16], {'north': 'g', 'south': 'g', 'east': 'i', 'west': 'i', 'up': 'i', 'down': 'i'})], {'g': tex, 'i': 'iron'}, 'iron')
+        m[f'floor_grate_{stage}'] = model([element([0, 0, 0], [16, 16, 16], {'up': 'g', 'down': 'g', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})], {'g': tex, 'i': 'iron'}, 'iron')
+    # The witness plate on the cable bed, greased over and scraped clean.
+    for stage, tex in enumerate(('witness_greased', 'witness_clean')):
+        m[f'witness_{stage}'] = model([element([2, 0, 2], [14, 2, 14], {'up': 'w', 'down': 'i', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})], {'w': tex, 'i': 'iron'}, tex)
+    # The winch's parking catch: a pawl on a post beside the brake, lifted clear (off) and dropped into the drum's teeth (set).
+    for stage, angle in enumerate((-45, 0)):
+        rot = {'origin': [8, 11, 8], 'axis': 'x', 'angle': angle} if angle else None
+        m[f'catch_{stage}'] = model([element([6, 0, 6], [10, 11, 10], {'all': 'i'}), element([7, 10, 1], [9, 12, 9], {'all': 'r'}, rot=rot),
+                                     element([6.5, 9.5, 0], [9.5, 12.5, 2], {'all': 'g'}, rot=rot)], {'i': 'iron', 'r': 'roller', 'g': 'grip'}, 'iron')
+    # The water stain on the boards under the fairlead, fresh and drying.
+    for stage, tex in enumerate(('stain', 'stain_dry')):
+        m[f'stain_{stage}'] = model([element([0, 0, 0], [16, .1, 16], {'up': 's'})], {'s': tex}, tex)
+    # The cable tools rolled in their canvas, the handles out of one end.
+    m['tools_0'] = model([element([2, 0, 5], [14, 3, 11], {'all': 'c'}), element([14, 1, 6], [16, 2, 7], {'all': 'i'}), element([14, 1, 8.5], [15.5, 2, 9.5], {'all': 'w'})],
+                         {'c': 'canvas', 'i': 'iron', 'w': 'grip'}, 'canvas')
     # The ferry's nameplate, bolted to its rail in two halves.
     for half in range(2):
         m[f'nameplate_{half}'] = model([element([0, 5, 15], [16, 11, 16], {'all': 'b', 'north': 'n'})], {'b': 'brass', 'n': f'name_{half}'}, f'name_{half}')
@@ -635,14 +750,16 @@ def fitting_models():
 
 
 KINDS = ['table', 'clipboard', 'slate', 'plate', 'plate_set', 'bracket', 'stove', 'gauge', 'brake', 'valve', 'run', 'bleed', 'grate', 'pump', 'pipe', 'roller',
-         'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate', 'bar', 'isolator']
+         'fairlead', 'drum', 'hatch', 'wheel', 'pin', 'coil', 'hook', 'depth', 'nameplate', 'bar', 'isolator',
+         'bypass', 'branch', 'floor_grate', 'witness', 'catch', 'stain', 'tools']
 STAGES = {'clipboard': 2, 'plate': 4, 'plate_set': 4, 'gauge': 4, 'brake': 2, 'valve': 4, 'bleed': 2, 'grate': 3, 'pump': 2, 'roller': 2, 'fairlead': 2,
-          'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2}
+          'hatch': 2, 'wheel': 3, 'pin': 2, 'coil': 4, 'hook': 2, 'nameplate': 2, 'bar': 2, 'isolator': 2,
+          'bypass': 2, 'branch': 3, 'floor_grate': 3, 'witness': 2, 'catch': 2, 'stain': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'crossing_fitting': 'Station Fitting'}
 ENTITIES = {'crossing_undertow': 'Undertow'}
-ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench'}
+ITEMS = {'crossing_plate': 'Handprint Plate', 'crossing_line': 'Mooring Line', 'crossing_lamp': 'Station Lamp', 'crossing_wrench': 'Wrench', 'crossing_tools': 'Cable Tools'}
 
 
 def files():

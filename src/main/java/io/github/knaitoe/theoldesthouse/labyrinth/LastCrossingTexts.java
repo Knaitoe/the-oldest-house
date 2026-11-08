@@ -53,6 +53,13 @@ public final class LastCrossingTexts {
             case NAMEPLATE->"The ferry's nameplate, cast in brass: CORDELIA.";
             case BAR->stage==1?"The bar's across the door.":"A heavy bar, leaning by the door. There are brackets either side of the frame to take it.";
             case ISOLATOR->stage==1?"The isolation valve, shut. The upper floor's on its own pump now.":"The isolation valve for the lower floor. Open.";
+            case BYPASS->stage==1?"A bypass wheel on its riser, turned open. The tin tag wired to it is turned to match.":"A bypass wheel on its riser, shut. A tin tag is wired to it.";
+            case BRANCH->stage==1?"A grate into a service branch. Water's running behind it; the bars are wet.":stage==2?"A grate into a service branch. The bars are damp, beaded with water.":"A grate into a service branch, shut. Dry behind it.";
+            case FLOOR_GRATE->stage==1?"A grate in the floor. Water's standing right under it, and the bars are wet.":stage==2?"A grate in the floor, its bars damp.":"A grate in the floor. Dark and dry under it.";
+            case WITNESS->stage==1?"The witness plate on the cable bed, scraped clean: a mark cut square across it.":"The witness plate on the cable bed, greased over.";
+            case CATCH->stage==1?"The parking catch, down in the drum's teeth.":"The winch's parking catch, lifted clear of the drum.";
+            case STAIN->stage==1?"A stain on the boards under the fairlead, drying.":"A dark wet stain on the boards under the fairlead.";
+            case TOOLS->"The cable tools, rolled in canvas.";
         };
     }
 
@@ -92,4 +99,16 @@ public final class LastCrossingTexts {
     public static final String INFECTED_TWO="You'll change at the next dusk. You know it the way you know your own hands.";
     public static final List<String> SYMPTOMS=List.of("Your breath comes twice.","Under your own breathing, another breath, slower.","The water in the channel sounds almost like talk.");
     public static final String DAWN_CARRIER="The light comes up. You're still yourself, for today.";
+
+    // ------------------------------------------------------------------------------------------------ Day Two (0.4.353)
+    public static final String SLATE_FIRST="Slate first.";
+    public static final String SLATE_SEEN="Ellis is still up there. Marked present, the night of the last crossing. I never rubbed it out.";
+    public static final String FAR_END="Cable tools are on the desk. The drum wants lining up on the witness marks at the far end before tonight's pull. Who's taking the far end?";
+    public static final String DAY2_JOBS="The drum wants lining up on the witness marks before dark. One of you at the far end with the tools, reading the marks; one on the brake by the drum. Ease it out, crank it in, and when the marks meet, the catch goes in. Somebody keep an eye on the spillway while they do it. And whoever's on the gauge, watch it.";
+    public static final String ADMIT_ASK="Did anybody ever answer for Ellis?";
+    public static final String VERA_ADMITS="Once. The night the ferry went over, I called the roll down the intake pipe, like a fool. Something answered. I took my ear off the pipe and I didn't put it back.";
+    public static final String LINED="That's it. Leave it there.";
+    public static final String BRAKE_SET="Leave the brake set for the first pull. Whatever it's lined up on at dark, that's what we pull on.";
+    public static final String ELLIS_VOICE="You'll want to know what it sounded like. It was Ellis's voice. Coming up the pipe a breath late, like it had been listening first.";
+    public static final String BACK_DAY2="There you are. The drum's still to line up.";
 }
