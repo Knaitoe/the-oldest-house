@@ -38,6 +38,14 @@ public final class LakeHouseRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LakeHouseFittingBlock>> FITTING_TYPE=CODECS.register("lake_house_fitting",()->LakeHouseFittingBlock.CODEC);
     public static final DeferredBlock<LakeHouseFittingBlock> FITTING=BLOCKS.registerBlock("lake_house_fitting",LakeHouseFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable().lightLevel(s->{var k=s.getValue(LakeHouseFittingBlock.KIND);return k==LakeHouseFittingBlock.Kind.CANDLE||k==LakeHouseFittingBlock.Kind.HEARTH?7:s.getValue(LakeHouseFittingBlock.LIT)&&(k==LakeHouseFittingBlock.Kind.LAMP||k==LakeHouseFittingBlock.Kind.BULB)?14:0;}));
     public static final DeferredBlock<Block> FLOOR=material("lake_house_floor",Blocks.OAK_PLANKS),WALL=material("lake_house_wall",Blocks.BRICKS),POOL_STONE=material("lake_house_pool_stone",Blocks.STONE_BRICKS),CEDAR=material("lake_house_cedar",Blocks.SPRUCE_PLANKS);
+    /**
+     * 0.4.379, the texture pass's third interior release (docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md): what was still vanilla round the
+     * rooms. The drowned house's brick and silted foundation, the boathouse's siding, the dock's boards and the culvert's concrete,
+     * drawn by tools/draw_lake_house_exterior_art.py. Each keeps the collision and sound of what it stands in for and cannot be broken.
+     */
+    public static final DeferredBlock<Block> DROWNED_BRICK=fixed("lake_house_drowned_brick",Blocks.BRICKS),SILT_STONE=fixed("lake_house_silt_stone",Blocks.STONE_BRICKS),
+        SIDING=fixed("lake_house_siding",Blocks.SPRUCE_PLANKS),DOCK=fixed("lake_house_dock",Blocks.SPRUCE_PLANKS),
+        CULVERT=fixed("lake_house_culvert",Blocks.LIGHT_GRAY_CONCRETE),CULVERT_STAINED=fixed("lake_house_culvert_stained",Blocks.LIGHT_GRAY_CONCRETE);
     public static final DeferredBlock<net.minecraft.world.level.block.StairBlock> RED_STAIR=BLOCKS.registerBlock("lake_house_red_stair",p->new net.minecraft.world.level.block.StairBlock(Blocks.DARK_OAK_PLANKS.defaultBlockState(),p),BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_STAIRS).noLootTable());
     public static final DeferredItem<LakeHouseArtifactItem> FOUND_FLASHLIGHT=ITEMS.register("lake_found_flashlight",()->new LakeHouseArtifactItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE),LakeHouseArtifactItem.FLASHLIGHT));
     public static final DeferredItem<LakeHouseArtifactItem> HOUSE_LIGHT=ITEMS.register("lake_house_light",()->new LakeHouseArtifactItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE),LakeHouseArtifactItem.LIGHT));
@@ -63,6 +71,7 @@ public final class LakeHouseRegistry {
     /** Each subtitled: the compressor's engine, the canoe against the culvert, air into the tanks. */
     public static final DeferredHolder<SoundEvent,SoundEvent> COMPRESSOR_SOUND=sound("lake_house.compressor"),SCRAPE=sound("lake_house.scrape"),HISS=sound("lake_house.hiss");
 
+    private static DeferredBlock<Block> fixed(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).strength(-1,3600000).noLootTable());}
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private LakeHouseRegistry(){}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}

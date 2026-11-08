@@ -112,8 +112,8 @@ public final class LiteraryRooms {
             case MAPPING_INTERIOR->ReadingStandBlock.of(ReadingStandBlock.Kind.FLOOR_PLAN,Direction.SOUTH);
             default->Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true);};
     }
-    private static Block wall(LabyrinthPlace p){return switch(p){case USHER->Blocks.DEEPSLATE_BRICKS;case MAPPING_INTERIOR,DEVILS_ROCK->LiteraryRegistry.SIDING.get();case CRIMSON_HALL->Blocks.POLISHED_BLACKSTONE_BRICKS;case MINIATURES,GHOSTS_SET,WHEEL->Blocks.CALCITE;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;case WINCHESTER->LiteraryRegistry.WINCHESTER_WALLPAPER.get();default->LiteraryRegistry.DARK_PANEL.get();};}
-    private static Block floor(LabyrinthPlace p){return switch(p){case USHER->Blocks.POLISHED_DEEPSLATE;case CRIMSON_HALL->LiteraryRegistry.RED_FLOOR.get();case MAPPING_INTERIOR->Blocks.BIRCH_PLANKS;case DEVILS_ROCK->Blocks.SMOOTH_STONE;case LAKE_HOUSE->Blocks.SPRUCE_PLANKS;case WINCHESTER->LiteraryRegistry.WINCHESTER_PARQUET.get();default->Blocks.DARK_OAK_PLANKS;};}
+    private static Block wall(LabyrinthPlace p){return switch(p){case USHER->Blocks.DEEPSLATE_BRICKS;case MAPPING_INTERIOR,DEVILS_ROCK->LiteraryRegistry.SIDING.get();case CRIMSON_HALL->Blocks.POLISHED_BLACKSTONE_BRICKS;case MINIATURES,GHOSTS_SET,WHEEL->Blocks.CALCITE;case LAKE_HOUSE->LakeHouseRegistry.SIDING.get();case WINCHESTER->LiteraryRegistry.WINCHESTER_WALLPAPER.get();default->LiteraryRegistry.DARK_PANEL.get();};}
+    private static Block floor(LabyrinthPlace p){return switch(p){case USHER->Blocks.POLISHED_DEEPSLATE;case CRIMSON_HALL->LiteraryRegistry.RED_FLOOR.get();case MAPPING_INTERIOR->Blocks.BIRCH_PLANKS;case DEVILS_ROCK->Blocks.SMOOTH_STONE;case LAKE_HOUSE->LakeHouseRegistry.DOCK.get();case WINCHESTER->LiteraryRegistry.WINCHESTER_PARQUET.get();default->Blocks.DARK_OAK_PLANKS;};}
     private static void room(ServerLevel l,BlockPos b,int x0,int x1,int z0,int z1,int y,int h,Block walls,Block flooring){
         NovelRooms.room(l,b,x0,x1,z0,z1,y,h,walls,flooring);
         // Timber bays, sills and a recessed coffer construction rather than featureless boxes.

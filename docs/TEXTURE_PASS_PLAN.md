@@ -111,8 +111,10 @@ Two or three scenes per release, 4 to 8 textures each:
 3. Mother of strays: left as it is, at the owner's word.
 4. The puzzle rooms (one shared set): lift shaft, worn stair and landing. Built in 0.4.378 for the three older rooms (docs/TEXTURE_PASS_PUZZLES_0_4_378.md);
    the newer puzzle rooms already had their own.
-5. The lake house interior.
-6. The two cabins.
+5. The lake house. Its rooms already had their own surfaces; the drowned house's brick and foundation, the boathouse, the dock,
+   the culvert and the drive were built in 0.4.379 (docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md).
+6. The two cabins. The old cabin is the reader's own bedside, copied from the Overworld, and is left as it is, like the family copy.
+   The cabin at the end of the world is still to do: its walls and roof are shared with the scene composition pass.
 7. The child's room.
 8. Holloway's camp.
 9. The hotel basement.
@@ -135,6 +137,7 @@ Two or three scenes per release, 4 to 8 textures each:
 | 3 | The great staircase (well and rails built in 0.4.376, docs/TEXTURE_PASS_STAIRCASE_0_4_376.md) | 10, plus 2 models |
 | 4 | Tier 3: Proofrock (built in 0.4.377, docs/TEXTURE_PASS_PROOFROCK_0_4_377.md) | 16 |
 | 5 | Tier 3: the puzzle rooms' shells (built in 0.4.378, docs/TEXTURE_PASS_PUZZLES_0_4_378.md) | 11 |
-| 6 onwards | The rest of Tier 3, two or three scenes at a time | 4–8 each |
+| 6 | Tier 3: the lake house's outside (built in 0.4.379, docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md) | 7 |
+| 7 onwards | The rest of Tier 3, two or three scenes at a time | 4–8 each |
 
 Each release keeps the architecture views, the texture CRC and decode check and the full suite. Any tier can be reordered or dropped.

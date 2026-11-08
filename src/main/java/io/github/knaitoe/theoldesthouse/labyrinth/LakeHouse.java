@@ -110,7 +110,7 @@ public final class LakeHouse {
         BuildBlocks.after(l,()->{for(var at:s.connect){var st=l.getBlockState(at);var joined=Block.updateFromNeighbourShapes(st,l,at);if(!joined.equals(st))l.setBlock(at,joined,Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}});
     }
 
-    public static void buildEmpty(ServerLevel l,BlockPos b){var r=PLACE.room();for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=r.maxZ();z++)for(int y=r.minY();y<=r.maxY();y++)BuildBlocks.set(l,b.offset(x,y,z),Blocks.AIR.defaultBlockState(),F);var s=new Site(l,b);land(s);culvert(s);boathouse(s);dock(s);woods(s);LiteraryRooms.paper(l,b,SOURCE,LiteraryTexts.source(PLACE));LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.SPRUCE_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,LabyrinthPlace.LAKE_HOUSE_EMPTY);NovelRooms.safeApproach(l,b);}
+    public static void buildEmpty(ServerLevel l,BlockPos b){var r=PLACE.room();for(int x=r.minX();x<=r.maxX();x++)for(int z=r.minZ();z<=r.maxZ();z++)for(int y=r.minY();y<=r.maxY();y++)BuildBlocks.set(l,b.offset(x,y,z),Blocks.AIR.defaultBlockState(),F);var s=new Site(l,b);land(s);culvert(s);boathouse(s);dock(s);woods(s);LiteraryRooms.paper(l,b,SOURCE,LiteraryTexts.source(PLACE));LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);LabyrinthBuilder.entrance(l,b,LakeHouseRegistry.SIDING.get().defaultBlockState(),LakeHouseRegistry.DOCK.get().defaultBlockState(),Blocks.SPRUCE_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,LabyrinthPlace.LAKE_HOUSE_EMPTY);NovelRooms.safeApproach(l,b);}
 
     /** The lowest water in a column, or none: the culvert's channel, then either lake. */
     static int lowestWater(int x,int z){
@@ -150,7 +150,7 @@ public final class LakeHouse {
             int foot=footing(x,z,top-3);
             if(foot<top-3)s.fill(x,foot,z,x,top-4,z,Blocks.STONE);
             s.fill(x,top-3,z,x,top-1,z,Blocks.DIRT);
-            s.set(x,top,z,road(x,z)?Blocks.GRAY_CONCRETE.defaultBlockState():Blocks.GRASS_BLOCK.defaultBlockState());
+            s.set(x,top,z,road(x,z)?ProofrockSurface.ASPHALT.get().defaultBlockState():Blocks.GRASS_BLOCK.defaultBlockState());
             // Reeds and pale sand where the clear lake meets the land.
             boolean shore=clearLake(x+1,z)||clearLake(x-1,z)||clearLake(x,z+1)||clearLake(x,z-1);
             if(shore&&top==-1){s.set(x,top,z,Blocks.SAND);if(noise(x,z)<.18&&!near(x,z,0,-12,6))s.set(x,0,z,Blocks.SUGAR_CANE);}
@@ -171,10 +171,10 @@ public final class LakeHouse {
             s.set(0,-1,z,Blocks.WATER);s.set(1,-1,z,Blocks.WATER);
             s.fill(0,0,z,1,2,z,Blocks.AIR);
             // Concrete walls, stained low down where the water stands.
-            for(int y=-1;y<=0;y++){s.set(-1,y,z,y==-1?Blocks.CYAN_TERRACOTTA:Blocks.LIGHT_GRAY_CONCRETE);s.set(2,y,z,y==-1?Blocks.CYAN_TERRACOTTA:Blocks.LIGHT_GRAY_CONCRETE);}
+            for(int y=-1;y<=0;y++){s.set(-1,y,z,y==-1?LakeHouseRegistry.CULVERT_STAINED.get():LakeHouseRegistry.CULVERT.get());s.set(2,y,z,y==-1?LakeHouseRegistry.CULVERT_STAINED.get():LakeHouseRegistry.CULVERT.get());}
             if(covered){
                 // The ceiling, and the drive's own surface over it.
-                for(int x=0;x<=1;x++){s.set(x,1,z,Blocks.LIGHT_GRAY_CONCRETE);if(surface(x,z)>=2)s.set(x,2,z,road(x,z)?Blocks.GRAY_CONCRETE:Blocks.GRASS_BLOCK);}
+                for(int x=0;x<=1;x++){s.set(x,1,z,LakeHouseRegistry.CULVERT.get());if(surface(x,z)>=2)s.set(x,2,z,road(x,z)?ProofrockSurface.ASPHALT.get():Blocks.GRASS_BLOCK);}
             }
         }
         // The drive's kerbs.
@@ -192,11 +192,11 @@ public final class LakeHouse {
 
     /** The boathouse the reader comes into from the House: the rental log, the account shelf, and the lake through the door. */
     private static void boathouse(Site s){
-        s.fill(-6,-1,0,6,-1,-9,Blocks.SPRUCE_PLANKS);
+        s.fill(-6,-1,0,6,-1,-9,LakeHouseRegistry.DOCK.get());
         s.fill(-5,0,-1,5,4,-8,Blocks.AIR);
         for(int y=0;y<=3;y++){
-            for(int z=0;z>=-9;z--){s.set(-6,y,z,Blocks.SPRUCE_PLANKS);s.set(6,y,z,Blocks.SPRUCE_PLANKS);}
-            for(int x=-6;x<=6;x++){s.set(x,y,0,Blocks.SPRUCE_PLANKS);s.set(x,y,-9,Blocks.SPRUCE_PLANKS);}
+            for(int z=0;z>=-9;z--){s.set(-6,y,z,LakeHouseRegistry.SIDING.get());s.set(6,y,z,LakeHouseRegistry.SIDING.get());}
+            for(int x=-6;x<=6;x++){s.set(x,y,0,LakeHouseRegistry.SIDING.get());s.set(x,y,-9,LakeHouseRegistry.SIDING.get());}
         }
         for(int y=0;y<=3;y++)for(int[] c:new int[][]{{-6,0},{6,0},{-6,-9},{6,-9}})s.set(c[0],y,c[1],Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.Y));
         // The wide lake door and two windows.
@@ -207,12 +207,12 @@ public final class LakeHouse {
             int y=3+i;
             s.set(-7+i,y,z,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
             s.set(7-i,y,z,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
-            if(i>0)for(int x=-7+i+1;x<=7-i-1;x++){if(z==0||z==-9)s.set(x,y,z,Blocks.SPRUCE_PLANKS);}
+            if(i>0)for(int x=-7+i+1;x<=7-i-1;x++){if(z==0||z==-9)s.set(x,y,z,LakeHouseRegistry.SIDING.get());}
         }
         s.fill(0,9,1,0,9,-10,Blocks.SPRUCE_SLAB);
         // Inside: the rental counter with the log, the shelf with the accounts, a rack of paddles, one lamp.
-        s.set(-4,0,-4,Blocks.SPRUCE_PLANKS);s.set(-4,0,-6,Blocks.SPRUCE_PLANKS);s.set(-5,0,-5,Blocks.SPRUCE_PLANKS);
-        s.set(4,0,-4,Blocks.SPRUCE_PLANKS);s.set(4,0,-6,Blocks.SPRUCE_PLANKS);s.set(5,0,-5,Blocks.SPRUCE_PLANKS);
+        s.set(-4,0,-4,LakeHouseRegistry.DOCK.get());s.set(-4,0,-6,LakeHouseRegistry.DOCK.get());s.set(-5,0,-5,LakeHouseRegistry.DOCK.get());
+        s.set(4,0,-4,LakeHouseRegistry.DOCK.get());s.set(4,0,-6,LakeHouseRegistry.DOCK.get());s.set(5,0,-5,LakeHouseRegistry.DOCK.get());
         for(int z=-2;z>=-7;z-=5)s.set(5,2,z,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.OPEN,true));
         s.fill(0,3,-4,0,8,-4,Blocks.CHAIN);s.set(0,2,-4,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
     }
@@ -220,7 +220,7 @@ public final class LakeHouse {
     /** The dock runs out over the clear water to where the canoes are tied. */
     private static void dock(Site s){
         for(int z=-10;z>=DOCK_END.getZ();z--){
-            for(int x=-1;x<=1;x++)s.set(x,-1,z,Blocks.SPRUCE_PLANKS);
+            for(int x=-1;x<=1;x++)s.set(x,-1,z,LakeHouseRegistry.DOCK.get());
             if(z%4==-2)for(int x:new int[]{-2,2}){for(int y=-2;y>=clearBed(x,Math.min(z,-14))+1;y--)s.wet(x,y,z,Blocks.SPRUCE_FENCE);s.set(x,-1,z,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.Y));s.set(x,0,z,Blocks.SPRUCE_FENCE);}
         }
     }
@@ -229,15 +229,15 @@ public final class LakeHouse {
     private static void house(Site s){
         int x0=-HX,x1=HX,zf=HZ_FRONT,zb=HZ_BACK;
         // Foundations and floors.
-        s.fill(x0-1,GROUND-1,zf+1,x1+1,GROUND-1,zb-1,Blocks.STONE_BRICKS);
-        s.fill(x0,GROUND,zf,x1,GROUND,zb,Blocks.OAK_PLANKS);
-        s.fill(x0,UPPER,zf,x1,UPPER,zb,Blocks.SPRUCE_PLANKS);
-        s.fill(x0,EAVES,zf,x1,EAVES,zb,Blocks.SPRUCE_PLANKS);
+        s.fill(x0-1,GROUND-1,zf+1,x1+1,GROUND-1,zb-1,LakeHouseRegistry.SILT_STONE.get());
+        s.fill(x0,GROUND,zf,x1,GROUND,zb,LakeHouseRegistry.FLOOR.get());
+        s.fill(x0,UPPER,zf,x1,UPPER,zb,LakeHouseRegistry.FLOOR.get());
+        s.fill(x0,EAVES,zf,x1,EAVES,zb,LakeHouseRegistry.FLOOR.get());
         // Walls: brick, with windows on both storeys.
         for(int y=GROUND+1;y<EAVES;y++){
             if(y==UPPER)continue;
-            for(int x=x0;x<=x1;x++){s.set(x,y,zf,Blocks.BRICKS);s.set(x,y,zb,Blocks.BRICKS);}
-            for(int z=zb;z<=zf;z++){s.set(x0,y,z,Blocks.BRICKS);s.set(x1,y,z,Blocks.BRICKS);}
+            for(int x=x0;x<=x1;x++){s.set(x,y,zf,LakeHouseRegistry.DROWNED_BRICK.get());s.set(x,y,zb,LakeHouseRegistry.DROWNED_BRICK.get());}
+            for(int z=zb;z<=zf;z++){s.set(x0,y,z,LakeHouseRegistry.DROWNED_BRICK.get());s.set(x1,y,z,LakeHouseRegistry.DROWNED_BRICK.get());}
         }
         for(int storey:new int[]{GROUND+2,UPPER+2})for(int y=storey;y<=storey+1;y++){
             for(int x:new int[]{-6,-5,5,6}){s.wet(x,y,zf,Blocks.GLASS_PANE);s.wet(x,y,zb,Blocks.GLASS_PANE);}
@@ -257,11 +257,11 @@ public final class LakeHouse {
                 s.wet(x,y,zb-1+i,Blocks.DEEPSLATE_TILE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));
             }
             // The gable ends are brick.
-            for(int z=zb+i;z<=zf-i;z++){s.set(x0,y,z,Blocks.BRICKS);s.set(x1,y,z,Blocks.BRICKS);}
+            for(int z=zb+i;z<=zf-i;z++){s.set(x0,y,z,LakeHouseRegistry.DROWNED_BRICK.get());s.set(x1,y,z,LakeHouseRegistry.DROWNED_BRICK.get());}
         }
         for(int x=x0-1;x<=x1+1;x++)s.wet(x,EAVES+half+1,(zf+zb)/2,Blocks.DEEPSLATE_TILE_SLAB);
         // The chimney comes up through the back slope to just under the surface.
-        for(int y=EAVES;y<=CHIMNEY.getY();y++)for(int dx=0;dx<=1;dx++)s.set(CHIMNEY.getX()+dx,y,CHIMNEY.getZ(),Blocks.BRICKS);
+        for(int y=EAVES;y<=CHIMNEY.getY();y++)for(int dx=0;dx<=1;dx++)s.set(CHIMNEY.getX()+dx,y,CHIMNEY.getZ(),LakeHouseRegistry.DROWNED_BRICK.get());
         // A garden under the front windows: kelp and seagrass, a glow of sea pickles, a low wall.
         for(int x=-8;x<=8;x++){
             if(Math.abs(x)<=1)continue;
