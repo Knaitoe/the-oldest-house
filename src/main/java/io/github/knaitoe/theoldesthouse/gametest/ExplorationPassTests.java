@@ -11,6 +11,7 @@ import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.*;
@@ -786,6 +787,130 @@ public final class ExplorationPassTests {
         try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
         h.succeed();
     }
+    /** 0.4.391: the four other new ordinary halls (docs/FOUR_HALLS_0_4_391.md), each an ordinary way on, built whole, with a name in prose. */
+    private static void ordinaryHall(GameTestHelper h,LabyrinthPlace hall){
+        h.assertTrue(OrdinaryHalls.is(hall)&&LabyrinthPacing.ordinary(hall)&&LabyrinthDealer.onward(hall)&&hall.authored(),hall.id()+" is an ordinary hall, built whole");
+        h.assertTrue(!StaircaseProse.place(hall.id()).equals(StaircaseProse.place("unnamed_room_for_test")),hall.id()+" has a name in prose");
+        if(OrdinaryHalls.stone(hall))h.assertTrue(LabyrinthDealer.grayWeight(hall,LabyrinthPacing.STONE_DEPTH-1)==0&&LabyrinthDealer.grayWeight(hall,LabyrinthPacing.STONE_DEPTH)>0&&LabyrinthDealer.grayWeight(hall,DarkHalls.ONLY_DEPTH)==0
+                &&LabyrinthBuilder.requiredDepth(hall)==LabyrinthPacing.STONE_DEPTH,hall.id()+" is dealt with the stone halls, until only the dark halls are left");
+        else h.assertTrue(LabyrinthDealer.grayWeight(hall,4)>0&&LabyrinthDealer.grayWeight(hall,LabyrinthPacing.STONE_DEPTH)==0&&LabyrinthBuilder.requiredDepth(hall)==0,hall.id()+" is dealt with the domestic halls, until the halls turn to stone");
+    }
+    private static void use(ServerLevel l,ServerPlayer p,BlockPos at){l.getBlockState(at).useWithoutItem(l,p,new BlockHitResult(Vec3.atCenterOf(at),Direction.UP,at,false));}
+    private static int lit(ServerLevel l,BlockPos b,LabyrinthPlace hall){int n=0;var r=hall.room();
+        for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ())))if(TrialBlock.is(l.getBlockState(at),TrialBlock.Kind.STILL_LAMP,1))n++;return n;}
+
+    @GameTest(template="empty")
+    public static void theLongBedroomHallHasEighteenDoorsAndOnlyTwoOpen(GameTestHelper h) {
+        var hall=LabyrinthPlace.BEDROOM_HALL;var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(4200,8,280);
+        ordinaryHall(h,hall);OrdinaryHalls.build(l,b,hall);
+        var reached=walk(l,b.offset(0,0,-1));int painted=0;
+        for(var door:hall.doors()){var at=b.offset(door.rel());
+            if(door.name().equals("entry")){h.assertTrue(l.getBlockState(at).getBlock() instanceof DoorBlock,"the entry door stands");continue;}
+            h.assertTrue(l.getBlockState(at).is(OrdinaryHallRegistry.DOOR.get())&&l.getBlockState(at.above()).is(OrdinaryHallRegistry.DOOR.get()),"the "+door.name()+" door is a real door, drawn like the painted ones");
+            h.assertTrue(reached.contains(at.relative(door.facing())),"a body walks to the "+door.name()+" door");}
+        for(int side:new int[]{-2,2})for(int z:OrdinaryHalls.BEDROOM_DOORS){var at=b.offset(side,0,z);var s=l.getBlockState(at);
+            if(s.getBlock() instanceof DoorBlock)continue;
+            h.assertTrue(HallFaceBlock.is(s,HallFaceBlock.Kind.PAINTED_DOOR)&&HallFaceBlock.is(l.getBlockState(at.above()),HallFaceBlock.Kind.PAINTED_DOOR_TOP)&&s.getValue(HallFaceBlock.FACING)==(side<0?Direction.EAST:Direction.WEST),"a door is painted on the wall at "+side+","+z+", facing into the hall");
+            h.assertTrue(s.isCollisionShapeFullBlock(l,at),"a painted door is the wall itself, flush with it");
+            h.assertTrue(l.getBlockState(at.north()).is(OrdinaryHallRegistry.material("bedroom_trim"))&&l.getBlockState(at.south()).is(OrdinaryHallRegistry.material("bedroom_trim"))&&l.getBlockState(at.above(2)).is(OrdinaryHallRegistry.material("bedroom_trim")),"every door has the same frame: "+z);
+            painted++;}
+        h.assertTrue(HallFaceBlock.is(l.getBlockState(b.offset(0,0,OrdinaryHalls.BEDROOM_FAR)),HallFaceBlock.Kind.PAINTED_DOOR),"the far end is a painted door too");
+        h.assertTrue(painted==16,"sixteen of the eighteen doors down the walls are painted on: "+painted);
+        h.assertTrue(l.getBlockState(b.offset(0,-1,-20)).is(OrdinaryHallRegistry.material("bedroom_runner"))&&l.getBlockState(b.offset(1,-1,-20)).is(OrdinaryHallRegistry.material("bedroom_floor")),"a runner down the boards");
+        h.assertTrue(lit(l,b,hall)==OrdinaryHalls.BEDROOM_LAMPS.length,"the lamps are lit");
+        var reader=h.makeMockServerPlayerInLevel();reader.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);reader.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);
+        use(l,reader,b.offset(-2,0,-4));use(l,reader,b.offset(2,1,-8));
+        h.assertTrue(OrdinaryHalls.tries(reader,true)==2&&l.getBlockState(b.offset(-2,0,-4)).getBlock() instanceof HallFaceBlock,"a painted door, tried, stays painted on and says so");
+        var real=b.offset(hall.doors().get(1).rel());use(l,reader,real);
+        h.assertTrue(l.getBlockState(real).getValue(DoorBlock.OPEN),"the real one opens");
+        reader.discard();
+        try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
+        h.succeed();
+    }
+
+    @GameTest(template="empty")
+    public static void theAtriumHasADoorOnTheFloorAndOneOnTheBalconyUpAStairThatCannotBeFallenFrom(GameTestHelper h) {
+        var hall=LabyrinthPlace.ATRIUM_HALL;var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(4260,8,280);
+        ordinaryHall(h,hall);h.assertTrue(LabyrinthDealer.grayWeight(hall,2)==0,"nobody's first steps are up a stair");
+        OrdinaryHalls.build(l,b,hall);
+        for(var door:hall.doors())h.assertTrue(l.getBlockState(b.offset(door.rel())).getBlock() instanceof DoorBlock,"the atrium keeps its native "+door.name()+" door");
+        var ground=walk(l,b.offset(0,0,-1));var floorDoor=hall.doors().get(1);var balconyDoor=hall.doors().get(2);
+        h.assertTrue(ground.contains(b.offset(floorDoor.rel()).relative(floorDoor.facing())),"the floor door is walked to");
+        h.assertTrue(balconyDoor.rel().getY()==OrdinaryHalls.ATRIUM_DECK+1&&l.getBlockState(b.offset(balconyDoor.rel()).relative(balconyDoor.facing()).below()).is(OrdinaryHallRegistry.material("atrium_deck")),"the balcony door is up on the balcony");
+        // The stair: from the floor, half a block at a time, a body clear over every step, to the balcony.
+        double last=0;
+        for(int z=OrdinaryHalls.STAIR_FOOT;z<=OrdinaryHalls.STAIR_HEAD;z++){double hgt=OrdinaryHalls.stairHalves(z)/2.0;var at=b.offset(OrdinaryHalls.STAIR_X,0,z);
+            var body=new AABB(at.getX()+.2,at.getY()+hgt+.01,at.getZ()+.2,at.getX()+.8,at.getY()+hgt+1.81,at.getZ()+.8);
+            var tread=new AABB(at.getX()+.2,at.getY()+hgt-.05,at.getZ()+.2,at.getX()+.8,at.getY()+hgt-.01,at.getZ()+.8);
+            h.assertTrue(l.noCollision(null,body)&&!l.noCollision(null,tread)&&hgt-last<=.5,"each step is half a block up, with room over it: "+z+" at "+hgt);last=hgt;}
+        h.assertTrue(OrdinaryHalls.ATRIUM_DECK+1-last<=.5,"the top step is half a block under the balcony");
+        var upstairs=walk(l,b.offset(OrdinaryHalls.STAIR_X-1,OrdinaryHalls.ATRIUM_DECK+1,OrdinaryHalls.STAIR_HEAD));
+        h.assertTrue(upstairs.contains(b.offset(balconyDoor.rel()).relative(balconyDoor.facing())),"round the balcony from the stair head to the balcony door");
+        // Nowhere a fall: every edge of the well at balcony height has a rail too high to climb, or a drop of two blocks at most.
+        int rails=0;
+        for(int x=-4;x<=4;x++)for(int z=-11;z<=-3;z++){if(Math.abs(x)!=4&&z!=-11&&z!=-3)continue;var at=b.offset(x,OrdinaryHalls.ATRIUM_DECK+1,z);var s=l.getBlockState(at);
+            if(s.is(OrdinaryHallRegistry.FITTING.get())){rails++;h.assertTrue(s.getCollisionShape(l,at).max(Direction.Axis.Y)>=1.5,"the balustrade stands a block and a half, too high to climb: "+x+","+z);continue;}
+            if(s.isCollisionShapeFullBlock(l,at))continue;
+            int floor=OrdinaryHalls.ATRIUM_DECK;double top=0;for(int y=floor;y>=-1;y--){var under=b.offset(x,y,z);var shape=l.getBlockState(under).getCollisionShape(l,under);if(!shape.isEmpty()){top=y+shape.max(Direction.Axis.Y);break;}}
+            h.assertTrue(OrdinaryHalls.ATRIUM_DECK+1-top<=2,"an open edge of the well drops two blocks at most, onto the stair: "+x+","+z+" to "+top);}
+        h.assertTrue(rails>=24,"the well is railed round: "+rails);
+        h.assertTrue(l.getBlockState(b.offset(0,OrdinaryHalls.ATRIUM_CEILING,-7)).is(OrdinaryHallRegistry.material("atrium_skylight"))&&lit(l,b,hall)>=8,"a skylight over the well, and lamps on both floors");
+        try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
+        h.succeed();
+    }
+
+    @GameTest(template="empty")
+    public static void theCisternWalkCrossesStillWaterUnderADrippingVault(GameTestHelper h) {
+        var hall=LabyrinthPlace.CISTERN_HALL;var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(4320,8,280);
+        ordinaryHall(h,hall);OrdinaryHalls.build(l,b,hall);
+        var reached=walk(l,b.offset(0,0,-1));
+        for(var door:hall.doors()){var at=b.offset(door.rel());h.assertTrue(l.getBlockState(at).getBlock() instanceof DoorBlock,"the cistern keeps its native "+door.name()+" door");
+            if(!door.name().equals("entry"))h.assertTrue(reached.contains(at.relative(door.facing())),"the walk leads to the "+door.name()+" door");}
+        int water=0,drips=0;
+        for(int x=-OrdinaryHalls.CISTERN_HALF;x<=OrdinaryHalls.CISTERN_HALF;x++)for(int z=OrdinaryHalls.CISTERN_FAR+1;z<=-1;z++){
+            boolean onWalk=OrdinaryHalls.walk(x,z);var top=b.offset(x,-1,z);
+            if(onWalk)h.assertTrue(l.getBlockState(top).is(OrdinaryHallRegistry.material("cistern_floor")),"the walk is flagged: "+x+","+z);
+            else if(!l.getBlockState(top).is(OrdinaryHallRegistry.material("cistern_pillar"))){h.assertTrue(l.getFluidState(top).isSource()&&l.getFluidState(top.below(3)).isSource()&&l.getBlockState(b.offset(x,OrdinaryHalls.CISTERN_BOTTOM,z)).is(OrdinaryHallRegistry.material("cistern_under")),"still water, four deep, over the silt: "+x+","+z);water++;}
+            var vault=b.offset(x,OrdinaryHalls.vault(x),z);if(l.getBlockState(vault).is(OrdinaryHallRegistry.DRIP.get())){drips++;h.assertTrue(x!=0,"no drip right over the middle of the walk");}
+            h.assertTrue(l.getBlockState(b.offset(x,OrdinaryHalls.vault(x)-1,z)).isAir()||l.getBlockState(b.offset(x,OrdinaryHalls.vault(x)-1,z)).is(OrdinaryHallRegistry.material("cistern_vault"))||l.getBlockState(b.offset(x,OrdinaryHalls.vault(x)-1,z)).is(OrdinaryHallRegistry.material("cistern_pillar"))||TrialBlock.is(l.getBlockState(b.offset(x,OrdinaryHalls.vault(x)-1,z)),TrialBlock.Kind.STILL_LAMP,1),"under the vault is open: "+x+","+z);}
+        h.assertTrue(water>300&&drips>=20,"a wide water, and the vault drips here and there: water "+water+", drips "+drips);
+        for(int side:new int[]{-4,4})for(int z:OrdinaryHalls.COLUMNS)for(int y=OrdinaryHalls.CISTERN_BOTTOM+1;y<OrdinaryHalls.vault(side);y++)
+            h.assertTrue(l.getBlockState(b.offset(side,y,z)).is(OrdinaryHallRegistry.material("cistern_pillar")),"the columns stand from the floor of the water to the vault: "+side+","+y+","+z);
+        h.assertTrue(l.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,new AABB(b.offset(-8,-6,-42).getCenter(),b.offset(8,8,0).getCenter())).isEmpty(),"nothing is in the water");
+        h.assertTrue(lit(l,b,hall)==OrdinaryHalls.CISTERN_LAMPS.length+1,"lamps hang over the walk and the branch");
+        try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
+        h.succeed();
+    }
+
+    @GameTest(template="empty")
+    public static void theLibraryStacksAreASmallMazeWithTwoWaysOutAndBooksThatWillNotComeOut(GameTestHelper h) {
+        var hall=LabyrinthPlace.STACKS_HALL;var l=h.getLevel();var b=h.absolutePos(BlockPos.ZERO).offset(4400,8,280);
+        ordinaryHall(h,hall);OrdinaryHalls.build(l,b,hall);
+        for(var door:hall.doors())h.assertTrue(l.getBlockState(b.offset(door.rel())).getBlock() instanceof DoorBlock,"the stacks keep their native "+door.name()+" door");
+        // Every aisle is a single block wide between shelves four high, too tall to see over; the way through is walked, not seen.
+        var shelves=OrdinaryHalls.shelves();
+        for(var at:shelves){for(int y=0;y<OrdinaryHalls.STACKS_SHELF;y++){var s=l.getBlockState(b.offset(at).above(y));
+                h.assertTrue(HallFaceBlock.is(s,HallFaceBlock.Kind.SHELF)||HallFaceBlock.is(s,HallFaceBlock.Kind.SHELF_B),"a shelf of books, four high: "+at+" y "+y);}
+            h.assertTrue(l.getBlockState(b.offset(at).above(OrdinaryHalls.STACKS_SHELF)).isAir(),"the ceiling's light comes over the shelves");}
+        h.assertTrue(OrdinaryHalls.STACKS_SHELF>2&&shelves.equals(OrdinaryHalls.shelves()),"the shelves are higher than a reader's eyes, and the maze is the same every time");
+        // Distances through the maze, from the strip inside the door.
+        var start=b.offset(0,0,-1);var dist=new HashMap<BlockPos,Integer>();var queue=new ArrayDeque<BlockPos>();dist.put(start,0);queue.add(start);
+        while(!queue.isEmpty()){var from=queue.removeFirst();for(var side:Direction.Plane.HORIZONTAL){var at=from.relative(side);
+            var body=new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.81,at.getZ()+.8);
+            if(!dist.containsKey(at)&&l.getBlockState(at.below()).isCollisionShapeFullBlock(l,at.below())&&l.noCollision(null,body)){dist.put(at,dist.get(from)+1);queue.add(at);}}}
+        for(var door:hall.doors()){if(door.name().equals("entry"))continue;var front=b.offset(door.rel()).relative(door.facing());
+            int straight=front.distManhattan(start);
+            h.assertTrue(dist.containsKey(front)&&dist.get(front)>=straight+4,"the "+door.name()+" way out is found through the maze, the long way round: "+dist.get(front)+" against "+straight+" straight");}
+        h.assertTrue(dist.keySet().stream().anyMatch(at->at.distManhattan(b.offset(OrdinaryHalls.TABLE))==1)&&OrdinaryHallBlock.is(l.getBlockState(b.offset(OrdinaryHalls.TABLE)),OrdinaryHallBlock.Kind.TABLE),"the reading table in the clearing is reached");
+        var reader=h.makeMockServerPlayerInLevel();reader.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);reader.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-2.5,180,0);
+        var shelf=b.offset(shelves.iterator().next());use(l,reader,shelf);use(l,reader,shelf.above());
+        h.assertTrue(OrdinaryHalls.tries(reader,false)==2&&reader.getInventory().isEmpty()&&l.getBlockState(shelf).getBlock() instanceof HallFaceBlock,"the books will not come out: nothing is taken");
+        reader.discard();
+        h.assertTrue(lit(l,b,hall)==OrdinaryHalls.STACKS_LAMPS.size(),"the lamps over the aisles are lit");
+        try{ArchitectureTests.export(l,b,hall);}catch(Exception e){throw new RuntimeException(e);}
+        h.succeed();
+    }
+
     private static void halls(GameTestHelper h,List<LabyrinthPlace> list,int x0)throws Exception {
         var l=h.getLevel();int i=0;
         for(var hall:list) {

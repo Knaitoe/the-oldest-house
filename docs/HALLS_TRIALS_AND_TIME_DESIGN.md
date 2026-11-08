@@ -9,7 +9,8 @@ Status: **being built (November 8)**. The owner left the open questions to judge
 - Trial 10, the hall of many lengths: built in 0.4.388 ([MANY_LENGTHS_0_4_388.md](MANY_LENGTHS_0_4_388.md)), with T2 and P1. The bends hide each length from the next, so no private copies (T1) are needed.
 - Trial 4, the door that follows: built in 0.4.389 ([FOLLOWING_DOOR_0_4_389.md](FOLLOWING_DOOR_0_4_389.md)), at the owner's request. The far door itself stays put; nine doors into a passage behind the walls do the moving, and the mirrors are true plane mirrors.
 - Hall 1, the laundry corridor: built in 0.4.390 ([LAUNDRY_CORRIDOR_0_4_390.md](LAUNDRY_CORRIDOR_0_4_390.md)), the first of five halls (1, 2, 5, 6 and 10). Two of its three ways on are behind the washing.
-- Next: the other four halls (the long bedroom hall, the atrium, the cistern walk, the library stacks), then R2 as the owner set it (from depth 20, one hall in four). R3 (only as fixed folds shared by everyone) and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
+- Halls 2, 5, 6 and 10, the long bedroom hall, the atrium, the cistern walk and the library stacks: built in 0.4.391 ([FOUR_HALLS_0_4_391.md](FOUR_HALLS_0_4_391.md)), at the owner's request ("go ahead and implement the four rooms please, then the rules"). The atrium's stair runs up beside the well, inside a wall that rises with it, rather than round the walls.
+- Next: R2 as the owner set it (from depth 20, one hall in four). R3 (only as fixed folds shared by everyone) and R4 wait for a playtest. Trials 5, 7, 8 and 9 are not scheduled.
 
 The owner (October 29): "can you also design some more hallway variations and trial rooms? I've found it too easy to get to the staircase. … I'd love to play with the mechanics of different people being able to traverse the same amount of space in different times. I don't know how that could be implemented."
 

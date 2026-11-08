@@ -22,7 +22,7 @@ public final class StoneHalls {
     public static boolean isStone(LabyrinthPlace place) {
         return place == LabyrinthPlace.STONE_GALLERY || place == LabyrinthPlace.STONE_CROSSING || place == LabyrinthPlace.STONE_DESCENT
                 || place == LabyrinthPlace.STONE_ARCADE || place == LabyrinthPlace.STONE_BEND || place == LabyrinthPlace.STONE_LANDING
-                || place == LabyrinthPlace.STONE_DUST;
+                || place == LabyrinthPlace.STONE_DUST || OrdinaryHalls.stone(place); // 0.4.391: the cistern walk and the library stacks
     }
 
     private static final BlockState BRICK = Blocks.STONE_BRICKS.defaultBlockState();

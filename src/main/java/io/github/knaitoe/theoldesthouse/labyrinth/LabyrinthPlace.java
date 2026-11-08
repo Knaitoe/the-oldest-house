@@ -653,7 +653,27 @@ public enum LabyrinthPlace {
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("west",new BlockPos(-3,0,-15),Direction.EAST,LabyrinthData.DEALT),
             new DoorSpec("east",new BlockPos(3,0,-28),Direction.WEST,LabyrinthData.DEALT),
-            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT)));
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.391, the long bedroom hall (OrdinaryHalls, docs/FOUR_HALLS_0_4_391.md): a corridor of identical bedroom doors, all but two painted onto the wall. */
+    BEDROOM_HALL("bedroom_hall",Kind.GRAY,229,new BoundingBox(-3,-1,-42,3,4,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("west",new BlockPos(-2,0,-16),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("east",new BlockPos(2,0,-28),Direction.WEST,LabyrinthData.DEALT))),
+    /** 0.4.391, the atrium: two storeys round a well, one door on the floor and one on the balcony, up a stair by the well. */
+    ATRIUM_HALL("atrium_hall",Kind.GRAY,230,new BoundingBox(-8,-1,-15,8,10,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("floor",new BlockPos(0,0,-14),Direction.SOUTH,LabyrinthData.DEALT),
+            new DoorSpec("balcony",new BlockPos(7,5,-7),Direction.WEST,LabyrinthData.DEALT))),
+    /** 0.4.391, the cistern walk: a stone causeway over still water, between columns, under a vault that drips. Nothing is in the water. */
+    CISTERN_HALL("cistern_hall",Kind.GRAY,231,new BoundingBox(-8,-6,-42,8,8,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("east",new BlockPos(8,0,-21),Direction.WEST,LabyrinthData.DEALT),
+            new DoorSpec("far",new BlockPos(0,0,-42),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.391, the library stacks: a small maze of shelves too tall to see over, two ways out, and books that will not come out. */
+    STACKS_HALL("stacks_hall",Kind.GRAY,232,new BoundingBox(-11,-1,-23,11,5,0),List.of(
+            new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+            new DoorSpec("west",new BlockPos(-10,0,-15),Direction.EAST,LabyrinthData.DEALT),
+            new DoorSpec("north",new BlockPos(5,0,-22),Direction.SOUTH,LabyrinthData.DEALT)));
 
     /** What a place is to the dealer. */
     public enum Kind {

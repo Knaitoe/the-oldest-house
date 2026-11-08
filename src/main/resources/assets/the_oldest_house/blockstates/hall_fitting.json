@@ -29,6 +29,66 @@
     "facing=east,kind=stool": {
       "model": "the_oldest_house:block/hall_stool",
       "y": 270
+    },
+    "facing=south,kind=step": {
+      "model": "the_oldest_house:block/hall_step"
+    },
+    "facing=west,kind=step": {
+      "model": "the_oldest_house:block/hall_step",
+      "y": 90
+    },
+    "facing=north,kind=step": {
+      "model": "the_oldest_house:block/hall_step",
+      "y": 180
+    },
+    "facing=east,kind=step": {
+      "model": "the_oldest_house:block/hall_step",
+      "y": 270
+    },
+    "facing=south,kind=balustrade": {
+      "model": "the_oldest_house:block/hall_balustrade",
+      "y": 180
+    },
+    "facing=west,kind=balustrade": {
+      "model": "the_oldest_house:block/hall_balustrade",
+      "y": 270
+    },
+    "facing=north,kind=balustrade": {
+      "model": "the_oldest_house:block/hall_balustrade"
+    },
+    "facing=east,kind=balustrade": {
+      "model": "the_oldest_house:block/hall_balustrade",
+      "y": 90
+    },
+    "facing=south,kind=balustrade_corner": {
+      "model": "the_oldest_house:block/hall_balustrade_corner",
+      "y": 180
+    },
+    "facing=west,kind=balustrade_corner": {
+      "model": "the_oldest_house:block/hall_balustrade_corner",
+      "y": 270
+    },
+    "facing=north,kind=balustrade_corner": {
+      "model": "the_oldest_house:block/hall_balustrade_corner"
+    },
+    "facing=east,kind=balustrade_corner": {
+      "model": "the_oldest_house:block/hall_balustrade_corner",
+      "y": 90
+    },
+    "facing=south,kind=table": {
+      "model": "the_oldest_house:block/hall_table"
+    },
+    "facing=west,kind=table": {
+      "model": "the_oldest_house:block/hall_table",
+      "y": 90
+    },
+    "facing=north,kind=table": {
+      "model": "the_oldest_house:block/hall_table",
+      "y": 180
+    },
+    "facing=east,kind=table": {
+      "model": "the_oldest_house:block/hall_table",
+      "y": 270
     }
   }
 }
