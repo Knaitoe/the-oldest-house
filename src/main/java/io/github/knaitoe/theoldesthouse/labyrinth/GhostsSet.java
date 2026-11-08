@@ -490,6 +490,8 @@ public final class GhostsSet {
     }
     public static final String AFTERMATH="The house is dark. The three of them are still at the table, and Merry's chair is empty. The crew's things are gone.";
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own) {
+        // 0.4.350: a reader who was at the Barretts' that Saturday, years before: the drawing on the fridge and Merry's look, theirs alone.
+        if(built(LabyrinthData.get(p.server),b))GrowingThings.ghosts(p,b,own);
         if(!own.getBoolean("Filming0485")||!built(LabyrinthData.get(p.server),b))return;
         GhostsLore.reader(p,b,own);
         if(!own.contains("AcceptedScene131")&&own.getBoolean("Rolling"))own.putInt("AcceptedScene131",objective(own));

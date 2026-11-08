@@ -1,0 +1,152 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "w": "the_oldest_house:block/growing/sheet",
+    "t": "the_oldest_house:block/growing/twine",
+    "p": "the_oldest_house:block/growing/post",
+    "particle": "the_oldest_house:block/growing/sheet"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        15,
+        7.75
+      ],
+      "to": [
+        16,
+        15.5,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        0.5,
+        1,
+        7.9
+      ],
+      "to": [
+        15.5,
+        15,
+        8.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w",
+          "uv": [
+            0.5,
+            1,
+            15.5,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#w",
+          "uv": [
+            0.5,
+            1,
+            15.5,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        14.5,
+        7.6
+      ],
+      "to": [
+        2.5,
+        15.8,
+        8.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        13.5,
+        14.5,
+        7.6
+      ],
+      "to": [
+        14.5,
+        15.8,
+        8.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

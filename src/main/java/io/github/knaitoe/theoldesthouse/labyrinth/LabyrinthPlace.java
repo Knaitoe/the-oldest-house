@@ -611,7 +611,10 @@ public enum LabyrinthPlace {
     MARSH_SUPPER("marsh_supper",Kind.ONE_SHOT,209,new BoundingBox(-32,-5,-86,32,18,0),literaryEntry()),
     /** 0.4.349, In the Tall Grass (TallGrass, docs/TALL_GRASS_0_4_349.md): a county road in the late afternoon, the House's wagon on the shoulder with
      * its hazards on, and grass higher than a head that moves whoever goes into it; the next car pulls over at the end. */
-    TALL_GRASS("tall_grass",Kind.ONE_SHOT,210,new BoundingBox(-56,-5,-112,56,16,1),literaryEntry());
+    TALL_GRASS("tall_grass",Kind.ONE_SHOT,210,new BoundingBox(-56,-5,-112,56,16,1),literaryEntry()),
+    /** 0.4.350, Growing Things (GrowingThings, docs/GROWING_THINGS_0_4_350.md): the Barretts' back yard and house on a Saturday, years before
+     * the filming; the chores, the father who goes out to clear the back step, the kitchen floor lifting, and supper carried upstairs. */
+    GROWING_THINGS("growing_things",Kind.ONE_SHOT,211,new BoundingBox(-30,-5,-60,30,16,1),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

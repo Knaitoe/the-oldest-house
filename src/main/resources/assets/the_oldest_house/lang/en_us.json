@@ -1227,5 +1227,16 @@
   "subtitles.the_oldest_house.grass.car": "A car slows and pulls onto gravel",
   "subtitles.the_oldest_house.grass.away": "A car pulls away",
   "advancements.the_oldest_house.account.tall_grass.title": "The tall grass",
-  "advancements.the_oldest_house.account.tall_grass.description": "I went into the grass by a county road after a boy who said he couldn't find it."
+  "advancements.the_oldest_house.account.tall_grass.description": "I went into the grass by a county road after a boy who said he couldn't find it.",
+  "block.the_oldest_house.growing_fitting": "Barretts' Fitting",
+  "item.the_oldest_house.growing_plate": "Plate",
+  "item.the_oldest_house.growing_pot": "Supper Pot",
+  "item.the_oldest_house.growing_loaf": "Loaf",
+  "item.the_oldest_house.growing_seed_head": "Dry Seed Head",
+  "subtitles.the_oldest_house.growing.boards": "Floorboards creak and lift",
+  "subtitles.the_oldest_house.growing.frame": "A window frame splits",
+  "subtitles.the_oldest_house.growing.spade": "A spade bites into the ground",
+  "subtitles.the_oldest_house.growing.shoots": "Something rustles in the shoots",
+  "advancements.the_oldest_house.account.growing_things.title": "Growing things",
+  "advancements.the_oldest_house.account.growing_things.description": "I helped a family with their Saturday chores while something came up through their yard."
 }
