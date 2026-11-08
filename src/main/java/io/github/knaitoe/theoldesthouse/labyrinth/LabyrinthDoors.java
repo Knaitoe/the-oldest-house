@@ -430,6 +430,7 @@ public final class LabyrinthDoors {
             LiteraryVignettes.onArrive(p,place);
             BlindStretch.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
+            TallGrass.arrived(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);

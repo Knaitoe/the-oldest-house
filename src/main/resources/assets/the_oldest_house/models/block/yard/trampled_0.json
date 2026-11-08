@@ -1,0 +1,85 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/yard/grass_flat",
+    "particle": "the_oldest_house:block/yard/grass_flat"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0.6,
+        0
+      ],
+      "to": [
+        16,
+        0.6,
+        16
+      ],
+      "shade": false,
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0.5,
+        0
+      ],
+      "to": [
+        15,
+        0.5,
+        15
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          0.5,
+          15
+        ],
+        "axis": "x",
+        "angle": -22.5
+      },
+      "shade": false,
+      "faces": {
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            15
+          ],
+          "texture": "#c"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            15
+          ],
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

@@ -32,12 +32,16 @@ import net.minecraft.world.phys.shapes.*;
  * flat on the ground (2) (YardWind).</li>
  * <li>0.4.347: corn three high, the stalk (stage 0), the stalk and its ear (1), the tassel (2), and the same corn pushed over flat the way a
  * reader went through it (3); no collision, slow to push through (YardStorm). A windsock on its hoop: slack (0), lifting (1), full (2).</li>
+ * <li>0.4.349: the wagon's nose and tail with its hazards on (stage 1). Roadside grass higher than a head, a third to each stage (the
+ * stems, the blades, the seed heads), no collision, slow to push through; the same grass trampled flat (0), rising (1) and nearly up
+ * again (2); a boy's cap lying wet on the flattened stems. A pickup's nose, its body under the cab (stage 1 with the front wheel), its cab,
+ * and its bed (stage 0 with the back wheel, 1 the tailgate) (TallGrass).</li>
  * </ul>
  */
 public final class YardBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<YardBlock> CODEC=simpleCodec(YardBlock::new);
     public enum Kind implements StringRepresentable {
-        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT,STOCK_LEAF,ROOF_SHEET,STALK,WINDSOCK;
+        BULB,NOSE,BODY,CABIN,TAIL,SHEET,PIPE_LIP,SURVEY_SLOT,GATE_LATCH,FLOOD_GRATE,PRINT,STOCK_LEAF,ROOF_SHEET,STALK,WINDSOCK,GRASS,TRAMPLED,CAP,PICKUP_NOSE,PICKUP_BODY,PICKUP_CAB,PICKUP_BED;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -45,7 +49,7 @@ public final class YardBlock extends HorizontalDirectionalBlock {
     public YardBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.BODY).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing,int stage){return PuzzleRegistry.YARD.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(3,stage)));}
     public static boolean is(BlockState s,Kind kind){return s.is(PuzzleRegistry.YARD.get())&&s.getValue(KIND)==kind;}
-    public static int light(BlockState s){return switch(s.getValue(KIND)){case BULB->14;case NOSE->12;case TAIL->4;default->0;};}
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case BULB->14;case NOSE,PICKUP_NOSE->12;case TAIL->4;default->0;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}
@@ -62,10 +66,14 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             case ROOF_SHEET->Block.box(0,0,0,16,s.getValue(STAGE)==2?1:2,16);
             case STALK->s.getValue(STAGE)==3?Block.box(0,0,0,16,3,16):Block.box(3,0,3,13,16,13);
             case WINDSOCK->Block.box(4,4,4,12,14,12);
+            case GRASS->Block.box(2,0,2,14,16,14);
+            case TRAMPLED->Block.box(0,0,0,16,switch(s.getValue(STAGE)){case 0->2;case 1->9;default->13;},16);
+            case CAP->Block.box(5,0,4,11,3,13);
+            case PICKUP_CAB->Block.box(0,0,0,16,10,16);
             default->Block.box(0,0,0,16,14,16);
         };
     }
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);return k==Kind.BULB||k==Kind.SHEET||k==Kind.STALK||k==Kind.WINDSOCK?Shapes.empty():getShape(s,l,p,c);}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);return k==Kind.BULB||k==Kind.SHEET||k==Kind.STALK||k==Kind.WINDSOCK||k==Kind.GRASS||k==Kind.TRAMPLED||k==Kind.CAP?Shapes.empty():getShape(s,l,p,c);}
     @Override protected void entityInside(BlockState s,Level l,BlockPos at,net.minecraft.world.entity.Entity e){
         if(e instanceof ServerPlayer p&&s.getValue(KIND)==Kind.SHEET)YardConnectors.brush(p,at);
         // Standing corn holds a body back until it goes over; once flat it is a track anyone can follow at a walk.
@@ -74,9 +82,15 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             // It goes over once the reader has pushed halfway into the row.
             if(l instanceof net.minecraft.server.level.ServerLevel level&&e instanceof ServerPlayer p&&s.getValue(STAGE)==0&&p.blockPosition().equals(at))YardStorm.bend(level,at,s,p);
         }
+        // 0.4.349: the tall grass holds a body back the same way, and goes down under a reader standing in it, a track that springs back.
+        if(s.getValue(KIND)==Kind.GRASS&&e instanceof net.minecraft.world.entity.LivingEntity){
+            e.makeStuckInBlock(s,new net.minecraft.world.phys.Vec3(.82,1,.82));
+            if(l instanceof net.minecraft.server.level.ServerLevel level&&e instanceof ServerPlayer p&&s.getValue(STAGE)==0&&p.blockPosition().equals(at))TallGrass.trample(level,at,p);
+        }
     }
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){
         if(level.isClientSide||!(player instanceof ServerPlayer p))return InteractionResult.SUCCESS;
+        if(TallGrass.use(p,pos,s))return InteractionResult.CONSUME;
         if(YardStorm.use(p,pos,s))return InteractionResult.CONSUME;
         if(YardFields.use(p,pos,s))return InteractionResult.CONSUME;
         if(YardStock.use(p,pos,s))return InteractionResult.CONSUME;
@@ -90,6 +104,10 @@ public final class YardBlock extends HorizontalDirectionalBlock {
             case NOSE->"The engine ticks over. Warm air comes off the grille. Nobody is at the wheel.";
             case CABIN->"Through the glass: a blanket on the back seat, a map folded wrong, the keys in the ignition.";
             case TAIL->"The tailgate is up. The driver's door, round the side, stands ajar.";
+            case GRASS->"Grass, higher than your head.";
+            case TRAMPLED->"Grass pressed flat. It is coming back up.";
+            case CAP->"A small cap, wet through.";
+            case PICKUP_NOSE,PICKUP_BODY,PICKUP_CAB,PICKUP_BED->"A pickup, its engine running.";
             default->"A station wagon, wood-panelled. Mud up the doors from the drive.";
         });
         return InteractionResult.CONSUME;

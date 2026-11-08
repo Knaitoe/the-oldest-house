@@ -608,7 +608,10 @@ public enum LabyrinthPlace {
     YARD_STORM_FIELD("yard_storm_field",Kind.GRAY,208,new BoundingBox(-22,-4,-72,22,18,0),grayDoors(0,0,-62)),
     /** 0.4.348, The Supper (MarshSupper, docs/MARSH_SUPPER_0_4_348.md): the Marsh farm at dusk at the end of a corn maze, the oak across the only
      * drive, the supper and the guest whose chair is gone; dealt once each after the House's yard, its way on the gate onto the county road. */
-    MARSH_SUPPER("marsh_supper",Kind.ONE_SHOT,209,new BoundingBox(-32,-5,-86,32,18,0),literaryEntry());
+    MARSH_SUPPER("marsh_supper",Kind.ONE_SHOT,209,new BoundingBox(-32,-5,-86,32,18,0),literaryEntry()),
+    /** 0.4.349, In the Tall Grass (TallGrass, docs/TALL_GRASS_0_4_349.md): a county road in the late afternoon, the House's wagon on the shoulder with
+     * its hazards on, and grass higher than a head that moves whoever goes into it; the next car pulls over at the end. */
+    TALL_GRASS("tall_grass",Kind.ONE_SHOT,210,new BoundingBox(-56,-5,-112,56,16,1),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

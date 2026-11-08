@@ -5,7 +5,10 @@ rain; a garage door of dark vertical boards with a handle; a bare bulb on its co
 panelling, its grille and lit headlights, windows, roof rack, tailgate and tail-lamps, wheels. 0.4.322: soft mud, clear or with a reader's
 footprints pressed into it. 0.4.345: a stockyard swing gate's leaf in three heights, galvanised tube rails on oak stiles, the top rail
 painted so the gates read from the loading platform; a sheet of corrugated barn roofing, rusted at its laps. 0.4.347: field corn three
-high (the stalk, the ear, the tassel) and the same corn pushed flat; a windsock, slack, lifting and full. --check verifies everything.
+high (the stalk, the ear, the tassel) and the same corn pushed flat; a windsock, slack, lifting and full. 0.4.349: the wagon's hazard lamps
+lit at nose and tail; roadside grass higher than a head in thirds (the stems, the blades, the seed heads), the same grass trampled flat and
+springing back in two steps, a boy's cap lying wet on the flattened stems; and a pickup (nose, body, cab, bed) in faded paint. --check
+verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -248,6 +251,143 @@ def windsock():
     return im
 
 
+AMBER = '#ffb030'
+
+
+def grille_hazard():
+    # 0.4.349: the wagon's nose with its hazards on: the headlights lit and both amber corner lamps lit with them.
+    im = grille(True)
+    for x0 in (0, 14):
+        fill(im, x0, 2, x0 + 2, 5, AMBER); dot(im, x0, 2, '#fff0c0')
+    return im
+
+
+def tailgate_hazard():
+    # 0.4.349: the tail with its hazards on: the lamps lit amber with a hot centre.
+    im = tailgate()
+    for x0 in (0, 13):
+        fill(im, x0, 8, x0 + 3, 11, AMBER); dot(im, x0 + 1, 9, '#fff0c0')
+    return im
+
+
+GRASS = ['#7d8f3e', '#889a44', '#6f8236', '#93a04c', '#a3a453']
+SEED = ['#c2b46a', '#cdbf78', '#b4a55c', '#d8cc8a']
+
+
+def grass(stage, seed):
+    # 0.4.349: roadside grass taller than a head, a third of its height to each stage. Stems crowded together at the foot, darker where
+    # the light does not get down; blades crossing in the middle; seed heads nodding at the top. Drawn without the biome's tint.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(seed)
+    cols = (0, 2, 3, 5, 7, 8, 10, 12, 13, 15)
+    for i, x in enumerate(cols):
+        dark = stage == 0
+        top = 0 if stage < 2 else rnd.randrange(3, 9)
+        lean = rnd.choice((-1, 0, 0, 1))
+        for y in range(top, 16):
+            xx = x + (lean if y < 6 and stage == 2 else 0)
+            if 0 <= xx < 16:
+                c = GRASS[(i + y) % len(GRASS)]
+                if dark and y > 9: c = '#55662a' if (x + y) % 3 else '#4b5a26'
+                dot(im, xx, y, c)
+        if stage == 2:
+            # A seed head: a drooping spike of pale grains above its stem.
+            hx = x + lean
+            for k in range(rnd.randrange(3, 6)):
+                yy = top - k
+                if 0 <= yy < 16 and 0 <= hx < 16: dot(im, hx, yy, SEED[(k + i) % 4])
+                if 0 <= yy < 16 and 0 <= hx + 1 < 16 and k % 2: dot(im, hx + 1, yy, SEED[(k + i + 1) % 4])
+    if stage == 1:
+        # Blades crossing the stems, long and thin, out of every other stem.
+        for i, x in enumerate(cols[::2]):
+            side = 1 if i % 2 else -1
+            y0 = rnd.randrange(4, 13)
+            for k in range(1, rnd.randrange(4, 7)):
+                xx, yy = x + side * k, y0 - k // 2
+                if 0 <= xx < 16 and 0 <= yy < 16: dot(im, xx, yy, GRASS[(k + i) % len(GRASS)])
+    return im
+
+
+def grass_flat(seed):
+    # 0.4.349: the same grass trampled flat, seen from above, every stem pressed over the way someone went through.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(seed)
+    for x in range(0, 16, 2):
+        for y in range(rnd.randrange(0, 2), 16 - rnd.randrange(0, 3)):
+            dot(im, x, y, GRASS[(x + y) % len(GRASS)])
+            if y % 4 == 1 and x < 15: dot(im, x + 1, y, '#5f7030')
+    for _ in range(14):
+        dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(SEED))
+    for x, y in ((3, 2), (11, 9), (6, 13)):
+        dot(im, x, y, '#4c5a26')
+    return im
+
+
+def cap():
+    # 0.4.349: a child's ball cap, wet through, the cloth dark with water, a pale button on the crown, the brim's stitching.
+    im = noisy(['#2c3a52', '#26344a', '#32405a'], 3490, [3, 2, 2])
+    for x in range(16): dot(im, x, 12, '#c8c4b4') if x % 2 else None
+    fill(im, 7, 2, 9, 4, '#d8d4c4')
+    for x, y in ((3, 6), (10, 8), (5, 10)):
+        dot(im, x, y, '#1c2638')
+    return im
+
+
+def pickup_paint():
+    return noisy(['#4e6a80', '#48647a', '#567288'], 3491)
+
+
+def pickup_side():
+    im = pickup_paint()
+    for x in range(16):
+        dot(im, x, 5, '#c8ccd0'); dot(im, x, 14, '#2c2c2c'); dot(im, x, 15, '#2c2c2c')
+    for x, y in ((4, 9), (11, 11), (13, 8)):
+        dot(im, x, y, '#7a5a40')
+    return im
+
+
+def pickup_grille():
+    im = noisy(['#9a9c9e', '#8e9092', '#a6a8aa'], 3492)
+    for y in range(6, 11): fill(im, 4, y, 12, y + 1, '#2a2a2a' if y % 2 else '#b8babc')
+    for x0 in (0, 12):
+        fill(im, x0, 5, x0 + 4, 10, '#fff6c8'); dot(im, x0 + 1, 6, '#ffffff')
+    fill(im, 0, 12, 16, 15, '#c0c2c4')
+    return im
+
+
+def pickup_window():
+    im = pickup_paint()
+    fill(im, 1, 2, 15, 13, '#1c2630')
+    line(im, 2, 11, 7, 3, '#3c4a56')
+    return im
+
+
+def pickup_bed():
+    im = noisy(['#3a3c3e', '#343638', '#404244'], 3493)
+    for x in (2, 6, 10, 14):
+        for y in range(16): dot(im, x, y, '#2a2c2e')
+    return im
+
+
+def pickup_gate():
+    im = pickup_side()
+    fill(im, 0, 7, 3, 10, '#8a1a14'); fill(im, 13, 7, 16, 10, '#8a1a14')
+    return im
+
+
+
+def cap_item():
+    # 0.4.349: the boy's cap as carried: a small ball cap in profile, crown and brim, dark with water, a pale button, a drip off the brim.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    crown = ['#2c3a52', '#26344a', '#32405a']
+    for y in range(4, 11):
+        for x in range(3 + max(0, 6 - y), 12 - max(0, 6 - y) // 2):
+            dot(im, x, y, crown[(x + y) % 3])
+    fill(im, 9, 9, 15, 11, '#1e2a3e'); fill(im, 3, 10, 12, 11, '#1a2436')
+    dot(im, 7, 3, '#d8d4c4'); dot(im, 8, 3, '#c8c4b4')
+    for x in range(4, 11, 2): dot(im, x, 8, '#3c4a64')
+    dot(im, 14, 12, '#7a9ab8'); dot(im, 14, 13, '#5a7a98')
+    return im
+ITEMS = {'tall_grass_cap': 'Small Cap'}
+
 def textures():
     out = {'block/yard_clapboard.png': clapboard(), 'block/yard_wet_gravel.png': wet_gravel(), 'block/yard_garage_door.png': garage_door()}
     linen = noisy(['#c9c6b6', '#d4d0c2', '#bdbbac'], 3131, [5, 3, 1])
@@ -275,7 +415,12 @@ def textures():
     t['windsock'] = windsock()
     hoop = noisy(['#9aa3a6', '#aab3b5', '#868f92'], 3472, [3, 2, 2])
     t['hoop'] = hoop
+    t['grille_hazard'] = grille_hazard(); t['tailgate_hazard'] = tailgate_hazard()
+    for stage in range(3): t[f'grass_{stage}'] = grass(stage, 3494 + stage)
+    t['grass_flat'] = grass_flat(3497); t['cap'] = cap()
+    t.update({'pickup_paint': pickup_paint(), 'pickup_side': pickup_side(), 'pickup_grille': pickup_grille(), 'pickup_window': pickup_window(), 'pickup_bed': pickup_bed(), 'pickup_gate': pickup_gate()})
     out.update({f'block/yard/{k}.png': v for k, v in t.items()})
+    out['item/tall_grass_cap.png'] = cap_item()
     return out
 
 
@@ -329,11 +474,48 @@ def fitting_models():
     for stage, els in enumerate((slack, lifting, full)):
         m[f'windsock_{stage}'] = model([hoop] + els, {'h': 'hoop', 'w': 'windsock'}, 'windsock')
     for stage in range(3): m[f'stock_leaf_{stage}'] = model([element([0, 0, 7], [16, 16, 9], {'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l', 'up': 'l', 'down': 'l'}, uv={'east': [14, 0, 16, 16], 'west': [0, 0, 2, 16], 'up': [0, 0, 16, 2], 'down': [0, 14, 16, 16]})], {'l': f'leaf_{stage}'}, f'leaf_{stage}')
+    # 0.4.349: the wagon with its hazards on.
+    m['nose_1'] = model([element([0, 3, 0], [16, 12, 16], {'north': 'g', 'south': 'p', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})], {'g': 'grille_hazard', 's': 'side', 'p': 'paint'}, 'paint')
+    m['tail_1'] = model([element([0, 3, 0], [16, 14, 16], {'south': 't', 'north': 'p', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})], {'t': 'tailgate_hazard', 's': 'side', 'p': 'paint'}, 'paint')
+    # 0.4.349: the tall grass in thirds, crossed planes like the corn's; trampled flat (0), rising (1), nearly up again (2).
+    def crossed(tex, height=16, lean=0):
+        planes = []
+        for a, b in (([0.8, 0, 8], [15.2, height, 8]), ([8, 0, 0.8], [8, height, 15.2])):
+            faces = ('north', 'south') if a[2] == 8 else ('east', 'west')
+            el = {'from': a, 'to': b, 'rotation': {'origin': [8, 0, 8], 'axis': 'y', 'angle': 45, 'rescale': True}, 'shade': False,
+                  'faces': {f: {'uv': [0, 16 - height, 16, 16], 'texture': '#c'} for f in faces}}
+            planes.append(el)
+        if lean:
+            leant = []
+            for el in planes:
+                el = json.loads(json.dumps(el)); el['rotation'] = {'origin': [8, 0, 8], 'axis': 'x', 'angle': lean}; leant.append(el)
+            planes = leant
+        return planes
+    for stage in range(3):
+        m[f'grass_{stage}'] = {**model(crossed('c'), {'c': f'grass_{stage}'}, f'grass_{stage}'), 'ambientocclusion': False}
+    m['trampled_0'] = {**model([flat, leaning], {'c': 'grass_flat'}, 'grass_flat'), 'ambientocclusion': False}
+    flat_f = json.loads(json.dumps(flat)); flat_f['faces'] = {f: {'uv': [0, 0, 16, 16], 'texture': '#f'} for f in ('up', 'down')}
+    m['trampled_1'] = {**model([flat_f] + crossed('c', 9, -45), {'c': 'grass_1', 'f': 'grass_flat'}, 'grass_flat'), 'ambientocclusion': False}
+    m['trampled_2'] = {**model(crossed('c', 13, -22.5), {'c': 'grass_0'}, 'grass_0'), 'ambientocclusion': False}
+    m['cap_0'] = {**model([flat, element([5, 0.6, 4], [11, 3, 10], {'up': 'k', 'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k'}, uv={f: [4, 0, 12, 4] for f in ('north', 'south', 'east', 'west')}),
+                          element([6, 0.6, 10], [10, 1.2, 13], {'up': 'k', 'down': 'k', 'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k'}, uv={f: [0, 11, 16, 13] for f in ('north', 'south', 'east', 'west', 'up', 'down')})],
+                          {'c': 'grass_flat', 'k': 'cap'}, 'cap'), 'ambientocclusion': False}
+    # 0.4.349: the pickup that pulls over: its nose, two lengths of body under the cab (one with the front wheel), the bed (with the back
+    # wheel, then the tailgate).
+    m['pickup_nose_0'] = model([element([0, 3, 0], [16, 11, 16], {'north': 'g', 'south': 'p', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})], {'g': 'pickup_grille', 's': 'pickup_side', 'p': 'pickup_paint'}, 'pickup_paint')
+    pbody = element([0, 3, 0], [16, 14, 16], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})
+    m['pickup_body_0'] = model([pbody], {'s': 'pickup_side', 'p': 'pickup_paint'}, 'pickup_paint')
+    m['pickup_body_1'] = model([pbody, element([-0.5, 0, 3], [0.5, 9, 12], {'west': 'w', 'east': 'w'}), element([15.5, 0, 3], [16.5, 9, 12], {'west': 'w', 'east': 'w'})], {'s': 'pickup_side', 'p': 'pickup_paint', 'w': 'wheel'}, 'pickup_paint')
+    m['pickup_cab_0'] = model([element([0, 0, 0], [16, 10, 16], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'p', 'down': 'p'})], {'w': 'pickup_window', 'p': 'pickup_paint'}, 'pickup_paint')
+    walls = [element([0, 3, 0], [16, 5, 16], {'up': 'b', 'down': 'p', 'north': 's', 'south': 's', 'east': 's', 'west': 's'}),
+             element([0, 5, 0], [1, 14, 16], {'all': 's'}), element([15, 5, 0], [16, 14, 16], {'all': 's'})]
+    m['pickup_bed_0'] = model(walls + [element([-0.5, 0, 3], [0.5, 9, 12], {'west': 'w', 'east': 'w'}), element([15.5, 0, 3], [16.5, 9, 12], {'west': 'w', 'east': 'w'})], {'b': 'pickup_bed', 's': 'pickup_side', 'p': 'pickup_paint', 'w': 'wheel'}, 'pickup_side')
+    m['pickup_bed_1'] = model(walls + [element([0, 3, 15], [16, 14, 16], {'all': 's', 'south': 't'})], {'b': 'pickup_bed', 's': 'pickup_side', 'p': 'pickup_paint', 't': 'pickup_gate'}, 'pickup_side')
     return m
 
 
-KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet', 'stalk', 'windsock']
-STAGES = {'bulb': 1, 'nose': 1, 'body': 2, 'cabin': 1, 'tail': 1, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3}
+KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet', 'stalk', 'windsock', 'grass', 'trampled', 'cap', 'pickup_nose', 'pickup_body', 'pickup_cab', 'pickup_bed']
+STAGES = {'bulb': 1, 'nose': 2, 'body': 2, 'cabin': 1, 'tail': 2, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3, 'grass': 3, 'trampled': 3, 'cap': 1, 'pickup_nose': 1, 'pickup_body': 2, 'pickup_cab': 1, 'pickup_bed': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 
@@ -354,6 +536,8 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/yard_fitting.json'] = {'variants': variants}
+    for item in ITEMS:
+        out[f'models/item/{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/{item}'}}
     return out
 
 
@@ -378,7 +562,7 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
-    for key, name in {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}.items():
+    for key, name in {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()}}.items():
         if check:
             assert lang.get(key) == name, key
         else:

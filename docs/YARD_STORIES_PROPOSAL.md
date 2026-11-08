@@ -321,7 +321,7 @@ The draft points at a separate design for The Last Crossing, a three-day vignett
 1. **The Supper,** in two slices. *Built whole in 0.4.348 (`docs/MARSH_SUPPER_0_4_348.md`), both slices in one release; its story id is `marsh_supper`, the place's id.*
    1. The place, the maze, the drive and tree, the porch, the house and kitchen, the household and the guest, the ordinary meal, the chair and the kitchen view.
    2. Her name, the meat, the three endings, the keys, together, the accounts, the yield, and the tests.
-2. **In the Tall Grass,** in two slices: the shoulder and the field's movement; the calls, the end, and the accounts.
+2. **In the Tall Grass,** in two slices: the shoulder and the field's movement; the calls, the end, and the accounts. *Built whole in 0.4.349 (`docs/TALL_GRASS_0_4_349.md`), both slices in one release; the road runs east and west with the wagon on the shoulder and the grass beyond the ditch, the House's door in the brush across the road.*
 3. **Growing Things,** in two slices: the yard and the chores; the clock, supper upstairs, the Ghosts Set drawing, and the accounts.
 4. **The Last Crossing:** the approach and the gathering place first. The rest follows the owner's design.
 
