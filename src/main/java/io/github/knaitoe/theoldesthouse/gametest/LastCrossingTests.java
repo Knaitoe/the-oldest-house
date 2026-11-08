@@ -85,6 +85,10 @@ public final class LastCrossingTests {
     @AfterBatch(batch="last_crossing_slot") public static void slotDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_launch") public static void launchDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_gallery") public static void galleryDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_ferry") public static void ferryDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_cleared") public static void clearedDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_breath") public static void breathDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_taken") public static void takenDone(ServerLevel l){close();}
     private static void look(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){var b=f.base(P);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z));}
     /** A crew through Day One and Night One untouched, into the morning and Day Two. */
     private static GameTestSequence dayTwo(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer[] c,String prefix,Runnable atStart){
@@ -736,8 +740,8 @@ public final class LastCrossingTests {
                 LastCrossing.skip(b,LastCrossing.DAY_TICKS*5/6);})
             .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"briefed3"),"before dark: where everyone stands, and the plate"))
             .thenExecute(()->{for(var p:c)h.assertTrue(f.own(p,P).getBoolean("HeardBrief"),"heard by "+name(p));LastCrossing.skip(b,LastCrossing.DAY_TICKS);})
-            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"held3"),"the third dusk holds"))
-            .thenExecute(()->{h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAY&&LastCrossing.dayNo(b)==3,"still Day Three");
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==3,"the third dusk"))
+            .thenExecute(()->{
                 for(var p:c)h.assertTrue(f.own(p,P).getBoolean("DayThree"),"Day Three worked");
                 LastCrossing.resetNow(l,b);
                 h.assertTrue(is(l,b,LastCrossingSite.PIN,Kind.PIN,0)&&is(l,b,LastCrossingSite.PIN_RACK,Kind.RACK,0)&&is(l,b,LastCrossingSite.ROLLERS.get(3),Kind.ROLLER,0),"the station set back");
@@ -800,6 +804,153 @@ public final class LastCrossingTests {
                 LastCrossing.resetNow(l,b);
                 h.assertTrue(is(l,b,LastCrossingSite.GALLERY_DOOR,Kind.GALLERY_DOOR,0)&&is(l,b,LastCrossingSite.FEED_GATE,Kind.FEED_GATE,0)&&is(l,b,LastCrossingSite.DEBRIS.get(1),Kind.DEBRIS,0)
                     &&is(l,b,LastCrossingSite.BAR_RACK,Kind.RACK,2)&&is(l,b,LastCrossingSite.FEED_GAUGE,Kind.FEED,0),"the station set back");
+                h.succeed();});
+    }
+
+    // ------------------------------------------------------------------------------------------------ Night Three (0.4.356)
+    /** On to the third dusk from Day Three. */
+    private static GameTestSequence toNightThree(GameTestSequence s,LiteraryTests.Fixture f,GameTestHelper h){
+        var b=f.base(P);
+        return s.thenExecute(()->LastCrossing.skip(b,LastCrossing.DAY_TICKS))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.phase(b)==LastCrossing.DUSK&&LastCrossing.dayNo(b)==3,"the third dusk"));
+    }
+    private static boolean farBank(LiteraryTests.Fixture f,ServerPlayer p){return LastCrossingSite.farBank(rel(f,p));}
+    private static void hereFar(ServerPlayer... crew){for(var p:crew)if(Talk.replies(p).contains("Here."))Talk.choose(p,"Here");}
+    private static void expose(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer p){
+        LastCrossing.carryForTest(p);f.at(p,P,16.5,0,-44.5);
+        h.assertTrue(use(f,p,LastCrossingSite.PLATE_HOME)&&Talk.choose(p,"Lay your palm")&&f.own(p,P).getBoolean("Exposed"),"exposed at the plate");
+    }
+
+    @GameTest(template="empty",batch="last_crossing_ferry",timeoutTicks=20000)
+    public static void nightThreeTheFerryCrosses(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        toNightThree(dayThree(f,h,c,"lc_ferry",()->{},s->s)
+            .thenExecute(()->{f.at(c[0],P,11.5,0,-36.5);h.assertTrue(use(f,c[0],LastCrossingSite.PIN_RACK),"the pin off the porch rack");
+                f.at(c[0],P,25.5,0,-61.5);select(c[0],"pin");h.assertTrue(use(f,c[0],LastCrossingSite.PIN)&&LastCrossing.flag(b,"pinStaged"),"staged by day");}),f,h)
+            .thenExecute(()->{h.assertTrue(!LastCrossing.flag(b,"pin")&&is(l,b,LastCrossingSite.PIN,Kind.PIN,0),"the pin up in its sleeve at dark");
+                LastCrossing.skip(b,LastCrossingNightThree.RISE_AT);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"risen")&&l.getBlockState(b.offset(26,-5,-60)).is(Blocks.WATER),"the final rise fills the pit"))
+            .thenExecute(()->{
+                // Too soon: the rope won't let her go on her sill.
+                f.at(c[3],P,34.5,0,-64.5);h.assertTrue(use(f,c[3],LastCrossingSite.RELEASE)&&!LastCrossing.flag(b,"released"),"not on her sill");
+                // The wheel held at the bottom of the flooded pit while the pin drops from the deck.
+                f.at(c[1],P,26.5,-7,-59.5);h.assertTrue(use(f,c[1],LastCrossingSite.WHEEL),"the wheel held");
+                f.at(c[0],P,25.5,0,-61.5);h.assertTrue(use(f,c[0],LastCrossingSite.PIN)&&LastCrossing.flag(b,"pin"),"the pin dropped");})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"pinned3"),"pinned for the night"))
+            .thenExecute(()->{h.assertTrue(f.own(c[0],P).getBoolean("SeatedLaunchPin")&&f.own(c[1],P).getBoolean("HeldWheelToPin"),"who held and who pinned");
+                LastCrossingNightThree.hurry(b,LastCrossingNightThree.SILL_CLEAR);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"floating")&&LastCrossing.flag(b,"pin"),"off her sill, the pin still in"))
+            .thenExecute(()->{f.at(c[0],P,35.5,0,-67.5);f.at(c[2],P,31.5,0,-67.5);
+                h.assertTrue(use(f,c[3],LastCrossingSite.RELEASE)&&LastCrossing.flag(b,"released"),"let go");
+                var aboard=LastCrossingNightThree.aboard(b);
+                h.assertTrue(aboard.contains(c[0].getUUID())&&aboard.contains(c[2].getUUID())&&aboard.contains(c[3].getUUID())&&!aboard.contains(c[1].getUUID()),"three aboard, one left in the pit");
+                h.assertTrue(f.own(c[1],P).getBoolean("LeftOnStation")&&f.own(c[3],P).getBoolean("PulledRelease")&&is(l,b,LastCrossingSite.RELEASE,Kind.RELEASE,1),"remembered");
+                LastCrossingNightThree.hurry(b,LastCrossingNightThree.TRANSIT);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"arrived")&&LastCrossingNightThree.ending(b)==LastCrossingNightThree.FERRY,"across: the crew's crossing"))
+            .thenExecute(()->{h.assertTrue(farBank(f,c[0])&&farBank(f,c[3])&&!farBank(f,c[1]),"those aboard on the far landing");
+                h.assertTrue(f.own(c[2],P).getBoolean("CrossedOver")&&f.own(c[0],P).getString("Ending").equals("ferry"),"crossed, and the ending kept");})
+            .thenWaitUntil(()->{hereFar(c);h.assertTrue(LastCrossing.flag(b,"ended"),"the roll on the far bank, then morning");})
+            .thenExecute(()->{h.assertTrue(LastCrossing.phase(b)==LastCrossing.END,"morning");
+                h.assertTrue(f.own(c[0],P).getBoolean("AnsweredFar")&&f.own(c[1],P).getBoolean("UnansweredFar")&&f.own(c[0],P).getString("HeardUnanswered").contains(name(c[1])),"a name unanswered, heard by those who answered");
+                h.assertTrue(f.own(c[0],P).getBoolean("HeardEllisLate")&&!f.own(c[0],P).getBoolean("HeardEllisFar"),"a late answer for Ellis from the far end of the boat");
+                h.assertTrue(farBank(f,c[1])&&f.own(c[1],P).getBoolean("BroughtAcross"),"the one left behind brought over in the morning");
+                for(var p:c)h.assertTrue(f.own(p,P).getBoolean("NightThree"),"Night Three, for "+name(p));
+                LastCrossing.resetNow(l,b);
+                h.assertTrue(is(l,b,LastCrossingSite.RELEASE,Kind.RELEASE,0)&&!l.getBlockState(b.offset(26,-5,-60)).is(Blocks.WATER),"the station set back");
+                h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_cleared",timeoutTicks=20000)
+    public static void nightThreeTheStationCleared(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        var chamber=new AABB(b.getX()+40,b.getY()-12,b.getZ()-58,b.getX()+48,b.getY()-6,b.getZ()-48);
+        toNightThree(dayThree(f,h,c,"lc_cleared",()->LastCrossing.carryForTest(c[0]),s->s)
+            .thenExecute(()->{f.at(c[2],P,22.5,0,-56.5);use(f,c[2],LastCrossingSite.FEED_GAUGE);f.at(c[2],P,22.5,-6,-55.5);use(f,c[2],LastCrossingSite.FEED_INTAKE);use(f,c[2],LastCrossingSite.GALLERY_DOOR);
+                f.at(c[3],P,22.5,-6,-54.5);h.assertTrue(use(f,c[3],LastCrossingSite.BAR_RACK),"the bar taken");})
+            .thenExecuteAfter(11,()->use(f,c[2],LastCrossingSite.GALLERY_DOOR))
+            .thenExecuteAfter(11,()->{use(f,c[2],LastCrossingSite.GALLERY_DOOR);f.at(c[3],P,40.5,-11,-53.5);select(c[3],"lockbar");
+                h.assertTrue(LastCrossing.flag(b,"doorOpen")&&use(f,c[3],LastCrossingSite.FEED_GATE)&&LastCrossing.flag(b,"barStaged"),"the door open and the bar staged by day");}),f,h)
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.turned(b).contains(c[0].getUUID()),"the carrier turns"))
+            .thenExecute(()->{
+                // One holds the gate, another drops the bar; then the cutoff.
+                f.at(c[2],P,33.5,-11,-44.5);h.assertTrue(use(f,c[2],LastCrossingSite.CUTOFF)&&!LastCrossing.flag(b,"cutoff"),"the cutoff won't turn with the gate unbarred");
+                f.at(c[3],P,40.5,-11,-53.5);h.assertTrue(use(f,c[3],LastCrossingSite.FEED_GATE)&&f.own(c[3],P).getBoolean("HeldFeedGate"),"the gate held");
+                f.at(c[2],P,40.5,-11,-52.5);h.assertTrue(use(f,c[2],LastCrossingSite.FEED_GATE)&&LastCrossing.flag(b,"gateBarred")&&is(l,b,LastCrossingSite.FEED_GATE,Kind.FEED_GATE,2),"the bar dropped across");
+                h.assertTrue(f.own(c[3],P).getBoolean("HeldGateToBar")&&f.own(c[2],P).getString("BarredWith").contains(name(c[3])),"together");
+                f.at(c[2],P,33.5,-11,-44.5);h.assertTrue(use(f,c[2],LastCrossingSite.CUTOFF)&&LastCrossing.flag(b,"cutoff"),"the cutoff wound shut");
+                LastCrossingNightThree.hurry(b,LastCrossingNightThree.DRAIN);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"drained")&&LastCrossingNightThree.defenders(b)>0,"the chamber down, and things on the source"))
+            .thenExecute(()->{h.assertTrue(is(l,b,LastCrossingSite.SOURCE,Kind.SOURCE,1)&&l.getBlockState(b.offset(LastCrossingSite.FEED_GATE)).isAir()&&l.getBlockState(b.offset(LastCrossingSite.SOURCE).east()).isAir(),"the source bare, the gate drawn up, the water gone");
+                f.at(c[2],P,42.5,-11,-53.5);h.assertTrue(LastCrossingNightThree.strike(c[2])&&!f.own(c[2],P).getBoolean("StruckSource"),"nothing lands while they cover it");
+                for(var u:l.getEntitiesOfClass(Undertow.class,chamber))if(u.getTags().contains("crossing_defender"))u.kill();})
+            .thenWaitUntil(()->{LastCrossingNightThree.strike(c[2]);h.assertTrue(f.own(c[2],P).getBoolean("StruckSource"),"fought off it, the first blow lands");})
+            .thenExecuteAfter(11,()->LastCrossingNightThree.strike(c[2])).thenExecuteAfter(11,()->LastCrossingNightThree.strike(c[2]))
+            .thenExecuteAfter(11,()->LastCrossingNightThree.strike(c[2])).thenExecuteAfter(11,()->LastCrossingNightThree.strike(c[2]))
+            .thenExecuteAfter(11,()->LastCrossingNightThree.strike(c[2]))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"destroyed")&&LastCrossingNightThree.ending(b)==LastCrossingNightThree.GALLERY,"the source dead, the station cleared"))
+            .thenExecute(()->{h.assertTrue(LastCrossingNightTwo.turned(b).isEmpty()&&f.own(c[0],P).getBoolean("ReleasedByFight"),"the turned let go at once");
+                h.assertTrue(f.own(c[2],P).getBoolean("DestroyedSource")&&f.own(c[3],P).getBoolean("SawSourceDie"),"who killed it, who saw");
+                LastCrossing.bell(c[1]);h.assertTrue(LastCrossing.flag(b,"mustered")&&f.own(c[1],P).getBoolean("RangMuster"),"the muster bell");
+                h.assertTrue(f.own(c[2],P).getBoolean("OutOfGallery")&&f.own(c[3],P).getBoolean("OutOfGallery")&&!f.own(c[1],P).getBoolean("OutOfGallery"),"those who came out of the gallery");
+                LastCrossingNightThree.hurry(b,LastCrossingNightThree.BEAT);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"ended")&&LastCrossing.phase(b)==LastCrossing.END,"morning"))
+            .thenExecute(()->{for(var p:c)h.assertTrue(farBank(f,p)&&f.own(p,P).getString("Ending").equals("gallery"),"across in the morning: "+name(p));
+                LastCrossing.resetNow(l,b);
+                h.assertTrue(is(l,b,LastCrossingSite.SOURCE,Kind.SOURCE,0)&&is(l,b,LastCrossingSite.FEED_GATE,Kind.FEED_GATE,0)&&l.getBlockState(b.offset(LastCrossingSite.SOURCE).east()).is(Blocks.WATER),"the chamber full again");
+                h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_breath",timeoutTicks=20000)
+    public static void nightThreeTheOtherBreath(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        toNightThree(dayThree(f,h,c,"lc_breath",()->expose(f,h,c[0]),s->s)
+            .thenWaitUntil(()->h.assertTrue(f.own(c[0],P).getBoolean("OfferedBreath"),"offered on Day Three")),f,h)
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.turned(b).contains(c[0].getUUID()),"the carrier turns"))
+            .thenExecute(()->{f.at(c[0],P,25.5,-7,-60.5);h.assertTrue(use(f,c[0],LastCrossingSite.MASTER)&&!LastCrossing.flag(b,"masterOpen"),"before the rise it won't turn");
+                LastCrossing.skip(b,LastCrossingNightThree.RISE_AT);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"risen"),"the rise"))
+            .thenExecute(()->{f.at(c[1],P,26.5,-7,-60.5);h.assertTrue(use(f,c[1],LastCrossingSite.MASTER)&&!LastCrossing.flag(b,"masterOpen"),"it won't turn for a clean hand");
+                look(f,c[1],Vec3.atCenterOf(LastCrossingSite.MASTER));f.at(c[2],P,30.5,0,-57.5);
+                h.assertTrue(use(f,c[0],LastCrossingSite.MASTER)&&LastCrossing.flag(b,"masterOpen")&&is(l,b,LastCrossingSite.MASTER,Kind.MASTER,1),"open at high water");
+                h.assertTrue(f.own(c[1],P).getString("SawMasterOpened").contains(name(c[0])),"and seen opened");})
+            .thenWaitUntil(()->h.assertTrue(f.own(c[2],P).getBoolean("HeardHammer"),"the pipes hammer at the ramp"))
+            .thenExecute(()->LastCrossingNightThree.hurry(b,LastCrossingNightThree.BARGAIN_HOLD))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"bargained"),"held open till the water reached the approach"))
+            .thenExecute(()->{h.assertTrue(Math.abs(LastCrossingNightThree.breath(c[0])-.2)<1e-6&&f.own(c[0],P).getBoolean("OtherBreath")&&f.own(c[0],P).getBoolean("SidedWithSource"),"the Other Breath taken");
+                h.assertTrue(LastCrossingNightThree.breath(c[1])==0,"nobody else's");
+                h.assertTrue(l.getBlockState(b.offset(LastCrossingSite.APPROACH.get(1))).is(Blocks.WATER),"water over the ramp's approach");
+                // Shut too late: the landing drained, the change kept.
+                f.at(c[3],P,53.5,0,-58.5);h.assertTrue(use(f,c[3],LastCrossingSite.DOWNSTREAM)&&f.own(c[3],P).getBoolean("DrainedLanding")&&!f.own(c[3],P).getBoolean("DeniedBargain"),"the downstream sluice shut after");})
+            .thenWaitUntil(()->h.assertTrue(!l.getBlockState(b.offset(LastCrossingSite.APPROACH.get(1))).is(Blocks.WATER),"the approach drained"))
+            .thenExecute(()->{LastCrossing.resetNow(l,b);
+                h.assertTrue(Math.abs(LastCrossingNightThree.breath(c[0])-.2)<1e-6,"kept after the station is set back");
+                h.succeed();});
+    }
+
+    @GameTest(template="empty",batch="last_crossing_taken",timeoutTicks=20000)
+    public static void nightThreeTheSourceTakesIt(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[4];
+        toNightThree(dayThree(f,h,c,"lc_taken",()->expose(f,h,c[0]),s->s),f,h)
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightTwo.turned(b).contains(c[0].getUUID()),"the carrier turns"))
+            .thenExecute(()->LastCrossing.skip(b,LastCrossingNightThree.RISE_AT))
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"risen"),"the rise"))
+            .thenExecute(()->{f.at(c[0],P,25.5,-7,-60.5);h.assertTrue(use(f,c[0],LastCrossingSite.MASTER)&&LastCrossing.flag(b,"masterOpen"),"opened");
+                // Shut in time: denied.
+                f.at(c[3],P,53.5,0,-58.5);h.assertTrue(use(f,c[3],LastCrossingSite.DOWNSTREAM)&&LastCrossing.flag(b,"denied")&&!LastCrossing.flag(b,"masterOpen"),"the downstream sluice shut in time");
+                h.assertTrue(f.own(c[0],P).getBoolean("BargainDenied")&&f.own(c[0],P).getString("DeniedBy").contains(name(c[3]))&&LastCrossingNightThree.breath(c[0])==0,"denied, and by whom");
+                h.assertTrue(use(f,c[0],LastCrossingSite.MASTER)&&!LastCrossing.flag(b,"masterOpen"),"it won't open again");
+                // The night runs out with neither the ferry across nor the source dead.
+                LastCrossing.skip(b,LastCrossingNightThree.NIGHT3_TICKS);})
+            .thenWaitUntil(()->h.assertTrue(LastCrossingNightThree.ending(b)==LastCrossingNightThree.SOURCE,"the source takes the crossing"))
+            .thenExecute(()->{for(var p:c)h.assertTrue(farBank(f,p),"everyone at the far landing: "+name(p));})
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"ended")&&LastCrossing.phase(b)==LastCrossing.END,"every name answered, then morning"))
+            .thenExecute(()->{for(var p:c){var own=f.own(c[1],P);h.assertTrue(own.getString("HeardAnsweredFor").contains(name(p)),"an answer for "+name(p));}
+                h.assertTrue(f.own(c[1],P).getBoolean("HeardEllisFar")&&f.own(c[2],P).getString("Ending").equals("source"),"Ellis answered too; the ending kept");
+                h.assertTrue(LastCrossingNightTwo.turned(b).isEmpty(),"the turned themselves again in the morning");
                 h.succeed();});
     }
 }

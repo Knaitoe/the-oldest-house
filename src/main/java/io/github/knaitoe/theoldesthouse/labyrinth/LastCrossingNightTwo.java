@@ -74,6 +74,9 @@ public final class LastCrossingNightTwo {
     record Drawn(Vec3 to,long until){}
     static final class Night {
         int tick;boolean begun,dawn;
+        /** 0.4.356: this is Night Three, run by LastCrossingNightThree on these same workings (no pull, both carriers turn, the roll in the
+         * first day's order); and the things come up onto the landing too while the master bypass is open. */
+        boolean third,landing;
         /** The turn: who is turning and since when, whether anyone saw it, and who has turned. */
         @Nullable UUID turning;long turnAt=-1;boolean turnSeen;final Set<UUID> turned=new LinkedHashSet<>();
         /** The roll from the cable house's doorway: which name, how long, called twice, who answered, and done. */
@@ -95,6 +98,8 @@ public final class LastCrossingNightTwo {
     }
 
     // ------------------------------------------------------------------------------------------------ for the station and its tests
+    /** How long this night runs: Night Two's four minutes, or the last night's own. */
+    static int length(Night n){return n.third?LastCrossingNightThree.NIGHT3_TICKS:LastCrossing.NIGHT_TICKS;}
     static boolean active(Run r){return r.phase==LastCrossing.DUSK&&r.dayNo>=2&&!r.night2.dawn;}
     /** A reader turned tonight, now. */
     static boolean turned(Run r,ServerPlayer p){return active(r)&&r.night2.turned.contains(p.getUUID());}
@@ -144,12 +149,14 @@ public final class LastCrossingNightTwo {
     /** At sunset the Night One carrier turns where they stand. One who isn't at the station turns when they come back to it. */
     static void turn(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
         if(n.tick<TURN_AT)return;
-        var c=LastCrossing.player(l,r.night.carrier);
-        if(c==null||r.dead.contains(c.getUUID())||n.turned.contains(c.getUUID())||!here.contains(c)||c.isSpectator())return;
+        // One turning at a time: one who left mid-turn starts again when they come back.
+        ServerPlayer c=n.turning==null?null:LastCrossing.player(l,n.turning);
+        if(c!=null&&(r.dead.contains(c.getUUID())||!here.contains(c)||c.isSpectator())){n.turning=null;c=null;}
+        if(c==null)for(var id:carriers(r,n)){var q=LastCrossing.player(l,id);if(q==null||r.dead.contains(id)||n.turned.contains(id)||!here.contains(q)||q.isSpectator())continue;c=q;break;}
+        if(c==null)return;
         if(n.turning==null){n.turning=c.getUUID();n.turnAt=r.tick;n.turnSeen=false;
             LastCrossing.sound(l,c.blockPosition(),CrossingRegistry.TURN.get(),1F,1F);
-            c.playNotifySound(CrossingRegistry.BREATH.get(),SoundSource.PLAYERS,1F,.8F);LastCrossing.cue(c,LastCrossingTexts.TURN_START);}
-        if(!c.getUUID().equals(n.turning))return;
+            c.playNotifySound(CrossingRegistry.BREATH.get(),SoundSource.PLAYERS,1F,.8F);LastCrossing.cue(c,n.third&&c.getUUID().equals(n.secondSlot)?LastCrossingTexts.TURN_FIRST:LastCrossingTexts.TURN_START);}
         if(r.tick%4==0){l.sendParticles(ParticleTypes.DRIPPING_WATER,c.getX(),c.getY()+1.2,c.getZ(),6,.3,.5,.3,0);
             l.sendParticles(new DustParticleOptions(new Vector3f(.2F,.3F,.28F),1.2F),c.getX(),c.getY()+1,c.getZ(),4,.3,.5,.3,0);}
         // Anyone with a view of them while they turn knows whose face it was.
@@ -165,19 +172,23 @@ public final class LastCrossingNightTwo {
         LastCrossing.sync(l,r);
     }
 
+    /** Who turns tonight: the Night One carrier, and on the last night the second carrier too. */
+    static List<UUID> carriers(Run r,Night n){var out=new ArrayList<UUID>();if(r.night.carrier!=null)out.add(r.night.carrier);if(n.third&&n.secondSlot!=null&&!out.contains(n.secondSlot))out.add(n.secondSlot);return out;}
+
     // ------------------------------------------------------------------------------------------------ the roll from the doorway
     static void roll(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
         if(n.rollDone)return;
         if(!n.rollStarted){
             // Vera reaches the cable house's door, opens it unless it's barred, and calls from the doorway.
             if(LastCrossing.walking(r)&&n.tick<ROLL_BY)return;
-            n.rollStarted=true;openCableDoor(l,r);n.calling=-1;n.callTicks=0;
-            LastCrossing.speak(l,r,LastCrossingTexts.NIGHT_ROLL,EARSHOT);return;}
-        n.callTicks++;var names=rollNames(r);
+            n.rollStarted=true;if(!n.third)openCableDoor(l,r);n.calling=-1;n.callTicks=0;
+            LastCrossing.speak(l,r,n.third?LastCrossingTexts.NIGHT3_ROLL:LastCrossingTexts.NIGHT_ROLL,EARSHOT);return;}
+        n.callTicks++;var names=rollNames(r,n);
         if(n.calling<0){if(n.callTicks>=30)next(l,r,n);return;}
         if(n.calling<names.size()){
             var e=names.get(n.calling);var id=e.getKey();
             if(n.answered.contains(id)){if(r.tick-n.answerAt>=20)next(l,r,n);}
+            else if(r.dead.contains(id)){if(n.callTicks>=ANSWER){n.absent.add(e.getValue());next(l,r,n);}}
             else if(!n.calledTwice&&n.callTicks>=ANSWER){n.calledTwice=true;n.callTicks=0;LastCrossing.speak(l,r,e.getValue()+"?",EARSHOT);offer(l,r,id,e.getValue()+"?");}
             else if(n.calledTwice&&n.callTicks>=AGAIN){
                 var p=LastCrossing.player(l,id);if(p!=null){LastCrossing.mark(p,"AbsentNightRoll");if(LastCrossing.TALK.equals(Talk.key(p)))Talk.close(p);}
@@ -188,13 +199,13 @@ public final class LastCrossingNightTwo {
         if(n.absent.isEmpty())LastCrossing.speak(l,r,LastCrossingTexts.ROLL_ALL,EARSHOT);
         else{LastCrossing.speak(l,r,LastCrossingTexts.ROLL_ABSENT,EARSHOT);
             for(var p:here){if(!hears(l,r,p))continue;for(var who:n.absent)if(!who.equals(LastCrossing.name(p)))LastCrossing.addName(p,"NotedAbsent",who);}}
-        LastCrossing.route(r,new Vec3(45.5,0,-55.5),LastCrossingSite.VERA_PULL);
+        if(!n.third)LastCrossing.route(r,new Vec3(45.5,0,-55.5),LastCrossingSite.VERA_PULL);
     }
-    /** The names on the roll, less those who have died here: she knows. */
-    static List<Map.Entry<UUID,String>> rollNames(Run r){var out=new ArrayList<Map.Entry<UUID,String>>();for(var e:r.crew.entrySet())if(!r.dead.contains(e.getKey()))out.add(e);return out;}
+    /** The names on the roll, less those who have died here: she knows. On the last night she calls them all, in the first day's order. */
+    static List<Map.Entry<UUID,String>> rollNames(Run r,Night n){var out=new ArrayList<Map.Entry<UUID,String>>();for(var e:r.crew.entrySet())if(n.third||!r.dead.contains(e.getKey()))out.add(e);return out;}
     static void next(ServerLevel l,Run r,Night n){
-        n.calling++;n.callTicks=0;n.calledTwice=false;var names=rollNames(r);
-        if(n.calling<names.size()){var e=names.get(n.calling);LastCrossing.speak(l,r,e.getValue()+".",EARSHOT);offer(l,r,e.getKey(),e.getValue()+".");}
+        n.calling++;n.callTicks=0;n.calledTwice=false;var names=rollNames(r,n);
+        if(n.calling<names.size()){var e=names.get(n.calling);LastCrossing.speak(l,r,e.getValue()+".",EARSHOT);if(!r.dead.contains(e.getKey()))offer(l,r,e.getKey(),e.getValue()+".");}
     }
     /** A name called: its reader can answer only if they hear it. */
     static void offer(ServerLevel l,Run r,UUID id,String called){
@@ -228,6 +239,7 @@ public final class LastCrossingNightTwo {
 
     // ------------------------------------------------------------------------------------------------ the pull
     static void pull(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
+        if(n.third)return;
         var b=r.base;
         if(n.pull==NOT_CALLED){
             if(!(n.rollDone&&!LastCrossing.walking(r))&&n.tick<PULL_BY)return;
@@ -400,7 +412,7 @@ public final class LastCrossingNightTwo {
                 if(under)p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,220,0,true,false));else p.removeEffect(MobEffects.NIGHT_VISION);
                 if(!under)l.sendParticles(ParticleTypes.DRIPPING_WATER,p.getX(),p.getY()+1.3,p.getZ(),2,.25,.4,.25,0);}
             // The stronger of the two: a live grate held shut, or the plate.
-            boolean gate=p.getUUID().equals(n.gateBy)&&live(r);double plate=plateDistance(l,r,p);
+            boolean gate=(p.getUUID().equals(n.gateBy)&&live(r)||LastCrossingNightThree.holdingLive(r,p))&&!LastCrossingNightThree.masterOpen(r);double plate=plateDistance(l,r,p);
             boolean ward=plate<WARD;
             if(!gate&&!ward){
                 int was=n.choking.getOrDefault(p.getUUID(),0);if(was>CHOKE_WARN)LastCrossing.cue(p,LastCrossingTexts.BREATH_BACK);n.choking.remove(p.getUUID());
@@ -474,15 +486,17 @@ public final class LastCrossingNightTwo {
         n.mobs.removeIf(id->!(l.getEntity(id) instanceof Undertow u&&u.isAlive()));
         n.drawn.keySet().removeIf(id->!n.mobs.contains(id)||r.tick>n.drawn.get(id).until());
         int cap=Math.max(3,Math.min(LastCrossing.MAX_CREW,r.crew.size()));
-        if(n.tick>=FIRST_SPAWN&&n.tick<LastCrossing.NIGHT_TICKS-SPAWN_STOP&&n.mobs.size()<cap&&(n.lastSpawn<0||n.tick-n.lastSpawn>=SPAWN_EVERY)){
+        if(n.tick>=FIRST_SPAWN&&n.tick<length(n)-SPAWN_STOP&&n.mobs.size()<cap&&(n.lastSpawn<0||n.tick-n.lastSpawn>=SPAWN_EVERY)){
             // Over the spillway's banks; and every other one through a branch left open, the grate behind the brake if nobody's shut it.
             Vec3 from=n.spawned%2==0?LastCrossingSite.WEST_BANK:LastCrossingSite.EAST_BANK;
             if(n.spawned%2==1&&live(r)&&!shutGate(r))from=LastCrossingSite.FLOOR_RISE;
             else if(n.spawned%3==2&&r.dayTwo.rampOpen)from=LastCrossingSite.PIT_RISE;
+            // With the master bypass open, every other one comes up onto the landing.
+            if(n.landing&&n.spawned%2==0)from=LastCrossingSite.LANDING_RISE;
             spawn(l,r,n,from);
         }
         if(r.tick%10!=0)return;
-        var door=LastCrossing.world(b,new Vec3(45.5,0,-52.5));
+        var door=LastCrossing.world(b,n.third?LastCrossingSite.LANDING_RISE:new Vec3(45.5,0,-52.5));
         for(var id:List.copyOf(n.mobs)){if(!(l.getEntity(id) instanceof Undertow u))continue;var q=LastCrossing.rel(u.position(),b);
             if(!LastCrossingSite.atStation(q)&&!LastCrossingSite.onBridge(q)){LastCrossingNight.sink(l,u);n.mobs.remove(id);continue;}
             var d=n.drawn.get(id);
@@ -503,6 +517,7 @@ public final class LastCrossingNightTwo {
         n.mobs.add(u.getUUID());n.spawned++;n.lastSpawn=n.tick;
         l.sendParticles(ParticleTypes.SPLASH,at.x,at.y+.3,at.z,24,.5,.2,.5,.2);LastCrossing.sound(l,BlockPos.containing(at),CrossingRegistry.UNDERTOW.get(),1F,1F);
         boolean grate=rel==LastCrossingSite.FLOOR_RISE||rel==LastCrossingSite.PIT_RISE;
+        if(rel==LastCrossingSite.LANDING_RISE)for(var p:LastCrossing.readers(l,r.base)){if(!LastCrossing.sees(p,at.add(0,1,0),20,.2))continue;LastCrossing.mark(p,"SawLandingRise");}
         for(var p:LastCrossing.readers(l,r.base)){if(!LastCrossing.sees(p,at.add(0,1,0),20,.2))continue;
             if(grate){LastCrossing.mark(p,"SawGrateRise");LastCrossing.cue(p,rel==LastCrossingSite.FLOOR_RISE?"Something comes up through the grate behind the brake, streaming.":"Something comes up through the grate into the pit, streaming.");}
             else if(!LastCrossing.own(p).getBoolean("SawUndertow")){LastCrossing.mark(p,"SawUndertow");LastCrossing.cue(p,"Something comes up out of the spillway and over its edge, streaming.");}}
@@ -559,6 +574,7 @@ public final class LastCrossingNightTwo {
     }
     /** "The second slot is available only with all six readers still active at the point of infection." */
     static boolean secondSlotOpen(ServerLevel l,Run r,List<ServerPlayer> here){
+        if(r.night2.third)return false;
         if(r.night2.secondSlot!=null||r.crew.size()<LastCrossing.MAX_CREW||!r.dead.isEmpty())return false;
         for(var id:r.crew.keySet()){var p=LastCrossing.player(l,id);if(p==null||!here.contains(p)||!p.isAlive()||p.isSpectator())return false;}
         return true;
@@ -601,7 +617,8 @@ public final class LastCrossingNightTwo {
      * line is made once and shown to everyone who hears it, the speaker too. */
     public static String voice(ServerPlayer p,String text){
         var r=LastCrossing.runOf(p);if(r==null||!turned(r,p)||text==null||text.isBlank())return text;var n=r.night2;var l=p.serverLevel();
-        int level=plateDistance(l,r,p)<WARD||p.getUUID().equals(n.gateBy)&&live(r)?LastCrossingSpeech.CHOKED:LastCrossingSpeech.NIGHT_TWO;
+        boolean held=(p.getUUID().equals(n.gateBy)&&live(r)||LastCrossingNightThree.holdingLive(r,p))&&!LastCrossingNightThree.masterOpen(r);
+        int level=plateDistance(l,r,p)<WARD||held?LastCrossingSpeech.CHOKED:n.third?LastCrossingSpeech.NIGHT_THREE:LastCrossingSpeech.NIGHT_TWO;
         var names=new ArrayList<>(r.crew.values());names.addAll(List.of("Vera","Ellis","Cordelia"));
         var said=LastCrossingSpeech.garble(text,level,names,r.id+r.tick);
         LastCrossing.mark(p,"SpokeTurned");
