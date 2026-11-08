@@ -1279,5 +1279,12 @@
   "subtitles.the_oldest_house.settling.give": "Floorboards settle",
   "subtitles.the_oldest_house.settling.seam": "Plaster cracks",
   "subtitles.the_oldest_house.settling.scrape": "A cabinet scrapes",
-  "block.the_oldest_house.settling_fitting": "Gallery Fittings"
+  "block.the_oldest_house.settling_fitting": "Gallery Fittings",
+  "subtitles.the_oldest_house.clockwork.tick": "A clock ticks",
+  "subtitles.the_oldest_house.clockwork.teeth": "Gear teeth engage",
+  "subtitles.the_oldest_house.clockwork.lever": "A lever seats heavily",
+  "subtitles.the_oldest_house.clockwork.ratchet": "A ratchet winds back",
+  "subtitles.the_oldest_house.clockwork.weight": "A weight drops",
+  "subtitles.the_oldest_house.clockwork.gate": "Bars draw up",
+  "block.the_oldest_house.clockwork_fitting": "Clockwork"
 }

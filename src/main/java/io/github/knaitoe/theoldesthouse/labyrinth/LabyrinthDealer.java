@@ -235,6 +235,7 @@ public final class LabyrinthDealer {
         // 0.4.256: the header tank (HeaderTanks), a puzzle room.
         gray.add(LabyrinthPlace.HEADER_TANK);
         gray.add(LabyrinthPlace.RESONANT_PIPE);
+        gray.add(LabyrinthPlace.CLOCKWORK_ATTIC);
         // 0.4.306: the tension room (TensionRooms), a puzzle room.
         gray.add(LabyrinthPlace.TENSION_ROOM);
         gray.add(LabyrinthPlace.TENSION_ROOMS);
@@ -269,7 +270,7 @@ public final class LabyrinthDealer {
         // 0.4.264: Johnny Truant's places, from the crossing where stories begin, weighted by the reader's time without him.
         gray.addAll(TruantPlaces.dealt(depth));
         if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.add(LabyrinthPlace.FOLDED_MAZE);
-        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS, LabyrinthPlace.RESONANT_PIPES, LabyrinthPlace.SETTLING_FLOOR));
+        if (depth >= LabyrinthPacing.STRANGE_DEPTH) gray.addAll(List.of(LabyrinthPlace.LAMP_ROOMS, LabyrinthPlace.TWIN_LIFT, LabyrinthPlace.TURNING_STAIR, LabyrinthPlace.VENT_ROOMS, LabyrinthPlace.SPRUNG_ROOMS, LabyrinthPlace.AIRING_ROOMS, LabyrinthPlace.FOLDED_ROOMS, LabyrinthPlace.FUSE_ROOMS, LabyrinthPlace.HEADER_TANKS, LabyrinthPlace.RESONANT_PIPES, LabyrinthPlace.SETTLING_FLOOR, LabyrinthPlace.CLOCKWORK_ATTICS));
         if (depth >= LabyrinthPacing.DEEP_DEPTH) gray.add(LabyrinthPlace.DEEP_MAZE);
         if (depth >= LabyrinthPacing.ABYSS_DEPTH) gray.add(LabyrinthPlace.ABYSS_MAZE);
         // After seven forward crossings, newly discovered ordinary halls are stone.
@@ -613,7 +614,7 @@ public final class LabyrinthDealer {
             // 0.4.199 (owner: "one with a massive ceiling and one with a crumbled floor players have to 'parkour' across"): the
             // vaulted hall a little rarer than the others, so it stays a surprise; the crumbled hall never in the first three
             // crossings, so nobody's first steps in the House are a jump.
-            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS, FOLDING_ROOM, FOLDED_ROOMS, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, FUSE_ROOMS, HEADER_TANK, HEADER_TANKS, TENSION_ROOM, TENSION_ROOMS, RESONANT_PIPE, RESONANT_PIPES, SETTLING_FLOOR -> 0;
+            case BORROWED_LIGHT, SERVICE_LIFT, TURNING_LANDING, LAMP_ROOMS, TWIN_LIFT, TURNING_STAIR, DRAFT_ROOM, VENT_ROOMS, PROPPED_DOOR, SPRUNG_ROOMS, AIRING_ROOMS, FOLDING_ROOM, FOLDED_ROOMS, WINDOW_CLEANER, NIGHT_OPERATOR, FUSE_ROOM, FUSE_ROOMS, HEADER_TANK, HEADER_TANKS, TENSION_ROOM, TENSION_ROOMS, RESONANT_PIPE, RESONANT_PIPES, SETTLING_FLOOR, CLOCKWORK_ATTIC, CLOCKWORK_ATTICS -> 0;
             // 0.4.306: the Sphinx's vestibule, rare. She is frightening, so never in the domestic opening (before the story depth); a domestic crossing, so not past the deep halls.
             case SPHINX_VESTIBULE -> depth < LabyrinthPacing.STORY_DEPTH || depth >= LabyrinthPacing.DEEP_DEPTH ? 0 : 2;
             // 0.4.335: the stair, as rare, in the stone halls between the domestic crossing and the dark halls.

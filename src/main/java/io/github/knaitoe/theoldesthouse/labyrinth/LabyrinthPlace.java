@@ -627,7 +627,11 @@ public enum LabyrinthPlace {
     /** Its deep rooms: three rooms sharing the pipework, three reeds on the last door. */
     RESONANT_PIPES("resonant_pipes",Kind.GRAY,216,new BoundingBox(-7,-1,-34,7,6,0),grayDoors(5,0,-33)),
     /** 0.4.361, the Settling Floor (SettlingFloor, docs/SETTLING_FLOOR_0_4_361.md): a long gallery whose boards settle under weight, and a panel in its far wall. */
-    SETTLING_FLOOR("settling_floor",Kind.GRAY,217,new BoundingBox(-5,-3,-33,5,5,0),grayDoors(0,0,-32));
+    SETTLING_FLOOR("settling_floor",Kind.GRAY,217,new BoundingBox(-5,-3,-33,5,5,0),grayDoors(0,0,-32)),
+    /** 0.4.362, the Clockwork Attic (Clockwork, docs/CLOCKWORK_ATTIC_0_4_362.md): one long gear train from a master clock to the lever that lets the loft's ladder down. */
+    CLOCKWORK_ATTIC("clockwork_attic",Kind.GRAY,218,new BoundingBox(-5,-1,-26,5,8,0),grayDoors(0,5,-25)),
+    /** Its deep attics: three bays and three trains that need running in the right order. */
+    CLOCKWORK_ATTICS("clockwork_attics",Kind.GRAY,219,new BoundingBox(-9,-1,-32,9,8,0),grayDoors(2,5,-31));
 
     /** What a place is to the dealer. */
     public enum Kind {
