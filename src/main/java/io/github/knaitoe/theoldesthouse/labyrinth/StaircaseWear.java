@@ -41,7 +41,7 @@ public final class StaircaseWear {
                 if(bars!=null&&bars.getBlock() instanceof IronBarsBlock)blocks.put(next,bars.setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(side.getOpposite()),false));}
         }
     }
-    private static boolean authored(BlockState s){return s.isAir()||s.is(Blocks.IRON_BARS)||s.is(HouseBlocks.STAIRCASE_STONE.get())||s.is(HouseBlocks.STAIRCASE_STAIRS.get())
+    private static boolean authored(BlockState s){return s.isAir()||StairWell.isRail(s)||s.is(HouseBlocks.STAIRCASE_STONE.get())||s.is(HouseBlocks.STAIRCASE_STAIRS.get())
             ||s.is(Blocks.TUFF_BRICKS)||s.is(Blocks.TUFF_BRICK_STAIRS)||s.is(Blocks.DEEPSLATE_BRICKS)||s.is(Blocks.DEEPSLATE_BRICK_STAIRS)
             ||s.is(Blocks.POLISHED_BLACKSTONE_BRICKS)||s.is(Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS);}
     /**

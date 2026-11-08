@@ -32,7 +32,7 @@ public final class StaircaseDebris {
     }
 
     private record Piece(BlockPos source,BlockPos backing){}
-    private static boolean masonry(BlockState s){return s.is(Blocks.DEEPSLATE_TILES)||s.is(Blocks.CHISELED_DEEPSLATE);}
+    private static boolean masonry(BlockState s){return s.is(Blocks.DEEPSLATE_TILES)||s.is(Blocks.CHISELED_DEEPSLATE)||StairWell.isWall(s);}
     private static boolean loaded(ServerLevel level,BlockPos p){return level.hasChunkAt(p)&&level.areEntitiesLoaded(new ChunkPos(p).toLong());}
     /**
      * Whether something may hang on this stone: a torch, ladder, sign, lantern, chain or anything else

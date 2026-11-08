@@ -89,9 +89,16 @@ public final class ArchitectureTests {
             // Railings and depth variation must exist beyond the first visible stretch, on both descents.
             Set<Block> treadKinds=new HashSet<>();int checked=0;
             for(int top=FinaleArchitecture.TOP;top>FinaleArchitecture.LOOP_BOTTOM+128;top-=128){
-                int rails=0;for(var at:BlockPos.betweenClosed(base.offset(-31,top-127,-31),base.offset(31,top,31)))if(l.getBlockState(at).is(Blocks.IRON_BARS))rails++;
+                int rails=0;for(var at:BlockPos.betweenClosed(base.offset(-31,top-127,-31),base.offset(31,top,31)))if(io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isRail(l.getBlockState(at)))rails++;
                 h.assertTrue(rails>80,"every full depth band has actual native guard rails: "+top+" / "+rails);checked++;
             }
+            // 0.4.376: the well wears its own stone, a darker band in each third of the descent, and its pilasters fluted piers.
+            var bands=new java.util.LinkedHashSet<Block>();
+            for(int y:new int[]{FinaleArchitecture.TOP-10,FinaleArchitecture.TOP-600,FinaleArchitecture.ARENA-300}){
+                var wall=l.getBlockState(base.offset(-FinaleArchitecture.SHAFT_RADIUS,y,5));var pier=l.getBlockState(base.offset(-FinaleArchitecture.SHAFT_RADIUS,y,0));
+                h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isWall(wall)&&io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isWall(pier)&&wall.getBlock()!=pier.getBlock(),"the well's own stone and pier at "+y+": "+wall+" / "+pier);
+                h.assertTrue(wall.is(io.github.knaitoe.theoldesthouse.labyrinth.StairWell.stone(y).getBlock()),"in the band for its depth at "+y+": "+wall);bands.add(wall.getBlock());}
+            h.assertTrue(bands.size()==3,"three bands of stone down the well: "+bands);
             for(var at:FinaleArchitecture.continuationRoute(origin))treadKinds.add(l.getBlockState(at.below()).getBlock());
             h.assertTrue(checked>=19&&treadKinds.containsAll(List.of(Blocks.TUFF_BRICK_STAIRS,Blocks.DEEPSLATE_BRICK_STAIRS,Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS)),"the lower continuation uses distinct authored native stair materials");
             exportStair(l,origin,"great_staircase",FinaleArchitecture.TOP-144,FinaleArchitecture.TOP+15);
