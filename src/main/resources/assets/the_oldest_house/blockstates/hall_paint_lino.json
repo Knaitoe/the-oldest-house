@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/hall_paint_lino"
+      },
+      {
+        "model": "the_oldest_house:block/hall_paint_lino",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/hall_paint_lino",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/hall_paint_lino",
+        "y": 270
+      }
+    ]
+  }
+}

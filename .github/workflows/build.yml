@@ -142,6 +142,7 @@ jobs:
           python3 tools/generate_staircase_leak_assets.py --check
           python3 tools/draw_hall_art.py --check
           python3 tools/draw_stone_hall_art.py --check
+          python3 tools/draw_paint_hall_art.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

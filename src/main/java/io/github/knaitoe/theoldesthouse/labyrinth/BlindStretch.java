@@ -29,6 +29,8 @@ public final class BlindStretch {
         NovelRooms.box(l,b,-1,0,-41,1,2,-38,Blocks.AIR.defaultBlockState());NovelRooms.box(l,b,-1,-1,-41,1,-1,-38,Blocks.SMOOTH_STONE.defaultBlockState());
         l.setBlock(b.offset(-2,0,-2),Blocks.LECTERN.defaultBlockState(),f);if(l.getBlockEntity(b.offset(-2,0,-2)) instanceof LecternBlockEntity e)e.setBook(HotelTexts.blind());
         LabyrinthBuilder.entrance(l,b,Blocks.GRAY_CONCRETE.defaultBlockState(),Blocks.SMOOTH_STONE.defaultBlockState(),Blocks.GRAY_CONCRETE.defaultBlockState());LabyrinthBuilder.doors(l,b,LabyrinthPlace.BLIND_STRETCH);
+        // 0.4.375: its own linoleum and paint, though the reader seldom sees them (docs/TEXTURE_PASS_PAINT_0_4_375.md).
+        PaintFinish.finish(l,b,LabyrinthPlace.BLIND_STRETCH);
     }
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){if(place!=LabyrinthPlace.BLIND_STRETCH||p.gameMode.getGameModeForPlayer()==GameType.SPECTATOR)return;var d=LabyrinthData.get(p.server);var all=d.state(STATE);var own=d.stateEntry(STATE,p.getUUID().toString());own.putInt("Turn",0);all.put(p.getUUID().toString(),own);d.setState(STATE,all);}
     public static int advance(int stage,BlockPos b,net.minecraft.world.phys.Vec3 position){while(stage<TURNS.size()&&position.distanceToSqr(b.offset(TURNS.get(stage)).getCenter())<6.25)stage++;return stage;}

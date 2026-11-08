@@ -68,6 +68,34 @@ public final class HazardVarietyTests {
      * 0.4.323 (owner, November 5: "this room is unpassable, if a player falls. the manipulated gravity is great, but it binds a player
      * to the ladders"): a reader on a recovery ladder is not pulled, and the walk itself still pulls outward.
      */
+    /**
+     * 0.4.375 (docs/TEXTURE_PASS_PAINT_0_4_375.md): the five quiet and threshold halls wear their own linoleum, paint and panelling,
+     * with no vanilla shell left on any face a room shows, and the watched threshold's door, moving on, leaves the painted wall behind.
+     */
+    @GameTest(template="empty",batch="hazard_paint",timeoutTicks=400) public static void quietAndThresholdHallsWearTheirOwnPaint(GameTestHelper h){var f=new Fixture(h);active=f;
+        var halls=List.of(LabyrinthPlace.LAST_SCONCE,LabyrinthPlace.WATCHED_THRESHOLD,LabyrinthPlace.MIRROR_HALL,LabyrinthPlace.QUIET_HALL,LabyrinthPlace.BLIND_STRETCH);
+        for(var p:halls){if(p!=LabyrinthPlace.BLIND_STRETCH){f.build(p);continue;}var bounds=LabyrinthPlaces.placeBounds(f.origin,p);f.chunks.hold(f.level,new AABB(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1));
+            // The blind stretch's turns are carved out of the slot's own fill, which the House lays before building it.
+            var bb=f.base(p);var r=p.room();for(var at:BlockPos.betweenClosed(bb.offset(r.minX()-1,r.minY()-1,r.minZ()-1),bb.offset(r.maxX()+1,r.maxY()+1,r.maxZ())))f.level.setBlock(at,Blocks.WHITE_TERRACOTTA.defaultBlockState(),2);
+            BlindStretch.build(f.level,bb);}
+        f.ready(()->{
+            for(var p:halls){var b=f.base(p);var box=p.room();var shell=PaintFinish.shellOf(p);int lino=0,worn=0,foot=0,wall=0,marked=0,ceiling=0,bare=0;BlockPos firstBare=null;
+                for(var at:BlockPos.betweenClosed(b.offset(box.minX(),box.minY(),box.minZ()),b.offset(box.maxX(),box.maxY(),box.maxZ()))){var s=f.level.getBlockState(at);
+                    if(s.is(HallRegistry.paint("lino_worn"))){lino++;worn++;}else if(s.is(HallRegistry.paint("lino")))lino++;
+                    else if(s.is(HallRegistry.paint("dado"))||s.is(HallRegistry.paint("panel_low")))foot++;
+                    else if(s.is(HallRegistry.paint("wall_marked"))){wall++;marked++;}else if(s.is(HallRegistry.paint("wall"))||s.is(HallRegistry.paint("panel")))wall++;
+                    else if(s.is(HallRegistry.paint("ceiling")))ceiling++;
+                    if(!s.isAir())continue;
+                    for(var side:Direction.values()){var n=at.relative(side);if(n.getX()<b.getX()+box.minX()||n.getX()>b.getX()+box.maxX()||n.getZ()<b.getZ()+box.minZ()||n.getZ()>b.getZ()+box.maxZ())continue;if(shell.contains(f.level.getBlockState(n).getBlock())||f.level.getBlockState(n).is(Blocks.SMOOTH_STONE)){bare++;if(firstBare==null)firstBare=n.subtract(b);}}}
+                boolean quiet=p==LabyrinthPlace.QUIET_HALL;
+                h.assertTrue((lino>8||quiet&&lino>0)&&(worn>0||quiet)&&foot>10&&wall>30&&ceiling>20&&bare==0,p.id()+" wears its own paint: lino "+lino+" (worn "+worn+"), foot "+foot+", wall "+wall+" (marked "+marked+"), ceiling "+ceiling+", vanilla faces showing "+bare+(firstBare==null?"":" (first at "+firstBare.toShortString()+")"));}
+            // The watched threshold's door moves on, and the wall it leaves behind is the painted wall, not terracotta.
+            var place=LabyrinthPlace.WATCHED_THRESHOLD;var b=f.base(place);var w=f.room(place);int from=w.getInt("DoorIndex"),to=(from+1)%3;var old=b.offset(place.doors().get(from+1).rel());
+            h.assertTrue(HazardVariety.moveThreshold(f.level,b,w,to),"the unwatched door moves through the painted wall");
+            h.assertTrue(f.level.getBlockState(old).is(HallRegistry.paint("dado"))&&PaintFinish.is(f.level.getBlockState(old.above()))&&f.level.getBlockState(b.offset(place.doors().get(to+1).rel())).getBlock() instanceof DoorBlock,"it leaves the dado and the plaster behind it: "+f.level.getBlockState(old)+" / "+f.level.getBlockState(old.above()));
+            h.succeed();});
+    }
+    @AfterBatch(batch="hazard_paint") public static void paintDone(ServerLevel level){close();}
     @GameTest(template="empty",batch="hazard_spiral",timeoutTicks=300) public static void spiralClimbersAreNotPulledButTheWalkStillPulls(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.SPIRAL_WALKWAY;var p=f.player("spiral_climber",place);var b=f.base(place);int z=HazardMaps.SPIRAL_LADDER_Z;
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&f.room(place).getLong("Clock")>20,"the walkway's own clock runs"))
