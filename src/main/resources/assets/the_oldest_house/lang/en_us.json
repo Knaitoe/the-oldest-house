@@ -1343,5 +1343,15 @@
   "block.the_oldest_house.stair_well_pier_upper": "Upper Well Pier",
   "block.the_oldest_house.stair_well_pier_middle": "Middle Well Pier",
   "block.the_oldest_house.stair_well_pier_lower": "Lower Well Pier",
-  "block.the_oldest_house.stair_well_balustrade": "Balustrade"
+  "block.the_oldest_house.stair_well_balustrade": "Balustrade",
+  "block.the_oldest_house.proofrock_asphalt": "Asphalt",
+  "block.the_oldest_house.proofrock_asphalt_patched": "Patched Asphalt",
+  "block.the_oldest_house.proofrock_road_line": "Road Line",
+  "block.the_oldest_house.proofrock_sidewalk": "Sidewalk",
+  "block.the_oldest_house.proofrock_sidewalk_cracked": "Cracked Sidewalk",
+  "block.the_oldest_house.proofrock_kerb": "Kerb",
+  "block.the_oldest_house.proofrock_clapboard": "Clapboard",
+  "block.the_oldest_house.proofrock_clapboard_painted": "Painted Clapboard",
+  "block.the_oldest_house.proofrock_clapboard_weathered": "Weathered Clapboard",
+  "block.the_oldest_house.proofrock_cinder_block": "Painted Block"
 }

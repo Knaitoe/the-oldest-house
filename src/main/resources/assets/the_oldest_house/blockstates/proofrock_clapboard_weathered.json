@@ -1,0 +1,15 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/proofrock_clapboard_weathered"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_clapboard_weathered_1"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_clapboard_weathered_2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/proofrock_asphalt_patched"
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_asphalt_patched",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_asphalt_patched",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/proofrock_asphalt_patched",
+        "y": 270
+      }
+    ]
+  }
+}

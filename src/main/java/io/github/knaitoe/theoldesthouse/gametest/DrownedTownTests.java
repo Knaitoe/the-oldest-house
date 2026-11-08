@@ -136,7 +136,18 @@ public final class DrownedTownTests {
     public static void nativeFurnaceDoorReturnsKeyAndRoofCompleteTheActualSequence(GameTestHelper helper){
         MinecraftServer server=helper.getLevel().getServer();BlockPos origin=new BlockPos(5600,80,5600);sequenceFixture=new Fixture(server,origin);
         Fixture fixture=sequenceFixture;ServerLevel level=fixture.level;BlockPos base=fixture.base;LabyrinthData data=LabyrinthData.get(server);
-        helper.assertTrue(level.getBlockState(base.offset(0,-1,-30)).is(Blocks.GRAY_CONCRETE)||level.getBlockState(base.offset(0,-1,-30)).is(Blocks.YELLOW_CONCRETE)||level.getBlockState(base.offset(0,-1,-30)).is(Blocks.ANDESITE), "Main Street is paved and dry");
+        helper.assertTrue(ProofrockSurface.road(level.getBlockState(base.offset(0,-1,-30))), "Main Street is paved and dry");
+        // 0.4.377: the town's own streets and walls. All of Main Street between the kerbs and its sidewalks is the town's paving,
+        // the centre line runs down each street it is painted on, and every kind of surface is laid somewhere in the town.
+        for(int z=-6;z>=-88;z--)for(int x=-5;x<=5;x++){var s=level.getBlockState(base.offset(x,-1,z));helper.assertTrue(ProofrockSurface.is(s),"Main Street is the town's own paving at "+x+","+z+": "+s);}
+        helper.assertTrue(level.getBlockState(base.offset(0,-1,-28)).getValue(RotatedPillarBlock.AXIS)==Direction.Axis.Z&&level.getBlockState(base.offset(-8,-1,-41)).getValue(RotatedPillarBlock.AXIS)==Direction.Axis.X,"the centre line runs down Main Street and along School Street");
+        helper.assertTrue(level.getBlockState(base.offset(4,-1,-30)).is(ProofrockSurface.KERB.get())&&level.getBlockState(base.offset(-4,-1,-30)).is(ProofrockSurface.KERB.get()),"granite kerbs edge Main Street");
+        int[] laid=new int[8];
+        for(int x=-63;x<=63;x++)for(int z=-127;z<=-1;z++)for(int y=-1;y<=7;y++){var s=level.getBlockState(base.offset(x,y,z));
+            int kind=s.is(ProofrockSurface.ASPHALT.get())||s.is(ProofrockSurface.PATCHED.get())?0:s.is(ProofrockSurface.ROAD_LINE.get())?1:s.is(ProofrockSurface.SIDEWALK.get())||s.is(ProofrockSurface.SIDEWALK_CRACKED.get())?2
+                :s.is(ProofrockSurface.KERB.get())?3:s.is(ProofrockSurface.CLAPBOARD.get())?4:s.is(ProofrockSurface.CLAPBOARD_PAINTED.get())?5:s.is(ProofrockSurface.CLAPBOARD_WEATHERED.get())?6:s.is(ProofrockSurface.CINDER_BLOCK.get())?7:-1;
+            if(kind>=0)laid[kind]++;}
+        helper.assertTrue(laid[0]>1000&&laid[1]>60&&laid[2]>300&&laid[3]>120&&laid[4]>100&&laid[5]>80&&laid[6]>100&&laid[7]>100,"Proofrock wears its own asphalt, line, sidewalk, kerb, three clapboards and block: "+Arrays.toString(laid));
         helper.assertTrue(level.getFluidState(base.offset(0,-3,-100)).is(net.minecraft.tags.FluidTags.WATER)&&level.getFluidState(base.offset(50,-3,-60)).is(net.minecraft.tags.FluidTags.WATER), "the lake fills the north and the eastern bay");
         helper.assertTrue(level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getBlock() instanceof DoorBlock&&level.getBlockState(base.offset(DrownedTown.SCHOOL_DOOR)).getFluidState().isEmpty(), "the high school's front door stands on dry ground");
         for(var desk:DrownedTown.PAPERS)helper.assertTrue(level.getBlockEntity(base.offset(desk)) instanceof net.minecraft.world.Container drawer&&drawer.getItem(0).getItem()!=Items.AIR, "each essay is in a real teacher's desk");
