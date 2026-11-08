@@ -317,3 +317,17 @@ The draft's approach above becomes the station's own: the farm road into the flo
    4. Day Three and Night Three: the two plans, the launch and the gallery, the master bypass and the Other Breath, the three endings, roll calls, the nameplate and spare, each reader's account, and the Witness source. *Day Three built in 0.4.355 (`docs/LAST_CROSSING_0_4_355.md`): the depth and the roll at the ramp, the question, the launch made ready (rollers, the pin from the porch, the wheel, the rope and the pin's hands), the feed traced down to the lower gallery behind a rusted door, the bar staged and the debris cleared to the cutoff, the master bypass and the Other Breath's offer. Night Three built in 0.4.356 (`docs/LAST_CROSSING_0_4_356.md`): the last turns and the roll at the ramp, the final rise, the launch and the ferry's crossing, the gallery and the source, the master bypass held open for the Other Breath or denied at the downstream sluice, the source taking the crossing, and the three endings with their roll calls on the far bank. The nameplate and spare, each reader's account, the Witness source and dealing are 0.4.357.*
 
 Each slice ships with its documentation and tests and its own version. A story's Witness source is added only in the slice that makes it fully playable, so the quota never counts a story that cannot be finished.
+
+## What remains of "The House Has a Yard"
+
+Checked against the owner's draft on 8 November. Everything else in it is built: the turnaround and the shared apron for private departures (0.4.309, 0.4.314), the ditch and the clothesline (0.4.313), the Survey Stakes and the Flood Cut (0.4.314), Truant's toolshed, barn lantern and stock gate (0.4.316), the long drive, the porch turn and the joists over the state route (0.4.322), the Sphinx's field crossing (0.4.339), the Stock Gate and the Windbreak with its lean-to coming apart (0.4.345), the flash-flood ditch (0.4.346), the storm field (0.4.347) and the four stories' thresholds. What is left:
+
+1. The Last Crossing's slice 4c (0.4.357): the nameplate and the spare, each reader's account, the Witness source and dealing.
+2. A finishing release for the yard's small items:
+   - the night variation of the sky, a fixed sky with a slightly displaced star pattern;
+   - on a long straight, a silhouette under a distant streetlight that keeps its distance as the reader comes on;
+   - the Survey Stakes' deeper variant, lined up with an opening in a fence that looks continuous until it is approached on that bearing;
+   - the clothesline's quiet return, where a reader's later walk through the same lane carries only the weight of wet fabric and the snap of a line, without the footsteps;
+   - hedge edges that move a little in the wind while the lane's structure stays legible.
+
+Then the remainder of the owner's "Johnny Truant · Encounter Pairs" (the deep missing-sentence pair) and of "New Puzzle and Hazard Room Designs" (the Resonant Pipes, early and deep; the Settling Floor; the Clockwork Attic, early and deep; the Cold Pantry). After those, "Last Weekend at Pinehook" (`docs/PINEHOOK_PROPOSAL.md`).
