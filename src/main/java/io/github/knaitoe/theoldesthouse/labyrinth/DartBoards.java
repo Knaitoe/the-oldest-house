@@ -193,6 +193,11 @@ public final class DartBoards {
         l.addFreshEntity(d);b.flying++;
         l.playSound(null,from.x,from.y,from.z,BarRegistry.DARTS_THROW.get(),SoundSource.PLAYERS,.6F,.9F+l.random.nextFloat()*.2F);
     }
+    /** For a test's failure message: whose turn it is, the darts in the air and landed, and when the board's own player throws next. */
+    public static String describe(Board b){
+        return "seats "+b.seats.size()+", shooter "+(b.shooter()==null?"none":regular(b.shooter())?"regular":"reader")+", flying "+b.flying+", landed "+b.darts.size()
+            +", regular due "+b.regularDue+", paused until "+b.pauseUntil+(b.game==null?", no game":", turn "+b.game.turn+", darts "+b.game.darts+", this turn "+b.game.thisTurn.size()+", last turn "+b.game.lastTurn.size());
+    }
     /** Whether a dart still belongs to a game in play (one that does not is discarded). */
     static boolean knows(DartEntity d){
         if(d.board==null)return false;var b=BOARDS.get(GlobalPos.of(d.level().dimension(),d.board));
