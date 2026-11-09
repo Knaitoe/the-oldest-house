@@ -1778,5 +1778,69 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 145
+  },
+  {
+    "name": "literary_drisking_lorna",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 146
+  },
+  {
+    "name": "literary_drisking_ames",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 147
+  },
+  {
+    "name": "literary_drisking_rowe",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 148
+  },
+  {
+    "name": "literary_drisking_kurt",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 149
+  },
+  {
+    "name": "literary_drisking_odell",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 150
+  },
+  {
+    "name": "literary_drisking_fenn",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 151
+  },
+  {
+    "name": "literary_drisking_gus",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 152
+  },
+  {
+    "name": "literary_drisking_earl",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 153
   }
 ]

@@ -1563,5 +1563,15 @@
   "block.the_oldest_house.borrasca_shop": "Shop Fitting",
   "block.the_oldest_house.borrasca_checker": "Checkered Floor",
   "block.the_oldest_house.borrasca_lino": "Linoleum",
-  "block.the_oldest_house.borrasca_tin": "Pressed Tin"
+  "block.the_oldest_house.borrasca_tin": "Pressed Tin",
+  "item.the_oldest_house.borrasca_coins": "Pocket change",
+  "item.the_oldest_house.borrasca_wallet": "Wallet",
+  "item.the_oldest_house.borrasca_pie": "Slice of pie",
+  "item.the_oldest_house.borrasca_coffee": "Cup of coffee",
+  "item.the_oldest_house.borrasca_milk_coffee": "Coffee, mostly milk",
+  "item.the_oldest_house.borrasca_soda": "Bottle of soda",
+  "item.the_oldest_house.borrasca_candy": "Candy bar",
+  "item.the_oldest_house.borrasca_lollipop": "Lollipop",
+  "item.the_oldest_house.borrasca_malt": "Chocolate malt",
+  "item.the_oldest_house.borrasca_beer": "Bottle of beer"
 }

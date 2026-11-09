@@ -217,6 +217,8 @@ public final class BorrascaShops {
         if(rel.equals(CARDS)){LiteraryVignettes.open(p,place,own,grown?"CardsLater":"Cards",BorrascaShopTexts.cards(grown),at);return true;}
         if(rel.equals(MAP)){LiteraryVignettes.open(p,place,own,"MineMap",BorrascaShopTexts.map(),at);return true;}
         for(var peg:PEGBOARD)if(rel.equals(peg)){LiteraryVignettes.open(p,place,own,grown?"HardwareLater":"Hardware",BorrascaShopTexts.hardware(grown),at);return true;}
+        // 0.4.425: a child gets one lollipop from the jar, with the receptionist there to say so.
+        if(rel.equals(JAR)&&!grown&&BorrascaPeople.atWork(p,own,BorrascaPeople.ODELL)){BorrascaPeople.lollipop(p,own);return true;}
         var s=p.serverLevel().getBlockState(at);
         if(!s.is(BorrascaRegistry.SHOP.get()))return false;
         String line=BorrascaShopTexts.look(s.getValue(BorrascaShopBlock.KIND),s.getValue(BorrascaShopBlock.STAGE),grown);
