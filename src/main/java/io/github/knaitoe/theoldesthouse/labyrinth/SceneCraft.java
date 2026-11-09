@@ -1567,13 +1567,13 @@ public final class SceneCraft {
         for (int x : new int[]{-11, -5, -1, 9}) shutters(x, -36, Direction.NORTH, 1, 3, Blocks.DARK_OAK_TRAPDOOR);
         for (int z : new int[]{-31, -24, -15}) shutters(13, z, Direction.EAST, 1, 3, Blocks.DARK_OAK_TRAPDOOR);
         woodpile(13, -34, -32);
-        roof(-12, 12, -35, -13, 6, Blocks.DARK_OAK_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG);
+        // 0.4.406: the cabin's own roof (docs/TEXTURE_PASS_CABIN_0_4_406.md), cedar shakes over board-and-batten gables; its corner
+        // posts are laid with its walls.
+        roof(-12, 12, -35, -13, 6, RoomShell.CABIN_SHAKE_SLAB.get(), RoomShell.CABIN_GABLE.get(), Blocks.STRIPPED_DARK_OAK_LOG);
         // The porch roof keeps every slab of its plate where the old eave had cut into it.
-        for (int x = -12; x <= 12; x++) for (int z = -12; z <= -8; z++) cover(x, 6, z, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
-        for (int[] corner : new int[][]{{-12, -35}, {12, -35}, {-12, -13}, {12, -13}})
-            for (int y = 0; y <= 5; y++) wallTrim(corner[0], y, corner[1], log(Blocks.STRIPPED_SPRUCE_LOG, Direction.Axis.Y), Blocks.SPRUCE_PLANKS);
-        // A jetty out over the lake on pilings.
-        for (int z = -49; z <= -42; z++) for (int x = 6; x <= 7; x++) if (at(x, -1, z).is(Blocks.WATER)) set(p(x, -1, z), Blocks.SPRUCE_PLANKS.defaultBlockState());
+        for (int x = -12; x <= 12; x++) for (int z = -12; z <= -8; z++) cover(x, 6, z, slab(RoomShell.CABIN_SHAKE_SLAB.get(), SlabType.BOTTOM));
+        // A jetty out over the lake on pilings, decked as the porch is.
+        for (int z = -49; z <= -42; z++) for (int x = 6; x <= 7; x++) if (at(x, -1, z).is(Blocks.WATER)) set(p(x, -1, z), RoomShell.CABIN_PORCH.get().defaultBlockState());
         for (int x : new int[]{5, 8})
             for (int z : new int[]{-45, -49})
                 for (int y = -8; y <= -1; y++) if (at(x, y, z).is(Blocks.WATER)) set(p(x, y, z), Blocks.SPRUCE_LOG.defaultBlockState());
@@ -1620,7 +1620,7 @@ public final class SceneCraft {
         return switch (scene) {
             case ELK_LOT -> List.of(new Roof(-23, -7, -24, -5, 6, Blocks.DARK_OAK_SLAB, Blocks.DARK_OAK_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG));
             case MAPPING_INTERIOR -> List.of(new Roof(-13, 13, -36, -8, 5, Blocks.SPRUCE_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_SPRUCE_LOG));
-            case END_WORLD_CABIN -> List.of(new Roof(-12, 12, -35, -13, 6, Blocks.DARK_OAK_SLAB, Blocks.SPRUCE_PLANKS, Blocks.STRIPPED_DARK_OAK_LOG));
+            case END_WORLD_CABIN -> List.of(new Roof(-12, 12, -35, -13, 6, RoomShell.CABIN_SHAKE_SLAB.get(), RoomShell.CABIN_GABLE.get(), Blocks.STRIPPED_DARK_OAK_LOG));
             case CAMP_BLOOD -> {
                 List<Roof> roofs = new ArrayList<>();
                 Block[] boards = {Blocks.SPRUCE_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.BIRCH_PLANKS};

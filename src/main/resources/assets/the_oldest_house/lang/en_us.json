@@ -1462,5 +1462,14 @@
   "block.the_oldest_house.room_shell_mapping_shingles": "Asphalt Shingles",
   "block.the_oldest_house.room_shell_mapping_shingle_slab": "Asphalt Shingle Slab",
   "block.the_oldest_house.room_shell_mapping_tunnel": "Tunnel Floor",
-  "block.the_oldest_house.room_shell_mapping_cistern": "Cistern Brick"
+  "block.the_oldest_house.room_shell_mapping_cistern": "Cistern Brick",
+  "block.the_oldest_house.room_shell_cabin_wall": "Cabin Wall",
+  "block.the_oldest_house.room_shell_cabin_sill": "Fieldstone Footing",
+  "block.the_oldest_house.room_shell_cabin_floor": "Pine Floorboards",
+  "block.the_oldest_house.room_shell_cabin_ceiling": "Tongue and Groove Ceiling",
+  "block.the_oldest_house.room_shell_cabin_beam": "Hewn Beam",
+  "block.the_oldest_house.room_shell_cabin_shakes": "Cedar Shakes",
+  "block.the_oldest_house.room_shell_cabin_shake_slab": "Cedar Shake Slab",
+  "block.the_oldest_house.room_shell_cabin_gable": "Board and Batten",
+  "block.the_oldest_house.room_shell_cabin_porch": "Porch Decking"
 }

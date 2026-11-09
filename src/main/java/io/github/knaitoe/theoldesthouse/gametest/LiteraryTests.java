@@ -540,6 +540,60 @@ public final class LiteraryTests {
         h.succeed();
     }
     @AfterBatch(batch="literary_mapping_shell") public static void mappingShellDone(ServerLevel l){close();}
+    /**
+     * 0.4.406, the texture pass's eleventh release (docs/TEXTURE_PASS_CABIN_0_4_406.md): the cabin at the end of the world in its own
+     * surfaces. Its outer walls face out on a fieldstone foot between hewn corner posts, its floor is boarded (the kitchen and the
+     * hearth keep the planks their tile and stone go on), its ceiling boarded between beams and its porch decked. Once the scene passes
+     * have run, its roof is cedar shakes over board-and-batten gables, the walls are still its own, and no vanilla plank, stair or slab
+     * of the old shell is left in its walls, floor, ceiling or roof.
+     */
+    @GameTest(template="empty",batch="literary_cabin_shell",timeoutTicks=200)
+    public static void theCabinAtTheEndOfTheWorldStandsInItsOwnSurfaces(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.END_WORLD_CABIN;f.build(place);var l=f.level(place);var b=f.base(place);
+        java.util.function.Consumer<String> walls=when->{int clad=0,feet=0;
+            for(int y=0;y<=5;y++)for(int x=-12;x<=12;x++)for(int z=-35;z<=-13;z++){
+                boolean xw=Math.abs(x)==12,zw=z==-35||z==-13;if(!xw&&!zw)continue;var s=l.getBlockState(b.offset(x,y,z));String at=x+","+y+","+z+" "+when;
+                if(xw&&zw){h.assertTrue(s.is(Blocks.STRIPPED_SPRUCE_LOG),"the corners are hewn posts at "+at+": "+s);continue;}
+                Direction out=x==-12?Direction.WEST:x==12?Direction.EAST:z==-35?Direction.NORTH:Direction.SOUTH;
+                if(s.is(RoomShell.CABIN_WALL.get())||s.is(RoomShell.CABIN_SILL.get())){
+                    h.assertTrue(s.getValue(RoomShell.Skin.FACING)==out,"the wall faces out at "+at);
+                    h.assertTrue(s.is(RoomShell.CABIN_SILL.get())==(y==0),"the foot is fieldstone and the rest shiplap at "+at);
+                    if(y==0)feet++;else clad++;
+                }else h.assertTrue(s.is(Blocks.STRIPPED_DARK_OAK_LOG)||s.is(Blocks.STRIPPED_SPRUCE_LOG)||s.is(Blocks.DARK_OAK_SLAB)||s.getBlock() instanceof IronBarsBlock||s.getBlock() instanceof DoorBlock,
+                    "the walls are clad, framed, glazed or a door at "+at+": "+s);
+            }
+            h.assertTrue(clad>=100&&feet>=60,"the cabin is clad all round "+when+": "+clad+" shiplap, "+feet+" fieldstone");};
+        walls.accept("as built");
+        for(int x=-11;x<=11;x++)for(int z=-34;z<=-14;z++){
+            boolean kept=x>=-11&&x<=-5&&z>=-24&&z<=-14||x>=9&&z>=-32&&z<=-31;var floor=l.getBlockState(b.offset(x,-1,z));
+            h.assertTrue(kept?floor.is(Blocks.SPRUCE_PLANKS):floor.is(RoomShell.CABIN_FLOOR.get()),"the floor is boarded, the kitchen and hearth left for their tile and stone, at "+x+","+z+": "+floor);
+            var top=l.getBlockState(b.offset(x,6,z));
+            h.assertTrue(top.is(RoomShell.CABIN_CEILING.get())||top.is(RoomShell.CABIN_BEAM.get())||top.is(Blocks.BRICKS),"the ceiling is boarded between beams at "+x+","+z+": "+top);
+        }
+        int beams=0;for(int x=-11;x<=11;x++)for(int z=-34;z<=-14;z++)if(l.getBlockState(b.offset(x,6,z)).is(RoomShell.CABIN_BEAM.get()))beams++;
+        h.assertTrue(beams>=40,"the ceiling has its beams: "+beams);
+        for(int x=-12;x<=12;x++)for(int z=-12;z<=-8;z++)h.assertTrue(l.getBlockState(b.offset(x,-1,z)).is(RoomShell.CABIN_PORCH.get()),"the porch is decked at "+x+","+z);
+        int apron=0;for(int x=-13;x<=13;x++)for(int z=-36;z<=-12;z++){if(x>=-12&&x<=12&&z>=-35&&z<=-13)continue;var s=l.getBlockState(b.offset(x,-1,z));
+            h.assertTrue(!s.is(Blocks.STONE_BRICKS),"the foundation ring shows as the cabin's own at "+x+","+z+": "+s);if(s.is(RoomShell.CABIN_SILL.get()))apron++;}
+        h.assertTrue(apron>=60,"the walls stand on a fieldstone apron: "+apron);
+        // The scene passes, in their order: the polish, the composition (its roof), the interiors.
+        ScenePolish.polishOnce(l,f.origin,place);
+        h.startSequence().thenIdle(2).thenExecute(()->{
+            walls.accept("once composed");
+            int shakes=0,gables=0;
+            for(var at:BlockPos.betweenClosed(b.offset(-13,6,-36),b.offset(13,14,-12))){var s=l.getBlockState(at);var rel=at.subtract(b);
+                if(s.is(RoomShell.CABIN_SHAKE_SLAB.get()))shakes++;
+                if(s.is(RoomShell.CABIN_GABLE.get()))gables++;
+                boolean wallTop=rel.getY()==6&&(Math.abs(rel.getX())==12||rel.getZ()==-35||rel.getZ()==-13);
+                h.assertTrue(!s.is(Blocks.DARK_OAK_SLAB)&&!s.is(Blocks.DARK_OAK_STAIRS)&&!s.is(Blocks.SPRUCE_STAIRS)&&!s.is(Blocks.SPRUCE_SLAB)&&!s.is(Blocks.BIRCH_PLANKS)
+                    &&!(s.is(Blocks.SPRUCE_PLANKS)&&(wallTop||rel.getY()>6)),"no vanilla roof or gable is left: "+rel+" "+s);}
+            h.assertTrue(shakes>=500&&gables>=20,"the roof is shaked end to end over board-and-batten gables: "+shakes+" shakes, "+gables+" gable boards");
+            for(int x=-12;x<=12;x++)for(int z=-12;z<=-8;z++)h.assertTrue(l.getBlockState(b.offset(x,6,z)).is(RoomShell.CABIN_SHAKE_SLAB.get()),"the porch roof is shaked at "+x+","+z);
+            h.assertTrue(VignetteInteriorBlock.is(l.getBlockState(b.offset(-8,-1,-20)),VignetteInteriorBlock.Kind.HOLIDAY_TILE),"the kitchen's tile is laid on the planks it expects: "+l.getBlockState(b.offset(-8,-1,-20)));
+            h.assertTrue(VignetteInteriorBlock.is(l.getBlockState(b.offset(-4,3,-31)),VignetteInteriorBlock.Kind.HOLIDAY_PINE),"the bedroom partition is the same pine as the walls within: "+l.getBlockState(b.offset(-4,3,-31)));
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_cabin_shell") public static void cabinShellDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="literary_registry",timeoutTicks=100)
     public static void eligibleSourcesAndOneOptionalClosureLeaveTheWitnessReachable(GameTestHelper h){var data=new LabyrinthData();var player=UUID.randomUUID();h.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"the quota derives from all eligible authored stories");h.assertTrue(WitnessAccount.Story.of("old_cabin")==null,"the recurring witness cabin is guidance, not another source");int sources=0;for(var place:LabyrinthPlace.values())if(LiteraryRooms.isLiterary(place)&&place!=LabyrinthPlace.OLD_CABIN&&place!=LabyrinthPlace.PITT){h.assertTrue(WitnessAccount.Story.of(place.id())!=null&&LiteraryTexts.source(place).has(DataComponents.WRITTEN_BOOK_CONTENT),"every new eligible site has original discovery writing and its own resolution registration");sources++;}var unfinished=UUID.randomUUID();data.visit(unfinished,LabyrinthPlace.HILL_NURSERY);
         h.assertTrue(!LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HILL_NURSERY)&&!LiteraryCabinChoices.canRetire(data,LabyrinthPlace.HOLLOWAY_CAMP),"offline unfinished readers and the finale shield route cannot be retired");

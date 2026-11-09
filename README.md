@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.405** fixes the Goatman's trailer for several readers. Friends who each sat an evening there alone can go back together. A friend who follows after supper has started is told why and goes on elsewhere, instead of finding the door locked. A reader back before dark counts for the night. See [docs/GOATMAN_TOGETHER_0_4_405.md](docs/GOATMAN_TOGETHER_0_4_405.md).
+Development candidate **0.4.406** finishes the texture pass with the cabin at the end of the world: weathered shiplap on a fieldstone foot outside, the knotty pine within, wide floorboards, a boarded ceiling between beams, cedar shakes over board-and-batten gables, and a grey deck on the porch and jetty. See [docs/TEXTURE_PASS_CABIN_0_4_406.md](docs/TEXTURE_PASS_CABIN_0_4_406.md).
+
+Candidate **0.4.405** fixes the Goatman's trailer for several readers. Friends who each sat an evening there alone can go back together. A friend who follows after supper has started is told why and goes on elsewhere, instead of finding the door locked. A reader back before dark counts for the night. See [docs/GOATMAN_TOGETHER_0_4_405.md](docs/GOATMAN_TOGETHER_0_4_405.md).
 
 Candidate **0.4.404** lets several readers film *A Head Full of Ghosts* together. The first reader on the set leads. Everyone else is a second camera on that take: they see the same family, hear it, and keep what their own lens holds. See [docs/GHOSTS_CREW_0_4_404.md](docs/GHOSTS_CREW_0_4_404.md).
 

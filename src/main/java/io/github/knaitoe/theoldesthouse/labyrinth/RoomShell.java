@@ -69,6 +69,18 @@ public final class RoomShell {
         MAPPING_TUNNEL=cube("mapping_tunnel",Blocks.PACKED_MUD),MAPPING_CISTERN=cube("mapping_cistern",Blocks.MUD_BRICKS);
     public static final DeferredBlock<SlabBlock> MAPPING_SHINGLE_SLAB=BLOCKS.registerBlock("room_shell_mapping_shingle_slab",SlabBlock::new,fixed(Blocks.DEEPSLATE_TILE_SLAB));
 
+    /**
+     * 0.4.406, the eleventh release (docs/TEXTURE_PASS_CABIN_0_4_406.md): the cabin at the end of the world, drawn by
+     * tools/draw_cabin_art.py. Its outer walls face out: weathered shiplap outside, the knotty pine it already had within; their
+     * foot is fieldstone outside with a dark skirting within. Wide pine floorboards, a tongue-and-groove ceiling between hewn
+     * beams, cedar shakes on the roof over board-and-batten gables, and grey decking on the porch.
+     */
+    public static final DeferredBlock<Skin> CABIN_WALL=skin("cabin_wall",Blocks.SPRUCE_PLANKS),CABIN_SILL=skin("cabin_sill",Blocks.DARK_OAK_PLANKS);
+    public static final DeferredBlock<Block> CABIN_FLOOR=cube("cabin_floor",Blocks.SPRUCE_PLANKS),CABIN_CEILING=cube("cabin_ceiling",Blocks.BIRCH_PLANKS),
+        CABIN_BEAM=cube("cabin_beam",Blocks.DARK_OAK_PLANKS),CABIN_SHAKES=cube("cabin_shakes",Blocks.DARK_OAK_PLANKS),
+        CABIN_GABLE=cube("cabin_gable",Blocks.SPRUCE_PLANKS),CABIN_PORCH=cube("cabin_porch",Blocks.SPRUCE_PLANKS);
+    public static final DeferredBlock<SlabBlock> CABIN_SHAKE_SLAB=BLOCKS.registerBlock("room_shell_cabin_shake_slab",SlabBlock::new,fixed(Blocks.DARK_OAK_SLAB));
+
     /** A wall block of a skin one block thick: its outside faces the way it faces, its inside the other way. */
     public static final class Skin extends HorizontalDirectionalBlock {
         public static final MapCodec<Skin> CODEC=simpleCodec(Skin::new);
@@ -102,6 +114,11 @@ public final class RoomShell {
         return s.is(MAPPING_WALL.get())||s.is(MAPPING_PANEL.get())||s.is(MAPPING_CEILING.get())||s.is(MAPPING_LINO.get())||s.is(MAPPING_SKIRT.get())
             ||s.is(MAPPING_CARPET_FRONT.get())||s.is(MAPPING_CARPET_BOYS.get())||s.is(MAPPING_CARPET_BED.get())||s.is(MAPPING_SHINGLES.get())
             ||s.is(MAPPING_SHINGLE_SLAB.get())||s.is(MAPPING_TUNNEL.get())||s.is(MAPPING_CISTERN.get());
+    }
+    /** Whether a block is one of the cabin at the end of the world's own surfaces. */
+    public static boolean cabin(BlockState s){
+        return s.is(CABIN_WALL.get())||s.is(CABIN_SILL.get())||s.is(CABIN_FLOOR.get())||s.is(CABIN_CEILING.get())||s.is(CABIN_BEAM.get())
+            ||s.is(CABIN_SHAKES.get())||s.is(CABIN_SHAKE_SLAB.get())||s.is(CABIN_GABLE.get())||s.is(CABIN_PORCH.get());
     }
     /** Whether a block is one of the boiler room's own surfaces. */
     public static boolean boiler(BlockState s){
