@@ -1532,5 +1532,13 @@
   "subtitles.the_oldest_house.kept.glare": "A door opens onto glare",
   "subtitles.the_oldest_house.kept.notice": "The machine notices",
   "advancements.the_oldest_house.account.the_kept.title": "The kept",
-  "advancements.the_oldest_house.account.the_kept.description": "I walked with four people a machine had kept, to food it had promised them that could not be opened."
+  "advancements.the_oldest_house.account.the_kept.description": "I walked with four people a machine had kept, to food it had promised them that could not be opened.",
+  "subtitles.the_oldest_house.prize.kazoo": "Kazoo buzzes",
+  "subtitles.the_oldest_house.prize.boing": "Ball bounces",
+  "subtitles.the_oldest_house.prize.squeak": "Rubber squeaks",
+  "subtitles.the_oldest_house.prize.slap": "Bracelet snaps on",
+  "subtitles.the_oldest_house.prize.creak": "Finger trap creaks",
+  "subtitles.the_oldest_house.prize.pop": "Fingers come free",
+  "entity.the_oldest_house.polybius_prize_prop": "Prize",
+  "entity.the_oldest_house.polybius_bouncy_ball": "Bouncy Ball"
 }

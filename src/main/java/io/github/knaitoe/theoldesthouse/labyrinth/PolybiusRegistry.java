@@ -34,7 +34,19 @@ public final class PolybiusRegistry {
     public static final DeferredItem<net.minecraft.world.item.Item> TICKETS=ITEMS.registerSimpleItem("polybius_tickets",new net.minecraft.world.item.Item.Properties());
     public static final List<String> PRIZE_NAMES=List.of("spider","finger_trap","bouncy_ball","glow_star","slap_bracelet","kazoo","mood_ring","plush_dog");
     public static final int[] PRIZE_COST={5,5,10,10,15,20,25,40};
-    public static final List<DeferredItem<net.minecraft.world.item.Item>> PRIZES=PRIZE_NAMES.stream().map(n->ITEMS.registerSimpleItem("polybius_prize_"+n,new net.minecraft.world.item.Item.Properties().stacksTo(16))).toList();
+    /** 0.4.411: each prize does something (PolybiusPrize): the bracelet and the ring are worn, the others played with or set down. */
+    public static final List<DeferredItem<PolybiusPrize>> PRIZES=java.util.stream.IntStream.range(0,PRIZE_NAMES.size()).mapToObj(i->ITEMS.register("polybius_prize_"+PRIZE_NAMES.get(i),
+        ()->new PolybiusPrize(PolybiusPrize.Kind.values()[i],new net.minecraft.world.item.Item.Properties().stacksTo(16)))).toList();
+    private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    /** A spider, a dog or a star set down in the world, and a ball in flight. */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<PrizeProp>> PROP=TYPES.register("polybius_prize_prop",
+        ()->net.minecraft.world.entity.EntityType.Builder.<PrizeProp>of(PrizeProp::new,net.minecraft.world.entity.MobCategory.MISC).sized(.45F,.3F).clientTrackingRange(8).updateInterval(20).build("polybius_prize_prop"));
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<PrizeBall>> BALL=TYPES.register("polybius_bouncy_ball",
+        ()->net.minecraft.world.entity.EntityType.Builder.<PrizeBall>of(PrizeBall::new,net.minecraft.world.entity.MobCategory.MISC).sized(.25F,.25F).clientTrackingRange(6).updateInterval(1).build("polybius_bouncy_ball"));
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
+    /** The prizes' own noises (tools/generate_prize_audio.py). */
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> KAZOO=sound("prize.kazoo"),BOING=sound("prize.boing"),SQUEAK=sound("prize.squeak"),SLAP=sound("prize.slap"),CREAK=sound("prize.creak"),POP=sound("prize.pop");
     /**
      * 0.4.224 (owner: "add a pizza and soda booth/vendor, too! describe the pizza as overly greasy"): a slice off the warmer and a
      * fountain soda, sold for tickets at the pizza counter.
@@ -46,5 +58,5 @@ public final class PolybiusRegistry {
             .effect(()->new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED,300,0),1).build()),true));
     public static final int PIZZA_COST=4,SODA_COST=3;
     private PolybiusRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);}
 }

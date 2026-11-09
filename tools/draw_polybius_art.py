@@ -262,7 +262,7 @@ def digits(im, x, y, text, colour):
         x += 4
 
 
-def prize_icon(k, im=None, ox=0, oy=0, small=False):
+def prize_icon(k, im=None, ox=0, oy=0, small=False, mood=4):
     """One prize, drawn at 16 pixels (an item) or 7 (on the shelf, two to a row)."""
     im = im or Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     def d(x, y, c):
@@ -303,15 +303,65 @@ def prize_icon(k, im=None, ox=0, oy=0, small=False):
                     d(x, y, '#e0a040' if (x + y) % 4 else '#3a2010')
     elif k == 5:  # a kazoo
         f(2, 7, 12, 10, '#c03030'); f(12, 6, 14, 11, '#c03030'); f(6, 6, 8, 7, '#f0e0a0'); d(3, 8, '#801818')
-    elif k == 6:  # a mood ring: a band and its dark stone
+    elif k == 6:  # a mood ring: a band and its stone, black until it is worn
+        stone, shine = MOODS[mood]
         for x in range(4, 12):
             for y in range(7, 13):
                 if 6 <= (x - 7.5) ** 2 + (y - 10) ** 2 * 2 <= 14:
                     d(x, y, '#c8b060')
-        f(6, 4, 10, 8, '#2a1a40'); d(7, 5, '#6a4ab0'); d(8, 6, '#40a080')
+        f(6, 4, 10, 8, stone); d(7, 5, shine); d(8, 6, shine)
     else:  # a plush dog with one eye
         f(3, 6, 12, 12, '#c89a68'); f(10, 3, 15, 8, '#c89a68'); f(10, 2, 12, 4, '#8a6040'); f(4, 12, 6, 14, '#c89a68'); f(9, 12, 11, 14, '#c89a68')
         d(13, 5, '#141414'); d(14, 6, '#3a2010'); d(2, 7, '#8a6040')
+    return im
+
+
+# 0.4.411 (owner: "Massive disappointment that I couldn't snap the bracelet onto my wrist"): the prizes in use. The mood ring's
+# stone in its five colours (violet, blue, green, amber, black), the slap bracelet held up straight before it snaps, the finger trap
+# stretched as it tightens, and the strip of print, gold and stones the worn bracelet and ring are drawn from.
+MOODS = [('#7a3ad0', '#c8a0ff'), ('#2a6ad8', '#90c0ff'), ('#2aa860', '#a0f0c0'), ('#d89a20', '#ffe0a0'), ('#18141c', '#3a3044')]
+LEOPARD = ('#e0a040', '#3a2010', '#b07028')
+
+
+def bracelet_straight():
+    """The slap bracelet straightened out, a stiff strip of leopard print held up to snap."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i in range(13):
+        x, y = 2 + i, 13 - i
+        for w in range(2):
+            c = LEOPARD[1] if (i * 3 + w) % 5 == 0 else LEOPARD[2] if w else LEOPARD[0]
+            dot(im, x, y - w, c)
+    dot(im, 14, 1, '#c8c0b0'); dot(im, 2, 13, '#c8c0b0')
+    return im
+
+
+def trap_pulled(level):
+    """The finger trap pulled tighter: longer, and narrower in the middle, as the weave closes."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    half = 6 + level  # half the length grows; the middle draws in
+    for x in range(8 - half, 8 + half):
+        mid = abs(x - 7.5) < 3
+        top, bottom = (7, 9) if mid and level >= 2 else (6 + (1 if mid and level else 0), 10 - (1 if mid and level else 0))
+        for y in range(top, bottom):
+            dot(im, x, y, '#d84060' if (x + y) % 3 == 0 else '#f0d050' if (x + y) % 3 == 1 else '#3070c0')
+    for y in (7, 8):
+        dot(im, 7 - half, y, '#a03040'); dot(im, 8 + half, y, '#a03040')
+    return im
+
+
+def wear():
+    """What the worn prizes are drawn from: three rows of leopard print, a row of gold, and the ring's five stones, two pixels each."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rng = random.Random(411)
+    for x in range(16):
+        for y in range(3):
+            dot(im, x, y, LEOPARD[1] if rng.random() < .22 else LEOPARD[0] if (x + y) % 3 else LEOPARD[2])
+    for x in range(16):
+        dot(im, x, 4, '#d8c070' if x % 4 else '#f0e0a0')
+    for m, (stone, shine) in enumerate(MOODS):
+        for x in range(2):
+            for y in range(6, 8):
+                dot(im, m * 2 + x, y, shine if x == 0 and y == 6 else stone)
     return im
 
 
@@ -757,6 +807,12 @@ def textures():
         out[f'block/polybius/prizes_{k}.png'] = prizes(k)
         out[f'item/polybius_prize_{PRIZE_NAMES[k]}.png'] = prize_icon(k)
     out['item/polybius_tickets.png'] = tickets()
+    for m in range(4):
+        out[f'item/polybius_prize_mood_ring_{m}.png'] = prize_icon(6, mood=m)
+    out['item/polybius_prize_slap_bracelet_straight.png'] = bracelet_straight()
+    for level in range(1, 4):
+        out[f'item/polybius_prize_finger_trap_pull{level}.png'] = trap_pulled(level)
+    out['entity/prize_wear.png'] = wear()
     out['block/polybius/prizes_side.png'] = new(base='#3a2a1e', seed=284, spread=3)
     for h in range(2):
         out[f'block/polybius/brawl_front_{h}.png'] = brawl_front(h); out[f'block/polybius/brawl_marquee_{h}.png'] = brawl_marquee(h)
@@ -816,7 +872,20 @@ def files():
         out[f'textures/block/polybius/other_screen_{g}.png.mcmeta'] = SCREEN_META
     for item in ITEM_NAMES:
         out[f'models/item/{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/{item}'}}
+    for item, prop, variants in OVERRIDES:
+        for _, suffix in variants:
+            out[f'models/item/{item}_{suffix}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/{item}_{suffix}'}}
+        out[f'models/item/{item}.json']['overrides'] = [{'predicate': {NS + prop: value}, 'model': NS + f'item/{item}_{suffix}'} for value, suffix in variants]
     return out
+
+
+# 0.4.411: the ring's stone follows its wearer (black, amber, green, blue, violet as the value rises), the bracelet straightens while
+# held up, and the finger trap stretches with each pull.
+OVERRIDES = [
+    ('polybius_prize_mood_ring', 'mood', [(0.25, '3'), (0.5, '2'), (0.75, '1'), (1.0, '0')]),
+    ('polybius_prize_slap_bracelet', 'straight', [(1.0, 'straight')]),
+    ('polybius_prize_finger_trap', 'pull', [(0.3, 'pull1'), (0.6, 'pull2'), (0.95, 'pull3')]),
+]
 
 
 def main():

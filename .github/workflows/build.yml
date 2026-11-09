@@ -162,6 +162,7 @@ jobs:
           python3 tools/generate_city_audio.py --check
           python3 tools/draw_kept_art.py --check
           python3 tools/generate_kept_audio.py --check
+          python3 tools/generate_prize_audio.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

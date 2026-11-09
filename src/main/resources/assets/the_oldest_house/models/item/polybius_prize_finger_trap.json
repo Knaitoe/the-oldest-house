@@ -2,5 +2,25 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "the_oldest_house:item/polybius_prize_finger_trap"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "the_oldest_house:pull": 0.3
+      },
+      "model": "the_oldest_house:item/polybius_prize_finger_trap_pull1"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:pull": 0.6
+      },
+      "model": "the_oldest_house:item/polybius_prize_finger_trap_pull2"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:pull": 0.95
+      },
+      "model": "the_oldest_house:item/polybius_prize_finger_trap_pull3"
+    }
+  ]
 }

@@ -54,6 +54,15 @@ public final class Grounding {
         set(p.server,p.getUUID(),0);HousePackets.send(p,new GroundingPayload(0F,true));
         return true;
     }
+    /**
+     * 0.4.411: three seconds holding the arcade's plush dog close halves whatever static is left on the reader, anywhere. Nothing says
+     * so; it only goes sooner. Returns whether there was any to ease.
+     */
+    public static boolean ease(ServerPlayer p){
+        int left=ticks(p.server,p.getUUID());if(left<=0)return false;
+        set(p.server,p.getUUID(),left/2);HousePackets.send(p,new GroundingPayload(left/2/(float)FADE,false));
+        return true;
+    }
     /** Whether the writing has a line of at least twenty-four letters that was not there before. */
     public static boolean newLine(String before,String after){
         var old=new HashSet<String>();for(String line:before.split("\n"))old.add(line.trim());

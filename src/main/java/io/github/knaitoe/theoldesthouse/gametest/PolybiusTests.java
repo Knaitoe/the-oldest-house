@@ -258,4 +258,82 @@ public final class PolybiusTests {
         }
         h.succeed();
     }
+
+    /**
+     * 0.4.411: every prize does something. The bracelet snaps round the wrist of the hand that held it and the ring slips onto a finger;
+     * a wrist takes one bracelet; crouching with an empty hand takes them off again. The ring's stone follows its wearer. The kazoo
+     * plays the scale by where its player looks. The ball bounces and comes to rest as the ball. The star sticks to a wall and the
+     * spider sits on the floor; the spider jumps when someone comes near; both come back to a hand. The trap tightens when pulled and
+     * lets go when the fingers are pushed together. Holding the dog close halves what static is left.
+     */
+    @GameTest(template="empty",batch="poly_toys",timeoutTicks=900)
+    public static void everyPrizeIsWornPlayedOrSetDown(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var a=f.player("poly_prize_a",P);var c=f.player("poly_prize_c",P);
+        PrizeProp[] star={null},spider={null};PrizeBall[] ball={null};
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenExecute(()->{
+                var hand=net.minecraft.world.InteractionHand.MAIN_HAND;
+                // The bracelet: held up, then slapped round the wrist of the hand that held it.
+                a.setItemInHand(hand,new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(4).get(),2));
+                a.getMainHandItem().use(f.in,a,hand);h.assertTrue(a.isUsingItem(),"the bracelet is held up before it snaps");
+                a.getMainHandItem().finishUsingItem(f.in,a);a.stopUsingItem();
+                h.assertTrue((PrizeWear.worn(a)&PrizeWear.RIGHT_WRIST)!=0&&a.getMainHandItem().getCount()==1,"it snaps round the right wrist and one is used: "+PrizeWear.worn(a));
+                h.assertTrue(a.getMainHandItem().use(f.in,a,hand).getResult()==net.minecraft.world.InteractionResult.FAIL,"a wrist takes one bracelet");
+                // The ring, on the same hand, and its stone.
+                a.setItemInHand(hand,new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(6).get()));
+                a.getMainHandItem().use(f.in,a,hand);a.getMainHandItem().finishUsingItem(f.in,a);a.stopUsingItem();
+                h.assertTrue((PrizeWear.worn(a)&PrizeWear.RIGHT_RING)!=0&&a.getMainHandItem().isEmpty(),"the ring slips onto that hand");
+                h.assertTrue(PolybiusPrize.mood(a)==1,"whole, inside the House, the stone is blue: "+PolybiusPrize.mood(a));
+                a.setHealth(5F);h.assertTrue(PolybiusPrize.mood(a)==3,"badly hurt, amber");a.hurtTime=5;h.assertTrue(PolybiusPrize.mood(a)==4,"while being hurt, black");a.hurtTime=0;a.setHealth(a.getMaxHealth());
+                h.assertTrue(PolybiusPrize.mood(null)==4,"and black on no finger at all");
+                // Crouching with an empty hand takes them off: the ring first, then the bracelet.
+                a.setPose(net.minecraft.world.entity.Pose.CROUCHING);a.setShiftKeyDown(true);
+                h.assertTrue(PrizeWear.takeOff(a)&&PolybiusPrize.is(a.getMainHandItem(),PolybiusPrize.Kind.MOOD_RING),"the ring comes off into the empty hand");
+                h.assertTrue(!PrizeWear.takeOff(a),"nothing more comes off into a full hand");
+                a.getInventory().add(a.getMainHandItem().copy());a.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);
+                h.assertTrue(PrizeWear.takeOff(a)&&PolybiusPrize.is(a.getMainHandItem(),PolybiusPrize.Kind.SLAP_BRACELET)&&PrizeWear.worn(a)==0,"then the bracelet: "+PrizeWear.worn(a));
+                a.setShiftKeyDown(false);a.setPose(net.minecraft.world.entity.Pose.STANDING);
+                // The kazoo plays the scale by where its player looks.
+                h.assertTrue(PolybiusPrize.kazooPitch(0F)==1F&&PolybiusPrize.kazooPitch(-90F)==2F&&PolybiusPrize.kazooPitch(90F)==.5F,"level, up and down are the middle, top and bottom of the scale");
+                // The finger trap: pulled, it tightens; pushed together, it lets go.
+                var trap=new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(1).get());a.setItemInHand(hand,trap);var trapItem=(PolybiusPrize)trap.getItem();
+                trapItem.onUseTick(f.in,a,trap,72000-PolybiusPrize.TIGHTEN);trapItem.onUseTick(f.in,a,trap,72000-2*PolybiusPrize.TIGHTEN);
+                h.assertTrue(PolybiusPrize.pull(trap)==2,"each pull tightens it: "+PolybiusPrize.pull(trap));
+                a.setPose(net.minecraft.world.entity.Pose.CROUCHING);a.setShiftKeyDown(true);
+                trapItem.onUseTick(f.in,a,trap,72000-3*PolybiusPrize.TIGHTEN);trapItem.onUseTick(f.in,a,trap,72000-4*PolybiusPrize.TIGHTEN);
+                h.assertTrue(PolybiusPrize.pull(trap)==0,"pushing the fingers together frees them");a.setShiftKeyDown(false);a.setPose(net.minecraft.world.entity.Pose.STANDING);
+                // The dog: three seconds held close halve the static left.
+                io.github.knaitoe.theoldesthouse.journal.Grounding.begin(a);float before=io.github.knaitoe.theoldesthouse.journal.Grounding.level(f.in.getServer(),a.getUUID());
+                var dog=new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(7).get());a.setItemInHand(hand,dog);
+                ((PolybiusPrize)dog.getItem()).onUseTick(f.in,a,dog,72000-PolybiusPrize.HUG);
+                float after=io.github.knaitoe.theoldesthouse.journal.Grounding.level(f.in.getServer(),a.getUUID());
+                h.assertTrue(before>.9F&&Math.abs(after-before/2)<.02F,"a hug halves the static: "+before+" to "+after);
+                // The star on a wall, the spider on the floor.
+                var wall=b.offset(-2,1,-8);f.in.setBlock(wall,net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
+                f.in.setBlock(wall.south(),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                var starStack=new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(3).get());a.setItemInHand(hand,starStack);
+                var hit=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(wall).add(0,0,.5),net.minecraft.core.Direction.SOUTH,wall,false);
+                h.assertTrue(starStack.useOn(new net.minecraft.world.item.context.UseOnContext(a,hand,hit)).consumesAction(),"the star sticks to the wall");
+                var floor=b.offset(2,-1,-8);
+                var spiderStack=new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(0).get());a.setItemInHand(hand,spiderStack);
+                var down=new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(floor).add(0,.5,0),net.minecraft.core.Direction.UP,floor,false);
+                h.assertTrue(spiderStack.useOn(new net.minecraft.world.item.context.UseOnContext(a,hand,down)).consumesAction(),"the spider is set down on the floor");
+                var props=f.in.getEntitiesOfClass(PrizeProp.class,new AABB(b).inflate(30));
+                for(var prop:props){if(prop.kind()==PolybiusPrize.Kind.GLOW_STAR)star[0]=prop;if(prop.kind()==PolybiusPrize.Kind.SPIDER)spider[0]=prop;}
+                h.assertTrue(star[0]!=null&&star[0].face()==net.minecraft.core.Direction.SOUTH&&star[0].support().equals(wall),"the star hangs on that face of that block");
+                h.assertTrue(spider[0]!=null&&spider[0].support().equals(floor)&&spider[0].startled()<0,"the spider sits still on the floor");
+                at(f,a,-6.5,-3.5);c.teleportTo(f.in,spider[0].getX()+.6,spider[0].getY(),spider[0].getZ(),0,0);
+                // The ball: thrown at the floor, it bounces.
+                a.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);
+                ball[0]=new PrizeBall(f.in,a);ball[0].setItem(new net.minecraft.world.item.ItemStack(PolybiusRegistry.PRIZES.get(2).get()));
+                ball[0].moveTo(b.getX()+.5,b.getY()+2.5,b.getZ()-6.5);ball[0].setDeltaMovement(.25,-.3,0);f.in.addFreshEntity(ball[0]);})
+            .thenWaitUntil(()->h.assertTrue(spider[0].startled()>=0,"the spider jumps when someone comes near"))
+            .thenWaitUntil(()->h.assertTrue(ball[0].isRemoved()&&ball[0].bounces>=2,"the ball bounces more than once and comes to rest: "+ball[0].bounces+" removed "+ball[0].isRemoved()+" at "+ball[0].position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))+" moving "+ball[0].getDeltaMovement()+" ticks "+ball[0].tickCount))
+            .thenExecute(()->{
+                h.assertTrue(!f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(b).inflate(30),i->PolybiusPrize.is(i.getItem(),PolybiusPrize.Kind.BOUNCY_BALL)).isEmpty(),"and lies there as the ball, to be picked up");
+                star[0].interact(a,net.minecraft.world.InteractionHand.MAIN_HAND);spider[0].interact(c,net.minecraft.world.InteractionHand.MAIN_HAND);
+                h.assertTrue(star[0].isRemoved()&&spider[0].isRemoved()&&count(a,PolybiusRegistry.PRIZES.get(3).get())==1&&count(c,PolybiusRegistry.PRIZES.get(0).get())==1,"each comes back to the hand that takes it");
+                close();h.succeed();});
+    }
+    @AfterBatch(batch="poly_toys") public static void toysDone(ServerLevel l){close();}
 }
