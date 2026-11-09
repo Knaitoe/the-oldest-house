@@ -76,6 +76,30 @@ def text(im, x, y, word, colour, step=4):
         x += step
 
 
+# 0.4.403: other widths of some letters, so a word fits the face it is painted on (the signs' last letters ran off their faces), and
+# an N with its diagonal (three pixels wide, it is a solid block).
+NARROW = {'I': ['1', '1', '1', '1', '1'], 'L': ['10', '10', '10', '10', '11'], 'N': ['1001', '1101', '1011', '1001', '1001']}
+
+
+def word(im, x, y, letters, colour, narrow=''):
+    """Paints a word glyph by glyph, one pixel between letters; the letters named in {@code narrow} are drawn narrow."""
+    for ch in letters:
+        glyph = NARROW[ch] if ch in narrow else GLYPHS[ch]
+        for j, row in enumerate(glyph):
+            for i, on in enumerate(row):
+                if on == '1':
+                    dot(im, x + i, y + j, colour)
+        x += len(glyph[0]) + 1
+
+
+def width(letters, narrow=''):
+    return sum(len((NARROW[ch] if ch in narrow else GLYPHS[ch])[0]) + 1 for ch in letters) - 1
+
+
+# A runner, for the no-running sign: head, leaning body, one arm forward and one back, legs apart.
+RUNNER = ['....11.', '....11.', '..111..', '.1.11.1', '...1...', '..1.1..', '.1...1.']
+
+
 def tiles(base, grout, seed, size=4):
     im = new(base=base, seed=seed, spread=3)
     for y in range(16):
@@ -281,10 +305,12 @@ def lamp(on):
 
 
 def exit_sign():
+    # 0.4.403: the face is fifteen pixels by nine (rows 3 to 11), a dark rule above and below, EXIT in white with a pixel to spare
+    # all round (it was drawn sixteen wide on a twelve-pixel face, and its T ran off).
     im = new(base='#2a8a4a', seed=2360, spread=2)
-    text(im, 2, 6, 'EXIT', '#f0f4ee')
     for x in range(16):
-        dot(im, x, 0, '#1a5a2a'); dot(im, x, 15, '#1a5a2a')
+        dot(im, x, 3, '#1a5a2a'); dot(im, x, 11, '#1a5a2a')
+    word(im, (15 - width('EXIT', 'I')) // 2, 5, 'EXIT', '#f0f4ee', 'I')
     return im
 
 
@@ -305,12 +331,19 @@ def drain():
 
 
 def sign(n):
+    # 0.4.403: the whole sixteen-pixel face, a red rule along the top and the bottom. The words were cut off by a face twelve pixels
+    # wide; now every letter sits inside it. No running is NO over a running figure; last swim is LAST over SWIM.
     im = new(base='#f0eee6', seed=2390 + n, spread=2)
-    fill(im, 0, 0, 16, 2, '#c83a32'); fill(im, 0, 14, 16, 16, '#c83a32')
+    fill(im, 0, 0, 16, 1, '#c83a32'); fill(im, 0, 15, 16, 16, '#c83a32')
     if n == 0:
-        text(im, 4, 3, 'NO', '#1e2a3a'); text(im, 0, 9, 'RUN', '#1e2a3a', 5)
+        word(im, (16 - width('NO', 'N')) // 2, 2, 'NO', '#1e2a3a', 'N')
+        for j, row in enumerate(RUNNER):
+            for i, on in enumerate(row):
+                if on == '1':
+                    dot(im, 4 + i, 8 + j, '#1e2a3a')
     else:
-        text(im, 0, 3, 'LAST', '#1e2a3a'); text(im, 0, 9, 'SWIM', '#1e2a3a')
+        word(im, (16 - width('LAST', 'L')) // 2, 3, 'LAST', '#1e2a3a', 'L')
+        word(im, (16 - width('SWIM', 'I')) // 2, 9, 'SWIM', '#1e2a3a', 'I')
     return im
 
 
@@ -352,11 +385,11 @@ def fitting_models():
         m[f'lockers_{n}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 's', 'north': 'f'})], {'s': 'locker_side', 'f': f'lockers_{n}'}, 'locker_side', 'solid')
         m[f'radio_{n}'] = model([element([3, 0, 6], [13, 6, 10], {'all': 's', 'north': 'f'}), element([11, 6, 8], [12, 11, 9], {'all': 'e'})], {'s': 'radio_side', 'f': f'radio_{n}', 'e': 'edge'}, 'radio_side')
         m[f'lamp_{n}'] = model([element([2, 14, 2], [14, 16, 14], {'all': 'r', 'down': 'l'})], {'r': 'edge', 'l': f'lamp_{n}'}, 'edge')
-        m[f'sign_{n}'] = model([element([2, 3, 15.5], [14, 13, 16], {'north': 's', 'south': 's'}, {'north': [2, 3, 14, 13], 'south': [2, 3, 14, 13]})], {'s': f'sign_{n}'}, f'sign_{n}')
+        m[f'sign_{n}'] = model([element([0, 0, 15.5], [16, 16, 16], {'north': 's', 'south': 's'}, {'north': [0, 0, 16, 16], 'south': [0, 0, 16, 16]})], {'s': f'sign_{n}'}, f'sign_{n}')
     m['bench_0'] = model([element([0, 6, 3], [16, 8, 13], {'all': 'b'}), element([1, 0, 4], [3, 6, 12], {'all': 'e'}), element([13, 0, 4], [15, 6, 12], {'all': 'e'})], {'b': 'bench', 'e': 'edge'}, 'bench')
     m['clipboard_0'] = model([element([4, 0, 3], [12, 1, 13], {'all': 's', 'up': 'c'}, {'up': [2, 1, 14, 15]})], {'c': 'clipboard', 's': 'radio_side'}, 'clipboard')
     m['boards_0'] = model([element([2, 0, 4], [14, 7, 12], {'all': 'b'})], {'b': 'boards'}, 'boards')
-    m['exit_sign_0'] = model([element([2, 5, 15], [14, 10, 16], {'north': 'x', 'south': 'x', 'up': 'r', 'down': 'r', 'east': 'r', 'west': 'r'}, {'north': [2, 5, 14, 10], 'south': [2, 5, 14, 10]})], {'x': 'exit', 'r': 'edge'}, 'exit')
+    m['exit_sign_0'] = model([element([0.5, 4, 15], [15.5, 13, 16], {'north': 'x', 'south': 'x', 'up': 'r', 'down': 'r', 'east': 'r', 'west': 'r'}, {'north': [0, 3, 15, 12], 'south': [0, 3, 15, 12]})], {'x': 'exit', 'r': 'edge'}, 'exit')
     m['towel_0'] = model([element([3, 0, 4], [13, 2, 12], {'all': 't'})], {'t': 'towel'}, 'towel')
     m['drain_0'] = model([element([2, 0, 2], [14, 0.5, 14], {'up': 'd', 'down': 'd'})], {'d': 'drain'}, 'drain')
     return m

@@ -117,6 +117,9 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(MEMORY_PHASE.equals(key)){refreshDimensions();phaseStart=tickCount;}}
     @Override public boolean isPushable(){return !memory()&&super.isPushable();}
+    /** 0.4.403, the owner's playtest: "Lake witch caught on boat". A canoe or boat drifting into her picked her up as a passenger, and she sat in it. She never rides anything. */
+    @Override protected boolean canRide(net.minecraft.world.entity.Entity vehicle){return false;}
+    @Override public boolean startRiding(net.minecraft.world.entity.Entity vehicle,boolean force){return false;}
     @Override protected void pushEntities(){if(!memory())super.pushEntities();}
     @Override public boolean isPickable(){return (!memory()||memoryPhase()<=Shallows.CARRIED)&&super.isPickable();}
     public @Nullable UUID memoryOwner() { return memoryOwner; }
@@ -431,6 +434,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         follow(.26);
     }
     @Override public void tick() {
+        if(!level().isClientSide()&&isPassenger())stopRiding();
         if(level().isClientSide()){swingO=swingNow;swingNow=swing();}
         super.tick();
         if(memory()) { setAirSupply(300); if(!level().isClientSide())Shallows.tickActor(this); return; }

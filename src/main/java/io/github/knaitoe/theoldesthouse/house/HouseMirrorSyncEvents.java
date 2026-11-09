@@ -82,9 +82,35 @@ public final class HouseMirrorSyncEvents {
         }
     }
 
-    /** Withers, dragons and other block-breaking creatures leave the impossible hallway standing. */
+    /** Withers, dragons and other block-breaking creatures leave the impossible hallway and the manor's outside doors standing. */
     public static void onMobDestroy(net.neoforged.neoforge.event.entity.living.LivingDestroyBlockEvent event) {
         if (HouseImpossibleHallway.isShielded(event.getEntity().level(), event.getPos())) event.setCanceled(true);
+        else if (event.getEntity().level() instanceof ServerLevel level && isMirroredDimension(level)) {
+            BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+            if (origin != null && isExteriorDoor(origin, event.getPos())) event.setCanceled(true);
+        }
+    }
+
+    /** 0.4.403: the manor's outside doors do not give under a hand or a tool; mining them makes no progress, as bedrock does. */
+    public static void onBreakSpeed(net.neoforged.neoforge.event.entity.player.PlayerEvent.BreakSpeed event) {
+        if (!(event.getEntity().level() instanceof ServerLevel level) || !isMirroredDimension(level)) {
+            return;
+        }
+        BlockPos origin = HouseSavedData.get(level.getServer()).houseOrigin();
+        if (origin != null && event.getPosition().filter(pos -> isExteriorDoor(origin, pos)).isPresent()) {
+            event.setNewSpeed(0F);
+        }
+    }
+
+    /** Either half of one of the manor's two outside doors (the front and the back). */
+    public static boolean isExteriorDoor(BlockPos origin, BlockPos pos) {
+        int x = pos.getX() - origin.getX(), y = pos.getY() - origin.getY(), z = pos.getZ() - origin.getZ();
+        for (HouseLayout.ExteriorDoor door : HouseLayout.EXTERIOR_DOORS) {
+            if (x == door.x() && z == door.z() && (y == door.y() || y == door.y() + 1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void onPiston(PistonEvent.Pre event) {
@@ -285,6 +311,11 @@ public final class HouseMirrorSyncEvents {
         if (HouseBetweenRoom.isProtectedHousePosition(data, origin, pos)) {
             // The door to the room between rooms and the wall around it, on
             // both sides of the mirror.
+            return true;
+        }
+        if (isExteriorDoor(origin, pos)) {
+            // 0.4.403, the owner: a reader locked out of the house tried to break the front door down. The manor's two outside doors
+            // stand whatever is done to them, on both sides of the mirror.
             return true;
         }
         return level.dimension().equals(HouseDimensions.INTERIOR)

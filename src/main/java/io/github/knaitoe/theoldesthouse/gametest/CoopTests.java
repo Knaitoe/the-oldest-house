@@ -413,6 +413,7 @@ public final class CoopTests {
         });
     }
 
+
     @GameTest(template="empty",batch="coop_private151",timeoutTicks=4000)
     public static void aPrivateSceneIsOneReadersAtATimeAndWaitsForTheNext(GameTestHelper h){
         // 0.4.153: private scenes have copies; with none allowed (sceneCopies 0) they are one reader's at a time, as in 0.4.151.
@@ -429,7 +430,7 @@ public final class CoopTests {
                 for(var v:scenes)h.assertTrue(SharedVignettes.privateScene(v)&&!SharedVignettes.followable(v),"friends do not follow each other into "+v.id());
                 h.assertTrue(SharedVignettes.followable(LabyrinthPlace.LAKE_HOUSE)&&SharedVignettes.followable(LabyrinthPlace.GHOSTS_SET),"the lake house and the film set stay shared");
                 LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
-                for(var hall:halls){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                for(var hall:halls)EntrancePlaytestTests.buildHall(f,hall);
                 var study=f.base(LabyrinthPlace.HARRIGAN);
                 at(inside,f.in,study.offset(0,0,-10));at(watcher,f.in,study.offset(2,0,-10));watcher.setGameMode(GameType.SPECTATOR);
                 h.assertTrue(SharedVignettes.occupant(f.in.getServer(),LabyrinthPlace.HARRIGAN,next.getUUID())==inside,"a reader in Harrigan's study has it");
@@ -462,7 +463,7 @@ public final class CoopTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, its halls and the confession room are resident"))
             .thenExecute(()->{
                 LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
-                for(var hall:halls){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                for(var hall:halls)EntrancePlaytestTests.buildHall(f,hall);
                 f.build(scene);at(watcher,f.in,f.base(scene).offset(2,0,-10));watcher.setGameMode(GameType.SPECTATOR);
                 h.assertTrue(SceneInstances.copyable(scene)&&SceneInstances.cap()==8,"the confession has copies, eight at most by default");
                 west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");ticking[0]=true;knock.accept(first);
