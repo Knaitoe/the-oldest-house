@@ -1,7 +1,6 @@
 package io.github.knaitoe.theoldesthouse.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseSitting;
 import io.github.knaitoe.theoldesthouse.house.SeatEntity;
@@ -40,10 +39,13 @@ public final class SeatClientEvents {
             if (!seat.swinging()) return;
             var level = seat.level(); var pair = HouseReadSwing.pair(level, seat.support()); if (pair.isEmpty() || !HouseReadSwing.is(level.getBlockState(pair.getFirst()))) return;
             var pivot = HouseReadSwing.pivot(pair); var at = seat.getPosition(partial);
-            // The angle the reader is at, so the drawn seat is exactly under them.
-            float angle = (float) Math.atan2(pivot.z - at.z, pivot.y - at.y);
+            // The angle the reader is at, so the drawn seat is exactly under them. 0.4.423: a swing hangs either way round; it turns
+            // about its crossbar, the axis forward x up (the porch's, swinging north, turns about +x).
+            var forward = HouseReadSwing.forward(level.getBlockState(pair.getFirst()));
+            float angle = (float) Math.atan2((at.x - pivot.x) * forward.getStepX() + (at.z - pivot.z) * forward.getStepZ(), pivot.y - at.y);
             var blocks = Minecraft.getInstance().getBlockRenderer();
-            pose.pushPose(); pose.translate(pivot.x - at.x, pivot.y - at.y, pivot.z - at.z); pose.mulPose(Axis.XP.rotation(angle));
+            pose.pushPose(); pose.translate(pivot.x - at.x, pivot.y - at.y, pivot.z - at.z);
+            pose.mulPose(new org.joml.Quaternionf().rotateAxis(angle, -forward.getStepZ(), 0, forward.getStepX()));
             for (var pos : pair) for (int y = 0; y <= 3; y++) {
                 var state = y == 0 ? level.getBlockState(pos).setValue(HouseReadPropBlock.TURNED, false) : HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
                 pose.pushPose(); pose.translate(pos.getX() - pivot.x, pos.getY() + y - pivot.y, pos.getZ() - pivot.z);

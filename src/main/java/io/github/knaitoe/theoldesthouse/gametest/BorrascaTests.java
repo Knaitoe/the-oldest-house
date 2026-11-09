@@ -507,6 +507,12 @@ public final class BorrascaTests {
             f.atWorld(p,new BlockPos(10,0,-86));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the doctor's corkboard"))).contains(flat("1992")),"the doctor's cards are a few weeks apart in the childhood year");
             f.atWorld(p,new BlockPos(-17,0,-101));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MAP,"the map of the old workings"))).contains(flat("DEPOT")),"the old map puts the depot over the first shaft");
             f.atWorld(p,new BlockPos(-22,0,-19));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.PEGBOARD[0],"the hardware pegboard"))).contains(flat("Flashlight 4.99")),"the store's hardware counter has its price card");
+            // 0.4.423: the Hollis yard's swing is a real one; a jump off it going forward throws the child out across the yard.
+            var seatAt=BorrascaRooms.at(b,new BlockPos(-9,0,-54));
+            h.assertTrue(HouseReadSwing.is(f.out.getBlockState(seatAt))&&HouseReadSwing.is(f.out.getBlockState(seatAt.east()))&&f.out.getBlockState(seatAt.above(3)).is(HouseReadRegistry.ROPE.get())&&f.out.getBlockState(seatAt.above(4)).is(Blocks.STRIPPED_OAK_LOG),"the Hollis yard has a rope swing, its seat and ropes under the crossbar");
+            f.at(p,-9,0,-52);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,seatAt)&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity seat&&seat.swinging(),"a child sits on the yard's swing");
+            ((io.github.knaitoe.theoldesthouse.house.SeatEntity)p.getVehicle()).swing(f.out.getGameTime()-157);var away=HouseReadSwing.jump(p);
+            h.assertTrue(away!=null&&!p.isPassenger()&&away.z<-.3&&Math.abs(away.x)<.01,"a jump going forward throws the child out north, across the yard toward the path: "+away);
             f.stage(p,3);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult cast recalled")).thenExecute(()->{
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("SHELBY")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");

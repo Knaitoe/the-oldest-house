@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.house.SeatEntity;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -9,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChainBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -18,6 +20,13 @@ import net.minecraft.world.phys.Vec3;
  * the seat entity carries the reader along the arc, building up to a gentle swing, and the renderer draws the seat and ropes
  * moving with them. Getting off puts the still swing back. Every position comes from the time sat down, so client and server
  * agree without sending it.
+ *
+ * <p>0.4.423 (owner: "players should be able to jump from swings. The game should give them an appropriate launch based on their
+ * velocity"): jumping on a swing lets go of it. The reader leaves from where the seat is, carried on by the seat's own speed along
+ * the arc at that moment, a little more than it (a push off the seat with the legs), and a little up. Off the forward upswing that
+ * throws them out ahead; at either end of the arc, where the seat stops, they mostly drop; going back, they go back. A swing faces
+ * the way its sitter does: the seat block's facing is behind the sitter, so the porch's (facing south) swings north and south, and a
+ * swing can hang either way round.
  */
 public final class HouseReadSwing {
     private HouseReadSwing(){}
@@ -25,19 +34,28 @@ public final class HouseReadSwing {
     public static final double PIVOT=4.0,SEAT=.5,LENGTH=PIVOT-SEAT;
     /** Radians a tick of the swing's sway, the widest arc, and how quickly a sitter builds up to it. */
     public static final double RATE=.12,REACH=.5,BUILD=.004;
+    /** Letting go: how much of the seat's speed the reader keeps (with the push of their legs), and the hop up off the seat. */
+    public static final double CARRY=1.6,HOP=.3;
     public static boolean is(BlockState s){return s.is(HouseReadRegistry.FITTING.get())&&s.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.SWING;}
-    /** The seat's two halves: this one and its neighbour along the crossbar, west first. */
+    /** The way a sitter on this seat faces, and the way the swing goes forward: away from the seat block's facing. */
+    public static Direction forward(BlockState s){return is(s)?s.getValue(HorizontalDirectionalBlock.FACING).getOpposite():Direction.NORTH;}
+    /** The seat's two halves: this one and its neighbour along the crossbar, west (or north) first. */
     public static List<BlockPos> pair(Level l,BlockPos at){
+        var side=forward(l.getBlockState(at)).getClockWise();var before=side.getAxisDirection()==Direction.AxisDirection.POSITIVE?side.getOpposite():side;var after=before.getOpposite();
         var out=new ArrayList<BlockPos>();
-        if(is(l.getBlockState(at.west()))){out.add(at.west());out.add(at);}else{out.add(at);if(is(l.getBlockState(at.east())))out.add(at.east());}
+        if(is(l.getBlockState(at.relative(before)))){out.add(at.relative(before));out.add(at);}else{out.add(at);if(is(l.getBlockState(at.relative(after))))out.add(at.relative(after));}
         return out;
     }
     /** Where the swing hangs from, at the middle of the seat under the crossbar. */
-    public static Vec3 pivot(List<BlockPos> pair){var first=pair.getFirst();return new Vec3(first.getX()+pair.size()*.5,first.getY()+PIVOT,first.getZ()+.5);}
+    public static Vec3 pivot(List<BlockPos> pair){var first=pair.getFirst();var last=pair.getLast();return new Vec3((first.getX()+last.getX())/2.+.5,first.getY()+PIVOT,(first.getZ()+last.getZ())/2.+.5);}
     /** The angle from the rest position after {@code ticks} sat: the sway grows to its reach and stays there. */
     public static double angle(double ticks){return Math.min(REACH,Math.max(0,ticks)*BUILD)*Math.sin(Math.max(0,ticks)*RATE);}
-    /** The seat's place on the arc for an angle: forward (toward the house, north) is positive. */
-    public static Vec3 seat(Vec3 pivot,double angle){return pivot.add(0,-LENGTH*Math.cos(angle),-LENGTH*Math.sin(angle));}
+    /** The seat's place on the arc for an angle: forward (the way the sitter faces) is positive. */
+    public static Vec3 seat(Vec3 pivot,Direction forward,double angle){return pivot.add(forward.getStepX()*LENGTH*Math.sin(angle),-LENGTH*Math.cos(angle),forward.getStepZ()*LENGTH*Math.sin(angle));}
+    /** The seat's velocity, in blocks a tick, {@code ticks} after the reader sat down. */
+    public static Vec3 velocity(Vec3 pivot,Direction forward,double ticks){return seat(pivot,forward,angle(ticks+.5)).subtract(seat(pivot,forward,angle(ticks-.5)));}
+    /** What a reader who lets go at that velocity leaves with. */
+    public static Vec3 launch(Vec3 seat){return seat.scale(CARRY).add(0,HOP,0);}
     /** A reader sits: the still swing is hidden so the moving one can be drawn in its place. */
     public static void hide(ServerPlayer p,BlockPos at){
         var l=p.serverLevel();
@@ -48,5 +66,19 @@ public final class HouseReadSwing {
     public static void restore(Level l,BlockPos at){
         for(var pos:pair(l,at)){var s=l.getBlockState(pos);if(is(s))l.setBlock(pos,s.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);
             for(int y=1;y<=3;y++)if(l.getBlockState(pos.above(y)).isAir())l.setBlock(pos.above(y),HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS,Direction.Axis.Y),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
+    }
+    /**
+     * The reader jumped on a swing (SwingJumpPayload): they let go where the seat is and fly on with its speed. Returns the velocity
+     * they left with, or null when they were not on a moving swing.
+     */
+    public static Vec3 jump(ServerPlayer p){
+        if(!(p.getVehicle() instanceof SeatEntity seat)||!seat.swinging()||p.isSpectator())return null;
+        var l=p.serverLevel();var pair=pair(l,seat.support());if(!is(l.getBlockState(pair.getFirst())))return null;
+        var forward=forward(l.getBlockState(pair.getFirst()));var pivot=pivot(pair);double ticks=seat.swingTicks(0);
+        var from=seat(pivot,forward,angle(ticks)).add(0,.05,0);var away=launch(velocity(pivot,forward,ticks));
+        seat.letGo(from);p.stopRiding();
+        p.connection.teleport(from.x,from.y,from.z,p.getYRot(),p.getXRot());
+        p.setDeltaMovement(away);p.hurtMarked=true;p.resetFallDistance();
+        return away;
     }
 }

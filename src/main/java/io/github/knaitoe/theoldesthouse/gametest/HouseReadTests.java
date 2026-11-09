@@ -382,8 +382,16 @@ public final class HouseReadTests {
               // 0.4.172 (owner: "The rope swing should be interactive. Players should be able to swing."): the swing seats the reader.
               var swing=b[0].offset(-10,0,2);stand(p,f.out,b[0],-9,0,3.5);click(p,swing);
               h.assertTrue(p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity seat&&seat.swinging()&&f.out.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&f.out.getBlockState(swing.above()).isAir(),"the rope swing seats the reader, and the still seat and ropes give way to the moving ones");
-          }).thenIdle(60).thenExecute(()->{var seat=p.getVehicle();h.assertTrue(seat!=null&&Math.abs(seat.getZ()-(b[0].getZ()+2.5))>.2&&seat.getY()>b[0].getY()+.5,"and swings them along its arc: "+(seat==null?"off":seat.position().subtract(Vec3.atLowerCornerOf(b[0]))));p.stopRiding();})
-          .thenIdle(3).thenExecute(()->{
+          }).thenIdle(60).thenExecute(()->{var seat=p.getVehicle();h.assertTrue(seat!=null&&Math.abs(seat.getZ()-(b[0].getZ()+2.5))>.2&&seat.getY()>b[0].getY()+.5,"and swings them along its arc: "+(seat==null?"off":seat.position().subtract(Vec3.atLowerCornerOf(b[0]))));
+              // 0.4.423 (owner: "players should be able to jump from swings. The game should give them an appropriate launch based on their
+              // velocity"): at full reach, going forward through the bottom of the arc, a jump throws the reader out ahead, off the seat.
+              var swinging=(io.github.knaitoe.theoldesthouse.house.SeatEntity)seat;swinging.swing(f.out.getGameTime()-157);
+              var pivot=HouseReadSwing.pivot(HouseReadSwing.pair(f.out,b[0].offset(-10,0,2)));var leftFrom=HouseReadSwing.seat(pivot,net.minecraft.core.Direction.NORTH,HouseReadSwing.angle(157));
+              var away=HouseReadSwing.jump(p);
+              h.assertTrue(away!=null&&!p.isPassenger()&&away.z<-.3&&Math.abs(away.x)<.01&&Math.abs(away.y-HouseReadSwing.HOP)<.03&&p.getDeltaMovement().equals(away),"a jump going forward through the bottom of the arc throws the reader out ahead, faster than the seat was going: "+away);
+              h.assertTrue(p.position().distanceTo(leftFrom)<.2,"they leave from the seat, not from beside the swing: "+p.position().subtract(leftFrom));
+          }).thenIdle(3).thenExecute(()->{
+              h.assertTrue(packets(p).stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket m&&m.getId()==p.getId()&&m.getZa()<-.3),"the reader's own client is told how fast they left");
               var swing=b[0].offset(-10,0,2);h.assertTrue(!f.out.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&f.out.getBlockState(swing.above()).is(HouseReadRegistry.ROPE.get())&&f.out.getBlockState(swing.east().above(3)).is(HouseReadRegistry.ROPE.get()),"getting off puts the still swing and its ropes back");
               h.assertTrue(packets(p).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket particles&&particles.getParticle().getType()==net.minecraft.core.particles.ParticleTypes.GLOW),"no sparkles drift over the yard");
               var entry=f.data().door("house_read/"+p.getUUID()+"/porch/entry");stand(p,f.out,b[0],.5,0,11.5);click(p,entry.lower);

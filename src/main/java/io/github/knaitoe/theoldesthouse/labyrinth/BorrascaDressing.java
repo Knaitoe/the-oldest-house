@@ -138,7 +138,7 @@ final class BorrascaDressing {
         int tx=street+(west?-3:3),tz=z0;
         switch(yard){
             case 0->{BorrascaLand.oak(l,b,tx,0,tz,6);}
-            case 1->{redbud(l,b,tx,0,z0);swing(l,b,street+(west?-4:4),zc-4,west);}
+            case 1->{redbud(l,b,tx,0,z0);swing(l,b,street+(west?-4:4),zc-3,west);}
             case 2->{BorrascaLand.oak(l,b,tx,0,z1,5);line(l,b,back-3*o,z0,z1,west);}
             default->{dogwood(l,b,tx,0,z0);beds(l,b,street+(west?-2:2),zc,west);kennel(l,b,back,z0,west);}
         }
@@ -150,10 +150,17 @@ final class BorrascaDressing {
         BuildBlocks.set(l,foot,Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.FOOT),F);
         BuildBlocks.set(l,head,Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.HEAD),F);
     }
+    /**
+     * 0.4.423 (owner: "players should be able to jump from swings"): the yard's swing is a real one, the porch swing's seat and ropes
+     * (HouseReadSwing) under a crossbar on two posts. It hangs across the yard, so it swings toward the house's path and a reader who
+     * jumps off it lands on the grass, not in the chain-link.
+     */
     private static void swing(ServerLevel l,BlockPos b,int x,int z,boolean west){
-        for(int dz:new int[]{-1,2})box(l,b,x,0,z+dz,x,3,z+dz,Blocks.OAK_FENCE);
-        box(l,b,x,4,z-1,x,4,z+2,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.Z));
-        for(int dz=0;dz<=1;dz++){set(l,b,x,3,z+dz,Blocks.CHAIN);set(l,b,x,2,z+dz,Blocks.CHAIN);set(l,b,x,1,z+dz,slab(Blocks.OAK_SLAB,SlabType.TOP));}
+        for(int dx:new int[]{-1,2})box(l,b,x+dx,0,z,x+dx,3,z,Blocks.OAK_FENCE);
+        box(l,b,x-1,4,z,x+2,4,z,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));
+        var rope=HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS,Direction.Axis.Y);
+        var seat=HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,HouseReadPropBlock.Part.SWING).setValue(HorizontalDirectionalBlock.FACING,Direction.SOUTH);
+        for(int dx=0;dx<=1;dx++){for(int y=1;y<=3;y++)BuildBlocks.set(l,b.offset(x+dx,y,z),rope,F);BuildBlocks.set(l,b.offset(x+dx,0,z),seat,F);}
     }
     private static void line(ServerLevel l,BlockPos b,int x,int z0,int z1,boolean west){
         for(int z:new int[]{z0,z1}){box(l,b,x,0,z,x,2,z,Blocks.OAK_FENCE);}
