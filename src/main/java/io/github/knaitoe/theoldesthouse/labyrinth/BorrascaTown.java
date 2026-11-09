@@ -108,9 +108,12 @@ final class BorrascaTown {
         set(l,b,-14,0,-29,Blocks.BARREL);set(l,b,-15,0,-27,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));set(l,b,-15,0,-26,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));
         // Inside: counter and till by the door, stock behind it, two aisles, the cooler along the back.
         for(int z=-27;z<=-25;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-26,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
-        for(int z=-28;z<=-25;z++)road(l,b,-17,0,z,RoadhouseBlock.Kind.SHELF,Direction.WEST);
+        // 0.4.430: the stock behind the counter and the two aisles are a grocer's shelves (tins, boxes, flour), not shelves of books and
+        // not barrels of nothing; the feed is at the back of the second aisle, sacks and bales under the hardware sign.
+        for(int z=-28;z<=-25;z++)set(l,b,-17,0,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.GROCERIES,Direction.WEST));
         set(l,b,-18,0,-28,stair(Blocks.SPRUCE_STAIRS,Direction.SOUTH,Half.BOTTOM));
-        for(int z=-27;z<=-19;z++){if(z==-23)continue;set(l,b,-24,0,z,Blocks.BARREL);set(l,b,-24,1,z,z%2==0?Blocks.BARREL.defaultBlockState():Blocks.HAY_BLOCK.defaultBlockState());set(l,b,-21,0,z,z%3==0?Blocks.DRIED_KELP_BLOCK:Blocks.HAY_BLOCK);set(l,b,-21,1,z,z%2==0?Blocks.COMPOSTER:Blocks.BARREL);}
+        for(int z=-27;z<=-19;z++){if(z==-23)continue;set(l,b,-24,0,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.GROCERIES,Direction.EAST));
+            if(z>=-22)set(l,b,-21,0,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.GROCERIES,Direction.WEST));else{set(l,b,-21,0,z,Blocks.HAY_BLOCK);if(z!=-25)set(l,b,-21,1,z,Blocks.BARREL);}}
         for(int x=-27;x<=-23;x++){set(l,b,x,0,-29,Blocks.WHITE_CONCRETE);set(l,b,x,1,-29,Blocks.LIGHT_BLUE_STAINED_GLASS);set(l,b,x,2,-29,Blocks.WHITE_CONCRETE);}
         road(l,b,-17,1,-20,RoadhouseBlock.Kind.CORKBOARD,Direction.WEST);
         // 0.4.422: the town's history hangs in the historical society now (BorrascaShops); the hardware pegboard is here instead.

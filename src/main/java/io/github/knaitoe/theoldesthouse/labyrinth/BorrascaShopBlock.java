@@ -25,15 +25,20 @@ import net.minecraft.world.phys.shapes.*;
  * EXAM, the examination table; CHART, the eye chart.</li>
  * <li>The drugstore: FOUNTAIN, the soda fountain's taps on the counter; MEDS, the pharmacy shelf; RACK, the comic spinner.</li>
  * <li>OPEN, a lit sign in a window.</li>
+ * <li>0.4.430, the owner: "i hope you're still working on detailing the architecture". The station's own stock: OIL, steel shelving of
+ * motor oil and antifreeze; BAIT, the bait freezer with cups on its lid; SNACKS, a wire rack of chips; CALENDAR, the feed store's
+ * calendar; BAIT_SIGN, a painted board; TIRES, a stack of used tires. GROCERIES, the general store's shelf of tins, boxes and flour;
+ * CROCKERY, the diner's shelf of plates, mugs and bowls. They replace the shelves that read as bookcases.</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<BorrascaShopBlock> CODEC=simpleCodec(BorrascaShopBlock::new);
     public enum Kind implements StringRepresentable {
-        PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN;
+        PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
+        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, behind the model's south face. */
-        public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,OPEN->true;default->false;};}
+        public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,OPEN,CALENDAR,BAIT_SIGN->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,1);
@@ -63,12 +68,18 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case JAR->Block.box(5,0,5,11,9,11);
             case EXAM->MarshBlock.turned(f,0,0,2,16,10,14);
             case FOUNTAIN->MarshBlock.turned(f,2,0,6,14,10,12);
+            case OIL,GROCERIES,CROCKERY->MarshBlock.turned(f,0,0,2,16,16,14);
+            case BAIT->MarshBlock.turned(f,1,0,2,15,13,14);
+            case SNACKS->MarshBlock.turned(f,1,0,5,15,16,11);
+            case CALENDAR->MarshBlock.turned(f,3,1,15,13,15,16);
+            case BAIT_SIGN->MarshBlock.turned(f,0,0,14,16,16,16);
+            case TIRES->Block.box(1,0,1,15,12,15);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN->getShape(s,l,p,c);
+            case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }

@@ -6,7 +6,10 @@ north and turned by its facing. The diner's pie case (stage 1, one pie cut), cof
 (stage 1, a flashlight gone from its hook); the gas pump's two halves, the price board, the payphone, the soda cooler and the candy
 rack; the antiques shop's glass case, the miner's helmet, the map of the old workings, framed photographs and a wall clock; the
 doctor's beam scale, lollipop jar (stage 1, nearly empty), corkboard of birth cards, examination table and eye chart; the
-drugstore's soda fountain, pharmacy shelf and comic spinner; and a lit OPEN sign. 0.4.425: the things the town sells (pie,
+drugstore's soda fountain, pharmacy shelf and comic spinner; and a lit OPEN sign. 0.4.430: the gas station's own stock (steel
+shelving of motor oil and antifreeze, a bait freezer with cups of night crawlers, a wire rack of chips, the feed store's calendar, a
+painted bait sign and a stack of used tires); the general store's shelf of tins, boxes and flour, and the diner's shelf of plates,
+mugs and bowls. 0.4.425: the things the town sells (pie,
 coffee, coffee mostly milk, soda, candy, a lollipop, a malt, beer) and the money to buy them with (a child's change, a wallet), as
 items. Writes the models and block states and the
 blocks' names. --check verifies everything.
@@ -70,6 +73,7 @@ FONT = {
     'U': '101101101101111', 'Y': '101101010010010', 'E2': '111100111100111', '1': '010110010010111', '2': '110001010100111',
     '3': '110001010001110', '4': '101101111001001', '5': '111100110001110', '9': '111101111001110', '0': '111101101101111',
     '.': '000000000000010', '-': '000000111000000', ' ': '000000000000000',
+    'V': '101101101101010', 'K': '101101110101101', 'G': '011100101101011', 'M': '101111111101101', 'W': '101101101111101',
 }
 
 
@@ -468,6 +472,172 @@ def open_sign():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.430: the station's own stock
+def steel():
+    im = new('#7f8589', 42280, 3)
+    for y in range(16):
+        dot(im, 0, y, '#9aa0a4'); dot(im, 15, y, '#5f6467')
+    return im
+
+
+def oil(base, band, cap):
+    """Quarts of motor oil, one can in each four-by-eight cell: its cap, a coloured body and the band round it (no maker's name)."""
+    im = new(); rnd = random.Random(42281 + len(base))
+    for y0 in (0, 8):
+        for x0 in range(0, 16, 4):
+            fill(im, x0, y0, x0 + 4, y0 + 8, base)
+            fill(im, x0, y0, x0 + 4, y0 + 1, cap); dot(im, x0 + 1, y0, '#e2e2e2')
+            fill(im, x0, y0 + 3, x0 + 4, y0 + 5, band)
+            for y in range(y0 + 1, y0 + 8):
+                dot(im, x0, y, shade(base, 18)[:3]); dot(im, x0 + 3, y, shade(base, -22)[:3])
+            dot(im, x0 + 2, y0 + rnd.randint(5, 7), shade(base, -30)[:3])
+    return im
+
+
+def jug():
+    """Gallon jugs of antifreeze: green, a white label, the handle's hollow dark."""
+    im = new('#3f9a4a', 42283, 4)
+    fill(im, 0, 0, 16, 2, '#e9e6dd'); fill(im, 2, 6, 14, 11, '#efeee8'); fill(im, 4, 7, 12, 10, '#2c6e35')
+    fill(im, 10, 2, 14, 5, '#2a6b33')
+    return im
+
+
+def bait_front():
+    """A chest freezer, white enamel with a blue band: LIVE over BAIT."""
+    im = new('#ecebe5', 42284, 3)
+    fill(im, 0, 2, 16, 15, '#2f5f9e')
+    text(im, 1, 3, 'LIVE', '#f2ede2', 4); text(im, 1, 9, 'BAIT', '#f2ede2', 4)
+    for x in range(16):
+        dot(im, x, 0, '#c9c8c2'); dot(im, x, 15, '#b9b8b2')
+    return im
+
+
+def bait_top():
+    im = new('#e8e7e1', 42285, 3)
+    for x in range(16):
+        dot(im, x, 7, '#bdbcb6')
+    fill(im, 6, 13, 10, 15, '#9ea2a5')
+    return im
+
+
+def cup():
+    """A styrofoam cup of night crawlers, a paper lid pressed on."""
+    im = new('#f4f1ea', 42286, 2)
+    fill(im, 0, 0, 16, 3, '#d9cfae'); fill(im, 0, 3, 16, 4, '#bfb593')
+    return im
+
+
+def chips():
+    """Bags of chips on a wire rack: a bright bag, a white window, a crimped top."""
+    im = new(); rnd = random.Random(42287)
+    for x0 in range(0, 16, 4):
+        c = rnd.choice(('#d6402f', '#f4b52a', '#2f6fb3', '#3b8a3e', '#c95a1f', '#8a55c4'))
+        fill(im, x0, 0, x0 + 4, 16, c)
+        for x in range(x0, x0 + 4, 2):
+            dot(im, x, 0, '#f2ede2')
+        fill(im, x0 + 1, 6, x0 + 3, 10, '#f2ede2'); dot(im, x0 + 2, 8, '#e3b26a')
+        for y in range(1, 16):
+            dot(im, x0 + 3, y, shade(c, -30)[:3])
+    return im
+
+
+def calendar():
+    """A feed store's calendar: a largemouth bass leaping over the water above, the month's grid below, one square marked."""
+    im = new('#f2efe6', 42288, 2)
+    fill(im, 1, 1, 15, 8, '#7fb2d6'); fill(im, 1, 6, 15, 8, '#3c6f93')
+    for x, y in ((4, 4), (5, 3), (6, 3), (7, 3), (8, 3), (9, 4), (10, 3), (11, 2), (11, 4), (5, 4), (6, 4), (7, 4), (8, 4), (9, 5)):
+        dot(im, x, y, '#4f7a3a')
+    dot(im, 5, 3, '#1b1b1b')
+    for row in range(3):
+        for col in range(5):
+            dot(im, 2 + col * 3, 10 + row * 2, '#8a8780')
+    dot(im, 8, 12, '#c0302a'); dot(im, 9, 12, '#c0302a')
+    fill(im, 7, 0, 9, 1, '#26252a')
+    return im
+
+
+def bait_sign():
+    """A painted board: WORMS over BAIT, and the arrow to the freezer."""
+    im = new('#efe7d0', 42289, 3)
+    text(im, 1, 2, 'WORM', '#7a2a1e', 4); text(im, 1, 8, 'BAIT', '#2f5f9e', 4)
+    fill(im, 6, 14, 10, 15, '#7a2a1e')
+    return im
+
+
+def tire():
+    """A worn tire's tread, its grooves gone shallow, and its sidewall."""
+    im = new('#2a292c', 42290, 4)
+    for x in range(16):
+        if x % 3 == 0:
+            for y in range(16):
+                dot(im, x, y, '#1a1a1c')
+    for y in (0, 15):
+        for x in range(16):
+            dot(im, x, y, '#3a393d')
+    return im
+
+
+def tire_top():
+    im = new('#2d2c2f', 42291, 3)
+    fill(im, 5, 5, 11, 11, '#141416'); frame(im, '#3e3d41', 4, 4, 12, 12)
+    return im
+
+
+def tins():
+    """Tins of soup and beans on the store's shelf, one in each four-by-eight cell: a red top, a white band, a silver rim."""
+    im = new(); rnd = random.Random(42292)
+    for y0 in (0, 8):
+        for x0 in range(0, 16, 4):
+            top = rnd.choice(('#b8312b', '#b8312b', '#3f7a3a', '#d89a2a'))
+            fill(im, x0, y0, x0 + 4, y0 + 8, '#f2ede2'); fill(im, x0, y0 + 1, x0 + 4, y0 + 4, top)
+            fill(im, x0, y0, x0 + 4, y0 + 1, '#c6c9cb'); fill(im, x0, y0 + 7, x0 + 4, y0 + 8, '#9ea2a5')
+            dot(im, x0 + 1, y0 + 5, shade(top, -10)[:3]); dot(im, x0 + 2, y0 + 5, shade(top, -10)[:3])
+            for y in range(y0 + 1, y0 + 7):
+                dot(im, x0 + 3, y, shade('#f2ede2', -30)[:3] if y > y0 + 3 else shade(top, -30)[:3])
+    return im
+
+
+def boxes():
+    """Boxes of cereal, soap and matches, one in each four-by-eight cell, a white panel on each."""
+    im = new(); rnd = random.Random(42293)
+    for y0 in (0, 8):
+        for x0 in range(0, 16, 4):
+            c = rnd.choice(('#d6402f', '#f4b52a', '#2f6fb3', '#7a4a8a', '#3b8a3e', '#e07a2a'))
+            fill(im, x0, y0, x0 + 4, y0 + 8, c); fill(im, x0 + 1, y0 + 2, x0 + 3, y0 + 5, '#f2ede2')
+            dot(im, x0 + 1, y0 + 3, shade(c, -20)[:3])
+            for y in range(y0, y0 + 8):
+                dot(im, x0 + 3, y, shade(c, -30)[:3])
+    return im
+
+
+def sack():
+    """A flour sack, cream cotton printed with a blue wheat sheaf, tied at the neck."""
+    im = new('#efe6cf', 42294, 4)
+    fill(im, 5, 0, 11, 2, '#d8cba8'); fill(im, 4, 2, 12, 3, '#b9a77e')
+    for x, y in ((8, 6), (7, 7), (9, 7), (8, 8), (7, 9), (9, 9), (8, 10), (8, 11), (8, 12)):
+        dot(im, x, y, '#2f5f9e')
+    fill(im, 3, 13, 13, 14, '#b8312b')
+    return im
+
+
+def plate():
+    """Plates stacked on a shelf, seen edge on: white, a blue line near the rim, every edge a darker line."""
+    im = new('#f2efe8', 42295, 2)
+    for y in range(0, 16, 2):
+        for x in range(16):
+            dot(im, x, y, '#c9c6bd')
+    for x in range(16):
+        dot(im, x, 1, '#5d7fb3')
+    return im
+
+
+def mug():
+    """A heavy diner mug, white with a green stripe."""
+    im = new('#efece4', 42296, 2)
+    fill(im, 0, 5, 16, 7, '#3f7a3a'); fill(im, 0, 0, 16, 1, '#c9c6bd')
+    return im
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
     faces = {
@@ -479,6 +649,10 @@ def textures():
         'velvet': velvet(), 'curios': curios(), 'helmet': helmet(), 'lamp': lamp(), 'map': mine_map(), 'photos': photos(), 'clock': clock(),
         'scale': scale_face(), 'jar': jar(False), 'jar_low': jar(True), 'cards': cards(), 'exam_top': exam_top(), 'exam_side': exam_side(),
         'chart': chart(), 'fountain': fountain(), 'meds': meds(), 'rack': rack(), 'open': open_sign(),
+        'steel': steel(), 'oil_blue': oil('#2f5f9e', '#f4d03a', '#26252a'), 'oil_red': oil('#b8312b', '#f2ede2', '#d8b23a'), 'jug': jug(),
+        'bait_front': bait_front(), 'bait_top': bait_top(), 'cup': cup(), 'chips': chips(), 'calendar': calendar(),
+        'bait_sign': bait_sign(), 'tire': tire(), 'tire_top': tire_top(),
+        'tins': tins(), 'boxes': boxes(), 'sack': sack(), 'plate': plate(), 'mug': mug(),
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
@@ -567,6 +741,41 @@ def shop_models():
     m['rack_0'] = model([element([7, 0, 7], [9, 15, 9], {'all': 'c'}),
                          element([3, 2, 3], [13, 15, 13], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'})], {'c': 'chrome', 'r': 'rack'}, 'rack')
     m['open_0'] = model([element([2, 4, 14.5], [14, 11, 16], {'all': 'b', 'north': 'o'}, {'north': [1, 2, 15, 12]})], {'b': 'black', 'o': 'open'}, 'open')
+    # 0.4.430: steel shelving of motor oil, quarts on the two upper shelves and gallon jugs on the bottom, each can its own block.
+    def cans(y0, h, tex, xs, z0=4, d=3, w=3, uv=(0, 0, 4, 8)):
+        sides = {k: list(uv) for k in ('north', 'south', 'east', 'west')}
+        return [element([x, y0, z0], [x + w, y0 + h, z0 + d], {'all': tex}, {**sides, 'up': [uv[0], uv[1], uv[2], uv[1] + 1], 'down': [uv[0], uv[1], uv[2], uv[1] + 1]}) for x in xs]
+    shelf = [element([0, 0, 2], [1, 16, 14], {'all': 's'}), element([15, 0, 2], [16, 16, 14], {'all': 's'}), element([1, 0, 13], [15, 16, 14], {'all': 's'})]
+    for y in (0, 5.5, 11, 15.5):
+        shelf.append(element([1, y, 2], [15, y + .5 if y else 1, 13], {'all': 's'}))
+    m['oil_0'] = model(shelf + cans(1, 4.5, 'j', (1.5, 5.75, 10), 3, 5, 3.75, (0, 0, 16, 16)) + cans(6, 4, 'b', (2, 5, 8, 11)) + cans(11.5, 4, 'r', (2, 5, 8, 11)),
+                       {'s': 'steel', 'b': 'oil_blue', 'r': 'oil_red', 'j': 'jug'}, 'oil_blue')
+    # The general store's shelf of groceries and the diner's shelf of crockery, on the same frame in wood.
+    wooden = [element([0, 0, 2], [1, 16, 14], {'all': 's'}), element([15, 0, 2], [16, 16, 14], {'all': 's'}), element([1, 0, 13], [15, 16, 14], {'all': 's'})]
+    for y in (0, 5.5, 11, 15.5):
+        wooden.append(element([1, y, 2], [15, y + .5 if y else 1, 13], {'all': 's'}))
+    m['groceries_0'] = model(wooden + cans(1, 4.5, 'k', (1.5, 5.75, 10), 3, 5, 3.75, (0, 0, 16, 16)) + cans(6, 4, 't', (2, 5, 8, 11)) + cans(11.5, 4, 'x', (1.5, 4.5, 7.5, 10.5), 3.5, 3, 3),
+                             {'s': 'wood', 't': 'tins', 'x': 'boxes', 'k': 'sack'}, 'tins')
+    crockery = [element([x, 1, 4], [x + 4, 4.5, 8], {'all': 'p'}, {k: [0, 0, 16, 7] for k in ('north', 'south', 'east', 'west')}) for x in (2, 6.5, 11)]
+    crockery += [element([x, 6, 5], [x + 2, 8, 7], {'all': 'm'}) for x in (2.5, 5.5, 8.5, 11.5)]
+    crockery += [element([x, 11.5, 4], [x + 3.5, 13, 7.5], {'all': 'p'}, {k: [0, 0, 16, 3] for k in ('north', 'south', 'east', 'west')}) for x in (2, 6, 10)]
+    m['crockery_0'] = model(wooden + crockery, {'s': 'wood', 'p': 'plate', 'm': 'mug'}, 'plate')
+    m['bait_0'] = model([element([1, 0, 2], [15, 10, 14], {'all': 'f', 'up': 't'}),
+                         element([3, 10, 5], [6, 13, 8], {'all': 'c'}), element([7, 10, 4], [10, 13, 7], {'all': 'c'}), element([4, 10, 9], [7, 13, 12], {'all': 'c'})],
+                        {'f': 'bait_front', 't': 'bait_top', 'c': 'cup'}, 'bait_front')
+    rack = [element([1, 0, 6], [2, 16, 10], {'all': 'k'}), element([14, 0, 6], [15, 16, 10], {'all': 'k'})]
+    for y in (1, 6, 11):
+        rack.append(element([2, y, 5], [14, y + .5, 11], {'all': 'k'}))
+        rack += [element([x, y + .5, 6], [x + 3, y + 4.5, 8], {'all': 'p'}, {k: [0, 0, 3, 4] for k in ('north', 'south', 'east', 'west')}, {'angle': -22.5, 'axis': 'x', 'origin': [8, y, 7]}) for x in (2.5, 6.5, 10.5)]
+    m['snacks_0'] = model(rack, {'k': 'chrome', 'p': 'chips'}, 'chips')
+    m['calendar_0'] = model([element([3, 1, 15.5], [13, 15, 16], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'up': 'c', 'down': 'c'}, {'north': [1, 0, 15, 16]})], {'c': 'calendar'}, 'calendar')
+    m['bait_sign_0'] = wall('bait_sign')
+    tires = []
+    for i in range(3):
+        y = i * 4
+        tires += [element([1, y, 4], [15, y + 4, 12], {'all': 't', 'up': 'o', 'down': 'o'}, {'up': [1, 4, 15, 12], 'down': [1, 4, 15, 12]}),
+                  element([4, y, 1], [12, y + 4, 15], {'all': 't', 'up': 'o', 'down': 'o'}, {'up': [4, 1, 12, 15], 'down': [4, 1, 12, 15]})]
+    m['tires_0'] = model(tires, {'t': 'tire', 'o': 'tire_top'}, 'tire')
     return m
 
 
@@ -697,7 +906,8 @@ ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wal
 
 
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
-         'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open']
+         'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open',
+         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery']
 STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
