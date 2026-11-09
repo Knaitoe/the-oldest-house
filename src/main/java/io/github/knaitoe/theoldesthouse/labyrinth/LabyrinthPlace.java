@@ -673,7 +673,11 @@ public enum LabyrinthPlace {
     STACKS_HALL("stacks_hall",Kind.GRAY,232,new BoundingBox(-11,-1,-23,11,5,0),List.of(
             new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
             new DoorSpec("west",new BlockPos(-10,0,-15),Direction.EAST,LabyrinthData.DEALT),
-            new DoorSpec("north",new BlockPos(5,0,-22),Direction.SOUTH,LabyrinthData.DEALT)));
+            new DoorSpec("north",new BlockPos(5,0,-22),Direction.SOUTH,LabyrinthData.DEALT))),
+    /** 0.4.407, The Drawing (Drawing, docs/THE_DRAWING_0_4_407.md): a village square on a bright summer morning, a black box on a stool,
+     * the households read from a list and the readers at the end of it; held on every visit, each visit a year. Its way on is the
+     * meeting hall's door. */
+    THE_DRAWING("the_drawing",Kind.RECURRING,233,new BoundingBox(-30,-4,-72,30,16,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

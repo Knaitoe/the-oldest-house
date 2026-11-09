@@ -41,6 +41,7 @@ public final class SceneClock {
             case SPHINX_FIELD->3; // 0.4.339: dusk over the corn
             case STATE_ROUTE->9; // 0.4.333: midnight and rain on the state route
             case MARSH_SUPPER->3; // 0.4.348: dusk over the corn at the Marsh farm
+            case THE_DRAWING->18; // 0.4.407: ten in the morning in the village square, bright, all day
             case TALL_GRASS->16; // 0.4.349: late afternoon on the county road, the sun low over the grass
             case GROWING_THINGS->16; // 0.4.350: a Saturday afternoon at the Barretts', going on to supper
             case PINEHOOK->3; // 0.4.364: dusk over the lake at Pinehook
@@ -57,6 +58,6 @@ public final class SceneClock {
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 11->1000;case 15->7000;case 17->1000;case 16->10800;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 18->4000;case 15->7000;case 17->1000;case 16->10800;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }

@@ -75,7 +75,7 @@ public final class LiteraryActor extends PathfinderMob {
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
-    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||BorrascaStory.townChild(role,phase)||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT||role==ROAD_WOMAN?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
+    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER||BorrascaStory.townChild(role,phase)||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT||role==ROAD_WOMAN?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:role==STRANGER&&Drawing.child(phase)?.68:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     @Override public void startSeenByPlayer(ServerPlayer p){
         super.startSeenByPlayer(p);
@@ -149,6 +149,8 @@ public final class LiteraryActor extends PathfinderMob {
         if(getPersistentData().contains(VignetteThreads.ACTOR_TAG)&&!VignetteThreads.sees(p,scene,getPersistentData().getString(VignetteThreads.ACTOR_TAG)))return false;
         // 0.4.183: Usher's Roderick is not there for a reader who has seen the house fall, and Madeline at the doors is that night's alone.
         if(scene.equals(LabyrinthPlace.USHER.id())&&!UsherStory.sees(p,this))return false;
+        // 0.4.407: once a reader's day in the square is cut, the square is empty for them.
+        if(scene.equals(LabyrinthPlace.THE_DRAWING.id())&&Drawing.cutOut(p.getUUID()))return false;
         if(scene.equals(ElkLot.PLACE.id())&&role()==STRANGER&&phase()>=5&&phase()<=8){var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),ElkLot.PLACE);if(own.getBoolean("Ready")||own.getBoolean("Completed"))return false;}
         if((lakePartner(role())||role()==LAKE_WAX)&&owner().isPresent()&&p.isSpectator())return false;
         return super.broadcastToPlayer(p);

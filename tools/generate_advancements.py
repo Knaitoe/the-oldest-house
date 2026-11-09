@@ -107,6 +107,7 @@ STORY_ICONS = {
     'growing_things': NS + ':growing_seed_head',
     'last_crossing': NS + ':crossing_fragment',
     'pinehook': NS + ':pinehook_costume',
+    'the_drawing': NS + ':drawing_stone',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

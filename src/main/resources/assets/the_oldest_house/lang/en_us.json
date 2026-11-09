@@ -1471,5 +1471,20 @@
   "block.the_oldest_house.room_shell_cabin_shakes": "Cedar Shakes",
   "block.the_oldest_house.room_shell_cabin_shake_slab": "Cedar Shake Slab",
   "block.the_oldest_house.room_shell_cabin_gable": "Board and Batten",
-  "block.the_oldest_house.room_shell_cabin_porch": "Porch Decking"
+  "block.the_oldest_house.room_shell_cabin_porch": "Porch Decking",
+  "block.the_oldest_house.drawing_fitting": "Village Fitting",
+  "block.the_oldest_house.drawing_flagstone": "Flagstones",
+  "block.the_oldest_house.drawing_weatherboard": "Painted Weatherboard",
+  "block.the_oldest_house.drawing_brick": "Bank Brick",
+  "item.the_oldest_house.drawing_slip": "Folded Slip",
+  "item.the_oldest_house.drawing_stone": "Smooth Stone",
+  "item.the_oldest_house.drawing_lemonade": "Glass of Lemonade",
+  "item.the_oldest_house.drawing_jug": "Lemonade Jug",
+  "subtitles.the_oldest_house.drawing.murmur": "A murmur goes round the crowd",
+  "subtitles.the_oldest_house.drawing.slip": "Paper rustles",
+  "subtitles.the_oldest_house.drawing.stones": "Stones clatter",
+  "subtitles.the_oldest_house.drawing.pour": "Lemonade is poured",
+  "subtitles.the_oldest_house.drawing.white": "A high ringing",
+  "advancements.the_oldest_house.account.the_drawing.title": "The drawing",
+  "advancements.the_oldest_house.account.the_drawing.description": "I stood in a village square on a bright morning and drew a folded slip from a black box like everyone else."
 }

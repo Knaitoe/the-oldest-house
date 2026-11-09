@@ -4501,5 +4501,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.literary.home_landline"
+  },
+  "drawing.murmur": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:drawing/murmur",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.drawing.murmur"
+  },
+  "drawing.slip": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:drawing/slip",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.drawing.slip"
+  },
+  "drawing.stones": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:drawing/stones",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.drawing.stones"
+  },
+  "drawing.pour": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:drawing/pour",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.drawing.pour"
+  },
+  "drawing.white": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:drawing/white",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.drawing.white"
   }
 }
