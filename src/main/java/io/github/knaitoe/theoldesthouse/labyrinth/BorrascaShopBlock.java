@@ -29,13 +29,15 @@ import net.minecraft.world.phys.shapes.*;
  * motor oil and antifreeze; BAIT, the bait freezer with cups on its lid; SNACKS, a wire rack of chips; CALENDAR, the feed store's
  * calendar; BAIT_SIGN, a painted board; TIRES, a stack of used tires. GROCERIES, the general store's shelf of tins, boxes and flour;
  * CROCKERY, the diner's shelf of plates, mugs and bowls. They replace the shelves that read as bookcases.</li>
+ * <li>0.4.431: BIKE, a child's bike: Kendra's on its kickstand (stage 0), Patrick's dropped on its side (stage 1). It runs past the
+ * block at both ends and nothing bumps into it.</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<BorrascaShopBlock> CODEC=simpleCodec(BorrascaShopBlock::new);
     public enum Kind implements StringRepresentable {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
-        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY;
+        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, behind the model's south face. */
         public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,OPEN,CALENDAR,BAIT_SIGN->true;default->false;};}
@@ -74,6 +76,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case CALENDAR->MarshBlock.turned(f,3,1,15,13,15,16);
             case BAIT_SIGN->MarshBlock.turned(f,0,0,14,16,16,16);
             case TIRES->Block.box(1,0,1,15,12,15);
+            case BIKE->s.getValue(STAGE)==0?MarshBlock.turned(f,0,0,6,16,14,10):MarshBlock.turned(f,0,0,2,16,6,16);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */

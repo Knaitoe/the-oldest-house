@@ -9,7 +9,7 @@ doctor's beam scale, lollipop jar (stage 1, nearly empty), corkboard of birth ca
 drugstore's soda fountain, pharmacy shelf and comic spinner; and a lit OPEN sign. 0.4.430: the gas station's own stock (steel
 shelving of motor oil and antifreeze, a bait freezer with cups of night crawlers, a wire rack of chips, the feed store's calendar, a
 painted bait sign and a stack of used tires); the general store's shelf of tins, boxes and flour, and the diner's shelf of plates,
-mugs and bowls. 0.4.425: the things the town sells (pie,
+mugs and bowls. 0.4.431: a child's bike, on its kickstand (stage 0, Kendra's) and dropped on its side (stage 1, Patrick's). 0.4.425: the things the town sells (pie,
 coffee, coffee mostly milk, soda, candy, a lollipop, a malt, beer) and the money to buy them with (a child's change, a wallet), as
 items. Writes the models and block states and the
 blocks' names. --check verifies everything.
@@ -638,6 +638,79 @@ def mug():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.431: the children's bikes
+def bike_paint():
+    """The bike's frame: enamel gone dull, chipped to the metal at a few places."""
+    im = new('#7d2620', 42297, 3)
+    for x, y in ((3, 4), (11, 9), (6, 13)):
+        dot(im, x, y, '#a9a59c')
+    fill(im, 0, 0, 16, 1, '#9a332b')
+    return im
+
+
+def bike_seat():
+    im = new('#26201c', 42298, 3)
+    fill(im, 0, 0, 16, 1, '#3a302a')
+    return im
+
+
+def bike_parts():
+    """A bicycle on its kickstand, built from bars a pixel or two thick: two wheels, the frame, the seat, the bars and the pedals.
+    It runs along x, from -4 to 20, with its wheels in the plane z 7.5..8.5."""
+    parts = []
+
+    def bar(lo, hi, tex, rot=None):
+        e = element(lo, hi, {'all': tex}, {k: [7, 7, 8, 8] for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot)
+        parts.append(e)
+
+    def wheel(cx, cy, r=5.5):
+        z0, z1 = 7.5, 8.5
+        bar([cx - 2, cy + r - 1, z0], [cx + 2, cy + r, z1], 't')          # top
+        bar([cx - 2, cy - r, z0], [cx + 2, cy - r + 1, z1], 't')          # bottom, on the ground
+        bar([cx - r, cy - 2, z0], [cx - r + 1, cy + 2, z1], 't')          # back
+        bar([cx + r - 1, cy - 2, z0], [cx + r, cy + 2, z1], 't')          # front
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                mx, my = cx + sx * (r - 1.6), cy + sy * (r - 1.6)
+                bar([mx - 1.4, my - .5, z0], [mx + 1.4, my + .5, z1], 't', {'angle': -45 if sx * sy > 0 else 45, 'axis': 'z', 'origin': [mx, my, 8]})
+        bar([cx - .5, cy - .5, 7], [cx + .5, cy + .5, 9], 'c')            # hub
+        bar([cx - r + 1, cy - .25, 7.75], [cx + r - 1, cy + .25, 8.25], 'c')  # spokes, one across and one up
+        bar([cx - .25, cy - r + 1, 7.75], [cx + .25, cy + r - 1, 8.25], 'c')
+
+    wheel(1.5, 5.5)
+    wheel(14.5, 5.5)
+    bar([5, 9.5, 7.5], [14, 10.5, 8.5], 'f')                              # top tube
+    bar([6.5, 4, 7.5], [7.5, 12, 8.5], 'f')                               # seat tube
+    bar([1.5, 5, 7.25], [7, 6, 7.5], 'f'); bar([1.5, 5, 8.5], [7, 6, 8.75], 'f')   # chain stays
+    bar([5.75, 6.5, 7.5], [14.25, 7.5, 8.5], 'f', {'angle': 45, 'axis': 'z', 'origin': [10, 7, 8]})  # down tube
+    bar([.75, 7.25, 7.5], [7.75, 8.25, 8.5], 'f', {'angle': 45, 'axis': 'z', 'origin': [4.25, 7.75, 8]})  # seat stays
+    bar([14, 5.5, 7.25], [15, 11, 7.5], 'c'); bar([14, 5.5, 8.5], [15, 11, 8.75], 'c')  # fork, down to the front hub
+    bar([13.5, 10, 7.5], [14.5, 13.5, 8.5], 'c')                           # stem
+    bar([13.5, 13.5, 3.5], [14.5, 14.5, 12.5], 'c')                        # handlebar
+    bar([13.4, 13.4, 3], [14.6, 14.6, 4.5], 's'); bar([13.4, 13.4, 11.5], [14.6, 14.6, 13], 's')  # grips
+    bar([6.5, 12, 7.5], [7.5, 12.5, 8.5], 'c')                             # seat post
+    bar([4.5, 12.5, 7], [9, 13.5, 9], 's')                                 # seat
+    bar([6.5, 3.5, 6], [7.5, 4.5, 10], 'c')                                # crank axle
+    bar([6, 3.2, 5], [8, 3.8, 6], 's'); bar([6, 4.2, 10], [8, 4.8, 11], 's')  # pedals
+    bar([7.5, .5, 9.5], [8.5, 4, 10.5], 'c', {'angle': 22.5, 'axis': 'x', 'origin': [8, 4, 8.5]})  # kickstand, its foot on the ground
+    return parts
+
+
+def lying(parts):
+    """The same bike dropped on its side: the wheels' plane laid flat a little off the ground, the near grip and pedal down in the grass."""
+    out = []
+    for e in parts:
+        (x0, y0, z0), (x1, y1, z1) = e['from'], e['to']
+        f = {'from': [x0, z0 - 5.5, 16 - y1], 'to': [x1, z1 - 5.5, 16 - y0], 'faces': e['faces']}
+        if 'rotation' in e:
+            r = e['rotation']; ox, oy, oz = r['origin']
+            axis = {'x': 'x', 'y': 'z', 'z': 'y'}[r['axis']]
+            angle = r['angle']  # the turn about x carries the z axis onto y, the same way round
+            f['rotation'] = {'angle': angle, 'axis': axis, 'origin': [ox, oz - 5.5, 16 - oy]}
+        out.append(f)
+    return out
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
     faces = {
@@ -653,6 +726,7 @@ def textures():
         'bait_front': bait_front(), 'bait_top': bait_top(), 'cup': cup(), 'chips': chips(), 'calendar': calendar(),
         'bait_sign': bait_sign(), 'tire': tire(), 'tire_top': tire_top(),
         'tins': tins(), 'boxes': boxes(), 'sack': sack(), 'plate': plate(), 'mug': mug(),
+        'bike_paint': bike_paint(), 'bike_seat': bike_seat(),
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
@@ -776,6 +850,10 @@ def shop_models():
         tires += [element([1, y, 4], [15, y + 4, 12], {'all': 't', 'up': 'o', 'down': 'o'}, {'up': [1, 4, 15, 12], 'down': [1, 4, 15, 12]}),
                   element([4, y, 1], [12, y + 4, 15], {'all': 't', 'up': 'o', 'down': 'o'}, {'up': [4, 1, 12, 15], 'down': [4, 1, 12, 15]})]
     m['tires_0'] = model(tires, {'t': 'tire', 'o': 'tire_top'}, 'tire')
+    parts = bike_parts()
+    bike = {'t': 'tire', 'c': 'chrome', 'f': 'bike_paint', 's': 'bike_seat'}
+    m['bike_0'] = model(parts, bike, 'bike_paint')
+    m['bike_1'] = model(lying(parts), bike, 'bike_paint')
     return m
 
 
@@ -907,8 +985,8 @@ ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wal
 
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
          'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open',
-         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery']
-STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2}
+         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'bike': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
 

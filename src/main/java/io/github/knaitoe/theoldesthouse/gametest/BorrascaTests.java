@@ -715,19 +715,31 @@ public final class BorrascaTests {
               f.talk(p,"TownEli");f.talk(p,"TownWren");
               h.assertTrue(f.own(p).getBoolean("MetEli")&&f.own(p).getBoolean("MetWren"),"both children can tell their part of the legend");
               h.assertTrue(f.out.getBlockState(f.base(p).offset(eliPoster)).isAir(),"Patrick's poster goes up only after he disappears");
+              bike(h,f,p,BorrascaRooms.PATRICK_BIKE,1,"on the first visit Patrick's bike lies on its side outside the store");
+              bike(h,f,p,BorrascaRooms.KENDRA_BIKE,0,"and Kendra's stands on its kickstand by where she waits");
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"second visit cast recalled"))
           .thenExecute(()->{
               h.assertTrue(f.actor(p,"TownEli").isInvisible()&&!f.actor(p,"TownWren").isInvisible(),"Patrick is missing while Kendra is still in town");
               f.talk(p,"TownWren");h.assertTrue(f.own(p).getBoolean("WrenRememberedEli"),"Kendra remembers Patrick's bicycle");
               f.read(p,eliPoster,false);
+              h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.PATRICK_BIKE)).isAir(),"by the second visit Kendra has walked Patrick's bike home to his mother");
+              bike(h,f,p,BorrascaRooms.KENDRA_BIKE,0,"her own still stands where she waits");
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult visit cast recalled"))
           .thenExecute(()->{
               h.assertTrue(f.actor(p,"TownWren").isInvisible(),"Kendra is missing on the adult return");
               f.read(p,wrenPoster,false);
               h.assertTrue(f.own(p).getBoolean("Read_WrenPoster")&&f.own(p).getBoolean("Read_EliPoster"),"both posters have readable pages");
+              for(var at:List.of(BorrascaRooms.PATRICK_BIKE,BorrascaRooms.KENDRA_BIKE))h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),at)).isAir(),"years later neither bike is in town");
           }).thenSucceed();
+    }
+    /** 0.4.431: a child's bike stands or lies at the given place, on the ground, with something to say when looked at, and bumps nobody. */
+    private static void bike(GameTestHelper h,Fixture f,ServerPlayer p,BlockPos authored,int stage,String what){
+        var at=BorrascaRooms.at(f.base(p),authored);var s=f.out.getBlockState(at);
+        h.assertTrue(s.is(BorrascaRegistry.SHOP.get())&&s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.BIKE&&s.getValue(BorrascaShopBlock.STAGE)==stage,what+": "+s);
+        h.assertTrue(!f.out.getBlockState(at.below()).getCollisionShape(f.out,at.below()).isEmpty(),what+", on solid ground: "+f.out.getBlockState(at.below()));
+        h.assertTrue(s.getCollisionShape(f.out,at).isEmpty()&&BorrascaShopTexts.look(BorrascaShopBlock.Kind.BIKE,stage,false)!=null,"the bike bumps nobody and can be looked at");
     }
 
     /**
