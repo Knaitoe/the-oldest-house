@@ -81,6 +81,15 @@ public final class BorrascaShopTexts {
             case MEDS->"Bottles in rows behind the counter. A card says to ask the pharmacist.";
             case RACK->"Comics in the spinner, some of them years old. It squeaks when it turns.";
             case OPEN->"OPEN, lit, in the window.";
+            // 0.4.430: the station's own stock, the store's shelves and the diner's crockery.
+            case OIL->later?"Quarts of motor oil and jugs of antifreeze. The front row's labels have gone pale in the sun.":"Quarts of motor oil in rows, and jugs of antifreeze on the bottom shelf.";
+            case BAIT->"LIVE BAIT on the lid. Inside, cups of night crawlers in damp dirt, and a carton of crickets that chirps when the lid comes up.";
+            case SNACKS->"Bags of chips on a wire rack, gone soft at the corners.";
+            case CALENDAR->later?"A feed store calendar with a leaping bass on it. It is still on June.":"A feed store calendar with a leaping bass on it. Somebody has circled a Saturday.";
+            case BAIT_SIGN->"WORMS and BAIT, painted by hand, with an arrow down to the freezer.";
+            case TIRES->"Used tires stacked by the wall. A price is chalked on the top one and rubbed half out.";
+            case GROCERIES->"Tins of soup and beans, boxes of cereal and matches, sacks of flour on the bottom shelf.";
+            case CROCKERY->"Heavy diner plates, mugs with a stripe round the rim, bowls stacked three deep.";
             default->null;
         };
     }

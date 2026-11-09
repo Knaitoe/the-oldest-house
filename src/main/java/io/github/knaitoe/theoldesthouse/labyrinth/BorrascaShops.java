@@ -96,10 +96,11 @@ public final class BorrascaShops {
         fit(l,b,MENU,BorrascaShopBlock.Kind.MENU,Direction.SOUTH);fit(l,b,-7,2,-80,BorrascaShopBlock.Kind.OPEN,Direction.EAST);
         // The kitchen behind the counter: the range, the sink, the shelves, the door to the back.
         set(l,b,-20,0,-89,Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));set(l,b,-20,0,-88,Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));
-        set(l,b,-20,0,-86,Blocks.CAULDRON);for(int z=-84;z<=-81;z++)road(l,b,-20,0,z,RoadhouseBlock.Kind.SHELF,Direction.EAST);
+        set(l,b,-20,0,-86,Blocks.CAULDRON);for(int z=-84;z<=-81;z++)fit(l,b,-20,0,z,BorrascaShopBlock.Kind.CROCKERY,Direction.EAST);
         set(l,b,-20,0,-80,Blocks.BARREL);set(l,b,-19,0,-80,Blocks.BARREL);
         set(l,b,-12,0,-90,Blocks.JUKEBOX);set(l,b,-8,0,-85,Blocks.POTTED_FERN);
         for(int z:new int[]{-88,-83})set(l,b,-12,4,z,hanging());set(l,b,-18,4,-85,hanging());
+        joists(l,b,-20,-8,Blocks.STRIPPED_BIRCH_LOG,-90,-86,-81);
     }
 
     /** Rowe's Antiques in front, the Drisking Historical Society through the door at the back. */
@@ -136,11 +137,23 @@ public final class BorrascaShops {
         box(l,b,-13,4,-120,-7,4,-109,slab(Blocks.SMOOTH_STONE_SLAB,SlabType.BOTTOM));set(l,b,-10,3,-114,hanging());
         box(l,b,-6,0,-109,-6,3,-109,log(Blocks.DARK_OAK_LOG,Direction.Axis.Y));fit(l,b,PRICE,BorrascaShopBlock.Kind.PRICE,Direction.EAST);
         fit(l,b,PAYPHONE,BorrascaShopBlock.Kind.PAYPHONE,Direction.EAST);fit(l,b,COOLER,BorrascaShopBlock.Kind.COOLER,Direction.EAST);
-        // Inside: the candy rack, the counter and till, shelves of oil and bait, a second cooler.
+        // Inside: the candy rack, the counter and till, a second cooler. 0.4.430 (owner: "i hope you're still working on detailing the
+        // architecture"): along the back wall the station's own stock, not shelves of books: chips, motor oil and antifreeze, the bait
+        // freezer under its sign, and the feed store's calendar behind the counter; a mat inside the door, joists overhead, a second
+        // lamp, and used tires stacked out front.
         fit(l,b,STATION_CANDY,BorrascaShopBlock.Kind.CANDY,Direction.EAST);
         for(int z=-118;z<=-116;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-117,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
-        for(int z=-118;z<=-111;z++)road(l,b,-25,0,z,RoadhouseBlock.Kind.SHELF,Direction.EAST);
-        fit(l,b,-22,0,-118,BorrascaShopBlock.Kind.COOLER,Direction.SOUTH);set(l,b,-21,4,-114,hanging());
+        fit(l,b,-25,0,-111,BorrascaShopBlock.Kind.SNACKS,Direction.EAST);fit(l,b,-25,0,-112,BorrascaShopBlock.Kind.OIL,Direction.EAST);fit(l,b,-25,0,-113,BorrascaShopBlock.Kind.OIL,Direction.EAST);
+        fit(l,b,-25,0,-114,BorrascaShopBlock.Kind.BAIT,Direction.EAST);fit(l,b,-25,1,-114,BorrascaShopBlock.Kind.BAIT_SIGN,Direction.EAST);
+        fit(l,b,-25,0,-115,BorrascaShopBlock.Kind.OIL,Direction.EAST);fit(l,b,-25,0,-116,BorrascaShopBlock.Kind.OIL,Direction.EAST);
+        fit(l,b,-25,1,-117,BorrascaShopBlock.Kind.CALENDAR,Direction.EAST);
+        fit(l,b,-22,0,-118,BorrascaShopBlock.Kind.COOLER,Direction.SOUTH);set(l,b,-21,4,-114,hanging());set(l,b,-23,4,-115,hanging());
+        box(l,b,-18,0,-114,-17,0,-114,Blocks.GRAY_CARPET);joists(l,b,-25,-17,Blocks.STRIPPED_SPRUCE_LOG,-112,-117);
+        fit(l,b,-15,0,-119,BorrascaShopBlock.Kind.TIRES,Direction.WEST);
+    }
+    /** 0.4.430: ceiling joists across a shop, under its roof, on rows clear of every hanging lamp. */
+    private static void joists(ServerLevel l,BlockPos b,int x0,int x1,Block log,int... zs){
+        for(int z:zs)box(l,b,x0,4,z,x1,4,z,log(log,Direction.Axis.X));
     }
 
     /** Dr. Hale's office: a waiting room with the corkboard of birth cards and the lollipop jar, the examination room behind. */
@@ -157,6 +170,7 @@ public final class BorrascaShops {
         fit(l,b,EXAM,BorrascaShopBlock.Kind.EXAM,Direction.WEST);fit(l,b,SCALE,BorrascaShopBlock.Kind.SCALE,Direction.WEST);fit(l,b,CHART,BorrascaShopBlock.Kind.CHART,Direction.WEST);
         fit(l,b,18,0,-88,BorrascaShopBlock.Kind.MEDS,Direction.WEST);set(l,b,14,0,-79,Blocks.CAULDRON);
         set(l,b,10,4,-84,hanging());set(l,b,16,4,-84,hanging());
+        joists(l,b,8,18,Blocks.STRIPPED_BIRCH_LOG,-87,-81);
     }
 
     /** Main Street Drug: the soda fountain with its stools, the pharmacy counter at the back, the comic spinner and the candy rack. */
@@ -173,6 +187,7 @@ public final class BorrascaShops {
         fit(l,b,RACK,BorrascaShopBlock.Kind.RACK,Direction.WEST);fit(l,b,DRUG_CANDY,BorrascaShopBlock.Kind.CANDY,Direction.WEST);
         fit(l,b,7,2,-101,BorrascaShopBlock.Kind.OPEN,Direction.WEST);
         for(int x:new int[]{11,16})set(l,b,x,4,-98,hanging());
+        joists(l,b,8,20,Blocks.STRIPPED_DARK_OAK_LOG,-102,-94);
     }
 
     /** The Tipple: a long bar with its back bar, stools, a pool table and a dartboard, a booth, and a beer sign in the window. */
@@ -187,6 +202,7 @@ public final class BorrascaShops {
         road(l,b,20,0,-109,RoadhouseBlock.Kind.BOOTH,Direction.SOUTH);road(l,b,20,0,-110,RoadhouseBlock.Kind.BOOTH_TABLE,Direction.SOUTH);road(l,b,20,0,-111,RoadhouseBlock.Kind.BOOTH,Direction.NORTH);
         road(l,b,8,2,-111,RoadhouseBlock.Kind.NEON_BEER,Direction.WEST);road(l,b,12,1,-109,RoadhouseBlock.Kind.CORKBOARD,Direction.NORTH);
         set(l,b,12,4,-113,hanging());set(l,b,18,4,-116,hanging());
+        joists(l,b,8,21,Blocks.DARK_OAK_LOG,-119,-115,-110);
     }
 
     /** The general store's hardware counter: a pegboard of rope, flashlights, batteries and pocketknives where the frame used to hang. */
