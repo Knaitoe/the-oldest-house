@@ -30,12 +30,12 @@ public final class BorrascaNativeArt {
     public static final ResourceLocation ATLAS=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_cast_pixels.png");
     public static final ModelLayerLocation CAST=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca_cast"),"main");
     private BorrascaNativeArt(){}
-    private static final String[] PEOPLE={"kyle","kimber","sheriff","prescott","worker","worker_two","eli","wren"};
+    private static final String[] PEOPLE={"kyle","kimber","sheriff","prescott","worker","worker_two","eli","wren","kelly_grown"};
     /** Shared cast painter: six 256-pixel exports on the original 64x64 humanoid UV layout; 4 and 5 are the two plant workers (0.4.262: no longer one face twice). */
     public static ResourceLocation skin(int person){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_"+PEOPLE[Math.max(0,Math.min(PEOPLE.length-1,person))]+".png");}
     public static ResourceLocation skin(int person,boolean worker){return skin(worker?4:Math.min(3,person));}
     /** Which painting an actor wears: a worker's phase says which of the two men he is. */
-    public static int person(LiteraryActor a){if(BorrascaStory.townChild(a.role(),a.phase()))return a.phase()==BorrascaStory.ELI?6:7;return a.phase()>=BorrascaStory.WORKER?(a.phase()==BorrascaStory.WORKER+1?5:4):Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE));}
+    public static int person(LiteraryActor a){if(a.role()==LiteraryActor.BORRASCA_KIMBER&&a.phase()==BorrascaStory.GROWN)return 8;if(BorrascaStory.townChild(a.role(),a.phase()))return a.phase()==BorrascaStory.ELI?6:7;return a.phase()>=BorrascaStory.WORKER?(a.phase()==BorrascaStory.WORKER+1?5:4):Math.max(0,Math.min(3,a.role()-LiteraryActor.BORRASCA_KYLE));}
     @SubscribeEvent public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e){e.registerLayerDefinition(CAST,BorrascaNativeArt::castLayer);}
     private static LayerDefinition castLayer(){
         var mesh=HumanoidModel.createMesh(CubeDeformation.NONE,0);
@@ -162,7 +162,7 @@ public final class BorrascaNativeArt {
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */
-        public void preview(int person,float age,float stride){brow=tilt=mouth=0;HumanoidMotion.reset(this);young=person<2||person>=6;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
+        public void preview(int person,float age,float stride){brow=tilt=mouth=0;HumanoidMotion.reset(this);young=person<2||person==6||person==7;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
         public void previewPose(int person,int gesture,float age){preview(person,age,0);pose(gesture,person==2,age);HumanoidMotion.connect(this);}
     }
     public static void cube(PoseStack p,VertexConsumer out,float x0,float y0,float z0,float x1,float y1,float z1,int tile,int light,int overlay,int colour){

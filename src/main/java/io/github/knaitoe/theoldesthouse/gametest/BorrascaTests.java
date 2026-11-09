@@ -653,7 +653,7 @@ public final class BorrascaTests {
             f.read(p,BorrascaRooms.NIGHT_BOOK,false);f.read(p,BorrascaRooms.LETTER,false);var own=f.own(p);
             h.assertTrue(own.getBoolean("LedgerRead")&&own.getBoolean("LetterRead"),"the night book and the letter are read on the desk");
             var book=String.join(" ",BorrascaTexts.document("Ledger").get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());
-            h.assertTrue(book.contains("Approved: Sheriff's office")&&book.contains("E. Prescott")&&book.contains("W. Prescott")&&book.contains("J. Prescott")&&book.contains("263-A")&&book.contains("Transfer, D-417")&&book.contains("To the yard")&&book.contains("264-A"),"the night book: the Sheriff's approvals, three Prescotts, her tag and her transfer, the yard, and the newest tag");
+            h.assertTrue(book.contains("Approved: Sheriff's office")&&book.contains("E. Prescott")&&book.contains("W. Prescott")&&book.contains("J. Prescott")&&book.contains("263-A")&&book.contains("Asks for nobody now")&&book.contains("To the yard")&&book.contains("264-A"),"the night book: the Sheriff's approvals, three Prescotts, her tag, the yard, and the newest tag");
             // 0.4.437 (owner): grown women only below, and the town's reason on paper.
             h.assertTrue(book.contains("None to come down before eighteen")&&book.contains("Kept above")&&book.contains("Placed in town")&&book.contains("141-A. Down"),"nobody comes down before eighteen, a child taken is kept above, and what is born below is placed in town");
             var letterPages=BorrascaTexts.document("Letter").get(DataComponents.WRITTEN_BOOK_CONTENT).pages();
@@ -661,14 +661,19 @@ public final class BorrascaTests {
             var styles=new java.util.HashSet<net.minecraft.network.chat.Style>();letterPages.get(0).raw().visit((style,text)->{if(!text.isBlank())styles.add(style);return java.util.Optional.empty();},net.minecraft.network.chat.Style.EMPTY);
             h.assertTrue(letter.contains("UNDER THE DEPOT")&&letter.contains("THE BABIES GO UP TO TOWN")&&letter.contains("WITHHELD")&&!letter.contains("MOM,"),"the note says where she is and where the babies go, and was never sent: "+letter);
             h.assertTrue(styles.size()>=6,"the note is pasted from cuttings, no two alike, so it has no hand: "+styles.size());
-            f.at(p,-15,6,-179);f.refresh(p);own=f.own(p);var wall=l.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.NELL_WALL));
+            f.at(p,-16,6,-179);f.refresh(p);own=f.own(p);var wall=l.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.NELL_WALL));
             h.assertTrue(own.getBoolean("LowerRooms")&&own.getBoolean("NellsRoom"),"under the depot, and in her room");
             h.assertTrue(wall instanceof BorrascaCarvingEntity e&&e.friend().equals(BorrascaStory.FRIEND)&&e.reader().equals(p.getGameProfile().getName())&&l.getBlockState(BorrascaRooms.at(b,BorrascaRooms.NELL_WALL)).getValue(BorrascaCarvingBlock.WALL),"her name scratched into the wall beside the reader's");
+            // 0.4.438 (owner): Kelly is there, grown: the same saved actor as the child, on her grown skin and at full size.
+            var kelly=f.actor(p,"CastKimber");
+            h.assertTrue(kelly!=null&&kelly.phase()==BorrascaStory.GROWN&&!kelly.isInvisible()&&kelly.getBbHeight()>1.5F&&kelly.position().distanceTo(Vec3.atBottomCenterOf(BorrascaRooms.at(b,BorrascaRooms.KELLY)))<1.6&&own.getBoolean("KellyFound"),"she is there, grown, by the cot: "+(kelly==null?"no actor":kelly.phase()+" "+kelly.getBbHeight()+" "+kelly.position()+" for "+Vec3.atBottomCenterOf(BorrascaRooms.at(b,BorrascaRooms.KELLY))+" invisible "+kelly.isInvisible()));
+            for(int i=0;i<4;i++)f.talk(p,"CastKimber");own=f.own(p);
+            h.assertTrue(own.getBoolean("KellyAsked")&&own.getInt("KellyLine")>=5,"she will not come up, and asks the reader to stop the machine and take her name up: "+own.getInt("KellyLine"));
             f.at(p,-23,6,-199);f.refresh(p);h.assertTrue(f.own(p).getBoolean("MarasRoom"),"the newest room, bolted, still warm");
             h.assertTrue(l.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.grave(0))) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign&&sign.getFrontText().getMessage(1,false).getString().equals(BorrascaRooms.GRAVE_TAGS[0])&&sign.isWaxed(),"a number on a stake, no name");
             f.at(p,0,12,-204);f.refresh(p);own=f.own(p);h.assertTrue(own.getBoolean("GravesSeen"),"the rows behind the shed");
             var account=BorrascaTexts.account(own);
-            h.assertTrue(account.contains("bolts on the outside")&&account.contains("scratched into the wall beside mine")&&account.contains("counted by a Prescott")&&account.contains("never sent")&&account.contains("numbers in the ground")&&account.contains("transfer, and nothing after"),"the account keeps what was found: "+account);
+            h.assertTrue(account.contains("bolts on the outside")&&account.contains("scratched into the wall beside mine")&&account.contains("counted by a Prescott")&&account.contains("never sent")&&account.contains("numbers in the ground")&&account.contains("two births, both placed in town")&&account.contains("grown, and would not come up")&&account.contains("take her name up instead of her"),"the account keeps what was found: "+account);
             h.assertTrue(BorrascaTexts.witness(own).contains("night book"),"and the Witness line the book");
             h.assertTrue(!own.getBoolean("Completed"),"none of it is required to finish; finding it is the reader's own");
         }).thenSucceed();

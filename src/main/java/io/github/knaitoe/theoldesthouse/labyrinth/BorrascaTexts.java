@@ -63,7 +63,7 @@ public final class BorrascaTexts {
             "1983\n141-A. Down. Rm 2.\n1985\nRm 2. Delivered, girl. Placed in town.\nApproved: Sheriff's office.\nCounted: W. Prescott",
             "1987\nRm 2. Letter withheld.\nRm 4. No visitors. Unwell.\nRm 4. Closed. To the yard.",
             "1993\n263-A. Received, 6:40 pm. Kept above.\n1999\n263-A. Down. Rm 6.\nRm 6. Will not eat. Asks for her friend by name.",
-            "2001\nRm 6. Delivered, boy. Placed in town.\n2004\nRm 6. Delivered, girl. Placed in town.\nRm 6. Transfer, D-417. Night.",
+            "2001\nRm 6. Delivered, boy. Placed in town.\n2004\nRm 6. Delivered, girl. Placed in town.\nRm 6. Asks for nobody now.",
             "264-A. Received tonight. Down at once. Rm 7.\nNight shift tonight.\nApproved: Sheriff's office.\nCounted: J. Prescott");
         // 0.4.437 (owner): room 2's note home, made of letters cut from the catalogues they are given and pasted down, so it has no
         // hand and gives no age. It is an adult's, from the year the book withholds it; it was taken off her and kept.
@@ -174,9 +174,10 @@ public final class BorrascaTexts {
             +(own.getBoolean("Read_WrenPoster")?" Kendra had gone looking for Patrick. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Kendra walked Patrick's bike back to his mom.":"")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
-            +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine. The room was empty.":"")
+            +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine."+(own.getBoolean("KellyFound")?" She was there, grown, and would not come up.":""):"")
+            +(own.getBoolean("KellyAsked")?" She asked me to stop the machine, and to take her name up instead of her.":"")
             +(own.getBoolean("MarasRoom")?" The newest room was still warm.":"")
-            +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Nobody came down until they were grown. What was born down there went up to town. Beside her number it said transfer, and nothing after.":"")
+            +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Nobody came down until they were grown. What was born down there went up to town. Beside her number there were two births, both placed in town.":"")
             +(own.getBoolean("LetterRead")?" Someone down there had made a note home out of letters cut from catalogues. It was never sent.":"")
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
             // 0.4.427: what the reader did to the Sheriff, grown.
