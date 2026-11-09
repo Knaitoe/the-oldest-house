@@ -114,6 +114,8 @@ public final class BorrascaTexts {
     public static String account(){return account(new CompoundTag());}
     public static String account(CompoundTag own){
         return (own.getBoolean("FoundNell")?"She called out which way to look when we played hide-and-seek. ":"")
+            // 0.4.433: the two who came part of the way.
+            +(own.getBoolean("AlongHeard")?"Patrick and Kendra came with us as far as the first marker. Patrick said he would go up by the second one some other time. ":"")
             // 0.4.432: what she said on the walk up.
             +(own.getInt("WalkTalk")>=BorrascaStory.WALK_TALK.length?"She talked the whole way up to the Tree, and asked if I wanted to be best friends. ":own.getInt("WalkTalk")>0?"She talked on the way up to the Tree. ":"")
             +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")

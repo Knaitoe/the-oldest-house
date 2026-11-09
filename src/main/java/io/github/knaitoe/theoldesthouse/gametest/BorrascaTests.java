@@ -760,6 +760,45 @@ public final class BorrascaTests {
               h.assertTrue(BorrascaTexts.account(f.own(p)).contains("on the way up to the Tree")||BorrascaTexts.account(f.own(p)).contains("the whole way up to the Tree"),"the account remembers the walk");
           }).thenSucceed();
     }
+    /**
+     * 0.4.433 (owner: "other potential npcs ... time to talk and bond"). Patrick and Kendra walk up behind Kelly as far as the first marker,
+     * say goodbye there to a reader near enough to hear, walk back down, and are home in town once nobody is watching them.
+     */
+    @AfterBatch(batch="borrasca_along") public static void alongDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_along",timeoutTicks=4800)
+    public static void patrickAndKendraWalkUpAsFarAsTheFirstMarker(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_along");
+        java.util.function.DoubleConsumer behind=d->{var a=f.actor(p,"CastKimber");p.teleportTo(f.out,a.getX(),a.getY(),a.getZ()+d,180,0);p.setDeltaMovement(Vec3.ZERO);};
+        java.util.function.IntPredicate there=s->f.own(p).getInt("EliAlong")>=s&&f.own(p).getInt("WrenAlong")>=s;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
+          .thenExecute(()->{var own=f.own(p);own.putBoolean("MetFriend",true);own.putBoolean("PlayDone",true);f.save(p,own);})
+          // Walking beside Kelly, the two come up the trail behind.
+          .thenWaitUntil(()->{if(!f.own(p).getBoolean("KimberAtFort")&&f.rel(f.actor(p,"CastKimber"),p).y<5)behind.accept(2);
+              h.assertTrue(f.own(p).getBoolean("AlongStarted")&&there.test(2),"they follow her up the trail: eli="+f.own(p).getInt("EliAlong")+" wren="+f.own(p).getInt("WrenAlong")
+                  +" patrick="+f.rel(f.actor(p,"TownEli"),p)+" kendra="+f.rel(f.actor(p,"TownWren"),p));})
+          .thenWaitUntil(()->{if(!f.own(p).getBoolean("KimberAtFort")&&f.rel(f.actor(p,"CastKimber"),p).y<5)behind.accept(2);
+              var eli=f.actor(p,"TownEli");var wren=f.actor(p,"TownWren");
+              h.assertTrue(there.test(3),"they stop at the first marker: patrick="+f.rel(eli,p)+" kendra="+f.rel(wren,p)+" kelly="+f.rel(f.actor(p,"CastKimber"),p));})
+          .thenExecute(()->{
+              var marker=Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),BorrascaRooms.MARKER_ONE));
+              for(var key:new String[]{"TownEli","TownWren"}){var a=f.actor(p,key);h.assertTrue(a.position().distanceTo(marker)<5,key+" stands by the first marker: "+a.position().distanceTo(marker));}
+              var friend=f.actor(p,"CastKimber");h.assertTrue(f.actor(p,"TownEli").distanceToSqr(f.actor(p,"TownWren"))>.5,"at the marker they stand either side of the trail");
+              var wren=f.actor(p,"TownWren");p.teleportTo(f.out,wren.getX(),wren.getY(),wren.getZ()-3,0,0);p.setDeltaMovement(Vec3.ZERO);})
+          // Near them, the reader hears them say goodbye; then they turn back down.
+          .thenWaitUntil(()->{var wren=f.actor(p,"TownWren");if(!f.own(p).getBoolean("AlongHome")){p.teleportTo(f.out,wren.getX(),wren.getY(),wren.getZ()-3,0,0);p.setDeltaMovement(Vec3.ZERO);}
+              h.assertTrue(f.own(p).getBoolean("AlongHeard"),"they say goodbye at the marker");})
+          .thenExecute(()->{
+              h.assertTrue(TalkHistory.conversations(p.server,p.getUUID()).stream().map(CompoundTag.class::cast).flatMap(t->t.getList("Lines",10).stream()).map(CompoundTag.class::cast)
+                  .anyMatch(line->line.getString("T").equals(BorrascaStory.FAREWELL_ELI)),"what Patrick said at the marker is in the journal");
+              // The reader goes on up to the Tree, looking up the hill; behind them the two go home.
+              var fort=BorrascaRooms.at(f.base(p),BorrascaStory.FORT);p.teleportTo(f.out,fort.getX()+.5,fort.getY(),fort.getZ()+.5,180,-10);p.setDeltaMovement(Vec3.ZERO);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("AlongDone"),"they are home again once nobody watches: patrick="+f.rel(f.actor(p,"TownEli"),p)+" kendra="+f.rel(f.actor(p,"TownWren"),p)))
+          .thenExecute(()->{
+              for(var key:new String[]{"TownEli","TownWren"}){var home=Vec3.atBottomCenterOf(f.base(p).offset(BorrascaCast.target(key,1)));h.assertTrue(f.actor(p,key).position().distanceTo(home)<1.5,key+" is back in town");}
+              h.assertTrue(BorrascaTexts.account(f.own(p)).contains("as far as the first marker"),"the account remembers who came part of the way");
+          }).thenSucceed();
+    }
     /** 0.4.432: on the second visit's walk toward the mill she talks about Patrick, the same way, between the shelters' calls. */
     @AfterBatch(batch="borrasca_walk_talk_two") public static void walkTalkTwoDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_walk_talk_two",timeoutTicks=5200)

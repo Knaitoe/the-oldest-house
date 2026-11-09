@@ -88,6 +88,20 @@ public final class BorrascaStory {
         "If something happens, you run home. Don't wait for me. Promise."
     };
     public static final int WALK_TALK_GAP=80,WALK_TALK_NEAR=8;
+    /**
+     * 0.4.433 (owner: the walk "gives Nell and the player and other potential npcs, if not occupied by players, time to talk and bond").
+     * On the first visit, once Kelly has set off for the Tree, Patrick and Kendra come up the trail behind her in single file, never past
+     * her, as far as the first marker, where they stand either side of the trail. There they stop: Kendra is not let past it, and Patrick will go up by the second
+     * marker some other time. When they have said so to a reader near enough to hear (or the reader has long gone on), they turn back
+     * down the trail, and are home in town again the moment nobody is watching them.
+     */
+    private static final BlockPos[] ALONG={new BlockPos(1,0,-35),new BlockPos(1,0,-60),new BlockPos(3,0,-75)};
+    public static final String[] ALONG_ELI={"Race you to the first marker. Kelly doesn't count, she stops for every bird."};
+    public static final String[] ALONG_WREN={"He says that every time, and then he walks."};
+    public static final String FAREWELL_WREN="This is as far as I go. My mom can see the marker from our porch.";
+    public static final String FAREWELL_ELI="I'm going up by the second marker some other time. Don't tell my brother.";
+    /** Reader ticks the two wait at the marker for someone to say goodbye to before they go home anyway. */
+    public static final int ALONG_WAIT=1200,ALONG_NEAR=10;
     /** The fort the friend climbs to, and the point she tells the legend from. */
     public static final BlockPos FORT=new BlockPos(1,6,-94);
     /**
@@ -344,6 +358,7 @@ public final class BorrascaStory {
             if(child==null||child.isInvisible()||p.distanceToSqr(child)>36||!p.hasLineOfSight(child))continue;
             String key=child.phase()==ELI?"EliTrailGreeting":"WrenTrailGreeting"+visit;
             if(own.getBoolean(key))continue;
+            if(visit==1&&own.getBoolean("AlongStarted")){own.putBoolean(key,true);continue;} // 0.4.433: on the trail with Kelly, not in town
             own.putBoolean(key,true);
             if(recentSpeech(p)){
                 // Still let a passing reader meet the child without replacing Nell's current subtitle.
@@ -396,6 +411,7 @@ public final class BorrascaStory {
             own.putInt("HatTicks",hat);
             if(hat==0)sheriff.gesture(0);
         }
+        if(visit==1)tagAlong(p,b,own,friend,eli,wren);
         switch(visit){
             case 1->visitOne(p,b,own,friend,sheriff,prescott);
             case 2->visitTwo(p,b,own,friend,w0,w1);
@@ -541,6 +557,72 @@ public final class BorrascaStory {
         for(double h:new double[]{GENT_HEIGHT*.6,GENT_HEIGHT-.4}){var point=at.add(0,h,0);
             if(look.dot(point.subtract(eye).normalize())>=.95&&p.level().clip(new ClipContext(eye,point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS)return true;}
         return false;
+    }
+    /** 0.4.433: Patrick and Kendra up the trail behind Kelly as far as the first marker, their goodbye there, and home again. */
+    private static void tagAlong(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor eli,@Nullable LiteraryActor wren){
+        if(own.getBoolean("AlongDone")||eli==null||wren==null||eli.isInvisible()||wren.isInvisible())return;
+        if(!own.getBoolean("AlongStarted")){
+            if(friend==null||!own.getBoolean("PlayDone")||own.getInt("ChildStep")<1&&!own.getBoolean("KimberAtFort"))return;
+            own.putBoolean("AlongStarted",true);
+        }
+        var children=new LiteraryActor[]{eli,wren};
+        if(own.getBoolean("AlongHome")){
+            // Back down the trail; home in town as soon as nobody sees them go.
+            boolean both=true;
+            for(var child:children){
+                String key=child.phase()==ELI?"TownEli":"TownWren";var home=b.offset(BorrascaCast.target(key,1));
+                if(child.position().distanceToSqr(Vec3.atBottomCenterOf(home))<1){BorrascaCast.stop(child);continue;}
+                if(BorrascaCast.recall(p,child,home))continue;
+                both=false;String step=child.phase()==ELI?"EliAlong":"WrenAlong";int i=Math.min(own.getInt(step),ALONG.length-1);
+                // Back the way they came, step by step along the trail.
+                var to=Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[Math.max(0,i-1)]));var base0=Vec3.atLowerCornerOf(b);
+                if(child.position().subtract(to).horizontalDistance()<.7){if(i>0)own.putInt(step,i-1);BorrascaCast.stop(child);continue;}
+                BorrascaCast.walk(child,i>0?BorrascaRooms.toward(child.position().subtract(base0),ALONG[i],ALONG[i-1]).add(base0):to,.8);
+            }
+            if(both){own.putBoolean("AlongDone",true);for(var child:children)BorrascaCast.remember(own,child.phase()==ELI?"TownEli":"TownWren",child);}
+            return;
+        }
+        boolean there=true;
+        // Single file on her line (the trail is narrow where the street gives out to the woods): Patrick a few steps behind her, never
+        // past her, and Kendra behind him. Only at the marker do they stand side by side, either side of the trail.
+        for(var child:children){
+            boolean lead=child.phase()==ELI;String step=lead?"EliAlong":"WrenAlong";int i=own.getInt(step);
+            if(i>=ALONG.length){BorrascaCast.stop(child);continue;}
+            there=false;
+            boolean last=i==ALONG.length-1;
+            var ahead=lead?(own.getBoolean("KimberAtFort")?null:friend):own.getInt("EliAlong")>=ALONG.length?null:eli;
+            // Behind means further back up the trail, which runs north: the trail's own progress, not the distance between them.
+            if(ahead!=null&&child.getZ()<ahead.getZ()+(lead?3:2)){BorrascaCast.stop(child);continue;}
+            var at=last?along(b,i,lead?-1:1):Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[i]));
+            var base0=Vec3.atLowerCornerOf(b);
+            var steer=i>0&&child.position().subtract(at).horizontalDistance()>3?BorrascaRooms.toward(child.position().subtract(base0),ALONG[i-1],ALONG[i]).add(base0):at;
+            if(child.position().subtract(at).horizontalDistance()<.7&&Math.abs(child.getY()-at.y)<1.2){own.putInt(step,i+1);BorrascaCast.stop(child);}
+            else BorrascaCast.walk(child,steer,.8);
+        }
+        if(!there){
+            walkTalk(p,own,eli,ALONG_ELI,"EliAlongTalk");
+            if(own.getInt("EliAlongTalk")>=ALONG_ELI.length)walkTalk(p,own,wren,ALONG_WREN,"WrenAlongTalk");
+            return;
+        }
+        // At the marker: they face the trail up, and say goodbye to a reader near enough to hear.
+        for(var child:children){float yaw=toward(child,p);child.setYHeadRot(yaw);}
+        boolean near=p.distanceToSqr(eli)<ALONG_NEAR*ALONG_NEAR||p.distanceToSqr(wren)<ALONG_NEAR*ALONG_NEAR;
+        if(!near){
+            int wait=own.getInt("AlongWait")+5;own.putInt("AlongWait",wait);
+            if(wait>=ALONG_WAIT)own.putBoolean("AlongHome",true);
+            return;
+        }
+        if(recentSpeech(p))return;
+        if(!own.getBoolean("AlongWrenSaid")){own.putBoolean("AlongWrenSaid",true);say(p,wren,FAREWELL_WREN);return;}
+        own.putBoolean("AlongHeard",true);own.putBoolean("AlongHome",true);say(p,eli,FAREWELL_ELI);
+    }
+    /** Where a child stands at the marker: the trail's last step, a little to their own side of it. */
+    private static Vec3 along(BlockPos b,int i,int side){return Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[i])).add(right(b,i).scale(side*.9));}
+    /** The trail's right hand at a step, along the ground. */
+    private static Vec3 right(BlockPos b,int i){
+        var from=Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[Math.max(0,i-1)]));var to=Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[Math.max(1,i)]));
+        if(i==0){from=Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[0]));to=Vec3.atBottomCenterOf(BorrascaRooms.at(b,ALONG[1]));}
+        var d=to.subtract(from).multiply(1,0,1);if(d.lengthSqr()<1e-6)return Vec3.ZERO;d=d.normalize();return new Vec3(-d.z,0,d.x);
     }
     /** 0.4.432: the next of her walk lines (kept count under key), if the reader is beside her and it is her turn to speak. */
     private static void walkTalk(ServerPlayer p,CompoundTag own,LiteraryActor friend,String[] lines,String key){
