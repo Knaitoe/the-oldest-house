@@ -96,4 +96,11 @@ public final class BorrascaShopTexts {
             default->null;
         };
     }
+    /** 0.4.435: a bike by whose it is, on its kickstand or on its side. */
+    static String bike(int whose,boolean lying){
+        return whose==BorrascaBike.PATRICK?(lying?"Patrick's bike, dropped on its side where anybody could trip on it. A baseball card is pinned to the fork so the spokes clatter."
+                :"Patrick's bike, on its kickstand. A baseball card is pinned to the fork so the spokes clatter.")
+            :(lying?"Kendra's bike, on its side in the road. The seat is let all the way down, and the chain shines with fresh oil."
+                :"Kendra's bike, on its kickstand. The seat is let all the way down, and the chain shines with fresh oil.");
+    }
 }

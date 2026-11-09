@@ -110,12 +110,20 @@ public final class BorrascaTexts {
     private static String stained(String page,int seed){
         var words=page.split(" ");var out=new StringBuilder();for(int i=0;i<words.length;i++){if(i>0)out.append(' ');boolean keep=i==0||(i*7+seed*3)%5!=0||words[i].contains("\n");out.append(keep?words[i]:"...");}return out.toString();
     }
+    /** 0.4.435: whose bike this reader rode, and whether they came off. */
+    private static String bikes(CompoundTag own){
+        boolean his=own.getBoolean("BikeRode"+BorrascaBike.PATRICK),hers=own.getBoolean("BikeRode"+BorrascaBike.KENDRA);if(!his&&!hers)return "";int falls=own.getInt("BikeFalls");
+        return (his&&hers?"I rode Patrick's bike and Kendra's around town.":his?"I rode Patrick's bike around town.":"I rode Kendra's bike around town.")
+            +(falls==1?" I came off once, and it went down in the road. ":falls>1?" I came off more than once. ":" ");
+    }
     /** The account, from what this reader did and heard. */
     public static String account(){return account(new CompoundTag());}
     public static String account(CompoundTag own){
         return (own.getBoolean("FoundNell")?"She called out which way to look when we played hide-and-seek. ":"")
             // 0.4.433: the two who came part of the way.
             +(own.getBoolean("AlongHeard")?"Patrick and Kendra came with us as far as the first marker. Patrick said he would go up by the second one some other time. ":"")
+            // 0.4.435: the bikes.
+            +bikes(own)
             // 0.4.432: what she said on the walk up.
             +(own.getInt("WalkTalk")>=BorrascaStory.WALK_TALK.length?"She talked the whole way up to the Tree, and asked if I wanted to be best friends. ":own.getInt("WalkTalk")>0?"She talked on the way up to the Tree. ":"")
             +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")

@@ -241,6 +241,8 @@ public final class BorrascaShops {
         if(!s.is(BorrascaRegistry.SHOP.get()))return false;
         // 0.4.426: the payphone has its own dial.
         if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PAYPHONE){BorrascaPayphone.open(p,own);return true;}
+        // 0.4.435: the children's bikes can be ridden.
+        if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.BIKE)return BorrascaStory.bikeClick(p,b,own,at,s);
         String line=BorrascaShopTexts.look(s.getValue(BorrascaShopBlock.KIND),s.getValue(BorrascaShopBlock.STAGE),grown);
         if(line==null)return false;
         BorrascaStory.cue(p,line);return true;

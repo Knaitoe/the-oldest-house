@@ -1069,9 +1069,70 @@ public final class BorrascaStory {
         var his=BorrascaRooms.at(b,BorrascaRooms.PATRICK_BIKE);var hers=BorrascaRooms.at(b,BorrascaRooms.KENDRA_BIKE);
         var l=p.serverLevel();if(!l.hasChunkAt(his)||!l.hasChunkAt(hers))return;
         var none=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        // 0.4.435: a bike ridden and left somewhere else on an earlier visit goes with that visit.
+        for(int whose=0;whose<2;whose++){String key="BikeAt"+whose;if(!own.contains(key))continue;var left=BlockPos.of(own.getLong(key));if(!l.hasChunkAt(left))return;
+            if(BorrascaShopBlock.is(l.getBlockState(left),BorrascaShopBlock.Kind.BIKE))l.setBlock(left,none,F);own.remove(key);}
         l.setBlock(his,visit==1?BorrascaShopBlock.of(BorrascaShopBlock.Kind.BIKE,Direction.EAST,1):none,F);
         l.setBlock(hers,visit<=2?BorrascaShopBlock.of(BorrascaShopBlock.Kind.BIKE,Direction.EAST,0):none,F);
         own.putInt("TownBikeVisit",visit);
+    }
+
+    // ------------------------------------------------------------------ 0.4.435: the bikes, ridden
+    /**
+     * A bike clicked in the town, on a childhood visit. The first click on each is a look at it. Lying down, a click stands it up.
+     * Standing, a click gets on it (BorrascaBike), with the keys shown once in grey. A grown reader only looks.
+     */
+    static boolean bikeClick(ServerPlayer p,BlockPos b,CompoundTag own,BlockPos at,net.minecraft.world.level.block.state.BlockState s){
+        var l=p.serverLevel();int whose=whoseBike(b,own,at);boolean lying=s.getValue(BorrascaShopBlock.STAGE)==1;
+        String look=BorrascaShopTexts.bike(whose,lying);String seen="BikeLooked"+whose;
+        if(own.getInt("Visit")>=3||p.isPassenger()){cue(p,look);return true;}
+        if(lying){l.setBlock(at,s.setValue(BorrascaShopBlock.STAGE,0),F);cue(p,(own.getBoolean(seen)?"":look+" ")+"You pick it up and kick the stand down.");own.putBoolean(seen,true);return true;}
+        if(!own.getBoolean(seen)){own.putBoolean(seen,true);cue(p,look);return true;}
+        var bike=BorrascaRegistry.BIKE.get().create(l);if(bike==null)return true;
+        float yaw=s.getValue(BorrascaShopBlock.FACING).getClockWise().toYRot();
+        l.setBlock(at,Blocks.AIR.defaultBlockState(),F);
+        bike.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);bike.setUp(p,whose,yaw);l.addFreshEntity(bike);
+        if(!p.startRiding(bike,true)){bike.discard();l.setBlock(at,s,F);return true;}
+        own.remove("BikeAt"+whose);
+        if(!own.getBoolean("BikeKeys")){own.putBoolean("BikeKeys",true);
+            p.displayClientMessage(Component.empty().append(Component.keybind("key.left")).append(" and ").append(Component.keybind("key.right")).append(" push the pedals in turn  ·  ")
+                .append(Component.keybind("key.back")).append(" brake  ·  ").append(Component.keybind("key.sneak")).append(" get off").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+        return true;
+    }
+    /** Whose bike stands here: one this reader rode and left here, else the one put out in town at this spot. */
+    public static int whoseBike(BlockPos b,CompoundTag own,BlockPos at){
+        for(int w=0;w<2;w++)if(own.contains("BikeAt"+w)&&BlockPos.of(own.getLong("BikeAt"+w)).equals(at))return w;
+        return at.equals(BorrascaRooms.at(b,BorrascaRooms.PATRICK_BIKE))?BorrascaBike.PATRICK:BorrascaBike.KENDRA;
+    }
+    /** Every few ticks while a reader rides: that they rode it, and Patrick or Kendra saying something about it, once a visit. */
+    static void bikeRidden(ServerPlayer p,BorrascaBike bike){
+        if(bike.tickCount%5!=0)return;
+        var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);int whose=bike.whose(),visit=own.getInt("Visit");boolean changed=false;
+        if(!own.getBoolean("BikeRode"+whose)){own.putBoolean("BikeRode"+whose,true);changed=true;}
+        for(String key:new String[]{"TownWren","TownEli"}){
+            var child=actor(p,own,key);if(child==null||child.isInvisible()||p.distanceToSqr(child)>100||!p.hasLineOfSight(child))continue;
+            String said=key+"OnBike"+visit;if(own.getBoolean(said)||recentSpeech(p))continue;
+            boolean patrick=child.phase()==ELI;
+            say(p,child,patrick?(whose==BorrascaBike.PATRICK?"Don't put it in the ditch. And pedal both sides, not just the one.":"She lets me ride hers too. You have to keep pedaling or it tips.")
+                :whose==BorrascaBike.KENDRA?(visit==2?"Bring it back here after. I'm waiting for Patrick.":"You can ride it. Just bring it back."):"That's Patrick's. He won't care.");
+            own.putBoolean(said,true);changed=true;break;
+        }
+        if(changed)LiteraryVignettes.save(data,p.getUUID(),PLACE,own);
+    }
+    /** The reader came off: over it went, or straight into something. */
+    static void bikeFell(ServerPlayer p,int whose,boolean crashed){
+        var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);own.putInt("BikeFalls",own.getInt("BikeFalls")+1);
+        cue(p,crashed?"Straight into it. You go over the bars, and the bike goes down in the road.":"It goes over, and you go with it. The bike lies in the road.");
+        var kendra=actor(p,own,"TownWren");String said="WrenBikeFall"+own.getInt("Visit");
+        if(kendra!=null&&!kendra.isInvisible()&&p.distanceToSqr(kendra)<144&&!own.getBoolean(said)&&!recentSpeech(p)){own.putBoolean(said,true);say(p,kendra,whose==BorrascaBike.KENDRA?"You have to keep going or it falls over. Is it scratched?":"You have to keep going or it falls over.");}
+        LiteraryVignettes.save(data,p.getUUID(),PLACE,own);
+    }
+    /** Where a bike was left, so a click there knows whose it is and the next visit clears it. With nowhere to stand it, it goes back to its own place in town. */
+    static void bikeParked(ServerLevel l,@Nullable UUID reader,int whose,@Nullable BlockPos at){
+        if(reader==null)return;var data=LabyrinthData.get(l.getServer());var own=LiteraryVignettes.personal(data,reader,PLACE);
+        if(at==null){var b=BorrascaSites.base(l.getServer(),reader);if(b==null)return;var home=BorrascaRooms.at(b,whose==BorrascaBike.PATRICK?BorrascaRooms.PATRICK_BIKE:BorrascaRooms.KENDRA_BIKE);
+            if(!l.getBlockState(home).isAir())return;l.setBlock(home,BorrascaShopBlock.of(BorrascaShopBlock.Kind.BIKE,Direction.EAST,0),F);at=home;}
+        own.putLong("BikeAt"+whose,at.asLong());LiteraryVignettes.save(data,reader,PLACE,own);
     }
 
     private static void scene(ServerPlayer p,BlockPos b,CompoundTag own){
