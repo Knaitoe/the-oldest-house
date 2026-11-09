@@ -1,5 +1,8 @@
 # Borrasca: the children's names (0.4.421)
 
+*0.4.424 renamed them again, so that the children born at the depot carry their fathers' letter: see
+BORRASCA_FATHERS_NAMES_0_4_424.md.*
+
 The owner, November 9: "Also does Nells name match the naming convention from the story?"
 
 It did not. The story's children carry names that were in fashion for small-town children of their own decade: mostly two

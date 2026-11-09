@@ -62,7 +62,7 @@ gate and in CI.
 
 ## Next
 
-- **0.4.424, people and pocket money:**
+- **0.4.425, people and pocket money:**
   - each shop's keeper;
   - a few coins in a child's pocket on each visit and a wallet when grown;
   - pie and coffee at the diner, with the host answering a child who orders coffee;
@@ -70,7 +70,7 @@ gate and in CI.
   - soda and candy;
   - the town drunk in the Sheriff's cell;
   - children turned away at the bar.
-- **0.4.425, the town's day:**
+- **0.4.426, the town's day:**
   - the mail carrier, children on bikes, parents at the diner counter and a truck;
   - the payphone on the phone screen, where the tip line says there is no open case;
   - the couple at the doctor's and the baby announcement after;
