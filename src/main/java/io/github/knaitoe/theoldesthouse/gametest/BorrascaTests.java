@@ -457,6 +457,8 @@ public final class BorrascaTests {
             var view=BorrascaStory.view(p,own);h.assertTrue(view!=null&&view.gentlemanTicks()==BorrascaStory.GENT_TICKS&&view.gentleman().equals(at)&&view.gentlemanScale()==BorrascaStory.gentScale(own),"the reader's own view is told where he stands and how tall, for as long as the strokes last");
             p.lookAt(EntityAnchorArgument.Anchor.EYES,at.add(0,BorrascaStory.GENT_HEIGHT*BorrascaStory.gentScale(own)*.6,0));f.refresh(p);h.assertTrue(f.own(p).getBoolean("SawGentleman"),"looking straight at him is remembered");
             h.assertTrue(BorrascaTexts.account(f.own(p)).contains("shone"),"and the account says so");
+            // 0.4.440: back below the marker, where the noise does not come nearer.
+            var below=BorrascaRooms.trail(-118);f.at(p,below.getX(),below.getY(),below.getZ());
             for(int i=0;i<15;i++)f.refresh(p);var after=f.own(p);h.assertTrue(BorrascaStory.gentleman(after)==null&&BorrascaStory.view(p,after).gentlemanTicks()==0,"he is gone when the strokes end");
             // Grown, the reader never sees him.
             f.stage(p,3);var grown=f.own(p);grown.putInt("GentTicks",BorrascaStory.GENT_TICKS);f.save(p,grown);h.assertTrue(BorrascaStory.gentleman(f.own(p))==null,"on the adult visits he never comes");
@@ -500,6 +502,49 @@ public final class BorrascaTests {
         return "cols "+cols+" unloaded "+unloaded+" high "+high+" ground "+ground+" near "+near+" room "+room+" clip "+clip+" ok "+ok+" eye "+BorrascaRooms.authored(BlockPos.containing(eye).subtract(b))+" hits "+hits;
     }
     @AfterBatch(batch="borrasca_gentleman_far") public static void gentlemanFarDone(ServerLevel l){cleanup();}
+
+    /**
+     * 0.4.440 (the owner: "have the klangs get closer while the player is past the mile marker and grow more frequent. the gentleman grows
+     * closer to a child player with each until it's directly above them. it picks them up and eats them after that, sending the player to
+     * the triple tree again"; "I'd allow it on visit one, too"). A child who stays past the second marker hears the noise again and again,
+     * sooner each time, and each time he stands nearer, until he stands over them; then he has them, and they are under the Triple Tree.
+     * Going back below the marker lets him fall back.
+     */
+    @GameTest(template="empty",batch="borrasca_gentleman_near",timeoutTicks=2400)
+    public static void pastTheSecondMarkerHeComesNearerAndTakesTheChild(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_near");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
+            var b=f.base(p);var road=BorrascaRooms.trail(-130);
+            var near=new java.util.ArrayList<Double>();var gaps=new java.util.ArrayList<Integer>();int since=0;
+            for(int i=0;i<200&&f.own(p).getInt("GrabTicks")==0;i++){
+                f.at(p,road.getX(),road.getY(),road.getZ());p.setYRot(180);p.setXRot(-8);int before=f.own(p).getInt("Approach");f.refresh(p);since+=5;
+                var own=f.own(p);var g=BorrascaStory.gentleman(own);
+                if(own.getInt("Approach")>before&&g!=null){near.add(Math.hypot(g.x-p.getX(),g.z-p.getZ()));gaps.add(since);since=0;
+                    h.assertTrue(own.getInt("Echoes")>0,"the noise comes with him");}
+            }
+            h.assertTrue(near.size()==BorrascaStory.NEARER.length+1,"he came nearer with each stroke, then stood over the child: "+near);
+            for(int i=1;i<near.size();i++)h.assertTrue(near.get(i)<near.get(i-1),"each time nearer: "+near);
+            h.assertTrue(Math.abs(near.get(0)-BorrascaStory.NEARER[0])<4&&near.get(near.size()-1)<BorrascaStory.OVER+1,"from far off to over them: "+near);
+            for(int i=2;i<gaps.size();i++)h.assertTrue(gaps.get(i)<=gaps.get(i-1),"and the noise comes sooner each time: "+gaps);
+            var own=f.own(p);h.assertTrue(own.getInt("GrabTicks")>0&&BorrascaStory.view(p,own).grab()>0,"then he has them, and the child's own view is told");
+            h.assertTrue(BorrascaStory.gentScale(own)>=(float)BorrascaStory.GENT_SCALE_MAX-.01F,"standing at his tallest over them");
+            for(int i=0;i<BorrascaStory.GRAB_TICKS/5+2&&f.own(p).getInt("Swallowed")==0;i++)f.refresh(p);
+            own=f.own(p);var rel=BorrascaRooms.rel(p,b);
+            h.assertTrue(own.getInt("Swallowed")==1&&own.getInt("GrabTicks")==0&&own.getInt("Approach")==0,"he ate them once, and it is over: "+own.getInt("Swallowed"));
+            h.assertTrue(rel.z>-106&&rel.z<-86&&p.isAlive(),"and they are under the Triple Tree, unhurt: "+rel);
+            h.assertTrue(BorrascaStory.view(p,own).swallowed()==1&&BorrascaStory.gentleman(own)==null,"the view is told, and he is gone");
+            h.assertTrue(BorrascaTexts.account(own).contains("Once I went on past the second marker"),"the account remembers it");
+            // Below the marker he does not come nearer; he falls back a step for each little while there.
+            own.putInt("Approach",3);f.save(p,own);var below=BorrascaRooms.trail(-112);
+            for(int i=0;i<BorrascaStory.FALL_BACK/5;i++){f.at(p,below.getX(),below.getY(),below.getZ());f.refresh(p);}
+            h.assertTrue(f.own(p).getInt("Approach")==2&&f.own(p).getInt("GrabTicks")==0,"below the marker he falls back: "+f.own(p).getInt("Approach"));
+            // Grown, never.
+            f.stage(p,3);own=f.own(p);own.putInt("Approach",6);f.save(p,own);var past=BorrascaRooms.trail(-130);
+            for(int i=0;i<40;i++){f.at(p,past.getX(),past.getY(),past.getZ());f.refresh(p);}
+            h.assertTrue(f.own(p).getInt("GrabTicks")==0&&f.own(p).getInt("Swallowed")==1,"grown, he never comes for them");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="borrasca_gentleman_near") public static void gentlemanNearDone(ServerLevel l){cleanup();}
 
     /**
      * 0.4.435 (the owner: "Let players ride bikes? Maintaining balance and pedaling left/right should be a function."): Kendra's bike in

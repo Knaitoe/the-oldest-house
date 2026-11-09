@@ -166,6 +166,8 @@ public final class BorrascaTexts {
             +"We cut our names into the three trees, mine beside hers."+(own.getBoolean("KnifeTaken")?" She lent me her knife to cut mine."+(own.getBoolean("KnifeKept")?" I nearly went home with it.":""):"")+(own.getInt("WalkTalkTwo")>=BorrascaStory.WALK_TALK_TWO.length?" The next time, on the way to the mill, she told me about Patrick and made me promise to run home if anything happened.":own.getInt("WalkTalkTwo")>0?" The next time, on the way to the mill, she told me about Patrick.":"")
             +(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
+            // 0.4.440: going on past the second marker, and what came for the child there.
+            +(own.getInt("Swallowed")>0?(own.getInt("Swallowed")>1?" More than once":" Once")+" I went on past the second marker. Each time the noise came it was nearer, and so was it, until it stood right over me and bent down. Then I was under the Triple Tree with my back to the trunk.":"")
             // 0.4.428: the historical society, got into as a child.
             +(own.getInt("SocietyChild")>0?(own.getInt("SocietyChild")==1?" While Mr. Rowe smoked out front of his shop, I went into the historical society behind it.":" Behind Mr. Rowe's back I got into the historical society.")
                 +" On a map of the old workings someone had drawn a small square over the top shaft and written DEPOT."+(own.getBoolean("CaughtInSociety")?" He came back in and sent me out.":"")

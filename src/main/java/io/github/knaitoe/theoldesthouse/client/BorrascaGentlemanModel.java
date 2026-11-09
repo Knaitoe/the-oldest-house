@@ -183,6 +183,73 @@ public final class BorrascaGentlemanModel {
         pose.popPose();
         if(buffers instanceof MultiBufferSource.BufferSource batch)batch.endBatch(RenderType.entityTranslucentEmissive(flesh));
     }
+    // ------------------------------------------------------------------ 0.4.440: over the child
+    /*
+     * The owner: "the gentleman grows closer to a child player with each until it's directly above them. it picks them up and eats them
+     * after that". Seen only from the child's eyes: he folds down over them from where he stands, his hands come up under them, and his
+     * face comes down into their view, the smooth oval splitting open on steel teeth and the dark of his throat, until there is nothing
+     * else to see. Nothing of the child is drawn. The same boxes as at the machine, with his own materials inside.
+     */
+    /** How far he folds over the child at the waist, from upright (radians). */
+    static final float TAKE_BEND=1.75F;
+    /**
+     * Him taking the child whose eyes are the pose's origin (camera-relative, world axes). {@code t} runs from his taking hold (0) to the
+     * end (1); {@code feet} is where he stands, from the eyes; {@code look} the way they are looking.
+     */
+    public static void renderTaking(PoseStack pose,MultiBufferSource buffers,float t,float time,Vec3 feet,Vec3 look){
+        var r=feeding();float s=(float)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaStory.GENT_SCALE_MAX;t=Mth.clamp(t,0,1);
+        int c=(int)(255*(.84F+.1F*Mth.sin(time*.27F)));int colour=FastColor.ARGB32.color(255,c,c,c);int light=LightTexture.FULL_BRIGHT,ov=OverlayTexture.NO_OVERLAY;
+        // Turned so that he faces the child down +z, the child at the origin.
+        double hd=Math.max(.5,Math.hypot(feet.x,feet.z));float theta=(float)Math.atan2(-feet.x,-feet.z);double ct=Math.cos(theta),st=Math.sin(theta);
+        Vec3 f=new Vec3(0,feet.y,-hd),l=new Vec3(look.x*ct-look.z*st,look.y,look.x*st+look.z*ct).normalize();
+        pose.pushPose();pose.mulPose(Axis.YP.rotation(theta));
+        var out=buffers.getBuffer(type());
+        var torso=r.getChild("torso");torso.xRot=Mth.lerp(ease(t/.4F),.25F,TAKE_BEND)+.03F*Mth.sin(time*.3F);
+        pose.pushPose();pose.translate(f.x,f.y,f.z);pose.mulPose(Axis.YP.rotation(Mth.PI));pose.translate(0,FEET/16F*s,0);pose.scale(-s,-s,s);
+        r.getChild("legs").render(pose,out,light,ov,colour);torso.render(pose,out,light,ov,colour);pose.popPose();
+        // His hands come up under the child, the long fingers closing round them.
+        for(int side:new int[]{-1,1}){
+            Vec3 shoulder=onTorso(f,side*5,-16,torso.xRot,s);
+            Vec3 hand=Vec3.ZERO.lerp(new Vec3(side*.5,-1,.05),ease(t/.25F)).add(t<.25?shoulder.scale(1-ease(t/.25F)):Vec3.ZERO);
+            Vec3 elbow=shoulder.add(hand).scale(.5).add(side*s*.45,s*.12,0);
+            segment(pose,r.getChild("upper"),shoulder,elbow,11,s*1.3F,out,colour);segment(pose,r.getChild("fore"),elbow,hand,14,s*1.3F,out,colour);
+            for(int i=0;i<FINGERS.length;i++){Vec3 way=new Vec3(-side*.65,.55+.1*Math.sin(time*.2+i),(i-1.5)*.35).normalize();
+                segment(pose,r.getChild("finger"),hand,hand.add(way.scale(FINGERS[i]/16D*2.4)),8,2.4F,out,colour);}
+        }
+        // His face, from up where it was, down into the child's sight, and over them.
+        Vec3 high=f.add(0,s*(FEET-13)/16D,0),far=l.scale(3.4),near=l.scale(.55),in=l.scale(.08);
+        Vec3 mouth=t<.4?high.lerp(far,ease(t/.4F)):t<.8?far.lerp(near,ease((t-.4F)/.4F)):near.lerp(in,(t-.8F)/.2F);
+        float open=t<.35F?.12F:Mth.lerp(ease((t-.35F)/.35F),.12F,1.05F);
+        Vec3 neckBase=onTorso(f,0,-17,torso.xRot,s);
+        Vec3 faceWay=mouth.lengthSqr()<1e-6?l.scale(-1):mouth.scale(-1).normalize();
+        Vec3 ref=mouth.subtract(neckBase);ref=ref.subtract(faceWay.scale(ref.dot(faceWay)));
+        if(ref.lengthSqr()<1e-6){var up=Math.abs(faceWay.y)>.9?new Vec3(0,0,-1):new Vec3(0,1,0);ref=up.subtract(faceWay.scale(up.dot(faceWay)));}
+        Vec3 crownWay=ref.normalize();
+        Vec3 chin=mouth.subtract(crownWay.scale(5/16D*s)).subtract(faceWay.scale(2/16D*s));
+        segment(pose,r.getChild("neck"),neckBase,chin,4,s*1.8F,out,colour);
+        var crown=r.getChild("crown");var jaw=r.getChild("jaw");crown.xRot=-open;jaw.xRot=open*.85F;
+        pose.pushPose();head(pose,chin,crownWay,faceWay,s);crown.render(pose,out,light,ov,colour);jaw.render(pose,out,light,ov,colour);
+        // Inside: the dark of his throat, and a row of steel teeth along each lip (the machine's materials on his sheet).
+        for(var half:new ModelPart[]{crown,jaw}){boolean top=half==crown;pose.pushPose();half.translateAndRotate(pose);float y=top?.03F:-.03F;
+            sheetQuad(pose,out,new float[][]{{-2.5F,y,-4},{2.5F,y,-4},{2.5F,y,0},{-2.5F,y,0}},116,24,124,32,light,ov,colour);
+            for(int k=0;k<5;k++){float x=-2F+k,h=top?1.3F+.3F*(k%2):-1.1F-.3F*((k+1)%2);float y0=Math.min(0,h),y1=Math.max(0,h);sheetBox(pose,out,x-.3F,y0,-3.95F,x+.3F,y1,-3.35F,116,16,120,24,light,ov,colour);}
+            pose.popPose();}
+        pose.popPose();
+        pose.popPose();
+        if(buffers instanceof MultiBufferSource.BufferSource batch)batch.endBatch(type());
+    }
+    private static float ease(float x){x=Mth.clamp(x,0,1);return x*x*(3-2*x);}
+    /** A quad on his own sheet (128 by 64). */
+    private static void sheetQuad(PoseStack p,VertexConsumer out,float[][] q,float u0,float v0,float u1,float v1,int light,int overlay,int colour){
+        float[][] uv={{u0,v0},{u1,v0},{u1,v1},{u0,v1}};
+        for(int i=0;i<4;i++)out.addVertex(p.last(),q[i][0]/16,q[i][1]/16,q[i][2]/16).setColor(colour).setUv(uv[i][0]/ATLAS_W,uv[i][1]/ATLAS_H).setOverlay(overlay).setLight(light).setNormal(p.last(),0,1,0);
+    }
+    private static void sheetBox(PoseStack p,VertexConsumer out,float x0,float y0,float z0,float x1,float y1,float z1,float u0,float v0,float u1,float v1,int light,int overlay,int colour){
+        sheetQuad(p,out,new float[][]{{x0,y0,z0},{x1,y0,z0},{x1,y1,z0},{x0,y1,z0}},u0,v0,u1,v1,light,overlay,colour);
+        sheetQuad(p,out,new float[][]{{x1,y0,z1},{x0,y0,z1},{x0,y1,z1},{x1,y1,z1}},u0,v0,u1,v1,light,overlay,colour);
+        sheetQuad(p,out,new float[][]{{x0,y0,z1},{x0,y0,z0},{x0,y1,z0},{x0,y1,z1}},u0,v0,u1,v1,light,overlay,colour);
+        sheetQuad(p,out,new float[][]{{x1,y0,z0},{x1,y0,z1},{x1,y1,z1},{x1,y1,z0}},u0,v0,u1,v1,light,overlay,colour);
+    }
     /** His head's frame: at its chin, the crown turned {@code crownWay} and the face {@code faceWay}, at his size, as his model is drawn. */
     private static void head(PoseStack pose,Vec3 chin,Vec3 crownWay,Vec3 faceWay,float s){
         pose.translate(chin.x,chin.y,chin.z);Vec3 side=crownWay.cross(faceWay);

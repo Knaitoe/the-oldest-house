@@ -37,7 +37,29 @@ public final class BorrascaAtmosphere {
     private record SheriffLens(Vec3 position,Vec3 direction){}
     private static SheriffLens sheriffLens;
     private BorrascaAtmosphere(){}
-    public static void accept(BorrascaViewPayload p){var mc=Minecraft.getInstance();state=p;world=mc.level;received=world==null?0:world.getGameTime();if(!p.active())stop();}
+    /** 0.4.440: how many times this reader had been eaten when last told, and when they last came to under the Tree after it. */
+    private static int swallowedSeen=-1;
+    private static long woke=Long.MIN_VALUE/2;
+    public static void accept(BorrascaViewPayload p){var mc=Minecraft.getInstance();boolean same=world!=null&&world==mc.level;state=p;world=mc.level;received=world==null?0:world.getGameTime();
+        if(same&&swallowedSeen>=0&&p.swallowed()>swallowedSeen)woke=received;swallowedSeen=p.swallowed();if(!p.active())stop();}
+    /** 0.4.440: ticks since he took hold of this reader, or -1 when he has not. */
+    static float taken(float partial){var mc=Minecraft.getInstance();if(state==null||mc.level==null||mc.level!=world||state.grab()<=0||state.visit()>2)return -1;return BorrascaStory.GRAB_TICKS-state.grab()+(mc.level.getGameTime()-received)+partial;}
+    /** 0.4.440: how black the child's sight is: going as his mouth closes over them, held until they are at the Tree, then coming back. */
+    static float black(float partial){
+        var mc=Minecraft.getInstance();if(mc.level==null||mc.level!=world)return 0;float a=0,e=taken(partial),end=BorrascaStory.GRAB_TICKS;
+        if(e>=0)a=e<end?Mth.clamp((e-end*.78F)/(end*.18F),0,1):e<end+40?1:Mth.clamp(1-(e-end-40)/20,0,1);
+        float since=mc.level.getGameTime()-woke+partial;if(since>=0&&since<60)a=Math.max(a,since<14?1:1-(since-14)/46);
+        return a;
+    }
+    @SubscribeEvent public static void dark(RenderGuiEvent.Post e){float a=black(e.getPartialTick().getGameTimeDeltaPartialTick(false));if(a<=0)return;var g=e.getGuiGraphics();g.fill(0,0,g.guiWidth(),g.guiHeight(),((int)(255*a))<<24);}
+    /** 0.4.440: him, folding down over this reader and taking them; only they see it. */
+    @SubscribeEvent public static void taking(RenderLevelStageEvent e){
+        if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES||!active())return;float partial=e.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float el=taken(partial);if(el<0||el>BorrascaStory.GRAB_TICKS+40||state.gentleman().equals(Vec3.ZERO))return;var mc=Minecraft.getInstance();
+        var camera=e.getCamera().getPosition();var pose=e.getPoseStack();pose.pushPose();
+        BorrascaGentlemanModel.renderTaking(pose,mc.renderBuffers().bufferSource(),el/BorrascaStory.GRAB_TICKS,mc.level.getGameTime()+partial,state.gentleman().subtract(camera),new Vec3(e.getCamera().getLookVector()));
+        pose.popPose();
+    }
     public static boolean active(){var mc=Minecraft.getInstance();if(state==null||!state.active()||mc.level==null||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var b=state.source().subtract(BorrascaRooms.world(BorrascaRooms.MACHINE));return BorrascaSites.bounds(b).contains(mc.player.position());}
     public static boolean playing(){var mc=Minecraft.getInstance();return clear!=null&&muffled!=null&&mc.getSoundManager().isActive(clear)&&mc.getSoundManager().isActive(muffled);}
     public static long time(long normal){return !active()?normal:switch(state.visit()){case 1->10000;case 2->11500;case 3->800;default->18000;};}
@@ -75,8 +97,10 @@ public final class BorrascaAtmosphere {
     @SubscribeEvent public static void gentleman(RenderLevelStageEvent e){
         if(!active()||e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES||state.visit()>2||state.gentlemanTicks()<=0)return;var mc=Minecraft.getInstance();
         double left=state.gentlemanTicks()-(mc.level.getGameTime()-received);if(left<=0)return;
-        // He is simply there with the first stroke, and fades as the last one dies.
-        float alpha=(float)Mth.clamp(Math.min((BorrascaStory.GENT_TICKS-left+3)/3D,left/20D),0,1);
+        // 0.4.440: while he has hold of the reader, he is drawn taking them instead (taking).
+        if(taken(e.getPartialTick().getGameTimeDeltaPartialTick(false))>=0)return;
+        // He is simply there with the stroke, and fades as it dies.
+        float alpha=(float)Mth.clamp(left/20D,0,1);
         var at=state.gentleman();var camera=e.getCamera().getPosition();var pose=e.getPoseStack();pose.pushPose();pose.translate(at.x-camera.x,at.y-camera.y,at.z-camera.z);
         pose.mulPose(Axis.YP.rotation((float)Math.atan2(camera.x-at.x,camera.z-at.z)));drawGentleman(pose,mc.renderBuffers().bufferSource(),alpha,mc.level.getGameTime()+e.getPartialTick().getGameTimeDeltaPartialTick(false),state.gentlemanScale());pose.popPose();
     }
