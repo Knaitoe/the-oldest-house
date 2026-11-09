@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("173")
+        event.registrar("174")
                 .playToClient(BorrascaPayphonePayload.TYPE,BorrascaPayphonePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaPayphoneScreen.accept(payload)))
                 .playToServer(BorrascaDialPayload.TYPE,BorrascaDialPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaPayphone.dialled(p,payload.number());}))
                 .playToServer(SwingJumpPayload.TYPE,SwingJumpPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.jump(p);}))

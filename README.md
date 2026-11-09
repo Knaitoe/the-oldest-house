@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.433** sends Patrick and Kendra up Borrasca's trail behind Kelly, single file, as far as the first marker. There Kendra says she isn't let past it and Patrick says he'll go up by the second marker some other time; then they walk home. By the second visit Patrick is missing. See [docs/BORRASCA_ALONG_0_4_433.md](docs/BORRASCA_ALONG_0_4_433.md).
+Development candidate **0.4.434** gives Borrasca's Shiny Gentleman a body: a tall, too-thin monster in a bent hat with a faceless polished head, a ragged coat and long hooked fingers, swaying and working his fingers while the noise lasts. When the noise comes he can stand out past the second marker up to 200 blocks off, taller for the distance, so a child at the Tree sees him on the ridge above the pines. See [docs/BORRASCA_GENTLEMAN_0_4_434.md](docs/BORRASCA_GENTLEMAN_0_4_434.md).
+
+Candidate **0.4.433** sends Patrick and Kendra up Borrasca's trail behind Kelly, single file, as far as the first marker. There Kendra says she isn't let past it and Patrick says he'll go up by the second marker some other time; then they walk home. By the second visit Patrick is missing. See [docs/BORRASCA_ALONG_0_4_433.md](docs/BORRASCA_ALONG_0_4_433.md).
 
 Candidate **0.4.432** gives Borrasca's walk up to the Tree its talk. Kelly says four things on the way, one at a time, while the reader keeps near her; a reader who runs ahead or hangs back misses them. On the second visit's walk toward the mill she talks about Patrick, who is missing. What she says goes into the journal, and the account remembers both walks. See [docs/BORRASCA_WALK_0_4_432.md](docs/BORRASCA_WALK_0_4_432.md).
 
