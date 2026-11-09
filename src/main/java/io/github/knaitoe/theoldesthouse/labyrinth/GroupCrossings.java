@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -55,7 +56,7 @@ public final class GroupCrossings {
     public static void before(ServerPlayer p,LabyrinthData.Door door){
         if(p.isSpectator()||door.command||!LabyrinthData.DEALT.equals(door.destination))return;
         var data=LabyrinthData.get(p.server);int now=p.server.getTickCount();var me=p.getUUID();
-        RECENT.values().removeIf(c->now-c.tick()>WINDOW||now<c.tick());
+        RECENT.values().removeIf(c->!held(p.server,c,now));
         var led=RECENT.get(key(door));
         if(led!=null&&!led.leader().equals(me)){
             if(follows(data,me,led))data.deal(me,door,led.place().id(),false,false);
@@ -71,6 +72,9 @@ public final class GroupCrossings {
         if(SharedVignettes.followable(place)&&group.stream().allMatch(q->canJoin(data,q.getUUID(),place,thread)))return;
         var common=new ArrayList<>(LabyrinthDealer.vignettesAvailable(data,me));
         common.removeIf(v->!SharedVignettes.followable(v)||started(data,me,v));
+        // 0.4.401: the yard's stories only off the yard (YardStretch).
+        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
+        if(!YardStretch.place(origin==null?null:LabyrinthPlaces.placeAt(origin,door.lower)))common.removeIf(YardStretch.STORIES::contains);
         for(var q:group){var theirs=LabyrinthDealer.vignettesAvailable(data,q.getUUID());common.removeIf(v->!theirs.contains(v)||started(data,q.getUUID(),v));}
         if(common.isEmpty()){
             // The group splits here: the first through is told, and so is everyone at the door who cannot follow, and why.
@@ -88,7 +92,7 @@ public final class GroupCrossings {
         // 0.4.244: nobody follows a reader into the aftermath of a scene they finished.
         if(Aftermath.returning(LabyrinthData.get(p.server),p.getUUID(),place))return;
         int now=p.server.getTickCount();var led=RECENT.get(key(door));
-        if(led==null||now-led.tick()>WINDOW||now<led.tick()||led.leader().equals(p.getUUID()))RECENT.put(key(door),new Crossing(p.getUUID(),p.getGameProfile().getName(),place,now,door.dimension,door.lower,new HashSet<>()));
+        if(led==null||!held(p.server,led,now)||led.leader().equals(p.getUUID()))RECENT.put(key(door),new Crossing(p.getUUID(),p.getGameProfile().getName(),place,now,door.dimension,door.lower,new HashSet<>()));
     }
 
     // ------------------------------------------------------------------ 0.4.270, what friends at the door are shown and told
@@ -103,7 +107,7 @@ public final class GroupCrossings {
     @Nullable static Near near(ServerPlayer q){
         if(q.isSpectator()||!q.isAlive())return null;var data=LabyrinthData.get(q.server);int now=q.server.getTickCount();Near best=null;
         for(var c:RECENT.values()){
-            if(now-c.tick()>WINDOW||now<c.tick()||c.leader().equals(q.getUUID())||!q.level().dimension().equals(c.dimension()))continue;
+            if(!held(q.server,c,now)||c.leader().equals(q.getUUID())||!q.level().dimension().equals(c.dimension()))continue;
             double d=q.position().distanceTo(Vec3.atBottomCenterOf(c.at()));if(d>SEE||best!=null&&d>=best.distance())continue;
             best=new Near(c,follows(data,q.getUUID(),c),d);
         }
@@ -129,13 +133,32 @@ public final class GroupCrossings {
             if(en.getValue().isEmpty())it.remove();
         }
         if(RECENT.isEmpty()||now%10!=0)return;
-        RECENT.values().removeIf(c->now-c.tick()>WINDOW||now<c.tick());
+        RECENT.values().removeIf(c->!held(server,c,now));
         for(var p:server.getPlayerList().getPlayers()){
             var n=near(p);if(n==null)continue;var c=n.crossing();var level=p.serverLevel();
             // A few motes at the held door, for a friend who can follow it, and only them.
             if(n.canFollow())level.sendParticles(p,ParticleTypes.WHITE_ASH,false,c.at().getX()+.5,c.at().getY()+1,c.at().getZ()+.5,5,.3,.7,.3,0);
             if(n.distance()<=TELL&&c.told().add(p.getUUID())){var line=cue(p);if(line!=null)say(p,line);}
         }
+    }
+
+    /**
+     * 0.4.401, the owner: "pretty sure it's sending me to where it expects me to be based on depth, not through the actual path of the
+     * labyrinth". A friend who came to the door more than half a minute after the first through it was dealt their own room by their own
+     * depth. A door now leads where the one who went through it went for as long as they are still beyond it: their way back still runs
+     * through this door. Half a minute after they come back through it, it is anyone's own door again.
+     */
+    static boolean held(MinecraftServer server,Crossing c,int now){
+        if(now<c.tick())return false;
+        if(now-c.tick()<=WINDOW)return true;
+        var leader=server.getPlayerList().getPlayer(c.leader());
+        if(leader==null||!leader.isAlive()||leader.isSpectator())return false;
+        return LabyrinthData.get(server).hasReturn(c.leader(),w->w.door()&&w.dimension().equals(c.dimension())&&BlockPos.containing(w.pos()).equals(c.at()));
+    }
+    /** Whether someone else's crossing holds this door for this reader, who can follow it (Folds: nobody folds alone behind a friend). */
+    public static boolean ledThrough(ServerPlayer p,LabyrinthData.Door door){
+        var led=RECENT.get(key(door));
+        return led!=null&&!led.leader().equals(p.getUUID())&&held(p.server,led,p.server.getTickCount())&&follows(LabyrinthData.get(p.server),p.getUUID(),led);
     }
 
     /** 0.4.400: an ordinary way on, not a story: a gray room of the interior (a hall, a trial, a room to rest in) that stands once for everyone. */
@@ -164,4 +187,6 @@ public final class GroupCrossings {
     }
     /** Fixtures only. */
     public static void forget(){RECENT.clear();OWED.clear();}
+    /** Fixtures only: every held crossing as if it had been made {@code ticks} earlier. */
+    public static void age(int ticks){RECENT.replaceAll((k,c)->new Crossing(c.leader(),c.name(),c.place(),c.tick()-ticks,c.dimension(),c.at(),c.told()));}
 }

@@ -177,9 +177,16 @@ public final class CoopTests {
                 GroupCrossings.before(friend,far);
                 h.assertTrue(laundry.id().equals(data.deal(friend.getUUID(),far).place()),"following through the same door, the friend comes out in the same hall, not the one their own way dealt: "+data.deal(friend.getUUID(),far).place());
                 h.assertTrue(GroupCrossings.owed(friend.getUUID()).isEmpty(),"and is told of no split: "+GroupCrossings.owed(friend.getUUID()));
-                // Once the door is no longer held, a reader's door leads where their own way deals it.
-                GroupCrossings.forget();GroupCrossings.before(late,far);
-                h.assertTrue(stacks.id().equals(data.deal(late.getUUID(),far).place()),"after the door is let go, a reader's door is their own again");
+                // 0.4.401: long after, while the first through is still beyond the door (their way back runs through it), it still
+                // leads where they went, for a reader who comes to it from far down the hall.
+                var through=new LabyrinthData.Waypoint(far.dimension,Vec3.atBottomCenterOf(far.lower),far.facing.toYRot(),true);
+                data.pushReturn(lead.getUUID(),through);GroupCrossings.age(GroupCrossings.WINDOW*4);
+                at(late,f.in,front);GroupCrossings.before(late,far);
+                h.assertTrue(laundry.id().equals(data.deal(late.getUUID(),far).place()),"two minutes on, the door still leads where the first went while they are beyond it: "+data.deal(late.getUUID(),far).place());
+                // Once they have come back through it, and the half minute is long past, a reader's door leads where their own way deals it.
+                h.assertTrue(data.consumeReturn(lead.getUUID(),through),"the first through comes back");
+                data.deal(late.getUUID(),far,stacks.id(),false);GroupCrossings.before(late,far);
+                h.assertTrue(stacks.id().equals(data.deal(late.getUUID(),far).place()),"after the door is let go, a reader's door is their own again: "+data.deal(late.getUUID(),far).place());
                 GroupCrossings.forget();
             }).thenSucceed();
     }

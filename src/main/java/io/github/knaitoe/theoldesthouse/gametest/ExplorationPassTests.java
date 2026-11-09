@@ -942,6 +942,51 @@ public final class ExplorationPassTests {
         h.succeed();
     }
 
+    /**
+     * 0.4.401, the owner: "it's also feeding me yard maps when i'm not in the yard". From the House's halls only the back door onto the
+     * yard is dealt; inside the yard its ways on lead further into it for a stretch, then back inside; its stories open only off it.
+     */
+    @GameTest(template="empty")
+    public static void theYardOpensOnlyByItsBackDoorAndLeadsOnIntoItselfForAStretch(GameTestHelper h) {
+        var data=LabyrinthData.get(h.getLevel().getServer());var random=RandomSource.create(4010L);int depth=LabyrinthPacing.DEEP_DEPTH;int n=400;
+        boolean backDoorStands=LabyrinthBuilder.isPlaceReady(data,LabyrinthPlace.YARD_TURNAROUND);
+        java.util.function.Function<String,UUID> reader=tag->{var id=UUID.randomUUID();
+            for(int d=0;d<depth;d++)data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(d,64,0),0F,true));return id;};
+        java.util.function.BiFunction<UUID,LabyrinthPlace,List<LabyrinthPlace>> deal=(id,here)->{
+            var doors=new ArrayList<LabyrinthData.Door>();
+            for(int j=0;j<2;j++)doors.add(new LabyrinthData.Door("yard401_"+id+"_"+j,HouseDimensions.INTERIOR,new BlockPos(j,64,0),Direction.NORTH,LabyrinthData.DEALT,false));
+            LabyrinthDealer.deal(data,id,doors,here,random);var out=new ArrayList<LabyrinthPlace>();
+            for(var door:doors){var dl=data.deal(id,door);out.add(dl==null?null:LabyrinthPlace.byId(dl.place()));}return out;};
+        // From a stone hall: no yard place but its back door, and the back door now and then.
+        int back=0;
+        for(int i=0;i<n;i++){var id=reader.apply("hall");data.visit(id,LabyrinthPlace.STONE_GALLERY);
+            for(var p:deal.apply(id,LabyrinthPlace.STONE_GALLERY)){
+                h.assertTrue(!YardStretch.place(p)||YardStretch.DOORS.contains(p),"from a hall, the yard only by its back door: "+p);
+                h.assertTrue(!YardStretch.STORIES.contains(p),"and none of the yard's stories: "+p);
+                if(p==LabyrinthPlace.YARD_TURNAROUND)back++;}}
+        h.assertTrue(backDoorStands,"the yard's back door stands");
+        h.assertTrue(back>0,"the back door comes up among the halls' doors: "+back+" in "+(2*n));
+        // Out of the back door: its ways on lead further into the yard, and not straight back round to the porch.
+        boolean yardStands=LabyrinthBuilder.isPlaceReady(data,LabyrinthPlace.YARD_DITCH)||LabyrinthBuilder.isPlaceReady(data,LabyrinthPlace.YARD_CLOTHESLINE);
+        int inYard=0,ways=0;
+        for(int i=0;i<n;i++){var id=reader.apply("yard");data.visit(id,LabyrinthPlace.STONE_GALLERY);data.visit(id,LabyrinthPlace.YARD_TURNAROUND);
+            h.assertTrue(YardStretch.stretch(data,id,LabyrinthPlace.YARD_TURNAROUND)==1,"the back door begins the stretch");
+            for(var p:deal.apply(id,LabyrinthPlace.YARD_TURNAROUND)){if(p==null||p.isVignette())continue;ways++;
+                if(YardStretch.place(p)){inYard++;h.assertTrue(p!=LabyrinthPlace.YARD_TURNAROUND,"the drive does not keep coming back round to the porch");}}}
+        h.assertTrue(yardStands,"the ditch or the line stands");
+        h.assertTrue(inYard==ways&&ways>0,"in the yard, every ordinary way on leads further into the yard: "+inYard+" of "+ways);
+        // Three yard places in a row: the way leads back inside.
+        for(int i=0;i<n;i++){var id=reader.apply("long");for(var p:List.of(LabyrinthPlace.STONE_GALLERY,LabyrinthPlace.YARD_TURNAROUND,LabyrinthPlace.YARD_DITCH,LabyrinthPlace.YARD_CLOTHESLINE))data.visit(id,p);
+            h.assertTrue(YardStretch.stretch(data,id,LabyrinthPlace.YARD_CLOTHESLINE)==YardStretch.LONGEST,"three yard places in a row");
+            for(var p:deal.apply(id,LabyrinthPlace.YARD_CLOTHESLINE))h.assertTrue(!YardStretch.place(p),"after the stretch, the way leads back inside: "+p);}
+        // The stories: the yard's only off the yard, and off it first.
+        h.assertTrue(YardStretch.stories(List.of(LabyrinthPlace.MARSH_SUPPER,LabyrinthPlace.GOATMAN),LabyrinthPlace.STONE_GALLERY).equals(List.of(LabyrinthPlace.GOATMAN)),"no yard story off a hall");
+        h.assertTrue(YardStretch.stories(List.of(LabyrinthPlace.MARSH_SUPPER,LabyrinthPlace.GOATMAN),LabyrinthPlace.YARD_DITCH).equals(List.of(LabyrinthPlace.MARSH_SUPPER)),"off the yard, its own story first");
+        h.assertTrue(YardStretch.stories(List.of(LabyrinthPlace.GOATMAN),LabyrinthPlace.YARD_DITCH).equals(List.of(LabyrinthPlace.GOATMAN)),"and another story if it has none");
+        h.assertTrue(YardStretch.waitsOutside(data,List.of(LabyrinthPlace.TALL_GRASS),List.of(),LabyrinthPlace.STONE_GALLERY)==backDoorStands,"a story waiting only in the yard deals the back door");
+        h.succeed();
+    }
+
     private static final List<LabyrinthPlace> FOLD_ROUTE=List.of(LabyrinthPlace.STONE_GALLERY,LabyrinthPlace.STONE_ARCADE,LabyrinthPlace.STONE_BEND,
             LabyrinthPlace.STONE_LANDING,LabyrinthPlace.STONE_DUST,LabyrinthPlace.STONE_DESCENT,LabyrinthPlace.CISTERN_HALL,LabyrinthPlace.STACKS_HALL);
     /** A way back of {@code depth} crossings through ordinary halls' real doors, the last out of {@code last} if given. */

@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.400** holds every door for the group: a friend who follows through the same door within half a minute comes out in the same room, a hall or a trial as well as a story. See [docs/HELD_DOORS_0_4_400.md](docs/HELD_DOORS_0_4_400.md).
+Development candidate **0.4.401** makes doors follow the path. The yard is entered by its back door, leads on into itself for a stretch, then back inside, and its rooms and stories no longer open off the halls. A door leads where a friend went for as long as they are still beyond it. See [docs/PATH_AND_YARD_0_4_401.md](docs/PATH_AND_YARD_0_4_401.md).
+
+Candidate **0.4.400** holds every door for the group: a friend who follows through the same door within half a minute comes out in the same room, a hall or a trial as well as a story. See [docs/HELD_DOORS_0_4_400.md](docs/HELD_DOORS_0_4_400.md).
 
 Candidate **0.4.399** smooths the slow dance and lets a long pull swirl the partner round the reader. The quiet rooms' last title card now fades out onto the House instead of cutting, and the book on the library stacks' reading table now gives a line when touched. See [docs/DANCE_SWIRL_0_4_399.md](docs/DANCE_SWIRL_0_4_399.md).
 
