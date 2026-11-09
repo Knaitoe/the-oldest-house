@@ -91,7 +91,7 @@ public final class VignetteThreads {
      * visit is joining partway. A member arriving after their thread's ending without them reads its aftermath.
      */
     public static void arrived(ServerPlayer p,LabyrinthPlace place){
-        if(p.isSpectator()||!p.isAlive()||!SharedVignettes.followable(place))return;
+        if(p.isSpectator()||!p.isAlive()||!SharedVignettes.followable(place)||SharedVignettes.afresh(place))return;
         var d=LabyrinthData.get(p.server);var all=all(d,place);var threads=all.getCompound("Threads");var me=p.getUUID();
         var id=find(threads,me);boolean joining=id==null;
         if(joining)for(var other:p.server.getPlayerList().getPlayers()){

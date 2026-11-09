@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.404** lets several readers film *A Head Full of Ghosts* together. The first reader on the set leads. Everyone else is a second camera on that take: they see the same family, hear it, and keep what their own lens holds. See [docs/GHOSTS_CREW_0_4_404.md](docs/GHOSTS_CREW_0_4_404.md).
+Development candidate **0.4.405** fixes the Goatman's trailer for several readers. Friends who each sat an evening there alone can go back together. A friend who follows after supper has started is told why and goes on elsewhere, instead of finding the door locked. A reader back before dark counts for the night. See [docs/GOATMAN_TOGETHER_0_4_405.md](docs/GOATMAN_TOGETHER_0_4_405.md).
+
+Candidate **0.4.404** lets several readers film *A Head Full of Ghosts* together. The first reader on the set leads. Everyone else is a second camera on that take: they see the same family, hear it, and keep what their own lens holds. See [docs/GHOSTS_CREW_0_4_404.md](docs/GHOSTS_CREW_0_4_404.md).
 
 Candidate **0.4.403** works through the November 9 playtest notes. The manor's outside doors cannot be broken. The pool's signs are redrawn, its ladder is dry and its attendant talks. Readers who fall through the Still Light and the Soft Floor can climb back out partway down, and the mirror hall's glass seals. The Windbreak's fence, Truant's dip, the lake witch on a boat and Usher's coffin are fixed, and the Winchester buffet holds a real mirror. See [docs/PLAYTEST_NOTES_0_4_403.md](docs/PLAYTEST_NOTES_0_4_403.md).
 

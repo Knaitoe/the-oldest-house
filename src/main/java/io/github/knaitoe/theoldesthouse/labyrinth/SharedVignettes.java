@@ -51,6 +51,12 @@ public final class SharedVignettes {
     private static final Map<LabyrinthPlace,Together> TOGETHER=new EnumMap<>(LabyrinthPlace.class);
     /** Shared scenes whose own code writes each reader's account for how they were there (0.4.149 to 0.4.157). */
     private static final Set<LabyrinthPlace> OWN=EnumSet.of(CHILD_ROOM,GOATMAN,LAKE_HOUSE,SHALLOWS);
+    /**
+     * 0.4.405: shared scenes that begin afresh whenever nobody is in them, the Goatman's evening at the trailer. They keep no
+     * threads: an evening sat alone is over when its morning comes or its readers leave, so friends who each sat one can go
+     * back together, and anyone it can be dealt to can follow a friend in.
+     */
+    private static final Set<LabyrinthPlace> AFRESH=EnumSet.of(GOATMAN);
     private SharedVignettes(){}
     static {
         // 0.4.147: the monkey's paw, the first scene drafted for every way of being there; 0.4.148: the drowned town.
@@ -80,6 +86,7 @@ public final class SharedVignettes {
     public static void together(LabyrinthPlace place,Together scene){if(followable(place))TOGETHER.put(place,scene);}
     /** A shared scene whose own code already writes every reader's account for how they were there. */
     public static boolean ownAccounts(LabyrinthPlace place){return OWN.contains(place);}
+    public static boolean afresh(@Nullable LabyrinthPlace place){return place!=null&&AFRESH.contains(place);}
     /** Fixtures only: forget a drafted scene they registered. */
     public static void undraft(LabyrinthPlace place){DRAFTED.remove(place);}
 }

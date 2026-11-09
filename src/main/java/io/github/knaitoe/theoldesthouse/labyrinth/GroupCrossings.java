@@ -59,8 +59,8 @@ public final class GroupCrossings {
         RECENT.values().removeIf(c->!held(p.server,c,now));
         var led=RECENT.get(key(door));
         if(led!=null&&!led.leader().equals(me)){
-            if(follows(data,me,led))data.deal(me,door,led.place().id(),false,false);
-            else owe(p,why(data,me,led),AFTER); // otherwise the group splits here, and this reader keeps their own door
+            if(follows(p,led))data.deal(me,door,led.place().id(),false,false);
+            else owe(p,why(p,led),AFTER); // otherwise the group splits here, and this reader keeps their own door
             return;
         }
         var deal=data.deal(me,door);var place=deal==null?null:LabyrinthPlace.byId(deal.place());
@@ -99,9 +99,19 @@ public final class GroupCrossings {
     /** Why this reader cannot follow the one who went through: they have finished it, or their own story there went another way. */
     static String why(LabyrinthData data,UUID reader,Crossing led){
         if(LabyrinthDealer.finishedFor(data,reader,led.place())||Aftermath.returning(data,reader,led.place()))return "You have already been where "+led.name()+" went. This door leads you elsewhere.";
-        if(VignetteThreads.threadId(data,led.place(),reader)!=null)return led.name()+" went into a story yours has already parted from. This door leads you elsewhere.";
+        if(!SharedVignettes.afresh(led.place())&&VignetteThreads.threadId(data,led.place(),reader)!=null)return led.name()+" went into a story yours has already parted from. This door leads you elsewhere.";
         return led.name()+" went where you cannot follow. This door leads you elsewhere.";
     }
+    /** The same for a reader at the door, who may also be too late for a scene that is under way (0.4.405, the Goatman's evening). */
+    static String why(ServerPlayer q,Crossing led){
+        var data=LabyrinthData.get(q.server);
+        if(follows(data,q.getUUID(),led)){var late=late(q,led);if(late!=null)return late;}
+        return why(data,q.getUUID(),led);
+    }
+    /** Why a scene under way will not take this reader now, or null: the Goatman's evening once supper has started or night has fallen. */
+    static @Nullable String late(ServerPlayer q,Crossing led){return led.place()==LabyrinthPlace.GOATMAN?GoatmanVignette.underway(q,led.name()):null;}
+    /** Whether this reader at the door can follow the one who went through, now. */
+    static boolean follows(ServerPlayer q,Crossing led){return follows(LabyrinthData.get(q.server),q.getUUID(),led)&&late(q,led)==null;}
     /** The held door near this reader, if any, and whether they could follow through it. */
     record Near(Crossing crossing,boolean canFollow,double distance){}
     @Nullable static Near near(ServerPlayer q){
@@ -109,14 +119,14 @@ public final class GroupCrossings {
         for(var c:RECENT.values()){
             if(!held(q.server,c,now)||c.leader().equals(q.getUUID())||!q.level().dimension().equals(c.dimension()))continue;
             double d=q.position().distanceTo(Vec3.atBottomCenterOf(c.at()));if(d>SEE||best!=null&&d>=best.distance())continue;
-            best=new Near(c,follows(data,q.getUUID(),c),d);
+            best=new Near(c,follows(q,c),d);
         }
         return best;
     }
     /** What this reader is told as they come to a held door: who went through, and whether the way is open to them. Null if nothing. */
     @Nullable public static String cue(ServerPlayer q){
         var n=near(q);if(n==null||n.distance()>TELL)return null;
-        return n.canFollow()?n.crossing().name()+" went through here a moment ago. The way is still open behind them.":why(LabyrinthData.get(q.server),q.getUUID(),n.crossing());
+        return n.canFollow()?n.crossing().name()+" went through here a moment ago. The way is still open behind them.":why(q,n.crossing());
     }
     /** A line for a reader, now or after a crossing's fade. */
     static void owe(ServerPlayer p,String line,int after){OWED.computeIfAbsent(p.getUUID(),k->new ArrayList<>()).add(new Owed(line,p.server.getTickCount()+after));}
@@ -158,7 +168,7 @@ public final class GroupCrossings {
     /** Whether someone else's crossing holds this door for this reader, who can follow it (Folds: nobody folds alone behind a friend). */
     public static boolean ledThrough(ServerPlayer p,LabyrinthData.Door door){
         var led=RECENT.get(key(door));
-        return led!=null&&!led.leader().equals(p.getUUID())&&held(p.server,led,p.server.getTickCount())&&follows(LabyrinthData.get(p.server),p.getUUID(),led);
+        return led!=null&&!led.leader().equals(p.getUUID())&&held(p.server,led,p.server.getTickCount())&&follows(p,led);
     }
 
     /** 0.4.400: an ordinary way on, not a story: a gray room of the interior (a hall, a trial, a room to rest in) that stands once for everyone. */
@@ -172,7 +182,8 @@ public final class GroupCrossings {
         if(!SharedVignettes.followable(place)||LabyrinthDealer.finishedFor(data,reader,place))return false;
         // 0.4.244: a reader who finished it would find only its aftermath, which is theirs alone: they keep their own door.
         if(Aftermath.returning(data,reader,place))return false;
-        var mine=VignetteThreads.threadId(data,place,reader);
+        // 0.4.405: an evening that begins afresh keeps no threads; an earlier evening sat apart does not keep friends apart now.
+        var mine=SharedVignettes.afresh(place)?null:VignetteThreads.threadId(data,place,reader);
         if(mine!=null)return mine.equals(leaderThread);
         return LabyrinthDealer.vignettesAvailable(data,reader).contains(place);
     }

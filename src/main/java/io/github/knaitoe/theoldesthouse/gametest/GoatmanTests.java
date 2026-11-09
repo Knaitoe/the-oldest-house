@@ -499,6 +499,54 @@ public final class GoatmanTests {
             h.assertTrue(r.getUUID("Id").equals(round)&&r.getCompound("Cohort").contains(first.getStringUUID())&&r.getCompound("Cohort").contains(second.getStringUUID()),"and joins the first reader's evening rather than starting another");
         }).thenSucceed();
     }
+    private static Fixture together;
+    @AfterBatch(batch="goat_together0405") public static void cleanTogether(ServerLevel l){if(together!=null){together.close();together=null;}GroupCrossings.forget();}
+    /**
+     * 0.4.405 (owner, November 9 playtest: "Goatman vignette doesn't work with multiplayer as intended"). Friends who each sat an
+     * evening alone go back together: the trailer keeps no threads. A friend who follows while the evening is still on the trail
+     * comes in; once supper has started the held door no longer takes them, and they are told why rather than finding it locked.
+     * A friend whose evening ended does not walk back into the others', and a child back before dark is counted for the night.
+     */
+    @GameTest(template="empty",batch="goat_together0405",timeoutTicks=400)
+    public static void friendsWhoEachSatAnEveningAloneGoBackTogetherAndALateFriendIsToldWhy(GameTestHelper h){
+        together=new Fixture(h,39300);var f=together;f.finishedCamper();var a=f.player();var b=f.player();var c=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp is natively loaded")).thenExecute(()->{
+            var d=LabyrinthData.get(f.server);var goat=LabyrinthPlace.GOATMAN;GroupCrossings.forget();String name=a.getGameProfile().getName();
+            // Each sat an evening at the trailer alone in an earlier build, which kept a thread for each of them.
+            VignetteThreads.solo(a,goat);VignetteThreads.solo(b,goat);var theirs=VignetteThreads.threadId(d,goat,a.getUUID());
+            h.assertTrue(theirs!=null&&!theirs.equals(VignetteThreads.threadId(d,goat,b.getUUID())),"two evenings sat apart");
+            h.assertTrue(GroupCrossings.canJoin(d,b.getUUID(),goat,theirs),"an evening sat apart does not keep friends apart: the trailer keeps no threads");
+            VignetteThreads.arrived(c,goat);h.assertTrue(VignetteThreads.threadId(d,goat,c.getUUID())==null,"and an arrival there begins none");
+            // The first goes through the door and begins the evening; the friend follows while it is still on the trail.
+            var door=d.door(goat.entryDoorId());h.assertTrue(door!=null&&!door.command,"the trailer has its door");
+            b.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+80);c.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+80);
+            a.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,180,0);h.assertTrue(GoatmanVignette.enter(a,true),"the first reader through begins the evening");
+            GroupCrossings.crossed(a,door,goat);
+            h.assertTrue(GoatmanVignette.canEnter(b)&&GroupCrossings.ledThrough(b,door),"a friend follows while the evening is on the trail");
+            // Supper has started: it is too late, and the friend is told so.
+            var r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",GoatmanVignette.BRISK_SUPPER);r.putBoolean("MealFrozen0465",true);f.run(r);
+            h.assertTrue(!GoatmanVignette.canEnter(b)&&!GroupCrossings.ledThrough(b,door),"once supper has started the held door no longer takes a newcomer in");
+            var line=GoatmanVignette.underway(b,name);
+            h.assertTrue(line!=null&&line.startsWith(name+" went through to the trailer. Supper has already started there.")&&line.endsWith("This door leads you elsewhere."),"and they are told why: "+line);
+            r=f.run();r.putInt("Phase",GoatmanVignette.VIGIL);f.run(r);
+            h.assertTrue(String.valueOf(GoatmanVignette.underway(b)).startsWith("It is already dark there"),"after dark the line says so: "+GoatmanVignette.underway(b));
+            h.assertTrue(GoatmanVignette.underway(a)==null,"and the reader in the evening is not turned away from it");
+            // A friend whose evening ended at the trailer does not walk back into the one the others are still having.
+            r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",100);r.remove("MealFrozen0465");var cohort=r.getCompound("Cohort");
+            var dead=new CompoundTag();dead.putBoolean("Failed",true);cohort.put(b.getStringUUID(),dead);r.put("Cohort",cohort);f.run(r);
+            b.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,180,0);
+            h.assertTrue(!GoatmanVignette.canEnter(b)&&!GoatmanVignette.enter(b,true),"a child whose evening ended stays out of the others'");
+            h.assertTrue(f.run().getCompound("Cohort").getCompound(b.getStringUUID()).getBoolean("Failed")&&!f.run().getCompound("Cohort").getCompound(b.getStringUUID()).getBoolean("Active"),"and is not quietly put back in it");
+            h.assertTrue(String.valueOf(GoatmanVignette.underway(b)).startsWith("The evening at the trailer has gone on without you."),"and is told so: "+GoatmanVignette.underway(b));
+            // A child who stepped out and is back before dark will sit the whole night, so the night counts for them.
+            r=f.run();cohort=r.getCompound("Cohort");var with=new CompoundTag();with.putBoolean("Active",true);with.putBoolean("Arrived",true);cohort.put(c.getStringUUID(),with);
+            var mine=cohort.getCompound(a.getStringUUID());mine.putBoolean("Active",false);mine.putBoolean("Interrupted",true);cohort.put(a.getStringUUID(),mine);r.put("Cohort",cohort);f.run(r);
+            c.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,180,0);
+            h.assertTrue(GoatmanVignette.enter(a,true),"back through the door before dark, they rejoin the same evening");
+            var back=f.run().getCompound("Cohort").getCompound(a.getStringUUID());
+            h.assertTrue(back.getBoolean("Active")&&!back.getBoolean("Interrupted"),"and the night ahead is theirs to be counted for: "+back);
+        }).thenSucceed();
+    }
     @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}
     @AfterBatch(batch="goat_condiments0150") public static void cleanCondiments(ServerLevel l){if(condiments!=null){condiments.close();condiments=null;}}
     /** Two readers enrol together, facing back down the trail, and supper's first plate goes down with both inside. */

@@ -166,8 +166,29 @@ public final class GoatmanVignette {
         CompoundTag own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
         // A latecomer waits out a supper already under way, but an evening everyone has left is begun again on entry.
         if(!empty&&own.isEmpty()&&r.getInt("Phase")==GATHERING&&(r.getInt("Clock")>=supperAt(r)||r.getBoolean("MealFrozen0465")))return false;
+        // 0.4.405: a child whose evening ended (a fall, a command) does not walk back into the one the others are still having.
+        if(!empty&&own.getBoolean("Failed"))return false;
         if(r.getInt("Phase")==DAWN)return empty;
         return r.getInt("Phase")!=VIGIL||empty||own.getBoolean("Active")&&!own.getBoolean("Failed");
+    }
+    /**
+     * 0.4.405 (owner, after the November 9 playtest: "Goatman vignette doesn't work with multiplayer as intended"): an evening
+     * the others are in has gone too far for this reader to join. Why, in a line, so a friend who follows is told rather than
+     * finding the door locked; null when they can come in, or when the trailer is not theirs to be dealt at all.
+     */
+    public static @Nullable String underway(ServerPlayer p){return underway(p,null);}
+    /** The same, for a friend who followed {@code friend} to the door. */
+    public static @Nullable String underway(ServerPlayer p,@Nullable String friend){
+        LabyrinthData d=LabyrinthData.get(p.server);if(!canDeal(d,p.getUUID())||canEnter(p))return null;
+        CompoundTag r=run(d),own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
+        if(own.getBoolean("Failed"))return "The evening at the trailer has gone on without you. This door leads you elsewhere.";
+        if(r.getInt("Phase")!=VIGIL&&r.getInt("Phase")!=DAWN&&r.getCompound("Cohort").getAllKeys().size()>=MAX_PLAYERS)return "There is no room left at the trailer. This door leads you elsewhere.";
+        String went=friend==null?"":friend+" went through to the trailer. ";
+        return went+switch(r.getInt("Phase")){
+            case VIGIL->"It is already dark there, and its door is locked for the night. This door leads you elsewhere.";
+            case DAWN->"It is morning there, and the others are walking out. This door leads you elsewhere.";
+            default->"Supper has already started there. It is too late to join "+(friend==null?"the others":"them")+". This door leads you elsewhere.";
+        };
     }
     private static CompoundTag newRun(ServerPlayer p){
         CompoundTag r=new CompoundTag();r.putUUID("Id",UUID.randomUUID());r.putInt("Phase",PATH);r.putInt("Version",VERSION);
@@ -197,6 +218,7 @@ public final class GoatmanVignette {
             r.putBoolean(CLEAR,true);
         }
         if(!member&&(r.getInt("Phase")==VIGIL||r.getInt("Phase")==DAWN||r.getInt("Phase")==GATHERING&&(r.getInt("Clock")>=supperAt(r)||r.getBoolean("MealFrozen0465"))||cohort.getAllKeys().size()>=MAX_PLAYERS))return false;
+        if(member&&other&&cohort.getCompound(p.getUUID().toString()).getBoolean("Failed"))return false;
         CompoundTag own=cohort.getCompound(p.getUUID().toString());
         if(!member){own.putBoolean("Active",true);own.putDouble("Progress",0);own.putInt("Vigil",0);own.putBoolean("Arrived",false);
             // 0.4.150: the first in is the latecomer, whose bed the thing comes to first.
@@ -204,6 +226,8 @@ public final class GoatmanVignette {
             // 0.4.150: arriving with the first reader, before anyone reaches the camp, a reader takes a cousin's place.
             if(fresh(r)&&r.getInt("Phase")==PATH&&!cohort.isEmpty()){int role=standIn(r);if(role>=0){own.putInt(PLAYS,role);r.putInt(PLAYED,r.getInt(PLAYED)|1<<role);
                 if(role==r.getInt("Runner")){r.putUUID(GAS,p.getUUID());r.putString(GAS_NAME,p.getGameProfile().getName());}}}}
+        // 0.4.405: a child who stepped out and is back before dark will sit the whole night, so the night is theirs to be counted for.
+        if(member&&r.getInt("Phase")<VIGIL)own.remove("Interrupted");
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         if(!member)p.displayClientMessage(Component.literal(own.contains(PLAYS)?"You're late too. The others are already at the trailer, and they've kept your place.":"You're late. Your cousins are already at the trailer."),false);
         scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);GoatmanBedtime.restore(p,r);
