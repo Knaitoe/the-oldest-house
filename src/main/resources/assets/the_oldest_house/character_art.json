@@ -1658,5 +1658,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 130
+  },
+  {
+    "name": "literary_corner_romina",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 131
+  },
+  {
+    "name": "literary_corner_nacho",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 132
+  },
+  {
+    "name": "literary_corner_luli",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 133
+  },
+  {
+    "name": "literary_corner_nacho_grown",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 134
   }
 ]

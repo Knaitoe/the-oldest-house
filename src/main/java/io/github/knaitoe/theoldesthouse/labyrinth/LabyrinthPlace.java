@@ -677,7 +677,11 @@ public enum LabyrinthPlace {
     /** 0.4.407, The Drawing (Drawing, docs/THE_DRAWING_0_4_407.md): a village square on a bright summer morning, a black box on a stool,
      * the households read from a list and the readers at the end of it; held on every visit, each visit a year. Its way on is the
      * meeting hall's door. */
-    THE_DRAWING("the_drawing",Kind.RECURRING,233,new BoundingBox(-30,-4,-72,30,16,0),literaryEntry());
+    THE_DRAWING("the_drawing",Kind.RECURRING,233,new BoundingBox(-30,-4,-72,30,16,0),literaryEntry()),
+    /** 0.4.408, The House on the Corner (Corner, docs/THE_HOUSE_ON_THE_CORNER_0_4_408.md): a city street at siesta, an empty house on the
+     * corner behind a tall fence, three children on the kerb, and a corridor longer than the house; held on every visit, the dare, the
+     * corridor and the last room, then the street at night. Its way on is a door across the cross street. */
+    CORNER_HOUSE("the_house_on_the_corner",Kind.RECURRING,234,new BoundingBox(-36,-4,-122,44,16,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

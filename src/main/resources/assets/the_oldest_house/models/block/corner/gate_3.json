@@ -1,0 +1,36 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "g": "the_oldest_house:block/corner/gate_upper",
+    "particle": "the_oldest_house:block/corner/gate_upper"
+  },
+  "elements": [
+    {
+      "from": [
+        0.5,
+        0,
+        0
+      ],
+      "to": [
+        1.5,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        }
+      }
+    }
+  ]
+}

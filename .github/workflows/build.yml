@@ -156,6 +156,8 @@ jobs:
           python3 tools/draw_cabin_art.py --check
           python3 tools/draw_drawing_art.py --check
           python3 tools/generate_drawing_audio.py --check
+          python3 tools/draw_corner_art.py --check
+          python3 tools/generate_corner_audio.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v

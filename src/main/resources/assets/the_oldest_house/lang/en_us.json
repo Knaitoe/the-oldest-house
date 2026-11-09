@@ -1486,5 +1486,18 @@
   "subtitles.the_oldest_house.drawing.pour": "Lemonade is poured",
   "subtitles.the_oldest_house.drawing.white": "A high ringing",
   "advancements.the_oldest_house.account.the_drawing.title": "The drawing",
-  "advancements.the_oldest_house.account.the_drawing.description": "I stood in a village square on a bright morning and drew a folded slip from a black box like everyone else."
+  "advancements.the_oldest_house.account.the_drawing.description": "I stood in a village square on a bright morning and drew a folded slip from a black box like everyone else.",
+  "block.the_oldest_house.corner_fitting": "Street Fitting",
+  "block.the_oldest_house.corner_stucco": "Painted Render",
+  "block.the_oldest_house.corner_paving": "Pavement Slabs",
+  "block.the_oldest_house.corner_setts": "Stone Setts",
+  "block.the_oldest_house.corner_tiles": "Patterned Tiles",
+  "block.the_oldest_house.corner_wallpaper": "Faded Wallpaper",
+  "subtitles.the_oldest_house.corner.gate": "An iron gate creaks",
+  "subtitles.the_oldest_house.corner.jar": "Glass clinks",
+  "subtitles.the_oldest_house.corner.shut": "A door shuts, deep in the house",
+  "subtitles.the_oldest_house.corner.cicadas": "Cicadas",
+  "subtitles.the_oldest_house.corner.hum": "A faint electric hum",
+  "advancements.the_oldest_house.account.the_house_on_the_corner.title": "The house on the corner",
+  "advancements.the_oldest_house.account.the_house_on_the_corner.description": "A girl with one arm took me into the empty house on the corner, past the jars and down a corridor longer than the house."
 }

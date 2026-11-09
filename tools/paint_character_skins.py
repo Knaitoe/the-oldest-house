@@ -170,6 +170,11 @@ LOOKS = {
     'literary_drawing_pike': Look('#d8b49a','#e0ddd4','receding','#4a4038','#3a3630','coat','#bfb39a',eyes='#5a5a52',age=2,beard='walrus'),
     'literary_drawing_dunn': Look('#d2a283','#7a7a74','bun','#6a5a7a','#3a3640','cardigan','#cfc4b0',eyes='#5a5a52',age=2),
     'literary_drawing_ricky': Look('#c48a68','#3a2a1e','messy','#8a3a2e','#2e3a4a','tee','#d8d0c0',eyes='#3a3029',sleeve=4,face_style='child'),
+    # 0.4.408, The House on the Corner: the girl with one arm (her left is not drawn; her sleeve is pinned), her brother, their friend, and her brother older.
+    'literary_corner_romina': Look('#c9967a','#2a1e18','braids','#d8b84a','#3a3a44','dress','#f0e6d0',eyes='#3a2e26',sleeve=4,face_style='child'),
+    'literary_corner_nacho': Look('#c48e6c','#2a1e18','messy','#3a5a7a','#2e3440','tee','#d8d0c0',eyes='#3a2e26',sleeve=4,face_style='child'),
+    'literary_corner_luli': Look('#e0b896','#6a3a22','ponytail','#c8607a','#3a4a5a','tee','#f0e6d0',eyes='#4a5a4a',sleeve=4,face_style='child'),
+    'literary_corner_nacho_grown': Look('#c48e6c','#2a1e18','short','#4a4a52','#2e3440','jacket','#8a8478',eyes='#3a2e26',beard='stubble'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
