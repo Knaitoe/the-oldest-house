@@ -41,9 +41,14 @@ public final class PoolTableBlock extends HorizontalDirectionalBlock implements 
     public static boolean is(BlockState s){return s.is(BarRegistry.POOL_TABLE.get());}
     /** The table's foot, where its frame is kept, from either end. */
     public static BlockPos foot(BlockState s,BlockPos pos){return s.getValue(PART)==BedPart.HEAD?pos.relative(s.getValue(FACING).getOpposite()):pos;}
-    /** Places a whole table, foot here and head the way it faces; for the builders. */
+    /**
+     * Places a whole table, foot here and head the way it faces; for the builders. 0.4.441 (owner: "it's not physically in last_orders"):
+     * through BuildBlocks, so that a scene built from a recorded plan lays the table in its turn. Written straight into the level, it went
+     * in while the plan was still being recorded and the plan's own clearing of the room took it out again.
+     */
     public static void place(Level level,BlockPos foot,Direction facing){
         var s=BarRegistry.POOL_TABLE.get().defaultBlockState().setValue(FACING,facing);
+        if(level instanceof net.minecraft.server.level.ServerLevel sl){BuildBlocks.set(sl,foot,s.setValue(PART,BedPart.FOOT),18);BuildBlocks.set(sl,foot.relative(facing),s.setValue(PART,BedPart.HEAD),18);return;}
         level.setBlock(foot,s.setValue(PART,BedPart.FOOT),18);level.setBlock(foot.relative(facing),s.setValue(PART,BedPart.HEAD),18);
     }
 
