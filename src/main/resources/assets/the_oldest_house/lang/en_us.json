@@ -1547,5 +1547,12 @@
   "subtitles.the_oldest_house.pool.strike": "Cue strikes the ball",
   "subtitles.the_oldest_house.pool.clack": "Pool balls knock",
   "subtitles.the_oldest_house.pool.cushion": "Ball hits the cushion",
-  "subtitles.the_oldest_house.pool.pocket": "Ball drops into a pocket"
+  "subtitles.the_oldest_house.pool.pocket": "Ball drops into a pocket",
+  "block.the_oldest_house.dartboard": "Dartboard",
+  "item.the_oldest_house.dart": "Dart",
+  "entity.the_oldest_house.dart": "Dart",
+  "subtitles.the_oldest_house.darts.throw": "Dart thrown",
+  "subtitles.the_oldest_house.darts.board": "Dart hits the board",
+  "subtitles.the_oldest_house.darts.wall": "Dart hits the wall",
+  "subtitles.the_oldest_house.darts.pull": "Darts pulled from the board"
 }

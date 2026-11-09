@@ -1,5 +1,5 @@
-"""Original sounds for the bar's games (0.4.414): the cue's tip on the ball, ball on ball, a ball off the cushion, and a ball dropping
-into a pocket and rolling down the return.
+"""Original sounds for the bar's games: the cue's tip on the ball, ball on ball, a ball off the cushion, and a ball dropping into a
+pocket and rolling down the return (0.4.414); a dart thrown, into the board, into the wall, and the turn's darts pulled out (0.4.415).
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 table. Run from tools/. Existing files are kept, so the committed sounds only change when deleted first.
@@ -13,6 +13,10 @@ ROWS = {
     'pool/clack': ('pool.clack', 'Pool balls knock', 16),
     'pool/cushion': ('pool.cushion', 'Ball hits the cushion', 12),
     'pool/pocket': ('pool.pocket', 'Ball drops into a pocket', 16),
+    'darts/throw': ('darts.throw', 'Dart thrown', 8),
+    'darts/board': ('darts.board', 'Dart hits the board', 12),
+    'darts/wall': ('darts.wall', 'Dart hits the wall', 12),
+    'darts/pull': ('darts.pull', 'Darts pulled from the board', 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -82,7 +86,48 @@ def pocket():
     return thunk + roll + ticks
 
 
-MAKERS = {'pool/strike': strike, 'pool/clack': clack, 'pool/cushion': cushion, 'pool/pocket': pocket}
+def dart_throw():
+    # A dart leaving the hand: a short soft rush of air, rising then gone.
+    n = seconds(.18)
+    t = times(n)
+    env = np.sin(np.pi * np.clip(t / .18, 0, 1)) ** 2
+    return band(rng.standard_normal(n), 900, 4200) * env * .5
+
+
+def dart_board():
+    # The point sinking into packed sisal: a dull, dry thud with a tiny click of the barrel.
+    n = seconds(.16)
+    t = times(n)
+    thud = band(rng.standard_normal(n), 200, 1400) * np.exp(-t / .012) * .8
+    body = np.sin(2 * np.pi * 150 * t) * np.exp(-t / .03) * .4
+    click = band(rng.standard_normal(n), 3000, 8000) * np.exp(-t / .002) * .25
+    return thud + body + click
+
+
+def dart_wall():
+    # Into wood or plaster: a harder, higher tock that rings a moment.
+    n = seconds(.2)
+    t = times(n)
+    tock = band(rng.standard_normal(n), 900, 5000) * np.exp(-t / .004) * .8
+    ring = np.sin(2 * np.pi * 820 * t) * np.exp(-t / .025) * .35
+    return tock + ring
+
+
+def dart_pull():
+    # Three darts worked out of the board one after another: short gritty scrapes.
+    n = seconds(.7)
+    out = np.zeros(n)
+    for at in (.0, .22, .43):
+        i = int(at * RATE)
+        m = seconds(.12)
+        tt = times(m)
+        scrape = band(rng.standard_normal(m), 600, 3500) * np.sin(np.pi * np.clip(tt / .12, 0, 1)) * .45
+        out[i:i + m] += scrape[:max(0, min(m, n - i))]
+    return out
+
+
+MAKERS = {'pool/strike': strike, 'pool/clack': clack, 'pool/cushion': cushion, 'pool/pocket': pocket,
+          'darts/throw': dart_throw, 'darts/board': dart_board, 'darts/wall': dart_wall, 'darts/pull': dart_pull}
 
 
 def main():

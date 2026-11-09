@@ -1,5 +1,6 @@
 """The bar's games (0.4.414, docs/BAR_GAMES_PROPOSAL.md): the pool table's cloth, rails, wood and pockets, the balls as the table
-and the screen draw them, and the table's item picture. Writes the table's model and block states and its name. --check verifies
+and the screen draw them, and the table's item picture; the dartboard's face and sides, and the dart's and board's item pictures
+(0.4.415). Writes the table's model and block states and its name. --check verifies
 everything already written. Run from tools/.
 
 Palette: cloth #1f6e3e, rails and apron mahogany #5a3218 / #3a1e0e, sights #e8d8b0, pockets #0c0806 with a leather lip #3a2414.
@@ -122,12 +123,122 @@ def item_icon():
     return im
 
 
+# ------------------------------------------------------------------------------------------------------------ darts (0.4.415)
+ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5]
+BLACK, CREAM, RED, GREEN, WIRE, RING = '#1a1816', '#e6d9b8', '#b8281c', '#1c6e38', '#b8bcc0', '#141210'
+DIGITS = {
+    '0': ['111', '101', '101', '101', '111'], '1': ['010', '110', '010', '010', '111'], '2': ['111', '001', '111', '100', '111'],
+    '3': ['111', '001', '011', '001', '111'], '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111'],
+    '6': ['111', '100', '111', '101', '111'], '7': ['111', '001', '010', '010', '010'], '8': ['111', '101', '111', '101', '111'],
+    '9': ['111', '101', '111', '001', '111'],
+}
+
+
+def dartboard_face():
+    """The board's face at 128 pixels to the block: the double's outer wire 56 pixels out (7 of the block's 16), the number ring
+    to the edge. Proportions are a standard board's; 20 at the top, 6 at the right, as seen by someone facing it."""
+    size, c, scoring = 128, 64, 56
+    im = Image.new('RGBA', (size, size), (0, 0, 0, 255))
+    wires = [6.35, 15.9, 99, 107, 162, 170]
+    for y in range(size):
+        for x in range(size):
+            u, v = x + .5 - c, c - (y + .5)
+            r = math.hypot(u, v) / scoring * 170
+            if r > 170:
+                dot(im, x, y, RING if math.hypot(u, v) < 63 else shade(RING, 10))
+                continue
+            if r < 6.35:
+                colour = RED
+            elif r < 15.9:
+                colour = GREEN
+            else:
+                a = math.degrees(math.atan2(u, v)) % 360
+                i = int((a + 9) // 18) % 20
+                ring = 99 <= r < 107 or r >= 162
+                colour = (RED if i % 2 == 0 else GREEN) if ring else (BLACK if i % 2 == 0 else CREAM)
+                edge = abs(((a + 9) % 18)) < 18 * .02 or abs(((a + 9) % 18) - 18) < 18 * .02
+                if edge and r > 15.9:
+                    colour = WIRE
+            if any(abs(r - w) < .9 for w in wires):
+                colour = WIRE
+            dot(im, x, y, colour)
+    for i, n in enumerate(ORDER):
+        a = math.radians(i * 18)
+        cx, cy = c + math.sin(a) * 59.5, c - math.cos(a) * 59.5
+        text = str(n)
+        w = len(text) * 4 - 1
+        for k, ch in enumerate(text):
+            for row, bits in enumerate(DIGITS[ch]):
+                for col, bit in enumerate(bits):
+                    if bit == '1':
+                        dot(im, int(cx - w / 2 + k * 4 + col), int(cy - 2.5 + row), '#ece6d6')
+    return im
+
+
+def dartboard_side():
+    im = new(base=RING, seed=405, spread=2)
+    for x in range(16):
+        dot(im, x, 0, shade(RING, 14)); dot(im, x, 15, shade(RING, -6))
+    return im
+
+
+def dart_icon():
+    """A dart lying corner to corner: point bottom left, flights top right."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for k in range(2):
+        dot(im, 2 + k, 13 - k, '#d8d8d8')
+    for k in range(2, 6):
+        dot(im, 2 + k, 13 - k, '#6e7074'); dot(im, 3 + k, 13 - k, '#55575a')
+    for k in range(6, 9):
+        dot(im, 2 + k, 13 - k, '#161616')
+    for x, y in [(11, 4), (12, 4), (12, 3), (13, 3), (11, 2), (10, 3), (13, 5), (12, 5), (11, 5), (12, 6), (13, 2)]:
+        dot(im, x, y, '#c8301e')
+    dot(im, 12, 4, '#8a1e14')
+    return im
+
+
+def dartboard_icon():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            u, v = x + .5 - 8, 8 - (y + .5)
+            r = math.hypot(u, v)
+            if r > 7.6:
+                continue
+            if r > 6.4:
+                colour = RING
+            elif r < 1:
+                colour = RED
+            elif r < 1.9:
+                colour = GREEN
+            else:
+                i = int(((math.degrees(math.atan2(u, v)) % 360) + 9) // 18) % 20
+                ring = 3.6 <= r < 4.4 or r >= 5.6
+                colour = (RED if i % 2 == 0 else GREEN) if ring else (BLACK if i % 2 == 0 else CREAM)
+            dot(im, x, y, colour)
+    return im
+
+
+def dartboard_model():
+    """The board hung on the south side of its block, its face to the north."""
+    side = {'texture': '#side'}
+    return {'ambientocclusion': False,
+            'textures': {'face': B + 'dartboard_face', 'side': B + 'dartboard_side', 'particle': B + 'dartboard_side'},
+            'elements': [{'from': [0, 0, 14], 'to': [16, 16, 16], 'faces': {
+                'north': {'uv': [0, 0, 16, 16], 'texture': '#face'},
+                'south': dict(side, uv=[0, 0, 16, 16], cullface='south'),
+                'east': dict(side, uv=[14, 0, 16, 16]), 'west': dict(side, uv=[0, 0, 2, 16]),
+                'up': dict(side, uv=[0, 14, 16, 16]), 'down': dict(side, uv=[0, 0, 16, 2])}}]}
+
+
 def textures():
     return {
         'block/bar/pool_cloth.png': cloth(), 'block/bar/pool_rail.png': rail(), 'block/bar/pool_wood.png': wood(),
         'block/bar/pool_leg.png': leg(), 'block/bar/ball.png': Image.new('RGBA', (8, 8), (255, 255, 255, 255)),
         'gui/pool_ball.png': disc(), 'gui/pool_band.png': disc(band=(5, 11)), 'gui/pool_shine.png': shine(),
         'gui/pool_pocket.png': pocket_gui(), 'item/pool_table.png': item_icon(),
+        'block/bar/dartboard_face.png': dartboard_face(), 'block/bar/dartboard_side.png': dartboard_side(),
+        'item/dart.png': dart_icon(), 'item/dartboard.png': dartboard_icon(),
     }
 
 
@@ -160,10 +271,16 @@ def files():
                 v['y'] = (y + turn) % 360
             variants[f'facing={facing},part={part}'] = v
     out['blockstates/pool_table.json'] = {'variants': variants}
+    out['models/block/bar/dartboard.json'] = dartboard_model()
+    out['blockstates/dartboard.json'] = {'variants': {f'facing={f}': ({'model': B + 'dartboard', 'y': y} if y else {'model': B + 'dartboard'})
+                                                      for f, y in FACING_Y.items()}}
+    for item in ('dart', 'dartboard'):
+        out[f'models/item/{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/' + item}}
     return out
 
 
-NAMES = {'block.the_oldest_house.pool_table': 'Pool Table'}
+NAMES = {'block.the_oldest_house.pool_table': 'Pool Table', 'block.the_oldest_house.dartboard': 'Dartboard',
+         'item.the_oldest_house.dart': 'Dart', 'entity.the_oldest_house.dart': 'Dart'}
 
 
 def main():
