@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "t": "the_oldest_house:block/kept/tube",
+    "particle": "the_oldest_house:block/kept/tube"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        13,
+        6
+      ],
+      "to": [
+        15,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

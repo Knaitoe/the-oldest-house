@@ -1,0 +1,68 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "c": "the_oldest_house:block/kept/cable",
+    "particle": "the_oldest_house:block/kept/cable"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        0
+      ],
+      "to": [
+        5,
+        2,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            1,
+            0,
+            5,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        0,
+        0
+      ],
+      "to": [
+        13,
+        2,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            9,
+            0,
+            13,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

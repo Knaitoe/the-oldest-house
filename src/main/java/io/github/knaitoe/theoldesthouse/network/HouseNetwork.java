@@ -13,12 +13,13 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("166")
+        event.registrar("167")
                 .playToClient(GhostsLorePayload.TYPE,GhostsLorePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GhostsLoreScreen.open(payload)))
                 .playToClient(YardCrawlPayload.TYPE,YardCrawlPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.YardCrawlClient.accept(payload)))
                 .playToServer(CompanionNearbyPayload.TYPE,CompanionNearbyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.opening.CompanionOrders.openNearest(p);}))
                 .playToServer(JournalRibbonPayload.TYPE,JournalRibbonPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.journal.Journals.ribbon(p,payload.page());}))
                 .playToClient(SourceMarkPayload.TYPE,SourceMarkPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SourceMarkClient.accept(payload)))
+                .playToClient(FaceLossPayload.TYPE,FaceLossPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.labyrinth.FaceLoss.clientSet(payload.player(),payload.gone())))
                 .playToClient(CityPayload.TYPE,CityPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CityClient.accept(payload)))
                 .playToClient(CornerPayload.TYPE,CornerPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CornerClient.accept(payload)))
                 .playToClient(SecondPersonPayload.TYPE,SecondPersonPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SecondPersonClient.accept(payload)))

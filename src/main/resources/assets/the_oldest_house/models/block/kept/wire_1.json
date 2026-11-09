@@ -1,0 +1,82 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/kept/wire_lit",
+    "particle": "the_oldest_house:block/kept/wire_lit"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        0.01,
+        0.01,
+        8
+      ],
+      "to": [
+        15.99,
+        15.99,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        0.01,
+        0.01
+      ],
+      "to": [
+        8,
+        15.99,
+        15.99
+      ],
+      "faces": {
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

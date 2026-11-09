@@ -1,3 +1,16 @@
+November 9 candidate 0.4.410 (docs/THE_KEPT_0_4_410.md), the next series' Ellison proposal (DESIGN_PROPOSALS_NEXT.md, section 5), built as "The Kept" in its short-story shape: the game adaptation's five characters would recreate a specific existing game and are not built. The punishment is the recommended (c): a persistent blank face, chat untouched.
+- Place: KEPT appends at slot 236 (layout 134, protocol 167), an interior slot. KeptSite builds it whole:
+  - a corridor of cabinets and screens, the printer (the source) and the tray (the account) by the door;
+  - a cave of ice the machine has made out of its own casing;
+  - a thicket of wire with one crawl under it;
+  - a hall of three long tables and a hundred chairs, the crate of tins, and four cells whose doors open onto glare.
+- The four, shared: Silas, Petra, Wendell and Tamsin sit until a reader comes near, then walk behind whoever has gone furthest, bickering. They go round the wire and wait at the mouth of the hall, go up to the crate, understand the tins, and ask one at a time at their cells.
+- The screens, personal and truthful: the reader's deaths, lost companions and walked-out stories, read out in the machine's hand.
+- The cave is cold, held short of freezing. The chairs turn to whoever is nearest.
+- Release, personal: crouching by the asking door shuts the eyes. A door opened with eyes shut lets the captive walk into the glare, and counts for every reader whose eyes were shut by it.
+- Resolution: all four let go (across visits too). The machine notices and takes the reader's mouth for good (FaceLoss, drawn for every viewer and in mirrors). The account waits in the tray.
+- Witness: 85 / 64 / two kinds / three endings (one release source).
+
 November 9 candidate 0.4.409 (docs/THE_BLACK_CITY_0_4_409.md), the next series' Lovecraft proposal (DESIGN_PROPOSALS_NEXT.md, section 2a): "The Black City", shaped on the Mountains as recommended. In the game it is called the city on the ice. What fills the tunnel is a placeholder texture drawn in code for the owner to replace, and the look back shows only mist that moves wrongly.
 - Place: BLACK_CITY appends at slot 235 (layout 133, protocol 166), its base at CitySite.BASE_Y. CitySite builds it whole under the outside sky:
   - the radio hut and the empty camp;

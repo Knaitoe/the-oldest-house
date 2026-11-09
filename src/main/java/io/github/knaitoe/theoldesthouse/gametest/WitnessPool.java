@@ -18,8 +18,10 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.367, Last Weekend at Pinehook: 81 / 61 / 58.
  0.4.407, The Drawing: 82 / 62 / 59.
  0.4.408, The House on the Corner: 83 / 63 / 60.
+ 0.4.409, the city on the ice: 84 / 63 / 61.
+ 0.4.410, the Kept: 85 / 64 / 62.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=84,REQUIRED=63,LITERARY=61;
+    static final int SOURCES=85,REQUIRED=64,LITERARY=62;
 }
