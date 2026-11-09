@@ -1,10 +1,14 @@
-"""Borrasca (0.4.236): the Shiny Gentleman, as a child sees him for a moment among the pines when the noise comes off the ridge.
+"""Borrasca: the Shiny Gentleman, as a child sees him among the pines when the noise comes off the ridge.
 
-One texture, in native Minecraft pixels (16 to a block), drawn from a fixed seed: a figure four and a half blocks tall and too thin,
-in a long coat and a tall hat that has grown into his head. Where the face should be, the head is smooth and polished, with one
-bright band across it where light catches. The arms hang past the knees and end in long fingers. Everything about him shines like
-wet metal: lit from the left, dark on the right, with bands of reflection down the coat and a few sparks. Writes
-textures/entity/borrasca_gentleman.png. --check verifies it.
+0.4.236 drew him as one flat figure. 0.4.434 (the owner: "Ensure the shiny gentleman still appears as an actual monster out by the far
+marker too") gives him a body: client.BorrascaGentlemanModel builds him from boxes, and this paints their faces on one atlas in native
+Minecraft pixels (16 to a block), from a fixed seed. Four and a half blocks tall and too thin: a tall hat bent over at the crown and grown
+into his head under a narrow brim; no face, a smooth polished oval with one bright band across it; a neck like a stalk; shoulders too
+wide over a narrow coat that falls to a ragged hem; legs a pixel wide; arms that hang apart from the coat, bend out at the elbow and end
+past his knees in long hooked fingers. He shines like wet metal, lit hard from the viewer's left and dark on the right, with streaks
+of light sliding down the coat and a few glints at his edges.
+
+Writes textures/entity/borrasca_gentleman.png (64 x 64). --check verifies it.
 """
 from pathlib import Path
 import argparse
@@ -13,7 +17,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/main/resources/assets/the_oldest_house/textures/entity/borrasca_gentleman.png'
-W, H = 32, 72
+W, H = 64, 64
 
 DARK = (34, 38, 46)
 MID = (86, 95, 108)
@@ -21,104 +25,89 @@ LIGHT = (160, 171, 186)
 SHINE = (224, 232, 242)
 SPARK = (255, 255, 255)
 
+# Each box's place on the atlas and its size in pixels: name, u, v, width, height, depth. They must match the boxes in
+# client.BorrascaGentlemanModel (the standard box unwrap: the two caps across the top row, then the sides in a row below them).
+PARTS = [
+    ('skirt', 0, 0, 11, 15, 5),
+    ('brim', 32, 0, 9, 1, 5),
+    ('shoulders', 32, 6, 11, 2, 3),
+    ('crown', 32, 11, 5, 6, 4),
+    ('tip', 50, 11, 3, 3, 3),
+    ('chest', 0, 20, 9, 7, 3),
+    ('waist', 24, 21, 7, 8, 3),
+    ('head', 44, 21, 5, 8, 4),
+    ('chin', 0, 30, 3, 1, 3),
+    ('neck', 12, 30, 1, 4, 1),
+    ('leg', 16, 30, 1, 17, 1),
+    ('foot', 0, 34, 2, 1, 2),
+    ('upper', 20, 33, 1, 11, 1),
+    ('fore', 24, 33, 1, 14, 1),
+    ('finger', 28, 33, 1, 8, 1),
+]
+COAT = {'skirt', 'shoulders', 'chest', 'waist'}
+HAT = {'brim', 'crown', 'tip'}
 
-def shape():
-    """The figure's cells: a set of (x, y). He leans a little, and his hat is crooked."""
-    cells = set()
 
-    def run(y, x0, x1):
-        for x in range(x0, x1 + 1):
-            cells.add((x, y))
-    # The hat, too tall and tapering, its crown bent over to one side, grown into the head under a narrow brim.
-    run(0, 16, 17)
-    run(1, 15, 17)
-    for y in range(2, 8):
-        run(y, 14, 18)
-    run(8, 12, 20)
-    # The head: a long smooth oval, no face, narrowing to the chin.
-    for y in range(9, 16):
-        run(y, 14, 18)
-    run(16, 15, 17)
-    run(17, 15, 17)
-    # The neck, one long thin stalk.
-    for y in range(18, 22):
-        run(y, 16, 16)
-    # Bony shoulders, too wide, and the coat narrow beneath them.
-    run(22, 11, 21)
-    run(23, 10, 22)
-    for y in range(24, 39):
-        w = 4 if y < 31 else 3
-        run(y, 16 - w, 16 + w)
-    # The coat falls and flares a little to a ragged hem.
-    hems = [53, 55, 52, 56, 54, 53, 55, 56, 52, 54, 55]
-    for i, x in enumerate(range(11, 22)):
-        for y in range(39, hems[i] + 1):
-            if y >= 39 + abs(16 - x) // 2:
-                cells.add((x, y))
-    for y in range(39, 41):
-        run(y, 13, 19)
-    # The arms hang apart from the coat, bend out at the elbow, and reach far past the knees.
-    for side, shoulder, elbow in ((-1, 10, 9), (1, 22, 23)):
-        for y in range(24, 35):
-            cells.add((shoulder, y))
-        for y in range(35, 59):
-            cells.add((elbow, y))
-        # Four long fingers, curled at the ends like hooks.
-        for i, length in enumerate((5, 8, 7, 4)):
-            x = elbow + side * (i - 1)
-            for y in range(59, 59 + length):
-                cells.add((x, y))
-            cells.add((x + side, 58 + length))
-    # The legs, a pixel each, and narrow feet.
-    for y in range(55, 71):
-        cells.add((14, y))
-        cells.add((18, y))
-    run(71, 13, 14)
-    run(71, 18, 19)
-    return cells
+def faces(u, v, w, h, d):
+    """The regions of one box: (face, x0, y0, width, height)."""
+    return [('cap0', u + d, v, w, d), ('cap1', u + d + w, v, w, d),
+            ('left', u, v + d, d, h), ('front', u + d, v + d, w, h),
+            ('right', u + d + w, v + d, d, h), ('back', u + d + w + d, v + d, w, h)]
+
+
+def shade(face, t, name):
+    """The colour across a face, t from its viewer's-left edge (0) to its right edge (1): lit hard from the left, dark on the right."""
+    if face == 'left':
+        return SHINE if t < .5 else LIGHT
+    if face == 'right':
+        return DARK
+    if face == 'back':
+        return DARK if t > .3 else MID
+    if face in ('cap0', 'cap1'):
+        return LIGHT if name in HAT or name in COAT else MID
+    # The front: a hard highlight at the left edge, falling away to dark on the right.
+    return SHINE if t < .15 else LIGHT if t < .45 else MID if t < .75 else DARK
 
 
 def draw():
-    cells = shape()
-    rng = random.Random(236)
+    rng = random.Random(434)
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     px = im.load()
-    for y in range(H):
-        row = sorted(x for x in range(W) if (x, y) in cells)
-        if not row:
-            continue
-        # Each run of the row is one surface: a hard highlight on the left, a dark core, a thin rim of light on the right.
-        runs, start = [], row[0]
-        for a, b in zip(row, row[1:] + [None]):
-            if b != a + 1:
-                runs.append((start, a))
-                if b is not None:
-                    start = b
-        for x0, x1 in runs:
-            for x in range(x0, x1 + 1):
-                if x1 == x0:
-                    c = SHINE if (x + y) % 7 == 0 else LIGHT if (x + y) % 3 else MID
-                else:
-                    t = (x - x0) / (x1 - x0)
-                    c = SHINE if t < 0.12 else LIGHT if t < 0.3 else MID if t < 0.55 else DARK if t < 0.88 else LIGHT
-                    # Light slides down him in long diagonal streaks.
-                    if y >= 22 and (x - y // 2) % 9 == 0 and c in (MID, DARK):
+    for name, u, v, w, h, d in PARTS:
+        for face, x0, y0, fw, fh in faces(u, v, w, h, d):
+            for dy in range(fh):
+                for dx in range(fw):
+                    t = dx / max(1, fw - 1)
+                    c = shade(face, t, name)
+                    # Light slides down the coat in long diagonal streaks.
+                    if name in COAT and face == 'front' and (dx - dy // 2) % 4 == 0 and c in (MID, DARK):
                         c = LIGHT
-                px[x, y] = c + (255,)
+                    # The hat is darker than the rest of him, lit only along its edges.
+                    if name in HAT and face in ('front', 'back') and 0 < dy < fh - 1:
+                        c = MID if c in (SHINE, LIGHT) else DARK
+                    px[x0 + dx, y0 + dy] = c + (255,)
+            # The coat's hem is ragged: its last rows are torn away in places.
+            if name == 'skirt' and face in ('front', 'back', 'left', 'right'):
+                for dx in range(fw):
+                    tear = rng.choice((0, 0, 1, 2, 3))
+                    for dy in range(fh - tear, fh):
+                        px[x0 + dx, y0 + dy] = (0, 0, 0, 0)
     # The face is a polished blank; one bright band crosses it, as if it had turned to the light.
-    for x in range(14, 19):
-        px[x, 12] = SHINE + (255,)
-    for x in range(15, 18):
-        px[x, 13] = LIGHT + (255,)
-    # The brim and the shoulders catch the light along their tops.
-    for x in range(12, 21):
-        px[x, 8] = SHINE + (255,) if x < 15 else LIGHT + (255,)
-    for x in range(10, 23):
-        if (x, 23) in cells and x < 15:
-            px[x, 23] = SHINE + (255,)
-    # Glints only at his edges: the hat, a shoulder, a finger.
-    edges = [c for c in cells if (c[0] - 1, c[1]) not in cells and c[1] < 66]
-    for x, y in rng.sample(sorted(edges), 4):
+    _, hu, hv, hw, hh, hd = next(p for p in PARTS if p[0] == 'head')
+    fx, fy = hu + hd, hv + hd
+    for dx in range(hw):
+        for dy in range(hh):
+            px[fx + dx, fy + dy] = (LIGHT if dx < 2 else MID if dx < 4 else DARK) + (255,)
+        px[fx + dx, fy + 3] = SHINE + (255,)
+        px[fx + dx, fy + 4] = (LIGHT if dx < 4 else MID) + (255,)
+    # The fingertips catch the light, like hooks.
+    _, gu, gv, gw, gh, gd = next(p for p in PARTS if p[0] == 'finger')
+    for face, x0, y0, fw, fh in faces(gu, gv, gw, gh, gd):
+        if face in ('front', 'left'):
+            px[x0, y0 + fh - 1] = SPARK + (255,)
+    # Glints only at his edges: the brim, a shoulder, an elbow.
+    edges = [(x, y) for x in range(W) for y in range(H) if px[x, y][3] and px[x, y][:3] == LIGHT]
+    for x, y in rng.sample(sorted(edges), 6):
         px[x, y] = SPARK + (255,)
     return im
 
@@ -128,11 +117,17 @@ def main():
     parser.add_argument('--check', action='store_true')
     check = parser.parse_args().check
     im = draw()
-    # He must read as a figure from far off: tall, thin and shining.
-    alpha = [im.getpixel((x, y))[3] for y in range(H) for x in range(W)]
-    filled = sum(1 for a in alpha if a)
-    assert 350 < filled < 900, filled
-    assert im.getpixel((16, 12))[:3] == SHINE and im.getpixel((11, 30))[3] == 0, 'the face band and the gap between arm and coat'
+    # Every box's faces are painted and none overlap another's.
+    seen = {}
+    for name, u, v, w, h, d in PARTS:
+        assert u + 2 * (w + d) <= W and v + d + h <= H, name
+        for face, x0, y0, fw, fh in faces(u, v, w, h, d):
+            for x in range(x0, x0 + fw):
+                for y in range(y0, y0 + fh):
+                    assert (x, y) not in seen, (name, face, seen.get((x, y)))
+                    seen[(x, y)] = name
+    _, hu, hv, hw, hh, hd = next(p for p in PARTS if p[0] == 'head')
+    assert im.getpixel((hu + hd + 2, hv + hd + 3))[:3] == SHINE, 'the band across the face'
     if check:
         with Image.open(OUT) as actual:
             assert actual.convert('RGBA').tobytes() == im.tobytes(), OUT

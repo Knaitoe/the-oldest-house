@@ -445,17 +445,55 @@ public final class BorrascaTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
             var road=BorrascaRooms.trail(-126);f.at(p,road.getX(),road.getY(),road.getZ());p.setYRot(180);p.setXRot(-8);f.refresh(p);var own=f.own(p);
             var at=BorrascaStory.gentleman(own);h.assertTrue(own.getBoolean("PastTwo1")&&at!=null,"a child past the second marker hears the noise, and he is there: ticks "+own.getInt("GentTicks")+", echoes "+own.getInt("Echoes"));
-            var head=at.add(0,BorrascaStory.GENT_HEIGHT-.4,0);double d=head.distanceTo(p.getEyePosition());
+            var head=at.add(0,BorrascaStory.GENT_HEIGHT*BorrascaStory.gentScale(own)-.4,0);double d=head.distanceTo(p.getEyePosition());
             h.assertTrue(d>=BorrascaStory.GENT_NEAR&&d<=BorrascaStory.GENT_FAR&&BorrascaRooms.authored(at.subtract(Vec3.atLowerCornerOf(f.base(p)))).z< -124,"he stands past the second marker, far off: "+d+" at "+at.subtract(Vec3.atLowerCornerOf(f.base(p))));
             h.assertTrue(f.out.clip(new ClipContext(p.getEyePosition(),head,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS,"in clear sight of the reader");
-            var view=BorrascaStory.view(p,own);h.assertTrue(view!=null&&view.gentlemanTicks()==BorrascaStory.GENT_TICKS&&view.gentleman().equals(at),"the reader's own view is told where he stands, for as long as the strokes last");
-            p.lookAt(EntityAnchorArgument.Anchor.EYES,at.add(0,BorrascaStory.GENT_HEIGHT*.6,0));f.refresh(p);h.assertTrue(f.own(p).getBoolean("SawGentleman"),"looking straight at him is remembered");
+            var view=BorrascaStory.view(p,own);h.assertTrue(view!=null&&view.gentlemanTicks()==BorrascaStory.GENT_TICKS&&view.gentleman().equals(at)&&view.gentlemanScale()==BorrascaStory.gentScale(own),"the reader's own view is told where he stands and how tall, for as long as the strokes last");
+            p.lookAt(EntityAnchorArgument.Anchor.EYES,at.add(0,BorrascaStory.GENT_HEIGHT*BorrascaStory.gentScale(own)*.6,0));f.refresh(p);h.assertTrue(f.own(p).getBoolean("SawGentleman"),"looking straight at him is remembered");
             h.assertTrue(BorrascaTexts.account(f.own(p)).contains("shone"),"and the account says so");
             for(int i=0;i<15;i++)f.refresh(p);var after=f.own(p);h.assertTrue(BorrascaStory.gentleman(after)==null&&BorrascaStory.view(p,after).gentlemanTicks()==0,"he is gone when the strokes end");
             // Grown, the reader never sees him.
             f.stage(p,3);var grown=f.own(p);grown.putInt("GentTicks",BorrascaStory.GENT_TICKS);f.save(p,grown);h.assertTrue(BorrascaStory.gentleman(f.own(p))==null,"on the adult visits he never comes");
         }).thenSucceed();
     }
+
+    /**
+     * 0.4.434 (the owner: "Ensure the shiny gentleman still appears as an actual monster out by the far marker too"). From the foot of the
+     * Tree, looking up the ridge, the noise shows him far off past the second marker, much farther than he could be seen before the hill
+     * was drawn out, and taller for the distance.
+     */
+    @GameTest(template="empty",batch="borrasca_gentleman_far",timeoutTicks=1800)
+    public static void fromTheTreeHeStandsOutPastTheSecondMarker(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_far");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
+            // A few steps off to the side of the trunk, where a child stands to look up the ridge (against the bark, the trunk fills the view).
+            var tree=BorrascaRooms.trail(-97);var col=BorrascaRooms.at(f.base(p),tree.getX()+6,0,tree.getZ()+2);int ground=f.out.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,col.getX(),col.getZ());
+            p.teleportTo(f.out,col.getX()+.5,ground,col.getZ()+.5,180,-6);p.setDeltaMovement(Vec3.ZERO);
+            var own=f.own(p);var at=BorrascaStory.glimpseFor(p,own);f.save(p,own);
+            h.assertTrue(at!=null,"the noise shows him to a child at the Tree: "+whyNot(p,f.base(p)));
+            var rel=BorrascaRooms.authored(at.subtract(Vec3.atLowerCornerOf(f.base(p))));float scale=BorrascaStory.gentScale(own);
+            var head=at.add(0,BorrascaStory.GENT_HEIGHT*scale-.4,0);double d=head.distanceTo(p.getEyePosition());
+            h.assertTrue(rel.z< -124&&d>70&&d<=BorrascaStory.GENT_FAR,"he stands out past the second marker, far off: "+d+" at "+rel);
+            h.assertTrue(scale>1.5,"and stands taller for the distance: "+scale);
+            h.assertTrue(f.out.clip(new ClipContext(p.getEyePosition(),head,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS,"his head is in clear sight from the Tree");
+            var view=BorrascaStory.view(p,own);h.assertTrue(view!=null&&view.gentlemanScale()==scale&&view.gentleman().equals(at),"the reader's view is told where and how tall");
+        }).thenSucceed();
+    }
+    /** Why no place past the second marker would do, for the failure message: what each column was turned down for. */
+    private static String whyNot(ServerPlayer p,BlockPos b){
+        var l=p.serverLevel();var eye=p.getEyePosition();int cols=0,unloaded=0,high=0,ground=0,near=0,room=0,clip=0,ok=0;var hits=new java.util.TreeMap<String,Integer>();
+        for(int z=-128;z>=-165;z-=3)for(int x=-30;x<=30;x+=3){cols++;
+            var column=BorrascaRooms.at(b,x,0,z);if(!l.hasChunkAt(column)){unloaded++;continue;}
+            int y=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,column.getX(),column.getZ());
+            if(y<column.getY()-1||y>column.getY()+16){high++;continue;}var feet=new BlockPos(column.getX(),y,column.getZ());
+            var under=l.getBlockState(feet.below());if(under.is(net.minecraft.tags.BlockTags.LOGS)||under.is(net.minecraft.tags.BlockTags.LEAVES)||under.is(BorrascaRegistry.FITTING.get())){ground++;continue;}
+            var base=Vec3.atBottomCenterOf(feet);double far=base.distanceTo(eye);if(far<BorrascaStory.GENT_NEAR-BorrascaStory.GENT_HEIGHT||far>BorrascaStory.GENT_FAR){near++;continue;}double tall=BorrascaStory.GENT_HEIGHT*BorrascaStory.gentScale(far);
+            boolean r=true;for(int i=0;i<Math.ceil(tall)&&r;i++)r=l.getBlockState(feet.above(i)).getCollisionShape(l,feet.above(i)).isEmpty();if(!r){room++;continue;}
+            var head=base.add(0,tall-.4,0);var hit=l.clip(new ClipContext(eye,head,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
+            if(hit.getType()!=HitResult.Type.MISS){clip++;hits.merge(l.getBlockState(hit.getBlockPos()).getBlock().getDescriptionId()+"@"+(int)BorrascaRooms.authored(hit.getBlockPos().subtract(b)).getZ(),1,Integer::sum);continue;}ok++;}
+        return "cols "+cols+" unloaded "+unloaded+" high "+high+" ground "+ground+" near "+near+" room "+room+" clip "+clip+" ok "+ok+" eye "+BorrascaRooms.authored(BlockPos.containing(eye).subtract(b))+" hits "+hits;
+    }
+    @AfterBatch(batch="borrasca_gentleman_far") public static void gentlemanFarDone(ServerLevel l){cleanup();}
 
     /** The child's hand swaps some letters for alternate glyphs (HouseWriting); read them back as the letters they stand for. */
     private static String childPlain(String text){var base="aeiotrshnldcmyug";var out=new StringBuilder();for(char c:text.toCharArray()){if(c>=0xE100&&c<0xE110+base.length()){int i=c>=0xE110?c-0xE110:c-0xE100;out.append(i<base.length()?base.charAt(i):c);}else out.append(c);}return out.toString();}
