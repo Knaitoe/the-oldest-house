@@ -25,6 +25,8 @@ GLYPHS = {
     'M': ('101','111','111','101','101'), 'B': ('110','101','110','101','110'),
     'E': ('111','100','110','100','111'), 'R': ('110','101','110','110','101'),
     'N': ('110','101','101','101','101'), 'L': ('100','100','100','100','111'),
+    # 0.4.421: the friend is Shelby.
+    'S': ('111','100','111','001','111'), 'H': ('101','101','111','101','101'), 'Y': ('101','101','010','010','010'),
 }
 
 
@@ -460,7 +462,7 @@ def element(box, sides, top=None, bottom=None, rotation=None):
 
 
 def compass_model(k):
-    """Nell's compass lying face up: an eight-sided brass case, a raised bezel, the dial, the needle at position k of 16 (each a sixteenth
+    """Shelby's compass lying face up: an eight-sided brass case, a raised bezel, the dial, the needle at position k of 16 (each a sixteenth
     of a turn anticlockwise from north, seen from above), its pivot, the bow it hung from, and the red tape round its side."""
     els = []
     for box in ((4, 0, 2, 12, 2.5, 14), (2, 0, 4, 14, 2.5, 12), (3, 0, 3, 13, 2.5, 13)):
@@ -633,7 +635,7 @@ def outputs():
     compass = compass_model(0)
     for k in range(1, 16):
         out[f'models/item/borrasca_compass_{k}.json'] = compass_model(k)
-    patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('NELL',2,6,7.35,.8,12,mirror=False)])
+    patch = model([cube((0,3,7.5,16,13,8.5),9),*letters('SHELBY',1.7,6.6,7.35,.55,12,mirror=False)])
     lens = cube((5, 15.9, 5, 11, 16, 11), 14)
     lens['faces'] = {'up': lens['faces']['up']}
     lens['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
@@ -661,8 +663,8 @@ def outputs():
     out['../minecraft/atlases/blocks.json'] = atlas
     lang = json.loads((ASSETS / 'lang/en_us.json').read_text())
     lang.update({'block.the_oldest_house.borrasca_bark':'Carved pine bark',
-                 'item.the_oldest_house.borrasca_compass':"Nell's compass",
-                 'item.the_oldest_house.borrasca_name_patch':"Nell's name patch",
+                 'item.the_oldest_house.borrasca_compass':"Shelby's compass",
+                 'item.the_oldest_house.borrasca_name_patch':"Shelby's name patch",
                  'item.the_oldest_house.borrasca_flashlight':'County flashlight',
                  'subtitles.the_oldest_house.borrasca.triple_chime':'Metallic cry from the ridge',
                  'subtitles.the_oldest_house.borrasca.stroke':'One stroke from the ridge',
