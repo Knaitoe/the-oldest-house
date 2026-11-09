@@ -39,6 +39,11 @@ public final class BorrascaTests {
         /** Direct authored-geometry fixture; production construction is separately exercised below. */
         ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);int index=players.size();players.add(p);var site=new CompoundTag();site.putInt("Index",index);site.putBoolean("Built",true);data().setStateEntry("borrasca_sites_0497",p.getUUID().toString(),site);var world=new CompoundTag();world.putInt("NextIndex",players.size());data().setStateEntry("borrasca_sites_0497","World",world);var b=base(p);chunks.hold(out,BorrascaSites.bounds(b).inflate(2));BorrascaRooms.build(out,b);data().putDoor(new LabyrinthData.Door("borrasca/"+p.getUUID()+"/entry",HouseDimensions.OUTSIDE,BorrascaRooms.at(b,0,0,1),Direction.SOUTH,LabyrinthData.RETURN,false));p.setNoGravity(true);return p;}
         BlockPos home(){return LabyrinthPlaces.base(origin,LabyrinthPlace.JUNCTION).offset(0,0,-5);}
+        /**
+         * Run 1497: on a loaded runner a fresh site's entity sections took longer than a case's whole clock, which fast ticks spend in seconds.
+         * While they are not in, the server thread rests a little longer, so the clock covers real time.
+         */
+        boolean loaded(){boolean ready=chunks.ready();if(!ready)java.util.concurrent.locks.LockSupport.parkNanos(20_000_000L);return ready;}
         void enter(ServerPlayer p){var home=home();chunks.hold(in,new AABB(home).inflate(4));for(var at:BlockPos.betweenClosed(home.offset(-2,-1,-2),home.offset(2,-1,2)))in.setBlock(at,Blocks.STONE.defaultBlockState(),3);data().pushReturn(p.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.atBottomCenterOf(home),180,false));at(p,0,0,-3);VignetteGate.begin(p,P);LiteraryVignettes.onArrive(p,P);}
         void at(ServerPlayer p,double x,double y,double z){var b=base(p);var w=BorrascaRooms.world(new Vec3(x+.5,y,z+.5));p.teleportTo(out,b.getX()+w.x,b.getY()+w.y,b.getZ()+w.z,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);}
         void look(ServerPlayer p,BlockPos rel){p.lookAt(EntityAnchorArgument.Anchor.EYES,BorrascaRooms.at(base(p),rel).getCenter());}
@@ -126,7 +131,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_play",timeoutTicks=1800)
     public static void nellPlaysBeforeTheTreeAndTheTrailChildrenHaveMoreToSay(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_play");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
             .thenExecute(()->{f.enter(p);f.at(p,1,0,-18);})
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("MetFriend"),"Kelly starts the game at the trailhead"))
             .thenExecute(()->{
@@ -149,7 +154,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_motion",timeoutTicks=7200)
     public static void nativeChildAndTheOriginalFriendClimbTheActualFortWithoutRelocation(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("triple_tree_climber");final boolean[] moving={false};final int[] rises={0},friendRises={0},playerRoute={0};final double[] last={0,0};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"all original cast loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"all original cast loaded")).thenExecute(()->{
             var b=f.base(p);h.assertTrue(f.out.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.SOURCE)) instanceof LecternBlockEntity,"the content note is a native book");h.assertTrue(!f.out.noCollision(p,wbox(b,-4.8,6,-93.1,-4.2,7,-92.9)),"native fort rails join between posts");
             // Stage the approach only; both bodies must then climb by native collision and ladder physics.
             f.at(p,3,0,-83);p.setNoGravity(false);var a=f.actor(p,"CastKimber");a.moveTo(Vec3.atBottomCenterOf(BorrascaRooms.at(b,3,0,-86)),180,0);var own=f.own(p);own.putBoolean("MetFriend",true);own.putInt("ChildStep",3);f.save(p,own);last[0]=p.getY();last[1]=a.getY();moving[0]=true;
@@ -160,7 +165,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_low",timeoutTicks=1800)
     public static void theAdultBodyCrouchesThroughTheGullyAndTheReleasedServicePipe(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("fern_gully_adult");final int[] phase={0},steps={0};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenIdle(6).thenExecute(()->{h.assertTrue(p.getBbHeight()<1.1,"the initial native body is child height: "+p.getBbHeight());f.stage(p,3);}).thenIdle(6).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p)).thenIdle(6).thenExecute(()->{h.assertTrue(p.getBbHeight()<1.1,"the initial native body is child height: "+p.getBbHeight());f.stage(p,3);}).thenIdle(6).thenExecute(()->{
             var b=f.base(p);h.assertTrue(p.getBbHeight()>1.7,"the third visit restores adult height");Vec3 g0=BorrascaRooms.world(new Vec3(-15.8,3,-119.8)),g1=BorrascaRooms.world(new Vec3(-15.2,4.8,-119.2));var standing=new AABB(b.getX()+g0.x,b.getY()+g0.y,b.getZ()+g0.z,b.getX()+g1.x,b.getY()+g1.y,b.getZ()+g1.z);var low=new AABB(standing.minX,standing.minY,standing.minZ,standing.maxX,b.getY()+BorrascaRooms.world(new Vec3(-15.8,4.5,-119.8)).y,standing.maxZ);h.assertTrue(!f.out.noCollision(p,standing)&&f.out.noCollision(p,low),"the actual gully roof admits crouching and blocks standing");f.at(p,-16,2,-119);p.setNoGravity(false);p.setShiftKeyDown(true);p.setPose(Pose.CROUCHING);phase[0]=1;
         }).thenWaitUntil(()->h.assertTrue(phase[0]==3,"native crouched gully and service traversal: phase="+phase[0]+" body="+p.position().subtract(Vec3.atLowerCornerOf(f.base(p))))).thenExecute(()->h.assertTrue(steps[0]>25,"the adult walks continuously under both native roofs")).thenSucceed();
         h.onEachTick(()->{if(phase[0]==0||phase[0]==3)return;p.setShiftKeyDown(true);p.setPose(Pose.CROUCHING);if(phase[0]==1){var end=Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),-13,4,-128));var d=end.subtract(p.position());p.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));}else p.setYRot(f.rel(p,p).z< -207.6?90:180);p.travel(new Vec3(0,0,1));steps[0]++;
@@ -179,7 +184,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_four",timeoutTicks=6000)
     public static void fourConfirmedReturnsCarryTheOriginalAndRestoreTheScarWithoutASecondKind(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("name_beside_mine");var peer=f.player("earlier_reader");final UUID[] original={null};
-        var s=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both private native sites loaded")).thenExecute(()->{f.enter(p);f.enter(peer);}).thenWaitUntil(()->h.assertTrue(recalled(f,p),"original Friend loaded"));
+        var s=h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"both private native sites loaded")).thenExecute(()->{f.enter(p);f.enter(peer);}).thenWaitUntil(()->h.assertTrue(recalled(f,p),"original Friend loaded"));
         s.thenExecute(()->{original[0]=f.own(p).getUUID("CastKimber");f.read(p,BorrascaRooms.SOURCE,false);var own=f.own(p);own.putBoolean("FriendCarved",true);f.save(p,own);f.actor(p,"CastKimber").moveTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),1,0,-96)),180,0);f.use(p,BorrascaRooms.CARVING);h.assertTrue(f.own(p).getInt("Beat")==0,"bare hands cut no name");f.carve(p);h.assertTrue(f.own(p).getInt("Beat")==1,"the native carving seals the staged childhood pact");f.talk(p,"CastKimber");h.assertTrue(!BorrascaBelongings.has(p,f.own(p),BorrascaBelongings.KNIFE)&&f.own(p).getBoolean("KnifeBack"),"the knife goes back to her");var e=(BorrascaCarvingEntity)f.out.getBlockEntity(BorrascaRooms.at(f.base(p),BorrascaRooms.CARVING));h.assertTrue(e.reader().equals(p.getGameProfile().getName())&&e.friend().equals(BorrascaStory.FRIEND),"the bark holds this reader's actual name beside their Friend");f.leave(p);}).thenWaitUntil(()->h.assertTrue(f.home(p),"actual first return consumes its native destination"));
         s.thenWaitUntil(()->h.assertTrue(staged(p),"the actual entry preparation stages the originals while the reader is away: "+BorrascaCast.why(p))).thenExecute(()->{f.enter(p);h.assertTrue(f.own(p).getInt("Visit")==2&&f.own(p).getInt("ConfirmedVisits")==1,"only the confirmed first return advances childhood");}).thenWaitUntil(()->h.assertTrue(recalled(f,p),"same Friend recalled")).thenExecute(()->{
             f.talk(p,"CastKimber");h.assertTrue(!f.own(p).getBoolean("FollowAgain"),"the childhood trail notice cannot acknowledge the new second-visit content note");f.read(p,BorrascaRooms.SOURCE,false);h.assertTrue(f.own(p).getBoolean("Read_ContentNote"),"the new trailhead note is personally read before the taking route");f.talk(p,"CastKimber");var own=f.own(p);own.putInt("TakingStep",Integer.MAX_VALUE);f.save(p,own);f.actor(p,"CastKimber").moveTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),BorrascaRooms.TAKING)),180,0);f.at(p,-2,9,-147);p.setYRot(0);
@@ -197,7 +202,7 @@ public final class BorrascaTests {
 
     @GameTest(template="empty",batch="borrasca_private",timeoutTicks=1800)
     public static void savedOriginalCastAndBorrowedKeepsakesStayPrivateAcrossReload(GameTestHelper h){
-        var f=new Fixture(h);var p=f.player("pine_owner");var peer=f.player("pine_other");h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.enter(peer);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(peer).getBoolean("CastRecalled"),"both casts loaded")).thenExecute(()->{
+        var f=new Fixture(h);var p=f.player("pine_owner");var peer=f.player("pine_other");h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.enter(peer);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(peer).getBoolean("CastRecalled"),"both casts loaded")).thenExecute(()->{
             var a=f.actor(p,"CastKimber");var theirs=f.actor(peer,"CastKimber");h.assertTrue(!a.getUUID().equals(theirs.getUUID())&&a.broadcastToPlayer(p)&&!a.broadcastToPlayer(peer),"native entity tracking keeps the original cast private");var id=a.getUUID();var own=f.own(p);h.assertTrue(BorrascaBelongings.takeAt(p,own,"Patch",p.blockPosition()),"one original patch enters its owner's actual inventory");f.save(p,own);peer.getInventory().add(BorrascaBelongings.original(p,own,"Patch").copy());h.assertTrue(!BorrascaStory.carriesEvidence(peer,f.own(peer)),"a borrowed patch is no personal proof");var edited=BorrascaRooms.at(f.base(p),2,0,-12);f.out.setBlock(edited,Blocks.DIAMOND_BLOCK.defaultBlockState(),3);f.reload();LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p).getInt("Visit")==1&&f.own(p).getUUID("CastKimber").equals(id)&&f.out.getEntity(id)==a,"reload neither advances nor replaces the original");h.assertTrue(f.out.getBlockState(edited).is(Blocks.DIAMOND_BLOCK)&&BorrascaSites.prepareEntry(p)!=null,"ready sites preserve player edits");
         }).thenSucceed();
     }
@@ -210,13 +215,13 @@ public final class BorrascaTests {
 
     @GameTest(template="empty",batch="borrasca_interrupt",timeoutTicks=1800)
     public static void unconfirmedDeparturesAndStagedFinalFlagsCannotBecomeWitnesses(GameTestHelper h){
-        var f=new Fixture(h);var p=f.player("pine_interrupt");h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);var own=f.own(p);own.putInt("Beat",1);f.save(p,own);BorrascaStory.depart(p);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p).getInt("Visit")==1&&f.own(p).getInt("ConfirmedVisits")==0,"departure intent without successful travel cannot confirm or advance a visit");f.reload();f.stage(p,4);own=f.own(p);own.putInt("Beat",3);own.putBoolean("PowerOff",true);own.putBoolean("EvidenceRead",true);own.putBoolean("Ready",true);BorrascaBelongings.takeAt(p,own,"Patch",p.blockPosition());f.save(p,own);f.leave(p);}).thenWaitUntil(()->h.assertTrue(f.home(p),"actual staged fourth-visit return")).thenExecute(()->h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA)&&!f.own(p).getBoolean("Completed"),"final flags and a real original cannot replace three confirmed earlier returns")).thenSucceed();
+        var f=new Fixture(h);var p=f.player("pine_interrupt");h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);var own=f.own(p);own.putInt("Beat",1);f.save(p,own);BorrascaStory.depart(p);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p).getInt("Visit")==1&&f.own(p).getInt("ConfirmedVisits")==0,"departure intent without successful travel cannot confirm or advance a visit");f.reload();f.stage(p,4);own=f.own(p);own.putInt("Beat",3);own.putBoolean("PowerOff",true);own.putBoolean("EvidenceRead",true);own.putBoolean("Ready",true);BorrascaBelongings.takeAt(p,own,"Patch",p.blockPosition());f.save(p,own);f.leave(p);}).thenWaitUntil(()->h.assertTrue(f.home(p),"actual staged fourth-visit return")).thenExecute(()->h.assertTrue(!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA)&&!f.own(p).getBoolean("Completed"),"final flags and a real original cannot replace three confirmed earlier returns")).thenSucceed();
     }
 
     @GameTest(template="empty",batch="borrasca_missing",timeoutTicks=1800)
     public static void olderNativeFriendNbtCannotReviveTheMissingOriginalOrDuplicateHerCompass(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_missing");final CompoundTag[] before={null};final UUID[] id={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Friend loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Friend loaded")).thenExecute(()->{
             var a=f.actor(p,"CastKimber");before[0]=a.saveWithoutId(new CompoundTag());id[0]=a.getUUID();a.discard();var own=f.own(p);own.putInt("Visit",2);own.putBoolean("FriendMissing",true);own.putBoolean("FriendHidden",true);h.assertTrue(BorrascaBelongings.dropOnce(p,own,"Compass",BorrascaRooms.at(f.base(p),BorrascaRooms.DROP)),"one physical original drops");f.save(p,own);f.reload();
         }).thenIdle(3).thenExecute(()->{
             var a=LiteraryRegistry.ACTOR.get().create(f.out);a.load(before[0]);h.assertTrue(f.out.addFreshEntity(a),"the same UUID returns from genuinely older native entity NBT");h.assertTrue(a.getUUID().equals(id[0])&&a.phase()==BorrascaStory.MISSING&&a.isInvisible()&&a.getOffhandItem().isEmpty(),"saved missing state wins before native tracking");var own=f.own(p);h.assertTrue(!BorrascaBelongings.dropOnce(p,own,"Compass",BorrascaRooms.at(f.base(p),BorrascaRooms.DROP)),"reload cannot issue a second original");long count=f.out.getEntitiesOfClass(ItemEntity.class,BorrascaSites.bounds(f.base(p))).stream().filter(e->BorrascaBelongings.valid(p,own,"Compass",e.getItem())).count();h.assertTrue(count==1,"exactly one original compass survives as a native item entity");f.save(p,own);f.talk(p,"CastKimber");h.assertTrue(!f.own(p).getBoolean("FollowAgain"),"the missing Friend does not answer or resume the taking");
@@ -226,7 +231,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_custody",timeoutTicks=1800)
     public static void denialWorksWithoutTheCompassAndConfiscationReturnsTheSameOriginal(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_compass");final ItemStack[] exact={null};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original adult Sheriff loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original adult Sheriff loaded")).thenExecute(()->{
             f.talk(p,"CastSheriff");h.assertTrue(f.own(p).getBoolean("HeardDenial")&&f.actor(p,"CastSheriff").getCustomName().getString().contains("Marker Three"),"he gives away Marker Three even with no compass");var own=f.own(p);BorrascaBelongings.takeAt(p,own,"Compass",p.blockPosition());exact[0]=BorrascaBelongings.remove(p,own,"Compass");p.setItemInHand(InteractionHand.MAIN_HAND,exact[0]);f.save(p,own);f.talk(p,"CastSheriff");h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"holding the real compass opens the native handover choice");p.containerMenu.clicked(0,0,ClickType.PICKUP,p);p.closeContainer();h.assertTrue(f.own(p).getBoolean("CompassConfiscated")&&!BorrascaBelongings.has(p,f.own(p),"Compass"),"handover transfers the actual inventory stack");f.reload();f.stage(p,4);f.use(p,BorrascaRooms.PACK);var after=f.own(p);h.assertTrue(BorrascaBelongings.has(p,after,"Compass")&&!after.contains("ConfiscatedCompass"),"the original is recovered at the sorting table after reload");var found=p.getInventory().items.stream().filter(a->BorrascaBelongings.valid(p,after,"Compass",a)).findFirst().orElse(ItemStack.EMPTY);h.assertTrue(ItemStack.isSameItemSameComponents(exact[0],found),"all components of the confiscated compass remain exact");
         }).thenSucceed();
     }
@@ -244,7 +249,7 @@ public final class BorrascaTests {
         // Walk around the visible timber ends. Direct pursuit cuts inside a corner once
         // the friend has rounded it; a human reader can see and take these clear passages.
         var timberEnds=new BlockPos[]{new BlockPos(6,2,-114),new BlockPos(6,3,-117),new BlockPos(1,6,-131),new BlockPos(1,6,-134)};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);p.setYRot(0);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Friend recalled off camera for explicit second-visit staging")).thenExecute(()->{assertTakingSightline(f,p);f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");id[0]=f.actor(p,"CastKimber").getUUID();f.at(p,1,0,-72);p.setNoGravity(false);previous[0]=f.actor(p,"CastKimber").position();walking[0]=true;}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendMissing"),"the real Friend and child walk the second route, shelter and reach the taking: body="+p.position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" friend="+f.actor(p,"CastKimber").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step="+f.own(p).getInt("TakingStep"))).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);p.setYRot(0);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Friend recalled off camera for explicit second-visit staging")).thenExecute(()->{assertTakingSightline(f,p);f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");id[0]=f.actor(p,"CastKimber").getUUID();f.at(p,1,0,-72);p.setNoGravity(false);previous[0]=f.actor(p,"CastKimber").position();walking[0]=true;}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendMissing"),"the real Friend and child walk the second route, shelter and reach the taking: body="+p.position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" friend="+f.actor(p,"CastKimber").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step="+f.own(p).getInt("TakingStep"))).thenExecute(()->{
             walking[0]=false;var own=f.own(p);h.assertTrue(own.getBoolean("Sheltered6")&&own.getBoolean("Sheltered10")&&moved[0]>100,"both actual crouched shelter beats precede the taking after continuous native walking");h.assertTrue(f.actor(p,"CastKimber").getUUID().equals(id[0])&&own.getBoolean("CompassIssued"),"the same original departs and drops her finite compass");long originals=f.out.getEntitiesOfClass(ItemEntity.class,BorrascaSites.bounds(f.base(p))).stream().filter(e->BorrascaBelongings.valid(p,own,"Compass",e.getItem())).count();h.assertTrue(originals+(BorrascaBelongings.has(p,own,"Compass")?1:0)==1,"one physical original remains after the look-away taking");
         }).thenSucceed();
         h.onEachTick(()->{
@@ -318,7 +323,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_wire",timeoutTicks=3000)
     public static void nobodyJumpsTheWireFromTheGroundOutsideIt(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_jumper");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{
             var b=f.base(p);var cells=walkable(f.out,b,BorrascaRooms.at(b,0,0,-2),.95);
             var wire=BorrascaRooms.at(b,-30,15,-190);var s=f.out.getBlockState(wire);
             h.assertTrue(s.is(BorrascaRegistry.FITTING.get()),"the wire's top run is where it was built: "+s);
@@ -340,7 +345,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_sealed",timeoutTicks=3000)
     public static void theRefineryIsSealedFromTheWoodsUntilTheLastNight(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_explorer");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{
             var b=f.base(p);var child=walkable(f.out,b,BorrascaRooms.at(b,0,0,-2),.95);
             h.assertTrue(reaches(child,b,BorrascaRooms.TAKING,2)&&reaches(child,b,new BlockPos(5,12,-164),2.5),"a child can walk anywhere on the mountain, up to the wire and look through it");
             Map<String,BlockPos> inside=new LinkedHashMap<>();inside.put("the machine",new BlockPos(0,12,-185));inside.put("the breaker",BorrascaRooms.POWER);inside.put("the receipt",BorrascaRooms.EVIDENCE);inside.put("the sorting table",BorrascaRooms.PACK);inside.put("the service tunnel",new BlockPos(-23,12,-208));
@@ -358,7 +363,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_ahead_pact",timeoutTicks=6000)
     public static void aReaderWhoRunsToTheTreeFirstStillMakesThePactThere(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_ahead");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
             .thenExecute(()->{f.at(p,1,6,-92);f.refresh(p);h.assertTrue(f.own(p).getBoolean("TreeReached")&&f.own(p).getBoolean("CalledAfter"),"the reader is in the fort before meeting her, and she calls after them");})
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("KimberAtFort"),"she comes up to the Tree on her own: "+f.actor(p,"CastKimber").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step="+f.own(p).getInt("ChildStep")))
             .thenExecute(()->{
@@ -394,7 +399,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_ahead_taking",timeoutTicks=5200)
     public static void aReaderWaitingAtTheClearingStillLosesHerThere(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_waiting");final double[] closest={99,99};final boolean[] watching={false};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the friend is at the first marker"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the friend is at the first marker"))
             .thenExecute(()->{f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");h.assertTrue(f.own(p).getBoolean("FollowAgain"),"she sets off");f.at(p,0,9,-146);p.setYRot(180);watching[0]=true;})
             .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Shelter6")>=60&&f.own(p).getInt("Shelter10")>=60,"she shelters at both timbers on her own when the noise comes: step="+f.own(p).getInt("TakingStep")))
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendMissing"),"she reaches the clearing where the reader is waiting, and is taken there: friend="+f.actor(p,"CastKimber").position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" step="+f.own(p).getInt("TakingStep")))
@@ -413,7 +418,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_strokes",timeoutTicks=3200)
     public static void theMenComeDownTheRidgeRoadToThreeStrokesAndLeadHerOut(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_strokes");final double[] maxStep={0},gentFurther={-99};final Vec3[] last={null,null};final boolean[] watching={false},gentSeen={false};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is placed"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is placed"))
             .thenExecute(()->{
                 h.assertTrue(f.actor(p,"Worker0").phase()==BorrascaStory.WORKER&&f.actor(p,"Worker1").phase()==BorrascaStory.WORKER+1,"each of the two men has his own face");
                 f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");var own=f.own(p);own.putInt("TakingStep",Integer.MAX_VALUE);f.save(p,own);
@@ -437,7 +442,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_gentleman",timeoutTicks=1800)
     public static void theShinyGentlemanStandsInThePinesWhenTheNoiseComes(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_gentleman");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
             var road=BorrascaRooms.trail(-126);f.at(p,road.getX(),road.getY(),road.getZ());p.setYRot(180);p.setXRot(-8);f.refresh(p);var own=f.own(p);
             var at=BorrascaStory.gentleman(own);h.assertTrue(own.getBoolean("PastTwo1")&&at!=null,"a child past the second marker hears the noise, and he is there: ticks "+own.getInt("GentTicks")+", echoes "+own.getInt("Echoes"));
             var head=at.add(0,BorrascaStory.GENT_HEIGHT-.4,0);double d=head.distanceTo(p.getEyePosition());
@@ -458,7 +463,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_lower",timeoutTicks=1800)
     public static void theRoomsUnderTheDepotHoldWhatTheNoteWarnedOf(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_lower");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the last night")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the last night")).thenExecute(()->{
             var b=f.base(p);var l=f.out;
             h.assertTrue(l.getBlockState(BorrascaRooms.at(b,BorrascaRooms.HATCH)).getBlock() instanceof TrapDoorBlock&&l.getBlockState(BorrascaRooms.at(b,-19,8,-202)).is(Blocks.LADDER)&&l.getBlockState(BorrascaRooms.at(b,-19,7,-190)).isAir(),"a hatch in the back room's floor, a ladder down, a corridor");
             for(int room=1;room<=12;room++){var door=l.getBlockState(BorrascaRooms.at(b,BorrascaRooms.roomDoor(room)));var lever=l.getBlockState(BorrascaRooms.at(b,BorrascaRooms.roomLever(room)));
@@ -490,7 +495,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_any_route",timeoutTicks=1800)
     public static void theGougeIsSeenByLookingAndAnyUnseenRouteReachesTheWire(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_any_route");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the adult cast is in place")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the adult cast is in place")).thenExecute(()->{
             f.at(p,0,0,-93);f.look(p,BorrascaRooms.CARVING);f.refresh(p);h.assertTrue(f.own(p).getBoolean("GougeSeen"),"looking at the bark is enough to see the gouge");
             f.atWorld(p,BorrascaRooms.trailWorld((int)Math.round(BorrascaRooms.worldZ(BorrascaRooms.SHERIFF.getZ()))+10));f.look(p,BorrascaRooms.SHERIFF);f.refresh(p);var sheriff=f.actor(p,"CastSheriff");
             h.assertTrue(f.own(p).getBoolean("HeardDenial")&&sheriff.getCustomName()!=null&&sheriff.getCustomName().getString().contains("Marker Three"),"he gives himself away as soon as he sees the reader, ten blocks off");
@@ -523,7 +528,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_town",timeoutTicks=1800)
     public static void theTownFortAndDepotAreRealBuildingsAndTheTownsPapersChangeBetweenVisits(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("drisking_reader");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original cast loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original cast loaded")).thenExecute(()->{
             var b=f.base(p);
             h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,7,1,-6)).is(BorrascaRegistry.FITTING.get())&&f.out.getBlockState(BorrascaRooms.at(b,0,6,-6)).getBlock() instanceof SlabBlock&&f.out.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.SOURCE)) instanceof LecternBlockEntity,"the reader arrives inside the trailhead station, under its roof, with the trail notice");
             for(int z=-3;z>=-14;z--)h.assertTrue(clear(f,p,b,0,0,z),"the station aisle and doorway stay open at z "+z);
@@ -587,7 +592,7 @@ public final class BorrascaTests {
         java.util.function.IntFunction<LiteraryActor> keeper=phase->BorrascaPeople.keeper(p,f.own(p),phase);
         java.util.function.BiFunction<Integer,BorrascaPeople.Ware,String> buy=(phase,ware)->{var own=f.own(p);var line=BorrascaPeople.buy(p,own,keeper.apply(phase),ware);f.save(p,own);return line;};
         java.util.function.Function<net.minecraft.world.item.Item,Integer> count=item->p.getInventory().countItem(item);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p))
           .thenWaitUntil(()->{for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.EARL;k++)h.assertTrue(keeper.apply(k)!=null,"keeper "+k+" stands at the counter");})
           .thenWaitUntil(()->h.assertTrue(BorrascaPeople.carried(p,false)!=null,"the child has change in a pocket"))
           .thenExecute(()->{
@@ -652,7 +657,7 @@ public final class BorrascaTests {
         java.util.function.IntFunction<LiteraryActor> person=phase->BorrascaPeople.keeper(p,f.own(p),phase);
         java.util.function.Function<String,BorrascaPayphone.Call> dial=number->{var own=f.own(p);var call=BorrascaPayphone.dial(p,own,number);f.save(p,own);return call;};
         java.util.function.Function<BorrascaPayphone.Call,String> said=call->String.join(" ",call.lines());
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p))
           .thenWaitUntil(()->{h.assertTrue(f.own(p).getBoolean("CastRecalled"),"cast recalled");for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.MERLE;k++)h.assertTrue(person.apply(k)!=null,"everyone in town is placed: "+k);})
           .thenWaitUntil(()->h.assertTrue(BorrascaPeople.carried(p,false)!=null,"the child has change"))
           .thenExecute(()->{
@@ -704,7 +709,7 @@ public final class BorrascaTests {
     public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_town");
         var eliPoster=new BlockPos(-15,1,-24);var wrenPoster=new BlockPos(-15,1,-22);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
           .thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"town cast recalled"))
           .thenExecute(()->{
               f.talk(p,"TownEli");f.talk(p,"TownWren");
@@ -734,7 +739,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_sheriff_patrol",timeoutTicks=2400)
     public static void theFourthVisitSheriffPatrolsFightsBackAndCanBeBeatenDownAndKilled(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_patrol");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
           .thenExecute(()->{f.enter(p);f.stage(p,4);f.at(p,0,12,-170);})
           .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"fourth visit cast recalled"))
           .thenWaitUntil(()->h.assertTrue(f.rel(f.actor(p,"CastSheriff"),p).z< -176,"the sheriff walks his yard route"))
@@ -769,7 +774,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_retribution",timeoutTicks=3000)
     public static void aChildCannotHurtTheSheriffButGrownTheReaderCanKillHimAndTheTownKnows(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_retribution");
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p))
           .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"first visit cast recalled"))
           .thenExecute(()->{
               var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+1.6,a.getY(),a.getZ(),90,0);
@@ -810,7 +815,7 @@ public final class BorrascaTests {
         java.util.function.Consumer<Integer> clock=c->{var own=f.own(p);own.putInt("TownClock",c);f.save(p,own);};
         Runnable away=()->{f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);};
         final int[] firstLeg={-1};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p))
           .thenWaitUntil(()->{h.assertTrue(f.own(p).getBoolean("CastRecalled"),"cast recalled");for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.CARRIER;k++)h.assertTrue(person.apply(k)!=null,"everyone in town is placed: "+k);})
           .thenExecute(()->{
             var rowe=person.apply(BorrascaPeople.ROWE);var b=f.base(p);
@@ -866,7 +871,7 @@ public final class BorrascaTests {
     @GameTest(template="empty",batch="borrasca_escort",timeoutTicks=1800)
     public static void flashlightObeysSolidCoverAndTheSheriffEnforcesTheTape(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_escort");final int[] phase={0},still={0},moved={0};final Vec3[] previous={Vec3.ZERO};
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Sheriff loaded")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,3);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original Sheriff loaded")).thenExecute(()->{
             var a=f.actor(p,"CastSheriff");f.atWorld(p,BorrascaRooms.trailWorld((int)Math.round(a.getZ()-f.base(p).getZ())+8));Vec3 d=p.getEyePosition().subtract(a.getEyePosition());float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z));h.assertTrue(BorrascaStory.flashlightSees(a,p,yaw),"the actual eye ray and cone see the reader: sheriff="+a.position()+" reader="+p.position());var cover=BlockPos.containing(a.getEyePosition().add(d.scale(.5)));f.out.setBlock(cover,Blocks.STONE.defaultBlockState(),3);h.assertTrue(!BorrascaStory.flashlightSees(a,p,yaw),"solid native cover blocks the flashlight");f.out.setBlock(cover,Blocks.AIR.defaultBlockState(),3);
             var own=f.own(p);own.putInt("TrailClock",20);h.assertTrue(BorrascaStory.masking(own),"the dust pulse masks footsteps");own.putInt("TrailClock",90);h.assertTrue(!BorrascaStory.masking(own),"quiet intervals expose footsteps");
             own.putInt("Suspicion",10);own.putFloat("BeamYaw",37);h.assertTrue(BorrascaStory.flashlightYaw(own)==37,"once it has found someone the beam holds on them");own.putInt("Suspicion",0);h.assertTrue(BorrascaStory.flashlightYaw(own)!=37||true,"and sweeps again once they are out of it");

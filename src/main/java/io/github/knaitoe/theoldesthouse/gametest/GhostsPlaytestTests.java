@@ -24,7 +24,8 @@ public final class GhostsPlaytestTests {
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static LiteraryActor actor(LiteraryTests.Fixture f,ServerPlayer p,int role){return f.in.getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(f.base(P),P),a->a.role()==role&&a.owner().filter(p.getUUID()::equals).isPresent()).stream().findFirst().orElse(null);}
     private static void save(LiteraryTests.Fixture f,ServerPlayer p,CompoundTag own){LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}
-    private static void scene(LiteraryTests.Fixture f,ServerPlayer p,int day,int clock){var own=f.own(p,P);own.putInt("FilmDay",day);own.putInt("ShotClock",clock);own.putBoolean("Rolling",true);own.putBoolean("DayDone",false);own.putBoolean("CastPlaced",false);save(f,p,own);}
+    /** Run 1497: a slow cast load let a pre-take errand begin, and the called take then waited on it; a staged scene starts with nobody out. */
+    private static void scene(LiteraryTests.Fixture f,ServerPlayer p,int day,int clock){var own=f.own(p,P);own.putInt("FilmDay",day);own.putInt("ShotClock",clock);own.putBoolean("Rolling",true);own.putBoolean("DayDone",false);own.putBoolean("CastPlaced",false);own.remove(GhostsErrands.KEY);save(f,p,own);}
     private static boolean resident(LiteraryTests.Fixture f,ServerPlayer p){return f.chunks.ready()&&Arrays.stream(GhostsSet.ROLES).allMatch(r->actor(f,p,r)!=null);}
 
     @GameTest(template="empty",batch="ghosts_camera_words318",timeoutTicks=1800)
