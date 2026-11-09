@@ -278,6 +278,27 @@ public final class LabyrinthData extends SavedData {
         return mix(hash, place.id());
     }
 
+    /**
+     * 0.4.402: the key for a place reached by the given way back, bottom (first crossing) first, exactly as {@link #nodeKey} computes it
+     * for a reader whose way back that is (TeleportAnchor: a reader taken to a friend takes up the friend's way through the House).
+     */
+    public static long routeKey(List<Waypoint> bottomFirst, LabyrinthPlace place) {
+        long hash = 0xcbf29ce484222325L;
+        for (Waypoint point : bottomFirst) {
+            hash = mix(hash, point.dimension().location().toString());
+            hash = mix(hash, Long.toString(BlockPos.containing(point.pos()).asLong()));
+        }
+        return mix(hash, place.id());
+    }
+
+    /** 0.4.402: this reader's way back becomes a copy of another's (TeleportAnchor). */
+    public void adoptReturns(UUID from, UUID to) {
+        Deque<Waypoint> theirs = returns.get(from);
+        if (theirs == null || theirs.isEmpty()) returns.remove(to);
+        else returns.put(to, new ArrayDeque<>(theirs));
+        setDirty();
+    }
+
     /** The exact key a confirmed forward crossing would create, without mutating its return stack. */
     public long arrivalKey(UUID player, LabyrinthPlace place, Waypoint source) {
         long hash = 0xcbf29ce484222325L;
