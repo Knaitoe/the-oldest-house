@@ -31,13 +31,15 @@ import net.minecraft.world.phys.shapes.*;
  * CROCKERY, the diner's shelf of plates, mugs and bowls. They replace the shelves that read as bookcases.</li>
  * <li>0.4.431: BIKE, a child's bike: Kendra's on its kickstand (stage 0), Patrick's dropped on its side (stage 1). It runs past the
  * block at both ends and nothing bumps into it.</li>
+ * <li>0.4.436: CABINET and CABINET_TOP, the drugstore's arcade cabinets (BorrascaArcade), lower and upper halves; the stage is the
+ * game: 0 DEEP SEAM, 1 BIG CAT. The screen in the upper half glows a little.</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<BorrascaShopBlock> CODEC=simpleCodec(BorrascaShopBlock::new);
     public enum Kind implements StringRepresentable {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
-        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE;
+        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, behind the model's south face. */
         public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,OPEN,CALENDAR,BAIT_SIGN->true;default->false;};}
@@ -48,7 +50,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return BorrascaRegistry.SHOP.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(1,stage)));}
     public static boolean is(BlockState s,Kind kind){return s.is(BorrascaRegistry.SHOP.get())&&s.getValue(KIND)==kind;}
-    static int light(BlockState s){return s.getValue(KIND)==Kind.OPEN?7:s.getValue(KIND)==Kind.PUMP_TOP?5:0;}
+    static int light(BlockState s){return s.getValue(KIND)==Kind.OPEN?7:s.getValue(KIND)==Kind.PUMP_TOP||s.getValue(KIND)==Kind.CABINET_TOP?5:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -77,12 +79,14 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case BAIT_SIGN->MarshBlock.turned(f,0,0,14,16,16,16);
             case TIRES->Block.box(1,0,1,15,12,15);
             case BIKE->s.getValue(STAGE)==0?MarshBlock.turned(f,0,0,6,16,14,10):MarshBlock.turned(f,0,0,2,16,6,16);
+            case CABINET->MarshBlock.turned(f,1,0,0,15,16,16);
+            case CABINET_TOP->MarshBlock.turned(f,1,0,3,15,16,16);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY->getShape(s,l,p,c);
+            case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY,CABINET,CABINET_TOP->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }

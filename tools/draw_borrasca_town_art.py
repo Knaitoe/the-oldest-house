@@ -724,6 +724,106 @@ def bike_cranks():
     return parts
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.436: the drugstore's arcade cabinets
+def cab_side(game):
+    """A cabinet's side: DEEP SEAM's coal black with a slanting lamp-yellow band, BIG CAT's river green with a wavy band of water."""
+    if game == 0:
+        im = new('#17130f', 43601, 3)
+        for x in range(16):
+            for w in range(3):
+                dot(im, x, (12 - x // 2 + w) % 16, '#d8a42a' if w < 2 else '#8a6418')
+        fill(im, 3, 3, 6, 6, '#f0d070'); dot(im, 4, 2, '#5a5040'); dot(im, 4, 6, '#a07a20')
+    else:
+        im = new('#173a2a', 43602, 3)
+        for x in range(16):
+            y = 10 + (1 if (x // 3) % 2 else 0)
+            dot(im, x, y, '#3e7ea8'); dot(im, x, y + 1, '#2c5e84'); dot(im, x, y + 2, '#1e4462')
+        for x, y in ((4, 4), (5, 4), (6, 5), (3, 5)):
+            dot(im, x, y, '#c0b890')
+    fill(im, 0, 0, 16, 1, '#0c0a08'); fill(im, 0, 15, 16, 16, '#0c0a08')
+    return im
+
+
+def cab_coin():
+    """The coin door under the controls: a steel plate, two lit coin slots, the return buttons and a scuffed kick plate."""
+    im = new('#1c1c20', 43603, 2)
+    fill(im, 3, 2, 13, 11, '#4a4c54'); frame(im, '#2a2a30', 3, 2, 13, 11)
+    for x0 in (4, 9):
+        fill(im, x0, 4, x0 + 3, 7, '#c8601c'); fill(im, x0 + 1, 4, x0 + 2, 7, '#1a1010'); dot(im, x0 + 1, 8, '#a0a0a8')
+    fill(im, 2, 12, 14, 16, '#2a2a30')
+    for x in (4, 9, 12):
+        dot(im, x, 13, '#4a4a52')
+    return im
+
+
+def cab_panel():
+    """The control panel's top: worn black with the player's spot rubbed lighter."""
+    im = new('#141416', 43604, 2)
+    fill(im, 2, 3, 8, 9, '#1e1e22')
+    for x in range(16):
+        dot(im, x, 0, '#2a2a30')
+    return im
+
+
+def cab_screen(game):
+    """The screen in its bezel, as a passer-by sees it glowing: DEEP SEAM's cart on its rails, BIG CAT's boat and the line."""
+    im = new('#0a0a0c', 43605 + game, 1)
+    fill(im, 1, 1, 15, 13, '#000000')
+    if game == 0:
+        for y in (5, 8, 11):
+            fill(im, 2, y, 14, y + 1, '#7a7c80')
+        fill(im, 4, 6, 7, 8, '#4a4e56'); dot(im, 7, 7, '#ffe8a0'); fill(im, 10, 3, 11, 5, '#f0c048')
+        for x, y in ((2, 2), (12, 2), (8, 12)):
+            dot(im, x, y, '#3a2a18')
+    else:
+        fill(im, 1, 1, 15, 4, '#0e1430'); dot(im, 12, 2, '#e8e4c8')
+        fill(im, 1, 4, 15, 13, '#06243a'); fill(im, 1, 4, 15, 5, '#6080a0')
+        fill(im, 6, 3, 10, 4, '#5a4630')
+        for i in range(6):
+            dot(im, 10 + i // 3, 3 + i, '#c0c0c0')
+        fill(im, 3, 10, 7, 12, '#6a5e50'); dot(im, 2, 11, '#9a8e7e')
+    fill(im, 0, 13, 16, 16, '#1a1a1e')
+    return im
+
+
+def cab_marquee(game):
+    """The lit marquee over the screen: a lamp over crossed picks for DEEP SEAM, a catfish with its whiskers for BIG CAT."""
+    if game == 0:
+        im = new('#1a120a', 43607, 2)
+        fill(im, 0, 0, 16, 16, '#d89a22')
+        fill(im, 1, 1, 15, 15, '#2a1a0c')
+        for i in range(10):  # two picks crossed behind the lamp
+            dot(im, 3 + i, 3 + i, '#c8c8c8'); dot(im, 3 + i, 12 - i, '#c8c8c8')
+        fill(im, 6, 5, 10, 10, '#ffe080'); fill(im, 7, 4, 9, 5, '#5a5040'); fill(im, 6, 10, 10, 11, '#8a6418')
+    else:
+        im = new('#0e2a20', 43608, 2)
+        fill(im, 0, 0, 16, 16, '#58c0a0')
+        fill(im, 1, 1, 15, 15, '#0e2a30')
+        fill(im, 3, 6, 12, 10, '#9a8e7e'); fill(im, 12, 7, 14, 9, '#9a8e7e'); fill(im, 1, 5, 3, 11, '#7a6e5e')
+        dot(im, 4, 7, '#101010')
+        for x in (2, 3):
+            dot(im, x - 1, 9 + (3 - x), '#c8c0a8'); dot(im, x - 1, 10 + (3 - x), '#c8c0a8')
+        fill(im, 3, 12, 13, 13, '#3e7ea8')
+    return im
+
+
+def cabinet_models(m):
+    """The two halves of each cabinet. The lower: the coin door under a deep control panel, with the stick and two buttons. The
+    upper: the screen set back in its bezel, under the lit marquee. Both face north, as authored, into the shop."""
+    for game in (0, 1):
+        tex = {'s': f'cab_side_{game}', 'k': 'black', 'c': 'cab_coin', 'p': 'cab_panel', 'r': 'cab_red', 'y': 'cab_yellow',
+               'v': f'cab_screen_{game}', 'q': f'cab_marquee_{game}'}
+        full = {'north': [0, 0, 16, 16]}
+        lower = [element([1, 0, 3], [15, 11, 16], {'north': 'c', 'south': 'k', 'east': 's', 'west': 's', 'up': 'k', 'down': 'k'}, full),
+                 element([1, 11, 0], [15, 14, 16], {'north': 'k', 'south': 'k', 'east': 's', 'west': 's', 'up': 'p', 'down': 'k'}),
+                 element([4, 14, 3], [5, 16.5, 4], {'all': 'k'}), element([3.5, 16.5, 2.5], [5.5, 18, 4.5], {'all': 'r'}),
+                 element([8, 14, 2.5], [9.5, 14.6, 4], {'all': 'r'}), element([10.5, 14, 2.5], [12, 14.6, 4], {'all': 'y'})]
+        upper = [element([1, 0, 5], [15, 12, 16], {'north': 'v', 'south': 'k', 'east': 's', 'west': 's', 'up': 'k', 'down': 'k'}, full),
+                 element([1, 12, 3], [15, 16, 16], {'north': 'q', 'south': 'k', 'east': 's', 'west': 's', 'up': 'k', 'down': 'k'}, full)]
+        m[f'cabinet_{game}'] = model(lower, tex, f'cab_side_{game}')
+        m[f'cabinet_top_{game}'] = model(upper, tex, f'cab_side_{game}')
+
+
 def lying(parts):
     """The same bike dropped on its side: the wheels' plane laid flat a little off the ground, the near grip and pedal down in the grass."""
     out = []
@@ -755,6 +855,9 @@ def textures():
         'bait_sign': bait_sign(), 'tire': tire(), 'tire_top': tire_top(),
         'tins': tins(), 'boxes': boxes(), 'sack': sack(), 'plate': plate(), 'mug': mug(),
         'bike_paint': bike_paint(), 'bike_seat': bike_seat(),
+        'cab_side_0': cab_side(0), 'cab_side_1': cab_side(1), 'cab_coin': cab_coin(), 'cab_panel': cab_panel(),
+        'cab_screen_0': cab_screen(0), 'cab_screen_1': cab_screen(1), 'cab_marquee_0': cab_marquee(0), 'cab_marquee_1': cab_marquee(1),
+        'cab_red': new('#c8281c', 43609, 3), 'cab_yellow': new('#e8c030', 43610, 3),
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
@@ -885,6 +988,7 @@ def shop_models():
     m['bike_frame'] = model(bike_parts(wheels=False, standing=False), bike, 'bike_paint')
     m['bike_wheel'] = model(bike_wheel(), bike, 'tire')
     m['bike_cranks'] = model(bike_cranks(), bike, 'chrome')
+    cabinet_models(m)
     return m
 
 
@@ -1016,8 +1120,8 @@ ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wal
 
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
          'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open',
-         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike']
-STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'bike': 2}
+         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
 

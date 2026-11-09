@@ -100,6 +100,10 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_lower") public static void lowerDone(ServerLevel l){cleanup();}
     /** Run 1411: without this the strokes case left its reader standing at the shared site, watching the taking, so the next case's cast was never unwatched. */
     @AfterBatch(batch="borrasca_strokes") public static void strokesDone(ServerLevel l){cleanup();}
+    // Run 1498: the wire case had no cleanup, so its reader stayed logged in on the real world and another suite's empty-world case failed.
+    @AfterBatch(batch="borrasca_wire") public static void wireDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_registration") public static void registrationDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_arcade_rules") public static void arcadeRulesDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="borrasca_diagnostics")
     public static void preEntrySocketDiagnosticsNeverGeneratePrivateCoordinatesInEitherDimension(GameTestHelper h){
@@ -566,6 +570,69 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
     @AfterBatch(batch="borrasca_bike_balance") public static void bikeBalanceDone(ServerLevel l){cleanup();}
+
+    /**
+     * 0.4.436 (the owner: "It should have its own arcade games, don't recycle"): the drugstore's two cabinets stand by its south wall.
+     * A play takes a quarter from the child's own money, and none is taken from a child who has none. The server keeps only what the
+     * game scores when it is played again from the screen's keys, and refuses a log longer than the session has been open. The table
+     * starts with the town's children's initials, Patrick's at the top.
+     */
+    @GameTest(template="empty",batch="borrasca_arcade",timeoutTicks=1800)
+    public static void theDrugstoreCabinetsPlayTheirOwnGames(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_arcade");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
+              var b=f.base(p);
+              for(int game=0;game<2;game++){var low=f.out.getBlockState(b.offset(BorrascaShops.CABINETS[game]));var top=f.out.getBlockState(b.offset(BorrascaShops.CABINETS[game]).above());
+                  h.assertTrue(BorrascaShopBlock.is(low,BorrascaShopBlock.Kind.CABINET)&&BorrascaShopBlock.is(top,BorrascaShopBlock.Kind.CABINET_TOP)&&BorrascaArcade.game(low)==game&&BorrascaArcade.game(top)==game,"cabinet "+game+" stands in the drugstore, both halves");}
+              var own=f.own(p);
+              h.assertTrue(BorrascaArcade.table(own,BorrascaArcade.SEAM).get(0)[0].equals("PAT"),"Patrick's initials are at the top of the mine game before the reader plays");
+              int cents=own.getInt("Cents");
+              h.assertTrue(BorrascaStory.click(p,b,BorrascaShops.CABINETS[BorrascaArcade.SEAM].above(),own),"the screen half answers a click");f.save(p,own);
+              var first=BorrascaArcade.session(p.getUUID());h.assertTrue(first!=null&&first.game()==BorrascaArcade.SEAM,"a quarter in starts DEEP SEAM");
+              h.assertTrue(f.own(p).getInt("Cents")==cents-BorrascaArcade.PRICE,"and the quarter comes out of the reader's money");
+              // A cart nobody steers: the keys held on every tick, as runs, are all the server is sent.
+              var g=BorrascaArcade.of(BorrascaArcade.SEAM,first.token(),null);int ticks=0;while(!g.over()&&ticks<BorrascaArcade.LONGEST[0]){g.tick(0);ticks++;}
+              h.assertTrue(g.over(),"a cart nobody steers comes to grief");
+              h.assertTrue(!BorrascaArcade.submit(p,first.token(),List.of(ticks<<5)),"a log longer than the session has been open is refused");
+              own=f.own(p);BorrascaStory.click(p,b,BorrascaShops.CABINETS[BorrascaArcade.SEAM],own);f.save(p,own);
+              var second=BorrascaArcade.session(p.getUUID());h.assertTrue(second!=null&&second.token()!=first.token(),"another quarter, another game");
+              var again=BorrascaArcade.of(BorrascaArcade.SEAM,second.token(),null);int n=0;while(!again.over()&&n<BorrascaArcade.LONGEST[0]){again.tick(0);n++;}
+              BorrascaArcade.backdate(p.getUUID(),n+5);
+              h.assertTrue(BorrascaArcade.submit(p,second.token(),List.of(n<<5)),"a game the session had time for stands");
+              h.assertTrue(f.own(p).getInt("ArcadeBest"+BorrascaArcade.SEAM)==again.score(),"and the score kept is the one the server's own replay reaches: "+again.score());
+              h.assertTrue(f.own(p).getInt("Cents")==cents-2*BorrascaArcade.PRICE,"two plays, two quarters");
+              // The table: a good game goes in under Patrick's, and the last of the children's drops off the bottom.
+              own=f.own(p);h.assertTrue(BorrascaArcade.record(own,BorrascaArcade.SEAM,"ZZZ",2000)==2,"two thousand goes in second, under Patrick's");
+              var rows=BorrascaArcade.table(own,BorrascaArcade.SEAM);h.assertTrue(rows.size()==BorrascaArcade.ROWS&&rows.get(0)[0].equals("PAT")&&rows.get(1)[0].equals("ZZZ")&&rows.stream().noneMatch(r->r[0].equals("PAM")),"and the last of the children's falls off the bottom");f.save(p,own);
+              // No money, no game.
+              own=f.own(p);own.putInt("Cents",10);own.putInt("FriendCents",0);f.save(p,own);own=f.own(p);BorrascaStory.click(p,b,BorrascaShops.CABINETS[BorrascaArcade.CAT],own);f.save(p,own);
+              h.assertTrue(BorrascaArcade.session(p.getUUID())==null&&f.own(p).getInt("Cents")==10,"a child without a quarter does not get a game, and keeps the dime");
+          }).thenSucceed();
+    }
+    @AfterBatch(batch="borrasca_arcade") public static void arcadeDone(ServerLevel l){cleanup();}
+
+    /**
+     * 0.4.436: both games, played tick by tick with a changing hand, score the same when the server plays them again from the runs of
+     * keys the screen would send. BIG CAT ends at dawn or when the worms run out; a hook left in the river loses its worms to what swims.
+     */
+    @GameTest(template="empty",batch="borrasca_arcade_rules",timeoutTicks=200)
+    public static void theCabinetGamesScoreTheSameWhenPlayedAgain(GameTestHelper h){
+        for(int game=0;game<2;game++)for(long seed:new long[]{7,436,90210}){
+            var g=BorrascaArcade.of(game,seed,null);var runs=new ArrayList<Integer>();int held=-1,count=0;
+            for(int t=0;t<BorrascaArcade.LONGEST[game]&&!g.over();t++){
+                int k=game==0?(t%37==3?BorrascaArcade.UP:t%53==9?BorrascaArcade.DOWN:t%29==1?BorrascaArcade.SPACE:0):((t/40)%3==0?BorrascaArcade.SPACE:0)|((t/70)%2==0?BorrascaArcade.LEFT:BorrascaArcade.RIGHT);
+                if(k==held)count++;else{if(count>0)runs.add(count<<5|held);held=k;count=1;}
+                g.tick(k);
+            }
+            if(count>0)runs.add(count<<5|held);
+            var replay=BorrascaArcade.replay(game,seed,runs,BorrascaArcade.LONGEST[game]);
+            h.assertTrue(replay!=null&&replay.score()==g.score()&&replay.over()==g.over(),BorrascaArcade.TITLES[game]+" seed "+seed+": the replay scores "+(replay==null?"nothing":replay.score())+", the screen "+g.score());
+        }
+        var cat=BorrascaArcade.of(BorrascaArcade.CAT,5,null);while(!cat.over())cat.tick(0);
+        h.assertTrue(cat.ticks<=BorrascaArcade.LONGEST[BorrascaArcade.CAT],"BIG CAT is over by dawn at the latest");
+        h.succeed();
+    }
 
     /** The child's hand swaps some letters for alternate glyphs (HouseWriting); read them back as the letters they stand for. */
     private static String childPlain(String text){var base="aeiotrshnldcmyug";var out=new StringBuilder();for(char c:text.toCharArray()){if(c>=0xE100&&c<0xE110+base.length()){int i=c>=0xE110?c-0xE110:c-0xE100;out.append(i<base.length()?base.charAt(i):c);}else out.append(c);}return out.toString();}

@@ -989,6 +989,66 @@
     "facing=west,kind=bike,stage=1": {
       "model": "the_oldest_house:block/borrasca_shop/bike_1",
       "y": 270
+    },
+    "facing=north,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_0"
+    },
+    "facing=north,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_1"
+    },
+    "facing=east,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_0",
+      "y": 90
+    },
+    "facing=east,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_1",
+      "y": 90
+    },
+    "facing=south,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_0",
+      "y": 180
+    },
+    "facing=south,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_1",
+      "y": 180
+    },
+    "facing=west,kind=cabinet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_0",
+      "y": 270
+    },
+    "facing=west,kind=cabinet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_1",
+      "y": 270
+    },
+    "facing=north,kind=cabinet_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_0"
+    },
+    "facing=north,kind=cabinet_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_1"
+    },
+    "facing=east,kind=cabinet_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_0",
+      "y": 90
+    },
+    "facing=east,kind=cabinet_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_1",
+      "y": 90
+    },
+    "facing=south,kind=cabinet_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_0",
+      "y": 180
+    },
+    "facing=south,kind=cabinet_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_1",
+      "y": 180
+    },
+    "facing=west,kind=cabinet_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_0",
+      "y": 270
+    },
+    "facing=west,kind=cabinet_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cabinet_top_1",
+      "y": 270
     }
   }
 }

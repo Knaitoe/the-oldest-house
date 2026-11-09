@@ -32,7 +32,7 @@ public final class BorrascaShops {
     public static final BlockPos[] PUMPS={new BlockPos(-10,0,-112),new BlockPos(-10,0,-117)};
     public static final BlockPos DOCTOR_DOOR=new BlockPos(7,0,-84),CARDS=new BlockPos(10,2,-88),JAR=new BlockPos(12,1,-80),SCALE=new BlockPos(18,0,-80),CHART=new BlockPos(18,2,-84),EXAM=new BlockPos(16,0,-87);
     public static final BlockPos DRUG_DOOR=new BlockPos(7,0,-98),FOUNTAIN=new BlockPos(13,1,-103),MEDS=new BlockPos(20,0,-98),RACK=new BlockPos(10,0,-95),DRUG_CANDY=new BlockPos(14,0,-95);
-    /** The two places in the drugstore kept for its own arcade cabinets (they come in a later release). */
+    /** The drugstore's two arcade cabinets by its south wall, DEEP SEAM then BIG CAT (0.4.436, BorrascaArcade). */
     public static final BlockPos[] CABINETS={new BlockPos(9,0,-93),new BlockPos(11,0,-93)};
     public static final BlockPos BAR_DOOR=new BlockPos(7,0,-114),POOL=new BlockPos(14,0,-111),DARTS=new BlockPos(21,2,-114);
     /** The hardware counter in the general store: the pegboard on the south wall, where the frame used to hang. */
@@ -186,6 +186,8 @@ public final class BorrascaShops {
         for(int z=-103;z<=-94;z++){fit(l,b,20,0,z,BorrascaShopBlock.Kind.MEDS,Direction.WEST);fit(l,b,20,1,z,BorrascaShopBlock.Kind.MEDS,Direction.WEST);}
         fit(l,b,RACK,BorrascaShopBlock.Kind.RACK,Direction.WEST);fit(l,b,DRUG_CANDY,BorrascaShopBlock.Kind.CANDY,Direction.WEST);
         fit(l,b,7,2,-101,BorrascaShopBlock.Kind.OPEN,Direction.WEST);
+        // 0.4.436: the two cabinets against the south wall, facing into the shop.
+        for(int game=0;game<CABINETS.length;game++){set(l,b,CABINETS[game],BorrascaShopBlock.of(BorrascaShopBlock.Kind.CABINET,Direction.NORTH,game));set(l,b,CABINETS[game].above(),BorrascaShopBlock.of(BorrascaShopBlock.Kind.CABINET_TOP,Direction.NORTH,game));}
         for(int x:new int[]{11,16})set(l,b,x,4,-98,hanging());
         joists(l,b,8,20,Blocks.STRIPPED_DARK_OAK_LOG,-102,-94);
     }
@@ -243,6 +245,8 @@ public final class BorrascaShops {
         if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PAYPHONE){BorrascaPayphone.open(p,own);return true;}
         // 0.4.435: the children's bikes can be ridden.
         if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.BIKE)return BorrascaStory.bikeClick(p,b,own,at,s);
+        // 0.4.436: the drugstore's cabinets play their own games.
+        int game=BorrascaArcade.game(s);if(game>=0){BorrascaArcade.click(p,at,own,game);return true;}
         String line=BorrascaShopTexts.look(s.getValue(BorrascaShopBlock.KIND),s.getValue(BorrascaShopBlock.STAGE),grown);
         if(line==null)return false;
         BorrascaStory.cue(p,line);return true;
