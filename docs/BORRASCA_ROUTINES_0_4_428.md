@@ -63,7 +63,7 @@ me out." Caught without reading the map: "Mr. Rowe found me in the back room of 
 
 ## Next
 
-- **0.4.429, bikes and the truck:** children riding bikes up and down the street (a bike model of its own) and a truck that pulls up
+- **Bikes and the truck (after 0.4.429):** children riding bikes up and down the street (a bike model of its own) and a truck that pulls up
   outside the diner while its driver eats.
 - **The drugstore's arcade** (its own original games), the walk, and the lower rooms' rework follow.
 

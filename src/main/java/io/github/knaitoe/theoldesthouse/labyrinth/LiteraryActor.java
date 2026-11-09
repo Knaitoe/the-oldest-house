@@ -43,12 +43,14 @@ public final class LiteraryActor extends PathfinderMob {
     private static final EntityDataAccessor<Optional<UUID>> OWNER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);
     /** 0.4.228: how far the actor has faded, 0 (solid) to 100 (gone); the tenant in Vacant Possession thins as the flat empties. */
     private static final EntityDataAccessor<Integer> FADE=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
+    /** 0.4.429: who is saying the line up now, for its caption (empty when the scene gives no name). */
+    private static final EntityDataAccessor<String> SPEAKER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.STRING);
     private String scene="";private boolean small;
     private final CarcassHunt carcassHunt=new CarcassHunt();
     private final KillerNavigation privateHunt=new KillerNavigation();
     public LiteraryActor(EntityType<? extends LiteraryActor> type,Level l){super(type,l);setPersistenceRequired();setNoAi(true);setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);b.define(SPEAKER,"");}
     public int speaking(){return entityData.get(SPEECH);}
     /** Sets them talking for about as long as the line takes to say. */
     public void silent(){entityData.set(SPEECH,0);}
@@ -88,7 +90,20 @@ public final class LiteraryActor extends PathfinderMob {
      * A line over the actor's head. 0.4.398 (owner, of the Masque's red figure: "his dialogue does not disappear"): it stays up long
      * enough to read, five seconds or longer for a long line, then goes; saying it again keeps it up.
      */
-    public void say(String text){setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Math.min(SAY_LONGEST,Math.max(SAY_SHORTEST,40+text.length()*3));}
+    public void say(String text){say(null,text);}
+    /**
+     * 0.4.429: a line with its speaker's name. The owner: "text still needs to be centered, framed in center of player's vision and clear
+     * itself of obstacles": the line is shown as a caption (client.SpeechCaptions), with this name before it, not as a nameplate. And:
+     * "spoken npc dialogue doesn't track to journal": each new line is kept for whoever is near enough to hear it (TalkHistory.overheard).
+     */
+    public void say(@javax.annotation.Nullable String speaker,String text){
+        boolean again=spokenFor>0&&getCustomName()!=null&&getCustomName().getString().equals(text)&&entityData.get(SPEAKER).equals(speaker==null?"":speaker);
+        setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Math.min(SAY_LONGEST,Math.max(SAY_SHORTEST,40+text.length()*3));
+        entityData.set(SPEAKER,speaker==null?"":speaker);
+        if(!again&&!level().isClientSide)TalkHistory.overheard(this,speaker,text);
+    }
+    /** Who is saying the line up now, or empty. */
+    public String speaker(){return entityData.get(SPEAKER);}
     public static final int SAY_SHORTEST=100,SAY_LONGEST=240;
     /** Ticks the last line said stays up. */
     private int spokenFor;
