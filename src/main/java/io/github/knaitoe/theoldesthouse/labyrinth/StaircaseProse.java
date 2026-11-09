@@ -247,6 +247,7 @@ public final class StaircaseProse {
     static { PLACES.put("the_house_on_the_corner","the house on the corner"); }
     static { PLACES.put("the_black_city","the city on the ice"); }
     static { PLACES.put("the_kept","the machine"); }
+    static { PLACES.put("last_orders","the bar"); }
     static { PLACES.put("household","the landing where the household camped"); }
     static {
         String[][] names = {

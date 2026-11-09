@@ -4816,5 +4816,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.darts.pull"
+  },
+  "orders.whistle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:orders/whistle",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.orders.whistle"
   }
 }

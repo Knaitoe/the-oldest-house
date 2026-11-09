@@ -56,6 +56,8 @@ public final class DartBoards {
         final Map<UUID,Double> skills=new HashMap<>();long regularDue=-1;
         /** A story's own board, kept while only its regulars are playing. */
         public boolean house;
+        /** What a game of 301 here counts down from: a story may play shorter legs. */
+        public int start=DartsGame.START;
         public @Nullable Listener listener;
         Board(GlobalPos at){this.at=at;serial=at.pos().asLong()*31+System.nanoTime();}
         public boolean seated(UUID id){return seats.contains(id);}
@@ -108,6 +110,17 @@ public final class DartBoards {
         b.seats.add(id);b.names.add(name);b.skills.put(id,Math.max(0,Math.min(1,skill)));
         if(regular(b.shooter()))b.regularDue=l.getGameTime()+REGULAR_GAP;
         sync(l,b);
+    }
+    /** Another game for the same players, once the last is over (for a story playing a match). */
+    public static void again(ServerLevel l,BlockPos pos){
+        var b=at(l,pos);if(b==null||b.game==null||!b.game.over())return;
+        b.game=null;b.pauseUntil=-1;pull(b);b.flying=0;hand(l,b);
+        if(b.shooter()!=null&&regular(b.shooter()))b.regularDue=l.getGameTime()+REGULAR_GAP;
+        sync(l,b);
+    }
+    /** Puts a board's game away entirely: everyone's place, the darts and the game (for a story taking the board). */
+    public static void clear(ServerLevel l,BlockPos pos){
+        var b=at(l,pos);if(b==null)return;strip(l.getServer(),b);pull(b);BOARDS.remove(b.at);
     }
     static String nameOf(ServerLevel l,UUID id){var p=l.getServer().getPlayerList().getPlayer(id);return p==null?"?":p.getGameProfile().getName();}
 
@@ -165,7 +178,7 @@ public final class DartBoards {
         var b=boardOf(stack);if(b==null)return;var l=p.serverLevel();
         if(!l.dimension().equals(b.at.dimension())||!p.getUUID().equals(b.shooter())||b.paused()||b.dartsLeft()<=0)return;
         if(b.game!=null&&b.game.over())return;
-        if(b.game==null)b.game=new DartsGame(b.mode,b.seats.size());
+        if(b.game==null)b.game=new DartsGame(b.mode,b.seats.size(),b.start);
         var sway=DartItem.sway(held,p.isShiftKeyDown(),DartItem.phase(p.getUUID(),stack.getCount()));
         var dir=Vec3.directionFromRotation((float)(p.getXRot()+sway[1]),(float)(p.getYRot()+sway[0]));
         var eye=p.getEyePosition();
@@ -209,7 +222,7 @@ public final class DartBoards {
         double u=aim[0]+l.random.nextGaussian()*spread,v=aim[1]+l.random.nextGaussian()*spread;
         var target=DartboardBlock.onFace(b.at.pos(),facing,u,v);
         var from=DartboardBlock.centre(b.at.pos(),facing).add(facing.getStepX()*OCHE,0,facing.getStepZ()*OCHE);
-        if(b.game==null)b.game=new DartsGame(b.mode,b.seats.size());
+        if(b.game==null)b.game=new DartsGame(b.mode,b.seats.size(),b.start);
         throwDart(l,b,null,from,target.subtract(from).normalize(),b.shooterSeat(),true);
     }
     /** Where a sensible player aims: trebles while there is plenty to score, then what finishes; in round the clock, the number. */

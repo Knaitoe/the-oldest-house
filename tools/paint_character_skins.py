@@ -180,6 +180,15 @@ LOOKS = {
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
     'literary_kept_wendell': Look('#c49a7c','#6a5a4a','receding','#6a5a44','#3e3a34','ragged','#8a7a5a',eyes='#5a4a3a',age=1,glasses=True,beard='stubble',mark='despair'),
     'literary_kept_tamsin': Look('#d8b49a','#4a3426','close','#5a6a6a','#3a4044','ragged','#7a8a88',eyes='#4a5a4a',mark='despair'),
+    # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
+    # in old coats; and Benny on the far stool.
+    'literary_orders_stranger': Look('#cfcac0','#2e2c2a','receding','#232326','#1c1c1f','coat','#bdb8ae',eyes='#5c605e',age=2),
+    'literary_orders_ferris': Look('#c49a7c','#6a5a4a','receding','#4e4034','#2e2a26','jacket','#8a7a5a',eyes='#4a3a2a',age=2,beard='walrus'),
+    'literary_orders_mags': Look('#d6aa8c','#8a7a6a','bun','#5a3e4a','#2e2a2e','cardigan','#c8b8a0',eyes='#4a4a3a',age=2),
+    'literary_orders_hob': Look('#b88a68','#3a3028','short','#3a4a3a','#2a2e2a','coat','#6a6a4a',eyes='#3a3a2a',age=2,beard='full'),
+    'literary_orders_ott': Look('#caa080','#8a8478','receding','#4a3e30','#2a2620','waistcoat','#a89878',eyes='#5a5040',age=2,beard='chops'),
+    'literary_orders_cass': Look('#a8785a','#2a2220','close','#3e3a4a','#26242c','coat','#8a8698',eyes='#3a2e26',age=1),
+    'literary_orders_benny': Look('#d0a284','#4a3a2e','short','#7a4a32','#2a2a2e','flannel','#c8a878',eyes='#3a3a3a',age=1,beard='moustache'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

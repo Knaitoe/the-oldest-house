@@ -20,8 +20,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.408, The House on the Corner: 83 / 63 / 60.
  0.4.409, the city on the ice: 84 / 63 / 61.
  0.4.410, the Kept: 85 / 64 / 62.
+ 0.4.416, Last orders: 86 / 65 / 63.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=85,REQUIRED=64,LITERARY=62;
+    static final int SOURCES=86,REQUIRED=65,LITERARY=63;
 }

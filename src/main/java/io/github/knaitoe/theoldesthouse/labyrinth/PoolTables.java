@@ -52,6 +52,8 @@ public final class PoolTables {
         public final int[] turns=new int[2];
         public double regularSkill=.6;public long regularDue=-1;
         public @Nullable Listener listener;
+        /** A story's match against the table's own player: every reader takes the first side, and the table's player the second. */
+        public boolean againstHouse;
         Table(GlobalPos at){this.at=at;}
         public boolean seated(UUID id){return seats.contains(id);}
         public int seatOf(UUID id){return seats.indexOf(id);}
@@ -66,6 +68,7 @@ public final class PoolTables {
         }
         /** A new seat goes to the side with fewer players, the first side on a tie. */
         void sit(UUID id,String name){
+            if(againstHouse){seats.add(id);names.add(name);sides.add(REGULAR.equals(id)?1:0);return;}
             int a=0,b=0;for(int s:sides)if(s==0)a++;else b++;
             seats.add(id);names.add(name);sides.add(a<=b?0:1);
         }
@@ -105,8 +108,19 @@ public final class PoolTables {
     public static void seatRegular(ServerLevel l,BlockPos foot,String name,double skill){
         var t=table(l,foot);if(t.game==null||t.game.phase==PoolGame.Phase.OVER){t.empty();t.rack(l.getGameTime());}
         if(t.seated(REGULAR)||t.seats.size()>=SEATS)return;
-        t.sit(REGULAR,name);t.regularSkill=skill;sync(l,t,null);
+        t.sit(REGULAR,name);t.regularSkill=skill;
+        if(REGULAR.equals(t.shooter()))t.regularDue=l.getGameTime()+REGULAR_PAUSE;
+        sync(l,t,null);
     }
+    /** Another frame for the same players, once the last is over (for a story playing a match). */
+    public static void again(ServerLevel l,BlockPos foot){
+        var t=at(l,foot);if(t==null||t.game==null||t.game.phase!=PoolGame.Phase.OVER)return;
+        t.rack(l.getGameTime());
+        if(REGULAR.equals(t.shooter()))t.regularDue=l.getGameTime()+REGULAR_PAUSE;
+        sync(l,t,null);
+    }
+    /** Puts a table's frame away entirely (for a story taking the table). */
+    public static void clear(ServerLevel l,BlockPos foot){var t=at(l,foot);if(t==null)return;t.empty();t.game=null;TABLES.remove(t.at);}
     /** A shot from a player at the table. False if it was not theirs to take, or could not be taken. */
     public static boolean shoot(ServerPlayer p,BlockPos foot,double angle,double power,double placeX,double placeY){
         var l=p.serverLevel();var t=at(l,foot);if(t==null||t.game==null)return false;
