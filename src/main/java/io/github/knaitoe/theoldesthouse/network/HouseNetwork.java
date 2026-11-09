@@ -13,7 +13,10 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("168")
+        event.registrar("169")
+                .playToClient(PoolStatePayload.TYPE,PoolStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PoolClient.state(payload)))
+                .playToClient(PoolShotPayload.TYPE,PoolShotPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PoolClient.shot(payload)))
+                .playToServer(PoolShootPayload.TYPE,PoolShootPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.PoolTables.shoot(p,payload.table(),payload.angle(),payload.power(),payload.placeX(),payload.placeY());}))
                 .playToClient(PrizeWearPayload.TYPE,PrizeWearPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.labyrinth.PrizeWear.clientSet(payload.player(),payload.worn())))
                 .playToServer(PrizeTakeOffPayload.TYPE,PrizeTakeOffPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.PrizeWear.takeOff(p);}))
                 .playToClient(GhostsLorePayload.TYPE,GhostsLorePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.GhostsLoreScreen.open(payload)))

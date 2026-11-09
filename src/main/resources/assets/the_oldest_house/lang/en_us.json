@@ -1542,5 +1542,10 @@
   "entity.the_oldest_house.polybius_prize_prop": "Prize",
   "entity.the_oldest_house.polybius_bouncy_ball": "Bouncy Ball",
   "block.the_oldest_house.polybius_home_cabinet": "Arcade Cabinet",
-  "item.the_oldest_house.polybius_service_key": "Service Key"
+  "item.the_oldest_house.polybius_service_key": "Service Key",
+  "block.the_oldest_house.pool_table": "Pool Table",
+  "subtitles.the_oldest_house.pool.strike": "Cue strikes the ball",
+  "subtitles.the_oldest_house.pool.clack": "Pool balls knock",
+  "subtitles.the_oldest_house.pool.cushion": "Ball hits the cushion",
+  "subtitles.the_oldest_house.pool.pocket": "Ball drops into a pocket"
 }
