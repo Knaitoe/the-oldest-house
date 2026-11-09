@@ -110,6 +110,11 @@ public final class BorrascaTexts {
     private static String stained(String page,int seed){
         var words=page.split(" ");var out=new StringBuilder();for(int i=0;i<words.length;i++){if(i>0)out.append(' ');boolean keep=i==0||(i*7+seed*3)%5!=0||words[i].contains("\n");out.append(keep?words[i]:"...");}return out.toString();
     }
+    /** 0.4.436: quarters spent at the drugstore's cabinets, and whether the reader's initials went over Patrick's. */
+    private static String arcade(CompoundTag own){
+        int plays=own.getInt("ArcadePlays0")+own.getInt("ArcadePlays1");if(plays==0)return "";
+        return (plays==1?"I put a quarter in one of the games at the drugstore.":"I spent my quarters on the games at the drugstore.")+(own.getBoolean("OverPatrick")?" I got my initials over Patrick's.":"")+" ";
+    }
     /** 0.4.435: whose bike this reader rode, and whether they came off. */
     private static String bikes(CompoundTag own){
         boolean his=own.getBoolean("BikeRode"+BorrascaBike.PATRICK),hers=own.getBoolean("BikeRode"+BorrascaBike.KENDRA);if(!his&&!hers)return "";int falls=own.getInt("BikeFalls");
@@ -124,6 +129,8 @@ public final class BorrascaTexts {
             +(own.getBoolean("AlongHeard")?"Patrick and Kendra came with us as far as the first marker. Patrick said he would go up by the second one some other time. ":"")
             // 0.4.435: the bikes.
             +bikes(own)
+            // 0.4.436: the drugstore's games.
+            +arcade(own)
             // 0.4.432: what she said on the walk up.
             +(own.getInt("WalkTalk")>=BorrascaStory.WALK_TALK.length?"She talked the whole way up to the Tree, and asked if I wanted to be best friends. ":own.getInt("WalkTalk")>0?"She talked on the way up to the Tree. ":"")
             +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")

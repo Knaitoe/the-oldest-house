@@ -291,6 +291,18 @@ public final class BorrascaPeople {
         var goods=w.goods(grown);if(!p.getInventory().add(goods))p.drop(goods,false);
         return speak(p,a,sold(phase,w,grown,visit));
     }
+    /**
+     * 0.4.436: a quarter for a drugstore cabinet, from this reader's own money. A child who is short with the friend beside them has her
+     * put in the rest, as at the counters. False if there is not a quarter between them.
+     */
+    public static boolean payQuarter(ServerPlayer p,CompoundTag own){
+        int price=BorrascaArcade.PRICE,have=own.getInt("Cents");boolean grown=own.getInt("Visit")>=3;
+        var friend=grown?null:BorrascaStory.friend(p,own);int pool=own.getInt("FriendCents");
+        if(have<price&&friend!=null&&friend.distanceToSqr(p)<64&&have+pool>=price){int top=price-have;own.putInt("FriendCents",pool-top);have=price;own.putInt("Pooled",own.getInt("Pooled")+1);BorrascaStory.say(p,friend,"Here, I've got a quarter. I get next go.");}
+        if(have<price)return false;
+        own.putInt("Cents",have-price);var held=carried(p,grown);if(held!=null)BorrascaPurseItem.mark(held,p.getUUID(),have-price);
+        return true;
+    }
     private static String speak(ServerPlayer p,LiteraryActor a,String words){BorrascaStory.say(p,a,words);return words;}
     private static String sold(int phase,Ware w,boolean grown,int visit){
         return switch(phase){

@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("174")
+        event.registrar("175")
                 .playToClient(BorrascaPayphonePayload.TYPE,BorrascaPayphonePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaPayphoneScreen.accept(payload)))
                 .playToServer(BorrascaDialPayload.TYPE,BorrascaDialPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaPayphone.dialled(p,payload.number());}))
                 .playToServer(SwingJumpPayload.TYPE,SwingJumpPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.jump(p);}))
@@ -36,6 +36,8 @@ public final class HouseNetwork {
                 .playToClient(KeptStatePayload.TYPE,KeptStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.KeptClient.accept(payload)))
                 .playToClient(PolybiusBrawlPayload.TYPE,PolybiusBrawlPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusBrawlScreen.accept(payload)))
                 .playToServer(PolybiusBrawlKeysPayload.TYPE,PolybiusBrawlKeysPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.PolybiusBrawl.keys(p,payload.keys());}))
+                .playToClient(BorrascaArcadePayload.TYPE,BorrascaArcadePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaArcadeScreen.accept(payload)))
+                .playToServer(BorrascaArcadeScorePayload.TYPE,BorrascaArcadeScorePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaArcade.submit(p,payload.token(),payload.runs());}))
                 .playToClient(PolybiusPayload.TYPE,PolybiusPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PolybiusScreen.accept(payload)))
                 .playToServer(PolybiusScorePayload.TYPE,PolybiusScorePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.Polybius.submit(p,payload.token(),payload.runs());}))
                 .playToClient(LateBodiesPayload.TYPE,LateBodiesPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LateBodyClient.accept(payload)))

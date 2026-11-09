@@ -1,0 +1,93 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/borrasca_shop/cab_side_0",
+    "k": "the_oldest_house:block/borrasca_shop/black",
+    "c": "the_oldest_house:block/borrasca_shop/cab_coin",
+    "p": "the_oldest_house:block/borrasca_shop/cab_panel",
+    "r": "the_oldest_house:block/borrasca_shop/cab_red",
+    "y": "the_oldest_house:block/borrasca_shop/cab_yellow",
+    "v": "the_oldest_house:block/borrasca_shop/cab_screen_0",
+    "q": "the_oldest_house:block/borrasca_shop/cab_marquee_0",
+    "particle": "the_oldest_house:block/borrasca_shop/cab_side_0"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        5
+      ],
+      "to": [
+        15,
+        12,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#v",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        12,
+        3
+      ],
+      "to": [
+        15,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    }
+  ]
+}

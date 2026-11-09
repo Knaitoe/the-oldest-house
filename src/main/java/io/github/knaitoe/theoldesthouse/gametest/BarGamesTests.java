@@ -245,21 +245,31 @@ public final class BarGamesTests {
         var p=reader(h,"darts_r",foot.offset(0,0,-2));
         var board=hangBoard(h,p);var face=DartboardBlock.centre(board,Direction.NORTH);
         p.teleportTo(l,face.x+1,foot.getY(),face.z-DartBoards.OCHE,0,0);
-        DartBoards.seatRegular(l,board,"the regular",.95);DartBoards.use(p,board,false);
-        var b=DartBoards.at(l,board);
-        h.assertTrue(b!=null&&b.seats.size()==2&&DartBoards.regular(b.shooter())&&houseDarts(p)==0,"the board's own player throws first, and the reader waits");
+        // Run 1498: the empty template keeps only its own corner's chunks ticking, and the board can hang in the next chunk, where the
+        // regular's first dart hung in the air for the rest of the case. Hold the corner's chunks, and seat the regular only once the
+        // board and the oche both tick entities.
+        var oche=BlockPos.containing(face.x+1,foot.getY(),face.z-DartBoards.OCHE);var b=new DartBoards.Board[1];
+        held=new NativeTestChunks();held.hold(l,new net.minecraft.world.phys.AABB(foot).inflate(16));
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(held.ticking()&&l.isPositionEntityTicking(board)&&l.isPositionEntityTicking(oche),"the board and the oche tick entities: "+l.isPositionEntityTicking(board)+"/"+l.isPositionEntityTicking(oche)))
+            .thenExecute(()->{
+                DartBoards.seatRegular(l,board,"the regular",.95);DartBoards.use(p,board,false);
+                b[0]=DartBoards.at(l,board);
+                h.assertTrue(b[0]!=null&&b[0].seats.size()==2&&DartBoards.regular(b[0].shooter())&&houseDarts(p)==0,"the board's own player throws first, and the reader waits");
+            })
         // Run 1495: three throws a REGULAR_GAP apart, each landing after its flight, left about fifteen ticks of a fixed 120-tick budget,
         // and the full suite's busy server once ran past it. Wait for the three darts (within the case's limit) and report the board's state.
-        h.startSequence()
-            .thenWaitUntil(()->h.assertTrue(b.game!=null&&b.game.lastTurn.size()+b.game.thisTurn.size()>=3,"on its turn it throws its three darts: "+DartBoards.describe(b)))
+            .thenWaitUntil(()->h.assertTrue(b[0].game!=null&&b[0].game.lastTurn.size()+b[0].game.thisTurn.size()>=3,"on its turn it throws its three darts: "+DartBoards.describe(b[0])))
             .thenExecute(()->{
-                int hits=0;for(var x:b.game.lastTurn.isEmpty()?b.game.thisTurn:b.game.lastTurn)if(x.ring()!=DartsGame.Ring.MISS)hits++;
+                int hits=0;for(var x:b[0].game.lastTurn.isEmpty()?b[0].game.thisTurn:b[0].game.lastTurn)if(x.ring()!=DartsGame.Ring.MISS)hits++;
                 h.assertTrue(hits>=2,"and a steady hand finds the board: "+hits);
             })
-            .thenWaitUntil(()->h.assertTrue(p.getUUID().equals(b.shooter())&&houseDarts(p)==3,"then the reader is handed three: "+DartBoards.describe(b)))
-            .thenExecute(()->{for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();})
+            .thenWaitUntil(()->h.assertTrue(p.getUUID().equals(b[0].shooter())&&houseDarts(p)==3,"then the reader is handed three: "+DartBoards.describe(b[0])))
+            .thenExecute(()->{for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();release();})
             .thenSucceed();
     }
+    private static NativeTestChunks held;
+    private static void release(){if(held!=null){held.close();held=null;}}
     @AfterBatch(batch="bar_darts") public static void dartsDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
-    @AfterBatch(batch="bar_darts_regular") public static void regularDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
+    @AfterBatch(batch="bar_darts_regular") public static void regularDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();release();}
 }
