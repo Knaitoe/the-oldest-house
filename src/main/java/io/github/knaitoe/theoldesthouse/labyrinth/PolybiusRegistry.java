@@ -57,6 +57,20 @@ public final class PolybiusRegistry {
         .food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(1).saturationModifier(.1F).alwaysEdible()
             .effect(()->new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED,300,0),1).build()),true));
     public static final int PIZZA_COST=4,SODA_COST=3;
+    /**
+     * 0.4.413 (docs/POLYBIUS_HOME_CABINET_0_4_413.md): the service key under the men's clipboard, and the cabinet it makes at a
+     * crafting table: an ordinary block, breakable, that plays the arcade's three working games wherever its reader puts it.
+     */
+    public static final DeferredItem<ServiceKeyItem> SERVICE_KEY=ITEMS.register("polybius_service_key",()->new ServiceKeyItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HomeCabinetBlock>> HOME_CABINET_TYPE=CODECS.register("polybius_home_cabinet",()->HomeCabinetBlock.CODEC);
+    public static final DeferredBlock<HomeCabinetBlock> HOME_CABINET=BLOCKS.registerBlock("polybius_home_cabinet",HomeCabinetBlock::new,
+        BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(2F,3F).noOcclusion().lightLevel(HomeCabinetBlock::light).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
+    public static final DeferredItem<net.minecraft.world.item.DoubleHighBlockItem> HOME_CABINET_ITEM=ITEMS.register("polybius_home_cabinet",()->new net.minecraft.world.item.DoubleHighBlockItem(HOME_CABINET.get(),new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<HomeCabinetBlockEntity>> HOME_CABINET_ENTITY=BLOCK_ENTITIES.register("polybius_home_cabinet",
+        ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(HomeCabinetBlockEntity::new,HOME_CABINET.get()).build(null));
+    /** The recipe the key makes, given to its reader's recipe book with it. */
+    public static final net.minecraft.resources.ResourceLocation HOME_CABINET_RECIPE=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"polybius_home_cabinet");
     private PolybiusRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);SOUNDS.register(bus);BLOCK_ENTITIES.register(bus);}
 }

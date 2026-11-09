@@ -44,6 +44,8 @@ public final class PolybiusTexts {
             t.append(PolybiusScores.NAMES[g]).append("  ").append(best).append(rank>0?"  (table, "+Polybius.ordinal(rank)+")":"").append('\n');}
         if(!any)t.append("none played\n");
         t.append("\nAt the bottom, in pen, in a hand that presses too hard: no further visits required.");
+        // 0.4.413: the key the reader is given with the account (ServiceKeyItem).
+        t.append("\n\nTaped under the clip, a small round key on a ring. Its paper tag says FREE PLAY.");
         return t.toString();
     }
     public static String afterwards(String name,CompoundTag own){

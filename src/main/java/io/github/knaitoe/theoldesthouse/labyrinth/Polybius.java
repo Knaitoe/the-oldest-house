@@ -58,7 +58,9 @@ public final class Polybius {
     /** How far a key log may run ahead of the time the session has been open, in ticks: the screen opens a moment after the session. */
     static final int SLACK=40;
     /** A session: the game, its token (the game's seed too), when it opened by the server's clock and by the wall clock, and whether the black cabinet keeps the reader. */
-    public record Session(int game,long token,long start,long startMillis,boolean taken){}
+    public record Session(int game,long token,long start,long startMillis,boolean taken,@Nullable net.minecraft.core.GlobalPos home){
+        public Session(int game,long token,long start,long startMillis,boolean taken){this(game,token,start,startMillis,taken,null);}
+    }
     static final Map<UUID,Session> SESSIONS=new HashMap<>();
     public static @Nullable Session session(UUID id){return SESSIONS.get(id);}
     public static boolean playing(UUID id){return SESSIONS.containsKey(id);}
@@ -112,7 +114,7 @@ public final class Polybius {
     /** A cabinet's screen opened for one reader. */
     static void play(ServerPlayer p,BlockPos b,CompoundTag own,int game){
         if(playing(p.getUUID())||PolybiusBrawl.playing(p.getUUID())){cue(p,"You're already playing.");return;}
-        for(var e:SESSIONS.entrySet())if(e.getValue().game()==game&&!e.getKey().equals(p.getUUID())){cue(p,"Someone is playing it.");return;}
+        for(var e:SESSIONS.entrySet())if(e.getValue().game()==game&&e.getValue().home()==null&&!e.getKey().equals(p.getUUID())){cue(p,"Someone is playing it.");return;}
         boolean taken=false;
         if(game==PolybiusSite.BLACK){
             if(own.getBoolean("Ready")){cue(p,"The screen is dark. The men are gone.");return;}
@@ -139,6 +141,7 @@ public final class Polybius {
         long open=Math.max(now-s.start(),(System.currentTimeMillis()-s.startMillis())/50);
         int length=PolybiusGames.length(runs);
         if(length<0||length>open+SLACK||length>LONGEST[s.game()])return false;
+        if(s.home()!=null)return submitHome(p,s,runs);
         var own=own(p);var b=base(p);
         if(s.game()==PolybiusSite.BLACK){
             if(length<MIN_PLAY){cue(p,"The screen goes back to its slow pattern.");return false;}
@@ -162,8 +165,45 @@ public final class Polybius {
         cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your name goes to the top of the table.":"GAME OVER. "+score+". Your name goes up the table, "+ordinal(rank)+".");
         return true;
     }
+    // ------------------------------------------------------------------------------------------------ a cabinet of their own (0.4.413)
+    /** How far a reader may stand from their own cabinet and keep playing it. */
+    static final double HOME_REACH=6;
+    /** True while someone is playing the cabinet whose lower half is here. */
+    public static boolean playingHome(BlockPos at,net.minecraft.world.level.Level level){
+        for(var s:SESSIONS.values())if(s.home()!=null&&s.home().dimension().equals(level.dimension())&&s.home().pos().equals(at))return true;
+        return false;
+    }
+    static boolean atHome(ServerPlayer p,net.minecraft.core.GlobalPos home){
+        return p.level().dimension().equals(home.dimension())&&HomeCabinetBlock.is(p.level().getBlockState(home.pos()))&&p.position().distanceToSqr(Vec3.atCenterOf(home.pos()))<=HOME_REACH*HOME_REACH;
+    }
+    /**
+     * A home cabinet's screen opened for one reader: the same game, from the same seed rules, judged the same way when it ends, but
+     * on that cabinet's own table, with no tickets (they are the arcade's) and nothing to do with the House. One reader at a time.
+     */
+    public static void playHome(ServerPlayer p,BlockPos at,int game){
+        if(game<0||game>=PolybiusSite.BLACK)return;
+        if(playing(p.getUUID())||PolybiusBrawl.playing(p.getUUID())){cue(p,"You're already playing.");return;}
+        if(playingHome(at,p.level())){cue(p,"Someone is playing it.");return;}
+        if(!(p.level().getBlockEntity(at) instanceof HomeCabinetBlockEntity cab))return;
+        long token=p.getRandom().nextLong();
+        SESSIONS.put(p.getUUID(),new Session(game,token,p.serverLevel().getGameTime(),System.currentTimeMillis(),false,net.minecraft.core.GlobalPos.of(p.level().dimension(),at.immutable())));
+        HousePackets.send(p,new PolybiusPayload(game,token,p.getGameProfile().getName(),0,false,PolybiusScores.tag(cab.table(game))));
+        p.serverLevel().playSound(null,at.above(),SoundEvents.NOTE_BLOCK_BIT.value(),SoundSource.BLOCKS,.5F,1.4F);
+    }
+    /** With the key, the cabinet's recipe goes into its reader's recipe book. */
+    public static void teach(ServerPlayer p){p.server.getRecipeManager().byKey(PolybiusRegistry.HOME_CABINET_RECIPE).ifPresent(r->p.awardRecipes(List.of(r)));}
+    static boolean submitHome(ServerPlayer p,Session s,List<Integer> runs){
+        var game=PolybiusGames.replay(s.game(),s.token(),runs,LONGEST[s.game()]);
+        if(game==null||game.ticks()==0)return false;
+        int score=game.score();
+        var level=p.server.getLevel(s.home().dimension());
+        int rank=level!=null&&level.getBlockEntity(s.home().pos()) instanceof HomeCabinetBlockEntity cab?cab.record(s.game(),p,score):0;
+        cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your name goes to the top of the table.":"GAME OVER. "+score+". Your name goes up the table, "+ordinal(rank)+".");
+        return true;
+    }
+
     /** For the tests: a reader's session as if it had opened so many ticks ago, by both clocks. */
-    public static void backdate(UUID id,int ticks){var s=SESSIONS.get(id);if(s!=null)SESSIONS.put(id,new Session(s.game(),s.token(),s.start()-ticks,s.startMillis()-ticks*50L,s.taken()));}
+    public static void backdate(UUID id,int ticks){var s=SESSIONS.get(id);if(s!=null)SESSIONS.put(id,new Session(s.game(),s.token(),s.start()-ticks,s.startMillis()-ticks*50L,s.taken(),s.home()));}
     /** Prize tickets for a game of one of the three: one, and one more for every hundred points, up to thirty. */
     public static int tickets(int score){return score<=0?0:Math.min(30,1+score/100);}
 
@@ -270,7 +310,8 @@ public final class Polybius {
             if(p==null){it.remove();continue;}
             long age=p.serverLevel().getGameTime()-ses.start();
             if(ses.taken()&&age>=TAKEN_AFTER){it.remove();fail(p);continue;}
-            if(!LiteraryVignettes.inside(p,PLACE)||age>LONGEST[ses.game()]+400){it.remove();HousePackets.send(p,PolybiusPayload.close());}
+            boolean away=ses.home()!=null?!atHome(p,ses.home()):!LiteraryVignettes.inside(p,PLACE);
+            if(away||age>LONGEST[ses.game()]+400){it.remove();HousePackets.send(p,PolybiusPayload.close());}
         }
         if(s.getTickCount()%10!=0)return;
         for(var p:s.getPlayerList().getPlayers()){

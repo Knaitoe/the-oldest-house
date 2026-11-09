@@ -336,4 +336,72 @@ public final class PolybiusTests {
                 close();h.succeed();});
     }
     @AfterBatch(batch="poly_toys") public static void toysDone(ServerLevel l){close();}
+
+    private static net.minecraft.world.item.ItemStack find(ServerPlayer p,net.minecraft.world.item.Item item){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(item))return inv.getItem(i);return net.minecraft.world.item.ItemStack.EMPTY;}
+    /** What a crafting table offers this player for the key with planks, a pane and redstone. */
+    private static net.minecraft.world.item.ItemStack craft(ServerPlayer p,net.minecraft.world.item.ItemStack key){
+        var menu=new net.minecraft.world.inventory.CraftingMenu(0,p.getInventory(),net.minecraft.world.inventory.ContainerLevelAccess.create(p.level(),p.blockPosition()));
+        var plank=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.OAK_PLANKS);var none=net.minecraft.world.item.ItemStack.EMPTY;
+        net.minecraft.world.item.ItemStack[] grid={none,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GLASS_PANE),none,plank.copy(),key.copy(),plank.copy(),plank.copy(),new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.REDSTONE),plank.copy()};
+        for(int i=0;i<9;i++)menu.getSlot(1+i).set(grid[i]);
+        return menu.getSlot(0).getItem().copy();
+    }
+    private static net.minecraft.world.phys.BlockHitResult hit(net.minecraft.core.BlockPos at,net.minecraft.core.Direction face){return new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at).relative(face,.5),face,at,false);}
+    /**
+     * 0.4.413: the key taped under the clipboard's clip, given with the account. With it its reader, and nobody else, makes a cabinet
+     * at a crafting table; the key comes back. Out in the world the cabinet stands two blocks tall, plays the arcade's games one reader
+     * at a time on a table of its own and for no tickets, changes board when crouched at, and breaks into one cabinet again.
+     */
+    @GameTest(template="empty",batch="poly_home",timeoutTicks=900)
+    public static void theClipboardsKeyMakesACabinetToPlayAtHome(GameTestHelper h){
+        var f=fixture(h);var p=f.player("poly_home",P);var q=f.player("poly_home_peer",P);var s=h.getLevel().getServer();
+        net.minecraft.core.BlockPos[] at={null};var drift=keys(30,PolybiusGames.LEFT,30,PolybiusGames.UP|PolybiusGames.RIGHT,40,PolybiusGames.DOWN,400,0);int[] expected={0};
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenExecute(()->{
+                f.source(p,P);var own=f.own(p,P);LiteraryVignettes.ready(p,P,own,"walked_away");LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                f.read(p,P,LiteraryRooms.ending(P));
+                h.assertTrue(f.own(p,P).getBoolean("Completed"),"reading the clipboard finishes the arcade");
+                h.assertTrue(PolybiusTexts.form("poly_home",f.own(p,P)).contains("FREE PLAY"),"the clipboard's form says where the key was");
+                var key=find(p,PolybiusRegistry.SERVICE_KEY.get());
+                h.assertTrue(!key.isEmpty()&&ServiceKeyItem.mine(key,p)&&!ServiceKeyItem.mine(key,q),"the reader has the service key, marked as theirs alone");
+                h.assertTrue(p.getRecipeBook().contains(PolybiusRegistry.HOME_CABINET_RECIPE),"and the cabinet's recipe in their book");
+                h.assertTrue(craft(p,key).is(PolybiusRegistry.HOME_CABINET_ITEM.get()),"their key, planks, a pane and redstone make a cabinet");
+                h.assertTrue(craft(q,key).isEmpty(),"the same key in another reader's grid makes nothing");
+                h.assertTrue(ServiceKeyItem.mine(key.getItem().getCraftingRemainingItem(key),p),"the key comes back from the grid as it went in, still theirs");
+                // Out in the world, a cabinet put down by hand.
+                var l=h.getLevel();at[0]=h.absolutePos(new net.minecraft.core.BlockPos(1,1,1));
+                l.setBlock(at[0].below(),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(),3);
+                for(int y=0;y<3;y++)for(int z=0;z<4;z++)l.setBlock(at[0].offset(0,y,z),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                for(var r:new ServerPlayer[]{p,q}){r.teleportTo(l,at[0].getX()+.5,at[0].getY(),at[0].getZ()+2.5,180,0);r.setNoGravity(true);}
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(PolybiusRegistry.HOME_CABINET_ITEM.get()));
+                var placed=p.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(p,net.minecraft.world.InteractionHand.MAIN_HAND,hit(at[0].below(),net.minecraft.core.Direction.UP)));
+                var lower=l.getBlockState(at[0]);var upper=l.getBlockState(at[0].above());
+                h.assertTrue(placed.consumesAction()&&HomeCabinetBlock.is(lower)&&HomeCabinetBlock.is(upper)&&upper.getValue(HomeCabinetBlock.HALF)==net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER,"the cabinet stands two blocks tall where it was put: "+lower+" / "+upper);
+                h.assertTrue(l.getBlockEntity(at[0]) instanceof HomeCabinetBlockEntity&&lower.getValue(HomeCabinetBlock.FACING)==net.minecraft.core.Direction.SOUTH,"its table is in the panel, which faces whoever put it down");
+                // Played from its screen: a session at home, on this cabinet's game.
+                upper.useWithoutItem(l,p,hit(at[0].above(),net.minecraft.core.Direction.SOUTH));
+                var ses=Polybius.session(p.getUUID());
+                h.assertTrue(ses!=null&&ses.home()!=null&&ses.home().pos().equals(at[0])&&ses.game()==PolybiusSite.MOTHLIGHT,"using it opens its game for that reader: "+ses);
+                lower.useWithoutItem(l,q,hit(at[0],net.minecraft.core.Direction.SOUTH));
+                h.assertTrue(Polybius.session(q.getUUID())==null,"one reader plays it at a time");
+                q.setShiftKeyDown(true);lower.useWithoutItem(l,q,hit(at[0],net.minecraft.core.Direction.SOUTH));q.setShiftKeyDown(false);
+                h.assertTrue(l.getBlockState(at[0]).getValue(HomeCabinetBlock.GAME)==PolybiusSite.MOTHLIGHT,"nor is its board changed under them");
+                expected[0]=PolybiusGames.replay(ses.game(),ses.token(),drift,Polybius.LONGEST[ses.game()]).score();
+                Polybius.backdate(p.getUUID(),500);
+                h.assertTrue(expected[0]>0&&Polybius.submit(p,ses.token(),drift),"a game played on it stands, at the server's replay: "+expected[0]);
+                var cab=(HomeCabinetBlockEntity)l.getBlockEntity(at[0]);
+                h.assertTrue(cab.table(PolybiusSite.MOTHLIGHT).size()==1&&cab.table(PolybiusSite.MOTHLIGHT).get(0).id().equals(p.getUUID())&&cab.table(PolybiusSite.MOTHLIGHT).get(0).score()==expected[0],"on the cabinet's own table");
+                h.assertTrue(PolybiusScores.best(s,PolybiusSite.MOTHLIGHT,p.getUUID())==0&&count(p,PolybiusRegistry.TICKETS.get())==0,"not on the arcade's, and for no tickets");
+                q.setShiftKeyDown(true);lower.useWithoutItem(l,q,hit(at[0],net.minecraft.core.Direction.SOUTH));q.setShiftKeyDown(false);
+                h.assertTrue(l.getBlockState(at[0]).getValue(HomeCabinetBlock.GAME)==PolybiusSite.UNDERTOW&&l.getBlockState(at[0].above()).getValue(HomeCabinetBlock.GAME)==PolybiusSite.UNDERTOW,"crouched at, it takes the next board, screen and panel together");
+                h.assertTrue(l.getBlockEntity(at[0]) instanceof HomeCabinetBlockEntity again&&again.table(PolybiusSite.MOTHLIGHT).size()==1,"and keeps its tables");
+                // Broken from the screen, the whole cabinet comes down as one.
+                l.destroyBlock(at[0].above(),true);
+                var drops=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(at[0]).inflate(3),e->e.getItem().is(PolybiusRegistry.HOME_CABINET_ITEM.get()));
+                h.assertTrue(l.getBlockState(at[0]).isAir()&&l.getBlockState(at[0].above()).isAir()&&drops.size()==1&&drops.get(0).getItem().getCount()==1,"breaking it leaves one cabinet: "+drops.size());
+                drops.forEach(net.minecraft.world.entity.Entity::discard);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="poly_home") public static void homeDone(ServerLevel l){close();}
 }

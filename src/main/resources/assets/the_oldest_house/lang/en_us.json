@@ -1540,5 +1540,7 @@
   "subtitles.the_oldest_house.prize.creak": "Finger trap creaks",
   "subtitles.the_oldest_house.prize.pop": "Fingers come free",
   "entity.the_oldest_house.polybius_prize_prop": "Prize",
-  "entity.the_oldest_house.polybius_bouncy_ball": "Bouncy Ball"
+  "entity.the_oldest_house.polybius_bouncy_ball": "Bouncy Ball",
+  "block.the_oldest_house.polybius_home_cabinet": "Arcade Cabinet",
+  "item.the_oldest_house.polybius_service_key": "Service Key"
 }

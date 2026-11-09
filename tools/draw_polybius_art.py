@@ -388,6 +388,39 @@ def tickets():
     return im
 
 
+def service_key():
+    """0.4.413: the service key: a round tubular key on a split ring, with a paper tag that says FREE PLAY (too small to read)."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    # the split ring, top left
+    for x, y in [(2, 2), (3, 1), (4, 1), (5, 2), (6, 3), (6, 4), (5, 5), (4, 6), (3, 6), (2, 5), (1, 4), (1, 3)]:
+        dot(im, x, y, '#b8bcc4')
+    dot(im, 3, 2, '#e8ecf0'); dot(im, 5, 5, '#7a7e86')
+    # the paper tag on its string
+    dot(im, 2, 7, '#d8d0b0'); dot(im, 2, 8, '#d8d0b0')
+    fill(im, 0, 9, 5, 14, '#f0e8c8'); fill(im, 1, 10, 4, 11, '#c03020'); fill(im, 1, 12, 3, 13, '#c03020')
+    dot(im, 0, 9, '#c8bc98'); dot(im, 4, 13, '#c8bc98')
+    # the round head and its barrel down to the right
+    fill(im, 7, 5, 11, 9, '#9aa0aa'); fill(im, 8, 6, 10, 8, '#d0d4dc'); dot(im, 9, 7, '#3a3e46')
+    for i in range(5):
+        dot(im, 10 + i, 9 + i, '#c8ccd4'); dot(im, 11 + i, 9 + i, '#8a8e96') if 11 + i < 16 else None
+    dot(im, 15, 14, '#5a5e66'); dot(im, 14, 14, '#c8ccd4'); dot(im, 15, 15, '#7a7e86')
+    return im
+
+
+def home_cabinet_icon():
+    """0.4.413: the home cabinet as an item: a small upright cabinet with a lit screen and a marquee."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    body = GAME_BODY[0]
+    fill(im, 4, 1, 12, 16, body)
+    fill(im, 4, 1, 12, 3, NEON[0]); fill(im, 5, 1, 11, 2, '#ffd0ec')
+    fill(im, 5, 4, 11, 8, '#0a0a14'); fill(im, 6, 5, 10, 7, '#45e6ff'); dot(im, 7, 6, '#ffe14a')
+    fill(im, 3, 9, 13, 11, shade(body, 18)); dot(im, 5, 9, '#e03030'); dot(im, 9, 10, '#f0d040'); dot(im, 11, 10, '#40a0f0')
+    fill(im, 6, 12, 10, 15, '#2a2a2e'); dot(im, 7, 13, '#ff7030'); dot(im, 9, 13, '#ff7030')
+    for y in range(1, 16):
+        dot(im, 4, y, shade(body, -12)); dot(im, 11, y, shade(body, -18))
+    return im
+
+
 # ------------------------------------------------------------------------------------------------ Block Party and the regulars' games
 BRAWL_BODY = '#2a1a3a'
 
@@ -831,6 +864,7 @@ def textures():
     out['block/polybius/boxes_top.png'] = boxes('top'); out['block/polybius/boxes_side.png'] = boxes('side')
     out['block/polybius/napkins.png'] = napkins(); out['block/polybius/menu_board.png'] = menu_board()
     out['item/polybius_pizza.png'] = slice_icon(); out['item/polybius_soda.png'] = soda_icon()
+    out['item/polybius_service_key.png'] = service_key(); out['item/polybius_home_cabinet.png'] = home_cabinet_icon()
     return out
 
 
@@ -842,9 +876,10 @@ STAGES = {'cabinet': 4, 'screen': 4, 'neon': 3, 'poster': 3, 'dead': 2, 'dead_sc
 ITEM_NAMES = {'polybius_tickets': 'Prize Tickets', 'polybius_prize_spider': 'Rubber Spider', 'polybius_prize_finger_trap': 'Finger Trap',
               'polybius_prize_bouncy_ball': 'Bouncy Ball', 'polybius_prize_glow_star': 'Glow Star', 'polybius_prize_slap_bracelet': 'Slap Bracelet',
               'polybius_prize_kazoo': 'Kazoo', 'polybius_prize_mood_ring': 'Mood Ring', 'polybius_prize_plush_dog': 'Plush Dog with One Eye',
-              'polybius_pizza': 'Slice of Pizza', 'polybius_soda': 'Fountain Soda'}
+              'polybius_pizza': 'Slice of Pizza', 'polybius_soda': 'Fountain Soda', 'polybius_service_key': 'Service Key'}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
-NAMES = {'polybius_fitting': 'Arcade Fitting', 'polybius_carpet': 'Arcade Carpet', 'polybius_wall': 'Arcade Wall', 'polybius_ceiling': 'Arcade Ceiling'}
+NAMES = {'polybius_fitting': 'Arcade Fitting', 'polybius_carpet': 'Arcade Carpet', 'polybius_wall': 'Arcade Wall', 'polybius_ceiling': 'Arcade Ceiling',
+         'polybius_home_cabinet': 'Arcade Cabinet'}
 
 
 def files():
@@ -864,6 +899,17 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/polybius_fitting.json'] = {'variants': variants}
+    # 0.4.413: a cabinet of the reader's own, on the arcade's own cabinet models: the panel below, the screen above, one per game.
+    home = {}
+    for facing, y in FACING_Y.items():
+        for half, kind in (('lower', 'cabinet'), ('upper', 'screen')):
+            for game in range(3):
+                v = {'model': NS + f'block/polybius/{kind}_{game}'}
+                if y:
+                    v['y'] = y
+                home[f'facing={facing},game={game},half={half}'] = v
+    out['blockstates/polybius_home_cabinet.json'] = {'variants': home}
+    out['models/item/polybius_home_cabinet.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/polybius_home_cabinet'}}
     for g in range(4):
         out[f'textures/block/polybius/screen_{g}.png.mcmeta'] = BLACK_META if g == 3 else SCREEN_META
     for h in range(2):

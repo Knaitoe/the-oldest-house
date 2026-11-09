@@ -23,20 +23,28 @@ public final class PolybiusScores {
     public record Entry(String name,UUID id,int score){}
     static String key(int game){return "Game"+game;}
     public static List<Entry> table(MinecraftServer s,int game){
-        var out=new ArrayList<Entry>();if(game<0||game>=PolybiusSite.BLACK)return out;
-        for(Tag t:LabyrinthData.get(s).stateEntry(STATE,key(game)).getList("Rows",Tag.TAG_COMPOUND)){var c=(CompoundTag)t;if(c.hasUUID("Id"))out.add(new Entry(c.getString("Name"),c.getUUID("Id"),c.getInt("Score")));}
+        if(game<0||game>=PolybiusSite.BLACK)return new ArrayList<>();
+        return read(LabyrinthData.get(s).stateEntry(STATE,key(game)).getList("Rows",Tag.TAG_COMPOUND));
+    }
+    static void save(MinecraftServer s,int game,List<Entry> rows){var t=new CompoundTag();t.put("Rows",write(rows));LabyrinthData.get(s).setStateEntry(STATE,key(game),t);}
+    /** 0.4.413: a table's rows as they are saved, here and in a cabinet of the reader's own (HomeCabinetBlockEntity). */
+    public static List<Entry> read(ListTag list){
+        var out=new ArrayList<Entry>();
+        for(Tag t:list){var c=(CompoundTag)t;if(c.hasUUID("Id"))out.add(new Entry(c.getString("Name"),c.getUUID("Id"),c.getInt("Score")));}
         return out;
     }
-    static void save(MinecraftServer s,int game,List<Entry> rows){
-        var list=new ListTag();for(var e:rows){var c=new CompoundTag();c.putString("Name",e.name());c.putUUID("Id",e.id());c.putInt("Score",e.score());list.add(c);}
-        var t=new CompoundTag();t.put("Rows",list);LabyrinthData.get(s).setStateEntry(STATE,key(game),t);
-    }
+    public static ListTag write(List<Entry> rows){var list=new ListTag();for(var e:rows){var c=new CompoundTag();c.putString("Name",e.name());c.putUUID("Id",e.id());c.putInt("Score",e.score());list.add(c);}return list;}
     /** A finished game: the reader's best stands, and their place on the table is returned (1 for the top), or 0 for none. */
     public static int record(MinecraftServer s,int game,ServerPlayer p,int score){
         if(game<0||game>=PolybiusSite.BLACK||score<=0)return 0;
-        var rows=table(s,game);var mine=rows.stream().filter(e->e.id().equals(p.getUUID())).findFirst().orElse(null);
+        var rows=table(s,game);int rank=record(rows,p,score);save(s,game,rows);return rank;
+    }
+    /** The same on any table's rows, which it changes: the reader's best stands, the ten best are kept, and their place is returned. */
+    public static int record(List<Entry> rows,ServerPlayer p,int score){
+        if(score<=0)return 0;
+        var mine=rows.stream().filter(e->e.id().equals(p.getUUID())).findFirst().orElse(null);
         if(mine==null||mine.score()<score){rows.removeIf(e->e.id().equals(p.getUUID()));rows.add(new Entry(p.getGameProfile().getName(),p.getUUID(),score));}
-        rows.sort(Comparator.comparingInt(Entry::score).reversed());while(rows.size()>KEEP)rows.remove(rows.size()-1);save(s,game,rows);
+        rows.sort(Comparator.comparingInt(Entry::score).reversed());while(rows.size()>KEEP)rows.remove(rows.size()-1);
         for(int i=0;i<rows.size();i++)if(rows.get(i).id().equals(p.getUUID()))return i+1;
         return 0;
     }
@@ -46,7 +54,8 @@ public final class PolybiusScores {
     /** The black cabinet's price for a fourth play: every place the reader held on every table, gone. Returns how many. */
     public static int strike(MinecraftServer s,UUID id){int n=0;for(int g=0;g<PolybiusSite.BLACK;g++){var rows=table(s,g);if(rows.removeIf(e->e.id().equals(id))){n++;save(s,g,rows);}}return n;}
     /** A table as the cabinet's screen sends it. */
-    public static CompoundTag tag(MinecraftServer s,int game){var list=new ListTag();for(var e:table(s,game)){var c=new CompoundTag();c.putString("Name",e.name());c.putInt("Score",e.score());list.add(c);}var t=new CompoundTag();t.put("Rows",list);return t;}
+    public static CompoundTag tag(MinecraftServer s,int game){return tag(table(s,game));}
+    public static CompoundTag tag(List<Entry> rows){var list=new ListTag();for(var e:rows){var c=new CompoundTag();c.putString("Name",e.name());c.putInt("Score",e.score());list.add(c);}var t=new CompoundTag();t.put("Rows",list);return t;}
     /** A table as it hangs over its cabinet: the top five. */
     public static Component board(MinecraftServer s,int game){
         MutableComponent c=Component.literal(game==PolybiusSite.BLACK?"":NAMES[game]+"\n").withStyle(ChatFormatting.LIGHT_PURPLE);
