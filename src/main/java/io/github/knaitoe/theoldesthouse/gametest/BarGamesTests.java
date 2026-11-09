@@ -248,15 +248,17 @@ public final class BarGamesTests {
         DartBoards.seatRegular(l,board,"the regular",.95);DartBoards.use(p,board,false);
         var b=DartBoards.at(l,board);
         h.assertTrue(b!=null&&b.seats.size()==2&&DartBoards.regular(b.shooter())&&houseDarts(p)==0,"the board's own player throws first, and the reader waits");
-        h.runAfterDelay(DartBoards.REGULAR_GAP*3+30,()->{
-            h.assertTrue(b.game!=null&&b.game.lastTurn.size()+b.game.thisTurn.size()>=3,"on its turn it throws its three darts");
-            int hits=0;for(var x:b.game.lastTurn.isEmpty()?b.game.thisTurn:b.game.lastTurn)if(x.ring()!=DartsGame.Ring.MISS)hits++;
-            h.assertTrue(hits>=2,"and a steady hand finds the board: "+hits);
-            h.runAfterDelay(DartBoards.PAUSE,()->{
-                h.assertTrue(p.getUUID().equals(b.shooter())&&houseDarts(p)==3,"then the reader is handed three");
-                for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();h.succeed();
-            });
-        });
+        // Run 1495: three throws a REGULAR_GAP apart, each landing after its flight, left about fifteen ticks of a fixed 120-tick budget,
+        // and the full suite's busy server once ran past it. Wait for the three darts (within the case's limit) and report the board's state.
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(b.game!=null&&b.game.lastTurn.size()+b.game.thisTurn.size()>=3,"on its turn it throws its three darts: "+DartBoards.describe(b)))
+            .thenExecute(()->{
+                int hits=0;for(var x:b.game.lastTurn.isEmpty()?b.game.thisTurn:b.game.lastTurn)if(x.ring()!=DartsGame.Ring.MISS)hits++;
+                h.assertTrue(hits>=2,"and a steady hand finds the board: "+hits);
+            })
+            .thenWaitUntil(()->h.assertTrue(p.getUUID().equals(b.shooter())&&houseDarts(p)==3,"then the reader is handed three: "+DartBoards.describe(b)))
+            .thenExecute(()->{for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();})
+            .thenSucceed();
     }
     @AfterBatch(batch="bar_darts") public static void dartsDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
     @AfterBatch(batch="bar_darts_regular") public static void regularDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
