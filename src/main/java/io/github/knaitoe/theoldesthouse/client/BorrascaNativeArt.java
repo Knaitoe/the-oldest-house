@@ -43,7 +43,9 @@ public final class BorrascaNativeArt {
         mesh.getRoot().getChild("head").addOrReplaceChild("painted_hat",CubeListBuilder.create().texOffs(32,0).addBox(-4,-8,-4,8,8,8,new CubeDeformation(.5F)),PartPose.ZERO);
         return LayerDefinition.create(mesh,64,64);
     }
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);}
+    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);e.registerEntityRenderer(BorrascaRegistry.BIKE.get(),BorrascaBikeRenderer::new);}
+    /** 0.4.435: the ridden bike's frame, wheel and cranks, which no block state names. */
+    @SubscribeEvent public static void models(net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional e){e.register(BorrascaBikeRenderer.FRAME);e.register(BorrascaBikeRenderer.WHEEL);e.register(BorrascaBikeRenderer.CRANKS);}
     public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{
         private Matrix4f renderToEntity;
         private Vec3 entityPosition;

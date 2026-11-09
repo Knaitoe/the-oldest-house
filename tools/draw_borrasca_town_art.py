@@ -654,31 +654,39 @@ def bike_seat():
     return im
 
 
-def bike_parts():
+def bike_bar(parts, lo, hi, tex, rot=None):
+    """One bar of a bike, a pixel or two thick, every face from the same pixel of its texture."""
+    parts.append(element(lo, hi, {'all': tex}, {k: [7, 7, 8, 8] for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot))
+
+
+def bike_wheel_parts(parts, cx, cy, r=5.5):
+    """A wheel in the plane z 7.5..8.5 about its hub (cx, cy): the tyre in eight pieces, the hub and two spokes."""
+    z0, z1 = 7.5, 8.5
+    bike_bar(parts, [cx - 2, cy + r - 1, z0], [cx + 2, cy + r, z1], 't')          # top
+    bike_bar(parts, [cx - 2, cy - r, z0], [cx + 2, cy - r + 1, z1], 't')          # bottom, on the ground
+    bike_bar(parts, [cx - r, cy - 2, z0], [cx - r + 1, cy + 2, z1], 't')          # back
+    bike_bar(parts, [cx + r - 1, cy - 2, z0], [cx + r, cy + 2, z1], 't')          # front
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            mx, my = cx + sx * (r - 1.6), cy + sy * (r - 1.6)
+            bike_bar(parts, [mx - 1.4, my - .5, z0], [mx + 1.4, my + .5, z1], 't', {'angle': -45 if sx * sy > 0 else 45, 'axis': 'z', 'origin': [mx, my, 8]})
+    bike_bar(parts, [cx - .5, cy - .5, 7], [cx + .5, cy + .5, 9], 'c')            # hub
+    bike_bar(parts, [cx - r + 1, cy - .25, 7.75], [cx + r - 1, cy + .25, 8.25], 'c')  # spokes, one across and one up
+    bike_bar(parts, [cx - .25, cy - r + 1, 7.75], [cx + .25, cy + r - 1, 8.25], 'c')
+
+
+def bike_parts(wheels=True, standing=True):
     """A bicycle on its kickstand, built from bars a pixel or two thick: two wheels, the frame, the seat, the bars and the pedals.
-    It runs along x, from -4 to 20, with its wheels in the plane z 7.5..8.5."""
+    It runs along x, from -4 to 20, with its wheels in the plane z 7.5..8.5. 0.4.435: without its wheels, kickstand and pedals it is
+    the frame a ridden bike is drawn from (the wheels and the cranks turn on their own, bike_wheel and bike_cranks)."""
     parts = []
 
     def bar(lo, hi, tex, rot=None):
-        e = element(lo, hi, {'all': tex}, {k: [7, 7, 8, 8] for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot)
-        parts.append(e)
+        bike_bar(parts, lo, hi, tex, rot)
 
-    def wheel(cx, cy, r=5.5):
-        z0, z1 = 7.5, 8.5
-        bar([cx - 2, cy + r - 1, z0], [cx + 2, cy + r, z1], 't')          # top
-        bar([cx - 2, cy - r, z0], [cx + 2, cy - r + 1, z1], 't')          # bottom, on the ground
-        bar([cx - r, cy - 2, z0], [cx - r + 1, cy + 2, z1], 't')          # back
-        bar([cx + r - 1, cy - 2, z0], [cx + r, cy + 2, z1], 't')          # front
-        for sx in (-1, 1):
-            for sy in (-1, 1):
-                mx, my = cx + sx * (r - 1.6), cy + sy * (r - 1.6)
-                bar([mx - 1.4, my - .5, z0], [mx + 1.4, my + .5, z1], 't', {'angle': -45 if sx * sy > 0 else 45, 'axis': 'z', 'origin': [mx, my, 8]})
-        bar([cx - .5, cy - .5, 7], [cx + .5, cy + .5, 9], 'c')            # hub
-        bar([cx - r + 1, cy - .25, 7.75], [cx + r - 1, cy + .25, 8.25], 'c')  # spokes, one across and one up
-        bar([cx - .25, cy - r + 1, 7.75], [cx + .25, cy + r - 1, 8.25], 'c')
-
-    wheel(1.5, 5.5)
-    wheel(14.5, 5.5)
+    if wheels:
+        bike_wheel_parts(parts, 1.5, 5.5)
+        bike_wheel_parts(parts, 14.5, 5.5)
     bar([5, 9.5, 7.5], [14, 10.5, 8.5], 'f')                              # top tube
     bar([6.5, 4, 7.5], [7.5, 12, 8.5], 'f')                               # seat tube
     bar([1.5, 5, 7.25], [7, 6, 7.5], 'f'); bar([1.5, 5, 8.5], [7, 6, 8.75], 'f')   # chain stays
@@ -690,9 +698,29 @@ def bike_parts():
     bar([13.4, 13.4, 3], [14.6, 14.6, 4.5], 's'); bar([13.4, 13.4, 11.5], [14.6, 14.6, 13], 's')  # grips
     bar([6.5, 12, 7.5], [7.5, 12.5, 8.5], 'c')                             # seat post
     bar([4.5, 12.5, 7], [9, 13.5, 9], 's')                                 # seat
-    bar([6.5, 3.5, 6], [7.5, 4.5, 10], 'c')                                # crank axle
-    bar([6, 3.2, 5], [8, 3.8, 6], 's'); bar([6, 4.2, 10], [8, 4.8, 11], 's')  # pedals
-    bar([7.5, .5, 9.5], [8.5, 4, 10.5], 'c', {'angle': 22.5, 'axis': 'x', 'origin': [8, 4, 8.5]})  # kickstand, its foot on the ground
+    if standing:
+        bar([6.5, 3.5, 6], [7.5, 4.5, 10], 'c')                                # crank axle
+        bar([6, 3.2, 5], [8, 3.8, 6], 's'); bar([6, 4.2, 10], [8, 4.8, 11], 's')  # pedals
+        bar([7.5, .5, 9.5], [8.5, 4, 10.5], 'c', {'angle': 22.5, 'axis': 'x', 'origin': [8, 4, 8.5]})  # kickstand, its foot on the ground
+    return parts
+
+
+def bike_wheel():
+    """0.4.435: one wheel about the middle of the block, turned by the ridden bike's renderer at each hub."""
+    parts = []
+    bike_wheel_parts(parts, 8, 8)
+    return parts
+
+
+def bike_cranks():
+    """0.4.435: the cranks about the middle of the block, as the axle at (7, 4) is drawn turning: the left pedal (toward -z, on the
+    rider's left) down and the right one up, each on an arm two and a half pixels long."""
+    parts = []
+    bike_bar(parts, [7.5, 7.5, 6], [8.5, 8.5, 10], 'c')                    # axle
+    bike_bar(parts, [7.6, 5.5, 5.5], [8.4, 8, 6], 'c')                     # left arm, down
+    bike_bar(parts, [6.75, 5, 4], [9.25, 5.75, 5.5], 's')                  # left pedal
+    bike_bar(parts, [7.6, 8, 10], [8.4, 10.5, 10.5], 'c')                  # right arm, up
+    bike_bar(parts, [6.75, 10.25, 10.5], [9.25, 11, 12], 's')              # right pedal
     return parts
 
 
@@ -854,6 +882,9 @@ def shop_models():
     bike = {'t': 'tire', 'c': 'chrome', 'f': 'bike_paint', 's': 'bike_seat'}
     m['bike_0'] = model(parts, bike, 'bike_paint')
     m['bike_1'] = model(lying(parts), bike, 'bike_paint')
+    m['bike_frame'] = model(bike_parts(wheels=False, standing=False), bike, 'bike_paint')
+    m['bike_wheel'] = model(bike_wheel(), bike, 'tire')
+    m['bike_cranks'] = model(bike_cranks(), bike, 'chrome')
     return m
 
 

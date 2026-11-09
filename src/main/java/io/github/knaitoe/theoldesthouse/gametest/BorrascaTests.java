@@ -495,6 +495,78 @@ public final class BorrascaTests {
     }
     @AfterBatch(batch="borrasca_gentleman_far") public static void gentlemanFarDone(ServerLevel l){cleanup();}
 
+    /**
+     * 0.4.435 (the owner: "Let players ride bikes? Maintaining balance and pedaling left/right should be a function."): Kendra's bike in
+     * town is looked at, got on, pushed along by each strafe key in turn, and got off with a sneak. It is left on its kickstand where it
+     * stopped, and it is still hers.
+     */
+    @GameTest(template="empty",batch="borrasca_bike",timeoutTicks=1800)
+    public static void aChildGetsOnKendrasBikePedalsAndGetsOff(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_bike");final BorrascaBike[] bike={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&BorrascaShopBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.KENDRA_BIKE)),BorrascaShopBlock.Kind.BIKE),"her bike is out in town"))
+          .thenExecute(()->{
+              var b=f.base(p);var at=BorrascaRooms.at(b,BorrascaRooms.KENDRA_BIKE);var rel=at.subtract(b);
+              var own=f.own(p);h.assertTrue(BorrascaStory.click(p,b,rel,own),"the bike answers a click");f.save(p,own);
+              h.assertTrue(!p.isPassenger()&&f.own(p).getBoolean("BikeLooked"+BorrascaBike.KENDRA),"the first click is a look at it");
+              own=f.own(p);BorrascaStory.click(p,b,rel,own);f.save(p,own);
+              h.assertTrue(p.getVehicle() instanceof BorrascaBike,"the second gets on it");bike[0]=(BorrascaBike)p.getVehicle();
+              h.assertTrue(f.out.getBlockState(at).isAir()&&bike[0].whose()==BorrascaBike.KENDRA,"it is off its stand while it is ridden, and it is Kendra's");
+          }).thenIdle(40).thenExecute(()->{
+              h.assertTrue(p.getVehicle()==bike[0]&&Math.abs(bike[0].leanNow())<.05F,"stopped, a foot is down and it stays up: "+bike[0].leanNow());
+              p.setPlayerInput(1,0,false,false);
+          }).thenIdle(2).thenExecute(()->{
+              h.assertTrue(bike[0].strokes()==-1&&bike[0].speedNow()>0,"the left strafe key is a push on the left pedal: "+bike[0].strokes());
+              p.setPlayerInput(0,0,false,false);
+          }).thenIdle(2).thenExecute(()->p.setPlayerInput(-1,0,false,false)).thenIdle(2).thenExecute(()->{
+              h.assertTrue(bike[0].strokes()==2,"the right key pushes the right pedal: "+bike[0].strokes());
+              p.setPlayerInput(0,0,false,true);
+          }).thenWaitUntil(()->h.assertTrue(!p.isPassenger()&&bike[0].isRemoved(),"sneaking gets off"))
+          .thenExecute(()->{
+              var own=f.own(p);h.assertTrue(own.contains("BikeAt"+BorrascaBike.KENDRA),"where it was left is remembered");
+              var left=BlockPos.of(own.getLong("BikeAt"+BorrascaBike.KENDRA));var s=f.out.getBlockState(left);
+              h.assertTrue(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.BIKE)&&s.getValue(BorrascaShopBlock.STAGE)==0,"and it stands there on its kickstand");
+              h.assertTrue(BorrascaStory.whoseBike(f.base(p),own,left)==BorrascaBike.KENDRA,"still Kendra's where it was left");
+              h.assertTrue(own.getBoolean("BikeRode"+BorrascaBike.KENDRA)&&BorrascaTexts.account(own).contains("I rode Kendra's bike"),"and the account says so");
+          }).thenSucceed();
+    }
+    @AfterBatch(batch="borrasca_bike") public static void bikeDone(ServerLevel l){cleanup();}
+
+    /**
+     * 0.4.435: on a straight road, pushing the pedals in turn, and twice on the far pedal whenever it starts to go over, keeps a moving bike
+     * up and carries it a good way. Pushing one pedal over and over tips it until the reader comes off, and the bike lies in the road.
+     */
+    @GameTest(template="empty",batch="borrasca_bike_balance",timeoutTicks=1800)
+    public static void pedallingInTurnKeepsTheBikeUpAndOnePedalPutsItDown(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_pedal");final BorrascaBike[] bike={null};final Vec3[] start={null};final int[] t={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
+          .thenExecute(()->{
+              // A clear straight road high over the town, inside the site, so nothing but the rider decides where the bike goes.
+              var road=f.base(p).offset(0,36,-6);
+              for(int z=0;z>-72;z--)for(int x=-1;x<=1;x++){f.out.setBlock(road.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);for(int y=0;y<4;y++)f.out.setBlock(road.offset(x,y,z),Blocks.AIR.defaultBlockState(),3);}
+              p.teleportTo(f.out,road.getX()+.5,road.getY(),road.getZ()+.5,180,0);
+              var made=BorrascaRegistry.BIKE.get().create(f.out);made.moveTo(road.getX()+.5,road.getY(),road.getZ()+.5,180,0);made.setUp(p,BorrascaBike.PATRICK,180);f.out.addFreshEntity(made);
+              h.assertTrue(p.startRiding(made,true),"on Patrick's bike");bike[0]=made;start[0]=made.position();
+          }).thenExecuteFor(160,()->{
+              // Pushing in turn every eight ticks; when it starts to go over, the pedal on the other side, twice.
+              var b=bike[0];int n=t[0]++;if(p.getVehicle()!=b)return;
+              if(b.leanNow()>.3F&&n%2==0)b.pedal(-1);else if(b.leanNow()< -.3F&&n%2==0)b.pedal(1);else if(n%8==0)b.pedal(b.strokes()<0?1:-1);
+          }).thenExecute(()->{
+              var b=bike[0];h.assertTrue(p.getVehicle()==b,"pedalled in turn and kept straight, it is still up after eight seconds: lean "+b.leanNow());
+              double went=b.position().subtract(start[0]).horizontalDistance();h.assertTrue(went>25,"and it has gone a good way: "+went);
+              h.assertTrue(f.own(p).getBoolean("BikeRode"+BorrascaBike.PATRICK),"the reader rode Patrick's bike");
+          }).thenExecuteFor(80,()->{if(p.getVehicle()==bike[0]&&t[0]++%4==0)bike[0].pedal(1);})
+          .thenExecute(()->{
+              h.assertTrue(!p.isPassenger()&&bike[0].isRemoved(),"pushing the one pedal over and over, the reader comes off");
+              var own=f.own(p);h.assertTrue(own.getInt("BikeFalls")==1,"one fall, remembered: "+own.getInt("BikeFalls"));
+              var left=BlockPos.of(own.getLong("BikeAt"+BorrascaBike.PATRICK));var s=f.out.getBlockState(left);
+              h.assertTrue(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.BIKE)&&s.getValue(BorrascaShopBlock.STAGE)==1,"and the bike lies on its side in the road");
+              h.assertTrue(BorrascaTexts.account(own).contains("I came off once"),"the account remembers it");
+          }).thenSucceed();
+    }
+    @AfterBatch(batch="borrasca_bike_balance") public static void bikeBalanceDone(ServerLevel l){cleanup();}
+
     /** The child's hand swaps some letters for alternate glyphs (HouseWriting); read them back as the letters they stand for. */
     private static String childPlain(String text){var base="aeiotrshnldcmyug";var out=new StringBuilder();for(char c:text.toCharArray()){if(c>=0xE100&&c<0xE110+base.length()){int i=c>=0xE110?c-0xE110:c-0xE100;out.append(i<base.length()?base.charAt(i):c);}else out.append(c);}return out.toString();}
     /** 0.4.237: what the trailhead note warns of is in the vignette, off-screen: the rooms under the depot, the night book, the letter, the graves. */
