@@ -26,6 +26,12 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * different story progress will separate them"): while the door is held, a friend near it who can follow sees a few motes drift at
  * it, seen by them alone, and is told once, quietly, who went through and that the way is still open; a friend who cannot follow is
  * told that instead. Whoever is split from the group by the door is told why, after the crossing, on the action bar.
+ * <p>
+ * 0.4.400, the owner: "room crossings don't allow time for other players to join?" Only doors into stories were held: a door onto an
+ * ordinary way on (a hall, a trial, a room to rest in) was dealt to each reader by their own route, so a friend who came another way,
+ * or was further down, went through the same door a moment later and came out somewhere else. Now every dealt door is held for
+ * WINDOW behind the first through it: whoever follows through it in that time comes out in the same room. A way on is anyone's to
+ * follow into; stories keep their own rules (finished, another thread, one at a time).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class GroupCrossings {
@@ -52,7 +58,7 @@ public final class GroupCrossings {
         RECENT.values().removeIf(c->now-c.tick()>WINDOW||now<c.tick());
         var led=RECENT.get(key(door));
         if(led!=null&&!led.leader().equals(me)){
-            if(canJoin(data,me,led.place(),VignetteThreads.threadId(data,led.place(),led.leader())))data.deal(me,door,led.place().id(),false,false);
+            if(follows(data,me,led))data.deal(me,door,led.place().id(),false,false);
             else owe(p,why(data,me,led),AFTER); // otherwise the group splits here, and this reader keeps their own door
             return;
         }
@@ -78,7 +84,7 @@ public final class GroupCrossings {
     }
     /** The first through a dealt door into a shared vignette holds it for the group. */
     public static void crossed(ServerPlayer p,LabyrinthData.Door door,@Nullable LabyrinthPlace place){
-        if(p.isSpectator()||door.command||!SharedVignettes.followable(place))return;
+        if(p.isSpectator()||door.command||!(SharedVignettes.followable(place)||wayOn(place)))return;
         // 0.4.244: nobody follows a reader into the aftermath of a scene they finished.
         if(Aftermath.returning(LabyrinthData.get(p.server),p.getUUID(),place))return;
         int now=p.server.getTickCount();var led=RECENT.get(key(door));
@@ -99,7 +105,7 @@ public final class GroupCrossings {
         for(var c:RECENT.values()){
             if(now-c.tick()>WINDOW||now<c.tick()||c.leader().equals(q.getUUID())||!q.level().dimension().equals(c.dimension()))continue;
             double d=q.position().distanceTo(Vec3.atBottomCenterOf(c.at()));if(d>SEE||best!=null&&d>=best.distance())continue;
-            best=new Near(c,canJoin(data,q.getUUID(),c.place(),VignetteThreads.threadId(data,c.place(),c.leader())),d);
+            best=new Near(c,follows(data,q.getUUID(),c),d);
         }
         return best;
     }
@@ -132,6 +138,12 @@ public final class GroupCrossings {
         }
     }
 
+    /** 0.4.400: an ordinary way on, not a story: a gray room of the interior (a hall, a trial, a room to rest in) that stands once for everyone. */
+    public static boolean wayOn(@Nullable LabyrinthPlace place){return place!=null&&place.isGray()&&place.slot()>=0&&!SceneInstances.copyable(place);}
+    /** Whether this reader can follow the one who went through: into a way on always, into a story as canJoin says. */
+    static boolean follows(LabyrinthData data,UUID reader,Crossing led){
+        return wayOn(led.place())||canJoin(data,reader,led.place(),VignetteThreads.threadId(data,led.place(),led.leader()));
+    }
     /** Whether this reader can go into the leader's scene with them: not finished, and no other thread of it. */
     public static boolean canJoin(LabyrinthData data,UUID reader,LabyrinthPlace place,@Nullable String leaderThread){
         if(!SharedVignettes.followable(place)||LabyrinthDealer.finishedFor(data,reader,place))return false;

@@ -152,6 +152,38 @@ public final class CoopTests {
             }).thenSucceed();
     }
 
+    /**
+     * 0.4.400 (the owner: "room crossings don't allow time for other players to join?"): a door onto an ordinary hall is held for the
+     * group like a story's. The first through keeps the hall dealt to them; a friend who follows through the same door within the
+     * window comes out in the same hall, whatever their own way would have dealt, is shown the way is open, and is told of no split.
+     * Once the door is no longer held, a reader's door is their own again.
+     */
+    @GameTest(template="empty",batch="coop_halls400",timeoutTicks=1200)
+    public static void aFriendWhoFollowsThroughAHallDoorComesOutInTheSameHall(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var lead=player(h,f,"hall_lead");var friend=player(h,f,"hall_friend");var late=player(h,f,"hall_late");
+        hold(f,LabyrinthPlace.STRAIGHT_HALL);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
+            .thenExecute(()->{
+                hall(f,LabyrinthPlace.STRAIGHT_HALL);var data=f.data();var far=data.door(LabyrinthPlace.STRAIGHT_HALL.id()+"/far");var front=far.lower.relative(far.facing);
+                GroupCrossings.forget();at(lead,f.in,front);at(friend,f.in,front.east(1));at(late,f.in,front.south(14));
+                var laundry=LabyrinthPlace.LAUNDRY_HALL;var stacks=LabyrinthPlace.STACKS_HALL;
+                h.assertTrue(GroupCrossings.wayOn(laundry)&&GroupCrossings.wayOn(stacks)&&!GroupCrossings.wayOn(SCENE),"the halls are ways on; the nursery is a story");
+                data.deal(lead.getUUID(),far,laundry.id(),false);data.deal(friend.getUUID(),far,stacks.id(),false);data.deal(late.getUUID(),far,stacks.id(),false);
+                GroupCrossings.before(lead,far);
+                h.assertTrue(laundry.id().equals(data.deal(lead.getUUID(),far).place()),"the first through keeps the hall dealt to them");
+                GroupCrossings.crossed(lead,far,laundry);
+                var open=GroupCrossings.cue(friend);
+                h.assertTrue(open!=null&&open.contains("hall_lead")&&open.contains("still open"),"a friend at the door is told the way is open behind them: "+open);
+                GroupCrossings.before(friend,far);
+                h.assertTrue(laundry.id().equals(data.deal(friend.getUUID(),far).place()),"following through the same door, the friend comes out in the same hall, not the one their own way dealt: "+data.deal(friend.getUUID(),far).place());
+                h.assertTrue(GroupCrossings.owed(friend.getUUID()).isEmpty(),"and is told of no split: "+GroupCrossings.owed(friend.getUUID()));
+                // Once the door is no longer held, a reader's door leads where their own way deals it.
+                GroupCrossings.forget();GroupCrossings.before(late,far);
+                h.assertTrue(stacks.id().equals(data.deal(late.getUUID(),far).place()),"after the door is let go, a reader's door is their own again");
+                GroupCrossings.forget();
+            }).thenSucceed();
+    }
+
     /** A drafted scene for this fixture: every way of being there has its own line, and the holder's beat waits for them. */
     private static final SharedVignettes.Scene DRAFT=new SharedVignettes.Scene(){
         @Override public @Nullable String line(VignetteRole role,String outcome,String actor){return switch(role){
