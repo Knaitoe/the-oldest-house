@@ -28,8 +28,6 @@ public final class BorrascaRooms {
     public static final BlockPos SERVICE_DOOR=new BlockPos(-17,12,-206),SERVICE_GATE=new BlockPos(-30,12,-209);
     /** 0.4.121: the trail map in the station, the noticeboard on the store's porch and the friend's notes in the fort. */
     public static final BlockPos TRAIL_MAP=new BlockPos(6,1,-7),NOTES=new BlockPos(-1,7,-99);
-    /** 0.4.419: the store's framed page of town history, hung high on the inside of the south wall. */
-    public static final BlockPos HISTORY=new BlockPos(-22,2,-17);
     public static final BlockPos[] BOARD={new BlockPos(-15,1,-21),new BlockPos(-15,1,-20),new BlockPos(-15,2,-21),new BlockPos(-15,2,-20)};
     /** 0.4.262: the men's truck stands in the turning bay at the top of the ridge road, nose to the road, out of sight behind the shoulder. */
     public static final BlockPos TRUCK=new BlockPos(35,12,-199);
@@ -167,7 +165,7 @@ public final class BorrascaRooms {
         for(int z=-151;z>=-163;z--){int y=trailY(z);for(int x=0;x<=4;x++)BuildBlocks.set(l,ridge.offset(x,y-1,z),walked(x,z,Math.abs(x-2)),F);box(l,ridge,0,y,z,4,y+3,z,Blocks.AIR);}
         for(int z:new int[]{-150,-155,-160})for(int x=0;x<=4;x++)BuildBlocks.set(l,ridge.offset(x,trailY(z)-1,z),riser(Direction.NORTH),F);
         BorrascaLand.road(l,depot);
-        BorrascaTown.town(l,b);BorrascaDressing.town(l,b);
+        BorrascaTown.town(l,b);BorrascaDressing.town(l,b);BorrascaShops.build(l,b);
         BorrascaLand.forest(l,b);
         for(var tree0:new BlockPos[]{BorrascaPlay.EAST_TREE,BorrascaPlay.WEST_TREE})
             for(int height=0;height<3;height++)BuildBlocks.set(l,b.offset(tree0.above(height)),Blocks.OAK_LOG.defaultBlockState(),F);

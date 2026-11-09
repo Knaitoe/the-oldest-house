@@ -1,0 +1,724 @@
+{
+  "variants": {
+    "facing=north,kind=pie_case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_0"
+    },
+    "facing=north,kind=pie_case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_1"
+    },
+    "facing=east,kind=pie_case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_0",
+      "y": 90
+    },
+    "facing=east,kind=pie_case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_1",
+      "y": 90
+    },
+    "facing=south,kind=pie_case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_0",
+      "y": 180
+    },
+    "facing=south,kind=pie_case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_1",
+      "y": 180
+    },
+    "facing=west,kind=pie_case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_0",
+      "y": 270
+    },
+    "facing=west,kind=pie_case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pie_case_1",
+      "y": 270
+    },
+    "facing=north,kind=urn,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0"
+    },
+    "facing=north,kind=urn,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0"
+    },
+    "facing=east,kind=urn,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0",
+      "y": 90
+    },
+    "facing=east,kind=urn,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0",
+      "y": 90
+    },
+    "facing=south,kind=urn,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0",
+      "y": 180
+    },
+    "facing=south,kind=urn,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0",
+      "y": 180
+    },
+    "facing=west,kind=urn,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0",
+      "y": 270
+    },
+    "facing=west,kind=urn,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/urn_0",
+      "y": 270
+    },
+    "facing=north,kind=menu,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0"
+    },
+    "facing=north,kind=menu,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0"
+    },
+    "facing=east,kind=menu,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0",
+      "y": 90
+    },
+    "facing=east,kind=menu,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0",
+      "y": 90
+    },
+    "facing=south,kind=menu,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0",
+      "y": 180
+    },
+    "facing=south,kind=menu,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0",
+      "y": 180
+    },
+    "facing=west,kind=menu,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0",
+      "y": 270
+    },
+    "facing=west,kind=menu,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/menu_0",
+      "y": 270
+    },
+    "facing=north,kind=pegboard,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_0"
+    },
+    "facing=north,kind=pegboard,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_1"
+    },
+    "facing=east,kind=pegboard,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_0",
+      "y": 90
+    },
+    "facing=east,kind=pegboard,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_1",
+      "y": 90
+    },
+    "facing=south,kind=pegboard,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_0",
+      "y": 180
+    },
+    "facing=south,kind=pegboard,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_1",
+      "y": 180
+    },
+    "facing=west,kind=pegboard,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_0",
+      "y": 270
+    },
+    "facing=west,kind=pegboard,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pegboard_1",
+      "y": 270
+    },
+    "facing=north,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0"
+    },
+    "facing=north,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0"
+    },
+    "facing=east,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0",
+      "y": 90
+    },
+    "facing=east,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0",
+      "y": 90
+    },
+    "facing=south,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0",
+      "y": 180
+    },
+    "facing=south,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0",
+      "y": 180
+    },
+    "facing=west,kind=pump,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0",
+      "y": 270
+    },
+    "facing=west,kind=pump,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_0",
+      "y": 270
+    },
+    "facing=north,kind=pump_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0"
+    },
+    "facing=north,kind=pump_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0"
+    },
+    "facing=east,kind=pump_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0",
+      "y": 90
+    },
+    "facing=east,kind=pump_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0",
+      "y": 90
+    },
+    "facing=south,kind=pump_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0",
+      "y": 180
+    },
+    "facing=south,kind=pump_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0",
+      "y": 180
+    },
+    "facing=west,kind=pump_top,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0",
+      "y": 270
+    },
+    "facing=west,kind=pump_top,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/pump_top_0",
+      "y": 270
+    },
+    "facing=north,kind=price,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0"
+    },
+    "facing=north,kind=price,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0"
+    },
+    "facing=east,kind=price,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0",
+      "y": 90
+    },
+    "facing=east,kind=price,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0",
+      "y": 90
+    },
+    "facing=south,kind=price,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0",
+      "y": 180
+    },
+    "facing=south,kind=price,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0",
+      "y": 180
+    },
+    "facing=west,kind=price,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0",
+      "y": 270
+    },
+    "facing=west,kind=price,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/price_0",
+      "y": 270
+    },
+    "facing=north,kind=payphone,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0"
+    },
+    "facing=north,kind=payphone,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0"
+    },
+    "facing=east,kind=payphone,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0",
+      "y": 90
+    },
+    "facing=east,kind=payphone,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0",
+      "y": 90
+    },
+    "facing=south,kind=payphone,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0",
+      "y": 180
+    },
+    "facing=south,kind=payphone,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0",
+      "y": 180
+    },
+    "facing=west,kind=payphone,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0",
+      "y": 270
+    },
+    "facing=west,kind=payphone,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/payphone_0",
+      "y": 270
+    },
+    "facing=north,kind=cooler,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0"
+    },
+    "facing=north,kind=cooler,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0"
+    },
+    "facing=east,kind=cooler,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0",
+      "y": 90
+    },
+    "facing=east,kind=cooler,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0",
+      "y": 90
+    },
+    "facing=south,kind=cooler,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0",
+      "y": 180
+    },
+    "facing=south,kind=cooler,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0",
+      "y": 180
+    },
+    "facing=west,kind=cooler,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0",
+      "y": 270
+    },
+    "facing=west,kind=cooler,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cooler_0",
+      "y": 270
+    },
+    "facing=north,kind=candy,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0"
+    },
+    "facing=north,kind=candy,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0"
+    },
+    "facing=east,kind=candy,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0",
+      "y": 90
+    },
+    "facing=east,kind=candy,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0",
+      "y": 90
+    },
+    "facing=south,kind=candy,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0",
+      "y": 180
+    },
+    "facing=south,kind=candy,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0",
+      "y": 180
+    },
+    "facing=west,kind=candy,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0",
+      "y": 270
+    },
+    "facing=west,kind=candy,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/candy_0",
+      "y": 270
+    },
+    "facing=north,kind=case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0"
+    },
+    "facing=north,kind=case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0"
+    },
+    "facing=east,kind=case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0",
+      "y": 90
+    },
+    "facing=east,kind=case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0",
+      "y": 90
+    },
+    "facing=south,kind=case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0",
+      "y": 180
+    },
+    "facing=south,kind=case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0",
+      "y": 180
+    },
+    "facing=west,kind=case,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0",
+      "y": 270
+    },
+    "facing=west,kind=case,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/case_0",
+      "y": 270
+    },
+    "facing=north,kind=helmet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0"
+    },
+    "facing=north,kind=helmet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0"
+    },
+    "facing=east,kind=helmet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0",
+      "y": 90
+    },
+    "facing=east,kind=helmet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0",
+      "y": 90
+    },
+    "facing=south,kind=helmet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0",
+      "y": 180
+    },
+    "facing=south,kind=helmet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0",
+      "y": 180
+    },
+    "facing=west,kind=helmet,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0",
+      "y": 270
+    },
+    "facing=west,kind=helmet,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/helmet_0",
+      "y": 270
+    },
+    "facing=north,kind=map,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0"
+    },
+    "facing=north,kind=map,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0"
+    },
+    "facing=east,kind=map,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0",
+      "y": 90
+    },
+    "facing=east,kind=map,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0",
+      "y": 90
+    },
+    "facing=south,kind=map,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0",
+      "y": 180
+    },
+    "facing=south,kind=map,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0",
+      "y": 180
+    },
+    "facing=west,kind=map,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0",
+      "y": 270
+    },
+    "facing=west,kind=map,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/map_0",
+      "y": 270
+    },
+    "facing=north,kind=photos,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0"
+    },
+    "facing=north,kind=photos,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0"
+    },
+    "facing=east,kind=photos,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0",
+      "y": 90
+    },
+    "facing=east,kind=photos,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0",
+      "y": 90
+    },
+    "facing=south,kind=photos,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0",
+      "y": 180
+    },
+    "facing=south,kind=photos,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0",
+      "y": 180
+    },
+    "facing=west,kind=photos,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0",
+      "y": 270
+    },
+    "facing=west,kind=photos,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/photos_0",
+      "y": 270
+    },
+    "facing=north,kind=clock,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0"
+    },
+    "facing=north,kind=clock,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0"
+    },
+    "facing=east,kind=clock,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0",
+      "y": 90
+    },
+    "facing=east,kind=clock,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0",
+      "y": 90
+    },
+    "facing=south,kind=clock,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0",
+      "y": 180
+    },
+    "facing=south,kind=clock,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0",
+      "y": 180
+    },
+    "facing=west,kind=clock,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0",
+      "y": 270
+    },
+    "facing=west,kind=clock,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/clock_0",
+      "y": 270
+    },
+    "facing=north,kind=scale,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0"
+    },
+    "facing=north,kind=scale,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0"
+    },
+    "facing=east,kind=scale,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0",
+      "y": 90
+    },
+    "facing=east,kind=scale,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0",
+      "y": 90
+    },
+    "facing=south,kind=scale,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0",
+      "y": 180
+    },
+    "facing=south,kind=scale,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0",
+      "y": 180
+    },
+    "facing=west,kind=scale,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0",
+      "y": 270
+    },
+    "facing=west,kind=scale,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/scale_0",
+      "y": 270
+    },
+    "facing=north,kind=jar,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_0"
+    },
+    "facing=north,kind=jar,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_1"
+    },
+    "facing=east,kind=jar,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_0",
+      "y": 90
+    },
+    "facing=east,kind=jar,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_1",
+      "y": 90
+    },
+    "facing=south,kind=jar,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_0",
+      "y": 180
+    },
+    "facing=south,kind=jar,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_1",
+      "y": 180
+    },
+    "facing=west,kind=jar,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_0",
+      "y": 270
+    },
+    "facing=west,kind=jar,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/jar_1",
+      "y": 270
+    },
+    "facing=north,kind=cards,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0"
+    },
+    "facing=north,kind=cards,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0"
+    },
+    "facing=east,kind=cards,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0",
+      "y": 90
+    },
+    "facing=east,kind=cards,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0",
+      "y": 90
+    },
+    "facing=south,kind=cards,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0",
+      "y": 180
+    },
+    "facing=south,kind=cards,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0",
+      "y": 180
+    },
+    "facing=west,kind=cards,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0",
+      "y": 270
+    },
+    "facing=west,kind=cards,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/cards_0",
+      "y": 270
+    },
+    "facing=north,kind=exam,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0"
+    },
+    "facing=north,kind=exam,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0"
+    },
+    "facing=east,kind=exam,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0",
+      "y": 90
+    },
+    "facing=east,kind=exam,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0",
+      "y": 90
+    },
+    "facing=south,kind=exam,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0",
+      "y": 180
+    },
+    "facing=south,kind=exam,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0",
+      "y": 180
+    },
+    "facing=west,kind=exam,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0",
+      "y": 270
+    },
+    "facing=west,kind=exam,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/exam_0",
+      "y": 270
+    },
+    "facing=north,kind=chart,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0"
+    },
+    "facing=north,kind=chart,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0"
+    },
+    "facing=east,kind=chart,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0",
+      "y": 90
+    },
+    "facing=east,kind=chart,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0",
+      "y": 90
+    },
+    "facing=south,kind=chart,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0",
+      "y": 180
+    },
+    "facing=south,kind=chart,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0",
+      "y": 180
+    },
+    "facing=west,kind=chart,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0",
+      "y": 270
+    },
+    "facing=west,kind=chart,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/chart_0",
+      "y": 270
+    },
+    "facing=north,kind=fountain,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0"
+    },
+    "facing=north,kind=fountain,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0"
+    },
+    "facing=east,kind=fountain,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0",
+      "y": 90
+    },
+    "facing=east,kind=fountain,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0",
+      "y": 90
+    },
+    "facing=south,kind=fountain,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0",
+      "y": 180
+    },
+    "facing=south,kind=fountain,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0",
+      "y": 180
+    },
+    "facing=west,kind=fountain,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0",
+      "y": 270
+    },
+    "facing=west,kind=fountain,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/fountain_0",
+      "y": 270
+    },
+    "facing=north,kind=meds,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0"
+    },
+    "facing=north,kind=meds,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0"
+    },
+    "facing=east,kind=meds,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0",
+      "y": 90
+    },
+    "facing=east,kind=meds,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0",
+      "y": 90
+    },
+    "facing=south,kind=meds,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0",
+      "y": 180
+    },
+    "facing=south,kind=meds,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0",
+      "y": 180
+    },
+    "facing=west,kind=meds,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0",
+      "y": 270
+    },
+    "facing=west,kind=meds,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/meds_0",
+      "y": 270
+    },
+    "facing=north,kind=rack,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0"
+    },
+    "facing=north,kind=rack,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0"
+    },
+    "facing=east,kind=rack,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0",
+      "y": 90
+    },
+    "facing=east,kind=rack,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0",
+      "y": 90
+    },
+    "facing=south,kind=rack,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0",
+      "y": 180
+    },
+    "facing=south,kind=rack,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0",
+      "y": 180
+    },
+    "facing=west,kind=rack,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0",
+      "y": 270
+    },
+    "facing=west,kind=rack,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/rack_0",
+      "y": 270
+    },
+    "facing=north,kind=open,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0"
+    },
+    "facing=north,kind=open,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0"
+    },
+    "facing=east,kind=open,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0",
+      "y": 90
+    },
+    "facing=east,kind=open,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0",
+      "y": 90
+    },
+    "facing=south,kind=open,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0",
+      "y": 180
+    },
+    "facing=south,kind=open,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0",
+      "y": 180
+    },
+    "facing=west,kind=open,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0",
+      "y": 270
+    },
+    "facing=west,kind=open,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/open_0",
+      "y": 270
+    }
+  }
+}

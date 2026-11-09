@@ -1559,5 +1559,9 @@
   "advancements.the_oldest_house.account.last_orders.title": "Last orders",
   "advancements.the_oldest_house.account.last_orders.description": "I played a stranger for everything on his table and won, and I left it there.",
   "item.the_oldest_house.house_chalk": "House Chalk",
-  "item.the_oldest_house.dart_tin": "Tin of Darts"
+  "item.the_oldest_house.dart_tin": "Tin of Darts",
+  "block.the_oldest_house.borrasca_shop": "Shop Fitting",
+  "block.the_oldest_house.borrasca_checker": "Checkered Floor",
+  "block.the_oldest_house.borrasca_lino": "Linoleum",
+  "block.the_oldest_house.borrasca_tin": "Pressed Tin"
 }

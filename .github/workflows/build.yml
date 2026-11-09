@@ -72,6 +72,7 @@ jobs:
           python3 tools/draw_ghosts_bedrooms.py --check
           python3 tools/generate_borrasca_trail_assets.py --check
           python3 tools/draw_borrasca_cast.py --check
+          python3 tools/draw_borrasca_town_art.py --check
           python3 tools/draw_shiny_gentleman.py --check
           python3 tools/generate_bath_decay_assets.py --check
           python3 tools/draw_reading_stands.py --check

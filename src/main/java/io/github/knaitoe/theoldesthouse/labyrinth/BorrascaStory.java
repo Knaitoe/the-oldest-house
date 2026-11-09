@@ -105,6 +105,8 @@ public final class BorrascaStory {
 
     // ------------------------------------------------------------------ hands
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        // 0.4.422: the shops along the street past the chapel are placed in the world (that street has no authored coordinates).
+        if(BorrascaShops.click(p,b,rel,own))return true;
         rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
         if(rel.equals(BorrascaRooms.CARVING)){
@@ -142,8 +144,7 @@ public final class BorrascaStory {
         }
         // 0.4.121: the town's papers. Each visit's noticeboard and the aged notes are their own originals.
         if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),BorrascaRooms.at(b,rel));return true;}
-        // 0.4.419: the store's framed history is hung too high for a child to read.
-        if(rel.equals(BorrascaRooms.HISTORY)){if(visit>=3)LiteraryVignettes.open(p,PLACE,own,"History",BorrascaTexts.document("History"),BorrascaRooms.at(b,rel));else cue(p,"A framed page of typing, hung up high. You can't read it from down here.");return true;}
+        // 0.4.422: the framed history hangs in the historical society now, on the street past the chapel (BorrascaShops.click).
         if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),BorrascaRooms.at(b,rel));return true;}
         if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),BorrascaRooms.at(b,rel));return true;}
         if(visit>=2&&rel.equals(BorrascaRooms.ELI_POSTER)){
@@ -865,7 +866,7 @@ public final class BorrascaStory {
     static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
     static String speaker(LiteraryActor a){if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Cody":"Brandi";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
     /** What the reader notices, on the action bar. */
-    private static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
+    static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
     /** The House's own word, grey and italic. */
     private static void house(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     private static void heard(ServerPlayer p,net.minecraft.sounds.SoundEvent sound,BlockPos at,float volume){LiteraryVignettes.heard(p,sound,at,volume,1);}
