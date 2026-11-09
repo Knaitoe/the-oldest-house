@@ -27,6 +27,11 @@ public final class LastOrdersTests {
     private static final LabyrinthPlace P=LabyrinthPlace.LAST_ORDERS;
     private static LiteraryTests.Fixture active;
     private static LiteraryTests.Fixture fixture(GameTestHelper h){if(active!=null)active.close();active=new LiteraryTests.Fixture(h);LastOrders.clearAll();PoolTables.clearAll();DartBoards.clearAll();return active;}
+    /** Run 1493: the last case of each batch leaves no players behind for whatever the runner takes up next. */
+    private static void close(){if(active!=null){active.close();active=null;}LastOrders.clearAll();PoolTables.clearAll();DartBoards.clearAll();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="orders_darts") public static void ordersDartsDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="orders_pool") public static void ordersPoolDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="orders_regulars") public static void ordersRegularsDone(net.minecraft.server.level.ServerLevel l){close();}
     private static AABB box(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-15,b.getY()-3,b.getZ()-35,b.getX()+17,b.getY()+9,b.getZ()+4);}
     private static String text(net.minecraft.world.item.ItemStack book){var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}
     private static void ask(LiteraryTests.Fixture f,ServerPlayer p,String choice){

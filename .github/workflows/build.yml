@@ -835,7 +835,8 @@ jobs:
       - name: Structure game tests
         # The earlier 827-case corpus reached 793 passes at the former one-hour wall limit; this candidate declares 835.
         # Preserve every native per-case tick deadline; allow the complete corpus and clean shutdown.
-        timeout-minutes: 77
+        # Run 1493: 819 batches ran in 75 minutes and about 90 never started, so the limit is 105.
+        timeout-minutes: 105
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
         run: |
