@@ -112,17 +112,17 @@ public final class BorrascaTests {
         var f=new Fixture(h);var p=f.player("pine_play");
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
             .thenExecute(()->{f.enter(p);f.at(p,1,0,-18);})
-            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("MetFriend"),"Nell starts the game at the trailhead"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("MetFriend"),"Shelby starts the game at the trailhead"))
             .thenExecute(()->{
                 var b=f.base(p);var eli=f.actor(p,"TownEli");var wren=f.actor(p,"TownWren");
                 h.assertTrue(eli.blockPosition().equals(BorrascaRooms.at(b,-2,0,-24))
                         &&wren.blockPosition().equals(BorrascaRooms.at(b,-2,0,-32)),"both children are on the main trail");
                 f.talk(p,"TownEli");f.talk(p,"TownEli");
-                h.assertTrue(f.own(p).getInt("EliTalk1")>=2,"Eli has a second conversation about the Sheriff");
+                h.assertTrue(f.own(p).getInt("EliTalk1")>=2,"Cody has a second conversation about the Sheriff");
                 f.at(p,1,0,-28);
             })
-            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("TaggedNell"),"catching up tags Nell before the Tree"))
-            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("HideLeg")==2,"Nell reaches one of the two hiding places"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("TaggedNell"),"catching up tags Shelby before the Tree"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("HideLeg")==2,"Shelby reaches one of the two hiding places"))
             .thenExecute(()->f.at(p,f.own(p).getInt("HideSide"),0,-35))
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FoundNell")&&f.own(p).getBoolean("PlayDone"),
                     "finding her on the far side of the hiding tree finishes the games"))
@@ -325,7 +325,7 @@ public final class BorrascaTests {
                         "standing under the treehouse cannot start the scene");
                 f.at(p,-4,6,-94);
             })
-            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("SharedWindow"),"the reader picks a window and Nell checks her compass"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("SharedWindow"),"the reader picks a window and Shelby checks her compass"))
             .thenExecute(()->NativeTestPlayers.packets(p))
             .thenWaitUntil(()->{
                 var own=f.own(p);
@@ -335,11 +335,11 @@ public final class BorrascaTests {
                 h.assertTrue(echo!=null,"a native chime packet reaches the reader after the window game");
                 h.assertTrue(p.distanceToSqr(echo.getX(),echo.getY(),echo.getZ())<64,
                         "the positional echo is in audible range");
-                h.assertTrue(own.getInt("LegendTicks")<100,"Nell gives the chime time to finish before naming it");
+                h.assertTrue(own.getInt("LegendTicks")<100,"Shelby gives the chime time to finish before naming it");
             })
             .thenWaitUntil(()->{
                 var name=f.actor(p,"CastKimber").getCustomName();
-                h.assertTrue(name!=null&&name.getString().contains("Shiny Gentleman"),"Nell names the sound after the chime");
+                h.assertTrue(name!=null&&name.getString().contains("Shiny Gentleman"),"Shelby names the sound after the chime");
             })
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("LegendDone"),"she tells the legend with the reader there"))
             .thenExecute(()->f.at(p,1,6,-92))
@@ -491,18 +491,18 @@ public final class BorrascaTests {
             h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,-28,12,-183)).is(BorrascaRegistry.FITTING.get())&&f.out.getBlockState(BorrascaRooms.at(b,-17,12,-169)).getBlock() instanceof DoorBlock&&f.out.getBlockState(BorrascaRooms.at(b,4,14,-190)).is(BorrascaRegistry.FITTING.get()),"the depot's drawers, front door and machine shed stand");
             // The papers: the trail map, the store's board in childhood, the friend's notes.
             f.at(p,5,0,-6);var map=opened(f,p,BorrascaRooms.TRAIL_MAP,"the trail map");h.assertTrue(text(map).contains("Marker 2"),"the map shows where the public walk ends");
-            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[3],"the noticeboard");h.assertTrue(text(board).contains("DANA PRUITT")&&!text(board).contains("NELL"),"the childhood board has an older child's poster and not hers");
+            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[3],"the noticeboard");h.assertTrue(text(board).contains("DANA PRUITT")&&!text(board).contains("SHELBY"),"the childhood board has an older child's poster and not hers");
             f.at(p,-1,6,-96);var notes=opened(f,p,BorrascaRooms.NOTES,"the friend's notes");h.assertTrue(title(notes).equals(BorrascaStory.FRIEND+"'s notes"),"her notes are pinned in the fort");
             // 0.4.419: her notes keep the tag rhyme, and the store's history hangs too high for a child.
             h.assertTrue(flat(text(notes)).contains(flat("three trunks meet")),"her notes keep the tag rhyme");
             f.at(p,-22,0,-19);f.click(p,BorrascaRooms.HISTORY);h.assertFalse(p.containerMenu instanceof LiteraryVignettes.Pages,"the store's framed history is out of a child's reach");
             f.stage(p,3);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult cast recalled")).thenExecute(()->{
-            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("NELL")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");
+            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("SHELBY")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");
             f.at(p,-1,6,-96);h.assertTrue(title(opened(f,p,BorrascaRooms.NOTES,"the aged notes")).contains("water-stained"),"her notes are still there, damp through");
             f.stage(p,4);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled")).thenExecute(()->{
-            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[1],"the last noticeboard");h.assertTrue(text(board).contains("MARA"),"the last night's board has a new poster: visit "+f.own(p).getInt("Visit")+", "+title(board)+": "+text(board));
+            f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[1],"the last noticeboard");h.assertTrue(text(board).contains("KAYLA"),"the last night's board has a new poster: visit "+f.own(p).getInt("Visit")+", "+title(board)+": "+text(board));
             var own=f.own(p);h.assertTrue(own.contains("Original_Board")&&own.contains("Original_Board3")&&own.contains("Original_Board4")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA),"each visit's board is its own original, and reading confers nothing");
             // 0.4.419: grown, the reader can read the frame: what the word means and what the town owes the Prescotts.
             f.at(p,-22,0,-19);var history=opened(f,p,BorrascaRooms.HISTORY,"the store's framed history");h.assertTrue(flat(text(history)).contains(flat("borrasca"))&&flat(text(history)).contains(flat("gives nothing back"))&&flat(text(history)).contains(flat("Prescotts stayed")),"the frame says what borrasca means and who brought the town back");
@@ -521,17 +521,17 @@ public final class BorrascaTests {
           .thenExecute(()->{
               f.talk(p,"TownEli");f.talk(p,"TownWren");
               h.assertTrue(f.own(p).getBoolean("MetEli")&&f.own(p).getBoolean("MetWren"),"both children can tell their part of the legend");
-              h.assertTrue(f.out.getBlockState(f.base(p).offset(eliPoster)).isAir(),"Eli's poster goes up only after he disappears");
+              h.assertTrue(f.out.getBlockState(f.base(p).offset(eliPoster)).isAir(),"Cody's poster goes up only after he disappears");
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"second visit cast recalled"))
           .thenExecute(()->{
-              h.assertTrue(f.actor(p,"TownEli").isInvisible()&&!f.actor(p,"TownWren").isInvisible(),"Eli is missing while Wren is still in town");
-              f.talk(p,"TownWren");h.assertTrue(f.own(p).getBoolean("WrenRememberedEli"),"Wren remembers Eli's bicycle");
+              h.assertTrue(f.actor(p,"TownEli").isInvisible()&&!f.actor(p,"TownWren").isInvisible(),"Cody is missing while Brandi is still in town");
+              f.talk(p,"TownWren");h.assertTrue(f.own(p).getBoolean("WrenRememberedEli"),"Brandi remembers Cody's bicycle");
               f.read(p,eliPoster,false);
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult visit cast recalled"))
           .thenExecute(()->{
-              h.assertTrue(f.actor(p,"TownWren").isInvisible(),"Wren is missing on the adult return");
+              h.assertTrue(f.actor(p,"TownWren").isInvisible(),"Brandi is missing on the adult return");
               f.read(p,wrenPoster,false);
               h.assertTrue(f.own(p).getBoolean("Read_WrenPoster")&&f.own(p).getBoolean("Read_EliPoster"),"both posters have readable pages");
           }).thenSucceed();

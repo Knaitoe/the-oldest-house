@@ -41,7 +41,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 public final class BorrascaStory {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.BORRASCA;
     /** 0.4.235: a child of a later Drisking generation than the original story's; only the Sheriff and the Prescotts last that long. */
-    public static final String FRIEND="Nell";
+    public static final String FRIEND="Shelby";
     public static final int MISSING=10,WORKER=20;
     public static final int ELI=1,WREN=2;
     /**
@@ -218,21 +218,21 @@ public final class BorrascaStory {
     private static void talkTownChild(ServerPlayer p,LiteraryActor child,CompoundTag own,int visit){
         if(child.isInvisible())return;
         boolean eli=child.phase()==ELI;
-        String key=(eli?"Eli":"Wren")+"Talk"+visit;
+        String key=(eli?"Eli":"Wren")+"Talk"+visit; // 0.4.421: the keys keep the boys' and girls' first names (now Cody and Brandi)
         int said=own.getInt(key);
         String[] lines=eli?new String[]{
-            "I can ride all the way to the fort. Wren says pushing on the steep part doesn't count.",
+            "I can ride all the way to the fort. Brandi says pushing on the steep part doesn't count.",
             "My brother and I count the knocks from our porch. If we get four he says the last one's somebody coming down.",
             "The Sheriff heard us counting once. He said it was a truck backing up. My brother asked him why it never got any closer.",
-            "If my bike's still at the store, I'm up by the second marker. Tell Wren I'll wait."
+            "If my bike's still at the store, I'm up by the second marker. Tell Brandi I'll wait."
         }:visit==1?new String[]{
-            "If Eli says he rode all the way up, ask him to show you his knees.",
+            "If Cody says he rode all the way up, ask him to show you his knees.",
             "Dana taught me how to get the chain back on. You turn the bike over first so it looks like it's dead.",
             "Her mom still goes up to the tree. She puts her thumb in the D where the trunks join. I watched her do it once.",
             "The store took Dana's picture down when school started. Her mom put it right back up."
         }:new String[]{
             "They keep saying he went to his dad's. His bike was still at the store. I walked it back to his mom.",
-            "I went to his dad's. He asked me if I'd seen Eli.",
+            "I went to his dad's. He asked me if I'd seen Cody.",
             "I used to think if your name was up there, you'd always know where to come back to.",
             "I'm going to the tree. If he comes back he'll look for his name first."
         };
@@ -252,7 +252,7 @@ public final class BorrascaStory {
         }:new String[]{
             "When I get lost, I pick one thing I remember passing. Then I go back to that.",
             "You can hold the compass when we come back. I know this part.",
-            "Eli says he can ride all the way up. I want to see him try that with his chain the way it is."
+            "Cody says he can ride all the way up. I want to see him try that with his chain the way it is."
         };
         int line=own.getInt("NellSmallTalk")%lines.length;
         own.putInt("NellSmallTalk",line+1);say(p,friend,lines[line]);
@@ -267,7 +267,7 @@ public final class BorrascaStory {
             own.putBoolean(key,true);
             if(recentSpeech(p)){
                 // Still let a passing reader meet the child without replacing Nell's current subtitle.
-                child.say(visit==2?"I'm waiting for Eli.":child.phase()==ELI?"Nell's down by the sign.":"Hi. Watch out for Eli's bike.");
+                child.say(visit==2?"I'm waiting for Cody.":child.phase()==ELI?"Shelby's down by the sign.":"Hi. Watch out for Cody's bike.");
                 child.getPersistentData().putInt("BorrascaSaid",child.tickCount);
             }else talkTownChild(p,child,own,visit);
             return;
@@ -863,7 +863,7 @@ public final class BorrascaStory {
         return p.getPersistentData().contains("BorrascaSpeechAt")&&elapsed>=0&&elapsed<SPEECH_TICKS;
     }
     static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
-    static String speaker(LiteraryActor a){if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Eli":"Wren";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
+    static String speaker(LiteraryActor a){if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Cody":"Brandi";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
     /** What the reader notices, on the action bar. */
     private static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
     /** The House's own word, grey and italic. */
