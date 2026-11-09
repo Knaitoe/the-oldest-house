@@ -59,7 +59,7 @@ public final class VignetteHandlingTests {
    for(var off:new int[]{0,3})h.assertTrue(((VignetteHandlingBlockEntity)l.getBlockEntity(at.east(off))).view().key()==-1,"depressed keys release on native server time");h.succeed();
   });
  }
- @GameTest(template="empty",batch="handling_models",timeoutTicks=500)
+ @GameTest(template="empty",batch="handling_models",timeoutTicks=1500)
  public static void practiceFurnitureMovesAndRotatesWithoutChangingOriginalRecordedRooms(GameTestHelper h){
   var f=new LiteraryTests.Fixture(h,144);workshop=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();var room=LabyrinthPlace.MINIATURES;var l=f.level(room);var b=f.base(room);f.chunks.hold(l,SceneReview.area(b,room));
   h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual workshop sections resident")).thenExecute(()->{

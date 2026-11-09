@@ -89,6 +89,19 @@ public final class HallwayShieldTests {
             h.assertTrue(interior.getBlockState(burnt).is(Blocks.WHITE_TERRACOTTA) && interior.getBlockState(floor).is(Blocks.SPRUCE_PLANKS),
                     "with the hallway's own materials");
             h.assertTrue(interior.getBlockState(furnishing).isAir(), "the open hallway itself is not filled");
+
+            // 0.4.410: a room in the stack does not burn either (run 1491: the bedroom's ground floor burned through).
+            var room = io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces.base(origin, io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.MISSING_SLEEP);
+            chunks.hold(interior, new AABB(room).inflate(8));
+            BlockPos boards = room.offset(2, -1, -4), flame = boards.above(), side = boards.east();
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces.fireproof(interior, flame)
+                    && !io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces.fireproof(interior, origin.offset(0, 0, -4000)), "a room's slot is fireproof; open ground is not");
+            interior.setBlock(boards, Blocks.SPRUCE_PLANKS.defaultBlockState(), 3);
+            interior.setBlock(side, Blocks.SPRUCE_PLANKS.defaultBlockState(), 3);
+            interior.setBlock(flame, Blocks.FIRE.defaultBlockState(), 3);
+            interior.getBlockState(flame).tick(interior, flame, random);
+            h.assertTrue(interior.getBlockState(flame).isAir() && interior.getBlockState(boards).is(Blocks.SPRUCE_PLANKS)
+                    && interior.getBlockState(side).is(Blocks.SPRUCE_PLANKS), "a fire in a room goes out and burns nothing");
             h.succeed();
         } finally {
             fireTick.set(oldFireTick, server);
