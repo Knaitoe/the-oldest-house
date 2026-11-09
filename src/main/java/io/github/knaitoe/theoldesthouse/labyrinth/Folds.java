@@ -164,6 +164,8 @@ public final class Folds {
         if (here == null || !LabyrinthPacing.ordinary(here)) return false;
         var data = LabyrinthData.get(p.server);
         int now = p.server.getTickCount();
+        // 0.4.401: a friend who went on through this door, and is still beyond it, takes this reader on with them (GroupCrossings.held).
+        if (GroupCrossings.ledThrough(p, door)) return false;
         var plan = plan(data, p.getUUID(), origin, here, door, origin.asLong(), now, true);
         if (plan.withLeader() != null) data.deal(p.getUUID(), door, plan.withLeader(), false, false);
         var deal = data.deal(p.getUUID(), door);

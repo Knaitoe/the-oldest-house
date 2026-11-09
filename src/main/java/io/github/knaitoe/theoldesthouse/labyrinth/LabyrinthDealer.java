@@ -506,6 +506,7 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
         gray.remove(here);
         gray.removeIf(p -> !onward(p) || LabyrinthPacing.anomaly(p) || LabyrinthPacing.physicalTrial(p));
+        YardStretch.fit(gray, data, player, here);
         // 0.4.400: a way on that is standing already, where there is one. A hall still to be built held the door shut, so a reader
         // turned from a taken scene, or from one gone, was left at a door that stuck instead of one that opened.
         List<LabyrinthPlace> standing = new ArrayList<>(gray);
@@ -557,7 +558,7 @@ public final class LabyrinthDealer {
         }
 
         LabyrinthData.Door real = doors.get(random.nextInt(doors.size()));
-        List<LabyrinthPlace> vignettes = vignettesAvailable(data,player);
+        List<LabyrinthPlace> vignettes = YardStretch.stories(vignettesAvailable(data,player), LabyrinthPlace.DUPLICATE_PASSAGE);
         boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
         boolean vignette = !vignettes.isEmpty()
                 && (scent || random.nextInt(100) < vignetteChance(data, player));
@@ -584,6 +585,7 @@ public final class LabyrinthDealer {
         } else {
             List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
             gray.remove(LabyrinthPlace.DUPLICATE_PASSAGE);
+            YardStretch.fit(gray, data, player, LabyrinthPlace.DUPLICATE_PASSAGE);
             realDestination = pickGray(gray, data, player, random).id();
             leak = lyingLeak(data, player, random);
         }
@@ -637,7 +639,10 @@ public final class LabyrinthDealer {
             // 0.4.339: the field, per reader (SphinxField.weight); without a reader, never.
             case SPHINX_FIELD -> 0;
             // 0.4.309: the yard, an outdoor breather during an expedition: after the domestic opening, from the story depth.
-            case YARD_TURNAROUND, YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
+            // 0.4.401: the turn-around is the yard's back door, the one way out into it from the halls (YardStretch), so it carries the
+            // yard's whole share again, as it did before the ditch and the clothesline split it.
+            case YARD_TURNAROUND -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : YardStretch.BACK_DOOR;
+            case YARD_DITCH, YARD_CLOTHESLINE -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 2;
             case YARD_SURVEY, YARD_SURVEY_DEEP, YARD_STOCK, YARD_REUNION, YARD_LONG_DRIVE, YARD_PORCH_TURN, YARD_JOISTS -> 0;
             case YARD_FLOOD -> depth < LabyrinthPacing.STORY_DEPTH ? 0 : 3;
             case YARD_WINDBREAK -> depth < LabyrinthPacing.DEEP_DEPTH ? 0 : 3;
@@ -711,9 +716,14 @@ public final class LabyrinthDealer {
         if (doors.isEmpty()) {
             return;
         }
-        List<LabyrinthPlace> vignettes = vignettesAvailable(data,player);
+        List<LabyrinthPlace> everyStory = vignettesAvailable(data,player);
+        // 0.4.401 (owner: "it's also feeding me yard maps when i'm not in the yard"): the yard's stories open only off the yard, and off
+        // the yard first (YardStretch). A reader whose next story waits out there, and nothing else, is dealt the back door instead.
+        List<LabyrinthPlace> vignettes = YardStretch.stories(everyStory, here);
+        boolean outside = YardStretch.waitsOutside(data, everyStory, vignettes, here);
         LabyrinthData.Door lucky = null;
         boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
+        boolean scentOutside = data.hillaryScent(player) && outside;
         if (scent) {
             List<LabyrinthPlace> unfound = new ArrayList<>();
             for (LabyrinthPlace place : vignettes) {
@@ -738,13 +748,15 @@ public final class LabyrinthDealer {
         boolean voiceOwed = !owing && !scent && !rescueNeeded(data, player) && LabyrinthBuilder.isPlaceReady(data, LabyrinthPlace.SPEAK_UP)
                 && SpeakUp.owed(data, player);
         boolean voiceHere = false;
-        if (!owing && (!vignettes.isEmpty() || voiceOwed)
-                && (scent || random.nextInt(100) < (vignettes.isEmpty() ? storyChance(data, player) : vignetteChance(data, player)))) {
+        if (!owing && (!vignettes.isEmpty() || voiceOwed || outside)
+                && (scent || scentOutside || random.nextInt(100) < (vignettes.isEmpty() ? storyChance(data, player) : vignetteChance(data, player)))) {
             lucky = doors.get(random.nextInt(doors.size()));
             voiceHere = voiceOwed && (vignettes.isEmpty() || SpeakUp.due(data, player) || random.nextInt(3) == 0);
         }
 
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
+        // 0.4.401: the yard is entered by its back door and leads on into itself for a stretch, then back inside (YardStretch).
+        boolean yardOn = YardStretch.fit(gray, data, player, here);
         // Ordinary stretches do not repeatedly lead straight back into themselves,
         // nor ping-pong back into the hall the explorer has just come from.
         if (here != null) gray.remove(here);
@@ -764,7 +776,7 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> trials=gray.stream().filter(p->!HazardVariety.sibling(p)).filter(LabyrinthPacing::physicalTrial).toList();
         LabyrinthData.Door trialDoor=null;
         if(lucky==null&&oddDoor==null&&!trials.isEmpty()&&!choices.isEmpty()&&random.nextInt(100)<LabyrinthPacing.trialChance(data,player))trialDoor=choices.remove(random.nextInt(choices.size()));
-        if (!choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 35) {
+        if (!yardOn && !choices.isEmpty() && LabyrinthPacing.restDue(data, player) && random.nextInt(100) < 35) {
             restDoor = choices.get(random.nextInt(choices.size()));
         }
         // 0.4.392, R2 (LabyrinthPacing.TRIAL_ONLY_DEPTH): deep enough, about one ordinary hall in four leads on only by trials, and
@@ -779,6 +791,9 @@ public final class LabyrinthDealer {
         for (LabyrinthData.Door door : doors) {
             if (door == lucky && voiceHere) {
                 data.deal(player, door, LabyrinthPlace.SPEAK_UP.id(), false);
+            } else if (door == lucky && vignettes.isEmpty()) {
+                // The story waits out in the yard: this door is the back door onto it. A scent goes on with the reader to find it there.
+                data.deal(player, door, LabyrinthPlace.YARD_TURNAROUND.id(), false, scentOutside);
             } else if (door == lucky) {
                 data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
                 if (voiceOwed) SpeakUp.storyDealt(data, player);
@@ -809,6 +824,6 @@ public final class LabyrinthDealer {
             if (!finaleDoors.isEmpty()) data.deal(player, finaleDoors.get(random.nextInt(finaleDoors.size())), FinaleArchitecture.ID, false);
         }
         for (LabyrinthData.Door door : quietDoors) HouseReadSites.owe(data, player, door.id);
-        recordDryDeal(data, player, lucky != null || !quietDoors.isEmpty());
+        recordDryDeal(data, player, (lucky != null && (voiceHere || !vignettes.isEmpty())) || !quietDoors.isEmpty());
     }
 }
