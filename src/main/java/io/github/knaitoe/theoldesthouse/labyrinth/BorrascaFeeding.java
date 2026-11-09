@@ -151,7 +151,7 @@ public final class BorrascaFeeding {
         var l=p.serverLevel();if(!l.isLoaded(BorrascaRooms.at(b,SIDE_DOOR)))return false;
         place(dana,b,INSIDE,90);place(w0,b,INSIDE_LEAD,90);place(w1,b,INSIDE_BEHIND,90);
         dana.setInvisible(false);dana.setNoGravity(false);dana.gesture(0);dana.torn(0);
-        for(var w:new LiteraryActor[]{w0,w1}){w.setInvisible(false);w.gesture(0);BorrascaCast.stop(w);}
+        for(var w:new LiteraryActor[]{w0,w1}){w.setInvisible(false);w.gesture(0);BorrascaCast.stop(w);BorrascaStory.resync(p,w);}
         own.remove("FeedWorkersGone");
         return true;
     }

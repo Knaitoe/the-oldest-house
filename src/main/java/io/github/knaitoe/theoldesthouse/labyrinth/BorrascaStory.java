@@ -51,7 +51,7 @@ public final class BorrascaStory {
      * falls and she is gone, and the paces: they walk down the ridge road deliberately, and lead her back up it no faster than she can be
      * made to go.
      */
-    static final int TAKEN_BY=1200,LED_FOR=60;static final double TAKER_PACE=.62,LED_PACE=.5;
+    static final int TAKEN_BY=1200,LED_FOR=60;static final double TAKER_PACE=.8,LED_PACE=.5;
     /** 0.4.236: the Shiny Gentleman stands as long as the strokes last, between these distances from a child, this tall. */
     public static final int GENT_TICKS=70;public static final double GENT_NEAR=28,GENT_FAR=200,GENT_HEIGHT=4.5;
     /**
@@ -128,7 +128,8 @@ public final class BorrascaStory {
      * lead her back out the same way (EXIT), walking until nobody is looking.
      */
     static final BlockPos[] APPROACH={new BlockPos(37,12,-203),new BlockPos(35,12,-197),new BlockPos(31,12,-191),new BlockPos(31,12,-182),new BlockPos(31,12,-173),new BlockPos(30,12,-165),new BlockPos(21,12,-162),new BlockPos(10,12,-162),new BlockPos(3,12,-162),new BlockPos(2,11,-157),new BlockPos(2,10,-153),new BlockPos(1,9,-149)};
-    static final int[] SPAWNS={4,3,2,0};
+    /** 0.4.440: the nearest unseen place on their road first, so that they come into sight soon and are not long coming. */
+    static final int[] SPAWNS={6,5,4,3,2,0};
     /** The point on the approach at the head of the lane: the second stroke comes as they turn down it toward her. */
     static final int LANE_HEAD=8;
     static final BlockPos[] EXIT;
@@ -136,7 +137,8 @@ public final class BorrascaStory {
     /** The second marker's line, and how far past it the Sheriff watches. */
     private static final BlockPos[] SHERIFF_PATROL={BorrascaRooms.YARD_PATROL_START,new BlockPos(2,12,-180),
             new BlockPos(7,12,-180),new BlockPos(7,12,-174)};
-    private static final BlockPos SHERIFF_SHUTDOWN_CHECK=new BlockPos(5,12,-182);
+    /** 0.4.440: at the refinery's doorway beside the belt, looking in at the stopped machine (the machine has a hall of its own now). */
+    public static final BlockPos SHERIFF_SHUTDOWN_CHECK=new BlockPos(1,12,-180);
     static final int MARKER_TWO_Z=-124,TAPE_Z=-125;
     private BorrascaStory(){}
 
@@ -836,7 +838,7 @@ public final class BorrascaStory {
         for(int i=0;i<2;i++){
             var w=men[i];if(w==null)continue;var at=Vec3.atBottomCenterOf(BorrascaRooms.at(b,APPROACH[start]));var next=Vec3.atBottomCenterOf(BorrascaRooms.at(b,APPROACH[start+1]));var heading=next.subtract(at).multiply(1,0,1).normalize();var right=new Vec3(-heading.z,0,heading.x);
             var pos=at.add(right.scale(i==0?-.6:.6)).subtract(heading.scale(i*.9));float yaw=(float)Math.toDegrees(Math.atan2(-heading.x,heading.z));
-            BorrascaCast.stop(w);w.moveTo(pos,yaw,0);w.setYBodyRot(yaw);w.setYHeadRot(yaw);w.setInvisible(false);w.appearance(LiteraryActor.BORRASCA_KYLE,WORKER+i);w.gesture(0);
+            BorrascaCast.stop(w);w.moveTo(pos,yaw,0);w.setYBodyRot(yaw);w.setYHeadRot(yaw);w.setInvisible(false);w.appearance(LiteraryActor.BORRASCA_KYLE,WORKER+i);w.gesture(0);resync(p,w);
             own.putInt("Taker"+i,start+1);own.remove("Exit"+i);
         }
         own.putInt("Strokes",0);own.remove("ExitF");
@@ -886,10 +888,18 @@ public final class BorrascaStory {
         // Only the men are ever moved on; she never jumps, watched or not.
         BorrascaCast.walk(a,steer,pace);if(a.role()!=LiteraryActor.BORRASCA_KIMBER)unstick(p,own,a,key,steer);return false;
     }
+    /**
+     * 0.4.440: after a man is set somewhere new, tell the reader's client where he is and how he looks, at once. A client that has him gets
+     * him there; one that has not yet been sent him ignores it, and is sent him whole as soon as he is in its range.
+     */
+    static void resync(ServerPlayer p,LiteraryActor a){
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket(a));
+        var data=a.getEntityData().getNonDefaultValues();if(data!=null)p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(a.getId(),data));
+    }
     private static void unstick(ServerPlayer p,CompoundTag own,LiteraryActor a,String key,Vec3 goal){
         var t=own.getCompound(key+"Stuck");var last=new Vec3(t.getDouble("X"),t.getDouble("Y"),t.getDouble("Z"));int ticks=t.getInt("T")+5;
         if(!t.contains("X")||a.position().distanceToSqr(last)>.3*.3){t.putDouble("X",a.getX());t.putDouble("Y",a.getY());t.putDouble("Z",a.getZ());ticks=0;}
-        if(ticks>=60&&!LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())&&!LiteraryVignettes.watched(p.serverLevel(),goal.add(0,1.6,0))){BorrascaCast.stop(a);a.moveTo(goal.x,goal.y,goal.z,a.getYRot(),0);ticks=0;}
+        if(ticks>=60&&!LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())&&!LiteraryVignettes.watched(p.serverLevel(),goal.add(0,1.6,0))){BorrascaCast.stop(a);a.moveTo(goal.x,goal.y,goal.z,a.getYRot(),0);resync(p,a);ticks=0;}
         t.putInt("T",ticks);own.put(key+"Stuck",t);
     }
     /** Where a man walks beside her: a little behind her shoulder, on his own side of the way she is going. */
@@ -929,7 +939,8 @@ public final class BorrascaStory {
         }
         var carrier=friend.getVehicle() instanceof LiteraryActor w?w:null;
         if(carrier==null){
-            for(var worker:men)if(worker!=null&&worker.distanceToSqr(friend)<6.25&&friend.startRiding(worker,true)){
+            // 0.4.440: only a man who is there to be seen picks her up.
+            for(var worker:men)if(worker!=null&&!worker.isInvisible()&&!worker.isVehicle()&&worker.distanceToSqr(friend)<6.25&&friend.startRiding(worker,true)){
                 carrier=worker;BorrascaCast.stop(friend);break;
             }
         }
@@ -980,6 +991,8 @@ public final class BorrascaStory {
     private static void gone(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor a,String key,int side){
         if(a.role()==LiteraryActor.BORRASCA_KIMBER){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);}
         if(own.getBoolean(key)||a.isInvisible()&&!own.contains(key)||!LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())){
+            // 0.4.440: whoever he was carrying is set down walking, not left in his arms with nobody there.
+            for(var rider:a.getPassengers())if(rider instanceof LiteraryActor r)r.gesture(LED);
             a.stopRiding();a.ejectPassengers();a.setInvisible(true);own.putBoolean(key,true);BorrascaCast.stop(a);return;
         }
         if(side==0){
@@ -1146,7 +1159,7 @@ public final class BorrascaStory {
 
         BorrascaCast.stop(sheriff);
         sheriff.gesture(4);
-        float facing=powerOff?157:switch(stop){case 0->0;case 1->180;case 2->-90;default->0;};
+        float facing=powerOff?180:switch(stop){case 0->0;case 1->180;case 2->-90;default->0;};
         float yaw=facing+22*(float)Math.sin(own.getInt("TrailClock")*.045);
         sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);
         if(powerOff){
