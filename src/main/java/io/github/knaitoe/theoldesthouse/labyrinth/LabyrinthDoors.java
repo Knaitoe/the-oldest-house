@@ -234,7 +234,11 @@ public final class LabyrinthDoors {
             return;
         }
         if(place==LabyrinthPlace.PHONE_CANOE&&!PhoneCanoe.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
-        if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){if(reroute(player,door))return;locked(player);return;}
+        if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){
+            // 0.4.405: an evening the others are in that has gone too far to join says so, and this reader goes on elsewhere.
+            var why=GoatmanVignette.underway(player);
+            if(why!=null){player.displayClientMessage(Component.literal(why),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_underway:"+place.id(),player.blockPosition());if(!elsewhere(player,door))locked(player);return;}
+            if(reroute(player,door))return;locked(player);return;}
         if(place==LabyrinthPlace.TED_CAVER&&!CaverVignette.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
         GroupCrossings.crossed(player, door, place);
         if(OnwardDoors.isOnward(door)){DeerRoad.onward(player,door);StateRoute.onward(player,door);MarshSupper.onward(player,door);}
