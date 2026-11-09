@@ -62,6 +62,13 @@ LOOKS = {
     'borrasca_wren': Look('#dbb78e','#65513f','long','#526986','#514a44','cardigan','#8b9c9d',eyes='#6e7765',mark='freckles',sleeve=10,logical=64),
     # 0.4.438: Kelly grown, found in room 6 on the last night. Her auburn hair and green eyes, freckles, a washed-out shirt and trousers.
     'borrasca_kelly_grown': Look('#d6ab8f','#8a4f35','long','#8a8478','#5e5a52','shirt','#a39d90',eyes='#52745b',mark='freckles',sleeve=10,logical=64),
+    # 0.4.439: Dana, from room 2, on the belt on the last night. A woman in her forties, sallow, her long hair going grey; what is
+    # left of a smock in rags across her chest and hips, the midriff bare with the navel shaded as the crop top's is, bare arms with
+    # strap marks at the wrists and the band on her left, bare shins, felt slippers. Dull eyes straight ahead; on the second sheet
+    # they have gone to one side, as they now and then do on the belt.
+    'borrasca_dana': Look('#c7a78e','#5f5045','long','#9b968b','#c7a78e','shirt','#77736a',eyes='#5f5d52',age=1,mark='borrasca_dana',sleeve=0,logical=64),
+    'borrasca_dana_aside': Look('#c7a78e','#5f5045','long','#9b968b','#c7a78e','shirt','#77736a',eyes='#5f5d52',age=1,mark='borrasca_dana_aside',sleeve=0,logical=64),
+    'borrasca_dana_scream': Look('#c7a78e','#5f5045','long','#9b968b','#c7a78e','shirt','#77736a',eyes='#5f5d52',age=1,mark='borrasca_dana_scream',sleeve=0,logical=64),
     'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_second',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),
@@ -653,6 +660,29 @@ def face(look):
             d.rectangle((10,5,12,9),fill=skin);d.line((10,6,12,7),fill=shade(hair,-4));d.line((10,8,12,8),fill='#e9e2ce');d.point((11,8),fill=rgb(look.eyes))
             d.line((10,9,12,9),fill=shade(skin,-24))
             d.line((5,13,8,13),fill=shade(skin,-9));d.line((6,13,8,13),fill=shade(skin,-44));d.line((9,12,10,11),fill=shade(skin,-44));d.point((11,11),fill=shade(skin,-20))
+    if look.mark.startswith('borrasca_dana'):
+        # Dull eyes under heavy lids, shadow under them, the cheeks hollow and the mouth a little open. Straight ahead, or (aside)
+        # both gone to her right.
+        aside=look.mark.endswith('_aside')
+        if look.mark.endswith('_scream'):
+            # 0.4.439, at the blade: the eyes wide open, whites all round and the irises rolled up, the brows pulled up and in, the
+            # mouth stretched open as far as it goes, dark inside, a row of teeth showing at the top.
+            for x in (3,10):
+                inner=x+2 if x==3 else x
+                d.line((x,5,x+2,5),fill=shade(skin,-40));d.point((inner,4),fill=shade(skin,-40))
+                d.rectangle((x,6,x+2,9),fill='#e2dccb');d.point((x+1,6),fill=rgb(look.eyes));d.point((x+1,7),fill='#2a2826')
+                d.line((x,10,x+2,10),fill=shade(skin,-36))
+            d.line((4,11,4,13),fill=shade(skin,-30));d.line((11,11,11,13),fill=shade(skin,-30))
+            d.rectangle((5,11,10,15),fill='#2b1312');d.line((6,11,9,11),fill='#d3ccb8');d.rectangle((6,14,9,15),fill='#5a1f1d')
+            d.line((5,11,5,15),fill=shade(skin,-52));d.line((10,11,10,15),fill=shade(skin,-52))
+        else:
+            for x in (3,10):
+                d.line((x,6,x+2,6),fill=shade(skin,-34));d.rectangle((x,7,x+2,8),fill='#d4cdbd')
+                iris=x if aside else x+1
+                d.line((iris,7,iris,8),fill=rgb(look.eyes));d.point((iris,8),fill='#2a2826')
+                d.line((x,9,x+2,9),fill=shade(skin,-30))
+            d.line((4,10,4,12),fill=shade(skin,-22));d.line((11,10,11,12),fill=shade(skin,-22))
+            d.line((6,13,9,13),fill=shade(skin,-58));d.line((7,14,8,14),fill=shade(skin,-32))
     if look.face_style in ('young_teen','child'):
         # A child's plain, fuller face; no adult cheek hollows, heavy brow or painted lip.
         d.rectangle((1,9,2,14),fill=skin);d.rectangle((13,9,14,14),fill=skin)
@@ -788,7 +818,38 @@ def borrasca_cloth(im,look,side):
     return im
 
 
+def dana_torso(size,look,side):
+    """0.4.439 (owner: "She doesn't need to be in the nude, but her clothing should be in scraps"; "bare torso too, using the navel
+    shadowing"): what is left of a smock. A ragged band across the chest hung from two torn straps, rags at the hips, and between them
+    the bare midriff: the ribs showing, the navel a dark pixel with a softer one beside it a little right of the middle (the crop top's
+    shading, 0.4.201), a bruise on one side. The shoulders and the small of the back are bare too."""
+    w,h=size;skin=rgb(look.skin);c=rgb(look.cloth);lo=shade(c,-22);stain='#7a6c58'
+    if side=='bottom':return panel(size,look.cloth,'cloth',side)
+    im=panel(size,look.skin,'skin',side);d=ImageDraw.Draw(im)
+    if side=='top':return im
+    # Rows in the 24-row face: the chest band from 3 to about 10, the hip rags from about 18 down.
+    chest=[10,11,9,10,12,10,9,11,10,12,11,9,10,11,10,9]
+    hips=[18,17,19,18,20,18,17,18,19,17,18,20,19,18,17,19]
+    for x in range(w):
+        cb,hb=chest[x%16],hips[(x*3+1)%16]
+        if side in ('left','right'):cb,hb=cb-1,hb+1
+        d.line((x,3,x,cb),fill=c);d.point((x,cb),fill=lo)
+        d.line((x,hb,x,h-1),fill=c);d.point((x,hb),fill=lo)
+    if side in ('front','back'):
+        for x0 in (3,w-5):d.rectangle((x0,0,x0+1,3),fill=c)
+        for x,y in ((5,5),(11,7),(2,20),(12,21)):d.point((x,y),fill=skin)
+        for x,y in ((7,6),(8,6),(9,21),(4,22)):d.point((x,y),fill=stain)
+    if side=='front':
+        for y in (12,14):d.line((2,y,4,y),fill=shade(skin,-16));d.line((w-5,y,w-3,y),fill=shade(skin,-16))
+        d.point((8,15),fill=shade(skin,-62));d.point((7,15),fill=shade(skin,-26))
+        for x,y in ((12,13),(13,13),(12,14)):d.point((x,y),fill='#8a7686')
+    if side=='back':
+        d.line((w//2,11,w//2,16),fill=shade(skin,-14))
+    return im
+
+
 def cloth_face(size,look,side='front'):
+    if look.mark.startswith('borrasca_dana'):return dana_torso(size,look,side)
     im=panel(size,look.cloth,'cloth',side);d=ImageDraw.Draw(im);w,h=size
     c=rgb(look.cloth);a=rgb(look.accent);lo=shade(c,-19);hi=shade(c,16)
     if look.style=='flannel':
@@ -1069,7 +1130,7 @@ def paint(look):
         d.polygon([(5,4),(10,4),(12,6),(12,9),(10,11),(5,11),(3,9),(3,6)],fill=rgb(look.hair))
         d.line((5,5,9,5,11,7),fill=shade(look.hair,15))
         put(net(32,0,8,8,8)['back'],art)
-    if look.mark.startswith('borrasca_'):
+    if look.mark.startswith('borrasca_') and not look.mark.startswith('borrasca_dana'):
         if look.mark=='borrasca_kimber':
             art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
             d.rectangle((5,4,10,13),fill=rgb(look.hair));d.line((5,6,10,6),fill='#52615c');d.line((6,8,6,12),fill=shade(look.hair,14))
@@ -1104,7 +1165,7 @@ def paint(look):
     for side,box in torso.items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
     # Classic humanoids mirror one arm/leg; player models have the two extra left nets.
     arms=[net(40,16,3 if look.mark=='witch' or look==LOOKS.get('lake_witch_memory') else 4,12,4),net(32,48,3 if look.mark=='witch' or look==LOOKS.get('lake_witch_memory') else 4,12,4)]
-    for arm in arms:
+    for ai,arm in enumerate(arms):
         for side,box in arm.items():
             w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
             art=panel((w,h),look.cloth,'cloth',side);d=ImageDraw.Draw(art)
@@ -1129,6 +1190,19 @@ def paint(look):
                 d=ImageDraw.Draw(art);d.rectangle((0,h-4,w-1,h-1),fill='#a48f64');d.line((0,h-4,w-1,h-4),fill='#786b51')
             if look.mark=='borrasca_kyle' and side not in ('top','bottom'):
                 ImageDraw.Draw(art).rectangle((0,2,w-1,3),fill=rgb(look.accent))
+            if look.mark.startswith('borrasca_dana'):
+                # Bare arms: the marks of a strap round each wrist, the band on her left with its card turned out, and on her right
+                # a torn end of sleeve still hanging from the shoulder.
+                if side=='top':art=panel((w,h),look.skin,'skin',side)
+                d=ImageDraw.Draw(art)
+                if side not in ('top','bottom'):
+                    d.line((0,h-7,w-1,h-7),fill='#8b6a74');d.line((0,h-6,w-1,h-6),fill=shade(look.skin,-28))
+                    if ai==1:
+                        d.rectangle((0,h-9,w-1,h-8),fill='#e9e6de')
+                        if side=='front':d.rectangle((1,h-10,w-2,h-8),fill='#f3f1ea');d.point((2,h-9),fill='#2c3a62');d.point((4,h-9),fill='#2c3a62')
+                    if ai==0:
+                        for x in range(w):d.line((x,0,x,2+(x*3)%4),fill=rgb(look.cloth))
+                    if side=='front' and ai==0:d.point((1,h//2),fill='#8a7686');d.point((2,h//2+1),fill='#8a7686')
             put(box,art)
     # Elbow/knee cut surfaces are real model faces, with their own flat pigments.
     d=ImageDraw.Draw(im)
@@ -1158,6 +1232,13 @@ def paint(look):
                     d.rectangle((0,13,w-1,h-6),fill=shade(look.skin,-7))
                     d.rectangle((0,h-5,w-1,h-1),fill='#292f33');d.line((1,h-4,w-2,h-4),fill='#505858')
                     d.line((0,h-1,w-1,h-1),fill='#1b2023')
+                elif look.mark.startswith('borrasca_dana'):
+                    # Bare legs under the rags of the hem, bruised at the shin, and grey felt slippers with pale soles.
+                    d.rectangle((0,0,w-1,h-1),fill=rgb(look.skin))
+                    for x in range(w):d.line((x,0,x,2+(x*5)%4),fill=rgb(look.cloth))
+                    d.line((1,h//2,w-2,h//2),fill=shade(look.skin,-14))
+                    if side=='front':d.point((2,h-9),fill='#8a7686');d.point((3,h-9),fill='#8a7686');d.point((2,h-10),fill='#9c8a92')
+                    d.rectangle((0,h-4,w-1,h-1),fill='#8d8a84');d.line((0,h-4,w-1,h-4),fill='#6f6c66');d.line((0,h-1,w-1,h-1),fill='#d6d0c2')
                 elif look.mark=='possessed':
                     # Barefoot under the hem: a pale shin and a dirty sole line, no shoes.
                     d.rectangle((0,h-9,w-1,h-1),fill=rgb(look.skin));d.line((0,h-9,w-1,h-9),fill=shade(look.pants,-24));d.line((0,h-1,w-1,h-1),fill=shade(look.skin,-40))
@@ -1166,6 +1247,7 @@ def paint(look):
                     if look.mark=='cottage_bowler':d.line((2,1,2,h-7),fill=shade(look.pants,13))
                     d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
             if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark in ('possessed','trunks') else '#292c28','skin')
+            if side=='bottom' and look.mark.startswith('borrasca_dana'):art=panel((w,h),'#d6d0c2','skin')
             put(box,art)
     if look.mark=='winter':
         def over(box,art):im.paste(art,(round(box[0]*S),round(box[1]*S)),art)
@@ -1288,6 +1370,25 @@ def paint(look):
         d.line((21*S,24*S,22*S,26*S,21*S,28*S),fill='#242928',width=S);d.line((25*S,28*S,26*S,30*S),fill='#746f64',width=S)
         d.rectangle((44*S,22*S,46*S-1,25*S-1),fill='#78616a');d.line((45*S,25*S,46*S,27*S),fill='#b19e90',width=S)
         for x in (1,25):d.rectangle((x*S,11*S,(x+2)*S-1,14*S-1),fill='#79656c');d.point(((x+1)*S,12*S),fill='#59515b')
+    if look.mark.startswith('borrasca_dana'):
+        # 0.4.439: where the machine has cut her, drawn on the island no layer of the cast model reads, (56,16)-(64,32). The top square
+        # is a torn end: ragged skin round the rim, meat and fat, a broken bone in the middle. The lower square is wet blood, for the
+        # split skin and the slices nearest the slot.
+        d=ImageDraw.Draw(im)
+        def px(x,y,c):d.rectangle(((56+x)*S,(16+y)*S,(57+x)*S-1,(17+y)*S-1),fill=c)
+        meat=['#7c1915','#8e1f1a','#a42a21','#6a1411']
+        for y in range(8):
+            for x in range(8):
+                edge=x in (0,7) or y in (0,7)
+                px(x,y,(look.skin if (x*5+y*3)%4 else shade(look.skin,-38)) if edge and (x+y)%3 else meat[(x*7+y*5)%4] if not edge else '#5a1210')
+        for x,y in ((2,2),(5,5),(1,5)):px(x,y,'#d8b98e')
+        for x,y in ((3,3),(4,3),(3,4),(4,4)):px(x,y,'#e3dccb')
+        px(4,4,'#9a4a3a');px(2,6,'#b8342a');px(6,1,'#b8342a')
+        blood=['#6d0f0c','#5a0c0a','#7e1410','#4a0907']
+        for y in range(8):
+            for x in range(8):px(x,8+y,blood[(x*3+y*5+x*y)%4])
+        for x,y in ((1,9),(5,11),(3,14),(6,13)):px(x,y,'#a01e18')
+        for x,y in ((2,12),(6,9)):px(x,y,'#2e0504')
     # Native 256-square / 512x256 archive dimensions; art itself remains the exact two-pixel grid.
     return im.resize((look.logical*4,256),Image.Resampling.NEAREST)
 

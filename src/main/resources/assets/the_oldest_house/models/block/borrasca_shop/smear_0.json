@@ -1,0 +1,36 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "g": "the_oldest_house:block/borrasca_shop/gore",
+    "b": "the_oldest_house:block/borrasca_shop/bone",
+    "h": "the_oldest_house:block/borrasca_shop/hair",
+    "s": "the_oldest_house:block/borrasca_shop/slipper",
+    "w": "the_oldest_house:block/borrasca_shop/wristband",
+    "m": "the_oldest_house:block/borrasca_shop/smear",
+    "n": "the_oldest_house:block/borrasca_shop/smear_soaked",
+    "particle": "the_oldest_house:block/borrasca_shop/smear"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        0.15,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    }
+  ]
+}

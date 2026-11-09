@@ -11,8 +11,10 @@ shelving of motor oil and antifreeze, a bait freezer with cups of night crawlers
 painted bait sign and a stack of used tires); the general store's shelf of tins, boxes and flour, and the diner's shelf of plates,
 mugs and bowls. 0.4.431: a child's bike, on its kickstand (stage 0, Kendra's) and dropped on its side (stage 1, Patrick's). 0.4.425: the things the town sells (pie,
 coffee, coffee mostly milk, soda, candy, a lollipop, a malt, beer) and the money to buy them with (a child's change, a wallet), as
-items. Writes the models and block states and the
-blocks' names. --check verifies everything.
+items. 0.4.439: what the machine leaves on its last night, in the same native pixels. A smear for the belt where it went in (stage 0,
+a first wet streak; stage 1, the belt soaked); what comes off the far end (pulp and bone, stage 0; hair and a felt slipper, stage 1);
+and the band from her wrist, cut, its card stamped with her number. With them, a sound made from vanilla files: the grinder, wet.
+Writes the models and block states, the blocks' names, and the sound and its subtitle. --check verifies everything.
 """
 from pathlib import Path
 import argparse
@@ -839,6 +841,97 @@ def lying(parts):
     return out
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.439: the last night at the machine
+def gore():
+    """Pulp: wet, dark and bright by turns, clotted, with fat and gristle through it."""
+    im = new('#6e0f12', 43906, 8); rnd = random.Random(43907)
+    for _ in range(26):
+        x, y = rnd.randint(0, 15), rnd.randint(0, 15)
+        dot(im, x, y, '#3d0608'); dot(im, x + 1, y, '#3d0608')
+    for _ in range(20):
+        dot(im, rnd.randint(0, 15), rnd.randint(0, 15), '#a3201f')
+    for _ in range(8):
+        x, y = rnd.randint(0, 14), rnd.randint(0, 14)
+        dot(im, x, y, '#d0483f'); dot(im, x, y + 1, '#a3201f')
+    for _ in range(9):
+        dot(im, rnd.randint(0, 15), rnd.randint(0, 15), '#e8c9a8')
+    for _ in range(4):
+        x, y = rnd.randint(1, 13), rnd.randint(1, 13)
+        for k in range(3):
+            dot(im, x + k, y, '#d9a7a0')
+    return im
+
+
+def smear(soaked):
+    """What the belt carries out of the slot: a streak along the rubber, or all of it running wet, the edges thin and the clots
+    lying in the ribs."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(43915 + soaked)
+    half = 8 if soaked else 3
+    for y in range(16):
+        width = half + rnd.randint(-1, 2 if soaked else 1)
+        for x in range(8 - width, 8 + width):
+            edge = x in (8 - width, 8 + width - 1)
+            dot(im, x, y, '#4a0a0c' if edge else ('#6e0f12' if (x + y) % 3 else '#8a1416'), 150 if edge else 225)
+    for _ in range(10 if soaked else 4):
+        x, y = rnd.randint(8 - half + 1, 8 + half - 2), rnd.randint(0, 15)
+        dot(im, x, y, '#3d0608'); dot(im, x + 1, y, '#a3201f')
+    for _ in range(5 if soaked else 2):
+        dot(im, rnd.randint(8 - half + 1, 8 + half - 2), rnd.randint(0, 15), '#d0483f')
+    return im
+
+
+def bone():
+    im = new('#e3dccb', 43908, 4); rnd = random.Random(43909)
+    for y in range(16):
+        dot(im, rnd.randint(0, 15), y, '#c8bfa9')
+    for x in range(16):
+        if x % 5 == 2:
+            for y in range(rnd.randint(0, 5), rnd.randint(9, 15)):
+                dot(im, x, y, '#8a1d1a')
+    dot(im, 7, 7, '#7a3a2a'); dot(im, 8, 7, '#7a3a2a'); dot(im, 7, 8, '#5a2418')
+    return im
+
+
+def hair():
+    """A clump of hair, long, going grey through the brown, matted together."""
+    im = new('#4a3a2e', 43910, 4); rnd = random.Random(43911)
+    for x in range(16):
+        for y in range(16):
+            if (x * 3 + y) % 5 == 0:
+                dot(im, x, y, '#6b5a4a')
+            elif (x * 3 + y) % 7 == 0:
+                dot(im, x, y, '#9a948a')
+    for _ in range(14):
+        x, y = rnd.randint(0, 15), rnd.randint(0, 15)
+        dot(im, x, y, '#5b1414'); dot(im, x, y + 1, '#3d0c0c')
+    return im
+
+
+def slipper():
+    """A felt slipper, the kind handed out by the dozen: a worn grey felt upper, its pale sole, and what got on it."""
+    im = new('#8d8a84', 43912, 5); rnd = random.Random(43913)
+    fill(im, 0, 12, 16, 16, '#d6d0c2'); fill(im, 0, 12, 16, 13, '#a9a294')
+    for x in range(1, 15, 2):
+        dot(im, x, 2, '#6f6c66')
+    for _ in range(12):
+        dot(im, rnd.randint(0, 15), rnd.randint(0, 11), '#a5a29b')
+    for _ in range(12):
+        x, y = rnd.randint(0, 15), rnd.randint(3, 15)
+        dot(im, x, y, '#6e0f12'); dot(im, x, y + 1, '#4a0a0c')
+    return im
+
+
+def wristband():
+    """The band from her wrist: a white plastic strap, cut, with its card. The card is stamped 141 under an A."""
+    im = new('#e9e6de', 43914, 3)
+    fill(im, 0, 0, 16, 1, '#bdb8ac'); fill(im, 0, 15, 16, 16, '#bdb8ac')
+    text(im, 7, 1, 'A', '#2c3a62')
+    text(im, 3, 7, '141', '#2c3a62')
+    for x, y in ((1, 13), (2, 14), (14, 3), (13, 12), (14, 13)):
+        dot(im, x, y, '#6e0f12')
+    return im
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
     faces = {
@@ -858,6 +951,8 @@ def textures():
         'cab_side_0': cab_side(0), 'cab_side_1': cab_side(1), 'cab_coin': cab_coin(), 'cab_panel': cab_panel(),
         'cab_screen_0': cab_screen(0), 'cab_screen_1': cab_screen(1), 'cab_marquee_0': cab_marquee(0), 'cab_marquee_1': cab_marquee(1),
         'cab_red': new('#c8281c', 43609, 3), 'cab_yellow': new('#e8c030', 43610, 3),
+        'gore': gore(), 'smear': smear(0), 'smear_soaked': smear(1), 'bone': bone(), 'hair': hair(), 'slipper': slipper(),
+        'wristband': wristband(),
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
@@ -989,7 +1084,30 @@ def shop_models():
     m['bike_wheel'] = model(bike_wheel(), bike, 'tire')
     m['bike_cranks'] = model(bike_cranks(), bike, 'chrome')
     cabinet_models(m)
+    feeding_models(m)
     return m
+
+
+def feeding_models(m):
+    """0.4.439: what comes off the far end of the belt, and what the belt carries out of the slot. North-facing like the rest."""
+    g = {'g': 'gore', 'b': 'bone', 'h': 'hair', 's': 'slipper', 'w': 'wristband', 'm': 'smear', 'n': 'smear_soaked'}
+    # Pulp and bone: a slumped heap, the lumps on it, and shards and a rib standing out of it.
+    m['remains_0'] = model([element([2, 0, 2], [14, 1.5, 14], {'all': 'g'}), element([4, 1.5, 4], [10, 4, 10], {'all': 'g'}),
+                            element([8, 1.5, 7], [12, 3, 12], {'all': 'g'}),
+                            element([6, 2, 6], [7, 6.5, 7], {'all': 'b'}, None, {'angle': 22.5, 'axis': 'z', 'origin': [6.5, 2, 6.5]}),
+                            element([8, 3, 8], [13, 3.8, 9], {'all': 'b'}, None, {'angle': -22.5, 'axis': 'y', 'origin': [10, 3, 8.5]}),
+                            element([3, 1.5, 11], [7, 2.3, 12], {'all': 'b'})], g, 'gore')
+    # Hair and a felt slipper in what is left of the rest.
+    m['remains_1'] = model([element([1, 0, 1], [15, 1, 15], {'all': 'g'}), element([3, 1, 3], [8, 2.5, 9], {'all': 'h'}),
+                            element([8, 1, 6], [12, 3.5, 14], {'all': 's', 'up': 's'}, None, {'angle': 22.5, 'axis': 'y', 'origin': [10, 1, 10]}),
+                            element([4, 1, 10], [7, 3, 13], {'all': 'g'})], g, 'gore')
+    # The band from her wrist, cut, lying open in a thin smear with its card turned up.
+    m['wristband_0'] = model([element([2, 0, 3], [14, .3, 13], {'up': 'm', 'down': 'm'}),
+                              element([3, .3, 7], [13, .9, 9], {'all': 'w'}, {k: [0, 6, 16, 9] for k in ('north', 'south', 'east', 'west', 'up', 'down')}),
+                              element([6, .3, 5.5], [10, 1.1, 10.5], {'all': 'w', 'up': 'w'}, {'up': [0, 0, 16, 16]})], g, 'wristband')
+    # The belt where it comes out of the slot: a streak, then all of it running wet. Thin enough to lie on the belt's rubber.
+    m['smear_0'] = model([element([0, 0, 0], [16, .15, 16], {'up': 'm', 'down': 'm'})], g, 'smear', True)
+    m['smear_1'] = model([element([0, 0, 0], [16, .15, 16], {'up': 'n', 'down': 'n'})], g, 'smear_soaked', True)
 
 
 # ------------------------------------------------------------------------------------------------ 0.4.425: things to buy
@@ -1120,8 +1238,9 @@ ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wal
 
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
          'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open',
-         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top']
-STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2}
+         'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top',
+         'remains', 'wristband', 'smear']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
 
@@ -1181,6 +1300,19 @@ def main():
             assert lang.get(key) == name, key
         else:
             lang[key] = name
+    # 0.4.439: the grinder with something in it, from vanilla's own files (bone breaking, mud, a heavy wet slap), pitched low.
+    sounds_path = A / 'sounds.json'; sounds = json.loads(sounds_path.read_text())
+    wet = {'subtitle': 'subtitles.the_oldest_house.borrasca.machine_wet', 'sounds':
+           [{'name': f'minecraft:block/bone_block/break{i}', 'pitch': .7} for i in range(1, 6)] +
+           [{'name': f'minecraft:block/mud/break{i}', 'pitch': .6} for i in range(1, 7)] +
+           [{'name': f'minecraft:mob/slime/big{i}', 'pitch': .55} for i in range(1, 5)]}
+    wanted['subtitles.the_oldest_house.borrasca.machine_wet'] = 'Grinder chokes, wet'
+    if check:
+        assert sounds.get('borrasca.machine_wet') == wet, 'borrasca.machine_wet'
+        assert lang.get('subtitles.the_oldest_house.borrasca.machine_wet') == 'Grinder chokes, wet'
+    else:
+        sounds['borrasca.machine_wet'] = wet; sounds_path.write_text(json.dumps(sounds, indent=2) + '\n')
+        lang['subtitles.the_oldest_house.borrasca.machine_wet'] = 'Grinder chokes, wet'
     if not check:
         lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(('Verified' if check else 'Drew') + f" Drisking's shops: {len(images)} textures, {len(data)} models and states.")

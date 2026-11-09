@@ -41,6 +41,7 @@ public final class BorrascaCast {
         case "TownEli"->visit==1?new BlockPos(-2,0,-24):new BlockPos(36,-4,-56);
         case "TownWren"->visit<=2?new BlockPos(-2,0,-32):new BlockPos(38,-4,-56);
         case "Worker1"->visit==3?new BlockPos(8,12,-182):new BlockPos(37,-4,-59);
+        case "CastDana"->BorrascaFeeding.COT; // 0.4.439: on her cot in room 2 until the men fetch her (BorrascaFeeding)
         default->throw new IllegalArgumentException(key);};}
     public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return;int visit=own.contains("CastNextVisit")?own.getInt("CastNextVisit"):own.getInt("Visit");var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=body(own,key)!=null?body(own,key):base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?Math.max(3,visit):visit));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)level.getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(level,held));}
     /** Prepare the next cast while the reader is still at the original House door, before travel. */

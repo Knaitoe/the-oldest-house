@@ -73,12 +73,31 @@ public final class SpeechCaptions {
             float fade=(float)Mth.clamp(1-(d-6)/(HEARD-6)*.5,.5,1);
             int top=y-lines.size()*10-4,x0=w/2-width/2-4,x1=w/2+width/2+4;
             g.fill(x0,top,x1,y,(int)(fade*150)<<24);
-            int colour=((int)(fade*255)<<24)|0xFFFFFF;
-            for(int i=0;i<lines.size();i++)g.drawString(font,lines.get(i),w/2-font.width(lines.get(i))/2,top+3+i*10,colour,false);
+            int colour=((int)(fade*255)<<24)|0xFFFFFF;float shake=BorrascaNativeArt.scream(a),age=a.tickCount+delta.getGameTimeDeltaPartialTick(false);
+            for(int i=0;i<lines.size();i++){int x=w/2-font.width(lines.get(i))/2,y0=top+3+i*10;
+                if(shake>0)shaking(g,lines.get(i),x,y0,colour,shake,age,i);else g.drawString(font,lines.get(i),x,y0,colour,false);}
             // A voice from outside the middle of the view is marked on its side.
             if(to.dot(look)<.8){boolean onLeft=to.dot(left)>0;String mark=onLeft?"◂":"▸";g.drawString(font,mark,onLeft?x0-3-font.width(mark):x1+3,top+3+(lines.size()-1)*5,colour,true);}
             y=top-3;
         }
+    }
+
+    /**
+     * 0.4.439 (owner, of Dana at the machine: "text should be garbled and wobbly like marjorie's"). The line is drawn a letter at a time,
+     * each bobbing and tipping on its own as Marjorie's voice is drawn in the Ghosts set (GhostsTakeClient.renderCaption), harder the
+     * harder she screams; past that, the letters jump about, and some leave a dark red double behind them.
+     */
+    static void shaking(GuiGraphics g,FormattedCharSequence line,int x,int y,int colour,float shake,float age,int row){
+        var font=Minecraft.getInstance().font;final float[] pen={x};
+        line.accept((index,style,codepoint)->{
+            var glyph=Component.literal(new String(Character.toChars(codepoint))).withStyle(style);var pose=g.pose();pose.pushPose();
+            int seed=index*31+(int)(age/2)*17+row*7;
+            float bob=Mth.sin(age*(.62F+.3F*shake)+index*.41F+row)*.75F*shake;
+            float jx=shake>1?(Math.floorMod(seed*1103515245>>>16,5)-2)*.3F*(shake-1):0,jy=shake>1?(Math.floorMod(seed*214013>>>16,5)-2)*.3F*(shake-1):0;
+            pose.translate(pen[0]+jx,y+bob+jy,0);pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(Mth.sin(age*.24F*(1+shake)+index*.37F)*3*shake));
+            if(shake>.9F&&Math.floorMod(seed,5)==0)g.drawString(font,glyph,1,1,((colour>>>24)*3/4)<<24|0x8A1C16,false);
+            g.drawString(font,glyph,0,0,colour,false);
+            pose.popPose();pen[0]+=font.width(glyph);return true;});
     }
 
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
