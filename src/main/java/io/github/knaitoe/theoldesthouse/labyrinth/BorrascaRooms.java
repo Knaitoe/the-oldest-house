@@ -42,6 +42,8 @@ public final class BorrascaRooms {
     public static final BlockPos HATCH=new BlockPos(-19,11,-202),NIGHT_BOOK=new BlockPos(-19,7,-172),LETTER=new BlockPos(-18,7,-172),NELL_WALL=new BlockPos(-15,7,-181);
     public static final int[] ROOM_Z={-199,-195,-191,-187,-183,-179};
     public static final int NELL_ROOM=6,MARA_ROOM=7;
+    /** 0.4.438: where the friend stands grown in room 6, by the cot under the names. */
+    public static final BlockPos KELLY=new BlockPos(-15,6,-179);
     /** The numbers in the ground behind the shed: the tags before Nell's. */
     public static final String[] GRAVE_TAGS={"211-A","214-A","219-A","222-A","226-A","230-A","234-A","238-A","241-A","245-A","247-A","251-A","255-A","258-A","260-A"};
     public static BlockPos grave(int i){return new BlockPos(-6+3*(i%5),12,-202-3*(i/5));}
@@ -234,7 +236,7 @@ public final class BorrascaRooms {
             boolean open=room==NELL_ROOM;
             NovelRooms.door(l,b.offset(roomDoor(room)),east?Direction.WEST:Direction.EAST,Blocks.IRON_DOOR,open);
             BuildBlocks.set(l,b.offset(roomLever(room)),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.WALL).setValue(LeverBlock.FACING,east?Direction.WEST:Direction.EAST).setValue(LeverBlock.POWERED,open),F);
-            var tag=room==NELL_ROOM?new String[]{"RM 6","263-A","TRANSFER","D-417"}:room==MARA_ROOM?new String[]{"RM 7","264-A","",""}:new String[]{"RM "+room,"","",""};
+            var tag=room==NELL_ROOM?new String[]{"RM 6","263-A","",""}:room==MARA_ROOM?new String[]{"RM 7","264-A","",""}:new String[]{"RM "+room,"","",""};
             NovelRooms.sign(l,b.offset(east?-18:-20,8,zc),east?Direction.WEST:Direction.EAST,tag);
         }
         // Her room: the blanket gone, her name scratched into the wall beside the reader's (the names are set for each reader).

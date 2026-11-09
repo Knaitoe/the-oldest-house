@@ -60,6 +60,8 @@ LOOKS = {
     'borrasca_worker_two': Look('#a7765a','#2d2621','close','#6a5a3a','#3b4450','crew','#d7d2c2',eyes='#3f3a33',age=1,beard='chinstrap',mark='borrasca_worker_two',sleeve=10,logical=64),
     'borrasca_eli': Look('#bb8c69','#514031','close','#a76145','#80745c','tee','#aa8e6a',eyes='#635342',sleeve=4,logical=64),
     'borrasca_wren': Look('#dbb78e','#65513f','long','#526986','#514a44','cardigan','#8b9c9d',eyes='#6e7765',mark='freckles',sleeve=10,logical=64),
+    # 0.4.438: Kelly grown, found in room 6 on the last night. Her auburn hair and green eyes, freckles, a washed-out shirt and trousers.
+    'borrasca_kelly_grown': Look('#d6ab8f','#8a4f35','long','#8a8478','#5e5a52','shirt','#a39d90',eyes='#52745b',mark='freckles',sleeve=10,logical=64),
     'uncanny_waitress': Look('#cba083','#795039','bun','#496d80','#496d80','dress','#e0d4b8',eyes='#596456',age=1,mark='diner_apron',sleeve=4,logical=64),
     'uncanny_second_waitress': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_second',sleeve=4,logical=64),
     'uncanny_second_waitress_split': Look('#c4ad97','#42312c','bun','#526c79','#526c79','dress','#d5c8ab',eyes='#657068',mark='diner_split',sleeve=4,logical=64),

@@ -43,6 +43,8 @@ public final class BorrascaStory {
     /** 0.4.235: a child of a later Drisking generation than the original story's; only the Sheriff and the Prescotts last that long. */
     public static final String FRIEND="Kelly";
     public static final int MISSING=10,WORKER=20;
+    /** 0.4.438: the friend found grown in room 6 on the last night; drawn on her own grown skin, at full size. */
+    public static final int GROWN=11;
     public static final int ELI=1,WREN=2;
     /**
      * The taking (0.4.262): the longest the men may take to reach her before she is led anyway, how long she is led before her compass
@@ -252,6 +254,7 @@ public final class BorrascaStory {
         if(BorrascaPeople.talk(p,a,own))return; // 0.4.425: the shops' keepers and Earl in the cell
         int visit=own.getInt("Visit");
         if(a.role()==LiteraryActor.BORRASCA_KIMBER){
+            if(visit==4&&a.phase()==GROWN){grownTalk(p,a,own);return;}
             if(own.getBoolean("FriendMissing")||visit>=3)return;
             if(visit==1){
                 if(knifeTalk(p,a,own))return;
@@ -927,7 +930,7 @@ public final class BorrascaStory {
 
     // ------------------------------------------------------------------ the fourth visit: the names
     private static void visitFour(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
-        if(friend!=null){friend.stopRiding();friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
+        if(friend!=null)grownKelly(p,b,own,friend);
         if(sheriff!=null&&!retribution(p,own,sheriff))patrolRefinery(p,b,own,sheriff);
         if(!own.getBoolean("PowerOff")&&own.getInt("TrailClock")%200==0)heard(p,BorrascaRegistry.CHIME.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),1);
         if(!own.getBoolean("GougeSeen")&&looksAt(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),7))noticeGouge(p,own);
@@ -1041,9 +1044,34 @@ public final class BorrascaStory {
     private static void lowerRooms(ServerPlayer p,BlockPos b,CompoundTag own){
         var r0=BorrascaRooms.rel(p,b);double x=r0.x,y=r0.y,z=r0.z;
         if(!own.getBoolean("LowerRooms")&&BorrascaRooms.inLowerRooms(x,y,z)){own.putBoolean("LowerRooms",true);cue(p,"A corridor under the depot, rooms along both sides. Every bolt is on this side of the door.");}
-        if(!own.getBoolean("NellsRoom")&&BorrascaRooms.inRoom(BorrascaRooms.NELL_ROOM,x,y,z)){own.putBoolean("NellsRoom",true);cue(p,"Room 6 is empty. Scratched into the wall: "+FRIEND.toUpperCase(Locale.ROOT)+", and beside it your name, the way you both cut them into the tree.");}
+        if(!own.getBoolean("NellsRoom")&&BorrascaRooms.inRoom(BorrascaRooms.NELL_ROOM,x,y,z)){own.putBoolean("NellsRoom",true);cue(p,"Room 6. Scratched into the wall: "+FRIEND.toUpperCase(Locale.ROOT)+", and beside it your name, the way you both cut them into the tree. A woman is standing under them. She looks up.");
+            var friend=actor(p,own,"CastKimber");if(friend!=null&&friend.phase()==GROWN){own.putBoolean("KellyFound",true);say(p,friend,GROWN_LINES[0]);own.putInt("KellyLine",1);}}
         if(!own.getBoolean("MarasRoom")&&BorrascaRooms.inRoom(BorrascaRooms.MARA_ROOM,x,y,z)){own.putBoolean("MarasRoom",true);cue(p,"The blanket on the cot is folded. It is still warm. The trucks went up the ridge road tonight.");}
         if(!own.getBoolean("GravesSeen")&&x>=-7.5&&x<7.5&&z>=-211&&z<-201&&y>11&&y<14)graves(p,own);
+    }
+    /**
+     * 0.4.438 (owner: "Why not have Kelly etc aged up if the player sees them as adults?"): on the last night the friend is in room 6,
+     * grown. The same saved actor as the child, on her grown skin and at full size, standing by the cot under the two names, turned to
+     * the open door. She knows the reader, will not come up, and asks them to stop the machine and take her name up instead of her.
+     */
+    static final String[] GROWN_LINES={
+        "Don't touch the other doors. They count them in the morning.",
+        "You still have your name on the tree? I did ours on every wall they gave me.",
+        "I'm not coming up. Two of mine are up there already. They have other people's names now.",
+        "The machine on the ridge is the only thing up there that's theirs. Stop it.",
+        "Take my name up with you. Not me. Go on."};
+    private static void grownKelly(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
+        friend.stopRiding();if(friend.phase()!=GROWN||friend.role()!=LiteraryActor.BORRASCA_KIMBER)friend.appearance(LiteraryActor.BORRASCA_KIMBER,GROWN);
+        friend.setInvisible(false);friend.setCustomNameVisible(false);BorrascaCast.stop(friend);
+        var at=BorrascaRooms.at(b,BorrascaRooms.KELLY);var spot=Vec3.atBottomCenterOf(at);
+        if(friend.position().distanceToSqr(spot)>2.25&&p.serverLevel().hasChunkAt(at))friend.teleportTo(spot.x,spot.y,spot.z);
+        // Turned to the door until the reader is in the room, then to the reader.
+        float yaw=BorrascaRooms.inRoom(BorrascaRooms.NELL_ROOM,BorrascaRooms.rel(p,b).x,BorrascaRooms.rel(p,b).y,BorrascaRooms.rel(p,b).z)?(float)Math.toDegrees(Math.atan2(-(p.getX()-friend.getX()),p.getZ()-friend.getZ())):90;
+        friend.setYRot(yaw);friend.setYHeadRot(yaw);friend.yBodyRot=yaw;
+    }
+    private static void grownTalk(ServerPlayer p,LiteraryActor a,CompoundTag own){
+        int i=Math.min(own.getInt("KellyLine"),GROWN_LINES.length-1);say(p,a,GROWN_LINES[i]);own.putInt("KellyLine",i+1);
+        own.putBoolean("KellyFound",true);if(i>=3)own.putBoolean("KellyAsked",true);save(p,own);
     }
     private static void graves(ServerPlayer p,CompoundTag own){if(own.getBoolean("GravesSeen"))return;own.putBoolean("GravesSeen",true);cue(p,"Behind the shed, low mounds in rows, a number on a stake at the head of each. No names.");}
 
@@ -1181,7 +1209,7 @@ public final class BorrascaStory {
         // 0.4.429: her knife never leaves the hill in a pocket; it went back to her.
         if(!BorrascaBelongings.remove(p,own,BorrascaBelongings.KNIFE).isEmpty()){own.putBoolean("KnifeBack",true);own.putBoolean("KnifeKept",true);}boolean valid=BorrascaSites.inside(p)&&own.getBoolean("Here")&&!own.getBoolean("Interrupted")&&p.isAlive();if(valid&&own.getInt("Beat")>=own.getInt("Visit"))own.putInt("DepartVisit",own.getInt("Visit"));else own.remove("DepartVisit");own.putBoolean("ExitEligible",valid&&own.getInt("Visit")==4&&(own.getInt("ConfirmedVisits")&7)==7&&own.getBoolean("Ready")&&own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&carriesEvidence(p,own));own.putBoolean("Here",false);save(p,own);}
     public static void returned(ServerPlayer p){BorrascaPeople.leave(p);var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("BorrascaDeparted",true);own.putBoolean("Escorting",false);own.putInt("Suspicion",0);int returned=own.getInt("DepartVisit");if(returned>=1&&returned<=3){own.putInt("ConfirmedVisits",own.getInt("ConfirmedVisits")|(1<<(returned-1)));own.putInt("CastNextVisit",returned+1);}if(own.getBoolean("ExitEligible")&&carriesEvidence(p,own)){own.putBoolean("NameReturned",own.getBoolean("RestoredName"));own.putBoolean("Completed",true);own.putInt("Beat",4);save(p,own);WitnessAccount.resolve(p,WitnessAccount.Story.BORRASCA,"silenced_the_mountain");d.setCompleted(PLACE.id(),true);WitnessAccount.updateBook(p,false);}own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}
-    @SubscribeEvent public static void joined(EntityJoinLevelEvent event){if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.role()!=LiteraryActor.BORRASCA_KIMBER||a.owner().isEmpty())return;var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE);if(own.getInt("Visit")>=3||own.getBoolean("FriendMissing")){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);if(own.getInt("Visit")>=3||own.getBoolean("FriendHidden")){a.setInvisible(true);BorrascaCast.stop(a);}}}
+    @SubscribeEvent public static void joined(EntityJoinLevelEvent event){if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.role()!=LiteraryActor.BORRASCA_KIMBER||a.owner().isEmpty())return;var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE);if(own.getInt("Visit")==4){a.appearance(LiteraryActor.BORRASCA_KIMBER,GROWN);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);a.setInvisible(false);return;}if(own.getInt("Visit")>=3||own.getBoolean("FriendMissing")){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);if(own.getInt("Visit")>=3||own.getBoolean("FriendHidden")){a.setInvisible(true);BorrascaCast.stop(a);}}}
     @SubscribeEvent public static void rejoined(PlayerEvent.PlayerLoggedInEvent event){if(!(event.getEntity() instanceof ServerPlayer p)||!BorrascaSites.inside(p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getBoolean("Here")){own.putBoolean("CastRecalled",false);save(p,own);}}
     @SubscribeEvent public static void died(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&BorrascaSites.inside(p)){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);own.putBoolean("Here",false);own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}}
 }
