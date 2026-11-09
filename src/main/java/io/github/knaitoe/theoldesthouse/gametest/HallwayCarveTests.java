@@ -53,6 +53,30 @@ public final class HallwayCarveTests {
     @AfterBatch(batch="door_boundary") public static void boundaryDone(ServerLevel level) { cleanup(level); }
     @AfterBatch(batch="door_winchester") public static void winchesterDone(ServerLevel level) { cleanup(level); }
     @AfterBatch(batch="door_rabbit") public static void rabbitDone(ServerLevel level) { cleanup(level); }
+    @AfterBatch(batch="door_bar") public static void barDone(ServerLevel level) { cleanup(level); }
+
+    /**
+     * 0.4.441 (owner: the pool table "is not physically in last_orders"): the bar built as the House builds it, from a recorded plan
+     * in slices. The table used to be written into the level while the plan was still being recorded, and the plan's clearing of the
+     * room then took it out; the literary fixtures build rooms directly and never saw it.
+     */
+    @GameTest(template="empty",batch="door_bar",timeoutTicks=1200)
+    public static void slicedBarKeepsItsPoolTable(GameTestHelper h) {
+        var level=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);
+        var base=new BlockPos(111000,200,111000); var place=LabyrinthPlace.LAST_ORDERS; hold(level,base,place);
+        var foot=base.offset(LastOrdersSite.TABLE); var head=foot.north();
+        plan=BuildBlocks.record(level,()->LiteraryRooms.build(level,base,place));
+        h.assertTrue(!PoolTableBlock.is(level.getBlockState(foot)),"recording the bar writes nothing into the level, the table included");
+        h.onEachTick(()->{
+            boolean done=plan.tick(); h.assertTrue(plan.lastVisits()<=BuildBlocks.MAX_VISITS,"every slice has a hard position limit");
+            if (!done) return;
+            h.assertTrue(PoolTableBlock.is(level.getBlockState(foot))&&PoolTableBlock.is(level.getBlockState(head)),
+                    "the pool table stands whole in the finished bar: "+level.getBlockState(foot)+" / "+level.getBlockState(head));
+            h.assertTrue(level.getBlockEntity(foot) instanceof PoolTableBlockEntity,"the table's foot keeps its frame");
+            h.assertTrue(DartboardBlock.is(level.getBlockState(base.offset(LastOrdersSite.BOARD))),"the dartboard is on its wall");
+            h.succeed();
+        });
+    }
 
     @GameTest(template="empty",batch="door_boundary",timeoutTicks=100)
     public static void actualWaitingPlayerAtTheFarDoorNeverStartsAnOverworldBreach(GameTestHelper h) {

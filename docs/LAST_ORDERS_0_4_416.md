@@ -118,3 +118,15 @@ there:
 - Architecture: the bar lays no rug, only its bare boards.
 
 New builds only. Protocol 170 is unchanged.
+
+## 0.4.441: the table stands in the bar
+
+The owner: the pool table "is not physically in last_orders". In play the House builds a scene from a recorded plan, laid a slice at a
+time. `PoolTableBlock.place` wrote the table straight into the level while that plan was still being recorded, so it went in first and
+the plan's own clearing of the room took it out again; the literary fixtures build rooms directly, so their checks always found it. It
+now goes through `BuildBlocks` and is laid in its turn, after the room and its floor. Borrasca's bar places its table the same way and
+had lost it the same way.
+
+`HallwayCarveTests.slicedBarKeepsItsPoolTable` builds the bar from a recorded plan in slices: recording writes nothing (the old code
+failed here), and the finished bar has the whole table, its frame at the foot, and the dartboard.
+
