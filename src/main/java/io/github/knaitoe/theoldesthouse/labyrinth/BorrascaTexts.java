@@ -117,6 +117,10 @@ public final class BorrascaTexts {
             +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")
             +"We cut our names into the three trees, mine beside hers."+(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
+            // 0.4.428: the historical society, got into as a child.
+            +(own.getInt("SocietyChild")>0?(own.getInt("SocietyChild")==1?" While Mr. Rowe smoked out front of his shop, I went into the historical society behind it.":" Behind Mr. Rowe's back I got into the historical society.")
+                +" On a map of the old workings someone had drawn a small square over the top shaft and written DEPOT."+(own.getBoolean("CaughtInSociety")?" He came back in and sent me out.":"")
+                :own.getBoolean("CaughtInSociety")?" Mr. Rowe found me in the back room of his shop and sent me out.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
             +(own.getBoolean("Read_History")?" A framed page at the historical society said what Borrasca meant: the first mine to give out, the one that gives nothing back. The town's water had run red for two years, and after that the town grew every year.":"")

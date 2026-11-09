@@ -32,15 +32,31 @@ public final class BorrascaPeople {
      * retired deputies on the Tipple's stools years later.
      */
     public static final int WEBB=154,SHERRY=155,ROY=156,JOLENE=157,DUTCH=158,MERLE=159;
-    private static final String[] SKINS={"lorna","ames","rowe","kurt","odell","fenn","gus","earl","webb","sherry","roy","jolene","dutch","merle"};
-    private static final String[] NAMES={"Lorna","Mr. Ames","Mr. Rowe","Kurt","Mrs. Odell","Mr. Fenn","Gus","Earl","Mr. Webb","Mrs. Webb","Roy Tate","Jolene Tate","Dutch","Merle"};
+    /** 0.4.428, the town's routines: Mr. Dorsey carries the mail up one side of the street and down the other, on stranger phase 160. */
+    public static final int CARRIER=160;
+    private static final String[] SKINS={"lorna","ames","rowe","kurt","odell","fenn","gus","earl","webb","sherry","roy","jolene","dutch","merle","dorsey"};
+    private static final String[] NAMES={"Lorna","Mr. Ames","Mr. Rowe","Kurt","Mrs. Odell","Mr. Fenn","Gus","Earl","Mr. Webb","Mrs. Webb","Roy Tate","Jolene Tate","Dutch","Merle","Mr. Dorsey"};
+    /**
+     * 0.4.428: the town's day. Each reader's own clock runs while they are in Drisking, DAY ticks to a turn. From SMOKE_FROM to SMOKE_TO
+     * Mr. Rowe steps out front of his shop for a smoke: the only time a child can get into the historical society behind it. He goes and
+     * comes back only while neither the counter nor the stoop is watched. Back at the counter for CATCH ticks, he sends out a child he finds
+     * in the society; a child he finds there has been in it SEEN ticks.
+     */
+    public static final int DAY=2400,SMOKE_FROM=1200,SMOKE_TO=1800,CATCH=40,SEEN=20;
+    /** Where Mr. Rowe smokes, on the sidewalk beside his door; where a child he catches in the society is sent, his shop's floor. */
+    public static final BlockPos STOOP=new BlockPos(-6,0,-102),SENT_OUT=new BlockPos(-9,0,-100);
+    /** Mr. Dorsey's round, in the world relative to the base: up the west side past each door, across, and back down the east side. */
+    public static final BlockPos[] ROUND={new BlockPos(-5,0,-79),new BlockPos(-5,0,-84),new BlockPos(-5,0,-100),new BlockPos(-5,0,-114),new BlockPos(6,0,-114),new BlockPos(6,0,-98),new BlockPos(6,0,-84),new BlockPos(6,0,-79)};
+    /** The round's stops (at a door, where he puts the mail through), and how long he stands at each. */
+    private static final boolean[] STOPS={false,true,true,true,true,true,true,false};
+    public static final int STOP_TICKS=60;
     /** What a child has in change on each childhood visit, and a grown reader in the wallet, in cents. */
     public static final int CHANGE=150,WALLET=2000;
     /** 0.4.426: what the friend has in her own pocket on a childhood visit, to put in when the reader is short. */
     public static final int FRIEND_CHANGE=100;
     private BorrascaPeople(){}
 
-    public static boolean cast(int phase){return phase>=LORNA&&phase<=MERLE;}
+    public static boolean cast(int phase){return phase>=LORNA&&phase<=CARRIER;}
     public static String skin(int phase){return "drisking_"+SKINS[phase-LORNA];}
     public static boolean keeper(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static String name(LiteraryActor a){return NAMES[a.phase()-LORNA];}
@@ -49,6 +65,7 @@ public final class BorrascaPeople {
         case WEBB,SHERRY->visit<=3;
         case ROY,JOLENE->visit==1;
         case DUTCH,MERLE->visit>=3;
+        case CARRIER->visit<4;
         default->visit<4||phase==KURT||phase==GUS||phase==EARL;
     };}
 
@@ -68,6 +85,7 @@ public final class BorrascaPeople {
         case JOLENE->new BlockPos(10,0,-79);
         case DUTCH->new BlockPos(14,0,-117);
         case MERLE->new BlockPos(16,0,-117);
+        case CARRIER->ROUND[0];
         default->BorrascaRooms.world(new BlockPos(28,0,-28));
     };}
     /** The way each faces at rest: across the counter toward the door, Earl toward the bars. */
@@ -99,13 +117,70 @@ public final class BorrascaPeople {
     /** Every reader tick inside the site: the purse for this visit, the keepers at their counters, and the bar's door. */
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
         purse(p,b,own,visit);
-        for(int phase=LORNA;phase<=MERLE;phase++){
+        own.putInt("TownClock",(own.getInt("TownClock")+5)%DAY);
+        for(int phase=LORNA;phase<=CARRIER;phase++){
             var a=ensure(p,b,own,phase);if(a==null)continue;
             boolean on=staffed(phase,visit);
-            if(a.isInvisible()==on){a.setInvisible(!on);if(!on)a.setCustomNameVisible(false);}
-            var at=Vec3.atBottomCenterOf(b.offset(post(phase)));if(a.position().distanceToSqr(at)>1){a.moveTo(at,yaw(phase),0);a.setYHeadRot(yaw(phase));}
+            if(a.isInvisible()==on){a.setInvisible(!on);if(!on){a.setCustomNameVisible(false);if(phase==CARRIER)BorrascaCast.stop(a);}}
+            if(phase==CARRIER){if(on)round(own,a,b);continue;}
+            if(phase==ROWE&&on)rowe(p,b,own,a);
+            boolean out=phase==ROWE&&own.getBoolean("RoweOut");float yaw=out?-90:yaw(phase);
+            var at=Vec3.atBottomCenterOf(b.offset(out?STOOP:post(phase)));if(a.position().distanceToSqr(at)>1){a.moveTo(at,yaw,0);a.setYHeadRot(yaw);}
         }
         bar(p,b,own,visit);
+        society(p,b,own,visit);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------- the routines
+    /** Whether the town's clock is in Mr. Rowe's smoke break. */
+    public static boolean smoking(CompoundTag own){int c=own.getInt("TownClock");return c>=SMOKE_FROM&&c<SMOKE_TO;}
+    /** Mr. Rowe goes out front and comes back in by the clock, only while neither his counter nor the stoop is watched. */
+    private static void rowe(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor a){
+        var l=p.serverLevel();boolean want=smoking(own),out=own.getBoolean("RoweOut");
+        if(want!=out){
+            var to=Vec3.atBottomCenterOf(b.offset(want?STOOP:post(ROWE))).add(0,1.6,0);
+            if(!LiteraryVignettes.watched(l,a.getEyePosition())&&!LiteraryVignettes.watched(l,to)){
+                own.putBoolean("RoweOut",want);own.putInt("RoweIn",0);
+                // The shop bell over the door as he comes back in; anyone in the society hears it.
+                if(!want){LiteraryVignettes.heard(p,net.minecraft.sounds.SoundEvents.BELL_BLOCK,b.offset(BorrascaShops.ANTIQUES_DOOR),.5F,1.6F);closeSociety(l,b);}
+            }
+        }
+        if(own.getBoolean("RoweOut")){if(own.getInt("TownClock")%20==0)l.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,a.getX()+.25,a.getEyeY()-.05,a.getZ(),1,.02,.02,.02,.005);}
+        else own.putInt("RoweIn",own.getInt("RoweIn")+5);
+    }
+    /** Back from his break, Mr. Rowe shuts the society's door again, unless somebody is standing in it. */
+    private static void closeSociety(net.minecraft.server.level.ServerLevel l,BlockPos b){
+        var at=b.offset(BorrascaShops.SOCIETY_DOOR);var s=l.getBlockState(at);
+        if(s.getBlock() instanceof net.minecraft.world.level.block.DoorBlock door&&s.getValue(net.minecraft.world.level.block.DoorBlock.OPEN)&&l.getEntitiesOfClass(net.minecraft.world.entity.player.Player.class,new net.minecraft.world.phys.AABB(at).expandTowards(0,1,0)).isEmpty())door.setOpen(null,l,s,at,false);
+    }
+    /** The back room of Rowe's Antiques, in the world relative to the base. */
+    public static boolean inSociety(BlockPos rel){return rel.getX()>=-20&&rel.getX()<=-16&&rel.getZ()<=-95&&rel.getZ()>=-106&&rel.getY()>=-1&&rel.getY()<=4;}
+    /** Whether a child may open the society's door now: Mr. Rowe is out front, or away, or the child is already inside. */
+    public static boolean societyOpen(ServerPlayer p,BlockPos b,CompoundTag own){
+        if(own.getInt("Visit")>=3||inSociety(p.blockPosition().subtract(b))||own.getBoolean("RoweOut"))return true;
+        var rowe=keeper(p,own,ROWE);return rowe==null||rowe.isInvisible();
+    }
+    /** What Mr. Rowe says to a child trying the society's door while he is at his counter. */
+    public static void notForKids(ServerPlayer p,CompoundTag own){
+        var rowe=keeper(p,own,ROWE);if(rowe==null)return;int n=own.getInt("SocietyAsked");own.putInt("SocietyAsked",n+1);turn(rowe,p);
+        BorrascaStory.say(p,rowe,new String[]{"That's the historical society, hon. It's for grown-ups, and it's only open Saturdays.","Not back there. Those papers are older than your grandmother.","No."}[Math.min(n,2)]);
+    }
+    /** A child Mr. Rowe finds in the society once he is back at his counter is sent out into the shop. */
+    private static void society(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
+        if(visit>=3||!inSociety(p.blockPosition().subtract(b))){own.putInt("InSociety",0);return;}
+        int in=own.getInt("InSociety")+5;own.putInt("InSociety",in);
+        var rowe=keeper(p,own,ROWE);if(rowe==null||rowe.isInvisible()||own.getBoolean("RoweOut")||own.getInt("RoweIn")<CATCH||in<SEEN)return;
+        int n=own.getInt("SocietyCaught");own.putInt("SocietyCaught",n+1);own.putBoolean("CaughtInSociety",true);own.putInt("InSociety",0);
+        BorrascaStory.say(p,rowe,n==0?"Hey. Out of there. That room's not for kids.":n==1?"I told you once already. Out.":"Out.");
+        var to=Vec3.atBottomCenterOf(b.offset(SENT_OUT));p.stopRiding();p.connection.teleport(to.x,to.y,to.z,-90,0);p.setDeltaMovement(Vec3.ZERO);
+    }
+    /** Mr. Dorsey walks his round: to each point in turn, standing a while at each door. */
+    private static void round(CompoundTag own,LiteraryActor a,BlockPos b){
+        if(a.getPersistentData().contains("BorrascaSpeed"))return;
+        int leg=own.getInt("RoundLeg"),wait=own.getInt("RoundWait");
+        if(STOPS[leg]&&wait<STOP_TICKS){own.putInt("RoundWait",wait+5);return;}
+        leg=(leg+1)%ROUND.length;own.putInt("RoundLeg",leg);own.putInt("RoundWait",0);
+        BorrascaCast.walk(a,Vec3.atBottomCenterOf(b.offset(ROUND[leg])),.6);
     }
     /** A keeper of this reader's, or null while the chunk is not loaded. A keeper that has gone is stood at the counter again. */
     public static @Nullable LiteraryActor keeper(ServerPlayer p,CompoundTag own,int phase){String key="Keeper"+phase;return own.hasUUID(key)&&p.serverLevel().getEntity(own.getUUID(key)) instanceof LiteraryActor a?a:null;}
@@ -140,6 +215,7 @@ public final class BorrascaPeople {
         int visit=own.getInt("Visit");boolean grown=visit>=3;int phase=a.phase();turn(a,p);
         if(phase==ODELL&&!grown){lollipop(p,own);return true;}
         if(phase==GUS&&!grown){BorrascaStory.say(p,a,"Out. No kids in here.");return true;}
+        if(phase==ROWE&&own.getBoolean("RoweOut")){BorrascaStory.say(p,a,grown?"Five minutes. Go on back to the society if you like.":"I'm on my break, hon. Don't touch the clocks.");return true;}
         String[] lines=own.getBoolean("SheriffDead")&&own.getInt("SheriffDiedVisit")<visit&&afterTheSheriff(phase)!=null?afterTheSheriff(phase):greetings(phase,visit);String key="Said"+phase;int n=own.getInt(key);own.putInt(key,n+1);
         BorrascaStory.say(p,a,lines[n%lines.length]);
         var wares=wares(phase,grown);if(!wares.isEmpty())counter(p,a,wares,grown);
@@ -194,6 +270,9 @@ public final class BorrascaPeople {
         case ROY->new String[]{"Any day now, Doc says.","Don't mind us. We're just waiting on the doctor."};
         case JOLENE->new String[]{"Mrs. Odell says it's a girl. She's never wrong about it.","We picked out her name in March. Before we even knew."};
         case DUTCH->visit==4?new String[]{"Sheriff's up on the ridge tonight. He likes it quiet when he's up there.","We don't talk shop in here. That's Gus's rule."}:new String[]{"Thirty-one years with the county. Never once had to draw.","We don't talk shop in here. That's Gus's rule.","Prescott bought the department its new cruisers. Bought the old ones too."};
+        case CARRIER->visit==2?new String[]{"Got a letter here for the Garritys. Nobody's emptied their box all week.","The Maddox boy's mother asks me every day if I've seen him. Like I'd know. I just carry the mail."}
+            :grown?new String[]{"Twenty-two years on this route. Same boxes, mostly.","The Garritys' box is still on its post. Nobody's taken it down."}
+            :new String[]{"Nothing for you, kid. Unless you're expecting something.","Eleven Sears catalogues in this bag. Everybody wants the toy pages."};
         case MERLE->visit==4?new String[]{"Go home. Whatever you're thinking of doing tonight, go home.","You're not from the paper, are you?"}:new String[]{"Garrity girl? I took that report myself. Runaway, the Sheriff said. So that's what I wrote down.","Lot of kids run off from a town this size. You'd be surprised how many.","You're not from the paper, are you?"};
         // 0.4.426: grown, Earl says too much.
         default->visit==4?new String[]{"You're going up there tonight. I can see it on you.","Don't let them see your light past the second marker. That's all I'll say.","They keep me in here so I don't say things. That's a joke. Mostly."}:grown?new String[]{"You again. No. You were smaller.","I wore the star once, same as Dutch and Merle. Ask them what we did with the reports.","Every kid on the board at the store, the Sheriff signs off as a runaway. Every one. They don't run anywhere.","There's a road behind the depot fence the county doesn't plow. Somebody plows it."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};

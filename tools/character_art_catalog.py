@@ -137,7 +137,7 @@ def entries():
     # Last orders (0.4.416): the bar's seven on stranger phases one hundred and thirty-nine to one hundred and forty-five.
     for name,phase in (('stranger',139),('ferris',140),('mags',141),('hob',142),('ott',143),('cass',144),('benny',145)):
         rows.append({'name':'literary_orders_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
-    # Borrasca's town (0.4.425, 0.4.426): the keepers, Earl and the patrons on stranger phases one hundred and forty-six to one hundred and fifty-nine.
-    for name,phase in (('lorna',146),('ames',147),('rowe',148),('kurt',149),('odell',150),('fenn',151),('gus',152),('earl',153),('webb',154),('sherry',155),('roy',156),('jolene',157),('dutch',158),('merle',159)):
+    # Borrasca's town (0.4.425, 0.4.426, 0.4.428): the keepers, Earl, the patrons and the mail carrier on stranger phases one hundred and forty-six to one hundred and sixty.
+    for name,phase in (('lorna',146),('ames',147),('rowe',148),('kurt',149),('odell',150),('fenn',151),('gus',152),('earl',153),('webb',154),('sherry',155),('roy',156),('jolene',157),('dutch',158),('merle',159),('dorsey',160)):
         rows.append({'name':'literary_drisking_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows
