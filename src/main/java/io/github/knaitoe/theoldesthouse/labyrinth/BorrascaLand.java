@@ -119,9 +119,11 @@ public final class BorrascaLand {
         if(!onRoad){if(m<=0)h=Math.min(h,floor+4-m*.9);else h=Math.max(h,floor+7+3*(m-1));}
         // The lane up from the clearing to the wire keeps its own steps.
         if(x>=-1&&x<=5&&z<=-150&&z>=-164)h=BorrascaRooms.trailY(z);
-        // Nothing next to the wire stands higher than a child can step from to its top.
+        // Nothing next to the wire stands higher than a child can step from to its top. 0.4.429 (owner: "players can jump in from here"):
+        // nor near enough to jump it from. Out to nine blocks the ground stays under a line rising four in five from beside the wire,
+        // so no run and jump from it carries anyone over the top (BorrascaTests.nobodyJumpsTheWireFromTheGroundOutsideIt).
         int c=chebyshev(x,z,YARD_X0,YARD_Z0,YARD_X1,YARD_Z1);
-        if(c<=0)h=12;else if(c<=2)h=Math.min(h,13);
+        if(c<=0)h=12;else if(c<=2)h=Math.min(h,13);else if(c<=9)h=Math.min(h,Math.floor(13+.8*(c-2)));
         return (int)Math.round(clamp(h,-1,25));
     }
     /** How far a column is into the valley's walls: one or more on the cliff, zero at its foot, negative within the valley. */

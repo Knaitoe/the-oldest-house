@@ -58,11 +58,29 @@ public final class TalkHistory {
     }
 
     /** A scene's actually delivered speech, grouped across its saved visit; never invents replies for the reader. */
-    public static void heard(ServerPlayer p,String scene,String who,String where,String text){
+    public static void heard(ServerPlayer p,String scene,String who,String where,String text){heard(p,scene,"The Barretts",who,where,text);}
+    /** How far a line said aloud carries (as client.SpeechCaptions shows it). */
+    public static final double HEARD=24;
+    /**
+     * 0.4.429 (owner: "spoken npc dialogue doesn't track to journal"): a line an actor has just said aloud, kept for every reader near
+     * enough to hear it who can see the speaker (an actor kept private to another reader's scene is never theirs). One record per place
+     * and day; its heading names who spoke in it. Scenes that keep their own record (the Barretts' filming days) are left to it.
+     */
+    public static void overheard(LiteraryActor a,@javax.annotation.Nullable String speaker,String text){
+        if(!(a.level() instanceof net.minecraft.server.level.ServerLevel l)||text.isBlank()||a.scene().equals(GhostsSet.PLACE.id()))return;
+        String who=speaker==null||speaker.isBlank()?"Someone":speaker;
+        for(var p:l.players()){
+            if(p.isSpectator()||!p.isAlive()||p.distanceToSqr(a)>HEARD*HEARD||!a.broadcastToPlayer(p))continue;
+            String where=where(p);heard(p,"said/"+where+"/"+day(p),who,who,where,text);
+        }
+    }
+    /** As heard(p,scene,who,where,text), the record headed by title when it is new; a new speaker's name joins the heading (up to three). */
+    static void heard(ServerPlayer p,String scene,String title,String who,String where,String text){
         if(p.isSpectator()||text.isBlank())return;
         var t=own(p.server,p.getUUID());var all=t.getList("Talks",Tag.TAG_COMPOUND);CompoundTag talk=null;
         for(int i=0;i<all.size();i++)if(all.getCompound(i).getString("Scene").equals(scene)){talk=all.getCompound(i);break;}
-        if(talk==null){int number=t.getInt("Next")+1;t.putInt("Next",number);talk=new CompoundTag();talk.putInt("N",number);talk.putString("Scene",scene);talk.putString("Who","The Barretts");talk.putString("Where",where);talk.putLong("Day",day(p));all.add(talk);}
+        if(talk==null){int number=t.getInt("Next")+1;t.putInt("Next",number);talk=new CompoundTag();talk.putInt("N",number);talk.putString("Scene",scene);talk.putString("Who",title);talk.putString("Where",where);talk.putLong("Day",day(p));all.add(talk);}
+        else if(scene.startsWith("said/")&&!who.equals("Someone")){var names=new java.util.ArrayList<>(List.of(talk.getString("Who").split(", ")));names.remove("Someone");if(!names.contains(who)&&names.size()<3){names.add(who);talk.putString("Who",String.join(", ",names));}}
         var lines=talk.getList("Lines",Tag.TAG_COMPOUND);
         if(!lines.isEmpty()){var last=lines.getCompound(lines.size()-1);if(last.getString("S").equals(who)&&last.getString("T").equals(text))return;}
         var line=new CompoundTag();line.putString("S",who);line.putString("T",text);lines.add(line);while(lines.size()>LINES)lines.remove(0);talk.put("Lines",lines);

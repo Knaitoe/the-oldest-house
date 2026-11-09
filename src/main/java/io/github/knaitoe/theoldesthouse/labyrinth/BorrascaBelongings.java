@@ -24,14 +24,24 @@ public final class BorrascaBelongings {
     public static ItemStack original(ServerPlayer p,CompoundTag own,String key){
         if(own.contains(key+"Original"))return ItemStack.parseOptional(p.registryAccess(),own.getCompound(key+"Original"));
         var token=UUID.randomUUID();own.putUUID(key+"Token",token);
-        var s=new ItemStack(key.equals("Compass")?BorrascaRegistry.COMPASS.get():BorrascaRegistry.PATCH.get());
-        s.set(DataComponents.CUSTOM_NAME,Component.literal(key.equals("Compass")?BorrascaStory.FRIEND+"'s compass":BorrascaStory.FRIEND+"'s name patch"));
+        var s=new ItemStack(item(key));
+        s.set(DataComponents.CUSTOM_NAME,Component.literal(BorrascaStory.FRIEND+(key.equals("Compass")?"'s compass":key.equals(KNIFE)?"'s pocketknife":"'s name patch")));
         CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(TOKEN,token);t.putUUID(LiteraryVignettes.OWNER,p.getUUID());t.putString(LiteraryVignettes.KEY,key);t.putString(LiteraryVignettes.PLACE,LabyrinthPlace.BORRASCA.id());});
-        Keepsakes.inscribe(s,LabyrinthPlace.BORRASCA,key);own.put(key+"Original",s.save(p.registryAccess()));return s;
+        if(!key.equals(KNIFE))Keepsakes.inscribe(s,LabyrinthPlace.BORRASCA,key);own.put(key+"Original",s.save(p.registryAccess()));return s;
+    }
+    /** 0.4.429: the friend's pocketknife, lent for the length of a name at the Tree and handed back. */
+    public static final String KNIFE="Knife";
+    private static Item item(String key){return key.equals("Compass")?BorrascaRegistry.COMPASS.get():key.equals(KNIFE)?LiteraryRegistry.KNIFE.get():BorrascaRegistry.PATCH.get();}
+    /** Puts the original in the reader's hand: what they were holding goes into the pack if there is room, otherwise the original does. */
+    public static boolean hand(ServerPlayer p,CompoundTag own,String key){
+        if(has(p,own,key))return true;var inv=p.getInventory();var s=original(p,own,key);
+        if(!inv.getSelected().isEmpty()){int free=-1;for(int i=0;i<inv.items.size();i++)if(i!=inv.selected&&inv.items.get(i).isEmpty()){free=i;break;}if(free>=0){inv.items.set(free,inv.getSelected());inv.items.set(inv.selected,ItemStack.EMPTY);}}
+        if(inv.getSelected().isEmpty())inv.items.set(inv.selected,s);else if(!inv.add(s))return false;
+        own.putBoolean(key+"Issued",true);p.inventoryMenu.broadcastChanges();return true;
     }
     public static boolean valid(ServerPlayer p,CompoundTag own,String key,ItemStack s){
         var c=s.get(DataComponents.CUSTOM_DATA);if(c==null||!own.hasUUID(key+"Token"))return false;var t=c.copyTag();
-        return s.is(key.equals("Compass")?BorrascaRegistry.COMPASS.get():BorrascaRegistry.PATCH.get())&&t.hasUUID(TOKEN)&&t.getUUID(TOKEN).equals(own.getUUID(key+"Token"))&&t.hasUUID(LiteraryVignettes.OWNER)&&p.getUUID().equals(t.getUUID(LiteraryVignettes.OWNER));
+        return s.is(item(key))&&t.hasUUID(TOKEN)&&t.getUUID(TOKEN).equals(own.getUUID(key+"Token"))&&t.hasUUID(LiteraryVignettes.OWNER)&&p.getUUID().equals(t.getUUID(LiteraryVignettes.OWNER));
     }
     public static boolean has(ServerPlayer p,CompoundTag own,String key){for(int i=0;i<p.getInventory().getContainerSize();i++)if(valid(p,own,key,p.getInventory().getItem(i)))return true;return false;}
     public static ItemStack remove(ServerPlayer p,CompoundTag own,String key){for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(valid(p,own,key,s)){p.getInventory().setItem(i,ItemStack.EMPTY);p.inventoryMenu.broadcastChanges();return s;}}return ItemStack.EMPTY;}

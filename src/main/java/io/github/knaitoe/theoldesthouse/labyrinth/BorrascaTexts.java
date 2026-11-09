@@ -115,7 +115,7 @@ public final class BorrascaTexts {
     public static String account(CompoundTag own){
         return (own.getBoolean("FoundNell")?"She called out which way to look when we played hide-and-seek. ":"")
             +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")
-            +"We cut our names into the three trees, mine beside hers."+(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
+            +"We cut our names into the three trees, mine beside hers."+(own.getBoolean("KnifeTaken")?" She lent me her knife to cut mine."+(own.getBoolean("KnifeKept")?" I nearly went home with it.":""):"")+(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             // 0.4.428: the historical society, got into as a child.
             +(own.getInt("SocietyChild")>0?(own.getInt("SocietyChild")==1?" While Mr. Rowe smoked out front of his shop, I went into the historical society behind it.":" Behind Mr. Rowe's back I got into the historical society.")

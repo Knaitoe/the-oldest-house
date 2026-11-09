@@ -50,6 +50,20 @@ public final class BorrascaTests {
         /** 0.4.422: a click on a block given in the world (the street past the chapel has no authored coordinates). */
         void clickWorld(ServerPlayer p,BlockPos w){var at=base(p).offset(w);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));}
         void use(ServerPlayer p,BlockPos rel){at(p,rel.getX()-1,rel.getY(),rel.getZ()+1);look(p,rel);click(p,rel);}
+        /**
+         * 0.4.429: a connected client moves its own player by the velocity the server sends it; a test player has no client, so a shove
+         * is played out here the way a client would (its movement against the blocks, then ground friction), each tick.
+         */
+        void shoved(ServerPlayer p){h.onEachTick(()->{var v=p.getDeltaMovement();if(v.horizontalDistanceSqr()>.0004){p.move(MoverType.SELF,new Vec3(v.x,0,v.z));p.setDeltaMovement(v.x*.546,v.y,v.z*.546);}});}
+        /** 0.4.429: the reader takes her knife from the Friend and cuts their own name in the bark with it. */
+        void carve(ServerPlayer p){
+            talk(p,"CastKimber");h.assertTrue(BorrascaBelongings.valid(p,own(p),BorrascaBelongings.KNIFE,p.getMainHandItem())&&actor(p,"CastKimber").getMainHandItem().isEmpty(),"the reader takes the Friend's own knife from her hand into theirs");
+            for(int i=0;i<BorrascaStory.CUTS;i++){
+                use(p,BorrascaRooms.CARVING);
+                if(i==0){var cut=((BorrascaCarvingEntity)out.getBlockEntity(BorrascaRooms.at(base(p),BorrascaRooms.CARVING))).reader();String name=p.getGameProfile().getName();
+                    h.assertTrue(!cut.isEmpty()&&cut.length()<name.length()&&name.startsWith(cut),"the first cut shows only the start of the reader's name: "+cut);}
+            }
+        }
         void read(ServerPlayer p,BlockPos rel,boolean take){use(p,rel);h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"native paper opens at "+rel);var menu=(LiteraryVignettes.Pages)p.containerMenu;var content=menu.original().get(DataComponents.WRITTEN_BOOK_CONTENT);h.assertTrue(menu.clickMenuButton(p,100+content.pages().size()-1),"native last page opens");if(take){h.assertTrue(menu.clickMenuButton(p,3),"the real original is taken");h.assertTrue(!menu.clickMenuButton(p,3),"it cannot be taken twice");}p.closeContainer();}
         LiteraryActor actor(ServerPlayer p,String key){var t=own(p);return t.hasUUID(key)&&out.getEntity(t.getUUID(key)) instanceof LiteraryActor a?a:null;}
         void talk(ServerPlayer p,String key){var a=actor(p,key);h.assertTrue(a!=null,"original native cast is loaded: "+key);p.moveTo(a.getX()+1.5,a.getY(),a.getZ());p.interactOn(a,InteractionHand.MAIN_HAND);}
@@ -166,7 +180,7 @@ public final class BorrascaTests {
     public static void fourConfirmedReturnsCarryTheOriginalAndRestoreTheScarWithoutASecondKind(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("name_beside_mine");var peer=f.player("earlier_reader");final UUID[] original={null};
         var s=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both private native sites loaded")).thenExecute(()->{f.enter(p);f.enter(peer);}).thenWaitUntil(()->h.assertTrue(recalled(f,p),"original Friend loaded"));
-        s.thenExecute(()->{original[0]=f.own(p).getUUID("CastKimber");f.read(p,BorrascaRooms.SOURCE,false);var own=f.own(p);own.putBoolean("FriendCarved",true);f.save(p,own);f.actor(p,"CastKimber").moveTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),1,0,-96)),180,0);f.use(p,BorrascaRooms.CARVING);h.assertTrue(f.own(p).getInt("Beat")==1,"the native carving seals the staged childhood pact");var e=(BorrascaCarvingEntity)f.out.getBlockEntity(BorrascaRooms.at(f.base(p),BorrascaRooms.CARVING));h.assertTrue(e.reader().equals(p.getGameProfile().getName())&&e.friend().equals(BorrascaStory.FRIEND),"the bark holds this reader's actual name beside their Friend");f.leave(p);}).thenWaitUntil(()->h.assertTrue(f.home(p),"actual first return consumes its native destination"));
+        s.thenExecute(()->{original[0]=f.own(p).getUUID("CastKimber");f.read(p,BorrascaRooms.SOURCE,false);var own=f.own(p);own.putBoolean("FriendCarved",true);f.save(p,own);f.actor(p,"CastKimber").moveTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),1,0,-96)),180,0);f.use(p,BorrascaRooms.CARVING);h.assertTrue(f.own(p).getInt("Beat")==0,"bare hands cut no name");f.carve(p);h.assertTrue(f.own(p).getInt("Beat")==1,"the native carving seals the staged childhood pact");f.talk(p,"CastKimber");h.assertTrue(!BorrascaBelongings.has(p,f.own(p),BorrascaBelongings.KNIFE)&&f.own(p).getBoolean("KnifeBack"),"the knife goes back to her");var e=(BorrascaCarvingEntity)f.out.getBlockEntity(BorrascaRooms.at(f.base(p),BorrascaRooms.CARVING));h.assertTrue(e.reader().equals(p.getGameProfile().getName())&&e.friend().equals(BorrascaStory.FRIEND),"the bark holds this reader's actual name beside their Friend");f.leave(p);}).thenWaitUntil(()->h.assertTrue(f.home(p),"actual first return consumes its native destination"));
         s.thenWaitUntil(()->h.assertTrue(staged(p),"the actual entry preparation stages the originals while the reader is away: "+BorrascaCast.why(p))).thenExecute(()->{f.enter(p);h.assertTrue(f.own(p).getInt("Visit")==2&&f.own(p).getInt("ConfirmedVisits")==1,"only the confirmed first return advances childhood");}).thenWaitUntil(()->h.assertTrue(recalled(f,p),"same Friend recalled")).thenExecute(()->{
             f.talk(p,"CastKimber");h.assertTrue(!f.own(p).getBoolean("FollowAgain"),"the childhood trail notice cannot acknowledge the new second-visit content note");f.read(p,BorrascaRooms.SOURCE,false);h.assertTrue(f.own(p).getBoolean("Read_ContentNote"),"the new trailhead note is personally read before the taking route");f.talk(p,"CastKimber");var own=f.own(p);own.putInt("TakingStep",Integer.MAX_VALUE);f.save(p,own);f.actor(p,"CastKimber").moveTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),BorrascaRooms.TAKING)),180,0);f.at(p,-2,9,-147);p.setYRot(0);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendMissing"),"the taking completes with the camera looking away")).thenExecute(()->{f.use(p,BorrascaRooms.DROP);h.assertTrue(f.own(p).getInt("Beat")==2&&BorrascaBelongings.has(p,f.own(p),"Compass"),"the dropped original is recovered through native interaction");f.leave(p);}).thenWaitUntil(()->h.assertTrue(f.home(p),"actual second return"));
@@ -296,6 +310,33 @@ public final class BorrascaTests {
     }
     private static boolean reaches(Set<BlockPos> cells,BlockPos base,BlockPos rel,double radius){var at=BorrascaRooms.at(base,rel);for(var c:cells)if(c.distSqr(at)<=radius*radius)return true;return false;}
 
+    /**
+     * 0.4.429 (owner: "players can jump in from here"): no ground a reader can walk to outside the wire is near enough and high enough
+     * for a running jump to carry them over its top. The jump is a sprint jump's arc (the boost, the air drag and gravity, tick by tick);
+     * it starts with the reader's middle over the edge of their block nearest the wire.
+     */
+    @GameTest(template="empty",batch="borrasca_wire",timeoutTicks=3000)
+    public static void nobodyJumpsTheWireFromTheGroundOutsideIt(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_jumper");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->{
+            var b=f.base(p);var cells=walkable(f.out,b,BorrascaRooms.at(b,0,0,-2),.95);
+            var wire=BorrascaRooms.at(b,-30,15,-190);var s=f.out.getBlockState(wire);
+            h.assertTrue(s.is(BorrascaRegistry.FITTING.get()),"the wire's top run is where it was built: "+s);
+            double top=wire.getY()+s.getCollisionShape(f.out,wire,net.minecraft.world.phys.shapes.CollisionContext.empty()).max(Direction.Axis.Y);
+            var bad=new ArrayList<String>();
+            for(var c:cells){
+                var a=BorrascaRooms.authored(c.subtract(b));int x=a.getX(),z=a.getZ();
+                int d=Math.max(Math.max(-30-x,x-27),Math.max(-214-z,z+167));if(d<1||d>12)continue;
+                double foot=footing(f.out,c);if(Double.isNaN(foot))continue;
+                if(foot+sprintJump(d-.86)>=top)bad.add(a.toShortString()+" (stands "+String.format(Locale.ROOT,"%.1f",foot-(wire.getY()-3))+" over the yard, "+d+" out)");
+            }
+            h.assertTrue(bad.isEmpty(),"no ground outside the wire is near and high enough to jump it from: "+bad.size()+" "+bad.subList(0,Math.min(16,bad.size())));
+            h.assertTrue(top-wire.getY()>=1.5,"the wire's top stops a body half a block above it, as a fence does");
+        }).thenSucceed();
+    }
+    /** How high above where it left the ground a sprint jump is when it has carried a body this far. */
+    static double sprintJump(double distance){double x=0,y=0,vx=.48,vy=.42;while(x<distance){x+=vx;y+=vy;vx=vx*.91+.026;vy=(vy-.08)*.98;}return y;}
+
     @GameTest(template="empty",batch="borrasca_sealed",timeoutTicks=3000)
     public static void theRefineryIsSealedFromTheWoodsUntilTheLastNight(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_explorer");
@@ -346,7 +387,7 @@ public final class BorrascaTests {
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("LegendDone"),"she tells the legend with the reader there"))
             .thenExecute(()->f.at(p,1,6,-92))
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendCarved"),"she climbs down and carves where the reader can see: downStep="+f.own(p).getInt("DownStep")))
-            .thenExecute(()->{f.use(p,BorrascaRooms.CARVING);var own=f.own(p);h.assertTrue(own.getBoolean("PactCarved")&&own.getInt("Beat")==1,"the pact is made, in the order the reader came to it");})
+            .thenExecute(()->{f.carve(p);var own=f.own(p);h.assertTrue(own.getBoolean("PactCarved")&&own.getInt("Beat")==1,"the pact is made, in the order the reader came to it");})
             .thenSucceed();
     }
 
@@ -542,7 +583,7 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_people") public static void peopleDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_people",timeoutTicks=2400)
     public static void theTownsKeepersSellToAChildAndAGrownReaderAndTurnChildrenOutOfTheBar(GameTestHelper h){
-        var f=new Fixture(h);var p=f.player("drisking_customer");
+        var f=new Fixture(h);var p=f.player("drisking_customer");f.shoved(p);
         java.util.function.IntFunction<LiteraryActor> keeper=phase->BorrascaPeople.keeper(p,f.own(p),phase);
         java.util.function.BiFunction<Integer,BorrascaPeople.Ware,String> buy=(phase,ware)->{var own=f.own(p);var line=BorrascaPeople.buy(p,own,keeper.apply(phase),ware);f.save(p,own);return line;};
         java.util.function.Function<net.minecraft.world.item.Item,Integer> count=item->p.getInventory().countItem(item);
@@ -570,7 +611,11 @@ public final class BorrascaTests {
             var own=f.own(p);h.assertTrue(BorrascaPeople.lollipop(p,own)&&!BorrascaPeople.lollipop(p,own)&&count.apply(BorrascaRegistry.LOLLIPOP.get())==1,"the receptionist gives a child one lollipop, and only one");f.save(p,own);
             h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(BorrascaShops.JAR)),BorrascaShopBlock.Kind.JAR)&&f.out.getBlockState(b.offset(BorrascaShops.JAR)).getValue(BorrascaShopBlock.STAGE)==1,"the jar is lower by one");
             f.atWorld(p,new BlockPos(12,0,-114));
-          }).thenWaitUntil(()->h.assertTrue(p.getX()-f.base(p).getX()<7,"Gus turns the child out of the bar onto the sidewalk: "+p.position().subtract(Vec3.atLowerCornerOf(f.base(p)))))
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("BarShove"),"Gus starts walking the child out"))
+          .thenExecute(()->{var gus=keeper.apply(BorrascaPeople.GUS);var b=f.base(p);h.assertTrue(gus.getCustomName()!=null&&gus.getCustomName().getString().startsWith("Out")&&BorrascaPeople.inBar(p.blockPosition().subtract(b)),"he says so, and the child is still inside, not set down outside: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
+              h.assertTrue(f.out.getBlockState(b.offset(BorrascaShops.BAR_DOOR)).getValue(DoorBlock.OPEN),"he opens the door for them");})
+          .thenWaitUntil(()->h.assertTrue(p.getX()-f.base(p).getX()<7,"Gus pushes the child out of the bar onto the sidewalk: "+p.position().subtract(Vec3.atLowerCornerOf(f.base(p)))))
+          .thenWaitUntil(()->h.assertTrue(!f.own(p).getBoolean("BarShove")&&!f.out.getBlockState(f.base(p).offset(BorrascaShops.BAR_DOOR)).getValue(DoorBlock.OPEN),"and the door swings shut behind them"))
           .thenExecute(()->{h.assertTrue(f.own(p).getInt("BarTurnedOut")==1,"turned out once");f.stage(p,3);})
           .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&BorrascaPeople.carried(p,true)!=null,"years later the reader carries a wallet"))
           .thenExecute(()->{
@@ -759,7 +804,7 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_routines") public static void routinesDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_routines",timeoutTicks=4000)
     public static void theTownKeepsItsRoutinesRoweSmokesTheSocietyOpensAndTheMailGoesRound(GameTestHelper h){
-        var f=new Fixture(h);var p=f.player("drisking_routine");
+        var f=new Fixture(h);var p=f.player("drisking_routine");f.shoved(p);
         java.util.function.IntFunction<LiteraryActor> person=phase->BorrascaPeople.keeper(p,f.own(p),phase);
         java.util.function.Function<BlockPos,Boolean> tryDoor=w->{var at=f.base(p).offset(w);var e=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.EAST,at,false));NeoForge.EVENT_BUS.post(e);return !e.isCanceled();};
         java.util.function.Consumer<Integer> clock=c->{var own=f.own(p);own.putInt("TownClock",c);f.save(p,own);};
@@ -790,9 +835,10 @@ public final class BorrascaTests {
           })
           .thenWaitUntil(()->h.assertTrue(!f.own(p).getBoolean("RoweOut"),"the break over, he comes back in while nobody in the society can see the counter"))
           .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CaughtInSociety"),"back at his counter, he finds the child in the society"))
+          .thenExecute(()->h.assertTrue(BorrascaPeople.inSociety(p.blockPosition().subtract(f.base(p)))&&f.own(p).getBoolean("SocietyShove"),"he walks them out; nobody is set down anywhere"))
+          .thenWaitUntil(()->{var b=f.base(p);h.assertTrue(!f.own(p).getBoolean("SocietyShove")&&p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(BorrascaPeople.SENT_OUT)))<2.5&&!BorrascaPeople.inSociety(p.blockPosition().subtract(b)),"and pushes the child out through the shop: "+p.position().subtract(Vec3.atLowerCornerOf(b)));})
           .thenExecute(()->{
             var rowe=person.apply(BorrascaPeople.ROWE);var b=f.base(p);
-            h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(BorrascaPeople.SENT_OUT)))<2&&!BorrascaPeople.inSociety(p.blockPosition().subtract(b)),"and sends the child out into the shop: "+p.position());
             h.assertTrue(rowe.getCustomName()!=null&&rowe.getCustomName().getString().contains("Out of there"),"he says so: "+rowe.getCustomName());
             String account=BorrascaTexts.account(f.own(p));
             h.assertTrue(account.contains("While Mr. Rowe smoked out front")&&account.contains("DEPOT")&&account.contains("sent me out"),"the account keeps the society: "+account);

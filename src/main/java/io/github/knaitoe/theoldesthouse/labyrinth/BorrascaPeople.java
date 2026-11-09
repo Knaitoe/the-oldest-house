@@ -125,7 +125,10 @@ public final class BorrascaPeople {
             if(phase==CARRIER){if(on)round(own,a,b);continue;}
             if(phase==ROWE&&on)rowe(p,b,own,a);
             boolean out=phase==ROWE&&own.getBoolean("RoweOut");float yaw=out?-90:yaw(phase);
-            var at=Vec3.atBottomCenterOf(b.offset(out?STOOP:post(phase)));if(a.position().distanceToSqr(at)>1){a.moveTo(at,yaw,0);a.setYHeadRot(yaw);}
+            var at=Vec3.atBottomCenterOf(b.offset(out?STOOP:post(phase)));
+            // 0.4.429: a keeper who has walked a child out walks back to the counter; nobody is snapped there while walking.
+            if(a.getPersistentData().contains("BorrascaSpeed")||shoving(own,phase))continue;
+            if(a.position().distanceToSqr(at)>1){if(a.getPersistentData().getBoolean("BorrascaAway")){a.getPersistentData().remove("BorrascaAway");BorrascaCast.walk(a,at,.7);}else{a.moveTo(at,yaw,0);a.setYHeadRot(yaw);}}
         }
         bar(p,b,own,visit);
         society(p,b,own,visit);
@@ -167,13 +170,57 @@ public final class BorrascaPeople {
     }
     /** A child Mr. Rowe finds in the society once he is back at his counter is sent out into the shop. */
     private static void society(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
+        var rowe=keeper(p,own,ROWE);
+        if(own.getBoolean("SocietyShove")){
+            // 0.4.429: walked back out through the shop, his hand on the child's back, as far as the front of the shop.
+            boolean out=!inSociety(p.blockPosition().subtract(b))&&p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(SENT_OUT)))<1.2;
+            if(out||rowe==null||visit>=3||tired(own)||!shove(p,b,rowe,SENT_OUT,14)){own.remove("ShoveTicks");own.remove("SocietyShove");if(rowe!=null)rowe.getPersistentData().putBoolean("BorrascaAway",true);closeSociety(p.serverLevel(),b);}
+            return;
+        }
         if(visit>=3||!inSociety(p.blockPosition().subtract(b))){own.putInt("InSociety",0);return;}
         int in=own.getInt("InSociety")+5;own.putInt("InSociety",in);
-        var rowe=keeper(p,own,ROWE);if(rowe==null||rowe.isInvisible()||own.getBoolean("RoweOut")||own.getInt("RoweIn")<CATCH||in<SEEN)return;
+        if(rowe==null||rowe.isInvisible()||own.getBoolean("RoweOut")||own.getInt("RoweIn")<CATCH||in<SEEN)return;
         int n=own.getInt("SocietyCaught");own.putInt("SocietyCaught",n+1);own.putBoolean("CaughtInSociety",true);own.putInt("InSociety",0);
         BorrascaStory.say(p,rowe,n==0?"Hey. Out of there. That room's not for kids.":n==1?"I told you once already. Out.":"Out.");
-        var to=Vec3.atBottomCenterOf(b.offset(SENT_OUT));p.stopRiding();p.connection.teleport(to.x,to.y,to.z,-90,0);p.setDeltaMovement(Vec3.ZERO);
+        BorrascaStory.openDoor(p.serverLevel(),b.offset(BorrascaShops.SOCIETY_DOOR),true);own.putBoolean("SocietyShove",true);shove(p,b,rowe,SENT_OUT,14);
     }
+    /** A shove that has gone on fifteen seconds without getting them out is given up (a child pinned in a corner is not lifted out). */
+    private static boolean tired(CompoundTag own){int t=own.getInt("ShoveTicks")+5;own.putInt("ShoveTicks",t);return t>300;}
+    /** Whether this keeper is walking a child out just now. */
+    private static boolean shoving(CompoundTag own,int phase){return phase==GUS&&own.getBoolean("BarShove")||phase==ROWE&&own.getBoolean("SocietyShove");}
+    /**
+     * 0.4.429 (owner: "children should be pushed out of the bar rather than teleported out"): a grown-up walks a child out with a hand on
+     * their back. Every few ticks the child is given a shove toward the next block on the shortest way out (through blocks a child fits
+     * through, doors open or not) and the grown-up comes on behind. Their own walking can work against it a while, but it keeps coming.
+     * Returns false once the child stands where they are being put out to.
+     */
+    private static boolean shove(ServerPlayer p,BlockPos b,LiteraryActor by,BlockPos out,int reach){
+        var l=p.serverLevel();var from=p.blockPosition();var goal=b.offset(out);if(from.equals(goal))return false;
+        var next=nextStep(l,from,goal,reach);var aim=Vec3.atBottomCenterOf(next==null?goal:next);
+        var dir=new Vec3(aim.x-p.getX(),0,aim.z-p.getZ());double d=dir.length();if(d<1e-3)return false;dir=dir.scale(1/d);
+        p.stopRiding();p.setDeltaMovement(dir.x*SHOVE,Math.max(0,p.getDeltaMovement().y),dir.z*SHOVE);p.hurtMarked=true;
+        var behind=p.position().subtract(dir.scale(1.1));var step=nextStep(l,by.blockPosition(),BlockPos.containing(behind),reach);
+        BorrascaCast.walk(by,step==null?behind:Vec3.atBottomCenterOf(step),.95);by.gesture(2);turn(by,p);
+        return true;
+    }
+    /** How hard a shove is: about a block's push each time, a little under a walk. */
+    static final double SHOVE=.42;
+    /** The block after from on the shortest way to goal, through blocks a body fits through, within reach of goal; null if there is none. */
+    static @javax.annotation.Nullable BlockPos nextStep(net.minecraft.server.level.ServerLevel l,BlockPos from,BlockPos goal,int reach){
+        var toward=new HashMap<BlockPos,BlockPos>();var queue=new ArrayDeque<BlockPos>();toward.put(goal,goal);queue.add(goal);
+        while(!queue.isEmpty()){
+            var c=queue.poll();
+            for(var d:net.minecraft.core.Direction.Plane.HORIZONTAL){
+                var n=c.relative(d);if(toward.containsKey(n)||Math.abs(n.getX()-goal.getX())>reach||Math.abs(n.getZ()-goal.getZ())>reach)continue;
+                if(n.equals(from))return c;
+                if(!walkable(l,n))continue;toward.put(n,c);queue.add(n);
+            }
+        }
+        return null;
+    }
+    private static boolean walkable(net.minecraft.server.level.ServerLevel l,BlockPos c){return low(l,c)&&clear(l,c.above())&&!l.getBlockState(c.below()).getCollisionShape(l,c.below()).isEmpty();}
+    private static boolean low(net.minecraft.server.level.ServerLevel l,BlockPos c){var s=l.getBlockState(c);return s.getBlock() instanceof net.minecraft.world.level.block.DoorBlock||s.getCollisionShape(l,c).isEmpty()||s.getCollisionShape(l,c).max(net.minecraft.core.Direction.Axis.Y)<=.5;}
+    private static boolean clear(net.minecraft.server.level.ServerLevel l,BlockPos c){var s=l.getBlockState(c);return s.getBlock() instanceof net.minecraft.world.level.block.DoorBlock||s.getCollisionShape(l,c).isEmpty();}
     /** Mr. Dorsey walks his round: to each point in turn, standing a while at each door. */
     private static void round(CompoundTag own,LiteraryActor a,BlockPos b){
         if(a.getPersistentData().contains("BorrascaSpeed"))return;
@@ -301,13 +348,22 @@ public final class BorrascaPeople {
     // ---------------------------------------------------------------------------------------------------------------- the bar's door
     /** Inside the Tipple's walls (world, relative to the base). */
     public static boolean inBar(BlockPos rel){return rel.getX()>=8&&rel.getX()<=21&&rel.getZ()<=-109&&rel.getZ()>=-120&&rel.getY()>=-1&&rel.getY()<=4;}
-    /** Where a child turned out of the bar is set: the sidewalk outside its door, facing the street. */
+    /** Where a child turned out of the bar is put: the sidewalk outside its door. */
     public static final BlockPos TURNED_OUT=new BlockPos(5,0,-114);
-    /** Gus turns a child out of the bar on the childhood visits. */
+    /** Gus turns a child out of the bar on the childhood visits: comes round the bar and walks them out the door (0.4.429). */
     private static void bar(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
-        if(visit>=3||!inBar(p.blockPosition().subtract(b)))return;var gus=keeper(p,own,GUS);if(gus==null||gus.isInvisible())return;
+        var gus=keeper(p,own,GUS);var rel=p.blockPosition().subtract(b);
+        if(own.getBoolean("BarShove")){
+            if(rel.getX()<=6||gus==null||visit>=3||tired(own)||!shove(p,b,gus,TURNED_OUT,17)){own.remove("ShoveTicks");own.remove("BarShove");if(gus!=null)gus.getPersistentData().putBoolean("BorrascaAway",true);closeBar(p.serverLevel(),b);}
+            return;
+        }
+        if(visit>=3||!inBar(rel)||gus==null||gus.isInvisible())return;
         int n=own.getInt("BarTurnedOut");own.putInt("BarTurnedOut",n+1);
         BorrascaStory.say(p,gus,n==0?"Out. No kids in here.":n==1?"I said out. Go find your folks.":"Out.");
-        var to=Vec3.atBottomCenterOf(b.offset(TURNED_OUT));p.stopRiding();p.connection.teleport(to.x,to.y,to.z,90,0);p.setDeltaMovement(Vec3.ZERO);
+        BorrascaStory.openDoor(p.serverLevel(),b.offset(BorrascaShops.BAR_DOOR),true);own.putBoolean("BarShove",true);shove(p,b,gus,TURNED_OUT,17);
+    }
+    /** The bar's door swings shut behind a child put out, unless somebody is standing in it. */
+    private static void closeBar(net.minecraft.server.level.ServerLevel l,BlockPos b){
+        var at=b.offset(BorrascaShops.BAR_DOOR);if(l.getEntitiesOfClass(net.minecraft.world.entity.player.Player.class,new net.minecraft.world.phys.AABB(at).expandTowards(0,1,0)).isEmpty())BorrascaStory.openDoor(l,at,false);
     }
 }

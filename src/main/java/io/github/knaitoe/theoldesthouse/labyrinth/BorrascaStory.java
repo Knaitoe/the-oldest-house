@@ -117,8 +117,27 @@ public final class BorrascaStory {
             if(visit==1){
                 if(!own.getBoolean("FriendCarved")){cue(p,"Some names are only grooves now. There are old scars between them.");return true;}
                 if(!own.getBoolean("PactCarved")){
-                    own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,rel),.55F);
-                    var friend=actor(p,own,"CastKimber");if(friend!=null){friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}
+                    // 0.4.429 (owner: "players should be able to take the knife from the kid, use it to carve their name"): the reader
+                    // takes her pocketknife from her and cuts their own name with it, a few letters at each cut.
+                    var friend=actor(p,own,"CastKimber");
+                    if(!BorrascaBelongings.valid(p,own,BorrascaBelongings.KNIFE,p.getMainHandItem())){
+                        if(BorrascaBelongings.has(p,own,BorrascaBelongings.KNIFE))cue(p,"The knife needs to be in your hand.");
+                        else if(friend!=null){friend.gesture(4);say(p,friend,"Here. Take the knife.");}
+                        else cue(p,"You'd need something to cut with.");
+                        return true;
+                    }
+                    int cuts=own.getInt("KnifeCuts")+1;own.putInt("KnifeCuts",cuts);var at=BorrascaRooms.at(b,rel);
+                    p.swing(net.minecraft.world.InteractionHand.MAIN_HAND,true);heard(p,BorrascaRegistry.CARVE.get(),at,.4F);
+                    p.serverLevel().sendParticles(p,new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK,Blocks.SPRUCE_LOG.defaultBlockState()),false,at.getX()+.5,at.getY()+.55,at.getZ()+1.05,6,.15,.12,.02,.02);
+                    String name=p.getGameProfile().getName();
+                    if(cuts<CUTS){
+                        var bark=p.serverLevel().getBlockState(at);if(bark.is(BorrascaRegistry.CARVING.get())&&bark.getValue(BorrascaCarvingBlock.STAGE)!=2)p.serverLevel().setBlock(at,bark.setValue(BorrascaCarvingBlock.STAGE,2),F);
+                        BorrascaCarvingEntity.names(p.serverLevel(),at,name.substring(0,Math.max(1,(int)Math.ceil(name.length()*cuts/(double)CUTS))));
+                        if(cuts==1)cue(p,"The bark is softer than it looks.");
+                        return true;
+                    }
+                    own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),at,.55F);
+                    if(friend!=null){friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}
                     echo(p,b,own,.35F);own.putBoolean("PactEcho",true);
                     return true;
                 }
@@ -189,6 +208,7 @@ public final class BorrascaStory {
         if(a.role()==LiteraryActor.BORRASCA_KIMBER){
             if(own.getBoolean("FriendMissing")||visit>=3)return;
             if(visit==1){
+                if(knifeTalk(p,a,own))return;
                 if(!own.getBoolean("MetFriend")){own.putBoolean("MetFriend",true);return;}
                 if(!own.getBoolean("PlayDone")&&own.getInt("ChildStep")==0)return;
                 if(own.getBoolean("KimberAtFort")&&!own.getBoolean("LegendDone"))return;
@@ -251,6 +271,37 @@ public final class BorrascaStory {
         child.setYRot(yaw);child.setYBodyRot(yaw);child.setYHeadRot(yaw);
     }
 
+    /** How many cuts the reader's own name takes. */
+    public static final int CUTS=4;
+    /**
+     * 0.4.429: her pocketknife. When she has cut her name she holds it out; the reader takes it from her, cuts their own name with it
+     * and gives it back. Returns whether the knife was what this was about.
+     */
+    private static boolean knifeTalk(ServerPlayer p,LiteraryActor friend,CompoundTag own){
+        if(!own.getBoolean("FriendCarved")||own.getBoolean("KnifeBack"))return false;
+        boolean held=BorrascaBelongings.has(p,own,BorrascaBelongings.KNIFE);
+        if(!own.getBoolean("PactCarved")){
+            if(held){say(p,friend,"Under mine. Press hard or it won't last.");return true;}
+            if(!BorrascaBelongings.hand(p,own,BorrascaBelongings.KNIFE)){say(p,friend,"Your hands are full.");return true;}
+            friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(2);own.putBoolean("KnifeTaken",true);
+            say(p,friend,"Careful. It's sharp.");return true;
+        }
+        if(!held)return false;
+        giveBack(p,friend,own,false);return true;
+    }
+    /** The knife goes back to her pocket: handed over, or taken back. */
+    private static void giveBack(ServerPlayer p,LiteraryActor friend,CompoundTag own,boolean taken){
+        if(BorrascaBelongings.remove(p,own,BorrascaBelongings.KNIFE).isEmpty())return;
+        own.putBoolean("KnifeBack",true);own.remove("KnifeWait");friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(0);
+        if(taken)cue(p,FRIEND+" takes her knife back out of your hand and folds it.");else say(p,friend,"Thanks. My dad counts his knives.");
+    }
+    /** After the names, she wants her knife; if it is not given, she takes it. */
+    private static void knifeBack(ServerPlayer p,LiteraryActor friend,CompoundTag own){
+        if(!own.getBoolean("PactCarved")||own.getBoolean("KnifeBack")||!BorrascaBelongings.has(p,own,BorrascaBelongings.KNIFE))return;
+        int wait=own.getInt("KnifeWait")+5;own.putInt("KnifeWait",wait);
+        if(wait==80){friend.gesture(4);say(p,friend,"Can I have my knife back?");}
+        else if(wait>=400&&p.distanceToSqr(friend)<9)giveBack(p,friend,own,true);
+    }
     private static void idleFriend(ServerPlayer p,LiteraryActor friend,CompoundTag own){
         String[] lines=own.getBoolean("KimberAtFort")?new String[]{
             "If you get here first, save me the window side.",
@@ -376,8 +427,10 @@ public final class BorrascaStory {
             if(!follow(p,b,own,friend,"DownStep",DOWN))return;
             if(!near(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),10)){friend.gesture(0);if(!own.getBoolean("CalledDown")){own.putBoolean("CalledDown",true);say(p,friend,"Come down here. Bring your name.");}return;}
             friend.gesture(3);friend.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(LiteraryRegistry.KNIFE.get()));int n=own.getInt("CarveTicks")+5;own.putInt("CarveTicks",n);
-            if(n>=40){own.putBoolean("FriendCarved",true);bark(p,b,1);friend.gesture(4);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,BorrascaRooms.CARVING),.5F);say(p,friend,"Your turn. Right there, next to mine.");}
+            if(n>=40){own.putBoolean("FriendCarved",true);bark(p,b,1);friend.gesture(4);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,BorrascaRooms.CARVING),.5F);say(p,friend,"Your turn. Take the knife.");}
+            return;
         }
+        knifeBack(p,friend,own);
     }
     /** The room belongs to them for a little while before the ridge intrudes. */
     private static void fort(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
@@ -893,12 +946,12 @@ public final class BorrascaStory {
     private static void bark(ServerPlayer p,BlockPos b,int stage){var at=BorrascaRooms.at(b,BorrascaRooms.CARVING);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.CARVING.get())&&s.getValue(BorrascaCarvingBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaCarvingBlock.STAGE,stage),F);BorrascaCarvingEntity.names(p.serverLevel(),at,p.getGameProfile().getName());}
     private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(BorrascaRooms.at(b,rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
     private static boolean near(ServerPlayer p,BlockPos at,double distance){return at!=null&&p.distanceToSqr(Vec3.atBottomCenterOf(at))<distance*distance;}
-    /** A person speaks: over their head, and on the reader's action bar. Never in chat. */
+    /** A person speaks: a caption with their name (client.SpeechCaptions), kept in the reader's journal. Never in chat. */
     private static boolean recentSpeech(ServerPlayer p){
         int elapsed=p.tickCount-p.getPersistentData().getInt("BorrascaSpeechAt");
         return p.getPersistentData().contains("BorrascaSpeechAt")&&elapsed>=0&&elapsed<SPEECH_TICKS;
     }
-    static void say(ServerPlayer p,LiteraryActor a,String words){a.say(words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);p.displayClientMessage(Component.literal(speaker(a)+": "+words),true);}
+    static void say(ServerPlayer p,LiteraryActor a,String words){a.say(speaker(a),words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);}
     static String speaker(LiteraryActor a){if(BorrascaPeople.keeper(a))return BorrascaPeople.name(a);if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Patrick":"Kendra";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
     /** What the reader notices, on the action bar. */
     static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
@@ -917,7 +970,9 @@ public final class BorrascaStory {
         var p=a.owner().map(l.getServer().getPlayerList()::getPlayer).orElse(null);if(p==null||!BorrascaSites.inside(p)){BorrascaCast.stop(a);return;}var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(!own.getBoolean("Here")||!own.getBoolean("CastRecalled"))BorrascaCast.stop(a);
     }
     /** Capture intent; the actual door travel callback is the sole return authority. */
-    public static void depart(ServerPlayer p){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);boolean valid=BorrascaSites.inside(p)&&own.getBoolean("Here")&&!own.getBoolean("Interrupted")&&p.isAlive();if(valid&&own.getInt("Beat")>=own.getInt("Visit"))own.putInt("DepartVisit",own.getInt("Visit"));else own.remove("DepartVisit");own.putBoolean("ExitEligible",valid&&own.getInt("Visit")==4&&(own.getInt("ConfirmedVisits")&7)==7&&own.getBoolean("Ready")&&own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&carriesEvidence(p,own));own.putBoolean("Here",false);save(p,own);}
+    public static void depart(ServerPlayer p){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);
+        // 0.4.429: her knife never leaves the hill in a pocket; it went back to her.
+        if(!BorrascaBelongings.remove(p,own,BorrascaBelongings.KNIFE).isEmpty()){own.putBoolean("KnifeBack",true);own.putBoolean("KnifeKept",true);}boolean valid=BorrascaSites.inside(p)&&own.getBoolean("Here")&&!own.getBoolean("Interrupted")&&p.isAlive();if(valid&&own.getInt("Beat")>=own.getInt("Visit"))own.putInt("DepartVisit",own.getInt("Visit"));else own.remove("DepartVisit");own.putBoolean("ExitEligible",valid&&own.getInt("Visit")==4&&(own.getInt("ConfirmedVisits")&7)==7&&own.getBoolean("Ready")&&own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&carriesEvidence(p,own));own.putBoolean("Here",false);save(p,own);}
     public static void returned(ServerPlayer p){BorrascaPeople.leave(p);var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("BorrascaDeparted",true);own.putBoolean("Escorting",false);own.putInt("Suspicion",0);int returned=own.getInt("DepartVisit");if(returned>=1&&returned<=3){own.putInt("ConfirmedVisits",own.getInt("ConfirmedVisits")|(1<<(returned-1)));own.putInt("CastNextVisit",returned+1);}if(own.getBoolean("ExitEligible")&&carriesEvidence(p,own)){own.putBoolean("NameReturned",own.getBoolean("RestoredName"));own.putBoolean("Completed",true);own.putInt("Beat",4);save(p,own);WitnessAccount.resolve(p,WitnessAccount.Story.BORRASCA,"silenced_the_mountain");d.setCompleted(PLACE.id(),true);WitnessAccount.updateBook(p,false);}own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}
     @SubscribeEvent public static void joined(EntityJoinLevelEvent event){if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.role()!=LiteraryActor.BORRASCA_KIMBER||a.owner().isEmpty())return;var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE);if(own.getInt("Visit")>=3||own.getBoolean("FriendMissing")){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);if(own.getInt("Visit")>=3||own.getBoolean("FriendHidden")){a.setInvisible(true);BorrascaCast.stop(a);}}}
     @SubscribeEvent public static void rejoined(PlayerEvent.PlayerLoggedInEvent event){if(!(event.getEntity() instanceof ServerPlayer p)||!BorrascaSites.inside(p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getBoolean("Here")){own.putBoolean("CastRecalled",false);save(p,own);}}
