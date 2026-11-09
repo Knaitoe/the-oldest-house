@@ -199,6 +199,18 @@ public final class LabyrinthPlaces {
         return slotBounds(origin, place);
     }
 
+    /**
+     * 0.4.410: the House's rooms do not burn. A fire inside a slot of either House dimension goes out on its first tick, and a
+     * fire beside one does not burn into it. Every hearth is a campfire, so no room needs a fire block. (Run 1491: the bedroom's
+     * ground floor burned through while both readers were upstairs.)
+     */
+    public static boolean fireproof(net.minecraft.world.level.Level level, BlockPos pos) {
+        if (!(level instanceof net.minecraft.server.level.ServerLevel server)
+                || !io.github.knaitoe.theoldesthouse.house.HouseDimensions.isHouseDimension(server.dimension())) return false;
+        BlockPos origin = io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(server.getServer()).houseOrigin();
+        return origin != null && placeAt(origin, pos) != null;
+    }
+
     /** Whether a position lies in any slot of the stack. */
     public static boolean isInStack(BlockPos origin, BlockPos pos) {
         return placeAt(origin, pos) != null;

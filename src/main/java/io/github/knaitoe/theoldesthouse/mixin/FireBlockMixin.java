@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.mixin;
 
 import io.github.knaitoe.theoldesthouse.house.HouseImpossibleHallway;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlaces;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,18 +14,18 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** The impossible hallway does not burn, and fire does not keep inside it. */
+/** The impossible hallway and the House's rooms do not burn, and fire does not keep inside them. */
 @Mixin(FireBlock.class)
 public abstract class FireBlockMixin {
     @Inject(method = "checkBurnOut", at = @At("HEAD"), cancellable = true)
     private void theOldestHouse$hallwayDoesNotBurn(Level level, BlockPos pos, int chance, RandomSource random, int age, Direction face,
             CallbackInfo ci) {
-        if (HouseImpossibleHallway.isShielded(level, pos)) ci.cancel();
+        if (HouseImpossibleHallway.isShielded(level, pos) || LabyrinthPlaces.fireproof(level, pos)) ci.cancel();
     }
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void theOldestHouse$fireGoesOutInTheHallway(BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
-        if (HouseImpossibleHallway.isShielded(level, pos)) {
+        if (HouseImpossibleHallway.isShielded(level, pos) || LabyrinthPlaces.fireproof(level, pos)) {
             level.removeBlock(pos, false);
             ci.cancel();
         }
