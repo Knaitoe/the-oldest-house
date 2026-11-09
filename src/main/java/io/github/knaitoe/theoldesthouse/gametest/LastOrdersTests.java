@@ -18,7 +18,8 @@ import net.neoforged.neoforge.gametest.*;
  * the last frame is played for everything. One winner walks out and leaves the roll, and has the account; the other takes it and is back
  * at the door with nothing. At darts, a reader takes a glass from Benny, which puts a week on the league board under their name and turns
  * the window to another season, then loses the last leg and has the evening taken. The regulars play among themselves, and a reader
- * waiting for their next game goes on the chalk first.
+ * waiting for their next game goes on the chalk first. The one who walked out finds the house chalk and a tin of darts with the note
+ * (0.4.417), and makes a table and a board of their own with them; nobody else's grid makes anything with those.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
 public final class LastOrdersTests {
@@ -30,6 +31,13 @@ public final class LastOrdersTests {
     private static String text(net.minecraft.world.item.ItemStack book){var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}
     private static void ask(LiteraryTests.Fixture f,ServerPlayer p,String choice){
         var a=LastOrders.actor(f.level(P),f.base(P),0);f.at(p,P,-8.5,0,-18.5);LastOrders.talk(p,a);Talk.choose(p,choice);
+    }
+    private static net.minecraft.world.item.ItemStack find(ServerPlayer p,net.minecraft.world.item.Item item){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(item))return inv.getItem(i);return net.minecraft.world.item.ItemStack.EMPTY;}
+    /** What a crafting table offers this player for a grid of nine. */
+    private static net.minecraft.world.item.ItemStack craft(ServerPlayer p,net.minecraft.world.item.ItemStack[] grid){
+        var menu=new net.minecraft.world.inventory.CraftingMenu(0,p.getInventory(),net.minecraft.world.inventory.ContainerLevelAccess.create(p.level(),p.blockPosition()));
+        for(int i=0;i<9;i++)menu.getSlot(1+i).set(grid[i].copy());
+        return menu.getSlot(0).getItem().copy();
     }
     private static int houseDarts(ServerPlayer p){int n=0;for(var s:p.getInventory().items)if(DartBoards.isHouseDart(s))n+=s.getCount();for(var s:p.getInventory().offhand)if(DartBoards.isHouseDart(s))n+=s.getCount();return n;}
     private static String sign(LiteraryTests.Fixture f,net.minecraft.core.BlockPos rel,int line){return f.level(P).getBlockEntity(f.base(P).offset(rel)) instanceof SignBlockEntity s?s.getFrontText().getMessage(line,false).getString():"";}
@@ -98,6 +106,21 @@ public final class LastOrdersTests {
                 h.assertTrue(walked.contains("staring at the seat across from him")&&walked.contains("left it there")&&!walked.contains("Neither of them breathing"),"the account for the one who left it: "+walked);
                 var took=text(LastOrdersTexts.account(r[1].getGameProfile().getName(),f.own(r[1],P)));
                 h.assertTrue(took.contains("two of them")&&took.contains("Same coat"),"the note's other page, for the one who took it: "+took);
+                // 0.4.417: the keepsakes under the till, for the one who walked out, and what they make at home.
+                h.assertTrue(walked.contains("house chalk and a tin of darts")&&!took.contains("house chalk"),"the note says what was left with it, for the one who walked out only");
+                var chalk=find(r[0],BarRegistry.HOUSE_CHALK.get());var tin=find(r[0],BarRegistry.DART_TIN.get());
+                h.assertTrue(KeepsakeKeyItem.mine(chalk,r[0])&&KeepsakeKeyItem.mine(tin,r[0])&&!KeepsakeKeyItem.mine(chalk,r[1]),"the house chalk and the tin of darts, marked as theirs alone");
+                h.assertTrue(find(r[1],BarRegistry.HOUSE_CHALK.get()).isEmpty()&&find(r[1],BarRegistry.DART_TIN.get()).isEmpty(),"nothing for the one who took the roll");
+                h.assertTrue(r[0].getRecipeBook().contains(BarRegistry.POOL_TABLE_RECIPE)&&r[0].getRecipeBook().contains(BarRegistry.DARTBOARD_RECIPE),"both recipes in their book");
+                var wool=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GREEN_WOOL);var plank=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.OAK_PLANKS);
+                var iron=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT);var none=net.minecraft.world.item.ItemStack.EMPTY;
+                net.minecraft.world.item.ItemStack[] table={wool,wool,wool,plank,chalk,plank,iron,none,iron};
+                net.minecraft.world.item.ItemStack[] board={none,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STRING),none,plank,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TARGET),plank,none,tin,none};
+                h.assertTrue(craft(r[0],table).is(BarRegistry.POOL_TABLE_ITEM.get())&&craft(r[0],board).is(BarRegistry.DARTBOARD_ITEM.get()),"their chalk makes a pool table and their tin a dartboard");
+                h.assertTrue(craft(r[1],table).isEmpty()&&craft(r[1],board).isEmpty(),"the same keepsakes in another reader's grid make nothing");
+                h.assertTrue(KeepsakeKeyItem.mine(chalk.getItem().getCraftingRemainingItem(chalk),r[0])&&KeepsakeKeyItem.mine(tin.getItem().getCraftingRemainingItem(tin),r[0]),"each comes back from the grid as it went in, still theirs");
+                var key=new net.minecraft.world.item.ItemStack(PolybiusRegistry.SERVICE_KEY.get());
+                h.assertTrue(!KeepsakeKeyItem.mine(key,r[0])&&!KeepsakeKeyItem.mine(chalk,r[1]),"a key nobody was given is nobody's");
                 LastOrders.resetNow(l,b);
             })
             .thenSucceed();

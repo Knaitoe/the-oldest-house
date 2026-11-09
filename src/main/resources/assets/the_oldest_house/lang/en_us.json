@@ -1557,5 +1557,7 @@
   "subtitles.the_oldest_house.darts.pull": "Darts pulled from the board",
   "subtitles.the_oldest_house.orders.whistle": "Someone whistles",
   "advancements.the_oldest_house.account.last_orders.title": "Last orders",
-  "advancements.the_oldest_house.account.last_orders.description": "I played a stranger for everything on his table and won, and I left it there."
+  "advancements.the_oldest_house.account.last_orders.description": "I played a stranger for everything on his table and won, and I left it there.",
+  "item.the_oldest_house.house_chalk": "House Chalk",
+  "item.the_oldest_house.dart_tin": "Tin of Darts"
 }

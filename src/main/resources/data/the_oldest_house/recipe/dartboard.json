@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "PTP",
+    " K "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:string"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "T": {
+      "item": "minecraft:target"
+    },
+    "K": {
+      "item": "the_oldest_house:dart_tin"
+    }
+  },
+  "result": {
+    "id": "the_oldest_house:dartboard",
+    "count": 1
+  }
+}

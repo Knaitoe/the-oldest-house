@@ -19,7 +19,7 @@ import net.neoforged.neoforge.registries.*;
 
 /**
  * 0.4.414 (docs/BAR_GAMES_PROPOSAL.md): the bar's games. The pool table and its sounds (0.4.414), the dartboard, darts and theirs
- * (0.4.415); the bar itself follows. Drawn by
+ * (0.4.415), the bar's whistle (0.4.416), and the two keepsakes that make a table and a board at home (0.4.417). Drawn by
  * tools/draw_bar_art.py, the sounds made by tools/generate_bar_audio.py.
  */
 public final class BarRegistry {
@@ -44,6 +44,13 @@ public final class BarRegistry {
     public static final DeferredItem<DartItem> DART=ITEMS.register("dart",()->new DartItem(new Item.Properties().stacksTo(16)));
     public static final DeferredHolder<EntityType<?>,EntityType<DartEntity>> DART_ENTITY=ENTITIES.register("dart",
         ()->EntityType.Builder.<DartEntity>of(DartEntity::new,MobCategory.MISC).sized(.15F,.15F).clientTrackingRange(6).updateInterval(1).build("dart"));
+
+    /** 0.4.417: the bar's keepsakes, given with the morning shift's note to a reader who left the roll and walked out. Each makes its
+     * object at a crafting table for its own reader and comes back ({@link KeepsakeKeyItem}). */
+    public static final DeferredItem<KeepsakeKeyItem> HOUSE_CHALK=ITEMS.register("house_chalk",()->new KeepsakeKeyItem(new Item.Properties().stacksTo(1),"last_orders"));
+    public static final DeferredItem<KeepsakeKeyItem> DART_TIN=ITEMS.register("dart_tin",()->new KeepsakeKeyItem(new Item.Properties().stacksTo(1),"last_orders"));
+    public static final ResourceLocation POOL_TABLE_RECIPE=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"pool_table");
+    public static final ResourceLocation DARTBOARD_RECIPE=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"dartboard");
 
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** The cue's tip on the ball, ball on ball, a ball off the cushion, and one dropping into a pocket. */

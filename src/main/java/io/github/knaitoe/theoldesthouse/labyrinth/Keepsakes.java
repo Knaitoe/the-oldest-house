@@ -132,6 +132,8 @@ public final class Keepsakes {
             case "borrasca/Compass" -> "She kept it close so she could find her way back. Away from the House it points to where you last fell; inside, to where lost things are kept.";
             case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall away from the House, what is in your hand stays with you.";
             case "polybius/ServiceKey" -> "A small round key on a ring, with a paper tag: FREE PLAY. At a crafting table, with planks, a pane of glass and redstone, it opens a cabinet of your own.";
+            case "last_orders/Chalk" -> "The house chalk, worn hollow on one side. At a crafting table, with wool, planks and iron, it makes a table of your own.";
+            case "last_orders/Darts" -> "Three darts in a tin, their flights flattened from years in a pocket. At a crafting table, with string, planks and a target, it makes a board of your own.";
             case "feet_up/ChalkStub" -> "Worn to a stub. Carried in the House, a short fall costs you nothing, as if the floor only ever counted.";
             default -> Artifacts.line(place, key);
         };

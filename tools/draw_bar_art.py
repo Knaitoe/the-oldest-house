@@ -1,6 +1,6 @@
 """The bar's games (0.4.414, docs/BAR_GAMES_PROPOSAL.md): the pool table's cloth, rails, wood and pockets, the balls as the table
 and the screen draw them, and the table's item picture; the dartboard's face and sides, and the dart's and board's item pictures
-(0.4.415). Writes the table's model and block states and its name. --check verifies
+(0.4.415), and the bar's two keepsakes, the house chalk and the tin of darts (0.4.417). Writes the table's model and block states and its name. --check verifies
 everything already written. Run from tools/.
 
 Palette: cloth #1f6e3e, rails and apron mahogany #5a3218 / #3a1e0e, sights #e8d8b0, pockets #0c0806 with a leather lip #3a2414.
@@ -219,6 +219,59 @@ def dartboard_icon():
     return im
 
 
+def chalk_icon():
+    """The house chalk: a cube seen from above and to the left, its paper wrap round the sides and a hollow worn in the top."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    CHALK, PAPER = '#3c6cb4', '#e6dcc0'
+    for y in range(3, 7):
+        for x in range(3 + (7 - y), 11 + (7 - y)):
+            dot(im, x, y, shade(CHALK, 18))
+    for x, y in [(8, 4), (9, 4), (10, 4), (7, 5), (8, 5), (9, 5), (10, 5), (8, 6), (9, 6)]:
+        dot(im, x, y, shade(CHALK, -34))
+    dot(im, 10, 6, shade(CHALK, -14)); dot(im, 11, 4, shade(CHALK, 30))
+    for y in range(7, 14):
+        for x in range(3, 11):
+            dot(im, x, y, PAPER if y > 7 else CHALK)
+    for x in range(5, 9):
+        for y in range(9, 12):
+            dot(im, x, y, '#2a3c62' if (x + y) % 3 else shade(CHALK, -10))
+    for c in range(11, 15):
+        top = 7 - (c - 10)
+        for y in range(top, top + 7):
+            dot(im, c, y, shade(PAPER, -42) if y > top else shade(CHALK, -22))
+    for x in range(3, 11):
+        dot(im, x, 13, shade(PAPER, -26))
+    return im
+
+
+def tin_icon():
+    """A round tin, open, with three darts standing in it: barrels in the tin, flights up."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    TIN = '#8a9098'
+    for y in range(9, 14):
+        for x in range(3, 13):
+            colour = shade(TIN, 34) if x == 4 else shade(TIN, -30) if x >= 11 else TIN
+            dot(im, x, y, shade(colour, -16) if y == 13 else colour)
+    for x in range(3, 13):
+        dot(im, x, 10, SIGHT if 3 < x < 12 else shade(SIGHT, -30)); dot(im, x, 11, SIGHT if 3 < x < 12 else shade(SIGHT, -30))
+    for x in range(5, 11):
+        dot(im, x, 11, RED if x in (6, 9) else SIGHT)
+    for x in range(4, 12):
+        dot(im, x, 6, '#c8ced6'); dot(im, x, 8, '#9aa0a8')
+    dot(im, 3, 7, '#c8ced6'); dot(im, 12, 7, '#9aa0a8')
+    for x in range(4, 12):
+        dot(im, x, 7, '#24262a')
+    for x, lean in ((5, -1), (8, 0), (11, 1)):
+        bx = x
+        for y in range(4, 8):
+            dot(im, bx, y, '#6e7074' if y > 5 else '#161616')
+        fx = bx + lean
+        for y, w in ((1, 1), (2, 1), (3, 0)):
+            for dx in range(-w, w + 1):
+                dot(im, fx + dx, y, RED if dx else shade(RED, -40))
+    return im
+
+
 def dartboard_model():
     """The board hung on the south side of its block, its face to the north."""
     side = {'texture': '#side'}
@@ -239,6 +292,7 @@ def textures():
         'gui/pool_pocket.png': pocket_gui(), 'item/pool_table.png': item_icon(),
         'block/bar/dartboard_face.png': dartboard_face(), 'block/bar/dartboard_side.png': dartboard_side(),
         'item/dart.png': dart_icon(), 'item/dartboard.png': dartboard_icon(),
+        'item/house_chalk.png': chalk_icon(), 'item/dart_tin.png': tin_icon(),
     }
 
 
@@ -274,13 +328,14 @@ def files():
     out['models/block/bar/dartboard.json'] = dartboard_model()
     out['blockstates/dartboard.json'] = {'variants': {f'facing={f}': ({'model': B + 'dartboard', 'y': y} if y else {'model': B + 'dartboard'})
                                                       for f, y in FACING_Y.items()}}
-    for item in ('dart', 'dartboard'):
+    for item in ('dart', 'dartboard', 'house_chalk', 'dart_tin'):
         out[f'models/item/{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/' + item}}
     return out
 
 
 NAMES = {'block.the_oldest_house.pool_table': 'Pool Table', 'block.the_oldest_house.dartboard': 'Dartboard',
-         'item.the_oldest_house.dart': 'Dart', 'entity.the_oldest_house.dart': 'Dart'}
+         'item.the_oldest_house.dart': 'Dart', 'entity.the_oldest_house.dart': 'Dart',
+         'item.the_oldest_house.house_chalk': 'House Chalk', 'item.the_oldest_house.dart_tin': 'Tin of Darts'}
 
 
 def main():
