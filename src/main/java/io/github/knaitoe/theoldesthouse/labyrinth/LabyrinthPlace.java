@@ -685,7 +685,11 @@ public enum LabyrinthPlace {
     /** 0.4.409, the city on the ice (BlackCity, docs/THE_BLACK_CITY_0_4_409.md): an expedition's empty camp, a pass between peaks too regular
      * to be peaks, and a city of dark stone with a ramp turning down past twelve carvings to a tunnel and a warm shore. Its base stands at
      * CitySite.BASE_Y so the pit has room under it. Its way on is the mess hut's door. */
-    BLACK_CITY("the_black_city",Kind.RECURRING,235,new BoundingBox(-64,-46,-192,64,60,0),literaryEntry());
+    BLACK_CITY("the_black_city",Kind.RECURRING,235,new BoundingBox(-64,-46,-192,64,60,0),literaryEntry()),
+    /** 0.4.410, the Kept (Kept, docs/THE_KEPT_0_4_410.md): the inside of a machine and four people it has kept, a walk through a corridor of
+     * cabinets, a cave of ice and a thicket of wire to a hall of a hundred chairs, a crate of tins, and four cells whose doors open onto glare.
+     * Its way on is a door in the hall's north wall. */
+    KEPT("the_kept",Kind.RECURRING,236,new BoundingBox(-22,-2,-98,22,10,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

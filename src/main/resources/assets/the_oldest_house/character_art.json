@@ -1690,5 +1690,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 134
+  },
+  {
+    "name": "literary_kept_silas",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 135
+  },
+  {
+    "name": "literary_kept_petra",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 136
+  },
+  {
+    "name": "literary_kept_wendell",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 137
+  },
+  {
+    "name": "literary_kept_tamsin",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 138
   }
 ]

@@ -110,6 +110,7 @@ STORY_ICONS = {
     'the_drawing': NS + ':drawing_stone',
     'the_house_on_the_corner': 'minecraft:glass_bottle',
     'the_black_city': 'minecraft:packed_ice',
+    'the_kept': 'minecraft:observer',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

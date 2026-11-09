@@ -175,6 +175,11 @@ LOOKS = {
     'literary_corner_nacho': Look('#c48e6c','#2a1e18','messy','#3a5a7a','#2e3440','tee','#d8d0c0',eyes='#3a2e26',sleeve=4,face_style='child'),
     'literary_corner_luli': Look('#e0b896','#6a3a22','ponytail','#c8607a','#3a4a5a','tee','#f0e6d0',eyes='#4a5a4a',sleeve=4,face_style='child'),
     'literary_corner_nacho_grown': Look('#c48e6c','#2a1e18','short','#4a4a52','#2e3440','jacket','#8a8478',eyes='#3a2e26',beard='stubble'),
+    # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
+    'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
+    'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
+    'literary_kept_wendell': Look('#c49a7c','#6a5a4a','receding','#6a5a44','#3e3a34','ragged','#8a7a5a',eyes='#5a4a3a',age=1,glasses=True,beard='stubble',mark='despair'),
+    'literary_kept_tamsin': Look('#d8b49a','#4a3426','close','#5a6a6a','#3a4044','ragged','#7a8a88',eyes='#4a5a4a',mark='despair'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
