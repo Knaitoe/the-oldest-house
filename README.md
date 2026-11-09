@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.436** gives Borrasca's drugstore its own two arcade cabinets, for a quarter a play: DEEP SEAM, a mine cart down a dark seam on three rails, hopping gaps and going round fallen timbers while the lamp's light runs down; and BIG CAT, night fishing for the catfish on the river bottom without parting the line. Each cabinet's table starts with the town's children's initials, Patrick's at the top, and keeps them after he is gone. See [docs/BORRASCA_ARCADE_0_4_436.md](docs/BORRASCA_ARCADE_0_4_436.md).
+Development candidate **0.4.437** keeps the rooms under Borrasca's depot to grown women only: the night book brings nobody down before eighteen, keeps a taken child "above", and sends what is born below up to town by the doctor; Dana's note home is pasted from letters cut out of catalogues, with no hand and no age, and Kayla is nineteen. See [docs/BORRASCA_GROWN_0_4_437.md](docs/BORRASCA_GROWN_0_4_437.md).
 
 Candidate **0.4.435** lets a child ride Patrick's and Kendra's bikes around Borrasca. The left and right keys push the pedals, and pedalling is balancing: each push tips the bike toward its side, two on the same pedal tip it much more, and a moving bike keeps leaning the way it leans. A rider keeps it up by pedalling in turn and pushing twice on the far pedal when it starts to go, and comes off into the road when it goes over. A needle under the crosshair shows the lean. See [docs/BORRASCA_BIKES_0_4_435.md](docs/BORRASCA_BIKES_0_4_435.md).
 
