@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/borrasca_shop/photos",
+    "particle": "the_oldest_house:block/borrasca_shop/photos"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.5
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

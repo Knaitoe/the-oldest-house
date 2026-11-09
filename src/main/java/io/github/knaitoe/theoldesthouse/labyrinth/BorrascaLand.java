@@ -39,8 +39,28 @@ public final class BorrascaLand {
     static final int BAY_X0=32,BAY_X1=39,BAY_Z0=-207,BAY_Z1=-195;
     private record Route(BlockPos[] points,double half,double bank){}
     private static final Route[] ROUTES={new Route(BorrascaRooms.GULLY,1.7,1.4),new Route(BorrascaRooms.RETURN_ROUTE,1.7,.9),new Route(ROAD,2.3,2.4)};
-    /** 0.4.420: the same ways in the world, drawn out with the hill, for the slopes between the authored places. */
-    private static final Route[] WORLD_ROUTES=java.util.Arrays.stream(ROUTES).map(r->new Route(java.util.Arrays.stream(r.points()).map(BorrascaRooms::world).toArray(BlockPos[]::new),r.half(),r.bank())).toArray(Route[]::new);
+    /**
+     * 0.4.420: the same ways in the world, for the slopes between the authored places. 0.4.422: a step that crosses a slope is drawn out
+     * with the hill (a point every two blocks, swaying and rising with the trail), so a way keeps its place beside the trail instead of
+     * cutting straight through the woods; and the way down the far side ends at the trailhead, so it never runs through the street.
+     */
+    private static final Route[] WORLD_ROUTES={worldRoute(ROUTES[0],false),worldRoute(ROUTES[1],true),worldRoute(ROUTES[2],false)};
+    private static Route worldRoute(Route r,boolean endAtTrailhead){
+        var out=new ArrayList<BlockPos>();var p=r.points();
+        for(int i=0;i<p.length;i++){
+            var a=p[i];
+            if(i+1==p.length){out.add(BorrascaRooms.world(a));break;}
+            var c=p[i+1];double wa=BorrascaRooms.worldZ(a.getZ()),wc=BorrascaRooms.worldZ(c.getZ());
+            int n=BorrascaRooms.crosses(wa,wc)?Math.max(1,(int)Math.ceil(Math.abs(wc-wa)/2)):1;
+            for(int k=0;k<n;k++){
+                double w=wa+(wc-wa)*k/n,z=BorrascaRooms.authoredZ(w),t=c.getZ()==a.getZ()?0:Math.max(0,Math.min(1,(z-a.getZ())/(c.getZ()-a.getZ())));
+                var v=BorrascaRooms.world(new net.minecraft.world.phys.Vec3(a.getX()+(c.getX()-a.getX())*t,a.getY()+(c.getY()-a.getY())*t,z));
+                out.add(new BlockPos((int)Math.round(v.x),(int)Math.round(v.y),(int)Math.round(w)));
+            }
+        }
+        if(endAtTrailhead)out.removeIf(q->q.getZ()>BorrascaRooms.TOWN_END+2);
+        return new Route(out.toArray(BlockPos[]::new),r.half(),r.bank());
+    }
     /** Places kept at their own level, with the ground easing back to the slope over the margin. */
     private record Flat(int x0,int z0,int x1,int z1,int h,int margin){}  // margin: kept for reading; the easing is a cone
     private static final Flat[] FLATS={
@@ -122,6 +142,8 @@ public final class BorrascaLand {
     static final double BAND=5.5;
     public static int groundAt(int x,int w){
         if(!BorrascaRooms.drawnOutWorld(w)){int z=za(w);return ground(x,z)+(int)Math.round(BorrascaRooms.lift(z));}
+        // 0.4.422: the street past the chapel is the town's, level from side to side like the rest of it, out to the valley walls.
+        if(w>=BorrascaRooms.TOWN_END)return ground(x,-71);
         var s=BorrascaRooms.slope(w);double t=BorrascaRooms.along(w);
         double h=(ground(x,s[0])+s[4])*(1-t)+(ground(x,s[1])+s[5])*t;
         double tx=BorrascaRooms.trailXw(w),ty=BorrascaRooms.trailYw(w),d=Math.abs(x-tx);

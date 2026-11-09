@@ -1,0 +1,634 @@
+"""Borrasca's town (0.4.422): the shops along Drisking's street.
+
+Draws, in native Minecraft pixels from fixed seeds: three surfaces (the diner's black and white floor, the linoleum of the doctor's
+office and the drugstore, the antiques shop's pressed tin ceiling) and every fitting of the borrasca_shop block, its models facing
+north and turned by its facing. The diner's pie case (stage 1, one pie cut), coffee urn and letter board; the hardware pegboard
+(stage 1, a flashlight gone from its hook); the gas pump's two halves, the price board, the payphone, the soda cooler and the candy
+rack; the antiques shop's glass case, the miner's helmet, the map of the old workings, framed photographs and a wall clock; the
+doctor's beam scale, lollipop jar (stage 1, nearly empty), corkboard of birth cards, examination table and eye chart; the
+drugstore's soda fountain, pharmacy shelf and comic spinner; and a lit OPEN sign. Writes the models and block states and the
+blocks' names. --check verifies everything.
+"""
+from pathlib import Path
+import argparse
+import json
+import random
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parents[1]
+A = ROOT / 'src/main/resources/assets/the_oldest_house'
+NS = 'the_oldest_house:'
+P = NS + 'block/borrasca_shop/'
+
+
+def rgb(c):
+    c = c.lstrip('#')
+    return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def shade(c, k=0, a=255):
+    r, g, b = rgb(c) if isinstance(c, str) else c[:3]
+    return (max(0, min(255, r + k)), max(0, min(255, g + k)), max(0, min(255, b + k)), a)
+
+
+def new(base=None, seed=0, spread=4):
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    if base:
+        rnd = random.Random(seed); px = im.load()
+        for y in range(16):
+            for x in range(16):
+                px[x, y] = shade(base, rnd.randint(-spread, spread))
+    return im
+
+
+def fill(im, x0, y0, x1, y1, colour, a=255):
+    px = im.load()
+    for y in range(max(0, y0), min(16, y1)):
+        for x in range(max(0, x0), min(16, x1)):
+            px[x, y] = shade(colour, 0, a)
+
+
+def dot(im, x, y, colour, a=255):
+    if 0 <= x < 16 and 0 <= y < 16:
+        im.putpixel((x, y), shade(colour, 0, a))
+
+
+def frame(im, colour, x0=0, y0=0, x1=16, y1=16):
+    for x in range(x0, x1):
+        dot(im, x, y0, colour); dot(im, x, y1 - 1, colour)
+    for y in range(y0, y1):
+        dot(im, x0, y, colour); dot(im, x1 - 1, y, colour)
+
+
+# A three-by-five pixel alphabet for the boards, enough for what they say.
+FONT = {
+    'A': '010101111101101', 'B': '110101110101110', 'C': '011100100100011', 'D': '110101101101110', 'E': '111100110100111',
+    'F': '111100110100100', 'H': '101101111101101', 'I': '111010010010111', 'L': '100100100100111', 'N': '110101101101101',
+    'O': '010101101101010', 'P': '110101110100100', 'R': '110101110110101', 'S': '011100010001110', 'T': '111010010010010',
+    'U': '101101101101111', 'Y': '101101010010010', 'E2': '111100111100111', '1': '010110010010111', '2': '110001010100111',
+    '3': '110001010001110', '4': '101101111001001', '5': '111100110001110', '9': '111101111001110', '0': '111101101101111',
+    '.': '000000000000010', '-': '000000111000000', ' ': '000000000000000',
+}
+
+
+def text(im, x, y, word, colour, step=4):
+    for ch in word:
+        bits = FONT[ch]
+        for i, b in enumerate(bits):
+            if b == '1':
+                dot(im, x + i % 3, y + i // 3, colour)
+        x += step
+
+
+# ------------------------------------------------------------------------------------------------ surfaces
+def checker():
+    im = new()
+    rnd = random.Random(42201); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            dark = (x // 8 + y // 8) % 2 == 1
+            px[x, y] = shade('#2c2b30' if dark else '#e6e1d3', rnd.randint(-5, 5))
+    for _ in range(6):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#b9b3a3')
+    return im
+
+
+def lino():
+    im = new('#b7c2ad', 42202, 4); rnd = random.Random(42203)
+    for _ in range(26):
+        dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(('#9aa691', '#cdd5c4', '#a7b49d', '#8d9884')))
+    for i in range(16):
+        dot(im, i, 15, '#9aa38f'); dot(im, 15, i, '#9aa38f')
+    return im
+
+
+def tin():
+    im = new('#a9aba6', 42204, 3)
+    for x in range(16):
+        for y in range(16):
+            if x in (0, 8) or y in (0, 8):
+                dot(im, x, y, '#8b8d88')
+            elif x in (1, 9) or y in (1, 9):
+                dot(im, x, y, '#c2c4bf')
+    for cx, cy in ((4, 4), (12, 4), (4, 12), (12, 12)):
+        dot(im, cx, cy, '#c9cbc6'); dot(im, cx + 1, cy, '#93958f'); dot(im, cx, cy + 1, '#93958f'); dot(im, cx - 1, cy, '#c9cbc6'); dot(im, cx, cy - 1, '#c9cbc6')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ shared faces
+def wood():
+    im = new('#5e4128', 42210, 5); rnd = random.Random(42211)
+    for y in range(0, 16, 4):
+        for x in range(16):
+            if rnd.random() < .5:
+                dot(im, x, y, '#4f3620')
+    return im
+
+
+def chrome():
+    im = new('#c6c9cb', 42212, 3)
+    for y in range(16):
+        dot(im, 2, y, '#e4e6e8'); dot(im, 3, y, '#e4e6e8'); dot(im, 12, y, '#9ea2a5')
+    return im
+
+
+def glass():
+    im = new()
+    fill(im, 0, 0, 16, 16, '#d8eef2', 40)
+    frame(im, '#e9f6f8', 0, 0, 16, 16)
+    for i in range(3, 8):
+        dot(im, i, 10 - i, '#ffffff', 120)
+    return im
+
+
+def enamel():
+    return new('#ecebe5', 42213, 3)
+
+
+def black():
+    return new('#26252a', 42214, 3)
+
+
+# ------------------------------------------------------------------------------------------------ the diner
+def pie(cut):
+    im = new('#c8873e', 42220, 6)
+    # A lattice of crust over cherries, a fluted rim.
+    for i in range(16):
+        dot(im, i, 0, '#a86a2a'); dot(im, i, 15, '#a86a2a'); dot(im, 0, i, '#a86a2a'); dot(im, 15, i, '#a86a2a')
+    for y in range(2, 14):
+        for x in range(2, 14):
+            if (x + y) % 4 == 0 or (x - y) % 4 == 0:
+                dot(im, x, y, '#e2aa5e')
+            else:
+                dot(im, x, y, '#8e2330' if (x * 7 + y * 3) % 5 else '#6f1a25')
+    if cut:
+        fill(im, 8, 8, 16, 16, '#000000', 0)
+        for i in range(8, 16):
+            dot(im, i, 8, '#e2aa5e'); dot(im, 8, i, '#e2aa5e')
+    return im
+
+
+def crust():
+    im = new('#b77a35', 42221, 6)
+    for x in range(16):
+        dot(im, x, 0, '#e2aa5e'); dot(im, x, 1, '#c98b44')
+    return im
+
+
+def urn():
+    im = new('#b9bdbf', 42222, 3)
+    for y in range(16):
+        dot(im, 3, y, '#dfe2e4'); dot(im, 12, y, '#8f9396')
+    fill(im, 7, 3, 9, 11, '#2a1a10')  # the gauge glass, coffee in it
+    fill(im, 7, 3, 9, 5, '#d6cdbf')
+    fill(im, 5, 13, 11, 15, '#2b2b2b')
+    return im
+
+
+def menu():
+    im = black()
+    frame(im, '#6a4a2e')
+    text(im, 2, 2, 'PIE', '#f2efe6')
+    text(im, 2, 8, 'COF', '#f2efe6')
+    for x in range(2, 14, 2):
+        dot(im, x, 14, '#bdb9ae')
+    dot(im, 14, 3, '#d9c27a'); dot(im, 14, 9, '#d9c27a')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ the hardware counter
+def pegboard(taken):
+    im = new('#b48d5c', 42230, 4)
+    for y in range(1, 16, 3):
+        for x in range(1, 16, 3):
+            dot(im, x, y, '#7a5c37')
+    # A coil of rope.
+    for x, y in ((2, 2), (3, 1), (4, 1), (5, 2), (5, 3), (4, 4), (3, 4), (2, 3), (3, 2), (4, 3)):
+        dot(im, x, y, '#a07c45')
+    dot(im, 3, 3, '#6b5230'); dot(im, 4, 2, '#d1ad6a')
+    # Two flashlights; the second is taken when stage 1 is drawn.
+    for i, x in enumerate((9, 12)):
+        if taken and i == 1:
+            dot(im, x, 1, '#555555'); continue
+        dot(im, x, 1, '#555555'); fill(im, x - 1, 2, x + 1, 6, '#b8312a'); fill(im, x - 1, 6, x + 1, 7, '#d4d4cc')
+    # Batteries on a card.
+    fill(im, 2, 8, 7, 13, '#e6dfcf')
+    for x in (3, 5):
+        fill(im, x, 9, x + 1, 12, '#2c2c2c'); dot(im, x, 9, '#c58b2f')
+    # A pocketknife.
+    fill(im, 9, 10, 14, 11, '#9e2a22'); fill(im, 9, 9, 12, 10, '#d4d6d8')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ the gas station
+def pump_front():
+    im = new('#b32a26', 42240, 4)
+    fill(im, 3, 2, 13, 9, '#ece7da'); frame(im, '#7e1d1a', 3, 2, 13, 9)
+    text(im, 4, 3, '1', '#2a2a2a'); text(im, 8, 3, '9', '#2a2a2a')
+    fill(im, 5, 11, 11, 15, '#4a1513')
+    return im
+
+
+def pump_side():
+    im = new('#a8251f', 42241, 4)
+    fill(im, 6, 3, 10, 13, '#1e1e1e')  # the hose hangs in its holster
+    return im
+
+
+def pump_head():
+    im = new('#b32a26', 42242, 4)
+    fill(im, 2, 3, 14, 11, '#ece7da'); frame(im, '#7e1d1a', 2, 3, 14, 11)
+    text(im, 3, 5, '0', '#2a2a2a'); text(im, 7, 5, '9', '#2a2a2a'); text(im, 11, 5, '9', '#cc2222')
+    return im
+
+
+def globe():
+    # Milk glass with a red band round it.
+    im = new('#f1efe7', 42243, 3)
+    fill(im, 0, 6, 16, 10, '#c0302a'); fill(im, 0, 7, 16, 8, '#e05a4a')
+    return im
+
+
+def price():
+    im = new('#f0ece2', 42244, 3); frame(im, '#3a3a3a')
+    text(im, 2, 2, '1', '#c0302a'); text(im, 6, 2, '0', '#c0302a'); text(im, 10, 2, '9', '#c0302a')
+    text(im, 2, 9, '1', '#2a2a2a'); text(im, 6, 9, '1', '#2a2a2a'); text(im, 10, 9, '4', '#2a2a2a')
+    return im
+
+
+def payphone():
+    im = new('#b8bcbe', 42245, 3); frame(im, '#7a7e81')
+    fill(im, 2, 2, 7, 13, '#1f1f22')  # the handset in its cradle
+    dot(im, 3, 3, '#3a3a3e'); dot(im, 3, 12, '#3a3a3e')
+    for row in range(4):
+        for col in range(3):
+            dot(im, 9 + col * 2, 5 + row * 2, '#2d2d30')
+    fill(im, 9, 2, 14, 4, '#d9d3b8')  # the instruction card
+    return im
+
+
+def cooler_front():
+    # A plain red cooler, ICE stencilled on a white band; no maker's mark.
+    im = new('#b8312b', 42246, 4)
+    for x in range(16):
+        dot(im, x, 1, '#8b1e1a'); dot(im, x, 14, '#8b1e1a')
+    fill(im, 1, 4, 15, 11, '#f2ede2'); text(im, 3, 5, 'I', '#8b1e1a'); text(im, 7, 5, 'C', '#8b1e1a'); text(im, 11, 5, 'E', '#8b1e1a')
+    fill(im, 6, 12, 10, 13, '#d0d0d0')
+    return im
+
+
+def cooler_top():
+    im = new('#b52a24', 42247, 3)
+    fill(im, 5, 7, 11, 9, '#cfcfcf')
+    return im
+
+
+def candy():
+    im = new()
+    fill(im, 0, 0, 16, 16, '#6b6f72', 255)
+    rnd = random.Random(42248)
+    for row in range(4):
+        y = 1 + row * 4
+        fill(im, 1, y + 3, 15, y + 4, '#9ea2a5')
+        for x in range(1, 15, 2):
+            fill(im, x, y, x + 2, y + 3, rnd.choice(('#7b3f1e', '#d8b23a', '#c0302a', '#2f6fb3', '#3b8a3e', '#f0e6d2')))
+            dot(im, x + 1, y, '#e8e3d6')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ the antiques shop and the society
+def velvet():
+    return new('#5a1f2c', 42250, 4)
+
+
+def curios():
+    im = velvet()
+    # A pocket watch, two spoons, an arrowhead and a pair of spectacles on the velvet.
+    for x, y in ((3, 3), (4, 2), (5, 3), (4, 4)):
+        dot(im, x, y, '#d4b24c')
+    dot(im, 4, 3, '#f0e8c8')
+    for i in range(5):
+        dot(im, 9, 2 + i, '#c8cbcd'); dot(im, 12, 2 + i, '#c8cbcd')
+    dot(im, 9, 1, '#e3e5e6'); dot(im, 12, 1, '#e3e5e6')
+    for x, y in ((3, 11), (4, 10), (5, 11), (4, 12), (4, 11)):
+        dot(im, x, y, '#6e6a63')
+    for x in (9, 10, 12, 13):
+        dot(im, x, 11, '#2b2b2b')
+    dot(im, 11, 11, '#9a9a9a')
+    return im
+
+
+def helmet():
+    im = new('#3f4a3a', 42251, 4)
+    for x in range(16):
+        dot(im, x, 15, '#2e372b')
+    return im
+
+
+def lamp():
+    im = new('#a07a3c', 42252, 3)
+    fill(im, 4, 4, 12, 12, '#e8d9a0'); fill(im, 6, 6, 10, 10, '#fff6cf')
+    return im
+
+
+def mine_map():
+    im = new('#d9ccaa', 42253, 4); frame(im, '#4a321e')
+    for x, y in ((2, 13), (3, 12), (4, 11), (5, 11), (6, 10), (7, 9), (7, 8), (8, 7), (9, 6), (10, 5), (11, 4), (12, 3)):
+        dot(im, x, y, '#4a4237')
+    for x, y in ((5, 11), (5, 12), (5, 13), (9, 6), (10, 7), (11, 8), (12, 8)):
+        dot(im, x, y, '#4a4237')
+    dot(im, 12, 2, '#a3271f'); dot(im, 13, 3, '#a3271f'); dot(im, 13, 2, '#a3271f'); dot(im, 12, 3, '#a3271f')
+    return im
+
+
+def photos():
+    # Three framed photographs: two people on a porch, a man with a lamp on his hat, a row of children.
+    im = new('#6b4f37', 42254, 3)
+    for x0, y0, w, h in ((1, 1, 6, 6), (9, 1, 6, 6), (2, 9, 12, 6)):
+        fill(im, x0, y0, x0 + w, y0 + h, '#2c2118'); fill(im, x0 + 1, y0 + 1, x0 + w - 1, y0 + h - 1, '#c9b48e')
+    for x in (2, 4):
+        dot(im, x, 2, '#4a3a28'); fill(im, x, 3, x + 1, 6, '#5a4630')
+    dot(im, 11, 2, '#f0e0a0'); dot(im, 11, 3, '#4a3a28'); fill(im, 11, 4, 13, 6, '#5a4630'); dot(im, 10, 2, '#5a4630'); dot(im, 12, 2, '#5a4630')
+    for x in range(3, 13, 2):
+        dot(im, x, 11, '#4a3a28'); fill(im, x, 12, x + 1, 14, '#5a4630')
+    return im
+
+
+def clock():
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if d < 7.5:
+                im.putpixel((x, y), shade('#3e2a18' if d > 6.2 else '#efe8d6', 0))
+    for i in range(3, 8):
+        dot(im, 7, i, '#1d1d1d')
+    for i in range(8, 11):
+        dot(im, i, 8, '#1d1d1d')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ the doctor's office
+def scale_face():
+    im = enamel()
+    fill(im, 6, 0, 10, 16, '#dedcd5')
+    fill(im, 1, 1, 15, 3, '#2a2a2a')
+    for x in range(2, 14, 2):
+        dot(im, x, 2, '#c9c9c9')
+    return im
+
+
+def jar(low):
+    im = new()
+    fill(im, 0, 0, 16, 16, '#d8eef2', 50)
+    rnd = random.Random(42260)
+    top = 9 if low else 3
+    for y in range(top, 15, 2):
+        for x in range(1, 15, 2):
+            if rnd.random() < .85:
+                c = rnd.choice(('#d6402f', '#f2a43a', '#5ab04e', '#8a55c4', '#e86fa6', '#f4e04a'))
+                fill(im, x, y, x + 2, y + 2, c)
+                dot(im, x + 1, y + 2, '#f3efe6')
+    frame(im, '#eaf6f8')
+    return im
+
+
+def cards():
+    im = new('#b88d58', 42261, 5); frame(im, '#6b4a2a')
+    rnd = random.Random(42262)
+    for row in range(3):
+        for col in range(3):
+            x, y = 1 + col * 5, 1 + row * 5
+            fill(im, x, y, x + 4, y + 4, rnd.choice(('#f3c6d2', '#bcd6f2', '#f3c6d2', '#bcd6f2', '#f3ecd0')))
+            dot(im, x + 1, y + 1, '#8a8a8a'); dot(im, x + 2, y + 2, '#a0a0a0')
+            dot(im, x + 2, y, '#c0302a')
+    return im
+
+
+def exam_top():
+    im = new('#6f8a72', 42263, 4)
+    fill(im, 4, 0, 12, 16, '#f1efe8')
+    return im
+
+
+def exam_side():
+    im = new('#6f8a72', 42264, 4)
+    fill(im, 0, 12, 16, 16, '#b9bdbf')
+    return im
+
+
+def chart():
+    im = new('#f4f2ec', 42265, 2); frame(im, '#9a9a9a')
+    text(im, 6, 1, 'E', '#1d1d1d')
+    for x in (4, 9):
+        text(im, x, 7, 'F' if x == 4 else 'P', '#1d1d1d')
+    for x in range(2, 14, 2):
+        dot(im, x, 13, '#1d1d1d')
+    return im
+
+
+# ------------------------------------------------------------------------------------------------ the drugstore
+def fountain():
+    im = chrome()
+    for x in (3, 7, 11):
+        fill(im, x, 1, x + 2, 6, '#2b2b2b'); dot(im, x, 1, '#c0302a')
+    fill(im, 0, 12, 16, 16, '#d8d4c8')
+    return im
+
+
+def meds():
+    im = wood(); rnd = random.Random(42270)
+    for row in range(3):
+        y = 1 + row * 5
+        fill(im, 0, y + 4, 16, y + 5, '#3b2817')
+        x = 1
+        while x < 14:
+            w = rnd.choice((2, 2, 3))
+            c = rnd.choice(('#a35a1f', '#f1ede4', '#7aa0c4', '#a35a1f', '#d8c87a'))
+            fill(im, x, y + 1, x + w, y + 4, c); dot(im, x, y, '#f1ede4')
+            x += w + 1
+    return im
+
+
+def rack():
+    im = new('#6b6f72', 42271, 3); rnd = random.Random(42272)
+    for row in range(3):
+        for col in range(3):
+            x, y = 1 + col * 5, 1 + row * 5
+            c = rnd.choice(('#d6402f', '#2f6fb3', '#f4d03a', '#3b8a3e', '#8a55c4'))
+            fill(im, x, y, x + 4, y + 4, c); fill(im, x, y, x + 4, y + 1, '#f2ede2')
+    return im
+
+
+def open_sign():
+    im = new('#1b1b20', 42273, 2)
+    text(im, 1, 5, 'O', '#ff4a3a'); text(im, 5, 5, 'P', '#ff4a3a'); text(im, 9, 5, 'E', '#ff4a3a'); text(im, 13, 5, 'N', '#ff4a3a', 3)
+    return im
+
+
+def textures():
+    out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
+    faces = {
+        'wood': wood(), 'chrome': chrome(), 'glass': glass(), 'enamel': enamel(), 'black': black(),
+        'pie': pie(False), 'pie_cut': pie(True), 'crust': crust(), 'urn': urn(), 'menu': menu(),
+        'pegboard': pegboard(False), 'pegboard_taken': pegboard(True),
+        'pump_front': pump_front(), 'pump_side': pump_side(), 'pump_head': pump_head(), 'globe': globe(), 'price': price(),
+        'payphone': payphone(), 'cooler_front': cooler_front(), 'cooler_top': cooler_top(), 'candy': candy(),
+        'velvet': velvet(), 'curios': curios(), 'helmet': helmet(), 'lamp': lamp(), 'map': mine_map(), 'photos': photos(), 'clock': clock(),
+        'scale': scale_face(), 'jar': jar(False), 'jar_low': jar(True), 'cards': cards(), 'exam_top': exam_top(), 'exam_side': exam_side(),
+        'chart': chart(), 'fountain': fountain(), 'meds': meds(), 'rack': rack(), 'open': open_sign(),
+    }
+    for name, im in faces.items():
+        out[f'block/borrasca_shop/{name}.png'] = im
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ models
+def element(lo, hi, textures, uv=None, rot=None):
+    faces = {}
+    keys = ['north', 'south', 'east', 'west', 'up', 'down']
+    if 'all' in textures:
+        textures = {**{k: textures['all'] for k in keys}, **{k: v for k, v in textures.items() if k != 'all'}}
+    for k in keys:
+        if k in textures:
+            face = {'texture': '#' + textures[k]}
+            if uv and k in uv:
+                face['uv'] = uv[k]
+            faces[k] = face
+    e = {'from': lo, 'to': hi, 'faces': faces}
+    if rot:
+        e['rotation'] = rot
+    return e
+
+
+def model(elements, textures, particle, translucent=False):
+    return {'ambientocclusion': False, 'render_type': 'minecraft:translucent' if translucent else 'minecraft:cutout',
+            'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
+
+
+def wall(face, frame_tex='wood', inset=1):
+    """A board on the wall behind it: a thin frame and the face, looking north."""
+    return model([element([0, 0, 14.5], [16, 16, 16], {'all': 'f'}),
+                  element([inset, inset, 14.4], [16 - inset, 16 - inset, 14.5], {'north': 'b'}, {'north': [inset, inset, 16 - inset, 16 - inset]})],
+                 {'f': frame_tex, 'b': face}, face)
+
+
+def shop_models():
+    m = {}
+    for stage, top in ((0, 'pie'), (1, 'pie_cut')):
+        pies = [element([3, 1, 4], [7, 3, 8], {'all': 'c', 'up': 'p'}), element([9, 1, 4], [13, 3, 8], {'all': 'c', 'up': 'p'}),
+                element([6, 1, 9], [10, 3, 13], {'all': 'c', 'up': 'q'})]
+        m[f'pie_case_{stage}'] = model([element([1, 0, 2], [15, 1, 14], {'all': 'w'}), *pies,
+                                        element([1, 1, 2], [15, 9, 14], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g'})],
+                                       {'w': 'chrome', 'c': 'crust', 'p': 'pie', 'q': top, 'g': 'glass'}, 'glass', True)
+    m['urn_0'] = model([element([4, 0, 4], [12, 12, 12], {'all': 'u', 'up': 'k'}), element([6, 12, 6], [10, 13, 10], {'all': 'k'}),
+                        element([7, 3, 2], [9, 5, 4], {'all': 'k'})], {'u': 'urn', 'k': 'black'}, 'urn')
+    m['menu_0'] = wall('menu')
+    for stage, face in ((0, 'pegboard'), (1, 'pegboard_taken')):
+        m[f'pegboard_{stage}'] = model([element([0, 0, 15], [16, 16, 16], {'all': 'b', 'north': 'p'})], {'b': 'wood', 'p': face}, face)
+    m['pump_0'] = model([element([2, 0, 4], [14, 16, 13], {'all': 's', 'north': 'f', 'south': 'f'}),
+                         element([14, 6, 7], [15, 12, 10], {'all': 'k'})], {'s': 'pump_side', 'f': 'pump_front', 'k': 'black'}, 'pump_front')
+    m['pump_top_0'] = model([element([2, 0, 4], [14, 7, 13], {'all': 's', 'north': 'h', 'south': 'h'}),
+                             element([5, 7, 6], [11, 11, 11], {'all': 'g'})], {'s': 'pump_side', 'h': 'pump_head', 'g': 'globe'}, 'pump_head')
+    m['price_0'] = wall('price', 'chrome')
+    m['payphone_0'] = model([element([3, 1, 11], [13, 16, 16], {'all': 'c', 'north': 'p'}), element([2, 15, 10], [14, 16, 16], {'all': 'c'})],
+                            {'c': 'chrome', 'p': 'payphone'}, 'payphone')
+    m['cooler_0'] = model([element([1, 0, 2], [15, 12, 15], {'all': 'f', 'up': 't'}), element([1, 12, 2], [15, 13, 15], {'all': 't'})],
+                          {'f': 'cooler_front', 't': 'cooler_top'}, 'cooler_front')
+    m['candy_0'] = model([element([2, 0, 7], [14, 15, 8], {'all': 'c'}), element([2, 0, 3], [3, 15, 13], {'all': 'k'}),
+                          element([13, 0, 3], [14, 15, 13], {'all': 'k'})], {'c': 'candy', 'k': 'chrome'}, 'candy')
+    m['case_0'] = model([element([0, 0, 0], [16, 8, 16], {'all': 'w'}), element([1, 8, 1], [15, 8.2, 15], {'up': 'v'}),
+                         element([0, 8, 0], [16, 14, 16], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g'})],
+                        {'w': 'wood', 'v': 'curios', 'g': 'glass'}, 'glass', True)
+    m['helmet_0'] = model([element([6, 0, 6], [10, 4, 10], {'all': 'w'}), element([4, 4, 4], [12, 8, 12], {'all': 'h'}),
+                           element([3, 4, 3], [13, 5, 13], {'all': 'h'}), element([6, 5, 2.5], [10, 8, 4], {'all': 'l'})],
+                          {'w': 'wood', 'h': 'helmet', 'l': 'lamp'}, 'helmet')
+    m['map_0'] = wall('map')
+    m['photos_0'] = model([element([0, 0, 15.5], [16, 16, 16], {'north': 'p'})], {'p': 'photos'}, 'photos')
+    m['clock_0'] = model([element([4, 4, 14.5], [12, 12, 16], {'north': 'c', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'},
+                                  {'north': [0, 0, 16, 16]})], {'c': 'clock', 'w': 'wood'}, 'clock')
+    m['scale_0'] = model([element([3, 0, 3], [13, 2, 13], {'all': 'k'}), element([7, 2, 7], [9, 14, 9], {'all': 'e'}),
+                          element([3, 13, 7.5], [13, 15, 8.5], {'all': 's'})], {'k': 'black', 'e': 'enamel', 's': 'scale'}, 'scale')
+    for stage, face in ((0, 'jar'), (1, 'jar_low')):
+        m[f'jar_{stage}'] = model([element([5, 0, 5], [11, 8, 11], {'north': 'j', 'south': 'j', 'east': 'j', 'west': 'j', 'down': 'j'}),
+                                   element([5.5, 8, 5.5], [10.5, 9, 10.5], {'all': 'c'})], {'j': face, 'c': 'chrome'}, face, True)
+    m['cards_0'] = wall('cards')
+    m['exam_0'] = model([element([0, 6, 2], [16, 10, 14], {'all': 's', 'up': 't'}), element([1, 0, 3], [3, 6, 5], {'all': 'c'}),
+                         element([13, 0, 3], [15, 6, 5], {'all': 'c'}), element([1, 0, 11], [3, 6, 13], {'all': 'c'}),
+                         element([13, 0, 11], [15, 6, 13], {'all': 'c'})], {'s': 'exam_side', 't': 'exam_top', 'c': 'chrome'}, 'exam_top')
+    m['chart_0'] = wall('chart', 'enamel', 0)
+    m['fountain_0'] = model([element([2, 0, 6], [14, 3, 12], {'all': 'c'}), element([3, 3, 8], [13, 10, 10], {'all': 'c', 'north': 'f'})],
+                            {'c': 'chrome', 'f': 'fountain'}, 'fountain')
+    m['meds_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'w', 'north': 'm'})], {'w': 'wood', 'm': 'meds'}, 'meds')
+    m['rack_0'] = model([element([7, 0, 7], [9, 15, 9], {'all': 'c'}),
+                         element([3, 2, 3], [13, 15, 13], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'})], {'c': 'chrome', 'r': 'rack'}, 'rack')
+    m['open_0'] = model([element([2, 4, 14.5], [14, 11, 16], {'all': 'b', 'north': 'o'}, {'north': [1, 2, 15, 12]})], {'b': 'black', 'o': 'open'}, 'open')
+    return m
+
+
+KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
+         'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2}
+FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
+NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
+
+
+def files():
+    out = {}
+    for name in ('checker', 'lino', 'tin'):
+        out[f'models/block/borrasca_{name}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + f'block/borrasca_{name}'}}
+        out[f'blockstates/borrasca_{name}.json'] = {'variants': {'': {'model': NS + f'block/borrasca_{name}'}}}
+    for key, obj in shop_models().items():
+        out[f'models/block/borrasca_shop/{key}.json'] = obj
+    variants = {}
+    for kind in KINDS:
+        for facing, y in FACING_Y.items():
+            for stage in range(2):
+                drawn = stage if stage < STAGES.get(kind, 1) else 0
+                v = {'model': NS + f'block/borrasca_shop/{kind}_{drawn}'}
+                if y:
+                    v['y'] = y
+                variants[f'facing={facing},kind={kind},stage={stage}'] = v
+    out['blockstates/borrasca_shop.json'] = {'variants': variants}
+    return out
+
+
+def main():
+    check = argparse.ArgumentParser()
+    check.add_argument('--check', action='store_true')
+    check = check.parse_args().check
+    images, data = textures(), files()
+    models = shop_models()
+    for kind in KINDS:
+        for stage in range(STAGES.get(kind, 1)):
+            assert f'{kind}_{stage}' in models, (kind, stage)
+    for key, obj in models.items():
+        for tex in obj['textures'].values():
+            assert f'block/borrasca_shop/{tex.split("borrasca_shop/")[1]}.png' in images, (key, tex)
+    for rel, im in images.items():
+        path = A / 'textures' / rel
+        if check:
+            with Image.open(path) as actual:
+                assert actual.convert('RGBA').tobytes() == im.tobytes(), rel
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True); im.save(path, optimize=True)
+    for rel, obj in data.items():
+        path = A / rel
+        if check:
+            assert json.loads(path.read_text()) == obj, rel
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+    lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
+    wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
+    for key, name in wanted.items():
+        if check:
+            assert lang.get(key) == name, key
+        else:
+            lang[key] = name
+    if not check:
+        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+    print(('Verified' if check else 'Drew') + f" Drisking's shops: {len(images)} textures, {len(data)} models and states.")
+
+
+if __name__ == '__main__':
+    main()

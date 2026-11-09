@@ -113,8 +113,7 @@ final class BorrascaTown {
         for(int z=-27;z<=-19;z++){if(z==-23)continue;set(l,b,-24,0,z,Blocks.BARREL);set(l,b,-24,1,z,z%2==0?Blocks.BARREL.defaultBlockState():Blocks.HAY_BLOCK.defaultBlockState());set(l,b,-21,0,z,z%3==0?Blocks.DRIED_KELP_BLOCK:Blocks.HAY_BLOCK);set(l,b,-21,1,z,z%2==0?Blocks.COMPOSTER:Blocks.BARREL);}
         for(int x=-27;x<=-23;x++){set(l,b,x,0,-29,Blocks.WHITE_CONCRETE);set(l,b,x,1,-29,Blocks.LIGHT_BLUE_STAINED_GLASS);set(l,b,x,2,-29,Blocks.WHITE_CONCRETE);}
         road(l,b,-17,1,-20,RoadhouseBlock.Kind.CORKBOARD,Direction.WEST);
-        // 0.4.419: the town's history in a frame, high on the south wall between its windows.
-        fitAt(l,b,BorrascaRooms.HISTORY,BorrascaFittingBlock.Kind.NOTICE,Direction.NORTH);
+        // 0.4.422: the town's history hangs in the historical society now (BorrascaShops); the hardware pegboard is here instead.
         for(int z:new int[]{-26,-20})set(l,b,-22,4,z,hanging());set(l,b,-18,4,-23,hanging());
         set(l,b,-27,0,-17,Blocks.POTTED_DEAD_BUSH);set(l,b,-27,0,-18,Blocks.CAULDRON);
         BorrascaRooms.join(l,b,-29,1,-31,-12,3,-15);

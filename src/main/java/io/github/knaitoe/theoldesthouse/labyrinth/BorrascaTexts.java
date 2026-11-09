@@ -119,7 +119,7 @@ public final class BorrascaTexts {
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
-            +(own.getBoolean("Read_History")?" A framed page in the store said what Borrasca meant: the first mine to give out, the one that gives nothing back. The town's water had run red for two years, and after that the town grew every year.":"")
+            +(own.getBoolean("Read_History")?" A framed page at the historical society said what Borrasca meant: the first mine to give out, the one that gives nothing back. The town's water had run red for two years, and after that the town grew every year.":"")
             +(own.getBoolean("Read_WrenPoster")?" Brandi had gone looking for Cody. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Brandi walked Cody's bike back to his mom.":"")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")

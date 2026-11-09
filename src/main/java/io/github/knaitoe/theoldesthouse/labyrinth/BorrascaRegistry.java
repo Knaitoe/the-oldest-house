@@ -21,6 +21,13 @@ public final class BorrascaRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaFittingBlock>> FITTING_TYPE=CODECS.register("borrasca_fitting",()->BorrascaFittingBlock.CODEC);
     public static final DeferredBlock<BorrascaFittingBlock> FITTING=BLOCKS.registerBlock("borrasca_fitting",BorrascaFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable().lightLevel(s->s.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.LAMP?13:0));
+    /** 0.4.422: the shops' fittings (BorrascaShopBlock) and three of their surfaces, drawn by tools/draw_borrasca_town_art.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaShopBlock>> SHOP_TYPE=CODECS.register("borrasca_shop",()->BorrascaShopBlock.CODEC);
+    public static final DeferredBlock<BorrascaShopBlock> SHOP=BLOCKS.registerBlock("borrasca_shop",BorrascaShopBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable().lightLevel(BorrascaShopBlock::light));
+    /** The diner's black and white floor, the doctor's and the drugstore's linoleum, the antiques shop's pressed tin ceiling. */
+    public static final DeferredBlock<Block> CHECKER=BLOCKS.registerSimpleBlock("borrasca_checker",BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).strength(-1,3600000).noLootTable());
+    public static final DeferredBlock<Block> LINO=BLOCKS.registerSimpleBlock("borrasca_lino",BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).strength(-1,3600000).noLootTable());
+    public static final DeferredBlock<Block> TIN=BLOCKS.registerSimpleBlock("borrasca_tin",BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(-1,3600000).noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaMachineBlock>> MACHINE_TYPE=CODECS.register("borrasca_machine",()->BorrascaMachineBlock.CODEC);
     public static final DeferredBlock<BorrascaMachineBlock> MACHINE=BLOCKS.registerBlock("borrasca_machine",BorrascaMachineBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(-1,3600000).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BorrascaMachineBlock.Machine>> MACHINE_ENTITY=BES.register("borrasca_machine",()->BlockEntityType.Builder.of(BorrascaMachineBlock.Machine::new,MACHINE.get()).build(null));

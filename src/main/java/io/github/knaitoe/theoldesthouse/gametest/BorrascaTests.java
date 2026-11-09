@@ -47,6 +47,8 @@ public final class BorrascaTests {
         /** 0.4.420: where an entity stands on the hill, in authored coordinates. */
         Vec3 rel(Entity e,ServerPlayer p){return BorrascaRooms.rel(e,base(p));}
         void click(ServerPlayer p,BlockPos rel){var at=BorrascaRooms.at(base(p),rel);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));}
+        /** 0.4.422: a click on a block given in the world (the street past the chapel has no authored coordinates). */
+        void clickWorld(ServerPlayer p,BlockPos w){var at=base(p).offset(w);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));}
         void use(ServerPlayer p,BlockPos rel){at(p,rel.getX()-1,rel.getY(),rel.getZ()+1);look(p,rel);click(p,rel);}
         void read(ServerPlayer p,BlockPos rel,boolean take){use(p,rel);h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"native paper opens at "+rel);var menu=(LiteraryVignettes.Pages)p.containerMenu;var content=menu.original().get(DataComponents.WRITTEN_BOOK_CONTENT);h.assertTrue(menu.clickMenuButton(p,100+content.pages().size()-1),"native last page opens");if(take){h.assertTrue(menu.clickMenuButton(p,3),"the real original is taken");h.assertTrue(!menu.clickMenuButton(p,3),"it cannot be taken twice");}p.closeContainer();}
         LiteraryActor actor(ServerPlayer p,String key){var t=own(p);return t.hasUUID(key)&&out.getEntity(t.getUUID(key)) instanceof LiteraryActor a?a:null;}
@@ -470,6 +472,7 @@ public final class BorrascaTests {
     }
     private static AABB wbox(BlockPos b,double x0,double y0,double z0,double x1,double y1,double z1){var a=BorrascaRooms.world(new Vec3(x0,y0,z0)).add(Vec3.atLowerCornerOf(b));var c=BorrascaRooms.world(new Vec3(x1,y1,z1)).add(Vec3.atLowerCornerOf(b));return new AABB(a,c);}
     private static boolean clear(Fixture f,ServerPlayer p,BlockPos b,int x,int y,int z){var w=BorrascaRooms.at(b,x,y,z);return f.out.noCollision(p,new AABB(w.getX()+.2,w.getY()+.1,w.getZ()+.2,w.getX()+.8,w.getY()+1.8,w.getZ()+.8));}
+    private static ItemStack openedWorld(Fixture f,ServerPlayer p,BlockPos w,String what){f.clickWorld(p,w);f.h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,what+" opens as native pages at "+w);var book=((LiteraryVignettes.Pages)p.containerMenu).original();p.closeContainer();return book;}
     private static ItemStack opened(Fixture f,ServerPlayer p,BlockPos rel,String what){f.click(p,rel);f.h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,what+" opens as native pages at "+rel);var book=((LiteraryVignettes.Pages)p.containerMenu).original();p.closeContainer();return book;}
     private static String text(ItemStack book){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);}
     /** Page breaks fall between words and take the space with them, and a child's hand swaps letters for drawn ones, so phrases are compared in plain letters without spaces. */
@@ -495,17 +498,27 @@ public final class BorrascaTests {
             f.at(p,-1,6,-96);var notes=opened(f,p,BorrascaRooms.NOTES,"the friend's notes");h.assertTrue(title(notes).equals(BorrascaStory.FRIEND+"'s notes"),"her notes are pinned in the fort");
             // 0.4.419: her notes keep the tag rhyme, and the store's history hangs too high for a child.
             h.assertTrue(flat(text(notes)).contains(flat("three trunks meet")),"her notes keep the tag rhyme");
-            f.at(p,-22,0,-19);f.click(p,BorrascaRooms.HISTORY);h.assertFalse(p.containerMenu instanceof LiteraryVignettes.Pages,"the store's framed history is out of a child's reach");
+            // 0.4.422: the street past the chapel has its shops, and the frame hangs in the historical society, still too high for a child.
+            f.atWorld(p,new BlockPos(-17,0,-97));f.clickWorld(p,BorrascaShops.HISTORY);h.assertFalse(p.containerMenu instanceof LiteraryVignettes.Pages,"the society's framed history is out of a child's reach");
+            h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(BorrascaShops.PUMPS[0])),BorrascaShopBlock.Kind.PUMP)&&BorrascaShopBlock.is(f.out.getBlockState(b.offset(BorrascaShops.PIE_CASE)),BorrascaShopBlock.Kind.PIE_CASE)&&f.out.getBlockState(b.offset(BorrascaShops.POOL)).is(BarRegistry.POOL_TABLE.get()),"the station has its pumps, the diner its pies, the bar its pool table");
+            for(var door:new BlockPos[]{BorrascaShops.DINER_DOOR,BorrascaShops.ANTIQUES_DOOR,BorrascaShops.SOCIETY_DOOR,BorrascaShops.STATION_DOOR,BorrascaShops.DOCTOR_DOOR,BorrascaShops.DRUG_DOOR,BorrascaShops.BAR_DOOR})h.assertTrue(f.out.getBlockState(b.offset(door)).getBlock() instanceof DoorBlock,"a real door at "+door);
+            for(int z=-76;z>=-132;z-=4)h.assertTrue(BorrascaLand.groundAt(-12,z)==0&&BorrascaLand.groundAt(12,z)==0,"the street past the chapel is level, the way down ending at the trailhead, at z "+z);
+            f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the diner's menu"))).contains(flat("Coffee .50")),"the childhood menu has its early prices");
+            f.atWorld(p,new BlockPos(10,0,-86));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the doctor's corkboard"))).contains(flat("1992")),"the doctor's cards are a few weeks apart in the childhood year");
+            f.atWorld(p,new BlockPos(-17,0,-101));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MAP,"the map of the old workings"))).contains(flat("DEPOT")),"the old map puts the depot over the first shaft");
+            f.atWorld(p,new BlockPos(-22,0,-19));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.PEGBOARD[0],"the hardware pegboard"))).contains(flat("Flashlight 4.99")),"the store's hardware counter has its price card");
             f.stage(p,3);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult cast recalled")).thenExecute(()->{
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("SHELBY")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");
             f.at(p,-1,6,-96);h.assertTrue(title(opened(f,p,BorrascaRooms.NOTES,"the aged notes")).contains("water-stained"),"her notes are still there, damp through");
+            f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the later menu"))).contains(flat("Coffee 1.25")),"years later the menu's prices have gone up");
+            f.atWorld(p,new BlockPos(10,0,-86));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the later corkboard"))).contains(flat("2009")),"the corkboard holds a later year's cards");
             f.stage(p,4);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled")).thenExecute(()->{
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[1],"the last noticeboard");h.assertTrue(text(board).contains("KAYLA"),"the last night's board has a new poster: visit "+f.own(p).getInt("Visit")+", "+title(board)+": "+text(board));
             var own=f.own(p);h.assertTrue(own.contains("Original_Board")&&own.contains("Original_Board3")&&own.contains("Original_Board4")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA),"each visit's board is its own original, and reading confers nothing");
             // 0.4.419: grown, the reader can read the frame: what the word means and what the town owes the Prescotts.
-            f.at(p,-22,0,-19);var history=opened(f,p,BorrascaRooms.HISTORY,"the store's framed history");h.assertTrue(flat(text(history)).contains(flat("borrasca"))&&flat(text(history)).contains(flat("gives nothing back"))&&flat(text(history)).contains(flat("Prescotts stayed")),"the frame says what borrasca means and who brought the town back");
+            f.atWorld(p,new BlockPos(-17,0,-97));var history=openedWorld(f,p,BorrascaShops.HISTORY,"the society's framed history");h.assertTrue(flat(text(history)).contains(flat("borrasca"))&&flat(text(history)).contains(flat("gives nothing back"))&&flat(text(history)).contains(flat("Prescotts stayed")),"the frame says what borrasca means and who brought the town back");
             var read=new net.minecraft.nbt.CompoundTag();read.putBoolean("Read_History",true);h.assertTrue(BorrascaTexts.account(read).contains("gives nothing back")&&!BorrascaTexts.account().contains("gives nothing back"),"the account keeps the word only for a reader who read the frame");
 
         }).thenSucceed();
