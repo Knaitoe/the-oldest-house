@@ -29,7 +29,7 @@ public final class GhostsPlaytestTests {
 
     @GameTest(template="empty",batch="ghosts_camera_words318",timeoutTicks=1800)
     public static void actualCameraUseLeavesFamilySpeechReadableAndItsHistoryPrivate(GameTestHelper h){
-        var f=fixture(h);var p=f.player("camera_words",P);var peer=f.player("camera_peer",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));ItemStack[] camera={ItemStack.EMPTY};
+        var f=fixture(h);var p=f.player("camera_words",P);var peer=f.player("camera_peer",P);GhostsSetTests.lead(f,p,peer);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));ItemStack[] camera={ItemStack.EMPTY};
         h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the original family is resident"))
             .thenExecute(()->{
                 var merry=actor(f,p,LiteraryActor.GHOST_MERRY);int slot=-1;for(int i=0;i<p.getInventory().items.size();i++)if(p.getInventory().items.get(i).is(LiteraryRegistry.CAMCORDER.get()))slot=i;
@@ -79,7 +79,7 @@ public final class GhostsPlaytestTests {
     @AfterBatch(batch="ghosts_scene_history318") public static void sceneHistoryDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="ghosts_scene_history318",timeoutTicks=1800)
     public static void heardSceneDialogueIsKeptButAnAbsentPeerGetsNoTranscript(GameTestHelper h){
-        var f=fixture(h);var p=f.player("scene_hearer",P);var peer=f.player("absent_hearer",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
+        var f=fixture(h);var p=f.player("scene_hearer",P);var peer=f.player("absent_hearer",P);GhostsSetTests.lead(f,p,peer);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
         h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the scene's original speakers are resident")).thenExecute(()->{
             f.at(peer,P,0,0,40);scene(f,p,2,95);f.at(p,P,-4,0,-15);NativeTestPlayers.messages(p);
             var own=f.own(p,P);GhostsSet.reader(p,b,own);save(f,p,own);

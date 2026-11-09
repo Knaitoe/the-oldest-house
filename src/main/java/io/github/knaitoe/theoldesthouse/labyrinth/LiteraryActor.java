@@ -140,7 +140,11 @@ public final class LiteraryActor extends PathfinderMob {
         // overlapping cast must not remain on this client and intercept its entity pick.
         boolean sharedCopy=scene.equals(LabyrinthPlace.FAMILY_COPY.id())||scene.equals(LabyrinthPlace.OLD_CABIN.id());
         // 0.4.156: the lake house's figure is also seen by the reader who goes down in Tess's place with its reader.
-        if(owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID())&&!(role()==LAKE_WAX&&LakeHousePairs.sharesWith(p,owner().get())))return false;
+        // 0.4.404: the Ghosts set's cast is seen by the reader whose take it is and by their second cameras (GhostsCrew); a second camera's
+        // own cast is out of their sight while they crew.
+        boolean ghosts=GhostsCrew.castRole(role())&&owner().isPresent();
+        if(ghosts&&!owner().get().equals(GhostsCrew.castOf(p.getUUID())))return false;
+        if(!ghosts&&owner().isPresent()&&!sharedCopy&&!owner().get().equals(p.getUUID())&&!(role()==LAKE_WAX&&LakeHousePairs.sharesWith(p,owner().get())))return false;
         // 0.4.147: a thread's cast is seen by that thread's members alone.
         if(getPersistentData().contains(VignetteThreads.ACTOR_TAG)&&!VignetteThreads.sees(p,scene,getPersistentData().getString(VignetteThreads.ACTOR_TAG)))return false;
         // 0.4.183: Usher's Roderick is not there for a reader who has seen the house fall, and Madeline at the doors is that night's alone.

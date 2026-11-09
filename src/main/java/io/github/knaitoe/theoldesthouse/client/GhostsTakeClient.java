@@ -25,8 +25,14 @@ public final class GhostsTakeClient {
     private static volatile int lease,day;private static boolean johnHurt;private static BlockPos base;private static CompoundTag pendingFreeze;
     private static int voiceId=-1,voiceTicks,voiceAge,shake;private static boolean privacyPull,effigy,jar;private static String words="";
     private static final java.util.WeakHashMap<LiteraryActor,Float> heldAges=new java.util.WeakHashMap<>();
+    /** 0.4.404: whose cast this reader sees on the set, theirs or the lead's while they are a second camera (GhostsCrew). */
+    private static java.util.UUID castOwner;
     private GhostsTakeClient(){}
     public static int day(){return lease>0&&Minecraft.getInstance().level==world?day:0;}
+    /** Whose Ghosts set cast this reader sees: the lead's while they crew on the set, otherwise their own. */
+    public static java.util.UUID cast(java.util.UUID self){return lease>0&&Minecraft.getInstance().level==world&&castOwner!=null?castOwner:self;}
+    /** Whether this reader sees this Ghosts set body: their own cast, or their lead's while they crew. */
+    public static boolean sees(LiteraryActor a,java.util.UUID self){return a.owner().isPresent()&&a.owner().get().equals(cast(self));}
     /** Whether John's hand is cut in this reader's take: after the cut on day 2 and every day after (0.4.329). */
     public static boolean johnHurt(){return lease>0&&Minecraft.getInstance().level==world&&johnHurt;}
     public static boolean onSet(){var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!mc.level.dimension().equals(io.github.knaitoe.theoldesthouse.house.HouseDimensions.INTERIOR))return false;if(lease>0&&world==mc.level&&base!=null&&io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(base,LabyrinthPlace.GHOSTS_SET).contains(mc.player.position()))return true;return HouseSightlineState.hasOrigin()&&LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==LabyrinthPlace.GHOSTS_SET;}
@@ -39,24 +45,24 @@ public final class GhostsTakeClient {
     }
     @SubscribeEvent public static void music(net.neoforged.neoforge.client.event.sound.PlaySoundEvent e){if(onSet()&&e.getSound()!=null&&e.getSound().getSource()==net.minecraft.sounds.SoundSource.MUSIC&&e.getSound().getLocation().getNamespace().equals("minecraft"))e.setSound(null);}
     public static boolean frozen(){return marker!=null&&lease>0&&Minecraft.getInstance().level==world;}
-    public static float poseAge(LiteraryActor actor,float age){if(!frozen()||Minecraft.getInstance().player==null||actor.owner().filter(Minecraft.getInstance().player.getUUID()::equals).isEmpty()){heldAges.remove(actor);return age;}return heldAges.computeIfAbsent(actor,a->age);}
+    public static float poseAge(LiteraryActor actor,float age){if(!frozen()||Minecraft.getInstance().player==null||!sees(actor,Minecraft.getInstance().player.getUUID())){heldAges.remove(actor);return age;}return heldAges.computeIfAbsent(actor,a->age);}
     public static void accept(CompoundTag take){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!take.hasUUID("Reader")||!take.getUUID("Reader").equals(mc.player.getUUID())||!take.contains("GhostDay"))return;
-        if(world!=null&&world!=mc.level)clear();int previous=day;world=mc.level;day=Math.max(1,Math.min(7,take.getInt("GhostDay")));lease=20;base=BlockPos.of(take.getLong("GhostBase"));if(previous!=day){dirtyMeals();voiceId=-1;voiceTicks=0;words="";}
+        if(world!=null&&world!=mc.level)clear();int previous=day;world=mc.level;day=Math.max(1,Math.min(7,take.getInt("GhostDay")));lease=20;castOwner=take.hasUUID("GhostCast")?take.getUUID("GhostCast"):null;base=BlockPos.of(take.getLong("GhostBase"));if(previous!=day){dirtyMeals();voiceId=-1;voiceTicks=0;words="";}
         if(take.getInt("GhostVoiceRemaining")>0&&take.getInt("GhostVoiceId")!=voiceId){voiceId=take.getInt("GhostVoiceId");words=take.getString("GhostVoice");voiceTicks=Math.min(140,take.getInt("GhostVoiceRemaining"));voiceAge=0;}
         shake=take.getInt("GhostShake");johnHurt=take.getBoolean("JohnHurt");privacyPull=take.getBoolean("GhostPrivacyPull");effigy=take.getBoolean("GhostEffigy");jar=take.getBoolean("GhostJar");
         pendingFreeze=take.getBoolean("GhostFreeze")?take.copy():null;if(pendingFreeze==null)restore();else applyFreeze();
     }
     private static void applyFreeze(){
         var mc=Minecraft.getInstance();var take=pendingFreeze;if(take==null||mc.level==null||mc.player==null)return;var target=mc.level.getEntity(take.getInt("GhostFreezeTarget"));
-        if(target instanceof LiteraryActor actor&&actor.role()==LiteraryActor.GHOST_MARJORIE&&actor.owner().filter(mc.player.getUUID()::equals).isPresent()&&actor.phase()==io.github.knaitoe.theoldesthouse.labyrinth.GhostsSet.LEAP&&(!take.contains("GhostActorX")||actor.position().distanceToSqr(new net.minecraft.world.phys.Vec3(take.getDouble("GhostActorX"),take.getDouble("GhostActorY"),take.getDouble("GhostActorZ")))<.0001)){
+        if(target instanceof LiteraryActor actor&&actor.role()==LiteraryActor.GHOST_MARJORIE&&sees(actor,mc.player.getUUID())&&actor.phase()==io.github.knaitoe.theoldesthouse.labyrinth.GhostsSet.LEAP&&(!take.contains("GhostActorX")||actor.position().distanceToSqr(new net.minecraft.world.phys.Vec3(take.getDouble("GhostActorX"),take.getDouble("GhostActorY"),take.getDouble("GhostActorZ")))<.0001)){
             if(marker==null){marker=EntityType.MARKER.create(mc.level);if(marker==null)return;oldCamera=mc.options.getCameraType();mc.options.setCameraType(CameraType.FIRST_PERSON);}
             marker.moveTo(take.getDouble("GhostEyeX"),take.getDouble("GhostEyeY"),take.getDouble("GhostEyeZ"),take.getFloat("GhostYaw"),take.getFloat("GhostPitch"));marker.setOldPosAndRot();mc.setCameraEntity(marker);
         }
     }
     private static void restore(){var mc=Minecraft.getInstance();if(marker!=null){if(mc.getCameraEntity()==marker&&mc.player!=null)mc.setCameraEntity(mc.player);marker.discard();marker=null;if(oldCamera!=null)mc.options.setCameraType(oldCamera);oldCamera=null;}heldAges.clear();}
     private static void dirtyMeals(){var mc=Minecraft.getInstance();if(base!=null&&mc.level==world){mc.levelRenderer.setBlocksDirty(base.getX()-1,base.getY()+1,base.getZ()-29,base.getX()+1,base.getY()+1,base.getZ()-28);for(var rel:new BlockPos[]{io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.LAPTOP_AT,io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.PAD_AT,io.github.knaitoe.theoldesthouse.labyrinth.GhostsLore.CANISTERS_AT}){var at=base.offset(rel);mc.levelRenderer.setBlocksDirty(at.getX(),at.getY(),at.getZ(),at.getX(),at.getY(),at.getZ());}}}
-    public static void clear(){johnHurt=false;pendingFreeze=null;restore();privacyPull=false;effigy=false;jar=false;shake=0;int old=day;lease=day=voiceTicks=voiceAge=0;if(old!=0)dirtyMeals();world=null;base=null;voiceId=-1;words="";}
+    public static void clear(){castOwner=null;johnHurt=false;pendingFreeze=null;restore();privacyPull=false;effigy=false;jar=false;shake=0;int old=day;lease=day=voiceTicks=voiceAge=0;if(old!=0)dirtyMeals();world=null;base=null;voiceId=-1;words="";}
     @SubscribeEvent public static void tick(ClientTickEvent.Post ignored){var mc=Minecraft.getInstance();if(onSet())mc.getMusicManager().stopPlaying();if(lease>0)--lease;if(shake>0)--shake;if(voiceTicks>0){--voiceTicks;++voiceAge;}if(lease>0&&pendingFreeze!=null)applyFreeze();if(lease==0||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.player.isSpectator()||HouseSightlineState.hasOrigin()&&LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())!=LabyrinthPlace.GHOSTS_SET)clear();else if(privacyPull&&!frozen()&&CamcorderClient.active()&&mc.getCameraEntity()==mc.player&&mc.player.getXRot()<55){
         // Native input adds a small turn; the mouse can overcome it, and stopping/stowing the camera ends it immediately.
         float step=Math.min(.16F*Comfort.effects(),55-mc.player.getXRot());mc.player.turn(0,step/.15F);

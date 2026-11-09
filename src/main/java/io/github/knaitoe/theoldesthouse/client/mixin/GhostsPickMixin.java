@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LiteraryActor.class)
 public abstract class GhostsPickMixin {
     @Inject(method="isPickable",at=@At("HEAD"),cancellable=true)
-    private void ownCast(CallbackInfoReturnable<Boolean> cir){var a=(LiteraryActor)(Object)this;var p=Minecraft.getInstance().player;if(a.role()>=LiteraryActor.GHOST_MARJORIE&&a.owner().isPresent()&&(p==null||!a.owner().get().equals(p.getUUID())))cir.setReturnValue(false);}
+    private void ownCast(CallbackInfoReturnable<Boolean> cir){var a=(LiteraryActor)(Object)this;var p=Minecraft.getInstance().player;if(a.role()>=LiteraryActor.GHOST_MARJORIE&&a.owner().isPresent()&&(p==null||!a.owner().get().equals(io.github.knaitoe.theoldesthouse.labyrinth.GhostsCrew.castRole(a.role())?io.github.knaitoe.theoldesthouse.client.GhostsTakeClient.cast(p.getUUID()):p.getUUID())))cir.setReturnValue(false);}
 }
