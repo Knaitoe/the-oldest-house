@@ -2,5 +2,31 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "the_oldest_house:item/polybius_prize_mood_ring"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "the_oldest_house:mood": 0.25
+      },
+      "model": "the_oldest_house:item/polybius_prize_mood_ring_3"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:mood": 0.5
+      },
+      "model": "the_oldest_house:item/polybius_prize_mood_ring_2"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:mood": 0.75
+      },
+      "model": "the_oldest_house:item/polybius_prize_mood_ring_1"
+    },
+    {
+      "predicate": {
+        "the_oldest_house:mood": 1.0
+      },
+      "model": "the_oldest_house:item/polybius_prize_mood_ring_0"
+    }
+  ]
 }

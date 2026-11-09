@@ -2,5 +2,13 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "the_oldest_house:item/polybius_prize_slap_bracelet"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "the_oldest_house:straight": 1.0
+      },
+      "model": "the_oldest_house:item/polybius_prize_slap_bracelet_straight"
+    }
+  ]
 }
