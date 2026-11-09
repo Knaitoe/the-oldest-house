@@ -1217,25 +1217,26 @@ jobs:
             run/crash-reports/
           if-no-files-found: warn
       - name: Focused native literary gameplay
-        timeout-minutes: 21
+        timeout-minutes: 27
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary,the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 26m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
           completed=re.findall(r'All (\d+) required tests passed',Path('build/literary-native.log').read_text())
-          # Every case in the namespaces this job runs, read from each file's holder: a new file in them is counted without a list to keep.
-          spaces={'literary','ghosts','fan488','lake_house','playtest492','borrasca'}
+          # Every case in the namespace this job runs, read from each file's holder: a new file in it is counted without a list to keep.
+          # 0.4.416: the literary namespace outgrew one twenty-minute run with its neighbours; they run in literary-neighbours.
+          spaces={'literary'}
           declared=0
           for source in Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest').glob('*.java'):
               text=source.read_text();holder=re.search(r'@GameTestHolder\(\s*TheOldestHouse\.MOD_ID\s*\+\s*"_([a-z0-9_]+)"\s*\)',text)
               if holder and holder.group(1) in spaces:declared+=len(re.findall(r'@GameTest\s*\(',text))
-          assert declared>=152,declared
+          assert declared>=100,declared
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} focused native literary cases passed; the complete suite remains required.')
           PY
@@ -1268,6 +1269,71 @@ jobs:
         with:
           name: literary-diagnostics-${{ github.sha }}
           path: build/literary-native.log
+
+  literary-neighbours:
+    needs: quick
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Focused native literary neighbours
+        timeout-minutes: 21
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/neighbours-native.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/neighbours-native.log').read_text())
+          # Every case in the namespaces this job runs, read from each file's holder: a new file in them is counted without a list to keep.
+          spaces={'ghosts','fan488','lake_house','playtest492','borrasca'}
+          declared=0
+          for source in Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest').glob('*.java'):
+              text=source.read_text();holder=re.search(r'@GameTestHolder\(\s*TheOldestHouse\.MOD_ID\s*\+\s*"_([a-z0-9_]+)"\s*\)',text)
+              if holder and holder.group(1) in spaces:declared+=len(re.findall(r'@GameTest\s*\(',text))
+          assert declared>=20,declared
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} focused native neighbouring cases passed; the complete suite remains required.')
+          PY
+      - name: Publish failed neighbouring tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log = Path('build/neighbours-native.log')
+          if not log.exists():
+              print('::error title=Failed neighbouring test::no log was written')
+              raise SystemExit(0)
+          lines = log.read_text(errors='replace').splitlines()
+          keys = re.compile(r'(failed at|required tests failed|Exception|Caused by|assert)')
+          picked = []
+          for i, line in enumerate(lines):
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  entry = (text + ' :: ' + ' | '.join(l.strip() for l in lines[i + 1:i + 3]))[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          for entry in picked[:9]:
+              print('::error title=Failed neighbouring test::' + entry.replace('%', '%25'))
+          PY
+
+      - name: Upload neighbouring diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neighbours-diagnostics-${{ github.sha }}
+          path: build/neighbours-native.log
 
   hallway-carve:
     needs: quick
