@@ -166,7 +166,7 @@ public final class GhostsSetTests {
         var f=fixture(h);var p=f.player("ghost_after",P);var peer=f.player("ghost_after_peer",P);var held=f.base(P);
         f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the house is ready"))
-            .thenExecute(()->{var b=f.base(P);var own=f.own(p,P);own.putInt("FilmDay",7);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putInt("ShotClock",0);GhostsSet.reader(p,b,own);save(f,p,own);})
+            .thenExecute(()->{lead(f,p,peer);var b=f.base(P);var own=f.own(p,P);own.putInt("FilmDay",7);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putInt("ShotClock",0);GhostsSet.reader(p,b,own);save(f,p,own);})
             .thenWaitUntil(()->{actor(f,p,LiteraryActor.GHOST_MERRY);actor(f,p,LiteraryActor.GHOST_PRODUCER);})
             .thenExecute(()->{
                 var b=f.base(P);var own=f.own(p,P);
