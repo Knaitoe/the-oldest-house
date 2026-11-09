@@ -151,6 +151,8 @@ public final class PoolTables {
             if(!anyone&&!t.seats.isEmpty()){t.empty();t.game=null;it.remove();continue;}
             if(changed){if(t.seats.isEmpty()){t.game=null;it.remove();continue;}
                 if(REGULAR.equals(t.shooter())&&t.regularDue<0)t.regularDue=l.getGameTime()+REGULAR_PAUSE;sync(l,t,null);}
+            // Now and then the frame is sent again, so someone who walks up mid-frame sees the balls where they lie.
+            else if(s.getTickCount()%100==0)sync(l,t,null);
         }
     }
 }

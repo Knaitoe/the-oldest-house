@@ -4780,5 +4780,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pool.pocket"
+  },
+  "darts.throw": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:darts/throw",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.darts.throw"
+  },
+  "darts.board": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:darts/board",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.darts.board"
+  },
+  "darts.wall": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:darts/wall",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.darts.wall"
+  },
+  "darts.pull": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:darts/pull",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.darts.pull"
   }
 }

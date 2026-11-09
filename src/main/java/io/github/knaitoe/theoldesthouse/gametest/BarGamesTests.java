@@ -16,7 +16,9 @@ import net.neoforged.neoforge.gametest.*;
 /**
  * 0.4.414 (docs/BAR_GAMES_PROPOSAL.md): the bar's games played for real. Pool: the same shot always ends the same way; pots, fouls,
  * groups and the eight follow the rules; the table's own player finds a pot; real readers take turns at a real table, someone who
- * comes late watches, a shot out of turn is ignored, and a reader who walks away gives up their seat.
+ * comes late watches, a shot out of turn is ignored, and a reader who walks away gives up their seat. Darts (0.4.415): where a dart
+ * lands gives its ring and number; 301 and round the clock keep their rules; real darts thrown from the oche stick, score and come
+ * out after three; the board's own player throws on its turn.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
 public final class BarGamesTests {
@@ -119,4 +121,143 @@ public final class BarGamesTests {
         });
     }
     @AfterBatch(batch="bar_pool") public static void poolDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();PoolTables.clearAll();}
+
+    @GameTest(template="empty")
+    public static void dartsScoreWhereTheyLandAndKeepTheRules(GameTestHelper h){
+        // Where a dart lands: the bull, the outer bull, trebles, doubles and singles, by the standard number order.
+        h.assertTrue(DartsGame.score(0,0).value()==50&&DartsGame.score(0,.06).value()==25,"the bull is 50 and the ring round it 25");
+        double tr=(DartsGame.TREBLE_IN+DartsGame.TREBLE_OUT)/2,dr=(DartsGame.DOUBLE_IN+1)/2;
+        h.assertTrue(DartsGame.score(0,tr).equals(new DartsGame.Hit(DartsGame.Ring.TREBLE,20))&&DartsGame.score(0,tr).value()==60,"straight up through the treble is treble 20");
+        h.assertTrue(DartsGame.score(dr,0).equals(new DartsGame.Hit(DartsGame.Ring.DOUBLE,6)),"to the right through the double is double 6: "+DartsGame.score(dr,0));
+        h.assertTrue(DartsGame.score(-.5,0).equals(new DartsGame.Hit(DartsGame.Ring.SINGLE,11))&&DartsGame.score(0,-.5).equals(new DartsGame.Hit(DartsGame.Ring.SINGLE,3)),"left is 11 and down is 3");
+        double in=Math.toRadians(8.5),out=Math.toRadians(9.5);
+        h.assertTrue(DartsGame.score(Math.sin(in)*.5,Math.cos(in)*.5).number()==20&&DartsGame.score(Math.sin(out)*.5,Math.cos(out)*.5).number()==1,"the wire between 20 and 1 sits nine degrees round");
+        h.assertTrue(DartsGame.score(0,1.02).ring()==DartsGame.Ring.MISS,"past the double's outer wire scores nothing");
+        for(int n:DartsGame.ORDER){var a=DartsGame.aimAt(DartsGame.Ring.TREBLE,n);h.assertTrue(DartsGame.score(a[0],a[1]).equals(new DartsGame.Hit(DartsGame.Ring.TREBLE,n)),"aiming at treble "+n+" lands in it");}
+        // 301: down to exactly nothing, with a bust over.
+        var g=new DartsGame(DartsGame.Mode.X01,2);var t20=new DartsGame.Hit(DartsGame.Ring.TREBLE,20);
+        g.dart(t20);g.dart(t20);h.assertTrue(!g.turnOver()&&g.score[0]==181,"two darts in, the turn goes on: "+g.score[0]);
+        g.dart(t20);h.assertTrue(g.turnOver()&&g.score[0]==121,"three darts end the turn: "+g.score[0]);
+        g.dart(t20);h.assertTrue(g.score[0]==121&&g.darts==3,"a fourth dart counts for nothing");
+        g.nextTurn();h.assertTrue(g.turn==1&&g.darts==0&&g.lastTurn.size()==3,"then it is the next player's turn");
+        g.score[1]=40;g.turnStart=40;g.dart(new DartsGame.Hit(DartsGame.Ring.SINGLE,20));g.dart(t20);
+        h.assertTrue(g.turnOver()&&g.score[1]==40&&!g.over(),"going over is a bust: back to where the turn began");
+        g.nextTurn();g.nextTurn();g.dart(new DartsGame.Hit(DartsGame.Ring.DOUBLE,20));
+        h.assertTrue(g.over()&&g.winner==1&&g.score[1]==0,"exactly nothing wins");
+        // Round the clock: the number in order, any ring of it; after 20, the bull.
+        var c=new DartsGame(DartsGame.Mode.CLOCK,2);
+        c.dart(new DartsGame.Hit(DartsGame.Ring.SINGLE,1));c.dart(new DartsGame.Hit(DartsGame.Ring.TREBLE,2));c.dart(new DartsGame.Hit(DartsGame.Ring.SINGLE,20));
+        h.assertTrue(c.score[0]==3&&c.turnOver(),"one, then two, and twenty out of turn counts for nothing: "+c.score[0]);
+        c.nextTurn();h.assertTrue(c.target()==1,"the other player starts at one");
+        c.nextTurn();c.score[0]=20;c.dart(new DartsGame.Hit(DartsGame.Ring.DOUBLE,20));h.assertTrue(c.target()==DartsGame.BULL_TARGET,"after twenty comes the bull");
+        c.dart(new DartsGame.Hit(DartsGame.Ring.OUTER,25));h.assertTrue(c.over()&&c.winner==0,"and the bull goes round the clock");
+        // Someone leaving: the others keep their scores and a turn that was theirs passes on.
+        var three=new DartsGame(DartsGame.Mode.X01,3);three.score[2]=99;three.nextTurn();
+        var two=three.without(1);h.assertTrue(two.players()==2&&two.score[1]==99&&two.turn==1&&two.darts==0,"a player leaving takes their place with them");
+        h.assertTrue(DartsGame.load(g.save()).save().equals(g.save()),"a game saves and loads as it was");
+        h.succeed();
+    }
+
+    /** A stone wall and floor with a board hung on it, facing north, at eye height for a reader on the floor. Returns the board. */
+    static BlockPos hangBoard(GameTestHelper h,ServerPlayer placer){
+        var l=h.getLevel();var foot=h.absolutePos(new BlockPos(1,1,1));
+        for(int x=-3;x<=3;x++)for(int z=-4;z<=1;z++){l.setBlock(foot.offset(x,-1,z),Blocks.STONE.defaultBlockState(),3);for(int y=0;y<4;y++)l.setBlock(foot.offset(x,y,z),Blocks.AIR.defaultBlockState(),3);}
+        for(int x=-3;x<=3;x++)for(int y=0;y<4;y++)l.setBlock(foot.offset(x,y,2),Blocks.STONE.defaultBlockState(),3);
+        var wall=foot.offset(0,1,2);
+        placer.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(BarRegistry.DARTBOARD_ITEM.get()));
+        placer.setYRot(0);placer.setXRot(0);
+        placer.getMainHandItem().useOn(new net.minecraft.world.item.context.UseOnContext(placer,net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(wall).add(0,0,-.5),Direction.NORTH,wall,false)));
+        return wall.north();
+    }
+    /** Turns a reader to look at a point. */
+    static void lookAt(ServerPlayer p,net.minecraft.world.phys.Vec3 at){
+        var d=at.subtract(p.getEyePosition());
+        p.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));p.setXRot((float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));
+    }
+    static int houseDarts(ServerPlayer p){int n=0;for(var s:p.getInventory().items)if(DartBoards.isHouseDart(s))n+=s.getCount();return n;}
+    static List<DartEntity> stuck(GameTestHelper h,BlockPos board){return h.getLevel().getEntitiesOfClass(DartEntity.class,new net.minecraft.world.phys.AABB(board).inflate(4));}
+
+    @GameTest(template="empty",batch="bar_darts",timeoutTicks=500)
+    public static void readersThrowRealDartsInTurn(GameTestHelper h){
+        var l=h.getLevel();var foot=h.absolutePos(new BlockPos(1,1,1));
+        var p=reader(h,"darts_p",foot.offset(0,0,-2));
+        var board=hangBoard(h,p);var state=l.getBlockState(board);
+        h.assertTrue(DartboardBlock.is(state)&&state.getValue(DartboardBlock.FACING)==Direction.NORTH,"the board hangs on the wall, face out: "+state);
+        var face=DartboardBlock.centre(board,Direction.NORTH);
+        // The oche: the board's distance out from the face, on the floor.
+        p.teleportTo(l,face.x,foot.getY(),face.z-DartBoards.OCHE,0,0);
+        var q=reader(h,"darts_q",foot.offset(2,0,-3));
+        DartBoards.use(q,board,true);
+        var b=DartBoards.at(l,board);
+        h.assertTrue(b!=null&&b.mode==DartsGame.Mode.CLOCK,"crouching at the board before the first dart changes the game");
+        DartBoards.use(q,board,true);
+        h.assertTrue(b.mode==DartsGame.Mode.X01,"and changes it back");
+        DartBoards.use(p,board,false);DartBoards.use(q,board,false);
+        h.assertTrue(b.seats.size()==2&&p.getUUID().equals(b.shooter()),"two readers chalk up, and the first throws first");
+        h.assertTrue(houseDarts(p)==3&&houseDarts(q)==0,"the thrower holds three of the house's darts and nobody else any: "+houseDarts(p)+"/"+houseDarts(q));
+        lookAt(p,face);
+        var hand=p.getMainHandItem();
+        h.assertTrue(DartBoards.isHouseDart(hand),"they are in the thrower's hand");
+        DartBoards.thrown(p,hand,20);
+        h.runAfterDelay(15,()->{
+            h.assertTrue(b.game!=null&&b.game.darts==1&&b.game.thisTurn.size()==1,"the first dart lands and counts");
+            var hit=b.game.thisTurn.get(0);
+            h.assertTrue(hit.ring()!=DartsGame.Ring.MISS&&b.game.score[0]==DartsGame.START-hit.value(),"aimed at the middle from the oche, it scores where it lands: "+hit.say());
+            var darts=stuck(h,board);
+            h.assertTrue(darts.size()==1&&darts.get(0).stuck()&&darts.get(0).position().distanceTo(face)<.6,"and stays stuck in the board: "+darts.size());
+            var w=reader(h,"darts_w",foot.offset(-2,0,-3));DartBoards.use(w,board,false);
+            h.assertTrue(!b.seated(w.getUUID())&&houseDarts(w)==0,"someone who comes after the first dart watches");
+            DartBoards.thrown(q,new net.minecraft.world.item.ItemStack(BarRegistry.DART.get()),20);
+            h.assertTrue(b.game.darts==1&&stuck(h,board).size()==1,"a dart that is not the house's, or not their throw, flies nowhere");
+            lookAt(p,face);DartBoards.thrown(p,p.getMainHandItem(),20);
+            h.runAfterDelay(6,()->{
+                lookAt(p,face);DartBoards.thrown(p,p.getMainHandItem(),20);
+                h.runAfterDelay(15,()->{
+                    h.assertTrue(b.game.darts==3&&b.game.turnOver()&&houseDarts(p)==0,"three darts end the turn, and the thrower's hand is empty");
+                    h.assertTrue(stuck(h,board).size()==3,"all three are still in the board for everyone to see");
+                    h.runAfterDelay(DartBoards.PAUSE+5,()->{
+                        h.assertTrue(stuck(h,board).isEmpty(),"then the darts are pulled out");
+                        h.assertTrue(q.getUUID().equals(b.shooter())&&houseDarts(q)==3&&houseDarts(p)==0,"and the next player is handed three: "+houseDarts(q));
+                        // A reader who walks away gives up their place; the game goes on without them.
+                        q.teleportTo(l,foot.getX()+40.5,foot.getY(),foot.getZ()+.5,0,0);
+                        h.runAfterDelay(30,()->{
+                            h.assertTrue(!b.seated(q.getUUID())&&b.seats.size()==1&&p.getUUID().equals(b.shooter())&&houseDarts(p)==3&&houseDarts(q)==0,"a reader who walks off takes their darts and place with them; the turn comes back round");
+                            h.assertTrue(b.game.players()==1&&b.game.score[0]<DartsGame.START,"and the one left keeps their score: "+b.game.score[0]);
+                            // Broken, the board comes down whole and drops once.
+                            l.destroyBlock(board,true);
+                            var drops=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(board).inflate(3),e->e.getItem().is(BarRegistry.DARTBOARD_ITEM.get()));
+                            h.assertTrue(drops.size()==1,"broken, the board drops itself once: "+drops.size());
+                            drops.forEach(e->e.discard());
+                            h.runAfterDelay(2,()->{
+                                h.assertTrue(DartBoards.at(l,board)==null&&houseDarts(p)==0,"and its game and darts go with it");
+                                for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();h.succeed();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    @GameTest(template="empty",batch="bar_darts_regular",timeoutTicks=400)
+    public static void theBoardsOwnPlayerThrowsOnItsTurn(GameTestHelper h){
+        var l=h.getLevel();var foot=h.absolutePos(new BlockPos(1,1,1));
+        var p=reader(h,"darts_r",foot.offset(0,0,-2));
+        var board=hangBoard(h,p);var face=DartboardBlock.centre(board,Direction.NORTH);
+        p.teleportTo(l,face.x+1,foot.getY(),face.z-DartBoards.OCHE,0,0);
+        DartBoards.seatRegular(l,board,"the regular",.95);DartBoards.use(p,board,false);
+        var b=DartBoards.at(l,board);
+        h.assertTrue(b!=null&&b.seats.size()==2&&DartBoards.regular(b.shooter())&&houseDarts(p)==0,"the board's own player throws first, and the reader waits");
+        h.runAfterDelay(DartBoards.REGULAR_GAP*3+30,()->{
+            h.assertTrue(b.game!=null&&b.game.lastTurn.size()+b.game.thisTurn.size()>=3,"on its turn it throws its three darts");
+            int hits=0;for(var x:b.game.lastTurn.isEmpty()?b.game.thisTurn:b.game.lastTurn)if(x.ring()!=DartsGame.Ring.MISS)hits++;
+            h.assertTrue(hits>=2,"and a steady hand finds the board: "+hits);
+            h.runAfterDelay(DartBoards.PAUSE,()->{
+                h.assertTrue(p.getUUID().equals(b.shooter())&&houseDarts(p)==3,"then the reader is handed three");
+                for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();h.succeed();
+            });
+        });
+    }
+    @AfterBatch(batch="bar_darts") public static void dartsDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
+    @AfterBatch(batch="bar_darts_regular") public static void regularDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
 }
