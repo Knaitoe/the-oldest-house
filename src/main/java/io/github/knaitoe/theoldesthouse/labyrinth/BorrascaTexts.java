@@ -128,12 +128,14 @@ public final class BorrascaTexts {
             +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Beside her number it said transfer, and nothing after.":"")
             +(own.getBoolean("LetterRead")?" A girl had written home from down there. Her letter was never sent.":"")
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
+            // 0.4.427: what the reader did to the Sheriff, grown.
+            +(own.getBoolean("SheriffDead")?" I killed the Sheriff on the ridge. He talked until he couldn't, and none of it was sorry.":own.getBoolean("SheriffBeaten")?" I beat the Sheriff down into the dirt and left him there, still talking.":"")
             +" I stopped the machine."
-            +(own.getBoolean("SheriffYielded")?" He lowered his hand and told me to go.":own.getBoolean("HeardSheriffShutdown")?" The Sheriff said he would make the call.":"")
+            +(own.getBoolean("HeardSheriffShutdown")&&!own.getBoolean("SheriffDead")?" The Sheriff said he would make the call.":"")
             +" The wind was still in the pines."
             +(own.getBoolean("NameReturned")||own.getBoolean("RestoredName")?" "+restored():" I carried her name out in the cloth.");
     }
     public static ItemStack accountBook(String reader,CompoundTag own){return book("The name beside mine",reader,account(own));}
     public static String restored(){return "I cut her name beside mine again. The gouges were still there.";}
-    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("SharedWindow")?" We picked out a window before the ridge rang.":"")+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Kendra went looking for Patrick. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
+    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("SheriffDead")?" The Sheriff never came down off the ridge.":"")+(own.getBoolean("SharedWindow")?" We picked out a window before the ridge rang.":"")+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Kendra went looking for Patrick. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
 }

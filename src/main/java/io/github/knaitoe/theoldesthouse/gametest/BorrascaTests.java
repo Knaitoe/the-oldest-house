@@ -680,9 +680,14 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
 
+    /**
+     * 0.4.427 (owner: "Ensure the player can enact violent retribution against the sheriff too, when they're an adult"). On the last night
+     * the Sheriff walks his yard and goes to the stopped machine; struck, he fights back with his flashlight, goes down in the dirt with his
+     * hands up when beaten and talks, and a blow after that kills him. His body stays.
+     */
     @AfterBatch(batch="borrasca_sheriff_patrol") public static void sheriffPatrolDone(ServerLevel l){cleanup();}
-    @GameTest(template="empty",batch="borrasca_sheriff_patrol",timeoutTicks=1800)
-    public static void theFourthVisitSheriffPatrolsAndCanYield(GameTestHelper h){
+    @GameTest(template="empty",batch="borrasca_sheriff_patrol",timeoutTicks=2400)
+    public static void theFourthVisitSheriffPatrolsFightsBackAndCanBeBeatenDownAndKilled(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_patrol");
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded"))
           .thenExecute(()->{f.enter(p);f.stage(p,4);f.at(p,0,12,-170);})
@@ -693,21 +698,59 @@ public final class BorrascaTests {
               var a=f.actor(p,"CastSheriff");var b=f.base(p);
               h.assertTrue(a.distanceToSqr(Vec3.atBottomCenterOf(BorrascaRooms.at(b,5,12,-182)))<.1&&a.gesture()==4,"he goes to inspect the stopped machine");
           })
-          .thenExecute(()->hitSheriff(f,p)).thenIdle(12)
-          .thenExecute(()->hitSheriff(f,p)).thenIdle(12)
-          .thenExecute(()->{
-              hitSheriff(f,p);
+          .thenExecute(()->{var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+1.6,a.getY(),a.getZ(),90,0);p.setHealth(p.getMaxHealth());h.assertTrue(hitSheriff(f,p),"a grown reader's blow lands");})
+          .thenWaitUntil(()->h.assertTrue(p.getHealth()<p.getMaxHealth()&&f.own(p).getInt("SheriffHits")==1,"struck, the Sheriff turns on the reader and hits back")).thenIdle(12)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());hitSheriff(f,p);}).thenIdle(12)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());hitSheriff(f,p);}).thenIdle(12)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());hitSheriff(f,p);
               var a=f.actor(p,"CastSheriff");
-              h.assertTrue(a.isAlive()&&a.getMainHandItem().isEmpty()&&f.own(p).getBoolean("SheriffYielded"),
-                      "three landed hits disarm him and end the confrontation");
-              h.assertTrue(BorrascaSites.inside(p)&&!f.own(p).getBoolean("Interrupted"),"the player can continue the visit");
+              h.assertTrue(a.isAlive()&&f.own(p).getBoolean("SheriffDown")&&a.gesture()==BorrascaStory.KNELT&&a.getMainHandItem().isEmpty(),"beaten, he goes down in the dirt with his hands up and the flashlight gone: health "+a.getHealth()+" hits "+f.own(p).getInt("SheriffHits"));
+              f.talk(p,"CastSheriff");h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().contains("never my idea"),"down, he talks: "+a.getCustomName());
+              h.assertFalse(hitSheriff(f,p),"a blow in the moment he goes down does not finish him");
+          }).thenIdle(22)
+          .thenExecute(()->{
+              var a=f.actor(p,"CastSheriff");h.assertTrue(hitSheriff(f,p),"a blow after that lands");
+              h.assertTrue(f.own(p).getBoolean("SheriffDead")&&a.isAlive()&&a.gesture()==BorrascaStory.FALLEN&&f.own(p).getInt("SheriffDiedVisit")==4,"and kills him; his body lies where he fell");
+              h.assertFalse(hitSheriff(f,p),"the body takes no more blows");
+              h.assertTrue(BorrascaTexts.account(f.own(p)).contains("killed the Sheriff")&&BorrascaSites.inside(p)&&!f.own(p).getBoolean("Interrupted"),"the account says so, and the visit goes on");
+          }).thenIdle(10).thenExecute(()->h.assertTrue(f.actor(p,"CastSheriff").gesture()==BorrascaStory.FALLEN&&!f.actor(p,"CastSheriff").isInvisible(),"the body stays where it fell for the rest of the night")).thenSucceed();
+    }
+
+    /**
+     * 0.4.427: a child's blows do nothing to the Sheriff. Grown, on the third visit at the tape, the reader can beat him down and kill him;
+     * on the last night his body still lies where he fell, the deputies at the bar know he is dead, and his office says so on the phone.
+     */
+    @AfterBatch(batch="borrasca_retribution") public static void retributionDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_retribution",timeoutTicks=3000)
+    public static void aChildCannotHurtTheSheriffButGrownTheReaderCanKillHimAndTheTownKnows(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_retribution");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"first visit cast recalled"))
+          .thenExecute(()->{
+              var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+1.6,a.getY(),a.getZ(),90,0);
+              h.assertFalse(hitSheriff(f,p),"a child's blow does nothing to the Sheriff");h.assertTrue(f.own(p).getInt("SheriffHits")==0&&a.getHealth()==a.getMaxHealth(),"and he is untouched");
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("Visit")==3,"years later: "+BorrascaCast.why(p)))
+          .thenExecute(()->{var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+1.6,a.getY(),a.getZ(),90,0);p.setHealth(p.getMaxHealth());h.assertTrue(hitSheriff(f,p),"grown, a blow lands at the tape");}).thenIdle(12)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());hitSheriff(f,p);}).thenIdle(12)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());hitSheriff(f,p);}).thenIdle(12)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());hitSheriff(f,p);h.assertTrue(f.own(p).getBoolean("SheriffDown"),"beaten down at the tape");}).thenIdle(22)
+          .thenExecute(()->{p.setHealth(p.getMaxHealth());h.assertTrue(hitSheriff(f,p)&&f.own(p).getBoolean("SheriffDead")&&f.own(p).getInt("SheriffDiedVisit")==3,"and killed there");
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,4);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==4,"the last night: "+BorrascaCast.why(p)))
+          .thenExecute(()->{
+              var body=f.actor(p,"CastSheriff");var lies=BlockPos.of(f.own(p).getLong("SheriffBody"));
+              h.assertTrue(!body.isInvisible()&&body.isAlive()&&body.gesture()==BorrascaStory.FALLEN&&body.getMainHandItem().isEmpty(),"on the last night the Sheriff's body is still there, face down, and doesn't get up");
+              h.assertTrue(body.blockPosition().distManhattan(lies)<=1,"it lies where he fell at the tape, years later the same night: "+body.blockPosition()+" fell "+lies);
+              var own=f.own(p);var dutch=BorrascaPeople.keeper(p,own,BorrascaPeople.DUTCH);BorrascaPeople.talk(p,dutch,own);f.save(p,own);
+              h.assertTrue(dutch.getCustomName()!=null&&dutch.getCustomName().getString().contains("Sheriff's dead"),"the deputies at the bar know he is dead: "+dutch.getCustomName());
+              f.atWorld(p,new BlockPos(-13,0,-111));own=f.own(p);var call=BorrascaPayphone.dial(p,own,BorrascaPayphone.SHERIFF);f.save(p,own);
+              h.assertTrue(call!=null&&String.join(" ",call.lines()).contains("The Sheriff's dead"),"his office says so on the phone: "+(call==null?null:call.lines()));
+              h.assertTrue(BorrascaTexts.witness(f.own(p)).contains("never came down off the ridge"),"the Witness line keeps it");
           }).thenSucceed();
     }
 
-    private static void hitSheriff(Fixture f,ServerPlayer p){
-        var a=f.actor(p,"CastSheriff");
-        f.h.assertTrue(a.hurt(p.damageSources().playerAttack(p),4),"the fourth-visit sheriff takes a hit");
-    }
+    private static boolean hitSheriff(Fixture f,ServerPlayer p){return f.actor(p,"CastSheriff").hurt(p.damageSources().playerAttack(p),8);}
 
     @GameTest(template="empty",batch="borrasca_escort",timeoutTicks=1800)
     public static void flashlightObeysSolidCoverAndTheSheriffEnforcesTheTape(GameTestHelper h){

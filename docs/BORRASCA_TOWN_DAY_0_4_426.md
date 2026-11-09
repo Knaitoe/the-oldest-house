@@ -70,7 +70,7 @@ purses will pool the same way.
 
 ## Next
 
-- **0.4.427, the town's routines:** the mail carrier on his round, children on bikes, a truck on the street, and Mr. Rowe stepping out
+- **0.4.428, the town's routines** (0.4.427 went to the Sheriff, docs/BORRASCA_RETRIBUTION_0_4_427.md): the mail carrier on his round, children on bikes, a truck on the street, and Mr. Rowe stepping out
   of the antiques shop for a smoke, the only time a child can slip into the historical society. A friend keeping him talking will do
   the same in the co-op rework.
 - **The drugstore's arcade** (its own original games), the walk, and the lower rooms' rework follow.

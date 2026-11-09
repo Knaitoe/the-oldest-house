@@ -50,6 +50,10 @@ public final class BorrascaPayphone {
     }
     private static Call answer(CompoundTag own,String number,int visit,boolean grown){
         boolean missing=own.getBoolean("FriendMissing");String friend=BorrascaStory.FRIEND;
+        // 0.4.427: once the Sheriff is dead, his office answers differently: that night he isn't answering his radio, and after it he's dead.
+        boolean dead=own.getBoolean("SheriffDead"),found=dead&&own.getInt("SheriffDiedVisit")<visit;
+        if(number.equals(SHERIFF)&&dead)return new Call(number,2,found?List.of("Sheriff's office.","...","The Sheriff's dead. If you know anything about it, you stay on this line.","Nobody stays on it. The line clicks off."):List.of("Sheriff's office.","...","He's not answering his radio. Who is this?","...","Who is this?"),true);
+        if(number.equals(EMERGENCY)&&visit==4&&found)return new Call(number,1,List.of("County dispatch. What's your emergency?","...","The ridge. There's nobody up there tonight to send. I'll make a note.","The line clicks off."),false);
         return switch(number){
             case EMERGENCY->new Call(number,1,visit==4
                 ?List.of("County dispatch. What's your emergency?","...","The ridge. All right. I'll let the Sheriff know you called. He's up there tonight.","The line clicks off.")
