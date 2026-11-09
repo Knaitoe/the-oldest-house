@@ -177,9 +177,23 @@ public final class BarGamesTests {
     static int houseDarts(ServerPlayer p){int n=0;for(var s:p.getInventory().items)if(DartBoards.isHouseDart(s))n+=s.getCount();return n;}
     static List<DartEntity> stuck(GameTestHelper h,BlockPos board){return h.getLevel().getEntitiesOfClass(DartEntity.class,new net.minecraft.world.phys.AABB(board).inflate(4));}
 
-    @GameTest(template="empty",batch="bar_darts",timeoutTicks=500)
+    @GameTest(template="empty",batch="bar_darts",timeoutTicks=600)
     public static void readersThrowRealDartsInTurn(GameTestHelper h){
+        // Run 1499: the template keeps only its own corner's chunks ticking, and the board can hang in the next one, where a dart
+        // thrown before that chunk ticks entities hangs in the air. Hold the chunks round the oche and wait for them, as the
+        // regular's case does.
         var l=h.getLevel();var foot=h.absolutePos(new BlockPos(1,1,1));
+        held=new NativeTestChunks();held.hold(l,new net.minecraft.world.phys.AABB(foot).inflate(16));
+        h.startSequence()
+            .thenWaitUntil(()->h.assertTrue(held.ticking()&&around(l,foot),"the chunks round the oche tick entities"))
+            .thenExecute(()->throwInTurn(h,l,foot));
+    }
+    /** Whether the oche and everything within six blocks of it ticks entities. */
+    private static boolean around(net.minecraft.server.level.ServerLevel l,BlockPos foot){
+        for(int dx=-6;dx<=6;dx+=6)for(int dz=-6;dz<=6;dz+=6)if(!l.isPositionEntityTicking(foot.offset(dx,0,dz)))return false;
+        return true;
+    }
+    private static void throwInTurn(GameTestHelper h,net.minecraft.server.level.ServerLevel l,BlockPos foot){
         var p=reader(h,"darts_p",foot.offset(0,0,-2));
         var board=hangBoard(h,p);var state=l.getBlockState(board);
         h.assertTrue(DartboardBlock.is(state)&&state.getValue(DartboardBlock.FACING)==Direction.NORTH,"the board hangs on the wall, face out: "+state);
@@ -270,6 +284,6 @@ public final class BarGamesTests {
     }
     private static NativeTestChunks held;
     private static void release(){if(held!=null){held.close();held=null;}}
-    @AfterBatch(batch="bar_darts") public static void dartsDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();}
+    @AfterBatch(batch="bar_darts") public static void dartsDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();release();}
     @AfterBatch(batch="bar_darts_regular") public static void regularDone(ServerLevel l){for(var m:made)NativeTestPlayers.remove(m);made.clear();DartBoards.clearAll();release();}
 }
