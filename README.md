@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.401** makes doors follow the path. The yard is entered by its back door, leads on into itself for a stretch, then back inside, and its rooms and stories no longer open off the halls. A door leads where a friend went for as long as they are still beyond it. See [docs/PATH_AND_YARD_0_4_401.md](docs/PATH_AND_YARD_0_4_401.md).
+Development candidate **0.4.402** goes by where you are: a reader moved by a command or a respawn takes up where they land, a friend's way through the House when the friend is in the same room, the spot they came from when alone, nothing in the manor. See [docs/WHERE_YOU_ARE_0_4_402.md](docs/WHERE_YOU_ARE_0_4_402.md).
+
+Candidate **0.4.401** makes doors follow the path. The yard is entered by its back door, leads on into itself for a stretch, then back inside, and its rooms and stories no longer open off the halls. A door leads where a friend went for as long as they are still beyond it. See [docs/PATH_AND_YARD_0_4_401.md](docs/PATH_AND_YARD_0_4_401.md).
 
 Candidate **0.4.400** holds every door for the group: a friend who follows through the same door within half a minute comes out in the same room, a hall or a trial as well as a story. See [docs/HELD_DOORS_0_4_400.md](docs/HELD_DOORS_0_4_400.md).
 

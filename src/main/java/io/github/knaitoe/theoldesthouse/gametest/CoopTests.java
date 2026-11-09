@@ -191,6 +191,75 @@ public final class CoopTests {
             }).thenSucceed();
     }
 
+    private static LabyrinthData.Door firstDealt(LabyrinthData data,LabyrinthPlace place){
+        for(var spec:place.doors()){var door=data.door(place.doorId(spec));if(door!=null&&LabyrinthData.DEALT.equals(door.destination))return door;}return null;
+    }
+
+    /**
+     * 0.4.402, the owner: "the game tracks where it expects players to be and not where they actually are. this is especially apparent
+     * when teleporting to/from friends". A reader moved by a command takes up where they land: a friend's way through the House, the
+     * spot they were moved from when alone in a room, nothing in the manor. A real /tp does it too.
+     */
+    @GameTest(template="empty",batch="coop_anchor402",timeoutTicks=1200)
+    public static void aReaderTeleportedToAFriendTakesUpTheFriendsWayAndAloneStartsFromWhereTheyWere(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var lead=player(h,f,"anchor_lead");var friend=player(h,f,"anchor_friend");
+        var straight=LabyrinthPlace.STRAIGHT_HALL;var bent=LabyrinthPlace.BENT_HALL;
+        hold(f,straight);hold(f,bent);
+        BlockPos[] manor={null};var expected=new ArrayList<LabyrinthData.Waypoint>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the halls are resident"))
+            .thenExecute(()->{
+                TeleportAnchor.forget();GroupCrossings.forget();
+                hall(f,straight);hall(f,bent);var data=f.data();
+                var bentDoor=firstDealt(data,bent);var straightDoor=firstDealt(data,straight);
+                h.assertTrue(bentDoor!=null&&straightDoor!=null,"both halls have a dealt door");
+                // The lead came out of the bent hall by its door into the straight hall; the straight hall's door leads to the stacks.
+                var w1=new LabyrinthData.Waypoint(bentDoor.dimension,Vec3.atBottomCenterOf(bentDoor.lower),bentDoor.facing.toYRot(),true);
+                data.pushReturn(lead.getUUID(),w1);
+                data.rememberNode(lead.getUUID(),LabyrinthData.routeKey(List.of(),bent),Map.of(bentDoor.id,new LabyrinthData.Deal(straight.id(),false,false)));
+                data.deal(lead.getUUID(),straightDoor,LabyrinthPlace.STACKS_HALL.id(),false);
+                data.rememberNode(lead.getUUID(),data.nodeKey(lead.getUUID(),straight),Map.of(straightDoor.id,new LabyrinthData.Deal(LabyrinthPlace.STACKS_HALL.id(),false,false)));
+                // The friend came another way, and their door here leads elsewhere.
+                data.pushReturn(friend.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(3,64,3),0F,true));
+                data.pushReturn(friend.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(5,64,9),0F,true));
+                data.deal(friend.getUUID(),straightDoor,LabyrinthPlace.BEDROOM_HALL.id(),false);
+                var sb=f.base(straight);var bb=f.base(bent);
+                at(lead,f.in,sb.offset(0,0,-8));at(friend,f.in,bb.offset(0,0,-6));
+                // Teleported to the lead.
+                var from=TeleportAnchor.before(friend);h.assertTrue(from.place()==bent,"the friend was in the bent hall: "+from.place());
+                at(friend,f.in,sb.offset(1,0,-8));
+                h.assertTrue("friend".equals(TeleportAnchor.reanchor(friend,from)),"the friend takes up the lead's way");
+                h.assertTrue(data.returns(friend.getUUID()).equals(data.returns(lead.getUUID())),"the way back is the lead's way back");
+                h.assertTrue(data.nodeKey(friend.getUUID(),straight)==data.nodeKey(lead.getUUID(),straight)&&data.returnDepth(friend.getUUID())==data.returnDepth(lead.getUUID()),"the room is known by the lead's route, at the lead's depth");
+                h.assertTrue(LabyrinthPlace.STACKS_HALL.id().equals(data.deal(friend.getUUID(),straightDoor).place()),"the door here leads where the lead's does, not where the friend's old way dealt it: "+data.deal(friend.getUUID(),straightDoor).place());
+                var behind=data.node(friend.getUUID(),LabyrinthData.routeKey(List.of(),bent));
+                h.assertTrue(behind!=null&&straight.id().equals(behind.get(bentDoor.id).place())&&straight.id().equals(data.deal(friend.getUUID(),bentDoor).place()),"going back, the room before is as the lead found it");
+                // Moved within the same room: nothing changes.
+                var same=TeleportAnchor.before(friend);at(friend,f.in,sb.offset(-1,0,-12));
+                h.assertTrue("same room".equals(TeleportAnchor.reanchor(friend,same)),"a move within the room changes nothing");
+                // Alone in another room: the spot they were moved from is the way back, and the room's doors are dealt.
+                for(int dx=-24;dx<=24&&manor[0]==null;dx++)for(int dz=-24;dz<=24&&manor[0]==null;dz++)if(HouseLayout.isInsideDomesticVolume(dx+.5,1,dz+.5))manor[0]=f.origin.offset(dx,1,dz);
+                h.assertTrue(manor[0]!=null,"a spot in the manor");
+                at(lead,f.in,manor[0]);
+                var away=TeleportAnchor.before(friend);at(friend,f.in,bb.offset(0,0,-6));
+                h.assertTrue("alone".equals(TeleportAnchor.reanchor(friend,away)),"alone in the bent hall");
+                var top=data.peekReturn(friend.getUUID());
+                h.assertTrue(top!=null&&!top.door()&&top.pos().distanceTo(away.pos())<.01,"the way back is the spot they were moved from: "+top);
+                h.assertTrue(data.deal(friend.getUUID(),bentDoor)!=null,"the room's door is dealt from there");
+                // Into the manor: nothing of a way back to keep.
+                var home=TeleportAnchor.before(friend);at(friend,f.in,manor[0].east());
+                h.assertTrue("manor".equals(TeleportAnchor.reanchor(friend,home))&&data.returnCount(friend.getUUID())==0,"in the manor the way back is cleared");
+                // A real /tp to the lead, back in the straight hall.
+                data.pushReturn(friend.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(7,64,7),0F,true));
+                at(lead,f.in,sb.offset(0,0,-8));at(friend,f.in,bb.offset(0,0,-6));expected.addAll(data.returns(lead.getUUID()));
+                var server=f.in.getServer();var to=sb.offset(1,0,-8);
+                server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withPermission(4).withSuppressedOutput(),
+                        "execute in "+f.in.dimension().location()+" run tp anchor_friend "+(to.getX()+.5)+" "+to.getY()+" "+(to.getZ()+.5));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.data().returns(friend.getUUID()).equals(expected),"after a real /tp the friend's way back is the lead's: "+f.data().returns(friend.getUUID())))
+            .thenExecute(()->{TeleportAnchor.forget();GroupCrossings.forget();})
+            .thenSucceed();
+    }
+
     /** A drafted scene for this fixture: every way of being there has its own line, and the holder's beat waits for them. */
     private static final SharedVignettes.Scene DRAFT=new SharedVignettes.Scene(){
         @Override public @Nullable String line(VignetteRole role,String outcome,String actor){return switch(role){

@@ -467,8 +467,7 @@ public final class LabyrinthDoors {
             STEPS.remove(player.getUUID());
             return true;
         }
-        LabyrinthPlace place = SiloSites.inside(player)?LabyrinthPlace.SILO:BackseatSites.inside(player)?LabyrinthPlace.BACKSEAT:BorrascaSites.placeAt(player.server,player.blockPosition());if(place==null)place=LiteraryCopies.placeAt(player.server,player.blockPosition());
-        if(place==null)place=LabyrinthPlaces.placeAt(origin, player.blockPosition());
+        LabyrinthPlace place = placeOf(player, origin);
         if (place == null) {
             STEPS.remove(player.getUUID());
             return false;
@@ -540,6 +539,25 @@ public final class LabyrinthDoors {
             }
         }
         return true;
+    }
+
+    /** The place a player actually stands in, its private sites and copies included; null in the manor or outside every place. */
+    public static @Nullable LabyrinthPlace placeOf(ServerPlayer player, BlockPos origin) {
+        LabyrinthPlace place = SiloSites.inside(player)?LabyrinthPlace.SILO:BackseatSites.inside(player)?LabyrinthPlace.BACKSEAT:BorrascaSites.placeAt(player.server,player.blockPosition());if(place==null)place=LiteraryCopies.placeAt(player.server,player.blockPosition());
+        if(place==null)place=LabyrinthPlaces.placeAt(origin, player.blockPosition());
+        return place;
+    }
+
+    /**
+     * 0.4.402: a reader the House did not move (a command, a respawn) starts from where they stand: no step remembered from before, no
+     * entry door shut for them, and inside the room if they are past its doorway (TeleportAnchor).
+     */
+    public static void settle(ServerPlayer player, @Nullable LabyrinthPlace place) {
+        UUID id = player.getUUID();
+        STEPS.remove(id); SHUT_FOR.remove(id); INSIDE.remove(id); STUCK.remove(id);
+        if (place == null) return;
+        LabyrinthData.Door entry = SceneInstances.entryAt(player, place);
+        if (entry != null && entry.dimension.equals(player.level().dimension()) && intoRoom(player, entry) >= THRESHOLD) INSIDE.add(id);
     }
 
     /** An authored forced cut still uses the native visit departure and exact saved return stack. */
