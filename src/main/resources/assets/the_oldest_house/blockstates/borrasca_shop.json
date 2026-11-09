@@ -959,6 +959,36 @@
     "facing=west,kind=crockery,stage=1": {
       "model": "the_oldest_house:block/borrasca_shop/crockery_0",
       "y": 270
+    },
+    "facing=north,kind=bike,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_0"
+    },
+    "facing=north,kind=bike,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_1"
+    },
+    "facing=east,kind=bike,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_0",
+      "y": 90
+    },
+    "facing=east,kind=bike,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_1",
+      "y": 90
+    },
+    "facing=south,kind=bike,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_0",
+      "y": 180
+    },
+    "facing=south,kind=bike,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_1",
+      "y": 180
+    },
+    "facing=west,kind=bike,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_0",
+      "y": 270
+    },
+    "facing=west,kind=bike,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/bike_1",
+      "y": 270
     }
   }
 }

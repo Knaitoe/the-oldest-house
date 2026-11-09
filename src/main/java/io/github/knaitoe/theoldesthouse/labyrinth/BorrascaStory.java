@@ -364,6 +364,7 @@ public final class BorrascaStory {
         }
         for(String key:BorrascaCast.KEYS)BorrascaCast.remember(own,key,actor(p,own,key));
         townPosters(p,b,own,visit);
+        townBike(p,b,own,visit);
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door
         scene(p,b,own);
         if(!own.getBoolean("CastRecalled"))return;
@@ -926,6 +927,21 @@ public final class BorrascaStory {
         p.serverLevel().setBlock(eli,poster,F);
         if(visit>=3)p.serverLevel().setBlock(wren,poster,F);
         own.putInt("TownPostersVisit",visit);
+    }
+
+    /**
+     * 0.4.431: the children's bikes. On the first visit Patrick's lies on its side outside the store where he dropped it ("If my bike's
+     * still at the store, I'm up by the second marker"), and Kendra's stands on its kickstand by where she waits. By the second visit
+     * Kendra has walked his home to his mother; hers is gone with her on the third.
+     */
+    private static void townBike(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
+        if(own.getInt("TownBikeVisit")>=visit)return;
+        var his=BorrascaRooms.at(b,BorrascaRooms.PATRICK_BIKE);var hers=BorrascaRooms.at(b,BorrascaRooms.KENDRA_BIKE);
+        var l=p.serverLevel();if(!l.hasChunkAt(his)||!l.hasChunkAt(hers))return;
+        var none=net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        l.setBlock(his,visit==1?BorrascaShopBlock.of(BorrascaShopBlock.Kind.BIKE,Direction.EAST,1):none,F);
+        l.setBlock(hers,visit<=2?BorrascaShopBlock.of(BorrascaShopBlock.Kind.BIKE,Direction.EAST,0):none,F);
+        own.putInt("TownBikeVisit",visit);
     }
 
     private static void scene(ServerPlayer p,BlockPos b,CompoundTag own){

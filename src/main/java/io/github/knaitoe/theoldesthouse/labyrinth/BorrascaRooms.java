@@ -14,6 +14,8 @@ public final class BorrascaRooms {
     public static final BlockPos MARKER_ONE=new BlockPos(5,0,-76),MARKER_TWO=new BlockPos(7,4,-123),MARKER_THREE=new BlockPos(5,9,-148),MARKER_FOUR=new BlockPos(5,12,-165);
     public static final BlockPos SHERIFF=new BlockPos(2,4,-122),TAPE=new BlockPos(2,5,-125),TAKING=new BlockPos(-2,9,-148),DROP=new BlockPos(1,10,-151),HIDE=new BlockPos(-12,9,-151);
     static final BlockPos ELI_POSTER=new BlockPos(-15,1,-24),WREN_POSTER=new BlockPos(-15,1,-22);
+    /** 0.4.431: Patrick's bike, dropped on its side outside the store, and Kendra's on its kickstand by where she waits. */
+    public static final BlockPos PATRICK_BIKE=new BlockPos(-12,0,-24),KENDRA_BIKE=new BlockPos(-3,0,-33);
     static final BlockPos YARD_PATROL_START=new BlockPos(2,12,-174);
     public static final BlockPos SHELTER_ONE=new BlockPos(3,2,-114),SHELTER_TWO=new BlockPos(-2,6,-131);
     public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-167),GATE_LOG=new BlockPos(5,13,-170),PACK=new BlockPos(-24,13,-195);

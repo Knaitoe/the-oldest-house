@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.430** details the insides of Borrasca's shops. The gas station's back wall holds its own stock now (chips, motor oil and antifreeze, the bait freezer under a hand-painted sign, a feed store calendar), with used tires out front; the general store's aisles are a grocer's shelves with the feed at the back; the diner's kitchen has its crockery; and joists cross the ceilings of five shops. See [docs/BORRASCA_ARCHITECTURE_0_4_430.md](docs/BORRASCA_ARCHITECTURE_0_4_430.md).
+Development candidate **0.4.431** puts the children's bikes in Borrasca's town. On the first visit Patrick's lies dropped on its side outside the general store, where Kendra warns you not to trip on it, and hers stands on its kickstand by where she waits. By the second visit she has walked his home to his mother. See [docs/BORRASCA_BIKES_0_4_431.md](docs/BORRASCA_BIKES_0_4_431.md).
+
+Candidate **0.4.430** details the insides of Borrasca's shops. The gas station's back wall holds its own stock now (chips, motor oil and antifreeze, the bait freezer under a hand-painted sign, a feed store calendar), with used tires out front; the general store's aisles are a grocer's shelves with the feed at the back; the diner's kitchen has its crockery; and joists cross the ceilings of five shops. See [docs/BORRASCA_ARCHITECTURE_0_4_430.md](docs/BORRASCA_ARCHITECTURE_0_4_430.md).
 
 Candidate **0.4.429** answers five playtest notes. What people say is now a caption, wrapped and framed below the middle of the view in front of everything, with the speaker's name, and it goes into the journal's "What was said". In Borrasca, Gus and Mr. Rowe walk a child out of the bar and the historical society instead of setting them down outside; the reader takes Kelly's pocketknife from her to cut their own name in the Triple Tree; and the ground round the refinery's wire no longer lets anyone jump over it. See [docs/BORRASCA_SPEECH_0_4_429.md](docs/BORRASCA_SPEECH_0_4_429.md).
 

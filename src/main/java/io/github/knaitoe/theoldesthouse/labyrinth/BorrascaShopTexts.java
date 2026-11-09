@@ -60,7 +60,7 @@ public final class BorrascaShopTexts {
     }
 
     /** What a look at one of the shops' fittings shows, or nothing for those that only stand there. */
-    static @Nullable String look(BorrascaShopBlock.Kind kind,int stage,boolean later){
+    public static @Nullable String look(BorrascaShopBlock.Kind kind,int stage,boolean later){
         return switch(kind){
             case PIE_CASE->stage==1?"Three pies under the glass. One has been cut.":"Three pies under the glass: cherry, pecan and one with a lattice top.";
             case URN->"The coffee urn ticks as it heats. Its little window shows it full.";
@@ -90,6 +90,9 @@ public final class BorrascaShopTexts {
             case TIRES->"Used tires stacked by the wall. A price is chalked on the top one and rubbed half out.";
             case GROCERIES->"Tins of soup and beans, boxes of cereal and matches, sacks of flour on the bottom shelf.";
             case CROCKERY->"Heavy diner plates, mugs with a stripe round the rim, bowls stacked three deep.";
+            // 0.4.431: Kendra's bike on its kickstand (stage 0), Patrick's dropped on its side (stage 1).
+            case BIKE->stage==0?"Kendra's bike, on its kickstand. The seat is let all the way down, and the chain shines with fresh oil."
+                :"Patrick's bike, dropped on its side where anybody could trip on it. A baseball card is pinned to the fork so the spokes clatter.";
             default->null;
         };
     }
