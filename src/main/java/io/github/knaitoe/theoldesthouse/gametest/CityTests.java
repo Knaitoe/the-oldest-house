@@ -25,6 +25,11 @@ public final class CityTests {
     private static final LabyrinthPlace P=LabyrinthPlace.BLACK_CITY;
     private static LiteraryTests.Fixture active;
     private static LiteraryTests.Fixture fixture(GameTestHelper h){if(active!=null)active.close();active=new LiteraryTests.Fixture(h);BlackCity.clearAll();return active;}
+    /** Run 1493: the last case of each batch leaves no players behind for whatever the runner takes up next. */
+    private static void close(){if(active!=null){active.close();active=null;}BlackCity.clearAll();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="city_camp") public static void cityCampDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="city_look") public static void cityLookDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="city_tunnel") public static void cityTunnelDone(net.minecraft.server.level.ServerLevel l){close();}
     private static AABB box(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-65,b.getY()-47,b.getZ()-193,b.getX()+65,b.getY()+61,b.getZ()+2);}
     private static String account(LiteraryTests.Fixture f,ServerPlayer p){var book=CityTexts.account(p.getGameProfile().getName(),f.own(p,P));var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}
     private static void murals(LiteraryTests.Fixture f,ServerPlayer p,int read){var own=f.own(p,P);own.putInt("Murals",read);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}

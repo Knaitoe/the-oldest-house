@@ -31,6 +31,10 @@ public final class KeptTests {
     private static final LabyrinthPlace P=LabyrinthPlace.KEPT;
     private static LiteraryTests.Fixture active;
     private static LiteraryTests.Fixture fixture(GameTestHelper h){if(active!=null)active.close();active=new LiteraryTests.Fixture(h);Kept.clearAll();return active;}
+    /** Run 1493: the last case of each batch leaves no players behind for whatever the runner takes up next. */
+    private static void close(){if(active!=null){active.close();active=null;}Kept.clearAll();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="kept_doors") public static void keptDoorsDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="kept_walk") public static void keptWalkDone(net.minecraft.server.level.ServerLevel l){close();}
     private static AABB box(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-23,b.getY()-3,b.getZ()-99,b.getX()+23,b.getY()+11,b.getZ()+12);}
     private static String text(net.minecraft.world.item.ItemStack book){var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}
     /** Stands in front of a cell's door, on the hall side, and right-clicks it. */
