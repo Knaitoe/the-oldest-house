@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.406** finishes the texture pass with the cabin at the end of the world: weathered shiplap on a fieldstone foot outside, the knotty pine within, wide floorboards, a boarded ceiling between beams, cedar shakes over board-and-batten gables, and a grey deck on the porch and jetty. See [docs/TEXTURE_PASS_CABIN_0_4_406.md](docs/TEXTURE_PASS_CABIN_0_4_406.md).
+Development candidate **0.4.407** adds the Drawing: a village square on a summer morning, where every household draws a folded slip from an old black box. Each reader is read out as a new household and draws their own. One villager is marked every year, never a reader, and each reader decides alone what to do with the stone they are handed. See [docs/THE_DRAWING_0_4_407.md](docs/THE_DRAWING_0_4_407.md).
+
+Candidate **0.4.406** finishes the texture pass with the cabin at the end of the world: weathered shiplap on a fieldstone foot outside, the knotty pine within, wide floorboards, a boarded ceiling between beams, cedar shakes over board-and-batten gables, and a grey deck on the porch and jetty. See [docs/TEXTURE_PASS_CABIN_0_4_406.md](docs/TEXTURE_PASS_CABIN_0_4_406.md).
 
 Candidate **0.4.405** fixes the Goatman's trailer for several readers. Friends who each sat an evening there alone can go back together. A friend who follows after supper has started is told why and goes on elsewhere, instead of finding the door locked. A reader back before dark counts for the night. See [docs/GOATMAN_TOGETHER_0_4_405.md](docs/GOATMAN_TOGETHER_0_4_405.md).
 

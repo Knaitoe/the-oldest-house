@@ -159,6 +159,17 @@ LOOKS = {
     'literary_pinehook_coverall': Look('#8e5f45','#1e1814','close','#3a3c34','#3a3c34','crew','#5a5c52',eyes='#3a3029',beard='shadow',sleeve=10),
     'literary_pinehook_nina': Look('#dcb49a','#2a2220','long','#5a4a5e','#2e3440','knit','#d8d0c0',eyes='#4a5a52'),
     'literary_pinehook_len': Look('#c8a088','#a8a49a','receding','#6a5a3a','#3a3c40','flannel','#a89a7a',eyes='#5a5c58',age=2,beard='shadow'),
+    # The Drawing (0.4.407): the village in the square. Mr. Albright in his shirtsleeves with the list, Mr. Rudd the postmaster in his
+    # cardigan and glasses, Nell Garrow in her apron, Dale Garrow in his work flannel, Bess their daughter, Old Mr. Pike in his good
+    # coat, Mrs. Dunn in her cardigan, and Ricky with his pockets full.
+    'literary_drawing_albright': Look('#d6ae90','#5a4a3a','part','#e2ddd0','#3a3c44','shirt','#6a6e7a',eyes='#4a5a5a',age=1),
+    'literary_drawing_rudd': Look('#c99a78','#8a8478','receding','#5a6a7a','#3a3e44','cardigan','#cfc4b0',eyes='#4a4a40',age=2,glasses=True),
+    'literary_drawing_nell': Look('#e0b896','#8a4a2a','bun','#b8645a','#4a4038','apron','#f0e6d0',eyes='#4a6050'),
+    'literary_drawing_dale': Look('#c99878','#5a3a22','short','#5a6a4a','#3a3e48','flannel','#c8bca0',eyes='#4e5a50',beard='stubble'),
+    'literary_drawing_bess': Look('#e2c2a6','#a86a3a','ponytail','#6a8aaa','#3a4a5a','tee','#f0e6d0',eyes='#4a6a5a',sleeve=4,face_style='child'),
+    'literary_drawing_pike': Look('#d8b49a','#e0ddd4','receding','#4a4038','#3a3630','coat','#bfb39a',eyes='#5a5a52',age=2,beard='walrus'),
+    'literary_drawing_dunn': Look('#d2a283','#7a7a74','bun','#6a5a7a','#3a3640','cardigan','#cfc4b0',eyes='#5a5a52',age=2),
+    'literary_drawing_ricky': Look('#c48a68','#3a2a1e','messy','#8a3a2e','#2e3a4a','tee','#d8d0c0',eyes='#3a3029',sleeve=4,face_style='child'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

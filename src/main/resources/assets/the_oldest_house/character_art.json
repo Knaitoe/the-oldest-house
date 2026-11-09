@@ -1594,5 +1594,69 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 122
+  },
+  {
+    "name": "literary_drawing_albright",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 123
+  },
+  {
+    "name": "literary_drawing_rudd",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 124
+  },
+  {
+    "name": "literary_drawing_nell",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 125
+  },
+  {
+    "name": "literary_drawing_dale",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 126
+  },
+  {
+    "name": "literary_drawing_bess",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 127
+  },
+  {
+    "name": "literary_drawing_pike",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 128
+  },
+  {
+    "name": "literary_drawing_dunn",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 129
+  },
+  {
+    "name": "literary_drawing_ricky",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 130
   }
 ]
