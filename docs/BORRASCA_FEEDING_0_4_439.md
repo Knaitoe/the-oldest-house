@@ -77,45 +77,38 @@ feeding sequence overlayed. Ensure the players screen is pulsing/flashing a dull
 - **The red.** While the belt is still taking her, the screen throbs a dull red: a slow double heartbeat, darker at the edges, harder at
   each lurch when a bone gives. Five seconds after the belt stops moving her (the breaker, or the end) it fades out. Like every flash and
   shake, it scales with the reader's Distortion Effects setting, down to nothing.
-- **Him.** When the machine reaches her chest (`GENTLEMAN_AT`, 1.02 blocks) with the slot in this reader's sight, for two seconds the
-  machine is not there. The Shiny Gentleman is, drawn by the machine's own renderer in its place (`BorrascaOrrery.devour`):
-  - he is four and a half times his height, so the stepped cone below his waist stands on the housing where the machine's cone stood;
-  - he is folded down at the waist over the south wall, his hoops whirling;
+- **Him.** The owner: "the monster is the child's imagination seeing him as an adult is that trauma made real". The figure in the
+  pines on the child visits is what a child makes of the machine on the hill. On the last night the grown reader sees the same figure,
+  real. When the machine reaches her chest (`GENTLEMAN_AT`, 1.02 blocks) with the slot in this reader's sight, for two seconds the machine
+  is not there and he is, drawn by the machine's own renderer in its place (`BorrascaOrrery.devour`):
+  - he is four and a half times his height, so his coat stands on the housing's walls where the machine's cone stood;
+  - he is folded down at the waist over the south wall;
   - his neck is drawn out down to the slot, and his faceless oval is split across and open around her, lined with her torn flesh and her
     bone for teeth;
   - his arms come down to her shoulders and the fingers hook over.
 
-  Then he is gone and the machine is turning again. The server records that the reader saw him at the machine (`GentlemanAtMachine`),
-  and the account says: "For a second the machine wasn't there. Something tall and shining was, bent over the belt, its face split open
-  around her."
+  Then he is gone and the machine is turning again. The server records that the reader saw him at the machine (`GentlemanAtMachine`).
+  The account says: "For a second the machine wasn't there. Something tall and shining was, bent over the belt, its face split open
+  around her." If the reader saw him in the pines as a child, it says "The tall thing from the pines was" instead.
 
-## The machine and the Gentleman, rebuilt
+## The machine, rebuilt
 
-The owner: "Well the orrery needs to be rebuilt too. Maybe redesign them both". In the story the women are fed to "a large silver,
-conically shaped machine", and the children's Shiny Gentleman is that machine, whirling, that "lit up the valley".
+The owner: "Well the orrery needs to be rebuilt too". In the story the women are fed to "a large silver, conically shaped machine", and
+its whirling "lit up the valley".
 
-- **The machine** (`client.BorrascaOrrery`, drawn by the machine block's renderer, seen from 256 blocks):
-  - a sixteen-sided silver cone stands on the housing's walls and rises ten blocks, in bands of plain plate, rivets and vents that glow
-    while it runs, to a tip bent over like his hat;
-  - three arms turn round it at three heights and speeds, each carrying a polished ball; the middle one turns the other way and carries
-    a smaller ball turning round its own;
-  - two tilted hoops turn round it, slower;
-  - a streak of light goes round the cone;
-  - when the breaker is pulled, everything slows to a stop with the drum;
-  - the belt runs into a mouth at its foot: a lip over the slot with steel teeth hanging from it, and dark behind.
+`client.BorrascaOrrery` is drawn by the machine block's renderer and can be seen from 256 blocks:
 
-  None of it is solid. The housing's walls are the only blocks, and the arms and hoops turn above head height.
-- **The Shiny Gentleman** is built from the same parts, on one atlas with the machine (`tools/draw_shiny_gentleman.py`, 128 by 64):
-  - he keeps the bent hat and the faceless oval with its one bright band;
-  - a bar of shoulders too wide, with a ball at each end;
-  - a spindle for a body, with three collars and two tilted hoops turning round it, a bead riding each;
-  - from the waist, a stepped cone like the machine's, banded, to a toothed hem;
-  - legs a pixel wide with a bead at each knee;
-  - arms of rods with a ball at the elbow and the wrist, ending in four long hooked fingers.
+- a sixteen-sided silver cone stands on the housing's walls and rises ten blocks, in bands of plain plate, rivets and vents that glow
+  while it runs, to a tip bent over like a hat (where the child got his hat from);
+- three arms turn round it at three heights and speeds, each carrying a polished ball; the middle one turns the other way and carries
+  a smaller ball turning round its own;
+- two tilted hoops turn round it, slower;
+- a streak of light goes round the cone;
+- when the breaker is pulled, everything slows to a stop with the drum;
+- the belt runs into a mouth at its foot: a lip over the slot with steel teeth hanging from it, and dark behind.
 
-  He still stands out by the far marker, the reader's alone.
-- **Open question for the owner:** keep the figure in the pines (kept for now, in the machine's likeness), or let the machine be the only
-  Shiny Gentleman, as in the book.
+None of it is solid. The housing's walls are the only blocks, and the arms and hoops turn above head height. Its materials are on the
+right half of the Shiny Gentleman's sheet (`tools/draw_shiny_gentleman.py`, now 128 by 64). His half is unchanged, and so is he.
 
 ## The breaker
 
@@ -185,7 +178,7 @@ The note now has a page of its own for this:
   - the shaking caption;
   - the pile.
 - Page 15 shows the two seconds as the machine's renderer draws them, under the red. Page 16 shows the machine running, from three sides,
-  one of them slowing. Page 11 shows the rebuilt Gentleman in the pines.
+  one of them slowing.
 
 ## Numbers
 

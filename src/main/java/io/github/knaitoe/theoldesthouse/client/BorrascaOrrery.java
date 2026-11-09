@@ -23,9 +23,12 @@ import org.joml.Quaternionf;
  * is pulled, all of it slows to a stop with the drum. The belt runs into a mouth at its foot: a lip over the slot with steel teeth hanging
  * from it, and dark behind.
  * <p>
- * Everything here is drawn by the machine block's renderer, on its own atlas with the Shiny Gentleman (tools/draw_shiny_gentleman.py's
- * TILES), so that he and it are made of the same things. None of it is solid: the cone stands above the housing's walls and the arms and
- * hoops turn above head height.
+ * The children make a man of it, the Shiny Gentleman in the pines, with its bent tip for his hat (BorrascaGentlemanModel); the owner:
+ * "the monster is the child's imagination seeing him as an adult is that trauma made real". On the last night, for two seconds, the grown
+ * reader sees him here in its place ({@link #devour}).
+ * <p>
+ * Everything here is drawn by the machine block's renderer; its materials are on the right half of his sheet (tools/draw_shiny_gentleman.py's
+ * TILES). None of it is solid: the cone stands above the housing's walls and the arms and hoops turn above head height.
  */
 public final class BorrascaOrrery {
     private BorrascaOrrery(){}
@@ -43,10 +46,10 @@ public final class BorrascaOrrery {
     /** The cone's tiers, a block each from the bottom: plain plate, a riveted band, a band of vents. */
     private static final int[] TIERS={0,1,0,2,0,1,0,2,0,1};
     // Places on the shared atlas, in pixels (tools/draw_shiny_gentleman.py's TILES and PARTS).
-    private static final int[][] TILE={{32,30},{56,30},{80,30}};
+    private static final int[][] TILE={{64,0},{88,0},{64,16}};
     private static final int TILE_W=24,TILE_H=16;
-    private static final int[] SPHERE={32,46,16},TOOTH={48,46},THROAT={52,46};
-    private static final int ROD_U=104,ROD_V=30;
+    private static final int[] SPHERE={88,16,16},TOOTH={116,16},THROAT={116,24};
+    private static final int ROD_U=104,ROD_V=16;
     private static final float W=BorrascaGentlemanModel.ATLAS_W,H=BorrascaGentlemanModel.ATLAS_H;
 
     static RenderType type(){return RenderType.entityCutoutNoCull(BorrascaGentlemanModel.TEXTURE);}
