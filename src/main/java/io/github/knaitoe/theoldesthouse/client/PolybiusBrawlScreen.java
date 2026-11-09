@@ -120,7 +120,14 @@ public final class PolybiusBrawlScreen extends Screen {
             // 0.4.223: a zombie's picture has no left arm or leg of its own (the game mirrors the right ones), so they were drawn blank.
             ZOMBIE_RIG=new Rig(64,4,4,20,4,20,4,44,20,44,20,false);
     /** A paper doll: head, body, arms and legs, front on, turned by the way it faces; walking swings a leg and an arm. */
-    void doll(GuiGraphics g,ResourceLocation tex,Rig r,float x,float y,int facing,int step,boolean punching){
+    void doll(GuiGraphics g,ResourceLocation tex,Rig r,float x,float y,int facing,int step,boolean punching){doll(g,tex,r,x,y,facing,step,punching?90:-1,null);}
+    /**
+     * 0.4.412 (the owner's note on Block Party's equipped items): the front arm can be raised to an angle from hanging (0) through
+     * straight ahead (90) to straight up (180), turning at the shoulder, and what it holds is drawn in its hand, so a sword, a bow, a
+     * potion or a block of TNT moves with the arm instead of floating beside the body. Turned to the left, all of it is mirrored with
+     * the doll.
+     */
+    void doll(GuiGraphics g,ResourceLocation tex,Rig r,float x,float y,int facing,int step,float arm,Runnable inHand){
         float top=y-32,left=x-4;int swing=step==0?0:(step%16<8?1:-1);
         g.pose().pushPose();
         // 0.4.223 (owner: "rendering is messed up on brawler"): turned to the left the doll is drawn mirrored, which turns its
@@ -130,11 +137,31 @@ public final class PolybiusBrawlScreen extends Screen {
         g.blit(tex,Math.round(left+4),Math.round(top+20-swing),r.legLU(),r.legLV(),r.legW(),12,64,r.texH());
         g.blit(tex,Math.round(left),Math.round(top+8),20,20,8,12,64,r.texH());
         g.blit(tex,Math.round(left-r.armW()),Math.round(top+8),r.armRU(),r.armRV(),r.armW(),12,64,r.texH());
-        if(punching){g.pose().pushPose();g.pose().translate(left+8,top+8+r.armW(),0);g.pose().mulPose(Axis.ZP.rotationDegrees(-90));g.blit(tex,0,0,r.armLU(),r.armLV(),r.armW(),12,64,r.texH());g.pose().popPose();}
-        else g.blit(tex,Math.round(left+8),Math.round(top+8-swing),r.armLU(),r.armLV(),r.armW(),12,64,r.texH());
         g.blit(tex,Math.round(left),Math.round(top),8,8,8,8,64,r.texH());
         if(r.overlay())g.blit(tex,Math.round(left),Math.round(top),40,8,8,8,64,r.texH());
+        // The front arm last, over the body and the head, as an arm held out in front of them would be.
+        float sx=left+8+r.armW()/2F,sy=top+9;
+        if(arm<0){
+            g.blit(tex,Math.round(left+8),Math.round(top+8-swing),r.armLU(),r.armLV(),r.armW(),12,64,r.texH());
+            if(inHand!=null){g.pose().pushPose();g.pose().translate(sx,top+8-swing+10.5F,0);inHand.run();g.pose().popPose();}
+        }else{
+            g.pose().pushPose();g.pose().translate(sx,sy,0);g.pose().mulPose(Axis.ZP.rotationDegrees(-arm));g.pose().translate(-r.armW()/2F,-1,0);
+            g.blit(tex,0,0,r.armLU(),r.armLV(),r.armW(),12,64,r.texH());g.pose().popPose();
+            if(inHand!=null){double a=Math.toRadians(arm);g.pose().pushPose();g.pose().translate(sx+(float)Math.sin(a)*10F,sy+(float)Math.cos(a)*10F,0);inHand.run();g.pose().popPose();}
+        }
         if(facing<0)RenderSystem.enableCull();
+        g.pose().popPose();
+    }
+    /**
+     * An item picture held by its grip: the pixel of the picture a hand closes on is put at the hand, and the picture is turned about
+     * it so that the direction it points in its own picture ({@code picture}, degrees clockwise from straight ahead) points at
+     * {@code toward}.
+     */
+    void inHand(GuiGraphics g,ResourceLocation tex,float size,float gripX,float gripY,float picture,float toward,int tint){
+        g.pose().pushPose();g.pose().mulPose(Axis.ZP.rotationDegrees(toward-picture));float s=size/16F;g.pose().scale(s,s,1);
+        if(tint!=-1)RenderSystem.setShaderColor((tint>>16&255)/255F,(tint>>8&255)/255F,(tint&255)/255F,1);
+        RenderSystem.enableBlend();g.blit(tex,Math.round(-gripX),Math.round(-gripY),0,0,16,16,16,16);
+        if(tint!=-1)RenderSystem.setShaderColor(1,1,1,1);
         g.pose().popPose();
     }
     ResourceLocation skin(UUID id){
@@ -163,29 +190,53 @@ public final class PolybiusBrawlScreen extends Screen {
         float x=c.getInt("X")/4F,y=c.getInt("Y")/4F;int seatOf=c.getInt("Seat"),cls=c.getInt("Class"),facing=c.getInt("Facing");
         g.fill(Math.round(x-6),Math.round(y-1),Math.round(x+6),Math.round(y+1),0x60000000);
         if(c.getInt("Dash")>0)for(int i=1;i<=3;i++)g.fill(Math.round(x-facing*(6+i*4)),Math.round(y-20+i*4),Math.round(x-facing*(2+i*4)),Math.round(y-19+i*4),0x90D0D0D0);
-        boolean swinging=c.getInt("Punch")>2;
-        doll(g,skin(c.getUUID("Id")),PLAYER,x,y,facing,c.getBoolean("Moving")?ticks:0,swinging&&cls==PolybiusBrawl.BRAWLER);
+        doll(g,skin(c.getUUID("Id")),PLAYER,x,y,facing,c.getBoolean("Moving")?ticks:0,arm(c,cls),()->held(g,c,cls));
         RenderSystem.setShaderColor(1,1,1,1);
-        held(g,c,x,y,facing,cls,swinging);
+        if(cls==PolybiusBrawl.KNIGHT&&c.getInt("Shield")>0){g.pose().pushPose();g.pose().translate(x+facing*7,y-24,0);g.blit(SHIELD,-3,0,6,14,1,1,12,22,64,64);g.pose().popPose();}
         String name=c.getString("Name");if(name.length()>8)name=name.substring(0,8);
         g.pose().pushPose();g.pose().translate(x,y-38,0);g.pose().scale(.5F,.5F,1);g.drawString(font,name,-font.width(name)/2,0,COLOURS[seatOf%4],false);
         if(state.getInt("Lobby")>0){String pick="< "+PolybiusBrawl.CLASS_NAMES[cls]+" >";g.drawString(font,pick,-font.width(pick)/2,-10,0xFFFFE060,false);}
         else if(c.getInt("Combo")>=2){String chain="x"+c.getInt("Combo")+(c.getBoolean("Finish")?" FINISH":"");g.drawString(font,chain,-font.width(chain)/2,-10,0xFFFFE060,false);}
         g.pose().popPose();
     }
-    /** What a fighter holds: the Knight's sword (and shield, raised), the Archer's bow, the Alchemist's next potion, TNT if carried. */
-    void held(GuiGraphics g,CompoundTag c,float x,float y,int facing,int cls,boolean swinging){
-        float hx=x+facing*6,hy=y-17;
-        if(c.getInt("Tnt")>0){icon(g,TNT,hx,hy,6,0,-1);return;}
+    /** Where a picture's grip is, in its own sixteen pixels, and which way it points in its picture. */
+    static final float[] SWORD_GRIP={2.5F,12.5F},BOW_GRIP={4F,9.5F},BOTTLE_GRIP={8F,10.5F};
+    static final ResourceLocation[] BOW_PULLING={vanilla("item/bow_pulling_0"),vanilla("item/bow_pulling_1"),vanilla("item/bow_pulling_2")};
+    /** The angle of the front arm, from hanging (0) to straight up (180), for what a fighter is doing with what it holds. */
+    static float arm(CompoundTag c,int cls){
+        int punch=c.getInt("Punch");boolean finish=c.getBoolean("Finish");
+        if(c.getInt("Tnt")>0)return 165;
+        return switch(cls){
+            // The sword is raised behind the head and brought down through the front; a finisher holds the arm out and spins the blade.
+            case PolybiusBrawl.KNIGHT->punch<=0?30:finish?90:new float[]{30,22,15,20,45,85,125,150,165}[Math.min(8,punch)];
+            // The bow is held out at the arm's length while it shoots, and lowered to the side between.
+            case PolybiusBrawl.ARCHER->punch>0?90:25;
+            // The bottle is lifted back over the shoulder and thrown forward.
+            case PolybiusBrawl.ALCHEMIST->punch<=0?25:new float[]{25,60,95,130,160,170,175}[Math.min(6,punch)];
+            // A punch is thrown straight out.
+            default->punch>2?90:-1;
+        };
+    }
+    /** What a fighter holds, drawn in its hand: the Knight's sword, the Archer's bow, the Alchemist's next potion, TNT if carried. */
+    void held(GuiGraphics g,CompoundTag c,int cls){
+        int punch=c.getInt("Punch");float arm=arm(c,cls);
+        if(c.getInt("Tnt")>0){inHand(g,TNT,7,8,4,0,0,-1);return;}
         switch(cls){
             case PolybiusBrawl.KNIGHT->{
-                // At rest the blade is up and forward; a swing brings it down through the front; a finisher spins it right round.
-                int punch=c.getInt("Punch");float a=!swinging?-45:c.getBoolean("Finish")?punch*45:-60+(8-punch)*15;
-                icon(g,CLASS_ICON[cls],hx,hy-2,10,aim(facing,a,POINTS_UP_RIGHT),-1);
-                if(c.getInt("Shield")>0){g.pose().pushPose();g.pose().translate(x+facing*7,y-24,0);g.blit(SHIELD,-3,0,6,14,1,1,12,22,64,64);g.pose().popPose();}
+                // The blade leads the arm by sixty degrees, so it trails back over the head as the arm goes up and comes down in front.
+                float toward=c.getBoolean("Finish")&&punch>0?punch*45:30-arm;
+                inHand(g,CLASS_ICON[cls],10,SWORD_GRIP[0],SWORD_GRIP[1],POINTS_UP_RIGHT,toward,-1);
             }
-            case PolybiusBrawl.ARCHER->icon(g,CLASS_ICON[cls],hx,hy,9,aim(facing,0,POINTS_UP_LEFT),-1);
-            case PolybiusBrawl.ALCHEMIST->bottle(g,true,hx,hy,7,0,HARM_TINT);
+            case PolybiusBrawl.ARCHER->{
+                // Held upright, the arc forward and the string toward the body; the string draws back as an arrow goes and springs home.
+                var tex=punch>=4?BOW_PULLING[2]:punch==3?BOW_PULLING[1]:punch>0?BOW_PULLING[0]:CLASS_ICON[cls];
+                inHand(g,tex,9,BOW_GRIP[0],BOW_GRIP[1],POINTS_UP_LEFT,0,-1);
+            }
+            case PolybiusBrawl.ALCHEMIST->{
+                // The bottle stays upright in the hand; once thrown it is the one arcing through the air, so the hand is empty.
+                if(punch>=4)return;
+                inHand(g,SPLASH_LIQUID,7,BOTTLE_GRIP[0],BOTTLE_GRIP[1],0,0,HARM_TINT);inHand(g,SPLASH,7,BOTTLE_GRIP[0],BOTTLE_GRIP[1],0,0,-1);
+            }
             default->{}
         }
     }
