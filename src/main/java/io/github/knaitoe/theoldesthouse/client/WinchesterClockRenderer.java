@@ -24,6 +24,7 @@ public final class WinchesterClockRenderer implements BlockEntityRenderer<Winche
     @Override public void render(WinchesterClockEntity clock,float partial,PoseStack pose,MultiBufferSource out,int light,int overlay){
         var s=clock.getBlockState();if(!s.is(LiteraryRegistry.WINCHESTER_FITTING.get()))return;
         if(s.getValue(WinchesterFittingBlock.KIND)==WinchesterFittingBlock.Kind.HALL_STAND_TOP){mirror(clock,s,pose,out);return;}
+        if(s.getValue(WinchesterFittingBlock.KIND)==WinchesterFittingBlock.Kind.BUFFET_R){buffet(clock,s,pose,out);return;}
         ClockHands.draw(clock,s.getValue(WinchesterFittingBlock.FACING),ClockHands.Time.THIRTEEN,.5f,6f/16,12f/16,pose,out,light);
     }
     /**
@@ -34,6 +35,22 @@ public final class WinchesterClockRenderer implements BlockEntityRenderer<Winche
      */
     static HouseReadReflection.Glass glass(WinchesterClockEntity stand,net.minecraft.world.level.block.state.BlockState s){
         return new HouseReadReflection.Glass(stand.getBlockPos(),s.getValue(WinchesterFittingBlock.FACING),1.5f/16,14.5f/16,.5f/16,14f/16,1.6f/16,null);
+    }
+    /**
+     * 0.4.403, the owner's playtest: "Missed mirror opportunity here." The dining room buffet's glass is a true plane mirror too. It runs
+     * across both halves of the buffet, from inside the right half's frame to inside the left half's, and from the top of the cupboard
+     * (15 px) to the frame's head (30.5 px); its face is 1.5 px off the back. Without its left half beside it, it stops at its own frame.
+     */
+    static HouseReadReflection.Glass buffetGlass(WinchesterClockEntity buffet,net.minecraft.world.level.block.state.BlockState s){
+        var facing=s.getValue(WinchesterFittingBlock.FACING);var at=buffet.getBlockPos();
+        var probe=new HouseReadReflection.Glass(at,facing,0,1,0,1,0,null).world(1.5,.5,.5);
+        var level=buffet.getLevel();var other=level==null?null:level.getBlockState(net.minecraft.core.BlockPos.containing(probe));
+        boolean pair=other!=null&&other.is(LiteraryRegistry.WINCHESTER_FITTING.get())&&other.getValue(WinchesterFittingBlock.KIND)==WinchesterFittingBlock.Kind.BUFFET_L;
+        return new HouseReadReflection.Glass(at,facing,1.5f/16,pair?1+14.5f/16:1,15f/16,30.5f/16,1.6f/16,null);
+    }
+    private static void buffet(WinchesterClockEntity buffet,net.minecraft.world.level.block.state.BlockState s,PoseStack pose,MultiBufferSource out){
+        var glass=buffetGlass(buffet,s);HouseReadReflection.want(glass);
+        if(HouseReadReflection.showing(glass.at()))HouseReadReflection.drawGlass(glass,pose,out);
     }
     private static void mirror(WinchesterClockEntity stand,net.minecraft.world.level.block.state.BlockState s,PoseStack pose,MultiBufferSource out){
         var glass=glass(stand,s);HouseReadReflection.want(glass);

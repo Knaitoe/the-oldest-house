@@ -87,10 +87,13 @@ public final class TruantService {
         for(int z=-1;z>=-8;z--)set(l,b,-1,2,z,wallPipe(Direction.EAST));
         for(int x=-6;x<=-1;x++)set(l,b,x,2,-10,wallPipe(Direction.SOUTH));
         for(int z=-11;z>=-18;z--)set(l,b,-6,2,z,wallPipe(Direction.EAST));
-        // A gutter down the floor that drains west, and the west branch a step lower past its first yard.
+        // A gutter down the floor that drains west, and the west branch a step lower past its first yard, up again a yard short of the way
+        // on. 0.4.403, the owner's playtest: the dip ran right up to the door, and a reader crossing from a block below its sill came out
+        // in the next hall half in its floor.
         for(int x=-5;x<=0;x++)set(l,b,x,-1,-9,Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF,Half.TOP));
-        for(int z=-13;z>=-18;z--)for(int x=-6;x<=-4;x++){set(l,b,x,-2,z,Blocks.POLISHED_ANDESITE.defaultBlockState());set(l,b,x,-1,z,air());}
+        for(int z=-13;z>=-17;z--)for(int x=-6;x<=-4;x++){set(l,b,x,-2,z,Blocks.POLISHED_ANDESITE.defaultBlockState());set(l,b,x,-1,z,air());}
         for(int x=-6;x<=-4;x++)set(l,b,x,-1,-13,Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH));
+        for(int x=-6;x<=-4;x++)set(l,b,x,-1,-17,Blocks.POLISHED_ANDESITE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));
         // The east branch narrows to one wide and two high, then the floor ends over a sump with a ladder out.
         box(l,b,3,0,-9,6,2,-9,Blocks.STONE_BRICKS.defaultBlockState());box(l,b,3,2,-10,7,2,-10,Blocks.STONE_BRICKS.defaultBlockState());
         set(l,b,7,0,-10,air());set(l,b,7,1,-10,air());

@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.402** goes by where you are: a reader moved by a command or a respawn takes up where they land, a friend's way through the House when the friend is in the same room, the spot they came from when alone, nothing in the manor. See [docs/WHERE_YOU_ARE_0_4_402.md](docs/WHERE_YOU_ARE_0_4_402.md).
+Development candidate **0.4.403** works through the November 9 playtest notes. The manor's outside doors cannot be broken. The pool's signs are redrawn, its ladder is dry and its attendant talks. Readers who fall through the Still Light and the Soft Floor can climb back out partway down, and the mirror hall's glass seals. The Windbreak's fence, Truant's dip, the lake witch on a boat and Usher's coffin are fixed, and the Winchester buffet holds a real mirror. See [docs/PLAYTEST_NOTES_0_4_403.md](docs/PLAYTEST_NOTES_0_4_403.md).
+
+Candidate **0.4.402** goes by where you are: a reader moved by a command or a respawn takes up where they land, a friend's way through the House when the friend is in the same room, the spot they came from when alone, nothing in the manor. See [docs/WHERE_YOU_ARE_0_4_402.md](docs/WHERE_YOU_ARE_0_4_402.md).
 
 Candidate **0.4.401** makes doors follow the path. The yard is entered by its back door, leads on into itself for a stretch, then back inside, and its rooms and stories no longer open off the halls. A door leads where a friend went for as long as they are still beyond it. See [docs/PATH_AND_YARD_0_4_401.md](docs/PATH_AND_YARD_0_4_401.md).
 

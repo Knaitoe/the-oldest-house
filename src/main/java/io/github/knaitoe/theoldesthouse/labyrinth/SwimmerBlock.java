@@ -14,7 +14,8 @@ import net.minecraft.world.phys.shapes.*;
 
 /**
  * 0.4.227, the last swimmer: the pool's fittings. Models face north as drawn and turn with {@link #FACING}; a fitting on a wall has
- * its back to that wall. The rope, the cover and the ladder stand in the water and are waterlogged. Stages: the cover flat (0),
+ * its back to that wall. The rope and the cover stand in the water and are waterlogged. The ladder's rails stand on the deck, dry (0.4.403: waterlogged, they
+ * stood in a block of water above the pool's edge). Stages: the cover flat (0),
  * pressed up from underneath (1), or its leading edge (2); the reel full (0), half run out (1) or empty (2); a starting block's
  * number (0-5); the pace clock's sweep hand at each five-second mark (0-11); a depth tile shallow (0) or deep (1); the lockers shut
  * (0) or one ajar (1); the radio off (0) or on (1); a lamp lit (0) or off (1); the signs no running (0) and last swim (1).
@@ -32,7 +33,7 @@ public final class SwimmerBlock extends HorizontalDirectionalBlock implements Si
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return SwimmerRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,stage).setValue(WATERLOGGED,wet(kind));}
     /** The fittings that stand in the pool's water. */
-    public static boolean wet(Kind k){return k==Kind.ROPE||k==Kind.COVER||k==Kind.LADDER;}
+    public static boolean wet(Kind k){return k==Kind.ROPE||k==Kind.COVER;}
     public static boolean is(BlockState s,Kind kind){return s.is(SwimmerRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static Kind kind(BlockState s){return s.is(SwimmerRegistry.FITTING.get())?s.getValue(KIND):null;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -58,10 +59,10 @@ public final class SwimmerBlock extends HorizontalDirectionalBlock implements Si
             case CLIPBOARD->Block.box(4,0,3,12,1,13);
             case BOARDS->Block.box(2,0,4,14,7,12);
             case LAMP->Block.box(2,14,2,14,16,14);
-            case EXIT_SIGN->box(f,2,5,15,14,10,16);
+            case EXIT_SIGN->box(f,0.5,4,15,15.5,13,16);
             case TOWEL->Block.box(3,0,4,13,2,12);
             case DRAIN->Block.box(2,0,2,14,1,14);
-            case SIGN->box(f,2,3,15,14,13,16);
+            case SIGN->box(f,0,0,15.5,16,16,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

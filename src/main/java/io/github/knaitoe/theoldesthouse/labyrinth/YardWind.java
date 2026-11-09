@@ -65,7 +65,9 @@ public final class YardWind {
         var air=Blocks.AIR.defaultBlockState();
         box(l,b,-14,-3,-46,14,-2,0,Blocks.DIRT.defaultBlockState());box(l,b,-14,-1,-46,14,-1,0,Blocks.GRASS_BLOCK.defaultBlockState());
         box(l,b,-14,0,-46,14,9,0,YardRooms.leaves());
-        box(l,b,-12,0,-44,12,12,-2,air);box(l,b,-1,0,-2,1,4,-1,air);
+        // 0.4.403, the owner's playtest: "players can get stuck on other side of fence". The field ran a block past the wire, and a gust or the
+        // sheet threw readers over it into a strip they could not climb back out of. The hedge stands right behind the wire now.
+        box(l,b,-12,0,-44,FENCE_X,12,-2,air);box(l,b,-1,0,-2,1,4,-1,air);
         // Long grass over the field, thinner along the trodden ways.
         var rnd=new Random(b.asLong());
         for(int x=-12;x<=10;x++)for(int z=-44;z<=-3;z++)if(rnd.nextInt(x>=-7&&x<=-5||x==0?7:3)==0)put(l,b,x,0,z,Blocks.SHORT_GRASS.defaultBlockState());

@@ -62,6 +62,19 @@ public final class SwimmerTexts {
         };
     }
 
+    /** 0.4.403: the attendant, turned to: before the first haul, once the cover is on, and at the held door (no words there). */
+    public static final String ATTENDANT_ASK="\"Strap's at the shallow end, by the reel. I've got this end. We pull it across together.\"";
+    public static final String ATTENDANT_CLOSED="\"That's it. I'll get the lights.\"";
+    public static final String ATTENDANT_HELD="The attendant doesn't answer. They tip their head at the open door.";
+    private static final String[] ATTENDANT={
+        "\"Keep it coming. Slow and straight.\"",
+        "\"Them? They're all right. They're always last out.\"",
+        "\"Don't call to them. It doesn't help.\"",
+        "\"Mind the ropes. It catches.\"",
+        "\"Same time every night, near enough.\""};
+    /** 0.4.403: the attendant, turned to while the cover goes across; the k-th time, round again after the last. */
+    public static String attendant(int k){return ATTENDANT[Math.floorMod(k,ATTENDANT.length)];}
+
     /** The closing log, handed over at the fire door: tonight's line, and every line before it. */
     public static String log(String reader,CompoundTag own){
         var t=new StringBuilder("A page from the closing log in the office, ruled in columns: DATE, LAST SWIM, COVER ON, LIGHTS, IN AT CLOSE, INITIALS.\n\n");

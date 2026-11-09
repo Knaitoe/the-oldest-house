@@ -89,8 +89,11 @@ public final class WinchesterFittingBlock extends Block implements net.minecraft
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return shape(s);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){case PLAQUE,SPIDER_WINDOW,SAWDUST,SCONCE,RUG_PERSIAN,RUNNER_EDGE,RUNNER_MID,RUNNER_NARROW,CANDELABRA->Shapes.empty();default->shape(s);};}
-    /** 0.4.220: the clock's top has an entity, for its moving hands; 0.4.223: and the hall stand's top, for its mirror. */
-    @Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos at,BlockState s){return s.getValue(KIND)==Kind.CLOCK_TOP||s.getValue(KIND)==Kind.HALL_STAND_TOP?new WinchesterClockEntity(at,s):null;}
+    /**
+     * 0.4.220: the clock's top has an entity, for its moving hands; 0.4.223: and the hall stand's top, for its mirror; 0.4.403 (the owner's
+     * playtest: "Missed mirror opportunity here"): and the dining room buffet's right half, for the glass across both halves.
+     */
+    @Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos at,BlockState s){return switch(s.getValue(KIND)){case CLOCK_TOP,HALL_STAND_TOP,BUFFET_R->new WinchesterClockEntity(at,s);default->null;};}
     /** 0.4.223 (owner: "the chair should be sittable"): the house's chairs and its settee seat a reader, facing the way they face. */
     public static boolean seat(BlockState s){return s.is(LiteraryRegistry.WINCHESTER_FITTING.get())&&switch(s.getValue(KIND)){case SEANCE_CHAIR,DINING_CHAIR,WING_CHAIR,SETTEE_L,SETTEE_R->true;default->false;};}
     /** Where the seat is, in pixels: on the cushion, a little under its top. */

@@ -391,6 +391,21 @@ public final class LastSwimmer {
         if(turned&&!pool.held){if(SceneFootpaths.walk(a,hold,.13)){pool.held=true;door(l,b,true);for(var r:readers(l,b))cue(r,"The attendant is at the fire door, holding it open. They don't say anything.");}return;}
         if(pool.held){door(l,b,true);var r=closest(l,b,a.position());if(r!=null)SceneFootpaths.face(a,r.position(),8);}
     }
+    /**
+     * 0.4.403, the owner's playtest: the attendant had nothing to say to a reader who turned to them. What they say follows the
+     * closing: the ask before the first haul, a word while the cover goes across (each time the next one), the lights once it is on,
+     * and nothing at the held door, only a nod at it.
+     */
+    public static void talk(ServerPlayer p,LiteraryActor actor,CompoundTag own){
+        if(actor.phase()!=ATTENDANT)return;
+        var b=LiteraryVignettes.base(p,PLACE);var pool=b==null?null:pool(b);
+        if(pool==null)return;
+        if(pool.held){cue(p,SwimmerTexts.ATTENDANT_HELD);return;}
+        if(pool.closed()){cue(p,SwimmerTexts.ATTENDANT_CLOSED);return;}
+        if(pool.hauls==0){cue(p,SwimmerTexts.ATTENDANT_ASK);return;}
+        int k=own.getInt("Talk227");own.putInt("Talk227",k+1);
+        cue(p,SwimmerTexts.attendant(k));
+    }
     @Nullable static ServerPlayer closest(ServerLevel l,BlockPos b,Vec3 from){ServerPlayer best=null;double d=Double.MAX_VALUE;for(var r:readers(l,b)){double dd=r.position().distanceToSqr(from);if(dd<d){d=dd;best=r;}}return best;}
 
     // ------------------------------------------------------------------------------------------------ each reader

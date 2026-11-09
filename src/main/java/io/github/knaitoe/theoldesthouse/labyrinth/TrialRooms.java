@@ -117,8 +117,12 @@ public final class TrialRooms {
         }
         return out;
     }
-    /** The two holes in the floor beside the entry, over the steps up out of the trough. */
-    public static boolean stairWell(int x,int z){return x>=3&&(z==-3||z==-4);}
+    /**
+     * The holes in the floor over the steps up out of the trough: two beside the entry, and (0.4.403, the owner's playtest: "Too low
+     * for players to climb back up") one against each side wall down the room, the east a third of the way, the west two thirds. A
+     * reader who has fallen climbs out partway along, onto the steps' upper tread, where standing still brings the lamps up.
+     */
+    public static boolean stairWell(int x,int z){return x>=3&&(z==-3||z==-4)||x==HALF&&(z==-16||z==-17)||x==-HALF&&(z==-28||z==-29);}
 
     private static BlockState mat(String name){return TrialRegistry.material(name).defaultBlockState();}
     private static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,FLAGS);}
@@ -139,6 +143,12 @@ public final class TrialRooms {
         // The way back up, beside the entry: one step of the trough's brick, then another, then the landing.
         box(l,b,3,-3,-4,HALF,-3,-4,under);
         box(l,b,3,-3,-3,HALF,-2,-3,under);
+        // 0.4.403: two more ways up, against the side walls, each the same two steps under its own hole in the floor; and a faint glow
+        // at the foot of every way up, so a reader in the dark under the boards can see where they are.
+        set(l,b,HALF,-3,-17,under);set(l,b,HALF,-3,-16,under);set(l,b,HALF,-2,-16,under);
+        set(l,b,-HALF,-3,-29,under);set(l,b,-HALF,-3,-28,under);set(l,b,-HALF,-2,-28,under);
+        var glow=Blocks.LIGHT.defaultBlockState().setValue(net.minecraft.world.level.block.LightBlock.LEVEL,6);
+        set(l,b,HALF,-3,-5,glow);set(l,b,HALF,-3,-18,glow);set(l,b,-HALF,-3,-30,glow);
         for(int z:LAMP_Z)set(l,b,0,3,z,TrialBlock.of(TrialBlock.Kind.STILL_LAMP));
         LabyrinthBuilder.entrance(l,b,wall,worn,ceiling);
     }
@@ -199,8 +209,8 @@ public final class TrialRooms {
     public static final List<Integer> SOFT_LAMP_Z=List.of(-2,-8,-14,-20,-26,-32,-37);
     /** The two half-walls: at z -16 from the west wall to x 0, at z -28 from x 0 to the east wall. */
     public static boolean halfWall(int x,int z){return z==-16&&x<=0||z==-28&&x>=0;}
-    /** The two holes beside the entry, over the steps up out of the passage. */
-    public static boolean softWell(int x,int z){return x>=2&&(z==-3||z==-4);}
+    /** The holes over the steps up out of the passage: two beside the entry, and (0.4.403, as in the still light) one against each side wall down the room. */
+    public static boolean softWell(int x,int z){return x>=2&&(z==-3||z==-4)||x==SOFT_HALF&&(z==-19||z==-20)||x==-SOFT_HALF&&(z==-31||z==-32);}
     /** The stage a square's weight has brought it to. */
     public static int softStage(int load){return load>=DROP?3:load>=SINK_MORE?2:load>=SINK?1:0;}
 
@@ -219,6 +229,11 @@ public final class TrialRooms {
         for(int z:BEAM_Z)box(l,b,-SOFT_HALF,1,z,SOFT_HALF,1,z,TrialBlock.of(TrialBlock.Kind.SOFT_BEAM));
         box(l,b,2,-3,-4,SOFT_HALF,-3,-4,under);
         box(l,b,2,-3,-3,SOFT_HALF,-2,-3,under);
+        // 0.4.403: the same two steps up under each wall's hole partway down, and a faint glow at the foot of every way up.
+        set(l,b,SOFT_HALF,-3,-20,under);set(l,b,SOFT_HALF,-3,-19,under);set(l,b,SOFT_HALF,-2,-19,under);
+        set(l,b,-SOFT_HALF,-3,-32,under);set(l,b,-SOFT_HALF,-3,-31,under);set(l,b,-SOFT_HALF,-2,-31,under);
+        var glow=Blocks.LIGHT.defaultBlockState().setValue(net.minecraft.world.level.block.LightBlock.LEVEL,6);
+        set(l,b,SOFT_HALF,-3,-5,glow);set(l,b,SOFT_HALF,-3,-21,glow);set(l,b,-SOFT_HALF,-3,-33,glow);
         for(int z:SOFT_LAMP_Z)set(l,b,0,3,z,TrialBlock.of(TrialBlock.Kind.STILL_LAMP,1));
         LabyrinthBuilder.entrance(l,b,wall,landing,ceiling);
     }

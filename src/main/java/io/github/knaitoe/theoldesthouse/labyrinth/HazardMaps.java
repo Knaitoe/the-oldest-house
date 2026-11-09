@@ -57,7 +57,13 @@ public final class HazardMaps {
         long mask=HazardMaze.initialMask(b.asLong());for(int i=0;i<HazardMaze.EDGES.size();i++)if((mask&(1L<<i))!=0)for(var at:HazardMaze.EDGES.get(i).cells())BuildBlocks.set(l,b.offset(at),AIR,F);
         box(l,b,-1,0,-3,3,2,-1,AIR);box(l,b,1,0,-34,3,2,-27,AIR);
     }
-    private static void mirror(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,Blocks.GRAY_CONCRETE.defaultBlockState());box(l,b,-7,0,-40,-7,3,-2,HazardBlock.of(MIRROR_GLASS));
+    /**
+     * 0.4.403, the owner's playtest: "Glass barrier in reflection does not seal. Players can walk behind it." The glass stopped a block
+     * short of each end wall and of the ceiling, and readers walked round its ends into the reflection. It runs wall to wall and floor to
+     * ceiling now.
+     */
+    public static final int MIRROR_X=-7;
+    private static void mirror(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,Blocks.GRAY_CONCRETE.defaultBlockState());var r=p.room();box(l,b,MIRROR_X,0,r.minZ()+1,MIRROR_X,r.maxY()-1,-1,HazardBlock.of(MIRROR_GLASS));
         for(int x:new int[]{-10,-14,-18})LabyrinthBuilder.placeDoor(l,b.offset(x,0,-42),Direction.SOUTH);
         for(int z=-7;z>=-37;z-=10){lamp(l,b,1,4,z);lamp(l,b,-18,4,z);}
         for(int z=-10;z>=-30;z-=10){set(l,b,6,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));set(l,b,-20,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));}

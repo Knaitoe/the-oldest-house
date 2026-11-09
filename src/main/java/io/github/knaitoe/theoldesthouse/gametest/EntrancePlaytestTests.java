@@ -205,7 +205,7 @@ public final class EntrancePlaytestTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction and every ordinary hall it can open onto are resident"))
             .thenExecute(()->{
                 LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
-                for(var hall:halls){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                for(var hall:halls)buildHall(f,hall);
                 west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");
                 h.assertTrue(!LabyrinthDealer.finishedFor(f.data(),p.getUUID(),LabyrinthPlace.HILL_NURSERY),"an unread story is not a passage");
                 WitnessAccount.resolve(f.data(),p.getUUID(),story,"native passage fixture");
@@ -253,7 +253,15 @@ public final class EntrancePlaytestTests {
         // 0.4.261: the quiet room and its siblings, the rest rooms.
         out.addAll(QuietRooms.FAMILY);
         for(var place:LabyrinthPlace.values())if(HallVariations.plain(place))out.add(place);
+        // 0.4.403: the laundry, bedroom and atrium halls have been ordinary ways on since 0.4.390; a re-deal in CI run 1488 opened onto one the fixture never built.
+        for(var place:OrdinaryHalls.HALLS)if(!OrdinaryHalls.stone(place))out.add(place);
         return java.util.List.copyOf(out);
+    }
+    /** Builds one of {@link #HALLS} as the House would and registers its doors. */
+    static void buildHall(LiteraryTests.Fixture f,LabyrinthPlace hall){
+        var b=f.base(hall);
+        if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else if(OrdinaryHalls.is(hall))OrdinaryHalls.build(f.in,b,hall);else LabyrinthHalls.build(f.in,b,hall);
+        LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);
     }
     private static boolean hall(LabyrinthPlace place){return place!=null&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place));}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.level(place),new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
@@ -267,7 +275,7 @@ public final class EntrancePlaytestTests {
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, the ordinary halls and the nursery are resident"))
             .thenExecute(()->{
                 LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
-                for(var hall:HALLS){var b=f.base(hall);if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else LabyrinthHalls.build(f.in,b,hall);LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);}
+                for(var hall:HALLS)buildHall(f,hall);
                 f.build(scene);
                 h.assertTrue(f.data().door(OnwardDoors.id(scene))==null,"the scene's authored doors are registered without its way on, which waits for its door to stand");
                 h.assertTrue(OnwardDoors.install(f.level(scene),f.base(scene),scene),"the fitted door goes in where it was placed");

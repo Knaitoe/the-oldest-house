@@ -279,6 +279,10 @@ public final class HazardVarietyTests {
                     for(int i=1;i<way.size();i++)h.assertTrue(way.get(i).distManhattan(way.get(i-1))==1,"the way is one unbroken walk at "+way.get(i));
                     f.body(b,3.5,-2,-3.5,1,"the first step up out of the trough");f.body(b,3.5,-1,-2.5,1,"the second step up");
                     f.body(b,3.5,0,-1.5,1,"the entry landing above the steps");f.body(b,.5,0,-42.5,1,"the far landing");
+                    // 0.4.403: and a way up against each side wall partway down, so a reader who falls can climb back out where they are.
+                    f.body(b,4.5,-2,-16.5,1,"the east way up's first step");f.body(b,4.5,-1,-15.5,1,"its second step, under its hole");
+                    f.body(b,-3.5,-2,-28.5,1,"the west way up's first step");f.body(b,-3.5,-1,-27.5,1,"its second step, under its hole");
+                    h.assertTrue(TrialRooms.stairWell(4,-16)&&TrialRooms.stairWell(-4,-28)&&f.level.getBlockState(b.offset(4,-3,-18)).is(Blocks.LIGHT),"each way up shows a faint glow at its foot");
                     h.assertTrue(f.level.getBlockState(b.offset(0,0,TrialRooms.FAR_WALL)).getBlock() instanceof DoorBlock,"the far door stands in the end wall");
                     for(int z:TrialRooms.LAMP_Z)h.assertTrue(TrialBlock.is(f.level.getBlockState(b.offset(0,3,z)),TrialBlock.Kind.STILL_LAMP,0)
                             &&TrialRegistry.isMaterial(f.level.getBlockState(b.offset(0,4,z))),"a dark lamp hangs from the ceiling at "+z);
@@ -344,6 +348,9 @@ public final class HazardVarietyTests {
                         else h.assertTrue(TrialBlock.is(s,TrialBlock.Kind.SOFT_PLATE,0),"a firm square at "+x+","+z);
                         if(!TrialRooms.softWell(x,z))f.body(b,x+.5,-3,z+.5,1,"standing room in the passage under "+x+","+z);
                     }
+                    // 0.4.403: a way up against each side wall partway down the passage.
+                    f.body(b,3.5,-2,-19.5,1,"the east way up's first step");f.body(b,3.5,-1,-18.5,1,"its second step, under its hole");
+                    f.body(b,-2.5,-2,-31.5,1,"the west way up's first step");f.body(b,-2.5,-1,-30.5,1,"its second step, under its hole");
                     for(int z:TrialRooms.BEAM_Z)for(int x=-TrialRooms.SOFT_HALF;x<=TrialRooms.SOFT_HALF;x++){
                         h.assertTrue(TrialBlock.is(f.level.getBlockState(b.offset(x,1,z)),TrialBlock.Kind.SOFT_BEAM),"a beam across the room at "+x+","+z);
                         f.body(b,x+.5,0,z+.5,1.5/1.8,"room to crouch under the beam at "+x+","+z);

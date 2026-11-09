@@ -50,6 +50,10 @@ public final class LastSwimmerTests {
         // Nine hauls take the cover over lanes six, five and four's ropes and over lane four: at the next turn they are a lane over.
         for(int i=0;i<9;i++)seq=seq.thenIdle(LastSwimmer.HAUL_GAP+1).thenExecute(()->haul(f,p));
         seq=seq.thenExecute(()->{h.assertTrue(LastSwimmer.hauls(b)==9&&SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)),SwimmerBlock.Kind.COVER)&&SwimmerBlock.is(l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)),SwimmerBlock.Kind.COVER)&&l.getBlockState(b.offset(0,SwimmerSite.SURFACE,-20)).getValue(SwimmerBlock.STAGE)==2&&l.getBlockState(b.offset(-1,SwimmerSite.SURFACE,-20)).is(Blocks.WATER),"nine columns covered, the leading edge on the ninth: "+LastSwimmer.hauls(b));
+                // 0.4.403: turned to while the cover goes across, the attendant has a word, and a different one the next time.
+                var attendant=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(60),a->a.role()==LiteraryActor.STRANGER&&a.phase()==LastSwimmer.ATTENDANT).stream().findFirst().orElse(null);
+                var talk=new net.minecraft.nbt.CompoundTag();h.assertTrue(attendant!=null,"the attendant is out on the deck");LastSwimmer.talk(p,attendant,talk);LastSwimmer.talk(p,attendant,talk);
+                h.assertTrue(talk.getInt("Talk227")==2&&!SwimmerTexts.attendant(0).equals(SwimmerTexts.attendant(1)),"the attendant answers each time, not with the same words");
                 long t=LastSwimmer.tick(b);LastSwimmer.hurry(b,(int)(LastSwimmer.LENGTH_TICKS-t%LastSwimmer.LENGTH_TICKS)-1);})
             .thenIdle(3)
             .thenExecute(()->h.assertTrue(LastSwimmer.lane(b)==2,"at the next turn, the swimmer is a lane further over: "+LastSwimmer.lane(b)));
