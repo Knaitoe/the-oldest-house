@@ -295,7 +295,7 @@ public enum LabyrinthPlace {
     /** A shared empty-lake aftermath; internal, never offered as another story. */
     LAKE_HOUSE_EMPTY("lake_house_empty",Kind.HALLWAY,97,new BoundingBox(LakeHouse.MIN_X,LakeHouse.MIN_Y,LakeHouse.MIN_Z,LakeHouse.MAX_X,LakeHouse.MAX_Y,0),literaryEntry()),
     /** Borrasca: one reader's four returns to the same town, never another reader's later town. */
-    BORRASCA("borrasca",Kind.MULTI_VISIT,98,new BoundingBox(-44,-5,-220,44,26,0),literaryEntry()),
+    BORRASCA("borrasca",Kind.MULTI_VISIT,98,new BoundingBox(-44,-5,-460,44,52,0),literaryEntry()),
     /** Six original uncanny rooms (0.4.113); every earlier address remains unchanged. */
     PAINTED_INTERIOR("painted_interior",Kind.ONE_SHOT,99,new BoundingBox(-15,-3,-39,15,11,0),literaryEntry()),
     SECOND_WAITRESS("second_waitress",Kind.ONE_SHOT,100,new BoundingBox(-28,-4,-57,28,12,0),List.of(new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),new DoorSpec("till_exit",new BlockPos(-10,0,-6),Direction.WEST,LabyrinthData.RETURN))),

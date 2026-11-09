@@ -108,6 +108,19 @@ public final class HouseWriting {
         return result.toString();
     }
 
+    /** The plain letters behind a child's hand: each hand-drawn alternate back to the letter it stands for. */
+    public static String plain(String text) {
+        StringBuilder result = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            int one = c - CHILD_ALT_ONE, two = c - CHILD_ALT_TWO;
+            if (one >= 0 && one < CHILD_ALTERNATE_BASE.length()) result.append(CHILD_ALTERNATE_BASE.charAt(one));
+            else if (two >= 0 && two < CHILD_ALTERNATE_BASE.length()) result.append(CHILD_ALTERNATE_BASE.charAt(two));
+            else result.append(c);
+        }
+        return result.toString();
+    }
+
     public static ItemStack book(String title, String author, WritingStyle writing, List<String> pages) {
         List<Component> rendered = new ArrayList<>();
         for (String page : pages) {

@@ -39,6 +39,8 @@ public final class BorrascaLand {
     static final int BAY_X0=32,BAY_X1=39,BAY_Z0=-207,BAY_Z1=-195;
     private record Route(BlockPos[] points,double half,double bank){}
     private static final Route[] ROUTES={new Route(BorrascaRooms.GULLY,1.7,1.4),new Route(BorrascaRooms.RETURN_ROUTE,1.7,.9),new Route(ROAD,2.3,2.4)};
+    /** 0.4.420: the same ways in the world, drawn out with the hill, for the slopes between the authored places. */
+    private static final Route[] WORLD_ROUTES=java.util.Arrays.stream(ROUTES).map(r->new Route(java.util.Arrays.stream(r.points()).map(BorrascaRooms::world).toArray(BlockPos[]::new),r.half(),r.bank())).toArray(Route[]::new);
     /** Places kept at their own level, with the ground easing back to the slope over the margin. */
     private record Flat(int x0,int z0,int x1,int z1,int h,int margin){}  // margin: kept for reading; the easing is a cone
     private static final Flat[] FLATS={
@@ -106,6 +108,51 @@ public final class BorrascaLand {
     static int edge(int x,int z){int ax=Math.abs(x);return Math.max(z>-72?ax-37:ax-35,-216-z);}
     /** A column whose neighbours are two blocks or more above or below it shows rock, not soil. */
     private static boolean steep(int x,int z,int h){for(var d:new int[][]{{1,0},{-1,0},{0,1},{0,-1}})if(Math.abs(ground(x+d[0],z+d[1])-h)>=2)return true;return false;}
+
+    // ---- 0.4.420: the ground in the world -------------------------------------------------------------------------
+
+    private static int za(int w){return (int)Math.round(BorrascaRooms.authoredZ(w));}
+    private static int lift(int w){return (int)Math.round(BorrascaRooms.lift(BorrascaRooms.authoredZ(w)));}
+    /**
+     * The ground at a world column. An authored region's own ground, raised by its lift. On a drawn-out slope: the hillside between
+     * the ground at its two ends, low swells across it away from the trail, the trail's own level along the trail (easing up and down
+     * its sides at most nine in ten), and the gully and the way down cut through it as they are everywhere else.
+     */
+    /** How far either side of the trail's line a drawn-out slope keeps the trail's level (0.4.420). */
+    static final double BAND=5.5;
+    public static int groundAt(int x,int w){
+        if(!BorrascaRooms.drawnOutWorld(w)){int z=za(w);return ground(x,z)+(int)Math.round(BorrascaRooms.lift(z));}
+        var s=BorrascaRooms.slope(w);double t=BorrascaRooms.along(w);
+        double h=(ground(x,s[0])+s[4])*(1-t)+(ground(x,s[1])+s[5])*t;
+        double tx=BorrascaRooms.trailXw(w),ty=BorrascaRooms.trailYw(w),d=Math.abs(x-tx);
+        h+=swell(x,w)*.8*Math.sin(Math.PI*t)*clamp((d-BAND-2.5)/8,0,1);
+        // The trail's own level runs BAND either side of its line, so whoever walks beside it rather than on it keeps the same
+        // half-steps instead of meeting a full block where the hillside begins.
+        if(d<=BAND)h=ty;else h=clamp(h,ty-(d-BAND)*.9,ty+(d-BAND)*.9);
+        for(int i=0;i<2;i++){var r=WORLD_ROUTES[i];var n=near(r,x,w);double dist=n[0],y=n[1];
+            if(dist<=r.half())h=y;else{double rise=(dist-r.half())*r.bank()+.4;if(h>y)h=Math.min(h,y+rise);else h=Math.max(h,y-rise);}}
+        return (int)Math.round(clamp(h,-1,46));
+    }
+    private static boolean steepAt(int x,int w,int h){for(var d:new int[][]{{1,0},{-1,0},{0,1},{0,-1}})if(Math.abs(groundAt(x+d[0],w+d[1])-h)>=2)return true;return false;}
+    /** Which way a world column's floor belongs to (as routeFloor, in the world). */
+    static int routeFloorAt(int x,int w,int h){
+        // An authored region's floor is its authored ground, so its ways are matched there too: the world line of a way that crosses
+        // onto a slope bends away from the authored one near the join, and its risers would go missing.
+        if(!BorrascaRooms.drawnOutWorld(w)){int z=za(w);return routeFloor(x,z,h-(int)Math.round(BorrascaRooms.lift(z)));}
+        for(int i=0;i<2;i++){var n=near(WORLD_ROUTES[i],x,w);if(n[0]<=WORLD_ROUTES[i].half()&&h==(int)Math.round(clamp(n[1],-1,46)))return i+1;}
+        return 0;
+    }
+    private static boolean gullyBankAt(int x,int w){return BorrascaRooms.drawnOutWorld(w)?near(WORLD_ROUTES[0],x,w)[0]<=WORLD_ROUTES[0].half()+4.5:gullyBank(x,za(w));}
+    /** Where nothing grows or lies, in the world: an authored region's own rule; on a drawn-out slope the trail, the ways and the lane. */
+    static boolean clearAt(int x,int w,int margin){
+        if(!BorrascaRooms.drawnOutWorld(w))return clear(x,za(w),margin);
+        // The town's own north end (0.4.420): kept clear like the rest of the town.
+        if(w>=BorrascaRooms.TOWN_END-2)return Math.abs(x)<35+margin;
+        if(Math.abs(x-BorrascaRooms.trailXw(w))<=BAND+1.5+margin)return true;
+        for(var r:WORLD_ROUTES)if(near(r,x,w)[0]<=r.half()+margin)return true;
+        int z=za(w),o=(int)Math.round(BorrascaRooms.sway(BorrascaRooms.authoredZ(w)));return z<=-150&&z>=-164&&x>=o-1-margin&&x<=o+5+margin;
+    }
+    private static int edgeAt(int x,int w){return edge(x,za(w));}
     private static BlockState top(int x,int z,int h,boolean steep){
         if(steep||h>=19)return rock(x,h,z);
         if(z>-72&&Math.abs(x)<38)return Blocks.GRASS_BLOCK.defaultBlockState();
@@ -122,14 +169,14 @@ public final class BorrascaLand {
 
     /** The ground itself, every column but the front strip the station and the House's door stand on. */
     static void terrain(ServerLevel l,BlockPos b){
-        for(int x=-44;x<=44;x++)for(int z=-220;z<=-1;z++){
-            int h=ground(x,z);boolean steep=steep(x,z,h);int route=routeFloor(x,z,h);boolean bank=!steep?false:gullyBank(x,z);
-            var top=route==1?bed(x,z):route==2?BorrascaRooms.walked(x,z,near(ROUTES[1],x,z)[0]<=.9?0:2):bank?earth(x,h,z):top(x,z,h,steep);
-            if(h<=0){if(h==0&&!top.is(Blocks.GRASS_BLOCK))BuildBlocks.set(l,b.offset(x,-1,z),top,F);step(l,b,x,z,h,route);continue;}
-            if(h>=3)LiteraryRooms.box(l,b,x,0,z,x,h-3,z,Blocks.STONE);
-            if(h>=2)BuildBlocks.set(l,b.offset(x,h-2,z),steep&&!bank?rock(x,h-2,z):Blocks.DIRT.defaultBlockState(),F);
-            BuildBlocks.set(l,b.offset(x,h-1,z),top,F);
-            step(l,b,x,z,h,route);
+        for(int x=-44;x<=44;x++)for(int w=BorrascaRooms.FAR;w<=-1;w++){
+            int h=groundAt(x,w);boolean steep=steepAt(x,w,h);int route=routeFloorAt(x,w,h);boolean bank=steep&&gullyBankAt(x,w);
+            var top=route==1?bed(x,w):route==2?BorrascaRooms.walked(x,w,near(WORLD_ROUTES[1],x,w)[0]<=.9?0:2):bank?earth(x,h,w):top(x,w<-74&&w>=BorrascaRooms.TOWN_END?-60:za(w),h-lift(w),steep);
+            if(h<=0){if(h==0&&!top.is(Blocks.GRASS_BLOCK))BuildBlocks.set(l,b.offset(x,-1,w),top,F);stepAt(l,b,x,w,h,route);continue;}
+            if(h>=3)LiteraryRooms.box(l,b,x,0,w,x,h-3,w,Blocks.STONE);
+            if(h>=2)BuildBlocks.set(l,b.offset(x,h-2,w),steep&&!bank?rock(x,h-2,w):Blocks.DIRT.defaultBlockState(),F);
+            BuildBlocks.set(l,b.offset(x,h-1,w),top,F);
+            stepAt(l,b,x,w,h,route);
         }
         gullyEdges(l,b);
     }
@@ -142,13 +189,13 @@ public final class BorrascaLand {
         for(int i=0;i<2;i++){var n=near(ROUTES[i],x,z);if(n[0]<=ROUTES[i].half()&&h==(int)Math.round(clamp(n[1],-1,25)))return i+1;}
         return 0;
     }
-    /** A step up along a way: a riser where its floor climbs a block from the column before, facing the climb. */
-    private static void step(ServerLevel l,BlockPos b,int x,int z,int h,int route){
+    /** A step up along a way: a riser where its floor climbs a block from the column before, facing the climb (world columns). */
+    private static void stepAt(ServerLevel l,BlockPos b,int x,int w,int h,int route){
         if(route==0||h<0)return;
-        for(var d:Direction.Plane.HORIZONTAL){int nx=x-d.getStepX(),nz=z-d.getStepZ();int nh=ground(nx,nz);
-            if(nh==h-1&&routeFloor(nx,nz,nh)==route){
-                var stair=route==1?(hash(x,9,z)%3==0?Blocks.MOSSY_COBBLESTONE_STAIRS:Blocks.STONE_STAIRS).defaultBlockState().setValue(StairBlock.FACING,d):BorrascaRooms.riser(d);
-                BuildBlocks.set(l,b.offset(x,h-1,z),stair,F);return;}
+        for(var d:Direction.Plane.HORIZONTAL){int nx=x-d.getStepX(),nw=w-d.getStepZ();int nh=groundAt(nx,nw);
+            if(nh==h-1&&routeFloorAt(nx,nw,nh)==route){
+                var stair=route==1?(hash(x,9,w)%3==0?Blocks.MOSSY_COBBLESTONE_STAIRS:Blocks.STONE_STAIRS).defaultBlockState().setValue(StairBlock.FACING,d):BorrascaRooms.riser(d);
+                BuildBlocks.set(l,b.offset(x,h-1,w),stair,F);return;}
         }
     }
     /** The gully's bed: the chert gravel an Ozark creek leaves, grey and white, with ledges of its rock showing through. */
@@ -159,18 +206,19 @@ public final class BorrascaLand {
     private static BlockState earth(int x,int y,int z){int k=hash(x,y,z)%12;return (k<4?Blocks.COARSE_DIRT:k<6?Blocks.ROOTED_DIRT:k<8?Blocks.TERRACOTTA:k<10?Blocks.DIRT:k<11?Blocks.MOSSY_COBBLESTONE:Blocks.PACKED_MUD).defaultBlockState();}
     /** Ferns along the top of the gully's banks, and one trunk fallen across it high enough to walk under. */
     private static void gullyEdges(ServerLevel l,BlockPos b){
-        var r=ROUTES[0];
-        for(int x=-26;x<=4;x++)for(int z=-148;z<=-92;z++){
-            double d=near(r,x,z)[0];if(d<=r.half()+.3||d>r.half()+2.6)continue;int h=ground(x,z);if(steep(x,z,h)||chebyshev(x,z,-12,-108,11,-78)<=0)continue;
-            int k=hash(x,33,z)%10;var at=b.offset(x,h,z);
+        var r=WORLD_ROUTES[0];int from=(int)Math.round(BorrascaRooms.worldZ(-148)),to=(int)Math.round(BorrascaRooms.worldZ(-92));
+        for(int x=-26;x<=4;x++)for(int w=from;w<=to;w++){
+            double d=near(r,x,w)[0];if(d<=r.half()+.3||d>r.half()+2.6)continue;int h=groundAt(x,w);if(steepAt(x,w,h))continue;
+            if(!BorrascaRooms.drawnOutWorld(w)&&chebyshev(x,za(w),-12,-108,11,-78)<=0)continue;
+            int k=hash(x,33,w)%10;var at=b.offset(x,h,w);
             if(k<3)BuildBlocks.set(l,at,Blocks.FERN.defaultBlockState(),F);
             else if(k<4){BuildBlocks.set(l,at,Blocks.LARGE_FERN.defaultBlockState().setValue(DoublePlantBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,at.above(),Blocks.LARGE_FERN.defaultBlockState().setValue(DoublePlantBlock.HALF,DoubleBlockHalf.UPPER),F);}
         }
-        // The fallen trunk (0.4.277: a sycamore from the bank): across the channel at z -122, three above its bed, its ends on the banks.
-        int z=-122;var n=near(r,-15,z);int bedY=(int)Math.round(n[1]),y=bedY+3;int x0=Integer.MIN_VALUE,x1=Integer.MIN_VALUE;
-        for(int x=-15;x>=-24;x--)if(ground(x,z)>=y){x0=x;break;}
-        for(int x=-15;x<=-6;x++)if(ground(x,z)>=y){x1=x;break;}
-        if(x0!=Integer.MIN_VALUE&&x1!=Integer.MIN_VALUE)for(int x=x0;x<=x1;x++){BuildBlocks.set(l,b.offset(x,Math.max(y,ground(x,z)),z),Blocks.BIRCH_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X),F);if(hash(x,35,z)%2==0)BuildBlocks.set(l,b.offset(x,Math.max(y,ground(x,z))+1,z),Blocks.MOSS_CARPET.defaultBlockState(),F);}
+        // The fallen trunk (0.4.277: a sycamore from the bank): across the channel at authored z -122, three above its bed, its ends on the banks.
+        int z=(int)Math.round(BorrascaRooms.worldZ(-122));var n=near(r,-15,z);int bedY=(int)Math.round(n[1]),y=bedY+3;int x0=Integer.MIN_VALUE,x1=Integer.MIN_VALUE;
+        for(int x=-15;x>=-24;x--)if(groundAt(x,z)>=y){x0=x;break;}
+        for(int x=-15;x<=-6;x++)if(groundAt(x,z)>=y){x1=x;break;}
+        if(x0!=Integer.MIN_VALUE&&x1!=Integer.MIN_VALUE)for(int x=x0;x<=x1;x++){BuildBlocks.set(l,b.offset(x,Math.max(y,groundAt(x,z)),z),Blocks.BIRCH_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X),F);if(hash(x,35,z)%2==0)BuildBlocks.set(l,b.offset(x,Math.max(y,groundAt(x,z))+1,z),Blocks.MOSS_CARPET.defaultBlockState(),F);}
     }
 
     // ---- Rocks -----------------------------------------------------------------------------------------------------
@@ -270,38 +318,41 @@ public final class BorrascaLand {
         var rocky=new HashSet<Long>();
         // Cover beside the trail, where the old blocks stood (a reader still has somewhere to keep out of the Sheriff's light).
         // 0.4.276: not a pair at every eleventh block: one side then the other, at different sizes and distances from the path.
+        // 0.4.420: each kept beside the trail wherever the drawn-out trail now runs.
         double[][] cover={{-106,-6.4,1.4,2.3,1.9,2.5},{-108,10.4,-1.2,1.6,1.3,1.7},{-117,9.8,1.0,2.5,1.9,2.4},{-120,-7.6,-1.4,1.5,1.2,1.6},{-128,-6.8,1.5,2.6,2.0,2.8},{-139,9.2,1.6,2.3,1.8,2.4},{-141,-6.2,.2,1.3,1.0,1.4}};
-        for(var c:cover){int z=(int)c[0];int y=BorrascaRooms.trailY(z);rock(l,b,c[1],y+.9-(c[4]<1.5?.3:0),z+c[2],c[3],c[4],c[5],null,rocky);}
+        for(var c:cover){int z=(int)c[0];int w=(int)Math.round(BorrascaRooms.worldZ(z));double y=BorrascaRooms.trailYw(w);double x=c[1]+BorrascaRooms.trailXw(w)-BorrascaRooms.trailX(z);rock(l,b,x,y+.9-(c[4]<1.5?.3:0),w+c[2],c[3],c[4],c[5],null,rocky);}
         // Boulders on the slopes, half sunk.
-        for(int i=0,placed=0;i<400&&placed<26;i++){
-            int x=-34+hash(i,11,7)%69,z=-212+hash(i,13,5)%138;if(clear(x,z,3)||edge(x,z)>=-4)continue;int h=ground(x,z);if(h>18)continue;
-            double r=1.1+(hash(i,17,3)%10)/9.0;rock(l,b,x+.5,h+.15,z+.5,r*1.15,r*.8,r,null,rocky);placed++;
+        int span=-6-BorrascaRooms.FAR;
+        for(int i=0,placed=0;i<900&&placed<52;i++){
+            int x=-34+hash(i,11,7)%69,w=BorrascaRooms.FAR+8+hash(i,13,5)%(span-90);if(w>BorrascaRooms.TOWN_END||clearAt(x,w,3)||edgeAt(x,w)>=-4)continue;int h=groundAt(x,w);if(h-lift(w)>18)continue;
+            double r=1.1+(hash(i,17,3)%10)/9.0;rock(l,b,x+.5,h+.15,w+.5,r*1.15,r*.8,r,null,rocky);placed++;
         }
         var trunks=new HashSet<Long>();
-        for(int gx=-42;gx<=42;gx+=6)for(int gz=-216;gz<=-6;gz+=6){
-            int x=gx+hash(gx,1,gz)%5-2,z=gz+hash(gx,2,gz)%5-2;
-            if(clear(x,z,2)||rocky.contains(ChunkPos.asLong(x,z)))continue;int h=ground(x,z);if(h>16&&Math.abs(x)<37&&z>-217)continue;
+        for(int gx=-42;gx<=42;gx+=6)for(int gz=BorrascaRooms.FAR+4;gz<=-6;gz+=6){
+            int x=gx+hash(gx,1,gz)%5-2,w=gz+hash(gx,2,gz)%5-2;int z=za(w);
+            if(clearAt(x,w,2)||rocky.contains(ChunkPos.asLong(x,w)))continue;int h=groundAt(x,w);if(h-lift(w)>16&&Math.abs(x)<37&&z>-217)continue;
             // A young cedar can be climbed like a stair, so near the cliffs only the tall trees grow, their crowns well out of reach.
-            boolean cliff=edge(x,z)>=-6;int kind=hash(x,3,z)%10;int tall=12+hash(x,4,z)%6;
-            boolean creek=near(ROUTES[0],x,z)[0]<=ROUTES[0].half()+9;
-            if(creek&&kind<5)sycamore(l,b,x,h,z,tall);
-            else if(kind<3)pine(l,b,x,h,z,13+hash(x,4,z)%7);
-            else if(kind<7||cliff)tallOak(l,b,x,h,z,tall,kind==6||hash(x,12,z)%4==0);
-            else if(z>-135)oak(l,b,x,h,z,5+hash(x,6,z)%3);
-            else cedar(l,b,x,h,z,5+hash(x,5,z)%4);
-            trunks.add(ChunkPos.asLong(x,z));
+            boolean cliff=edgeAt(x,w)>=-6;int kind=hash(x,3,w)%10;int tall=12+hash(x,4,w)%6;
+            boolean creek=near(WORLD_ROUTES[0],x,w)[0]<=WORLD_ROUTES[0].half()+9;
+            if(creek&&kind<5)sycamore(l,b,x,h,w,tall);
+            else if(kind<3)pine(l,b,x,h,w,13+hash(x,4,w)%7);
+            else if(kind<7||cliff)tallOak(l,b,x,h,w,tall,kind==6||hash(x,12,w)%4==0);
+            else if(z>-135)oak(l,b,x,h,w,5+hash(x,6,w)%3);
+            else cedar(l,b,x,h,w,5+hash(x,5,w)%4);
+            trunks.add(ChunkPos.asLong(x,w));
         }
         // Fallen trunks, only where the ground lies level along their whole length.
-        for(int i=0,placed=0;i<300&&placed<7;i++){
-            int x=-36+hash(i,21,1)%73,z=-205+hash(i,23,2)%130;boolean along=hash(i,25,3)%2==0;int len=4+hash(i,27,4)%3;
-            int h=ground(x,z);boolean ok=h<=18;for(int k=0;k<len&&ok;k++){int ax=x+(along?k:0),az=z+(along?0:k);ok=!clear(ax,az,2)&&ground(ax,az)==h&&!rocky.contains(ChunkPos.asLong(ax,az))&&!trunks.contains(ChunkPos.asLong(ax,az));}
+        for(int i=0,placed=0;i<700&&placed<14;i++){
+            int x=-36+hash(i,21,1)%73,w=BorrascaRooms.FAR+15+hash(i,23,2)%(span-80);if(w>BorrascaRooms.TOWN_END)continue;boolean along=hash(i,25,3)%2==0;int len=4+hash(i,27,4)%3;
+            int h=groundAt(x,w);boolean ok=h-lift(w)<=18;for(int k=0;k<len&&ok;k++){int ax=x+(along?k:0),aw=w+(along?0:k);ok=!clearAt(ax,aw,2)&&groundAt(ax,aw)==h&&!rocky.contains(ChunkPos.asLong(ax,aw))&&!trunks.contains(ChunkPos.asLong(ax,aw));}
             if(!ok)continue;placed++;
-            for(int k=0;k<len;k++){int ax=x+(along?k:0),az=z+(along?0:k);BuildBlocks.set(l,b.offset(ax,h,az),(i%2==0?Blocks.OAK_LOG:Blocks.DARK_OAK_LOG).defaultBlockState().setValue(RotatedPillarBlock.AXIS,along?Direction.Axis.X:Direction.Axis.Z),F);if(hash(ax,29,az)%2==0)BuildBlocks.set(l,b.offset(ax,h+1,az),Blocks.MOSS_CARPET.defaultBlockState(),F);trunks.add(ChunkPos.asLong(ax,az));}
+            for(int k=0;k<len;k++){int ax=x+(along?k:0),aw=w+(along?0:k);BuildBlocks.set(l,b.offset(ax,h,aw),(i%2==0?Blocks.OAK_LOG:Blocks.DARK_OAK_LOG).defaultBlockState().setValue(RotatedPillarBlock.AXIS,along?Direction.Axis.X:Direction.Axis.Z),F);if(hash(ax,29,aw)%2==0)BuildBlocks.set(l,b.offset(ax,h+1,aw),Blocks.MOSS_CARPET.defaultBlockState(),F);trunks.add(ChunkPos.asLong(ax,aw));}
         }
         // Undergrowth.
-        for(int x=-40;x<=40;x++)for(int z=-212;z<=-74;z++){
-            int k=hash(x,31,z)%100;if(k>=9||clear(x,z,1)||rocky.contains(ChunkPos.asLong(x,z))||trunks.contains(ChunkPos.asLong(x,z)))continue;
-            int h=ground(x,z);if(h>18||steep(x,z,h))continue;var at=b.offset(x,h,z);
+        int under=(int)Math.round(BorrascaRooms.worldZ(-212));
+        for(int x=-40;x<=40;x++)for(int w=under;w<=BorrascaRooms.TOWN_END;w++){
+            int k=hash(x,31,w)%100;if(k>=9||clearAt(x,w,1)||rocky.contains(ChunkPos.asLong(x,w))||trunks.contains(ChunkPos.asLong(x,w)))continue;
+            int h=groundAt(x,w);if(h-lift(w)>18||steepAt(x,w,h))continue;var at=b.offset(x,h,w);
             if(k<3)BuildBlocks.set(l,at,Blocks.FERN.defaultBlockState(),F);
             else if(k<4){BuildBlocks.set(l,at,Blocks.LARGE_FERN.defaultBlockState().setValue(DoublePlantBlock.HALF,DoubleBlockHalf.LOWER),F);BuildBlocks.set(l,at.above(),Blocks.LARGE_FERN.defaultBlockState().setValue(DoublePlantBlock.HALF,DoubleBlockHalf.UPPER),F);}
             else if(k<7)BuildBlocks.set(l,at,Blocks.DEAD_BUSH.defaultBlockState(),F);

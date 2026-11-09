@@ -100,17 +100,18 @@ public final class BorrascaStory {
         if(!BorrascaSites.inside(p)){if(key.equals("Compass")&&own.getBoolean("Taken_Ending"))Keepsakes.compass(p);else p.displayClientMessage(Component.literal(key.equals("Compass")?"The red tape is worn thin around the brass case.":"Her name, stitched in the cloth."),true);return;}
         var b=BorrascaSites.base(p.server,p.getUUID());if(b==null)return;
         if(key.equals("Compass")&&own.getInt("Visit")==3){var sheriff=actor(p,own,"CastSheriff");if(sheriff!=null&&p.distanceToSqr(sheriff)<36){denial(p,sheriff,own);save(p,own);compassChoice(p);return;}}
-        if(key.equals("Patch")&&own.getInt("Visit")==4&&near(p,b.offset(BorrascaRooms.CARVING),4)){restoreName(p,b,own);save(p,own);}
+        if(key.equals("Patch")&&own.getInt("Visit")==4&&near(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),4)){restoreName(p,b,own);save(p,own);}
     }
 
     // ------------------------------------------------------------------ hands
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
         if(rel.equals(BorrascaRooms.CARVING)){
             if(visit==1){
                 if(!own.getBoolean("FriendCarved")){cue(p,"Some names are only grooves now. There are old scars between them.");return true;}
                 if(!own.getBoolean("PactCarved")){
-                    own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),b.offset(rel),.55F);
+                    own.putBoolean("PactCarved",true);own.putInt("Beat",1);bark(p,b,2);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,rel),.55F);
                     var friend=actor(p,own,"CastKimber");if(friend!=null){friend.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);friend.gesture(2);say(p,friend,"There. Now it has to keep a place for both of us.");}
                     echo(p,b,own,.35F);own.putBoolean("PactEcho",true);
                     return true;
@@ -125,7 +126,7 @@ public final class BorrascaStory {
         if(rel.equals(BorrascaRooms.DROP)||rel.equals(BorrascaRooms.DROP.below())){
             if(visit==2&&own.getBoolean("FriendMissing")){
                 own.putBoolean("CompassExamined",true);own.putInt("Beat",2);
-                boolean carried=BorrascaBelongings.takeAt(p,own,"Compass",b.offset(BorrascaRooms.DROP));
+                boolean carried=BorrascaBelongings.takeAt(p,own,"Compass",BorrascaRooms.at(b,BorrascaRooms.DROP));
                 cue(p,carried?"Her compass. The red tape is wet with clay. The heavy tracks lead uphill.":"Her compass, in the clay. Your hands are too full to carry it. The heavy tracks lead uphill.");
             }
             return true;
@@ -136,41 +137,43 @@ public final class BorrascaStory {
             return true;
         }
         if(rel.equals(BorrascaRooms.PACK)){
-            if(visit==4){if(BorrascaBelongings.takeAt(p,own,"Patch",b.offset(rel))&&carriesEvidence(p,own))own.putBoolean("PatchRecovered",true);if(own.getBoolean("CompassConfiscated"))BorrascaBelongings.reclaim(p,own);cue(p,"The same teal pack. Her name is stitched inside the flap.");}
+            if(visit==4){if(BorrascaBelongings.takeAt(p,own,"Patch",BorrascaRooms.at(b,rel))&&carriesEvidence(p,own))own.putBoolean("PatchRecovered",true);if(own.getBoolean("CompassConfiscated"))BorrascaBelongings.reclaim(p,own);cue(p,"The same teal pack. Her name is stitched inside the flap.");}
             return true;
         }
         // 0.4.121: the town's papers. Each visit's noticeboard and the aged notes are their own originals.
-        if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),b.offset(rel));return true;}
-        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),b.offset(rel));return true;}
-        if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),b.offset(rel));return true;}
+        if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),BorrascaRooms.at(b,rel));return true;}
+        // 0.4.419: the store's framed history is hung too high for a child to read.
+        if(rel.equals(BorrascaRooms.HISTORY)){if(visit>=3)LiteraryVignettes.open(p,PLACE,own,"History",BorrascaTexts.document("History"),BorrascaRooms.at(b,rel));else cue(p,"A framed page of typing, hung up high. You can't read it from down here.");return true;}
+        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),BorrascaRooms.at(b,rel));return true;}
+        if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),BorrascaRooms.at(b,rel));return true;}
         if(visit>=2&&rel.equals(BorrascaRooms.ELI_POSTER)){
-            LiteraryVignettes.open(p,PLACE,own,"EliPoster",BorrascaTexts.document("EliPoster"),b.offset(rel));
+            LiteraryVignettes.open(p,PLACE,own,"EliPoster",BorrascaTexts.document("EliPoster"),BorrascaRooms.at(b,rel));
             return true;
         }
         if(visit>=3&&rel.equals(BorrascaRooms.WREN_POSTER)){
-            LiteraryVignettes.open(p,PLACE,own,"WrenPoster",BorrascaTexts.document("WrenPoster"),b.offset(rel));
+            LiteraryVignettes.open(p,PLACE,own,"WrenPoster",BorrascaTexts.document("WrenPoster"),BorrascaRooms.at(b,rel));
             return true;
         }
-        if(rel.equals(BorrascaRooms.GATE_LOG)){LiteraryVignettes.open(p,PLACE,own,"GateLog",BorrascaTexts.document("GateLog"),b.offset(rel));return true;}
+        if(rel.equals(BorrascaRooms.GATE_LOG)){LiteraryVignettes.open(p,PLACE,own,"GateLog",BorrascaTexts.document("GateLog"),BorrascaRooms.at(b,rel));return true;}
         // 0.4.237: the desk under the depot, and the numbers behind the shed.
-        if(rel.equals(BorrascaRooms.NIGHT_BOOK)){LiteraryVignettes.open(p,PLACE,own,"Ledger",BorrascaTexts.document("Ledger"),b.offset(rel));return true;}
-        if(rel.equals(BorrascaRooms.LETTER)){LiteraryVignettes.open(p,PLACE,own,"Letter",BorrascaTexts.document("Letter"),b.offset(rel));return true;}
+        if(rel.equals(BorrascaRooms.NIGHT_BOOK)){LiteraryVignettes.open(p,PLACE,own,"Ledger",BorrascaTexts.document("Ledger"),BorrascaRooms.at(b,rel));return true;}
+        if(rel.equals(BorrascaRooms.LETTER)){LiteraryVignettes.open(p,PLACE,own,"Letter",BorrascaTexts.document("Letter"),BorrascaRooms.at(b,rel));return true;}
         for(int i=0;i<BorrascaRooms.GRAVE_TAGS.length;i++)if(rel.equals(BorrascaRooms.grave(i))){graves(p,own);cue(p,"A number on a stake: "+BorrascaRooms.GRAVE_TAGS[i]+". No name.");return true;}
-        if(rel.equals(BorrascaRooms.EVIDENCE)){if(visit==4)LiteraryVignettes.open(p,PLACE,own,"Evidence",BorrascaTexts.document("Evidence",own.getBoolean("CompassEverConfiscated")),b.offset(rel));return true;}
-        if(rel.equals(FRONT_LEVER)){if(visit==4)openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);return true;}
+        if(rel.equals(BorrascaRooms.EVIDENCE)){if(visit==4)LiteraryVignettes.open(p,PLACE,own,"Evidence",BorrascaTexts.document("Evidence",own.getBoolean("CompassEverConfiscated")),BorrascaRooms.at(b,rel));return true;}
+        if(rel.equals(FRONT_LEVER)){if(visit==4)openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.FACTORY_DOOR),true);return true;}
         if(rel.equals(BorrascaRooms.POWER)){
-            if(visit==4&&!own.getBoolean("PowerOff")){own.putBoolean("PowerOff",true);var state=p.serverLevel().getBlockState(b.offset(BorrascaRooms.MACHINE));if(state.is(BorrascaRegistry.MACHINE.get()))p.serverLevel().setBlock(b.offset(BorrascaRooms.MACHINE),state.setValue(BorrascaMachineBlock.RUNNING,false),F);var lever=p.serverLevel().getBlockState(b.offset(rel));if(lever.is(Blocks.LEVER))p.serverLevel().setBlock(b.offset(rel),lever.setValue(LeverBlock.POWERED,false),F);heard(p,BorrascaRegistry.BREAKER.get(),b.offset(rel),.7F);heard(p,BorrascaRegistry.MOTOR_STOP.get(),b.offset(BorrascaRooms.MACHINE),1);send(p,own);}
+            if(visit==4&&!own.getBoolean("PowerOff")){own.putBoolean("PowerOff",true);var state=p.serverLevel().getBlockState(BorrascaRooms.at(b,BorrascaRooms.MACHINE));if(state.is(BorrascaRegistry.MACHINE.get()))p.serverLevel().setBlock(BorrascaRooms.at(b,BorrascaRooms.MACHINE),state.setValue(BorrascaMachineBlock.RUNNING,false),F);var lever=p.serverLevel().getBlockState(BorrascaRooms.at(b,rel));if(lever.is(Blocks.LEVER))p.serverLevel().setBlock(BorrascaRooms.at(b,rel),lever.setValue(LeverBlock.POWERED,false),F);heard(p,BorrascaRegistry.BREAKER.get(),BorrascaRooms.at(b,rel),.7F);heard(p,BorrascaRegistry.MOTOR_STOP.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),1);send(p,own);}
             return true;
         }
         if(rel.equals(BorrascaRooms.RELEASE)){
-            if(visit==4){own.putBoolean("ReleaseOpened",true);openDoor(p.serverLevel(),b.offset(BorrascaRooms.SERVICE_DOOR),true);openDoor(p.serverLevel(),b.offset(BorrascaRooms.SERVICE_GATE),true);var s=p.serverLevel().getBlockState(b.offset(rel));if(s.is(Blocks.LEVER))p.serverLevel().setBlock(b.offset(rel),s.setValue(LeverBlock.POWERED,true),F);}
+            if(visit==4){own.putBoolean("ReleaseOpened",true);openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.SERVICE_DOOR),true);openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.SERVICE_GATE),true);var s=p.serverLevel().getBlockState(BorrascaRooms.at(b,rel));if(s.is(Blocks.LEVER))p.serverLevel().setBlock(BorrascaRooms.at(b,rel),s.setValue(LeverBlock.POWERED,true),F);}
             return true;
         }
         return false;
     }
     private static void restoreName(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!own.getBoolean("PowerOff")||!own.getBoolean("EvidenceRead")||!carriesEvidence(p,own)||own.getBoolean("RestoredName"))return;
-        own.putBoolean("RestoredName",true);bark(p,b,4);heard(p,BorrascaRegistry.CARVE.get(),b.offset(BorrascaRooms.CARVING),.6F);
+        own.putBoolean("RestoredName",true);bark(p,b,4);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,BorrascaRooms.CARVING),.6F);
     }
     public static void openDoor(ServerLevel l,BlockPos at,boolean open){for(int y=0;y<2;y++){var s=l.getBlockState(at.above(y));if(s.getBlock() instanceof DoorBlock)l.setBlock(at.above(y),s.setValue(DoorBlock.OPEN,open),F);}}
 
@@ -275,7 +278,7 @@ public final class BorrascaStory {
     private static void denial(ServerPlayer p,LiteraryActor sheriff,CompoundTag own){if(own.getBoolean("HeardDenial"))return;own.putBoolean("HeardDenial",true);sheriff.gesture(2);say(p,sheriff,presentingCompass(p,own)?"Put that in my hand. There was nobody up there with you. You should have stayed this side of Marker Three.":"There is no case to reopen. You were alone up there. You should have stayed this side of Marker Three.");}
     private static void compassChoice(ServerPlayer p){
         var icons=new HashMap<Integer,ItemStack>();icons.put(0,LiteraryChoiceMenu.icon(BorrascaRegistry.COMPASS.get(),"Hand over the compass"));icons.put(8,LiteraryChoiceMenu.icon(Items.PAPER,"Keep it"));
-        LiteraryChoiceMenu.open(p,"The Sheriff holds out his hand",icons,()->BorrascaSites.inside(p)&&near(p,BorrascaSites.base(p.server,p.getUUID()).offset(BorrascaRooms.SHERIFF),8),slot->{if(slot==8)return true;if(slot!=0)return false;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getInt("Visit")==3&&BorrascaBelongings.confiscate(p,own)){var sheriff=actor(p,own,"CastSheriff");if(sheriff!=null)say(p,sheriff,"That's county property now.");}save(p,own);return true;});
+        LiteraryChoiceMenu.open(p,"The Sheriff holds out his hand",icons,()->BorrascaSites.inside(p)&&near(p,BorrascaRooms.at(BorrascaSites.base(p.server,p.getUUID()),BorrascaRooms.SHERIFF),8),slot->{if(slot==8)return true;if(slot!=0)return false;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getInt("Visit")==3&&BorrascaBelongings.confiscate(p,own)){var sheriff=actor(p,own,"CastSheriff");if(sheriff!=null)say(p,sheriff,"That's county property now.");}save(p,own);return true;});
     }
 
     // ------------------------------------------------------------------ the cast
@@ -330,17 +333,17 @@ public final class BorrascaStory {
     // ------------------------------------------------------------------ the first visit: the pact
     private static void visitOne(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff,@Nullable LiteraryActor prescott){
         if(sheriff!=null&&!own.getBoolean("MetSheriff")&&near(p,sheriff.blockPosition(),8))talk(p,sheriff,own);
-        if(prescott!=null&&!own.getBoolean("MetPrescott")&&p.getZ()<b.getZ()-22&&p.getZ()>b.getZ()-34&&near(p,prescott.blockPosition(),13))talk(p,prescott,own);
+        if(prescott!=null&&!own.getBoolean("MetPrescott")&&BorrascaRooms.rel(p,b).z< -22&&BorrascaRooms.rel(p,b).z> -34&&near(p,prescott.blockPosition(),13))talk(p,prescott,own);
         if(friend==null)return;
         friend.setInvisible(false);friend.appearance(LiteraryActor.BORRASCA_KIMBER,0);if(!own.getBoolean("CompassIssued"))friend.setItemSlot(EquipmentSlot.OFFHAND,BorrascaBelongings.original(p,own,"Compass"));
         pastMarkerTwo(p,b,own,friend);
         if(!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))childhoodEcho(p,b,own,friend);
         pact(p,b,own,friend);
     }
-    private static boolean inFort(ServerPlayer p,BlockPos b){return p.getY()>=b.getY()+5.9&&p.getZ()<b.getZ()-89&&p.getZ()>b.getZ()-100&&Math.abs(p.getX()-b.getX())<6;}
+    private static boolean inFort(ServerPlayer p,BlockPos b){var r=BorrascaRooms.rel(p,b);return r.y>=5.9&&r.z< -89&&r.z> -100&&Math.abs(r.x)<6;}
     private static void pact(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         if(!own.getBoolean("TreeReached")&&inFort(p,b))own.putBoolean("TreeReached",true);
-        boolean ahead=p.getZ()<b.getZ()-40;
+        boolean ahead=BorrascaRooms.rel(p,b).z< -40;
         if(!own.getBoolean("MetFriend")){
             if(near(p,friend.blockPosition(),6))talk(p,friend,own);
             else if(ahead&&!own.getBoolean("CalledAfter")){own.putBoolean("CalledAfter",true);say(p,friend,"Hey! Wait for me!");}
@@ -353,7 +356,7 @@ public final class BorrascaStory {
         if(!own.getBoolean("LegendDone")){
             BorrascaCast.stop(friend);
             if(inFort(p,b))fort(p,b,own,friend);
-            else if(!own.getBoolean("TreeReached")&&!own.getBoolean("CalledUp")&&near(p,b.offset(FORT),12)){
+            else if(!own.getBoolean("TreeReached")&&!own.getBoolean("CalledUp")&&near(p,BorrascaRooms.at(b,FORT),12)){
                 own.putBoolean("CalledUp",true);say(p,friend,"Up here! There's a ladder around the other side.");
             }
             return;
@@ -361,9 +364,9 @@ public final class BorrascaStory {
         // Down the ladder to the trunk; she carves once the reader is near enough to see it.
         if(!own.getBoolean("FriendCarved")){
             if(!follow(p,b,own,friend,"DownStep",DOWN))return;
-            if(!near(p,b.offset(BorrascaRooms.CARVING),10)){friend.gesture(0);if(!own.getBoolean("CalledDown")){own.putBoolean("CalledDown",true);say(p,friend,"Come down here. Bring your name.");}return;}
+            if(!near(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),10)){friend.gesture(0);if(!own.getBoolean("CalledDown")){own.putBoolean("CalledDown",true);say(p,friend,"Come down here. Bring your name.");}return;}
             friend.gesture(3);friend.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(LiteraryRegistry.KNIFE.get()));int n=own.getInt("CarveTicks")+5;own.putInt("CarveTicks",n);
-            if(n>=40){own.putBoolean("FriendCarved",true);bark(p,b,1);friend.gesture(4);heard(p,BorrascaRegistry.CARVE.get(),b.offset(BorrascaRooms.CARVING),.5F);say(p,friend,"Your turn. Right there, next to mine.");}
+            if(n>=40){own.putBoolean("FriendCarved",true);bark(p,b,1);friend.gesture(4);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,BorrascaRooms.CARVING),.5F);say(p,friend,"Your turn. Right there, next to mine.");}
         }
     }
     /** The room belongs to them for a little while before the ridge intrudes. */
@@ -372,7 +375,7 @@ public final class BorrascaStory {
         if(play<320&&!own.getBoolean("FortEcho")){
             play+=5;own.putInt("FortPlayTicks",play);
             if(play==5)say(p,friend,"This is our house. Pick a window. I'll see which way it faces.");
-            double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();
+            var r0=BorrascaRooms.rel(p,b);double x=r0.x,z=r0.z;
             if(!own.getBoolean("SharedWindow")&&play>=100&&play<=220&&z>=-97&&z<-93&&(x<-3||x>4)){
                 own.putBoolean("SharedWindow",true);
                 friend.gesture(BorrascaPlay.COMPASS);
@@ -404,8 +407,8 @@ public final class BorrascaStory {
     /** A child who goes past the second marker hears it, the noise echoing off the ridge; the friend has something to say about it later. */
     private static void pastMarkerTwo(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         int visit=own.getInt("Visit");if(visit>2||own.getBoolean("FriendMissing"))return;
-        if(p.getZ()<b.getZ()+MARKER_TWO_Z&&!own.getBoolean("PastTwo"+visit)){own.putBoolean("PastTwo"+visit,true);echo(p,b,own,.9F);}
-        if(own.getBoolean("PastTwo"+visit)&&!own.getBoolean("WarnedTwo"+visit)&&p.getZ()>b.getZ()+MARKER_TWO_Z+3&&near(p,friend.blockPosition(),8)){own.putBoolean("WarnedTwo"+visit,true);say(p,friend,"You went past the second marker? Don't go that far again.");}
+        if(BorrascaRooms.rel(p,b).z<MARKER_TWO_Z&&!own.getBoolean("PastTwo"+visit)){own.putBoolean("PastTwo"+visit,true);echo(p,b,own,.9F);}
+        if(own.getBoolean("PastTwo"+visit)&&!own.getBoolean("WarnedTwo"+visit)&&BorrascaRooms.rel(p,b).z>MARKER_TWO_Z+3&&near(p,friend.blockPosition(),8)){own.putBoolean("WarnedTwo"+visit,true);say(p,friend,"You went past the second marker? Don't go that far again.");}
     }
     /** The noise from the ridge: three strokes, heard wherever the reader is, the dust lifting with it. */
     private static void childhoodEcho(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
@@ -417,7 +420,7 @@ public final class BorrascaStory {
 
     private static void echo(ServerPlayer p,BlockPos b,CompoundTag own,float volume){
         // Keep the ridge's bearing, within the client's positional sound range even from town.
-        var ridge=b.offset(BorrascaRooms.MACHINE).getCenter();
+        var ridge=BorrascaRooms.at(b,BorrascaRooms.MACHINE).getCenter();
         var offset=ridge.subtract(p.position());
         var source=offset.lengthSqr()>36?p.position().add(offset.normalize().scale(6)):ridge;
         heard(p,BorrascaRegistry.CHIME.get(),BlockPos.containing(source),volume);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));if(own.getInt("Visit")<=2)glimpse(p,b,own);}
@@ -430,9 +433,9 @@ public final class BorrascaStory {
     static @Nullable Vec3 gentlemanSpot(ServerPlayer p,BlockPos b){
         var l=p.serverLevel();var eye=p.getEyePosition();var look=p.getLookAngle();Vec3 best=null;double bestScore=-9;
         for(int z=MARKER_TWO_Z-4;z>=-165;z-=3)for(int x=-30;x<=30;x+=3){
-            var column=new BlockPos(b.getX()+x,b.getY(),b.getZ()+z);if(!l.hasChunkAt(column))continue;
+            var column=BorrascaRooms.at(b,x,0,z);if(!l.hasChunkAt(column))continue;
             int y=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,column.getX(),column.getZ());
-            if(y<b.getY()-1||y>b.getY()+16)continue;var feet=new BlockPos(column.getX(),y,column.getZ());
+            if(y<column.getY()-1||y>column.getY()+16)continue;var feet=new BlockPos(column.getX(),y,column.getZ());
             // On the ground, not on a trunk or a rock, with room to stand.
             var under=l.getBlockState(feet.below());if(under.is(net.minecraft.tags.BlockTags.LOGS)||under.is(net.minecraft.tags.BlockTags.LEAVES)||under.is(BorrascaRegistry.FITTING.get()))continue;
             boolean room=true;for(int i=0;i<5&&room;i++)room=l.getBlockState(feet.above(i)).getCollisionShape(l,feet.above(i)).isEmpty();if(!room)continue;
@@ -455,13 +458,15 @@ public final class BorrascaStory {
     }
     /** She walks a route at her own pace; she waits only for a reader far behind her, and calls them once each time. True at its end. */
     private static boolean follow(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,String key,BlockPos[] points){
-        int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}var at=Vec3.atBottomCenterOf(b.offset(points[i]));
+        int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}var at=Vec3.atBottomCenterOf(BorrascaRooms.at(b,points[i]));
+        // 0.4.420: on the long slopes she keeps to the trail, a few blocks ahead at a time.
+        var base0=Vec3.atLowerCornerOf(b);var steer=i>0?BorrascaRooms.toward(friend.position().subtract(base0),points[i-1],points[i]).add(base0):at;
         // Behind means further back along the whole route, not off the line of the next step: a reader waiting up ahead is never waited for.
-        var start=Vec3.atBottomCenterOf(b.offset(points[0]));var way=Vec3.atBottomCenterOf(b.offset(points[points.length-1])).subtract(start).multiply(1,0,1);
+        var start=Vec3.atBottomCenterOf(BorrascaRooms.at(b,points[0]));var way=Vec3.atBottomCenterOf(BorrascaRooms.at(b,points[points.length-1])).subtract(start).multiply(1,0,1);
         boolean behind=friend.distanceToSqr(p)>20*20&&p.position().subtract(start).dot(way)<friend.position().subtract(start).dot(way);
         if(behind){BorrascaCast.stop(friend);if(!own.getBoolean(key+"Called")){own.putBoolean(key+"Called",true);say(p,friend,"Come on!");}return false;}
         own.putBoolean(key+"Called",false);
-        var delta=friend.position().subtract(at);if(delta.horizontalDistance()<.4&&Math.abs(delta.y)<.14){own.putInt(key,i+1);BorrascaCast.stop(friend);}else BorrascaCast.walk(friend,at,.8);return own.getInt(key)>=points.length;
+        var delta=friend.position().subtract(at);if(delta.horizontalDistance()<.4&&Math.abs(delta.y)<.14){own.putInt(key,i+1);BorrascaCast.stop(friend);}else BorrascaCast.walk(friend,steer,.8);return own.getInt(key)>=points.length;
     }
 
     // ------------------------------------------------------------------ the second visit: the taking
@@ -493,7 +498,7 @@ public final class BorrascaStory {
         friend.gesture(0);
         if(!follow(p,b,own,friend,"TakingStep",TAKING_WALK))return;
         // At the clearing she waits for the reader, wherever they have got to, and calls for them.
-        if(!near(p,b.offset(BorrascaRooms.TAKING),20)){int w=own.getInt("ClearingWait")+5;own.putInt("ClearingWait",w);if(w%200==5)say(p,friend,p.getGameProfile().getName()+"? Where'd you go?");return;}
+        if(!near(p,BorrascaRooms.at(b,BorrascaRooms.TAKING),20)){int w=own.getInt("ClearingWait")+5;own.putInt("ClearingWait",w);if(w%200==5)say(p,friend,p.getGameProfile().getName()+"? Where'd you go?");return;}
         own.putInt("TakingTicks",1);friend.gesture(SCARED);say(p,friend,"Wait. Is that someone—");comeDown(p,b,own,w0,w1);stroke(p,b,own,1,w0,w1);send(p,own);
     }
     /**
@@ -502,10 +507,10 @@ public final class BorrascaStory {
      */
     private static void comeDown(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
         var l=p.serverLevel();int start=0;
-        for(int k:SPAWNS){var at=b.offset(APPROACH[k]).getCenter().add(0,1,0);var behind=b.offset(APPROACH[Math.max(0,k-1)]).getCenter().add(0,1,0);if(!LiteraryVignettes.watched(l,at)&&!LiteraryVignettes.watched(l,behind)){start=k;break;}}
+        for(int k:SPAWNS){var at=BorrascaRooms.at(b,APPROACH[k]).getCenter().add(0,1,0);var behind=BorrascaRooms.at(b,APPROACH[Math.max(0,k-1)]).getCenter().add(0,1,0);if(!LiteraryVignettes.watched(l,at)&&!LiteraryVignettes.watched(l,behind)){start=k;break;}}
         var men=new LiteraryActor[]{w0,w1};
         for(int i=0;i<2;i++){
-            var w=men[i];if(w==null)continue;var at=Vec3.atBottomCenterOf(b.offset(APPROACH[start]));var next=Vec3.atBottomCenterOf(b.offset(APPROACH[start+1]));var heading=next.subtract(at).multiply(1,0,1).normalize();var right=new Vec3(-heading.z,0,heading.x);
+            var w=men[i];if(w==null)continue;var at=Vec3.atBottomCenterOf(BorrascaRooms.at(b,APPROACH[start]));var next=Vec3.atBottomCenterOf(BorrascaRooms.at(b,APPROACH[start+1]));var heading=next.subtract(at).multiply(1,0,1).normalize();var right=new Vec3(-heading.z,0,heading.x);
             var pos=at.add(right.scale(i==0?-.6:.6)).subtract(heading.scale(i*.9));float yaw=(float)Math.toDegrees(Math.atan2(-heading.x,heading.z));
             BorrascaCast.stop(w);w.moveTo(pos,yaw,0);w.setYBodyRot(yaw);w.setYHeadRot(yaw);w.setInvisible(false);w.appearance(LiteraryActor.BORRASCA_KYLE,WORKER+i);w.gesture(0);
             own.putInt("Taker"+i,start+1);own.remove("Exit"+i);
@@ -518,7 +523,7 @@ public final class BorrascaStory {
      * taller than they are, where the reader can see him over their shoulders; he stays while they come, and fades as the last stroke dies.
      */
     private static void stroke(ServerPlayer p,BlockPos b,CompoundTag own,int n,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
-        own.putInt("Strokes",n);heard(p,BorrascaRegistry.STROKE.get(),b.offset(BorrascaRooms.MACHINE),n==3?1.8F:1.5F);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));
+        own.putInt("Strokes",n);heard(p,BorrascaRegistry.STROKE.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),n==3?1.8F:1.5F);dust(p);own.putInt("Echoes",own.getInt("Echoes")+1);own.putInt("EchoAt",own.getInt("TrailClock"));
         if(n>=3){if(own.getInt("GentTicks")>0)own.putInt("GentTicks",40);return;}
         // He is only ever behind them: while they are still out of sight in the cutting there is nowhere for him to stand, and he comes
         // with the next stroke. Where the reader is already looking at him, he stays.
@@ -532,7 +537,8 @@ public final class BorrascaStory {
         if(mid==null)return null;mid=mid.scale(1.0/n);var l=p.serverLevel();var eye=p.getEyePosition();var away=mid.subtract(eye).multiply(1,0,1);if(away.lengthSqr()<1)return null;away=away.normalize();
         for(int k=5;k<=18;k++)for(int sway:new int[]{0,2,-2}){
             var c=mid.add(away.scale(k)).add(new Vec3(-away.z,0,away.x).scale(sway));var column=BlockPos.containing(c.x,b.getY(),c.z);if(!l.hasChunkAt(column))continue;
-            int y=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,column.getX(),column.getZ());if(y<b.getY()+6||y>b.getY()+22)continue;
+            int ly=b.getY()+(int)Math.round(BorrascaRooms.lift(BorrascaRooms.authoredZ(column.getZ()-b.getZ())));
+            int y=l.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,column.getX(),column.getZ());if(y<ly+6||y>ly+22)continue;
             var feet=new BlockPos(column.getX(),y,column.getZ());var under=l.getBlockState(feet.below());if(under.is(net.minecraft.tags.BlockTags.LOGS)||under.is(net.minecraft.tags.BlockTags.LEAVES)||under.is(BorrascaRegistry.FITTING.get())||under.getBlock() instanceof net.minecraft.world.level.block.FenceBlock)continue;
             boolean room=true;for(int i=0;i<5&&room;i++)room=l.getBlockState(feet.above(i)).getCollisionShape(l,feet.above(i)).isEmpty();if(!room)continue;
             var base=Vec3.atBottomCenterOf(feet);var head=base.add(0,GENT_HEIGHT-.4,0);if(head.distanceTo(eye)<12)continue;
@@ -547,12 +553,14 @@ public final class BorrascaStory {
      */
     private static boolean route(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor a,String key,BlockPos[] points,double side,double pace){
         int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(a);return true;}
-        var at=Vec3.atBottomCenterOf(b.offset(points[i]));var from=i>0?Vec3.atBottomCenterOf(b.offset(points[i-1])):a.position();
+        var at=Vec3.atBottomCenterOf(BorrascaRooms.at(b,points[i]));var from=i>0?Vec3.atBottomCenterOf(BorrascaRooms.at(b,points[i-1])):a.position();
         var heading=at.subtract(from).multiply(1,0,1);if(heading.lengthSqr()<.01)heading=at.subtract(a.position()).multiply(1,0,1);if(heading.lengthSqr()<.01)heading=new Vec3(0,0,-1);heading=heading.normalize();
         var goal=at.add(new Vec3(-heading.z,0,heading.x).scale(side));
         if(a.position().subtract(goal).horizontalDistance()<.7){own.putInt(key,i+1);own.remove(key+"Stuck");if(i+1>=points.length){BorrascaCast.stop(a);return true;}return false;}
+        // 0.4.420: down (or up) the drawn-out lane a few blocks at a time, keeping to it.
+        var base0=Vec3.atLowerCornerOf(b);var steer=i>0?BorrascaRooms.toward(a.position().subtract(base0),points[i-1],points[i]).add(base0):at;if(steer!=at)steer=steer.add(new Vec3(-heading.z,0,heading.x).scale(side));else steer=goal;
         // Only the men are ever moved on; she never jumps, watched or not.
-        BorrascaCast.walk(a,goal,pace);if(a.role()!=LiteraryActor.BORRASCA_KIMBER)unstick(p,own,a,key,goal);return false;
+        BorrascaCast.walk(a,steer,pace);if(a.role()!=LiteraryActor.BORRASCA_KIMBER)unstick(p,own,a,key,steer);return false;
     }
     private static void unstick(ServerPlayer p,CompoundTag own,LiteraryActor a,String key,Vec3 goal){
         var t=own.getCompound(key+"Stuck");var last=new Vec3(t.getDouble("X"),t.getDouble("Y"),t.getDouble("Z"));int ticks=t.getInt("T")+5;
@@ -562,7 +570,7 @@ public final class BorrascaStory {
     }
     /** Where a man walks beside her: a little behind her shoulder, on his own side of the way she is going. */
     private static Vec3 beside(BlockPos b,CompoundTag own,LiteraryActor friend,int side){
-        int i=Math.min(EXIT.length-1,own.getInt("ExitF"));var heading=Vec3.atBottomCenterOf(b.offset(EXIT[i])).subtract(friend.position()).multiply(1,0,1);if(heading.lengthSqr()<.04)heading=Vec3.atBottomCenterOf(b.offset(EXIT[Math.min(EXIT.length-1,i+1)])).subtract(friend.position()).multiply(1,0,1);if(heading.lengthSqr()<.01)heading=new Vec3(1,0,0);heading=heading.normalize();
+        int i=Math.min(EXIT.length-1,own.getInt("ExitF"));var heading=Vec3.atBottomCenterOf(BorrascaRooms.at(b,EXIT[i])).subtract(friend.position()).multiply(1,0,1);if(heading.lengthSqr()<.04)heading=Vec3.atBottomCenterOf(BorrascaRooms.at(b,EXIT[Math.min(EXIT.length-1,i+1)])).subtract(friend.position()).multiply(1,0,1);if(heading.lengthSqr()<.01)heading=new Vec3(1,0,0);heading=heading.normalize();
         return friend.position().add(new Vec3(-heading.z,0,heading.x).scale(side*.78)).subtract(heading.scale(.12));
     }
     private static void footsteps(ServerPlayer p,LiteraryActor w,int clock){
@@ -581,7 +589,7 @@ public final class BorrascaStory {
         var men=new LiteraryActor[]{w0,w1};
         if(accost(p,b,own,men))return;
         if(!own.getBoolean("Led")){
-            BorrascaCast.stop(friend);friend.gesture(SCARED);friend.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,men[0]!=null?men[0].getEyePosition():Vec3.atCenterOf(b.offset(BorrascaRooms.LAMP)));
+            BorrascaCast.stop(friend);friend.gesture(SCARED);friend.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,men[0]!=null?men[0].getEyePosition():Vec3.atCenterOf(BorrascaRooms.at(b,BorrascaRooms.LAMP)));
             boolean reached=false,turned=false;
             for(int i=0;i<2;i++){
                 var w=men[i];if(w==null)continue;w.setInvisible(false);int side=i==0?-1:1;String key="Taker"+i;
@@ -610,13 +618,13 @@ public final class BorrascaStory {
             footsteps(p,w,clock);
         }
         if(clock>=own.getInt("LedAt")+LED_FOR){
-            own.putBoolean("FriendMissing",true);friend.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);BorrascaBelongings.dropOnce(p,own,"Compass",b.offset(BorrascaRooms.DROP));
+            own.putBoolean("FriendMissing",true);friend.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);BorrascaBelongings.dropOnce(p,own,"Compass",BorrascaRooms.at(b,BorrascaRooms.DROP));
             fit(p,b,BorrascaRooms.DROP.below(),BorrascaFittingBlock.Kind.TRAIL);for(int i=0;i<8;i++)fit(p,b,new BlockPos(1,BorrascaRooms.trailY(-152-i),-152-i),BorrascaFittingBlock.Kind.TRACKS);
             for(int i=0;i<2;i++)if(!own.contains("Exit"+i))own.putInt("Exit"+i,own.getInt("ExitF"));
         }
     }
     private static boolean accost(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor[] workers){
-        double x=p.getX()-b.getX(),z=p.getZ()-b.getZ();
+        var r0=BorrascaRooms.rel(p,b);double x=r0.x,z=r0.z;
         if(x<-.5||x>5.5||z>-152||z<-167)return false;
         LiteraryActor guard=null;
         for(var worker:workers)if(worker!=null&&!worker.isInvisible()&&worker.distanceToSqr(p)<64
@@ -636,7 +644,7 @@ public final class BorrascaStory {
         // The attack ends this attempt. The abduction still leaves its evidence on the ridge.
         own.putBoolean("TakingReturned",true);
         own.putBoolean("FriendMissing",true);
-        BorrascaBelongings.dropOnce(p,own,"Compass",b.offset(BorrascaRooms.DROP));
+        BorrascaBelongings.dropOnce(p,own,"Compass",BorrascaRooms.at(b,BorrascaRooms.DROP));
         own.putBoolean("Here",false);own.remove("DepartVisit");own.remove("ExitEligible");
         return true;
     }
@@ -667,9 +675,9 @@ public final class BorrascaStory {
     private static void visitThree(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
         if(friend!=null){friend.stopRiding();friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
         // The gouge is seen when it is looked at, from close enough to read the bark; no hand is needed.
-        if(!own.getBoolean("GougeSeen")&&looksAt(p,b.offset(BorrascaRooms.CARVING),7))noticeGouge(p,own);
+        if(!own.getBoolean("GougeSeen")&&looksAt(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),7))noticeGouge(p,own);
         if(sheriff!=null){sheriff.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(BorrascaRegistry.FLASHLIGHT.get()));blockade(p,b,own,sheriff);}
-        if(near(p,b.offset(BorrascaRooms.MARKER_FOUR),9))perimeter(p,own);
+        if(near(p,BorrascaRooms.at(b,BorrascaRooms.MARKER_FOUR),9))perimeter(p,own);
         if(own.getBoolean("GougeSeen")&&own.getBoolean("PerimeterSeen"))own.putInt("Beat",3);
     }
     private static void noticeGouge(ServerPlayer p,CompoundTag own){if(own.getBoolean("GougeSeen"))return;own.putBoolean("GougeSeen",true);if(!own.getBoolean("RestoredName"))cue(p,"Fresh pale cuts. A flat steel tool has taken her name out. Yours is still there.");}
@@ -684,13 +692,13 @@ public final class BorrascaStory {
     private static void blockade(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor sheriff){
         // He gives himself away as soon as he has the reader in sight, from either side of the tape.
         if(!own.getBoolean("HeardDenial")&&sheriff.distanceToSqr(p)<20*20&&sees(sheriff,p.getEyePosition()))denial(p,sheriff,own);
-        if(own.getInt("TrailClock")%200==0){heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),.8F);dust(p);}
+        if(own.getInt("TrailClock")%200==0){heard(p,BorrascaRegistry.CHIME.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),.8F);dust(p);}
         if(own.getBoolean("Escorting")){escort(p,b,own,sheriff);return;}
         int cooldown=Math.max(0,own.getInt("CaughtCooldown")-5);own.putInt("CaughtCooldown",cooldown);
-        BorrascaCast.walk(sheriff,Vec3.atBottomCenterOf(b.offset(BorrascaRooms.SHERIFF)),.65);
+        BorrascaCast.walk(sheriff,Vec3.atBottomCenterOf(BorrascaRooms.at(b,BorrascaRooms.SHERIFF)),.65);
         float yaw=flashlightYaw(own);sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);sheriff.gesture(4);
         // Past the tape and in his light, or in plain sight and noisy near him, wherever the reader came from.
-        boolean beyond=p.getZ()<b.getZ()+TAPE_Z-.5&&p.getZ()>b.getZ()-167;
+        double rz=BorrascaRooms.rel(p,b).z;boolean beyond=rz<TAPE_Z-.5&&rz> -167;
         boolean caught=beyond&&cooldown==0&&(flashlightSees(sheriff,p,yaw)||!p.isCrouching()&&!masking(own)&&sheriff.distanceToSqr(p)<14*14&&sees(sheriff,p.getEyePosition()));
         int suspicion=caught?own.getInt("Suspicion")+5:Math.max(0,own.getInt("Suspicion")-5);own.putInt("Suspicion",suspicion);
         // The beam holds on whoever it found until they are out of it.
@@ -700,7 +708,7 @@ public final class BorrascaStory {
     }
     /** He walks behind the reader with the light on them, and enforces the boundary if they refuse to go. */
     private static void escort(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor sheriff){
-        var end=Vec3.atBottomCenterOf(b.offset(2,BorrascaLand.ground(2,-119),-119));
+        var end=Vec3.atBottomCenterOf(BorrascaRooms.at(b,2,BorrascaLand.ground(2,-119),-119));
         float yaw=toward(sheriff,p);own.putFloat("BeamYaw",yaw);sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);sheriff.gesture(4);
         if(p.getZ()>=end.z-1){finishEscort(p,own,sheriff);return;}
         int elapsed=own.getInt("EscortTicks")+5;own.putInt("EscortTicks",elapsed);
@@ -727,11 +735,11 @@ public final class BorrascaStory {
     private static void visitFour(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
         if(friend!=null){friend.stopRiding();friend.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);friend.setInvisible(true);BorrascaCast.stop(friend);}
         if(sheriff!=null)patrolRefinery(p,b,own,sheriff);
-        if(!own.getBoolean("PowerOff")&&own.getInt("TrailClock")%200==0)heard(p,BorrascaRegistry.CHIME.get(),b.offset(BorrascaRooms.MACHINE),1);
-        if(!own.getBoolean("GougeSeen")&&looksAt(p,b.offset(BorrascaRooms.CARVING),7))noticeGouge(p,own);
+        if(!own.getBoolean("PowerOff")&&own.getInt("TrailClock")%200==0)heard(p,BorrascaRegistry.CHIME.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),1);
+        if(!own.getBoolean("GougeSeen")&&looksAt(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),7))noticeGouge(p,own);
         if(carriesEvidence(p,own))own.putBoolean("PatchRecovered",true);
         lowerRooms(p,b,own);
-        if(own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&own.getBoolean("PatchRecovered")&&carriesEvidence(p,own)&&(own.getInt("ConfirmedVisits")&7)==7&&p.getZ()>b.getZ()-106){own.putBoolean("EscapedWithOriginal",true);LiteraryVignettes.ready(p,PLACE,own,"silenced_the_mountain");}
+        if(own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&own.getBoolean("PatchRecovered")&&carriesEvidence(p,own)&&(own.getInt("ConfirmedVisits")&7)==7&&BorrascaRooms.rel(p,b).z> -106){own.putBoolean("EscapedWithOriginal",true);LiteraryVignettes.ready(p,PLACE,own,"silenced_the_mountain");}
     }
 
     static @Nullable CompoundTag sheriffFight(ServerPlayer p,LiteraryActor sheriff){
@@ -779,7 +787,7 @@ public final class BorrascaStory {
 
         boolean powerOff=own.getBoolean("PowerOff");
         int stop=own.getInt("SheriffPatrolStop")%SHERIFF_PATROL.length;
-        var target=Vec3.atBottomCenterOf(b.offset(powerOff?SHERIFF_SHUTDOWN_CHECK:SHERIFF_PATROL[stop]));
+        var target=Vec3.atBottomCenterOf(BorrascaRooms.at(b,powerOff?SHERIFF_SHUTDOWN_CHECK:SHERIFF_PATROL[stop]));
         if(sheriff.distanceToSqr(target)>.09){
             sheriff.gesture(0);
             BorrascaCast.walk(sheriff,target,.72);
@@ -811,7 +819,7 @@ public final class BorrascaStory {
 
     /** 0.4.237: what the reader finds under the depot and behind the shed on the last night. Nothing is shown happening; it is all after. */
     private static void lowerRooms(ServerPlayer p,BlockPos b,CompoundTag own){
-        double x=p.getX()-b.getX(),y=p.getY()-b.getY(),z=p.getZ()-b.getZ();
+        var r0=BorrascaRooms.rel(p,b);double x=r0.x,y=r0.y,z=r0.z;
         if(!own.getBoolean("LowerRooms")&&BorrascaRooms.inLowerRooms(x,y,z)){own.putBoolean("LowerRooms",true);cue(p,"A corridor under the depot, rooms along both sides. Every bolt is on this side of the door.");}
         if(!own.getBoolean("NellsRoom")&&BorrascaRooms.inRoom(BorrascaRooms.NELL_ROOM,x,y,z)){own.putBoolean("NellsRoom",true);cue(p,"Room 6 is empty. Scratched into the wall: "+FRIEND.toUpperCase(Locale.ROOT)+", and beside it your name, the way you both cut them into the tree.");}
         if(!own.getBoolean("MarasRoom")&&BorrascaRooms.inRoom(BorrascaRooms.MARA_ROOM,x,y,z)){own.putBoolean("MarasRoom",true);cue(p,"The blanket on the cot is folded. It is still warm. The trucks went up the ridge road tonight.");}
@@ -822,8 +830,8 @@ public final class BorrascaStory {
     // ------------------------------------------------------------------ the place
     private static void townPosters(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
         if(visit<2||own.getInt("TownPostersVisit")>=visit)return;
-        var eli=b.offset(BorrascaRooms.ELI_POSTER);
-        var wren=b.offset(BorrascaRooms.WREN_POSTER);
+        var eli=BorrascaRooms.at(b,BorrascaRooms.ELI_POSTER);
+        var wren=BorrascaRooms.at(b,BorrascaRooms.WREN_POSTER);
         if(!p.serverLevel().hasChunkAt(eli)||!p.serverLevel().hasChunkAt(wren))return;
         var poster=TownFixtureBlock.of(TownFixtureBlock.Kind.POSTER,Direction.EAST);
         p.serverLevel().setBlock(eli,poster,F);
@@ -832,22 +840,22 @@ public final class BorrascaStory {
     }
 
     private static void scene(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(own.getBoolean("PowerOff")&&p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.MACHINE))){var at=b.offset(BorrascaRooms.MACHINE);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.MACHINE.get())&&s.getValue(BorrascaMachineBlock.RUNNING))p.serverLevel().setBlock(at,s.setValue(BorrascaMachineBlock.RUNNING,false),F);var lamp=b.offset(BorrascaRooms.LAMP);var light=p.serverLevel().getBlockState(lamp);if(light.is(BorrascaRegistry.FITTING.get())&&light.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.LAMP)fit(p,b,BorrascaRooms.LAMP,BorrascaFittingBlock.Kind.LAMP_OFF);}
-        int visit=own.getInt("Visit");if(!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.CARVING))||!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.PACK))||visit==4&&!p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.GATE)))return;
+        if(own.getBoolean("PowerOff")&&p.serverLevel().hasChunkAt(BorrascaRooms.at(b,BorrascaRooms.MACHINE))){var at=BorrascaRooms.at(b,BorrascaRooms.MACHINE);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.MACHINE.get())&&s.getValue(BorrascaMachineBlock.RUNNING))p.serverLevel().setBlock(at,s.setValue(BorrascaMachineBlock.RUNNING,false),F);var lamp=BorrascaRooms.at(b,BorrascaRooms.LAMP);var light=p.serverLevel().getBlockState(lamp);if(light.is(BorrascaRegistry.FITTING.get())&&light.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.LAMP)fit(p,b,BorrascaRooms.LAMP,BorrascaFittingBlock.Kind.LAMP_OFF);}
+        int visit=own.getInt("Visit");if(!p.serverLevel().hasChunkAt(BorrascaRooms.at(b,BorrascaRooms.CARVING))||!p.serverLevel().hasChunkAt(BorrascaRooms.at(b,BorrascaRooms.PACK))||visit==4&&!p.serverLevel().hasChunkAt(BorrascaRooms.at(b,BorrascaRooms.GATE)))return;
         int stage=own.getBoolean("RestoredName")?4:visit>=3?3:own.getBoolean("PactCarved")?2:own.getBoolean("FriendCarved")?1:0;bark(p,b,stage);
-        if(visit==4&&p.serverLevel().hasChunkAt(b.offset(BorrascaRooms.NELL_WALL)))BorrascaCarvingEntity.names(p.serverLevel(),b.offset(BorrascaRooms.NELL_WALL),FRIEND,p.getGameProfile().getName());
+        if(visit==4&&p.serverLevel().hasChunkAt(BorrascaRooms.at(b,BorrascaRooms.NELL_WALL)))BorrascaCarvingEntity.names(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.NELL_WALL),FRIEND,p.getGameProfile().getName());
         if(own.getInt("SceneryVisit")==visit)return;
-        if(visit>=3){for(int x=-5;x<=5;x++)for(int y=5;y<=11;y++)for(int z=-100;z<=-88;z++){var s=p.serverLevel().getBlockState(b.offset(x,y,z));if(s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.OAK_PLANKS))fit(p,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.AGED_WOOD);}for(int x=-1;x<=5;x++)fit(p,b,new BlockPos(x,5,-125),BorrascaFittingBlock.Kind.TAPE);}
+        if(visit>=3){for(int x=-5;x<=5;x++)for(int y=5;y<=11;y++)for(int z=-100;z<=-88;z++){var s=p.serverLevel().getBlockState(BorrascaRooms.at(b,x,y,z));if(s.is(Blocks.SPRUCE_PLANKS)||s.is(Blocks.BIRCH_PLANKS)||s.is(Blocks.OAK_PLANKS))fit(p,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.AGED_WOOD);}for(int x=-1;x<=5;x++)fit(p,b,new BlockPos(x,5,-125),BorrascaFittingBlock.Kind.TAPE);}
         // Her pack is not at the sorting table until after she is taken.
-        var pack=p.serverLevel().getBlockState(b.offset(BorrascaRooms.PACK));
-        if(visit<=2&&pack.is(BorrascaRegistry.FITTING.get())&&pack.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.PACK)p.serverLevel().setBlock(b.offset(BorrascaRooms.PACK),Blocks.AIR.defaultBlockState(),F);
+        var pack=p.serverLevel().getBlockState(BorrascaRooms.at(b,BorrascaRooms.PACK));
+        if(visit<=2&&pack.is(BorrascaRegistry.FITTING.get())&&pack.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.PACK)p.serverLevel().setBlock(BorrascaRooms.at(b,BorrascaRooms.PACK),Blocks.AIR.defaultBlockState(),F);
         if(visit>=3&&pack.isAir())fit(p,b,BorrascaRooms.PACK,BorrascaFittingBlock.Kind.PACK);
-        if(visit==2){p.serverLevel().setBlock(b.offset(2,0,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);var source=b.offset(BorrascaRooms.SOURCE);if(p.serverLevel().getBlockEntity(source) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){lectern.setBook(BorrascaTexts.contentNote());lectern.setChanged();p.serverLevel().sendBlockUpdated(source,lectern.getBlockState(),lectern.getBlockState(),F);}}
-        if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(b.offset(x,y,-167),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),b.offset(BorrascaRooms.FACTORY_DOOR),true);}
+        if(visit==2){p.serverLevel().setBlock(BorrascaRooms.at(b,2,0,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);var source=BorrascaRooms.at(b,BorrascaRooms.SOURCE);if(p.serverLevel().getBlockEntity(source) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){lectern.setBook(BorrascaTexts.contentNote());lectern.setChanged();p.serverLevel().sendBlockUpdated(source,lectern.getBlockState(),lectern.getBlockState(),F);}}
+        if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(BorrascaRooms.at(b,x,y,-167),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.FACTORY_DOOR),true);}
         own.putInt("SceneryVisit",visit);
     }
-    private static void bark(ServerPlayer p,BlockPos b,int stage){var at=b.offset(BorrascaRooms.CARVING);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.CARVING.get())&&s.getValue(BorrascaCarvingBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaCarvingBlock.STAGE,stage),F);BorrascaCarvingEntity.names(p.serverLevel(),at,p.getGameProfile().getName());}
-    private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(b.offset(rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
+    private static void bark(ServerPlayer p,BlockPos b,int stage){var at=BorrascaRooms.at(b,BorrascaRooms.CARVING);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.CARVING.get())&&s.getValue(BorrascaCarvingBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaCarvingBlock.STAGE,stage),F);BorrascaCarvingEntity.names(p.serverLevel(),at,p.getGameProfile().getName());}
+    private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(BorrascaRooms.at(b,rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
     private static boolean near(ServerPlayer p,BlockPos at,double distance){return at!=null&&p.distanceToSqr(Vec3.atBottomCenterOf(at))<distance*distance;}
     /** A person speaks: over their head, and on the reader's action bar. Never in chat. */
     private static boolean recentSpeech(ServerPlayer p){
@@ -865,7 +873,7 @@ public final class BorrascaStory {
     private static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     private static void send(ServerPlayer p,CompoundTag own){var view=view(p,own);if(view!=null)HousePackets.send(p,view);}
     /** What this reader's client is told: the machine, the visit, the light, the Sheriff's beam and, for a child, where he stands. */
-    public static @Nullable BorrascaViewPayload view(ServerPlayer p,CompoundTag own){var b=BorrascaSites.base(p.server,p.getUUID());var sheriff=actor(p,own,"CastSheriff");if(b==null)return null;var standing=gentleman(own);return new BorrascaViewPayload(b.offset(BorrascaRooms.MACHINE),own.getInt("Visit"),own.getBoolean("Here"),!own.getBoolean("PowerOff")&&(own.getInt("Visit")>1||own.getBoolean("PactCarved")),lit(own)?own.getInt("TakingTicks"):0,own.getInt("TrailClock"),sheriff==null?b.offset(BorrascaRooms.SHERIFF):sheriff.blockPosition(),flashlightYaw(own),standing==null?Vec3.ZERO:standing,standing==null?0:own.getInt("GentTicks"));}
+    public static @Nullable BorrascaViewPayload view(ServerPlayer p,CompoundTag own){var b=BorrascaSites.base(p.server,p.getUUID());var sheriff=actor(p,own,"CastSheriff");if(b==null)return null;var standing=gentleman(own);return new BorrascaViewPayload(BorrascaRooms.at(b,BorrascaRooms.MACHINE),own.getInt("Visit"),own.getBoolean("Here"),!own.getBoolean("PowerOff")&&(own.getInt("Visit")>1||own.getBoolean("PactCarved")),lit(own)?own.getInt("TakingTicks"):0,own.getInt("TrailClock"),sheriff==null?BorrascaRooms.at(b,BorrascaRooms.SHERIFF):sheriff.blockPosition(),flashlightYaw(own),standing==null?Vec3.ZERO:standing,standing==null?0:own.getInt("GentTicks"));}
     /** Per-native-tick motion; native collision and ladder physics remain enabled. Spoken lines clear after a few seconds. */
     public static void actorTick(LiteraryActor a){
         if(!a.scene().equals(PLACE.id())||!(a.level() instanceof ServerLevel l))return;

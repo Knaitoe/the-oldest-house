@@ -38,7 +38,7 @@ public final class BorrascaAtmosphere {
     private static SheriffLens sheriffLens;
     private BorrascaAtmosphere(){}
     public static void accept(BorrascaViewPayload p){var mc=Minecraft.getInstance();state=p;world=mc.level;received=world==null?0:world.getGameTime();if(!p.active())stop();}
-    public static boolean active(){var mc=Minecraft.getInstance();if(state==null||!state.active()||mc.level==null||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var b=state.source().subtract(BorrascaRooms.MACHINE);return BorrascaSites.bounds(b).contains(mc.player.position());}
+    public static boolean active(){var mc=Minecraft.getInstance();if(state==null||!state.active()||mc.level==null||mc.level!=world||mc.player==null||!mc.player.isAlive()||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var b=state.source().subtract(BorrascaRooms.world(BorrascaRooms.MACHINE));return BorrascaSites.bounds(b).contains(mc.player.position());}
     public static boolean playing(){var mc=Minecraft.getInstance();return clear!=null&&muffled!=null&&mc.getSoundManager().isActive(clear)&&mc.getSoundManager().isActive(muffled);}
     public static long time(long normal){return !active()?normal:switch(state.visit()){case 1->10000;case 2->11500;case 3->800;default->18000;};}
     public static BlockPos source(){return state==null?BlockPos.ZERO:state.source();}
@@ -50,7 +50,7 @@ public final class BorrascaAtmosphere {
     @SubscribeEvent public static void choose(SelectMusicEvent e){if(active())e.setMusic(null);}
     @SubscribeEvent public static void music(PlaySoundEvent e){var sound=e.getSound();if(active()&&sound!=null&&sound.getSource()==SoundSource.MUSIC&&sound.getLocation().getNamespace().equals("minecraft"))e.setSound(null);}
     @SubscribeEvent public static void glare(RenderGuiEvent.Post e){
-        if(!active()||state.takingTicks()<=0||state.takingTicks()>60)return;var mc=Minecraft.getInstance();var camera=mc.gameRenderer.getMainCamera();var at=state.source().subtract(BorrascaRooms.MACHINE).offset(BorrascaRooms.LAMP).getCenter();var d=at.subtract(camera.getPosition());if(d.lengthSqr()<.01)return;
+        if(!active()||state.takingTicks()<=0||state.takingTicks()>60)return;var mc=Minecraft.getInstance();var camera=mc.gameRenderer.getMainCamera();var at=state.source().subtract(BorrascaRooms.world(BorrascaRooms.MACHINE)).offset(BorrascaRooms.LAMP).getCenter();var d=at.subtract(camera.getPosition());if(d.lengthSqr()<.01)return;
         var f=camera.getLookVector();double look=new Vec3(f.x(),f.y(),f.z()).dot(d.normalize());if(look<.7)return;
         var ray=mc.level.clip(new ClipContext(camera.getPosition(),at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,mc.player));if(ray.getType()!=HitResult.Type.MISS&&ray.getLocation().distanceToSqr(at)>2)return;
         double effects=Comfort.effects();double rise=Math.sin(Math.PI*Math.min(60,state.takingTicks()+mc.level.getGameTime()-received)/60D);int alpha=(int)(225*Mth.clamp((look-.7)/.3,0,1)*Math.max(0,rise)*effects);if(alpha<=0)return;
@@ -66,10 +66,10 @@ public final class BorrascaAtmosphere {
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES)return;
         var lens=sheriffLens;sheriffLens=null;
         if(!active())return;
-        var b=state.source().subtract(BorrascaRooms.MACHINE);
+        var b=state.source().subtract(BorrascaRooms.world(BorrascaRooms.MACHINE));
         if(lens!=null)
             beam(e,lens.position().add(lens.direction().scale(.015)),lens.direction(),22,5.8,.065F);
-        if(state.takingTicks()>0||state.visit()==4&&state.running()){var direction=b.offset(BorrascaRooms.TAKING).getCenter().subtract(b.offset(BorrascaRooms.LAMP).getCenter()).normalize();beam(e,b.offset(BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
+        if(state.takingTicks()>0||state.visit()==4&&state.running()){var direction=BorrascaRooms.at(b,BorrascaRooms.TAKING).getCenter().subtract(BorrascaRooms.at(b,BorrascaRooms.LAMP).getCenter()).normalize();beam(e,BorrascaRooms.at(b,BorrascaRooms.LAMP).getCenter().add(direction.scale(.65)),direction,48,8,.09F);}
     }
     /** 0.4.236: the Shiny Gentleman, where the server says he stands for this reader, for as long as the strokes last. */
     private static final ResourceLocation GENTLEMAN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_gentleman.png");
