@@ -689,7 +689,11 @@ public enum LabyrinthPlace {
     /** 0.4.410, the Kept (Kept, docs/THE_KEPT_0_4_410.md): the inside of a machine and four people it has kept, a walk through a corridor of
      * cabinets, a cave of ice and a thicket of wire to a hall of a hundred chairs, a crate of tins, and four cells whose doors open onto glare.
      * Its way on is a door in the hall's north wall. */
-    KEPT("the_kept",Kind.RECURRING,236,new BoundingBox(-22,-2,-98,22,10,0),literaryEntry());
+    KEPT("the_kept",Kind.RECURRING,236,new BoundingBox(-22,-2,-98,22,10,0),literaryEntry()),
+    /** 0.4.416, Last orders (LastOrders, docs/LAST_ORDERS_0_4_416.md): a saloon bar long after midnight, a pale man in booth four who
+     * plays pool or darts for everything on his table, three regulars at the board, the next booth's talk, and a window onto a street in
+     * whatever season the glasses have brought. Its way on is the street door by the front. */
+    LAST_ORDERS("last_orders",Kind.RECURRING,237,new BoundingBox(-14,-2,-34,16,8,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

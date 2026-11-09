@@ -125,7 +125,8 @@ public final class WitnessAccount {
         THE_DRAWING("the_drawing","The drawing","understanding","I stood in a village square on a bright morning and drew a folded slip from a black box like everyone else. Mine was blank. Then a child put a stone in my hand."),
         CORNER_HOUSE("the_house_on_the_corner","The house on the corner","memory","A girl with one arm took me into the empty house on the corner, past the jars and down a corridor longer than the house. She went into the last room. I have the stories she told me about her arm."),
         BLACK_CITY("the_black_city","The city on the ice","understanding","I followed an empty camp's people up a pass to a city of carved stone, read its walls in order down a turning ramp, and outran what came up the tunnel. From the top of the pass I looked back."),
-        KEPT("the_kept","The kept","release","I walked with four people a machine had kept, to food it had promised them that could not be opened. One at a time I shut my eyes and opened their doors, and it took my mouth for it.");
+        KEPT("the_kept","The kept","release","I walked with four people a machine had kept, to food it had promised them that could not be opened. One at a time I shut my eyes and opened their doors, and it took my mouth for it."),
+        LAST_ORDERS("last_orders","Last orders","survival","I played a stranger for everything on his table and won, and I left it there. When I walked out he was still looking at the seat.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

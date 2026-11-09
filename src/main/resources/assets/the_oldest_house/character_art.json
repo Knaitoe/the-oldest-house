@@ -1722,5 +1722,61 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 138
+  },
+  {
+    "name": "literary_orders_stranger",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 139
+  },
+  {
+    "name": "literary_orders_ferris",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 140
+  },
+  {
+    "name": "literary_orders_mags",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 141
+  },
+  {
+    "name": "literary_orders_hob",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 142
+  },
+  {
+    "name": "literary_orders_ott",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 143
+  },
+  {
+    "name": "literary_orders_cass",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 144
+  },
+  {
+    "name": "literary_orders_benny",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 145
   }
 ]

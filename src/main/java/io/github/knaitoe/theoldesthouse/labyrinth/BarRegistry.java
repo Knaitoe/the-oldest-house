@@ -49,6 +49,8 @@ public final class BarRegistry {
     /** The cue's tip on the ball, ball on ball, a ball off the cushion, and one dropping into a pocket. */
     /** A dart leaving the hand, sinking into the board, knocking into the wall, and the turn's darts pulled out. */
     public static final DeferredHolder<SoundEvent,SoundEvent> DARTS_THROW=sound("darts.throw"),DARTS_BOARD=sound("darts.board"),DARTS_WALL=sound("darts.wall"),DARTS_PULL=sound("darts.pull");
+    /** 0.4.416: the man in booth four whistles three times when the last frame is his. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> ORDERS_WHISTLE=sound("orders.whistle");
     public static final DeferredHolder<SoundEvent,SoundEvent> POOL_STRIKE=sound("pool.strike"),POOL_CLACK=sound("pool.clack"),POOL_CUSHION=sound("pool.cushion"),POOL_POCKET=sound("pool.pocket");
 
     private BarRegistry(){}

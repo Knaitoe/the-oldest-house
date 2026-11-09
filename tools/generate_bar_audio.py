@@ -1,5 +1,6 @@
 """Original sounds for the bar's games: the cue's tip on the ball, ball on ball, a ball off the cushion, and a ball dropping into a
-pocket and rolling down the return (0.4.414); a dart thrown, into the board, into the wall, and the turn's darts pulled out (0.4.415).
+pocket and rolling down the return (0.4.414); a dart thrown, into the board, into the wall, and the turn's darts pulled out (0.4.415);
+and the man in booth four's whistle (0.4.416).
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 table. Run from tools/. Existing files are kept, so the committed sounds only change when deleted first.
@@ -17,6 +18,7 @@ ROWS = {
     'darts/board': ('darts.board', 'Dart hits the board', 12),
     'darts/wall': ('darts.wall', 'Dart hits the wall', 12),
     'darts/pull': ('darts.pull', 'Darts pulled from the board', 10),
+    'orders/whistle': ('orders.whistle', 'Someone whistles', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -126,8 +128,21 @@ def dart_pull():
     return out
 
 
+def whistle():
+    # One long, thin whistle through the teeth: a pure tone sliding up and falling away, a little breath round it.
+    n = seconds(.75)
+    t = times(n)
+    pitch = 1350 + 420 * np.clip(t / .25, 0, 1) - 260 * np.clip((t - .45) / .3, 0, 1) + 14 * np.sin(2 * np.pi * 6 * t)
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    shape = np.clip(t / .04, 0, 1) * np.clip((.75 - t) / .18, 0, 1)
+    tone = np.sin(phase) * shape * .7
+    breath = band(rng.standard_normal(n), 1800, 6000) * shape * .06
+    return tone + breath
+
+
 MAKERS = {'pool/strike': strike, 'pool/clack': clack, 'pool/cushion': cushion, 'pool/pocket': pocket,
-          'darts/throw': dart_throw, 'darts/board': dart_board, 'darts/wall': dart_wall, 'darts/pull': dart_pull}
+          'darts/throw': dart_throw, 'darts/board': dart_board, 'darts/wall': dart_wall, 'darts/pull': dart_pull,
+          'orders/whistle': whistle}
 
 
 def main():

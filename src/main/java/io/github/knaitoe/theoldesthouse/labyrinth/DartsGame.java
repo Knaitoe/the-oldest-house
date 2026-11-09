@@ -62,9 +62,11 @@ public final class DartsGame {
     public final List<Hit> lastTurn=new ArrayList<>();
     public String last="";
 
-    public DartsGame(Mode mode,int players){
+    public DartsGame(Mode mode,int players){this(mode,players,START);}
+    /** A game counting down from {@code start} (301, or a shorter leg) in 301's rules; round the clock ignores it. */
+    public DartsGame(Mode mode,int players,int start){
         this.mode=mode;score=new int[Math.max(1,players)];
-        for(int i=0;i<score.length;i++)score[i]=mode==Mode.X01?START:1;
+        for(int i=0;i<score.length;i++)score[i]=mode==Mode.X01?start:1;
         turnStart=score[0];
     }
     public boolean over(){return winner>=0;}
@@ -100,7 +102,7 @@ public final class DartsGame {
 
     /** The same game with one player gone: the others keep their scores, and a turn that was theirs passes on. */
     public DartsGame without(int player){
-        var g=new DartsGame(mode,Math.max(1,score.length-1));
+        var g=new DartsGame(mode,Math.max(1,score.length-1),1);
         for(int i=0,j=0;i<score.length&&j<g.score.length;i++)if(i!=player)g.score[j++]=score[i];
         if(turn==player){g.turn=player%g.score.length;g.turnStart=g.score[g.turn];}
         else{g.turn=turn>player?turn-1:turn;g.darts=darts;g.busted=busted;g.turnStart=turnStart;g.thisTurn.addAll(thisTurn);}

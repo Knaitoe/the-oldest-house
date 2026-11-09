@@ -60,7 +60,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -134,4 +134,7 @@ def entries():
     # The Kept (0.4.410): the four the machine keeps on stranger phases one hundred and thirty-five to one hundred and thirty-eight.
     for name,phase in (('silas',135),('petra',136),('wendell',137),('tamsin',138)):
         rows.append({'name':'literary_kept_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # Last orders (0.4.416): the bar's seven on stranger phases one hundred and thirty-nine to one hundred and forty-five.
+    for name,phase in (('stranger',139),('ferris',140),('mags',141),('hob',142),('ott',143),('cass',144),('benny',145)):
+        rows.append({'name':'literary_orders_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

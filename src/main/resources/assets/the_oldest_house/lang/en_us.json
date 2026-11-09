@@ -1554,5 +1554,8 @@
   "subtitles.the_oldest_house.darts.throw": "Dart thrown",
   "subtitles.the_oldest_house.darts.board": "Dart hits the board",
   "subtitles.the_oldest_house.darts.wall": "Dart hits the wall",
-  "subtitles.the_oldest_house.darts.pull": "Darts pulled from the board"
+  "subtitles.the_oldest_house.darts.pull": "Darts pulled from the board",
+  "subtitles.the_oldest_house.orders.whistle": "Someone whistles",
+  "advancements.the_oldest_house.account.last_orders.title": "Last orders",
+  "advancements.the_oldest_house.account.last_orders.description": "I played a stranger for everything on his table and won, and I left it there."
 }
