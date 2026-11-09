@@ -30,7 +30,8 @@ public final class BorrascaCast {
      * store under the far bank: the friend once she is gone; the two men in childhood (they come down the ridge road only for her) and on the
      * last night; Prescott on the last night. Years later the men are at work in the yard, seen through the wire.
      */
-    public static BlockPos target(String key,int visit){return switch(key){
+    public static BlockPos target(String key,int visit){return BorrascaRooms.world(authoredTarget(key,visit));}
+    private static BlockPos authoredTarget(String key,int visit){return switch(key){
         case "CastKimber"->visit>=3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);
         case "CastSheriff"->visit>=4?BorrascaRooms.YARD_PATROL_START:visit==3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);
         case "CastPrescott"->visit>=4?new BlockPos(40,-4,-55):visit>=2?new BlockPos(15,12,-171):new BlockPos(11,0,-25);

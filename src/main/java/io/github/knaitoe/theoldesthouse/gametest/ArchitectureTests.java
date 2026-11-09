@@ -662,11 +662,11 @@ public final class ArchitectureTests {
         if(name.equals("lake_house_cutaway")){minX=-12;maxX=LakeHouse.HX-1;minZ=LakeHouse.HZ_BACK-3;maxZ=LakeHouse.HZ_FRONT-1;minY=LakeHouse.GROUND-2;maxY=LakeHouse.EAVES-1;}
         if(scene==LabyrinthPlace.BORRASCA){minX=-34;maxX=35;minZ=-69;maxZ=0;minY=-1;maxY=4;}
         // 0.4.276: the town whole, roofs and yard trees included, as a reader sees it from the trailhead.
-        if(name.equals("borrasca_town")){minX=-36;maxX=36;minZ=-76;maxZ=1;minY=-1;maxY=14;}
-        if(name.equals("borrasca_treehouse")){minX=-11;maxX=11;minZ=-108;maxZ=-82;minY=-1;maxY=22;}
-        if(name.equals("borrasca_refinery")){minX=-30;maxX=15;minZ=-211;maxZ=-166;minY=10;maxY=16;}
-        if(name.equals("borrasca_gully")){minX=-20;maxX=12;minZ=-142;maxZ=-96;minY=-1;maxY=12;}
-        if(name.equals("borrasca_taking")){minX=-18;maxX=17;minZ=-169;maxZ=-139;minY=7;maxY=19;}
+        if(name.equals("borrasca_town")){minX=-36;maxX=36;minZ=BorrascaRooms.TOWN_END-2;maxZ=1;minY=-1;maxY=14;}
+        if(name.equals("borrasca_treehouse")){minX=-11;maxX=11;minZ=wz(-108);maxZ=wz(-82);minY=-1+wy(-95);maxY=22+wy(-95);}
+        if(name.equals("borrasca_refinery")){minX=-30;maxX=15;minZ=wz(-211);maxZ=wz(-166);minY=10+wy(-190);maxY=16+wy(-190);}
+        if(name.equals("borrasca_gully")){minX=-20;maxX=12;minZ=wz(-142);maxZ=wz(-96);minY=-1+wy(-96);maxY=12+wy(-142);}
+        if(name.equals("borrasca_taking")){minX=-18;maxX=17;minZ=wz(-169);maxZ=wz(-139);minY=7+wy(-150);maxY=19+wy(-150);}
         for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++)for(int z=minZ;z<=maxZ;z++){
             var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.is(LiteraryRegistry.FROZEN.get()))s=LiteraryFrozenBlock.original(l,at);
             if(s.isAir()||s.is(Blocks.BARRIER)||s.is(Blocks.LIGHT))continue;
@@ -744,5 +744,9 @@ public final class ArchitectureTests {
             h.succeed();
         }
     }
+
+    /** 0.4.420: where an authored Borrasca row lies on the drawn-out hill, and how far it is raised there. */
+    private static int wz(int z){return (int)Math.round(BorrascaRooms.worldZ(z));}
+    private static int wy(int z){return (int)Math.round(BorrascaRooms.lift(z));}
 
 }

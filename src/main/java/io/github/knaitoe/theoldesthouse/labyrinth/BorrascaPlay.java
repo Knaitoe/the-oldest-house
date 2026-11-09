@@ -26,7 +26,7 @@ final class BorrascaPlay {
             }
             if(ticks<100)return true;
             nell.gesture(0);
-            if(!walk(nell,b.offset(TAG_END)))return true;
+            if(!walk(nell,BorrascaRooms.at(b,TAG_END)))return true;
             BorrascaCast.stop(nell);
             if(p.distanceToSqr(nell)>4)return true;
             own.putBoolean("TaggedNell",true);own.putInt("PlayBeat",1);
@@ -46,7 +46,7 @@ final class BorrascaPlay {
         int leg=own.getInt("HideLeg"),side=own.getInt("HideSide");
         if(leg<2){
             var at=leg==0?new BlockPos(1,0,-35):new BlockPos(side,0,-35);
-            if(walk(nell,b.offset(at)))own.putInt("HideLeg",leg+1);
+            if(walk(nell,BorrascaRooms.at(b,at)))own.putInt("HideLeg",leg+1);
             return true;
         }
         BorrascaCast.stop(nell);

@@ -42,7 +42,8 @@ final class BorrascaDressing {
     // ================================================================================================ the town
 
     /** The street runs up the middle from the square (z -14) to the trees (z -70); the child's walk keeps to it. */
-    static final int STREET_Z0=-14,STREET_Z1=-68;
+    /** 0.4.420: the street runs on to the trailhead at the town's new north end. */
+    static final int STREET_Z0=-14,STREET_Z1=BorrascaRooms.TOWN_END+1;
 
     static void town(ServerLevel l,BlockPos b){
         street(l,b);
@@ -63,7 +64,7 @@ final class BorrascaDressing {
         for(int z=STREET_Z0;z>=STREET_Z1;z--)for(int x=-4;x<=4;x++){
             int ax=Math.abs(x);int k=hash(x,1,z)%10;BlockState s;
             // It narrows to the trail at its top end.
-            boolean top=z<-62;int width=top?2:3;
+            boolean top=z<STREET_Z1+6;int width=top?2:3;
             if(ax>width+1)continue;
             if(ax<=width)s=top?BorrascaRooms.walked(x,z,ax):(k<9?Blocks.GRAVEL:Blocks.COARSE_DIRT).defaultBlockState();
             else s=(k<3?Blocks.COARSE_DIRT:Blocks.GRASS_BLOCK).defaultBlockState();
@@ -229,14 +230,16 @@ final class BorrascaDressing {
 
     /** Where the street gives out: gravel for cars, a log rail, a bin and a bench, and two posts the trail leaves between. */
     private static void trailhead(ServerLevel l,BlockPos b){
-        for(int x=-18;x<=-6;x++)for(int z=-58;z>=-68;z--){int k=hash(x,7,z)%10;if(Math.abs(x+12)+Math.abs(z+63)>9&&k<5)continue;set(l,b,x,-1,z,(k<9?Blocks.GRAVEL:Blocks.COARSE_DIRT).defaultBlockState());}
-        for(int z=-60;z>=-66;z-=3)box(l,b,-17,0,z,-15,0,z,log(Blocks.OAK_LOG,Direction.Axis.X));
-        set(l,b,-7,0,-60,Blocks.BARREL);set(l,b,-7,0,-66,stair(Blocks.OAK_STAIRS,Direction.EAST,Half.BOTTOM));set(l,b,-7,0,-67,stair(Blocks.OAK_STAIRS,Direction.EAST,Half.BOTTOM));
+        // 0.4.420: where the street ends, now at the town's north end; the woods begin past the posts.
+        int d=BorrascaRooms.TOWN_END+1-(-69);var t=b.offset(0,0,d);
+        for(int x=-18;x<=-6;x++)for(int z=-58;z>=-68;z--){int k=hash(x,7,z)%10;if(Math.abs(x+12)+Math.abs(z+63)>9&&k<5)continue;set(l,t,x,-1,z,(k<9?Blocks.GRAVEL:Blocks.COARSE_DIRT).defaultBlockState());}
+        for(int z=-60;z>=-66;z-=3)box(l,t,-17,0,z,-15,0,z,log(Blocks.OAK_LOG,Direction.Axis.X));
+        set(l,t,-7,0,-60,Blocks.BARREL);set(l,t,-7,0,-66,stair(Blocks.OAK_STAIRS,Direction.EAST,Half.BOTTOM));set(l,t,-7,0,-67,stair(Blocks.OAK_STAIRS,Direction.EAST,Half.BOTTOM));
         // The posts, either side of the trail where the street ends, a board across them high over the path.
-        for(int x:new int[]{-4,4})box(l,b,x,0,-69,x,4,-69,log(Blocks.OAK_LOG,Direction.Axis.Y));
-        box(l,b,-4,5,-69,4,5,-69,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));
-        NovelRooms.sign(l,b.offset(-1,5,-68),Direction.SOUTH,new String[]{"","OZARK PINE","TRAIL",""});
-        NovelRooms.sign(l,b.offset(1,5,-68),Direction.SOUTH,new String[]{"","Triple Tree","1 mile",""});
+        for(int x:new int[]{-4,4})box(l,t,x,0,-69,x,4,-69,log(Blocks.OAK_LOG,Direction.Axis.Y));
+        box(l,t,-4,5,-69,4,5,-69,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));
+        NovelRooms.sign(l,t.offset(-1,5,-68),Direction.SOUTH,new String[]{"","OZARK PINE","TRAIL",""});
+        NovelRooms.sign(l,t.offset(1,5,-68),Direction.SOUTH,new String[]{"","Triple Tree","1 mile",""});
     }
 
     /** Creosoted poles down the street's east side, a lamp on an arm over the street from each. */

@@ -5,6 +5,8 @@ import net.minecraft.core.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 /** New builds: one rising pine trail read as childhood, loss, denial and ordinary industry; BorrascaTown builds its buildings. */
 public final class BorrascaRooms {
@@ -26,6 +28,8 @@ public final class BorrascaRooms {
     public static final BlockPos SERVICE_DOOR=new BlockPos(-17,12,-206),SERVICE_GATE=new BlockPos(-30,12,-209);
     /** 0.4.121: the trail map in the station, the noticeboard on the store's porch and the friend's notes in the fort. */
     public static final BlockPos TRAIL_MAP=new BlockPos(6,1,-7),NOTES=new BlockPos(-1,7,-99);
+    /** 0.4.419: the store's framed page of town history, hung high on the inside of the south wall. */
+    public static final BlockPos HISTORY=new BlockPos(-22,2,-17);
     public static final BlockPos[] BOARD={new BlockPos(-15,1,-21),new BlockPos(-15,1,-20),new BlockPos(-15,2,-21),new BlockPos(-15,2,-20)};
     /** 0.4.262: the men's truck stands in the turning bay at the top of the ridge road, nose to the road, out of sight behind the shoulder. */
     public static final BlockPos TRUCK=new BlockPos(35,12,-199);
@@ -47,6 +51,74 @@ public final class BorrascaRooms {
     /** Inside a room: the three-by-three floor behind its door. */
     public static boolean inRoom(int room,double x,double y,double z){int x0=room<=6?-16:-24,zc=room<=6?ROOM_Z[room-1]:ROOM_Z[room-7];return y<9&&x>=x0&&x<x0+3&&z>=zc-1&&z<zc+2;}
     public static boolean inLowerRooms(double x,double y,double z){return y<9.5&&x>=-25&&x<-12&&z>=-203&&z<-171;}
+    // ---- 0.4.420: the longer hill ------------------------------------------------------------------------------------
+    /*
+     * The owner, November 9: "move the triple tree farther up the hill - expand the hill totally, so it's a walk to the tree and a
+     * farther walk to the mill. The walk gives Nell and the player and other potential npcs ... time to talk and bond."
+     *
+     * Every place on the hill keeps the coordinates it was authored at (the constants here, the builders, the story). The world puts
+     * them farther up: the town is where it was, and runs on north past its houses to TOWN_END, where the woods begin; the first marker,
+     * the Triple Tree and the fort are 160 blocks farther north and 6 higher; everything from the second marker on (the blockade, the
+     * gully's head, the clearing, the lane, the wire, the depot and all under and behind it) 252 farther and 16 higher. Between them the
+     * slope is drawn out: a walk through the woods from the trailhead to the Tree, and a long climb from the Tree to the second marker,
+     * the trail swinging from side to side. The clearing, the lane and the wire keep their own distances, so the light on the ridge
+     * still finds the clearing. world() and authored() turn one into the other; tree() and ridge() are the bases those regions are built
+     * from.
+     */
+    private static final int[] FROM={0,-74,-75,-110,-118},TO={0,-74,-235,-270,-370},LIFT={0,0,6,6,16};
+    /** 0.4.420: the town runs on north past its houses to here before the woods begin (the shops of 0.4.421 stand along it). */
+    public static final int TOWN_END=-134;
+    /** How far the trail swings from side to side on each drawn-out slope (they alternate with the authored regions). */
+    private static final double[] MEANDER={0,7,0,5,0};
+    /** The world's far end of the hill, relative to the base (the authored -220). */
+    public static final int FAR=-472,TOP=44;
+    /** Which part of the map a row is in. A region keeps both its end rows (its own ground, steps and all); a slope has only the rows between. */
+    private static int segment(double z){if(z>=FROM[1])return 0;for(int i=1;i<FROM.length-1;i++)if(i%2==1?z>FROM[i+1]:z>=FROM[i+1])return i;return FROM.length-1;}
+    private static int worldSegment(double w){if(w>=TO[1])return 0;for(int i=1;i<TO.length-1;i++)if(i%2==1?w>TO[i+1]:w>=TO[i+1])return i;return TO.length-1;}
+    /** Whether an authored z lies on one of the drawn-out slopes (otherwise its region is only moved). */
+    public static boolean drawnOut(double z){return segment(z)%2==1;}
+    public static boolean drawnOutWorld(double w){return worldSegment(w)%2==1;}
+    public static double worldZ(double z){int i=segment(z);if(i==FROM.length-1||i==0)return z+(TO[i]-FROM[i]);return TO[i]+(z-FROM[i])*(TO[i+1]-TO[i])/(double)(FROM[i+1]-FROM[i]);}
+    public static double authoredZ(double w){int i=worldSegment(w);if(i==TO.length-1||i==0)return w-(TO[i]-FROM[i]);return FROM[i]+(w-TO[i])*(FROM[i+1]-FROM[i])/(double)(TO[i+1]-TO[i]);}
+    /** For a world z on a drawn-out slope: its authored ends, their world rows and their lifts. */
+    public static int[] slope(double w){int i=worldSegment(w);return new int[]{FROM[i],FROM[i+1],TO[i],TO[i+1],LIFT[i],LIFT[i+1]};}
+    /** How far along a drawn-out slope a world z is, 0 at its town end and 1 at its far end. */
+    public static double along(double w){int i=worldSegment(w);double from=i==1?Math.min(TO[1],TOWN_END):TO[i];if(w>from)return 0;return (w-from)/(double)(TO[i+1]-from);}
+    /** The trail's world height and line on the hill, for any world z. */
+    public static double trailYw(double w){int i=worldSegment(w);if(i%2==0){double z=authoredZ(w);return trailY((int)Math.round(z))+LIFT[i];}double t=along(w);double a=trailY(FROM[i])+LIFT[i],c=trailY(FROM[i+1])+LIFT[i+1];return a+(c-a)*t;}
+    public static double trailXw(double w){int i=worldSegment(w);if(i%2==0)return trailX((int)Math.round(authoredZ(w)));double t=along(w);return trailX(FROM[i])+(trailX(FROM[i+1])-trailX(FROM[i]))*t+MEANDER[i]*Math.sin(2*Math.PI*t);}
+    public static BlockPos trailWorld(int w){return new BlockPos((int)Math.round(trailXw(w)),(int)Math.round(trailYw(w)),w);}
+    /** How much higher the world stands than the authored height at an authored z. */
+    public static double lift(double z){int i=segment(z);if(i%2==0)return LIFT[i];double w=worldZ(z);return trailYw(w)-trailY((int)Math.round(z));}
+    /** How far the drawn-out trail has swung from its authored line at an authored z (nothing, in an authored region). Whatever lies beside it swings with it. */
+    public static double sway(double z){int i=segment(z);if(i%2==0)return 0;return trailXw(worldZ(z))-trailX((int)Math.round(z));}
+    public static BlockPos world(BlockPos a){return new BlockPos(a.getX()+(int)Math.round(sway(a.getZ())),a.getY()+(int)Math.round(lift(a.getZ())),(int)Math.round(worldZ(a.getZ())));}
+    public static Vec3 world(Vec3 a){return new Vec3(a.x+sway(a.z),a.y+lift(a.z),worldZ(a.z));}
+    /** Whether the world between two world z crosses a drawn-out slope. */
+    static boolean crosses(double w0,double w1){double lo=Math.min(w0,w1),hi=Math.max(w0,w1);for(int i=1;i<TO.length-1;i+=2)if(TO[i+1]<hi&&TO[i]>lo)return true;return false;}
+    /**
+     * Where to head next on the way from authored a to authored c, from where one stands now (relative to the base, in the world):
+     * c itself, unless the step crosses a drawn-out slope; then a point a few blocks ahead along the step as the hill draws it out, so
+     * whoever walks it keeps to the trail (or beside it) instead of cutting across the woods.
+     */
+    public static Vec3 toward(Vec3 now,BlockPos a,BlockPos c){
+        var wc=Vec3.atBottomCenterOf(world(c));double wa=worldZ(a.getZ()),wz=worldZ(c.getZ());if(!crosses(wa,wz))return wc;
+        int n=Math.max(2,(int)Math.ceil(Math.abs(wz-wa)/3));int best=0;double bd=Double.MAX_VALUE;var pts=new Vec3[n+1];
+        for(int k=0;k<=n;k++){double w=wa+(wz-wa)*k/n,z=authoredZ(w),t=c.getZ()==a.getZ()?1:(z-a.getZ())/(c.getZ()-a.getZ());
+            pts[k]=world(new Vec3(a.getX()+.5+(c.getX()-a.getX())*t,a.getY()+(c.getY()-a.getY())*t,z));double d=pts[k].subtract(now).horizontalDistanceSqr();if(d<bd){bd=d;best=k;}}
+        return best+2>=n?wc:pts[best+2];
+    }
+    public static BlockPos authored(BlockPos w){double z=authoredZ(w.getZ());return new BlockPos((int)Math.round(w.getX()-sway(z)),(int)Math.round(w.getY()-lift(z)),(int)Math.round(z));}
+    public static Vec3 authored(Vec3 w){double z=authoredZ(w.z);return new Vec3(w.x-sway(z),w.y-lift(z),z);}
+    /** An authored place on this reader's hill, in the world. */
+    public static BlockPos at(BlockPos b,BlockPos authored){return b.offset(world(authored));}
+    public static BlockPos at(BlockPos b,int x,int y,int z){return at(b,new BlockPos(x,y,z));}
+    /** Where a reader (or anything) stands on the hill, in authored coordinates. */
+    public static Vec3 rel(Entity e,BlockPos b){return authored(e.position().subtract(Vec3.atLowerCornerOf(b)));}
+    /** The bases the moved regions are built from: authored coordinates written from these land where world() puts them. */
+    public static BlockPos tree(BlockPos b){return b.offset(0,LIFT[2],TO[2]-FROM[2]);}
+    public static BlockPos ridge(BlockPos b){return b.offset(0,LIFT[4],TO[4]-FROM[4]);}
+    public static BlockPos depot(BlockPos b){return ridge(b);}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private BorrascaRooms(){}
     static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,Block block){LiteraryRooms.box(l,b,x,y,z,X,Y,Z,block);}
@@ -70,28 +142,35 @@ public final class BorrascaRooms {
     public static int trailY(int z){return Math.min(12,Math.max(0,(-z-100)/5));}
     public static BlockPos trail(int z){return new BlockPos(trailX(z),trailY(z),z);}
     public static void build(ServerLevel l,BlockPos b){
-        box(l,b,-44,-5,-220,44,26,2,Blocks.AIR);box(l,b,-44,-5,-220,44,-2,2,Blocks.STONE);box(l,b,-44,-1,-220,44,-1,2,Blocks.GRASS_BLOCK);
+        var tree=tree(b);var ridge=ridge(b);var depot=depot(b);
+        box(l,b,-44,-5,FAR,44,TOP,2,Blocks.AIR);box(l,b,-44,-5,FAR,44,-2,2,Blocks.STONE);box(l,b,-44,-1,FAR,44,-1,2,Blocks.GRASS_BLOCK);
         // 0.4.262: the valley, not a staircase of full-width terraces with walls down both sides (BorrascaLand).
         BorrascaLand.terrain(l,b);
         // 0.4.276: a walked path, not a painted strip: packed earth down the middle, its edges giving way to the needles, and a timber
-        // riser at each rise.
-        for(int z=-8;z>=-166;z--){var p=trail(z);box(l,b,p.getX()-2,p.getY(),z,p.getX()+2,p.getY()+3,z,Blocks.AIR);for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),walked(p.getX()+dx,z,Math.abs(dx)),F);if(z<-101&&(-z-100)%5==0)for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),riser(Direction.NORTH),F);}
-        BorrascaTown.fort(l,b);BorrascaDressing.tree(l,b);gully(l,b);compound(l,b);BorrascaDressing.yard(l,b);serviceDescent(l,b);lowerRooms(l,b);graves(l,b);
-        marker(l,b,MARKER_ONE,BorrascaFittingBlock.Kind.MARKER_ONE);marker(l,b,MARKER_TWO,BorrascaFittingBlock.Kind.MARKER_TWO);marker(l,b,MARKER_THREE,BorrascaFittingBlock.Kind.MARKER_THREE);marker(l,b,MARKER_FOUR,BorrascaFittingBlock.Kind.MARKER_FOUR);
-        path(l,b,trail(-125),SHELTER_TWO);path(l,b,SHELTER_TWO,new BlockPos(1,6,-131));path(l,b,new BlockPos(1,6,-131),trail(-141));
+        // riser at each rise. 0.4.420: walked in the world, from the trailhead to the lane below the wire, the long way.
+        int top=(int)Math.round(worldZ(-166)),last=0;
+        for(int z=-8;z>=top;z--){var p=trailWorld(z);box(l,b,p.getX()-2,p.getY(),z,p.getX()+2,p.getY()+3,z,Blocks.AIR);for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),walked(p.getX()+dx,z,Math.abs(dx)),F);if(z<-8&&p.getY()>last){int band=drawnOutWorld(z)?5:2;for(int dx=-band;dx<=band;dx++)BuildBlocks.set(l,b.offset(p.offset(dx,-1,0)),riser(Direction.NORTH),F);}last=p.getY();}
+        BorrascaTown.fort(l,tree);BorrascaDressing.tree(l,tree);gully(l,ridge);compound(l,depot);BorrascaDressing.yard(l,depot);serviceDescent(l,depot);lowerRooms(l,depot);graves(l,depot);
+        // The sealed store under the far bank, where whoever is not about is kept out of the way: it stays at the town end.
+        box(l,b,34,-5,-61,41,-1,-53,Blocks.STONE_BRICKS);box(l,b,35,-4,-60,40,-2,-54,Blocks.AIR);
+        marker(l,tree,MARKER_ONE,BorrascaFittingBlock.Kind.MARKER_ONE);marker(l,ridge,MARKER_TWO,BorrascaFittingBlock.Kind.MARKER_TWO);marker(l,ridge,MARKER_THREE,BorrascaFittingBlock.Kind.MARKER_THREE);marker(l,depot,MARKER_FOUR,BorrascaFittingBlock.Kind.MARKER_FOUR);
+        path(l,ridge,trail(-125),SHELTER_TWO);path(l,ridge,SHELTER_TWO,new BlockPos(1,6,-131));path(l,ridge,new BlockPos(1,6,-131),trail(-141));
         // The shelter branch starts on this rise; its floor must not replace the main trail's half-step.
-        for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,b.offset(trail(-125).offset(dx,-1,0)),riser(Direction.NORTH),F);
-        for(var at:new BlockPos[]{new BlockPos(1,2,-115),new BlockPos(-5,6,-132)})box(l,b,at.getX(),at.getY(),at.getZ(),at.getX()+4,at.getY(),at.getZ(),Blocks.SPRUCE_LOG);
-        BorrascaLand.clearing(l,b);
-        for(int x=-3;x<=1;x++)BuildBlocks.set(l,b.offset(x,8,-144),riser(Direction.NORTH),F);
-        // The lane up from the clearing to the wire, the way the men come down and go back up: a step at each rise, so it can be walked both ways.
-        for(int z=-151;z>=-163;z--){int y=trailY(z);for(int x=0;x<=4;x++)BuildBlocks.set(l,b.offset(x,y-1,z),walked(x,z,Math.abs(x-2)),F);box(l,b,0,y,z,4,y+3,z,Blocks.AIR);}
-        for(int z:new int[]{-150,-155,-160})for(int x=0;x<=4;x++)BuildBlocks.set(l,b.offset(x,trailY(z)-1,z),riser(Direction.NORTH),F);
-        BorrascaLand.road(l,b);
+        for(int dx=-2;dx<=2;dx++)BuildBlocks.set(l,ridge.offset(trail(-125).offset(dx,-1,0)),riser(Direction.NORTH),F);
+        // The first shelter lies on the drawn-out climb between the Tree and the second marker: a log beside the trail, wherever the trail is.
+        {BlockPos a=world(new BlockPos(1,2,-115)),c=world(new BlockPos(5,2,-115));box(l,b,a.getX(),a.getY(),a.getZ(),c.getX(),a.getY(),a.getZ(),Blocks.SPRUCE_LOG);}
+        box(l,ridge,-5,6,-132,-1,6,-132,Blocks.SPRUCE_LOG);
+        BorrascaLand.clearing(l,ridge);
+        for(int x=-3;x<=1;x++)BuildBlocks.set(l,ridge.offset(x,8,-144),riser(Direction.NORTH),F);
+        // The lane up from the clearing to the wire, the way the men come down and go back up: a step at each rise, so it can be walked
+        // both ways. 0.4.420: it lies past the second marker, raised and moved up the hill with everything there.
+        for(int z=-151;z>=-163;z--){int y=trailY(z);for(int x=0;x<=4;x++)BuildBlocks.set(l,ridge.offset(x,y-1,z),walked(x,z,Math.abs(x-2)),F);box(l,ridge,0,y,z,4,y+3,z,Blocks.AIR);}
+        for(int z:new int[]{-150,-155,-160})for(int x=0;x<=4;x++)BuildBlocks.set(l,ridge.offset(x,trailY(z)-1,z),riser(Direction.NORTH),F);
+        BorrascaLand.road(l,depot);
         BorrascaTown.town(l,b);BorrascaDressing.town(l,b);
         BorrascaLand.forest(l,b);
-        for(var tree:new BlockPos[]{BorrascaPlay.EAST_TREE,BorrascaPlay.WEST_TREE})
-            for(int height=0;height<3;height++)BuildBlocks.set(l,b.offset(tree.above(height)),Blocks.OAK_LOG.defaultBlockState(),F);
+        for(var tree0:new BlockPos[]{BorrascaPlay.EAST_TREE,BorrascaPlay.WEST_TREE})
+            for(int height=0;height<3;height++)BuildBlocks.set(l,b.offset(tree0.above(height)),Blocks.OAK_LOG.defaultBlockState(),F);
         furniture(l,b,SOURCE.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);furniture(l,b,ACCOUNT.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);
         LiteraryRooms.paper(l,b,SOURCE,BorrascaTexts.source(),LiteraryRooms.holder(LabyrinthPlace.BORRASCA));LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);
@@ -132,7 +211,6 @@ public final class BorrascaRooms {
         // The west fence, whole again wherever the way down touched it.
         for(int z=-213;z<=-168;z++){if(z>=-210&&z<=-207)continue;for(int y=12;y<=15;y++)fit(l,b,new BlockPos(-30,y,z),BorrascaFittingBlock.Kind.FENCE,Direction.EAST);}
         BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);sign(l,b,RELEASE.above(2),"SERVICE EXIT","Mechanical release","Keep low","Return to trail");
-        box(l,b,34,-5,-61,41,-1,-53,Blocks.STONE_BRICKS);box(l,b,35,-4,-60,40,-2,-54,Blocks.AIR);
     }
     /** 0.4.237: the rooms under the depot (see HATCH). Nothing in them is shown happening; what they were for is in the book. */
     private static void lowerRooms(ServerLevel l,BlockPos b){

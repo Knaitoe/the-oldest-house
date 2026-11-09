@@ -56,6 +56,14 @@ public final class BorrascaTexts {
         case "GateLog"->typed("Ridge gate log","Prescott Ore Services",
             "RIDGE DEPOT\nGATE LOG\n\nAfter dusk, admit county vehicles on the Sheriff's word. Keep the chain on between trucks.",
             "Vehicle 17. In 6:48 pm. One passenger.\nOut 6:52 pm. Driver only.\n\nNo mileage recorded. County account.");
+        // 0.4.419: what the word means, and what the town owes. The page says nothing about what the depot does.
+        case "History"->typed("Drisking, an iron town","Drisking Historical Society",
+            "DRISKING\nAn iron town\n\nOre was found on the ridge in 1887. By 1900 there were four shafts and a refinery on the hill, and the town had grown up around the company store.",
+            "The first shaft to give out was No. 1, the north working at the top of the ridge. Miners had a word for a mine that gives nothing back: borrasca. The name stayed with the ridge after the shaft was sealed.",
+            "In 1953 children went into the old workings and did not come out. The county closed the mines and blasted the shafts shut the next spring.",
+            "The blasting broke into the water table. For two years the town's water ran red, and most families left.",
+            "The Prescotts stayed. Prescott Ore Services took the county maintenance contract and the old depot on the ridge, and in time brought Drisking back.",
+            "Since 1961 the town has grown every year.\n\nDonated by the Prescott family.");
         case "Map"->typed("Pine trail map","County Trails",
             "OZARK PINE TRAIL\n\nTrailhead to Triple Tree: one mile, Marker 1.\nTriple Tree to Marker 2: the public walk ends here.",
             "Beyond Marker 2: county property, no public access. Markers 3 and 4 are maintenance markers on the ridge road.",
@@ -90,7 +98,9 @@ public final class BorrascaTexts {
         "Dana's name is where the trunks join. Her mom showed me which one.",
         "The big kids call the top of the ridge Borrasca. Nobody will say what it means. Dad says it doesn't mean anything.",
         "The sound is like somebody hitting a pipe a long way off, three times. It comes when the wind turns. Mr. Prescott's trucks go up after.",
-        "Kept here: the flashlight (dead), this.\nMy compass stays on me. The red tape is mine. If I lose it I'll never find the fort. That's a joke. It's three trees."};
+        "Kept here: the flashlight (dead), this.\nMy compass stays on me. The red tape is mine. If I lose it I'll never find the fort. That's a joke. It's three trees.",
+        // 0.4.419: the tag rhyme. The tree is home, and the rhyme says what a name on it is for.
+        "Tag: the tree is home. You have to be touching it when the rhyme ends or you're it.\n\nOne for the root and two for the bark,\nthree for the ridge that rings after dark.\nLeave your name where the three trunks meet\nand he'll know you by the sound of your feet."};
     public static String notesKey(boolean aged){return aged?"NotesAged":"Notes";}
     /** Her notes, pinned up in the fort. Years later they are still there, with the damp through them. */
     public static ItemStack notes(boolean aged){
@@ -109,6 +119,7 @@ public final class BorrascaTexts {
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
+            +(own.getBoolean("Read_History")?" A framed page in the store said what Borrasca meant: the first mine to give out, the one that gives nothing back. The town's water had run red for two years, and after that the town grew every year.":"")
             +(own.getBoolean("Read_WrenPoster")?" Wren had gone looking for Eli. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Wren walked Eli's bike back to his mom.":"")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
