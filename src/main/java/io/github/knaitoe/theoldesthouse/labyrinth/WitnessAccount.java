@@ -123,7 +123,8 @@ public final class WitnessAccount {
         LAST_CROSSING("last_crossing","The last crossing","survival","I worked three days and three nights at a flood station with a crew, for a keeper who called the roll every morning and one name more at the end of it. On the last night the river came up to the ramp, and we tried to get across."),
         PINEHOOK("pinehook","The weekend at Pinehook","understanding","I spent a weekend at a cabin by a lake where the host had planned every scare, and somebody else had planned one more. By the morning I knew who, and why, and what I had done about it."),
         THE_DRAWING("the_drawing","The drawing","understanding","I stood in a village square on a bright morning and drew a folded slip from a black box like everyone else. Mine was blank. Then a child put a stone in my hand."),
-        CORNER_HOUSE("the_house_on_the_corner","The house on the corner","memory","A girl with one arm took me into the empty house on the corner, past the jars and down a corridor longer than the house. She went into the last room. I have the stories she told me about her arm.");
+        CORNER_HOUSE("the_house_on_the_corner","The house on the corner","memory","A girl with one arm took me into the empty house on the corner, past the jars and down a corridor longer than the house. She went into the last room. I have the stories she told me about her arm."),
+        BLACK_CITY("the_black_city","The city on the ice","understanding","I followed an empty camp's people up a pass to a city of carved stone, read its walls in order down a turning ramp, and outran what came up the tunnel. From the top of the pass I looked back.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

@@ -1,0 +1,2164 @@
+{
+  "variants": {
+    "facing=north,panel=0,part=0": {
+      "model": "the_oldest_house:block/city/mural_0_0"
+    },
+    "facing=north,panel=0,part=1": {
+      "model": "the_oldest_house:block/city/mural_0_1"
+    },
+    "facing=north,panel=0,part=2": {
+      "model": "the_oldest_house:block/city/mural_0_2"
+    },
+    "facing=north,panel=0,part=3": {
+      "model": "the_oldest_house:block/city/mural_0_3"
+    },
+    "facing=north,panel=0,part=4": {
+      "model": "the_oldest_house:block/city/mural_0_4"
+    },
+    "facing=north,panel=0,part=5": {
+      "model": "the_oldest_house:block/city/mural_0_5"
+    },
+    "facing=north,panel=0,part=6": {
+      "model": "the_oldest_house:block/city/mural_0_6"
+    },
+    "facing=north,panel=0,part=7": {
+      "model": "the_oldest_house:block/city/mural_0_7"
+    },
+    "facing=north,panel=0,part=8": {
+      "model": "the_oldest_house:block/city/mural_0_8"
+    },
+    "facing=north,panel=0,part=9": {
+      "model": "the_oldest_house:block/city/mural_0_9"
+    },
+    "facing=north,panel=0,part=10": {
+      "model": "the_oldest_house:block/city/mural_0_10"
+    },
+    "facing=north,panel=0,part=11": {
+      "model": "the_oldest_house:block/city/mural_0_11"
+    },
+    "facing=north,panel=1,part=0": {
+      "model": "the_oldest_house:block/city/mural_1_0"
+    },
+    "facing=north,panel=1,part=1": {
+      "model": "the_oldest_house:block/city/mural_1_1"
+    },
+    "facing=north,panel=1,part=2": {
+      "model": "the_oldest_house:block/city/mural_1_2"
+    },
+    "facing=north,panel=1,part=3": {
+      "model": "the_oldest_house:block/city/mural_1_3"
+    },
+    "facing=north,panel=1,part=4": {
+      "model": "the_oldest_house:block/city/mural_1_4"
+    },
+    "facing=north,panel=1,part=5": {
+      "model": "the_oldest_house:block/city/mural_1_5"
+    },
+    "facing=north,panel=1,part=6": {
+      "model": "the_oldest_house:block/city/mural_1_6"
+    },
+    "facing=north,panel=1,part=7": {
+      "model": "the_oldest_house:block/city/mural_1_7"
+    },
+    "facing=north,panel=1,part=8": {
+      "model": "the_oldest_house:block/city/mural_1_8"
+    },
+    "facing=north,panel=1,part=9": {
+      "model": "the_oldest_house:block/city/mural_1_9"
+    },
+    "facing=north,panel=1,part=10": {
+      "model": "the_oldest_house:block/city/mural_1_10"
+    },
+    "facing=north,panel=1,part=11": {
+      "model": "the_oldest_house:block/city/mural_1_11"
+    },
+    "facing=north,panel=2,part=0": {
+      "model": "the_oldest_house:block/city/mural_2_0"
+    },
+    "facing=north,panel=2,part=1": {
+      "model": "the_oldest_house:block/city/mural_2_1"
+    },
+    "facing=north,panel=2,part=2": {
+      "model": "the_oldest_house:block/city/mural_2_2"
+    },
+    "facing=north,panel=2,part=3": {
+      "model": "the_oldest_house:block/city/mural_2_3"
+    },
+    "facing=north,panel=2,part=4": {
+      "model": "the_oldest_house:block/city/mural_2_4"
+    },
+    "facing=north,panel=2,part=5": {
+      "model": "the_oldest_house:block/city/mural_2_5"
+    },
+    "facing=north,panel=2,part=6": {
+      "model": "the_oldest_house:block/city/mural_2_6"
+    },
+    "facing=north,panel=2,part=7": {
+      "model": "the_oldest_house:block/city/mural_2_7"
+    },
+    "facing=north,panel=2,part=8": {
+      "model": "the_oldest_house:block/city/mural_2_8"
+    },
+    "facing=north,panel=2,part=9": {
+      "model": "the_oldest_house:block/city/mural_2_9"
+    },
+    "facing=north,panel=2,part=10": {
+      "model": "the_oldest_house:block/city/mural_2_10"
+    },
+    "facing=north,panel=2,part=11": {
+      "model": "the_oldest_house:block/city/mural_2_11"
+    },
+    "facing=north,panel=3,part=0": {
+      "model": "the_oldest_house:block/city/mural_3_0"
+    },
+    "facing=north,panel=3,part=1": {
+      "model": "the_oldest_house:block/city/mural_3_1"
+    },
+    "facing=north,panel=3,part=2": {
+      "model": "the_oldest_house:block/city/mural_3_2"
+    },
+    "facing=north,panel=3,part=3": {
+      "model": "the_oldest_house:block/city/mural_3_3"
+    },
+    "facing=north,panel=3,part=4": {
+      "model": "the_oldest_house:block/city/mural_3_4"
+    },
+    "facing=north,panel=3,part=5": {
+      "model": "the_oldest_house:block/city/mural_3_5"
+    },
+    "facing=north,panel=3,part=6": {
+      "model": "the_oldest_house:block/city/mural_3_6"
+    },
+    "facing=north,panel=3,part=7": {
+      "model": "the_oldest_house:block/city/mural_3_7"
+    },
+    "facing=north,panel=3,part=8": {
+      "model": "the_oldest_house:block/city/mural_3_8"
+    },
+    "facing=north,panel=3,part=9": {
+      "model": "the_oldest_house:block/city/mural_3_9"
+    },
+    "facing=north,panel=3,part=10": {
+      "model": "the_oldest_house:block/city/mural_3_10"
+    },
+    "facing=north,panel=3,part=11": {
+      "model": "the_oldest_house:block/city/mural_3_11"
+    },
+    "facing=north,panel=4,part=0": {
+      "model": "the_oldest_house:block/city/mural_4_0"
+    },
+    "facing=north,panel=4,part=1": {
+      "model": "the_oldest_house:block/city/mural_4_1"
+    },
+    "facing=north,panel=4,part=2": {
+      "model": "the_oldest_house:block/city/mural_4_2"
+    },
+    "facing=north,panel=4,part=3": {
+      "model": "the_oldest_house:block/city/mural_4_3"
+    },
+    "facing=north,panel=4,part=4": {
+      "model": "the_oldest_house:block/city/mural_4_4"
+    },
+    "facing=north,panel=4,part=5": {
+      "model": "the_oldest_house:block/city/mural_4_5"
+    },
+    "facing=north,panel=4,part=6": {
+      "model": "the_oldest_house:block/city/mural_4_6"
+    },
+    "facing=north,panel=4,part=7": {
+      "model": "the_oldest_house:block/city/mural_4_7"
+    },
+    "facing=north,panel=4,part=8": {
+      "model": "the_oldest_house:block/city/mural_4_8"
+    },
+    "facing=north,panel=4,part=9": {
+      "model": "the_oldest_house:block/city/mural_4_9"
+    },
+    "facing=north,panel=4,part=10": {
+      "model": "the_oldest_house:block/city/mural_4_10"
+    },
+    "facing=north,panel=4,part=11": {
+      "model": "the_oldest_house:block/city/mural_4_11"
+    },
+    "facing=north,panel=5,part=0": {
+      "model": "the_oldest_house:block/city/mural_5_0"
+    },
+    "facing=north,panel=5,part=1": {
+      "model": "the_oldest_house:block/city/mural_5_1"
+    },
+    "facing=north,panel=5,part=2": {
+      "model": "the_oldest_house:block/city/mural_5_2"
+    },
+    "facing=north,panel=5,part=3": {
+      "model": "the_oldest_house:block/city/mural_5_3"
+    },
+    "facing=north,panel=5,part=4": {
+      "model": "the_oldest_house:block/city/mural_5_4"
+    },
+    "facing=north,panel=5,part=5": {
+      "model": "the_oldest_house:block/city/mural_5_5"
+    },
+    "facing=north,panel=5,part=6": {
+      "model": "the_oldest_house:block/city/mural_5_6"
+    },
+    "facing=north,panel=5,part=7": {
+      "model": "the_oldest_house:block/city/mural_5_7"
+    },
+    "facing=north,panel=5,part=8": {
+      "model": "the_oldest_house:block/city/mural_5_8"
+    },
+    "facing=north,panel=5,part=9": {
+      "model": "the_oldest_house:block/city/mural_5_9"
+    },
+    "facing=north,panel=5,part=10": {
+      "model": "the_oldest_house:block/city/mural_5_10"
+    },
+    "facing=north,panel=5,part=11": {
+      "model": "the_oldest_house:block/city/mural_5_11"
+    },
+    "facing=north,panel=6,part=0": {
+      "model": "the_oldest_house:block/city/mural_6_0"
+    },
+    "facing=north,panel=6,part=1": {
+      "model": "the_oldest_house:block/city/mural_6_1"
+    },
+    "facing=north,panel=6,part=2": {
+      "model": "the_oldest_house:block/city/mural_6_2"
+    },
+    "facing=north,panel=6,part=3": {
+      "model": "the_oldest_house:block/city/mural_6_3"
+    },
+    "facing=north,panel=6,part=4": {
+      "model": "the_oldest_house:block/city/mural_6_4"
+    },
+    "facing=north,panel=6,part=5": {
+      "model": "the_oldest_house:block/city/mural_6_5"
+    },
+    "facing=north,panel=6,part=6": {
+      "model": "the_oldest_house:block/city/mural_6_6"
+    },
+    "facing=north,panel=6,part=7": {
+      "model": "the_oldest_house:block/city/mural_6_7"
+    },
+    "facing=north,panel=6,part=8": {
+      "model": "the_oldest_house:block/city/mural_6_8"
+    },
+    "facing=north,panel=6,part=9": {
+      "model": "the_oldest_house:block/city/mural_6_9"
+    },
+    "facing=north,panel=6,part=10": {
+      "model": "the_oldest_house:block/city/mural_6_10"
+    },
+    "facing=north,panel=6,part=11": {
+      "model": "the_oldest_house:block/city/mural_6_11"
+    },
+    "facing=north,panel=7,part=0": {
+      "model": "the_oldest_house:block/city/mural_7_0"
+    },
+    "facing=north,panel=7,part=1": {
+      "model": "the_oldest_house:block/city/mural_7_1"
+    },
+    "facing=north,panel=7,part=2": {
+      "model": "the_oldest_house:block/city/mural_7_2"
+    },
+    "facing=north,panel=7,part=3": {
+      "model": "the_oldest_house:block/city/mural_7_3"
+    },
+    "facing=north,panel=7,part=4": {
+      "model": "the_oldest_house:block/city/mural_7_4"
+    },
+    "facing=north,panel=7,part=5": {
+      "model": "the_oldest_house:block/city/mural_7_5"
+    },
+    "facing=north,panel=7,part=6": {
+      "model": "the_oldest_house:block/city/mural_7_6"
+    },
+    "facing=north,panel=7,part=7": {
+      "model": "the_oldest_house:block/city/mural_7_7"
+    },
+    "facing=north,panel=7,part=8": {
+      "model": "the_oldest_house:block/city/mural_7_8"
+    },
+    "facing=north,panel=7,part=9": {
+      "model": "the_oldest_house:block/city/mural_7_9"
+    },
+    "facing=north,panel=7,part=10": {
+      "model": "the_oldest_house:block/city/mural_7_10"
+    },
+    "facing=north,panel=7,part=11": {
+      "model": "the_oldest_house:block/city/mural_7_11"
+    },
+    "facing=north,panel=8,part=0": {
+      "model": "the_oldest_house:block/city/mural_8_0"
+    },
+    "facing=north,panel=8,part=1": {
+      "model": "the_oldest_house:block/city/mural_8_1"
+    },
+    "facing=north,panel=8,part=2": {
+      "model": "the_oldest_house:block/city/mural_8_2"
+    },
+    "facing=north,panel=8,part=3": {
+      "model": "the_oldest_house:block/city/mural_8_3"
+    },
+    "facing=north,panel=8,part=4": {
+      "model": "the_oldest_house:block/city/mural_8_4"
+    },
+    "facing=north,panel=8,part=5": {
+      "model": "the_oldest_house:block/city/mural_8_5"
+    },
+    "facing=north,panel=8,part=6": {
+      "model": "the_oldest_house:block/city/mural_8_6"
+    },
+    "facing=north,panel=8,part=7": {
+      "model": "the_oldest_house:block/city/mural_8_7"
+    },
+    "facing=north,panel=8,part=8": {
+      "model": "the_oldest_house:block/city/mural_8_8"
+    },
+    "facing=north,panel=8,part=9": {
+      "model": "the_oldest_house:block/city/mural_8_9"
+    },
+    "facing=north,panel=8,part=10": {
+      "model": "the_oldest_house:block/city/mural_8_10"
+    },
+    "facing=north,panel=8,part=11": {
+      "model": "the_oldest_house:block/city/mural_8_11"
+    },
+    "facing=north,panel=9,part=0": {
+      "model": "the_oldest_house:block/city/mural_9_0"
+    },
+    "facing=north,panel=9,part=1": {
+      "model": "the_oldest_house:block/city/mural_9_1"
+    },
+    "facing=north,panel=9,part=2": {
+      "model": "the_oldest_house:block/city/mural_9_2"
+    },
+    "facing=north,panel=9,part=3": {
+      "model": "the_oldest_house:block/city/mural_9_3"
+    },
+    "facing=north,panel=9,part=4": {
+      "model": "the_oldest_house:block/city/mural_9_4"
+    },
+    "facing=north,panel=9,part=5": {
+      "model": "the_oldest_house:block/city/mural_9_5"
+    },
+    "facing=north,panel=9,part=6": {
+      "model": "the_oldest_house:block/city/mural_9_6"
+    },
+    "facing=north,panel=9,part=7": {
+      "model": "the_oldest_house:block/city/mural_9_7"
+    },
+    "facing=north,panel=9,part=8": {
+      "model": "the_oldest_house:block/city/mural_9_8"
+    },
+    "facing=north,panel=9,part=9": {
+      "model": "the_oldest_house:block/city/mural_9_9"
+    },
+    "facing=north,panel=9,part=10": {
+      "model": "the_oldest_house:block/city/mural_9_10"
+    },
+    "facing=north,panel=9,part=11": {
+      "model": "the_oldest_house:block/city/mural_9_11"
+    },
+    "facing=north,panel=10,part=0": {
+      "model": "the_oldest_house:block/city/mural_10_0"
+    },
+    "facing=north,panel=10,part=1": {
+      "model": "the_oldest_house:block/city/mural_10_1"
+    },
+    "facing=north,panel=10,part=2": {
+      "model": "the_oldest_house:block/city/mural_10_2"
+    },
+    "facing=north,panel=10,part=3": {
+      "model": "the_oldest_house:block/city/mural_10_3"
+    },
+    "facing=north,panel=10,part=4": {
+      "model": "the_oldest_house:block/city/mural_10_4"
+    },
+    "facing=north,panel=10,part=5": {
+      "model": "the_oldest_house:block/city/mural_10_5"
+    },
+    "facing=north,panel=10,part=6": {
+      "model": "the_oldest_house:block/city/mural_10_6"
+    },
+    "facing=north,panel=10,part=7": {
+      "model": "the_oldest_house:block/city/mural_10_7"
+    },
+    "facing=north,panel=10,part=8": {
+      "model": "the_oldest_house:block/city/mural_10_8"
+    },
+    "facing=north,panel=10,part=9": {
+      "model": "the_oldest_house:block/city/mural_10_9"
+    },
+    "facing=north,panel=10,part=10": {
+      "model": "the_oldest_house:block/city/mural_10_10"
+    },
+    "facing=north,panel=10,part=11": {
+      "model": "the_oldest_house:block/city/mural_10_11"
+    },
+    "facing=north,panel=11,part=0": {
+      "model": "the_oldest_house:block/city/mural_11_0"
+    },
+    "facing=north,panel=11,part=1": {
+      "model": "the_oldest_house:block/city/mural_11_1"
+    },
+    "facing=north,panel=11,part=2": {
+      "model": "the_oldest_house:block/city/mural_11_2"
+    },
+    "facing=north,panel=11,part=3": {
+      "model": "the_oldest_house:block/city/mural_11_3"
+    },
+    "facing=north,panel=11,part=4": {
+      "model": "the_oldest_house:block/city/mural_11_4"
+    },
+    "facing=north,panel=11,part=5": {
+      "model": "the_oldest_house:block/city/mural_11_5"
+    },
+    "facing=north,panel=11,part=6": {
+      "model": "the_oldest_house:block/city/mural_11_6"
+    },
+    "facing=north,panel=11,part=7": {
+      "model": "the_oldest_house:block/city/mural_11_7"
+    },
+    "facing=north,panel=11,part=8": {
+      "model": "the_oldest_house:block/city/mural_11_8"
+    },
+    "facing=north,panel=11,part=9": {
+      "model": "the_oldest_house:block/city/mural_11_9"
+    },
+    "facing=north,panel=11,part=10": {
+      "model": "the_oldest_house:block/city/mural_11_10"
+    },
+    "facing=north,panel=11,part=11": {
+      "model": "the_oldest_house:block/city/mural_11_11"
+    },
+    "facing=east,panel=0,part=0": {
+      "model": "the_oldest_house:block/city/mural_0_0",
+      "y": 90
+    },
+    "facing=east,panel=0,part=1": {
+      "model": "the_oldest_house:block/city/mural_0_1",
+      "y": 90
+    },
+    "facing=east,panel=0,part=2": {
+      "model": "the_oldest_house:block/city/mural_0_2",
+      "y": 90
+    },
+    "facing=east,panel=0,part=3": {
+      "model": "the_oldest_house:block/city/mural_0_3",
+      "y": 90
+    },
+    "facing=east,panel=0,part=4": {
+      "model": "the_oldest_house:block/city/mural_0_4",
+      "y": 90
+    },
+    "facing=east,panel=0,part=5": {
+      "model": "the_oldest_house:block/city/mural_0_5",
+      "y": 90
+    },
+    "facing=east,panel=0,part=6": {
+      "model": "the_oldest_house:block/city/mural_0_6",
+      "y": 90
+    },
+    "facing=east,panel=0,part=7": {
+      "model": "the_oldest_house:block/city/mural_0_7",
+      "y": 90
+    },
+    "facing=east,panel=0,part=8": {
+      "model": "the_oldest_house:block/city/mural_0_8",
+      "y": 90
+    },
+    "facing=east,panel=0,part=9": {
+      "model": "the_oldest_house:block/city/mural_0_9",
+      "y": 90
+    },
+    "facing=east,panel=0,part=10": {
+      "model": "the_oldest_house:block/city/mural_0_10",
+      "y": 90
+    },
+    "facing=east,panel=0,part=11": {
+      "model": "the_oldest_house:block/city/mural_0_11",
+      "y": 90
+    },
+    "facing=east,panel=1,part=0": {
+      "model": "the_oldest_house:block/city/mural_1_0",
+      "y": 90
+    },
+    "facing=east,panel=1,part=1": {
+      "model": "the_oldest_house:block/city/mural_1_1",
+      "y": 90
+    },
+    "facing=east,panel=1,part=2": {
+      "model": "the_oldest_house:block/city/mural_1_2",
+      "y": 90
+    },
+    "facing=east,panel=1,part=3": {
+      "model": "the_oldest_house:block/city/mural_1_3",
+      "y": 90
+    },
+    "facing=east,panel=1,part=4": {
+      "model": "the_oldest_house:block/city/mural_1_4",
+      "y": 90
+    },
+    "facing=east,panel=1,part=5": {
+      "model": "the_oldest_house:block/city/mural_1_5",
+      "y": 90
+    },
+    "facing=east,panel=1,part=6": {
+      "model": "the_oldest_house:block/city/mural_1_6",
+      "y": 90
+    },
+    "facing=east,panel=1,part=7": {
+      "model": "the_oldest_house:block/city/mural_1_7",
+      "y": 90
+    },
+    "facing=east,panel=1,part=8": {
+      "model": "the_oldest_house:block/city/mural_1_8",
+      "y": 90
+    },
+    "facing=east,panel=1,part=9": {
+      "model": "the_oldest_house:block/city/mural_1_9",
+      "y": 90
+    },
+    "facing=east,panel=1,part=10": {
+      "model": "the_oldest_house:block/city/mural_1_10",
+      "y": 90
+    },
+    "facing=east,panel=1,part=11": {
+      "model": "the_oldest_house:block/city/mural_1_11",
+      "y": 90
+    },
+    "facing=east,panel=2,part=0": {
+      "model": "the_oldest_house:block/city/mural_2_0",
+      "y": 90
+    },
+    "facing=east,panel=2,part=1": {
+      "model": "the_oldest_house:block/city/mural_2_1",
+      "y": 90
+    },
+    "facing=east,panel=2,part=2": {
+      "model": "the_oldest_house:block/city/mural_2_2",
+      "y": 90
+    },
+    "facing=east,panel=2,part=3": {
+      "model": "the_oldest_house:block/city/mural_2_3",
+      "y": 90
+    },
+    "facing=east,panel=2,part=4": {
+      "model": "the_oldest_house:block/city/mural_2_4",
+      "y": 90
+    },
+    "facing=east,panel=2,part=5": {
+      "model": "the_oldest_house:block/city/mural_2_5",
+      "y": 90
+    },
+    "facing=east,panel=2,part=6": {
+      "model": "the_oldest_house:block/city/mural_2_6",
+      "y": 90
+    },
+    "facing=east,panel=2,part=7": {
+      "model": "the_oldest_house:block/city/mural_2_7",
+      "y": 90
+    },
+    "facing=east,panel=2,part=8": {
+      "model": "the_oldest_house:block/city/mural_2_8",
+      "y": 90
+    },
+    "facing=east,panel=2,part=9": {
+      "model": "the_oldest_house:block/city/mural_2_9",
+      "y": 90
+    },
+    "facing=east,panel=2,part=10": {
+      "model": "the_oldest_house:block/city/mural_2_10",
+      "y": 90
+    },
+    "facing=east,panel=2,part=11": {
+      "model": "the_oldest_house:block/city/mural_2_11",
+      "y": 90
+    },
+    "facing=east,panel=3,part=0": {
+      "model": "the_oldest_house:block/city/mural_3_0",
+      "y": 90
+    },
+    "facing=east,panel=3,part=1": {
+      "model": "the_oldest_house:block/city/mural_3_1",
+      "y": 90
+    },
+    "facing=east,panel=3,part=2": {
+      "model": "the_oldest_house:block/city/mural_3_2",
+      "y": 90
+    },
+    "facing=east,panel=3,part=3": {
+      "model": "the_oldest_house:block/city/mural_3_3",
+      "y": 90
+    },
+    "facing=east,panel=3,part=4": {
+      "model": "the_oldest_house:block/city/mural_3_4",
+      "y": 90
+    },
+    "facing=east,panel=3,part=5": {
+      "model": "the_oldest_house:block/city/mural_3_5",
+      "y": 90
+    },
+    "facing=east,panel=3,part=6": {
+      "model": "the_oldest_house:block/city/mural_3_6",
+      "y": 90
+    },
+    "facing=east,panel=3,part=7": {
+      "model": "the_oldest_house:block/city/mural_3_7",
+      "y": 90
+    },
+    "facing=east,panel=3,part=8": {
+      "model": "the_oldest_house:block/city/mural_3_8",
+      "y": 90
+    },
+    "facing=east,panel=3,part=9": {
+      "model": "the_oldest_house:block/city/mural_3_9",
+      "y": 90
+    },
+    "facing=east,panel=3,part=10": {
+      "model": "the_oldest_house:block/city/mural_3_10",
+      "y": 90
+    },
+    "facing=east,panel=3,part=11": {
+      "model": "the_oldest_house:block/city/mural_3_11",
+      "y": 90
+    },
+    "facing=east,panel=4,part=0": {
+      "model": "the_oldest_house:block/city/mural_4_0",
+      "y": 90
+    },
+    "facing=east,panel=4,part=1": {
+      "model": "the_oldest_house:block/city/mural_4_1",
+      "y": 90
+    },
+    "facing=east,panel=4,part=2": {
+      "model": "the_oldest_house:block/city/mural_4_2",
+      "y": 90
+    },
+    "facing=east,panel=4,part=3": {
+      "model": "the_oldest_house:block/city/mural_4_3",
+      "y": 90
+    },
+    "facing=east,panel=4,part=4": {
+      "model": "the_oldest_house:block/city/mural_4_4",
+      "y": 90
+    },
+    "facing=east,panel=4,part=5": {
+      "model": "the_oldest_house:block/city/mural_4_5",
+      "y": 90
+    },
+    "facing=east,panel=4,part=6": {
+      "model": "the_oldest_house:block/city/mural_4_6",
+      "y": 90
+    },
+    "facing=east,panel=4,part=7": {
+      "model": "the_oldest_house:block/city/mural_4_7",
+      "y": 90
+    },
+    "facing=east,panel=4,part=8": {
+      "model": "the_oldest_house:block/city/mural_4_8",
+      "y": 90
+    },
+    "facing=east,panel=4,part=9": {
+      "model": "the_oldest_house:block/city/mural_4_9",
+      "y": 90
+    },
+    "facing=east,panel=4,part=10": {
+      "model": "the_oldest_house:block/city/mural_4_10",
+      "y": 90
+    },
+    "facing=east,panel=4,part=11": {
+      "model": "the_oldest_house:block/city/mural_4_11",
+      "y": 90
+    },
+    "facing=east,panel=5,part=0": {
+      "model": "the_oldest_house:block/city/mural_5_0",
+      "y": 90
+    },
+    "facing=east,panel=5,part=1": {
+      "model": "the_oldest_house:block/city/mural_5_1",
+      "y": 90
+    },
+    "facing=east,panel=5,part=2": {
+      "model": "the_oldest_house:block/city/mural_5_2",
+      "y": 90
+    },
+    "facing=east,panel=5,part=3": {
+      "model": "the_oldest_house:block/city/mural_5_3",
+      "y": 90
+    },
+    "facing=east,panel=5,part=4": {
+      "model": "the_oldest_house:block/city/mural_5_4",
+      "y": 90
+    },
+    "facing=east,panel=5,part=5": {
+      "model": "the_oldest_house:block/city/mural_5_5",
+      "y": 90
+    },
+    "facing=east,panel=5,part=6": {
+      "model": "the_oldest_house:block/city/mural_5_6",
+      "y": 90
+    },
+    "facing=east,panel=5,part=7": {
+      "model": "the_oldest_house:block/city/mural_5_7",
+      "y": 90
+    },
+    "facing=east,panel=5,part=8": {
+      "model": "the_oldest_house:block/city/mural_5_8",
+      "y": 90
+    },
+    "facing=east,panel=5,part=9": {
+      "model": "the_oldest_house:block/city/mural_5_9",
+      "y": 90
+    },
+    "facing=east,panel=5,part=10": {
+      "model": "the_oldest_house:block/city/mural_5_10",
+      "y": 90
+    },
+    "facing=east,panel=5,part=11": {
+      "model": "the_oldest_house:block/city/mural_5_11",
+      "y": 90
+    },
+    "facing=east,panel=6,part=0": {
+      "model": "the_oldest_house:block/city/mural_6_0",
+      "y": 90
+    },
+    "facing=east,panel=6,part=1": {
+      "model": "the_oldest_house:block/city/mural_6_1",
+      "y": 90
+    },
+    "facing=east,panel=6,part=2": {
+      "model": "the_oldest_house:block/city/mural_6_2",
+      "y": 90
+    },
+    "facing=east,panel=6,part=3": {
+      "model": "the_oldest_house:block/city/mural_6_3",
+      "y": 90
+    },
+    "facing=east,panel=6,part=4": {
+      "model": "the_oldest_house:block/city/mural_6_4",
+      "y": 90
+    },
+    "facing=east,panel=6,part=5": {
+      "model": "the_oldest_house:block/city/mural_6_5",
+      "y": 90
+    },
+    "facing=east,panel=6,part=6": {
+      "model": "the_oldest_house:block/city/mural_6_6",
+      "y": 90
+    },
+    "facing=east,panel=6,part=7": {
+      "model": "the_oldest_house:block/city/mural_6_7",
+      "y": 90
+    },
+    "facing=east,panel=6,part=8": {
+      "model": "the_oldest_house:block/city/mural_6_8",
+      "y": 90
+    },
+    "facing=east,panel=6,part=9": {
+      "model": "the_oldest_house:block/city/mural_6_9",
+      "y": 90
+    },
+    "facing=east,panel=6,part=10": {
+      "model": "the_oldest_house:block/city/mural_6_10",
+      "y": 90
+    },
+    "facing=east,panel=6,part=11": {
+      "model": "the_oldest_house:block/city/mural_6_11",
+      "y": 90
+    },
+    "facing=east,panel=7,part=0": {
+      "model": "the_oldest_house:block/city/mural_7_0",
+      "y": 90
+    },
+    "facing=east,panel=7,part=1": {
+      "model": "the_oldest_house:block/city/mural_7_1",
+      "y": 90
+    },
+    "facing=east,panel=7,part=2": {
+      "model": "the_oldest_house:block/city/mural_7_2",
+      "y": 90
+    },
+    "facing=east,panel=7,part=3": {
+      "model": "the_oldest_house:block/city/mural_7_3",
+      "y": 90
+    },
+    "facing=east,panel=7,part=4": {
+      "model": "the_oldest_house:block/city/mural_7_4",
+      "y": 90
+    },
+    "facing=east,panel=7,part=5": {
+      "model": "the_oldest_house:block/city/mural_7_5",
+      "y": 90
+    },
+    "facing=east,panel=7,part=6": {
+      "model": "the_oldest_house:block/city/mural_7_6",
+      "y": 90
+    },
+    "facing=east,panel=7,part=7": {
+      "model": "the_oldest_house:block/city/mural_7_7",
+      "y": 90
+    },
+    "facing=east,panel=7,part=8": {
+      "model": "the_oldest_house:block/city/mural_7_8",
+      "y": 90
+    },
+    "facing=east,panel=7,part=9": {
+      "model": "the_oldest_house:block/city/mural_7_9",
+      "y": 90
+    },
+    "facing=east,panel=7,part=10": {
+      "model": "the_oldest_house:block/city/mural_7_10",
+      "y": 90
+    },
+    "facing=east,panel=7,part=11": {
+      "model": "the_oldest_house:block/city/mural_7_11",
+      "y": 90
+    },
+    "facing=east,panel=8,part=0": {
+      "model": "the_oldest_house:block/city/mural_8_0",
+      "y": 90
+    },
+    "facing=east,panel=8,part=1": {
+      "model": "the_oldest_house:block/city/mural_8_1",
+      "y": 90
+    },
+    "facing=east,panel=8,part=2": {
+      "model": "the_oldest_house:block/city/mural_8_2",
+      "y": 90
+    },
+    "facing=east,panel=8,part=3": {
+      "model": "the_oldest_house:block/city/mural_8_3",
+      "y": 90
+    },
+    "facing=east,panel=8,part=4": {
+      "model": "the_oldest_house:block/city/mural_8_4",
+      "y": 90
+    },
+    "facing=east,panel=8,part=5": {
+      "model": "the_oldest_house:block/city/mural_8_5",
+      "y": 90
+    },
+    "facing=east,panel=8,part=6": {
+      "model": "the_oldest_house:block/city/mural_8_6",
+      "y": 90
+    },
+    "facing=east,panel=8,part=7": {
+      "model": "the_oldest_house:block/city/mural_8_7",
+      "y": 90
+    },
+    "facing=east,panel=8,part=8": {
+      "model": "the_oldest_house:block/city/mural_8_8",
+      "y": 90
+    },
+    "facing=east,panel=8,part=9": {
+      "model": "the_oldest_house:block/city/mural_8_9",
+      "y": 90
+    },
+    "facing=east,panel=8,part=10": {
+      "model": "the_oldest_house:block/city/mural_8_10",
+      "y": 90
+    },
+    "facing=east,panel=8,part=11": {
+      "model": "the_oldest_house:block/city/mural_8_11",
+      "y": 90
+    },
+    "facing=east,panel=9,part=0": {
+      "model": "the_oldest_house:block/city/mural_9_0",
+      "y": 90
+    },
+    "facing=east,panel=9,part=1": {
+      "model": "the_oldest_house:block/city/mural_9_1",
+      "y": 90
+    },
+    "facing=east,panel=9,part=2": {
+      "model": "the_oldest_house:block/city/mural_9_2",
+      "y": 90
+    },
+    "facing=east,panel=9,part=3": {
+      "model": "the_oldest_house:block/city/mural_9_3",
+      "y": 90
+    },
+    "facing=east,panel=9,part=4": {
+      "model": "the_oldest_house:block/city/mural_9_4",
+      "y": 90
+    },
+    "facing=east,panel=9,part=5": {
+      "model": "the_oldest_house:block/city/mural_9_5",
+      "y": 90
+    },
+    "facing=east,panel=9,part=6": {
+      "model": "the_oldest_house:block/city/mural_9_6",
+      "y": 90
+    },
+    "facing=east,panel=9,part=7": {
+      "model": "the_oldest_house:block/city/mural_9_7",
+      "y": 90
+    },
+    "facing=east,panel=9,part=8": {
+      "model": "the_oldest_house:block/city/mural_9_8",
+      "y": 90
+    },
+    "facing=east,panel=9,part=9": {
+      "model": "the_oldest_house:block/city/mural_9_9",
+      "y": 90
+    },
+    "facing=east,panel=9,part=10": {
+      "model": "the_oldest_house:block/city/mural_9_10",
+      "y": 90
+    },
+    "facing=east,panel=9,part=11": {
+      "model": "the_oldest_house:block/city/mural_9_11",
+      "y": 90
+    },
+    "facing=east,panel=10,part=0": {
+      "model": "the_oldest_house:block/city/mural_10_0",
+      "y": 90
+    },
+    "facing=east,panel=10,part=1": {
+      "model": "the_oldest_house:block/city/mural_10_1",
+      "y": 90
+    },
+    "facing=east,panel=10,part=2": {
+      "model": "the_oldest_house:block/city/mural_10_2",
+      "y": 90
+    },
+    "facing=east,panel=10,part=3": {
+      "model": "the_oldest_house:block/city/mural_10_3",
+      "y": 90
+    },
+    "facing=east,panel=10,part=4": {
+      "model": "the_oldest_house:block/city/mural_10_4",
+      "y": 90
+    },
+    "facing=east,panel=10,part=5": {
+      "model": "the_oldest_house:block/city/mural_10_5",
+      "y": 90
+    },
+    "facing=east,panel=10,part=6": {
+      "model": "the_oldest_house:block/city/mural_10_6",
+      "y": 90
+    },
+    "facing=east,panel=10,part=7": {
+      "model": "the_oldest_house:block/city/mural_10_7",
+      "y": 90
+    },
+    "facing=east,panel=10,part=8": {
+      "model": "the_oldest_house:block/city/mural_10_8",
+      "y": 90
+    },
+    "facing=east,panel=10,part=9": {
+      "model": "the_oldest_house:block/city/mural_10_9",
+      "y": 90
+    },
+    "facing=east,panel=10,part=10": {
+      "model": "the_oldest_house:block/city/mural_10_10",
+      "y": 90
+    },
+    "facing=east,panel=10,part=11": {
+      "model": "the_oldest_house:block/city/mural_10_11",
+      "y": 90
+    },
+    "facing=east,panel=11,part=0": {
+      "model": "the_oldest_house:block/city/mural_11_0",
+      "y": 90
+    },
+    "facing=east,panel=11,part=1": {
+      "model": "the_oldest_house:block/city/mural_11_1",
+      "y": 90
+    },
+    "facing=east,panel=11,part=2": {
+      "model": "the_oldest_house:block/city/mural_11_2",
+      "y": 90
+    },
+    "facing=east,panel=11,part=3": {
+      "model": "the_oldest_house:block/city/mural_11_3",
+      "y": 90
+    },
+    "facing=east,panel=11,part=4": {
+      "model": "the_oldest_house:block/city/mural_11_4",
+      "y": 90
+    },
+    "facing=east,panel=11,part=5": {
+      "model": "the_oldest_house:block/city/mural_11_5",
+      "y": 90
+    },
+    "facing=east,panel=11,part=6": {
+      "model": "the_oldest_house:block/city/mural_11_6",
+      "y": 90
+    },
+    "facing=east,panel=11,part=7": {
+      "model": "the_oldest_house:block/city/mural_11_7",
+      "y": 90
+    },
+    "facing=east,panel=11,part=8": {
+      "model": "the_oldest_house:block/city/mural_11_8",
+      "y": 90
+    },
+    "facing=east,panel=11,part=9": {
+      "model": "the_oldest_house:block/city/mural_11_9",
+      "y": 90
+    },
+    "facing=east,panel=11,part=10": {
+      "model": "the_oldest_house:block/city/mural_11_10",
+      "y": 90
+    },
+    "facing=east,panel=11,part=11": {
+      "model": "the_oldest_house:block/city/mural_11_11",
+      "y": 90
+    },
+    "facing=south,panel=0,part=0": {
+      "model": "the_oldest_house:block/city/mural_0_0",
+      "y": 180
+    },
+    "facing=south,panel=0,part=1": {
+      "model": "the_oldest_house:block/city/mural_0_1",
+      "y": 180
+    },
+    "facing=south,panel=0,part=2": {
+      "model": "the_oldest_house:block/city/mural_0_2",
+      "y": 180
+    },
+    "facing=south,panel=0,part=3": {
+      "model": "the_oldest_house:block/city/mural_0_3",
+      "y": 180
+    },
+    "facing=south,panel=0,part=4": {
+      "model": "the_oldest_house:block/city/mural_0_4",
+      "y": 180
+    },
+    "facing=south,panel=0,part=5": {
+      "model": "the_oldest_house:block/city/mural_0_5",
+      "y": 180
+    },
+    "facing=south,panel=0,part=6": {
+      "model": "the_oldest_house:block/city/mural_0_6",
+      "y": 180
+    },
+    "facing=south,panel=0,part=7": {
+      "model": "the_oldest_house:block/city/mural_0_7",
+      "y": 180
+    },
+    "facing=south,panel=0,part=8": {
+      "model": "the_oldest_house:block/city/mural_0_8",
+      "y": 180
+    },
+    "facing=south,panel=0,part=9": {
+      "model": "the_oldest_house:block/city/mural_0_9",
+      "y": 180
+    },
+    "facing=south,panel=0,part=10": {
+      "model": "the_oldest_house:block/city/mural_0_10",
+      "y": 180
+    },
+    "facing=south,panel=0,part=11": {
+      "model": "the_oldest_house:block/city/mural_0_11",
+      "y": 180
+    },
+    "facing=south,panel=1,part=0": {
+      "model": "the_oldest_house:block/city/mural_1_0",
+      "y": 180
+    },
+    "facing=south,panel=1,part=1": {
+      "model": "the_oldest_house:block/city/mural_1_1",
+      "y": 180
+    },
+    "facing=south,panel=1,part=2": {
+      "model": "the_oldest_house:block/city/mural_1_2",
+      "y": 180
+    },
+    "facing=south,panel=1,part=3": {
+      "model": "the_oldest_house:block/city/mural_1_3",
+      "y": 180
+    },
+    "facing=south,panel=1,part=4": {
+      "model": "the_oldest_house:block/city/mural_1_4",
+      "y": 180
+    },
+    "facing=south,panel=1,part=5": {
+      "model": "the_oldest_house:block/city/mural_1_5",
+      "y": 180
+    },
+    "facing=south,panel=1,part=6": {
+      "model": "the_oldest_house:block/city/mural_1_6",
+      "y": 180
+    },
+    "facing=south,panel=1,part=7": {
+      "model": "the_oldest_house:block/city/mural_1_7",
+      "y": 180
+    },
+    "facing=south,panel=1,part=8": {
+      "model": "the_oldest_house:block/city/mural_1_8",
+      "y": 180
+    },
+    "facing=south,panel=1,part=9": {
+      "model": "the_oldest_house:block/city/mural_1_9",
+      "y": 180
+    },
+    "facing=south,panel=1,part=10": {
+      "model": "the_oldest_house:block/city/mural_1_10",
+      "y": 180
+    },
+    "facing=south,panel=1,part=11": {
+      "model": "the_oldest_house:block/city/mural_1_11",
+      "y": 180
+    },
+    "facing=south,panel=2,part=0": {
+      "model": "the_oldest_house:block/city/mural_2_0",
+      "y": 180
+    },
+    "facing=south,panel=2,part=1": {
+      "model": "the_oldest_house:block/city/mural_2_1",
+      "y": 180
+    },
+    "facing=south,panel=2,part=2": {
+      "model": "the_oldest_house:block/city/mural_2_2",
+      "y": 180
+    },
+    "facing=south,panel=2,part=3": {
+      "model": "the_oldest_house:block/city/mural_2_3",
+      "y": 180
+    },
+    "facing=south,panel=2,part=4": {
+      "model": "the_oldest_house:block/city/mural_2_4",
+      "y": 180
+    },
+    "facing=south,panel=2,part=5": {
+      "model": "the_oldest_house:block/city/mural_2_5",
+      "y": 180
+    },
+    "facing=south,panel=2,part=6": {
+      "model": "the_oldest_house:block/city/mural_2_6",
+      "y": 180
+    },
+    "facing=south,panel=2,part=7": {
+      "model": "the_oldest_house:block/city/mural_2_7",
+      "y": 180
+    },
+    "facing=south,panel=2,part=8": {
+      "model": "the_oldest_house:block/city/mural_2_8",
+      "y": 180
+    },
+    "facing=south,panel=2,part=9": {
+      "model": "the_oldest_house:block/city/mural_2_9",
+      "y": 180
+    },
+    "facing=south,panel=2,part=10": {
+      "model": "the_oldest_house:block/city/mural_2_10",
+      "y": 180
+    },
+    "facing=south,panel=2,part=11": {
+      "model": "the_oldest_house:block/city/mural_2_11",
+      "y": 180
+    },
+    "facing=south,panel=3,part=0": {
+      "model": "the_oldest_house:block/city/mural_3_0",
+      "y": 180
+    },
+    "facing=south,panel=3,part=1": {
+      "model": "the_oldest_house:block/city/mural_3_1",
+      "y": 180
+    },
+    "facing=south,panel=3,part=2": {
+      "model": "the_oldest_house:block/city/mural_3_2",
+      "y": 180
+    },
+    "facing=south,panel=3,part=3": {
+      "model": "the_oldest_house:block/city/mural_3_3",
+      "y": 180
+    },
+    "facing=south,panel=3,part=4": {
+      "model": "the_oldest_house:block/city/mural_3_4",
+      "y": 180
+    },
+    "facing=south,panel=3,part=5": {
+      "model": "the_oldest_house:block/city/mural_3_5",
+      "y": 180
+    },
+    "facing=south,panel=3,part=6": {
+      "model": "the_oldest_house:block/city/mural_3_6",
+      "y": 180
+    },
+    "facing=south,panel=3,part=7": {
+      "model": "the_oldest_house:block/city/mural_3_7",
+      "y": 180
+    },
+    "facing=south,panel=3,part=8": {
+      "model": "the_oldest_house:block/city/mural_3_8",
+      "y": 180
+    },
+    "facing=south,panel=3,part=9": {
+      "model": "the_oldest_house:block/city/mural_3_9",
+      "y": 180
+    },
+    "facing=south,panel=3,part=10": {
+      "model": "the_oldest_house:block/city/mural_3_10",
+      "y": 180
+    },
+    "facing=south,panel=3,part=11": {
+      "model": "the_oldest_house:block/city/mural_3_11",
+      "y": 180
+    },
+    "facing=south,panel=4,part=0": {
+      "model": "the_oldest_house:block/city/mural_4_0",
+      "y": 180
+    },
+    "facing=south,panel=4,part=1": {
+      "model": "the_oldest_house:block/city/mural_4_1",
+      "y": 180
+    },
+    "facing=south,panel=4,part=2": {
+      "model": "the_oldest_house:block/city/mural_4_2",
+      "y": 180
+    },
+    "facing=south,panel=4,part=3": {
+      "model": "the_oldest_house:block/city/mural_4_3",
+      "y": 180
+    },
+    "facing=south,panel=4,part=4": {
+      "model": "the_oldest_house:block/city/mural_4_4",
+      "y": 180
+    },
+    "facing=south,panel=4,part=5": {
+      "model": "the_oldest_house:block/city/mural_4_5",
+      "y": 180
+    },
+    "facing=south,panel=4,part=6": {
+      "model": "the_oldest_house:block/city/mural_4_6",
+      "y": 180
+    },
+    "facing=south,panel=4,part=7": {
+      "model": "the_oldest_house:block/city/mural_4_7",
+      "y": 180
+    },
+    "facing=south,panel=4,part=8": {
+      "model": "the_oldest_house:block/city/mural_4_8",
+      "y": 180
+    },
+    "facing=south,panel=4,part=9": {
+      "model": "the_oldest_house:block/city/mural_4_9",
+      "y": 180
+    },
+    "facing=south,panel=4,part=10": {
+      "model": "the_oldest_house:block/city/mural_4_10",
+      "y": 180
+    },
+    "facing=south,panel=4,part=11": {
+      "model": "the_oldest_house:block/city/mural_4_11",
+      "y": 180
+    },
+    "facing=south,panel=5,part=0": {
+      "model": "the_oldest_house:block/city/mural_5_0",
+      "y": 180
+    },
+    "facing=south,panel=5,part=1": {
+      "model": "the_oldest_house:block/city/mural_5_1",
+      "y": 180
+    },
+    "facing=south,panel=5,part=2": {
+      "model": "the_oldest_house:block/city/mural_5_2",
+      "y": 180
+    },
+    "facing=south,panel=5,part=3": {
+      "model": "the_oldest_house:block/city/mural_5_3",
+      "y": 180
+    },
+    "facing=south,panel=5,part=4": {
+      "model": "the_oldest_house:block/city/mural_5_4",
+      "y": 180
+    },
+    "facing=south,panel=5,part=5": {
+      "model": "the_oldest_house:block/city/mural_5_5",
+      "y": 180
+    },
+    "facing=south,panel=5,part=6": {
+      "model": "the_oldest_house:block/city/mural_5_6",
+      "y": 180
+    },
+    "facing=south,panel=5,part=7": {
+      "model": "the_oldest_house:block/city/mural_5_7",
+      "y": 180
+    },
+    "facing=south,panel=5,part=8": {
+      "model": "the_oldest_house:block/city/mural_5_8",
+      "y": 180
+    },
+    "facing=south,panel=5,part=9": {
+      "model": "the_oldest_house:block/city/mural_5_9",
+      "y": 180
+    },
+    "facing=south,panel=5,part=10": {
+      "model": "the_oldest_house:block/city/mural_5_10",
+      "y": 180
+    },
+    "facing=south,panel=5,part=11": {
+      "model": "the_oldest_house:block/city/mural_5_11",
+      "y": 180
+    },
+    "facing=south,panel=6,part=0": {
+      "model": "the_oldest_house:block/city/mural_6_0",
+      "y": 180
+    },
+    "facing=south,panel=6,part=1": {
+      "model": "the_oldest_house:block/city/mural_6_1",
+      "y": 180
+    },
+    "facing=south,panel=6,part=2": {
+      "model": "the_oldest_house:block/city/mural_6_2",
+      "y": 180
+    },
+    "facing=south,panel=6,part=3": {
+      "model": "the_oldest_house:block/city/mural_6_3",
+      "y": 180
+    },
+    "facing=south,panel=6,part=4": {
+      "model": "the_oldest_house:block/city/mural_6_4",
+      "y": 180
+    },
+    "facing=south,panel=6,part=5": {
+      "model": "the_oldest_house:block/city/mural_6_5",
+      "y": 180
+    },
+    "facing=south,panel=6,part=6": {
+      "model": "the_oldest_house:block/city/mural_6_6",
+      "y": 180
+    },
+    "facing=south,panel=6,part=7": {
+      "model": "the_oldest_house:block/city/mural_6_7",
+      "y": 180
+    },
+    "facing=south,panel=6,part=8": {
+      "model": "the_oldest_house:block/city/mural_6_8",
+      "y": 180
+    },
+    "facing=south,panel=6,part=9": {
+      "model": "the_oldest_house:block/city/mural_6_9",
+      "y": 180
+    },
+    "facing=south,panel=6,part=10": {
+      "model": "the_oldest_house:block/city/mural_6_10",
+      "y": 180
+    },
+    "facing=south,panel=6,part=11": {
+      "model": "the_oldest_house:block/city/mural_6_11",
+      "y": 180
+    },
+    "facing=south,panel=7,part=0": {
+      "model": "the_oldest_house:block/city/mural_7_0",
+      "y": 180
+    },
+    "facing=south,panel=7,part=1": {
+      "model": "the_oldest_house:block/city/mural_7_1",
+      "y": 180
+    },
+    "facing=south,panel=7,part=2": {
+      "model": "the_oldest_house:block/city/mural_7_2",
+      "y": 180
+    },
+    "facing=south,panel=7,part=3": {
+      "model": "the_oldest_house:block/city/mural_7_3",
+      "y": 180
+    },
+    "facing=south,panel=7,part=4": {
+      "model": "the_oldest_house:block/city/mural_7_4",
+      "y": 180
+    },
+    "facing=south,panel=7,part=5": {
+      "model": "the_oldest_house:block/city/mural_7_5",
+      "y": 180
+    },
+    "facing=south,panel=7,part=6": {
+      "model": "the_oldest_house:block/city/mural_7_6",
+      "y": 180
+    },
+    "facing=south,panel=7,part=7": {
+      "model": "the_oldest_house:block/city/mural_7_7",
+      "y": 180
+    },
+    "facing=south,panel=7,part=8": {
+      "model": "the_oldest_house:block/city/mural_7_8",
+      "y": 180
+    },
+    "facing=south,panel=7,part=9": {
+      "model": "the_oldest_house:block/city/mural_7_9",
+      "y": 180
+    },
+    "facing=south,panel=7,part=10": {
+      "model": "the_oldest_house:block/city/mural_7_10",
+      "y": 180
+    },
+    "facing=south,panel=7,part=11": {
+      "model": "the_oldest_house:block/city/mural_7_11",
+      "y": 180
+    },
+    "facing=south,panel=8,part=0": {
+      "model": "the_oldest_house:block/city/mural_8_0",
+      "y": 180
+    },
+    "facing=south,panel=8,part=1": {
+      "model": "the_oldest_house:block/city/mural_8_1",
+      "y": 180
+    },
+    "facing=south,panel=8,part=2": {
+      "model": "the_oldest_house:block/city/mural_8_2",
+      "y": 180
+    },
+    "facing=south,panel=8,part=3": {
+      "model": "the_oldest_house:block/city/mural_8_3",
+      "y": 180
+    },
+    "facing=south,panel=8,part=4": {
+      "model": "the_oldest_house:block/city/mural_8_4",
+      "y": 180
+    },
+    "facing=south,panel=8,part=5": {
+      "model": "the_oldest_house:block/city/mural_8_5",
+      "y": 180
+    },
+    "facing=south,panel=8,part=6": {
+      "model": "the_oldest_house:block/city/mural_8_6",
+      "y": 180
+    },
+    "facing=south,panel=8,part=7": {
+      "model": "the_oldest_house:block/city/mural_8_7",
+      "y": 180
+    },
+    "facing=south,panel=8,part=8": {
+      "model": "the_oldest_house:block/city/mural_8_8",
+      "y": 180
+    },
+    "facing=south,panel=8,part=9": {
+      "model": "the_oldest_house:block/city/mural_8_9",
+      "y": 180
+    },
+    "facing=south,panel=8,part=10": {
+      "model": "the_oldest_house:block/city/mural_8_10",
+      "y": 180
+    },
+    "facing=south,panel=8,part=11": {
+      "model": "the_oldest_house:block/city/mural_8_11",
+      "y": 180
+    },
+    "facing=south,panel=9,part=0": {
+      "model": "the_oldest_house:block/city/mural_9_0",
+      "y": 180
+    },
+    "facing=south,panel=9,part=1": {
+      "model": "the_oldest_house:block/city/mural_9_1",
+      "y": 180
+    },
+    "facing=south,panel=9,part=2": {
+      "model": "the_oldest_house:block/city/mural_9_2",
+      "y": 180
+    },
+    "facing=south,panel=9,part=3": {
+      "model": "the_oldest_house:block/city/mural_9_3",
+      "y": 180
+    },
+    "facing=south,panel=9,part=4": {
+      "model": "the_oldest_house:block/city/mural_9_4",
+      "y": 180
+    },
+    "facing=south,panel=9,part=5": {
+      "model": "the_oldest_house:block/city/mural_9_5",
+      "y": 180
+    },
+    "facing=south,panel=9,part=6": {
+      "model": "the_oldest_house:block/city/mural_9_6",
+      "y": 180
+    },
+    "facing=south,panel=9,part=7": {
+      "model": "the_oldest_house:block/city/mural_9_7",
+      "y": 180
+    },
+    "facing=south,panel=9,part=8": {
+      "model": "the_oldest_house:block/city/mural_9_8",
+      "y": 180
+    },
+    "facing=south,panel=9,part=9": {
+      "model": "the_oldest_house:block/city/mural_9_9",
+      "y": 180
+    },
+    "facing=south,panel=9,part=10": {
+      "model": "the_oldest_house:block/city/mural_9_10",
+      "y": 180
+    },
+    "facing=south,panel=9,part=11": {
+      "model": "the_oldest_house:block/city/mural_9_11",
+      "y": 180
+    },
+    "facing=south,panel=10,part=0": {
+      "model": "the_oldest_house:block/city/mural_10_0",
+      "y": 180
+    },
+    "facing=south,panel=10,part=1": {
+      "model": "the_oldest_house:block/city/mural_10_1",
+      "y": 180
+    },
+    "facing=south,panel=10,part=2": {
+      "model": "the_oldest_house:block/city/mural_10_2",
+      "y": 180
+    },
+    "facing=south,panel=10,part=3": {
+      "model": "the_oldest_house:block/city/mural_10_3",
+      "y": 180
+    },
+    "facing=south,panel=10,part=4": {
+      "model": "the_oldest_house:block/city/mural_10_4",
+      "y": 180
+    },
+    "facing=south,panel=10,part=5": {
+      "model": "the_oldest_house:block/city/mural_10_5",
+      "y": 180
+    },
+    "facing=south,panel=10,part=6": {
+      "model": "the_oldest_house:block/city/mural_10_6",
+      "y": 180
+    },
+    "facing=south,panel=10,part=7": {
+      "model": "the_oldest_house:block/city/mural_10_7",
+      "y": 180
+    },
+    "facing=south,panel=10,part=8": {
+      "model": "the_oldest_house:block/city/mural_10_8",
+      "y": 180
+    },
+    "facing=south,panel=10,part=9": {
+      "model": "the_oldest_house:block/city/mural_10_9",
+      "y": 180
+    },
+    "facing=south,panel=10,part=10": {
+      "model": "the_oldest_house:block/city/mural_10_10",
+      "y": 180
+    },
+    "facing=south,panel=10,part=11": {
+      "model": "the_oldest_house:block/city/mural_10_11",
+      "y": 180
+    },
+    "facing=south,panel=11,part=0": {
+      "model": "the_oldest_house:block/city/mural_11_0",
+      "y": 180
+    },
+    "facing=south,panel=11,part=1": {
+      "model": "the_oldest_house:block/city/mural_11_1",
+      "y": 180
+    },
+    "facing=south,panel=11,part=2": {
+      "model": "the_oldest_house:block/city/mural_11_2",
+      "y": 180
+    },
+    "facing=south,panel=11,part=3": {
+      "model": "the_oldest_house:block/city/mural_11_3",
+      "y": 180
+    },
+    "facing=south,panel=11,part=4": {
+      "model": "the_oldest_house:block/city/mural_11_4",
+      "y": 180
+    },
+    "facing=south,panel=11,part=5": {
+      "model": "the_oldest_house:block/city/mural_11_5",
+      "y": 180
+    },
+    "facing=south,panel=11,part=6": {
+      "model": "the_oldest_house:block/city/mural_11_6",
+      "y": 180
+    },
+    "facing=south,panel=11,part=7": {
+      "model": "the_oldest_house:block/city/mural_11_7",
+      "y": 180
+    },
+    "facing=south,panel=11,part=8": {
+      "model": "the_oldest_house:block/city/mural_11_8",
+      "y": 180
+    },
+    "facing=south,panel=11,part=9": {
+      "model": "the_oldest_house:block/city/mural_11_9",
+      "y": 180
+    },
+    "facing=south,panel=11,part=10": {
+      "model": "the_oldest_house:block/city/mural_11_10",
+      "y": 180
+    },
+    "facing=south,panel=11,part=11": {
+      "model": "the_oldest_house:block/city/mural_11_11",
+      "y": 180
+    },
+    "facing=west,panel=0,part=0": {
+      "model": "the_oldest_house:block/city/mural_0_0",
+      "y": 270
+    },
+    "facing=west,panel=0,part=1": {
+      "model": "the_oldest_house:block/city/mural_0_1",
+      "y": 270
+    },
+    "facing=west,panel=0,part=2": {
+      "model": "the_oldest_house:block/city/mural_0_2",
+      "y": 270
+    },
+    "facing=west,panel=0,part=3": {
+      "model": "the_oldest_house:block/city/mural_0_3",
+      "y": 270
+    },
+    "facing=west,panel=0,part=4": {
+      "model": "the_oldest_house:block/city/mural_0_4",
+      "y": 270
+    },
+    "facing=west,panel=0,part=5": {
+      "model": "the_oldest_house:block/city/mural_0_5",
+      "y": 270
+    },
+    "facing=west,panel=0,part=6": {
+      "model": "the_oldest_house:block/city/mural_0_6",
+      "y": 270
+    },
+    "facing=west,panel=0,part=7": {
+      "model": "the_oldest_house:block/city/mural_0_7",
+      "y": 270
+    },
+    "facing=west,panel=0,part=8": {
+      "model": "the_oldest_house:block/city/mural_0_8",
+      "y": 270
+    },
+    "facing=west,panel=0,part=9": {
+      "model": "the_oldest_house:block/city/mural_0_9",
+      "y": 270
+    },
+    "facing=west,panel=0,part=10": {
+      "model": "the_oldest_house:block/city/mural_0_10",
+      "y": 270
+    },
+    "facing=west,panel=0,part=11": {
+      "model": "the_oldest_house:block/city/mural_0_11",
+      "y": 270
+    },
+    "facing=west,panel=1,part=0": {
+      "model": "the_oldest_house:block/city/mural_1_0",
+      "y": 270
+    },
+    "facing=west,panel=1,part=1": {
+      "model": "the_oldest_house:block/city/mural_1_1",
+      "y": 270
+    },
+    "facing=west,panel=1,part=2": {
+      "model": "the_oldest_house:block/city/mural_1_2",
+      "y": 270
+    },
+    "facing=west,panel=1,part=3": {
+      "model": "the_oldest_house:block/city/mural_1_3",
+      "y": 270
+    },
+    "facing=west,panel=1,part=4": {
+      "model": "the_oldest_house:block/city/mural_1_4",
+      "y": 270
+    },
+    "facing=west,panel=1,part=5": {
+      "model": "the_oldest_house:block/city/mural_1_5",
+      "y": 270
+    },
+    "facing=west,panel=1,part=6": {
+      "model": "the_oldest_house:block/city/mural_1_6",
+      "y": 270
+    },
+    "facing=west,panel=1,part=7": {
+      "model": "the_oldest_house:block/city/mural_1_7",
+      "y": 270
+    },
+    "facing=west,panel=1,part=8": {
+      "model": "the_oldest_house:block/city/mural_1_8",
+      "y": 270
+    },
+    "facing=west,panel=1,part=9": {
+      "model": "the_oldest_house:block/city/mural_1_9",
+      "y": 270
+    },
+    "facing=west,panel=1,part=10": {
+      "model": "the_oldest_house:block/city/mural_1_10",
+      "y": 270
+    },
+    "facing=west,panel=1,part=11": {
+      "model": "the_oldest_house:block/city/mural_1_11",
+      "y": 270
+    },
+    "facing=west,panel=2,part=0": {
+      "model": "the_oldest_house:block/city/mural_2_0",
+      "y": 270
+    },
+    "facing=west,panel=2,part=1": {
+      "model": "the_oldest_house:block/city/mural_2_1",
+      "y": 270
+    },
+    "facing=west,panel=2,part=2": {
+      "model": "the_oldest_house:block/city/mural_2_2",
+      "y": 270
+    },
+    "facing=west,panel=2,part=3": {
+      "model": "the_oldest_house:block/city/mural_2_3",
+      "y": 270
+    },
+    "facing=west,panel=2,part=4": {
+      "model": "the_oldest_house:block/city/mural_2_4",
+      "y": 270
+    },
+    "facing=west,panel=2,part=5": {
+      "model": "the_oldest_house:block/city/mural_2_5",
+      "y": 270
+    },
+    "facing=west,panel=2,part=6": {
+      "model": "the_oldest_house:block/city/mural_2_6",
+      "y": 270
+    },
+    "facing=west,panel=2,part=7": {
+      "model": "the_oldest_house:block/city/mural_2_7",
+      "y": 270
+    },
+    "facing=west,panel=2,part=8": {
+      "model": "the_oldest_house:block/city/mural_2_8",
+      "y": 270
+    },
+    "facing=west,panel=2,part=9": {
+      "model": "the_oldest_house:block/city/mural_2_9",
+      "y": 270
+    },
+    "facing=west,panel=2,part=10": {
+      "model": "the_oldest_house:block/city/mural_2_10",
+      "y": 270
+    },
+    "facing=west,panel=2,part=11": {
+      "model": "the_oldest_house:block/city/mural_2_11",
+      "y": 270
+    },
+    "facing=west,panel=3,part=0": {
+      "model": "the_oldest_house:block/city/mural_3_0",
+      "y": 270
+    },
+    "facing=west,panel=3,part=1": {
+      "model": "the_oldest_house:block/city/mural_3_1",
+      "y": 270
+    },
+    "facing=west,panel=3,part=2": {
+      "model": "the_oldest_house:block/city/mural_3_2",
+      "y": 270
+    },
+    "facing=west,panel=3,part=3": {
+      "model": "the_oldest_house:block/city/mural_3_3",
+      "y": 270
+    },
+    "facing=west,panel=3,part=4": {
+      "model": "the_oldest_house:block/city/mural_3_4",
+      "y": 270
+    },
+    "facing=west,panel=3,part=5": {
+      "model": "the_oldest_house:block/city/mural_3_5",
+      "y": 270
+    },
+    "facing=west,panel=3,part=6": {
+      "model": "the_oldest_house:block/city/mural_3_6",
+      "y": 270
+    },
+    "facing=west,panel=3,part=7": {
+      "model": "the_oldest_house:block/city/mural_3_7",
+      "y": 270
+    },
+    "facing=west,panel=3,part=8": {
+      "model": "the_oldest_house:block/city/mural_3_8",
+      "y": 270
+    },
+    "facing=west,panel=3,part=9": {
+      "model": "the_oldest_house:block/city/mural_3_9",
+      "y": 270
+    },
+    "facing=west,panel=3,part=10": {
+      "model": "the_oldest_house:block/city/mural_3_10",
+      "y": 270
+    },
+    "facing=west,panel=3,part=11": {
+      "model": "the_oldest_house:block/city/mural_3_11",
+      "y": 270
+    },
+    "facing=west,panel=4,part=0": {
+      "model": "the_oldest_house:block/city/mural_4_0",
+      "y": 270
+    },
+    "facing=west,panel=4,part=1": {
+      "model": "the_oldest_house:block/city/mural_4_1",
+      "y": 270
+    },
+    "facing=west,panel=4,part=2": {
+      "model": "the_oldest_house:block/city/mural_4_2",
+      "y": 270
+    },
+    "facing=west,panel=4,part=3": {
+      "model": "the_oldest_house:block/city/mural_4_3",
+      "y": 270
+    },
+    "facing=west,panel=4,part=4": {
+      "model": "the_oldest_house:block/city/mural_4_4",
+      "y": 270
+    },
+    "facing=west,panel=4,part=5": {
+      "model": "the_oldest_house:block/city/mural_4_5",
+      "y": 270
+    },
+    "facing=west,panel=4,part=6": {
+      "model": "the_oldest_house:block/city/mural_4_6",
+      "y": 270
+    },
+    "facing=west,panel=4,part=7": {
+      "model": "the_oldest_house:block/city/mural_4_7",
+      "y": 270
+    },
+    "facing=west,panel=4,part=8": {
+      "model": "the_oldest_house:block/city/mural_4_8",
+      "y": 270
+    },
+    "facing=west,panel=4,part=9": {
+      "model": "the_oldest_house:block/city/mural_4_9",
+      "y": 270
+    },
+    "facing=west,panel=4,part=10": {
+      "model": "the_oldest_house:block/city/mural_4_10",
+      "y": 270
+    },
+    "facing=west,panel=4,part=11": {
+      "model": "the_oldest_house:block/city/mural_4_11",
+      "y": 270
+    },
+    "facing=west,panel=5,part=0": {
+      "model": "the_oldest_house:block/city/mural_5_0",
+      "y": 270
+    },
+    "facing=west,panel=5,part=1": {
+      "model": "the_oldest_house:block/city/mural_5_1",
+      "y": 270
+    },
+    "facing=west,panel=5,part=2": {
+      "model": "the_oldest_house:block/city/mural_5_2",
+      "y": 270
+    },
+    "facing=west,panel=5,part=3": {
+      "model": "the_oldest_house:block/city/mural_5_3",
+      "y": 270
+    },
+    "facing=west,panel=5,part=4": {
+      "model": "the_oldest_house:block/city/mural_5_4",
+      "y": 270
+    },
+    "facing=west,panel=5,part=5": {
+      "model": "the_oldest_house:block/city/mural_5_5",
+      "y": 270
+    },
+    "facing=west,panel=5,part=6": {
+      "model": "the_oldest_house:block/city/mural_5_6",
+      "y": 270
+    },
+    "facing=west,panel=5,part=7": {
+      "model": "the_oldest_house:block/city/mural_5_7",
+      "y": 270
+    },
+    "facing=west,panel=5,part=8": {
+      "model": "the_oldest_house:block/city/mural_5_8",
+      "y": 270
+    },
+    "facing=west,panel=5,part=9": {
+      "model": "the_oldest_house:block/city/mural_5_9",
+      "y": 270
+    },
+    "facing=west,panel=5,part=10": {
+      "model": "the_oldest_house:block/city/mural_5_10",
+      "y": 270
+    },
+    "facing=west,panel=5,part=11": {
+      "model": "the_oldest_house:block/city/mural_5_11",
+      "y": 270
+    },
+    "facing=west,panel=6,part=0": {
+      "model": "the_oldest_house:block/city/mural_6_0",
+      "y": 270
+    },
+    "facing=west,panel=6,part=1": {
+      "model": "the_oldest_house:block/city/mural_6_1",
+      "y": 270
+    },
+    "facing=west,panel=6,part=2": {
+      "model": "the_oldest_house:block/city/mural_6_2",
+      "y": 270
+    },
+    "facing=west,panel=6,part=3": {
+      "model": "the_oldest_house:block/city/mural_6_3",
+      "y": 270
+    },
+    "facing=west,panel=6,part=4": {
+      "model": "the_oldest_house:block/city/mural_6_4",
+      "y": 270
+    },
+    "facing=west,panel=6,part=5": {
+      "model": "the_oldest_house:block/city/mural_6_5",
+      "y": 270
+    },
+    "facing=west,panel=6,part=6": {
+      "model": "the_oldest_house:block/city/mural_6_6",
+      "y": 270
+    },
+    "facing=west,panel=6,part=7": {
+      "model": "the_oldest_house:block/city/mural_6_7",
+      "y": 270
+    },
+    "facing=west,panel=6,part=8": {
+      "model": "the_oldest_house:block/city/mural_6_8",
+      "y": 270
+    },
+    "facing=west,panel=6,part=9": {
+      "model": "the_oldest_house:block/city/mural_6_9",
+      "y": 270
+    },
+    "facing=west,panel=6,part=10": {
+      "model": "the_oldest_house:block/city/mural_6_10",
+      "y": 270
+    },
+    "facing=west,panel=6,part=11": {
+      "model": "the_oldest_house:block/city/mural_6_11",
+      "y": 270
+    },
+    "facing=west,panel=7,part=0": {
+      "model": "the_oldest_house:block/city/mural_7_0",
+      "y": 270
+    },
+    "facing=west,panel=7,part=1": {
+      "model": "the_oldest_house:block/city/mural_7_1",
+      "y": 270
+    },
+    "facing=west,panel=7,part=2": {
+      "model": "the_oldest_house:block/city/mural_7_2",
+      "y": 270
+    },
+    "facing=west,panel=7,part=3": {
+      "model": "the_oldest_house:block/city/mural_7_3",
+      "y": 270
+    },
+    "facing=west,panel=7,part=4": {
+      "model": "the_oldest_house:block/city/mural_7_4",
+      "y": 270
+    },
+    "facing=west,panel=7,part=5": {
+      "model": "the_oldest_house:block/city/mural_7_5",
+      "y": 270
+    },
+    "facing=west,panel=7,part=6": {
+      "model": "the_oldest_house:block/city/mural_7_6",
+      "y": 270
+    },
+    "facing=west,panel=7,part=7": {
+      "model": "the_oldest_house:block/city/mural_7_7",
+      "y": 270
+    },
+    "facing=west,panel=7,part=8": {
+      "model": "the_oldest_house:block/city/mural_7_8",
+      "y": 270
+    },
+    "facing=west,panel=7,part=9": {
+      "model": "the_oldest_house:block/city/mural_7_9",
+      "y": 270
+    },
+    "facing=west,panel=7,part=10": {
+      "model": "the_oldest_house:block/city/mural_7_10",
+      "y": 270
+    },
+    "facing=west,panel=7,part=11": {
+      "model": "the_oldest_house:block/city/mural_7_11",
+      "y": 270
+    },
+    "facing=west,panel=8,part=0": {
+      "model": "the_oldest_house:block/city/mural_8_0",
+      "y": 270
+    },
+    "facing=west,panel=8,part=1": {
+      "model": "the_oldest_house:block/city/mural_8_1",
+      "y": 270
+    },
+    "facing=west,panel=8,part=2": {
+      "model": "the_oldest_house:block/city/mural_8_2",
+      "y": 270
+    },
+    "facing=west,panel=8,part=3": {
+      "model": "the_oldest_house:block/city/mural_8_3",
+      "y": 270
+    },
+    "facing=west,panel=8,part=4": {
+      "model": "the_oldest_house:block/city/mural_8_4",
+      "y": 270
+    },
+    "facing=west,panel=8,part=5": {
+      "model": "the_oldest_house:block/city/mural_8_5",
+      "y": 270
+    },
+    "facing=west,panel=8,part=6": {
+      "model": "the_oldest_house:block/city/mural_8_6",
+      "y": 270
+    },
+    "facing=west,panel=8,part=7": {
+      "model": "the_oldest_house:block/city/mural_8_7",
+      "y": 270
+    },
+    "facing=west,panel=8,part=8": {
+      "model": "the_oldest_house:block/city/mural_8_8",
+      "y": 270
+    },
+    "facing=west,panel=8,part=9": {
+      "model": "the_oldest_house:block/city/mural_8_9",
+      "y": 270
+    },
+    "facing=west,panel=8,part=10": {
+      "model": "the_oldest_house:block/city/mural_8_10",
+      "y": 270
+    },
+    "facing=west,panel=8,part=11": {
+      "model": "the_oldest_house:block/city/mural_8_11",
+      "y": 270
+    },
+    "facing=west,panel=9,part=0": {
+      "model": "the_oldest_house:block/city/mural_9_0",
+      "y": 270
+    },
+    "facing=west,panel=9,part=1": {
+      "model": "the_oldest_house:block/city/mural_9_1",
+      "y": 270
+    },
+    "facing=west,panel=9,part=2": {
+      "model": "the_oldest_house:block/city/mural_9_2",
+      "y": 270
+    },
+    "facing=west,panel=9,part=3": {
+      "model": "the_oldest_house:block/city/mural_9_3",
+      "y": 270
+    },
+    "facing=west,panel=9,part=4": {
+      "model": "the_oldest_house:block/city/mural_9_4",
+      "y": 270
+    },
+    "facing=west,panel=9,part=5": {
+      "model": "the_oldest_house:block/city/mural_9_5",
+      "y": 270
+    },
+    "facing=west,panel=9,part=6": {
+      "model": "the_oldest_house:block/city/mural_9_6",
+      "y": 270
+    },
+    "facing=west,panel=9,part=7": {
+      "model": "the_oldest_house:block/city/mural_9_7",
+      "y": 270
+    },
+    "facing=west,panel=9,part=8": {
+      "model": "the_oldest_house:block/city/mural_9_8",
+      "y": 270
+    },
+    "facing=west,panel=9,part=9": {
+      "model": "the_oldest_house:block/city/mural_9_9",
+      "y": 270
+    },
+    "facing=west,panel=9,part=10": {
+      "model": "the_oldest_house:block/city/mural_9_10",
+      "y": 270
+    },
+    "facing=west,panel=9,part=11": {
+      "model": "the_oldest_house:block/city/mural_9_11",
+      "y": 270
+    },
+    "facing=west,panel=10,part=0": {
+      "model": "the_oldest_house:block/city/mural_10_0",
+      "y": 270
+    },
+    "facing=west,panel=10,part=1": {
+      "model": "the_oldest_house:block/city/mural_10_1",
+      "y": 270
+    },
+    "facing=west,panel=10,part=2": {
+      "model": "the_oldest_house:block/city/mural_10_2",
+      "y": 270
+    },
+    "facing=west,panel=10,part=3": {
+      "model": "the_oldest_house:block/city/mural_10_3",
+      "y": 270
+    },
+    "facing=west,panel=10,part=4": {
+      "model": "the_oldest_house:block/city/mural_10_4",
+      "y": 270
+    },
+    "facing=west,panel=10,part=5": {
+      "model": "the_oldest_house:block/city/mural_10_5",
+      "y": 270
+    },
+    "facing=west,panel=10,part=6": {
+      "model": "the_oldest_house:block/city/mural_10_6",
+      "y": 270
+    },
+    "facing=west,panel=10,part=7": {
+      "model": "the_oldest_house:block/city/mural_10_7",
+      "y": 270
+    },
+    "facing=west,panel=10,part=8": {
+      "model": "the_oldest_house:block/city/mural_10_8",
+      "y": 270
+    },
+    "facing=west,panel=10,part=9": {
+      "model": "the_oldest_house:block/city/mural_10_9",
+      "y": 270
+    },
+    "facing=west,panel=10,part=10": {
+      "model": "the_oldest_house:block/city/mural_10_10",
+      "y": 270
+    },
+    "facing=west,panel=10,part=11": {
+      "model": "the_oldest_house:block/city/mural_10_11",
+      "y": 270
+    },
+    "facing=west,panel=11,part=0": {
+      "model": "the_oldest_house:block/city/mural_11_0",
+      "y": 270
+    },
+    "facing=west,panel=11,part=1": {
+      "model": "the_oldest_house:block/city/mural_11_1",
+      "y": 270
+    },
+    "facing=west,panel=11,part=2": {
+      "model": "the_oldest_house:block/city/mural_11_2",
+      "y": 270
+    },
+    "facing=west,panel=11,part=3": {
+      "model": "the_oldest_house:block/city/mural_11_3",
+      "y": 270
+    },
+    "facing=west,panel=11,part=4": {
+      "model": "the_oldest_house:block/city/mural_11_4",
+      "y": 270
+    },
+    "facing=west,panel=11,part=5": {
+      "model": "the_oldest_house:block/city/mural_11_5",
+      "y": 270
+    },
+    "facing=west,panel=11,part=6": {
+      "model": "the_oldest_house:block/city/mural_11_6",
+      "y": 270
+    },
+    "facing=west,panel=11,part=7": {
+      "model": "the_oldest_house:block/city/mural_11_7",
+      "y": 270
+    },
+    "facing=west,panel=11,part=8": {
+      "model": "the_oldest_house:block/city/mural_11_8",
+      "y": 270
+    },
+    "facing=west,panel=11,part=9": {
+      "model": "the_oldest_house:block/city/mural_11_9",
+      "y": 270
+    },
+    "facing=west,panel=11,part=10": {
+      "model": "the_oldest_house:block/city/mural_11_10",
+      "y": 270
+    },
+    "facing=west,panel=11,part=11": {
+      "model": "the_oldest_house:block/city/mural_11_11",
+      "y": 270
+    }
+  }
+}

@@ -196,6 +196,7 @@ public final class MiniatureNotes {
         Map.entry(LabyrinthPlace.LAST_CROSSING, "A flood station the size of a matchbox on a mound of plaster, a flat ferry no longer than a thumbnail against its landing, and a thread of wire run across a strip of glass to a pinhead lamp on the far side."),
         Map.entry(LabyrinthPlace.GROWING_THINGS, "A back yard the size of a palm behind a paper fence, a thread of washing line, and the lawn stippled so thick with tiny pins that the house at the end of it is up to its windows."),
         Map.entry(LabyrinthPlace.MARSH_SUPPER, "A farmhouse no bigger than a loaf in a square of corn cut into paths, its upstairs windows lit, a table inside laid for more chairs than it has."),
+        Map.entry(LabyrinthPlace.BLACK_CITY, "A camp the size of a matchbox on a sheet of glass, a pass between peaks like sugar lumps, and past it a city carved in a thumbnail of dark stone, with a ramp turning down into the middle of it."),
         Map.entry(LabyrinthPlace.CORNER_HOUSE, "A street corner no bigger than a hand, a house behind a fence of pins, and inside, on a board the width of a fingernail, three jars you would need a needle to lift."),
         Map.entry(LabyrinthPlace.THE_DRAWING, "A village square no bigger than a plate, flagstones round a patch of felt lawn, and in the middle a black box the size of a pea on a stool you need a pin to see."),
         Map.entry(LabyrinthPlace.STATE_ROUTE, "Four lanes of road the width of a hand, a mailbox on the far side with its flag up, and every car on it stopped."),

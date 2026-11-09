@@ -4591,5 +4591,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.corner.hum"
+  },
+  "city.wind": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:city/wind",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.city.wind"
+  },
+  "city.flap": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:city/flap",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.city.flap"
+  },
+  "city.piping": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:city/piping",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.city.piping"
+  },
+  "city.birds": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:city/birds",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.city.birds"
+  },
+  "city.mass": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:city/mass",
+        "attenuation_distance": 40
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.city.mass"
   }
 }

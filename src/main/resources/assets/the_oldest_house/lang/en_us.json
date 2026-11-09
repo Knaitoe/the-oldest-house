@@ -1499,5 +1499,21 @@
   "subtitles.the_oldest_house.corner.cicadas": "Cicadas",
   "subtitles.the_oldest_house.corner.hum": "A faint electric hum",
   "advancements.the_oldest_house.account.the_house_on_the_corner.title": "The house on the corner",
-  "advancements.the_oldest_house.account.the_house_on_the_corner.description": "A girl with one arm took me into the empty house on the corner, past the jars and down a corridor longer than the house."
+  "advancements.the_oldest_house.account.the_house_on_the_corner.description": "A girl with one arm took me into the empty house on the corner, past the jars and down a corridor longer than the house.",
+  "subtitles.the_oldest_house.city.wind": "Wind across the ice",
+  "subtitles.the_oldest_house.city.flap": "Torn fabric flaps",
+  "subtitles.the_oldest_house.city.piping": "Something pipes in the dark",
+  "subtitles.the_oldest_house.city.birds": "Wings in the dark",
+  "subtitles.the_oldest_house.city.mass": "Something wet pushes through the tunnel",
+  "block.the_oldest_house.city_fitting": "Camp Fitting",
+  "block.the_oldest_house.city_mural": "Carved Panel",
+  "block.the_oldest_house.city_mass": "Something in the Tunnel",
+  "block.the_oldest_house.city_basalt": "Dark Stone",
+  "block.the_oldest_house.city_fives": "Stone Carved in Fives",
+  "block.the_oldest_house.city_snow": "Packed Snow",
+  "block.the_oldest_house.city_ice": "Blue Ice",
+  "block.the_oldest_house.city_canvas": "Tent Canvas",
+  "block.the_oldest_house.city_boards": "Weathered Boards",
+  "advancements.the_oldest_house.account.the_black_city.title": "The city on the ice",
+  "advancements.the_oldest_house.account.the_black_city.description": "I followed an empty camp's people up a pass to a city of carved stone, read its walls in order down a turning ramp, and outran what came up the tunnel."
 }
