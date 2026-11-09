@@ -66,6 +66,28 @@ public final class BorrascaStory {
     private static final BlockPos[] CHILD_WALK={new BlockPos(1,0,-35),new BlockPos(1,0,-60),new BlockPos(3,0,-86),new BlockPos(3,6,-88),new BlockPos(1,6,-94)};
     private static final BlockPos[] DOWN={new BlockPos(2,6,-89),new BlockPos(2,6,-88),new BlockPos(3,6,-88),new BlockPos(3,0,-88),new BlockPos(2,0,-88),new BlockPos(1,0,-96)};
     private static final BlockPos[] TAKING_WALK={new BlockPos(1,0,-85),new BlockPos(2,0,-93),new BlockPos(3,0,-97),new BlockPos(3,0,-103),BorrascaRooms.trail(-108),BorrascaRooms.SHELTER_ONE,new BlockPos(6,2,-114),new BlockPos(6,3,-116),BorrascaRooms.trail(-125),BorrascaRooms.SHELTER_TWO,new BlockPos(1,6,-131),BorrascaRooms.trail(-141),BorrascaRooms.TAKING};
+    /**
+     * 0.4.432 (owner: the longer hill "gives Nell and the player and other potential npcs ... time to talk and bond"). On the walk up to
+     * the Tree she talks, one line at a time, while the reader keeps near her: WALK_TALK_GAP reader ticks after her last line and once
+     * nothing else is being said. A reader who runs on ahead or hangs back misses what she says while they are away.
+     */
+    public static final String[] WALK_TALK={
+        "My mom says I can go as far as the Tree and not past it. So the Tree's the edge of everything.",
+        "Dana used to walk me up here. She knew all the birds. I only know the loud ones.",
+        "If you hear the knocking, count it in your head. Don't say the number out loud. That's the rule.",
+        "Do you want to be best friends? You don't have to say. You can just keep walking."
+    };
+    /**
+     * 0.4.432: the second visit's walk on from the Tree toward the mill, the same way: Patrick is missing, and she talks about it between
+     * the two shelters' calls.
+     */
+    public static final String[] WALK_TALK_TWO={
+        "Patrick's dad sat out on the porch with the light on all night. Kendra says he never went in.",
+        "The sheriff told my mom Patrick ran off. He didn't even take his bike.",
+        "Same rule as before. If you hear the knocking, count it in your head.",
+        "If something happens, you run home. Don't wait for me. Promise."
+    };
+    public static final int WALK_TALK_GAP=80,WALK_TALK_NEAR=8;
     /** The fort the friend climbs to, and the point she tells the legend from. */
     public static final BlockPos FORT=new BlockPos(1,6,-94);
     /**
@@ -414,7 +436,7 @@ public final class BorrascaStory {
         if(ahead)own.putBoolean("PlayDone",true);
         if(BorrascaPlay.tick(p,b,own,friend))return;
         // She goes to the Tree at her own pace, whether the reader is beside her, behind her or already there.
-        if(!own.getBoolean("KimberAtFort")){if(!follow(p,b,own,friend,"ChildStep",CHILD_WALK))return;own.putBoolean("KimberAtFort",true);}
+        if(!own.getBoolean("KimberAtFort")){walkTalk(p,own,friend,WALK_TALK,"WalkTalk");if(!follow(p,b,own,friend,"ChildStep",CHILD_WALK))return;own.putBoolean("KimberAtFort",true);}
         if(!own.getBoolean("LegendDone")){
             BorrascaCast.stop(friend);
             if(inFort(p,b))fort(p,b,own,friend);
@@ -520,6 +542,14 @@ public final class BorrascaStory {
             if(look.dot(point.subtract(eye).normalize())>=.95&&p.level().clip(new ClipContext(eye,point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS)return true;}
         return false;
     }
+    /** 0.4.432: the next of her walk lines (kept count under key), if the reader is beside her and it is her turn to speak. */
+    private static void walkTalk(ServerPlayer p,CompoundTag own,LiteraryActor friend,String[] lines,String key){
+        int said=own.getInt(key);if(said>=lines.length)return;
+        if(p.distanceToSqr(friend)>WALK_TALK_NEAR*WALK_TALK_NEAR){own.putInt(key+"Wait",0);return;}
+        int wait=own.getInt(key+"Wait")+5;own.putInt(key+"Wait",wait);
+        if(wait<WALK_TALK_GAP||recentSpeech(p))return;
+        say(p,friend,lines[said]);own.putInt(key,said+1);own.putInt(key+"Wait",0);
+    }
     /** She walks a route at her own pace; she waits only for a reader far behind her, and calls them once each time. True at its end. */
     private static boolean follow(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend,String key,BlockPos[] points){
         int i=own.getInt(key);if(i>=points.length){BorrascaCast.stop(friend);return true;}var at=Vec3.atBottomCenterOf(BorrascaRooms.at(b,points[i]));
@@ -560,6 +590,7 @@ public final class BorrascaStory {
             friend.gesture(5);BorrascaCast.stop(friend);if(p.isCrouching()&&p.distanceToSqr(friend)<36)own.putBoolean("Sheltered"+step,true);own.putInt("Shelter"+step,Math.min(60,t+5));return;
         }
         friend.gesture(0);
+        walkTalk(p,own,friend,WALK_TALK_TWO,"WalkTalkTwo");
         if(!follow(p,b,own,friend,"TakingStep",TAKING_WALK))return;
         // At the clearing she waits for the reader, wherever they have got to, and calls for them.
         if(!near(p,BorrascaRooms.at(b,BorrascaRooms.TAKING),20)){int w=own.getInt("ClearingWait")+5;own.putInt("ClearingWait",w);if(w%200==5)say(p,friend,p.getGameProfile().getName()+"? Where'd you go?");return;}

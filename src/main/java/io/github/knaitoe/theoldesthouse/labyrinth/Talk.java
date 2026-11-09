@@ -71,6 +71,15 @@ public final class Talk {
     public static void ask(ServerPlayer p,Reply... replies){ask(p,List.of(replies));}
     /** The exchange has said what it had to: the panel stays open to be read, with nothing left to choose. */
     public static void end(ServerPlayer p){ask(p,List.of());}
+    /**
+     * Whether the reader's open exchange has just set down this line, so its transcript already keeps it (TalkHistory.overheard leaves
+     * such a line to the transcript, rather than keeping it twice). Only the last few lines are looked at.
+     */
+    static boolean holds(ServerPlayer p,String text){
+        var e=OPEN.get(p.getUUID());if(e==null)return false;
+        for(int i=e.all.size()-1;i>=Math.max(0,e.all.size()-8);i--)if(e.all.get(i)[1].equals(text))return true;
+        return false;
+    }
     /** Whether the reader has an exchange with replies still open. */
     public static boolean waiting(ServerPlayer p){var e=OPEN.get(p.getUUID());return e!=null&&!e.replies.isEmpty();}
     public static boolean waiting(ServerPlayer p,String key){var e=OPEN.get(p.getUUID());return e!=null&&!e.replies.isEmpty()&&e.key.equals(key);}

@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.431** puts the children's bikes in Borrasca's town. On the first visit Patrick's lies dropped on its side outside the general store, where Kendra warns you not to trip on it, and hers stands on its kickstand by where she waits. By the second visit she has walked his home to his mother. See [docs/BORRASCA_BIKES_0_4_431.md](docs/BORRASCA_BIKES_0_4_431.md).
+Development candidate **0.4.432** gives Borrasca's walk up to the Tree its talk. Kelly says four things on the way, one at a time, while the reader keeps near her; a reader who runs ahead or hangs back misses them. On the second visit's walk toward the mill she talks about Patrick, who is missing. What she says goes into the journal, and the account remembers both walks. See [docs/BORRASCA_WALK_0_4_432.md](docs/BORRASCA_WALK_0_4_432.md).
+
+Candidate **0.4.431** puts the children's bikes in Borrasca's town. On the first visit Patrick's lies dropped on its side outside the general store, where Kendra warns you not to trip on it, and hers stands on its kickstand by where she waits. By the second visit she has walked his home to his mother. See [docs/BORRASCA_BIKES_0_4_431.md](docs/BORRASCA_BIKES_0_4_431.md).
 
 Candidate **0.4.430** details the insides of Borrasca's shops. The gas station's back wall holds its own stock now (chips, motor oil and antifreeze, the bait freezer under a hand-painted sign, a feed store calendar), with used tires out front; the general store's aisles are a grocer's shelves with the feed at the back; the diner's kitchen has its crockery; and joists cross the ceilings of five shops. See [docs/BORRASCA_ARCHITECTURE_0_4_430.md](docs/BORRASCA_ARCHITECTURE_0_4_430.md).
 

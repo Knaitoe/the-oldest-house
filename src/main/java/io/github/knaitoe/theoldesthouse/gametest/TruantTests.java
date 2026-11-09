@@ -180,7 +180,9 @@ public final class TruantTests {
                 Truant.talk(a[0],Truant.body(f.in));
                 var own=Truant.record(f.in.getServer(),id);
                 h.assertTrue(!Talk.waiting(a[0])&&Talk.lines(a[0]).contains("you: Maybe.")&&own.getString("Promise").equals("maybe")&&own.getInt("Declined")==1,"an answer already accepted reopens as the finished exchange");
-                h.assertTrue(TalkHistory.conversations(f.in.getServer(),id).size()==1,"recovery keeps one transcript");
+                // Run 1498: what he says aloud outside the panel (at the held door) is kept apart, under "said/"; the exchange is one transcript.
+                h.assertTrue(TalkHistory.conversations(f.in.getServer(),id).stream().map(net.minecraft.nbt.CompoundTag.class::cast)
+                    .filter(t->!t.getString("Scene").startsWith("said/")).count()==1,"recovery keeps one transcript");
                 h.assertTrue(Talk.waiting(b),"the other reader's reply remains independent");
                 var peerId=b.getUUID();
                 f.players.remove(b);NativeTestPlayers.remove(b);
