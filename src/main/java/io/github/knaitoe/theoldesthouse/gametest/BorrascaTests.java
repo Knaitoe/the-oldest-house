@@ -750,6 +750,71 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
 
+    /**
+     * 0.4.428, the town's routines: each reader's town clock sends Mr. Rowe out front for a smoke, only while nobody watches him go. While he
+     * is at his counter the society's door stays shut to a child; while he smokes a child can go in and read the map of the old workings,
+     * and back at his counter he sends out a child he finds there. Mr. Dorsey walks his mail round door to door, and the account keeps the
+     * society.
+     */
+    @AfterBatch(batch="borrasca_routines") public static void routinesDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_routines",timeoutTicks=4000)
+    public static void theTownKeepsItsRoutinesRoweSmokesTheSocietyOpensAndTheMailGoesRound(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("drisking_routine");
+        java.util.function.IntFunction<LiteraryActor> person=phase->BorrascaPeople.keeper(p,f.own(p),phase);
+        java.util.function.Function<BlockPos,Boolean> tryDoor=w->{var at=f.base(p).offset(w);var e=new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.EAST,at,false));NeoForge.EVENT_BUS.post(e);return !e.isCanceled();};
+        java.util.function.Consumer<Integer> clock=c->{var own=f.own(p);own.putInt("TownClock",c);f.save(p,own);};
+        Runnable away=()->{f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);};
+        final int[] firstLeg={-1};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+          .thenWaitUntil(()->{h.assertTrue(f.own(p).getBoolean("CastRecalled"),"cast recalled");for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.CARRIER;k++)h.assertTrue(person.apply(k)!=null,"everyone in town is placed: "+k);})
+          .thenExecute(()->{
+            var rowe=person.apply(BorrascaPeople.ROWE);var b=f.base(p);
+            h.assertTrue(!f.own(p).getBoolean("RoweOut")&&rowe.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(BorrascaPeople.post(BorrascaPeople.ROWE))))<1.1,"Mr. Rowe starts the day at his counter");
+            h.assertFalse(person.apply(BorrascaPeople.CARRIER).isInvisible(),"the mail carrier is out on his round on a childhood visit");
+            firstLeg[0]=f.own(p).getInt("RoundLeg");
+            f.atWorld(p,new BlockPos(-11,0,-100));
+            h.assertFalse(tryDoor.apply(BorrascaShops.SOCIETY_DOOR),"while Mr. Rowe is at his counter the society's door stays shut to a child");
+            h.assertTrue(f.own(p).getInt("SocietyAsked")==1&&rowe.getCustomName()!=null&&rowe.getCustomName().getString().contains("historical society"),"and he says what it is: "+rowe.getCustomName());
+            away.run();clock.accept(BorrascaPeople.SMOKE_FROM);
+          })
+          .thenWaitUntil(()->{var rowe=person.apply(BorrascaPeople.ROWE);h.assertTrue(f.own(p).getBoolean("RoweOut")&&rowe.position().distanceToSqr(Vec3.atBottomCenterOf(f.base(p).offset(BorrascaPeople.STOOP)))<1.1,"at his break, unwatched, Mr. Rowe steps out front: "+rowe.position());})
+          .thenExecute(()->{
+            var rowe=person.apply(BorrascaPeople.ROWE);
+            f.atWorld(p,new BlockPos(-11,0,-100));
+            h.assertTrue(tryDoor.apply(BorrascaShops.SOCIETY_DOOR),"while he smokes a child can open the society's door");
+            var own=f.own(p);BorrascaPeople.talk(p,rowe,own);f.save(p,own);
+            h.assertTrue(rowe.getCustomName()!=null&&rowe.getCustomName().getString().contains("break"),"out front he is on his break: "+rowe.getCustomName());
+            f.atWorld(p,new BlockPos(-18,0,-100));f.clickWorld(p,BorrascaShops.MAP);
+            h.assertTrue(f.own(p).getInt("SocietyChild")==1,"in the society the child reads the map of the old workings while he is out");
+            p.closeContainer();clock.accept(BorrascaPeople.SMOKE_TO);
+          })
+          .thenWaitUntil(()->h.assertTrue(!f.own(p).getBoolean("RoweOut"),"the break over, he comes back in while nobody in the society can see the counter"))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CaughtInSociety"),"back at his counter, he finds the child in the society"))
+          .thenExecute(()->{
+            var rowe=person.apply(BorrascaPeople.ROWE);var b=f.base(p);
+            h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(BorrascaPeople.SENT_OUT)))<2&&!BorrascaPeople.inSociety(p.blockPosition().subtract(b)),"and sends the child out into the shop: "+p.position());
+            h.assertTrue(rowe.getCustomName()!=null&&rowe.getCustomName().getString().contains("Out of there"),"he says so: "+rowe.getCustomName());
+            String account=BorrascaTexts.account(f.own(p));
+            h.assertTrue(account.contains("While Mr. Rowe smoked out front")&&account.contains("DEPOT")&&account.contains("sent me out"),"the account keeps the society: "+account);
+            away.run();
+          })
+          .thenWaitUntil(()->{int leg=f.own(p).getInt("RoundLeg");h.assertTrue(leg!=firstLeg[0]&&leg>=3,"Mr. Dorsey walks his round up the street, door to door: leg "+leg);})
+          .thenWaitUntil(()->{var a=person.apply(BorrascaPeople.CARRIER);int leg=f.own(p).getInt("RoundLeg");h.assertTrue(!a.getPersistentData().contains("BorrascaSpeed")&&a.position().distanceToSqr(Vec3.atBottomCenterOf(f.base(p).offset(BorrascaPeople.ROUND[leg])))<1.5,"and stands at the door he walked to: "+a.position()+" leg "+leg);})
+          .thenExecute(()->{
+            var a=person.apply(BorrascaPeople.CARRIER);var own=f.own(p);p.moveTo(a.getX()+1.5,a.getY(),a.getZ());BorrascaPeople.talk(p,a,own);f.save(p,own);
+            h.assertTrue(a.getCustomName()!=null&&!a.getCustomName().getString().isEmpty(),"he talks to a child on his round: "+a.getCustomName());
+            away.run();f.stage(p,3);
+          })
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("Visit")==3,"years later: "+BorrascaCast.why(p)))
+          .thenExecute(()->{
+            var own=f.own(p);own.putBoolean("RoweOut",false);own.putInt("TownClock",0);f.save(p,own);
+            f.atWorld(p,new BlockPos(-11,0,-100));
+            h.assertTrue(tryDoor.apply(BorrascaShops.SOCIETY_DOOR),"a grown reader goes into the society whenever the shop is open");
+            var a=person.apply(BorrascaPeople.CARRIER);own=f.own(p);BorrascaPeople.talk(p,a,own);f.save(p,own);
+            h.assertTrue(a.getCustomName()!=null&&(a.getCustomName().getString().contains("route")||a.getCustomName().getString().contains("Garritys")),"years later he is still on the route: "+a.getCustomName());
+          }).thenSucceed();
+    }
+
     private static boolean hitSheriff(Fixture f,ServerPlayer p){return f.actor(p,"CastSheriff").hurt(p.damageSources().playerAttack(p),8);}
 
     @GameTest(template="empty",batch="borrasca_escort",timeoutTicks=1800)

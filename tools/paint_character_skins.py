@@ -205,6 +205,8 @@ LOOKS = {
     'literary_drisking_jolene': Look('#dcb092','#4a2e22','ponytail','#8aa86a','#5a5a6a','dress','#e8e0c8',eyes='#4a5a3a',sleeve=4),
     'literary_drisking_dutch': Look('#c89a7a','#bdb8ae','close','#5a5a4a','#3a3a34','jacket','#a89a7a',eyes='#5a5a50',age=2,beard='walrus'),
     'literary_drisking_merle': Look('#d2a888','#9a948a','receding','#4a5a6a','#2e3238','cardigan','#c8c0b0',eyes='#4a5058',age=2,glasses=True),
+    # The town's routines (0.4.428): Mr. Dorsey, the mail carrier, in the summer uniform.
+    'literary_drisking_dorsey': Look('#c49a7c','#4a3a2e','short','#8aa4c0','#2e3a52','uniform','#d8d0b8',eyes='#4a4a42',age=1,beard='moustache'),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

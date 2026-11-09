@@ -1890,5 +1890,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 159
+  },
+  {
+    "name": "literary_drisking_dorsey",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 160
   }
 ]
