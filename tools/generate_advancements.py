@@ -108,6 +108,7 @@ STORY_ICONS = {
     'last_crossing': NS + ':crossing_fragment',
     'pinehook': NS + ':pinehook_costume',
     'the_drawing': NS + ':drawing_stone',
+    'the_house_on_the_corner': 'minecraft:glass_bottle',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

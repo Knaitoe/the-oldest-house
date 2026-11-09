@@ -1,3 +1,19 @@
+November 9 candidate 0.4.408 (docs/THE_HOUSE_ON_THE_CORNER_0_4_408.md), the next series' Enríquez proposal (DESIGN_PROPOSALS_NEXT.md, section 6): the House on the Corner, shaped on "Adela's House" as recommended. The jars stay as close as the proposal describes and no closer.
+- Place: CORNER_HOUSE appends at slot 234 (layout 132, protocol 165). CornerSite builds it whole under the outside sky.
+  - The street: low rendered houses with balconies and shutters down, jacarandas and petals, a kiosk and a sleeping dog.
+  - The cross street: the way on is a door in the row across it.
+  - The corner lot: behind a tall iron gate, the empty house. The front room is clean and lit, with jars on boards. A corridor runs more than thirty blocks under a blank apartment block, to a last door and a room smaller than the door.
+  - The time: siesta (SceneClock 19); CornerPayload/CornerClient give a reader the street at night on visits after the last room.
+- People: Romina, a girl with one arm (her left arm not drawn); Nacho, her brother; Luli; and Nacho grown (stranger phases 131 to 134, painted skins; the three children child-sized).
+- Days: Corner runs one shared day, the furthest any unfinished reader there has reached; a day counts only for a reader there for its beat.
+  - The dare: the front room, and a back door that will not open.
+  - The corridor: her hand, held by one reader at a time and let go at will; at the last door she says "Not today".
+  - The last room: she lets go and goes in. A reader opens the door, which opens for them alone, or waits outside until the front door opens onto the street. The garden grows over the path.
+  - After: night, her brother older on the kerb, and one jar more each time.
+- Her arm: six stories, the next each time she is asked. A reader who lost an arm in the House hears "We match" and the true story, once.
+- Account: the_house_on_the_corner (memory). CornerTexts writes the reader's memory of her: the stories they heard, the true one if told, the jars, the corridor, the hand and the door. 83 sources / 63 resolutions / two kinds / three endings.
+- Made: CornerRegistry (five materials, one corner_fitting block with ten kinds, five sounds), tools/draw_corner_art.py and tools/generate_corner_audio.py (--check in CI and the quick gate). Three CornerTests cases.
+
 November 9 candidate 0.4.407 (docs/THE_DRAWING_0_4_407.md), the next series' fourth proposal (DESIGN_PROPOSALS_NEXT.md, section 4): the Drawing. Its open decision is taken as recommended: a real player is never the one marked.
 - Place: THE_DRAWING appends at slot 233 (layout 131, protocol 164). DrawingSite builds it whole: the lane between hedges from the House's garden-wall door, the flagstone square round its lawn and two oaks, the post office, bank, grocery, wall and plot, four houses and the meeting hall, whose doorway is the way on. Ten o'clock all day (SceneClock 18).
 - People: eight villagers on stranger phases 123 to 130 (Mr. Albright, Mr. Rudd, Nell, Dale and Bess Garrow, Old Mr. Pike, Mrs. Dunn, Ricky), painted by tools/paint_character_skins.py; Bess and Ricky are child-sized. They talk on right-click through the conversation panel and never say what the drawing is for.

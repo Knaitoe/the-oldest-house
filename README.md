@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.407** adds the Drawing: a village square on a summer morning, where every household draws a folded slip from an old black box. Each reader is read out as a new household and draws their own. One villager is marked every year, never a reader, and each reader decides alone what to do with the stone they are handed. See [docs/THE_DRAWING_0_4_407.md](docs/THE_DRAWING_0_4_407.md).
+Development candidate **0.4.408** adds the House on the Corner. It is a city street at siesta, with an empty house on the corner that nobody has ever lived in. Three children on the kerb take the reader inside. The girl has one arm and a different story about the other every time she is asked. Over three visits she leads the reader to the jars in the front room, down a corridor longer than the house, and to a last door she goes through alone. See [docs/THE_HOUSE_ON_THE_CORNER_0_4_408.md](docs/THE_HOUSE_ON_THE_CORNER_0_4_408.md).
+
+Candidate **0.4.407** adds the Drawing: a village square on a summer morning, where every household draws a folded slip from an old black box. Each reader is read out as a new household and draws their own. One villager is marked every year, never a reader, and each reader decides alone what to do with the stone they are handed. See [docs/THE_DRAWING_0_4_407.md](docs/THE_DRAWING_0_4_407.md).
 
 Candidate **0.4.406** finishes the texture pass with the cabin at the end of the world: weathered shiplap on a fieldstone foot outside, the knotty pine within, wide floorboards, a boarded ceiling between beams, cedar shakes over board-and-batten gables, and a grey deck on the porch and jetty. See [docs/TEXTURE_PASS_CABIN_0_4_406.md](docs/TEXTURE_PASS_CABIN_0_4_406.md).
 
