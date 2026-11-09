@@ -734,6 +734,50 @@ public final class BorrascaTests {
               for(var at:List.of(BorrascaRooms.PATRICK_BIKE,BorrascaRooms.KENDRA_BIKE))h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),at)).isAir(),"years later neither bike is in town");
           }).thenSucceed();
     }
+    /**
+     * 0.4.432 (owner: the longer hill "gives Nell and the player ... time to talk and bond"). Kelly talks on the walk up to the Tree, a line
+     * at a time, while the reader keeps near her; hanging back hears nothing. Her lines go into the journal's record of what was said.
+     */
+    @AfterBatch(batch="borrasca_walk_talk") public static void walkTalkDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_walk_talk",timeoutTicks=3600)
+    public static void kellyTalksOnTheWalkUpToTheTreeWhileTheReaderKeepsNear(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_walker");int[] hung={0};
+        // Distances here are in the world: the hill stretches the authored plan, so a step on the plan can be many blocks on the ground.
+        java.util.function.DoubleConsumer behind=d->{var a=f.actor(p,"CastKimber");p.teleportTo(f.out,a.getX(),a.getY(),a.getZ()+d,180,0);p.setDeltaMovement(Vec3.ZERO);};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
+          .thenExecute(()->{var own=f.own(p);own.putBoolean("MetFriend",true);own.putBoolean("PlayDone",true);f.save(p,own);})
+          // Hanging back, a dozen blocks behind her, the reader hears nothing she says.
+          .thenWaitUntil(()->{behind.accept(12);h.assertTrue(++hung[0]>=40,"hanging back a while");})
+          .thenExecute(()->h.assertTrue(f.own(p).getInt("WalkTalk")==0,"a reader hanging back a dozen blocks behind hears none of it"))
+          .thenWaitUntil(()->{if(!f.own(p).getBoolean("KimberAtFort")&&f.rel(f.actor(p,"CastKimber"),p).y<5)behind.accept(2);
+              h.assertTrue(f.own(p).getBoolean("KimberAtFort"),"walking beside her to the Tree: step="+f.own(p).getInt("ChildStep")+" said="+f.own(p).getInt("WalkTalk")+" her="+f.rel(f.actor(p,"CastKimber"),p));})
+          .thenExecute(()->{
+              int said=f.own(p).getInt("WalkTalk");
+              h.assertTrue(said>=2,"beside her, the reader hears her talk on the way up: "+said+" lines");
+              h.assertTrue(TalkHistory.conversations(p.server,p.getUUID()).stream().map(CompoundTag.class::cast).flatMap(t->t.getList("Lines",10).stream()).map(CompoundTag.class::cast)
+                  .anyMatch(line->line.getString("T").equals(BorrascaStory.WALK_TALK[0])),"what she said on the walk is in the journal");
+              h.assertTrue(BorrascaTexts.account(f.own(p)).contains("on the way up to the Tree")||BorrascaTexts.account(f.own(p)).contains("the whole way up to the Tree"),"the account remembers the walk");
+          }).thenSucceed();
+    }
+    /** 0.4.432: on the second visit's walk toward the mill she talks about Patrick, the same way, between the shelters' calls. */
+    @AfterBatch(batch="borrasca_walk_talk_two") public static void walkTalkTwoDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_walk_talk_two",timeoutTicks=5200)
+    public static void kellyTalksAboutPatrickOnTheWalkToTheMill(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_mill_walker");
+        java.util.function.DoubleConsumer behind=d->{var a=f.actor(p,"CastKimber");p.teleportTo(f.out,a.getX(),a.getY(),a.getZ()+d,180,0);p.setDeltaMovement(Vec3.ZERO);};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,2);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the friend is at the first marker"))
+          .thenExecute(()->{f.read(p,BorrascaRooms.SOURCE,false);f.talk(p,"CastKimber");h.assertTrue(f.own(p).getBoolean("FollowAgain"),"she sets off");})
+          .thenWaitUntil(()->{if(f.own(p).getInt("TakingTicks")==0)behind.accept(2);
+              h.assertTrue(f.own(p).getBoolean("FriendMissing"),"walking beside her to the clearing: step="+f.own(p).getInt("TakingStep")+" said="+f.own(p).getInt("WalkTalkTwo"));})
+          .thenExecute(()->{
+              var own=f.own(p);int said=own.getInt("WalkTalkTwo");
+              h.assertTrue(said>=2,"beside her, the reader hears her talk about Patrick on the way: "+said+" lines");
+              h.assertTrue(own.getInt("WalkTalk")==0,"the first visit's walk lines are not said again");
+              h.assertTrue(BorrascaTexts.account(own).contains("on the way to the mill, she told me about Patrick"),"the account remembers the second walk");
+          }).thenSucceed();
+    }
     /** 0.4.431: a child's bike stands or lies at the given place, on the ground, with something to say when looked at, and bumps nobody. */
     private static void bike(GameTestHelper h,Fixture f,ServerPlayer p,BlockPos authored,int stage,String what){
         var at=BorrascaRooms.at(f.base(p),authored);var s=f.out.getBlockState(at);

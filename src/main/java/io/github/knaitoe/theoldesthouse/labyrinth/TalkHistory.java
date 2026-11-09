@@ -64,13 +64,16 @@ public final class TalkHistory {
     /**
      * 0.4.429 (owner: "spoken npc dialogue doesn't track to journal"): a line an actor has just said aloud, kept for every reader near
      * enough to hear it who can see the speaker (an actor kept private to another reader's scene is never theirs). One record per place
-     * and day; its heading names who spoke in it. Scenes that keep their own record (the Barretts' filming days) are left to it.
+     * and day; its heading names who spoke in it. Scenes that keep their own record (the Barretts' filming days) are left to it, as is a
+     * line the reader's open conversation panel already holds.
      */
     public static void overheard(LiteraryActor a,@javax.annotation.Nullable String speaker,String text){
         if(!(a.level() instanceof net.minecraft.server.level.ServerLevel l)||text.isBlank()||a.scene().equals(GhostsSet.PLACE.id()))return;
         String who=speaker==null||speaker.isBlank()?"Someone":speaker;
         for(var p:l.players()){
             if(p.isSpectator()||!p.isAlive()||p.distanceToSqr(a)>HEARD*HEARD||!a.broadcastToPlayer(p))continue;
+            // Run 1498: a line the reader's own conversation panel has just set down is kept in that exchange's transcript, not twice.
+            if(Talk.holds(p,text))continue;
             String where=where(p);heard(p,"said/"+where+"/"+day(p),who,who,where,text);
         }
     }
