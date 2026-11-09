@@ -284,6 +284,8 @@ public final class BorrascaStory {
     }
 
     // ------------------------------------------------------------------ the cast
+    /** 0.4.426: the friend, while she is still about on a childhood visit (BorrascaPeople has her put in her change). */
+    static @Nullable LiteraryActor friend(ServerPlayer p,CompoundTag own){var a=actor(p,own,"CastKimber");return a==null||a.isInvisible()||own.getBoolean("FriendMissing")||own.getInt("Visit")>=3?null:a;}
     private static @Nullable LiteraryActor actor(ServerPlayer p,CompoundTag own,String key){return own.hasUUID(key)&&p.serverLevel().getEntity(own.getUUID(key)) instanceof LiteraryActor a?a:null;}
     /** Each of the two men has his own face (0.4.262): the first plant worker on phase WORKER, the second on WORKER + 1. */
     static int workerPhase(String key){return key.equals("Worker0")?WORKER:key.equals("Worker1")?WORKER+1:0;}

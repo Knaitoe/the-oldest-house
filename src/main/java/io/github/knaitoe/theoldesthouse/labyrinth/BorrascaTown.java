@@ -155,7 +155,7 @@ final class BorrascaTown {
     private static void lot(ServerLevel l,BlockPos b){
         box(l,b,5,-1,-27,16,-1,-14,Blocks.GRAVEL);for(int z:new int[]{-28,-19,-15})set(l,b,16,0,z,log(Blocks.OAK_LOG,Direction.Axis.Y));
         pickup(l,b,8,0,-19,2);sign(l,b,9,0,-13,Direction.SOUTH,"COUNTY 17","Sheriff's","office","");
-        pickup(l,b,12,0,-26,3);sign(l,b,13,0,-20,Direction.SOUTH,"PRESCOTT ORE","SERVICES","D-417","");
+        pickup(l,b,12,0,-26,3);sign(l,b,13,0,-20,Direction.SOUTH,"PRESCOTT ORE","SERVICES","D-417","555-0190");
     }
 
     /** The town's back edge: a rail fence and a hedgerow either side of the station, and big oaks behind the buildings. */

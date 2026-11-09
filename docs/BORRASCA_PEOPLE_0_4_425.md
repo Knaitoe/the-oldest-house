@@ -85,7 +85,7 @@ a bottle of beer. Each food says what it is on the hover and one plain thing whe
 
 ## Next
 
-- **0.4.426, the town's day:**
+- **0.4.426, the town's day** (docs/BORRASCA_TOWN_DAY_0_4_426.md):
   - the mail carrier, children on bikes, parents at the diner counter and a truck;
   - the payphone on the phone screen, where the tip line says there is no open case;
   - the couple at the doctor's and the baby announcement after;

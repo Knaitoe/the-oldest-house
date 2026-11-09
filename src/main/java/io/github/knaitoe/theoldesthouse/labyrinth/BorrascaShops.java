@@ -214,13 +214,15 @@ public final class BorrascaShops {
         var place=BorrascaStory.PLACE;
         if(rel.equals(HISTORY)){if(grown)LiteraryVignettes.open(p,place,own,"History",BorrascaTexts.document("History"),at);else BorrascaStory.cue(p,"A framed page of typing, hung up high. You can't read it from down here.");return true;}
         if(rel.equals(MENU)){LiteraryVignettes.open(p,place,own,grown?"MenuLater":"Menu",BorrascaShopTexts.menu(grown),at);return true;}
-        if(rel.equals(CARDS)){LiteraryVignettes.open(p,place,own,grown?"CardsLater":"Cards",BorrascaShopTexts.cards(grown),at);return true;}
+        if(rel.equals(CARDS)){LiteraryVignettes.open(p,place,own,grown?"CardsLater":visit==2?"Cards2":"Cards",BorrascaShopTexts.cards(visit),at);return true;}
         if(rel.equals(MAP)){LiteraryVignettes.open(p,place,own,"MineMap",BorrascaShopTexts.map(),at);return true;}
         for(var peg:PEGBOARD)if(rel.equals(peg)){LiteraryVignettes.open(p,place,own,grown?"HardwareLater":"Hardware",BorrascaShopTexts.hardware(grown),at);return true;}
         // 0.4.425: a child gets one lollipop from the jar, with the receptionist there to say so.
         if(rel.equals(JAR)&&!grown&&BorrascaPeople.atWork(p,own,BorrascaPeople.ODELL)){BorrascaPeople.lollipop(p,own);return true;}
         var s=p.serverLevel().getBlockState(at);
         if(!s.is(BorrascaRegistry.SHOP.get()))return false;
+        // 0.4.426: the payphone has its own dial.
+        if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PAYPHONE){BorrascaPayphone.open(p,own);return true;}
         String line=BorrascaShopTexts.look(s.getValue(BorrascaShopBlock.KIND),s.getValue(BorrascaShopBlock.STAGE),grown);
         if(line==null)return false;
         BorrascaStory.cue(p,line);return true;

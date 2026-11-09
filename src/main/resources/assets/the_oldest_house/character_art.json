@@ -1842,5 +1842,53 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 153
+  },
+  {
+    "name": "literary_drisking_webb",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 154
+  },
+  {
+    "name": "literary_drisking_sherry",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 155
+  },
+  {
+    "name": "literary_drisking_roy",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 156
+  },
+  {
+    "name": "literary_drisking_jolene",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 157
+  },
+  {
+    "name": "literary_drisking_dutch",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 158
+  },
+  {
+    "name": "literary_drisking_merle",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 159
   }
 ]

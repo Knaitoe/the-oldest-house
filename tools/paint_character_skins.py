@@ -198,6 +198,13 @@ LOOKS = {
     'literary_drisking_fenn': Look('#d2aa8c','#5a4a3e','short','#e4e4dc','#3a3a40','coat','#d8d8d0',eyes='#4a5058',age=1,glasses=True),
     'literary_drisking_gus': Look('#b88a6a','#2a2420','close','#2e2e32','#2a2a2e','vest','#d8d0c0',eyes='#3a2e26',age=1,beard='full'),
     'literary_drisking_earl': Look('#c49478','#8a8072','messy','#6a5a3e','#3a3a34','flannel','#8a3a2e',eyes='#6a5a4a',age=2,beard='full'),
+    # The town's day (0.4.426): the Webbs at the diner counter, the Tates at the doctor's, two retired deputies at the bar.
+    'literary_drisking_webb': Look('#d0a688','#6a4a32','short','#5a6e8a','#3a3e48','shirt','#c8c0a8',eyes='#4a5a4a',age=1),
+    'literary_drisking_sherry': Look('#e2bea2','#b08a52','long','#c87a6a','#4a4a5a','cardigan','#f0e4d0',eyes='#5a6a7a',age=1),
+    'literary_drisking_roy': Look('#b88866','#2e241c','short','#7a5a3a','#2e3640','flannel','#c8b088',eyes='#3a2e24',beard='moustache'),
+    'literary_drisking_jolene': Look('#dcb092','#4a2e22','ponytail','#8aa86a','#5a5a6a','dress','#e8e0c8',eyes='#4a5a3a',sleeve=4),
+    'literary_drisking_dutch': Look('#c89a7a','#bdb8ae','close','#5a5a4a','#3a3a34','jacket','#a89a7a',eyes='#5a5a50',age=2,beard='walrus'),
+    'literary_drisking_merle': Look('#d2a888','#9a948a','receding','#4a5a6a','#2e3238','cardigan','#c8c0b0',eyes='#4a5058',age=2,glasses=True),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),

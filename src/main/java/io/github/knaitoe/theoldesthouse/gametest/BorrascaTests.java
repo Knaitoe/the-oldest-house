@@ -593,6 +593,67 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
 
+    /**
+     * 0.4.426: the town's day. The Webbs sit at the diner counter and the Tates wait at the doctor's on the first visit; their girl's card
+     * is on the board by the second. The payphone takes a quarter, gives it back for a number not in service and nothing for 911; the
+     * Sheriff's office has no open case for the friend once she is gone, and years later still none. A child who is short has the friend
+     * put in the rest. Grown, two retired deputies sit at the bar and Earl says too much; on the last night Prescott's number rings through
+     * to a machine running.
+     */
+    @AfterBatch(batch="borrasca_day") public static void dayDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_day",timeoutTicks=3000)
+    public static void theTownsDayHasItsPatronsAPayphoneWithNoOpenCaseAndFriendsWhoPoolTheirCoins(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("drisking_caller");
+        java.util.function.IntFunction<LiteraryActor> person=phase->BorrascaPeople.keeper(p,f.own(p),phase);
+        java.util.function.Function<String,BorrascaPayphone.Call> dial=number->{var own=f.own(p);var call=BorrascaPayphone.dial(p,own,number);f.save(p,own);return call;};
+        java.util.function.Function<BorrascaPayphone.Call,String> said=call->String.join(" ",call.lines());
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+          .thenWaitUntil(()->{h.assertTrue(f.own(p).getBoolean("CastRecalled"),"cast recalled");for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.MERLE;k++)h.assertTrue(person.apply(k)!=null,"everyone in town is placed: "+k);})
+          .thenWaitUntil(()->h.assertTrue(BorrascaPeople.carried(p,false)!=null,"the child has change"))
+          .thenExecute(()->{
+            var b=f.base(p);
+            for(int k:new int[]{BorrascaPeople.WEBB,BorrascaPeople.SHERRY,BorrascaPeople.ROY,BorrascaPeople.JOLENE})h.assertFalse(person.apply(k).isInvisible(),"on the first visit "+BorrascaPeople.name(person.apply(k))+" is about");
+            for(int k:new int[]{BorrascaPeople.DUTCH,BorrascaPeople.MERLE})h.assertTrue(person.apply(k).isInvisible(),"the retired deputies aren't at the bar in the daytime of a childhood visit");
+            h.assertTrue(RoadhouseBlock.is(f.out.getBlockState(person.apply(BorrascaPeople.WEBB).blockPosition()),RoadhouseBlock.Kind.STOOL),"Mr. Webb sits on a stool at the diner counter");
+            h.assertTrue(f.out.getBlockState(person.apply(BorrascaPeople.JOLENE).blockPosition()).is(HouseBlocks.HOUSEHOLD_FURNITURE.get()),"Jolene Tate sits in a waiting-room chair");
+            // The payphone: a quarter for a call, the coin back for a number not in service, 911 free.
+            f.atWorld(p,new BlockPos(-13,0,-111));
+            var sheriff=dial.apply(BorrascaPayphone.SHERIFF);h.assertTrue(sheriff!=null&&sheriff.charged()&&said.apply(sheriff).contains("grown-ups")&&BorrascaPeople.cents(f.own(p))==125,"the Sheriff's office tells a child the line is for grown-ups, for a quarter: "+(sheriff==null?null:said.apply(sheriff)));
+            var wrong=dial.apply("5551234");h.assertTrue(!wrong.charged()&&said.apply(wrong).contains("not in service")&&BorrascaPeople.cents(f.own(p))==125,"a number not in service gives the quarter back");
+            var help=dial.apply(BorrascaPayphone.EMERGENCY);h.assertTrue(said.apply(help).contains("dispatch")&&BorrascaPeople.cents(f.own(p))==125,"911 is free");
+            f.atWorld(p,new BlockPos(30,0,-140));h.assertTrue(dial.apply(BorrascaPayphone.SHERIFF)==null,"away from the phone nothing is dialled");
+            // Friends pool their coins: short for pie, the friend beside the child puts in the rest.
+            var own=f.own(p);own.putInt("Cents",100);f.save(p,own);
+            f.atWorld(p,new BlockPos(-15,0,-86));var kelly=(LiteraryActor)f.out.getEntity(f.own(p).getUUID("CastKimber"));kelly.moveTo(p.getX()+1,p.getY(),p.getZ());
+            own=f.own(p);var pie=BorrascaPeople.buy(p,own,person.apply(BorrascaPeople.LORNA),BorrascaPeople.Ware.PIE);f.save(p,own);
+            h.assertTrue(pie!=null&&p.getInventory().countItem(BorrascaRegistry.PIE.get())==1&&BorrascaPeople.cents(f.own(p))==0&&f.own(p).getInt("FriendCents")==BorrascaPeople.FRIEND_CHANGE-25,"the friend puts in the quarter the child was short: "+pie+" / "+f.own(p).getInt("FriendCents"));
+            f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==2,"second visit: "+BorrascaCast.why(p)))
+          .thenExecute(()->{
+            h.assertTrue(person.apply(BorrascaPeople.ROY).isInvisible()&&person.apply(BorrascaPeople.JOLENE).isInvisible(),"the Tates are home with their baby");
+            f.atWorld(p,new BlockPos(10,0,-86));var cards=flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the second visit's corkboard")));
+            h.assertTrue(cards.contains(flat("TATE"))&&cards.contains(flat("Paige")),"the Tates' girl is on the board by the second visit, a P name: "+cards);
+            var own=f.own(p);own.putBoolean("FriendMissing",true);f.save(p,own);
+            f.atWorld(p,new BlockPos(-13,0,-111));var tip=dial.apply(BorrascaPayphone.SHERIFF);
+            h.assertTrue(said.apply(tip).contains("no open case")&&said.apply(tip).contains(BorrascaStory.FRIEND),"the Sheriff's office has no open case for her: "+said.apply(tip));
+            f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==3,"years later: "+BorrascaCast.why(p)))
+          .thenExecute(()->{
+            for(int k:new int[]{BorrascaPeople.DUTCH,BorrascaPeople.MERLE})h.assertTrue(!person.apply(k).isInvisible()&&RoadhouseBlock.is(f.out.getBlockState(person.apply(k).blockPosition()),RoadhouseBlock.Kind.STOOL),"years later "+BorrascaPeople.name(person.apply(k))+" sits at the bar");
+            var own=f.own(p);var merle=person.apply(BorrascaPeople.MERLE);BorrascaPeople.talk(p,merle,own);var earl=person.apply(BorrascaPeople.EARL);BorrascaPeople.talk(p,earl,own);BorrascaPeople.talk(p,earl,own);f.save(p,own);
+            h.assertTrue(merle.getCustomName()!=null&&merle.getCustomName().getString().contains("Runaway"),"Merle took the report and wrote what the Sheriff said: "+merle.getCustomName());
+            h.assertTrue(earl.getCustomName()!=null&&earl.getCustomName().getString().contains("reports"),"Earl says too much: "+earl.getCustomName());
+            f.atWorld(p,new BlockPos(-13,0,-111));var tip=dial.apply(BorrascaPayphone.SHERIFF);
+            h.assertTrue(said.apply(tip).contains("no open case")&&BorrascaPeople.cents(f.own(p))==BorrascaPeople.WALLET-50,"years later there is still no open case, for two quarters: "+said.apply(tip));
+            f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,4);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==4,"the last night: "+BorrascaCast.why(p)))
+          .thenExecute(()->{
+            f.atWorld(p,new BlockPos(-13,0,-111));var call=dial.apply(BorrascaPayphone.PRESCOTT);
+            h.assertTrue(said.apply(call).contains("machine")&&call.rings()>3,"on the last night Prescott's number rings and rings, and a machine is running behind whoever picks up: "+said.apply(call));
+            h.assertTrue(person.apply(BorrascaPeople.WEBB).isInvisible()&&!person.apply(BorrascaPeople.DUTCH).isInvisible(),"at night the diner's regulars are gone and the deputies still at the bar");
+          }).thenSucceed();
+    }
+
     @AfterBatch(batch="borrasca_town_children") public static void townChildrenDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=1800)
     public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){

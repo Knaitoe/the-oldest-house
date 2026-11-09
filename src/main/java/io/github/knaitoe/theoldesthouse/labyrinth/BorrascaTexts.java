@@ -75,7 +75,7 @@ public final class BorrascaTexts {
     public static ItemStack board(int visit){
         if(visit>=4)return typed("The noticeboard","Drisking",
             "DRISKING\n\nChurch supper cancelled. Storm forecast for the ridge.",
-            "MISSING\nKAYLA, 14\nLast seen walking home from the store. Call the Sheriff's office.\n\nThe paper is new and still white.",
+            "MISSING\nKAYLA, 14\nLast seen walking home from the store. Call the Sheriff's office, 555-0117.\n\nThe paper is new and still white.",
             "Under it, older and softer, another sheet. Only one word is still legible: KELLY. Under that, the pin holes of sheets nobody kept.",
             "PRESCOTT ORE SERVICES\nNight shift tonight. Trucks on the ridge road after dark.");
         if(visit==3)return typed("The noticeboard","Drisking",
