@@ -50,7 +50,7 @@ public final class BorrascaVisualProof extends Screen {
             for(String name:STYLE_NAMES){var row=rows.get(name);if(row==null)throw new IllegalStateException("Missing established-cast comparison: "+name);styleRows.add(row);}
         }
         float cell=width/6F,rowHeight=(height-65)/2F;
-        String[] names={"Kyle","Shelby","Sheriff","Prescott","Plant worker","Second worker"};
+        String[] names={"Kyle","Kelly","Sheriff","Prescott","Plant worker","Second worker"};
         String[] references={"Camp cousin","Waitress","Sergeant","Club vest","Hotel porter","Window cleaner"};
         for(int i=0;i<6;i++){
             float x=(i+.5F)*cell;

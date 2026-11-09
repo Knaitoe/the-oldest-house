@@ -56,7 +56,7 @@ public final class CoAuthor {
         Map.entry("movie_night",List.of("Frank","Jamie","Bobby","Lynn")),
         Map.entry("holy_rabbit",List.of("Slaney")),
         Map.entry("ghosts_set",List.of("Marjorie","Merry")),
-        Map.entry("borrasca",List.of("Shelby","Prescott")),
+        Map.entry("borrasca",List.of("Kelly","Prescott")),
         Map.entry("holloway_camp",List.of("Holloway")),
         Map.entry("karen_room",List.of("Karen")),
         Map.entry("zampano_courtyard",List.of("Zampanò","Zampano")),

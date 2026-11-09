@@ -24,7 +24,7 @@ public final class BorrascaTexts {
     public static ItemStack document(String key,boolean compassHeld){return switch(key){
         case "Evidence"->typed("Ridge property receipt","County property office",
             "COUNTY PROPERTY RECEIPT\nRidge Depot\n\nReceipt no. 263\nReleased by: Sheriff's office\nVehicle: County 17\nCarrier: Prescott Ore Services\nSigned for: Prescott",
-            "Tag 263-A\nName: SHELBY GARRITY\nCollected: Marker 3, 6:40 pm\nItems: teal pack; name patch, stitched inside the flap."+(compassHeld?"\nAdded: brass compass, from the Sheriff's desk.":""),
+            "Tag 263-A\nName: KELLY GARRITY\nCollected: Marker 3, 6:40 pm\nItems: teal pack; name patch, stitched inside the flap."+(compassHeld?"\nAdded: brass compass, from the Sheriff's desk.":""),
             "Case: closed.\nRelease to family: none.\nHeld at: sorting table.",
             "Transfer D-417\nNight access: authorized\nFuel: county maintenance account\nApproved: Sheriff's office",
             "Next tag: 264-A\nName: Kayla\nRelease to family: none.");
@@ -47,12 +47,12 @@ public final class BorrascaTexts {
             "I'm not allowed to say the rest and I don't want to.",
             "Please come up past the marker. Please tell Ellie not to go to the fort.\n\nDana",
             "WITHHELD\nNot to be posted.\nW. P.");
-        case "EliPoster"->typed("Missing poster for Cody","The Maddox family",
-            "MISSING\nCODY MADDOX\n\nLast seen at Marker Two. His bicycle was found behind the store. Please call the Maddox house.",
-            "Written along the bottom in pencil\nCody, your bike is in the shed. I put it away for you. Mom");
-        case "WrenPoster"->typed("Missing poster for Brandi","The Bell family",
-            "MISSING\nBRANDI BELL\n\nLast seen on the ridge road. She was looking for Cody Maddox. Please call the Bell house.",
-            "The phone number is crossed out. The sheet underneath has Cody's name and the same staple holes.");
+        case "EliPoster"->typed("Missing poster for Patrick","The Maddox family",
+            "MISSING\nPATRICK MADDOX\n\nLast seen at Marker Two. His bicycle was found behind the store. Please call the Maddox house.",
+            "Written along the bottom in pencil\nPatrick, your bike is in the shed. I put it away for you. Mom");
+        case "WrenPoster"->typed("Missing poster for Kendra","The Bell family",
+            "MISSING\nKENDRA BELL\n\nLast seen on the ridge road. She was looking for Patrick Maddox. Please call the Bell house.",
+            "The phone number is crossed out. The sheet underneath has Patrick's name and the same staple holes.");
         case "GateLog"->typed("Ridge gate log","Prescott Ore Services",
             "RIDGE DEPOT\nGATE LOG\n\nAfter dusk, admit county vehicles on the Sheriff's word. Keep the chain on between trucks.",
             "Vehicle 17. In 6:48 pm. One passenger.\nOut 6:52 pm. Driver only.\n\nNo mileage recorded. County account.");
@@ -76,11 +76,11 @@ public final class BorrascaTexts {
         if(visit>=4)return typed("The noticeboard","Drisking",
             "DRISKING\n\nChurch supper cancelled. Storm forecast for the ridge.",
             "MISSING\nKAYLA, 14\nLast seen walking home from the store. Call the Sheriff's office.\n\nThe paper is new and still white.",
-            "Under it, older and softer, another sheet. Only one word is still legible: SHELBY. Under that, the pin holes of sheets nobody kept.",
+            "Under it, older and softer, another sheet. Only one word is still legible: KELLY. Under that, the pin holes of sheets nobody kept.",
             "PRESCOTT ORE SERVICES\nNight shift tonight. Trucks on the ridge road after dark.");
         if(visit==3)return typed("The noticeboard","Drisking",
             "DRISKING\n\nChurch supper Sunday, six o'clock.\n\nFor sale: girl's bicycle, hardly ridden. Ask inside.",
-            "MISSING\nSHELBY GARRITY, 12\nLast seen on the pine trail near the second marker. Teal backpack.",
+            "MISSING\nKELLY GARRITY, 12\nLast seen on the pine trail near the second marker. Teal backpack.",
             "The sheet has gone soft and pale. Someone has written CLOSED across the bottom in marker.",
             "PRESCOTT ORE SERVICES\nCounty maintenance contract renewed. Night work available.");
         return typed("The noticeboard","Drisking",
@@ -120,7 +120,7 @@ public final class BorrascaTexts {
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
             +(own.getBoolean("Read_History")?" A framed page at the historical society said what Borrasca meant: the first mine to give out, the one that gives nothing back. The town's water had run red for two years, and after that the town grew every year.":"")
-            +(own.getBoolean("Read_WrenPoster")?" Brandi had gone looking for Cody. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Brandi walked Cody's bike back to his mom.":"")
+            +(own.getBoolean("Read_WrenPoster")?" Kendra had gone looking for Patrick. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Kendra walked Patrick's bike back to his mom.":"")
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine. The room was empty.":"")
@@ -135,5 +135,5 @@ public final class BorrascaTexts {
     }
     public static ItemStack accountBook(String reader,CompoundTag own){return book("The name beside mine",reader,account(own));}
     public static String restored(){return "I cut her name beside mine again. The gouges were still there.";}
-    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("SharedWindow")?" We picked out a window before the ridge rang.":"")+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Brandi went looking for Cody. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
+    public static String witness(CompoundTag own){return WitnessAccount.Story.BORRASCA.text+(own.getBoolean("SharedWindow")?" We picked out a window before the ridge rang.":"")+(own.getBoolean("LedgerRead")?" The night book under the depot had the Sheriff's office on every page.":"")+(own.getBoolean("Read_WrenPoster")?" Kendra went looking for Patrick. Both names were on the store wall.":"")+(own.getBoolean("SheriffYielded")?" The Sheriff put his light down and let me pass.":own.getBoolean("HeardSheriffShutdown")?" When the machine stopped, he was still there.":"")+(own.getBoolean("NameReturned")?" "+restored():"");}
 }

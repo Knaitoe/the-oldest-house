@@ -27,14 +27,19 @@ public final class BorrascaShopTexts {
                 "Plate lunch 3.95\nGrilled cheese 1.95\nMalt 1.50\n\nWhole pies to go: call ahead.\nAsk about today's pie.");
     }
 
-    /** The doctor's corkboard: the cards the families sent in, a few weeks apart. */
+    /**
+     * The doctor's corkboard: the cards the families sent in, a few weeks apart. 0.4.424 (owner: "the children were named after their
+     * progenitor"): every baby's name begins with P or K, the Prescotts' letter or the Sheriff's, in the childhood year and years later
+     * alike. Nothing on the board says so.
+     */
     static ItemStack cards(boolean later){
         String y=later?"2009":"1992";
+        String[] n=later?new String[]{"Kennedy","Paxton","Kaylee","Piper and Kade","Kingston"}:new String[]{"Kelsey Ann","Paul","Katelyn","Peyton and Kody","Kevin"};
         return typed("Cards on Dr. Hale's corkboard","Drisking families",
             "Pinned in rows, edges curling. Every card has a stork, or a rattle, or a ribbon, and every one says thank you to the doctor.",
-            "PRUITT\nIt's a girl!\nMarch 3, "+y+"\nThank you, Doc.\n\nWEBB\nA boy, 7 lb 2 oz\nMarch 20, "+y+"\nWe can't thank you enough.",
-            "HOLLIS\nOur daughter\nApril 6, "+y+"\nAn answer to prayer.\n\nCORLEY\nTwins!\nApril 28, "+y+"\nThank you for everything.",
-            "MADDOX\nA son\nMay 15, "+y+"\nThank you, Dr. Hale.\n\nThe last pin holds an empty envelope, addressed to the doctor in a careful hand.");
+            "PRUITT\nIt's a girl! "+n[0]+"\nMarch 3, "+y+"\nThank you, Doc.\n\nWEBB\n"+n[1]+", 7 lb 2 oz\nMarch 20, "+y+"\nWe can't thank you enough.",
+            "HOLLIS\nOur daughter, "+n[2]+"\nApril 6, "+y+"\nAn answer to prayer.\n\nCORLEY\nTwins! "+n[3]+"\nApril 28, "+y+"\nThank you for everything.",
+            "MADDOX\nA son, "+n[4]+"\nMay 15, "+y+"\nThank you, Dr. Hale.\n\nThe last pin holds an empty envelope, addressed to the doctor in a careful hand.");
     }
 
     /** The society's framed map of the old workings. */
