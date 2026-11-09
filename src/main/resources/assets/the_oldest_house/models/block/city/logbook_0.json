@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "e": "the_oldest_house:block/city/paper_edge",
+    "b": "the_oldest_house:block/city/logbook",
+    "particle": "the_oldest_house:block/city/logbook"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

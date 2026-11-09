@@ -1,3 +1,21 @@
+November 9 candidate 0.4.409 (docs/THE_BLACK_CITY_0_4_409.md), the next series' Lovecraft proposal (DESIGN_PROPOSALS_NEXT.md, section 2a): "The Black City", shaped on the Mountains as recommended. In the game it is called the city on the ice. What fills the tunnel is a placeholder texture drawn in code for the owner to replace, and the look back shows only mist that moves wrongly.
+- Place: BLACK_CITY appends at slot 235 (layout 133, protocol 166), its base at CitySite.BASE_Y. CitySite builds it whole under the outside sky:
+  - the radio hut and the empty camp;
+  - the pass, with cut steps, three nooks out of the wind and a crest;
+  - the city: rings and five stepped towers round a square pit;
+  - the ramp: a turn and a half down past twelve carved panels to a landing;
+  - the tunnel to a warm shore by dark water.
+  - The time is a low sun (SceneClock 20). CityPayload/CityClient give dawn to a reader who outran what fills the tunnel. The client draws blowing snow over the camp and the climb, and the dark under the city.
+- Wind and cold, shared: gusts push readers back down the upper pass, and the cold builds there but is held short of freezing. The nooks keep both off.
+- Panels, personal: each is read by standing and looking at it for three seconds, in order.
+- The tunnel, shared:
+  - A reader with all twelve panels read, standing on the shore, brings the piping.
+  - Then what fills the tunnel comes up it and then the ramp, at a pace slower than a walk, and the lamps go out behind it.
+  - A reader who gets out of the pit ahead of it has survived; it counts only for a reader who had read every panel.
+  - A reader it reaches is taken into the dark and wakes by the hut, with every panel still read.
+- Resolution: back on the crest, a survivor who looks at the far peaks for three seconds sees the mist moving against the wind. The account waits on the message pad by the radio.
+- Witness: 84 / 63 / two kinds / three endings (one understanding source).
+
 November 9 candidate 0.4.408 (docs/THE_HOUSE_ON_THE_CORNER_0_4_408.md), the next series' Enríquez proposal (DESIGN_PROPOSALS_NEXT.md, section 6): the House on the Corner, shaped on "Adela's House" as recommended. The jars stay as close as the proposal describes and no closer.
 - Place: CORNER_HOUSE appends at slot 234 (layout 132, protocol 165). CornerSite builds it whole under the outside sky.
   - The street: low rendered houses with balconies and shutters down, jacarandas and petals, a kiosk and a sleeping dog.

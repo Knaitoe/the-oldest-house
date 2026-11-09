@@ -681,7 +681,11 @@ public enum LabyrinthPlace {
     /** 0.4.408, The House on the Corner (Corner, docs/THE_HOUSE_ON_THE_CORNER_0_4_408.md): a city street at siesta, an empty house on the
      * corner behind a tall fence, three children on the kerb, and a corridor longer than the house; held on every visit, the dare, the
      * corridor and the last room, then the street at night. Its way on is a door across the cross street. */
-    CORNER_HOUSE("the_house_on_the_corner",Kind.RECURRING,234,new BoundingBox(-36,-4,-122,44,16,0),literaryEntry());
+    CORNER_HOUSE("the_house_on_the_corner",Kind.RECURRING,234,new BoundingBox(-36,-4,-122,44,16,0),literaryEntry()),
+    /** 0.4.409, the city on the ice (BlackCity, docs/THE_BLACK_CITY_0_4_409.md): an expedition's empty camp, a pass between peaks too regular
+     * to be peaks, and a city of dark stone with a ramp turning down past twelve carvings to a tunnel and a warm shore. Its base stands at
+     * CitySite.BASE_Y so the pit has room under it. Its way on is the mess hut's door. */
+    BLACK_CITY("the_black_city",Kind.RECURRING,235,new BoundingBox(-64,-46,-192,64,60,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

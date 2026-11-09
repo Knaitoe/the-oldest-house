@@ -61,6 +61,7 @@ final class OnwardPlacements {
         r.put(PINEHOOK,PinehookSite.ONWARD.getX(),0,PinehookSite.ONWARD.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.364: the pump house at the west end of the apron
         r.put(TALL_GRASS,TallGrassSite.GATE.getX(),0,TallGrassSite.GATE.getZ(),NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.349: the field gate in the brush across the road
         r.put(THE_DRAWING,DrawingSite.HALL_DOOR.getX(),0,DrawingSite.HALL_DOOR.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.407: the meeting hall's door off the square
+        r.put(BLACK_CITY,CitySite.ONWARD.getX(),0,CitySite.ONWARD.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.409: the mess hut's door, facing the camp
         r.put(CORNER_HOUSE,CornerSite.ONWARD.getX(),0,CornerSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.408: a door across the cross street, facing up the main street
         r.put(MARSH_SUPPER,MarshSupperSite.GATE.getX(),0,MarshSupperSite.GATE.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.348: the gate onto the county road past the oak
         r.put(DEER_ROAD,-4,-2,-84,SOUTH,DeerRoadRegistry.GATE); // 0.4.310: the drainage gate at the head of the ditch
