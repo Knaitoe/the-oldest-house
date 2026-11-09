@@ -506,6 +506,11 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
         gray.remove(here);
         gray.removeIf(p -> !onward(p) || LabyrinthPacing.anomaly(p) || LabyrinthPacing.physicalTrial(p));
+        // 0.4.400: a way on that is standing already, where there is one. A hall still to be built held the door shut, so a reader
+        // turned from a taken scene, or from one gone, was left at a door that stuck instead of one that opened.
+        List<LabyrinthPlace> standing = new ArrayList<>(gray);
+        standing.removeIf(p -> !LabyrinthBuilder.isPlaceReady(data, p));
+        if (!standing.isEmpty()) gray = standing;
         LabyrinthPlace next = gray.isEmpty() ? LabyrinthPlace.JUNCTION : weightedGray(gray, data, player, random);
         data.deal(player, door, next.id(), false);
         long key = data.nodeKey(player, here);
