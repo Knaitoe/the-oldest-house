@@ -677,10 +677,19 @@ public final class GoatmanTests {
             var hm=GoatmanWoods.bunkHead(mine);var hh=GoatmanWoods.bunkHead(hers);var farther=hm.getZ()<hh.getZ()||hm.getZ()==hh.getZ()&&hm.getX()<hh.getX()?second:third;
             h.assertTrue(GoatmanBedtime.next(f.run(),List.of(first,second,third))==farther,"then the bunk farthest from the door");
             for(var p:List.of(first,second,third))p.stopSleeping();
-            // A reader who comes once the camp is reached is one more child, as before.
+            // 0.4.418 (owner, after the night playtest): a reader who comes once the camp is reached, before supper, takes a cousin's
+            // place too, and is told which bed is theirs; the gas job has gone to the second, so it is not theirs.
             r=f.run();r.putInt("Phase",GoatmanVignette.GATHERING);r.putInt("Clock",100);r.remove("BedtimeCalled131");f.run(r);var late=f.player();
+            h.assertTrue(GoatmanVignette.standInOpen(f.run()),"before supper at the camp, a place can still be taken");
             h.assertTrue(GoatmanVignette.enter(late),"a later reader still joins before supper");GoatmanVignette.tick(f.server);r=f.run();
-            h.assertTrue(!r.getCompound("Cohort").getCompound(late.getStringUUID()).contains(GoatmanVignette.PLAYS)&&GoatmanVignette.played(r)==2&&r.getInt("Expected")==9,"they take nobody's place and make a ninth");
+            var lateOwn=r.getCompound("Cohort").getCompound(late.getStringUUID());
+            h.assertTrue(lateOwn.contains(GoatmanVignette.PLAYS)&&GoatmanVignette.played(r)==3&&r.getInt("Expected")==8&&!r.getUUID(GoatmanVignette.GAS).equals(late.getUUID()),"they take a cousin's place, and the camp still has its eight: "+r.getInt("Expected"));
+            int lateRole=lateOwn.getInt(GoatmanVignette.PLAYS);
+            h.assertTrue(lateRole!=wrong&&lateRole!=runner&&!GoatmanMeal.carriers(r).contains(lateRole)&&lateRole!=a&&lateRole!=c,"never the thing, the gas job, a carrier, or a place already taken");
+            h.assertTrue(GoatmanVignette.keptPlace(r,lateRole,late).contains("bed on the"),"they are told where they sleep: "+GoatmanVignette.keptPlace(r,lateRole,late));
+            // Once supper has started, nobody new takes a place.
+            r=f.run();r.putBoolean("MealStarted137",true);f.run(r);
+            h.assertTrue(!GoatmanVignette.standInOpen(f.run()),"after supper starts, no place is taken");
             // The account says who sat the night out together, and whose place was kept.
             var personal=new CompoundTag();personal.putBoolean("Drafted0150",true);var with=new ListTag();with.add(net.minecraft.nbt.StringTag.valueOf("goat_first"));with.add(net.minecraft.nbt.StringTag.valueOf("goat_third"));personal.put("With0150",with);personal.putBoolean("StoodIn0150",true);
             var story=WitnessAccount.Story.GOATMAN;

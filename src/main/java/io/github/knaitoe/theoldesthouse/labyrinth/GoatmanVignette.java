@@ -133,13 +133,27 @@ public final class GoatmanVignette {
     private static final List<Integer> STAND_IN_ORDER=List.of(GoatmanFear.TREMBLE,GoatmanFear.PACE,GoatmanFear.COMFORT,GoatmanFear.STARTLE,GoatmanFear.WATCH,GoatmanFear.BRACE,GoatmanFear.EARS);
     /** A cousin whose place a reader may take, or -1 when every such place is taken. */
     static int standIn(CompoundTag r){
-        int runner=r.getInt("Runner");if(brisk(r)&&!r.hasUUID(GAS)&&(r.getInt(PLAYED)&(1<<runner))==0)return runner;
+        // 0.4.418: the gas job only while the cousin who would go has not gone yet.
+        int runner=r.getInt("Runner");if(brisk(r)&&!r.hasUUID(GAS)&&(r.getInt(PLAYED)&(1<<runner))==0&&r.getInt("RunnerState")==R_HOME)return runner;
         var carriers=GoatmanMeal.carriers(r);int best=-1,rank=Integer.MAX_VALUE;
         for(int i=0;i<count(r);i++){
             if(i==r.getInt("Wrong")||i==r.getInt("Runner")||carriers.contains(i)||(r.getInt(PLAYED)&(1<<i))!=0)continue;
             int at=STAND_IN_ORDER.indexOf(GoatmanFear.role(i,r));if(at<rank){rank=at;best=i;}
         }
         return best;
+    }
+    /** 0.4.418: whether a reader coming in now still takes a cousin's place: on the trail, or at the camp before supper. */
+    public static boolean standInOpen(CompoundTag r){
+        int phase=r.getInt("Phase");
+        return phase==PATH||phase==GATHERING&&r.getInt("Clock")<supperAt(r)&&!r.getBoolean("MealFrozen0465")&&!r.getBoolean("MealStarted137");
+    }
+    /** What a reader who takes a cousin's place is told: whose place, and where they sit and sleep. */
+    public static String keptPlace(CompoundTag r,int role,ServerPlayer p){
+        boolean gas=byReader(r)&&r.getUUID(GAS).equals(p.getUUID());
+        // The bunks (GoatmanWoods.bunk): even on the left wall from the door, odd on the right, nearest the door first; upper ones past twelve.
+        int bunk=GoatmanBedtime.bunk(r,role);String[] nth={"first","second","third","fourth","fifth","sixth"};
+        String where="the "+nth[(bunk/2)%6]+(bunk>=12?" top":"")+" bed on the "+(bunk%2==0?"left":"right")+" as you come in";
+        return gas?"You're late too. The others are at the trailer, and they've kept your place. The generator's yours to fill tonight; you sleep on "+where+".":"You're late too. The others are at the trailer, and they've kept your place: a chair at the table, and "+where+" for tonight.";
     }
     private GoatmanVignette(){}
 
@@ -224,12 +238,15 @@ public final class GoatmanVignette {
             // 0.4.150: the first in is the latecomer, whose bed the thing comes to first.
             if(cohort.isEmpty())own.putBoolean("Latecomer0150",true);
             // 0.4.150: arriving with the first reader, before anyone reaches the camp, a reader takes a cousin's place.
-            if(fresh(r)&&r.getInt("Phase")==PATH&&!cohort.isEmpty()){int role=standIn(r);if(role>=0){own.putInt(PLAYS,role);r.putInt(PLAYED,r.getInt(PLAYED)|1<<role);
+            // 0.4.418 (owner, after the night playtest: "The plans were for secondary players to occupy the roles of the cousins, but
+            // last night's playtest did not perform like that"): a friend who came through after the first reader had reached the camp
+            // was only ever an extra child. Anyone who comes in before supper now takes a cousin's place; the cousin goes unseen.
+            if(fresh(r)&&standInOpen(r)&&!cohort.isEmpty()){int role=standIn(r);if(role>=0){own.putInt(PLAYS,role);r.putInt(PLAYED,r.getInt(PLAYED)|1<<role);
                 if(role==r.getInt("Runner")){r.putUUID(GAS,p.getUUID());r.putString(GAS_NAME,p.getGameProfile().getName());}}}}
         // 0.4.405: a child who stepped out and is back before dark will sit the whole night, so the night is theirs to be counted for.
         if(member&&r.getInt("Phase")<VIGIL)own.remove("Interrupted");
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
-        if(!member)p.displayClientMessage(Component.literal(own.contains(PLAYS)?"You're late too. The others are already at the trailer, and they've kept your place.":"You're late. Your cousins are already at the trailer."),false);
+        if(!member)p.displayClientMessage(Component.literal(own.contains(PLAYS)?keptPlace(r,own.getInt(PLAYS),p):"You're late. Your cousins are already at the trailer."),false);
         scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);GoatmanBedtime.restore(p,r);
         if(!stage(l,b,r))r.putBoolean("StagePending0469",true);saveRun(d,r);
         GoatmanWoods.supplies(l,b,expected(r,cohort.getAllKeys().size()));if(fresh(r))GoatmanWoods.supperChairs(l,b,expected(r,cohort.getAllKeys().size()));return true;
