@@ -25,16 +25,16 @@ public final class GhostsDialogueTests {
 
     @GameTest(template="empty",batch="ghosts_dialogue_once",timeoutTicks=1800)
     public static void eachNativeFamilyClickSaysOneLineAndKeepsTheFriendsCursorAndOriginals(GameTestHelper h){
-        var f=fixture(h);var p=f.player("sisters_reader",GhostsSet.PLACE);var q=f.player("sisters_friend",GhostsSet.PLACE);f.source(p,GhostsSet.PLACE);
+        var f=fixture(h);var p=f.player("sisters_reader",GhostsSet.PLACE);var q=f.player("sisters_friend",GhostsSet.PLACE);GhostsSetTests.lead(f,p,q);f.source(p,GhostsSet.PLACE);
         f.chunks.hold(f.in,IndianLakeRooms.bounds(f.base(GhostsSet.PLACE),GhostsSet.PLACE));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&actor(f,p,LiteraryActor.GHOST_MERRY)!=null&&actor(f,q,LiteraryActor.GHOST_MERRY)!=null,"both original sisters are resident"))
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&actor(f,p,LiteraryActor.GHOST_MERRY)!=null&&GhostsCrew.castOf(q.getUUID()).equals(p.getUUID()),"the lead's original sisters are resident and the friend is a second camera"))
             .thenExecute(()->{
                 var merry=actor(f,p,LiteraryActor.GHOST_MERRY);var id=merry.getUUID();approach(p,merry);
                 merry.interact(p,InteractionHand.MAIN_HAND);
                 h.assertTrue(f.own(p,GhostsSet.PLACE).getInt("GhostTalk_1_1")==1,"one actual interaction consumes exactly the first spoken line");
                 merry.interact(p,InteractionHand.MAIN_HAND);
                 h.assertTrue(f.own(p,GhostsSet.PLACE).getInt("GhostTalk_1_1")==2,"the next interaction reaches the second line without skipping it");
-                h.assertTrue(f.own(q,GhostsSet.PLACE).getInt("GhostTalk_1_1")==0&&actor(f,q,LiteraryActor.GHOST_MERRY)!=merry,"the friend's original sister and dialogue stay personal");
+                h.assertTrue(f.own(q,GhostsSet.PLACE).getInt("GhostTalk_1_1")==0&&merry.broadcastToPlayer(q),"the friend sees the same sister; the dialogue cursor stays personal");
                 var talks=TalkHistory.conversations(p.server,p.getUUID());h.assertTrue(talks.stream().map(CompoundTag.class::cast).anyMatch(t->t.getString("Where").contains("filming day 1")&&t.getList("Lines",10).stream().map(CompoundTag.class::cast).filter(l->l.getString("S").equals("Merry")).count()==2),"the two actual family lines enter the reader's heard history with the filming day");
                 var heard=TalkHistory.conversations(p.server,p.getUUID()).stream().map(CompoundTag.class::cast).flatMap(t->t.getList("Lines",10).stream()).map(CompoundTag.class::cast).filter(l->l.getString("S").equals("Merry")).map(l->l.getString("T")).collect(java.util.stream.Collectors.toSet());h.assertTrue(TalkHistory.conversations(q.server,q.getUUID()).stream().map(CompoundTag.class::cast).flatMap(t->t.getList("Lines",10).stream()).map(CompoundTag.class::cast).noneMatch(l->l.getString("S").equals("Merry")&&heard.contains(l.getString("T"))),"the friend never receives the owner's private family conversation; their own heard idle lines may remain");
                 f.reload();h.assertTrue(f.in.getEntity(id)==merry&&WitnessAccount.count(f.data(),p.getUUID())==0,"talking and saved-data reload retain the original body without completing the story");

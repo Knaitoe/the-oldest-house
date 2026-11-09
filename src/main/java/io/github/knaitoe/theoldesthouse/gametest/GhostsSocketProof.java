@@ -35,7 +35,9 @@ final class GhostsSocketProof {
             p.hasChangedDimension();p.connection.resetPosition();
             LiteraryVignettes.onArrive(p,LabyrinthPlace.GHOSTS_SET);var own=LiteraryVignettes.personal(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET);
             // Fixture selects the already-read day; production movement, camera lease and forced return remain untouched.
-            own.putBoolean("Read_Source",true);own.putInt("FilmDay",6);own.putInt("ShotClock",p==a?590:600);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",true);LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET,own);
+            own.putBoolean("Read_Source",true);
+            // 0.4.404: A came onto the set first and leads; B is a second camera on A's take (GhostsCrew).
+            own.putLong("OnSet0404",level.getGameTime()-(p==a?20:10));own.putInt("FilmDay",6);own.putInt("ShotClock",p==a?590:600);own.putBoolean("CastPlaced",false);own.putBoolean("DayDone",false);own.putBoolean("Rolling",true);LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.GHOSTS_SET,own);
             var camera=p.getInventory().items.stream().filter(s->s.is(LiteraryRegistry.CAMCORDER.get())).findFirst().orElseThrow();int slot=p.getInventory().items.indexOf(camera);if(slot!=0){var kept=p.getInventory().getItem(0);p.getInventory().setItem(0,camera);p.getInventory().setItem(slot,kept);}p.getInventory().selected=0;CamcorderItem.setRolling(camera,false);p.inventoryMenu.broadcastChanges();p.stopUsingItem();
             MOVED.put(p.getUUID(),0);
         }
@@ -43,7 +45,8 @@ final class GhostsSocketProof {
     static void observe(ServerPlayer a,ServerPlayer b){
         if(!CHUNKS.ready())return;
         for(var p:List.of(a,b)){
-            var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),LabyrinthPlace.GHOSTS_SET);String key="FilmMarjorie_"+p.getUUID();if(!world.hasUUID(key))continue;
+            // 0.4.404: both readers watch the take's one Marjorie, the lead's; after the lead walks out, the next camera holds the same body.
+            var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),LabyrinthPlace.GHOSTS_SET);String key="FilmMarjorie_"+GhostsCrew.castOf(p.getUUID());if(!world.hasUUID(key))continue;
             require(p.server.getLevel(HouseDimensions.INTERIOR).getEntity(world.getUUID(key)) instanceof LiteraryActor,"the reader's original is loaded");var m=(LiteraryActor)p.server.getLevel(HouseDimensions.INTERIOR).getEntity(world.getUUID(key));
             ORIGINALS.putIfAbsent(p.getUUID(),m.getUUID());require(ORIGINALS.get(p.getUUID()).equals(m.getUUID()),"approach, jump and return never replace the original UUID");
             // The day's staging places the cast once all six are loaded; Marjorie can exist a moment before that, at her home spot.
@@ -65,5 +68,5 @@ final class GhostsSocketProof {
         }
         return true;
     }
-    static void finish(){try{Files.writeString(LiveExpeditionProof.folder().resolve("ghosts-native-jump-passed.txt"),"Explicit day-six fixture, two actual socket readers: original private Marjories walked continuously from the real beds through the bedroom doors, physically cleared the balcony guards, held their native apex while the leased lenses froze and the heads turned, then returned through their own saved routes. Filming used native item input; actual frozen-shot frames, six-day state, UUIDs and route depths remained personal. This is a targeted native fixture, not an ordinary seven-day manual playthrough.\n");CHUNKS.close();}catch(Exception e){throw new IllegalStateException(e);}}
+    static void finish(){try{Files.writeString(LiveExpeditionProof.folder().resolve("ghosts-native-jump-passed.txt"),"Explicit day-six fixture, two actual socket readers: the lead's original Marjorie walked continuously from the real bed through the bedroom door, physically cleared the balcony guard and held its native apex while both leased lenses, the lead's and the second camera's, froze on it and its head turned; both readers then returned through their own saved routes. Filming used native item input; actual frozen-shot frames, six-day state, UUIDs and route depths remained personal. This is a targeted native fixture, not an ordinary seven-day manual playthrough.\n");CHUNKS.close();}catch(Exception e){throw new IllegalStateException(e);}}
 }

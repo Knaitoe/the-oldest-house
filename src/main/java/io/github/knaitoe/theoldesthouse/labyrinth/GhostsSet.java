@@ -82,20 +82,32 @@ public final class GhostsSet {
     private GhostsSet() {}
     public static boolean built(LabyrinthData d,BlockPos b) { return d.state(STATE).getBoolean(Long.toString(b.asLong())); }
     public static void markBuilt(LabyrinthData d,BlockPos b) {var t=d.state(STATE);t.putBoolean(Long.toString(b.asLong()),true);d.setState(STATE,t);}
-    public static void clearAll() { GhostsLights.clearAll(); }
+    public static void clearAll() { GhostsLights.clearAll(); GhostsCrew.clearAll(); }
     static int day(CompoundTag own) { return Math.max(1,Math.min(DAYS,own.getInt("FilmDay"))); }
     public static void arrive(ServerPlayer p,CompoundTag own) {
         if(own.getBoolean("Completed")||own.getBoolean("Ready")&&!own.getBoolean("Filming0485"))return;
         boolean newDay=false;
+        // 0.4.404: when the set has a lead, a reader coming in is a second camera on their take (GhostsCrew).
+        own.putLong(GhostsCrew.ON_SET,p.level().getGameTime());
         if(!own.getBoolean("Filming0485")) { own.putBoolean("Filming0485",true);own.putInt("FilmDay",1);own.putInt("ShotClock",0);newDay=true; }
+        else if(own.getBoolean(GhostsCrew.CREWED)) {
+            // Back after a take of someone else's: their own next day, from the first one they have not filmed, unless they saw the last day end.
+            own.remove(GhostsCrew.CREWED);
+            if(!own.getBoolean(GhostsCrew.WATCHED)){var home=LiteraryVignettes.base(p,PLACE);if(home!=null)GhostsErrands.reset(p,home,own);for(String key:DAY_KEYS)own.remove(key);own.putInt("FilmDay",GhostsCrew.firstUnfilmed(own));own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);own.remove("BedroomPickup");own.remove("PickupStep0");own.remove("PickupStep1");newDay=true;}
+        }
         else if(own.getBoolean("DayDone")&&own.getBoolean("FilmDoorExit")&&day(own)<DAYS) {
-            own.putInt("FilmDay",day(own)+1);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);newDay=true;
+            // A reader who has been a second camera may have days missing behind them: theirs is the first unfilmed one.
+            own.putInt("FilmDay",own.getBoolean(GhostsCrew.SECOND_CAMERA)?GhostsCrew.firstUnfilmed(own):day(own)+1);own.putInt("ShotClock",0);own.putBoolean("DayDone",false);own.putBoolean("Rolling",false);own.putBoolean("CastPlaced",false);newDay=true;
         }
         own.putBoolean("FilmDoorExit",false);own.remove("FrameNonce");
         if(newDay){for(String key:List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","LightsOut0242"))own.remove(key);
             // 0.4.247: yesterday's errands are over; the table is as it is.
             var home=LiteraryVignettes.base(p,PLACE);if(home!=null)GhostsErrands.reset(p,home,own);else own.remove(GhostsErrands.KEY);}
         LiteraryVignettes.reward(p,PLACE,own,"Camcorder",new ItemStack(LiteraryRegistry.CAMCORDER.get()));
+        var rolling=leadOnSet(p);
+        if(rolling!=null){var ownL=LiteraryVignettes.personal(LabyrinthData.get(p.server),rolling.getUUID(),PLACE);
+            p.displayClientMessage(Component.literal((day(ownL)==DAYS?"Day ":"Filming day ")+day(ownL)+": "+TITLES[day(ownL)-1]+". "+rolling.getGameProfile().getName()+" is already filming. You're a second camera."),false);
+            p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,"Hi. Grab a camera and stay out of their shot.")),true);return;}
         p.displayClientMessage(Component.literal((day(own)==DAYS?"Day ":"Filming day ")+day(own)+": "+TITLES[day(own)-1]+"."),false);
         // 0.4.199 (owner: "the director should address the player as soon as they enter so they know to seek him out"): Barry
         // calls the camera operator over from the video village the moment they come in.
@@ -103,6 +115,14 @@ public final class GhostsSet {
         if(day(own)==DAYS&&own.getBoolean("DayDone"))return;
         p.displayClientMessage(Component.literal("Barry: "+VignetteTailoring.crew(p,callOver(own))),true);
     }
+    /** 0.4.404: another reader already filming on the set, whose take a reader coming in joins; null when there is none. */
+    static ServerPlayer leadOnSet(ServerPlayer p){
+        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);if(!world.hasUUID("CrewLead0404"))return null;
+        var lead=p.server.getPlayerList().getPlayer(world.getUUID("CrewLead0404"));if(lead==null||lead==p||!LiteraryVignettes.inside(lead,PLACE))return null;
+        var own=LiteraryVignettes.personal(d,lead.getUUID(),PLACE);return own.getBoolean("Filming0485")&&!own.getBoolean("Completed")&&!own.getBoolean("Ready")?lead:null;
+    }
+    /** 0.4.404: every key one filming day leaves behind (the production a second camera follows, with GhostsCrew's own exceptions). */
+    static List<String> dayKeys(){return DAY_KEYS;}
     /** What Barry calls out as the reader comes in: the first morning, a later one, or a day already in the can. */
     /** Every scripted line of a day, as spoken. */
     public static List<String> script(int day){return LINES.get(day-1).stream().map(l->PEOPLE[l.speaker()]+(l.written()?" holds up a card: ":": ")+l.text()).toList();}
@@ -140,7 +160,7 @@ public final class GhostsSet {
     }
     public static String status(ServerPlayer p){
         var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);int d=day(own);var filmed=new ArrayList<Integer>();for(int i=1;i<=DAYS;i++)if((own.getInt("FilmedDays")&(1<<(i-1)))!=0)filmed.add(i);
-        return "Ghosts set: "+(own.getBoolean("Completed")?"completed":own.getBoolean("Filming0485")?"day "+d+" ("+TITLES[d-1]+"), clock "+own.getInt("ShotClock")+"/"+LENGTH[d-1]+(own.getBoolean("Rolling")?", rolling":"")+(own.getBoolean("DayDone")?", done":"")+(own.getBoolean("BedroomPickup")?", upstairs pickup":""):"not filming")+"; filmed days "+filmed;
+        return "Ghosts set: "+(own.getBoolean("Completed")?"completed":own.getBoolean("Filming0485")?"day "+d+" ("+TITLES[d-1]+"), clock "+own.getInt("ShotClock")+"/"+LENGTH[d-1]+(own.getBoolean("Rolling")?", rolling":"")+(own.getBoolean("DayDone")?", done":"")+(own.getBoolean("BedroomPickup")?", upstairs pickup":""):"not filming")+"; filmed days "+filmed+"; "+GhostsCrew.describe(p);
     }
     /** Called only by the physical doorway departure hook, never by logout, a death or a scene timer. */
     public static void depart(ServerPlayer p) {
@@ -201,7 +221,24 @@ public final class GhostsSet {
         if(d==2||d==7)return x>-6&&x<5&&y>=-.5&&y<4&&z<-13&&z>-26;
         return x>-11&&x<5&&y>=-.5&&y<4&&z<-12&&z>-26;
     }
-    static void spoken(ServerPlayer p,CompoundTag own,String who,String text){p.displayClientMessage(Component.literal(who+": "+text),true);heard(p,own,who,text);}
+    static void spoken(ServerPlayer p,CompoundTag own,String who,String text){say(p,who+": "+text);heard(p,own,who,text);}
+    /** 0.4.404: the lead's second cameras during the lead's take, with their own records; empty at every other time. */
+    private static List<ServerPlayer> crewNow=List.of();
+    private static final Map<UUID,CompoundTag> CREW_OWN=new HashMap<>();
+    private static ServerPlayer leadNow;
+    /** The second cameras on this reader's take while it runs; empty otherwise. */
+    static List<ServerPlayer> crewOf(ServerPlayer p){return p==leadNow?crewNow:List.of();}
+    /** What the take says aloud reaches the lead and every second camera on it. */
+    static void say(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);if(p==leadNow)for(var q:crewNow)q.displayClientMessage(Component.literal(text),true);}
+    /** A sound of the take, heard by the lead and every second camera on it. */
+    static void sound(ServerPlayer p,net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound,double x,double y,double z,float volume,float pitch){
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(sound,net.minecraft.sounds.SoundSource.NEUTRAL,x,y,z,volume,pitch,p.getRandom().nextLong()));
+        if(p==leadNow)for(var q:crewNow)q.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(sound,net.minecraft.sounds.SoundSource.NEUTRAL,x,y,z,volume,pitch,q.getRandom().nextLong()));
+    }
+    /** Particles of the take, seen by the lead and every second camera on it. */
+    private static void particles(ServerPlayer p,net.minecraft.core.particles.ParticleOptions kind,double x,double y,double z,int count,double dx,double dy,double dz,double speed){
+        p.serverLevel().sendParticles(p,kind,false,x,y,z,count,dx,dy,dz,speed);if(p==leadNow)for(var q:crewNow)q.serverLevel().sendParticles(q,kind,false,x,y,z,count,dx,dy,dz,speed);
+    }
     private static boolean riteSetup(ServerPlayer p,BlockPos b,LiteraryActor[] cast,CompoundTag own){
         if(own.getBoolean("RiteSetupDone")||own.getInt("ShotClock")>0)return false;
         int before=own.getInt("RiteSetupClock"),now=before+5;own.putInt("RiteSetupClock",now);pose(cast[0],BED);
@@ -229,7 +266,7 @@ public final class GhostsSet {
             pose(cast[i],STAND);GhostsMotion.toward(cast[i],target,i==5?.28:.34);face(cast[i],cast[0].getEyePosition());if(cast[i].position().distanceToSqr(target)<.025)own.putInt(key,step+1);
         }
     }
-    private static void heard(ServerPlayer p,CompoundTag own,String speaker,String text){TalkHistory.heard(p,"ghosts/day/"+day(own),speaker,"the Barrett house, filming day "+day(own),text);}
+    private static void heard(ServerPlayer p,CompoundTag own,String speaker,String text){TalkHistory.heard(p,"ghosts/day/"+day(own),speaker,"the Barrett house, filming day "+day(own),text);if(p==leadNow)for(var q:crewNow)TalkHistory.heard(q,"ghosts/day/"+day(own),speaker,"the Barrett house, filming day "+day(own),text);}
     private static void face(LiteraryActor a,Vec3 at){
         GhostsMotion.look(a,at);
     }
@@ -256,7 +293,7 @@ public final class GhostsSet {
         if(day(own)==DAYS&&own.getBoolean("DayDone"))return;
         long now=p.level().getGameTime();if(own.contains("FilmIdle0490")&&now-own.getLong("FilmIdle0490")<260)return;
         int next=own.getInt("FilmIdleLine0490"),speaker=next%4;var a=cast[speaker];if(p.distanceToSqr(a)>14*14)return;
-        var idle=idleLine(own,next);p.displayClientMessage(Component.literal(idle),true);int colon=idle.indexOf(':');if(colon>0)heard(p,own,idle.substring(0,colon),idle.substring(colon+1).strip());if(day(own)==DAYS&&speaker==1)a.silent();else a.speaks(idleLine(own,next));own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
+        var idle=idleLine(own,next);say(p,idle);int colon=idle.indexOf(':');if(colon>0)heard(p,own,idle.substring(0,colon),idle.substring(colon+1).strip());if(day(own)==DAYS&&speaker==1)a.silent();else a.speaks(idleLine(own,next));own.putLong("FilmIdle0490",now);own.putInt("FilmIdleLine0490",next+1);
     }
     private static int objective(CompoundTag own){return day(own)*2+(day(own)==4&&own.getBoolean("BedroomPickup")?1:0);}
     public static boolean objectiveAccepted(CompoundTag own){return own.contains("AcceptedScene131")&&own.getInt("AcceptedScene131")==objective(own);}
@@ -304,6 +341,15 @@ public final class GhostsSet {
         if(d==6){place(cast[2],b,-5.5,5,-20.2,180,STAND);place(cast[3],b,-5,5,-25,0,STAND);}
         if(d==4){place(cast[0],b,7,-4,-20,0,STAND);place(cast[1],b,7,-4,-23,180,STAND);}
         if(d==5){for(int i=1;i<4;i++)place(cast[i],b,-9+i*2,5,-24,0,STAND);place(cast[0],b,-6.5,5.125+seatedHeight(cast[0].getScale()),-23.5,0,SIT);place(cast[5],b,-5,5,-20,180,STAND);}
+    }
+    /** 0.4.404: a second camera asking Barry to roll rolls the lead's take; anyone else rolls their own. */
+    public static boolean startTake(ServerPlayer p,CompoundTag own){
+        var lead=GhostsCrew.lead(p);if(lead==null)return start(p,own);
+        if(!LiteraryVignettes.inside(p,PLACE)||!own.getBoolean("Read_Source"))return false;
+        var data=LabyrinthData.get(p.server);var ownL=LiteraryVignettes.personal(data,lead.getUUID(),PLACE);
+        if(!LiteraryVignettes.inside(lead,PLACE)||ownL.getBoolean("DayDone"))return false;
+        ownL.putBoolean("Rolling",true);ownL.putInt("AcceptedScene131",objective(ownL));LiteraryVignettes.save(data,lead.getUUID(),PLACE,ownL);
+        own.putBoolean("Rolling",true);own.putInt("AcceptedScene131",objective(own));return true;
     }
     public static boolean start(ServerPlayer p,CompoundTag own) {
         if(!LiteraryVignettes.inside(p,PLACE)||own.getBoolean("DayDone")||!own.getBoolean("Read_Source"))return false;
@@ -363,13 +409,18 @@ public final class GhostsSet {
         replies.add(Talk.act(done?"Review the edited episode":last?"Stay for supper":"Ready for today's filming",q->{
             if(!producerHere(q,a,d))return;Talk.close(q);var data=LabyrinthData.get(q.server);var now=LiteraryVignettes.personal(data,q.getUUID(),PLACE);
             if(now.getBoolean("DayDone"))LiteraryVignettes.open(q,PLACE,"Episode"+d,edit(q,now,d,false),a.blockPosition());
-            else if(!start(q,now))q.displayClientMessage(Component.literal("Read the call sheet first."),true);
+            else if(!startTake(q,now))q.displayClientMessage(Component.literal("Read the call sheet first."),true);
             LiteraryVignettes.save(data,q.getUUID(),PLACE,now);
         }));
         if(done&&d<DAYS)replies.add(Talk.act("Review the unedited camera log",q->{if(!producerHere(q,a,d))return;Talk.close(q);var now=LiteraryVignettes.personal(LabyrinthData.get(q.server),q.getUUID(),PLACE);LiteraryVignettes.open(q,PLACE,"Rushes"+d,edit(q,now,d,true),a.blockPosition());}));
         replies.add(Talk.reply(done?"I'll leave until tomorrow.":"I'll leave it for now.",Talk::close));Talk.ask(p,replies);
     }
     static void capture(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
+        // 0.4.404: every second camera on the lead's take holds its own shots.
+        if(p==leadNow)for(var q:crewNow)captureOne(q,CREW_OWN.get(q.getUUID()),subject,at);
+        captureOne(p,own,subject,at);
+    }
+    private static void captureOne(ServerPlayer p,CompoundTag own,String subject,Vec3 at) {
         if(!recording(p)||!framed(p,lensEye(p,own),lensLook(p,own),at))return;
         var log=own.getCompound("FilmLog"+day(own));String k="Frames_"+subject;log.putInt(k,Math.min(72000,log.getInt(k)+5));own.put("FilmLog"+day(own),log);
     }
@@ -402,8 +453,8 @@ public final class GhostsSet {
         pose(playhouse,t>=800?2:inside&&t>=700?1:0);
         if(previous<800&&t>=800){
             cue(p,LiteraryRegistry.GHOST_CARD,house);var level=p.serverLevel();
-            level.sendParticles(p,new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.64F,.52F,.35F),1.4F),false,house.x,house.y+.6,house.z,40,.45,.35,.45,.02);
-            level.sendParticles(p,new net.minecraft.core.particles.ItemParticleOption(net.minecraft.core.particles.ParticleTypes.ITEM,new ItemStack(Items.PAPER)),false,house.x,house.y+.7,house.z,14,.3,.3,.3,.12);
+            particles(p,new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.64F,.52F,.35F),1.4F),house.x,house.y+.6,house.z,40,.45,.35,.45,.02);
+            particles(p,new net.minecraft.core.particles.ItemParticleOption(net.minecraft.core.particles.ParticleTypes.ITEM,new ItemStack(Items.PAPER)),house.x,house.y+.7,house.z,14,.3,.3,.3,.12);
         }
         if(previous<815&&t>=815)cue(p,LiteraryRegistry.GHOST_CARD,house.add(.3,.3,0));
         capture(p,own,"Playhouse",house.add(0,t>=800?.1:.5,0));
@@ -484,7 +535,7 @@ public final class GhostsSet {
         }
         // 0.4.242 (owner: "if they see it through to the end - merry running out the door, the lights in the house should cut off. the
         // family remains."): once she is through the front door she is gone, and the house goes dark around the three at the table.
-        if(own.getBoolean("MerryLeft0488")){offstage(cast[1]);own.putBoolean(MERRY_JAR,true);GhostsLights.out(p,b,own);}
+        if(own.getBoolean("MerryLeft0488")){offstage(cast[1]);own.putBoolean(MERRY_JAR,true);GhostsLights.out(p,b,own);if(p==leadNow)for(var q:crewNow)GhostsLights.out(q,b,CREW_OWN.get(q.getUUID()));}
         if(t>=860&&!own.getBoolean("MerryLeft0488"))capture(p,own,"MerryDeparture",cast[1].getEyePosition());
         capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-19.5));
     }
@@ -507,6 +558,16 @@ public final class GhostsSet {
             display(p,own,b);
             return;
         }
+        // 0.4.404: a second camera follows the lead's take and sees the lead's cast; theirs stays out of sight (GhostsCrew).
+        var lead=GhostsCrew.lead(p);
+        if(lead!=null){GhostsCrew.follow(p,own,LiteraryVignettes.personal(LabyrinthData.get(p.server),lead.getUUID(),PLACE));display(p,own,b);return;}
+        var crew=GhostsCrew.crew(p);var data=LabyrinthData.get(p.server);
+        crewNow=crew;leadNow=p;CREW_OWN.clear();for(var q:crew)CREW_OWN.put(q.getUUID(),LiteraryVignettes.personal(data,q.getUUID(),PLACE));
+        try{production(p,b,own);}
+        finally{for(var q:crew)LiteraryVignettes.save(data,q.getUUID(),PLACE,CREW_OWN.get(q.getUUID()));crewNow=List.of();leadNow=null;CREW_OWN.clear();}
+    }
+    /** The lead's take: their cast, their clock, every beat of the day. */
+    private static void production(ServerPlayer p,BlockPos b,CompoundTag own) {
         var cast=new LiteraryActor[6];for(int i=0;i<6;i++){cast[i]=person(p,b,i);if(cast[i]==null)return;}
         if(own.getBoolean("CastPlaced"))fitSavedSeats(b,cast);
         var playhouse=prop(p,b,"FilmPlayhouse",LiteraryActor.GHOST_PLAYHOUSE,new BlockPos(7,5,-23));
@@ -535,7 +596,7 @@ public final class GhostsSet {
             if(previous>=715&&(!ready||!GhostsJump.begin(cast[0])))t=715;
         }
         own.putInt("ShotClock",t);
-        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();heard(p,own,line.written()?PEOPLE[line.speaker()]+" (card)":PEOPLE[line.speaker()],line.text());if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else{p.displayClientMessage(Component.literal(line.written()?PEOPLE[line.speaker()]+" holds up a card: "+line.text():words),true);if(line.written())cast[line.speaker()].silent();else cast[line.speaker()].speaks(line.text());}if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
+        for(var line:LINES.get(d-1))if(line.tick()>previous&&line.tick()<=t&&p.distanceToSqr(cast[line.speaker()])<24*24){String words=PEOPLE[line.speaker()]+": "+line.text();heard(p,own,line.written()?PEOPLE[line.speaker()]+" (card)":PEOPLE[line.speaker()],line.text());if(line.speaker()==0&&d==2){own.putString("GhostVoice",words);own.putInt("GhostVoiceId",d*10000+line.tick());own.putLong("GhostVoiceUntil",p.level().getGameTime()+140);}else{say(p,line.written()?PEOPLE[line.speaker()]+" holds up a card: "+line.text():words);if(line.written())cast[line.speaker()].silent();else cast[line.speaker()].speaks(line.text());}if(d==2&&line.speaker()==0)cue(p,line.tick()<1100?LiteraryRegistry.GHOST_LOW:LiteraryRegistry.GHOST_THIN,cast[0].getEyePosition());}
         if(d==2) {
             // 0.4.242 (owner: "Parents asking to pray – holding hands, mary hesitant, Marjorie slipping from her seat and ducking
             // beneath the table"): John and Sarah leave their chairs to stand by the girls and hold out a hand each. Merry holds back,
@@ -550,7 +611,7 @@ public final class GhostsSet {
                 else{pose(cast[2],STAND);toward(cast[2],b,-.4,0,-18.12,.1);}
             }
             if(previous<520&&t>=520)cue(p,LiteraryRegistry.GHOST_SCRAPE,cast[0].position());
-            if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)p.serverLevel().sendParticles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,false,b.getX()+.5,b.getY()+1.03,b.getZ()-19.5,2,.06,.02,.06,0);}
+            if(t>=250&&t<520){pose(cast[0],VOMIT);if(t%20==0)particles(p,net.minecraft.core.particles.ParticleTypes.SPORE_BLOSSOM_AIR,b.getX()+.5,b.getY()+1.03,b.getZ()-19.5,2,.06,.02,.06,0);}
             if(t>=520&&t<950){
                 if(previous<520)own.putInt("CrawlChair04112",0);
                 // Leave the seat at its side, lower to the floor, then go under.
@@ -581,7 +642,7 @@ public final class GhostsSet {
             if(t>=570&&!own.getBoolean("BedroomPickup")){
                 // Both sisters climb the real stair on their next pickup; the player follows them.
                 own.putBoolean("BedroomPickup",true);own.putBoolean("Rolling",false);
-                p.displayClientMessage(Component.literal("Barry: We're ready upstairs. Can you come up?"),true);
+                say(p,"Barry: We're ready upstairs. Can you come up?");
             }
             if(t>=575)box(p,b,cast,playhouse,own,previous,t);
         }
@@ -600,6 +661,7 @@ public final class GhostsSet {
         }
         if(d==7)finalDinner(p,b,cast,own,t);
         for(int i=0;i<4;i++)capture(p,own,PEOPLE[i],cast[i].getEyePosition());
+        for(var q:crewNow)rolling(q,CREW_OWN.get(q.getUUID()),cast,d,previous,t);
         if(recording(p)){
             var eye=lensEye(p,own);var look=lensLook(p,own);int lead=-1;double alignment=-1;for(int i=0;i<4;i++)if(framed(p,eye,look,cast[i].getEyePosition())){double a=look.dot(cast[i].getEyePosition().subtract(eye).normalize());if(a>alignment){alignment=a;lead=i;}}
             if(lead>=0){var log=own.getCompound("FilmLog"+d);var key="LeadTicks_"+PEOPLE[lead];log.putInt(key,Math.min(72000,log.getInt(key)+5));own.put("FilmLog"+d,log);}
@@ -607,12 +669,21 @@ public final class GhostsSet {
         }
         if(t>=LENGTH[d-1]) {
             own.putBoolean("DayDone",true);own.putBoolean("Rolling",false);own.putInt("FilmedDays",own.getInt("FilmedDays")|(1<<(d-1)));own.putInt("Beat",own.getInt("Visit"));
-            p.displayClientMessage(Component.literal(d==DAYS?"The equipment is packed. Leave your account in the booth.":"Barry: I think we have it. Come and have a look."),true);
+            say(p,d==DAYS?"The equipment is packed. Leave your account in the booth.":"Barry: I think we have it. Come and have a look.");
+            // 0.4.404: a day filmed to the end is filmed for every camera on it; the last one ends the filming for them.
+            for(var q:crewNow)GhostsCrew.dayEnded(CREW_OWN.get(q.getUUID()),d);
         }
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");
         display(p,own,b);
     }
-    private static void cue(ServerPlayer p,net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound,Vec3 at){p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(sound,net.minecraft.sounds.SoundSource.NEUTRAL,at.x,at.y,at.z,.6F,1,p.getRandom().nextLong()));}
+    /** 0.4.404: a second camera's own lens on the lead's take: who it kept in the middle, and its frames for the monitor. */
+    private static void rolling(ServerPlayer q,CompoundTag own,LiteraryActor[] cast,int d,int previous,int t){
+        if(!recording(q))return;
+        var eye=lensEye(q,own);var look=lensLook(q,own);int lead=-1;double alignment=-1;for(int i=0;i<4;i++)if(framed(q,eye,look,cast[i].getEyePosition())){double a=look.dot(cast[i].getEyePosition().subtract(eye).normalize());if(a>alignment){alignment=a;lead=i;}}
+        if(lead>=0){var log=own.getCompound("FilmLog"+d);var key="LeadTicks_"+PEOPLE[lead];log.putInt(key,Math.min(72000,log.getInt(key)+5));own.put("FilmLog"+d,log);}
+        for(int exposure:EXPOSURES[d-1])if(previous<exposure&&t>=exposure)requestFrame(q,own);
+    }
+    private static void cue(ServerPlayer p,net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound,Vec3 at){sound(p,sound,at.x,at.y,at.z,.6F,1);}
     public static ItemStack edit(ServerPlayer p,CompoundTag own,int d,boolean raw) { return edit(p.getGameProfile().getName(),own,d,raw); }
     public static ItemStack edit(String name,CompoundTag own,int d,boolean raw) {
         var log=own.getCompound("FilmLog"+d);var text=new StringBuilder((d==DAYS?(raw?"CAMERA LOG — HOUSE RECONSTRUCTION":"HOUSE RECONSTRUCTION — AFTER WRAP"):(raw?"CAMERA LOG":"THE POSSESSION — EDITED EPISODE"))+"\n\nDay "+d+": "+TITLES[d-1]+"\n\n");
@@ -632,6 +703,8 @@ public final class GhostsSet {
     public static List<String> pages(String text){var result=new ArrayList<String>();for(int start=0;start<text.length();){int end=Math.min(text.length(),start+120),breaks=0;for(int i=start;i<end;i++)if(text.charAt(i)=='\n'&&++breaks>4){end=i;break;}if(end<text.length()){int word=text.lastIndexOf(' ',end-1);if(word>start+40)end=word+1;}result.add(text.substring(start,end));start=end;}return result.isEmpty()?List.of(""):result;}
     public static String account(String name,CompoundTag own) {
         var text=new StringBuilder("THE TAPE AND THE CUT\n\nI came back to the Barretts seven times. The early incidents were reconstructions. The show had finished before the last supper. The House let me stay for it.\n\nBetween takes the girls talked about their books and their things. Before the prayers Marjorie said she was cold. Someone had covered her desk with a white cloth. What reached my tape depended on where I stood and when I put the camera down.\n\nMerry had eaten her pasta without sauce long before that night. Watching the plate did not tell me what her sister had promised her. This is what I kept, visit by visit.\n\n");
+        // 0.4.404: days on someone else's take, as a second camera (GhostsCrew).
+        if(own.getBoolean(GhostsCrew.SECOND_CAMERA))text.append("Some of those days another camera was rolling beside mine. What follows is only what my lens held.\n\n");
         text.append(GhostsLore.account(own));
         for(int d=1;d<=DAYS;d++){var book=edit(name,own,d,true).get(DataComponents.WRITTEN_BOOK_CONTENT);for(var page:book.pages())text.append(page.raw().getString());text.append("\n\n");}
         text.append("MY ACCOUNT\n\n").append(own.getString("Confession"));return text.toString();
@@ -655,11 +728,11 @@ public final class GhostsSet {
         if(finished(own))LiteraryVignettes.ready(p,PLACE,own,"completed_the_filming_days_and_read_own_cut");
         var model=new CompoundTag();model.putBoolean("GhostEffigy",GhostsLore.throughLens(p,b,own));model.putBoolean("GhostJar",own.getBoolean(MERRY_JAR));var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);
         if(!frames.isEmpty()){int n=(p.server.getTickCount()/60)%frames.size();model.putIntArray("Screen",frames.getCompound(n).getIntArray("Pixels"));}
-        model.putUUID("Reader",p.getUUID());model.putInt("GhostDay",day(own));model.putBoolean("JohnHurt",johnHurt(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","GhostActorX","GhostActorY","GhostActorZ"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
+        model.putUUID("Reader",p.getUUID());model.putUUID("GhostCast",GhostsCrew.castOf(p.getUUID()));model.putInt("GhostDay",day(own));model.putBoolean("JohnHurt",johnHurt(own));model.putLong("GhostBase",b.asLong());boolean frozen=day(own)==6&&own.getBoolean("JumpFrozen0488")&&!own.getBoolean("DayDone");model.putBoolean("GhostFreeze",frozen);model.putInt("GhostFreezeTarget",frozen?own.getInt("GhostFreezeTarget"):-1);for(String key:List.of("GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","GhostActorX","GhostActorY","GhostActorZ"))if(own.contains(key))model.put(key,own.get(key).copy());int voice=(int)Math.max(0,Math.min(140,own.getLong("GhostVoiceUntil")-p.level().getGameTime()));model.putInt("GhostVoiceRemaining",voice);if(voice>0){model.putString("GhostVoice",own.getString("GhostVoice"));model.putInt("GhostVoiceId",own.getInt("GhostVoiceId"));}
         model.putInt("GhostShake",(int)Math.max(0,Math.min(12,own.getLong("GhostShakeUntil")-p.level().getGameTime())));model.putBoolean("GhostPrivacyPull",privacyPull(p,own));model.putBoolean("ScreenDark",frames.isEmpty());HousePackets.send(p,new LiteraryViewPayload(-1,20,0,model));
     }
     @SubscribeEvent public static void finishJump(ServerTickEvent.Post event){for(var p:event.getServer().getPlayerList().getPlayers()){if(!LiteraryVignettes.inside(p,PLACE)||LabyrinthDoors.isBusy(p))continue;var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);if(!own.getBoolean("JumpEject0488")||!own.getBoolean("DayDone"))continue;if(LabyrinthDoors.finishTakeAndReturn(p,PLACE)){own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);own.remove("JumpEject0488");LiteraryVignettes.save(data,p.getUUID(),PLACE,own);}}}
-    private static boolean finished(CompoundTag own){return day(own)==DAYS&&own.getBoolean("DayDone")&&own.getInt("FilmedDays")==((1<<DAYS)-1)&&own.contains("Confession");}
+    private static boolean finished(CompoundTag own){return day(own)==DAYS&&own.getBoolean("DayDone")&&(own.getInt("FilmedDays")==((1<<DAYS)-1)||own.getBoolean(GhostsCrew.WATCHED))&&own.contains("Confession");}
     private static void requestFrame(ServerPlayer p,CompoundTag own) {
         var frames=own.getList("FramesDay"+day(own),Tag.TAG_COMPOUND);if(frames.size()>=4||own.hasUUID("FrameNonce")&&p.server.getTickCount()-own.getInt("FrameTick")<60)return;
         UUID nonce=UUID.randomUUID();own.putUUID("FrameNonce",nonce);own.putInt("FrameTick",p.server.getTickCount());own.putInt("FrameDay",day(own));own.putDouble("FrameX",p.getX());own.putDouble("FrameY",p.getY());own.putDouble("FrameZ",p.getZ());own.putFloat("FrameYaw",p.getYRot());own.putFloat("FramePitch",p.getXRot());HousePackets.send(p,new CamcorderExposurePayload(nonce));

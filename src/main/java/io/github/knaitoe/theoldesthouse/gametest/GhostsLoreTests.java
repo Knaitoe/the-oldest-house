@@ -45,7 +45,7 @@ public final class GhostsLoreTests {
 
     @GameTest(template="empty",batch="ghosts_lore_papers321",timeoutTicks=1800)
     public static void nativePapersArePrivateAndTheLateLaptopDoesNotCompleteAFilmingDay(GameTestHelper h){
-        var f=fixture(h);var p=f.player("lore_reader",P);var peer=f.player("lore_friend",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));int[] days={0};
+        var f=fixture(h);var p=f.player("lore_reader",P);var peer=f.player("lore_friend",P);GhostsSetTests.lead(f,p,peer);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));int[] days={0};
         h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the new set and original cast are resident"))
             .thenExecute(()->{
                 papers(p);papers(peer);days[0]=f.own(p,P).getInt("FilmedDays");
@@ -71,7 +71,7 @@ public final class GhostsLoreTests {
 
     @GameTest(template="empty",batch="ghosts_lore_lens321",timeoutTicks=1800)
     public static void onlyTheOwnedLiveBasementLensKeepsTheOtherwiseAbsentEffigy(GameTestHelper h){
-        var f=fixture(h);var p=f.player("lens_reader",P);var peer=f.player("lens_friend",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
+        var f=fixture(h);var p=f.player("lens_reader",P);var peer=f.player("lens_friend",P);GhostsSetTests.lead(f,p,peer);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
         h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the basement and camera owner are ready"))
             .thenExecute(()->{
                 h.assertTrue(GhostsSet.jumpToDay(p,7,false)==null,"the late-day camera visit is available");f.at(p,P,5.5,-4,-21.5);var own=f.own(p,P);var cam=camera(h,p);p.setItemInHand(InteractionHand.MAIN_HAND,cam);

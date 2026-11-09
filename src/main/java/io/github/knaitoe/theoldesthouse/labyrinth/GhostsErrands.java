@@ -182,15 +182,15 @@ public final class GhostsErrands {
     private static void move(LiteraryActor a,BlockPos b,double x,double y,double z,double speed){GhostsMotion.toward(a,new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z),speed);}
     private static boolean arrived(LiteraryActor a,BlockPos b,double x,double y,double z){return a.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(x,y,z))<.02;}
     private static void say(ServerPlayer p,CompoundTag own,String line){
-        p.displayClientMessage(Component.literal(line),true);own.putLong("FilmIdle0490",p.level().getGameTime());
+        GhostsSet.say(p,line);own.putLong("FilmIdle0490",p.level().getGameTime());
     }
     /** As above, with the speaker's mouth moving while the line is up. */
     private static void say(ServerPlayer p,CompoundTag own,String line,LiteraryActor speaker){say(p,own,line);if(speaker!=null)speaker.speaks(line);}
     private static void sound(ServerPlayer p,LiteraryActor a,net.minecraft.sounds.SoundEvent sound,float volume,float pitch){
-        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),SoundSource.NEUTRAL,a.getX(),a.getY()+1,a.getZ(),volume,pitch,p.getRandom().nextLong()));
+        GhostsSet.sound(p,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound),a.getX(),a.getY()+1,a.getZ(),volume,pitch);
     }
     /** The plate Sarah took, gone from the table in this reader's view (sent again now and then, so a section loaded afresh agrees). */
-    static void hidePlate(ServerPlayer p,BlockPos b){p.connection.send(new ClientboundBlockUpdatePacket(b.offset(PLATE),Blocks.AIR.defaultBlockState()));}
+    static void hidePlate(ServerPlayer p,BlockPos b){p.connection.send(new ClientboundBlockUpdatePacket(b.offset(PLATE),Blocks.AIR.defaultBlockState()));for(var q:GhostsSet.crewOf(p))q.connection.send(new ClientboundBlockUpdatePacket(b.offset(PLATE),Blocks.AIR.defaultBlockState()));}
     /** A new day: the table as it really is, and nobody carrying anything. */
     static void reset(ServerPlayer p,BlockPos b,CompoundTag own){
         if(own.getCompound(KEY).getBoolean("Plate"))p.connection.send(new ClientboundBlockUpdatePacket(p.serverLevel(),b.offset(PLATE)));

@@ -28,6 +28,11 @@ public final class GhostsSetTests {
     // A missing original is an assertion, so a waiting step retries and a failed one fails its test, never the whole server (run 1336).
     private static LiteraryActor actor(LiteraryTests.Fixture f,ServerPlayer p,int role){return f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.role()==role&&a.owner().filter(p.getUUID()::equals).isPresent()).stream().findFirst().orElseThrow(()->new net.minecraft.gametest.framework.GameTestAssertException("the original "+role+" is not staged yet"));}
     private static String status(LiteraryTests.Fixture f,ServerPlayer p){var own=f.own(p,P);var cast=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),a->a.owner().filter(p.getUUID()::equals).isPresent());return "day="+own.getInt("FilmDay")+" clock="+own.getInt("ShotClock")+" rolling="+own.getBoolean("Rolling")+" approach="+own.getInt("JumpApproach0495")+" pickup="+own.getInt("PickupStep0")+","+own.getInt("PickupStep1")+" reader="+p.position().subtract(f.base(P).getX(),f.base(P).getY(),f.base(P).getZ())+" cast="+cast.stream().map(a->a.role()+"/"+a.phase()+" at "+a.position().subtract(f.base(P).getX(),f.base(P).getY(),f.base(P).getZ())+" arc="+a.getPersistentData().getInt("GhostJumpArc0495")).toList();}
+    /** 0.4.404: the first reader leads the set and the rest are second cameras on their take (GhostsCrew), whatever order the fixture made them in. */
+    static void lead(LiteraryTests.Fixture f,ServerPlayer lead,ServerPlayer... crew){
+        GhostsCrew.clearAll();var w=LiteraryVignettes.shared(f.data(),P);w.remove("CrewLead0404");LiteraryVignettes.shared(f.data(),P,w);
+        var t=f.own(lead,P);t.putLong("OnSet0404",1);save(f,lead,t);long n=2;for(var q:crew){t=f.own(q,P);t.putLong("OnSet0404",n++);save(f,q,t);}
+    }
     private static String words(ItemStack s){return s.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",String::concat);}
     @GameTest(template="empty",batch="ghosts_room0490",timeoutTicks=500)
     public static void anUpstairsTakeWaitsForTheActualRoomAndMarjorieIsSmallerThanTheAdults(GameTestHelper h){
@@ -45,6 +50,58 @@ public final class GhostsSetTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_room0490") public static void room0490Done(ServerLevel ignored){if(active!=null){active.close();active=null;}}
+    /**
+     * 0.4.404, the owner: "a head full of ghosts should allow multiple players too. only one version of the cast is rendered for the
+     * primary player - the rest see nothing." The first reader filming leads; a second reader on the set is a second camera on that take
+     * (GhostsCrew): they see the lead's family, not their own; follow the lead's day and clock; hear its lines; hold their own shots in
+     * their own camera log; can ask Barry to roll the lead's take; have the day count as filmed when it ends; and take over the same
+     * bodies, where they stand, when the lead walks out.
+     */
+    @GameTest(template="empty",batch="ghosts_crew0404",timeoutTicks=1200)
+    public static void aSecondReaderOnTheSetIsASecondCameraOnTheLeadsTakeAndSeesTheLeadsCast(GameTestHelper h){
+        var f=fixture(h);var lead=f.player("ghost_lead0404",P);var crew=f.player("ghost_crew0404",P);f.source(lead,P);f.source(crew,P);var held=f.base(P);
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the house and its cast sections are ready")).thenExecute(()->{
+            var b=f.base(P);var server=lead.server;
+            // The second reader alone first, with a family of their own.
+            GhostsCrew.clearAll();var w=LiteraryVignettes.shared(f.data(),P);w.remove("CrewLead0404");LiteraryVignettes.shared(f.data(),P,w);
+            f.at(crew,P,1.5,0,-14.5);var ownC=f.own(crew,P);ownC.putInt("FilmDay",2);ownC.putBoolean("CastPlaced",false);ownC.putBoolean("Rolling",false);ownC.putInt("ShotClock",0);ownC.putLong("OnSet0404",200);GhostsSet.reader(crew,b,ownC);save(f,crew,ownC);
+            var theirs=actor(f,crew,LiteraryActor.GHOST_MARJORIE);
+            // The lead came in first.
+            f.at(lead,P,2.5,0,-14.5);var ownL=f.own(lead,P);ownL.putInt("FilmDay",2);ownL.putBoolean("CastPlaced",false);ownL.putBoolean("Rolling",false);ownL.putInt("ShotClock",0);ownL.putLong("OnSet0404",100);save(f,lead,ownL);
+            GhostsCrew.refresh(server);
+            h.assertTrue(GhostsCrew.crewing(crew.getUUID())&&GhostsCrew.castOf(crew.getUUID()).equals(lead.getUUID())&&!GhostsCrew.crewing(lead.getUUID()),"the reader who came in first leads; the other is a second camera: "+GhostsCrew.describe(crew));
+            // A second camera asking Barry to roll rolls the lead's take.
+            ownC=f.own(crew,P);h.assertTrue(GhostsSet.startTake(crew,ownC),"the second camera can call the take");save(f,crew,ownC);
+            ownL=f.own(lead,P);h.assertTrue(ownL.getBoolean("Rolling")&&GhostsSet.objectiveAccepted(ownL),"the lead's take is rolling");
+            GhostsSet.reader(lead,b,ownL);save(f,lead,ownL);
+            var marjorie=actor(f,lead,LiteraryActor.GHOST_MARJORIE);
+            h.assertTrue(marjorie.broadcastToPlayer(lead)&&marjorie.broadcastToPlayer(crew),"the lead's family is seen by the lead and by the second camera");
+            h.assertTrue(!theirs.broadcastToPlayer(crew)&&!theirs.broadcastToPlayer(lead),"the second camera's own family is out of everyone's sight while they crew");
+            // The second camera follows the lead's take and holds their own shots.
+            ownC=f.own(crew,P);GhostsSet.reader(crew,b,ownC);save(f,crew,ownC);
+            h.assertTrue(ownC.getInt("FilmDay")==2&&ownC.getInt("ShotClock")==f.own(lead,P).getInt("ShotClock")&&ownC.getBoolean("Rolling")&&ownC.getBoolean("Crewed0404"),"the second camera is on the lead's day and clock");
+            film(crew,cam(crew));crew.lookAt(EntityAnchorArgument.Anchor.EYES,marjorie.getEyePosition());
+            ownL=f.own(lead,P);ownL.putInt("ShotClock",95);save(f,lead,ownL);
+            for(int i=0;i<4;i++){ownL=f.own(lead,P);GhostsSet.reader(lead,b,ownL);save(f,lead,ownL);}
+            var log=f.own(crew,P).getCompound("FilmLog2");
+            h.assertTrue(log.getAllKeys().stream().anyMatch(k->k.startsWith("Frames_")&&log.getInt(k)>0),"the second camera's own lens held shots of the lead's take: "+log);
+            var talks=TalkHistory.conversations(server,crew.getUUID());boolean heard=false;for(int i=0;i<talks.size();i++)if(talks.getCompound(i).getString("Scene").equals("ghosts/day/2")&&!talks.getCompound(i).getList("Lines",10).isEmpty())heard=true;
+            h.assertTrue(heard,"the second camera heard the take's lines");
+            // The day filmed to the end counts as filmed for the second camera too.
+            ownL=f.own(lead,P);ownL.putInt("ShotClock",GhostsSet.LENGTH[1]-5);save(f,lead,ownL);GhostsSet.reader(lead,b,ownL);save(f,lead,ownL);
+            h.assertTrue(f.own(lead,P).getBoolean("DayDone")&&(f.own(crew,P).getInt("FilmedDays")&(1<<1))!=0,"the second day is filmed for both cameras");
+            // The lead walks out in the middle of the next take: the second camera takes over the same bodies where they stand.
+            ownL=f.own(lead,P);ownL.putBoolean("DayDone",false);ownL.putInt("ShotClock",300);save(f,lead,ownL);
+            var body=marjorie.getUUID();var at=marjorie.position();lead.teleportTo(f.out,0,100,0,0,0);
+            GhostsCrew.refresh(server);
+            h.assertTrue(!GhostsCrew.crewing(crew.getUUID())&&marjorie.owner().filter(crew.getUUID()::equals).isPresent()&&marjorie.getUUID().equals(body)&&marjorie.position().equals(at),"the next camera takes over the lead's own bodies, unmoved");
+            h.assertTrue(theirs.owner().filter(lead.getUUID()::equals).isPresent()&&!f.own(crew,P).getBoolean("Crewed0404")&&f.own(lead,P).getBoolean("Crewed0404"),"the bodies are traded, and the reader who walked out starts afresh next time");
+            GhostsCrew.clearAll();
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_crew0404") public static void crew0404Done(ServerLevel ignored){GhostsCrew.clearAll();if(active!=null){active.close();active=null;}}
+
     /**
      * 0.4.247, ordinary errands between takes (docs/GHOSTS_ERRANDS_0_4_247.md): before the first day's take, Barry gets up from the
      * monitors and crouches over the cable while he talks, then sits back down; then Sarah takes a plate from the table to the sink.
@@ -177,7 +234,7 @@ public final class GhostsSetTests {
     @GameTest(template="empty",batch="ghosts_days",timeoutTicks=200)
     public static void followingDayRequiresDoorExitAndInterruptedDayResumes(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_days",P);var t=f.own(p,P);t.putInt("ShotClock",315);save(f,p,t);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p,P).getInt("ShotClock")==315,"an interrupted arrival retains the occupied filming clock");t=f.own(p,P);t.putBoolean("DayDone",true);t.putInt("Beat",t.getInt("Visit"));save(f,p,t);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==1,"a timer or repeated arrival inside cannot advance the day");GhostsSet.depart(p);f.at(p,P,0,0,2);f.arrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==2&&f.own(p,P).getInt("ShotClock")==0,"door departure followed by actual later arrival starts the following day");f.reload();h.assertTrue(f.own(p,P).getInt("FilmDay")==2,"the personal filming day survives native SavedData reload");h.succeed();}
     @GameTest(template="empty",batch="ghosts_lens",timeoutTicks=240)
-    public static void RealLensChangesTheEditedAccountAndBorrowedCamerasDoNot(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_lens",P);var peer=f.player("ghost_peer",P);f.source(p,P);h.runAtTickTime(30,()->{
+    public static void RealLensChangesTheEditedAccountAndBorrowedCamerasDoNot(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_lens",P);var peer=f.player("ghost_peer",P);lead(f,p,peer);f.source(p,P);h.runAtTickTime(30,()->{
         var t=f.own(p,P);GhostsSet.start(p,t);GhostsSet.reader(p,f.base(P),t);f.at(p,P,-6,0,-19);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);film(p,cam(p));p.lookAt(EntityAnchorArgument.Anchor.EYES,m.getEyePosition());for(int i=0;i<8;i++)GhostsSet.reader(p,f.base(P),t);save(f,p,t);
         h.assertTrue(t.getCompound("FilmLog1").getInt("Frames_Marjorie")>=20,"native use, real aim and clear ray record Marjorie");String cut=words(GhostsSet.edit(p,t,1,false));h.assertTrue(cut.contains("Marjorie"),"recorded framing enters the edited episode");
         film(peer,cam(p));h.assertTrue(!GhostsSet.recording(peer),"a borrowed camera cannot make the peer's camera log");peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!GhostsSet.recording(peer),"an actual native observer earns no recording authority");h.assertTrue(f.own(peer,P).getCompound("FilmLog1").isEmpty(),"film records remain independent per reader");h.succeed();});}
@@ -206,7 +263,10 @@ public final class GhostsSetTests {
     @GameTest(template="empty",batch="ghosts_frames",timeoutTicks=200)
     public static void FramesAreBoundedNonceOwnedAndSingleUse(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_frame",P);var peer=f.player("ghost_other",P);film(p,cam(p));var t=f.own(p,P);var nonce=UUID.randomUUID();t.putUUID("FrameNonce",nonce);t.putInt("FrameTick",p.server.getTickCount());t.putInt("FrameDay",1);t.putDouble("FrameX",p.getX());t.putDouble("FrameY",p.getY());t.putDouble("FrameZ",p.getZ());t.putFloat("FrameYaw",p.getYRot());t.putFloat("FramePitch",p.getXRot());save(f,p,t);h.assertTrue(!GhostsSet.receiveFrame(peer,nonce,new int[384])&&!GhostsSet.receiveFrame(p,nonce,new int[385]),"wrong sender and oversized frame are refused");h.assertTrue(GhostsSet.receiveFrame(p,nonce,new int[384])&&!GhostsSet.receiveFrame(p,nonce,new int[384]),"a valid native owner frame consumes its nonce once");f.reload();h.assertTrue(f.own(p,P).getList("FramesDay1",10).size()==1,"the bounded real frame survives native SavedData reload");h.succeed();}
     @GameTest(template="empty",batch="ghosts_cast",timeoutTicks=240)
-    public static void WholeFamilyIsPrivateInteractableAndReusesBodies(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_cast",P);var peer=f.player("ghost_cast2",P);h.runAtTickTime(30,()->{var ids=new HashSet<UUID>();for(int r:GhostsSet.ROLES){var a=actor(f,p,r);var other=actor(f,peer,r);ids.add(a.getUUID());h.assertTrue(!a.owner().get().equals(other.owner().get()),"each reader has their own original cast");h.assertTrue(a.broadcastToPlayer(p)&&other.broadcastToPlayer(peer)&&!a.broadcastToPlayer(peer)&&!other.broadcastToPlayer(p),"native tracking excludes the other reader's invisible overlapping body from either client's entity pick");}var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);m.appearance(m.role(),GhostsSet.CRAWL);h.assertTrue(m.getBoundingBox().getYsize()<.7,"the native crawl body fits under the actual table");var t=f.own(p,P);GhostsSet.reader(p,f.base(P),t);for(int r:GhostsSet.ROLES)h.assertTrue(ids.contains(actor(f,p,r).getUUID()),"updates retain all six native identities");h.succeed();});}
+    public static void WholeFamilyIsPrivateInteractableAndReusesBodies(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_cast",P);var peer=f.player("ghost_cast2",P);lead(f,p,peer);h.runAtTickTime(30,()->{var ids=new HashSet<UUID>();for(int r:GhostsSet.ROLES){var a=actor(f,p,r);ids.add(a.getUUID());
+        // 0.4.404: one cast on the set, the lead's, seen by both; the second camera has no overlapping family of its own.
+        h.assertTrue(a.broadcastToPlayer(p)&&a.broadcastToPlayer(peer)&&GhostsCrew.castOf(peer.getUUID()).equals(p.getUUID()),"the lead's original cast is the one both readers track");
+        h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(f.base(P).offset(-21,-5,-47)),Vec3.atLowerCornerOf(f.base(P).offset(22,13,1))),x->x.role()==r&&x.owner().filter(peer.getUUID()::equals).isPresent()).isEmpty(),"no second, overlapping body is staged for the second camera");}var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);m.appearance(m.role(),GhostsSet.CRAWL);h.assertTrue(m.getBoundingBox().getYsize()<.7,"the native crawl body fits under the actual table");var t=f.own(p,P);GhostsSet.reader(p,f.base(P),t);for(int r:GhostsSet.ROLES)h.assertTrue(ids.contains(actor(f,p,r).getUUID()),"updates retain all six native identities");h.succeed();});}
     @GameTest(template="empty",batch="ghosts_legacy",timeoutTicks=200)
     public static void LegacyResolutionsAndQuotaSurvive(GameTestHelper h){var f=fixture(h);var p=f.player("ghost_legacy",P);var t=f.own(p,P);t.putBoolean("Completed",true);t.putBoolean("Ready",true);t.putString("Confession","The old, original account.");save(f,p,t);LiteraryVignettes.onArrive(p,P);h.assertTrue(f.own(p,P).getBoolean("Completed")&&f.own(p,P).getString("Confession").equals("The old, original account."),"earlier completed accounts remain exact");h.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED&&P.kind()==LabyrinthPlace.Kind.MULTI_VISIT,"the filming source remains one multi-visit credit beside the new lake-house source");h.succeed();}
     @GameTest(template="empty",batch="ghosts_ending",timeoutTicks=240)
@@ -325,7 +385,7 @@ public final class GhostsSetTests {
     }
     @GameTest(template="empty",batch="ghosts_frozen_return",timeoutTicks=900)
     public static void HeldJumpTurnsOnlyItsOriginalHeadAndReturnsThroughTheSavedVisit(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_jump",P);var peer=f.player("ghost_jump_peer",P);f.source(p,P);
+        var f=fixture(h);var p=f.player("ghost_jump",P);var peer=f.player("ghost_jump_peer",P);lead(f,p,peer);f.source(p,P);
         final Vec3[] body={null};final UUID[] original={null};final float[] startHead={0};final CompoundTag[] peerBefore={null};
         var back=Vec3.atBottomCenterOf(f.base(P).offset(0,0,40));var returned=back.add(0,0,1);
         h.startSequence().thenIdle(30).thenExecute(()->{
@@ -340,13 +400,14 @@ public final class GhostsSetTests {
             var own=f.own(p,P);var m=actor(f,p,LiteraryActor.GHOST_MARJORIE);
             h.assertTrue(m.getUUID().equals(original[0])&&m.position().distanceToSqr(body[0])<.000001&&m.getDeltaMovement().lengthSqr()<.000001,"native ticks retain the same motionless midair body");
             h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(m.getYHeadRot()-startHead[0]))>10&&!own.getBoolean("DayDone"),"the head turns toward its reader's camera before the three-second hold ends");
-            h.assertTrue(own.getCompound("FilmLog6").getInt("Frames_FrozenLeap")>=20&&f.own(peer,P).getInt("FilmDay")==peerBefore[0].getInt("FilmDay")&&!f.own(peer,P).getBoolean("JumpFrozen0488"),"the owned lens records its held view without borrowing a peer's day");
+            // 0.4.404: the other reader on the set is a second camera on this take and is held with it (GhostsCrew).
+            h.assertTrue(own.getCompound("FilmLog6").getInt("Frames_FrozenLeap")>=20&&f.own(peer,P).getInt("FilmDay")==6&&f.own(peer,P).getBoolean("JumpFrozen0488"),"the owned lens records its held view, and the second camera follows the lead's day six");
         }).thenWaitUntil(()->{
             var t=f.own(p,P);h.assertTrue(!LabyrinthDoors.isBusy(p)&&!LiteraryVignettes.inside(p,P)&&f.data().returnDepth(p.getUUID())==0,"the authored cut completes the native saved return: clock="+t.getInt("ShotClock")+", done="+t.getBoolean("DayDone")+", eject="+t.getBoolean("JumpEject0488")+", busy="+LabyrinthDoors.isBusy(p)+", depth="+f.data().returnDepth(p.getUUID())+", pos="+p.position()+", place="+LabyrinthPlaces.placeAt(f.origin,p.blockPosition()));
         }).thenExecute(()->{
             h.assertTrue(p.position().distanceToSqr(returned)<.01&&f.own(p,P).getBoolean("FilmDoorExit")&&f.own(p,P).getInt("FilmDay")==6,"the cut returns beside the saved prior door without carrying its upstairs offset and leaves the following day unstarted");
             h.assertTrue(f.in.getEntity(original[0])!=null&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.GHOSTS_SET),"the same original body survives and the cut alone grants no ending");
-            f.arrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==7&&!f.own(p,P).getBoolean("JumpFrozen0488")&&f.own(peer,P).getInt("FilmDay")==1,"a later actual arrival admits only this reader to day seven");
+            f.arrive(p,P);h.assertTrue(f.own(p,P).getInt("FilmDay")==7&&!f.own(p,P).getBoolean("JumpFrozen0488")&&(f.own(peer,P).getInt("FilmedDays")&(1<<5))!=0,"a later actual arrival admits this reader to day seven; the second camera filmed day six beside them");
         }).thenSucceed();
     }
     private static void close(){if(active!=null){active.close();active=null;}}
@@ -407,7 +468,7 @@ public final class GhostsSetTests {
     }
     @GameTest(template="empty",batch="ghosts_final_death0488",timeoutTicks=2000)
     public static void PoisoningUnfoldsOnTheOriginalFamilyAndMerryWalksOutAfterTheirDeaths(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_final_death",P);var peer=f.player("ghost_final_peer",P);f.source(p,P);var ids=new HashMap<Integer,UUID>();
+        var f=fixture(h);var p=f.player("ghost_final_death",P);var peer=f.player("ghost_final_peer",P);lead(f,p,peer);f.source(p,P);var ids=new HashMap<Integer,UUID>();
         // Wait for the set and its cast rather than a fixed thirty ticks: on a loaded runner the originals were not staged yet.
         h.startSequence().thenIdle(30).thenWaitUntil(()->{
             var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-15);GhostsSet.reader(p,f.base(P),own);save(f,p,own);
@@ -416,7 +477,7 @@ public final class GhostsSetTests {
             var own=f.own(p,P);h.assertTrue(actor(f,p,LiteraryActor.GHOST_PRODUCER).getZ()>f.base(P).getZ()-9&&actor(f,p,LiteraryActor.GHOST_PRIEST).getZ()>f.base(P).getZ()-9,"both original crew bodies are beyond the occupied room");own.putInt("ShotClock",475);GhostsSet.reader(p,f.base(P),own);h.assertTrue(actor(f,p,LiteraryActor.GHOST_MERRY).getMainHandItem().getHoverName().getString().equals("WHY?")&&actor(f,p,LiteraryActor.GHOST_MERRY).speaking()==0,"her question about her sister eating is written, with no speaking animation");own.putInt("ShotClock",625);GhostsSet.reader(p,f.base(P),own);h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).phase()==GhostsSet.CHOKING&&actor(f,p,LiteraryActor.GHOST_JOHN).phase()==GhostsSet.EATING,"the original family has distinct death onset times");own.putInt("ShotClock",855);GhostsSet.reader(p,f.base(P),own);save(f,p,own);f.reload();
             for(int role:new int[]{LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN,LiteraryActor.GHOST_SARAH})h.assertTrue(actor(f,p,role).phase()==GhostsSet.DEAD,"each original reaches its leaking, still death pose");
         }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MerryLeft0488"),"the surviving original walks through the actual front door in native time")).thenExecute(()->{
-            var own=f.own(p,P);var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.getZ()>f.base(P).getZ()-11&&merry.phase()==GhostsSet.STAND,"Merry is beyond the door");for(int role:GhostsSet.ROLES)h.assertTrue(ids.get(role).equals(actor(f,p,role).getUUID()),"every original identity survives poisoning and departure");var position=merry.position();save(f,p,own);f.reload();GhostsSet.reader(p,f.base(P),f.own(p,P));h.assertTrue(merry.position().equals(position),"reload does not reseat Merry beside the bodies");h.assertTrue(f.own(peer,P).getInt("FilmDay")==1&&actor(f,peer,LiteraryActor.GHOST_MARJORIE).phase()!=GhostsSet.DEAD&&!own.getBoolean("Ready"),"a peer's living family and the original seven-day account gate remain independent");
+            var own=f.own(p,P);var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.getZ()>f.base(P).getZ()-11&&merry.phase()==GhostsSet.STAND,"Merry is beyond the door");for(int role:GhostsSet.ROLES)h.assertTrue(ids.get(role).equals(actor(f,p,role).getUUID()),"every original identity survives poisoning and departure");var position=merry.position();save(f,p,own);f.reload();GhostsSet.reader(p,f.base(P),f.own(p,P));h.assertTrue(merry.position().equals(position),"reload does not reseat Merry beside the bodies");h.assertTrue(f.own(peer,P).getInt("FilmDay")==7&&GhostsCrew.castOf(peer.getUUID()).equals(p.getUUID())&&!own.getBoolean("Ready"),"the second camera is on the lead's last day, and the seven-day account gate stays closed");
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_final_death0488") public static void finalDeathDone(ServerLevel l){close();}
