@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/room_shell_cabin_shake_slab"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/room_shell_cabin_shake_slab_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/room_shell_cabin_shakes"
+    }
+  }
+}

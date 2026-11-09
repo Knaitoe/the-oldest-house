@@ -242,6 +242,43 @@ public final class LiteraryRooms {
         // A trodden path from the porch to the shed.
         for(int z=-7;z<=-5;z++)for(int x=-1;x<=1;x++)at(l,b,x,-1,z,Blocks.DIRT_PATH);
         shed(l,b);
+        cabinSurfaces(l,b);
+    }
+    /**
+     * 0.4.406, the texture pass's eleventh release (docs/TEXTURE_PASS_CABIN_0_4_406.md): the cabin's own surfaces, laid once its
+     * frame stands. The outer walls face out, weathered shiplap outside and the pine it had within, on a fieldstone foot; hewn
+     * corner posts; wide floorboards, leaving the kitchen and the hearth the boards their tile and stone are laid over later; the
+     * ceiling's boards between its beams; the porch decked and shaked, and the foundation ring a fieldstone apron. The timber bays,
+     * the windows and the door stay as they are.
+     * The roof is the scene pass's (SceneCraft), in the cabin's shakes.
+     */
+    private static void cabinSurfaces(ServerLevel l,BlockPos b){
+        int x0=-12,x1=12,z0=-35,z1=-13;
+        for(int y=0;y<=6;y++)for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
+            boolean xw=x==x0||x==x1,zw=z==z0||z==z1;if(!xw&&!zw)continue;var at=b.offset(x,y,z);var old=BuildBlocks.state(l,at);
+            // The posts run up to the eave: the roof frame's gable fill reaches the corners' top course, where no stair is left to replace.
+            if(xw&&zw){if(old.is(Blocks.SPRUCE_PLANKS))BuildBlocks.set(l,at,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState(),F);continue;}
+            Direction out=x==x0?Direction.WEST:x==x1?Direction.EAST:z==z0?Direction.NORTH:Direction.SOUTH;
+            if(old.is(Blocks.SPRUCE_PLANKS)||y==0&&old.is(Blocks.DARK_OAK_PLANKS))
+                BuildBlocks.set(l,at,(y==0?RoomShell.CABIN_SILL:RoomShell.CABIN_WALL).get().defaultBlockState().setValue(RoomShell.Skin.FACING,out),F);
+        }
+        for(int x=x0+1;x<x1;x++)for(int z=z0+1;z<z1;z++){
+            boolean kitchen=x>=-11&&x<=-5&&z>=-24&&z<=-14,hearth=x>=9&&z>=-32&&z<=-31;
+            var floor=b.offset(x,-1,z);if(!kitchen&&!hearth&&BuildBlocks.state(l,floor).is(Blocks.SPRUCE_PLANKS))BuildBlocks.set(l,floor,RoomShell.CABIN_FLOOR.get().defaultBlockState(),F);
+            var over=b.offset(x,6,z);var top=BuildBlocks.state(l,over);
+            if(top.is(Blocks.BIRCH_PLANKS))BuildBlocks.set(l,over,RoomShell.CABIN_CEILING.get().defaultBlockState(),F);
+            else if(top.is(Blocks.DARK_OAK_PLANKS))BuildBlocks.set(l,over,RoomShell.CABIN_BEAM.get().defaultBlockState(),F);
+        }
+        // The foundation ring round the walls shows at the ground as a fieldstone apron; along the porch it is the deck's first board.
+        for(int x=x0-1;x<=x1+1;x++)for(int z=z0-1;z<=z1+1;z++){
+            if(x>=x0&&x<=x1&&z>=z0&&z<=z1)continue;var at=b.offset(x,-1,z);if(!BuildBlocks.state(l,at).is(Blocks.STONE_BRICKS))continue;
+            Direction out=x<x0?Direction.WEST:x>x1?Direction.EAST:z<z0?Direction.NORTH:Direction.SOUTH;
+            BuildBlocks.set(l,at,z==z1+1&&x>=x0&&x<=x1?RoomShell.CABIN_PORCH.get().defaultBlockState():RoomShell.CABIN_SILL.get().defaultBlockState().setValue(RoomShell.Skin.FACING,out),F);
+        }
+        for(int x=x0;x<=x1;x++)for(int z=-12;z<=-8;z++){
+            var deck=b.offset(x,-1,z);if(BuildBlocks.state(l,deck).is(Blocks.SPRUCE_PLANKS))BuildBlocks.set(l,deck,RoomShell.CABIN_PORCH.get().defaultBlockState(),F);
+            var roof=b.offset(x,6,z);if(BuildBlocks.state(l,roof).is(Blocks.SPRUCE_SLAB))BuildBlocks.set(l,roof,RoomShell.CABIN_SHAKE_SLAB.get().defaultBlockState(),F);
+        }
     }
     /** Glass panes from {@code from} to {@code to} along a wall, three high, in a stripped spruce frame. */
     private static void glaze(ServerLevel l,BlockPos b,boolean alongX,int wall,int from,int to){

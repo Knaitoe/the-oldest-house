@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "the_oldest_house:block/room_shell/cabin_ceiling",
+    "top": "the_oldest_house:block/room_shell/cabin_shakes",
+    "side": "the_oldest_house:block/room_shell/cabin_shake_edge"
+  }
+}

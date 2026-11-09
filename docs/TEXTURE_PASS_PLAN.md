@@ -114,7 +114,8 @@ Two or three scenes per release, 4 to 8 textures each:
 5. The lake house. Its rooms already had their own surfaces; the drowned house's brick and foundation, the boathouse, the dock,
    the culvert and the drive were built in 0.4.379 (docs/TEXTURE_PASS_LAKE_HOUSE_0_4_379.md).
 6. The two cabins. The old cabin is the reader's own bedside, copied from the Overworld, and is left as it is, like the family copy.
-   The cabin at the end of the world is still to do: its walls and roof are shared with the scene composition pass.
+   The cabin at the end of the world was built in 0.4.406 (docs/TEXTURE_PASS_CABIN_0_4_406.md): its walls, their foot, its floor,
+   ceiling and beams, its porch and jetty decking, and the shakes and gables of the roof the composition pass lays.
 7. The child's room. Built in 0.4.380 with the hotel's boiler room (docs/TEXTURE_PASS_ROOMS_0_4_380.md).
 8. Holloway's camp. Built in 0.4.381 with the preserved cave's pews (docs/TEXTURE_PASS_CAMP_0_4_381.md).
 9. The hotel basement (the boiler room). Built in 0.4.380 with the child's room.
@@ -142,6 +143,6 @@ Two or three scenes per release, 4 to 8 textures each:
 | 8 | Tier 3: Holloway's camp and the cave's chapel (built in 0.4.381, docs/TEXTURE_PASS_CAMP_0_4_381.md) | 11 |
 | 9 | Tier 3: Goatman's trailer (built in 0.4.382, docs/TEXTURE_PASS_TRAILER_0_4_382.md) | 15 |
 | 10 | Tier 3: Mapping the Interior (built in 0.4.396, docs/TEXTURE_PASS_MAPPING_0_4_396.md) | 12 |
-| 11 | The cabin at the end of the world | 4–8 |
+| 11 | The cabin at the end of the world (built in 0.4.406, docs/TEXTURE_PASS_CABIN_0_4_406.md) | 9 |
 
 Each release keeps the architecture views, the texture CRC and decode check and the full suite. Any tier can be reordered or dropped.
