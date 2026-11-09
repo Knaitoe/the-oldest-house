@@ -26,18 +26,31 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class BorrascaPeople {
     public static final int LORNA=146,AMES=147,ROWE=148,KURT=149,ODELL=150,FENN=151,GUS=152,EARL=153;
-    private static final String[] SKINS={"lorna","ames","rowe","kurt","odell","fenn","gus","earl"};
-    private static final String[] NAMES={"Lorna","Mr. Ames","Mr. Rowe","Kurt","Mrs. Odell","Mr. Fenn","Gus","Earl"};
+    /**
+     * 0.4.426, the town's day: the people who are not behind a counter. The Webbs at the diner counter in the daytime (their Paul is on the
+     * doctor's corkboard), the Tates waiting at the doctor's on the first visit (their girl's card is on the board by the second), and two
+     * retired deputies on the Tipple's stools years later.
+     */
+    public static final int WEBB=154,SHERRY=155,ROY=156,JOLENE=157,DUTCH=158,MERLE=159;
+    private static final String[] SKINS={"lorna","ames","rowe","kurt","odell","fenn","gus","earl","webb","sherry","roy","jolene","dutch","merle"};
+    private static final String[] NAMES={"Lorna","Mr. Ames","Mr. Rowe","Kurt","Mrs. Odell","Mr. Fenn","Gus","Earl","Mr. Webb","Mrs. Webb","Roy Tate","Jolene Tate","Dutch","Merle"};
     /** What a child has in change on each childhood visit, and a grown reader in the wallet, in cents. */
     public static final int CHANGE=150,WALLET=2000;
+    /** 0.4.426: what the friend has in her own pocket on a childhood visit, to put in when the reader is short. */
+    public static final int FRIEND_CHANGE=100;
     private BorrascaPeople(){}
 
-    public static boolean cast(int phase){return phase>=LORNA&&phase<=EARL;}
+    public static boolean cast(int phase){return phase>=LORNA&&phase<=MERLE;}
     public static String skin(int phase){return "drisking_"+SKINS[phase-LORNA];}
     public static boolean keeper(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static String name(LiteraryActor a){return NAMES[a.phase()-LORNA];}
     /** Who is at work: everyone in the daytime visits; on the last night, only the station and the bar, and Earl in his cell. */
-    public static boolean staffed(int phase,int visit){return visit<4||phase==KURT||phase==GUS||phase==EARL;}
+    public static boolean staffed(int phase,int visit){return switch(phase){
+        case WEBB,SHERRY->visit<=3;
+        case ROY,JOLENE->visit==1;
+        case DUTCH,MERLE->visit>=3;
+        default->visit<4||phase==KURT||phase==GUS||phase==EARL;
+    };}
 
     /** Where each keeper stands, in the world relative to the base: behind each counter, and Earl in the cell. */
     public static BlockPos post(int phase){return switch(phase){
@@ -48,10 +61,17 @@ public final class BorrascaPeople {
         case ODELL->new BlockPos(12,0,-82);
         case FENN->new BlockPos(13,0,-104);
         case GUS->new BlockPos(13,0,-119);
+        // The patrons sit: actors placed in a stool or a chair are drawn seated on it.
+        case WEBB->new BlockPos(-15,0,-82);
+        case SHERRY->new BlockPos(-15,0,-80);
+        case ROY->new BlockPos(9,0,-79);
+        case JOLENE->new BlockPos(10,0,-79);
+        case DUTCH->new BlockPos(14,0,-117);
+        case MERLE->new BlockPos(16,0,-117);
         default->BorrascaRooms.world(new BlockPos(28,0,-28));
     };}
     /** The way each faces at rest: across the counter toward the door, Earl toward the bars. */
-    private static float yaw(int phase){return switch(phase){case LORNA,ROWE,KURT->-90;case AMES,ODELL,EARL->90;default->0;};}
+    private static float yaw(int phase){return switch(phase){case LORNA,ROWE,KURT->-90;case AMES,ODELL,EARL,WEBB,SHERRY->90;case ROY,JOLENE,DUTCH,MERLE->180;default->0;};}
 
     // ---------------------------------------------------------------------------------------------------------------- what they sell
     public enum Ware {
@@ -79,7 +99,7 @@ public final class BorrascaPeople {
     /** Every reader tick inside the site: the purse for this visit, the keepers at their counters, and the bar's door. */
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
         purse(p,b,own,visit);
-        for(int phase=LORNA;phase<=EARL;phase++){
+        for(int phase=LORNA;phase<=MERLE;phase++){
             var a=ensure(p,b,own,phase);if(a==null)continue;
             boolean on=staffed(phase,visit);
             if(a.isInvisible()==on){a.setInvisible(!on);if(!on)a.setCustomNameVisible(false);}
@@ -102,7 +122,7 @@ public final class BorrascaPeople {
     // ---------------------------------------------------------------------------------------------------------------- the money
     /** The purse for this visit: new change or a new wallet when the visit changes; the one carried shows what is left. */
     private static void purse(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
-        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.remove("Lollipop");own.remove("BarTurnedOut");leave(p);jar(p,b,0);}
+        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");leave(p);jar(p,b,0);}
         boolean wallet=visit>=3;var held=carried(p,wallet);int cents=own.getInt("Cents");
         if(held==null)p.getInventory().add(BorrascaPurseItem.of(p,cents,wallet));
         else if(BorrascaPurseItem.cents(held)!=cents)BorrascaPurseItem.mark(held,p.getUUID(),cents);
@@ -140,6 +160,9 @@ public final class BorrascaPeople {
         turn(a,p);
         if(w==Ware.FLASHLIGHT&&!grown)return speak(p,a,"A flashlight. For the trail, I bet. I don't sell those to kids, not for up there. Bring your folks in.");
         int price=w.price(grown),have=own.getInt("Cents");
+        // 0.4.426: friends pool their coins. A child who is short with the friend beside them has her put in the rest, while she has it.
+        var friend=grown?null:BorrascaStory.friend(p,own);int pool=own.getInt("FriendCents");
+        if(have<price&&friend!=null&&friend.distanceToSqr(p)<64&&have+pool>=price){int top=price-have;own.putInt("FriendCents",pool-top);have=price;own.putInt("Cents",have);own.putInt("Pooled",own.getInt("Pooled")+1);BorrascaStory.say(p,friend,"Here. I've got "+BorrascaPurseItem.money(top)+". We'll split it.");}
         if(have<price)return speak(p,a,phase==LORNA&&!grown?"That's "+BorrascaPurseItem.money(price)+", hon. You're a little short. Come back with your friends.":"That's "+BorrascaPurseItem.money(price)+". You've got "+BorrascaPurseItem.money(have)+".");
         own.putInt("Cents",have-price);var held=carried(p,grown);if(held!=null)BorrascaPurseItem.mark(held,p.getUUID(),have-price);
         var goods=w.goods(grown);if(!p.getInventory().add(goods))p.drop(goods,false);
@@ -166,7 +189,14 @@ public final class BorrascaPeople {
         case ODELL->new String[]{"He's booked through next month. Half the county's expecting.","Do you have an appointment? No? Then take a seat and wait."};
         case FENN->grown?new String[]{"Prescriptions at the back. The fountain's still open.","A malt, for old times? The stools haven't changed."}:new String[]{"Fountain's open. Stools are for customers.","No running in here."};
         case GUS->visit==4?new String[]{"Last call's at one. What'll it be?","Sheriff's out on the ridge again. What'll it be?"}:new String[]{"What'll it be?","Earl's stool's open. He's in the Sheriff's cell again."};
-        default->grown?new String[]{"You again. No. You were smaller.","They keep me in here so I don't say things. That's a joke. Mostly.","Twenty years in and out of this cell. Same blanket."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};
+        case WEBB->grown?new String[]{"Paul's driving now. Works summers out at Prescott's.","Good money at Prescott's. Everybody's kid works there sooner or later."}:new String[]{"First breakfast out since Paul came. His grandma's got him.","Don't tell Lorna, but the pie's better at the church supper."};
+        case SHERRY->grown?new String[]{"You look like somebody's kid. Whose are you?","Paul says the pay at Prescott's is better than the plant ever was."}:new String[]{"Paul slept through the night. First time. So we're celebrating.","Dr. Hale delivered him. Dr. Hale delivers everybody."};
+        case ROY->new String[]{"Any day now, Doc says.","Don't mind us. We're just waiting on the doctor."};
+        case JOLENE->new String[]{"Mrs. Odell says it's a girl. She's never wrong about it.","We picked out her name in March. Before we even knew."};
+        case DUTCH->visit==4?new String[]{"Sheriff's up on the ridge tonight. He likes it quiet when he's up there.","We don't talk shop in here. That's Gus's rule."}:new String[]{"Thirty-one years with the county. Never once had to draw.","We don't talk shop in here. That's Gus's rule.","Prescott bought the department its new cruisers. Bought the old ones too."};
+        case MERLE->visit==4?new String[]{"Go home. Whatever you're thinking of doing tonight, go home.","You're not from the paper, are you?"}:new String[]{"Garrity girl? I took that report myself. Runaway, the Sheriff said. So that's what I wrote down.","Lot of kids run off from a town this size. You'd be surprised how many.","You're not from the paper, are you?"};
+        // 0.4.426: grown, Earl says too much.
+        default->visit==4?new String[]{"You're going up there tonight. I can see it on you.","Don't let them see your light past the second marker. That's all I'll say.","They keep me in here so I don't say things. That's a joke. Mostly."}:grown?new String[]{"You again. No. You were smaller.","I wore the star once, same as Dutch and Merle. Ask them what we did with the reports.","Every kid on the board at the store, the Sheriff signs off as a runaway. Every one. They don't run anywhere.","There's a road behind the depot fence the county doesn't plow. Somebody plows it."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};
     };}
     private static void turn(LiteraryActor a,ServerPlayer p){float yaw=(float)(Mth.atan2(p.getZ()-a.getZ(),p.getX()-a.getX())*180/Math.PI)-90;a.setYRot(yaw);a.setYHeadRot(yaw);a.setYBodyRot(yaw);}
 
@@ -177,7 +207,7 @@ public final class BorrascaPeople {
         if(own.getInt("Visit")>=3||odell==null||odell.isInvisible()||b==null)return false;
         if(own.getBoolean("Lollipop")){BorrascaStory.say(p,odell,"One's the rule.");return false;}
         own.putBoolean("Lollipop",true);var s=new ItemStack(BorrascaRegistry.LOLLIPOP.get());if(!p.getInventory().add(s))p.drop(s,false);jar(p,b,1);
-        BorrascaStory.say(p,odell,"Dr. Hale's with someone. Here, take one. Just one.");return true;
+        BorrascaStory.say(p,odell,own.getInt("Visit")==2?"The Tates had their girl last night. Dr. Hale was up till all hours. Here, take one. Just one.":"Dr. Hale's with someone. Here, take one. Just one.");return true;
     }
     private static void jar(ServerPlayer p,BlockPos b,int stage){var at=b.offset(BorrascaShops.JAR);var s=p.serverLevel().getBlockState(at);if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.JAR)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaShopBlock.STAGE,stage),3);}
 

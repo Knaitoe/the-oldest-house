@@ -32,14 +32,16 @@ public final class BorrascaShopTexts {
      * progenitor"): every baby's name begins with P or K, the Prescotts' letter or the Sheriff's, in the childhood year and years later
      * alike. Nothing on the board says so.
      */
-    static ItemStack cards(boolean later){
-        String y=later?"2009":"1992";
+    static ItemStack cards(int visit){
+        boolean later=visit>=3;String y=later?"2009":"1992";
         String[] n=later?new String[]{"Kennedy","Paxton","Kaylee","Piper and Kade","Kingston"}:new String[]{"Kelsey Ann","Paul","Katelyn","Peyton and Kody","Kevin"};
         return typed("Cards on Dr. Hale's corkboard","Drisking families",
             "Pinned in rows, edges curling. Every card has a stork, or a rattle, or a ribbon, and every one says thank you to the doctor.",
             "PRUITT\nIt's a girl! "+n[0]+"\nMarch 3, "+y+"\nThank you, Doc.\n\nWEBB\n"+n[1]+", 7 lb 2 oz\nMarch 20, "+y+"\nWe can't thank you enough.",
             "HOLLIS\nOur daughter, "+n[2]+"\nApril 6, "+y+"\nAn answer to prayer.\n\nCORLEY\nTwins! "+n[3]+"\nApril 28, "+y+"\nThank you for everything.",
-            "MADDOX\nA son, "+n[4]+"\nMay 15, "+y+"\nThank you, Dr. Hale.\n\nThe last pin holds an empty envelope, addressed to the doctor in a careful hand.");
+            "MADDOX\nA son, "+n[4]+"\nMay 15, "+y+"\nThank you, Dr. Hale.\n\nThe last pin holds an empty envelope, addressed to the doctor in a careful hand.",
+            // 0.4.426: the couple waiting on the first visit had their girl by the second; her card is the newest on the board.
+            visit==2?"TATE\nIt's a girl! Paige\nJune 1992\nThank you, Doc. We'd have been lost without you.\n\nPinned over the envelope, the newest card on the board.":"");
     }
 
     /** The society's framed map of the old workings. */
