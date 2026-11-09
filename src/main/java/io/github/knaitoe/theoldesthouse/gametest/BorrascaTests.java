@@ -533,6 +533,66 @@ public final class BorrascaTests {
         }).thenSucceed();
     }
 
+    /**
+     * 0.4.425: the town's people and the pocket money. Each shop has its keeper at the counter and Earl is in the Sheriff's cell; a child has
+     * a dollar fifty in change, buys coffee that comes mostly milk, is short for pie, is refused a flashlight for the trail, gets one lollipop
+     * and is turned out of the bar. Grown, the reader has a wallet with twenty in it, real coffee, a flashlight and a beer, and is let stay in
+     * the bar. On the last night only the station and the bar are open. Leaving takes the money out of the reader's pockets.
+     */
+    @AfterBatch(batch="borrasca_people") public static void peopleDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_people",timeoutTicks=2400)
+    public static void theTownsKeepersSellToAChildAndAGrownReaderAndTurnChildrenOutOfTheBar(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("drisking_customer");
+        java.util.function.IntFunction<LiteraryActor> keeper=phase->BorrascaPeople.keeper(p,f.own(p),phase);
+        java.util.function.BiFunction<Integer,BorrascaPeople.Ware,String> buy=(phase,ware)->{var own=f.own(p);var line=BorrascaPeople.buy(p,own,keeper.apply(phase),ware);f.save(p,own);return line;};
+        java.util.function.Function<net.minecraft.world.item.Item,Integer> count=item->p.getInventory().countItem(item);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"native sections loaded")).thenExecute(()->f.enter(p))
+          .thenWaitUntil(()->{for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.EARL;k++)h.assertTrue(keeper.apply(k)!=null,"keeper "+k+" stands at the counter");})
+          .thenWaitUntil(()->h.assertTrue(BorrascaPeople.carried(p,false)!=null,"the child has change in a pocket"))
+          .thenExecute(()->{
+            var b=f.base(p);
+            for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.EARL;k++){var a=keeper.apply(k);h.assertTrue(!a.isInvisible()&&a.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(BorrascaPeople.post(k))))<1.1,"on a childhood visit every keeper is at work, at the counter: "+BorrascaPeople.name(a));}
+            var earl=keeper.apply(BorrascaPeople.EARL);h.assertTrue(earl.blockPosition().equals(BorrascaRooms.at(b,28,0,-28)),"Earl is in the Sheriff's cell");
+            h.assertTrue(BorrascaPeople.cents(f.own(p))==BorrascaPeople.CHANGE&&BorrascaPurseItem.money(BorrascaPeople.CHANGE).equals("1.50"),"a child has a dollar fifty to spend");
+            f.atWorld(p,new BlockPos(-15,0,-85));
+            var coffee=buy.apply(BorrascaPeople.LORNA,BorrascaPeople.Ware.COFFEE);
+            h.assertTrue(coffee!=null&&coffee.contains("mostly milk")&&count.apply(BorrascaRegistry.MILK_COFFEE.get())==1&&count.apply(BorrascaRegistry.COFFEE.get())==0,"the host answers a child's coffee order and makes it mostly milk: "+coffee);
+            h.assertTrue(BorrascaPeople.cents(f.own(p))==100&&BorrascaPurseItem.cents(BorrascaPeople.carried(p,false))==100,"the coffee cost fifty cents and the change in the pocket says so");
+            var pie=buy.apply(BorrascaPeople.LORNA,BorrascaPeople.Ware.PIE);
+            h.assertTrue(pie!=null&&pie.contains("short")&&count.apply(BorrascaRegistry.PIE.get())==0&&BorrascaPeople.cents(f.own(p))==100,"a dollar is short of a slice of pie: "+pie);
+            f.at(p,-20,0,-26);
+            var torch=buy.apply(BorrascaPeople.AMES,BorrascaPeople.Ware.FLASHLIGHT);
+            h.assertTrue(torch!=null&&torch.contains("For the trail")&&count.apply(BorrascaRegistry.FLASHLIGHT.get())==0&&BorrascaPeople.cents(f.own(p))==100,"the store won't sell a child a flashlight for the trail: "+torch);
+            f.atWorld(p,new BlockPos(-18,0,-117));
+            h.assertTrue(buy.apply(BorrascaPeople.KURT,BorrascaPeople.Ware.CANDY)!=null&&count.apply(BorrascaRegistry.CANDY.get())==1&&BorrascaPeople.cents(f.own(p))==65,"thirty-five cents buys a candy bar at the station");
+            h.assertTrue(buy.apply(BorrascaPeople.GUS,BorrascaPeople.Ware.BEER)==null&&count.apply(BorrascaRegistry.BEER.get())==0,"the bar serves a child nothing");
+            f.atWorld(p,new BlockPos(11,0,-82));
+            var own=f.own(p);h.assertTrue(BorrascaPeople.lollipop(p,own)&&!BorrascaPeople.lollipop(p,own)&&count.apply(BorrascaRegistry.LOLLIPOP.get())==1,"the receptionist gives a child one lollipop, and only one");f.save(p,own);
+            h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(BorrascaShops.JAR)),BorrascaShopBlock.Kind.JAR)&&f.out.getBlockState(b.offset(BorrascaShops.JAR)).getValue(BorrascaShopBlock.STAGE)==1,"the jar is lower by one");
+            f.atWorld(p,new BlockPos(12,0,-114));
+          }).thenWaitUntil(()->h.assertTrue(p.getX()-f.base(p).getX()<7,"Gus turns the child out of the bar onto the sidewalk: "+p.position().subtract(Vec3.atLowerCornerOf(f.base(p)))))
+          .thenExecute(()->{h.assertTrue(f.own(p).getInt("BarTurnedOut")==1,"turned out once");f.stage(p,3);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&BorrascaPeople.carried(p,true)!=null,"years later the reader carries a wallet"))
+          .thenExecute(()->{
+            h.assertTrue(BorrascaPeople.carried(p,false)==null&&BorrascaPeople.cents(f.own(p))==BorrascaPeople.WALLET,"the child's change is gone and the wallet holds twenty");
+            f.atWorld(p,new BlockPos(-15,0,-85));
+            var coffee=buy.apply(BorrascaPeople.LORNA,BorrascaPeople.Ware.COFFEE);
+            h.assertTrue(coffee!=null&&!coffee.contains("milk")&&count.apply(BorrascaRegistry.COFFEE.get())==1&&BorrascaPeople.cents(f.own(p))==1875,"grown, the coffee is coffee, at the later price: "+coffee);
+            f.at(p,-20,0,-26);
+            h.assertTrue(buy.apply(BorrascaPeople.AMES,BorrascaPeople.Ware.FLASHLIGHT)!=null&&count.apply(BorrascaRegistry.FLASHLIGHT.get())==1&&BorrascaPeople.cents(f.own(p))==876,"a grown reader can buy a flashlight");
+            f.atWorld(p,new BlockPos(12,0,-116));
+            h.assertTrue(buy.apply(BorrascaPeople.GUS,BorrascaPeople.Ware.BEER)!=null&&count.apply(BorrascaRegistry.BEER.get())==1&&BorrascaPeople.cents(f.own(p))==576,"the bar serves a grown reader a beer");
+          }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(BorrascaPeople.inBar(p.blockPosition().subtract(f.base(p)))&&f.own(p).getInt("BarTurnedOut")==0,"a grown reader stays in the bar");
+            f.stage(p,4);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==4,"the last night's purse"))
+          .thenExecute(()->{
+            for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.EARL;k++){boolean open=k==BorrascaPeople.KURT||k==BorrascaPeople.GUS||k==BorrascaPeople.EARL;h.assertTrue(keeper.apply(k).isInvisible()!=open,"on the last night only the station and the bar are open: "+BorrascaPeople.name(keeper.apply(k)));}
+            f.atWorld(p,new BlockPos(-15,0,-85));h.assertTrue(buy.apply(BorrascaPeople.LORNA,BorrascaPeople.Ware.PIE)==null,"the diner is closed on the last night");
+            BorrascaStory.depart(p);h.assertTrue(BorrascaPeople.carried(p,true)==null&&BorrascaPeople.carried(p,false)==null,"leaving takes the money out of the reader's pockets");
+          }).thenSucceed();
+    }
+
     @AfterBatch(batch="borrasca_town_children") public static void townChildrenDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=1800)
     public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){

@@ -37,6 +37,11 @@ public final class BorrascaRegistry {
     public static final DeferredItem<BorrascaKeepsakeItem> COMPASS=ITEMS.register("borrasca_compass",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Compass"));
     public static final DeferredItem<BorrascaKeepsakeItem> PATCH=ITEMS.register("borrasca_name_patch",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Patch"));
     public static final DeferredItem<Item> FLASHLIGHT=ITEMS.registerSimpleItem("borrasca_flashlight",new Item.Properties().stacksTo(1));
+    /** 0.4.425: the money a reader carries in the town, and what the shops sell (BorrascaPeople, BorrascaFood). */
+    public static final DeferredItem<BorrascaPurseItem> COINS=ITEMS.register("borrasca_coins",()->new BorrascaPurseItem(false)),WALLET=ITEMS.register("borrasca_wallet",()->new BorrascaPurseItem(true));
+    public static final DeferredItem<BorrascaFood> PIE=food("pie",BorrascaFood.Kind.PIE),COFFEE=food("coffee",BorrascaFood.Kind.COFFEE),MILK_COFFEE=food("milk_coffee",BorrascaFood.Kind.MILK_COFFEE),SODA=food("soda",BorrascaFood.Kind.SODA),
+        CANDY=food("candy",BorrascaFood.Kind.CANDY),LOLLIPOP=food("lollipop",BorrascaFood.Kind.LOLLIPOP),MALT=food("malt",BorrascaFood.Kind.MALT),BEER=food("beer",BorrascaFood.Kind.BEER);
+    private static DeferredItem<BorrascaFood> food(String id,BorrascaFood.Kind kind){return ITEMS.register("borrasca_"+id,()->new BorrascaFood(kind));}
     public static final DeferredHolder<SoundEvent,SoundEvent> GRINDER=sound("grinder"),GRINDER_MUFFLED=sound("grinder_muffled"),MOTOR_STOP=sound("motor_stop"),TREE_CREAK=sound("tree_creak"),TOWN_WIND=sound("town_wind"),CHIME=sound("triple_chime"),STROKE=sound("stroke"),CARVE=sound("carve"),BREAKER=sound("breaker"),CHAIN=sound("chain");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register("borrasca."+id,()->id.equals("triple_chime")||id.equals("stroke")?SoundEvent.createFixedRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca."+id),256):SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca."+id)));}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}

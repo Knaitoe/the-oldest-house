@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.424** gives Borrasca's children their fathers' letter. As in the story it follows, the children born at the depot are named for the men who fathered them, P for the Prescotts and K for the Sheriff: the friend is now Kelly, the boy with the bike Patrick and the girl who went looking for him Kendra, and every baby on the doctor's corkboard has a P or K name.
+Development candidate **0.4.425** puts people in Borrasca's town. Each shop has its keeper behind the counter: Lorna at the diner, Mr. Ames at the store, Mr. Rowe among the antiques, Kurt at the gas station, Mrs. Odell at the doctor's desk, Mr. Fenn at the soda fountain and Gus at the bar, and Earl sleeps it off in the Sheriff's cell. A child has a dollar fifty in change and a grown reader a wallet with twenty in it, to spend on pie, coffee, soda, candy, a malt or a beer. The diner's host makes a child's coffee mostly milk, the store won't sell a child a flashlight for the trail, and Gus turns children out of the bar. See [docs/BORRASCA_PEOPLE_0_4_425.md](docs/BORRASCA_PEOPLE_0_4_425.md).
+
+Candidate **0.4.424** gives Borrasca's children their fathers' letter. As in the story it follows, the children born at the depot are named for the men who fathered them, P for the Prescotts and K for the Sheriff: the friend is now Kelly, the boy with the bike Patrick and the girl who went looking for him Kendra, and every baby on the doctor's corkboard has a P or K name.
 
 Candidate **0.4.423** lets a reader jump off a swing. Jumping while sitting on one lets go, and the reader flies on with the seat's own speed along the arc: out ahead off the forward swing, almost straight down at either end, backward on the way back. It works on the quiet rooms' porch swing and on a Borrasca yard's swing, which can now be sat on.
 

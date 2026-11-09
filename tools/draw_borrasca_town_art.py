@@ -6,7 +6,9 @@ north and turned by its facing. The diner's pie case (stage 1, one pie cut), cof
 (stage 1, a flashlight gone from its hook); the gas pump's two halves, the price board, the payphone, the soda cooler and the candy
 rack; the antiques shop's glass case, the miner's helmet, the map of the old workings, framed photographs and a wall clock; the
 doctor's beam scale, lollipop jar (stage 1, nearly empty), corkboard of birth cards, examination table and eye chart; the
-drugstore's soda fountain, pharmacy shelf and comic spinner; and a lit OPEN sign. Writes the models and block states and the
+drugstore's soda fountain, pharmacy shelf and comic spinner; and a lit OPEN sign. 0.4.425: the things the town sells (pie,
+coffee, coffee mostly milk, soda, candy, a lollipop, a malt, beer) and the money to buy them with (a child's change, a wallet), as
+items. Writes the models and block states and the
 blocks' names. --check verifies everything.
 """
 from pathlib import Path
@@ -480,6 +482,8 @@ def textures():
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
+    for name, (draw, _) in ITEM_ART.items():
+        out[f'item/borrasca_{name}.png'] = draw()
     return out
 
 
@@ -566,6 +570,132 @@ def shop_models():
     return m
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.425: things to buy
+# Drawn as grids, one character a pixel, in the vanilla item manner: a darker rim on every edge that meets the air.
+def grid(rows, palette, rim=-46):
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in palette:
+                c = palette[ch]
+                im.putpixel((x, y), shade(c[0], 0, c[1]) if isinstance(c, tuple) else shade(c))
+    px = im.load(); edge = []
+    for y in range(16):
+        for x in range(16):
+            if px[x, y][3] != 255:
+                continue
+            if any(not (0 <= x + dx < 16 and 0 <= y + dy < 16) or px[x + dx, y + dy][3] == 0 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                edge.append((x, y))
+    for x, y in edge:
+        r, g, b, a = px[x, y]
+        px[x, y] = (max(0, r + rim), max(0, g + rim), max(0, b + rim), a)
+    return im
+
+
+def item_pie():
+    return grid(['................', '................', '................', '................',
+                 '..........hh....', '.......hhcLch...', '....hhcLccLcch..', '.hhcLccLccLcccC.',
+                 '.cccccccccccccC.', '.ffgfffgffffcCC.', '.FfffFfffFfffCC.', '.CCCCCCCCCCCCCC.',
+                 'wwwwwwwwwwwwwwww', 'swwwwwwwwwwwwwws', '.ssssssssssssss.', '................'],
+                {'h': '#f2c87e', 'c': '#d9a252', 'C': '#a8702e', 'L': '#b47a38', 'f': '#8e2026', 'F': '#621219', 'g': '#c03a40',
+                 'w': '#ece8e0', 's': '#bdb6a8'})
+
+
+def item_mug(coffee, light):
+    return grid(['................', '......g...g.....', '.....g...g......', '......g...g.....',
+                 '................', '..OOOOOOOOO.....', '..OddDdddDO.....', '..OHWWWWWSOOO...',
+                 '..OHWWWWWSO.O...', '..OHWWWWWSO.O...', '..OHWWWWWSOOO...', '..OHWWWWWSO.....',
+                 '...OSSSSSO......', '....OOOOO.......', '................', '................'],
+                {'g': ('#ffffff', 110), 'O': '#a8a296', 'W': '#f0ede6', 'H': '#ffffff', 'S': '#cfc9bd', 'd': coffee, 'D': light}, rim=-20)
+
+
+def item_soda():
+    return grid(['.......kk.......', '.......KK.......', '.......GG.......', '.......Gg.......',
+                 '......GddG......', '......GddG......', '.....GdddgG.....', '.....GdddgG.....',
+                 '.....LLLLLL.....', '.....LmmmmL.....', '.....LLLLLL.....', '.....GdddgG.....',
+                 '.....GdddgG.....', '.....GdddgG.....', '.....GGGGGG.....', '................'],
+                {'k': '#d6d6ce', 'K': '#9a9a92', 'G': '#7c9e96', 'g': '#d2eee6', 'd': '#3e2216', 'L': '#ece4cc', 'm': '#bc2e2c'})
+
+
+def item_beer():
+    return grid(['.......kk.......', '.......kk.......', '.......BB.......', '.......Bb.......',
+                 '.......Bb.......', '......BBbB......', '.....BBBBbB.....', '.....BBBBbB.....',
+                 '.....LLLLLL.....', '.....LllllL.....', '.....LLLLLL.....', '.....BBBBbB.....',
+                 '.....BBBBbB.....', '.....BBBBbB.....', '.....BBBBBB.....', '................'],
+                {'k': '#c8b46a', 'B': '#6a3414', 'b': '#b0622c', 'L': '#ece0c0', 'l': '#2e3e70'})
+
+
+def item_malt():
+    return grid(['.........s......', '....cc..s.......', '...cCcwws.......', '..wwwwwwwwww....',
+                 '..wWwwwwwwWw....', '..GmmmmmmmmG....', '...GmmmmmmG.....', '...GmMmmmmG.....',
+                 '....GmMmmG......', '....GmmmmG......', '.....GmmG.......', '......GG........',
+                 '......GG........', '....GGGGGG......', '................', '................'],
+                {'s': '#f4f0ea', 'c': '#c8202c', 'C': '#ff6a70', 'w': '#f6f2ea', 'W': '#ffffff', 'G': '#c4dcdc', 'm': '#8a5636', 'M': '#a8704a'}, rim=-30)
+
+
+def item_candy():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            u, v = (x - 7.5) - (y - 7.5), (x - 7.5) + (y - 7.5)
+            if abs(u) > 11 or abs(v) > 3.5:
+                continue
+            if u > 8.5:
+                c = '#5a3018' if abs(v) < 2.5 else '#3e1e0e'
+            elif u < -9.5:
+                c = '#e8b0a8' if (x + y) % 2 else '#c87870'
+            elif abs(u) < 3:
+                c = '#efe6cc' if abs(v) < 2.5 else '#c8bc9a'
+                if abs(v) < 1 and int(u) % 2 == 0:
+                    c = '#3a2a6a'
+            else:
+                c = '#c4342c' if abs(v) < 2.5 else '#8a1e18'
+            im.putpixel((x, y), shade(c))
+    return im
+
+
+def item_lollipop():
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for i in range(7):
+        x, y = 8 + i, 8 + i
+        im.putpixel((x, y), shade('#f4f0e6')); im.putpixel((x, y + 1) if y < 15 else (x, y), shade('#bdb6a6'))
+    import math
+    for y in range(11):
+        for x in range(11):
+            dx, dy = x - 5, y - 5
+            d = math.hypot(dx, dy)
+            if d > 4.6:
+                continue
+            band = int((math.atan2(dy, dx) + math.pi) / (math.pi / 3) + d) % 2
+            c = ('#e8344a' if band else '#f8e8ea') if d < 4 else '#a01e2e'
+            im.putpixel((x + 1, y + 1), shade(c))
+    im.putpixel((4, 3), shade('#ffffff'))
+    return im
+
+
+def item_coins():
+    return grid(['................', '................', '................', '................',
+                 '................', '.........oooo...', '........oPPPPo..', '........oPpPPo..',
+                 '...oooo..oooo...', '..oSSSSo........', '..oShSSo..oooo..', '..oooooo.oSSSSo.',
+                 '..oEEEEo.oShSSo.', '..oooooo.oooooo.', '..oEEEEo.oEEEEo.', '...oooo...oooo..'],
+                {'o': '#6a6e72', 'S': '#c8ccd0', 'h': '#f2f6fa', 'E': '#9ca2a8', 'P': '#c27a4a', 'p': '#e8a06c'}, rim=0)
+
+
+def item_wallet():
+    return grid(['................', '................', '................', '................',
+                 '....gggggg......', '...gGGGGGGg.....', '.OOOOOOOOOOOOO..', '.OLLLLLLLLLLLO..',
+                 '.OLtttttttttLO..', '.OLllllllllLLO..', '.OLLLLLLLLLLLO..', '.OLtttttttttLO..',
+                 '.OLLLLLLLLLLLO..', '.OOOOOOOOOOOOO..', '................', '................'],
+                {'g': '#7e9a70', 'G': '#a8c49a', 'O': '#3a2416', 'L': '#5e3c24', 'l': '#7c5434', 't': '#a8825a'}, rim=0)
+
+
+ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wallet'),
+            'pie': (item_pie, 'Slice of pie'), 'coffee': (lambda: item_mug('#3a2416', '#5c3a24'), 'Cup of coffee'),
+            'milk_coffee': (lambda: item_mug('#b88a5e', '#d4ac80'), 'Coffee, mostly milk'), 'soda': (item_soda, 'Bottle of soda'),
+            'candy': (item_candy, 'Candy bar'), 'lollipop': (item_lollipop, 'Lollipop'), 'malt': (item_malt, 'Chocolate malt'),
+            'beer': (item_beer, 'Bottle of beer')}
+
+
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
          'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open']
 STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2}
@@ -590,6 +720,8 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/borrasca_shop.json'] = {'variants': variants}
+    for name in ITEM_ART:
+        out[f'models/item/borrasca_{name}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/borrasca_{name}'}}
     return out
 
 
@@ -620,6 +752,7 @@ def main():
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
+    wanted.update({f'item.the_oldest_house.borrasca_{k}': v[1] for k, v in ITEM_ART.items()})
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key
