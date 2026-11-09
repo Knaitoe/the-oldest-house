@@ -89,19 +89,55 @@ Each is an original story with original people and words. In each, horror comes 
 
 ### A. Last orders (chosen)
 
-- **The place:** a dive bar at closing time that does not close. The clock over the door says ten to, all night.
-- **The chalkboard:** the league board has the reader's name on it, in the reader's own handwriting, with a season of scores. The
-  regulars greet the reader as one of them and remember games the reader never played.
-- **The man at the table:** one regular has been on the same frame of eight-ball since the last night the bar really closed, and
-  will not let it end. Each rack the reader plays against him, the bar is a little later and a little emptier. More of "the
-  reader's" games appear on the chalkboard, dated on nights the reader was somewhere else.
-- **The darts:** a round-the-clock game on the board counts the hours. Hitting the bull at the end is the only way anyone has ever
-  seen the clock move.
+The owner, the same day: "try to draw inspiration from literary sources if you can find any".
+
+**Sources.** All three are public domain. Only their shapes are taken, and the people, names and words are original, as always. No
+title appears in the game.
+- **W. C. Morrow, "Over an Absinthe Bottle" (1893).** The spine. In a San Francisco saloon, a starving young man is invited into a
+  private booth by a pale stranger with a stone-cold hand and a roll of bills. They play dice over a bottle of absinthe for stakes
+  that rise from a dollar to everything. Two men in the next booth talk about a robbery, and that reveals who the stranger is. The
+  young man takes the winnings and walks out into a dream of feasting. At the end, detectives find both men dead in the booth,
+  staring at each other across the stacked money, the empty bottle and the dice beside them.
+- **Washington Irving, "Rip Van Winkle" (1819).** The regulars. A silent company plays its game in the hills without a word, and the
+  flagon they share takes twenty years from the man who drinks with them.
+- **Samuel Taylor Coleridge, "The Rime of the Ancient Mariner" (1798).** The last game. Two figures cast dice for the crew. "The game
+  is done! I've won!" is said by the winner, who whistles three times.
+
+**The story:**
+- **The place:** a saloon-bar long after midnight. There are numbered booths down one wall, a pool table under one lamp and a
+  dartboard at the far end. The clock over the door says ten to, all night.
+- **The stranger in booth four (Morrow).** He is pale, with a face like badly cut stone, a hand as cold as one, and a roll of notes
+  tied with string. He wants a game, pool or darts, the reader's choice. He stakes from the roll and the reader stakes nothing they
+  own; he says the company is stake enough.
+  - He loses the first frames, and each time he doubles what is on the table.
+  - Pool is played on the real table and darts at the real board, so anyone in the room can watch.
+- **The regulars at the bar (Irving).** They are a few people in old coats who play darts among themselves without a word and never
+  miss. When the reader passes, one pushes a glass along the bar toward them.
+  - Each glass the reader takes adds another week of league games to the chalkboard, in the reader's own handwriting, that the
+    reader never played.
+  - The window behind them turns to another season.
+  - Refusing is always possible. The chalkboard and the window are the bar's, shared by everyone in it.
+- **The next booth (Morrow's reveal).** Once the stakes are high, two drinkers in booth three talk without looking round. One night
+  a man came in, won everything at that table, and never went home. Partway through, they stop describing the stranger and start
+  describing whoever is playing him now.
+- **The last frame (Coleridge).** Everything on the table is played for. If the stranger wins, he says it is done and he has won,
+  and whistles three times.
 - **Endings:**
-  - win his frame, and he puts his coat on and goes out the front door into a street that was not there before;
-  - throw the frame on purpose, and the reader's name stays on the chalkboard for the next one;
-  - walk out mid-frame.
-- **The account:** the league sheet, with every game "the reader" played.
+  - **Walked out (resolved, survival):** win the last frame, leave the roll on the table and walk out of the bar. Behind the reader
+    the stranger sits on, staring at the empty seat.
+  - **Took the roll (failure):** win the last frame and pick the roll up. The street outside is a feast, every window lit and full of
+    food, and the reader is somehow back at the bar, at ten to, with their pockets empty. They may come back another night and try
+    again.
+  - **Lost the last frame (failure):** the three whistles, and the evening is taken, as at the black cabinet.
+- **The account:** the morning shift's note left under the till, in an original voice. It records what was in booth four at opening:
+  - for a reader who walked out, one man staring at an empty seat and the money stacked;
+  - its earlier pages, from nights the reader took the roll, record two at the table, staring at each other, one in the reader's
+    clothes.
+- **Multiplayer:**
+  - The stranger plays one reader at a time at pool, or two readers together at doubles.
+  - Darts with the regulars is open to everyone.
+  - Each reader's resolution is theirs alone: they must have played the last frame and left the roll.
+  - The glasses, the chalkboard and the window are shared.
 
 ### B. The wake
 
