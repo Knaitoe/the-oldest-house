@@ -37,10 +37,12 @@ public final class BorrascaCast {
         case "CastKimber"->visit>=4?BorrascaRooms.KELLY:visit==3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);
         case "CastSheriff"->visit>=4?BorrascaRooms.YARD_PATROL_START:visit==3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);
         case "CastPrescott"->visit>=4?new BlockPos(40,-4,-55):visit>=2?new BlockPos(15,12,-171):new BlockPos(11,0,-25);
-        case "Worker0"->visit==3?new BlockPos(-6,12,-178):new BlockPos(35,-4,-59);
+        // 0.4.440: the two men wait under the yard, not in the store in town: the owner saw a child's taking where the men, brought up the
+        // hill from three hundred blocks off, were heard and never seen, and slow to come.
+        case "Worker0"->visit==3?new BlockPos(-6,12,-178):BorrascaRooms.MEN_WAIT;
         case "TownEli"->visit==1?new BlockPos(-2,0,-24):new BlockPos(36,-4,-56);
         case "TownWren"->visit<=2?new BlockPos(-2,0,-32):new BlockPos(38,-4,-56);
-        case "Worker1"->visit==3?new BlockPos(8,12,-182):new BlockPos(37,-4,-59);
+        case "Worker1"->visit==3?new BlockPos(5,12,-178):BorrascaRooms.MEN_WAIT.east(3);
         case "CastDana"->BorrascaFeeding.COT; // 0.4.439: on her cot in room 2 until the men fetch her (BorrascaFeeding)
         default->throw new IllegalArgumentException(key);};}
     public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return;int visit=own.contains("CastNextVisit")?own.getInt("CastNextVisit"):own.getInt("Visit");var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=body(own,key)!=null?body(own,key):base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?Math.max(3,visit):visit));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)level.getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(level,held));}

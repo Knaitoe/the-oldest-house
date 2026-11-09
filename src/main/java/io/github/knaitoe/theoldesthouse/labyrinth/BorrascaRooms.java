@@ -19,7 +19,7 @@ public final class BorrascaRooms {
     static final BlockPos YARD_PATROL_START=new BlockPos(2,12,-174);
     public static final BlockPos SHELTER_ONE=new BlockPos(3,2,-114),SHELTER_TWO=new BlockPos(-2,6,-131);
     public static final BlockPos GATE=new BlockPos(0,12,-169),LOCK=new BlockPos(0,13,-167),GATE_LOG=new BlockPos(5,13,-170),PACK=new BlockPos(-24,13,-195);
-    public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,17,-184);
+    public static final BlockPos EVIDENCE=new BlockPos(-26,13,-195),POWER=new BlockPos(6,12,-183),RELEASE=new BlockPos(-15,12,-205),MACHINE=new BlockPos(0,12,-189),FACTORY_DOOR=new BlockPos(-17,12,-169),LAMP=new BlockPos(0,17,-180);
     public static final BlockPos[] GULLY={new BlockPos(-9,0,-97),new BlockPos(-15,0,-107),new BlockPos(-16,2,-117),new BlockPos(-13,4,-128),new BlockPos(-8,6,-137),new BlockPos(-2,8,-143)};
     /**
      * The way down the far side from the service gate, outside the wire all the way (0.4.235: it used to run along the west fence and
@@ -190,11 +190,53 @@ public final class BorrascaRooms {
         BorrascaTown.depot(l,b);
         for(int z=-178;z>=-200;z--)fit(l,b,new BlockPos(0,12,z),BorrascaFittingBlock.Kind.BELT,Direction.NORTH);
         for(int y=13;y<=16;y++)for(int x=-2;x<=2;x++)for(int z=-191;z<=-187;z++)if(Math.abs(x)==2||z==-191||z==-187)fit(l,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.POLISHED,Direction.NORTH);
-        BuildBlocks.set(l,b.offset(MACHINE),BorrascaRegistry.MACHINE.get().defaultBlockState(),F);box(l,b,3,12,-184,3,17,-184,Blocks.IRON_BARS);box(l,b,1,17,-184,3,17,-184,Blocks.IRON_BARS);join(l,b,1,12,-184,3,17,-184);fit(l,b,LAMP,BorrascaFittingBlock.Kind.LAMP,Direction.SOUTH);
+        BuildBlocks.set(l,b.offset(MACHINE),BorrascaRegistry.MACHINE.get().defaultBlockState(),F);
+        // 0.4.440: the lamp is on the refinery's front, over the belt's way in, where the trail still sees it come on.
+        box(l,b,19,3,-207,26,8,-201,Blocks.STONE_BRICKS);box(l,b,20,4,-206,25,6,-202,Blocks.AIR);
+        refinery(l,b);fit(l,b,LAMP,BorrascaFittingBlock.Kind.LAMP,Direction.SOUTH);for(int x:new int[]{-1,1})set(l,b,x,LAMP.getY(),LAMP.getZ(),Blocks.IRON_BARS);join(l,b,-1,LAMP.getY(),LAMP.getZ(),1,LAMP.getY(),LAMP.getZ());
         BuildBlocks.set(l,b.offset(POWER),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR).setValue(LeverBlock.POWERED,true),F);fit(l,b,POWER.below(),BorrascaFittingBlock.Kind.BREAKER,Direction.SOUTH);
         for(var e:ElkLot.pickupStates(b.offset(0,12,0),12,-180,Direction.NORTH,2,false).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
         for(var e:ElkLot.pickupStates(b.offset(0,12,0),TRUCK.getX(),TRUCK.getZ(),Direction.SOUTH,3,false).entrySet())BuildBlocks.set(l,e.getKey(),e.getValue(),F);
         for(int z=-180;z>=-201;z--)box(l,b,-11,12,z,-11,14,z,Blocks.IRON_BARS);join(l,b,-11,12,-201,-11,14,-180);box(l,b,-11,12,-179,-11,13,-179,Blocks.AIR);
+    }
+    /*
+     * 0.4.440, the owner: "secure this so the player can't see it from the gate" (the cone and its rings stood up over the depot); and the
+     * book: "We were standing in what I guessed was a refinery and in the middle of the room was a large silver, conically shaped machine."
+     * The machine stands in a hall of its own: steel walls to the eaves, a pitched roof over the cone's bent tip, and the belt's way in at
+     * the foot of the south wall, three blocks high, too low to show anything above the housing from the gate. The belt goes out through
+     * the north wall to the pile. Inside, the breaker, and lamps hung from the roof.
+     */
+    /** The refinery's walls: x at plus and minus REF_X, z from REF_NORTH to REF_SOUTH, up to REF_EAVES. */
+    public static final int REF_X=8,REF_SOUTH=-181,REF_NORTH=-198,REF_EAVES=28;
+    /** 0.4.440: where the two men are kept out of the way when they are not about: a sealed room under the yard, near where they come out. */
+    public static final BlockPos MEN_WAIT=new BlockPos(21,4,-204);
+    /** The belt's way in, in the south wall: x from -2 to 2, up to this height. */
+    public static final int REF_DOOR_TOP=14;
+    /** The roof over a column, in half blocks: from just over the eaves at the walls to the ridge over the machine. */
+    public static int refineryRoof(int x){return 2*(REF_EAVES+1)+(REF_X-Math.abs(x));}
+    private static void refinery(ServerLevel l,BlockPos b){
+        box(l,b,-REF_X+1,REF_EAVES-3,REF_NORTH+1,REF_X-1,refineryRoof(0)/2+1,REF_SOUTH-1,Blocks.AIR);
+        for(int x=-REF_X;x<=REF_X;x++)for(int z=REF_NORTH;z<=REF_SOUTH;z++){
+            boolean wall=Math.abs(x)==REF_X||z==REF_NORTH||z==REF_SOUTH;
+            if(!wall){if(!(x==0||(x==POWER.getX()&&z==POWER.getZ())))set(l,b,x,11,z,Blocks.POLISHED_ANDESITE);continue;}
+            boolean column=(Math.abs(x)==REF_X&&(z==REF_NORTH||z==REF_SOUTH||(z-REF_SOUTH)%5==0))||((z==REF_NORTH||z==REF_SOUTH)&&(Math.abs(x)==REF_X||Math.abs(x)==3));
+            for(int y=12;y<=REF_EAVES;y++){
+                if(z==REF_SOUTH&&Math.abs(x)<=2&&y<=REF_DOOR_TOP){set(l,b,x,y,z,Blocks.AIR);continue;}
+                if(z==REF_NORTH&&Math.abs(x)<=1&&y<=13){set(l,b,x,y,z,Blocks.AIR);continue;}
+                if(column){set(l,b,x,y,z,Blocks.IRON_BLOCK);continue;}
+                if(y==12){set(l,b,x,y,z,Blocks.GRAY_CONCRETE);continue;}
+                int run=(x*73856093^z*83492791)>>>4;fit(l,b,new BlockPos(x,y,z),run%6==0&&y<=13+run/6%3?BorrascaFittingBlock.Kind.RUST:BorrascaFittingBlock.Kind.STEEL,Direction.NORTH);
+            }
+        }
+        // The roof, pitched along the hall in half-block steps and run out a block past every wall; the gables closed up under it.
+        for(int x=-REF_X-1;x<=REF_X+1;x++)for(int z=REF_NORTH-1;z<=REF_SOUTH+1;z++){
+            int half=refineryRoof(x);boolean gable=(z==REF_NORTH||z==REF_SOUTH)&&Math.abs(x)<REF_X;
+            BuildBlocks.set(l,b.offset(x,half/2,z),Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,half%2==0?SlabType.BOTTOM:gable?SlabType.DOUBLE:SlabType.TOP),F);
+            if(gable)for(int y=REF_EAVES+1;y<half/2;y++)fit(l,b,new BlockPos(x,y,z),BorrascaFittingBlock.Kind.STEEL,Direction.NORTH);
+        }
+        // Lamps on chains from the roof, clear of the arms' and hoops' sweep.
+        for(int x:new int[]{-4,4})for(int z:new int[]{-184,-195}){int under=refineryRoof(x)/2-1;
+            for(int y=under-3;y<=under;y++)set(l,b,x,y,z,Blocks.CHAIN);BuildBlocks.set(l,b.offset(x,under-4,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
     }
     /**
      * The service exit: the depot's iron back door opens into a low tunnel walled off from the yard, which runs west under the wire to

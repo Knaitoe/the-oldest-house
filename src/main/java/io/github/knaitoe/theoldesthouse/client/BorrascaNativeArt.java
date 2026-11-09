@@ -153,6 +153,8 @@ public final class BorrascaNativeArt {
             if(brow!=0||tilt!=0||mouth!=0)GhostsSkinMesh.standardExpression(head,p,out,light,overlay,colour,brow,tilt,mouth);
             if(!Float.isNaN(cutAt))torn(p,out,light,overlay);
         }
+        /** Whether this client has the actor riding a carrier it can see. */
+        static boolean carriedHere(LiteraryActor a){return a.getVehicle() instanceof LiteraryActor v&&!v.isInvisible();}
         /** Every part drawn whole and the slices hidden: everyone but a body at the blade. */
         void whole(){cutAt=Float.NaN;wet.clear();for(int i=0;i<owners.length;i++){owners[i].skipDraw=false;for(var cut:cuts[i])cut.visible=false;}}
         /** A point of a part, as high in the model as it sits after the part's own turn (pixels; the feet are at 24). */
@@ -214,14 +216,17 @@ public final class BorrascaNativeArt {
          * walk's. Now a full stride takes about two blocks, the legs swing their whole way, and an arm a gesture is not using swings opposite
          * its leg.
          */
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);whole();young=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
-            pose(a.gesture(),a.role()==LiteraryActor.BORRASCA_SHERIFF,age);HumanoidMotion.connect(this);RecentActorMotion.blend(a,age,this);
-            if(a.gesture()!=BorrascaStory.CARRIED&&!BorrascaNativeArt.laid(a))stride(a.gesture(),motion.phase()*.45F,motion.amount());
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);whole();young=false;if(a.gesture()==BorrascaStory.CARRIED&&!carriedHere(a))riding=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
+            // 0.4.440 (the owner's screenshot: Kelly sitting in the air): she is drawn carried only while this client has her in the arms
+            // of a man it can see; otherwise she is drawn being led, on her feet.
+            int gesture=carriedHere(a)||a.gesture()!=BorrascaStory.CARRIED?a.gesture():BorrascaStory.LED;
+            pose(gesture,a.role()==LiteraryActor.BORRASCA_SHERIFF,age);HumanoidMotion.connect(this);RecentActorMotion.blend(a,age,this);
+            if(gesture!=BorrascaStory.CARRIED&&!BorrascaNativeArt.laid(a))stride(gesture,motion.phase()*.45F,motion.amount());
             head.yRot=net.minecraft.util.Mth.clamp(head.yRot,-.95F,.95F);
             if(BorrascaNativeArt.laid(a))lie(a.gesture()==BorrascaStory.LAID,age+a.getId()*13);
             if(BorrascaNativeArt.torn(a)){if(a.gesture()==BorrascaStory.TORN_LIVE)thrash(age+a.getId()*13);else limp();cut(a.torn()/1000F*16);}
             brow=tilt=mouth=0;
-            int gesture=a.gesture();
+            gesture=a.gesture();
             if(a.role()==LiteraryActor.BORRASCA_KIMBER){
                 if(gesture==10){brow=.28F;mouth=.8F;}
                 if(gesture==BorrascaStory.SCARED||gesture==BorrascaStory.CARRIED){brow=.85F;tilt=.45F;mouth=-.65F;}
@@ -315,8 +320,8 @@ public final class BorrascaNativeArt {
             if(him!=null)BorrascaOrrery.devour(p,buffers,him.slot(),him.age(),time,skin(11));
         }
         @Override public boolean shouldRenderOffScreen(BorrascaMachineBlock.Machine e){return true;}
-        /** It shines across the valley. */
-        @Override public int getViewDistance(){return 256;}
+        /** 0.4.440: it stands in the refinery now, seen from inside or through its doorway. */
+        @Override public int getViewDistance(){return 64;}
         @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(BorrascaMachineBlock.Machine e){var at=e.getBlockPos();return new net.minecraft.world.phys.AABB(at.getX()-5,at.getY(),at.getZ()-5,at.getX()+6,at.getY()+17,at.getZ()+6);}
     }
     public static void drawMachine(PoseStack p,MultiBufferSource buffers,int light,int overlay,float angle){var out=buffers.getBuffer(RenderType.entityCutoutNoCull(ATLAS));p.pushPose();p.translate(.5,.7,.5);p.mulPose(Axis.XP.rotation(angle));for(int i=0;i<8;i++){p.pushPose();p.mulPose(Axis.XP.rotation((float)(i*Math.PI/4)));cube(p,out,-11,-7,-2,11,-5,2,13,light,overlay,0xffffffff);p.popPose();}cube(p,out,-13,-2,-2,13,2,2,14,light,overlay,0xffffffff);p.popPose();}

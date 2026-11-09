@@ -337,7 +337,8 @@ final class BorrascaDressing {
         // Pallets and a stack of pipe by the depot's east door.
         for(int[] p:new int[][]{{-9,-176},{-8,-176},{-9,-175}}){set(l,b,p[0],12,p[1],slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));}
         set(l,b,-9,12,-174,slab(Blocks.SPRUCE_SLAB,SlabType.TOP));set(l,b,-9,13,-176,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
-        for(int z=-194;z>=-197;z--){set(l,b,8,12,z,log(Blocks.STRIPPED_SPRUCE_LOG,Direction.Axis.X));}
-        box(l,b,7,12,-198,10,12,-198,Blocks.IRON_BARS);
+        // 0.4.440: along the refinery's east wall, outside it.
+        for(int z=-194;z>=-197;z--){set(l,b,9,12,z,log(Blocks.STRIPPED_SPRUCE_LOG,Direction.Axis.X));}
+        box(l,b,9,12,-199,10,12,-199,Blocks.IRON_BARS);
     }
 }

@@ -261,6 +261,8 @@ public final class BorrascaTests {
         h.onEachTick(()->{
             if(!walking[0])return;
             var own=f.own(p);
+            // 0.4.440 (the owner's screenshot: Kelly carried in the air by nobody): whoever she rides is always to be seen.
+            {var k=f.actor(p,"CastKimber");if(k!=null&&k.getVehicle() instanceof LiteraryActor v)h.assertTrue(!v.isInvisible()&&!k.isInvisible(),"she is never carried by a man who is not there: carrier hidden "+v.isInvisible()+", missing "+own.getBoolean("FriendMissing")+", led "+own.getBoolean("Led"));}
             if(own.getBoolean("FriendMissing"))return;
             var a=f.actor(p,"CastKimber");
             if(a.getVehicle() instanceof LiteraryActor worker){
@@ -545,6 +547,34 @@ public final class BorrascaTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="borrasca_gentleman_near") public static void gentlemanNearDone(ServerLevel l){cleanup();}
+
+    /**
+     * 0.4.440 (the owner: "secure this so the player can't see it from the gate", of the cone and its rings standing up over the depot;
+     * the book: "We were standing in what I guessed was a refinery and in the middle of the room was a large silver, conically shaped
+     * machine"). From anywhere along the gate, every line to the cone, its tip and the far reach of its arms meets the refinery's walls or
+     * roof; the roof is whole over the machine; the lamp is on the refinery's front, still in sight of the taking.
+     */
+    @GameTest(template="empty",batch="borrasca_refinery",timeoutTicks=1200)
+    public static void theMachineStandsInsideTheRefinery(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_refinery");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{
+            var b=f.base(p);var machine=Vec3.atLowerCornerOf(BorrascaRooms.at(b,BorrascaRooms.MACHINE)).add(.5,0,.5);
+            var targets=new java.util.ArrayList<Vec3>();
+            for(float y:new float[]{5.5F,8,11,15,16.5F})targets.add(machine.add(0,y,0));
+            for(int k=0;k<8;k++){double a=k*Math.PI/4;targets.add(machine.add(Math.cos(a)*4.9,6.6,Math.sin(a)*4.9));targets.add(machine.add(Math.cos(a)*3.6,10.4,Math.sin(a)*3.6));}
+            int checked=0;
+            for(double x=-1.2;x<=2.2;x+=.85)for(double back:new double[]{.6,3,8})for(double eye:new double[]{1.0,1.62,2.4}){
+                var gate=Vec3.atLowerCornerOf(BorrascaRooms.at(b,0,12,-167)).add(x,eye,1+back);
+                for(var t:targets){checked++;var hit=f.out.clip(new ClipContext(gate,t,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
+                    h.assertTrue(hit.getType()==HitResult.Type.BLOCK&&hit.getLocation().distanceTo(t)>1.5,"from the gate the machine is hidden: "+gate.subtract(Vec3.atLowerCornerOf(b))+" to "+t.subtract(Vec3.atLowerCornerOf(b))+" hit "+(hit.getType()==HitResult.Type.BLOCK?f.out.getBlockState(hit.getBlockPos())+" at "+hit.getBlockPos().subtract(b):"nothing"));}}
+            h.assertTrue(checked>100,"looked from enough places: "+checked);
+            for(int x=-BorrascaRooms.REF_X;x<=BorrascaRooms.REF_X;x++)for(int z=BorrascaRooms.REF_NORTH;z<=BorrascaRooms.REF_SOUTH;z++){
+                int half=BorrascaRooms.refineryRoof(x);var at=BorrascaRooms.at(b,x,half/2,z);h.assertTrue(f.out.getBlockState(at).getBlock() instanceof SlabBlock,"the roof is whole at "+x+","+z);}
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.LAMP)).is(BorrascaRegistry.FITTING.get())&&!f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.LAMP).north()).isAir(),"the lamp is on the refinery's front wall");
+            assertTakingSightline(f,p);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="borrasca_refinery") public static void refineryDone(ServerLevel l){cleanup();}
 
     /**
      * 0.4.435 (the owner: "Let players ride bikes? Maintaining balance and pedaling left/right should be a function."): Kendra's bike in
@@ -1145,7 +1175,7 @@ public final class BorrascaTests {
           .thenExecute(()->f.use(p,BorrascaRooms.POWER))
           .thenWaitUntil(()->{
               var a=f.actor(p,"CastSheriff");var b=f.base(p);
-              h.assertTrue(a.distanceToSqr(Vec3.atBottomCenterOf(BorrascaRooms.at(b,5,12,-182)))<.1&&a.gesture()==4,"he goes to inspect the stopped machine");
+              h.assertTrue(a.distanceToSqr(Vec3.atBottomCenterOf(BorrascaRooms.at(b,BorrascaStory.SHERIFF_SHUTDOWN_CHECK)))<.1&&a.gesture()==4,"he goes to the refinery's doorway to look in at the stopped machine: "+a.position().subtract(Vec3.atLowerCornerOf(b)));
           })
           .thenExecute(()->{var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+1.6,a.getY(),a.getZ(),90,0);p.setHealth(p.getMaxHealth());h.assertTrue(hitSheriff(f,p),"a grown reader's blow lands");})
           .thenWaitUntil(()->h.assertTrue(p.getHealth()<p.getMaxHealth()&&f.own(p).getInt("SheriffHits")==1,"struck, the Sheriff turns on the reader and hits back")).thenIdle(12)
