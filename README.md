@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.438** puts Kelly in room 6 under Borrasca's depot on the last night, grown: the same friend, on her own grown skin, who knows the reader, will not come up, and asks them to stop the machine and take her name up instead of her. See [docs/BORRASCA_KELLY_GROWN_0_4_438.md](docs/BORRASCA_KELLY_GROWN_0_4_438.md).
+Development candidate **0.4.439** lets the reader watch Borrasca's machine fed on the last night: two men lay a grown woman, Dana, on the belt, and it takes her feet first, slowly, tearing her body a slice at a time while her scream shakes on screen, until pieces come out the far end. While it takes her the screen throbs a dull red, and for two seconds the machine is not there: the Shiny Gentleman is, bent over the belt, eating her. The machine is rebuilt as a silver cone with arms, balls and hoops whirling round it, and he is rebuilt from the same parts. The breaker can stop it before the slot, and she stays on the belt and does not answer. The trailhead note now warns of graphic gore. See [docs/BORRASCA_FEEDING_0_4_439.md](docs/BORRASCA_FEEDING_0_4_439.md).
+
+Candidate **0.4.438** puts Kelly in room 6 under Borrasca's depot on the last night, grown: the same friend, on her own grown skin, who knows the reader, will not come up, and asks them to stop the machine and take her name up instead of her. See [docs/BORRASCA_KELLY_GROWN_0_4_438.md](docs/BORRASCA_KELLY_GROWN_0_4_438.md).
 
 Candidate **0.4.435** lets a child ride Patrick's and Kendra's bikes around Borrasca. The left and right keys push the pedals, and pedalling is balancing: each push tips the bike toward its side, two on the same pedal tip it much more, and a moving bike keeps leaning the way it leans. A rider keeps it up by pedalling in turn and pushing twice on the far pedal when it starts to go, and comes off into the road when it goes over. A needle under the crosshair shows the lean. See [docs/BORRASCA_BIKES_0_4_435.md](docs/BORRASCA_BIKES_0_4_435.md).
 

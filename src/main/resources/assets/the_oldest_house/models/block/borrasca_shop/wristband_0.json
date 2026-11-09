@@ -1,0 +1,142 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "g": "the_oldest_house:block/borrasca_shop/gore",
+    "b": "the_oldest_house:block/borrasca_shop/bone",
+    "h": "the_oldest_house:block/borrasca_shop/hair",
+    "s": "the_oldest_house:block/borrasca_shop/slipper",
+    "w": "the_oldest_house:block/borrasca_shop/wristband",
+    "m": "the_oldest_house:block/borrasca_shop/smear",
+    "n": "the_oldest_house:block/borrasca_shop/smear_soaked",
+    "particle": "the_oldest_house:block/borrasca_shop/wristband"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        3
+      ],
+      "to": [
+        14,
+        0.3,
+        13
+      ],
+      "faces": {
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0.3,
+        7
+      ],
+      "to": [
+        13,
+        0.9,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w",
+          "uv": [
+            0,
+            6,
+            16,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#w",
+          "uv": [
+            0,
+            6,
+            16,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#w",
+          "uv": [
+            0,
+            6,
+            16,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#w",
+          "uv": [
+            0,
+            6,
+            16,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            6,
+            16,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#w",
+          "uv": [
+            0,
+            6,
+            16,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        0.3,
+        5.5
+      ],
+      "to": [
+        10,
+        1.1,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

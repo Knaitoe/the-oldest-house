@@ -33,13 +33,16 @@ import net.minecraft.world.phys.shapes.*;
  * block at both ends and nothing bumps into it.</li>
  * <li>0.4.436: CABINET and CABINET_TOP, the drugstore's arcade cabinets (BorrascaArcade), lower and upper halves; the stage is the
  * game: 0 DEEP SEAM, 1 BIG CAT. The screen in the upper half glows a little.</li>
+ * <li>0.4.439: what the machine leaves on the last night (BorrascaFeeding). REMAINS on the pile at the end of the belt, pulp and bone
+ * (stage 0) or hair and a felt slipper (stage 1); WRISTBAND, the band from her wrist with its card; SMEAR, drawn on the belt's
+ * rubber by a display where it comes out of the slot (stage 0 a streak, stage 1 soaked).</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<BorrascaShopBlock> CODEC=simpleCodec(BorrascaShopBlock::new);
     public enum Kind implements StringRepresentable {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
-        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP;
+        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP,REMAINS,WRISTBAND,SMEAR;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, behind the model's south face. */
         public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,OPEN,CALENDAR,BAIT_SIGN->true;default->false;};}
@@ -81,6 +84,9 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case BIKE->s.getValue(STAGE)==0?MarshBlock.turned(f,0,0,6,16,14,10):MarshBlock.turned(f,0,0,2,16,6,16);
             case CABINET->MarshBlock.turned(f,1,0,0,15,16,16);
             case CABINET_TOP->MarshBlock.turned(f,1,0,3,15,16,16);
+            case REMAINS->Block.box(1,0,1,15,4,15);
+            case WRISTBAND->Block.box(2,0,3,14,1,13);
+            case SMEAR->Block.box(0,0,0,16,1,16);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */

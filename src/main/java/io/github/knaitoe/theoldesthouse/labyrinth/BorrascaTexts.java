@@ -43,7 +43,9 @@ public final class BorrascaTexts {
         "TRIPLE TREE\n\nOne mile up, at the first marker, three pines grow out of one root. Children have built a fort in them, and rebuilt it, for as long as anyone in Drisking can remember.",
         "The public walk ends at Marker Two. Beyond it the ridge is county property.\n\nReturn before dusk.");}
     public static ItemStack contentNote(){return book("A note at the trailhead","The House",
-        "CONTENT NOTE\n\nAbduction, coercion, sexual violence and death. These themes remain off-screen. No assault is shown or heard.",
+        "CONTENT NOTE\n\nAbduction, coercion, sexual violence and death. Sexual violence stays off-screen. No assault is shown or heard.",
+        // 0.4.439 (owner: the feeding scene is graphic gore, and the note must say so).
+        "GRAPHIC GORE\n\nOn the last visit a woman is fed alive into a machine. It is slow, and it is shown: her body torn apart, her screaming, and what is left of her.",
         "The second visit begins an investigation into a child's disappearance. You may leave through the House door at any point. Leaving early does not finish a visit.");}
     public static ItemStack document(String key){return document(key,false);}
     public static ItemStack document(String key,boolean compassHeld){return switch(key){
@@ -64,7 +66,7 @@ public final class BorrascaTexts {
             "1987\nRm 2. Letter withheld.\nRm 4. No visitors. Unwell.\nRm 4. Closed. To the yard.",
             "1993\n263-A. Received, 6:40 pm. Kept above.\n1999\n263-A. Down. Rm 6.\nRm 6. Will not eat. Asks for her friend by name.",
             "2001\nRm 6. Delivered, boy. Placed in town.\n2004\nRm 6. Delivered, girl. Placed in town.\nRm 6. Asks for nobody now.",
-            "264-A. Received tonight. Down at once. Rm 7.\nNight shift tonight.\nApproved: Sheriff's office.\nCounted: J. Prescott");
+            "Rm 2. No more deliveries. Up before the shift.\n264-A. Received tonight. To the doctor first. Rm 7 made up.\nApproved: Sheriff's office.\nCounted: J. Prescott");
         // 0.4.437 (owner): room 2's note home, made of letters cut from the catalogues they are given and pasted down, so it has no
         // hand and gives no age. It is an adult's, from the year the book withholds it; it was taken off her and kept.
         case "Letter"->pasted("A pasted note, not sent","Rm 2","WITHHELD\nNot to be posted.\nRm 2. 141-A.\nW. P.",
@@ -176,13 +178,19 @@ public final class BorrascaTexts {
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine."+(own.getBoolean("KellyFound")?" She was there, grown, and would not come up.":""):"")
             +(own.getBoolean("KellyAsked")?" She asked me to stop the machine, and to take her name up instead of her.":"")
-            +(own.getBoolean("MarasRoom")?" The newest room was still warm.":"")
+            +(own.getBoolean("MarasRoom")?" The newest room was made up, with a coat from town on the hook.":"")
+            +(own.getBoolean("DanaInRoom")&&!own.getBoolean("DanaRoomEmpty")?" In room 2 a woman lay on the cot looking at the ceiling. She didn't look at me.":"")
             +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Nobody came down until they were grown. What was born down there went up to town. Beside her number there were two births, both placed in town.":"")
             +(own.getBoolean("LetterRead")?" Someone down there had made a note home out of letters cut from catalogues. It was never sent.":"")
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
             // 0.4.427: what the reader did to the Sheriff, grown.
             +(own.getBoolean("SheriffDead")?" I killed the Sheriff on the ridge. He talked until he couldn't, and none of it was sorry.":own.getBoolean("SheriffBeaten")?" I beat the Sheriff down into the dirt and left him there, still talking.":"")
-            +" I stopped the machine."
+            // 0.4.439: the woman from room 2 on the belt, and whether the breaker came in time.
+            +(own.getBoolean("DanaSaved")?" Two men walked a woman out of the depot and laid her on the belt. I pulled the breaker before it took her in. She stayed where they had put her, looking up, and never once looked at me."+(own.getBoolean("DanaIgnored")?" I held out my hand. She didn't take it.":"")
+              :own.getBoolean("DanaLate")?" Two men walked a woman out of the depot and laid her on the belt. I pulled the breaker when it already had "+(own.getInt("DanaLateAt")<400?"her feet.":own.getInt("DanaLateAt")<800?"her legs.":"half of her.")+" She went quiet a little after the belt stopped."
+              :own.getBoolean("DanaFed")?" Two men walked a woman out of the depot and laid her on the belt, and it took her into the machine feet first. It took a long time. She screamed until it had her chest. Pieces of her were coming out of the far end before it had her head."+(own.getBoolean("GentlemanAtMachine")?" For a second the machine wasn't there. Something tall and shining was, bent over the belt, its face split open around her.":"")+(own.getBoolean("BandRead")?" On the pile at the far end there was a felt slipper and the band from her wrist: 141-A.":" On the pile at the far end there was a felt slipper.")
+              :"")
+            +(own.getBoolean("DanaSaved")||own.getBoolean("DanaLate")?"":" I stopped the machine.")
             +(own.getBoolean("HeardSheriffShutdown")&&!own.getBoolean("SheriffDead")?" The Sheriff said he would make the call.":"")
             +" The wind was still in the pines."
             +(own.getBoolean("NameReturned")||own.getBoolean("RestoredName")?" "+restored():" I carried her name out in the cloth.");

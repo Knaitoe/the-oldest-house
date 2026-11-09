@@ -282,7 +282,9 @@ final class BorrascaTown {
         box(l,b,0,17,-193,0,19,-193,Blocks.CHAIN);set(l,b,0,16,-193,Blocks.HEAVY_CORE);
         fitAt(l,b,new BlockPos(3,12,-194),BorrascaFittingBlock.Kind.BREAKER,Direction.WEST);
         for(int z:new int[]{-188,-194}){box(l,b,-3,17,z,-3,19,z,Blocks.CHAIN);set(l,b,-3,16,z,hanging());}
-        box(l,b,-1,11,-203,1,11,-201,Blocks.GRAY_CONCRETE);box(l,b,-1,12,-203,1,12,-201,Blocks.BLACK_CONCRETE);set(l,b,0,12,-201,Blocks.COMPOSTER);
+        // 0.4.439: a concrete apron where the outflow belt ends, open above, for what comes off it to pile on (BorrascaFeeding.PILE_*).
+        // It used to be a raised pad with a bin on it, which stood in the pile's way and over the third grave's stake and mound.
+        box(l,b,-1,11,-201,1,11,-201,Blocks.GRAY_CONCRETE);box(l,b,-1,12,-201,1,12,-201,AIR);
     }
     /** The gate hut, inside the wire east of the gate, its window on whoever comes up the trail. */
     private static void hut(ServerLevel l,BlockPos b){

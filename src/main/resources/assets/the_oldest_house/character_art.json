@@ -7,6 +7,27 @@
     "phase": 1
   },
   {
+    "name": "borrasca_dana",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 9,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_dana_aside",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 10,
+    "phase": 0
+  },
+  {
+    "name": "borrasca_dana_scream",
+    "logical": 64,
+    "model": "borrasca",
+    "number": 11,
+    "phase": 0
+  },
+  {
     "name": "borrasca_eli",
     "logical": 64,
     "model": "borrasca",

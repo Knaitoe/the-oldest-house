@@ -4825,5 +4825,70 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.orders.whistle"
+  },
+  "borrasca.machine_wet": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.machine_wet",
+    "sounds": [
+      {
+        "name": "minecraft:block/bone_block/break1",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block/bone_block/break2",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block/bone_block/break3",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block/bone_block/break4",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block/bone_block/break5",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block/mud/break1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/mud/break2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/mud/break3",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/mud/break4",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/mud/break5",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block/mud/break6",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/slime/big1",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:mob/slime/big2",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:mob/slime/big3",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:mob/slime/big4",
+        "pitch": 0.55
+      }
+    ]
   }
 }

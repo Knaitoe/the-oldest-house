@@ -18,7 +18,7 @@ def entry(name,logical):
     if name=='backseat_stowaway':
         row.update(model='backseat',phase=1)
     elif name.startswith('borrasca_'):
-        row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker','worker_two','eli','wren','kelly_grown'].index(name[9:]))
+        row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker','worker_two','eli','wren','kelly_grown','dana','dana_aside','dana_scream'].index(name[9:]))
     elif name.startswith('uncanny_'):
         role=32 if name.startswith('uncanny_family_') else 35 if name=='uncanny_bent_neck' else 37 if name.startswith('uncanny_peeler') else 38 if name=='uncanny_visitor' else 34 if name.startswith('uncanny_second_') else 33
         phase=int(name[-1])+1 if role==32 else 3 if name.endswith('_split') else 0 if role==33 or name=='uncanny_peeler' else 2 if name.endswith('_exhausted') else 1

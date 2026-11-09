@@ -104,6 +104,8 @@ public final class BorrascaTests {
     @AfterBatch(batch="borrasca_wire") public static void wireDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_registration") public static void registrationDone(ServerLevel l){cleanup();}
     @AfterBatch(batch="borrasca_arcade_rules") public static void arcadeRulesDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_feeding") public static void feedingDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_breaker") public static void breakerDone(ServerLevel l){cleanup();}
 
     @GameTest(template="empty",batch="borrasca_diagnostics")
     public static void preEntrySocketDiagnosticsNeverGeneratePrivateCoordinatesInEitherDimension(GameTestHelper h){
@@ -669,13 +671,83 @@ public final class BorrascaTests {
             h.assertTrue(kelly!=null&&kelly.phase()==BorrascaStory.GROWN&&!kelly.isInvisible()&&kelly.getBbHeight()>1.5F&&kelly.position().distanceTo(Vec3.atBottomCenterOf(BorrascaRooms.at(b,BorrascaRooms.KELLY)))<1.6&&own.getBoolean("KellyFound"),"she is there, grown, by the cot: "+(kelly==null?"no actor":kelly.phase()+" "+kelly.getBbHeight()+" "+kelly.position()+" for "+Vec3.atBottomCenterOf(BorrascaRooms.at(b,BorrascaRooms.KELLY))+" invisible "+kelly.isInvisible()));
             for(int i=0;i<4;i++)f.talk(p,"CastKimber");own=f.own(p);
             h.assertTrue(own.getBoolean("KellyAsked")&&own.getInt("KellyLine")>=5,"she will not come up, and asks the reader to stop the machine and take her name up: "+own.getInt("KellyLine"));
-            f.at(p,-23,6,-199);f.refresh(p);h.assertTrue(f.own(p).getBoolean("MarasRoom"),"the newest room, bolted, still warm");
+            f.at(p,-23,6,-199);f.refresh(p);h.assertTrue(f.own(p).getBoolean("MarasRoom"),"the newest room, bolted, made up for her");
             h.assertTrue(l.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.grave(0))) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign&&sign.getFrontText().getMessage(1,false).getString().equals(BorrascaRooms.GRAVE_TAGS[0])&&sign.isWaxed(),"a number on a stake, no name");
             f.at(p,0,12,-204);f.refresh(p);own=f.own(p);h.assertTrue(own.getBoolean("GravesSeen"),"the rows behind the shed");
             var account=BorrascaTexts.account(own);
             h.assertTrue(account.contains("bolts on the outside")&&account.contains("scratched into the wall beside mine")&&account.contains("counted by a Prescott")&&account.contains("never sent")&&account.contains("numbers in the ground")&&account.contains("two births, both placed in town")&&account.contains("grown, and would not come up")&&account.contains("take her name up instead of her"),"the account keeps what was found: "+account);
             h.assertTrue(BorrascaTexts.witness(own).contains("night book"),"and the Witness line the book");
             h.assertTrue(!own.getBoolean("Completed"),"none of it is required to finish; finding it is the reader's own");
+        }).thenSucceed();
+    }
+
+    /**
+     * 0.4.439 (owner: "when she hits the blade it shouldn't be quick... the game should track the splitting/tearing of her body so it
+     * doesn't tear all at once"). Dana on her cot in room 2; the men fetched from near the side door; then, from the slot's mouth, the
+     * machine takes her a little at a time over most of a minute, catching on bone, while her voice goes from a moan to a scream to
+     * nothing; pieces of her come out of the far end before it has her head, and the pile and the band are what is left.
+     */
+    @GameTest(template="empty",batch="borrasca_feeding",timeoutTicks=5000)
+    public static void theMachineTakesHerSlowlyAndTearsHerASliceAtATime(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_feeding");
+        final int[] depth={0},steps={0},firstTorn={-1},fedAt={-1},tick={0};final boolean[] piecesWhileOnBelt={false},living={false},dead={false};final List<String> voice=new ArrayList<>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the last night")).thenExecute(()->{
+            var dana=f.actor(p,"CastDana");
+            h.assertTrue(dana!=null&&!dana.isInvisible()&&dana.gesture()==BorrascaStory.LAID&&dana.torn()==0,"she lies on her cot, whole: "+(dana==null?"no actor":dana.gesture()+" "+dana.torn()));
+            f.at(p,-16,6,-195);f.refresh(p);h.assertTrue(f.own(p).getBoolean("DanaInRoom"),"room 2: a woman on the cot, looking at the ceiling");
+            f.at(p,-10,12,-176);f.refresh(p);h.assertTrue(BorrascaFeeding.state(f.own(p))==BorrascaFeeding.FETCH,"near the depot's side door the men are heard, and go for her");
+            // The walk and the ride are their own business; this case starts with her feet at the slot.
+            var own=f.own(p);own.putInt("Feed",BorrascaFeeding.RIDE);own.putInt("FeedTicks",0);own.putDouble("FeedZ",BorrascaFeeding.SLOT_Z+.05);f.save(p,own);
+            h.onEachTick(()->{tick[0]++;var d=f.actor(p,"CastDana");var o=f.own(p);if(d==null||fedAt[0]>=0)return;
+                if(d.torn()<depth[0])throw new GameTestAssertException("the machine never gives anything back: "+d.torn()+" after "+depth[0]);
+                if(d.torn()>depth[0]){if(depth[0]==0)firstTorn[0]=tick[0];depth[0]=d.torn();steps[0]++;}
+                if(d.gesture()==BorrascaStory.TORN_LIVE)living[0]=true;if(d.gesture()==BorrascaStory.TORN_DEAD)dead[0]=true;
+                if(d.isCustomNameVisible()&&d.getCustomName()!=null){String w=d.getCustomName().getString();if(voice.isEmpty()||!voice.get(voice.size()-1).equals(w))voice.add(w);}
+                if(o.contains("FeedOut")&&!o.getBoolean("DanaFed"))piecesWhileOnBelt[0]=true;
+                if(o.getBoolean("DanaFed"))fedAt[0]=tick[0];});
+        }).thenWaitUntil(()->h.assertTrue(fedAt[0]>=0,"the machine has all of her: "+depth[0]+" of "+(int)(BorrascaFeeding.BODY*1000)+", "+voice)).thenExecute(()->{
+            h.assertTrue(fedAt[0]-firstTorn[0]>=600,"it is slow: "+(fedAt[0]-firstTorn[0])+" ticks from the slot to her head");
+            h.assertTrue(steps[0]>=60,"her body goes a little at a time, not at once: "+steps[0]+" steps");
+            h.assertTrue(living[0]&&dead[0],"she is alive at the blade, and then she is not");
+            int moan=voice.indexOf("awwwoo"),scream=voice.indexOf("AAHHHHH"),end=voice.indexOf("-");
+            h.assertTrue(moan>=0&&scream>moan&&end>scream,"her voice goes from awwwoo to AAHHHHH to -: "+voice);
+            h.assertTrue(piecesWhileOnBelt[0],"pieces of her come out of the far end while the rest of her is still on the belt");
+            var dana=f.actor(p,"CastDana");h.assertTrue(dana==null||dana.isInvisible(),"none of her is left on the belt");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FeedPiled"),"what came out has reached the end of the belt")).thenExecute(()->{
+            var b=f.base(p);
+            h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(BorrascaRooms.at(b,BorrascaFeeding.PILE_REMAINS)),BorrascaShopBlock.Kind.REMAINS)&&BorrascaShopBlock.is(f.out.getBlockState(BorrascaRooms.at(b,BorrascaFeeding.PILE_HAIR)),BorrascaShopBlock.Kind.REMAINS)&&BorrascaShopBlock.is(f.out.getBlockState(BorrascaRooms.at(b,BorrascaFeeding.PILE_BAND)),BorrascaShopBlock.Kind.WRISTBAND),"pulp and bone, hair and a slipper, and her band on the pile");
+            f.use(p,BorrascaFeeding.PILE_BAND);var own=f.own(p);h.assertTrue(own.getBoolean("BandRead"),"the band from her wrist reads 141-A");
+            var account=BorrascaTexts.account(own);
+            h.assertTrue(account.contains("feet first")&&account.contains("screamed until it had her chest")&&account.contains("before it had her head")&&account.contains("141-A"),"the account keeps what the machine did: "+account);
+            f.at(p,-16,6,-195);f.refresh(p);h.assertTrue(f.own(p).getBoolean("DanaRoomEmpty"),"her cot is empty after");
+        }).thenSucceed();
+    }
+    /**
+     * 0.4.439, the owner: "The player should be able to shut the belt off to save her; the account remembers that, but Dana does not get
+     * off the belt. She does not respond to the player". Pulled while she rides, the breaker stops the belt with her whole on it; she
+     * says nothing and takes no hand. Another reader pulls theirs once the machine has her legs: it stops there, and she goes quiet. The
+     * note at the trailhead says the last visit shows this.
+     */
+    @GameTest(template="empty",batch="borrasca_breaker",timeoutTicks=3000)
+    public static void theBreakerStopsTheBeltButSheDoesNotGetOff(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_breaker");var q=f.player("pine_late");final double[] at={0};
+        var note=String.join(" ",BorrascaTexts.contentNote().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());
+        h.assertTrue(note.contains("GRAPHIC GORE")&&note.contains("fed alive")&&note.contains("Sexual violence stays off-screen"),"the trailhead note warns of the gore and keeps the rest off-screen: "+note);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.enter(q);f.stage(p,4);f.stage(q,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled"),"the last night, for both")).thenExecute(()->{
+            var own=f.own(p);own.putInt("Feed",BorrascaFeeding.RIDE);own.putInt("FeedTicks",0);own.putDouble("FeedZ",BorrascaFeeding.SLOT_Z+3);f.save(p,own);
+            own=f.own(q);own.putInt("Feed",BorrascaFeeding.INTAKE);own.putInt("FeedTicks",0);own.putInt("FeedBones",2);own.putDouble("FeedZ",BorrascaFeeding.SLOT_Z-.5);f.save(q,own);
+        }).thenIdle(20).thenExecute(()->{
+            at[0]=f.own(p).getDouble("FeedZ");f.use(p,BorrascaRooms.POWER);f.use(q,BorrascaRooms.POWER);
+        }).thenWaitUntil(()->h.assertTrue(BorrascaFeeding.state(f.own(p))==BorrascaFeeding.SAVED&&BorrascaFeeding.state(f.own(q))==BorrascaFeeding.LATE,"both belts stop")).thenIdle(200).thenExecute(()->{
+            var dana=f.actor(p,"CastDana");var own=f.own(p);
+            h.assertTrue(own.getBoolean("DanaSaved")&&dana!=null&&!dana.isInvisible()&&dana.gesture()==BorrascaStory.LAID&&dana.torn()==0&&dana.isNoGravity(),"saved: she lies whole where they put her, on the stopped belt: "+(dana==null?"no actor":dana.gesture()+" "+dana.torn()));
+            h.assertTrue(Math.abs(own.getDouble("FeedZ")-at[0])<.2&&own.getDouble("FeedZ")>BorrascaFeeding.SLOT_Z,"the belt has not moved her since: "+own.getDouble("FeedZ"));
+            f.talk(p,"CastDana");own=f.own(p);h.assertTrue(own.getBoolean("DanaIgnored")&&!dana.isCustomNameVisible(),"held out a hand, she does not take it or say anything");
+            var account=BorrascaTexts.account(own);h.assertTrue(account.contains("I pulled the breaker before it took her in")&&account.contains("never once looked at me")&&account.contains("She didn't take it"),"the account remembers that she was saved and did not get off: "+account);
+            var late=f.actor(q,"CastDana");var lateOwn=f.own(q);
+            h.assertTrue(lateOwn.getBoolean("DanaLate")&&lateOwn.getInt("DanaLateAt")>=400&&late!=null&&late.torn()>=400&&late.torn()==lateOwn.getInt("DanaLateAt"),"late: it stopped with her legs taken, and takes no more: "+(late==null?"no actor":late.torn()));
+            h.assertTrue(late.gesture()==BorrascaStory.TORN_DEAD,"and she has gone still");
+            account=BorrascaTexts.account(lateOwn);h.assertTrue(account.contains("already had her legs")&&account.contains("went quiet"),"the late account: "+account);
         }).thenSucceed();
     }
 
