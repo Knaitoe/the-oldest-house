@@ -3,10 +3,15 @@
 The owner, 9 November 2026: "How would you feel about developing a pool mini-game and a darts mini-game and a vignette based in/around
 the bar? The player could again bring the pool table and darts board to the world outside too, through unlockable means."
 
-Design only. Nothing here is built yet. Two choices are the owner's:
-- **which bar:** a new vignette (recommended below) or the Last Stop reworked around the games;
-- **when:** straight after the arcade cabinet (0.4.413), before The Ones Already Inside (recommended, since it reuses the cabinet's
-  unlock and crafting code), or after A Little Longer.
+The owner's answers, the same day: "Well, other players should be able to play too?" and "my suggestion would be to again develop a
+vignette where the horror is focused in the bar - the Last Stop is focused on the events outside, no?"
+
+Decided:
+- **Every reader plays.** In the bar any reader can take a cue or darts. At home only the crafting needs the keepsake's owner; a
+  placed table or board is anyone's to play, as the home cabinet is.
+- **A new vignette, with its horror inside the bar.** The Last Stop's horror is the elk outside. Pitch A, Last orders, is the one
+  built.
+- **When:** next, straight after the arcade cabinet (0.4.413), unless the owner moves it.
 
 ## What exists
 
@@ -69,20 +74,20 @@ already written for the service key becomes one rule for every keepsake that unl
 
 | Object | Made from | Out in the world |
 |---|---|---|
-| Pool table | the house chalk, planks, wool, iron | two blocks, plays the same eight-ball (two readers, or one against the table's practice rack) |
+| Pool table | the house chalk, planks, wool, iron | two blocks, plays the same eight-ball for any two readers (four for doubles), or one alone on a practice rack |
 | Dartboard | the tin of darts, planks, string, a target block | on a wall, plays 301 and round the clock; the darts come with it |
 
-Both are ordinary blocks: they break by hand and drop themselves. They pay nothing and keep their own scores, as the home cabinet
-does. The recipes go into the reader's recipe book with the keepsakes.
+Both are ordinary blocks: they break by hand and drop themselves. Anyone can play them, not only the reader who made them. They pay
+nothing and keep their own scores, as the home cabinet does. The recipes go into the reader's recipe book with the keepsakes.
 
 The Last Stop's own table and board would play the same two games against Russ, Denny and Wade, with no reward there. That costs
 almost nothing once the games exist.
 
-## The bar's story (three pitches; one recommended)
+## The bar's story (three pitches; A chosen)
 
 Each is an original story with original people and words. In each, horror comes first and the sorrow is in the aftermath.
 
-### A. Last orders (recommended)
+### A. Last orders (chosen)
 
 - **The place:** a dive bar at closing time that does not close. The clock over the door says ten to, all night.
 - **The chalkboard:** the league board has the reader's name on it, in the reader's own handwriting, with a season of scores. The
