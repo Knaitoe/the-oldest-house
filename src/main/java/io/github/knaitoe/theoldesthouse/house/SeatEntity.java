@@ -19,6 +19,8 @@ public final class SeatEntity extends Entity {
     private static final EntityDataAccessor<Integer> SWING_START = SynchedEntityData.defineId(SeatEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<BlockPos> SUPPORT = SynchedEntityData.defineId(SeatEntity.class, EntityDataSerializers.BLOCK_POS);
     private BlockPos support = BlockPos.ZERO;
+    /** 0.4.423: where a reader who jumped off the swing let go, so they leave from the seat rather than step off beside it. */
+    private Vec3 letGo;
     public SeatEntity(EntityType<? extends SeatEntity> type, Level level) {
         super(type, level);
         noPhysics = true;
@@ -28,6 +30,8 @@ public final class SeatEntity extends Entity {
     public BlockPos support() { return entityData.get(SUPPORT); }
     /** Starts the swing from this game tick. */
     public void swing(long now) { entityData.set(SWING_START, (int) now); }
+    /** The reader is jumping off from here (HouseReadSwing.jump). */
+    public void letGo(Vec3 at) { letGo = at; }
     public boolean swinging() { return entityData.get(SWING_START) >= 0; }
     /** Ticks since the reader sat on the swing, at this partial tick. */
     public double swingTicks(float partial) { return level().getGameTime() + partial - entityData.get(SWING_START); }
@@ -39,7 +43,7 @@ public final class SeatEntity extends Entity {
         super.tick();
         if (swinging()) {
             var pair = io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pair(level(), support());
-            var at = io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.seat(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pivot(pair), io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.angle(swingTicks(0)));
+            var at = io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.seat(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pivot(pair), io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.forward(level().getBlockState(pair.getFirst())), io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.angle(swingTicks(0)));
             setPos(at.x, at.y, at.z);
         }
         if (!level().isClientSide() && (!isVehicle() || !HouseSitting.isSeat(level().getBlockState(support)))) {
@@ -49,6 +53,7 @@ public final class SeatEntity extends Entity {
         }
     }
     @Override public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
+        if (letGo != null) return letGo;
         for (BlockPos pos : new BlockPos[]{support.south(), support.east(), support.north(), support.west()}) {
             Vec3 point = Vec3.atBottomCenterOf(pos);
             if (level().getBlockState(pos.below()).isSolid()

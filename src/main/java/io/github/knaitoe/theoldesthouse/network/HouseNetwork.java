@@ -13,7 +13,8 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("170")
+        event.registrar("171")
+                .playToServer(SwingJumpPayload.TYPE,SwingJumpPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.jump(p);}))
                 .playToClient(PoolStatePayload.TYPE,PoolStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PoolClient.state(payload)))
                 .playToClient(PoolShotPayload.TYPE,PoolShotPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PoolClient.shot(payload)))
                 .playToClient(DartsStatePayload.TYPE,DartsStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.DartsClient.state(payload)))

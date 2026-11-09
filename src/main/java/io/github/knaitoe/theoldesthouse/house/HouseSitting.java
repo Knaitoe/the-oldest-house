@@ -68,9 +68,9 @@ public final class HouseSitting {
         seat.moveTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
         // 0.4.172: the porch swing seats the reader in the middle of its plank and swings them.
         boolean swing=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.is(state);
-        if(swing){var pair=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pair(player.level(),pos);if(!player.level().getEntitiesOfClass(SeatEntity.class,new AABB(pair.getFirst()).minmax(new AABB(pair.getLast())).inflate(0,1,3)).isEmpty())return false;var rest=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.seat(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pivot(pair),0);seat.moveTo(rest.x,rest.y,rest.z);seat.swing(player.level().getGameTime());}
+        if(swing){var pair=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pair(player.level(),pos);if(!player.level().getEntitiesOfClass(SeatEntity.class,new AABB(pair.getFirst()).minmax(new AABB(pair.getLast())).inflate(3,1,3)).isEmpty())return false;var rest=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.seat(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pivot(pair),io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.forward(state),0);seat.moveTo(rest.x,rest.y,rest.z);seat.swing(player.level().getGameTime());}
         if (!player.serverLevel().addFreshEntity(seat) || !player.startRiding(seat)) { seat.discard(); return false; }
-        if(swing){io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.hide(player,pos);player.setYRot(180);player.setYHeadRot(180);return true;}
+        if(swing){io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.hide(player,pos);float yaw=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.forward(state).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);return true;}
         if (state.getBlock() instanceof StairBlock) {
             float yaw = state.getValue(StairBlock.FACING).getOpposite().toYRot();
             player.setYRot(yaw); player.setYHeadRot(yaw);
