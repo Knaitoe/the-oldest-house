@@ -69,6 +69,12 @@ public final class LastOrders {
     static final String[] SKINS={"stranger","ferris","mags","hob","ott","cass","benny"};
     public static boolean cast(int phase){return phase>=STRANGER&&phase<=BENNY;}
     public static String skin(int phase){return "orders_"+SKINS[phase-STRANGER];}
+    /** 0.4.417: the recipes for a table and a board of the reader's own, into their book with the keepsakes. */
+    public static void teach(ServerPlayer p){
+        var recipes=p.server.getRecipeManager();var out=new java.util.ArrayList<net.minecraft.world.item.crafting.RecipeHolder<?>>();
+        for(var id:new net.minecraft.resources.ResourceLocation[]{BarRegistry.POOL_TABLE_RECIPE,BarRegistry.DARTBOARD_RECIPE})recipes.byKey(id).ifPresent(out::add);
+        p.awardRecipes(out);
+    }
     /** Poses: throwing a dart, staring, bent over a cue, whistling, the next booth leaning in, both hands flat on the table. */
     public static final int THROW=1,STARE=2,CUE=3,WHISTLE=4,LEAN=5,HANDS=6;
     public static final String TALK="last_orders",OUTCOME="walked_out";

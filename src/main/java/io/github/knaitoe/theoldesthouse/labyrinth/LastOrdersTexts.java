@@ -116,6 +116,8 @@ public final class LastOrdersTexts {
         if(lost>0)p.add("The chalk on the league board was wiped again. Somebody lost an evening in here. They always leave the glass behind.");
         if(glasses>0)p.add((glasses==1?"Another week":glasses+" more weeks")+" up on the league board under "+name+". I don't remember "+name+" playing one of them. The window's on another season again.");
         if(own.getBoolean("Walked"))p.add("Booth four when I opened up: just the old one, sat staring at the seat across from him as if somebody was still in it. All his money stacked on the table in front of him. He hadn't touched it. I didn't either. Whoever was sat across from him last night left it there, and left.");
+        // 0.4.417: the keepsakes are under the till with the note (LiteraryVignettes.finishReward).
+        if(own.getBoolean("Walked"))p.add("I've put the house chalk and a tin of darts under here with this. They're for whoever walked out. If they come back in, they're to have them.");
         p.add("Clock's still stuck at ten to. I'm leaving it.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LAST_ORDERS),"The morning shift",pages(HouseWriting.WritingStyle.PLAIN,p.toArray(String[]::new)));
     }
