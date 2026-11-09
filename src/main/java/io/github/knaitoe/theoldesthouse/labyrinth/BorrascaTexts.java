@@ -14,6 +14,31 @@ public final class BorrascaTexts {
         var fitted=new ArrayList<String>();for(String original:pages){var page=new StringBuilder();for(String word:original.split("(?<=\\s)")){if(page.length()+word.length()>limit){fitted.add(page.toString().strip());page.setLength(0);}page.append(word);}if(!page.isEmpty())fitted.add(page.toString().strip());}
         return HouseWriting.book(title,author,style,fitted);
     }
+    /**
+     * 0.4.437: a note made of letters cut out and pasted down. Each word is one cutting or a cutting a letter, and each cutting
+     * keeps its own type, weight and ink, chosen the same way every time from the note's title, so no page has a hand. The last
+     * page is the stamp, typed.
+     */
+    private static ItemStack pasted(String title,String author,String stamp,String... pages){
+        var rng=new Random(title.hashCode());var out=new ArrayList<net.minecraft.network.chat.Component>();
+        int[] ink={0x1A1A1A,0x3B1F14,0x5A1414,0x14285A,0x1F3D1F,0x4A3A10,0x2E2E2E,0x3A1A3A};
+        var uniform=net.minecraft.resources.ResourceLocation.withDefaultNamespace("uniform");
+        for(String page:pages){var c=net.minecraft.network.chat.Component.empty();
+            for(String part:page.split("(?<=[ \n])|(?=[ \n])")){
+                if(part.equals(" ")||part.equals("\n")){c.append(net.minecraft.network.chat.Component.literal(part));continue;}
+                boolean whole=rng.nextFloat()<.35F;
+                for(String cut:whole?List.of(part):Arrays.asList(part.split(""))){
+                    String text=!whole&&Character.isLetter(cut.charAt(0))&&rng.nextFloat()<.3F?cut.toLowerCase(Locale.ROOT):cut;
+                    var style=net.minecraft.network.chat.Style.EMPTY.withColor(ink[rng.nextInt(ink.length)]).withBold(rng.nextFloat()<.4F)
+                        .withItalic(rng.nextFloat()<.15F).withUnderlined(rng.nextFloat()<.08F).withFont(rng.nextBoolean()?uniform:net.minecraft.network.chat.Style.DEFAULT_FONT);
+                    c.append(net.minecraft.network.chat.Component.literal(text).withStyle(style));
+                }
+            }
+            out.add(c);
+        }
+        out.add(net.minecraft.network.chat.Component.literal(stamp));
+        return HouseWriting.book(title,author,out);
+    }
     public static ItemStack source(){return typed("Triple Tree trail","County Trails",
         "TRIPLE TREE\n\nOne mile up, at the first marker, three pines grow out of one root. Children have built a fort in them, and rebuilt it, for as long as anyone in Drisking can remember.",
         "The public walk ends at Marker Two. Beyond it the ridge is county property.\n\nReturn before dusk.");}
@@ -26,27 +51,29 @@ public final class BorrascaTexts {
             "COUNTY PROPERTY RECEIPT\nRidge Depot\n\nReceipt no. 263\nReleased by: Sheriff's office\nVehicle: County 17\nCarrier: Prescott Ore Services\nSigned for: Prescott",
             "Tag 263-A\nName: KELLY GARRITY\nCollected: Marker 3, 6:40 pm\nItems: teal pack; name patch, stitched inside the flap."+(compassHeld?"\nAdded: brass compass, from the Sheriff's desk.":""),
             "Case: closed.\nRelease to family: none.\nHeld at: sorting table.",
-            "Transfer D-417\nNight access: authorized\nFuel: county maintenance account\nApproved: Sheriff's office",
+            "Kept above.\nNot to come down before eighteen.\nFuel: county maintenance account\nApproved: Sheriff's office",
             "Next tag: 264-A\nName: Kayla\nRelease to family: none.");
         // 0.4.237: the book on the desk under the depot. Nothing in it is described; it is kept like any other book of nights.
+        // 0.4.437 (owner): the lower rooms hold grown women only, and the book keeps the town's reason. Nobody comes down before
+        // eighteen; a child taken is "kept above", and what is born below is placed in town by the doctor.
         case "Ledger"->typed("Night book, lower rooms","Ridge Depot",
             "NIGHT BOOK\nLower rooms\n\nAccess at night by approval only. Sign in and out. Fees to the county maintenance account.",
-            "No names in this book. Rooms by number, tags by number.",
+            "No names in this book. Rooms by number, tags by number.\n\nNone to come down before eighteen. Births to the doctor. Placings by the doctor.",
             "1964\nRm 2. In 11:40. Out 1:05.\nRm 5. In 12:10. Out 12:50.\nApproved: Sheriff's office.\nCounted: E. Prescott",
-            "1979\nRm 1. In 11:15. Out 12:30.\nRm 5. Transfer, D-118.\nApproved: Sheriff's office.\nCounted: W. Prescott",
-            "1993\nRm 3. In 10:50. Out 12:00.\nRm 4. No visitors. Unwell.\nRm 4. Closed. To the yard.",
-            "Rm 2. Letter withheld.\nApproved: Sheriff's office.\nCounted: W. Prescott",
-            "263-A. Rm 6. Received, 6:40 pm.\nRm 6. No visitors. Will not eat.\nRm 6. Asks for her friend by name.\nRm 6. Transfer, D-417. Night.",
-            "264-A. Rm 7. Received.\nNight shift tonight.\nApproved: Sheriff's office.\nCounted: J. Prescott");
-        // 0.4.237: a girl's letter home from room 2, taken off her and kept. She does not say the rest.
-        case "Letter"->book("A letter, not sent","Dana",HouseWriting.WritingStyle.CHILD,110,
-            "Mom,\n\nThey said I could write if I was good. They said you think I went to Aunt Ruth's. I didn't.",
-            "I'm under the depot past the second marker.",
-            "There are other girls. We knock on the walls at night so we know who's still here. The girl in four stopped knocking.",
-            "Men come down at night. Mr. Prescott writes in a book. The Sheriff comes too.",
-            "I'm not allowed to say the rest and I don't want to.",
-            "Please come up past the marker. Please tell Ellie not to go to the fort.\n\nDana",
-            "WITHHELD\nNot to be posted.\nW. P.");
+            "1983\n141-A. Down. Rm 2.\n1985\nRm 2. Delivered, girl. Placed in town.\nApproved: Sheriff's office.\nCounted: W. Prescott",
+            "1987\nRm 2. Letter withheld.\nRm 4. No visitors. Unwell.\nRm 4. Closed. To the yard.",
+            "1993\n263-A. Received, 6:40 pm. Kept above.\n1999\n263-A. Down. Rm 6.\nRm 6. Will not eat. Asks for her friend by name.",
+            "2001\nRm 6. Delivered, boy. Placed in town.\n2004\nRm 6. Delivered, girl. Placed in town.\nRm 6. Transfer, D-417. Night.",
+            "264-A. Received tonight. Down at once. Rm 7.\nNight shift tonight.\nApproved: Sheriff's office.\nCounted: J. Prescott");
+        // 0.4.437 (owner): room 2's note home, made of letters cut from the catalogues they are given and pasted down, so it has no
+        // hand and gives no age. It is an adult's, from the year the book withholds it; it was taken off her and kept.
+        case "Letter"->pasted("A pasted note, not sent","Rm 2","WITHHELD\nNot to be posted.\nRm 2. 141-A.\nW. P.",
+            "TELL MY MOTHER\nI DID NOT\nRUN OFF",
+            "I AM UNDER\nTHE DEPOT\nPAST THE\nSECOND MARKER",
+            "THEY CALL ME\n141\nTHERE ARE\nOTHERS",
+            "WE KNOCK\nON THE WALLS\nFOUR STOPPED\nKNOCKING",
+            "THE BABIES\nGO UP TO TOWN\nASK THE DOCTOR\nWHOSE THEY ARE",
+            "COME PAST\nTHE MARKER\nNOT THE SHERIFF");
         case "EliPoster"->typed("Missing poster for Patrick","The Maddox family",
             "MISSING\nPATRICK MADDOX\n\nLast seen at Marker Two. His bicycle was found behind the store. Please call the Maddox house.",
             "Written along the bottom in pencil\nPatrick, your bike is in the shed. I put it away for you. Mom");
@@ -75,7 +102,7 @@ public final class BorrascaTexts {
     public static ItemStack board(int visit){
         if(visit>=4)return typed("The noticeboard","Drisking",
             "DRISKING\n\nChurch supper cancelled. Storm forecast for the ridge.",
-            "MISSING\nKAYLA, 14\nLast seen walking home from the store. Call the Sheriff's office, 555-0117.\n\nThe paper is new and still white.",
+            "MISSING\nKAYLA, 19\nLast seen walking home from the store. Call the Sheriff's office, 555-0117.\n\nThe paper is new and still white.",
             "Under it, older and softer, another sheet. Only one word is still legible: KELLY. Under that, the pin holes of sheets nobody kept.",
             "PRESCOTT ORE SERVICES\nNight shift tonight. Trucks on the ridge road after dark.");
         if(visit==3)return typed("The noticeboard","Drisking",
@@ -149,8 +176,8 @@ public final class BorrascaTexts {
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine. The room was empty.":"")
             +(own.getBoolean("MarasRoom")?" The newest room was still warm.":"")
-            +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Beside her number it said transfer, and nothing after.":"")
-            +(own.getBoolean("LetterRead")?" A girl had written home from down there. Her letter was never sent.":"")
+            +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Nobody came down until they were grown. What was born down there went up to town. Beside her number it said transfer, and nothing after.":"")
+            +(own.getBoolean("LetterRead")?" Someone down there had made a note home out of letters cut from catalogues. It was never sent.":"")
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
             // 0.4.427: what the reader did to the Sheriff, grown.
             +(own.getBoolean("SheriffDead")?" I killed the Sheriff on the ridge. He talked until he couldn't, and none of it was sorry.":own.getBoolean("SheriffBeaten")?" I beat the Sheriff down into the dirt and left him there, still talking.":"")

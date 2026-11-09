@@ -654,8 +654,13 @@ public final class BorrascaTests {
             h.assertTrue(own.getBoolean("LedgerRead")&&own.getBoolean("LetterRead"),"the night book and the letter are read on the desk");
             var book=String.join(" ",BorrascaTexts.document("Ledger").get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());
             h.assertTrue(book.contains("Approved: Sheriff's office")&&book.contains("E. Prescott")&&book.contains("W. Prescott")&&book.contains("J. Prescott")&&book.contains("263-A")&&book.contains("Transfer, D-417")&&book.contains("To the yard")&&book.contains("264-A"),"the night book: the Sheriff's approvals, three Prescotts, her tag and her transfer, the yard, and the newest tag");
-            var letter=childPlain(String.join(" ",BorrascaTexts.document("Letter").get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList()));
-            h.assertTrue(letter.contains("Men come down at night")&&letter.contains("I don't want to")&&letter.contains("WITHHELD"),"the letter says what it can, and no more, and was never sent");
+            // 0.4.437 (owner): grown women only below, and the town's reason on paper.
+            h.assertTrue(book.contains("None to come down before eighteen")&&book.contains("Kept above")&&book.contains("Placed in town")&&book.contains("141-A. Down"),"nobody comes down before eighteen, a child taken is kept above, and what is born below is placed in town");
+            var letterPages=BorrascaTexts.document("Letter").get(DataComponents.WRITTEN_BOOK_CONTENT).pages();
+            var letter=String.join(" ",letterPages.stream().map(page->page.raw().getString()).toList()).toUpperCase(Locale.ROOT).replaceAll("\\s+"," ");
+            var styles=new java.util.HashSet<net.minecraft.network.chat.Style>();letterPages.get(0).raw().visit((style,text)->{if(!text.isBlank())styles.add(style);return java.util.Optional.empty();},net.minecraft.network.chat.Style.EMPTY);
+            h.assertTrue(letter.contains("UNDER THE DEPOT")&&letter.contains("THE BABIES GO UP TO TOWN")&&letter.contains("WITHHELD")&&!letter.contains("MOM,"),"the note says where she is and where the babies go, and was never sent: "+letter);
+            h.assertTrue(styles.size()>=6,"the note is pasted from cuttings, no two alike, so it has no hand: "+styles.size());
             f.at(p,-15,6,-179);f.refresh(p);own=f.own(p);var wall=l.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.NELL_WALL));
             h.assertTrue(own.getBoolean("LowerRooms")&&own.getBoolean("NellsRoom"),"under the depot, and in her room");
             h.assertTrue(wall instanceof BorrascaCarvingEntity e&&e.friend().equals(BorrascaStory.FRIEND)&&e.reader().equals(p.getGameProfile().getName())&&l.getBlockState(BorrascaRooms.at(b,BorrascaRooms.NELL_WALL)).getValue(BorrascaCarvingBlock.WALL),"her name scratched into the wall beside the reader's");
