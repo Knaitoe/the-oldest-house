@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,game=0,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_0"
+    },
+    "facing=north,game=1,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_1"
+    },
+    "facing=north,game=2,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_2"
+    },
+    "facing=north,game=0,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_0"
+    },
+    "facing=north,game=1,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_1"
+    },
+    "facing=north,game=2,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_2"
+    },
+    "facing=east,game=0,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_0",
+      "y": 90
+    },
+    "facing=east,game=1,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_1",
+      "y": 90
+    },
+    "facing=east,game=2,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_2",
+      "y": 90
+    },
+    "facing=east,game=0,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_0",
+      "y": 90
+    },
+    "facing=east,game=1,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_1",
+      "y": 90
+    },
+    "facing=east,game=2,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_2",
+      "y": 90
+    },
+    "facing=south,game=0,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_0",
+      "y": 180
+    },
+    "facing=south,game=1,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_1",
+      "y": 180
+    },
+    "facing=south,game=2,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_2",
+      "y": 180
+    },
+    "facing=south,game=0,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_0",
+      "y": 180
+    },
+    "facing=south,game=1,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_1",
+      "y": 180
+    },
+    "facing=south,game=2,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_2",
+      "y": 180
+    },
+    "facing=west,game=0,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_0",
+      "y": 270
+    },
+    "facing=west,game=1,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_1",
+      "y": 270
+    },
+    "facing=west,game=2,half=lower": {
+      "model": "the_oldest_house:block/polybius/cabinet_2",
+      "y": 270
+    },
+    "facing=west,game=0,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_0",
+      "y": 270
+    },
+    "facing=west,game=1,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_1",
+      "y": 270
+    },
+    "facing=west,game=2,half=upper": {
+      "model": "the_oldest_house:block/polybius/screen_2",
+      "y": 270
+    }
+  }
+}

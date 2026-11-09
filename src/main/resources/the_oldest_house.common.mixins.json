@@ -14,7 +14,8 @@
     "PortraitPaintingMixin",
     "ArtifactGripMixin",
     "ArtifactPaddleMixin",
-    "ArtifactSnowMixin"
+    "ArtifactSnowMixin",
+    "CraftingKeyMixin"
   ],
   "injectors": {
     "defaultRequire": 1
