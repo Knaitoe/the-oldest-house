@@ -140,7 +140,7 @@ public final class BorrascaPeople {
         int visit=own.getInt("Visit");boolean grown=visit>=3;int phase=a.phase();turn(a,p);
         if(phase==ODELL&&!grown){lollipop(p,own);return true;}
         if(phase==GUS&&!grown){BorrascaStory.say(p,a,"Out. No kids in here.");return true;}
-        String[] lines=greetings(phase,visit);String key="Said"+phase;int n=own.getInt(key);own.putInt(key,n+1);
+        String[] lines=own.getBoolean("SheriffDead")&&own.getInt("SheriffDiedVisit")<visit&&afterTheSheriff(phase)!=null?afterTheSheriff(phase):greetings(phase,visit);String key="Said"+phase;int n=own.getInt(key);own.putInt(key,n+1);
         BorrascaStory.say(p,a,lines[n%lines.length]);
         var wares=wares(phase,grown);if(!wares.isEmpty())counter(p,a,wares,grown);
         return true;
@@ -197,6 +197,14 @@ public final class BorrascaPeople {
         case MERLE->visit==4?new String[]{"Go home. Whatever you're thinking of doing tonight, go home.","You're not from the paper, are you?"}:new String[]{"Garrity girl? I took that report myself. Runaway, the Sheriff said. So that's what I wrote down.","Lot of kids run off from a town this size. You'd be surprised how many.","You're not from the paper, are you?"};
         // 0.4.426: grown, Earl says too much.
         default->visit==4?new String[]{"You're going up there tonight. I can see it on you.","Don't let them see your light past the second marker. That's all I'll say.","They keep me in here so I don't say things. That's a joke. Mostly."}:grown?new String[]{"You again. No. You were smaller.","I wore the star once, same as Dutch and Merle. Ask them what we did with the reports.","Every kid on the board at the store, the Sheriff signs off as a runaway. Every one. They don't run anywhere.","There's a road behind the depot fence the county doesn't plow. Somebody plows it."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};
+    };}
+    /** 0.4.427: what the bar and the cell say on the visit after the Sheriff was killed on the ridge; null for everyone else. */
+    private static @Nullable String[] afterTheSheriff(int phase){return switch(phase){
+        case DUTCH->new String[]{"Sheriff's dead. He's still up by the tape. Nobody's gone for him.","Prescott says leave him till the county comes. So he's still lying up there."};
+        case MERLE->new String[]{"Somebody's going to have to write it up. It won't be me. Not this time.","They'll send a new one from the county. They always do."};
+        case GUS->new String[]{"Drinks are on the house tonight. Don't ask me why.","Nobody's said a word about the Sheriff in here. Keep it that way."};
+        case EARL->new String[]{"Somebody finally did it. Don't tell me who. I'd only say it.","Leave the door open on your way out. Nobody's coming to lock it."};
+        default->null;
     };}
     private static void turn(LiteraryActor a,ServerPlayer p){float yaw=(float)(Mth.atan2(p.getZ()-a.getZ(),p.getX()-a.getX())*180/Math.PI)-90;a.setYRot(yaw);a.setYHeadRot(yaw);a.setYBodyRot(yaw);}
 

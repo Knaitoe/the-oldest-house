@@ -88,6 +88,13 @@ public final class BorrascaNativeArt {
         }
 
         @Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(person(a));}
+        /** 0.4.427: the Sheriff sat down in the dirt, or lying on his back where he fell. */
+        @Override protected void setupRotations(LiteraryActor a,PoseStack pose,float age,float yaw,float partial,float scale){
+            super.setupRotations(a,pose,age,yaw,partial,scale);
+            if(a.role()!=LiteraryActor.BORRASCA_SHERIFF)return;
+            if(a.gesture()==BorrascaStory.KNELT)pose.translate(0,-.6F,0);
+            else if(a.gesture()==BorrascaStory.FALLEN){pose.translate(0,.13F,0);pose.mulPose(Axis.XP.rotationDegrees(-90));}
+        }
         @Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}
     }
     public static final class CastModel extends HumanoidModel<LiteraryActor>{
@@ -119,6 +126,7 @@ public final class BorrascaNativeArt {
         }
         /** Legs and free arms swinging with the distance actually walked; a sheltering crouch keeps its legs. */
         void stride(int gesture,float phase,float amount){
+            if(gesture==BorrascaStory.KNELT||gesture==BorrascaStory.FALLEN)return;
             if(amount<=.01F)return;float c=net.minecraft.util.Mth.cos(phase),swing=.72F*amount;
             if(gesture!=5&&gesture!=BorrascaStory.CARRIED){rightLeg.xRot+=c*swing;leftLeg.xRot-=c*swing;}
             boolean right=gesture==0||gesture==8,left=gesture!=3&&gesture!=5&&gesture!=8&&gesture!=BorrascaStory.CARRY&&gesture!=10;
@@ -146,6 +154,9 @@ public final class BorrascaNativeArt {
                 }
                 case BorrascaStory.CARRY->{rightArm.xRot=leftArm.xRot=-1.55F;rightArm.yRot=-.28F;leftArm.yRot=.28F;}
                 case BorrascaStory.WARNING->{rightArm.xRot=-1.28F;rightArm.yRot=-.35F;head.xRot=.15F;}
+                // 0.4.427: the Sheriff beaten down, sitting in the dirt with his legs out and his hands up; and dead, flat on his back.
+                case BorrascaStory.KNELT->{leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.zRot=-.12F;rightLeg.zRot=.12F;body.xRot=.22F;head.xRot=.38F;leftArm.xRot=rightArm.xRot=-1.2F;leftArm.zRot=.28F;rightArm.zRot=-.28F;}
+                case BorrascaStory.FALLEN->{leftArm.zRot=-.32F;rightArm.zRot=.4F;leftLeg.zRot=-.08F;rightLeg.zRot=.1F;head.yRot=.55F;head.xRot=0;}
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */

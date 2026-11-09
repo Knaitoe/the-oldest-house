@@ -31,6 +31,8 @@ public final class BorrascaCast {
      * last night; Prescott on the last night. Years later the men are at work in the yard, seen through the wire.
      */
     public static BlockPos target(String key,int visit){return BorrascaRooms.world(authoredTarget(key,visit));}
+    /** 0.4.427: a dead Sheriff stays where he fell, on every later visit; null while he lives. Absolute world position. */
+    public static @javax.annotation.Nullable BlockPos body(CompoundTag own,String key){return key.equals("CastSheriff")&&own.getBoolean("SheriffDead")&&own.contains("SheriffBody")?BlockPos.of(own.getLong("SheriffBody")):null;}
     private static BlockPos authoredTarget(String key,int visit){return switch(key){
         case "CastKimber"->visit>=3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);
         case "CastSheriff"->visit>=4?BorrascaRooms.YARD_PATROL_START:visit==3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);
@@ -40,12 +42,12 @@ public final class BorrascaCast {
         case "TownWren"->visit<=2?new BlockPos(-2,0,-32):new BlockPos(38,-4,-56);
         case "Worker1"->visit==3?new BlockPos(8,12,-182):new BlockPos(37,-4,-59);
         default->throw new IllegalArgumentException(key);};}
-    public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return;int visit=own.contains("CastNextVisit")?own.getInt("CastNextVisit"):own.getInt("Visit");var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:visit));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)level.getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(level,held));}
+    public static void prepare(ServerPlayer p,BlockPos base,CompoundTag own){var d=LabyrinthData.get(p.server);if(store!=d){clear();store=d;}if(leases.containsKey(p.getUUID()))return;var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(level==null)return;int visit=own.contains("CastNextVisit")?own.getInt("CastNextVisit"):own.getInt("Visit");var chunks=new LinkedHashSet<ChunkPos>();for(String key:KEYS){var from=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):base.offset(target(key,1));var to=body(own,key)!=null?body(own,key):base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:visit));chunks.add(new ChunkPos(from));chunks.add(new ChunkPos(to));}var held=List.copyOf(chunks);for(var c:held)level.getChunkSource().addRegionTicket(TICKET,c,3,p.getUUID());leases.put(p.getUUID(),new Lease(level,held));}
     /** Prepare the next cast while the reader is still at the original House door, before travel. */
     public static boolean prepareNext(ServerPlayer p){
         var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),LabyrinthPlace.BORRASCA);int next=own.getInt("CastNextVisit");if(next==0)return true;
         if(BorrascaSites.inside(p)||own.getBoolean("Here"))return false;var base=BorrascaSites.base(p.server,p.getUUID());var level=p.server.getLevel(HouseDimensions.OUTSIDE);if(base==null||level==null)return false;prepare(p,base,own);
-        boolean all=true;for(String key:KEYS){if(key.startsWith("Town")&&!own.hasUUID(key))continue;var a=own.hasUUID(key)&&level.getEntity(own.getUUID(key)) instanceof LiteraryActor actor?actor:null;all&=recall(level,a,base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:next)));if(a!=null)remember(own,key,a);}
+        boolean all=true;for(String key:KEYS){if(key.startsWith("Town")&&!own.hasUUID(key))continue;var a=own.hasUUID(key)&&level.getEntity(own.getUUID(key)) instanceof LiteraryActor actor?actor:null;all&=recall(level,a,body(own,key)!=null?body(own,key):base.offset(target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:next)));if(a!=null)remember(own,key,a);}
         if(all){own.putInt("CastVisit",next);own.remove("CastNextVisit");release(p.getUUID());}LiteraryVignettes.save(data,p.getUUID(),LabyrinthPlace.BORRASCA,own);return all;
     }
     /** For a failed staging: where each of the cast is, where they are going, and what holds them back. */
@@ -88,7 +90,7 @@ public final class BorrascaCast {
         }return new Vec3(0,0,Math.min(t.getDouble("BorrascaSpeed"),horizontal*2));
     }
     public static void remember(CompoundTag own,String key,LiteraryActor actor){if(actor!=null)own.putLong(key+"At",actor.blockPosition().asLong());}
-    public static BlockPos destination(CompoundTag own,String key,BlockPos base){return own.getInt("CastVisit")==own.getInt("Visit")&&own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")).subtract(base):target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:own.getInt("Visit"));}
+    public static BlockPos destination(CompoundTag own,String key,BlockPos base){var lies=body(own,key);if(lies!=null)return lies.subtract(base);return own.getInt("CastVisit")==own.getInt("Visit")&&own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")).subtract(base):target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?3:own.getInt("Visit"));}
     public static void release(UUID id){var lease=leases.remove(id);if(lease!=null)for(var c:lease.chunks)lease.level.getChunkSource().removeRegionTicket(TICKET,c,3,id);}
     public static void clear(){for(var id:List.copyOf(leases.keySet()))release(id);store=null;}
     public static int heldChunks(){return leases.values().stream().mapToInt(l->l.chunks.size()).sum();}
