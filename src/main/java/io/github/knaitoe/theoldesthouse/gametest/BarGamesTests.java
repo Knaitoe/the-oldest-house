@@ -106,11 +106,13 @@ public final class BarGamesTests {
             PoolTables.clearAll();PoolTables.use(p,foot);PoolTables.seatRegular(l,foot,"the regular",.9);
             var u=PoolTables.at(l,foot);
             h.assertTrue(u!=null&&u.seats.size()==2&&u.seated(PoolTables.REGULAR),"the table can seat its own player");
-            var gg=u.game;PoolTables.shoot(p,foot,Math.atan2(gg.y[1]-gg.y[0],gg.x[1]-gg.x[0]),.15,0,0);
-            boolean regularsTurn=PoolTables.REGULAR.equals(u.shooter());
+            var gg=u.game;
+            gg.x[9]=PoolGame.HEAD_X;gg.y[9]=PoolGame.H/2;
+            gg.x[0]=PoolGame.HEAD_X-20;
+            h.assertTrue(PoolTables.shoot(p,foot,Math.PI,.1,0,0)&&PoolTables.REGULAR.equals(u.shooter())&&gg.ballInHand&&!gg.canPlace(PoolGame.HEAD_X,PoolGame.H/2),"a foul gives the regular ball in hand with the head spot occupied");
             var before=u.game.save();
             h.runAfterDelay(PoolTables.REGULAR_PAUSE+10,()->{
-                h.assertTrue(!regularsTurn||!u.game.save().equals(before),"on its turn the table's own player takes its shot");
+                h.assertTrue(!u.game.save().equals(before),"the regular plays its scheduled shot from a legal spot");
                 // Broken from its head, the whole table goes and comes back as one item.
                 l.destroyBlock(head,true);
                 var drops=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(foot).inflate(3),e->e.getItem().is(BarRegistry.POOL_TABLE_ITEM.get()));

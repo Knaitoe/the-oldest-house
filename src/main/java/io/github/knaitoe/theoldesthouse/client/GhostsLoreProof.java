@@ -42,7 +42,7 @@ public final class GhostsLoreProof {
         new View("desk-closed",0,1,0,2,1),
         new View("desk-study",0,7,0,2,2),
         new View("stored-cross",0,7,0,2,3),
-        new View("lens-effigy",0,7,0,2,4),
+        new View("lens-effigy",0,3,0,2,4),
         // 0.4.325: the sisters' plan, the image search, the shrine with its jar on the fifth day, and the new props together.
         new View("images",GhostsLore.LAPTOP,7,3,2,0),
         new View("pad-question",GhostsLore.PAD,7,0,2,0),

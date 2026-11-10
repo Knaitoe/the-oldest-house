@@ -40,10 +40,11 @@ public final class GhostsCrew {
     /** Each lead's crew, in the order they came onto the set. */
     private static final Map<UUID,List<UUID>> CREW=new ConcurrentHashMap<>();
     /**
-     * What one reader's own take keeps to them: their camera's frames and lens, their idle lines and their door. Everything else in a
-     * day's keys is the production's, and a second camera follows the lead's.
+     * Each reader keeps their own camera frames, lens settings and conversation progress.
+     * A second camera follows the lead's other production keys.
      */
-    private static final Set<String> PERSONAL=Set.of("FrameNonce","FilmIdle0490","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw");
+    private static final Set<String> PERSONAL=Set.of("FrameNonce","FilmIdle0490","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw",
+            GhostsSet.MERRY_LINE_BEFORE,GhostsSet.MERRY_LINE_AFTER);
     /** The production keys a second camera follows besides the day's own keys. */
     private static final List<String> PRODUCTION=List.of("FilmDay","ShotClock","Rolling","DayDone","CastPlaced","BedroomPickup","PickupStep0","PickupStep1","AcceptedScene131","MerryExitStep0488","MerryLeft0488","LightsOut0242");
     private GhostsCrew(){}

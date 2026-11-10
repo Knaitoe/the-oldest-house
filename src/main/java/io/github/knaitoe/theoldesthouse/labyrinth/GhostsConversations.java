@@ -143,7 +143,8 @@ public final class GhostsConversations {
             new Shot("MerryPlate","Merry's buttered pasta, without the sauce.","The assembly holds on the plain plate without showing how long Merry has eaten that way."),
             new Shot("FamilyConvulsions","The family choking and shaking, then going still.","The assembly squeezes the three of them into one quick sequence."),
             new Shot("MouthLeak","Blood and spit at their mouths after they stop moving.","The assembly leaves their mouths sooner than your recording does."),
-            new Shot("MerryDeparture","Merry getting up and walking out the front door.","The assembly ends with Merry leaving. This departure belongs to the House's reconstruction."))
+            new Shot("MerryAtCross","Merry sitting on the basement floor beside the cross.","The assembly holds on Merry sitting by the cross."),
+            new Shot("MerryDeparture","Merry walking toward the front door.","The assembly ends on Merry crossing the front hall."))
     );
     /** 0.4.242 (owner, of "Sustained shots: HatExchange, InjuredHand": "That's not right."): what each kept shot is called on the log. */
     private static final Map<String,String> SHOT_NAMES=Map.ofEntries(
@@ -155,7 +156,8 @@ public final class GhostsConversations {
         Map.entry("DinnerMouth","Marjorie eating"),Map.entry("FinalMeal","the last supper"),Map.entry("MerryPlate","Merry's plate"),
         Map.entry("SarahDiary","Sarah's diary"),Map.entry("BankSlips","the kitchen papers"),Map.entry("LaptopStudy","Marjorie's saved study"),Map.entry("BasementEffigy","the basement camera image"),
         Map.entry("PlanPad","Merry's pad"),Map.entry("OpenCanisters","the open canisters"),Map.entry("EmptyJar","the empty jar"),
-        Map.entry("FamilyConvulsions","the family choking"),Map.entry("MouthLeak","their mouths"),Map.entry("MerryDeparture","Merry leaving"));
+        Map.entry("FamilyConvulsions","the family choking"),Map.entry("MouthLeak","their mouths"),
+        Map.entry("MerryAtCross","Merry by the cross"),Map.entry("MerryDeparture","Merry heading for the door"));
     public static String shotName(String key){return SHOT_NAMES.getOrDefault(key,key);}
     /** The kept shots in plain words, in the day's order: "Marjorie, Merry and John's hand". */
     public static String shotList(Collection<String> keys){

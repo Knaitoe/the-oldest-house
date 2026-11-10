@@ -18,8 +18,9 @@ public final class GhostsLore {
             LAPTOP_AT=GhostsSetRooms.EXORCISM_DESK.above(),EFFIGY_AT=new BlockPos(5,-4,-24),DRAWING_AT=new BlockPos(4,5,-17),
             // 0.4.325: Merry's pad on her nightstand, the canisters on the counter by the sink, and where she sets the empty jar down.
             PAD_AT=new BlockPos(10,6,-25),CANISTERS_AT=new BlockPos(-8,1,-25),JAR_AT=EFFIGY_AT.south();
-    /** 0.4.325 (owner: "maybe have the shrine appear on day 5"): from the fifth day, before the rite. */
-    public static final int SHRINE_DAY=5;
+    /** The shrine appears through the camera from day three. The jar still turns up before the rite. */
+    public static final int SHRINE_DAY=3;
+    private static final int SHRINE_JAR_DAY=5;
     private GhostsLore(){}
     public static void build(ServerLevel level,BlockPos base){
         level.setBlock(base.offset(BANK_AT),GhostsSetBlock.of(GhostsSetBlock.Kind.BANK_SLIPS,Direction.SOUTH),2);
@@ -33,8 +34,8 @@ public final class GhostsLore {
     /** 0.4.325: Merry's pad is by her bed only on the last day; the canisters stand open, a spoon across them, only on the last day. */
     public static GhostsSetBlock.Kind pad(int day){return day==7?GhostsSetBlock.Kind.PLAN_PAD:null;}
     public static GhostsSetBlock.Kind canisters(int day){return day==7?GhostsSetBlock.Kind.CANISTERS_OPEN:GhostsSetBlock.Kind.CANISTERS;}
-    /** 0.4.325: the camera's shrine has the small jar on its bench until the last day, when the bench is bare. */
-    public static GhostsSetBlock.Kind shrine(int day){return day>=7?GhostsSetBlock.Kind.BASEMENT_EFFIGY:GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR;}
+    /** The bench holds the small jar on days five and six. */
+    public static GhostsSetBlock.Kind shrine(int day){return day>=SHRINE_JAR_DAY&&day<7?GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR:GhostsSetBlock.Kind.BASEMENT_EFFIGY;}
     public static boolean click(ServerPlayer p,BlockPos base,BlockPos rel,CompoundTag own){
         if(!LiteraryVignettes.inside(p,GhostsSet.PLACE)||p.isSpectator()||p.distanceToSqr(base.offset(rel).getCenter())>36)return false;
         var state=p.serverLevel().getBlockState(base.offset(rel));int kind=-1,day=GhostsSet.day(own);
@@ -104,7 +105,7 @@ public final class GhostsLore {
     /** 0.4.325: the shrine is on tape if the camera held it for a second on any day it could be seen. */
     public static boolean effigyRecorded(CompoundTag own){int frames=0;for(int d=SHRINE_DAY;d<=7;d++)frames+=own.getCompound("FilmLog"+d).getInt("Frames_BasementEffigy");return frames>=20;}
     /** Whether the camera kept the jar on the shrine's bench (only before the last day). */
-    public static boolean jarRecorded(CompoundTag own){int frames=0;for(int d=SHRINE_DAY;d<7;d++)frames+=own.getCompound("FilmLog"+d).getInt("Frames_BasementEffigy");return frames>=20;}
+    public static boolean jarRecorded(CompoundTag own){int frames=0;for(int d=SHRINE_JAR_DAY;d<7;d++)frames+=own.getCompound("FilmLog"+d).getInt("Frames_BasementEffigy");return frames>=20;}
     public static int found(CompoundTag own){return (own.getInt("LoreDiaryDay")>0?1:0)+(own.getBoolean("LoreBank")?1:0)+(own.getBoolean("LoreLaptop")?1:0)+(own.getInt("LoreDrawingDay")>0?1:0)+(effigyRecorded(own)?1:0)+(own.getBoolean("LorePad")?1:0)+(own.getBoolean("LoreCanisters")?1:0);}
     public static String fragment(CompoundTag own){
         if(own.getBoolean("LorePad"))return "the plan written small at the bottom of Merry's pad";
@@ -132,7 +133,7 @@ public final class GhostsLore {
         case "SarahDiary"->raw?"Sarah's closed notebook beside her bed. The writing inside is not visible in this shot.":"The diary is absent from the cut.";
         case "BankSlips"->raw?"The mortgage notice and the production payment are clipped together on the kitchen counter.":"The kitchen's financial papers are left out.";
         case "LaptopStudy"->raw?"The laptop is open to a study summary. A large 4 is visible above the paragraphs.":"The assembly does not show the saved pages on the laptop.";
-        case "BasementEffigy"->raw?(day<7?"The viewfinder shows cloths, a bench and the cross in the basement, and a small capped jar of white powder on the bench. Without the camera, there is only the stored cross and rag.":"The viewfinder shows cloths, a bench and the cross in the basement. The bench is bare. Without the camera, there is only the stored cross and rag."):"The assembly leaves out the basement image.";
+        case "BasementEffigy"->raw?(shrine(day)==GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR?"The viewfinder shows cloths, a bench and the cross in the basement, and a small capped jar of white powder on the bench. Without the camera, there is only the stored cross and rag.":"The viewfinder shows cloths, a bench and the cross in the basement. The bench is bare. Without the camera, there is only the stored cross and rag."):"The assembly leaves out the basement image.";
         case "PlanPad"->raw?"Merry's pad by her bed, a pen clipped to it. The pages are not readable in this shot.":"The pad is not in the cut.";
         case "OpenCanisters"->raw?"The sugar and flour canisters stand open on the kitchen counter, a spoon and white dust between them.":"The kitchen counter is not in the cut.";
         case "EmptyJar"->raw?"An empty glass jar on the basement floor in front of the cross.":"The basement floor is not in the cut.";

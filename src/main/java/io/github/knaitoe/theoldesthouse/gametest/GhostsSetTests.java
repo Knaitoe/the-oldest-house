@@ -489,7 +489,8 @@ public final class GhostsSetTests {
      */
     @GameTest(template="empty",batch="ghosts_merry_basement325",timeoutTicks=4000)
     public static void merryTakesTheEmptyJarDownToTheCrossSitsThereAndTalksThenLeaves(GameTestHelper h){
-        var f=fixture(h);var p=f.player("ghost_basement",P);f.source(p,P);var b=f.base(P);
+        var f=fixture(h);var p=f.player("ghost_basement",P);var peer=f.player("basement_peer",P);
+        f.source(p,P);f.source(peer,P);lead(f,p,peer);var b=f.base(P);
         h.startSequence().thenIdle(30).thenWaitUntil(()->{
             var own=f.own(p,P);own.putInt("FilmDay",7);own.putInt("ShotClock",295);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",true);f.at(p,P,-4,0,-15);GhostsSet.reader(p,b,own);save(f,p,own);
             h.assertTrue(actor(f,p,LiteraryActor.GHOST_MERRY)!=null,"the last day's cast is placed");
@@ -499,17 +500,37 @@ public final class GhostsSetTests {
           .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("MerryExitStep0488")>=12,"she walks down the actual basement stair: step "+f.own(p,P).getInt("MerryExitStep0488")+" at "+actor(f,p,LiteraryActor.GHOST_MERRY).position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))))
           .thenExecute(()->{
             var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.getY()<b.getY()-3.5,"she is down on the basement floor");
-            var own=f.own(p,P);f.at(p,P,7,-4,-20);GhostsSet.talk(p,merry,own);save(f,p,own);h.assertTrue(own.getInt("MerryLineA0325")==1&&!own.getBoolean(GhostsSet.MERRY_JAR),"talking to her down there before the jar is set down gets her first basement line");
+            f.at(p,P,7,-4,-20);f.at(peer,P,7.5,-4,-20);
+            h.assertTrue(GhostsCrew.castOf(peer.getUUID()).equals(p.getUUID()),"both readers can talk to the original Merry");
+            var second=f.own(peer,P);GhostsSet.reader(peer,b,second);save(f,peer,second);
+            LiteraryVignettes.talk(peer,merry);
+            second=f.own(peer,P);GhostsSet.reader(peer,b,second);save(f,peer,second);
+            LiteraryVignettes.talk(peer,merry);LiteraryVignettes.talk(p,merry);
+            h.assertTrue(f.own(peer,P).getInt("MerryLineA0325")==2&&f.own(p,P).getInt("MerryLineA0325")==1&&!f.own(p,P).getBoolean(GhostsSet.MERRY_JAR),"the second reader's replies advance across a crew sync, and the lead starts their own conversation");
         }).thenWaitUntil(()->{var merry=actor(f,p,LiteraryActor.GHOST_MERRY);h.assertTrue(merry.phase()==GhostsSet.FLOOR&&f.own(p,P).getBoolean(GhostsSet.MERRY_JAR),"she sets the jar down at the cross and sits on the floor: phase "+merry.phase()+" step "+f.own(p,P).getInt("MerryExitStep0488"));})
           .thenExecute(()->{
             var merry=actor(f,p,LiteraryActor.GHOST_MERRY);var at=merry.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b));
             h.assertTrue(merry.getMainHandItem().isEmpty()&&Math.abs(at.x-5.5)<.35&&Math.abs(at.z+22.2)<.35&&Math.abs(at.y+4)<.1,"she sits at the cross, the jar out of her hand: "+at);
-            var own=f.own(p,P);GhostsSet.talk(p,merry,own);GhostsSet.talk(p,merry,own);save(f,p,own);h.assertTrue(own.getInt("MerryLineB0325")==2,"once the jar is down she says the other lines");
+            LiteraryVignettes.talk(p,merry);LiteraryVignettes.talk(p,merry);
+            var second=f.own(peer,P);GhostsSet.reader(peer,b,second);save(f,peer,second);
+            LiteraryVignettes.talk(peer,merry);
+            h.assertTrue(f.own(p,P).getInt("MerryLineB0325")==2&&f.own(peer,P).getInt("MerryLineB0325")==1,"each reader gets their own replies after the shared jar placement");
+            film(p,cam(p));p.lookAt(EntityAnchorArgument.Anchor.EYES,merry.getEyePosition());
+            h.assertTrue(GhostsSet.framed(p,merry.getEyePosition()),"the lead can frame Merry seated at the cross");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getCompound("FilmLog7").getInt("Frames_MerryAtCross")>=20,"the lead's lens holds the basement shot"))
+          .thenExecute(()->{
+            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            f.at(peer,P,1.5,0,-1.5);peer.lookAt(EntityAnchorArgument.Anchor.EYES,Vec3.atLowerCornerOf(b).add(1.5,1.5,-8.5));film(peer,cam(peer));
         }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MerryLeft0488"),"after sitting a while she goes back up and out of the front door: step "+f.own(p,P).getInt("MerryExitStep0488")))
-          .thenExecute(()->{var own=f.own(p,P);h.assertTrue(own.getBoolean(GhostsSet.MERRY_JAR)&&GhostsLore.account(own).contains("empty jar"),"the empty jar stays in front of the cross and the account says so");})
+          .thenExecute(()->{
+            var own=f.own(p,P);h.assertTrue(own.getBoolean(GhostsSet.MERRY_JAR)&&GhostsLore.account(own).contains("empty jar"),"the empty jar stays in front of the cross and the account says so");
+            String basement=words(GhostsSet.edit(p,own,7,true)),hall=words(GhostsSet.edit(peer,f.own(peer,P),7,true));
+            h.assertTrue(basement.contains("Merry sitting on the basement floor beside the cross.")&&!basement.contains("front door")&&!basement.contains("Merry's questions at the last supper"),"the lead's basement footage stays a basement shot: "+basement);
+            h.assertTrue(hall.contains("Merry walking toward the front door.")&&!hall.contains("basement floor beside the cross"),"the second camera independently records her final walk in the hall: "+hall);
+          })
           .thenSucceed();
     }
-    @AfterBatch(batch="ghosts_merry_basement325") public static void merryBasementDone(ServerLevel l){close();}
+    @AfterBatch(batch="ghosts_merry_basement325") public static void merryBasementDone(ServerLevel l){GhostsCrew.clearAll();close();}
     /**
      * 0.4.172 (owner: "add a command to trigger specific film days for testing"; "improve Marjorie's crawl into and destruction
      * of the cardboard box"): the shortcut starts day four at the upstairs pickup without filming the days before it, and in

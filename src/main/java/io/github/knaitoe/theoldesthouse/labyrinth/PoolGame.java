@@ -112,6 +112,17 @@ public final class PoolGame {
         for(int b=1;b<BALLS;b++)if(on[b]&&Math.hypot(px-x[b],py-y[b])<2*R+.01)return false;
         return true;
     }
+    private double[] cueSpot(){
+        // There are more grid points than object balls, and each ball can block at most one.
+        double spacing=4*R+.04;
+        for(double px=HEAD_X;px>=2*R;px-=spacing){
+            for(double offset=0;offset<=H/2-2*R;offset+=spacing){
+                if(canPlace(px,H/2+offset))return new double[]{px,H/2+offset};
+                if(offset>0&&canPlace(px,H/2-offset))return new double[]{px,H/2-offset};
+            }
+        }
+        throw new IllegalStateException("No legal cue ball spot");
+    }
     /**
      * A shot taken by the side whose turn it is: the cue ball placed first if they have it in hand, then struck. Returns what the shot
      * did, or null (changing nothing) for a shot that cannot be taken. Afterwards the turn, the groups, the ball in hand and the winner follow the
@@ -144,7 +155,7 @@ public final class PoolGame {
         if(breakShot)phase=Phase.OPEN;
         if(phase==Phase.OPEN&&group[0]!=0)phase=Phase.PLAY;
         if(foul){
-            if(!on[0]){x[0]=HEAD_X;y[0]=H/2;on[0]=true;int tries=0;while(!canPlace(x[0],y[0])&&tries++<40)y[0]+=2*R*(tries%2==0?1:-1)*tries/2.0;}
+            if(!on[0]){var spot=cueSpot();x[0]=spot[0];y[0]=spot[1];on[0]=true;}
             side=1-side;ballInHand=true;
             last=r.first<0?"Nothing touched. Ball in hand.":r.potted.contains(0)?"The cue ball drops. Ball in hand.":"Wrong ball first. Ball in hand.";
         }else if(kept){
@@ -158,7 +169,8 @@ public final class PoolGame {
     public double[] aim(long seed,double skill){
         var rnd=new Random(seed);int mine=group[side];boolean eightNow=mine!=0&&cleared(side);
         double best=-1,bestAngle=rnd.nextDouble()*Math.PI*2,bestPower=.5;
-        double cx=ballInHand?HEAD_X:x[0],cy=ballInHand?H/2:y[0];
+        double cx=x[0],cy=y[0];
+        if(ballInHand){var spot=cueSpot();cx=spot[0];cy=spot[1];}
         for(int b=1;b<BALLS;b++){
             if(!on[b])continue;
             boolean ok=phase==Phase.BREAK?b==1:eightNow?b==8:mine==0?b!=8:groupOf(b)==mine;if(!ok)continue;
