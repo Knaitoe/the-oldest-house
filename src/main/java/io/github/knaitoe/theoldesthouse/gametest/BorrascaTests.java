@@ -382,6 +382,23 @@ public final class BorrascaTests {
                 f.at(p,-4,6,-94);
             })
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("SharedWindow"),"the reader picks a window and Kelly checks her compass"))
+            // 0.4.445 (owner: "Let her tuck a borrowed comic into that sill for you"): she crosses to that window and stands it there.
+            .thenWaitUntil(()->{
+                var own=f.own(p);var kelly=f.actor(p,"CastKimber");
+                h.assertTrue(own.getBoolean("ComicTucked"),"she crosses to the reader's window with the comic: step "+own.getInt("ComicStep")+" at "+f.rel(kelly,p));
+                h.assertTrue(own.getString("FortWindow").equals("west")&&f.rel(kelly,p).distanceTo(Vec3.atBottomCenterOf(BorrascaComic.STAND_WEST))<1.3,"she is at the west window, the one the reader stood at: "+f.rel(kelly,p));
+                var sill=f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaComic.SILL_WEST));
+                h.assertTrue(BorrascaShopBlock.is(sill,BorrascaShopBlock.Kind.COMIC)&&sill.getValue(BorrascaShopBlock.FACING)==Direction.EAST&&sill.getValue(BorrascaShopBlock.STAGE)==0,"the comic stands in that sill with its cover to the room: "+sill);
+                h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaComic.SILL_EAST)).isAir(),"and not in the other");
+                var said=kelly.getCustomName().getString();
+                h.assertTrue(kelly.getMainHandItem().isEmpty()&&said.contains("Patrick lent me this")&&said.contains("your window"),"it is out of her hand, and she says whose it is: "+said);
+                h.assertTrue(!own.getBoolean("FortEcho"),"the ridge waits for her to be done");
+            })
+            .thenWaitUntil(()->{
+                var own=f.own(p);var kelly=f.actor(p,"CastKimber");
+                h.assertTrue(own.getBoolean("ComicBack")&&f.rel(kelly,p).distanceTo(Vec3.atBottomCenterOf(BorrascaStory.FORT))<1.3,"she goes back to her place: step "+own.getInt("ComicStep")+" at "+f.rel(kelly,p));
+                h.assertTrue(own.getInt("FortPlayTicks")>=BorrascaStory.FORT_AFTER_COMIC,"and the ridge is a few seconds off");
+            })
             .thenExecute(()->NativeTestPlayers.packets(p))
             .thenWaitUntil(()->{
                 var own=f.own(p);
@@ -401,6 +418,10 @@ public final class BorrascaTests {
             .thenExecute(()->f.at(p,1,6,-92))
             .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FriendCarved"),"she climbs down and carves where the reader can see: downStep="+f.own(p).getInt("DownStep")))
             .thenExecute(()->{f.carve(p);var own=f.own(p);h.assertTrue(own.getBoolean("PactCarved")&&own.getInt("Beat")==1,"the pact is made, in the order the reader came to it");})
+            .thenExecute(()->{
+                var account=BorrascaTexts.account(f.own(p));
+                h.assertTrue(account.contains("let me pick a window. She stood a comic of Patrick's in its sill for me. She had only got halfway through it. We were still up there when the ridge rang."),"the account keeps the comic between the window and the ridge: "+account);
+            })
             .thenSucceed();
     }
 
@@ -714,6 +735,94 @@ public final class BorrascaTests {
     /** The child's hand swaps some letters for alternate glyphs (HouseWriting); read them back as the letters they stand for. */
     private static String childPlain(String text){var base="aeiotrshnldcmyug";var out=new StringBuilder();for(char c:text.toCharArray()){if(c>=0xE100&&c<0xE110+base.length()){int i=c>=0xE110?c-0xE110:c-0xE100;out.append(i<base.length()?base.charAt(i):c);}else out.append(c);}return out.toString();}
     /** 0.4.237: what the trailhead note warns of is in the vignette, off-screen: the rooms under the depot, the night book, the letter, the graves. */
+    @AfterBatch(batch="borrasca_comic") public static void comicDone(ServerLevel l){cleanup();}
+    private static int comics(ServerPlayer p){int n=0;for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i).is(BorrascaRegistry.COMIC.get()))n++;return n;}
+    private static String said(Fixture f,ServerPlayer p,String key){var name=f.actor(p,key).getCustomName();return name==null?"":name.getString();}
+    /** Her next two words in Room 6 with the comic's question still to come: the question, then the reader's true answer. */
+    private static void asked(Fixture f,ServerPlayer p,String window){
+        var own=f.own(p);own.putInt("ComicAsked",0);own.remove("ComicAnswer");f.save(p,own);
+        f.talk(p,"CastKimber");var question=said(f,p,"CastKimber");
+        f.h.assertTrue(question.contains(window)&&question.contains("I stood Patrick's comic in the sill for you. Did you ever finish it?"),"she names the window and asks: "+question);
+        f.talk(p,"CastKimber");
+    }
+    /**
+     * 0.4.445 (owner: "Let her tuck a borrowed comic into that sill for you. Years later, when you find her in Room 6, she remembers
+     * which window you chose and asks if you ever finished it."). The fort's own scene is walked in
+     * aReaderWhoRunsToTheTreeFirstStillMakesThePactThere; here the comic is already in each reader's window. One reader takes it
+     * down as a child, has every page of its story open, is known by it to Patrick and then to Kendra, and years later has it to
+     * leave with her. The other leaves it: it is still in the sill when they are grown, bleached, and each answer they could give
+     * her is the true one for what they did.
+     */
+    @GameTest(template="empty",batch="borrasca_comic",timeoutTicks=3600)
+    public static void theComicIsKnownInTownAndAnsweredForInRoomSix(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_comic");var q=f.player("pine_sill");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+            .thenExecute(()->{for(var r:List.of(p,q)){f.enter(r);var own=f.own(r);own.putString("FortWindow",r==p?"east":"west");own.putBoolean("SharedWindow",r==p);own.putBoolean("ComicTucked",true);own.putBoolean("ComicBack",true);f.save(r,own);}})
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled"),"the cast is in place for both readers"))
+            .thenExecute(()->{
+                var b=f.base(p);f.refresh(p);var sill=f.out.getBlockState(BorrascaRooms.at(b,BorrascaComic.SILL_EAST));
+                h.assertTrue(BorrascaShopBlock.is(sill,BorrascaShopBlock.Kind.COMIC)&&sill.getValue(BorrascaShopBlock.FACING)==Direction.WEST&&sill.getValue(BorrascaShopBlock.STAGE)==0&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaComic.SILL_WEST)).isAir(),"left in the east window, it stands there, bright, its cover to the room: "+sill);
+                h.assertTrue(sill.getCollisionShape(f.out,BorrascaRooms.at(b,BorrascaComic.SILL_EAST)).isEmpty()&&sill.getShape(f.out,BorrascaRooms.at(b,BorrascaComic.SILL_EAST)).bounds().minX>=1,"nothing bumps into it, and a hand finds it on the ledge under the pane, past its own block: "+sill.getShape(f.out,BorrascaRooms.at(b,BorrascaComic.SILL_EAST)).bounds());
+                h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,5,7,-96)).is(Blocks.GLASS_PANE)&&f.out.getBlockState(BorrascaRooms.at(b,5,6,-96)).isCollisionShapeFullBlock(f.out,BorrascaRooms.at(b,5,6,-96)),"that ledge is the wall's top, inside the window's glass");
+                f.at(p,3,6,-96);f.click(p,BorrascaComic.SILL_WEST);h.assertTrue(comics(p)==0,"a hand on the other window's sill takes nothing");
+                f.click(p,BorrascaComic.SILL_EAST);var own=f.own(p);
+                ItemStack comic=ItemStack.EMPTY;for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i).is(BorrascaRegistry.COMIC.get()))comic=p.getInventory().getItem(i);
+                h.assertTrue(own.getBoolean("ComicTaken")&&own.getInt("ComicTakenVisit")==1&&comics(p)==1&&BorrascaBelongings.valid(p,own,BorrascaComic.KEY,comic)&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaComic.SILL_EAST)).isAir(),"a hand on it takes it down: one comic, the reader's own, and the sill empty");
+                h.assertTrue(!comic.has(DataComponents.CUSTOM_MODEL_DATA)&&!comic.has(DataComponents.CUSTOM_NAME)&&comic.getHoverName().getString().equals("Kit & Caboose No. 31")&&comic.get(DataComponents.LORE).lines().stream().anyMatch(line->line.getString().contains("Patrick's")),"it keeps the name printed on it, bright, and says whose it was: "+comic.getHoverName().getString());
+                f.click(p,BorrascaComic.SILL_EAST);f.refresh(p);h.assertTrue(comics(p)==1&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaComic.SILL_EAST)).isAir(),"there is no second one, and it does not come back to the sill");
+                BorrascaStory.held(p,comic,BorrascaComic.KEY); // it opens in the hand; a test reader has no screen to open
+                BorrascaComic.page(p,0);for(int page=1;page<6;page++)BorrascaComic.page(p,page);BorrascaComic.page(p,7);BorrascaComic.page(p,9);
+                h.assertTrue(!f.own(p).getBoolean("ComicFinished"),"the covers and five of the story's six pages are not the end of it");
+                BorrascaComic.page(p,6);own=f.own(p);h.assertTrue(own.getBoolean("ComicFinished")&&own.getInt("ComicAt")==6&&own.getInt("ComicSeen")==0xFF,"the sixth is, and the comic is kept open there: "+own.getInt("ComicSeen"));
+                BorrascaComic.page(q,6);h.assertTrue(f.own(q).getInt("ComicSeen")==0,"a reader who is not carrying theirs has had no page open");
+                f.talk(p,"TownEli");h.assertTrue(said(f,p,"TownEli").contains(BorrascaComic.PATRICK),"Patrick knows his own comic: "+said(f,p,"TownEli"));
+                f.talk(p,"TownEli");h.assertTrue(!said(f,p,"TownEli").contains(BorrascaComic.PATRICK)&&f.own(p).getInt("EliTalk1")==1,"he says so once, and then what he would have said: "+said(f,p,"TownEli"));
+                f.talk(q,"TownEli");h.assertTrue(!said(f,q,"TownEli").contains(BorrascaComic.PATRICK),"to a reader without it he says nothing of it");
+                // Each turns their back on the town at the gate, so the cast can be moved to its places for the next time.
+                for(var r:List.of(p,q)){f.at(r,0,0,-3);r.setYRot(0);r.setYHeadRot(0);}f.stage(p,2);f.stage(q,4);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled"),"the next time for one, the last night for the other"))
+            .thenExecute(()->{
+                f.talk(p,"TownWren");h.assertTrue(said(f,p,"TownWren").contains(BorrascaComic.KENDRA),"with Patrick gone, Kendra knows whose it is: "+said(f,p,"TownWren"));
+                f.talk(p,"TownWren");h.assertTrue(!said(f,p,"TownWren").contains(BorrascaComic.KENDRA),"once");
+                // The reader who left it: grown, it is still in their window, and the window has had it.
+                var b=f.base(q);f.refresh(q);var sill=f.out.getBlockState(BorrascaRooms.at(b,BorrascaComic.SILL_WEST));
+                h.assertTrue(BorrascaShopBlock.is(sill,BorrascaShopBlock.Kind.COMIC)&&sill.getValue(BorrascaShopBlock.FACING)==Direction.EAST&&sill.getValue(BorrascaShopBlock.STAGE)==1,"years later it is still in the west sill, bleached: "+sill);
+                f.at(q,-16,6,-179);f.refresh(q);h.assertTrue(f.own(q).getBoolean("KellyFound")&&f.own(q).getInt("KellyLine")==1,"she is in Room 6, and has warned the reader off the doors");
+                asked(f,q,"The west window.");var own=f.own(q);
+                h.assertTrue(!said(f,q,"CastKimber").contains("You picked it")&&own.getString("ComicAnswer").equals("sill")&&said(f,q,"CastKimber").contains(BorrascaComic.HER_SILL),"a reader who chose no window is not told they did, and one who left it says so: "+said(f,q,"CastKimber"));
+                h.assertTrue(BorrascaTexts.account(own).contains("She remembered which window it was, and asked if I had ever finished the comic. It was still in the sill."),"the account: "+BorrascaTexts.account(own));
+                // Taken down grown, it is the bleached one; carried to her, it can be kept.
+                f.at(q,-3,6,-96);f.click(q,BorrascaComic.SILL_WEST);own=f.own(q);ItemStack aged=ItemStack.EMPTY;for(int i=0;i<q.getInventory().getContainerSize();i++)if(q.getInventory().getItem(i).is(BorrascaRegistry.COMIC.get()))aged=q.getInventory().getItem(i);
+                h.assertTrue(own.getInt("ComicTakenVisit")==4&&comics(q)==1&&aged.has(DataComponents.CUSTOM_MODEL_DATA)&&BorrascaBelongings.valid(q,own,BorrascaComic.KEY,aged)&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaComic.SILL_WEST)).isAir(),"taken down grown, it is the one the window bleached");
+                asked(f,q,"The west window.");own=f.own(q);
+                h.assertTrue(said(f,q,"CastKimber").contains(BorrascaComic.HER_HERE_AGED)&&q.containerMenu instanceof LiteraryChoiceMenu&&own.getString("ComicAnswer").equals("kept"),"held out to her, she sees what the window did, and it is the reader's to leave or keep: "+said(f,q,"CastKimber"));
+                q.containerMenu.clicked(8,0,net.minecraft.world.inventory.ClickType.PICKUP,q);own=f.own(q);
+                h.assertTrue(comics(q)==1&&!own.getBoolean("ComicGiven")&&said(f,q,"CastKimber").contains(BorrascaComic.HER_KEPT)&&!(q.containerMenu instanceof LiteraryChoiceMenu),"kept, unfinished: "+said(f,q,"CastKimber"));
+                // Put by, and never finished; then finished, and told.
+                var put=BorrascaBelongings.remove(q,own,BorrascaComic.KEY);f.save(q,own);asked(f,q,"The west window.");own=f.own(q);
+                h.assertTrue(own.getString("ComicAnswer").equals("unfinished")&&said(f,q,"CastKimber").contains(BorrascaComic.HER_NOT)&&!(q.containerMenu instanceof LiteraryChoiceMenu),"taken and never finished, and not here to hand over: "+said(f,q,"CastKimber"));
+                h.assertTrue(BorrascaTexts.account(own).contains("asked if I had ever finished the comic. I never had."),"the account: "+BorrascaTexts.account(own));
+                own.putBoolean("ComicFinished",true);f.save(q,own);asked(f,q,"The west window.");own=f.own(q);
+                h.assertTrue(own.getString("ComicAnswer").equals("finished")&&said(f,q,"CastKimber").contains(BorrascaComic.HER_END),"read to where it stops, the reader can tell her: "+said(f,q,"CastKimber"));
+                h.assertTrue(BorrascaTexts.account(own).contains("I told her where it stops."),"the account: "+BorrascaTexts.account(own));
+                q.getInventory().add(put);
+                for(int i=0;i<4;i++)f.talk(q,"CastKimber");own=f.own(q);
+                h.assertTrue(own.getBoolean("KellyAsked")&&own.getInt("KellyLine")>=5&&own.getInt("ComicAsked")==2,"then her own lines go on to the end: "+own.getInt("KellyLine"));
+                f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,4);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the last night for the reader who took it as a child"))
+            .thenExecute(()->{
+                f.at(p,-16,6,-179);f.refresh(p);asked(f,p,"The east window. You picked it.");var own=f.own(p);var kelly=f.actor(p,"CastKimber");
+                h.assertTrue(said(f,p,"CastKimber").contains(BorrascaComic.HER_HERE)&&p.containerMenu instanceof LiteraryChoiceMenu,"she names the window the reader picked, and sees they kept it flat: "+said(f,p,"CastKimber"));
+                p.containerMenu.clicked(0,0,net.minecraft.world.inventory.ClickType.PICKUP,p);own=f.own(p);
+                h.assertTrue(comics(p)==0&&own.getBoolean("ComicGiven")&&own.getString("ComicAnswer").equals("given")&&BorrascaBelongings.valid(p,own,BorrascaComic.KEY,kelly.getMainHandItem())&&said(f,p,"CastKimber").contains(BorrascaComic.HER_GIVEN),"left with her, the reader's own comic is in her hand, and she knows her page: "+said(f,p,"CastKimber"));
+                h.assertTrue(BorrascaTexts.account(own).contains("She remembered which window was mine, and asked if I had ever finished the comic. I had it with me. I left it with her, and she found her page."),"the account: "+BorrascaTexts.account(own));
+                f.refresh(p);h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaComic.SILL_EAST)).isAir()&&BorrascaBelongings.valid(p,f.own(p),BorrascaComic.KEY,f.actor(p,"CastKimber").getMainHandItem()),"it stays with her");
+            })
+            .thenSucceed();
+    }
+
     @GameTest(template="empty",batch="borrasca_lower",timeoutTicks=1800)
     public static void theRoomsUnderTheDepotHoldWhatTheNoteWarnedOf(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_lower");

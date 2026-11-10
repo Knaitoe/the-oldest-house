@@ -1107,6 +1107,46 @@ def rack():
     return im
 
 
+def comic_sill(aged):
+    """0.4.445: Kit & Caboose No. 31 standing in the fort's window sill (tools/draw_borrasca_comic.py draws its pages). The front
+    cover, seven pixels by ten, is at the left of the tile, the back cover with its coupon at the right, and the cut edge of the
+    pages is the strip under them. After its years in the window (aged) the red has gone to buff and the black to a grey-blue."""
+    im = new()
+    # The front: the white of the spine, the masthead, the night, the light coming up out of the crater, the two of them either side.
+    fill(im, 0, 0, 7, 10, '#101022'); fill(im, 0, 0, 7, 3, '#c82c20'); fill(im, 0, 3, 7, 4, '#f4d03a')
+    for x in (1, 3, 5):
+        dot(im, x, 1, '#f4d03a')
+    dot(im, 6, 5, '#f6f2e6')
+    fill(im, 0, 8, 7, 10, '#969690'); fill(im, 2, 8, 5, 9, '#141218'); dot(im, 3, 8, '#f4d03a')
+    # The light spreads as it rises; Kit stands at one side of it, taller than Caboose at the other.
+    fill(im, 3, 5, 4, 8, '#fff096'); dot(im, 2, 4, '#fff096'); dot(im, 4, 4, '#fff096')
+    dot(im, 1, 7, '#c82c20'); dot(im, 1, 6, '#ecc4a0'); dot(im, 5, 7, '#b0462c')
+    fill(im, 0, 0, 1, 10, '#f6f2e6')
+    # The back: an advertisement, lines of small print, and the coupon with a name begun in pencil.
+    # (as its page has them: the toy spacemen on yellow, the moon crystals on blue, and the coupon's three ruled lines)
+    fill(im, 8, 0, 15, 10, '#e8dec4'); fill(im, 9, 1, 14, 3, '#f4d03a'); fill(im, 9, 4, 14, 6, '#3462aa')
+    for x in (9, 11, 13):
+        dot(im, x, 2, '#3462aa')
+    for x in (10, 11, 12):
+        dot(im, x, 5, '#f6f2e6')
+    for y in (7, 9):
+        for x in range(9, 14):
+            dot(im, x, y, '#969690')
+    dot(im, 9, 8, '#606068'); dot(im, 10, 8, '#606068'); dot(im, 11, 8, '#606068')
+    # The edge of the pages.
+    fill(im, 0, 12, 16, 14, '#e8dec4'); fill(im, 0, 14, 16, 16, '#c9bfa6')
+    if aged:
+        px = im.load()
+        for y in range(16):
+            for x in range(16):
+                r, g, b, a = px[x, y]
+                if a:
+                    grey = (r * 30 + g * 50 + b * 20) // 100
+                    r2, g2, b2 = (r + grey * 2) // 3, (g + grey * 2) // 3, (b * 2 + grey + 40) // 3
+                    px[x, y] = (min(255, 96 + r2 * 150 // 255), min(255, 104 + g2 * 146 // 255), min(255, 112 + b2 * 140 // 255), a)
+    return im
+
+
 def cab_side_top(game):
     """A cabinet's side above the control panel: the same ground as below, with the game's badge: a miner's lamp, or a catfish."""
     if game == 0:
@@ -1168,6 +1208,7 @@ def textures():
         'wristband': wristband(),
         'doc_dispatch': doc_dispatch(), 'doc_payroll': doc_payroll(), 'doc_signin': doc_signin(), 'doc_intake': doc_intake(), 'doc_tags': doc_tags(),
         'doc_forms': doc_forms(), 'doc_ledger': doc_ledger(), 'doc_letter': doc_letter(), 'doc_receipt': doc_receipt(), 'doc_log': doc_log(),
+        'comic': comic_sill(False), 'comic_aged': comic_sill(True),
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
@@ -1328,7 +1369,19 @@ def shop_models():
     cabinet_models(m)
     feeding_models(m)
     paper_models(m)
+    comic_models(m)
     return m
+
+
+def comic_models(m):
+    """0.4.445: the comic in the fort's window. It stands past its own block, on the ledge the wall leaves inside the pane behind
+    it (the glass is seven pixels beyond the block's back), and leans its top against the glass: the front cover to the room, the
+    back cover to whoever looks in from the bough."""
+    edge = [0, 12, 7, 12.5]
+    for stage, tex in ((0, 'comic'), (1, 'comic_aged')):
+        m[f'comic_{stage}'] = model([element([4.5, 0, 18.3], [11.5, 10, 18.8], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'up': 'c', 'down': 'c'},
+                                             {'north': [0, 0, 7, 10], 'south': [8, 0, 15, 10], 'east': [0, 12, .5, 14], 'west': [0, 12, .5, 14], 'up': edge, 'down': [0, 14, 7, 14.5]},
+                                             {'origin': [8, 0, 18.55], 'axis': 'x', 'angle': 22.5})], {'c': tex}, tex)
 
 
 def paper_models(m):
@@ -1494,8 +1547,9 @@ KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'pa
          'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open',
          'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top',
          'remains', 'wristband', 'smear',
-         'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log']
-STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2}
+         'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log',
+         'comic']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
 

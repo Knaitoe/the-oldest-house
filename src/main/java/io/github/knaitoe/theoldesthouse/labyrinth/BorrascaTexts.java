@@ -184,7 +184,8 @@ public final class BorrascaTexts {
             +arcade(own)
             // 0.4.432: what she said on the walk up.
             +(own.getInt("WalkTalk")>=BorrascaStory.WALK_TALK.length?"She talked the whole way up to the Tree, and asked if I wanted to be best friends. ":own.getInt("WalkTalk")>0?"She talked on the way up to the Tree. ":"")
-            +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. We were still up there when the ridge rang. ":"")
+            // 0.4.445: the comic she left in it, before the ridge was heard.
+            +(own.getBoolean("SharedWindow")?"In the fort she let me pick a window. ":"")+BorrascaComic.left(own)+(own.getBoolean("SharedWindow")?"We were still up there when the ridge rang. ":"")
             +"We cut our names into the three trees, mine beside hers."+(own.getBoolean("KnifeTaken")?" She lent me her knife to cut mine."+(own.getBoolean("KnifeKept")?" I nearly went home with it.":""):"")+(own.getInt("WalkTalkTwo")>=BorrascaStory.WALK_TALK_TWO.length?" The next time, on the way to the mill, she told me about Patrick and made me promise to run home if anything happened.":own.getInt("WalkTalkTwo")>0?" The next time, on the way to the mill, she told me about Patrick.":"")
             +(own.getBoolean("Sheltered6")||own.getBoolean("Sheltered10")?" When the noise came she pulled me down behind the timber.":"")
             +(own.getBoolean("SawGentleman")?" Past the second marker something tall stood in the pines and shone, and when the noise stopped it was gone.":"")
@@ -201,6 +202,7 @@ public final class BorrascaTexts {
             +" At the ridge, his office's papers and Prescott's signature lay beside her things."
             +(own.getBoolean("LowerRooms")?" Under the depot there were rooms with the bolts on the outside.":"")
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine."+(own.getBoolean("KellyFound")?" She was there, grown, and would not come up.":""):"")
+            +BorrascaComic.asked(own)
             +(own.getBoolean("KellyAsked")?" She asked me to stop the machine, and to take her name up instead of her.":"")
             +(own.getBoolean("MarasRoom")?" The newest room was made up, with a coat from town on the hook.":"")
             +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Nobody came down until they were grown. What was born down there went up to town. Beside her number there were two births, both placed in town.":"")

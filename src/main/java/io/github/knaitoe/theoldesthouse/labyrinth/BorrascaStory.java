@@ -154,6 +154,7 @@ public final class BorrascaStory {
     public static void held(ServerPlayer p,ItemStack s,String key){
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         if(!BorrascaBelongings.valid(p,own,key,s))return;
+        if(key.equals(BorrascaComic.KEY)){BorrascaComic.read(p,s,own);return;} // 0.4.445: the comic opens wherever it is carried
         // 0.4.198: away from the trail the compass points (Keepsakes.compass); the patch only shows her name.
         if(!BorrascaSites.inside(p)){if(key.equals("Compass")&&own.getBoolean("Taken_Ending"))Keepsakes.compass(p);else p.displayClientMessage(Component.literal(key.equals("Compass")?"The red tape is worn thin around the brass case.":"Her name, stitched in the cloth."),true);return;}
         var b=BorrascaSites.base(p.server,p.getUUID());if(b==null)return;
@@ -168,6 +169,7 @@ public final class BorrascaStory {
         if(BorrascaShops.click(p,b,rel,own))return true;
         rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
+        if(BorrascaComic.click(p,b,rel,own))return true; // 0.4.445: the comic in the fort's window
         // 0.4.444 (owner: "Keep prison cell door shut. Allow player to speak to npc through bars."): a hand on the cell's bars or its
         // door speaks to whoever is in it.
         if(BorrascaPeople.cell(rel)){
@@ -337,8 +339,10 @@ public final class BorrascaStory {
         };
         if(eli)own.putBoolean("MetEli",true);
         else own.putBoolean(visit==1?"MetWren":"WrenRememberedEli",true);
-        own.putInt(key,(said+1)%lines.length);
-        say(p,child,lines[said%lines.length]);
+        // 0.4.445: each of them knows whose comic the reader is carrying, and says so once before anything else.
+        String comic=BorrascaComic.child(p,own,eli,visit);
+        if(comic==null)own.putInt(key,(said+1)%lines.length);
+        say(p,child,comic!=null?comic:lines[said%lines.length]);
         float yaw=toward(child,p);
         child.setYRot(yaw);child.setYBodyRot(yaw);child.setYHeadRot(yaw);
     }
@@ -439,6 +443,7 @@ public final class BorrascaStory {
         for(String key:BorrascaCast.KEYS)BorrascaCast.remember(own,key,actor(p,own,key));
         townPosters(p,b,own,visit);
         townBike(p,b,own,visit);
+        BorrascaComic.keep(p,b,own,visit); // 0.4.445: the comic in the fort's window, for as long as it is left there
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door
         scene(p,b,own);
         if(!own.getBoolean("CastRecalled"))return;
@@ -491,6 +496,9 @@ public final class BorrascaStory {
         // She goes to the Tree at her own pace, whether the reader is beside her, behind her or already there.
         if(!own.getBoolean("KimberAtFort")){walkTalk(p,own,friend,WALK_TALK,"WalkTalk");if(!follow(p,b,own,friend,"ChildStep",CHILD_WALK))return;own.putBoolean("KimberAtFort",true);}
         if(!own.getBoolean("LegendDone")){
+            // 0.4.445 (owner: "Let her tuck a borrowed comic into that sill for you"): the window settled, she crosses to it with
+            // Patrick's comic and comes back, whether or not the reader stays up there to watch. The ridge waits for her.
+            if(BorrascaComic.tucking(own)){if(BorrascaComic.tuck(p,b,own,friend))own.putInt("FortPlayTicks",Math.max(own.getInt("FortPlayTicks"),FORT_AFTER_COMIC));return;}
             BorrascaCast.stop(friend);
             if(inFort(p,b))fort(p,b,own,friend);
             else if(!own.getBoolean("TreeReached")&&!own.getBoolean("CalledUp")&&near(p,BorrascaRooms.at(b,FORT),12)){
@@ -508,6 +516,8 @@ public final class BorrascaStory {
         }
         knifeBack(p,friend,own);
     }
+    /** 0.4.445: where the fort's clock stands when she is back from the window, a few seconds before the ridge is heard. */
+    public static final int FORT_AFTER_COMIC=260;
     /** The room belongs to them for a little while before the ridge intrudes. */
     private static void fort(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         int play=own.getInt("FortPlayTicks");
@@ -516,12 +526,13 @@ public final class BorrascaStory {
             if(play==5)say(p,friend,"This is our house. Pick a window. I'll see which way it faces.");
             var r0=BorrascaRooms.rel(p,b);double x=r0.x,z=r0.z;
             if(!own.getBoolean("SharedWindow")&&play>=100&&play<=220&&z>=-97&&z<-93&&(x<-3||x>4)){
-                own.putBoolean("SharedWindow",true);
+                own.putBoolean("SharedWindow",true);own.putString("FortWindow",x<-3?"west":"east"); // 0.4.445: which one is kept
                 friend.gesture(BorrascaPlay.COMPASS);
                 say(p,friend,x<-3
                         ?"West. We can leave a lamp there. If you come up after me, I'll leave it on."
                         :"East. That's your window, then. If you come up after me, I'll wait right there.");
             }else if(play==220&&!own.getBoolean("SharedWindow")){
+                own.putString("FortWindow","west"); // 0.4.445: a reader who chose none is given hers
                 friend.gesture(BorrascaPlay.COMPASS);
                 say(p,friend,"I'll leave a lamp in the window. That way you'll know if I'm here first.");
             }
@@ -1249,6 +1260,9 @@ public final class BorrascaStory {
         friend.setYRot(yaw);friend.setYHeadRot(yaw);friend.yBodyRot=yaw;
     }
     private static void grownTalk(ServerPlayer p,LiteraryActor a,CompoundTag own){
+        // 0.4.445 (owner: "she remembers which window you chose and asks if you ever finished it"): once she has warned the reader
+        // off the other doors, the window and the comic; then her own lines go on.
+        if(own.getInt("KellyLine")>=1&&BorrascaComic.room(p,a,own)){own.putBoolean("KellyFound",true);save(p,own);return;}
         int i=Math.min(own.getInt("KellyLine"),GROWN_LINES.length-1);say(p,a,GROWN_LINES[i]);own.putInt("KellyLine",i+1);
         own.putBoolean("KellyFound",true);if(i>=3)own.putBoolean("KellyAsked",true);save(p,own);
     }

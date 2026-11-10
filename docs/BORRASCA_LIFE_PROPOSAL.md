@@ -40,6 +40,8 @@ changed. The reader is never told to remember anything. The thing is there, and 
 
 ## 1. The window and the comic (first)
 
+**Built in 0.4.445.** What is said, word for word, and how it is made: [BORRASCA_COMIC_0_4_445.md](BORRASCA_COMIC_0_4_445.md).
+
 **The window.** In the fort Kelly already says "Pick a window", and answers west or east. The choice is now kept. A reader who
 picks neither gets hers, the west one.
 
@@ -52,18 +54,18 @@ in the sill, drawn leaning on the glass.
 - The back cover has a subscription coupon that Patrick started to fill in, in pencil, and did not finish.
 - Patrick, asked while the reader has it: it is his, and they can keep it till they are done. Kendra, on the second visit, with
   Patrick gone: it is Patrick's, and somebody should hold on to it.
-- Left in the sill, it stays there. Years later the cover has gone pale blue in the sun and the staples have rusted. A grown reader
-  can still take it.
+- Left in the sill, it stays there. Years later the window has bleached it. A grown reader can still take it, and it is the
+  bleached one they carry and read.
 
 **Room 6.** After her first line Kelly says which window the reader took, and asks whether they ever finished it. What follows is
 what the reader really did:
 
 | What the reader did | What is said |
 |---|---|
-| Read it to the last page | The reader tells her it stops at the door and says continued. She knows; she made up the rest. |
-| Took it and did not finish | Neither did she. She made up the rest. |
-| Left it in the sill | Then it is still up there, and somebody ought to get to read it. |
-| Has it with them now | She sees it. She can be left it; she keeps it, and the reader takes her name. |
+| Read it to the last page | The reader tells her where it stops: a knock, and continued. She gave it a better ending herself; she had the time. |
+| Took it and did not finish | Then neither of them knows, and she does not want it found out for her. |
+| Left it in the sill | Then it is where she said it would be. Somebody else will pick that window. |
+| Has it with them now | She sees it. It can be left with her (she knows her page) or kept. |
 
 Then her lines go on as they do now, to the name.
 
