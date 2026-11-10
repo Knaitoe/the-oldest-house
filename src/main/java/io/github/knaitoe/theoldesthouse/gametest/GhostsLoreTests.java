@@ -74,19 +74,21 @@ public final class GhostsLoreTests {
         var f=fixture(h);var p=f.player("lens_reader",P);var peer=f.player("lens_friend",P);GhostsSetTests.lead(f,p,peer);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
         h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the basement and camera owner are ready"))
             .thenExecute(()->{
-                h.assertTrue(GhostsSet.jumpToDay(p,7,false)==null,"the late-day camera visit is available");f.at(p,P,5.5,-4,-21.5);var own=f.own(p,P);var cam=camera(h,p);p.setItemInHand(InteractionHand.MAIN_HAND,cam);
-                h.assertTrue(!GhostsLore.throughLens(p,b,own),"an idle camera leaves the room ordinary");toggle(p,cam);h.assertTrue(GhostsLore.throughLens(p,b,own),"actual held owned recording reveals the camera image");
+                h.assertTrue(GhostsSet.jumpToDay(p,3,false)==null,"the third-day camera visit is available");f.at(p,P,5.5,-4,-21.5);var own=f.own(p,P);var cam=camera(h,p);p.setItemInHand(InteractionHand.MAIN_HAND,cam);
+                h.assertTrue(!GhostsLore.throughLens(p,b,own),"an idle camera leaves the room ordinary");toggle(p,cam);
+                var dayTwo=own.copy();dayTwo.putInt("FilmDay",2);
+                h.assertTrue(!GhostsLore.throughLens(p,b,dayTwo)&&GhostsLore.throughLens(p,b,own),"the actual held owned camera starts revealing the image on day three");
                 var borrowed=cam.copy();CamcorderItem.setRolling(borrowed,false);peer.setItemInHand(InteractionHand.MAIN_HAND,borrowed);f.at(peer,P,5.5,-4,-21.5);toggle(peer,borrowed);
-                var peerOwn=f.own(peer,P);peerOwn.putInt("FilmDay",7);h.assertTrue(!GhostsLore.throughLens(peer,b,peerOwn),"a borrowed camera is not the friend's lens");
+                var peerOwn=f.own(peer,P);peerOwn.putInt("FilmDay",3);h.assertTrue(!GhostsLore.throughLens(peer,b,peerOwn),"a borrowed camera is not the friend's lens");
                 p.setGameMode(GameType.SPECTATOR);h.assertTrue(!GhostsLore.throughLens(p,b,own),"spectators cannot receive or record the image");p.setGameMode(GameType.SURVIVAL);
                 f.at(p,P,0,0,-3);h.assertTrue(!GhostsLore.throughLens(p,b,own),"the image never follows the camera outside the basement");f.at(p,P,5.5,-4,-21.5);
                 var target=Vec3.atLowerCornerOf(b.offset(GhostsLore.EFFIGY_AT)).add(.5,1.4,.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,target);float pitch=p.getXRot();
                 h.assertTrue(GhostsSet.framed(p,target),"the actual lens can see the basement image without clipping furniture");
                 for(int i=0;i<4;i++)GhostsSet.reader(p,b,own);save(f,p,own);
-                h.assertTrue(GhostsLore.effigyRecorded(own)&&p.getXRot()==pitch,"native framed capture keeps the image without turning the player");
+                h.assertTrue(own.getCompound("FilmLog3").getInt("Frames_BasementEffigy")>=20&&GhostsLore.effigyRecorded(own)&&!GhostsLore.jarRecorded(own)&&p.getXRot()==pitch,"day three keeps the image of the bare bench without turning the player");
                 h.assertTrue(f.in.getBlockState(b.offset(GhostsLore.EFFIGY_AT)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.STORED_CROSS,"the only physical prop is the ordinary stored cross and rag");
                 for(var at:BlockPos.betweenClosed(b.offset(3,-4,-26),b.offset(11,-1,-14))){var state=f.in.getBlockState(at);h.assertTrue(!state.is(LiteraryRegistry.GHOST_SET.get())||state.getValue(GhostsSetBlock.KIND)!=GhostsSetBlock.Kind.BASEMENT_EFFIGY,"the shrine is never a physical world block");}
-                String raw=GhostsConversations.review(own,7,true,Set.of("BasementEffigy")),cut=GhostsConversations.review(own,7,false,Set.of("BasementEffigy"));h.assertTrue(raw.contains("viewfinder")&&cut.contains("leaves out"),"the recorded image and the production cut disagree explicitly");
+                String raw=GhostsConversations.review(own,3,true,Set.of("BasementEffigy")),cut=GhostsConversations.review(own,3,false,Set.of("BasementEffigy"));h.assertTrue(raw.contains("viewfinder")&&raw.contains("bench is bare")&&cut.contains("leaves out"),"the day-three tape describes its own image and the production cuts it");
                 p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.assertTrue(!GhostsLore.throughLens(p,b,own),"stowing the rolling camera immediately removes the image");
                 f.reload();h.assertTrue(GhostsLore.effigyRecorded(f.own(p,P))&&!GhostsLore.effigyRecorded(f.own(peer,P))&&WitnessAccount.count(f.data(),p.getUUID())==0,"only the actual recorder retains it, without a Witness credit");
             }).thenSucceed();
@@ -106,19 +108,23 @@ public final class GhostsLoreTests {
     }
 
     /**
-     * 0.4.325 (owner: "Some evidence of merry and Marjorie's plot to 'save' their parents should be evident"; "maybe have the shrine
-     * appear on day 5"): the pad and the open canisters are there to find only on the last day, from the actual anchors the new build
-     * places, and the camera's shrine shows from the fifth day with the jar on its bench until the last.
+     * The pad and open canisters are there to find on the last day. The camera reveals the shrine from day three,
+     * with the jar on its bench on days five and six.
      */
     @GameTest(template="empty",batch="ghosts_plan325",timeoutTicks=1800)
-    public static void theSistersPlanIsInTheHouseOnTheLastDayAndTheShrineFromTheFifth(GameTestHelper h){
+    public static void theSistersPlanIsInTheHouseOnTheLastDayAndTheShrineFromTheThird(GameTestHelper h){
         var f=fixture(h);var p=f.player("plan_reader",P);f.source(p,P);var b=f.base(P);f.chunks.hold(f.in,IndianLakeRooms.bounds(b,P));
         h.startSequence().thenWaitUntil(()->h.assertTrue(resident(f,p),"the new set and original cast are resident"))
             .thenExecute(()->{
                 papers(p);
                 h.assertTrue(f.in.getBlockState(b.offset(GhostsLore.PAD_AT)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.PLAN_PAD&&f.in.getBlockState(b.offset(GhostsLore.CANISTERS_AT)).getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.CANISTERS,"the new build places the pad and canister anchors");
-                h.assertTrue(!GhostsLore.lensImage(4,true,true)&&GhostsLore.lensImage(5,true,true)&&GhostsLore.lensImage(6,true,true)&&GhostsLore.lensImage(7,true,true)&&!GhostsLore.lensImage(5,false,true)&&!GhostsLore.lensImage(5,true,false),"the shrine shows only through the reader's own rolling camera in the basement, from the fifth day");
-                h.assertTrue(GhostsLore.shrine(5)==GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR&&GhostsLore.shrine(6)==GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR&&GhostsLore.shrine(7)==GhostsSetBlock.Kind.BASEMENT_EFFIGY,"the jar stands on the shrine's bench until the last day");
+                h.assertTrue(!GhostsLore.lensImage(2,true,true)&&!GhostsLore.lensImage(3,false,true)&&!GhostsLore.lensImage(3,true,false),"the shrine needs day three, the owner's rolling camera and the basement");
+                for(int day=3;day<=7;day++){
+                    h.assertTrue(GhostsLore.lensImage(day,true,true),"the rolling basement camera shows the shrine on day "+day);
+                    boolean withJar=day==5||day==6;
+                    h.assertTrue(GhostsLore.shrine(day)==(withJar?GhostsSetBlock.Kind.BASEMENT_EFFIGY_JAR:GhostsSetBlock.Kind.BASEMENT_EFFIGY),"only days five and six put the jar on the bench");
+                    h.assertTrue(GhostsLore.footage("BasementEffigy",true,day).contains("capped jar")==withJar,"the camera log describes the bench seen on that day");
+                }
                 h.assertTrue(GhostsLore.pad(6)==null&&GhostsLore.pad(7)==GhostsSetBlock.Kind.PLAN_PAD&&GhostsLore.canisters(6)==GhostsSetBlock.Kind.CANISTERS&&GhostsLore.canisters(7)==GhostsSetBlock.Kind.CANISTERS_OPEN,"the pad appears and the canisters stand open only on the last day");
                 f.click(p,P,GhostsLore.PAD_AT);f.click(p,P,GhostsLore.CANISTERS_AT);
             }).thenIdle(3).thenExecute(()->{

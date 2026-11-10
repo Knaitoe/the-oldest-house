@@ -26,6 +26,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class GhostsSet {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.GHOSTS_SET;
     public static final String STATE="ghosts_set_0485";
+    public static final String MERRY_JAR="MerryJar0325";
+    static final String MERRY_LINE_BEFORE="MerryLineA0325",MERRY_LINE_AFTER="MerryLineB0325";
     public static final int DAYS=7, STAND=0, SIT=1, CROUCH=2, CRAWL=3, WALL=4, BED=5, FLINCH=6, SLUMP=7, VOMIT=8, HAND=9,LEAP=10,EATING=11,CHOKING=12,DEAD=13,PRAY=14,FALL=15,IMPACT=16,HELP=17,SLIP=18,WARY=19,
         /** 0.4.325: sitting on the floor, knees drawn up, arms round them (Merry in the basement after the supper). */
         FLOOR=20;
@@ -135,7 +137,7 @@ public final class GhostsSet {
     }
     /** Every key one filming day leaves behind, cleared when another day begins. */
     private static final List<String> DAY_KEYS=List.of("JumpFrozen0488","JumpEject0488","JumpApproach0495","JumpLandingLine0495","GhostActorX","GhostActorY","GhostActorZ","GhostVoice","GhostVoiceUntil","GhostVoiceId","PrivacyPitch0490","GhostPrivacyPitch","WallFallSpeed0490","WallImpact0490","WallHelpStep","RiteSetupClock","RiteSetupDone","FamilyShoved","FamilyShoveAt","FamilyFollow2","FamilyFollow3","FamilyFollow5",
-        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","MerryBasement0325","MerryWait0325","MerryJar0325","MerryLineA0325","MerryLineB0325","CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242",GhostsErrands.KEY);
+        "BedroomPickup","PickupStep0","PickupStep1","MerryExitStep0488","MerryLeft0488","MerryBasement0325","MerryWait0325",MERRY_JAR,MERRY_LINE_BEFORE,MERRY_LINE_AFTER,"CrewExit0490_4","CrewExit0490_5","CrawlChair04112","AcceptedScene131","GhostShakeUntil","GhostFreezeTarget","GhostEyeX","GhostEyeY","GhostEyeZ","GhostYaw","GhostPitch","JumpBodyYaw","BoxStep04172","FrameNonce","FilmIdle0490","LightsOut0242",GhostsErrands.KEY);
     /**
      * 0.4.172 (owner: "add a command to trigger specific film days for testing"): puts one reader at the start of a filming
      * day, as a fresh arrival on that day would be, with the cast restaged and that day's log and frames cleared; with
@@ -390,7 +392,7 @@ public final class GhostsSet {
             String line=VignetteTailoring.crew(p,GhostsConversations.line(own,4));Talk.line(p,"Barry",line);a.speaks(line);producerOffers(p,a,d);return;
         }
         if(a.role()==LiteraryActor.GHOST_MERRY&&day(own)==DAYS&&merryDownstairs(own.getInt("MerryExitStep0488"))&&!own.getBoolean("MerryLeft0488")){
-            boolean after=own.getBoolean(MERRY_JAR);var lines=after?MERRY_BASEMENT_AFTER:MERRY_BASEMENT_BEFORE;String key=after?"MerryLineB0325":"MerryLineA0325";
+            boolean after=own.getBoolean(MERRY_JAR);var lines=after?MERRY_BASEMENT_AFTER:MERRY_BASEMENT_BEFORE;String key=after?MERRY_LINE_AFTER:MERRY_LINE_BEFORE;
             int i=own.getInt(key);String line=lines[Math.min(i,lines.length-1)];own.putInt(key,i+1);
             p.displayClientMessage(Component.literal("Merry: "+line),true);heard(p,own,"Merry",line);a.speaks(line);GhostsMotion.look(a,p.getEyePosition());return;
         }
@@ -475,7 +477,6 @@ public final class GhostsSet {
     /** Steps at which she is downstairs in the basement (the foot of the stair to the cross and back). */
     static boolean merryDownstairs(int step){return step>=11&&step<=17;}
     /** 0.4.325: the empty jar is on the basement floor in front of the cross, for this reader. */
-    public static final String MERRY_JAR="MerryJar0325";
     /** How long she sits on the basement floor before she gets up and goes. */
     static final int MERRY_FLOOR_TICKS=240;
     private static ItemStack emptyJar(){var jar=new ItemStack(Items.GLASS_BOTTLE);jar.set(DataComponents.CUSTOM_NAME,Component.literal("Empty jar"));return jar;}
@@ -530,13 +531,14 @@ public final class GhostsSet {
                 var door=b.offset(0,0,-12);var state=p.serverLevel().getBlockState(door);
                 if(step>=MERRY_THROUGH_DOOR&&state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))((net.minecraft.world.level.block.DoorBlock)state.getBlock()).setOpen(cast[1],p.serverLevel(),state,door,true);
                 toward(cast[1],b,at[0],at[1],at[2],.42);
+                if(step==MERRY_EXIT.length-1)capture(p,own,"MerryDeparture",cast[1].getEyePosition());
                 if(cast[1].position().distanceToSqr(new Vec3(b.getX()+at[0],b.getY()+at[1],b.getZ()+at[2]))<.18){own.putInt("MerryExitStep0488",step+1);if(step+1==MERRY_EXIT.length)own.putBoolean("MerryLeft0488",true);}
             }
+            if(step==MERRY_AT_CROSS&&cast[1].phase()==FLOOR)capture(p,own,"MerryAtCross",cast[1].getEyePosition());
         }
         // 0.4.242 (owner: "if they see it through to the end - merry running out the door, the lights in the house should cut off. the
         // family remains."): once she is through the front door she is gone, and the house goes dark around the three at the table.
         if(own.getBoolean("MerryLeft0488")){offstage(cast[1]);own.putBoolean(MERRY_JAR,true);GhostsLights.out(p,b,own);if(p==leadNow)for(var q:crewNow)GhostsLights.out(q,b,CREW_OWN.get(q.getUUID()));}
-        if(t>=860&&!own.getBoolean("MerryLeft0488"))capture(p,own,"MerryDeparture",cast[1].getEyePosition());
         capture(p,own,"FinalMeal",cast[0].getEyePosition());capture(p,own,"MerryPlate",Vec3.atLowerCornerOf(b).add(1.5,1.06,-19.5));
     }
     public static final String AFTERMATH="The house is dark. The three of them are still at the table, and Merry's chair is empty. The crew's things are gone.";
@@ -660,7 +662,10 @@ public final class GhostsSet {
             if(t>=780)own.putBoolean("JumpEject0488",true);
         }
         if(d==7)finalDinner(p,b,cast,own,t);
-        for(int i=0;i<4;i++)capture(p,own,PEOPLE[i],cast[i].getEyePosition());
+        for(int i=0;i<4;i++){
+            if(d==DAYS&&i==1&&!seatedPose(cast[i].role(),cast[i].phase()))continue;
+            capture(p,own,PEOPLE[i],cast[i].getEyePosition());
+        }
         for(var q:crewNow)rolling(q,CREW_OWN.get(q.getUUID()),cast,d,previous,t);
         if(recording(p)){
             var eye=lensEye(p,own);var look=lensLook(p,own);int lead=-1;double alignment=-1;for(int i=0;i<4;i++)if(framed(p,eye,look,cast[i].getEyePosition())){double a=look.dot(cast[i].getEyePosition().subtract(eye).normalize());if(a>alignment){alignment=a;lead=i;}}
