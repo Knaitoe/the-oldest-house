@@ -51,3 +51,55 @@ the jump follow it.
 - **Layout:** 135.
 - **Content note:** unchanged.
 - **New builds only.**
+
+## 0.4.443: a push forward
+
+The owner, November 10: "The swing should offer some forward momentum from jumps too".
+
+A jump now also pushes off forward, the way the sitter faces. Every jump gains a fifth of a block a tick along the swing's forward
+(`HouseReadSwing.PUSH`), on top of the seat's carried speed and the hop.
+
+- **Going forward through the bottom of the arc,** a jump lands about three and a half blocks ahead. It was a little over two.
+- **At either end of the arc,** where the seat stops, a jump hops forward about a block and a half. It used to drop almost straight
+  down.
+- **Going back,** the push takes most of the way back off: under a block from the bottom of the arc, where it was over two.
+
+The fall is no higher than before, so it still cannot hurt.
+
+### The empty swing swings on
+
+Before, the still seat and its ropes came back the moment a reader let go, at the swing's rest place. A hop forward from the back
+of the arc now crosses that place, and the reader would have come down standing on the seat. So after a jump:
+
+- **The empty seat keeps swinging.** It goes on until the reader has had time to land (12 ticks) and the seat next passes the bottom
+  of its arc. That is at most about two seconds.
+- **The still seat comes back there,** where the moving seat and the still one are in the same place, so nothing jumps on screen.
+- **Nobody can sit on it** until it has come back.
+- **Getting off with sneak** is unchanged: the still swing is put back at once.
+- **If the swing is left over a reload** while it is swinging empty, it is put back at once, as before.
+
+This is in `SeatEntity` (`CLEAR`, `GIVE_UP`). Nothing new is saved or sent.
+
+### The Hollis yard's swing faces the path
+
+The Hollis swing had been hung facing the yard's side fence, under three blocks from its crossbar. Without the push a jump fell
+short of the chain-link; with it, a jump would have reached the fence. The swing now faces the other way, toward the path, with six
+clear blocks of yard in front of it and the side fence behind it. A jump going back falls short of that fence by more than before.
+
+The porch's swing already faces open grass.
+
+### Tests
+
+- **`HouseReadTests.porchWhistleVoiceAndAllQuietWaysOnRemainPersonalAndTheRailWritesUnseen`:**
+  - where the seat stops, a jump still hops forward at the push's speed, with the hop up;
+  - going back at full speed, the push leaves less than the seat's own carried speed, and never sends the reader forward;
+  - going forward through the bottom of the arc, the reader leaves faster than the seat's carried speed alone;
+  - three ticks after the jump the empty seat is still swinging and the still seat is not back;
+  - once it has come back through the bottom of its arc the still swing and its ropes are back, and the moving seat is gone.
+- **`BorrascaTests.theTownFortAndDepotAreRealBuildingsAndTheTownsPapersChangeBetweenVisits`:**
+  - a jump going forward throws the child south, toward the path;
+  - the yard in front of the swing is clear to land in for six blocks;
+  - the side fence is behind the swing.
+
+Protocol 177 and layout are unchanged. The turned swing is in new builds only.
+

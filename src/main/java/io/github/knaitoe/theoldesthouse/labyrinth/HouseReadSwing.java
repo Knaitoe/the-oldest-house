@@ -27,6 +27,12 @@ import net.minecraft.world.phys.Vec3;
  * throws them out ahead; at either end of the arc, where the seat stops, they mostly drop; going back, they go back. A swing faces
  * the way its sitter does: the seat block's facing is behind the sitter, so the porch's (facing south) swings north and south, and a
  * swing can hang either way round.
+ *
+ * <p>0.4.443 (owner: "The swing should offer some forward momentum from jumps too"): the legs push off forward as well, the way the
+ * sitter faces. Every jump gains PUSH along the swing's forward on top of the seat's carried speed: off the forward upswing it throws
+ * them further; at either end of the arc, where the seat stops, they hop forward instead of dropping; going back, they go back much
+ * less. A hop forward from the back of the arc crosses where the still seat hangs, so after a jump the empty seat swings on until the
+ * jumper is down and it is next at the bottom of its arc (SeatEntity), and only then gives way to the still one.
  */
 public final class HouseReadSwing {
     private HouseReadSwing(){}
@@ -34,8 +40,8 @@ public final class HouseReadSwing {
     public static final double PIVOT=4.0,SEAT=.5,LENGTH=PIVOT-SEAT;
     /** Radians a tick of the swing's sway, the widest arc, and how quickly a sitter builds up to it. */
     public static final double RATE=.12,REACH=.5,BUILD=.004;
-    /** Letting go: how much of the seat's speed the reader keeps (with the push of their legs), and the hop up off the seat. */
-    public static final double CARRY=1.6,HOP=.3;
+    /** Letting go: how much of the seat's speed the reader keeps, the push of their legs forward, and the hop up off the seat. */
+    public static final double CARRY=1.6,PUSH=.2,HOP=.3;
     public static boolean is(BlockState s){return s.is(HouseReadRegistry.FITTING.get())&&s.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.SWING;}
     /** The way a sitter on this seat faces, and the way the swing goes forward: away from the seat block's facing. */
     public static Direction forward(BlockState s){return is(s)?s.getValue(HorizontalDirectionalBlock.FACING).getOpposite():Direction.NORTH;}
@@ -54,8 +60,8 @@ public final class HouseReadSwing {
     public static Vec3 seat(Vec3 pivot,Direction forward,double angle){return pivot.add(forward.getStepX()*LENGTH*Math.sin(angle),-LENGTH*Math.cos(angle),forward.getStepZ()*LENGTH*Math.sin(angle));}
     /** The seat's velocity, in blocks a tick, {@code ticks} after the reader sat down. */
     public static Vec3 velocity(Vec3 pivot,Direction forward,double ticks){return seat(pivot,forward,angle(ticks+.5)).subtract(seat(pivot,forward,angle(ticks-.5)));}
-    /** What a reader who lets go at that velocity leaves with. */
-    public static Vec3 launch(Vec3 seat){return seat.scale(CARRY).add(0,HOP,0);}
+    /** What a reader who lets go at that velocity, on a swing going that way, leaves with. */
+    public static Vec3 launch(Vec3 seat,Direction forward){return seat.scale(CARRY).add(forward.getStepX()*PUSH,HOP,forward.getStepZ()*PUSH);}
     /** A reader sits: the still swing is hidden so the moving one can be drawn in its place. */
     public static void hide(ServerPlayer p,BlockPos at){
         var l=p.serverLevel();
@@ -75,7 +81,7 @@ public final class HouseReadSwing {
         if(!(p.getVehicle() instanceof SeatEntity seat)||!seat.swinging()||p.isSpectator())return null;
         var l=p.serverLevel();var pair=pair(l,seat.support());if(!is(l.getBlockState(pair.getFirst())))return null;
         var forward=forward(l.getBlockState(pair.getFirst()));var pivot=pivot(pair);double ticks=seat.swingTicks(0);
-        var from=seat(pivot,forward,angle(ticks)).add(0,.05,0);var away=launch(velocity(pivot,forward,ticks));
+        var from=seat(pivot,forward,angle(ticks)).add(0,.05,0);var away=launch(velocity(pivot,forward,ticks),forward);
         seat.letGo(from);p.stopRiding();
         p.connection.teleport(from.x,from.y,from.z,p.getYRot(),p.getXRot());
         p.setDeltaMovement(away);p.hurtMarked=true;p.resetFallDistance();

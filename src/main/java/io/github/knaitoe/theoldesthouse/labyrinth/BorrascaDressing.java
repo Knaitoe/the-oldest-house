@@ -153,13 +153,14 @@ final class BorrascaDressing {
     /**
      * 0.4.423 (owner: "players should be able to jump from swings"): the yard's swing is a real one, the porch swing's seat and ropes
      * (HouseReadSwing) under a crossbar on two posts. It hangs across the yard, so it swings toward the house's path and a reader who
-     * jumps off it lands on the grass, not in the chain-link.
+     * jumps off it lands on the grass, not in the chain-link. 0.4.443: it had been hung facing the yard's side fence, three blocks off,
+     * which the push forward now given to every jump would reach. It faces the path, with six clear blocks of yard in front of it.
      */
     private static void swing(ServerLevel l,BlockPos b,int x,int z,boolean west){
         for(int dx:new int[]{-1,2})box(l,b,x+dx,0,z,x+dx,3,z,Blocks.OAK_FENCE);
         box(l,b,x-1,4,z,x+2,4,z,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));
         var rope=HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS,Direction.Axis.Y);
-        var seat=HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,HouseReadPropBlock.Part.SWING).setValue(HorizontalDirectionalBlock.FACING,Direction.SOUTH);
+        var seat=HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,HouseReadPropBlock.Part.SWING).setValue(HorizontalDirectionalBlock.FACING,Direction.NORTH);
         for(int dx=0;dx<=1;dx++){for(int y=1;y<=3;y++)BuildBlocks.set(l,b.offset(x+dx,y,z),rope,F);BuildBlocks.set(l,b.offset(x+dx,0,z),seat,F);}
     }
     private static void line(ServerLevel l,BlockPos b,int x,int z0,int z1,boolean west){
