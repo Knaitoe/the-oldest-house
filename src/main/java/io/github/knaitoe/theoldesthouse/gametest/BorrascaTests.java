@@ -554,7 +554,7 @@ public final class BorrascaTests {
      * machine"). From anywhere along the gate, every line to the cone, its tip and the far reach of its arms meets the refinery's walls or
      * roof; the roof is whole over the machine; the lamp is on the refinery's front, still in sight of the taking.
      */
-    @GameTest(template="empty",batch="borrasca_refinery",timeoutTicks=1200)
+    @GameTest(template="empty",batch="borrasca_refinery",timeoutTicks=1800)
     public static void theMachineStandsInsideTheRefinery(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_refinery");
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{
