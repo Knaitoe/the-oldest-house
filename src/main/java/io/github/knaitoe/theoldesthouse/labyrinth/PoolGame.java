@@ -10,7 +10,7 @@ import net.minecraft.nbt.CompoundTag;
  * No game or client classes are touched here, so the server plays a shot and every client watching plays the same shot from the same
  * state and arrives at the same place: Java's arithmetic is the same everywhere.
  *
- * <p>The table is 254 by 127 units (about centimetres), with six pockets. Ball 0 is the cue ball, 1 to 7 the spots, 8 the eight and 9
+ * <p>The table is 254 by 127 units (about centimetres), with six pockets. Ball 0 is the cue ball, 1 to 7 the solids, 8 the eight and 9
  * to 15 the stripes. Up to four players, in two sides that alternate (doubles: 0 and 2 against 1 and 3).
  */
 public final class PoolGame {
@@ -27,7 +27,7 @@ public final class PoolGame {
     public final double[] x=new double[BALLS],y=new double[BALLS],vx=new double[BALLS],vy=new double[BALLS];
     public final boolean[] on=new boolean[BALLS];
     public Phase phase=Phase.BREAK;
-    /** Whose turn: side 0 or 1. Which group each side has: 0 none yet, 1 spots, 2 stripes. */
+    /** Whose turn: side 0 or 1. Which group each side has: 0 none yet, 1 solids, 2 stripes. */
     public int side;
     public final int[] group=new int[2];
     public boolean ballInHand;
@@ -37,7 +37,7 @@ public final class PoolGame {
 
     public static int groupOf(int ball){return ball>=1&&ball<=7?1:ball>=9&&ball<=15?2:0;}
 
-    /** A fresh rack: the eight in the middle of the triangle, a spot and a stripe in the back corners, the rest by the seed. */
+    /** A fresh rack: the eight in the middle of the triangle, a solid and a stripe in the back corners, the rest by the seed. */
     public static PoolGame rack(long seed){
         var g=new PoolGame();var rnd=new Random(seed);
         List<Integer> rest=new ArrayList<>();for(int b=2;b<=15;b++)if(b!=8&&b!=9)rest.add(b);

@@ -24,7 +24,8 @@ import net.minecraft.world.phys.shapes.*;
  * <li>The doctor's office: SCALE, the beam scale; JAR, the lollipop jar (stage 1, nearly empty); CARDS, the corkboard of birth cards;
  * EXAM, the examination table; CHART, the eye chart.</li>
  * <li>The drugstore: FOUNTAIN, the soda fountain's taps on the counter; MEDS, the pharmacy shelf; RACK, the comic spinner.</li>
- * <li>OPEN, a lit sign in a window.</li>
+ * <li>OPEN, a lit sign in a window. 0.4.444: it hangs at the front of its own block, inside the shop against the glass, facing the
+ * street (it used to stand in the window's place).</li>
  * <li>0.4.430, the owner: "i hope you're still working on detailing the architecture". The station's own stock: OIL, steel shelving of
  * motor oil and antifreeze; BAIT, the bait freezer with cups on its lid; SNACKS, a wire rack of chips; CALENDAR, the feed store's
  * calendar; BAIT_SIGN, a painted board; TIRES, a stack of used tires. GROCERIES, the general store's shelf of tins, boxes and flour;
@@ -36,16 +37,23 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.439: what the machine leaves on the last night (BorrascaFeeding). REMAINS on the pile at the end of the belt, pulp and bone
  * (stage 0) or hair and a felt slipper (stage 1); WRISTBAND, the band from her wrist with its card; SMEAR, drawn on the belt's
  * rubber by a display where it comes out of the slot (stage 0 a streak, stage 1 soaked).</li>
+ * <li>0.4.444, the owner: "Give new textures to the different docs." The papers that can be read, each with its own face: DOC_DISPATCH
+ * and DOC_LOG on clipboards, DOC_PAYROLL on green-bar paper, DOC_SIGNIN with its pen, DOC_INTAKE with its stamp, DOC_TAGS (three
+ * manila tags), DOC_FORMS (a stack), DOC_LEDGER (the night book, open), DOC_LETTER (the pasted note) and DOC_RECEIPT (a pink carbon).
+ * A paper's facing is the way the top of its page points, away from whoever reads it. MEDS has a second arrangement (stage 1).</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<BorrascaShopBlock> CODEC=simpleCodec(BorrascaShopBlock::new);
     public enum Kind implements StringRepresentable {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
-        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP,REMAINS,WRISTBAND,SMEAR;
+        OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP,REMAINS,WRISTBAND,SMEAR,
+        DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG;
+        /** A paper lying on a desk. */
+        public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, behind the model's south face. */
-        public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,OPEN,CALENDAR,BAIT_SIGN->true;default->false;};}
+        public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,CALENDAR,BAIT_SIGN->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,1);
@@ -61,14 +69,16 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
         return switch(s.getValue(KIND)){
             case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CARDS,CHART->MarshBlock.turned(f,0,0,14,16,16,16);
             case CLOCK->MarshBlock.turned(f,4,4,14,12,12,16);
-            case OPEN->MarshBlock.turned(f,2,4,14,14,11,16);
+            case OPEN->MarshBlock.turned(f,0,4,0,16,11,2);
             case PAYPHONE->MarshBlock.turned(f,3,1,10,13,16,16);
             case PIE_CASE->Block.box(1,0,2,15,9,14);
             case URN->Block.box(4,0,4,12,13,12);
             case PUMP->MarshBlock.turned(f,2,0,4,14,16,13);
             case PUMP_TOP->MarshBlock.turned(f,2,0,4,14,11,13);
             case COOLER->MarshBlock.turned(f,1,0,2,15,13,15);
-            case CANDY,RACK->Block.box(2,0,3,14,15,13);
+            case CANDY->Block.box(2,0,3,14,15,13);
+            case RACK->Block.box(3,0,3,13,16,13);
+            case DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG->Block.box(1,0,1,15,2,15);
             case CASE,MEDS->Shapes.block();
             case HELMET->Block.box(4,0,4,12,9,12);
             case SCALE->Block.box(3,0,3,13,16,13);

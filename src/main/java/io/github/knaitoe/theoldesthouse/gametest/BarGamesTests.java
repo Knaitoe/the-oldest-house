@@ -41,12 +41,12 @@ public final class BarGamesTests {
         h.assertTrue(r!=null&&r.first==1&&brk.phase!=PoolGame.Phase.BREAK,"the break meets the head ball and opens the table: "+(r==null?"none":r.first));
         int moved=0;var fresh=PoolGame.rack(5);for(int i=1;i<PoolGame.BALLS;i++)if(Math.hypot(brk.x[i]-fresh.x[i],brk.y[i]-fresh.y[i])>1)moved++;
         h.assertTrue(moved>=6,"and spreads the rack: "+moved+" balls moved");
-        // A spot straight into the corner: it drops, the side takes spots, and shoots again.
+        // A solid straight into the corner: it drops, the side takes solids, and shoots again.
         // Aimed along the line from the ball to the pocket, through the ball.
         var pot=lay(new double[]{0,180,70},new double[]{3,220,100},new double[]{8,60,60},new double[]{12,60,30});
         double px=PoolGame.W,py=PoolGame.H,tl=Math.hypot(px-220,py-100),gx=220-(px-220)/tl*2*PoolGame.R,gy=100-(py-100)/tl*2*PoolGame.R;
         r=pot.shoot(Math.atan2(gy-70,gx-180),.55,0,0);
-        h.assertTrue(r!=null&&r.potted.contains(3)&&pot.group[0]==1&&pot.group[1]==2&&pot.side==0&&!pot.ballInHand,"a spot dropped: spots for that side, and the shot again: "+(r==null?"none":r.potted)+" groups "+pot.group[0]+"/"+pot.group[1]+" side "+pot.side);
+        h.assertTrue(r!=null&&r.potted.contains(3)&&pot.group[0]==1&&pot.group[1]==2&&pot.side==0&&!pot.ballInHand,"a solid dropped: solids for that side, and the shot again: "+(r==null?"none":r.potted)+" groups "+pot.group[0]+"/"+pot.group[1]+" side "+pot.side);
         // The cue ball straight into a pocket with nothing in the way: a foul, and the cue ball in the other side's hand.
         var scratch=lay(new double[]{0,30,30},new double[]{3,200,100},new double[]{8,150,60});scratch.group[0]=1;scratch.group[1]=2;scratch.phase=PoolGame.Phase.PLAY;
         r=scratch.shoot(toward(scratch,0,0,0),.5,0,0);

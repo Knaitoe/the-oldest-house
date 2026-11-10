@@ -109,7 +109,7 @@ public final class PoolScreen extends Screen {
         for(int s=0;s<2;s++){
             var side=new StringBuilder();for(int i=0;i<names.size();i++){if(i>=seatSides.size()||seatSides.get(i)!=s)continue;if(side.length()>0)side.append(" & ");side.append(names.get(i));}
             if(side.length()==0)continue;
-            String group=game.group[s]==1?" (spots)":game.group[s]==2?" (stripes)":"";
+            String group=game.group[s]==1?" (solids)":game.group[s]==2?" (stripes)":"";
             if(sides.length()>0)sides.append("   vs   ");sides.append(side).append(group);
         }
         int top=y0-(int)Math.max(6,scale*7)-22;

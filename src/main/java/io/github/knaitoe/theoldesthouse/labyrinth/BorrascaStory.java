@@ -168,6 +168,13 @@ public final class BorrascaStory {
         if(BorrascaShops.click(p,b,rel,own))return true;
         rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
+        // 0.4.444 (owner: "Keep prison cell door shut. Allow player to speak to npc through bars."): a hand on the cell's bars or its
+        // door speaks to whoever is in it.
+        if(BorrascaPeople.cell(rel)){
+            var earl=BorrascaPeople.keeper(p,own,BorrascaPeople.EARL);
+            if(earl!=null&&!earl.isInvisible()&&earl.distanceToSqr(p)<49)BorrascaPeople.talk(p,earl,own);else cue(p,"The cell is empty, and locked.");
+            return true;
+        }
         if(rel.equals(BorrascaRooms.CARVING)){
             if(visit==1){
                 if(!own.getBoolean("FriendCarved")){cue(p,"Some names are only grooves now. There are old scars between them.");return true;}
@@ -234,6 +241,8 @@ public final class BorrascaStory {
             return true;
         }
         if(rel.equals(BorrascaRooms.GATE_LOG)){LiteraryVignettes.open(p,PLACE,own,"GateLog",BorrascaTexts.document("GateLog"),BorrascaRooms.at(b,rel));return true;}
+        // 0.4.444 (owner: "Documents are not interactable."): the rest of the depot's paperwork, and the forms on the Sheriff's desk.
+        for(var paper:PAPERS)if(rel.equals(paper.at())){LiteraryVignettes.open(p,PLACE,own,paper.key(),BorrascaTexts.document(paper.key()),BorrascaRooms.at(b,rel));own.putBoolean("Read_"+paper.key(),true);return true;}
         // 0.4.237: the desk under the depot, and the numbers behind the shed.
         if(rel.equals(BorrascaRooms.NIGHT_BOOK)){LiteraryVignettes.open(p,PLACE,own,"Ledger",BorrascaTexts.document("Ledger"),BorrascaRooms.at(b,rel));return true;}
         if(rel.equals(BorrascaRooms.LETTER)){LiteraryVignettes.open(p,PLACE,own,"Letter",BorrascaTexts.document("Letter"),BorrascaRooms.at(b,rel));return true;}
@@ -250,6 +259,9 @@ public final class BorrascaStory {
         }
         return false;
     }
+    /** 0.4.444: a paper that is only read: where it lies, and its document. */
+    record Paper(BlockPos at,String key){}
+    static final Paper[] PAPERS={new Paper(BorrascaRooms.DISPATCH,"Dispatch"),new Paper(BorrascaRooms.PAYROLL,"Payroll"),new Paper(BorrascaRooms.SIGN_IN,"SignIn"),new Paper(BorrascaRooms.INTAKE,"Intake"),new Paper(BorrascaRooms.TAGS,"Tags"),new Paper(BorrascaRooms.FORMS,"Forms")};
     private static void restoreName(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!own.getBoolean("PowerOff")||!own.getBoolean("EvidenceRead")||!carriesEvidence(p,own)||own.getBoolean("RestoredName"))return;
         own.putBoolean("RestoredName",true);bark(p,b,4);heard(p,BorrascaRegistry.CARVE.get(),BorrascaRooms.at(b,BorrascaRooms.CARVING),.6F);
@@ -285,7 +297,9 @@ public final class BorrascaStory {
             if(visit>=3&&own.getBoolean("SheriffDown")){sheriffPleads(p,a,own);return;}
             if(visit>=3&&own.getInt("SheriffHits")>0){say(p,a,"Stay back.");return;}
             if(visit<3){
-                a.gesture(1);own.putInt("HatTicks",40);say(p,a,"You two keep this side of Marker Two when the wind comes up.");
+                a.gesture(1);own.putInt("HatTicks",40);
+                if(visit==2&&own.getBoolean("FriendMissing")){int n=own.getInt("SheriffAfter");own.putInt("SheriffAfter",n+1);say(p,a,SHERIFF_AFTER[Math.min(n,SHERIFF_AFTER.length-1)]);}
+                else say(p,a,"You two keep this side of Marker Two when the wind comes up.");
                 own.putBoolean("MetSheriff",true);
             }else if(visit==3){
                 denial(p,a,own);if(presentingCompass(p,own))compassChoice(p);
@@ -681,9 +695,21 @@ public final class BorrascaStory {
     static void swallowed(ServerPlayer p,BlockPos b,CompoundTag own){
         own.putInt("GrabTicks",0);own.putInt("GentTicks",0);own.putInt("Approach",0);own.remove("ApproachArmed");own.putInt("ApproachAway",0);own.putInt("Swallowed",own.getInt("Swallowed")+1);
         p.removeEffect(net.minecraft.world.effect.MobEffects.LEVITATION);p.removeEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
-        var at=treeFoot(p,b);p.teleportTo(p.serverLevel(),at.x,at.y,at.z,180,0);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();p.connection.resetPosition();
-        cue(p,own.getBoolean("PactCarved")?"The Triple Tree, at your back. Your name is in the bark beside your shoulder.":"The Triple Tree, at your back, and all the names in its bark.");
+        // 0.4.444 (owner: "capture spawns on top of triple tree rather than inside"): inside the fort, on its floor. The foot of the
+        // Tree was found from the top of whatever stood in that column, which is the fort's roof.
+        var inside=fortFloor(p,b);var at=inside!=null?inside:treeFoot(p,b);p.teleportTo(p.serverLevel(),at.x,at.y,at.z,180,0);p.setDeltaMovement(Vec3.ZERO);p.resetFallDistance();p.connection.resetPosition();
+        cue(p,inside==null?(own.getBoolean("PactCarved")?"The Triple Tree, at your back. Your name is in the bark beside your shoulder.":"The Triple Tree, at your back, and all the names in its bark.")
+            :own.getBoolean("PactCarved")?"The fort in the Triple Tree. Your name is in the bark under the floor.":"The fort in the Triple Tree, and under its floor all the names in the bark.");
         send(p,own);
+    }
+    /** 0.4.444: somewhere clear to stand on the fort's floor, or null if the fort is not loaded or its floor is full. */
+    static @Nullable Vec3 fortFloor(ServerPlayer p,BlockPos b){
+        var l=p.serverLevel();
+        for(int[] o:new int[][]{{0,-92},{1,-92},{-1,-92},{2,-93},{0,-91},{-2,-92}}){
+            var feet=BorrascaRooms.at(b,o[0],6,o[1]);if(!l.hasChunkAt(feet))continue;
+            if(l.getBlockState(feet).getCollisionShape(l,feet).isEmpty()&&l.getBlockState(feet.above()).getCollisionShape(l,feet.above()).isEmpty()&&!l.getBlockState(feet.below()).getCollisionShape(l,feet.below()).isEmpty())return Vec3.atBottomCenterOf(feet);
+        }
+        return null;
     }
     /** Somewhere to stand at the foot of the Triple Tree, facing up the ridge, with the trunk behind. */
     static Vec3 treeFoot(ServerPlayer p,BlockPos b){
@@ -1110,10 +1136,14 @@ public final class BorrascaStory {
     /** A blow at the Sheriff once he is down. A moment after he goes down, it kills him. Returns whether it did. */
     static boolean sheriffFinished(ServerPlayer p,LiteraryActor sheriff,CompoundTag own){
         if(!own.getBoolean("SheriffDown")||p.serverLevel().getGameTime()-own.getLong("SheriffDownAt")<20)return false;
-        own.putBoolean("SheriffDead",true);own.putInt("SheriffDiedVisit",own.getInt("Visit"));own.remove("SheriffDown");own.putLong("SheriffBody",sheriff.blockPosition().asLong());own.putFloat("SheriffBodyYaw",sheriff.getYRot());
+        own.putBoolean("SheriffDead",true);own.putInt("SheriffDiedVisit",own.getInt("Visit"));own.putLong("SheriffDiedAt",p.serverLevel().getGameTime());own.remove("SheriffDown");own.putLong("SheriffBody",sheriff.blockPosition().asLong());own.putFloat("SheriffBodyYaw",sheriff.getYRot());
         BorrascaCast.stop(sheriff);sheriff.gesture(FALLEN);sheriff.setCustomNameVisible(false);sheriff.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
         house(p,"He doesn't get up.");save(p,own);return true;
     }
+    /** 0.4.444: the blood under the Sheriff's body, as his synced torn: spreading up to POOL_FULL, and POOL_DRIED on a later visit. */
+    public static final int POOL_FULL=1000,POOL_DRIED=2000;
+    /** 0.4.444 (owner: "Dialogue should change on second day, after Kelly/friend is taken"): what he says to a child who comes down alone. */
+    static final String[] SHERIFF_AFTER={"You came down by yourself. Then you went up by yourself. Go on home.","Nobody's been on that road today. I'd have seen them.","Kids run off. I'll have a word with her folks. You stay off that trail."};
     private static final String[] PLEAS={"It was never my idea. There was a Sheriff before me, and he signed for it too.","You think it stops with me? There's a waiting list for this badge.","The Prescotts own the ground. I only ever kept the road clear.","Go on. Get it over with, or get out of my county."};
     private static void sheriffPleads(ServerPlayer p,LiteraryActor sheriff,CompoundTag own){int n=own.getInt("SheriffPleas");own.putInt("SheriffPleas",n+1);say(p,sheriff,PLEAS[n%PLEAS.length]);}
     /**
@@ -1126,6 +1156,9 @@ public final class BorrascaStory {
         if(own.getBoolean("SheriffDead")){
             BorrascaCast.stop(sheriff);sheriff.setCustomNameVisible(false);
             sheriff.setInvisible(false);sheriff.gesture(FALLEN);sheriff.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
+            // 0.4.444 (owner: "pool blood around corpse?"): it spreads under him for ten seconds after he falls (his synced torn, in
+            // thousandths), and on a later visit it has dried (2000). client.BorrascaNativeArt draws it.
+            sheriff.torn(own.getInt("SheriffDiedVisit")!=visit?POOL_DRIED:(int)Math.min(POOL_FULL,(p.serverLevel().getGameTime()-own.getLong("SheriffDiedAt"))*5));
             // Where he fell, facing the way he fell: a recall or a reload never moves the body.
             if(own.contains("SheriffBody")){var at=Vec3.atBottomCenterOf(BlockPos.of(own.getLong("SheriffBody")));float yaw=own.getFloat("SheriffBodyYaw");if(sheriff.position().distanceToSqr(at)>1)sheriff.moveTo(at,yaw,0);if(sheriff.getYRot()!=yaw){sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);}}
             return true;
@@ -1189,8 +1222,8 @@ public final class BorrascaStory {
         // 0.4.439: room 7 is made up for 264-A, who is with the doctor first; room 2 is Dana's, on her cot until the men fetch her.
         if(!own.getBoolean("MarasRoom")&&BorrascaRooms.inRoom(BorrascaRooms.MARA_ROOM,x,y,z)){own.putBoolean("MarasRoom",true);cue(p,"Room 7. The cot is made up with a clean blanket. A coat from town hangs on the hook.");}
         if(BorrascaRooms.inRoom(BorrascaFeeding.DANA_ROOM,x,y,z)){
-            if(BorrascaFeeding.state(own)==BorrascaFeeding.IDLE){if(!own.getBoolean("DanaInRoom")){own.putBoolean("DanaInRoom",true);cue(p,"Room 2. A woman lies on the cot, looking at the ceiling. She doesn't look round.");}}
-            else if(!own.getBoolean("DanaRoomEmpty")){own.putBoolean("DanaRoomEmpty",true);cue(p,"Room 2. The blanket on the cot is folded back. It is still warm.");}
+            // 0.4.444: she is already up on the belt when the night begins.
+            if(!own.getBoolean("DanaRoomEmpty")){own.putBoolean("DanaRoomEmpty",true);cue(p,"Room 2. The blanket on the cot is folded back. It is still warm.");}
         }
         if(!own.getBoolean("GravesSeen")&&x>=-7.5&&x<7.5&&z>=-211&&z<-201&&y>11&&y<14)graves(p,own);
     }
@@ -1207,7 +1240,8 @@ public final class BorrascaStory {
         "Take my name up with you. Not me. Go on."};
     private static void grownKelly(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor friend){
         friend.stopRiding();if(friend.phase()!=GROWN||friend.role()!=LiteraryActor.BORRASCA_KIMBER)friend.appearance(LiteraryActor.BORRASCA_KIMBER,GROWN);
-        friend.setInvisible(false);friend.setCustomNameVisible(false);BorrascaCast.stop(friend);
+        // 0.4.444 (owner: "Kelly's dialogue text appears for like, half a second"): her words were being hidden again on every tick here.
+        friend.setInvisible(false);BorrascaCast.stop(friend);
         var at=BorrascaRooms.at(b,BorrascaRooms.KELLY);var spot=Vec3.atBottomCenterOf(at);
         if(friend.position().distanceToSqr(spot)>2.25&&p.serverLevel().hasChunkAt(at))friend.teleportTo(spot.x,spot.y,spot.z);
         // Turned to the door until the reader is in the room, then to the reader.
@@ -1354,6 +1388,11 @@ public final class BorrascaStory {
         // 0.4.429: her knife never leaves the hill in a pocket; it went back to her.
         if(!BorrascaBelongings.remove(p,own,BorrascaBelongings.KNIFE).isEmpty()){own.putBoolean("KnifeBack",true);own.putBoolean("KnifeKept",true);}boolean valid=BorrascaSites.inside(p)&&own.getBoolean("Here")&&!own.getBoolean("Interrupted")&&p.isAlive();if(valid&&own.getInt("Beat")>=own.getInt("Visit"))own.putInt("DepartVisit",own.getInt("Visit"));else own.remove("DepartVisit");own.putBoolean("ExitEligible",valid&&own.getInt("Visit")==4&&(own.getInt("ConfirmedVisits")&7)==7&&own.getBoolean("Ready")&&own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&carriesEvidence(p,own));own.putBoolean("Here",false);save(p,own);}
     public static void returned(ServerPlayer p){BorrascaPeople.leave(p);var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("BorrascaDeparted",true);own.putBoolean("Escorting",false);own.putInt("Suspicion",0);int returned=own.getInt("DepartVisit");if(returned>=1&&returned<=3){own.putInt("ConfirmedVisits",own.getInt("ConfirmedVisits")|(1<<(returned-1)));own.putInt("CastNextVisit",returned+1);}if(own.getBoolean("ExitEligible")&&carriesEvidence(p,own)){own.putBoolean("NameReturned",own.getBoolean("RestoredName"));own.putBoolean("Completed",true);own.putInt("Beat",4);save(p,own);WitnessAccount.resolve(p,WitnessAccount.Story.BORRASCA,"silenced_the_mountain");d.setCompleted(PLACE.id(),true);WitnessAccount.updateBook(p,false);}own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}
+    /** 0.4.444 (owner: "Two dorseys"): a townsperson the reader's record no longer names does not come back into the world. */
+    @SubscribeEvent public static void strayKeeper(EntityJoinLevelEvent event){
+        if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.owner().isEmpty())return;
+        if(BorrascaPeople.stray(a,LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE)))event.setCanceled(true);
+    }
     @SubscribeEvent public static void joined(EntityJoinLevelEvent event){if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.role()!=LiteraryActor.BORRASCA_KIMBER||a.owner().isEmpty())return;var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE);if(own.getInt("Visit")==4){a.appearance(LiteraryActor.BORRASCA_KIMBER,GROWN);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);a.setInvisible(false);return;}if(own.getInt("Visit")>=3||own.getBoolean("FriendMissing")){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);if(own.getInt("Visit")>=3||own.getBoolean("FriendHidden")){a.setInvisible(true);BorrascaCast.stop(a);}}}
     @SubscribeEvent public static void rejoined(PlayerEvent.PlayerLoggedInEvent event){if(!(event.getEntity() instanceof ServerPlayer p)||!BorrascaSites.inside(p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getBoolean("Here")){own.putBoolean("CastRecalled",false);save(p,own);}}
     @SubscribeEvent public static void died(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&BorrascaSites.inside(p)){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);own.putBoolean("Here",false);own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}}

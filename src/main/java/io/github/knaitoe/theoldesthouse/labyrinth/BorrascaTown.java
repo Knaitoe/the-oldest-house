@@ -143,11 +143,11 @@ final class BorrascaTown {
         // The working side: two desks, the radio, the files, the map and the cell.
         furniture(l,b,25,0,-20,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,24,0,-20,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);
         furniture(l,b,25,0,-25,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,24,0,-25,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);
-        fitAt(l,b,new BlockPos(25,1,-20),BorrascaFittingBlock.Kind.PAPER,Direction.WEST);prop(l,b,25,1,-25,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST,0);
+        doc(l,b,BorrascaRooms.FORMS,BorrascaShopBlock.Kind.DOC_FORMS,Direction.WEST);prop(l,b,25,1,-25,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST,0);
         for(int z=-24;z<=-21;z++)box(l,b,29,0,z,29,1,z,fit(BorrascaFittingBlock.Kind.DRAWERS,Direction.WEST));
         fitAt(l,b,new BlockPos(29,2,-22),BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);fitAt(l,b,new BlockPos(29,2,-23),BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);
         set(l,b,29,0,-20,Blocks.CAULDRON);set(l,b,29,1,-20,Blocks.BREWING_STAND);
-        box(l,b,26,0,-29,26,3,-26,Blocks.IRON_BARS);box(l,b,27,0,-26,29,3,-26,Blocks.IRON_BARS);NovelRooms.door(l,b.offset(26,0,-28),Direction.WEST,Blocks.IRON_DOOR,true);
+        box(l,b,26,0,-29,26,3,-26,Blocks.IRON_BARS);box(l,b,27,0,-26,29,3,-26,Blocks.IRON_BARS);NovelRooms.door(l,b.offset(26,0,-28),Direction.WEST,Blocks.IRON_DOOR,false); // 0.4.444: shut; Earl is spoken to through the bars
         for(int x=27;x<=29;x++)set(l,b,x,0,-29,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,29,0,-27,Blocks.CAULDRON);
         set(l,b,20,0,-17,Blocks.POTTED_SPRUCE_SAPLING);
         for(int z:new int[]{-26,-20})set(l,b,24,4,z,hanging());set(l,b,20,4,-23,hanging());set(l,b,28,4,-28,hanging());
@@ -241,9 +241,9 @@ final class BorrascaTown {
     private static void depotOffice(ServerLevel l,BlockPos b){
         for(int x=-28;x<=-26;x++)box(l,b,x,12,-170,x,13,-170,fit(BorrascaFittingBlock.Kind.DRAWERS,Direction.NORTH));
         furniture(l,b,-23,12,-170,HouseholdFurnitureBlock.Kind.RADIATOR,Direction.NORTH);
-        for(int z:new int[]{-174,-177}){furniture(l,b,-25,12,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,-26,12,z,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);fitAt(l,b,new BlockPos(-25,13,z),BorrascaFittingBlock.Kind.PAPER,Direction.WEST);}
+        for(int z:new int[]{-174,-177}){furniture(l,b,-25,12,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,-26,12,z,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);doc(l,b,new BlockPos(-25,13,z),z==-174?BorrascaShopBlock.Kind.DOC_DISPATCH:BorrascaShopBlock.Kind.DOC_PAYROLL,Direction.EAST);}
         fitAt(l,b,new BlockPos(-28,14,-176),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);fitAt(l,b,new BlockPos(-28,14,-175),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
-        for(int z=-174;z<=-171;z++)set(l,b,-20,12,z,Blocks.SPRUCE_PLANKS);fitAt(l,b,new BlockPos(-20,13,-172),BorrascaFittingBlock.Kind.PAPER,Direction.EAST);set(l,b,-21,12,-172,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
+        for(int z=-174;z<=-171;z++)set(l,b,-20,12,z,Blocks.SPRUCE_PLANKS);doc(l,b,BorrascaRooms.SIGN_IN,BorrascaShopBlock.Kind.DOC_SIGNIN,Direction.WEST);set(l,b,-21,12,-172,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
         set(l,b,-15,12,-171,Blocks.WHITE_CONCRETE);set(l,b,-15,13,-171,Blocks.LIGHT_BLUE_STAINED_GLASS);
         for(int z=-177;z<=-175;z++)set(l,b,-15,12,z,stair(Blocks.SPRUCE_STAIRS,Direction.EAST,Half.BOTTOM));
         set(l,b,-22,16,-175,hanging());set(l,b,-17,16,-172,hanging());
@@ -251,10 +251,10 @@ final class BorrascaTown {
     private static void sorting(ServerLevel l,BlockPos b){
         for(int z=-192;z<=-183;z++)box(l,b,-28,12,z,-28,14,z,fit(BorrascaFittingBlock.Kind.DRAWERS,Direction.EAST));
         for(int x=-23;x<=-20;x++)for(int z=-189;z<=-188;z++)furniture(l,b,x,12,z,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);
-        fitAt(l,b,new BlockPos(-23,13,-188),BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);fitAt(l,b,new BlockPos(-21,13,-189),BorrascaFittingBlock.Kind.PAPER,Direction.NORTH);
+        doc(l,b,BorrascaRooms.INTAKE,BorrascaShopBlock.Kind.DOC_INTAKE,Direction.SOUTH);doc(l,b,BorrascaRooms.TAGS,BorrascaShopBlock.Kind.DOC_TAGS,Direction.NORTH);
         prop(l,b,-22,13,-188,LiteraryPropBlock.Kind.BELONGINGS,Direction.SOUTH,1);prop(l,b,-20,13,-189,LiteraryPropBlock.Kind.BELONGINGS,Direction.WEST,2);prop(l,b,-23,13,-189,LiteraryPropBlock.Kind.BELONGINGS,Direction.NORTH,0);
         for(var at:new BlockPos[]{BorrascaRooms.EVIDENCE,BorrascaRooms.PACK})NovelRooms.furniture(l,b.offset(at.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);
-        fitAt(l,b,BorrascaRooms.EVIDENCE,BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);fitAt(l,b,BorrascaRooms.PACK,BorrascaFittingBlock.Kind.PACK,Direction.SOUTH);
+        doc(l,b,BorrascaRooms.EVIDENCE,BorrascaShopBlock.Kind.DOC_RECEIPT,Direction.SOUTH);fitAt(l,b,BorrascaRooms.PACK,BorrascaFittingBlock.Kind.PACK,Direction.SOUTH);
         fitAt(l,b,new BlockPos(-28,14,-195),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
         // Shelved effects behind a wire cage on the east wall, its gate open; the aisle stays clear at x -19..-17.
         for(int z=-196;z<=-183;z++){if(z==-190)continue;set(l,b,-15,12,z,Blocks.BARREL);if(z%2==0)set(l,b,-15,13,z,Blocks.BARREL);}
@@ -295,7 +295,7 @@ final class BorrascaTown {
         door(l,b,6,12,-172,Direction.NORTH,Blocks.SPRUCE_DOOR);
         box(l,b,3,15,-173,9,15,-168,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
         furniture(l,b,5,12,-170,HouseholdFurnitureBlock.Kind.READING_DESK,Direction.EAST);furniture(l,b,6,12,-170,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
-        fitAt(l,b,BorrascaRooms.GATE_LOG,BorrascaFittingBlock.Kind.PAPER,Direction.EAST);set(l,b,7,14,-170,hanging());
+        doc(l,b,BorrascaRooms.GATE_LOG,BorrascaShopBlock.Kind.DOC_LOG,Direction.EAST);set(l,b,7,14,-170,hanging());
         BorrascaRooms.join(l,b,4,13,-172,8,13,-168);
     }
     /** Yard clutter, kept off the trail-to-lamp line, the workers' and Prescott's marks, the county pickup and the breaker. */
@@ -307,4 +307,6 @@ final class BorrascaTown {
     }
 
     private static void fitAt(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k,Direction d){BuildBlocks.set(l,b.offset(at),fit(k,d),F);}
+    /** 0.4.444: a paper that can be read, with its own face (BorrascaShopBlock's DOC kinds); its facing is the way the top of the page points. */
+    private static void doc(ServerLevel l,BlockPos b,BlockPos at,BorrascaShopBlock.Kind k,Direction d){BuildBlocks.set(l,b.offset(at),BorrascaShopBlock.of(k,d),F);}
 }

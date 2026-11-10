@@ -533,7 +533,7 @@ public final class BorrascaTests {
             for(int i=0;i<BorrascaStory.GRAB_TICKS/5+2&&f.own(p).getInt("Swallowed")==0;i++)f.refresh(p);
             own=f.own(p);var rel=BorrascaRooms.rel(p,b);
             h.assertTrue(own.getInt("Swallowed")==1&&own.getInt("GrabTicks")==0&&own.getInt("Approach")==0,"he ate them once, and it is over: "+own.getInt("Swallowed"));
-            h.assertTrue(rel.z>-106&&rel.z<-86&&p.isAlive(),"and they are under the Triple Tree, unhurt: "+rel);
+            h.assertTrue(rel.z>-100&&rel.z<-89&&Math.abs(rel.x)<5&&Math.abs(rel.y-6)<.2&&p.isAlive(),"and they are in the fort in the Triple Tree, on its floor, unhurt: "+rel);
             h.assertTrue(BorrascaStory.view(p,own).swallowed()==1&&BorrascaStory.gentleman(own)==null,"the view is told, and he is gone");
             h.assertTrue(BorrascaTexts.account(own).contains("Once I went on past the second marker"),"the account remembers it");
             // Below the marker he does not come nearer; he falls back a step for each little while there.
@@ -758,7 +758,8 @@ public final class BorrascaTests {
 
     /**
      * 0.4.439 (owner: "when she hits the blade it shouldn't be quick... the game should track the splitting/tearing of her body so it
-     * doesn't tear all at once"). Dana on her cot in room 2; the men fetched from near the side door; then, from the slot's mouth, the
+     * doesn't tear all at once"). 0.4.444: Dana is on the belt when the night begins, the two men standing by it, and the belt starts
+     * when the reader comes up to the yard; her cot in room 2 is empty. Then, from the slot's mouth, the
      * machine takes her a little at a time over most of a minute, catching on bone, while her voice goes from a moan to a scream to
      * nothing; pieces of her come out of the far end before it has her head, and the pile and the band are what is left.
      */
@@ -766,11 +767,13 @@ public final class BorrascaTests {
     public static void theMachineTakesHerSlowlyAndTearsHerASliceAtATime(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_feeding");
         final int[] depth={0},steps={0},firstTorn={-1},fedAt={-1},tick={0};final boolean[] piecesWhileOnBelt={false},living={false},dead={false};final List<String> voice=new ArrayList<>();
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the last night")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getBoolean("FeedPlaced"),"the last night, the men at the belt")).thenExecute(()->{
             var dana=f.actor(p,"CastDana");
-            h.assertTrue(dana!=null&&!dana.isInvisible()&&dana.gesture()==BorrascaStory.LAID&&dana.torn()==0,"she lies on her cot, whole: "+(dana==null?"no actor":dana.gesture()+" "+dana.torn()));
-            f.at(p,-16,6,-195);f.refresh(p);h.assertTrue(f.own(p).getBoolean("DanaInRoom"),"room 2: a woman on the cot, looking at the ceiling");
-            f.at(p,-10,12,-176);f.refresh(p);h.assertTrue(BorrascaFeeding.state(f.own(p))==BorrascaFeeding.FETCH,"near the depot's side door the men are heard, and go for her");
+            h.assertTrue(dana!=null&&!dana.isInvisible()&&dana.gesture()==BorrascaStory.LAID&&dana.torn()==0,"she lies whole: "+(dana==null?"no actor":dana.gesture()+" "+dana.torn()));
+            var lies=f.rel(dana,p);h.assertTrue(Math.abs(lies.z-BorrascaFeeding.LAID_Z)<.3&&Math.abs(lies.x-BorrascaFeeding.BELT_X)<.3&&lies.y>12.4&&BorrascaFeeding.state(f.own(p))==BorrascaFeeding.IDLE,"she is on the belt, at its head, when the night begins, and it has not started: "+lies);
+            for(String key:new String[]{"Worker0","Worker1"}){var w=f.actor(p,key);var at=w==null?null:f.rel(w,p);h.assertTrue(w!=null&&!w.isInvisible()&&Math.abs(at.x+1.6)<1&&at.z<-180&&at.z>-185,"the two men stand beside the belt: "+key+" "+at);}
+            f.at(p,-16,6,-195);f.refresh(p);h.assertTrue(f.own(p).getBoolean("DanaRoomEmpty")&&BorrascaFeeding.state(f.own(p))==BorrascaFeeding.IDLE,"room 2: her cot is empty, the blanket folded back; under the depot the belt does not start");
+            f.at(p,-10,12,-176);f.refresh(p);h.assertTrue(BorrascaFeeding.state(f.own(p))==BorrascaFeeding.RIDE,"when the reader comes up to the yard the belt starts, with her on it");
             // The walk and the ride are their own business; this case starts with her feet at the slot.
             var own=f.own(p);own.putInt("Feed",BorrascaFeeding.RIDE);own.putInt("FeedTicks",0);own.putDouble("FeedZ",BorrascaFeeding.SLOT_Z+.05);f.save(p,own);
             h.onEachTick(()->{tick[0]++;var d=f.actor(p,"CastDana");var o=f.own(p);if(d==null||fedAt[0]>=0)return;
@@ -808,10 +811,11 @@ public final class BorrascaTests {
         var f=new Fixture(h);var p=f.player("pine_breaker");var q=f.player("pine_late");final double[] at={0};
         var note=String.join(" ",BorrascaTexts.contentNote().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).toList());
         h.assertTrue(note.contains("GRAPHIC GORE")&&note.contains("fed alive")&&note.contains("Sexual violence stays off-screen"),"the trailhead note warns of the gore and keeps the rest off-screen: "+note);
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.enter(q);f.stage(p,4);f.stage(q,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled"),"the last night, for both")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.enter(q);f.stage(p,4);f.stage(q,4);}).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled")&&f.own(p).getBoolean("FeedPlaced")&&f.own(q).getBoolean("FeedPlaced"),"the last night, for both, the men at their belts")).thenExecute(()->{
             var own=f.own(p);own.putInt("Feed",BorrascaFeeding.RIDE);own.putInt("FeedTicks",0);own.putDouble("FeedZ",BorrascaFeeding.SLOT_Z+3);f.save(p,own);
             own=f.own(q);own.putInt("Feed",BorrascaFeeding.INTAKE);own.putInt("FeedTicks",0);own.putInt("FeedBones",2);own.putDouble("FeedZ",BorrascaFeeding.SLOT_Z-.5);f.save(q,own);
         }).thenIdle(20).thenExecute(()->{
+            var watching=f.actor(p,"Worker0");h.assertTrue(watching!=null&&!watching.isInvisible()&&watching.getCustomName()!=null&&watching.getCustomName().getString().contains("Gentleman'll look after her"),"the men watch her go in, and say who has her now: "+(watching==null?null:watching.getCustomName()));
             at[0]=f.own(p).getDouble("FeedZ");f.use(p,BorrascaRooms.POWER);f.use(q,BorrascaRooms.POWER);
         }).thenWaitUntil(()->h.assertTrue(BorrascaFeeding.state(f.own(p))==BorrascaFeeding.SAVED&&BorrascaFeeding.state(f.own(q))==BorrascaFeeding.LATE,"both belts stop")).thenIdle(200).thenExecute(()->{
             var dana=f.actor(p,"CastDana");var own=f.own(p);
@@ -864,6 +868,25 @@ public final class BorrascaTests {
         var f=new Fixture(h);var p=f.player("drisking_reader");
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"original cast loaded")).thenExecute(()->{
             var b=f.base(p);
+            // 0.4.444: nothing hangs on glass. Every piece that hangs on a wall has wall behind it, and the OPEN signs hang inside their windows.
+            var hung=new ArrayList<String>();
+            for(var hungAt:BlockPos.betweenClosed(b.offset(-50,-1,-125),b.offset(50,10,3))){var hs=f.out.getBlockState(hungAt);Direction face=null;
+                if(hs.is(BorrascaRegistry.SHOP.get())&&hs.getValue(BorrascaShopBlock.KIND).wall())face=hs.getValue(BorrascaShopBlock.FACING);
+                else if(hs.is(BorrascaRegistry.FITTING.get())&&hs.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.NOTICE)face=hs.getValue(BorrascaFittingBlock.FACING);
+                if(face==null)continue;var behind=f.out.getBlockState(hungAt.relative(face.getOpposite()));
+                if(behind.is(Blocks.GLASS_PANE)||behind.isAir())hung.add(hungAt.subtract(b).toShortString()+" "+hs);}
+            h.assertTrue(hung.isEmpty(),"every piece that hangs on a wall has wall behind it, not glass or air: "+hung);
+            for(var sign:new BlockPos[]{new BlockPos(-8,2,-80),new BlockPos(8,2,-101)}){boolean west=sign.getX()<0;h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(sign)),BorrascaShopBlock.Kind.OPEN)&&f.out.getBlockState(b.offset(sign).relative(west?Direction.EAST:Direction.WEST)).is(Blocks.GLASS_PANE),"the OPEN sign hangs inside the shop against its window, which keeps its glass: "+sign);}
+            h.assertTrue(!BorrascaShopTexts.pump(0,false).equals(BorrascaShopTexts.pump(1,false))&&!BorrascaShopTexts.pump(0,true).equals(BorrascaShopTexts.pump(1,true)),"each pump's dials stopped at its own last sale");
+            h.assertTrue(f.out.getBlockState(b.offset(20,0,-103)).getValue(BorrascaShopBlock.STAGE)!=f.out.getBlockState(b.offset(20,0,-102)).getValue(BorrascaShopBlock.STAGE),"the pharmacy's shelves are not all one arrangement");
+            h.assertTrue(f.out.getBlockState(b.offset(18,1,-97)).getValue(RoadhouseBlock.FACING)==Direction.EAST,"the pharmacy register's keys face the pharmacist");
+            // 0.4.444: the depot's papers and the Sheriff's forms are each their own paper, and each can be read.
+            var faces=new java.util.HashSet<BorrascaShopBlock.Kind>();
+            for(var paper:new BlockPos[]{BorrascaRooms.DISPATCH,BorrascaRooms.PAYROLL,BorrascaRooms.SIGN_IN,BorrascaRooms.INTAKE,BorrascaRooms.TAGS,BorrascaRooms.FORMS,BorrascaRooms.EVIDENCE,BorrascaRooms.GATE_LOG,BorrascaRooms.NIGHT_BOOK,BorrascaRooms.LETTER}){
+                var ps=f.out.getBlockState(BorrascaRooms.at(b,paper));h.assertTrue(ps.is(BorrascaRegistry.SHOP.get())&&ps.getValue(BorrascaShopBlock.KIND).doc()&&faces.add(ps.getValue(BorrascaShopBlock.KIND)),"a paper with its own face lies at "+paper+": "+ps);}
+            f.at(p,24,0,-19);h.assertTrue(flat(text(opened(f,p,BorrascaRooms.FORMS,"the Sheriff's report forms"))).contains(flat("Finding: RUNAWAY")),"the forms on the Sheriff's desk have their finding printed already");
+            f.at(p,-24,12,-175);h.assertTrue(flat(text(opened(f,p,BorrascaRooms.DISPATCH,"the depot's dispatch sheet"))).contains(flat("folding tables to the church")),"the dispatch sheet sends Prescott's truck to the church with the tables");
+            h.assertTrue(flat(text(opened(f,p,BorrascaRooms.PAYROLL,"the depot's payroll"))).contains(flat("by their own fathers")),"the payroll names who in town is paid");
             h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,7,1,-6)).is(BorrascaRegistry.FITTING.get())&&f.out.getBlockState(BorrascaRooms.at(b,0,6,-6)).getBlock() instanceof SlabBlock&&f.out.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.SOURCE)) instanceof LecternBlockEntity,"the reader arrives inside the trailhead station, under its roof, with the trail notice");
             for(int z=-3;z>=-14;z--)h.assertTrue(clear(f,p,b,0,0,z),"the station aisle and doorway stay open at z "+z);
             h.assertTrue(RoadhouseBlock.is(f.out.getBlockState(BorrascaRooms.at(b,-19,1,-26)),RoadhouseBlock.Kind.REGISTER)&&f.out.getBlockState(BorrascaRooms.at(b,-16,0,-23)).getBlock() instanceof DoorBlock,"Drisking General has its till and its door");
@@ -938,6 +961,9 @@ public final class BorrascaTests {
             var b=f.base(p);
             for(int k=BorrascaPeople.LORNA;k<=BorrascaPeople.EARL;k++){var a=keeper.apply(k);h.assertTrue(!a.isInvisible()&&a.position().distanceToSqr(Vec3.atBottomCenterOf(b.offset(BorrascaPeople.post(k))))<1.1,"on a childhood visit every keeper is at work, at the counter: "+BorrascaPeople.name(a));}
             var earl=keeper.apply(BorrascaPeople.EARL);h.assertTrue(earl.blockPosition().equals(BorrascaRooms.at(b,28,0,-28)),"Earl is in the Sheriff's cell");
+            // 0.4.444: the cell is shut, and Earl is spoken to through its bars.
+            var cellDoor=f.out.getBlockState(BorrascaRooms.at(b,26,0,-28));h.assertTrue(cellDoor.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&!cellDoor.getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"the cell's door is shut: "+cellDoor);
+            f.at(p,24,0,-27);f.click(p,new BlockPos(26,1,-27));h.assertTrue(earl.getCustomName()!=null&&earl.isCustomNameVisible()&&earl.getCustomName().getString().contains("asleep"),"a hand on the bars speaks to Earl through them: "+earl.getCustomName());
             h.assertTrue(BorrascaPeople.cents(f.own(p))==BorrascaPeople.CHANGE&&BorrascaPurseItem.money(BorrascaPeople.CHANGE).equals("1.50"),"a child has a dollar fifty to spend");
             f.atWorld(p,new BlockPos(-15,0,-85));
             var coffee=buy.apply(BorrascaPeople.LORNA,BorrascaPeople.Ware.COFFEE);
@@ -1023,6 +1049,8 @@ public final class BorrascaTests {
             f.atWorld(p,new BlockPos(10,0,-86));var cards=flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the second visit's corkboard")));
             h.assertTrue(cards.contains(flat("TATE"))&&cards.contains(flat("Paige")),"the Tates' girl is on the board by the second visit, a P name: "+cards);
             var own=f.own(p);own.putBoolean("FriendMissing",true);f.save(p,own);
+            // 0.4.444: after she is taken the Sheriff no longer says "you two".
+            f.talk(p,"CastSheriff");var sheriffSaid=f.actor(p,"CastSheriff").getCustomName();h.assertTrue(sheriffSaid!=null&&sheriffSaid.getString().contains("by yourself")&&!sheriffSaid.getString().contains("You two"),"after the taking the Sheriff speaks to a child who came down alone: "+sheriffSaid);
             f.atWorld(p,new BlockPos(-13,0,-111));var tip=dial.apply(BorrascaPayphone.SHERIFF);
             h.assertTrue(said.apply(tip).contains("no open case")&&said.apply(tip).contains(BorrascaStory.FRIEND),"the Sheriff's office has no open case for her: "+said.apply(tip));
             f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
@@ -1030,6 +1058,8 @@ public final class BorrascaTests {
           .thenExecute(()->{
             for(int k:new int[]{BorrascaPeople.DUTCH,BorrascaPeople.MERLE})h.assertTrue(!person.apply(k).isInvisible()&&RoadhouseBlock.is(f.out.getBlockState(person.apply(k).blockPosition()),RoadhouseBlock.Kind.STOOL),"years later "+BorrascaPeople.name(person.apply(k))+" sits at the bar");
             var own=f.own(p);var merle=person.apply(BorrascaPeople.MERLE);BorrascaPeople.talk(p,merle,own);var earl=person.apply(BorrascaPeople.EARL);BorrascaPeople.talk(p,earl,own);BorrascaPeople.talk(p,earl,own);f.save(p,own);
+            // 0.4.444: years later Earl is not in the cell; he sits on a flattened box at the mouth of the alley by the Tipple.
+            h.assertTrue(!earl.isInvisible()&&earl.blockPosition().equals(f.base(p).offset(BorrascaPeople.EARL_STREET))&&f.out.getBlockState(earl.blockPosition()).getBlock() instanceof net.minecraft.world.level.block.CarpetBlock,"years later Earl is out on the street: "+earl.blockPosition().subtract(f.base(p)));
             h.assertTrue(merle.getCustomName()!=null&&merle.getCustomName().getString().contains("Runaway"),"Merle took the report and wrote what the Sheriff said: "+merle.getCustomName());
             h.assertTrue(earl.getCustomName()!=null&&earl.getCustomName().getString().contains("reports"),"Earl says too much: "+earl.getCustomName());
             f.atWorld(p,new BlockPos(-13,0,-111));var tip=dial.apply(BorrascaPayphone.SHERIFF);

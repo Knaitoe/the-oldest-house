@@ -62,6 +62,8 @@ public final class LiteraryRenderers {
         if(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.Kind.CHAIR))return new Seat(10,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.
         if(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.Kind.CHAIR))return new Seat(9,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.FACING));
+        // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.
+        if(a.role()==LiteraryActor.STRANGER&&a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.BorrascaPeople.EARL&&state.getBlock() instanceof net.minecraft.world.level.block.CarpetBlock)return new Seat(1,null);
         return null;
     }
     public static final class CastModel extends HumanoidModel<LiteraryActor>{private final ModelPart coat,gown,mask,bandage,hood,lakeHair,eyelids;private int shelterGesture;

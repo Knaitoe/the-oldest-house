@@ -60,11 +60,16 @@ public final class BorrascaShopTexts {
     }
 
     /** What a look at one of the shops' fittings shows, or nothing for those that only stand there. */
+    /** 0.4.444: what each of the station's two pumps last sold. Kurt says the second one sticks. */
+    public static String pump(int which,boolean later){
+        if(which==0)return later?"The dials stopped at the last sale: 11 gallons, 31.79.":"The dials stopped at the last sale: 9 gallons, 9.81.";
+        return later?"The dials stopped partway: 6 gallons, and the cents wheel caught between two numbers. This is the one that sticks.":"The dials stopped at the last sale: 4 gallons, 4.36.";
+    }
     public static @Nullable String look(BorrascaShopBlock.Kind kind,int stage,boolean later){
         return switch(kind){
             case PIE_CASE->stage==1?"Three pies under the glass. One has been cut.":"Three pies under the glass: cherry, pecan and one with a lattice top.";
             case URN->"The coffee urn ticks as it heats. Its little window shows it full.";
-            case PUMP,PUMP_TOP->later?"The dials stopped at the last sale: 11 gallons, 31.79.":"The dials stopped at the last sale: 9 gallons, 9.81.";
+            case PUMP,PUMP_TOP->pump(0,later);
             case PRICE->later?"Regular 2.89. Unleaded 2.99. Diesel, ask inside.":"Regular 1.09. Unleaded 1.14. Diesel, ask inside.";
             case PAYPHONE->"A payphone. Twenty-five cents for a local call. Someone has scratched a number into the steel and scratched it out again.";
             case COOLER->"Bottles of soda standing in ice water. The lid is cold to touch.";
