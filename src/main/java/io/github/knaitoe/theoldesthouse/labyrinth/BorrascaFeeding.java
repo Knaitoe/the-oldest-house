@@ -39,19 +39,20 @@ import javax.annotation.Nullable;
  * clothing should be in scraps"; "bare torso too, using the navel shadowing"), painted on her own skin (borrasca_dana).
  * <p>
  * Everything here is the reader's own site and record. Called from {@link BorrascaStory#reader} every five ticks on the last visit.
+ * <p>
+ * 0.4.444, the owner: "She should spawn on this on day 4, not spawn elsewhere then walk onto it. You should have operators that are
+ * watching her go in, referencing the shiny gentleman taking care of her." She is on the belt, at its head, when the night begins, and
+ * the two men stand beside it. The belt starts when the reader comes up to the yard; the men watch her go and say who has her now.
+ * Nobody fetches her, walks her out or lays her down any more. Pulled before the belt starts, the breaker leaves her where she lies.
  */
 public final class BorrascaFeeding {
     private BorrascaFeeding(){}
-    public static final int IDLE=0,FETCH=1,WALK=2,LAY=3,RIDE=4,INTAKE=5,OUTFLOW=6,SAVED=7,LATE=8;
-    /** Room 2, where she is kept, and the cot she lies on until they fetch her. */
+    public static final int IDLE=0,RIDE=4,INTAKE=5,OUTFLOW=6,SAVED=7,LATE=8;
+    /** Room 2, where she was kept. Her cot is empty on the last night: she is already up on the belt. */
     public static final int DANA_ROOM=2;
-    public static final BlockPos COT=new BlockPos(-14,7,-196);
-    static final Vec3 COT_FEET=new Vec3(-13.5,7.0,-195.9);
-    /** The depot's side door onto the yard, and the corridor just inside it. */
-    public static final BlockPos SIDE_DOOR=new BlockPos(-14,12,-179);
-    static final Vec3 INSIDE=new Vec3(-15.5,12,-178.5),INSIDE_LEAD=new Vec3(-16.5,12,-177.6),INSIDE_BEHIND=new Vec3(-16.5,12,-179.4);
-    /** Out of the side door, through the gap in the bars and along to the head of the belt. */
-    static final Vec3[] ROUTE={new Vec3(-13.5,12,-178.5),new Vec3(-11.5,12,-178.5),new Vec3(-3,12,-178.5),new Vec3(-1.3,12,-178.6)};
+    /** The head of the belt, where she lies when the night begins, and where the two men stand to watch her go. */
+    public static final BlockPos BELT_HEAD=new BlockPos(0,12,-180);
+    static final Vec3 WATCH_NEAR=new Vec3(-1.6,12,-183.5),WATCH_FAR=new Vec3(-1.6,12,-181.0);
     /** The belt's rubber is nine sixteenths up its block (BorrascaFittingBlock BELT). She lies on it with her feet to the north. */
     public static final double BELT_TOP=12+9/16.0,BELT_X=.5;
     /** Where her feet are laid, the slot's mouth (the housing's south face), and where her head has gone in after her. */
@@ -80,13 +81,13 @@ public final class BorrascaFeeding {
     /** The pile at the end of the belt, between the belt and the first row of stakes. */
     public static final BlockPos PILE_REMAINS=new BlockPos(0,12,-201),PILE_HAIR=new BlockPos(-1,12,-201),PILE_BAND=new BlockPos(1,12,-201);
     /** The men's lines. They only ever talk to each other. */
-    static final String[] LURE={"Two's done. They want her up before the shift.","She walk?","She walks. She doesn't do anything else."};
-    static final String LIE="Lie down.",DONT_WATCH="Don't watch it go in. Watch the belt.",BREAKER="Breaker's gone.",LEAVE="Leave her. She won't get off.";
+    public static final String[] WATCH={"There she goes. The Gentleman'll look after her now.","He looks after all of them.","My dad used to say that. Same words."};
+    static final String BREAKER="Breaker's gone.",LEAVE="Leave her. She won't get off.";
     static final String STALL="It catches on the bones. Give it a second.",HOSE="Hose the belt down after.";
 
     public static int state(CompoundTag own){return own.getInt("Feed");}
     /** Whether the two men are out in the yard for this (so BorrascaStory.cast leaves them visible). */
-    public static boolean workersOut(CompoundTag own){int s=state(own);return s>=FETCH&&!own.getBoolean("FeedWorkersGone");}
+    public static boolean workersOut(CompoundTag own){return own.getBoolean("FeedPlaced")&&!own.getBoolean("FeedWorkersGone");}
 
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor dana,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
         var l=p.serverLevel();boolean power=!own.getBoolean("PowerOff");int state=state(own);
@@ -96,33 +97,27 @@ public final class BorrascaFeeding {
         if(dana==null)return;
         switch(state){
             case IDLE->{
-                lie(dana,b,COT_FEET,180,false);
-                if(power&&ready(p,b)&&w0!=null&&w1!=null&&fetch(p,b,own,dana,w0,w1))set(own,FETCH);
-            }
-            case FETCH->{
-                stand(dana);
-                if(w0==null||w1==null)return;
-                if(t==5)BorrascaStory.say(p,w0,LURE[0]);else if(t==45)BorrascaStory.say(p,w1,LURE[1]);else if(t==85)BorrascaStory.say(p,w0,LURE[2]);
-                if(t>=100){BorrascaStory.openDoor(l,BorrascaRooms.at(b,SIDE_DOOR),true);own.putInt("FeedWay",0);set(own,WALK);}
-            }
-            case WALK->walk(p,b,own,dana,w0,w1,t);
-            case LAY->{
-                stand(dana);
-                if(t==5&&w1!=null)BorrascaStory.say(p,w1,LIE);
-                if(t>=30){own.putDouble("FeedZ",LAID_Z);lie(dana,b,new Vec3(BELT_X,BELT_TOP,LAID_Z),180,false);
-                    if(w0!=null){w0.gesture(0);BorrascaCast.walk(w0,world(b,new Vec3(-1.6,12,-183.5)),.3);}
-                    if(w1!=null){w1.gesture(0);BorrascaCast.walk(w1,world(b,new Vec3(-8,12,-178.5)),.3);}
-                    set(own,RIDE);}
+                lie(dana,b,new Vec3(BELT_X,BELT_TOP,LAID_Z),180,false);
+                if(w0!=null&&w1!=null&&!own.getBoolean("FeedPlaced")&&l.isLoaded(BorrascaRooms.at(b,BELT_HEAD))){
+                    place(w0,b,WATCH_NEAR,-90);place(w1,b,WATCH_FAR,-90);
+                    for(var w:new LiteraryActor[]{w0,w1}){w.setInvisible(false);w.gesture(0);BorrascaStory.resync(p,w);}
+                    own.putBoolean("FeedPlaced",true);own.remove("FeedWorkersGone");
+                }
+                watch(dana,w0,w1);
+                if(!ready(p,b))return;
+                own.putDouble("FeedZ",LAID_Z);
+                if(power)set(own,RIDE);
+                else{own.putBoolean("DanaSaved",true);set(own,SAVED);if(w0!=null)BorrascaStory.say(p,w0,BREAKER);BorrascaStory.save(p,own);}
             }
             case RIDE->{
                 double z=own.getDouble("FeedZ");
                 if(!power){own.putBoolean("DanaSaved",true);set(own,SAVED);lie(dana,b,new Vec3(BELT_X,BELT_TOP,z),180,false);if(w0!=null)BorrascaStory.say(p,w0,BREAKER);BorrascaStory.save(p,own);return;}
                 z-=RIDE_SPEED*5;own.putDouble("FeedZ",z);lie(dana,b,new Vec3(BELT_X,BELT_TOP,z),180,false);
-                if(t==100&&w0!=null)BorrascaStory.say(p,w0,DONT_WATCH);
-                if(w0!=null&&!w0.getPersistentData().contains("BorrascaSpeed"))face(w0,90);
+                if(t==10&&w0!=null)BorrascaStory.say(p,w0,WATCH[0]);else if(t==60&&w1!=null)BorrascaStory.say(p,w1,WATCH[1]);else if(t==110&&w0!=null)BorrascaStory.say(p,w0,WATCH[2]);
+                watch(dana,w0,w1);
                 if(z<=SLOT_Z)set(own,INTAKE);
             }
-            case INTAKE->intake(p,b,own,dana,w0,power,t);
+            case INTAKE->{watch(dana,w0,w1);intake(p,b,own,dana,w0,power,t);}
             case OUTFLOW->{if(t==60&&w1!=null)BorrascaStory.say(p,w1,HOSE);leave(p,b,own,w0,w1,t);}
             case LATE->{late(p,b,own,dana,w0,t);leave(p,b,own,w0,w1,t);}
             case SAVED->{
@@ -137,44 +132,23 @@ public final class BorrascaFeeding {
     /** An authored place on this reader's hill, in the world (the ridge is an authored region, so this is the site's own shift). */
     static Vec3 world(BlockPos b,Vec3 rel){return Vec3.atLowerCornerOf(b).add(BorrascaRooms.world(rel));}
 
-    /** The reader is close enough to the depot's side door to hear the men there, out in the yard and not in the depot or under it. */
+    /** The reader is close enough to the head of the belt to see her on it, out in the yard and not in the depot or under it. */
     static boolean ready(ServerPlayer p,BlockPos b){
         var r=BorrascaRooms.rel(p,b);
         if(r.y<10||r.y>24)return false;
         boolean depot=r.x>=-29&&r.x<-13&&r.z>=-205&&r.z<-168&&r.y<19;if(depot)return false;
-        double dx=r.x-(SIDE_DOOR.getX()+.5),dz=r.z-(SIDE_DOOR.getZ()+.5);
         double hx=r.x-.5,hz=r.z+177.5;
-        return dx*dx+dz*dz<24*24||hx*hx+hz*hz<14*14;
+        return hx*hx+hz*hz<26*26;
     }
-    /** The men bring her up to the side door, inside the depot where the reader cannot see. */
-    private static boolean fetch(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor dana,LiteraryActor w0,LiteraryActor w1){
-        var l=p.serverLevel();if(!l.isLoaded(BorrascaRooms.at(b,SIDE_DOOR)))return false;
-        place(dana,b,INSIDE,90);place(w0,b,INSIDE_LEAD,90);place(w1,b,INSIDE_BEHIND,90);
-        dana.setInvisible(false);dana.setNoGravity(false);dana.gesture(0);dana.torn(0);
-        for(var w:new LiteraryActor[]{w0,w1}){w.setInvisible(false);w.gesture(0);BorrascaCast.stop(w);BorrascaStory.resync(p,w);}
-        own.remove("FeedWorkersGone");
-        return true;
+    /** The men, while they stand, keep their eyes on her. */
+    private static void watch(LiteraryActor dana,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
+        for(var w:new LiteraryActor[]{w0,w1}){
+            if(w==null||w.isInvisible()||w.getPersistentData().contains("BorrascaSpeed"))continue;
+            face(w,(float)Math.toDegrees(Math.atan2(-(dana.getX()-w.getX()),dana.getZ()+1-w.getZ())));
+        }
     }
     private static void place(LiteraryActor a,BlockPos b,Vec3 rel,float yaw){BorrascaCast.stop(a);var at=world(b,rel);a.moveTo(at.x,at.y,at.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);}
-    private static void stand(LiteraryActor dana){if(dana.gesture()==BorrascaStory.LAID||dana.gesture()==BorrascaStory.LAID_STILL)dana.gesture(0);dana.setNoGravity(false);}
     private static void face(LiteraryActor a,float yaw){a.setYRot(yaw);a.setYBodyRot(yaw);a.setYHeadRot(yaw);}
-
-    /** Out of the door and along the yard, one man ahead and one behind with a hand on her arm. */
-    private static void walk(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor dana,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1,int t){
-        int way=own.getInt("FeedWay");
-        if(way>=ROUTE.length){set(own,LAY);BorrascaCast.stop(dana);if(w0!=null)BorrascaCast.stop(w0);if(w1!=null){BorrascaCast.stop(w1);w1.gesture(0);}face(dana,90);return;}
-        var goal=world(b,ROUTE[way]);
-        if(dana.position().distanceToSqr(goal.x,dana.getY(),goal.z)<.2||t>600){
-            if(t>600)dana.moveTo(goal.x,goal.y,goal.z,dana.getYRot(),0);
-            own.putInt("FeedWay",way+1);own.putInt("FeedTicks",0);
-            if(way==1)BorrascaStory.openDoor(p.serverLevel(),BorrascaRooms.at(b,SIDE_DOOR),false);
-            return;
-        }
-        dana.gesture(0);BorrascaCast.walk(dana,goal,.26);
-        var d=goal.subtract(dana.position());d=new Vec3(d.x,0,d.z);d=d.lengthSqr()<1e-4?new Vec3(1,0,0):d.normalize();
-        if(w0!=null){w0.gesture(0);BorrascaCast.walk(w0,dana.position().add(d.scale(1.4)),.3);}
-        if(w1!=null){w1.gesture(BorrascaStory.HOLD_RIGHT);BorrascaCast.walk(w1,dana.position().subtract(d.scale(1.1)),.3);}
-    }
 
     /** Lying on her back with her feet toward the yaw she faces: on the cot, and on the belt. */
     static void lie(LiteraryActor dana,BlockPos b,Vec3 rel,float yaw,boolean still){lie(dana,b,rel,yaw,still?BorrascaStory.LAID_STILL:BorrascaStory.LAID);}

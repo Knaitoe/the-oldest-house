@@ -1,0 +1,111 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "d": "the_oldest_house:block/borrasca_shop/doc_dispatch",
+    "c": "the_oldest_house:block/borrasca_shop/chrome",
+    "particle": "the_oldest_house:block/borrasca_shop/doc_dispatch"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        0.6,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d",
+          "uv": [
+            1,
+            14,
+            15,
+            14.6
+          ]
+        },
+        "south": {
+          "texture": "#d",
+          "uv": [
+            1,
+            14,
+            15,
+            14.6
+          ]
+        },
+        "east": {
+          "texture": "#d",
+          "uv": [
+            1,
+            14,
+            15,
+            14.6
+          ]
+        },
+        "west": {
+          "texture": "#d",
+          "uv": [
+            1,
+            14,
+            15,
+            14.6
+          ]
+        },
+        "up": {
+          "texture": "#d",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#d",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        0.6,
+        1
+      ],
+      "to": [
+        10,
+        1.1,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

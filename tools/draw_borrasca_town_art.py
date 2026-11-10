@@ -75,6 +75,7 @@ FONT = {
     'U': '101101101101111', 'Y': '101101010010010', 'E2': '111100111100111', '1': '010110010010111', '2': '110001010100111',
     '3': '110001010001110', '4': '101101111001001', '5': '111100110001110', '9': '111101111001110', '0': '111101101101111',
     '.': '000000000000010', '-': '000000111000000', ' ': '000000000000000',
+    '6': '111100111101111', '7': '111001010010010', '8': '111101111101111',
     'V': '101101101101010', 'K': '101101110101101', 'G': '011100101101011', 'M': '101111111101101', 'W': '101101101111101',
 }
 
@@ -386,21 +387,6 @@ def scale_face():
     return im
 
 
-def jar(low):
-    im = new()
-    fill(im, 0, 0, 16, 16, '#d8eef2', 50)
-    rnd = random.Random(42260)
-    top = 9 if low else 3
-    for y in range(top, 15, 2):
-        for x in range(1, 15, 2):
-            if rnd.random() < .85:
-                c = rnd.choice(('#d6402f', '#f2a43a', '#5ab04e', '#8a55c4', '#e86fa6', '#f4e04a'))
-                fill(im, x, y, x + 2, y + 2, c)
-                dot(im, x + 1, y + 2, '#f3efe6')
-    frame(im, '#eaf6f8')
-    return im
-
-
 def cards():
     im = new('#b88d58', 42261, 5); frame(im, '#6b4a2a')
     rnd = random.Random(42262)
@@ -444,33 +430,11 @@ def fountain():
     return im
 
 
-def meds():
-    im = wood(); rnd = random.Random(42270)
-    for row in range(3):
-        y = 1 + row * 5
-        fill(im, 0, y + 4, 16, y + 5, '#3b2817')
-        x = 1
-        while x < 14:
-            w = rnd.choice((2, 2, 3))
-            c = rnd.choice(('#a35a1f', '#f1ede4', '#7aa0c4', '#a35a1f', '#d8c87a'))
-            fill(im, x, y + 1, x + w, y + 4, c); dot(im, x, y, '#f1ede4')
-            x += w + 1
-    return im
-
-
-def rack():
-    im = new('#6b6f72', 42271, 3); rnd = random.Random(42272)
-    for row in range(3):
-        for col in range(3):
-            x, y = 1 + col * 5, 1 + row * 5
-            c = rnd.choice(('#d6402f', '#2f6fb3', '#f4d03a', '#3b8a3e', '#8a55c4'))
-            fill(im, x, y, x + 4, y + 4, c); fill(im, x, y, x + 4, y + 1, '#f2ede2')
-    return im
-
-
 def open_sign():
-    im = new('#1b1b20', 42273, 2)
-    text(im, 1, 5, 'O', '#ff4a3a'); text(im, 5, 5, 'P', '#ff4a3a'); text(im, 9, 5, 'E', '#ff4a3a'); text(im, 13, 5, 'N', '#ff4a3a', 3)
+    """0.4.444: a lit sign that hangs inside the glass: seven rows of the tile (5 to 11), red tube above and below red letters."""
+    im = new('#141418', 42273, 2)
+    fill(im, 0, 5, 16, 6, '#c8281c'); fill(im, 0, 11, 16, 12, '#c8281c')
+    text(im, 0, 6, 'OPEN', '#ff5a48')
     return im
 
 
@@ -742,7 +706,6 @@ def cab_side(game):
             dot(im, x, y, '#3e7ea8'); dot(im, x, y + 1, '#2c5e84'); dot(im, x, y + 2, '#1e4462')
         for x, y in ((4, 4), (5, 4), (6, 5), (3, 5)):
             dot(im, x, y, '#c0b890')
-    fill(im, 0, 0, 16, 1, '#0c0a08'); fill(im, 0, 15, 16, 16, '#0c0a08')
     return im
 
 
@@ -813,15 +776,17 @@ def cabinet_models(m):
     """The two halves of each cabinet. The lower: the coin door under a deep control panel, with the stick and two buttons. The
     upper: the screen set back in its bezel, under the lit marquee. Both face north, as authored, into the shop."""
     for game in (0, 1):
-        tex = {'s': f'cab_side_{game}', 'k': 'black', 'c': 'cab_coin', 'p': 'cab_panel', 'r': 'cab_red', 'y': 'cab_yellow',
+        tex = {'s': f'cab_side_{game}', 't': f'cab_side_top_{game}', 'k': 'black', 'c': 'cab_coin', 'p': 'cab_panel', 'r': 'cab_red', 'y': 'cab_yellow',
                'v': f'cab_screen_{game}', 'q': f'cab_marquee_{game}'}
         full = {'north': [0, 0, 16, 16]}
         lower = [element([1, 0, 3], [15, 11, 16], {'north': 'c', 'south': 'k', 'east': 's', 'west': 's', 'up': 'k', 'down': 'k'}, full),
                  element([1, 11, 0], [15, 14, 16], {'north': 'k', 'south': 'k', 'east': 's', 'west': 's', 'up': 'p', 'down': 'k'}),
+                 # 0.4.444 (owner: "Arcade machines have gap in center?"): the sides carry on up behind the panel to meet the upper half.
+                 element([1, 14, 5], [15, 16, 16], {'north': 'k', 'south': 'k', 'east': 's', 'west': 's'}),
                  element([4, 14, 3], [5, 16.5, 4], {'all': 'k'}), element([3.5, 16.5, 2.5], [5.5, 18, 4.5], {'all': 'r'}),
                  element([8, 14, 2.5], [9.5, 14.6, 4], {'all': 'r'}), element([10.5, 14, 2.5], [12, 14.6, 4], {'all': 'y'})]
-        upper = [element([1, 0, 5], [15, 12, 16], {'north': 'v', 'south': 'k', 'east': 's', 'west': 's', 'up': 'k', 'down': 'k'}, full),
-                 element([1, 12, 3], [15, 16, 16], {'north': 'q', 'south': 'k', 'east': 's', 'west': 's', 'up': 'k', 'down': 'k'}, full)]
+        upper = [element([1, 0, 5], [15, 12, 16], {'north': 'v', 'south': 'k', 'east': 't', 'west': 't', 'up': 'k', 'down': 'k'}, full),
+                 element([1, 12, 3], [15, 16, 16], {'north': 'q', 'south': 'k', 'east': 't', 'west': 't', 'up': 'k', 'down': 'k'}, full)]
         m[f'cabinet_{game}'] = model(lower, tex, f'cab_side_{game}')
         m[f'cabinet_top_{game}'] = model(upper, tex, f'cab_side_{game}')
 
@@ -932,8 +897,256 @@ def wristband():
     return im
 
 
+# ---- 0.4.444: papers, each with its own face (the owner: "Give new textures to the different docs.")
+def sheet(paper='#e9e3d2', seed=0):
+    """A sheet fourteen pixels square inside the tile (the models show the tile's middle, pixel for pixel)."""
+    im = new(); px = im.load(); rnd = random.Random(seed)
+    for y in range(1, 15):
+        for x in range(1, 15):
+            px[x, y] = shade(paper, rnd.randint(-3, 3))
+    return im
+
+
+def typed_rows(im, rows, x0=3, x1=13, colour='#55524c'):
+    for y in rows:
+        for x in range(x0, x1):
+            if (x * 7 + y * 3) % 11 != 0:
+                dot(im, x, y, colour)
+
+
+def clipboard(seed, grid):
+    im = new(); fill(im, 1, 1, 15, 15, '#7a5230'); frame(im, '#5c3b20', 1, 1, 15, 15)
+    px = im.load(); rnd = random.Random(seed)
+    for y in range(3, 14):
+        for x in range(2, 14):
+            px[x, y] = shade('#ece7d8', rnd.randint(-3, 3))
+    fill(im, 6, 1, 10, 3, '#b9bcc0'); fill(im, 7, 2, 9, 3, '#8d9196')
+    if grid:
+        for x in (6, 10):
+            fill(im, x, 4, x + 1, 13, '#b7b09c')
+        for y in (5, 7, 9, 11):
+            typed_rows(im, (y,), 3, 13, '#6b6860')
+    else:
+        fill(im, 3, 4, 13, 5, '#b3261e')
+        typed_rows(im, (6, 8, 10, 12))
+    return im
+
+
+def doc_dispatch():
+    """The dispatch sheet, on a clipboard under a red header."""
+    return clipboard(44431, False)
+
+
+def doc_log():
+    """The gate log: a clipboard ruled into columns, a pencil lying across its corner."""
+    im = clipboard(44432, True)
+    for i in range(4):
+        dot(im, 9 + i, 13 - i, '#e2b53a')
+    dot(im, 13, 9, '#3a2c20'); dot(im, 8, 14, '#d9a0a0')
+    return im
+
+
+def doc_payroll():
+    """Green-bar paper: pale green and white in bands, ruled into columns, the figures down the right."""
+    im = sheet('#f1eee4', 44433)
+    for y in range(1, 15):
+        if (y // 2) % 2 == 0:
+            fill(im, 1, y, 15, y + 1, '#cfe3c8')
+    fill(im, 1, 1, 15, 3, '#8fb287')
+    for x in (6, 11):
+        fill(im, x, 1, x + 1, 15, '#9fb89a')
+    for y in range(4, 14, 2):
+        typed_rows(im, (y,), 2, 6, '#3f4a3c'); dot(im, 8, y, '#3f4a3c'); dot(im, 9, y, '#3f4a3c'); dot(im, 12, y, '#3f4a3c'); dot(im, 13, y, '#3f4a3c')
+    return im
+
+
+def doc_signin():
+    """A ruled sign-in sheet: a red margin, blue rules, a column of scrawled initials, and the pen left on it."""
+    im = sheet('#f4f1e8', 44434)
+    for y in range(3, 14, 2):
+        fill(im, 1, y, 15, y + 1, '#b7c6de')
+    fill(im, 3, 1, 4, 15, '#d98a8a')
+    rnd = random.Random(44435)
+    for y in range(2, 13, 2):
+        x = 5
+        for _ in range(rnd.randint(2, 5)):
+            dot(im, x, y, '#27367a'); x += rnd.choice((1, 1, 2))
+    for i in range(5):
+        dot(im, 9 + i, 13 - i, '#1c2a5c')
+    dot(im, 14, 8, '#c8ccd2')
+    return im
+
+
+def doc_intake():
+    """The intake form: a black header, three ticked boxes, and a red stamp with the tag's number."""
+    im = sheet('#ece4cf', 44436)
+    fill(im, 2, 2, 14, 3, '#2a2826')
+    for y in (4, 6):
+        frame(im, '#4a4640', 2, y, 4, y + 2); typed_rows(im, (y,), 5, 13)
+    dot(im, 2, 4, '#2a2826'); dot(im, 3, 5, '#2a2826')
+    text(im, 3, 8, '264', '#b3261e'); fill(im, 3, 14, 14, 15, '#b3261e')
+    return im
+
+
+def doc_tags():
+    """Unclaimed property: three manila tags on their strings, lying one over another. Nothing else: the table shows between them."""
+    im = new()
+    for (x0, y0, x1, y1), string in (((2, 2, 10, 6), '#b3261e'), ((5, 6, 14, 10), '#d8d2c2'), ((2, 10, 11, 14), '#b3261e')):
+        fill(im, x0, y0, x1, y1, '#d9bf8a'); frame(im, '#b79a62', x0, y0, x1, y1)
+        dot(im, x0 + 1, y0 + 1, '#3a2c20'); dot(im, x0, y0 + 1, string); dot(im, x0 - 1, y0 + 2, string)
+        typed_rows(im, (y0 + 2,), x0 + 3, x1 - 1, '#4a4034')
+    return im
+
+
+def doc_forms():
+    """A stack of the same report form: typed lines, and one line already printed in red on every sheet."""
+    im = sheet('#efebe0', 44437)
+    fill(im, 2, 14, 15, 15, '#bdb8ac'); fill(im, 14, 2, 15, 15, '#bdb8ac')
+    fill(im, 3, 2, 12, 3, '#2a2826')
+    typed_rows(im, (4, 6), 3, 12)
+    fill(im, 3, 9, 12, 11, '#b3261e'); fill(im, 4, 9, 11, 10, '#d24a40')
+    typed_rows(im, (12,), 3, 10)
+    return im
+
+
+def doc_ledger():
+    """The night book, open: two ruled pages in a dark red cover, its ribbon down the gutter."""
+    im = new(); fill(im, 1, 1, 15, 15, '#5a1f1c'); frame(im, '#3c1211', 1, 1, 15, 15)
+    px = im.load(); rnd = random.Random(44438)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            px[x, y] = shade('#eadfc4', rnd.randint(-3, 3))
+    fill(im, 7, 2, 9, 14, '#bfb294'); fill(im, 8, 8, 9, 15, '#a01c1c')
+    for y in range(3, 13, 2):
+        typed_rows(im, (y,), 3, 7, '#3d3a34'); typed_rows(im, (y,), 10, 13, '#3d3a34')
+    return im
+
+
+def doc_letter():
+    """The pasted note: letters cut out of catalogues, each on its own scrap, stuck down in three crooked rows."""
+    im = sheet('#d8cfb8', 44439); rnd = random.Random(44440)
+    for row, y in enumerate((2, 6, 10)):
+        x = 2 + row % 2
+        for n in range(4 - row % 2):
+            c = ('#f3efe6', '#e9d9a8', '#cfcac0', '#e8c4c0', '#c9d6e4')[(row * 3 + n * 2) % 5]
+            dy = (row + n) % 2
+            fill(im, x, y + dy, x + 2, y + dy + 3, c)
+            # each scrap's letter: an upright stroke, or a short bar, never two dots side by side
+            if (row + n) % 3 == 0:
+                fill(im, x, y + dy + 1, x + 2, y + dy + 2, '#141210')
+            else:
+                fill(im, x + n % 2, y + dy, x + n % 2 + 1, y + dy + 2 + n % 2, '#141210')
+            x += 3
+    return im
+
+
+def doc_receipt():
+    """The county's receipt: a pink carbon, perforated down one side, its number in blue."""
+    im = sheet('#e7b3b8', 44441)
+    fill(im, 1, 1, 15, 3, '#cc8a92')
+    for y in range(2, 14, 2):
+        dot(im, 2, y, '#f6e6e8')
+    text(im, 4, 4, '263', '#2c3a62')
+    typed_rows(im, (10, 12), 4, 13, '#6a4a50')
+    return im
+
+
+# ---- 0.4.444: the lollipop jar, the comic spinner and the pharmacy's shelves, drawn again
+def jar_glass():
+    """The jar's glass, six pixels by nine in the tile's corner: clear, with a pale rim and a streak of light down one side."""
+    im = new()
+    fill(im, 0, 0, 6, 9, '#dff1f4', 36); frame(im, '#f4fbfc', 0, 0, 6, 9)
+    for y in range(1, 7):
+        dot(im, 1, y, '#ffffff', 150)
+    return im
+
+
+def lolly():
+    """The lollipops' colours in four-pixel squares across the top (the wrapper's twist under each), and the white of their sticks."""
+    im = new()
+    for i, c in enumerate(('#d6402f', '#f2a43a', '#5ab04e', '#8a55c4')):
+        fill(im, i * 4, 0, i * 4 + 4, 4, c); dot(im, i * 4 + 1, 1, shade(c, 60)[:3]); fill(im, i * 4, 4, i * 4 + 4, 8, shade(c, -30)[:3])
+    fill(im, 0, 8, 16, 16, '#f3efe6')
+    return im
+
+
+def meds(alt):
+    """The pharmacy's shelves: bottles with caps and labels, jars and boxes on three white shelves, not books. Two arrangements."""
+    im = new('#2a2420', 44410 + alt, 2); rnd = random.Random(44420 + alt)
+    for row in range(3):
+        y = row * 5
+        fill(im, 0, y + 4, 16, y + 5, '#d9d2c2')
+        x = (row + alt) % 2
+        while x < 14:
+            kind = rnd.choice(('amber', 'amber', 'white', 'green', 'box', 'jar'))
+            if kind == 'box':
+                w = 3; c = rnd.choice(('#c94f3d', '#3f77b5', '#e6dcc6'))
+                fill(im, x, y + 1, x + w, y + 4, c); fill(im, x, y + 2, x + w, y + 3, '#f3efe6')
+            elif kind == 'jar':
+                w = 3; fill(im, x, y + 1, x + w, y + 4, '#cfe1e6'); fill(im, x, y + 3, x + w, y + 4, '#b9a26a'); fill(im, x, y, x + w, y + 1, '#8f8f8f')
+            else:
+                w = 2; c = {'amber': '#a35a1f', 'white': '#ece8dd', 'green': '#3d6b4a'}[kind]
+                fill(im, x, y + 1, x + w, y + 4, c); fill(im, x, y, x + w, y + 1, '#1c1a18')
+                fill(im, x, y + 2, x + w, y + 3, '#7a8aa0' if kind == 'white' else '#f3efe6')
+            x += w + 1
+    fill(im, 0, 15, 16, 16, '#d9d2c2')
+    return im
+
+
+def rack():
+    """The spinner's comics: twelve covers, four pixels by five, each with its masthead band and a figure. The first is Kit &
+    Caboose: red, with a yellow masthead."""
+    im = new(); rnd = random.Random(44402)
+    fields = ['#c8281c', '#2f6fb3', '#3b8a3e', '#8a55c4', '#e08a2a', '#1f8f93', '#b03a78', '#30343c', '#d8b23a', '#7a4a2a', '#4a6ad0', '#a01818']
+    for i, c in enumerate(fields):
+        x, y = (i % 4) * 4, (i // 4) * 5
+        fill(im, x, y, x + 4, y + 5, c)
+        fill(im, x, y, x + 4, y + 1, '#f4d03a' if i == 0 else rnd.choice(('#f2ede2', '#f4d03a', '#101014')))
+        dot(im, x + 1 + rnd.randrange(2), y + 2, '#f3e3c8'); dot(im, x + 1, y + 3, shade(c, 50)[:3]); dot(im, x + 2, y + 3, shade(c, -50)[:3])
+        dot(im, x + 3, y + 4, shade(c, -70)[:3])
+    return im
+
+
+def cab_side_top(game):
+    """A cabinet's side above the control panel: the same ground as below, with the game's badge: a miner's lamp, or a catfish."""
+    if game == 0:
+        im = new('#17130f', 43611, 3)
+        fill(im, 6, 5, 10, 10, '#d8a42a'); fill(im, 7, 6, 9, 9, '#f6e7a0'); fill(im, 7, 4, 9, 5, '#8a6418'); fill(im, 6, 10, 10, 11, '#8a6418')
+        for x, y in ((6, 3), (7, 2), (8, 2), (9, 3)):
+            dot(im, x, y, '#5a5040')
+        fill(im, 0, 13, 16, 14, '#d8a42a')
+    else:
+        im = new('#173a2a', 43612, 3)
+        fill(im, 4, 6, 11, 9, '#c0b890'); fill(im, 11, 5, 12, 10, '#c0b890'); dot(im, 12, 4, '#c0b890'); dot(im, 12, 10, '#c0b890'); dot(im, 5, 7, '#10201a')
+        for x, y in ((3, 8), (2, 9), (3, 6), (2, 5)):
+            dot(im, x, y, '#8a8468')
+        fill(im, 0, 13, 16, 14, '#3e7ea8'); fill(im, 0, 14, 16, 15, '#2c5e84')
+    return im
+
+
+def blood_pool():
+    """0.4.444: what spreads under the Sheriff's body: an uneven dark pool, thirty-two pixels across, with a darker edge."""
+    im = Image.new('RGBA', (32, 32), (0, 0, 0, 0)); px = im.load(); rnd = random.Random(44401)
+    lobes = [(15.5, 15.5, 11.5, 9.5)] + [(15.5 + rnd.uniform(-9, 9), 15.5 + rnd.uniform(-7, 7), rnd.uniform(3, 6), rnd.uniform(2.5, 5)) for _ in range(7)]
+    inside = [[any(((x + .5 - cx) / rx) ** 2 + ((y + .5 - cy) / ry) ** 2 <= 1 for cx, cy, rx, ry in lobes) for x in range(32)] for y in range(32)]
+    for y in range(32):
+        for x in range(32):
+            if not inside[y][x]:
+                continue
+            edge = any(not (0 <= x + dx < 32 and 0 <= y + dy < 32 and inside[y + dy][x + dx]) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+            base = (58, 7, 9) if edge else (96, 12, 14)
+            k = rnd.randint(-6, 6)
+            px[x, y] = (max(0, base[0] + k), max(0, base[1] + k // 3), max(0, base[2] + k // 3), 235 if edge else 245)
+    for x, y in ((12, 13), (13, 13), (17, 17), (18, 17), (19, 18), (10, 18)):
+        px[x, y] = (128, 22, 22, 245)
+    for x, y in ((3, 6), (27, 24), (28, 9), (5, 26)):
+        px[x, y] = (70, 9, 10, 225)
+    return im
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
+    out['entity/borrasca_blood_pool.png'] = blood_pool()
     faces = {
         'wood': wood(), 'chrome': chrome(), 'glass': glass(), 'enamel': enamel(), 'black': black(),
         'pie': pie(False), 'pie_cut': pie(True), 'crust': crust(), 'urn': urn(), 'menu': menu(),
@@ -941,18 +1154,20 @@ def textures():
         'pump_front': pump_front(), 'pump_side': pump_side(), 'pump_head': pump_head(), 'globe': globe(), 'price': price(),
         'payphone': payphone(), 'cooler_front': cooler_front(), 'cooler_top': cooler_top(), 'candy': candy(),
         'velvet': velvet(), 'curios': curios(), 'helmet': helmet(), 'lamp': lamp(), 'map': mine_map(), 'photos': photos(), 'clock': clock(),
-        'scale': scale_face(), 'jar': jar(False), 'jar_low': jar(True), 'cards': cards(), 'exam_top': exam_top(), 'exam_side': exam_side(),
-        'chart': chart(), 'fountain': fountain(), 'meds': meds(), 'rack': rack(), 'open': open_sign(),
+        'scale': scale_face(), 'jar_glass': jar_glass(), 'lolly': lolly(), 'cards': cards(), 'exam_top': exam_top(), 'exam_side': exam_side(),
+        'chart': chart(), 'fountain': fountain(), 'meds': meds(0), 'meds_b': meds(1), 'rack': rack(), 'open': open_sign(),
         'steel': steel(), 'oil_blue': oil('#2f5f9e', '#f4d03a', '#26252a'), 'oil_red': oil('#b8312b', '#f2ede2', '#d8b23a'), 'jug': jug(),
         'bait_front': bait_front(), 'bait_top': bait_top(), 'cup': cup(), 'chips': chips(), 'calendar': calendar(),
         'bait_sign': bait_sign(), 'tire': tire(), 'tire_top': tire_top(),
         'tins': tins(), 'boxes': boxes(), 'sack': sack(), 'plate': plate(), 'mug': mug(),
         'bike_paint': bike_paint(), 'bike_seat': bike_seat(),
-        'cab_side_0': cab_side(0), 'cab_side_1': cab_side(1), 'cab_coin': cab_coin(), 'cab_panel': cab_panel(),
+        'cab_side_0': cab_side(0), 'cab_side_1': cab_side(1), 'cab_side_top_0': cab_side_top(0), 'cab_side_top_1': cab_side_top(1), 'cab_coin': cab_coin(), 'cab_panel': cab_panel(),
         'cab_screen_0': cab_screen(0), 'cab_screen_1': cab_screen(1), 'cab_marquee_0': cab_marquee(0), 'cab_marquee_1': cab_marquee(1),
         'cab_red': new('#c8281c', 43609, 3), 'cab_yellow': new('#e8c030', 43610, 3),
         'gore': gore(), 'smear': smear(0), 'smear_soaked': smear(1), 'bone': bone(), 'hair': hair(), 'slipper': slipper(),
         'wristband': wristband(),
+        'doc_dispatch': doc_dispatch(), 'doc_payroll': doc_payroll(), 'doc_signin': doc_signin(), 'doc_intake': doc_intake(), 'doc_tags': doc_tags(),
+        'doc_forms': doc_forms(), 'doc_ledger': doc_ledger(), 'doc_letter': doc_letter(), 'doc_receipt': doc_receipt(), 'doc_log': doc_log(),
     }
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
@@ -1027,9 +1242,22 @@ def shop_models():
                                   {'north': [0, 0, 16, 16]})], {'c': 'clock', 'w': 'wood'}, 'clock')
     m['scale_0'] = model([element([3, 0, 3], [13, 2, 13], {'all': 'k'}), element([7, 2, 7], [9, 14, 9], {'all': 'e'}),
                           element([3, 13, 7.5], [13, 15, 8.5], {'all': 's'})], {'k': 'black', 'e': 'enamel', 's': 'scale'}, 'scale')
-    for stage, face in ((0, 'jar'), (1, 'jar_low')):
-        m[f'jar_{stage}'] = model([element([5, 0, 5], [11, 8, 11], {'north': 'j', 'south': 'j', 'east': 'j', 'west': 'j', 'down': 'j'}),
-                                   element([5.5, 8, 5.5], [10.5, 9, 10.5], {'all': 'c'})], {'j': face, 'c': 'chrome'}, face, True)
+    # 0.4.444 (owner: "This ain't exactly the candy jar you promised lol"): a glass jar with a lid, and lollipops standing in it on
+    # their sticks; nearly empty, two lie in the bottom.
+    def lollipop(i, x, z, h):
+        u = (i % 4) * 4
+        return [element([x + .25, .5, z + .25], [x + .75, h, z + .75], {'all': 'l'}, {k: [0, 9, 1, 15] for k in ('north', 'south', 'east', 'west')}),
+                element([x - .25, h, z - .25], [x + 1.25, h + 1.5, z + 1.25], {'all': 'l'}, {k: [u, 0, u + 2, 2] for k in ('north', 'south', 'east', 'west', 'up', 'down')})]
+    walls = {k: [0, 0, 6, 9] for k in ('north', 'south', 'east', 'west')}
+    glass_jar = [element([5, 0, 5], [11, 9, 11], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g', 'down': 'g'}, {**walls, 'down': [0, 0, 6, 6]}),
+                 element([4.5, 9, 4.5], [11.5, 10, 11.5], {'all': 'c'}), element([7.25, 10, 7.25], [8.75, 11, 8.75], {'all': 'c'})]
+    full = [e for i, (x, z, h) in enumerate(((6, 6, 5), (8.6, 6.2, 6), (7, 8.6, 5.5), (9, 8.8, 4.8), (6.2, 9.2, 6.2), (8, 7.4, 6.6))) for e in lollipop(i, x, z, h)]
+    low = [element([6, .5, 7], [10, 1, 7.5], {'all': 'l'}, {k: [0, 9, 4, 10] for k in ('north', 'south', 'up', 'down')}),
+           element([5.4, .3, 6.5], [6.9, 1.8, 8], {'all': 'l'}, {k: [0, 0, 2, 2] for k in ('north', 'south', 'east', 'west', 'up', 'down')}),
+           element([8, .5, 8.5], [8.5, 1, 10.5], {'all': 'l'}, {k: [0, 9, 1, 11] for k in ('east', 'west', 'up', 'down')}),
+           element([7.5, .3, 9.9], [9, 1.8, 10.9], {'all': 'l'}, {k: [8, 0, 10, 2] for k in ('north', 'south', 'east', 'west', 'up', 'down')})]
+    for stage, inside in ((0, full), (1, low)):
+        m[f'jar_{stage}'] = model(inside + glass_jar, {'g': 'jar_glass', 'c': 'chrome', 'l': 'lolly'}, 'lolly', True)
     m['cards_0'] = wall('cards')
     m['exam_0'] = model([element([0, 6, 2], [16, 10, 14], {'all': 's', 'up': 't'}), element([1, 0, 3], [3, 6, 5], {'all': 'c'}),
                          element([13, 0, 3], [15, 6, 5], {'all': 'c'}), element([1, 0, 11], [3, 6, 13], {'all': 'c'}),
@@ -1037,10 +1265,24 @@ def shop_models():
     m['chart_0'] = wall('chart', 'enamel', 0)
     m['fountain_0'] = model([element([2, 0, 6], [14, 3, 12], {'all': 'c'}), element([3, 3, 8], [13, 10, 10], {'all': 'c', 'north': 'f'})],
                             {'c': 'chrome', 'f': 'fountain'}, 'fountain')
-    m['meds_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'w', 'north': 'm'})], {'w': 'wood', 'm': 'meds'}, 'meds')
-    m['rack_0'] = model([element([7, 0, 7], [9, 15, 9], {'all': 'c'}),
-                         element([3, 2, 3], [13, 15, 13], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r'})], {'c': 'chrome', 'r': 'rack'}, 'rack')
-    m['open_0'] = model([element([2, 4, 14.5], [14, 11, 16], {'all': 'b', 'north': 'o'}, {'north': [1, 2, 15, 12]})], {'b': 'black', 'o': 'open'}, 'open')
+    for stage, face in ((0, 'meds'), (1, 'meds_b')):
+        m[f'meds_{stage}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'w', 'north': 'm'})], {'w': 'wood', 'm': face}, face)
+    # 0.4.444 (owner: "Needs an improved texture."): a real spinner: a pole on a foot, and on each of its four sides three wire
+    # pockets of two comics, their covers outward.
+    spinner = [element([7.25, 0, 7.25], [8.75, 16, 8.75], {'all': 'c'}), element([4.5, 0, 4.5], [11.5, .75, 11.5], {'all': 'k'}),
+               element([6.5, 15.25, 6.5], [9.5, 16, 9.5], {'all': 'k'})]
+    for tier, y in enumerate((1.5, 6.25, 11)):
+        for side, (lo, hi, face, back) in enumerate((([4, y, 3.5], [12, y + 4.5, 4], 'north', 'south'), ([4, y, 12], [12, y + 4.5, 12.5], 'south', 'north'),
+                                                      ([12, y, 4], [12.5, y + 4.5, 12], 'east', 'west'), ([3.5, y, 4], [4, y + 4.5, 12], 'west', 'east'))):
+            u, v = ((tier + side) % 2) * 8, tier * 5
+            spinner.append(element(lo, hi, {face: 'r', back: 'w', 'up': 'w', 'down': 'w'}, {face: [u, v, u + 8, v + 4.5]}))
+        for lo, hi in (([3.25, y - .4, 3.25], [12.75, y, 3.75]), ([3.25, y - .4, 12.25], [12.75, y, 12.75]), ([3.25, y - .4, 3.75], [3.75, y, 12.25]), ([12.25, y - .4, 3.75], [12.75, y, 12.25])):
+            spinner.append(element(lo, hi, {'all': 'c'}))
+    m['rack_0'] = model(spinner, {'c': 'chrome', 'k': 'black', 'r': 'rack', 'w': 'enamel'}, 'rack')
+    # 0.4.444 (owner: "open sign eating glass, also unfinished"): the sign hangs on two wires at the front of its own block, inside
+    # the shop and against the window, its letters to the street and a plain housing to the room.
+    m['open_0'] = model([element([0, 4, .2], [16, 11, 1.2], {'all': 'b', 'north': 'o'}, {'north': [0, 5, 16, 12]}),
+                         element([2, 11, .5], [2.5, 16, 1], {'all': 'b'}), element([13.5, 11, .5], [14, 16, 1], {'all': 'b'})], {'b': 'black', 'o': 'open'}, 'open')
     # 0.4.430: steel shelving of motor oil, quarts on the two upper shelves and gallon jugs on the bottom, each can its own block.
     def cans(y0, h, tex, xs, z0=4, d=3, w=3, uv=(0, 0, 4, 8)):
         sides = {k: list(uv) for k in ('north', 'south', 'east', 'west')}
@@ -1085,7 +1327,19 @@ def shop_models():
     m['bike_cranks'] = model(bike_cranks(), bike, 'chrome')
     cabinet_models(m)
     feeding_models(m)
+    paper_models(m)
     return m
+
+
+def paper_models(m):
+    """0.4.444: each paper lies flat, fourteen pixels square, its face the middle of its tile. The books and the stack stand a little
+    higher, and a clipboard has its clip."""
+    def flat(face, h=.3):
+        return element([1, 0, 1], [15, h, 15], {'all': 'd'}, {'up': [1, 1, 15, 15], 'down': [1, 1, 15, 15], **{k: [1, 14, 15, 14 + min(1, h)] for k in ('north', 'south', 'east', 'west')}})
+    for name, h, extra in (('dispatch', .6, [element([6, .6, 1], [10, 1.1, 3], {'all': 'c'})]), ('log', .6, [element([6, .6, 1], [10, 1.1, 3], {'all': 'c'})]),
+                           ('payroll', .3, []), ('signin', .3, []), ('intake', .3, []), ('tags', .3, []), ('forms', 1.5, []), ('ledger', 1.2, []),
+                           ('letter', .3, []), ('receipt', .3, [])):
+        m[f'doc_{name}_0'] = model([flat(name, h)] + extra, {'d': f'doc_{name}', 'c': 'chrome'}, f'doc_{name}')
 
 
 def feeding_models(m):
@@ -1239,8 +1493,9 @@ ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wal
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
          'clock', 'scale', 'jar', 'cards', 'exam', 'chart', 'fountain', 'meds', 'rack', 'open',
          'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top',
-         'remains', 'wristband', 'smear']
-STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2}
+         'remains', 'wristband', 'smear',
+         'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
 

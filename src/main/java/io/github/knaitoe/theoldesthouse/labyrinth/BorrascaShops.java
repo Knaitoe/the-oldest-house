@@ -45,8 +45,17 @@ public final class BorrascaShops {
     private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,BlockState s){NovelRooms.box(l,b,Math.min(x,X),Math.min(y,Y),Math.min(z,Z),Math.max(x,X),Math.max(y,Y),Math.max(z,Z),s);}
     private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,Block block){box(l,b,x,y,z,X,Y,Z,block.defaultBlockState());}
     private static BlockState fit(BorrascaShopBlock.Kind k,Direction d){return BorrascaShopBlock.of(k,d);}
-    private static void fit(ServerLevel l,BlockPos b,BlockPos at,BorrascaShopBlock.Kind k,Direction d){set(l,b,at,fit(k,d));}
-    private static void fit(ServerLevel l,BlockPos b,int x,int y,int z,BorrascaShopBlock.Kind k,Direction d){set(l,b,x,y,z,fit(k,d));}
+    private static void fit(ServerLevel l,BlockPos b,BlockPos at,BorrascaShopBlock.Kind k,Direction d){if(k.wall())back(l,b,at,d);set(l,b,at,fit(k,d));}
+    private static void fit(ServerLevel l,BlockPos b,int x,int y,int z,BorrascaShopBlock.Kind k,Direction d){fit(l,b,new BlockPos(x,y,z),k,d);}
+    /**
+     * 0.4.444 (the owner's screenshot: a clock hung on a window): a piece that hangs on a wall has wall behind it. Where the shop's
+     * builder left one of its small side windows there, the wall is carried across it.
+     */
+    static void back(ServerLevel l,BlockPos b,BlockPos at,Direction d){
+        var behind=b.offset(at).relative(d.getOpposite());if(!BuildBlocks.state(l,behind).is(Blocks.GLASS_PANE))return;
+        var wall=behind.below();while(BuildBlocks.state(l,wall).is(Blocks.GLASS_PANE))wall=wall.below();
+        BuildBlocks.set(l,behind,BuildBlocks.state(l,wall),F);
+    }
     private static void road(ServerLevel l,BlockPos b,int x,int y,int z,RoadhouseBlock.Kind k,Direction d){set(l,b,x,y,z,RoadhouseBlock.of(k,d));}
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction d){NovelRooms.furniture(l,b.offset(x,y,z),k,d);}
     private static void sign(ServerLevel l,BlockPos b,int x,int y,int z,Direction d,String... lines){NovelRooms.sign(l,b.offset(x,y,z),d,lines);}
@@ -81,7 +90,7 @@ public final class BorrascaShops {
     }
 
     static void build(ServerLevel l,BlockPos b){
-        diner(l,b);antiques(l,b);station(l,b);doctor(l,b);drugstore(l,b);bar(l,b);hardware(l,b);poles(l,b);
+        diner(l,b);antiques(l,b);station(l,b);doctor(l,b);drugstore(l,b);bar(l,b);hardware(l,b);poles(l,b);alley(l,b);
     }
 
     /** The Hilltop Cafe: a counter with stools, booths along the windows, the pie case and the urn on the counter, the kitchen behind. */
@@ -90,10 +99,10 @@ public final class BorrascaShops {
             DINER_DOOR.getZ(),new int[]{-89,-88,-87,-81,-80,-79},Blocks.RED_CARPET,Blocks.SPRUCE_DOOR,"HILLTOP","CAFE","Pie - Coffee","Plate Lunch");
         for(int z=-89;z<=-80;z++)road(l,b,-16,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);
         for(int z:new int[]{-88,-86,-82,-80})road(l,b,-15,0,z,RoadhouseBlock.Kind.STOOL,Direction.WEST);
-        fit(l,b,PIE_CASE,BorrascaShopBlock.Kind.PIE_CASE,Direction.EAST);fit(l,b,URN,BorrascaShopBlock.Kind.URN,Direction.EAST);road(l,b,DINER_TILL.getX(),DINER_TILL.getY(),DINER_TILL.getZ(),RoadhouseBlock.Kind.REGISTER,Direction.EAST);
+        fit(l,b,PIE_CASE,BorrascaShopBlock.Kind.PIE_CASE,Direction.EAST);fit(l,b,URN,BorrascaShopBlock.Kind.URN,Direction.EAST);road(l,b,DINER_TILL.getX(),DINER_TILL.getY(),DINER_TILL.getZ(),RoadhouseBlock.Kind.REGISTER,Direction.WEST);
         // Booths by the windows: a seat each end and the table between.
         for(int z0:new int[]{-89,-81}){road(l,b,-9,0,z0,RoadhouseBlock.Kind.BOOTH,Direction.SOUTH);road(l,b,-9,0,z0+1,RoadhouseBlock.Kind.BOOTH_TABLE,Direction.SOUTH);road(l,b,-9,0,z0+2,RoadhouseBlock.Kind.BOOTH,Direction.NORTH);}
-        fit(l,b,MENU,BorrascaShopBlock.Kind.MENU,Direction.SOUTH);fit(l,b,-7,2,-80,BorrascaShopBlock.Kind.OPEN,Direction.EAST);
+        fit(l,b,MENU,BorrascaShopBlock.Kind.MENU,Direction.SOUTH);fit(l,b,-8,2,-80,BorrascaShopBlock.Kind.OPEN,Direction.EAST);
         // The kitchen behind the counter: the range, the sink, the shelves, the door to the back.
         set(l,b,-20,0,-89,Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));set(l,b,-20,0,-88,Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));
         set(l,b,-20,0,-86,Blocks.CAULDRON);for(int z=-84;z<=-81;z++)fit(l,b,-20,0,z,BorrascaShopBlock.Kind.CROCKERY,Direction.EAST);
@@ -119,7 +128,7 @@ public final class BorrascaShops {
         furniture(l,b,-9,0,-95,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);set(l,b,-14,0,-95,Blocks.DECORATED_POT);set(l,b,-14,1,-106,Blocks.LANTERN);
         fit(l,b,SHOP_CLOCK,BorrascaShopBlock.Kind.CLOCK,Direction.SOUTH);
         // The society: the frame, the map of the old workings, the photographs, a miner's helmet, the reading table.
-        set(l,b,HISTORY,BorrascaFittingBlock.of(BorrascaFittingBlock.Kind.NOTICE,Direction.NORTH));
+        back(l,b,HISTORY,Direction.NORTH);set(l,b,HISTORY,BorrascaFittingBlock.of(BorrascaFittingBlock.Kind.NOTICE,Direction.NORTH));
         fit(l,b,MAP,BorrascaShopBlock.Kind.MAP,Direction.EAST);fit(l,b,PHOTOS,BorrascaShopBlock.Kind.PHOTOS,Direction.SOUTH);fit(l,b,-17,2,-106,BorrascaShopBlock.Kind.PHOTOS,Direction.SOUTH);
         fit(l,b,HELMET,BorrascaShopBlock.Kind.HELMET,Direction.EAST);furniture(l,b,-19,0,-98,HouseholdFurnitureBlock.Kind.READING_DESK,Direction.WEST);furniture(l,b,-18,0,-98,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST);
         set(l,b,-11,4,-100,hanging());set(l,b,-18,4,-102,hanging());
@@ -142,7 +151,7 @@ public final class BorrascaShops {
         // freezer under its sign, and the feed store's calendar behind the counter; a mat inside the door, joists overhead, a second
         // lamp, and used tires stacked out front.
         fit(l,b,STATION_CANDY,BorrascaShopBlock.Kind.CANDY,Direction.EAST);
-        for(int z=-118;z<=-116;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-117,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
+        for(int z=-118;z<=-116;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-117,RoadhouseBlock.Kind.REGISTER,Direction.WEST);
         fit(l,b,-25,0,-111,BorrascaShopBlock.Kind.SNACKS,Direction.EAST);fit(l,b,-25,0,-112,BorrascaShopBlock.Kind.OIL,Direction.EAST);fit(l,b,-25,0,-113,BorrascaShopBlock.Kind.OIL,Direction.EAST);
         fit(l,b,-25,0,-114,BorrascaShopBlock.Kind.BAIT,Direction.EAST);fit(l,b,-25,1,-114,BorrascaShopBlock.Kind.BAIT_SIGN,Direction.EAST);
         fit(l,b,-25,0,-115,BorrascaShopBlock.Kind.OIL,Direction.EAST);fit(l,b,-25,0,-116,BorrascaShopBlock.Kind.OIL,Direction.EAST);
@@ -182,10 +191,12 @@ public final class BorrascaShops {
         fit(l,b,FOUNTAIN,BorrascaShopBlock.Kind.FOUNTAIN,Direction.SOUTH);fit(l,b,11,1,-103,BorrascaShopBlock.Kind.URN,Direction.SOUTH);
         for(int x:new int[]{10,12,14,16})road(l,b,x,0,-102,RoadhouseBlock.Kind.STOOL,Direction.NORTH);
         // The pharmacy at the back, behind its counter.
-        for(int z=-102;z<=-95;z++)road(l,b,18,0,z,RoadhouseBlock.Kind.COUNTER,Direction.WEST);road(l,b,18,1,-97,RoadhouseBlock.Kind.REGISTER,Direction.WEST);
-        for(int z=-103;z<=-94;z++){fit(l,b,20,0,z,BorrascaShopBlock.Kind.MEDS,Direction.WEST);fit(l,b,20,1,z,BorrascaShopBlock.Kind.MEDS,Direction.WEST);}
+        // 0.4.444 (owner: "Facing the wrong way. Give the shelves more variance?"): the register's keys are the pharmacist's, and the
+        // shelves behind him alternate between two arrangements.
+        for(int z=-102;z<=-95;z++)road(l,b,18,0,z,RoadhouseBlock.Kind.COUNTER,Direction.WEST);road(l,b,18,1,-97,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
+        for(int z=-103;z<=-94;z++)for(int y=0;y<=1;y++)set(l,b,20,y,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.MEDS,Direction.WEST,(z+y)&1));
         fit(l,b,RACK,BorrascaShopBlock.Kind.RACK,Direction.WEST);fit(l,b,DRUG_CANDY,BorrascaShopBlock.Kind.CANDY,Direction.WEST);
-        fit(l,b,7,2,-101,BorrascaShopBlock.Kind.OPEN,Direction.WEST);
+        fit(l,b,8,2,-101,BorrascaShopBlock.Kind.OPEN,Direction.WEST);
         // 0.4.436: the two cabinets against the south wall, facing into the shop.
         for(int game=0;game<CABINETS.length;game++){set(l,b,CABINETS[game],BorrascaShopBlock.of(BorrascaShopBlock.Kind.CABINET,Direction.NORTH,game));set(l,b,CABINETS[game].above(),BorrascaShopBlock.of(BorrascaShopBlock.Kind.CABINET_TOP,Direction.NORTH,game));}
         for(int x:new int[]{11,16})set(l,b,x,4,-98,hanging());
@@ -205,6 +216,11 @@ public final class BorrascaShops {
         road(l,b,8,2,-111,RoadhouseBlock.Kind.NEON_BEER,Direction.WEST);road(l,b,12,1,-109,RoadhouseBlock.Kind.CORKBOARD,Direction.NORTH);
         set(l,b,12,4,-113,hanging());set(l,b,18,4,-116,hanging());
         joists(l,b,8,21,Blocks.DARK_OAK_LOG,-119,-115,-110);
+    }
+
+    /** 0.4.444: the mouth of the alley between the drugstore and the Tipple, and the flattened boxes where, years later, Earl sits. */
+    private static void alley(ServerLevel l,BlockPos b){
+        for(int x=8;x<=9;x++){set(l,b,x,-1,-107,Blocks.GRAVEL);set(l,b,x,0,-107,Blocks.BROWN_CARPET);}
     }
 
     /** The general store's hardware counter: a pegboard of rope, flashlights, batteries and pocketknives where the frame used to hang. */
@@ -245,6 +261,8 @@ public final class BorrascaShops {
         if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PAYPHONE){BorrascaPayphone.open(p,own);return true;}
         // 0.4.435: the children's bikes can be ridden.
         if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.BIKE)return BorrascaStory.bikeClick(p,b,own,at,s);
+        // 0.4.444 (owner: "maybe give the different pumps different last prices?"): each pump's own last sale.
+        if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PUMP||s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PUMP_TOP){BorrascaStory.cue(p,BorrascaShopTexts.pump(rel.getZ()==PUMPS[1].getZ()?1:0,grown));return true;}
         // 0.4.436: the drugstore's cabinets play their own games.
         int game=BorrascaArcade.game(s);if(game>=0){BorrascaArcade.click(p,at,own,game);return true;}
         String line=BorrascaShopTexts.look(s.getValue(BorrascaShopBlock.KIND),s.getValue(BorrascaShopBlock.STAGE),grown);

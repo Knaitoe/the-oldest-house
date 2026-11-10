@@ -93,6 +93,28 @@ public final class BorrascaTexts {
             "The blasting broke into the water table. For two years the town's water ran red, and most families left.",
             "The Prescotts stayed. Prescott Ore Services took the county maintenance contract and the old depot on the ridge, and in time brought Drisking back.",
             "Since 1961 the town has grown every year.\n\nDonated by the Prescott family.");
+        // 0.4.444 (owner: "Documents are not interactable."): the depot's ordinary paperwork. Nothing in it is described; it is the
+        // town's names, and who is paid for what. The church's tables and its sale come off the same truck and the same table.
+        case "Dispatch"->typed("Dispatch sheet","Prescott Ore Services",
+            "PRESCOTT ORE SERVICES\nDISPATCH\n\nD-417: feed and linen to the depot, Monday and Thursday.\nD-422: folding tables to the church, Sunday. Bring them back.",
+            "County 17: on the Sheriff's word only. No sheet.\n\nDr. Hale: Tuesday and Friday, by the lower door. He has his own key.",
+            "Drivers do not go below.\nDrivers do not ask what is in a county vehicle.\n\nAnyone who asks is sent to Mr. Prescott.");
+        case "Payroll"->typed("Payroll, October","Prescott Ore Services",
+            "PAYROLL\nOctober\n\nYard: 6 men.\nDrivers: 4.\nKitchen and linen: 2.\nNights, lower rooms: 3.",
+            "Retainers\n\nDutch. Merle. County, retired.\nMrs. Odell. The doctor's records.\nAmes. Feed, at cost.\nGus. Fridays.",
+            "Summer hires\n\nP. Webb, driver's mate.\nP. Tate, kitchen.\n\nNew hires are told what the yard is for by their own fathers, not here.");
+        case "SignIn"->typed("Sign-in sheet","Ridge Depot",
+            "SIGN IN\nNights\n\n9:40  Sheriff's office\n9:55  Dr. Hale\n10:10  J. Prescott\n10:15  initials\n10:15  initials",
+            "Members sign with initials. The book downstairs has the rooms.\n\nNo guests.\nNo sons under twenty-one.");
+        case "Intake"->typed("Intake form","Ridge Depot",
+            "INTAKE\n\nTag: 264-A\nReceived: tonight\nFrom: County 17\nCondition: walking\nTo: the doctor first, then Rm 7",
+            "Effects: one purse, one ring. To the sorting table.\nHer coat goes down with her.\n\nName: not recorded here.\nReceipt to the Sheriff's office.");
+        case "Tags"->typed("Unclaimed property","Ridge Depot",
+            "UNCLAIMED\nSorting table\n\nHeld one year, then to the church sale.\n\n141-A: one bible, one pair of reading glasses.\n197-A: wedding band.\n230-A: bus ticket, unused.",
+            "263-A: teal pack. HOLD.\nThe Sheriff's office says not to sell.\n\nSale money to the county maintenance account.");
+        case "Forms"->typed("Report forms","Drisking County Sheriff's office",
+            "MISSING PERSON REPORT\n\nName:\nLast seen:\n\nFinding: RUNAWAY\nNo further action.",
+            "The finding is printed on every form in the stack, before anything else is filled in.");
         case "Map"->typed("Pine trail map","County Trails",
             "OZARK PINE TRAIL\n\nTrailhead to Triple Tree: one mile, Marker 1.\nTriple Tree to Marker 2: the public walk ends here.",
             "Beyond Marker 2: county property, no public access. Markers 3 and 4 are maintenance markers on the ridge road.",
@@ -181,16 +203,15 @@ public final class BorrascaTexts {
             +(own.getBoolean("NellsRoom")?" In one of them her name was scratched into the wall beside mine."+(own.getBoolean("KellyFound")?" She was there, grown, and would not come up.":""):"")
             +(own.getBoolean("KellyAsked")?" She asked me to stop the machine, and to take her name up instead of her.":"")
             +(own.getBoolean("MarasRoom")?" The newest room was made up, with a coat from town on the hook.":"")
-            +(own.getBoolean("DanaInRoom")&&!own.getBoolean("DanaRoomEmpty")?" In room 2 a woman lay on the cot looking at the ceiling. She didn't look at me.":"")
             +(own.getBoolean("LedgerRead")?" A book kept the nights there by room number: who came down and when, approved by the Sheriff's office and counted by a Prescott, father and son. Nobody came down until they were grown. What was born down there went up to town. Beside her number there were two births, both placed in town.":"")
             +(own.getBoolean("LetterRead")?" Someone down there had made a note home out of letters cut from catalogues. It was never sent.":"")
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
             // 0.4.427: what the reader did to the Sheriff, grown.
             +(own.getBoolean("SheriffDead")?" I killed the Sheriff on the ridge. He talked until he couldn't, and none of it was sorry.":own.getBoolean("SheriffBeaten")?" I beat the Sheriff down into the dirt and left him there, still talking.":"")
             // 0.4.439: the woman from room 2 on the belt, and whether the breaker came in time.
-            +(own.getBoolean("DanaSaved")?" Two men walked a woman out of the depot and laid her on the belt. I pulled the breaker before it took her in. She stayed where they had put her, looking up, and never once looked at me."+(own.getBoolean("DanaIgnored")?" I held out my hand. She didn't take it.":"")
-              :own.getBoolean("DanaLate")?" Two men walked a woman out of the depot and laid her on the belt. I pulled the breaker when it already had "+(own.getInt("DanaLateAt")<400?"her feet.":own.getInt("DanaLateAt")<800?"her legs.":"half of her.")+" She went quiet a little after the belt stopped."
-              :own.getBoolean("DanaFed")?" Two men walked a woman out of the depot and laid her on the belt, and it took her into the machine feet first. It took a long time. She screamed until it had her chest. Pieces of her were coming out of the far end before it had her head."+(own.getBoolean("GentlemanAtMachine")?" For a second the machine wasn't there. "+(own.getBoolean("SawGentleman")?"The tall thing from the pines was":"Something tall and shining was")+", bent over the belt, its face split open around her.":"")+(own.getBoolean("BandRead")?" On the pile at the far end there was a felt slipper and the band from her wrist: 141-A.":" On the pile at the far end there was a felt slipper.")
+            +(own.getBoolean("DanaSaved")?" A woman was lying on the belt when I came up to the yard, two men standing by it to watch her go. I pulled the breaker before it took her in. She stayed where they had put her, looking up, and never once looked at me."+(own.getBoolean("DanaIgnored")?" I held out my hand. She didn't take it.":"")
+              :own.getBoolean("DanaLate")?" A woman was lying on the belt when I came up to the yard, two men standing by it to watch her go. I pulled the breaker when it already had "+(own.getInt("DanaLateAt")<400?"her feet.":own.getInt("DanaLateAt")<800?"her legs.":"half of her.")+" She went quiet a little after the belt stopped."
+              :own.getBoolean("DanaFed")?" A woman was lying on the belt when I came up to the yard, two men standing by it to watch her go. One of them said the Gentleman would look after her now. It took her into the machine feet first. It took a long time. She screamed until it had her chest. Pieces of her were coming out of the far end before it had her head."+(own.getBoolean("GentlemanAtMachine")?" For a second the machine wasn't there. "+(own.getBoolean("SawGentleman")?"The tall thing from the pines was":"Something tall and shining was")+", bent over the belt, its face split open around her.":"")+(own.getBoolean("BandRead")?" On the pile at the far end there was a felt slipper and the band from her wrist: 141-A.":" On the pile at the far end there was a felt slipper.")
               :"")
             +(own.getBoolean("DanaSaved")||own.getBoolean("DanaLate")?"":" I stopped the machine.")
             +(own.getBoolean("HeardSheriffShutdown")&&!own.getBoolean("SheriffDead")?" The Sheriff said he would make the call.":"")

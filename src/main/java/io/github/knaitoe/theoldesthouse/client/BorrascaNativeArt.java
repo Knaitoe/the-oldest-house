@@ -73,6 +73,9 @@ public final class BorrascaNativeArt {
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);e.registerEntityRenderer(BorrascaRegistry.BIKE.get(),BorrascaBikeRenderer::new);}
     /** 0.4.435: the ridden bike's frame, wheel and cranks, which no block state names. */
     @SubscribeEvent public static void models(net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional e){e.register(BorrascaBikeRenderer.FRAME);e.register(BorrascaBikeRenderer.WHEEL);e.register(BorrascaBikeRenderer.CRANKS);}
+    /** 0.4.444: the blood under the Sheriff's body, and how far off the ground his body is drawn so that it lies on it. */
+    public static final ResourceLocation POOL=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_blood_pool.png");
+    static final float FALLEN_LIFT=.15F;
     public static final class CastRenderer extends MobRenderer<LiteraryActor,CastModel>{
         private Matrix4f renderToEntity;
         private Vec3 entityPosition;
@@ -105,6 +108,19 @@ public final class BorrascaNativeArt {
                             new Vec3(forward.x,forward.y,forward.z).normalize());
                 }
             });
+            // 0.4.444 (owner: "pool blood around corpse?"): under the Sheriff where he lies. In the model's own space he lies along y
+            // with the ground in front of him (the way setupRotations turns him), so the pool is a sheet just above that ground, about
+            // his chest and head. It spreads with his synced torn, and has dried dark on a later visit.
+            addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryActor,CastModel>(this){
+                @Override public void render(PoseStack pose,MultiBufferSource buffers,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
+                    if(a.role()!=LiteraryActor.BORRASCA_SHERIFF||a.gesture()!=BorrascaStory.FALLEN||a.torn()<=0||a.isInvisible())return;
+                    boolean dried=a.torn()>BorrascaStory.POOL_FULL;float s=(float)Math.sqrt(Math.min(BorrascaStory.POOL_FULL,a.torn())/(float)BorrascaStory.POOL_FULL);
+                    float cx=-.08F,cy=.3F,hw=.95F*s,hh=.85F*s,z=-FALLEN_LIFT+1/64F;int c=dried?0xFF7A5148:0xFFFFFFFF;
+                    var out=buffers.getBuffer(RenderType.entityTranslucent(POOL));var m=pose.last();
+                    float[][] q={{cx-hw,cy-hh,0,0},{cx+hw,cy-hh,1,0},{cx+hw,cy+hh,1,1},{cx-hw,cy+hh,0,1}};
+                    for(var v:q)out.addVertex(m,v[0],v[1],z).setColor(c).setUv(v[2],v[3]).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(light).setNormal(m,0,0,1);
+                }
+            });
         }
 
         @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
@@ -129,7 +145,7 @@ public final class BorrascaNativeArt {
                 return;}
             if(a.role()!=LiteraryActor.BORRASCA_SHERIFF)return;
             if(a.gesture()==BorrascaStory.KNELT)pose.translate(0,-.6F,0);
-            else if(a.gesture()==BorrascaStory.FALLEN){pose.translate(0,.13F,0);pose.mulPose(Axis.XP.rotationDegrees(-90));}
+            else if(a.gesture()==BorrascaStory.FALLEN){pose.translate(0,FALLEN_LIFT,0);pose.mulPose(Axis.XP.rotationDegrees(-90));}
         }
         @Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}
     }
@@ -216,7 +232,10 @@ public final class BorrascaNativeArt {
          * walk's. Now a full stride takes about two blocks, the legs swing their whole way, and an arm a gesture is not using swings opposite
          * its leg.
          */
-        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);whole();young=false;if(a.gesture()==BorrascaStory.CARRIED&&!carriedHere(a))riding=false;super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
+        @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){HumanoidMotion.reset(this);whole();young=false;if(a.gesture()==BorrascaStory.CARRIED&&!carriedHere(a))riding=false;
+            // 0.4.444 (owner: "Sheriff continues to wiggle after 'death'"): a body does not breathe, sway its arms or turn its head.
+            boolean dead=a.gesture()==BorrascaStory.FALLEN;
+            if(dead)super.setupAnim(a,0,0,0,0,0);else super.setupAnim(a,walk,amount,age,yaw,pitch);var motion=HumanoidMotion.sample(a,age-a.tickCount);if(!dead)body.xRot+=.015F*(float)Math.sin(age*.055F+a.getId());
             // 0.4.440 (the owner's screenshot: Kelly sitting in the air): she is drawn carried only while this client has her in the arms
             // of a man it can see; otherwise she is drawn being led, on her feet.
             int gesture=carriedHere(a)||a.gesture()!=BorrascaStory.CARRIED?a.gesture():BorrascaStory.LED;

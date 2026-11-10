@@ -106,7 +106,7 @@ public final class PoolClient {
         var cw=facing.getClockWise();
         return new Vec3(.5+facing.getStepX()*s+cw.getStepX()*t,12/16.0+lift,.5+facing.getStepZ()*s+cw.getStepZ()*t);
     }
-    /** The balls' colours: the cue ball, then the seven spots, the eight, and the stripes on the same seven. */
+    /** The balls' colours: the cue ball, then the seven solids, the eight, and the stripes on the same seven. */
     public static final int[] COLOURS={0xF4F0E4,0xE8C020,0x2850B8,0xC8301E,0x5A2C8C,0xE07020,0x1E7A3C,0x7A1E22,0x161616};
     public static int colour(int ball){return ball<=8?COLOURS[ball]:COLOURS[ball-8];}
     public static boolean striped(int ball){return ball>=9;}

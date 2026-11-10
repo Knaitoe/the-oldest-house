@@ -88,7 +88,15 @@ public final class BorrascaPeople {
         case CARRIER->ROUND[0];
         default->BorrascaRooms.world(new BlockPos(28,0,-28));
     };}
-    /** The way each faces at rest: across the counter toward the door, Earl toward the bars. */
+    /**
+     * 0.4.444 (owner: "He shouldn't still be in jail upon returning as an adult. Make him a vagrant on the street instead."): years
+     * later Earl sits on a flattened box at the mouth of the alley beside the Tipple, in the world relative to the base.
+     */
+    public static final BlockPos EARL_STREET=new BlockPos(8,0,-107);
+    /** The Sheriff's cell, where it was authored: its bars along the west and south, and its door among them. */
+    public static boolean cell(BlockPos rel){return rel.getY()>=0&&rel.getY()<=3&&(rel.getX()==26&&rel.getZ()>=-29&&rel.getZ()<=-26||rel.getZ()==-26&&rel.getX()>=27&&rel.getX()<=29);}
+    public static BlockPos post(int phase,int visit){return phase==EARL&&visit>=3?EARL_STREET:post(phase);}
+    /** The way each faces at rest: across the counter toward the door, Earl toward the bars (and, years later, the street). */
     private static float yaw(int phase){return switch(phase){case LORNA,ROWE,KURT->-90;case AMES,ODELL,EARL,WEBB,SHERRY->90;case ROY,JOLENE,DUTCH,MERLE->180;default->0;};}
 
     // ---------------------------------------------------------------------------------------------------------------- what they sell
@@ -125,7 +133,7 @@ public final class BorrascaPeople {
             if(phase==CARRIER){if(on)round(own,a,b);continue;}
             if(phase==ROWE&&on)rowe(p,b,own,a);
             boolean out=phase==ROWE&&own.getBoolean("RoweOut");float yaw=out?-90:yaw(phase);
-            var at=Vec3.atBottomCenterOf(b.offset(out?STOOP:post(phase)));
+            var at=Vec3.atBottomCenterOf(b.offset(out?STOOP:post(phase,visit)));
             // 0.4.429: a keeper who has walked a child out walks back to the counter; nobody is snapped there while walking.
             if(a.getPersistentData().contains("BorrascaSpeed")||shoving(own,phase))continue;
             if(a.position().distanceToSqr(at)>1){if(a.getPersistentData().getBoolean("BorrascaAway")){a.getPersistentData().remove("BorrascaAway");BorrascaCast.walk(a,at,.7);}else{a.moveTo(at,yaw,0);a.setYHeadRot(yaw);}}
@@ -233,12 +241,28 @@ public final class BorrascaPeople {
     public static @Nullable LiteraryActor keeper(ServerPlayer p,CompoundTag own,int phase){String key="Keeper"+phase;return own.hasUUID(key)&&p.serverLevel().getEntity(own.getUUID(key)) instanceof LiteraryActor a?a:null;}
     /** Whether this keeper is at work for this reader now. */
     public static boolean atWork(ServerPlayer p,CompoundTag own,int phase){var a=keeper(p,own,phase);return a!=null&&!a.isInvisible();}
+    /** Marks a townsperson made this tick, so that {@link #stray} lets them in before the reader's record names them. */
+    static final String FRESH="BorrascaFresh";
+    /**
+     * 0.4.444: whether an actor joining the world is a townsperson the reader's record no longer names: a leftover second one, loaded
+     * back in after another was made in their place. They are not let back in.
+     */
+    public static boolean stray(LiteraryActor a,CompoundTag own){
+        if(!keeper(a))return false;
+        if(a.getPersistentData().getBoolean(FRESH)){a.getPersistentData().remove(FRESH);return false;}
+        String key="Keeper"+a.phase();return own.hasUUID(key)&&!own.getUUID(key).equals(a.getUUID());
+    }
     private static @Nullable LiteraryActor ensure(ServerPlayer p,BlockPos b,CompoundTag own,int phase){
-        var known=keeper(p,own,phase);if(known!=null)return known;
+        String key="Keeper"+phase;
+        var known=keeper(p,own,phase);if(known!=null){own.putLong(key+"At",known.blockPosition().asLong());return known;}
         var l=p.serverLevel();var at=b.offset(post(phase));if(!l.areEntitiesLoaded(ChunkPos.asLong(at.getX()>>4,at.getZ()>>4)))return null;
+        // 0.4.444 (owner: "Two dorseys"): one who has walked out of the loaded world is still out there, and used to be made again at
+        // his post. A new one is made only when everywhere about the place he was last seen is loaded and he is not in it.
+        if(own.hasUUID(key)){var last=own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")):at;for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)if(!l.areEntitiesLoaded(ChunkPos.asLong((last.getX()>>4)+dx,(last.getZ()>>4)+dz)))return null;}
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(BorrascaStory.PLACE,p.getUUID());a.appearance(LiteraryActor.STRANGER,phase);a.moveTo(Vec3.atBottomCenterOf(at),yaw(phase),0);a.setYHeadRot(yaw(phase));a.setNoAi(true);
-        if(!l.addFreshEntity(a))return null;own.putUUID("Keeper"+phase,a.getUUID());return a;
+        a.getPersistentData().putBoolean(FRESH,true);
+        if(!l.addFreshEntity(a))return null;own.putUUID(key,a.getUUID());own.putLong(key+"At",a.blockPosition().asLong());return a;
     }
 
     // ---------------------------------------------------------------------------------------------------------------- the money
@@ -323,7 +347,7 @@ public final class BorrascaPeople {
         case KURT->visit==4?new String[]{"Open till ten. Not much open past that up here.","Pumps are on. Anything from inside?"}:grown?new String[]{"Pump two sticks. Anything from inside?","Ice is in the cooler. Bait's in the back."}:new String[]{"Sodas are in the cooler. Pay me first.","Don't hang on the pumps."};
         case ODELL->new String[]{"He's booked through next month. Half the county's expecting.","Do you have an appointment? No? Then take a seat and wait."};
         case FENN->grown?new String[]{"Prescriptions at the back. The fountain's still open.","A malt, for old times? The stools haven't changed."}:new String[]{"Fountain's open. Stools are for customers.","No running in here."};
-        case GUS->visit==4?new String[]{"Last call's at one. What'll it be?","Sheriff's out on the ridge again. What'll it be?"}:new String[]{"What'll it be?","Earl's stool's open. He's in the Sheriff's cell again."};
+        case GUS->visit==4?new String[]{"Last call's at one. What'll it be?","Sheriff's out on the ridge again. What'll it be?"}:grown?new String[]{"What'll it be?","Earl's out by the alley. I don't serve him anymore. I leave a plate out the back."}:new String[]{"What'll it be?","Earl's stool's open. He's in the Sheriff's cell again."};
         case WEBB->grown?new String[]{"Paul's driving now. Works summers out at Prescott's.","Good money at Prescott's. Everybody's kid works there sooner or later."}:new String[]{"First breakfast out since Paul came. His grandma's got him.","Don't tell Lorna, but the pie's better at the church supper."};
         case SHERRY->grown?new String[]{"You look like somebody's kid. Whose are you?","Paul says the pay at Prescott's is better than the plant ever was."}:new String[]{"Paul slept through the night. First time. So we're celebrating.","Dr. Hale delivered him. Dr. Hale delivers everybody."};
         case ROY->new String[]{"Any day now, Doc says.","Don't mind us. We're just waiting on the doctor."};
@@ -334,14 +358,14 @@ public final class BorrascaPeople {
             :new String[]{"Nothing for you, kid. Unless you're expecting something.","Eleven Sears catalogues in this bag. Everybody wants the toy pages."};
         case MERLE->visit==4?new String[]{"Go home. Whatever you're thinking of doing tonight, go home.","You're not from the paper, are you?"}:new String[]{"Garrity girl? I took that report myself. Runaway, the Sheriff said. So that's what I wrote down.","Lot of kids run off from a town this size. You'd be surprised how many.","You're not from the paper, are you?"};
         // 0.4.426: grown, Earl says too much.
-        default->visit==4?new String[]{"You're going up there tonight. I can see it on you.","Don't let them see your light past the second marker. That's all I'll say.","They keep me in here so I don't say things. That's a joke. Mostly."}:grown?new String[]{"You again. No. You were smaller.","I wore the star once, same as Dutch and Merle. Ask them what we did with the reports.","Every kid on the board at the store, the Sheriff signs off as a runaway. Every one. They don't run anywhere.","There's a road behind the depot fence the county doesn't plow. Somebody plows it."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};
+        default->visit==4?new String[]{"You're going up there tonight. I can see it on you.","Don't let them see your light past the second marker. That's all I'll say.","They quit locking me up. Nobody listens to a man who sleeps in an alley. Costs them less."}:grown?new String[]{"You again. No. You were smaller.","I wore the star once, same as Dutch and Merle. Ask them what we did with the reports.","Every kid on the board at the store, the Sheriff signs off as a runaway. Every one. They don't run anywhere.","There's a road behind the depot fence the county doesn't plow. Somebody plows it."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};
     };}
     /** 0.4.427: what the bar and the cell say on the visit after the Sheriff was killed on the ridge; null for everyone else. */
     private static @Nullable String[] afterTheSheriff(int phase){return switch(phase){
         case DUTCH->new String[]{"Sheriff's dead. He's still up by the tape. Nobody's gone for him.","Prescott says leave him till the county comes. So he's still lying up there."};
         case MERLE->new String[]{"Somebody's going to have to write it up. It won't be me. Not this time.","They'll send a new one from the county. They always do."};
         case GUS->new String[]{"Drinks are on the house tonight. Don't ask me why.","Nobody's said a word about the Sheriff in here. Keep it that way."};
-        case EARL->new String[]{"Somebody finally did it. Don't tell me who. I'd only say it.","Leave the door open on your way out. Nobody's coming to lock it."};
+        case EARL->new String[]{"Somebody finally did it. Don't tell me who. I'd only say it.","Nobody's told me to move along all day. First time in years."};
         default->null;
     };}
     private static void turn(LiteraryActor a,ServerPlayer p){float yaw=(float)(Mth.atan2(p.getZ()-a.getZ(),p.getX()-a.getX())*180/Math.PI)-90;a.setYRot(yaw);a.setYHeadRot(yaw);a.setYBodyRot(yaw);}

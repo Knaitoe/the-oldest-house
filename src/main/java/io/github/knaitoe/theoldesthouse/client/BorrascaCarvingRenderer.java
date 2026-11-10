@@ -15,20 +15,24 @@ public final class BorrascaCarvingRenderer implements BlockEntityRenderer<Borras
         draw(font,e.friend(),e.reader(),state.getValue(BorrascaCarvingBlock.STAGE),p,buffers,light);
     }
     public static void draw(Font font,String friend,String reader,int stage,PoseStack p,MultiBufferSource buffers,int light){
-        p.pushPose();p.translate(.5,.82,1.003);p.scale(.008F,-.008F,.008F);
-        cut(font,"DANA",-19,-2,0xFFAF9369,p,buffers,light);
-        cut(font,"JESS + M",18,12,0xFF927B58,p,buffers,light);
-        cut(font,"LEE",-24,28,0xFF9D855C,p,buffers,light);
-        if(stage>=1&&stage!=3)cut(font,friend,2,56,stage==4?0xFFF0C18A:0xFFC4A078,p,buffers,light);
-        if(stage>=2)cut(font,reader,0,78,0xFFC4A078,p,buffers,light);
+        // 0.4.444 (owner: "Names should be easier to read."): cut wood is pale, and stays pale in the shade of the Tree. The names are
+        // a little larger, their strokes doubled, and never drawn darker than a lit evening (the bark itself keeps the place's light).
+        light=LightTexture.pack(Math.max(LightTexture.block(light),9),Math.max(LightTexture.sky(light),9));
+        p.pushPose();p.translate(.5,.86,1.003);p.scale(.0092F,-.0092F,.0092F);
+        cut(font,"DANA",-19,-2,0xFFD9C59A,p,buffers,light);
+        cut(font,"JESS + M",16,12,0xFFCDB88C,p,buffers,light);
+        cut(font,"LEE",-24,28,0xFFD2BE92,p,buffers,light);
+        if(stage>=1&&stage!=3)cut(font,friend,2,54,stage==4?0xFFFFE3B0:0xFFF2DDB0,p,buffers,light);
+        if(stage>=2)cut(font,reader,0,74,0xFFF2DDB0,p,buffers,light);
         p.popPose();
     }
     private static void cut(Font font,String name,float x,float y,int colour,PoseStack p,MultiBufferSource buffers,int light){
         p.pushPose();p.translate(x,0,0);p.mulPose(com.mojang.math.Axis.ZP.rotationDegrees((x%7)*.7F));
         p.pushPose();p.translate(.8,-.9,-.03);
-        line(font,name,y,0xFF2C2116,p,buffers,light);
+        line(font,name,y,0xFF1E160E,p,buffers,light);
         p.popPose();
         line(font,name,y,colour,p,buffers,light);
+        p.pushPose();p.translate(.55,0,-.01);line(font,name,y,colour,p,buffers,light);p.popPose();
         p.popPose();
     }
     /** 0.4.237: names scratched into a cell wall with something small and hard: pale, a little uneven, in capitals. */

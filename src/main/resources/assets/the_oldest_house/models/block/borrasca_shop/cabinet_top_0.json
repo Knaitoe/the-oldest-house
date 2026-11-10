@@ -3,6 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "s": "the_oldest_house:block/borrasca_shop/cab_side_0",
+    "t": "the_oldest_house:block/borrasca_shop/cab_side_top_0",
     "k": "the_oldest_house:block/borrasca_shop/black",
     "c": "the_oldest_house:block/borrasca_shop/cab_coin",
     "p": "the_oldest_house:block/borrasca_shop/cab_panel",
@@ -38,10 +39,10 @@
           "texture": "#k"
         },
         "east": {
-          "texture": "#s"
+          "texture": "#t"
         },
         "west": {
-          "texture": "#s"
+          "texture": "#t"
         },
         "up": {
           "texture": "#k"
@@ -76,10 +77,10 @@
           "texture": "#k"
         },
         "east": {
-          "texture": "#s"
+          "texture": "#t"
         },
         "west": {
-          "texture": "#s"
+          "texture": "#t"
         },
         "up": {
           "texture": "#k"

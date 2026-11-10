@@ -30,6 +30,11 @@ public final class BorrascaRooms {
     public static final BlockPos SERVICE_DOOR=new BlockPos(-17,12,-206),SERVICE_GATE=new BlockPos(-30,12,-209);
     /** 0.4.121: the trail map in the station, the noticeboard on the store's porch and the friend's notes in the fort. */
     public static final BlockPos TRAIL_MAP=new BlockPos(6,1,-7),NOTES=new BlockPos(-1,7,-99);
+    /**
+     * 0.4.444 (owner: "Documents are not interactable."): the papers in the depot's office and by its sorting table, and the stack of
+     * forms on the Sheriff's desk in town, which used to be for show. Each is read where it lies (BorrascaTexts.document).
+     */
+    public static final BlockPos DISPATCH=new BlockPos(-25,13,-174),PAYROLL=new BlockPos(-25,13,-177),SIGN_IN=new BlockPos(-20,13,-172),INTAKE=new BlockPos(-23,13,-188),TAGS=new BlockPos(-21,13,-189),FORMS=new BlockPos(25,1,-20);
     public static final BlockPos[] BOARD={new BlockPos(-15,1,-21),new BlockPos(-15,1,-20),new BlockPos(-15,2,-21),new BlockPos(-15,2,-20)};
     /** 0.4.262: the men's truck stands in the turning bay at the top of the ridge road, nose to the road, out of sight behind the shoulder. */
     public static final BlockPos TRUCK=new BlockPos(35,12,-199);
@@ -268,7 +273,8 @@ public final class BorrascaRooms {
         for(int z:new int[]{-196,-186,-176})BuildBlocks.set(l,b.offset(-19,8,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
         NovelRooms.furniture(l,b.offset(NIGHT_BOOK.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);NovelRooms.furniture(l,b.offset(LETTER.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);
         NovelRooms.furniture(l,b.offset(-20,6,-173),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);
-        fit(l,b,NIGHT_BOOK,BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);fit(l,b,LETTER,BorrascaFittingBlock.Kind.PAPER,Direction.SOUTH);
+        // 0.4.444: the night book lies open, and the pasted note beside it is a different paper.
+        BuildBlocks.set(l,b.offset(NIGHT_BOOK),BorrascaShopBlock.of(BorrascaShopBlock.Kind.DOC_LEDGER,Direction.SOUTH),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);BuildBlocks.set(l,b.offset(LETTER),BorrascaShopBlock.of(BorrascaShopBlock.Kind.DOC_LETTER,Direction.SOUTH),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);
         // Twelve rooms, three by three, each bolted from the corridor: a cot, a bucket, and nothing else.
         for(int room=1;room<=12;room++){
             boolean east=room<=6;int zc=ROOM_Z[(room-1)%6],x0=east?-16:-24,cot=east?-14:-24;

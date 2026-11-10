@@ -34,7 +34,7 @@ game.
   bounces, and a pocket's jaws.
 - **The rules, kept short:**
   - the break;
-  - open table, then each player's group (spots or stripes);
+  - open table, then each player's group (solids or stripes; 0.4.444, the owner: "Spots to solids");
   - the eight last;
   - fouls: scratch, or hitting the other group first, give the other player the cue ball in hand;
   - potting the eight early, or scratching on it, loses the frame.
