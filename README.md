@@ -2,7 +2,11 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.441** puts the pool table back in Last orders and in Borrasca's bar: in play both were wiped as the room was built. See [docs/LAST_ORDERS_0_4_416.md](docs/LAST_ORDERS_0_4_416.md).
+Development candidate **0.4.443** gives every jump off a swing a push forward: a jump from the top of the arc now hops ahead and no longer drops, and a jump through the bottom carries further. The empty swing keeps moving for a moment after a jump. Borrasca's yard swing is turned to face the open yard. See [docs/SWING_JUMPS_0_4_423.md](docs/SWING_JUMPS_0_4_423.md).
+
+Candidate **0.4.442** corrects the Ghosts set's camera records and gives the pool regular a legal place for the cue ball when the head spot is taken. See [docs/GHOSTS_AND_POOL_0_4_442.md](docs/GHOSTS_AND_POOL_0_4_442.md).
+
+Candidate **0.4.441** puts the pool table back in Last orders and in Borrasca's bar: in play both were wiped as the room was built. See [docs/LAST_ORDERS_0_4_416.md](docs/LAST_ORDERS_0_4_416.md).
 
 Candidate **0.4.440** gives Borrasca's children their reason for the names: cut into the Triple Tree, they keep the Shiny Gentleman from taking you. Seen from far off he stands over the pines again when the noise comes. A child who stays past the second marker hears the noise again and again, sooner each time, and each time he stands nearer, until he stands over them, picks them up and eats them, seen only through their eyes, and they come to under the Triple Tree. The machine now stands inside a roofed refinery, out of sight from the gate, and the men who come for Kelly wait near the yard and are seen coming sooner. See [docs/BORRASCA_GENTLEMAN_0_4_440.md](docs/BORRASCA_GENTLEMAN_0_4_440.md).
 

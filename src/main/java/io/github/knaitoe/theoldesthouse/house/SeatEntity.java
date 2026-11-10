@@ -13,7 +13,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * An invisible, disposable anchor for vanilla's seated player pose. 0.4.172: on the porch's rope swing it also swings, from the
- * time the reader sat down (HouseReadSwing), on the client and the server alike.
+ * time the reader sat down (HouseReadSwing), on the client and the server alike. 0.4.443: after a jump it swings on empty for a
+ * moment before the still seat comes back.
  */
 public final class SeatEntity extends Entity {
     private static final EntityDataAccessor<Integer> SWING_START = SynchedEntityData.defineId(SeatEntity.class, EntityDataSerializers.INT);
@@ -21,6 +22,14 @@ public final class SeatEntity extends Entity {
     private BlockPos support = BlockPos.ZERO;
     /** 0.4.423: where a reader who jumped off the swing let go, so they leave from the seat rather than step off beside it. */
     private Vec3 letGo;
+    /**
+     * 0.4.443: ticks the swing has gone on empty since a reader jumped off it. With the push forward a jump now carries them across where
+     * the still seat hangs, so the empty seat keeps swinging until they have had time to land and it next comes through the bottom of
+     * its arc. The still seat takes its place there, where the two are in the same place, and not under the jumper's feet.
+     */
+    private int empty;
+    /** A jump is down within this many ticks; an empty swing is put back after this many whatever its arc. */
+    public static final int CLEAR = 12, GIVE_UP = 60;
     public SeatEntity(EntityType<? extends SeatEntity> type, Level level) {
         super(type, level);
         noPhysics = true;
@@ -47,10 +56,21 @@ public final class SeatEntity extends Entity {
             setPos(at.x, at.y, at.z);
         }
         if (!level().isClientSide() && (!isVehicle() || !HouseSitting.isSeat(level().getBlockState(support)))) {
+            if (letGo != null && !isVehicle() && swinging() && HouseSitting.isSeat(level().getBlockState(support)) && !backAtRest()) return;
             if (swinging()) io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.restore(level(), support);
             ejectPassengers();
             discard();
         }
+    }
+    /**
+     * After a jump: the jumper has had time to land, and this is the tick on which the empty seat is nearest the bottom of its arc
+     * (or it has swung long enough).
+     */
+    private boolean backAtRest() {
+        if (++empty < CLEAR) return false;
+        double t = swingTicks(0);
+        double now = Math.abs(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.angle(t)), before = Math.abs(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.angle(t - 1)), after = Math.abs(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.angle(t + 1));
+        return now <= before && now <= after || empty >= GIVE_UP;
     }
     @Override public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
         if (letGo != null) return letGo;

@@ -891,11 +891,16 @@ public final class BorrascaTests {
             f.atWorld(p,new BlockPos(-17,0,-101));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MAP,"the map of the old workings"))).contains(flat("DEPOT")),"the old map puts the depot over the first shaft");
             f.atWorld(p,new BlockPos(-22,0,-19));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.PEGBOARD[0],"the hardware pegboard"))).contains(flat("Flashlight 4.99")),"the store's hardware counter has its price card");
             // 0.4.423: the Hollis yard's swing is a real one; a jump off it going forward throws the child out across the yard.
+            // 0.4.443: it faces the path (south), away from the side fence, and every jump is pushed forward.
             var seatAt=BorrascaRooms.at(b,new BlockPos(-9,0,-54));
             h.assertTrue(HouseReadSwing.is(f.out.getBlockState(seatAt))&&HouseReadSwing.is(f.out.getBlockState(seatAt.east()))&&f.out.getBlockState(seatAt.above(3)).is(HouseReadRegistry.ROPE.get())&&f.out.getBlockState(seatAt.above(4)).is(Blocks.STRIPPED_OAK_LOG),"the Hollis yard has a rope swing, its seat and ropes under the crossbar");
             f.at(p,-9,0,-52);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,seatAt)&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity seat&&seat.swinging(),"a child sits on the yard's swing");
             ((io.github.knaitoe.theoldesthouse.house.SeatEntity)p.getVehicle()).swing(f.out.getGameTime()-157);var away=HouseReadSwing.jump(p);
-            h.assertTrue(away!=null&&!p.isPassenger()&&away.z<-.3&&Math.abs(away.x)<.01,"a jump going forward throws the child out north, across the yard toward the path: "+away);
+            h.assertTrue(away!=null&&!p.isPassenger()&&away.z>.45&&Math.abs(away.x)<.01,"a jump going forward throws the child out south, across the yard toward the path: "+away);
+            for(int z=-53;z<=-48;z++)for(int y=0;y<=1;y++)for(int x=-9;x<=-8;x++)h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,x,y,z)).getCollisionShape(f.out,BorrascaRooms.at(b,x,y,z)).isEmpty(),"the yard in front of the swing is clear to land in at "+x+","+y+","+z+": "+f.out.getBlockState(BorrascaRooms.at(b,x,y,z)));
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,-9,0,-57)).is(Blocks.IRON_BARS),"the side fence is behind the swing, not in front of it");
+            // The swing now leaves the child facing the town, and the cast is only recalled out of sight: turn them back to the fence.
+            f.at(p,-9,0,-52);
             f.stage(p,3);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult cast recalled")).thenExecute(()->{
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("KELLY")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");

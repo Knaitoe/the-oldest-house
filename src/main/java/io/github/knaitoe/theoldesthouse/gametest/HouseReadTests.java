@@ -390,9 +390,19 @@ public final class HouseReadTests {
               var away=HouseReadSwing.jump(p);
               h.assertTrue(away!=null&&!p.isPassenger()&&away.z<-.3&&Math.abs(away.x)<.01&&Math.abs(away.y-HouseReadSwing.HOP)<.03&&p.getDeltaMovement().equals(away),"a jump going forward through the bottom of the arc throws the reader out ahead, faster than the seat was going: "+away);
               h.assertTrue(p.position().distanceTo(leftFrom)<.2,"they leave from the seat, not from beside the swing: "+p.position().subtract(leftFrom));
+              // 0.4.443 (owner: "The swing should offer some forward momentum from jumps too"): the legs push off forward on every jump.
+              var still=HouseReadSwing.launch(Vec3.ZERO,net.minecraft.core.Direction.NORTH);var back=HouseReadSwing.launch(new Vec3(0,0,.21),net.minecraft.core.Direction.NORTH);
+              h.assertTrue(Math.abs(still.z+HouseReadSwing.PUSH)<1e-9&&Math.abs(still.y-HouseReadSwing.HOP)<1e-9&&still.x==0,"where the seat stops, a jump still hops forward: "+still);
+              h.assertTrue(back.z>-.01&&back.z<.21*HouseReadSwing.CARRY,"going back, the push forward takes most of the way back off: "+back);
+              h.assertTrue(away.z<-.45,"going forward, the push adds to the seat's speed (the seat alone gave about a third of a block a tick): "+away);
           }).thenIdle(3).thenExecute(()->{
               h.assertTrue(packets(p).stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket m&&m.getId()==p.getId()&&m.getZa()<-.3),"the reader's own client is told how fast they left");
-              var swing=b[0].offset(-10,0,2);h.assertTrue(!f.out.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&f.out.getBlockState(swing.above()).is(HouseReadRegistry.ROPE.get())&&f.out.getBlockState(swing.east().above(3)).is(HouseReadRegistry.ROPE.get()),"getting off puts the still swing and its ropes back");
+              // 0.4.443: the empty swing goes on moving while the reader is in the air, so the still seat is not put back under them.
+              var swing=b[0].offset(-10,0,2);var seats=f.out.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.house.SeatEntity.class,new net.minecraft.world.phys.AABB(swing).inflate(4));
+              h.assertTrue(f.out.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&f.out.getBlockState(swing.above()).isAir()&&seats.size()==1&&seats.getFirst().swinging()&&!seats.getFirst().isVehicle(),"the empty swing keeps moving while the reader who jumped is in the air: "+seats.size());
+          }).thenIdle(io.github.knaitoe.theoldesthouse.house.SeatEntity.CLEAR+30).thenExecute(()->{
+              var swing=b[0].offset(-10,0,2);h.assertTrue(!f.out.getBlockState(swing).getValue(HouseReadPropBlock.TURNED)&&f.out.getBlockState(swing.above()).is(HouseReadRegistry.ROPE.get())&&f.out.getBlockState(swing.east().above(3)).is(HouseReadRegistry.ROPE.get()),"once it has come back through the bottom of its arc the still swing and its ropes are put back");
+              h.assertTrue(f.out.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.house.SeatEntity.class,new net.minecraft.world.phys.AABB(swing).inflate(4)).isEmpty(),"and the moving seat is gone");
               h.assertTrue(packets(p).stream().noneMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket particles&&particles.getParticle().getType()==net.minecraft.core.particles.ParticleTypes.GLOW),"no sparkles drift over the yard");
               var entry=f.data().door("house_read/"+p.getUUID()+"/porch/entry");stand(p,f.out,b[0],.5,0,11.5);click(p,entry.lower);
           }).thenWaitUntil(()->h.assertTrue(HouseReadSites.inside(p)==null&&!LabyrinthDoors.isBusy(p),"once the House has its answer the actual entry opens, after the closing line"))
