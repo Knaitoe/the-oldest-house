@@ -41,6 +41,9 @@ import net.minecraft.world.phys.shapes.*;
  * and DOC_LOG on clipboards, DOC_PAYROLL on green-bar paper, DOC_SIGNIN with its pen, DOC_INTAKE with its stamp, DOC_TAGS (three
  * manila tags), DOC_FORMS (a stack), DOC_LEDGER (the night book, open), DOC_LETTER (the pasted note) and DOC_RECEIPT (a pink carbon).
  * A paper's facing is the way the top of its page points, away from whoever reads it. MEDS has a second arrangement (stage 1).</li>
+ * <li>0.4.445, the owner: "Let her tuck a borrowed comic into that sill for you." COMIC, Kit &amp; Caboose No. 31 standing in the
+ * fort's window (BorrascaComic), bright (stage 0) or bleached by its years there (stage 1). It stands past its own block, on the
+ * ledge the wall leaves inside the pane behind it, leaning on the glass; its facing is the way its front cover looks.</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
@@ -48,7 +51,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
         OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP,REMAINS,WRISTBAND,SMEAR,
-        DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG;
+        DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG,COMIC;
         /** A paper lying on a desk. */
         public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
@@ -97,6 +100,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case REMAINS->Block.box(1,0,1,15,4,15);
             case WRISTBAND->Block.box(2,0,3,14,1,13);
             case SMEAR->Block.box(0,0,0,16,1,16);
+            case COMIC->MarshBlock.turned(f,4,0,17,12,11,23);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */

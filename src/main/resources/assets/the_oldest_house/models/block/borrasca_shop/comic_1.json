@@ -1,0 +1,87 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/borrasca_shop/comic_aged",
+    "particle": "the_oldest_house:block/borrasca_shop/comic_aged"
+  },
+  "elements": [
+    {
+      "from": [
+        4.5,
+        0,
+        18.3
+      ],
+      "to": [
+        11.5,
+        10,
+        18.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            7,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            8,
+            0,
+            15,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            0,
+            12,
+            0.5,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#c",
+          "uv": [
+            0,
+            12,
+            0.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            0,
+            12,
+            7,
+            12.5
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            0,
+            14,
+            7,
+            14.5
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          18.55
+        ],
+        "axis": "x",
+        "angle": 22.5
+      }
+    }
+  ]
+}

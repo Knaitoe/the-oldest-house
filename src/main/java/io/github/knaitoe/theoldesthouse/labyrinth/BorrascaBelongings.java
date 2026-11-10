@@ -25,13 +25,16 @@ public final class BorrascaBelongings {
         if(own.contains(key+"Original"))return ItemStack.parseOptional(p.registryAccess(),own.getCompound(key+"Original"));
         var token=UUID.randomUUID();own.putUUID(key+"Token",token);
         var s=new ItemStack(item(key));
-        s.set(DataComponents.CUSTOM_NAME,Component.literal(BorrascaStory.FRIEND+(key.equals("Compass")?"'s compass":key.equals(KNIFE)?"'s pocketknife":"'s name patch")));
+        // 0.4.445: the comic keeps the name printed on it.
+        if(!key.equals(COMIC))s.set(DataComponents.CUSTOM_NAME,Component.literal(BorrascaStory.FRIEND+(key.equals("Compass")?"'s compass":key.equals(KNIFE)?"'s pocketknife":"'s name patch")));
         CustomData.update(DataComponents.CUSTOM_DATA,s,t->{t.putUUID(TOKEN,token);t.putUUID(LiteraryVignettes.OWNER,p.getUUID());t.putString(LiteraryVignettes.KEY,key);t.putString(LiteraryVignettes.PLACE,LabyrinthPlace.BORRASCA.id());});
         if(!key.equals(KNIFE))Keepsakes.inscribe(s,LabyrinthPlace.BORRASCA,key);own.put(key+"Original",s.save(p.registryAccess()));return s;
     }
     /** 0.4.429: the friend's pocketknife, lent for the length of a name at the Tree and handed back. */
     public static final String KNIFE="Knife";
-    private static Item item(String key){return key.equals("Compass")?BorrascaRegistry.COMPASS.get():key.equals(KNIFE)?LiteraryRegistry.KNIFE.get():BorrascaRegistry.PATCH.get();}
+    /** 0.4.445: the comic from the fort's window (BorrascaComic). */
+    public static final String COMIC="Comic";
+    private static Item item(String key){return key.equals("Compass")?BorrascaRegistry.COMPASS.get():key.equals(KNIFE)?LiteraryRegistry.KNIFE.get():key.equals(COMIC)?BorrascaRegistry.COMIC.get():BorrascaRegistry.PATCH.get();}
     /** Puts the original in the reader's hand: what they were holding goes into the pack if there is room, otherwise the original does. */
     public static boolean hand(ServerPlayer p,CompoundTag own,String key){
         if(has(p,own,key))return true;var inv=p.getInventory();var s=original(p,own,key);

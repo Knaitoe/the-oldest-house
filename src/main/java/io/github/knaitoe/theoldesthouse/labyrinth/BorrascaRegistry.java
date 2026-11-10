@@ -40,6 +40,8 @@ public final class BorrascaRegistry {
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BorrascaCarvingEntity>> CARVING_ENTITY=BES.register("borrasca_bark",()->BlockEntityType.Builder.of(BorrascaCarvingEntity::new,CARVING.get()).build(null));
     public static final DeferredItem<BorrascaKeepsakeItem> COMPASS=ITEMS.register("borrasca_compass",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Compass"));
     public static final DeferredItem<BorrascaKeepsakeItem> PATCH=ITEMS.register("borrasca_name_patch",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Patch"));
+    /** 0.4.445: the comic the friend stands in the reader's window of the fort (BorrascaComic). The reader's own, like her compass. */
+    public static final DeferredItem<BorrascaKeepsakeItem> COMIC=ITEMS.register("borrasca_comic",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Comic"));
     public static final DeferredItem<Item> FLASHLIGHT=ITEMS.registerSimpleItem("borrasca_flashlight",new Item.Properties().stacksTo(1));
     /** 0.4.425: the money a reader carries in the town, and what the shops sell (BorrascaPeople, BorrascaFood). */
     public static final DeferredItem<BorrascaPurseItem> COINS=ITEMS.register("borrasca_coins",()->new BorrascaPurseItem(false)),WALLET=ITEMS.register("borrasca_wallet",()->new BorrascaPurseItem(true));
