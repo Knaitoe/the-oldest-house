@@ -105,7 +105,13 @@ public final class SeesawBlock extends HorizontalDirectionalBlock implements Ent
     /**
      * The board. A rider's weight turns it their way; one whose end is down can push off the sand with their legs. Two riders
      * weigh the same, so between two a push carries the board all the way over; one alone comes back down. It comes down on its
-     * bumper, and under a lone rider it bounces a little if it came down hard. The server and each client step it alike; the server sends where it is
+     * bumper, and under a lone rider it bounces a little if it came down hard.
+     *
+     * <p>0.4.470, as docs/BIKE_NIGHT_PROPOSAL.md has it: "Each pushing down at the right moment bounces the other higher. A big
+     * bounce throws the one on top off with its speed, like a swing jump." A push made as a rider's end comes down (a little
+     * before it lands, or a little after) is a bounce: it turns round part of the speed that end came down with, on top of the
+     * push. Bounce after bounce the board goes over faster, and when an end comes down hard enough the rider up on the other end
+     * is thrown off it. The server and each client step it alike; the server sends where it is
      * whenever something happens to it, and a little while it moves.
      */
     public static final class Board extends BlockEntity {
@@ -115,6 +121,13 @@ public final class SeesawBlock extends HorizontalDirectionalBlock implements Ent
          * the speed under which it does not bounce, and the speed over which it is heard.
          */
         public static final double WEIGHT=.002,PUSH=.03,KEEP=.98,DOWN=.02,BOUNCE=.25,SETTLE=.012,HEARD=.006;
+        /**
+         * The bounce: how many ticks before or after their end lands a rider's push is one; what it turns round of the speed the
+         * end came down with; the fastest a push or a bounce sends the board; and the speed an end comes down with that throws
+         * the rider on the other.
+         */
+        public static final int GOOD=4;
+        public static final double SPRING=.8,FASTEST=.09,THROW=.05;
         /** Before any game time: no rider's seat has said it is there. (Not the least long there is: the time since it is taken.) */
         private static final long NEVER=-1000;
         private double tilt=MAX,before=MAX,speed;
@@ -123,6 +136,9 @@ public final class SeesawBlock extends HorizontalDirectionalBlock implements Ent
         /** The server's: the riders' seats, which say each tick that they are there; and the game time each last did. */
         private final SeesawSeat[] seats=new SeesawSeat[2];
         private final long[] sat={NEVER,NEVER};
+        /** The server's: when each end last came down and how fast, and when its rider last asked for a push it was too soon for. */
+        private final long[] landed={NEVER,NEVER},wanted={NEVER,NEVER};
+        private final double[] hit={0,0};
         public Board(BlockPos at,BlockState s){super(BikeNightRegistry.SEESAW_BOARD.get(),at,s);}
 
         public Direction facing(){return getBlockState().getValue(FACING);}
@@ -139,10 +155,18 @@ public final class SeesawBlock extends HorizontalDirectionalBlock implements Ent
         private boolean here(int end){return level!=null&&level.getGameTime()-sat[end]<=2;}
         /** A rider's seat says it is there (each tick, on either side). */
         void sat(int end,SeesawSeat seat){seats[end]=seat;if(level!=null)sat[end]=level.getGameTime();}
-        /** A rider pushes off the sand with their legs. It takes only while their end is down. */
-        public boolean push(int end){
-            if(level==null||level.isClientSide||!down(end))return false;
-            speed=end==0?-PUSH:PUSH;sync();return true;
+        /**
+         * A rider pushes off the sand with their legs. It takes only while their end is down: 0 if it did not, 1 if it did, 2 if
+         * it was a bounce (made as their end landed). One made a little too soon, while their end is on its way down, is kept for
+         * the moment it lands.
+         */
+        public int push(int end){
+            if(level==null||level.isClientSide)return 0;
+            long now=level.getGameTime();
+            if(!down(end)){if(end==0?speed>0:speed<0)wanted[end]=now;return 0;}
+            boolean bounce=now-landed[end]<=GOOD;
+            double with=bounce?Math.min(FASTEST,PUSH+SPRING*hit[end]):PUSH;
+            speed=end==0?-with:with;landed[end]=NEVER;wanted[end]=NEVER;hit[end]=0;sync();return bounce?2:1;
         }
         /** For the tests: put it somewhere. */
         public void set(double tilt,double speed){this.tilt=before=Mth.clamp(tilt,-MAX,MAX);this.speed=speed;sync();}
@@ -162,6 +186,14 @@ public final class SeesawBlock extends HorizontalDirectionalBlock implements Ent
                     }
                     // It bounces only where a weight will bring it back down: under a rider with nobody on the other end.
                     b.speed=hit>SETTLE&&b.ridden(end)&&!b.ridden(1-end)?-b.speed*BOUNCE:0;
+                    if(!l.isClientSide&&hit>HEARD){
+                        b.landed[end]=l.getGameTime();b.hit[end]=hit;
+                        // Hard enough, and whoever is up on the other end is thrown off it.
+                        var top=b.seat(1-end);var low=b.seat(end);
+                        if(hit>=THROW&&top!=null)top.thrown(hit,low);
+                        // A push asked for a moment too soon is made now, as a bounce.
+                        if(low!=null&&l.getGameTime()-b.wanted[end]<=GOOD)low.pushed();
+                    }
                 }
             }
             if(Math.abs(b.speed)<1e-6)b.speed=0;

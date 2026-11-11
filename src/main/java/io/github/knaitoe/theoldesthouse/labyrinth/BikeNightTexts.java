@@ -45,12 +45,17 @@ public final class BikeNightTexts {
     public static final String BARS_LOW="Out of reach from down here. Jump for them, or go up the ladder at either end.";
     public static final String BARS_ON="You are standing on top of them. Nobody is about to tell you to get down.";
     public static final String BARS_FAR="Not from here. Get under them.";
-    public static final String BARS_HINT="Walk to go hand over hand, the way you are looking. Sneak lets go.";
+    public static final String BARS_HINT="Strafe to swing. Strafe again at the top of the swing to catch the next rung. Too early, and you drop. Sneak lets go.";
+    /** 0.4.470: a hand let go before the swing had carried it to the next rung. */
+    public static final String BARS_EARLY="Too early. Your hand misses the rung.";
     public static final String BARS_ACROSS="Across, from one end to the other, and not a foot on the sand.";
     /** 0.4.468, the seesaw: a hand on it; a hand on an end somebody is on; and what a reader sitting on it is told once. */
     public static final String SEESAW="A seesaw: a long board on a steel stand, with a seat and a handle at each end.";
     public static final String SEESAW_TAKEN="Somebody is on that end.";
-    public static final String SEESAW_HINT="Jump to push off the sand when your end is down. Sneak gets off.";
+    public static final String SEESAW_HINT="Jump to push off the sand when your end is down. Push just as you land, and it bounces. Sneak gets off.";
+    /** 0.4.470: the other end came down hard, to the reader thrown off the top; and to the one who came down, of the one they threw. */
+    public static final String SEESAW_THROWN="The bump throws you off the top.";
+    public static final String SEESAW_THREW="The bump throws %s off the other end.";
     /**
      * 0.4.469, the merry-go-round: a hand on it that pushes neither way; a hand on it from on its deck, and from too far off; and
      * what a reader going round on it is told once.
@@ -90,9 +95,12 @@ public final class BikeNightTexts {
         else if(own.getBoolean("Swung"))p.add("I sat on one of the swings for a while.");
         if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
         if(own.getInt("Crossed")>0)p.add("I went all the way across the monkey bars, hand over hand, without a foot on the sand.");
+        else if(own.getInt("BarsMissed")>0)p.add("I went for the next rung of the monkey bars too early, and dropped into the sand.");
         else if(own.getInt("Hung")>0)p.add("I hung from the monkey bars for a while, and dropped.");
         String with=own.getString("SeesawWith");
-        if(!with.isEmpty())p.add("I went up and down on the seesaw with "+with+" on the other end.");
+        String threw=own.getString("SeesawThrew");
+        if(!with.isEmpty())p.add("I went up and down on the seesaw with "+with+" on the other end."
+            +(own.getBoolean("SeesawThrown")?" We got it bouncing, and a hard bump threw me off the top of it.":!threw.isEmpty()?" We got it bouncing, and I bounced "+threw+" off the top of it.":""));
         else if(own.getInt("Seesaw")>0)p.add("I sat on one end of the seesaw with nobody on the other, and pushed myself up, and came down again each time.");
         else if(own.getBoolean("SeesawSat"))p.add("I sat on one end of the seesaw for a while.");
         int rounds=(int)(own.getDouble("RoundTurned")/(Math.PI*2));

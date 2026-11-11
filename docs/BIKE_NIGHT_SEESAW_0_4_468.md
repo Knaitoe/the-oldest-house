@@ -1,5 +1,7 @@
 # Bike night 6: the seesaw (0.4.468)
 
+**Added in 0.4.470** (`docs/BIKE_NIGHT_RHYTHM_0_4_470.md`): a push made as a rider's end lands is a bounce, and a hard enough landing throws the rider on the other end off, as the proposal has it. What is below is what 0.4.468 built.
+
 The sixth slice of Bike night (`docs/BIKE_NIGHT_PROPOSAL.md`). The owner's note:
 
 > Lots of fun potential for unique interaction here - a seesaw, slides, swings, monkey bars, etc

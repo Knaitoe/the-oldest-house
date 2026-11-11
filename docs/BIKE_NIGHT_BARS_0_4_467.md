@@ -1,5 +1,7 @@
 # Bike night 5: the monkey bars (0.4.467)
 
+**Changed in 0.4.470** (`docs/BIKE_NIGHT_RHYTHM_0_4_470.md`): going along the bars is the proposal's timing game with the strafe keys, not the walk keys at a steady pace as written below, and a jump at the bars grabs one. What is below is what 0.4.467 built.
+
 The fifth slice of Bike night (`docs/BIKE_NIGHT_PROPOSAL.md`). The owner's note:
 
 > Lots of fun potential for unique interaction here - a seesaw, slides, swings, monkey bars, etc
