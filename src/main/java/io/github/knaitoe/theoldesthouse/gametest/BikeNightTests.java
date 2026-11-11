@@ -1301,12 +1301,17 @@ public final class BikeNightTests {
     @GameTest(template="empty",batch="park_gus_seesaw",timeoutTicks=6000)
     public static void gusTakesTheOtherEndOfTheSeesawForAReaderOnTheirOwn(GameTestHelper h){
         var f=park(h);BikeNightGus.keptHome=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final LiteraryActor[] gus={null};
-        final SeesawSeat[] seat={null,null};final boolean[] up={false,false};final int[] pushes={0};var lines=new java.util.HashSet<String>();
+        final SeesawSeat[] seat={null,null};final boolean[] up={false,false};final int[] pushes={0};final long[] downSince={-1};var lines=new java.util.HashSet<String>();
         var stand=b.offset(BikeNightSite.SEESAW);
         java.util.function.Supplier<SeesawBlock.Board> board=()->(SeesawBlock.Board)l.getBlockEntity(stand);
-        // The reader pushes off whenever their end is down; and what Gus says is kept.
+        // The reader pushes off when their end has been down a moment, which is a push and never a bounce; and what Gus says is kept.
+        // (A bounce on top of one of his sends the board over hard enough to throw the reader off their own end, which is the
+        // seesaw's own case, not this one: how often he bounces is the game's dice.)
         Runnable ride=()->{if(!saying(gus[0]).isEmpty())lines.add(saying(gus[0]));if(seat[0]!=null&&p[0].getVehicle()==seat[0]){
-            boolean down=board.get().down(seat[0].end());if(!down)up[0]=true;if(down&&up[0]){up[0]=false;if(SeesawSeat.jump(p[0]))pushes[0]++;}else if(down&&pushes[0]==0&&SeesawSeat.jump(p[0]))pushes[0]++;}};
+            boolean down=board.get().down(seat[0].end());
+            if(!down){up[0]=true;downSince[0]=-1;return;}
+            if(downSince[0]<0)downSince[0]=l.getGameTime();
+            if((up[0]||pushes[0]==0)&&l.getGameTime()-downSince[0]>SeesawBlock.Board.GOOD+2&&SeesawSeat.jump(p[0])){up[0]=false;pushes[0]++;}}};
         h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
             .thenExecute(()->p[0]=f.player("seesaw_reader",P))
@@ -1321,7 +1326,7 @@ public final class BikeNightTests {
                 h.assertTrue(Mth.degreesDifferenceAbs(gus[0].getYRot(),BikeNightSite.SEESAW_FACING.toYRot())<1,"facing the reader across the stand: "+gus[0].getYRot());
             })
             // The reader pushes off; he pushes off when his end comes down; and so it goes.
-            .thenWaitUntil(()->{ride.run();h.assertTrue(pushes[0]>=4,"waiting for the board to have gone over a few times: "+pushes[0]+" pushes, tilt "+board.get().tilt());})
+            .thenWaitUntil(()->{ride.run();h.assertTrue(pushes[0]>=4,"waiting for the board to have gone over a few times: "+pushes[0]+" pushes, tilt "+board.get().tilt()+", the reader "+(p[0].getVehicle()==seat[0]?"on it":"off it"));})
             // (He says hello first, and does not talk over himself.)
             .thenWaitUntil(()->{ride.run();h.assertTrue(lines.contains(BikeNightTexts.GUS_SEESAW_ON),"waiting for him to say how it is done: "+lines);})
             .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("SeesawWith").equals("Gus")&&f.own(p[0],P).getInt("Seesaw")>=4,"it is in the reader's record, with whom"))
