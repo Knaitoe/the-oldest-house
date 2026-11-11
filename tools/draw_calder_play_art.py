@@ -1,4 +1,4 @@
-"""Bike night (0.4.465 to 0.4.469): the playground in Calder Park.
+"""Bike night (0.4.465 to 0.4.471): the playground in Calder Park.
 
 Draws, in native Minecraft pixels from fixed seeds, the playground's equipment, each piece a kind of one block (calder_play). This
 slice, the swings: a steel frame's posts (a foot with its two stays, a shaft, and the two tops a bar ends on or runs over), its top
@@ -21,6 +21,11 @@ turned about the axle. Drawn level, pointing north.
 0.4.469, the merry-go-round (its own block, calder_roundabout): the whole wheel as one model that is never a block in the world,
 which its hub's renderer draws turned about the hub: a round deck in four painted quarters, the hub's post, and four rails from
 the hub out to posts at the rim. Its ground's nine cells draw nothing.
+
+0.4.471, the climbing dome (its own block, calder_dome): its ground's cells draw nothing; a bar of it in each of its three paints,
+lying along east from the corner of its block, and a joint, are never blocks in the world: the middle cell's renderer lays a bar
+from each joint to the next. And the spring rider (its own block, calder_spring): the foot it is bolted to, and the horse on its
+coil, which is never a block in the world and which the foot's renderer draws rocked about the foot.
 
 Made as the park's fittings are (tools/draw_calder_art.py): small pieces are bars that take one pixel of a paint card, the
 playground's own; a face big enough to carry a picture takes a part of one the size it is. Sixteen pixels to the block. A piece is
@@ -425,6 +430,80 @@ def roundabout():
     return p
 
 
+# ---------------------------------------------------------------------------------------------------------------- the climbing dome
+# As DomeBlock has it: a bar is this many pixels through.
+DOME_BAR = 1.2
+
+
+def dome_bar(paint):
+    """A bar of the dome, a block long, lying along east from the corner of its block, the bar's middle line on the block's edge:
+    painted at its ends, the paint gone along its middle where it is held. The renderer makes it as long as the bar it is."""
+    p = []
+    h = DOME_BAR / 2
+    bar(p, [0, -h, -h], [4.5, h, h], paint)
+    bar(p, [4.5, -h, -h], [11.5, h, h], BARE)
+    bar(p, [11.5, -h, -h], [16, h, h], paint)
+    return p
+
+
+def dome_joint():
+    """Where the dome's bars meet: a plate with a bolt through it, about the corner of its block. East is outward."""
+    p = []
+    bar(p, [-.4, -1.3, -1.3], [.4, 1.3, 1.3], BOLT)
+    bar(p, [.4, -.5, -.5], [.9, .5, .5], BARE)
+    return p
+
+
+# ---------------------------------------------------------------------------------------------------------------- the spring rider
+# As SpringBlock has it: the coil meets its foot this many pixels up, which is what the horse rocks about; the saddle is this many
+# over that.
+SPRING_PIVOT, SPRING_SADDLE = 1.5, 11.1
+
+
+def spring_foot():
+    """The plate the spring rider is bolted down by, a bolt at each corner, and the clamp the coil stands in."""
+    p = []
+    bar(p, [4.5, 0, 4.5], [11.5, .8, 11.5], BOLT)
+    for x in (5, 10.2):
+        for z in (5, 10.2):
+            bar(p, [x, .8, z], [x + .8, 1.2, z + .8], BARE)
+    bar(p, [6, .8, 6], [10, SPRING_PIVOT, 10], CHAIN_DK)
+    return p
+
+
+def spring_horse():
+    """The horse on its coil, looking north. The coil, turn over turn; the body, the paint gone from its sides where knees go; a
+    saddle; a neck, a head and two ears; a mane and a tail; the bar its rider holds, through its neck, with a grip on each end;
+    and the bar their feet go on, under its belly."""
+    p = []
+    top = SPRING_PIVOT + SPRING_SADDLE                                     # the saddle's top: where its rider sits
+    for i in range(7):                                                     # the coil, a turn to a pixel
+        wide = 0 if i % 2 else .45
+        bar(p, [6.5 - wide, SPRING_PIVOT + i, 6.5 - wide], [9.5 + wide, SPRING_PIVOT + i + 1, 9.5 + wide], BARE if i % 2 else CHAIN_DK)
+    belly = SPRING_PIVOT + 7
+    bar(p, [6, belly, 3.5], [10, top - .5, 12.5], YELLOW)                  # the body
+    for x0 in (5.9, 10):
+        bar(p, [x0, belly + .6, 6.2], [x0 + .1, top - 1.2, 8.8], BARE)     # where knees go
+    bar(p, [5.8, top - 1.3, 6], [10.2, top, 11], FRAME)                    # the saddle
+    bar(p, [6.5, top - 1.6, 1.4], [9.5, top + 3, 4.6], YELLOW)             # the neck
+    bar(p, [6.6, top + 1.2, -1.6], [9.4, top + 3.9, 1.4], YELLOW)          # the head, its nose to the north
+    bar(p, [6.5, top + 1.1, -2], [9.5, top + 2.3, -1.6], YELLOW_WORN)      # its muzzle
+    for x0 in (6.6, 8.6):
+        bar(p, [x0, top + 3.9, .2], [x0 + .8, top + 4.9, 1], YELLOW_WORN)  # ears
+    for x0 in (6.5, 9.4):
+        bar(p, [x0, top + 2.6, -.6], [x0 + .1, top + 3.3, .1], RUBBER)     # eyes
+    bar(p, [7.4, top - .2, 4.6], [8.6, top + 3.6, 5.4], PLANK)             # the mane
+    bar(p, [7.2, top - 3, 12.5], [8.8, top - .8, 13.6], PLANK)             # the tail
+    bar(p, [7.5, top - 5.2, 13], [8.5, top - 3, 14.2], PLANK)
+    bar(p, [3, top + .9, 2.5], [13, top + 1.9, 3.5], BARE)                 # the bar they hold
+    for x0 in (2.6, 11.4):
+        bar(p, [x0, top + .7, 2.3], [x0 + 2, top + 2.1, 3.7], RUBBER)
+    bar(p, [3, belly - 1.3, 7.5], [13, belly - .3, 8.5], BARE)             # the bar their feet go on
+    for x0 in (2.6, 11.4):
+        bar(p, [x0, belly - 1.5, 7.3], [x0 + 2, belly - .1, 8.7], RUBBER)
+    return p
+
+
 def mark_model():
     p = []
     plate(p, [0, .3, 0], [16, .3, 16], 'm', {'up': (0, 0)})
@@ -438,12 +517,18 @@ PIECES = {
     'chute_0': lambda: chute(0), 'chute_1': lambda: chute(1), 'chute_2': lambda: chute(2), 'chute_3': lambda: chute(3), 'runout_0': runout,
     'ladder_2': lambda: ladder(0, GREEN, BOLT), 'ladder_3': lambda: ladder(1, GREEN, BOLT), 'rungs_0': lambda: rungs(False), 'rungs_1': lambda: rungs(True),
     'seesaw_stand': seesaw_stand, 'seesaw_board': seesaw_board, 'seesaw_seat': seesaw_seat, 'roundabout_wheel': roundabout,
+    'dome_red': lambda: dome_bar(FRAME), 'dome_yellow': lambda: dome_bar(YELLOW), 'dome_blue': lambda: dome_bar(BLUE), 'dome_joint': dome_joint,
+    'spring_foot': spring_foot, 'spring_horse': spring_horse,
 }
 NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark', 's': 'sheet', 't': 'tread', 'w': 'plank'}
 # The seesaw's block: the model each of its parts is drawn from. An end's place in the world draws nothing.
 SEESAW = {'stand': 'seesaw_stand', 'end': 'gone', 'board': 'seesaw_board', 'seat': 'seesaw_seat'}
 # The merry-go-round's block: its ground's nine cells draw nothing; the wheel is drawn turned by its hub's renderer.
 ROUNDABOUT = {**{cell: 'gone' for cell in ('nw', 'n', 'ne', 'w', 'hub', 'e', 'sw', 's', 'se')}, 'wheel': 'roundabout_wheel'}
+# The dome's block: its ground's cells draw nothing; its bars and joint are drawn by the middle cell's renderer.
+DOME = {'cell': 'gone', 'red': 'dome_red', 'yellow': 'dome_yellow', 'blue': 'dome_blue', 'joint': 'dome_joint'}
+# The spring rider's block: its foot, and the horse the foot's renderer draws rocked.
+SPRING = {'foot': 'spring_foot', 'horse': 'spring_horse'}
 KINDS = ['post', 'bar', 'chain', 'swing', 'ladder', 'deck', 'chute', 'runout', 'rungs']
 # The model each stage of a kind is drawn from; `gone` draws nothing.
 STAGES = {'post': ('post_0', 'post_1', 'post_2', 'post_3'), 'bar': ('bar_0', 'bar_1', 'bar_0', 'bar_0'),
@@ -480,12 +565,16 @@ def files():
     out['blockstates/calder_seesaw.json'] = {'variants': {f'facing={facing},part={part}': {'model': P + name, **({'y': y} if y else {})}
                                                           for facing, y in FACING_Y.items() for part, name in SEESAW.items()}}
     out['blockstates/calder_roundabout.json'] = {'variants': {f'cell={cell}': {'model': P + name} for cell, name in ROUNDABOUT.items()}}
+    out['blockstates/calder_dome.json'] = {'variants': {f'part={part}': {'model': P + name} for part, name in DOME.items()}}
+    out['blockstates/calder_spring.json'] = {'variants': {f'facing={facing},part={part}': {'model': P + name, **({'y': y} if y else {})}
+                                                          for facing, y in FACING_Y.items() for part, name in SPRING.items()}}
     out['models/item/sand_ball.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/sand_ball'}}
     return out
 
 
 NAMES = {'block.the_oldest_house.calder_play': 'Playground Equipment', 'block.the_oldest_house.calder_mark': 'Heel Mark',
          'block.the_oldest_house.calder_seesaw': 'Seesaw', 'block.the_oldest_house.calder_roundabout': 'Merry-go-round',
+         'block.the_oldest_house.calder_dome': 'Climbing Dome', 'block.the_oldest_house.calder_spring': 'Spring Rider',
          'item.the_oldest_house.sand_ball': 'Ball of Sand', 'entity.the_oldest_house.sand_ball': 'Ball of Sand'}
 
 

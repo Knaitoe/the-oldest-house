@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "part=cell": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "part=red": {
+      "model": "the_oldest_house:block/calder_play/dome_red"
+    },
+    "part=yellow": {
+      "model": "the_oldest_house:block/calder_play/dome_yellow"
+    },
+    "part=blue": {
+      "model": "the_oldest_house:block/calder_play/dome_blue"
+    },
+    "part=joint": {
+      "model": "the_oldest_house:block/calder_play/dome_joint"
+    }
+  }
+}

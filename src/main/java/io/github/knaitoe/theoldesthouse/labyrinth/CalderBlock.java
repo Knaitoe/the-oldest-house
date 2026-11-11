@@ -25,23 +25,31 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * upper, 2 the lower with the chain round it, 3 the same with the padlock on it. Shut, and as tall as the railings.</li>
  * <li>LAMP: a lamp post in pieces. Stage 0 its foot, 1 its post, 2 its lantern lit, 3 its lantern dark.</li>
  * <li>BENCH: a slatted bench on iron ends, looking the way it faces. Stage 0 one block long; 1 and 2 the two ends of a longer one,
- * the end on the sitter's left and the end on their right.</li>
+ * the end on the sitter's left and the end on their right; 3 (0.4.471) a left end with a heart cut into its top slat.</li>
  * <li>BIN: a wire litter bin.</li>
  * <li>BORDER: the sandpit's timber edging along the edge it faces; stage 1 a corner, with another along the edge to its left.</li>
  * <li>NOTE: a sheet of lined paper taped to what is behind it.</li>
  * <li>CAP: the top of a brick pier: its last courses, and a stone slab that oversails them.</li>
+ * <li>FOUNTAIN (0.4.471): a drinking fountain, its button toward the way it faces. Stage 1: running, for a little while after its
+ * button is pressed.</li>
+ * <li>PHONE (0.4.471): a payphone on the wall behind it, looking the way it faces. Stage 1: its handset off the hook, for a little
+ * while after it is lifted.</li>
  * </ul>
  */
 public final class CalderBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CalderBlock> CODEC=simpleCodec(CalderBlock::new);
     public enum Kind implements StringRepresentable {
-        FENCE,GATE,LAMP,BENCH,BIN,BORDER,NOTE,CAP;
+        FENCE,GATE,LAMP,BENCH,BIN,BORDER,NOTE,CAP,FOUNTAIN,PHONE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
     /** A lamp's pieces. */
     public static final int FOOT=0,POST=1,LIT=2,DARK=3;
+    /** The bench with the heart cut in it; a fountain running, and how long it runs; a payphone's handset lifted, and how long it is held. */
+    public static final int CARVED=3,RUNNING=1,LIFTED=1,RUNS=50,HELD=80;
+    /** How high the fountain's pedestal is, in pixels: its bowl is under a child's chin. */
+    public static final int FOUNTAIN_HIGH=7;
     public CalderBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.FENCE).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return BikeNightRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(3,stage)));}
@@ -60,7 +68,16 @@ public final class CalderBlock extends HorizontalDirectionalBlock {
             case BORDER->stage==1?Shapes.or(MarshBlock.turned(f,0,0,0,16,3,3),MarshBlock.turned(f,0,0,3,3,3,16)):MarshBlock.turned(f,0,0,0,16,3,3);
             case NOTE->MarshBlock.turned(f,4,3.5,15,12,13.5,16);
             case CAP->Shapes.block();
+            case FOUNTAIN->Shapes.or(Block.box(5,0,5,11,FOUNTAIN_HIGH,11),Block.box(3.5,FOUNTAIN_HIGH,3.5,12.5,FOUNTAIN_HIGH+3,12.5));
+            case PHONE->MarshBlock.turned(f,2,1,9.5,13,15,16);
         };
+    }
+    /** A fountain stops running, and a payphone's handset goes back on its hook, by themselves. */
+    @Override protected void tick(BlockState s,net.minecraft.server.level.ServerLevel l,BlockPos p,net.minecraft.util.RandomSource r){
+        var kind=s.getValue(KIND);
+        if(kind!=Kind.FOUNTAIN&&kind!=Kind.PHONE||s.getValue(STAGE)==0)return;
+        l.setBlock(p,s.setValue(STAGE,0),Block.UPDATE_CLIENTS);
+        if(kind==Kind.PHONE)l.playSound(null,p,BikeNightRegistry.PHONE_HOOK.get(),net.minecraft.sounds.SoundSource.BLOCKS,.7F,.95F+r.nextFloat()*.1F);
     }
     /** The railings and the gate stand half a block higher than they look; the paper is reached through. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

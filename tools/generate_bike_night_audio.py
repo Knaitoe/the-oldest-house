@@ -4,7 +4,8 @@ tyre. And the park's (0.4.464): the failing lamp striking and buzzing as it come
 tries it. And the playground's (0.4.465): a swing's hangers as it comes through the bottom of its arc, and a ball of sand packed in
 a hand, thrown, and bursting on what it meets; (0.4.466) a body going down the slide; (0.4.467) a hand coming down on a rung
 of the monkey bars; (0.4.468) the seesaw's axle as somebody pushes off, and its bumper coming down on the sand; and (0.4.469) the
-merry-go-round's bearing as it comes round.
+merry-go-round's bearing as it comes round. And the park's small things (0.4.471): the drinking fountain running, the payphone's
+dial tone and its handset going back on the hook, and the spring rider's spring.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -32,6 +33,10 @@ ROWS = {
     'park/seesaw_creak': ('park.seesaw_creak', 'Seesaw creaks', 10),
     'park/seesaw_thud': ('park.seesaw_thud', 'Seesaw bumps down', 12),
     'park/roundabout_squeak': ('park.roundabout_squeak', 'Merry-go-round squeaks', 12),
+    'park/fountain': ('park.fountain', 'Fountain runs', 10),
+    'park/phone_tone': ('park.phone_tone', 'Dial tone', 8),
+    'park/phone_hook': ('park.phone_hook', 'Handset is hung up', 8),
+    'park/spring': ('park.spring', 'Spring creaks', 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -310,8 +315,58 @@ def roundabout_squeak():
     return out
 
 
+def fountain():
+    # Water thrown from a spout into a steel bowl: a hiss that comes on, its patter in the bowl, and the drain's gurgle as it stops.
+    length = 2.4
+    n = seconds(length)
+    t = times(n)
+    on = np.clip(t / .15, 0, 1) * np.clip((length - .35 - t) / .25, 0, 1)
+    hiss = band(rng.standard_normal(n), 2500, 8000) * on * .5
+    patter = band(rng.standard_normal(n), 500, 2200) * on * (.6 + .4 * np.sign(np.sin(2 * np.pi * 31 * t + 3 * np.sin(2 * np.pi * 3.3 * t)))) * .35
+    gurgle = np.sin(2 * np.pi * (180 + 90 * np.sin(2 * np.pi * 9 * t)) * t) * np.clip((t - (length - .6)) / .1, 0, 1) * np.clip((length - t) / .3, 0, 1) * .3
+    return hiss + patter + gurgle
+
+
+def phone_tone():
+    # A handset lifted off its hook (a click), and the dial tone in it: two steady notes together, small, from the earpiece.
+    length = 3.2
+    n = seconds(length)
+    t = times(n)
+    out = (np.sin(2 * np.pi * 350 * t) + np.sin(2 * np.pi * 440 * t)) * .22 * np.clip((t - .12) / .03, 0, 1) * np.clip((length - t) / .08, 0, 1)
+    c = click(.03, 400, 3000, .008) * .8
+    out[:len(c)] += c
+    return out
+
+
+def phone_hook():
+    # A handset set back on its hook: plastic on steel, twice, and the cradle's spring.
+    length = .3
+    n = seconds(length)
+    t = times(n)
+    out = np.sin(2 * np.pi * 900 * t) * np.exp(-t / .03) * .15
+    for at, level in ((0, .9), (.07, .5)):
+        i = seconds(at)
+        c = click(.04, 300, 2600, .01) * level
+        out[i:i + len(c)] += c[:n - i]
+    return out
+
+
+def spring():
+    # A heavy coil spring flexing under a weight and coming back: a low twang that bends down and up, and the coils' rub.
+    length = .5
+    n = seconds(length)
+    t = times(n)
+    pitch = 120 - 35 * np.sin(np.pi * np.clip(t / length, 0, 1))
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    shape = np.sin(np.pi * np.clip(t / length, 0, 1)) ** .7
+    twang = (np.sin(phase) + .5 * np.sin(2.02 * phase) + .35 * np.sin(3.97 * phase)) * shape * .45
+    rub = band(rng.standard_normal(n), 1200, 4200) * shape * (.5 + .5 * np.sign(np.sin(2 * np.pi * 41 * t))) * .14
+    return twang + rub
+
+
 MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
-          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud, 'park/roundabout_squeak': roundabout_squeak}
+          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud, 'park/roundabout_squeak': roundabout_squeak, 'park/fountain': fountain, 'park/phone_tone': phone_tone, 'park/phone_hook': phone_hook,
+          'park/spring': spring}
 
 
 def main():

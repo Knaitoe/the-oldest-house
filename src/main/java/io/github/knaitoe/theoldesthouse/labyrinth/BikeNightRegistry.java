@@ -116,6 +116,20 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<RoundaboutBlock.Wheel>> ROUNDABOUT_WHEEL=BLOCK_ENTITIES.register("calder_roundabout",
         ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(RoundaboutBlock.Wheel::new,ROUNDABOUT.get()).build(null));
 
+    /** 0.4.471: the playground's spring rider ({@link SpringBlock}): its foot, which keeps the rocking; and a rider's seat on it (SpringSeat). */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SpringBlock>> SPRING_TYPE=CODECS.register("calder_spring",()->SpringBlock.CODEC);
+    public static final DeferredBlock<SpringBlock> SPRING_RIDER=BLOCKS.registerBlock("calder_spring",SpringBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<SpringBlock.Rocker>> SPRING_ROCKER=BLOCK_ENTITIES.register("calder_spring",
+        ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(SpringBlock.Rocker::new,SPRING_RIDER.get()).build(null));
+    public static final DeferredHolder<EntityType<?>,EntityType<SpringSeat>> SPRING_SEAT=ENTITIES.register("spring_seat",
+        ()->EntityType.Builder.<SpringSeat>of(SpringSeat::new,MobCategory.MISC).sized(.05F,.05F).clientTrackingRange(8).updateInterval(20).noSave().noSummon().build("spring_seat"));
+
+    /** 0.4.471: the playground's climbing dome ({@link DomeBlock}): its ground's cells, and the middle one's block entity, which is there to be drawn. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<DomeBlock>> DOME_TYPE=CODECS.register("calder_dome",()->DomeBlock.CODEC);
+    public static final DeferredBlock<DomeBlock> DOME=BLOCKS.registerBlock("calder_dome",DomeBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<DomeBlock.Bars>> DOME_BARS=BLOCK_ENTITIES.register("calder_dome",
+        ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(DomeBlock.Bars::new,DOME.get()).build(null));
+
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Any bike: the tyres letting go of the road, and both of them coming back down. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOP=sound("bike.hop"),LAND=sound("bike.land");
@@ -131,6 +145,10 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> BARS=sound("park.bars");
     /** The seesaw: its axle as a rider pushes off the sand, and a bumper coming down on it. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SEESAW_CREAK=sound("park.seesaw_creak"),SEESAW_THUD=sound("park.seesaw_thud");
+    /** The drinking fountain running; the payphone's dial tone, and its handset going back on the hook. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> FOUNTAIN=sound("park.fountain"),PHONE_TONE=sound("park.phone_tone"),PHONE_HOOK=sound("park.phone_hook");
+    /** The spring rider's spring, as it comes through the middle. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SPRING=sound("park.spring");
     /** The merry-go-round's bearing, once a quarter of a turn. */
     public static final DeferredHolder<SoundEvent,SoundEvent> ROUNDABOUT_SQUEAK=sound("park.roundabout_squeak");
 

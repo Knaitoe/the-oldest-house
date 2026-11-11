@@ -5064,5 +5064,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.park.roundabout_squeak"
+  },
+  "park.fountain": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/fountain",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.fountain"
+  },
+  "park.phone_tone": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/phone_tone",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.phone_tone"
+  },
+  "park.phone_hook": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/phone_hook",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.phone_hook"
+  },
+  "park.spring": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/spring",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.spring"
   }
 }

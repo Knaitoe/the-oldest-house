@@ -62,6 +62,15 @@ public final class BikeNightSite {
     /** 0.4.468, the seesaw: where its stand is, and the way its first end points. Its ends are over the blocks two out each way. */
     public static final BlockPos SEESAW=new BlockPos(-10,0,-17);
     public static final Direction SEESAW_FACING=Direction.NORTH;
+    /**
+     * 0.4.471, the climbing dome: the middle of its ground, in the playground's south-west corner. It is three blocks across;
+     * its ground is five square and two high (DomeBlock). And the spring rider, in the north-west corner, and the way its horse
+     * looks.
+     */
+    public static final BlockPos DOME=new BlockPos(-24,0,-14),SPRING=new BlockPos(-25,0,-33);
+    public static final Direction SPRING_FACING=Direction.EAST;
+    /** 0.4.471: the drinking fountain, on the grass by the side path; and the payphone, on the back wall west of the door. */
+    public static final BlockPos FOUNTAIN=new BlockPos(-5,0,-19),PHONE=new BlockPos(-10,1,0);
     /** 0.4.469, the merry-go-round: its hub. Its deck is over the eight blocks round it as well. */
     public static final BlockPos ROUNDABOUT=new BlockPos(-15,0,-32);
     public static final int LAMP_TOP=3;
@@ -117,6 +126,8 @@ public final class BikeNightSite {
         bars(l,b);
         seesaw(l,b);
         roundabout(l,b);
+        dome(l,b);
+        set(l,b,SPRING,SpringBlock.of(SpringBlock.Part.FOOT,SPRING_FACING));
         railings(l,b);
         gate(l,b);
         for(var at:LAMPS)lamp(l,b,at,true);
@@ -216,6 +227,14 @@ public final class BikeNightSite {
         set(l,b,SEESAW,SeesawBlock.of(SeesawBlock.Part.STAND,SEESAW_FACING));
         for(int end=0;end<2;end++)set(l,b,seesawEnd(end),SeesawBlock.of(SeesawBlock.Part.END,end==0?SEESAW_FACING:SEESAW_FACING.getOpposite()));
     }
+    /** The climbing dome: the cells of its ground. The middle one on the sand keeps what draws it. */
+    static void dome(ServerLevel l,BlockPos b){
+        // Where its ground runs out over the sandpit's edging the edging stays: the dome's bars do not reach that far.
+        for(int y=0;y<DomeBlock.HIGH;y++)for(int x=0;x<DomeBlock.WIDE;x++)for(int z=0;z<DomeBlock.WIDE;z++){
+            var at=DOME.offset(x-DomeBlock.MID,y,z-DomeBlock.MID);
+            if(free(l,b,at.getX(),at.getY(),at.getZ()))set(l,b,at,DomeBlock.cell(x,y,z));
+        }
+    }
     /** The merry-go-round: its hub, which keeps the wheel, and the rest of the ground its deck is over. */
     static void roundabout(ServerLevel l,BlockPos b){
         for(var cell:RoundaboutBlock.Cell.values())if(cell!=RoundaboutBlock.Cell.WHEEL)set(l,b,ROUNDABOUT.offset(cell.dx,0,cell.dz),RoundaboutBlock.of(cell));
@@ -272,6 +291,9 @@ public final class BikeNightSite {
     static void benches(ServerLevel l,BlockPos b){
         bench(l,b,3,-16,Direction.WEST);set(l,b,3,0,-18,fit(CalderBlock.Kind.BIN,Direction.NORTH,0));   // by the path, looking across it
         bench(l,b,-5,-23,Direction.WEST);                                                           // by the playground, looking at it
+        set(l,b,-5,0,-23,fit(CalderBlock.Kind.BENCH,Direction.WEST,CalderBlock.CARVED));                // the one with the heart cut in it
+        set(l,b,FOUNTAIN,fit(CalderBlock.Kind.FOUNTAIN,Direction.NORTH,0));
+        set(l,b,PHONE,fit(CalderBlock.Kind.PHONE,Direction.NORTH,0));
         bench(l,b,3,-30,Direction.WEST);
     }
     /** The rack by the gate, and the six bikes in it, in the order they are named. */

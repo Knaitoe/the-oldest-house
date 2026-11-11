@@ -24,6 +24,12 @@ public final class BikeNightTexts {
     public static final String LAMP="A park lamp. It gives a small light and a hum.",LAMP_FAILING="This one keeps going out. Each time it comes back a little later.";
     public static final String BENCH="A park bench. Somebody has cut initials into the top slat, and somebody else has cut them out again.";
     public static final String BIN="A wire bin, a third full: wrappers, a paper bag, a burst balloon.";
+    /** 0.4.471: the bench by the playground; the drinking fountain, pressed and already running; the payphone, lifted and already held. */
+    public static final String CARVED="A park bench. A heart cut into the top slat, long ago, and gone the same weathered way as the wood. Inside it: R.D. + A.L. Nobody has cut these out.";
+    public static final String FOUNTAIN="You press the button and drink. The water is cold, and tastes of the pipe.";
+    public static final String FOUNTAIN_RUNNING="It is still running.";
+    public static final String PHONE="A payphone. You lift the handset: a dial tone. It wants a coin, and you have not got one.";
+    public static final String PHONE_HELD="The dial tone goes on.";
     public static final String RACK="A bike rack bolted to the path. Six places.";
     public static final String BORDER="Squared timbers round the sand, worn pale where people step over them.";
     /** 0.4.465, the swings: a hand on the frame; what a reader on one is told once; coming down off one; a hand on the mark. */
@@ -64,6 +70,12 @@ public final class BikeNightTexts {
     public static final String ROUNDABOUT_ON="You are on it. It is pushed from the sand, by a rail.";
     public static final String ROUNDABOUT_FAR="Too far off to push it.";
     public static final String ROUNDABOUT_HINT="Sneak to hold on. Stand up on it when it is going fast and it throws you off.";
+    /** 0.4.471, the climbing frame: a hand on it; and what a reader who gets to the top of it is told once. */
+    public static final String DOME="A climbing dome: steel bars bolted into triangles, worn bright where hands and shoes go. Walk into it and you climb it. Keep low, and you can get in between the bars at the bottom.";
+    public static final String DOME_TOP="The top of the dome. From here you can see over the railings to the street.";
+    public static final String SPRING="A horse on a spring, bolted into the ground. Its paint is gone where knees go.";
+    public static final String SPRING_TAKEN="Somebody is on it.";
+    public static final String SPRING_HINT="Strafe to rock it. Rock with it, and it goes further. Sneak gets off.";
     /** The sand: a ball packed; no more to be carried; no room for one; what is left of one carried out of the night. */
     public static final String SAND="You pack a ball of sand. It holds.";
     public static final String SAND_FULL="Your pockets are full of sand.";
@@ -107,6 +119,12 @@ public final class BikeNightTexts {
         if(own.getInt("RoundFlung")>0)p.add("I stood up on the merry-go-round while it was going fast, and it threw me off into the sand.");
         else if(rounds>0)p.add("I went round on the merry-go-round "+(rounds==1?"once":Stillness.words(rounds)+" times")+".");
         else if(own.getInt("RoundPushed")>0)p.add("I pushed the merry-go-round and watched it turn.");
+        if(own.getBoolean("DomeTop"))p.add("I climbed to the top of the climbing dome and looked out over the railings.");
+        if(own.getInt("Sprung")>0)p.add("I rocked the horse on its spring as far as it would go, for no reason at all.");
+        else if(own.getBoolean("SpringSat"))p.add("I sat on the horse on its spring.");
+        if(own.getBoolean("Drank")&&own.getBoolean("Phoned"))p.add("I drank from the fountain, and lifted the payphone by the door to hear its tone, with no coin to put in it.");
+        else if(own.getBoolean("Drank"))p.add("I drank from the fountain. The water tasted of the pipe.");
+        else if(own.getBoolean("Phoned"))p.add("I lifted the payphone by the door to hear its tone, with no coin to put in it.");
         if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }
