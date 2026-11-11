@@ -303,7 +303,8 @@ public final class BorrascaRooms {
             boolean east=room<=6;int zc=ROOM_Z[(room-1)%6],x0=east?-16:-24,cot=east?-14:-24;
             box(l,b,x0,6,zc-1,x0+2,8,zc+1,Blocks.AIR);
             for(int z=zc-1;z<=zc;z++)BuildBlocks.set(l,b.offset(cot,6,z),Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP),F);
-            set(l,b,east?-14:-24,6,zc+1,Blocks.CAULDRON);
+            // 0.4.460: the bucket is a bucket, a square of board over it (a cauldron).
+            BuildBlocks.set(l,b.offset(east?-14:-24,6,zc+1),BorrascaShopBlock.of(BorrascaShopBlock.Kind.PAIL,Direction.NORTH,1),F);
             boolean open=room==NELL_ROOM;
             NovelRooms.door(l,b.offset(roomDoor(room)),east?Direction.WEST:Direction.EAST,Blocks.IRON_DOOR,open);
             BuildBlocks.set(l,b.offset(roomLever(room)),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.WALL).setValue(LeverBlock.FACING,east?Direction.WEST:Direction.EAST).setValue(LeverBlock.POWERED,open),F);

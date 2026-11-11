@@ -73,9 +73,15 @@ public final class BorrascaShops {
     }
     /** 0.4.454: what the years change on the street itself. The station's board shows the prices of the reader's own year. */
     public static void years(ServerLevel l,BlockPos b,boolean grown){
-        var at=b.offset(PRICE);if(!l.hasChunkAt(at))return;var s=l.getBlockState(at);int stage=grown?1:0;
-        if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.PRICE)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)l.setBlock(at,s.setValue(BorrascaShopBlock.STAGE,stage),3);
+        int stage=grown?1:0;
+        var at=b.offset(PRICE);if(l.hasChunkAt(at)){var s=l.getBlockState(at);
+            if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.PRICE)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)l.setBlock(at,s.setValue(BorrascaShopBlock.STAGE,stage),3);}
+        // 0.4.460: the diner's jukebox is lit in the childhood year and unplugged years on.
+        var juke=b.offset(JUKEBOX);if(l.hasChunkAt(juke)){var s=l.getBlockState(juke);
+            if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.JUKEBOX)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)l.setBlock(juke,s.setValue(BorrascaShopBlock.STAGE,stage),3);}
     }
+    /** 0.4.460: the diner's jukebox, against its north wall, and the bell on Mr. Rowe's counter. */
+    public static final BlockPos JUKEBOX=new BlockPos(-12,0,-90),COUNTER_BELL=new BlockPos(-13,1,-99);
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction d){NovelRooms.furniture(l,b.offset(x,y,z),k,d);}
     private static BlockState slab(Block block,SlabType type){return block.defaultBlockState().setValue(SlabBlock.TYPE,type);}
     private static BlockState stair(Block block,Direction facing){return block.defaultBlockState().setValue(StairBlock.FACING,facing);}
@@ -126,10 +132,11 @@ public final class BorrascaShops {
         for(int z0:new int[]{-89,-81}){road(l,b,-9,0,z0,RoadhouseBlock.Kind.BOOTH,Direction.SOUTH);road(l,b,-9,0,z0+1,RoadhouseBlock.Kind.BOOTH_TABLE,Direction.SOUTH);road(l,b,-9,0,z0+2,RoadhouseBlock.Kind.BOOTH,Direction.NORTH);}
         fit(l,b,MENU,BorrascaShopBlock.Kind.MENU,Direction.SOUTH);BorrascaSigns.hang(l,b.offset(OPEN_DINER),BorrascaSigns.Sign.OPEN_DINER,Direction.EAST);
         // The kitchen behind the counter: the range, the sink, the shelves, the door to the back.
-        set(l,b,-20,0,-89,Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));set(l,b,-20,0,-88,Blocks.FURNACE.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));
-        set(l,b,-20,0,-86,Blocks.CAULDRON);for(int z=-84;z<=-81;z++)fit(l,b,-20,0,z,BorrascaShopBlock.Kind.CROCKERY,Direction.EAST);
+        // 0.4.460: the kitchen's griddle, fryer and sink (a smoker, a furnace and a cauldron).
+        fit(l,b,-20,0,-89,BorrascaShopBlock.Kind.GRILL,Direction.EAST);fit(l,b,-20,0,-88,BorrascaShopBlock.Kind.FRYER,Direction.EAST);
+        fit(l,b,-20,0,-86,BorrascaShopBlock.Kind.SINK,Direction.EAST);for(int z=-84;z<=-81;z++)fit(l,b,-20,0,z,BorrascaShopBlock.Kind.CROCKERY,Direction.EAST);
         set(l,b,-20,0,-80,Blocks.BARREL);set(l,b,-19,0,-80,Blocks.BARREL);
-        set(l,b,-12,0,-90,Blocks.JUKEBOX);set(l,b,-8,0,-85,Blocks.POTTED_FERN);
+        fit(l,b,JUKEBOX,BorrascaShopBlock.Kind.JUKEBOX,Direction.SOUTH);set(l,b,-8,0,-85,Blocks.POTTED_FERN); // 0.4.460: the diner's own jukebox
         for(int z:new int[]{-88,-83})set(l,b,-12,4,z,hanging());set(l,b,-18,4,-85,hanging());
         joists(l,b,-20,-8,Blocks.STRIPPED_BIRCH_LOG,-90,-86,-81);
     }
@@ -147,7 +154,7 @@ public final class BorrascaShops {
         // The shop: two glass cases, a counter with a bell, chairs and lamps for sale, a clock on the wall.
         fit(l,b,CURIOS,BorrascaShopBlock.Kind.CASE,Direction.EAST);fit(l,b,-11,0,-96,BorrascaShopBlock.Kind.CASE,Direction.EAST);
         for(int z=-99;z>=-102;z--){if(z==-100)continue;road(l,b,-13,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);}
-        set(l,b,-13,1,-99,Blocks.BELL.defaultBlockState().setValue(BellBlock.ATTACHMENT,BellAttachType.FLOOR).setValue(BellBlock.FACING,Direction.EAST));
+        fit(l,b,COUNTER_BELL,BorrascaShopBlock.Kind.DESK_BELL,Direction.EAST); // 0.4.460: a counter bell (the game's great bell stood on the counter)
         furniture(l,b,-9,0,-106,HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.SOUTH);furniture(l,b,-14,0,-106,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH);
         furniture(l,b,-9,0,-95,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);set(l,b,-14,0,-95,Blocks.DECORATED_POT);set(l,b,-14,1,-106,Blocks.LANTERN);
         fit(l,b,SHOP_CLOCK,BorrascaShopBlock.Kind.CLOCK,Direction.SOUTH);
@@ -202,7 +209,7 @@ public final class BorrascaShops {
         // The partition, and the examination room: the table, the scale, the eye chart, a cabinet and a basin.
         box(l,b,13,0,-88,13,4,-79,Blocks.WHITE_CONCRETE);NovelRooms.door(l,b.offset(13,0,-84),Direction.WEST,Blocks.BIRCH_DOOR,false);
         fit(l,b,EXAM,BorrascaShopBlock.Kind.EXAM,Direction.WEST);fit(l,b,SCALE,BorrascaShopBlock.Kind.SCALE,Direction.WEST);fit(l,b,CHART,BorrascaShopBlock.Kind.CHART,Direction.WEST);
-        fit(l,b,18,0,-88,BorrascaShopBlock.Kind.MEDS,Direction.WEST);set(l,b,14,0,-79,Blocks.CAULDRON);
+        fit(l,b,18,0,-88,BorrascaShopBlock.Kind.MEDS,Direction.WEST);fit(l,b,14,0,-79,BorrascaShopBlock.Kind.SINK,Direction.NORTH); // 0.4.460: the doctor's sink (a cauldron)
         set(l,b,10,4,-84,hanging());set(l,b,16,4,-84,hanging());
         BorrascaSigns.span(l,b.offset(IN_DOCTOR),BorrascaSigns.Sign.IN_DOCTOR,Direction.WEST);
         joists(l,b,8,18,Blocks.STRIPPED_BIRCH_LOG,-87,-81);
@@ -292,6 +299,8 @@ public final class BorrascaShops {
         if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PUMP||s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.PUMP_TOP){BorrascaStory.cue(p,BorrascaShopTexts.pump(rel.getZ()==PUMPS[1].getZ()?1:0,grown));return true;}
         // 0.4.436: the drugstore's cabinets play their own games.
         int game=BorrascaArcade.game(s);if(game>=0){BorrascaArcade.click(p,at,own,game);return true;}
+        // 0.4.460: the bell on Mr. Rowe's counter rings.
+        if(s.getValue(BorrascaShopBlock.KIND)==BorrascaShopBlock.Kind.DESK_BELL){BorrascaPeople.rang(p,own,at);return true;}
         String line=BorrascaShopTexts.look(s.getValue(BorrascaShopBlock.KIND),s.getValue(BorrascaShopBlock.STAGE),grown);
         if(line==null)return false;
         BorrascaStory.cue(p,line);return true;

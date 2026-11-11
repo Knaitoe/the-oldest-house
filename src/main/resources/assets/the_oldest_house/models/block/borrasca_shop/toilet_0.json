@@ -1,0 +1,214 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/borrasca_shop/toilet",
+    "particle": "the_oldest_house:block/borrasca_shop/toilet"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        3
+      ],
+      "to": [
+        12,
+        6,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            8,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            8,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            8,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            8,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            8,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            8,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        6,
+        2
+      ],
+      "to": [
+        13,
+        7,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            10,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            10,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            10,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            10,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            10,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            10,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        0,
+        12
+      ],
+      "to": [
+        14,
+        12,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            10,
+            0,
+            16,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            10,
+            12,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            10,
+            12,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            10,
+            12,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#t",
+          "uv": [
+            0,
+            11,
+            10,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#t",
+          "uv": [
+            10,
+            12,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

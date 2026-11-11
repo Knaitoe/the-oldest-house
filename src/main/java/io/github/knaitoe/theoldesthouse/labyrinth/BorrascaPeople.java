@@ -268,7 +268,7 @@ public final class BorrascaPeople {
     // ---------------------------------------------------------------------------------------------------------------- the money
     /** The purse for this visit: new change or a new wallet when the visit changes; the one carried shows what is left. */
     private static void purse(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
-        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");own.remove("LollipopAfter");own.remove("WrenAfter");own.remove("DorseyMail");for(int k=LORNA;k<=CARRIER;k++)own.remove("SaidAfter"+k);leave(p);jar(p,b,0);}
+        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");own.remove("LollipopAfter");own.remove("WrenAfter");own.remove("DorseyMail");own.remove("BellRings");for(int k=LORNA;k<=CARRIER;k++)own.remove("SaidAfter"+k);leave(p);jar(p,b,0);}
         boolean wallet=visit>=3;var held=carried(p,wallet);int cents=own.getInt("Cents");
         if(held==null)p.getInventory().add(BorrascaPurseItem.of(p,cents,wallet));
         else if(BorrascaPurseItem.cents(held)!=cents)BorrascaPurseItem.mark(held,p.getUUID(),cents);
@@ -429,6 +429,20 @@ public final class BorrascaPeople {
         BorrascaStory.say(p,odell,own.getInt("Visit")==2?"The Tates had their girl last night. Dr. Hale was up till all hours. Here, take one. Just one.":"Dr. Hale's with someone. Here, take one. Just one.");return true;
     }
     private static void jar(ServerPlayer p,BlockPos b,int stage){var at=b.offset(BorrascaShops.JAR);var s=p.serverLevel().getBlockState(at);if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.JAR)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaShopBlock.STAGE,stage),3);}
+
+    // ---------------------------------------------------------------------------------------------------------------- the counter bell
+    public static final String BELL="A brass counter bell.",BELL_CHILD="Once is plenty, hon. I'm standing right here.",BELL_GROWN="I heard it. I'm right here.",BELL_AGAIN="That's enough of that.";
+    /**
+     * 0.4.460: the bell on Mr. Rowe's counter (the game's great bell stood there). It rings. Rung again with him at his counter, he
+     * says so; with him out front for his smoke nobody answers it. Returns what was shown or said.
+     */
+    public static String rang(ServerPlayer p,CompoundTag own,BlockPos at){
+        BorrascaStory.heard(p,net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BELL.value(),at,1);
+        int n=own.getInt("BellRings");own.putInt("BellRings",n+1);
+        var rowe=keeper(p,own,ROWE);
+        if(n==0||rowe==null||rowe.isInvisible()||own.getBoolean("RoweOut")){BorrascaStory.cue(p,BELL);return BELL;}
+        String line=n==1?(own.getInt("Visit")>=3?BELL_GROWN:BELL_CHILD):BELL_AGAIN;turn(rowe,p);BorrascaStory.say(p,rowe,line);return line;
+    }
 
     // ---------------------------------------------------------------------------------------------------------------- the bar's door
     /** Inside the Tipple's walls (world, relative to the base). */

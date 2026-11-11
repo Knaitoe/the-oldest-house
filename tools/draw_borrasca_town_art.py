@@ -1376,6 +1376,389 @@ def ward(course):
     return im
 
 
+# 0.4.460 (owner: "Borrasca needs a custom texture pass"), the second part: the things that were still the game's own blocks
+# standing in for something else. A pot-bellied stove and its pipe (a smoker under iron bars); a griddle and a fryer (a smoker and a
+# furnace); an enamel sink, a steel cell toilet and a galvanised bucket (cauldrons); steel drums (barrels); boxed effects on steel
+# shelving (barrels); a crane's block and hook (a heavy core); a counter bell (a bell); a jukebox (the game's jukebox).
+IRON, IRON_L, IRON_D, IRON_S = '#2f3033', '#45474b', '#222325', '#17181a'
+STAIN, STAIN_L, STAIN_D, STAIN_S = '#b9bec2', '#d9dddf', '#969ca1', '#737a80'
+
+
+def every(uv):
+    return {k: uv for k in ('north', 'south', 'east', 'west', 'up', 'down')}
+
+
+def stove():
+    """A pot-bellied stove's iron: its door, twelve by six, with a mica window, cold; its side, twelve by six,
+    with a cast band; and down the right, four wide, its pipe with a seam every eight."""
+    im = new()
+    for y in range(12):
+        for x in range(12):
+            dot(im, x, y, IRON_L if (y in (0, 6)) else IRON_D if y in (5, 11) or x in (0, 11) else IRON)
+    # the door
+    for x in range(3, 9):
+        dot(im, x, 1, IRON_S); dot(im, x, 4, IRON_S)
+    for y in range(1, 5):
+        dot(im, 3, y, IRON_S); dot(im, 8, y, IRON_S)
+    dot(im, 5, 2, '#5c4d3b'); dot(im, 6, 2, '#75644c'); dot(im, 5, 3, '#3d3226'); dot(im, 6, 3, '#5c4d3b')   # mica, and no fire behind it in June
+    dot(im, 9, 3, '#8f949a')                                    # its latch
+    for x in (1, 2, 9, 10):
+        dot(im, x, 5, IRON_S)                                   # draught slots at the foot
+    # the side's cast band and two bolts
+    for x in range(1, 11):
+        dot(im, x, 8, IRON_L); dot(im, x, 9, IRON_S)
+    dot(im, 2, 7, '#55585d'); dot(im, 9, 7, '#55585d')
+    # the pipe: blued sheet, a highlight down it, a seam every eight
+    for y in range(16):
+        for x in range(12, 16):
+            dot(im, x, y, ('#34373c', '#4a4e55', '#3b3f45', '#2a2c30')[x - 12])
+        if y % 8 == 7:
+            for x in range(12, 16):
+                dot(im, x, y, '#1f2124')
+    # legs and odd corners
+    fill(im, 0, 12, 12, 16, IRON); fill(im, 0, 12, 12, 13, IRON_L); fill(im, 0, 15, 12, 16, IRON_D)
+    return im
+
+
+def stove_top():
+    """The stove from above: a square plate, a round lid with its lifter's slot, the collar the pipe stands in."""
+    im = new()
+    fill(im, 2, 2, 14, 14, IRON)
+    for x in range(2, 14):
+        dot(im, x, 2, IRON_L); dot(im, x, 13, IRON_D)
+    for y in range(2, 14):
+        dot(im, 2, y, IRON_L); dot(im, 13, y, IRON_D)
+    for x, y in ((6, 4), (7, 4), (8, 4), (9, 4), (5, 5), (10, 5), (4, 6), (11, 6), (4, 7), (11, 7), (4, 8), (11, 8), (4, 9), (11, 9), (5, 10), (10, 10), (6, 11), (7, 11), (8, 11), (9, 11)):
+        dot(im, x, y, IRON_S)
+    fill(im, 6, 6, 10, 10, IRON_D); fill(im, 7, 7, 9, 9, '#0f1011')
+    return im
+
+
+def grill_front():
+    """A griddle's front, twelve rows: a strip of three knobs, a door with its bar handle, a dark kick."""
+    im = new()
+    for y in range(4, 16):
+        for x in range(16):
+            dot(im, x, y, STAIN_L if y in (4, 8) else STAIN_D if y in (7, 13) or x in (0, 15) else STAIN)
+    for x in (3, 8, 12):
+        dot(im, x, 5, '#1c1c1e'); dot(im, x + 1, 5, '#1c1c1e'); dot(im, x, 6, '#1c1c1e'); dot(im, x + 1, 6, '#3a3a3e'); dot(im, x, 5, '#c8352b' if x == 8 else '#1c1c1e')
+    for x in range(3, 13):
+        dot(im, x, 10, STAIN_S)
+    dot(im, 3, 11, STAIN_D); dot(im, 12, 11, STAIN_D)
+    fill(im, 0, 14, 16, 16, '#2a2c2f'); fill(im, 1, 14, 15, 15, '#3a3d41')
+    return im
+
+
+def grill_top():
+    """The plate from above: seasoned steel, the scraper's streaks, a trough along the front, two patties and a heap of onions."""
+    im = new()
+    rnd = random.Random(460)
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, shade('#3b3a3a', rnd.randint(-5, 5)))
+    for x in range(1, 15):
+        dot(im, x, 1, '#1f1f20'); dot(im, x, 2, '#5a5857')    # the trough at the front (north)
+    for x, y in ((3, 6), (4, 6), (5, 7), (6, 7), (9, 10), (10, 10), (11, 11)):
+        dot(im, x, y, '#4c4a49')
+    for ox, oy in ((2, 9), (7, 5)):
+        fill(im, ox, oy, ox + 3, oy + 3, '#6b3f24'); dot(im, ox, oy, '#51301b'); dot(im, ox + 2, oy + 2, '#51301b'); dot(im, ox + 1, oy + 1, '#855030')
+    for x, y in ((12, 6), (13, 6), (12, 7), (13, 8), (11, 7)):
+        dot(im, x, y, '#d9c98f')
+    for x in range(16):
+        dot(im, x, 14, STAIN_D); dot(im, x, 15, STAIN)         # the splash's foot at the back
+    return im
+
+
+def fryer_front():
+    """A fryer's front, twelve rows: a dial and its lamp, a plate with the maker's name worn off it, a door, a dark kick."""
+    im = new()
+    for y in range(4, 16):
+        for x in range(16):
+            dot(im, x, y, STAIN_L if y in (4, 8) else STAIN_D if y in (7, 13) or x in (0, 15) else STAIN)
+    fill(im, 3, 5, 5, 7, '#1c1c1e'); dot(im, 4, 5, '#e6e2d6'); dot(im, 7, 6, '#e0752a')
+    fill(im, 10, 5, 14, 7, '#8f2a22'); dot(im, 11, 6, '#d9c7c2'); dot(im, 12, 6, '#d9c7c2')
+    for y in range(9, 13):
+        dot(im, 8, y, STAIN_S)
+    dot(im, 6, 10, STAIN_D); dot(im, 6, 11, STAIN_D); dot(im, 10, 10, STAIN_D); dot(im, 10, 11, STAIN_D)
+    fill(im, 0, 14, 16, 16, '#2a2c2f'); fill(im, 1, 14, 15, 15, '#3a3d41')
+    return im
+
+
+def fryer_top():
+    """Two wells of oil from above, a basket's wire rim in each."""
+    im = new()
+    fill(im, 0, 0, 16, 16, STAIN); fill(im, 0, 0, 16, 1, STAIN_L)
+    for ox in (1, 9):
+        fill(im, ox, 3, ox + 6, 13, '#7a4d16')
+        for x, y in ((ox + 1, 5), (ox + 3, 7), (ox + 2, 10), (ox + 4, 11), (ox + 4, 4)):
+            dot(im, x, y, '#b98a35')
+        for x in range(ox, ox + 6):
+            dot(im, x, 3, STAIN_S); dot(im, x, 12, STAIN_S)
+        for y in range(3, 13):
+            dot(im, ox, y, STAIN_S); dot(im, ox + 5, y, STAIN_S)
+        for y in range(5, 12, 2):
+            dot(im, ox + 2, y, '#94989c'); dot(im, ox + 3, y, '#94989c')
+    for x in range(16):
+        dot(im, x, 14, STAIN_D)
+    return im
+
+
+def sink_top():
+    """An enamel sink from above: its rim, the basin's grey shadow and its drain, a bar of soap in its dish."""
+    w, s, d = '#f1efe8', '#cfd0cc', '#a9aaa6'
+    im = new()
+    fill(im, 0, 0, 16, 16, w)
+    fill(im, 2, 3, 14, 12, s)
+    for x in range(2, 14):
+        dot(im, x, 3, d)
+    for y in range(3, 12):
+        dot(im, 2, y, d)
+    fill(im, 7, 7, 9, 9, '#3a3c3e'); dot(im, 7, 7, '#6d7073')
+    fill(im, 11, 13, 14, 15, '#e3d7a5'); dot(im, 11, 13, '#f2e9c2')
+    dot(im, 5, 6, '#b9bab6'); dot(im, 10, 9, '#b9bab6')        # water marks
+    return im
+
+
+def toilet():
+    """A steel cell toilet: from above, a ring, the dark bowl and the water in it; and the plate on the wall with its button."""
+    im = new()
+    fill(im, 0, 0, 10, 11, STAIN); fill(im, 0, 0, 10, 1, STAIN_L)
+    fill(im, 2, 2, 8, 9, STAIN_S); fill(im, 3, 3, 7, 8, '#2e3235'); fill(im, 4, 5, 6, 7, '#4f6470')
+    dot(im, 2, 2, STAIN); dot(im, 7, 2, STAIN); dot(im, 2, 8, STAIN); dot(im, 7, 8, STAIN)
+    # the wall plate
+    for y in range(12):
+        for x in range(10, 16):
+            dot(im, x, y, STAIN_L if y == 0 else STAIN_D if x in (10, 15) or y == 11 else STAIN)
+    fill(im, 13, 6, 15, 8, STAIN_S); dot(im, 13, 6, STAIN_L)   # the button, low and to one side
+    dot(im, 11, 1, '#5d6368'); dot(im, 14, 10, '#5d6368')
+    fill(im, 0, 11, 10, 16, STAIN); fill(im, 0, 15, 10, 16, STAIN_D); fill(im, 10, 12, 16, 16, STAIN)
+    return im
+
+
+def drum(body, light, dark, label):
+    """A steel drum's side: two rolled hoops, a stencilled panel, a dent."""
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, light if x in (3, 4) else dark if x in (0, 15, 12) else body)
+    for y in (5, 10):
+        for x in range(16):
+            dot(im, x, y, light)
+            dot(im, x, y + 1, dark)
+    fill(im, 6, 7, 11, 10, label)
+    dot(im, 7, 8, dark); dot(im, 9, 8, dark); dot(im, 8, 8, dark)
+    for x in range(16):
+        dot(im, x, 0, dark); dot(im, x, 15, dark)
+    dot(im, 13, 13, dark); dot(im, 14, 13, light)
+    return im
+
+
+def drum_top():
+    """A drum's lid from above: a rim, a pressed ring, two bungs."""
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            r2 = (x - 7.5) ** 2 + (y - 7.5) ** 2
+            if r2 <= 38:
+                dot(im, x, y, '#6e7479' if r2 > 30 else '#8d9398' if 14 < r2 <= 18 else '#7f858a')
+    fill(im, 5, 4, 7, 6, '#4a4f54'); dot(im, 5, 4, '#9aa0a5'); dot(im, 10, 10, '#4a4f54')
+    return im
+
+
+def hook():
+    """A crane's block and hook: yellow cheeks barred in black, the sheave's pin, and grey forged steel."""
+    im = new()
+    for y in range(8):
+        for x in range(8):
+            dot(im, x, y, '#1c1c1e' if (x + y) % 4 in (0, 1) and 1 <= y <= 6 else '#d8a520')
+    fill(im, 3, 3, 5, 5, '#6b7076'); dot(im, 3, 3, '#aab0b5')
+    for y in range(8, 16):
+        for x in range(8):
+            dot(im, x, y, ('#7c8288', '#9aa0a6', '#868c92', '#646a70')[x % 4])
+    fill(im, 8, 0, 16, 16, '#7c8288')
+    return im
+
+
+def desk_bell():
+    """A counter bell's brass: its dome, lit from one side, and the button on top."""
+    im = new()
+    for y in range(8):
+        for x in range(8):
+            dot(im, x, y, ('#8a6c2e', '#b8974a', '#dcc06f', '#f0dc98', '#dcc06f', '#b8974a', '#8a6c2e', '#6d5320')[x])
+    for x in range(8):
+        dot(im, x, 7, '#6d5320')
+    fill(im, 8, 0, 16, 8, '#b8974a'); fill(im, 0, 8, 16, 16, '#1b1a19'); fill(im, 0, 8, 16, 9, '#34322f')
+    return im
+
+
+def juke_front(dark):
+    """A jukebox's lower half, twelve rows: walnut cheeks, a grille of chrome bars over coloured cloth, the coin slot and a row
+    of buttons under it. Unplugged, years on, the cloth is only brown."""
+    wood, wood_d = '#6b4a2e', '#4a321e'
+    cloth = ('#5b4a3a', '#51412f', '#5b4a3a') if dark else ('#c8352b', '#e0b83a', '#3f8f6a')
+    im = new()
+    for y in range(4, 16):
+        for x in range(16):
+            dot(im, x, y, wood_d if x in (0, 15) else wood)
+    for y in range(8, 15):
+        for x in range(3, 13):
+            dot(im, x, y, cloth[(x - 3) * 3 // 10])
+    for x in (4, 6, 8, 10, 12):
+        for y in range(8, 15):
+            dot(im, x - 1, y, '#d2d6d9' if not dark else '#8f9498')
+    for x in range(3, 13):
+        dot(im, x, 7, '#8f9498'); dot(im, x, 15, '#3b2817')
+    for x in range(3, 13, 2):
+        dot(im, x, 5, '#efe9d6' if not dark else '#9a917c')
+    dot(im, 13, 5, '#1b1a19'); dot(im, 13, 6, '#b8974a')
+    return im
+
+
+def juke_top(dark):
+    """A jukebox's head: an arch of lit tubes round a window with the record in it. Unplugged, the tubes are grey glass."""
+    tube = ('#8a8f93', '#7b8084', '#6e7377') if dark else ('#f2c94c', '#ee8f3a', '#d9443a')
+    im = new()
+    fill(im, 2, 4, 14, 12, '#6b4a2e')
+    for i, (x0, x1, y0, y1) in enumerate(((2, 14, 4, 12), (3, 13, 5, 12), (4, 12, 6, 12))):
+        for x in range(x0, x1):
+            dot(im, x, y0, tube[i])
+        for y in range(y0, y1):
+            dot(im, x0, y, tube[i]); dot(im, x1 - 1, y, tube[i])
+    fill(im, 5, 7, 11, 12, '#15171a')
+    for x, y in ((7, 9), (8, 9), (6, 10), (9, 10), (7, 11), (8, 11)):
+        dot(im, x, y, '#2e3236')
+    dot(im, 7, 10, '#b3261e' if not dark else '#5a2a26'); dot(im, 8, 10, '#b3261e' if not dark else '#5a2a26'); dot(im, 9, 8, '#6d7378')
+    # the crown: three rows above
+    for i, y in enumerate((1, 2, 3)):
+        for x in range(4, 12):
+            dot(im, x, y, tube[2 - i] if 5 <= x <= 10 else '#6b4a2e')
+    return im
+
+
+def pail():
+    """A galvanised bucket: zinc in its crystals, a rolled rim, a band near the foot; from above, the dark inside it; and a
+    square of board that does for a lid."""
+    im = new()
+    rnd = random.Random(461)
+    for y in range(8):
+        for x in range(8):
+            dot(im, x, y, rnd.choice(('#a9b0b4', '#b9c0c4', '#98a0a5', '#c6ccd0', '#a9b0b4')))
+    for x in range(8):
+        dot(im, x, 0, '#d5dadd'); dot(im, x, 1, '#7d858a'); dot(im, x, 6, '#7d858a'); dot(im, x, 7, '#8f979c')
+    fill(im, 8, 0, 16, 8, '#8f979c'); fill(im, 9, 1, 15, 7, '#3b4043'); fill(im, 10, 2, 14, 6, '#2a2e30')
+    for y in range(8, 16):
+        for x in range(8):
+            dot(im, x, y, ('#9a7a52', '#8a6c46', '#a3835a', '#8a6c46')[(x + y // 3) % 4])
+    dot(im, 2, 10, '#6d5233'); dot(im, 5, 13, '#6d5233')
+    fill(im, 8, 8, 16, 16, '#7d858a')
+    return im
+
+
+def effects(other):
+    """Cardboard boxes, each with a tag wired to it: a box's front and its top, a strip of tape across both. One has no lid, and
+    what is folded in it shows."""
+    card, card_d, card_l, tape, tag = '#b08a5a', '#8f6c40', '#c59f6c', '#d9c9a3', '#f1ede2'
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, card_d if x in (0, 15) or y in (7, 15) else card_l if y in (0, 8) else card)
+    for y in range(16):
+        dot(im, 7, y, tape); dot(im, 8, y, tape)
+    for oy in (2, 10):
+        fill(im, 10, oy, 14, oy + 3, tag); dot(im, 11, oy + 1, '#3d362e'); dot(im, 12, oy + 1, '#3d362e'); dot(im, 9, oy, '#6d7378')
+    if other:
+        fill(im, 1, 9, 7, 15, '#5d7f9a'); fill(im, 1, 9, 7, 10, '#7a9ab3'); dot(im, 3, 12, '#f1ede2'); dot(im, 4, 12, '#f1ede2')
+    return im
+
+
+STANDIN_TEX = {'pail': pail, 'effects_0': lambda: effects(False), 'effects_1': lambda: effects(True),
+       'stove': stove, 'stove_top': stove_top, 'grill_front': grill_front, 'grill_top': grill_top, 'fryer_front': fryer_front, 'fryer_top': fryer_top,
+       'sink_top': sink_top, 'toilet': toilet, 'drum_0': lambda: drum('#3f5f7a', '#5f84a3', '#2b4459', '#e9e3cf'),
+       'drum_1': lambda: drum('#8a3b2a', '#ad5a44', '#5f2519', '#e9e3cf'), 'drum_top': drum_top, 'hook': hook, 'desk_bell': desk_bell,
+       'juke_front_0': lambda: juke_front(False), 'juke_front_1': lambda: juke_front(True), 'juke_top_0': lambda: juke_top(False), 'juke_top_1': lambda: juke_top(True)}
+
+
+def standin_models(m):
+    side, legs = [0, 6, 12, 12], every([0, 12, 2, 14])
+    m['stove_0'] = model(
+        [element([3, 0, 3], [5, 2, 5], {'all': 's'}, legs), element([11, 0, 3], [13, 2, 5], {'all': 's'}, legs),
+         element([3, 0, 11], [5, 2, 13], {'all': 's'}, legs), element([11, 0, 11], [13, 2, 13], {'all': 's'}, legs),
+         element([3, 2, 3], [13, 3, 13], {'all': 's', 'up': 't', 'down': 't'}, {**every([1, 12, 11, 13]), 'up': [3, 3, 13, 13], 'down': [3, 3, 13, 13]}),
+         element([2, 3, 2], [14, 9, 14], {'all': 's', 'up': 't', 'down': 't'}, {**every(side), 'north': [0, 0, 12, 6], 'up': [2, 2, 14, 14], 'down': [2, 2, 14, 14]}),
+         element([3, 9, 3], [13, 11, 13], {'all': 's', 'up': 't'}, {**every([1, 6, 11, 8]), 'up': [3, 3, 13, 13]}),
+         element([2, 11, 2], [14, 12, 14], {'all': 's', 'up': 't', 'down': 't'}, {**every([0, 12, 12, 13]), 'up': [2, 2, 14, 14], 'down': [2, 2, 14, 14]}),
+         element([6, 12, 6], [10, 16, 10], {'all': 's'}, {**every([12, 0, 16, 4]), 'up': [12, 0, 16, 4]})],
+        {'s': 'stove', 't': 'stove_top'}, 'stove')
+    m['pipe_0'] = model([element([6, 0, 6], [10, 16, 10], {'all': 's'}, {**every([12, 0, 16, 16]), 'up': [12, 0, 16, 4], 'down': [12, 0, 16, 4]})], {'s': 'stove'}, 'stove')
+    for name in ('grill', 'fryer'):
+        parts = [element([0, 0, 0], [16, 12, 16], {'all': 'c', 'north': 'f'}), element([0, 12, 0], [16, 13, 16], {'all': 'c', 'up': 't'}, {'up': [0, 0, 16, 16]}),
+                 element([0, 13, 14], [16, 16, 16], {'all': 'c'})]
+        if name == 'fryer':
+            parts += [element([3, 13, 0], [4, 14, 6], {'all': 'k'}), element([11, 13, 0], [12, 14, 6], {'all': 'k'})]
+        m[f'{name}_0'] = model(parts, {'c': 'chrome', 'f': f'{name}_front', 't': f'{name}_top', 'k': 'black'}, 'chrome')
+    leg = every([0, 0, 1, 9])
+    m['sink_0'] = model(
+        [element([1, 0, 3], [2, 9, 4], {'all': 'c'}, leg), element([14, 0, 3], [15, 9, 4], {'all': 'c'}, leg),
+         element([1, 0, 14], [2, 9, 15], {'all': 'c'}, leg), element([14, 0, 14], [15, 9, 15], {'all': 'c'}, leg),
+         element([0, 9, 2], [16, 14, 16], {'all': 'e', 'up': 't'}, {'up': [0, 0, 16, 14]}),
+         element([0, 14, 14], [16, 16, 16], {'all': 'e'}),
+         element([4, 14, 12], [5, 16, 13], {'all': 'c'}, every([2, 0, 3, 2])), element([11, 14, 12], [12, 16, 13], {'all': 'c'}, every([2, 0, 3, 2])),
+         element([7, 15, 9], [9, 16, 14], {'all': 'c'}, every([2, 0, 4, 1]))],
+        {'c': 'chrome', 'e': 'enamel', 't': 'sink_top'}, 'enamel')
+    m['toilet_0'] = model(
+        [element([4, 0, 3], [12, 6, 12], {'all': 't'}, every([0, 11, 8, 16])),
+         element([3, 6, 2], [13, 7, 13], {'all': 't'}, {**every([0, 11, 10, 12]), 'up': [0, 0, 10, 11]}),
+         element([2, 0, 12], [14, 12, 16], {'all': 't'}, {**every([10, 12, 16, 16]), 'north': [10, 0, 16, 12], 'up': [0, 11, 10, 15]})],
+        {'t': 'toilet'}, 'toilet')
+    for stage in range(2):
+        d = {'all': 'd', 'up': 't', 'down': 't'}
+        m[f'drum_{stage}'] = model(
+            [element([2, 0, 4], [14, 16, 12], d, {'north': [2, 0, 14, 16], 'south': [2, 0, 14, 16], 'east': [4, 0, 12, 16], 'west': [4, 0, 12, 16]}),
+             element([4, 0, 2], [12, 16, 14], d, {'north': [4, 0, 12, 16], 'south': [4, 0, 12, 16], 'east': [2, 0, 14, 16], 'west': [2, 0, 14, 16]})],
+            {'d': f'drum_{stage}', 't': 'drum_top'}, f'drum_{stage}')
+        w = {'all': 'w'}
+        m[f'jukebox_{stage}'] = model(
+            [element([1, 0, 4], [15, 12, 15], {**w, 'north': 'f'}),
+             element([2, 12, 5], [14, 20, 14], {**w, 'north': 'h'}, {'north': [2, 4, 14, 12]}),
+             element([4, 20, 6], [12, 23, 13], {**w, 'north': 'h'}, {'north': [4, 1, 12, 4]})],
+            {'w': 'wood', 'f': f'juke_front_{stage}', 'h': f'juke_top_{stage}'}, 'wood')
+    z = every([0, 1, 7, 7])
+    for stage in range(2):
+        parts = [element([5, 0, 5], [11, 1, 11], {'all': 'p'}, every([1, 7, 7, 8])),
+                 element([4.5, 1, 4.5], [11.5, 7, 11.5], {'all': 'p'}, z),
+                 element([4, 7, 4], [12, 8, 12], {'all': 'p'}, {**every([0, 0, 8, 1]), 'up': [8, 0, 16, 8]})]
+        if stage:
+            parts.append(element([3, 8, 3], [13, 8.6, 13], {'all': 'p'}, {**every([0, 8, 8, 9]), 'up': [0, 8, 8, 16], 'down': [0, 8, 8, 16]}))
+        else:
+            wire = every([8, 8, 9, 9])
+            parts += [element([4, 8, 7.6], [4.4, 11, 8.4], {'all': 'p'}, wire), element([11.6, 8, 7.6], [12, 11, 8.4], {'all': 'p'}, wire),
+                      element([4, 11, 7.6], [12, 11.4, 8.4], {'all': 'p'}, wire)]
+        m[f'pail_{stage}'] = model(parts, {'p': 'pail'}, 'pail')
+        c, st = {'all': 'c'}, {'all': 's'}
+        up = every([0, 0, 1, 16])
+        shelf = [element([0, 0, 3], [1, 16, 4], st, up), element([15, 0, 3], [16, 16, 4], st, up), element([0, 0, 13], [1, 16, 14], st, up), element([15, 0, 13], [16, 16, 14], st, up),
+                 element([0, 0, 3], [16, 1, 14], st), element([0, 8, 3], [16, 9, 14], st)]
+        front, top = [0, 8, 7, 14], [0, 0, 7, 7]
+        boxes = [((1, 1, 4), (8, 7, 13), front), ((9, 1, 4), (15, 6, 13), [9, 9, 15, 14]), ((1, 9, 4), (7, 14, 13), [9, 1, 15, 6]), ((8, 9, 5), (15, 15, 12), [0, 0, 7, 6])]
+        if stage:
+            boxes = [((1, 1, 4), (7, 6, 13), [9, 9, 15, 14]), ((8, 1, 4), (15, 7, 13), front), ((1, 9, 5), (9, 15, 12), [0, 0, 8, 6]), ((10, 9, 4), (15, 13, 13), [9, 1, 14, 5])]
+        for lo, hi, f in boxes:
+            shelf.append(element(list(lo), list(hi), c, {**every(f), 'up': [0, 9, hi[0] - lo[0], 15] if stage and lo == (1, 9, 5) else [0, 0, hi[0] - lo[0], 7]}))
+        m[f'effects_{stage}'] = model(shelf, {'c': f'effects_{stage}', 's': 'steel'}, f'effects_{stage}')
+    steel = every([0, 8, 2, 12])
+    m['hook_0'] = model(
+        [element([5, 8, 6], [11, 16, 10], {'all': 'h'}, {**every([0, 0, 4, 8]), 'north': [0, 0, 6, 8], 'south': [0, 0, 6, 8]}),
+         element([7, 3, 7], [9, 8, 9], {'all': 'h'}, steel), element([7, 1, 7], [12, 3, 9], {'all': 'h'}, every([0, 8, 5, 10])),
+         element([10, 3, 7], [12, 5, 9], {'all': 'h'}, steel)],
+        {'h': 'hook'}, 'hook')
+    m['desk_bell_0'] = model(
+        [element([5, 0, 5], [11, 1, 11], {'all': 'b'}, every([0, 8, 6, 9])),
+         element([6, 1, 6], [10, 3, 10], {'all': 'b'}, {**every([2, 0, 6, 2]), 'up': [9, 1, 13, 5]}),
+         element([7, 3, 7], [9, 3.5, 9], {'all': 'b'}, every([3, 0, 5, 1])),
+         element([7.5, 3.5, 7.5], [8.5, 4.5, 8.5], {'all': 'b'}, every([3, 0, 4, 1]))],
+        {'b': 'desk_bell'}, 'desk_bell')
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
     out.update({f'block/borrasca_ward_{c}.png': ward(c) for c in range(3)})
@@ -1406,6 +1789,7 @@ def textures():
         'doc_forms': doc_forms(), 'doc_ledger': doc_ledger(), 'doc_letter': doc_letter(), 'doc_receipt': doc_receipt(), 'doc_log': doc_log(),
         'comic': comic_sill(False), 'comic_aged': comic_sill(True),
     }
+    faces.update({name: draw() for name, draw in STANDIN_TEX.items()})
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
     for name, (draw, _) in ITEM_ART.items():
@@ -1569,6 +1953,7 @@ def shop_models():
     feeding_models(m)
     paper_models(m)
     comic_models(m)
+    standin_models(m)
     return m
 
 
@@ -1823,9 +2208,10 @@ KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'pa
          'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top',
          'remains', 'wristband', 'smear',
          'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log',
-         'comic', 'pew_end', 'pew_mid', 'bench', 'bench_end', 'bench_mid', 'baton']
+         'comic', 'pew_end', 'pew_mid', 'bench', 'bench_end', 'bench_mid', 'baton',
+         'stove', 'pipe', 'grill', 'fryer', 'sink', 'toilet', 'pail', 'drum', 'effects', 'hook', 'desk_bell', 'jukebox']
 STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2,
-          'pump': 2, 'pump_top': 2, 'pew_end': 2, 'bench_end': 2, 'price': 2}
+          'pump': 2, 'pump_top': 2, 'pew_end': 2, 'bench_end': 2, 'price': 2, 'pail': 2, 'drum': 2, 'effects': 2, 'jukebox': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin',
          'borrasca_ward': 'Painted Block Wall'}

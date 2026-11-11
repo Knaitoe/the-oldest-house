@@ -243,7 +243,7 @@ final class BorrascaDressing {
         int d=BorrascaRooms.TOWN_END+1-(-69);var t=b.offset(0,0,d);
         for(int x=-18;x<=-6;x++)for(int z=-58;z>=-68;z--){int k=hash(x,7,z)%10;if(Math.abs(x+12)+Math.abs(z+63)>9&&k<5)continue;set(l,t,x,-1,z,(k<9?Blocks.GRAVEL:Blocks.COARSE_DIRT).defaultBlockState());}
         for(int z=-60;z>=-66;z-=3)box(l,t,-17,0,z,-15,0,z,log(Blocks.OAK_LOG,Direction.Axis.X));
-        set(l,t,-7,0,-60,Blocks.BARREL);BorrascaShops.seats(l,t,new BlockPos(-7,0,-66),new BlockPos(-7,0,-67),Direction.WEST,false); // 0.4.454
+        set(l,t,-7,0,-60,BorrascaShopBlock.of(BorrascaShopBlock.Kind.DRUM,Direction.NORTH));BorrascaShops.seats(l,t,new BlockPos(-7,0,-66),new BlockPos(-7,0,-67),Direction.WEST,false); // 0.4.454; 0.4.460: a steel drum for the trailhead's rubbish (a barrel)
         // The posts, either side of the trail where the street ends, a board across them high over the path.
         for(int x:new int[]{-4,4})box(l,t,x,0,-69,x,4,-69,log(Blocks.OAK_LOG,Direction.Axis.Y));
         box(l,t,-4,5,-69,4,5,-69,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));

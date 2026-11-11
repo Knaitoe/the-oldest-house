@@ -62,7 +62,15 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
         DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG,COMIC,
         PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID,
         /** 0.4.457: the Sheriff's baton, lying where it fell (BorrascaSheriffFight). */
-        BATON;
+        BATON,
+        /**
+         * 0.4.460 (owner: "Borrasca needs a custom texture pass"), the second part: what was still one of the game's own blocks
+         * standing for something else. A pot-bellied stove and a length of its pipe; the diner's griddle and fryer; an enamel
+         * sink; a steel cell toilet; a galvanised bucket (stage 1: with a square of board over it); a steel drum (two paints);
+         * boxed effects on steel shelving (two arrangements); a crane's block and hook; a counter bell; a jukebox (stage 1:
+         * unplugged, years on).
+         */
+        STOVE,PIPE,GRILL,FRYER,SINK,TOILET,PAIL,DRUM,EFFECTS,HOOK,DESK_BELL,JUKEBOX;
         /** A paper lying on a desk. */
         public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
@@ -78,7 +86,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return BorrascaRegistry.SHOP.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(1,stage)));}
     public static boolean is(BlockState s,Kind kind){return s.is(BorrascaRegistry.SHOP.get())&&s.getValue(KIND)==kind;}
-    static int light(BlockState s){return s.getValue(KIND)==Kind.OPEN?7:s.getValue(KIND)==Kind.PUMP_TOP||s.getValue(KIND)==Kind.CABINET_TOP?5:0;}
+    static int light(BlockState s){return s.getValue(KIND)==Kind.OPEN||s.getValue(KIND)==Kind.JUKEBOX&&s.getValue(STAGE)==0?7:s.getValue(KIND)==Kind.PUMP_TOP||s.getValue(KIND)==Kind.CABINET_TOP?5:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -118,13 +126,25 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case COMIC->MarshBlock.turned(f,4,0,17,12,11,23);
             case PEW_END,PEW_MID->Shapes.or(MarshBlock.turned(f,0,0,3,16,8,13),MarshBlock.turned(f,0,8,11,16,16,15));
             case BENCH,BENCH_END,BENCH_MID->Shapes.or(MarshBlock.turned(f,0,0,2,16,7,12),MarshBlock.turned(f,0,7,12,16,16,15));
+            case STOVE->Block.box(2,0,2,14,16,14);
+            case PIPE->Block.box(6,0,6,10,16,10);
+            case GRILL,FRYER->Shapes.or(Block.box(0,0,0,16,13,16),MarshBlock.turned(f,0,13,14,16,16,16));
+            case SINK->Shapes.or(MarshBlock.turned(f,0,9,2,16,14,16),MarshBlock.turned(f,0,14,14,16,16,16),MarshBlock.turned(f,1,0,3,15,9,15));
+            case TOILET->Shapes.or(MarshBlock.turned(f,3,0,2,13,7,13),MarshBlock.turned(f,2,0,12,14,12,16));
+            case PAIL->Block.box(4,0,4,12,s.getValue(STAGE)==0?11.5:8.6,12);
+            case DRUM->Block.box(2,0,2,14,16,14);
+            case EFFECTS->MarshBlock.turned(f,0,0,3,16,16,14);
+            case HOOK->Block.box(5,1,6,12,16,10);
+            case DESK_BELL->Block.box(5,0,5,11,4.5,11);
+            case JUKEBOX->MarshBlock.turned(f,1,0,4,15,23,15);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY,CABINET,CABINET_TOP,
-                PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID->getShape(s,l,p,c);
+                PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID,STOVE,PIPE,GRILL,FRYER,SINK,TOILET,DRUM,EFFECTS,JUKEBOX->getShape(s,l,p,c);
+            case PAIL->Block.box(4,0,4,12,8,12);
             default->Shapes.empty();
         };
     }
