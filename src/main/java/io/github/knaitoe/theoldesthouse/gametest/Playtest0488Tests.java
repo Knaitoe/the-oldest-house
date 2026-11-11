@@ -78,10 +78,18 @@ public final class Playtest0488Tests {
             thread.put("Story",mine);VignetteThreads.saveThread(f.data(),place,p.getUUID(),thread);LiteraryVignettes.talk(p,father);
             h.assertTrue(father.getCustomName()!=null&&father.getCustomName().getString().contains("It moved")&&!sergeant.hasCustomName(),
                 "the same father speaks the actual later-stage response");
+            // 0.4.473: how long words stay up is the speaker's own to say (Dialogue), and a scene asks him whether he is still saying
+            // them. The cottage has no timer of its own any more: a mark that says the time is up changes nothing while he is.
+            // (CI, run 1532: this case still set that mark and expected the line gone. It had failed every run since, behind others.)
             father.getPersistentData().putLong("SayUntil0488",l.getGameTime()-1);
             ThreeFingers.reader(p,f.base(place),f.own(p,place));
-            h.assertTrue(!father.hasCustomName()&&!father.isCustomNameVisible()&&father.getUUID().equals(fatherId)&&peerFather.hasCustomName(),
-                "expired speech clears the native hover name, preserving actor identity and the peer's bubble");
+            h.assertTrue(father.saying()&&father.hasCustomName()&&father.isCustomNameVisible(),"the cottage leaves a line up for as long as its speaker is saying it, whatever an old mark says");
+            // When he has finished, the cottage takes the hover name off him: the same man, and nothing of the peer's.
+            father.hush();
+            ThreeFingers.reader(p,f.base(place),f.own(p,place));
+            h.assertTrue(!father.hasCustomName()&&!father.isCustomNameVisible()&&father.getUUID().equals(fatherId)&&peerFather.hasCustomName()&&peerFather.saying(),
+                "a line that is over leaves no native hover name, preserving actor identity and the peer's bubble: name "+father.hasCustomName()+", shown "+father.isCustomNameVisible()
+                +", the peer's "+peerFather.hasCustomName());
         }).thenSucceed();
     }
     private static CompoundTag story(LiteraryTests.Fixture f,ServerPlayer p){return VignetteThreads.thread(f.data(),LabyrinthPlace.THREE_FINGERS,p.getUUID()).getCompound("Story");}
