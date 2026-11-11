@@ -108,9 +108,10 @@ public final class CalderRoutes {
         back("lot_turn","lot_ramp","lot_corner","lot_mouth","park_lot");
 
         // ---- Big Top's lot: in front, behind, and the drive-thru lane between.
-        place("bigtop_front",25,-62,"Big Top's lot");place("bigtop_front_west",10,-62,"Big Top's lot");place("lane_south",34.5,-63,"the drive-thru");
+        // (0.4.487: along the lot's south edge, in front of the noses of the two cars parked in its bays, and not through them.)
+        place("bigtop_front",25,-62,"Big Top's lot");place("bigtop_front_west",8.5,-59.8,"Big Top's lot");place("bigtop_front_mid",19.5,-59.8,"Big Top's lot");place("lane_south",34.5,-63,"the drive-thru");
         place("lane_north",34.5,-80,"the drive-thru");place("bigtop_back",22.5,-81.5,"Big Top's lot");place("bigtop_back_west",10,-81,"Big Top's lot");
-        back("park_bigtop","bigtop_front","lane_south");back("mill_lot","bigtop_front_west","bigtop_front");back("east_front","lane_south");
+        back("park_bigtop","bigtop_front","lane_south");back("mill_lot","bigtop_front_west","bigtop_front_mid","bigtop_front");back("east_front","lane_south");
         tight("lane_south","lane_north");
         back("lane_north","bigtop_back","main_bigtop");back("lane_north","main_lane");back("mill_back","bigtop_back_west","bigtop_back");back("lane_north","east_back");
 

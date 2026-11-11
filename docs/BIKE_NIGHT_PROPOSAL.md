@@ -30,6 +30,14 @@ November 11, with the people on the pavements just built:
 (Answered from **Act three** below, with what was added in the answer written into it under "As answered, November 11", and
 three calls left with the owner at the end of **Open, for the owner**. None of the graveyard is built.)
 
+And to that answer, and its three calls:
+
+> - No that all sounds great.
+
+(Read as: no, not darker; and yes to the rest. So the three stay readable as having dropped their bikes and run; Gus rides the
+plain way through the Hollow with no specter of his own; and the Hollow is one shared course, each specter private to whoever it
+chases. What was marked as Claude's in the answer stands. Recorded against 7, 8 and 9 below.)
+
 Everything below is Claude's working of those notes. Names, places, lines and creatures are original, and nothing recreates a particular film or game.
 
 ## The shape
@@ -348,8 +356,9 @@ It is large. It has three acts, a town, and a course in the air. In slices:
 6. **Order:** where does it go in the queue, before or after the Pell house?
 7. **The three at the end** (asked November 11): their bikes lie by the front gate, they are nowhere, and the cap hangs on
    the gate. They are children, so Claude would keep it readable as "they dropped their bikes and ran". Darker, or left more
-   open?
+   open? **Answered, November 11: no. As Claude has it.**
 8. **Gus in the Hollow** (asked November 11): he rides the plain way with no specter ever his, so he is at the back gate
    whenever the reader is; or he stops at the edge where the ground falls away, and is waiting at the back gate.
+   **Answered, November 11: the first. He rides the plain way.**
 9. **One course or one each** (asked November 11, and the same as 5): Claude plans on one shared course, with each specter
-   private to whoever it chases.
+   private to whoever it chases. **Answered, November 11: yes, one shared course.** (Which answers 5.)
