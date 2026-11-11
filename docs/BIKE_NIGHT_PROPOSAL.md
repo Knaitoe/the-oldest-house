@@ -57,6 +57,7 @@ A park with a sandy playground under two lamps, one of which flickers. Every pie
 
 - **Seesaw.** It takes two: two readers, or one and Gus. Each pushing down at the right moment bounces the other higher. A big bounce throws the one on top off with its speed, like a swing jump.
 - **Swings.** The existing swing, with the existing jump off it, out into the sand. Every jump carries forward (0.4.443, `docs/SWING_JUMPS_0_4_423.md`).
+  - **A push.** Added by the owner on 11 November ("please ensure players can push other players on the swing set"): somebody on the sand pushes the one on a swing, and has to time it (0.4.474, `docs/SWING_PUSH_0_4_474.md`).
 - **Slide.** A long metal slide. A reader goes down it seated and shoots off the end with speed. Riding down it on the Wasp is possible, and Gus is impressed.
 - **Monkey bars.** A new verb: hanging and swinging hand over hand.
   - **The verb.** A jump at the bars grabs one. The strafe keys swing the body, and each swing at the top of its arc reaches the next bar. Letting go drops.

@@ -35,6 +35,7 @@ public final class BikeNightTexts {
     /** 0.4.465, the swings: a hand on the frame; what a reader on one is told once; coming down off one; a hand on the mark. */
     public static final String SWINGS="A steel frame with four swings on chains under it. The paint is worn through where hands go.";
     public static final String SWING_HINT="Lean with the swing to take it higher. Jump to let go.";
+    // 0.4.474: what somebody pushing a swing is told is the swing's own to say (HouseReadSwing), since any swing can be pushed.
     public static final String JUMP="You come down %s paces out from the swings. The furthest tonight is %s.";
     public static final String JUMP_LEVEL="You come down %s paces out from the swings, level with the furthest tonight.";
     public static final String JUMP_BEST="You come down %s paces out from the swings. Nobody has landed further tonight.";
@@ -102,9 +103,10 @@ public final class BikeNightTexts {
         String bike=bike(own.getString("Bike"));
         p.add(bike.isEmpty()?"There were six bikes in the rack by the gate. I did not take one.":"There were six bikes in the rack by the gate. I took "+bike+".");
         // The playground, as far as this reader went on it.
-        int far=own.getInt("SwingBest");
-        if(far>0)p.add("I got one of the swings as high as it would go and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
-        else if(own.getBoolean("Swung"))p.add("I sat on one of the swings for a while.");
+        int far=own.getInt("SwingBest");String pushedBy=own.getString("SwingPushedBy"),pushed=own.getString("SwingPushed");
+        if(far>0)p.add("I got one of the swings as high as it would go"+(pushedBy.isEmpty()?"":", with "+pushedBy+" pushing,")+" and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
+        else if(own.getBoolean("Swung"))p.add(pushedBy.isEmpty()?"I sat on one of the swings for a while.":"I sat on one of the swings, and "+pushedBy+" pushed me.");
+        if(!pushed.isEmpty())p.add("I pushed "+pushed+" on the swings.");
         if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
         if(own.getInt("Crossed")>0)p.add("I went all the way across the monkey bars, hand over hand, without a foot on the sand.");
         else if(own.getInt("BarsMissed")>0)p.add("I went for the next rung of the monkey bars too early, and dropped into the sand.");
