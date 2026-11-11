@@ -39,6 +39,8 @@ SHEETS = [
     ('wall_school', 1, True), ('wall_squint', 1, True), ('wall_pencil', 1, True), ('wall_holes', 1, True), ('wall_bleached', 1, True),
     ('wall_cut', 1, True), ('wall_torn', 1, True), ('wall_two', 1, True), ('wall_corners', 1, True),
     ('board', 4, False), ('board_third', 4, False), ('board_last', 4, False), ('board_covered', 4, False),
+    # 0.4.462: the childhood board with the dog's notice taken down (labyrinth.BorrascaDogs). Last, so that no other sheet's blocks move.
+    ('board_home', 4, False),
 ]
 
 WHITE, CREAM, YELLOW, BROWN, PALE = '#e9e6dc', '#e3d9b8', '#d6c58f', '#a98a5e', '#dcd6c6'
@@ -378,7 +380,10 @@ def card(rnd, colour):
     return note(5, 3, colour, rnd, lines=((1, 1, 4),))
 
 
-def board(stage, every):
+def board(stage, every, dog_home=False):
+    """One picture of the store's noticeboard. `dog_home` is the childhood board once the lost dog's notice is down: everything
+    else on it is laid exactly as before (the same sheets from the same numbers), and where the notice hung the cork is paler,
+    with the hole its pin left."""
     rnd = random.Random(40 + stage)
     im = framed(cork(rnd))
     px = im.load()
@@ -389,7 +394,17 @@ def board(stage, every):
         lay(im, every['dana'], 3, 3)
         lay(im, bake(rnd), 10, 10); pin(im, 13, 10, 1)
         lay(im, church(rnd), 3, 20); pin(im, 7, 20, 2)
-        lay(im, dog(rnd), 12, 20); pin(im, 15, 20, 3)
+        notice = dog(rnd)
+        if dog_home:
+            src = notice.load()
+            for dy in range(notice.size[1]):
+                for dx in range(notice.size[0]):
+                    if src[dx, dy][3]:
+                        r, g, b, a = px[12 + dx, 20 + dy]
+                        px[12 + dx, 20 + dy] = (min(255, r + 16), min(255, g + 14), min(255, b + 10), a)
+            px[15, 20] = S.tone('#5a3d24')
+        else:
+            lay(im, notice, 12, 20); pin(im, 15, 20, 3)
         lay(im, prescott(rnd), 20, 22); pin(im, 24, 22, 0)
         lay(im, card(rnd, '#e6d27a'), 2, 29); lay(im, card(rnd, '#d8d2c2'), 13, 29)
     elif stage == 1:    # years later: the supper, a bicycle for sale, Kelly's sheet marked CLOSED, the contract renewed
@@ -430,6 +445,7 @@ def pictures():
         out[name + '_back'] = back(out[name])
     for k, name in enumerate(('board', 'board_third', 'board_last', 'board_covered')):
         out[name] = board(k, every)
+    out['board_home'] = board(0, every, dog_home=True)
     return out
 
 

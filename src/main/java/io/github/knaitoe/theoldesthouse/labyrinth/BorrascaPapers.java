@@ -53,7 +53,9 @@ public final class BorrascaPapers {
         BOARD(4,false,""),
         BOARD_THIRD(4,false,""),
         BOARD_LAST(4,false,""),
-        BOARD_COVERED(4,false,"");
+        BOARD_COVERED(4,false,""),
+        /** 0.4.462: the childhood board with the lost dog's notice down (BorrascaDogs). Last, so that no other sheet's blocks move. */
+        BOARD_HOME(4,false,"");
         public final int pieces;public final boolean glass;
         /** What a hand on it reads; empty for the noticeboard, which opens as pages. */
         public final String look;
@@ -75,6 +77,8 @@ public final class BorrascaPapers {
     /** How far the front has got for a reader on this visit; {@code ended} once the machine has been fed or stopped. */
     public static int stage(int visit,boolean ended){return ended?PAPERED:Math.max(AS_BUILT,Math.min(LAST,visit));}
     public static Sheet board(int stage){return stage>=PAPERED?Sheet.BOARD_COVERED:stage==LAST?Sheet.BOARD_LAST:stage==KENDRA?Sheet.BOARD_THIRD:Sheet.BOARD;}
+    /** 0.4.462: on the second visit the dog's notice is down from the board if he was brought home the day before. */
+    public static Sheet board(int stage,boolean noticeDown){return noticeDown&&stage==PATRICK?Sheet.BOARD_HOME:board(stage);}
     /** The quarter of a board's picture that hangs in one of {@link BorrascaRooms#BOARD}'s cells: a reader on the porch faces west, so their left is south. */
     public static BlockState boardPiece(Sheet board,BlockPos cell){
         int south=Arrays.stream(BorrascaRooms.BOARD).mapToInt(BlockPos::getZ).max().orElseThrow(),top=Arrays.stream(BorrascaRooms.BOARD).mapToInt(BlockPos::getY).max().orElseThrow();
@@ -99,8 +103,9 @@ public final class BorrascaPapers {
         return true;
     }
     /** Hang the front as it is at a stage. Each stage holds what the ones before it hung. */
-    static void hang(ServerLevel l,BlockPos b,int stage){
-        var board=board(stage);
+    static void hang(ServerLevel l,BlockPos b,int stage){hang(l,b,stage,false);}
+    static void hang(ServerLevel l,BlockPos b,int stage,boolean noticeDown){
+        var board=board(stage,noticeDown);
         for(var cell:BorrascaRooms.BOARD)l.setBlock(BorrascaRooms.at(b,cell),boardPiece(board,cell),F);
         if(stage>=PAPERED){paper(l,b);return;}
         if(stage>=PATRICK)l.setBlock(BorrascaRooms.at(b,BorrascaRooms.ELI_POSTER),BorrascaPaperBlock.of(stage>=LAST?Sheet.PATRICK_YELLOWED:Sheet.PATRICK,0,Direction.EAST,false),F);

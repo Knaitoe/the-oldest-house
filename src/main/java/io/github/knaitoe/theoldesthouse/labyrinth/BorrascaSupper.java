@@ -195,7 +195,8 @@ public final class BorrascaSupper {
             case BorrascaPeople.VERN->stood(own)>=SPOTS.length?VERN_DONE:n==0?VERN_FIRST:VERN_NEXT;
             case BorrascaPeople.MRS_HOLLIS->stood(own)<SPOTS.length?HOLLIS_TABLES:own.getInt("SupperLaid")!=ALL_LAID?HOLLIS_PLATES:HOLLIS_DONE;
             case BorrascaPeople.MRS_PRUITT->own.getBoolean("SupperPie")?PRUITT_AFTER:PRUITT_PIE;
-            case BorrascaPeople.MRS_CORLEY->n==0?CORLEY_FIRST:CORLEY_NEXT;
+            // 0.4.462: once Biscuit is home she says so, the first time she is asked.
+            case BorrascaPeople.MRS_CORLEY->{if(own.getBoolean("BiscuitHome")&&!own.getBoolean("BiscuitThanked")){own.putBoolean("BiscuitThanked",true);yield BorrascaDogs.CORLEY_HOME;}yield n==0?CORLEY_FIRST:CORLEY_NEXT;}
             default->n%2==0?NEAL_FIRST:NEAL_NEXT;
         };
     }

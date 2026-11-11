@@ -134,13 +134,24 @@ public final class BorrascaTexts {
             "MISSING\nKELLY GARRITY, 12\nLast seen on the pine trail near the second marker. Teal backpack.",
             "The sheet has gone soft and pale. Someone has written CLOSED across the bottom in marker.",
             "PRESCOTT ORE SERVICES\nCounty maintenance contract renewed. Night work available.");
+        return childhood("Lost: brown dog, answers to Biscuit.");
+    }
+    /** The board of the two childhood visits. Its first sheet ends with the dog's notice, or with where that notice was. */
+    private static ItemStack childhood(String dog){
         return typed("The noticeboard","Drisking",
-            "DRISKING\n\nChurch supper Sunday, six o'clock. Bring a dish.\n\nLost: brown dog, answers to Biscuit.",
+            "DRISKING\n\nChurch supper Sunday, six o'clock. Bring a dish.\n\n"+dog,
             "CURFEW\nChildren off the trails by dusk.\nSheriff's office",
             "PRESCOTT ORE SERVICES\nNight work at the ridge depot. Good pay. Ask at the yard gate.\nFamily owned since the old mine.",
             "MISSING\nDANA PRUITT, 15\nLast seen on the pine trail.\n\nThe sheet is sun-faded. A newer flyer for a bake sale is pinned over half of it.",
             "Behind the curfew notice, the curled corner of a much older poster: a girl's school photograph, the paper gone brown. The name has worn away.");
     }
+    /**
+     * 0.4.462: the board on the second visit once Biscuit has been brought home (BorrascaDogs): his notice is down. It is its own
+     * original, so a reader who read the board the day before keeps that copy as it was.
+     */
+    public static ItemStack boardNoDog(){return childhood("A pin hole in a paler square of cork, where a notice was.");}
+    public static ItemStack board(int visit,boolean noticeDown){return noticeDown&&visit==2?boardNoDog():board(visit);}
+    public static String boardKey(int visit,boolean noticeDown){return noticeDown&&visit==2?"BoardNoDog":boardKey(visit);}
     /** 0.4.451: the board after the ending, when the whole front of the store has been papered over. It is its own original. */
     public static ItemStack boardAfter(){return typed("The noticeboard","Drisking",
         "DRISKING\n\nEvery sheet on the board says LOST. They are pinned across the frame and across each other.",
@@ -183,6 +194,8 @@ public final class BorrascaTexts {
         return (own.getBoolean("FoundNell")?"She called out which way to look when we played hide-and-seek. ":"")
             // 0.4.433: the two who came part of the way.
             +(own.getBoolean("AlongHeard")?"Patrick and Kendra came with us as far as the first marker. Patrick said he would go up by the second one some other time. ":"")
+            // 0.4.462: the dog in the trees by the first marker.
+            +BorrascaDogs.told(own)
             // 0.4.435: the bikes.
             +bikes(own)
             // 0.4.436: the drugstore's games.
