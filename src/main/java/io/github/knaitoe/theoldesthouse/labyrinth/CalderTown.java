@@ -725,6 +725,24 @@ public final class CalderTown {
         for(int row=0;row<up.rows;row++)for(int col=0;col<up.cols;col++)
             l.setBlock(b.offset(MARQUEE).offset(col,row,0),CalderSignBlock.of(up,(up.rows-1-row)*up.cols+(up.cols-1-col),Direction.NORTH),Block.UPDATE_CLIENTS);
     }
+    /** Changes a sign that hangs on a wall for another of its size, block for block. Where no sign hangs, nothing is hung. */
+    private static void change(ServerLevel l,BlockPos b,CalderSigns.Sign to,Direction facing,int plane,int lo,int y){
+        int left=facing==Direction.SOUTH||facing==Direction.WEST?lo:lo+to.cols-1;var at=b.offset(before(facing,plane,left,y,1));
+        for(int row=0;row<to.rows;row++)for(int col=0;col<to.cols;col++){
+            var cell=CalderSigns.cell(to,at,facing,col,row);var now=l.getBlockState(cell);
+            if(CalderSignBlock.is(now)&&!CalderSignBlock.is(now,to))l.setBlock(cell,CalderSignBlock.of(to,row*to.cols+col,facing),Block.UPDATE_CLIENTS);
+        }
+    }
+    /** 0.4.486: the burger place's name, both of them, with its bad letter out or lit. */
+    public static void neon(ServerLevel l,BlockPos b,boolean dim){
+        var to=dim?CalderSigns.Sign.BIGTOP_NAME_DIM:CalderSigns.Sign.BIGTOP_NAME;
+        change(l,b,to,Direction.SOUTH,NEON_SOUTH.getZ()-1,NEON_SOUTH.getX(),NEON_SOUTH.getY());change(l,b,to,Direction.NORTH,NEON_NORTH.getZ()+1,NEON_NORTH.getX(),NEON_NORTH.getY());
+    }
+    public static boolean neonDim(ServerLevel l,BlockPos b,boolean north){return CalderSignBlock.is(l.getBlockState(b.offset(north?NEON_NORTH:NEON_SOUTH)),CalderSigns.Sign.BIGTOP_NAME_DIM);}
+    private static final CalderSigns.Sign[] AISLES={CalderSigns.Sign.FOOD_A,CalderSigns.Sign.FOOD_B,CalderSigns.Sign.FOOD_C},AISLES_DARK={CalderSigns.Sign.FOOD_A_DARK,CalderSigns.Sign.FOOD_B_DARK,CalderSigns.Sign.FOOD_C_DARK};
+    /** 0.4.486: one of the Food Fair's three windows, with the lights behind it on or off. */
+    public static void aisle(ServerLevel l,BlockPos b,int which,boolean lit){change(l,b,(lit?AISLES:AISLES_DARK)[which],Direction.SOUTH,FOOD[which].getZ()-1,FOOD[which].getX(),FOOD[which].getY());}
+    public static boolean aisleLit(ServerLevel l,BlockPos b,int which){return CalderSignBlock.is(l.getBlockState(b.offset(FOOD[which])),AISLES[which]);}
     /** A new night: the next double feature on the marquee, and the clock back at the night's first minute. */
     public static void newNight(ServerLevel l,BlockPos b){
         if(!l.isLoaded(b.offset(MARQUEE))||!l.isLoaded(b.offset(CLOCK)))return;

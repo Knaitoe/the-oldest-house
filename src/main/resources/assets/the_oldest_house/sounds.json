@@ -5208,5 +5208,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.town.horn_muscle"
+  },
+  "town.dryers": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:town/dryers",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.town.dryers"
+  },
+  "town.neon": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:town/neon",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.town.neon"
+  },
+  "town.breaker": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:town/breaker",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.town.breaker"
+  },
+  "town.laughter": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:town/laughter",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.town.laughter"
+  },
+  "town.radio": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:town/radio",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.town.radio"
   }
 }

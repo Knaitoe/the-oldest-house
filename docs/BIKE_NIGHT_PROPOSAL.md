@@ -23,6 +23,13 @@ November 11, while the town was being rebuilt:
 
 (Yes: every way north comes out on Church Lane, which touches the cemetery's railings at its gate; the straight way is the cut, a footpath from Elm Street, named CEMETERY at its mouth. The same note.)
 
+November 11, with the people on the pavements just built:
+
+> - So what do you have in mind for the graveyard hunt? Both mechanically and narratively?
+
+(Answered from **Act three** below, with what was added in the answer written into it under "As answered, November 11", and
+three calls left with the owner at the end of **Open, for the owner**. None of the graveyard is built.)
+
 Everything below is Claude's working of those notes. Names, places, lines and creatures are original, and nothing recreates a particular film or game.
 
 ## The shape
@@ -164,6 +171,25 @@ The chase runs through Calder Falls, built whole at night and dressed for Hallow
 - **The stones tell a story.**
   - One row of small headstones near the back all carries the same autumn date, years before, with names and nothing else.
   - The town has a story about the kids who cut through the graveyard on Halloween. Gus tells it badly on the ride, earlier, as a joke. It is never told properly.
+
+**As answered, November 11** (the owner asked what the graveyard's hunt is to be). What is Claude's own and not in the notes
+above is marked.
+- **The hunt changes hands.** In the town the readers are hunted by three children who want their bikes. In the graveyard that
+  hunt fails by itself, and what comes after the readers next does not want bikes. (Claude's reading.)
+- **Getting in.** The town's hunt leaves the north open (0.4.482), so the gate is the one way the three are not in. It has been
+  shut all evening and is standing open when the readers reach it. Nobody says why.
+- **The three.** They can still catch a reader who comes off in the first rows. Nothing is shown happening to them: their
+  voices stop, and they are taken away only when nobody can see them go.
+- **The quiet row.** Gus has told the story badly in the park, and shouts "Not the graveyard" in the chase. At the row he
+  says nothing. (Claude's.)
+- **Stones.** A stone is a wall by the rule the cars already have: a glance keeps a bike's way, a head-on hit puts the rider
+  over the bars. Low stones can be hopped. The open grave is a pit behind its mound; the mound is the ramp, and falling in
+  costs time and nothing else.
+- **The mist** is each reader's own, thicker with each row. The Lamp pushes it back for its rider and whoever rides close.
+- **In the Hollow,** ducking a witch is the hop's crouch, so a witch just before a gap is a choice. (Claude's.) The werewolf
+  leaps at gaps, so a gap is timed. The headless rider on the last stretch is a check on pace.
+- **A plain way through for any bike,** longer and with more in it, beside the five that the perks open: nobody is shut out
+  by the bike they took. (Claude's.)
 
 **The town melts away.** Past the last row, the lights of Calder Falls go out behind the riders, one street at a time. Then the ground ahead falls away. They are riding into **the Hollow**:
 - the same night and the same moon;
@@ -307,7 +333,7 @@ It is large. It has three acts, a town, and a course in the air. In slices:
    - the rack and the choice.
 2. **The playground:** the seesaw, the slide, the monkey bars (new verb), the merry-go-round, the spring rider, the dome, the sandpit and sand balls. Gus. (The park itself is built, 0.4.464, `docs/BIKE_NIGHT_PARK_0_4_464.md`: the place, its railings, gate, lamps, rack and sand, and whose bike is whose. The swings and the sand balls are built, 0.4.465, `docs/BIKE_NIGHT_SWINGS_0_4_465.md`, the slide, 0.4.466, `docs/BIKE_NIGHT_SLIDE_0_4_466.md`, the monkey bars, 0.4.467, `docs/BIKE_NIGHT_BARS_0_4_467.md`, the seesaw, 0.4.468, `docs/BIKE_NIGHT_SEESAW_0_4_468.md`, and the merry-go-round, 0.4.469, `docs/BIKE_NIGHT_ROUNDABOUT_0_4_469.md`. The monkey bars and the seesaw were first built short of what is written above, and were put right in 0.4.470, `docs/BIKE_NIGHT_RHYTHM_0_4_470.md`. The spring rider, the climbing dome, the drinking fountain, the payphone and the carved bench are built, 0.4.471, `docs/BIKE_NIGHT_SMALL_THINGS_0_4_471.md`. Gus at the playground is built, 0.4.476, `docs/BIKE_NIGHT_GUS_0_4_476.md`; his bike and his riding come with the chase. Riding the slide on a bike is noticed, 0.4.477, `docs/BIKE_NIGHT_SLIDE_BIKE_0_4_477.md`; a hill takes and gives a bike its speed, 0.4.478, `docs/BIKE_HILLS_0_4_478.md`.)
 3. **The bullies** at the playground, and the start of the chase. (Built, 0.4.479, `docs/BIKE_NIGHT_BULLIES_0_4_479.md`: the three, their bikes, the gate, the cap, the seesaw, sand balls and "Get them." Being caught comes with the town.)
-4. **The town:** the streets, buildings and dressing (built, 0.4.481, `docs/BIKE_NIGHT_TOWN_0_4_481.md`); the traffic actor (built, 0.4.484, `docs/BIKE_NIGHT_CARS_0_4_484.md`); the passers-by (built, 0.4.485, `docs/BIKE_NIGHT_PEOPLE_0_4_485.md`: the trick-or-treaters, the theater's line, the four on the hoods; the set pieces are still to come); the bullies' hunt through the back ways (built, 0.4.482, `docs/BIKE_NIGHT_HUNT_0_4_482.md`, with being caught in town).
+4. **The town:** the streets, buildings and dressing (built, 0.4.481, `docs/BIKE_NIGHT_TOWN_0_4_481.md`); the traffic actor (built, 0.4.484, `docs/BIKE_NIGHT_CARS_0_4_484.md`); the passers-by (built, 0.4.485, `docs/BIKE_NIGHT_PEOPLE_0_4_485.md`: the trick-or-treaters, the theater's line, the four on the hoods; and what changes, 0.4.486, `docs/BIKE_NIGHT_EVENING_0_4_486.md`: the laundromat's moving front, the neon's bad letter, the grocery closing up, tracks on the field, the town's sounds; the stock boy and his carts are still to come); the bullies' hunt through the back ways (built, 0.4.482, `docs/BIKE_NIGHT_HUNT_0_4_482.md`, with being caught in town).
 5. **The graveyard:** the stones, the mist, the bullies falling back.
 6. **The Hollow:** the course, its routes, the pop-up ghouls and goblins, the specters.
 7. **The endings,** the account, the keepsake, the failures' headstone and chained bike, and the aftermath.
@@ -320,3 +346,10 @@ It is large. It has three acts, a town, and a course in the air. In slices:
 4. **Permanent failures:** both permanent, as written, or is this a lighter vignette where being caught in town lets the reader walk back and try again?
 5. **The Hollow:** one shared course as suggested, or a course instanced per rider as in the owner's notes?
 6. **Order:** where does it go in the queue, before or after the Pell house?
+7. **The three at the end** (asked November 11): their bikes lie by the front gate, they are nowhere, and the cap hangs on
+   the gate. They are children, so Claude would keep it readable as "they dropped their bikes and ran". Darker, or left more
+   open?
+8. **Gus in the Hollow** (asked November 11): he rides the plain way with no specter ever his, so he is at the back gate
+   whenever the reader is; or he stops at the edge where the ground falls away, and is waiting at the back gate.
+9. **One course or one each** (asked November 11, and the same as 5): Claude plans on one shared course, with each specter
+   private to whoever it chases.

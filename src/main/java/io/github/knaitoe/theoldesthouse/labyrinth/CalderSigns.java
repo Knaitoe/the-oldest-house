@@ -21,7 +21,7 @@ public final class CalderSigns {
         RULES(4,2,Mount.WALL,0,"PARK RULES. Shut at dusk. No cycling. Under that, in marker, in another hand: NO FUN."),
         // 0.4.481, the town. A shop's front is a picture too: its window band, hung on the wall like a sign.
         WASH_NAME(8,1,Mount.WALL,6,"WASH-O-MAT, in lit letters over the door."),
-        WASH_FRONT(7,2,Mount.WALL,10,"Six dryers in a row behind the glass, some of them turning. COIN-OP. WASH .50. OPEN, 24H."),
+        WASH_FRONT(7,2,Mount.WALL,10,"Six dryers in a row behind the glass, four of them turning. A woman folding a sheet at the counter, alone. A television on a bracket, with a late film on. COIN-OP. WASH .50. OPEN, 24H."),
         BIGTOP_NAME(7,2,Mount.WALL,8,"BIG TOP BURGERS, in tubes under a tent's stripes. One letter of BURGERS keeps going out."),
         BIGTOP_NAME_DIM(7,2,Mount.WALL,8,"BIG TOP BURGERS, in tubes under a tent's stripes. One letter of BURGERS is out."),
         BIGTOP_FRONT(7,2,Mount.WALL,12,"The counter and its hatch, ORDER HERE, the menu over it, and an arcade cabinet in the corner with its screen going."),

@@ -1701,5 +1701,10 @@
   "subtitles.the_oldest_house.town.horn_pickup": "A pickup's horn",
   "subtitles.the_oldest_house.town.horn_sedan": "A sedan's horn",
   "subtitles.the_oldest_house.town.horn_muscle": "A fast car's horn",
-  "item.the_oldest_house.treat_sack": "Pillowcase of Sweets"
+  "item.the_oldest_house.treat_sack": "Pillowcase of Sweets",
+  "subtitles.the_oldest_house.town.dryers": "Dryers tumble",
+  "subtitles.the_oldest_house.town.neon": "Neon buzzes",
+  "subtitles.the_oldest_house.town.breaker": "Lights are switched off",
+  "subtitles.the_oldest_house.town.laughter": "An audience laughs",
+  "subtitles.the_oldest_house.town.radio": "A car radio plays"
 }
