@@ -81,6 +81,8 @@ public final class BorrascaShopTexts {
             // 0.4.431: Kendra's bike on its kickstand (stage 0), Patrick's dropped on its side (stage 1).
             case BIKE->stage==0?"Kendra's bike, on its kickstand. The seat is let all the way down, and the chain shines with fresh oil."
                 :"Patrick's bike, dropped on its side where anybody could trip on it. A baseball card is pinned to the fork so the spokes clatter.";
+            // 0.4.457: where it fell.
+            case BATON->"The Sheriff's baton, lying where it fell.";
             default->null;
         };
     }

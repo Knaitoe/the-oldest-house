@@ -372,6 +372,33 @@ def bench_iron():
     return im
 
 
+def baton():
+    """0.4.457: the Sheriff's baton. Black rubber with a line of light along it; at one end the ridges of the grip."""
+    im = art(['IIIIIIIIIIIIIIII'] * 16, {'I': '#1d1d20'}, 'I', 45700, 2)
+    for x in range(16):
+        dot(im, x, 5, '#3a3a40'); dot(im, x, 6, '#2a2a2f')
+    for x in (1, 3, 5):
+        for y in range(16):
+            dot(im, x, y, '#0f0f11')
+    return im
+
+
+def baton_item():
+    """The baton in a hand: a stick on end, sixteen pixels long, its side handle a third of the way up. Held as a club."""
+    stick = {k: [6, 0, 7.5, 16] for k in ('north', 'south', 'east', 'west')}
+    stick.update({'up': [8, 4, 9.5, 5.5], 'down': [8, 4, 9.5, 5.5]})
+    side = {k: [8, 4, 11, 5.5] for k in ('north', 'south', 'up', 'down')}
+    side.update({'east': [8, 4, 9.5, 5.5], 'west': [8, 4, 9.5, 5.5]})
+    return {'textures': {'b': P + 'baton', 'particle': P + 'baton'},
+            'elements': [element([7.25, 0, 7.25], [8.75, 16, 8.75], {'all': 'b'}, stick),
+                         element([8.75, 4.5, 7.25], [11.75, 6, 8.75], {'all': 'b'}, side)],
+            'display': {'thirdperson_righthand': {'rotation': [-20, 0, 0], 'translation': [0, 3.5, .5], 'scale': [.85, .85, .85]},
+                        'thirdperson_lefthand': {'rotation': [-20, 0, 0], 'translation': [0, 3.5, .5], 'scale': [.85, .85, .85]},
+                        'firstperson_righthand': {'rotation': [0, -20, 12], 'translation': [0, 3, 0], 'scale': [.8, .8, .8]},
+                        'ground': {'rotation': [90, 0, 0], 'translation': [0, 1, 0], 'scale': [.6, .6, .6]},
+                        'gui': {'rotation': [0, 0, -45], 'translation': [0, 0, 0], 'scale': [.9, .9, .9]}}}
+
+
 def price(later=False):
     """The station's board: regular over unleaded. 1.09 and 1.14 in the childhood years; 2.89 and 2.99 when the reader comes back grown (0.4.454)."""
     im = new('#f0ece2', 42244, 3); frame(im, '#3a3a3a')
@@ -1359,7 +1386,7 @@ def textures():
         'pegboard': pegboard(False), 'pegboard_taken': pegboard(True),
         'pump_door': pump_door(), 'pump_side': pump_side(), 'pump_side_top': pump_side_top(), 'pump_dial_0': pump_dial(0), 'pump_dial_1': pump_dial(1),
         'pump_cap': pump_cap(), 'pump_trim': pump_trim(), 'pump_globe': pump_globe(), 'pump_base': pump_base(), 'pump_hose': pump_hose(),
-        'pew_wood': pew_wood(), 'pew_end': pew_end(), 'pew_books': pew_books(), 'bench_wood': bench_wood(), 'bench_iron': bench_iron(),
+        'pew_wood': pew_wood(), 'pew_end': pew_end(), 'pew_books': pew_books(), 'bench_wood': bench_wood(), 'bench_iron': bench_iron(), 'baton': baton(),
         'price': price(), 'price_later': price(True),
         'payphone': payphone(), 'cooler_front': cooler_front(), 'cooler_top': cooler_top(), 'candy': candy(),
         'velvet': velvet(), 'curios': curios(), 'helmet': helmet(), 'lamp': lamp(), 'map': mine_map(), 'photos': photos(), 'clock': clock(),
@@ -1431,6 +1458,10 @@ def shop_models():
         m[f'pegboard_{stage}'] = model([element([0, 0, 15], [16, 16, 16], {'all': 'b', 'north': 'p'})], {'b': 'wood', 'p': face}, face)
     pump_models(m)
     seat_models(m)
+    # 0.4.457: the Sheriff's baton, lying where it fell.
+    m['baton_0'] = model([element([2, 0, 7], [14, 1.5, 8.5], {'all': 'b'}, {**{k: [0, 4, 12, 5.5] for k in ('north', 'south', 'up', 'down')}, 'east': [8, 4, 9.5, 5.5], 'west': [8, 4, 9.5, 5.5]}),
+                          element([9, 0, 8.5], [10.5, 1.5, 11], {'all': 'b'}, {k: [8, 4, 10.5, 5.5] for k in ('north', 'south', 'east', 'west', 'up', 'down')})],
+                         {'b': 'baton'}, 'baton')
     m['price_0'] = wall('price', 'chrome')
     m['price_1'] = wall('price_later', 'chrome')
     m['payphone_0'] = model([element([3, 1, 11], [13, 16, 16], {'all': 'c', 'north': 'p'}), element([2, 15, 10], [14, 16, 16], {'all': 'c'})],
@@ -1792,7 +1823,7 @@ KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'pa
          'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top',
          'remains', 'wristband', 'smear',
          'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log',
-         'comic', 'pew_end', 'pew_mid', 'bench', 'bench_end', 'bench_mid']
+         'comic', 'pew_end', 'pew_mid', 'bench', 'bench_end', 'bench_mid', 'baton']
 STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2,
           'pump': 2, 'pump_top': 2, 'pew_end': 2, 'bench_end': 2, 'price': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
@@ -1826,6 +1857,7 @@ def files():
     out['blockstates/borrasca_shop.json'] = {'variants': variants}
     for name in ITEM_ART:
         out[f'models/item/borrasca_{name}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/borrasca_{name}'}}
+    out['models/item/borrasca_baton.json'] = baton_item()
     return out
 
 
@@ -1909,6 +1941,7 @@ def main():
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
     wanted.update({f'item.the_oldest_house.borrasca_{k}': v[1] for k, v in ITEM_ART.items()})
+    wanted['item.the_oldest_house.borrasca_baton'] = 'County baton'
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key

@@ -278,7 +278,7 @@ public final class BorrascaNativeArt {
             if(gesture==BorrascaStory.KNELT||gesture==BorrascaStory.FALLEN)return;
             if(amount<=.01F)return;float c=net.minecraft.util.Mth.cos(phase),swing=.72F*amount;
             if(gesture!=5&&gesture!=BorrascaStory.CARRIED){rightLeg.xRot+=c*swing;leftLeg.xRot-=c*swing;}
-            boolean right=gesture==0||gesture==8,left=gesture!=3&&gesture!=5&&gesture!=8&&gesture!=BorrascaStory.CARRY&&gesture!=10;
+            boolean right=gesture==0||gesture==8,left=gesture!=3&&gesture!=5&&gesture!=8&&gesture!=BorrascaStory.CARRY&&gesture!=10&&(gesture<BorrascaSheriffFight.GUARD||gesture>BorrascaSheriffFight.REEL);
             if(right)rightArm.xRot-=c*.5F*amount;if(left)leftArm.xRot+=c*.5F*amount;
             float bob=-Math.abs(net.minecraft.util.Mth.sin(phase))*.22F*amount;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=bob;
         }
@@ -306,6 +306,18 @@ public final class BorrascaNativeArt {
                 // 0.4.427: the Sheriff beaten down, sitting in the dirt with his legs out and his hands up; and dead, flat on his back.
                 case BorrascaStory.KNELT->{leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.zRot=-.12F;rightLeg.zRot=.12F;body.xRot=.22F;head.xRot=.38F;leftArm.xRot=rightArm.xRot=-1.2F;leftArm.zRot=.28F;rightArm.zRot=-.28F;}
                 case BorrascaStory.FALLEN->{leftArm.zRot=-.32F;rightArm.zRot=.4F;leftLeg.zRot=-.08F;rightLeg.zRot=.1F;head.yRot=.55F;head.xRot=0;}
+                // 0.4.457 (owner: "Punches should be sluggish with real weight. The sheriff should use his baton ... He swings with one fist
+                // then the other."): the Sheriff's fight (BorrascaSheriffFight). His hands up between blows; the baton raised over his right
+                // shoulder with that shoulder drawn back, and brought down across him as he leans into it; each fist drawn back low with its
+                // shoulder, then thrown level and across with that shoulder behind it; and reeling from a blow, his head back and his arms out.
+                case BorrascaSheriffFight.GUARD->{body.xRot=.1F;head.xRot=.08F;rightArm.xRot=-1.15F;rightArm.yRot=-.35F;leftArm.xRot=-1.05F;leftArm.yRot=.4F;}
+                case BorrascaSheriffFight.BATON_UP->{body.yRot=.5F;body.xRot=-.06F;rightArm.xRot=-3.0F;rightArm.zRot=.2F;leftArm.xRot=-.9F;leftArm.yRot=.5F;rightLeg.xRot=.22F;leftLeg.xRot=-.18F;}
+                case BorrascaSheriffFight.BATON_DOWN->{body.yRot=-.45F;body.xRot=.3F;head.xRot=.15F;rightArm.xRot=-.5F;rightArm.yRot=-.5F;leftArm.xRot=.4F;rightLeg.xRot=-.3F;leftLeg.xRot=.25F;}
+                case BorrascaSheriffFight.LEFT_BACK->{body.yRot=-.45F;body.xRot=.06F;leftArm.xRot=-.35F;leftArm.zRot=-.2F;rightArm.xRot=-1.2F;rightArm.yRot=-.4F;}
+                case BorrascaSheriffFight.LEFT_OUT->{body.yRot=.5F;body.xRot=.18F;leftArm.xRot=-1.5F;leftArm.yRot=.4F;rightArm.xRot=-.9F;rightArm.yRot=-.3F;leftLeg.xRot=-.25F;rightLeg.xRot=.2F;}
+                case BorrascaSheriffFight.RIGHT_BACK->{body.yRot=.45F;body.xRot=.06F;rightArm.xRot=-.35F;rightArm.zRot=.2F;leftArm.xRot=-1.2F;leftArm.yRot=.4F;}
+                case BorrascaSheriffFight.RIGHT_OUT->{body.yRot=-.5F;body.xRot=.18F;rightArm.xRot=-1.5F;rightArm.yRot=-.4F;leftArm.xRot=-.9F;leftArm.yRot=.3F;rightLeg.xRot=-.25F;leftLeg.xRot=.2F;}
+                case BorrascaSheriffFight.REEL->{body.xRot=-.28F;head.xRot=-.4F;rightArm.xRot=-.35F;rightArm.zRot=.55F;leftArm.xRot=-.35F;leftArm.zRot=-.55F;leftLeg.xRot=.3F;rightLeg.xRot=-.1F;}
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */

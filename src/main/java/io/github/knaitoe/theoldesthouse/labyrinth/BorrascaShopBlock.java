@@ -60,7 +60,9 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
         OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP,REMAINS,WRISTBAND,SMEAR,
         DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG,COMIC,
-        PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID;
+        PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID,
+        /** 0.4.457: the Sheriff's baton, lying where it fell (BorrascaSheriffFight). */
+        BATON;
         /** A paper lying on a desk. */
         public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
@@ -112,6 +114,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case REMAINS->Block.box(1,0,1,15,4,15);
             case WRISTBAND->Block.box(2,0,3,14,1,13);
             case SMEAR->Block.box(0,0,0,16,1,16);
+            case BATON->MarshBlock.turned(f,2,0,7,14,2,11);
             case COMIC->MarshBlock.turned(f,4,0,17,12,11,23);
             case PEW_END,PEW_MID->Shapes.or(MarshBlock.turned(f,0,0,3,16,8,13),MarshBlock.turned(f,0,8,11,16,16,15));
             case BENCH,BENCH_END,BENCH_MID->Shapes.or(MarshBlock.turned(f,0,0,2,16,7,12),MarshBlock.turned(f,0,7,12,16,16,15));

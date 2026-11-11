@@ -1134,7 +1134,7 @@ public final class BorrascaStory {
     static float toward(LiteraryActor from,ServerPlayer to){var d=to.position().subtract(from.position());return (float)Math.toDegrees(Math.atan2(-d.x,d.z));}
     public static float flashlightYaw(CompoundTag own){return own.getInt("Suspicion")>0||own.getBoolean("Escorting")?own.getFloat("BeamYaw"):180+55*(float)Math.sin(own.getInt("TrailClock")*.018);}
     public static boolean flashlightSees(LiteraryActor sheriff,ServerPlayer p,float yaw){Vec3 d=p.getEyePosition().subtract(sheriff.getEyePosition());if(d.lengthSqr()>22*22||d.lengthSqr()<.01)return false;Vec3 direction=new Vec3(-Math.sin(Math.toRadians(yaw)),0,Math.cos(Math.toRadians(yaw)));return direction.dot(d.normalize())>.965&&sees(sheriff,p.getEyePosition());}
-    private static boolean sees(LiteraryActor a,Vec3 at){var hit=a.level().clip(new ClipContext(a.getEyePosition(),at,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,a));return hit.getType()==HitResult.Type.MISS;}
+    static boolean sees(LiteraryActor a,Vec3 at){var hit=a.level().clip(new ClipContext(a.getEyePosition(),at,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,a));return hit.getType()==HitResult.Type.MISS;}
 
     // ------------------------------------------------------------------ the fourth visit: the names
     private static void visitFour(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
@@ -1168,10 +1168,10 @@ public final class BorrascaStory {
         if(sheriff.getHealth()<=SHERIFF_DOWN_HEALTH){
             own.putBoolean("SheriffDown",true);own.putBoolean("SheriffBeaten",true);own.putLong("SheriffDownAt",now);
             var held=sheriff.getMainHandItem();if(!held.isEmpty()){sheriff.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);}
-            sheriff.gesture(KNELT);say(p,sheriff,"Wait. Wait. You don't know what this town is.");
+            sheriff.gesture(KNELT);say(p,sheriff,"Wait. Wait. You don't know what this town is.");BorrascaSheriffFight.heavy(p,false);
         }else{
             if(hits==1)say(p,sheriff,"That's the worst thing you've done in your life.");else if(hits==3)say(p,sheriff,"You're going in a hole up here.");
-            own.putLong("SheriffStrikeAt",Math.min(own.getLong("SheriffStrikeAt"),now+10));
+            BorrascaSheriffFight.struck(p,sheriff,own,hits); // 0.4.457: he is knocked back and reels; at the third the baton is out of his hand
         }
         save(p,own);
     }
@@ -1180,7 +1180,7 @@ public final class BorrascaStory {
         if(!own.getBoolean("SheriffDown")||p.serverLevel().getGameTime()-own.getLong("SheriffDownAt")<20)return false;
         own.putBoolean("SheriffDead",true);own.putInt("SheriffDiedVisit",own.getInt("Visit"));own.putLong("SheriffDiedAt",p.serverLevel().getGameTime());own.remove("SheriffDown");own.putLong("SheriffBody",sheriff.blockPosition().asLong());own.putFloat("SheriffBodyYaw",sheriff.getYRot());
         BorrascaCast.stop(sheriff);sheriff.gesture(FALLEN);sheriff.setCustomNameVisible(false);sheriff.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
-        house(p,"He doesn't get up.");save(p,own);return true;
+        BorrascaSheriffFight.heavy(p,false);house(p,"He doesn't get up.");save(p,own);return true;
     }
     /** 0.4.444: the blood under the Sheriff's body, as his synced torn: spreading up to POOL_FULL, and POOL_DRIED on a later visit. */
     public static final int POOL_FULL=1000,POOL_DRIED=2000;
@@ -1194,7 +1194,7 @@ public final class BorrascaStory {
      */
     private static boolean retribution(ServerPlayer p,CompoundTag own,LiteraryActor sheriff){
         int visit=own.getInt("Visit");
-        if(own.getInt("SheriffVisit")!=visit){own.putInt("SheriffVisit",visit);if(!own.getBoolean("SheriffDead")){sheriff.setHealth(sheriff.getMaxHealth());own.remove("SheriffHits");own.remove("SheriffDown");own.remove("SheriffPleas");}}
+        if(own.getInt("SheriffVisit")!=visit){own.putInt("SheriffVisit",visit);if(!own.getBoolean("SheriffDead")){sheriff.setHealth(sheriff.getMaxHealth());own.remove("SheriffHits");own.remove("SheriffDown");own.remove("SheriffPleas");}BorrascaSheriffFight.rest(p,own,true);}
         if(own.getBoolean("SheriffDead")){
             BorrascaCast.stop(sheriff);sheriff.setCustomNameVisible(false);
             sheriff.setInvisible(false);sheriff.gesture(FALLEN);sheriff.setItemSlot(EquipmentSlot.MAINHAND,ItemStack.EMPTY);
@@ -1206,16 +1206,10 @@ public final class BorrascaStory {
             return true;
         }
         if(own.getBoolean("SheriffDown")){BorrascaCast.stop(sheriff);sheriff.gesture(KNELT);float yaw=toward(sheriff,p);sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);return true;}
-        if(own.getInt("SheriffHits")<=0)return false;
-        // The fight: he comes at the reader and swings his flashlight; if the reader runs far enough he lets them go, for now.
-        double d=sheriff.distanceToSqr(p);
-        if(d>24*24){own.remove("SheriffHits");BorrascaCast.walk(sheriff,sheriff.position(),.5);return false;}
-        if(!sheriff.getMainHandItem().is(BorrascaRegistry.FLASHLIGHT.get()))sheriff.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(BorrascaRegistry.FLASHLIGHT.get()));
-        float yaw=toward(sheriff,p);sheriff.setYRot(yaw);sheriff.setYBodyRot(yaw);sheriff.setYHeadRot(yaw);
-        if(d>2.4*2.4){sheriff.gesture(4);BorrascaCast.walk(sheriff,p.position(),.95);return true;}
-        BorrascaCast.stop(sheriff);sheriff.gesture(2);
-        long now=p.serverLevel().getGameTime();
-        if(now>=own.getLong("SheriffStrikeAt")&&sees(sheriff,p.getEyePosition())){sheriff.swing(net.minecraft.world.InteractionHand.MAIN_HAND);p.hurt(p.damageSources().mobAttack(sheriff),3);own.putLong("SheriffStrikeAt",now+24);}
+        if(!BorrascaSheriffFight.on(own)){BorrascaSheriffFight.heavy(p,false);return false;}
+        // The fight (0.4.457, BorrascaSheriffFight): his baton, and after it his fists. If the reader runs far enough he lets them go, for now.
+        if(sheriff.distanceToSqr(p)>24*24){own.remove("SheriffHits");BorrascaSheriffFight.rest(p,own,false);BorrascaCast.walk(sheriff,sheriff.position(),.5);return false;}
+        BorrascaSheriffFight.tick(p,own,sheriff);
         return true;
     }
 

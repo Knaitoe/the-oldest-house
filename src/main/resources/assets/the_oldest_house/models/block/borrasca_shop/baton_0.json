@@ -1,0 +1,146 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/borrasca_shop/baton",
+    "particle": "the_oldest_house:block/borrasca_shop/baton"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        7
+      ],
+      "to": [
+        14,
+        1.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            0,
+            4,
+            12,
+            5.5
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            0,
+            4,
+            12,
+            5.5
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            9.5,
+            5.5
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            9.5,
+            5.5
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            0,
+            4,
+            12,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            0,
+            4,
+            12,
+            5.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        0,
+        8.5
+      ],
+      "to": [
+        10.5,
+        1.5,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            10.5,
+            5.5
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            10.5,
+            5.5
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            10.5,
+            5.5
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            10.5,
+            5.5
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            10.5,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            8,
+            4,
+            10.5,
+            5.5
+          ]
+        }
+      }
+    }
+  ]
+}
