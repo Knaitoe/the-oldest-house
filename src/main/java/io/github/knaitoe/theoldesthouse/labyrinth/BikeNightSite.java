@@ -59,6 +59,9 @@ public final class BikeNightSite {
      * rungs' block is over the sand. A ladder stands at each end, a block beyond the rungs.
      */
     public static final int BARS_Z=-15,BARS_W=-19,BARS_E=-14,BARS_Y=2;
+    /** 0.4.468, the seesaw: where its stand is, and the way its first end points. Its ends are over the blocks two out each way. */
+    public static final BlockPos SEESAW=new BlockPos(-10,0,-17);
+    public static final Direction SEESAW_FACING=Direction.NORTH;
     public static final int LAMP_TOP=3;
     /** The sheet taped to the wall by the door (the first paper), and where a reader's account is handed over. */
     public static final BlockPos SOURCE=new BlockPos(-4,1,0),ENDING=new BlockPos(-4,2,0);
@@ -81,6 +84,8 @@ public final class BikeNightSite {
     public static BlockPos rungsAt(int k){return new BlockPos(BARS_W+k,BARS_Y,BARS_Z);}
     public static int rungs(){return BARS_E-BARS_W+1;}
     public static BlockPos barsLadder(int end){return new BlockPos(end==0?BARS_W-1:BARS_E+1,0,BARS_Z);}
+    /** The block an end of the seesaw's board is over (0 its first end, 1 its other). */
+    public static BlockPos seesawEnd(int end){return SeesawBlock.end(SEESAW,SEESAW_FACING,end);}
     /** Where a swing's seat hangs. */
     public static BlockPos swingAt(int seat){return new BlockPos(SWING_X,0,SWING_SEATS[seat]);}
     /** Where a bike stands in the rack. */
@@ -108,6 +113,7 @@ public final class BikeNightSite {
         swings(l,b);
         slide(l,b);
         bars(l,b);
+        seesaw(l,b);
         railings(l,b);
         gate(l,b);
         for(var at:LAMPS)lamp(l,b,at,true);
@@ -201,6 +207,11 @@ public final class BikeNightSite {
             for(int y=0;y<BARS_Y;y++)set(l,b,foot.above(y),play(CalderPlayBlock.Kind.LADDER,toward,CalderPlayBlock.BARS+(y==BARS_Y-1?1:0)));
         }
         for(int k=0;k<rungs();k++)set(l,b,rungsAt(k),play(CalderPlayBlock.Kind.RUNGS,k==0?Direction.WEST:Direction.EAST,k==0||k==rungs()-1?CalderPlayBlock.RUNG_END:0));
+    }
+    /** The seesaw: its stand, and the place each end of its board is over. The board is the stand's, and starts with its first end down. */
+    static void seesaw(ServerLevel l,BlockPos b){
+        set(l,b,SEESAW,SeesawBlock.of(SeesawBlock.Part.STAND,SEESAW_FACING));
+        for(int end=0;end<2;end++)set(l,b,seesawEnd(end),SeesawBlock.of(SeesawBlock.Part.END,end==0?SEESAW_FACING:SEESAW_FACING.getOpposite()));
     }
     /** Any swing left as if somebody were on it (a server stopped under a reader) hangs still again. */
     static void swingsBack(ServerLevel l,BlockPos b){

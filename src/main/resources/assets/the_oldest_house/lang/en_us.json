@@ -1623,5 +1623,8 @@
   "subtitles.the_oldest_house.park.sand_throw": "Sand ball is thrown",
   "subtitles.the_oldest_house.park.sand_burst": "Sand ball bursts",
   "subtitles.the_oldest_house.park.slide": "Someone slides",
-  "subtitles.the_oldest_house.park.bars": "Rung rings"
+  "subtitles.the_oldest_house.park.bars": "Rung rings",
+  "block.the_oldest_house.calder_seesaw": "Seesaw",
+  "subtitles.the_oldest_house.park.seesaw_creak": "Seesaw creaks",
+  "subtitles.the_oldest_house.park.seesaw_thud": "Seesaw bumps down"
 }

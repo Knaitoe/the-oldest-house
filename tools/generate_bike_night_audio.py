@@ -2,8 +2,8 @@
 down; the playing card pegged into the Rattler's spokes, and the roar it makes when it takes the bike; the Lamp's dynamo against its
 tyre. And the park's (0.4.464): the failing lamp striking and buzzing as it comes back on, and the chain on the gate when a hand
 tries it. And the playground's (0.4.465): a swing's hangers as it comes through the bottom of its arc, and a ball of sand packed in
-a hand, thrown, and bursting on what it meets; (0.4.466) a body going down the slide; and (0.4.467) a hand coming down on a rung
-of the monkey bars.
+a hand, thrown, and bursting on what it meets; (0.4.466) a body going down the slide; (0.4.467) a hand coming down on a rung
+of the monkey bars; and (0.4.468) the seesaw's axle as somebody pushes off, and its bumper coming down on the sand.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -28,6 +28,8 @@ ROWS = {
     'park/sand_burst': ('park.sand_burst', 'Sand ball bursts', 14),
     'park/slide': ('park.slide', 'Someone slides', 14),
     'park/bars': ('park.bars', 'Rung rings', 10),
+    'park/seesaw_creak': ('park.seesaw_creak', 'Seesaw creaks', 10),
+    'park/seesaw_thud': ('park.seesaw_thud', 'Seesaw bumps down', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -266,8 +268,32 @@ def bars():
     return (slap + ring + hum) * np.clip((length - t) / .04, 0, 1)
 
 
+def seesaw_creak():
+    # A seesaw's axle turning dry under a load as somebody pushes off: a low groan that climbs, with grit in it.
+    length = .5
+    n = seconds(length)
+    t = times(n)
+    pitch = 150 + 130 * np.clip(t / .4, 0, 1) ** 1.5
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    shape = np.sin(np.pi * np.clip(t / length, 0, 1)) ** .8
+    groan = (np.sin(phase) + .5 * np.sin(2.01 * phase) + .3 * np.sin(3.03 * phase)) * shape
+    grit = band(rng.standard_normal(n), 900, 4200) * shape * (.5 + .5 * np.sign(np.sin(2 * np.pi * 23 * t))) * .22
+    return groan * .5 + grit
+
+
+def seesaw_thud():
+    # A half tyre under the end of a board coming down on packed sand: a dull bump, the board's knock after it, and sand.
+    length = .4
+    n = seconds(length)
+    t = times(n)
+    bump = np.sin(2 * np.pi * (95 - 40 * np.clip(t / .08, 0, 1)) * t) * np.exp(-t / .05)
+    knock = band(rng.standard_normal(n), 250, 1100) * np.exp(-t / .03) * .7
+    sand = band(rng.standard_normal(n), 2500, 7000) * np.exp(-np.clip(t - .02, 0, None) / .06) * (t > .02) * .12
+    return (bump + knock + sand) * np.clip((length - t) / .05, 0, 1)
+
+
 MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
-          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars}
+          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud}
 
 
 def main():

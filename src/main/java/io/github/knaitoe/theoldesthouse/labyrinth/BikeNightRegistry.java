@@ -37,6 +37,7 @@ public final class BikeNightRegistry {
     private static final DeferredRegister<EntityType<?>> ENTITIES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
 
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NightBikeBlock>> BIKE_TYPE=CODECS.register("night_bike",()->NightBikeBlock.CODEC);
     public static final DeferredBlock<NightBikeBlock> BIKE_BLOCK=BLOCKS.registerBlock("night_bike",NightBikeBlock::new,
@@ -98,6 +99,17 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<BarsHang>> BARS_HANG=ENTITIES.register("bars_hang",
         ()->EntityType.Builder.<BarsHang>of(BarsHang::new,MobCategory.MISC).sized(.05F,.05F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("bars_hang"));
 
+    /**
+     * 0.4.468: the playground's seesaw ({@link SeesawBlock}): its stand, which keeps the board, and the places its ends are over; a
+     * rider's seat on an end (SeesawSeat), never saved, of which nothing is drawn.
+     */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SeesawBlock>> SEESAW_TYPE=CODECS.register("calder_seesaw",()->SeesawBlock.CODEC);
+    public static final DeferredBlock<SeesawBlock> SEESAW=BLOCKS.registerBlock("calder_seesaw",SeesawBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<SeesawBlock.Board>> SEESAW_BOARD=BLOCK_ENTITIES.register("calder_seesaw",
+        ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(SeesawBlock.Board::new,SEESAW.get()).build(null));
+    public static final DeferredHolder<EntityType<?>,EntityType<SeesawSeat>> SEESAW_SEAT=ENTITIES.register("seesaw_seat",
+        ()->EntityType.Builder.<SeesawSeat>of(SeesawSeat::new,MobCategory.MISC).sized(.05F,.05F).clientTrackingRange(8).updateInterval(20).noSave().noSummon().build("seesaw_seat"));
+
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Any bike: the tyres letting go of the road, and both of them coming back down. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOP=sound("bike.hop"),LAND=sound("bike.land");
@@ -111,7 +123,9 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> SLIDE=sound("park.slide");
     /** A hand coming down on a rung of the monkey bars. */
     public static final DeferredHolder<SoundEvent,SoundEvent> BARS=sound("park.bars");
+    /** The seesaw: its axle as a rider pushes off the sand, and a bumper coming down on it. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SEESAW_CREAK=sound("park.seesaw_creak"),SEESAW_THUD=sound("park.seesaw_thud");
 
     private BikeNightRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BLOCK_ENTITIES.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
 }
