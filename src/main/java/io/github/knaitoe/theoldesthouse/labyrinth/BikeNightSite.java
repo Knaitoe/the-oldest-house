@@ -54,6 +54,11 @@ public final class BikeNightSite {
     /** 0.4.466, the slide: where its ladder stands, and the way it goes down. */
     public static final BlockPos SLIDE=new BlockPos(-10,0,-32);
     public static final Direction SLIDE_FORWARD=Direction.SOUTH;
+    /**
+     * 0.4.467, the monkey bars: the row they run along, east and west; their first and last blocks of rungs; and how high the
+     * rungs' block is over the sand. A ladder stands at each end, a block beyond the rungs.
+     */
+    public static final int BARS_Z=-15,BARS_W=-19,BARS_E=-14,BARS_Y=2;
     public static final int LAMP_TOP=3;
     /** The sheet taped to the wall by the door (the first paper), and where a reader's account is handed over. */
     public static final BlockPos SOURCE=new BlockPos(-4,1,0),ENDING=new BlockPos(-4,2,0);
@@ -72,6 +77,10 @@ public final class BikeNightSite {
     public static BlockPos slideDeck(){return SLIDE.relative(SLIDE_FORWARD).above();}
     public static BlockPos slideTop(){return SLIDE.relative(SLIDE_FORWARD,2).above();}
     public static BlockPos slideEnd(){return SLIDE.relative(SLIDE_FORWARD,2+CalderPlayBlock.CHUTES);}
+    /** A block of the monkey bars' rungs, counted from the west; and the ladder at an end of them (0 the west, 1 the east), its lower block. */
+    public static BlockPos rungsAt(int k){return new BlockPos(BARS_W+k,BARS_Y,BARS_Z);}
+    public static int rungs(){return BARS_E-BARS_W+1;}
+    public static BlockPos barsLadder(int end){return new BlockPos(end==0?BARS_W-1:BARS_E+1,0,BARS_Z);}
     /** Where a swing's seat hangs. */
     public static BlockPos swingAt(int seat){return new BlockPos(SWING_X,0,SWING_SEATS[seat]);}
     /** Where a bike stands in the rack. */
@@ -98,6 +107,7 @@ public final class BikeNightSite {
         sandpit(l,b);
         swings(l,b);
         slide(l,b);
+        bars(l,b);
         railings(l,b);
         gate(l,b);
         for(var at:LAMPS)lamp(l,b,at,true);
@@ -180,6 +190,17 @@ public final class BikeNightSite {
         set(l,b,slideDeck(),play(CalderPlayBlock.Kind.DECK,f,0));set(l,b,slideDeck().above(),play(CalderPlayBlock.Kind.DECK,f,CalderPlayBlock.GUARD));
         for(int k=0;k<CalderPlayBlock.CHUTES;k++){var at=slideTop().relative(f,k);set(l,b,CalderPlayBlock.chuteLow(k)?at.below():at,play(CalderPlayBlock.Kind.CHUTE,f,k));}
         set(l,b,slideEnd(),play(CalderPlayBlock.Kind.RUNOUT,f,0));
+    }
+    /**
+     * The monkey bars: a ladder at each end, facing the rungs, and the rungs between them over a child's head. The end blocks of
+     * rungs face their ladders, and their rails run on over them.
+     */
+    static void bars(ServerLevel l,BlockPos b){
+        for(int end=0;end<2;end++){
+            var toward=end==0?Direction.EAST:Direction.WEST;var foot=barsLadder(end);
+            for(int y=0;y<BARS_Y;y++)set(l,b,foot.above(y),play(CalderPlayBlock.Kind.LADDER,toward,CalderPlayBlock.BARS+(y==BARS_Y-1?1:0)));
+        }
+        for(int k=0;k<rungs();k++)set(l,b,rungsAt(k),play(CalderPlayBlock.Kind.RUNGS,k==0?Direction.WEST:Direction.EAST,k==0||k==rungs()-1?CalderPlayBlock.RUNG_END:0));
     }
     /** Any swing left as if somebody were on it (a server stopped under a reader) hangs still again. */
     static void swingsBack(ServerLevel l,BlockPos b){

@@ -94,6 +94,10 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<SlideRide>> SLIDE_RIDE=ENTITIES.register("slide_ride",
         ()->EntityType.Builder.<SlideRide>of(SlideRide::new,MobCategory.MISC).sized(.05F,.05F).clientTrackingRange(8).updateInterval(20).noSave().noSummon().build("slide_ride"));
 
+    /** 0.4.467: a reader's hold on the monkey bars (BarsHang). Never saved; nothing is drawn of it. It is sent every tick: it is moved by hand. */
+    public static final DeferredHolder<EntityType<?>,EntityType<BarsHang>> BARS_HANG=ENTITIES.register("bars_hang",
+        ()->EntityType.Builder.<BarsHang>of(BarsHang::new,MobCategory.MISC).sized(.05F,.05F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("bars_hang"));
+
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Any bike: the tyres letting go of the road, and both of them coming back down. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOP=sound("bike.hop"),LAND=sound("bike.land");
@@ -105,6 +109,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> SWING_CREAK=sound("park.swing_creak"),SAND_SCOOP=sound("park.sand_scoop"),SAND_THROW=sound("park.sand_throw"),SAND_BURST=sound("park.sand_burst");
     /** A body going down the slide's chute. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SLIDE=sound("park.slide");
+    /** A hand coming down on a rung of the monkey bars. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> BARS=sound("park.bars");
 
     private BikeNightRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}

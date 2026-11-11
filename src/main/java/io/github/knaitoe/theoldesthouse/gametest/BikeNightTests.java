@@ -409,6 +409,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_pump") public static void pumpDone(ServerLevel l){done();}
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
     @AfterBatch(batch="park_slide") public static void slideDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_bars") public static void barsDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
     public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
@@ -617,6 +618,7 @@ public final class BikeNightTests {
             new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
             new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
             new Thing(BikeNightSite.SLIDE,BikeNightTexts.SLIDE),new Thing(BikeNightSite.slideEnd(),BikeNightTexts.SLIDE),
+            new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),
             new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -626,7 +628,8 @@ public final class BikeNightTests {
         seq.thenExecute(()->{
             for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look(),
                 BikeNightTexts.SWINGS,BikeNightTexts.SWING_HINT,BikeNightTexts.JUMP,BikeNightTexts.JUMP_LEVEL,BikeNightTexts.JUMP_BEST,BikeNightTexts.JUMP_OFF,BikeNightTexts.MARK,BikeNightTexts.MARK_OWN,BikeNightTexts.MARK_THEIRS,
-                BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE)){
+                BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE,
+                BikeNightTexts.BARS,BikeNightTexts.BARS_LOW,BikeNightTexts.BARS_ON,BikeNightTexts.BARS_FAR,BikeNightTexts.BARS_HINT,BikeNightTexts.BARS_ACROSS)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -988,6 +991,124 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 var account=String.join(" ",BikeNightTexts.account("slide_one",f.own(p[0],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
                 h.assertTrue(account.contains("went round and did it again"),"and their account has it: "+account);
+            }).thenSucceed();
+    }
+
+    /** A hand on a block from where the reader is (the fixture's click moves them first). */
+    private static void hand(ServerPlayer p,BlockPos at){
+        p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,at.getCenter());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),Direction.DOWN,at,false)));
+    }
+
+    @GameTest(template="empty",batch="park_bars",timeoutTicks=2400)
+    public static void theMonkeyBarsAreCrossedHandOverHandByReadersWhoCanReachThem(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final BarsHang[] hold={null,null};final double[] last={0};
+        int n=BikeNightSite.rungs();var first=b.offset(BikeNightSite.rungsAt(0));var end=b.offset(BikeNightSite.rungsAt(n-1));var mid=b.offset(BikeNightSite.rungsAt(2));
+        double z=BikeNightSite.BARS_Z+.5,lo=BikeNightSite.BARS_W+.25,hi=BikeNightSite.BARS_E+.75,high=BikeNightSite.BARS_Y+CalderPlayBlock.RUNG;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                // A ladder at each end, facing the rungs, in the bars' paint, and climbed; the rungs between them.
+                for(int e=0;e<2;e++){
+                    var toward=e==0?Direction.EAST:Direction.WEST;var foot=b.offset(BikeNightSite.barsLadder(e));
+                    for(int y=0;y<BikeNightSite.BARS_Y;y++){
+                        var at=foot.above(y);var s=l.getBlockState(at);
+                        h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.LADDER)&&s.getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.BARS+(y==BikeNightSite.BARS_Y-1?1:0)&&s.getValue(CalderPlayBlock.FACING)==toward&&s.isLadder(l,at,null),"the bars' ladder "+e+", block "+y+": "+s);
+                    }
+                    h.assertTrue(l.getBlockState(foot.below()).is(Blocks.SAND)&&l.getBlockState(foot.above(BikeNightSite.BARS_Y)).isAir(),"it stands on the sand, and is open above");
+                    h.assertTrue(foot.above(BikeNightSite.BARS_Y).relative(toward).equals(e==0?first:end),"the rungs begin beside the top of it");
+                }
+                for(int k=0;k<n;k++){
+                    var at=b.offset(BikeNightSite.rungsAt(k));var s=l.getBlockState(at);boolean ends=k==0||k==n-1;
+                    h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.RUNGS)&&s.getValue(CalderPlayBlock.STAGE)==(ends?CalderPlayBlock.RUNG_END:0)&&s.getValue(CalderPlayBlock.FACING)==(k==0?Direction.WEST:Direction.EAST),"the rungs' block "+k+": "+s);
+                    var shape=s.getCollisionShape(l,at);
+                    h.assertTrue(Math.abs(shape.max(Direction.Axis.Y)-CalderPlayBlock.RUNGS_THICK/16)<1e-9&&shape.min(Direction.Axis.Y)==0&&shape.min(Direction.Axis.X)==0&&shape.max(Direction.Axis.X)==1,"they are stood on, a thin run at the bottom of their block: "+shape);
+                    h.assertTrue(l.getBlockState(at.below()).isAir()&&l.getBlockState(at.below(2)).isAir()&&l.getBlockState(at.below(3)).is(Blocks.SAND),"with room under them, over the sand");
+                }
+                var run=BarsHang.run(l,mid);
+                h.assertTrue(Math.abs(run[0]-(b.getX()+lo))<1e-9&&Math.abs(run[1]-(b.getX()+hi))<1e-9&&n>=4,"the first and last rungs: "+run[0]+" "+run[1]);
+                p[0]=f.player("bars_one",P);p[1]=f.player("bars_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            // A reader is made a child on their first tick in the night, a few ticks after they arrive.
+            .thenWaitUntil(()->h.assertTrue(p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1,"readers here are children: "+p[0].getBbHeight()))
+            .thenExecute(()->{
+                // A child on the ground cannot reach them.
+                double tall=p[0].getBbHeight();
+                h.assertTrue(tall*BarsHang.REACH+BarsHang.STRETCH<BikeNightSite.BARS_Y,"the rungs are out of a standing child's reach: "+tall);
+                hush(p[0]);f.at(p[0],P,BikeNightSite.BARS_W+2.5,0,z);hand(p[0],mid);
+                h.assertTrue(!p[0].isPassenger()&&BikeNightTexts.BARS_LOW.equals(BarsHang.cannot(p[0],mid)),"from the ground they are out of reach");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.BARS_LOW),"and they are told so"))
+            .thenExecute(()->{
+                // Nor from beside them, nor from past their end, nor from on top of them.
+                f.at(p[0],P,BikeNightSite.BARS_W+2.5,1,z+1.5);h.assertTrue(BikeNightTexts.BARS_FAR.equals(BarsHang.cannot(p[0],mid)),"not from beside them");
+                f.at(p[0],P,BikeNightSite.BARS_W-3,1,z);h.assertTrue(BikeNightTexts.BARS_FAR.equals(BarsHang.cannot(p[0],first)),"not from well past their end");
+                f.at(p[0],P,BikeNightSite.BARS_W+2.5,BikeNightSite.BARS_Y+CalderPlayBlock.RUNGS_THICK/16,z);
+                h.assertTrue(BikeNightTexts.BARS_ON.equals(BarsHang.cannot(p[0],mid))&&BarsHang.take(p[0],mid)==null,"not from on top of them");
+                // From up the west ladder, a hand on the first rungs takes hold: over the first rung.
+                hush(p[0]);f.at(p[0],P,BikeNightSite.BARS_W-.6,.9,z);hand(p[0],first);
+                h.assertTrue(p[0].getVehicle() instanceof BarsHang,"from up the ladder a hand on the rungs takes hold");
+                hold[0]=(BarsHang)p[0].getVehicle();
+                h.assertTrue(hold[0].alongX()&&Math.abs(hold[0].getX()-(b.getX()+lo))<1e-9&&Math.abs(hold[0].getY()-(b.getY()+high))<1e-9&&Math.abs(hold[0].getZ()-(b.getZ()+z))<1e-9&&!hold[0].shouldRiderSit(),"the hold is on the first rung, at the rungs' height, and does not sit them down: "+hold[0].position().subtract(b.getX(),b.getY(),b.getZ()));
+                h.assertTrue(BarsHang.take(p[0],first)==null,"somebody hanging takes no second hold");
+                last[0]=hold[0].getX();
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                // They hang at their full length under it, clear of the sand; hanging still, they stay.
+                double feet=hold[0].getY()-p[0].getBbHeight()*BarsHang.REACH;
+                h.assertTrue(Math.abs(p[0].getY()-feet)<1e-6&&Math.abs(p[0].getX()-hold[0].getX())<1e-6&&p[0].getY()-b.getY()>.6&&p[0].getY()+p[0].getBbHeight()<hold[0].getY()+.05,"hanging by their hands, their feet off the sand: "+(p[0].getY()-b.getY()));
+                h.assertTrue(hold[0].getX()==last[0],"hanging still");
+                // Looking square across the bars, the walk keys take them nowhere.
+                p[0].setYRot(0);p[0].setXRot(0);p[0].setPlayerInput(0,1,false,false);
+            })
+            .thenIdle(5)
+            .thenExecute(()->{
+                h.assertTrue(hold[0].getX()==last[0],"a look square across goes neither way");
+                // Looking east along them, forward goes east.
+                p[0].setYRot(-90);
+            })
+            .thenExecuteFor(20,()->{
+                p[0].setPlayerInput(0,1,false,false);double x=hold[0].getX();
+                h.assertTrue(x>=last[0]&&x-last[0]<=BarsHang.PACE+1e-9&&p[0].getVehicle()==hold[0],"along, no faster than a hand goes: "+(x-last[0]));last[0]=x;
+            })
+            .thenExecute(()->{
+                h.assertTrue(hold[0].getX()-(b.getX()+lo)>BarsHang.PACE*17,"well along them: "+(hold[0].getX()-b.getX()-lo));
+                // Backwards takes them back the other way.
+                p[0].setPlayerInput(0,-1,false,false);
+            })
+            .thenIdle(6)
+            .thenExecute(()->{
+                h.assertTrue(hold[0].getX()<last[0]-BarsHang.PACE*3,"backwards goes back");last[0]=hold[0].getX();
+                // A second reader, at the top of a jump under the far end, catches the rungs: both hang at once.
+                f.at(p[1],P,BikeNightSite.BARS_E+.5,.9,z);hand(p[1],end);
+                h.assertTrue(p[1].getVehicle() instanceof BarsHang other&&other!=hold[0],"a second reader hangs from the same bars");hold[1]=(BarsHang)p[1].getVehicle();
+                p[0].setPlayerInput(0,1,false,false);
+            })
+            .thenWaitUntil(()->{p[0].setPlayerInput(0,1,false,false);h.assertTrue(Math.abs(hold[0].getX()-(b.getX()+hi))<1e-9,"to the last rung");})
+            .thenIdle(10)
+            .thenExecute(()->h.assertTrue(Math.abs(hold[0].getX()-(b.getX()+hi))<1e-9&&p[0].getVehicle()==hold[0],"and no further"))
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.BARS_ACROSS)&&heard(p[0],BikeNightTexts.BARS_HINT),"across, and told so; and told once how it is done"))
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"park.bars"),"and the rungs were heard"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Crossed")==1&&f.own(p[0],P).getInt("Hung")==1&&f.own(p[1],P).getInt("Hung")==1&&f.own(p[1],P).getInt("Crossed")==0,"in their records: one across, the other only hanging"))
+            .thenExecute(()->{
+                // Letting go drops them where they hang.
+                var feet=new Vec3(hold[0].getX(),hold[0].getY()-p[0].getBbHeight()*BarsHang.REACH,hold[0].getZ());p[0].setPlayerInput(0,0,false,false);p[0].stopRiding();
+                h.assertTrue(p[0].position().distanceTo(feet)<.05&&!p[0].isPassenger(),"letting go, they are where they hung: "+p[0].position().subtract(feet));
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                h.assertTrue(hold[0].isRemoved()&&!hold[1].isRemoved()&&p[1].getVehicle()==hold[1],"that hold is gone with its rider; the other reader's is not");
+                // The rungs taken away from over somebody: their hold goes with them.
+                l.setBlock(end,Blocks.AIR.defaultBlockState(),3);
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                h.assertTrue(hold[1].isRemoved()&&!p[1].isPassenger(),"no rungs, no hold");
+                var account=String.join(" ",BikeNightTexts.account("bars_one",f.own(p[0],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                var other=String.join(" ",BikeNightTexts.account("bars_two",f.own(p[1],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(account.contains("all the way across the monkey bars")&&other.contains("hung from the monkey bars")&&!other.contains("all the way across"),"and their accounts have it: "+account+" / "+other);
             }).thenSucceed();
     }
 }
