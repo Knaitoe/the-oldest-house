@@ -3031,4 +3031,162 @@ public final class BikeNightTests {
                 h.assertTrue(p[0].getHealth()==p[0].getMaxHealth()&&p[1].getHealth()==p[1].getMaxHealth(),"and neither is hurt");
             }).thenSucceed();
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.483: Gus's bike
+    @GameTest(template="empty",batch="gus_bike",timeoutTicks=9000)
+    public static void gusHasABikeOfHisOwnByTheBenchAndAHandOnItGetsAWordFromHim(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] gus={null};final PackBike[] his={null};
+        final int[] times={0};final String[] last={""};
+        Runnable listen=()->{var now=saying(gus[0]);if(!now.equals(last[0])&&now.equals(BikeNightTexts.GUS_HIS_BIKE))times[0]++;last[0]=now;};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("gus_bike_reader",P))
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);his[0]=BikeNightGus.bikeOf(l,b);
+                h.assertTrue(BikeNight.begun(b)&&gus[0]!=null&&his[0]!=null&&p[0].getBbHeight()<1.1,"waiting for the night, Gus, his bike, and the reader to be the park's size");})
+            .thenExecute(()->{
+                h.assertTrue(his[0].look()==PackBike.GUS&&his[0].getPassengers().isEmpty()&&flat(his[0],b,BikeNightGus.BIKE_AT)<.2&&Math.abs(net.minecraft.util.Mth.wrapDegrees(his[0].getYRot()-BikeNightGus.BIKE_YAW))<1,
+                    "his bike stands by the bench, pointing at the gate, with nobody on it: "+his[0].position().subtract(Vec3.atLowerCornerOf(b)));
+                h.assertTrue(l.getEntitiesOfClass(PackBike.class,room(f).inflate(4)).size()==1,"and it is the only one of its kind in the park");
+                h.assertTrue(l.noCollision(his[0].getBoundingBox().deflate(.02))&&!BikeNightSite.onSand(BikeNightGus.BIKE_AT),"it stands clear of the bench, and off the sand");
+                h.assertTrue(flat(gus[0],b,BikeNightGus.BIKE_AT)<6,"a few steps from where he waits: "+flat(gus[0],b,BikeNightGus.BIKE_AT));
+                f.at(p[0],P,BikeNightGus.BIKE_AT.x+1.6,0,BikeNightGus.BIKE_AT.z);
+            })
+            // He says hello first. Then a hand on the bike.
+            .thenWaitUntil(()->h.assertTrue(BikeNightGus.doing(b)==BikeNightGus.FREE&&!gus[0].saying(),"waiting for him to have said hello"))
+            .thenExecute(()->{
+                hush(p[0]);
+                h.assertTrue(his[0].isPickable()&&his[0].interact(p[0],InteractionHand.MAIN_HAND).consumesAction()&&!p[0].isPassenger()&&his[0].getPassengers().isEmpty(),"a hand on it: nobody is on it for that");
+            })
+            .thenWaitUntil(()->{listen.run();h.assertTrue(times[0]==1,"waiting for him to say whose it is");})
+            // A second hand gets no more of it: he has said it.
+            .thenExecute(()->h.assertTrue(his[0].interact(p[0],InteractionHand.MAIN_HAND).consumesAction(),"a second hand on it"))
+            .thenExecuteFor(200,listen)
+            .thenExecute(()->{
+                h.assertTrue(times[0]==1,"he says it once: "+times[0]);
+                h.assertTrue(!heard(p[0],BikeNightTexts.GUS_HIS_BIKE),"over his head, and never in chat");
+                h.assertTrue(BikeNightGus.doing(b)<BikeNightGus.TO_BIKE&&his[0].isAlive()&&flat(his[0],b,BikeNightGus.BIKE_AT)<.2,"with nobody come for anybody he has not gone for it, and it has not moved");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="gus_bike") public static void gusBikeDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="gus_ride",timeoutTicks=9000)
+    public static void gusGetsOnHisBikeAndRidesBesideAReaderThroughTheGateAndTheTown(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] gus={null};final PackBike[] his={null};
+        final NightBike[] mine={null};final double[] last={99},gate={99};var origin=Vec3.atLowerCornerOf(b);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("gus_ride_reader",P))
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);his[0]=BikeNightGus.bikeOf(l,b);
+                h.assertTrue(BikeNight.begun(b)&&gus[0]!=null&&his[0]!=null&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, Gus, his bike, and the reader to be the park's size");})
+            // The reader is on the Wasp at the rack, the gate stands open, and he is told to ride.
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.WASP);BikeNightSite.gateOpen(l,b);BikeNightGus.rideNow(b);})
+            .thenWaitUntil(()->{
+                if(BikeNightGus.doing(b)==BikeNightGus.TO_BIKE)last[0]=gus[0].position().distanceTo(his[0].position());
+                h.assertTrue(BikeNightGus.doing(b)==BikeNightGus.RIDING&&gus[0].getVehicle()==his[0],"waiting for him to be on his bike: doing "+BikeNightGus.doing(b)+", "+last[0]+" from it");})
+            .thenExecute(()->{
+                h.assertTrue(last[0]<2.4,"he went to it on his own feet: "+last[0]+" from it when he got on");
+                h.assertTrue(gus[0].gesture()==BikeNightGus.RIDE&&his[0].getPassengers().size()==1&&!his[0].isPickable(),"his hands are on the bars; and with him on it, it is not to be touched");
+            })
+            // In the park he comes over to the reader, and stops a little way off.
+            .thenWaitUntil(()->h.assertTrue(his[0].position().distanceTo(mine[0].position())<BikeNightGus.KEEP+.6&&his[0].speedNow()<.02,"waiting for him beside the reader at the rack: "+his[0].position().distanceTo(mine[0].position())))
+            .thenExecute(()->{
+                h.assertTrue(his[0].position().distanceTo(mine[0].position())>1.2,"a little way off, and not on top of them: "+his[0].position().distanceTo(mine[0].position()));
+                mine[0].moveTo(b.getX()-27,b.getY(),b.getZ()-91.5,90,0);
+            })
+            // The reader is on Main Street. He comes by the gate and the streets.
+            .thenWaitUntil(()->{
+                if(gate[0]>90&&his[0].getZ()-b.getZ()<BikeNightSite.NORTH)gate[0]=his[0].getX()-b.getX();
+                h.assertTrue(his[0].position().distanceTo(mine[0].position())<BikeNightGus.KEEP+.6,"waiting for him on Main Street: at "+his[0].position().subtract(origin)+", "+CalderRoutes.place(CalderRoutes.nearest(b,his[0].position())).street());})
+            .thenExecute(()->{
+                h.assertTrue(Math.abs(gate[0]+.5)<2.1,"he left the park by its gate: at x "+gate[0]);
+                h.assertTrue(gus[0].getVehicle()==his[0]&&CalderRoutes.place(CalderRoutes.nearest(b,his[0].position())).street().equals("Main Street"),"he is on his bike, on Main Street");
+                // Out of his sight, round behind the shops.
+                var to=CalderRoutes.at(b,CalderRoutes.id("alley_south_gap"));mine[0].moveTo(to.x,to.y,to.z,90,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(his[0].position().distanceTo(mine[0].position())<BikeNightGus.KEEP+.6,"waiting for him round behind the shops: at "+his[0].position().subtract(origin)+", "+CalderRoutes.place(CalderRoutes.nearest(b,his[0].position())).street()))
+            .thenExecute(()->h.assertTrue(gus[0].getVehicle()==his[0]&&gus[0].isAlive()&&p[0].getVehicle()==mine[0]&&p[0].getHealth()==p[0].getMaxHealth(),"he is beside them on his bike, and the reader is on theirs"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="gus_ride") public static void gusRideDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="gus_calls",timeoutTicks=12000)
+    public static void onTheRideGusCallsOutWhereTheThreeAreAndTheyNeverGoForHim(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final LiteraryActor[] gus={null};final PackBike[] his={null};final boolean[] round={false},behind={false},nobody={false},calling={false};
+        var said=new ArrayList<String>();final String[] last={""};final double[] near={99,99};double rx=-29.5,rz=-91.5;
+        // Every line of his, in order. While the case is waiting on what he calls out about the three, anything he says is cut short as
+        // soon as it has been heard, and his next call is due at once: the three are a few seconds from the reader, and he has two things to say.
+        Runnable listen=()->{
+            three(l,b,who,bikes);var now=saying(gus[0]);
+            if(!now.isEmpty()&&!now.equals(last[0])){
+                said.add(now);nobody[0]|=now.equals(BikeNightTexts.GUS_NOBODY);
+                // How near the nearest of the three was to the reader when he called each.
+                double nearest=99;for(var bike:bikes)if(bike!=null)nearest=Math.min(nearest,bike.position().distanceTo(p[0].position()));
+                if(List.of(BikeNightTexts.GUS_ROUND).contains(now)&&!round[0]){round[0]=true;near[0]=nearest;}
+                if(List.of(BikeNightTexts.GUS_BEHIND).contains(now)&&!behind[0]){behind[0]=true;near[1]=nearest;}
+            }
+            last[0]=now;
+            if(calling[0]&&!(round[0]&&behind[0])){if(gus[0].saying()){gus[0].hush();last[0]="";}BikeNightGus.warnNow(b);}
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("gus_calls_reader",P))
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);his[0]=BikeNightGus.bikeOf(l,b);
+                h.assertTrue(BikeNight.begun(b)&&gus[0]!=null&&his[0]!=null&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, Gus, his bike, and the reader to be the park's size");})
+            // The reader takes the Wasp, which is theirs once they have sat on it, leaves it at the rack, and waits on the sand.
+            .thenExecute(()->take(h,f,p[0],NightBike.Make.WASP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the Wasp to be theirs"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{listen.run();h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGus.doing(b)==BikeNightGus.RIDING,"waiting for the chase, and for him to be on his bike: stage "+BikeNightBullies.stage(b)+", doing "+BikeNightGus.doing(b));})
+            // The reader stands on Main Street with Gus beside them, and the three come: one along the street, two by the back ways.
+            .thenExecute(()->{f.at(p[0],P,rx,0,rz);his[0].moveTo(b.getX()+rx,b.getY(),b.getZ()+rz-3,90,0);calling[0]=true;})
+            .thenWaitUntil(()->{
+                listen.run();
+                h.assertTrue(round[0]&&behind[0],"waiting for him to call out that one of them has gone round, and that one is right behind: "+(BikeNightBullies.caught(b,p[0])?"the reader has been caught; ":"")+"he has said "+said);
+            })
+            .thenExecute(()->{
+                h.assertTrue(near[0]>BikeNightGus.BEHIND_THEM&&near[0]<=BikeNightGus.ROUND_THEM,"he called that one had gone round while they were still coming: the nearest was "+near[0]+" off");
+                h.assertTrue(near[1]<BikeNightGus.BEHIND_THEM,"and that one was right behind when one was: "+near[1]+" off");
+                h.assertTrue(gus[0].getVehicle()==his[0],"he is on his bike");
+            })
+            // Nobody keeps them off: one of them has the reader, and takes the Wasp from the rack.
+            .thenWaitUntil(()->{listen.run();h.assertTrue(BikeNightBullies.caught(b,p[0]),"waiting for the reader to be caught");})
+            .thenWaitUntil(()->{listen.run();h.assertTrue(nobody[0]&&BikeNightBullies.stage(b)==BikeNightBullies.GONE,"waiting for the three to be gone, and for him to say that nobody looked at his: stage "+BikeNightBullies.stage(b)+", he has said "+said);})
+            .thenExecute(()->{
+                h.assertTrue(said.contains(BikeNightTexts.GUS_CAUGHT),"he saw them get a bike: he said "+said.subList(Math.max(0,said.size()-8),said.size())+"; the reader's record "+f.own(p[0],P));
+                h.assertTrue(BikeNightGus.bikeOf(l,b)==his[0]&&his[0].isAlive()&&his[0].look()==PackBike.GUS&&gus[0].isAlive()&&gus[0].getVehicle()==his[0],"none of them went for him: he is on his bike, and it is his");
+                h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)==null,"and the Wasp went with them");
+                for(var line:BikeNightTexts.gusLines())h.assertTrue(!heard(p[0],line),"what he says is over his head and never in chat: "+line);
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"nobody is hurt");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="gus_calls") public static void gusCallsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="sand_close",timeoutTicks=9000)
+    public static void aBallOfSandThrownAtOneOfThemWhoIsRightOnTopOfAReaderStillMeetsHim(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};final int[] at={-1};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("sand_close_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, and for the reader to be the park's size"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            // On the grass by the main path, on foot, with the three riding at them.
+            .thenExecute(()->f.at(p[0],P,6.5,0,-30.5))
+            .thenWaitUntil(()->{
+                three(l,b,who,bikes);
+                for(int i=0;i<3&&at[0]<0;i++)if(who[i]!=null&&bikes[i]!=null&&who[i].getBoundingBox().contains(p[0].getEyePosition()))at[0]=i;
+                h.assertTrue(at[0]>=0,"waiting for one of them to be right on top of the reader");
+            })
+            .thenExecute(()->{
+                h.assertTrue(who[at[0]].gesture()!=BikeNightBullies.COUGH&&!BikeNightBullies.caught(b,p[0]),"he is not coughing yet, and has not had them");
+                throwAt(p[0],who[at[0]]);
+            })
+            .thenWaitUntil(()->h.assertTrue(who[at[0]].gesture()==BikeNightBullies.COUGH,"waiting for the ball thrown from inside his reach to meet him"))
+            .thenExecute(()->h.assertTrue(!BikeNightBullies.caught(b,p[0])&&p[0].getHealth()==p[0].getMaxHealth(),"and the reader has not been caught"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="sand_close") public static void sandCloseDone(ServerLevel l){done();}
 }

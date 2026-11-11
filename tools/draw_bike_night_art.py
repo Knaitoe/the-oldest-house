@@ -53,8 +53,10 @@ CARDS = {
     'tully': ('#1b1b1d', '#b3261f', '#b3261f', '#b3261f'),
     'ray': ('#c8cdd2', '#2a62b5', '#1d1b1a', '#2a62b5'),
     'duff': ('#4c5a2e', '#d8c9a0', '#3a2a1c', '#1d1b1a'),
+    # 0.4.483, Gus's: his brother's old bike, with a flag on a whip that was his own idea.
+    'gus': ('#3f8f8a', '#e8762c', '#6b4526', '#efe6c8'),
 }
-PACK = ('tully', 'ray', 'duff')
+PACK = ('tully', 'ray', 'duff', 'gus')
 
 
 def card(make, seed):
@@ -489,13 +491,19 @@ BIKES = {'wasp': wasp, 'hare': hare, 'comet': comet, 'hopper': hopper, 'lamp': l
 
 
 def pack(name):
-    """A bike of the three who come to the park (0.4.479): the Wasp's frame, in their own paint. Tully's has stunt pegs on both axles;
-    Duff's has a number plate on its bars."""
+    """A bike of the three who come to the park (0.4.479), or Gus's (0.4.483): the Wasp's frame, in their own paint. Tully's has stunt
+    pegs on both axles; Duff's has a number plate on its bars; Gus's has a flag on a whip."""
     b = Bike((2.5, 4.5), (13.5, 4.5), (7.5, 4.5), 12, 4.5, 4.5, 1.8, 1.6)
     bmx(b, name == 'duff')
     if name == 'tully':
         for hx, hy in (b.back, b.front):
             bar(b.parts, [hx - .7, hy - .7, 4.2], [hx + .7, hy + .7, 11.8], 'c')
+    if name == 'gus':
+        # A safety flag on a whip, up from the back axle beside the wheel: the whip, and a pennant in two steps.
+        hx, hy = b.back
+        bar(b.parts, [hx - .2, hy, 9.7], [hx + .2, hy + 14.6, 10.1], 'c')
+        bar(b.parts, [hx - 2.6, hy + 12.2, 9.8], [hx - .2, hy + 14.6, 10], 'f', TRIM)
+        bar(b.parts, [hx - 4.2, hy + 13, 9.8], [hx - 2.6, hy + 13.8, 10], 'f', TRIM)
     return b
 
 

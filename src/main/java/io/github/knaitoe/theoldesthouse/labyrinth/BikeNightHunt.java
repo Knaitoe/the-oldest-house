@@ -56,6 +56,17 @@ public final class BikeNightHunt {
     /** Where they go when they have what they came for: the far ends of the town. */
     static final String[] AWAY={"park_west","park_east","west_church","east_church"};
 
+    /**
+     * What somebody riding the town's ways has in mind: the way, as places, and how far along it he is; where it ends; when he thinks
+     * again; until when he cannot ride straight at anybody; which side he is going round something, and until when; and whether he is
+     * going in after a reader he cannot see from the end of their way, from which place, until when, and until when he lets it be.
+     * The three have one each (BikeNightBullies.Bully), and Gus has one (0.4.483).
+     */
+    static class Rider {
+        @Nullable int[] plan;int step,aim=-1,around=1;long planAt,blindUntil=-1,aroundUntil=-1;
+        boolean closing;int closeFrom=-1;long closeBy=-1,restUntil=-1;
+    }
+
     /** Whether somewhere is in the town, north of the park's own street: the hunt is there, and the park keeps the chase it had. */
     static boolean inTown(BikeNight.Night n,Vec3 at){return at.z<n.base.getZ()+BikeNightSite.LINE-4.5;}
     static double dot(Vec3 a,Vec3 b){return a.x*b.x+a.z*b.z;}
@@ -116,7 +127,7 @@ public final class BikeNightHunt {
         return any?best:CalderRoutes.nearest(b,here);
     }
     /** Thinks again: where his part sends him, and the way there. */
-    static void plan(ServerLevel l,BikeNight.Night n,Pack k,Bully u,PackBike bike,ServerPlayer prey,int part){
+    static void plan(ServerLevel l,BikeNight.Night n,Pack k,Rider u,PackBike bike,ServerPlayer prey,int part){
         var b=n.base;u.planAt=n.tick+THINK;
         boolean under=u.plan!=null&&u.step<u.plan.length;
         int from=under?u.plan[u.step]:start(l,n,bike),before=under&&u.step>0?u.plan[u.step-1]:-1;
@@ -152,12 +163,12 @@ public final class BikeNightHunt {
         u.plan=path;u.step=0;u.aim=target;
     }
     /** Somewhere to go, by the town's ways, from where he is. */
-    static void send(ServerLevel l,BikeNight.Night n,Bully u,PackBike bike,int to){
+    static void send(ServerLevel l,BikeNight.Night n,Rider u,PackBike bike,int to){
         u.plan=CalderRoutes.path(start(l,n,bike),to,-1);u.step=0;u.aim=to;u.planAt=Long.MAX_VALUE;
     }
     private static boolean tight(int a,int b){for(var w:CalderRoutes.from(a))if(w.other(a)==b)return w.tight();return false;}
     /** Along the way he has in mind, a place at a time. True when he is at the end of it. */
-    static boolean follow(ServerLevel l,BikeNight.Night n,Bully u,PackBike bike){
+    static boolean follow(ServerLevel l,BikeNight.Night n,Rider u,PackBike bike){
         if(u.plan==null||u.step>=u.plan.length){bike.toward(null,0);return true;}
         var b=n.base;
         for(;;){
@@ -236,7 +247,7 @@ public final class BikeNightHunt {
         BikeNight.cue(p,make==null?BikeNightTexts.CAUGHT_NO_BIKE_CUE:String.format(BikeNightTexts.CAUGHT_CUE,BikeNightBullies.NAMES[by.who]));
         var own=BikeNight.own(p);own.putBoolean("Caught",true);own.putInt("CaughtBy",by.who);
         own.putString("CaughtOn",CalderRoutes.place(CalderRoutes.nearest(n.base,where)).street());BikeNight.save(p,own);
-        BikeNightGus.sawAgain(n,BikeNightTexts.GUS_CAUGHT);
+        if(make!=null)BikeNightGus.sawAgain(n,BikeNightTexts.GUS_CAUGHT);
         by.leaving=true;by.plan=null;by.closing=false;by.goneBy=n.tick+GONE_MOST;
     }
     /** Where a bike led beside another one is: a little to its right. */

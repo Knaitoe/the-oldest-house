@@ -40,6 +40,13 @@ import net.minecraft.world.phys.Vec3;
  * <li>a hand on him gets an answer.</li>
  * </ul>
  * What he says is a caption over his head and never chat. Every line is original.
+ *
+ * <p><b>0.4.483, his bike and the chase.</b> His bike stands by the bench off the side path: his brother's, with a flag on a whip
+ * (PackBike.GUS). A hand on it gets a word from him. When the three go for their bikes he drops what he is doing and goes for
+ * his, and from then on he rides: beside whichever reader is nearest who still has a bike, straight to them when he can see them
+ * and by the town's ways (CalderRoutes, BikeNightHunt) when he cannot, stopping a little way off. He says what he sees of the
+ * three: one of them close behind, one gone round to wait ahead. The three do not go for him: they have his cap, and it is the
+ * readers' bikes they want.
  */
 public final class BikeNightGus {
     private BikeNightGus(){}
@@ -49,10 +56,22 @@ public final class BikeNightGus {
     public static boolean cast(int phase){return phase==GUS||phase==GUS_BARE;}
     public static String skin(int phase){return phase==GUS_BARE?"bike_gus_bare":"bike_gus";}
     public static boolean is(@Nullable Entity e){return e instanceof LiteraryActor a&&a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
-    /** His gestures: a wave; pointing; both arms up; both hands out to push; his hands on the seesaw's handle; a shrug. */
-    public static final int WAVE=1,POINT=2,CHEER=3,PUSH=4,SIT=5,SHRUG=6;
-    /** What he is doing: waiting for somebody to come; at a loose end; going to the seesaw; on it; going to push a swing; pushing it. */
-    public static final int WAITING=0,FREE=1,TO_SEESAW=2,ON_SEESAW=3,TO_SWING=4,PUSHING=5;
+    /** His gestures: a wave; pointing; both arms up; both hands out to push; his hands on the seesaw's handle; a shrug; on his bike. */
+    public static final int WAVE=1,POINT=2,CHEER=3,PUSH=4,SIT=5,SHRUG=6,RIDE=7;
+    /** What he is doing: waiting for somebody to come; at a loose end; going to the seesaw; on it; going to push a swing; pushing it; going to his bike; riding it. */
+    public static final int WAITING=0,FREE=1,TO_SEESAW=2,ON_SEESAW=3,TO_SWING=4,PUSHING=5,TO_BIKE=6,RIDING=7;
+    /** 0.4.483. Where his bike stands, on the grass by the bench off the side path, and the way it points: at the gate. The middle of the side path. */
+    public static final Vec3 BIKE_AT=new Vec3(-3.5,0,-22.6);
+    public static final float BIKE_YAW=180;public static final double SIDE_PATH=BikeNightSite.SIDE_S;
+    /**
+     * In blocks: how near a reader he rides before he stops; how near one of the three riding at them is before he says so; how near
+     * one who has gone round is; and how near them the corner he has gone round to.
+     */
+    public static final double KEEP=3.2,BEHIND_THEM=9,ROUND_THEM=30,AHEAD_THEM=18;
+    /** Blocks a tick on his bike: what the three ride at. */
+    public static final float RIDE_PACE=.3F;
+    /** In ticks: how long he may take to get to his bike before he is on it anyway; and the gap between two things he calls out about the three. */
+    public static final int MOUNT_MOST=160,WARN_GAP=160;
     /** Where he waits, on the sand by the side path, and the way he looks from there: toward the path. */
     public static final Vec3 HOME=new Vec3(-8.5,0,-22.5);
     public static final float HOME_YAW=-90;
@@ -82,6 +101,10 @@ public final class BikeNightGus {
     static final class Friend {
         @Nullable UUID id;
         int doing=WAITING,idle,story=-1,talk,sandHits,end;
+        /** 0.4.483: his bike; his way through the town; whom he is riding beside; when he may next call out; and how much he has said on the ride. */
+        @Nullable UUID bike,friend;final BikeNightHunt.Rider way=new BikeNightHunt.Rider();long warnAt;int rides,warned;int[] rideDeck={};
+        /** Whether the last thing he called out was of one gone round; and, for tests, whether he has been told to ride without the three. */
+        boolean lastRound,called;
         long since,nextIdle,soonAt,replan,gestureUntil=-1,pushAt=-1,aloneSince=-1,swingSince=-1,seesawSince=-1,stuckSince=-1;
         boolean left,wasDown,walking;
         @Nullable Vec3 goal;final ArrayDeque<Vec3> route=new ArrayDeque<>();
@@ -113,6 +136,9 @@ public final class BikeNightGus {
     /** The night over, or beginning: nobody is left of him but one, at his place, with nothing said. */
     static void reset(ServerLevel l,BikeNight.Night n){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(n.base),BikeNightGus::is)){old.stopRiding();old.discard();}
+        // He may be out in the town, and his bike with him.
+        if(n.gus.id!=null&&l.getEntity(n.gus.id) instanceof LiteraryActor out){out.stopRiding();out.discard();}
+        if(n.gus.bike!=null&&l.getEntity(n.gus.bike) instanceof PackBike his)his.discard();
         n.gus=new Friend();
     }
 
@@ -130,7 +156,9 @@ public final class BikeNightGus {
     static boolean sees(ServerLevel l,BikeNight.Night n,ServerPlayer p,double within){if(keptHome)return false;var a=body(l,n);return a!=null&&a.distanceToSqr(p)<=within*within;}
     /** Both arms up for a moment. */
     static void cheer(@Nullable BikeNight.Night n,ServerLevel l){if(n==null||keptHome)return;var a=body(l,n);if(a!=null&&n.gus.doing!=ON_SEESAW&&n.gus.doing!=PUSHING)gesture(n.gus,n,a,CHEER);}
-    static void gesture(Friend g,BikeNight.Night n,LiteraryActor a,int which){a.gesture(which);g.gestureUntil=n.tick+GESTURE;}
+    static void gesture(Friend g,BikeNight.Night n,LiteraryActor a,int which){if(g.doing==RIDING)return;a.gesture(which);g.gestureUntil=n.tick+GESTURE;}
+    /** How he holds himself with nothing else to do. */
+    static int rest(Friend g){return g.doing==ON_SEESAW?SIT:g.doing==RIDING?RIDE:0;}
     static int[] shuffled(net.minecraft.util.RandomSource r,int count){
         var out=new int[count];for(int i=0;i<count;i++)out[i]=i;
         for(int i=count-1;i>0;i--){int k=r.nextInt(i+1);int t=out[i];out[i]=out[k];out[k]=t;}
@@ -138,6 +166,7 @@ public final class BikeNightGus {
     }
     /** His next line about nothing; or, once he has said a few, the next of his story. */
     static String idle(ServerLevel l,BikeNight.Night n,Friend g,LiteraryActor a){
+        if(g.doing==RIDING)return riding(l,g);
         var story=BikeNightTexts.GUS_STORY;
         if(g.story>=0&&g.story<story.length){
             String line=story[g.story++];
@@ -152,21 +181,22 @@ public final class BikeNightGus {
         if(a.saying()||near==null||near.distanceToSqr(a)>HEARD*HEARD)return;
         String line=null;
         if(!g.soon.isEmpty()){if(n.tick>=g.soonAt)line=g.soon.poll();}
-        else if(g.doing!=WAITING&&n.tick>=g.nextIdle)line=idle(l,n,g,a);
+        else if(g.doing!=WAITING&&g.doing!=TO_BIKE&&n.tick>=g.nextIdle)line=idle(l,n,g,a);
         if(line==null)return;
         a.say(NAME,line);a.speaks(line);
         int up=Dialogue.ticks(line);boolean telling=g.story>0&&g.story<BikeNightTexts.GUS_STORY.length;
         g.nextIdle=n.tick+up+(telling?STORY_GAP:BETWEEN+l.getRandom().nextInt(BETWEEN_MORE));g.soonAt=n.tick+up+10;
-        if(!g.walking&&g.doing!=ON_SEESAW&&g.doing!=PUSHING)SceneFootpaths.face(a,near.position(),180);
+        if(!g.walking&&g.doing!=ON_SEESAW&&g.doing!=PUSHING&&g.doing!=RIDING)SceneFootpaths.face(a,near.position(),180);
     }
     /** A hand on him. He answers, unless he is in the middle of saying something. */
     public static void talk(ServerPlayer p,LiteraryActor actor){
         var n=BikeNight.night(p);if(n==null||!is(actor)||keptHome)return;var g=n.gus;
         if(actor.saying())return;
-        String line=BikeNight.own(p).getString("Bike").isEmpty()&&g.once.add("nobike")?BikeNightTexts.GUS_TALK_NO_BIKE:BikeNightTexts.GUS_TALK[g.talk++%BikeNightTexts.GUS_TALK.length];
+        String line=g.doing==RIDING?riding(p.serverLevel(),g)
+            :BikeNight.own(p).getString("Bike").isEmpty()&&g.once.add("nobike")?BikeNightTexts.GUS_TALK_NO_BIKE:BikeNightTexts.GUS_TALK[g.talk++%BikeNightTexts.GUS_TALK.length];
         actor.say(NAME,line);actor.speaks(line);
         int up=Dialogue.ticks(line);g.nextIdle=Math.max(g.nextIdle,n.tick+up+BETWEEN);g.soonAt=Math.max(g.soonAt,n.tick+up+10);
-        if(!g.walking&&g.doing!=ON_SEESAW&&g.doing!=PUSHING)SceneFootpaths.face(actor,p.position(),180);
+        if(!g.walking&&g.doing!=ON_SEESAW&&g.doing!=PUSHING&&g.doing!=RIDING)SceneFootpaths.face(actor,p.position(),180);
     }
     /** 0.4.479: Tully has his cap. */
     static void capTaken(ServerLevel l,BikeNight.Night n){var a=body(l,n);if(a!=null)a.appearance(LiteraryActor.STRANGER,GUS_BARE);if(!keptHome)later(n.gus,n,BikeNightTexts.GUS_CAP,20);}
@@ -180,7 +210,8 @@ public final class BikeNightGus {
     // ------------------------------------------------------------------------------------------------ each tick
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var g=n.gus;var a=body(l,n);if(a==null||keptHome)return;
-        if(g.gestureUntil>=0&&n.tick>=g.gestureUntil){g.gestureUntil=-1;a.gesture(g.doing==ON_SEESAW?SIT:0);}
+        var bike=bike(l,n,a);
+        if(g.gestureUntil>=0&&n.tick>=g.gestureUntil){g.gestureUntil=-1;a.gesture(rest(g));}
         ServerPlayer near=null;double best=Double.MAX_VALUE;
         for(var p:here){if(p.isSpectator())continue;double d=p.distanceToSqr(a);if(d<best){best=d;near=p;}}
         // Hello, to each as they first come near.
@@ -194,8 +225,12 @@ public final class BikeNightGus {
         if(g.doing==WAITING&&n.tick>=WAIT_MOST){g.doing=FREE;g.since=n.tick;g.nextIdle=n.tick+BETWEEN;}
         // What he sees for himself: a swing going past its widest arc.
         for(var p:here)if(p.getVehicle() instanceof SeatEntity seat&&seat.pumped()&&seat.kicks()>=2)saw(n,"past",BikeNightTexts.GUS_PAST);
+        // 0.4.483: when the three go for their bikes, he goes for his.
+        if(g.doing<TO_BIKE&&bike!=null&&(g.called||n.pack.stage==BikeNightBullies.GET_THEM&&n.pack.saidAt>=0||n.pack.stage==BikeNightBullies.CHASE))toHisBike(n,g,a);
         speak(l,n,g,a,near);
         switch(g.doing){
+            case TO_BIKE->toBike(n,g,a,bike);
+            case RIDING->ride(l,n,g,a,bike,here);
             case FREE->free(l,n,g,a,here,near);
             case TO_SEESAW->toSeesaw(l,n,g,a);
             case ON_SEESAW->onSeesaw(l,n,g,a);
@@ -334,7 +369,96 @@ public final class BikeNightGus {
         if(seat.reach()>=HouseReadSwing.HIGH-.02)saw(n,"high",BikeNightTexts.GUS_HIGH);
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.483: his bike, and the chase
+    /** His bike: the one this night has, or a new one where he leaves it. It is never saved, so one that has gone from under him is made again where he is. */
+    static @Nullable PackBike bike(ServerLevel l,BikeNight.Night n,LiteraryActor a){
+        var g=n.gus;if(g.bike!=null&&l.getEntity(g.bike) instanceof PackBike b&&b.isAlive())return b;
+        var at=g.doing==RIDING?a.position():at(n,BIKE_AT);var cell=BlockPos.containing(at);
+        if(!l.isLoaded(cell)||!l.areEntitiesLoaded(ChunkPos.asLong(cell)))return null;
+        var b=BikeNightRegistry.PACK_BIKE.get().create(l);if(b==null)return null;
+        b.look(PackBike.GUS);b.moveTo(at.x,at.y,at.z,g.doing==RIDING?a.getYRot():BIKE_YAW,0);
+        if(!l.addFreshEntity(b))return null;
+        g.bike=b.getUUID();return b;
+    }
+    /** A hand on his bike while it stands there. He says whose it is, once. */
+    static void hisBike(ServerPlayer p){saw(BikeNight.night(p),"hisbike",BikeNightTexts.GUS_HIS_BIKE);}
+    /** He drops what he is doing and makes for his bike: off the sand by the side path if he is on it, and up behind it. */
+    static void toHisBike(BikeNight.Night n,Friend g,LiteraryActor a){
+        if(a.isPassenger())a.stopRiding();
+        release(g,a);g.doing=TO_BIKE;g.since=n.tick;
+        if(BikeNight.rel(a.position(),n.base).x<BikeNightSite.SAND_E+1)g.route.add(new Vec3(BikeNightSite.SAND_E+.4,0,SIDE_PATH));
+        g.route.add(new Vec3(BIKE_AT.x-1.4,0,SIDE_PATH));g.route.add(new Vec3(BIKE_AT.x,0,BIKE_AT.z+1.2));
+    }
+    /** To his bike, and onto it. If he cannot get to it he is on it anyway, as the three are on theirs. */
+    static void toBike(BikeNight.Night n,Friend g,LiteraryActor a,@Nullable PackBike bike){
+        if(bike==null)return;
+        if(flat(a.position(),bike.position())>1.6*1.6&&n.tick-g.since<MOUNT_MOST){
+            if(walk(n,g,a,HURRY)){g.route.clear();g.goal=BikeNight.rel(bike.position(),n.base);}
+            return;
+        }
+        g.goal=null;g.route.clear();g.walking=false;g.gestureUntil=-1;
+        a.startRiding(bike,true);a.gesture(RIDE);g.doing=RIDING;g.since=n.tick;g.nextIdle=n.tick+80;g.warnAt=n.tick+60;
+    }
+    /** His next line about nothing, as he rides. */
+    static String riding(ServerLevel l,Friend g){
+        if(g.rideDeck.length==0)g.rideDeck=shuffled(l.getRandom(),BikeNightTexts.GUS_RIDE.length);
+        return BikeNightTexts.GUS_RIDE[g.rideDeck[g.rides++%g.rideDeck.length]];
+    }
+    /**
+     * On his bike: beside whichever reader is nearest who still has a bike (and the one he was beside before another the same
+     * distance off), stopping a little way from them. In the park and on its street he rides at them, by the gate; in the town,
+     * straight at them if he can see them and by the town's ways if he cannot. With nobody left to ride beside he stops where he is.
+     */
+    static void ride(ServerLevel l,BikeNight.Night n,Friend g,LiteraryActor a,@Nullable PackBike bike,List<ServerPlayer> here){
+        if(bike==null)return;
+        if(a.getVehicle()!=bike){a.startRiding(bike,true);a.gesture(RIDE);}
+        a.setYRot(bike.getYRot());a.setYHeadRot(bike.getYRot());a.setYBodyRot(bike.getYRot());
+        ServerPlayer friend=null;double best=Double.MAX_VALUE;
+        for(var p:BikeNightHunt.prey(n.pack,here)){double d=flat(p.position(),bike.position())*(p.getUUID().equals(g.friend)?.5:1);if(d<best){best=d;friend=p;}}
+        if(friend==null){
+            bike.toward(null,0);
+            if(!n.pack.caught.isEmpty()&&g.once.add("nobody"))later(g,n,BikeNightTexts.GUS_NOBODY,40);
+            return;
+        }
+        g.friend=friend.getUUID();
+        var at=bike.position();var there=friend.position();double d=Math.sqrt(flat(at,there));boolean level=Math.abs(at.y-there.y)<1.2;
+        if(d<KEEP&&level)bike.toward(null,0);
+        else if(!BikeNightHunt.inTown(n,at)&&!BikeNightHunt.inTown(n,there)){g.way.plan=null;BikeNightBullies.parkRide(n,g.way,bike,there,RIDE_PACE);}
+        else if(d<BikeNightHunt.SIGHT&&level&&BikeNightHunt.clear(l,at,there)){g.way.plan=null;bike.toward(there,(float)Math.min(RIDE_PACE,Math.max(.12,(d-KEEP+.6)*.16)));}
+        else{
+            if(g.way.plan==null||g.way.step>=g.way.plan.length||n.tick>=g.way.planAt)BikeNightHunt.plan(l,n,n.pack,g.way,bike,friend,0);
+            BikeNightHunt.follow(l,n,g.way,bike);
+        }
+        warn(l,n,g,a,friend);
+    }
+    /** What he sees of the three, called out as he rides: one of them riding at his friend and close, or one gone round to head them off. And the graveyard, when they are near it. */
+    static void warn(ServerLevel l,BikeNight.Night n,Friend g,LiteraryActor a,ServerPlayer friend){
+        var there=friend.position();
+        if(flat(there,CalderRoutes.at(n.base,CalderRoutes.id("cemetery_gate")))<30*30)saw(n,"church",BikeNightTexts.GUS_CHURCH);
+        if(n.tick<g.warnAt||a.saying()||!g.soon.isEmpty()||flat(a.position(),there)>HEARD*HEARD)return;
+        var going=BikeNightHunt.going(n.pack,friend);boolean behind=false,round=false;
+        for(var u:n.pack.b){
+            var his=BikeNightBullies.bike(l,u);if(his==null||!u.riding||u.leaving||u.gone||n.tick<u.stunnedUntil)continue;
+            double d=Math.sqrt(flat(his.position(),there));
+            if(u.aim<0){behind|=d<BEHIND_THEM;continue;}
+            // One of them who is near, making by the town's ways for a corner his friend is riding toward; or, if they are standing,
+            // for any corner but the one behind them.
+            var corner=CalderRoutes.at(n.base,u.aim);
+            round|=d<ROUND_THEM&&flat(corner,there)<AHEAD_THEM*AHEAD_THEM&&(going!=null?BikeNightHunt.dot(corner.subtract(there),going)>0:u.aim!=BikeNightHunt.nearEnd(n,there));
+        }
+        if(!behind&&!round)return;
+        // With both to say, not the same one twice running.
+        boolean ofRound=round&&(!behind||!g.lastRound);var lines=ofRound?BikeNightTexts.GUS_ROUND:BikeNightTexts.GUS_BEHIND;
+        g.lastRound=ofRound;g.warnAt=n.tick+WARN_GAP;later(g,n,lines[g.warned++%lines.length],0);
+    }
+
     // ------------------------------------------------------------------------------------------------ for tests
+    /** His bike in this park, if it is there. */
+    public static @Nullable PackBike bikeOf(ServerLevel l,BlockPos b){var n=BikeNight.night(b);return n!=null&&n.gus.bike!=null&&l.getEntity(n.gus.bike) instanceof PackBike his&&his.isAlive()?his:null;}
+    /** He goes for his bike now, whether or not the three have gone for theirs. */
+    public static void rideNow(BlockPos b){var n=BikeNight.night(b);if(n!=null)n.gus.called=true;}
+    /** The next thing he has to call out about the three is due now. */
+    public static void warnNow(BlockPos b){var n=BikeNight.night(b);if(n!=null){n.gus.warnAt=n.tick;n.gus.soonAt=Math.min(n.gus.soonAt,n.tick);}}
     /** What he is doing in this park, or -1. */
     public static int doing(BlockPos b){var n=BikeNight.night(b);return n==null?-1:n.gus.doing;}
     /** He starts on his story with his next line about nothing. */

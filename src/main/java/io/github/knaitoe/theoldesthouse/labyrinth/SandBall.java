@@ -28,6 +28,22 @@ public class SandBall extends ThrowableItemProjectile {
     public SandBall(Level level,LivingEntity thrower){super(BikeNightRegistry.SAND_BALL_THROWN.get(),thrower,level);}
     @Override protected Item getDefaultItem(){return BikeNightRegistry.SAND_BALL.get();}
     @Override protected double getDefaultGravity(){return WEIGHT;}
+    private boolean begun;
+    /**
+     * 0.4.483: thrown at somebody who is right on top of the thrower, it starts inside them, and a flight that starts inside a body
+     * never meets it: the ball went through one of the three at arm's length, which is when a reader most needs it. Whoever it
+     * starts inside, it has met.
+     */
+    @Override public void tick(){
+        if(!begun&&!level().isClientSide){
+            begun=true;var owner=getOwner();
+            // With more than one of them there, it meets one who is not coughing already.
+            var inside=level().getEntities(this,getBoundingBox().inflate(.15),x->x!=owner&&canHitEntity(x));
+            inside.sort(java.util.Comparator.comparingInt(e->BikeNightBullies.coughing(e)?1:0));
+            if(!inside.isEmpty()){onHit(new EntityHitResult(inside.get(0)));return;}
+        }
+        super.tick();
+    }
     @Override protected void onHitEntity(EntityHitResult hit){
         super.onHitEntity(hit);
         if(level() instanceof ServerLevel l)BikeNight.sanded(l,this,hit.getEntity());

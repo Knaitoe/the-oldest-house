@@ -121,7 +121,7 @@ public final class BikeNightVisualProof extends Screen {
             "the spring rider: rocked back as far as it goes, upright, and rocked forward",
             "the small things: fountain still and running; payphone on and off its hook; bench plain and carved",
             "over the bar: a swing hanging still; at its widest arc; kicked as far past it as kicks go; over the top",
-            "the three's bikes, side on and turning; and the gate as Tully leaves it, from inside the park",
+            "the three's bikes, Gus's below them, and the gate as Tully leaves it",
             "the town's things: on walls; fences; pumpkins; dumpsters; crates, drums, tyres; litter",
             "behind a shop: the door under its bulb, the shutter, paint on the brick, and what has been left out",
             "Main Street: hardware, bank and clock, theater and marquee; laundromat, video, barber",
@@ -259,7 +259,7 @@ public final class BikeNightVisualProof extends Screen {
      * a seat at the top of its turn: one swing hanging still, one at the top of its widest arc, one kicked as far past that as kicks
      * take it, and one over the top. The moving ones are the still seat and its chains turned about the bar, as the game draws them.
      */
-    /** 0.4.479: the bikes of the three who come to the park, and the gate standing open as Tully leaves it, seen from inside the park. */
+    /** 0.4.479: the bikes of the three who come to the park, and the gate standing open as Tully leaves it, seen from inside the park. 0.4.483: Gus's bike, lower left, with its flag. */
     private void pack(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();
         {int y=(int)floor(0);g.fill(0,y,width,y+10,GROUND);}g.flush();
@@ -268,6 +268,15 @@ public final class BikeNightVisualProof extends Screen {
             var look=BikeLook.pack(i);float[][] views={{-90,0,0,0,0},{-62,i%2==0?.4F:-.4F,0,1.3F,(float)Math.PI/2}};
             for(int v=0;v<2;v++){
                 var pose=g.pose();pose.pushPose();pose.translate(cx(i)+(v==0?-s*.95F:s*.95F),floor(i),200);pose.scale(s,-s,s);pose.mulPose(Axis.XP.rotationDegrees(10));
+                look.draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),views[v][0],views[v][1],views[v][2],views[v][3],views[v][4],LightTexture.FULL_BRIGHT,false);
+                buffers.endBatch();pose.popPose();
+            }
+        }
+        {
+            float low=24+(height-24)*.9F;g.fill(0,(int)low,(int)(width*.25F),(int)low+10,GROUND);g.flush();
+            var look=BikeLook.pack(io.github.knaitoe.theoldesthouse.labyrinth.PackBike.GUS);float[][] views={{-90,0,0,0,0},{-62,.4F,0,1.3F,(float)Math.PI/2}};
+            for(int v=0;v<2;v++){
+                var pose=g.pose();pose.pushPose();pose.translate(width*(v==0?.065F:.18F),low,200);pose.scale(s,-s,s);pose.mulPose(Axis.XP.rotationDegrees(10));
                 look.draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),views[v][0],views[v][1],views[v][2],views[v][3],views[v][4],LightTexture.FULL_BRIGHT,false);
                 buffers.endBatch();pose.popPose();
             }
