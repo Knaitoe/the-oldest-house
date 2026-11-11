@@ -28,6 +28,8 @@ public final class BorrascaArcadeScreen extends Screen {
     static final int W=BorrascaArcade.W,H=BorrascaArcade.H;
     final int game;final long token;final String name;final List<String[]> table=new ArrayList<>();final Set<Integer> keys=new HashSet<>();
     final BorrascaArcade.Game play;
+    /** 0.4.446: somebody else's game, watched over their shoulder: the hand that plays it, or null for the reader's own. */
+    final BorrascaArcade.Hand hand;
     /** The keys held on each tick, as runs ({@code count<<5|keys}), sent when the game is over. */
     final List<Integer> runs=new ArrayList<>();int held=-1,count;
     int ticks;boolean over,sent;
@@ -36,8 +38,22 @@ public final class BorrascaArcadeScreen extends Screen {
         super(Component.literal(BorrascaArcade.TITLES[Mth.clamp(p.game(),0,1)]));
         game=Mth.clamp(p.game(),0,1);token=p.token();name=p.name();
         for(Tag t:p.table().getList("Rows",Tag.TAG_COMPOUND)){var c=(CompoundTag)t;table.add(new String[]{c.getString("N"),Integer.toString(c.getInt("S"))});}
-        play=BorrascaArcade.of(game,token,this::sound);
+        play=BorrascaArcade.of(game,token,this::sound);hand=null;
     }
+    /**
+     * 0.4.446: a cabinet with one of the others at it. Their game comes out of its seed here as it does on the server, played by
+     * the same hand, run on in silence to where it has got to and then tick for tick. Nothing is sent back.
+     */
+    BorrascaArcadeScreen(io.github.knaitoe.theoldesthouse.network.BorrascaArcadeWatchPayload p){
+        super(Component.literal(BorrascaArcade.TITLES[Mth.clamp(p.game(),0,1)]));
+        game=Mth.clamp(p.game(),0,1);token=p.seed();name=p.name();
+        for(Tag t:p.table().getList("Rows",Tag.TAG_COMPOUND)){var c=(CompoundTag)t;table.add(new String[]{c.getString("N"),Integer.toString(c.getInt("S"))});}
+        hand=new BorrascaArcade.Hand(p.seed(),p.way());var quiet=new boolean[]{true};
+        play=BorrascaArcade.of(game,p.seed(),(kind,pitch)->{if(!quiet[0])sound(kind,pitch);});
+        for(int i=0;i<p.elapsed()&&!play.over()&&play.ticks<BorrascaArcade.LONGEST[game];i++)play.tick(hand.keys(play));
+        quiet[0]=false;over=play.over()||play.ticks>=BorrascaArcade.LONGEST[game];
+    }
+    public static void watch(io.github.knaitoe.theoldesthouse.network.BorrascaArcadeWatchPayload p){Minecraft.getInstance().setScreen(new BorrascaArcadeScreen(p));}
     public static void accept(BorrascaArcadePayload p){
         var mc=Minecraft.getInstance();
         if(p.game()<0){if(mc.screen instanceof BorrascaArcadeScreen s){s.send();mc.setScreen(null);}return;}
@@ -46,12 +62,13 @@ public final class BorrascaArcadeScreen extends Screen {
     @Override public boolean isPauseScreen(){return false;}
     @Override public void tick(){
         if(over){ticks++;return;}
+        if(hand!=null){play.tick(hand.keys(play));ticks++;if(play.over()||play.ticks>=BorrascaArcade.LONGEST[game]){over=true;beep(SoundEvents.NOTE_BLOCK_BIT.value(),.5F);}return;}
         int k=mask();if(k==held)count++;else{flush();held=k;count=1;}
         play.tick(k);ticks++;
         if(play.over()||play.ticks>=BorrascaArcade.LONGEST[game]){over=true;send();beep(SoundEvents.NOTE_BLOCK_BIT.value(),.5F);}
     }
     void flush(){if(count>0)runs.add(count<<5|held);count=0;}
-    void send(){if(sent)return;sent=true;flush();PacketDistributor.sendToServer(new BorrascaArcadeScorePayload(token,List.copyOf(runs)));}
+    void send(){if(sent||hand!=null)return;sent=true;flush();PacketDistributor.sendToServer(new BorrascaArcadeScorePayload(token,List.copyOf(runs)));}
     @Override public void removed(){send();super.removed();}
     @Override public boolean keyPressed(int key,int scan,int mods){keys.add(key);return super.keyPressed(key,scan,mods)||key!=GLFW.GLFW_KEY_ESCAPE;}
     @Override public boolean keyReleased(int key,int scan,int mods){keys.remove(key);return true;}
@@ -74,15 +91,18 @@ public final class BorrascaArcadeScreen extends Screen {
         float scale=Math.max(1,Math.min((width-24)/(float)W,(height-48)/(float)H));
         int sw=Math.round(W*scale),sh=Math.round(H*scale),x0=(width-sw)/2,y0=(height-sh)/2+8;
         g.fill(x0-6,y0-6,x0+sw+6,y0+sh+6,game==BorrascaArcade.SEAM?0xFF2A1E12:0xFF12261C);g.fill(x0-2,y0-2,x0+sw+2,y0+sh+2,0xFF000000);
-        var title=BorrascaArcade.TITLES[game];g.drawString(font,title,(width-font.width(title))/2,y0-20,game==BorrascaArcade.SEAM?0xFFF0C040:0xFF90E0B0,false);
+        var title=BorrascaArcade.TITLES[game]+(hand!=null?"   "+name:"");g.drawString(font,title,(width-font.width(title))/2,y0-20,game==BorrascaArcade.SEAM?0xFFF0C040:0xFF90E0B0,false);
         g.enableScissor(x0,y0,x0+sw,y0+sh);
         g.pose().pushPose();g.pose().translate(x0,y0,0);g.pose().scale(scale,scale,1);
         draw(g,font,play,ticks);
         if(over)table(g);
         g.pose().popPose();
         g.disableScissor();
-        String hint=over?"GAME OVER   [Esc]":game==BorrascaArcade.SEAM?"[W][S] change rails   [Space] hop   [Esc] leave":"[A][D] steer   hold [Space] reel in   [Esc] leave";
+        String hint=over?"GAME OVER   [Esc]":hand!=null?"over "+name+"'s shoulder   [Esc] leave":game==BorrascaArcade.SEAM?"[W][S] change rails   [Space] hop   [Esc] leave":"[A][D] steer   hold [Space] reel in   [Esc] leave";
         g.drawString(font,hint,(width-font.width(hint))/2,y0+sh+10,0xFFA09078,false);
+        // 0.4.446: whoever is at the reader's shoulder goes on talking. Their words sit across the top of the field, clear of the rails
+        // and of the river.
+        SpeechCaptions.render(g,Minecraft.getInstance().getTimer(),y0+36);
     }
     /** The table, after a game: the reader's initials where their score would sit. */
     void table(GuiGraphics g){

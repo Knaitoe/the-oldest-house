@@ -164,7 +164,7 @@ public final class BorrascaTexts {
     /** 0.4.436: quarters spent at the drugstore's cabinets, and whether the reader's initials went over Patrick's. */
     private static String arcade(CompoundTag own){
         int plays=own.getInt("ArcadePlays0")+own.getInt("ArcadePlays1");if(plays==0)return "";
-        return (plays==1?"I put a quarter in one of the games at the drugstore.":"I spent my quarters on the games at the drugstore.")+(own.getBoolean("OverPatrick")?" I got my initials over Patrick's.":"")+" ";
+        return (plays==1?"I put a quarter in one of the games at the drugstore.":"I spent my quarters on the games at the drugstore.")+(own.getBoolean("OverPatrick")?" I got my initials over Patrick's.":"")+BorrascaArcadeFriends.account(own)+" ";
     }
     /** 0.4.435: whose bike this reader rode, and whether they came off. */
     private static String bikes(CompoundTag own){

@@ -145,6 +145,7 @@ public final class BorrascaStory {
     public static void arrive(ServerPlayer p,CompoundTag own){
         int visit=own.getInt("Visit");if(visit==0)visit=1;else if(own.getBoolean("BorrascaDeparted")&&(own.getInt("ConfirmedVisits")&(1<<(visit-1)))!=0)visit=Math.min(4,visit+1);
         own.putInt("Visit",visit);own.putInt("GrabTicks",0);own.putInt("Approach",0);own.remove("ApproachArmed");own.putInt("ApproachAway",0);own.putBoolean("BorrascaDeparted",false);own.putBoolean("Here",true);own.putBoolean("Interrupted",false);own.remove("ExitEligible");own.remove("DepartVisit");p.getPersistentData().remove("BorrascaSpeechAt");own.putInt("Present",0);own.putInt("TrailClock",0);own.putBoolean("CastRecalled",false);
+        BorrascaArcadeFriends.arrived(p,own); // 0.4.446: an afternoon at the cabinets left unfinished is over
         cue(p,switch(visit){case 1->"The pine trail. Someone is waiting at the sign.";case 2->FRIEND+" is waiting by the first marker. A note is waiting by the door.";case 3->"Years later. You remember the way to the three trees.";default->"The ridge after dark. The way back stays open.";});
         send(p,own);
     }
@@ -318,6 +319,7 @@ public final class BorrascaStory {
 
     private static void talkTownChild(ServerPlayer p,LiteraryActor child,CompoundTag own,int visit){
         if(child.isInvisible())return;
+        if(BorrascaArcadeFriends.talk(p,child,own))return; // 0.4.446: at the cabinets, they have other things to say
         boolean eli=child.phase()==ELI;
         String key=(eli?"Eli":"Wren")+"Talk"+visit; // 0.4.421: the keys keep the old first names (the children are now Patrick and Kendra, 0.4.424)
         int said=own.getInt(key);
@@ -341,6 +343,8 @@ public final class BorrascaStory {
         else own.putBoolean(visit==1?"MetWren":"WrenRememberedEli",true);
         // 0.4.445: each of them knows whose comic the reader is carrying, and says so once before anything else.
         String comic=BorrascaComic.child(p,own,eli,visit);
+        // 0.4.446: and Kendra, the next time, has one thing to say about the afternoon at the cabinets.
+        if(comic==null&&!eli)comic=BorrascaArcadeFriends.later(own,visit);
         if(comic==null)own.putInt(key,(said+1)%lines.length);
         say(p,child,comic!=null?comic:lines[said%lines.length]);
         float yaw=toward(child,p);
@@ -427,7 +431,7 @@ public final class BorrascaStory {
         var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(PLACE,p.getUUID());a.appearance(role,switch(key){case "TownEli"->ELI;case "TownWren"->WREN;case "CastDana"->DANA;default->workerPhase(key);});a.moveTo(Vec3.atBottomCenterOf(at),180,0);if(!p.serverLevel().addFreshEntity(a))return null;own.putUUID(key,a.getUUID());return a;
     }
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(LabyrinthDoors.isBusy(p))return;if(!own.getBoolean("Here")){if(own.getBoolean("BorrascaDeparted"))return;own.putBoolean("Here",true);own.remove("ExitEligible");}
+        if(LabyrinthDoors.isBusy(p))return;if(!own.getBoolean("Here")){if(own.getBoolean("BorrascaDeparted"))return;own.putBoolean("Here",true);own.remove("ExitEligible");BorrascaArcadeFriends.arrived(p,own);}
         own.putInt("TrailClock",(own.getInt("TrailClock")+5)%60000);int visit=own.getInt("Visit");
         var standing=gentleman(own);if(standing!=null&&!own.getBoolean("SawGentleman")&&seesGentleman(p,standing,gentScale(own)))own.putBoolean("SawGentleman",true);if(own.getInt("GentTicks")>0)own.putInt("GentTicks",visit<=2?Math.max(0,own.getInt("GentTicks")-5):0);if(!own.getBoolean("CastRecalled"))BorrascaCast.prepare(p,b,own);
         var friend=ensure(p,b,own,"CastKimber",LiteraryActor.BORRASCA_KIMBER);var sheriff=ensure(p,b,own,"CastSheriff",LiteraryActor.BORRASCA_SHERIFF);var prescott=ensure(p,b,own,"CastPrescott",LiteraryActor.BORRASCA_PRESCOTT);
@@ -453,14 +457,15 @@ public final class BorrascaStory {
             own.putInt("HatTicks",hat);
             if(hat==0)sheriff.gesture(0);
         }
-        if(visit==1)tagAlong(p,b,own,friend,eli,wren);
+        BorrascaArcadeFriends.tick(p,b,own,eli,wren); // 0.4.446: Patrick and Kendra at the drugstore's cabinets
+        if(visit==1&&!BorrascaArcadeFriends.on(own))tagAlong(p,b,own,friend,eli,wren);
         switch(visit){
             case 1->visitOne(p,b,own,friend,sheriff,prescott);
             case 2->visitTwo(p,b,own,friend,w0,w1);
             case 3->visitThree(p,b,own,friend,sheriff);
             default->{visitFour(p,b,own,friend,sheriff);BorrascaFeeding.tick(p,b,own,dana,w0,w1);}
         }
-        if(visit!=1||!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))greetChildren(p,own,visit,eli,wren);
+        if((visit!=1||!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))&&!BorrascaArcadeFriends.on(own))greetChildren(p,own,visit,eli,wren);
         boolean light=lit(own);if(own.getInt("Present")%20==0||light||light!=own.getBoolean("LightSent")){own.putBoolean("LightSent",light);send(p,own);}
     }
     /** The ridge light is on from the moment she sees someone until she is gone. */
@@ -493,6 +498,8 @@ public final class BorrascaStory {
         }
         if(ahead)own.putBoolean("PlayDone",true);
         if(BorrascaPlay.tick(p,b,own,friend))return;
+        // 0.4.446: on her way up the street she comes into the drugstore with the others while the reader is at the cabinets.
+        if(!own.getBoolean("KimberAtFort")&&BorrascaArcadeFriends.kelly(p,b,own,friend))return;
         // She goes to the Tree at her own pace, whether the reader is beside her, behind her or already there.
         if(!own.getBoolean("KimberAtFort")){walkTalk(p,own,friend,WALK_TALK,"WalkTalk");if(!follow(p,b,own,friend,"ChildStep",CHILD_WALK))return;own.putBoolean("KimberAtFort",true);}
         if(!own.getBoolean("LegendDone")){
@@ -1375,7 +1382,7 @@ public final class BorrascaStory {
     private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(BorrascaRooms.at(b,rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
     private static boolean near(ServerPlayer p,BlockPos at,double distance){return at!=null&&p.distanceToSqr(Vec3.atBottomCenterOf(at))<distance*distance;}
     /** A person speaks: a caption with their name (client.SpeechCaptions), kept in the reader's journal. Never in chat. */
-    private static boolean recentSpeech(ServerPlayer p){
+    static boolean recentSpeech(ServerPlayer p){
         int elapsed=p.tickCount-p.getPersistentData().getInt("BorrascaSpeechAt");
         return p.getPersistentData().contains("BorrascaSpeechAt")&&elapsed>=0&&elapsed<SPEECH_TICKS;
     }
@@ -1408,6 +1415,6 @@ public final class BorrascaStory {
         if(BorrascaPeople.stray(a,LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE)))event.setCanceled(true);
     }
     @SubscribeEvent public static void joined(EntityJoinLevelEvent event){if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.role()!=LiteraryActor.BORRASCA_KIMBER||a.owner().isEmpty())return;var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE);if(own.getInt("Visit")==4){a.appearance(LiteraryActor.BORRASCA_KIMBER,GROWN);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);a.setInvisible(false);return;}if(own.getInt("Visit")>=3||own.getBoolean("FriendMissing")){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);if(own.getInt("Visit")>=3||own.getBoolean("FriendHidden")){a.setInvisible(true);BorrascaCast.stop(a);}}}
-    @SubscribeEvent public static void rejoined(PlayerEvent.PlayerLoggedInEvent event){if(!(event.getEntity() instanceof ServerPlayer p)||!BorrascaSites.inside(p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getBoolean("Here")){own.putBoolean("CastRecalled",false);save(p,own);}}
+    @SubscribeEvent public static void rejoined(PlayerEvent.PlayerLoggedInEvent event){if(!(event.getEntity() instanceof ServerPlayer p)||!BorrascaSites.inside(p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getBoolean("Here")){own.putBoolean("CastRecalled",false);BorrascaArcadeFriends.arrived(p,own);save(p,own);}}
     @SubscribeEvent public static void died(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&BorrascaSites.inside(p)){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);own.putBoolean("Here",false);own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}}
 }
