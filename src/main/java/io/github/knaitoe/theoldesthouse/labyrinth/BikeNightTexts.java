@@ -258,13 +258,20 @@ public final class BikeNightTexts {
     public static final String CAUGHT_CUE="%s has your bike. You are down in the leaves.";
     public static final String CAUGHT_NO_BIKE_CUE="You are down in the leaves. They ride off laughing.";
     public static final String OUT_CUE="Nobody is coming back this way. The way home is the way you came.";
+    /**
+     * 0.4.484, the cars. What a driver calls at a rider who has sat in front of their car a while, one for each car (the wagon, the
+     * pickup, the sedan, the fast one); what a driver says to each of the three, coming by him in the town; and what he answers.
+     */
+    public static final String[] GET_OFF={"Get off the road!","Hey! This is a street, kid!","It's the middle of the road! Move!","Move it! Some of us have places to be!"};
+    public static final String[] TOLD_OFF={"Tully Marsh! Does your mother know where you are?","Raymond! I am calling your father!","Duff! You leave those kids alone!"};
+    public static final String[] TOLD_BACK={"We're not doing anything!","It's Ray-RAY.","They started it!"};
     /** A hand on another bike, by a reader whose own the three have had. */
     public static final String NO_MORE="Yours is gone. These are other people's.";
     /** Every line of theirs, for the case that holds them to how they talk. */
     public static List<String> bullyLines(){
         var all=new ArrayList<String>(List.of(TULLY_GATE,TULLY_HAT,TULLY_HAT_ON,GET_THEM,DUFF_MINE,DUFF_UP,DUFF_OFF));
         all.addAll(List.of(JEERS));all.addAll(List.of(HIT));all.addAll(List.of(HANDS_OFF));all.addAll(List.of(CHASE_JEERS));
-        all.addAll(List.of(CAUGHT));all.addAll(List.of(LEAVING));
+        all.addAll(List.of(CAUGHT));all.addAll(List.of(LEAVING));all.addAll(List.of(TOLD_BACK));
         for(var on:List.of("swing","bike","seesaw","slide","bars","spring"))all.add(jeerAt(on));
         return all;
     }

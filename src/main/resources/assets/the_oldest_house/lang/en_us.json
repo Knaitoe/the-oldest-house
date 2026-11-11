@@ -1694,5 +1694,11 @@
   "block.the_oldest_house.calder_hedge": "Hedge",
   "block.the_oldest_house.calder_turf_line": "Chalked Turf",
   "subtitles.the_oldest_house.town.leaves": "Someone lands in leaves",
-  "subtitles.the_oldest_house.town.laugh": "Laughter"
+  "subtitles.the_oldest_house.town.laugh": "Laughter",
+  "entity.the_oldest_house.town_car": "Car",
+  "subtitles.the_oldest_house.town.engine": "A car goes by",
+  "subtitles.the_oldest_house.town.horn_wagon": "A station wagon's horn",
+  "subtitles.the_oldest_house.town.horn_pickup": "A pickup's horn",
+  "subtitles.the_oldest_house.town.horn_sedan": "A sedan's horn",
+  "subtitles.the_oldest_house.town.horn_muscle": "A fast car's horn"
 }

@@ -3189,4 +3189,233 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="sand_close") public static void sandCloseDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.484: the cars
+    /** How far along a way round the place nearest somewhere is, and how far off it that is. */
+    private static double[] nearestAlong(BlockPos b,int round,Vec3 at){
+        double best=0,least=Double.MAX_VALUE;
+        for(double d=0;d<CalderTraffic.length(round);d+=.5){double q=CalderTraffic.point(b,round,d).distanceTo(new Vec3(at.x,b.getY(),at.z));if(q<least){least=q;best=d;}}
+        return new double[]{best,least};
+    }
+    private static List<TownCar> cars(ServerLevel l,LiteraryTests.Fixture f){return l.getEntitiesOfClass(TownCar.class,whole(f));}
+
+    @GameTest(template="empty",batch="traffic_rounds",timeoutTicks=9000)
+    public static void theCarsRoundsKeepToTheRoadAndEachWayRoundHasItsOwnLane(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final int[] kerb={0},samples={0};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                h.assertTrue(CalderTraffic.rounds()==4&&TownCar.KINDS==4,"two rounds, each driven both ways, and a car for each way");
+                for(int r=0;r<CalderTraffic.rounds();r++){
+                    double length=CalderTraffic.length(r);
+                    h.assertTrue(length>230&&length<340&&CalderTraffic.point(b,r,0).distanceTo(CalderTraffic.point(b,r,length))<1e-6,"a way round comes back to where it began, a few hundred blocks on: "+length);
+                    for(double d=0;d<length;d+=.5){
+                        var at=CalderTraffic.point(b,r,d);float yaw=CalderTraffic.yaw(b,r,d);double rad=Math.toRadians(yaw);
+                        // The middle of the car is on the road, and both its sides are on the road or on the kerb, which is level with it
+                        // (where a street slants, a car's outer wheels run along the kerb's edge). A body the size of one touches nothing there.
+                        for(double side:new double[]{-TownCar.WIDE,0,TownCar.WIDE}){
+                            double x=at.x-Math.cos(rad)*side-b.getX(),z=at.z-Math.sin(rad)*side-b.getZ();int on=CalderTown.surface((int)Math.floor(x),(int)Math.floor(z));
+                            h.assertTrue(on==CalderTown.ROAD||side!=0&&on==CalderTown.KERB,"way "+r+" is on the road all the way round: at "+d+", "+x+", "+z+" is "+on);
+                            if(on==CalderTown.KERB)kerb[0]++;
+                        }
+                        samples[0]++;
+                        h.assertTrue(l.noCollision(new AABB(at.x-.9,at.y+.2,at.z-.9,at.x+.9,at.y+1.4,at.z+.9)),"nothing stands in way "+r+": at "+d+", "+at.subtract(Vec3.atLowerCornerOf(b)));
+                        h.assertTrue(at.z-b.getZ()>-135,"no car goes up to Church Lane: way "+r+" at "+d);
+                    }
+                }
+                h.assertTrue(kerb[0]*20<samples[0],"a car's side is over the kerb in few places: "+kerb[0]+" of "+samples[0]);
+                // The two ways round a round are two lanes.
+                for(int r=0;r<4;r+=2)for(double d=0;d<CalderTraffic.length(r);d+=1){
+                    double off=nearestAlong(b,r+1,CalderTraffic.point(b,r,d))[1];
+                    h.assertTrue(off>2.2,"the two ways round are not in each other's lane: ways "+r+" and "+(r+1)+" are "+off+" apart at "+d);
+                }
+                // A reader, for a night to ask where its cars start.
+                f.player("traffic_rounds_reader",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b),"waiting for the night"))
+            .thenExecute(()->{
+                var gate=Vec3.atLowerCornerOf(b).add(-.5,0,BikeNightSite.NORTH);
+                for(int i=0;i<TownCar.KINDS;i++){
+                    double far=CalderTraffic.point(b,CalderTraffic.roundOf(i),CalderTraffic.along(b,i)).distanceTo(gate);
+                    h.assertTrue(far>30,"no car starts by the park's gate: the "+TownCar.NAMES[i]+" is "+far+" from it");
+                }
+                h.assertTrue(!CalderTraffic.going(b)&&cars(l,f).isEmpty(),"and with no chase there are no cars yet");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="traffic_rounds") public static void trafficRoundsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="traffic_drive",timeoutTicks=9000)
+    public static void fourCarsDriveTheirWaysRoundWithTheirLightsOn(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final double[] from=new double[4];final TownCar[] body=new TownCar[4];
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("traffic_drive_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            // The reader stands on the pavement of Main Street, and the cars are started.
+            .thenExecute(()->{f.at(p[0],P,-20.5,0,-86.5);hush(p[0]);CalderTraffic.startNow(b);for(int i=0;i<4;i++)from[i]=CalderTraffic.along(b,i);})
+            .thenWaitUntil(()->{for(int i=0;i<4;i++)body[i]=CalderTraffic.body(l,b,i);h.assertTrue(body[0]!=null&&body[1]!=null&&body[2]!=null&&body[3]!=null,"waiting for each car to have a body");})
+            .thenIdle(300)
+            .thenExecute(()->{
+                h.assertTrue(cars(l,f).size()==4,"four cars, and no more: "+cars(l,f).size());
+                var origin=Vec3.atLowerCornerOf(b);
+                for(int i=0;i<4;i++){
+                    int r=CalderTraffic.roundOf(i);double length=CalderTraffic.length(r),gone=(CalderTraffic.along(b,i)-from[i]+length)%length;
+                    h.assertTrue(body[i].isAlive()&&body[i].kind()==i&&CalderTraffic.body(l,b,i)==body[i],"the "+TownCar.NAMES[i]+" has the body it had");
+                    h.assertTrue(gone>70&&gone<110,"it has driven on at a car's pace: "+gone+" blocks in fifteen seconds");
+                    h.assertTrue(body[i].position().distanceTo(CalderTraffic.point(b,r,CalderTraffic.along(b,i)))<.6,"its body is where it is");
+                    var at=body[i].position().subtract(origin);
+                    h.assertTrue(CalderTown.surface((int)Math.floor(at.x),(int)Math.floor(at.z))==CalderTown.ROAD,"on the road: "+at);
+                    // It points the way it is going, and its light is on the road ahead of its nose.
+                    double rad=Math.toRadians(body[i].getYRot());var ahead=CalderTraffic.point(b,r,CalderTraffic.along(b,i)+3).subtract(body[i].position());
+                    h.assertTrue((-Math.sin(rad)*ahead.x+Math.cos(rad)*ahead.z)/ahead.length()>.9,"it points the way it is going");
+                    var light=CalderTraffic.light(b,i);
+                    h.assertTrue(light!=null&&l.getBlockState(light).is(BikeNightRegistry.BEAM.get())&&l.getBlockState(light).getLightEmission(l,light)>=12,"its light is lit: "+light);
+                    var to=Vec3.atBottomCenterOf(light).subtract(body[i].position());
+                    h.assertTrue(to.length()>TownCar.LONG&&to.length()<TownCar.LONG+4&&-Math.sin(rad)*to.x+Math.cos(rad)*to.z>0,"ahead of its nose: "+to.length());
+                }
+                h.assertTrue(sounded(p[0],"town.engine"),"a car going by is heard");
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"and a reader on the pavement is left alone");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="traffic_drive") public static void trafficDriveDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="traffic_stop",timeoutTicks=9000)
+    public static void aCarStopsShortOfSomebodyInItsLaneSoundsItsHornAndGoesOnWhenTheyHaveGone(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final TownCar[] body={null};final boolean[] under={false};final long[] stopped={-1};
+        int car=TownCar.WAGON,round=CalderTraffic.roundOf(car);double start=150;
+        Runnable watch=()->{body[0]=CalderTraffic.body(l,b,car);if(body[0]!=null&&body[0].over(p[0].position(),0))under[0]=true;};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("traffic_stop_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            // The station wagon is on Main Street, and the reader stands in its lane sixteen blocks ahead of it.
+            .thenExecute(()->{
+                CalderTraffic.startNow(b);CalderTraffic.put(b,car,start);
+                var at=CalderTraffic.point(b,round,start+16).subtract(Vec3.atLowerCornerOf(b));f.at(p[0],P,at.x,0,at.z);hush(p[0]);
+            })
+            .thenWaitUntil(()->{watch.run();
+                if(body[0]!=null&&CalderTraffic.speed(b,car)==0&&CalderTraffic.along(b,car)>start+3&&stopped[0]<0)stopped[0]=l.getGameTime();
+                h.assertTrue(stopped[0]>=0,"waiting for it to come up to them and stop: at "+CalderTraffic.along(b,car)+" going "+CalderTraffic.speed(b,car));})
+            .thenExecute(()->{
+                double nose=body[0].position().distanceTo(p[0].position())-TownCar.LONG;
+                h.assertTrue(nose>=.9&&nose<3,"it stops short of them: its nose is "+nose+" off");
+                h.assertTrue(!under[0],"and it was never over them");
+                h.assertTrue(sounded(p[0],"town.horn_wagon"),"they have had its horn");
+                h.assertTrue(!body[0].saying(),"its driver has not said anything yet");
+            })
+            // They stay where they are: after a while the driver says so.
+            .thenWaitUntil(()->{watch.run();h.assertTrue(body[0].saying(),"waiting for the driver to say something");})
+            .thenExecute(()->{
+                h.assertTrue(body[0].getCustomName()!=null&&body[0].getCustomName().getString().equals(BikeNightTexts.GET_OFF[car])&&body[0].isCustomNameVisible(),"what the driver calls: "+body[0].getCustomName());
+                h.assertTrue(l.getGameTime()-stopped[0]>=CalderTraffic.WAITED-30,"not at once: "+(l.getGameTime()-stopped[0])+" ticks after it stopped");
+                h.assertTrue(CalderTraffic.speed(b,car)==0&&!under[0],"and it has not moved");
+                // Off the road, onto the pavement.
+                var at=p[0].position().subtract(Vec3.atLowerCornerOf(b));f.at(p[0],P,at.x,0,at.z+6);
+            })
+            .thenWaitUntil(()->{watch.run();h.assertTrue(CalderTraffic.speed(b,car)>.3F&&CalderTraffic.along(b,car)>start+24,"waiting for it to go on past where they were: at "+CalderTraffic.along(b,car)+" going "+CalderTraffic.speed(b,car));})
+            .thenExecute(()->{
+                h.assertTrue(!heard(p[0],BikeNightTexts.GET_OFF[car]),"what the driver called was never in chat");
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"and nobody is hurt");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="traffic_stop") public static void trafficStopDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="traffic_crash",timeoutTicks=9000)
+    public static void aRiderWhoRidesIntoACarComesOffAndOneGoingSlowlyDoesNot(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final TownCar[] body={null};final int[] t={0};
+        int car=TownCar.SEDAN,round=CalderTraffic.roundOf(car);final double[] hold={0};final Vec3[] at={null};
+        // The sedan is held where it is, on Main Street, for as long as the case wants it there.
+        Runnable keep=()->{CalderTraffic.put(b,car,hold[0]);body[0]=CalderTraffic.body(l,b,car);};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("traffic_crash_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->{
+                mine[0]=take(h,f,p[0],NightBike.Make.WASP);CalderTraffic.startNow(b);
+                hold[0]=nearestAlong(b,round,Vec3.atLowerCornerOf(b).add(-10.5,0,-92.5))[0];at[0]=CalderTraffic.point(b,round,hold[0]);keep.run();
+            })
+            .thenWaitUntil(()->{keep.run();h.assertTrue(body[0]!=null&&f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the sedan's body, and for the Wasp to be theirs");})
+            // Slowly, at its side from the south: nothing comes of it, and the car stays where it is while they are under it.
+            .thenExecute(()->{mine[0].moveTo(at[0].x,at[0].y,at[0].z+1.1,180,0);p[0].setYRot(180);})
+            .thenExecuteFor(30,()->{keep.run();})
+            .thenExecute(()->{
+                h.assertTrue(body[0].over(mine[0].position(),.25)&&p[0].getVehicle()==mine[0]&&mine[0].speedNow()<=RiddenBike.CRASH,"against its side, going slowly, the rider is still on: "+mine[0].speedNow());
+                h.assertTrue(CalderTraffic.speed(b,car)==0,"and the car does not move with somebody under it");
+                // From eight blocks off, at a run.
+                mine[0].moveTo(at[0].x,at[0].y,at[0].z+9,180,0);p[0].setYRot(180);hush(p[0]);t[0]=0;
+            })
+            .thenWaitUntil(()->{
+                keep.run();
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);}
+                h.assertTrue(p[0].getVehicle()==null,"waiting for them to ride into it and come off: "+(mine[0].isAlive()?mine[0].position().subtract(at[0])+" going "+mine[0].speedNow():"the bike is gone"));
+            })
+            .thenWaitUntil(()->{keep.run();h.assertTrue(heard(p[0],NightBikes.HEAD_ON),"waiting for them to be told");})
+            .thenExecute(()->{
+                var lying=new ArrayList<BlockPos>();
+                for(var cell:BlockPos.betweenClosed(BlockPos.containing(at[0]).offset(-4,-1,-4),BlockPos.containing(at[0]).offset(4,1,4)))if(l.getBlockState(cell).getBlock() instanceof NightBikeBlock&&l.getBlockState(cell).getValue(NightBikeBlock.LYING))lying.add(cell.immutable());
+                h.assertTrue(lying.size()==1,"the Wasp lies in the road by the car: "+lying);
+                h.assertTrue(body[0].isAlive()&&body[0].position().distanceTo(at[0])<.5,"and the car is where it was");
+                h.assertTrue(p[0].getHealth()>=p[0].getMaxHealth()-1,"they are no more hurt than by a wall: "+p[0].getHealth());
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="traffic_crash") public static void trafficCrashDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="traffic_told",timeoutTicks=12000)
+    public static void aDriverTellsOneOfTheThreeOffAndHeStopsForItAndTheirBikesGoRoundACar(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final int[] toldWho={-1,-1},car={-1,-1};final long[] toldAt={-1,-1};final boolean[] answered={false,false},inside={false};final Vec3[] stoodAt={null,null};
+        // Every tick: none of the three's bikes is inside a car.
+        Runnable watch=()->{three(l,b,who,bikes);for(var body:cars(l,f))for(var bike:bikes)if(bike!=null&&body.over(bike.position(),-.15))inside[0]=true;};
+        // A car is put a little behind one of them who is riding in the town beside its way, going at its pace: its driver comes by him.
+        java.util.function.IntPredicate comeBy=slot->{
+            for(int i=0;i<3;i++){
+                if(bikes[i]==null||who[i]==null||who[i].gesture()==BikeNightBullies.COUGH||i==toldWho[0]||bikes[i].speedNow()<.1F||bikes[i].getZ()-b.getZ()>-60)continue;
+                for(int c=0;c<TownCar.KINDS;c++){
+                    if(c==car[0])continue;
+                    var near=nearestAlong(b,CalderTraffic.roundOf(c),bikes[i].position());
+                    if(near[1]>1.5&&near[1]<3){CalderTraffic.put(b,c,near[0]-3.5,CalderTraffic.CRUISE);toldWho[slot]=i;car[slot]=c;toldAt[slot]=l.getGameTime();stoodAt[slot]=bikes[i].position();return true;}
+                }
+            }
+            return false;
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("traffic_told_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{watch.run();h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            // The reader is a long way off, in the turning circle of Elm Court, and the three have the town to cross.
+            .thenExecute(()->{h.assertTrue(CalderTraffic.going(b),"the cars start with the chase");f.at(p[0],P,22.5,0,-141.5);})
+            .thenWaitUntil(()->{watch.run();h.assertTrue(toldWho[0]>=0||comeBy.test(0),"waiting for one of the three to ride beside a car's way");})
+            .thenWaitUntil(()->{watch.run();h.assertTrue(CalderTraffic.told(b)==1,"waiting for the driver to tell him off: "+CalderTraffic.told(b));})
+            .thenExecuteFor(CalderTraffic.REPLY+6,()->{watch.run();if(saying(who[toldWho[0]]).equals(BikeNightTexts.TOLD_BACK[toldWho[0]]))answered[0]=true;})
+            .thenExecute(()->{
+                var body=CalderTraffic.body(l,b,car[0]);
+                h.assertTrue(body!=null&&body.getCustomName()!=null&&body.getCustomName().getString().equals(BikeNightTexts.TOLD_OFF[toldWho[0]]),"the driver said what they think of him: "+(body==null?null:body.getCustomName()));
+                h.assertTrue(answered[0],"and he answered back: "+saying(who[toldWho[0]]));
+                h.assertTrue(bikes[toldWho[0]].speedNow()<.02F,"he has stopped for it: "+bikes[toldWho[0]].speedNow());
+                h.assertTrue(CalderTraffic.speed(b,car[0])<=CalderTraffic.CRAWL+.01F,"and the car crawls beside him: "+CalderTraffic.speed(b,car[0]));
+            })
+            // He is off again when it is over, and a second driver tells another of them off.
+            .thenWaitUntil(()->{watch.run();h.assertTrue(bikes[toldWho[0]]!=null&&bikes[toldWho[0]].speedNow()>.15F,"waiting for him to ride on");})
+            .thenExecute(()->h.assertTrue(l.getGameTime()-toldAt[0]>=CalderTraffic.TOLD-2,"not before it was over: "+(l.getGameTime()-toldAt[0])+" ticks"))
+            .thenWaitUntil(()->{watch.run();h.assertTrue(toldWho[1]>=0||comeBy.test(1),"waiting for another of them to ride beside a car's way");})
+            .thenWaitUntil(()->{watch.run();h.assertTrue(CalderTraffic.told(b)==2,"waiting for a second driver to tell another of them off: "+CalderTraffic.told(b));})
+            // A car that is where one of their bikes is: the bike is put to one side of it.
+            .thenExecute(()->{
+                int c=0;while(c==car[0]||c==car[1])c++;
+                var near=nearestAlong(b,CalderTraffic.roundOf(c),bikes[toldWho[1]].position());
+                CalderTraffic.put(b,c,near[0]);bikes[toldWho[1]].setPos(CalderTraffic.point(b,CalderTraffic.roundOf(c),near[0]));car[0]=c;
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                var body=CalderTraffic.body(l,b,car[0]);
+                h.assertTrue(body!=null&&!body.over(bikes[toldWho[1]].position(),.15),"a bike a car is put on top of is beside it a moment later: "+bikes[toldWho[1]].position().subtract(body.position()));
+                h.assertTrue(CalderTraffic.told(b)==2,"and no third driver has anything to say: "+CalderTraffic.told(b));
+                h.assertTrue(!inside[0],"none of their bikes was ever inside a car");
+                for(var line:BikeNightTexts.TOLD_OFF)h.assertTrue(!heard(p[0],line),"what a driver says is never in chat");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="traffic_told") public static void trafficToldDone(ServerLevel l){done();}
 }

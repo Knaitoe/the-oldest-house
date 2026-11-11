@@ -2,6 +2,8 @@ package io.github.knaitoe.theoldesthouse.client;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor;
+import io.github.knaitoe.theoldesthouse.labyrinth.Voiced;
+import net.minecraft.world.entity.Entity;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,22 +41,22 @@ public final class SpeechCaptions {
     public static final int MOST=3,LINES=5;
     private SpeechCaptions(){}
 
-    /** An actor's line is a caption now, not a nameplate. */
-    @SubscribeEvent public static void nameTag(RenderNameTagEvent e){if(e.getEntity() instanceof LiteraryActor)e.setCanRender(TriState.FALSE);}
+    /** An actor's line is a caption now, not a nameplate; and so is what a driver calls out of a car (0.4.484, Voiced). */
+    @SubscribeEvent public static void nameTag(RenderNameTagEvent e){if(e.getEntity() instanceof Voiced)e.setCanRender(TriState.FALSE);}
 
     /** Who is speaking where this client can hear it, nearest first. */
-    public static List<LiteraryActor> speakers(Minecraft mc){
+    public static List<Entity> speakers(Minecraft mc){
         if(mc.level==null||mc.player==null)return List.of();
         Vec3 eye=mc.gameRenderer.getMainCamera().getPosition();
-        var list=new ArrayList<>(mc.level.getEntitiesOfClass(LiteraryActor.class,new AABB(eye,eye).inflate(HEARD),
-            a->a.isAlive()&&!a.isInvisible()&&a.isCustomNameVisible()&&a.hasCustomName()&&a.getEyePosition().distanceToSqr(eye)<HEARD*HEARD));
+        var list=new ArrayList<>(mc.level.getEntitiesOfClass(Entity.class,new AABB(eye,eye).inflate(HEARD),
+            a->a instanceof Voiced&&a.isAlive()&&!a.isInvisible()&&a.isCustomNameVisible()&&a.hasCustomName()&&a.getEyePosition().distanceToSqr(eye)<HEARD*HEARD));
         list.sort(Comparator.comparingDouble(a->a.getEyePosition().distanceToSqr(eye)));
         return list.size()>MOST?list.subList(0,MOST):list;
     }
 
     /** The caption's words, after the speaker's name when the scene gives one. */
-    public static Component line(LiteraryActor a){
-        var words=a.getCustomName()==null?Component.empty():a.getCustomName();String who=a.speaker();
+    public static Component line(Entity a){
+        var words=a.getCustomName()==null?Component.empty():a.getCustomName();String who=a instanceof Voiced voiced?voiced.speaker():"";
         return who.isEmpty()?words:Component.literal(who+": ").withStyle(ChatFormatting.GRAY).append(words.copy().withStyle(ChatFormatting.WHITE));
     }
     /** Where the lowest caption's frame ends: below the crosshair, above the action bar and the hotbar. */
@@ -78,7 +80,7 @@ public final class SpeechCaptions {
             float fade=(float)Mth.clamp(1-(d-6)/(HEARD-6)*.5,.5,1);
             int top=y-lines.size()*10-4,x0=w/2-width/2-4,x1=w/2+width/2+4;
             g.fill(x0,top,x1,y,(int)(fade*150)<<24);
-            int colour=((int)(fade*255)<<24)|0xFFFFFF;float shake=BorrascaNativeArt.scream(a),age=a.tickCount+delta.getGameTimeDeltaPartialTick(false);
+            int colour=((int)(fade*255)<<24)|0xFFFFFF;float shake=a instanceof LiteraryActor actor?BorrascaNativeArt.scream(actor):0,age=a.tickCount+delta.getGameTimeDeltaPartialTick(false);
             for(int i=0;i<lines.size();i++){int x=w/2-font.width(lines.get(i))/2,y0=top+3+i*10;
                 if(shake>0)shaking(g,lines.get(i),x,y0,colour,shake,age,i);else g.drawString(font,lines.get(i),x,y0,colour,false);}
             // A voice from outside the middle of the view is marked on its side.

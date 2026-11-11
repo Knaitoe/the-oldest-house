@@ -6,7 +6,8 @@ a hand, thrown, and bursting on what it meets; (0.4.466) a body going down the s
 of the monkey bars; (0.4.468) the seesaw's axle as somebody pushes off, and its bumper coming down on the sand; and (0.4.469) the
 merry-go-round's bearing as it comes round. And the park's small things (0.4.471): the drinking fountain running, the payphone's
 dial tone and its handset going back on the hook, and the spring rider's spring. And the hunt's (0.4.482): a body landing in
-dry leaves, and the three laughing as they ride off.
+dry leaves, and the three laughing as they ride off. And the cars' (0.4.484): an engine going by, a second of it, which the game
+plays over and over as a car drives; and four horns, one for each car.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -47,6 +48,12 @@ ROWS = {
     # 0.4.482, the hunt.
     'town/leaves': ('town.leaves', 'Someone lands in leaves', 16),
     'town/laugh': ('town.laugh', 'Laughter', 28),
+    # 0.4.484, the cars: an engine going by, and each car's own horn.
+    'town/engine': ('town.engine', 'A car goes by', 32),
+    'town/horn_wagon': ('town.horn_wagon', "A station wagon's horn", 48),
+    'town/horn_pickup': ('town.horn_pickup', "A pickup's horn", 48),
+    'town/horn_sedan': ('town.horn_sedan', "A sedan's horn", 48),
+    'town/horn_muscle': ('town.horn_muscle', "A fast car's horn", 48),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -475,7 +482,37 @@ def laugh():
     return out
 
 
-MAKERS = {'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
+def engine():
+    # A car's engine as it goes by, a second of it: low and even, with its tyres on the road, beginning and ending quietly so that
+    # one beat of it runs into the next.
+    length = 1.1
+    n = seconds(length)
+    t = times(n)
+    phase = 2 * np.pi * 58 * t
+    tone = np.sin(phase) + .5 * np.sin(2 * phase) + .28 * np.sin(3.02 * phase) + .15 * np.sin(4.5 * phase)
+    burble = 1 + .18 * np.sin(2 * np.pi * 14.5 * t)
+    tyres = band(rng.standard_normal(n), 300, 2200) * .35
+    return (tone * .5 * burble + tyres) * np.clip(t / .3, 0, 1) * np.clip((length - t) / .4, 0, 1)
+
+
+def horn(low, high, length, rasp=0.0, twice=False):
+    # A car's horn: two reeds a third or so apart, each with its overtones; some rasp for an old one; one long press, or two short.
+    n = seconds(length)
+    t = times(n)
+
+    def press(start, held):
+        shape = np.clip((t - start) / .015, 0, 1) * np.clip((start + held - t) / .04, 0, 1) * (t >= start) * (t <= start + held)
+        out = np.zeros(n)
+        for f, level in ((low, 1.0), (high, .85)):
+            ph = 2 * np.pi * f * t
+            out += (np.sin(ph) + .5 * np.sin(2 * ph) + .33 * np.sin(3 * ph) + .2 * np.sin(4 * ph) + rasp * np.sign(np.sin(ph))) * level
+        return out * shape
+    return (press(.02, .2) + press(.32, length - .38) if twice else press(.02, length - .06)) * .5
+
+
+MAKERS = {'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
+          'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
+          'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
           'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud, 'park/roundabout_squeak': roundabout_squeak, 'park/fountain': fountain, 'park/phone_tone': phone_tone, 'park/phone_hook': phone_hook,
           'park/spring': spring}
 

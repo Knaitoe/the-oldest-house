@@ -72,7 +72,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -104,6 +104,7 @@ public final class BikeNightVisualProof extends Screen {
         for(var state:BikeNightRegistry.DOME.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.SPRING_RIDER.get().getStateDefinition().getPossibleStates())need(state);
         if(mc.getItemRenderer().getModel(new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()),null,null,0)==missing)throw new IllegalStateException("Missing the ball of sand's model");
+        if(!TownCarRenderer.missing().isEmpty())throw new IllegalStateException("Missing car parts "+TownCarRenderer.missing());
     }
     private static void need(BlockState s){var mc=Minecraft.getInstance();if(mc.getBlockRenderer().getBlockModel(s)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing Bike night model for "+s);}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
@@ -125,9 +126,10 @@ public final class BikeNightVisualProof extends Screen {
             "the town's things: on walls; fences; pumpkins; dumpsters; crates, drums, tyres; litter",
             "behind a shop: the door under its bulb, the shutter, paint on the brick, and what has been left out",
             "Main Street: hardware, bank and clock, theater and marquee; laundromat, video, barber",
-            "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets"}[page],8,8,0xffffffff);
+            "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets",
+            "the cars: station wagon, pickup, sedan and the fast one, from in front and from behind"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);default->fronts(g,1);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);default->cars(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -294,6 +296,20 @@ public final class BikeNightVisualProof extends Screen {
             at.accept(CalderBlock.of(CalderBlock.Kind.GATE,Direction.EAST,x==-2?2:0),new int[]{x,0,-2});at.accept(CalderBlock.of(CalderBlock.Kind.GATE,Direction.EAST,1),new int[]{x,1,-2});
         }
         buffers.endBatch();pose.popPose();
+    }
+    /** 0.4.484: the four cars on a strip of road, each from in front and to one side, and from behind and to the other, its wheels a part turn round. */
+    private void cars(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();
+        float s=width*.052F;
+        for(int k=0;k<io.github.knaitoe.theoldesthouse.labyrinth.TownCar.KINDS;k++){
+            float y=24+(height-24)*(.26F+.235F*k);
+            g.fill(0,(int)y,width,(int)y+8,0xff3a3a40);g.flush();
+            for(int v=0;v<2;v++){
+                var pose=g.pose();pose.pushPose();pose.translate(width*(v==0?.27F:.74F),y,300);pose.scale(s,-s,s);pose.mulPose(Axis.XP.rotationDegrees(14));
+                TownCarRenderer.draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),k,v==0?-52:128,.6F*(k+1),LightTexture.FULL_BRIGHT);
+                buffers.endBatch();pose.popPose();
+            }
+        }
     }
     private void over(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();

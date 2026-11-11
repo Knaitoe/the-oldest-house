@@ -97,6 +97,10 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<PackBike>> PACK_BIKE=ENTITIES.register("pack_bike",
         ()->EntityType.Builder.<PackBike>of(PackBike::new,MobCategory.MISC).sized(.6F,.9F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("pack_bike"));
 
+    /** 0.4.484: one of the town's cars (TownCar): a body the night's traffic moves. Never saved. */
+    public static final DeferredHolder<EntityType<?>,EntityType<TownCar>> TOWN_CAR=ENTITIES.register("town_car",
+        ()->EntityType.Builder.<TownCar>of(TownCar::new,MobCategory.MISC).sized(1.9F,1.45F).clientTrackingRange(10).updateInterval(1).noSave().noSummon().build("town_car"));
+
     /**
      * 0.4.465: a ball of the sandpit's sand, packed by hand and thrown (SandBallItem, SandBall). The night's one item: it runs out
      * through the fingers of anyone who carries it out of the park.
@@ -169,6 +173,9 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> ROUNDABOUT_SQUEAK=sound("park.roundabout_squeak");
     /** The hunt (0.4.482): somebody landing in dry leaves, and the three laughing as they go. */
     public static final DeferredHolder<SoundEvent,SoundEvent> LEAVES_FALL=sound("town.leaves"),LAUGH=sound("town.laugh");
+    /** 0.4.484, the cars: an engine going by, and each car's own horn, in TownCar's order. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> ENGINE=sound("town.engine");
+    public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> HORNS=java.util.List.of(sound("town.horn_wagon"),sound("town.horn_pickup"),sound("town.horn_sedan"),sound("town.horn_muscle"));
 
     private BikeNightRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BLOCK_ENTITIES.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
