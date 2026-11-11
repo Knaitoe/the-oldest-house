@@ -1,0 +1,282 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "j": "the_oldest_house:block/calder_town/town2",
+    "particle": "the_oldest_house:block/calder_town/town2"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        3,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        10
+      ],
+      "to": [
+        13,
+        3,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#j",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        6
+      ],
+      "to": [
+        6,
+        3,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        0,
+        6
+      ],
+      "to": [
+        13,
+        3,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#j",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        }
+      }
+    }
+  ]
+}

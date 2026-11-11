@@ -1,0 +1,1144 @@
+{
+  "variants": {
+    "facing=north,kind=chainlink,stage=0": {
+      "model": "the_oldest_house:block/calder_town/chainlink_0"
+    },
+    "facing=north,kind=chainlink,stage=1": {
+      "model": "the_oldest_house:block/calder_town/chainlink_1"
+    },
+    "facing=north,kind=chainlink,stage=2": {
+      "model": "the_oldest_house:block/calder_town/chainlink_2"
+    },
+    "facing=north,kind=chainlink,stage=3": {
+      "model": "the_oldest_house:block/calder_town/chainlink_3"
+    },
+    "facing=east,kind=chainlink,stage=0": {
+      "model": "the_oldest_house:block/calder_town/chainlink_0",
+      "y": 90
+    },
+    "facing=east,kind=chainlink,stage=1": {
+      "model": "the_oldest_house:block/calder_town/chainlink_1",
+      "y": 90
+    },
+    "facing=east,kind=chainlink,stage=2": {
+      "model": "the_oldest_house:block/calder_town/chainlink_2",
+      "y": 90
+    },
+    "facing=east,kind=chainlink,stage=3": {
+      "model": "the_oldest_house:block/calder_town/chainlink_3",
+      "y": 90
+    },
+    "facing=south,kind=chainlink,stage=0": {
+      "model": "the_oldest_house:block/calder_town/chainlink_0",
+      "y": 180
+    },
+    "facing=south,kind=chainlink,stage=1": {
+      "model": "the_oldest_house:block/calder_town/chainlink_1",
+      "y": 180
+    },
+    "facing=south,kind=chainlink,stage=2": {
+      "model": "the_oldest_house:block/calder_town/chainlink_2",
+      "y": 180
+    },
+    "facing=south,kind=chainlink,stage=3": {
+      "model": "the_oldest_house:block/calder_town/chainlink_3",
+      "y": 180
+    },
+    "facing=west,kind=chainlink,stage=0": {
+      "model": "the_oldest_house:block/calder_town/chainlink_0",
+      "y": 270
+    },
+    "facing=west,kind=chainlink,stage=1": {
+      "model": "the_oldest_house:block/calder_town/chainlink_1",
+      "y": 270
+    },
+    "facing=west,kind=chainlink,stage=2": {
+      "model": "the_oldest_house:block/calder_town/chainlink_2",
+      "y": 270
+    },
+    "facing=west,kind=chainlink,stage=3": {
+      "model": "the_oldest_house:block/calder_town/chainlink_3",
+      "y": 270
+    },
+    "facing=north,kind=bleacher,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0"
+    },
+    "facing=north,kind=bleacher,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0"
+    },
+    "facing=north,kind=bleacher,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0"
+    },
+    "facing=north,kind=bleacher,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0"
+    },
+    "facing=east,kind=bleacher,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 90
+    },
+    "facing=east,kind=bleacher,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 90
+    },
+    "facing=east,kind=bleacher,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 90
+    },
+    "facing=east,kind=bleacher,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 90
+    },
+    "facing=south,kind=bleacher,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 180
+    },
+    "facing=south,kind=bleacher,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 180
+    },
+    "facing=south,kind=bleacher,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 180
+    },
+    "facing=south,kind=bleacher,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 180
+    },
+    "facing=west,kind=bleacher,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 270
+    },
+    "facing=west,kind=bleacher,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 270
+    },
+    "facing=west,kind=bleacher,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 270
+    },
+    "facing=west,kind=bleacher,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "y": 270
+    },
+    "facing=north,kind=pumpkin,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_0"
+    },
+    "facing=north,kind=pumpkin,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_1"
+    },
+    "facing=north,kind=pumpkin,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_2"
+    },
+    "facing=north,kind=pumpkin,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_3"
+    },
+    "facing=east,kind=pumpkin,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_0",
+      "y": 90
+    },
+    "facing=east,kind=pumpkin,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_1",
+      "y": 90
+    },
+    "facing=east,kind=pumpkin,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_2",
+      "y": 90
+    },
+    "facing=east,kind=pumpkin,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_3",
+      "y": 90
+    },
+    "facing=south,kind=pumpkin,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_0",
+      "y": 180
+    },
+    "facing=south,kind=pumpkin,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_1",
+      "y": 180
+    },
+    "facing=south,kind=pumpkin,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_2",
+      "y": 180
+    },
+    "facing=south,kind=pumpkin,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_3",
+      "y": 180
+    },
+    "facing=west,kind=pumpkin,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_0",
+      "y": 270
+    },
+    "facing=west,kind=pumpkin,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_1",
+      "y": 270
+    },
+    "facing=west,kind=pumpkin,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_2",
+      "y": 270
+    },
+    "facing=west,kind=pumpkin,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pumpkin_3",
+      "y": 270
+    },
+    "facing=north,kind=awning,stage=0": {
+      "model": "the_oldest_house:block/calder_town/awning_0"
+    },
+    "facing=north,kind=awning,stage=1": {
+      "model": "the_oldest_house:block/calder_town/awning_1"
+    },
+    "facing=north,kind=awning,stage=2": {
+      "model": "the_oldest_house:block/calder_town/awning_2"
+    },
+    "facing=north,kind=awning,stage=3": {
+      "model": "the_oldest_house:block/calder_town/awning_0"
+    },
+    "facing=east,kind=awning,stage=0": {
+      "model": "the_oldest_house:block/calder_town/awning_0",
+      "y": 90
+    },
+    "facing=east,kind=awning,stage=1": {
+      "model": "the_oldest_house:block/calder_town/awning_1",
+      "y": 90
+    },
+    "facing=east,kind=awning,stage=2": {
+      "model": "the_oldest_house:block/calder_town/awning_2",
+      "y": 90
+    },
+    "facing=east,kind=awning,stage=3": {
+      "model": "the_oldest_house:block/calder_town/awning_0",
+      "y": 90
+    },
+    "facing=south,kind=awning,stage=0": {
+      "model": "the_oldest_house:block/calder_town/awning_0",
+      "y": 180
+    },
+    "facing=south,kind=awning,stage=1": {
+      "model": "the_oldest_house:block/calder_town/awning_1",
+      "y": 180
+    },
+    "facing=south,kind=awning,stage=2": {
+      "model": "the_oldest_house:block/calder_town/awning_2",
+      "y": 180
+    },
+    "facing=south,kind=awning,stage=3": {
+      "model": "the_oldest_house:block/calder_town/awning_0",
+      "y": 180
+    },
+    "facing=west,kind=awning,stage=0": {
+      "model": "the_oldest_house:block/calder_town/awning_0",
+      "y": 270
+    },
+    "facing=west,kind=awning,stage=1": {
+      "model": "the_oldest_house:block/calder_town/awning_1",
+      "y": 270
+    },
+    "facing=west,kind=awning,stage=2": {
+      "model": "the_oldest_house:block/calder_town/awning_2",
+      "y": 270
+    },
+    "facing=west,kind=awning,stage=3": {
+      "model": "the_oldest_house:block/calder_town/awning_0",
+      "y": 270
+    },
+    "facing=north,kind=hydrant,stage=0": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0"
+    },
+    "facing=north,kind=hydrant,stage=1": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0"
+    },
+    "facing=north,kind=hydrant,stage=2": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0"
+    },
+    "facing=north,kind=hydrant,stage=3": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0"
+    },
+    "facing=east,kind=hydrant,stage=0": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 90
+    },
+    "facing=east,kind=hydrant,stage=1": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 90
+    },
+    "facing=east,kind=hydrant,stage=2": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 90
+    },
+    "facing=east,kind=hydrant,stage=3": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 90
+    },
+    "facing=south,kind=hydrant,stage=0": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 180
+    },
+    "facing=south,kind=hydrant,stage=1": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 180
+    },
+    "facing=south,kind=hydrant,stage=2": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 180
+    },
+    "facing=south,kind=hydrant,stage=3": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 180
+    },
+    "facing=west,kind=hydrant,stage=0": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 270
+    },
+    "facing=west,kind=hydrant,stage=1": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 270
+    },
+    "facing=west,kind=hydrant,stage=2": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 270
+    },
+    "facing=west,kind=hydrant,stage=3": {
+      "model": "the_oldest_house:block/calder_town/hydrant_0",
+      "y": 270
+    },
+    "facing=north,kind=mailbox,stage=0": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0"
+    },
+    "facing=north,kind=mailbox,stage=1": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0"
+    },
+    "facing=north,kind=mailbox,stage=2": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0"
+    },
+    "facing=north,kind=mailbox,stage=3": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0"
+    },
+    "facing=east,kind=mailbox,stage=0": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 90
+    },
+    "facing=east,kind=mailbox,stage=1": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 90
+    },
+    "facing=east,kind=mailbox,stage=2": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 90
+    },
+    "facing=east,kind=mailbox,stage=3": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 90
+    },
+    "facing=south,kind=mailbox,stage=0": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 180
+    },
+    "facing=south,kind=mailbox,stage=1": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 180
+    },
+    "facing=south,kind=mailbox,stage=2": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 180
+    },
+    "facing=south,kind=mailbox,stage=3": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 180
+    },
+    "facing=west,kind=mailbox,stage=0": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 270
+    },
+    "facing=west,kind=mailbox,stage=1": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 270
+    },
+    "facing=west,kind=mailbox,stage=2": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 270
+    },
+    "facing=west,kind=mailbox,stage=3": {
+      "model": "the_oldest_house:block/calder_town/mailbox_0",
+      "y": 270
+    },
+    "facing=north,kind=pole,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pole_0"
+    },
+    "facing=north,kind=pole,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pole_0"
+    },
+    "facing=north,kind=pole,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pole_0"
+    },
+    "facing=north,kind=pole,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pole_0"
+    },
+    "facing=east,kind=pole,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 90
+    },
+    "facing=east,kind=pole,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 90
+    },
+    "facing=east,kind=pole,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 90
+    },
+    "facing=east,kind=pole,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 90
+    },
+    "facing=south,kind=pole,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 180
+    },
+    "facing=south,kind=pole,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 180
+    },
+    "facing=south,kind=pole,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 180
+    },
+    "facing=south,kind=pole,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 180
+    },
+    "facing=west,kind=pole,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 270
+    },
+    "facing=west,kind=pole,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 270
+    },
+    "facing=west,kind=pole,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 270
+    },
+    "facing=west,kind=pole,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pole_0",
+      "y": 270
+    },
+    "facing=north,kind=tp,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tp_0"
+    },
+    "facing=north,kind=tp,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tp_0"
+    },
+    "facing=north,kind=tp,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tp_0"
+    },
+    "facing=north,kind=tp,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tp_0"
+    },
+    "facing=east,kind=tp,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 90
+    },
+    "facing=east,kind=tp,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 90
+    },
+    "facing=east,kind=tp,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 90
+    },
+    "facing=east,kind=tp,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 90
+    },
+    "facing=south,kind=tp,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 180
+    },
+    "facing=south,kind=tp,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 180
+    },
+    "facing=south,kind=tp,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 180
+    },
+    "facing=south,kind=tp,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 180
+    },
+    "facing=west,kind=tp,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 270
+    },
+    "facing=west,kind=tp,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 270
+    },
+    "facing=west,kind=tp,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 270
+    },
+    "facing=west,kind=tp,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tp_0",
+      "y": 270
+    },
+    "facing=north,kind=cart,stage=0": {
+      "model": "the_oldest_house:block/calder_town/cart_0"
+    },
+    "facing=north,kind=cart,stage=1": {
+      "model": "the_oldest_house:block/calder_town/cart_0"
+    },
+    "facing=north,kind=cart,stage=2": {
+      "model": "the_oldest_house:block/calder_town/cart_0"
+    },
+    "facing=north,kind=cart,stage=3": {
+      "model": "the_oldest_house:block/calder_town/cart_0"
+    },
+    "facing=east,kind=cart,stage=0": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 90
+    },
+    "facing=east,kind=cart,stage=1": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 90
+    },
+    "facing=east,kind=cart,stage=2": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 90
+    },
+    "facing=east,kind=cart,stage=3": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 90
+    },
+    "facing=south,kind=cart,stage=0": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 180
+    },
+    "facing=south,kind=cart,stage=1": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 180
+    },
+    "facing=south,kind=cart,stage=2": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 180
+    },
+    "facing=south,kind=cart,stage=3": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 180
+    },
+    "facing=west,kind=cart,stage=0": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 270
+    },
+    "facing=west,kind=cart,stage=1": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 270
+    },
+    "facing=west,kind=cart,stage=2": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 270
+    },
+    "facing=west,kind=cart,stage=3": {
+      "model": "the_oldest_house:block/calder_town/cart_0",
+      "y": 270
+    },
+    "facing=north,kind=dumpster,stage=0": {
+      "model": "the_oldest_house:block/calder_town/dumpster_0"
+    },
+    "facing=north,kind=dumpster,stage=1": {
+      "model": "the_oldest_house:block/calder_town/dumpster_1"
+    },
+    "facing=north,kind=dumpster,stage=2": {
+      "model": "the_oldest_house:block/calder_town/dumpster_2"
+    },
+    "facing=north,kind=dumpster,stage=3": {
+      "model": "the_oldest_house:block/calder_town/dumpster_3"
+    },
+    "facing=east,kind=dumpster,stage=0": {
+      "model": "the_oldest_house:block/calder_town/dumpster_0",
+      "y": 90
+    },
+    "facing=east,kind=dumpster,stage=1": {
+      "model": "the_oldest_house:block/calder_town/dumpster_1",
+      "y": 90
+    },
+    "facing=east,kind=dumpster,stage=2": {
+      "model": "the_oldest_house:block/calder_town/dumpster_2",
+      "y": 90
+    },
+    "facing=east,kind=dumpster,stage=3": {
+      "model": "the_oldest_house:block/calder_town/dumpster_3",
+      "y": 90
+    },
+    "facing=south,kind=dumpster,stage=0": {
+      "model": "the_oldest_house:block/calder_town/dumpster_0",
+      "y": 180
+    },
+    "facing=south,kind=dumpster,stage=1": {
+      "model": "the_oldest_house:block/calder_town/dumpster_1",
+      "y": 180
+    },
+    "facing=south,kind=dumpster,stage=2": {
+      "model": "the_oldest_house:block/calder_town/dumpster_2",
+      "y": 180
+    },
+    "facing=south,kind=dumpster,stage=3": {
+      "model": "the_oldest_house:block/calder_town/dumpster_3",
+      "y": 180
+    },
+    "facing=west,kind=dumpster,stage=0": {
+      "model": "the_oldest_house:block/calder_town/dumpster_0",
+      "y": 270
+    },
+    "facing=west,kind=dumpster,stage=1": {
+      "model": "the_oldest_house:block/calder_town/dumpster_1",
+      "y": 270
+    },
+    "facing=west,kind=dumpster,stage=2": {
+      "model": "the_oldest_house:block/calder_town/dumpster_2",
+      "y": 270
+    },
+    "facing=west,kind=dumpster,stage=3": {
+      "model": "the_oldest_house:block/calder_town/dumpster_3",
+      "y": 270
+    },
+    "facing=north,kind=bags,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bags_0"
+    },
+    "facing=north,kind=bags,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bags_1"
+    },
+    "facing=north,kind=bags,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bags_2"
+    },
+    "facing=north,kind=bags,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bags_3"
+    },
+    "facing=east,kind=bags,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bags_0",
+      "y": 90
+    },
+    "facing=east,kind=bags,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bags_1",
+      "y": 90
+    },
+    "facing=east,kind=bags,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bags_2",
+      "y": 90
+    },
+    "facing=east,kind=bags,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bags_3",
+      "y": 90
+    },
+    "facing=south,kind=bags,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bags_0",
+      "y": 180
+    },
+    "facing=south,kind=bags,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bags_1",
+      "y": 180
+    },
+    "facing=south,kind=bags,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bags_2",
+      "y": 180
+    },
+    "facing=south,kind=bags,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bags_3",
+      "y": 180
+    },
+    "facing=west,kind=bags,stage=0": {
+      "model": "the_oldest_house:block/calder_town/bags_0",
+      "y": 270
+    },
+    "facing=west,kind=bags,stage=1": {
+      "model": "the_oldest_house:block/calder_town/bags_1",
+      "y": 270
+    },
+    "facing=west,kind=bags,stage=2": {
+      "model": "the_oldest_house:block/calder_town/bags_2",
+      "y": 270
+    },
+    "facing=west,kind=bags,stage=3": {
+      "model": "the_oldest_house:block/calder_town/bags_3",
+      "y": 270
+    },
+    "facing=north,kind=crate,stage=0": {
+      "model": "the_oldest_house:block/calder_town/crate_0"
+    },
+    "facing=north,kind=crate,stage=1": {
+      "model": "the_oldest_house:block/calder_town/crate_1"
+    },
+    "facing=north,kind=crate,stage=2": {
+      "model": "the_oldest_house:block/calder_town/crate_2"
+    },
+    "facing=north,kind=crate,stage=3": {
+      "model": "the_oldest_house:block/calder_town/crate_3"
+    },
+    "facing=east,kind=crate,stage=0": {
+      "model": "the_oldest_house:block/calder_town/crate_0",
+      "y": 90
+    },
+    "facing=east,kind=crate,stage=1": {
+      "model": "the_oldest_house:block/calder_town/crate_1",
+      "y": 90
+    },
+    "facing=east,kind=crate,stage=2": {
+      "model": "the_oldest_house:block/calder_town/crate_2",
+      "y": 90
+    },
+    "facing=east,kind=crate,stage=3": {
+      "model": "the_oldest_house:block/calder_town/crate_3",
+      "y": 90
+    },
+    "facing=south,kind=crate,stage=0": {
+      "model": "the_oldest_house:block/calder_town/crate_0",
+      "y": 180
+    },
+    "facing=south,kind=crate,stage=1": {
+      "model": "the_oldest_house:block/calder_town/crate_1",
+      "y": 180
+    },
+    "facing=south,kind=crate,stage=2": {
+      "model": "the_oldest_house:block/calder_town/crate_2",
+      "y": 180
+    },
+    "facing=south,kind=crate,stage=3": {
+      "model": "the_oldest_house:block/calder_town/crate_3",
+      "y": 180
+    },
+    "facing=west,kind=crate,stage=0": {
+      "model": "the_oldest_house:block/calder_town/crate_0",
+      "y": 270
+    },
+    "facing=west,kind=crate,stage=1": {
+      "model": "the_oldest_house:block/calder_town/crate_1",
+      "y": 270
+    },
+    "facing=west,kind=crate,stage=2": {
+      "model": "the_oldest_house:block/calder_town/crate_2",
+      "y": 270
+    },
+    "facing=west,kind=crate,stage=3": {
+      "model": "the_oldest_house:block/calder_town/crate_3",
+      "y": 270
+    },
+    "facing=north,kind=boxes,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boxes_0"
+    },
+    "facing=north,kind=boxes,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boxes_1"
+    },
+    "facing=north,kind=boxes,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boxes_2"
+    },
+    "facing=north,kind=boxes,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boxes_3"
+    },
+    "facing=east,kind=boxes,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boxes_0",
+      "y": 90
+    },
+    "facing=east,kind=boxes,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boxes_1",
+      "y": 90
+    },
+    "facing=east,kind=boxes,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boxes_2",
+      "y": 90
+    },
+    "facing=east,kind=boxes,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boxes_3",
+      "y": 90
+    },
+    "facing=south,kind=boxes,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boxes_0",
+      "y": 180
+    },
+    "facing=south,kind=boxes,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boxes_1",
+      "y": 180
+    },
+    "facing=south,kind=boxes,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boxes_2",
+      "y": 180
+    },
+    "facing=south,kind=boxes,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boxes_3",
+      "y": 180
+    },
+    "facing=west,kind=boxes,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boxes_0",
+      "y": 270
+    },
+    "facing=west,kind=boxes,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boxes_1",
+      "y": 270
+    },
+    "facing=west,kind=boxes,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boxes_2",
+      "y": 270
+    },
+    "facing=west,kind=boxes,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boxes_3",
+      "y": 270
+    },
+    "facing=north,kind=drum,stage=0": {
+      "model": "the_oldest_house:block/calder_town/drum_0"
+    },
+    "facing=north,kind=drum,stage=1": {
+      "model": "the_oldest_house:block/calder_town/drum_1"
+    },
+    "facing=north,kind=drum,stage=2": {
+      "model": "the_oldest_house:block/calder_town/drum_2"
+    },
+    "facing=north,kind=drum,stage=3": {
+      "model": "the_oldest_house:block/calder_town/drum_3"
+    },
+    "facing=east,kind=drum,stage=0": {
+      "model": "the_oldest_house:block/calder_town/drum_0",
+      "y": 90
+    },
+    "facing=east,kind=drum,stage=1": {
+      "model": "the_oldest_house:block/calder_town/drum_1",
+      "y": 90
+    },
+    "facing=east,kind=drum,stage=2": {
+      "model": "the_oldest_house:block/calder_town/drum_2",
+      "y": 90
+    },
+    "facing=east,kind=drum,stage=3": {
+      "model": "the_oldest_house:block/calder_town/drum_3",
+      "y": 90
+    },
+    "facing=south,kind=drum,stage=0": {
+      "model": "the_oldest_house:block/calder_town/drum_0",
+      "y": 180
+    },
+    "facing=south,kind=drum,stage=1": {
+      "model": "the_oldest_house:block/calder_town/drum_1",
+      "y": 180
+    },
+    "facing=south,kind=drum,stage=2": {
+      "model": "the_oldest_house:block/calder_town/drum_2",
+      "y": 180
+    },
+    "facing=south,kind=drum,stage=3": {
+      "model": "the_oldest_house:block/calder_town/drum_3",
+      "y": 180
+    },
+    "facing=west,kind=drum,stage=0": {
+      "model": "the_oldest_house:block/calder_town/drum_0",
+      "y": 270
+    },
+    "facing=west,kind=drum,stage=1": {
+      "model": "the_oldest_house:block/calder_town/drum_1",
+      "y": 270
+    },
+    "facing=west,kind=drum,stage=2": {
+      "model": "the_oldest_house:block/calder_town/drum_2",
+      "y": 270
+    },
+    "facing=west,kind=drum,stage=3": {
+      "model": "the_oldest_house:block/calder_town/drum_3",
+      "y": 270
+    },
+    "facing=north,kind=tyres,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tyres_0"
+    },
+    "facing=north,kind=tyres,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tyres_1"
+    },
+    "facing=north,kind=tyres,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tyres_2"
+    },
+    "facing=north,kind=tyres,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tyres_3"
+    },
+    "facing=east,kind=tyres,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tyres_0",
+      "y": 90
+    },
+    "facing=east,kind=tyres,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tyres_1",
+      "y": 90
+    },
+    "facing=east,kind=tyres,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tyres_2",
+      "y": 90
+    },
+    "facing=east,kind=tyres,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tyres_3",
+      "y": 90
+    },
+    "facing=south,kind=tyres,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tyres_0",
+      "y": 180
+    },
+    "facing=south,kind=tyres,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tyres_1",
+      "y": 180
+    },
+    "facing=south,kind=tyres,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tyres_2",
+      "y": 180
+    },
+    "facing=south,kind=tyres,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tyres_3",
+      "y": 180
+    },
+    "facing=west,kind=tyres,stage=0": {
+      "model": "the_oldest_house:block/calder_town/tyres_0",
+      "y": 270
+    },
+    "facing=west,kind=tyres,stage=1": {
+      "model": "the_oldest_house:block/calder_town/tyres_1",
+      "y": 270
+    },
+    "facing=west,kind=tyres,stage=2": {
+      "model": "the_oldest_house:block/calder_town/tyres_2",
+      "y": 270
+    },
+    "facing=west,kind=tyres,stage=3": {
+      "model": "the_oldest_house:block/calder_town/tyres_3",
+      "y": 270
+    },
+    "facing=north,kind=trash,stage=0": {
+      "model": "the_oldest_house:block/calder_town/trash_0"
+    },
+    "facing=north,kind=trash,stage=1": {
+      "model": "the_oldest_house:block/calder_town/trash_1"
+    },
+    "facing=north,kind=trash,stage=2": {
+      "model": "the_oldest_house:block/calder_town/trash_2"
+    },
+    "facing=north,kind=trash,stage=3": {
+      "model": "the_oldest_house:block/calder_town/trash_3"
+    },
+    "facing=east,kind=trash,stage=0": {
+      "model": "the_oldest_house:block/calder_town/trash_0",
+      "y": 90
+    },
+    "facing=east,kind=trash,stage=1": {
+      "model": "the_oldest_house:block/calder_town/trash_1",
+      "y": 90
+    },
+    "facing=east,kind=trash,stage=2": {
+      "model": "the_oldest_house:block/calder_town/trash_2",
+      "y": 90
+    },
+    "facing=east,kind=trash,stage=3": {
+      "model": "the_oldest_house:block/calder_town/trash_3",
+      "y": 90
+    },
+    "facing=south,kind=trash,stage=0": {
+      "model": "the_oldest_house:block/calder_town/trash_0",
+      "y": 180
+    },
+    "facing=south,kind=trash,stage=1": {
+      "model": "the_oldest_house:block/calder_town/trash_1",
+      "y": 180
+    },
+    "facing=south,kind=trash,stage=2": {
+      "model": "the_oldest_house:block/calder_town/trash_2",
+      "y": 180
+    },
+    "facing=south,kind=trash,stage=3": {
+      "model": "the_oldest_house:block/calder_town/trash_3",
+      "y": 180
+    },
+    "facing=west,kind=trash,stage=0": {
+      "model": "the_oldest_house:block/calder_town/trash_0",
+      "y": 270
+    },
+    "facing=west,kind=trash,stage=1": {
+      "model": "the_oldest_house:block/calder_town/trash_1",
+      "y": 270
+    },
+    "facing=west,kind=trash,stage=2": {
+      "model": "the_oldest_house:block/calder_town/trash_2",
+      "y": 270
+    },
+    "facing=west,kind=trash,stage=3": {
+      "model": "the_oldest_house:block/calder_town/trash_3",
+      "y": 270
+    },
+    "facing=north,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pipe_0"
+    },
+    "facing=north,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pipe_1"
+    },
+    "facing=north,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pipe_2"
+    },
+    "facing=north,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pipe_0"
+    },
+    "facing=east,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pipe_0",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pipe_1",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pipe_2",
+      "y": 90
+    },
+    "facing=east,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pipe_0",
+      "y": 90
+    },
+    "facing=south,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pipe_0",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pipe_1",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pipe_2",
+      "y": 180
+    },
+    "facing=south,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pipe_0",
+      "y": 180
+    },
+    "facing=west,kind=pipe,stage=0": {
+      "model": "the_oldest_house:block/calder_town/pipe_0",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=1": {
+      "model": "the_oldest_house:block/calder_town/pipe_1",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=2": {
+      "model": "the_oldest_house:block/calder_town/pipe_2",
+      "y": 270
+    },
+    "facing=west,kind=pipe,stage=3": {
+      "model": "the_oldest_house:block/calder_town/pipe_0",
+      "y": 270
+    },
+    "facing=north,kind=unit,stage=0": {
+      "model": "the_oldest_house:block/calder_town/unit_0"
+    },
+    "facing=north,kind=unit,stage=1": {
+      "model": "the_oldest_house:block/calder_town/unit_1"
+    },
+    "facing=north,kind=unit,stage=2": {
+      "model": "the_oldest_house:block/calder_town/unit_2"
+    },
+    "facing=north,kind=unit,stage=3": {
+      "model": "the_oldest_house:block/calder_town/unit_3"
+    },
+    "facing=east,kind=unit,stage=0": {
+      "model": "the_oldest_house:block/calder_town/unit_0",
+      "y": 90
+    },
+    "facing=east,kind=unit,stage=1": {
+      "model": "the_oldest_house:block/calder_town/unit_1",
+      "y": 90
+    },
+    "facing=east,kind=unit,stage=2": {
+      "model": "the_oldest_house:block/calder_town/unit_2",
+      "y": 90
+    },
+    "facing=east,kind=unit,stage=3": {
+      "model": "the_oldest_house:block/calder_town/unit_3",
+      "y": 90
+    },
+    "facing=south,kind=unit,stage=0": {
+      "model": "the_oldest_house:block/calder_town/unit_0",
+      "y": 180
+    },
+    "facing=south,kind=unit,stage=1": {
+      "model": "the_oldest_house:block/calder_town/unit_1",
+      "y": 180
+    },
+    "facing=south,kind=unit,stage=2": {
+      "model": "the_oldest_house:block/calder_town/unit_2",
+      "y": 180
+    },
+    "facing=south,kind=unit,stage=3": {
+      "model": "the_oldest_house:block/calder_town/unit_3",
+      "y": 180
+    },
+    "facing=west,kind=unit,stage=0": {
+      "model": "the_oldest_house:block/calder_town/unit_0",
+      "y": 270
+    },
+    "facing=west,kind=unit,stage=1": {
+      "model": "the_oldest_house:block/calder_town/unit_1",
+      "y": 270
+    },
+    "facing=west,kind=unit,stage=2": {
+      "model": "the_oldest_house:block/calder_town/unit_2",
+      "y": 270
+    },
+    "facing=west,kind=unit,stage=3": {
+      "model": "the_oldest_house:block/calder_town/unit_3",
+      "y": 270
+    },
+    "facing=north,kind=boards,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boards_0"
+    },
+    "facing=north,kind=boards,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boards_1"
+    },
+    "facing=north,kind=boards,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boards_2"
+    },
+    "facing=north,kind=boards,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boards_3"
+    },
+    "facing=east,kind=boards,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boards_0",
+      "y": 90
+    },
+    "facing=east,kind=boards,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boards_1",
+      "y": 90
+    },
+    "facing=east,kind=boards,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boards_2",
+      "y": 90
+    },
+    "facing=east,kind=boards,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boards_3",
+      "y": 90
+    },
+    "facing=south,kind=boards,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boards_0",
+      "y": 180
+    },
+    "facing=south,kind=boards,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boards_1",
+      "y": 180
+    },
+    "facing=south,kind=boards,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boards_2",
+      "y": 180
+    },
+    "facing=south,kind=boards,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boards_3",
+      "y": 180
+    },
+    "facing=west,kind=boards,stage=0": {
+      "model": "the_oldest_house:block/calder_town/boards_0",
+      "y": 270
+    },
+    "facing=west,kind=boards,stage=1": {
+      "model": "the_oldest_house:block/calder_town/boards_1",
+      "y": 270
+    },
+    "facing=west,kind=boards,stage=2": {
+      "model": "the_oldest_house:block/calder_town/boards_2",
+      "y": 270
+    },
+    "facing=west,kind=boards,stage=3": {
+      "model": "the_oldest_house:block/calder_town/boards_3",
+      "y": 270
+    }
+  }
+}

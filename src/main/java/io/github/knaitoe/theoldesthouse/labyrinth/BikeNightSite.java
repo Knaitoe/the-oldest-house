@@ -29,8 +29,8 @@ import net.minecraft.world.phys.Vec3;
 public final class BikeNightSite {
     private BikeNightSite(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.BIKE_NIGHT;
-    /** The railings' three lines (the back wall is at z 1), and how far the ground is laid past them. */
-    public static final int WEST=-31,EAST=31,NORTH=-45,FAR_WEST=-56,FAR_EAST=56,FAR_NORTH=-72;
+    /** The railings' three lines (the back wall is at z 1), and how far the park's own ground is laid past them: north, to Park Street's far pavement, where the town's begins (CalderTown). */
+    public static final int WEST=-31,EAST=31,NORTH=-45,FAR_WEST=-56,FAR_EAST=56,FAR_NORTH=-58;
     /** The path from the door to the gate, and the gateway's four blocks between its piers. */
     public static final int PATH_W=-2,PATH_E=1,PIER_W=-3,PIER_E=2;
     /** The playground's sand, and the gap in its edging where the side path comes in. */
@@ -119,6 +119,7 @@ public final class BikeNightSite {
         box(l,b,FAR_WEST,-1,FAR_NORTH,FAR_EAST,-1,0,Blocks.GRASS_BLOCK.defaultBlockState());
         wall(l,b);
         street(l,b);
+        CalderTown.build(l,b);
         paths(l,b);
         sandpit(l,b);
         swings(l,b);
@@ -341,17 +342,14 @@ public final class BikeNightSite {
             if(free(l,b,x+dx,top+dy,z+dz))set(l,b,x+dx,top+dy,z+dz,leaves());
         }
     }
-    /** The park's own trees, and the dark belt of them outside the railings and past the street. */
+    /** The park's own trees, and the dark belt of them outside the railings on either side. (0.4.481: the town is past the street.) */
     static void trees(ServerLevel l,BlockPos b,Random rnd){
         int[][] park={{-20,-5},{13,-8},{23,-20},{14,-27},{24,-38},{-14,-40},{21,-5},{-28,-3},{9,-36}};
         for(int[] t:park)tree(l,b,t[0],t[1],5+rnd.nextInt(2),rnd);
-        for(int z=-4;z>=FAR_NORTH+3;z-=5){
-            for(int x:new int[]{WEST-6-rnd.nextInt(3),WEST-14-rnd.nextInt(4),WEST-22,EAST+6+rnd.nextInt(3),EAST+14+rnd.nextInt(4),EAST+22}){
-                int at=z+rnd.nextInt(3)-1;if(at<=WALK_S+1&&at>=WALK_N-2)continue;
-                tree(l,b,x,at,5+rnd.nextInt(3),rnd);
-            }
+        for(int z=-4;z>=NORTH+4;z-=5){
+            for(int x:new int[]{WEST-6-rnd.nextInt(3),WEST-14-rnd.nextInt(4),WEST-22,EAST+6+rnd.nextInt(3),EAST+14+rnd.nextInt(4),EAST+22})
+                tree(l,b,x,z+rnd.nextInt(3)-1,5+rnd.nextInt(3),rnd);
         }
-        for(int x=FAR_WEST+4;x<=FAR_EAST-4;x+=5+rnd.nextInt(2))for(int z:new int[]{WALK_N-5-rnd.nextInt(2),WALK_N-10-rnd.nextInt(2)})tree(l,b,x,z,5+rnd.nextInt(3),rnd);
     }
     /** Leaves down on the grass, thickest under the trees. */
     static void litter(ServerLevel l,BlockPos b,Random rnd){

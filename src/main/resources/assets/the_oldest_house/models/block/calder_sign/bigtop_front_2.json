@@ -1,0 +1,5 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/bigtop_front","particle":"the_oldest_house:block/calder_sign/bigtop_front","g":"the_oldest_house:block/calder_sign/bigtop_front_glow"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[4.5714,0.0,6.8571,8.0]},"east":{"texture":"#a","uv":[4.5714,0.0,4.7143,8.0]},"west":{"texture":"#a","uv":[6.7143,0.0,6.8571,8.0]},"up":{"texture":"#a","uv":[6.8571,0.0,4.5714,0.5]},"down":{"texture":"#a","uv":[6.8571,7.5,4.5714,8.0]}}},
+  {"from":[0,0,14.75],"to":[16,13,14.75],"faces":{"north":{"texture":"#g","uv":[4.5714,1.5,6.8571,8.0]}},"shade":false,"neoforge_data":{"block_light":15,"sky_light":15}}
+ ]}

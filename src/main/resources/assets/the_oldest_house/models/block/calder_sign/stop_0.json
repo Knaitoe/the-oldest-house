@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/stop","particle":"the_oldest_house:block/calder_sign/stop"},
+ "elements":[
+  {"from":[0,0,7.5],"to":[16,16,8.5],"faces":{"north":{"texture":"#a","uv":[0.0,0.0,16.0,16.0]},"south":{"texture":"#a","uv":[0.0,0.0,16.0,16.0]},"east":{"texture":"#a","uv":[0.0,0.0,1.0,16.0]},"west":{"texture":"#a","uv":[15.0,0.0,16.0,16.0]},"up":{"texture":"#a","uv":[16.0,0.0,0.0,1.0]},"down":{"texture":"#a","uv":[16.0,15.0,0.0,16.0]}}}
+ ]}

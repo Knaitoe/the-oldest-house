@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/food_b_dark","particle":"the_oldest_house:block/calder_sign/food_b_dark"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[0.0,8.0,5.3333,16.0]},"east":{"texture":"#a","uv":[0.0,8.0,0.3333,16.0]},"west":{"texture":"#a","uv":[5.0,8.0,5.3333,16.0]},"up":{"texture":"#a","uv":[5.3333,8.0,0.0,8.5]},"down":{"texture":"#a","uv":[5.3333,15.5,0.0,16.0]}}}
+ ]}

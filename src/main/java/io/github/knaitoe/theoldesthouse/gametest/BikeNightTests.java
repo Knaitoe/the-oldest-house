@@ -432,7 +432,10 @@ public final class BikeNightTests {
     private static LiteraryTests.Fixture park(GameTestHelper h){done();BikeNightGus.keptHome=true;BikeNightBullies.keptAway=true;active=new LiteraryTests.Fixture(h);return active;}
     private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();BikeNightGus.keptHome=false;
         BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=BikeNightBullies.ARRIVE;BikeNightBullies.patience=BikeNightBullies.PATIENCE;}
-    private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);var r=P.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
+    /** The park and Park Street: what the park's own cases keep resident. (0.4.481: the place is the town too; its cases keep that, {@link #town}.) */
+    private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-58,b.getY()-5,b.getZ()-74,b.getX()+59,b.getY()+19,b.getZ()+2);}
+    /** The town's ground, and Park Street with it. */
+    private static AABB town(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()+CalderTown.W-1,b.getY()-5,b.getZ()+CalderTown.N-1,b.getX()+CalderTown.E+2,b.getY()+CalderTown.TOP+3,b.getZ()+BikeNightSite.NORTH+3);}
     /** Everything a reader has been told so far has this in it. What is said reaches a reader when the tick ends, so cases wait on it. */
     /** What a reader was told and what they heard come down one pipe, and reading it empties it: both are kept as they are read. */
     private static void drain(ServerPlayer p){
@@ -500,7 +503,8 @@ public final class BikeNightTests {
                 h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(BikeNightSite.SOURCE)),CalderBlock.Kind.NOTE)&&l.getBlockState(b.offset(BikeNightSite.SOURCE).south()).is(brick),"the sheet from a school pad, taped to the brick by the door");
                 var text=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);var all=String.join(" ",text.pages().stream().map(pg->pg.raw().getString()).toList());
                 h.assertTrue(text.author().equals("Gus")&&all.contains("HALLOWEEN PLAN")&&all.contains("Come through the tool shed")&&all.contains("Do NOT cut through the graveyard"),"the plan for the night, in Gus's hand: "+all);
-                for(var sign:CalderSigns.Sign.values()){
+                // The park's own two. (0.4.481: the town has signs of its own, which its own cases look at.)
+                for(var sign:new CalderSigns.Sign[]{CalderSigns.Sign.ARCH,CalderSigns.Sign.RULES}){
                     var at=sign==CalderSigns.Sign.ARCH?b.offset(BikeNightSite.PIER_E,3,BikeNightSite.NORTH):b.offset(8,1,0);
                     for(int row=0;row<sign.rows;row++)for(int col=0;col<sign.cols;col++){var s=l.getBlockState(CalderSigns.cell(sign,at,Direction.NORTH,col,row));
                         h.assertTrue(CalderSignBlock.is(s,sign)&&s.getValue(CalderSignBlock.PIECE)==sign.first()+row*sign.cols+col&&s.getValue(CalderSignBlock.FACING)==Direction.NORTH,"the "+sign+" board, block "+col+","+row+": "+s);}
@@ -547,8 +551,9 @@ public final class BikeNightTests {
                     &&l.getBlockState(b.offset(10,-1,BikeNightSite.LINE)).is(BikeNightRegistry.ROAD_LINE.get())&&l.getBlockState(b.offset(10,-1,BikeNightSite.LINE)).getValue(RotatedPillarBlock.AXIS)==Direction.Axis.X
                     &&l.getBlockState(b.offset(10,-1,BikeNightSite.KERB_N)).is(kerb)&&l.getBlockState(b.offset(10,-1,BikeNightSite.WALK_N)).is(BikeNightRegistry.material("paving")),"the pavement, the kerb, the road and its line, the far kerb and pavement");
                 // Trees and what has come down from them; and nothing in the park that is one of the game's own blocks standing for something else.
+                // (0.4.481: the place is the town as well now. This looks at the park and its street; the town's own case looks at the town.)
                 int leaves=0,litter=0;var strangers=new java.util.TreeSet<String>();var r=P.room();
-                for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()))){
+                for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),BikeNightSite.LINE-6),b.offset(r.maxX(),r.maxY(),r.maxZ()))){
                     var s=l.getBlockState(at);if(s.isAir())continue;
                     if(s.is(BikeNightRegistry.LEAVES.get()))leaves++;if(s.is(BikeNightRegistry.LITTER.get()))litter++;
                     var id=BuiltInRegistries.BLOCK.getKey(s.getBlock());
@@ -2487,5 +2492,275 @@ public final class BikeNightTests {
             })
             .thenWaitUntil(()->h.assertTrue(!p[1].isPassenger(),"and gets off"))
             .thenExecute(()->stand(p[1])).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.481: the town
+    @AfterBatch(batch="town_built") public static void townBuiltDone(ServerLevel l){done();}
+    @AfterBatch(batch="town_ways") public static void townWaysDone(ServerLevel l){done();}
+    @AfterBatch(batch="town_ride") public static void townRideDone(ServerLevel l){done();}
+    @AfterBatch(batch="town_clock") public static void townClockDone(ServerLevel l){done();}
+    private static boolean mine(net.minecraft.world.level.block.state.BlockState s){return BuiltInRegistries.BLOCK.getKey(s.getBlock()).getNamespace().equals(TheOldestHouse.MOD_ID);}
+    private static boolean sign(ServerLevel l,BlockPos b,int x,int y,int z,CalderSigns.Sign sign){return CalderSignBlock.is(l.getBlockState(b.offset(x,y,z)),sign);}
+    /** The kinds of the town's fittings that stand in a part of it. */
+    private static java.util.Set<CalderTownBlock.Kind> kinds(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1){
+        var out=java.util.EnumSet.noneOf(CalderTownBlock.Kind.class);
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)for(int y=0;y<=4;y++){var s=l.getBlockState(b.offset(x,y,z));if(s.is(BikeNightRegistry.TOWN.get()))out.add(s.getValue(CalderTownBlock.KIND));}
+        return out;
+    }
+    /** Whether there is a lamp standing anywhere in a part of the town. */
+    private static boolean lamp(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1){
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++)if(CalderBlock.is(l.getBlockState(b.offset(x,0,z)),CalderBlock.Kind.LAMP))return true;
+        return false;
+    }
+
+    @GameTest(template="empty",batch="town_built",timeoutTicks=2400)
+    public static void theTownStandsNorthOfTheParkOnStreetsThatAreNotAGridBuiltOfItsOwnThings(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,town(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the town is resident"))
+            .thenExecute(()->{
+                var asphalt=BikeNightRegistry.material("asphalt");var kerb=BikeNightRegistry.material("kerb");var paving=BikeNightRegistry.material("paving");var line=BikeNightRegistry.ROAD_LINE.get();
+                int road=CalderTown.ROAD;
+                // Every place a street takes is laid as the street has it.
+                int wrong=0;String first="";
+                for(int x=CalderTown.W;x<=CalderTown.E;x++)for(int z=CalderTown.N;z<=CalderTown.S;z++){
+                    int k=CalderTown.surface(x,z);if(k==CalderTown.NONE)continue;var s=l.getBlockState(b.offset(x,-1,z));
+                    boolean ok=k==road?s.is(asphalt)||s.is(line):k==CalderTown.KERB?s.is(kerb):s.is(paving);
+                    if(!ok&&wrong++==0)first=x+","+z+" is "+s;
+                }
+                h.assertTrue(wrong==0,"road, kerb and pavement lie where the streets have them: "+wrong+" places do not, the first "+first);
+                // The owner: "less even streets". They are not a grid: they differ in width, one slants, one goes round, two bend, one ends in a circle.
+                int main=0,elm=0,park=0;
+                for(int dz=-8;dz<=8;dz++){if(CalderTown.surface(20,-92+dz)==road)main++;if(CalderTown.surface(30,-121+dz)==road)elm++;if(CalderTown.surface(20,BikeNightSite.LINE+dz)==road)park++;}
+                h.assertTrue(main==9&&park==7&&elm==5,"Main Street is the wide one, Park Street between, Elm narrow: "+main+", "+park+", "+elm);
+                h.assertTrue(CalderTown.surface(-40,-129)==road&&CalderTown.surface(30,-121)==road&&CalderTown.surface(30,-129)!=road&&CalderTown.surface(-40,-121)!=road,"Elm Street slants: it is eight rows further south at its east end");
+                h.assertTrue(CalderTown.surface(-40,-165)==road&&CalderTown.surface(0,-171)==road&&CalderTown.surface(0,-165)!=road&&CalderTown.surface(40,-165)==road,"Church Lane goes round the foot of the hill, nearest the cemetery in its middle");
+                h.assertTrue(CalderTown.surface(50,-70)==road&&CalderTown.surface(46,-130)==road&&CalderTown.surface(50,-130)!=road&&CalderTown.surface(-50,-70)==road&&CalderTown.surface(-46,-140)==road&&CalderTown.surface(-50,-140)!=road,"both avenues bend");
+                h.assertTrue(CalderTown.surface(0,-70)==road&&CalderTown.surface(2,-110)==road&&CalderTown.surface(-3,-110)!=road&&CalderTown.surface(2,-128)!=road,"Mill Street steps aside at Main, and ends on Elm");
+                h.assertTrue(CalderTown.surface(22,-141)==road&&CalderTown.surface(18,-141)==road&&CalderTown.surface(26,-141)==road&&CalderTown.surface(22,-145)==road&&CalderTown.surface(22,-146)==CalderTown.KERB&&CalderTown.surface(22,-148)==CalderTown.PAVEMENT
+                    &&CalderTown.surface(22,-149)==CalderTown.NONE,"Elm Court ends in a turning circle, kerb and pavement round it");
+                var mid=l.getBlockState(b.offset(20,-1,-92));var up=l.getBlockState(b.offset(0,-1,-70));
+                h.assertTrue(mid.is(line)&&mid.getValue(RotatedPillarBlock.AXIS)==Direction.Axis.X&&up.is(line)&&up.getValue(RotatedPillarBlock.AXIS)==Direction.Axis.Z&&l.getBlockState(b.offset(0,-1,-92)).is(asphalt)&&l.getBlockState(b.offset(22,-1,-130)).is(asphalt),
+                    "a line down the middle of a street, along it; none across a crossing, and none in the court");
+                // The fronts and names are up.
+                record Hung(CalderSigns.Sign sign,int x,int y,int z){}
+                for(var s:List.of(new Hung(CalderSigns.Sign.WASH_NAME,10,3,-99),new Hung(CalderSigns.Sign.WASH_FRONT,10,0,-99),new Hung(CalderSigns.Sign.VIDEO_NAME,22,2,-99),new Hung(CalderSigns.Sign.VIDEO_FRONT,23,0,-99),
+                        new Hung(CalderSigns.Sign.BARBER_NAME,33,3,-99),new Hung(CalderSigns.Sign.BARBER_FRONT,34,0,-99),new Hung(CalderSigns.Sign.HARDWARE_NAME,-42,3,-85),new Hung(CalderSigns.Sign.HARDWARE_FRONT,-42,0,-85),
+                        new Hung(CalderSigns.Sign.BANK_NAME,-31,2,-85),new Hung(CalderSigns.Sign.BANK_FRONT,-30,0,-85),new Hung(CalderSigns.Sign.THEATER_FRONT,-17,0,-85),new Hung(CalderSigns.Sign.BIGTOP_FRONT,22,0,-66),
+                        new Hung(CalderSigns.Sign.BIGTOP_NAME,22,2,-66),new Hung(CalderSigns.Sign.BIGTOP_NAME,22,2,-77),new Hung(CalderSigns.Sign.FOODFAIR_NAME,-29,3,-112),new Hung(CalderSigns.Sign.FOOD_DOOR,-27,0,-112),
+                        new Hung(CalderSigns.Sign.FOOD_A,-37,0,-112),new Hung(CalderSigns.Sign.FOOD_B,-32,0,-112),new Hung(CalderSigns.Sign.FOOD_C,-22,0,-112),
+                        new Hung(CalderSigns.Sign.SCHOOL_FRONT,-38,0,-138),new Hung(CalderSigns.Sign.TROPHY,-31,0,-138),new Hung(CalderSigns.Sign.JRHIGH_NAME,-38,3,-138),new Hung(CalderSigns.Sign.CEMETERY,-3,3,CalderTown.RAILS),
+                        new Hung(CalderSigns.Sign.DRIVE_THRU,33,3,-66),new Hung(CalderSigns.Sign.DRIVE_THRU,33,3,-77),new Hung(CalderSigns.Sign.DELIVERIES,14,3,-110),new Hung(CalderSigns.Sign.SHUTTER,15,1,-110),
+                        new Hung(CalderSigns.Sign.TAG_RULES,-19,1,-71),new Hung(CalderSigns.Sign.TAG_HERE,-22,1,-81),new Hung(CalderSigns.Sign.FOR_SALE,-18,2,-60),new Hung(CalderSigns.Sign.BEWARE,-30,1,-65),
+                        new Hung(CalderSigns.Sign.POSTER_A,-6,1,CalderTown.POSTERS[0]),new Hung(CalderSigns.Sign.POSTER_B,-6,2,CalderTown.POSTERS[1]+1),new Hung(CalderSigns.Sign.POSTER_C,-6,1,CalderTown.POSTERS[2]),
+                        new Hung(CalderSigns.Sign.SCOREBOARD,CalderTown.FIELD_W,2,CalderTown.SCORE_LO+2)))
+                    h.assertTrue(sign(l,b,s.x,s.y,s.z,s.sign),"the "+s.sign+" is up at "+s.x+","+s.y+","+s.z+": "+l.getBlockState(b.offset(s.x,s.y,s.z)));
+                h.assertTrue(CalderTown.feature(l,b)==0&&java.util.Arrays.equals(CalderTown.clockShows(l,b),new int[]{1,1,CalderDigitBlock.COLON,4,1}),"the first double feature on the marquee; the bank's clock at 11:41");
+                // One look at everything standing in the town: nothing vanilla is built there; what hangs on a wall has a wall behind it; a dumpster has both its halves.
+                int stray=0,hanging=0,halves=0,doors=0,lit=0;String strays="",hangs="";
+                for(int x=CalderTown.W;x<=CalderTown.E;x++)for(int z=CalderTown.N;z<=CalderTown.S;z++)for(int y=-1;y<=CalderTown.TOP;y++){
+                    var at=b.offset(x,y,z);var s=l.getBlockState(at);if(s.isAir())continue;
+                    if(!mine(s)){
+                        boolean natural=y==-1&&(s.is(Blocks.GRASS_BLOCK)||s.is(Blocks.COARSE_DIRT))||s.is(Blocks.OAK_LOG);
+                        if(!natural&&stray++<4)strays+=" "+s.getBlock()+" at "+x+","+y+","+z;
+                        continue;
+                    }
+                    Direction wall=null;
+                    if(CalderSignBlock.is(s)){
+                        var mount=CalderSignBlock.sign(s).mount;if(mount==BorrascaSigns.Mount.WALL||mount==BorrascaSigns.Mount.DECAL)wall=s.getValue(CalderSignBlock.FACING).getOpposite();
+                        if(CalderSignBlock.sign(s)==CalderSigns.Sign.HOUSE_DOOR)doors++;
+                    }else if(s.is(BikeNightRegistry.TOWN.get())){
+                        var kind=s.getValue(CalderTownBlock.KIND);var facing=s.getValue(CalderTownBlock.FACING);int stage=s.getValue(CalderTownBlock.STAGE);
+                        if(kind==CalderTownBlock.Kind.PIPE||kind==CalderTownBlock.Kind.UNIT||kind==CalderTownBlock.Kind.AWNING||kind==CalderTownBlock.Kind.POLE)wall=facing.getOpposite();
+                        if(kind==CalderTownBlock.Kind.DUMPSTER){
+                            var other=l.getBlockState(at.relative(stage%2==0?facing.getClockWise():facing.getCounterClockWise()));
+                            if(CalderTownBlock.is(other,CalderTownBlock.Kind.DUMPSTER)&&other.getValue(CalderTownBlock.FACING)==facing&&other.getValue(CalderTownBlock.STAGE)==(stage^1))halves++;
+                            else if(hanging++<4)hangs+=" half a dumpster at "+x+","+y+","+z;
+                        }
+                    }else if(CalderBlock.is(s,CalderBlock.Kind.LAMP)&&s.getValue(CalderBlock.STAGE)==CalderBlock.LIT)lit++;
+                    if(wall!=null&&!l.getBlockState(at.relative(wall)).isCollisionShapeFullBlock(l,at.relative(wall))&&hanging++<4)hangs+=" "+s.getBlock()+" at "+x+","+y+","+z+" on nothing";
+                }
+                h.assertTrue(stray==0,"nothing vanilla is built in the town but grass, worn earth and the trees' trunks: "+stray+" such,"+strays);
+                h.assertTrue(hanging==0,"what hangs on a wall has a wall behind it, and a dumpster is whole: "+hanging+" are not,"+hangs);
+                h.assertTrue(halves==10&&doors==44&&lit>=30,"five dumpsters, twenty-two houses' front doors, and the lamps lit: "+halves/2+", "+doors/2+", "+lit);
+                // The owner: "space between buildings". A body gets through each gap between two shops, from the street to their alley.
+                int[][] gaps={{-34,-33,-84,-77},{-23,-22,-84,-75},{19,20,-108,-100},{30,31,-107,-100}};
+                for(int[] gap:gaps)for(int z=gap[2];z<=gap[3];z++){
+                    boolean open=false;
+                    for(int x=gap[0];x<=gap[1];x++){var foot=b.offset(x,0,z);open|=l.getBlockState(foot).getCollisionShape(l,foot).isEmpty()&&l.getBlockState(foot.above()).getCollisionShape(l,foot.above()).isEmpty();}
+                    h.assertTrue(open,"the gap at x="+gap[0]+" is open at z="+z);
+                }
+                // The owner: "clutter and decor in alleys ... dumpsters, trash". Each alley has its own.
+                var all=java.util.EnumSet.of(CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.Kind.BAGS,CalderTownBlock.Kind.CRATE,CalderTownBlock.Kind.BOXES,CalderTownBlock.Kind.DRUM,CalderTownBlock.Kind.TYRES,
+                    CalderTownBlock.Kind.TRASH,CalderTownBlock.Kind.PIPE,CalderTownBlock.Kind.UNIT);
+                var south=kinds(l,b,-43,-84,-7,-70);var north=kinds(l,b,8,-114,40,-100);var yard=kinds(l,b,-11,-123,-4,-113);var back=kinds(l,b,19,-82,31,-77);
+                h.assertTrue(south.containsAll(all)&&north.containsAll(all),"behind the shops on each side of Main Street: a dumpster, bags, crates, boxes, drums, tyres, trash, a drainpipe, and what is fixed to a wall: "+south+" / "+north);
+                h.assertTrue(yard.containsAll(java.util.EnumSet.of(CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.Kind.BAGS,CalderTownBlock.Kind.CRATE,CalderTownBlock.Kind.BOXES,CalderTownBlock.Kind.TRASH,CalderTownBlock.Kind.UNIT))
+                    &&back.containsAll(java.util.EnumSet.of(CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.Kind.BAGS,CalderTownBlock.Kind.CRATE,CalderTownBlock.Kind.DRUM,CalderTownBlock.Kind.TRASH,CalderTownBlock.Kind.UNIT)),
+                    "and in the grocery's yard and behind the burger place: "+yard+" / "+back);
+                // Main Street is lit. The alleys, the cut and the field are not.
+                h.assertTrue(lamp(l,b,-50,-99,50,-85),"lamps along Main Street");
+                h.assertTrue(!lamp(l,b,-43,-84,-7,-70)&&!lamp(l,b,8,-115,40,-100)&&!lamp(l,b,CalderTown.CUT_W-1,CalderTown.CUT_N,CalderTown.CUT_E+1,CalderTown.CUT_S)&&!lamp(l,b,CalderTown.FIELD_W,CalderTown.FIELD_N-1,CalderTown.FIELD_E,CalderTown.FIELD_S+1),
+                    "none in either alley, in the cut or on the school's field");
+                // The school's fence and its holes; the bleachers stand clear of the ground.
+                for(var hole:new BlockPos[]{CalderTown.HOLE_SOUTH,CalderTown.HOLE_NORTH}){
+                    var low=l.getBlockState(b.offset(hole));var high=l.getBlockState(b.offset(hole).above());
+                    h.assertTrue(CalderTownBlock.is(low,CalderTownBlock.Kind.CHAINLINK)&&low.getValue(CalderTownBlock.STAGE)==CalderTownBlock.TORN&&high.getValue(CalderTownBlock.STAGE)==CalderTownBlock.TORN_UPPER
+                        &&low.getCollisionShape(l,b.offset(hole)).isEmpty()&&high.getCollisionShape(l,b.offset(hole).above()).isEmpty(),"the wire is cut and pulled back at "+hole);
+                    var beside=l.getBlockState(b.offset(hole).east());
+                    h.assertTrue(CalderTownBlock.is(beside,CalderTownBlock.Kind.CHAINLINK)&&beside.getValue(CalderTownBlock.STAGE)==CalderTownBlock.LOWER,"and whole beside it");
+                }
+                h.assertTrue(CalderTown.HOLE_SOUTH.getX()==CalderTown.HOLE_NORTH.getX(),"one hole is due north of the other");
+                // The field is a football field: yard lines chalked across it, and the middle one is the way from hole to hole.
+                var chalk=BikeNightRegistry.material("turf_line");var turf=BikeNightRegistry.material("turf");int yards=0;
+                for(int x=CalderTown.FIELD_W;x<=CalderTown.FIELD_E;x++){
+                    boolean chalked=l.getBlockState(b.offset(x,-1,CalderTown.YARD_N)).is(chalk);if(chalked)yards++;
+                    for(int z=CalderTown.YARD_N;z<=CalderTown.YARD_S;z++)h.assertTrue(l.getBlockState(b.offset(x,-1,z)).is(chalked?chalk:turf),"the field at "+x+","+z+" is "+(chalked?"a yard line":"turf")+" from end to end");
+                }
+                h.assertTrue(yards==5&&l.getBlockState(b.offset(CalderTown.HOLE_SOUTH.getX(),-1,-145)).is(chalk)&&l.getBlockState(b.offset(CalderTown.HOLE_SOUTH.getX(),-1,CalderTown.FIELD_S)).is(turf),
+                    "five yard lines, the middle one on the line between the holes, and none of them out to the fence: "+yards);
+                // The way to the cemetery is named where the cut leaves Elm Street, on a blade lying along the cut, beside its mouth and not in it.
+                int blade=0,inWay=0;
+                for(int x=CalderTown.CUT_W-6;x<=CalderTown.CUT_E+6;x++)for(int z=CalderTown.CUT_S-1;z<=CalderTown.CUT_S+8;z++){
+                    var s=l.getBlockState(b.offset(x,3,z));
+                    if(CalderSignBlock.is(s,CalderSigns.Sign.TO_CEMETERY)){blade++;if(s.getValue(CalderSignBlock.FACING).getAxis()!=Direction.Axis.X)inWay++;}
+                    if(x>=CalderTown.CUT_W&&x<=CalderTown.CUT_E&&!l.getBlockState(b.offset(x,0,z)).getCollisionShape(l,b.offset(x,0,z)).isEmpty())inWay++;
+                }
+                h.assertTrue(blade==3&&inWay==0,"CEMETERY, on a blade along the cut at its mouth, and nothing standing in the mouth: "+blade+" blocks of it, "+inWay+" things wrong");
+                for(int k=0;k<CalderTown.STAND_ROWS;k++)h.assertTrue(CalderTownBlock.is(l.getBlockState(b.offset(CalderTown.HOLE_NORTH.getX(),k+1,CalderTown.STAND_FRONT-k)),CalderTownBlock.Kind.BLEACHER)
+                    &&l.getBlockState(b.offset(CalderTown.HOLE_NORTH.getX(),0,CalderTown.STAND_FRONT-k)).isAir()&&l.getBlockState(b.offset(CalderTown.HOLE_NORTH.getX(),k,CalderTown.STAND_FRONT-k)).isAir(),"row "+k+" of the bleachers is a block clear of the ground on the way between the holes");
+                // The dock, the boards up onto it, and the lot's ramp.
+                for(int z=CalderTown.DOCK_N;z<=CalderTown.DOCK_S;z++){
+                    var ramp=l.getBlockState(b.offset(CalderTown.DOCK_RAMP,0,z));
+                    h.assertTrue(ramp.getBlock() instanceof BikeRampBlock&&ramp.getValue(BikeRampBlock.FACING)==Direction.EAST&&ramp.getValue(BikeRampBlock.PART)==BikeRampBlock.Part.STEEP&&l.getBlockState(b.offset(CalderTown.DOCK_W,0,z)).is(BikeNightRegistry.material("concrete"))
+                        &&l.getBlockState(b.offset(CalderTown.DOCK_E,0,z)).is(BikeNightRegistry.material("concrete"))&&l.getBlockState(b.offset(CalderTown.DOCK_E+1,0,z)).getCollisionShape(l,b.offset(CalderTown.DOCK_E+1,0,z)).isEmpty(),"the dock: boards up at its west end, concrete along it, a drop off its east end, at z="+z);
+                }
+                var low=l.getBlockState(b.offset(CalderTown.LOT_RAMP));var high=l.getBlockState(b.offset(CalderTown.LOT_RAMP).west());
+                h.assertTrue(low.getBlock() instanceof BikeRampBlock&&low.getValue(BikeRampBlock.PART)==BikeRampBlock.Part.LOW&&high.getValue(BikeRampBlock.PART)==BikeRampBlock.Part.HIGH&&low.getValue(BikeRampBlock.FACING)==Direction.WEST
+                    &&l.getBlockState(b.offset(CalderTown.LOT_RAMP).below()).is(Blocks.COARSE_DIRT)&&l.getBlockState(b.offset(CalderTown.LOT_GAP)).getValue(CalderTownBlock.STAGE)==CalderTownBlock.TORN,"the empty lot's ramp on its trail, and the boards gone from the fence at the trail's end");
+                // The cemetery's railings from one side of the ground to the other, and its gate shut.
+                for(int x=CalderTown.W;x<=CalderTown.E;x++){var at=b.offset(x,0,CalderTown.RAILS);h.assertTrue(!l.getBlockState(at).getCollisionShape(l,at).isEmpty(),"the cemetery's railings are whole at x="+x);}
+                for(int x=CalderTown.GATE_W;x<=CalderTown.GATE_E;x++)h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,0,CalderTown.RAILS)),CalderBlock.Kind.GATE)&&CalderBlock.is(l.getBlockState(b.offset(x,1,CalderTown.RAILS)),CalderBlock.Kind.GATE),"its gate, shut, at x="+x);
+            }).thenSucceed();
+    }
+
+    /** Whether a child on foot can be somewhere: nothing in a body that size standing there, or standing on what is there if that is no more than a block high. */
+    private static boolean fits(ServerLevel l,BlockPos b,double x,double z){
+        double wx=b.getX()+x,wz=b.getZ()+z,half=.16;
+        return l.noCollision(new AABB(wx-half,b.getY()+.02,wz-half,wx+half,b.getY()+.95,wz+half))||l.noCollision(new AABB(wx-half,b.getY()+1.02,wz-half,wx+half,b.getY()+1.95,wz+half));
+    }
+    /** Everywhere a child on foot can get to from Mill Street by quarter blocks, as a set of places; null in its first place names a way off the town's ground. */
+    private static java.util.BitSet reach(ServerLevel l,BlockPos b,java.util.function.Predicate<BlockPos> shut,String[] off){
+        int x0=CalderTown.W-2,z0=CalderTown.N-2,wide=(CalderTown.E+3-x0)*4,deep=(BikeNightSite.NORTH+3-z0)*4;
+        var seen=new java.util.BitSet(wide*deep);var todo=new java.util.ArrayDeque<int[]>();
+        int si=(int)((.5-x0)*4),sj=(int)((-60.5-z0)*4);seen.set(sj*wide+si);todo.add(new int[]{si,sj});
+        int[][] step={{1,0},{-1,0},{0,1},{0,-1}};
+        while(!todo.isEmpty()){
+            var at=todo.poll();
+            for(int[] d:step){
+                int i=at[0]+d[0],j=at[1]+d[1];if(i<0||j<0||i>=wide||j>=deep||seen.get(j*wide+i))continue;
+                seen.set(j*wide+i);
+                double x=x0+i/4.0,z=z0+j/4.0;var cell=BlockPos.containing(x,0,z);
+                if(shut.test(cell)||!fits(l,b,x,z)){seen.clear(j*wide+i);todo.remove(null);continue;}
+                boolean out=x<CalderTown.W||x>=CalderTown.E+1||z<CalderTown.RAILS||z>=BikeNightSite.NORTH+1||l.getBlockState(b.offset(cell).below()).isAir();
+                if(out&&off[0]==null)off[0]=x+","+z;
+                if(!out)todo.add(new int[]{i,j});
+            }
+        }
+        return seen;
+    }
+    private static boolean reached(java.util.BitSet seen,double x,double z){
+        int x0=CalderTown.W-2,z0=CalderTown.N-2,wide=(CalderTown.E+3-x0)*4;return seen.get((int)((z-z0)*4)*wide+(int)((x-x0)*4));
+    }
+
+    @GameTest(template="empty",batch="town_ways",timeoutTicks=2400)
+    public static void nobodyGetsOffTheTownsGroundAndEveryWayThroughIsOpen(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,town(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the town is resident"))
+            .thenExecute(()->{
+                var off=new String[]{null};var seen=reach(l,b,cell->false,off);
+                h.assertTrue(off[0]==null,"from Mill Street a child on foot gets nowhere off the town's ground: but does at "+off[0]);
+                // The streets, and the ways through that are not streets.
+                Object[][] places={{"Main Street",20.5,-91.5},{"Elm Street's west end",-30.5,-128.5},{"Elm Street's east end",30.5,-120.5},{"Church Lane by the gate",.5,-170.5},{"West Avenue",-49.5,-80.5},
+                    {"West Avenue past its bend",-45.5,-140.5},{"East Avenue",49.5,-70.5},{"East Avenue past its bend",46.5,-140.5},{"Elm Court's circle",22.5,-140.5},
+                    {"the gap between the hardware store and the bank",-33.5,-80.5},{"the alley behind them",-20.5,-70.5},{"the gap between the bank and the theater",-22.5,-79.5},
+                    {"the empty lot's trail",-22.5,-66.5},{"the alley behind the laundromat, west of the dock",9.5,-113.5},{"the same alley east of it",30.5,-112.5},
+                    {"the gap between the laundromat and the Video Hut",19.5,-104.5},{"the gap between the Video Hut and the barber",30.5,-104.5},{"Elm Street's pavement, through the alley's fence",28.5,-116.5},
+                    {"the drive-thru lane",34.5,-70.5},{"the lot behind the burger place",25.5,-80.5},{"the grocery's yard",-7.5,-118.5},
+                    {"the school's field",-18.5,-145.5},{"the grass north of the field",-17.5,-161.5},{"the cut",-5.5,-150.5},{"the yard by the cut",-1.5,-144.5},
+                    {"the yard by East Avenue",39.5,-144.5},{"the path out of the court",21.5,-155.5},{"the cemetery's gate",-.5,-175.5},{"the school's lawn",-35.5,-136.5}};
+                for(var place:places)h.assertTrue(reached(seen,(double)place[1],(double)place[2]),"a child on foot gets to "+place[0]);
+                // But for its two holes the field's fence is whole, to a child as much as to a bike.
+                var none=new String[]{null};
+                var shut=reach(l,b,cell->cell.getZ()==CalderTown.HOLE_SOUTH.getZ()&&cell.getX()==CalderTown.HOLE_SOUTH.getX()||cell.getZ()==CalderTown.HOLE_NORTH.getZ()&&cell.getX()==CalderTown.HOLE_NORTH.getX(),none);
+                h.assertTrue(!reached(shut,-18.5,-145.5)&&reached(shut,-17.5,-161.5)&&reached(shut,20.5,-91.5),"with the two holes stopped nobody gets onto the field, and everybody still gets everywhere else");
+            }).thenSucceed();
+    }
+
+    /** One of the three's bikes with somebody on it, for riding the town's ways: where, and looking which way (180 is north). */
+    private static PackBike mounted(ServerLevel l,BlockPos b,double x,double z,float yaw){
+        var bike=BikeNightRegistry.PACK_BIKE.get().create(l);var a=LiteraryRegistry.ACTOR.get().create(l);
+        bike.look(PackBike.RAY);bike.moveTo(b.getX()+x,b.getY(),b.getZ()+z,yaw,0);
+        a.bind(P,null);a.appearance(LiteraryActor.STRANGER,BikeNightBullies.RAY);a.moveTo(b.getX()+x,b.getY(),b.getZ()+z,yaw,0);
+        l.addFreshEntity(bike);l.addFreshEntity(a);a.startRiding(bike,true);a.gesture(BikeNightBullies.RIDE);
+        return bike;
+    }
+
+    @GameTest(template="empty",batch="town_ride",timeoutTicks=6000)
+    public static void aBikeIsRiddenFromTheParksGateToTheCemeterysByTheBackWays(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final PackBike[] bike={null};final int[] at={0},leg={0};final double[] top={0,0};final boolean[] offDock={false};
+        // Out of the gate and up Mill Street; west along Main and down the gap between the hardware store and the bank; along the alley behind
+        // the bank and the theater; up Mill Street again and into the laundromat's alley, over its dock; out through the alley's fence to Elm
+        // Street; up Elm Court, round into the path at its head, and out to Church Lane and the cemetery's gate.
+        double[][] way={{.5,-60},{.5,-84},{-6,-90.5},{-30,-90.5},{-33.5,-87},{-33.5,-78},{-31,-71.5},{-12,-70.6},{-5.5,-70.5},{-2,-76},{.5,-86},{2.5,-98},{2.5,-108},{6,-111},
+            {9.5,-111},{14,-111},{20.5,-111},{26,-112.5},{28.9,-114},{28.9,-117.5},{26,-121},{22.5,-126},{22.5,-136},{21.6,-145},{21.6,-150},{21.6,-160},{18,-166.5},{4,-170.5},{-.5,-173},{-.5,-175.4}};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,town(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the town is resident"))
+            // A night with nobody in it is put away, and its bikes with it: somebody is in the park while this one is ridden.
+            .thenExecute(()->f.player("town_rider",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b),"waiting for the night to begin"))
+            .thenExecute(()->{bike[0]=mounted(l,b,.5,-50.5,180);top[1]=bike[0].getY();})
+            .thenWaitUntil(()->{
+                var here=bike[0].position();double x=here.x-b.getX(),z=here.z-b.getZ(),y=here.y-b.getY();
+                if(x>=CalderTown.DOCK_W&&x<=CalderTown.DOCK_E+1&&z>=CalderTown.DOCK_N&&z<=CalderTown.DOCK_S+1)top[0]=Math.max(top[0],y);
+                if(at[0]>16&&x>CalderTown.DOCK_E+1.5&&y<.1)offDock[0]=true;
+                var to=way[at[0]];
+                h.assertTrue(bike[0].isAlive()&&bike[0].getFirstPassenger() instanceof LiteraryActor,"the bike and its rider are still there");
+                if(Math.hypot(x-to[0],z-to[1])<1){at[0]++;leg[0]=0;if(at[0]==way.length){bike[0].toward(null,0);return;}to=way[at[0]];}
+                bike[0].toward(new Vec3(b.getX()+to[0],b.getY(),b.getZ()+to[1]),BikeNightBullies.APPROACH);leg[0]++;
+                h.assertTrue(at[0]==way.length,"waiting for the bike to get there: it is at "+x+","+y+","+z+", bound for "+to[0]+","+to[1]+" (place "+at[0]+" of "+way.length+"), "+leg[0]+" ticks on the way"+(bike[0].heldUp()?", held up":""));
+            })
+            .thenExecute(()->{
+                h.assertTrue(top[0]>.95&&offDock[0],"it went up the boards onto the dock and off the end of it: as high as "+top[0]);
+                var here=bike[0].position();
+                h.assertTrue(here.z-b.getZ()<CalderTown.RAILS+3&&Math.abs(here.x-b.getX())<2&&bike[0].getFirstPassenger() instanceof LiteraryActor,"and stands at the cemetery's gate, its rider on it: "+here.subtract(Vec3.atLowerCornerOf(b)));
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="town_clock",timeoutTicks=1200)
+    public static void theBanksClockKeepsTheNightsTimeAndTheMarqueeChangesWithTheNight(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};
+        int colon=CalderDigitBlock.COLON,deg=CalderDigitBlock.DEGREES;
+        h.assertTrue(java.util.Arrays.equals(CalderTown.shown(0),new int[]{1,1,colon,4,1})&&java.util.Arrays.equals(CalderTown.shown(1200*19),new int[]{1,2,colon,0,0})&&java.util.Arrays.equals(CalderTown.shown(1200*26+100),new int[]{1,2,colon,0,7}),
+            "the night starts at 11:41, it is 12:00 nineteen minutes in and 12:07 seven after that");
+        h.assertTrue(java.util.Arrays.equals(CalderTown.shown(150),new int[]{-1,4,1,deg,-1})&&java.util.Arrays.equals(CalderTown.shown(6000*3+150),new int[]{-1,3,8,deg,-1})&&java.util.Arrays.equals(CalderTown.shown(6000*40+150),new int[]{-1,3,3,deg,-1}),
+            "three seconds in every ten it shows the temperature: 41 at first, a degree colder every five minutes, and never under 33");
+        h.startSequence().thenExecute(()->f.chunks.hold(l,town(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the town is resident"))
+            .thenExecute(()->{
+                h.assertTrue(CalderTown.feature(l,b)==0,"as built, the first double feature is up");
+                CalderTown.clock(l,b,1200*26);
+                h.assertTrue(java.util.Arrays.equals(CalderTown.clockShows(l,b),new int[]{1,2,colon,0,7}),"the clock's places show what it is set to: "+java.util.Arrays.toString(CalderTown.clockShows(l,b)));
+                p[0]=f.player("town_reader",P);
+            })
+            // A night begins: the next double feature goes up, and the clock is the night's.
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null&&CalderTown.feature(l,b)==1,"waiting for the night to put the next feature up: "+CalderTown.feature(l,b)))
+            .thenWaitUntil(()->h.assertTrue(java.util.Arrays.equals(CalderTown.clockShows(l,b),new int[]{1,1,colon,4,1}),"and for the clock to be the night's own: "+java.util.Arrays.toString(CalderTown.clockShows(l,b))))
+            .thenExecute(()->{
+                for(int col=0;col<7;col++)for(int row=0;row<2;row++)h.assertTrue(sign(l,b,CalderTown.MARQUEE.getX()+col,CalderTown.MARQUEE.getY()+row,CalderTown.MARQUEE.getZ(),CalderSigns.Sign.MARQUEE_B),"the whole of the second feature is up, and nothing of the first");
+                CalderTown.newNight(l,b);h.assertTrue(CalderTown.feature(l,b)==2,"the night after, the third");
+                CalderTown.newNight(l,b);h.assertTrue(CalderTown.feature(l,b)==0,"and then the first again");
+            }).thenSucceed();
     }
 }

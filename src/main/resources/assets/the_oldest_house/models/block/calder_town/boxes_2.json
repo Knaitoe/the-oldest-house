@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cf": "the_oldest_house:block/calder_town/cardboard_flat",
+    "particle": "the_oldest_house:block/calder_town/cardboard"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0.04,
+        0
+      ],
+      "to": [
+        16,
+        0.06,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#cf",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

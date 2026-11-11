@@ -1676,5 +1676,21 @@
   "subtitles.the_oldest_house.park.padlock": "Padlock comes open",
   "subtitles.the_oldest_house.park.cough": "Someone coughs",
   "subtitles.the_oldest_house.park.sand_kick": "Sand is kicked",
-  "entity.the_oldest_house.pack_bike": "Bike"
+  "entity.the_oldest_house.pack_bike": "Bike",
+  "block.the_oldest_house.calder_town": "Town Fitting",
+  "block.the_oldest_house.calder_digit": "Clock Digit",
+  "block.the_oldest_house.calder_stucco": "Stucco",
+  "block.the_oldest_house.calder_tanbrick": "Tan Brick",
+  "block.the_oldest_house.calder_siding": "Clapboard",
+  "block.the_oldest_house.calder_concrete": "Concrete",
+  "block.the_oldest_house.calder_roofing": "Tarred Roof",
+  "block.the_oldest_house.calder_shingle": "Shingles",
+  "block.the_oldest_house.calder_lot": "Lot Asphalt",
+  "block.the_oldest_house.calder_lot_line": "Bay Line",
+  "block.the_oldest_house.calder_plank": "Porch Boards",
+  "block.the_oldest_house.calder_gravel": "Alley Gravel",
+  "block.the_oldest_house.calder_turf": "Field Turf",
+  "block.the_oldest_house.calder_turf_track": "Tracked Turf",
+  "block.the_oldest_house.calder_hedge": "Hedge",
+  "block.the_oldest_house.calder_turf_line": "Chalked Turf"
 }

@@ -112,6 +112,8 @@ public final class BikeNight {
     @Nullable public static UUID owner(BlockPos b,NightBike.Make make){var n=night(b);return n==null?null:n.owner[make.ordinal()];}
     /** Where a bike is while nobody rides it, or null. */
     @Nullable public static BlockPos bikeAt(BlockPos b,NightBike.Make make){var n=night(b);return n==null?null:n.at[make.ordinal()];}
+    /** Whether a night is under way there: somebody has come, and the park has been put as a night begins. Before that, what stands in it is the last night's and is about to be cleared away. */
+    public static boolean begun(BlockPos b){var n=night(b);return n!=null&&!n.fresh;}
     public static boolean failingLampLit(BlockPos b){var n=night(b);return n==null||n.lampLit;}
     public static int outages(BlockPos b){var n=night(b);return n==null?0:n.outages;}
     /** For tests: the failing lamp's next change brought forward to now. */
@@ -214,8 +216,9 @@ public final class BikeNight {
             var here=readers(l,n.base);
             if(here.isEmpty()){if(++n.empty>=EMPTY_RESET&&loaded(l,n)){reset(l,n);NIGHTS.remove(n.base.asLong());}continue;}
             n.empty=0;n.tick++;
-            if(n.fresh){if(!loaded(l,n))continue;n.fresh=false;recall(l,n);reset(l,n);}
+            if(n.fresh){if(!loaded(l,n))continue;n.fresh=false;recall(l,n);reset(l,n);CalderTown.newNight(l,n.base);}
             lamp(l,n);
+            if(n.tick%20==0&&l.isLoaded(n.base.offset(CalderTown.CLOCK)))CalderTown.clock(l,n.base,n.tick);
             flights(l,n);
             barsJump(n,here);
             BikeNightGus.tick(l,n,here);

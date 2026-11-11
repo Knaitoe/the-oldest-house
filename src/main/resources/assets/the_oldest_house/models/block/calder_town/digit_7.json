@@ -1,0 +1,107 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "d7": "the_oldest_house:block/calder_town/digit_7",
+    "k": "the_oldest_house:block/calder_town/town",
+    "particle": "the_oldest_house:block/calder_town/digit_7"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        1,
+        14
+      ],
+      "to": [
+        14,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d7",
+          "uv": [
+            2,
+            1,
+            14,
+            15
+          ]
+        }
+      },
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      }
+    },
+    {
+      "from": [
+        1.5,
+        0.5,
+        14.5
+      ],
+      "to": [
+        14.5,
+        15.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#k",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#k",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#k",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#k",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#k",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "x": "the_oldest_house:block/calder_town/crate",
+    "particle": "the_oldest_house:block/calder_town/crate"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        14,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#x",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#x",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#x",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#x",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#x",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#x",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

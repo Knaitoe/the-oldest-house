@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "r0": "the_oldest_house:block/calder_town/trash_0",
+    "particle": "the_oldest_house:block/calder_town/trash_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0.04,
+        0
+      ],
+      "to": [
+        16,
+        0.06,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#r0",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

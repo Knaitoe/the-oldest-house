@@ -1,0 +1,5 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/barber_front","particle":"the_oldest_house:block/calder_sign/barber_front","g":"the_oldest_house:block/calder_sign/barber_front_glow"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[0.0,0.0,4.0,8.0]},"east":{"texture":"#a","uv":[0.0,0.0,0.25,8.0]},"west":{"texture":"#a","uv":[3.75,0.0,4.0,8.0]},"up":{"texture":"#a","uv":[4.0,0.0,0.0,0.5]},"down":{"texture":"#a","uv":[4.0,7.5,0.0,8.0]}}},
+  {"from":[0,0,14.75],"to":[14,13,14.75],"faces":{"north":{"texture":"#g","uv":[0.5,1.5,4.0,8.0]}},"shade":false,"neoforge_data":{"block_light":15,"sky_light":15}}
+ ]}
