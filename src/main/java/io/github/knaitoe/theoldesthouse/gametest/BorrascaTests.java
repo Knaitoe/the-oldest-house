@@ -1510,6 +1510,19 @@ public final class BorrascaTests {
           .thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"town cast recalled"))
           .thenExecute(()->{
               var b=f.base(p);var rooms=new ArrayList<Set<BorrascaHomeBlock.Kind>>();var lines=new HashSet<String>();int told=0;
+              // 0.4.472 (owner, of two bare log posts in the road: "are these intentional? They're uneven, as like, gateway arches"):
+              // the two trees the friend's game hides her behind are oaks on the verges, the same distance either side of the street.
+              for(int x:new int[]{-4,4}){
+                  for(int y=0;y<7;y++)h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,x,y,-33)).is(Blocks.OAK_LOG),"an oak's trunk on the verge at x="+x+", "+y+" up");
+                  int crown=0;for(var at:BlockPos.betweenClosed(BorrascaRooms.at(b,x-3,4,-36),BorrascaRooms.at(b,x+3,9,-30)))if(f.out.getBlockState(at).is(Blocks.OAK_LEAVES))crown++;
+                  h.assertTrue(crown>30,"with a crown over it: "+crown+" leaves");
+              }
+              for(int x=-3;x<=3;x++)for(int z=-36;z<=-30;z++)for(int y=0;y<4;y++){
+                  var s=f.out.getBlockState(BorrascaRooms.at(b,x,y,z));h.assertTrue(!s.is(net.minecraft.tags.BlockTags.LOGS)&&!s.is(Blocks.OAK_LEAVES),"nothing of a tree is in the roadway, or under four blocks over it, at "+x+","+y+","+z+": "+s);
+              }
+              // The first of the street's lamp poles stands clear of the east oak, whole, its lamp on its arm over the street.
+              for(int y=0;y<6;y++)h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,5,y,-30)).is(Blocks.DARK_OAK_LOG),"the first lamp pole, "+y+" up");
+              h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,4,5,-30)).is(Blocks.LANTERN)&&f.out.getBlockState(BorrascaRooms.at(b,4,6,-30)).is(Blocks.STRIPPED_DARK_OAK_LOG)&&!f.out.getBlockState(BorrascaRooms.at(b,5,3,-33)).is(Blocks.DARK_OAK_LOG),"its lamp on its arm, and no pole where the oak is");
               for(int house=0;house<BorrascaHomes.HOUSES;house++){
                   var mine=new TreeSet<BorrascaHomeBlock.Kind>();
                   for(var t:things)if(t.house()==house){

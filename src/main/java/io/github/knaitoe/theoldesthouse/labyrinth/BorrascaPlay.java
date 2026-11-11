@@ -5,12 +5,23 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 
-/** Nell's games on the walk from the town to the Triple Tree. */
+/**
+ * Nell's games on the walk from the town to the Triple Tree.
+ *
+ * <p>0.4.472, the owner, of two bare log posts standing in the road: "are these intentional? They're uneven, as like, gateway
+ * arches". They were the two trees she hides behind, and each was three logs with no crown, one on the street's east edge and
+ * one nearly in the middle of it. They are oaks now, one on each verge, the same distance either side of the street
+ * (BorrascaRooms.build plants them).
+ */
 final class BorrascaPlay {
     static final int COMPASS=10;
-    static final BlockPos EAST_TREE=new BlockPos(3,0,-33),WEST_TREE=new BlockPos(-1,0,-33);
+    /**
+     * The verges either side of the street, and how tall the two oaks' trunks are: tall enough that their crowns begin four
+     * blocks over the road, clear of a rider hopping Kendra's bike, which stands under the west one.
+     */
+    static final int EAST=4,WEST=-4,TREE_HIGH=7;
+    static final BlockPos EAST_TREE=new BlockPos(EAST,0,-33),WEST_TREE=new BlockPos(WEST,0,-33);
     private static final BlockPos TAG_END=new BlockPos(1,0,-28);
-    private static final int EAST=3,WEST=-1;
     private BorrascaPlay(){}
 
     static boolean tick(ServerPlayer p,BlockPos b,CompoundTag own,LiteraryActor nell){
@@ -40,7 +51,8 @@ final class BorrascaPlay {
         if(!own.contains("HideSide")){
             // Give a reader who turns to count a head start on a clean hide.
             if(ticks<hideAt+80&&p.getLookAngle().z<-.25)return true;
-            own.putInt("HideSide",p.getX()>b.getX()+1.5?WEST:EAST);
+            // She hides on the far side of the street from where the reader stands (the street's middle line is half a block in).
+            own.putInt("HideSide",p.getX()>b.getX()+.5?WEST:EAST);
         }
         nell.gesture(0);
         int leg=own.getInt("HideLeg"),side=own.getInt("HideSide");
