@@ -145,7 +145,7 @@ public final class Corner {
             if(who==0&&d.stage==WAITING){SceneFootpaths.face(a,world(d.base,new Vec3(18.5,2,-80)),60);continue;}
             ServerPlayer near=null;double best=64;for(var r:here){double dd=r.distanceToSqr(a);if(dd<best){best=dd;near=r;}}
             if(near!=null)SceneFootpaths.face(a,near.getEyePosition(),70);
-            var t=d.said.get(a.getUUID());if(t!=null&&d.tick-t>90){a.setCustomNameVisible(false);a.silent();d.said.remove(a.getUUID());}
+            var t=d.said.get(a.getUUID());if(t!=null&&!a.saying()){a.setCustomNameVisible(false);a.silent();d.said.remove(a.getUUID());}
         }
     }
 

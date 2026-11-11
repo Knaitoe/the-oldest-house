@@ -106,7 +106,8 @@ public final class LiteraryActor extends PathfinderMob {
     @Override public boolean shouldRenderAtSqrDistance(double distance){return role()==SILHOUETTE&&phase()==4?distance<192D*192D:super.shouldRenderAtSqrDistance(distance);}
     /**
      * A line over the actor's head. 0.4.398 (owner, of the Masque's red figure: "his dialogue does not disappear"): it stays up long
-     * enough to read, five seconds or longer for a long line, then goes; saying it again keeps it up.
+     * enough to read, five seconds or longer for a long line, then goes; saying it again keeps it up. 0.4.473: how long that is, is
+     * Dialogue's to say, for every person in every scene; a scene asks {@link #saying} and does not time a line itself.
      */
     public void say(String text){say(null,text);}
     /**
@@ -116,15 +117,18 @@ public final class LiteraryActor extends PathfinderMob {
      */
     public void say(@javax.annotation.Nullable String speaker,String text){
         boolean again=spokenFor>0&&getCustomName()!=null&&getCustomName().getString().equals(text)&&entityData.get(SPEAKER).equals(speaker==null?"":speaker);
-        setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Math.min(SAY_LONGEST,Math.max(SAY_SHORTEST,40+text.length()*3));
+        setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Dialogue.ticks(text);
         entityData.set(SPEAKER,speaker==null?"":speaker);
         if(!again&&!level().isClientSide)TalkHistory.overheard(this,speaker,text);
     }
     /** Who is saying the line up now, or empty. */
     public String speaker(){return entityData.get(SPEAKER);}
-    public static final int SAY_SHORTEST=100,SAY_LONGEST=240;
     /** Ticks the last line said stays up. */
     private int spokenFor;
+    /** Whether the line this person last said is still up to be read (the server's to know). */
+    public boolean saying(){return spokenFor>0;}
+    /** Takes the line down now, read or not: for a person who is cut off, put away, or dead. */
+    public void hush(){spokenFor=0;setCustomNameVisible(false);}
     @Override public void tick(){
         boolean privateKiller=!level().isClientSide&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent();
         if(!level().isClientSide&&entityData.get(SPEECH)>0)entityData.set(SPEECH,entityData.get(SPEECH)-1);

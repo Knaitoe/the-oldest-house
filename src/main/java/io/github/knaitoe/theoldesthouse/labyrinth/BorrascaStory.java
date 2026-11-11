@@ -74,8 +74,6 @@ public final class BorrascaStory {
     public static final int TORN_LIVE=19,TORN_DEAD=20;
     /** At or below this much health (of 40) the Sheriff goes down; each blow does three to eight. */
     public static final float SHERIFF_DOWN_HEALTH=14;
-    /** How long a spoken line stays over the speaker's head. */
-    public static final int SPEECH_TICKS=100;
     private static final int FORT_LISTEN_TICKS=100; // The chime lasts 70 ticks. Leave a beat of silence after it.
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static final BlockPos FRONT_LEVER=new BlockPos(-15,13,-168);
@@ -440,7 +438,6 @@ public final class BorrascaStory {
             if(recentSpeech(p)){
                 // Still let a passing reader meet the child without replacing Nell's current subtitle.
                 child.say(visit==2?"I'm waiting for Patrick.":child.phase()==ELI?"Kelly's down by the sign.":"Hi. Watch out for Patrick's bike.");
-                child.getPersistentData().putInt("BorrascaSaid",child.tickCount);
             }else talkTownChild(p,child,own,visit);
             return;
         }
@@ -1425,12 +1422,17 @@ public final class BorrascaStory {
     private static void bark(ServerPlayer p,BlockPos b,int stage){var at=BorrascaRooms.at(b,BorrascaRooms.CARVING);var s=p.serverLevel().getBlockState(at);if(s.is(BorrascaRegistry.CARVING.get())&&s.getValue(BorrascaCarvingBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaCarvingBlock.STAGE,stage),F);BorrascaCarvingEntity.names(p.serverLevel(),at,p.getGameProfile().getName());}
     private static void fit(ServerPlayer p,BlockPos b,BlockPos rel,BorrascaFittingBlock.Kind kind){p.serverLevel().setBlock(BorrascaRooms.at(b,rel),BorrascaFittingBlock.of(kind,Direction.SOUTH),F);}
     private static boolean near(ServerPlayer p,BlockPos at,double distance){return at!=null&&p.distanceToSqr(Vec3.atBottomCenterOf(at))<distance*distance;}
-    /** A person speaks: a caption with their name (client.SpeechCaptions), kept in the reader's journal. Never in chat. */
-    static boolean recentSpeech(ServerPlayer p){
+    /**
+     * Whether the last line said to this reader is still up to be read. 0.4.473 (owner: "slow dialogue a bit across vignettes"):
+     * that is as long as the line takes to read (Dialogue), where it was five seconds whatever its length; so nobody in town
+     * starts a line of their own over one the reader is still reading.
+     */
+    public static boolean recentSpeech(ServerPlayer p){
         int elapsed=p.tickCount-p.getPersistentData().getInt("BorrascaSpeechAt");
-        return p.getPersistentData().contains("BorrascaSpeechAt")&&elapsed>=0&&elapsed<SPEECH_TICKS;
+        return p.getPersistentData().contains("BorrascaSpeechAt")&&elapsed>=0&&elapsed<p.getPersistentData().getInt("BorrascaSpeechFor");
     }
-    static void say(ServerPlayer p,LiteraryActor a,String words){a.say(speaker(a),words);a.getPersistentData().putInt("BorrascaSaid",a.tickCount);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);}
+    /** A person speaks: a caption with their name (client.SpeechCaptions), kept in the reader's journal. Never in chat. */
+    public static void say(ServerPlayer p,LiteraryActor a,String words){a.say(speaker(a),words);p.getPersistentData().putInt("BorrascaSpeechAt",p.tickCount);p.getPersistentData().putInt("BorrascaSpeechFor",Dialogue.ticks(words));}
     static String speaker(LiteraryActor a){if(a.role()==LiteraryActor.BORRASCA_KYLE&&a.phase()==DANA)return "";if(BorrascaPeople.keeper(a))return BorrascaPeople.name(a);if(townChild(a.role(),a.phase()))return a.phase()==ELI?"Patrick":"Kendra";return a.role()==LiteraryActor.BORRASCA_KIMBER?FRIEND:a.role()==LiteraryActor.BORRASCA_SHERIFF?"Sheriff":a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER?"Prescott":"A man";}
     /** What the reader notices, on the action bar. */
     static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
@@ -1442,10 +1444,9 @@ public final class BorrascaStory {
     private static void send(ServerPlayer p,CompoundTag own){var view=view(p,own);if(view!=null)HousePackets.send(p,view);}
     /** What this reader's client is told: the machine, the visit, the light, the Sheriff's beam and, for a child, where he stands. */
     public static @Nullable BorrascaViewPayload view(ServerPlayer p,CompoundTag own){var b=BorrascaSites.base(p.server,p.getUUID());var sheriff=actor(p,own,"CastSheriff");if(b==null)return null;var standing=gentleman(own);return new BorrascaViewPayload(BorrascaRooms.at(b,BorrascaRooms.MACHINE),own.getInt("Visit"),own.getBoolean("Here"),!own.getBoolean("PowerOff")&&(own.getInt("Visit")>1||own.getBoolean("PactCarved")),lit(own)?own.getInt("TakingTicks"):0,own.getInt("TrailClock"),sheriff==null?BorrascaRooms.at(b,BorrascaRooms.SHERIFF):sheriff.blockPosition(),flashlightYaw(own),standing==null?Vec3.ZERO:standing,standing==null?0:own.getInt("GentTicks"),gentScale(own),own.getInt("GrabTicks"),own.getInt("Swallowed"));}
-    /** Per-native-tick motion; native collision and ladder physics remain enabled. Spoken lines clear after a few seconds. */
+    /** Per-native-tick motion; native collision and ladder physics remain enabled. A spoken line clears when it has been read (the actor's own to do, 0.4.473). */
     public static void actorTick(LiteraryActor a){
         if(!a.scene().equals(PLACE.id())||!(a.level() instanceof ServerLevel l))return;
-        if(a.isCustomNameVisible()){int said=a.getPersistentData().getInt("BorrascaSaid");if(a.tickCount-said>SPEECH_TICKS||a.tickCount<said)a.setCustomNameVisible(false);}
         var p=a.owner().map(l.getServer().getPlayerList()::getPlayer).orElse(null);if(p==null||!BorrascaSites.inside(p)){BorrascaCast.stop(a);return;}var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(!own.getBoolean("Here")||!own.getBoolean("CastRecalled"))BorrascaCast.stop(a);
     }
     /** Capture intent; the actual door travel callback is the sole return authority. */

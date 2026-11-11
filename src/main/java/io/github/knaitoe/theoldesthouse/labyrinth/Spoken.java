@@ -42,7 +42,7 @@ public final class Spoken {
         }
     }
     /** How long words stay up: long enough to read, longer for more of them. */
-    public static int ticks(String text){return Mth.clamp(60+text.length()*2,60,180);}
+    public static int ticks(String text){return Dialogue.ticks(text);}
 
     // ------------------------------------------------------------------------------------------------ for tests
     /** The last words this listener heard from that speaker, or empty if the last words they heard were someone else's or none. */

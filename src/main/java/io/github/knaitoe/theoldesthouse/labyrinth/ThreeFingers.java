@@ -293,7 +293,7 @@ public final class ThreeFingers {
         long now=n.l.getGameTime();
         for(var key:CAST){var a=cast(n.l,n.story,key);if(a!=null&&a.hasCustomName()){
             var said=a.getPersistentData();long until=said.contains("SayUntil0488")?said.getLong("SayUntil0488"):said.getLong("Said0481")+100;
-            if(now>until){a.setCustomNameVisible(false);a.setCustomName(null);}
+            if(!a.saying()){a.setCustomNameVisible(false);a.setCustomName(null);}
         }}
     }
     // ------------------------------------------------------------------------------------------------ 0.4.371, Walter in the doorway

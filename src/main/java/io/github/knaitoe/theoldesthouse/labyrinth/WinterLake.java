@@ -141,7 +141,7 @@ public final class WinterLake {
         var witch=witch(l);
         if(witch!=null){if(!witch.driven())adopt(witch,b);listen(l,b,w,readers,witch);move(l,b,w,witch,night);}
         if(night%200==1)l.playSound(null,b.getX(),b.getY()+6,b.getZ()-40,WinterLakeRegistry.WIND.get(),SoundSource.AMBIENT,2.5F,.9F+l.random.nextFloat()*.2F);
-        if(night%10==0)for(var who:BOYS){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&l.getGameTime()-a.getPersistentData().getLong("Said0504")>100)a.setCustomNameVisible(false);}
+        if(night%10==0)for(var who:BOYS){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
         LiteraryVignettes.shared(d,PLACE,w);
     }
     /** The night starts over for whoever comes next: the boys by the fire, the ice whole, her under it. */

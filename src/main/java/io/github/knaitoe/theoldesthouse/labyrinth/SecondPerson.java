@@ -370,7 +370,7 @@ public final class SecondPerson {
             story(l,f,p,own);
             save(p,own);
             sky(p,f,own);
-            var gone=new ArrayList<UUID>();for(var e:f.said.entrySet())if(l.getGameTime()-e.getValue()>70){var a=actor(l,e.getKey());if(a!=null){a.setCustomName(null);a.setCustomNameVisible(false);}gone.add(e.getKey());}gone.forEach(f.said::remove);
+            var gone=new ArrayList<UUID>();for(var e:f.said.entrySet()){var a=actor(l,e.getKey());if(a!=null&&a.saying())continue;if(a!=null){a.setCustomName(null);a.setCustomNameVisible(false);}gone.add(e.getKey());}gone.forEach(f.said::remove);
         }
         for(var it=FLATS.values().iterator();it.hasNext();){var f=it.next();if(seen.contains(f.base.asLong()))continue;
             if(++f.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(f.base))clearActors(l,f.base);it.remove();}}
