@@ -409,6 +409,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_pump") public static void pumpDone(ServerLevel l){done();}
     @AfterBatch(batch="park_push") public static void pushDone(ServerLevel l){done();}
     @AfterBatch(batch="park_rope") public static void ropeDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_over") public static void overDone(ServerLevel l){done();}
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
     @AfterBatch(batch="park_slide") public static void slideDone(ServerLevel l){done();}
     @AfterBatch(batch="park_bars") public static void barsDone(ServerLevel l){done();}
@@ -641,7 +642,9 @@ public final class BikeNightTests {
                 BikeNightTexts.SEESAW,BikeNightTexts.SEESAW_TAKEN,BikeNightTexts.SEESAW_HINT,
                 BikeNightTexts.ROUNDABOUT,BikeNightTexts.ROUNDABOUT_ON,BikeNightTexts.ROUNDABOUT_FAR,BikeNightTexts.ROUNDABOUT_HINT,
                 BikeNightTexts.DOME,BikeNightTexts.DOME_TOP,BikeNightTexts.SPRING,BikeNightTexts.SPRING_TAKEN,BikeNightTexts.SPRING_HINT,
-                BikeNightTexts.CARVED,BikeNightTexts.FOUNTAIN,BikeNightTexts.FOUNTAIN_RUNNING,BikeNightTexts.PHONE,BikeNightTexts.PHONE_HELD)){
+                BikeNightTexts.CARVED,BikeNightTexts.FOUNTAIN,BikeNightTexts.FOUNTAIN_RUNNING,BikeNightTexts.PHONE,BikeNightTexts.PHONE_HELD,
+                HouseReadSwing.PUSH_HINT,HouseReadSwing.PUSH_EARLY,HouseReadSwing.PUSH_FAR,HouseReadSwing.PUSH_BESIDE,HouseReadSwing.PUSHED_BY,
+                BikeNightTexts.SCRATCH_ADD,BikeNightTexts.SCRATCH_OWN,BikeNightTexts.SCRATCH_FRESH,BikeNightTexts.OVER_BAR,BikeNightTexts.OVER_SEEN)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -764,7 +767,9 @@ public final class BikeNightTests {
     public static void aSwingPumpedHighThrowsItsRiderOutOverTheSandAndTheFurthestIsMarked(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final SeatEntity[] seat={null};
         final double[] high={0,0};final Vec3[] away={null};final int[] paces={0,0};final BlockPos[] mark={null};var forward=BikeNightSite.SWING_FORWARD;
-        Runnable with=()->{double going=Math.cos((seat[0].swingTicks(0)+1)*HouseReadSwing.RATE);p[0].setPlayerInput(0,going>0?1F:-1F,false,false);high[0]=Math.max(high[0],seat[0].reach());high[1]=Math.max(high[1],seat[0].getY()-b.getY());};
+        // 0.4.475: leaning the way it goes, but not to the tick: the lean is let go for a few ticks either side of each turn. (A lean
+        // thrown over exactly as the swing turns, end after end, is another matter: it goes over the bar, and has its own case.)
+        Runnable with=()->{double going=Math.cos((seat[0].swingTicks(0)+1)*HouseReadSwing.RATE);p[0].setPlayerInput(0,Math.abs(going)<Math.sin(4.5*HouseReadSwing.RATE)?0:going>0?1F:-1F,false,false);high[0]=Math.max(high[0],seat[0].reach());high[1]=Math.max(high[1],seat[0].getY()-b.getY());};
         Runnable against=()->{double going=Math.cos((seat[0].swingTicks(0)+1)*HouseReadSwing.RATE);p[0].setPlayerInput(0,going>0?-1F:1F,false,false);};
         // The fixture's readers are weightless, so that they stay where a case puts them. One in the air off a swing has to fall.
         Runnable fly=()->{if(BikeNight.inFlight(p[0])){p[0].setNoGravity(false);p[0].travel(Vec3.ZERO);}else p[0].setNoGravity(true);};
@@ -774,9 +779,9 @@ public final class BikeNightTests {
             .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
             .thenExecute(()->{f.click(p[0],P,BikeNightSite.swingAt(2));seat[0]=(SeatEntity)p[0].getVehicle();h.assertTrue(seat[0]!=null&&seat[0].pumped(),"on a swing");})
             // Leaning the way it goes, each way, takes it as high as it will go; and no higher.
-            .thenExecuteFor(240,with)
+            .thenExecuteFor(420,with)
             .thenExecute(()->{
-                h.assertTrue(Math.abs(seat[0].reach()-HouseReadSwing.HIGH)<.02&&high[0]<=HouseReadSwing.HIGH+1e-9&&HouseReadSwing.HIGH>HouseReadSwing.REACH*2,"leaning with it takes the arc to its widest, well past a gentle one: "+seat[0].reach());
+                h.assertTrue(Math.abs(seat[0].reach()-HouseReadSwing.HIGH)<.02&&high[0]<=HouseReadSwing.HIGH+1e-9&&seat[0].kicks()==0&&HouseReadSwing.HIGH>HouseReadSwing.REACH*2,"leaning with it takes the arc to its widest, well past a gentle one: "+seat[0].reach());
                 h.assertTrue(high[1]>2.3&&high[1]<3,"which carries the seat well over two blocks up at each end: "+high[1]);
             })
             // Leaning against it brings it down.
@@ -841,18 +846,18 @@ public final class BikeNightTests {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(e);return e.isCanceled();
     }
     /** Which way the swing is going (forward is positive), by the turn of its arc. */
-    private static double going(SeatEntity seat){return Math.cos(seat.swingTicks(0)*HouseReadSwing.RATE);}
+    private static double going(SeatEntity seat){return Math.cos(seat.swung(0)*HouseReadSwing.RATE);}
 
     @GameTest(template="empty",batch="park_push",timeoutTicks=3000)
     public static void aReaderOnASwingIsPushedByAnotherOnTheSandWhoTimesIt(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final SeatEntity[] seat={null,null};
-        double bar=BikeNightSite.SWING_X+.5,line=BikeNightSite.SWING_SEATS[0]+.5;final double[] was={0,0};final int[] sent={0};
+        double bar=BikeNightSite.SWING_X+.5,line=BikeNightSite.SWING_SEATS[0]+.5;final double[] was={0,0};final int[] sent={0,0,0};
         double meet=Math.sin(HouseReadSwing.MEET*HouseReadSwing.RATE);
         // The one behind pushes each time the swing starts away from them.
         Runnable timed=()->{
             double before=seat[0].reach();
             if(seat[0].swingAngle(0)<0&&going(seat[0])>0&&push(p[1],p[0])&&seat[0].reach()>before+.05)sent[0]++;
-            was[1]=Math.max(was[1],seat[0].reach());
+            was[1]=Math.max(was[1],seat[0].reach());sent[1]=Math.max(sent[1],seat[0].kicks());sent[2]|=seat[0].turning(0)>=0?1:0;
         };
         h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -909,12 +914,13 @@ public final class BikeNightTests {
                 was[0]=seat[0].reach();
                 h.assertTrue(push(p[1],p[0])&&Math.abs(seat[0].reach()-was[0]-HouseReadSwing.PUSHED)<1e-9,"a push as it stops at the top sends it on: "+was[0]+" to "+seat[0].reach());
             })
-            // Pushed each time it starts away, it goes as high as a swing goes, and no higher.
+            // Pushed each time it starts away, it goes as high as a swing goes. (0.4.475: a push that meets it as it turns is a kick,
+            // so hands at one end take it a step past that for a moment; with the other end going by unkicked it never goes over.)
             .thenExecute(()->{sent[0]=0;was[1]=0;})
             .thenExecuteFor(520,timed)
             .thenExecute(()->{
-                h.assertTrue(sent[0]>=5&&was[1]>HouseReadSwing.HIGH-1e-9&&was[1]<=HouseReadSwing.HIGH+1e-9&&seat[0].reach()>HouseReadSwing.HIGH-.12,
-                    "pushed as it starts away each time, the swing goes as high as it goes, and no higher: "+sent[0]+" pushes, "+was[1]+", now "+seat[0].reach());
+                h.assertTrue(sent[0]>=5&&was[1]>HouseReadSwing.HIGH-1e-9&&was[1]<=HouseReadSwing.HIGH+HouseReadSwing.OVER_STEP+1e-9&&seat[0].reach()>HouseReadSwing.HIGH-.12&&sent[1]<=1&&sent[2]==0,
+                    "pushed as it starts away each time, the swing goes as high as it goes, a step past it at most, and never over the bar: "+sent[0]+" pushes, "+was[1]+", now "+seat[0].reach()+", "+sent[1]+" kicks");
                 h.assertTrue(HouseReadSwing.HIGH>HouseReadSwing.REACH*2,"far higher than a swing left alone");
             })
             .thenWaitUntil(()->h.assertTrue(f.own(p[1],P).getInt("SwingPushes")>=5&&f.own(p[1],P).getString("SwingPushed").equals("swing_rider")&&f.own(p[0],P).getString("SwingPushedBy").equals("swing_hands"),
@@ -1018,6 +1024,107 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 h.assertTrue(seat[0].isRemoved()&&l.getBlockState(at.above(2)).is(HouseReadRegistry.ROPE.get()),"off it, the swing hangs still on its ropes again");
                 for(int dx=-1;dx<=2;dx++)for(int y=0;y<=4;y++)for(int dz=-3;dz<=0;dz++)l.setBlock(at.offset(dx,y,dz),Blocks.AIR.defaultBlockState(),3);
+            }).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.475: over the bar
+    @GameTest(template="empty",batch="park_over",timeoutTicks=4800)
+    public static void aSwingKickedExactlyAsItTurnsEndAfterEndGoesAllTheWayOverTheBar(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final SeatEntity[] seat={null};
+        double bar=BikeNightSite.SWING_X+.5,line=BikeNightSite.SWING_SEATS[0]+.5;var post=new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]);var forward=BikeNightSite.SWING_FORWARD;
+        final double[] top={0,0,0};final int[] most={0};final boolean[] went={false,false};final Vec3[] away={null};var levels=new java.util.TreeSet<Integer>();
+        Runnable watch=()->{most[0]=Math.max(most[0],seat[0].kicks());top[0]=Math.max(top[0],seat[0].reach());top[1]=Math.max(top[1],seat[0].getY()-b.getY());top[2]=Math.max(top[2],Math.abs(seat[0].swingAngle(0)));
+            levels.add((int)Math.round(seat[0].reach()*100));went[0]|=seat[0].turning(0)>=0;};
+        // Leaning with the swing, but late: the lean goes over five ticks after the swing has turned.
+        Runnable sloppy=()->{p[0].setPlayerInput(0,Math.cos((seat[0].swung(0)-4)*HouseReadSwing.RATE)>0?1F:-1F,false,false);watch.run();};
+        // Leaning exactly with it: the lean goes over on the tick the swing turns. Once it is going over the bar, the lean is let go.
+        Runnable exact=()->{if(went[0])p[0].setPlayerInput(0,0,false,false);else p[0].setPlayerInput(0,Math.cos((seat[0].swung(0)+1)*HouseReadSwing.RATE)>0?1F:-1F,false,false);watch.run();};
+        // Exact at the front end of the arc only: round the back end the lean is let go, and taken up again too late to count.
+        Runnable front=()->{double turn=(seat[0].swung(0)+1)*HouseReadSwing.RATE;boolean back=Math.sin(turn)<0&&Math.abs(Math.cos(turn))<Math.sin(6.5*HouseReadSwing.RATE);
+            if(went[0]||back)p[0].setPlayerInput(0,0,false,false);else p[0].setPlayerInput(0,Math.cos(turn)>0?1F:-1F,false,false);
+            // And somebody behind, who pushes as it starts away from them.
+            if(!went[0]&&seat[0].swingAngle(0)<0&&going(seat[0])>0)push(p[1],p[0]);
+            watch.run();};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("over_rider",P);p[1]=f.player("over_watcher",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenExecute(()->{
+                h.assertTrue(HouseReadSwing.OVER_REACH>Math.PI/2&&HouseReadSwing.OVER_REACH<Math.PI&&Math.abs(HouseReadSwing.over(0))<1e-9&&Math.abs(HouseReadSwing.over(.5)-Math.PI)<1e-9&&Math.abs(HouseReadSwing.over(1)-2*Math.PI)<1e-6,
+                    "a turn over the bar is a whole turn, and the top of it is half way through");
+                double start=HouseReadSwing.over(.01)/(.01*HouseReadSwing.OVER_TICKS),over=(HouseReadSwing.over(.505)-HouseReadSwing.over(.495))/(.01*HouseReadSwing.OVER_TICKS);
+                h.assertTrue(Math.abs(start-HouseReadSwing.OVER_REACH*HouseReadSwing.RATE)<.01&&over<start*.45&&over>start*.35,"it leaves the bottom at the speed of the arc it was sent from, and is slowest over the top: "+start+" "+over);
+                // The post is the park's only word on it.
+                hush(p[1]);f.click(p[1],P,post);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],"T.R. WENT OVER THE BAR")&&heard(p[1],"DID NOT")&&!heard(p[1],"DID TOO"),"a hand on the frame finds what is scratched into its post"))
+            .thenExecute(()->{
+                f.at(p[1],P,bar+6,0,line+4);
+                f.click(p[0],P,BikeNightSite.swingAt(0));seat[0]=(SeatEntity)p[0].getVehicle();h.assertTrue(seat[0]!=null&&seat[0].pumped(),"on a swing");
+                seat[0].reach(HouseReadSwing.HIGH);
+            })
+            // Leaning with it, however long, without the timing: as high as a swing goes, and not a hair past it.
+            .thenExecuteFor(170,sloppy)
+            .thenExecute(()->{
+                h.assertTrue(most[0]==0&&top[0]<=HouseReadSwing.HIGH+1e-9&&!went[0]&&seat[0].reach()>HouseReadSwing.HIGH-.05,"leaning with it late, end after end, never takes it past its widest arc: "+top[0]+", "+most[0]+" kicks");
+                levels.clear();
+            })
+            // Exactly as it turns, end after end: a step past its widest each time, and after the fifth, over the bar.
+            .thenExecuteFor(250,exact)
+            .thenExecute(()->{
+                h.assertTrue(went[0]&&most[0]==HouseReadSwing.OVER_KICKS&&Math.abs(top[0]-HouseReadSwing.OVER_REACH)<1e-6,"five kicks in time, one end after another, and it goes over: "+most[0]+" kicks, "+top[0]);
+                h.assertTrue(levels.containsAll(List.of(140,165,190,215)),"each kick takes the arc a step past its widest, and it is held there: "+levels);
+                h.assertTrue(top[1]>HouseReadSwing.PIVOT+HouseReadSwing.LENGTH-.3&&top[2]>6,"the seat goes up over the bar and all the way round: "+top[1]+" up, "+top[2]+" round");
+                h.assertTrue(seat[0].turning(0)<0&&seat[0].kicks()==0&&seat[0].reach()<=HouseReadSwing.HIGH+1e-9&&p[0].getVehicle()==seat[0],
+                    "and comes down swinging; with the lean let go, the next end goes by without a kick and the arc is back to its widest: "+seat[0].reach());
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("OverBar")==1&&f.own(p[0],P).getString("OverSeenBy").equals("over_watcher")&&f.own(p[1],P).getString("SawOver").equals("over_rider"),"it is in their record, and in the record of the one who saw"))
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.OVER_BAR)&&heard(p[1],String.format(BikeNightTexts.OVER_SEEN,"over_rider")),"the one who went over is told, and so is the one who saw"))
+            // Two kicks in time, and then an end that goes by without one: everything the kicks had gained is lost.
+            .thenExecute(()->{went[0]=false;most[0]=0;top[0]=0;})
+            .thenWaitUntil(()->{exact.run();h.assertTrue(seat[0].kicks()==2,"waiting for two kicks in time: "+seat[0].kicks());})
+            .thenExecute(()->p[0].setPlayerInput(0,0,false,false))
+            .thenExecuteFor(70,watch)
+            .thenExecute(()->{
+                h.assertTrue(!went[0]&&seat[0].kicks()==0&&top[0]>HouseReadSwing.HIGH+HouseReadSwing.OVER_STEP&&seat[0].reach()<=HouseReadSwing.HIGH+1e-9&&f.own(p[0],P).getInt("OverBar")==1,
+                    "an end that goes by without its kick loses what the kicks had gained, and the swing does not go over: "+top[0]+" to "+seat[0].reach());
+                // A push that meets the swing as it turns is a kick. Somebody behind takes the back end; the rider has only the front to time.
+                f.at(p[1],P,bar-3.7,0,line);seat[0].reach(HouseReadSwing.HIGH);went[0]=false;most[0]=0;
+            })
+            .thenWaitUntil(()->{front.run();h.assertTrue(went[0],"waiting for the rider at the front and the hands at the back to send it over between them: "+seat[0].kicks());})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("OverBar")==2,"over the bar a second time, with a friend's hands for half the kicks"))
+            .thenExecute(()->{
+                // Letting go of a swing going over the bar throws nobody further than its widest arc would, and nobody is hurt coming down.
+                p[0].setPlayerInput(0,0,false,false);seat[0].reach(HouseReadSwing.HIGH);went[0]=false;f.at(p[1],P,bar+6,0,line+4);
+            })
+            .thenIdle(40)
+            .thenWaitUntil(()->{exact.run();h.assertTrue(seat[0].turning(0)>.2,"waiting to be a little way round a third turn");})
+            .thenExecute(()->{
+                away[0]=HouseReadSwing.jump(p[0]);
+                var carried=away[0]==null?null:away[0].subtract(HouseReadSwing.launch(Vec3.ZERO,forward));
+                h.assertTrue(away[0]!=null&&!p[0].isPassenger()&&carried.length()<=HouseReadSwing.FASTEST*HouseReadSwing.CARRY+1e-6&&carried.length()>HouseReadSwing.FASTEST*HouseReadSwing.CARRY-1e-6,
+                    "letting go a little way round throws them no harder than the swing's widest arc would: "+away[0]);
+                // High over the park, where the sand's own softness does not reach.
+                p[0].teleportTo(p[0].getX(),b.getY()+9,p[0].getZ());
+                var hard=new net.neoforged.neoforge.event.entity.living.LivingFallEvent(p[0],14F,1F);BikeNight.fall(hard);
+                h.assertTrue(BikeNight.inFlight(p[0])&&!BikeNightSite.onSand(p[0].position().subtract(b.getX(),b.getY(),b.getZ()))&&hard.getDamageMultiplier()==0,"and nobody is hurt coming down off a swing, wherever it threw them");
+            })
+            .thenIdle(60)
+            .thenExecute(()->{
+                h.assertTrue(f.own(p[0],P).getInt("OverBar")==2,"a turn they let go of is not a time over the bar");
+                // Back at the post, they have something to add.
+                hush(p[0]);f.click(p[0],P,post);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SCRATCH_ADD)&&f.own(p[0],P).getBoolean("Scratched"),"one who has been over the bar scratches their answer under it"))
+            .thenExecute(()->{hush(p[0]);f.click(p[0],P,post);hush(p[1]);f.click(p[1],P,post);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SCRATCH_OWN)&&!heard(p[0],BikeNightTexts.SCRATCH_ADD)&&heard(p[1],BikeNightTexts.SCRATCH_FRESH),"once; after that it is there, for them and for anybody else that night"))
+            .thenExecute(()->{
+                var rider=told("over_rider",p[0],f);var watcher=told("over_watcher",p[1],f);
+                h.assertTrue(rider.contains("I went all the way over the bar on one of the swings, and then did it again.")&&rider.contains("over_watcher saw.")&&rider.contains("I scratched DID TOO into the post, under DID NOT."),"their account has it: "+rider);
+                h.assertTrue(watcher.contains("I saw over_rider go all the way over the bar on the swings."),"and so has the account of the one who saw: "+watcher);
+                var alone=new net.minecraft.nbt.CompoundTag();alone.putInt("OverBar",1);alone.putBoolean("Swung",true);
+                var unseen=String.join(" ",BikeNightTexts.account("over_rider",alone).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(unseen.contains("I went all the way over the bar on one of the swings. Nobody saw."),"one who went over with nobody there says so: "+unseen);
             }).thenSucceed();
     }
 
