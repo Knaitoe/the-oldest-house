@@ -1323,8 +1323,10 @@ public final class BorrascaTests {
             for(int i=5;i<11;i++)BorrascaCards.seen(p,i);
             h.assertTrue(f.own(p).getBoolean("Read_CardsLater")&&f.own(p).getInt("Seen_CardsLater")==BorrascaCards.top(3),"the later board is read by what hangs on top: "+f.own(p).getInt("Seen_CardsLater"));
             f.stage(p,4);
-        }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled")).thenExecute(()->{
-            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.LONG_GONE,"years later the two patches have gone grey");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled"))
+          // 0.4.465: the town is dressed for a visit once the ground it changes is loaded, which may be a little after the cast is
+          // recalled. In the whole suite an earlier case has always had that ground in; run by itself this case looked too soon.
+          .thenWaitUntil(()->h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.LONG_GONE,"years later the two patches have gone grey")).thenExecute(()->{
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[1],"the last noticeboard");h.assertTrue(text(board).contains("KAYLA"),"the last night's board has a new poster: visit "+f.own(p).getInt("Visit")+", "+title(board)+": "+text(board));
             var own=f.own(p);h.assertTrue(own.contains("Original_Board")&&own.contains("Original_Board3")&&own.contains("Original_Board4")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA),"each visit's board is its own original, and reading confers nothing");
             // 0.4.419: grown, the reader can read the frame: what the word means and what the town owes the Prescotts.

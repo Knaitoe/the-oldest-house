@@ -8,6 +8,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.BikeRackBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.BikeRampBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderLitterBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderPlayBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderSignBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderSigns;
 import io.github.knaitoe.theoldesthouse.labyrinth.NightBike;
@@ -41,10 +42,14 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * paper on it, the gate chained between its piers under the board, seen from inside, railings, a lamp lit and a lamp dark, a bench,
  * the bin, a corner of the sandpit's edging, leaves down, the street's line); and both signs flat, the gate's board from in front and
  * from behind. Every state of the park's blocks must have its model.
+ *
+ * <p>0.4.465, the swings: a bay of the frame as the builder puts it up, on sand, with one swing hanging still and one caught at the
+ * top of a high arc as the moving one is drawn (its seat and chains turned about the bar); the heel mark in the sand; and a ball of
+ * sand in the hand. Every state of the playground's blocks and the ball's own model must be there.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -67,6 +72,9 @@ public final class BikeNightVisualProof extends Screen {
         for(var name:BikeNightRegistry.MATERIAL_NAMES)need(BikeNightRegistry.material(name).defaultBlockState());
         for(var state:BikeNightRegistry.ROAD_LINE.get().getStateDefinition().getPossibleStates())need(state);
         need(BikeNightRegistry.LEAVES.get().defaultBlockState());
+        for(var state:BikeNightRegistry.PLAY.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.MARK.get().getStateDefinition().getPossibleStates())need(state);
+        if(mc.getItemRenderer().getModel(new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()),null,null,0)==missing)throw new IllegalStateException("Missing the ball of sand's model");
     }
     private static void need(BlockState s){var mc=Minecraft.getInstance();if(mc.getBlockRenderer().getBlockModel(s)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing Bike night model for "+s);}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
@@ -74,9 +82,10 @@ public final class BikeNightVisualProof extends Screen {
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         g.fill(0,0,width,height,0xff252925);
         g.drawString(font,"BIKE NIGHT / "+new String[]{"the six, on their stands","ridden: upright (the Lamp lit), and leaning with the nose up","lying where they went over","six in the rack, the long ramp and the kicker","what a rider sees under the crosshair",
-            "the park's own things, from inside the gate","the park's signs: the gate's board from in front and from behind, and the rules"}[page],8,8,0xffffffff);
+            "the park's own things, from inside the gate","the park's signs: the gate's board from in front and from behind, and the rules",
+            "the swings: one hanging still, one at the top of a high arc; the furthest landing's mark; a ball of sand"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);default->signs(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);default->swings(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -170,6 +179,39 @@ public final class BikeNightVisualProof extends Screen {
         buffers.endBatch();pose.popPose();
     }
 
+    /**
+     * A bay of the swings as the builder puts it up, looking along the sand at it from in front and to one side: a post at each end,
+     * the bar with its hangers, one swing hanging still and one as the moving swing is drawn at the top of a high arc (the seat and
+     * its chains turned about the underside of the bar, the way SeatClientEvents turns them); the heel mark where a jump came down;
+     * and, to the side, a ball of sand as it lies in the hand.
+     */
+    private void swings(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width*.074F;var pose=g.pose();pose.pushPose();pose.translate(width*.4F,24+(height-24)*.84F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(15));pose.mulPose(Axis.YP.rotationDegrees(-118));pose.translate(-2.5F,0,-3.5F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        // The swings look east (+x): what a seat faces is behind whoever sits on it.
+        var behind=Direction.WEST;int top=4;
+        for(int x=-1;x<=6;x++)for(int z=0;z<=6;z++)at.accept(Blocks.SAND.defaultBlockState(),new int[]{x,-1,z});
+        for(int z:new int[]{0,6}){
+            at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.FOOT),new int[]{0,0,z});
+            for(int y=1;y<top;y++)at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.SHAFT),new int[]{0,y,z});
+            at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.POST,z==0?Direction.EAST:Direction.WEST,CalderPlayBlock.END),new int[]{0,top,z});
+        }
+        for(int z=1;z<=5;z++)at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.BAR,behind,z==2||z==4?CalderPlayBlock.HANGERS:0),new int[]{0,top,z});
+        var seat=CalderPlayBlock.of(CalderPlayBlock.Kind.SWING,behind,0);var chain=CalderPlayBlock.of(CalderPlayBlock.Kind.CHAIN,behind,0);
+        at.accept(seat,new int[]{0,0,4});for(int y=1;y<top;y++)at.accept(chain,new int[]{0,y,4});
+        // The moving one, at the top of a high arc: turned about the bar's underside over the middle of its seat, forward being up and out.
+        pose.pushPose();pose.translate(.5F,top,2.5F);pose.mulPose(new org.joml.Quaternionf().rotateAxis((float)io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.HIGH,0,0,1));
+        for(int y=0;y<top;y++){pose.pushPose();pose.translate(-.5F,y-top,-.5F);mc.getBlockRenderer().renderSingleBlock(y==0?seat:chain,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
+        pose.popPose();
+        at.accept(BikeNightRegistry.MARK.get().defaultBlockState().setValue(CalderLitterBlock.FACING,Direction.EAST),new int[]{5,0,2});
+        buffers.endBatch();pose.popPose();
+        // The ball of sand, as the game draws an item, large.
+        pose.pushPose();pose.translate(width*.82F,24+(height-24)*.22F,200);pose.scale(6,6,1);g.renderItem(new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()),0,0);pose.popPose();
+        g.drawString(font,"a ball of sand",(int)(width*.82F),(int)(24+(height-24)*.22F)+104,0xffffffff);
+    }
+
     /** Both signs flat on, as the builder hangs them: the gate's board from in front, then from behind, then the rules. */
     private void signs(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
@@ -219,7 +261,7 @@ public final class BikeNightVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-bike-night-"+PAGES[s.page]+".png"));s.drawn(image);}
         if(++s.page<PAGES.length){s.frames=0;return;}
-        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Seven native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. Every state of the bike, rack, ramp and park blocks and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
+        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Eight native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
         mc.stop();
     }
 }

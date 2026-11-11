@@ -20,6 +20,8 @@ import net.minecraft.world.phys.Vec3;
  * failing. By the gate the six bikes stand in a rack under a lamp of their own. Outside the gate, Park Street: the pavement, the kerb,
  * the road and its centre line, and dark trees past it.
  *
+ * <p>0.4.465: the swings. A steel frame along the playground's west side, its bar four blocks over the sand, with four belt seats on
+ * chains under it, each looking east over the open sand a jump off one comes down on; and a lamp of their own behind them.
  */
 public final class BikeNightSite {
     private BikeNightSite(){}
@@ -36,7 +38,16 @@ public final class BikeNightSite {
     public static final int RACK_X=4,RACK_Z=-43,BIKE_Z=-42;
     /** The lamps: by the door, the failing one and the good one over the playground, and the rack's. Each is four blocks tall. */
     public static final BlockPos DOOR_LAMP=new BlockPos(-7,0,-3),FLICKER=new BlockPos(-5,0,-13),PLAY_LAMP=new BlockPos(-5,0,-33),RACK_LAMP=new BlockPos(10,0,-43);
-    public static final List<BlockPos> LAMPS=List.of(DOOR_LAMP,FLICKER,PLAY_LAMP,RACK_LAMP);
+    /** The swings' own lamp, behind them on the grass. */
+    public static final BlockPos SWING_LAMP=new BlockPos(-28,0,-25);
+    public static final List<BlockPos> LAMPS=List.of(DOOR_LAMP,FLICKER,PLAY_LAMP,RACK_LAMP,SWING_LAMP);
+    /**
+     * The swings: the line the frame stands on, how high its bar is over the sand, where its three posts and four seats are along
+     * it, and the way a sitter looks.
+     */
+    public static final int SWING_X=-23,SWING_BAR=4;
+    public static final int[] SWING_POSTS={-31,-25,-19},SWING_SEATS={-29,-27,-23,-21};
+    public static final Direction SWING_FORWARD=Direction.EAST;
     public static final int LAMP_TOP=3;
     /** The sheet taped to the wall by the door (the first paper), and where a reader's account is handed over. */
     public static final BlockPos SOURCE=new BlockPos(-4,1,0),ENDING=new BlockPos(-4,2,0);
@@ -49,6 +60,10 @@ public final class BikeNightSite {
     public static boolean inPark(Vec3 r){return r.x>WEST+.5&&r.x<EAST+.5&&r.z<1&&r.z>NORTH+.5&&r.y>-1&&r.y<12;}
     /** On the playground's sand. */
     public static boolean onSand(Vec3 r){return r.x>=SAND_W&&r.x<SAND_E+1&&r.z>=SAND_N&&r.z<SAND_S+1&&r.y>-.6&&r.y<3;}
+    /** A block of the playground's sand. */
+    public static boolean sandAt(BlockPos r){return r.getY()==-1&&r.getX()>=SAND_W&&r.getX()<=SAND_E&&r.getZ()>=SAND_N&&r.getZ()<=SAND_S;}
+    /** Where a swing's seat hangs. */
+    public static BlockPos swingAt(int seat){return new BlockPos(SWING_X,0,SWING_SEATS[seat]);}
     /** Where a bike stands in the rack. */
     public static BlockPos bikeAt(NightBike.Make make){return new BlockPos(RACK_X+make.ordinal(),0,BIKE_Z);}
 
@@ -59,6 +74,7 @@ public final class BikeNightSite {
     private static boolean free(ServerLevel l,BlockPos b,int x,int y,int z){return BuildBlocks.state(l,b.offset(x,y,z)).isAir();}
     static BlockState mat(String name){return BikeNightRegistry.material(name).defaultBlockState();}
     static BlockState fit(CalderBlock.Kind kind,Direction facing,int stage){return CalderBlock.of(kind,facing,stage);}
+    static BlockState play(CalderPlayBlock.Kind kind,Direction facing,int stage){return CalderPlayBlock.of(kind,facing,stage);}
     static BlockState leaves(){return BikeNightRegistry.LEAVES.get().defaultBlockState();}
 
     public static void build(ServerLevel l,BlockPos b){
@@ -70,6 +86,7 @@ public final class BikeNightSite {
         street(l,b);
         paths(l,b);
         sandpit(l,b);
+        swings(l,b);
         railings(l,b);
         gate(l,b);
         for(var at:LAMPS)lamp(l,b,at,true);
@@ -118,6 +135,37 @@ public final class BikeNightSite {
             else if(s&&e)set(l,b,x,0,z,fit(CalderBlock.Kind.BORDER,Direction.SOUTH,1));
             else if(s&&w)set(l,b,x,0,z,fit(CalderBlock.Kind.BORDER,Direction.WEST,1));
             else set(l,b,x,0,z,fit(CalderBlock.Kind.BORDER,n?Direction.NORTH:s?Direction.SOUTH:w?Direction.WEST:Direction.EAST,0));
+        }
+    }
+    /**
+     * The swings. Three posts and a bar over them; under the bar, between the posts, two seats to a bay, each on its chains. What
+     * a seat faces is behind whoever sits on it; a bar ends on an end post (it goes off to the east of a post facing north) and
+     * runs on over the middle one.
+     */
+    static void swings(ServerLevel l,BlockPos b){
+        var behind=SWING_FORWARD.getOpposite();int first=SWING_POSTS[0],last=SWING_POSTS[SWING_POSTS.length-1];
+        for(int z=first;z<=last;z++){
+            boolean post=false,seat=false;for(int at:SWING_POSTS)post|=at==z;for(int at:SWING_SEATS)seat|=at==z;
+            if(post){
+                set(l,b,SWING_X,0,z,play(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.FOOT));
+                for(int y=1;y<SWING_BAR;y++)set(l,b,SWING_X,y,z,play(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.SHAFT));
+                set(l,b,SWING_X,SWING_BAR,z,z==first?play(CalderPlayBlock.Kind.POST,Direction.EAST,CalderPlayBlock.END)
+                    :z==last?play(CalderPlayBlock.Kind.POST,Direction.WEST,CalderPlayBlock.END):play(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.THROUGH));
+                continue;
+            }
+            set(l,b,SWING_X,SWING_BAR,z,play(CalderPlayBlock.Kind.BAR,behind,seat?CalderPlayBlock.HANGERS:0));
+            if(!seat)continue;
+            set(l,b,SWING_X,0,z,play(CalderPlayBlock.Kind.SWING,behind,0));
+            for(int y=1;y<SWING_BAR;y++)set(l,b,SWING_X,y,z,play(CalderPlayBlock.Kind.CHAIN,behind,0));
+        }
+    }
+    /** Any swing left as if somebody were on it (a server stopped under a reader) hangs still again. */
+    static void swingsBack(ServerLevel l,BlockPos b){
+        for(int i=0;i<SWING_SEATS.length;i++){
+            var at=b.offset(swingAt(i));var s=l.getBlockState(at);
+            if(!CalderPlayBlock.is(s,CalderPlayBlock.Kind.SWING)||s.getValue(CalderPlayBlock.STAGE)!=CalderPlayBlock.GONE)continue;
+            if(!l.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.house.SeatEntity.class,new net.minecraft.world.phys.AABB(at).inflate(5,4,5),seat->at.equals(seat.support())).isEmpty())continue;
+            HouseReadSwing.restore(l,at);
         }
     }
     /** A brick pier, three high, under a stone cap. */

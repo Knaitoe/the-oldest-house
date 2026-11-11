@@ -33,6 +33,13 @@ import net.minecraft.world.phys.Vec3;
  * them further; at either end of the arc, where the seat stops, they hop forward instead of dropping; going back, they go back much
  * less. A hop forward from the back of the arc crosses where the still seat hangs, so after a jump the empty seat swings on until the
  * jumper is down and it is next at the bottom of its arc (SeatEntity), and only then gives way to the still one.
+ *
+ * <p>0.4.465, Bike night (owner: "Lots of fun potential for unique interaction here - a seesaw, slides, swings, monkey bars, etc"):
+ * the park's swings are swings too, and are pumped. A park swing is one belt seat on two chains (CalderPlayBlock), the same length as
+ * the porch's ropes. Left alone it comes up to the same gentle arc. Its rider can take it higher: leaning forward while it goes
+ * forward, or back while it goes back, widens the arc, up to HIGH; leaning against it narrows it. So the arc of a pumped swing is as
+ * wide as its rider has made it and is kept by the seat (SeatEntity.reach), and where it is on that arc still comes from the time
+ * sat down. Letting go works as it always has, so a swing pumped high throws its rider a long way.
  */
 public final class HouseReadSwing {
     private HouseReadSwing(){}
@@ -42,11 +49,21 @@ public final class HouseReadSwing {
     public static final double RATE=.12,REACH=.5,BUILD=.004;
     /** Letting go: how much of the seat's speed the reader keeps, the push of their legs forward, and the hop up off the seat. */
     public static final double CARRY=1.6,PUSH=.2,HOP=.3;
-    public static boolean is(BlockState s){return s.is(HouseReadRegistry.FITTING.get())&&s.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.SWING;}
+    /** A pumped swing: the widest arc there is, what a tick of leaning with it (or against it) adds (or takes), and how it eases back to a gentle one. */
+    public static final double HIGH=1.15,PUMP=.006,EASE=.001;
+    public static boolean is(BlockState s){return rope(s)||pumped(s);}
+    /** The porch's kind: a plank two blocks wide on ropes. */
+    private static boolean rope(BlockState s){return s.is(HouseReadRegistry.FITTING.get())&&s.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.SWING;}
+    /** The park's kind: one belt seat on chains, which its rider pumps. */
+    public static boolean pumped(BlockState s){return CalderPlayBlock.is(s,CalderPlayBlock.Kind.SWING);}
+    /** The seat as it hangs with nobody on it, and one block of what hangs it: what the moving swing is drawn from. */
+    public static BlockState still(BlockState s){return pumped(s)?s.setValue(CalderPlayBlock.STAGE,0):s.setValue(HouseReadPropBlock.TURNED,false);}
+    public static BlockState hanger(BlockState s){return pumped(s)?CalderPlayBlock.of(CalderPlayBlock.Kind.CHAIN,s.getValue(HorizontalDirectionalBlock.FACING)):HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS,Direction.Axis.Y);}
     /** The way a sitter on this seat faces, and the way the swing goes forward: away from the seat block's facing. */
     public static Direction forward(BlockState s){return is(s)?s.getValue(HorizontalDirectionalBlock.FACING).getOpposite():Direction.NORTH;}
     /** The seat's two halves: this one and its neighbour along the crossbar, west (or north) first. */
     public static List<BlockPos> pair(Level l,BlockPos at){
+        if(pumped(l.getBlockState(at)))return List.of(at);   // a belt seat is one block, however near the next one hangs
         var side=forward(l.getBlockState(at)).getClockWise();var before=side.getAxisDirection()==Direction.AxisDirection.POSITIVE?side.getOpposite():side;var after=before.getOpposite();
         var out=new ArrayList<BlockPos>();
         if(is(l.getBlockState(at.relative(before)))){out.add(at.relative(before));out.add(at);}else{out.add(at);if(is(l.getBlockState(at.relative(after))))out.add(at.relative(after));}
@@ -65,11 +82,21 @@ public final class HouseReadSwing {
     /** A reader sits: the still swing is hidden so the moving one can be drawn in its place. */
     public static void hide(ServerPlayer p,BlockPos at){
         var l=p.serverLevel();
+        if(pumped(l.getBlockState(at))){
+            l.setBlock(at,l.getBlockState(at).setValue(CalderPlayBlock.STAGE,CalderPlayBlock.GONE),Block.UPDATE_CLIENTS);
+            for(int y=1;y<=3;y++){var s=l.getBlockState(at.above(y));if(CalderPlayBlock.is(s,CalderPlayBlock.Kind.CHAIN))l.setBlock(at.above(y),s.setValue(CalderPlayBlock.STAGE,CalderPlayBlock.GONE),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
+            return;
+        }
         for(var pos:pair(l,at)){var s=l.getBlockState(pos);l.setBlock(pos,s.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);for(int y=1;y<=3;y++)if(l.getBlockState(pos.above(y)).is(HouseReadRegistry.ROPE.get()))l.setBlock(pos.above(y),Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
         if(HouseReadSites.inside(p)==HouseReadSites.Room.PORCH)HouseReadSites.act(p,HouseReadSites.Room.PORCH,"sat on the swing");
     }
     /** Off the swing: the still seat and its ropes come back, up to the crossbar. */
     public static void restore(Level l,BlockPos at){
+        if(pumped(l.getBlockState(at))){
+            l.setBlock(at,l.getBlockState(at).setValue(CalderPlayBlock.STAGE,0),Block.UPDATE_CLIENTS);
+            for(int y=1;y<=3;y++){var s=l.getBlockState(at.above(y));if(CalderPlayBlock.is(s,CalderPlayBlock.Kind.CHAIN))l.setBlock(at.above(y),s.setValue(CalderPlayBlock.STAGE,0),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
+            return;
+        }
         for(var pos:pair(l,at)){var s=l.getBlockState(pos);if(is(s))l.setBlock(pos,s.setValue(HouseReadPropBlock.TURNED,false),Block.UPDATE_CLIENTS);
             for(int y=1;y<=3;y++)if(l.getBlockState(pos.above(y)).isAir())l.setBlock(pos.above(y),HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS,Direction.Axis.Y),Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE);}
     }
@@ -80,11 +107,15 @@ public final class HouseReadSwing {
     public static Vec3 jump(ServerPlayer p){
         if(!(p.getVehicle() instanceof SeatEntity seat)||!seat.swinging()||p.isSpectator())return null;
         var l=p.serverLevel();var pair=pair(l,seat.support());if(!is(l.getBlockState(pair.getFirst())))return null;
-        var forward=forward(l.getBlockState(pair.getFirst()));var pivot=pivot(pair);double ticks=seat.swingTicks(0);
-        var from=seat(pivot,forward,angle(ticks)).add(0,.05,0);var away=launch(velocity(pivot,forward,ticks),forward);
+        var state=l.getBlockState(pair.getFirst());var forward=forward(state);var pivot=pivot(pair);
+        // The seat says where it is on its arc and how fast it is going: by the time sat alone, or (a pumped one) by how wide its
+        // rider has made the arc as well.
+        var from=seat(pivot,forward,seat.swingAngle(0)).add(0,.05,0);
+        var away=launch(seat(pivot,forward,seat.swingAngle(.5)).subtract(seat(pivot,forward,seat.swingAngle(-.5))),forward);
         seat.letGo(from);p.stopRiding();
         p.connection.teleport(from.x,from.y,from.z,p.getYRot(),p.getXRot());
         p.setDeltaMovement(away);p.hurtMarked=true;p.resetFallDistance();
+        if(pumped(state))BikeNight.letGo(p,pivot,forward);
         return away;
     }
 }

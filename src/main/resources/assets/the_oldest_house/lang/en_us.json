@@ -1613,5 +1613,13 @@
   "block.the_oldest_house.calder_sign": "Painted Sign",
   "block.the_oldest_house.calder_litter": "Fallen Leaves",
   "subtitles.the_oldest_house.park.lamp_buzz": "Lamp buzzes",
-  "subtitles.the_oldest_house.park.chain": "Chain rattles"
+  "subtitles.the_oldest_house.park.chain": "Chain rattles",
+  "block.the_oldest_house.calder_play": "Playground Equipment",
+  "block.the_oldest_house.calder_mark": "Heel Mark",
+  "item.the_oldest_house.sand_ball": "Ball of Sand",
+  "entity.the_oldest_house.sand_ball": "Ball of Sand",
+  "subtitles.the_oldest_house.park.swing_creak": "Swing creaks",
+  "subtitles.the_oldest_house.park.sand_scoop": "Sand is packed",
+  "subtitles.the_oldest_house.park.sand_throw": "Sand ball is thrown",
+  "subtitles.the_oldest_house.park.sand_burst": "Sand ball bursts"
 }

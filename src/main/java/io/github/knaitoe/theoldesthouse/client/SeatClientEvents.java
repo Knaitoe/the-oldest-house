@@ -4,8 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseSitting;
 import io.github.knaitoe.theoldesthouse.house.SeatEntity;
-import io.github.knaitoe.theoldesthouse.labyrinth.HouseReadPropBlock;
-import io.github.knaitoe.theoldesthouse.labyrinth.HouseReadRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -13,10 +11,8 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.block.ChainBlock;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -29,8 +25,8 @@ public final class SeatClientEvents {
         event.registerEntityRenderer(HouseSitting.SEAT.get(), SwingRenderer::new);
     }
     /**
-     * An ordinary seat draws nothing. 0.4.172: a swinging one draws the porch swing's seat and ropes, turned about the crossbar to
-     * where the reader is on the arc, in place of the still ones hidden while it is in use.
+     * An ordinary seat draws nothing. 0.4.172: a swinging one draws the swing's seat and what it hangs by, turned about the crossbar
+     * to where the reader is on the arc, in place of the still ones hidden while it is in use.
      */
     static final class SwingRenderer extends EntityRenderer<SeatEntity> {
         SwingRenderer(EntityRendererProvider.Context context) { super(context); }
@@ -47,7 +43,8 @@ public final class SeatClientEvents {
             pose.pushPose(); pose.translate(pivot.x - at.x, pivot.y - at.y, pivot.z - at.z);
             pose.mulPose(new org.joml.Quaternionf().rotateAxis(angle, -forward.getStepZ(), 0, forward.getStepX()));
             for (var pos : pair) for (int y = 0; y <= 3; y++) {
-                var state = y == 0 ? level.getBlockState(pos).setValue(HouseReadPropBlock.TURNED, false) : HouseReadRegistry.ROPE.get().defaultBlockState().setValue(ChainBlock.AXIS, Direction.Axis.Y);
+                // 0.4.465: whichever kind of swing it is says what it is drawn from (the porch's plank and ropes, the park's belt and chains).
+                var state = y == 0 ? HouseReadSwing.still(level.getBlockState(pos)) : HouseReadSwing.hanger(level.getBlockState(pos));
                 pose.pushPose(); pose.translate(pos.getX() - pivot.x, pos.getY() + y - pivot.y, pos.getZ() - pivot.z);
                 blocks.renderSingleBlock(state, pose, out, light, OverlayTexture.NO_OVERLAY); pose.popPose();
             }
