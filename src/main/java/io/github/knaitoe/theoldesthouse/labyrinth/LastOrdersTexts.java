@@ -99,10 +99,10 @@ public final class LastOrdersTexts {
     public static final String LOST="Three whistles, and the lamps go down. When they come up the clock over the door still says ten to. Your glass is gone and the chalk has been wiped. You don't remember the rest of the evening.";
     public static final String WALKED="Behind you, nobody calls you back.";
 
-    /** A week chalked on the league board: the week, the name, and who they are down as beating. */
+    /** A week chalked on the league slate: the week, the name, and who they are down as beating. The slate draws a long name
+     * narrower (0.4.450), so nothing is cut from it. */
     public static String[] leagueSign(int week,String name,String beat){
-        String n=name.length()>15?name.substring(0,15):name;
-        return new String[]{"Week "+week,n,"beat "+beat,""};
+        return new String[]{"Week "+week,name,"beat "+beat};
     }
     public static final String[] REGULARS={"Hob","Ott","Cass"};
 

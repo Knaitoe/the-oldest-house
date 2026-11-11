@@ -35,10 +35,14 @@ public final class LastOrdersSite {
     /** The dartboard on the far wall, face south, and the oche line on the floor in front of it. */
     public static final BlockPos BOARD=new BlockPos(2,1,NORTH+1);
     public static final int OCHE_Z=NORTH+4;
-    /** The league board: eight signs on the far wall west of the dartboard, two rows of four. */
+    /** The league board: a slate four blocks by three on the far wall west of the dartboard, this its bottom left block
+     * ({@link BarSlateBlock}). Its top course is the heading; the eight squares under it are the weeks, two rows of four, the
+     * newest at the right of the upper row. */
+    public static final BlockPos SLATE=new BlockPos(-6,1,NORTH+1);
     public static final BlockPos[] LEAGUE;
     static{var l=new BlockPos[8];for(int i=0;i<8;i++)l[i]=new BlockPos(-3-(i%4),2-i/4,NORTH+1);LEAGUE=l;}
-    public static final BlockPos LEAGUE_HEAD=new BlockPos(-4,3,NORTH+1);
+    /** The lamp hung in front of the slate, so that it can be read. */
+    public static final BlockPos SLATE_LAMP=new BlockPos(-5,TOP-2,-29);
     /** The window in the east wall past the end of the bar, and the little street beyond it. */
     public static final int WINDOW_Z0=-23,WINDOW_Z1=-21;
     /** The way on: the street door, against the west wall by the front. */
@@ -91,7 +95,7 @@ public final class LastOrdersSite {
         set(l,b,RULES,road(RoadhouseBlock.Kind.CORKBOARD,Direction.NORTH));
         set(l,b,CLOCK,io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.state(io.github.knaitoe.theoldesthouse.house.SceneDetailBlock.Kind.CLOCK,Direction.NORTH));
         // A few lamps, low: the bar is dark between them.
-        for(var at:new BlockPos[]{new BlockPos(6,TOP-2,-9),new BlockPos(6,TOP-2,-15),new BlockPos(-9,TOP-2,-8),new BlockPos(-9,TOP-2,-16),new BlockPos(-9,TOP-2,-24),new BlockPos(2,TOP-2,-27),new BlockPos(0,TOP-2,-4)})hang(l,b,at);
+        for(var at:new BlockPos[]{new BlockPos(6,TOP-2,-9),new BlockPos(6,TOP-2,-15),new BlockPos(-9,TOP-2,-8),new BlockPos(-9,TOP-2,-16),new BlockPos(-9,TOP-2,-24),new BlockPos(2,TOP-2,-27),new BlockPos(0,TOP-2,-4),SLATE_LAMP})hang(l,b,at);
     }
     /** A lantern hung on a short chain from the ceiling. */
     static void hang(ServerLevel l,BlockPos b,BlockPos at){
@@ -122,14 +126,23 @@ public final class LastOrdersSite {
                 set(l,b,x,0,c+1,road(RoadhouseBlock.Kind.BOOTH,Direction.NORTH));
                 set(l,b,x,0,c-1,road(RoadhouseBlock.Kind.BOOTH,Direction.SOUTH));
             }
-            // A high partition between booths, open above head height.
-            for(int x=-11;x<=-9;x++){set(l,b,x,0,c+2,Blocks.DARK_OAK_PLANKS.defaultBlockState());set(l,b,x,1,c+2,Blocks.DARK_OAK_FENCE.defaultBlockState());}
-            NovelRooms.sign(l,b.offset(-9,1,c+2).south(0),Direction.EAST,new String[]{"",String.valueOf(i+1),"",""});
+            // 0.4.450: the partition on the door's side of the booth carries its number; a candle in red glass on the table
+            // against the wall, and the booth's own picture over it.
+            partition(l,b,c+2,i+1);
+            set(l,b,-11,1,c,BarBoothBlock.of(BarBoothBlock.Kind.CANDLE,Direction.NORTH,0));
+            set(l,b,-11,2,c,BarBoothBlock.of(BarBoothBlock.Kind.PICTURE,Direction.EAST,i+1));
         }
-        int last=BOOTHS[BOOTHS.length-1]-2;
-        for(int x=-11;x<=-9;x++){set(l,b,x,0,last,Blocks.DARK_OAK_PLANKS.defaultBlockState());set(l,b,x,1,last,Blocks.DARK_OAK_FENCE.defaultBlockState());}
-        // A small lamp on each table.
-        for(int c:BOOTHS)set(l,b,-11,1,c,Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT,true));
+        partition(l,b,PARTITION_END,0);
+    }
+    /** Where the last booth's far partition stands. */
+    public static final int PARTITION_END=BOOTHS[BOOTHS.length-1]-2;
+    /** A partition between booths, from the wall to a block into the aisle: panelling, a glass screen over it, and a post at
+     * the aisle with the number of the booth behind it (none on a bare post). */
+    static void partition(ServerLevel l,BlockPos b,int z,int number){
+        for(int x=-11;x<=-9;x++){
+            set(l,b,x,0,z,BarBoothBlock.of(BarBoothBlock.Kind.PANEL,Direction.EAST,0));
+            set(l,b,x,1,z,x==-9?BarBoothBlock.of(BarBoothBlock.Kind.POST,Direction.EAST,number):BarBoothBlock.of(BarBoothBlock.Kind.SCREEN,Direction.EAST,0));
+        }
     }
     static void pool(ServerLevel l,BlockPos b){
         PoolTableBlock.place(l,b.offset(TABLE),Direction.NORTH);
@@ -142,8 +155,7 @@ public final class LastOrdersSite {
         set(l,b,BOARD,BarRegistry.DARTBOARD.get().defaultBlockState().setValue(DartboardBlock.FACING,Direction.SOUTH));
         // The oche: a line of darker board in the floor.
         for(int x=BOARD.getX()-1;x<=BOARD.getX()+1;x++)set(l,b,x,-1,OCHE_Z,Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,Direction.Axis.X));
-        NovelRooms.sign(l,b.offset(LEAGUE_HEAD),Direction.SOUTH,new String[]{"","LEAGUE","",""});
-        for(int i=0;i<LEAGUE.length;i++)NovelRooms.sign(l,b.offset(LEAGUE[i]),Direction.SOUTH,new String[]{"","","",""});
+        BarSlateBlock.hang(l,b.offset(SLATE),Direction.SOUTH);
     }
     /** The window: three panes onto a scrap of street, which the bar keeps in one season or another. */
     static void window(ServerLevel l,BlockPos b){

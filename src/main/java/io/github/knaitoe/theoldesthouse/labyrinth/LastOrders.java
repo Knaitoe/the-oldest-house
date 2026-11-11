@@ -215,8 +215,9 @@ public final class LastOrders {
         var list=world.getList("League",net.minecraft.nbt.Tag.TAG_COMPOUND);
         for(int i=0;i<LastOrdersSite.LEAGUE.length;i++){
             int at=list.size()-1-i;var at3=b.offset(LastOrdersSite.LEAGUE[i]);
-            if(at<0){NovelRooms.sign(l,at3,net.minecraft.core.Direction.SOUTH,new String[]{"","","",""});continue;}
-            var c=list.getCompound(at);NovelRooms.sign(l,at3,net.minecraft.core.Direction.SOUTH,LastOrdersTexts.leagueSign(c.getInt("Week"),c.getString("Name"),c.getString("Beat")));
+            if(at<0){BarSlateBlock.chalk(l,at3,"","","");continue;}
+            var c=list.getCompound(at);var week=LastOrdersTexts.leagueSign(c.getInt("Week"),c.getString("Name"),c.getString("Beat"));
+            BarSlateBlock.chalk(l,at3,week[0],week[1],week[2]);
         }
     }
 
