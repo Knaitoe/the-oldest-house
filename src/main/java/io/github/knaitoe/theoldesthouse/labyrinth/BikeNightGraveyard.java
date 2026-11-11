@@ -47,10 +47,29 @@ public final class BikeNightGraveyard {
     /** The middle of the gateway, and how far inside it a rider is in. */
     public static final double GATE_X=0,GATE_IN=CalderTown.RAILS-2.5;
 
+    /**
+     * 0.4.491, the mist, in a hundred: how thick it is just inside the gate, and past the last row; what is left of it beside a lit
+     * Lamp; how near a Lamp must be, in blocks; and how often a reader is told, in ticks.
+     */
+    public static final int MIST_GATE=18,MIST_BACK=100,MIST_EVERY=10;
+    public static final float LAMP_CUTS=.45F;
+    public static final double LAMP_NEAR=7;
+    /**
+     * 0.4.491, the town's lights: the rows its streets' lamps are north of, from the cemetery down to the park's street (a lamp goes out
+     * with the first of these it is north of); ticks between one street and the next; and how far its breaker is heard.
+     */
+    public static final int[] STREETS={-150,-110,-75,-46};
+    public static final int DARK_EVERY=50;
+    public static final float BREAKER_HEARD=5;
+
     /** A night's graveyard. */
     static final class Yard {
         boolean gateOpen;
         final int[] state=new int[3];final long[] since={-1,-1,-1};
+        /** What each reader was last told of their mist. */
+        final java.util.Map<java.util.UUID,Integer> mist=new java.util.HashMap<>();
+        /** How many of the town's streets are dark, when the next goes, and where the town's lamps stand (found when the first goes). */
+        int dark;long darkAt=-1;@javax.annotation.Nullable java.util.List<BlockPos> lamps;
     }
 
     // ------------------------------------------------------------------------------------------------ for tests, and for the night
@@ -72,11 +91,74 @@ public final class BikeNightGraveyard {
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         if(CalderGraves.gateIsOpen(l,n.base))CalderGraves.gateShut(l,n.base);
+        if(n.yard.lamps!=null)for(var at:n.yard.lamps)BikeNightSite.lantern(l,n.base,at,true);
         n.yard=new Yard();
+    }
+    public static int dark(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.yard.dark;}
+
+    // ------------------------------------------------------------------------------------------------ the mist
+    /**
+     * How thick a reader's own mist is, in a hundred. The proposal: "It rises off the grass and thickens with each row. The Lamp's
+     * headlight cuts it." Nothing outside the railings; inside, more for each row of stones they are past; and less than half of
+     * that for the rider of a Lamp that is throwing its light, "and whoever rides close".
+     */
+    public static int mist(ServerLevel l,BlockPos b,ServerPlayer p){
+        if(!in(b,p.position()))return 0;
+        double z=p.getZ()-b.getZ();int rows=0;
+        for(int row:CalderGraves.ROWS)if(z<row+.5)rows++;
+        float m=MIST_GATE+(MIST_BACK-MIST_GATE)*rows/(float)CalderGraves.ROWS.length;
+        if(lamp(l,p))m*=LAMP_CUTS;
+        return Math.round(m);
+    }
+    /** Whether a Lamp that is ridden and making light is near somebody. Its dynamo makes light only while the wheel turns: stopped, it cuts nothing. */
+    public static boolean lamp(ServerLevel l,ServerPlayer p){
+        return !l.getEntitiesOfClass(NightBike.class,p.getBoundingBox().inflate(LAMP_NEAR),bike->bike.make()==NightBike.Make.LAMP&&bike.lit()>0&&!bike.getPassengers().isEmpty()).isEmpty();
+    }
+    private static void mists(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        if(n.tick%MIST_EVERY!=0)return;
+        var y=n.yard;
+        for(var p:here){
+            int m=mist(l,n.base,p);Integer was=y.mist.put(p.getUUID(),m);
+            // Told while they are in it, and once more when they are out of it.
+            if(m>0||was!=null&&was>0)io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload(m));
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------ the town's lights
+    /**
+     * The proposal's notes: "the city starts to melt away". Once every reader who is still in the night is on the hill, past its
+     * first bank, the town's street lamps go out a street at a time, from Church Lane down to the park's own street, each with its
+     * breaker. With a reader still down in the town nothing goes out: it is their town too. The park's lamps are the park's.
+     */
+    /** Where the town's street lamps stand: every lamp's foot north of the park's street that has a lantern over it. (A street's name hangs on a post with the same foot and no lantern.) */
+    public static java.util.List<BlockPos> townLamps(ServerLevel l,BlockPos b){
+        var out=new java.util.ArrayList<BlockPos>();
+        for(int x=CalderTown.W;x<=CalderTown.E;x++)for(int z=CalderTown.N;z<STREETS[STREETS.length-1];z++)for(int at=0;at<=2;at++){
+            var s=l.getBlockState(b.offset(x,at,z));
+            if(!CalderBlock.is(s,CalderBlock.Kind.LAMP)||s.getValue(CalderBlock.STAGE)!=CalderBlock.FOOT)continue;
+            var top=l.getBlockState(b.offset(x,at+BikeNightSite.LAMP_TOP,z));
+            if(CalderBlock.is(top,CalderBlock.Kind.LAMP)&&top.getValue(CalderBlock.STAGE)>=CalderBlock.LIT)out.add(new BlockPos(x,at,z));
+        }
+        return out;
+    }
+    private static void lights(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var y=n.yard;var b=n.base;
+        if(y.dark>=STREETS.length||n.tick<y.darkAt)return;
+        if(y.dark==0){
+            var prey=BikeNightHunt.prey(n.pack,here);if(prey.isEmpty()||!y.gateOpen)return;
+            for(var p:prey)if(!in(b,p.position())||p.getZ()-b.getZ()>=CalderGraves.BANKS[0])return;
+        }
+        if(y.lamps==null)y.lamps=townLamps(l,b);
+        int south=STREETS[y.dark],north=y.dark==0?Integer.MIN_VALUE:STREETS[y.dark-1];
+        for(var at:y.lamps)if(at.getZ()<south&&at.getZ()>=north)BikeNightSite.lantern(l,b,at,false);
+        l.playSound(null,b.getX()+.5,b.getY()+3,b.getZ()+(y.dark==0?CalderTown.RAILS+8:(south+north)/2.0),BikeNightRegistry.BREAKER.get(),net.minecraft.sounds.SoundSource.BLOCKS,BREAKER_HEARD,.8F);
+        y.dark++;y.darkAt=n.tick+DARK_EVERY;
     }
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var y=n.yard;
+        mists(l,n,here);
+        lights(l,n,here);
         // The gate: open once they are hunted, and only when nobody could be looking.
         if(!y.gateOpen&&n.pack.stage==BikeNightBullies.CHASE){
             var gate=new Vec3(n.base.getX()+GATE_X,n.base.getY()+1,n.base.getZ()+CalderTown.RAILS+.5);boolean watched=false;

@@ -4476,4 +4476,138 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="yard_gus") public static void yardGusDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.491, the mist and the town's lights
+    /** What a reader has just been told of their mist, the newest of it; or -1 if they have been told nothing since this was last asked. */
+    private static int toldMist(ServerPlayer p){
+        int last=-1;
+        for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload mist)last=mist.mist();
+        return last;
+    }
+    private static List<BlockPos> townLamps(ServerLevel l,BlockPos b){return BikeNightGraveyard.townLamps(l,b);}
+
+    @GameTest(template="empty",batch="yard_mist",timeoutTicks=9000)
+    public static void theMistIsEachReadersOwnThickerWithEachRowAndALampThatIsMakingLightCutsItForWhoeverIsNear(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};final int[] t={0},seen={-1,-1,-1},n={0};
+        int full=BikeNightGraveyard.MIST_BACK,gate=BikeNightGraveyard.MIST_GATE;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("yard_mist_rider",P);p[1]=f.player("yard_mist_walker",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->mine[0]=take(h,f,p[0],NightBike.Make.LAMP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
+            .thenExecute(()->{
+                // The proposal: "It rises off the grass and thickens with each row." None outside the railings; some just inside them; more past each row; all of it past the last.
+                f.at(p[1],P,.5,0,CalderTown.RAILS+3.5);
+                h.assertTrue(BikeNightGraveyard.mist(l,b,p[1])==0,"none on the lane");
+                f.at(p[1],P,.5,0,CalderTown.RAILS-1.5);
+                int last=BikeNightGraveyard.mist(l,b,p[1]);
+                h.assertTrue(last==gate&&gate>0&&gate<30,"some just inside the gate: "+last);
+                for(int row:CalderGraves.ROWS){
+                    f.at(p[1],P,.5,CalderGraves.level(row+1),row+1.5);
+                    h.assertTrue(BikeNightGraveyard.mist(l,b,p[1])==last,"no thicker until the row at "+row+" is passed");
+                    f.at(p[1],P,.5,CalderGraves.level(row-1),row-.5);
+                    int now=BikeNightGraveyard.mist(l,b,p[1]);
+                    h.assertTrue(now>last&&now-last>=6&&now-last<=8,"thicker past the row at "+row+": "+last+" to "+now);
+                    last=now;
+                }
+                h.assertTrue(last==full&&full==100,"all of it past the last row: "+last);
+                // And the reader is told, and nobody else is told theirs.
+                f.at(p[1],P,.5,3,CalderGraves.SMALL_ROW+1.5);toldMist(p[0]);toldMist(p[1]);
+            })
+            .thenWaitUntil(()->{int told=toldMist(p[1]);if(told>=0)seen[0]=told;int other=toldMist(p[0]);if(other>0)seen[1]=other;
+                h.assertTrue(seen[0]==full,"waiting for the reader at the back to be told all of it: "+seen[0]);})
+            .thenExecute(()->{
+                // As answered: "The mist is each reader's own." The one still in the park has been told nothing of it.
+                h.assertTrue(seen[1]<0,"the reader in the park is told of no mist: "+seen[1]);
+                f.at(p[1],P,.5,0,CalderTown.RAILS+3.5);seen[0]=-1;
+            })
+            .thenWaitUntil(()->{int told=toldMist(p[1]);if(told>=0)seen[0]=told;h.assertTrue(seen[0]==0,"waiting for them to be told it is gone, out on the lane: "+seen[0]);})
+            .thenExecute(()->{t[0]=0;n[0]=0;})
+            .thenWaitUntil(()->{if(toldMist(p[1])>=0)n[0]++;h.assertTrue(++t[0]>=60,"waiting three seconds on the lane");})
+            .thenExecute(()->{
+                h.assertTrue(n[0]==0,"and are told nothing more of it while they are out of it: "+n[0]+" times");
+                // The proposal: "The Lamp's headlight cuts it." Along the top path across the hill, from the west, with a reader standing by the path.
+                int row=CalderGraves.ACROSS[3];
+                mine[0].moveTo(b.getX()-24.5,b.getY()+3,b.getZ()+row+.5,-90,0);p[0].setYRot(-90);
+                f.at(p[1],P,.5,3,row-1.5);t[0]=0;seen[0]=seen[1]=seen[2]=-1;
+            })
+            .thenWaitUntil(()->{
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(-90);pedalWell(mine[0],t[0]++,3);}
+                double x=mine[0].getX()-b.getX();int walker=BikeNightGraveyard.mist(l,b,p[1]),rider=BikeNightGraveyard.mist(l,b,p[0]);
+                // The walker's, with the Lamp far off to the west, beside them, and gone on to the east; the rider's, once it is making light.
+                if(x<-12&&seen[0]<0)seen[0]=walker;
+                if(Math.abs(x)<3&&mine[0].lit()>0&&seen[1]<0){seen[1]=walker;seen[2]=rider;}
+                h.assertTrue(p[0].getVehicle()==mine[0],"they are still on it: "+rel(b,mine[0]));
+                h.assertTrue(x>14,"waiting for the Lamp to ride past the walker and on: at "+rel(b,mine[0])+" going "+mine[0].speedNow()+", lit "+mine[0].lit());
+            })
+            .thenExecute(()->{
+                int walker=BikeNightGraveyard.mist(l,b,p[1]),cut=Math.round(seen[0]*BikeNightGraveyard.LAMP_CUTS);
+                h.assertTrue(seen[0]>80&&seen[0]<full,"with the Lamp far off the walker's mist is nearly all of it: "+seen[0]);
+                h.assertTrue(seen[1]==cut&&seen[2]==cut&&cut<seen[0]/2,"beside it, theirs and its rider's are under half of that: "+seen[1]+" and "+seen[2]+" of "+seen[0]);
+                h.assertTrue(walker==seen[0],"and when it has gone on, theirs is what it was: "+walker);
+                h.assertTrue(BikeNightGraveyard.lamp(l,p[0]),"its rider has it still");
+            })
+            // "Its dynamo makes light only while the wheel turns": stopped, it cuts nothing.
+            .thenWaitUntil(()->h.assertTrue(halted(p[0],mine[0])&&mine[0].lit()==0,"waiting for the Lamp to stop and go dark: going "+mine[0].speedNow()+", lit "+mine[0].lit()))
+            .thenExecute(()->h.assertTrue(!BikeNightGraveyard.lamp(l,p[0])&&BikeNightGraveyard.mist(l,b,p[0])==seen[0],"a Lamp standing still cuts nothing: "+BikeNightGraveyard.mist(l,b,p[0])))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="yard_mist") public static void yardMistDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="yard_dark",timeoutTicks=12000)
+    public static void theTownsLampsGoOutAStreetAtATimeOnceEveryReaderStillInTheNightIsOnTheHill(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final int[] t={0},dark={0};final long[] at={0,0,0,0,0};var lamps=new ArrayList<BlockPos>();
+        java.util.function.IntFunction<int[]> lit=street->{int on=0,all=0;int south=BikeNightGraveyard.STREETS[street],north=street==0?Integer.MIN_VALUE:BikeNightGraveyard.STREETS[street-1];
+            for(var lamp:lamps)if(lamp.getZ()<south&&lamp.getZ()>=north){all++;if(BikeNightSite.lit(l,b,lamp))on++;}return new int[]{on,all};};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("yard_dark_first",P);p[1]=f.player("yard_dark_second",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{
+                f.at(p[0],P,-14.5,0,-20.5);f.at(p[1],P,-12.5,0,-20.5);lamps.addAll(townLamps(l,b));
+                h.assertTrue(lamps.size()>=30,"the town has its lamps: "+lamps.size());
+                // A street's name hangs on a post with a lamp's foot and no lantern: it is not a lamp, and nothing is put out on it.
+                int feet=0;
+                for(int x=CalderTown.W;x<=CalderTown.E;x++)for(int z=CalderTown.N;z<BikeNightSite.NORTH;z++){var s=l.getBlockState(b.offset(x,0,z));if(CalderBlock.is(s,CalderBlock.Kind.LAMP)&&s.getValue(CalderBlock.STAGE)==CalderBlock.FOOT)feet++;}
+                h.assertTrue(feet>lamps.size(),"the posts the streets' names hang on are not lamps: "+feet+" feet, "+lamps.size()+" lamps");
+                for(int i=0;i<BikeNightGraveyard.STREETS.length;i++){var one=lit.apply(i);h.assertTrue(one[1]>=3&&one[0]==one[1],"street "+i+" has lamps and they are lit: "+one[0]+" of "+one[1]);}
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGraveyard.gateOpen(b),"waiting for the chase, and the gate: stage "+BikeNightBullies.stage(b)))
+            // One reader is up the hill, past its first bank. The other is still down in the town, at the far end of Church Lane.
+            .thenExecute(()->{f.at(p[0],P,-.5,1,CalderGraves.BANKS[0]-6.5);f.at(p[1],P,-40.5,0,-164.5);t[0]=0;})
+            .thenWaitUntil(()->{
+                h.assertTrue(BikeNightGraveyard.dark(b)==0,"nothing goes out while a reader is still in the town");
+                h.assertTrue(++t[0]>=100,"waiting five seconds with one reader in the town");
+            })
+            .thenExecute(()->{
+                for(var lamp:lamps)h.assertTrue(BikeNightSite.lit(l,b,lamp),"every lamp is lit: "+lamp.toShortString());
+                // They come up the hill too.
+                f.at(p[1],P,2.5,1,CalderGraves.BANKS[0]-6.5);hush(p[0]);hush(p[1]);
+            })
+            .thenWaitUntil(()->{
+                int now=BikeNightGraveyard.dark(b);
+                if(now>dark[0]){
+                    at[now]=l.getGameTime();dark[0]=now;
+                    // The streets north of this one are dark, this one has just gone, and the ones south of it are lit.
+                    for(int i=0;i<BikeNightGraveyard.STREETS.length;i++){var one=lit.apply(i);
+                        h.assertTrue(i<now?one[0]==0:one[0]==one[1],"with "+now+" streets dark, street "+i+" has "+one[0]+" of "+one[1]+" lamps lit");}
+                    if(now>1)h.assertTrue(at[now]-at[now-1]>=BikeNightGraveyard.DARK_EVERY,"a street at a time: "+(at[now]-at[now-1])+" ticks after the last");
+                }
+                h.assertTrue(now==BikeNightGraveyard.STREETS.length,"waiting for the town's streets to go dark, from the cemetery down: "+now);
+            })
+            .thenExecute(()->{
+                for(var lamp:lamps)h.assertTrue(!BikeNightSite.lit(l,b,lamp),"every lamp of the town is out: "+lamp.toShortString());
+                // The park's are the park's.
+                h.assertTrue(BikeNightSite.lit(l,b,BikeNightSite.PLAY_LAMP)&&BikeNightSite.lit(l,b,BikeNightSite.RACK_LAMP),"the park's lamps are lit");
+                // Each street's breaker is heard on the hill.
+                h.assertTrue(sounded(p[0],"town.breaker")&&sounded(p[1],"town.breaker"),"they hear it go");
+                // The night over, the town is lit again.
+                BikeNight.resetNow(l,b);
+                for(var lamp:lamps)h.assertTrue(BikeNightSite.lit(l,b,lamp),"lit again when the night is over: "+lamp.toShortString());
+                h.assertTrue(BikeNightGraveyard.dark(b)==0,"and nothing is dark");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="yard_dark") public static void yardDarkDone(ServerLevel l){done();}
 }
