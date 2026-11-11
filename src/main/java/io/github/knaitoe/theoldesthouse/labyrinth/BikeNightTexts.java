@@ -265,13 +265,44 @@ public final class BikeNightTexts {
     public static final String[] GET_OFF={"Get off the road!","Hey! This is a street, kid!","It's the middle of the road! Move!","Move it! Some of us have places to be!"};
     public static final String[] TOLD_OFF={"Tully Marsh! Does your mother know where you are?","Raymond! I am calling your father!","Duff! You leave those kids alone!"};
     public static final String[] TOLD_BACK={"We're not doing anything!","It's Ray-RAY.","They started it!"};
+    /**
+     * 0.4.485, the people on the pavements. What one of a pair says at a stop of its round (a door; the laundromat's window; the
+     * video shop's); what each lot of them calls to a reader riding by (the pair round Elm Court, the pair on Main Street, the
+     * theater's line, the two on the hood); what is called at each of the three; what one of the line tells one of the three who
+     * rides into it, and what he says back; and what a hand on one of each lot gets.
+     */
+    public static final String[] AT_A_STOP={"Trick or treat!","Somebody left a whole wash in there.","They've got the one with the giant ants."};
+    public static final String[][] CHEERS={
+        {"Go, kid, go!","Whoa! Did you see that?"},
+        {"Nice bike!","Faster! Faster!"},
+        {"Go, kid, go!","Coming through! Let 'em by!","Ride like the wind!"},
+        {"Go on, kid! Lose 'em!","Now that is a bike."}};
+    public static final String[][] BOOS={
+        {"Leave 'em alone, Tully!","Go home, Tully!"},
+        {"Pick on somebody your own size, Ray-Ray!","Boo! Go home, Ray-Ray!"},
+        {"Leave 'em alone, Duff!","Duff! We know where you live!"}};
+    public static final String[] NO_CUTTING={"Back of the line, Tully.","No cutting, Ray-Ray.","The line starts back there, Duff."};
+    public static final String[] CUT_BACK={"I'm not even in your line!","Move! They're getting away!","I don't want to see your movie!"};
+    public static final String[][] PEOPLE_TALK={
+        {"We've done the whole court. Nearly.","The house at the top gives whole bars."},
+        {"We can't go past the corner.","I got two the same. Want to swap?"},
+        {"It's the late show. The one with the hands.","We've been here since seven.","No cutting. Not even on a bike."},
+        {"The lot's closed. We're only sitting.","You should see what those three did to the swings."}};
+    /** Every line of the people on the pavements, for the case that holds them to how they talk. */
+    public static List<String> peopleLines(){
+        var all=new ArrayList<String>(List.of(AT_A_STOP));all.addAll(List.of(NO_CUTTING));
+        for(var lot:CHEERS)all.addAll(List.of(lot));
+        for(var lot:BOOS)all.addAll(List.of(lot));
+        for(var lot:PEOPLE_TALK)all.addAll(List.of(lot));
+        return all;
+    }
     /** A hand on another bike, by a reader whose own the three have had. */
     public static final String NO_MORE="Yours is gone. These are other people's.";
     /** Every line of theirs, for the case that holds them to how they talk. */
     public static List<String> bullyLines(){
         var all=new ArrayList<String>(List.of(TULLY_GATE,TULLY_HAT,TULLY_HAT_ON,GET_THEM,DUFF_MINE,DUFF_UP,DUFF_OFF));
         all.addAll(List.of(JEERS));all.addAll(List.of(HIT));all.addAll(List.of(HANDS_OFF));all.addAll(List.of(CHASE_JEERS));
-        all.addAll(List.of(CAUGHT));all.addAll(List.of(LEAVING));all.addAll(List.of(TOLD_BACK));
+        all.addAll(List.of(CAUGHT));all.addAll(List.of(LEAVING));all.addAll(List.of(TOLD_BACK));all.addAll(List.of(CUT_BACK));
         for(var on:List.of("swing","bike","seesaw","slide","bars","spring"))all.add(jeerAt(on));
         return all;
     }

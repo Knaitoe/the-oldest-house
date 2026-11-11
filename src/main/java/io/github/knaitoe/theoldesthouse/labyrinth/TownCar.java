@@ -21,9 +21,12 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class TownCar extends Entity implements Voiced {
     private static final EntityDataAccessor<Integer> KIND=SynchedEntityData.defineId(TownCar.class,EntityDataSerializers.INT);
-    /** The four: a station wagon with wood panels, a pickup, a long sedan, and a muscle car with its windows down. */
-    public static final int WAGON=0,PICKUP=1,SEDAN=2,MUSCLE=3,KINDS=4;
-    public static final String[] NAMES={"wagon","pickup","sedan","muscle"};
+    /**
+     * The four that drive: a station wagon with wood panels, a pickup, a long sedan, and a muscle car with its windows down. And two
+     * that stand parked all night (0.4.485): a sedan and a pickup in other paint.
+     */
+    public static final int WAGON=0,PICKUP=1,SEDAN=2,MUSCLE=3,BLUE=4,WHITE=5,MOVING=4,KINDS=6;
+    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white"};
     /** Half a car's length and half its width, in blocks; and how long one goes untold where it is before it is gone, in ticks. */
     public static final double LONG=2.25,WIDE=.95;
     public static final int LEFT_ALONE=40;

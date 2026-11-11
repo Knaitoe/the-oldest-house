@@ -178,5 +178,7 @@ public final class BikeNightRegistry {
     public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> HORNS=java.util.List.of(sound("town.horn_wagon"),sound("town.horn_pickup"),sound("town.horn_sedan"),sound("town.horn_muscle"));
 
     private BikeNightRegistry(){}
+    /** 0.4.485: the pillowcase a trick-or-treater carries. Nobody is given one. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> TREAT_SACK=ITEMS.register("treat_sack",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BLOCK_ENTITIES.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
 }

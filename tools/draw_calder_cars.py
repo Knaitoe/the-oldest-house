@@ -1,7 +1,8 @@
 """Bike night (0.4.484): the cars of Calder Falls.
 
 The proposal's traffic: "a station wagon with wood panels, a pickup, a long sedan, a muscle car with its windows down", each "a car
-driving its lane with its headlights on". Draws, in native Minecraft pixels from fixed seeds, the four cars and nothing else: each
+driving its lane with its headlights on". Draws, in native Minecraft pixels from fixed seeds, the four cars that drive, two more
+that stand parked (a sedan and a pickup in other paint, 0.4.485), and nothing else: each
 car's paint (plain, and as its side has it, with the bright strip along the belt and the seams of its doors), the wagon's wood, the
 sedan's vinyl roof, the muscle car's striped top, glass, the dark inside of a car, chrome, the grille, a headlight and a tail light
 (both lit: a car here is never seen with them off), the tyre and its hubcap, the underside, and the pumpkins in the pickup's bed.
@@ -35,14 +36,15 @@ A = ROOT / 'src/main/resources/assets/the_oldest_house'
 NS = 'the_oldest_house:'
 DIR = 'block/calder_car/'
 P = NS + DIR
-KINDS = ('wagon', 'pickup', 'sedan', 'muscle')
+# The four that drive, and two that stand in the burger place's lot all night (0.4.485): a sedan and a pickup in other paint.
+KINDS = ('wagon', 'pickup', 'sedan', 'muscle', 'blue', 'white')
 FACES = ('north', 'south', 'east', 'west', 'up', 'down')
 # Half a car's length and half its width, in pixels; where its axles are along it; a wheel's radius, and how high its hub is.
 L, W = 36, 15
 AXLE, RADIUS, HUB = 21, 5.5, 5.5
 # What is added to a car's own x to put each half inside a model's reach, and to its z.
 FRONT, BACK, ACROSS = -10, 26, 8
-PAINT = {'wagon': '#c4b188', 'pickup': '#8c392c', 'sedan': '#2e4a3d', 'muscle': '#b5461f'}
+PAINT = {'wagon': '#c4b188', 'pickup': '#8c392c', 'sedan': '#2e4a3d', 'muscle': '#b5461f', 'blue': '#4f7391', 'white': '#d6d2c6'}
 SLIP = .05
 
 
@@ -279,8 +281,8 @@ def wagon():
     return c
 
 
-def pickup():
-    c = Car('pickup'); lower(c, back_top=9, back_from=-2)
+def pickup(name='pickup', pumpkins=True):
+    c = Car(name); lower(c, back_top=9, back_from=-2)
     # The bed: its floor is the lowered tub, boarded over; its walls, its front and its gate. Two pumpkins ride in it.
     for a, b, low in ((-L, -AXLE - 7, 9), (-AXLE - 7, -AXLE + 7, 11.5), (-AXLE + 7, -2, 9)):      # its walls, clear of the wheels under them
         both(c.body, [a, low, 13], [b, 15, W], c.skin)
@@ -288,13 +290,14 @@ def pickup():
     box(c.body, [-L, 9, -13], [-L + 1.5, 15, 13], {'side': c.kind, 'end': c.kind, 'top': c.kind})
     box(c.body, [-L + 1.5, 9, -13], [-3.5, 9.3, 13], {'top': 'bed'})
     cabin(c, -2, 14, back=0, front=2.5, pillars=((12, 14, False), (-2, 0, True)))
-    box(c.body, [-23, 9.3, -8], [-17, 14.3, -2], 'pumpkin'); box(c.body, [-29, 9.3, 2], [-24, 13.3, 7], 'pumpkin')
-    box(c.body, [-20.5, 14.3, -5.5], [-19.5, 15.5, -4.5], 'vinyl'); box(c.body, [-27, 13.3, 4], [-26, 14.4, 5], 'vinyl')
+    if pumpkins:
+        box(c.body, [-23, 9.3, -8], [-17, 14.3, -2], 'pumpkin'); box(c.body, [-29, 9.3, 2], [-24, 13.3, 7], 'pumpkin')
+        box(c.body, [-20.5, 14.3, -5.5], [-19.5, 15.5, -4.5], 'vinyl'); box(c.body, [-27, 13.3, 4], [-26, 14.4, 5], 'vinyl')
     return c
 
 
-def sedan():
-    c = Car('sedan'); lower(c)
+def sedan(name='sedan'):
+    c = Car(name); lower(c)
     cabin(c, -17, 13, roof='vinyl', pillars=((11, 13, False), (-3, -1, True), (-17, -15, False)))
     return c
 
@@ -309,7 +312,7 @@ def muscle():
     return c
 
 
-CARS = {'wagon': wagon, 'pickup': pickup, 'sedan': sedan, 'muscle': muscle}
+CARS = {'wagon': wagon, 'pickup': pickup, 'sedan': sedan, 'muscle': muscle, 'blue': lambda: sedan('blue'), 'white': lambda: pickup('white', False)}
 
 
 def wheel(wide):
@@ -383,7 +386,7 @@ def review(path):
                 X, Y = ox + round(x0 * S) + i, oy - round(y1 * S) + j
                 if 0 <= X < page.width and 0 <= Y < page.height and px[3]:
                     page.putpixel((X, Y), px)
-    page = Image.new('RGBA', (1500, 4 * 250 + 20), (70, 84, 96, 255))
+    page = Image.new('RGBA', (1500, len(CARS) * 250 + 20), (70, 84, 96, 255))
     for row, (kind, build) in enumerate(CARS.items()):
         c = build(); parts = c.body + c.lit; oy = 20 + row * 250 + 150
         # the side, seen from +z: south faces, the nearer (greater z) last

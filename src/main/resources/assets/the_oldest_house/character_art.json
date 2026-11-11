@@ -2014,5 +2014,117 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 171
+  },
+  {
+    "name": "literary_calder_ghost",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 172
+  },
+  {
+    "name": "literary_calder_skeleton",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 173
+  },
+  {
+    "name": "literary_calder_pumpkin",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 174
+  },
+  {
+    "name": "literary_calder_vampire",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 175
+  },
+  {
+    "name": "literary_calder_monster",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 176
+  },
+  {
+    "name": "literary_calder_skull",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 177
+  },
+  {
+    "name": "literary_calder_robot",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 178
+  },
+  {
+    "name": "literary_calder_mummy",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 179
+  },
+  {
+    "name": "literary_calder_cat",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 180
+  },
+  {
+    "name": "literary_calder_scarecrow",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 181
+  },
+  {
+    "name": "literary_calder_letterman",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 182
+  },
+  {
+    "name": "literary_calder_denim",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 183
+  },
+  {
+    "name": "literary_calder_sweater",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 184
+  },
+  {
+    "name": "literary_calder_cap",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 185
   }
 ]
