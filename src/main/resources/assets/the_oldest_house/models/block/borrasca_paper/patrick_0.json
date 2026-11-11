@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_paper/patrick","particle":"the_oldest_house:block/borrasca_paper/patrick"},
+ "elements":[
+  {"from":[1,0,15.8],"to":[15,16,15.8],"faces":{"north":{"texture":"#a","uv":[1.0,0.0,15.0,16.0]}}}
+ ]}

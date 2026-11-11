@@ -34,8 +34,8 @@ Two standing remarks run through the whole document and are treated as passes of
 | 18 | "Dialogue should change on second day, after Kelly/friend is taken" | The Sheriff, after she is taken: "You two keep this side of Marker Two when the wind comes up." | done, 0.4.444 for the Sheriff; the rest of the town is to be gone through |
 | 19 | "He shouldn't still be in jail upon returning as an adult. Make him a vagrant on the street instead." | Earl in the cell, years later. | done, 0.4.444: on a flattened box at the mouth of the alley by the Tipple |
 | 20 | "retexture this table and all instances of it. It's got an hd texture that isn't in line with vanilla" | A small table with a finely detailed, scratched wood texture. | open |
-| 21 | "try to add the faces of the actual children, especially if they're npcs from the vignette" | The LOST posters: a grey outline of a head. | open |
-| 22 | "Cluttered" | The noticeboard: four copies of the same corkboard tile. | open |
+| 21 | "try to add the faces of the actual children, especially if they're npcs from the vignette" | The LOST posters: a grey outline of a head. | done, 0.4.451: Patrick's and Kendra's own faces on their sheets, read off their skins; Dana's, Kelly's on the board (docs/BORRASCA_STORE_FRONT_0_4_451.md) |
+| 22 | "Cluttered" | The noticeboard: four copies of the same corkboard tile. | done, 0.4.451, read as "make it a cluttered board": one board two blocks by two under the town's own clutter, a different picture on each visit to match its pages |
 | 23 | "Could benefit from custom signs" | The trailhead arch: two small vanilla signs on its beam. | done, 0.4.449: the trail's name burned into a plank seven blocks long on the beam, and the distance on a board that hangs under it on chains |
 | 24 | "Combat with the sheriff shouldn't' feel like a vanilla Minecraft fight. Punches should be sluggish with real weight. The sheriff should use his baton, then drop it after being hit a few times and start swinging his own fists. He swings with one fist then the other." | (no screenshot of the fight) | open |
 | 24 | "Sphinx talons still need three distinct nails, not the many several smaller ones." | The Sphinx's paw: a row of many small claws along three toes. | done, 0.4.447: one toe and one talon to each of the three blocks of her paw |
@@ -56,7 +56,7 @@ Two standing remarks run through the whole document and are treated as passes of
 | - | "Borrasca shiny gentleman capture spawns on top of triple tree rather than inside" | (no screenshot) | done, 0.4.444: on the fort's floor |
 | 41 | "Spots to solids" | Last orders' pool: "knaitoe (stripes) vs Booth four (spots)". | done, 0.4.444 |
 | 42 | "Two dorseys" | The mail carrier, and a second one behind him. | done, 0.4.444 |
-| 43 | "Have this whole front of house filled with lost papers after vignette has ended – after the orrery has either been fed or stopped." | The store front with its noticeboard and two LOST posters. | open |
+| 43 | "Have this whole front of house filled with lost papers after vignette has ended – after the orrery has either been fed or stopped." | The store front with its noticeboard and two LOST posters. | done, 0.4.451: once Dana is fed to the machine or the breaker is thrown, forty-two LOST sheets cover the front's boards and both windows' glass and the board is covered; the doorway is clear |
 
 ## Order of work
 

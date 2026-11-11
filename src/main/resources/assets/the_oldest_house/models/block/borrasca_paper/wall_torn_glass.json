@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_paper/wall_torn","particle":"the_oldest_house:block/borrasca_paper/wall_torn","b":"the_oldest_house:block/borrasca_paper/wall_torn_back"},
+ "elements":[
+  {"from":[0,0,22.9],"to":[16,16,22.9],"faces":{"north":{"texture":"#a","uv":[0.0,0.0,16.0,16.0]},"south":{"texture":"#b","uv":[0.0,0.0,16.0,16.0]}}}
+ ]}

@@ -243,7 +243,8 @@ public final class BorrascaStory {
         // 0.4.121: the town's papers. Each visit's noticeboard and the aged notes are their own originals.
         if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),BorrascaRooms.at(b,rel));return true;}
         // 0.4.422: the framed history hangs in the historical society now, on the street past the chapel (BorrascaShops.click).
-        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.boardKey(visit),BorrascaTexts.board(visit),BorrascaRooms.at(b,rel));return true;}
+        // 0.4.451: once the front has been papered over, the board is its own last original.
+        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){boolean covered=own.getInt("TownPostersVisit")>=BorrascaPapers.PAPERED;LiteraryVignettes.open(p,PLACE,own,covered?"BoardAfter":BorrascaTexts.boardKey(visit),covered?BorrascaTexts.boardAfter():BorrascaTexts.board(visit),BorrascaRooms.at(b,rel));return true;}
         if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),BorrascaRooms.at(b,rel));return true;}
         if(visit>=2&&rel.equals(BorrascaRooms.ELI_POSTER)){
             LiteraryVignettes.open(p,PLACE,own,"EliPoster",BorrascaTexts.document("EliPoster"),BorrascaRooms.at(b,rel));
@@ -253,6 +254,9 @@ public final class BorrascaStory {
             LiteraryVignettes.open(p,PLACE,own,"WrenPoster",BorrascaTexts.document("WrenPoster"),BorrascaRooms.at(b,rel));
             return true;
         }
+        // 0.4.451: any other sheet on the store's front answers a hand with what is on it.
+        var sheet=p.serverLevel().getBlockState(BorrascaRooms.at(b,rel));
+        if(BorrascaPaperBlock.is(sheet)&&!BorrascaPaperBlock.sheet(sheet).look.isEmpty()){cue(p,BorrascaPaperBlock.sheet(sheet).look);return true;}
         if(rel.equals(BorrascaRooms.GATE_LOG)){LiteraryVignettes.open(p,PLACE,own,"GateLog",BorrascaTexts.document("GateLog"),BorrascaRooms.at(b,rel));return true;}
         // 0.4.444 (owner: "Documents are not interactable."): the rest of the depot's paperwork, and the forms on the Sheriff's desk.
         for(var paper:PAPERS)if(rel.equals(paper.at())){LiteraryVignettes.open(p,PLACE,own,paper.key(),BorrascaTexts.document(paper.key()),BorrascaRooms.at(b,rel));own.putBoolean("Read_"+paper.key(),true);return true;}
@@ -1293,15 +1297,18 @@ public final class BorrascaStory {
     private static void graves(ServerPlayer p,CompoundTag own){if(own.getBoolean("GravesSeen"))return;own.putBoolean("GravesSeen",true);cue(p,"Behind the shed, low mounds in rows, a number on a stake at the head of each. No names.");}
 
     // ------------------------------------------------------------------ the place
+    /** How far the store's front has got for a reader: papered over once the machine has been fed or stopped, whichever they did. */
+    public static int frontStage(CompoundTag own,int visit){return BorrascaPapers.stage(visit,own.getBoolean("DanaFed")||own.getBoolean("PowerOff"));}
+    /**
+     * The store's front as the reader's own visits have left it (BorrascaPapers): Patrick's sheet from the second visit, Kendra's from
+     * the third, both gone yellow on the last night, and, once the machine has been fed or stopped, the whole front papered over.
+     * TownPostersVisit is the stage last hung.
+     */
     private static void townPosters(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
-        if(visit<2||own.getInt("TownPostersVisit")>=visit)return;
-        var eli=BorrascaRooms.at(b,BorrascaRooms.ELI_POSTER);
-        var wren=BorrascaRooms.at(b,BorrascaRooms.WREN_POSTER);
-        if(!p.serverLevel().hasChunkAt(eli)||!p.serverLevel().hasChunkAt(wren))return;
-        var poster=TownFixtureBlock.of(TownFixtureBlock.Kind.POSTER,Direction.EAST);
-        p.serverLevel().setBlock(eli,poster,F);
-        if(visit>=3)p.serverLevel().setBlock(wren,poster,F);
-        own.putInt("TownPostersVisit",visit);
+        int stage=frontStage(own,visit);
+        if(stage<BorrascaPapers.PATRICK||own.getInt("TownPostersVisit")>=stage||!BorrascaPapers.loaded(p.serverLevel(),b))return;
+        BorrascaPapers.hang(p.serverLevel(),b,stage);
+        own.putInt("TownPostersVisit",stage);
     }
 
     /**

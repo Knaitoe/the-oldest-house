@@ -102,7 +102,9 @@ final class BorrascaTown {
         box(l,b,-15,-1,-29,-13,-1,-17,Blocks.OAK_PLANKS);
         for(int z:new int[]{-29,-17})box(l,b,-13,0,z,-13,3,z,Blocks.OAK_FENCE);
         box(l,b,-15,4,-29,-13,4,-17,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
-        for(var at:BorrascaRooms.BOARD)fitAt(l,b,at,BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
+        // 0.4.451: the noticeboard is one board, two blocks by two, under the town's own clutter (BorrascaPapers); four copies of one
+        // notice hung here.
+        for(var at:BorrascaRooms.BOARD)BuildBlocks.set(l,b.offset(at),BorrascaPapers.boardPiece(BorrascaPapers.Sheet.BOARD,at),F);
         BorrascaSigns.span(l,b.offset(-15,2,-25),BorrascaSigns.Sign.COLD,Direction.EAST); // 0.4.449: a tin sign on the porch wall, north of the door
         set(l,b,-14,0,-29,Blocks.BARREL);set(l,b,-15,0,-27,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));set(l,b,-15,0,-26,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));
         // Inside: counter and till by the door, stock behind it, two aisles, the cooler along the back.
