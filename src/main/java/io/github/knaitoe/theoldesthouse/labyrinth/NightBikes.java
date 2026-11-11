@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * its name and the one thing it does. Lying on its side, a hand stands it up. Standing, a hand gets on, and the keys are shown once in
  * grey (and the Rattler's own key the first time it is the Rattler).
  *
- * <p>Not placed anywhere yet: the park, its rack and whose bike is whose for the night come with the playground. Until then
- * {@link #night} answers nothing and refuses nobody.
+ * <p>0.4.464: whose bike is whose for the night is the park's rule ({@link BikeNight#HOOK}), which {@link #night} is unless a test
+ * puts something else there. Outside a park it answers nothing and refuses nobody.
  */
 public final class NightBikes {
     private NightBikes(){}
@@ -31,9 +31,8 @@ public final class NightBikes {
         default void parked(ServerLevel l,@Nullable UUID reader,NightBike.Make make,@Nullable BlockPos at,boolean lying){}
         default void carried(ServerPlayer onPegs,ServerPlayer pedalling){}
     }
-    private static final Night NOBODY=new Night(){};
-    public static Night night=NOBODY;
-    public static void forget(){night=NOBODY;}
+    public static Night night=BikeNight.HOOK;
+    public static void forget(){night=BikeNight.HOOK;}
 
     public static final String[] LOOK={
         "The Wasp. A low BMX on small wheels with fat tyres, a race plate on its bars. It turns inside anything, and a wall hardly slows it.",

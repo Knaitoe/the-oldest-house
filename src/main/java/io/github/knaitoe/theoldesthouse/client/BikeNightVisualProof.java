@@ -3,8 +3,13 @@ package io.github.knaitoe.theoldesthouse.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.BikeRackBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.BikeRampBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderLitterBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderSignBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderSigns;
 import io.github.knaitoe.theoldesthouse.labyrinth.NightBike;
 import io.github.knaitoe.theoldesthouse.labyrinth.NightBikeBlock;
 import java.nio.file.Files;
@@ -31,10 +36,15 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * renderer draws it, upright with the Lamp lit, and leaning with its nose up, wheels and cranks turned; the six lying where they went
  * over; and six in a rack, with the long ramp and the kicker. Every state of every block and every part of every ridden bike must have
  * its model, and every bike must put something on the page.
+ *
+ * <p>0.4.464, the park's own things: a corner of it put together as the builder puts it (the back wall with the rules and the sheet of
+ * paper on it, the gate chained between its piers under the board, seen from inside, railings, a lamp lit and a lamp dark, a bench,
+ * the bin, a corner of the sandpit's edging, leaves down, the street's line); and both signs flat, the gate's board from in front and
+ * from behind. Every state of the park's blocks must have its model.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -51,15 +61,22 @@ public final class BikeNightVisualProof extends Screen {
                 if(part!=null&&mc.getModelManager().getModel(part)==missing)throw new IllegalStateException("Missing ridden bike part "+part);
         }
         for(var facing:Direction.Plane.HORIZONTAL){need(BikeRackBlock.of(facing));for(var part:BikeRampBlock.Part.values())need(BikeRampBlock.of(facing,part));}
+        for(var state:BikeNightRegistry.FITTING.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.LITTER.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.SIGN.get().getStateDefinition().getPossibleStates())need(state);
+        for(var name:BikeNightRegistry.MATERIAL_NAMES)need(BikeNightRegistry.material(name).defaultBlockState());
+        for(var state:BikeNightRegistry.ROAD_LINE.get().getStateDefinition().getPossibleStates())need(state);
+        need(BikeNightRegistry.LEAVES.get().defaultBlockState());
     }
     private static void need(BlockState s){var mc=Minecraft.getInstance();if(mc.getBlockRenderer().getBlockModel(s)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing Bike night model for "+s);}
     @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
 
     @Override public void render(GuiGraphics g,int x,int y,float partial){
         g.fill(0,0,width,height,0xff252925);
-        g.drawString(font,"BIKE NIGHT / "+new String[]{"the six, on their stands","ridden: upright (the Lamp lit), and leaning with the nose up","lying where they went over","six in the rack, the long ramp and the kicker","what a rider sees under the crosshair"}[page],8,8,0xffffffff);
+        g.drawString(font,"BIKE NIGHT / "+new String[]{"the six, on their stands","ridden: upright (the Lamp lit), and leaning with the nose up","lying where they went over","six in the rack, the long ramp and the kicker","what a rider sees under the crosshair",
+            "the park's own things, from inside the gate","the park's signs: the gate's board from in front and from behind, and the rules"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);default->hud(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);default->signs(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -113,6 +130,66 @@ public final class BikeNightVisualProof extends Screen {
         buffers.endBatch();pose.popPose();
     }
 
+    /** A corner of the park, put together as BikeNightSite puts it, seen from inside: so the gate's board is seen from behind. */
+    private void park(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width*.056F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.7F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(22));pose.mulPose(Axis.YP.rotationDegrees(-24));pose.translate(-7F,0,-3.5F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var brick=BikeNightRegistry.material("brick").defaultBlockState();var paving=BikeNightRegistry.material("paving").defaultBlockState();var asphalt=BikeNightRegistry.material("asphalt").defaultBlockState();
+        java.util.function.BiFunction<CalderBlock.Kind,int[],BlockState> fit=(kind,fs)->CalderBlock.of(kind,Direction.from2DDataValue(fs[0]),fs[1]);
+        int N=Direction.NORTH.get2DDataValue(),S=Direction.SOUTH.get2DDataValue(),W=Direction.WEST.get2DDataValue();
+        // The ground: flags, a corner of sand, and the street along the front with its line.
+        for(int x=0;x<=13;x++)for(int z=0;z<=6;z++)at.accept(x>=8&&x<=11&&z>=5?Blocks.SAND.defaultBlockState():paving,new int[]{x,-1,z});
+        for(int x=0;x<=13;x++)at.accept(x>=4&&x<=9?BikeNightRegistry.ROAD_LINE.get().defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS,Direction.Axis.X):asphalt,new int[]{x,-1,7});
+        // The back wall, the rules on it and the sheet of paper beside them.
+        for(int x=0;x<=5;x++)for(int y=0;y<=2;y++)at.accept(brick,new int[]{x,y,0});
+        var rules=CalderSigns.Sign.RULES;
+        for(int row=0;row<rules.rows;row++)for(int col=0;col<rules.cols;col++){var c=CalderSigns.cell(rules,new net.minecraft.core.BlockPos(1,1,1),Direction.SOUTH,col,row);at.accept(CalderSignBlock.of(rules,row*rules.cols+col,Direction.SOUTH),new int[]{c.getX(),c.getY(),c.getZ()});}
+        at.accept(fit.apply(CalderBlock.Kind.NOTE,new int[]{S,0}),new int[]{5,1,1});
+        // The gate between its piers under the board, and a length of railings.
+        for(int x:new int[]{7,12}){at.accept(brick,new int[]{x,0,3});at.accept(brick,new int[]{x,1,3});at.accept(fit.apply(CalderBlock.Kind.CAP,new int[]{N,0}),new int[]{x,2,3});}
+        int[] lower={0,2,3,0},turned={N,S,N,S};
+        for(int i=0;i<4;i++){at.accept(fit.apply(CalderBlock.Kind.GATE,new int[]{turned[i],lower[i]}),new int[]{8+i,0,3});at.accept(fit.apply(CalderBlock.Kind.GATE,new int[]{turned[i],1}),new int[]{8+i,1,3});}
+        var arch=CalderSigns.Sign.ARCH;
+        for(int col=0;col<arch.cols;col++){var c=CalderSigns.cell(arch,new net.minecraft.core.BlockPos(12,3,3),Direction.NORTH,col,0);at.accept(CalderSignBlock.of(arch,col,Direction.NORTH),new int[]{c.getX(),c.getY(),c.getZ()});}
+        at.accept(fit.apply(CalderBlock.Kind.FENCE,new int[]{N,0}),new int[]{13,0,3});at.accept(fit.apply(CalderBlock.Kind.FENCE,new int[]{N,1}),new int[]{13,1,3});
+        at.accept(fit.apply(CalderBlock.Kind.FENCE,new int[]{N,0}),new int[]{6,0,3});at.accept(fit.apply(CalderBlock.Kind.FENCE,new int[]{N,1}),new int[]{6,1,3});
+        // A lamp lit and a lamp dark; a bench and the bin; the sandpit's corner; leaves down.
+        for(int[] lamp:new int[][]{{6,CalderBlock.LIT},{0,CalderBlock.DARK}}){
+            at.accept(fit.apply(CalderBlock.Kind.LAMP,new int[]{N,CalderBlock.FOOT}),new int[]{lamp[0],0,5});
+            for(int y=1;y<=2;y++)at.accept(fit.apply(CalderBlock.Kind.LAMP,new int[]{N,CalderBlock.POST}),new int[]{lamp[0],y,5});
+            at.accept(fit.apply(CalderBlock.Kind.LAMP,new int[]{N,lamp[1]}),new int[]{lamp[0],3,5});
+        }
+        at.accept(fit.apply(CalderBlock.Kind.BENCH,new int[]{S,1}),new int[]{3,0,4});at.accept(fit.apply(CalderBlock.Kind.BENCH,new int[]{S,2}),new int[]{2,0,4});
+        at.accept(fit.apply(CalderBlock.Kind.BIN,new int[]{N,0}),new int[]{4,0,4});
+        at.accept(fit.apply(CalderBlock.Kind.BORDER,new int[]{N,1}),new int[]{8,0,5});
+        for(int x=9;x<=11;x++)at.accept(fit.apply(CalderBlock.Kind.BORDER,new int[]{N,0}),new int[]{x,0,5});
+        at.accept(fit.apply(CalderBlock.Kind.BORDER,new int[]{W,0}),new int[]{8,0,6});
+        int k=0;for(int[] leaf:new int[][]{{1,5},{5,5},{6,6},{12,5},{2,6},{13,6}})at.accept(CalderLitterBlock.of(Direction.from2DDataValue(k),k++),new int[]{leaf[0],0,leaf[1]});
+        buffers.endBatch();pose.popPose();
+    }
+
+    /** Both signs flat on, as the builder hangs them: the gate's board from in front, then from behind, then the rules. */
+    private void signs(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width*.105F;var arch=CalderSigns.Sign.ARCH;var rules=CalderSigns.Sign.RULES;
+        Object[][] rows={{arch,Direction.SOUTH,"from in front"},{arch,Direction.NORTH,"from behind"},{rules,Direction.SOUTH,"the rules, on the wall"}};
+        float y=24+(height-24)*.24F;
+        for(var row:rows){
+            var sign=(CalderSigns.Sign)row[0];var looks=(Direction)row[1];
+            var pose=g.pose();pose.pushPose();pose.translate(width*.5F,y+(sign.rows-1)*s*.5F,300);pose.scale(s,-s,s);pose.translate(-sign.cols/2F,0,0);
+            // Looking south at us it is hung from its left end; looking north we see its back, hung from the far end.
+            for(int r=0;r<sign.rows;r++)for(int c=0;c<sign.cols;c++){
+                var cell=CalderSigns.cell(sign,new net.minecraft.core.BlockPos(looks==Direction.SOUTH?0:sign.cols-1,0,0),looks,c,r);
+                pose.pushPose();pose.translate(cell.getX(),cell.getY(),0);mc.getBlockRenderer().renderSingleBlock(CalderSignBlock.of(sign,r*sign.cols+c,looks),pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();
+            }
+            buffers.endBatch();pose.popPose();
+            g.drawString(font,(String)row[2],(int)(width*.5F-sign.cols*s/2F),(int)(y-s*.95F-10),0xffffffff);
+            y+=s*(sign.rows+.9F);
+        }
+    }
+
     /** The rider's needle as BikeClient draws it, over a dark road and a bright one: upright; over to one side with the hop half wound; nearly over the other way with the hop wound right up; and the Rattler's card whole, half gone and spent. */
     private void hud(GuiGraphics g){
         g.fill(0,24,width,24+(height-24)/2,0xff1b2026);g.fill(0,24+(height-24)/2,width,height,0xffb9c4cc);
@@ -142,7 +219,7 @@ public final class BikeNightVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-bike-night-"+PAGES[s.page]+".png"));s.drawn(image);}
         if(++s.page<PAGES.length){s.frames=0;return;}
-        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Five native GPU views of Bike night's bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. Every state of the bike, rack and ramp blocks and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
+        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Seven native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. Every state of the bike, rack, ramp and park blocks and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
         mc.stop();
     }
 }

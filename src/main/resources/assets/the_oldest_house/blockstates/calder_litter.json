@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,scatter=0": {
+      "model": "the_oldest_house:block/calder/litter_0"
+    },
+    "facing=north,scatter=1": {
+      "model": "the_oldest_house:block/calder/litter_1"
+    },
+    "facing=north,scatter=2": {
+      "model": "the_oldest_house:block/calder/litter_2"
+    },
+    "facing=north,scatter=3": {
+      "model": "the_oldest_house:block/calder/litter_3"
+    },
+    "facing=east,scatter=0": {
+      "model": "the_oldest_house:block/calder/litter_0",
+      "y": 90
+    },
+    "facing=east,scatter=1": {
+      "model": "the_oldest_house:block/calder/litter_1",
+      "y": 90
+    },
+    "facing=east,scatter=2": {
+      "model": "the_oldest_house:block/calder/litter_2",
+      "y": 90
+    },
+    "facing=east,scatter=3": {
+      "model": "the_oldest_house:block/calder/litter_3",
+      "y": 90
+    },
+    "facing=south,scatter=0": {
+      "model": "the_oldest_house:block/calder/litter_0",
+      "y": 180
+    },
+    "facing=south,scatter=1": {
+      "model": "the_oldest_house:block/calder/litter_1",
+      "y": 180
+    },
+    "facing=south,scatter=2": {
+      "model": "the_oldest_house:block/calder/litter_2",
+      "y": 180
+    },
+    "facing=south,scatter=3": {
+      "model": "the_oldest_house:block/calder/litter_3",
+      "y": 180
+    },
+    "facing=west,scatter=0": {
+      "model": "the_oldest_house:block/calder/litter_0",
+      "y": 270
+    },
+    "facing=west,scatter=1": {
+      "model": "the_oldest_house:block/calder/litter_1",
+      "y": 270
+    },
+    "facing=west,scatter=2": {
+      "model": "the_oldest_house:block/calder/litter_2",
+      "y": 270
+    },
+    "facing=west,scatter=3": {
+      "model": "the_oldest_house:block/calder/litter_3",
+      "y": 270
+    }
+  }
+}

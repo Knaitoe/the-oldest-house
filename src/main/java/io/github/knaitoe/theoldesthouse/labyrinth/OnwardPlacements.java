@@ -63,6 +63,7 @@ final class OnwardPlacements {
         r.put(THE_DRAWING,DrawingSite.HALL_DOOR.getX(),0,DrawingSite.HALL_DOOR.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.407: the meeting hall's door off the square
         r.put(KEPT,KeptSite.ONWARD.getX(),0,KeptSite.ONWARD.getZ(),SOUTH,OnwardRegistry.SERVICE); // 0.4.410: a service door in the hall's north wall
         r.put(LAST_ORDERS,LastOrdersSite.ONWARD.getX(),0,LastOrdersSite.ONWARD.getZ(),EAST,OnwardRegistry.PANEL); // 0.4.416: the street door in the west wall by the front
+        r.put(BIKE_NIGHT,BikeNightSite.ONWARD.getX(),0,BikeNightSite.ONWARD.getZ(),NORTH,OnwardRegistry.SERVICE); // 0.4.464: a service door in the park's back wall, until the far gate is built
         r.put(BLACK_CITY,CitySite.ONWARD.getX(),0,CitySite.ONWARD.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.409: the mess hut's door, facing the camp
         r.put(CORNER_HOUSE,CornerSite.ONWARD.getX(),0,CornerSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.408: a door across the cross street, facing up the main street
         r.put(MARSH_SUPPER,MarshSupperSite.GATE.getX(),0,MarshSupperSite.GATE.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.348: the gate onto the county road past the oak

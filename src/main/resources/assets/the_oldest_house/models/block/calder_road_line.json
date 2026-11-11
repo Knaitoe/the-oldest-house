@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "the_oldest_house:block/calder_road_line",
+    "down": "the_oldest_house:block/calder_asphalt",
+    "north": "the_oldest_house:block/calder_asphalt",
+    "south": "the_oldest_house:block/calder_asphalt",
+    "east": "the_oldest_house:block/calder_asphalt",
+    "west": "the_oldest_house:block/calder_asphalt",
+    "particle": "the_oldest_house:block/calder_asphalt"
+  }
+}
