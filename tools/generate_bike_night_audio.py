@@ -5,7 +5,8 @@ tries it. And the playground's (0.4.465): a swing's hangers as it comes through 
 a hand, thrown, and bursting on what it meets; (0.4.466) a body going down the slide; (0.4.467) a hand coming down on a rung
 of the monkey bars; (0.4.468) the seesaw's axle as somebody pushes off, and its bumper coming down on the sand; and (0.4.469) the
 merry-go-round's bearing as it comes round. And the park's small things (0.4.471): the drinking fountain running, the payphone's
-dial tone and its handset going back on the hook, and the spring rider's spring.
+dial tone and its handset going back on the hook, and the spring rider's spring. And the hunt's (0.4.482): a body landing in
+dry leaves, and the three laughing as they ride off.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -43,6 +44,9 @@ ROWS = {
     'park/padlock': ('park.padlock', 'Padlock comes open', 16),
     'park/cough': ('park.cough', 'Someone coughs', 16),
     'park/sand_kick': ('park.sand_kick', 'Sand is kicked', 12),
+    # 0.4.482, the hunt.
+    'town/leaves': ('town.leaves', 'Someone lands in leaves', 16),
+    'town/laugh': ('town.laugh', 'Laughter', 28),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -436,7 +440,42 @@ def sand_kick():
     return scuff + spray
 
 
-MAKERS = {'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
+def leaves():
+    # Somebody landing in a heap of dry leaves: the body's thump, and the leaves crackling as they settle after it.
+    length = .9
+    n = seconds(length)
+    t = times(n)
+    thump = np.sin(2 * np.pi * 72 * t) * np.exp(-t / .05) * .7
+    grains = np.zeros(n)
+    for _ in range(90):
+        at = rng.uniform(0, .6)
+        m = seconds(.012)
+        i = int(at * RATE)
+        if i + m < n:
+            grains[i:i + m] += band(rng.standard_normal(m), 2500, 9000) * np.exp(-times(m) / .003) * rng.uniform(.2, .8) * np.exp(-at / .25)
+    hiss = band(rng.standard_normal(n), 1800, 7000) * np.clip(t / .01, 0, 1) * np.exp(-t / .18) * .5
+    return thump + grains + hiss
+
+
+def laugh():
+    # Three children laughing as they ride off: short voiced barks, each a little lower than the last, from three throats and not together.
+    length = 1.7
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for voice, (pitch, start) in enumerate(((330, .0), (270, .07), (390, .13))):
+        at = start
+        for k in range(7):
+            f0 = pitch * (1 - .035 * k) * rng.uniform(.97, 1.03)
+            shape = np.clip((t - at) / .01, 0, 1) * np.exp(-np.clip(t - at, 0, None) / .045) * (t >= at) * (t < at + .19)
+            tone = np.sin(2 * np.pi * f0 * t) * .5 + np.sin(2 * np.pi * f0 * 2 * t) * .3 + np.sin(2 * np.pi * f0 * 3 * t) * .15
+            breath = band(rng.standard_normal(n), 900, 3200) * .25
+            out += (tone + breath) * shape * (1 - .08 * k) * (.8 if voice else 1)
+            at += .17 + rng.uniform(-.015, .02)
+    return out
+
+
+MAKERS = {'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
           'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud, 'park/roundabout_squeak': roundabout_squeak, 'park/fountain': fountain, 'park/phone_tone': phone_tone, 'park/phone_hook': phone_hook,
           'park/spring': spring}
 

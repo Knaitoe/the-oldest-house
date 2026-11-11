@@ -1692,5 +1692,7 @@
   "block.the_oldest_house.calder_turf": "Field Turf",
   "block.the_oldest_house.calder_turf_track": "Tracked Turf",
   "block.the_oldest_house.calder_hedge": "Hedge",
-  "block.the_oldest_house.calder_turf_line": "Chalked Turf"
+  "block.the_oldest_house.calder_turf_line": "Chalked Turf",
+  "subtitles.the_oldest_house.town.leaves": "Someone lands in leaves",
+  "subtitles.the_oldest_house.town.laugh": "Laughter"
 }

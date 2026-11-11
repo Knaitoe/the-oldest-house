@@ -382,6 +382,9 @@ public abstract class RiddenBike extends Entity {
         if(!level().isClientSide&&!done&&pedalling&&e instanceof ServerPlayer p)park(p,false);
     }
 
+    /** Taken from under whoever is on it: it is gone without being stood anywhere, and everyone on it is left where they were. */
+    public void taken(){done=true;discard();}
+
     /** Back to a block where it stopped, on its kickstand or lying on its side, and gone as an entity. */
     private void park(@Nullable ServerPlayer p,boolean lying){
         if(!(level() instanceof ServerLevel l)||isRemoved())return;done=true;

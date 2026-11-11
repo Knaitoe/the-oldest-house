@@ -651,7 +651,7 @@ public final class CalderTown {
         // Those by the gaps between two shops stand at a shop's corner, beside the gap and not in its mouth: a bike comes out of it.
         int[][] lamps={{-5,-86},{5,-86},{-3,-98},{7,-98},{-24,-86},{-36,-86},{25,-86},{40,-86},{-24,-98},{17,-98},{33,-98},
             {-44,-86},{-44,-98},{44,-86},{44,-98},{-5,-57},{5,-57},{-44,-57},{44,-57},{-40,-125},{7,-117},{-3,-125},{40,-117},{-25,-133},
-            {26,-131},{25,-147},{3,-166},{5,-175},{-40,-161},{35,-161},{-44,-72},{-40,-146},{44,-72},{40,-140}};
+            {26,-131},{25,-147},{3,-166},{5,-175},{-40,-161},{35,-161},{-44,-67},{-40,-146},{44,-72},{40,-140}};
         for(int[] at:lamps)lamp(l,b,at[0],at[1]);
         // Street names.
         var mill=CalderSigns.Sign.MILL_ST;var west=CalderSigns.Sign.WEST_AVE;var east=CalderSigns.Sign.EAST_AVE;

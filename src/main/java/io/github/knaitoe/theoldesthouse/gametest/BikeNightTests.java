@@ -1664,7 +1664,7 @@ public final class BikeNightTests {
                 h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&who[0].getVehicle()==bikes[0]&&who[1].getVehicle()==bikes[1]&&who[2].getVehicle()==bikes[2]&&nearest[0]<3
                     &&said.stream().anyMatch(line->List.of(BikeNightTexts.CHASE_JEERS).contains(line)),"waiting for all three to be riding at the reader, calling after them: stage "+BikeNightBullies.stage(b)+", nearest "+nearest[0]+", "+said);})
             .thenExecute(()->{
-                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"reached, the reader is not hurt: nothing comes of it yet");
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"reached, the reader is not hurt");
                 String told=told("sand_thrower",p[0],f);
                 h.assertTrue(told.contains("I threw sand at them, and three balls of it landed.")&&told.contains("Tully said to get us."),"and it is in their account: "+told);
             })
@@ -2761,6 +2761,274 @@ public final class BikeNightTests {
                 for(int col=0;col<7;col++)for(int row=0;row<2;row++)h.assertTrue(sign(l,b,CalderTown.MARQUEE.getX()+col,CalderTown.MARQUEE.getY()+row,CalderTown.MARQUEE.getZ(),CalderSigns.Sign.MARQUEE_B),"the whole of the second feature is up, and nothing of the first");
                 CalderTown.newNight(l,b);h.assertTrue(CalderTown.feature(l,b)==2,"the night after, the third");
                 CalderTown.newNight(l,b);h.assertTrue(CalderTown.feature(l,b)==0,"and then the first again");
+            }).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.482: the hunt
+    @AfterBatch(batch="hunt_ways") public static void huntWaysDone(ServerLevel l){done();}
+    @AfterBatch(batch="hunt_split") public static void huntSplitDone(ServerLevel l){done();}
+    @AfterBatch(batch="hunt_caught") public static void huntCaughtDone(ServerLevel l){done();}
+    /** The whole place: the park and the town. */
+    private static AABB whole(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()+CalderTown.W-1,b.getY()-5,b.getZ()+CalderTown.N-1,b.getX()+CalderTown.E+2,b.getY()+CalderTown.TOP+3,b.getZ()+2);}
+    private static List<String> named(int[] path){var out=new ArrayList<String>();for(int id:path)out.add(CalderRoutes.place(id).name());return out;}
+    /** A ball of sand from where a reader stands, at one of the three. */
+    private static void throwAt(ServerPlayer p,LiteraryActor at){
+        var item=BikeNightRegistry.SAND_BALL.get();
+        p.setItemInHand(InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(item));p.getCooldowns().removeCooldown(item);
+        p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,at.position().add(0,at.getBbHeight()*.5,0));
+        p.gameMode.useItem(p,p.serverLevel(),p.getMainHandItem(),InteractionHand.MAIN_HAND);
+    }
+
+    @GameTest(template="empty",batch="hunt_ways",timeoutTicks=2400)
+    public static void everyWayThroughTheTownIsClearForABikeAndTheyAllJoinUp(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // The park's gate is chained until the three open it: the way through it is looked at as they leave it.
+                BikeNightSite.gateOpen(l,b);
+                var blocked=new ArrayList<String>();
+                for(var w:CalderRoutes.ways()){var why=CalderRoutes.blocked(l,b,w);if(why!=null)blocked.add(why);}
+                h.assertTrue(blocked.isEmpty(),"a bike gets along every one of the town's ways without touching anything: "+blocked.size()+" do not, "+blocked.stream().limit(8).toList());
+                int gate=CalderRoutes.id("gate_in"),cemetery=CalderRoutes.id("cemetery_gate");
+                for(int i=0;i<CalderRoutes.places();i++){var path=CalderRoutes.path(gate,i,-1);h.assertTrue(path[0]==gate&&path[path.length-1]==i,"there is a way from the park's gate to "+CalderRoutes.place(i).name());}
+                // The way to the cemetery's gate; a way round a place where there is one; and through it where there is not.
+                var north=CalderRoutes.path(gate,cemetery,-1);var names=named(north);
+                h.assertTrue(names.contains("mill_main")&&names.get(names.size()-2).equals("church_gate")&&CalderRoutes.length(north)<190,"from the park's gate to the cemetery's: "+names+", "+CalderRoutes.length(north)+" blocks");
+                var round=named(CalderRoutes.path(CalderRoutes.id("park_mill"),CalderRoutes.id("mill_alley"),CalderRoutes.id("mill_lot")));
+                h.assertTrue(!round.contains("mill_lot")&&round.contains("lot_gap")&&round.get(round.size()-1).equals("mill_alley"),"up Mill Street, keeping clear of a place on it, is by the empty lot and the alley: "+round);
+                var through=CalderRoutes.path(gate,cemetery,CalderRoutes.id("church_gate"));
+                h.assertTrue(through[through.length-1]==cemetery,"the cemetery's gate is reached by the middle of Church Lane whatever is to be kept clear of");
+                // The back ways are among them. What only a reader fits through is not: nothing of theirs goes onto the school's field.
+                int tight=0,back=0;for(var w:CalderRoutes.ways()){if(w.tight())tight++;if(w.back())back++;}
+                h.assertTrue(tight>=20&&back>tight,"the gaps, the alleys, the dock, the lot, the lane, the yard, the cut and the path are ways: "+tight+" tight, "+back+" back");
+                for(int i=0;i<CalderRoutes.places();i++){var at=CalderRoutes.place(i);
+                    h.assertTrue(!(at.x()>CalderTown.FIELD_W&&at.x()<CalderTown.FIELD_E&&at.z()>CalderTown.FIELD_N&&at.z()<CalderTown.FIELD_S),"no place of theirs is on the school's field: "+at.name());}
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="hunt_split",timeoutTicks=9000)
+    public static void inTheTownTheySplitUpOneBehindAndTwoByTheBackWaysToHeadAReaderOff(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final int[] aims={-1,-1,-1};final boolean[] gap={false},west={false},east={false};final long[] threw={-100};
+        // The reader stands on Main Street between the gap by the bank and the Food Fair's way in.
+        double rx=-29.5,rz=-91.5;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("hunt_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, and for the reader to be the park's size"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            .thenExecute(()->f.at(p[0],P,rx,0,rz))
+            .thenWaitUntil(()->{
+                three(l,b,who,bikes);
+                for(int i=0;i<3;i++){int aim=BikeNightBullies.aim(b,i);if(aim>=0&&aims[i]<0)aims[i]=aim;}
+                // Tully is kept off with sand, as a reader would: each ball stops him where he is for three seconds.
+                if(who[0]!=null&&bikes[0]!=null&&bikes[0].position().distanceTo(p[0].position())<5&&l.getGameTime()-threw[0]>20){threw[0]=l.getGameTime();throwAt(p[0],who[0]);}
+                if(bikes[0]!=null&&bikes[0].getX()-b.getX()>rx+1)east[0]=true;
+                if(bikes[1]!=null){double x=bikes[1].getX()-b.getX(),z=bikes[1].getZ()-b.getZ();
+                    if(Math.abs(x+33)<1.2&&z>-85.5&&z<-76.5)gap[0]=true;
+                    if(gap[0]&&x<rx-1&&z<-86)west[0]=true;}
+                h.assertTrue(aims[0]>=0&&aims[1]>=0&&aims[2]>=0&&gap[0]&&west[0]&&east[0],"waiting for Ray-Ray to come out of the gap behind the reader with Tully in front of them: aims "
+                    +(aims[0]<0?"none":CalderRoutes.place(aims[0]).name())+", "+(aims[1]<0?"none":CalderRoutes.place(aims[1]).name())+", "+(aims[2]<0?"none":CalderRoutes.place(aims[2]).name())
+                    +"; through the gap "+gap[0]+", west of the reader "+west[0]+", Tully east "+east[0]+"; Ray-Ray at "+(bikes[1]==null?"nowhere":bikes[1].position().subtract(Vec3.atLowerCornerOf(b))));
+            })
+            .thenExecute(()->{
+                h.assertTrue(CalderRoutes.place(aims[0]).name().equals("main_food"),"Tully made for the end of the reader's way that is nearer them: "+CalderRoutes.place(aims[0]).name());
+                h.assertTrue(CalderRoutes.place(aims[1]).name().equals("main_gap_hb"),"Ray-Ray for its other end, by a way that does not go through the reader: "+CalderRoutes.place(aims[1]).name());
+                h.assertTrue(CalderRoutes.place(aims[2]).name().equals("gap_hb"),"and Duff for the place past that, the mouth of the gap: "+CalderRoutes.place(aims[2]).name());
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"nobody is hurt");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="hunt_close",timeoutTicks=9000)
+    public static void eachOfThreeReadersHasOneOfThemAndTheOneBehindSomethingIsGoneInAfter(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        // One reader stands on Main Street with a bike stood across the road on either side of them. The other two stand in the open: on Mill Street, and outside the theater.
+        double[][] at={{-29.5,-91.5},{.5,-80},{22.5,-91.5}};var east=b.offset(-29,0,-92);var west=b.offset(-31,0,-92);final boolean[] went={false,false,false};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("hunt_hidden",P);p[1]=f.player("hunt_open",P);p[2]=f.player("hunt_theater",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&p[2].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1])&&BikeNight.here(p[2]),
+                "waiting for the night, and for the three readers to be the park's size"))
+            .thenExecute(()->{f.at(p[0],P,-14.5,0,-20.5);f.at(p[1],P,-12.5,0,-20.5);f.at(p[2],P,-10.5,0,-20.5);})
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            .thenExecute(()->{
+                l.setBlock(east,NightBikeBlock.of(NightBike.Make.HARE,Direction.NORTH,false),3);l.setBlock(west,NightBikeBlock.of(NightBike.Make.LAMP,Direction.NORTH,false),3);
+                for(int i=0;i<3;i++)f.at(p[i],P,at[i][0],0,at[i][1]);
+                h.assertTrue(!BikeNightHunt.clear(l,Vec3.atLowerCornerOf(b).add(-27.5,0,-91.5),p[0].position())&&!BikeNightHunt.clear(l,Vec3.atLowerCornerOf(b).add(-33,0,-91.5),p[0].position()),
+                    "from neither end of that stretch of the street is there a clear way to the one between the bikes");
+            })
+            .thenWaitUntil(()->{
+                three(l,b,who,bikes);for(int i=0;i<3;i++)went[i]|=BikeNightBullies.closing(b,i);
+                var where=new StringBuilder();
+                for(int i=0;i<3;i++){var bike=BikeNightBullies.bikeOf(l,b,i);int aim=BikeNightBullies.aim(b,i);
+                    where.append("; ").append(BikeNightBullies.NAMES[i]).append(BikeNightBullies.gone(b,i)?" gone":bike==null?" nowhere":" at "+bike.position().subtract(Vec3.atLowerCornerOf(b))+(bike.heldUp()?" held up":"")
+                        +(BikeNightBullies.closing(b,i)?" going in":" for "+(aim<0?"a reader":CalderRoutes.place(aim).name())));}
+                h.assertTrue(BikeNightBullies.caught(b,p[0])&&BikeNightBullies.caught(b,p[1])&&BikeNightBullies.caught(b,p[2]),"waiting for each of the three readers to be caught: "
+                    +BikeNightBullies.caught(b,p[0])+", "+BikeNightBullies.caught(b,p[1])+", "+BikeNightBullies.caught(b,p[2])+where);
+            })
+            .thenExecute(()->{
+                int[] by={f.own(p[0],P).getInt("CaughtBy"),f.own(p[1],P).getInt("CaughtBy"),f.own(p[2],P).getInt("CaughtBy")};
+                h.assertTrue(by[0]!=by[1]&&by[1]!=by[2]&&by[0]!=by[2],"each of the three had one of the readers: "+by[0]+", "+by[1]+", "+by[2]);
+                h.assertTrue(went[by[0]],"the one who had the reader between the bikes went in after them from the end of the street: "+BikeNightBullies.NAMES[by[0]]);
+                h.assertTrue(l.getBlockState(east).getBlock() instanceof NightBikeBlock&&l.getBlockState(west).getBlock() instanceof NightBikeBlock,"and both bikes are still standing");
+                h.assertTrue(f.own(p[0],P).getString("CaughtOn").equals("Main Street")&&f.own(p[1],P).getString("CaughtOn").equals("Mill Street")&&f.own(p[2],P).getString("CaughtOn").equals("Main Street"),
+                    "each record keeps its own street: "+f.own(p[0],P).getString("CaughtOn")+", "+f.own(p[1],P).getString("CaughtOn")+", "+f.own(p[2],P).getString("CaughtOn"));
+                for(var q:p)h.assertTrue(q.getHealth()==q.getMaxHealth()&&heard(q,BikeNightTexts.CAUGHT_NO_BIKE_CUE),"nobody is hurt, and a reader with no bike is told they are down in the leaves");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="hunt_close") public static void huntCloseDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="hunt_caught",timeoutTicks=9000)
+    public static void withinReachForTwoSecondsAReaderIsCaughtTheBikeGoesWithThemAndNobodyIsHurt(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final NightBike[] mine={null};final int[] by={-1};final long[] first={-1},at={-1};final PackBike[] taken={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("hunt_rider",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, and for the reader to be the park's size"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.WASP);})
+            // The reader sits on it at the rack while the three come in, go round and stand about.
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            // On the Wasp, standing on Main Street.
+            .thenExecute(()->{
+                h.assertTrue(p[0].getVehicle()==mine[0]&&!BikeNightBullies.caught(b,p[0]),"the reader is still on the Wasp, and nobody has had it");
+                mine[0].moveTo(b.getX()-27,b.getY(),b.getZ()-91.5,90,0);hush(p[0]);
+            })
+            .thenWaitUntil(()->{
+                three(l,b,who,bikes);
+                boolean near=false;for(int i=0;i<3;i++)if(bikes[i]!=null&&bikes[i].position().distanceTo(p[0].position())<BikeNightHunt.REACH)near=true;
+                if(near&&first[0]<0)first[0]=l.getGameTime();
+                if(BikeNightBullies.caught(b,p[0])&&at[0]<0){at[0]=l.getGameTime();for(int i=0;i<3;i++)if(BikeNightBullies.taken(l,b,i)!=null){by[0]=i;taken[0]=BikeNightBullies.taken(l,b,i);}}
+                h.assertTrue(at[0]>=0,"waiting for one of them to have had the reader within reach for two seconds: first within reach at "+first[0]+", now "+l.getGameTime());
+            })
+            .thenExecute(()->{
+                h.assertTrue(first[0]>=0&&at[0]-first[0]>=BikeNightHunt.CAUGHT-2,"not before two seconds within reach: "+(at[0]-first[0])+" ticks");
+                h.assertTrue(p[0].getVehicle()==null&&!mine[0].isAlive(),"the reader is off the bike, and it is not theirs to ride");
+                // It went with him: it is not also left standing in the road where they were.
+                var left=new ArrayList<BlockPos>();
+                for(var cell:BlockPos.betweenClosed(p[0].blockPosition().offset(-5,-1,-5),p[0].blockPosition().offset(5,2,5)))if(l.getBlockState(cell).getBlock() instanceof NightBikeBlock)left.add(cell.immutable());
+                h.assertTrue(left.isEmpty(),"no bike is left standing where they were caught: "+left);
+                h.assertTrue(by[0]>=0&&taken[0]!=null&&taken[0].look()==PackBike.MAKES+NightBike.Make.WASP.ordinal()&&taken[0].getPassengers().isEmpty()
+                    &&taken[0].position().distanceTo(bikes[by[0]].position())<1.6,"the one who caught them has the Wasp beside his own: "+by[0]);
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth(),"and the reader is not hurt: "+p[0].getHealth());
+                h.assertTrue(heard(p[0],String.format(BikeNightTexts.CAUGHT_CUE,BikeNightBullies.NAMES[by[0]])),"they are told who has it");
+                var own=f.own(p[0],P);
+                h.assertTrue(own.getBoolean("Caught")&&own.getInt("CaughtBy")==by[0]&&own.getString("CaughtOn").equals("Main Street"),"and their record keeps who, and where: "+own.getString("CaughtOn"));
+                h.assertTrue(saying(who[by[0]]).equals(BikeNightTexts.CAUGHT[by[0]]),"he says so: "+saying(who[by[0]]));
+            })
+            // He is off with it, and with nobody left to go after the others go too.
+            .thenWaitUntil(()->h.assertTrue(BikeNightBullies.gone(b,0)&&BikeNightBullies.gone(b,1)&&BikeNightBullies.gone(b,2)&&BikeNightBullies.stage(b)==BikeNightBullies.GONE,
+                "waiting for the three to be gone: "+BikeNightBullies.gone(b,0)+", "+BikeNightBullies.gone(b,1)+", "+BikeNightBullies.gone(b,2)+", stage "+BikeNightBullies.stage(b)))
+            .thenExecute(()->{
+                h.assertTrue(!taken[0].isAlive()&&l.getEntitiesOfClass(PackBike.class,whole(f)).isEmpty()&&l.getEntitiesOfClass(LiteraryActor.class,whole(f),BikeNightBullies::is).isEmpty(),"none of them is left in the town, and no bike of theirs, and not the Wasp");
+                h.assertTrue(BikeNightBullies.out(b,p[0])&&f.own(p[0],P).getBoolean("Out")&&heard(p[0],BikeNightTexts.OUT_CUE),"with nobody to carry them the reader is out, and is told the way home");
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth()&&BikeNight.bikeAt(b,NightBike.Make.WASP)==null,"still not hurt; and the Wasp is not in the park");
+                // They do not take another: the rest of the rack is other people's.
+                f.at(p[0],P,BikeNightSite.bikeAt(NightBike.Make.HARE).getX()+.5,0,BikeNightSite.bikeAt(NightBike.Make.HARE).getZ()+1.5);hush(p[0]);
+                hand(f,p[0],b.offset(BikeNightSite.bikeAt(NightBike.Make.HARE)));
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.NO_MORE),"waiting for them to be told why: "+HEARD.get(p[0].getUUID())))
+            .thenExecute(()->{
+                var hare=b.offset(BikeNightSite.bikeAt(NightBike.Make.HARE));
+                h.assertTrue(!p[0].isPassenger()&&l.getBlockState(hare).getBlock() instanceof NightBikeBlock,"a hand on another bike in the rack leaves it where it is, and them off it");
+                hand(f,p[0],hare);
+                h.assertTrue(!p[0].isPassenger()&&l.getBlockState(hare).getBlock() instanceof NightBikeBlock,"and so does a second");
+            }).thenSucceed();
+    }
+
+    @AfterBatch(batch="hunt_north") public static void huntNorthDone(ServerLevel l){done();}
+    @AfterBatch(batch="hunt_pegs") public static void huntPegsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="hunt_north",timeoutTicks=9000)
+    public static void nobodyHeadsAReaderOffToTheNorthAndSomebodyDoesToTheWest(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final double[] at={2.5,-94};final String[] wrong={null};final boolean[] headed={false};final int[] planned={0};
+        // Each tick: where everybody is, and is making for, against where the reader is.
+        Runnable north=()->{
+            three(l,b,who,bikes);
+            for(int i=0;i<3;i++){
+                if(bikes[i]!=null&&bikes[i].getZ()-b.getZ()<at[1]-2.5&&wrong[0]==null)wrong[0]=BikeNightBullies.NAMES[i]+" is north of the reader, at "+(bikes[i].getZ()-b.getZ())+" to their "+at[1];
+                int aim=BikeNightBullies.aim(b,i);if(aim<0)continue;planned[0]++;
+                if(CalderRoutes.place(aim).z()<at[1]-BikeNightHunt.NORTH_OPEN-7&&wrong[0]==null)wrong[0]=BikeNightBullies.NAMES[i]+" is making for "+CalderRoutes.place(aim).name()+", north of the reader at "+at[1];
+            }
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("hunt_north",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, and for the reader to be the park's size"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            // Standing on Mill Street north of Main, until the first of them is near.
+            .thenExecute(()->f.at(p[0],P,at[0],0,at[1]))
+            .thenWaitUntil(()->{
+                north.run();double nearest=99;for(var bike:bikes)if(bike!=null)nearest=Math.min(nearest,bike.position().distanceTo(p[0].position()));
+                h.assertTrue(nearest<12,"waiting for one of them to be near the reader on Mill Street: "+nearest);})
+            // Then north, faster than they ride, up to Elm Street.
+            .thenWaitUntil(()->{
+                at[1]=Math.max(-123.4,at[1]-.32);f.at(p[0],P,at[0],0,at[1]);north.run();
+                h.assertTrue(at[1]<=-123.4,"the reader is riding north: at "+at[1]);})
+            .thenExecute(()->h.assertTrue(wrong[0]==null&&planned[0]>20,"nobody headed the reader off to the north, standing or going: "+wrong[0]+" ("+planned[0]+" looks at where they were making for)"))
+            // And west along Elm Street, where somebody does.
+            .thenWaitUntil(()->{
+                at[0]=Math.max(-40,at[0]-.32);at[1]=at[0]>-11.5?-123.4-(2.5-at[0])*(5.1/14):-128.5;f.at(p[0],P,at[0],0,at[1]);three(l,b,who,bikes);
+                for(int i=1;i<3;i++){int aim=BikeNightBullies.aim(b,i);if(aim>=0&&CalderRoutes.place(aim).x()<at[0]-1&&Math.abs(CalderRoutes.place(aim).z()-at[1])<12)headed[0]=true;}
+                h.assertTrue(headed[0],"waiting for one of the two who head a reader off to be making for a place ahead of them on Elm Street: the reader is at "+at[0]+","+at[1]
+                    +", they are making for "+(BikeNightBullies.aim(b,1)<0?"nowhere":CalderRoutes.place(BikeNightBullies.aim(b,1)).name())+" and "+(BikeNightBullies.aim(b,2)<0?"nowhere":CalderRoutes.place(BikeNightBullies.aim(b,2)).name()));})
+            .thenExecute(()->h.assertTrue(p[0].getHealth()==p[0].getMaxHealth()&&!BikeNightBullies.caught(b,p[0]),"and the reader, who kept ahead of them, has not been caught"))
+            .thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="hunt_pegs",timeoutTicks=12000)
+    public static void aCaughtReaderOnAFriendsPegsIsStillInItAndOutWhenNobodyIsLeftToCarryThem(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final NightBike[] ride={null,null};final long[] since={-1};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("hunt_carrier",P);p[1]=f.player("hunt_carried",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night, and for both to be the park's size"))
+            .thenExecute(()->{ride[0]=take(h,f,p[0],NightBike.Make.HOPPER);ride[1]=take(h,f,p[1],NightBike.Make.WASP);})
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));})
+            // The Wasp stands on Main Street. The Hopper is a long way off, up on Church Lane.
+            .thenExecute(()->{ride[1].moveTo(b.getX()-29.5,b.getY(),b.getZ()-91.5,90,0);ride[0].moveTo(b.getX()+40,b.getY(),b.getZ()-164.5,90,0);hush(p[1]);})
+            .thenWaitUntil(()->{
+                // The Hopper keeps away from whoever comes for it, as a rider would: to the other end of Church Lane.
+                three(l,b,who,bikes);for(var bike:bikes)if(bike!=null&&bike.isAlive()&&bike.position().distanceTo(ride[0].position())<16){ride[0].moveTo(b.getX()+(ride[0].getX()-b.getX()>0?-40:40),b.getY(),b.getZ()-164.5,90,0);break;}
+                h.assertTrue(BikeNightBullies.caught(b,p[1]),"waiting for the one on the Wasp to be caught");})
+            .thenExecute(()->{
+                h.assertTrue(!BikeNightBullies.caught(b,p[0])&&!BikeNightBullies.out(b,p[1])&&p[1].getVehicle()==null&&p[0].getVehicle()==ride[0],"caught, with a friend still riding: not out yet, and the friend is not caught");
+                // The friend comes back for them: the Hopper beside them, and they get up on its pegs.
+                ride[0].moveTo(p[1].getX()+1.2,b.getY(),p[1].getZ(),90,0);
+                h.assertTrue(ride[0].interact(p[1],InteractionHand.MAIN_HAND).consumesAction()&&p[1].getVehicle()==ride[0]&&ride[0].getFirstPassenger()==p[0],"a hand on the Hopper puts them on its pegs");
+                ride[0].moveTo(b.getX()+40,b.getY(),b.getZ()-164.5,90,0);since[0]=l.getGameTime();
+            })
+            // Longer than a reader on foot is given, carried all the while and kept away from the two who are left.
+            .thenWaitUntil(()->{
+                three(l,b,who,bikes);for(var bike:bikes)if(bike!=null&&bike.isAlive()&&bike.position().distanceTo(ride[0].position())<16){ride[0].moveTo(b.getX()+(ride[0].getX()-b.getX()>0?-40:40),b.getY(),b.getZ()-164.5,90,0);break;}
+                h.assertTrue(l.getGameTime()-since[0]>BikeNightHunt.AFOOT+100,"waiting past the time a reader on foot is given");})
+            .thenExecute(()->{
+                h.assertTrue(p[1].getVehicle()==ride[0]&&!BikeNightBullies.out(b,p[1])&&!f.own(p[1],P).getBoolean("Out"),"carried on the pegs, they are still in the night");
+                // Then the Hopper stands still, and is caught too.
+                ride[0].moveTo(b.getX()-29.5,b.getY(),b.getZ()-91.5,90,0);hush(p[0]);hush(p[1]);
+            })
+            .thenWaitUntil(()->{
+                var where=new StringBuilder();
+                for(int i=0;i<3;i++){var bike=BikeNightBullies.bikeOf(l,b,i);int aim=BikeNightBullies.aim(b,i);
+                    where.append("; ").append(BikeNightBullies.NAMES[i]).append(BikeNightBullies.gone(b,i)?" gone":bike==null?" nowhere":" at "+bike.position().subtract(Vec3.atLowerCornerOf(b))+(bike.heldUp()?" held up":"")+" for "+(aim<0?"the reader":CalderRoutes.place(aim).name())
+                        +(bike==null?"":", clear "+BikeNightHunt.clear(l,bike.position(),p[0].position())));}
+                where.append("; the reader at ").append(p[0].position().subtract(Vec3.atLowerCornerOf(b))).append(" on ").append(p[0].getVehicle()).append(", the Hopper alive ").append(ride[0].isAlive()).append(", the block there ").append(l.getBlockState(p[0].blockPosition()));
+                h.assertTrue(BikeNightBullies.caught(b,p[0])&&BikeNightBullies.out(b,p[0])&&BikeNightBullies.out(b,p[1]),"waiting for the Hopper to be caught, and both of them to be out: "
+                    +BikeNightBullies.caught(b,p[0])+", "+BikeNightBullies.out(b,p[0])+", "+BikeNightBullies.out(b,p[1])+", stage "+BikeNightBullies.stage(b)+where);})
+            .thenExecute(()->{
+                h.assertTrue(p[0].getVehicle()==null&&p[1].getVehicle()==null&&!ride[0].isAlive(),"both are off it, and it is gone");
+                h.assertTrue(heard(p[0],BikeNightTexts.OUT_CUE)&&heard(p[1],BikeNightTexts.OUT_CUE)&&f.own(p[0],P).getBoolean("Out")&&f.own(p[1],P).getBoolean("Out"),"both are told the way home, and their records say so");
+                h.assertTrue(p[0].getHealth()==p[0].getMaxHealth()&&p[1].getHealth()==p[1].getMaxHealth(),"and neither is hurt");
             }).thenSucceed();
     }
 }

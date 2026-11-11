@@ -164,6 +164,8 @@ public final class BikeNight {
     public static final NightBikes.Night HOOK=new NightBikes.Night(){
         @Override public @Nullable String refuse(ServerPlayer p,NightBike.Make make,BlockPos at){
             var n=night(p);if(n==null)return null;var who=n.owner[make.ordinal()];
+            // 0.4.482: a reader whose bike the three have had does not take another. They can still be carried on a Hopper's pegs.
+            if(n.pack.caught.containsKey(p.getUUID()))return BikeNightTexts.NO_MORE;
             if(who==null||who.equals(p.getUUID()))return null;
             var other=p.server.getPlayerList().getPlayer(who);
             return other==null?BikeNightTexts.SOMEONES:String.format(BikeNightTexts.THEIRS,other.getGameProfile().getName());
