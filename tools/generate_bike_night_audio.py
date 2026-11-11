@@ -37,6 +37,12 @@ ROWS = {
     'park/phone_tone': ('park.phone_tone', 'Dial tone', 8),
     'park/phone_hook': ('park.phone_hook', 'Handset is hung up', 8),
     'park/spring': ('park.spring', 'Spring creaks', 10),
+    # 0.4.479, the three who come to the park.
+    'bike/freewheel': ('bike.freewheel', 'Freewheel ticks', 12),
+    'park/car_pass': ('park.car_pass', 'Car passes', 56),
+    'park/padlock': ('park.padlock', 'Padlock comes open', 16),
+    'park/cough': ('park.cough', 'Someone coughs', 16),
+    'park/sand_kick': ('park.sand_kick', 'Sand is kicked', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -364,7 +370,73 @@ def spring():
     return twang + rub
 
 
-MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
+def freewheel():
+    # A freewheel's pawls under somebody coasting: a run of small clicks, quick and even, that begins and ends quietly.
+    length = .5
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for k in range(int(length * 34)):
+        i = seconds(k / 34 + .004)
+        c = click(.006, 2600, 9000, .0012) * (.5 + .12 * rng.random())
+        out[i:i + len(c)] += c[:n - i]
+    return out * np.clip(t / .05, 0, 1) * np.clip((length - t) / .08, 0, 1)
+
+
+def car_pass():
+    # A car going by on the street: its engine low and steady, its tyres on the road, coming up, level, and going, a little lower
+    # as it goes away.
+    length = 4.2
+    n = seconds(length)
+    t = times(n)
+    near = np.exp(-((t - 1.9) / .95) ** 2)
+    pitch = 62 * (1.04 - .08 / (1 + np.exp(-(t - 1.9) / .25)))
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    engine = (np.sin(phase) + .55 * np.sin(2 * phase) + .3 * np.sin(3.01 * phase) + .18 * np.sin(4.5 * phase)) * (.22 + .3 * near)
+    tyres = band(rng.standard_normal(n), 300, 2400) * near * .5
+    wind = band(rng.standard_normal(n), 90, 500) * near ** .6 * .35
+    return (engine + tyres + wind) * np.clip(t / .5, 0, 1) * np.clip((length - t) / .9, 0, 1)
+
+
+def padlock():
+    # A key turned in a padlock, the shackle springing, and the chain pulled through the bars: links running on iron.
+    length = 1.5
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((.05, .5), (.2, 1.0)):
+        i = seconds(at)
+        c = click(.03, 900, 5200, .006) * level
+        out[i:i + len(c)] += c[:n - i]
+    run = np.clip((t - .38) / .1, 0, 1) * np.clip((length - t) / .35, 0, 1)
+    links = band(rng.standard_normal(n), 1800, 7500) * (np.sin(2 * np.pi * 19 * t) > .2) * run * .5
+    ring = np.sin(2 * np.pi * 2350 * t) * np.exp(-np.clip(t - .2, 0, None) / .12) * (t > .2) * .2
+    return out + links + ring
+
+
+def cough():
+    # Somebody coughing sand out: three short barks, each a breath of noise with a throat under it, the last the smallest.
+    length = .95
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level, tone in ((.02, 1.0, 310), (.3, .85, 285), (.6, .6, 260)):
+        shape = np.clip((t - at) / .012, 0, 1) * np.exp(-np.clip(t - at, 0, None) / .07) * (t >= at)
+        out += (band(rng.standard_normal(n), 500, 3600) * .7 + np.sin(2 * np.pi * tone * t) * .35 + np.sin(2 * np.pi * tone * 2.1 * t) * .15) * shape * level
+    return out
+
+
+def sand_kick():
+    # A shoe through dry sand: the scuff, and the spray landing after it.
+    length = .55
+    n = seconds(length)
+    t = times(n)
+    scuff = band(rng.standard_normal(n), 400, 2600) * np.clip(t / .02, 0, 1) * np.exp(-t / .07) * .8
+    spray = band(rng.standard_normal(n), 2500, 9000) * np.clip((t - .08) / .05, 0, 1) * np.exp(-np.clip(t - .08, 0, None) / .16) * .45
+    return scuff + spray
+
+
+MAKERS = {'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
           'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud, 'park/roundabout_squeak': roundabout_squeak, 'park/fountain': fountain, 'park/phone_tone': phone_tone, 'park/phone_hook': phone_hook,
           'park/spring': spring}
 

@@ -83,6 +83,10 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<NightBike>> BIKE=ENTITIES.register("night_bike",
         ()->EntityType.Builder.<NightBike>of(NightBike::new,MobCategory.MISC).sized(.6F,.9F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("night_bike"));
 
+    /** 0.4.479: a bike ridden by somebody who is not a reader (PackBike). Never saved. */
+    public static final DeferredHolder<EntityType<?>,EntityType<PackBike>> PACK_BIKE=ENTITIES.register("pack_bike",
+        ()->EntityType.Builder.<PackBike>of(PackBike::new,MobCategory.MISC).sized(.6F,.9F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("pack_bike"));
+
     /**
      * 0.4.465: a ball of the sandpit's sand, packed by hand and thrown (SandBallItem, SandBall). The night's one item: it runs out
      * through the fingers of anyone who carries it out of the park.
@@ -133,6 +137,8 @@ public final class BikeNightRegistry {
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Any bike: the tyres letting go of the road, and both of them coming back down. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOP=sound("bike.hop"),LAND=sound("bike.land");
+    /** 0.4.479: a freewheel ticking under somebody coasting; a car going by on Park Street; the gate's padlock coming open; somebody coughing sand; sand kicked. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> FREEWHEEL=sound("bike.freewheel"),CAR_PASS=sound("park.car_pass"),PADLOCK=sound("park.padlock"),COUGH=sound("park.cough"),SAND_KICK=sound("park.sand_kick");
     /** The Rattler's card in its spokes and the burst it gives; the Lamp's dynamo against its tyre. */
     public static final DeferredHolder<SoundEvent,SoundEvent> CARD=sound("bike.card"),TURBO=sound("bike.turbo"),DYNAMO=sound("bike.dynamo");
     /** The park: the failing lamp striking and buzzing as it comes back on; the chain on the gate when a hand tries it. */

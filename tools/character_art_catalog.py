@@ -143,6 +143,6 @@ def entries():
                        ('vern',161),('hollis',162),('pruitt',163),('corley',164),('neal',165)):
         rows.append({'name':'literary_drisking_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # Bike night (0.4.476): Gus, in his cap and without it, on stranger phases one hundred and sixty-six and sixty-seven.
-    for name,phase in (('gus',166),('gus_bare',167)):
+    for name,phase in (('gus',166),('gus_bare',167),('tully',168),('ray',169),('duff',170),('tully_cap',171)):
         rows.append({'name':'literary_bike_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

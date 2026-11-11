@@ -1982,5 +1982,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 167
+  },
+  {
+    "name": "literary_bike_tully",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 168
+  },
+  {
+    "name": "literary_bike_ray",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 169
+  },
+  {
+    "name": "literary_bike_duff",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 170
+  },
+  {
+    "name": "literary_bike_tully_cap",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 171
   }
 ]

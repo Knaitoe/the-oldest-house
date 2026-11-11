@@ -183,12 +183,18 @@ public abstract class RiddenBike extends Entity {
     @Override public boolean isAttackable(){return false;}
     @Override public boolean canBeCollidedWith(){return false;}
     @Override public boolean isPushable(){return false;}
-    @Override protected boolean canAddPassenger(Entity e){return getPassengers().isEmpty()&&e instanceof Player;}
+    @Override protected boolean canAddPassenger(Entity e){return getPassengers().isEmpty()&&takes(e);}
+    /** Who may ride it: a reader. */
+    protected boolean takes(Entity e){return e instanceof Player;}
 
     @Override public void tick(){
         super.tick();
         if(level().isClientSide){drawn();return;}
         if(done)return;
+        driven();
+    }
+    /** The server's tick. A reader's bike goes by its reader's keys, and with nobody on it is a block again. */
+    protected void driven(){
         if(!(getFirstPassenger() instanceof ServerPlayer p)){park(null,false);return;}
         // The pedals: a strafe key going down is one push (xxa is positive for left).
         boolean left=p.xxa>.5F,right=p.xxa< -.5F;
@@ -242,7 +248,7 @@ public abstract class RiddenBike extends Entity {
         catching=false;
         // A plank ramp: the bike rides the sheet itself, where the middle of its wheels is.
         float sheet=0;
-        double top=ramp();
+        double top=sheetUnder();
         if(!Double.isNaN(top)){
             double gap=top-getY();
             if(gap>LIP&&grounded){
@@ -306,7 +312,7 @@ public abstract class RiddenBike extends Entity {
      * or NaN where there is none under it. The cell it is in, or the one below: a bike at the top of a cell is on the cell below, and a
      * chute's sheet stands a little higher than its own block.
      */
-    private double ramp(){
+    protected double sheetUnder(){
         var at=BlockPos.containing(getX(),getY()+.001,getZ());
         for(int i=0;i<2;i++,at=at.below()){
             var s=level().getBlockState(at);
@@ -329,6 +335,11 @@ public abstract class RiddenBike extends Entity {
         }
         return Math.min(RAMP_SLOPE,best);
     }
+
+    /** For a bike that goes as it is told and not by a reader's keys (PackBike): its lean and speed, as they are and as they are drawn. */
+    protected void show(float lean,float speed){this.lean=lean;this.speed=speed;entityData.set(LEAN,Mth.clamp(lean,-1,1));entityData.set(SPEED,speed);}
+    /** Half a turn of the cranks, on that side, for the drawing. */
+    protected void stroke(int side){lastSide=side;strokes++;entityData.set(STROKES,side*strokes);}
 
     /** The bike leaves the ground, going up that fast: the tyres let go of the road. */
     protected void hopped(float up){
