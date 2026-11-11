@@ -5037,5 +5037,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.park.bars"
+  },
+  "park.seesaw_creak": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/seesaw_creak",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.seesaw_creak"
+  },
+  "park.seesaw_thud": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/seesaw_thud",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.seesaw_thud"
   }
 }

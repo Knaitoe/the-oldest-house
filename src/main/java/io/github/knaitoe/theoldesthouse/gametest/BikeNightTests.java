@@ -410,6 +410,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
     @AfterBatch(batch="park_slide") public static void slideDone(ServerLevel l){done();}
     @AfterBatch(batch="park_bars") public static void barsDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_seesaw") public static void seesawDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
     public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
@@ -618,7 +619,7 @@ public final class BikeNightTests {
             new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
             new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
             new Thing(BikeNightSite.SLIDE,BikeNightTexts.SLIDE),new Thing(BikeNightSite.slideEnd(),BikeNightTexts.SLIDE),
-            new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),
+            new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),new Thing(BikeNightSite.SEESAW,BikeNightTexts.SEESAW),
             new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -629,7 +630,8 @@ public final class BikeNightTests {
             for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look(),
                 BikeNightTexts.SWINGS,BikeNightTexts.SWING_HINT,BikeNightTexts.JUMP,BikeNightTexts.JUMP_LEVEL,BikeNightTexts.JUMP_BEST,BikeNightTexts.JUMP_OFF,BikeNightTexts.MARK,BikeNightTexts.MARK_OWN,BikeNightTexts.MARK_THEIRS,
                 BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE,
-                BikeNightTexts.BARS,BikeNightTexts.BARS_LOW,BikeNightTexts.BARS_ON,BikeNightTexts.BARS_FAR,BikeNightTexts.BARS_HINT,BikeNightTexts.BARS_ACROSS)){
+                BikeNightTexts.BARS,BikeNightTexts.BARS_LOW,BikeNightTexts.BARS_ON,BikeNightTexts.BARS_FAR,BikeNightTexts.BARS_HINT,BikeNightTexts.BARS_ACROSS,
+                BikeNightTexts.SEESAW,BikeNightTexts.SEESAW_TAKEN,BikeNightTexts.SEESAW_HINT)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -1109,6 +1111,117 @@ public final class BikeNightTests {
                 var account=String.join(" ",BikeNightTexts.account("bars_one",f.own(p[0],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
                 var other=String.join(" ",BikeNightTexts.account("bars_two",f.own(p[1],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
                 h.assertTrue(account.contains("all the way across the monkey bars")&&other.contains("hung from the monkey bars")&&!other.contains("all the way across"),"and their accounts have it: "+account+" / "+other);
+            }).thenSucceed();
+    }
+
+    private static String told(String name,ServerPlayer p,LiteraryTests.Fixture f){
+        return String.join(" ",BikeNightTexts.account(name,f.own(p,P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+    }
+
+    @GameTest(template="empty",batch="park_seesaw",timeoutTicks=3000)
+    public static void theSeesawGoesOverWhenWhoeverIsDownPushesOffAndOneAloneComesBackDown(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final SeesawBlock.Board[] board={null};final double[] low={0};
+        var stand=b.offset(BikeNightSite.SEESAW);var facing=BikeNightSite.SEESAW_FACING;var end0=b.offset(BikeNightSite.seesawEnd(0));var end1=b.offset(BikeNightSite.seesawEnd(1));double max=SeesawBlock.MAX;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                // The stand, which keeps the board, and the place each end of the board is over.
+                var s=l.getBlockState(stand);
+                h.assertTrue(SeesawBlock.is(s,SeesawBlock.Part.STAND)&&s.getValue(SeesawBlock.FACING)==facing&&l.getBlockEntity(stand) instanceof SeesawBlock.Board,"the stand, which keeps the board: "+s);
+                h.assertTrue(!s.getCollisionShape(l,stand).isEmpty()&&l.getBlockState(stand.below()).is(Blocks.SAND),"it stops a body, and stands on the sand");
+                board[0]=(SeesawBlock.Board)l.getBlockEntity(stand);
+                for(int e=0;e<2;e++){
+                    var at=e==0?end0:end1;var out=e==0?facing:facing.getOpposite();var es=l.getBlockState(at);
+                    h.assertTrue(SeesawBlock.is(es,SeesawBlock.Part.END)&&es.getValue(SeesawBlock.FACING)==out&&at.equals(stand.relative(out,SeesawBlock.OUT))&&l.getBlockEntity(at)==null,"the place end "+e+" is over: "+es);
+                    h.assertTrue(es.getCollisionShape(l,at).isEmpty()&&!es.getShape(l,at).isEmpty(),"a hand finds it, and it stops nobody");
+                    h.assertTrue(SeesawBlock.board(l,at)==board[0]&&SeesawBlock.endOf(l,at)==e,"it knows its board, and which end of it it is");
+                    h.assertTrue(l.getBlockState(stand.relative(out)).isAir()&&l.getBlockState(at.below()).is(Blocks.SAND),"between it and the stand the board runs over open air, over the sand");
+                }
+                // It stands with its first end down on its bumper.
+                h.assertTrue(max>.15&&max<.3&&Math.abs(board[0].tilt()-max)<1e-9&&board[0].speed()==0&&board[0].down(0)&&!board[0].down(1)&&!board[0].ridden(0)&&!board[0].ridden(1),"it stands with its first end down, still, nobody on it: "+board[0].tilt());
+                var lowSeat=SeesawBlock.seat(stand,facing,max,0);var highSeat=SeesawBlock.seat(stand,facing,max,1);var bumper=SeesawBlock.at(stand,facing,max,SeesawBlock.BUMPER_AT,-SeesawBlock.BUMPER);
+                h.assertTrue(Math.abs(bumper.y-stand.getY())<1e-9,"as far over as it goes, the bumper under the low end is on the sand: "+(bumper.y-stand.getY()));
+                h.assertTrue(lowSeat.y-stand.getY()>.15&&lowSeat.y-stand.getY()<.5&&highSeat.y-stand.getY()>.9&&highSeat.y-lowSeat.y>.6,"the low seat is one a child sits down onto, the high one is over their head: "+(lowSeat.y-stand.getY())+" "+(highSeat.y-stand.getY()));
+                h.assertTrue(Math.abs(lowSeat.z-(end0.getZ()+.5))<.15&&Math.abs(highSeat.z-(end1.getZ()+.5))<.15&&Math.abs(lowSeat.x-(stand.getX()+.5))<1e-9,"each seat is over its end's place");
+                var turned=SeesawBlock.seat(stand,facing,-max,1);
+                h.assertTrue(Math.abs(turned.y-lowSeat.y)<1e-9&&Math.abs((turned.z-(stand.getZ()+.5))+(lowSeat.z-(stand.getZ()+.5)))<1e-9,"and the other way over is the same, turned about");
+                p[0]=f.player("seesaw_one",P);p[1]=f.player("seesaw_two",P);p[2]=f.player("seesaw_three",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenWaitUntil(()->h.assertTrue(p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&p[2].getBbHeight()<1.1,"readers here are children"))
+            .thenExecute(()->{
+                // A hand on the low end sits on it.
+                hush(p[0]);f.at(p[0],P,BikeNightSite.seesawEnd(0).getX()+1.5,0,BikeNightSite.seesawEnd(0).getZ()+.5);hand(p[0],end0);
+                h.assertTrue(p[0].getVehicle() instanceof SeesawSeat seat&&seat.end()==0&&seat.stand().equals(stand),"a hand on the low end sits on it");
+                h.assertTrue(!SeesawSeat.jump(p[1]),"nobody pushes it who is not on it");
+            })
+            .thenIdle(4)
+            .thenExecute(()->{
+                var seat=(SeesawSeat)p[0].getVehicle();var where=SeesawBlock.seat(stand,facing,board[0].tilt(),0);
+                h.assertTrue(seat.position().distanceTo(where)<1e-6&&board[0].ridden(0)&&board[0].seat(0)==seat&&board[0].tilt()==max&&board[0].speed()==0,"the seat is on the board's end, and the board knows; their weight holds it down: "+board[0].tilt()+" "+board[0].speed());
+                h.assertTrue(Math.abs(p[0].getX()-seat.getX())<1e-6&&Math.abs(p[0].getZ()-seat.getZ())<1e-6&&p[0].getY()<seat.getY()&&seat.getY()-p[0].getY()<.7,"and they are sat on it: "+(seat.getY()-p[0].getY()));
+                // Alone, a push off the sand takes them up, and their weight brings them back down.
+                hush(p[0]);h.assertTrue(SeesawSeat.jump(p[0]),"down, they push off");low[0]=max;
+            })
+            .thenExecuteFor(10,()->low[0]=Math.min(low[0],board[0].tilt()))
+            .thenExecute(()->{
+                h.assertTrue(board[0].tilt()<max-.1&&!board[0].down(0),"up off the sand: "+board[0].tilt());
+                h.assertTrue(!SeesawSeat.jump(p[0]),"in the air there is nothing to push off");
+            })
+            .thenWaitUntil(()->{low[0]=Math.min(low[0],board[0].tilt());h.assertTrue(board[0].down(0)&&board[0].speed()==0,"and they come back down");})
+            .thenExecute(()->h.assertTrue(low[0]>-max+.05&&low[0]<max-.15,"alone it never goes over: "+low[0]))
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"park.seesaw_creak")&&sounded(p[0],"park.seesaw_thud"),"the axle and the bumper were heard"))
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SEESAW_HINT),"and they were told once how it is done"))
+            .thenExecute(()->{
+                // A second reader takes the high end, and a third finds both ends taken.
+                f.at(p[1],P,BikeNightSite.seesawEnd(1).getX()+1.5,0,BikeNightSite.seesawEnd(1).getZ()+.5);hand(p[1],end1);
+                h.assertTrue(p[1].getVehicle() instanceof SeesawSeat seat&&seat.end()==1,"a second reader sits on the high end");
+                hush(p[2]);f.at(p[2],P,BikeNightSite.seesawEnd(0).getX()-1.5,0,BikeNightSite.seesawEnd(0).getZ()+.5);hand(p[2],end0);
+                h.assertTrue(!p[2].isPassenger(),"nobody sits where somebody is");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[2],BikeNightTexts.SEESAW_TAKEN),"and they are told so"))
+            .thenIdle(5)
+            .thenExecute(()->{
+                h.assertTrue(board[0].ridden(1)&&board[0].tilt()==max&&board[0].speed()==0&&p[1].getY()>p[0].getY()+.6,"two on it, of one weight: it stays as it was, the second up in the air");
+                h.assertTrue(!SeesawSeat.jump(p[1]),"the one in the air cannot push");
+                h.assertTrue(SeesawSeat.jump(p[0]),"the one who is down pushes off");
+            })
+            .thenWaitUntil(()->h.assertTrue(board[0].down(1)&&board[0].speed()==0,"and between two it goes all the way over"))
+            .thenExecute(()->{
+                h.assertTrue(Math.abs(board[0].tilt()+max)<1e-9&&p[0].getY()>p[1].getY()+.6,"the first reader is up now, the second down");
+                h.assertTrue(SeesawSeat.jump(p[1]),"and the second pushes off in their turn");
+            })
+            .thenWaitUntil(()->h.assertTrue(board[0].down(0)&&board[0].speed()==0&&p[1].getY()>p[0].getY()+.6,"back over"))
+            .thenExecute(()->h.assertTrue(SeesawSeat.jump(p[0]),"over again"))
+            .thenWaitUntil(()->h.assertTrue(board[0].down(1)&&board[0].speed()==0,"the first reader up in the air"))
+            .thenExecute(()->{
+                // The one who is down gets off: the one in the air comes down, with a bump.
+                hush(p[0]);var seat=(SeesawSeat)p[1].getVehicle();var beside=seat.getDismountLocationForPassenger(p[1]);p[1].stopRiding();
+                h.assertTrue(p[1].position().distanceTo(beside)<.05&&Math.abs(p[1].getY()-stand.getY())<1e-6&&Math.abs(Math.abs(p[1].getX()-(stand.getX()+.5))-SeesawSeat.ASIDE)<1e-6,"getting off puts them on the sand beside their end: "+p[1].position().subtract(beside));
+            })
+            .thenWaitUntil(()->h.assertTrue(board[0].down(0)&&board[0].speed()==0&&!board[0].ridden(1),"with nobody on the other end, the one in the air comes down"))
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"park.seesaw_thud"),"with a bump"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Seesaw")==3&&"seesaw_two".equals(f.own(p[0],P).getString("SeesawWith"))&&f.own(p[1],P).getInt("Seesaw")==1&&"seesaw_one".equals(f.own(p[1],P).getString("SeesawWith"))&&f.own(p[0],P).getBoolean("SeesawSat")&&f.own(p[2],P).getInt("Seesaw")==0,
+                "in their records: who pushed off how often, and with whom: "+f.own(p[0],P).getInt("Seesaw")+" "+f.own(p[1],P).getInt("Seesaw")))
+            // The first reader gets off too. An end is free a moment after whoever was on it has gone.
+            .thenExecute(()->f.at(p[0],P,BikeNightSite.seesawEnd(0).getX()+1.5,0,BikeNightSite.seesawEnd(0).getZ()+.5))
+            .thenWaitUntil(()->h.assertTrue(!board[0].ridden(0)&&board[0].seat(0)==null,"the end is free again"))
+            .thenExecute(()->{
+                // The third reader has it alone, and their account says so.
+                f.at(p[2],P,BikeNightSite.seesawEnd(0).getX()-1.5,0,BikeNightSite.seesawEnd(0).getZ()+.5);hand(p[2],end0);
+                h.assertTrue(p[2].getVehicle() instanceof SeesawSeat,"and the third reader takes it");
+            })
+            .thenIdle(4)
+            .thenExecute(()->h.assertTrue(SeesawSeat.jump(p[2]),"and pushes off, alone"))
+            .thenIdle(6)
+            .thenWaitUntil(()->h.assertTrue(board[0].down(0)&&board[0].speed()==0&&f.own(p[2],P).getInt("Seesaw")==1,"and comes back down"))
+            .thenExecute(()->p[2].stopRiding())
+            .thenIdle(10)
+            .thenExecute(()->{
+                h.assertTrue(!board[0].ridden(0)&&!board[0].ridden(1)&&board[0].tilt()==max&&board[0].speed()==0,"left alone it stays as it was left");
+                h.assertTrue(l.getEntitiesOfClass(SeesawSeat.class,new AABB(stand).inflate(6)).isEmpty(),"and no seat is left on it");
+                String one=told("seesaw_one",p[0],f),two=told("seesaw_two",p[1],f),three=told("seesaw_three",p[2],f);
+                h.assertTrue(one.contains("on the seesaw with seesaw_two on the other end")&&two.contains("on the seesaw with seesaw_one on the other end")&&three.contains("with nobody on the other"),"and their accounts have it: "+one+" / "+two+" / "+three);
             }).thenSucceed();
     }
 }

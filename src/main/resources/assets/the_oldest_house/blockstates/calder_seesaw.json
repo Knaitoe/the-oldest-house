@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,part=stand": {
+      "model": "the_oldest_house:block/calder_play/seesaw_stand"
+    },
+    "facing=north,part=end": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "facing=north,part=board": {
+      "model": "the_oldest_house:block/calder_play/seesaw_board"
+    },
+    "facing=north,part=seat": {
+      "model": "the_oldest_house:block/calder_play/seesaw_seat"
+    },
+    "facing=east,part=stand": {
+      "model": "the_oldest_house:block/calder_play/seesaw_stand",
+      "y": 90
+    },
+    "facing=east,part=end": {
+      "model": "the_oldest_house:block/calder_play/gone",
+      "y": 90
+    },
+    "facing=east,part=board": {
+      "model": "the_oldest_house:block/calder_play/seesaw_board",
+      "y": 90
+    },
+    "facing=east,part=seat": {
+      "model": "the_oldest_house:block/calder_play/seesaw_seat",
+      "y": 90
+    },
+    "facing=south,part=stand": {
+      "model": "the_oldest_house:block/calder_play/seesaw_stand",
+      "y": 180
+    },
+    "facing=south,part=end": {
+      "model": "the_oldest_house:block/calder_play/gone",
+      "y": 180
+    },
+    "facing=south,part=board": {
+      "model": "the_oldest_house:block/calder_play/seesaw_board",
+      "y": 180
+    },
+    "facing=south,part=seat": {
+      "model": "the_oldest_house:block/calder_play/seesaw_seat",
+      "y": 180
+    },
+    "facing=west,part=stand": {
+      "model": "the_oldest_house:block/calder_play/seesaw_stand",
+      "y": 270
+    },
+    "facing=west,part=end": {
+      "model": "the_oldest_house:block/calder_play/gone",
+      "y": 270
+    },
+    "facing=west,part=board": {
+      "model": "the_oldest_house:block/calder_play/seesaw_board",
+      "y": 270
+    },
+    "facing=west,part=seat": {
+      "model": "the_oldest_house:block/calder_play/seesaw_seat",
+      "y": 270
+    }
+  }
+}

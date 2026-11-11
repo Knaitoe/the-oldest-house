@@ -1,4 +1,4 @@
-"""Bike night (0.4.465 to 0.4.467): the playground in Calder Park.
+"""Bike night (0.4.465 to 0.4.468): the playground in Calder Park.
 
 Draws, in native Minecraft pixels from fixed seeds, the playground's equipment, each piece a kind of one block (calder_play). This
 slice, the swings: a steel frame's posts (a foot with its two stays, a shaft, and the two tops a bar ends on or runs over), its top
@@ -13,6 +13,10 @@ level end. A piece of the slide faces the way the slide goes down.
 
 0.4.467, the monkey bars: a block of their rungs (two rails and two rungs at the bottom of its block, running the way it faces),
 an end of them whose rails run on over its ladder's, and the slide's ladder again in the bars' own paint.
+
+0.4.468, the seesaw (its own block, calder_seesaw): the stand it turns on; and its board in three pieces that are never blocks in
+the world, the middle three blocks of it and an end each way with its seat, handle and bumper, which the stand's renderer draws
+turned about the axle. Drawn level, pointing north.
 
 Made as the park's fittings are (tools/draw_calder_art.py): small pieces are bars that take one pixel of a paint card, the
 playground's own; a face big enough to carry a picture takes a part of one the size it is. Sixteen pixels to the block. A piece is
@@ -137,9 +141,26 @@ def tread():
     return im
 
 
+def plank():
+    """The seesaw's board, looking down on it, its length up the picture. From the left: its top, five pixels wide, the old paint
+    left along its edges and gone to the wood down its middle; then its underside, bare and darker."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4680)
+    for y in range(16):
+        for x in range(5):
+            painted = x in (0, 4) and rnd.random() < .7
+            dot(im, x, y, shade(CARD[YELLOW_WORN] if painted else CARD[PLANK], rnd.randint(-6, 6) + (5 if x == 2 else 0)))
+        for x in range(5, 10):
+            dot(im, x, y, shade('#5d4226', rnd.randint(-5, 5)))
+    for x, y in ((1, 3), (3, 11), (2, 7)):                                # grain that catches the light
+        dot(im, x, y, shade(CARD[PLANK], 14))
+    for x, y in ((6, 5), (8, 12)):
+        dot(im, x, y, shade('#3f2c18', 0))
+    return im
+
+
 def textures():
     return {DIR + 'play.png': card(), DIR + 'chain.png': chain_links(), DIR + 'mark.png': mark(), DIR + 'sheet.png': sheet(),
-            DIR + 'tread.png': tread(), 'item/sand_ball.png': sand_ball()}
+            DIR + 'tread.png': tread(), DIR + 'plank.png': plank(), 'item/sand_ball.png': sand_ball()}
 
 
 # ---------------------------------------------------------------------------------------------------------------- pieces
@@ -322,6 +343,59 @@ def rungs(end):
     return p
 
 
+# ---------------------------------------------------------------------------------------------------------------- the seesaw
+# As SeesawBlock has it: the axle is this many pixels up; the bottom of a bumper is this many under the board's middle line; a
+# rider sits this many over it. The board is five pixels wide and a pixel and a half thick.
+AXLE, BUMPER, PAD = 9.5, 2.75, 1.75
+BOARD0, BOARD1 = 5.5, 10.5
+
+
+def length_of_board(parts, z0, z1):
+    """A length of the board, running north and south: its top and its underside from the plank's picture, its edges from the card."""
+    uv = {k: sw(PLANK) for k in FACES}
+    v0 = round(z0 % 16, 3)
+    uv['up'] = [0, v0, 5, round(v0 + z1 - z0, 3)]
+    uv['down'] = [5, v0, 10, round(v0 + z1 - z0, 3)]
+    parts.append(element([BOARD0, AXLE - .75, z0], [BOARD1, AXLE + .75, z1], {'all': 'k', 'up': 'w', 'down': 'w'}, uv))
+
+
+def seesaw_stand():
+    """The stand, the board pointing north over it: a post each side of the board on a foot, the axle between them, and a cap on
+    each end of it."""
+    p = []
+    for x0 in (2, 11.5):
+        bar(p, [x0, 1, 6.5], [x0 + 2.5, 11, 9.5], YELLOW)                  # standing on its foot
+        bar(p, [x0 - .5, 0, 5.5], [x0 + 3, 1, 10.5], YELLOW_WORN)
+    bar(p, [4.5, AXLE - .6, 7.4], [11.5, AXLE + .6, 8.6], BARE)
+    for x0 in (1.4, 14):
+        bar(p, [x0, AXLE - 1, 7], [x0 + .6, AXLE + 1, 9], BOLT)
+    return p
+
+
+def seesaw_board():
+    """The middle three blocks of the board, level, and the strap that holds it down on the axle."""
+    p = []
+    for z0 in (-16, 0, 16):
+        length_of_board(p, z0, z0 + 16)
+    bar(p, [BOARD0 - .2, AXLE - .95, 6.8], [BOARD1 + .2, AXLE + .95, 9.2], BOLT)
+    return p
+
+
+def seesaw_seat():
+    """An end of the board, pointing north, level: the board's last length; the seat on it; the handle in front of whoever sits
+    there (toward the stand, to the south); and under it the half tyre that comes down on the sand."""
+    p = []
+    length_of_board(p, 1.6, 16)
+    bar(p, [4.5, AXLE + .75, 4.8], [11.5, AXLE + PAD, 11.2], FRAME)
+    bar(p, [5.5, AXLE + PAD, 5.8], [10.5, AXLE + PAD + .05, 10.2], FRAME_WORN)
+    bar(p, [7.4, AXLE + .75, 12.6], [8.6, AXLE + 5.4, 13.8], BARE)
+    bar(p, [4.2, AXLE + 5.4, 12.6], [11.8, AXLE + 6.6, 13.8], BARE)
+    for x0 in (3.6, 10.6):
+        bar(p, [x0, AXLE + 5.2, 12.4], [x0 + 1.8, AXLE + 6.8, 14], RUBBER)
+    bar(p, [6, AXLE - BUMPER, 2.8], [10, AXLE - .75, 6.8], RUBBER)
+    return p
+
+
 def mark_model():
     p = []
     plate(p, [0, .3, 0], [16, .3, 16], 'm', {'up': (0, 0)})
@@ -334,8 +408,11 @@ PIECES = {
     'ladder_0': lambda: ladder(0), 'ladder_1': lambda: ladder(1), 'deck_0': lambda: deck(False), 'deck_1': lambda: deck(True),
     'chute_0': lambda: chute(0), 'chute_1': lambda: chute(1), 'chute_2': lambda: chute(2), 'chute_3': lambda: chute(3), 'runout_0': runout,
     'ladder_2': lambda: ladder(0, GREEN, BOLT), 'ladder_3': lambda: ladder(1, GREEN, BOLT), 'rungs_0': lambda: rungs(False), 'rungs_1': lambda: rungs(True),
+    'seesaw_stand': seesaw_stand, 'seesaw_board': seesaw_board, 'seesaw_seat': seesaw_seat,
 }
-NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark', 's': 'sheet', 't': 'tread'}
+NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark', 's': 'sheet', 't': 'tread', 'w': 'plank'}
+# The seesaw's block: the model each of its parts is drawn from. An end's place in the world draws nothing.
+SEESAW = {'stand': 'seesaw_stand', 'end': 'gone', 'board': 'seesaw_board', 'seat': 'seesaw_seat'}
 KINDS = ['post', 'bar', 'chain', 'swing', 'ladder', 'deck', 'chute', 'runout', 'rungs']
 # The model each stage of a kind is drawn from; `gone` draws nothing.
 STAGES = {'post': ('post_0', 'post_1', 'post_2', 'post_3'), 'bar': ('bar_0', 'bar_1', 'bar_0', 'bar_0'),
@@ -369,11 +446,14 @@ def files():
     out['blockstates/calder_play.json'] = {'variants': variants}
     out['blockstates/calder_mark.json'] = {'variants': {f'facing={facing},scatter={k}': {'model': P + 'mark_0', **({'y': y} if y else {})}
                                                         for facing, y in FACING_Y.items() for k in range(4)}}
+    out['blockstates/calder_seesaw.json'] = {'variants': {f'facing={facing},part={part}': {'model': P + name, **({'y': y} if y else {})}
+                                                          for facing, y in FACING_Y.items() for part, name in SEESAW.items()}}
     out['models/item/sand_ball.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/sand_ball'}}
     return out
 
 
 NAMES = {'block.the_oldest_house.calder_play': 'Playground Equipment', 'block.the_oldest_house.calder_mark': 'Heel Mark',
+         'block.the_oldest_house.calder_seesaw': 'Seesaw',
          'item.the_oldest_house.sand_ball': 'Ball of Sand', 'entity.the_oldest_house.sand_ball': 'Ball of Sand'}
 
 

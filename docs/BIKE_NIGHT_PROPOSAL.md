@@ -1,6 +1,6 @@
 # Bike night — a proposal (November 10)
 
-The owner's notes for a bike vignette, recorded as given and then worked into a design for review. Its first slice, the bikes, is built (0.4.463), the park they stand in (0.4.464), the playground's swings and sand balls (0.4.465), its slide (0.4.466), and its monkey bars (0.4.467); the rest is not. It comes after Borrasca, using the bikes Borrasca already has (`docs/BORRASCA_BIKES_0_4_435.md`).
+The owner's notes for a bike vignette, recorded as given and then worked into a design for review. Its first slice, the bikes, is built (0.4.463), the park they stand in (0.4.464), the playground's swings and sand balls (0.4.465), its slide (0.4.466), its monkey bars (0.4.467), and its seesaw (0.4.468); the rest is not. It comes after Borrasca, using the bikes Borrasca already has (`docs/BORRASCA_BIKES_0_4_435.md`).
 
 ## The owner's notes
 
@@ -290,7 +290,7 @@ It is large. It has three acts, a town, and a course in the air. In slices:
    - the jump and landings;
    - riding double;
    - the rack and the choice.
-2. **The playground:** the seesaw, the slide, the monkey bars (new verb), the merry-go-round, the spring rider, the dome, the sandpit and sand balls. Gus. (The park itself is built, 0.4.464, `docs/BIKE_NIGHT_PARK_0_4_464.md`: the place, its railings, gate, lamps, rack and sand, and whose bike is whose. The swings and the sand balls are built, 0.4.465, `docs/BIKE_NIGHT_SWINGS_0_4_465.md`, the slide, 0.4.466, `docs/BIKE_NIGHT_SLIDE_0_4_466.md`, and the monkey bars, 0.4.467, `docs/BIKE_NIGHT_BARS_0_4_467.md`. The rest of what goes on the sand is not.)
+2. **The playground:** the seesaw, the slide, the monkey bars (new verb), the merry-go-round, the spring rider, the dome, the sandpit and sand balls. Gus. (The park itself is built, 0.4.464, `docs/BIKE_NIGHT_PARK_0_4_464.md`: the place, its railings, gate, lamps, rack and sand, and whose bike is whose. The swings and the sand balls are built, 0.4.465, `docs/BIKE_NIGHT_SWINGS_0_4_465.md`, the slide, 0.4.466, `docs/BIKE_NIGHT_SLIDE_0_4_466.md`, the monkey bars, 0.4.467, `docs/BIKE_NIGHT_BARS_0_4_467.md`, and the seesaw, 0.4.468, `docs/BIKE_NIGHT_SEESAW_0_4_468.md`. The rest of what goes on the sand is not.)
 3. **The bullies** at the playground, and the start of the chase.
 4. **The town:** the streets, buildings and dressing; the traffic actor; the passers-by; the bullies' hunt through the back ways.
 5. **The graveyard:** the stones, the mist, the bullies falling back.

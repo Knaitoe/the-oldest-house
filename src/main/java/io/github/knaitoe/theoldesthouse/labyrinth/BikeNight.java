@@ -40,6 +40,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>0.4.467, the monkey bars: a hand on their rungs from near enough under them takes hold (BarsHang); a reader's record counts
  * their holds, and the times they went from one end to the other on one.
  *
+ * <p>0.4.468, the seesaw: a hand on an end of its board sits on it (SeesawSeat); a reader's record has that they sat, how many
+ * times they pushed off the sand, and who was on the other end when they did.
+ *
  * <p>It cannot be finished yet (the playground's equipment, the bullies, the town, the graveyard and what comes after it are later
  * slices), so the House does not deal it: {@link #dealable} says no. It is reached by an operator's test door.
  */
@@ -67,7 +70,9 @@ public final class BikeNight {
         /** Readers in the air off a swing. */
         final Map<UUID,Flight> flights=new HashMap<>();
         /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
-        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>();
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>();
+        /** Who was on the other end of the seesaw when a reader last pushed off, for their record. */
+        final Map<UUID,String> rodeWith=new HashMap<>();
         /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
         int far;@Nullable UUID farWho;@Nullable BlockPos mark;
         Night(BlockPos b){base=b;for(var make:NightBike.Make.values())at[make.ordinal()]=b.offset(BikeNightSite.bikeAt(make));}
@@ -267,6 +272,12 @@ public final class BikeNight {
     /** A reader has been down the slide (SlideRide). */
     static void slid(ServerPlayer p){var n=night(p);if(n!=null)n.slid.merge(p.getUUID(),1,Integer::sum);}
 
+    // ------------------------------------------------------------------------------------------------ the seesaw
+    /** A reader on the seesaw has pushed off the sand (SeesawSeat); with whom on the other end, if anybody. */
+    static void seesawed(ServerPlayer p,@Nullable ServerPlayer other){
+        var n=night(p);if(n==null)return;n.pushed.merge(p.getUUID(),1,Integer::sum);if(other!=null)n.rodeWith.put(p.getUUID(),other.getGameProfile().getName());
+    }
+
     // ------------------------------------------------------------------------------------------------ the monkey bars
     /** A reader has taken hold of the monkey bars (BarsHang). */
     static void hung(ServerPlayer p){var n=night(p);if(n!=null)n.hung.merge(p.getUUID(),1,Integer::sum);}
@@ -314,6 +325,12 @@ public final class BikeNight {
         if(p.getVehicle() instanceof BarsHang&&!own.getBoolean("BarsTold")){own.putBoolean("BarsTold",true);cue(p,BikeNightTexts.BARS_HINT);}
         Integer holds=n.hung.remove(id);if(holds!=null)own.putInt("Hung",own.getInt("Hung")+holds);
         Integer across=n.crossed.remove(id);if(across!=null)own.putInt("Crossed",own.getInt("Crossed")+across);
+        if(p.getVehicle() instanceof SeesawSeat){
+            own.putBoolean("SeesawSat",true);
+            if(!own.getBoolean("SeesawTold")){own.putBoolean("SeesawTold",true);cue(p,BikeNightTexts.SEESAW_HINT);}
+        }
+        Integer pushes=n.pushed.remove(id);if(pushes!=null)own.putInt("Seesaw",own.getInt("Seesaw")+pushes);
+        String with=n.rodeWith.remove(id);if(with!=null)own.putString("SeesawWith",with);
     }
 
     // ------------------------------------------------------------------------------------------------ a hand on the park's things
@@ -337,6 +354,12 @@ public final class BikeNight {
             cue(p,switch(s.getValue(CalderPlayBlock.KIND)){
                 case LADDER->s.getValue(CalderPlayBlock.STAGE)>=CalderPlayBlock.BARS?BikeNightTexts.BARS:BikeNightTexts.SLIDE;
                 case DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->BikeNightTexts.SWINGS;});return true;
+        }
+        // An end of the seesaw's board is sat on, if nobody is on it; the rest of it is looked at.
+        if(s.is(BikeNightRegistry.SEESAW.get())){
+            if(s.getValue(SeesawBlock.PART)!=SeesawBlock.Part.END||p.isPassenger())cue(p,BikeNightTexts.SEESAW);
+            else if(SeesawSeat.sit(p,b.offset(rel))==null)cue(p,BikeNightTexts.SEESAW_TAKEN);
+            return true;
         }
         if(CalderSignBlock.is(s)){cue(p,CalderSignBlock.sign(s).look());return true;}
         if(s.is(BikeNightRegistry.RACK.get())){cue(p,BikeNightTexts.RACK);return true;}

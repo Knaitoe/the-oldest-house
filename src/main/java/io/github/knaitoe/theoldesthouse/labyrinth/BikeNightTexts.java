@@ -47,6 +47,10 @@ public final class BikeNightTexts {
     public static final String BARS_FAR="Not from here. Get under them.";
     public static final String BARS_HINT="Walk to go hand over hand, the way you are looking. Sneak lets go.";
     public static final String BARS_ACROSS="Across, from one end to the other, and not a foot on the sand.";
+    /** 0.4.468, the seesaw: a hand on it; a hand on an end somebody is on; and what a reader sitting on it is told once. */
+    public static final String SEESAW="A seesaw: a long board on a steel stand, with a seat and a handle at each end.";
+    public static final String SEESAW_TAKEN="Somebody is on that end.";
+    public static final String SEESAW_HINT="Jump to push off the sand when your end is down. Sneak gets off.";
     /** The sand: a ball packed; no more to be carried; no room for one; what is left of one carried out of the night. */
     public static final String SAND="You pack a ball of sand. It holds.";
     public static final String SAND_FULL="Your pockets are full of sand.";
@@ -79,6 +83,10 @@ public final class BikeNightTexts {
         if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
         if(own.getInt("Crossed")>0)p.add("I went all the way across the monkey bars, hand over hand, without a foot on the sand.");
         else if(own.getInt("Hung")>0)p.add("I hung from the monkey bars for a while, and dropped.");
+        String with=own.getString("SeesawWith");
+        if(!with.isEmpty())p.add("I went up and down on the seesaw with "+with+" on the other end.");
+        else if(own.getInt("Seesaw")>0)p.add("I sat on one end of the seesaw with nobody on the other, and pushed myself up, and came down again each time.");
+        else if(own.getBoolean("SeesawSat"))p.add("I sat on one end of the seesaw for a while.");
         if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }

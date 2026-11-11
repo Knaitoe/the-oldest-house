@@ -1995,12 +1995,12 @@ jobs:
           test -s build/font-smoke/borrasca-assets-passed.txt
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style; do test -s build/font-smoke/native-borrasca-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
-      - name: Native Bike night bikes, rack and ramps, the park's own things, the swings, the slide and the monkey bars
+      - name: Native Bike night bikes, rack and ramps, the park's own things and the playground
         timeout-minutes: 5
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbikeNightSmoke --no-daemon
           test -s build/font-smoke/bike-night-assets-passed.txt
-          for view in bikes ridden lying rack hud park signs swings slide bars; do test -s build/font-smoke/native-bike-night-$view.png; done
+          for view in bikes ridden lying rack hud park signs swings slide bars seesaw; do test -s build/font-smoke/native-bike-night-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -2304,7 +2304,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: Native Bike night, every bike and what each does, the park, the swings, the sand, the slide and the monkey bars
+      - name: Native Bike night, every bike and what each does, the park and the playground
         timeout-minutes: 19
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g

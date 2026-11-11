@@ -12,6 +12,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.CalderPlayBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderSignBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderSigns;
 import io.github.knaitoe.theoldesthouse.labyrinth.NightBike;
+import io.github.knaitoe.theoldesthouse.labyrinth.SeesawBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.NightBikeBlock;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,10 +53,13 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  *
  * <p>0.4.467, the monkey bars: the whole of them as the builder puts them up, from one side: a ladder at each end and the rungs
  * between them.
+ *
+ * <p>0.4.468, the seesaw: its stand with the board drawn over it as the stand's renderer draws it, as far over as it goes, and
+ * another caught level, half way over.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -80,6 +84,7 @@ public final class BikeNightVisualProof extends Screen {
         need(BikeNightRegistry.LEAVES.get().defaultBlockState());
         for(var state:BikeNightRegistry.PLAY.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.MARK.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.SEESAW.get().getStateDefinition().getPossibleStates())need(state);
         if(mc.getItemRenderer().getModel(new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()),null,null,0)==missing)throw new IllegalStateException("Missing the ball of sand's model");
     }
     private static void need(BlockState s){var mc=Minecraft.getInstance();if(mc.getBlockRenderer().getBlockModel(s)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing Bike night model for "+s);}
@@ -91,9 +96,10 @@ public final class BikeNightVisualProof extends Screen {
             "the park's own things, from inside the gate","the park's signs: the gate's board from in front and from behind, and the rules",
             "the swings: one hanging still, one at the top of a high arc; the furthest landing's mark; a ball of sand",
             "the slide: its ladder, the deck under its guard, the chute and its level end",
-            "the monkey bars: a ladder at each end, and the rungs between them over a child's head"}[page],8,8,0xffffffff);
+            "the monkey bars: a ladder at each end, and the rungs between them over a child's head",
+            "the seesaw: one end down on its bumper, as it stands; and half way over"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);default->bars(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);default->seesaw(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -251,6 +257,22 @@ public final class BikeNightVisualProof extends Screen {
         buffers.endBatch();pose.popPose();
     }
 
+    /** Two seesaws side on, their first ends to the right: the far one as it stands, that end down; the near one level, half way over. */
+    private void seesaw(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width*.1F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.62F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(14));pose.mulPose(Axis.YP.rotationDegrees(-24));pose.translate(-3.5F,0,-3F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var facing=Direction.EAST;
+        for(int x=0;x<=6;x++)for(int z=0;z<=5;z++)at.accept(Blocks.SAND.defaultBlockState(),new int[]{x,-1,z});
+        for(int row=0;row<2;row++){
+            int z=1+row*3;
+            at.accept(SeesawBlock.of(SeesawBlock.Part.STAND,facing),new int[]{3,0,z});
+            pose.pushPose();pose.translate(3,0,z);SeesawRenderer.draw(pose,buffers,facing,row==0?(float)SeesawBlock.MAX:0F,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();
+        }
+        buffers.endBatch();pose.popPose();
+    }
+
     /** Both signs flat on, as the builder hangs them: the gate's board from in front, then from behind, then the rules. */
     private void signs(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
@@ -300,7 +322,7 @@ public final class BikeNightVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-bike-night-"+PAGES[s.page]+".png"));s.drawn(image);}
         if(++s.page<PAGES.length){s.frames=0;return;}
-        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Ten native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. The monkey bars, whole, from one side. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
+        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Eleven native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. The monkey bars, whole, from one side. The seesaw, as it stands and half way over. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
         mc.stop();
     }
 }
