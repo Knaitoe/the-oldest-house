@@ -1,0 +1,87 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "l": "the_oldest_house:block/borrasca_home/letter_1",
+    "particle": "the_oldest_house:block/borrasca_home/letter_1"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        0.02,
+        -15.6
+      ],
+      "to": [
+        11.5,
+        0.3,
+        -10.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            0,
+            5,
+            6,
+            5.3
+          ]
+        },
+        "south": {
+          "texture": "#l",
+          "uv": [
+            0,
+            5,
+            6,
+            5.3
+          ]
+        },
+        "east": {
+          "texture": "#l",
+          "uv": [
+            0,
+            5,
+            6,
+            5.3
+          ]
+        },
+        "west": {
+          "texture": "#l",
+          "uv": [
+            0,
+            5,
+            6,
+            5.3
+          ]
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            6,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            6,
+            5
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.5,
+          0.1,
+          -13
+        ],
+        "axis": "y",
+        "angle": -22.5
+      }
+    }
+  ]
+}

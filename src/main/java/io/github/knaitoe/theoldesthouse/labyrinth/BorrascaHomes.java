@@ -46,8 +46,9 @@ public final class BorrascaHomes {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     public static final int PRUITT=0,HOLLIS=1,WEBB=2,CORLEY=3,HOUSES=4;
     /** Each house's walls as BorrascaDressing builds them: its west and east walls, its north wall, and whether it stands west of the street. */
-    private static final int[] X0={-23,-23,15,15},X1={-15,-15,23,23},NORTH={-43,-55,-43,-55};
-    private static final boolean[] WEST={true,true,false,false};
+    private static final int[] X0={-23,-23,15,15},X1={-15,-15,23,23};
+    static final int[] NORTH={-43,-55,-43,-55};
+    static final boolean[] WEST={true,true,false,false};
     /** A thing in a house: whose, where from the town's base, what, and how it faces. */
     public record Thing(int house,BlockPos at,BorrascaHomeBlock.Kind kind,Direction facing){}
 

@@ -90,7 +90,10 @@ On the second visit Patrick is gone, and Kendra's words by the cabinets follow w
 over his; or his, because the reader told him how; or his, because nobody ever beat him. Years later the dusty table says the
 same thing it said that afternoon.
 
-## 3. The letter (later)
+## 3. The letter
+
+**Built in 0.4.459.** What is said, word for word, and how it is made: [BORRASCA_LETTER_0_4_459.md](BORRASCA_LETTER_0_4_459.md).
+The letter is never opened, and who it is from is printed on it and said by nobody.
 
 On the second visit Dorsey has a letter for the Garritys and nobody at their door. He hands it to the reader to push under the
 porch door. The porch is a real one, with the box on its post at the gate. Years later the box is still there, GARRITY under tape
@@ -114,7 +117,7 @@ cancelled for a storm that does not come.
 
 1. The window and the comic, and room 6.
 2. The arcade.
-3. The letter. 4. The supper. 5. More play.
+3. The letter (built). 4. The supper. 5. More play.
 
 The playtest notes of the same day (docs/BORRASCA_PLAYTEST_2026_11_10.md) list what is broken in the town now; those come first
 where they touch the same places (the comic spinner, the cabinets, Dorsey).

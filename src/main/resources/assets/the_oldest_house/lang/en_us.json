@@ -1584,5 +1584,6 @@
   "block.the_oldest_house.bar_slate": "League Slate",
   "block.the_oldest_house.bar_booth": "Booth Joinery",
   "block.the_oldest_house.borrasca_home": "Household Thing",
-  "item.the_oldest_house.borrasca_baton": "County baton"
+  "item.the_oldest_house.borrasca_baton": "County baton",
+  "item.the_oldest_house.borrasca_letter": "A letter for the Garritys"
 }

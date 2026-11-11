@@ -1112,7 +1112,7 @@ jobs:
           for view in cast fixtures gear; do test -s build/font-smoke/native-lake-house-$view.png; done
           test -s build/font-smoke/lake-house-passed.txt
           test -s build/font-smoke/borrasca-assets-passed.txt
-          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style gentleman bike arcade feeding devoured orrery comic names signs-0 signs-1 papers seats cards-0 cards-1 cards-2 homes fight; do test -s build/font-smoke/native-borrasca-$view.png; done
+          for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style gentleman bike arcade feeding devoured orrery comic names signs-0 signs-1 papers seats cards-0 cards-1 cards-2 homes fight letter; do test -s build/font-smoke/native-borrasca-$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
           # Every architecture export has a rendered page, and every vignette (vignettes.txt, from the places) has an export: nothing here is a hand-kept count.

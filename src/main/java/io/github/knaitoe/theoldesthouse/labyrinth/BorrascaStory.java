@@ -158,6 +158,7 @@ public final class BorrascaStory {
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         if(!BorrascaBelongings.valid(p,own,key,s))return;
         if(key.equals(BorrascaComic.KEY)){BorrascaComic.read(p,s,own);return;} // 0.4.445: the comic opens wherever it is carried
+        if(key.equals(BorrascaGarritys.KEY)){BorrascaGarritys.look(p,s,own);return;} // 0.4.459: the Garritys' letter is looked at wherever it is carried
         // 0.4.198: away from the trail the compass points (Keepsakes.compass); the patch only shows her name.
         if(!BorrascaSites.inside(p)){if(key.equals("Compass")&&own.getBoolean("Taken_Ending"))Keepsakes.compass(p);else p.displayClientMessage(Component.literal(key.equals("Compass")?"The red tape is worn thin around the brass case.":"Her name, stitched in the cloth."),true);return;}
         var b=BorrascaSites.base(p.server,p.getUUID());if(b==null)return;
@@ -174,6 +175,7 @@ public final class BorrascaStory {
         // 0.4.422: the shops along the street past the chapel are placed in the world (that street has no authored coordinates).
         if(BorrascaShops.click(p,b,rel,own))return true;
         if(BorrascaHomes.click(p,b,rel,own))return true; // 0.4.456: a thing in one of the street's four houses
+        if(BorrascaGarritys.click(p,b,rel,own))return true; // 0.4.459: the Garritys' door, and the street's mailboxes
         rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
         if(BorrascaComic.click(p,b,rel,own))return true; // 0.4.445: the comic in the fort's window
@@ -476,6 +478,7 @@ public final class BorrascaStory {
         townPosters(p,b,own,visit);
         BorrascaShops.years(p.serverLevel(),b,visit>=3); // 0.4.454: the station's board shows the reader's own year's prices
         BorrascaHomes.years(p.serverLevel(),b,visit>=3); // 0.4.456: and the street's four households are as they were, or years on
+        BorrascaGarritys.keep(p.serverLevel(),b,own,visit); // 0.4.459: the Garritys' box, door and curtains, and the letter under the door
         townBike(p,b,own,visit);
         BorrascaComic.keep(p,b,own,visit); // 0.4.445: the comic in the fort's window, for as long as it is left there
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door

@@ -53,6 +53,8 @@ final class BorrascaDressing {
         house(l,b,-23,-47,-15,-55,true,Blocks.MUD_BRICKS,Blocks.POLISHED_ANDESITE_STAIRS,Blocks.POLISHED_ANDESITE_SLAB,"HOLLIS",1);
         house(l,b,15,-35,23,-43,false,Blocks.STRIPPED_OAK_LOG,Blocks.DEEPSLATE_TILE_STAIRS,Blocks.DEEPSLATE_TILE_SLAB,"WEBB",2);
         house(l,b,15,-47,23,-55,false,Blocks.BRICKS,Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS,Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,"CORLEY",3);
+        // 0.4.459: the friend's family, across from the church: dark boards under grey slate (BorrascaGarritys).
+        house(l,b,BorrascaGarritys.X0,BorrascaGarritys.SOUTH,BorrascaGarritys.X1,BorrascaGarritys.NORTH,true,Blocks.SPRUCE_PLANKS,Blocks.STONE_BRICK_STAIRS,Blocks.STONE_BRICK_SLAB,"GARRITY",BorrascaHomes.HOUSES);
         chapel(l,b);
         trailhead(l,b);
         poles(l,b);
@@ -108,7 +110,8 @@ final class BorrascaDressing {
         // Windows: two on the street, two at the back, one each end; the door in the middle of the street side.
         for(int dz:new int[]{-2,2}){box(l,b,front,1,zc+dz,front,2,zc+dz,Blocks.GLASS_PANE);box(l,b,back,1,zc+dz,back,2,zc+dz,Blocks.GLASS_PANE);}
         for(int z:new int[]{z0,z1})box(l,b,(x0+x1)/2,1,z,(x0+x1)/2,2,z,Blocks.GLASS_PANE);
-        NovelRooms.door(l,b.offset(front,0,zc),out,Blocks.OAK_DOOR,false);
+        boolean household=yard<BorrascaHomes.HOUSES; // 0.4.459: the Garritys' house has its own door, room and yard
+        if(household)NovelRooms.door(l,b.offset(front,0,zc),out,Blocks.OAK_DOOR,false);
         // Porch: boards level with the floor, two posts, a slab roof and its light (one house leaves it burning).
         int p0=front+o,p1=front+2*o;
         for(int x=Math.min(p0,p1);x<=Math.max(p0,p1);x++)for(int z=zc-2;z<=zc+2;z++){set(l,b,x,-1,z,Blocks.OAK_PLANKS);set(l,b,x,3,z,slab(roofSlab,SlabType.BOTTOM));}
@@ -120,7 +123,7 @@ final class BorrascaDressing {
         for(int y=0;y<=9;y++)set(l,b,back-o,y,z1+1,brick?Blocks.BRICKS.defaultBlockState():(hash(back,y,z1)%4==0?Blocks.MOSSY_COBBLESTONE:Blocks.COBBLESTONE).defaultBlockState());
         set(l,b,back-o,10,z1+1,brick?Blocks.BRICK_WALL:Blocks.COBBLESTONE_WALL);
         // Inside: 0.4.456, each house is its own household (BorrascaHomes); a lamp.
-        BorrascaHomes.furnish(l,b,yard);
+        if(household)BorrascaHomes.furnish(l,b,yard);else BorrascaGarritys.furnish(l,b);
         set(l,b,(x0+x1)/2,3,zc,hanging());
         // The yard: path, chain-link along the street with an opening for the path, the name on the post beside it, a tree.
         int street=west?-5:5;
@@ -128,12 +131,15 @@ final class BorrascaDressing {
         for(int z=z1-1;z<=z0+1;z++){if(z==zc)continue;set(l,b,street,0,z,Blocks.IRON_BARS);}
         box(l,b,street,0,zc,street,1,zc,AIR);
         for(int x=Math.min(street,back-o),X=Math.max(street,back-o);x<=X;x++){set(l,b,x,0,z0+2,Blocks.IRON_BARS);set(l,b,x,0,z1-2,Blocks.IRON_BARS);}
-        box(l,b,street,0,zc+1,street,1,zc+1,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.Y));BorrascaSigns.hang(l,b.offset(street+o,1,zc+1),BorrascaSigns.Sign.valueOf("NAME_"+name),out); // 0.4.449: each family's own plate
+        if(household){box(l,b,street,0,zc+1,street,1,zc+1,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.Y));BorrascaSigns.hang(l,b.offset(street+o,1,zc+1),BorrascaSigns.Sign.valueOf("NAME_"+name),out);} // 0.4.449: each family's own plate
+        // 0.4.459: a mailbox on a post at every gate, its mouth to the street. The Garritys' name is on theirs and nowhere else.
+        set(l,b,street,0,zc-1,Blocks.OAK_FENCE);set(l,b,street,1,zc-1,BorrascaHomeBlock.of(BorrascaHomeBlock.Kind.BOX,out,0));
         int tx=street+(west?-3:3),tz=z0;
         switch(yard){
             case 0->{BorrascaLand.oak(l,b,tx,0,tz,6);}
             case 1->{redbud(l,b,tx,0,z0);swing(l,b,street+(west?-4:4),zc-3,west);}
             case 2->{BorrascaLand.oak(l,b,tx,0,z1,5);line(l,b,back-3*o,z0,z1,west);}
+            case 4->{redbud(l,b,tx,0,z1);beds(l,b,street+(west?-2:2),zc,west);}
             default->{dogwood(l,b,tx,0,z0);beds(l,b,street+(west?-2:2),zc,west);kennel(l,b,back,z0,west);}
         }
         BorrascaRooms.join(l,b,Math.min(x0-3,street-1),0,z1-3,Math.max(x1+3,street+1),2,z0+3);
@@ -261,7 +267,7 @@ final class BorrascaDressing {
      * 0.4.277: the town's own trees, not the taiga's: big yard oaks, lower oaks, a red cedar in the fence line.
      */
     private static void trees(ServerLevel l,BlockPos b){
-        int[][] at={{-33,-12},{-34,-38},{-31,-46},{-33,-58},{-29,-66},{33,-10},{34,-34},{31,-44},{33,-55},{29,-66},{-26,-62},{26,-73},{-9,-73},{10,-74}};
+        int[][] at={{-33,-12},{-34,-38},{-31,-46},{-33,-58},{-29,-66},{33,-10},{34,-34},{31,-44},{33,-55},{29,-66},{-30,-72},{26,-73},{-9,-73},{10,-74}};
         for(var t:at){int x=t[0],z=t[1];int k=hash(x,8,z)%3;int y=Math.max(0,BorrascaLand.ground(x,z));
             if(k==0)BorrascaLand.tallOak(l,b,x,y,z,11+hash(x,9,z)%3,hash(x,11,z)%3==0);else if(k==1)BorrascaLand.oak(l,b,x,y,z,5+hash(x,10,z)%2);else BorrascaLand.cedar(l,b,x,y,z,6+hash(x,12,z)%2);
         }

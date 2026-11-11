@@ -13,7 +13,9 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("180")
+        event.registrar("181")
+                .playToClient(BorrascaLetterPayload.TYPE,BorrascaLetterPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaLetterScreen.accept(payload)))
+                .playToServer(BorrascaLetterSeenPayload.TYPE,BorrascaLetterSeenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaGarritys.seen(p,payload.back());}))
                 .playToClient(BorrascaCardsPayload.TYPE,BorrascaCardsPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaCardsScreen.accept(payload)))
                 .playToServer(BorrascaCardSeenPayload.TYPE,BorrascaCardSeenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaCards.seen(p,payload.index());}))
                 .playToClient(BorrascaArcadeWatchPayload.TYPE,BorrascaArcadeWatchPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaArcadeScreen.watch(payload)))
