@@ -47,6 +47,15 @@ class Look:
     face_style: str = ''
     # 0.4.202 (owner: "eyes are just a smidge off"): the House body's irises sit in the middle of both eyes, looking ahead.
     level_eyes: bool = False
+    # 0.4.480 (owner: "give the bullies more contemporary clothing please. skull with fire eyes on a t-shirt, hoodie, etc."):
+    # what is printed on the chest; a jersey's number; the long sleeve worn under a short one; a stripe down the outside of the
+    # leg; torn knees; and what the shoes are, where they are not the plain dark ones.
+    print: str = ''
+    jersey: int = 0
+    under: str = ''
+    stripe: str = ''
+    rips: bool = False
+    shoes: str = ''
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -190,10 +199,12 @@ LOOKS = {
     # 0.4.479, Bike night: the three who come to the park. Children, a little bigger than the readers (the owner: "i'd probably assume
     # him/the rest of the cast of playground kids and bullies as such"). Tully in a denim jacket with its sleeves cut off, and again in
     # Gus's cap once he has taken it (the cap's own colour is the accent, so his is Gus's); Ray-Ray in plaid; Duff in a sweatshirt.
-    'literary_bike_tully': Look('#d2a07c','#2a2320','messy','#3d5a80','#2b2f38','jacket','#b23a30',eyes='#4a5a3a',sleeve=4,face_style='child'),
-    'literary_bike_tully_cap': Look('#d2a07c','#2a2320','messy','#3d5a80','#2b2f38','jacket','#b23a30',eyes='#4a5a3a',mark='bike_cap',sleeve=4,face_style='child'),
-    'literary_bike_ray': Look('#e3b896','#c9a24a','short','#7a2b2b','#3a4f6e','flannel','#d9c7a0',eyes='#5a6a7a',sleeve=9,face_style='child'),
-    'literary_bike_duff': Look('#c99272','#5a3a22','close','#2f5a3a','#4a3a2a','crew','#e3d9b8',eyes='#3d4a3a',sleeve=7,face_style='child'),
+    # 0.4.480: Tully in a black T-shirt with a skull on it whose eyes are fire, and jeans out at the knees; Ray-Ray in a hooded
+    # sweatshirt and track pants; Duff in a football jersey over a long-sleeved shirt.
+    'literary_bike_tully': Look('#d2a07c','#2a2320','messy','#1d1d22','#33405a','tee','#b23a30',eyes='#4a5a3a',sleeve=4,face_style='child',print='skull_fire',rips=True,shoes='#e4e0d4'),
+    'literary_bike_tully_cap': Look('#d2a07c','#2a2320','messy','#1d1d22','#33405a','tee','#b23a30',eyes='#4a5a3a',mark='bike_cap',sleeve=4,face_style='child',print='skull_fire',rips=True,shoes='#e4e0d4'),
+    'literary_bike_ray': Look('#e3b896','#c9a24a','short','#7c2f3c','#26282e','hoodie','#e8e2d2',eyes='#5a6a7a',sleeve=11,face_style='child',stripe='#e8e2d2',shoes='#d6d2c6'),
+    'literary_bike_duff': Look('#c99272','#5a3a22','close','#285a3e','#6a6250','jersey','#ecdfae',eyes='#3d4a3a',sleeve=5,face_style='child',jersey=66,under='#d4d0c2',shoes='#26262a'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -888,6 +899,14 @@ def cloth_face(size,look,side='front'):
             d.line((w//2,h-7,w//2+3,h-5,w//2+1,h-3),fill=a)
         if look.mark=='movie_stripes':
             for y in range(3,h-1,4):d.line((0,y,w-1,y),fill=a);d.line((0,y+1,w-1,y+1),fill=shade(a,-14))
+        if look.style=='hoodie':
+            # The hood, down: it lies on the shoulders, a seam along its middle; and the ribbed hem.
+            mid=w//2
+            d.polygon([(2,0),(w-3,0),(w-4,7),(mid,9),(mid-1,9),(3,7)],fill=shade(c,-12))
+            d.line((2,0,3,7,mid-1,9),fill=lo);d.line((w-3,0,w-4,7,mid,9),fill=lo);d.line((mid-1,1,mid-1,8),fill=shade(c,-24))
+            d.line((0,h-2,w-1,h-2),fill=lo)
+        if look.style=='jersey':
+            d.rectangle((0,0,2,1),fill=a);d.rectangle((w-3,0,w-1,1),fill=a);numerals(d,str(look.jersey),w//2,6,a)
         return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
     if side!='front':return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
     mid=w//2
@@ -930,6 +949,18 @@ def cloth_face(size,look,side='front'):
         if look.style in ('dress','club_dress'):d.line((1,h-6,w-2,h-6),fill=a);d.rectangle((mid-1,h-7,mid,h-5),fill=shade(a,20))
         if look.style=='tank':
             d.rectangle((0,0,1,5),fill=rgb(look.skin));d.rectangle((w-2,0,w-1,5),fill=rgb(look.skin))
+    elif look.style=='hoodie':
+        # The hood's opening at the neck, its two cords, the pouch across the front, and the ribbed hem.
+        d.polygon([(mid-4,0),(mid+3,0),(mid,4),(mid-1,4)],fill=shade(c,-30))
+        d.line((mid-4,0,mid-1,4),fill=lo);d.line((mid+3,0,mid,4),fill=lo)
+        d.line((mid-2,4,mid-2,9),fill=a);d.line((mid+1,4,mid+1,8),fill=a);d.point((mid-2,10),fill=shade(a,-34));d.point((mid+1,9),fill=shade(a,-34))
+        d.polygon([(3,h-10),(w-4,h-10),(w-3,h-4),(2,h-4)],outline=lo);d.line((4,h-10,w-5,h-10),fill=hi)
+        d.line((0,h-2,w-1,h-2),fill=lo)
+    elif look.style=='jersey':
+        # A football jersey: a band round the collar, stripes over the shoulders, and its number, large.
+        d.line((mid-4,0,mid-3,2,mid-1,3,mid+1,3,mid+3,1),fill=a)
+        d.rectangle((0,0,2,1),fill=a);d.rectangle((w-3,0,w-1,1),fill=a)
+        numerals(d,str(look.jersey),mid,7,a)
     elif look.style=='vest':
         d.rectangle((mid-3,1,mid+2,h-1),fill='#393c3c');d.line((mid-4,2,mid-4,h-1),fill=hi);d.line((mid+3,2,mid+3,h-1),fill=hi)
         for x in (1,w-5):d.rectangle((x,7,x+3,12),outline=lo)
@@ -1002,6 +1033,14 @@ def cloth_face(size,look,side='front'):
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
+    if look.print=='skull_fire':
+        # A skull, bone on the shirt, and in each socket a flame: orange with a yellow heart, its tip up over the brow.
+        rows=('...SSSSS...','..SSSSSSS..','.SoSSSSSoS.','.SooSSSooS.','.SooSSSooS.','.SyySSSyyS.','.SSSSnSSSS.','..SSSnSSS..','..SSSSSSS..','...StStS...','...SSSSS...')
+        ink={'S':'#f0ead8','o':'#f0741c','y':'#ffd84a','n':'#141416','t':'#141416'}
+        for dy,row in enumerate(rows):
+            for dx,ch in enumerate(row):
+                if ch!='.':d.point((mid-6+dx,5+dy),fill=ink[ch])
+        for dx in (3,4,5,6,7):d.point((mid-6+dx,15),fill='#c2bca8')
     costume_marks(d,look,w,h)
     if look.number:
         # The entry number, pinned on: a white card with red digits.
@@ -1013,6 +1052,16 @@ def cloth_face(size,look,side='front'):
                     if bit=='1':d.point((x+col,y0+2+row),fill='#a8322c')
             x+=4
     return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
+
+
+def numerals(d,digits,mid,y0,color):
+    """A number in the entry cards' figures at twice their size, centred on a panel."""
+    x=mid-(len(digits)*8-2)//2
+    for ch in digits:
+        for row,bits in enumerate(DIGITS[ch]):
+            for col,bit in enumerate(bits):
+                if bit=='1':d.rectangle((x+col*2,y0+row*2,x+col*2+1,y0+row*2+1),fill=color)
+        x+=8
 
 
 def costume_marks(d,look,w,h):
@@ -1213,6 +1262,11 @@ def paint(look):
                         for y in range(4,min(h,cuff),7):d.line((0,y,w-1,y),fill=shade(look.cloth,-19))
                     d.rectangle((0,cuff,w-1,h-1),fill=rgb(look.skin))
                     if look.sleeve>=8:d.line((0,cuff-1,w-1,cuff-1),fill=shade(look.accent,8))
+                    if look.style=='jersey':
+                        # Two stripes round the short sleeve; and under it, where there is one, the long sleeve to the wrist.
+                        d.line((0,cuff-4,w-1,cuff-4),fill=rgb(look.accent));d.line((0,cuff-2,w-1,cuff-2),fill=rgb(look.accent))
+                    if look.under:
+                        d.rectangle((0,cuff,w-1,11*S-1),fill=rgb(look.under));d.line((0,11*S-1,w-1,11*S-1),fill=shade(look.under,-22))
                 if look.mark=='mourner_pocket':d.rectangle((0,5*S,w-1,7*S-1),fill='#1c2027')
                 if h>=20:
                     d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-18));d.point((w-2,h-4),fill=shade(look.skin,7))
@@ -1242,7 +1296,7 @@ def paint(look):
             put(box,art)
     # Elbow/knee cut surfaces are real model faces, with their own flat pigments.
     d=ImageDraw.Draw(im)
-    d.rectangle((0,0,8*S-1,8*S-1),fill=rgb(look.skin if look.sleeve<=6 else look.cloth))
+    d.rectangle((0,0,8*S-1,8*S-1),fill=rgb(look.under if look.under else look.skin if look.sleeve<=6 else look.cloth))
     d.rectangle((24*S,0,32*S-1,8*S-1),fill=rgb(look.pants))
     for leg in (net(0,16,4,12,4),net(16,48,4,12,4)):
         for side,box in leg.items():
@@ -1281,7 +1335,15 @@ def paint(look):
                 else:
                     if look.mark=='cottage_walter':d.rectangle((0,h-7,w-1,h-6),fill='#673c3a')
                     if look.mark=='cottage_bowler':d.line((2,1,2,h-7),fill=shade(look.pants,13))
-                    d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
+                    if look.stripe and side in ('left','right'):d.rectangle((w//2-1,1,w//2,h-6),fill=rgb(look.stripe))
+                    if look.rips and side=='front':
+                        # Out at the knee: the skin through it, and the threads still across.
+                        k=h//2-2;d.rectangle((2,k,w-3,k+2),fill=rgb(look.skin));d.line((1,k,w-2,k),fill=shade(look.pants,34));d.point((3,k+1),fill=shade(look.pants,30));d.line((2,k+3,w-3,k+3),fill=shade(look.pants,22))
+                    if look.shoes:
+                        # Sneakers: the upper, a stripe along it, and a pale sole.
+                        d.rectangle((0,h-5,w-1,h-1),fill=rgb(look.shoes));d.line((1,h-4,w-2,h-4),fill=shade(look.shoes,-38));d.line((0,h-1,w-1,h-1),fill=shade(look.shoes,24) if sum(rgb(look.shoes))<300 else shade(look.shoes,-60))
+                    else:
+                        d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
             if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark in ('possessed','trunks') else '#292c28','skin')
             if side=='bottom' and look.mark.startswith('borrasca_dana'):art=panel((w,h),'#d6d0c2','skin')
             put(box,art)

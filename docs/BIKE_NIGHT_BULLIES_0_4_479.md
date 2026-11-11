@@ -10,9 +10,11 @@ Children. The owner, of Gus: "if you don't have gus designed as a child, i'd pro
 playground kids and bullies as such." They are a little bigger than the readers (a reader is .54 of a grown body; they are
 .6 to .67), with children's faces, painted by the shared painter:
 
-- **Tully**, dark hair, a denim jacket with its sleeves cut off. A second sheet has him in Gus's cap.
-- **Ray-Ray**, fair, in plaid.
-- **Duff**, the biggest, a crew cut and a sweatshirt.
+- **Tully**, dark hair, a black T-shirt with a skull on it whose eyes are fire, and jeans out at the knees. A second sheet has him in Gus's cap.
+- **Ray-Ray**, fair, in a hooded sweatshirt and track pants.
+- **Duff**, the biggest, a crew cut and a football jersey, number 66, over a long-sleeved shirt.
+
+(Their clothes are 0.4.480's, `docs/BIKE_NIGHT_CLOTHES_0_4_480.md`. As first painted here Tully had a denim jacket with its sleeves cut off, Ray-Ray plaid, and Duff a sweatshirt.)
 
 Their threat is humiliation and never injury. Nothing in this slice hurts anybody.
 

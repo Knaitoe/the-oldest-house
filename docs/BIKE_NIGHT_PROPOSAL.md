@@ -10,6 +10,13 @@ The owner's notes for a bike vignette, recorded as given and then worked into a 
 > - The pursuit leads around a detailed 80s small town at night. Past laundromats, fast food, groceries, a theater and school. Cars pass by, passerby's honk yell and cheer from the street and sidewalks. The bullies pursue yelling jeers.
 > - Eventually the player or players have to cut through a graveyard - here, they have new obstacles to avoid - headstones and other memorials. The bullies can lag behind as mist creeps up. This could lead to a different sort of chase. Maybe find another mechanic to keep this mechanically unique - the city starts to melt away and the players have to platform - jump and swerve - their bikes through a realm of ghouls and goblins jumping out. That could utilize a bike-jump feature I was hoping to include, could instance platforms for players to jump to and from taking them high and low - as the bullies fall behind they could be chased by several Halloween specters, witches, werewolves, etc. its resource intensive but could be super flavorful. Eventually they exit from the other side of the graveyard
 
+November 11, on seeing the three as first painted and the town as first built:
+
+> - give the bullies more contemporary clothing please. skull with fire eyes on a t-shirt, hoodie, etc. the neighborhood looks good but would look better with less even streets, some suburb shortcuts, etc
+> - clutter and decor in alleys would benefit it too. space between buildings, dumpsters, trash
+
+(The clothes: 0.4.480, `docs/BIKE_NIGHT_CLOTHES_0_4_480.md`. The streets, the shortcuts and the alleys go into the town as it is built.)
+
 Everything below is Claude's working of those notes. Names, places, lines and creatures are original, and nothing recreates a particular film or game.
 
 ## The shape
