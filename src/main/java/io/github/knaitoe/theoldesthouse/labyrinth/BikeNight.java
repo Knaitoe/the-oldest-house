@@ -27,6 +27,13 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * getting on another that nobody has gives the first one back. One of the two lamps over the playground is failing. When the park has
  * stood empty for a while the night is over: the bikes are back in the rack and nobody has one.
  *
+ * <p>0.4.465, the swings and the sand. The owner: "Lots of fun potential for unique interaction here - a seesaw, slides, swings,
+ * monkey bars, etc", and of the bullies, "players throw balls of sand". The park's four swings are pumped (HouseReadSwing): a reader
+ * who lets go of one is in the air, and where they come down on the sand is paced out from under the bar. The furthest anyone has
+ * landed tonight is a heel mark in the sand, there for the next reader to beat. The playground's sand is soft: nobody is hurt
+ * coming down on it. A hand in it packs a ball of sand, eight at most; a ball thrown bursts on what it meets and hurts nobody, and
+ * the failing lamp, hit while it is out, comes back on.
+ *
  * <p>It cannot be finished yet (the playground's equipment, the bullies, the town, the graveyard and what comes after it are later
  * slices), so the House does not deal it: {@link #dealable} says no. It is reached by an operator's test door.
  */
@@ -36,6 +43,10 @@ public final class BikeNight {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.BIKE_NIGHT;
     /** Ticks: how long an empty park waits before its night is over; how long after getting on a bike its rider is told it is theirs. */
     public static final int EMPTY_RESET=200,TELL_AFTER=70;
+    /** A child's paces to a block; the fewest a landing is told in; ticks a jump is given to come down. */
+    public static final int PACES=2,LEAST=2,FLIGHT=200;
+    /** A reader in the air off a swing: where the swing hangs from, the way it faces, and when they let go. */
+    record Flight(Vec3 pivot,Direction forward,long tick){}
 
     static final class Night {
         final BlockPos base;long tick;int empty;boolean fresh=true;
@@ -47,6 +58,12 @@ public final class BikeNight {
         boolean lampLit=true;long lampNext=60,lampOut;int outages;
         /** What a reader is to be told, and when. */
         final Map<UUID,Long> tellAt=new HashMap<>();final Map<UUID,String> tell=new HashMap<>();
+        /** Readers in the air off a swing. */
+        final Map<UUID,Flight> flights=new HashMap<>();
+        /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>();
+        /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
+        int far;@Nullable UUID farWho;@Nullable BlockPos mark;
         Night(BlockPos b){base=b;for(var make:NightBike.Make.values())at[make.ordinal()]=b.offset(BikeNightSite.bikeAt(make));}
     }
     private static final Map<Long,Night> NIGHTS=new HashMap<>();
@@ -65,15 +82,24 @@ public final class BikeNight {
     public static int outages(BlockPos b){var n=night(b);return n==null?0:n.outages;}
     /** For tests: the failing lamp's next change brought forward to now. */
     public static void lampNow(BlockPos b){var n=night(b);if(n!=null)n.lampNext=n.tick;}
+    /** For tests: the failing lamp's next change put off this long. */
+    public static void lampHold(BlockPos b,int ticks){var n=night(b);if(n!=null)n.lampNext=n.tick+ticks;}
     /** For tests: what a reader is waiting to be told, told now. */
     public static void tellNow(BlockPos b){var n=night(b);if(n!=null)n.tellAt.replaceAll((k,v)->n.tick);}
     public static void resetNow(ServerLevel l,BlockPos b){var n=night(b);if(n!=null){reset(l,n);NIGHTS.remove(b.asLong());}}
+    /** The furthest landing off the swings tonight, in paces; whose; and where its mark is. */
+    public static int far(BlockPos b){var n=night(b);return n==null?0:n.far;}
+    @Nullable public static UUID farWho(BlockPos b){var n=night(b);return n==null?null:n.farWho;}
+    @Nullable public static BlockPos mark(BlockPos b){var n=night(b);return n==null?null:n.mark;}
+    public static boolean inFlight(ServerPlayer p){var n=night(p);return n!=null&&n.flights.containsKey(p.getUUID());}
 
     // ------------------------------------------------------------------------------------------------ records and speech
     static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     static Vec3 rel(Vec3 at,BlockPos b){return at.subtract(b.getX(),b.getY(),b.getZ());}
+    /** In the night, wherever in it. */
+    public static boolean here(ServerPlayer p){return LiteraryVignettes.current(p)==PLACE;}
     static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new ArrayList<ServerPlayer>();
         for(var p:l.players())if(LiteraryVignettes.participant(p)&&LiteraryVignettes.current(p)==PLACE&&b.equals(LiteraryVignettes.base(p,PLACE)))out.add(p);
@@ -155,6 +181,7 @@ public final class BikeNight {
             n.empty=0;n.tick++;
             if(n.fresh){if(!loaded(l,n))continue;n.fresh=false;recall(l,n);reset(l,n);}
             lamp(l,n);
+            flights(l,n);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -183,18 +210,105 @@ public final class BikeNight {
         }
         n.tell.clear();n.tellAt.clear();n.lampLit=true;n.lampNext=n.tick+60;n.outages=0;
         BikeNightSite.lantern(l,n.base,BikeNightSite.FLICKER,true);
+        // What the night has noted for its readers' records is not the park's to tidy: a night's first reset comes a few ticks
+        // after its first reader, and they may have done something by then.
+        unmark(l,n);n.far=0;n.farWho=null;
+        BikeNightSite.swingsBack(l,n.base);
         remember(l,n);
+    }
+
+    // ------------------------------------------------------------------------------------------------ the swings
+    /** A reader has let go of a park swing (HouseReadSwing.jump). How far out they come down is paced from under its bar. */
+    public static void letGo(ServerPlayer p,Vec3 pivot,Direction forward){var n=night(p);if(n!=null)n.flights.put(p.getUUID(),new Flight(pivot,forward,n.tick));}
+    static void flights(ServerLevel l,Night n){
+        if(n.flights.isEmpty())return;
+        for(var it=n.flights.entrySet().iterator();it.hasNext();){
+            var f=it.next();var p=l.getServer().getPlayerList().getPlayer(f.getKey());long up=n.tick-f.getValue().tick();
+            if(p==null||night(p)!=n||up>FLIGHT){it.remove();continue;}
+            if(up<3||!(p.onGround()||p.isInWater()||p.isPassenger()))continue;
+            it.remove();land(l,n,p,f.getValue());
+        }
+    }
+    /** Down. On the sand it counts, and is told in paces; the furthest of the night is marked where it was. */
+    static void land(ServerLevel l,Night n,ServerPlayer p,Flight f){
+        var at=p.position();double out=(at.x-f.pivot().x)*f.forward().getStepX()+(at.z-f.pivot().z)*f.forward().getStepZ();
+        int paces=(int)Math.floor(out*PACES);
+        if(!p.onGround()||paces<LEAST)return;
+        if(!BikeNightSite.onSand(rel(at,n.base))){cue(p,BikeNightTexts.JUMP_OFF);return;}
+        n.landed.merge(p.getUUID(),paces,Math::max);
+        boolean best=paces>n.far;
+        if(best){n.far=paces;n.farWho=p.getUUID();unmark(l,n);mark(l,n,p.blockPosition(),f.forward());}
+        cue(p,best?String.format(BikeNightTexts.JUMP_BEST,Stillness.words(paces)):paces==n.far?String.format(BikeNightTexts.JUMP_LEVEL,Stillness.words(paces))
+            :String.format(BikeNightTexts.JUMP,Stillness.words(paces),Stillness.words(n.far)));
+    }
+    static void unmark(ServerLevel l,Night n){
+        if(n.mark!=null&&l.isLoaded(n.mark)&&l.getBlockState(n.mark).is(BikeNightRegistry.MARK.get()))l.setBlock(n.mark,Blocks.AIR.defaultBlockState(),3);
+        n.mark=null;
+    }
+    /** The mark: a line dug across the way the jumper was going, where there is bare sand to dig it in. */
+    static void mark(ServerLevel l,Night n,BlockPos at,Direction forward){
+        var here=l.getBlockState(at);
+        if(!(here.isAir()||here.is(BikeNightRegistry.LITTER.get()))||!l.getBlockState(at.below()).is(Blocks.SAND))return;
+        l.setBlock(at,BikeNightRegistry.MARK.get().defaultBlockState().setValue(CalderLitterBlock.FACING,forward),3);n.mark=at.immutable();
+    }
+    /** The playground's sand is soft. */
+    @SubscribeEvent public static void fall(net.neoforged.neoforge.event.entity.living.LivingFallEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||!here(p))return;var b=LiteraryVignettes.base(p,PLACE);
+        if(b!=null&&BikeNightSite.onSand(rel(p.position(),b)))e.setDamageMultiplier(0);
+    }
+
+    // ------------------------------------------------------------------------------------------------ the sand
+    /** A hand in the playground's sand packs a ball of it: one at a time, eight at most. */
+    static void scoop(ServerPlayer p){
+        var item=BikeNightRegistry.SAND_BALL.get();
+        if(p.getCooldowns().isOnCooldown(item))return;
+        int has=p.getInventory().countItem(item);
+        if(has>=SandBallItem.MOST){cue(p,BikeNightTexts.SAND_FULL);return;}
+        if(!p.getInventory().add(new net.minecraft.world.item.ItemStack(item))){cue(p,BikeNightTexts.SAND_NO_ROOM);return;}
+        p.getCooldowns().addCooldown(item,SandBallItem.WAIT);
+        p.swing(net.minecraft.world.InteractionHand.MAIN_HAND,true);
+        p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),BikeNightRegistry.SAND_SCOOP.get(),net.minecraft.sounds.SoundSource.PLAYERS,.6F,.9F+p.getRandom().nextFloat()*.2F);
+        if(has==0)cue(p,BikeNightTexts.SAND);
+    }
+    /** A reader has thrown a ball of sand. */
+    static void threw(ServerPlayer p){var n=night(p);if(n!=null)n.thrown.merge(p.getUUID(),1,Integer::sum);}
+    /** A ball of sand has met somebody. Nobody is hurt by one; a reader on their feet is knocked a little the way it was going. */
+    static void sanded(ServerLevel l,SandBall ball,net.minecraft.world.entity.Entity met){
+        if(!(met instanceof ServerPlayer target))return;var n=night(target);if(n==null)return;
+        if(!target.isPassenger()){var v=ball.getDeltaMovement();target.knockback(.15,-v.x,-v.z);target.hurtMarked=true;}
+        if(ball.getOwner() instanceof ServerPlayer thrower&&thrower!=target)n.hits.merge(thrower.getUUID(),1,Integer::sum);
+    }
+    /** A ball of sand has met a block. The failing lamp, hit while it is out, comes back on, as a kicked one does. */
+    static void sandLanded(ServerLevel l,SandBall ball,BlockPos at){
+        var n=nightAt(l,at);if(n==null)return;var r=at.subtract(n.base);
+        if(r.getX()==BikeNightSite.FLICKER.getX()&&r.getZ()==BikeNightSite.FLICKER.getZ()&&r.getY()>=0&&r.getY()<=BikeNightSite.LAMP_TOP&&!n.lampLit)n.lampNext=n.tick;
     }
 
     // ------------------------------------------------------------------------------------------------ each reader
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(b==null)return;NIGHTS.computeIfAbsent(b.asLong(),k->new Night(b));
+        if(b==null)return;var n=NIGHTS.computeIfAbsent(b.asLong(),k->new Night(b));var id=p.getUUID();
+        if(p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity seat&&seat.pumped()){
+            own.putBoolean("Swung",true);
+            if(!own.getBoolean("SwingTold")){own.putBoolean("SwingTold",true);cue(p,BikeNightTexts.SWING_HINT);}
+        }
+        Integer far=n.landed.remove(id);if(far!=null&&far>own.getInt("SwingBest"))own.putInt("SwingBest",far);
+        Integer balls=n.thrown.remove(id);if(balls!=null)own.putInt("Sand",own.getInt("Sand")+balls);
+        Integer hits=n.hits.remove(id);if(hits!=null)own.putInt("SandHits",own.getInt("SandHits")+hits);
     }
 
     // ------------------------------------------------------------------------------------------------ a hand on the park's things
     /** A hand on something in the park that is only there to be looked at. True if it was one of them. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();BlockState s=l.getBlockState(b.offset(rel));
+        // The playground's sand, or the mark lying on it: a ball of it is packed. Anything else, with sand in the hand: the hand
+        // is not looking, it is throwing (SandBallItem), so this says nothing and lets it.
+        if(s.is(Blocks.SAND)&&BikeNightSite.sandAt(rel)||s.is(BikeNightRegistry.MARK.get())&&p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get())){scoop(p);return true;}
+        if(p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get()))return false;
+        if(s.is(BikeNightRegistry.MARK.get())){
+            var n=night(p);var who=n==null?null:n.farWho;var other=who==null?null:p.server.getPlayerList().getPlayer(who);
+            cue(p,who==null||other==null?BikeNightTexts.MARK:who.equals(p.getUUID())?BikeNightTexts.MARK_OWN:String.format(BikeNightTexts.MARK_THEIRS,other.getGameProfile().getName()));return true;
+        }
+        if(s.is(BikeNightRegistry.PLAY.get())){cue(p,BikeNightTexts.SWINGS);return true;}
         if(CalderSignBlock.is(s)){cue(p,CalderSignBlock.sign(s).look());return true;}
         if(s.is(BikeNightRegistry.RACK.get())){cue(p,BikeNightTexts.RACK);return true;}
         if(!s.is(BikeNightRegistry.FITTING.get()))return false;

@@ -26,6 +26,20 @@ public final class BikeNightTexts {
     public static final String BIN="A wire bin, a third full: wrappers, a paper bag, a burst balloon.";
     public static final String RACK="A bike rack bolted to the path. Six places.";
     public static final String BORDER="Squared timbers round the sand, worn pale where people step over them.";
+    /** 0.4.465, the swings: a hand on the frame; what a reader on one is told once; coming down off one; a hand on the mark. */
+    public static final String SWINGS="A steel frame with four swings on chains under it. The paint is worn through where hands go.";
+    public static final String SWING_HINT="Lean with the swing to take it higher. Jump to let go.";
+    public static final String JUMP="You come down %s paces out from the swings. The furthest tonight is %s.";
+    public static final String JUMP_LEVEL="You come down %s paces out from the swings, level with the furthest tonight.";
+    public static final String JUMP_BEST="You come down %s paces out from the swings. Nobody has landed further tonight.";
+    public static final String JUMP_OFF="You come down off the sand. That does not count.";
+    public static final String MARK="A heel mark dug into the sand: the furthest out anyone has landed off the swings tonight.";
+    public static final String MARK_OWN=MARK+" It is yours.",MARK_THEIRS=MARK+" It is %s's.";
+    /** The sand: a ball packed; no more to be carried; no room for one; what is left of one carried out of the night. */
+    public static final String SAND="You pack a ball of sand. It holds.";
+    public static final String SAND_FULL="Your pockets are full of sand.";
+    public static final String SAND_NO_ROOM="You have nowhere to put it.";
+    public static final String SAND_GONE="The sand has run out through your fingers.";
 
     private static List<Component> pages(HouseWriting.WritingStyle style,String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(style,p));return out;}
     /** A sheet from a school pad, in pencil. (Not the House's child's hand, which is a small child's and loses letters: Gus can spell.) */
@@ -46,6 +60,11 @@ public final class BikeNightTexts {
         p.add("It was the last night of October in a town called Calder Falls, and I was in the park after it had shut.");
         String bike=bike(own.getString("Bike"));
         p.add(bike.isEmpty()?"There were six bikes in the rack by the gate. I did not take one.":"There were six bikes in the rack by the gate. I took "+bike+".");
+        // The playground, as far as this reader went on it.
+        int far=own.getInt("SwingBest");
+        if(far>0)p.add("I got one of the swings as high as it would go and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
+        else if(own.getBoolean("Swung"))p.add("I sat on one of the swings for a while.");
+        if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }
 }

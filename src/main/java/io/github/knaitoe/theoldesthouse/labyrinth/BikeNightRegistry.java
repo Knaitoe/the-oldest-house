@@ -27,12 +27,16 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * <p>0.4.464: Calder Park. Its materials (the back wall's brick, the street's asphalt and centre line, the path's concrete flags, the
  * kerb, the trees' October leaves), its fittings ({@link CalderBlock}) and its painted signs ({@link CalderSigns}). Drawn by
  * tools/draw_calder_art.py and tools/draw_calder_signs.py.
+ *
+ * <p>0.4.465: the playground's equipment ({@link CalderPlayBlock}, drawn by tools/draw_calder_play_art.py), and the night's one item,
+ * a ball of sand.
  */
 public final class BikeNightRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITIES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
 
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<NightBikeBlock>> BIKE_TYPE=CODECS.register("night_bike",()->NightBikeBlock.CODEC);
     public static final DeferredBlock<NightBikeBlock> BIKE_BLOCK=BLOCKS.registerBlock("night_bike",NightBikeBlock::new,
@@ -64,6 +68,12 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderLitterBlock>> LITTER_TYPE=CODECS.register("calder_litter",()->CalderLitterBlock.CODEC);
     public static final DeferredBlock<CalderLitterBlock> LITTER=BLOCKS.registerBlock("calder_litter",CalderLitterBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).replaceable().noCollission().noOcclusion().noLootTable().instabreak().sound(SoundType.GRASS).pushReaction(PushReaction.DESTROY));
+    /** 0.4.465: the playground's equipment (CalderPlayBlock). This slice, the swings: a steel frame, chains and belt seats. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderPlayBlock>> PLAY_TYPE=CODECS.register("calder_play",()->CalderPlayBlock.CODEC);
+    public static final DeferredBlock<CalderPlayBlock> PLAY=BLOCKS.registerBlock("calder_play",CalderPlayBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    /** A heel mark dug into the sand where the furthest jump off the swings came down. It gives way as fallen leaves do, and is the same kind of block. */
+    public static final DeferredBlock<CalderLitterBlock> MARK=BLOCKS.registerBlock("calder_mark",CalderLitterBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.SAND).replaceable().noCollission().noOcclusion().noLootTable().instabreak().sound(SoundType.SAND).pushReaction(PushReaction.DESTROY));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderSignBlock>> SIGN_TYPE=CODECS.register("calder_sign",()->CalderSignBlock.CODEC);
     public static final DeferredBlock<CalderSignBlock> SIGN=BLOCKS.registerBlock("calder_sign",CalderSignBlock::new,
         BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noCollission().noLootTable().lightLevel(CalderSignBlock::light));
@@ -72,6 +82,14 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<NightBike>> BIKE=ENTITIES.register("night_bike",
         ()->EntityType.Builder.<NightBike>of(NightBike::new,MobCategory.MISC).sized(.6F,.9F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("night_bike"));
 
+    /**
+     * 0.4.465: a ball of the sandpit's sand, packed by hand and thrown (SandBallItem, SandBall). The night's one item: it runs out
+     * through the fingers of anyone who carries it out of the park.
+     */
+    public static final net.neoforged.neoforge.registries.DeferredItem<SandBallItem> SAND_BALL=ITEMS.register("sand_ball",()->new SandBallItem(new net.minecraft.world.item.Item.Properties().stacksTo(SandBallItem.MOST)));
+    public static final DeferredHolder<EntityType<?>,EntityType<SandBall>> SAND_BALL_THROWN=ENTITIES.register("sand_ball",
+        ()->EntityType.Builder.<SandBall>of(SandBall::new,MobCategory.MISC).sized(.25F,.25F).clientTrackingRange(6).updateInterval(10).noSave().build("sand_ball"));
+
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Any bike: the tyres letting go of the road, and both of them coming back down. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOP=sound("bike.hop"),LAND=sound("bike.land");
@@ -79,7 +97,9 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> CARD=sound("bike.card"),TURBO=sound("bike.turbo"),DYNAMO=sound("bike.dynamo");
     /** The park: the failing lamp striking and buzzing as it comes back on; the chain on the gate when a hand tries it. */
     public static final DeferredHolder<SoundEvent,SoundEvent> LAMP_BUZZ=sound("park.lamp_buzz"),CHAIN=sound("park.chain");
+    /** The playground: a swing's chains at the bottom of its arc; sand packed in a hand, thrown, and bursting where it lands. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SWING_CREAK=sound("park.swing_creak"),SAND_SCOOP=sound("park.sand_scoop"),SAND_THROW=sound("park.sand_throw"),SAND_BURST=sound("park.sand_burst");
 
     private BikeNightRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
 }

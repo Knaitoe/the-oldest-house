@@ -2,6 +2,8 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseSitting;
+import io.github.knaitoe.theoldesthouse.house.SeatEntity;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -34,6 +37,9 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  *
  * <p>0.4.464, the park: built whole of its own things; a reader comes in at child height at midnight; whichever bike a reader gets
  * on is theirs for the night; the failing lamp; the night over when the park stands empty; what a hand on the park's things says.
+ *
+ * <p>0.4.465, the swings and the sand: the frame and what hangs from it; two readers on swings side by side; a swing pumped high, let
+ * go of, and the furthest landing marked in the sand; sand packed into balls, thrown, bursting, and gone outside the night.
  * These build the place itself, one case to a batch, as the literary cases do.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_bike_night") @PrefixGameTestTemplate(false)
@@ -365,13 +371,22 @@ public final class BikeNightTests {
     // ------------------------------------------------------------------------------------------------ 0.4.464: the park
     private static final LabyrinthPlace P=LabyrinthPlace.BIKE_NIGHT;
     private static LiteraryTests.Fixture active;
-    private static final Map<UUID,List<String>> HEARD=new HashMap<>();
+    private static final Map<UUID,List<String>> HEARD=new HashMap<>(),SOUNDED=new HashMap<>();
     private static LiteraryTests.Fixture park(GameTestHelper h){done();active=new LiteraryTests.Fixture(h);return active;}
-    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();}
+    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();}
     private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);var r=P.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
     /** Everything a reader has been told so far has this in it. What is said reaches a reader when the tick ends, so cases wait on it. */
-    private static boolean heard(ServerPlayer p,String part){var all=HEARD.computeIfAbsent(p.getUUID(),k->new ArrayList<>());all.addAll(NativeTestPlayers.messages(p));return all.stream().anyMatch(m->m.contains(part));}
-    private static void hush(ServerPlayer p){NativeTestPlayers.messages(p);HEARD.remove(p.getUUID());}
+    /** What a reader was told and what they heard come down one pipe, and reading it empties it: both are kept as they are read. */
+    private static void drain(ServerPlayer p){
+        var said=HEARD.computeIfAbsent(p.getUUID(),k->new ArrayList<>());var rang=SOUNDED.computeIfAbsent(p.getUUID(),k->new ArrayList<>());
+        for(var packet:NativeTestPlayers.packets(p)){
+            if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)said.add(chat.content().getString());
+            if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)rang.add(sound.getSound().value().getLocation().getPath());
+        }
+    }
+    private static boolean heard(ServerPlayer p,String part){drain(p);return HEARD.get(p.getUUID()).stream().anyMatch(m->m.contains(part));}
+    private static boolean sounded(ServerPlayer p,String name){drain(p);return SOUNDED.get(p.getUUID()).contains(name);}
+    private static void hush(ServerPlayer p){drain(p);HEARD.remove(p.getUUID());SOUNDED.remove(p.getUUID());}
     /** A hand on a bike nobody is on: the block's own use. */
     private static void hand(LiteraryTests.Fixture f,ServerPlayer p,BlockPos at){var l=f.level(P);NightBikes.use(p,l,at,l.getBlockState(at));}
     /** A reader who has looked at this bike gets on it where it stands in the rack. */
@@ -388,6 +403,9 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_empty") public static void emptyDone(ServerLevel l){done();}
     @AfterBatch(batch="park_hands") public static void handsDone(ServerLevel l){done();}
     @AfterBatch(batch="park_rails") public static void railsDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_swings") public static void swingsDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_pump") public static void pumpDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
     public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
@@ -594,14 +612,17 @@ public final class BikeNightTests {
         var things=List.of(new Thing(new BlockPos(BikeNightSite.PATH_W+1,0,BikeNightSite.NORTH),BikeNightTexts.GATE),new Thing(new BlockPos(-6,0,BikeNightSite.NORTH),BikeNightTexts.RAILINGS),
             new Thing(BikeNightSite.FLICKER,BikeNightTexts.LAMP_FAILING),new Thing(BikeNightSite.PLAY_LAMP.above(),BikeNightTexts.LAMP),new Thing(new BlockPos(3,0,-16),BikeNightTexts.BENCH),
             new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
-            new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()));
+            new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
+            new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
             .thenExecute(()->p[0]=f.player("park_hand",P));
         for(var thing:things)seq=seq.thenExecute(()->{hush(p[0]);f.click(p[0],P,thing.at());})
             .thenWaitUntil(()->h.assertTrue(heard(p[0],thing.says()),"a hand at "+thing.at().toShortString()+" says: "+thing.says()));
         seq.thenExecute(()->{
-            for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look())){
+            for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look(),
+                BikeNightTexts.SWINGS,BikeNightTexts.SWING_HINT,BikeNightTexts.JUMP,BikeNightTexts.JUMP_LEVEL,BikeNightTexts.JUMP_BEST,BikeNightTexts.JUMP_OFF,BikeNightTexts.MARK,BikeNightTexts.MARK_OWN,BikeNightTexts.MARK_THEIRS,
+                BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -631,5 +652,241 @@ public final class BikeNightTests {
                 h.assertTrue(p[0].getX()<b.getX()+BikeNightSite.EAST+.5&&(bike[0].isRemoved()||bike[0].getX()<b.getX()+BikeNightSite.EAST+.5),"neither the rider nor the bike is past the east railings: rider "+(p[0].getX()-b.getX())+", highest "+high[0]);
                 h.assertTrue(BikeNightSite.inPark(p[0].position().subtract(b.getX(),b.getY(),b.getZ())),"the rider is still in the park");
             }).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.465: the swings and the sand
+    private static BlockPos swing(BlockPos b,int seat){return b.offset(BikeNightSite.swingAt(seat));}
+    private static int balls(ServerPlayer p){return p.getInventory().countItem(BikeNightRegistry.SAND_BALL.get());}
+
+    @GameTest(template="empty",batch="park_swings",timeoutTicks=2400)
+    public static void theSwingsHangFromTheirFrameAndTwoReadersSwingSideBySide(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final SeatEntity[] seat={null,null};
+        var forward=BikeNightSite.SWING_FORWARD;var behind=forward.getOpposite();int x=BikeNightSite.SWING_X,top=BikeNightSite.SWING_BAR;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                // The frame: three posts on the sand, a bar over them, and under the bar two seats to a bay, each on its chains.
+                int first=BikeNightSite.SWING_POSTS[0],last=BikeNightSite.SWING_POSTS[BikeNightSite.SWING_POSTS.length-1],seats=0;
+                for(int z=first;z<=last;z++){
+                    boolean post=false,hung=false;for(int at:BikeNightSite.SWING_POSTS)post|=at==z;for(int at:BikeNightSite.SWING_SEATS)hung|=at==z;
+                    var foot=l.getBlockState(b.offset(x,0,z));var up=l.getBlockState(b.offset(x,top,z));
+                    h.assertTrue(l.getBlockState(b.offset(x,-1,z)).is(Blocks.SAND),"the swings stand on the playground's sand at z="+z);
+                    if(post){
+                        h.assertTrue(CalderPlayBlock.is(foot,CalderPlayBlock.Kind.POST)&&foot.getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.FOOT&&foot.getValue(CalderPlayBlock.FACING).getAxis()==forward.getAxis(),"a post's foot, its stays the way the swings go, at z="+z+": "+foot);
+                        for(int y=1;y<top;y++){var s=l.getBlockState(b.offset(x,y,z));h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.POST)&&s.getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.SHAFT,"its shaft at y="+y+": "+s);}
+                        int stage=z==first||z==last?CalderPlayBlock.END:CalderPlayBlock.THROUGH;
+                        // A bar goes off to the east of an end post facing north: turned, to the south of the north post and the north of the south one.
+                        var want=z==first?Direction.EAST:z==last?Direction.WEST:behind;
+                        h.assertTrue(CalderPlayBlock.is(up,CalderPlayBlock.Kind.POST)&&up.getValue(CalderPlayBlock.STAGE)==stage&&up.getValue(CalderPlayBlock.FACING)==want,"its top, the bar ending on it or running on over it, at z="+z+": "+up);
+                        h.assertTrue(!foot.getCollisionShape(l,b.offset(x,0,z)).isEmpty(),"a post stops a body");
+                        continue;
+                    }
+                    h.assertTrue(CalderPlayBlock.is(up,CalderPlayBlock.Kind.BAR)&&up.getValue(CalderPlayBlock.STAGE)==(hung?CalderPlayBlock.HANGERS:0)&&up.getValue(CalderPlayBlock.FACING).getAxis()==forward.getAxis(),"the bar, with hangers only over a seat, at z="+z+": "+up);
+                    if(!hung){for(int y=0;y<top;y++)h.assertTrue(l.getBlockState(b.offset(x,y,z)).isAir(),"nothing under the bar between a seat and a post at z="+z+" y="+y);continue;}
+                    seats++;
+                    h.assertTrue(CalderPlayBlock.is(foot,CalderPlayBlock.Kind.SWING)&&foot.getValue(CalderPlayBlock.STAGE)==0&&foot.getValue(CalderPlayBlock.FACING)==behind&&HouseReadSwing.is(foot)&&HouseReadSwing.pumped(foot)&&HouseReadSwing.forward(foot)==forward
+                        &&HouseSitting.isSeat(foot)&&foot.getCollisionShape(l,b.offset(x,0,z)).isEmpty()&&!foot.getShape(l,b.offset(x,0,z)).isEmpty(),"a belt seat looking out over the sand, to be sat on, and no bar to a body, at z="+z+": "+foot);
+                    for(int y=1;y<top;y++){var s=l.getBlockState(b.offset(x,y,z));h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.CHAIN)&&s.getValue(CalderPlayBlock.STAGE)==0&&s.getValue(CalderPlayBlock.FACING)==behind&&s.getCollisionShape(l,b.offset(x,y,z)).isEmpty(),"its chains at y="+y+": "+s);}
+                    h.assertTrue(HouseReadSwing.pair(l,b.offset(x,0,z)).equals(List.of(b.offset(x,0,z)))&&HouseReadSwing.pivot(HouseReadSwing.pair(l,b.offset(x,0,z))).equals(new Vec3(b.getX()+x+.5,b.getY()+top,b.getZ()+z+.5)),"one block of seat, hung from the underside of the bar");
+                }
+                h.assertTrue(seats==4&&BikeNightSite.LAMPS.contains(BikeNightSite.SWING_LAMP)&&BikeNightSite.lit(l,b,BikeNightSite.SWING_LAMP),"four swings, and a lamp of their own behind them");
+                var gone=CalderPlayBlock.of(CalderPlayBlock.Kind.SWING,behind,CalderPlayBlock.GONE);
+                h.assertTrue(gone.getShape(l,BlockPos.ZERO).isEmpty()&&CalderPlayBlock.of(CalderPlayBlock.Kind.CHAIN,behind,CalderPlayBlock.GONE).getShape(l,BlockPos.ZERO).isEmpty()&&HouseSitting.isSeat(gone),"a seat somebody is on is not there to be touched, and is still a seat");
+                p[0]=f.player("swing_one",P);p[1]=f.player("swing_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenExecute(()->{
+                hush(p[0]);f.click(p[0],P,BikeNightSite.swingAt(0));
+                h.assertTrue(p[0].getVehicle() instanceof SeatEntity s&&s.swinging()&&s.pumped()&&s.reach()==0&&s.support().equals(swing(b,0)),"a hand on a seat sits on it, and the swing starts from still");
+                seat[0]=(SeatEntity)p[0].getVehicle();
+                h.assertTrue(Mth.degreesDifferenceAbs(p[0].getYRot(),forward.toYRot())<1,"looking out over the sand: "+p[0].getYRot());
+                var s=l.getBlockState(swing(b,0));
+                h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.SWING)&&s.getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.GONE,"the still seat gives way to the moving one: "+s);
+                for(int y=1;y<top;y++)h.assertTrue(l.getBlockState(swing(b,0).above(y)).getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.GONE,"and so do its chains, at y="+y);
+                h.assertTrue(HouseReadSwing.still(s).getValue(CalderPlayBlock.STAGE)==0&&CalderPlayBlock.is(HouseReadSwing.hanger(s),CalderPlayBlock.Kind.CHAIN)&&HouseReadSwing.hanger(s).getValue(CalderPlayBlock.FACING)==behind,"the moving swing is drawn from the seat and its chains");
+                // Nobody else gets on it; the next one along is free, with somebody swinging beside it.
+                f.at(p[1],P,x+1.5,0,BikeNightSite.SWING_SEATS[0]+.5);
+                h.assertTrue(!HouseSitting.sit(p[1],swing(b,0))&&!p[1].isPassenger(),"nobody else gets on a swing somebody is on");
+            })
+            .thenIdle(30)
+            .thenExecute(()->{
+                h.assertTrue(!HouseSitting.sit(p[1],swing(b,0)),"nor while it is away from where it hangs");
+                f.click(p[1],P,BikeNightSite.swingAt(1));
+                h.assertTrue(p[1].getVehicle() instanceof SeatEntity s&&s!=seat[0]&&s.support().equals(swing(b,1))&&p[0].getVehicle()==seat[0],"the next swing along takes a second reader while the first swings");
+                seat[1]=(SeatEntity)p[1].getVehicle();
+            })
+            .thenIdle(40)
+            .thenExecute(()->{
+                // Left alone a swing comes up to a gentle arc, and the seat carries its reader along it.
+                double reach=seat[0].reach();
+                h.assertTrue(reach>.2&&reach<=HouseReadSwing.REACH&&seat[1].reach()>.1&&seat[1].reach()<reach,"left alone each comes up towards a gentle arc: "+reach+", "+seat[1].reach());
+                var pivot=HouseReadSwing.pivot(List.of(swing(b,0)));
+                double now=seat[0].position().distanceTo(HouseReadSwing.seat(pivot,forward,seat[0].swingAngle(0))),before=seat[0].position().distanceTo(HouseReadSwing.seat(pivot,forward,seat[0].swingAngle(-1)));
+                h.assertTrue(Math.min(now,before)<1e-6&&Math.abs(seat[0].getZ()-pivot.z)<1e-6,"the seat is where the arc puts it, and swings the way it faces: "+now+" "+before);
+                h.assertTrue(p[0].getVehicle()==seat[0]&&seat[0].getX()!=seat[1].getX(),"each on their own arc");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SWING_HINT)&&f.own(p[0],P).getBoolean("Swung")&&f.own(p[0],P).getBoolean("SwingTold"),"told once how a swing is taken higher and let go of, and it is in their record"))
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"park.swing_creak"),"the chains are heard as it comes through the bottom"))
+            .thenExecute(()->{p[0].stopRiding();})
+            .thenIdle(3)
+            .thenExecute(()->{
+                var s=l.getBlockState(swing(b,0));
+                h.assertTrue(seat[0].isRemoved()&&s.getValue(CalderPlayBlock.STAGE)==0&&l.getBlockState(swing(b,0).above(2)).getValue(CalderPlayBlock.STAGE)==0,"off it, the swing hangs still again: "+s);
+                h.assertTrue(p[1].getVehicle()==seat[1]&&l.getBlockState(swing(b,1)).getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.GONE,"and the one beside it swings on");
+                // A swing left as if somebody were on it (a server stopped under a reader) hangs still again when the night begins.
+                p[1].stopRiding();seat[1].discard();
+                h.assertTrue(l.getBlockState(swing(b,1)).getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.GONE,"a seat whose rider went with the server is left as it was");
+                BikeNight.resetNow(l,b);
+                h.assertTrue(l.getBlockState(swing(b,1)).getValue(CalderPlayBlock.STAGE)==0&&l.getBlockState(swing(b,1).above()).getValue(CalderPlayBlock.STAGE)==0,"and is put back with the night");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_pump",timeoutTicks=3000)
+    public static void aSwingPumpedHighThrowsItsRiderOutOverTheSandAndTheFurthestIsMarked(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final SeatEntity[] seat={null};
+        final double[] high={0,0};final Vec3[] away={null};final int[] paces={0,0};final BlockPos[] mark={null};var forward=BikeNightSite.SWING_FORWARD;
+        Runnable with=()->{double going=Math.cos((seat[0].swingTicks(0)+1)*HouseReadSwing.RATE);p[0].setPlayerInput(0,going>0?1F:-1F,false,false);high[0]=Math.max(high[0],seat[0].reach());high[1]=Math.max(high[1],seat[0].getY()-b.getY());};
+        Runnable against=()->{double going=Math.cos((seat[0].swingTicks(0)+1)*HouseReadSwing.RATE);p[0].setPlayerInput(0,going>0?-1F:1F,false,false);};
+        // The fixture's readers are weightless, so that they stay where a case puts them. One in the air off a swing has to fall.
+        Runnable fly=()->{if(BikeNight.inFlight(p[0])){p[0].setNoGravity(false);p[0].travel(Vec3.ZERO);}else p[0].setNoGravity(true);};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("swing_high",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenExecute(()->{f.click(p[0],P,BikeNightSite.swingAt(2));seat[0]=(SeatEntity)p[0].getVehicle();h.assertTrue(seat[0]!=null&&seat[0].pumped(),"on a swing");})
+            // Leaning the way it goes, each way, takes it as high as it will go; and no higher.
+            .thenExecuteFor(240,with)
+            .thenExecute(()->{
+                h.assertTrue(Math.abs(seat[0].reach()-HouseReadSwing.HIGH)<.02&&high[0]<=HouseReadSwing.HIGH+1e-9&&HouseReadSwing.HIGH>HouseReadSwing.REACH*2,"leaning with it takes the arc to its widest, well past a gentle one: "+seat[0].reach());
+                h.assertTrue(high[1]>2.3&&high[1]<3,"which carries the seat well over two blocks up at each end: "+high[1]);
+            })
+            // Leaning against it brings it down.
+            .thenExecuteFor(50,against)
+            .thenExecute(()->{
+                h.assertTrue(seat[0].reach()<HouseReadSwing.HIGH-.2,"leaning against it narrows the arc: "+seat[0].reach());
+                p[0].setPlayerInput(0,0,false,false);seat[0].reach(HouseReadSwing.HIGH);
+            })
+            // Let go on the way up and forward.
+            .thenWaitUntil(()->{double a=seat[0].swingAngle(0);h.assertTrue(a>.55&&a<.75&&seat[0].swingAngle(1)>a,"waiting for the upswing: "+a);})
+            .thenExecute(()->{
+                hush(p[0]);away[0]=HouseReadSwing.jump(p[0]);
+                h.assertTrue(away[0]!=null&&!p[0].isPassenger()&&away[0].x>.6&&away[0].y>.5&&Math.abs(away[0].z)<.01&&p[0].getDeltaMovement().equals(away[0]),"letting go there throws the reader up and out the way the swing faces: "+away[0]);
+                h.assertTrue(BikeNight.inFlight(p[0])&&BikeNight.far(b)==0&&BikeNight.mark(b)==null,"in the air, and nobody has landed yet tonight");
+            })
+            .thenExecuteFor(70,fly)
+            .thenExecute(()->{
+                var r=p[0].position().subtract(b.getX(),b.getY(),b.getZ());double out=r.x-(BikeNightSite.SWING_X+.5);paces[0]=(int)Math.floor(out*BikeNight.PACES);
+                h.assertTrue(p[0].onGround()&&!BikeNight.inFlight(p[0])&&BikeNightSite.onSand(r)&&out>5&&Math.abs(r.z-(BikeNightSite.SWING_SEATS[2]+.5))<.5,"down on the sand, more than five blocks out from under the bar: "+r);
+                h.assertTrue(BikeNight.far(b)==paces[0]&&p[0].getUUID().equals(BikeNight.farWho(b)),"paced out from under the bar, a child's paces, and the furthest tonight: "+BikeNight.far(b)+" for "+out);
+                mark[0]=BikeNight.mark(b);var s=mark[0]==null?null:l.getBlockState(mark[0]);
+                h.assertTrue(mark[0]!=null&&mark[0].equals(p[0].blockPosition())&&s.is(BikeNightRegistry.MARK.get())&&s.getValue(CalderLitterBlock.FACING)==forward&&s.canBeReplaced()&&s.getCollisionShape(l,mark[0]).isEmpty(),"a heel mark in the sand where they came down, across the way they were going, that gives way to whatever is set down on it: "+s);
+                // The sand is soft, and only the sand.
+                var soft=new net.neoforged.neoforge.event.entity.living.LivingFallEvent(p[0],6F,1F);BikeNight.fall(soft);
+                h.assertTrue(soft.getDamageMultiplier()==0&&p[0].getHealth()==p[0].getMaxHealth(),"nobody is hurt coming down on the playground's sand");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],String.format(BikeNightTexts.JUMP_BEST,io.github.knaitoe.theoldesthouse.labyrinth.Stillness.words(paces[0]))),"told how far, and that nobody has landed further"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("SwingBest")==paces[0],"and it is in their record"))
+            .thenExecute(()->{
+                // A hand on the mark says whose it is.
+                hush(p[0]);f.click(p[0],P,mark[0].subtract(b));
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.MARK_OWN),"a hand on the mark says whose it is"))
+            // A second jump, off a gentle arc: shorter. The mark stays where it is.
+            .thenExecute(()->{
+                f.click(p[0],P,BikeNightSite.swingAt(3));seat[0]=(SeatEntity)p[0].getVehicle();h.assertTrue(seat[0]!=null&&seat[0].support().equals(swing(b,3)),"on another swing");
+                seat[0].reach(HouseReadSwing.REACH);
+            })
+            .thenWaitUntil(()->{double a=seat[0].swingAngle(0);h.assertTrue(a>.3&&seat[0].swingAngle(1)>a,"waiting for the upswing: "+a);})
+            .thenExecute(()->{hush(p[0]);HouseReadSwing.jump(p[0]);})
+            .thenExecuteFor(70,fly)
+            .thenExecute(()->{
+                var r=p[0].position().subtract(b.getX(),b.getY(),b.getZ());paces[1]=(int)Math.floor((r.x-(BikeNightSite.SWING_X+.5))*BikeNight.PACES);
+                h.assertTrue(p[0].onGround()&&paces[1]>=BikeNight.LEAST&&paces[1]<paces[0],"a jump off a gentle arc comes down nearer: "+paces[1]+" against "+paces[0]);
+                h.assertTrue(BikeNight.far(b)==paces[0]&&mark[0].equals(BikeNight.mark(b))&&l.getBlockState(mark[0]).is(BikeNightRegistry.MARK.get()),"the furthest is still the furthest, and its mark is where it was");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],String.format(BikeNightTexts.JUMP,io.github.knaitoe.theoldesthouse.labyrinth.Stillness.words(paces[1]),io.github.knaitoe.theoldesthouse.labyrinth.Stillness.words(paces[0]))),"told how far, and how far the furthest is"))
+            .thenExecute(()->{
+                h.assertTrue(f.own(p[0],P).getInt("SwingBest")==paces[0],"their record keeps their best");
+                var account=String.join(" ",BikeNightTexts.account("swing_high",f.own(p[0],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(account.contains("let go of it")&&account.contains(io.github.knaitoe.theoldesthouse.labyrinth.Stillness.words(paces[0])+" paces"),"and their account has it: "+account);
+                // The night over: the mark is gone with it.
+                BikeNight.resetNow(l,b);
+                h.assertTrue(!l.getBlockState(mark[0]).is(BikeNightRegistry.MARK.get()),"when the night is over the mark is gone");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_sand",timeoutTicks=2400)
+    public static void sandIsPackedIntoBallsThrownAndBurstsAndIsGoneOutsideTheNight(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};var item=BikeNightRegistry.SAND_BALL.get();var sand=new BlockPos(-16,-1,-22);
+        java.util.function.Supplier<List<SandBall>> flying=()->l.getEntitiesOfClass(SandBall.class,room(f));
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("sand_one",P);p[1]=f.player("sand_two",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null&&BikeNight.failingLampLit(b),"the night has begun"))
+            .thenExecute(()->{
+                h.assertTrue(BikeNightSite.sandAt(sand)&&!BikeNightSite.sandAt(sand.above())&&!BikeNightSite.sandAt(new BlockPos(-28,-1,-10))&&item.getDefaultMaxStackSize()==SandBallItem.MOST,"the playground's sand, and no other ground");
+                hush(p[0]);f.click(p[0],P,sand);
+                h.assertTrue(balls(p[0])==1&&p[0].getMainHandItem().is(item)&&p[0].getCooldowns().isOnCooldown(item),"a hand in the sand packs a ball of it, into the hand");
+                f.click(p[0],P,sand);
+                h.assertTrue(balls(p[0])==1,"one at a time");
+                f.click(p[0],P,new BlockPos(-28,-1,-10));
+                h.assertTrue(balls(p[0])==1,"grass packs nothing");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SAND)&&sounded(p[0],"park.sand_scoop"),"told so, and heard"))
+            .thenExecute(()->{
+                hush(p[0]);
+                for(int i=0;i<12;i++){p[0].getCooldowns().removeCooldown(item);f.click(p[0],P,sand);}
+                h.assertTrue(balls(p[0])==SandBallItem.MOST,"eight at most: "+balls(p[0]));
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SAND_FULL),"told their pockets are full"))
+            .thenExecute(()->{
+                // Thrown at another reader two blocks off: it bursts on them and hurts nobody.
+                f.at(p[0],P,-16.5,0,-22.5);f.at(p[1],P,-16.5,0,-24.5);p[0].getCooldowns().removeCooldown(item);hush(p[1]);
+                // Aimed at their middle, from wherever the thrower's eyes are (a case's reader keeps a grown body's eyes until it is next measured).
+                p[0].lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,p[1].position().add(0,.45,0));
+                p[0].gameMode.useItem(p[0],l,p[0].getMainHandItem(),InteractionHand.MAIN_HAND);
+                var thrown=flying.get();
+                h.assertTrue(balls(p[0])==SandBallItem.MOST-1&&thrown.size()==1&&thrown.getFirst().getOwner()==p[0]&&thrown.getFirst().getDeltaMovement().z< -.9&&p[0].getCooldowns().isOnCooldown(item),"using it throws it, the way the reader looks: "+thrown);
+            })
+            .thenWaitUntil(()->h.assertTrue(flying.get().isEmpty(),"the ball is gone where it burst"))
+            .thenExecute(()->{
+                h.assertTrue(p[1].getHealth()==p[1].getMaxHealth()&&p[1].getDeltaMovement().z<0,"it bursts on the other reader, who is not hurt, and is knocked a little the way it was going: "+p[1].getDeltaMovement()+", health "+p[1].getHealth());
+                p[1].setDeltaMovement(Vec3.ZERO);
+            })
+            .thenWaitUntil(()->h.assertTrue(sounded(p[1],"park.sand_burst"),"and is heard"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Sand")==1&&f.own(p[0],P).getInt("SandHits")==1,"a ball thrown and a ball that met somebody, in the thrower's record: "+f.own(p[0],P)))
+            // The failing lamp, hit while it is out, comes back on.
+            .thenExecute(()->BikeNight.lampNow(b))
+            .thenWaitUntil(()->h.assertTrue(!BikeNight.failingLampLit(b),"the failing lamp goes out"))
+            .thenExecute(()->{
+                BikeNight.lampHold(b,100000);
+                var lamp=BikeNightSite.FLICKER;f.at(p[0],P,lamp.getX()+.5,0,lamp.getZ()+2.5);f.look(p[0],b.offset(lamp));p[0].getCooldowns().removeCooldown(item);
+                p[0].gameMode.useItem(p[0],l,p[0].getMainHandItem(),InteractionHand.MAIN_HAND);
+                h.assertTrue(flying.get().size()==1&&!BikeNight.failingLampLit(b),"a ball thrown at it while it is out");
+            })
+            .thenWaitUntil(()->h.assertTrue(flying.get().isEmpty()&&BikeNight.failingLampLit(b)&&BikeNightSite.lit(l,b,BikeNightSite.FLICKER),"and it comes back on, as a kicked one does"))
+            .thenExecute(()->{
+                // With sand in the hand, a hand on the park's things is not looking: it says nothing, and the throw is let happen.
+                hush(p[0]);h.assertTrue(p[0].getMainHandItem().is(item)&&!BikeNight.click(p[0],b,new BlockPos(3,0,-16),f.own(p[0],P)),"sand in the hand does not stop to look at a bench");
+                // Let fall, a ball falls apart where it lands.
+                var dropped=new net.minecraft.world.entity.item.ItemEntity(l,b.getX()-15.5,b.getY()+.1,b.getZ()-20.5,new net.minecraft.world.item.ItemStack(item));dropped.setOnGround(true);
+                h.assertTrue(item.onEntityItemUpdate(dropped.getItem(),dropped)&&dropped.isRemoved(),"let fall, it falls apart");
+                // Carried out of the night, there is nothing left of it.
+                int had=balls(p[0]);h.assertTrue(had==SandBallItem.MOST-2,"six left: "+had);
+                // The ball looks once a second, on its holder's own count of ticks; the case gives it the tick it looks on.
+                p[0].tickCount=40;p[0].getMainHandItem().inventoryTick(l,p[0],p[0].getInventory().selected,true);
+                h.assertTrue(balls(p[0])==had,"in the night it keeps");
+                p[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+40,f.origin.getZ()+.5,0,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(LiteraryVignettes.current(p[0])!=P,"the reader is out of the night"))
+            .thenExecute(()->{
+                hush(p[0]);var held=p[0].getMainHandItem();
+                p[0].tickCount=41;held.inventoryTick(p[0].level(),p[0],p[0].getInventory().selected,true);
+                h.assertTrue(balls(p[0])==SandBallItem.MOST-2,"it does not look on every tick");
+                p[0].tickCount=60;held.inventoryTick(p[0].level(),p[0],p[0].getInventory().selected,true);
+                h.assertTrue(balls(p[0])==0,"carried out of the night, the sand is gone: "+balls(p[0]));
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SAND_GONE),"and they are told it ran out through their fingers"))
+            .thenSucceed();
     }
 }

@@ -32,7 +32,7 @@ public final class HouseSitting {
     /** 0.4.239: the loose chairs (the familiar kitchen's, the shut-up rooms'), sat in from the seat; their own block decides by where the hand is. */
     private static boolean looseChair(BlockState s){return io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.is(s,io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.Kind.CHAIR);}
     public static boolean isSeat(BlockState state) {
-        return readChair(state) || looseChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
+        return readChair(state) || looseChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pumped(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.WinchesterFittingBlock.seat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)
                 || state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat()
@@ -68,7 +68,10 @@ public final class HouseSitting {
         seat.moveTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
         // 0.4.172: the porch swing seats the reader in the middle of its plank and swings them.
         boolean swing=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.is(state);
-        if(swing){var pair=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pair(player.level(),pos);if(!player.level().getEntitiesOfClass(SeatEntity.class,new AABB(pair.getFirst()).minmax(new AABB(pair.getLast())).inflate(3,1,3)).isEmpty())return false;var rest=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.seat(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pivot(pair),io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.forward(state),0);seat.moveTo(rest.x,rest.y,rest.z);seat.swing(player.level().getGameTime());}
+        if(swing){var pair=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pair(player.level(),pos);
+            // A moving seat is away from its block for most of its arc, so the seat is looked for along the whole of it. 0.4.465:
+            // only this swing's own seat keeps a reader off it; somebody on the next swing along a frame does not.
+            if(!player.level().getEntitiesOfClass(SeatEntity.class,new AABB(pair.getFirst()).minmax(new AABB(pair.getLast())).inflate(4,3,4),other->pair.contains(other.support())).isEmpty())return false;var rest=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.seat(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pivot(pair),io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.forward(state),0);seat.moveTo(rest.x,rest.y,rest.z);seat.swing(player.level().getGameTime());if(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pumped(state))seat.pump();}
         if (!player.serverLevel().addFreshEntity(seat) || !player.startRiding(seat)) { seat.discard(); return false; }
         if(swing){io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.hide(player,pos);float yaw=io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.forward(state).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);return true;}
         if (state.getBlock() instanceof StairBlock) {

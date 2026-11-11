@@ -1,7 +1,8 @@
 """Original sounds for Bike night's bikes (0.4.463): a bike's tyres letting go of the road for a hop, and both of them coming back
 down; the playing card pegged into the Rattler's spokes, and the roar it makes when it takes the bike; the Lamp's dynamo against its
 tyre. And the park's (0.4.464): the failing lamp striking and buzzing as it comes back on, and the chain on the gate when a hand
-tries it.
+tries it. And the playground's (0.4.465): a swing's hangers as it comes through the bottom of its arc, and a ball of sand packed in
+a hand, thrown, and bursting on what it meets.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -20,6 +21,10 @@ ROWS = {
     'bike/dynamo': ('bike.dynamo', 'Dynamo whines', 8),
     'park/lamp_buzz': ('park.lamp_buzz', 'Lamp buzzes', 12),
     'park/chain': ('park.chain', 'Chain rattles', 12),
+    'park/swing_creak': ('park.swing_creak', 'Swing creaks', 12),
+    'park/sand_scoop': ('park.sand_scoop', 'Sand is packed', 8),
+    'park/sand_throw': ('park.sand_throw', 'Sand ball is thrown', 10),
+    'park/sand_burst': ('park.sand_burst', 'Sand ball bursts', 14),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -176,7 +181,63 @@ def chain():
     return out
 
 
-MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain}
+def swing_creak():
+    # A swing's hanger turning in its eye under a weight: a dry squeak that climbs and falls back, and the links settling after it.
+    length = .42
+    n = seconds(length)
+    t = times(n)
+    pitch = 880 + 420 * np.sin(np.pi * np.clip(t / .26, 0, 1)) ** 2
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    squeak = (np.sin(phase) + .45 * np.sin(2 * phase) + .2 * np.sin(3.02 * phase)) * np.sin(np.pi * np.clip(t / .3, 0, 1)) ** 1.5
+    grit = band(rng.standard_normal(n), 2500, 7000) * np.sin(np.pi * np.clip(t / .3, 0, 1)) * .25
+    out = squeak * (.6 + .4 * np.sign(np.sin(2 * np.pi * 37 * t))) * .5 + grit
+    for at, level, ring in ((.3, .35, 2700), (.34, .22, 3400), (.38, .15, 2300)):
+        i = seconds(at)
+        m = n - i
+        u = times(m)
+        out[i:] += np.sin(2 * np.pi * ring * u) * np.exp(-u / .02) * level
+    return out
+
+
+def sand_scoop():
+    # A hand goes into damp sand and comes up full, and the other hand pats it round: two short gritty swells.
+    length = .36
+    n = seconds(length)
+    t = times(n)
+    grit = band(rng.standard_normal(n), 900, 5200)
+    scoop = np.sin(np.pi * np.clip(t / .17, 0, 1)) ** 2
+    pat = np.exp(-np.clip(t - .22, 0, None) / .025) * (t >= .22)
+    low = np.sin(2 * np.pi * 140 * t) * np.exp(-np.clip(t - .22, 0, None) / .03) * (t >= .22)
+    return grit * (scoop * .7 + pat * .9) + low * .35
+
+
+def sand_throw():
+    # An arm coming over, and a small heavy thing leaving the hand: a soft rush that is gone at once.
+    length = .2
+    n = seconds(length)
+    t = times(n)
+    rush = band(rng.standard_normal(n), 350, 2600) * np.sin(np.pi * np.clip(t / length, 0, 1)) ** 2
+    sift = band(rng.standard_normal(n), 3000, 8000) * np.exp(-np.clip(t - .1, 0, None) / .03) * (t >= .1) * .3
+    return rush + sift
+
+
+def sand_burst():
+    # A ball of sand meeting something: a dull knock with no ring in it, and the sand going everywhere after.
+    length = .5
+    n = seconds(length)
+    t = times(n)
+    knock = np.sin(2 * np.pi * (120 - 60 * np.clip(t / .05, 0, 1)) * t) * np.exp(-t / .03)
+    spray = band(rng.standard_normal(n), 1800, 8000) * np.exp(-t / .07)
+    out = knock * .9 + spray * .7
+    for _ in range(14):
+        i = seconds(.06 + rng.random() * .36)
+        c = click(.006, 2500, 8000, .0012) * (.1 + rng.random() * .25) * (1 - i / n)
+        out[i:i + len(c)] += c[:max(0, n - i)]
+    return out
+
+
+MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
+          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst}
 
 
 def main():

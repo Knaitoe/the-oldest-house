@@ -4983,5 +4983,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.park.chain"
+  },
+  "park.swing_creak": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/swing_creak",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.swing_creak"
+  },
+  "park.sand_scoop": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/sand_scoop",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.sand_scoop"
+  },
+  "park.sand_throw": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/sand_throw",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.sand_throw"
+  },
+  "park.sand_burst": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/sand_burst",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.sand_burst"
   }
 }
