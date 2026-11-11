@@ -41,6 +41,9 @@ public final class BorrascaRegistry {
     public static final DeferredBlock<BorrascaWardBlock> WARD=BLOCKS.registerBlock("borrasca_ward",BorrascaWardBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).strength(-1,3600000).noLootTable());
     /** 0.4.449: a block of one of Drisking's painted signs (BorrascaSigns). */
     public static final DeferredBlock<BorrascaSignBlock> SIGN=BLOCKS.registerBlock("borrasca_sign",BorrascaSignBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noCollission().noLootTable().lightLevel(BorrascaSignBlock::light));
+    /** 0.4.451: the papers on the front of Drisking General (BorrascaPapers): LOST sheets, the papered front, the noticeboard. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaPaperBlock>> PAPER_TYPE=CODECS.register("borrasca_paper",()->BorrascaPaperBlock.CODEC);
+    public static final DeferredBlock<BorrascaPaperBlock> PAPER=BLOCKS.registerBlock("borrasca_paper",BorrascaPaperBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noCollission().noLootTable());
     public static final DeferredBlock<BorrascaNamesBlock> NAMES=BLOCKS.registerBlock("borrasca_names",BorrascaNamesBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_WOOD).strength(-1,3600000).noLootTable());
     public static final DeferredBlock<BorrascaCarvingBlock> CARVING=BLOCKS.registerBlock("borrasca_bark",BorrascaCarvingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).strength(-1,3600000).noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BorrascaCarvingEntity>> CARVING_ENTITY=BES.register("borrasca_bark",()->BlockEntityType.Builder.of(BorrascaCarvingEntity::new,CARVING.get()).build(null));

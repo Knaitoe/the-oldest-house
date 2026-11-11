@@ -1387,7 +1387,7 @@ public final class BorrascaTests {
     }
 
     @AfterBatch(batch="borrasca_town_children") public static void townChildrenDone(ServerLevel l){cleanup();}
-    @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=1800)
+    @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=2600)
     public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("pine_town");
         var eliPoster=new BlockPos(-15,1,-24);var wrenPoster=new BlockPos(-15,1,-22);
@@ -1397,11 +1397,16 @@ public final class BorrascaTests {
               f.talk(p,"TownEli");f.talk(p,"TownWren");
               h.assertTrue(f.own(p).getBoolean("MetEli")&&f.own(p).getBoolean("MetWren"),"both children can tell their part of the legend");
               h.assertTrue(f.out.getBlockState(f.base(p).offset(eliPoster)).isAir(),"Patrick's poster goes up only after he disappears");
+              // 0.4.451: the store's noticeboard is one board, two blocks by two, a quarter of its picture in each cell.
+              board(h,f,p,BorrascaPapers.Sheet.BOARD,"as the town was built");
               bike(h,f,p,BorrascaRooms.PATRICK_BIKE,1,"on the first visit Patrick's bike lies on its side outside the store");
               bike(h,f,p,BorrascaRooms.KENDRA_BIKE,0,"and Kendra's stands on its kickstand by where she waits");
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"second visit cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),eliPoster)),BorrascaPapers.Sheet.PATRICK),"Patrick's own sheet hangs by the store's door once he is gone"))
           .thenExecute(()->{
+              h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),wrenPoster)).isAir(),"Kendra's goes up only after she disappears");
+              board(h,f,p,BorrascaPapers.Sheet.BOARD,"on the second visit");
               h.assertTrue(f.actor(p,"TownEli").isInvisible()&&!f.actor(p,"TownWren").isInvisible(),"Patrick is missing while Kendra is still in town");
               f.talk(p,"TownWren");h.assertTrue(f.own(p).getBoolean("WrenRememberedEli"),"Kendra remembers Patrick's bicycle");
               f.read(p,eliPoster,false);
@@ -1409,12 +1414,55 @@ public final class BorrascaTests {
               bike(h,f,p,BorrascaRooms.KENDRA_BIKE,0,"her own still stands where she waits");
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult visit cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),wrenPoster)),BorrascaPapers.Sheet.KENDRA),"Kendra's own sheet hangs the other side of the door"))
           .thenExecute(()->{
+              h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),eliPoster)),BorrascaPapers.Sheet.PATRICK),"Patrick's is still up");
+              board(h,f,p,BorrascaPapers.Sheet.BOARD_THIRD,"years on");
               h.assertTrue(f.actor(p,"TownWren").isInvisible(),"Kendra is missing on the adult return");
               f.read(p,wrenPoster,false);
               h.assertTrue(f.own(p).getBoolean("Read_WrenPoster")&&f.own(p).getBoolean("Read_EliPoster"),"both posters have readable pages");
               for(var at:List.of(BorrascaRooms.PATRICK_BIKE,BorrascaRooms.KENDRA_BIKE))h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),at)).isAir(),"years later neither bike is in town");
+              p.closeContainer();f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,4);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last visit cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),eliPoster)),BorrascaPapers.Sheet.PATRICK_YELLOWED),"on the last night Patrick's sheet has gone yellow"))
+          .thenExecute(()->{
+              // 0.4.451 (owner: "Have this whole front of house filled with lost papers after vignette has ended – after the orrery
+              // has either been fed or stopped."): the last night's front, then the front once the machine has stopped.
+              h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),wrenPoster)),BorrascaPapers.Sheet.KENDRA_YELLOWED),"and Kendra's");
+              board(h,f,p,BorrascaPapers.Sheet.BOARD_LAST,"on the last night");
+              h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaPapers.FRONT_X,BorrascaPapers.HEAD,BorrascaPapers.NORTH)).isAir(),"nothing else is on the front before the ending");
+              var fed=new CompoundTag();fed.putBoolean("DanaFed",true);var stopped=new CompoundTag();stopped.putBoolean("PowerOff",true);
+              h.assertTrue(BorrascaStory.frontStage(fed,4)==BorrascaPapers.PAPERED&&BorrascaStory.frontStage(stopped,4)==BorrascaPapers.PAPERED&&BorrascaStory.frontStage(new CompoundTag(),4)==BorrascaPapers.LAST,"the front is papered once the machine has been fed or stopped, whichever, and not before");
+              var own=f.own(p);own.putBoolean("PowerOff",true);f.save(p,own);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getInt("TownPostersVisit")==BorrascaPapers.PAPERED,"the front is papered over once the machine has stopped"))
+          .thenExecute(()->{
+              var b=f.base(p);var odd=new ArrayList<String>();int sheets=0,onGlass=0;
+              for(int z=BorrascaPapers.SOUTH;z>=BorrascaPapers.NORTH;z--)for(int y=BorrascaPapers.FOOT;y<=BorrascaPapers.HEAD;y++){
+                  var cell=new BlockPos(BorrascaPapers.FRONT_X,y,z);var s=f.out.getBlockState(BorrascaRooms.at(b,cell));var wall=BorrascaRooms.at(b,cell.west());var behind=f.out.getBlockState(wall);
+                  if(Arrays.asList(BorrascaRooms.BOARD).contains(cell)){if(!s.equals(BorrascaPapers.boardPiece(BorrascaPapers.Sheet.BOARD_COVERED,cell)))odd.add("the board at "+cell.toShortString()+" is "+s);continue;}
+                  if(z==BorrascaPapers.DOOR_Z&&y<=BorrascaPapers.FOOT+1){if(!s.isAir())odd.add("across the doorway at "+cell.toShortString()+": "+s);continue;}
+                  if(BorrascaSignBlock.is(s)||s.getBlock() instanceof StairBlock)continue; // the store's tin sign and its bench are left as they are
+                  if(!BorrascaPaperBlock.is(s)){odd.add("bare at "+cell.toShortString()+": "+s);continue;}
+                  sheets++;boolean glass=s.getValue(BorrascaPaperBlock.GLASS);if(glass)onGlass++;
+                  if(glass!=behind.is(Blocks.GLASS_PANE)||!glass&&!behind.isFaceSturdy(f.out,wall,Direction.EAST))odd.add("the sheet at "+cell.toShortString()+" is held by "+behind);
+                  if(BorrascaPaperBlock.sheet(s)!=BorrascaPapers.wall(y,z)||s.getValue(BorrascaPaperBlock.FACING)!=Direction.EAST||BorrascaPaperBlock.sheet(s).look.isEmpty())odd.add("the wrong sheet at "+cell.toShortString()+": "+s);
+                  for(var next:List.of(cell.above(),cell.north())){var n=f.out.getBlockState(BorrascaRooms.at(b,next));if(BorrascaPaperBlock.is(n)&&n.getValue(BorrascaPaperBlock.PIECE).equals(s.getValue(BorrascaPaperBlock.PIECE)))odd.add("the same sheet twice, at "+cell.toShortString()+" and "+next.toShortString());}
+              }
+              h.assertTrue(odd.isEmpty()&&sheets==42&&onGlass==10,"after the ending a sheet hangs on every board of the store's front and on the glass of both windows, the board is covered, and the doorway is clear: "+sheets+" sheets, "+onGlass+" on glass, "+odd);
+              h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(b,eliPoster)),BorrascaPapers.Sheet.WALL_PATRICK)&&BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(b,wrenPoster)),BorrascaPapers.Sheet.WALL_KENDRA),"Patrick's and Kendra's sheets are where they were, under the rest");
+              // A hand on a sheet reads it where it hangs; the two by the door and the board still open as pages.
+              f.at(p,-13,0,-27);p.closeContainer();
+              h.assertTrue(BorrascaStory.click(p,b,BorrascaRooms.world(new BlockPos(BorrascaPapers.FRONT_X,BorrascaPapers.HEAD,BorrascaPapers.NORTH)),f.own(p))&&!(p.containerMenu instanceof LiteraryVignettes.Pages),"a hand on a sheet reads it without opening pages");
+              f.at(p,-13,0,-20);var after=opened(f,p,BorrascaRooms.BOARD[2],"the covered noticeboard");
+              h.assertTrue(text(after).contains("LOST")&&text(after).contains("Kayla")&&!text(after).contains("supper")&&f.own(p).contains("Original_BoardAfter"),"the covered board is its own original: "+text(after));
+              h.assertTrue(text(opened(f,p,eliPoster,"Patrick's sheet, after")).contains("PATRICK MADDOX")&&text(opened(f,p,wrenPoster,"Kendra's sheet, after")).contains("KENDRA BELL"),"their two sheets still open as their pages");
           }).thenSucceed();
+    }
+    /** 0.4.451: the store's noticeboard is the four quarters of one picture, each looking out over the porch. */
+    private static void board(GameTestHelper h,Fixture f,ServerPlayer p,BorrascaPapers.Sheet board,String when){
+        var pieces=new HashSet<Integer>();
+        for(var cell:BorrascaRooms.BOARD){var s=f.out.getBlockState(BorrascaRooms.at(f.base(p),cell));h.assertTrue(s.equals(BorrascaPapers.boardPiece(board,cell))&&BorrascaPaperBlock.sheet(s)==board,"the noticeboard "+when+" at "+cell.toShortString()+": "+s);pieces.add(s.getValue(BorrascaPaperBlock.PIECE));}
+        h.assertTrue(pieces.size()==4,"the noticeboard is four different quarters of one picture "+when+": "+pieces);
     }
     /**
      * 0.4.432 (owner: the longer hill "gives Nell and the player ... time to talk and bond"). Kelly talks on the walk up to the Tree, a line

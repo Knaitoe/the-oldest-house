@@ -141,6 +141,11 @@ public final class BorrascaTexts {
             "MISSING\nDANA PRUITT, 15\nLast seen on the pine trail.\n\nThe sheet is sun-faded. A newer flyer for a bake sale is pinned over half of it.",
             "Behind the curfew notice, the curled corner of a much older poster: a girl's school photograph, the paper gone brown. The name has worn away.");
     }
+    /** 0.4.451: the board after the ending, when the whole front of the store has been papered over. It is its own original. */
+    public static ItemStack boardAfter(){return typed("The noticeboard","Drisking",
+        "DRISKING\n\nEvery sheet on the board says LOST. They are pinned across the frame and across each other.",
+        "The pins ran out. The newest are tucked under the corners of the ones before.",
+        "On top, Kayla.\nUnder her, Kelly.\nUnder Kelly, Dana.\n\nUnder Dana the paper is brown, and the photographs are school photographs.");}
     private static final String[] NOTES={
         "TRIPLE TREE FORT\n\nRules:\nNo grown-ups.\nPassword changes on Sundays.\nNobody goes past Marker Two.",
         "My mom says the fort was here when she was little, and the rules were the same. She won't say anything else about it.",
