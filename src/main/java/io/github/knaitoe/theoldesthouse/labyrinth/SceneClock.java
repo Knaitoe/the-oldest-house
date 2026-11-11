@@ -54,6 +54,7 @@ public final class SceneClock {
             case VACANT_POSSESSION->3; // 0.4.228: moving day, the light going over the street
             case LAST_SWIMMER->9; // 0.4.227: closing time at the pool, dark over the skylight
             case POLAROID_TRAIL->3; // 0.4.204: late autumn twilight over the yard and the pines
+            case BIKE_NIGHT->9; // 0.4.464: the last night of October in Calder Falls
             case WHISTLERS->9; // 0.4.202: night at the lookout, stars over the forest of towers // 0.4.201: midnight at the Sandersons' and in the park
             default->0;
         };

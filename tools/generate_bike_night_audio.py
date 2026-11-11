@@ -1,6 +1,7 @@
 """Original sounds for Bike night's bikes (0.4.463): a bike's tyres letting go of the road for a hop, and both of them coming back
 down; the playing card pegged into the Rattler's spokes, and the roar it makes when it takes the bike; the Lamp's dynamo against its
-tyre.
+tyre. And the park's (0.4.464): the failing lamp striking and buzzing as it comes back on, and the chain on the gate when a hand
+tries it.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -17,6 +18,8 @@ ROWS = {
     'bike/card': ('bike.card', 'Card rattles in spokes', 14),
     'bike/turbo': ('bike.turbo', 'Card roars in spokes', 20),
     'bike/dynamo': ('bike.dynamo', 'Dynamo whines', 8),
+    'park/lamp_buzz': ('park.lamp_buzz', 'Lamp buzzes', 12),
+    'park/chain': ('park.chain', 'Chain rattles', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -29,7 +32,7 @@ def check():
         assert path.exists() and path.stat().st_size > 1000, path
         assert sounds[event] == {'sounds': [{'name': f'the_oldest_house:{path_name}', 'attenuation_distance': reach}], 'subtitle': f'subtitles.the_oldest_house.{event}'}, event
         assert lang[f'subtitles.the_oldest_house.{event}'] == subtitle, event
-    print(f'Verified the bikes\' {len(ROWS)} original cues.')
+    print(f'Verified Bike night\'s {len(ROWS)} original cues.')
 
 
 if __name__ == '__main__' and '--check' in sys.argv:
@@ -137,7 +140,43 @@ def dynamo():
     return (whine + hiss) * edge
 
 
-MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo}
+def lamp_buzz():
+    # A discharge lamp that will not stay lit: the starter's tick, the tube catching with a rasp, and the ballast's hum settling under it.
+    length = .9
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((0, .7), (.07, .5), (.16, .8)):
+        i = seconds(at)
+        c = click(.01, 2500, 7500, .0015) * level
+        out[i:i + len(c)] += c
+    catch = np.clip((t - .16) / .05, 0, 1)
+    hum = (np.sin(2 * np.pi * 120 * t) * .5 + np.sin(2 * np.pi * 240 * t) * .25 + np.sin(2 * np.pi * 360 * t) * .14 + np.sin(2 * np.pi * 600 * t) * .06)
+    rasp = band(rng.standard_normal(n), 1800, 6000) * (.5 + .5 * np.sign(np.sin(2 * np.pi * 120 * t))) * np.exp(-np.clip(t - .16, 0, None) / .12) * .5
+    settle = .35 + .65 * np.exp(-np.clip(t - .16, 0, None) / .25)
+    out += (hum * settle * .6 + rasp) * catch * np.clip((length - t) / .2, 0, 1)
+    return out
+
+
+def chain():
+    # A hand on the gate: the leaves shift an inch against the chain, the links run and knock on the iron, and the padlock swings back against a bar.
+    length = .8
+    n = seconds(length)
+    out = np.zeros(n)
+    knocks = ((0, 1.0, 2100), (.05, .6, 2900), (.09, .75, 2400), (.15, .5, 3300), (.21, .65, 2600), (.3, .35, 3100), (.47, .55, 1500), (.62, .25, 1500))
+    for at, level, pitch in knocks:
+        i = seconds(at)
+        m = n - i
+        t = times(m)
+        ring = (np.sin(2 * np.pi * pitch * t) + .6 * np.sin(2 * np.pi * pitch * 1.52 * t) + .35 * np.sin(2 * np.pi * pitch * 2.71 * t)) * np.exp(-t / .035)
+        hit = band(rng.standard_normal(m), 1200, 7000) * np.exp(-t / .006)
+        out[i:] += (ring * .5 + hit * .8) * level
+    t = times(n)
+    out += np.sin(2 * np.pi * 180 * t) * np.exp(-t / .09) * .3                   # the leaf itself, low, as it takes up the slack
+    return out
+
+
+MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain}
 
 
 def main():

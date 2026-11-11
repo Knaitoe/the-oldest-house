@@ -1,0 +1,78 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "k": "the_oldest_house:block/calder/park",
+    "particle": "the_oldest_house:block/calder/park"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k",
+          "uv": [
+            9,
+            5,
+            10,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#k",
+          "uv": [
+            9,
+            5,
+            10,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#k",
+          "uv": [
+            13,
+            5,
+            14,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#k",
+          "uv": [
+            13,
+            5,
+            14,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#k",
+          "uv": [
+            9,
+            5,
+            10,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#k",
+          "uv": [
+            9,
+            5,
+            10,
+            6
+          ]
+        }
+      }
+    }
+  ]
+}

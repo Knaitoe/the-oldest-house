@@ -84,6 +84,8 @@ public final class RhythmTests {
     @GameTest(template="empty")
     public static void retreatGuidanceIsPersonalOnceAndNeverPromisesALockedExit(GameTestHelper h){
         var p=NativeTestPlayers.survival(h,"retreat_reader");var peer=NativeTestPlayers.survival(h,"retreat_peer");var fixture=new LabyrinthData();
+        // 0.4.464: the House's levels are made here and not left to whichever case ran before; run by itself this case found none.
+        HouseTestLevel.get(p.server);
         var base=h.absolutePos(BlockPos.ZERO).offset(100,10,100);
         LabyrinthBuilder.registerDoors(fixture,LabyrinthPlace.FLOORBOARDS,base);LabyrinthBuilder.registerDoors(fixture,LabyrinthPlace.BARN_WELL,base);
         var entry=fixture.door(LabyrinthPlace.FLOORBOARDS.entryDoorId());var well=fixture.door(LabyrinthPlace.BARN_WELL.entryDoorId());

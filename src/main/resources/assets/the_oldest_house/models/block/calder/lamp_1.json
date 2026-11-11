@@ -1,0 +1,146 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "k": "the_oldest_house:block/calder/park",
+    "particle": "the_oldest_house:block/calder/park"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#k",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#k",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#k",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#k",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#k",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.6,
+        9,
+        6.6
+      ],
+      "to": [
+        9.4,
+        10.2,
+        9.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k",
+          "uv": [
+            5,
+            1,
+            6,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#k",
+          "uv": [
+            5,
+            1,
+            6,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#k",
+          "uv": [
+            5,
+            1,
+            6,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#k",
+          "uv": [
+            5,
+            1,
+            6,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#k",
+          "uv": [
+            5,
+            1,
+            6,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#k",
+          "uv": [
+            5,
+            1,
+            6,
+            2
+          ]
+        }
+      }
+    }
+  ]
+}

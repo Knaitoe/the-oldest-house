@@ -681,7 +681,7 @@ def hull(points):
     return lower[:-1] + upper[:-1]
 
 
-def seen(parts, names, images, view, scale=12, box=(-8, 26, -2, 20)):
+def seen(parts, names, images, view, scale=12, box=(-8, 26, -2, 20), prefix=DIR):
     """A model straight on from one side, every piece flat in the colour at the middle of the face it shows: 'side' looks north at the
     bike's right side (front to the right), 'top' looks down, 'front' looks west at its front."""
     x0, x1, y0, y1 = box
@@ -697,7 +697,7 @@ def seen(parts, names, images, view, scale=12, box=(-8, 26, -2, 20)):
         else:
             flat, depth = [(16 - p[2] + 1, p[1]) for p in pts], max(p[0] for p in pts)
         f = e['faces'].get(face) or next(iter(e['faces'].values()))
-        tex = images[DIR + names[f['texture'][1:]] + '.png']
+        tex = images[prefix + names[f['texture'][1:]] + '.png']
         u0, v0, u1, v1 = f.get('uv', [0, 0, 16, 16])
         c = tex.getpixel((min(15, max(0, int((u0 + u1) / 2))), min(15, max(0, int((v0 + v1) / 2)))))
         order.append((depth, hull([((x - x0) * scale, (y1 - y) * scale) for x, y in flat]), c))

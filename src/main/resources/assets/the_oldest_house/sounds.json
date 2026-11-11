@@ -4965,5 +4965,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.bike.dynamo"
+  },
+  "park.lamp_buzz": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/lamp_buzz",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.lamp_buzz"
+  },
+  "park.chain": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/chain",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.chain"
   }
 }

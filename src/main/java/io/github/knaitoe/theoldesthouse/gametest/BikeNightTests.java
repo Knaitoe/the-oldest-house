@@ -1,18 +1,18 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
-import io.github.knaitoe.theoldesthouse.labyrinth.BikeBeamBlock;
-import io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry;
-import io.github.knaitoe.theoldesthouse.labyrinth.BikeRampBlock;
-import io.github.knaitoe.theoldesthouse.labyrinth.NightBike;
-import io.github.knaitoe.theoldesthouse.labyrinth.NightBikeBlock;
-import io.github.knaitoe.theoldesthouse.labyrinth.NightBikes;
-import io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.locks.LockSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -21,6 +21,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -29,6 +31,10 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  * 0.4.463, Bike night's first slice: the six bikes. Each case rides on a road of its own in the test world's sky, where no other case
  * builds. Riders are real players on the server; the keys a client would send are given to the bike directly (pedal, keys), as
  * Borrasca's bike cases do.
+ *
+ * <p>0.4.464, the park: built whole of its own things; a reader comes in at child height at midnight; whichever bike a reader gets
+ * on is theirs for the night; the failing lamp; the night over when the park stands empty; what a hand on the park's things says.
+ * These build the place itself, one case to a batch, as the literary cases do.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_bike_night") @PrefixGameTestTemplate(false)
 public final class BikeNightTests {
@@ -354,5 +360,276 @@ public final class BikeNightTests {
             h.assertTrue(Math.abs(b[0].turboNow()-.5F)<.06F,"let go, steady riding brings it back: half in seven and a half seconds: "+b[0].turboNow());
             h.assertTrue(Math.abs(b[0].turbo()-b[0].turboNow())<.03F,"and the rider's screen is told how much: "+b[0].turbo());
         }).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.464: the park
+    private static final LabyrinthPlace P=LabyrinthPlace.BIKE_NIGHT;
+    private static LiteraryTests.Fixture active;
+    private static final Map<UUID,List<String>> HEARD=new HashMap<>();
+    private static LiteraryTests.Fixture park(GameTestHelper h){done();active=new LiteraryTests.Fixture(h);return active;}
+    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();}
+    private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);var r=P.room();return new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1);}
+    /** Everything a reader has been told so far has this in it. What is said reaches a reader when the tick ends, so cases wait on it. */
+    private static boolean heard(ServerPlayer p,String part){var all=HEARD.computeIfAbsent(p.getUUID(),k->new ArrayList<>());all.addAll(NativeTestPlayers.messages(p));return all.stream().anyMatch(m->m.contains(part));}
+    private static void hush(ServerPlayer p){NativeTestPlayers.messages(p);HEARD.remove(p.getUUID());}
+    /** A hand on a bike nobody is on: the block's own use. */
+    private static void hand(LiteraryTests.Fixture f,ServerPlayer p,BlockPos at){var l=f.level(P);NightBikes.use(p,l,at,l.getBlockState(at));}
+    /** A reader who has looked at this bike gets on it where it stands in the rack. */
+    private static NightBike take(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,NightBike.Make make){
+        var at=f.base(P).offset(BikeNightSite.bikeAt(make));hand(f,p,at);if(!p.isPassenger())hand(f,p,at);
+        h.assertTrue(p.getVehicle() instanceof NightBike b&&b.make()==make,p.getGameProfile().getName()+" is on the "+make.id());return (NightBike)p.getVehicle();
+    }
+    private static void getOff(ServerPlayer p){p.setPlayerInput(0,0,false,true);}
+    private static void stand(ServerPlayer p){p.setPlayerInput(0,0,false,false);}
+    @AfterBatch(batch="park_built") public static void builtDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_arrive") public static void arriveDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_bikes") public static void bikesDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_lamp") public static void lampDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_empty") public static void emptyDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_hands") public static void handsDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_rails") public static void railsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
+    public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                h.assertTrue(LiteraryRooms.isLiterary(P)&&LiteraryRooms.outside(P)&&P.kind()==LabyrinthPlace.Kind.ONE_SHOT&&P.authored()&&SceneClock.at(f.origin,b.offset(0,0,-20),HouseDimensions.OUTSIDE)==9,"a literary place outside, finished once, built whole, at midnight");
+                h.assertTrue(WitnessAccount.Story.of(P.id())==null&&WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED&&!LiteraryVignettes.canDeal(f.data(),UUID.randomUUID(),P),
+                    "not a source yet, the quota as it was, and not dealt until the night can be finished");
+                // The back wall and the shed's door in it; the paper and the rules beside it.
+                h.assertTrue(l.getBlockState(b.offset(0,0,1)).getBlock() instanceof DoorBlock&&l.getBlockState(b.offset(0,1,1)).getBlock() instanceof DoorBlock,"the tool shed's door, in the back wall");
+                var brick=BikeNightRegistry.material("brick");var kerb=BikeNightRegistry.material("kerb");
+                for(int x:new int[]{-40,-20,-5,5,20,40})h.assertTrue(l.getBlockState(b.offset(x,2,1)).is(brick),"the back wall is brick at x="+x);
+                h.assertTrue(l.getBlockState(b.offset(-30,6,1)).is(kerb)&&l.getBlockState(b.offset(0,7,1)).is(brick)&&l.getBlockState(b.offset(0,8,1)).is(kerb),"a stone coping on the wall, and on the shed's front, which stands two courses over it");
+                h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(BikeNightSite.SOURCE)),CalderBlock.Kind.NOTE)&&l.getBlockState(b.offset(BikeNightSite.SOURCE).south()).is(brick),"the sheet from a school pad, taped to the brick by the door");
+                var text=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);var all=String.join(" ",text.pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(text.author().equals("Gus")&&all.contains("HALLOWEEN PLAN")&&all.contains("Come through the tool shed")&&all.contains("Do NOT cut through the graveyard"),"the plan for the night, in Gus's hand: "+all);
+                for(var sign:CalderSigns.Sign.values()){
+                    var at=sign==CalderSigns.Sign.ARCH?b.offset(BikeNightSite.PIER_E,3,BikeNightSite.NORTH):b.offset(8,1,0);
+                    for(int row=0;row<sign.rows;row++)for(int col=0;col<sign.cols;col++){var s=l.getBlockState(CalderSigns.cell(sign,at,Direction.NORTH,col,row));
+                        h.assertTrue(CalderSignBlock.is(s,sign)&&s.getValue(CalderSignBlock.PIECE)==sign.first()+row*sign.cols+col&&s.getValue(CalderSignBlock.FACING)==Direction.NORTH,"the "+sign+" board, block "+col+","+row+": "+s);}
+                }
+                h.assertTrue(CalderSigns.Sign.ARCH.look().contains("CALDER PARK")&&CalderSigns.Sign.RULES.look().contains("No cycling")&&CalderSigns.Sign.RULES.look().contains("NO FUN"),"what a hand reads on each");
+                // The gate: two leaves of two, shut and chained, the padlock on the park's side; as tall as the railings and a half over.
+                int[] lower={0,2,3,0};Direction[] turned={Direction.NORTH,Direction.SOUTH,Direction.NORTH,Direction.SOUTH};
+                for(int i=0;i<4;i++){var at=b.offset(BikeNightSite.PATH_W+i,0,BikeNightSite.NORTH);var s=l.getBlockState(at);var up=l.getBlockState(at.above());
+                    h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.GATE)&&s.getValue(CalderBlock.STAGE)==lower[i]&&s.getValue(CalderBlock.FACING)==turned[i],"the gate's lower block "+i+": "+s);
+                    h.assertTrue(CalderBlock.is(up,CalderBlock.Kind.GATE)&&up.getValue(CalderBlock.STAGE)==1&&up.getValue(CalderBlock.FACING)==turned[i]&&up.getCollisionShape(l,at.above()).max(Direction.Axis.Y)==1.5,"and its upper, which stops a body half a block over its top: "+up);}
+                // The railings: every block of the three lines is railing, pier or gate; the piers are capped; the corners are piers.
+                int piers=0;
+                for(int x=BikeNightSite.WEST;x<=BikeNightSite.EAST;x++){var at=b.offset(x,0,BikeNightSite.NORTH);var s=l.getBlockState(at);
+                    if(s.is(brick)){piers++;h.assertTrue(l.getBlockState(at.above()).is(brick)&&CalderBlock.is(l.getBlockState(at.above(2)),CalderBlock.Kind.CAP),"a pier is brick two high under its cap, at x="+x);}
+                    else if(x>=BikeNightSite.PATH_W&&x<=BikeNightSite.PATH_E)h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.GATE),"the gateway at x="+x);
+                    else h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.FENCE)&&s.getValue(CalderBlock.STAGE)==0&&s.getValue(CalderBlock.FACING)==Direction.NORTH&&CalderBlock.is(l.getBlockState(at.above()),CalderBlock.Kind.FENCE)&&l.getBlockState(at.above()).getValue(CalderBlock.STAGE)==1,"railings two high along the street at x="+x+": "+s);}
+                h.assertTrue(piers==10&&l.getBlockState(b.offset(BikeNightSite.WEST,0,BikeNightSite.NORTH)).is(brick)&&l.getBlockState(b.offset(BikeNightSite.EAST,0,BikeNightSite.NORTH)).is(brick)
+                    &&l.getBlockState(b.offset(BikeNightSite.PIER_W,0,BikeNightSite.NORTH)).is(brick)&&l.getBlockState(b.offset(BikeNightSite.PIER_E,0,BikeNightSite.NORTH)).is(brick),"ten piers along the street, one at each corner and each side of the gate: "+piers);
+                for(int x:new int[]{BikeNightSite.WEST,BikeNightSite.EAST})for(int z=BikeNightSite.NORTH+1;z<=0;z++){var s=l.getBlockState(b.offset(x,0,z));
+                    h.assertTrue(s.is(brick)||CalderBlock.is(s,CalderBlock.Kind.FENCE)&&s.getValue(CalderBlock.FACING).getAxis()==Direction.Axis.X,"the side railings run unbroken to the back wall at "+x+","+z+": "+s);}
+                // The lamps, the benches, the bin.
+                for(var at:BikeNightSite.LAMPS){
+                    var foot=l.getBlockState(b.offset(at));var top=b.offset(at).above(BikeNightSite.LAMP_TOP);
+                    h.assertTrue(CalderBlock.is(foot,CalderBlock.Kind.LAMP)&&foot.getValue(CalderBlock.STAGE)==CalderBlock.FOOT&&l.getBlockState(b.offset(at).above()).getValue(CalderBlock.STAGE)==CalderBlock.POST&&l.getBlockState(b.offset(at).above(2)).getValue(CalderBlock.STAGE)==CalderBlock.POST,"a lamp post's foot and two of post at "+at);
+                    h.assertTrue(BikeNightSite.lit(l,b,at)&&l.getBlockState(top).getLightEmission(l,top)==14,"and its lantern, lit, giving light");
+                }
+                h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(3,0,-16)),CalderBlock.Kind.BENCH)&&l.getBlockState(b.offset(3,0,-16)).getValue(CalderBlock.STAGE)==1&&l.getBlockState(b.offset(3,0,-17)).getValue(CalderBlock.STAGE)==2
+                    &&l.getBlockState(b.offset(3,0,-16)).getValue(CalderBlock.FACING)==Direction.WEST&&CalderBlock.is(l.getBlockState(b.offset(3,0,-18)),CalderBlock.Kind.BIN),"a bench two blocks long looking across the path, a bin by it");
+                // The rack and the six bikes.
+                for(var make:NightBike.Make.values()){
+                    var rack=l.getBlockState(b.offset(BikeNightSite.RACK_X+make.ordinal(),0,BikeNightSite.RACK_Z));var bike=l.getBlockState(b.offset(BikeNightSite.bikeAt(make)));
+                    h.assertTrue(rack.is(BikeNightRegistry.RACK.get())&&rack.getValue(BikeRackBlock.FACING)==Direction.NORTH,"the rack's place "+make.ordinal());
+                    h.assertTrue(bike.is(BikeNightRegistry.BIKE_BLOCK.get())&&bike.getValue(NightBikeBlock.MAKE)==make&&bike.getValue(NightBikeBlock.FACING)==Direction.NORTH&&!bike.getValue(NightBikeBlock.LYING),"the "+make.id()+" on its stand in it: "+bike);
+                }
+                // The playground's sand in its edging, open where the side path comes in.
+                h.assertTrue(l.getBlockState(b.offset(-16,-1,-22)).is(Blocks.SAND)&&l.getBlockState(b.offset(BikeNightSite.SAND_W,-1,BikeNightSite.SAND_N)).is(Blocks.SAND)&&l.getBlockState(b.offset(BikeNightSite.SAND_W-1,-1,BikeNightSite.SAND_N)).is(Blocks.GRASS_BLOCK),"sand, and grass round it");
+                int[][] corner={{BikeNightSite.SAND_W,BikeNightSite.SAND_N},{BikeNightSite.SAND_E,BikeNightSite.SAND_N},{BikeNightSite.SAND_E,BikeNightSite.SAND_S},{BikeNightSite.SAND_W,BikeNightSite.SAND_S}};
+                Direction[] faces={Direction.NORTH,Direction.EAST,Direction.SOUTH,Direction.WEST};
+                for(int i=0;i<4;i++){var s=l.getBlockState(b.offset(corner[i][0],0,corner[i][1]));h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.BORDER)&&s.getValue(CalderBlock.STAGE)==1&&s.getValue(CalderBlock.FACING)==faces[i],"the edging turns the corner "+i+": "+s);}
+                h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(-16,0,BikeNightSite.SAND_N)),CalderBlock.Kind.BORDER)&&l.getBlockState(b.offset(BikeNightSite.SAND_E,0,BikeNightSite.SIDE_S)).isAir()&&l.getBlockState(b.offset(BikeNightSite.SAND_E,0,BikeNightSite.SIDE_N)).isAir()
+                    &&l.getBlockState(b.offset(-5,-1,BikeNightSite.SIDE_S)).is(BikeNightRegistry.material("paving")),"timbers along the edge, and none across the side path");
+                // Park Street.
+                h.assertTrue(l.getBlockState(b.offset(10,-1,BikeNightSite.WALK_S)).is(BikeNightRegistry.material("paving"))&&l.getBlockState(b.offset(10,-1,BikeNightSite.KERB_S)).is(kerb)&&l.getBlockState(b.offset(10,-1,BikeNightSite.ROAD_S)).is(BikeNightRegistry.material("asphalt"))
+                    &&l.getBlockState(b.offset(10,-1,BikeNightSite.LINE)).is(BikeNightRegistry.ROAD_LINE.get())&&l.getBlockState(b.offset(10,-1,BikeNightSite.LINE)).getValue(RotatedPillarBlock.AXIS)==Direction.Axis.X
+                    &&l.getBlockState(b.offset(10,-1,BikeNightSite.KERB_N)).is(kerb)&&l.getBlockState(b.offset(10,-1,BikeNightSite.WALK_N)).is(BikeNightRegistry.material("paving")),"the pavement, the kerb, the road and its line, the far kerb and pavement");
+                // Trees and what has come down from them; and nothing in the park that is one of the game's own blocks standing for something else.
+                int leaves=0,litter=0;var strangers=new java.util.TreeSet<String>();var r=P.room();
+                for(var at:BlockPos.betweenClosed(b.offset(r.minX(),r.minY(),r.minZ()),b.offset(r.maxX(),r.maxY(),r.maxZ()))){
+                    var s=l.getBlockState(at);if(s.isAir())continue;
+                    if(s.is(BikeNightRegistry.LEAVES.get()))leaves++;if(s.is(BikeNightRegistry.LITTER.get()))litter++;
+                    var id=BuiltInRegistries.BLOCK.getKey(s.getBlock());
+                    if(!id.getNamespace().equals(TheOldestHouse.MOD_ID)&&!s.is(Blocks.DIRT)&&!s.is(Blocks.GRASS_BLOCK)&&!s.is(Blocks.SAND)&&!s.is(Blocks.OAK_LOG)&&!(s.getBlock() instanceof DoorBlock))strangers.add(id.toString());
+                }
+                h.assertTrue(l.getBlockState(b.offset(-20,0,-5)).is(Blocks.OAK_LOG)&&leaves>400&&litter>60,"oaks in October leaf, and leaves down under them: "+leaves+" in the crowns, "+litter+" on the ground");
+                h.assertTrue(strangers.isEmpty(),"the park is earth, grass, sand, oak and its own things, and nothing else: "+strangers);
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_arrive",timeoutTicks=1600)
+    public static void aReaderComesInAtChildHeightAtMidnightAndReadsThePlan(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("park_reader",P))
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],"A town park after dark, on the last night of October"),"told where they are, in the bar over the hotbar"))
+            .thenWaitUntil(()->h.assertTrue(Math.abs(p[0].getScale()-.54F)<.02F,"at a child's height: "+p[0].getScale()))
+            .thenExecute(()->{
+                var own=f.own(p[0],P);
+                h.assertTrue(LiteraryVignettes.current(p[0])==P&&own.getInt("Nights")==1&&own.getString("Bike").isEmpty(),"in the park, on their first night there, with no bike yet: "+own);
+                h.assertTrue(BikeNightSite.inPark(p[0].position().subtract(b.getX(),b.getY(),b.getZ()))&&!BikeNightSite.onSand(p[0].position().subtract(b.getX(),b.getY(),b.getZ())),"inside the railings, on the path");
+                f.source(p[0],P);
+                h.assertTrue(f.own(p[0],P).getBoolean("Read_Source"),"the sheet by the door is read to its end");
+                h.assertTrue(BikeNightTexts.HINT.equals(LiteraryTexts.hint(P)),"and its hint is the rack's rule");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_bikes",timeoutTicks=2400)
+    public static void whicheverBikeAReaderGetsOnIsTheirsForTheNight(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] bike={null,null};
+        final BlockPos[] left={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("park_first",P);p[1]=f.player("park_second",P);f.at(p[0],P,4.5,0,-40.5);f.at(p[1],P,6.5,0,-40.5);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.owner(b,NightBike.Make.WASP)==null&&BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun, and nobody has a bike"))
+            .thenExecute(()->{
+                var wasp=b.offset(BikeNightSite.bikeAt(NightBike.Make.WASP));
+                hand(f,p[0],wasp);h.assertTrue(!p[0].isPassenger()&&BikeNight.owner(b,NightBike.Make.WASP)==null,"a first hand on a bike is a look at it, and takes nothing");
+                bike[0]=take(h,f,p[0],NightBike.Make.WASP);
+            })
+            .thenWaitUntil(()->h.assertTrue(p[0].getUUID().equals(BikeNight.owner(b,NightBike.Make.WASP))&&BikeNight.bikeAt(b,NightBike.Make.WASP)==null&&f.own(p[0],P).getString("Bike").equals("wasp"),"on it, it is theirs, and their record says which"))
+            .thenExecute(()->{hush(p[0]);BikeNight.tellNow(b);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.YOURS),"a little after getting on, they are told it is theirs"))
+            .thenExecute(()->getOff(p[0])).thenIdle(3)
+            .thenExecute(()->{
+                stand(p[0]);left[0]=BikeNight.bikeAt(b,NightBike.Make.WASP);
+                h.assertTrue(!p[0].isPassenger()&&left[0]!=null&&l.getBlockState(left[0]).is(BikeNightRegistry.BIKE_BLOCK.get())&&l.getBlockState(left[0]).getValue(NightBikeBlock.MAKE)==NightBike.Make.WASP,"off it, the night knows where it stands: "+left[0]);
+                h.assertTrue(p[0].getUUID().equals(BikeNight.owner(b,NightBike.Make.WASP)),"and it is still theirs");
+                // The other reader cannot have it.
+                hush(p[1]);hand(f,p[1],left[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(!p[1].isPassenger()&&heard(p[1],"park_first has that one tonight."),"somebody else's bike is refused, with whose it is"))
+            .thenExecute(()->{
+                hush(p[1]);hand(f,p[1],left[0]);h.assertTrue(!p[1].isPassenger(),"however often it is tried");
+                bike[1]=take(h,f,p[1],NightBike.Make.HARE);
+            })
+            .thenWaitUntil(()->h.assertTrue(p[1].getUUID().equals(BikeNight.owner(b,NightBike.Make.HARE))&&f.own(p[1],P).getString("Bike").equals("hare"),"the second reader has the Hare"))
+            // The first reader changes their mind: the Comet is theirs, and the Wasp is anybody's again.
+            .thenExecute(()->bike[0]=take(h,f,p[0],NightBike.Make.COMET))
+            .thenWaitUntil(()->h.assertTrue(p[0].getUUID().equals(BikeNight.owner(b,NightBike.Make.COMET))&&BikeNight.owner(b,NightBike.Make.WASP)==null&&f.own(p[0],P).getString("Bike").equals("comet")&&f.own(p[0],P).getInt("Swaps")==1,
+                "getting on another that nobody has gives the first back"))
+            .thenExecute(()->{hush(p[0]);BikeNight.tellNow(b);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SWAPPED),"and they are told so"))
+            .thenExecute(()->{getOff(p[1]);})
+            .thenIdle(3)
+            .thenExecute(()->{
+                stand(p[1]);h.assertTrue(!p[1].isPassenger(),"the second reader is off the Hare");
+                hand(f,p[1],left[0]);if(!p[1].isPassenger())hand(f,p[1],left[0]);
+                h.assertTrue(p[1].getVehicle() instanceof NightBike w&&w.make()==NightBike.Make.WASP,"and may now take the Wasp");
+            })
+            .thenWaitUntil(()->h.assertTrue(p[1].getUUID().equals(BikeNight.owner(b,NightBike.Make.WASP))&&BikeNight.owner(b,NightBike.Make.HARE)==null&&f.own(p[1],P).getString("Bike").equals("wasp"),"which is theirs, and the Hare nobody's"))
+            .thenExecute(()->{
+                h.assertTrue(BikeNightTexts.account("x",f.own(p[1],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().anyMatch(pg->pg.raw().getString().contains("I took the Wasp")),"their account has the bike they ended with");
+                h.assertTrue(LiteraryTexts.accountTitle(P).equals("The account: Calder Falls"),"and is titled with the town");
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_lamp",timeoutTicks=1600)
+    public static void theFailingLampGoesOutAndComesBackAndTheOthersStayLit(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final int[] before={0};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("park_lamp",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null&&BikeNight.failingLampLit(b)&&BikeNightSite.lit(l,b,BikeNightSite.FLICKER),"the night has begun, with every lamp lit"))
+            .thenExecute(()->{before[0]=BikeNight.outages(b);BikeNight.lampNow(b);})
+            .thenWaitUntil(()->h.assertTrue(!BikeNight.failingLampLit(b)&&!BikeNightSite.lit(l,b,BikeNightSite.FLICKER)&&BikeNight.outages(b)==before[0]+1,"the failing lamp goes out"))
+            .thenExecute(()->{
+                var top=b.offset(BikeNightSite.FLICKER).above(BikeNightSite.LAMP_TOP);
+                h.assertTrue(l.getBlockState(top).getValue(CalderBlock.STAGE)==CalderBlock.DARK&&l.getBlockState(top).getLightEmission(l,top)==0,"its lantern dark, and giving no light");
+                for(var at:BikeNightSite.LAMPS)if(!at.equals(BikeNightSite.FLICKER))h.assertTrue(BikeNightSite.lit(l,b,at),"the others stay lit: "+at);
+                BikeNight.lampNow(b);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.failingLampLit(b)&&BikeNightSite.lit(l,b,BikeNightSite.FLICKER),"and comes back"))
+            .thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_empty",timeoutTicks=2400)
+    public static void whenTheParkStandsEmptyTheNightIsOverAndTheBikesAreBackInTheRack(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final BlockPos[] left={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("park_last",P);f.at(p[0],P,9.5,0,-40.5);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.RATTLER)!=null,"the night has begun"))
+            .thenExecute(()->{var bike=take(h,f,p[0],NightBike.Make.RATTLER);bike.moveTo(b.getX()+12.5,b.getY(),b.getZ()-20.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(p[0].getUUID().equals(BikeNight.owner(b,NightBike.Make.RATTLER)),"the Rattler is theirs"))
+            .thenExecute(()->getOff(p[0])).thenIdle(3)
+            .thenExecute(()->{
+                stand(p[0]);left[0]=BikeNight.bikeAt(b,NightBike.Make.RATTLER);
+                h.assertTrue(left[0]!=null&&!left[0].equals(b.offset(BikeNightSite.bikeAt(NightBike.Make.RATTLER)))&&l.getBlockState(left[0]).is(BikeNightRegistry.BIKE_BLOCK.get()),"left out on the grass, away from the rack: "+left[0]);
+                var saved=LiteraryVignettes.shared(f.data(),P).getCompound("Bikes_"+b.asLong());
+                h.assertTrue(saved.getLong("rattler")==left[0].asLong()&&saved.contains("wasp"),"where each bike is, is kept with the world: "+saved);
+                // The reader goes: out of the park altogether.
+                p[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+40,f.origin.getZ()+.5,0,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.RATTLER)==null&&BikeNight.owner(b,NightBike.Make.RATTLER)==null,"after a while empty, the night is over"))
+            .thenExecute(()->{
+                var home=b.offset(BikeNightSite.bikeAt(NightBike.Make.RATTLER));
+                h.assertTrue(l.getBlockState(home).is(BikeNightRegistry.BIKE_BLOCK.get())&&l.getBlockState(home).getValue(NightBikeBlock.MAKE)==NightBike.Make.RATTLER&&!l.getBlockState(left[0]).is(BikeNightRegistry.BIKE_BLOCK.get()),"the Rattler is back in the rack, and not where it was left");
+                h.assertTrue(BikeNightSite.lit(l,b,BikeNightSite.FLICKER),"and the failing lamp is lit for whoever comes next");
+                h.assertTrue(f.own(p[0],P).getString("Bike").equals("rattler"),"the reader's own record keeps the bike they had");
+                // A night cut short by the server stopping: the bike is found where the world says it was left, and taken back.
+                var stray=b.offset(-12,0,-6);l.setBlock(stray,NightBikeBlock.of(NightBike.Make.LAMP,Direction.EAST,true),3);l.setBlock(b.offset(BikeNightSite.bikeAt(NightBike.Make.LAMP)),Blocks.AIR.defaultBlockState(),3);
+                var world=LiteraryVignettes.shared(f.data(),P);var t=world.getCompound("Bikes_"+b.asLong());t.putLong("lamp",stray.asLong());world.put("Bikes_"+b.asLong(),t);LiteraryVignettes.shared(f.data(),P,world);
+                left[0]=stray;f.arrive(p[0],P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.LAMP)!=null&&BikeNight.bikeAt(b,NightBike.Make.LAMP).equals(b.offset(BikeNightSite.bikeAt(NightBike.Make.LAMP)))
+                &&l.getBlockState(b.offset(BikeNightSite.bikeAt(NightBike.Make.LAMP))).is(BikeNightRegistry.BIKE_BLOCK.get())&&l.getBlockState(left[0]).isAir(),"the next night begins with the Lamp back in the rack and nothing left lying where it was"))
+            .thenExecute(()->h.assertTrue(f.own(p[0],P).getInt("Nights")==2,"their second night in the park"))
+            .thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_hands",timeoutTicks=1600)
+    public static void aHandOnTheParksThingsSaysWhatIsThere(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};
+        record Thing(BlockPos at,String says){}
+        var things=List.of(new Thing(new BlockPos(BikeNightSite.PATH_W+1,0,BikeNightSite.NORTH),BikeNightTexts.GATE),new Thing(new BlockPos(-6,0,BikeNightSite.NORTH),BikeNightTexts.RAILINGS),
+            new Thing(BikeNightSite.FLICKER,BikeNightTexts.LAMP_FAILING),new Thing(BikeNightSite.PLAY_LAMP.above(),BikeNightTexts.LAMP),new Thing(new BlockPos(3,0,-16),BikeNightTexts.BENCH),
+            new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
+            new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()));
+        var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("park_hand",P));
+        for(var thing:things)seq=seq.thenExecute(()->{hush(p[0]);f.click(p[0],P,thing.at());})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],thing.says()),"a hand at "+thing.at().toShortString()+" says: "+thing.says()));
+        seq.thenExecute(()->{
+            for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look())){
+                var low=line.toLowerCase(java.util.Locale.ROOT);
+                for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
+                    h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
+            }
+        }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_rails",timeoutTicks=2400)
+    public static void theBestHopThereIsDoesNotClearTheRailings(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] bike={null};final double[] high={0};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("park_hopper",P);f.at(p[0],P,7.5,0,-40.5);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.HOPPER)!=null,"the night has begun"))
+            .thenExecute(()->{
+                bike[0]=take(h,f,p[0],NightBike.Make.HOPPER);
+                // Out on the grass east of the path, pointing at the east railings, with a run-up.
+                bike[0].moveTo(b.getX()+22.5,b.getY(),b.getZ()-12.5,270,0);p[0].setYRot(270);bike[0].keys(true,false);
+            })
+            .thenExecuteFor(RiddenBike.CHARGE+2,()->{p[0].setYRot(270);pedalWell(bike[0],bike[0].tickCount,3);})
+            .thenExecute(()->bike[0].keys(false,false))
+            .thenExecuteFor(60,()->{
+                p[0].setYRot(270);if(p[0].getVehicle()==bike[0]){pedalWell(bike[0],bike[0].tickCount,3);high[0]=Math.max(high[0],bike[0].getY()-b.getY());
+                    if(bike[0].onGround()&&bike[0].getX()>b.getX()+BikeNightSite.EAST-6){bike[0].keys(true,false);}}
+            })
+            .thenExecute(()->{
+                h.assertTrue(p[0].getX()<b.getX()+BikeNightSite.EAST+.5&&(bike[0].isRemoved()||bike[0].getX()<b.getX()+BikeNightSite.EAST+.5),"neither the rider nor the bike is past the east railings: rider "+(p[0].getX()-b.getX())+", highest "+high[0]);
+                h.assertTrue(BikeNightSite.inPark(p[0].position().subtract(b.getX(),b.getY(),b.getZ())),"the rider is still in the park");
+            }).thenSucceed();
     }
 }
