@@ -1,0 +1,147 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/calder_grave/stone_4",
+    "s": "the_oldest_house:block/calder_grave/side_2",
+    "particle": "the_oldest_house:block/calder_grave/stone_4"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        6.5
+      ],
+      "to": [
+        13,
+        14,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            3,
+            2,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            3,
+            2,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            2,
+            3.0,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            13.0,
+            2,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            3,
+            0,
+            13,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            3,
+            13.0,
+            13,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        14,
+        6
+      ],
+      "to": [
+        14,
+        15,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            14,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            1,
+            4,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            12,
+            1,
+            16,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            2,
+            0,
+            14,
+            4
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            2,
+            12,
+            14,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

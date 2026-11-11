@@ -532,6 +532,8 @@ public final class BikeNight {
         // is not looking, it is throwing (SandBallItem), so this says nothing and lets it.
         if(s.is(Blocks.SAND)&&BikeNightSite.sandAt(rel)||s.is(BikeNightRegistry.MARK.get())&&p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get())){scoop(p);return true;}
         if(p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get()))return false;
+        // 0.4.489: a hand on a stone in the cemetery is told what is cut on it.
+        if(CalderGraveBlock.carved(s)){cue(p,CalderGraves.inscription(s,rel));return true;}
         if(s.is(BikeNightRegistry.MARK.get())){
             var n=night(p);var who=n==null?null:n.farWho;var other=who==null?null:p.server.getPlayerList().getPlayer(who);
             cue(p,who==null||other==null?BikeNightTexts.MARK:who.equals(p.getUUID())?BikeNightTexts.MARK_OWN:String.format(BikeNightTexts.MARK_THEIRS,other.getGameProfile().getName()));return true;

@@ -1,0 +1,146 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "m": "the_oldest_house:block/calder_grave/marble",
+    "particle": "the_oldest_house:block/calder_grave/marble"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#m",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#m",
+          "uv": [
+            0,
+            11,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#m",
+          "uv": [
+            6,
+            11,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#m",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#m",
+          "uv": [
+            3,
+            6,
+            13,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        5,
+        4.5
+      ],
+      "to": [
+        11.5,
+        16,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            4.5,
+            0,
+            11.5,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#m",
+          "uv": [
+            4.5,
+            0,
+            11.5,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#m",
+          "uv": [
+            0,
+            0,
+            7.0,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#m",
+          "uv": [
+            9.0,
+            0,
+            16,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#m",
+          "uv": [
+            4.5,
+            0,
+            11.5,
+            7.0
+          ]
+        },
+        "down": {
+          "texture": "#m",
+          "uv": [
+            4.5,
+            9.0,
+            11.5,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -613,7 +613,7 @@ public final class CalderTown {
         for(int[] t:new int[][]{{-60,-98,6},{-60,-85,5},{-60,-72,6},{-59,-113,6},{-60,-122,5},{-61,-148,6},{-60,-170,6},{-53,-172,7},
                 {60,-75,5},{58,-94,6},{60,-90,5},{60,-117,6},{61,-143,5},{60,-164,6},{53,-171,6}})tree(l,b,t[0],t[1],t[2],rnd);
     }
-    /** The cemetery's railings along the north of the town, its gate where Church Lane comes nearest, and the dark behind them. */
+    /** The cemetery's railings along the north of the town, and its gate where Church Lane comes nearest. */
     static void cemetery(ServerLevel l,BlockPos b,Random rnd){
         int pw=GATE_W-1,pe=GATE_E+1;
         for(int x=W;x<=E;x++){
@@ -625,7 +625,7 @@ public final class CalderTown {
             set(l,b,x,0,RAILS,fit(CalderBlock.Kind.GATE,facing,0));set(l,b,x,1,RAILS,fit(CalderBlock.Kind.GATE,facing,1));
         }
         CalderSigns.hang(l,b.offset(pw,3,RAILS),CalderSigns.Sign.CEMETERY,Direction.SOUTH);
-        for(int x=W+3;x<=E-3;x+=5+rnd.nextInt(3))BikeNightSite.tree(l,b,x,RAILS-2-rnd.nextInt(2),6+rnd.nextInt(3),rnd);
+        // 0.4.489: what was a line of trees behind the railings is the cemetery itself (CalderGraves), which has its own.
         // Between the lane and the railings, where the lane swings away from them.
         for(int[] t:new int[][]{{-38,-173},{-30,-175},{32,-173},{40,-175},{24,-174}})if(surface(t[0],t[1])==NONE)BikeNightSite.tree(l,b,t[0],t[1],5+rnd.nextInt(3),rnd);
     }

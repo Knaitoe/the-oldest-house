@@ -1,0 +1,70 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "d": "the_oldest_house:block/calder_grave/door_0",
+    "i": "the_oldest_house:block/calder_grave/side_1",
+    "particle": "the_oldest_house:block/calder_grave/door_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        14.5
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            1.5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            1.5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            16,
+            1.5
+          ]
+        },
+        "down": {
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            16,
+            1.5
+          ]
+        }
+      }
+    }
+  ]
+}

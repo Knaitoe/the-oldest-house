@@ -60,8 +60,10 @@ public final class BikeNightRegistry {
         // 0.4.481, the town's: stucco, tan brick, clapboard, concrete, a tarred roof, shingles, a lot's asphalt and its bay line, porch
         // boards, an alley's gravel, the school field's turf, plain, with a tyre's track through its dew and with a yard line chalked
         // down it, and a hedge.
-        "stucco","tanbrick","siding","concrete","roofing","shingle","lot","lot_line","plank","gravel","turf","turf_track","turf_line","hedge");
-    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge"->Blocks.MOSS_BLOCK;default->Blocks.STONE;};}
+        "stucco","tanbrick","siding","concrete","roofing","shingle","lot","lot_line","plank","gravel","turf","turf_track","turf_line","hedge",
+        // 0.4.489, the cemetery's: its grass, the earth of a fresh grave, the mausoleum's marble.
+        "grave_turf","grave_earth","marble");
+    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge","grave_turf"->Blocks.MOSS_BLOCK;case "grave_earth"->Blocks.COARSE_DIRT;default->Blocks.STONE;};}
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("calder_"+name,fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     /** Asphalt with the street's centre line on it, along its axis. */
@@ -79,6 +81,11 @@ public final class BikeNightRegistry {
     /** 0.4.481: the town's fittings (CalderTownBlock), and a place of the bank's clock. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderTownBlock>> TOWN_TYPE=CODECS.register("calder_town",()->CalderTownBlock.CODEC);
     public static final DeferredBlock<CalderTownBlock> TOWN=BLOCKS.registerBlock("calder_town",CalderTownBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(CalderTownBlock::light));
+    /** 0.4.489: what stands in the cemetery (CalderGraveBlock), and the half blocks its banks are stepped with. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderGraveBlock>> GRAVE_TYPE=CODECS.register("calder_grave",()->CalderGraveBlock.CODEC);
+    public static final DeferredBlock<CalderGraveBlock> GRAVE=BLOCKS.registerBlock("calder_grave",CalderGraveBlock::new,fixed(Blocks.STONE).noOcclusion().lightLevel(CalderGraveBlock::light));
+    public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> GRAVE_TURF_SLAB=BLOCKS.registerBlock("calder_grave_turf_slab",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.MOSS_BLOCK));
+    public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> GRAVEL_SLAB=BLOCKS.registerBlock("calder_gravel_slab",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.GRAVEL));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderDigitBlock>> DIGIT_TYPE=CODECS.register("calder_digit",()->CalderDigitBlock.CODEC);
     public static final DeferredBlock<CalderDigitBlock> DIGIT=BLOCKS.registerBlock("calder_digit",CalderDigitBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(s->7));
     public static final DeferredBlock<CalderPlayBlock> PLAY=BLOCKS.registerBlock("calder_play",CalderPlayBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());

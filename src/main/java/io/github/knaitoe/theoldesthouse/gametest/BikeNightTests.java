@@ -3990,4 +3990,314 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="carts_wait") public static void cartsWaitDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.489, the graveyard
+    private static AABB graves(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()+CalderGraves.W-1,b.getY()-5,b.getZ()+CalderGraves.FAR-1,b.getX()+CalderGraves.E+2,b.getY()+CalderGraves.TOP+2,b.getZ()+CalderGraves.FRONT+4);}
+    /** The rider's own brake, held until the bike has stopped; then let go. */
+    private static boolean halted(ServerPlayer p,RiddenBike bike){
+        if(p.getVehicle()!=bike)return true;
+        if(bike.speedNow()>.001F){p.setPlayerInput(0,-1,false,false);return false;}
+        p.setPlayerInput(0,0,false,false);return true;
+    }
+    private static net.minecraft.world.level.block.state.BlockState stood(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,CalderGraves.level(z),z));}
+    /** The first stone of a row, counting from the west, that is (or is not) a low marker, well away from the gate's line and from any tree. */
+    private static int stoneIn(ServerLevel l,BlockPos b,int row,boolean low){
+        for(int x=CalderGraves.W+3;x<=CalderGraves.E-3;x++){
+            var s=stood(l,b,x,row);
+            if(!CalderGraveBlock.is(s,CalderGraveBlock.Kind.STONE)||CalderGraveBlock.low(s)!=low||Math.abs(x)<16||Math.abs(Math.abs(x)-35)<4||Math.abs(Math.abs(x)-52)<4)continue;
+            // With nothing between it and the back railings but grass.
+            boolean open=true;for(int z=row-1;z>=CalderGraves.BACK+3;z--)if(!stood(l,b,x,z).isAir())open=false;
+            if(open)return x;
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    @GameTest(template="empty",batch="graves_built",timeoutTicks=2400)
+    public static void theCemeteryStandsOnItsRiseBehindTheTownInsideRailingsJoinedAllTheWayRound(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,graves(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the cemetery is resident"))
+            .thenExecute(()->{
+                var turf=BikeNightRegistry.material("grave_turf");var gravel=BikeNightRegistry.material("gravel");var earth=BikeNightRegistry.material("grave_earth");var marble=BikeNightRegistry.material("marble");
+                // The proposal: "It sits on a rise at the edge of town". Three banks, each a row of half blocks, the ground a block higher behind it.
+                h.assertTrue(CalderGraves.level(CalderGraves.FRONT-1)==0&&CalderGraves.level(CalderGraves.BACK+1)==CalderGraves.BANKS.length&&CalderGraves.BANKS.length==3,"the back of it is three blocks above the gate");
+                int wrong=0;String first="";
+                for(int z=CalderGraves.FAR;z<CalderGraves.FRONT;z++)for(int x=CalderGraves.W;x<=CalderGraves.E;x++){
+                    int y=CalderGraves.level(z);var ground=l.getBlockState(b.offset(x,y-1,z));
+                    boolean pit=x>=CalderGraves.PIT_W&&x<=CalderGraves.PIT_E&&z>=CalderGraves.PIT_N&&z<=CalderGraves.HEAP;
+                    // "The paths are gravel."
+                    boolean ok=pit||ground.is(CalderGraves.path(x,z)?gravel:turf);
+                    if(ok&&CalderGraves.bank(z)&&x>CalderGraves.W&&x<CalderGraves.E){
+                        var step=l.getBlockState(b.offset(x,y,z));
+                        ok=step.getBlock() instanceof net.minecraft.world.level.block.SlabBlock&&step.getValue(net.minecraft.world.level.block.SlabBlock.TYPE)==net.minecraft.world.level.block.state.properties.SlabType.BOTTOM
+                            &&step.is(CalderGraves.path(x,z)?BikeNightRegistry.GRAVEL_SLAB.get():BikeNightRegistry.GRAVE_TURF_SLAB.get());
+                    }
+                    if(!ok&&wrong++==0)first=x+","+z+" is "+ground;
+                }
+                h.assertTrue(wrong==0,"grass, gravel on the paths, and half blocks up each bank: "+wrong+" places are not, the first "+first);
+                // "the iron fence with spear tops, which must be connected properly": no gap anywhere in it, a pier at every corner and on every bank.
+                var brick=BikeNightRegistry.material("brick");
+                for(int z=CalderGraves.FRONT;z>=CalderGraves.BACK;z--)for(int x:new int[]{CalderGraves.W,CalderGraves.E}){
+                    int y=CalderGraves.level(z);var at=b.offset(x,y,z);var s=l.getBlockState(at);
+                    h.assertTrue(!s.getCollisionShape(l,at).isEmpty()&&!l.getBlockState(at.above()).getCollisionShape(l,at.above()).isEmpty(),"the side railings are whole, two high, at "+x+","+z);
+                    boolean corner=z==CalderGraves.FRONT||z==CalderGraves.BACK;
+                    if(corner||CalderGraves.bank(z))h.assertTrue(s.is(brick),"a pier at "+(corner?"the corner ":"the bank ")+x+","+z+": "+s);
+                    else h.assertTrue(s.is(brick)||CalderBlock.is(s,CalderBlock.Kind.FENCE)&&s.getValue(CalderBlock.FACING).getAxis()==Direction.Axis.X,"railings along the side at "+x+","+z+": "+s);
+                    // A pier on a bank reaches the rails above it as well as the ones below.
+                    if(CalderGraves.bank(z))h.assertTrue(l.getBlockState(at.above(2)).is(brick)&&CalderBlock.is(l.getBlockState(at.above(3)),CalderBlock.Kind.CAP),"the pier on the bank at "+x+","+z+" stands a block taller");
+                }
+                int top=CalderGraves.level(CalderGraves.BACK);
+                for(int x=CalderGraves.W;x<=CalderGraves.E;x++){
+                    var at=b.offset(x,top,CalderGraves.BACK);var s=l.getBlockState(at);
+                    h.assertTrue(!s.getCollisionShape(l,at).isEmpty(),"the back railings are whole at x="+x);
+                    if(x>=CalderGraves.PATH_W&&x<=CalderGraves.PATH_E)h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.GATE)&&CalderBlock.is(l.getBlockState(at.above()),CalderBlock.Kind.GATE),"the back gate, shut, at x="+x);
+                    else h.assertTrue(s.is(brick)||CalderBlock.is(s,CalderBlock.Kind.FENCE)&&s.getValue(CalderBlock.FACING).getAxis()==Direction.Axis.Z,"railings across the back at x="+x+": "+s);
+                }
+                h.assertTrue(l.getBlockState(b.offset(CalderGraves.PATH_W-1,top,CalderGraves.BACK)).is(brick)&&l.getBlockState(b.offset(CalderGraves.PATH_E+1,top,CalderGraves.BACK)).is(brick),"the back gate hangs between two piers");
+                // "headstones at every lean and height": rows of them across the hill, fuller toward the back, with the gate's line clear in every one.
+                var kinds=new java.util.HashSet<Integer>();int stones=0,crosses=0,lowOnes=0,goods=0,lanterns=0;int[] inRow=new int[CalderGraves.ROWS.length];
+                for(int r=0;r<CalderGraves.ROWS.length;r++){
+                    int z=CalderGraves.ROWS[r];
+                    for(int x=CalderGraves.W+1;x<CalderGraves.E;x++){
+                        var s=stood(l,b,x,z);
+                        boolean stone=CalderGraveBlock.is(s,CalderGraveBlock.Kind.STONE),cross=CalderGraveBlock.is(s,CalderGraveBlock.Kind.CROSS);
+                        if(!stone&&!cross)continue;
+                        inRow[r]++;if(stone){stones++;kinds.add(s.getValue(CalderGraveBlock.STAGE));if(CalderGraveBlock.low(s))lowOnes++;}else crosses++;
+                        h.assertTrue(!CalderGraves.path(x,z)&&!CalderGraves.kept(x,z)&&l.getBlockState(b.offset(x,CalderGraves.level(z)-1,z)).is(turf),"a stone stands on grass, off the paths and out of the gate's line: "+x+","+z);
+                        h.assertTrue(s.getValue(CalderGraveBlock.FACING)==Direction.SOUTH,"its name looks down the hill at whoever is coming up: "+x+","+z);
+                    }
+                    for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)h.assertTrue(stood(l,b,x,z).isAir(),"the gate's line is clear in the row at "+z);
+                }
+                for(int z=CalderGraves.BACK+1;z<CalderGraves.FRONT;z++)for(int x=CalderGraves.W+1;x<CalderGraves.E;x++){var s=stood(l,b,x,z);if(CalderGraveBlock.is(s,CalderGraveBlock.Kind.GOODS)){goods++;if(s.getValue(CalderGraveBlock.STAGE)==CalderGraveBlock.LANTERN)lanterns++;}}
+                h.assertTrue(stones>=180&&crosses>=6&&kinds.size()==CalderGraveBlock.STONES&&lowOnes>=20&&lowOnes<stones/2,"stones of every shape, low ones among them, and crosses: "+stones+" stones of "+kinds.size()+" kinds, "+lowOnes+" low, "+crosses+" crosses");
+                h.assertTrue(inRow[0]<inRow[CalderGraves.ROWS.length-1]&&inRow[0]+inRow[1]+inRow[2]<inRow[9]+inRow[10]+inRow[11],"the rows fill toward the back: "+java.util.Arrays.toString(inRow));
+                h.assertTrue(goods>=8&&lanterns>=1,"things are left at some of them, a lantern among them: "+goods+", "+lanterns+" lanterns");
+                // "One row of small headstones near the back": six of them, three each side of the gate's line, behind every other row.
+                for(int i=0;i<CalderGraves.SMALL_X.length;i++){
+                    var s=stood(l,b,CalderGraves.SMALL_X[i],CalderGraves.SMALL_ROW);
+                    h.assertTrue(CalderGraveBlock.is(s,CalderGraveBlock.Kind.SMALL)&&s.getValue(CalderGraveBlock.STAGE)==i,"the small stone "+i+" at x="+CalderGraves.SMALL_X[i]+": "+s);
+                }
+                h.assertTrue(CalderGraves.SMALL_X.length==CalderGraveBlock.SMALL_STONES&&CalderGraves.SMALL_ROW<CalderGraves.ROWS[CalderGraves.ROWS.length-1]&&CalderGraves.SMALL_ROW>CalderGraves.BACK+4,"the small row is the last, near the back");
+                // "an angel; an obelisk; a family mausoleum with iron doors".
+                for(int i=0;i<3;i++){
+                    h.assertTrue(CalderGraveBlock.is(l.getBlockState(b.offset(CalderGraves.ANGEL.above(i))),CalderGraveBlock.Kind.ANGEL)&&l.getBlockState(b.offset(CalderGraves.ANGEL.above(i))).getValue(CalderGraveBlock.STAGE)==i,"the angel, block "+i);
+                    h.assertTrue(CalderGraveBlock.is(l.getBlockState(b.offset(CalderGraves.OBELISK.above(i))),CalderGraveBlock.Kind.OBELISK)&&l.getBlockState(b.offset(CalderGraves.OBELISK.above(i))).getValue(CalderGraveBlock.STAGE)==i,"the obelisk, block "+i);
+                }
+                h.assertTrue(CalderGraves.ANGEL.getY()==CalderGraves.level(CalderGraves.ANGEL.getZ())&&CalderGraves.OBELISK.getY()==CalderGraves.level(CalderGraves.OBELISK.getZ()),"each stands on the ground of its own level");
+                int floor=CalderGraves.level(CalderGraves.TOMB_S);
+                for(int i=0;i<4;i++){
+                    var s=l.getBlockState(b.offset(i%2==0?CalderGraves.DOOR_W:CalderGraves.DOOR_E,floor+i/2,CalderGraves.TOMB_S));
+                    h.assertTrue(CalderGraveBlock.is(s,CalderGraveBlock.Kind.DOOR)&&s.getValue(CalderGraveBlock.STAGE)==i&&s.getValue(CalderGraveBlock.FACING)==Direction.SOUTH,"the mausoleum's iron doors, quarter "+i+": "+s);
+                    h.assertTrue(l.getBlockState(b.offset(i%2==0?CalderGraves.DOOR_W:CalderGraves.DOOR_E,floor+i/2,CalderGraves.TOMB_S-1)).is(marble),"and stone behind them: nobody goes in");
+                }
+                h.assertTrue(l.getBlockState(b.offset(CalderGraves.TOMB_W,floor,CalderGraves.TOMB_S)).is(marble)&&l.getBlockState(b.offset(CalderGraves.TOMB_E,floor+CalderGraves.TOMB_HIGH-1,CalderGraves.TOMB_N)).is(marble)
+                    &&l.getBlockState(b.offset(CalderGraves.TOMB_W-1,floor+CalderGraves.TOMB_HIGH,CalderGraves.TOMB_S+1)).is(marble)&&CalderGraves.path(CalderGraves.DOOR_W,CalderGraves.TOMB_S+1),"it is marble, its roof oversails its walls, and gravel leads to its doors");
+                // "a fresh open grave with a mound and a tarp": where the gate's path ends.
+                int y=CalderGraves.level(CalderGraves.PIT_S);
+                for(int x=CalderGraves.PIT_W;x<=CalderGraves.PIT_E;x++){
+                    for(int z=CalderGraves.PIT_N+1;z<=CalderGraves.PIT_S;z++)h.assertTrue(l.getBlockState(b.offset(x,y-1,z)).isAir()&&l.getBlockState(b.offset(x,y-2,z)).isAir()&&l.getBlockState(b.offset(x,y-3,z)).is(earth),"the pit is two deep, with earth at the bottom: "+x+","+z);
+                    h.assertTrue(l.getBlockState(b.offset(x,y-2,CalderGraves.PIT_N)).is(earth)&&l.getBlockState(b.offset(x,y-1,CalderGraves.PIT_N)).isAir(),"a step of earth is left at its north end");
+                    var heap=l.getBlockState(b.offset(x,y,CalderGraves.HEAP));
+                    h.assertTrue(CalderGraveBlock.is(heap,CalderGraveBlock.Kind.MOUND)&&heap.getValue(CalderGraveBlock.FACING)==Direction.NORTH,"its heap at its south end, the way up it north: "+heap);
+                    h.assertTrue(CalderGraves.path(x,CalderGraves.HEAP+1)&&CalderGraves.PATH_END==CalderGraves.HEAP+1,"and the gate's path runs straight to it");
+                }
+                h.assertTrue(CalderGraveBlock.is(l.getBlockState(b.offset(CalderGraves.PIT_E+1,y,CalderGraves.PIT_S-1)),CalderGraveBlock.Kind.TARP)&&CalderGraveBlock.is(l.getBlockState(b.offset(CalderGraves.PIT_W-1,y,CalderGraves.PIT_S-1)),CalderGraveBlock.Kind.TARP),"a tarpaulin on each side of it");
+                // Nothing vanilla stands in it but earth under the grass and the trunks of its trees; and it has trees.
+                int stray=0,trunks=0;String strays="";
+                for(int x=CalderGraves.W;x<=CalderGraves.E;x++)for(int z=CalderGraves.FAR;z<CalderGraves.FRONT;z++)for(int yy=-1;yy<=CalderGraves.TOP;yy++){
+                    var s=l.getBlockState(b.offset(x,yy,z));if(s.isAir()||mine(s))continue;
+                    if(s.is(Blocks.OAK_LOG)){if(yy==CalderGraves.level(z))trunks++;continue;}
+                    if(s.is(Blocks.DIRT)&&yy<CalderGraves.level(z)-1)continue;
+                    if(stray++<4)strays+=" "+s.getBlock()+" at "+x+","+yy+","+z;
+                }
+                h.assertTrue(stray==0&&trunks>=30,"nothing vanilla is built there: "+stray+strays+"; "+trunks+" trees");
+                // What a bike makes of it: a standing stone is higher than a bike's step, a low one is not, and the heap is a slope to it and no steps.
+                int tall=stoneIn(l,b,CalderGraves.ROWS[11],false),lowAt=stoneIn(l,b,CalderGraves.ROWS[11],true);
+                h.assertTrue(tall!=Integer.MIN_VALUE&&lowAt!=Integer.MIN_VALUE,"a standing stone and a low one in the last row with open grass behind them");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="graves_built") public static void gravesBuiltDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="graves_hands",timeoutTicks=2400)
+    public static void aHandOnAStoneIsToldWhatIsCutOnItAndTheSmallRowHasNamesAndTheOneDateAndNothingElse(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};
+        record Thing(BlockPos at,String says){}
+        var things=new ArrayList<Thing>();var small=new ArrayList<String>();
+        // The proposal: "One row of small headstones near the back all carries the same autumn date, years before, with names and nothing else."
+        for(int i=0;i<CalderGraves.SMALL_X.length;i++){
+            var cut=BikeNightTexts.SMALL_NAMES[i]+". "+BikeNightTexts.SMALL_DATE+".";small.add(cut);
+            things.add(new Thing(new BlockPos(CalderGraves.SMALL_X[i],CalderGraves.level(CalderGraves.SMALL_ROW),CalderGraves.SMALL_ROW),cut));
+        }
+        // The memorials, from any part of them; and the mausoleum's doors.
+        for(int i=0;i<3;i++){things.add(new Thing(CalderGraves.ANGEL.above(i),BikeNightTexts.ANGEL_STONE));things.add(new Thing(CalderGraves.OBELISK.above(i),BikeNightTexts.OBELISK_STONE));}
+        things.add(new Thing(new BlockPos(CalderGraves.DOOR_W,CalderGraves.level(CalderGraves.TOMB_S),CalderGraves.TOMB_S),BikeNightTexts.TOMB_DOORS));
+        things.add(new Thing(new BlockPos(CalderGraves.DOOR_E,CalderGraves.level(CalderGraves.TOMB_S)+1,CalderGraves.TOMB_S),BikeNightTexts.TOMB_DOORS));
+        var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("graves_hands_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&BikeNight.here(p[0]),"waiting for the night"));
+        for(var thing:things)seq=seq.thenExecute(()->{hush(p[0]);f.click(p[0],P,thing.at());})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],thing.says()),"a hand at "+thing.at().toShortString()+" is told: "+thing.says()));
+        // What is not carved says nothing of the kind: the heap.
+        seq.thenExecute(()->{hush(p[0]);f.click(p[0],P,new BlockPos(CalderGraves.PIT_W,CalderGraves.level(CalderGraves.HEAP),CalderGraves.HEAP));})
+            .thenIdle(6)
+            .thenExecute(()->{
+                for(var line:BikeNightTexts.graveLines())h.assertTrue(!heard(p[0],line),"the heap has nothing cut on it: "+line);
+                for(var cut:small)h.assertTrue(cut.matches("[A-Z]+ [A-Z]+\\. OCTOBER 31, 1957\\."),"a name and the date and nothing else: "+cut);
+                h.assertTrue(new java.util.HashSet<>(small).size()==CalderGraveBlock.SMALL_STONES,"six names, each its own: "+small);
+                for(int i=0;i<CalderGraves.SMALL_X.length;i++){
+                    var rel=new BlockPos(CalderGraves.SMALL_X[i],CalderGraves.level(CalderGraves.SMALL_ROW),CalderGraves.SMALL_ROW);
+                    h.assertTrue(CalderGraves.inscription(l.getBlockState(b.offset(rel)),rel).equals(small.get(i)),"the small stone "+i+" says "+small.get(i));
+                }
+                // Every other stone: a name, two years, and for some a line. Nobody under one died young, none after the last year, and the row's year is the row's.
+                int read=0,lined=0,wooden=0;var families=new java.util.HashSet<String>();var said=new java.util.HashSet<String>();
+                for(int r=0;r<CalderGraves.ROWS.length;r++)for(int x=CalderGraves.W+1;x<CalderGraves.E;x++){
+                    var rel=new BlockPos(x,CalderGraves.level(CalderGraves.ROWS[r]),CalderGraves.ROWS[r]);var s=l.getBlockState(b.offset(rel));
+                    if(!CalderGraveBlock.carved(s))continue;
+                    var cut=CalderGraves.inscription(s,rel);read++;said.add(cut);
+                    h.assertTrue(!cut.contains("1957"),"the row's year is on nothing but the row: "+cut+" at "+x+","+rel.getZ());
+                    if(CalderGraveBlock.is(s,CalderGraveBlock.Kind.CROSS)&&s.getValue(CalderGraveBlock.STAGE)==1){
+                        h.assertTrue(cut.matches("[A-Z]+ [A-Z]+\\. \\d{4}\\."),"a wooden cross has a name and a year: "+cut);wooden++;continue;
+                    }
+                    var m=java.util.regex.Pattern.compile("([A-Z]+) ([A-Z]+)\\. (\\d{4})-(\\d{4})\\.( [A-Z' ]+\\.)?").matcher(cut);
+                    h.assertTrue(m.matches(),"a name, two years and perhaps a line: "+cut);
+                    int born=Integer.parseInt(m.group(3)),died=Integer.parseInt(m.group(4));
+                    h.assertTrue(died-born>=21&&died-born<=85&&died<=BikeNightTexts.LAST_YEAR&&died>=BikeNightTexts.FIRST_YEAR-1,"nobody under a stone here died young, or lately: "+cut);
+                    if(CalderGraveBlock.low(s))h.assertTrue(died==BikeNightTexts.MARKER_YEARS[s.getValue(CalderGraveBlock.STAGE)-CalderGraveBlock.LOW],"a low marker's year is the one on its face: "+cut+" on "+s);
+                    if(m.group(5)!=null)lined++;
+                    families.add(m.group(2));
+                    h.assertTrue(List.of(BikeNightTexts.FAMILIES).contains(m.group(2))&&List.of(BikeNightTexts.GIVEN).contains(m.group(1)),"the town's own names: "+cut);
+                }
+                h.assertTrue(read>=180&&lined>read/4&&lined<read*3/4&&families.size()==BikeNightTexts.FAMILIES.length&&said.size()>read*9/10,"they are not all alike: "+read+" read, "+said.size()+" different, "+lined+" with a line, "+families.size()+" families, "+wooden+" wooden crosses");
+                // A family lies together: the next stone along has the same name more often than not.
+                int pairs=0,same=0;
+                for(int r=0;r<CalderGraves.ROWS.length;r++){String last=null;int lastX=0;
+                    for(int x=CalderGraves.W+1;x<CalderGraves.E;x++){
+                        var rel=new BlockPos(x,CalderGraves.level(CalderGraves.ROWS[r]),CalderGraves.ROWS[r]);var s=l.getBlockState(b.offset(rel));if(!CalderGraveBlock.carved(s))continue;
+                        var family=CalderGraves.inscription(s,rel).split("\\.")[0].split(" ")[1];
+                        if(last!=null&&x-lastX<=3){pairs++;if(family.equals(last))same++;}
+                        last=family;lastX=x;
+                    }
+                }
+                h.assertTrue(pairs>60&&same*2>pairs,"neighbours share a name more often than not: "+same+" of "+pairs);
+                // What is cut is cut in capitals; what is said of the doors is said.
+                for(var line:BikeNightTexts.graveLines())h.assertTrue(line.equals(BikeNightTexts.TOMB_DOORS)||line.equals(line.toUpperCase(java.util.Locale.ROOT)),"what is cut is cut in capitals: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="graves_hands") public static void gravesHandsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="graves_ride",timeoutTicks=9000)
+    public static void aBikeRidesUpTheHillFromTheGateAndAStandingStoneIsAWallToItAndALowOneIsABump(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final int[] t={0},at={0,0};final double[] least={9},most={-9,-999};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("graves_ride_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->mine[0]=take(h,f,p[0],NightBike.Make.LAMP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
+            // Just inside the gate, on the gravel, looking up the hill.
+            .thenExecute(()->{mine[0].moveTo(b.getX()-.5,b.getY(),b.getZ()+CalderGraves.FRONT-1.5,180,0);p[0].setYRot(180);})
+            .thenWaitUntil(()->{
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);}
+                double z=mine[0].getZ()-b.getZ();
+                // Once it is going, what it loses on a bank.
+                if(z<CalderGraves.BANKS[0]+6)least[0]=Math.min(least[0],mine[0].speedNow());
+                h.assertTrue(p[0].getVehicle()==mine[0],"they are still on it: at "+rel(b,mine[0]));
+                h.assertTrue(z<CalderGraves.PATH_END+2,"waiting for them to ride up the path to its end: at "+rel(b,mine[0])+" going "+mine[0].speedNow());
+            })
+            .thenExecute(()->{
+                h.assertTrue(Math.abs(mine[0].getY()-b.getY()-3)<.02,"three banks up: "+rel(b,mine[0]));
+                h.assertTrue(least[0]>RiddenBike.TOP*.8F,"and a bank does not slow a bike: its least way on the hill was "+least[0]);
+                at[0]=stoneIn(l,b,CalderGraves.ROWS[11],false);at[1]=stoneIn(l,b,CalderGraves.ROWS[11],true);
+            })
+            .thenWaitUntil(()->h.assertTrue(halted(p[0],mine[0]),"waiting for them to stop"))
+            // A low marker in the last row, with open grass north of it: ridden at from behind, from standing.
+            .thenExecute(()->{
+                mine[0].moveTo(b.getX()+at[1]+.5,b.getY()+3,b.getZ()+CalderGraves.BACK+3.5,0,0);p[0].setYRot(0);t[0]=0;
+            })
+            .thenWaitUntil(()->{
+                h.assertTrue(p[0].getVehicle()==mine[0],"they are on it at the low marker: "+rel(b,mine[0]));
+                p[0].setYRot(0);pedalWell(mine[0],t[0]++,3);most[0]=Math.max(most[0],mine[0].getY()-b.getY());
+                h.assertTrue(mine[0].getZ()-b.getZ()>CalderGraves.ROWS[11]+2.5,"waiting for them to ride over the low marker: at "+rel(b,mine[0])+" going "+mine[0].speedNow());
+            })
+            .thenExecute(()->{
+                // "Low stones can be hopped": or bumped over, half a block up and down again.
+                h.assertTrue(most[0]>3.4&&most[0]<3.75&&p[0].getVehicle()==mine[0],"a low marker is a bump to a bike, and they are still on it: it rose to "+most[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(halted(p[0],mine[0]),"waiting for them to stop"))
+            // A standing stone in the same row, the same way, flat out.
+            .thenExecute(()->{
+                mine[0].moveTo(b.getX()+at[0]+.5,b.getY()+3,b.getZ()+CalderGraves.BACK+3.5,0,0);p[0].setYRot(0);hush(p[0]);t[0]=0;most[0]=-9;
+            })
+            .thenWaitUntil(()->{
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(0);pedalWell(mine[0],t[0]++,3);}
+                if(mine[0].isAlive()){most[0]=Math.max(most[0],mine[0].speedNow());most[1]=Math.max(most[1],mine[0].getZ()-b.getZ());}
+                h.assertTrue(p[0].getVehicle()==null,"waiting for them to ride into the stone and come off: "+(mine[0].isAlive()?rel(b,mine[0])+" going "+mine[0].speedNow()+", at most "+most[0]+", leaning "+mine[0].leanNow()+", on the ground "+mine[0].onGround()+", looking "+mine[0].getYRot():"the bike is gone"));
+            })
+            .thenExecute(()->{
+                // The proposal: "A stone is a wall: ... a head-on hit puts the rider over the bars."
+                h.assertTrue(most[0]>RiddenBike.CRASH&&most[1]<CalderGraves.ROWS[11]+6.5/16,"it was going "+most[0]+" and got no further than the stone's back: "+most[1]);
+                h.assertTrue(CalderGraveBlock.is(stood(l,b,at[0],CalderGraves.ROWS[11]),CalderGraveBlock.Kind.STONE),"and the stone is where it was");
+                // To a bike it is a block and a half; to anybody on foot it is as high as it looks, and the heap is steps.
+                var stone=b.offset(at[0],3,CalderGraves.ROWS[11]);var heap=b.offset(CalderGraves.PIT_W,3,CalderGraves.HEAP);
+                var onFoot=net.minecraft.world.phys.shapes.CollisionContext.of(p[0]);
+                h.assertTrue(l.getBlockState(stone).getCollisionShape(l,stone,onFoot).max(Direction.Axis.Y)<1&&!l.getBlockState(heap).getCollisionShape(l,heap,onFoot).isEmpty(),"on foot a stone can be climbed, and the heap is stood on");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="graves_ride") public static void gravesRideDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="graves_pit",timeoutTicks=9000)
+    public static void theHeapByTheOpenGraveThrowsAFastBikeOverThePitAndASlowOneGoesInAndClimbsOutByTheStep(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final int[] t={0};final double[] low={99},high={-99};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("graves_pit_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->mine[0]=take(h,f,p[0],NightBike.Make.LAMP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
+            // On the top level, on the gate's path, fifteen blocks short of the heap.
+            .thenExecute(()->{mine[0].moveTo(b.getX()-.5,b.getY()+3,b.getZ()+CalderGraves.HEAP+15.5,180,0);p[0].setYRot(180);})
+            .thenWaitUntil(()->{
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);}
+                double z=mine[0].getZ()-b.getZ(),y=mine[0].getY()-b.getY();
+                if(z<CalderGraves.PIT_S+1&&z>CalderGraves.PIT_N){low[0]=Math.min(low[0],y);high[0]=Math.max(high[0],y);}
+                h.assertTrue(p[0].getVehicle()==mine[0],"they are still on it: at "+rel(b,mine[0]));
+                h.assertTrue(z<CalderGraves.PIT_N-.5&&mine[0].onGround(),"waiting for them to come down past the pit: at "+rel(b,mine[0])+" going "+mine[0].speedNow());
+            })
+            .thenExecute(()->{
+                // The proposal: "a fresh open grave with a mound and a tarp, which is a hazard to jump"; "the mound is the ramp".
+                h.assertTrue(low[0]>=3&&high[0]>3.75,"flat out, the heap threw them over the pit: over it they were never lower than "+low[0]+" and as high as "+high[0]);
+                h.assertTrue(Math.abs(mine[0].getY()-b.getY()-3)<.02,"and they are down on the grass behind it: "+rel(b,mine[0]));
+            })
+            .thenWaitUntil(()->h.assertTrue(halted(p[0],mine[0]),"waiting for them to stop"))
+            // Again from two blocks short of the heap, from standing.
+            .thenExecute(()->{
+                mine[0].moveTo(b.getX()-.5,b.getY()+3,b.getZ()+CalderGraves.HEAP+2.5,180,0);p[0].setYRot(180);t[0]=0;low[0]=99;
+            })
+            .thenIdle(10)
+            .thenWaitUntil(()->{
+                // At a walk: pushed only when it is going slower than one.
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);if(mine[0].speedNow()<.12F)pedalWell(mine[0],t[0]++,3);}
+                double z=p[0].getZ()-b.getZ(),y=p[0].getY()-b.getY();
+                h.assertTrue(y<2.7&&z<CalderGraves.PIT_S+1&&z>CalderGraves.PIT_N&&(p[0].getVehicle()==null?p[0].onGround():mine[0].onGround()),"waiting for the slow one to go in: at "+rel(b,p[0])+" going "+(mine[0].isAlive()?mine[0].speedNow():0));
+            })
+            .thenExecute(()->{
+                // "falling in costs time and nothing else": the bike's own rule for a landing is all there is to it, and the drop is not a hard one.
+                h.assertTrue(p[0].getVehicle()==mine[0]&&p[0].getHealth()>=p[0].getMaxHealth(),"they are in it, still on the bike, and not hurt: health "+p[0].getHealth());
+                // Out by the step, north.
+                mine[0].moveTo(b.getX()-.5,b.getY()+1,b.getZ()+CalderGraves.PIT_S+.5,180,0);p[0].setYRot(180);t[0]=0;
+            })
+            .thenWaitUntil(()->{
+                h.assertTrue(p[0].getVehicle()==mine[0],"they are on it in the pit: "+rel(b,mine[0]));
+                p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);
+                h.assertTrue(mine[0].getZ()-b.getZ()<CalderGraves.PIT_N-.5&&Math.abs(mine[0].getY()-b.getY()-3)<.02,"waiting for them to ride up the step and out: at "+rel(b,mine[0])+" going "+mine[0].speedNow());
+            })
+            .thenExecute(()->{
+                // And on foot: from the bottom, each rise is one block, which anybody jumps.
+                int y=CalderGraves.level(CalderGraves.PIT_S);
+                h.assertTrue(l.getBlockState(b.offset(CalderGraves.PIT_W,y-3,CalderGraves.PIT_S)).isCollisionShapeFullBlock(l,b)&&l.getBlockState(b.offset(CalderGraves.PIT_W,y-2,CalderGraves.PIT_N)).isCollisionShapeFullBlock(l,b)
+                    &&l.getBlockState(b.offset(CalderGraves.PIT_W,y-1,CalderGraves.PIT_N-1)).isCollisionShapeFullBlock(l,b)&&l.getBlockState(b.offset(CalderGraves.PIT_W,y,CalderGraves.PIT_N-1)).isAir(),"the bottom, the step and the grass are a block apart each");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="graves_pit") public static void gravesPitDone(ServerLevel l){done();}
 }

@@ -8,6 +8,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.BikeRackBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.BikeRampBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderDigitBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderGraveBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderTownBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderLitterBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderPlayBlock;
@@ -72,7 +73,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -94,6 +95,9 @@ public final class BikeNightVisualProof extends Screen {
         for(var state:BikeNightRegistry.SIGN.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.TOWN.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.DIGIT.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.GRAVE.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.GRAVE_TURF_SLAB.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.GRAVEL_SLAB.get().getStateDefinition().getPossibleStates())need(state);
         for(var name:BikeNightRegistry.MATERIAL_NAMES)need(BikeNightRegistry.material(name).defaultBlockState());
         for(var state:BikeNightRegistry.ROAD_LINE.get().getStateDefinition().getPossibleStates())need(state);
         need(BikeNightRegistry.LEAVES.get().defaultBlockState());
@@ -127,9 +131,11 @@ public final class BikeNightVisualProof extends Screen {
             "behind a shop: the door under its bulb, the shutter, paint on the brick, and what has been left out",
             "Main Street: hardware, bank and clock, theater and marquee; laundromat, video, barber",
             "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets",
-            "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back"}[page],8,8,0xffffffff);
+            "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back",
+            "the cemetery's things: headstones; the small row, crosses, obelisk, angel, doors; heap, tarps, what is left",
+            "the hill: a bank and the pier on it, the gate's path, two rows, and the open grave behind its heap"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);default->cars(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);default->hill(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -499,6 +505,58 @@ public final class BikeNightVisualProof extends Screen {
             // What lies on the ground.
             {CalderTownBlock.Kind.TRASH,0,0,0,8},{CalderTownBlock.Kind.TRASH,1,2,0,8},{CalderTownBlock.Kind.TRASH,2,4,0,8},{CalderTownBlock.Kind.TRASH,CalderTownBlock.PUDDLE,6,0,8}};
         for(var one:things)at.accept(CalderTownBlock.of((CalderTownBlock.Kind)one[0],f,(Integer)one[1]),new int[]{(Integer)one[2],(Integer)one[3],(Integer)one[4]});
+        buffers.endBatch();pose.popPose();
+    }
+    /** 0.4.489: everything that stands in the cemetery, each kind once, facing the page. */
+    private void graves(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width/21F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.62F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(20));pose.mulPose(Axis.YP.rotationDegrees(-8));pose.translate(-8.5F,0,-3F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var f=Direction.SOUTH;var turf=BikeNightRegistry.material("grave_turf").defaultBlockState();var marble=BikeNightRegistry.material("marble").defaultBlockState();
+        for(int x=-1;x<=17;x++)for(int z=-1;z<=5;z++)at.accept(turf,new int[]{x,-1,z});
+        // The sixteen headstones: four shapes of four, the last four low.
+        for(int i=0;i<CalderGraveBlock.STONES;i++)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.STONE,f,i),new int[]{i,0,0});
+        // The small row; the two crosses; the obelisk; the angel; the doors in a marble wall.
+        for(int i=0;i<CalderGraveBlock.SMALL_STONES;i++)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.SMALL,f,i),new int[]{i,0,2});
+        at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.CROSS,f,0),new int[]{7,0,2});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.CROSS,f,1),new int[]{8,0,2});
+        for(int i=0;i<3;i++){at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.OBELISK,f,i),new int[]{10,i,2});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.ANGEL,f,i),new int[]{12,i,2});}
+        for(int x=13;x<=16;x++)for(int y=0;y<=2;y++)if(y==2||x==13||x==16)at.accept(marble,new int[]{x,y,2});
+        for(int i=0;i<4;i++)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.DOOR,f,i),new int[]{i%2==0?14:15,i/2,2});
+        // The heap (the way up it away from the page, and toward it); the tarpaulins; what is left at a grave.
+        at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.MOUND,Direction.NORTH,0),new int[]{0,0,4});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.MOUND,Direction.EAST,0),new int[]{2,0,4});
+        at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.TARP,f,0),new int[]{4,0,4});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.TARP,f,CalderGraveBlock.HEAPED),new int[]{6,0,4});
+        for(int i=0;i<4;i++)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.GOODS,f,i),new int[]{8+i*2,0,4});
+        buffers.endBatch();pose.popPose();
+    }
+    /** 0.4.489: a strip of the hill put together as the builder puts it. */
+    private void hill(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width/19F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.8F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(26));pose.mulPose(Axis.YP.rotationDegrees(-16));pose.translate(-.5F,0,6F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var f=Direction.SOUTH;var turf=BikeNightRegistry.material("grave_turf").defaultBlockState();var gravel=BikeNightRegistry.material("gravel").defaultBlockState();var earth=BikeNightRegistry.material("grave_earth").defaultBlockState();
+        var brick=BikeNightRegistry.material("brick").defaultBlockState();
+        var turfStep=BikeNightRegistry.GRAVE_TURF_SLAB.get().defaultBlockState();var gravelStep=BikeNightRegistry.GRAVEL_SLAB.get().defaultBlockState();
+        // Rows z=0 (nearest) to -12; the bank at -4; the gate's path two wide; the heap at -9 and the pit behind it.
+        for(int z=0;z>=-12;z--){
+            int level=z< -4?1:0;
+            for(int x=-6;x<=6;x++){
+                boolean walk=(x==-1||x==0)&&z>=-8,pit=(x==-1||x==0)&&(z==-10||z==-11);
+                if(pit){at.accept(earth,new int[]{x,level-(z==-10?3:2),z});continue;}
+                if(level==1)at.accept(turf,new int[]{x,-1,z});
+                at.accept(walk?gravel:(x==-1||x==0)&&z==-9?earth:turf,new int[]{x,level-1,z});
+                if(z==-4)at.accept(walk?gravelStep:turfStep,new int[]{x,0,z});
+            }
+            // The railings down one side, and the pier on the bank.
+            if(z==-4){for(int y=0;y<=2;y++)at.accept(brick,new int[]{6,y,z});at.accept(CalderBlock.of(CalderBlock.Kind.CAP,Direction.NORTH,0),new int[]{6,3,z});}
+            else{at.accept(CalderBlock.of(CalderBlock.Kind.FENCE,Direction.EAST,0),new int[]{6,level,z});at.accept(CalderBlock.of(CalderBlock.Kind.FENCE,Direction.EAST,1),new int[]{6,level+1,z});}
+        }
+        int[][] stones={{-5,-2,0},{-3,-2,13},{2,-2,5},{4,-2,9},{-5,-7,2},{-3,-7,14},{3,-7,6},{5,-7,11}};
+        for(var one:stones)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.STONE,f,one[2]),new int[]{one[0],one[1]< -4?1:0,one[1]});
+        at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.CROSS,f,1),new int[]{2,1,-7});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.GOODS,f,CalderGraveBlock.LANTERN),new int[]{-3,0,-1});
+        for(int x=-1;x<=0;x++)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.MOUND,Direction.NORTH,0),new int[]{x,1,-9});
+        at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.TARP,f,CalderGraveBlock.HEAPED),new int[]{1,1,-10});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.TARP,f,0),new int[]{-2,1,-10});
         buffers.endBatch();pose.popPose();
     }
     /** The back of a shop, put together as the builder puts one: a brick wall with what is fixed to it and painted on it, and what has been left out on the gravel. */

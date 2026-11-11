@@ -1,0 +1,242 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/calder_grave/stone_11",
+    "s": "the_oldest_house:block/calder_grave/side_3",
+    "particle": "the_oldest_house:block/calder_grave/stone_11"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        6.5
+      ],
+      "to": [
+        13,
+        10,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            3,
+            6,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            3,
+            6,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            6,
+            3.0,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            13.0,
+            6,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            3,
+            0,
+            13,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            3,
+            13.0,
+            13,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        4,
+        10,
+        6.5
+      ],
+      "to": [
+        12,
+        12,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            4,
+            4,
+            12,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            4,
+            4,
+            12,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            4,
+            3.0,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            13.0,
+            4,
+            16,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            4,
+            0,
+            12,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            4,
+            13.0,
+            12,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        6,
+        12,
+        6.5
+      ],
+      "to": [
+        10,
+        14,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            6,
+            2,
+            10,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            6,
+            2,
+            10,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            2,
+            3.0,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            13.0,
+            2,
+            16,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            6,
+            0,
+            10,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            6,
+            13.0,
+            10,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      }
+    }
+  ]
+}
