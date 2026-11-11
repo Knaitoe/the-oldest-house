@@ -35,7 +35,7 @@ def models():
     for kind in KINDS:
         for present in (False,True):
             texture='the_oldest_house:block/domestic_record/'+kind
-            tex={'art':texture,'wood':'the_oldest_house:block/walnut','paper':'the_oldest_house:block/domestic/cardboard','particle':texture}
+            tex={'art':texture,'wood':'the_oldest_house:block/household/walnut','paper':'the_oldest_house:block/domestic/cardboard','particle':texture}
             if kind in ('note','recipe'):
                 ps=[box((2,0,2),(14,.5,14),'art' if present else 'paper',[0,0,16,16])]
             elif kind=='award':

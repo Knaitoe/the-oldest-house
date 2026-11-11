@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "green_cloth": "the_oldest_house:block/green_cloth",
-    "walnut": "the_oldest_house:block/walnut",
-    "particle": "the_oldest_house:block/green_cloth"
+    "green_cloth": "the_oldest_house:block/household/green_cloth",
+    "walnut": "the_oldest_house:block/household/walnut",
+    "particle": "the_oldest_house:block/household/green_cloth"
   },
   "elements": [
     {

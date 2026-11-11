@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "enamel": "the_oldest_house:block/enamel",
-    "particle": "the_oldest_house:block/enamel",
-    "front": "the_oldest_house:block/washer_front"
+    "enamel": "the_oldest_house:block/household/enamel",
+    "particle": "the_oldest_house:block/household/enamel",
+    "front": "the_oldest_house:block/household/washer_front"
   },
   "elements": [
     {
