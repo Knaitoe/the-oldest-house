@@ -1362,7 +1362,7 @@ public final class BorrascaStory {
         own.remove("BikeAt"+whose);
         if(!own.getBoolean("BikeKeys")){own.putBoolean("BikeKeys",true);
             p.displayClientMessage(Component.empty().append(Component.keybind("key.left")).append(" and ").append(Component.keybind("key.right")).append(" push the pedals in turn  ·  ")
-                .append(Component.keybind("key.back")).append(" brake  ·  ").append(Component.keybind("key.sneak")).append(" get off").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+                .append(Component.keybind("key.back")).append(" brake  ·  ").append(Component.keybind("key.jump")).append(" hold and let go to hop  ·  ").append(Component.keybind("key.sneak")).append(" get off").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
         return true;
     }
     /** Whose bike stands here: one this reader rode and left here, else the one put out in town at this spot. */
@@ -1386,9 +1386,12 @@ public final class BorrascaStory {
         if(changed)LiteraryVignettes.save(data,p.getUUID(),PLACE,own);
     }
     /** The reader came off: over it went, or straight into something. */
-    static void bikeFell(ServerPlayer p,int whose,boolean crashed){
+    static void bikeFell(ServerPlayer p,int whose,RiddenBike.Off why){
         var data=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(data,p.getUUID(),PLACE);own.putInt("BikeFalls",own.getInt("BikeFalls")+1);
-        cue(p,crashed?"Straight into it. You go over the bars, and the bike goes down in the road.":"It goes over, and you go with it. The bike lies in the road.");
+        cue(p,switch(why){
+            case HEAD_ON->"Straight into it. You go over the bars, and the bike goes down in the road.";
+            case LANDING->"It comes down too hard. You go over the bars, and the bike goes down in the road.";
+            default->"It goes over, and you go with it. The bike lies in the road.";});
         var kendra=actor(p,own,"TownWren");String said="WrenBikeFall"+own.getInt("Visit");
         if(kendra!=null&&!kendra.isInvisible()&&p.distanceToSqr(kendra)<144&&!own.getBoolean(said)&&!recentSpeech(p)){own.putBoolean(said,true);say(p,kendra,whose==BorrascaBike.KENDRA?"You have to keep going or it falls over. Is it scratched?":"You have to keep going or it falls over.");}
         LiteraryVignettes.save(data,p.getUUID(),PLACE,own);

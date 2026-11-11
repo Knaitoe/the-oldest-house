@@ -70,9 +70,9 @@ public final class BorrascaNativeArt {
     private static void slices(PartDefinition part,int u,int v,float x,float y,float z,int w,int h,int d,boolean mirror,CubeDeformation grow){
         for(int i=0;i<h;i++){var cubes=CubeListBuilder.create().texOffs(u,v+i);if(mirror)cubes.mirror();part.addOrReplaceChild("cut"+i,cubes.addBox(x,y+i,z,w,1,d,grow),PartPose.ZERO);}
     }
-    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);e.registerEntityRenderer(BorrascaRegistry.BIKE.get(),BorrascaBikeRenderer::new);e.registerEntityRenderer(BorrascaRegistry.DOG.get(),BorrascaDogRenderer::new);}
-    /** 0.4.435: the ridden bike's frame, wheel and cranks, which no block state names. */
-    @SubscribeEvent public static void models(net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional e){e.register(BorrascaBikeRenderer.FRAME);e.register(BorrascaBikeRenderer.WHEEL);e.register(BorrascaBikeRenderer.CRANKS);}
+    @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(BorrascaRegistry.MACHINE_ENTITY.get(),MachineRenderer::new);e.registerBlockEntityRenderer(BorrascaRegistry.CARVING_ENTITY.get(),BorrascaCarvingRenderer::new);e.registerEntityRenderer(BorrascaRegistry.BIKE.get(),BikeRenderer::new);e.registerEntityRenderer(io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry.BIKE.get(),BikeRenderer::new);e.registerEntityRenderer(BorrascaRegistry.DOG.get(),BorrascaDogRenderer::new);}
+    /** 0.4.435: the ridden bike's frame, wheel and cranks, which no block state names. 0.4.463: and each of Bike night's six bikes'. */
+    @SubscribeEvent public static void models(net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional e){BikeLook.register(e::register);}
     /** 0.4.444: the blood under the Sheriff's body, and how far off the ground his body is drawn so that it lies on it. */
     public static final ResourceLocation POOL=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/borrasca_blood_pool.png");
     static final float FALLEN_LIFT=.15F;

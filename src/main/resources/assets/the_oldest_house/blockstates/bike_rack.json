@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "the_oldest_house:block/bike_night/rack"
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/bike_night/rack",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "the_oldest_house:block/bike_night/rack",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/bike_night/rack",
+      "y": 270
+    }
+  }
+}

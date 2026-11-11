@@ -1,0 +1,69 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "l": "the_oldest_house:block/bike_night/glass_lit",
+    "particle": "the_oldest_house:block/bike_night/glass_lit"
+  },
+  "elements": [
+    {
+      "from": [
+        16.9,
+        7.8,
+        7.1
+      ],
+      "to": [
+        17.15,
+        9.4,
+        8.9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            0.25,
+            1.6
+          ]
+        },
+        "south": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            0.25,
+            1.6
+          ]
+        },
+        "east": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            1.8,
+            1.6
+          ]
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            0.25,
+            1.8
+          ]
+        },
+        "down": {
+          "texture": "#l",
+          "uv": [
+            0,
+            0,
+            0.25,
+            1.8
+          ]
+        }
+      }
+    }
+  ]
+}

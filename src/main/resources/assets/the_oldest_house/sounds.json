@@ -4920,5 +4920,50 @@
         "name": "minecraft:mob/wolf/panting"
       }
     ]
+  },
+  "bike.hop": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bike/hop",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bike.hop"
+  },
+  "bike.land": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bike/land",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bike.land"
+  },
+  "bike.card": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bike/card",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bike.card"
+  },
+  "bike.turbo": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bike/turbo",
+        "attenuation_distance": 20
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bike.turbo"
+  },
+  "bike.dynamo": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bike/dynamo",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bike.dynamo"
   }
 }

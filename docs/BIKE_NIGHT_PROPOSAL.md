@@ -1,6 +1,6 @@
 # Bike night — a proposal (November 10)
 
-The owner's notes for a bike vignette, recorded as given and then worked into a design for review. It is not built. It would come after Borrasca, using the bikes Borrasca already has (`docs/BORRASCA_BIKES_0_4_435.md`).
+The owner's notes for a bike vignette, recorded as given and then worked into a design for review. Its first slice, the bikes, is built (0.4.463); the rest is not. It comes after Borrasca, using the bikes Borrasca already has (`docs/BORRASCA_BIKES_0_4_435.md`).
 
 ## The owner's notes
 
@@ -285,7 +285,7 @@ The owner asked for "a detailed 80s small town". The same rule as the Pell house
 ## What it would take
 
 It is large. It has three acts, a town, and a course in the air. In slices:
-1. **The bikes:**
+1. **The bikes** (built, 0.4.463, `docs/BIKE_NIGHT_BIKES_0_4_463.md`; whose bike is whose comes with the park):
    - the six bikes and their perks, on the existing bike;
    - the jump and landings;
    - riding double;
