@@ -155,7 +155,39 @@ public final class BorrascaLand {
         if(d<=BAND)h=ty;else h=clamp(h,ty-(d-BAND)*.9,ty+(d-BAND)*.9);
         for(int i=0;i<2;i++){var r=WORLD_ROUTES[i];var n=near(r,x,w);double dist=n[0],y=n[1];
             if(dist<=r.half())h=y;else{double rise=(dist-r.half())*r.bank()+.4;if(h>y)h=Math.min(h,y+rise);else h=Math.max(h,y-rise);}}
+        // 0.4.447: the valley's walls stand along the drawn-out slopes too. Here a way's bank used to wear them down, which it does not
+        // in an authored region: beside the way down the far side the hill rose a block at a time to its very edge, and a reader could
+        // walk up it and off the west side of the world.
+        int m=Math.abs(x)-35;
+        if(m>0){double floor=(cb(s[0])+s[4])*(1-t)+(cb(s[1])+s[5])*t,cap=(25+s[4])*(1-t)+(25+s[5])*t;h=Math.max(h,Math.min(floor+7+3*(m-1),cap));}
         return (int)Math.round(clamp(h,-1,46));
+    }
+    /** The last row the hill is built on, south of the town's back fence (0.4.447). */
+    public static final int SOUTH=12;
+    /** Where the House's door and its way in stand behind the station (NovelRooms.safeApproach): the hill builds nothing there. */
+    public static boolean approach(int x,int z){return Math.abs(x)<=7&&z>=1&&z<=9;}
+    /**
+     * 0.4.447: the ground behind the town, for the rows from the station's back wall (z 0) south. The valley's walls stopped a row short
+     * of that wall, with three rows of level grass past them and nothing beyond: a reader could walk round the end of either wall, or
+     * round the back of the station through the gap beside it, and stand at a corner of the hill with nothing under the next step. The
+     * walls now run on south, and behind the back fence and its hedge the same rock closes the valley: a row of rough grass, then the
+     * cliff, seven blocks at its foot and three more each row, with the woods on top.
+     */
+    public static int south(int x,int z){
+        int m=Math.abs(x)-37;double h=m>0?7+3*(m-1):0;
+        if(z>=3)h=Math.max(h,7+3*(z-3));
+        return (int)Math.min(25,h);
+    }
+    static void south(ServerLevel l,BlockPos b){
+        for(int x=-44;x<=44;x++)for(int z=0;z<=SOUTH;z++){
+            if(approach(x,z)||z==0&&Math.abs(x)<=7)continue;int h=south(x,z);
+            if(h<=0){if(z>=2){LiteraryRooms.box(l,b,x,-5,z,x,-2,z,Blocks.STONE);BuildBlocks.set(l,b.offset(x,-1,z),(hash(x,41,z)%4==0?Blocks.COARSE_DIRT:Blocks.GRASS_BLOCK).defaultBlockState(),F);}continue;}
+            LiteraryRooms.box(l,b,x,-5,z,x,h-3,z,Blocks.STONE);BuildBlocks.set(l,b.offset(x,h-2,z),rock(x,h-2,z),F);
+            boolean level=h>=25&&south(x,z-1)>=25&&south(x-1,z)>=25&&south(x+1,z)>=25;
+            BuildBlocks.set(l,b.offset(x,h-1,z),level?(hash(x,42,z)%5==0?Blocks.COARSE_DIRT:Blocks.GRASS_BLOCK).defaultBlockState():rock(x,h-1,z),F);
+        }
+        for(int gx=-40;gx<=40;gx+=6){int x=gx+hash(gx,43,0)%3-1,z=10+hash(gx,44,0)%3;if(south(x,z)<25||south(x,z-1)<25)continue;
+            if(hash(gx,45,0)%10<3)pine(l,b,x,25,z,13+hash(gx,46,0)%5);else tallOak(l,b,x,25,z,11+hash(gx,47,0)%5,hash(gx,48,0)%4==0);}
     }
     private static boolean steepAt(int x,int w,int h){for(var d:new int[][]{{1,0},{-1,0},{0,1},{0,-1}})if(Math.abs(groundAt(x+d[0],w+d[1])-h)>=2)return true;return false;}
     /** Which way a world column's floor belongs to (as routeFloor, in the world). */
@@ -193,7 +225,7 @@ public final class BorrascaLand {
 
     /** The ground itself, every column but the front strip the station and the House's door stand on. */
     static void terrain(ServerLevel l,BlockPos b){
-        for(int x=-44;x<=44;x++)for(int w=BorrascaRooms.FAR;w<=-1;w++){
+        for(int x=-44;x<=44;x++)for(int w=BorrascaRooms.HEAD;w<=-1;w++){
             int h=groundAt(x,w);boolean steep=steepAt(x,w,h);int route=routeFloorAt(x,w,h);boolean bank=steep&&gullyBankAt(x,w);
             var top=route==1?bed(x,w):route==2?BorrascaRooms.walked(x,w,near(WORLD_ROUTES[1],x,w)[0]<=.9?0:2):bank?earth(x,h,w):top(x,w<-74&&w>=BorrascaRooms.TOWN_END?-60:za(w),h-lift(w),steep);
             if(h<=0){if(h==0&&!top.is(Blocks.GRASS_BLOCK))BuildBlocks.set(l,b.offset(x,-1,w),top,F);stepAt(l,b,x,w,h,route);continue;}
@@ -203,6 +235,7 @@ public final class BorrascaLand {
             stepAt(l,b,x,w,h,route);
         }
         gullyEdges(l,b);
+        south(l,b);
     }
     /**
      * 0.4.276: which way a column's own floor belongs to: 1 the gully's bed, 2 the way down the far side, 0 neither. Only where the
@@ -363,6 +396,13 @@ public final class BorrascaLand {
             else if(kind<7||cliff)tallOak(l,b,x,h,w,tall,kind==6||hash(x,12,w)%4==0);
             else if(z>-135)oak(l,b,x,h,w,5+hash(x,6,w)%3);
             else cedar(l,b,x,h,w,5+hash(x,5,w)%4);
+            trunks.add(ChunkPos.asLong(x,w));
+        }
+        // 0.4.447: the woods on top of the cliff at the valley's head (the rows past FAR), tall trees only, as along the other cliffs.
+        for(int gx=-42;gx<=42;gx+=6)for(int gz=BorrascaRooms.HEAD+3;gz<BorrascaRooms.FAR+1;gz+=5){
+            int x=gx+hash(gx,31,gz)%5-2,w=gz+hash(gx,32,gz)%3-1;if(w<BorrascaRooms.HEAD+2||w>=BorrascaRooms.FAR+4||Math.abs(x)>42)continue;
+            if(clearAt(x,w,2)||rocky.contains(ChunkPos.asLong(x,w))||trunks.contains(ChunkPos.asLong(x,w)))continue;int h=groundAt(x,w);if(h-lift(w)<24)continue;
+            if(hash(x,33,w)%10<3)pine(l,b,x,h,w,13+hash(x,34,w)%7);else tallOak(l,b,x,h,w,12+hash(x,35,w)%6,hash(x,36,w)%4==0);
             trunks.add(ChunkPos.asLong(x,w));
         }
         // Fallen trunks, only where the ground lies level along their whole length.

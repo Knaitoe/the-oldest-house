@@ -28,7 +28,7 @@ public final class BorrascaShops {
     public static final BlockPos HISTORY=new BlockPos(-18,2,-95);
     public static final BlockPos DINER_DOOR=new BlockPos(-7,0,-84),MENU=new BlockPos(-14,2,-90),PIE_CASE=new BlockPos(-16,1,-87),URN=new BlockPos(-16,1,-82),DINER_TILL=new BlockPos(-16,1,-84);
     public static final BlockPos ANTIQUES_DOOR=new BlockPos(-7,0,-100),SOCIETY_DOOR=new BlockPos(-15,0,-100),MAP=new BlockPos(-20,2,-100),PHOTOS=new BlockPos(-18,2,-106),CURIOS=new BlockPos(-11,0,-104),HELMET=new BlockPos(-19,0,-104),SHOP_CLOCK=new BlockPos(-10,2,-106);
-    public static final BlockPos STATION_DOOR=new BlockPos(-16,0,-114),PAYPHONE=new BlockPos(-15,1,-111),PRICE=new BlockPos(-5,2,-109),COOLER=new BlockPos(-15,0,-117),STATION_CANDY=new BlockPos(-20,0,-112);
+    public static final BlockPos STATION_DOOR=new BlockPos(-16,0,-114),PAYPHONE=new BlockPos(-15,1,-113),PRICE=new BlockPos(-5,2,-109),COOLER=new BlockPos(-15,0,-117),STATION_CANDY=new BlockPos(-20,0,-112);
     public static final BlockPos[] PUMPS={new BlockPos(-10,0,-112),new BlockPos(-10,0,-117)};
     public static final BlockPos DOCTOR_DOOR=new BlockPos(7,0,-84),CARDS=new BlockPos(10,2,-88),JAR=new BlockPos(12,1,-80),SCALE=new BlockPos(18,0,-80),CHART=new BlockPos(18,2,-84),EXAM=new BlockPos(16,0,-87);
     public static final BlockPos DRUG_DOOR=new BlockPos(7,0,-98),FOUNTAIN=new BlockPos(13,1,-103),MEDS=new BlockPos(20,0,-98),RACK=new BlockPos(10,0,-95),DRUG_CANDY=new BlockPos(14,0,-95);

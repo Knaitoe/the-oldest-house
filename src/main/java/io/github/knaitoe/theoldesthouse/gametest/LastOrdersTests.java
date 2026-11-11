@@ -66,6 +66,9 @@ public final class LastOrdersTests {
                 f.at(r[0],P,-1.5,0,-9.5);f.at(r[1],P,-2.5,0,-9.5);
             })
             .thenWaitUntil(()->{var a=LastOrders.actor(l,b,0);h.assertTrue(a!=null&&a.phase()==LastOrders.STRANGER&&LastOrders.stage(b)==LastOrders.IDLE,"the man in booth four, waiting");})
+            // 0.4.447: the bar's lean has the same number as Costume Night's crawl, and the two in the next booth were drawn on all fours.
+            .thenExecute(()->{for(int who=1;who<=2;who++){var a=LastOrders.actor(l,b,who);h.assertTrue(a!=null&&a.gesture()==LastOrders.LEAN&&a.ownGestures()&&!a.crawling()&&!a.reaching()&&a.getBbHeight()>1.5F,"the two in the next booth sit up and lean in over their table, neither of them on all fours: "+(a==null?null:a.gesture()+" "+a.getBbHeight()));}
+                var man=LastOrders.actor(l,b,0);int was=man.gesture();man.gesture(LastOrders.WHISTLE);h.assertTrue(!man.reaching()&&!man.crawling(),"his whistle is his own gesture, and not the plain reach with the same number");man.gesture(was);})
             .thenWaitUntil(()->{var bd=DartBoards.at(l,b.offset(LastOrdersSite.BOARD));h.assertTrue(bd!=null&&bd.house&&bd.seats.stream().filter(DartBoards::regular).count()==3,"the three regulars on the chalk at the board");})
             .thenExecute(()->{
                 ask(f,r[0],"Pool");

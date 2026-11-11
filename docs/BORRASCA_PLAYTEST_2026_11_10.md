@@ -27,8 +27,8 @@ Two standing remarks run through the whole document and are treated as passes of
 | 11 | "again, custom textures would be beneficial here." | A waiting room's benches, built of plank stairs and slabs. | open, the texture pass |
 | 12 | "You could add inflections of personality into the citizens homes. Remember that this town is sick, that many know what the town does and why and just accept it. Some don't, but they have to bite their tongue." | A house: a bed, drawers, an armchair, a table. Nothing says who lives there. | open |
 | 13 | "Keep prison cell door shut. Allow player to speak to npc through bars." | Earl in the cell with its door standing open. | done, 0.4.444 |
-| 14 | "Try to fix wheels" | A child's bike: each wheel is eight separate blocks with gaps between them. | open |
-| 15 | "Try to fix mild visual distortion when mounting bike." | The rider's view: the handlebars fill the top of the screen and a dark bar crosses the middle of it. | open |
+| 14 | "Try to fix wheels" | A child's bike: each wheel is eight separate blocks with gaps between them. | done, 0.4.447: each tyre is a closed ring of sixteen pieces, with eight spokes |
+| 15 | "Try to fix mild visual distortion when mounting bike." | The rider's view: the handlebars fill the top of the screen and a dark bar crosses the middle of it. | done, 0.4.447: the rider sits on the saddle; their eyes had been level with the bars and the saddle's top |
 | 16 | "Names should be easier to read." | The names cut in the Tree, dark on dark bark. | done, 0.4.444: paler, larger, bolder, and never darker than a lit evening |
 | 17 | "The tree is old. So is the town and its secrets. There should be names all over this tree." | The trunk beside the carving: bare bark. | open |
 | 18 | "Dialogue should change on second day, after Kelly/friend is taken" | The Sheriff, after she is taken: "You two keep this side of Marker Two when the wind comes up." | done, 0.4.444 for the Sheriff; the rest of the town is to be gone through |
@@ -38,21 +38,21 @@ Two standing remarks run through the whole document and are treated as passes of
 | 22 | "Cluttered" | The noticeboard: four copies of the same corkboard tile. | open |
 | 23 | "Could benefit from custom signs" | The trailhead arch: two small vanilla signs on its beam. | open, signs |
 | 24 | "Combat with the sheriff shouldn't' feel like a vanilla Minecraft fight. Punches should be sluggish with real weight. The sheriff should use his baton, then drop it after being hit a few times and start swinging his own fists. He swings with one fist then the other." | (no screenshot of the fight) | open |
-| 24 | "Sphinx talons still need three distinct nails, not the many several smaller ones." | The Sphinx's paw: a row of many small claws along three toes. | open |
+| 24 | "Sphinx talons still need three distinct nails, not the many several smaller ones." | The Sphinx's paw: a row of many small claws along three toes. | done, 0.4.447: one toe and one talon to each of the three blocks of her paw |
 | 25 | "Custom booths in last order" | Last orders: booths built of planks and red wool, numbered with vanilla signs. | open |
 | 26 | "Custom signs for last orders" | The league table: nine vanilla signs. | open, signs |
-| 27 | "Lol was this intentional, in last orders?" | Two regulars in a booth, sunk so that only their heads show at the table's edge. | open |
-| 28 | (no note) | A noticeboard and a blank board hung across a window. | open |
+| 27 | "Lol was this intentional, in last orders?" | Two regulars in a booth, sunk so that only their heads show at the table's edge. | done, 0.4.447: not intended. Their lean shared a number with Costume Night's crawl and they were drawn on all fours |
+| 28 | (no note) | A noticeboard and a blank board hung across a window. | done, 0.4.447: it was the Drawing's board on the post office; it hangs on the wall beside the window. Borrasca's gas station payphone was on glass too and has moved |
 | 29 | "Sheriff continues to wiggle after "death" pool blood around corpse?" | The Sheriff's body on the ground. | done, 0.4.444: the body is still, and a pool spreads under it |
 | 30 | "She should spawn on this on day 4, not spawn elsewhere then walk onto it. You should have operators that are watching her go in, referencing the shiny gentleman taking care of her." | Dana lying on the belt. | done, 0.4.444 |
-| 31 | (no note) | The yard: plank slabs, one of them hanging in the air. | open |
+| 31 | (no note) | The yard: plank slabs, one of them hanging in the air. | done, 0.4.447: every board in the yard rests on the ground or on the board under it |
 | 32 | "Documents are not interactable." | Papers on the desks in the depot office. | done, 0.4.444: six more documents, read where they lie |
-| 33 | "re-use water fountain from personhood vignette." | A water cooler made of a white box and a blue one. | open |
+| 33 | "re-use water fountain from personhood vignette." | A water cooler made of a white box and a blue one. | done, 0.4.447: the waiting room's cooler stands in the depot office |
 | 34 | "Give new textures to the different docs." | Two documents side by side with the same face. | done, 0.4.444: ten papers, ten faces |
 | 35 | "Kelly's dialogue text appears for like, half a second" | Kelly, grown, in room 6. | done, 0.4.444 |
 | 36 | "Custom signs, wall texture" | The corridor under the depot: vanilla signs for the room numbers, plain walls. | open, signs |
-| 37-39 | "No entry" | The passage between the depot and the wire, a lantern on a fence post, and a ladder up a closed timber box. | open, to be looked into |
-| 40 | "End of the world here lol." | Past the yard's fence the ground stops and there is nothing. | open |
+| 37-39 | "No entry" | The passage between the depot and the wire, a lantern on a fence post, and a ladder up a closed timber box. | in part, 0.4.447: the depot's front door and its lever now say why nothing happens. Whether the note asks for NO ENTRY signs, for ways in, or for these to be closed off is asked of the owner |
+| 40 | "End of the world here lol." | Past the yard's fence the ground stops and there is nothing. | done, 0.4.447: the hill goes on behind the yard and ends in the cliff at the valley's head |
 | - | "Borrasca shiny gentleman capture spawns on top of triple tree rather than inside" | (no screenshot) | done, 0.4.444: on the fort's floor |
 | 41 | "Spots to solids" | Last orders' pool: "knaitoe (stripes) vs Booth four (spots)". | done, 0.4.444 |
 | 42 | "Two dorseys" | The mail carrier, and a second one behind him. | done, 0.4.444 |

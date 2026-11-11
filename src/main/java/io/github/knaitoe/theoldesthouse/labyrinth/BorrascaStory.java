@@ -251,7 +251,14 @@ public final class BorrascaStory {
         if(rel.equals(BorrascaRooms.LETTER)){LiteraryVignettes.open(p,PLACE,own,"Letter",BorrascaTexts.document("Letter"),BorrascaRooms.at(b,rel));return true;}
         for(int i=0;i<BorrascaRooms.GRAVE_TAGS.length;i++)if(rel.equals(BorrascaRooms.grave(i))){graves(p,own);cue(p,"A number on a stake: "+BorrascaRooms.GRAVE_TAGS[i]+". No name.");return true;}
         if(rel.equals(BorrascaRooms.EVIDENCE)){if(visit==4)LiteraryVignettes.open(p,PLACE,own,"Evidence",BorrascaTexts.document("Evidence",own.getBoolean("CompassEverConfiscated")),BorrascaRooms.at(b,rel));return true;}
-        if(rel.equals(FRONT_LEVER)){if(visit==4)openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.FACTORY_DOOR),true);return true;}
+        if(rel.equals(BorrascaRooms.WATER)){p.serverLevel().playSound(null,BorrascaRooms.at(b,rel),HouseReadRegistry.GLUG.get(),net.minecraft.sounds.SoundSource.BLOCKS,.55F,1F);cue(p,"A bubble goes up through the bottle.");return true;}
+        // 0.4.447 (owner, of the depot's front: "No entry"): the door and its lever say why nothing happens. The lever is the way in on
+        // the last visit and did nothing, without a word, on any other; the door itself has no handle and said nothing at all.
+        if(rel.equals(FRONT_LEVER)){if(visit==4)openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.FACTORY_DOOR),true);else cue(p,"The lever is chained to its bracket. It does not move.");return true;}
+        if(rel.equals(BorrascaRooms.FACTORY_DOOR)||rel.equals(BorrascaRooms.FACTORY_DOOR.above())){
+            var door=p.serverLevel().getBlockState(BorrascaRooms.at(b,BorrascaRooms.FACTORY_DOOR));
+            if(door.getBlock() instanceof DoorBlock&&!door.getValue(DoorBlock.OPEN)){cue(p,visit==4?"Steel, and no handle on this side. A lever is set in the wall beside it.":"Steel, and no handle on this side.");return true;}
+        }
         if(rel.equals(BorrascaRooms.POWER)){
             if(visit==4&&!own.getBoolean("PowerOff")){own.putBoolean("PowerOff",true);var state=p.serverLevel().getBlockState(BorrascaRooms.at(b,BorrascaRooms.MACHINE));if(state.is(BorrascaRegistry.MACHINE.get()))p.serverLevel().setBlock(BorrascaRooms.at(b,BorrascaRooms.MACHINE),state.setValue(BorrascaMachineBlock.RUNNING,false),F);var lever=p.serverLevel().getBlockState(BorrascaRooms.at(b,rel));if(lever.is(Blocks.LEVER))p.serverLevel().setBlock(BorrascaRooms.at(b,rel),lever.setValue(LeverBlock.POWERED,false),F);heard(p,BorrascaRegistry.BREAKER.get(),BorrascaRooms.at(b,rel),.7F);heard(p,BorrascaRegistry.MOTOR_STOP.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),1);send(p,own);}
             return true;

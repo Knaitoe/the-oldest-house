@@ -38,7 +38,9 @@ public final class BorrascaBikeClient {
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void lean(RenderPlayerEvent.Pre e){
         if(!(e.getEntity().getVehicle() instanceof BorrascaBike b))return;float partial=e.getPartialTick();float yaw=Mth.rotLerp(partial,b.yRotO,b.getYRot());
         var pose=e.getPoseStack();pose.pushPose();
-        pose.translate(0,-.3,0);pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));pose.mulPose(Axis.XP.rotationDegrees(b.shownLean(partial)*BorrascaBike.LEAN_DEGREES));pose.mulPose(Axis.YP.rotationDegrees(yaw+90));pose.translate(0,.3,0);
+        // 0.4.447: about the road under the bike, however far above it this rider sits.
+        float up=(float)(Mth.lerp(partial,e.getEntity().yo,e.getEntity().getY())-Mth.lerp(partial,b.yo,b.getY()));
+        pose.translate(0,-up,0);pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));pose.mulPose(Axis.XP.rotationDegrees(b.shownLean(partial)*BorrascaBike.LEAN_DEGREES));pose.mulPose(Axis.YP.rotationDegrees(yaw+90));pose.translate(0,up,0);
         LEANED.add(e.getEntity());
     }
     @SubscribeEvent public static void unlean(RenderPlayerEvent.Post e){if(LEANED.remove(e.getEntity()))e.getPoseStack().popPose();}

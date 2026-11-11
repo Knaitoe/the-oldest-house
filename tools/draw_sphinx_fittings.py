@@ -475,14 +475,16 @@ def fitting_models():
             els.append(element([6.5, 6.5, depth], [9.5, 9.5, 15.5], {'all': 'b'}))
         m[f'pin_{s}'] = model(els, {'i': 'iron', 'b': 'brass'}, 'iron')
     m['grille_0'] = model([element([1, 1, 15], [15, 15, 16], {'all': 'i', 'north': 'g'}, uv={'north': [0, 0, 16, 16]})], {'i': 'iron', 'g': 'grille'}, 'grille')
-    # Her paw hooked over the frame: the heel of it on top, four heavy toes over the edge, each with a claw curling down into the wood.
-    els = [element([0, 9, 9], [16, 16, 16], {'all': 'f', 'down': 'd'})]
-    for x in (0.5, 4.5, 8.5, 12.5):
-        els.append(element([x, 5, 8], [x + 3.2, 11, 13.5], {'all': 'f', 'down': 'd'}))
-        # One claw to a toe: a thicker root out of the toe and a narrower tip below it, mapped as one nail (pale root, dark tip).
-        sides = ('north', 'south', 'east', 'west')
-        els.append(element([x + .9, 3, 6.6], [x + 2.3, 7, 8.2], {'all': 'c'}, uv={**{f: [0, 0, 16, 10] for f in sides}, 'up': [0, 0, 16, 3], 'down': [4, 10, 12, 16]}))
-        els.append(element([x + 1.1, 0, 6.4], [x + 2.1, 3.2, 7.4], {'all': 'c'}, uv={**{f: [4, 10, 12, 16] for f in sides}, 'up': [4, 10, 12, 16], 'down': [4, 12, 12, 16]}))
+    # Her paw hooked over the frame, one toe to a block: the heel of it on top, a heavy toe over the edge, and one talon out of it curling
+    # down into the wood. 0.4.447 (owner: "Sphinx talons still need three distinct nails, not the many several smaller ones."): three
+    # of these always stand side by side under the three columns of her foreleg, and each had four toes with a claw apiece, a fringe of
+    # twelve small claws. The talon is one nail in three pieces (root, body, tip), the claw's pale root on the top piece only.
+    sides = ('north', 'south', 'east', 'west')
+    els = [element([0, 9, 9], [16, 16, 16], {'all': 'f', 'down': 'd'}),
+           element([1, 4.5, 7.5], [15, 11, 13.5], {'all': 'f', 'down': 'd'}),
+           element([4.5, 2.5, 5.8], [11.5, 7, 8.4], {'all': 'c'}, uv={**{f: [0, 0, 16, 7] for f in sides}, 'up': [0, 0, 16, 3], 'down': [2, 7, 14, 12]}),
+           element([5.5, -.5, 5.6], [10.5, 3, 7.6], {'all': 'c'}, uv={**{f: [2, 7, 14, 12] for f in sides}, 'up': [2, 7, 14, 12], 'down': [5, 12, 11, 16]}),
+           element([6.75, -3, 5.4], [9.25, 0, 6.8], {'all': 'c'}, uv={**{f: [5, 12, 11, 16] for f in sides}, 'up': [5, 12, 11, 16], 'down': [5, 12, 11, 16]})]
     m['fingers_0'] = model(els, {'f': 'fur', 'c': 'claw', 'd': 'pad'}, 'fur')
     # Her foreleg down the wall: a thick furred limb against the plaster, a darker ridge down its front.
     m['reach_0'] = model([element([1, 0, 9], [15, 16, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f'})], {'f': 'fur'}, 'fur')
