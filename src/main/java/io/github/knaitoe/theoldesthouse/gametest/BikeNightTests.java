@@ -411,6 +411,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_slide") public static void slideDone(ServerLevel l){done();}
     @AfterBatch(batch="park_bars") public static void barsDone(ServerLevel l){done();}
     @AfterBatch(batch="park_seesaw") public static void seesawDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_round") public static void roundDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
     public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
@@ -619,7 +620,7 @@ public final class BikeNightTests {
             new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
             new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
             new Thing(BikeNightSite.SLIDE,BikeNightTexts.SLIDE),new Thing(BikeNightSite.slideEnd(),BikeNightTexts.SLIDE),
-            new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),new Thing(BikeNightSite.SEESAW,BikeNightTexts.SEESAW),
+            new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),new Thing(BikeNightSite.SEESAW,BikeNightTexts.SEESAW),new Thing(BikeNightSite.ROUNDABOUT,BikeNightTexts.ROUNDABOUT),
             new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -631,7 +632,8 @@ public final class BikeNightTests {
                 BikeNightTexts.SWINGS,BikeNightTexts.SWING_HINT,BikeNightTexts.JUMP,BikeNightTexts.JUMP_LEVEL,BikeNightTexts.JUMP_BEST,BikeNightTexts.JUMP_OFF,BikeNightTexts.MARK,BikeNightTexts.MARK_OWN,BikeNightTexts.MARK_THEIRS,
                 BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE,
                 BikeNightTexts.BARS,BikeNightTexts.BARS_LOW,BikeNightTexts.BARS_ON,BikeNightTexts.BARS_FAR,BikeNightTexts.BARS_HINT,BikeNightTexts.BARS_ACROSS,
-                BikeNightTexts.SEESAW,BikeNightTexts.SEESAW_TAKEN,BikeNightTexts.SEESAW_HINT)){
+                BikeNightTexts.SEESAW,BikeNightTexts.SEESAW_TAKEN,BikeNightTexts.SEESAW_HINT,
+                BikeNightTexts.ROUNDABOUT,BikeNightTexts.ROUNDABOUT_ON,BikeNightTexts.ROUNDABOUT_FAR,BikeNightTexts.ROUNDABOUT_HINT)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -1222,6 +1224,106 @@ public final class BikeNightTests {
                 h.assertTrue(l.getEntitiesOfClass(SeesawSeat.class,new AABB(stand).inflate(6)).isEmpty(),"and no seat is left on it");
                 String one=told("seesaw_one",p[0],f),two=told("seesaw_two",p[1],f),three=told("seesaw_three",p[2],f);
                 h.assertTrue(one.contains("on the seesaw with seesaw_two on the other end")&&two.contains("on the seesaw with seesaw_one on the other end")&&three.contains("with nobody on the other"),"and their accounts have it: "+one+" / "+two+" / "+three);
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_round",timeoutTicks=3000)
+    public static void theMerryGoRoundIsShovedRoundFromTheSandAndCarriesWhoeverStandsOnIt(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final RoundaboutBlock.Wheel[] wheel={null};final double[] was={0,0};final net.minecraft.world.entity.Entity[] thing={null};
+        var hub=b.offset(BikeNightSite.ROUNDABOUT);double cx=BikeNightSite.ROUNDABOUT.getX()+.5,cz=BikeNightSite.ROUNDABOUT.getZ()+.5,deck=RoundaboutBlock.DECK,top=RoundaboutBlock.Wheel.TOP;int wait=RoundaboutBlock.Wheel.WAIT;
+        // How far round the hub something is, from east toward south, in degrees.
+        java.util.function.Function<net.minecraft.world.entity.Entity,Double> round=e->Math.toDegrees(Math.atan2(e.getZ()-(b.getZ()+cz),e.getX()-(b.getX()+cx)));
+        java.util.function.Function<net.minecraft.world.entity.Entity,Double> out=e->Math.hypot(e.getX()-(b.getX()+cx),e.getZ()-(b.getZ()+cz));
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                // The hub, which keeps the wheel, and the rest of the ground its deck is over.
+                for(var cell:RoundaboutBlock.Cell.values()){
+                    if(cell==RoundaboutBlock.Cell.WHEEL)continue;
+                    var at=hub.offset(cell.dx,0,cell.dz);var s=l.getBlockState(at);
+                    h.assertTrue(RoundaboutBlock.is(s)&&s.getValue(RoundaboutBlock.CELL)==cell&&RoundaboutBlock.hub(at,s).equals(hub)&&RoundaboutBlock.wheel(l,at)!=null&&l.getBlockState(at.below()).is(Blocks.SAND),"the merry-go-round's ground at "+cell+": "+s);
+                    h.assertTrue((l.getBlockEntity(at) instanceof RoundaboutBlock.Wheel)==(cell==RoundaboutBlock.Cell.HUB),"only its hub keeps the wheel");
+                    double high=s.getCollisionShape(l,at).max(Direction.Axis.Y);
+                    h.assertTrue(Math.abs(high-(cell==RoundaboutBlock.Cell.HUB?RoundaboutBlock.POST/16.:deck))<1e-9,"the deck's height over it, and over the hub its post: "+high);
+                    h.assertTrue(Math.abs(s.getShape(l,at).max(Direction.Axis.Y)-RoundaboutBlock.POST/16.)<1e-9,"a hand finds it up to its rails' height");
+                }
+                wheel[0]=(RoundaboutBlock.Wheel)l.getBlockEntity(hub);
+                // The deck is round: where it is over the ground a body stands on it, and past its rim on the sand.
+                java.util.function.BiFunction<Double,Double,Boolean> stood=(x,z)->{
+                    var at=BlockPos.containing(b.getX()+x,b.getY()+.05,b.getZ()+z);var shape=l.getBlockState(at).getCollisionShape(l,at);
+                    return !shape.isEmpty()&&shape.toAabbs().stream().anyMatch(box->box.move(at).contains(b.getX()+x,b.getY()+deck-.01,b.getZ()+z));
+                };
+                h.assertTrue(stood.apply(cx+1.3,cz)&&stood.apply(cx,cz-1.3)&&stood.apply(cx-.95,cz+.95)&&stood.apply(cx+.2,cz+.6),"the deck is stood on out to its rim, every way");
+                h.assertTrue(!stood.apply(cx+1.4,cz+1.4)&&!stood.apply(cx-1.2,cz-1.2)&&!stood.apply(cx+1.49,cz),"and not past it: its ground's corners are open sand");
+                h.assertTrue(wheel[0].speed()==0&&wheel[0].angle()==0,"it stands still");
+                p[0]=f.player("round_one",P);p[1]=f.player("round_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenWaitUntil(()->h.assertTrue(p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1,"readers here are children"))
+            .thenExecute(()->{
+                // From on the deck, from too far off, and straight at its middle: no shove, and they are told why.
+                f.at(p[0],P,cx+1,deck,cz);h.assertTrue(wheel[0].on(p[0])&&BikeNightTexts.ROUNDABOUT_ON.equals(wheel[0].push(p[0])),"not from on it");
+                f.at(p[0],P,cx+4,0,cz);h.assertTrue(!wheel[0].on(p[0])&&BikeNightTexts.ROUNDABOUT_FAR.equals(wheel[0].push(p[0])),"not from too far off");
+                f.at(p[0],P,cx+2.2,0,cz);p[0].setYRot(90);p[0].setXRot(0);
+                h.assertTrue(BikeNightTexts.ROUNDABOUT.equals(wheel[0].push(p[0]))&&wheel[0].speed()==0,"a shove straight at its middle turns it neither way");
+                // East of it, a hand on its rim to their left (the south-east of it) shoves its near side that way.
+                hush(p[0]);hand(p[0],hub.offset(1,0,1));
+                h.assertTrue(Math.abs(wheel[0].speed()-RoundaboutBlock.Wheel.PUSH)<1e-9,"a hand on its rim to their left shoves it round that way: "+wheel[0].speed());
+                h.assertTrue(wheel[0].push(p[0])==null&&Math.abs(wheel[0].speed()-RoundaboutBlock.Wheel.PUSH)<1e-9,"one shove at a time: a second at once adds nothing");
+                was[0]=wheel[0].angle();
+            })
+            .thenIdle(wait+1)
+            .thenExecute(()->{
+                h.assertTrue(wheel[0].angle()>was[0]&&wheel[0].speed()>0&&wheel[0].speed()<RoundaboutBlock.Wheel.PUSH,"it turns, and slows by itself: "+wheel[0].speed());
+                // Facing the other way along its rim, a shove is the other way.
+                p[0].setYRot(180);double before=wheel[0].speed();
+                h.assertTrue(wheel[0].push(p[0])==null&&wheel[0].speed()<before-.02,"a shove the other way slows it");
+            })
+            .thenIdle(wait+1)
+            .thenExecute(()->{
+                wheel[0].set(0,top);p[0].setYRot(0);
+                h.assertTrue(wheel[0].push(p[0])==null&&wheel[0].speed()<=top,"it goes no faster than its fastest");
+                // A reader standing on the deck goes round with it, as their own game carries them (here, the case does);
+                // and something left lying on the deck goes round too, which the server carries.
+                wheel[0].set(0,.05);f.at(p[1],P,cx+1,deck,cz);p[1].setYRot(0);was[0]=0;
+                var stick=new net.minecraft.world.entity.item.ItemEntity(l,b.getX()+cx-1,b.getY()+deck,b.getZ()+cz,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STICK));
+                stick.setDeltaMovement(Vec3.ZERO);l.addFreshEntity(stick);thing[0]=stick;
+            })
+            .thenExecuteFor(40,()->{was[0]+=wheel[0].speed();h.assertTrue(wheel[0].carry(p[1],true),"on the deck");})
+            .thenExecute(()->{
+                double gone=Math.toDegrees(was[0]);
+                h.assertTrue(gone>60&&Math.abs(Mth.wrapDegrees(round.apply(p[1])-gone))<.01&&Math.abs(out.apply(p[1])-1)<1e-6,"they have gone round with it, as far as it has turned, no nearer its middle and no further: "+round.apply(p[1])+" of "+gone);
+                h.assertTrue(Math.abs(Mth.wrapDegrees(p[1].getYRot()-(float)gone))<.01,"and been turned with it");
+                h.assertTrue(Math.abs(Mth.wrapDegrees(round.apply(thing[0])-180-gone))<8&&Math.abs(out.apply(thing[0])-1)<.1,"and so has what was left lying on it: "+round.apply(thing[0]));
+                thing[0].discard();
+                // Standing up on it while it goes fast they are pushed outward; keeping low, they hold on.
+                wheel[0].set(0,.2);f.at(p[1],P,cx+1,deck,cz);
+            })
+            .thenIdle(1)
+            .thenExecute(()->{
+                wheel[0].carry(p[1],true);
+                h.assertTrue(p[1].getDeltaMovement().horizontalDistance()<1e-9,"keeping low, they hold on");
+                wheel[0].carry(p[1],false);var thrown=p[1].getDeltaMovement();
+                h.assertTrue(thrown.horizontalDistance()>.01&&thrown.x*(p[1].getX()-(b.getX()+cx))+thrown.z*(p[1].getZ()-(b.getZ()+cz))>0,"standing up, they are pushed outward: "+thrown);
+                wheel[0].set(0,.05);p[1].setDeltaMovement(Vec3.ZERO);wheel[0].carry(p[1],false);
+                h.assertTrue(p[1].getDeltaMovement().horizontalDistance()<1e-9,"going slowly it throws nobody");
+                // Their record: how far round they have gone on it; and they were told once how to stay on, when they first went round.
+                wheel[0].set(0,.2);f.at(p[1],P,cx+1,deck,cz);p[1].setDeltaMovement(Vec3.ZERO);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.ROUNDABOUT_HINT)&&f.own(p[1],P).getDouble("RoundTurned")>0,"told once how to stay on, and their turning is in their record"))
+            .thenWaitUntil(()->h.assertTrue(sounded(p[1],"park.roundabout_squeak"),"and its bearing is heard as it comes round"))
+            // Out past its rim, standing, while it still goes fast: it threw them.
+            .thenExecute(()->{wheel[0].set(0,.2);f.at(p[1],P,cx+2.2,0,cz);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[1],P).getInt("RoundFlung")==1,"off it while it was going fast: it threw them"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("RoundPushed")==3,"and the first reader's three shoves are in their record: "+f.own(p[0],P).getInt("RoundPushed")))
+            // Left alone it comes to a stop.
+            .thenExecute(()->wheel[0].set(1,.003))
+            .thenWaitUntil(()->h.assertTrue(wheel[0].speed()==0&&wheel[0].angle()>1,"left alone it runs down and stops"))
+            .thenExecute(()->{
+                String one=told("round_one",p[0],f),two=told("round_two",p[1],f);
+                var rode=new net.minecraft.nbt.CompoundTag();rode.putDouble("RoundTurned",Math.PI*2*3+.1);
+                var three=String.join(" ",BikeNightTexts.account("round_three",rode).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(one.contains("pushed the merry-go-round")&&two.contains("it threw me off")&&three.contains("round on the merry-go-round three times"),"and their accounts have it: "+one+" / "+two+" / "+three);
             }).thenSucceed();
     }
 }

@@ -110,6 +110,12 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<SeesawSeat>> SEESAW_SEAT=ENTITIES.register("seesaw_seat",
         ()->EntityType.Builder.<SeesawSeat>of(SeesawSeat::new,MobCategory.MISC).sized(.05F,.05F).clientTrackingRange(8).updateInterval(20).noSave().noSummon().build("seesaw_seat"));
 
+    /** 0.4.469: the playground's merry-go-round ({@link RoundaboutBlock}): the ground its deck is over, and the wheel its hub keeps. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RoundaboutBlock>> ROUNDABOUT_TYPE=CODECS.register("calder_roundabout",()->RoundaboutBlock.CODEC);
+    public static final DeferredBlock<RoundaboutBlock> ROUNDABOUT=BLOCKS.registerBlock("calder_roundabout",RoundaboutBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<RoundaboutBlock.Wheel>> ROUNDABOUT_WHEEL=BLOCK_ENTITIES.register("calder_roundabout",
+        ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(RoundaboutBlock.Wheel::new,ROUNDABOUT.get()).build(null));
+
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** Any bike: the tyres letting go of the road, and both of them coming back down. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOP=sound("bike.hop"),LAND=sound("bike.land");
@@ -125,6 +131,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> BARS=sound("park.bars");
     /** The seesaw: its axle as a rider pushes off the sand, and a bumper coming down on it. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SEESAW_CREAK=sound("park.seesaw_creak"),SEESAW_THUD=sound("park.seesaw_thud");
+    /** The merry-go-round's bearing, once a quarter of a turn. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> ROUNDABOUT_SQUEAK=sound("park.roundabout_squeak");
 
     private BikeNightRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BLOCK_ENTITIES.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}

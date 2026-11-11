@@ -51,6 +51,14 @@ public final class BikeNightTexts {
     public static final String SEESAW="A seesaw: a long board on a steel stand, with a seat and a handle at each end.";
     public static final String SEESAW_TAKEN="Somebody is on that end.";
     public static final String SEESAW_HINT="Jump to push off the sand when your end is down. Sneak gets off.";
+    /**
+     * 0.4.469, the merry-go-round: a hand on it that pushes neither way; a hand on it from on its deck, and from too far off; and
+     * what a reader going round on it is told once.
+     */
+    public static final String ROUNDABOUT="A merry-go-round. Push it along its rim, the way it is to go.";
+    public static final String ROUNDABOUT_ON="You are on it. It is pushed from the sand, by a rail.";
+    public static final String ROUNDABOUT_FAR="Too far off to push it.";
+    public static final String ROUNDABOUT_HINT="Sneak to hold on. Stand up on it when it is going fast and it throws you off.";
     /** The sand: a ball packed; no more to be carried; no room for one; what is left of one carried out of the night. */
     public static final String SAND="You pack a ball of sand. It holds.";
     public static final String SAND_FULL="Your pockets are full of sand.";
@@ -87,6 +95,10 @@ public final class BikeNightTexts {
         if(!with.isEmpty())p.add("I went up and down on the seesaw with "+with+" on the other end.");
         else if(own.getInt("Seesaw")>0)p.add("I sat on one end of the seesaw with nobody on the other, and pushed myself up, and came down again each time.");
         else if(own.getBoolean("SeesawSat"))p.add("I sat on one end of the seesaw for a while.");
+        int rounds=(int)(own.getDouble("RoundTurned")/(Math.PI*2));
+        if(own.getInt("RoundFlung")>0)p.add("I stood up on the merry-go-round while it was going fast, and it threw me off into the sand.");
+        else if(rounds>0)p.add("I went round on the merry-go-round "+(rounds==1?"once":Stillness.words(rounds)+" times")+".");
+        else if(own.getInt("RoundPushed")>0)p.add("I pushed the merry-go-round and watched it turn.");
         if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }

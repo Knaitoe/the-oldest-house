@@ -43,6 +43,10 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>0.4.468, the seesaw: a hand on an end of its board sits on it (SeesawSeat); a reader's record has that they sat, how many
  * times they pushed off the sand, and who was on the other end when they did.
  *
+ * <p>0.4.469, the merry-go-round: a hand on it from the sand beside it shoves it round (RoundaboutBlock.Wheel); a reader's
+ * record has how often they shoved it, how far round they went standing on it, and whether they came off it while it was going
+ * fast.
+ *
  * <p>It cannot be finished yet (the playground's equipment, the bullies, the town, the graveyard and what comes after it are later
  * slices), so the House does not deal it: {@link #dealable} says no. It is reached by an operator's test door.
  */
@@ -70,7 +74,9 @@ public final class BikeNight {
         /** Readers in the air off a swing. */
         final Map<UUID,Flight> flights=new HashMap<>();
         /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
-        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>();
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>(),shoved=new HashMap<>();
+        /** Whether each reader was standing on the merry-go-round when they were last looked at. */
+        final Map<UUID,Boolean> onWheel=new HashMap<>();
         /** Who was on the other end of the seesaw when a reader last pushed off, for their record. */
         final Map<UUID,String> rodeWith=new HashMap<>();
         /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
@@ -272,6 +278,12 @@ public final class BikeNight {
     /** A reader has been down the slide (SlideRide). */
     static void slid(ServerPlayer p){var n=night(p);if(n!=null)n.slid.merge(p.getUUID(),1,Integer::sum);}
 
+    // ------------------------------------------------------------------------------------------------ the merry-go-round
+    /** A reader has shoved the merry-go-round round (RoundaboutBlock.Wheel). */
+    static void shoved(ServerPlayer p){var n=night(p);if(n!=null)n.shoved.merge(p.getUUID(),1,Integer::sum);}
+    /** How often each reader's own record is brought up to date: what a look at who is on the merry-go-round stands for. */
+    static final int LOOK=5;
+
     // ------------------------------------------------------------------------------------------------ the seesaw
     /** A reader on the seesaw has pushed off the sand (SeesawSeat); with whom on the other end, if anybody. */
     static void seesawed(ServerPlayer p,@Nullable ServerPlayer other){
@@ -330,6 +342,18 @@ public final class BikeNight {
             if(!own.getBoolean("SeesawTold")){own.putBoolean("SeesawTold",true);cue(p,BikeNightTexts.SEESAW_HINT);}
         }
         Integer pushes=n.pushed.remove(id);if(pushes!=null)own.putInt("Seesaw",own.getInt("Seesaw")+pushes);
+        Integer shoves=n.shoved.remove(id);if(shoves!=null)own.putInt("RoundPushed",own.getInt("RoundPushed")+shoves);
+        if(p.serverLevel().getBlockEntity(b.offset(BikeNightSite.ROUNDABOUT)) instanceof RoundaboutBlock.Wheel wheel){
+            boolean on=wheel.on(p),was=Boolean.TRUE.equals(n.onWheel.put(id,on)),fast=Math.abs(wheel.speed())>RoundaboutBlock.Wheel.OUT;
+            if(on&&wheel.speed()!=0){
+                // How far round they have gone on it, by how far it turns between one look and the next.
+                own.putDouble("RoundTurned",own.getDouble("RoundTurned")+Math.abs(wheel.speed())*LOOK);
+                if(!own.getBoolean("RoundTold")){own.putBoolean("RoundTold",true);cue(p,BikeNightTexts.ROUNDABOUT_HINT);}
+            }
+            // Off it while it is going fast, standing up, and out past its rim: it threw them.
+            var m=wheel.middle();double dx=p.getX()-m.x,dz=p.getZ()-m.z;
+            if(was&&!on&&fast&&!p.isShiftKeyDown()&&!p.isPassenger()&&dx*dx+dz*dz>RoundaboutBlock.RADIUS*RoundaboutBlock.RADIUS)own.putInt("RoundFlung",own.getInt("RoundFlung")+1);
+        }
         String with=n.rodeWith.remove(id);if(with!=null)own.putString("SeesawWith",with);
     }
 
@@ -354,6 +378,12 @@ public final class BikeNight {
             cue(p,switch(s.getValue(CalderPlayBlock.KIND)){
                 case LADDER->s.getValue(CalderPlayBlock.STAGE)>=CalderPlayBlock.BARS?BikeNightTexts.BARS:BikeNightTexts.SLIDE;
                 case DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->BikeNightTexts.SWINGS;});return true;
+        }
+        // The merry-go-round is shoved round by a reader on the sand beside it; one who cannot is told why.
+        if(RoundaboutBlock.is(s)){
+            var wheel=RoundaboutBlock.wheel(l,b.offset(rel));
+            if(wheel!=null&&!p.isPassenger()){var why=wheel.push(p);if(why!=null)cue(p,why);}
+            return true;
         }
         // An end of the seesaw's board is sat on, if nobody is on it; the rest of it is looked at.
         if(s.is(BikeNightRegistry.SEESAW.get())){

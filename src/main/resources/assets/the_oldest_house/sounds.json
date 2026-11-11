@@ -5055,5 +5055,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.park.seesaw_thud"
+  },
+  "park.roundabout_squeak": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/roundabout_squeak",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.roundabout_squeak"
   }
 }

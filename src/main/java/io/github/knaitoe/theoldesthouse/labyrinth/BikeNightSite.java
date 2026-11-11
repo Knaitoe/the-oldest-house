@@ -62,6 +62,8 @@ public final class BikeNightSite {
     /** 0.4.468, the seesaw: where its stand is, and the way its first end points. Its ends are over the blocks two out each way. */
     public static final BlockPos SEESAW=new BlockPos(-10,0,-17);
     public static final Direction SEESAW_FACING=Direction.NORTH;
+    /** 0.4.469, the merry-go-round: its hub. Its deck is over the eight blocks round it as well. */
+    public static final BlockPos ROUNDABOUT=new BlockPos(-15,0,-32);
     public static final int LAMP_TOP=3;
     /** The sheet taped to the wall by the door (the first paper), and where a reader's account is handed over. */
     public static final BlockPos SOURCE=new BlockPos(-4,1,0),ENDING=new BlockPos(-4,2,0);
@@ -114,6 +116,7 @@ public final class BikeNightSite {
         slide(l,b);
         bars(l,b);
         seesaw(l,b);
+        roundabout(l,b);
         railings(l,b);
         gate(l,b);
         for(var at:LAMPS)lamp(l,b,at,true);
@@ -212,6 +215,10 @@ public final class BikeNightSite {
     static void seesaw(ServerLevel l,BlockPos b){
         set(l,b,SEESAW,SeesawBlock.of(SeesawBlock.Part.STAND,SEESAW_FACING));
         for(int end=0;end<2;end++)set(l,b,seesawEnd(end),SeesawBlock.of(SeesawBlock.Part.END,end==0?SEESAW_FACING:SEESAW_FACING.getOpposite()));
+    }
+    /** The merry-go-round: its hub, which keeps the wheel, and the rest of the ground its deck is over. */
+    static void roundabout(ServerLevel l,BlockPos b){
+        for(var cell:RoundaboutBlock.Cell.values())if(cell!=RoundaboutBlock.Cell.WHEEL)set(l,b,ROUNDABOUT.offset(cell.dx,0,cell.dz),RoundaboutBlock.of(cell));
     }
     /** Any swing left as if somebody were on it (a server stopped under a reader) hangs still again. */
     static void swingsBack(ServerLevel l,BlockPos b){
