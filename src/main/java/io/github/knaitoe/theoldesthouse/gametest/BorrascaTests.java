@@ -1494,6 +1494,73 @@ public final class BorrascaTests {
               f.close();
           }).thenSucceed();
     }
+    /**
+     * 0.4.457 (owner: "Combat with the sheriff shouldn't' feel like a vanilla Minecraft fight. Punches should be sluggish with real weight.
+     * The sheriff should use his baton, then drop it after being hit a few times and start swinging his own fists. He swings with one fist
+     * then the other."): a blow not brought all the way back glances; his baton is raised before it comes down, lands on a reader who
+     * stands there and misses one who has stepped out; the third whole blow has it out of his hand and on the ground; then the left
+     * fist and the right, each drawn back first; and the reader's arms are heavy for as long as it lasts.
+     */
+    @AfterBatch(batch="borrasca_fight") public static void fightDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_fight",timeoutTicks=3000)
+    public static void theSheriffFightsWithHisBatonAndThenHisFists(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_fight");var order=new ArrayList<Integer>();
+        var arm=net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED;
+        Runnable beside=()->{var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+1.6,a.getY(),a.getZ(),90,0);};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->{f.enter(p);f.stage(p,4);f.at(p,0,12,-170);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"fourth visit cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(f.rel(f.actor(p,"CastSheriff"),p).z< -176,"the sheriff walks his yard route"))
+          .thenExecute(()->{
+              var a=f.actor(p,"CastSheriff");beside.run();p.setHealth(p.getMaxHealth());
+              float whole=(float)p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+              h.assertTrue(p.getAttribute(arm).getModifier(BorrascaSheriffFight.HEAVY)==null,"before the fight the reader's arms are their own");
+              h.assertTrue(BorrascaSheriffFight.full(p,whole)&&!BorrascaSheriffFight.full(p,whole*.7F),"a whole blow is a blow, and most of one is not");
+              h.assertFalse(a.hurt(p.damageSources().playerAttack(p),whole*.4F),"a blow not brought all the way back glances off him");
+              h.assertTrue(a.getHealth()==a.getMaxHealth()&&f.own(p).getInt("SheriffHits")==0&&f.own(p).getBoolean("SheriffRoused"),"it does nothing but rouse him: "+a.getHealth());
+          })
+          .thenWaitUntil(()->h.assertTrue(f.actor(p,"CastSheriff").getMainHandItem().is(BorrascaRegistry.BATON.get())&&p.getAttribute(arm).getModifier(BorrascaSheriffFight.HEAVY)!=null,"roused, he has his baton out, and the reader's arms are heavy"))
+          .thenExecute(()->h.assertTrue(Math.abs(p.getAttributeValue(arm)-BorrascaSheriffFight.ARM_SPEED)<.05,"a blow takes most of a second to bring back: "+p.getAttributeValue(arm)))
+          .thenWaitUntil(()->h.assertTrue(f.actor(p,"CastSheriff").gesture()==BorrascaSheriffFight.BATON_UP&&p.getHealth()==p.getMaxHealth(),"he raises it before anything lands"))
+          .thenWaitUntil(()->h.assertTrue(f.actor(p,"CastSheriff").gesture()==BorrascaSheriffFight.BATON_DOWN&&p.getHealth()<=p.getMaxHealth()-BorrascaSheriffFight.BATON_DAMAGE+.01F,"and it comes down on a reader who stood there: "+p.getHealth()))
+          .thenExecute(()->{h.assertTrue(p.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN),"the baton leaves the reader's legs slow");p.setHealth(p.getMaxHealth());})
+          .thenWaitUntil(()->h.assertTrue(f.actor(p,"CastSheriff").gesture()==BorrascaSheriffFight.BATON_UP,"he raises it again"))
+          .thenExecute(()->{var a=f.actor(p,"CastSheriff");p.teleportTo(f.out,a.getX()+7,a.getY(),a.getZ(),90,0);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("SheriffMissed")&&p.getHealth()==p.getMaxHealth(),"a reader who has stepped out of it is missed"))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("SheriffSwing")==BorrascaSheriffFight.NONE,"and he gets his balance back"))
+          .thenExecute(()->{
+              var a=f.actor(p,"CastSheriff");beside.run();
+              h.assertTrue(hitSheriff(f,p),"a whole blow lands");
+              h.assertTrue(a.gesture()==BorrascaSheriffFight.REEL&&f.own(p).getInt("SheriffHits")==1,"and he reels from it");
+          }).thenIdle(12)
+          .thenExecute(()->{hitSheriff(f,p);h.assertTrue(f.actor(p,"CastSheriff").getMainHandItem().is(BorrascaRegistry.BATON.get())&&!f.own(p).getBoolean("SheriffDisarmed"),"two blows, and the baton is still in his hand");}).thenIdle(12)
+          .thenExecute(()->{
+              var a=f.actor(p,"CastSheriff");hitSheriff(f,p);var own=f.own(p);
+              h.assertTrue(own.getBoolean("SheriffDisarmed")&&a.getMainHandItem().isEmpty(),"the third has it out of his hand");
+              h.assertTrue(own.contains("SheriffBatonAt")&&BorrascaShopBlock.is(f.out.getBlockState(BlockPos.of(own.getLong("SheriffBatonAt"))),BorrascaShopBlock.Kind.BATON),"and it lies where it fell");
+              h.assertTrue(BorrascaShopTexts.look(BorrascaShopBlock.Kind.BATON,0,true)!=null,"a hand on it says what it is");
+              beside.run();p.setHealth(p.getMaxHealth());
+          })
+          .thenWaitUntil(()->{
+              int g=f.actor(p,"CastSheriff").gesture();
+              if(g>=BorrascaSheriffFight.LEFT_BACK&&g<=BorrascaSheriffFight.RIGHT_OUT&&(order.isEmpty()||order.get(order.size()-1)!=g))order.add(g);
+              h.assertTrue(order.size()>=4,"he throws the left and then the right: "+order);
+          })
+          .thenExecute(()->{
+              h.assertTrue(order.subList(0,4).equals(List.of(BorrascaSheriffFight.LEFT_BACK,BorrascaSheriffFight.LEFT_OUT,BorrascaSheriffFight.RIGHT_BACK,BorrascaSheriffFight.RIGHT_OUT)),"each fist drawn back before it is thrown, the left before the right: "+order);
+              h.assertTrue(f.actor(p,"CastSheriff").getMainHandItem().isEmpty(),"with nothing in his hands");
+              h.assertTrue(p.getHealth()<=p.getMaxHealth()-BorrascaSheriffFight.FIST_DAMAGE+.01F,"a fist lands on a reader who stood there: "+p.getHealth());
+              p.setHealth(p.getMaxHealth());
+          }).thenIdle(12)
+          .thenExecute(()->{
+              var a=f.actor(p,"CastSheriff");hitSheriff(f,p);var own=f.own(p);
+              h.assertTrue(own.getBoolean("SheriffDown")&&a.gesture()==BorrascaStory.KNELT,"beaten, he goes down as he did: health "+a.getHealth());
+              h.assertTrue(p.getAttribute(arm).getModifier(BorrascaSheriffFight.HEAVY)==null,"and the reader's arms are their own again");
+              var lay=BlockPos.of(own.getLong("SheriffBatonAt"));BorrascaSheriffFight.rest(p,own,true);
+              h.assertTrue(f.out.getBlockState(lay).isAir()&&!own.contains("SheriffDisarmed")&&!own.contains("SheriffBatonAt"),"on another visit he has his baton again, and it is not on the ground");
+              f.close();
+          }).thenSucceed();
+    }
     @AfterBatch(batch="borrasca_town_children") public static void townChildrenDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=2600)
     public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){

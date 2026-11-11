@@ -1619,6 +1619,36 @@
     "facing=west,kind=bench_mid,stage=1": {
       "model": "the_oldest_house:block/borrasca_shop/bench_mid_0",
       "y": 270
+    },
+    "facing=north,kind=baton,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0"
+    },
+    "facing=north,kind=baton,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0"
+    },
+    "facing=east,kind=baton,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0",
+      "y": 90
+    },
+    "facing=east,kind=baton,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0",
+      "y": 90
+    },
+    "facing=south,kind=baton,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0",
+      "y": 180
+    },
+    "facing=south,kind=baton,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0",
+      "y": 180
+    },
+    "facing=west,kind=baton,stage=0": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0",
+      "y": 270
+    },
+    "facing=west,kind=baton,stage=1": {
+      "model": "the_oldest_house:block/borrasca_shop/baton_0",
+      "y": 270
     }
   }
 }

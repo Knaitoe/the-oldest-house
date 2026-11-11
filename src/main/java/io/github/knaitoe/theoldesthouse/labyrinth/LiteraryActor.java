@@ -164,6 +164,8 @@ public final class LiteraryActor extends PathfinderMob {
                 // 0.4.427: a grown reader's blows land (three to eight each) but never kill outright; once he is down, the next one does.
                 if(amount<=0)return false;
                 if(fight.getBoolean("SheriffDown")){if(!BorrascaStory.sheriffFinished(p,this,fight))return false;super.hurt(source,Math.min(1,getHealth()-1));return true;}
+                // 0.4.457: a blow not brought all the way back glances off him: it rouses him and does nothing else.
+                if(!BorrascaSheriffFight.full(p,amount)){BorrascaSheriffFight.glanced(p,this,fight);return false;}
                 float dealt=Math.min(Math.min(8,Math.max(3,amount)),getHealth()-1);
                 boolean hit=dealt>0&&super.hurt(source,dealt);
                 if(hit)BorrascaStory.sheriffStruck(p,this,fight);

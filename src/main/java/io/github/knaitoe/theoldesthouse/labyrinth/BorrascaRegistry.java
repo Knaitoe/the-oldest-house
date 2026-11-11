@@ -55,6 +55,8 @@ public final class BorrascaRegistry {
     /** 0.4.445: the comic the friend stands in the reader's window of the fort (BorrascaComic). The reader's own, like her compass. */
     public static final DeferredItem<BorrascaKeepsakeItem> COMIC=ITEMS.register("borrasca_comic",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Comic"));
     public static final DeferredItem<Item> FLASHLIGHT=ITEMS.registerSimpleItem("borrasca_flashlight",new Item.Properties().stacksTo(1));
+    /** 0.4.457: the Sheriff's baton, in his hand while he has it (BorrascaSheriffFight). */
+    public static final DeferredItem<Item> BATON=ITEMS.registerSimpleItem("borrasca_baton",new Item.Properties().stacksTo(1));
     /** 0.4.425: the money a reader carries in the town, and what the shops sell (BorrascaPeople, BorrascaFood). */
     public static final DeferredItem<BorrascaPurseItem> COINS=ITEMS.register("borrasca_coins",()->new BorrascaPurseItem(false)),WALLET=ITEMS.register("borrasca_wallet",()->new BorrascaPurseItem(true));
     public static final DeferredItem<BorrascaFood> PIE=food("pie",BorrascaFood.Kind.PIE),COFFEE=food("coffee",BorrascaFood.Kind.COFFEE),MILK_COFFEE=food("milk_coffee",BorrascaFood.Kind.MILK_COFFEE),SODA=food("soda",BorrascaFood.Kind.SODA),

@@ -1583,5 +1583,6 @@
   "block.the_oldest_house.borrasca_ward": "Painted Block Wall",
   "block.the_oldest_house.bar_slate": "League Slate",
   "block.the_oldest_house.bar_booth": "Booth Joinery",
-  "block.the_oldest_house.borrasca_home": "Household Thing"
+  "block.the_oldest_house.borrasca_home": "Household Thing",
+  "item.the_oldest_house.borrasca_baton": "County baton"
 }
