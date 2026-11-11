@@ -1,0 +1,1998 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "chrome": "the_oldest_house:block/calder_car/chrome",
+    "glass": "the_oldest_house:block/calder_car/glass",
+    "inside": "the_oldest_house:block/calder_car/inside",
+    "muscle": "the_oldest_house:block/calder_car/muscle",
+    "muscle_side": "the_oldest_house:block/calder_car/muscle_side",
+    "muscle_top": "the_oldest_house:block/calder_car/muscle_top",
+    "under": "the_oldest_house:block/calder_car/under",
+    "particle": "the_oldest_house:block/calder_car/muscle"
+  },
+  "elements": [
+    {
+      "from": [
+        -10,
+        3.5,
+        -2.5
+      ],
+      "to": [
+        -6,
+        13,
+        8
+      ],
+      "faces": {
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            5.5,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            12,
+            5.5,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            12,
+            0,
+            16,
+            10.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10,
+        3.5,
+        8
+      ],
+      "to": [
+        -6,
+        13,
+        18.5
+      ],
+      "faces": {
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            3,
+            10.5,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            12,
+            0,
+            16,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            12,
+            5.5,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        3.5,
+        -2.5
+      ],
+      "to": [
+        10,
+        13,
+        8
+      ],
+      "faces": {
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            5.5,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            0,
+            16,
+            10.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        3.5,
+        8
+      ],
+      "to": [
+        10,
+        13,
+        18.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            0,
+            16,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            5.5,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        3.5,
+        -2.5
+      ],
+      "to": [
+        26,
+        13,
+        8
+      ],
+      "faces": {
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            5.5,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            0,
+            16,
+            10.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        3.5,
+        8
+      ],
+      "to": [
+        26,
+        13,
+        18.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            0,
+            16,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            5.5,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10,
+        3.5,
+        18.5
+      ],
+      "to": [
+        -6,
+        13,
+        23
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            4,
+            12.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            12,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            10.5,
+            3,
+            15,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            12,
+            10.5,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            12,
+            1,
+            16,
+            5.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        3.5,
+        18.5
+      ],
+      "to": [
+        -2,
+        13,
+        23
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            12,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            4,
+            12.5
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            1,
+            3,
+            5.5,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            10.5,
+            4,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            1,
+            4,
+            5.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10,
+        3.5,
+        -7
+      ],
+      "to": [
+        -6,
+        13,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            4,
+            12.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            12,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            1,
+            3,
+            5.5,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            12,
+            1,
+            16,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            12,
+            10.5,
+            16,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        3.5,
+        -7
+      ],
+      "to": [
+        -2,
+        13,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            12,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            4,
+            12.5
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            10.5,
+            3,
+            15,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            1,
+            4,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            10.5,
+            4,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -2,
+        11.5,
+        18.5
+      ],
+      "to": [
+        10,
+        13,
+        23
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            12,
+            4.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            4,
+            3,
+            16,
+            4.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            10.5,
+            3,
+            15,
+            4.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            4,
+            10.5,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            4,
+            1,
+            16,
+            5.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        11.5,
+        18.5
+      ],
+      "to": [
+        12,
+        13,
+        23
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            14,
+            3,
+            16,
+            4.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            2,
+            4.5
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            1,
+            3,
+            5.5,
+            4.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            10.5,
+            2,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            1,
+            2,
+            5.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -2,
+        11.5,
+        -7
+      ],
+      "to": [
+        10,
+        13,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            12,
+            4.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            4,
+            3,
+            16,
+            4.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            1,
+            3,
+            5.5,
+            4.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            4,
+            1,
+            16,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            4,
+            10.5,
+            16,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        11.5,
+        -7
+      ],
+      "to": [
+        12,
+        13,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            14,
+            3,
+            16,
+            4.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            2,
+            4.5
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            10.5,
+            3,
+            15,
+            4.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            1,
+            2,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            0,
+            10.5,
+            2,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        3.5,
+        18.5
+      ],
+      "to": [
+        26,
+        13,
+        23
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            14,
+            12.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            2,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            10.5,
+            3,
+            15,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            2,
+            10.5,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            2,
+            1,
+            16,
+            5.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        3.5,
+        -7
+      ],
+      "to": [
+        26,
+        13,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_side",
+          "uv": [
+            0,
+            3,
+            14,
+            12.5
+          ]
+        },
+        "south": {
+          "texture": "#muscle_side",
+          "uv": [
+            2,
+            3,
+            16,
+            12.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            1,
+            3,
+            5.5,
+            12.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            2,
+            1,
+            16,
+            5.5
+          ]
+        },
+        "down": {
+          "texture": "#under",
+          "uv": [
+            2,
+            10.5,
+            16,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -11.5,
+        4,
+        -7.5
+      ],
+      "to": [
+        -10,
+        6.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome",
+          "uv": [
+            4,
+            9.5,
+            5.5,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#chrome",
+          "uv": [
+            10.5,
+            9.5,
+            12,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#chrome",
+          "uv": [
+            0,
+            9.5,
+            15.5,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#chrome",
+          "uv": [
+            0.5,
+            9.5,
+            16,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#chrome",
+          "uv": [
+            10.5,
+            0.5,
+            12,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#chrome",
+          "uv": [
+            10.5,
+            0,
+            12,
+            15.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -11.5,
+        4,
+        8
+      ],
+      "to": [
+        -10,
+        6.5,
+        23.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#chrome",
+          "uv": [
+            4,
+            9.5,
+            5.5,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#chrome",
+          "uv": [
+            10.5,
+            9.5,
+            12,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#chrome",
+          "uv": [
+            0.5,
+            9.5,
+            16,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#chrome",
+          "uv": [
+            0,
+            9.5,
+            15.5,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#chrome",
+          "uv": [
+            10.5,
+            0,
+            12,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#chrome",
+          "uv": [
+            10.5,
+            0.5,
+            12,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        13,
+        -6
+      ],
+      "to": [
+        26,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inside",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            2,
+            0,
+            16,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        13,
+        8
+      ],
+      "to": [
+        26,
+        16,
+        22
+      ],
+      "faces": {
+        "south": {
+          "texture": "#inside",
+          "uv": [
+            0,
+            0,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            14,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        16,
+        -6
+      ],
+      "to": [
+        26,
+        17.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inside",
+          "uv": [
+            0,
+            14.5,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            2,
+            14.5,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        16,
+        8
+      ],
+      "to": [
+        26,
+        17.5,
+        22
+      ],
+      "faces": {
+        "south": {
+          "texture": "#inside",
+          "uv": [
+            0,
+            14.5,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            14.5,
+            14,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            0,
+            16,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        17.5,
+        -6
+      ],
+      "to": [
+        26,
+        20.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#inside",
+          "uv": [
+            0,
+            11.5,
+            12,
+            14.5
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            2,
+            11.5,
+            16,
+            14.5
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            4,
+            2,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        17.5,
+        8
+      ],
+      "to": [
+        26,
+        20.5,
+        22
+      ],
+      "faces": {
+        "south": {
+          "texture": "#inside",
+          "uv": [
+            4,
+            11.5,
+            16,
+            14.5
+          ]
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            0,
+            11.5,
+            14,
+            14.5
+          ]
+        },
+        "up": {
+          "texture": "#glass",
+          "uv": [
+            4,
+            0,
+            16,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9.8,
+        13,
+        21.6
+      ],
+      "to": [
+        10,
+        16,
+        22.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            0.2,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            15.8,
+            0,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            13.6,
+            0,
+            14.4,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9.8,
+        16,
+        21.6
+      ],
+      "to": [
+        10,
+        17.55,
+        22.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            14.45,
+            0.2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            15.8,
+            14.45,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            13.6,
+            14.45,
+            14.4,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            15.8,
+            13.6,
+            16,
+            14.4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        13,
+        21.6
+      ],
+      "to": [
+        11.8,
+        16,
+        22.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            14.2,
+            0,
+            16,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            1.8,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            1.6,
+            0,
+            2.4,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        16,
+        21.6
+      ],
+      "to": [
+        11.8,
+        17.55,
+        22.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            14.2,
+            14.45,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            14.45,
+            1.8,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            1.6,
+            14.45,
+            2.4,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            13.6,
+            1.8,
+            14.4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9.8,
+        13,
+        -6.4
+      ],
+      "to": [
+        10,
+        16,
+        -5.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            0.2,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            15.8,
+            0,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            1.6,
+            0,
+            2.4,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9.8,
+        16,
+        -6.4
+      ],
+      "to": [
+        10,
+        17.55,
+        -5.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            14.45,
+            0.2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            15.8,
+            14.45,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            1.6,
+            14.45,
+            2.4,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            15.8,
+            1.6,
+            16,
+            2.4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        13,
+        -6.4
+      ],
+      "to": [
+        11.8,
+        16,
+        -5.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            14.2,
+            0,
+            16,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            1.8,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            13.6,
+            0,
+            14.4,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        16,
+        -6.4
+      ],
+      "to": [
+        11.8,
+        17.55,
+        -5.6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            14.2,
+            14.45,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            14.45,
+            1.8,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            13.6,
+            14.45,
+            14.4,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            1.6,
+            1.8,
+            2.4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13.5,
+        20.5,
+        -6.5
+      ],
+      "to": [
+        26,
+        22.0,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            10.0,
+            12.5,
+            11.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle_top",
+          "uv": [
+            1.5,
+            10.0,
+            16,
+            11.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            3.5,
+            1.5,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#inside",
+          "uv": [
+            3.5,
+            0,
+            16,
+            14.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13.5,
+        20.5,
+        8
+      ],
+      "to": [
+        26,
+        22.0,
+        22.5
+      ],
+      "faces": {
+        "south": {
+          "texture": "#muscle_top",
+          "uv": [
+            3.5,
+            10.0,
+            16,
+            11.5
+          ]
+        },
+        "west": {
+          "texture": "#muscle_top",
+          "uv": [
+            0,
+            10.0,
+            14.5,
+            11.5
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            3.5,
+            0,
+            16,
+            14.5
+          ]
+        },
+        "down": {
+          "texture": "#inside",
+          "uv": [
+            3.5,
+            1.5,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        13,
+        -5
+      ],
+      "to": [
+        10,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            8,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            13,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            3,
+            0,
+            16,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            8,
+            3,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        13,
+        8
+      ],
+      "to": [
+        10,
+        16,
+        21
+      ],
+      "faces": {
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            8,
+            0,
+            16,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            3,
+            0,
+            16,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            13,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#muscle_top",
+          "uv": [
+            8,
+            0,
+            16,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10,
+        15,
+        -5
+      ],
+      "to": [
+        -7,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            1,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            13,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            3,
+            0,
+            16,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            12,
+            3,
+            15,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#muscle",
+          "uv": [
+            12,
+            0,
+            15,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10,
+        15,
+        8
+      ],
+      "to": [
+        -7,
+        16,
+        21
+      ],
+      "faces": {
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            12,
+            0,
+            15,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            3,
+            0,
+            16,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            0,
+            0,
+            13,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            12,
+            0,
+            15,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#muscle",
+          "uv": [
+            12,
+            3,
+            15,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -9,
+        13,
+        17
+      ],
+      "to": [
+        -8,
+        15,
+        18.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            2,
+            1,
+            3,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            13,
+            1,
+            14,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            5.5,
+            1,
+            7,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            9,
+            1,
+            10.5,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            13,
+            9,
+            14,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#muscle",
+          "uv": [
+            13,
+            5.5,
+            14,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -9,
+        13,
+        -2.5
+      ],
+      "to": [
+        -8,
+        15,
+        -1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#muscle",
+          "uv": [
+            2,
+            1,
+            3,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#muscle",
+          "uv": [
+            13,
+            1,
+            14,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#muscle",
+          "uv": [
+            9,
+            1,
+            10.5,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#muscle",
+          "uv": [
+            5.5,
+            1,
+            7,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#muscle",
+          "uv": [
+            13,
+            5.5,
+            14,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#muscle",
+          "uv": [
+            13,
+            9,
+            14,
+            10.5
+          ]
+        }
+      }
+    }
+  ]
+}

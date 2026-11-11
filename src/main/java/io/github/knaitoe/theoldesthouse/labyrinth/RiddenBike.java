@@ -376,6 +376,15 @@ public abstract class RiddenBike extends Entity {
         park(p,true);came(p,side,why);
     }
 
+    /**
+     * 0.4.484: ridden into something that is not the town's own blocks and has no body to be ridden into (a car). It is as riding
+     * into a wall: faster than CRASH, everyone on it comes off and it lies in the road. True if they came off.
+     */
+    public boolean struck(){
+        if(done||speed<=CRASH||!(getFirstPassenger() instanceof ServerPlayer p))return false;
+        off(p,lean>=0?1:-1,Off.HEAD_ON);return true;
+    }
+
     /** Only the one pedalling takes the bike with them when they get off: a second rider stepping down leaves it going. */
     @Override protected void removePassenger(Entity e){
         boolean pedalling=getFirstPassenger()==e;super.removePassenger(e);
