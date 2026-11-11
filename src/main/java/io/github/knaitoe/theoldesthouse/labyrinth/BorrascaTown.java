@@ -32,7 +32,6 @@ final class BorrascaTown {
     /** 0.4.277: oak leaves, for the Triple Tree's crowns and the hedgerow along the back of the town. */
     private static BlockState leaves(){return Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction d){NovelRooms.furniture(l,b.offset(x,y,z),k,d);}
-    private static void sign(ServerLevel l,BlockPos b,int x,int y,int z,Direction d,String... lines){NovelRooms.sign(l,b.offset(x,y,z),d,lines);}
     private static void door(ServerLevel l,BlockPos b,int x,int y,int z,Direction d,Block block){NovelRooms.door(l,b.offset(x,y,z),d,block,false);}
     private static void prop(ServerLevel l,BlockPos b,int x,int y,int z,LiteraryPropBlock.Kind k,Direction d,int stage){set(l,b,x,y,z,LiteraryRegistry.PROP.get().defaultBlockState().setValue(LiteraryPropBlock.KIND,k).setValue(LiteraryPropBlock.FACING,d).setValue(LiteraryPropBlock.STAGE,stage));}
     private static void road(ServerLevel l,BlockPos b,int x,int y,int z,RoadhouseBlock.Kind k,Direction d){set(l,b,x,y,z,RoadhouseBlock.of(k,d));}
@@ -73,13 +72,12 @@ final class BorrascaTown {
         box(l,b,-6,0,-4,-6,1,-4,Blocks.BOOKSHELF);
         fitAt(l,b,BorrascaRooms.TRAIL_MAP,BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);furniture(l,b,6,0,-7,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.WEST);
         set(l,b,6,0,-1,Blocks.BARREL);set(l,b,6,0,-11,Blocks.POTTED_FERN);set(l,b,-6,0,-11,Blocks.POTTED_FERN);
-        sign(l,b,6,1,-1,Direction.WEST,"LOST & FOUND","Ask at the","Sheriff's office","");
-        // Out front: the trailhead board.
-        for(int x:new int[]{-6,-3})box(l,b,x,0,-16,x,2,-16,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));box(l,b,-5,1,-16,-4,2,-16,Blocks.DARK_OAK_PLANKS);box(l,b,-6,3,-16,-3,3,-16,slab(Blocks.DARK_OAK_SLAB,SlabType.BOTTOM));
-        sign(l,b,-5,2,-15,Direction.SOUTH,"OZARK PINE TRAIL","Triple Tree  1","Marker Two  2","");
-        sign(l,b,-4,2,-15,Direction.SOUTH,"Public walk","ends at","Marker Two","");
-        sign(l,b,-5,1,-15,Direction.SOUTH,"Stay on the","marked trail","","");
-        sign(l,b,-4,1,-15,Direction.SOUTH,"Return","before dark","","County Trails");
+        // 0.4.449: a card in marker over the barrel, on the wall between the window and the corner post.
+        BorrascaSigns.span(l,b.offset(6,1,-1),BorrascaSigns.Sign.LOST,Direction.WEST);
+        // Out front: the trailhead board. 0.4.449: the county's own routed board, four across and two high between its posts (it was
+        // four of the game's wooden signs on a board two across); the frame is two wider to the west to carry it.
+        for(int x:new int[]{-8,-3})box(l,b,x,0,-16,x,2,-16,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));box(l,b,-7,1,-16,-4,2,-16,Blocks.DARK_OAK_PLANKS);box(l,b,-8,3,-16,-3,3,-16,slab(Blocks.DARK_OAK_SLAB,SlabType.BOTTOM));
+        BorrascaSigns.span(l,b.offset(-7,1,-15),BorrascaSigns.Sign.TRAIL,Direction.SOUTH);
         BorrascaRooms.join(l,b,-7,1,-12,7,2,0);
     }
 
@@ -93,8 +91,8 @@ final class BorrascaTown {
         // The false front stands two above the parapet, stepped down at its ends.
         box(l,b,-16,6,-28,-16,7,-18,Blocks.BIRCH_PLANKS);box(l,b,-16,6,-30,-16,6,-29,Blocks.BIRCH_PLANKS);box(l,b,-16,6,-17,-16,6,-16,Blocks.BIRCH_PLANKS);
         box(l,b,-16,8,-28,-16,8,-18,slab(Blocks.DARK_OAK_SLAB,SlabType.BOTTOM));box(l,b,-16,7,-30,-16,7,-29,slab(Blocks.DARK_OAK_SLAB,SlabType.BOTTOM));box(l,b,-16,7,-17,-16,7,-16,slab(Blocks.DARK_OAK_SLAB,SlabType.BOTTOM));
-        sign(l,b,-15,6,-23,Direction.EAST,"DRISKING","GENERAL","STORE","Est. 1961");
-        sign(l,b,-15,6,-26,Direction.EAST,"FEED","HARDWARE","","");sign(l,b,-15,6,-20,Direction.EAST,"COLD","DRINKS","","");
+        // 0.4.449: the store's name painted across the false front, nine boards long and two high.
+        BorrascaSigns.span(l,b.offset(-15,6,-27),BorrascaSigns.Sign.STORE,Direction.EAST);
         door(l,b,-16,0,-23,Direction.EAST,Blocks.SPRUCE_DOOR);
         for(int z:new int[]{-28,-27,-26,-19,-18})box(l,b,-16,1,z,-16,2,z,Blocks.GLASS_PANE);
         for(int z:new int[]{-26,-23,-20})box(l,b,-28,1,z,-28,2,z,Blocks.GLASS_PANE);
@@ -105,6 +103,7 @@ final class BorrascaTown {
         for(int z:new int[]{-29,-17})box(l,b,-13,0,z,-13,3,z,Blocks.OAK_FENCE);
         box(l,b,-15,4,-29,-13,4,-17,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
         for(var at:BorrascaRooms.BOARD)fitAt(l,b,at,BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
+        BorrascaSigns.span(l,b.offset(-15,2,-25),BorrascaSigns.Sign.COLD,Direction.EAST); // 0.4.449: a tin sign on the porch wall, north of the door
         set(l,b,-14,0,-29,Blocks.BARREL);set(l,b,-15,0,-27,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));set(l,b,-15,0,-26,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));
         // Inside: counter and till by the door, stock behind it, two aisles, the cooler along the back.
         for(int z=-27;z<=-25;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-26,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
@@ -131,7 +130,7 @@ final class BorrascaTown {
         door(l,b,18,0,-23,Direction.WEST,Blocks.SPRUCE_DOOR);set(l,b,17,-1,-23,Blocks.STONE_BRICKS);
         for(int z:new int[]{-27,-26,-20,-19})box(l,b,18,1,z,18,2,z,Blocks.GLASS_PANE);
         for(int z:new int[]{-26,-20})box(l,b,30,1,z,30,2,z,Blocks.GLASS_PANE);
-        sign(l,b,17,3,-23,Direction.WEST,"COUNTY","SHERIFF","Drisking","Office");
+        BorrascaSigns.span(l,b.offset(17,3,-25),BorrascaSigns.Sign.SHERIFF,Direction.WEST); // 0.4.449: gold on green over the door
         // A flagpole by the step.
         box(l,b,16,0,-26,16,6,-26,Blocks.IRON_BARS);set(l,b,16,7,-26,Blocks.LIGHTNING_ROD);
         // The public side: a bench and a counter with a swing gate.
@@ -157,8 +156,9 @@ final class BorrascaTown {
     /** The gravel lot between them, with the county pickup and Prescott's truck nosed in. */
     private static void lot(ServerLevel l,BlockPos b){
         box(l,b,5,-1,-27,16,-1,-14,Blocks.GRAVEL);for(int z:new int[]{-28,-19,-15})set(l,b,16,0,z,log(Blocks.OAK_LOG,Direction.Axis.Y));
-        pickup(l,b,8,0,-19,2);sign(l,b,9,0,-13,Direction.SOUTH,"COUNTY 17","Sheriff's","office","");
-        pickup(l,b,12,0,-26,3);sign(l,b,13,0,-20,Direction.SOUTH,"PRESCOTT ORE","SERVICES","D-417","555-0190");
+        // 0.4.449: whose each truck is, lettered across its tailgate (a wooden sign stood behind each).
+        pickup(l,b,8,0,-19,2);BorrascaSigns.span(l,b.offset(8,0,-13),BorrascaSigns.Sign.COUNTY,Direction.SOUTH);
+        pickup(l,b,12,0,-26,3);BorrascaSigns.span(l,b.offset(12,0,-20),BorrascaSigns.Sign.PRESCOTT,Direction.SOUTH);
     }
 
     /**
@@ -202,7 +202,7 @@ final class BorrascaTown {
         box(l,b,3,-1,-88,3,-1,-86,Blocks.SPRUCE_PLANKS);box(l,b,3,0,-89,3,7,-89,log(Blocks.SPRUCE_LOG,Direction.Axis.Y));
         for(int y=0;y<=6;y++)set(l,b,3,y,-88,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH));
         set(l,b,3,6,-88,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.SOUTH).setValue(TrapDoorBlock.OPEN,true));box(l,b,3,7,-88,3,8,-88,AIR);
-        sign(l,b,0,7,-88,Direction.SOUTH,"TRIPLE TREE","FORT","NO GROWN-UPS","knock first");
+        BorrascaSigns.span(l,b.offset(-2,7,-88),BorrascaSigns.Sign.FORT,Direction.SOUTH); // 0.4.449: three scrap boards the children painted
         // Inside.
         furniture(l,b,-3,6,-95,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);set(l,b,-3,6,-99,Blocks.BARREL);set(l,b,4,6,-91,Blocks.BARREL);set(l,b,-4,6,-90,Blocks.BOOKSHELF);
         box(l,b,-2,6,-97,0,6,-93,Blocks.RED_CARPET);set(l,b,-4,6,-99,Blocks.CANDLE.defaultBlockState());
@@ -238,7 +238,7 @@ final class BorrascaTown {
         NovelRooms.door(l,b.offset(BorrascaRooms.FACTORY_DOOR),Direction.SOUTH,Blocks.IRON_DOOR,false);door(l,b,-14,12,-179,Direction.EAST,Blocks.SPRUCE_DOOR);box(l,b,-17,12,-204,-17,13,-204,AIR);
         set(l,b,-17,11,-168,Blocks.SMOOTH_STONE);set(l,b,-13,11,-179,Blocks.SMOOTH_STONE);
         set(l,b,-15,13,-168,Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.WALL).setValue(LeverBlock.FACING,Direction.SOUTH));
-        sign(l,b,-16,14,-168,Direction.SOUTH,"RIDGE DEPOT","Office","Ring for","service");
+        BorrascaSigns.span(l,b.offset(-18,14,-168),BorrascaSigns.Sign.DEPOT,Direction.SOUTH); // 0.4.449: an enamel plate over the door, under the hood
         for(int x=-24;x<=-22;x++)box(l,b,x,13,-169,x,14,-169,Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);
         for(int z:new int[]{-173,-174,-175,-186,-187,-188})box(l,b,-14,13,z,-14,14,z,Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);
         for(int z:new int[]{-185,-186,-187,-191,-192,-193})box(l,b,-29,13,z,-29,14,z,Blocks.LIGHT_GRAY_STAINED_GLASS_PANE);

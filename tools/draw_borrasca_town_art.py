@@ -1198,8 +1198,44 @@ def blood_pool():
     return im
 
 
+def ward(course):
+    """0.4.449 (owner, of the corridor under the depot: "Custom signs, wall texture"): painted block wall, one of a wall's three
+    courses. 0 is the foot: green, scuffed dark along the floor. 1 is green to a line and cream above it. 2 is cream, stained where
+    water has come down from the ceiling. The blocks under the paint are two courses to the tile, their upright joints staggered."""
+    green, cream = '#7c9584', '#d6d0b9'
+    im = new('#000000')
+    rnd = random.Random(44900 + course)
+    px = im.load()
+    for y in range(16):
+        for x in range(16):
+            base = green if course == 0 or course == 1 and y >= 11 else cream
+            k = rnd.randint(-3, 3)
+            if y in (7, 15) or y < 7 and x == 15 or 7 < y < 15 and x == 7:
+                k -= 12
+            px[x, y] = shade(base, k)
+    if course == 1:
+        for x in range(16):
+            px[x, 10] = shade('#4f6257', rnd.randint(-3, 3))
+    if course == 0:
+        for y in (13, 14, 15):
+            for x in range(16):
+                px[x, y] = shade('#56685c', rnd.randint(-6, 4))
+        for _ in range(7):
+            px[rnd.randrange(16), rnd.randint(9, 12)] = shade('#62776a', rnd.randint(-5, 5))
+    if course == 2:
+        for x0, length in ((4, 9), (11, 5)):
+            for y in range(length):
+                if rnd.random() < .8:
+                    px[x0 + (y // 4) % 2, y] = shade('#b9ad88', rnd.randint(-5, 5))
+        for x in range(16):
+            if rnd.random() < .5:
+                px[x, 0] = shade('#bdb69e', rnd.randint(-5, 5))
+    return im
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
+    out.update({f'block/borrasca_ward_{c}.png': ward(c) for c in range(3)})
     out['entity/borrasca_blood_pool.png'] = blood_pool()
     faces = {
         'wood': wood(), 'chrome': chrome(), 'glass': glass(), 'enamel': enamel(), 'black': black(),
@@ -1565,7 +1601,8 @@ KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'pa
          'comic']
 STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
-NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin'}
+NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin',
+         'borrasca_ward': 'Painted Block Wall'}
 
 
 def files():
@@ -1573,6 +1610,13 @@ def files():
     for name in ('checker', 'lino', 'tin'):
         out[f'models/block/borrasca_{name}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + f'block/borrasca_{name}'}}
         out[f'blockstates/borrasca_{name}.json'] = {'variants': {'': {'model': NS + f'block/borrasca_{name}'}}}
+    # 0.4.449: the corridor's painted wall: painted on the side it faces, the game's own bare concrete on the rest.
+    bare = 'minecraft:block/light_gray_concrete'
+    for c in range(3):
+        out[f'models/block/borrasca_ward_{c}.json'] = {'parent': 'minecraft:block/cube', 'textures': {
+            'north': NS + f'block/borrasca_ward_{c}', 'south': bare, 'east': bare, 'west': bare, 'up': bare, 'down': bare, 'particle': bare}}
+    out['blockstates/borrasca_ward.json'] = {'variants': {
+        f'course={c},facing={facing}': {'model': NS + f'block/borrasca_ward_{c}', **({'y': y} if y else {})} for c in range(3) for facing, y in FACING_Y.items()}}
     for key, obj in shop_models().items():
         out[f'models/block/borrasca_shop/{key}.json'] = obj
     variants = {}

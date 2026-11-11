@@ -1,0 +1,5 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/open_drug","particle":"the_oldest_house:block/borrasca_sign/open_drug","g":"the_oldest_house:block/borrasca_sign/open_drug_glow"},
+ "elements":[
+  {"from":[-7,2,0.5],"to":[23,14,1.5],"faces":{"north":{"texture":"#a","uv":[0.5,2.0,15.5,14.0]},"south":{"texture":"#a","uv":[15.5,2.0,0.5,14.0]},"east":{"texture":"#a","uv":[0.5,2.0,1.0,14.0]},"west":{"texture":"#a","uv":[15.0,2.0,15.5,14.0]},"up":{"texture":"#a","uv":[15.5,2.0,0.5,3.0]},"down":{"texture":"#a","uv":[15.5,13.0,0.5,14.0]}}},
+  {"from":[-7,2,0.25],"to":[23,14,0.25],"faces":{"north":{"texture":"#g","uv":[0.5,2.0,15.5,14.0]}},"shade":false,"neoforge_data":{"block_light":15,"sky_light":15}}
+ ]}

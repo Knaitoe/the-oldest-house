@@ -168,11 +168,16 @@ public final class BorrascaStory {
     // ------------------------------------------------------------------ hands
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         if(own.getInt("Visit")==4&&BorrascaFeeding.click(p,b,BorrascaRooms.authored(rel),own))return true; // 0.4.439: the band, and what is on the pile, where they were authored
+        // 0.4.449: a hand on one of the town's painted signs reads it in full, the lines too small to letter included.
+        var board=p.serverLevel().getBlockState(b.offset(rel));
+        if(BorrascaSignBlock.is(board)){cue(p,BorrascaSignBlock.sign(board).look());return true;}
         // 0.4.422: the shops along the street past the chapel are placed in the world (that street has no authored coordinates).
         if(BorrascaShops.click(p,b,rel,own))return true;
         rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
         if(BorrascaComic.click(p,b,rel,own))return true; // 0.4.445: the comic in the fort's window
+        // 0.4.449: the yard's water tank, down its hatch. The town's history says its water ran red for two years.
+        if(BorrascaRooms.tankSilt(rel)){cue(p,"Dry. Red silt a hand deep on the boards, and a red line round the staves where the water stood.");return true;}
         // 0.4.444 (owner: "Keep prison cell door shut. Allow player to speak to npc through bars."): a hand on the cell's bars or its
         // door speaks to whoever is in it.
         if(BorrascaPeople.cell(rel)){
