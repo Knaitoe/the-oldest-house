@@ -839,6 +839,8 @@ jobs:
         # The earlier 827-case corpus reached 793 passes at the former one-hour wall limit; this candidate declares 835.
         # Preserve every native per-case tick deadline; allow the complete corpus and clean shutdown.
         # Run 1493: 819 batches ran in 75 minutes and about 90 never started, so the limit is 105.
+        # Run 1511: the step's limit was 105 but the command below still stopped itself at 75; 1,153 cases had passed, none had
+        # failed and 107 had not started. The command's own limit is 100, inside the step's.
         timeout-minutes: 105
         env:
           JAVA_TOOL_OPTIONS: -Xmx6g
@@ -872,7 +874,7 @@ jobs:
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 75m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-gametest.log
+          timeout --signal=QUIT --kill-after=20s 100m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-gametest.log
           python3 - <<'PY'
           import re
           from pathlib import Path
