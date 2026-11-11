@@ -1,0 +1,78 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cb": "the_oldest_house:block/calder_town/cardboard",
+    "particle": "the_oldest_house:block/calder_town/cardboard"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        8,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cb",
+          "uv": [
+            3,
+            2,
+            13,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#cb",
+          "uv": [
+            3,
+            2,
+            13,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#cb",
+          "uv": [
+            0,
+            2,
+            8,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#cb",
+          "uv": [
+            0,
+            2,
+            8,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#cb",
+          "uv": [
+            3,
+            0,
+            13,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#cb",
+          "uv": [
+            3,
+            0,
+            13,
+            8
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -7,6 +7,8 @@ import io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.BikeRackBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.BikeRampBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderDigitBlock;
+import io.github.knaitoe.theoldesthouse.labyrinth.CalderTownBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderLitterBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderPlayBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.CalderSignBlock;
@@ -70,7 +72,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -90,6 +92,8 @@ public final class BikeNightVisualProof extends Screen {
         for(var state:BikeNightRegistry.FITTING.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.LITTER.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.SIGN.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.TOWN.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.DIGIT.get().getStateDefinition().getPossibleStates())need(state);
         for(var name:BikeNightRegistry.MATERIAL_NAMES)need(BikeNightRegistry.material(name).defaultBlockState());
         for(var state:BikeNightRegistry.ROAD_LINE.get().getStateDefinition().getPossibleStates())need(state);
         need(BikeNightRegistry.LEAVES.get().defaultBlockState());
@@ -117,9 +121,13 @@ public final class BikeNightVisualProof extends Screen {
             "the spring rider: rocked back as far as it goes, upright, and rocked forward",
             "the small things: fountain still and running; payphone on and off its hook; bench plain and carved",
             "over the bar: a swing hanging still; at its widest arc; kicked as far past it as kicks go; over the top",
-            "the three's bikes, side on and turning; and the gate as Tully leaves it, from inside the park"}[page],8,8,0xffffffff);
+            "the three's bikes, side on and turning; and the gate as Tully leaves it, from inside the park",
+            "the town's things: on walls; fences; pumpkins; dumpsters; crates, drums, tyres; litter",
+            "behind a shop: the door under its bulb, the shutter, paint on the brick, and what has been left out",
+            "Main Street: hardware, bank and clock, theater and marquee; laundromat, video, barber",
+            "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);default->pack(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);default->fronts(g,1);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -425,6 +433,97 @@ public final class BikeNightVisualProof extends Screen {
         }
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.481: the town
+    /** Each of the town's own fittings, in rows, from the south: what is fixed to a wall along the back, and what stands or lies on the ground in front. */
+    private void townThings(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width/23F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.6F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(18));pose.mulPose(Axis.YP.rotationDegrees(-8));pose.translate(-9.5F,0,-4F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var f=Direction.SOUTH;var wall=BikeNightRegistry.material("tanbrick").defaultBlockState();var paving=BikeNightRegistry.material("paving").defaultBlockState();var gravel=BikeNightRegistry.material("gravel").defaultBlockState();
+        for(int x=0;x<=18;x++){for(int y=0;y<=2;y++)at.accept(wall,new int[]{x,y,-1});for(int z=0;z<=8;z++)at.accept(z>=6?gravel:paving,new int[]{x,-1,z});}
+        // {kind, stage, x, y, z}
+        Object[][] things={
+            // Along the wall: a drainpipe, head to foot; a meter, an air conditioner, a caged bulb, a vent; an awning's three parts; the barber's pole; a tyre and a pallet stood against it.
+            {CalderTownBlock.Kind.PIPE,2,0,2,0},{CalderTownBlock.Kind.PIPE,0,0,1,0},{CalderTownBlock.Kind.PIPE,1,0,0,0},
+            {CalderTownBlock.Kind.UNIT,CalderTownBlock.METER,2,1,0},{CalderTownBlock.Kind.UNIT,CalderTownBlock.COOLER,4,1,0},{CalderTownBlock.Kind.UNIT,CalderTownBlock.BULB,6,2,0},{CalderTownBlock.Kind.UNIT,CalderTownBlock.VENT,8,1,0},
+            {CalderTownBlock.Kind.AWNING,0,10,2,0},{CalderTownBlock.Kind.AWNING,1,11,2,0},{CalderTownBlock.Kind.AWNING,2,12,2,0},{CalderTownBlock.Kind.POLE,0,14,1,0},
+            {CalderTownBlock.Kind.TYRES,2,16,0,0},{CalderTownBlock.Kind.CRATE,CalderTownBlock.PALLET_STOOD,18,0,0},
+            // Fences: chain-link whole, cut, and whole again; boards the same. A bleacher's two seats. The four pumpkins.
+            {CalderTownBlock.Kind.CHAINLINK,CalderTownBlock.LOWER,0,0,2},{CalderTownBlock.Kind.CHAINLINK,CalderTownBlock.UPPER,0,1,2},{CalderTownBlock.Kind.CHAINLINK,CalderTownBlock.TORN,1,0,2},{CalderTownBlock.Kind.CHAINLINK,CalderTownBlock.TORN_UPPER,1,1,2},
+            {CalderTownBlock.Kind.CHAINLINK,CalderTownBlock.LOWER,2,0,2},{CalderTownBlock.Kind.CHAINLINK,CalderTownBlock.UPPER,2,1,2},
+            {CalderTownBlock.Kind.BOARDS,CalderTownBlock.LOWER,4,0,2},{CalderTownBlock.Kind.BOARDS,CalderTownBlock.UPPER,4,1,2},{CalderTownBlock.Kind.BOARDS,CalderTownBlock.TORN,5,0,2},{CalderTownBlock.Kind.BOARDS,CalderTownBlock.TORN_UPPER,5,1,2},
+            {CalderTownBlock.Kind.BOARDS,CalderTownBlock.LOWER,6,0,2},{CalderTownBlock.Kind.BOARDS,CalderTownBlock.UPPER,6,1,2},
+            {CalderTownBlock.Kind.BLEACHER,0,8,0,2},{CalderTownBlock.Kind.BLEACHER,0,9,0,2},
+            {CalderTownBlock.Kind.PUMPKIN,0,11,0,2},{CalderTownBlock.Kind.PUMPKIN,1,12,0,2},{CalderTownBlock.Kind.PUMPKIN,2,13,0,2},{CalderTownBlock.Kind.PUMPKIN,3,14,0,2},
+            // A dumpster shut and one with its lid back; bags; a hydrant, a post box, a cart; toilet paper, hanging.
+            {CalderTownBlock.Kind.DUMPSTER,0,1,0,4},{CalderTownBlock.Kind.DUMPSTER,1,0,0,4},{CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.OPEN,4,0,4},{CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.OPEN+1,3,0,4},
+            {CalderTownBlock.Kind.BAGS,0,6,0,4},{CalderTownBlock.Kind.BAGS,1,7,0,4},{CalderTownBlock.Kind.BAGS,2,8,0,4},{CalderTownBlock.Kind.BAGS,3,9,0,4},
+            {CalderTownBlock.Kind.HYDRANT,0,11,0,4},{CalderTownBlock.Kind.MAILBOX,0,12,0,4},{CalderTownBlock.Kind.CART,0,13,0,4},{CalderTownBlock.Kind.TP,0,15,1,4},
+            // A crate, a milk crate, a pallet; boxes; drums; tyres.
+            {CalderTownBlock.Kind.CRATE,0,0,0,6},{CalderTownBlock.Kind.CRATE,CalderTownBlock.MILK_CRATE,1,0,6},{CalderTownBlock.Kind.CRATE,CalderTownBlock.PALLET,2,0,6},
+            {CalderTownBlock.Kind.BOXES,0,4,0,6},{CalderTownBlock.Kind.BOXES,1,5,0,6},{CalderTownBlock.Kind.BOXES,CalderTownBlock.FLAT,6,0,6},{CalderTownBlock.Kind.BOXES,3,7,0,6},
+            {CalderTownBlock.Kind.DRUM,0,9,0,6},{CalderTownBlock.Kind.DRUM,1,10,0,6},{CalderTownBlock.Kind.DRUM,2,11,0,6},{CalderTownBlock.Kind.DRUM,3,12,0,6},
+            {CalderTownBlock.Kind.TYRES,0,14,0,6},{CalderTownBlock.Kind.TYRES,1,15,0,6},{CalderTownBlock.Kind.TYRES,3,16,0,6},
+            // What lies on the ground.
+            {CalderTownBlock.Kind.TRASH,0,0,0,8},{CalderTownBlock.Kind.TRASH,1,2,0,8},{CalderTownBlock.Kind.TRASH,2,4,0,8},{CalderTownBlock.Kind.TRASH,CalderTownBlock.PUDDLE,6,0,8}};
+        for(var one:things)at.accept(CalderTownBlock.of((CalderTownBlock.Kind)one[0],f,(Integer)one[1]),new int[]{(Integer)one[2],(Integer)one[3],(Integer)one[4]});
+        buffers.endBatch();pose.popPose();
+    }
+    /** The back of a shop, put together as the builder puts one: a brick wall with what is fixed to it and painted on it, and what has been left out on the gravel. */
+    private void alley(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width/16F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.74F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(20));pose.mulPose(Axis.YP.rotationDegrees(-14));pose.translate(-6F,0,-2.5F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var f=Direction.SOUTH;var wall=BikeNightRegistry.material("tanbrick").defaultBlockState();var gravel=BikeNightRegistry.material("gravel").defaultBlockState();
+        for(int x=0;x<=11;x++){for(int y=0;y<=3;y++)at.accept(wall,new int[]{x,y,0});for(int z=1;z<=4;z++)at.accept(gravel,new int[]{x,-1,z});}
+        // On the wall, each with its bottom left corner at {column, row}.
+        Object[][] hung={{CalderSigns.Sign.NO_PARKING,0,1},{CalderSigns.Sign.BACK_DOOR,2,0},{CalderSigns.Sign.LOST_CAT,3,1},{CalderSigns.Sign.SHUTTER,5,0},{CalderSigns.Sign.DELIVERIES,5,2},
+            {CalderSigns.Sign.TAG_RULES,8,0},{CalderSigns.Sign.TAG_HERE,8,2},{CalderSigns.Sign.TAG_SKULL,11,2}};
+        for(var one:hung){
+            var sign=(CalderSigns.Sign)one[0];
+            for(int r=0;r<sign.rows;r++)for(int c=0;c<sign.cols;c++){var cell=CalderSigns.cell(sign,new net.minecraft.core.BlockPos((Integer)one[1],(Integer)one[2],1),f,c,r);at.accept(CalderSignBlock.of(sign,r*sign.cols+c,f),new int[]{cell.getX(),cell.getY(),cell.getZ()});}
+        }
+        Object[][] things={{CalderTownBlock.Kind.UNIT,CalderTownBlock.BULB,2,2,1},{CalderTownBlock.Kind.UNIT,CalderTownBlock.METER,1,2,1},{CalderTownBlock.Kind.UNIT,CalderTownBlock.VENT,7,3,1},
+            {CalderTownBlock.Kind.PIPE,2,4,3,1},{CalderTownBlock.Kind.PIPE,0,4,2,1},{CalderTownBlock.Kind.PIPE,0,4,1,1},{CalderTownBlock.Kind.PIPE,1,4,0,1},
+            {CalderTownBlock.Kind.BAGS,1,0,0,2},{CalderTownBlock.Kind.BAGS,0,1,0,3},{CalderTownBlock.Kind.TYRES,1,0,0,4},
+            {CalderTownBlock.Kind.CRATE,0,3,0,3},{CalderTownBlock.Kind.CRATE,CalderTownBlock.MILK_CRATE,4,0,4},{CalderTownBlock.Kind.CRATE,CalderTownBlock.PALLET,6,0,3},{CalderTownBlock.Kind.BOXES,1,7,0,2},
+            {CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.OPEN,10,0,3},{CalderTownBlock.Kind.DUMPSTER,CalderTownBlock.OPEN+1,9,0,3},
+            {CalderTownBlock.Kind.DRUM,0,11,0,2},{CalderTownBlock.Kind.DRUM,3,11,0,4},
+            {CalderTownBlock.Kind.TRASH,0,2,0,4},{CalderTownBlock.Kind.TRASH,1,5,0,4},{CalderTownBlock.Kind.TRASH,2,8,0,4},{CalderTownBlock.Kind.TRASH,CalderTownBlock.PUDDLE,5,0,2}};
+        for(var one:things)at.accept(CalderTownBlock.of((CalderTownBlock.Kind)one[0],f,(Integer)one[1]),new int[]{(Integer)one[2],(Integer)one[3],(Integer)one[4]});
+        buffers.endBatch();pose.popPose();
+    }
+    /** The town's fronts, names and notices flat on, as the street sees them: each sign with its bottom left corner at a block of the page. */
+    private void fronts(GuiGraphics g,int which){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        Object[][] hung=which==0?new Object[][]{
+            {CalderSigns.Sign.HARDWARE_FRONT,0,6},{CalderSigns.Sign.HARDWARE_NAME,0,8},{CalderSigns.Sign.BANK_FRONT,9,6},{CalderSigns.Sign.BANK_NAME,8,8},
+            {CalderSigns.Sign.THEATER_FRONT,17,6},{CalderSigns.Sign.MARQUEE_A,17,8},
+            {CalderSigns.Sign.WASH_FRONT,0,0},{CalderSigns.Sign.WASH_NAME,0,2},{CalderSigns.Sign.VIDEO_FRONT,10,0},{CalderSigns.Sign.VIDEO_NAME,9,2},
+            {CalderSigns.Sign.BARBER_FRONT,19,0},{CalderSigns.Sign.BARBER_NAME,19,2}}
+            :new Object[][]{
+            {CalderSigns.Sign.BIGTOP_FRONT,0,6},{CalderSigns.Sign.BIGTOP_NAME,0,8},{CalderSigns.Sign.FOOD_A,8,6},{CalderSigns.Sign.FOOD_B,11,6},{CalderSigns.Sign.FOOD_DOOR,14,6},{CalderSigns.Sign.FOOD_C,16,6},
+            {CalderSigns.Sign.FOODFAIR_NAME,10,8},{CalderSigns.Sign.SCOREBOARD,20,6},{CalderSigns.Sign.TO_CEMETERY,20,9},{CalderSigns.Sign.DRIVE_THRU,24,9},
+            {CalderSigns.Sign.SCHOOL_FRONT,0,0},{CalderSigns.Sign.TROPHY,6,0},{CalderSigns.Sign.JRHIGH_NAME,0,2},
+            {CalderSigns.Sign.HOUSE_A,9,0},{CalderSigns.Sign.HOUSE_DOOR,11,0},{CalderSigns.Sign.HOUSE_B,12,0},{CalderSigns.Sign.HOUSE_C,14,0},
+            {CalderSigns.Sign.POSTER_A,17,0},{CalderSigns.Sign.POSTER_B,19,0},{CalderSigns.Sign.POSTER_C,21,0},
+            {CalderSigns.Sign.FOR_SALE,24,0},{CalderSigns.Sign.DEAD_END,24,1},{CalderSigns.Sign.BEWARE,24,2},{CalderSigns.Sign.STOP,26,3}};
+        float s=width/29F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F-13.5F*s,24+(height-24)*.95F,300);pose.scale(s,-s,s);
+        var f=Direction.SOUTH;
+        for(var one:hung){
+            var sign=(CalderSigns.Sign)one[0];
+            for(int r=0;r<sign.rows;r++)for(int c=0;c<sign.cols;c++){
+                var cell=CalderSigns.cell(sign,new net.minecraft.core.BlockPos((Integer)one[1],(Integer)one[2],0),f,c,r);
+                pose.pushPose();pose.translate(cell.getX(),cell.getY(),0);mc.getBlockRenderer().renderSingleBlock(CalderSignBlock.of(sign,r*sign.cols+c,f),pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();
+            }
+        }
+        // The bank's clock over its name, at the time a night begins.
+        if(which==0){int[] shows={1,1,CalderDigitBlock.COLON,4,1};for(int i=0;i<shows.length;i++){pose.pushPose();pose.translate(9+i,9,0);mc.getBlockRenderer().renderSingleBlock(CalderDigitBlock.of(shows[i],f),pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}}
+        buffers.endBatch();pose.popPose();
+    }
+
     /** The rider's needle as BikeClient draws it, over a dark road and a bright one: upright; over to one side with the hop half wound; nearly over the other way with the hop wound right up; and the Rattler's card whole, half gone and spent. */
     private void hud(GuiGraphics g){
         g.fill(0,24,width,24+(height-24)/2,0xff1b2026);g.fill(0,24+(height-24)/2,width,height,0xffb9c4cc);
@@ -454,7 +553,7 @@ public final class BikeNightVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-bike-night-"+PAGES[s.page]+".png"));s.drawn(image);}
         if(++s.page<PAGES.length){s.frames=0;return;}
-        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Fifteen native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. The monkey bars, whole, from one side. The seesaw, as it stands and half way over. The merry-go-round, as it was built and a little way round. The climbing dome, from one side and from above. The spring rider, rocked back, upright and rocked forward. The small things: the fountain still and running, the payphone on its hook and off it, the plain bench and the carved one. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
+        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. The monkey bars, whole, from one side. The seesaw, as it stands and half way over. The merry-go-round, as it was built and a little way round. The climbing dome, from one side and from above. The spring rider, rocked back, upright and rocked forward. The small things: the fountain still and running, the payphone on its hook and off it, the plain bench and the carved one. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page. The town: each of its own fittings, by kind and stage; the back of a shop put together as the builder puts one; and its fronts, names and notices flat on, the bank's clock over its name. Every state of the town's fittings and of the clock's digits was required to have its model.");
         mc.stop();
     }
 }

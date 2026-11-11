@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/tag_rules","particle":"the_oldest_house:block/calder_sign/tag_rules"},
+ "elements":[
+  {"from":[0,4,15.75],"to":[7,11,15.75],"faces":{"north":{"texture":"#a","uv":[3.0,2.5,5.3333,6.0]}}}
+ ]}

@@ -1,0 +1,5 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/marquee_b","particle":"the_oldest_house:block/calder_sign/marquee_b","g":"the_oldest_house:block/calder_sign/marquee_b_glow"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[0.0,0.0,2.2857,8.0]},"east":{"texture":"#a","uv":[0.0,0.0,0.1429,8.0]},"west":{"texture":"#a","uv":[2.1429,0.0,2.2857,8.0]},"up":{"texture":"#a","uv":[2.2857,0.0,0.0,0.5]},"down":{"texture":"#a","uv":[2.2857,7.5,0.0,8.0]}}},
+  {"from":[0,0,14.75],"to":[14,15,14.75],"faces":{"north":{"texture":"#g","uv":[0.2857,0.5,2.2857,8.0]}},"shade":false,"neoforge_data":{"block_light":15,"sky_light":15}}
+ ]}

@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/jrhigh_name","particle":"the_oldest_house:block/calder_sign/jrhigh_name"},
+ "elements":[
+  {"from":[8,2,15],"to":[15,13,16],"faces":{"north":{"texture":"#a","uv":[14.125,3.0,15.0,14.0]},"east":{"texture":"#a","uv":[14.125,3.0,14.25,14.0]},"west":{"texture":"#a","uv":[14.875,3.0,15.0,14.0]},"up":{"texture":"#a","uv":[15.0,3.0,14.125,4.0]},"down":{"texture":"#a","uv":[15.0,13.0,14.125,14.0]}}}
+ ]}

@@ -56,8 +56,13 @@ public final class BikeNightRegistry {
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /** Calder Falls' plain materials: brick, asphalt, concrete flags, kerbstone. */
-    public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("brick","asphalt","paving","kerb");
-    static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("calder_"+name,fixed(name.equals("brick")?Blocks.BRICKS:Blocks.STONE)));}
+    public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("brick","asphalt","paving","kerb",
+        // 0.4.481, the town's: stucco, tan brick, clapboard, concrete, a tarred roof, shingles, a lot's asphalt and its bay line, porch
+        // boards, an alley's gravel, the school field's turf, plain, with a tyre's track through its dew and with a yard line chalked
+        // down it, and a hedge.
+        "stucco","tanbrick","siding","concrete","roofing","shingle","lot","lot_line","plank","gravel","turf","turf_track","turf_line","hedge");
+    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge"->Blocks.MOSS_BLOCK;default->Blocks.STONE;};}
+    static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("calder_"+name,fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     /** Asphalt with the street's centre line on it, along its axis. */
     public static final DeferredBlock<RotatedPillarBlock> ROAD_LINE=BLOCKS.registerBlock("calder_road_line",RotatedPillarBlock::new,fixed(Blocks.STONE));
@@ -71,6 +76,11 @@ public final class BikeNightRegistry {
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).replaceable().noCollission().noOcclusion().noLootTable().instabreak().sound(SoundType.GRASS).pushReaction(PushReaction.DESTROY));
     /** 0.4.465: the playground's equipment (CalderPlayBlock). This slice, the swings: a steel frame, chains and belt seats. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderPlayBlock>> PLAY_TYPE=CODECS.register("calder_play",()->CalderPlayBlock.CODEC);
+    /** 0.4.481: the town's fittings (CalderTownBlock), and a place of the bank's clock. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderTownBlock>> TOWN_TYPE=CODECS.register("calder_town",()->CalderTownBlock.CODEC);
+    public static final DeferredBlock<CalderTownBlock> TOWN=BLOCKS.registerBlock("calder_town",CalderTownBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(CalderTownBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderDigitBlock>> DIGIT_TYPE=CODECS.register("calder_digit",()->CalderDigitBlock.CODEC);
+    public static final DeferredBlock<CalderDigitBlock> DIGIT=BLOCKS.registerBlock("calder_digit",CalderDigitBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(s->7));
     public static final DeferredBlock<CalderPlayBlock> PLAY=BLOCKS.registerBlock("calder_play",CalderPlayBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
     /** A heel mark dug into the sand where the furthest jump off the swings came down. It gives way as fallen leaves do, and is the same kind of block. */
     public static final DeferredBlock<CalderLitterBlock> MARK=BLOCKS.registerBlock("calder_mark",CalderLitterBlock::new,

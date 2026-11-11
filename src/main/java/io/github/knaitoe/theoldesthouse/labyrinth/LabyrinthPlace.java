@@ -694,10 +694,11 @@ public enum LabyrinthPlace {
      * plays pool or darts for everything on his table, three regulars at the board, the next booth's talk, and a window onto a street in
      * whatever season the glasses have brought. Its way on is the street door by the front. */
     LAST_ORDERS("last_orders",Kind.RECURRING,237,new BoundingBox(-14,-2,-34,16,8,0),literaryEntry()),
-    /** 0.4.464, Bike night (BikeNight, docs/BIKE_NIGHT_PROPOSAL.md): Calder Falls on the last night of October. This slice, the park:
-     * the tool shed's door in the back wall, the path to the chained gate, the playground's sand, and six bikes in the rack. Not dealt
-     * until the night can be finished; its room grows as the town, the graveyard and what lies past it are built. */
-    BIKE_NIGHT("bike_night",Kind.ONE_SHOT,238,new BoundingBox(-58,-5,-74,58,18,1),literaryEntry());
+    /** 0.4.464, Bike night (BikeNight, docs/BIKE_NIGHT_PROPOSAL.md): Calder Falls on the last night of October. The park: the tool
+     * shed's door in the back wall, the path to the chained gate, the playground's sand, and six bikes in the rack. 0.4.481, the
+     * town north of it (CalderTown), as far as the cemetery's railings. Not dealt until the night can be finished; its room grows
+     * as the graveyard and what lies past it are built. */
+    BIKE_NIGHT("bike_night",Kind.ONE_SHOT,238,new BoundingBox(-64,-5,-184,64,18,1),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

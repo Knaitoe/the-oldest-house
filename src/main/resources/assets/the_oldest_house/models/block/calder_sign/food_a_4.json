@@ -1,0 +1,5 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/food_a","particle":"the_oldest_house:block/calder_sign/food_a","g":"the_oldest_house:block/calder_sign/food_a_glow"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[5.3333,8.0,10.6667,16.0]},"east":{"texture":"#a","uv":[5.3333,8.0,5.6667,16.0]},"west":{"texture":"#a","uv":[10.3333,8.0,10.6667,16.0]},"up":{"texture":"#a","uv":[10.6667,8.0,5.3333,8.5]},"down":{"texture":"#a","uv":[10.6667,15.5,5.3333,16.0]}}},
+  {"from":[0,2,14.75],"to":[16,16,14.75],"faces":{"north":{"texture":"#g","uv":[5.3333,8.0,10.6667,15.0]}},"shade":false,"neoforge_data":{"block_light":15,"sky_light":15}}
+ ]}

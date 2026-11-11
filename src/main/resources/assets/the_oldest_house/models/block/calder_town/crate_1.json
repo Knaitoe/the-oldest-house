@@ -1,0 +1,83 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "y": "the_oldest_house:block/calder_town/milk_crate",
+    "particle": "the_oldest_house:block/calder_town/crate"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        8,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#y",
+          "uv": [
+            3,
+            0,
+            13,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#y",
+          "uv": [
+            3,
+            0,
+            13,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#y",
+          "uv": [
+            3,
+            0,
+            13,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#y",
+          "uv": [
+            3,
+            0,
+            13,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0.04,
+        3
+      ],
+      "to": [
+        13,
+        0.06,
+        13
+      ],
+      "faces": {
+        "up": {
+          "texture": "#y",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

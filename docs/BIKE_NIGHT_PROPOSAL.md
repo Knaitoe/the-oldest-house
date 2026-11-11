@@ -15,7 +15,13 @@ November 11, on seeing the three as first painted and the town as first built:
 > - give the bullies more contemporary clothing please. skull with fire eyes on a t-shirt, hoodie, etc. the neighborhood looks good but would look better with less even streets, some suburb shortcuts, etc
 > - clutter and decor in alleys would benefit it too. space between buildings, dumpsters, trash
 
-(The clothes: 0.4.480, `docs/BIKE_NIGHT_CLOTHES_0_4_480.md`. The streets, the shortcuts and the alleys go into the town as it is built.)
+(The clothes: 0.4.480, `docs/BIKE_NIGHT_CLOTHES_0_4_480.md`. The streets, the shortcuts and the alleys: 0.4.481, `docs/BIKE_NIGHT_TOWN_0_4_481.md`.)
+
+November 11, while the town was being rebuilt:
+
+> - do you have a path to the cemetery planned?
+
+(Yes: every way north comes out on Church Lane, which touches the cemetery's railings at its gate; the straight way is the cut, a footpath from Elm Street, named CEMETERY at its mouth. The same note.)
 
 Everything below is Claude's working of those notes. Names, places, lines and creatures are original, and nothing recreates a particular film or game.
 
@@ -301,7 +307,7 @@ It is large. It has three acts, a town, and a course in the air. In slices:
    - the rack and the choice.
 2. **The playground:** the seesaw, the slide, the monkey bars (new verb), the merry-go-round, the spring rider, the dome, the sandpit and sand balls. Gus. (The park itself is built, 0.4.464, `docs/BIKE_NIGHT_PARK_0_4_464.md`: the place, its railings, gate, lamps, rack and sand, and whose bike is whose. The swings and the sand balls are built, 0.4.465, `docs/BIKE_NIGHT_SWINGS_0_4_465.md`, the slide, 0.4.466, `docs/BIKE_NIGHT_SLIDE_0_4_466.md`, the monkey bars, 0.4.467, `docs/BIKE_NIGHT_BARS_0_4_467.md`, the seesaw, 0.4.468, `docs/BIKE_NIGHT_SEESAW_0_4_468.md`, and the merry-go-round, 0.4.469, `docs/BIKE_NIGHT_ROUNDABOUT_0_4_469.md`. The monkey bars and the seesaw were first built short of what is written above, and were put right in 0.4.470, `docs/BIKE_NIGHT_RHYTHM_0_4_470.md`. The spring rider, the climbing dome, the drinking fountain, the payphone and the carved bench are built, 0.4.471, `docs/BIKE_NIGHT_SMALL_THINGS_0_4_471.md`. Gus at the playground is built, 0.4.476, `docs/BIKE_NIGHT_GUS_0_4_476.md`; his bike and his riding come with the chase. Riding the slide on a bike is noticed, 0.4.477, `docs/BIKE_NIGHT_SLIDE_BIKE_0_4_477.md`; a hill takes and gives a bike its speed, 0.4.478, `docs/BIKE_HILLS_0_4_478.md`.)
 3. **The bullies** at the playground, and the start of the chase. (Built, 0.4.479, `docs/BIKE_NIGHT_BULLIES_0_4_479.md`: the three, their bikes, the gate, the cap, the seesaw, sand balls and "Get them." Being caught comes with the town.)
-4. **The town:** the streets, buildings and dressing; the traffic actor; the passers-by; the bullies' hunt through the back ways.
+4. **The town:** the streets, buildings and dressing (built, 0.4.481, `docs/BIKE_NIGHT_TOWN_0_4_481.md`); the traffic actor; the passers-by; the bullies' hunt through the back ways.
 5. **The graveyard:** the stones, the mist, the bullies falling back.
 6. **The Hollow:** the course, its routes, the pop-up ghouls and goblins, the specters.
 7. **The endings,** the account, the keepsake, the failures' headstone and chained bike, and the aftermath.

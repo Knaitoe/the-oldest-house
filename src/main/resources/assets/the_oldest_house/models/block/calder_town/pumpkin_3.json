@@ -1,0 +1,176 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c3": "the_oldest_house:block/calder_town/pumpkin_cut_3",
+    "k": "the_oldest_house:block/calder_town/town",
+    "p3": "the_oldest_house:block/calder_town/pumpkin_3",
+    "particle": "the_oldest_house:block/calder_town/pumpkin_3"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        9,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p3",
+          "uv": [
+            3,
+            7,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#p3",
+          "uv": [
+            3,
+            7,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#p3",
+          "uv": [
+            3,
+            7,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#p3",
+          "uv": [
+            3,
+            7,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#p3",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#p3",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        2.95
+      ],
+      "to": [
+        13,
+        9,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c3",
+          "uv": [
+            0,
+            0,
+            10,
+            9
+          ]
+        }
+      },
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      }
+    },
+    {
+      "from": [
+        7.2,
+        9,
+        7.2
+      ],
+      "to": [
+        8.8,
+        11,
+        8.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#k",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#k",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#k",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#k",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#k",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        }
+      }
+    }
+  ]
+}

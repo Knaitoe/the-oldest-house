@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/calder_sign/bank_front","particle":"the_oldest_house:block/calder_sign/bank_front"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[3.2,0.0,6.4,8.0]},"east":{"texture":"#a","uv":[3.2,0.0,3.4,8.0]},"west":{"texture":"#a","uv":[6.2,0.0,6.4,8.0]},"up":{"texture":"#a","uv":[6.4,0.0,3.2,0.5]},"down":{"texture":"#a","uv":[6.4,7.5,3.2,8.0]}}}
+ ]}
