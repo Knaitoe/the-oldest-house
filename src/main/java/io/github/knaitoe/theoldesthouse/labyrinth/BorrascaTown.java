@@ -161,10 +161,14 @@ final class BorrascaTown {
         pickup(l,b,12,0,-26,3);sign(l,b,13,0,-20,Direction.SOUTH,"PRESCOTT ORE","SERVICES","D-417","555-0190");
     }
 
-    /** The town's back edge: a rail fence and a hedgerow either side of the station, and big oaks behind the buildings. */
+    /**
+     * The town's back edge: a rail fence and a hedgerow either side of the station, and big oaks behind the buildings. 0.4.447: the fence
+     * stands on the town's side with the hedge behind it, from the station's own corners to the valley's walls. The hedge used to stand
+     * in front, where it was a step up over the fence, and the fence began a block clear of the station, which left a way round its back.
+     */
     private static void edge(ServerLevel l,BlockPos b){
-        for(int x=-44;x<=44;x++){if(Math.abs(x)<=8)continue;set(l,b,x,0,1,Blocks.OAK_FENCE);if(hash(x,0,0)%3!=0)set(l,b,x,0,0,leaves());}
-        BorrascaRooms.join(l,b,-44,0,1,44,0,1);
+        for(int x=-37;x<=37;x++){if(Math.abs(x)<=7)continue;set(l,b,x,0,0,Blocks.OAK_FENCE);if(hash(x,0,0)%3!=0)set(l,b,x,0,1,leaves());}
+        BorrascaRooms.join(l,b,-37,0,0,37,0,0);
         for(int[] at:new int[][]{{-36,-22},{36,-24}})BorrascaLand.tallOak(l,b,at[0],0,at[1],10+hash(at[0],0,at[1])%3,false);
     }
 
@@ -244,7 +248,9 @@ final class BorrascaTown {
         for(int z:new int[]{-174,-177}){furniture(l,b,-25,12,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,-26,12,z,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);doc(l,b,new BlockPos(-25,13,z),z==-174?BorrascaShopBlock.Kind.DOC_DISPATCH:BorrascaShopBlock.Kind.DOC_PAYROLL,Direction.EAST);}
         fitAt(l,b,new BlockPos(-28,14,-176),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);fitAt(l,b,new BlockPos(-28,14,-175),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
         for(int z=-174;z<=-171;z++)set(l,b,-20,12,z,Blocks.SPRUCE_PLANKS);doc(l,b,BorrascaRooms.SIGN_IN,BorrascaShopBlock.Kind.DOC_SIGNIN,Direction.WEST);set(l,b,-21,12,-172,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
-        set(l,b,-15,12,-171,Blocks.WHITE_CONCRETE);set(l,b,-15,13,-171,Blocks.LIGHT_BLUE_STAINED_GLASS);
+        // 0.4.447 (owner: "re-use water fountain from personhood vignette."): the waiting room's water cooler, its back to the wall. It was a
+        // block of white concrete with a block of blue glass on it.
+        set(l,b,BorrascaRooms.WATER.getX(),BorrascaRooms.WATER.getY(),BorrascaRooms.WATER.getZ(),HouseReadRooms.part(HouseReadPropBlock.Part.COOLER).setValue(HorizontalDirectionalBlock.FACING,Direction.WEST));
         for(int z=-177;z<=-175;z++)set(l,b,-15,12,z,stair(Blocks.SPRUCE_STAIRS,Direction.EAST,Half.BOTTOM));
         set(l,b,-22,16,-175,hanging());set(l,b,-17,16,-172,hanging());
     }
@@ -301,7 +307,7 @@ final class BorrascaTown {
     /** Yard clutter, kept off the trail-to-lamp line, the workers' and Prescott's marks, the county pickup and the breaker. */
     private static void yard(ServerLevel l,BlockPos b){
         for(int[] at:new int[][]{{-9,-186},{-8,-186},{-9,-187},{20,-199},{21,-199},{20,-200}})set(l,b,at[0],12,at[1],Blocks.BARREL);set(l,b,-8,13,-186,Blocks.BARREL);set(l,b,-7,12,-187,Blocks.CAULDRON);
-        for(int x=8;x<=10;x++)for(int z=-189;z<=-188;z++)set(l,b,x,12,z,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,9,12,-190,slab(Blocks.SPRUCE_SLAB,SlabType.TOP));
+        for(int x=8;x<=10;x++)for(int z=-189;z<=-188;z++)set(l,b,x,12,z,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,9,12,-189,slab(Blocks.SPRUCE_SLAB,SlabType.DOUBLE));set(l,b,9,12,-190,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
         box(l,b,18,12,-208,22,13,-205,Blocks.IRON_BLOCK);box(l,b,18,14,-208,22,14,-205,slab(Blocks.SMOOTH_STONE_SLAB,SlabType.BOTTOM));set(l,b,17,12,-206,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));set(l,b,17,13,-206,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));
         for(int[] at:new int[][]{{-12,-170},{24,-170},{24,-210},{-27,-210}}){box(l,b,at[0],12,at[1],at[0],15,at[1],Blocks.IRON_BARS);set(l,b,at[0],16,at[1],Blocks.LANTERN);}
     }

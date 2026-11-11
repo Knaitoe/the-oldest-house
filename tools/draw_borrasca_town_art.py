@@ -19,6 +19,7 @@ Writes the models and block states, the blocks' names, and the sound and its sub
 from pathlib import Path
 import argparse
 import json
+import math
 import random
 from PIL import Image
 
@@ -620,25 +621,38 @@ def bike_seat():
     return im
 
 
-def bike_bar(parts, lo, hi, tex, rot=None):
+def bike_bar(parts, lo, hi, tex, rot=None, px=7):
     """One bar of a bike, a pixel or two thick, every face from the same pixel of its texture."""
-    parts.append(element(lo, hi, {'all': tex}, {k: [7, 7, 8, 8] for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot))
+    parts.append(element(lo, hi, {'all': tex}, {k: [px, 7, px + 1, 8] for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot))
 
 
 def bike_wheel_parts(parts, cx, cy, r=5.5):
-    """A wheel in the plane z 7.5..8.5 about its hub (cx, cy): the tyre in eight pieces, the hub and two spokes."""
+    """A wheel in the plane z 7.5..8.5 about its hub (cx, cy). 0.4.447 (owner: "Try to fix wheels"): the tyre is a closed ring of
+    sixteen pieces, each as long as its share of the rim and a little over, so that none stands apart from the next (there were eight,
+    with a gap between each two). Every other piece takes the tread's groove, so the wheel is seen to turn. Then the hub and eight
+    spokes. A model's piece turns only by 22.5 or 45 degrees about one axis, which sixteen pieces use up."""
     z0, z1 = 7.5, 8.5
-    bike_bar(parts, [cx - 2, cy + r - 1, z0], [cx + 2, cy + r, z1], 't')          # top
-    bike_bar(parts, [cx - 2, cy - r, z0], [cx + 2, cy - r + 1, z1], 't')          # bottom, on the ground
-    bike_bar(parts, [cx - r, cy - 2, z0], [cx - r + 1, cy + 2, z1], 't')          # back
-    bike_bar(parts, [cx + r - 1, cy - 2, z0], [cx + r, cy + 2, z1], 't')          # front
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            mx, my = cx + sx * (r - 1.6), cy + sy * (r - 1.6)
-            bike_bar(parts, [mx - 1.4, my - .5, z0], [mx + 1.4, my + .5, z1], 't', {'angle': -45 if sx * sy > 0 else 45, 'axis': 'z', 'origin': [mx, my, 8]})
-    bike_bar(parts, [cx - .5, cy - .5, 7], [cx + .5, cy + .5, 9], 'c')            # hub
-    bike_bar(parts, [cx - r + 1, cy - .25, 7.75], [cx + r - 1, cy + .25, 8.25], 'c')  # spokes, one across and one up
-    bike_bar(parts, [cx - .25, cy - r + 1, 7.75], [cx + .25, cy + r - 1, 8.25], 'c')
+    thick = 1.2
+    mid = r - thick / 2
+    half = round(r * math.tan(math.pi / 16) + .12, 3)
+    for k in range(16):
+        phi = math.radians(k * 22.5)
+        mx, my = round(cx + mid * math.cos(phi), 3), round(cy + mid * math.sin(phi), 3)
+        tangent = (k * 22.5 + 90) % 180
+        if tangent > 90:
+            tangent -= 180
+        if abs(tangent) <= 45:
+            lo, hi, angle = [mx - half, my - thick / 2, z0], [mx + half, my + thick / 2, z1], tangent
+        else:
+            lo, hi, angle = [mx - thick / 2, my - half, z0], [mx + thick / 2, my + half, z1], tangent - 90 if tangent > 0 else tangent + 90
+        lo, hi = [round(v, 3) for v in lo], [round(v, 3) for v in hi]
+        bike_bar(parts, lo, hi, 't', {'angle': angle, 'axis': 'z', 'origin': [mx, my, 8]} if angle else None, 6 if k % 2 else 7)
+    bike_bar(parts, [cx - .6, cy - .6, 7], [cx + .6, cy + .6, 9], 'c')            # hub
+    reach = round(r - thick + .1, 3)
+    bike_bar(parts, [cx - reach, cy - .2, 7.8], [cx + reach, cy + .2, 8.2], 'c')  # spokes: across, up, and the two diagonals
+    bike_bar(parts, [cx - .2, cy - reach, 7.8], [cx + .2, cy + reach, 8.2], 'c')
+    for angle in (45, -45):
+        bike_bar(parts, [cx - reach, cy - .2, 7.8], [cx + reach, cy + .2, 8.2], 'c', {'angle': angle, 'axis': 'z', 'origin': [cx, cy, 8]})
 
 
 def bike_parts(wheels=True, standing=True):

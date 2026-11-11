@@ -336,8 +336,10 @@ final class BorrascaDressing {
         for(int x=19;x<=22;x++)for(int z=-176;z<=-173;z++)set(l,b,x,23,z,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
         for(int y=12;y<=19;y++)set(l,b,23,y,-174,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.EAST));
         // Pallets and a stack of pipe by the depot's east door.
-        for(int[] p:new int[][]{{-9,-176},{-8,-176},{-9,-175}}){set(l,b,p[0],12,p[1],slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));}
-        set(l,b,-9,12,-174,slab(Blocks.SPRUCE_SLAB,SlabType.TOP));set(l,b,-9,13,-176,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
+        // 0.4.447 (owner's screenshot of the yard): two of these hung in the air, one a top slab over nothing and one a slab set a whole
+        // block up over a half one. The corner is now a stack three boards high and the rest lie on the gravel.
+        for(int[] p:new int[][]{{-8,-176},{-9,-175},{-9,-174}}){set(l,b,p[0],12,p[1],slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));}
+        set(l,b,-9,12,-176,slab(Blocks.SPRUCE_SLAB,SlabType.DOUBLE));set(l,b,-9,13,-176,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
         // 0.4.440: along the refinery's east wall, outside it.
         for(int z=-194;z>=-197;z--){set(l,b,9,12,z,log(Blocks.STRIPPED_SPRUCE_LOG,Direction.Axis.X));}
         box(l,b,9,12,-199,10,12,-199,Blocks.IRON_BARS);

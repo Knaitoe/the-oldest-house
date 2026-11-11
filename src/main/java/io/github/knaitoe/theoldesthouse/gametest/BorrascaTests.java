@@ -309,7 +309,7 @@ public final class BorrascaTests {
     static Set<BlockPos> walkable(ServerLevel l,BlockPos base,BlockPos start,double height){
         var seen=new HashSet<BlockPos>();var queue=new ArrayDeque<BlockPos>();seen.add(start);queue.add(start);
         while(!queue.isEmpty()){
-            var c=queue.removeFirst();double fc=footing(l,c);if(Double.isNaN(fc))continue;var rel=c.subtract(base);if(Math.abs(rel.getX())>44||rel.getZ()>2||rel.getZ()<BorrascaRooms.FAR||rel.getY()<-5||rel.getY()>BorrascaRooms.TOP)continue;
+            var c=queue.removeFirst();double fc=footing(l,c);if(Double.isNaN(fc))continue;var rel=c.subtract(base);if(Math.abs(rel.getX())>44||rel.getZ()>2||rel.getZ()<BorrascaRooms.HEAD||rel.getY()<-5||rel.getY()>BorrascaRooms.TOP)continue;
             var moves=new ArrayList<BlockPos>();for(var d:Direction.Plane.HORIZONTAL)for(int dy=1;dy>=-3;dy--)moves.add(c.relative(d).offset(0,dy,0));
             if(l.getBlockState(c).is(net.minecraft.tags.BlockTags.CLIMBABLE)||l.getBlockState(c.above()).is(net.minecraft.tags.BlockTags.CLIMBABLE)){moves.add(c.above());moves.add(c.below());}
             for(var t:moves){
@@ -345,6 +345,12 @@ public final class BorrascaTests {
             }
             h.assertTrue(bad.isEmpty(),"no ground outside the wire is near and high enough to jump it from: "+bad.size()+" "+bad.subList(0,Math.min(16,bad.size())));
             h.assertTrue(top-wire.getY()>=1.5,"the wire's top stops a body half a block above it, as a fence does");
+            // 0.4.447 (owner: "End of the world here lol."): the hill ended six rows behind the wire, on ground a reader could walk out along.
+            var brink=new ArrayList<String>();
+            for(var c:cells){var rel=c.subtract(b);if(Double.isNaN(footing(f.out,c))||BorrascaLand.approach(rel.getX(),rel.getZ()))continue;if(Math.abs(rel.getX())>=42||rel.getZ()<=BorrascaRooms.HEAD+2||rel.getZ()>=2)brink.add(rel.toShortString());}
+            h.assertTrue(brink.isEmpty(),"nowhere a reader can walk to is at the edge of the hill, where the ground stops: "+brink.size()+" "+brink.subList(0,Math.min(12,brink.size())));
+            int back=(int)Math.round(BorrascaRooms.worldZ(-223)),cliff=(int)Math.round(BorrascaRooms.worldZ(-226));
+            for(int x=-30;x<=27;x+=3)h.assertTrue(BorrascaLand.groundAt(x,cliff)-BorrascaLand.groundAt(x,back)>=5,"behind the yard the cliff at the valley's head stands over the ground a reader can reach: "+x+" "+BorrascaLand.groundAt(x,back)+" "+BorrascaLand.groundAt(x,cliff));
         }).thenSucceed();
     }
     /** How high above where it left the ground a sprint jump is when it has carried a body this far. */
@@ -616,6 +622,9 @@ public final class BorrascaTests {
               h.assertTrue(f.out.getBlockState(at).isAir()&&bike[0].whose()==BorrascaBike.KENDRA,"it is off its stand while it is ridden, and it is Kendra's");
           }).thenIdle(40).thenExecute(()->{
               h.assertTrue(p.getVehicle()==bike[0]&&Math.abs(bike[0].leanNow())<.05F,"stopped, a foot is down and it stays up: "+bike[0].leanNow());
+              // 0.4.447: the rider's eyes were level with the handlebars and the top of the saddle, which lay across the view.
+              double hips=p.getY()+.675*p.getScale()-bike[0].getY(),eyes=p.getEyeY()-bike[0].getY();
+              h.assertTrue(Math.abs(hips-BorrascaBike.SADDLE)<.03&&eyes-14.6/16>.3,"the rider sits on the saddle, their eyes well over the bars: hips "+hips+", eyes "+eyes);
               p.setPlayerInput(1,0,false,false);
           }).thenIdle(2).thenExecute(()->{
               h.assertTrue(bike[0].strokes()==-1&&bike[0].speedNow()>0,"the left strafe key is a push on the left pedal: "+bike[0].strokes());
@@ -1136,6 +1145,18 @@ public final class BorrascaTests {
                 if(face==null)continue;var behind=f.out.getBlockState(hungAt.relative(face.getOpposite()));
                 if(behind.is(Blocks.GLASS_PANE)||behind.isAir())hung.add(hungAt.subtract(b).toShortString()+" "+hs);}
             h.assertTrue(hung.isEmpty(),"every piece that hangs on a wall has wall behind it, not glass or air: "+hung);
+            // 0.4.447: the yard's boards lie on the gravel or on each other. Two of them hung in the air.
+            var loose=new ArrayList<String>();
+            for(var board:BlockPos.betweenClosed(new BlockPos(-32,12,-212),new BlockPos(32,13,-168))){var at=BorrascaRooms.at(b,board);var bs=f.out.getBlockState(at);if(!bs.is(Blocks.SPRUCE_SLAB))continue;
+                var under=f.out.getBlockState(at.below());var type=bs.getValue(SlabBlock.TYPE);
+                boolean rests=type==net.minecraft.world.level.block.state.properties.SlabType.TOP?false:!under.isAir()&&(!(under.getBlock() instanceof SlabBlock)||under.getValue(SlabBlock.TYPE)!=net.minecraft.world.level.block.state.properties.SlabType.BOTTOM);
+                if(!rests)loose.add(board.toShortString()+" "+type+" over "+under.getBlock());}
+            h.assertTrue(loose.isEmpty(),"every board in the yard rests on the ground or on the board under it: "+loose);
+            // 0.4.447: the depot office's cooler is the waiting room's, and the front door answers a hand and stays shut.
+            var water=f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.WATER));
+            h.assertTrue(water.is(HouseReadRegistry.FITTING.get())&&water.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.COOLER&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.WATER).above()).isAir(),"the depot office's water cooler is the waiting room's: "+water);
+            var hand=f.own(p);
+            h.assertTrue(BorrascaStory.click(p,b,BorrascaRooms.world(BorrascaRooms.WATER),hand)&&BorrascaStory.click(p,b,BorrascaRooms.world(BorrascaRooms.FACTORY_DOOR),hand)&&!open(f,p,BorrascaRooms.FACTORY_DOOR),"the cooler and the depot's front door each answer a hand, and the door stays shut");
             for(var sign:new BlockPos[]{new BlockPos(-8,2,-80),new BlockPos(8,2,-101)}){boolean west=sign.getX()<0;h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(sign)),BorrascaShopBlock.Kind.OPEN)&&f.out.getBlockState(b.offset(sign).relative(west?Direction.EAST:Direction.WEST)).is(Blocks.GLASS_PANE),"the OPEN sign hangs inside the shop against its window, which keeps its glass: "+sign);}
             h.assertTrue(!BorrascaShopTexts.pump(0,false).equals(BorrascaShopTexts.pump(1,false))&&!BorrascaShopTexts.pump(0,true).equals(BorrascaShopTexts.pump(1,true)),"each pump's dials stopped at its own last sale");
             h.assertTrue(f.out.getBlockState(b.offset(20,0,-103)).getValue(BorrascaShopBlock.STAGE)!=f.out.getBlockState(b.offset(20,0,-102)).getValue(BorrascaShopBlock.STAGE),"the pharmacy's shelves are not all one arrangement");

@@ -29,7 +29,7 @@ public final class BorrascaSites {
     private static net.minecraft.nbt.CompoundTag site(MinecraftServer s,UUID id){return LabyrinthData.get(s).stateEntry(SITES,id.toString());}
     public static boolean ready(MinecraftServer s,UUID id){return site(s,id).getBoolean("Built");}
     public static @Nullable BlockPos base(MinecraftServer s,UUID id){var t=site(s,id);var o=HouseSavedData.get(s).houseOrigin();if(o==null||!t.contains("Index"))return null;var b=LabyrinthPlaces.base(o,LabyrinthPlace.BORRASCA);return b==null?null:new BlockPos(b.getX()+4096+t.getInt("Index")*512,80,b.getZ());}
-    public static AABB bounds(BlockPos b){return new AABB(b.getX()-44,b.getY()-5,b.getZ()+BorrascaRooms.FAR,b.getX()+45,b.getY()+BorrascaRooms.TOP+1,b.getZ()+18);}
+    public static AABB bounds(BlockPos b){return new AABB(b.getX()-44,b.getY()-5,b.getZ()+BorrascaRooms.HEAD,b.getX()+45,b.getY()+BorrascaRooms.TOP+1,b.getZ()+18);}
     public static boolean inside(ServerPlayer p){var b=base(p.server,p.getUUID());return b!=null&&ready(p.server,p.getUUID())&&p.level().dimension().equals(HouseDimensions.OUTSIDE)&&bounds(b).contains(p.position());}
     public static @Nullable LabyrinthPlace placeAt(MinecraftServer s,BlockPos at){return areas(s).stream().anyMatch(a->a.contains(Vec3.atCenterOf(at)))?LabyrinthPlace.BORRASCA:null;}
     public static List<AABB> areas(MinecraftServer s){var data=LabyrinthData.get(s);var index=data.state(SITES);var out=new ArrayList<AABB>();for(var key:index.getAllKeys())try{var b=base(s,UUID.fromString(key));if(b!=null)out.add(bounds(b));}catch(IllegalArgumentException ignored){}return out;}

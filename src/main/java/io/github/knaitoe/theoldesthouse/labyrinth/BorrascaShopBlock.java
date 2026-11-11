@@ -55,8 +55,11 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
         /** A paper lying on a desk. */
         public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
-        /** Flat on a wall, behind the model's south face. */
-        public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,CALENDAR,BAIT_SIGN->true;default->false;};}
+        /**
+         * On a wall, behind the model's south face. 0.4.447: the payphone too; the station's hung across one of its front windows, and
+         * is on the wall between that window and the door now.
+         */
+        public boolean wall(){return switch(this){case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CLOCK,CARDS,CHART,CALENDAR,BAIT_SIGN,PAYPHONE->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,1);

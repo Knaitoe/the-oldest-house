@@ -225,7 +225,7 @@ public final class LiteraryRenderers {
                 case 3->{rightArm.xRot=-.45F+(float)Math.sin(age*.12F)*.08F;rightArm.zRot=.18F;head.xRot+=.18F;}
                 default->{}
             }hat.copyFrom(head);}
-            if(a.role()==LiteraryActor.STRANGER&&a.gesture()==4)reaching();
+            if(a.reaching())reaching();
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Truant.phase(a.phase()))truant(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Pinehook.cast(a.phase()))pinehook(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase()))drawing(a.gesture(),age);
@@ -244,7 +244,7 @@ public final class LiteraryRenderers {
                 if(chair==null&&!(a.role()==LiteraryActor.BROTHER&&a.phase()>0))HumanoidMotion.gait(this,motion.phase(),motion.amount(),motion.running());
                 if(!(a.role()==LiteraryActor.BROTHER&&a.phase()>0))body.yRot+=.02F*net.minecraft.util.Mth.sin(age*.037F+a.getId()*1.7F);HumanoidMotion.connect(this);
             }
-            if(a.gesture()==io.github.knaitoe.theoldesthouse.labyrinth.CostumeNight.CRAWL)crawl(walk,amount);
+            if(a.crawling())crawl(walk,amount);
             if(a.role()==LiteraryActor.SILHOUETTE&&a.scene().equals(LabyrinthPlace.CHILD_ROOM.id())&&a.hasCustomName()&&"Dinnerbone".equals(a.getCustomName().getString()))DinnerboneIdle.pose(this,a.level().getGameTime()+age-a.tickCount,a.getUUID().hashCode());RecentActorMotion.blend(a,age,this,coat,gown,mask,bandage,hood,lakeHair);}
         /**
          * 0.4.410, the Kept: sat on the floor with the knees drawn up and the arms round them; walking hunched, head down, arms hanging; a

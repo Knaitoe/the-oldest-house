@@ -106,6 +106,8 @@ public final class KeptTests {
             .thenWaitUntil(()->{var a=Kept.actor(l,b,0);h.assertTrue(Kept.stage(b)==Kept.SITTING&&a!=null&&a.gesture()==Kept.SIT,"the four are sat in the corridor");})
             .thenExecute(()->Kept.skip(b,600))
             .thenWaitUntil(()->h.assertTrue(Kept.stage(b)==Kept.AT_TABLE,"readers already in the hall: the four are at its mouth"))
+            // 0.4.447: the reach toward the crate has the same number as Costume Night's crawl, and the four were drawn on all fours.
+            .thenWaitUntil(()->{for(int who=0;who<4;who++){var a=Kept.actor(l,b,who);h.assertTrue(a!=null&&a.gesture()==Kept.REACH&&a.ownGestures()&&!a.crawling()&&a.getBbHeight()>1.5F,"the four stand with both hands out toward the crate, none of them on all fours: "+who+" "+(a==null?null:a.gesture()+" "+a.getBbHeight()));}})
             .thenIdle(40)
             .thenExecute(()->{Kept.tryCrate(l,b);Kept.skip(b,340);})
             .thenWaitUntil(()->h.assertTrue(Kept.stage(b)==Kept.ASKING&&Kept.asking(b)==0,"after the crate, the first goes to their door to ask"))

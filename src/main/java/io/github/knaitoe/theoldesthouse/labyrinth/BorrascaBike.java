@@ -77,9 +77,20 @@ public final class BorrascaBike extends Entity {
     public void steady(float lean,float speed){this.lean=lean;this.speed=speed;}
     public void setUp(ServerPlayer p,int whose,float yaw){reader=p.getUUID();entityData.set(WHOSE,whose);setYRot(yaw);yRotO=yaw;}
 
-    // Standing on the pedals, not sitting back as on a horse: the rider's feet are a little above the road.
+    /** The saddle's top above the road, less what a body settles into it. */
+    public static final double SADDLE=13.5/16-.03;
+    /**
+     * Legs straight down toward the pedals, not out in front as on a horse. 0.4.447 (owner: "Try to fix mild visual distortion when
+     * mounting bike."): the rider sits on the saddle. They used to be set .3 up less the .6 a player is held at, which put a child's
+     * feet at the road, their hips at the cranks and their eyes level with the handlebars and the top of the saddle: the bars filled the
+     * top of the view and the saddle's top lay across the middle of it. A body's hips are 12 of its 32 pixels up, so the seat is set
+     * for whoever is riding: hips on the saddle, eyes well above the bars, which now sit low in the view where a rider's are.
+     */
     @Override public boolean shouldRiderSit(){return false;}
-    @Override protected Vec3 getPassengerAttachmentPoint(Entity rider,EntityDimensions d,float scale){return new Vec3(0,.3,0);}
+    @Override protected Vec3 getPassengerAttachmentPoint(Entity rider,EntityDimensions d,float scale){
+        double s=rider instanceof net.minecraft.world.entity.LivingEntity le?le.getScale():1;
+        return new Vec3(0,SADDLE-.675*s+.6*s,0);
+    }
     @Override public float maxUpStep(){return 1F;}
     @Override public boolean isPickable(){return false;}
     @Override public boolean canBeCollidedWith(){return false;}

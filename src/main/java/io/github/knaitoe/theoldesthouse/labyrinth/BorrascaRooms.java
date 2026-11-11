@@ -79,6 +79,16 @@ public final class BorrascaRooms {
     private static final double[] MEANDER={0,7,0,5,0};
     /** The world's far end of the hill, relative to the base (the authored -220). */
     public static final int FAR=-472,TOP=44;
+    /**
+     * 0.4.447 (owner, of the ground behind the yard: "End of the world here lol."): the hill goes on fourteen rows past FAR. Since
+     * 0.4.429 nothing within nine blocks of the wire stands high enough to jump it from, and the hill ended six rows behind the wire, so
+     * the cliff at the valley's head never got to rise: the ground ran on level and stopped at nothing. Past those nine blocks the cliff
+     * now stands, as it does down both sides, with the woods on top of it. FAR itself is kept: the woods are sown from it
+     * (BorrascaLand.forest), and every tree on the hill would move.
+     */
+    public static final int HEAD=FAR-14;
+    /** The water cooler in the depot's office (0.4.447). */
+    public static final BlockPos WATER=new BlockPos(-15,12,-171);
     /** Which part of the map a row is in. A region keeps both its end rows (its own ground, steps and all); a slope has only the rows between. */
     private static int segment(double z){if(z>=FROM[1])return 0;for(int i=1;i<FROM.length-1;i++)if(i%2==1?z>FROM[i+1]:z>=FROM[i+1])return i;return FROM.length-1;}
     private static int worldSegment(double w){if(w>=TO[1])return 0;for(int i=1;i<TO.length-1;i++)if(i%2==1?w>TO[i+1]:w>=TO[i+1])return i;return TO.length-1;}
@@ -150,7 +160,7 @@ public final class BorrascaRooms {
     public static BlockPos trail(int z){return new BlockPos(trailX(z),trailY(z),z);}
     public static void build(ServerLevel l,BlockPos b){
         var tree=tree(b);var ridge=ridge(b);var depot=depot(b);
-        box(l,b,-44,-5,FAR,44,TOP,2,Blocks.AIR);box(l,b,-44,-5,FAR,44,-2,2,Blocks.STONE);box(l,b,-44,-1,FAR,44,-1,2,Blocks.GRASS_BLOCK);
+        box(l,b,-44,-5,HEAD,44,TOP,2,Blocks.AIR);box(l,b,-44,-5,HEAD,44,-2,2,Blocks.STONE);box(l,b,-44,-1,HEAD,44,-1,2,Blocks.GRASS_BLOCK);
         // 0.4.262: the valley, not a staircase of full-width terraces with walls down both sides (BorrascaLand).
         BorrascaLand.terrain(l,b);
         // 0.4.276: a walked path, not a painted strip: packed earth down the middle, its edges giving way to the needles, and a timber

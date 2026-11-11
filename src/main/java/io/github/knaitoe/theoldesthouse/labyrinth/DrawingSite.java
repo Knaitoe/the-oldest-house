@@ -30,7 +30,11 @@ public final class DrawingSite {
     /** The stool, and the box on it. */
     public static final BlockPos STOOL=new BlockPos(0,0,-34),BOX=new BlockPos(0,1,-34);
     /** The post office board, by the door: the notice (the first paper) and, beside it, where each reader's account waits. */
-    public static final BlockPos NOTICE=new BlockPos(-13,1,-17),ACCOUNT=new BlockPos(-13,1,-18);
+    /*
+     * 0.4.447 (the owner's screenshot of 10 November): the account's half hung at z -18, across the lower pane of the window between
+     * the board and the door. It is on the wall at the notice's other side now; the wall has two boards' width there and no more.
+     */
+    public static final BlockPos NOTICE=new BlockPos(-13,1,-17),ACCOUNT=new BlockPos(-13,1,-16);
     /** The low stone wall down the east side and the two piles against it. */
     public static final int WALL_X=15,WALL_S=-28,WALL_N=-40;
     public static final BlockPos PILE_SOUTH=new BlockPos(14,0,-31),PILE_NORTH=new BlockPos(14,0,-37);
