@@ -253,6 +253,59 @@ public final class BikeNightTests {
         }).thenSucceed();
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.478: hills
+    @GameTest(template="empty",batch="bike_night",timeoutTicks=900)
+    public static void aHillTakesTheWayOffABikeGoingUpAndGivesItBackComingDown(GameTestHelper h){
+        var s=new Strip(h,9,40);final NightBike[] b={null,null,null};final ServerPlayer[] p={null,null,null};
+        final float[] lip={0,0,0},foot={0,0},after={0};final boolean[] over={false,false,false},flew={false};final double[] off={0};final int[] t={0,0};
+        double slope=BikeRampBlock.LONG/16;
+        // How high the long ramp's sheet is over the road, that far up the road: its foot is eleven and a half blocks up, and it is two long.
+        java.util.function.DoubleUnaryOperator sheet=along->Mth.clamp(along-11.5,0,2)*slope;
+        // The first bike again, on the ramp near its top, pointing back down it and going that fast.
+        java.util.function.Consumer<Float> atTheTop=speed->{
+            b[0].setPos(s.at.getX()-1.5,s.at.getY()+sheet.applyAsDouble(13.3),s.at.getZ()+.5-13.3);b[0].setYRot(0);p[0].setYRot(0);p[0].setYHeadRot(0);b[0].steady(0,speed);
+        };
+        h.startSequence().thenWaitUntil(()->h.assertTrue(s.ready(),"the road's sections are in")).thenExecute(()->{
+            s.lay();
+            for(int x:new int[]{-2,0,2}){s.l.setBlock(s.at.offset(x,0,-12),BikeRampBlock.of(Direction.NORTH,BikeRampBlock.Part.LOW),3);s.l.setBlock(s.at.offset(x,0,-13),BikeRampBlock.of(Direction.NORTH,BikeRampBlock.Part.HIGH),3);}
+            p[0]=s.reader("hill_fast");p[1]=s.reader("hill_slow");p[2]=s.reader("hill_hare");
+            b[0]=s.on(p[0],NightBike.Make.LAMP,-2,-4);b[1]=s.on(p[1],NightBike.Make.LAMP,0,-4);b[2]=s.on(p[2],NightBike.Make.HARE,2,-4);
+        }).thenIdle(2).thenExecuteFor(110,()->{
+            for(int i=0;i<3;i++){
+                if(p[i].getVehicle()!=b[i])continue;double along=s.along(b[i]);
+                // Held upright all the way. Held at one speed as far as the foot of the ramp, and from there left to roll.
+                if(along<11.5)b[i].steady(0,i==0?.32F:.16F);
+                else{b[i].steady(0,b[i].speedNow());if(along>13.5&&!over[i]){over[i]=true;lip[i]=b[i].speedNow();}}
+            }
+        }).thenExecute(()->{
+            for(int i=0;i<3;i++)h.assertTrue(p[i].getVehicle()==b[i],"all three riders are still on");
+            h.assertTrue(over[0]&&lip[0]>.17F&&lip[0]<.25F,"flat out, the ramp takes a third of a bike's way before it is over the top: "+lip[0]);
+            double at=s.along(b[1]);
+            h.assertTrue(!over[1]&&b[1].speedNow()<RiddenBike.STOPPED&&at>12&&at<13.4&&Math.abs(s.over(b[1])-sheet.applyAsDouble(at))<.03,
+                "at half that speed it stalls on the ramp, and stands where it stopped with a foot down: "+at+" up the road, "+s.over(b[1])+" over it, at "+b[1].speedNow());
+            h.assertTrue(over[2]&&lip[2]>.04F,"the Hare, which climbs, is over the top from the same speed: "+lip[2]);
+            // Down again: from near the top, barely moving, and left to roll.
+            atTheTop.accept(.06F);
+        }).thenExecuteFor(90,()->{
+            if(p[0].getVehicle()!=b[0])return;double along=s.along(b[0]);b[0].steady(0,b[0].speedNow());t[0]++;
+            if(along>11.55){if(t[0]>2){off[0]=Math.max(off[0],Math.abs(s.over(b[0])-sheet.applyAsDouble(along)));flew[0]|=!b[0].onGround();}}
+            else{if(foot[0]==0)foot[0]=b[0].speedNow();if(++t[1]==40)after[0]=b[0].speedNow();}
+        }).thenExecute(()->{
+            h.assertTrue(p[0].getVehicle()==b[0],"the rider is still on");
+            h.assertTrue(!flew[0]&&off[0]<.03,"rolling down, it stays on the ramp's sheet all the way: "+off[0]+" off it at the most, in the air "+flew[0]);
+            h.assertTrue(foot[0]>.15F,"let roll from the top with hardly a push, it is going well at the foot: "+foot[0]);
+            h.assertTrue(after[0]>foot[0]*.45F&&after[0]<foot[0]*.75F,"and on the level it runs that way off again, a little at a time: "+after[0]+" from "+foot[0]);
+            // And from flat out at the top.
+            foot[0]=0;t[0]=0;atTheTop.accept(.32F);
+        }).thenExecuteFor(25,()->{
+            if(p[0].getVehicle()!=b[0])return;b[0].steady(0,b[0].speedNow());
+            if(s.along(b[0])<=11.55&&foot[1]==0)foot[1]=b[0].speedNow();
+        }).thenExecute(()->{
+            h.assertTrue(foot[1]>RiddenBike.TOP+.015F&&foot[1]<=RiddenBike.TOP*1.4F,"a bike already flat out comes off the foot of the ramp faster than it can be pedalled: "+foot[1]);
+            p[0].setPlayerInput(0,-1,false,false);
+        }).thenSucceed();
+    }
+
     @GameTest(template="empty",batch="bike_night",timeoutTicks=900)
     public static void theHopperCarriesASecondRiderOnItsPegsAndBothComeOffTogether(GameTestHelper h){
         var s=new Strip(h,5,30);final NightBike[] b={null,null};final ServerPlayer[] p={null,null,null};final float[] health={0,0};
@@ -413,6 +466,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_over") public static void overDone(ServerLevel l){done();}
     @AfterBatch(batch="park_gus") public static void gusDone(ServerLevel l){done();}
     @AfterBatch(batch="park_slide_bike") public static void slideBikeDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_slide_speed") public static void slideSpeedDone(ServerLevel l){done();}
     @AfterBatch(batch="park_gus_seesaw") public static void gusSeesawDone(ServerLevel l){done();}
     @AfterBatch(batch="park_gus_swing") public static void gusSwingDone(ServerLevel l){done();}
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
@@ -1276,7 +1330,9 @@ public final class BikeNightTests {
                 // Two readers on it: it is theirs.
                 p[1]=f.player("seesaw_other",P);
             })
-            .thenWaitUntil(()->h.assertTrue(p[1].getBbHeight()<1.1&&BikeNight.here(p[1]),"waiting for the second reader to have arrived"))
+            // 0.4.478: and for the board to know Gus is off it. It counts an end as taken for two ticks after its rider has gone, and a
+            // reader who arrived quickly was now and then refused the end he had just left.
+            .thenWaitUntil(()->h.assertTrue(p[1].getBbHeight()<1.1&&BikeNight.here(p[1])&&!board.get().ridden(0)&&!board.get().ridden(1),"waiting for the second reader to have arrived, and for the board to be empty"))
             .thenExecute(()->{
                 f.click(p[0],P,BikeNightSite.seesawEnd(0));f.click(p[1],P,BikeNightSite.seesawEnd(1));
                 h.assertTrue(p[0].getVehicle() instanceof SeesawSeat&&p[1].getVehicle() instanceof SeesawSeat,"two readers on the seesaw: "+p[0].getVehicle()+", "+p[1].getVehicle());
@@ -1351,7 +1407,9 @@ public final class BikeNightTests {
             })
             // Up the chute, pedalling: a bike rolls up it as it rolls up any steps.
             .thenWaitUntil(()->{hear.run();t[0]++;var r=at.get();top[0]=Math.max(top[0],r.y);
-                if(r.y<deck.getY()+.55){p[0].setPlayerInput(0,0,false,false);pedalWell(bike[0],t[0],3);}else p[0].setPlayerInput(0,-1,false,false);   // near the top, the brake
+                // Pedalled whenever it slows, all the way up and slowly on over the deck's edge; the brake only once it is well onto
+                // the deck (0.4.478: a brake that grips, held a block short of the top, stops a bike on the chute).
+                boolean on=r.y>deck.getY()+.95,well=on&&r.z<deck.getZ()+.75;p[0].setPlayerInput(0,well?-1:0,false,false);if(!well&&bike[0].speedNow()<(on?.08F:.2F))pedalWell(bike[0],t[0],3);
                 h.assertTrue(p[0].getVehicle()==bike[0],"still on the bike at "+r);
                 h.assertTrue(r.y>deck.getY()+.95&&Math.abs(r.z-(deck.getZ()+.5))<.6&&bike[0].speedNow()<.02,"waiting to be stopped on the deck: "+r+" at "+bike[0].speedNow());})
             .thenExecute(()->{
@@ -1383,6 +1441,59 @@ public final class BikeNightTests {
             .thenWaitUntil(()->{t[0]++;var r=at.get();if(bike[0].speedNow()<.12F)pedalWell(bike[0],t[0],4);h.assertTrue(r.z>end.getZ()+1.2&&r.y<.5,"waiting to be down again: "+r);})
             .thenIdle(BikeNight.LOOK*3)
             .thenExecute(()->h.assertTrue(f.own(p[0],P).getInt("SlideRides")==1,"part way up and down again is not the slide ridden down"))
+            .thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.478: the chute as a hill
+    @GameTest(template="empty",batch="park_slide_speed",timeoutTicks=3000)
+    public static void aBikeRollsDownTheSlidesChuteGatheringSpeedAndLosesItGoingUp(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] bike={null};
+        var deck=BikeNightSite.slideDeck();var end=BikeNightSite.slideEnd();double line=deck.getX()+.5,head=deck.getZ()+1,foot=end.getZ();
+        final double[] off={0},stood={0};final boolean[] flew={false};final float[] bottom={0};final int[] t={0};
+        java.util.function.Supplier<Vec3> at=()->bike[0].position().subtract(b.getX(),b.getY(),b.getZ());
+        // How high the chute's surface is over the ground, that far south: from the deck's own height at its head to the run-out's at its foot.
+        java.util.function.DoubleUnaryOperator sheet=z->deck.getY()+1-CalderPlayBlock.SLOPE*(Mth.clamp(z,head,foot)-head);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("chute_rider",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.LAMP)!=null&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, and for the reader to be the park's size"))
+            .thenExecute(()->{
+                bike[0]=take(h,f,p[0],NightBike.Make.LAMP);
+                // Up on the deck, looking down the chute, with hardly a push.
+                bike[0].setPos(b.getX()+line,b.getY()+deck.getY()+1,b.getZ()+deck.getZ()+.5);bike[0].setYRot(0);p[0].setYRot(0);p[0].setYHeadRot(0);bike[0].steady(0,.06F);
+            })
+            .thenWaitUntil(()->{
+                var r=at.get();bike[0].steady(0,bike[0].speedNow());
+                h.assertTrue(p[0].getVehicle()==bike[0],"still on the bike at "+r);
+                // Clear of the deck, and as far as the run-out: on the chute.
+                if(r.z>head+.45&&r.z<foot-.05){off[0]=Math.max(off[0],Math.abs(r.y-sheet.applyAsDouble(r.z)));flew[0]|=!bike[0].onGround();}
+                if(r.z>=foot&&bottom[0]==0)bottom[0]=bike[0].speedNow();
+                h.assertTrue(r.z>foot+1.5&&r.y<.5,"waiting to be down off the end of the chute: "+r);})
+            .thenExecute(()->{
+                h.assertTrue(!flew[0]&&off[0]<.03,"a bike rides the chute's own surface all the way down, never off it: "+off[0]+" from it at the most, in the air "+flew[0]);
+                h.assertTrue(bottom[0]>.2F,"let roll from the deck with hardly a push, it is going well by the bottom: "+bottom[0]);
+                // Up it. From the sand below the run-out, at a good speed, and from the run-out on left to roll.
+                bike[0].setPos(b.getX()+line,b.getY(),b.getZ()+foot+3.5);bike[0].setYRot(180);p[0].setYRot(180);p[0].setYHeadRot(180);bike[0].steady(0,.3F);
+            })
+            .thenWaitUntil(()->{
+                var r=at.get();bike[0].steady(0,r.z>foot+1.6?.3F:bike[0].speedNow());
+                h.assertTrue(p[0].getVehicle()==bike[0],"still on the bike at "+r);
+                h.assertTrue(r.z<foot&&bike[0].speedNow()<RiddenBike.STOPPED,"waiting for the chute to stop it: "+r+" at "+bike[0].speedNow());})
+            .thenExecute(()->{
+                var r=at.get();stood[0]=r.z;
+                h.assertTrue(r.z>head+.4&&Math.abs(r.y-sheet.applyAsDouble(r.z))<.03,"not pedalled, it does not reach the top: it stalls on the chute, on its surface: "+r);
+            })
+            .thenExecuteFor(20,()->bike[0].steady(0,bike[0].speedNow()))
+            .thenExecute(()->{
+                var r=at.get();
+                h.assertTrue(p[0].getVehicle()==bike[0]&&Math.abs(r.z-stood[0])<.01&&Math.abs(r.y-sheet.applyAsDouble(r.z))<.03,"and stands where it stopped, a foot down: "+r+" from "+stood[0]);
+            })
+            // Pedalled, it climbs the rest.
+            .thenWaitUntil(()->{
+                t[0]++;var r=at.get();
+                boolean on=r.y>deck.getY()+.95,well=on&&r.z<deck.getZ()+.75;p[0].setPlayerInput(0,well?-1:0,false,false);if(!well&&bike[0].speedNow()<(on?.08F:.2F))pedalWell(bike[0],t[0],3);
+                h.assertTrue(p[0].getVehicle()==bike[0],"still on the bike at "+r);
+                h.assertTrue(r.y>deck.getY()+.95&&r.z<head&&bike[0].speedNow()<.02,"waiting to be stopped on the deck: "+r+" at "+bike[0].speedNow());})
             .thenSucceed();
     }
 

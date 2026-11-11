@@ -33,9 +33,10 @@ import net.minecraft.world.phys.Vec3;
  * function."). The strafe keys are the pedals, and each press of left or right is one push on that pedal. A push drives the bike on and
  * tips it a little toward that side. Pushing the same pedal twice running drives it on less and tips it much more. Left to itself, a
  * moving bike leans further whichever way it already leans: quickly when it is slow, slowly when it is going well. Turning leans it
- * into the turn, uphill slows it and downhill speeds it. So a reader keeps it up by pedalling in turn and, when it starts to go over,
+ * into the turn. Uphill slows it and downhill speeds it, by its own weight (0.4.478). So a reader keeps it up by pedalling in turn and, when it starts to go over,
  * by pushing twice on the pedal on the other side. If it leans all the way over, they come off and the bike lies in the road. Run into
- * a wall going fast and they come off too. Stopped, a foot goes down and nothing falls. The back key brakes. It goes where the rider
+ * a wall going fast and they come off too. Stopped, a foot goes down, nothing falls and the bike stands where it is, on a slope too
+ * (0.4.478). The back key brakes, to a stop. It goes where the rider
  * looks, turning no faster than a bike can, and sneaking gets off.
  *
  * <p><b>The hop</b> (0.4.463, the owner: "a bike-jump feature I was hoping to include"). Holding jump, the rider crouches over the
@@ -81,6 +82,18 @@ public abstract class RiddenBike extends Entity {
     public static final float LIP=.6F;
     /** How far above a ramp's sheet a bike rolling down it may find itself in a tick and still be kept on it. */
     public static final float STICK=.35F;
+    /**
+     * 0.4.478, what a hill is worth (the owner: "ensure bike properly accelerates and decelerates from the ramp"). GRAVITY is the pull
+     * of the ground on a real bike, 9.8 metres a second each second, in blocks and ticks. On the ground a bike gives up twice that of
+     * the square of its speed for each block it climbs, and is given as much for each block it comes down. CLIMB is the weight of an
+     * ordinary bike (Stats.climb): a make that climbs well is lighter going up and no lighter coming down.
+     */
+    public static final float GRAVITY=.0245F,CLIMB=.09F;
+    /**
+     * 0.4.478: what the brake takes off the speed each tick beside its share of it, for a brake as hard as an ordinary bike's. With
+     * only a share taken, a braked bike never quite stopped, and on a slope it crept down for as long as the brake was held.
+     */
+    public static final float GRIP=.012F;
 
     /** What one make of bike does differently. The plain one is Borrasca's. */
     public static final class Stats {
@@ -92,8 +105,8 @@ public abstract class RiddenBike extends Entity {
         public float brake=.9F;
         /** Along a wall: the least of its way a glance leaves it, and how nearly head on (as the share of its way it kept) puts the rider off. */
         public float glance=.3F,headOn=.4F;
-        /** What a block climbed costs. */
-        public float climb=.09F;
+        /** How hard a climb is on it: CLIMB is an ordinary bike, which a block climbed at full speed costs about this much of its speed. */
+        public float climb=CLIMB;
         /** The highest hop, how hard a crooked landing tips it, and how fast it can come down without the rider coming off. */
         public float popHigh=POP_HIGH,landTip=1F,hardFall=HARD_FALL;
         private Stats(){}
@@ -189,7 +202,8 @@ public abstract class RiddenBike extends Entity {
     public void pedal(int side){
         if(done)return;
         if(!onGround()){lean=Mth.clamp(lean+side*AIR_TIP,-.95F,.95F);return;}
-        boolean same=side==lastSide;Stats s=stats();
+        // From a standstill any pedal is a first push: there is no pedal it follows.
+        boolean same=side==lastSide&&speed>=STOPPED;Stats s=stats();
         // A push never slows a bike already going faster than it can be pedalled (downhill, or in the Rattler's burst).
         if(speed<s.top)speed=Math.min(s.top,speed+(same?s.samePush:s.turnPush)*load());
         lean+=side*(same?SAME_TIP:TURN_TIP);
@@ -211,7 +225,7 @@ public abstract class RiddenBike extends Entity {
         float want=Mth.wrapDegrees(p.getYRot()-getYRot());float turn=Mth.clamp(want,-s.turn,s.turn)*Math.min(1,.3F+speed/STEADY);
         if(!grounded)turn*=AIR_TURN;
         setYRot(getYRot()+turn);lean+=turn*s.turnLean*speed/TOP;
-        if(braking&&grounded)speed*=s.brake;
+        if(braking&&grounded)speed=Math.max(0,speed*s.brake-GRIP*(1-s.brake)*10);
         if(isInWater())speed*=.6F;
         // Balance. Stopped, a foot goes down. Moving, it leans further the way it leans, faster when slow, with a little wobble of its own.
         // In the air there is nothing to fall against: it keeps the lean it left the ground with, but for the rider's own weight.
@@ -234,8 +248,9 @@ public abstract class RiddenBike extends Entity {
             if(gap>LIP&&grounded){
                 // Into the ramp's side or its open back, well under the sheet: it is a wall.
                 setPos(x0,getY(),z0);horizontalCollision=true;
-            }else if(gap>=0||(grounded&&gap>-STICK)){
-                // Up onto the sheet (rolling up it, or coming down onto it from the air), or kept on it going down.
+            }else if(gap>=0||(grounded&&gap>-STICK&&!onGround())){
+                // Up onto the sheet (rolling up it, or coming down onto it from the air), or kept on it going down. Not pulled down
+                // onto it off real ground: where a sheet meets a deck or a ledge, the bike's wheels are on that until they are past it.
                 setPos(getX(),top,getZ());setOnGround(true);sheet=1;
             }
         }
@@ -257,10 +272,14 @@ public abstract class RiddenBike extends Entity {
         if(grounded&&landed){runs[onRoad&7]=went;climbs[onRoad&7]=(float)Math.max(0,climbed);onRoad++;}else onRoad=0;
         // How steeply it is going up a ramp's sheet just now, for the tick the sheet ends: exact, since the sheet is.
         onSheet=sheet>0&&landed&&went>.01F&&climbed>0?(float)(climbed/went):0;
-        // Uphill slows it. In the air what it climbs it pays for, and downhill, or coming down, gives it back.
-        if(grounded&&landed){if(climbed>.01)speed-=(float)climbed*s.climb;}
-        else if(climbed>.01)speed-=(float)climbed*.04F;
-        if(climbed< -.01)speed+=(float)-climbed*.04F;
+        // A hill. On the ground a bike gives up, or is given, the square of its speed for the height it gains or loses, as a real one
+        // does: so a climb a fast bike carries stalls a slow one, and a bike let roll from the top of a ramp is going well by the bottom.
+        // In the air what it climbs it pays for, and coming down gives it back.
+        if(grounded&&landed){
+            if(climbed>.001)speed=(float)Math.sqrt(Math.max(0,speed*speed-2*GRAVITY*(s.climb/CLIMB)*climbed));
+            else if(climbed< -.001)speed=(float)Math.sqrt(speed*speed-2*GRAVITY*climbed);
+        }else if(climbed>.01)speed-=(float)climbed*.04F;
+        else if(climbed< -.01)speed+=(float)-climbed*.04F;
         // Into something: a glance along a wall keeps most of the way on; head on at speed, the rider comes off.
         if(horizontalCollision&&speed>.001F){double kept=went/speed;if(kept<s.headOn&&speed>CRASH){off(p,lean>=0?1:-1,Off.HEAD_ON);return;}speed*=(float)Mth.clamp(kept,s.glance,1);}
         // Landing. Level, it keeps its way. Crooked, it tips much further the way it leaned and loses some. Far too hard, the rider is off.
@@ -274,21 +293,26 @@ public abstract class RiddenBike extends Entity {
             }
         }
         speed=Mth.clamp(speed*.988F,0,Math.max(s.top*1.4F,cap()));
+        // Stopped is stopped (0.4.478): with a foot down the bike stands where it is, on the level or on a slope. It used to creep on
+        // at whatever was left, which over the many ticks of turning round where it stood took it most of a block.
+        if(landed&&speed<STOPPED)speed=0;
         entityData.set(LEAN,Mth.clamp(lean,-1,1));entityData.set(SPEED,speed);entityData.set(CROUCH,charge/(float)CHARGE);
         if(Math.abs(lean)>=1)off(p,lean>0?1:-1,Off.OVER);
         else ridden(p);
     }
 
-    /** How high (in the world) a plank ramp's sheet is under the middle of the bike, or NaN where there is no ramp under it. */
+    /**
+     * How high (in the world) the sheet a bike rides is under the middle of the bike (a plank ramp's, the slide's chute: BikeSurface),
+     * or NaN where there is none under it. The cell it is in, or the one below: a bike at the top of a cell is on the cell below, and a
+     * chute's sheet stands a little higher than its own block.
+     */
     private double ramp(){
-        var at=BlockPos.containing(getX(),getY()+.001,getZ());var s=level().getBlockState(at);
-        if(!(s.getBlock() instanceof BikeRampBlock)){
-            // Standing exactly at the top of a cell, the ramp is the cell below.
-            if(getY()-Math.floor(getY())>.05)return Double.NaN;
-            at=at.below();s=level().getBlockState(at);
-            if(!(s.getBlock() instanceof BikeRampBlock))return Double.NaN;
+        var at=BlockPos.containing(getX(),getY()+.001,getZ());
+        for(int i=0;i<2;i++,at=at.below()){
+            var s=level().getBlockState(at);
+            if(s.getBlock() instanceof BikeSurface sheet){double top=sheet.sheet(s,at,getX(),getZ());if(!Double.isNaN(top))return at.getY()+top;}
         }
-        return at.getY()+BikeRampBlock.surface(s,at,getX(),getZ());
+        return Double.NaN;
     }
 
     /**

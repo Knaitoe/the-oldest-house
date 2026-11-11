@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -48,7 +49,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <li>LADDER at stage 2 (its lower block) or 3 (its upper) is the bars' own, in their paint. It faces the rungs.</li>
  * </ul>
  */
-public final class CalderPlayBlock extends HorizontalDirectionalBlock {
+public final class CalderPlayBlock extends HorizontalDirectionalBlock implements BikeSurface {
     public static final MapCodec<CalderPlayBlock> CODEC=simpleCodec(CalderPlayBlock::new);
     public enum Kind implements StringRepresentable {
         POST,BAR,CHAIN,SWING,LADDER,DECK,CHUTE,RUNOUT,RUNGS;
@@ -102,7 +103,24 @@ public final class CalderPlayBlock extends HorizontalDirectionalBlock {
     }
     /** The chains and the seat give way to a body, as hanging things do. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case CHAIN,SWING->Shapes.empty();default->getShape(s,l,p,c);};
+        return switch(s.getValue(KIND)){
+            case CHAIN,SWING->Shapes.empty();
+            // 0.4.478: a bike rides the chute's own surface, not the steps a body stands on (BikeSurface).
+            case CHUTE->c instanceof EntityCollisionContext e&&e.getEntity() instanceof RiddenBike?Shapes.empty():getShape(s,l,p,c);
+            // And the deck's guards stand too high for a bike to mount. A bike rolls up anything a block high, and a rail is a block high.
+            case DECK->s.getValue(STAGE)==GUARD&&c instanceof EntityCollisionContext e&&e.getEntity() instanceof RiddenBike
+                ?Shapes.or(MarshBlock.turned(s.getValue(FACING),0,0,0,1.5,24,16),MarshBlock.turned(s.getValue(FACING),14.5,0,0,16,24,16)):getShape(s,l,p,c);
+            default->getShape(s,l,p,c);
+        };
+    }
+    /**
+     * 0.4.478, the chute as a bike rides it: one sheet from the deck's own height to the run-out's, falling SLOPE of a block for each
+     * block along the way it faces. The steps a body stands on are at this sheet's height over their middles.
+     */
+    @Override public double sheet(BlockState s,BlockPos at,double x,double z){
+        if(s.getValue(KIND)!=Kind.CHUTE)return Double.NaN;
+        double along=switch(s.getValue(FACING)){case SOUTH->z-at.getZ();case EAST->x-at.getX();case WEST->1-(x-at.getX());default->1-(z-at.getZ());};
+        return (chuteTop(s.getValue(STAGE))-16*SLOPE*Math.max(0,Math.min(1,along)))/16;
     }
     @Override protected boolean isPathfindable(BlockState s,PathComputationType t){return false;}
 }

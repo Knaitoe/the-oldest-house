@@ -28,7 +28,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * rider. For a bike the steps are not there, and it rides the sheet itself, at exactly the sheet's slope ({@link #surface}, used by
  * RiddenBike). A bike that is still climbing when the ramp ends is thrown up by its own speed.
  */
-public final class BikeRampBlock extends HorizontalDirectionalBlock {
+public final class BikeRampBlock extends HorizontalDirectionalBlock implements BikeSurface {
     public static final MapCodec<BikeRampBlock> CODEC=simpleCodec(BikeRampBlock::new);
     /** The rise of the long ramp over one block, in pixels: sixteen times the tangent of 22.5 degrees. */
     public static final double LONG=16*Math.tan(Math.toRadians(22.5));
@@ -70,5 +70,6 @@ public final class BikeRampBlock extends HorizontalDirectionalBlock {
         double along=switch(s.getValue(FACING)){case SOUTH->z-at.getZ();case EAST->x-at.getX();case WEST->1-(x-at.getX());default->1-(z-at.getZ());};
         return (part.from+(part.to-part.from)*Math.max(0,Math.min(1,along)))/16;
     }
+    @Override public double sheet(BlockState s,BlockPos at,double x,double z){return surface(s,at,x,z);}
     @Override protected boolean isPathfindable(BlockState s,PathComputationType t){return false;}
 }
