@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/calder_grave_turf_slab"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/calder_grave_turf_slab_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/calder_grave_turf"
+    }
+  }
+}

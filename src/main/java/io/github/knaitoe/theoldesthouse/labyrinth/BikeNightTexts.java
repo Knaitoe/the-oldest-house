@@ -297,6 +297,26 @@ public final class BikeNightTexts {
     public static final String[] CARTS_THROUGH={"Through the gap! Go on!","Mind the handles!"};
     public static final String[] CARTS_ROUND={"Not through my carts, Tully.","Go round, Ray-Ray. Go on.","Round the end, Duff."};
     /** Every line of the people on the pavements, for the case that holds them to how they talk. */
+    // 0.4.489, the cemetery: what is cut on its stones, as a hand on one is told (CalderGraves.inscription).
+    /** The row of small stones near the back: the proposal's "names and nothing else", and the one date. */
+    public static final String[] SMALL_NAMES={"LUCY ARDEN","TOM ARDEN","BETH KOWAL","PETER RUIZ","WALT FINCH","JUNE ABBOTT"};
+    public static final int SMALL_YEAR=1957;
+    public static final String SMALL_DATE="OCTOBER 31, "+SMALL_YEAR;
+    /** The town's families, the names their dead were given, and the lines some have under their years. */
+    public static final String[] FAMILIES={"HOLT","ALDOUS","BRANNOCK","TILLEY","VOSS","HARROW","KEANE","LINDQVIST","MOTT","OAKES","SAYER","WHITLOW","YARROW","DUNMORE","GARRITY"};
+    public static final String[] GIVEN={"EDITH","HAROLD","AGNES","CLARENCE","MABEL","ERNEST","IDA","HOMER","PEARL","LLOYD","HAZEL","CHESTER","NELLIE","ELMER","CORA","ORVILLE","VIOLA","AMOS","ETTA",
+        "RUFUS","LOTTIE","SILAS","MINNIE","JASPER","OPAL","FLOYD"};
+    public static final String[] EPITAPHS={"AT REST","GONE HOME","ASLEEP","IN LOVING MEMORY","UNTIL THE DAY BREAK","THE DAY'S WORK DONE","REMEMBERED","PEACE","TOGETHER AGAIN"};
+    /** The year on each low marker's face (tools/draw_calder_graves_art.py draws the same four), and the years the rest died between. */
+    public static final int[] MARKER_YEARS={1934,1911,1946,1898};
+    public static final int FIRST_YEAR=1880,LAST_YEAR=1979;
+    public static final String ANGEL_STONE="ADELAIDE CALDER. 1822-1901. WIFE OF AMBROSE.";
+    public static final String OBELISK_STONE="AMBROSE CALDER. 1811-1889. HE BUILT THE MILL.";
+    public static final String TOMB_DOORS="The doors are iron, and shut. CALDER is cut in the stone over them.";
+    public static List<String> graveLines(){
+        var all=new ArrayList<String>(List.of(SMALL_NAMES));all.addAll(List.of(FAMILIES));all.addAll(List.of(GIVEN));all.addAll(List.of(EPITAPHS));
+        all.addAll(List.of(SMALL_DATE,ANGEL_STONE,OBELISK_STONE,TOMB_DOORS));return all;
+    }
     public static List<String> peopleLines(){
         var all=new ArrayList<String>(List.of(AT_A_STOP));all.addAll(List.of(NO_CUTTING));all.addAll(List.of(CARTS_MIND));all.addAll(List.of(CARTS_THROUGH));all.addAll(List.of(CARTS_ROUND));
         for(var lot:CHEERS)all.addAll(List.of(lot));

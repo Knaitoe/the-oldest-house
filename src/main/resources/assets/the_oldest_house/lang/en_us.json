@@ -1707,5 +1707,11 @@
   "subtitles.the_oldest_house.town.breaker": "Lights are switched off",
   "subtitles.the_oldest_house.town.laughter": "An audience laughs",
   "subtitles.the_oldest_house.town.radio": "A car radio plays",
-  "subtitles.the_oldest_house.town.carts": "Carts rattle"
+  "subtitles.the_oldest_house.town.carts": "Carts rattle",
+  "block.the_oldest_house.calder_grave": "Grave Fitting",
+  "block.the_oldest_house.calder_grave_turf": "Cemetery Grass",
+  "block.the_oldest_house.calder_grave_earth": "Grave Earth",
+  "block.the_oldest_house.calder_marble": "Marble",
+  "block.the_oldest_house.calder_grave_turf_slab": "Cemetery Grass Step",
+  "block.the_oldest_house.calder_gravel_slab": "Gravel Step"
 }

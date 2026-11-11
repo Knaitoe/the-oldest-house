@@ -1,0 +1,214 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "g": "the_oldest_house:block/calder_grave/goods",
+    "particle": "the_oldest_house:block/calder_grave/goods"
+  },
+  "elements": [
+    {
+      "from": [
+        7.6,
+        0,
+        7.6
+      ],
+      "to": [
+        8.4,
+        11,
+        8.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            9,
+            9,
+            10,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            9,
+            9,
+            10,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#g",
+          "uv": [
+            9,
+            9,
+            10,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            9,
+            9,
+            10,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#g",
+          "uv": [
+            9,
+            9,
+            10,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            9,
+            9,
+            10,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8.4,
+        7,
+        7.9
+      ],
+      "to": [
+        13,
+        10.5,
+        8.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#g",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#g",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            5,
+            9,
+            6,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8.5,
+        9.1,
+        7.85
+      ],
+      "to": [
+        10.5,
+        10.4,
+        8.15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#g",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#g",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        }
+      }
+    }
+  ]
+}
