@@ -75,3 +75,22 @@ while turning round, and finished on top of the guard rail. It passes with the b
 Nothing here was looked at in a client. The chute is drawn as it was; a bike on it now follows the drawn surface where
 before it followed the steps, which were at the same heights over their middles. How it feels to ride down is the owner's
 to judge: if the hill should pull harder or less, it is one number (`RiddenBike.GRAVITY`).
+
+## After: a hop where it stands (CI, run 1530)
+
+CI found one more thing the hills had left behind. Run 1530 failed the Borrasca case that hops Kendra's bike where it
+stands and expects it to come down level: it came down leaning (`-0.05`), by the dice, about one run in several.
+
+In the air a bike trades speed for height: it pays `0.04` of speed for each block it climbs and is given the same for each
+block it drops. A bike with no way on has nothing to pay going up, since its speed never goes below nothing, but it was
+still given speed for the whole drop coming down. Hopped from a standstill it landed at about `0.034`, just over the speed
+at which a bike counts as being ridden (`STOPPED`, `0.03`), so it rolled a little with nobody pedalling and wobbled as a
+moving bike does.
+
+Now a bike keeps count of what its climb has cost it since it left the ground (`lift`). A bike that is moving is given
+speed for a drop as before, and a bike rolling off a ledge still picks up the fall. One with no way on gets back only what
+its own climb took: hopped where it stands it paid nothing, so it comes down standing. The count is forgotten when it
+lands.
+
+The Borrasca case now says so: after the hop the bike's speed is nothing. It passed three times running with the change,
+and every Bike night case with it.

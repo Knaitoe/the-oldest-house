@@ -124,6 +124,8 @@ public abstract class RiddenBike extends Entity {
     /** How steeply it climbed a plank ramp's sheet in the last tick, or nothing if it was not on one or not going up it. */
     private float onSheet;
     private boolean catching;
+    /** What of its speed it has given up for height since it left the ground, which coming down gives it back. */
+    private float lift;
     // The client's own drawing state: how far it has rolled, the cranks turning, the lean, crouch and pitch eased, and the server's position eased in.
     private float rolled,rolledO,crank,crankO,crankTo,shown,shownO,down,downO,pitch,pitchO;private int seenStrokes,lerpSteps;private double lerpX,lerpY,lerpZ;private float lerpYRot;
 
@@ -284,8 +286,15 @@ public abstract class RiddenBike extends Entity {
         if(grounded&&landed){
             if(climbed>.001)speed=(float)Math.sqrt(Math.max(0,speed*speed-2*GRAVITY*(s.climb/CLIMB)*climbed));
             else if(climbed< -.001)speed=(float)Math.sqrt(speed*speed-2*GRAVITY*climbed);
-        }else if(climbed>.01)speed-=(float)climbed*.04F;
-        else if(climbed< -.01)speed+=(float)-climbed*.04F;
+        }else if(climbed>.01){float paid=Math.min(speed,(float)climbed*.04F);speed-=paid;lift+=paid;}
+        else if(climbed< -.01){
+            // Coming down gives a moving bike speed for the drop. One that has no way on gets back only what its own climb took
+            // (0.4.481): hopped where it stands, a bike paid nothing going up, and used to come down rolling on what the fall
+            // gave it, just fast enough to be riding and wobbling with nobody pedalling.
+            float back=(float)-climbed*.04F;if(speed<STOPPED)back=Math.min(back,lift);
+            speed+=back;lift=Math.max(0,lift-back);
+        }
+        if(landed)lift=0;
         // Into something: a glance along a wall keeps most of the way on; head on at speed, the rider comes off.
         if(horizontalCollision&&speed>.001F){double kept=went/speed;if(kept<s.headOn&&speed>CRASH){off(p,lean>=0?1:-1,Off.HEAD_ON);return;}speed*=(float)Mth.clamp(kept,s.glance,1);}
         // Landing. Level, it keeps its way. Crooked, it tips much further the way it leaned and loses some. Far too hard, the rider is off.

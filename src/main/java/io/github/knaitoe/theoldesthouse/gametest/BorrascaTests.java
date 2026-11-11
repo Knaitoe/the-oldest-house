@@ -634,6 +634,8 @@ public final class BorrascaTests {
               h.assertTrue(bike[0].getY()-road[0]>.8&&p.getVehicle()==bike[0],"let go, her bike hops: "+(bike[0].getY()-road[0]));
           }).thenIdle(14).thenExecute(()->{
               h.assertTrue(bike[0].onGround()&&p.getVehicle()==bike[0]&&Math.abs(bike[0].leanNow())<.05F,"and comes down level, the rider still on it: "+bike[0].leanNow());
+              // 0.4.481: and standing. It used to come down rolling on what the fall gave it, and a rolling bike wobbles by the dice.
+              h.assertTrue(bike[0].speedNow()==0,"hopped where it stood, it comes down standing: "+bike[0].speedNow());
               p.setPlayerInput(1,0,false,false);
           }).thenIdle(2).thenExecute(()->{
               h.assertTrue(bike[0].strokes()==-1&&bike[0].speedNow()>0,"the left strafe key is a push on the left pedal: "+bike[0].strokes());
