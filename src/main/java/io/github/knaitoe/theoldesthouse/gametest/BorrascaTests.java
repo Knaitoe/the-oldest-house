@@ -1431,6 +1431,69 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
 
+    /**
+     * 0.4.456 (owner: "You could add inflections of personality into the citizens homes. Remember that this town is sick, that many know
+     * what the town does and why and just accept it. Some don't, but they have to bite their tongue."): the street's four houses are four
+     * households, each told by what is in its room, and years on each is the same household later.
+     */
+    @AfterBatch(batch="borrasca_homes") public static void homesDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_homes",timeoutTicks=2000)
+    public static void theStreetsFourHousesAreFourHouseholds(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_homes");var things=BorrascaHomes.things();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"town cast recalled"))
+          .thenExecute(()->{
+              var b=f.base(p);var rooms=new ArrayList<Set<BorrascaHomeBlock.Kind>>();var lines=new HashSet<String>();int told=0;
+              for(int house=0;house<BorrascaHomes.HOUSES;house++){
+                  var mine=new TreeSet<BorrascaHomeBlock.Kind>();
+                  for(var t:things)if(t.house()==house){
+                      var s=f.out.getBlockState(b.offset(t.at()));String what="house "+house+"'s "+t.kind().getSerializedName()+" at "+t.at();
+                      h.assertTrue(BorrascaHomeBlock.is(s,t.kind())&&s.getValue(BorrascaHomeBlock.FACING)==t.facing()&&s.getValue(BorrascaHomeBlock.STAGE)==0,what+" stands as its household keeps it, in the childhood year: "+s);
+                      h.assertTrue(BorrascaHomes.house(t.at())==house,what+" is in its own house");
+                      if(t.kind().lies()){
+                          var under=f.out.getBlockState(b.offset(t.at().below()));
+                          h.assertTrue(under.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())&&Set.of(HouseholdFurnitureBlock.Kind.FORMICA_TABLE,HouseholdFurnitureBlock.Kind.WALNUT_DESK,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS).contains(under.getValue(HouseholdFurnitureBlock.KIND)),what+" lies on a table, a desk or the drawers: "+under);
+                      }
+                      if(t.kind().wall()){
+                          var behind=b.offset(t.at().relative(t.facing().getOpposite()));
+                          h.assertTrue(f.out.getBlockState(behind).isSolidRender(f.out,behind),what+" hangs on a wall, not on a window or the air: "+f.out.getBlockState(behind));
+                      }
+                      String early=BorrascaHomes.look(house,t.kind(),false),later=BorrascaHomes.look(house,t.kind(),true);
+                      h.assertTrue(early!=null&&later!=null&&!early.isBlank()&&!later.isBlank(),what+" has a line in both years");
+                      h.assertTrue(!t.kind().ages()||!early.equals(later),what+" says something else years on, having aged: "+early+" / "+later);
+                      for(var word:List.of("mine","baby","babies","Sheriff","stable","sold","bought the"))h.assertFalse(early.contains(word)||later.contains(word),what+" says what is there, not what it means: "+word);
+                      if(lines.add(early))told++;
+                      h.assertTrue(BorrascaHomes.click(p,b,t.at(),f.own(p)),what+" answers a hand with its line");
+                      mine.add(t.kind());
+                  }
+                  rooms.add(mine);
+                  h.assertTrue(mine.contains(BorrascaHomeBlock.Kind.CRIB),"house "+house+" has a crib: its card hangs on the doctor's board");
+                  h.assertTrue(f.out.getBlockState(b.offset(BorrascaHomes.cell(house,0,0,0))).getBlock() instanceof BedBlock&&f.out.getBlockState(b.offset(BorrascaHomes.cell(house,0,1,0))).getBlock() instanceof BedBlock,"house "+house+" has its bed against the back wall");
+                  for(int u=4;u<=6;u++){
+                      var w=b.offset(BorrascaHomes.cell(house,u,3,0));
+                      h.assertTrue(f.out.noCollision(p,new AABB(w.getX()+.2,w.getY()+.1,w.getZ()+.2,w.getX()+.8,w.getY()+1.8,w.getZ()+.8)),"a reader can walk in at house "+house+"'s door: "+w);
+                  }
+                  var door=b.offset(BorrascaHomes.cell(house,7,3,0));
+                  h.assertTrue(f.out.getBlockState(door).getBlock() instanceof DoorBlock,"house "+house+"'s door is where its room expects it: "+f.out.getBlockState(door));
+              }
+              h.assertTrue(new HashSet<>(rooms).size()==BorrascaHomes.HOUSES,"the four rooms hold four different sets of things: "+rooms);
+              h.assertTrue(told==new HashSet<>(things.stream().map(t->t.house()+"/"+t.kind()).toList()).size(),"no two houses share a line: "+told);
+              h.assertTrue(rooms.get(BorrascaHomes.PRUITT).contains(BorrascaHomeBlock.Kind.PORTRAIT)&&rooms.get(BorrascaHomes.HOLLIS).containsAll(Set.of(BorrascaHomeBlock.Kind.CROSS,BorrascaHomeBlock.Kind.BIBLE))
+                  &&rooms.get(BorrascaHomes.WEBB).containsAll(Set.of(BorrascaHomeBlock.Kind.TV,BorrascaHomeBlock.Kind.JACKET))&&rooms.get(BorrascaHomes.CORLEY).containsAll(Set.of(BorrascaHomeBlock.Kind.SUITCASE,BorrascaHomeBlock.Kind.ATLAS,BorrascaHomeBlock.Kind.FRAME_DOWN)),"each household has what tells it: "+rooms);
+              h.assertTrue(things.stream().filter(t->t.house()==BorrascaHomes.CORLEY&&t.kind()==BorrascaHomeBlock.Kind.CRIB).count()==2,"the Corleys have two cribs: their card says twins");
+              h.assertFalse(BorrascaHomes.click(p,b,BorrascaHomes.cell(BorrascaHomes.PRUITT,3,3,0),f.own(p)),"the floor of a room is not one of its things");
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult visit cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(f.out.getBlockState(f.base(p).offset(things.get(0).at())).getValue(BorrascaHomeBlock.STAGE)==1,"years on, the first room has aged"))
+          .thenExecute(()->{
+              var b=f.base(p);
+              for(var t:things){
+                  var s=f.out.getBlockState(b.offset(t.at()));
+                  h.assertTrue(BorrascaHomeBlock.is(s,t.kind())&&s.getValue(BorrascaHomeBlock.FACING)==t.facing()&&s.getValue(BorrascaHomeBlock.STAGE)==(t.kind().ages()?1:0),"years on, house "+t.house()+"'s "+t.kind().getSerializedName()+" is the same thing later: "+s);
+              }
+              f.close();
+          }).thenSucceed();
+    }
     @AfterBatch(batch="borrasca_town_children") public static void townChildrenDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_town_children",timeoutTicks=2600)
     public static void townChildrenBecomeReadableMissingPosters(GameTestHelper h){
