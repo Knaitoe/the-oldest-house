@@ -73,7 +73,7 @@ final class BorrascaDressing {
         // The store's forecourt: worn gravel from its porch steps to the street.
         for(int x=-12;x<=-5;x++)for(int z=-28;z<=-18;z++){int k=hash(x,2,z)%10;if(Math.abs(z+23)>4-(x+12)/4&&k<6)continue;set(l,b,x,-1,z,(k<9?Blocks.GRAVEL:Blocks.COARSE_DIRT).defaultBlockState());}
         // A bench outside the store and a rain barrel at the office.
-        for(int z=-20;z<=-19;z++)set(l,b,-11,0,z,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));
+        BorrascaShops.seats(l,b,new BlockPos(-11,0,-20),new BlockPos(-11,0,-19),Direction.EAST,false); // 0.4.454
         set(l,b,17,0,-28,Blocks.BARREL);
     }
 
@@ -114,7 +114,7 @@ final class BorrascaDressing {
         for(int x=Math.min(p0,p1);x<=Math.max(p0,p1);x++)for(int z=zc-2;z<=zc+2;z++){set(l,b,x,-1,z,Blocks.OAK_PLANKS);set(l,b,x,3,z,slab(roofSlab,SlabType.BOTTOM));}
         for(int dz:new int[]{-2,2})box(l,b,p1,0,zc+dz,p1,2,zc+dz,Blocks.BIRCH_FENCE);
         set(l,b,p0,2,zc+1,hanging());
-        set(l,b,p0,0,zc-1,stair(Blocks.OAK_STAIRS,out.getOpposite(),Half.BOTTOM));
+        BorrascaShops.seats(l,b,new BlockPos(p0,0,zc-1),new BlockPos(p0,0,zc-1),out,false); // 0.4.454: the porch seat, looking out
         // Chimney at the back, up through the eave: fieldstone, or brick on the brick house.
         boolean brick=wall==Blocks.BRICKS;
         for(int y=0;y<=9;y++)set(l,b,back-o,y,z1+1,brick?Blocks.BRICKS.defaultBlockState():(hash(back,y,z1)%4==0?Blocks.MOSSY_COBBLESTONE:Blocks.COBBLESTONE).defaultBlockState());
@@ -227,7 +227,11 @@ final class BorrascaDressing {
         set(l,b,tx0+1,9,tz1+1,Blocks.BELL.defaultBlockState().setValue(BellBlock.ATTACHMENT,BellAttachType.CEILING));
         box(l,b,tx0,11,tz1,tx1,11,tz0,slab(Blocks.POLISHED_ANDESITE_SLAB,SlabType.BOTTOM));set(l,b,tx0+1,11,tz1+1,Blocks.POLISHED_ANDESITE);set(l,b,tx0+1,12,tz1+1,Blocks.ANDESITE_WALL);set(l,b,tx0+1,13,tz1+1,Blocks.LIGHTNING_ROD);
         // Inside: pews either side of an aisle facing the far end, a table there, a lamp.
-        for(int z:new int[]{-60,-62,-66,-68})for(int x=x0+1;x<=x1-1;x++){if(x==(x0+x1)/2||z==-68&&Math.abs(x-(x0+x1)/2)<=1)continue;set(l,b,x,0,z,stair(Blocks.OAK_STAIRS,Direction.SOUTH,Half.BOTTOM));}
+        // 0.4.454 (owner: "again, custom textures would be beneficial here."): oak pews, a run either side of the aisle in each row
+        // (the last row stands back from the aisle for the door), their ends shaped and hymnals in the racks; they were plank stairs.
+        int aisle=(x0+x1)/2;
+        for(int z:new int[]{-60,-62,-66,-68}){int gap=z==-68?2:1;
+            BorrascaShops.seats(l,b,new BlockPos(x0+1,0,z),new BlockPos(aisle-gap,0,z),Direction.NORTH,true);BorrascaShops.seats(l,b,new BlockPos(aisle+gap,0,z),new BlockPos(x1-1,0,z),Direction.NORTH,true);}
         NovelRooms.furniture(l,b.offset((x0+x1)/2,0,z1+1),HouseholdFurnitureBlock.Kind.READING_DESK,Direction.SOUTH);
         for(int z:new int[]{-62,-67}){box(l,b,x0,5,z,x1,5,z,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));set(l,b,(x0+x1)/2,4,z,hanging());}
         // The path from the street to its door, and its board.
@@ -245,7 +249,7 @@ final class BorrascaDressing {
         int d=BorrascaRooms.TOWN_END+1-(-69);var t=b.offset(0,0,d);
         for(int x=-18;x<=-6;x++)for(int z=-58;z>=-68;z--){int k=hash(x,7,z)%10;if(Math.abs(x+12)+Math.abs(z+63)>9&&k<5)continue;set(l,t,x,-1,z,(k<9?Blocks.GRAVEL:Blocks.COARSE_DIRT).defaultBlockState());}
         for(int z=-60;z>=-66;z-=3)box(l,t,-17,0,z,-15,0,z,log(Blocks.OAK_LOG,Direction.Axis.X));
-        set(l,t,-7,0,-60,Blocks.BARREL);set(l,t,-7,0,-66,stair(Blocks.OAK_STAIRS,Direction.EAST,Half.BOTTOM));set(l,t,-7,0,-67,stair(Blocks.OAK_STAIRS,Direction.EAST,Half.BOTTOM));
+        set(l,t,-7,0,-60,Blocks.BARREL);BorrascaShops.seats(l,t,new BlockPos(-7,0,-66),new BlockPos(-7,0,-67),Direction.WEST,false); // 0.4.454
         // The posts, either side of the trail where the street ends, a board across them high over the path.
         for(int x:new int[]{-4,4})box(l,t,x,0,-69,x,4,-69,log(Blocks.OAK_LOG,Direction.Axis.Y));
         box(l,t,-4,5,-69,4,5,-69,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));

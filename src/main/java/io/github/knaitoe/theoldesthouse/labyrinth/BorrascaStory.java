@@ -467,6 +467,7 @@ public final class BorrascaStory {
         }
         for(String key:BorrascaCast.KEYS)BorrascaCast.remember(own,key,actor(p,own,key));
         townPosters(p,b,own,visit);
+        BorrascaShops.years(p.serverLevel(),b,visit>=3); // 0.4.454: the station's board shows the reader's own year's prices
         townBike(p,b,own,visit);
         BorrascaComic.keep(p,b,own,visit); // 0.4.445: the comic in the fort's window, for as long as it is left there
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door

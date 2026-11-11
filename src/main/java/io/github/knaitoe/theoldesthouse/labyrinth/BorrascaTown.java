@@ -68,7 +68,7 @@ final class BorrascaTown {
         box(l,b,-1,0,-10,1,0,-5,Blocks.BROWN_CARPET);
         set(l,b,-6,0,-1,Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));box(l,b,-6,1,-1,-6,stationRoof(-1)/2-1,-1,Blocks.IRON_BARS);
         box(l,b,-6,0,0,-4,0,0,log(Blocks.SPRUCE_LOG,Direction.Axis.X));set(l,b,-6,1,0,log(Blocks.SPRUCE_LOG,Direction.Axis.X));
-        for(int z=-8;z<=-6;z++)set(l,b,-6,0,z,stair(Blocks.SPRUCE_STAIRS,Direction.WEST,Half.BOTTOM));
+        BorrascaShops.seats(l,b,new BlockPos(-6,0,-8),new BlockPos(-6,0,-6),Direction.EAST,false); // 0.4.454: a bench, not three stairs
         box(l,b,-6,0,-4,-6,1,-4,Blocks.BOOKSHELF);
         fitAt(l,b,BorrascaRooms.TRAIL_MAP,BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);furniture(l,b,6,0,-7,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.WEST);
         set(l,b,6,0,-1,Blocks.BARREL);set(l,b,6,0,-11,Blocks.POTTED_FERN);set(l,b,-6,0,-11,Blocks.POTTED_FERN);
@@ -106,13 +106,13 @@ final class BorrascaTown {
         // notice hung here.
         for(var at:BorrascaRooms.BOARD)BuildBlocks.set(l,b.offset(at),BorrascaPapers.boardPiece(BorrascaPapers.Sheet.BOARD,at),F);
         BorrascaSigns.span(l,b.offset(-15,2,-25),BorrascaSigns.Sign.COLD,Direction.EAST); // 0.4.449: a tin sign on the porch wall, north of the door
-        set(l,b,-14,0,-29,Blocks.BARREL);set(l,b,-15,0,-27,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));set(l,b,-15,0,-26,stair(Blocks.OAK_STAIRS,Direction.WEST,Half.BOTTOM));
+        set(l,b,-14,0,-29,Blocks.BARREL);BorrascaShops.seats(l,b,new BlockPos(-15,0,-27),new BlockPos(-15,0,-26),Direction.EAST,false); // 0.4.454: the porch bench
         // Inside: counter and till by the door, stock behind it, two aisles, the cooler along the back.
         for(int z=-27;z<=-25;z++)road(l,b,-19,0,z,RoadhouseBlock.Kind.COUNTER,Direction.EAST);road(l,b,-19,1,-26,RoadhouseBlock.Kind.REGISTER,Direction.EAST);
         // 0.4.430: the stock behind the counter and the two aisles are a grocer's shelves (tins, boxes, flour), not shelves of books and
         // not barrels of nothing; the feed is at the back of the second aisle, sacks and bales under the hardware sign.
         for(int z=-28;z<=-25;z++)set(l,b,-17,0,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.GROCERIES,Direction.WEST));
-        set(l,b,-18,0,-28,stair(Blocks.SPRUCE_STAIRS,Direction.SOUTH,Half.BOTTOM));
+        furniture(l,b,-18,0,-28,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.SOUTH); // 0.4.454: the clerk's stool (a stair stood here)
         for(int z=-27;z<=-19;z++){if(z==-23)continue;set(l,b,-24,0,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.GROCERIES,Direction.EAST));
             if(z>=-22)set(l,b,-21,0,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.GROCERIES,Direction.WEST));else{set(l,b,-21,0,z,Blocks.HAY_BLOCK);if(z!=-25)set(l,b,-21,1,z,Blocks.BARREL);}}
         for(int x=-27;x<=-23;x++){set(l,b,x,0,-29,Blocks.WHITE_CONCRETE);set(l,b,x,1,-29,Blocks.LIGHT_BLUE_STAINED_GLASS);set(l,b,x,2,-29,Blocks.WHITE_CONCRETE);}
@@ -139,7 +139,7 @@ final class BorrascaTown {
         for(int z=-29;z<=-17;z++){if(z==-23)continue;set(l,b,22,0,z,z==-22||z==-24?Blocks.SPRUCE_PLANKS.defaultBlockState():Blocks.SPRUCE_FENCE.defaultBlockState());}
         set(l,b,22,0,-23,Blocks.SPRUCE_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.EAST));
         set(l,b,22,1,-22,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,22,1,-24,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
-        for(int z:new int[]{-28,-27,-18})set(l,b,19,0,z,stair(Blocks.SPRUCE_STAIRS,Direction.WEST,Half.BOTTOM));
+        BorrascaShops.seats(l,b,new BlockPos(19,0,-28),new BlockPos(19,0,-27),Direction.EAST,false);BorrascaShops.seats(l,b,new BlockPos(19,0,-18),new BlockPos(19,0,-18),Direction.EAST,false); // 0.4.454
         road(l,b,19,1,-21,RoadhouseBlock.Kind.CORKBOARD,Direction.EAST);
         // The working side: two desks, the radio, the files, the map and the cell.
         furniture(l,b,25,0,-20,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,24,0,-20,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);
@@ -256,11 +256,11 @@ final class BorrascaTown {
         furniture(l,b,-23,12,-170,HouseholdFurnitureBlock.Kind.RADIATOR,Direction.NORTH);
         for(int z:new int[]{-174,-177}){furniture(l,b,-25,12,z,HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.WEST);furniture(l,b,-26,12,z,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST);doc(l,b,new BlockPos(-25,13,z),z==-174?BorrascaShopBlock.Kind.DOC_DISPATCH:BorrascaShopBlock.Kind.DOC_PAYROLL,Direction.EAST);}
         fitAt(l,b,new BlockPos(-28,14,-176),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);fitAt(l,b,new BlockPos(-28,14,-175),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
-        for(int z=-174;z<=-171;z++)set(l,b,-20,12,z,Blocks.SPRUCE_PLANKS);doc(l,b,BorrascaRooms.SIGN_IN,BorrascaShopBlock.Kind.DOC_SIGNIN,Direction.WEST);set(l,b,-21,12,-172,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));
+        for(int z=-174;z<=-171;z++)set(l,b,-20,12,z,Blocks.SPRUCE_PLANKS);doc(l,b,BorrascaRooms.SIGN_IN,BorrascaShopBlock.Kind.DOC_SIGNIN,Direction.WEST);furniture(l,b,-21,12,-172,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST); // 0.4.454: the clerk's chair
         // 0.4.447 (owner: "re-use water fountain from personhood vignette."): the waiting room's water cooler, its back to the wall. It was a
         // block of white concrete with a block of blue glass on it.
         set(l,b,BorrascaRooms.WATER.getX(),BorrascaRooms.WATER.getY(),BorrascaRooms.WATER.getZ(),HouseReadRooms.part(HouseReadPropBlock.Part.COOLER).setValue(HorizontalDirectionalBlock.FACING,Direction.WEST));
-        for(int z=-177;z<=-175;z++)set(l,b,-15,12,z,stair(Blocks.SPRUCE_STAIRS,Direction.EAST,Half.BOTTOM));
+        BorrascaShops.seats(l,b,new BlockPos(-15,12,-177),new BlockPos(-15,12,-175),Direction.WEST,false); // 0.4.454: the waiting bench
         set(l,b,-22,16,-175,hanging());set(l,b,-17,16,-172,hanging());
     }
     private static void sorting(ServerLevel l,BlockPos b){

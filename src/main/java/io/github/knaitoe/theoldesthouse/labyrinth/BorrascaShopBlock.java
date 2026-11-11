@@ -45,6 +45,13 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.445, the owner: "Let her tuck a borrowed comic into that sill for you." COMIC, Kit &amp; Caboose No. 31 standing in the
  * fort's window (BorrascaComic), bright (stage 0) or bleached by its years there (stage 1). It stands past its own block, on the
  * ledge the wall leaves inside the pane behind it, leaning on the glass; its facing is the way its front cover looks.</li>
+ * <li>0.4.454, the owner: "Borrasca needs a custom texture pass" and, of the church's pews, "again, custom textures would be
+ * beneficial here." The pump is built of parts (a plinth, a door with its louvres and lock, a chrome waist, a glass head with the
+ * sale and the gallons on wheels, a cap, a lit lens, and the hose down one side to the nozzle in its boot); its stage is which of
+ * the two pumps it is, each stopped on its own sale. PRICE has a later board (stage 1). The seats, which were plank stairs:
+ * PEW_END and PEW_MID, the church's oak pews, an end shaped and carved, hymnals in the rack on each back; BENCH, BENCH_END and
+ * BENCH_MID, slats on cast iron, for the porch, the street and the waiting rooms. A seat's facing is the way whoever sits looks;
+ * an end's own end is to the left of that (stage 0) or the right (stage 1).</li>
  * </ul>
  */
 public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
@@ -52,7 +59,8 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         PIE_CASE,URN,MENU,PEGBOARD,PUMP,PUMP_TOP,PRICE,PAYPHONE,COOLER,CANDY,CASE,HELMET,MAP,PHOTOS,CLOCK,SCALE,JAR,CARDS,EXAM,CHART,FOUNTAIN,MEDS,RACK,OPEN,
         OIL,BAIT,SNACKS,CALENDAR,BAIT_SIGN,TIRES,GROCERIES,CROCKERY,BIKE,CABINET,CABINET_TOP,REMAINS,WRISTBAND,SMEAR,
-        DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG,COMIC;
+        DOC_DISPATCH,DOC_PAYROLL,DOC_SIGNIN,DOC_INTAKE,DOC_TAGS,DOC_FORMS,DOC_LEDGER,DOC_LETTER,DOC_RECEIPT,DOC_LOG,COMIC,
+        PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID;
         /** A paper lying on a desk. */
         public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
@@ -81,7 +89,7 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case PIE_CASE->Block.box(1,0,2,15,9,14);
             case URN->Block.box(4,0,4,12,13,12);
             case PUMP->MarshBlock.turned(f,2,0,4,14,16,13);
-            case PUMP_TOP->MarshBlock.turned(f,2,0,4,14,11,13);
+            case PUMP_TOP->MarshBlock.turned(f,2,0,4,14,14,13);
             case COOLER->MarshBlock.turned(f,1,0,2,15,13,15);
             case CANDY->Block.box(2,0,3,14,15,13);
             case RACK->Block.box(3,0,3,13,16,13);
@@ -105,12 +113,15 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case WRISTBAND->Block.box(2,0,3,14,1,13);
             case SMEAR->Block.box(0,0,0,16,1,16);
             case COMIC->MarshBlock.turned(f,4,0,17,12,11,23);
+            case PEW_END,PEW_MID->Shapes.or(MarshBlock.turned(f,0,0,3,16,8,13),MarshBlock.turned(f,0,8,11,16,16,15));
+            case BENCH,BENCH_END,BENCH_MID->Shapes.or(MarshBlock.turned(f,0,0,2,16,7,12),MarshBlock.turned(f,0,7,12,16,16,15));
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY,CABINET,CABINET_TOP->getShape(s,l,p,c);
+            case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY,CABINET,CABINET_TOP,
+                PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }
