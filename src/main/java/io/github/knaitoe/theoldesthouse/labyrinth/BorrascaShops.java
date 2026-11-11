@@ -59,6 +59,23 @@ public final class BorrascaShops {
         BuildBlocks.set(l,behind,BuildBlocks.state(l,wall),F);
     }
     private static void road(ServerLevel l,BlockPos b,int x,int y,int z,RoadhouseBlock.Kind k,Direction d){set(l,b,x,y,z,RoadhouseBlock.of(k,d));}
+    /**
+     * 0.4.454 (owner: "again, custom textures would be beneficial here."): a run of seats in a straight line from one cell to another,
+     * whoever sits looking the way given. A pew or a bench: its two ends shaped, a lone bench whole. They were plank stairs.
+     */
+    static void seats(ServerLevel l,BlockPos b,BlockPos from,BlockPos to,Direction looks,boolean pew){
+        var left=looks.getCounterClockWise();var axis=left.getAxis();int step=left.getAxisDirection().getStep();
+        var start=from.get(axis)*step>=to.get(axis)*step?from:to;int n=from.distManhattan(to);
+        for(int k=0;k<=n;k++){
+            var kind=pew?(k==0||k==n?BorrascaShopBlock.Kind.PEW_END:BorrascaShopBlock.Kind.PEW_MID):n==0?BorrascaShopBlock.Kind.BENCH:k==0||k==n?BorrascaShopBlock.Kind.BENCH_END:BorrascaShopBlock.Kind.BENCH_MID;
+            BuildBlocks.set(l,b.offset(start.relative(left.getOpposite(),k)),BorrascaShopBlock.of(kind,looks,n>0&&k==n?1:0),F);
+        }
+    }
+    /** 0.4.454: what the years change on the street itself. The station's board shows the prices of the reader's own year. */
+    public static void years(ServerLevel l,BlockPos b,boolean grown){
+        var at=b.offset(PRICE);if(!l.hasChunkAt(at))return;var s=l.getBlockState(at);int stage=grown?1:0;
+        if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.PRICE)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)l.setBlock(at,s.setValue(BorrascaShopBlock.STAGE,stage),3);
+    }
     private static void furniture(ServerLevel l,BlockPos b,int x,int y,int z,HouseholdFurnitureBlock.Kind k,Direction d){NovelRooms.furniture(l,b.offset(x,y,z),k,d);}
     private static BlockState slab(Block block,SlabType type){return block.defaultBlockState().setValue(SlabBlock.TYPE,type);}
     private static BlockState stair(Block block,Direction facing){return block.defaultBlockState().setValue(StairBlock.FACING,facing);}
@@ -148,7 +165,8 @@ public final class BorrascaShops {
         // The forecourt and the pump island under the canopy.
         for(int x=-13;x<=-6;x++)for(int z=-121;z<=-108;z++)set(l,b,x,-1,z,(x+z)%7==0?Blocks.COARSE_DIRT:Blocks.GRAVEL);
         box(l,b,-11,-1,-119,-9,-1,-110,Blocks.SMOOTH_STONE);
-        for(var p:PUMPS){fit(l,b,p,BorrascaShopBlock.Kind.PUMP,Direction.EAST);fit(l,b,p.above(),BorrascaShopBlock.Kind.PUMP_TOP,Direction.EAST);}
+        // 0.4.454: each pump is its own (its stage): the wheels behind its glass stopped on its own last sale.
+        for(int i=0;i<PUMPS.length;i++){set(l,b,PUMPS[i],BorrascaShopBlock.of(BorrascaShopBlock.Kind.PUMP,Direction.EAST,i));set(l,b,PUMPS[i].above(),BorrascaShopBlock.of(BorrascaShopBlock.Kind.PUMP_TOP,Direction.EAST,i));}
         for(int x:new int[]{-12,-8})for(int z:new int[]{-110,-119})box(l,b,x,0,z,x,3,z,log(Blocks.STRIPPED_SPRUCE_LOG,Direction.Axis.Y));
         box(l,b,-13,4,-120,-7,4,-109,slab(Blocks.SMOOTH_STONE_SLAB,SlabType.BOTTOM));set(l,b,-10,3,-114,hanging());
         box(l,b,-6,0,-109,-6,3,-109,log(Blocks.DARK_OAK_LOG,Direction.Axis.Y));fit(l,b,PRICE,BorrascaShopBlock.Kind.PRICE,Direction.EAST);

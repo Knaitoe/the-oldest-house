@@ -231,38 +231,154 @@ def pegboard(taken):
 
 
 # ------------------------------------------------------------------------------------------------ the gas station
-def pump_front():
-    im = new('#b32a26', 42240, 4)
-    fill(im, 3, 2, 13, 9, '#ece7da'); frame(im, '#7e1d1a', 3, 2, 13, 9)
-    text(im, 4, 3, '1', '#2a2a2a'); text(im, 8, 3, '9', '#2a2a2a')
-    fill(im, 5, 11, 11, 15, '#4a1513')
+def art(rows, palette, mottled=(), seed=0, spread=4):
+    """A picture from sixteen rows of sixteen letters. The colours named in mottled vary a little, from a fixed seed."""
+    assert len(rows) == 16 and all(len(r) == 16 for r in rows), [len(r) for r in rows]
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load(); rnd = random.Random(seed)
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != ' ':
+                px[x, y] = shade(palette[ch], rnd.randint(-spread, spread) if ch in mottled else 0)
     return im
+
+
+# 0.4.454 (owner: "Borrasca needs a custom texture pass", of the pump's flat red body and its two great digits): the pump is built of
+# parts, in enamel, chrome and rubber. A steel plinth; a door with its seam, louvres and lock under a white band; a chrome waist; the
+# head, all glass, with the sale and the gallons on small wheels; a white cap; a milk-glass lens on a stem; and down one side the
+# hose, from its elbow at the top round to the nozzle hung in its boot.
+PUMP = {'R': '#b02a23', 'L': '#c9463a', 'S': '#8a1e1a', 'D': '#63110f', 'W': '#f0ece2', 'C': '#d2ccbd', 'K': '#151517', 'k': '#38383d',
+        'G': '#e6e9ea', 'M': '#b4b9bd', 'N': '#7a8086', 'E': '#e8e1cd', 'F': '#a79f8a', 'T': '#44474b', 't': '#5e6268', 'u': '#2a2c2f',
+        'r': '#e0483a', 'B': '#27406e', 'O': '#c8352b'}
+
+
+def pump_door():
+    return art(['RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR', 'RRLWWWWWWWWWWSRR', 'RRLWWWWRRWWWWSRR', 'RRLCCCCCCCCCCSRR', 'RRLRRRRRRRRRRSRR',
+                'RRLRSSSSSSSSRSRR', 'RRLRSLLLLLLSRSRR', 'RRLRSRDDDDRSRSRR', 'RRLRSRLLLLRSRSRR', 'RRLRSRDDDDRSRSRR', 'RRLRSRLLLLGSRSRR',
+                'RRLRSSSSSSSSRSRR', 'RRSSSSSSSSSSSDRR', 'RRDDDDDDDDDDDDRR', 'RRDDDDDDDDDDDDRR'], PUMP, 'R', 42240, 3)
 
 
 def pump_side():
-    im = new('#a8251f', 42241, 4)
-    fill(im, 6, 3, 10, 13, '#1e1e1e')  # the hose hangs in its holster
+    return art(['RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR', 'WWWWWWWWWWWWWWWW', 'WWWWWWWWWWWWWWWW', 'CCCCCCCCCCCCCCCC', 'RRRRRRRRRRRRRRRR',
+                'RRRRRSSSSSSSRRRR', 'RRRRRSGRRRGSRRRR', 'RRRRRSRRRRRSRRRR', 'RRRRRSRRRRRSRRRR', 'RRRRRSRRRRRSRRRR', 'RRRRRSGRRRGSRRRR',
+                'RRRRRSSSSSSSRRRR', 'SSSSSSSSSSSSSSSS', 'DDDDDDDDDDDDDDDD', 'DDDDDDDDDDDDDDDD'], PUMP, 'R', 42241, 3)
+
+
+def pump_side_top():
+    return art(['RRRRRRRRRRRRRRRR'] * 6 + ['RRRRRRDDDDDRRRRR', 'RRRRRRLLLLLRRRRR', 'RRRRRRDDDDDRRRRR', 'RRRRRRLLLLLRRRRR', 'RRRRRRDDDDDRRRRR',
+                                           'RRRRRRLLLLLRRRRR', 'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR', 'SSSSSSSSSSSSSSSS'],
+               PUMP, 'R', 42242, 3)
+
+
+# What stands on a wheel, two pixels by two: enough to say a figure stands there, and that the two pumps stopped on different ones.
+# Each stands clear of its window's edge, so the windows read as black glass with white figures behind it.
+FIGURES = {'0': ('WW', 'WW'), '1': ('KW', 'KW'), '3': ('WW', 'KW'), '4': ('WK', 'WW'), '6': ('WK', 'WW'), '8': ('WW', 'WW'), '9': ('WW', 'KW'), ' ': ('KK', 'KK')}
+
+
+def pump_dial(which):
+    """The head's glass, front and back: the sale over the gallons, each in its own window. The first pump's wheels stopped on one
+    sale, the second's on another."""
+    window = 'RRGKKKKKKKKKKNRR'
+    rows = ['RRRRRRRRRRRRRRRR'] * 4 + ['RRGGGGGGGGGGGMRR', 'RRGWWEEEEEEEENRR', window, window, window, window, 'RRGEOEEEEFFFENRR',
+                                       window, window, window, window, 'RRMNNNNNNNNNNNRR']
+    im = art(rows, PUMP, 'R', 42243 + which, 3)
+    sale, gallons = ('981', ' 90') if which == 0 else ('436', ' 40')
+    for top, figures in ((7, sale), (12, gallons)):
+        for i, figure in enumerate(figures):
+            for dy, line in enumerate(FIGURES[figure]):
+                for dx, ch in enumerate(line):
+                    if ch == 'W':
+                        dot(im, 4 + i * 3 + dx, top + dy, PUMP['W'])
     return im
 
 
-def pump_head():
-    im = new('#b32a26', 42242, 4)
-    fill(im, 2, 3, 14, 11, '#ece7da'); frame(im, '#7e1d1a', 2, 3, 14, 11)
-    text(im, 3, 5, '0', '#2a2a2a'); text(im, 7, 5, '9', '#2a2a2a'); text(im, 11, 5, '9', '#cc2222')
+def pump_cap():
+    return art(['WWWWWWWWWWWWWWWW', 'CCCCCCCCCCCCCCCC'] + ['WWWWWWWWWWWWWWWW'] * 14, PUMP, 'W', 42245, 2)
+
+
+def pump_trim():
+    return art([('G', 'M', 'N', 'M')[y % 4] * 16 for y in range(16)], PUMP)
+
+
+def pump_globe():
+    """The lens, lit from inside: a ring and a dot on milk glass. Below it in the picture, the glass of its rim."""
+    return art(['     WWWWWW     ', '    WWOOOOWW    ', '    WOWBBWOW    ', '    WOWBBWOW    ', '    WWOOOOWW    ', '     WWWWWW     ',
+                '                ', '                '] + ['CCCCCCCCCCCCCCCC'] * 8, PUMP)
+
+
+def pump_base():
+    im = art(['TTTTTTTTTTTTTTTT'] * 14 + ['tttttttttttttttt', 'uuuuuuuuuuuuuuuu'], PUMP, 'T', 42246, 3)
+    for x, y in ((2, 4), (13, 4), (2, 12), (13, 12)):
+        dot(im, x, y, PUMP['t'])
     return im
 
 
-def globe():
-    # Milk glass with a red band round it.
-    im = new('#f1efe7', 42243, 3)
-    fill(im, 0, 6, 16, 10, '#c0302a'); fill(im, 0, 7, 16, 8, '#e05a4a')
+def pump_hose():
+    im = art(['KKKKKKKKKKKKKKKK'] * 16, PUMP, 'K', 42247, 2)
+    for i in range(16):
+        dot(im, 4, i, PUMP['k']); dot(im, i, 12, PUMP['k'])
     return im
 
 
-def price():
+# 0.4.454 (owner, of the church's pews built of plank stairs: "again, custom textures would be beneficial here."): boards four pixels
+# deep, golden under their varnish, a light edge above a dark seam, with a little grain. The pews' ends are cut from the same oak,
+# its boards on end, with a cross let into each. The benches' slats are a browner, weathered wood, on black iron.
+def boards(light, base, grain, seam):
+    palette = {'o': light, 'O': base, 'Q': grain, 'q': seam}
+    rows = []
+    for k, (flecks, dashes) in enumerate((((6, 7), (1, 2, 3, 9, 10)), ((1, 2, 10), (5, 6, 7, 12, 13, 14)), ((12, 13), (0, 1, 7, 8, 9)), ((7, 8), (3, 4, 5, 11, 12)))):
+        rows += ['o' * 16, ''.join('o' if x in flecks else 'O' for x in range(16)), ''.join('Q' if x in dashes else 'O' for x in range(16)), 'q' * 16]
+    return art(rows, palette)
+
+
+def pew_wood():
+    return boards('#bd8a4e', '#a8733c', '#93622f', '#70461f')
+
+
+def pew_end():
+    """A pew's end: boards on end, a line cut round inside its edge and a cross let into it."""
+    im = boards('#bd8a4e', '#a8733c', '#93622f', '#70461f').transpose(Image.Transpose.ROTATE_90)
+    for y in range(6, 15):
+        dot(im, 4, y, '#70461f'); dot(im, 12, y, '#70461f')
+    for x in range(4, 13):
+        dot(im, x, 14, '#70461f')
+    for y in range(7, 13):
+        dot(im, 8, y, '#5b3716')
+    for x in (7, 9):
+        dot(im, x, 9, '#5b3716')
+    return im
+
+
+def pew_books():
+    """The rack on a pew's back, as the row behind sees it: the hymnals' covers (red, and one blue) with their gilt, and the pages' edges."""
+    palette = {'r': '#8c2f2a', 's': '#6d211e', 'b': '#2f4a78', 'c': '#22365b', 'g': '#d9b24a', 'w': '#ece6d4', 'x': '#c9c2ad'}
+    return art(['rrs bbc         ', 'rgs bgc         ', 'rrs bbc         ', 'rrs bbc         ', '                ', '                ',
+                '                ', '                ', 'wxw wxw         ', 'wxw wxw         '] + ['                '] * 6, palette)
+
+
+def bench_wood():
+    """A bench's slats. Their tops (rows 0 to 2), and their edges one, two and three pixels deep (row 4, rows 6 and 7, rows 9 to 11)."""
+    palette = {'o': '#a67a4a', 'O': '#8b6239', 'Q': '#75512d', 'q': '#57391c', ' ': None}
+    def row(base, dashes):
+        return ''.join('Q' if x in dashes else base for x in range(16))
+    return art([row('o', (4, 5, 13)), row('O', (0, 1, 2, 8, 9)), row('O', (5, 6, 11, 12, 13)), 'q' * 16,
+                row('O', (2, 3, 10)), 'q' * 16, row('o', (7, 8)), row('Q', ()), 'q' * 16,
+                row('o', (1, 12, 13)), row('O', (4, 5, 6, 9)), row('Q', ()), 'q' * 16, 'q' * 16, 'q' * 16, 'q' * 16], palette)
+
+
+def bench_iron():
+    im = art(['IIIIIIIIIIIIIIII'] * 16, {'I': '#26272a'}, 'I', 42250, 2)
+    for i in range(0, 16, 3):
+        dot(im, i, (i * 5) % 16, '#3d3f44'); dot(im, (i * 7 + 3) % 16, i, '#3d3f44')
+    return im
+
+
+def price(later=False):
+    """The station's board: regular over unleaded. 1.09 and 1.14 in the childhood years; 2.89 and 2.99 when the reader comes back grown (0.4.454)."""
     im = new('#f0ece2', 42244, 3); frame(im, '#3a3a3a')
-    text(im, 2, 2, '1', '#c0302a'); text(im, 6, 2, '0', '#c0302a'); text(im, 10, 2, '9', '#c0302a')
-    text(im, 2, 9, '1', '#2a2a2a'); text(im, 6, 9, '1', '#2a2a2a'); text(im, 10, 9, '4', '#2a2a2a')
+    for i, ch in enumerate('289' if later else '109'):
+        text(im, 2 + i * 4, 2, ch, '#c0302a')
+    for i, ch in enumerate('299' if later else '114'):
+        text(im, 2 + i * 4, 9, ch, '#2a2a2a')
     return im
 
 
@@ -1241,7 +1357,10 @@ def textures():
         'wood': wood(), 'chrome': chrome(), 'glass': glass(), 'enamel': enamel(), 'black': black(),
         'pie': pie(False), 'pie_cut': pie(True), 'crust': crust(), 'urn': urn(), 'menu': menu(),
         'pegboard': pegboard(False), 'pegboard_taken': pegboard(True),
-        'pump_front': pump_front(), 'pump_side': pump_side(), 'pump_head': pump_head(), 'globe': globe(), 'price': price(),
+        'pump_door': pump_door(), 'pump_side': pump_side(), 'pump_side_top': pump_side_top(), 'pump_dial_0': pump_dial(0), 'pump_dial_1': pump_dial(1),
+        'pump_cap': pump_cap(), 'pump_trim': pump_trim(), 'pump_globe': pump_globe(), 'pump_base': pump_base(), 'pump_hose': pump_hose(),
+        'pew_wood': pew_wood(), 'pew_end': pew_end(), 'pew_books': pew_books(), 'bench_wood': bench_wood(), 'bench_iron': bench_iron(),
+        'price': price(), 'price_later': price(True),
         'payphone': payphone(), 'cooler_front': cooler_front(), 'cooler_top': cooler_top(), 'candy': candy(),
         'velvet': velvet(), 'curios': curios(), 'helmet': helmet(), 'lamp': lamp(), 'map': mine_map(), 'photos': photos(), 'clock': clock(),
         'scale': scale_face(), 'jar_glass': jar_glass(), 'lolly': lolly(), 'cards': cards(), 'exam_top': exam_top(), 'exam_side': exam_side(),
@@ -1310,11 +1429,10 @@ def shop_models():
     m['menu_0'] = wall('menu')
     for stage, face in ((0, 'pegboard'), (1, 'pegboard_taken')):
         m[f'pegboard_{stage}'] = model([element([0, 0, 15], [16, 16, 16], {'all': 'b', 'north': 'p'})], {'b': 'wood', 'p': face}, face)
-    m['pump_0'] = model([element([2, 0, 4], [14, 16, 13], {'all': 's', 'north': 'f', 'south': 'f'}),
-                         element([14, 6, 7], [15, 12, 10], {'all': 'k'})], {'s': 'pump_side', 'f': 'pump_front', 'k': 'black'}, 'pump_front')
-    m['pump_top_0'] = model([element([2, 0, 4], [14, 7, 13], {'all': 's', 'north': 'h', 'south': 'h'}),
-                             element([5, 7, 6], [11, 11, 11], {'all': 'g'})], {'s': 'pump_side', 'h': 'pump_head', 'g': 'globe'}, 'pump_head')
+    pump_models(m)
+    seat_models(m)
     m['price_0'] = wall('price', 'chrome')
+    m['price_1'] = wall('price_later', 'chrome')
     m['payphone_0'] = model([element([3, 1, 11], [13, 16, 16], {'all': 'c', 'north': 'p'}), element([2, 15, 10], [14, 16, 16], {'all': 'c'})],
                             {'c': 'chrome', 'p': 'payphone'}, 'payphone')
     m['cooler_0'] = model([element([1, 0, 2], [15, 12, 15], {'all': 'f', 'up': 't'}), element([1, 12, 2], [15, 13, 15], {'all': 't'})],
@@ -1421,6 +1539,82 @@ def shop_models():
     paper_models(m)
     comic_models(m)
     return m
+
+
+def pump_models(m):
+    """The pump's two halves, looking north; its back is a second face, and the hose hangs down its east side."""
+    tex = {'d': 'pump_door', 's': 'pump_side', 'u': 'pump_side_top', 'c': 'pump_cap', 't': 'pump_trim', 'g': 'pump_globe', 'b': 'pump_base', 'h': 'pump_hose'}
+    lower = [element([1, 0, 3], [15, 2, 14], {'all': 'b'}),
+             element([2, 2, 4], [14, 14, 13], {'north': 'd', 'south': 'd', 'east': 's', 'west': 's'}),
+             element([1.75, 14, 3.75], [14.25, 16, 13.25], {'all': 't'}),
+             # The hose: down from the head, round under, and up to the nozzle hung in its boot.
+             element([14.5, 4, 10.5], [15.5, 16, 11.5], {'north': 'h', 'south': 'h', 'east': 'h'}),
+             element([14.5, 3, 7], [15.5, 4, 11.5], {'north': 'h', 'south': 'h', 'east': 'h', 'up': 'h', 'down': 'h'}),
+             element([14.5, 4, 7], [15.5, 8, 8], {'north': 'h', 'south': 'h', 'east': 'h'}),
+             element([14.25, 8, 6.5], [15.75, 10, 8.5], {'north': 'h', 'south': 'h', 'east': 'h', 'up': 'h', 'down': 'h'}),
+             element([14.25, 10, 6.5], [15.75, 12, 8.5], {'north': 't', 'south': 't', 'east': 't', 'up': 't'}),
+             element([14, 12, 6], [16, 15, 9], {'north': 'b', 'south': 'b', 'east': 'b', 'up': 'b', 'down': 'b'})]
+    cap = {k: [2, 0, 15, 2] for k in ('north', 'south')} | {k: [3, 0, 13, 2] for k in ('east', 'west')}
+    rim = {k: [0, 8, 2, 14] for k in ('east', 'west')} | {k: [0, 8, 6, 10] for k in ('up', 'down')}
+    for which in (0, 1):
+        upper = [element([2, 0, 4], [14, 12, 13], {'north': 'f', 'south': 'f', 'east': 'u', 'west': 'u'}),
+                 element([1.5, 12, 3.5], [14.5, 14, 13.5], {'all': 'c'}, cap),
+                 element([7, 14, 7.5], [9, 15, 9.5], {'north': 't', 'south': 't', 'east': 't', 'west': 't'}),
+                 element([5, 15, 7.5], [11, 21, 9.5], {'all': 'g'}, {'north': [5, 0, 11, 6], 'south': [5, 0, 11, 6], **rim}),
+                 element([4, 16, 7.5], [12, 20, 9.5], {'all': 'g'}, {'north': [4, 1, 12, 5], 'south': [4, 1, 12, 5], **{k: [0, 8, 2, 12] for k in ('east', 'west')}, **{k: [0, 8, 8, 10] for k in ('up', 'down')}}),
+                 element([14, 8, 10], [15.5, 9.5, 12], {'north': 't', 'south': 't', 'east': 't', 'up': 't', 'down': 't'}),
+                 element([14.5, 0, 10.5], [15.5, 8, 11.5], {'north': 'h', 'south': 'h', 'east': 'h'})]
+        m[f'pump_{which}'] = model(lower, tex, 'pump_side')
+        m[f'pump_top_{which}'] = model(upper, {**tex, 'f': f'pump_dial_{which}'}, 'pump_side_top')
+
+
+def seat_models(m):
+    """0.4.454: the church's pews and the town's benches, looking north: whoever sits looks north, and the back is to the south.
+    An end's own end is to the west (stage 0) or the east (stage 1) as the seat looks."""
+    oak = {'w': 'pew_wood', 'e': 'pew_end', 'k': 'pew_books'}
+
+    def pew(x0, x1):
+        parts = [element([x0, 6, 3], [x1, 8, 13], {'all': 'w'}), element([x0, 8, 12], [x1, 15, 14], {'all': 'w'}), element([x0, 15, 11], [x1, 16, 15], {'all': 'w'}),
+                 # The rack on its back, for the row behind: a board, a lip, and the hymnals standing in it.
+                 element([x0 + 1, 9, 14], [x1 - 1, 10, 16], {'all': 'w'}), element([x0 + 1, 10, 15.5], [x1 - 1, 11, 16], {'all': 'w'})]
+        for x, cover in ((x0 + 2, 0), (x0 + 5, 4), (x1 - 4, 0)):
+            parts.append(element([x, 10, 14.2], [x + 2, 13.5, 15.4], {'all': 'k'},
+                                 {**{k: [cover, 0, cover + 2, 3.5] for k in ('north', 'south')}, **{k: [cover + 2, 0, cover + 3, 3.5] for k in ('east', 'west')},
+                                  'up': [cover, 8, cover + 2, 9.2], 'down': [cover, 8, cover + 2, 9.2]}))
+        return parts
+
+    def end(x):
+        """The shaped end: low under the arm at the front, rising in steps to the top of the back."""
+        return [element([x, 0, 2], [x + 2, 10, 15], {'all': 'w', 'east': 'e', 'west': 'e'}), element([x, 10, 8], [x + 2, 13, 15], {'all': 'w', 'east': 'e', 'west': 'e'}),
+                element([x, 13, 10], [x + 2, 16, 15], {'all': 'w', 'east': 'e', 'west': 'e'})]
+
+    m['pew_mid_0'] = model(pew(0, 16), oak, 'pew_wood')
+    m['pew_end_0'] = model(pew(2, 16) + end(0), oak, 'pew_wood')
+    m['pew_end_1'] = model(pew(0, 14) + end(14), oak, 'pew_wood')
+
+    iron = {'w': 'bench_wood', 'i': 'bench_iron'}
+
+    def slat(lo, hi):
+        """A slat, its top from the top of the picture and its edges from the rows drawn for their depth."""
+        deep = {1: 4, 2: 6, 3: 9}[hi[1] - lo[1]]
+        long = {k: [lo[0], deep, hi[0], deep + hi[1] - lo[1]] for k in ('north', 'south')}
+        across = {k: [0, deep, hi[2] - lo[2], deep + hi[1] - lo[1]] for k in ('east', 'west')}
+        return element(lo, hi, {'all': 'w'}, {**long, **across, 'up': [lo[0], 0, hi[0], hi[2] - lo[2]], 'down': [lo[0], 1, hi[0], 1 + hi[2] - lo[2]]})
+
+    def bench(x0, x1):
+        return [slat([x0, 6, 3], [x1, 7, 5]), slat([x0, 6, 6], [x1, 7, 8]), slat([x0, 6, 9], [x1, 7, 11]),
+                slat([x0, 9, 12], [x1, 11, 13]), slat([x0, 12, 13], [x1, 15, 14])]
+
+    def frame(x):
+        """A cast end: the leg in front that carries the arm, the rail the slats lie on, and the post behind them that leans as the
+        back does. Its posts stand clear of the slats' own faces, in front of the seat and behind the back."""
+        return [element([x, 0, 2], [x + 1, 10, 3], {'all': 'i'}), element([x, 10, 2], [x + 1, 11, 13], {'all': 'i'}), element([x, 5, 3], [x + 1, 6, 13], {'all': 'i'}),
+                element([x, 0, 13], [x + 1, 12, 14], {'all': 'i'}), element([x, 12, 14], [x + 1, 16, 15], {'all': 'i'})]
+
+    m['bench_mid_0'] = model(bench(0, 16), iron, 'bench_wood')
+    m['bench_end_0'] = model(bench(0, 16) + frame(0), iron, 'bench_wood')
+    m['bench_end_1'] = model(bench(0, 16) + frame(15), iron, 'bench_wood')
+    m['bench_0'] = model(bench(0, 16) + frame(0) + frame(15), iron, 'bench_wood')
 
 
 def comic_models(m):
@@ -1598,8 +1792,9 @@ KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'pa
          'oil', 'bait', 'snacks', 'calendar', 'bait_sign', 'tires', 'groceries', 'crockery', 'bike', 'cabinet', 'cabinet_top',
          'remains', 'wristband', 'smear',
          'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log',
-         'comic']
-STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2}
+         'comic', 'pew_end', 'pew_mid', 'bench', 'bench_end', 'bench_mid']
+STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2,
+          'pump': 2, 'pump_top': 2, 'pew_end': 2, 'bench_end': 2, 'price': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin',
          'borrasca_ward': 'Painted Block Wall'}
@@ -1634,10 +1829,62 @@ def files():
     return out
 
 
+# How each side of a model is seen: which face shows, how its box lies on the page, and which boxes stand in front.
+VIEWS = {
+    'north': ('north', lambda lo, hi: (16 - hi[0], 16 - lo[0], hi[1], lo[1]), lambda lo, hi: -lo[2]),
+    'south': ('south', lambda lo, hi: (lo[0], hi[0], hi[1], lo[1]), lambda lo, hi: hi[2]),
+    'east': ('east', lambda lo, hi: (16 - hi[2], 16 - lo[2], hi[1], lo[1]), lambda lo, hi: hi[0]),
+    'west': ('west', lambda lo, hi: (lo[2], hi[2], hi[1], lo[1]), lambda lo, hi: -lo[0]),
+    'up': ('up', lambda lo, hi: (lo[0], hi[0], 40 - lo[2], 40 - hi[2]), lambda lo, hi: hi[1]),
+}
+
+
+def seen(stack, view, images, scale=10, tall=40):
+    """One side of a stack of models (each with the height it stands at), straight on, as its faces are drawn: for review."""
+    face, lie, near = VIEWS[view]
+    page = Image.new('RGBA', (16 * scale, tall * scale), (0, 0, 0, 0))
+    boxes = []
+    for obj, lift in stack:
+        for e in obj['elements']:
+            if face in e['faces'] and 'rotation' not in e:
+                lo, hi = list(e['from']), list(e['to']); lo[1] += lift; hi[1] += lift
+                boxes.append((near(lo, hi), lie(lo, hi), e['faces'][face], obj['textures'], (e['from'], e['to'])))
+    for _, (x0, x1, top, bottom), f, names, (lo, hi) in sorted(boxes, key=lambda b: b[0]):
+        tex = images['block/borrasca_shop/' + names[f['texture'][1:]].split('borrasca_shop/')[1] + '.png']
+        u0, v0, u1, v1 = f.get('uv') or {'north': [16 - hi[0], 16 - hi[1], 16 - lo[0], 16 - lo[1]], 'south': [lo[0], 16 - hi[1], hi[0], 16 - lo[1]],
+                                         'east': [16 - hi[2], 16 - hi[1], 16 - lo[2], 16 - lo[1]], 'west': [lo[2], 16 - hi[1], hi[2], 16 - lo[1]],
+                                         'up': [lo[0], lo[2], hi[0], hi[2]]}[face]
+        left, right, y0, y1 = round(x0 * scale), round(x1 * scale), round((tall - top) * scale), round((tall - bottom) * scale)
+        for py in range(y0, y1):
+            for qx in range(left, right):
+                u = u0 + (qx + .5 - left) / (right - left) * (u1 - u0); v = v0 + (py + .5 - y0) / (y1 - y0) * (v1 - v0)
+                c = tex.getpixel((min(15, max(0, int(u))), min(15, max(0, int(v)))))
+                if c[3] and 0 <= qx < page.width and 0 <= py < page.height:
+                    page.putpixel((qx, py), c)
+    return page
+
+
+def review(path, images):
+    """A page for review: the pump, a pew and a bench, each from its four sides and from above."""
+    models = shop_models()
+    stacks = [[(models['pump_0'], 0), (models['pump_top_0'], 16)], [(models['pump_1'], 0), (models['pump_top_1'], 16)],
+              [(models['pew_end_0'], 0)], [(models['pew_mid_0'], 0)], [(models['pew_end_1'], 0)],
+              [(models['bench_0'], 0)], [(models['bench_end_0'], 0)], [(models['bench_mid_0'], 0)]]
+    scale = 10; page = Image.new('RGBA', (len(VIEWS) * 17 * scale, len(stacks) * 41 * scale), (58, 62, 70, 255))
+    for row, stack in enumerate(stacks):
+        for col, view in enumerate(VIEWS):
+            one = seen(stack, view, images, scale); page.alpha_composite(one, (col * 17 * scale + 5, row * 41 * scale + 5))
+    page.save(path)
+
+
 def main():
     check = argparse.ArgumentParser()
     check.add_argument('--check', action='store_true')
-    check = check.parse_args().check
+    check.add_argument('--sheet')
+    check = check.parse_args()
+    if check.sheet:
+        review(check.sheet, textures()); return
+    check = check.check
     images, data = textures(), files()
     models = shop_models()
     for kind in KINDS:

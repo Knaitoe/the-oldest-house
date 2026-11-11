@@ -1215,6 +1215,19 @@ public final class BorrascaTests {
             // 0.4.422: the street past the chapel has its shops, and the frame hangs in the historical society, still too high for a child.
             f.atWorld(p,new BlockPos(-17,0,-97));f.clickWorld(p,BorrascaShops.HISTORY);h.assertFalse(p.containerMenu instanceof LiteraryVignettes.Pages,"the society's framed history is out of a child's reach");
             h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(BorrascaShops.PUMPS[0])),BorrascaShopBlock.Kind.PUMP)&&BorrascaShopBlock.is(f.out.getBlockState(b.offset(BorrascaShops.PIE_CASE)),BorrascaShopBlock.Kind.PIE_CASE)&&f.out.getBlockState(b.offset(BorrascaShops.POOL)).is(BarRegistry.POOL_TABLE.get()),"the station has its pumps, the diner its pies, the bar its pool table");
+            // 0.4.454 (owner: "Borrasca needs a custom texture pass"; of the pews, "again, custom textures would be beneficial here."):
+            // each pump is its own, foot and head; the church has pews and the town benches, where plank stairs stood.
+            for(int i=0;i<2;i++)for(var at:List.of(BorrascaShops.PUMPS[i],BorrascaShops.PUMPS[i].above())){var s=f.out.getBlockState(b.offset(at));
+                h.assertTrue(BorrascaShopBlock.is(s,at.getY()==0?BorrascaShopBlock.Kind.PUMP:BorrascaShopBlock.Kind.PUMP_TOP)&&s.getValue(BorrascaShopBlock.STAGE)==i,"pump "+i+" is its own at "+at.toShortString()+": "+s);}
+            seat(h,f,b.offset(15,0,-60),BorrascaShopBlock.Kind.PEW_END,Direction.NORTH,0,"a pew's end at the wall");seat(h,f,b.offset(16,0,-60),BorrascaShopBlock.Kind.PEW_MID,Direction.NORTH,0,"the pew between its ends");
+            seat(h,f,b.offset(17,0,-60),BorrascaShopBlock.Kind.PEW_END,Direction.NORTH,1,"its other end at the aisle");seat(h,f,b.offset(19,0,-60),BorrascaShopBlock.Kind.PEW_END,Direction.NORTH,0,"the pew across the aisle");
+            seat(h,f,b.offset(16,0,-68),BorrascaShopBlock.Kind.PEW_END,Direction.NORTH,1,"the last row stands back from the aisle");
+            h.assertTrue(f.out.getBlockState(b.offset(18,0,-60)).isAir()&&f.out.getBlockState(b.offset(17,0,-68)).isAir()&&f.out.getBlockState(b.offset(18,0,-66)).isAir(),"the church's aisle is clear");
+            seat(h,f,b.offset(-15,0,-27),BorrascaShopBlock.Kind.BENCH_END,Direction.EAST,0,"the store's porch bench");seat(h,f,b.offset(-15,0,-26),BorrascaShopBlock.Kind.BENCH_END,Direction.EAST,1,"its other end");
+            seat(h,f,b.offset(19,0,-18),BorrascaShopBlock.Kind.BENCH,Direction.EAST,0,"the lone bench in the Sheriff's office");seat(h,f,b.offset(-6,0,-7),BorrascaShopBlock.Kind.BENCH_MID,Direction.EAST,0,"the middle of the ranger's bench");
+            seat(h,f,BorrascaRooms.at(b,-15,12,-176),BorrascaShopBlock.Kind.BENCH_MID,Direction.WEST,0,"the depot's waiting bench");
+            for(var at:List.of(b.offset(15,0,-60),b.offset(-15,0,-27),b.offset(19,0,-18),b.offset(-6,0,-7),b.offset(-11,0,-20),b.offset(-18,0,-28),BorrascaRooms.at(b,-21,12,-172),BorrascaRooms.at(b,-15,12,-176)))
+                h.assertFalse(f.out.getBlockState(at).getBlock() instanceof StairBlock,"no plank stair stands for a seat at "+at.subtract(b).toShortString());
             for(var door:new BlockPos[]{BorrascaShops.DINER_DOOR,BorrascaShops.ANTIQUES_DOOR,BorrascaShops.SOCIETY_DOOR,BorrascaShops.STATION_DOOR,BorrascaShops.DOCTOR_DOOR,BorrascaShops.DRUG_DOOR,BorrascaShops.BAR_DOOR})h.assertTrue(f.out.getBlockState(b.offset(door)).getBlock() instanceof DoorBlock,"a real door at "+door);
             for(int z=-76;z>=-132;z-=4)h.assertTrue(BorrascaLand.groundAt(-12,z)==0&&BorrascaLand.groundAt(12,z)==0,"the street past the chapel is level, the way down ending at the trailhead, at z "+z);
             f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the diner's menu"))).contains(flat("Coffee .50")),"the childhood menu has its early prices");
@@ -1399,6 +1412,8 @@ public final class BorrascaTests {
               h.assertTrue(f.out.getBlockState(f.base(p).offset(eliPoster)).isAir(),"Patrick's poster goes up only after he disappears");
               // 0.4.451: the store's noticeboard is one board, two blocks by two, a quarter of its picture in each cell.
               board(h,f,p,BorrascaPapers.Sheet.BOARD,"as the town was built");
+              // 0.4.454: the station's board shows the prices of the reader's own year.
+              h.assertTrue(f.out.getBlockState(f.base(p).offset(BorrascaShops.PRICE)).getValue(BorrascaShopBlock.STAGE)==0,"in the childhood years the station's board shows the early prices");
               bike(h,f,p,BorrascaRooms.PATRICK_BIKE,1,"on the first visit Patrick's bike lies on its side outside the store");
               bike(h,f,p,BorrascaRooms.KENDRA_BIKE,0,"and Kendra's stands on its kickstand by where she waits");
               f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
@@ -1418,6 +1433,7 @@ public final class BorrascaTests {
           .thenExecute(()->{
               h.assertTrue(BorrascaPaperBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),eliPoster)),BorrascaPapers.Sheet.PATRICK),"Patrick's is still up");
               board(h,f,p,BorrascaPapers.Sheet.BOARD_THIRD,"years on");
+              h.assertTrue(f.out.getBlockState(f.base(p).offset(BorrascaShops.PRICE)).getValue(BorrascaShopBlock.STAGE)==1,"years on, the board shows the later prices");
               h.assertTrue(f.actor(p,"TownWren").isInvisible(),"Kendra is missing on the adult return");
               f.read(p,wrenPoster,false);
               h.assertTrue(f.own(p).getBoolean("Read_WrenPoster")&&f.own(p).getBoolean("Read_EliPoster"),"both posters have readable pages");
@@ -1441,7 +1457,7 @@ public final class BorrascaTests {
                   var cell=new BlockPos(BorrascaPapers.FRONT_X,y,z);var s=f.out.getBlockState(BorrascaRooms.at(b,cell));var wall=BorrascaRooms.at(b,cell.west());var behind=f.out.getBlockState(wall);
                   if(Arrays.asList(BorrascaRooms.BOARD).contains(cell)){if(!s.equals(BorrascaPapers.boardPiece(BorrascaPapers.Sheet.BOARD_COVERED,cell)))odd.add("the board at "+cell.toShortString()+" is "+s);continue;}
                   if(z==BorrascaPapers.DOOR_Z&&y<=BorrascaPapers.FOOT+1){if(!s.isAir())odd.add("across the doorway at "+cell.toShortString()+": "+s);continue;}
-                  if(BorrascaSignBlock.is(s)||s.getBlock() instanceof StairBlock)continue; // the store's tin sign and its bench are left as they are
+                  if(BorrascaSignBlock.is(s)||BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.BENCH_END))continue; // the store's tin sign and its bench are left as they are
                   if(!BorrascaPaperBlock.is(s)){odd.add("bare at "+cell.toShortString()+": "+s);continue;}
                   sheets++;boolean glass=s.getValue(BorrascaPaperBlock.GLASS);if(glass)onGlass++;
                   if(glass!=behind.is(Blocks.GLASS_PANE)||!glass&&!behind.isFaceSturdy(f.out,wall,Direction.EAST))odd.add("the sheet at "+cell.toShortString()+" is held by "+behind);
@@ -1459,6 +1475,10 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
     /** 0.4.451: the store's noticeboard is the four quarters of one picture, each looking out over the porch. */
+    /** 0.4.454: a seat of the town's, of its kind, looking its way, its end to the left (0) or the right (1). */
+    private static void seat(GameTestHelper h,Fixture f,BlockPos at,BorrascaShopBlock.Kind kind,Direction looks,int stage,String what){
+        var s=f.out.getBlockState(at);h.assertTrue(BorrascaShopBlock.is(s,kind)&&s.getValue(BorrascaShopBlock.FACING)==looks&&s.getValue(BorrascaShopBlock.STAGE)==stage,what+": "+s);
+    }
     private static void board(GameTestHelper h,Fixture f,ServerPlayer p,BorrascaPapers.Sheet board,String when){
         var pieces=new HashSet<Integer>();
         for(var cell:BorrascaRooms.BOARD){var s=f.out.getBlockState(BorrascaRooms.at(f.base(p),cell));h.assertTrue(s.equals(BorrascaPapers.boardPiece(board,cell))&&BorrascaPaperBlock.sheet(s)==board,"the noticeboard "+when+" at "+cell.toShortString()+": "+s);pieces.add(s.getValue(BorrascaPaperBlock.PIECE));}

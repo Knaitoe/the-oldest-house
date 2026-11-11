@@ -14,7 +14,7 @@ Two standing remarks run through the whole document and are treated as passes of
 | # | The owner's note | What the screenshot shows | Status |
 |---|---|---|---|
 | 1 | "maybe give the different pumps different last prices?" | A gas pump. The line under it reads "The dials stopped at the last sale: 9 gallons, 9.81." Both pumps say the same. | done, 0.4.444: each pump has its own last sale |
-| 1 | "Borrasca needs a custom texture pass" | (the pump's flat red body and blocky dial) | open, the texture pass |
+| 1 | "Borrasca needs a custom texture pass" | (the pump's flat red body and blocky dial) | begun, 0.4.454: the pump is built of parts, in enamel, chrome, glass and rubber, and the two pumps' wheels stand differently; the price board shows the later prices to a grown reader (docs/BORRASCA_FITTINGS_0_4_454.md). The rest of the pass is open |
 | 2 | "Facing the wrong way. Give the shelves more variance?" | The drugstore's pharmacy counter: the cash register's keys face the customer. The wall of shelves behind it repeats one texture and reads as a bookcase. | done, 0.4.444: the registers' keys face their keepers; the pharmacy shelves are bottles, in two arrangements |
 | 3 | "Arcade machines have gap in center?" | The side of a cabinet: a dark seam where its upper and lower halves meet. | done, 0.4.444: one side panel from the floor to the top |
 | 4 | "Needs an improved texture." | The comic spinner: a grid of flat coloured squares. | done, 0.4.444: a spinner with a pole and wire pockets of comic covers |
@@ -24,7 +24,7 @@ Two standing remarks run through the whole document and are treated as passes of
 | 8 | "Give the different stores some variance/characterization in their signage" | The same OPEN sign in another shop's window. | done, 0.4.449: every shop has its own painted board on its false front, in its own colours and at its own size, and so have the store, the Sheriff, the church and the rest (docs/BORRASCA_SIGNS_0_4_449.md) |
 | 9 | "Try to show, don't tell. Try to design an actual ui for this" | The birth cards on the doctor's corkboard, described on a page of text. | open |
 | 10 | "This ain't exactly the candy jar you promised lol" | The lollipop jar: a glass box of coloured blocks. | done, 0.4.444: a glass jar with a lid and lollipops on sticks |
-| 11 | "again, custom textures would be beneficial here." | A waiting room's benches, built of plank stairs and slabs. | open, the texture pass |
+| 11 | "again, custom textures would be beneficial here." | The church's pews, built of plank stairs. (I first recorded this as a waiting room's benches; the church's board shows through the window.) | done, 0.4.454: oak pews with shaped, carved ends and hymnals in the racks; and every other seat in the town that was a stair is a bench of slats on cast iron |
 | 12 | "You could add inflections of personality into the citizens homes. Remember that this town is sick, that many know what the town does and why and just accept it. Some don't, but they have to bite their tongue." | A house: a bed, drawers, an armchair, a table. Nothing says who lives there. | open |
 | 13 | "Keep prison cell door shut. Allow player to speak to npc through bars." | Earl in the cell with its door standing open. | done, 0.4.444 |
 | 14 | "Try to fix wheels" | A child's bike: each wheel is eight separate blocks with gaps between them. | done, 0.4.447: each tyre is a closed ring of sixteen pieces, with eight spokes |
