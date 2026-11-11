@@ -1,0 +1,66 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/borrasca_home/frame_back",
+    "particle": "the_oldest_house:block/borrasca_home/frame_back"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        4
+      ],
+      "to": [
+        11,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            5,
+            4,
+            11,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            5,
+            4,
+            11,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#f",
+          "uv": [
+            5,
+            4,
+            11,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#f",
+          "uv": [
+            5,
+            4,
+            11,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}

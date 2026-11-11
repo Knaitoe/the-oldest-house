@@ -119,14 +119,8 @@ final class BorrascaDressing {
         boolean brick=wall==Blocks.BRICKS;
         for(int y=0;y<=9;y++)set(l,b,back-o,y,z1+1,brick?Blocks.BRICKS.defaultBlockState():(hash(back,y,z1)%4==0?Blocks.MOSSY_COBBLESTONE:Blocks.COBBLESTONE).defaultBlockState());
         set(l,b,back-o,10,z1+1,brick?Blocks.BRICK_WALL:Blocks.COBBLESTONE_WALL);
-        // Inside: a rug, a table and chairs, a chair by the stove, drawers, a bed against the back wall, a lamp.
-        int ix=back+o;
-        box(l,b,Math.min(ix,front-o*2),0,zc-1,Math.max(ix,front-o*2),0,zc+1,Blocks.BROWN_CARPET);
-        NovelRooms.furniture(l,b.offset(front-2*o,0,z0-1),HouseholdFurnitureBlock.Kind.FORMICA_TABLE,out);
-        NovelRooms.furniture(l,b.offset(front-3*o,0,z0-1),HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,out);
-        NovelRooms.furniture(l,b.offset(ix,0,z0-1),HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,out);
-        NovelRooms.furniture(l,b.offset(ix,0,zc),HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,out);
-        bed(l,b,ix,z1+1,out);
+        // Inside: 0.4.456, each house is its own household (BorrascaHomes); a lamp.
+        BorrascaHomes.furnish(l,b,yard);
         set(l,b,(x0+x1)/2,3,zc,hanging());
         // The yard: path, chain-link along the street with an opening for the path, the name on the post beside it, a tree.
         int street=west?-5:5;
@@ -143,12 +137,6 @@ final class BorrascaDressing {
             default->{dogwood(l,b,tx,0,z0);beds(l,b,street+(west?-2:2),zc,west);kennel(l,b,back,z0,west);}
         }
         BorrascaRooms.join(l,b,Math.min(x0-3,street-1),0,z1-3,Math.max(x1+3,street+1),2,z0+3);
-    }
-    private static void bed(ServerLevel l,BlockPos b,int x,int z,Direction out){
-        // Foot toward the room, head at the end wall.
-        var foot=b.offset(x,0,z+1);var head=b.offset(x,0,z);
-        BuildBlocks.set(l,foot,Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.FOOT),F);
-        BuildBlocks.set(l,head,Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.HEAD),F);
     }
     /**
      * 0.4.423 (owner: "players should be able to jump from swings"): the yard's swing is a real one, the porch swing's seat and ropes

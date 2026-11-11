@@ -1,0 +1,124 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/borrasca_home/cross",
+    "particle": "the_oldest_house:block/borrasca_home/cross"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        2,
+        15
+      ],
+      "to": [
+        9,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        9,
+        15
+      ],
+      "to": [
+        12,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        8.5,
+        3,
+        15.5
+      ],
+      "to": [
+        12.5,
+        6,
+        15.9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            4,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            0.4,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            4,
+            0.4
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            0,
+            2.6,
+            4,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

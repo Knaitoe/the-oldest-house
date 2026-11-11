@@ -28,6 +28,9 @@ public final class BorrascaRegistry {
     /** 0.4.422: the shops' fittings (BorrascaShopBlock) and three of their surfaces, drawn by tools/draw_borrasca_town_art.py. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaShopBlock>> SHOP_TYPE=CODECS.register("borrasca_shop",()->BorrascaShopBlock.CODEC);
     public static final DeferredBlock<BorrascaShopBlock> SHOP=BLOCKS.registerBlock("borrasca_shop",BorrascaShopBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable().lightLevel(BorrascaShopBlock::light));
+    /** 0.4.456: what tells the street's four households apart (BorrascaHomeBlock), drawn by tools/draw_borrasca_homes.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaHomeBlock>> HOME_TYPE=CODECS.register("borrasca_home",()->BorrascaHomeBlock.CODEC);
+    public static final DeferredBlock<BorrascaHomeBlock> HOME=BLOCKS.registerBlock("borrasca_home",BorrascaHomeBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable());
     /** The diner's black and white floor, the doctor's and the drugstore's linoleum, the antiques shop's pressed tin ceiling. */
     public static final DeferredBlock<Block> CHECKER=BLOCKS.registerSimpleBlock("borrasca_checker",BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).strength(-1,3600000).noLootTable());
     public static final DeferredBlock<Block> LINO=BLOCKS.registerSimpleBlock("borrasca_lino",BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).strength(-1,3600000).noLootTable());

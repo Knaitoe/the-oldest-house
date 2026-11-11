@@ -173,6 +173,7 @@ public final class BorrascaStory {
         if(BorrascaSignBlock.is(board)){cue(p,BorrascaSignBlock.sign(board).look());return true;}
         // 0.4.422: the shops along the street past the chapel are placed in the world (that street has no authored coordinates).
         if(BorrascaShops.click(p,b,rel,own))return true;
+        if(BorrascaHomes.click(p,b,rel,own))return true; // 0.4.456: a thing in one of the street's four houses
         rel=BorrascaRooms.authored(rel); // 0.4.420: the clicked block, where it was authored
         int visit=own.getInt("Visit");
         if(BorrascaComic.click(p,b,rel,own))return true; // 0.4.445: the comic in the fort's window
@@ -468,6 +469,7 @@ public final class BorrascaStory {
         for(String key:BorrascaCast.KEYS)BorrascaCast.remember(own,key,actor(p,own,key));
         townPosters(p,b,own,visit);
         BorrascaShops.years(p.serverLevel(),b,visit>=3); // 0.4.454: the station's board shows the reader's own year's prices
+        BorrascaHomes.years(p.serverLevel(),b,visit>=3); // 0.4.456: and the street's four households are as they were, or years on
         townBike(p,b,own,visit);
         BorrascaComic.keep(p,b,own,visit); // 0.4.445: the comic in the fort's window, for as long as it is left there
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door
