@@ -43,6 +43,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>0.4.468, the seesaw: a hand on an end of its board sits on it (SeesawSeat); a reader's record has that they sat, how many
  * times they pushed off the sand, and who was on the other end when they did.
  *
+ * <p>0.4.470, the monkey bars and the seesaw as the proposal has them: a jump at the bars catches one (barsJump), a hand let go
+ * too early misses and drops its reader (missed), and a hard bump on the seesaw throws whoever is on top (thrownOff).
+ *
  * <p>0.4.469, the merry-go-round: a hand on it from the sand beside it shoves it round (RoundaboutBlock.Wheel); a reader's
  * record has how often they shoved it, how far round they went standing on it, and whether they came off it while it was going
  * fast.
@@ -74,7 +77,11 @@ public final class BikeNight {
         /** Readers in the air off a swing. */
         final Map<UUID,Flight> flights=new HashMap<>();
         /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
-        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>(),shoved=new HashMap<>();
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>(),shoved=new HashMap<>(),missed=new HashMap<>(),bounced=new HashMap<>();
+        /** Readers who have let go of the monkey bars and not touched the ground since: a jump at the bars does not catch them. */
+        final Set<UUID> letGo=new HashSet<>();
+        /** Readers thrown off the top of the seesaw; and whom a reader threw off it, for their records. */
+        final Set<UUID> bumpedOff=new HashSet<>();final Map<UUID,String> bumpedWhom=new HashMap<>();
         /** Whether each reader was standing on the merry-go-round when they were last looked at. */
         final Map<UUID,Boolean> onWheel=new HashMap<>();
         /** Who was on the other end of the seesaw when a reader last pushed off, for their record. */
@@ -199,6 +206,7 @@ public final class BikeNight {
             if(n.fresh){if(!loaded(l,n))continue;n.fresh=false;recall(l,n);reset(l,n);}
             lamp(l,n);
             flights(l,n);
+            barsJump(n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -285,14 +293,38 @@ public final class BikeNight {
     static final int LOOK=5;
 
     // ------------------------------------------------------------------------------------------------ the seesaw
-    /** A reader on the seesaw has pushed off the sand (SeesawSeat); with whom on the other end, if anybody. */
-    static void seesawed(ServerPlayer p,@Nullable ServerPlayer other){
-        var n=night(p);if(n==null)return;n.pushed.merge(p.getUUID(),1,Integer::sum);if(other!=null)n.rodeWith.put(p.getUUID(),other.getGameProfile().getName());
+    /** A reader on the seesaw has pushed off the sand (SeesawSeat); with whom on the other end, if anybody; and whether it was a bounce, made as they landed. */
+    static void seesawed(ServerPlayer p,@Nullable ServerPlayer other,boolean bounce){
+        var n=night(p);if(n==null)return;n.pushed.merge(p.getUUID(),1,Integer::sum);if(bounce)n.bounced.merge(p.getUUID(),1,Integer::sum);
+        if(other!=null)n.rodeWith.put(p.getUUID(),other.getGameProfile().getName());
+    }
+    /** A reader was thrown off the top of the seesaw when the other end came down hard; under whom, if anybody. */
+    static void thrownOff(ServerPlayer p,@Nullable ServerPlayer by){
+        var n=night(p);if(n==null)return;n.bumpedOff.add(p.getUUID());cue(p,BikeNightTexts.SEESAW_THROWN);
+        if(by!=null){n.bumpedWhom.put(by.getUUID(),p.getGameProfile().getName());cue(by,String.format(BikeNightTexts.SEESAW_THREW,p.getGameProfile().getName()));}
     }
 
     // ------------------------------------------------------------------------------------------------ the monkey bars
     /** A reader has taken hold of the monkey bars (BarsHang). */
     static void hung(ServerPlayer p){var n=night(p);if(n!=null)n.hung.merge(p.getUUID(),1,Integer::sum);}
+    /** A reader's hand let go too early and missed the next rung: they are told, and drop. */
+    static void missed(ServerPlayer p){var n=night(p);if(n==null)return;n.missed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_EARLY);}
+    /** A reader is off the monkey bars: until they have touched the ground, a jump at the bars does not catch them. */
+    static void letGoOfBars(ServerPlayer p){var n=night(p);if(n!=null)n.letGo.add(p.getUUID());}
+    /**
+     * "A jump at the bars grabs one": a reader in the air under the monkey bars, near enough for their fists to reach, catches the
+     * rung over them without a hand on it. Not one on a ladder (theirs is the hand), and not one who has just let go.
+     */
+    static void barsJump(Night n,List<ServerPlayer> here){
+        for(var p:here){
+            if(p.onGround()){n.letGo.remove(p.getUUID());continue;}
+            if(p.isPassenger()||p.isSpectator()||p.onClimbable()||n.letGo.contains(p.getUUID()))continue;
+            var r=rel(p.position(),n.base);
+            if(Math.abs(r.z-(BikeNightSite.BARS_Z+.5))>BarsHang.SIDE||r.x<BikeNightSite.BARS_W-BarsHang.PAST||r.x>BikeNightSite.BARS_E+1+BarsHang.PAST||r.y>=BikeNightSite.BARS_Y)continue;
+            var at=n.base.offset(BikeNightSite.rungsAt(net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.floor(r.x)-BikeNightSite.BARS_W,0,BikeNightSite.rungs()-1)));
+            if(BarsHang.cannot(p,at)==null)BarsHang.take(p,at);
+        }
+    }
     /** A reader has gone from one end of them to the other on one hold. */
     static void crossed(ServerPlayer p){var n=night(p);if(n==null)return;n.crossed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_ACROSS);}
 
@@ -337,6 +369,7 @@ public final class BikeNight {
         if(p.getVehicle() instanceof BarsHang&&!own.getBoolean("BarsTold")){own.putBoolean("BarsTold",true);cue(p,BikeNightTexts.BARS_HINT);}
         Integer holds=n.hung.remove(id);if(holds!=null)own.putInt("Hung",own.getInt("Hung")+holds);
         Integer across=n.crossed.remove(id);if(across!=null)own.putInt("Crossed",own.getInt("Crossed")+across);
+        Integer misses=n.missed.remove(id);if(misses!=null)own.putInt("BarsMissed",own.getInt("BarsMissed")+misses);
         if(p.getVehicle() instanceof SeesawSeat){
             own.putBoolean("SeesawSat",true);
             if(!own.getBoolean("SeesawTold")){own.putBoolean("SeesawTold",true);cue(p,BikeNightTexts.SEESAW_HINT);}
@@ -355,6 +388,9 @@ public final class BikeNight {
             if(was&&!on&&fast&&!p.isShiftKeyDown()&&!p.isPassenger()&&dx*dx+dz*dz>RoundaboutBlock.RADIUS*RoundaboutBlock.RADIUS)own.putInt("RoundFlung",own.getInt("RoundFlung")+1);
         }
         String with=n.rodeWith.remove(id);if(with!=null)own.putString("SeesawWith",with);
+        Integer bounces=n.bounced.remove(id);if(bounces!=null)own.putInt("SeesawBounces",own.getInt("SeesawBounces")+bounces);
+        if(n.bumpedOff.remove(id))own.putBoolean("SeesawThrown",true);
+        String whom=n.bumpedWhom.remove(id);if(whom!=null)own.putString("SeesawThrew",whom);
     }
 
     // ------------------------------------------------------------------------------------------------ a hand on the park's things

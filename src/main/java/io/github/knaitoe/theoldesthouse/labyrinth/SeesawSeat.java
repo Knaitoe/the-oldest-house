@@ -25,6 +25,8 @@ public class SeesawSeat extends Entity {
     private static final EntityDataAccessor<Integer> END=SynchedEntityData.defineId(SeesawSeat.class,EntityDataSerializers.INT);
     /** How far to the side of the board a reader is put when they get off. */
     public static final double ASIDE=.8;
+    /** Thrown off the top: how much of the end's own speed they leave with, the most that is, and how fast they go outward. */
+    public static final double LAUNCH=5,HIGHEST=.62,OUTWARD=.12;
     public SeesawSeat(EntityType<? extends SeesawSeat> type,Level level){super(type,level);noPhysics=true;setNoGravity(true);}
 
     public BlockPos stand(){return entityData.get(STAND);}
@@ -56,14 +58,30 @@ public class SeesawSeat extends Entity {
         for(var rider:getPassengers())positionRider(rider);
     }
     /** The rider pressed jump (SwingJumpPayload): they push off the sand with their legs, if their end is down. True if it took. */
-    public static boolean jump(ServerPlayer p){
-        if(!(p.getVehicle() instanceof SeesawSeat seat)||p.isSpectator())return false;
-        var board=seat.board();if(board==null||!board.push(seat.end()))return false;
+    public static boolean jump(ServerPlayer p){return p.getVehicle() instanceof SeesawSeat seat&&!p.isSpectator()&&seat.pushed();}
+    /** Its rider pushes off: now, if their end is down (or kept for when it lands, if it is on its way). True if it took now. */
+    boolean pushed(){
+        if(!(getFirstPassenger() instanceof ServerPlayer p))return false;
+        var board=board();if(board==null)return false;
+        int took=board.push(end());if(took==0)return false;
         var l=p.serverLevel();
-        l.playSound(null,seat.getX(),seat.getY(),seat.getZ(),BikeNightRegistry.SEESAW_CREAK.get(),SoundSource.BLOCKS,.7F,.9F+l.getRandom().nextFloat()*.2F);
-        var other=board.seat(1-seat.end());
-        BikeNight.seesawed(p,other!=null&&other.getFirstPassenger() instanceof ServerPlayer with?with:null);
+        l.playSound(null,getX(),getY(),getZ(),BikeNightRegistry.SEESAW_CREAK.get(),SoundSource.BLOCKS,took==2?.9F:.7F,(took==2?1.05F:.9F)+l.getRandom().nextFloat()*.2F);
+        var other=board.seat(1-end());
+        BikeNight.seesawed(p,other!=null&&other.getFirstPassenger() instanceof ServerPlayer with?with:null,took==2);
         return true;
+    }
+    /**
+     * The other end came down hard under its rider (`by`, if it has one): this seat's rider, up on top, is thrown off it, up and a
+     * little outward, with the speed the end had (as a jump off a swing carries the swing's).
+     */
+    void thrown(double hit,@Nullable SeesawSeat by){
+        if(!(getFirstPassenger() instanceof ServerPlayer p))return;
+        var board=board();if(board==null)return;
+        var out=end()==0?board.facing():board.facing().getOpposite();var from=position().add(0,.1,0);
+        p.stopRiding();
+        p.connection.teleport(from.x,from.y,from.z,p.getYRot(),p.getXRot());
+        p.setDeltaMovement(out.getStepX()*OUTWARD,Math.min(HIGHEST,LAUNCH*hit*SeesawBlock.SEAT),out.getStepZ()*OUTWARD);p.hurtMarked=true;p.resetFallDistance();
+        BikeNight.thrownOff(p,by!=null&&by.getFirstPassenger() instanceof ServerPlayer who?who:null);
     }
     @Override protected boolean canAddPassenger(Entity passenger){return getPassengers().isEmpty();}
     /** They sit on the seat's top, which is where this is. */
