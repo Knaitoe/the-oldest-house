@@ -61,10 +61,13 @@ public final class VignetteHandlingTests {
  }
  @GameTest(template="empty",batch="handling_models",timeoutTicks=1500)
  public static void practiceFurnitureMovesAndRotatesWithoutChangingOriginalRecordedRooms(GameTestHelper h){
-  var f=new LiteraryTests.Fixture(h,144);workshop=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();var room=LabyrinthPlace.MINIATURES;var l=f.level(room);var b=f.base(room);f.chunks.hold(l,SceneReview.area(b,room));
+  // A height of its own. VignetteInteriorTests builds the same workshop at 144 and leaves a chest with a diamond where a bench goes.
+  // Fixtures share one world, and CI runs this job's namespaces one after another in the same folder, so this case used to build
+  // over that room: clearing it spilled the diamond, and about one run in seventy-five it landed against the next cell and kept
+  // the kit's bench, and so the kit, from being placed (runs 1491 and 1517).
+  var f=new LiteraryTests.Fixture(h,240);workshop=f;HouseSavedData.get(h.getLevel().getServer()).markInteriorInitialized();var room=LabyrinthPlace.MINIATURES;var l=f.level(room);var b=f.base(room);f.chunks.hold(l,SceneReview.area(b,room));
   h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"actual workshop sections resident")).thenExecute(()->{
    f.build(room);ScenePolish.polishOnce(l,f.origin,room);
-  // The build and its refit place their blocks in bounded slices; on a slow runner the spare kit can land a few ticks later.
   }).thenWaitUntil(()->h.assertTrue(l.getBlockEntity(b.offset(-10,1,-10)) instanceof VignetteHandlingBlockEntity&&l.getBlockEntity(b.offset(LiteraryRooms.source(room)))!=null&&java.util.stream.IntStream.of(-8,0,8).allMatch(x->l.getBlockEntity(b.offset(x,1,-18))!=null),"the workshop's refit has placed the spare kit; found "+l.getBlockState(b.offset(-10,1,-10)))).thenExecute(()->{
    var originals=List.of(l.getBlockEntity(b.offset(-8,1,-18)),l.getBlockEntity(b.offset(0,1,-18)),l.getBlockEntity(b.offset(8,1,-18)));
    var originalData=originals.stream().map(o->o.getUpdateTag(l.registryAccess()).copy()).toList();var source=l.getBlockEntity(b.offset(LiteraryRooms.source(room)));
