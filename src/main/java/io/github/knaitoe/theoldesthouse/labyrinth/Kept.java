@@ -143,7 +143,7 @@ public final class Kept {
         for(int who=0;who<4;who++){var a=actor(l,d.cast[who]);if(a==null||busy(d,who))continue;
             ServerPlayer near=null;double best=d.stage==SITTING?36:144;for(var r:here){double dd=r.distanceToSqr(a);if(dd<best){best=dd;near=r;}}
             if(near!=null)SceneFootpaths.face(a,near.getEyePosition(),60);
-            var t=d.said.get(a.getUUID());if(t!=null&&d.tick-t>100){a.setCustomNameVisible(false);a.silent();d.said.remove(a.getUUID());}
+            var t=d.said.get(a.getUUID());if(t!=null&&!a.saying()){a.setCustomNameVisible(false);a.silent();d.said.remove(a.getUUID());}
         }
     }
 

@@ -187,7 +187,7 @@ public final class MarshSupper {
             if(s.stage==OVER){a.setYHeadRot(MarshSupperSite.facing(seatOf(who)).toYRot());continue;}
             ServerPlayer near=null;double best=64;for(var r:here){double d=r.distanceToSqr(a);if(d<best){best=d;near=r;}}
             if(near!=null)SceneFootpaths.face(a,near.getEyePosition(),70);
-            var t=s.said.get(a.getUUID());if(t!=null&&s.tick-t>90){a.setCustomNameVisible(false);a.silent();s.said.remove(a.getUUID());}
+            var t=s.said.get(a.getUUID());if(t!=null&&!a.saying()){a.setCustomNameVisible(false);a.silent();s.said.remove(a.getUUID());}
         }
     }
 

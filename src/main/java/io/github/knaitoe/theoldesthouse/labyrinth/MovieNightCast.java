@@ -115,7 +115,7 @@ public final class MovieNightCast {
         react(l,w,readers);drift(l,b,w);
         if(night%240==120)idle(l,w,readers);
         // Lines fade from over their heads after a few seconds.
-        if(night%10==0)for(var who:CAST){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&l.getGameTime()-a.getPersistentData().getLong("Said0502")>100)a.setCustomNameVisible(false);}
+        if(night%10==0)for(var who:CAST){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
         LiteraryVignettes.shared(d,PLACE,w);
     }
     /** The night starts over for whoever comes next: everyone back in their places, the canoe moored, the chair stood up. */

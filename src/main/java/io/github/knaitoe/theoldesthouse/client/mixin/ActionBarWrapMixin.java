@@ -27,6 +27,17 @@ public abstract class ActionBarWrapMixin {
     @Shadow private boolean animateOverlayMessageColor;
     @Shadow public abstract Font getFont();
 
+    /**
+     * 0.4.473 (owner: "slow dialogue a bit across vignettes"): the game gives every line on the action bar three seconds however
+     * long it is. The House's own words, which are plain text, stay up as long as they take to read (labyrinth.Dialogue), and
+     * never less than the game's time. The game's own lines (translated ones: "Press Shift to dismount") are left as they are.
+     */
+    @Inject(method = "setOverlayMessage", at = @At("TAIL"))
+    private void theOldestHouse$readingTime(Component component, boolean animateColor, CallbackInfo ci) {
+        if (component == null || !(component.getContents() instanceof net.minecraft.network.chat.contents.PlainTextContents)) return;
+        overlayMessageTime = Math.max(overlayMessageTime, io.github.knaitoe.theoldesthouse.labyrinth.Dialogue.noticed(component.getString()));
+    }
+
     @Inject(method = "renderOverlayMessage", at = @At("HEAD"), cancellable = true)
     private void theOldestHouse$wrapLongLines(GuiGraphics g, DeltaTracker delta, CallbackInfo ci) {
         if (overlayMessageString == null || overlayMessageTime <= 0) return;

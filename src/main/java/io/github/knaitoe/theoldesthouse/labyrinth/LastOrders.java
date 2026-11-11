@@ -412,7 +412,7 @@ public final class LastOrders {
         // Benny looks at whoever is nearest the bar; the two in booth three keep their heads together.
         var benny=actor(l,d.cast[6]);
         if(benny!=null){ServerPlayer near=null;double best=100;for(var r:here){double dd=r.distanceToSqr(benny);if(dd<best){best=dd;near=r;}}if(near!=null)SceneFootpaths.face(benny,near.getEyePosition(),30);}
-        if(d.tick%2==0)for(var who=0;who<7;who++){var c=actor(l,d.cast[who]);if(c==null)continue;var t=d.said.get(c.getUUID());if(t!=null&&d.tick-t>100){c.setCustomNameVisible(false);c.silent();d.said.remove(c.getUUID());}}
+        if(d.tick%2==0)for(var who=0;who<7;who++){var c=actor(l,d.cast[who]);if(c==null)continue;var t=d.said.get(c.getUUID());if(t!=null&&!c.saying()){c.setCustomNameVisible(false);c.silent();d.said.remove(c.getUUID());}}
     }
 
     // ------------------------------------------------------------------------------------------------ Benny's glasses

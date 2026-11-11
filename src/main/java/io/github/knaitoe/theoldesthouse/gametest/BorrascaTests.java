@@ -1502,6 +1502,29 @@ public final class BorrascaTests {
      * what the town does and why and just accept it. Some don't, but they have to bite their tongue."): the street's four houses are four
      * households, each told by what is in its room, and years on each is the same household later.
      */
+    @AfterBatch(batch="borrasca_dialogue") public static void dialogueDone(ServerLevel l){cleanup();}
+    /**
+     * 0.4.473 (owner, of Patrick's caption in town: "slow dialogue a bit across vignettes, please"): a line said in Drisking stays
+     * up as long as it takes to read, where every line was taken down after five seconds, and nobody in town starts a line of
+     * their own over it until then.
+     */
+    @GameTest(template="empty",batch="borrasca_dialogue",timeoutTicks=2000)
+    public static void aLineInDriskingStaysUpAsLongAsItTakesToRead(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_dialogue");final LiteraryActor[] eli={null};
+        String lengthy="I can ride all the way to the fort. Kendra says pushing on the steep part doesn't count.";
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"town cast recalled"))
+          .thenExecute(()->{
+              eli[0]=f.actor(p,"TownEli");h.assertTrue(eli[0]!=null&&p.distanceToSqr(eli[0])>12*12,"Patrick is in town, and the reader is not near enough for him to start anything himself");
+              BorrascaStory.say(p,eli[0],lengthy);
+              h.assertTrue(Dialogue.ticks(lengthy)==Dialogue.MOST&&eli[0].saying()&&eli[0].isCustomNameVisible()&&BorrascaStory.recentSpeech(p),"his line is up, and the town knows the reader is reading it");
+          })
+          .thenIdle(120)
+          .thenExecute(()->h.assertTrue(eli[0].saying()&&eli[0].isCustomNameVisible()&&lengthy.equals(eli[0].getCustomName().getString())&&BorrascaStory.recentSpeech(p),"six seconds on, where it used to be taken down at five, it is still up and still being read"))
+          .thenIdle(Dialogue.MOST-120+3)
+          .thenExecute(()->h.assertTrue(!eli[0].saying()&&!eli[0].isCustomNameVisible()&&!BorrascaStory.recentSpeech(p),"when it has been read it goes, and the town may speak again"))
+          .thenSucceed();
+    }
     @AfterBatch(batch="borrasca_homes") public static void homesDone(ServerLevel l){cleanup();}
     @GameTest(template="empty",batch="borrasca_homes",timeoutTicks=2000)
     public static void theStreetsFourHousesAreFourHouseholds(GameTestHelper h){

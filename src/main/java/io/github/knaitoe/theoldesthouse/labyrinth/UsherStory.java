@@ -237,7 +237,7 @@ public final class UsherStory {
             roderick.setYHeadRot(Mth.clamp(Mth.wrapDegrees(toward), -70, 70));
         } else roderick.setYHeadRot(0);
         var said = roderick.getPersistentData();
-        if (said.contains("SayUntil0488") && p.serverLevel().getGameTime() > said.getLong("SayUntil0488")) { roderick.setCustomNameVisible(false); roderick.setCustomName(null); said.remove("SayUntil0488"); }
+        if (said.contains("SayUntil0488") && !roderick.saying()) { roderick.setCustomNameVisible(false); roderick.setCustomName(null); said.remove("SayUntil0488"); }
     }
 
     /** The storm night: the vapour's glow behind the windows, coming and going, the casements and the wind, the exhalation over the tarn. */

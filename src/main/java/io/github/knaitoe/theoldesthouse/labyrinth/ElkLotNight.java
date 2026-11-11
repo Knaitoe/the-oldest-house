@@ -146,7 +146,7 @@ public final class ElkLotNight {
         // A truck goes by now and then on the road, unseen.
         if(night%1100==700){var p=here.get(night/1100%here.size());l.playSound(null,BlockPos.containing(p.getX(),b.getY()+1,b.getZ()-6),LiteraryRegistry.LOT_HIGHWAY.get(),SoundSource.AMBIENT,2.5F,.9F+(night%7)*.03F);}
         // Lines fade from over their heads after a few seconds.
-        if(night%10==0)for(var who:CAST){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&l.getGameTime()-a.getPersistentData().getLong("Said0478")>100)a.setCustomNameVisible(false);}
+        if(night%10==0)for(var who:CAST){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
         LiteraryVignettes.shared(d,PLACE,w);
     }
 

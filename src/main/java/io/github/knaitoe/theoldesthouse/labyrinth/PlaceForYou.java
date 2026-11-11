@@ -140,7 +140,7 @@ public final class PlaceForYou {
             else SceneFootpaths.walk(a,to,.12);
         }
         // Nameplates fade after a while.
-        for(var who:List.of("Mara","Kit","Alex","Ren")){var a=actor(l,h,who);if(a==null)continue;var at=h.said.get(a.getUUID());if(at!=null&&l.getGameTime()-at>120){a.setCustomNameVisible(false);h.said.remove(a.getUUID());}}
+        for(var who:List.of("Mara","Kit","Alex","Ren")){var a=actor(l,h,who);if(a==null)continue;var at=h.said.get(a.getUUID());if(at!=null&&!a.saying()){a.setCustomNameVisible(false);h.said.remove(a.getUUID());}}
     }
 
     // ------------------------------------------------------------------------------------------------ what the House remembers

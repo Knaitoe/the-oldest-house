@@ -137,7 +137,7 @@ public final class CostumeNight {
             if(readers.stream().anyMatch(p->p.distanceToSqr(witch)<64))l.playSound(null,witch.getX(),witch.getY()+.5,witch.getZ(),CostumeNightRegistry.DRIP.get(),SoundSource.NEUTRAL,.6F,.9F+l.random.nextFloat()*.2F);
         }
         // Lines fade from over their heads after a few seconds.
-        if(party%10==0)for(var who:EVERYONE){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&l.getGameTime()-a.getPersistentData().getLong("Said0503")>100)a.setCustomNameVisible(false);}
+        if(party%10==0)for(var who:EVERYONE){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
         LiteraryVignettes.shared(d,PLACE,w);
     }
     /** The night starts over for whoever comes next: the lights back on, everyone in their places, her at the water. */

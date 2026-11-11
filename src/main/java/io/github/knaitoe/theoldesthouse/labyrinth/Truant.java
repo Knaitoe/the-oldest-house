@@ -197,7 +197,7 @@ public final class Truant {
                 if(p.distanceToSqr(a)<=64&&p.hasLineOfSight(a))LabyrinthData.get(server).sawTruant(p.getUUID());
             }
             if(scene.turn==null&&!readers.isEmpty())choose(scene,readers,l.random);
-            if(now>scene.quietAt&&scene.quietAt>=0&&a.hasCustomName()){a.setCustomName(null);a.setCustomNameVisible(false);scene.quietAt=-1;}
+            if(!a.saying()&&scene.quietAt>=0&&a.hasCustomName()){a.setCustomName(null);a.setCustomNameVisible(false);scene.quietAt=-1;}
             if(now<scene.flinchUntil){if(a.gesture()!=FLINCH)a.gesture(FLINCH);continue;}
             if(a.gesture()==FLINCH)a.gesture(0);
             if(TruantHospitality.tick(l,b,a,readers,scene))continue;

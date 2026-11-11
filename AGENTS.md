@@ -27,6 +27,7 @@ A candidate is verified only when every job of the workflow passes on that exact
 
 - `labyrinth/`: the places (`LabyrinthPlace`), the dealer, the doors, the builders and every vignette. `house/`: the manor, calendar, opening, config and Witness. `journal/`, `opening/`, `network/`, `client/`, `command/`, `mixin/`, `gametest/`.
 - How a room is made is one property on the place (0.4.226): `LabyrinthPlace.Made.WHOLE` (the default: built whole by its own builder) or `Made.DRESSED` (the older rooms the generic passes light and furnish). Every generic pass (polish, dressing, composition, the scene reviews, the playtest repairs, the vignette architecture, shells, exteriors) asks `place.authored()` and nothing else; never add a room to a pass by name to keep it out. A room built whole is exported in `ArchitectureTests` when the generic loop skips it. See `docs/AUTHORED_ROOMS_0_4_226.md`.
+- How long words stay up is `labyrinth/Dialogue`'s to say (0.4.473, docs/DIALOGUE_PACE_0_4_473.md): a person's line, a reader's own words and the House's words on the action bar all take their time from it, scaled by the world's `readingTimePercent`. A scene never takes a line down on a timer of its own: it asks `LiteraryActor.saying()`, and uses `hush()` for a person who is cut off.
 - A new vignette follows `docs/VIGNETTE_RELEASE_CHECKLIST.md`.
 - Textures, models and blockstates are drawn by `tools/*.py`; CI runs each in `--check` mode. Never hand-edit a generated PNG.
 

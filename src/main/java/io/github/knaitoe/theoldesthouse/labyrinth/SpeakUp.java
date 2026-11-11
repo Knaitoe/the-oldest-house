@@ -183,7 +183,7 @@ public final class SpeakUp {
         var s=e.getServer();var l=s.getLevel(HouseDimensions.INTERIOR);var b=base(s);if(l==null||b==null)return;
         long now=l.getGameTime();
         // Words fade after a few seconds.
-        SAID.entrySet().removeIf(entry->{if(now-entry.getValue()<70)return false;var a=l.getEntity(entry.getKey());if(a!=null)a.setCustomNameVisible(false);return true;});
+        SAID.entrySet().removeIf(entry->{var a=l.getEntity(entry.getKey());if(a instanceof LiteraryActor speaker&&speaker.saying())return false;if(a!=null)a.setCustomNameVisible(false);return true;});
         var d=LabyrinthData.get(s);
         for(var reader:List.copyOf(CAST.keySet())){var p=s.getPlayerList().getPlayer(reader);if(p==null||!inside(p)){clearCast(l,b,reader);var t=record(d,reader);if(t.getBoolean("Here")){t.putBoolean("Here",false);save(d,reader,t);}}}
         for(var p:l.players()){

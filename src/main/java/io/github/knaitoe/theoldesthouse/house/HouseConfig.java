@@ -34,10 +34,16 @@ public final class HouseConfig {
     public static final ModConfigSpec.BooleanValue PLAYTEST_LOG, PLAYTEST_LOG_HASH_IDS;
     /** 0.4.159: whether the quiet rooms' habits become categories at all, and whether who a reader is drawn to is read. */
     public static final ModConfigSpec.BooleanValue READ_READERS, READ_DRAWN_TO, HOUSE_BODIES;
+    /** 0.4.473: how long words stay up, as a percentage of the usual time (labyrinth.Dialogue). */
+    public static final ModConfigSpec.IntValue READING_TIME;
     private static final int CURRENT_PRESET = 62;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        READING_TIME = builder
+                .comment("How long spoken lines and other words stay on screen, as a percentage of their usual time.",
+                        "A line stays up longer the longer it is. 100 is the usual time; 150 is half as long again; 50 is half.")
+                .defineInRange("readingTimePercent", 100, 25, 400);
         ROOM_FIRST_AGE = builder
                 .comment("The first House morning on which the room between rooms can be rolled for.")
                 .defineInRange("roomFirstAge", 3, 1, 1000);

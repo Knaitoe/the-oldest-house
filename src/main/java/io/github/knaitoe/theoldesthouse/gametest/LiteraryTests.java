@@ -96,11 +96,54 @@ public final class LiteraryTests {
             .thenExecute(()->{h.assertTrue(Math.abs(p.getZ()-(b.getZ()-27.5))<.01||f.in.getGameTime()%400>=60,"one chime puts a reader back only once");
                 // 0.4.398 (owner: "his dialogue does not disappear"): the red figure's line is up to be read, then goes.
                 h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(96),a->a.role()==LiteraryActor.RED_FIGURE&&a.isCustomNameVisible()&&a.getCustomName()!=null&&a.getCustomName().getString().equals("The clock is speaking.")).size()==1,"a red figure says the clock is speaking");})
-            .thenIdle(LiteraryActor.SAY_LONGEST+5)
+            .thenIdle(Dialogue.MOST+5)
             .thenExecute(()->h.assertTrue(f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(96),a->a.role()==LiteraryActor.RED_FIGURE&&a.isCustomNameVisible()).isEmpty(),"and the line goes once it has been read"))
             .thenSucceed();
     }
     @AfterBatch(batch="literary_masque_chime") public static void masqueChimeDone(ServerLevel l){close();}
+    @AfterBatch(batch="literary_dialogue") public static void dialogueDone(ServerLevel l){HouseConfig.READING_TIME.set(100);close();}
+    /**
+     * 0.4.473 (owner: "slow dialogue a bit across vignettes, please" and "a universal handler ... configurable via config or
+     * settings"): how long a line stays up is one rule (Dialogue), a person keeps their own line up for that long, and the
+     * world's setting scales it.
+     */
+    @GameTest(template="empty",batch="literary_dialogue",timeoutTicks=1200)
+    public static void aLineStaysUpAsLongAsItTakesToReadByOneRuleAndTheSettingScalesIt(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("dialogue_reader",place);final LiteraryActor[] a={null};
+        String brief="Hello.",middling="Come on. It goes further than you think.",lengthy="I can ride all the way to the fort. Kendra says pushing on the steep part doesn't count.";
+        h.startSequence().thenExecute(()->{
+            // The rule: a moment to find the line and time for each character, never under five seconds or over twelve.
+            h.assertTrue(Dialogue.ticks(brief,100)==Dialogue.LEAST&&Dialogue.ticks(lengthy,100)==Dialogue.MOST&&Dialogue.FIND+Dialogue.A_CHARACTER*lengthy.length()>Dialogue.MOST,"a brief line has its five seconds and a long one its twelve");
+            int mid=Dialogue.ticks(middling,100);
+            h.assertTrue(mid==Dialogue.FIND+Dialogue.A_CHARACTER*middling.length()&&mid>Dialogue.LEAST&&mid<Dialogue.MOST,"between them, a moment to find it and time for each character: "+mid);
+            // The setting scales it, down to a floor.
+            h.assertTrue(Dialogue.ticks(lengthy,150)==Dialogue.MOST*3/2&&Dialogue.ticks(lengthy,50)==Dialogue.MOST/2&&Dialogue.ticks(brief,25)==Dialogue.FLOOR,"half as long again at 150, half at 50, and never under the floor");
+            // What a reader notices on the action bar: the same, but never under the game's own three seconds.
+            h.assertTrue(Dialogue.noticed(brief,100)==Dialogue.NOTICED_LEAST&&Dialogue.noticed(lengthy,100)==Dialogue.MOST&&Dialogue.noticed("Somebody is on it.",100)==Dialogue.FIND+Dialogue.A_CHARACTER*18,"the action bar's words by the same rule, from the game's own three seconds up");
+            h.assertTrue(Dialogue.percent()==100&&Dialogue.ticks(lengthy)==Dialogue.MOST,"and the world's setting is the usual time until somebody changes it");
+            a[0]=LiteraryVignettes.actor(p,place,"DialogueProbe",LiteraryActor.STRANGER,new BlockPos(0,0,-6),true);
+            h.assertTrue(a[0]!=null&&!a[0].saying(),"somebody who has said nothing is saying nothing");
+            a[0].say("Patrick",lengthy);
+            h.assertTrue(a[0].saying()&&a[0].isCustomNameVisible(),"a line is up as soon as it is said");
+        })
+        .thenIdle(130)
+        .thenExecute(()->h.assertTrue(a[0].saying()&&a[0].isCustomNameVisible()&&lengthy.equals(a[0].getCustomName().getString()),"six and a half seconds on a long line is still up, where most scenes used to take every line down"))
+        .thenIdle(Dialogue.MOST-130+2)
+        .thenExecute(()->{
+            h.assertTrue(!a[0].saying()&&!a[0].isCustomNameVisible(),"and it goes when it has been read");
+            HouseConfig.READING_TIME.set(200);
+            h.assertTrue(Dialogue.ticks(brief)==Dialogue.LEAST*2,"the world's setting at 200 gives a brief line ten seconds");
+            a[0].say(brief);
+        })
+        .thenIdle(Dialogue.LEAST+20)
+        .thenExecute(()->{
+            h.assertTrue(a[0].saying()&&a[0].isCustomNameVisible(),"so it is still up when at the usual time it would have gone");
+            a[0].hush();
+            h.assertTrue(!a[0].saying()&&!a[0].isCustomNameVisible(),"and a person who is cut off loses their line at once");
+            HouseConfig.READING_TIME.set(100);
+        })
+        .thenSucceed();
+    }
     @GameTest(template="empty",batch="literary_masque_own",timeoutTicks=800)
     public static void aStoppedClockStopsOnlyTheEveningOfTheReaderWhoStoppedIt(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.MASQUE;var p=f.player("masque_stopper",place);var late=f.player("masque_late",place);var b=f.base(place);

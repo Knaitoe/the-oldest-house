@@ -73,7 +73,7 @@ public final class LakeHouseTess {
         }
         if(count!=1||own.getBoolean("SoloGone")||own.getBoolean("GoodbyeDone")||ended&&!goodbye)return;
         a=ensure(p,b,own);if(a==null)return;
-        if(a.getPersistentData().getLong("LakeSayUntil")<p.level().getGameTime()){a.setCustomNameVisible(false);a.setCustomName(null);}
+        if(!a.saying()){a.setCustomNameVisible(false);a.setCustomName(null);}
         if(goodbye){
             a.stopRiding();a.appearance(a.role(),0);move(a,new Vec3(b.getX()+3.5,b.getY(),b.getZ()-16.5),.5);
             if(p.distanceToSqr(a)<36&&!p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)&&HouseWatchers.sees(p,a.getEyePosition())){
