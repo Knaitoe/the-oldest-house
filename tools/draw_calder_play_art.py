@@ -1,4 +1,4 @@
-"""Bike night (0.4.465 to 0.4.468): the playground in Calder Park.
+"""Bike night (0.4.465 to 0.4.469): the playground in Calder Park.
 
 Draws, in native Minecraft pixels from fixed seeds, the playground's equipment, each piece a kind of one block (calder_play). This
 slice, the swings: a steel frame's posts (a foot with its two stays, a shaft, and the two tops a bar ends on or runs over), its top
@@ -17,6 +17,10 @@ an end of them whose rails run on over its ladder's, and the slide's ladder agai
 0.4.468, the seesaw (its own block, calder_seesaw): the stand it turns on; and its board in three pieces that are never blocks in
 the world, the middle three blocks of it and an end each way with its seat, handle and bumper, which the stand's renderer draws
 turned about the axle. Drawn level, pointing north.
+
+0.4.469, the merry-go-round (its own block, calder_roundabout): the whole wheel as one model that is never a block in the world,
+which its hub's renderer draws turned about the hub: a round deck in four painted quarters, the hub's post, and four rails from
+the hub out to posts at the rim. Its ground's nine cells draw nothing.
 
 Made as the park's fittings are (tools/draw_calder_art.py): small pieces are bars that take one pixel of a paint card, the
 playground's own; a face big enough to carry a picture takes a part of one the size it is. Sixteen pixels to the block. A piece is
@@ -396,6 +400,31 @@ def seesaw_seat():
     return p
 
 
+# ---------------------------------------------------------------------------------------------------------------- the merry-go-round
+# As RoundaboutBlock has it: the deck is this many pixels in radius about the middle of its hub's block, and its top this many
+# up; the hub's post is this tall. The deck is every two-pixel square whose middle is within the radius.
+ROUND, DECK_TOP, HUB_POST = 23, 3, 14
+
+
+def roundabout():
+    """The wheel, its hub in the middle of the block: the deck, in rows of two-pixel squares, each row cut at the hub's middle so
+    that its four quarters take their own paint; the hub's post, capped; and four rails from the hub to a post at the rim."""
+    p = []
+    for z0 in range(-16, 32, 2):
+        for east in (False, True):
+            xs = [x0 for x0 in range(-16, 32, 2) if (x0 + 1 - 8) ** 2 + (z0 + 1 - 8) ** 2 <= ROUND ** 2 and (x0 >= 8) == east]
+            if xs:
+                bar(p, [min(xs), 1, z0], [max(xs) + 2, DECK_TOP, z0 + 2], (FRAME, YELLOW, GREEN, BLUE)[(1 if east else 0) + (2 if z0 >= 8 else 0)])
+    bar(p, [6.5, DECK_TOP, 6.5], [9.5, HUB_POST, 9.5], BARE)
+    bar(p, [6, HUB_POST, 6], [10, HUB_POST + 1, 10], BOLT)
+    rails = (([9.5, 12.8, 7.4], [28.2, 14, 8.6], [27, DECK_TOP, 7.4]), ([-12.2, 12.8, 7.4], [6.5, 14, 8.6], [-12.2, DECK_TOP, 7.4]),
+             ([7.4, 12.8, 9.5], [8.6, 14, 28.2], [7.4, DECK_TOP, 27]), ([7.4, 12.8, -12.2], [8.6, 14, 6.5], [7.4, DECK_TOP, -12.2]))
+    for lo, hi, post in rails:
+        bar(p, lo, hi, BARE)
+        bar(p, post, [post[0] + 1.2, 12.8, post[2] + 1.2], BARE)
+    return p
+
+
 def mark_model():
     p = []
     plate(p, [0, .3, 0], [16, .3, 16], 'm', {'up': (0, 0)})
@@ -408,11 +437,13 @@ PIECES = {
     'ladder_0': lambda: ladder(0), 'ladder_1': lambda: ladder(1), 'deck_0': lambda: deck(False), 'deck_1': lambda: deck(True),
     'chute_0': lambda: chute(0), 'chute_1': lambda: chute(1), 'chute_2': lambda: chute(2), 'chute_3': lambda: chute(3), 'runout_0': runout,
     'ladder_2': lambda: ladder(0, GREEN, BOLT), 'ladder_3': lambda: ladder(1, GREEN, BOLT), 'rungs_0': lambda: rungs(False), 'rungs_1': lambda: rungs(True),
-    'seesaw_stand': seesaw_stand, 'seesaw_board': seesaw_board, 'seesaw_seat': seesaw_seat,
+    'seesaw_stand': seesaw_stand, 'seesaw_board': seesaw_board, 'seesaw_seat': seesaw_seat, 'roundabout_wheel': roundabout,
 }
 NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark', 's': 'sheet', 't': 'tread', 'w': 'plank'}
 # The seesaw's block: the model each of its parts is drawn from. An end's place in the world draws nothing.
 SEESAW = {'stand': 'seesaw_stand', 'end': 'gone', 'board': 'seesaw_board', 'seat': 'seesaw_seat'}
+# The merry-go-round's block: its ground's nine cells draw nothing; the wheel is drawn turned by its hub's renderer.
+ROUNDABOUT = {**{cell: 'gone' for cell in ('nw', 'n', 'ne', 'w', 'hub', 'e', 'sw', 's', 'se')}, 'wheel': 'roundabout_wheel'}
 KINDS = ['post', 'bar', 'chain', 'swing', 'ladder', 'deck', 'chute', 'runout', 'rungs']
 # The model each stage of a kind is drawn from; `gone` draws nothing.
 STAGES = {'post': ('post_0', 'post_1', 'post_2', 'post_3'), 'bar': ('bar_0', 'bar_1', 'bar_0', 'bar_0'),
@@ -448,12 +479,13 @@ def files():
                                                         for facing, y in FACING_Y.items() for k in range(4)}}
     out['blockstates/calder_seesaw.json'] = {'variants': {f'facing={facing},part={part}': {'model': P + name, **({'y': y} if y else {})}
                                                           for facing, y in FACING_Y.items() for part, name in SEESAW.items()}}
+    out['blockstates/calder_roundabout.json'] = {'variants': {f'cell={cell}': {'model': P + name} for cell, name in ROUNDABOUT.items()}}
     out['models/item/sand_ball.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/sand_ball'}}
     return out
 
 
 NAMES = {'block.the_oldest_house.calder_play': 'Playground Equipment', 'block.the_oldest_house.calder_mark': 'Heel Mark',
-         'block.the_oldest_house.calder_seesaw': 'Seesaw',
+         'block.the_oldest_house.calder_seesaw': 'Seesaw', 'block.the_oldest_house.calder_roundabout': 'Merry-go-round',
          'item.the_oldest_house.sand_ball': 'Ball of Sand', 'entity.the_oldest_house.sand_ball': 'Ball of Sand'}
 
 

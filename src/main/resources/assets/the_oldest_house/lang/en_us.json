@@ -1626,5 +1626,7 @@
   "subtitles.the_oldest_house.park.bars": "Rung rings",
   "block.the_oldest_house.calder_seesaw": "Seesaw",
   "subtitles.the_oldest_house.park.seesaw_creak": "Seesaw creaks",
-  "subtitles.the_oldest_house.park.seesaw_thud": "Seesaw bumps down"
+  "subtitles.the_oldest_house.park.seesaw_thud": "Seesaw bumps down",
+  "block.the_oldest_house.calder_roundabout": "Merry-go-round",
+  "subtitles.the_oldest_house.park.roundabout_squeak": "Merry-go-round squeaks"
 }

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "cell=nw": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=n": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=ne": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=w": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=hub": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=e": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=sw": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=s": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=se": {
+      "model": "the_oldest_house:block/calder_play/gone"
+    },
+    "cell=wheel": {
+      "model": "the_oldest_house:block/calder_play/roundabout_wheel"
+    }
+  }
+}
