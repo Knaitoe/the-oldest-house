@@ -4300,4 +4300,180 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="graves_pit") public static void gravesPitDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.490, what happens in the graveyard
+    @GameTest(template="empty",batch="yard_gate",timeoutTicks=9000)
+    public static void theCemeterysGateIsShutAllEveningAndStandsOpenOnceTheChaseIsOnAndNobodySeesItMove(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final int[] t={0};
+        int rails=CalderTown.RAILS,w=CalderGraves.PATH_W,e=CalderGraves.PATH_E;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("yard_gate_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            // A reader on Church Lane, looking at the gate, all the while the three are in the park.
+            .thenExecute(()->{f.at(p[0],P,.5,0,-171.5);p[0].setYRot(180);p[0].setXRot(0);})
+            .thenWaitUntil(()->{
+                p[0].setYRot(180);p[0].setXRot(0);
+                h.assertTrue(!CalderGraves.gateIsOpen(l,b)&&!BikeNightGraveyard.gateOpen(b),"it is shut all evening");
+                h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b));
+            })
+            // The chase is on, and they are still looking at it: it does not move.
+            .thenWaitUntil(()->{
+                p[0].setYRot(180);p[0].setXRot(0);
+                h.assertTrue(!CalderGraves.gateIsOpen(l,b),"it does not open while somebody is looking at it");
+                h.assertTrue(++t[0]>=40,"waiting two seconds with the reader looking at it");
+            })
+            // They look away, down the lane.
+            .thenExecute(()->{p[0].setYRot(0);hush(p[0]);})
+            .thenWaitUntil(()->h.assertTrue(CalderGraves.gateIsOpen(l,b)&&BikeNightGraveyard.gateOpen(b),"waiting for it to be standing open"))
+            .thenExecute(()->{
+                // The answer: "Nobody says why." Nothing is said of it and nothing is heard.
+                h.assertTrue(HEARD.getOrDefault(p[0].getUUID(),List.of()).isEmpty()||!heard(p[0],"gate"),"nothing is said of it");
+                for(int x=w;x<=e;x++)for(int y=0;y<2;y++)h.assertTrue(l.getBlockState(b.offset(x,y,rails)).isAir(),"the gateway is empty at x="+x);
+                for(int x:new int[]{w,e})for(int z=rails-2;z<=rails-1;z++)for(int y=0;y<2;y++){
+                    var leaf=l.getBlockState(b.offset(x,y,z));
+                    h.assertTrue(CalderBlock.is(leaf,CalderBlock.Kind.GATE)&&leaf.getValue(CalderBlock.FACING).getAxis()==Direction.Axis.X,"each leaf stands end on to the gateway, inside it: "+x+","+y+","+z+" is "+leaf);
+                }
+                // A bike gets through it from the lane to the path inside, and so does anybody.
+                var o=Vec3.atLowerCornerOf(b);
+                h.assertTrue(BikeNightGraveyard.clear(l,b,o.add(0,0,rails+2.5),o.add(0,0,rails-3.5)),"the way through is a clear ride");
+                h.assertTrue(l.noCollision(new AABB(b.getX()-.9,b.getY()+.05,b.getZ()+rails-3,b.getX()+.9,b.getY()+1.8,b.getZ()+rails+2)),"and wide enough for two abreast");
+                h.assertTrue(BikeNightGraveyard.in(b,o.add(0,0,rails-1.5))&&!BikeNightGraveyard.in(b,o.add(0,0,rails+1.5)),"inside the railings is in, the lane is not");
+                // The night over, it is shut again, as it was built.
+                BikeNight.resetNow(l,b);
+                h.assertTrue(!CalderGraves.gateIsOpen(l,b),"shut again when the night is over");
+                for(int x=w;x<=e;x++)h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,0,rails)),CalderBlock.Kind.GATE)&&CalderBlock.is(l.getBlockState(b.offset(x,1,rails)),CalderBlock.Kind.GATE),"its leaves across the gateway at x="+x);
+                for(int x:new int[]{w,e})for(int z=rails-2;z<=rails-1;z++)h.assertTrue(l.getBlockState(b.offset(x,0,z)).isAir(),"and nothing left standing inside it");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="yard_gate") public static void yardGateDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="yard_three",timeoutTicks=12000)
+    public static void oneOfTheThreeStopsAtTheFenceAndTheOthersComeInSlowerAndFallBackAndAreGoneWhenNobodyCanSeeThemGo(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final int[] t={0};final double[] fastest={0,0},north={0,0};var said=new ArrayList<String>();final String[] last={"","",""};final int[] after={-1};
+        Runnable listen=()->{
+            three(l,b,who,bikes);
+            for(int i=0;i<3;i++){
+                if(who[i]==null)continue;var now=saying(who[i]);
+                if(!now.isEmpty()&&!now.equals(last[i]))said.add(now);
+                last[i]=now;
+                if(i<2&&bikes[i]!=null&&BikeNightGraveyard.in(b,bikes[i].position())){fastest[i]=Math.max(fastest[i],bikes[i].speedNow());north[i]=Math.min(north[i],bikes[i].getZ()-b.getZ());}
+            }
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("yard_three_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGraveyard.gateOpen(b),"waiting for the chase, and the gate: stage "+BikeNightBullies.stage(b));})
+            // The reader is up the hill, on its third level, looking back down at the gate; the three are on Church Lane.
+            .thenExecute(()->{
+                f.at(p[0],P,-.5,2,-212.5);p[0].setYRot(0);p[0].setXRot(0);
+                for(int i=0;i<3;i++)bikes[i].moveTo(b.getX()-6+6*i+.5,b.getY(),b.getZ()-170.5,180,0);
+                north[0]=north[1]=0;
+            })
+            .thenWaitUntil(()->{
+                p[0].setYRot(0);p[0].setXRot(0);listen.run();
+                h.assertTrue(BikeNightGraveyard.state(b,2)==BikeNightGraveyard.STOPPED,"waiting for Duff to stop at the fence: he is "+BikeNightGraveyard.state(b,2)+" at "+(bikes[2]==null?"nowhere":rel(b,bikes[2])));
+            })
+            .thenExecute(()->{
+                // The proposal: "one stops at the fence ('I'm not going in there')".
+                h.assertTrue(said.contains(BikeNightTexts.NOT_GOING_IN)&&!BikeNightGraveyard.in(b,bikes[2].position())&&bikes[2].getZ()-b.getZ()<CalderTown.RAILS+3.5,"he says so, outside the gate: "+said+", at "+rel(b,bikes[2]));
+            })
+            .thenWaitUntil(()->{
+                p[0].setYRot(0);p[0].setXRot(0);listen.run();
+                h.assertTrue(BikeNightGraveyard.state(b,0)==BikeNightGraveyard.STOPPED&&BikeNightGraveyard.state(b,1)==BikeNightGraveyard.STOPPED,"waiting for the other two to come in and stop: Tully "+BikeNightGraveyard.state(b,0)+" at "+(bikes[0]==null?"nowhere":rel(b,bikes[0]))+", Ray-Ray "+BikeNightGraveyard.state(b,1)+" at "+(bikes[1]==null?"nowhere":rel(b,bikes[1])));
+            })
+            .thenExecute(()->{
+                // "they come through the gate, slower": never faster in there than two thirds of the pace they hunt at.
+                h.assertTrue(fastest[0]>.1&&fastest[1]>.1&&fastest[0]<=BikeNightGraveyard.PACE+.001&&fastest[1]<=BikeNightGraveyard.PACE+.001&&BikeNightGraveyard.PACE<BikeNightBullies.HUNT*.7F,"slower in there: Tully at most "+fastest[0]+", Ray-Ray "+fastest[1]);
+                // "the other two fall back": each has only so much hill in him, Ray-Ray less than Tully, and neither reaches the reader.
+                h.assertTrue(north[1]>BikeNightGraveyard.NERVE[1]-2&&north[0]>BikeNightGraveyard.NERVE[0]-2&&north[0]<north[1]-8,"Ray-Ray got as far as "+north[1]+" and Tully as "+north[0]);
+                h.assertTrue(said.contains(BikeNightTexts.FALL_BACK[0])&&said.contains(BikeNightTexts.FALL_BACK[1]),"each says one thing to the other when he stops: "+said);
+                h.assertTrue(!BikeNightBullies.caught(b,p[0]),"and the reader is not caught");
+                after[0]=said.size();t[0]=0;
+            })
+            // They are watched: seven seconds, and they are all still there, and none of them says anything.
+            .thenWaitUntil(()->{
+                p[0].setYRot(0);p[0].setXRot(0);listen.run();
+                for(int i=0;i<3;i++)h.assertTrue(!BikeNightBullies.gone(b,i)&&who[i]!=null&&bikes[i]!=null,"nobody is taken while somebody can see him: "+BikeNightBullies.NAMES[i]);
+                h.assertTrue(++t[0]>=140,"waiting seven seconds with the reader watching them");
+            })
+            .thenExecute(()->{
+                // "and then their jeers stop altogether."
+                h.assertTrue(said.size()==after[0],"they say nothing more: "+said.subList(after[0],said.size()));
+                for(int i=0;i<3;i++)h.assertTrue(bikes[i].speedNow()<.01F,BikeNightBullies.NAMES[i]+" has stopped where he is");
+                // The reader turns to look up the hill.
+                p[0].setYRot(180);
+            })
+            .thenWaitUntil(()->{
+                p[0].setYRot(180);
+                boolean all=true;for(int i=0;i<3;i++)all&=BikeNightBullies.gone(b,i)&&BikeNightBullies.find(l,b,i)==null&&BikeNightBullies.bikeOf(l,b,i)==null&&BikeNightGraveyard.state(b,i)==BikeNightGraveyard.TAKEN;
+                h.assertTrue(all,"waiting for all three to be gone, and their bikes");
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.GONE,"waiting for the night to know they are gone: stage "+BikeNightBullies.stage(b)))
+            .thenExecute(()->{
+                // "Nothing is shown happening to them": nothing was said or heard of it.
+                h.assertTrue(said.size()==after[0]&&!BikeNightBullies.caught(b,p[0])&&p[0].getHealth()>=p[0].getMaxHealth(),"nothing more was said, and the reader is as they were");
+                for(var line:List.of(BikeNightTexts.NOT_GOING_IN,BikeNightTexts.FALL_BACK[0],BikeNightTexts.FALL_BACK[1]))h.assertTrue(!heard(p[0],line),"what they say is never in chat: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="yard_three") public static void yardThreeDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="yard_gus",timeoutTicks=12000)
+    public static void gusComesThroughTheStonesAfterHisFriendAndSaysNothingAtTheRow(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] gus={null};final PackBike[] his={null};
+        var said=new ArrayList<String>();final String[] last={""};final int[] t={0},held={0},after={-1};
+        Runnable listen=()->{var now=saying(gus[0]);if(!now.isEmpty()&&!now.equals(last[0]))said.add(now);last[0]=now;if(his[0].heldUp())held[0]++;};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("yard_gus_reader",P))
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);his[0]=BikeNightGus.bikeOf(l,b);
+                h.assertTrue(BikeNight.begun(b)&&gus[0]!=null&&his[0]!=null&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, Gus, his bike, and the reader to be the park's size");})
+            .thenExecute(()->take(h,f,p[0],NightBike.Make.WASP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the Wasp to be theirs"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{listen.run();h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGus.doing(b)==BikeNightGus.RIDING&&BikeNightGraveyard.gateOpen(b),"waiting for the chase, the gate, and for him to be on his bike: stage "+BikeNightBullies.stage(b)+", doing "+BikeNightGus.doing(b));})
+            // The reader is just inside the gate; Gus is on the lane outside it.
+            .thenExecute(()->{f.at(p[0],P,-.5,0,CalderTown.RAILS-8.5);his[0].moveTo(b.getX()+.5,b.getY(),b.getZ()+CalderTown.RAILS+4.5,180,0);said.clear();held[0]=0;})
+            .thenWaitUntil(()->{
+                listen.run();
+                h.assertTrue(BikeNightGraveyard.in(b,his[0].position())&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+1.5&&said.contains(BikeNightTexts.GUS_YARD),"waiting for him to come in by the gate after them, and say where they are: at "+rel(b,his[0])+", said "+said);
+            })
+            // Up the first bank.
+            .thenExecute(()->f.at(p[0],P,-.5,1,CalderGraves.BANKS[0]-6.5))
+            .thenWaitUntil(()->{
+                listen.run();
+                h.assertTrue(his[0].getZ()-b.getZ()<CalderGraves.BANKS[0]&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+1.5&&said.contains(BikeNightTexts.GUS_YARD_ON),"waiting for him up the first bank beside them, saying his other thing: at "+rel(b,his[0])+", said "+said);
+            })
+            // And to the row of small stones, behind every other row.
+            .thenExecute(()->{f.at(p[0],P,-.5,3,CalderGraves.SMALL_ROW+2.5);held[0]=0;})
+            .thenWaitUntil(()->{
+                listen.run();
+                h.assertTrue(BikeNightGraveyard.hushed(b,his[0].position())&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+1.5&&his[0].speedNow()<.01F,"waiting for him to be beside his friend at the row: at "+rel(b,his[0])+" going "+his[0].speedNow()+", held up for "+held[0]+" ticks");
+            })
+            .thenExecute(()->{
+                // Through twelve rows of stones, round the open grave, and up three banks: weaving, not butting his way.
+                h.assertTrue(Math.abs(his[0].getY()-b.getY()-3)<.05&&held[0]<60,"he is on the top of the hill, and was held up for "+held[0]+" ticks on the way");
+                after[0]=said.size();t[0]=0;
+                // A hand on him.
+                BikeNightGus.talk(p[0],gus[0]);
+            })
+            // The answer: "At the row he says nothing."
+            .thenWaitUntil(()->{
+                listen.run();
+                h.assertTrue(saying(gus[0]).isEmpty()||said.size()==after[0],"he says nothing at the row: "+said.subList(Math.min(after[0],said.size()),said.size()));
+                if(t[0]==100)BikeNightGus.talk(p[0],gus[0]);
+                h.assertTrue(++t[0]>=300,"waiting fifteen seconds at the row");
+            })
+            .thenExecute(()->{
+                h.assertTrue(said.size()==after[0],"not of his own accord and not to a hand on him: "+said.subList(after[0],said.size()));
+                for(var line:List.of(BikeNightTexts.GUS_YARD,BikeNightTexts.GUS_YARD_ON))h.assertTrue(!heard(p[0],line),"what he says is never in chat: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="yard_gus") public static void yardGusDone(ServerLevel l){done();}
 }

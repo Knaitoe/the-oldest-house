@@ -170,6 +170,28 @@ public final class CalderGraves {
             else rail(l,b,x,BACK,Direction.NORTH);
         }
     }
+    /**
+     * 0.4.490: the front gate swung open on its hinges, inward: each leaf end on to the gateway, its hinge by its pier, as the park's
+     * gate opens (BikeNightSite.gateOpen). The way through is the whole of the gateway but the leaves' own thickness.
+     */
+    public static void gateOpen(ServerLevel l,BlockPos b){
+        var air=Blocks.AIR.defaultBlockState();int z=CalderTown.RAILS;
+        for(int x=PATH_W;x<=PATH_E;x++)for(int y=0;y<2;y++)l.setBlock(b.offset(x,y,z),air,3);
+        for(int x:new int[]{PATH_W,PATH_E})for(int y=0;y<2;y++){
+            l.setBlock(b.offset(x,y,z-1),BikeNightSite.fit(CalderBlock.Kind.GATE,Direction.WEST,y),3);
+            l.setBlock(b.offset(x,y,z-2),BikeNightSite.fit(CalderBlock.Kind.GATE,Direction.EAST,y),3);
+        }
+    }
+    public static boolean gateIsOpen(ServerLevel l,BlockPos b){return !CalderBlock.is(l.getBlockState(b.offset(PATH_W,0,CalderTown.RAILS)),CalderBlock.Kind.GATE);}
+    /** And shut again, as it is built. */
+    public static void gateShut(ServerLevel l,BlockPos b){
+        var air=Blocks.AIR.defaultBlockState();int z=CalderTown.RAILS;
+        for(int x:new int[]{PATH_W,PATH_E})for(int at=z-2;at<=z-1;at++)for(int y=0;y<2;y++)if(CalderBlock.is(l.getBlockState(b.offset(x,y,at)),CalderBlock.Kind.GATE))l.setBlock(b.offset(x,y,at),air,3);
+        for(int x=PATH_W;x<=PATH_E;x++){
+            var facing=(x-PATH_W)%2==0?Direction.NORTH:Direction.SOUTH;
+            for(int y=0;y<2;y++)l.setBlock(b.offset(x,y,z),BikeNightSite.fit(CalderBlock.Kind.GATE,facing,y),3);
+        }
+    }
     /** The angel, the obelisk and the Calders' mausoleum. */
     static void memorials(ServerLevel l,BlockPos b){
         for(int i=0;i<3;i++){
