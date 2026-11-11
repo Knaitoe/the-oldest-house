@@ -1,0 +1,282 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/borrasca_shop/desk_bell",
+    "particle": "the_oldest_house:block/borrasca_shop/desk_bell"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        1,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        1,
+        6
+      ],
+      "to": [
+        10,
+        3,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            2,
+            0,
+            6,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            2,
+            0,
+            6,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            2,
+            0,
+            6,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            2,
+            0,
+            6,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            9,
+            1,
+            13,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            2,
+            0,
+            6,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        3,
+        7
+      ],
+      "to": [
+        9,
+        3.5,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            5,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            5,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            5,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            5,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            5,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            5,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        3.5,
+        7.5
+      ],
+      "to": [
+        8.5,
+        4.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            4,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            4,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            4,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            4,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            3,
+            0,
+            4,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

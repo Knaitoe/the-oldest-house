@@ -1235,6 +1235,37 @@ public final class BorrascaTests {
             seat(h,f,BorrascaRooms.at(b,-15,12,-176),BorrascaShopBlock.Kind.BENCH_MID,Direction.WEST,0,"the depot's waiting bench");
             for(var at:List.of(b.offset(15,0,-60),b.offset(-15,0,-27),b.offset(19,0,-18),b.offset(-6,0,-7),b.offset(-11,0,-20),b.offset(-18,0,-28),BorrascaRooms.at(b,-21,12,-172),BorrascaRooms.at(b,-15,12,-176)))
                 h.assertFalse(f.out.getBlockState(at).getBlock() instanceof StairBlock,"no plank stair stands for a seat at "+at.subtract(b).toShortString());
+            // 0.4.460 (owner: "Borrasca needs a custom texture pass"), the second part: each of the new things stands where one of
+            // the game's own blocks stood for it, and none of those blocks is left anywhere in Drisking.
+            for(var stand:List.of(
+                    Map.entry(BorrascaRooms.at(b,-6,0,-1),BorrascaShopBlock.Kind.STOVE),Map.entry(BorrascaRooms.at(b,-6,1,-1),BorrascaShopBlock.Kind.PIPE),
+                    Map.entry(BorrascaRooms.at(b,-27,0,-18),BorrascaShopBlock.Kind.PAIL),Map.entry(BorrascaRooms.at(b,29,1,-20),BorrascaShopBlock.Kind.URN),
+                    Map.entry(BorrascaRooms.at(b,29,0,-27),BorrascaShopBlock.Kind.TOILET),Map.entry(BorrascaRooms.at(b,-15,12,-189),BorrascaShopBlock.Kind.EFFECTS),
+                    Map.entry(BorrascaRooms.at(b,-15,13,-189),BorrascaShopBlock.Kind.EFFECTS),Map.entry(BorrascaRooms.at(b,-15,12,-202),BorrascaShopBlock.Kind.SINK),
+                    Map.entry(BorrascaRooms.at(b,-15,13,-200),BorrascaShopBlock.Kind.URN),Map.entry(BorrascaRooms.at(b,0,16,-193),BorrascaShopBlock.Kind.HOOK),
+                    Map.entry(BorrascaRooms.at(b,-9,12,-186),BorrascaShopBlock.Kind.DRUM),Map.entry(BorrascaRooms.at(b,-14,6,BorrascaRooms.ROOM_Z[0]+1),BorrascaShopBlock.Kind.PAIL),
+                    Map.entry(b.offset(-7,0,BorrascaRooms.TOWN_END+10),BorrascaShopBlock.Kind.DRUM),
+                    Map.entry(b.offset(-20,0,-89),BorrascaShopBlock.Kind.GRILL),Map.entry(b.offset(-20,0,-88),BorrascaShopBlock.Kind.FRYER),Map.entry(b.offset(-20,0,-86),BorrascaShopBlock.Kind.SINK),
+                    Map.entry(b.offset(BorrascaShops.JUKEBOX),BorrascaShopBlock.Kind.JUKEBOX),Map.entry(b.offset(BorrascaShops.COUNTER_BELL),BorrascaShopBlock.Kind.DESK_BELL),Map.entry(b.offset(14,0,-79),BorrascaShopBlock.Kind.SINK)))
+                h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(stand.getKey()),stand.getValue()),"a "+stand.getValue().getSerializedName()+" stands at "+stand.getKey().subtract(b).toShortString()+": "+f.out.getBlockState(stand.getKey()));
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,-14,6,BorrascaRooms.ROOM_Z[0]+1)).getValue(BorrascaShopBlock.STAGE)==1&&f.out.getBlockState(BorrascaRooms.at(b,-27,0,-18)).getValue(BorrascaShopBlock.STAGE)==0,"the bucket in a room under the depot has its board over it; the one behind the store has not");
+            int looked=0;
+            for(var at:BlockPos.betweenClosed(b.offset(-44,-8,-480),b.offset(44,64,6))){
+                if(!f.out.hasChunkAt(at))continue;var st=f.out.getBlockState(at);looked++;
+                h.assertFalse(st.is(Blocks.CAULDRON)||st.is(Blocks.WATER_CAULDRON)||st.is(Blocks.SMOKER)||st.is(Blocks.FURNACE)||st.is(Blocks.BREWING_STAND)||st.is(Blocks.HEAVY_CORE)||st.is(Blocks.JUKEBOX),"one of the game's own blocks still stands for something else at "+at.subtract(b).toShortString()+": "+st);
+            }
+            h.assertTrue(looked>1000000,"the whole of Drisking was looked through: "+looked);
+            for(var kind:List.of(BorrascaShopBlock.Kind.STOVE,BorrascaShopBlock.Kind.GRILL,BorrascaShopBlock.Kind.FRYER,BorrascaShopBlock.Kind.SINK,BorrascaShopBlock.Kind.TOILET,BorrascaShopBlock.Kind.PAIL,BorrascaShopBlock.Kind.DRUM,BorrascaShopBlock.Kind.EFFECTS,BorrascaShopBlock.Kind.HOOK,BorrascaShopBlock.Kind.JUKEBOX))
+                h.assertTrue(BorrascaShopTexts.look(kind,0,false)!=null&&BorrascaShopTexts.look(kind,1,true)!=null,"a hand on a "+kind.getSerializedName()+" is answered");
+            h.assertTrue(!BorrascaShopTexts.look(BorrascaShopBlock.Kind.JUKEBOX,0,false).equals(BorrascaShopTexts.look(BorrascaShopBlock.Kind.JUKEBOX,1,true))&&!BorrascaShopTexts.look(BorrascaShopBlock.Kind.PAIL,0,false).equals(BorrascaShopTexts.look(BorrascaShopBlock.Kind.PAIL,1,false)),"the jukebox and the bucket say what they are in each state");
+            // The jukebox is lit in the childhood year and unplugged years on.
+            var juke=b.offset(BorrascaShops.JUKEBOX);
+            h.assertTrue(f.out.getBlockState(juke).getValue(BorrascaShopBlock.STAGE)==0&&f.out.getBlockState(juke).getLightEmission(f.out,juke)>0,"the jukebox is lit");
+            BorrascaShops.years(f.out,b,true);h.assertTrue(f.out.getBlockState(juke).getValue(BorrascaShopBlock.STAGE)==1&&f.out.getBlockState(juke).getLightEmission(f.out,juke)==0,"years on it is unplugged");BorrascaShops.years(f.out,b,false);
+            // The counter bell rings; rung again with Mr. Rowe at his counter, he says so; with him out front, nobody answers.
+            {var mine=f.own(p).copy();mine.remove("BellRings");mine.putBoolean("RoweOut",false);var bell=b.offset(BorrascaShops.COUNTER_BELL);
+             h.assertTrue(BorrascaPeople.rang(p,mine,bell).equals(BorrascaPeople.BELL)&&BorrascaPeople.rang(p,mine,bell).equals(BorrascaPeople.BELL_CHILD)&&BorrascaPeople.rang(p,mine,bell).equals(BorrascaPeople.BELL_AGAIN),"the counter bell rings, and Mr. Rowe has had enough of it by the third");
+             mine.putBoolean("RoweOut",true);h.assertTrue(BorrascaPeople.rang(p,mine,bell).equals(BorrascaPeople.BELL),"with him out front nobody answers it");}
             for(var door:new BlockPos[]{BorrascaShops.DINER_DOOR,BorrascaShops.ANTIQUES_DOOR,BorrascaShops.SOCIETY_DOOR,BorrascaShops.STATION_DOOR,BorrascaShops.DOCTOR_DOOR,BorrascaShops.DRUG_DOOR,BorrascaShops.BAR_DOOR})h.assertTrue(f.out.getBlockState(b.offset(door)).getBlock() instanceof DoorBlock,"a real door at "+door);
             for(int z=-76;z>=-132;z-=4)h.assertTrue(BorrascaLand.groundAt(-12,z)==0&&BorrascaLand.groundAt(12,z)==0,"the street past the chapel is level, the way down ending at the trailhead, at z "+z);
             f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the diner's menu"))).contains(flat("Coffee .50")),"the childhood menu has its early prices");

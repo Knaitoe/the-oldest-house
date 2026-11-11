@@ -66,7 +66,8 @@ final class BorrascaTown {
         set(l,b,0,4,-4,hanging());set(l,b,0,3,-8,hanging());set(l,b,-4,4,-4,hanging());
         // Inside: a runner down the aisle (stopping short of where the reader steps in), a stove and its woodpile, a bench under the window, pamphlets, the trail map.
         box(l,b,-1,0,-10,1,0,-5,Blocks.BROWN_CARPET);
-        set(l,b,-6,0,-1,Blocks.SMOKER.defaultBlockState().setValue(AbstractFurnaceBlock.FACING,Direction.EAST));box(l,b,-6,1,-1,-6,stationRoof(-1)/2-1,-1,Blocks.IRON_BARS);
+        // 0.4.460: a pot-bellied stove and its pipe up through the roof (a smoker under iron bars).
+        set(l,b,-6,0,-1,BorrascaShopBlock.of(BorrascaShopBlock.Kind.STOVE,Direction.EAST));box(l,b,-6,1,-1,-6,stationRoof(-1)/2-1,-1,BorrascaShopBlock.of(BorrascaShopBlock.Kind.PIPE,Direction.EAST));
         box(l,b,-6,0,0,-4,0,0,log(Blocks.SPRUCE_LOG,Direction.Axis.X));set(l,b,-6,1,0,log(Blocks.SPRUCE_LOG,Direction.Axis.X));
         BorrascaShops.seats(l,b,new BlockPos(-6,0,-8),new BlockPos(-6,0,-6),Direction.EAST,false); // 0.4.454: a bench, not three stairs
         box(l,b,-6,0,-4,-6,1,-4,Blocks.BOOKSHELF);
@@ -119,7 +120,7 @@ final class BorrascaTown {
         road(l,b,-17,1,-20,RoadhouseBlock.Kind.CORKBOARD,Direction.WEST);
         // 0.4.422: the town's history hangs in the historical society now (BorrascaShops); the hardware pegboard is here instead.
         for(int z:new int[]{-26,-20})set(l,b,-22,4,z,hanging());set(l,b,-18,4,-23,hanging());
-        set(l,b,-27,0,-17,Blocks.POTTED_DEAD_BUSH);set(l,b,-27,0,-18,Blocks.CAULDRON);
+        set(l,b,-27,0,-17,Blocks.POTTED_DEAD_BUSH);set(l,b,-27,0,-18,BorrascaShopBlock.of(BorrascaShopBlock.Kind.PAIL,Direction.NORTH)); // 0.4.460: a bucket (a cauldron)
         BorrascaRooms.join(l,b,-29,1,-31,-12,3,-15);
     }
 
@@ -147,9 +148,10 @@ final class BorrascaTown {
         doc(l,b,BorrascaRooms.FORMS,BorrascaShopBlock.Kind.DOC_FORMS,Direction.WEST);prop(l,b,25,1,-25,LiteraryPropBlock.Kind.RECEIVER,Direction.WEST,0);
         for(int z=-24;z<=-21;z++)box(l,b,29,0,z,29,1,z,fit(BorrascaFittingBlock.Kind.DRAWERS,Direction.WEST));
         fitAt(l,b,new BlockPos(29,2,-22),BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);fitAt(l,b,new BlockPos(29,2,-23),BorrascaFittingBlock.Kind.NOTICE,Direction.WEST);
-        set(l,b,29,0,-20,Blocks.CAULDRON);set(l,b,29,1,-20,Blocks.BREWING_STAND);
+        // 0.4.460: the office's coffee stands on a drawer unit, the diner's own urn (a brewing stand over a cauldron).
+        set(l,b,29,0,-20,fit(BorrascaFittingBlock.Kind.DRAWERS,Direction.WEST));set(l,b,29,1,-20,BorrascaShopBlock.of(BorrascaShopBlock.Kind.URN,Direction.WEST));
         box(l,b,26,0,-29,26,3,-26,Blocks.IRON_BARS);box(l,b,27,0,-26,29,3,-26,Blocks.IRON_BARS);NovelRooms.door(l,b.offset(26,0,-28),Direction.WEST,Blocks.IRON_DOOR,false); // 0.4.444: shut; Earl is spoken to through the bars
-        for(int x=27;x<=29;x++)set(l,b,x,0,-29,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,29,0,-27,Blocks.CAULDRON);
+        for(int x=27;x<=29;x++)set(l,b,x,0,-29,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,29,0,-27,BorrascaShopBlock.of(BorrascaShopBlock.Kind.TOILET,Direction.WEST)); // 0.4.460: a steel toilet (a cauldron)
         set(l,b,20,0,-17,Blocks.POTTED_SPRUCE_SAPLING);
         for(int z:new int[]{-26,-20})set(l,b,24,4,z,hanging());set(l,b,20,4,-23,hanging());set(l,b,28,4,-28,hanging());
         BorrascaRooms.join(l,b,16,0,-31,31,3,-15);
@@ -272,7 +274,8 @@ final class BorrascaTown {
         doc(l,b,BorrascaRooms.EVIDENCE,BorrascaShopBlock.Kind.DOC_RECEIPT,Direction.SOUTH);fitAt(l,b,BorrascaRooms.PACK,BorrascaFittingBlock.Kind.PACK,Direction.SOUTH);
         fitAt(l,b,new BlockPos(-28,14,-195),BorrascaFittingBlock.Kind.NOTICE,Direction.EAST);
         // Shelved effects behind a wire cage on the east wall, its gate open; the aisle stays clear at x -19..-17.
-        for(int z=-196;z<=-183;z++){if(z==-190)continue;set(l,b,-15,12,z,Blocks.BARREL);if(z%2==0)set(l,b,-15,13,z,Blocks.BARREL);}
+        // 0.4.460: boxes on steel shelving, two shelves to a unit, a tag wired to each box (barrels).
+        for(int z=-196;z<=-183;z++){if(z==-190)continue;for(int y=12;y<=13;y++)set(l,b,-15,y,z,BorrascaShopBlock.of(BorrascaShopBlock.Kind.EFFECTS,Direction.WEST,Math.floorMod(z+y,3)==0?1:0));}
         for(int z=-195;z<=-185;z++)if(z!=-190)box(l,b,-16,12,z,-16,14,z,Blocks.IRON_BARS);
         for(int z:new int[]{-186,-193})set(l,b,-22,16,z,hanging());
     }
@@ -281,7 +284,8 @@ final class BorrascaTown {
         for(int z=-202;z<=-199;z++)box(l,b,-28,12,z,-28,13,z,Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.EAST).setValue(TrapDoorBlock.OPEN,true));
         for(int z=-202;z<=-199;z++)set(l,b,-26,12,z,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
         furniture(l,b,-22,12,-201,HouseholdFurnitureBlock.Kind.FORMICA_TABLE,Direction.SOUTH);furniture(l,b,-23,12,-201,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.EAST);furniture(l,b,-21,12,-201,HouseholdFurnitureBlock.Kind.KITCHEN_STOOL,Direction.WEST);
-        for(int z=-203;z<=-199;z++)set(l,b,-15,12,z,z==-202?Blocks.CAULDRON.defaultBlockState():Blocks.SMOOTH_STONE.defaultBlockState());set(l,b,-15,13,-200,Blocks.BREWING_STAND);
+        // 0.4.460: a sink in the counter and an urn on it (a cauldron and a brewing stand).
+        for(int z=-203;z<=-199;z++)set(l,b,-15,12,z,z==-202?BorrascaShopBlock.of(BorrascaShopBlock.Kind.SINK,Direction.WEST):Blocks.SMOOTH_STONE.defaultBlockState());set(l,b,-15,13,-200,BorrascaShopBlock.of(BorrascaShopBlock.Kind.URN,Direction.WEST));
         fitAt(l,b,new BlockPos(-20,14,-203),BorrascaFittingBlock.Kind.NOTICE,Direction.SOUTH);
         set(l,b,-22,16,-201,hanging());
     }
@@ -294,7 +298,7 @@ final class BorrascaTown {
             if((z==-196||z==-185)&&Math.abs(x)<=3){for(int y=18;y<half/2;y++)set(l,b,x,y,z,sheet(x,y,z));if(half%2==1)set(l,b,x,half/2,z,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.DOUBLE));}}
         box(l,b,0,13,-196,0,13,-196,AIR);
         door(l,b,4,12,-190,Direction.EAST,Blocks.IRON_DOOR);set(l,b,5,11,-190,Blocks.SMOOTH_STONE);
-        box(l,b,0,17,-193,0,19,-193,Blocks.CHAIN);set(l,b,0,16,-193,Blocks.HEAVY_CORE);
+        box(l,b,0,17,-193,0,19,-193,Blocks.CHAIN);set(l,b,0,16,-193,BorrascaShopBlock.of(BorrascaShopBlock.Kind.HOOK,Direction.NORTH)); // 0.4.460: a crane's block and hook (a heavy core)
         fitAt(l,b,new BlockPos(3,12,-194),BorrascaFittingBlock.Kind.BREAKER,Direction.WEST);
         for(int z:new int[]{-188,-194}){box(l,b,-3,17,z,-3,19,z,Blocks.CHAIN);set(l,b,-3,16,z,hanging());}
         // 0.4.439: a concrete apron where the outflow belt ends, open above, for what comes off it to pile on (BorrascaFeeding.PILE_*).
@@ -315,7 +319,9 @@ final class BorrascaTown {
     }
     /** Yard clutter, kept off the trail-to-lamp line, the workers' and Prescott's marks, the county pickup and the breaker. */
     private static void yard(ServerLevel l,BlockPos b){
-        for(int[] at:new int[][]{{-9,-186},{-8,-186},{-9,-187},{20,-199},{21,-199},{20,-200}})set(l,b,at[0],12,at[1],Blocks.BARREL);set(l,b,-8,13,-186,Blocks.BARREL);set(l,b,-7,12,-187,Blocks.CAULDRON);
+        // 0.4.460: steel drums, in two paints, and a bucket (barrels and a cauldron).
+        for(int[] at:new int[][]{{-9,-186},{-8,-186},{-9,-187},{20,-199},{21,-199},{20,-200}})set(l,b,at[0],12,at[1],BorrascaShopBlock.of(BorrascaShopBlock.Kind.DRUM,Direction.NORTH,Math.floorMod(at[0]+at[1],2)));
+        set(l,b,-8,13,-186,BorrascaShopBlock.of(BorrascaShopBlock.Kind.DRUM,Direction.NORTH,1));set(l,b,-7,12,-187,BorrascaShopBlock.of(BorrascaShopBlock.Kind.PAIL,Direction.NORTH));
         for(int x=8;x<=10;x++)for(int z=-189;z<=-188;z++)set(l,b,x,12,z,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,9,12,-189,slab(Blocks.SPRUCE_SLAB,SlabType.DOUBLE));set(l,b,9,12,-190,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
         box(l,b,18,12,-208,22,13,-205,Blocks.IRON_BLOCK);box(l,b,18,14,-208,22,14,-205,slab(Blocks.SMOOTH_STONE_SLAB,SlabType.BOTTOM));set(l,b,17,12,-206,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));set(l,b,17,13,-206,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));
         for(int[] at:new int[][]{{-12,-170},{24,-170},{24,-210},{-27,-210}}){box(l,b,at[0],12,at[1],at[0],15,at[1],Blocks.IRON_BARS);set(l,b,at[0],16,at[1],Blocks.LANTERN);}

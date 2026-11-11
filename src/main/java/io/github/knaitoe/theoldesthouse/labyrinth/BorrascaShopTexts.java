@@ -83,6 +83,17 @@ public final class BorrascaShopTexts {
                 :"Patrick's bike, dropped on its side where anybody could trip on it. A baseball card is pinned to the fork so the spokes clatter.";
             // 0.4.457: where it fell.
             case BATON->"The Sheriff's baton, lying where it fell.";
+            // 0.4.460: what were the game's own blocks. A length of stove pipe says nothing, and the counter bell rings (BorrascaPeople.rang).
+            case STOVE->"A pot-bellied stove, cold, its pipe going up through the roof. The ash under it has been swept.";
+            case GRILL->"The griddle. Two patties and a heap of onions on the plate, and the scraper's marks all round them.";
+            case FRYER->"The fryer. Two baskets hang over the oil.";
+            case SINK->"An enamel sink on four legs. One tap drips.";
+            case TOILET->"A steel toilet with no seat, bolted to the wall.";
+            case PAIL->stage==1?"A bucket with a square of board over it. There is nothing else in the room but the cot.":"A galvanised bucket.";
+            case DRUM->"A steel drum. A panel is stencilled on it, and a number under the panel.";
+            case EFFECTS->"Cardboard boxes on steel shelving, a tag wired to each. The tags have numbers on them and no names.";
+            case HOOK->"A crane's block and hook, hanging still on its chains.";
+            case JUKEBOX->stage==1?"The jukebox, unplugged. The title cards in it have gone brown.":"A jukebox, lit. The titles are typed on little cards. A good half of them are hymns.";
             default->null;
         };
     }
