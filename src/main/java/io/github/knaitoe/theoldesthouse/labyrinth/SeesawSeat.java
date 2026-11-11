@@ -51,6 +51,26 @@ public class SeesawSeat extends Entity {
         p.setYRot(yaw);p.setYHeadRot(yaw);
         return seat;
     }
+    /** 0.4.476: Gus gets on an end of the board, as a reader does. Null if he cannot: somebody is on it, or he is on something. */
+    public static @Nullable SeesawSeat sit(LiteraryActor a,BlockPos endBlock){
+        if(!(a.level() instanceof net.minecraft.server.level.ServerLevel l))return null;var board=SeesawBlock.board(l,endBlock);
+        if(board==null||!SeesawBlock.is(l.getBlockState(endBlock),SeesawBlock.Part.END)||a.isPassenger())return null;
+        int end=SeesawBlock.endOf(l,endBlock);if(board.ridden(end)||board.seat(end)!=null)return null;
+        var seat=BikeNightRegistry.SEESAW_SEAT.get().create(l);if(seat==null)return null;
+        seat.entityData.set(STAND,board.getBlockPos());seat.entityData.set(END,end);
+        var at=SeesawBlock.seat(board.getBlockPos(),board.facing(),board.tilt(),end);
+        float yaw=(end==0?board.facing().getOpposite():board.facing()).toYRot();
+        seat.moveTo(at.x,at.y,at.z,yaw,0);
+        if(!l.addFreshEntity(seat)||!a.startRiding(seat,true)){seat.discard();return null;}
+        board.sat(end,seat);
+        a.setYRot(yaw);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+        return seat;
+    }
+    /** Who is on a seat, by name: a reader's, or Gus's. */
+    static @Nullable String rider(@Nullable SeesawSeat seat){
+        var who=seat==null?null:seat.getFirstPassenger();
+        return who instanceof ServerPlayer p?p.getGameProfile().getName():BikeNightGus.is(who)?BikeNightGus.NAME:null;
+    }
     /** The board puts the seat where its end is, and its rider with it. */
     void place(double tilt){
         var board=board();if(board==null)return;
@@ -61,13 +81,12 @@ public class SeesawSeat extends Entity {
     public static boolean jump(ServerPlayer p){return p.getVehicle() instanceof SeesawSeat seat&&!p.isSpectator()&&seat.pushed();}
     /** Its rider pushes off: now, if their end is down (or kept for when it lands, if it is on its way). True if it took now. */
     boolean pushed(){
-        if(!(getFirstPassenger() instanceof ServerPlayer p))return false;
+        // 0.4.476: whoever is on it pushes, Gus as well as a reader.
+        var who=getFirstPassenger();if(who==null||!(level() instanceof net.minecraft.server.level.ServerLevel l))return false;
         var board=board();if(board==null)return false;
         int took=board.push(end());if(took==0)return false;
-        var l=p.serverLevel();
         l.playSound(null,getX(),getY(),getZ(),BikeNightRegistry.SEESAW_CREAK.get(),SoundSource.BLOCKS,took==2?.9F:.7F,(took==2?1.05F:.9F)+l.getRandom().nextFloat()*.2F);
-        var other=board.seat(1-end());
-        BikeNight.seesawed(p,other!=null&&other.getFirstPassenger() instanceof ServerPlayer with?with:null,took==2);
+        if(who instanceof ServerPlayer p)BikeNight.seesawed(p,rider(board.seat(1-end())),took==2);
         return true;
     }
     /**

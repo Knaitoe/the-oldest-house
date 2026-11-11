@@ -93,6 +93,94 @@ public final class BikeNightTexts {
     public static final String SAND_NO_ROOM="You have nowhere to put it.";
     public static final String SAND_GONE="The sand has run out through your fingers.";
 
+    // ------------------------------------------------------------------------------------------------ 0.4.476: Gus
+    /** Hello, to the first to come; and to the ones after. */
+    public static final String GUS_GREETING="You came! I wasn't sure anybody would. I've been here since it got dark.";
+    public static final String[] GUS_GREET_MORE={"Hey! You made it.","Oh, good. More of us."};
+    /** Of the bike a reader took, by its make. */
+    public static String gusBike(String make){
+        return switch(make){
+            case "wasp"->"The Wasp. It turns on a dime. I've seen it turn on an actual dime.";
+            case "hare"->"The Hare! Three pushes and it's gone. Try to stay on it.";
+            case "comet"->"The Comet goes like anything. It doesn't stop like anything, though.";
+            case "hopper"->"The Hopper. You can stand somebody on those pegs. Not me. Somebody.";
+            case "lamp"->"The Lamp has a real light. It runs off the wheel. That's science.";
+            default->"Oh. The Rattler. No, take it. I said take any. I meant it. Mostly.";
+        };
+    }
+    /** About nothing. */
+    public static final String[] GUS_IDLE={
+        "My cousin ate a whole pie once. A whole one. He said it was worth it. He didn't look like it was worth it.",
+        "Do you think dogs know it's Halloween? Ours hides under the porch. Maybe that's just our dog.",
+        "If you count the railings there's a hundred and twelve. I counted twice. The second time I got a hundred and nine.",
+        "My mom thinks I'm at the library. The library shuts at five. She doesn't know that. Don't tell her.",
+        "I had a flashlight. It's at home. That's the whole story.",
+        "That lamp's been doing that since school started. Somebody should tell somebody.",
+        "What's the furthest you've ever been from your house? By yourself. I've been to the creek.",
+        "They say the fountain water comes from under the graveyard. I say it comes from a pipe. I still don't drink it.",
+        "If I had a dime I'd call the radio station. I don't know what I'd say. I'd think of something.",
+        "You ever notice the swings always stop facing the same way? I have a theory. It's not finished.",
+        "My brother says the dome was taller when he was little. I think my brother was shorter.",
+        "I brought candy. I ate the candy. I'm telling you so you don't ask.",
+        "A few more years and we can drive. Then nobody can chase us. Nobody on bikes, anyway.",
+        "Do you smell leaves burning? I like that smell. It means somebody's home.",
+        "The trick with the merry-go-round is don't look at anything. Or look at one thing. I forget which.",
+        "I timed myself on the bars once. I didn't have a watch. I counted. It was a lot.",
+        "If Tully comes, we don't say anything. That's the plan. That's the whole plan.",
+        "Somebody cut a heart in that bench before we were born. I wonder if they're still, you know. A heart.",
+        "You can hear the highway from here if you hold your breath. Go on. I'll wait.",
+        "This is good. This is a good night. I'm saying it out loud so it counts."};
+    /** Why nobody cuts through the graveyard on Halloween, told badly. It is never told properly. */
+    public static final String[] GUS_STORY={
+        "You know why nobody cuts through the graveyard on Halloween?",
+        "Okay. So. A long time ago some kids did. On bikes. I don't know how many kids. Some.",
+        "And they went in the front gate, and... my brother tells it better. He does a voice.",
+        "Anyway there's a row of little stones at the back. All the same day on them. I've seen it. I didn't stay."};
+    /** A hand on him: before the reader has a bike; and after, in turn. */
+    public static final String GUS_TALK_NO_BIKE="Go and pick a bike. Any one. I'll wait here and not look like I care which.";
+    public static final String[] GUS_TALK={
+        "I'm fine. I'm just standing. Standing is a thing people do.",
+        "You want to do the seesaw? Get on an end. I'm heavier than I look. It's the jacket.",
+        "I can push you on the swings, if nobody else is going to. I'm good at it. I've got a system.",
+        "Don't cut through the graveyard later. I put it in the plan. It's number six.",
+        "Did you read the plan? I wrote it twice. The first one had a map, but the map was wrong.",
+        "If we get split up, meet at the rack. No. Meet at the... we won't get split up."};
+    /** What he says of what he sees. */
+    public static final String GUS_SWAP="Changed your mind. That's allowed.";
+    public static final String GUS_JUMP="%s paces! That's the furthest tonight. I'm not writing it down, but it is.";
+    public static final String GUS_PAST="Whoa. Whoa. It's not supposed to go that high.";
+    public static final String GUS_OVER="YOU WENT OVER THE BAR. I saw it. I'm a witness. Nobody is ever going to believe me.";
+    public static final String GUS_OVER_AGAIN="Again! You did it again! I'm still a witness!";
+    public static final String GUS_SLIDE="The trick is don't think about the bolts.";
+    public static final String GUS_BARS="All the way across! I can do four rungs. Four is normal.";
+    public static final String GUS_EARLY="Too early. Everybody goes too early.";
+    public static final String GUS_THROWN="Are you okay? That was the best thing I've ever seen. Are you okay?";
+    public static final String GUS_FLUNG="It does that. It did that to me in the summer. I landed on my lunch.";
+    public static final String GUS_DOME="Can you see my house from up there? It's the one with the porch light. Don't tell me if it's off.";
+    public static final String GUS_SPRING="That horse is older than my dad. My dad said so. He didn't sound happy about it.";
+    public static final String GUS_FOUNTAIN="You drank it. Okay. I'll remember you like this.";
+    public static final String GUS_PHONE="It wants a dime. Everything wants a dime.";
+    public static final String GUS_POST="T.R. is Teddy Rusk. He moved away, so nobody can ask him. That's how he gets away with it.";
+    public static final String GUS_DID_TOO="You wrote DID TOO. Good. It's true. I saw.";
+    /** A ball of sand that meets him: the first, the second and the third. After that he has said all he has to say about it. */
+    public static final String[] GUS_SAND={
+        "Hey! Okay. I probably had that coming. I don't know what for.",
+        "Sand gets in your ears. It stays there. For years.",
+        "I'm not mad. I'm just going to stand over here."};
+    /** The seesaw: getting on the other end; and when he has been left on it. */
+    public static final String GUS_SEESAW_ON="I've got this end. Push off when you're down. I'll do the same. That's all there is to it.";
+    public static final String GUS_SEESAW_OFF="Good seesaw. That was a good seesaw.";
+    /** The swings: going round to push; and with the swing as high as pushing takes it. */
+    public static final String GUS_SWING_OFFER="Stay there. I'll push. I've got a system.";
+    public static final String GUS_HIGH="That's as high as it goes. That's what everybody says, anyway.";
+    /** Every line of his, for the cases that hold him to how he talks. */
+    public static List<String> gusLines(){
+        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH));
+        all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
+        for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
+        return all;
+    }
+
     private static List<Component> pages(HouseWriting.WritingStyle style,String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(style,p));return out;}
     /** A sheet from a school pad, in pencil. (Not the House's child's hand, which is a small child's and loses letters: Gus can spell.) */
     public static ItemStack source(){
@@ -112,6 +200,8 @@ public final class BikeNightTexts {
         p.add("It was the last night of October in a town called Calder Falls, and I was in the park after it had shut.");
         String bike=bike(own.getString("Bike"));
         p.add(bike.isEmpty()?"There were six bikes in the rack by the gate. I did not take one.":"There were six bikes in the rack by the gate. I took "+bike+".");
+        // 0.4.476: Gus, if they met him; and his story, if they were there for the end of it.
+        if(own.getBoolean("GusMet"))p.add("Gus was there, in his cap, talking the whole time about nothing."+(own.getBoolean("GusStory")?" He told me why nobody cuts through the graveyard on Halloween. He told it badly.":""));
         // The playground, as far as this reader went on it.
         int far=own.getInt("SwingBest");String pushedBy=own.getString("SwingPushedBy"),pushed=own.getString("SwingPushed");
         if(far>0)p.add("I got one of the swings as high as it would go"+(pushedBy.isEmpty()?"":", with "+pushedBy+" pushing,")+" and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
