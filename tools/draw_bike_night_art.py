@@ -49,7 +49,12 @@ CARDS = {
     'hopper': ('#b6231f', '#e9e7e1', '#e9e7e1', '#e9e7e1'),
     'lamp': ('#2f5a3a', '#e3d9b8', '#6b4526', '#2a2522'),
     'rattler': ('#c9601a', '#1d1b1a', '#d2b23a', '#1d1b1a'),
+    # 0.4.479, the three who come to the park (PackBike). Their bikes are never blocks, so only a frame is drawn for each.
+    'tully': ('#1b1b1d', '#b3261f', '#b3261f', '#b3261f'),
+    'ray': ('#c8cdd2', '#2a62b5', '#1d1b1a', '#2a62b5'),
+    'duff': ('#4c5a2e', '#d8c9a0', '#3a2a1c', '#1d1b1a'),
 }
+PACK = ('tully', 'ray', 'duff')
 
 
 def card(make, seed):
@@ -184,6 +189,7 @@ def number():
 
 def textures():
     out = {f'{DIR}{make}.png': card(make, 46320 + i) for i, make in enumerate(MAKES)}
+    out.update({f'{DIR}{name}.png': card(name, 47900 + i) for i, name in enumerate(PACK)})
     out.update({DIR + 'tyre.png': tyre(), DIR + 'tyre_pale.png': tyre_pale(), DIR + 'chrome.png': chrome(), DIR + 'wicker.png': wicker(),
                 DIR + 'glass.png': glass(False), DIR + 'glass_lit.png': glass(True), DIR + 'paper.png': paper(), DIR + 'snake.png': snake(),
                 DIR + 'card.png': spoke_card(), DIR + 'peg.png': peg_wood(), DIR + 'steel.png': steel(), DIR + 'plywood.png': plywood(),
@@ -482,6 +488,17 @@ def rattler():
 BIKES = {'wasp': wasp, 'hare': hare, 'comet': comet, 'hopper': hopper, 'lamp': lamp, 'rattler': rattler}
 
 
+def pack(name):
+    """A bike of the three who come to the park (0.4.479): the Wasp's frame, in their own paint. Tully's has stunt pegs on both axles;
+    Duff's has a number plate on its bars."""
+    b = Bike((2.5, 4.5), (13.5, 4.5), (7.5, 4.5), 12, 4.5, 4.5, 1.8, 1.6)
+    bmx(b, name == 'duff')
+    if name == 'tully':
+        for hx, hy in (b.back, b.front):
+            bar(b.parts, [hx - .7, hy - .7, 4.2], [hx + .7, hy + .7, 11.8], 'c')
+    return b
+
+
 def bike_textures(make):
     return {'f': make, 't': 'tyre_pale' if make == 'hopper' else 'tyre', 'c': 'chrome', 'k': 'tyre', 'w': 'wicker', 'p': 'paper',
             'l': 'glass', 's': 'snake', 'd': 'card', 'g': 'peg', 'n': 'number'}
@@ -591,6 +608,8 @@ def models():
         parts = whole(b)
         m[f'{make}_0'] = model(parts, names, make)
         m[f'{make}_1'] = model(lying(parts), names, make)
+    for name in PACK:
+        m[f'{name}_frame'] = model(pack(name).parts, bike_textures(name), name)
     m['cranks'] = model(cranks(), {'c': 'chrome', 'k': 'tyre'}, 'chrome')
     m['lamp_glow'] = model(lamp_glow(), {'l': 'glass_lit'}, 'glass_lit')
     m['rack'] = model(rack(), {'r': 'steel'}, 'steel')
@@ -640,7 +659,7 @@ def java_shapes():
 
 
 NAMES = {'block.the_oldest_house.night_bike': 'Bike', 'block.the_oldest_house.bike_rack': 'Bike rack', 'block.the_oldest_house.bike_ramp': 'Plank ramp',
-         'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike'}
+         'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike', 'entity.the_oldest_house.pack_bike': 'Bike'}
 
 
 # ---------------------------------------------------------------------------------------------------------------- review

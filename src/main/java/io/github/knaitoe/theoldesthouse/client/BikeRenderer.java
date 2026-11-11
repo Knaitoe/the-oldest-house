@@ -19,7 +19,7 @@ public final class BikeRenderer extends EntityRenderer<RiddenBike> {
     public BikeRenderer(EntityRendererProvider.Context c){super(c);shadowRadius=.3F;}
     @Override public ResourceLocation getTextureLocation(RiddenBike b){return InventoryMenu.BLOCK_ATLAS;}
     @Override public void render(RiddenBike b,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
-        BikeLook look=b instanceof NightBike night?BikeLook.of(night.make()):BikeLook.BORRASCA;
+        BikeLook look=b instanceof NightBike night?BikeLook.of(night.make()):b instanceof io.github.knaitoe.theoldesthouse.labyrinth.PackBike pack?BikeLook.pack(pack.look()):BikeLook.BORRASCA;
         look.draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),yaw,b.shownLean(partial),b.shownPitch(partial),b.rolled(partial),b.crank(partial),light,b instanceof NightBike night&&night.lit()>0);
         super.render(b,yaw,partial,pose,buffers,light);
     }

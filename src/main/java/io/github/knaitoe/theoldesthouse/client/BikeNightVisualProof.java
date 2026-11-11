@@ -70,7 +70,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -116,9 +116,10 @@ public final class BikeNightVisualProof extends Screen {
             "the climbing dome: from one side, and from above",
             "the spring rider: rocked back as far as it goes, upright, and rocked forward",
             "the small things: fountain still and running; payphone on and off its hook; bench plain and carved",
-            "over the bar: a swing hanging still; at its widest arc; kicked as far past it as kicks go; over the top"}[page],8,8,0xffffffff);
+            "over the bar: a swing hanging still; at its widest arc; kicked as far past it as kicks go; over the top",
+            "the three's bikes, side on and turning; and the gate as Tully leaves it, from inside the park"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);default->over(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);default->pack(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -250,6 +251,33 @@ public final class BikeNightVisualProof extends Screen {
      * a seat at the top of its turn: one swing hanging still, one at the top of its widest arc, one kicked as far past that as kicks
      * take it, and one over the top. The moving ones are the still seat and its chains turned about the bar, as the game draws them.
      */
+    /** 0.4.479: the bikes of the three who come to the park, and the gate standing open as Tully leaves it, seen from inside the park. */
+    private void pack(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();
+        {int y=(int)floor(0);g.fill(0,y,width,y+10,GROUND);}g.flush();
+        float s=width*.074F;
+        for(int i=0;i<3;i++){
+            var look=BikeLook.pack(i);float[][] views={{-90,0,0,0,0},{-62,i%2==0?.4F:-.4F,0,1.3F,(float)Math.PI/2}};
+            for(int v=0;v<2;v++){
+                var pose=g.pose();pose.pushPose();pose.translate(cx(i)+(v==0?-s*.95F:s*.95F),floor(i),200);pose.scale(s,-s,s);pose.mulPose(Axis.XP.rotationDegrees(10));
+                look.draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),views[v][0],views[v][1],views[v][2],views[v][3],views[v][4],LightTexture.FULL_BRIGHT,false);
+                buffers.endBatch();pose.popPose();
+            }
+        }
+        float t=width*.052F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.93F,400);pose.scale(t,-t,t);
+        pose.mulPose(Axis.XP.rotationDegrees(20));pose.mulPose(Axis.YP.rotationDegrees(-22));pose.translate(0,0,-1F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var brick=BikeNightRegistry.material("brick").defaultBlockState();var paving=BikeNightRegistry.material("paving").defaultBlockState();
+        // North is away from us: the pavement beyond the gate line, the piers and a length of railings on it, and the two leaves out over the pavement.
+        for(int x=-5;x<=4;x++)for(int z=-3;z<=2;z++)at.accept(paving,new int[]{x,-1,z});
+        for(int x:new int[]{-3,2}){at.accept(brick,new int[]{x,0,0});at.accept(brick,new int[]{x,1,0});at.accept(CalderBlock.of(CalderBlock.Kind.CAP,Direction.NORTH,0),new int[]{x,2,0});}
+        for(int x:new int[]{-5,-4,3,4}){at.accept(CalderBlock.of(CalderBlock.Kind.FENCE,Direction.NORTH,0),new int[]{x,0,0});at.accept(CalderBlock.of(CalderBlock.Kind.FENCE,Direction.NORTH,1),new int[]{x,1,0});}
+        for(int x:new int[]{-2,1}){
+            at.accept(CalderBlock.of(CalderBlock.Kind.GATE,Direction.WEST,0),new int[]{x,0,-1});at.accept(CalderBlock.of(CalderBlock.Kind.GATE,Direction.WEST,1),new int[]{x,1,-1});
+            at.accept(CalderBlock.of(CalderBlock.Kind.GATE,Direction.EAST,x==-2?2:0),new int[]{x,0,-2});at.accept(CalderBlock.of(CalderBlock.Kind.GATE,Direction.EAST,1),new int[]{x,1,-2});
+        }
+        buffers.endBatch();pose.popPose();
+    }
     private void over(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
         float s=width*.043F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.9F,400);pose.scale(s,-s,s);

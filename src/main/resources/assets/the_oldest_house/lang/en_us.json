@@ -1670,5 +1670,11 @@
   "the_oldest_house.configuration.doorstepSearchRadius": "Doorstep search radius",
   "the_oldest_house.configuration.knockSound": "Knock sound",
   "the_oldest_house.configuration.projectScreenshots": "Project screenshots",
-  "the_oldest_house.configuration.secretSnapshots": "Secret snapshots"
+  "the_oldest_house.configuration.secretSnapshots": "Secret snapshots",
+  "subtitles.the_oldest_house.bike.freewheel": "Freewheel ticks",
+  "subtitles.the_oldest_house.park.car_pass": "Car passes",
+  "subtitles.the_oldest_house.park.padlock": "Padlock comes open",
+  "subtitles.the_oldest_house.park.cough": "Someone coughs",
+  "subtitles.the_oldest_house.park.sand_kick": "Sand is kicked",
+  "entity.the_oldest_house.pack_bike": "Bike"
 }

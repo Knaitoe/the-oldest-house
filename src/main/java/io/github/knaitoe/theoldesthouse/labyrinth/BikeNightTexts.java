@@ -176,9 +176,71 @@ public final class BikeNightTexts {
     /** The swings: going round to push; and with the swing as high as pushing takes it. */
     public static final String GUS_SWING_OFFER="Stay there. I'll push. I've got a system.";
     public static final String GUS_HIGH="That's as high as it goes. That's what everybody says, anyway.";
+    // ------------------------------------------------------------------------------------------------ 0.4.479: the three who come
+    /** What Gus says of the car, of them, of the padlock, of his cap, of each ball of sand that lands on one of them, and when Tully says go. */
+    public static final String GUS_CAR="Car. Cars don't come down here this late.";
+    public static final String GUS_THEM="Oh no. That's Tully. And Ray-Ray. And Duff. Duff ate a crayon once and asked for another.";
+    public static final String GUS_GATE="That's HIS padlock? Who puts a padlock on a park?";
+    public static final String GUS_CAP="Hey! Give it back! My mom wrote my name in that!";
+    public static final String[] GUS_HIT={"You hit one. You HIT one. That was the best thing I ever saw.","Stop. No. Do it again.","We are so dead. Worth it. But so dead."};
+    public static final String GUS_RUN="Bikes. BIKES. Go go go!";
+    /** What a reader is told when the gate is opened and when the three are sent after them; and what the open gate is, looked at. */
+    public static final String GATE_OPENED="Three bikes come in at the gate. It stands open behind them.";
+    public static final String GET_THEM_CUE="They are going for their bikes. The gate is open, and yours is where you left it.";
+    public static final String GATE_OPEN="The gate stands open. The chain hangs from one leaf, and the padlock is gone.";
+    /** Tully: at his padlock, at Gus's cap, in it, and what starts the chase. */
+    public static final String TULLY_GATE="Who chained this up? Oh, right. Me.";
+    public static final String TULLY_HAT="Nice hat.";
+    public static final String TULLY_HAT_ON="How do I look? Smarter?";
+    public static final String GET_THEM="Get them.";
+    /** Duff, on the seesaw: taking an end, keeping somebody up on the other, and finding both taken. */
+    public static final String DUFF_MINE="Mine now.";
+    public static final String DUFF_UP="Going up. Enjoy the view.";
+    public static final String DUFF_OFF="Off. One of you. I'm sitting there.";
+    /** Their jeers. The first is said first; the rest come in a different order each night. */
+    public static final String[] JEERS={
+        "Look, it's the science club.",
+        "Nice bike. Is it your mom's?",
+        "Park's closed. Says who? Says me.",
+        "Aw, did we interrupt recess?",
+        "You know the sandbox is for babies, right?",
+        "What are you supposed to be? Oh. Just you.",
+        "Trick or treat. We'll take the treat.",
+        "Wave to the dorks, Duff.",
+        "Hey Gus. Still scared of the big slide?",
+        "Bet you all hold hands on the way home.",
+        "Don't stop on our account. This is hilarious.",
+        "Somebody call their moms. It's past bedtime.",
+    };
+    /** One for what a reader is on, said once each. */
+    public static String jeerAt(String on){
+        return switch(on){
+            case "swing"->"Swing higher, dork.";
+            case "bike"->"Careful, the training wheels fell off.";
+            case "seesaw"->"Takes two. Got a friend? Didn't think so.";
+            case "slide"->"Don't cry at the bottom.";
+            case "bars"->"Gonna drop. They always drop.";
+            default->"Giddy up, cowpoke.";
+        };
+    }
+    /** One of them hit with sand: the first, the second, and from the third on. */
+    public static final String[] HIT={"Ow! Hey! Who threw that?","It's in my mouth. It's in my MOUTH.","My eyes! Okay. Okay, that's it."};
+    /** A hand on one of them. */
+    public static final String[] HANDS_OFF={"Hands off, dork.","Did I say you could touch me?","Go play in your sand."};
+    /** Called after the readers, in the chase. */
+    public static final String[] CHASE_JEERS={"You can't pedal forever!","Run, science club!","I'm keeping the hat!","Nowhere to go, dorks!","Slow down, we just want to talk!","Your bike's gonna be MY bike!"};
+    /** Every line of theirs, for the case that holds them to how they talk. */
+    public static List<String> bullyLines(){
+        var all=new ArrayList<String>(List.of(TULLY_GATE,TULLY_HAT,TULLY_HAT_ON,GET_THEM,DUFF_MINE,DUFF_UP,DUFF_OFF));
+        all.addAll(List.of(JEERS));all.addAll(List.of(HIT));all.addAll(List.of(HANDS_OFF));all.addAll(List.of(CHASE_JEERS));
+        for(var on:List.of("swing","bike","seesaw","slide","bars","spring"))all.add(jeerAt(on));
+        return all;
+    }
+
     /** Every line of his, for the cases that hold him to how he talks. */
     public static List<String> gusLines(){
-        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH));
+        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN));
+        all.addAll(List.of(GUS_HIT));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
         return all;
@@ -238,6 +300,12 @@ public final class BikeNightTexts {
         else if(own.getBoolean("Drank"))p.add("I drank from the fountain. The water tasted of the pipe.");
         else if(own.getBoolean("Phoned"))p.add("I lifted the payphone by the door to hear its tone, with no coin to put in it.");
         if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
+        // 0.4.479: the three who came.
+        if(own.getBoolean("Bullies"))p.add("Then three more came on bikes of their own, Tully and Ray-Ray and Duff. The padlock on the gate was Tully's, and he undid it."
+            +(own.getBoolean("CapTaken")?" He took Gus's cap and wore it.":""));
+        int struck=own.getInt("BullyHits");
+        if(struck>0)p.add("I threw sand at them, and "+(struck==1?"one ball":Stillness.words(struck)+" balls")+" of it landed.");
+        if(own.getBoolean("GetThem"))p.add("Tully said to get us.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }
 }

@@ -40,10 +40,24 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
         }
     }
     public static BikeLook of(NightBike.Make make){return NIGHT.get(make);}
+    /** 0.4.479: the bikes of the three who come to the park (PackBike): the Wasp's frame and wheels in their own paint. */
+    private static final String[] PACK_NAMES={"tully","ray","duff"};
+    private static final BikeLook[] PACK=new BikeLook[PACK_NAMES.length];
+    static{
+        var m=NightBike.Make.WASP;var wheel=standalone("bike_night/wasp_wheel");
+        for(int i=0;i<PACK.length;i++)PACK[i]=new BikeLook(standalone("bike_night/"+PACK_NAMES[i]+"_frame"),wheel,wheel,NIGHT_CRANKS,null,m.backX(),m.backY(),m.frontX(),m.frontY(),m.axleX(),m.axleY(),m.backRadius(),m.frontRadius());
+    }
+    /** How a PackBike of that look is drawn: one of the three, or (from PackBike.MAKES up) one of the six makes. */
+    public static BikeLook pack(int look){
+        int first=io.github.knaitoe.theoldesthouse.labyrinth.PackBike.MAKES;var makes=NightBike.Make.values();
+        if(look>=first)return NIGHT.get(makes[Math.min(makes.length-1,look-first)]);
+        return PACK[Math.max(0,Math.min(PACK.length-1,look))];
+    }
     /** Every model a ridden bike is drawn from, which no block state names. */
     static void register(java.util.function.Consumer<ModelResourceLocation> to){
         for(var look:new BikeLook[]{BORRASCA})look.each(to);
         for(var look:NIGHT.values())look.each(to);
+        for(var look:PACK)look.each(to);
     }
     private void each(java.util.function.Consumer<ModelResourceLocation> to){to.accept(frame);to.accept(frontWheel);to.accept(backWheel);to.accept(cranks);if(glow!=null)to.accept(glow);}
 

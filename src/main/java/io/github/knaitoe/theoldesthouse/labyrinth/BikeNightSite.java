@@ -270,6 +270,26 @@ public final class BikeNightSite {
         int[] lower={0,2,3,0};
         for(int i=0;i<4;i++){set(l,b,x[i],0,NORTH,fit(CalderBlock.Kind.GATE,facing[i],lower[i]));set(l,b,x[i],1,NORTH,fit(CalderBlock.Kind.GATE,facing[i],1));}
     }
+    /**
+     * 0.4.479: the gate swung open on its hinges. Each leaf stands out over the pavement, end on to the gateway, its hinge by the pier
+     * and its free end toward the road; the chain hangs from the west leaf's.
+     */
+    public static void gateOpen(ServerLevel l,BlockPos b){
+        var air=Blocks.AIR.defaultBlockState();
+        for(int x=PATH_W;x<=PATH_E;x++)for(int y=0;y<2;y++)l.setBlock(b.offset(x,y,NORTH),air,3);
+        for(int x:new int[]{PATH_W,PATH_E}){
+            l.setBlock(b.offset(x,0,NORTH-1),fit(CalderBlock.Kind.GATE,Direction.WEST,0),3);l.setBlock(b.offset(x,1,NORTH-1),fit(CalderBlock.Kind.GATE,Direction.WEST,1),3);
+            l.setBlock(b.offset(x,0,NORTH-2),fit(CalderBlock.Kind.GATE,Direction.EAST,x==PATH_W?2:0),3);l.setBlock(b.offset(x,1,NORTH-2),fit(CalderBlock.Kind.GATE,Direction.EAST,1),3);
+        }
+    }
+    public static boolean gateIsOpen(ServerLevel l,BlockPos b){return !CalderBlock.is(l.getBlockState(b.offset(PATH_W,0,NORTH)),CalderBlock.Kind.GATE);}
+    /** And shut again, chained and locked, as it is built. */
+    public static void gateShut(ServerLevel l,BlockPos b){
+        var air=Blocks.AIR.defaultBlockState();
+        for(int x:new int[]{PATH_W,PATH_E})for(int z=NORTH-2;z<=NORTH-1;z++)for(int y=0;y<2;y++)if(CalderBlock.is(l.getBlockState(b.offset(x,y,z)),CalderBlock.Kind.GATE))l.setBlock(b.offset(x,y,z),air,3);
+        int[] x={PATH_W,PATH_W+1,PATH_E-1,PATH_E};Direction[] facing={Direction.NORTH,Direction.SOUTH,Direction.NORTH,Direction.SOUTH};int[] lower={0,2,3,0};
+        for(int i=0;i<4;i++){l.setBlock(b.offset(x[i],0,NORTH),fit(CalderBlock.Kind.GATE,facing[i],lower[i]),3);l.setBlock(b.offset(x[i],1,NORTH),fit(CalderBlock.Kind.GATE,facing[i],1),3);}
+    }
     /** A lamp post, four blocks tall: its foot, two of post, and its lantern, lit or dark. */
     public static void lamp(ServerLevel l,BlockPos b,BlockPos at,boolean lit){
         set(l,b,at,fit(CalderBlock.Kind.LAMP,Direction.NORTH,CalderBlock.FOOT));

@@ -68,6 +68,8 @@ public final class BikeNight {
         final BlockPos base;long tick;int empty;boolean fresh=true;
         /** 0.4.476: Gus. */
         BikeNightGus.Friend gus=new BikeNightGus.Friend();
+        /** 0.4.479: the three who come. */
+        BikeNightBullies.Pack pack=new BikeNightBullies.Pack();
         /** Whose each bike is tonight, by make. */
         final UUID[] owner=new UUID[6];
         /** Where each bike stands or lies while nobody is on it; null while it is ridden. */
@@ -217,6 +219,7 @@ public final class BikeNight {
             flights(l,n);
             barsJump(n,here);
             BikeNightGus.tick(l,n,here);
+            BikeNightBullies.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -249,6 +252,7 @@ public final class BikeNight {
         // after its first reader, and they may have done something by then.
         unmark(l,n);n.far=0;n.farWho=null;
         BikeNightGus.reset(l,n);
+        BikeNightBullies.reset(l,n);
         BikeNightSite.swingsBack(l,n.base);
         remember(l,n);
     }
@@ -434,6 +438,7 @@ public final class BikeNight {
     static void threw(ServerPlayer p){var n=night(p);if(n!=null)n.thrown.merge(p.getUUID(),1,Integer::sum);}
     /** A ball of sand has met somebody. Nobody is hurt by one; a reader on their feet is knocked a little the way it was going. */
     static void sanded(ServerLevel l,SandBall ball,net.minecraft.world.entity.Entity met){
+        if(met instanceof LiteraryActor one&&BikeNightBullies.is(one)){BikeNightBullies.sanded(l,one,ball.getOwner());if(ball.getOwner() instanceof ServerPlayer thrower){var at=night(thrower);if(at!=null)at.hits.merge(thrower.getUUID(),1,Integer::sum);}return;}
         if(met instanceof LiteraryActor gus&&BikeNightGus.is(gus)){BikeNightGus.sanded(l,gus);if(ball.getOwner() instanceof ServerPlayer thrower){var at=night(thrower);if(at!=null)at.hits.merge(thrower.getUUID(),1,Integer::sum);}return;}
         if(!(met instanceof ServerPlayer target))return;var n=night(target);if(n==null)return;
         if(!target.isPassenger()){var v=ball.getDeltaMovement();target.knockback(.15,-v.x,-v.z);target.hurtMarked=true;}
@@ -543,7 +548,7 @@ public final class BikeNight {
         if(s.is(BikeNightRegistry.RACK.get())){cue(p,BikeNightTexts.RACK);return true;}
         if(!s.is(BikeNightRegistry.FITTING.get()))return false;
         switch(s.getValue(CalderBlock.KIND)){
-            case GATE->{cue(p,BikeNightTexts.GATE);l.playSound(null,b.offset(rel),BikeNightRegistry.CHAIN.get(),net.minecraft.sounds.SoundSource.BLOCKS,.8F,.95F+l.getRandom().nextFloat()*.1F);}
+            case GATE->{if(BikeNightBullies.open(b)){cue(p,BikeNightTexts.GATE_OPEN);break;}cue(p,BikeNightTexts.GATE);l.playSound(null,b.offset(rel),BikeNightRegistry.CHAIN.get(),net.minecraft.sounds.SoundSource.BLOCKS,.8F,.95F+l.getRandom().nextFloat()*.1F);}
             case FENCE->cue(p,BikeNightTexts.RAILINGS);
             case LAMP->{boolean failing=rel.getX()==BikeNightSite.FLICKER.getX()&&rel.getZ()==BikeNightSite.FLICKER.getZ();cue(p,failing?BikeNightTexts.LAMP_FAILING:BikeNightTexts.LAMP);}
             case BENCH->cue(p,s.getValue(CalderBlock.STAGE)==CalderBlock.CARVED?BikeNightTexts.CARVED:BikeNightTexts.BENCH);

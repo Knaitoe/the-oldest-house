@@ -187,6 +187,13 @@ LOOKS = {
     # Bike night (0.4.476): Gus, in his windbreaker, his glasses and his ball cap; and without the cap, once it has been taken.
     'literary_bike_gus': Look('#dcb090','#8a5a2e','messy','#2f7f86','#3a4f6e','jacket','#b23a30',eyes='#4f6a7a',glasses=True,mark='bike_cap',sleeve=10,face_style='child'),
     'literary_bike_gus_bare': Look('#dcb090','#8a5a2e','messy','#2f7f86','#3a4f6e','jacket','#b23a30',eyes='#4f6a7a',glasses=True,sleeve=10,face_style='child'),
+    # 0.4.479, Bike night: the three who come to the park. Children, a little bigger than the readers (the owner: "i'd probably assume
+    # him/the rest of the cast of playground kids and bullies as such"). Tully in a denim jacket with its sleeves cut off, and again in
+    # Gus's cap once he has taken it (the cap's own colour is the accent, so his is Gus's); Ray-Ray in plaid; Duff in a sweatshirt.
+    'literary_bike_tully': Look('#d2a07c','#2a2320','messy','#3d5a80','#2b2f38','jacket','#b23a30',eyes='#4a5a3a',sleeve=4,face_style='child'),
+    'literary_bike_tully_cap': Look('#d2a07c','#2a2320','messy','#3d5a80','#2b2f38','jacket','#b23a30',eyes='#4a5a3a',mark='bike_cap',sleeve=4,face_style='child'),
+    'literary_bike_ray': Look('#e3b896','#c9a24a','short','#7a2b2b','#3a4f6e','flannel','#d9c7a0',eyes='#5a6a7a',sleeve=9,face_style='child'),
+    'literary_bike_duff': Look('#c99272','#5a3a22','close','#2f5a3a','#4a3a2a','crew','#e3d9b8',eyes='#3d4a3a',sleeve=7,face_style='child'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),

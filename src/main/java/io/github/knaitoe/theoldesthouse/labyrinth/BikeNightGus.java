@@ -168,6 +168,8 @@ public final class BikeNightGus {
         int up=Dialogue.ticks(line);g.nextIdle=Math.max(g.nextIdle,n.tick+up+BETWEEN);g.soonAt=Math.max(g.soonAt,n.tick+up+10);
         if(!g.walking&&g.doing!=ON_SEESAW&&g.doing!=PUSHING)SceneFootpaths.face(actor,p.position(),180);
     }
+    /** 0.4.479: Tully has his cap. */
+    static void capTaken(ServerLevel l,BikeNight.Night n){var a=body(l,n);if(a!=null)a.appearance(LiteraryActor.STRANGER,GUS_BARE);if(!keptHome)later(n.gus,n,BikeNightTexts.GUS_CAP,20);}
     /** A ball of sand has met him. */
     static void sanded(ServerLevel l,LiteraryActor a){
         var n=BikeNight.nightAt(l,a.blockPosition());if(n==null||keptHome)return;var g=n.gus;g.sandHits++;
