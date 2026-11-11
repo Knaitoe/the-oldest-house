@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,part=low": {
+      "model": "the_oldest_house:block/bike_night/ramp_low"
+    },
+    "facing=north,part=high": {
+      "model": "the_oldest_house:block/bike_night/ramp_high"
+    },
+    "facing=north,part=steep": {
+      "model": "the_oldest_house:block/bike_night/ramp_steep"
+    },
+    "facing=east,part=low": {
+      "model": "the_oldest_house:block/bike_night/ramp_low",
+      "y": 90
+    },
+    "facing=east,part=high": {
+      "model": "the_oldest_house:block/bike_night/ramp_high",
+      "y": 90
+    },
+    "facing=east,part=steep": {
+      "model": "the_oldest_house:block/bike_night/ramp_steep",
+      "y": 90
+    },
+    "facing=south,part=low": {
+      "model": "the_oldest_house:block/bike_night/ramp_low",
+      "y": 180
+    },
+    "facing=south,part=high": {
+      "model": "the_oldest_house:block/bike_night/ramp_high",
+      "y": 180
+    },
+    "facing=south,part=steep": {
+      "model": "the_oldest_house:block/bike_night/ramp_steep",
+      "y": 180
+    },
+    "facing=west,part=low": {
+      "model": "the_oldest_house:block/bike_night/ramp_low",
+      "y": 270
+    },
+    "facing=west,part=high": {
+      "model": "the_oldest_house:block/bike_night/ramp_high",
+      "y": 270
+    },
+    "facing=west,part=steep": {
+      "model": "the_oldest_house:block/bike_night/ramp_steep",
+      "y": 270
+    }
+  }
+}

@@ -97,6 +97,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.HorrorRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.PolybiusRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.BarRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.ReplacementRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.SwimmerRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.VacantRegistry.register(modEventBus);

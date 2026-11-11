@@ -610,7 +610,7 @@ public final class BorrascaTests {
      */
     @GameTest(template="empty",batch="borrasca_bike",timeoutTicks=1800)
     public static void aChildGetsOnKendrasBikePedalsAndGetsOff(GameTestHelper h){
-        var f=new Fixture(h);var p=f.player("pine_bike");final BorrascaBike[] bike={null};
+        var f=new Fixture(h);var p=f.player("pine_bike");final BorrascaBike[] bike={null};final double[] road={0};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);})
           .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&BorrascaShopBlock.is(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.KENDRA_BIKE)),BorrascaShopBlock.Kind.BIKE),"her bike is out in town"))
           .thenExecute(()->{
@@ -625,6 +625,15 @@ public final class BorrascaTests {
               // 0.4.447: the rider's eyes were level with the handlebars and the top of the saddle, which lay across the view.
               double hips=p.getY()+.675*p.getScale()-bike[0].getY(),eyes=p.getEyeY()-bike[0].getY();
               h.assertTrue(Math.abs(hips-BorrascaBike.SADDLE)<.03&&eyes-14.6/16>.3,"the rider sits on the saddle, their eyes well over the bars: hips "+hips+", eyes "+eyes);
+              // 0.4.463: Drisking's bikes hop as every bike does. Held, the jump key winds it up; let go, the bike pops.
+              road[0]=bike[0].getY();bike[0].keys(true,false);
+          }).thenIdle(BorrascaBike.CHARGE+2).thenExecute(()->{
+              h.assertTrue(bike[0].crouch()==1&&bike[0].onGround(),"held, the jump key brings the rider right down over Kendra's bars, and the bike stays on the road");
+              bike[0].keys(false,false);
+          }).thenIdle(5).thenExecute(()->{
+              h.assertTrue(bike[0].getY()-road[0]>.8&&p.getVehicle()==bike[0],"let go, her bike hops: "+(bike[0].getY()-road[0]));
+          }).thenIdle(14).thenExecute(()->{
+              h.assertTrue(bike[0].onGround()&&p.getVehicle()==bike[0]&&Math.abs(bike[0].leanNow())<.05F,"and comes down level, the rider still on it: "+bike[0].leanNow());
               p.setPlayerInput(1,0,false,false);
           }).thenIdle(2).thenExecute(()->{
               h.assertTrue(bike[0].strokes()==-1&&bike[0].speedNow()>0,"the left strafe key is a push on the left pedal: "+bike[0].strokes());

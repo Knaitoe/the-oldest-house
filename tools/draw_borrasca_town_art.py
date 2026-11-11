@@ -770,11 +770,15 @@ def bike_bar(parts, lo, hi, tex, rot=None, px=7):
 
 
 def bike_wheel_parts(parts, cx, cy, r=5.5):
-    """A wheel in the plane z 7.5..8.5 about its hub (cx, cy). 0.4.447 (owner: "Try to fix wheels"): the tyre is a closed ring of
+    """A wheel in the plane z 8 about its hub (cx, cy). 0.4.447 (owner: "Try to fix wheels"): the tyre is a closed ring of
     sixteen pieces, each as long as its share of the rim and a little over, so that none stands apart from the next (there were eight,
     with a gap between each two). Every other piece takes the tread's groove, so the wheel is seen to turn. Then the hub and eight
-    spokes. A model's piece turns only by 22.5 or 45 degrees about one axis, which sixteen pieces use up."""
-    z0, z1 = 7.5, 8.5
+    spokes. A model's piece turns only by 22.5 or 45 degrees about one axis, which sixteen pieces use up.
+    0.4.463: the tyre was exactly as wide as the frame's tubes, so wherever the wheel passes behind one (the seat tube, the down
+    tube, the stem) the tyre's side and the tube's lay in one plane and flickered against each other, and so did each piece of the
+    tyre against the next where they join. The tyre is a hair narrower than the tubes now, and its grooved pieces a hair narrower
+    again (tools/flicker.py checks it)."""
+    z0, z1 = 7.55, 8.45
     thick = 1.2
     mid = r - thick / 2
     half = round(r * math.tan(math.pi / 16) + .12, 3)
@@ -784,10 +788,11 @@ def bike_wheel_parts(parts, cx, cy, r=5.5):
         tangent = (k * 22.5 + 90) % 180
         if tangent > 90:
             tangent -= 180
+        za, zb = (z0 + .05, z1 - .05) if k % 2 else (z0, z1)
         if abs(tangent) <= 45:
-            lo, hi, angle = [mx - half, my - thick / 2, z0], [mx + half, my + thick / 2, z1], tangent
+            lo, hi, angle = [mx - half, my - thick / 2, za], [mx + half, my + thick / 2, zb], tangent
         else:
-            lo, hi, angle = [mx - thick / 2, my - half, z0], [mx + thick / 2, my + half, z1], tangent - 90 if tangent > 0 else tangent + 90
+            lo, hi, angle = [mx - thick / 2, my - half, za], [mx + thick / 2, my + half, zb], tangent - 90 if tangent > 0 else tangent + 90
         lo, hi = [round(v, 3) for v in lo], [round(v, 3) for v in hi]
         bike_bar(parts, lo, hi, 't', {'angle': angle, 'axis': 'z', 'origin': [mx, my, 8]} if angle else None, 6 if k % 2 else 7)
     bike_bar(parts, [cx - .6, cy - .6, 7], [cx + .6, cy + .6, 9], 'c')            # hub
@@ -816,13 +821,13 @@ def bike_parts(wheels=True, standing=True):
     bar([5.75, 6.5, 7.5], [14.25, 7.5, 8.5], 'f', {'angle': 45, 'axis': 'z', 'origin': [10, 7, 8]})  # down tube
     bar([.75, 7.25, 7.5], [7.75, 8.25, 8.5], 'f', {'angle': 45, 'axis': 'z', 'origin': [4.25, 7.75, 8]})  # seat stays
     bar([14, 5.5, 7.25], [15, 11, 7.5], 'c'); bar([14, 5.5, 8.5], [15, 11, 8.75], 'c')  # fork, down to the front hub
-    bar([13.5, 10, 7.5], [14.5, 13.5, 8.5], 'c')                           # stem
+    bar([13.5, 10, 7.45], [14.5, 13.5, 8.55], 'c')                         # stem, a hair proud of the top tube it rises from
     bar([13.5, 13.5, 3.5], [14.5, 14.5, 12.5], 'c')                        # handlebar
     bar([13.4, 13.4, 3], [14.6, 14.6, 4.5], 's'); bar([13.4, 13.4, 11.5], [14.6, 14.6, 13], 's')  # grips
     bar([6.5, 12, 7.5], [7.5, 12.5, 8.5], 'c')                             # seat post
     bar([4.5, 12.5, 7], [9, 13.5, 9], 's')                                 # seat
     if standing:
-        bar([6.5, 3.5, 6], [7.5, 4.5, 10], 'c')                                # crank axle
+        bar([6.4, 3.4, 6], [7.6, 4.6, 10], 'c')                                # crank axle, in a shell a little fatter than the seat tube
         bar([6, 3.2, 5], [8, 3.8, 6], 's'); bar([6, 4.2, 10], [8, 4.8, 11], 's')  # pedals
         bar([7.5, .5, 9.5], [8.5, 4, 10.5], 'c', {'angle': 22.5, 'axis': 'x', 'origin': [8, 4, 8.5]})  # kickstand, its foot on the ground
     return parts
@@ -839,7 +844,7 @@ def bike_cranks():
     """0.4.435: the cranks about the middle of the block, as the axle at (7, 4) is drawn turning: the left pedal (toward -z, on the
     rider's left) down and the right one up, each on an arm two and a half pixels long."""
     parts = []
-    bike_bar(parts, [7.5, 7.5, 6], [8.5, 8.5, 10], 'c')                    # axle
+    bike_bar(parts, [7.4, 7.4, 6], [8.6, 8.6, 10], 'c')                    # axle, in a shell a little fatter than the seat tube
     bike_bar(parts, [7.6, 5.5, 5.5], [8.4, 8, 6], 'c')                     # left arm, down
     bike_bar(parts, [6.75, 5, 4], [9.25, 5.75, 5.5], 's')                  # left pedal
     bike_bar(parts, [7.6, 8, 10], [8.4, 10.5, 10.5], 'c')                  # right arm, up
@@ -2463,6 +2468,11 @@ def main():
     for key, obj in models.items():
         for tex in obj['textures'].values():
             assert f'block/borrasca_shop/{tex.split("borrasca_shop/")[1]}.png' in images, (key, tex)
+    from flicker import fights
+    for key in ('bike_0', 'bike_1', 'bike_frame', 'bike_wheel', 'bike_cranks'):   # 0.4.463: no two of the bike's faces flicker
+        clash = fights(models[key]['elements'])
+        assert not clash, (key, [(models[key]['elements'][a]['from'], models[key]['elements'][a]['to'], fa,
+                                  models[key]['elements'][b]['from'], models[key]['elements'][b]['to'], fb, n) for a, fa, b, fb, n in clash[:4]])
     for rel, im in images.items():
         path = A / 'textures' / rel
         if check:

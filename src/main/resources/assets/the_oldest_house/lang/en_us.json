@@ -1592,5 +1592,15 @@
   "entity.the_oldest_house.borrasca_dog": "Biscuit",
   "subtitles.the_oldest_house.borrasca.dog_bark": "Dog barks",
   "subtitles.the_oldest_house.borrasca.dog_whine": "Dog whines",
-  "subtitles.the_oldest_house.borrasca.dog_pant": "Dog pants"
+  "subtitles.the_oldest_house.borrasca.dog_pant": "Dog pants",
+  "block.the_oldest_house.night_bike": "Bike",
+  "block.the_oldest_house.bike_rack": "Bike rack",
+  "block.the_oldest_house.bike_ramp": "Plank ramp",
+  "block.the_oldest_house.bike_beam": "Lamplight",
+  "entity.the_oldest_house.night_bike": "Bike",
+  "subtitles.the_oldest_house.bike.hop": "Bike hops",
+  "subtitles.the_oldest_house.bike.land": "Bike lands",
+  "subtitles.the_oldest_house.bike.card": "Card rattles in spokes",
+  "subtitles.the_oldest_house.bike.turbo": "Card roars in spokes",
+  "subtitles.the_oldest_house.bike.dynamo": "Dynamo whines"
 }
