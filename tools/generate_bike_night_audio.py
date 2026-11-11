@@ -2,7 +2,7 @@
 down; the playing card pegged into the Rattler's spokes, and the roar it makes when it takes the bike; the Lamp's dynamo against its
 tyre. And the park's (0.4.464): the failing lamp striking and buzzing as it comes back on, and the chain on the gate when a hand
 tries it. And the playground's (0.4.465): a swing's hangers as it comes through the bottom of its arc, and a ball of sand packed in
-a hand, thrown, and bursting on what it meets.
+a hand, thrown, and bursting on what it meets; and (0.4.466) a body going down the slide.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -25,6 +25,7 @@ ROWS = {
     'park/sand_scoop': ('park.sand_scoop', 'Sand is packed', 8),
     'park/sand_throw': ('park.sand_throw', 'Sand ball is thrown', 10),
     'park/sand_burst': ('park.sand_burst', 'Sand ball bursts', 14),
+    'park/slide': ('park.slide', 'Someone slides', 14),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -236,8 +237,24 @@ def sand_burst():
     return out
 
 
+def slide():
+    # Cloth on sheet steel, faster all the way down: a hiss that climbs, the sheet drumming under it, and the lip at the end.
+    length = 1.25
+    n = seconds(length)
+    t = times(n)
+    go = np.clip(t / 1.05, 0, 1)
+    hiss = band(rng.standard_normal(n), 1500, 7000) * (.15 + .85 * go ** 1.5) * np.clip((length - t) / .12, 0, 1)
+    drum = band(rng.standard_normal(n), 90, 420) * (.2 + .8 * go) * np.clip((length - t) / .12, 0, 1)
+    ring = np.sin(2 * np.pi * (210 + 60 * go) * t) * .12 * go
+    out = hiss * .6 + drum * .9 + ring
+    i = seconds(1.07)
+    c = click(.02, 300, 2500, .006) * .8
+    out[i:i + len(c)] += c[:max(0, n - i)]
+    return out
+
+
 MAKERS = {'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
-          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst}
+          'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide}
 
 
 def main():

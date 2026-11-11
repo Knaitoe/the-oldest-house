@@ -5019,5 +5019,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.park.sand_burst"
+  },
+  "park.slide": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/slide",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.slide"
   }
 }

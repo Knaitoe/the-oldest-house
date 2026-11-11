@@ -46,10 +46,13 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * <p>0.4.465, the swings: a bay of the frame as the builder puts it up, on sand, with one swing hanging still and one caught at the
  * top of a high arc as the moving one is drawn (its seat and chains turned about the bar); the heel mark in the sand; and a ball of
  * sand in the hand. Every state of the playground's blocks and the ball's own model must be there.
+ *
+ * <p>0.4.466, the slide: the whole of it as the builder puts it up, from one side: ladder, deck and guard, four blocks of chute
+ * and the level end.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -83,9 +86,10 @@ public final class BikeNightVisualProof extends Screen {
         g.fill(0,0,width,height,0xff252925);
         g.drawString(font,"BIKE NIGHT / "+new String[]{"the six, on their stands","ridden: upright (the Lamp lit), and leaning with the nose up","lying where they went over","six in the rack, the long ramp and the kicker","what a rider sees under the crosshair",
             "the park's own things, from inside the gate","the park's signs: the gate's board from in front and from behind, and the rules",
-            "the swings: one hanging still, one at the top of a high arc; the furthest landing's mark; a ball of sand"}[page],8,8,0xffffffff);
+            "the swings: one hanging still, one at the top of a high arc; the furthest landing's mark; a ball of sand",
+            "the slide: its ladder, the deck under its guard, the chute and its level end"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);default->swings(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);default->slide(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -212,6 +216,21 @@ public final class BikeNightVisualProof extends Screen {
         g.drawString(font,"a ball of sand",(int)(width*.82F),(int)(24+(height-24)*.22F)+104,0xffffffff);
     }
 
+    /** The slide as the builder puts it up, going down to the south, seen from the east side and a little above. */
+    private void slide(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width*.085F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.8F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(16));pose.mulPose(Axis.YP.rotationDegrees(-128));pose.translate(-1.5F,0,-4F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var f=Direction.SOUTH;
+        for(int x=0;x<=2;x++)for(int z=0;z<=8;z++)at.accept(Blocks.SAND.defaultBlockState(),new int[]{x,-1,z});
+        at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.LADDER,f,0),new int[]{1,0,0});at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.LADDER,f,1),new int[]{1,1,0});
+        at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.DECK,f,0),new int[]{1,1,1});at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.DECK,f,CalderPlayBlock.GUARD),new int[]{1,2,1});
+        for(int k=0;k<CalderPlayBlock.CHUTES;k++)at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.CHUTE,f,k),new int[]{1,CalderPlayBlock.chuteLow(k)?0:1,2+k});
+        at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.RUNOUT,f,0),new int[]{1,0,2+CalderPlayBlock.CHUTES});
+        buffers.endBatch();pose.popPose();
+    }
+
     /** Both signs flat on, as the builder hangs them: the gate's board from in front, then from behind, then the rules. */
     private void signs(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
@@ -261,7 +280,7 @@ public final class BikeNightVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-bike-night-"+PAGES[s.page]+".png"));s.drawn(image);}
         if(++s.page<PAGES.length){s.frames=0;return;}
-        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Eight native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
+        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Nine native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page.");
         mc.stop();
     }
 }

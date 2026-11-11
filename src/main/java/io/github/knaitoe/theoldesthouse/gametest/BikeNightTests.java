@@ -40,6 +40,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  *
  * <p>0.4.465, the swings and the sand: the frame and what hangs from it; two readers on swings side by side; a swing pumped high, let
  * go of, and the furthest landing marked in the sand; sand packed into balls, thrown, bursting, and gone outside the night.
+ *
+ * <p>0.4.466, the slide: what it is built of, that its ladder is climbed and its chute stood on, and a go down it.
  * These build the place itself, one case to a batch, as the literary cases do.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_bike_night") @PrefixGameTestTemplate(false)
@@ -406,6 +408,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_swings") public static void swingsDone(ServerLevel l){done();}
     @AfterBatch(batch="park_pump") public static void pumpDone(ServerLevel l){done();}
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_slide") public static void slideDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
     public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
@@ -613,6 +616,7 @@ public final class BikeNightTests {
             new Thing(BikeNightSite.FLICKER,BikeNightTexts.LAMP_FAILING),new Thing(BikeNightSite.PLAY_LAMP.above(),BikeNightTexts.LAMP),new Thing(new BlockPos(3,0,-16),BikeNightTexts.BENCH),
             new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
             new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
+            new Thing(BikeNightSite.SLIDE,BikeNightTexts.SLIDE),new Thing(BikeNightSite.slideEnd(),BikeNightTexts.SLIDE),
             new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -622,7 +626,7 @@ public final class BikeNightTests {
         seq.thenExecute(()->{
             for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look(),
                 BikeNightTexts.SWINGS,BikeNightTexts.SWING_HINT,BikeNightTexts.JUMP,BikeNightTexts.JUMP_LEVEL,BikeNightTexts.JUMP_BEST,BikeNightTexts.JUMP_OFF,BikeNightTexts.MARK,BikeNightTexts.MARK_OWN,BikeNightTexts.MARK_THEIRS,
-                BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE)){
+                BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -888,5 +892,102 @@ public final class BikeNightTests {
             })
             .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.SAND_GONE),"and they are told it ran out through their fingers"))
             .thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.466: the slide
+    @GameTest(template="empty",batch="park_slide",timeoutTicks=2400)
+    public static void theSlideIsClimbedAndAReaderWhoComesIntoTheTopOfItsChuteGoesDownIt(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final SlideRide[] ride={null};final Vec3[] last={null};final double[] fastest={0};
+        var fwd=BikeNightSite.SLIDE_FORWARD;var ladder=b.offset(BikeNightSite.SLIDE);var deck=b.offset(BikeNightSite.slideDeck());var top=b.offset(BikeNightSite.slideTop());var end=b.offset(BikeNightSite.slideEnd());
+        java.util.function.Function<BlockPos,Double> surface=at->at.getY()-b.getY()+l.getBlockState(at).getCollisionShape(l,at).max(Direction.Axis.Y);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                // The ladder, two blocks of it, its rungs against the deck; the deck two blocks up under its guard.
+                for(int y=0;y<2;y++){var s=l.getBlockState(ladder.above(y));
+                    h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.LADDER)&&s.getValue(CalderPlayBlock.STAGE)==y&&s.getValue(CalderPlayBlock.FACING)==fwd&&s.isLadder(l,ladder.above(y),null),"the ladder's block "+y+", which is climbed: "+s);}
+                h.assertTrue(l.getBlockState(ladder.below()).is(Blocks.SAND)&&l.getBlockState(ladder.above(2)).isAir(),"it stands on the sand, and is open above");
+                var d=l.getBlockState(deck);var guard=l.getBlockState(deck.above());
+                h.assertTrue(deck.equals(ladder.relative(fwd).above())&&CalderPlayBlock.is(d,CalderPlayBlock.Kind.DECK)&&d.getValue(CalderPlayBlock.STAGE)==0&&d.getValue(CalderPlayBlock.FACING)==fwd&&!d.isLadder(l,deck,null)&&Math.abs(surface.apply(deck)-CalderPlayBlock.DECK_HEIGHT)<1e-6,"the deck, two blocks up: "+d+" at "+surface.apply(deck));
+                h.assertTrue(CalderPlayBlock.is(guard,CalderPlayBlock.Kind.DECK)&&guard.getValue(CalderPlayBlock.STAGE)==CalderPlayBlock.GUARD&&l.getBlockState(deck.below()).isAir(),"its guard over it, and room under it: "+guard);
+                var walls=guard.getCollisionShape(l,deck.above());var side=fwd.getClockWise().getAxis();
+                h.assertTrue(walls.min(side)==0&&walls.max(side)==1&&walls.max(Direction.Axis.Y)==1&&walls.toAabbs().size()==2&&walls.toAabbs().stream().allMatch(box->side==Direction.Axis.X?box.getXsize()<.2:box.getZsize()<.2),"the guard is a rail each side and open at both ends: "+walls);
+                // The chute: four blocks, each a little lower than the last, by the same fall; then the level end.
+                double before=CalderPlayBlock.DECK_HEIGHT;
+                for(int k=0;k<CalderPlayBlock.CHUTES;k++){
+                    var at=b.offset(BikeNightSite.slideTop().relative(fwd,k));if(CalderPlayBlock.chuteLow(k))at=at.below();var s=l.getBlockState(at);
+                    h.assertTrue(CalderPlayBlock.is(s,CalderPlayBlock.Kind.CHUTE)&&s.getValue(CalderPlayBlock.STAGE)==k&&s.getValue(CalderPlayBlock.FACING)==fwd,"the chute's block "+k+": "+s+" at "+at.subtract(b));
+                    double here=surface.apply(at),want=CalderPlayBlock.DECK_HEIGHT-(k+.25)*CalderPlayBlock.SLOPE;
+                    h.assertTrue(Math.abs(here-want)<1e-6&&here<before&&before-here<.6,"it is stood on, a step down from the last that a child takes: "+here+" after "+before);before=here;
+                }
+                h.assertTrue(l.getBlockState(top.below()).isAir()&&l.getBlockState(top.relative(fwd).below()).isAir(),"a body goes under the top of the chute");
+                var out=l.getBlockState(end);
+                h.assertTrue(CalderPlayBlock.is(out,CalderPlayBlock.Kind.RUNOUT)&&out.getValue(CalderPlayBlock.FACING)==fwd&&Math.abs(surface.apply(end)-(CalderPlayBlock.DECK_HEIGHT-CalderPlayBlock.CHUTES*CalderPlayBlock.SLOPE))<1e-6&&l.getBlockState(end.relative(fwd)).isAir()&&l.getBlockState(end.relative(fwd).below()).is(Blocks.SAND),"the level end, a third of a block up, and open sand past it");
+                // The ride's own arithmetic: faster all the way down, level at the end, and where the chute's surface is.
+                h.assertTrue(SlideRide.along(0)==0&&Math.abs(SlideRide.along(SlideRide.DOWN)-CalderPlayBlock.CHUTES)<1e-9&&Math.abs(SlideRide.along(SlideRide.WHOLE)-(CalderPlayBlock.CHUTES+SlideRide.LEVEL))<1e-9&&SlideRide.along(10)-SlideRide.along(9)>SlideRide.along(5)-SlideRide.along(4),"down the chute and along the level end, gaining all the way");
+                var start=SlideRide.at(top,fwd,0);var bottom=SlideRide.at(top,fwd,CalderPlayBlock.CHUTES);
+                h.assertTrue(Math.abs(start.y-b.getY()-CalderPlayBlock.DECK_HEIGHT)<1e-9&&Math.abs(bottom.y-b.getY()-surface.apply(end))<1e-9&&start.distanceTo(Vec3.atBottomCenterOf(top).add(-fwd.getStepX()*.5,1,-fwd.getStepZ()*.5))<1e-9,"from the deck's height at the chute's uphill edge to the level end's");
+                p[0]=f.player("slide_one",P);p[1]=f.player("slide_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenExecute(()->{
+                // A reader comes into the top of the chute, as one stepping off the deck does.
+                hush(p[0]);f.at(p[0],P,BikeNightSite.slideTop().getX()+.5,1.9,BikeNightSite.slideTop().getZ()+.5);
+                l.getBlockState(top).entityInside(l,top,p[0]);
+                h.assertTrue(p[0].getVehicle() instanceof SlideRide r&&r.top().equals(top)&&r.forward()==fwd&&Mth.degreesDifferenceAbs(p[0].getYRot(),fwd.toYRot())<1,"they sit, looking down it");
+                ride[0]=(SlideRide)p[0].getVehicle();last[0]=ride[0].position();
+                h.assertTrue(SlideRide.begin(p[0],top,fwd)==null,"somebody already going down is not taken again");
+                // Coming into any other block of it takes nobody.
+                l.getBlockState(top.relative(fwd)).entityInside(l,top.relative(fwd),p[1]);l.getBlockState(deck).entityInside(l,deck,p[1]);
+                h.assertTrue(!p[1].isPassenger(),"only the top of the chute takes a reader");
+            })
+            .thenExecuteFor((int)SlideRide.DOWN-2,()->{
+                var at=ride[0].position();double t=ride[0].ticks(0);
+                double now=at.distanceTo(SlideRide.at(top,fwd,SlideRide.along(t))),before=at.distanceTo(SlideRide.at(top,fwd,SlideRide.along(t-1)));
+                h.assertTrue(Math.min(now,before)<1e-6,"the ride is where the chute's surface is: "+now+" "+before);
+                double step=at.distanceTo(last[0]);
+                h.assertTrue(at.y<=last[0].y+1e-9&&step>=fastest[0]-1e-9&&p[0].getVehicle()==ride[0],"lower and faster every tick: "+step+" after "+fastest[0]);
+                fastest[0]=Math.max(fastest[0],step);last[0]=at;
+            })
+            .thenWaitUntil(()->h.assertTrue(ride[0].isRemoved()&&!p[0].isPassenger(),"let go off the level end"))
+            .thenExecute(()->{
+                var off=SlideRide.at(top,fwd,CalderPlayBlock.CHUTES+SlideRide.LEVEL);var v=p[0].getDeltaMovement();
+                h.assertTrue(p[0].position().distanceTo(off.add(0,.05,0))<1e-6&&fastest[0]>.3&&fastest[0]<.45,"at the end of it, having come down fast: "+p[0].position().subtract(off)+", "+fastest[0]+" blocks a tick");
+                h.assertTrue(Math.abs(v.x-fwd.getStepX()*SlideRide.SPEED*SlideRide.KEEP)<1e-6&&Math.abs(v.z-fwd.getStepZ()*SlideRide.SPEED*SlideRide.KEEP)<1e-6&&Math.abs(v.y-SlideRide.LIFT)<1e-6,"with the speed they came down with, out over the sand: "+v);
+                p[0].setDeltaMovement(Vec3.ZERO);
+            })
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"park.slide"),"and it was heard"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Slid")==1,"once down, in their record"))
+            .thenExecute(()->{
+                // Getting off in the top of the chute puts a reader back on the deck: left inside the top, they would be taken again at once.
+                f.at(p[1],P,BikeNightSite.slideTop().getX()+.5,1.9,BikeNightSite.slideTop().getZ()+.5);l.getBlockState(top).entityInside(l,top,p[1]);
+                h.assertTrue(p[1].getVehicle() instanceof SlideRide,"a second reader goes down");ride[0]=(SlideRide)p[1].getVehicle();
+            })
+            .thenIdle(4)
+            .thenExecute(()->{var first=ride[0];p[1].stopRiding();var on=Vec3.atBottomCenterOf(deck).add(0,1,0);
+                h.assertTrue(SlideRide.along(first.ticks(0))<1&&p[1].position().distanceTo(on)<.05&&!p[1].getBoundingBox().intersects(new net.minecraft.world.phys.AABB(top)),"off it in the top of the chute, back on the deck and out of the chute: "+p[1].position().subtract(on));})
+            .thenIdle(5)
+            .thenExecute(()->{
+                h.assertTrue(ride[0].isRemoved()&&!p[1].isPassenger()&&f.own(p[1],P).getInt("Slid")==0,"that ride is gone, and was not a go down it");
+                // Further down, getting off leaves a reader on the chute where they were.
+                f.at(p[1],P,BikeNightSite.slideTop().getX()+.5,1.9,BikeNightSite.slideTop().getZ()+.5);l.getBlockState(top).entityInside(l,top,p[1]);
+                h.assertTrue(p[1].getVehicle() instanceof SlideRide,"they go again");ride[0]=(SlideRide)p[1].getVehicle();
+            })
+            .thenIdle(14)
+            .thenExecute(()->{var at=ride[0].position();double along=SlideRide.along(ride[0].ticks(0));p[1].stopRiding();
+                h.assertTrue(along>=1&&along<CalderPlayBlock.CHUTES&&p[1].position().distanceTo(at.add(0,.1,0))<.05,"off it part of the way down, where they were: "+p[1].position().subtract(at)+" at "+along);})
+            .thenIdle(30)
+            .thenExecute(()->{
+                h.assertTrue(ride[0].isRemoved()&&f.own(p[1],P).getInt("Slid")==0,"the ride is gone with its rider, and that was not a go down it");
+                // Twice more for the first reader: their account says they went round again.
+                f.at(p[0],P,BikeNightSite.slideTop().getX()+.5,1.9,BikeNightSite.slideTop().getZ()+.5);l.getBlockState(top).entityInside(l,top,p[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Slid")==2,"twice down"))
+            .thenExecute(()->{p[0].setDeltaMovement(Vec3.ZERO);f.at(p[0],P,BikeNightSite.slideTop().getX()+.5,1.9,BikeNightSite.slideTop().getZ()+.5);l.getBlockState(top).entityInside(l,top,p[0]);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Slid")==3,"three times down"))
+            .thenExecute(()->{
+                var account=String.join(" ",BikeNightTexts.account("slide_one",f.own(p[0],P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(account.contains("went round and did it again"),"and their account has it: "+account);
+            }).thenSucceed();
     }
 }
