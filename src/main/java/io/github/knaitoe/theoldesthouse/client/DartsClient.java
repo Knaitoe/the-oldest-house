@@ -91,6 +91,7 @@ public final class DartsClient {
         public Chalk(BlockEntityRendererProvider.Context c){font=c.getFont();}
         @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){
             e.registerBlockEntityRenderer(BarRegistry.DARTBOARD_ENTITY.get(),Chalk::new);
+            e.registerBlockEntityRenderer(BarRegistry.SLATE_ENTITY.get(),BarSlateRenderer::new);
             e.registerEntityRenderer(BarRegistry.DART_ENTITY.get(),Dart::new);
         }
         @Override public void render(DartboardBlockEntity be,float partial,PoseStack pose,MultiBufferSource out,int light,int overlay){

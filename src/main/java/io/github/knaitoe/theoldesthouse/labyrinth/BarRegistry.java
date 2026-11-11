@@ -42,6 +42,14 @@ public final class BarRegistry {
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<DartboardBlockEntity>> DARTBOARD_ENTITY=BLOCK_ENTITIES.register("dartboard",
         ()->BlockEntityType.Builder.of(DartboardBlockEntity::new,DARTBOARD.get()).build(null));
     public static final DeferredItem<DartItem> DART=ITEMS.register("dart",()->new DartItem(new Item.Properties().stacksTo(16)));
+
+    /** 0.4.450: the league slate, whose squares the game chalks, and the booths' joinery. Neither is an item. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BarSlateBlock>> SLATE_TYPE=CODECS.register("bar_slate",()->BarSlateBlock.CODEC);
+    public static final DeferredBlock<BarSlateBlock> SLATE=BLOCKS.registerBlock("bar_slate",BarSlateBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).strength(.8F).noOcclusion().noCollission().noLootTable());
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BarSlateEntity>> SLATE_ENTITY=BLOCK_ENTITIES.register("bar_slate",
+        ()->BlockEntityType.Builder.of(BarSlateEntity::new,SLATE.get()).build(null));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BarBoothBlock>> BOOTH_TYPE=CODECS.register("bar_booth",()->BarBoothBlock.CODEC);
+    public static final DeferredBlock<BarBoothBlock> BOOTH=BLOCKS.registerBlock("bar_booth",BarBoothBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_PLANKS).strength(.8F).noOcclusion().noLootTable().lightLevel(BarBoothBlock::light));
     public static final DeferredHolder<EntityType<?>,EntityType<DartEntity>> DART_ENTITY=ENTITIES.register("dart",
         ()->EntityType.Builder.<DartEntity>of(DartEntity::new,MobCategory.MISC).sized(.15F,.15F).clientTrackingRange(6).updateInterval(1).build("dart"));
 

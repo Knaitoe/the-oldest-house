@@ -1,0 +1,78 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "a": "the_oldest_house:block/bar/slate",
+    "particle": "the_oldest_house:block/bar/slate"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a",
+          "uv": [
+            12.0,
+            5.3333,
+            16.0,
+            10.6667
+          ]
+        },
+        "south": {
+          "texture": "#a",
+          "uv": [
+            0,
+            0,
+            0.25,
+            0.3333
+          ],
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#a",
+          "uv": [
+            0,
+            0,
+            0.25,
+            0.3333
+          ]
+        },
+        "west": {
+          "texture": "#a",
+          "uv": [
+            0,
+            0,
+            0.25,
+            0.3333
+          ]
+        },
+        "up": {
+          "texture": "#a",
+          "uv": [
+            0,
+            0,
+            0.25,
+            0.3333
+          ]
+        },
+        "down": {
+          "texture": "#a",
+          "uv": [
+            0,
+            0,
+            0.25,
+            0.3333
+          ]
+        }
+      }
+    }
+  ]
+}

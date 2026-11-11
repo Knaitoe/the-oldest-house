@@ -74,6 +74,10 @@ public final class HallwayCarveTests {
                     "the pool table stands whole in the finished bar: "+level.getBlockState(foot)+" / "+level.getBlockState(head));
             h.assertTrue(level.getBlockEntity(foot) instanceof PoolTableBlockEntity,"the table's foot keeps its frame");
             h.assertTrue(DartboardBlock.is(level.getBlockState(base.offset(LastOrdersSite.BOARD))),"the dartboard is on its wall");
+            // 0.4.450: the league slate's squares keep what is chalked in them, and the booths their numbers, built in slices.
+            for(var square:LastOrdersSite.LEAGUE)h.assertTrue(BarSlateBlock.is(level.getBlockState(base.offset(square)))&&level.getBlockEntity(base.offset(square)) instanceof BarSlateEntity,"a square of the league slate at "+square);
+            for(int i=0;i<LastOrdersSite.BOOTHS.length;i++){var post=level.getBlockState(base.offset(-9,1,LastOrdersSite.BOOTHS[i]+2));
+                h.assertTrue(BarBoothBlock.is(post,BarBoothBlock.Kind.POST)&&post.getValue(BarBoothBlock.NUMBER)==i+1,"booth "+(i+1)+"'s post: "+post);}
             h.succeed();
         });
     }

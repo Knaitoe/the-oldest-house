@@ -7,7 +7,6 @@ import net.minecraft.gametest.framework.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.*;
 
@@ -45,7 +44,8 @@ public final class LastOrdersTests {
         return menu.getSlot(0).getItem().copy();
     }
     private static int houseDarts(ServerPlayer p){int n=0;for(var s:p.getInventory().items)if(DartBoards.isHouseDart(s))n+=s.getCount();for(var s:p.getInventory().offhand)if(DartBoards.isHouseDart(s))n+=s.getCount();return n;}
-    private static String sign(LiteraryTests.Fixture f,net.minecraft.core.BlockPos rel,int line){return f.level(P).getBlockEntity(f.base(P).offset(rel)) instanceof SignBlockEntity s?s.getFrontText().getMessage(line,false).getString():"";}
+    /** What is chalked in a square of the league slate. */
+    private static String sign(LiteraryTests.Fixture f,net.minecraft.core.BlockPos rel,int line){return f.level(P).getBlockEntity(f.base(P).offset(rel)) instanceof BarSlateEntity s?s.line(line):"";}
 
     @GameTest(template="empty",batch="orders_pool",timeoutTicks=3000)
     public static void aFrameForEverythingWonAndLeftOnTheTable(GameTestHelper h){
@@ -59,6 +59,34 @@ public final class LastOrdersTests {
                 h.assertTrue(RoadhouseBlock.is(l.getBlockState(b.offset(LastOrdersSite.RULES)),RoadhouseBlock.Kind.CORKBOARD)&&RoadhouseBlock.is(l.getBlockState(b.offset(LastOrdersSite.TILL)),RoadhouseBlock.Kind.REGISTER),"the house rules on the corkboard and the till on the counter");
                 h.assertTrue(PoolTableBlock.is(l.getBlockState(b.offset(LastOrdersSite.TABLE)))&&DartboardBlock.is(l.getBlockState(b.offset(LastOrdersSite.BOARD))),"a real pool table and a real dartboard");
                 for(int c:LastOrdersSite.BOOTHS)h.assertTrue(RoadhouseBlock.is(l.getBlockState(b.offset(-10,0,c)),RoadhouseBlock.Kind.BOOTH_TABLE)&&RoadhouseBlock.is(l.getBlockState(b.offset(-10,0,c-1)),RoadhouseBlock.Kind.BOOTH),"a booth at "+c);
+                // 0.4.450 (the owner: "Custom booths in last order", "Custom signs for last orders"): the booths' own joinery, their
+                // numbers on brass, and a slate for the league. None of the game's signs, fences or candles is left in the bar.
+                for(int i=0;i<LastOrdersSite.BOOTHS.length;i++){
+                    int c=LastOrdersSite.BOOTHS[i];var post=l.getBlockState(b.offset(-9,1,c+2));
+                    h.assertTrue(BarBoothBlock.is(post,BarBoothBlock.Kind.POST)&&post.getValue(BarBoothBlock.NUMBER)==i+1&&post.getValue(BarBoothBlock.FACING)==net.minecraft.core.Direction.EAST,"booth "+(i+1)+"'s number on the post at the aisle: "+post);
+                    for(int x=-11;x<=-9;x++)h.assertTrue(BarBoothBlock.is(l.getBlockState(b.offset(x,0,c+2)),BarBoothBlock.Kind.PANEL),"panelling under the screen at "+x+", "+(c+2));
+                    for(int x=-11;x<=-10;x++)h.assertTrue(BarBoothBlock.is(l.getBlockState(b.offset(x,1,c+2)),BarBoothBlock.Kind.SCREEN),"a glass screen over it at "+x+", "+(c+2));
+                    var candle=l.getBlockState(b.offset(-11,1,c));var picture=l.getBlockState(b.offset(-11,2,c));
+                    h.assertTrue(BarBoothBlock.is(candle,BarBoothBlock.Kind.CANDLE)&&candle.getLightEmission(l,b.offset(-11,1,c))==BarBoothBlock.CANDLE_LIGHT,"a lit candle on booth "+(i+1)+"'s table: "+candle);
+                    h.assertTrue(BarBoothBlock.is(picture,BarBoothBlock.Kind.PICTURE)&&picture.getValue(BarBoothBlock.NUMBER)==i+1&&picture.getValue(BarBoothBlock.FACING)==net.minecraft.core.Direction.EAST&&!l.getBlockState(b.offset(-12,2,c)).isAir(),"booth "+(i+1)+"'s own picture on its wall: "+picture);
+                }
+                var bare=l.getBlockState(b.offset(-9,1,LastOrdersSite.PARTITION_END));
+                h.assertTrue(BarBoothBlock.is(bare,BarBoothBlock.Kind.POST)&&bare.getValue(BarBoothBlock.NUMBER)==0,"the last partition's post is bare: "+bare);
+                for(int piece=0;piece<BarSlateBlock.COLS*BarSlateBlock.ROWS;piece++){
+                    var at=BarSlateBlock.cell(b.offset(LastOrdersSite.SLATE),net.minecraft.core.Direction.SOUTH,piece);var slate=l.getBlockState(at);
+                    h.assertTrue(BarSlateBlock.is(slate)&&slate.getValue(BarSlateBlock.PIECE)==piece&&slate.getValue(BarSlateBlock.FACING)==net.minecraft.core.Direction.SOUTH&&!l.getBlockState(at.north()).isAir()&&l.getBlockEntity(at) instanceof BarSlateEntity,"block "+piece+" of the league slate on the far wall: "+slate);
+                }
+                for(int i=0;i<LastOrdersSite.LEAGUE.length;i++){
+                    var at=b.offset(LastOrdersSite.LEAGUE[i]);int piece=l.getBlockState(at).getValue(BarSlateBlock.PIECE);
+                    h.assertTrue(piece>=BarSlateBlock.COLS&&at.equals(BarSlateBlock.cell(b.offset(LastOrdersSite.SLATE),net.minecraft.core.Direction.SOUTH,piece)),"week "+i+"'s square is one of the slate's eight");
+                }
+                h.assertTrue(l.getBlockState(b.offset(LastOrdersSite.SLATE_LAMP)).is(Blocks.LANTERN),"a lamp to read the slate by");
+                int vanilla=0;
+                for(var at:net.minecraft.core.BlockPos.betweenClosed(b.offset(LastOrdersSite.WEST+1,0,LastOrdersSite.NORTH+1),b.offset(LastOrdersSite.EAST-1,LastOrdersSite.TOP-1,-1))){
+                    var block=l.getBlockState(at).getBlock();
+                    if(block instanceof net.minecraft.world.level.block.SignBlock||block instanceof net.minecraft.world.level.block.CandleBlock)vanilla++;
+                }
+                h.assertTrue(vanilla==0,"none of the game's own signs or candles in the bar: "+vanilla);
                 h.assertTrue(l.getBlockState(b.offset(LastOrdersSite.EAST,2,LastOrdersSite.WINDOW_Z0)).is(Blocks.GLASS_PANE)&&l.getBlockState(b.offset(LastOrdersSite.EAST+2,2,(LastOrdersSite.WINDOW_Z0+LastOrdersSite.WINDOW_Z1)/2)).is(Blocks.CHERRY_LEAVES),"the window, onto a street in spring");
                 var all=text(LiteraryTexts.source(P));h.assertTrue(all.contains("Booth four is taken")&&all.contains("stays on the tables"),"the house rules: "+all);
                 r[0]=f.player("orders_walks",P);r[1]=f.player("orders_takes",P);
@@ -145,9 +173,12 @@ public final class LastOrdersTests {
             .thenExecute(()->{
                 var glass=l.getEntitiesOfClass(ItemEntity.class,box(f),e->r[0].getUUID().equals(LastOrders.glassOwner(e.getItem()))).getFirst();
                 h.assertTrue(glass.getX()>b.getX()+LastOrdersSite.COUNTER_X&&glass.getX()<b.getX()+LastOrdersSite.COUNTER_X+1,"on the counter");
+                // 0.4.450: the regulars' eight weeks are chalked on the slate, the newest at the right of the upper row.
+                for(int i=0;i<LastOrdersSite.LEAGUE.length;i++)h.assertTrue(sign(f,LastOrdersSite.LEAGUE[i],0).equals("Week "+(8-i))&&sign(f,LastOrdersSite.LEAGUE[i],1).equals(LastOrdersTexts.REGULARS[(8-i)%3])&&sign(f,LastOrdersSite.LEAGUE[i],2).equals("beat "+LastOrdersTexts.REGULARS[(9-i)%3]),"week "+(8-i)+" chalked on the slate: "+sign(f,LastOrdersSite.LEAGUE[i],0)+" / "+sign(f,LastOrdersSite.LEAGUE[i],1)+" / "+sign(f,LastOrdersSite.LEAGUE[i],2));
                 glass.discard();LastOrders.drink(r[0]);
                 h.assertTrue(f.own(r[0],P).getInt("Glasses")==1&&f.own(r[0],P).getInt("VisitGlasses")==1,"the glass drunk");
                 h.assertTrue(sign(f,LastOrdersSite.LEAGUE[0],1).equals(r[0].getGameProfile().getName())&&sign(f,LastOrdersSite.LEAGUE[0],0).equals("Week 9"),"another week on the league board, under the reader's name: "+sign(f,LastOrdersSite.LEAGUE[0],1));
+                h.assertTrue(sign(f,LastOrdersSite.LEAGUE[1],0).equals("Week 8")&&sign(f,LastOrdersSite.LEAGUE[7],0).equals("Week 2"),"and the weeks before it moved along one square: "+sign(f,LastOrdersSite.LEAGUE[1],0)+", "+sign(f,LastOrdersSite.LEAGUE[7],0));
                 h.assertTrue(l.getBlockState(b.offset(LastOrdersSite.EAST+2,2,(LastOrdersSite.WINDOW_Z0+LastOrdersSite.WINDOW_Z1)/2)).is(Blocks.OAK_LEAVES),"and the street outside the window in summer");
                 ask(f,r[0],"Darts");
                 h.assertTrue(LastOrders.stage(b)==LastOrders.WAITING,"he gets up to meet the reader at the board");
