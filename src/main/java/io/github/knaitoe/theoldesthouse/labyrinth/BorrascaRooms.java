@@ -189,8 +189,9 @@ public final class BorrascaRooms {
         BorrascaLand.road(l,depot);
         BorrascaTown.town(l,b);BorrascaDressing.town(l,b);BorrascaShops.build(l,b);
         BorrascaLand.forest(l,b);
-        for(var tree0:new BlockPos[]{BorrascaPlay.EAST_TREE,BorrascaPlay.WEST_TREE})
-            for(int height=0;height<3;height++)BuildBlocks.set(l,b.offset(tree0.above(height)),Blocks.OAK_LOG.defaultBlockState(),F);
+        // 0.4.472: the two trees Nell's game hides her behind are oaks on the street's verges (three bare logs each stood here, one
+        // of them in the road).
+        for(var tree0:new BlockPos[]{BorrascaPlay.EAST_TREE,BorrascaPlay.WEST_TREE})BorrascaLand.oak(l,b,tree0.getX(),tree0.getY(),tree0.getZ(),BorrascaPlay.TREE_HIGH);
         furniture(l,b,SOURCE.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);furniture(l,b,ACCOUNT.below(),HouseholdFurnitureBlock.Kind.WALNUT_DESK);
         LiteraryRooms.paper(l,b,SOURCE,BorrascaTexts.source(),LiteraryRooms.holder(LabyrinthPlace.BORRASCA));LiteraryRooms.prop(l,b,ACCOUNT,LiteraryPropBlock.Kind.LEDGER,Direction.SOUTH);
         NovelRooms.safeApproach(l,b);LabyrinthBuilder.entrance(l,b,Blocks.SPRUCE_PLANKS.defaultBlockState(),Blocks.STONE_BRICKS.defaultBlockState(),Blocks.DARK_OAK_PLANKS.defaultBlockState());NovelRooms.door(l,b.offset(0,0,1),Direction.SOUTH,Blocks.DARK_OAK_DOOR,false);

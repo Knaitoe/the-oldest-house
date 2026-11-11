@@ -253,9 +253,12 @@ final class BorrascaDressing {
         BorrascaSigns.hang(l,t.offset(0,4,-69),BorrascaSigns.Sign.ARCH_MILE,Direction.SOUTH);
     }
 
-    /** Creosoted poles down the street's east side, a lamp on an arm over the street from each. */
+    /**
+     * Creosoted poles down the street's east side, a lamp on an arm over the street from each. 0.4.472: the first stands three
+     * blocks nearer the square, clear of the oak on that verge.
+     */
     private static void poles(ServerLevel l,BlockPos b){
-        for(int z:new int[]{-33,-45,-57}){
+        for(int z:new int[]{-30,-45,-57}){
             box(l,b,5,0,z,5,6,z,log(Blocks.DARK_OAK_LOG,Direction.Axis.Y));
             box(l,b,4,6,z,6,6,z,log(Blocks.STRIPPED_DARK_OAK_LOG,Direction.Axis.X));
             set(l,b,4,5,z,hanging());
