@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/open_antiques","particle":"the_oldest_house:block/borrasca_sign/open_antiques"},
+ "elements":[
+  {"from":[-6,1,0.5],"to":[22,16,1.5],"faces":{"north":{"texture":"#a","uv":[1.0,0.0,15.0,15.0]},"south":{"texture":"#a","uv":[15.0,0.0,1.0,15.0]},"east":{"texture":"#a","uv":[1.0,0.0,1.5,15.0]},"west":{"texture":"#a","uv":[14.5,0.0,15.0,15.0]},"up":{"texture":"#a","uv":[15.0,0.0,1.0,1.0]},"down":{"texture":"#a","uv":[15.0,14.0,1.0,15.0]}}}
+ ]}

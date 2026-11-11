@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/church","particle":"the_oldest_house:block/borrasca_sign/church"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[4.0,0.0,8.0,8.0]},"east":{"texture":"#a","uv":[4.0,0.0,4.25,8.0]},"west":{"texture":"#a","uv":[7.75,0.0,8.0,8.0]},"up":{"texture":"#a","uv":[8.0,0.0,4.0,0.5]},"down":{"texture":"#a","uv":[8.0,7.5,4.0,8.0]}}}
+ ]}

@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/trail","particle":"the_oldest_house:block/borrasca_sign/trail"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[12.0,8.0,16.0,16.0]},"east":{"texture":"#a","uv":[12.0,8.0,12.25,16.0]},"west":{"texture":"#a","uv":[15.75,8.0,16.0,16.0]},"up":{"texture":"#a","uv":[16.0,8.0,12.0,8.5]},"down":{"texture":"#a","uv":[16.0,15.5,12.0,16.0]}}}
+ ]}

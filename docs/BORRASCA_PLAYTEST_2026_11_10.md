@@ -18,10 +18,10 @@ Two standing remarks run through the whole document and are treated as passes of
 | 2 | "Facing the wrong way. Give the shelves more variance?" | The drugstore's pharmacy counter: the cash register's keys face the customer. The wall of shelves behind it repeats one texture and reads as a bookcase. | done, 0.4.444: the registers' keys face their keepers; the pharmacy shelves are bottles, in two arrangements |
 | 3 | "Arcade machines have gap in center?" | The side of a cabinet: a dark seam where its upper and lower halves meet. | done, 0.4.444: one side panel from the floor to the top |
 | 4 | "Needs an improved texture." | The comic spinner: a grid of flat coloured squares. | done, 0.4.444: a spinner with a pole and wire pockets of comic covers |
-| 5 | "Give it an actual sign" | The historical society's sign, a vanilla wooden sign. | open, signs |
+| 5 | "Give it an actual sign" | The historical society's sign, a vanilla wooden sign. | done, 0.4.449: the society's own painted board over its door, DRISKING between crossed picks |
 | 6 | "Mirror on window?" | A wall clock hung in a window opening, on the glass. | done, 0.4.444: wall behind every piece that hangs on a wall (a test now checks the whole town) |
-| 7 | "open sign eating glass, also unfinished" | The OPEN sign takes the place of a window pane, and its lettering is rough. | half done, 0.4.444: the sign hangs inside the glass, which stays; its look is for the sign pass |
-| 8 | "Give the different stores some variance/characterization in their signage" | The same OPEN sign in another shop's window. | open, signs |
+| 7 | "open sign eating glass, also unfinished" | The OPEN sign takes the place of a window pane, and its lettering is rough. | done, 0.4.449: each shop has its own sign in its window, inside the glass: red tube at the cafe, a lit box at the drugstore, a card on a string at Rowe's, DOCTOR IS IN at Dr. Hale's |
+| 8 | "Give the different stores some variance/characterization in their signage" | The same OPEN sign in another shop's window. | done, 0.4.449: every shop has its own painted board on its false front, in its own colours and at its own size, and so have the store, the Sheriff, the church and the rest (docs/BORRASCA_SIGNS_0_4_449.md) |
 | 9 | "Try to show, don't tell. Try to design an actual ui for this" | The birth cards on the doctor's corkboard, described on a page of text. | open |
 | 10 | "This ain't exactly the candy jar you promised lol" | The lollipop jar: a glass box of coloured blocks. | done, 0.4.444: a glass jar with a lid and lollipops on sticks |
 | 11 | "again, custom textures would be beneficial here." | A waiting room's benches, built of plank stairs and slabs. | open, the texture pass |
@@ -36,7 +36,7 @@ Two standing remarks run through the whole document and are treated as passes of
 | 20 | "retexture this table and all instances of it. It's got an hd texture that isn't in line with vanilla" | A small table with a finely detailed, scratched wood texture. | open |
 | 21 | "try to add the faces of the actual children, especially if they're npcs from the vignette" | The LOST posters: a grey outline of a head. | open |
 | 22 | "Cluttered" | The noticeboard: four copies of the same corkboard tile. | open |
-| 23 | "Could benefit from custom signs" | The trailhead arch: two small vanilla signs on its beam. | open, signs |
+| 23 | "Could benefit from custom signs" | The trailhead arch: two small vanilla signs on its beam. | done, 0.4.449: the trail's name burned into a plank seven blocks long on the beam, and the distance on a board that hangs under it on chains |
 | 24 | "Combat with the sheriff shouldn't' feel like a vanilla Minecraft fight. Punches should be sluggish with real weight. The sheriff should use his baton, then drop it after being hit a few times and start swinging his own fists. He swings with one fist then the other." | (no screenshot of the fight) | open |
 | 24 | "Sphinx talons still need three distinct nails, not the many several smaller ones." | The Sphinx's paw: a row of many small claws along three toes. | done, 0.4.447: one toe and one talon to each of the three blocks of her paw |
 | 25 | "Custom booths in last order" | Last orders: booths built of planks and red wool, numbered with vanilla signs. | open |
@@ -50,8 +50,8 @@ Two standing remarks run through the whole document and are treated as passes of
 | 33 | "re-use water fountain from personhood vignette." | A water cooler made of a white box and a blue one. | done, 0.4.447: the waiting room's cooler stands in the depot office |
 | 34 | "Give new textures to the different docs." | Two documents side by side with the same face. | done, 0.4.444: ten papers, ten faces |
 | 35 | "Kelly's dialogue text appears for like, half a second" | Kelly, grown, in room 6. | done, 0.4.444 |
-| 36 | "Custom signs, wall texture" | The corridor under the depot: vanilla signs for the room numbers, plain walls. | open, signs |
-| 37-39 | "No entry" | The passage between the depot and the wire, a lantern on a fence post, and a ladder up a closed timber box. | in part, 0.4.447: the depot's front door and its lever now say why nothing happens. Whether the note asks for NO ENTRY signs, for ways in, or for these to be closed off is asked of the owner |
+| 36 | "Custom signs, wall texture" | The corridor under the depot: vanilla signs for the room numbers, plain walls. | done, 0.4.449: a steel plate with the number and a card slot over each door (rooms 6 and 7 have their cards in), and the corridor's walls are painted block, green below a line and cream above |
+| 37-39 | "No entry" | The passage between the depot and the wire, a lantern on a fence post, and a ladder up a closed timber box. | answered both ways, 0.4.449: NO ENTRY on the wire either side of the gate, the disc at the mouth of the passage and by the tank's ladder; and the tank's ladder now reaches an open hatch, with the tank dry and red silt on its floor. The depot's door and lever say why they do not open (0.4.447). Whether the note meant something else is asked of the owner |
 | 40 | "End of the world here lol." | Past the yard's fence the ground stops and there is nothing. | done, 0.4.447: the hill goes on behind the yard and ends in the cliff at the valley's head |
 | - | "Borrasca shiny gentleman capture spawns on top of triple tree rather than inside" | (no screenshot) | done, 0.4.444: on the fort's floor |
 | 41 | "Spots to solids" | Last orders' pool: "knaitoe (stripes) vs Booth four (spots)". | done, 0.4.444 |

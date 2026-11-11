@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/roundel","particle":"the_oldest_house:block/borrasca_sign/roundel"},
+ "elements":[
+  {"from":[1,1,15],"to":[15,15,16],"faces":{"north":{"texture":"#a","uv":[1.0,1.0,15.0,15.0]},"east":{"texture":"#a","uv":[1.0,1.0,2.0,15.0]},"west":{"texture":"#a","uv":[14.0,1.0,15.0,15.0]},"up":{"texture":"#a","uv":[15.0,1.0,1.0,2.0]},"down":{"texture":"#a","uv":[15.0,14.0,1.0,15.0]}}}
+ ]}

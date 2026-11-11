@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/arch","particle":"the_oldest_house:block/borrasca_sign/arch"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[9.1429,0.0,11.4286,16.0]},"east":{"texture":"#a","uv":[9.1429,0.0,9.2857,16.0]},"west":{"texture":"#a","uv":[11.2857,0.0,11.4286,16.0]},"up":{"texture":"#a","uv":[11.4286,0.0,9.1429,1.0]},"down":{"texture":"#a","uv":[11.4286,15.0,9.1429,16.0]}}}
+ ]}

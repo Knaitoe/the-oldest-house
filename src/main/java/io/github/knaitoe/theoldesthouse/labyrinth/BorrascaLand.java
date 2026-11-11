@@ -345,7 +345,7 @@ public final class BorrascaLand {
         }
         // A low post, no step from its top to the wire's.
         BuildBlocks.set(l,b.offset(28,13,-171),Blocks.OAK_LOG.defaultBlockState(),F);
-        NovelRooms.sign(l,b.offset(28,13,-170),Direction.SOUTH,new String[]{"PRESCOTT","REFINING","Service road","No admittance"});
+        BorrascaSigns.hang(l,b.offset(28,13,-170),BorrascaSigns.Sign.REFINING,Direction.SOUTH); // 0.4.449: Prescott's board, wider than its post
     }
 
     // ---- The woods -------------------------------------------------------------------------------------------------

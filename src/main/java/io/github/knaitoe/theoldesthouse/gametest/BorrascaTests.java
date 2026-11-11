@@ -1145,6 +1145,20 @@ public final class BorrascaTests {
                 if(face==null)continue;var behind=f.out.getBlockState(hungAt.relative(face.getOpposite()));
                 if(behind.is(Blocks.GLASS_PANE)||behind.isAir())hung.add(hungAt.subtract(b).toShortString()+" "+hs);}
             h.assertTrue(hung.isEmpty(),"every piece that hangs on a wall has wall behind it, not glass or air: "+hung);
+            // 0.4.449 (owner: "Give the different stores some variance/characterization in their signage"; "custom signs"): the
+            // town's signs are its own painted boards. None of the game's wooden signs is left but the numbers on the graves; every
+            // board is whole; one on a wall has wall or wire behind it, one in a window has the pane before it, one that hangs has
+            // its beam over it.
+            int wooden=0;var adrift=new ArrayList<String>();var boards=new java.util.EnumMap<BorrascaSigns.Sign,Integer>(BorrascaSigns.Sign.class);
+            for(var at:BlockPos.betweenClosed(b.offset(-47,-8,BorrascaRooms.HEAD),b.offset(47,60,12))){var s=f.out.getBlockState(at);
+                if(s.getBlock() instanceof net.minecraft.world.level.block.SignBlock)wooden++;
+                if(!BorrascaSignBlock.is(s))continue;var sign=BorrascaSignBlock.sign(s);boards.merge(sign,1,Integer::sum);var face=s.getValue(BorrascaSignBlock.FACING);
+                var behind=f.out.getBlockState(at.relative(face.getOpposite()));
+                boolean held=switch(sign.mount){case WALL,DECAL->!behind.isAir()&&!behind.is(Blocks.GLASS_PANE);case WINDOW->f.out.getBlockState(at.relative(face)).is(Blocks.GLASS_PANE);case FREE->!f.out.getBlockState(at.above()).isAir();};
+                if(!held)adrift.add(at.subtract(b).toShortString()+" "+sign);}
+            h.assertTrue(wooden==BorrascaRooms.GRAVE_TAGS.length,"the only wooden signs left on the hill are the numbers on the graves: "+wooden);
+            h.assertTrue(adrift.isEmpty(),"every board has wall or wire behind it, its window before it or its beam over it: "+adrift);
+            for(var sign:BorrascaSigns.Sign.values()){int want=sign.pieces()*(sign==BorrascaSigns.Sign.NO_ENTRY||sign==BorrascaSigns.Sign.ROUNDEL?2:1);h.assertTrue(boards.getOrDefault(sign,0)==want,"the "+sign+" sign is hung whole: "+boards.getOrDefault(sign,0)+" blocks of "+want);}
             // 0.4.447: the yard's boards lie on the gravel or on each other. Two of them hung in the air.
             var loose=new ArrayList<String>();
             for(var board:BlockPos.betweenClosed(new BlockPos(-32,12,-212),new BlockPos(32,13,-168))){var at=BorrascaRooms.at(b,board);var bs=f.out.getBlockState(at);if(!bs.is(Blocks.SPRUCE_SLAB))continue;
@@ -1163,7 +1177,17 @@ public final class BorrascaTests {
             for(int x=-3;x<2;x++)for(int y=0;y<=2;y++){var one=f.out.getBlockState(BorrascaRooms.at(b,x,y,-98));var next=f.out.getBlockState(BorrascaRooms.at(b,x+1,y,-98));if(BorrascaNamesBlock.is(one)&&BorrascaNamesBlock.is(next))h.assertTrue(!one.getValue(BorrascaNamesBlock.FACE).equals(next.getValue(BorrascaNamesBlock.FACE)),"no two blocks side by side carry the same names: "+x+","+y);}
             h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.CARVING)).is(BorrascaRegistry.CARVING.get())&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.BOTH&&BorrascaNamesBlock.friends(2).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.HIS_GONE,"the reader's carving keeps its place, and Patrick's and Kendra's names are cut beside it");
             h.assertTrue(BorrascaStory.click(p,b,BorrascaRooms.world(new BlockPos(-2,1,-98)),hand)&&BorrascaStory.click(p,b,BorrascaRooms.world(BorrascaRooms.FRIENDS_NAMES),hand),"a hand on the names is answered");
-            for(var sign:new BlockPos[]{new BlockPos(-8,2,-80),new BlockPos(8,2,-101)}){boolean west=sign.getX()<0;h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(sign)),BorrascaShopBlock.Kind.OPEN)&&f.out.getBlockState(b.offset(sign).relative(west?Direction.EAST:Direction.WEST)).is(Blocks.GLASS_PANE),"the OPEN sign hangs inside the shop against its window, which keeps its glass: "+sign);}
+            // 0.4.449: each shop's own sign hangs inside its window (the scan above found the pane before each); a hand on a board
+            // reads it.
+            h.assertTrue(BorrascaSignBlock.is(f.out.getBlockState(b.offset(BorrascaShops.OPEN_DINER)),BorrascaSigns.Sign.OPEN_DINER)&&BorrascaSignBlock.is(f.out.getBlockState(b.offset(BorrascaShops.OPEN_DRUG)),BorrascaSigns.Sign.OPEN_DRUG)
+                &&BorrascaSignBlock.is(f.out.getBlockState(b.offset(BorrascaShops.OPEN_ANTIQUES)),BorrascaSigns.Sign.OPEN_ANTIQUES)&&BorrascaSignBlock.is(f.out.getBlockState(b.offset(BorrascaShops.IN_DOCTOR)),BorrascaSigns.Sign.IN_DOCTOR),"each shop has its own sign in its window");
+            h.assertTrue(BorrascaStory.click(p,b,BorrascaShops.OPEN_DINER,hand)&&BorrascaStory.click(p,b,new BlockPos(-6,5,-84),hand)&&BorrascaSignBlock.is(f.out.getBlockState(b.offset(-6,5,-84)),BorrascaSigns.Sign.DINER),"a hand on a board reads it, the cafe's across its false front among them");
+            // 0.4.449: under the depot the corridor's walls are painted on the corridor's side, each door has its plate, and room 6's
+            // has its card; the yard's tank is open at the top and dry.
+            var painted=f.out.getBlockState(BorrascaRooms.at(b,-21,7,-190));
+            h.assertTrue(BorrascaWardBlock.is(painted)&&painted.getValue(BorrascaWardBlock.FACING)==Direction.EAST&&painted.getValue(BorrascaWardBlock.COURSE)==1&&BorrascaSignBlock.is(f.out.getBlockState(BorrascaRooms.at(b,-18,8,BorrascaRooms.ROOM_Z[5])),BorrascaSigns.Sign.ROOM_6),"the corridor's wall is painted where it looks into the corridor, and room 6 has its plate: "+painted);
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,21,23,-174)).is(Blocks.SPRUCE_TRAPDOOR)&&f.out.getBlockState(BorrascaRooms.at(b,23,23,-174)).is(Blocks.LADDER)&&f.out.getBlockState(BorrascaRooms.at(b,20,20,-175)).is(Blocks.RED_SAND)
+                &&BorrascaStory.click(p,b,BorrascaRooms.world(new BlockPos(20,20,-175)),hand),"the tank's ladder reaches its lid, the hatch stands open over red silt, and a hand in it is answered");
             h.assertTrue(!BorrascaShopTexts.pump(0,false).equals(BorrascaShopTexts.pump(1,false))&&!BorrascaShopTexts.pump(0,true).equals(BorrascaShopTexts.pump(1,true)),"each pump's dials stopped at its own last sale");
             h.assertTrue(f.out.getBlockState(b.offset(20,0,-103)).getValue(BorrascaShopBlock.STAGE)!=f.out.getBlockState(b.offset(20,0,-102)).getValue(BorrascaShopBlock.STAGE),"the pharmacy's shelves are not all one arrangement");
             h.assertTrue(f.out.getBlockState(b.offset(18,1,-97)).getValue(RoadhouseBlock.FACING)==Direction.EAST,"the pharmacy register's keys face the pharmacist");

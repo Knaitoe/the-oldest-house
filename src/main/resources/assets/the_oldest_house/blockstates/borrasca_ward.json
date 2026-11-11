@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "course=0,facing=north": {
+      "model": "the_oldest_house:block/borrasca_ward_0"
+    },
+    "course=0,facing=east": {
+      "model": "the_oldest_house:block/borrasca_ward_0",
+      "y": 90
+    },
+    "course=0,facing=south": {
+      "model": "the_oldest_house:block/borrasca_ward_0",
+      "y": 180
+    },
+    "course=0,facing=west": {
+      "model": "the_oldest_house:block/borrasca_ward_0",
+      "y": 270
+    },
+    "course=1,facing=north": {
+      "model": "the_oldest_house:block/borrasca_ward_1"
+    },
+    "course=1,facing=east": {
+      "model": "the_oldest_house:block/borrasca_ward_1",
+      "y": 90
+    },
+    "course=1,facing=south": {
+      "model": "the_oldest_house:block/borrasca_ward_1",
+      "y": 180
+    },
+    "course=1,facing=west": {
+      "model": "the_oldest_house:block/borrasca_ward_1",
+      "y": 270
+    },
+    "course=2,facing=north": {
+      "model": "the_oldest_house:block/borrasca_ward_2"
+    },
+    "course=2,facing=east": {
+      "model": "the_oldest_house:block/borrasca_ward_2",
+      "y": 90
+    },
+    "course=2,facing=south": {
+      "model": "the_oldest_house:block/borrasca_ward_2",
+      "y": 180
+    },
+    "course=2,facing=west": {
+      "model": "the_oldest_house:block/borrasca_ward_2",
+      "y": 270
+    }
+  }
+}

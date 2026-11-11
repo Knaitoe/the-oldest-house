@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/diner","particle":"the_oldest_house:block/borrasca_sign/diner"},
+ "elements":[
+  {"from":[0,0,15],"to":[16,16,16],"faces":{"north":{"texture":"#a","uv":[10.6667,0.0,13.3333,8.0]},"east":{"texture":"#a","uv":[10.6667,0.0,10.8333,8.0]},"west":{"texture":"#a","uv":[13.1667,0.0,13.3333,8.0]},"up":{"texture":"#a","uv":[13.3333,0.0,10.6667,0.5]},"down":{"texture":"#a","uv":[13.3333,7.5,10.6667,8.0]}}}
+ ]}

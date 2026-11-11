@@ -134,7 +134,7 @@ final class BorrascaDressing {
         for(int z=z1-1;z<=z0+1;z++){if(z==zc)continue;set(l,b,street,0,z,Blocks.IRON_BARS);}
         box(l,b,street,0,zc,street,1,zc,AIR);
         for(int x=Math.min(street,back-o),X=Math.max(street,back-o);x<=X;x++){set(l,b,x,0,z0+2,Blocks.IRON_BARS);set(l,b,x,0,z1-2,Blocks.IRON_BARS);}
-        box(l,b,street,0,zc+1,street,1,zc+1,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.Y));NovelRooms.sign(l,b.offset(street+o,1,zc+1),out,new String[]{"",name,"",""});
+        box(l,b,street,0,zc+1,street,1,zc+1,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.Y));BorrascaSigns.hang(l,b.offset(street+o,1,zc+1),BorrascaSigns.Sign.valueOf("NAME_"+name),out); // 0.4.449: each family's own plate
         int tx=street+(west?-3:3),tz=z0;
         switch(yard){
             case 0->{BorrascaLand.oak(l,b,tx,0,tz,6);}
@@ -232,8 +232,11 @@ final class BorrascaDressing {
         for(int z:new int[]{-62,-67}){box(l,b,x0,5,z,x1,5,z,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));set(l,b,(x0+x1)/2,4,z,hanging());}
         // The path from the street to its door, and its board.
         for(int x=5;x<tx0;x++)set(l,b,x,-1,tz1+1,BorrascaRooms.walked(x,tz1+1,1));
-        set(l,b,6,0,-62,log(Blocks.OAK_LOG,Direction.Axis.Y));set(l,b,6,1,-62,log(Blocks.OAK_LOG,Direction.Axis.Y));
-        NovelRooms.sign(l,b.offset(5,1,-62),Direction.WEST,new String[]{"FIRST BAPTIST","CHURCH","Sunday 10 am","All welcome"});
+        // 0.4.449: the church's board at the street: white boards between two posts under a cap, lettered in black (one post and a
+        // wooden sign stood here).
+        for(int z:new int[]{-63,-60})box(l,b,6,0,z,6,2,z,log(Blocks.OAK_LOG,Direction.Axis.Y));
+        box(l,b,6,1,-62,6,2,-61,Blocks.BIRCH_PLANKS);box(l,b,6,3,-63,6,3,-60,slab(Blocks.OAK_SLAB,SlabType.BOTTOM));
+        BorrascaSigns.span(l,b.offset(5,1,-63),BorrascaSigns.Sign.CHURCH,Direction.WEST);
     }
 
     /** Where the street gives out: gravel for cars, a log rail, a bin and a bench, and two posts the trail leaves between. */
@@ -246,8 +249,10 @@ final class BorrascaDressing {
         // The posts, either side of the trail where the street ends, a board across them high over the path.
         for(int x:new int[]{-4,4})box(l,t,x,0,-69,x,4,-69,log(Blocks.OAK_LOG,Direction.Axis.Y));
         box(l,t,-4,5,-69,4,5,-69,log(Blocks.STRIPPED_OAK_LOG,Direction.Axis.X));
-        NovelRooms.sign(l,t.offset(-1,5,-68),Direction.SOUTH,new String[]{"","OZARK PINE","TRAIL",""});
-        NovelRooms.sign(l,t.offset(1,5,-68),Direction.SOUTH,new String[]{"","Triple Tree","1 mile",""});
+        // 0.4.449 (owner, of the two small wooden signs that were on this beam: "Could benefit from custom signs"): the trail's name
+        // burned into a plank seven blocks long on the beam, and the distance on a board that hangs from it on two chains.
+        BorrascaSigns.span(l,t.offset(-3,5,-68),BorrascaSigns.Sign.ARCH,Direction.SOUTH);
+        BorrascaSigns.hang(l,t.offset(0,4,-69),BorrascaSigns.Sign.ARCH_MILE,Direction.SOUTH);
     }
 
     /** Creosoted poles down the street's east side, a lamp on an arm over the street from each. */
@@ -337,7 +342,18 @@ final class BorrascaDressing {
         for(int x=19;x<=22;x++)for(int z=-176;z<=-173;z++)set(l,b,x,19,z,Blocks.SPRUCE_PLANKS);
         for(int y=20;y<=22;y++)for(int x=19;x<=22;x++)for(int z=-176;z<=-173;z++){if(x!=19&&x!=22&&z!=-176&&z!=-173)continue;set(l,b,x,y,z,log(Blocks.STRIPPED_SPRUCE_LOG,Direction.Axis.Y));}
         for(int x=19;x<=22;x++)for(int z=-176;z<=-173;z++)set(l,b,x,23,z,slab(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB,SlabType.BOTTOM));
-        for(int y=12;y<=19;y++)set(l,b,23,y,-174,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.EAST));
+        // 0.4.449 (owner, of the ladder that ended under a closed box: "No entry"): the ladder goes on up to the lid, a hatch in the
+        // lid stands open over a ladder down the inside, and the tank is dry: red silt on its floor (BorrascaRooms.TANK_SILT), from
+        // the two years the town's water ran red. A no-entry disc is nailed up beside the ladder.
+        for(int y=12;y<=23;y++)set(l,b,23,y,-174,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.EAST));
+        set(l,b,21,23,-174,Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.WEST).setValue(TrapDoorBlock.HALF,Half.BOTTOM).setValue(TrapDoorBlock.OPEN,true));
+        for(int y=21;y<=22;y++)set(l,b,21,y,-174,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));
+        for(int x=20;x<=21;x++)for(int z=-175;z<=-174;z++)set(l,b,x,20,z,Blocks.RED_SAND);
+        BorrascaSigns.hang(l,b.offset(23,21,-175),BorrascaSigns.Sign.ROUNDEL,Direction.EAST);
+        // 0.4.449: NO ENTRY on the wire either side of the gate, and the disc on the depot's corner at the mouth of the passage to its
+        // front door.
+        BorrascaSigns.span(l,b.offset(3,13,-166),BorrascaSigns.Sign.NO_ENTRY,Direction.SOUTH);BorrascaSigns.span(l,b.offset(-4,13,-166),BorrascaSigns.Sign.NO_ENTRY,Direction.SOUTH);
+        BorrascaSigns.hang(l,b.offset(-13,13,-169),BorrascaSigns.Sign.ROUNDEL,Direction.EAST);
         // Pallets and a stack of pipe by the depot's east door.
         // 0.4.447 (owner's screenshot of the yard): two of these hung in the air, one a top slab over nothing and one a slab set a whole
         // block up over a half one. The corner is now a stack three boards high and the rest lie on the gravel.

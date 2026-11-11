@@ -25,7 +25,8 @@ import net.minecraft.world.phys.shapes.*;
  * EXAM, the examination table; CHART, the eye chart.</li>
  * <li>The drugstore: FOUNTAIN, the soda fountain's taps on the counter; MEDS, the pharmacy shelf; RACK, the comic spinner.</li>
  * <li>OPEN, a lit sign in a window. 0.4.444: it hangs at the front of its own block, inside the shop against the glass, facing the
- * street (it used to stand in the window's place).</li>
+ * street (it used to stand in the window's place). 0.4.449: it is no longer hung anywhere; each shop has its own sign in its
+ * window, one of {@link BorrascaSigns}'.</li>
  * <li>0.4.430, the owner: "i hope you're still working on detailing the architecture". The station's own stock: OIL, steel shelving of
  * motor oil and antifreeze; BAIT, the bait freezer with cups on its lid; SNACKS, a wire rack of chips; CALENDAR, the feed store's
  * calendar; BAIT_SIGN, a painted board; TIRES, a stack of used tires. GROCERIES, the general store's shelf of tins, boxes and flour;

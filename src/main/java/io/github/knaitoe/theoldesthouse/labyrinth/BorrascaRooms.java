@@ -46,6 +46,8 @@ public final class BorrascaRooms {
      */
     public static final BlockPos HATCH=new BlockPos(-19,11,-202),NIGHT_BOOK=new BlockPos(-19,7,-172),LETTER=new BlockPos(-18,7,-172),NELL_WALL=new BlockPos(-15,7,-181);
     public static final int[] ROOM_Z={-199,-195,-191,-187,-183,-179};
+    /** 0.4.449: the floor of the yard's water tank, dry, with red silt on it; reached by the hatch in its lid. */
+    public static boolean tankSilt(BlockPos rel){return rel.getY()==20&&rel.getX()>=20&&rel.getX()<=21&&rel.getZ()>=-175&&rel.getZ()<=-174;}
     public static final int NELL_ROOM=6,MARA_ROOM=7;
     /** 0.4.438: where the friend stands grown in room 6, by the cot under the names. */
     public static final BlockPos KELLY=new BlockPos(-15,6,-179);
@@ -144,7 +146,6 @@ public final class BorrascaRooms {
     static void set(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),F);}
     static void fit(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k,Direction d){BuildBlocks.set(l,b.offset(at),BorrascaFittingBlock.of(k,d),F);}
     private static void furniture(ServerLevel l,BlockPos b,BlockPos at,HouseholdFurnitureBlock.Kind k){NovelRooms.furniture(l,b.offset(at),k,Direction.SOUTH);}
-    private static void sign(ServerLevel l,BlockPos b,BlockPos at,String... words){NovelRooms.sign(l,b.offset(at),Direction.SOUTH,words);}
     private static int mix(int x,int z){int h=x*73856093^z*83492791^0x2b1;h^=h>>>13;h*=0x5bd1e995;return (h^h>>>15)&0x7fffffff;}
     /**
      * 0.4.276: a walked surface: packed earth where feet go (out to one off the line). 0.4.277: at its edge the Ozark woods' floor comes
@@ -271,7 +272,11 @@ public final class BorrascaRooms {
         NovelRooms.door(l,b.offset(SERVICE_GATE),Direction.WEST,Blocks.IRON_DOOR,false);
         // The west fence, whole again wherever the way down touched it.
         for(int z=-213;z<=-168;z++){if(z>=-210&&z<=-207)continue;for(int y=12;y<=15;y++)fit(l,b,new BlockPos(-30,y,z),BorrascaFittingBlock.Kind.FENCE,Direction.EAST);}
-        BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);sign(l,b,RELEASE.above(2),"SERVICE EXIT","Mechanical release","Keep low","Return to trail");
+        BuildBlocks.set(l,b.offset(RELEASE),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),F);BorrascaSigns.span(l,b.offset(RELEASE.offset(-1,2,0)),BorrascaSigns.Sign.SERVICE,Direction.SOUTH); // 0.4.449: green and white, over the release
+    }
+    /** 0.4.449: paints one block of the corridor's wall on the side that looks into the corridor, where the wall is still bare concrete. */
+    private static void paint(ServerLevel l,BlockPos b,int x,int y,int z,Direction into){
+        if(BuildBlocks.state(l,b.offset(x,y,z)).is(Blocks.LIGHT_GRAY_CONCRETE))BuildBlocks.set(l,b.offset(x,y,z),BorrascaWardBlock.course(y-6,into),F);
     }
     /** 0.4.237: the rooms under the depot (see HATCH). Nothing in them is shown happening; what they were for is in the book. */
     private static void lowerRooms(ServerLevel l,BlockPos b){
@@ -282,6 +287,12 @@ public final class BorrascaRooms {
         for(int y=6;y<=10;y++)BuildBlocks.set(l,b.offset(-19,y,-202),Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.SOUTH),F);
         // The corridor, and its far end.
         box(l,b,-20,6,-201,-18,8,-172,Blocks.AIR);box(l,b,-18,6,-202,-18,8,-202,Blocks.AIR);
+        // 0.4.449 (owner, of this corridor: "Custom signs, wall texture"): the corridor's walls are painted block, green to the
+        // height of a hand and cream above; the rooms off it are bare. The doors and their plates go in after.
+        for(int y=6;y<=8;y++){
+            for(int z=-201;z<=-172;z++){paint(l,b,-21,y,z,Direction.EAST);paint(l,b,-17,y,z,Direction.WEST);}
+            for(int x=-20;x<=-18;x++){paint(l,b,x,y,-202,Direction.SOUTH);paint(l,b,x,y,-171,Direction.NORTH);}
+        }
         for(int z:new int[]{-196,-186,-176})BuildBlocks.set(l,b.offset(-19,8,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
         NovelRooms.furniture(l,b.offset(NIGHT_BOOK.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);NovelRooms.furniture(l,b.offset(LETTER.below()),HouseholdFurnitureBlock.Kind.WALNUT_DESK,Direction.SOUTH);
         NovelRooms.furniture(l,b.offset(-20,6,-173),HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.NORTH);
@@ -296,8 +307,8 @@ public final class BorrascaRooms {
             boolean open=room==NELL_ROOM;
             NovelRooms.door(l,b.offset(roomDoor(room)),east?Direction.WEST:Direction.EAST,Blocks.IRON_DOOR,open);
             BuildBlocks.set(l,b.offset(roomLever(room)),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.WALL).setValue(LeverBlock.FACING,east?Direction.WEST:Direction.EAST).setValue(LeverBlock.POWERED,open),F);
-            var tag=room==NELL_ROOM?new String[]{"RM 6","263-A","",""}:room==MARA_ROOM?new String[]{"RM 7","264-A","",""}:new String[]{"RM "+room,"","",""};
-            NovelRooms.sign(l,b.offset(east?-18:-20,8,zc),east?Direction.WEST:Direction.EAST,tag);
+            // 0.4.449: a steel plate over each door with the room's number and a slot for a card; two of the slots have cards in.
+            BorrascaSigns.hang(l,b.offset(east?-18:-20,8,zc),BorrascaSigns.Sign.room(room),east?Direction.WEST:Direction.EAST);
         }
         // Her room: the blanket gone, her name scratched into the wall beside the reader's (the names are set for each reader).
         BuildBlocks.set(l,b.offset(NELL_WALL),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,2).setValue(BorrascaCarvingBlock.WALL,true),F);
