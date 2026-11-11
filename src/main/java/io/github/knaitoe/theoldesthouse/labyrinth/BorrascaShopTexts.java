@@ -94,6 +94,8 @@ public final class BorrascaShopTexts {
             case EFFECTS->"Cardboard boxes on steel shelving, a tag wired to each. The tags have numbers on them and no names.";
             case HOOK->"A crane's block and hook, hanging still on its chains.";
             case JUKEBOX->stage==1?"The jukebox, unplugged. The title cards in it have gone brown.":"A jukebox, lit. The titles are typed on little cards. A good half of them are hymns.";
+            // 0.4.461: the church's folding tables, put away at the depot. On the church's lawn they answer through BorrascaSupper.
+            case FOLDED->"Folding tables, stacked away. The top one has a ring on it where a pie dish stood.";
             default->null;
         };
     }

@@ -59,10 +59,13 @@ public final class BorrascaRegistry {
     public static final DeferredItem<Item> FLASHLIGHT=ITEMS.registerSimpleItem("borrasca_flashlight",new Item.Properties().stacksTo(1));
     /** 0.4.457: the Sheriff's baton, in his hand while he has it (BorrascaSheriffFight). */
     public static final DeferredItem<Item> BATON=ITEMS.registerSimpleItem("borrasca_baton",new Item.Properties().stacksTo(1));
+    /** 0.4.461: a folding table off the truck and a stack of plates, carried on the church's lawn and nowhere else (BorrascaSupper). */
+    public static final DeferredItem<Item> FOLDING_TABLE=ITEMS.registerSimpleItem("borrasca_folding_table",new Item.Properties().stacksTo(1)),PLATES=ITEMS.registerSimpleItem("borrasca_plates",new Item.Properties().stacksTo(1));
     /** 0.4.425: the money a reader carries in the town, and what the shops sell (BorrascaPeople, BorrascaFood). */
     public static final DeferredItem<BorrascaPurseItem> COINS=ITEMS.register("borrasca_coins",()->new BorrascaPurseItem(false)),WALLET=ITEMS.register("borrasca_wallet",()->new BorrascaPurseItem(true));
     public static final DeferredItem<BorrascaFood> PIE=food("pie",BorrascaFood.Kind.PIE),COFFEE=food("coffee",BorrascaFood.Kind.COFFEE),MILK_COFFEE=food("milk_coffee",BorrascaFood.Kind.MILK_COFFEE),SODA=food("soda",BorrascaFood.Kind.SODA),
-        CANDY=food("candy",BorrascaFood.Kind.CANDY),LOLLIPOP=food("lollipop",BorrascaFood.Kind.LOLLIPOP),MALT=food("malt",BorrascaFood.Kind.MALT),BEER=food("beer",BorrascaFood.Kind.BEER);
+        CANDY=food("candy",BorrascaFood.Kind.CANDY),LOLLIPOP=food("lollipop",BorrascaFood.Kind.LOLLIPOP),MALT=food("malt",BorrascaFood.Kind.MALT),BEER=food("beer",BorrascaFood.Kind.BEER),
+        PECAN_PIE=food("pecan_pie",BorrascaFood.Kind.PECAN); // 0.4.461: the church supper's
     private static DeferredItem<BorrascaFood> food(String id,BorrascaFood.Kind kind){return ITEMS.register("borrasca_"+id,()->new BorrascaFood(kind));}
     public static final DeferredHolder<SoundEvent,SoundEvent> GRINDER=sound("grinder"),GRINDER_MUFFLED=sound("grinder_muffled"),MOTOR_STOP=sound("motor_stop"),TREE_CREAK=sound("tree_creak"),TOWN_WIND=sound("town_wind"),CHIME=sound("triple_chime"),STROKE=sound("stroke"),CARVE=sound("carve"),BREAKER=sound("breaker"),CHAIN=sound("chain"),MACHINE_WET=sound("machine_wet");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register("borrasca."+id,()->id.equals("triple_chime")||id.equals("stroke")?SoundEvent.createFixedRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca."+id),256):SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca."+id)));}

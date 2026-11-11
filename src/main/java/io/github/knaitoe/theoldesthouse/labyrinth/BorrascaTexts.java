@@ -187,6 +187,8 @@ public final class BorrascaTexts {
             +bikes(own)
             // 0.4.436: the drugstore's games.
             +arcade(own)
+            // 0.4.461: the church's supper being set out, if the reader was at it.
+            +BorrascaSupper.told(own)
             // 0.4.432: what she said on the walk up.
             +(own.getInt("WalkTalk")>=BorrascaStory.WALK_TALK.length?"She talked the whole way up to the Tree, and asked if I wanted to be best friends. ":own.getInt("WalkTalk")>0?"She talked on the way up to the Tree. ":"")
             // 0.4.445: the comic she left in it, before the ridge was heard.

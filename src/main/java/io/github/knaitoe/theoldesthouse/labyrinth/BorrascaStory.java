@@ -169,6 +169,9 @@ public final class BorrascaStory {
     // ------------------------------------------------------------------ hands
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         if(own.getInt("Visit")==4&&BorrascaFeeding.click(p,b,BorrascaRooms.authored(rel),own))return true; // 0.4.439: the band, and what is on the pile, where they were authored
+        // 0.4.461: the church's lawn and the company's truck, on the first visit. It comes before the signs: the truck's tailgate has
+        // the company's name on it as the square's truck has, and its own number.
+        if(BorrascaSupper.click(p,b,rel,own))return true;
         // 0.4.449: a hand on one of the town's painted signs reads it in full, the lines too small to letter included.
         var board=p.serverLevel().getBlockState(b.offset(rel));
         if(BorrascaSignBlock.is(board)){cue(p,BorrascaSignBlock.sign(board).look());return true;}
@@ -479,6 +482,7 @@ public final class BorrascaStory {
         BorrascaShops.years(p.serverLevel(),b,visit>=3); // 0.4.454: the station's board shows the reader's own year's prices
         BorrascaHomes.years(p.serverLevel(),b,visit>=3); // 0.4.456: and the street's four households are as they were, or years on
         BorrascaGarritys.keep(p.serverLevel(),b,own,visit); // 0.4.459: the Garritys' box, door and curtains, and the letter under the door
+        BorrascaSupper.keep(p,b,own,visit); // 0.4.461: the church's supper being set out, on the first visit only
         townBike(p,b,own,visit);
         BorrascaComic.keep(p,b,own,visit); // 0.4.445: the comic in the fort's window, for as long as it is left there
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door

@@ -34,8 +34,13 @@ public final class BorrascaPeople {
     public static final int WEBB=154,SHERRY=155,ROY=156,JOLENE=157,DUTCH=158,MERLE=159;
     /** 0.4.428, the town's routines: Mr. Dorsey carries the mail up one side of the street and down the other, on stranger phase 160. */
     public static final int CARRIER=160;
-    private static final String[] SKINS={"lorna","ames","rowe","kurt","odell","fenn","gus","earl","webb","sherry","roy","jolene","dutch","merle","dorsey"};
-    private static final String[] NAMES={"Lorna","Mr. Ames","Mr. Rowe","Kurt","Mrs. Odell","Mr. Fenn","Gus","Earl","Mr. Webb","Mrs. Webb","Roy Tate","Jolene Tate","Dutch","Merle","Mr. Dorsey"};
+    /**
+     * 0.4.461, the church supper (BorrascaSupper): Prescott's driver, three of the street's mothers and the pastor, on stranger
+     * phases 161 to 165. They are on the church's lawn on the first visit and nowhere after it.
+     */
+    public static final int VERN=161,MRS_HOLLIS=162,MRS_PRUITT=163,MRS_CORLEY=164,NEAL=165,LAST=NEAL;
+    private static final String[] SKINS={"lorna","ames","rowe","kurt","odell","fenn","gus","earl","webb","sherry","roy","jolene","dutch","merle","dorsey","vern","hollis","pruitt","corley","neal"};
+    private static final String[] NAMES={"Lorna","Mr. Ames","Mr. Rowe","Kurt","Mrs. Odell","Mr. Fenn","Gus","Earl","Mr. Webb","Mrs. Webb","Roy Tate","Jolene Tate","Dutch","Merle","Mr. Dorsey","Vern","Mrs. Hollis","Mrs. Pruitt","Mrs. Corley","Brother Neal"};
     /**
      * 0.4.428: the town's day. Each reader's own clock runs while they are in Drisking, DAY ticks to a turn. From SMOKE_FROM to SMOKE_TO
      * Mr. Rowe steps out front of his shop for a smoke: the only time a child can get into the historical society behind it. He goes and
@@ -56,7 +61,7 @@ public final class BorrascaPeople {
     public static final int FRIEND_CHANGE=100;
     private BorrascaPeople(){}
 
-    public static boolean cast(int phase){return phase>=LORNA&&phase<=CARRIER;}
+    public static boolean cast(int phase){return phase>=LORNA&&phase<=LAST;}
     public static String skin(int phase){return "drisking_"+SKINS[phase-LORNA];}
     public static boolean keeper(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static String name(LiteraryActor a){return NAMES[a.phase()-LORNA];}
@@ -66,6 +71,7 @@ public final class BorrascaPeople {
         case ROY,JOLENE->visit==1;
         case DUTCH,MERLE->visit>=3;
         case CARRIER->visit<4;
+        case VERN,MRS_HOLLIS,MRS_PRUITT,MRS_CORLEY,NEAL->visit==1;
         default->visit<4||phase==KURT||phase==GUS||phase==EARL;
     };}
 
@@ -86,6 +92,7 @@ public final class BorrascaPeople {
         case DUTCH->new BlockPos(14,0,-117);
         case MERLE->new BlockPos(16,0,-117);
         case CARRIER->ROUND[0];
+        case VERN,MRS_HOLLIS,MRS_PRUITT,MRS_CORLEY,NEAL->BorrascaSupper.post(phase);
         default->BorrascaRooms.world(new BlockPos(28,0,-28));
     };}
     /**
@@ -97,7 +104,7 @@ public final class BorrascaPeople {
     public static boolean cell(BlockPos rel){return rel.getY()>=0&&rel.getY()<=3&&(rel.getX()==26&&rel.getZ()>=-29&&rel.getZ()<=-26||rel.getZ()==-26&&rel.getX()>=27&&rel.getX()<=29);}
     public static BlockPos post(int phase,int visit){return phase==EARL&&visit>=3?EARL_STREET:post(phase);}
     /** The way each faces at rest: across the counter toward the door, Earl toward the bars (and, years later, the street). */
-    private static float yaw(int phase){return switch(phase){case LORNA,ROWE,KURT->-90;case AMES,ODELL,EARL,WEBB,SHERRY->90;case ROY,JOLENE,DUTCH,MERLE->180;default->0;};}
+    private static float yaw(int phase){return switch(phase){case LORNA,ROWE,KURT->-90;case AMES,ODELL,EARL,WEBB,SHERRY,VERN,MRS_HOLLIS,MRS_CORLEY,NEAL->90;case ROY,JOLENE,DUTCH,MERLE->180;default->0;};}
 
     // ---------------------------------------------------------------------------------------------------------------- what they sell
     public enum Ware {
@@ -126,7 +133,7 @@ public final class BorrascaPeople {
     public static void tick(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
         purse(p,b,own,visit);
         own.putInt("TownClock",(own.getInt("TownClock")+5)%DAY);
-        for(int phase=LORNA;phase<=CARRIER;phase++){
+        for(int phase=LORNA;phase<=LAST;phase++){
             var a=ensure(p,b,own,phase);if(a==null)continue;
             boolean on=staffed(phase,visit);
             if(a.isInvisible()==on){a.setInvisible(!on);if(!on){a.setCustomNameVisible(false);if(phase==CARRIER)BorrascaCast.stop(a);}}
@@ -277,7 +284,7 @@ public final class BorrascaPeople {
     public static int cents(CompoundTag own){return own.getInt("Cents");}
     public static @Nullable ItemStack carried(ServerPlayer p,boolean wallet){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++){var s=inv.getItem(i);if(s.getItem() instanceof BorrascaPurseItem purse&&purse.wallet()==wallet&&p.getUUID().equals(BorrascaPurseItem.owner(s)))return s;}return null;}
     /** Leaving the town (or dying in it) leaves the money there: every purse of this reader's comes out of their inventory. */
-    public static void leave(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++){var s=inv.getItem(i);if(s.getItem() instanceof BorrascaPurseItem&&p.getUUID().equals(BorrascaPurseItem.owner(s)))inv.setItem(i,ItemStack.EMPTY);}}
+    public static void leave(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++){var s=inv.getItem(i);if(s.getItem() instanceof BorrascaPurseItem&&p.getUUID().equals(BorrascaPurseItem.owner(s)))inv.setItem(i,ItemStack.EMPTY);}BorrascaSupper.left(p);}
 
     // ---------------------------------------------------------------------------------------------------------------- talking and buying
     /** A word with a keeper: a greeting, then the counter for those who sell something. Returns false for anyone who is not a keeper. */
@@ -285,6 +292,8 @@ public final class BorrascaPeople {
         if(!keeper(a))return false;if(a.isInvisible())return true;
         int visit=own.getInt("Visit");boolean grown=visit>=3;int phase=a.phase();turn(a,p);
         boolean after=taken(own);
+        // 0.4.461: the church's people, at the supper's setting out.
+        if(phase>=VERN){BorrascaStory.say(p,a,BorrascaSupper.said(p,own,phase));return true;}
         if(phase==ODELL&&!grown){lollipop(p,own);return true;}
         if(phase==GUS&&!grown){BorrascaStory.say(p,a,after?GUS_AFTER:"Out. No kids in here.");return true;}
         if(phase==ROWE&&own.getBoolean("RoweOut")){BorrascaStory.say(p,a,grown?"Five minutes. Go on back to the society if you like.":after?ROWE_OUT_AFTER:"I'm on my break, hon. Don't touch the clocks.");return true;}

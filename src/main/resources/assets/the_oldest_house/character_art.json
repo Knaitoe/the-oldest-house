@@ -1926,5 +1926,45 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 160
+  },
+  {
+    "name": "literary_drisking_vern",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 161
+  },
+  {
+    "name": "literary_drisking_hollis",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 162
+  },
+  {
+    "name": "literary_drisking_pruitt",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 163
+  },
+  {
+    "name": "literary_drisking_corley",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 164
+  },
+  {
+    "name": "literary_drisking_neal",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 165
   }
 ]

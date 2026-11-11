@@ -27,7 +27,9 @@ public final class BorrascaFood extends Item {
         CANDY(false,3,.2F,"Soft at one corner from somebody's pocket.","Peanuts and caramel, stuck in your teeth."),
         LOLLIPOP(false,1,.1F,"Wrapped, on a paper stick.","It lasts a long time."),
         MALT(true,4,.4F,"Too thick for the straw, with a cherry on top.","The last of it rattles in the straw."),
-        BEER(true,1,.1F,"A long-neck, sweating.","Cold and thin.");
+        BEER(true,1,.1F,"A long-neck, sweating.","Cold and thin."),
+        /** 0.4.461: a slice off the church's dessert table (BorrascaSupper). */
+        PECAN(false,6,.5F,"A slice of pecan pie on a paper plate.","Dark and sweet, and the crust breaks clean.");
         final boolean drink;final int nutrition;final float saturation;final String hover,finished;
         Kind(boolean drink,int nutrition,float saturation,String hover,String finished){this.drink=drink;this.nutrition=nutrition;this.saturation=saturation;this.hover=hover;this.finished=finished;}
         /** The food each kind is: drinks can always be drunk; coffee gives a short burst of speed. */

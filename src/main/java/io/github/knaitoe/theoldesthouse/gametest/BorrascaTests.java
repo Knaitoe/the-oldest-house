@@ -2087,4 +2087,140 @@ public final class BorrascaTests {
             if(phase[0]==1){p.travel(Vec3.ZERO);if(distance>.02&&still[0]>5)moved[0]++;if(++still[0]>=80)phase[0]=2;}
             else if(phase[0]==3){p.setYRot(0);p.travel(new Vec3(0,0,1));}else p.travel(Vec3.ZERO);});
     }
+
+    /**
+     * 0.4.461, Borrasca life part 4 (docs/BORRASCA_SUPPER_0_4_461.md). The owner: "Put on the church supper from the noticeboard. Let
+     * the player help set out plates, take a slice of pie, and hear the adults talk about work and their kids. Prescott's truck
+     * brings the folding tables, and somebody thanks the driver for fixing their porch steps. Seeing that same company name at the
+     * depot later would give you a better sense of how much the town relies on him."
+     */
+    @AfterBatch(batch="borrasca_supper") public static void supperDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_supper",timeoutTicks=3600)
+    public static void theChurchSetsOutItsSupperAndAReaderMayCarryTablesLayPlacesAndTakeASlice(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_supper");var q=f.player("pine_pew");
+        final int first=BorrascaPeople.VERN,last=BorrascaPeople.NEAL;
+        java.util.function.BiFunction<ServerPlayer,Integer,LiteraryActor> person=(r,phase)->BorrascaPeople.keeper(r,f.own(r),phase);
+        java.util.function.Function<LiteraryActor,String> heard=who->who==null||who.getCustomName()==null?"":who.getCustomName().getString();
+        // A hand on one of the supper's places: the line shown, empty when one of the church's people spoke instead.
+        java.util.function.BiFunction<ServerPlayer,BlockPos,String> touch=(r,rel)->{var own=f.own(r);String line=BorrascaSupper.touch(r,f.base(r),rel,own);f.save(r,own);return line;};
+        java.util.function.BiFunction<ServerPlayer,Integer,String> ask=(r,phase)->{var own=f.own(r);var a=person.apply(r,phase);BorrascaPeople.talk(r,a,own);f.save(r,own);return heard.apply(a);};
+        java.util.function.BiFunction<ServerPlayer,BlockPos,BlockState> cell=(r,rel)->f.out.getBlockState(f.base(r).offset(rel));
+        java.util.function.ToIntFunction<ServerPlayer> tables=r->r.getInventory().countItem(BorrascaRegistry.FOLDING_TABLE.get()),plates=r->r.getInventory().countItem(BorrascaRegistry.PLATES.get()),slices=r->r.getInventory().countItem(BorrascaRegistry.PECAN_PIE.get());
+        // A table of one kind: two cells from west to east, the model's two halves.
+        record Table(ServerPlayer r,BlockPos[] at,BorrascaShopBlock.Kind kind){}
+        java.util.function.Predicate<Table> table=t->{for(int i=0;i<2;i++){var s=cell.apply(t.r(),t.at()[i]);if(!BorrascaShopBlock.is(s,t.kind())||s.getValue(BorrascaShopBlock.FACING)!=Direction.NORTH||s.getValue(BorrascaShopBlock.STAGE)!=i)return false;}return true;};
+        java.util.function.Predicate<ServerPlayer> untouched=r->{
+            for(var at:BorrascaSupper.BED){var s=cell.apply(r,at);if(!BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.TABLES)||s.getValue(BorrascaShopBlock.STAGE)!=0)return false;}
+            for(var spot:BorrascaSupper.SPOTS)if(!BorrascaShopBlock.is(cell.apply(r,spot[0]),BorrascaShopBlock.Kind.CLOTH)||!cell.apply(r,spot[1]).isAir())return false;
+            return table.test(new Table(r,BorrascaSupper.DESSERT,BorrascaShopBlock.Kind.FOLDING_SET))&&table.test(new Table(r,BorrascaSupper.STANDING,BorrascaShopBlock.Kind.FOLDING))&&BorrascaShopBlock.is(cell.apply(r,BorrascaSupper.PLATES),BorrascaShopBlock.Kind.PLATES);};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->{
+              // Before anyone has come: the verge and the lawn are clear where the supper goes, on ground, and none of it is on the gravel.
+              for(var r:List.of(p,q)){var b=f.base(r);
+                  for(var at:BorrascaSupper.cells(b)){var rel=at.subtract(b);
+                      h.assertTrue(f.out.getBlockState(at).isAir(),"nothing stands where the supper goes, at "+rel+": "+f.out.getBlockState(at));
+                      h.assertTrue(rel.getX()>=4&&(rel.getY()>0||f.out.getBlockState(at.below()).isCollisionShapeFullBlock(f.out,at.below())),"it is all off the street's gravel, on ground: "+rel);}
+                  for(int phase=first;phase<=last;phase++){var at=b.offset(BorrascaSupper.post(phase));
+                      h.assertTrue(f.out.getBlockState(at).isAir()&&f.out.getBlockState(at.above()).isAir()&&f.out.getBlockState(at.below()).isCollisionShapeFullBlock(f.out,at.below())&&!BorrascaSupper.cells(b).contains(at),"there is ground and room where each of its people stands: "+phase+" "+f.out.getBlockState(at));}
+                  f.enter(r);}
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled"),"the cast is in place for both readers"))
+          .thenWaitUntil(()->{for(var r:List.of(p,q)){h.assertTrue(BorrascaSupper.standing(f.out,f.base(r)),"the supper is being set out on the church's lawn");
+              for(int phase=first;phase<=last;phase++){var a=person.apply(r,phase);h.assertTrue(a!=null&&!a.isInvisible(),"and its people are there: "+phase);}}})
+          .thenExecute(()->{
+              var b=f.base(p);
+              // The company's pickup, on the verge and the grass, in the company's paint; the street's gravel is left clear.
+              for(int x=4;x<=6;x++){for(int z=-72;z<=-67;z++)h.assertTrue(cell.apply(p,new BlockPos(x,0,z)).getBlock() instanceof RoadhouseBlock,"the company's pickup stands beside the lawn: "+x+","+z);
+                  h.assertTrue(cell.apply(p,new BlockPos(x,1,-70)).getBlock() instanceof RoadhouseBlock,"with its cab");}
+              h.assertTrue(cell.apply(p,new BlockPos(5,0,-72)).equals(f.out.getBlockState(BorrascaRooms.at(b,13,0,-26))),"it is the same truck in the same paint as the company's in the square: "+cell.apply(p,new BlockPos(5,0,-72)));
+              for(int x=-3;x<=3;x++)for(int z=-74;z<=-64;z++)h.assertTrue(cell.apply(p,new BlockPos(x,0,z)).isAir()&&cell.apply(p,new BlockPos(x,1,z)).isAir(),"the street is clear beside it: "+x+","+z);
+              // The company's name across the tailgate, as on the truck in the square; this truck's own number under a hand.
+              for(int col=0;col<3;col++){var s=cell.apply(p,new BlockPos(4+col,0,-66));
+                  h.assertTrue(BorrascaSignBlock.is(s,BorrascaSigns.Sign.PRESCOTT)&&s.equals(f.out.getBlockState(BorrascaRooms.at(b,12+col,0,-20))),"the company's name is across its tailgate as it is across the truck's in the square: "+s);}
+              h.assertTrue(BorrascaSupper.TAILGATE.equals(touch.apply(p,new BlockPos(5,0,-66)))&&BorrascaSupper.TAILGATE.contains("PRESCOTT ORE SERVICES")&&BorrascaSupper.TAILGATE.contains("D-422")&&BorrascaSigns.Sign.PRESCOTT.look().contains("D-417"),"a hand on it reads the name and this truck's number, which is not the other truck's");
+              h.assertTrue(text(BorrascaTexts.document("Dispatch")).contains("D-422: folding tables to the church"),"the depot's dispatch sheet has that number against the church's tables");
+              {var own=f.own(p);own.remove("SupperTailgate");h.assertTrue(BorrascaStory.click(p,b,new BlockPos(4,0,-66),own)&&own.getBoolean("SupperTailgate"),"and the town's hand for its signs does not answer first with the other truck's number");f.save(p,own);}
+              // What is on the lawn: two tables in the bed, the dessert table laid, one bare, a cloth where each of the others goes.
+              h.assertTrue(untouched.test(p)&&untouched.test(q),"two tables ride in the bed, the dessert table is laid, one stands bare and a folded cloth marks where each of the others goes");
+              var pies=cell.apply(p,BorrascaSupper.PIES);h.assertTrue(BorrascaShopBlock.is(pies,BorrascaShopBlock.Kind.PIES)&&pies.getValue(BorrascaShopBlock.STAGE)==0,"three whole pies are on the dessert table: "+pies);
+              var bare=b.offset(BorrascaSupper.STANDING[0]);var cloth=b.offset(BorrascaSupper.SPOTS[0][0]);
+              h.assertTrue(!f.out.getBlockState(bare).getCollisionShape(f.out,bare).isEmpty()&&f.out.getBlockState(cloth).getCollisionShape(f.out,cloth).isEmpty()&&!f.out.getBlockState(cloth).getShape(f.out,cloth).isEmpty(),"a table stops a walker; a cloth does not, and a hand finds it");
+              // Its people, each where they stand.
+              String[] names={"Vern","Mrs. Hollis","Mrs. Pruitt","Mrs. Corley","Brother Neal"};
+              for(int phase=first;phase<=last;phase++){var a=person.apply(p,phase);
+                  h.assertTrue(BorrascaPeople.name(a).equals(names[phase-first])&&a.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaSupper.post(phase))))<.6,"each of them is where they stand: "+BorrascaPeople.name(a)+" "+a.position());}
+              // Empty-handed, a hand finds what is there and changes nothing.
+              h.assertTrue(BorrascaSupper.CLOTH_LINE.equals(touch.apply(p,BorrascaSupper.SPOTS[0][0]))&&BorrascaSupper.TABLE_BARE.equals(touch.apply(p,BorrascaSupper.STANDING[1]))&&BorrascaSupper.DESSERT_TABLE.equals(touch.apply(p,BorrascaSupper.DESSERT[0]))&&BorrascaSupper.TRUCK.equals(touch.apply(p,new BlockPos(5,0,-71)))&&touch.apply(p,new BlockPos(7,0,-69))==null,"empty-handed, a hand finds only what is there; the grass between is none of the supper's");
+              h.assertTrue(f.own(p).getInt("SupperPlaced")==0&&f.own(p).getInt("SupperLaid")==0&&untouched.test(p),"and changes nothing");
+              h.assertTrue(ask.apply(p,BorrascaPeople.VERN).contains(BorrascaSupper.VERN_FIRST)&&ask.apply(p,BorrascaPeople.MRS_HOLLIS).contains(BorrascaSupper.HOLLIS_TABLES)&&ask.apply(p,BorrascaPeople.MRS_CORLEY).contains(BorrascaSupper.CORLEY_FIRST)&&ask.apply(p,BorrascaPeople.MRS_CORLEY).contains(BorrascaSupper.CORLEY_NEXT)
+                  &&ask.apply(p,BorrascaPeople.NEAL).contains(BorrascaSupper.NEAL_FIRST)&&ask.apply(p,BorrascaPeople.NEAL).contains(BorrascaSupper.NEAL_NEXT)&&BorrascaSupper.NEAL_NEXT.contains("Mr. Prescott lends the tables"),"each has a word for a child who comes up; the pastor's second is who lends the tables");
+              // Tables off the truck, one at a time, each stood where a cloth is.
+              var vern=person.apply(p,BorrascaPeople.VERN);
+              h.assertTrue(BorrascaSupper.TOOK_TABLE.equals(touch.apply(p,BorrascaSupper.BED[0]))&&tables.applyAsInt(p)==1&&heard.apply(vern).contains(BorrascaSupper.VERN_NEXT),"a hand in the bed takes a table, and the driver has a word about fingers: "+heard.apply(vern));
+              for(var at:BorrascaSupper.BED){var s=cell.apply(p,at);h.assertTrue(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.TABLES)&&s.getValue(BorrascaShopBlock.STAGE)==1,"one is left in the bed: "+s);}
+              h.assertTrue("".equals(touch.apply(p,BorrascaSupper.BED[1]))&&heard.apply(vern).contains(BorrascaSupper.VERN_ONE)&&tables.applyAsInt(p)==1,"a second is not taken while the first is carried: "+heard.apply(vern));
+              h.assertTrue(BorrascaSupper.TABLE_UP.equals(touch.apply(p,BorrascaSupper.SPOTS[1][0]))&&tables.applyAsInt(p)==0&&table.test(new Table(p,BorrascaSupper.SPOTS[1],BorrascaShopBlock.Kind.FOLDING))&&f.own(p).getInt("SupperPlaced")==2,"set down on a cloth it stands there, bare, in the cloth's place");
+              h.assertTrue(BorrascaSupper.TOOK_TABLE.equals(touch.apply(p,new BlockPos(5,0,-67)))&&tables.applyAsInt(p)==1&&cell.apply(p,BorrascaSupper.BED[0]).isAir()&&cell.apply(p,BorrascaSupper.BED[1]).isAir(),"the other comes off over the tailgate, and the bed is empty");
+              h.assertTrue(BorrascaSupper.TABLE_UP.equals(touch.apply(p,BorrascaSupper.SPOTS[0][0]))&&table.test(new Table(p,BorrascaSupper.SPOTS[0],BorrascaShopBlock.Kind.FOLDING))&&BorrascaSupper.stood(f.own(p))==2&&BorrascaSupper.BED_EMPTY.equals(touch.apply(p,new BlockPos(5,0,-68)))&&tables.applyAsInt(p)==0,"both stand, and the truck has no more");
+              h.assertTrue(ask.apply(p,BorrascaPeople.VERN).contains(BorrascaSupper.VERN_DONE)&&ask.apply(p,BorrascaPeople.MRS_HOLLIS).contains(BorrascaSupper.HOLLIS_PLATES),"the driver says that is the lot; Mrs. Hollis says where the plates are");
+              // The plates, and the three bare tables laid.
+              h.assertTrue(BorrascaSupper.TOOK_PLATES.equals(touch.apply(p,BorrascaSupper.PLATES))&&plates.applyAsInt(p)==1&&BorrascaSupper.PLATES_HELD.equals(touch.apply(p,BorrascaSupper.PLATES))&&plates.applyAsInt(p)==1,"the plates come off the dessert table, one stack");
+              h.assertTrue(BorrascaSupper.LAID_IT.equals(touch.apply(p,BorrascaSupper.STANDING[1]))&&table.test(new Table(p,BorrascaSupper.STANDING,BorrascaShopBlock.Kind.FOLDING_SET))&&BorrascaSupper.TABLE_LAID.equals(touch.apply(p,BorrascaSupper.STANDING[0])),"a bare table is laid, and a laid one is left alone");
+              var hollis=person.apply(p,BorrascaPeople.MRS_HOLLIS);
+              h.assertTrue(BorrascaSupper.LAID_IT.equals(touch.apply(p,BorrascaSupper.SPOTS[0][1]))&&plates.applyAsInt(p)==1&&BorrascaSupper.LAID_IT.equals(touch.apply(p,BorrascaSupper.SPOTS[1][0]))&&plates.applyAsInt(p)==0&&table.test(new Table(p,BorrascaSupper.SPOTS[0],BorrascaShopBlock.Kind.FOLDING_SET))&&table.test(new Table(p,BorrascaSupper.SPOTS[1],BorrascaShopBlock.Kind.FOLDING_SET))
+                  &&heard.apply(hollis).contains(BorrascaSupper.HOLLIS_DONE),"with the third laid the plates are used up, and Mrs. Hollis says so: "+heard.apply(hollis));
+              h.assertTrue(BorrascaSupper.PLATES_LEFT.equals(touch.apply(p,BorrascaSupper.PLATES))&&plates.applyAsInt(p)==0,"there are no more to lay");
+              // A slice of the pecan.
+              var pruitt=person.apply(p,BorrascaPeople.MRS_PRUITT);
+              h.assertTrue("".equals(touch.apply(p,BorrascaSupper.PIES))&&slices.applyAsInt(p)==1&&heard.apply(pruitt).contains(BorrascaSupper.PRUITT_PIE)&&BorrascaSupper.PRUITT_PIE.contains("my Dana's")&&cell.apply(p,BorrascaSupper.PIES).getValue(BorrascaShopBlock.STAGE)==1,"a hand at the pies is given a slice of the pecan, which was her daughter's, and the pie shows it: "+heard.apply(pruitt));
+              h.assertTrue(BorrascaSupper.PIES_CUT.equals(touch.apply(p,BorrascaSupper.PIES))&&slices.applyAsInt(p)==1&&ask.apply(p,BorrascaPeople.MRS_PRUITT).contains(BorrascaSupper.PRUITT_AFTER),"one slice, and the rest at six");
+              h.assertTrue(BorrascaRegistry.PECAN_PIE.get().kind()==BorrascaFood.Kind.PECAN&&BorrascaRegistry.PECAN_PIE.get()!=BorrascaRegistry.PIE.get(),"it is the church's own slice, not the diner's");
+              // The account has what was done, and not what was not heard: neither reader has been near the lawn.
+              var told=BorrascaSupper.told(f.own(p));
+              h.assertTrue(told.contains("two folding tables off the Prescott truck and set places")&&told.contains("slice of the pecan")&&!told.contains("porch steps")&&f.own(p).getInt("SupperChat")==0&&BorrascaTexts.account(f.own(p)).contains(told),"the account has what the reader did, and nothing it did not hear: "+told);
+              h.assertTrue(BorrascaSupper.told(new CompoundTag()).isEmpty()&&BorrascaSupper.told(f.own(q)).isEmpty(),"and nothing for a reader who had no hand in it");
+              // The other reader's lawn is their own.
+              h.assertTrue(untouched.test(q)&&cell.apply(q,BorrascaSupper.PIES).getValue(BorrascaShopBlock.STAGE)==0&&tables.applyAsInt(q)+plates.applyAsInt(q)+slices.applyAsInt(q)==0,"nothing the first reader did is done on the second's lawn");
+              // Asked first, she offers it; the hand then takes it without another word from her.
+              h.assertTrue(ask.apply(q,BorrascaPeople.MRS_PRUITT).contains(BorrascaSupper.PRUITT_PIE)&&BorrascaSupper.PIES_TOOK.equals(touch.apply(q,BorrascaSupper.PIES))&&slices.applyAsInt(q)==1,"asked first, she offers; the slice is taken without her saying it twice");
+              // A table and plates in the pack of a reader who goes are the lawn's, and the lawn is cleared behind them.
+              h.assertTrue(BorrascaSupper.TOOK_TABLE.equals(touch.apply(q,BorrascaSupper.BED[0]))&&BorrascaSupper.TOOK_PLATES.equals(touch.apply(q,BorrascaSupper.PLATES))&&tables.applyAsInt(q)==1&&plates.applyAsInt(q)==1,"the second reader takes a table and the plates");
+              BorrascaPeople.leave(q);
+              h.assertTrue(tables.applyAsInt(q)==0&&plates.applyAsInt(q)==0&&slices.applyAsInt(q)==1,"going, they keep the slice and nothing else of the lawn's");
+              var c=f.base(q);h.assertTrue(!BorrascaSupper.standing(f.out,c),"and the lawn is cleared behind them");
+              for(var at:BorrascaSupper.cells(c))h.assertTrue(f.out.getBlockState(at).isAir(),"to the last block: "+at.subtract(c)+" "+f.out.getBlockState(at));
+              h.assertTrue(BorrascaSupper.standing(f.out,b)&&table.test(new Table(p,BorrascaSupper.SPOTS[0],BorrascaShopBlock.Kind.FOLDING_SET)),"the first reader's is as they laid it");
+              // The first reader comes up to the lawn, and hears its talk.
+              f.atWorld(p,new BlockPos(7,0,-64));
+          }).thenWaitUntil(()->h.assertTrue(untouched.test(q)&&cell.apply(q,BorrascaSupper.PIES).getValue(BorrascaShopBlock.STAGE)==1,"still there on the same day, the second reader finds the lawn laid again as they left it: the carried table back in the truck, the pie cut"))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("SupperChat")>=1&&heard.apply(person.apply(p,BorrascaPeople.MRS_CORLEY)).contains("Thank you for the porch steps, Vern. I never even asked."),"near the lawn the reader hears Mrs. Corley thank the driver for her porch steps: "+f.own(p).getInt("SupperChat")+" "+heard.apply(person.apply(p,BorrascaPeople.MRS_CORLEY))))
+          .thenExecute(()->{var corley=person.apply(p,BorrascaPeople.MRS_CORLEY);var vern=person.apply(p,BorrascaPeople.VERN);
+              double want=Math.atan2(vern.getZ()-corley.getZ(),vern.getX()-corley.getX())*180/Math.PI-90;
+              h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(corley.getYRot()-want))<1,"she has turned to him to say it: "+corley.getYRot()+" for "+want);
+              h.assertTrue(!BorrascaSupper.heardSteps(f.own(p)),"half of it is not the whole");})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("SupperChat")>=2&&heard.apply(person.apply(p,BorrascaPeople.VERN)).contains("Mr. Prescott likes things kept up, ma'am. It was no trouble."),"and the driver says whose doing it was: "+heard.apply(person.apply(p,BorrascaPeople.VERN))))
+          .thenExecute(()->{
+              var told=BorrascaSupper.told(f.own(p));
+              h.assertTrue(BorrascaSupper.heardSteps(f.own(p))&&told.contains("Mrs. Corley thanked the driver for her porch steps. She said she had never asked.")&&BorrascaTexts.account(f.own(p)).contains(told),"the account has it then: "+told);
+              // The rest of the talk is of work and of their children, each line from one of the five to another.
+              var all=new StringBuilder();
+              for(var line:BorrascaSupper.CHAT){all.append(line.words()).append(' ');h.assertTrue(line.who()>=first&&line.who()<=last&&line.to()>=first&&line.to()<=last&&line.who()!=line.to(),"each line is from one of them to another: "+line.words());}
+              h.assertTrue(all.indexOf("on nights")>=0&&all.indexOf("time and a half")>=0&&all.indexOf("Katelyn")>=0&&all.indexOf("your two")>=0&&all.indexOf("Bring the children")>=0&&all.indexOf("Mr. Prescott says keep them")>=0,"the talk is of work, of their children, and of whose tables they are");
+              // The second day. A table carried off the lawn does not come with the reader.
+              p.getInventory().add(new ItemStack(BorrascaRegistry.FOLDING_TABLE.get()));
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==2,"second visit: "+BorrascaCast.why(p)))
+          .thenWaitUntil(()->h.assertTrue(!BorrascaSupper.standing(f.out,f.base(p)),"on the second visit the supper is not there"))
+          .thenExecute(()->{
+              var b=f.base(p);
+              for(var at:BorrascaSupper.cells(b))h.assertTrue(f.out.getBlockState(at).isAir(),"nothing of it is left on the lawn or the verge: "+at.subtract(b)+" "+f.out.getBlockState(at));
+              for(int phase=first;phase<=last;phase++){var a=person.apply(p,phase);h.assertTrue(a==null||a.isInvisible(),"and its people are not there: "+phase);}
+              h.assertTrue(tables.applyAsInt(p)==0&&slices.applyAsInt(p)==1,"a table in the pack went with it; the slice of pie is the reader's");
+              {var own=f.own(p);h.assertTrue(!BorrascaSupper.click(p,b,BorrascaSupper.PIES,own)&&!BorrascaSupper.told(own).isEmpty(),"a hand finds nothing of it there now, and the account keeps it");}
+              // The tables, put away where they came from.
+              var yard=BorrascaRooms.at(b,BorrascaSupper.PUT_AWAY);var stack=f.out.getBlockState(yard);
+              h.assertTrue(BorrascaShopBlock.is(stack,BorrascaShopBlock.Kind.FOLDED)&&!stack.getCollisionShape(f.out,yard).isEmpty()&&f.out.getBlockState(yard.below()).isCollisionShapeFullBlock(f.out,yard.below())&&f.out.getBlockState(yard.above()).isAir(),"the tables are stacked away on the ground of the depot's yard: "+stack+" on "+f.out.getBlockState(yard.below())+" under "+f.out.getBlockState(yard.above()));
+              h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(yard.south()),BorrascaShopBlock.Kind.DRUM)&&f.out.getBlockState(yard.east()).is(Blocks.GRAY_CONCRETE),"past the drums, against the refinery's wall: "+f.out.getBlockState(yard.south())+" "+f.out.getBlockState(yard.east()));
+              h.assertTrue(BorrascaShopTexts.look(BorrascaShopBlock.Kind.FOLDED,0,true).contains("Folding tables")&&BorrascaShopTexts.look(BorrascaShopBlock.Kind.FOLDED,0,true).contains("pie dish"),"and a hand on them finds where a pie dish stood");
+          }).thenSucceed();
+    }
 }

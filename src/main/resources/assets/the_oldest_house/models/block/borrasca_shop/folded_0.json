@@ -1,0 +1,215 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "u": "the_oldest_house:block/borrasca_shop/folding_under",
+    "r": "the_oldest_house:block/borrasca_shop/folding_ring",
+    "particle": "the_oldest_house:block/borrasca_shop/folding"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        0
+      ],
+      "to": [
+        15,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            14,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            14,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1.6,
+        2,
+        0
+      ],
+      "to": [
+        15.6,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            14,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            14,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0.6,
+        4,
+        0
+      ],
+      "to": [
+        14.6,
+        6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            14,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            14,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#u",
+          "uv": [
+            0,
+            13,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

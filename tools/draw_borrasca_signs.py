@@ -467,10 +467,16 @@ def county(rnd):
 
 
 def prescott(rnd):
-    """Lettered on Prescott's tailgate in white, with the firm's mark."""
+    """Lettered on Prescott's tailgate in white, with the firm's mark, on a band of dark paint between the lamps.
+    0.4.461: the band, and the mark made small enough to stand inside it. The name ran across the pickup's licence plate, white
+    on white, so its middle could not be read, and the mark lay over the left lamp."""
     im = canvas(48, 16)
-    centre(im, 5, 'PRESCOTT', '#f1eee4', x0=10)
-    stamp(im, 3, 5, DIAMOND, {'#': '#e2b93b'})
+    px = im.load()
+    for x in range(5, 43):
+        for y in range(4, 11):
+            px[x, y] = tone('#18221a', (x * 7 + y * 13) % 3 - 1)
+    write(im, 11, 5, 'PRESCOTT', '#f1eee4')
+    stamp(im, 6, 6, ['.#.', '###', '.#.'], {'#': '#e2b93b'})
     return im, None
 
 
