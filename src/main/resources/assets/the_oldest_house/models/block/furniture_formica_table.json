@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "formica": "the_oldest_house:block/formica",
-    "metal_legs": "the_oldest_house:block/metal_legs",
-    "particle": "the_oldest_house:block/formica"
+    "formica": "the_oldest_house:block/household/formica",
+    "metal_legs": "the_oldest_house:block/household/metal_legs",
+    "particle": "the_oldest_house:block/household/formica"
   },
   "elements": [
     {

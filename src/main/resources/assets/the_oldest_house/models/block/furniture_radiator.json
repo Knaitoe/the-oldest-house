@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "enamel": "the_oldest_house:block/enamel",
-    "metal_legs": "the_oldest_house:block/metal_legs",
-    "particle": "the_oldest_house:block/enamel"
+    "enamel": "the_oldest_house:block/household/enamel",
+    "metal_legs": "the_oldest_house:block/household/metal_legs",
+    "particle": "the_oldest_house:block/household/enamel"
   },
   "elements": [
     {

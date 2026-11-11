@@ -78,6 +78,7 @@ jobs:
           python3 tools/draw_borrasca_signs.py --check
           python3 tools/draw_borrasca_papers.py --check
           python3 tools/draw_reading_desk.py --check
+          python3 tools/draw_household_furniture.py --check
           python3 tools/draw_shiny_gentleman.py --check
           python3 tools/generate_bath_decay_assets.py --check
           python3 tools/draw_reading_stands.py --check
