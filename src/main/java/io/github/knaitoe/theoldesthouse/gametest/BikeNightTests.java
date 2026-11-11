@@ -412,6 +412,9 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_bars") public static void barsDone(ServerLevel l){done();}
     @AfterBatch(batch="park_seesaw") public static void seesawDone(ServerLevel l){done();}
     @AfterBatch(batch="park_round") public static void roundDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_small") public static void smallDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_dome") public static void domeDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_spring") public static void springDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="park_built",timeoutTicks=2400)
     public static void theParkIsBuiltWholeOfItsOwnThingsWithSixBikesInTheRack(GameTestHelper h){
@@ -621,6 +624,7 @@ public final class BikeNightTests {
             new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
             new Thing(BikeNightSite.SLIDE,BikeNightTexts.SLIDE),new Thing(BikeNightSite.slideEnd(),BikeNightTexts.SLIDE),
             new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),new Thing(BikeNightSite.SEESAW,BikeNightTexts.SEESAW),new Thing(BikeNightSite.ROUNDABOUT,BikeNightTexts.ROUNDABOUT),
+            new Thing(BikeNightSite.DOME.above(),BikeNightTexts.DOME),new Thing(new BlockPos(-5,0,-23),BikeNightTexts.CARVED),new Thing(BikeNightSite.FOUNTAIN,BikeNightTexts.FOUNTAIN),new Thing(BikeNightSite.PHONE,BikeNightTexts.PHONE),
             new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -633,7 +637,9 @@ public final class BikeNightTests {
                 BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE,
                 BikeNightTexts.BARS,BikeNightTexts.BARS_LOW,BikeNightTexts.BARS_ON,BikeNightTexts.BARS_FAR,BikeNightTexts.BARS_HINT,BikeNightTexts.BARS_ACROSS,BikeNightTexts.BARS_EARLY,BikeNightTexts.SEESAW_THROWN,BikeNightTexts.SEESAW_THREW,
                 BikeNightTexts.SEESAW,BikeNightTexts.SEESAW_TAKEN,BikeNightTexts.SEESAW_HINT,
-                BikeNightTexts.ROUNDABOUT,BikeNightTexts.ROUNDABOUT_ON,BikeNightTexts.ROUNDABOUT_FAR,BikeNightTexts.ROUNDABOUT_HINT)){
+                BikeNightTexts.ROUNDABOUT,BikeNightTexts.ROUNDABOUT_ON,BikeNightTexts.ROUNDABOUT_FAR,BikeNightTexts.ROUNDABOUT_HINT,
+                BikeNightTexts.DOME,BikeNightTexts.DOME_TOP,BikeNightTexts.SPRING,BikeNightTexts.SPRING_TAKEN,BikeNightTexts.SPRING_HINT,
+                BikeNightTexts.CARVED,BikeNightTexts.FOUNTAIN,BikeNightTexts.FOUNTAIN_RUNNING,BikeNightTexts.PHONE,BikeNightTexts.PHONE_HELD)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -1413,5 +1419,202 @@ public final class BikeNightTests {
                 var three=String.join(" ",BikeNightTexts.account("round_three",rode).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
                 h.assertTrue(one.contains("pushed the merry-go-round")&&two.contains("it threw me off")&&three.contains("round on the merry-go-round three times"),"and their accounts have it: "+one+" / "+two+" / "+three);
             }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_small",timeoutTicks=2400)
+    public static void theFountainRunsThePayphoneWantsACoinAndOneBenchIsCarved(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};
+        var fountain=b.offset(BikeNightSite.FOUNTAIN);var phone=b.offset(BikeNightSite.PHONE);var bench=b.offset(-5,0,-23);
+        double fx=BikeNightSite.FOUNTAIN.getX()+.5,fz=BikeNightSite.FOUNTAIN.getZ()+.5;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                var s=l.getBlockState(fountain);
+                h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.FOUNTAIN)&&s.getValue(CalderBlock.STAGE)==0&&l.getBlockState(fountain.below()).is(Blocks.GRASS_BLOCK),"a drinking fountain on the grass by the side path, not running: "+s);
+                h.assertTrue(Math.abs(s.getCollisionShape(l,fountain).max(Direction.Axis.Y)-(CalderBlock.FOUNTAIN_HIGH+3)/16.)<1e-9&&(CalderBlock.FOUNTAIN_HIGH+3)/16.<.7,"its bowl is under a child's chin: "+s.getCollisionShape(l,fountain).max(Direction.Axis.Y));
+                var ph=l.getBlockState(phone);
+                h.assertTrue(CalderBlock.is(ph,CalderBlock.Kind.PHONE)&&ph.getValue(CalderBlock.STAGE)==0&&ph.getValue(CalderBlock.FACING)==Direction.NORTH&&l.getBlockState(phone.south()).is(BikeNightRegistry.material("brick")),"a payphone on the back wall, its handset on its hook: "+ph);
+                var seat=l.getBlockState(bench);
+                h.assertTrue(CalderBlock.is(seat,CalderBlock.Kind.BENCH)&&seat.getValue(CalderBlock.STAGE)==CalderBlock.CARVED,"the bench by the playground is the carved one: "+seat);
+                p[0]=f.player("small_one",P);p[1]=f.player("small_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            // The fountain runs for whoever presses its button, and is running for everybody while it does.
+            .thenExecute(()->{f.at(p[0],P,fx,0,fz+1.6);f.at(p[1],P,fx+1.6,0,fz);hush(p[0]);hush(p[1]);hand(p[0],fountain);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.FOUNTAIN)&&sounded(p[0],"park.fountain")&&sounded(p[1],"park.fountain"),"a hand on the fountain drinks from it, and it is heard by both"))
+            .thenExecute(()->{
+                h.assertTrue(l.getBlockState(fountain).getValue(CalderBlock.STAGE)==CalderBlock.RUNNING&&f.own(p[0],P).getBoolean("Drank"),"it runs, and they drank");
+                hand(p[1],fountain);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.FOUNTAIN_RUNNING),"another hand while it runs is told it is running"))
+            .thenExecute(()->h.assertTrue(!f.own(p[1],P).getBoolean("Drank"),"and has not drunk"))
+            .thenWaitUntil(()->h.assertTrue(l.getBlockState(fountain).getValue(CalderBlock.STAGE)==0,"it stops by itself"))
+            .thenExecute(()->{hush(p[1]);hand(p[1],fountain);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.FOUNTAIN)&&f.own(p[1],P).getBoolean("Drank"),"then the second reader drinks"))
+            // The payphone gives a dial tone and wants a coin; its handset goes back on its hook by itself.
+            .thenExecute(()->{f.at(p[0],P,BikeNightSite.PHONE.getX()+.5,0,BikeNightSite.PHONE.getZ()-1.2);hush(p[0]);hand(p[0],phone);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.PHONE)&&sounded(p[0],"park.phone_tone"),"a hand on the payphone lifts its handset: a dial tone, and no coin"))
+            .thenExecute(()->{
+                h.assertTrue(l.getBlockState(phone).getValue(CalderBlock.STAGE)==CalderBlock.LIFTED&&f.own(p[0],P).getBoolean("Phoned"),"its handset is off its hook");
+                hand(p[0],phone);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.PHONE_HELD),"a hand on it again: the tone goes on"))
+            .thenWaitUntil(()->h.assertTrue(l.getBlockState(phone).getValue(CalderBlock.STAGE)==0&&sounded(p[0],"park.phone_hook"),"it is hung up again, and that is heard"))
+            // The carved bench says what is cut into it.
+            .thenExecute(()->{f.at(p[0],P,-3.5,0,-22.5);hush(p[0]);hand(p[0],bench);})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.CARVED),"a hand on the carved bench reads the heart and the initials"))
+            .thenExecute(()->{
+                String one=told("small_one",p[0],f),two=told("small_two",p[1],f);
+                h.assertTrue(one.contains("drank from the fountain, and lifted the payphone")&&two.contains("The water tasted of the pipe")&&!two.contains("payphone"),"and their accounts have what each did: "+one+" / "+two);
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_dome",timeoutTicks=2400)
+    public static void theDomeIsClimbedOnEveryBarStoodOnAtItsTopAndGotIntoKeepingLow(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};
+        var mid=b.offset(BikeNightSite.DOME);double cx=BikeNightSite.DOME.getX()+.5,cz=BikeNightSite.DOME.getZ()+.5,top=26/16.;
+        // How high over the sand the dome stops a body, over a spot; less than nothing where it does not.
+        java.util.function.BiFunction<Double,Double,Double> stops=(x,z)->{
+            double high=-1,wx=b.getX()+x,wz=b.getZ()+z;
+            for(int y=0;y<DomeBlock.HIGH;y++){
+                var at=BlockPos.containing(wx,b.getY()+y+.5,wz);var s=l.getBlockState(at);if(!DomeBlock.is(s))continue;
+                for(var box:s.getCollisionShape(l,at).toAabbs()){var m=box.move(at);if(m.minX<=wx&&wx<m.maxX&&m.minZ<=wz&&wz<m.maxZ)high=Math.max(high,m.maxY-b.getY());}
+            }
+            return high;
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                int cells=0,kept=0,edging=0;double lowest=9,highest=0;
+                for(int y=0;y<DomeBlock.HIGH;y++)for(int x=0;x<DomeBlock.WIDE;x++)for(int z=0;z<DomeBlock.WIDE;z++){
+                    var at=mid.offset(x-DomeBlock.MID,y,z-DomeBlock.MID);var s=l.getBlockState(at);
+                    // Its ground's outside row runs out over the sandpit's edging to the west and the south: the edging stays.
+                    if(y==0&&(x==0||z==DomeBlock.WIDE-1)&&CalderBlock.is(s,CalderBlock.Kind.BORDER)){edging++;continue;}
+                    h.assertTrue(DomeBlock.is(s)&&s.getValue(DomeBlock.X)==x&&s.getValue(DomeBlock.Y)==y&&s.getValue(DomeBlock.Z)==z&&DomeBlock.middle(at,s).equals(mid),"the dome's ground at "+x+","+y+","+z+": "+s);
+                    cells++;if(l.getBlockEntity(at)!=null)kept++;
+                    if(y==0)h.assertTrue(l.getBlockState(at.below()).is(Blocks.SAND),"it stands on the sand");
+                    for(var box:s.getCollisionShape(l,at).toAabbs()){lowest=Math.min(lowest,box.minY+y);highest=Math.max(highest,box.maxY+y);}
+                }
+                h.assertTrue(cells==41&&edging==9&&kept==1&&l.getBlockEntity(mid) instanceof DomeBlock.Bars,"forty-one cells and the nine timbers of the edging they stop at, and only the middle cell on the sand keeps what draws it: "+cells+", "+edging);
+                for(int x=1;x<4;x++)for(int z=1;z<4;z++)for(int y=0;y<DomeBlock.HIGH;y++)h.assertTrue(DomeBlock.is(l.getBlockState(mid.offset(x-DomeBlock.MID,y,z-DomeBlock.MID))),"every cell its bars are in is there");
+                // Its bars: eight feet, two rings of eight and a top, every joint on the one ball; fifty-six bars, each about a child's reach long.
+                h.assertTrue(DomeBlock.JOINTS.size()==25&&DomeBlock.BARS.size()==56,"twenty-five joints and fifty-six bars");
+                var heart=new Vec3(0,DomeBlock.HEART,0);
+                for(var joint:DomeBlock.JOINTS)h.assertTrue(Math.abs(joint.distanceTo(heart)-DomeBlock.BALL)<1e-9&&joint.y>-1e-9,"every joint is on the one ball, over the sand: "+joint);
+                for(var bar:DomeBlock.BARS){double length=DomeBlock.JOINTS.get(bar[0]).distanceTo(DomeBlock.JOINTS.get(bar[1]));h.assertTrue(length>.5&&length<1.2,"a bar about a child's reach long: "+length);}
+                var used=new java.util.HashSet<Integer>();for(var bar:DomeBlock.BARS){used.add(bar[0]);used.add(bar[1]);}
+                h.assertTrue(used.size()==25,"and a bar on every joint");
+                // What stops a body: nothing under its first ring; from there the skin, up to the top.
+                h.assertTrue(Math.abs(lowest-14/16.)<1e-9&&Math.abs(highest-top)<1e-9,"it stops a body from its first ring up to its top: "+lowest+" to "+highest);
+                h.assertTrue(Math.abs(stops.apply(cx,cz)-top)<1e-9&&stops.apply(cx+1.35,cz)<0&&stops.apply(cx+2,cz)<0&&stops.apply(cx+1,cz+1)<0,"its top over its middle; nothing past its first ring");
+                // From the first ring to the top the skin is walked up: every way, each step in is no lower and no more than three pixels higher.
+                for(double round=0;round<Math.PI*2;round+=Math.PI/8){
+                    double before=-1;
+                    for(double out=1.2;out>=0;out-=.125){
+                        double here=stops.apply(cx+out*Math.cos(round),cz+out*Math.sin(round));
+                        h.assertTrue(here>0&&here>=before-1e-9&&(before<0||here-before<=3/16.+1e-9),"the skin is walked up from its first ring to its top, "+Math.toDegrees(round)+" round, "+out+" out: "+before+" then "+here);
+                        before=here;
+                    }
+                }
+                p[0]=f.player("dome_one",P);p[1]=f.player("dome_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenWaitUntil(()->h.assertTrue(p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1,"readers here are children"))
+            .thenExecute(()->{
+                double half=p[0].getBbWidth()/2,tall=p[0].getBbHeight(),low=tall*1.5/1.8;
+                // Whether a body that tall has room on the sand, that far east of the dome's middle.
+                java.util.function.BiFunction<Double,Double,Boolean> fits=(out,high)->l.noCollision(new AABB(b.getX()+cx+out-half,b.getY()+.001,b.getZ()+cz-half,b.getX()+cx+out+half,b.getY()+high,b.getZ()+cz+half));
+                f.at(p[0],P,cx+4,0,cz+3);f.at(p[1],P,cx+4,0,cz-3);
+                h.assertTrue(fits.apply(0.,tall)&&fits.apply(.5,tall),"inside it there is room for a child to stand");
+                h.assertTrue(!fits.apply(1.15,tall)&&fits.apply(1.15,low)&&fits.apply(1.6,tall),"a child standing does not get in under its first ring; one keeping low does: "+tall+", "+low);
+                // Every bar is a rung: a body at the skin is on a ladder, inside it or out; in the middle of it, or away from it, it is not.
+                f.at(p[0],P,cx+1.45,0,cz);h.assertTrue(p[0].onClimbable(),"at its foot, outside it");
+                f.at(p[0],P,cx+1.3,.6,cz);h.assertTrue(p[0].onClimbable(),"part of the way up the outside of it");
+                f.at(p[0],P,cx,0,cz-1);h.assertTrue(p[0].onClimbable(),"inside it, against its bars");
+                f.at(p[0],P,cx,0,cz);h.assertTrue(!p[0].onClimbable(),"standing in the middle of it is not climbing it");
+                f.at(p[0],P,cx-2.3,0,cz);h.assertTrue(!p[0].onClimbable(),"nor is standing off from it");
+                // A hand on it says what it is, and how it is climbed and got into.
+                hush(p[1]);f.at(p[1],P,cx+2.2,0,cz);hand(p[1],mid.above());
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.DOME),"a hand on the dome says what it is"))
+            // Standing on its top a reader is told, once, what is to be seen from there.
+            .thenExecute(()->{hush(p[0]);f.at(p[0],P,cx,top,cz);h.assertTrue(DomeBlock.onTop(mid,p[0])&&!DomeBlock.onTop(mid,p[1]),"one of them is on its top");})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.DOME_TOP)&&f.own(p[0],P).getBoolean("DomeTop"),"told what is to be seen from the top"))
+            .thenExecute(()->{h.assertTrue(!f.own(p[1],P).getBoolean("DomeTop"),"which is theirs alone");hush(p[0]);f.at(p[0],P,cx+4,0,cz+3);})
+            .thenIdle(12)
+            .thenExecute(()->f.at(p[0],P,cx,top,cz))
+            .thenIdle(12)
+            .thenExecute(()->{
+                h.assertTrue(!heard(p[0],BikeNightTexts.DOME_TOP),"and told once only");
+                // There is room on it for two.
+                double out=.4;f.at(p[1],P,cx+out,stops.apply(cx+out,cz),cz);
+                h.assertTrue(DomeBlock.onTop(mid,p[1])&&DomeBlock.onTop(mid,p[0]),"two of them on its top");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.DOME_TOP)&&f.own(p[1],P).getBoolean("DomeTop"),"and the second is told as well"))
+            .thenExecute(()->{
+                String one=told("dome_one",p[0],f);
+                h.assertTrue(one.contains("top of the climbing dome"),"and their account has it: "+one);
+            }).thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="park_spring",timeoutTicks=3000)
+    public static void theSpringRiderLeansWithItsRiderAndGoesFurtherWhenItIsRocked(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final SpringBlock.Rocker[] r={null};final double[] far={0,0};
+        var foot=b.offset(BikeNightSite.SPRING);var facing=BikeNightSite.SPRING_FACING;double sx=BikeNightSite.SPRING.getX()+.5,sz=BikeNightSite.SPRING.getZ()+.5;
+        double held=SpringBlock.Rocker.LEAN/SpringBlock.Rocker.SPRING;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                var s=l.getBlockState(foot);
+                h.assertTrue(SpringBlock.is(s,SpringBlock.Part.FOOT)&&s.getValue(SpringBlock.FACING)==facing&&l.getBlockState(foot.below()).is(Blocks.SAND)&&l.getBlockEntity(foot) instanceof SpringBlock.Rocker,"the spring rider's foot, bolted down on the sand: "+s);
+                r[0]=(SpringBlock.Rocker)l.getBlockEntity(foot);
+                h.assertTrue(r[0].angle()==0&&r[0].speed()==0&&!r[0].ridden(),"it stands upright and still");
+                h.assertTrue(held<SpringBlock.Rocker.ROCKED&&SpringBlock.Rocker.ROCKED<SpringBlock.MAX,"a lean held is short of rocking, and rocking is short of its stops");
+                p[0]=f.player("spring_one",P);p[1]=f.player("spring_two",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenWaitUntil(()->h.assertTrue(p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1,"readers here are children"))
+            .thenExecute(()->{f.at(p[0],P,sx,0,sz+1.5);f.at(p[1],P,sx,0,sz-1.5);hush(p[0]);hush(p[1]);hand(p[0],foot);})
+            .thenWaitUntil(()->h.assertTrue(p[0].getVehicle() instanceof SpringSeat&&heard(p[0],BikeNightTexts.SPRING_HINT)&&f.own(p[0],P).getBoolean("SpringSat"),"a hand on the horse sits on it, and they are told once how it is rocked"))
+            .thenExecute(()->{
+                h.assertTrue(p[0].getVehicle().position().distanceTo(SpringBlock.saddle(foot,facing,0))<1e-6&&r[0].ridden(),"they sit on its saddle");
+                hand(p[1],foot);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.SPRING_TAKEN)&&!p[1].isPassenger(),"there is room on it for one"))
+            // A lean held (the strafe keys, right for the way the horse looks) holds it a little over, short of rocking.
+            .thenExecute(()->p[0].setPlayerInput(-1,0,false,false))
+            .thenExecuteFor(200,()->far[0]=Math.max(far[0],Math.abs(r[0].angle())))
+            .thenExecute(()->{
+                h.assertTrue(Math.abs(r[0].angle()-held)<.02&&far[0]<SpringBlock.Rocker.ROCKED,"a lean held holds it a little over the way it looks, and never as far as rocking: "+r[0].angle()+", at most "+far[0]);
+                var seat=p[0].getVehicle();
+                h.assertTrue(seat.position().distanceTo(SpringBlock.saddle(foot,facing,r[0].angle()))<1e-6&&seat.getX()>b.getX()+sx+.1&&p[0].position().distanceTo(seat.position())<.5,"and its rider goes over with it");
+                h.assertTrue(f.own(p[0],P).getInt("Sprung")==0,"which is not rocking");
+            })
+            // Leaning with it, back and forth, takes it out to its stops.
+            .thenExecuteFor(200,()->{p[0].setPlayerInput(r[0].speed()>=0?-1:1,0,false,false);far[1]=Math.max(far[1],Math.abs(r[0].angle()));})
+            .thenExecute(()->h.assertTrue(far[1]>=SpringBlock.MAX-1e-9,"leaning with it, back and forth, takes it out to its stops: "+far[1]))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getInt("Sprung")>2&&sounded(p[0],"park.spring")&&sounded(p[1],"park.spring"),"that is rocking, in their record, and the spring is heard by both"))
+            // The walk keys lean it as well; and with no lean it runs down.
+            .thenExecute(()->{r[0].set(0,0);p[0].setPlayerInput(0,-1,false,false);})
+            .thenIdle(200)
+            .thenExecute(()->{h.assertTrue(Math.abs(r[0].angle()+held)<.02,"walking back leans it back: "+r[0].angle());p[0].setPlayerInput(0,0,false,false);})
+            .thenIdle(200)
+            .thenExecute(()->{h.assertTrue(Math.abs(r[0].angle())<.02&&r[0].ridden(),"with no lean it comes upright under them: "+r[0].angle());getOff(p[0]);})
+            // Sneak gets off, beside it; and left alone it stands still, for the next.
+            .thenWaitUntil(()->h.assertTrue(!p[0].isPassenger(),"sneak gets off"))
+            .thenExecute(()->{
+                stand(p[0]);var side=facing.getClockWise();
+                h.assertTrue(Math.abs(p[0].getX()-(b.getX()+sx+side.getStepX()*SpringSeat.ASIDE))<.01&&Math.abs(p[0].getZ()-(b.getZ()+sz+side.getStepZ()*SpringSeat.ASIDE))<.01&&Math.abs(p[0].getY()-b.getY())<.01,"onto the sand beside it: "+p[0].position());
+            })
+            .thenWaitUntil(()->h.assertTrue(r[0].angle()==0&&r[0].speed()==0&&!r[0].ridden()&&r[0].seat()==null,"left alone it stands upright and still, with nobody on it"))
+            .thenExecute(()->{hush(p[1]);hand(p[1],foot);})
+            .thenWaitUntil(()->h.assertTrue(p[1].getVehicle() instanceof SpringSeat&&heard(p[1],BikeNightTexts.SPRING_HINT),"and the second reader sits on it"))
+            .thenExecute(()->{
+                String one=told("spring_one",p[0],f),two=told("spring_two",p[1],f);
+                h.assertTrue(one.contains("rocked the horse on its spring")&&two.contains("sat on the horse on its spring")&&!two.contains("rocked"),"and their accounts have it: "+one+" / "+two);
+                getOff(p[1]);
+            })
+            .thenWaitUntil(()->h.assertTrue(!p[1].isPassenger(),"and gets off"))
+            .thenExecute(()->stand(p[1])).thenSucceed();
     }
 }

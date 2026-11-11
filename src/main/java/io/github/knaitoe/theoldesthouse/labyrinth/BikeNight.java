@@ -77,7 +77,7 @@ public final class BikeNight {
         /** Readers in the air off a swing. */
         final Map<UUID,Flight> flights=new HashMap<>();
         /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
-        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>(),shoved=new HashMap<>(),missed=new HashMap<>(),bounced=new HashMap<>();
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>(),pushed=new HashMap<>(),shoved=new HashMap<>(),missed=new HashMap<>(),bounced=new HashMap<>(),sprung=new HashMap<>();
         /** Readers who have let go of the monkey bars and not touched the ground since: a jump at the bars does not catch them. */
         final Set<UUID> letGo=new HashSet<>();
         /** Readers thrown off the top of the seesaw; and whom a reader threw off it, for their records. */
@@ -292,6 +292,9 @@ public final class BikeNight {
     /** How often each reader's own record is brought up to date: what a look at who is on the merry-go-round stands for. */
     static final int LOOK=5;
 
+    /** A reader on the spring rider has rocked it out toward a stop (SpringBlock.Rocker). */
+    static void sprung(ServerPlayer p){var n=night(p);if(n!=null)n.sprung.merge(p.getUUID(),1,Integer::sum);}
+
     // ------------------------------------------------------------------------------------------------ the seesaw
     /** A reader on the seesaw has pushed off the sand (SeesawSeat); with whom on the other end, if anybody; and whether it was a bounce, made as they landed. */
     static void seesawed(ServerPlayer p,@Nullable ServerPlayer other,boolean bounce){
@@ -376,6 +379,13 @@ public final class BikeNight {
         }
         Integer pushes=n.pushed.remove(id);if(pushes!=null)own.putInt("Seesaw",own.getInt("Seesaw")+pushes);
         Integer shoves=n.shoved.remove(id);if(shoves!=null)own.putInt("RoundPushed",own.getInt("RoundPushed")+shoves);
+        // Standing on the top of the climbing dome: told once what is to be seen from there.
+        if(!own.getBoolean("DomeTop")&&DomeBlock.onTop(b.offset(BikeNightSite.DOME),p)){own.putBoolean("DomeTop",true);cue(p,BikeNightTexts.DOME_TOP);}
+        if(p.getVehicle() instanceof SpringSeat){
+            own.putBoolean("SpringSat",true);
+            if(!own.getBoolean("SpringTold")){own.putBoolean("SpringTold",true);cue(p,BikeNightTexts.SPRING_HINT);}
+        }
+        Integer rocks=n.sprung.remove(id);if(rocks!=null)own.putInt("Sprung",own.getInt("Sprung")+rocks);
         if(p.serverLevel().getBlockEntity(b.offset(BikeNightSite.ROUNDABOUT)) instanceof RoundaboutBlock.Wheel wheel){
             boolean on=wheel.on(p),was=Boolean.TRUE.equals(n.onWheel.put(id,on)),fast=Math.abs(wheel.speed())>RoundaboutBlock.Wheel.OUT;
             if(on&&wheel.speed()!=0){
@@ -421,6 +431,13 @@ public final class BikeNight {
             if(wheel!=null&&!p.isPassenger()){var why=wheel.push(p);if(why!=null)cue(p,why);}
             return true;
         }
+        if(DomeBlock.is(s)){cue(p,BikeNightTexts.DOME);return true;}
+        // The spring rider is sat on, if nobody is on it.
+        if(s.is(BikeNightRegistry.SPRING_RIDER.get())){
+            if(p.isPassenger())cue(p,BikeNightTexts.SPRING);
+            else if(SpringSeat.sit(p,b.offset(rel))==null)cue(p,BikeNightTexts.SPRING_TAKEN);
+            return true;
+        }
         // An end of the seesaw's board is sat on, if nobody is on it; the rest of it is looked at.
         if(s.is(BikeNightRegistry.SEESAW.get())){
             if(s.getValue(SeesawBlock.PART)!=SeesawBlock.Part.END||p.isPassenger())cue(p,BikeNightTexts.SEESAW);
@@ -434,7 +451,20 @@ public final class BikeNight {
             case GATE->{cue(p,BikeNightTexts.GATE);l.playSound(null,b.offset(rel),BikeNightRegistry.CHAIN.get(),net.minecraft.sounds.SoundSource.BLOCKS,.8F,.95F+l.getRandom().nextFloat()*.1F);}
             case FENCE->cue(p,BikeNightTexts.RAILINGS);
             case LAMP->{boolean failing=rel.getX()==BikeNightSite.FLICKER.getX()&&rel.getZ()==BikeNightSite.FLICKER.getZ();cue(p,failing?BikeNightTexts.LAMP_FAILING:BikeNightTexts.LAMP);}
-            case BENCH->cue(p,BikeNightTexts.BENCH);
+            case BENCH->cue(p,s.getValue(CalderBlock.STAGE)==CalderBlock.CARVED?BikeNightTexts.CARVED:BikeNightTexts.BENCH);
+            // The fountain runs for a little while when its button is pressed; the payphone's handset is held for a little while.
+            case FOUNTAIN->{
+                if(s.getValue(CalderBlock.STAGE)==CalderBlock.RUNNING){cue(p,BikeNightTexts.FOUNTAIN_RUNNING);break;}
+                var at=b.offset(rel);l.setBlock(at,s.setValue(CalderBlock.STAGE,CalderBlock.RUNNING),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);l.scheduleTick(at,s.getBlock(),CalderBlock.RUNS);
+                l.playSound(null,at,BikeNightRegistry.FOUNTAIN.get(),net.minecraft.sounds.SoundSource.BLOCKS,.7F,.95F+l.getRandom().nextFloat()*.1F);
+                cue(p,BikeNightTexts.FOUNTAIN);own.putBoolean("Drank",true);
+            }
+            case PHONE->{
+                if(s.getValue(CalderBlock.STAGE)==CalderBlock.LIFTED){cue(p,BikeNightTexts.PHONE_HELD);break;}
+                var at=b.offset(rel);l.setBlock(at,s.setValue(CalderBlock.STAGE,CalderBlock.LIFTED),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);l.scheduleTick(at,s.getBlock(),CalderBlock.HELD);
+                l.playSound(null,at,BikeNightRegistry.PHONE_TONE.get(),net.minecraft.sounds.SoundSource.BLOCKS,.6F,1F);
+                cue(p,BikeNightTexts.PHONE);own.putBoolean("Phoned",true);
+            }
             case BIN->cue(p,BikeNightTexts.BIN);
             case BORDER->cue(p,BikeNightTexts.BORDER);
             default->{return false;}

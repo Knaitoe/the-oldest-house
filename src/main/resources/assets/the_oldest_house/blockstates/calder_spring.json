@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,part=foot": {
+      "model": "the_oldest_house:block/calder_play/spring_foot"
+    },
+    "facing=north,part=horse": {
+      "model": "the_oldest_house:block/calder_play/spring_horse"
+    },
+    "facing=east,part=foot": {
+      "model": "the_oldest_house:block/calder_play/spring_foot",
+      "y": 90
+    },
+    "facing=east,part=horse": {
+      "model": "the_oldest_house:block/calder_play/spring_horse",
+      "y": 90
+    },
+    "facing=south,part=foot": {
+      "model": "the_oldest_house:block/calder_play/spring_foot",
+      "y": 180
+    },
+    "facing=south,part=horse": {
+      "model": "the_oldest_house:block/calder_play/spring_horse",
+      "y": 180
+    },
+    "facing=west,part=foot": {
+      "model": "the_oldest_house:block/calder_play/spring_foot",
+      "y": 270
+    },
+    "facing=west,part=horse": {
+      "model": "the_oldest_house:block/calder_play/spring_horse",
+      "y": 270
+    }
+  }
+}

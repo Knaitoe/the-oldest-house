@@ -1628,5 +1628,11 @@
   "subtitles.the_oldest_house.park.seesaw_creak": "Seesaw creaks",
   "subtitles.the_oldest_house.park.seesaw_thud": "Seesaw bumps down",
   "block.the_oldest_house.calder_roundabout": "Merry-go-round",
-  "subtitles.the_oldest_house.park.roundabout_squeak": "Merry-go-round squeaks"
+  "subtitles.the_oldest_house.park.roundabout_squeak": "Merry-go-round squeaks",
+  "subtitles.the_oldest_house.park.fountain": "Fountain runs",
+  "subtitles.the_oldest_house.park.phone_tone": "Dial tone",
+  "subtitles.the_oldest_house.park.phone_hook": "Handset is hung up",
+  "subtitles.the_oldest_house.park.spring": "Spring creaks",
+  "block.the_oldest_house.calder_dome": "Climbing Dome",
+  "block.the_oldest_house.calder_spring": "Spring Rider"
 }

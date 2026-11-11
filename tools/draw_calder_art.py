@@ -1,4 +1,4 @@
-"""Bike night (0.4.464): Calder Park.
+"""Bike night (0.4.464, 0.4.471): Calder Park.
 
 Draws, in native Minecraft pixels from fixed seeds, the park the night begins in: its materials (the back wall's brick, the path's
 concrete flags, the kerb, the street's asphalt and its centre line, the trees' October leaves) and its own fittings, each a kind of
@@ -6,6 +6,9 @@ one block (calder_fitting): the iron railings and their spear tops, the gate's l
 pieces with its lantern lit or dark, a slatted bench with iron ends, a wire litter bin, the sandpit's timber edging, and a sheet of
 lined paper taped up by the door; and the leaves down on the grass, a block of their own (calder_litter) that gives way to whatever
 is set down on it. Nothing here is one of the game's own blocks standing for something else.
+
+0.4.471: a bench end with a heart cut into its top slat; a drinking fountain, still and running; and a payphone on the wall, its
+handset on its hook and off it.
 
 Small pieces are bars that take one pixel of the park's paint card, as the bikes' are (tools/draw_bike_night_art.py); faces big
 enough to carry a picture take a part of one the size they are, so everything is sixteen pixels to the block. A fitting is drawn
@@ -191,8 +194,35 @@ def note():
     return im
 
 
+def carving():
+    """What is cut into the bench's back, fourteen wide and four high from the corner: its upper two rows go on the top slat and
+    its lower two on the slat under it. A heart across both slats, and either side of it the strokes of a pair of letters. Only
+    the cuts are drawn; the wood under them is the slats' own. Cut long ago: grey, not pale."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4710)
+    rows = ('X..X..X.X..X.X',
+            'XX.X.XXXXX.X.X',
+            'X..X..XXX..X.X',
+            'X.XX...X...XX.')
+    for y, row in enumerate(rows):
+        for x, c in enumerate(row):
+            if c == 'X':
+                dot(im, x, y, shade('#3b3a36', rnd.randint(-4, 6) if x < 5 or x > 9 else 0))
+    return im
+
+
+def water():
+    """Drinking water in the air: pale, with the lamp in it."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4711)
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, shade('#bcd7e6', rnd.randint(-10, 14)))
+    return im
+
+
 def textures():
     out = {f'block/calder_{name}.png': im for name, im in materials().items()}
+    out[DIR + 'carving.png'] = carving()
+    out[DIR + 'water.png'] = water()
     out[DIR + 'park.png'] = card()
     out[DIR + 'lamp_lit.png'] = lamp_glass(1)
     out[DIR + 'lamp_dark.png'] = lamp_glass(0)
@@ -300,9 +330,13 @@ def lamp(stage):
     return p
 
 
-def bench(ends):
-    """A park bench looking north, its back to the south: slats on iron ends. `ends` says which of its ends this block has."""
+def bench(ends, carved=False):
+    """A park bench looking north, its back to the south: slats on iron ends. `ends` says which of its ends this block has.
+    Carved, a heart and two pairs of letters are cut into the front of its back, across both slats."""
     p = []
+    if carved:
+        plate(p, [2, 12.85, 11.55], [16, 14.85, 11.6], 'h', {'north': (0, 0)})
+        plate(p, [2, 10.35, 11.55], [16, 12.35, 11.6], 'h', {'north': (0, 2)})
     for side in ends:
         x0, x1 = (.5, 1.7) if side == 'west' else (14.3, 15.5)
         bar(p, [x0, 0, 4.5], [x1, 7, 5.7], IRON)                          # front leg
@@ -312,6 +346,51 @@ def bench(ends):
         bar(p, [x0 - .1, 9.4, 4.1], [x1 + .1, 10.2, 11.3], IRON_HI)       # the arm
     bar(p, [0, 7, 4], [16, 7.9, 6.3], WOOD); bar(p, [0, 7, 6.8], [16, 7.9, 9.1], WOOD_DK); bar(p, [0, 7, 9.6], [16, 7.9, 11.2], WOOD)
     bar(p, [0, 10.4, 11.6], [16, 12.3, 12.4], WOOD); bar(p, [0, 12.9, 11.6], [16, 14.8, 12.4], WOOD_DK)
+    return p
+
+
+# As CalderBlock has it: the fountain's pedestal is this many pixels high, so that its bowl is under a child's chin.
+FOUNTAIN_HIGH = 7
+
+
+def fountain(running):
+    """A drinking fountain, its button to the north: a concrete pedestal, a steel bowl on it with a dark drain, and a spout at the
+    back of the bowl that throws its water forward over it. Running, the water is in the air."""
+    p = []
+    h = FOUNTAIN_HIGH                                                      # the pedestal's top, where the bowl stands
+    bar(p, [5, 0, 5], [11, h, 11], CONCRETE)
+    bar(p, [4.2, 0, 4.2], [11.8, 1, 11.8], CONCRETE)
+    bar(p, [3.5, h, 3.5], [12.5, h + 2.4, 12.5], STEEL)
+    for lo, hi in (([3.5, h + 2.4, 3.5], [12.5, h + 3, 4.5]), ([3.5, h + 2.4, 11.5], [12.5, h + 3, 12.5]), ([3.5, h + 2.4, 4.5], [4.5, h + 3, 11.5]), ([11.5, h + 2.4, 4.5], [12.5, h + 3, 11.5])):
+        bar(p, lo, hi, STEEL)                                             # the bowl's rim
+    bar(p, [6.5, h + 2.4, 6], [9.5, h + 2.5, 9], SHADOW)                   # the drain
+    bar(p, [7.3, h + 2.4, 10.2], [8.7, h + 4.4, 11.5], IRON_HI)            # the spout
+    bar(p, [7, h - 3.5, 4.5], [9, h - 1.5, 5], BRASS)                      # the button
+    if running:
+        plate(p, [7.7, h + 4, 7.4], [8.3, h + 4.6, 10.2], 'w', {'up': (0, 0), 'down': (0, 0), 'east': (0, 0), 'west': (0, 0), 'north': (0, 0)})
+        plate(p, [7.7, h + 2.5, 6.4], [8.3, h + 4.3, 7.4], 'w', {'up': (0, 0), 'east': (0, 0), 'west': (0, 0), 'north': (0, 0), 'south': (0, 0)})
+    return p
+
+
+def phone(lifted):
+    """A payphone looking north, on the wall to its south: a steel box with its instructions on a card, a coin slot, a keypad and a
+    coin return; a shelf under it; and at its left side the handset on its hook, a cord down from it. Lifted, the hook is bare
+    and the cord goes up out of sight to whoever has it."""
+    p = []
+    bar(p, [3.5, 2.4, 11], [12.5, 15, 16], STEEL)
+    bar(p, [3, 1.5, 9.5], [13, 2.4, 16], IRON_HI)                          # the shelf
+    bar(p, [5, 9.5, 10.8], [11, 13, 11], CREAM)                            # the card
+    bar(p, [9.5, 13.5, 10.8], [11.2, 14.2, 11], BRASS)                     # the coin slot
+    for x in (5.4, 6.7, 8):
+        for y in (4.4, 5.7, 7):
+            bar(p, [x, y, 10.8], [x + .9, y + .9, 11], IRON_HI)            # the keys
+    bar(p, [9.8, 4.2, 10.8], [11.4, 5.6, 11], SHADOW)                      # the coin return
+    bar(p, [2.6, 11.4, 12], [3.5, 12.2, 13], IRON_HI)                      # the hook
+    if lifted:
+        bar(p, [2.75, 2.4, 12.3], [3.15, 11.4, 12.7], SHADOW)              # the cord, pulled up straight
+    else:
+        bar(p, [1.6, 4.5, 11.6], [3.1, 12.6, 13.4], SHADOW)                # the handset
+        bar(p, [2.2, 2.4, 12.3], [2.6, 4.5, 12.7], SHADOW)                 # its cord
     return p
 
 
@@ -365,16 +444,19 @@ FITTINGS = {
     'gate_0': (lambda: gate(0), 'park'), 'gate_1': (lambda: gate(1), 'park'), 'gate_2': (lambda: gate(2), 'park'), 'gate_3': (lambda: gate(3), 'park'),
     'lamp_0': (lambda: lamp(0), 'park'), 'lamp_1': (lambda: lamp(1), 'park'), 'lamp_2': (lambda: lamp(2), 'lamp_lit'), 'lamp_3': (lambda: lamp(3), 'lamp_dark'),
     'bench_0': (lambda: bench(('west', 'east')), 'park'), 'bench_1': (lambda: bench(('west',)), 'park'), 'bench_2': (lambda: bench(('east',)), 'park'),
+    'bench_3': (lambda: bench(('west',), True), 'park'),
+    'fountain_0': (lambda: fountain(False), 'park'), 'fountain_1': (lambda: fountain(True), 'park'),
+    'phone_0': (lambda: phone(False), 'park'), 'phone_1': (lambda: phone(True), 'park'),
     'bin_0': (bin_, 'park'), 'border_0': (lambda: border(False), 'park'), 'border_1': (lambda: border(True), 'park'), 'cap_0': (cap, '/calder_kerb'),
     'litter_0': (lambda: litter_model(0), 'litter_0'), 'litter_1': (lambda: litter_model(1), 'litter_1'),
     'litter_2': (lambda: litter_model(2), 'litter_2'), 'litter_3': (lambda: litter_model(3), 'litter_3'),
     'note_0': (note_model, 'note'),
 }
 # A name that begins with a slash is one of the materials, in the blocks' own folder.
-NAMES_OF = {'k': 'park', 'l': 'lamp_lit', 'd': 'lamp_dark', 'm': 'mesh', 'f0': 'litter_0', 'f1': 'litter_1', 'f2': 'litter_2', 'f3': 'litter_3', 'n': 'note',
+NAMES_OF = {'k': 'park', 'h': 'carving', 'w': 'water', 'l': 'lamp_lit', 'd': 'lamp_dark', 'm': 'mesh', 'f0': 'litter_0', 'f1': 'litter_1', 'f2': 'litter_2', 'f3': 'litter_3', 'n': 'note',
             'b': '/calder_brick', 'c': '/calder_kerb'}
-KINDS = ['fence', 'gate', 'lamp', 'bench', 'bin', 'border', 'note', 'cap']
-STAGES = {'fence': 2, 'gate': 4, 'lamp': 4, 'bench': 3, 'border': 2}
+KINDS = ['fence', 'gate', 'lamp', 'bench', 'bin', 'border', 'note', 'cap', 'fountain', 'phone']
+STAGES = {'fence': 2, 'gate': 4, 'lamp': 4, 'bench': 4, 'border': 2, 'fountain': 2, 'phone': 2}
 MAX_STAGE = 4
 
 
