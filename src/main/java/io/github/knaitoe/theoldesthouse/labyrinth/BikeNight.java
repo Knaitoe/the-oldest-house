@@ -37,6 +37,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>0.4.466, the slide: a reader who comes into the top of its chute is taken down it and let go off the end (SlideRide), and
  * their record counts the times.
  *
+ * <p>0.4.467, the monkey bars: a hand on their rungs from near enough under them takes hold (BarsHang); a reader's record counts
+ * their holds, and the times they went from one end to the other on one.
+ *
  * <p>It cannot be finished yet (the playground's equipment, the bullies, the town, the graveyard and what comes after it are later
  * slices), so the House does not deal it: {@link #dealable} says no. It is reached by an operator's test door.
  */
@@ -64,7 +67,7 @@ public final class BikeNight {
         /** Readers in the air off a swing. */
         final Map<UUID,Flight> flights=new HashMap<>();
         /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
-        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>();
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>(),hung=new HashMap<>(),crossed=new HashMap<>();
         /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
         int far;@Nullable UUID farWho;@Nullable BlockPos mark;
         Night(BlockPos b){base=b;for(var make:NightBike.Make.values())at[make.ordinal()]=b.offset(BikeNightSite.bikeAt(make));}
@@ -264,6 +267,12 @@ public final class BikeNight {
     /** A reader has been down the slide (SlideRide). */
     static void slid(ServerPlayer p){var n=night(p);if(n!=null)n.slid.merge(p.getUUID(),1,Integer::sum);}
 
+    // ------------------------------------------------------------------------------------------------ the monkey bars
+    /** A reader has taken hold of the monkey bars (BarsHang). */
+    static void hung(ServerPlayer p){var n=night(p);if(n!=null)n.hung.merge(p.getUUID(),1,Integer::sum);}
+    /** A reader has gone from one end of them to the other on one hold. */
+    static void crossed(ServerPlayer p){var n=night(p);if(n==null)return;n.crossed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_ACROSS);}
+
     // ------------------------------------------------------------------------------------------------ the sand
     /** A hand in the playground's sand packs a ball of it: one at a time, eight at most. */
     static void scoop(ServerPlayer p){
@@ -302,6 +311,9 @@ public final class BikeNight {
         Integer balls=n.thrown.remove(id);if(balls!=null)own.putInt("Sand",own.getInt("Sand")+balls);
         Integer hits=n.hits.remove(id);if(hits!=null)own.putInt("SandHits",own.getInt("SandHits")+hits);
         Integer down=n.slid.remove(id);if(down!=null)own.putInt("Slid",own.getInt("Slid")+down);
+        if(p.getVehicle() instanceof BarsHang&&!own.getBoolean("BarsTold")){own.putBoolean("BarsTold",true);cue(p,BikeNightTexts.BARS_HINT);}
+        Integer holds=n.hung.remove(id);if(holds!=null)own.putInt("Hung",own.getInt("Hung")+holds);
+        Integer across=n.crossed.remove(id);if(across!=null)own.putInt("Crossed",own.getInt("Crossed")+across);
     }
 
     // ------------------------------------------------------------------------------------------------ a hand on the park's things
@@ -317,7 +329,14 @@ public final class BikeNight {
             cue(p,who==null||other==null?BikeNightTexts.MARK:who.equals(p.getUUID())?BikeNightTexts.MARK_OWN:String.format(BikeNightTexts.MARK_THEIRS,other.getGameProfile().getName()));return true;
         }
         if(s.is(BikeNightRegistry.PLAY.get())){
-            cue(p,switch(s.getValue(CalderPlayBlock.KIND)){case LADDER,DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->BikeNightTexts.SWINGS;});return true;
+            // The rungs of the monkey bars are taken hold of, by a reader who can reach them; one who cannot is told why.
+            if(s.getValue(CalderPlayBlock.KIND)==CalderPlayBlock.Kind.RUNGS){
+                if(p.isPassenger())return true;
+                var why=BarsHang.cannot(p,b.offset(rel));if(why!=null)cue(p,why);else BarsHang.take(p,b.offset(rel));return true;
+            }
+            cue(p,switch(s.getValue(CalderPlayBlock.KIND)){
+                case LADDER->s.getValue(CalderPlayBlock.STAGE)>=CalderPlayBlock.BARS?BikeNightTexts.BARS:BikeNightTexts.SLIDE;
+                case DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->BikeNightTexts.SWINGS;});return true;
         }
         if(CalderSignBlock.is(s)){cue(p,CalderSignBlock.sign(s).look());return true;}
         if(s.is(BikeNightRegistry.RACK.get())){cue(p,BikeNightTexts.RACK);return true;}

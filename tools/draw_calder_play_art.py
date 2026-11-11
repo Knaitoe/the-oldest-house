@@ -1,4 +1,4 @@
-"""Bike night (0.4.465, 0.4.466): the playground in Calder Park.
+"""Bike night (0.4.465 to 0.4.467): the playground in Calder Park.
 
 Draws, in native Minecraft pixels from fixed seeds, the playground's equipment, each piece a kind of one block (calder_play). This
 slice, the swings: a steel frame's posts (a foot with its two stays, a shaft, and the two tops a bar ends on or runs over), its top
@@ -10,6 +10,9 @@ one item, a ball of sand.
 0.4.466, the slide: its ladder (two blocks), the deck at the top on its legs and the guard over it, four blocks of chute each
 falling a block's length times the tangent of 22.5 degrees (a sheet worn bright down the middle between two painted lips), and its
 level end. A piece of the slide faces the way the slide goes down.
+
+0.4.467, the monkey bars: a block of their rungs (two rails and two rungs at the bottom of its block, running the way it faces),
+an end of them whose rails run on over its ladder's, and the slide's ladder again in the bars' own paint.
 
 Made as the park's fittings are (tools/draw_calder_art.py): small pieces are bars that take one pixel of a paint card, the
 playground's own; a face big enough to carry a picture takes a part of one the size it is. Sixteen pixels to the block. A piece is
@@ -229,14 +232,14 @@ def chute_top(stage):
 RUNOUT_TOP = 16 * (DECK - CHUTES * SLOPE)
 
 
-def ladder(stage):
+def ladder(stage, paint=BLUE, foot=BLUE_WORN):
     """The ladder up the back of the slide, its rungs against the deck (north, the way the slide goes down): two rails and a rung
-    every quarter of a block. The lower block stands on two feet."""
+    every quarter of a block. The lower block stands on two feet. The monkey bars stand on two of the same, in their own paint."""
     p = []
     for x in (3, 13):
-        bar(p, [x - .6, .6 if stage == 0 else 0, .5], [x + .6, 16, 1.7], BLUE)   # the lower block's rails stand on their feet
+        bar(p, [x - .6, .6 if stage == 0 else 0, .5], [x + .6, 16, 1.7], paint)  # the lower block's rails stand on their feet
         if stage == 0:
-            bar(p, [x - 1, 0, 0], [x + 1, .6, 2.4], BLUE_WORN)
+            bar(p, [x - 1, 0, 0], [x + 1, .6, 2.4], foot)
     for y in (2, 6, 10, 14):
         bar(p, [3.6, y, .7], [12.4, y + .8, 1.5], BARE)
     return p
@@ -302,6 +305,23 @@ def runout():
     return p
 
 
+# ---------------------------------------------------------------------------------------------------------------- the monkey bars
+# As CalderPlayBlock has it: the rungs' block is this many pixels thick, at the bottom of its block.
+RUNGS_THICK = 1.2
+
+
+def rungs(end):
+    """A block of the monkey bars, running north and south: two rails, in line with the rails of the ladders they stand on, and a
+    rung a quarter of the way in from each end of the block, the paint gone from it. An end's rails run on to the north, over the
+    tops of its ladder's (the ladder stands in the next block north, facing back at the rungs)."""
+    p = []
+    for x in (3, 13):
+        bar(p, [x - .6, 0, -1.7 if end else 0], [x + .6, RUNGS_THICK, 16], GREEN)
+    for z in (4, 12):
+        bar(p, [3.6, .2, z - .4], [12.4, 1, z + .4], BARE)
+    return p
+
+
 def mark_model():
     p = []
     plate(p, [0, .3, 0], [16, .3, 16], 'm', {'up': (0, 0)})
@@ -313,14 +333,16 @@ PIECES = {
     'bar_0': lambda: top_bar(False), 'bar_1': lambda: top_bar(True), 'chain_0': chain, 'swing_0': swing, 'mark_0': mark_model,
     'ladder_0': lambda: ladder(0), 'ladder_1': lambda: ladder(1), 'deck_0': lambda: deck(False), 'deck_1': lambda: deck(True),
     'chute_0': lambda: chute(0), 'chute_1': lambda: chute(1), 'chute_2': lambda: chute(2), 'chute_3': lambda: chute(3), 'runout_0': runout,
+    'ladder_2': lambda: ladder(0, GREEN, BOLT), 'ladder_3': lambda: ladder(1, GREEN, BOLT), 'rungs_0': lambda: rungs(False), 'rungs_1': lambda: rungs(True),
 }
 NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark', 's': 'sheet', 't': 'tread'}
-KINDS = ['post', 'bar', 'chain', 'swing', 'ladder', 'deck', 'chute', 'runout']
+KINDS = ['post', 'bar', 'chain', 'swing', 'ladder', 'deck', 'chute', 'runout', 'rungs']
 # The model each stage of a kind is drawn from; `gone` draws nothing.
 STAGES = {'post': ('post_0', 'post_1', 'post_2', 'post_3'), 'bar': ('bar_0', 'bar_1', 'bar_0', 'bar_0'),
           'chain': ('chain_0', 'gone', 'chain_0', 'chain_0'), 'swing': ('swing_0', 'gone', 'swing_0', 'swing_0'),
-          'ladder': ('ladder_0', 'ladder_1', 'ladder_0', 'ladder_0'), 'deck': ('deck_0', 'deck_1', 'deck_0', 'deck_0'),
-          'chute': ('chute_0', 'chute_1', 'chute_2', 'chute_3'), 'runout': ('runout_0',) * 4}
+          'ladder': ('ladder_0', 'ladder_1', 'ladder_2', 'ladder_3'), 'deck': ('deck_0', 'deck_1', 'deck_0', 'deck_0'),
+          'chute': ('chute_0', 'chute_1', 'chute_2', 'chute_3'), 'runout': ('runout_0',) * 4,
+          'rungs': ('rungs_0', 'rungs_1', 'rungs_0', 'rungs_0')}
 
 
 def model(parts, particle='play'):

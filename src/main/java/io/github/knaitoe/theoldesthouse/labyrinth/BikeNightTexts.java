@@ -37,6 +37,16 @@ public final class BikeNightTexts {
     public static final String MARK_OWN=MARK+" It is yours.",MARK_THEIRS=MARK+" It is %s's.";
     /** 0.4.466, the slide: a hand on any part of it. */
     public static final String SLIDE="A slide. Its chute is worn bright down the middle and dull at the edges.";
+    /**
+     * 0.4.467, the monkey bars: a hand on their ladders; a hand on the rungs from the ground, from on top of them and from too
+     * far off; what a reader hanging from them is told once; and going from one end to the other.
+     */
+    public static final String BARS="Monkey bars. The paint is gone from every rung where hands go.";
+    public static final String BARS_LOW="Out of reach from down here. Jump for them, or go up the ladder at either end.";
+    public static final String BARS_ON="You are standing on top of them. Nobody is about to tell you to get down.";
+    public static final String BARS_FAR="Not from here. Get under them.";
+    public static final String BARS_HINT="Walk to go hand over hand, the way you are looking. Sneak lets go.";
+    public static final String BARS_ACROSS="Across, from one end to the other, and not a foot on the sand.";
     /** The sand: a ball packed; no more to be carried; no room for one; what is left of one carried out of the night. */
     public static final String SAND="You pack a ball of sand. It holds.";
     public static final String SAND_FULL="Your pockets are full of sand.";
@@ -67,6 +77,8 @@ public final class BikeNightTexts {
         if(far>0)p.add("I got one of the swings as high as it would go and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
         else if(own.getBoolean("Swung"))p.add("I sat on one of the swings for a while.");
         if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
+        if(own.getInt("Crossed")>0)p.add("I went all the way across the monkey bars, hand over hand, without a foot on the sand.");
+        else if(own.getInt("Hung")>0)p.add("I hung from the monkey bars for a while, and dropped.");
         if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }

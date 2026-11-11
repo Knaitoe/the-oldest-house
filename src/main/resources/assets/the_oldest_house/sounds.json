@@ -5028,5 +5028,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.park.slide"
+  },
+  "park.bars": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:park/bars",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.park.bars"
   }
 }

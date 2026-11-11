@@ -39,11 +39,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A body stands and walks on it. A reader who comes into its top block is taken down it (SlideRide).</li>
  * <li>RUNOUT: the level end of the chute, where a rider is let go.</li>
  * </ul>
+ *
+ * <p>0.4.467, the monkey bars.
+ * <ul>
+ * <li>RUNGS: a block of them, two rails and two rungs at the bottom of its block, running the way it faces. Stage 1: an end, its
+ * rails running on over the ladder that stands beyond the way it faces. A body stands on them; a reader hangs under them and goes
+ * along them hand over hand (BarsHang).</li>
+ * <li>LADDER at stage 2 (its lower block) or 3 (its upper) is the bars' own, in their paint. It faces the rungs.</li>
+ * </ul>
  */
 public final class CalderPlayBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CalderPlayBlock> CODEC=simpleCodec(CalderPlayBlock::new);
     public enum Kind implements StringRepresentable {
-        POST,BAR,CHAIN,SWING,LADDER,DECK,CHUTE,RUNOUT;
+        POST,BAR,CHAIN,SWING,LADDER,DECK,CHUTE,RUNOUT,RUNGS;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -58,6 +66,10 @@ public final class CalderPlayBlock extends HorizontalDirectionalBlock {
     public static boolean chuteLow(int stage){return stage>=2;}
     /** The run-out's surface over its block's floor, in pixels. */
     static final double RUNOUT_TOP=16*(DECK_HEIGHT-CHUTES*SLOPE);
+    /** The monkey bars: added to a ladder's stage for the bars' own paint; a block of rungs that is an end of them. */
+    public static final int BARS=2,RUNG_END=1;
+    /** How thick the rungs' block is, in pixels, and how high over its floor the middle of a rung is, in blocks. */
+    public static final double RUNGS_THICK=1.2,RUNG=RUNGS_THICK/32;
     public CalderPlayBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.POST).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return BikeNightRegistry.PLAY.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(3,stage)));}
@@ -79,9 +91,10 @@ public final class CalderPlayBlock extends HorizontalDirectionalBlock {
             // going down to the north) and the downhill half.
             case CHUTE->{double top=chuteTop(stage),fall=16*SLOPE;yield Shapes.or(MarshBlock.turned(f,2,Math.max(0,top-fall*.25-3),8,14,top-fall*.25,16),MarshBlock.turned(f,2,Math.max(0,top-fall*.75-3),0,14,top-fall*.75,8));}
             case RUNOUT->MarshBlock.turned(f,2,RUNOUT_TOP-3,0,14,RUNOUT_TOP,16);
+            case RUNGS->MarshBlock.turned(f,2,0,0,14,RUNGS_THICK,16);
         };
     }
-    /** The slide's ladder is climbed. */
+    /** A ladder is climbed: the slide's, and the two the monkey bars stand on. */
     @Override public boolean isLadder(BlockState s,net.minecraft.world.level.LevelReader l,BlockPos p,net.minecraft.world.entity.LivingEntity e){return s.getValue(KIND)==Kind.LADDER;}
     /** A reader who comes into the top of the chute goes down it. */
     @Override protected void entityInside(BlockState s,net.minecraft.world.level.Level l,BlockPos pos,net.minecraft.world.entity.Entity e){
