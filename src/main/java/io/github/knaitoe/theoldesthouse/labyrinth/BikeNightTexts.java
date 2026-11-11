@@ -54,6 +54,8 @@ public final class BikeNightTexts {
     public static final String MARK_OWN=MARK+" It is yours.",MARK_THEIRS=MARK+" It is %s's.";
     /** 0.4.466, the slide: a hand on any part of it. */
     public static final String SLIDE="A slide. Its chute is worn bright down the middle and dull at the edges.";
+    /** 0.4.477: off the end of the chute on a bike, having ridden it down from the deck. */
+    public static final String SLIDE_BIKE="Down the slide on a bike. The chute rings under the tyres all the way to the sand.";
     /**
      * 0.4.467, the monkey bars: a hand on their ladders; a hand on the rungs from the ground, from on top of them and from too
      * far off; what a reader hanging from them is told once; and going from one end to the other.
@@ -152,6 +154,7 @@ public final class BikeNightTexts {
     public static final String GUS_OVER="YOU WENT OVER THE BAR. I saw it. I'm a witness. Nobody is ever going to believe me.";
     public static final String GUS_OVER_AGAIN="Again! You did it again! I'm still a witness!";
     public static final String GUS_SLIDE="The trick is don't think about the bolts.";
+    public static final String GUS_SLIDE_BIKE="You rode down the slide. On a bike. I'm telling everyone. I'm telling my mom, and she thinks I'm at the library.";
     public static final String GUS_BARS="All the way across! I can do four rungs. Four is normal.";
     public static final String GUS_EARLY="Too early. Everybody goes too early.";
     public static final String GUS_THROWN="Are you okay? That was the best thing I've ever seen. Are you okay?";
@@ -175,7 +178,7 @@ public final class BikeNightTexts {
     public static final String GUS_HIGH="That's as high as it goes. That's what everybody says, anyway.";
     /** Every line of his, for the cases that hold him to how he talks. */
     public static List<String> gusLines(){
-        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH));
+        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
         return all;
@@ -213,6 +216,8 @@ public final class BikeNightTexts {
             +(own.getBoolean("Scratched")?" I scratched DID TOO into the post, under DID NOT.":""));
         if(!sawOver.isEmpty())p.add("I saw "+sawOver+" go all the way over the bar on the swings.");
         if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
+        String slideBike=bike(own.getString("SlideBike"));
+        if(!slideBike.isEmpty())p.add("I rode "+slideBike+" up the slide, turned it round at the top, and rode it down again.");
         if(own.getInt("Crossed")>0)p.add("I went all the way across the monkey bars, hand over hand, without a foot on the sand.");
         else if(own.getInt("BarsMissed")>0)p.add("I went for the next rung of the monkey bars too early, and dropped into the sand.");
         else if(own.getInt("Hung")>0)p.add("I hung from the monkey bars for a while, and dropped.");

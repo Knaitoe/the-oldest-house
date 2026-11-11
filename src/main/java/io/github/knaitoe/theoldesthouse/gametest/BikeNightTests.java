@@ -412,6 +412,7 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_rope") public static void ropeDone(ServerLevel l){done();}
     @AfterBatch(batch="park_over") public static void overDone(ServerLevel l){done();}
     @AfterBatch(batch="park_gus") public static void gusDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_slide_bike") public static void slideBikeDone(ServerLevel l){done();}
     @AfterBatch(batch="park_gus_seesaw") public static void gusSeesawDone(ServerLevel l){done();}
     @AfterBatch(batch="park_gus_swing") public static void gusSwingDone(ServerLevel l){done();}
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
@@ -1328,6 +1329,60 @@ public final class BikeNightTests {
             .thenExecute(()->{f.click(p[0],P,BikeNightSite.swingAt(1));h.assertTrue(p[0].getVehicle() instanceof SeatEntity,"on a swing again, with another reader in the park");})
             .thenIdle(BikeNightGus.SWING_FIRST*3)
             .thenExecute(()->h.assertTrue(BikeNightGus.doing(b)==BikeNightGus.FREE,"with another reader in the park he leaves the pushing to them: "+BikeNightGus.doing(b)))
+            .thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.477: a bike on the slide
+    @GameTest(template="empty",batch="park_slide_bike",timeoutTicks=4000)
+    public static void aBikeIsRiddenUpTheSlideTurnedRoundOnItsDeckAndRiddenDownAgain(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] bike={null};final LiteraryActor[] gus={null};
+        var deck=BikeNightSite.slideDeck();var end=BikeNightSite.slideEnd();double line=deck.getX()+.5;final int[] t={0};final double[] top={0};var lines=new java.util.HashSet<String>();
+        java.util.function.Supplier<Vec3> at=()->bike[0].position().subtract(b.getX(),b.getY(),b.getZ());
+        Runnable hear=()->{if(gus[0]!=null&&!saying(gus[0]).isEmpty())lines.add(saying(gus[0]));};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->p[0]=f.player("slide_rider",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);h.assertTrue(gus[0]!=null&&p[0].getBbHeight()<1.1,"waiting for Gus, and for the reader to be the park's size");})
+            .thenExecute(()->{
+                bike[0]=take(h,f,p[0],NightBike.Make.WASP);
+                // On the sand below the end of the chute, looking up it.
+                bike[0].setPos(b.getX()+line,b.getY(),b.getZ()+end.getZ()+2.5);bike[0].setYRot(180);bike[0].steady(0,0);p[0].setYRot(180);p[0].setYHeadRot(180);
+            })
+            // Up the chute, pedalling: a bike rolls up it as it rolls up any steps.
+            .thenWaitUntil(()->{hear.run();t[0]++;var r=at.get();top[0]=Math.max(top[0],r.y);
+                if(r.y<deck.getY()+.55){p[0].setPlayerInput(0,0,false,false);pedalWell(bike[0],t[0],3);}else p[0].setPlayerInput(0,-1,false,false);   // near the top, the brake
+                h.assertTrue(p[0].getVehicle()==bike[0],"still on the bike at "+r);
+                h.assertTrue(r.y>deck.getY()+.95&&Math.abs(r.z-(deck.getZ()+.5))<.6&&bike[0].speedNow()<.02,"waiting to be stopped on the deck: "+r+" at "+bike[0].speedNow());})
+            .thenExecute(()->{
+                var r=at.get();
+                h.assertTrue(Math.abs(r.x-line)<.3&&Math.abs(r.y-(deck.getY()+1))<.05,"up on the deck, between its guards: "+r);
+                // Turned round where it stands, to look down the chute.
+                p[0].setPlayerInput(0,0,false,false);p[0].setYRot(0);p[0].setYHeadRot(0);
+            })
+            .thenWaitUntil(()->{hear.run();h.assertTrue(p[0].getVehicle()==bike[0]&&Math.abs(Mth.wrapDegrees(bike[0].getYRot()))<6,"waiting for the bike to come round: "+bike[0].getYRot());})
+            .thenExecute(()->{var r=at.get();h.assertTrue(r.y>deck.getY()+.95&&Math.abs(r.z-(deck.getZ()+.5))<.6,"it turned round where it stood, on the deck: "+r);hush(p[0]);})
+            // And down.
+            .thenWaitUntil(()->{hear.run();t[0]++;var r=at.get();if(bike[0].speedNow()<.12F)pedalWell(bike[0],t[0],4);
+                h.assertTrue(p[0].getVehicle()==bike[0],"still on the bike at "+r);
+                h.assertTrue(r.z>end.getZ()+1.2&&r.y<.5,"waiting to be down off the end of the chute: "+r);})
+            .thenWaitUntil(()->{hear.run();h.assertTrue(f.own(p[0],P).getString("SlideBike").equals("wasp")&&f.own(p[0],P).getInt("SlideRides")==1&&heard(p[0],BikeNightTexts.SLIDE_BIKE),"ridden down the slide: told, and in their record");})
+            .thenExecute(()->{p[0].setPlayerInput(0,-1,false,false);
+                h.assertTrue(told("slide_rider",p[0],f).contains("I rode the Wasp up the slide, turned it round at the top, and rode it down again."),"and in their account: "+told("slide_rider",p[0],f));})
+            // Gus is impressed.
+            .thenWaitUntil(()->{hear.run();h.assertTrue(lines.contains(BikeNightTexts.GUS_SLIDE_BIKE),"waiting for Gus to say so: "+lines);})
+            // Across the end of the chute, never having been up it, is not a ride down it.
+            .thenExecute(()->{
+                p[0].setPlayerInput(0,0,false,false);
+                bike[0].setPos(b.getX()+line,b.getY(),b.getZ()+end.getZ()+3);bike[0].setYRot(180);bike[0].steady(0,0);p[0].setYRot(180);p[0].setYHeadRot(180);
+            })
+            .thenWaitUntil(()->{t[0]++;var r=at.get();pedalWell(bike[0],t[0],3);h.assertTrue(r.y>.6,"waiting to be a little way up the chute: "+r);})
+            .thenExecute(()->{p[0].setPlayerInput(0,-1,false,false);p[0].setYRot(0);p[0].setYHeadRot(0);})
+            .thenWaitUntil(()->{h.assertTrue(Math.abs(Mth.wrapDegrees(bike[0].getYRot()))<6,"waiting for the bike to come round");})
+            .thenExecute(()->p[0].setPlayerInput(0,0,false,false))
+            .thenWaitUntil(()->{t[0]++;var r=at.get();if(bike[0].speedNow()<.12F)pedalWell(bike[0],t[0],4);h.assertTrue(r.z>end.getZ()+1.2&&r.y<.5,"waiting to be down again: "+r);})
+            .thenIdle(BikeNight.LOOK*3)
+            .thenExecute(()->h.assertTrue(f.own(p[0],P).getInt("SlideRides")==1,"part way up and down again is not the slide ridden down"))
             .thenSucceed();
     }
 
