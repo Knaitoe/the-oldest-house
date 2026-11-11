@@ -109,7 +109,7 @@ public final class LiteraryTests {
      */
     @GameTest(template="empty",batch="literary_dialogue",timeoutTicks=1200)
     public static void aLineStaysUpAsLongAsItTakesToReadByOneRuleAndTheSettingScalesIt(GameTestHelper h){
-        var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("dialogue_reader",place);final LiteraryActor[] a={null};
+        var f=new Fixture(h);var place=LabyrinthPlace.HILL_NURSERY;var p=f.player("dialogue_reader",place);final LiteraryActor[] a={null};final long[] said={0};
         String brief="Hello.",middling="Come on. It goes further than you think.",lengthy="I can ride all the way to the fort. Kendra says pushing on the steep part doesn't count.";
         h.startSequence().thenExecute(()->{
             // The rule: a moment to find the line and time for each character, never under five seconds or over twelve.
@@ -123,14 +123,19 @@ public final class LiteraryTests {
             h.assertTrue(Dialogue.percent()==100&&Dialogue.ticks(lengthy)==Dialogue.MOST,"and the world's setting is the usual time until somebody changes it");
             a[0]=LiteraryVignettes.actor(p,place,"DialogueProbe",LiteraryActor.STRANGER,new BlockPos(0,0,-6),true);
             h.assertTrue(a[0]!=null&&!a[0].saying(),"somebody who has said nothing is saying nothing");
-            a[0].say("Patrick",lengthy);
+            a[0].say("Patrick",lengthy);said[0]=h.getLevel().getGameTime();
             h.assertTrue(a[0].saying()&&a[0].isCustomNameVisible(),"a line is up as soon as it is said");
         })
         .thenIdle(130)
         .thenExecute(()->h.assertTrue(a[0].saying()&&a[0].isCustomNameVisible()&&lengthy.equals(a[0].getCustomName().getString()),"six and a half seconds on a long line is still up, where most scenes used to take every line down"))
-        .thenIdle(Dialogue.MOST-130+2)
+        // 0.4.480 (CI, run 1528, on 0.4.478): this used to wait the line's own time and two ticks, and failed on a slower machine with
+        // the line still up. A person takes their own line down, on their own ticks, and one made a moment before their part of the
+        // world began to tick is that moment behind the game's clock. So the case waits for the line to go, and then holds it to
+        // having had its time and not much more.
+        .thenWaitUntil(()->h.assertTrue(!a[0].saying()&&!a[0].isCustomNameVisible(),"waiting for the line to go"))
         .thenExecute(()->{
-            h.assertTrue(!a[0].saying()&&!a[0].isCustomNameVisible(),"and it goes when it has been read");
+            long took=h.getLevel().getGameTime()-said[0];
+            h.assertTrue(took>=Dialogue.MOST-1&&took<=Dialogue.MOST+60,"and it goes when it has been read: after "+took+" ticks, for a line whose time is "+Dialogue.MOST);
             HouseConfig.READING_TIME.set(200);
             h.assertTrue(Dialogue.ticks(brief)==Dialogue.LEAST*2,"the world's setting at 200 gives a brief line ten seconds");
             a[0].say(brief);
