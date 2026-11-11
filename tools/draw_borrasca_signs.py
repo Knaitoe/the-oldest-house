@@ -643,6 +643,25 @@ def pictures():
     return out
 
 
+# 0.4.486: a sign whose picture moves. Its name -> (how many frames, how many ticks each is up). Its painter returns the frames one
+# under another; the .mcmeta written beside the picture tells the game how they are cut and played. Its blocks' models are cut
+# from all the frames laid over one another, so a block holds whatever any frame draws in it.
+FRAMES = {}
+
+
+def one_frame(name, im):
+    if im is None or name not in FRAMES:
+        return im
+    n = FRAMES[name][0]
+    w, h = im.size
+    if h % n:
+        raise SystemExit(f'{name}: {h} rows is not {n} frames')
+    out = Image.new('RGBA', (w, h // n), (0, 0, 0, 0))
+    for k in range(n):
+        out.alpha_composite(im.crop((0, k * (h // n), w, (k + 1) * (h // n))))
+    return out
+
+
 def bounds(im, box):
     """The smallest box inside `box` that holds every pixel drawn there, or None."""
     part = im.crop(box).getbbox()
@@ -704,7 +723,7 @@ def piece(name, im, glow, mount, light, window, left, bottom):
 def models(pics):
     out = {}
     for name, cols, rows, mount, painter, light in SIGNS:
-        im, glow = pics[name], pics.get(name + '_glow')
+        im, glow = one_frame(name, pics[name]), one_frame(name, pics.get(name + '_glow'))
         w, h = im.size
         if cols * rows > 1:
             if (w, h) != (cols * 16, rows * 16):
@@ -748,6 +767,11 @@ def files():
     for name, m in models(pics).items():
         out[ASSETS / f'models/block/{DIR}/{name}.json'] = dump_model(m)
     out[ASSETS / f'blockstates/{DIR}.json'] = dump_states(states())
+    for name, (n, ticks) in FRAMES.items():
+        for key in (name, name + '_glow'):
+            if key in pics:
+                w, h = pics[key].size
+                out[ASSETS / f'textures/block/{DIR}/{key}.png.mcmeta'] = json.dumps({'animation': {'frametime': ticks, 'width': w, 'height': h // n}}) + '\n'
     return pics, out
 
 
@@ -823,6 +847,7 @@ def main():
             if not path.exists() or path.read_text() != text:
                 raise SystemExit(f'{path.relative_to(ROOT)} is not what the tool writes')
         extra = {p.stem for p in folder.glob('*.png')} - set(pics) | {p.stem for p in (ASSETS / f'models/block/{DIR}').glob('*.json')} - {p.stem for p in texts}
+        extra |= {p.name for p in folder.glob('*.mcmeta')} - {p.name for p in texts}
         if extra:
             raise SystemExit(f'files the tool does not make: {sorted(extra)}')
         lang = json.loads((ASSETS / 'lang/en_us.json').read_text())

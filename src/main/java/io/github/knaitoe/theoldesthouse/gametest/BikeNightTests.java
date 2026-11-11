@@ -3665,4 +3665,128 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="people_boo") public static void peopleBooDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.486: what changes in the town
+    @GameTest(template="empty",batch="evening_signs",timeoutTicks=9000)
+    public static void theBurgerPlacesBadLetterGoesOutAndComesBackAndTheGroceryClosesUpAisleByAisle(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};
+        final boolean[] out={false},back={false},apart={false};final long[] wentDark={-1,-1,-1};final int[] order={0};
+        Runnable watch=()->{
+            boolean south=CalderTown.neonDim(l,b,false),north=CalderTown.neonDim(l,b,true);
+            if(south!=north||south!=CalderEvening.dim(b))apart[0]=true;
+            if(south)out[0]=true;else if(out[0])back[0]=true;
+            for(int k=0;k<3;k++)if(wentDark[k]<0&&!CalderTown.aisleLit(l,b,k)){wentDark[k]=l.getGameTime();order[0]=order[0]*10+k+1;}
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("evening_grocery_reader",P);p[1]=f.player("evening_burger_reader",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            // One reader in the Food Fair's lot, the other in the burger place's.
+            .thenExecute(()->{f.at(p[0],P,-30.5,0,-104.5);f.at(p[1],P,25.5,0,-62.5);hush(p[0]);hush(p[1]);})
+            .thenExecuteFor(60,watch)
+            .thenExecute(()->{
+                h.assertTrue(!out[0]&&order[0]==0&&CalderEvening.dark(b)==0,"until the town wakes, the sign is whole and the grocery is lit");
+                for(int k=0;k<3;k++)h.assertTrue(CalderTown.aisleLit(l,b,k),"window "+k+" is lit");
+                CalderTraffic.startNow(b);CalderEvening.closing(b,40);
+            })
+            .thenIdle(2)
+            .thenExecute(()->CalderEvening.neonNow(b))
+            .thenWaitUntil(()->{watch.run();h.assertTrue(back[0]&&CalderEvening.dark(b)==3,"waiting for the G to go out and come back, and for the grocery to be dark: "+CalderEvening.dark(b)+" aisles, out "+out[0]+", back "+back[0]);})
+            .thenExecute(()->{
+                h.assertTrue(!apart[0],"both of the burger place's signs go out and come back together");
+                h.assertTrue(order[0]==123,"the aisles go dark from the west, one after another: "+order[0]);
+                h.assertTrue(wentDark[1]-wentDark[0]>=CalderEvening.AISLE_GAP-2&&wentDark[2]-wentDark[1]>=CalderEvening.AISLE_GAP-2,"some seconds apart: "+(wentDark[1]-wentDark[0])+", "+(wentDark[2]-wentDark[1]));
+                h.assertTrue(CalderSignBlock.is(l.getBlockState(b.offset(-29,3,-112)),CalderSigns.Sign.FOODFAIR_NAME),"its name is still lit over the door");
+                h.assertTrue(sounded(p[0],"town.breaker")&&!sounded(p[1],"town.breaker"),"the switch is heard in the lot, and not across town");
+                h.assertTrue(sounded(p[1],"town.neon")&&!sounded(p[0],"town.neon"),"the tube is heard by the burger place, and not across town");
+                // The pictures that move are told to: each has its frames' card beside it.
+                for(var name:List.of("wash_front","wash_front_glow","bigtop_front","bigtop_front_glow"))
+                    h.assertTrue(CalderEvening.class.getResource("/assets/the_oldest_house/textures/block/calder_sign/"+name+".png.mcmeta")!=null,"the moving picture "+name+" has its frames' card");
+                // The night over: the windows are lit again and the sign is whole.
+                BikeNight.resetNow(l,b);
+                for(int k=0;k<3;k++)h.assertTrue(CalderTown.aisleLit(l,b,k),"the night over, window "+k+" is lit again");
+                h.assertTrue(!CalderTown.neonDim(l,b,false)&&!CalderTown.neonDim(l,b,true),"and the sign is whole");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="evening_signs") public static void eveningSignsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="evening_tracks",timeoutTicks=9000)
+    public static void aBikeLeavesTracksInTheDewOnTheFieldAndSomebodyOnFootLeavesNone(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};final int[] t={0};
+        var turf=BikeNightRegistry.material("turf").defaultBlockState();var tracked=BikeNightRegistry.material("turf_track").defaultBlockState();var chalk=BikeNightRegistry.material("turf_line").defaultBlockState();
+        int row=-16,from=-140;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("evening_tracks_rider",P);p[1]=f.player("evening_tracks_walker",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.WASP);CalderTraffic.startNow(b);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the Wasp to be theirs"))
+            // On the field, between two of its yard lines, looking north; and somebody standing on it a little way off.
+            .thenExecute(()->{
+                h.assertTrue(l.getBlockState(b.offset(row,-1,from))==turf&&l.getBlockState(b.offset(-18,-1,from))==chalk,"the field is turf, with its lines chalked on it");
+                mine[0].moveTo(b.getX()+row+.5,b.getY(),b.getZ()+from+.5,180,0);p[0].setYRot(180);f.at(p[1],P,-12.5,0,-145.5);
+            })
+            .thenIdle(12)
+            .thenExecute(()->{
+                h.assertTrue(l.getBlockState(b.offset(row,-1,from))==turf&&CalderEvening.tracks(b)==0,"a bike standing still leaves nothing");
+                h.assertTrue(l.getBlockState(b.offset(-13,-1,-146))==turf,"and neither does somebody on foot");
+            })
+            .thenWaitUntil(()->{if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);}
+                h.assertTrue(mine[0].getZ()-b.getZ()<from-9,"waiting for them to ride ten blocks up the field: at "+rel(b,mine[0])+" going "+mine[0].speedNow());})
+            .thenExecute(()->{
+                int marked=0;for(int z=from-8;z<=from-1;z++)if(l.getBlockState(b.offset(row,-1,z))==tracked)marked++;
+                h.assertTrue(marked>=7,"the turf they rode over is tracked: "+marked+" of eight");
+                h.assertTrue(CalderEvening.tracks(b)>=marked&&CalderEvening.tracks(b)<=16,"and only where they rode: "+CalderEvening.tracks(b));
+                for(int z=from-8;z<=from;z++){
+                    h.assertTrue(l.getBlockState(b.offset(row-1,-1,z))==turf&&l.getBlockState(b.offset(row+1,-1,z))==turf,"the turf either side of their way is as it was");
+                    h.assertTrue(l.getBlockState(b.offset(-18,-1,z))==chalk,"and the lines are still chalk");
+                }
+                h.assertTrue(l.getBlockState(b.offset(-13,-1,-146))==turf,"somebody who has stood there all this time has left nothing");
+                // The night over: nothing on the field.
+                getOff(p[0]);
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                BikeNight.resetNow(l,b);
+                for(int x=CalderTown.FIELD_W;x<=CalderTown.FIELD_E;x++)for(int z=CalderTown.FIELD_N;z<=CalderTown.FIELD_S;z++)h.assertTrue(l.getBlockState(b.offset(x,-1,z))!=tracked,"the night over, there is no track on the field: "+x+", "+z);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="evening_tracks") public static void eveningTracksDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="evening_sounds",timeoutTicks=9000)
+    public static void theDryersTheRadioAndTheTheatersLaughterAreHeardByWhoeverIsNearAndNobodyElse(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("evening_sounds_near",P);p[1]=f.player("evening_sounds_far",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            // One reader on the pavement outside the laundromat; the other stays in the park.
+            .thenExecute(()->{f.at(p[0],P,13.5,0,-97.5);f.at(p[1],P,-14.5,0,-20.5);hush(p[0]);hush(p[1]);})
+            .thenIdle(CalderEvening.DRYERS_EVERY+12)
+            .thenExecute(()->{
+                h.assertTrue(!sounded(p[0],"town.dryers"),"until the town wakes there is nothing to hear of it");
+                CalderTraffic.startNow(b);
+            })
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"town.dryers"),"waiting for the dryers to be heard outside the laundromat"))
+            .thenExecute(()->{hush(p[0]);})
+            .thenIdle(CalderEvening.DRYERS_EVERY+4)
+            .thenExecute(()->{
+                h.assertTrue(sounded(p[0],"town.dryers"),"and they go on");
+                // By the car in the burger place's lot.
+                f.at(p[0],P,11.5,0,-58.5);hush(p[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"town.radio"),"waiting for the car's radio"))
+            .thenExecute(()->{
+                h.assertTrue(!sounded(p[0],"town.dryers"),"the dryers are not heard from there");
+                // On the pavement under the theater's marquee.
+                f.at(p[0],P,-14.5,0,-85.5);hush(p[0]);
+            })
+            .thenIdle(3)
+            .thenExecute(()->CalderEvening.laughNow(b))
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"town.laughter"),"waiting for the house to laugh"))
+            .thenExecute(()->{
+                for(var name:List.of("town.dryers","town.radio","town.laughter"))h.assertTrue(!sounded(p[1],name),"none of it carries to the park: "+name);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="evening_sounds") public static void eveningSoundsDone(ServerLevel l){done();}
 }

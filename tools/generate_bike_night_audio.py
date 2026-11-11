@@ -7,7 +7,9 @@ of the monkey bars; (0.4.468) the seesaw's axle as somebody pushes off, and its 
 merry-go-round's bearing as it comes round. And the park's small things (0.4.471): the drinking fountain running, the payphone's
 dial tone and its handset going back on the hook, and the spring rider's spring. And the hunt's (0.4.482): a body landing in
 dry leaves, and the three laughing as they ride off. And the cars' (0.4.484): an engine going by, a second of it, which the game
-plays over and over as a car drives; and four horns, one for each car.
+plays over and over as a car drives; and four horns, one for each car. And the town's own (0.4.486): the laundromat's dryers, three
+seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
+house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -54,7 +56,17 @@ ROWS = {
     'town/horn_pickup': ('town.horn_pickup', "A pickup's horn", 48),
     'town/horn_sedan': ('town.horn_sedan', "A sedan's horn", 48),
     'town/horn_muscle': ('town.horn_muscle', "A fast car's horn", 48),
+    # 0.4.486: the town's own.
+    # (Each is played louder than one, which is how the game is told to send it further than sixteen blocks; what it reaches is
+    # this many blocks times that. So the ones that go on and on are made quiet in themselves: LEVELS.)
+    'town/dryers': ('town.dryers', 'Dryers tumble', 16),
+    'town/neon': ('town.neon', 'Neon buzzes', 14),
+    'town/breaker': ('town.breaker', 'Lights are switched off', 16),
+    'town/laughter': ('town.laughter', 'An audience laughs', 16),
+    'town/radio': ('town.radio', 'A car radio plays', 16),
 }
+# How loud each is in itself, where it is not as loud as a sound can be.
+LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55}
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
 
@@ -510,7 +522,111 @@ def horn(low, high, length, rasp=0.0, twice=False):
     return (press(.02, .2) + press(.32, length - .38) if twice else press(.02, length - .06)) * .5
 
 
-MAKERS = {'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
+def dryers():
+    # Dryers turning behind glass, three seconds of them: the motors' hum, the drums' rumble, and what is in them falling once a
+    # turn, two machines a little out of step. It begins and ends quietly, so that one playing of it runs into the next.
+    length = 3.0
+    n = seconds(length)
+    t = times(n)
+    hum = np.sin(2 * np.pi * 100 * t) * .3 + np.sin(2 * np.pi * 200 * t) * .1
+    rumble = band(rng.standard_normal(n), 60, 260) * (.6 + .4 * np.sin(2 * np.pi * .9 * t)) * .8
+    out = hum + rumble
+    for period, first in ((.92, .1), (1.07, .45)):
+        at = first
+        while at < length - .2:
+            i = seconds(at)
+            m = seconds(.14)
+            thump = band(rng.standard_normal(m), 90, 500) * np.exp(-times(m) / .04) * .9
+            out[i:i + m] += thump
+            if rng.random() < .5:                           # a zip or a button on the drum
+                c = click(.012, 2500, 6000, .002) * .3
+                j = i + seconds(.05)
+                out[j:j + len(c)] += c
+            at += period
+    return out * np.clip(t / .35, 0, 1) * np.clip((length - t) / .35, 0, 1)
+
+
+def neon():
+    # A tube that will not stay lit: a short hard buzz at twice the mains with a crackle on it, and a tick as it lets go.
+    length = .5
+    n = seconds(length)
+    t = times(n)
+    gate = .5 + .5 * np.sign(np.sin(2 * np.pi * 120 * t))
+    hum = np.sign(np.sin(2 * np.pi * 120 * t)) * .22 + np.sin(2 * np.pi * 240 * t) * .3 + np.sin(2 * np.pi * 480 * t) * .14
+    crackle = band(rng.standard_normal(n), 3000, 9000) * gate * .35
+    out = (hum + crackle) * np.clip(t / .008, 0, 1) * np.clip((length - .06 - t) / .05, 0, 1)
+    c = click(.01, 2500, 7500, .0015) * .6
+    i = seconds(length - .05)
+    out[i:i + len(c)] += c
+    return out
+
+
+def breaker():
+    # A row of lights switched off at the box: the handle going over with a clack, and the ballasts dying under it.
+    length = .9
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((0, 1.0), (.035, .5)):
+        c = click(.03, 400, 3500, .006) * level
+        i = seconds(at)
+        out[i:i + len(c)] += c
+    f = 120 * (1 - .12 * np.clip(t / length, 0, 1))
+    phase = 2 * np.pi * np.cumsum(f) / RATE
+    out += (np.sin(phase) * .3 + np.sin(2 * phase) * .14) * np.exp(-t / .22) * np.clip(t / .02, 0, 1)
+    return out
+
+
+def laughter():
+    # A full house laughing at the same thing, heard through the theater's doors: a great many voices, none of them clear, a swell
+    # and a falling away.
+    length = 2.6
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    for voice in range(26):
+        pitch = rng.uniform(150, 420)
+        at = rng.uniform(.0, .5)
+        for k in range(int(rng.integers(4, 8))):
+            f0 = pitch * (1 - .03 * k) * rng.uniform(.97, 1.03)
+            shape = np.clip((t - at) / .012, 0, 1) * np.exp(-np.clip(t - at, 0, None) / .05) * (t >= at) * (t < at + .2)
+            out += (np.sin(2 * np.pi * f0 * t) * .5 + np.sin(2 * np.pi * f0 * 2 * t) * .3 + np.sin(2 * np.pi * f0 * 3 * t) * .12) * shape * (1 - .07 * k)
+            at += rng.uniform(.15, .24)
+    room = band(rng.standard_normal(n), 300, 1500) * .5 * np.clip(t / .4, 0, 1) * np.exp(-np.clip(t - .7, 0, None) / .8)
+    return band(out + room * np.max(np.abs(out)) * .25, 140, 1100) * np.clip(t / .3, 0, 1) * np.clip((length - t) / .5, 0, 1)
+
+
+def radio():
+    # A car radio a street away, eight seconds of a tune nobody could name: a bass on the beat, an organ picking out four chords
+    # over it, a tick on the off-beats, all of it through a three-inch speaker. It ends as it began, so it goes round.
+    beat, bars = .5, 4
+    length = beat * 4 * bars
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    chords = ((110.0, (220.0, 261.63, 329.63)), (87.31, (174.61, 220.0, 261.63)), (130.81, (261.63, 329.63, 392.0)), (98.0, (196.0, 246.94, 293.66)))
+    order = (0, 1, 2, 1, 0, 2, 1, 2)
+
+    def note(f, at, held, level, organ):
+        shape = np.clip((t - at) / .008, 0, 1) * (np.exp(-np.clip(t - at, 0, None) / (held * .9)) if not organ else np.clip((at + held - t) / .03, 0, 1)) * (t >= at) * (t < at + held)
+        ph = 2 * np.pi * f * t
+        return (np.sin(ph) + (.5 * np.sin(2 * ph) + .3 * np.sin(3 * ph) + .12 * np.sin(4 * ph) if organ else .3 * np.sin(2 * ph))) * shape * level
+    for bar in range(bars):
+        root, tones = chords[bar]
+        for b in range(4):
+            at = (bar * 4 + b) * beat
+            out += note(root, at, beat * .9, .8 if b in (0, 2) else .5, False)
+            for half in range(2):
+                out += note(tones[order[b * 2 + half]] * 2, at + half * beat / 2, beat * .42, .32, True)
+            c = click(.02, 5000, 9000, .004) * .25
+            i = seconds(at + beat / 2)
+            out[i:i + len(c)] += c
+    out = np.tanh(band(out, 380, 3000) * 2.2)
+    return out * np.clip(t / .12, 0, 1) * np.clip((length - t) / .12, 0, 1)
+
+
+MAKERS = {'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+          'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
           'park/swing_creak': swing_creak, 'park/sand_scoop': sand_scoop, 'park/sand_throw': sand_throw, 'park/sand_burst': sand_burst, 'park/slide': slide, 'park/bars': bars, 'park/seesaw_creak': seesaw_creak, 'park/seesaw_thud': seesaw_thud, 'park/roundabout_squeak': roundabout_squeak, 'park/fountain': fountain, 'park/phone_tone': phone_tone, 'park/phone_hook': phone_hook,
@@ -522,7 +638,7 @@ def main():
         target = ASSETS / f'sounds/{path_name}.ogg'
         target.parent.mkdir(parents=True, exist_ok=True)
         if not target.exists():
-            soundfile.write(str(target), normalized(MAKERS[path_name]()).astype(np.float32), RATE, format='OGG', subtype='VORBIS')
+            soundfile.write(str(target), normalized(MAKERS[path_name](), LEVELS.get(path_name, .8)).astype(np.float32), RATE, format='OGG', subtype='VORBIS')
         update(ASSETS / 'sounds.json', event,
                {'sounds': [{'name': f'the_oldest_house:{path_name}', 'attenuation_distance': reach}], 'subtitle': f'subtitles.the_oldest_house.{event}'})
         update(ASSETS / 'lang/en_us.json', f'subtitles.the_oldest_house.{event}', subtitle)

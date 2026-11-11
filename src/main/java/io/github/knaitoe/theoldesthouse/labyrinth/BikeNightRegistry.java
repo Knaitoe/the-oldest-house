@@ -177,6 +177,9 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> ENGINE=sound("town.engine");
     public static final java.util.List<DeferredHolder<SoundEvent,SoundEvent>> HORNS=java.util.List.of(sound("town.horn_wagon"),sound("town.horn_pickup"),sound("town.horn_sedan"),sound("town.horn_muscle"));
 
+    /** 0.4.486, the town's own: the laundromat's dryers, the neon's bad letter, the grocery's lights switched off, the theater's house laughing, a car radio. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> DRYERS=sound("town.dryers"),NEON=sound("town.neon"),BREAKER=sound("town.breaker"),LAUGHTER=sound("town.laughter"),RADIO=sound("town.radio");
+
     private BikeNightRegistry(){}
     /** 0.4.485: the pillowcase a trick-or-treater carries. Nobody is given one. */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> TREAT_SACK=ITEMS.register("treat_sack",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));

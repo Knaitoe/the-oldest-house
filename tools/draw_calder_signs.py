@@ -12,6 +12,7 @@ This slice, the park's two: the iron board over the gate and the rules on the wa
 --check verifies everything. --sheet PATH draws every sign on one page.
 """
 from pathlib import Path
+import math
 
 import draw_borrasca_signs as signs
 from draw_borrasca_signs import border, bolts, canvas, centre, corners, field, line, write
@@ -86,23 +87,73 @@ def wash_name(rnd):
     return im, glow
 
 
+# 0.4.486: the laundromat's front moves, and the burger place's cabinet. How many frames each has, and how many ticks each is up.
+WASH_FRAMES, WASH_TICKS, CABINET_FRAMES, CABINET_TICKS = 8, 4, 4, 5
+# What is on the television, a frame at a time: a late film. Each is nine wide and six high: sky, dark, pale, light.
+FILM = [
+    ('sssssssss', 'ssssspsss', 'sssssssss', 'sssdddsss', 'ssdddddss', 'ddddddddd'),     # a house on a hill, under the moon
+    ('sssssssss', 'ssssspsss', 'sssssssss', 'sssdddsss', 'ssdldddss', 'ddddddddd'),     # and a light comes on in it
+    ('ddddddddd', 'ddpdddpdd', 'ddddddddd', 'dddpppddd', 'ddddddddd', 'ddddddddd'),     # a face in the dark
+    ('ddddddddd', 'dppdddppd', 'ddddddddd', 'ddpppppdd', 'dddpppddd', 'ddddddddd'),     # nearer
+    ('lllllllll', 'lldlllldl', 'lllllllll', 'ldllldlll', 'lllllllll', 'lllldllll'),     # the reel jumps
+    ('sssssssss', 'sssssssss', 'ssssdssss', 'sssdddsss', 'sssdddsss', 'ddddddddd'),     # somebody at the top of the hill
+    ('sssssssss', 'sssdsdsss', 'sssdddsss', 'sssdddsss', 'ssddddsss', 'ddddddddd'),     # with their arms up
+    ('ddddddddd', 'ddddddddd', 'dddpppddd', 'ddddddddd', 'ddddddddd', 'ddddddddd'),     # and the dark again
+]
+
+
 def wash_front(rnd):
-    """The laundromat: a row of dryers behind the glass, a folding counter, and the door at the right."""
+    """The laundromat, eight frames of it: a row of dryers behind the glass, four of them turning; a woman folding alone at the
+    counter; a television on a bracket with a late film on; and the door at the right."""
     im, glow = canvas(112, 32), canvas(112, 32)
     field(im, (0, 0, 112, 32), ALU, rnd, 3)
     pane(im, glow, (1, 1, 90, 31), '#d3dccb', rnd)
-    for k in range(6):                                       # the dryers: a ring, a dark drum, clothes going round
+    cloth = ('#c94a3a', '#3a6fc9', '#e0d8c0', '#d9b21f', '#5aa06a')
+    loads = []
+    for k in range(6):                                       # the dryers: a ring and a dark drum
         cx = 9 + k * 14
         line(glow, cx - 5, 5, cx + 5, 16, '#9aa0a4'); line(glow, cx - 4, 6, cx + 4, 15, '#2a3034')
-        for _ in range(9):
-            glow.putpixel((cx - 3 + rnd.randrange(7), 7 + rnd.randrange(7)), signs.tone(rnd.choice(('#c94a3a', '#3a6fc9', '#e0d8c0', '#d9b21f', '#5aa06a')), rnd.randint(-10, 10)))
+        loads.append([(rnd.random() * 6.283, rnd.choice((1.3, 2.2, 3.0, 3.0)), signs.tone(rnd.choice(cloth), rnd.randint(-10, 10))) for _ in range(9)])
     line(glow, 3, 23, 88, 25, '#8b6a48'); line(glow, 3, 25, 88, 30, '#6d5238')              # the counter
-    for x in (20, 47, 70):
+    for x in (20, 40):
         line(glow, x, 19, x + 9, 23, '#e6e0cf')                                              # folded things on it
-    write(glow, 4, 2, 'COIN-OP', NIGHT); write(glow, 59, 2, 'WASH .50', NIGHT)
+    write(glow, 4, 2, 'COIN-OP', NIGHT); write(glow, 36, 2, 'WASH .50', NIGHT)
+    line(glow, 86, 1, 88, 3, '#55585c'); line(glow, 76, 2, 88, 10, '#3a3a3e'); line(glow, 79, 10, 85, 11, '#2a2a2e')     # the television on its bracket
     pane(im, glow, (93, 1, 111, 31), '#d3dccb', rnd)
     line(glow, 95, 16, 109, 17, '#8f9396'); write(glow, 95, 5, 'OPEN', '#b3261f'); write(glow, 97, 22, '24H', NIGHT)
-    return im, glow
+    turning = (0, 2, 3, 5)
+    film = {'s': '#3a4a66', 'd': '#12141a', 'p': '#c8d2dc', 'l': '#9aa6b4'}
+    hair, skin, wool, sheet = '#5a3a22', '#d9b090', '#7a5a8a', '#f0ead8'
+    all_im, all_glow = canvas(112, 32 * WASH_FRAMES), canvas(112, 32 * WASH_FRAMES)
+    for f in range(WASH_FRAMES):
+        g = glow.copy(); px = g.load()
+        for k in range(6):
+            cx, cy = 9 + k * 14 - .5, 10.5
+            for i, (a, r, c) in enumerate(loads[k]):
+                if k in turning:                             # going round, an eighth of a turn a frame
+                    a = a + f * 6.283 / WASH_FRAMES
+                    x, y = round(cx + math.cos(a) * r), round(cy + math.sin(a) * r * .95)
+                else:                                        # stopped, in a heap at the bottom
+                    x, y = round(cx - 3 + i * .75), 13 + (i * 5) % 2
+                px[max(9 + k * 14 - 3, min(9 + k * 14 + 2, x)), max(7, min(13, y))] = c
+        for y, row in enumerate(FILM[f]):                    # what is on
+            for x, ch in enumerate(row):
+                px[77 + x, 3 + y] = signs.tone(film[ch])
+        # The woman at the counter, her back to the dryers: she holds a sheet up by its corners, brings them together, lays it on
+        # the counter, and smooths it down.
+        line(g, 62, 11, 65, 12, hair); line(g, 61, 12, 66, 13, hair); line(g, 62, 13, 65, 16, skin); line(g, 61, 13, 62, 15, hair); line(g, 65, 13, 66, 15, hair)
+        line(g, 60, 16, 67, 23, wool)
+        step = f // 2
+        if step == 0:
+            line(g, 57, 15, 59, 17, skin); line(g, 68, 15, 70, 17, skin); line(g, 57, 17, 70, 22, sheet)
+        elif step == 1:
+            line(g, 60, 15, 62, 17, skin); line(g, 65, 15, 67, 17, skin); line(g, 60, 17, 67, 22, sheet)
+        elif step == 2:
+            line(g, 59, 19, 61, 21, skin); line(g, 66, 19, 68, 21, skin); line(g, 60, 21, 67, 23, sheet)
+        else:
+            line(g, 60, 20, 62, 22, skin); line(g, 64, 20, 66, 22, skin); line(g, 59, 22, 68, 23, sheet)
+        all_im.paste(im, (0, 32 * f)); all_glow.paste(g, (0, 32 * f))
+    return all_im, all_glow
 
 
 def bigtop(dim):
@@ -144,7 +195,20 @@ def bigtop_front(rnd):
     for _ in range(10):
         glow.putpixel((8 + rnd.randrange(10), 9 + rnd.randrange(8)), signs.tone(rnd.choice(('#5ad0ff', '#ffe25a', '#1a1a24'))))
     line(glow, 9, 19, 17, 21, '#3a3a44'); glow.putpixel((11, 19), signs.tone('#ff5a4a')); glow.putpixel((15, 19), signs.tone('#ffe25a'))
-    return im, glow
+    # 0.4.486: its screen is going. A ship at the bottom that moves from side to side, a shot going up from it, and three rows of
+    # things coming down a step at a time.
+    all_im, all_glow = canvas(112, 32 * CABINET_FRAMES), canvas(112, 32 * CABINET_FRAMES)
+    for f in range(CABINET_FRAMES):
+        g = glow.copy()
+        line(g, 8, 9, 18, 17, '#141420')
+        for row in range(3):
+            for k in range(4):
+                x, y = 9 + k * 2 + (f + row) % 2, 9 + row + f // 2
+                g.putpixel((x, y), signs.tone(('#5ad0ff', '#ff5ad0', '#ffe25a')[row]))
+        ship = 10 + (0, 2, 4, 2)[f]
+        line(g, ship, 16, ship + 3, 17, '#e9e2cc'); g.putpixel((ship + 1, 15 - f), signs.tone('#ffffff'))
+        all_im.paste(im, (0, 32 * f)); all_glow.paste(g, (0, 32 * f))
+    return all_im, all_glow
 
 
 def foodfair_name(rnd):
@@ -653,6 +717,7 @@ def main():
     signs.SIGNS = SIGNS
     signs.PLACED = {}
     signs._PICS = None
+    signs.FRAMES = {'wash_front': (WASH_FRAMES, WASH_TICKS), 'bigtop_front': (CABINET_FRAMES, CABINET_TICKS)}
     signs.piece = piece
     signs.main()
 
