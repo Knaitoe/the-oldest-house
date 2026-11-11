@@ -701,7 +701,7 @@ public final class BorrascaTests {
               h.assertTrue(f.own(p).getInt("ArcadeBest"+BorrascaArcade.SEAM)==again.score(),"and the score kept is the one the server's own replay reaches: "+again.score());
               h.assertTrue(f.own(p).getInt("Cents")==cents-2*BorrascaArcade.PRICE,"two plays, two quarters");
               // The table: a good game goes in under Patrick's, and the last of the children's drops off the bottom.
-              own=f.own(p);h.assertTrue(BorrascaArcade.record(own,BorrascaArcade.SEAM,"ZZZ",2000)==2,"two thousand goes in second, under Patrick's");
+              own=f.own(p);h.assertTrue(BorrascaArcade.record(own,BorrascaArcade.SEAM,"ZZZ",700)==2,"seven hundred goes in second, under Patrick's seven thirty");
               var rows=BorrascaArcade.table(own,BorrascaArcade.SEAM);h.assertTrue(rows.size()==BorrascaArcade.ROWS&&rows.get(0)[0].equals("PAT")&&rows.get(1)[0].equals("ZZZ")&&rows.stream().noneMatch(r->r[0].equals("PAM")),"and the last of the children's falls off the bottom");f.save(p,own);
               // No money, no game.
               own=f.own(p);own.putInt("Cents",10);own.putInt("FriendCents",0);f.save(p,own);own=f.own(p);BorrascaStory.click(p,b,BorrascaShops.CABINETS[BorrascaArcade.CAT],own);f.save(p,own);
@@ -709,6 +709,141 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
     @AfterBatch(batch="borrasca_arcade") public static void arcadeDone(ServerLevel l){cleanup();}
+
+    @AfterBatch(batch="borrasca_arcade_friends") public static void arcadeFriendsDone(ServerLevel l){cleanup();}
+    /**
+     * 0.4.446 (owner: "Give Patrick and Kendra a turn at the arcade. Patrick watches your first run of Deep Seam and asks for a
+     * rematch if you beat him. Kendra knows a trick he keeps getting wrong. On the next visit, she reacts differently depending on
+     * whose initials are at the top."). The reader's first quarter in DEEP SEAM brings the two of them in through the drugstore's
+     * door. Under Patrick's score he says so and Kendra says what he gets wrong, then takes BIG CAT, where she can be watched. Over
+     * it he takes the cabinet and hops every timber; told, he goes round them and has the top back; and the next time, Kendra says
+     * how it came out.
+     */
+    @GameTest(template="empty",batch="borrasca_arcade_friends",timeoutTicks=6000)
+    public static void patrickAndKendraTakeTheirTurnsAtTheCabinets(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_cabinets");final int seam=BorrascaArcade.SEAM,cat=BorrascaArcade.CAT;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")).thenExecute(()->{f.enter(p);f.stage(p,1);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place")).thenExecute(()->{
+              var b=f.base(p);var out=b.offset(BorrascaArcadeFriends.OUT);
+              h.assertTrue(f.out.getBlockState(out).getCollisionShape(f.out,out).isEmpty()&&f.out.getBlockState(out.above()).getCollisionShape(f.out,out.above()).isEmpty()&&f.out.getBlockState(out.below()).isCollisionShapeFullBlock(f.out,out.below()),"the sidewalk by the drugstore's door is somewhere to stand");
+              h.assertTrue(f.out.getBlockState(b.offset(BorrascaShops.DRUG_DOOR)).getBlock() instanceof DoorBlock&&!f.out.getBlockState(b.offset(BorrascaShops.DRUG_DOOR)).getValue(DoorBlock.OPEN),"and the door is shut");
+              f.atWorld(p,new BlockPos(9,0,-94));p.setYRot(0);p.setYHeadRot(0);
+              var own=f.own(p);own.putInt("Cents",200);
+              h.assertTrue(BorrascaStory.click(p,b,BorrascaShops.CABINETS[seam],own),"a quarter in DEEP SEAM");f.save(p,own);
+              h.assertTrue(BorrascaArcade.session(p.getUUID())!=null&&f.own(p).getInt("ArcadeScene")==BorrascaArcadeFriends.ON,"the reader's first game there begins the afternoon");
+          })
+          .thenWaitUntil(()->{
+              var own=f.own(p);var b=f.base(p);var pat=f.actor(p,"TownEli");var ken=f.actor(p,"TownWren");
+              h.assertTrue(own.getInt("PatMode")==BorrascaArcadeFriends.WATCHING&&own.getInt("KenMode")==BorrascaArcadeFriends.WATCHING,"they come in while the screen has the reader's eyes: Patrick "+own.getInt("PatMode")+" at "+pat.position().subtract(Vec3.atLowerCornerOf(b))+", Kendra "+own.getInt("KenMode")+" at "+ken.position().subtract(Vec3.atLowerCornerOf(b)));
+              h.assertTrue(BorrascaArcadeFriends.inside(pat,b)&&BorrascaArcadeFriends.inside(ken,b)&&pat.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaArcadeFriends.PAT_WATCH)))<1&&ken.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaArcadeFriends.KEN_WATCH)))<1,"Patrick at the reader's shoulder and Kendra behind him");
+              h.assertTrue(!f.out.getBlockState(b.offset(BorrascaShops.DRUG_DOOR)).getValue(DoorBlock.OPEN)&&own.getBoolean("ArcadeSeen"),"and the door shut behind them");
+          })
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownEli").contains("Hop everything"),"with the reader's game still going, Patrick has advice: "+said(f,p,"TownEli")))
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownWren").contains("Don't listen to him"),"and Kendra has some about his: "+said(f,p,"TownWren")))
+          .thenWaitUntil(()->{
+              var own=f.own(p);var b=f.base(p);var kel=f.actor(p,"CastKimber");
+              h.assertTrue(own.getBoolean("KelIn")&&own.getInt("KelMode")==BorrascaArcadeFriends.WATCHING&&kel.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaArcadeFriends.KEL_WATCH)))<1,"Kelly, on her way up the street, comes in after them and stands at the comics: in "+own.getBoolean("KelIn")+" mode "+own.getInt("KelMode")+" at "+kel.position().subtract(Vec3.atLowerCornerOf(b)));
+              h.assertTrue(!f.out.getBlockState(b.offset(BorrascaShops.DRUG_DOOR)).getValue(DoorBlock.OPEN),"and shuts the door");
+          })
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"CastKimber").contains("Thirty-one's the one I've got"),"she knows which of Patrick's comics she has: "+said(f,p,"CastKimber")))
+          .thenExecute(()->{
+              // A cart nobody steers: under Patrick's score.
+              var s=BorrascaArcade.session(p.getUUID());var g=BorrascaArcade.of(seam,s.token(),null);int n=0;while(!g.over()&&n<BorrascaArcade.LONGEST[0]){g.tick(0);n++;}
+              BorrascaArcade.backdate(p.getUUID(),n+5);h.assertTrue(BorrascaArcade.submit(p,s.token(),List.of(n<<5)),"the reader's game stands");
+          })
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownEli").contains("Seven thirty"),"under his score, Patrick says so: "+said(f,p,"TownEli")))
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownWren").contains("You can't hop a timber, you go round it"),"and Kendra says what he gets wrong: "+said(f,p,"TownWren")))
+          .thenWaitUntil(()->{
+              var own=f.own(p);var b=f.base(p);var ken=f.actor(p,"TownWren");
+              h.assertTrue(own.getInt("KenMode")==BorrascaArcadeFriends.PLAYING,"then she takes BIG CAT: "+own.getInt("KenMode")+" step "+own.getInt("KenStep"));
+              h.assertTrue(ken.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaArcadeFriends.KEN_PLAY)))<1&&ken.gesture()==3,"standing at it with her hands on it");
+              var game=BorrascaArcade.play(cat,own.getLong("KenSeed"),BorrascaArcade.FISHES);
+              h.assertTrue(game.score()==own.getInt("KenScore")&&game.ticks()==own.getInt("KenLength")&&game.score()>100&&game.at().length>0,"her game is a real one out of its seed, with a big cat in it: "+game.score()+" in "+game.ticks());
+              int cents=own.getInt("Cents");
+              h.assertTrue(BorrascaStory.click(p,b,BorrascaShops.CABINETS[cat],own),"a hand on her cabinet");f.save(p,own);
+              h.assertTrue(BorrascaArcade.session(p.getUUID())==null&&f.own(p).getInt("Cents")==cents&&f.own(p).getInt("ArcadeWatched"+cat)==1,"watches over her shoulder: no quarter, no game of the reader's");
+              own=f.own(p);own.putLong("KenStart",own.getLong("KenStart")-own.getInt("KenLength"));f.save(p,own);
+          })
+          .thenWaitUntil(()->{
+              var own=f.own(p);h.assertTrue(own.getBoolean("KenPlayed")&&own.getInt("KenMode")==BorrascaArcadeFriends.WATCHING,"her game ends");
+              var rows=BorrascaArcade.table(own,cat);int rank=own.getInt("KenRank");
+              h.assertTrue(rank>=1&&rows.get(rank-1)[0].equals("KEN")&&rows.get(rank-1)[1].equals(Integer.toString(own.getInt("KenScore")))&&said(f,p,"TownWren").contains(BorrascaArcadeFriends.fished(own,rank,BorrascaArcade.initials(p))),"her score goes on BIG CAT's table and she says how it came out: "+said(f,p,"TownWren")+" rank "+rank);
+              var fresh=new CompoundTag();
+              h.assertTrue(BorrascaArcadeFriends.fished(fresh,BorrascaArcade.record(fresh,cat,"KEN",250),"ZZZ").contains("K, R, T")&&BorrascaArcadeFriends.fished(fresh,BorrascaArcade.record(fresh,cat,"KEN",320),"ZZZ").contains("Kelly")&&BorrascaArcadeFriends.fished(fresh,BorrascaArcade.record(fresh,cat,"KEN",260),"ZZZ").equals(BorrascaArcadeFriends.FISHED_WORSE)&&BorrascaArcadeFriends.fished(new CompoundTag(),0,"ZZZ").equals(BorrascaArcadeFriends.FISHED_NOTHING),"over Kurt's, over Kelly's, worse than her last, or nothing at all");
+          })
+          .thenExecute(()->{
+              // The reader's initials go over Patrick's.
+              var own=f.own(p);h.assertTrue(BorrascaArcade.record(own,seam,BorrascaArcade.initials(p),900)==1,"nine hundred goes to the top");own.putBoolean("OverPatrick",true);
+              BorrascaArcadeFriends.finished(p,own,seam,true);f.save(p,own);
+          })
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownEli").contains("I'm getting it back")&&f.own(p).getInt("PatMode")==BorrascaArcadeFriends.GOING,"over his score, he wants the cabinet: "+said(f,p,"TownEli")))
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownEli").contains("Move!"),"and the reader is standing where he means to stand: "+said(f,p,"TownEli")))
+          .thenExecute(()->{var own=f.own(p);h.assertTrue(BorrascaStory.click(p,f.base(p),BorrascaShops.CABINETS[seam],own)&&BorrascaArcade.session(p.getUUID())==null&&said(f,p,"TownEli").contains("My go"),"the cabinet is his for now");f.save(p,own);f.atWorld(p,new BlockPos(12,0,-97));p.setYRot(0);p.setYHeadRot(0);})
+          .thenWaitUntil(()->{
+              var own=f.own(p);var b=f.base(p);var pat=f.actor(p,"TownEli");
+              h.assertTrue(own.getInt("PatMode")==BorrascaArcadeFriends.PLAYING,"he plays: "+own.getInt("PatMode"));
+              h.assertTrue(pat.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaArcadeFriends.PAT_PLAY)))<1&&pat.gesture()==3&&own.getInt("PatWay")==BorrascaArcade.HOPS&&own.getInt("PatGames")==1,"at the cabinet, the way he always has");
+              var game=BorrascaArcade.play(seam,own.getLong("PatSeed"),BorrascaArcade.HOPS);
+              h.assertTrue(game.score()==own.getInt("PatScore")&&game.ticks()==own.getInt("PatLength")&&game.score()<600&&game.ticks()<=1500&&Arrays.stream(game.what()).allMatch(k->k==BorrascaArcade.DeepSeam.TIMBER),"his game is a real one out of its seed, short, and lost to three timbers: "+game.score()+" in "+game.ticks());
+              h.assertTrue(BorrascaStory.click(p,b,BorrascaShops.CABINETS[seam],own)&&BorrascaArcade.session(p.getUUID())==null&&own.getInt("ArcadeWatched"+seam)==1,"and can be watched over his shoulder");f.save(p,own);
+              own=f.own(p);own.putLong("PatStart",own.getLong("PatStart")-own.getInt("PatLength"));f.save(p,own);
+          })
+          .thenWaitUntil(()->{
+              var own=f.own(p);
+              h.assertTrue(own.getBoolean("PatLost")&&own.getInt("PatMode")==BorrascaArcadeFriends.WATCHING&&said(f,p,"TownEli").contains("The stick's sticky"),"he loses, and it was the stick: "+said(f,p,"TownEli"));
+              h.assertTrue(said(f,p,"TownWren").contains("Go round them, Pat")&&own.getInt("PatSaid")==3,"Kendra called every timber: "+said(f,p,"TownWren"));
+              h.assertTrue(BorrascaArcade.table(own,seam).get(0)[0].equals(BorrascaArcade.initials(p))&&own.getInt("ArcadeTop")==BorrascaArcadeFriends.READERS,"the reader's initials are still at the top");
+          })
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"CastKimber").contains("It's always the stick"),"Kelly has heard it before: "+said(f,p,"CastKimber")))
+          .thenWaitUntil(()->{
+              // A word to him is the chance to tell him.
+              h.assertTrue(f.rel(f.actor(p,"TownEli"),p)!=null,"he is there");
+              f.talk(p,"TownEli");h.assertTrue(p.containerMenu instanceof LiteraryChoiceMenu,"to tell him, or to say nothing: mode "+f.own(p).getInt("PatMode"));
+              p.containerMenu.clicked(0,0,ClickType.PICKUP,p);var own=f.own(p);
+              h.assertTrue(own.getBoolean("ArcadeTold")&&said(f,p,"TownEli").contains("I knew that"),"told, he knew that: "+said(f,p,"TownEli"));
+          })
+          .thenWaitUntil(()->{
+              var own=f.own(p);h.assertTrue(own.getInt("PatMode")==BorrascaArcadeFriends.PLAYING&&own.getInt("PatWay")==BorrascaArcade.ROUND&&own.getInt("PatGames")==2,"and has one more quarter: "+own.getInt("PatMode"));
+              var game=BorrascaArcade.play(seam,own.getLong("PatSeed"),BorrascaArcade.ROUND);
+              h.assertTrue(game.score()==own.getInt("PatScore")&&game.score()>900&&game.ticks()<=3600,"going round them, his game is a good one: "+game.score()+" in "+game.ticks());
+              own.putLong("PatStart",own.getLong("PatStart")-own.getInt("PatLength"));f.save(p,own);
+          })
+          .thenWaitUntil(()->{
+              var own=f.own(p);var rows=BorrascaArcade.table(own,seam);
+              h.assertTrue(own.getInt("PatMode")==BorrascaArcadeFriends.WATCHING&&rows.get(0)[0].equals("PAT")&&rows.get(0)[1].equals(Integer.toString(own.getInt("PatScore")))&&rows.get(1)[0].equals(BorrascaArcade.initials(p))&&own.getInt("ArcadeTop")==BorrascaArcadeFriends.HIS_AGAIN,"he has the top back, over the reader's: "+rows.get(0)[0]+" "+rows.get(0)[1]);
+              h.assertTrue(said(f,p,"TownEli").contains("P. A. T. Read it."),"and says so: "+said(f,p,"TownEli"));
+          })
+          .thenWaitUntil(()->h.assertTrue(said(f,p,"TownWren").contains("You told him"),"Kendra knows who to thank: "+said(f,p,"TownWren")))
+          .thenExecute(()->{
+              f.talk(p,"TownEli");h.assertTrue(!(p.containerMenu instanceof LiteraryChoiceMenu),"there is nothing more to tell him");
+              // The reader goes back to the gate and turns their back on the town.
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);
+          })
+          .thenWaitUntil(()->{
+              var own=f.own(p);var b=f.base(p);var pat=f.actor(p,"TownEli");var ken=f.actor(p,"TownWren");
+              var kel=f.actor(p,"CastKimber");
+              h.assertTrue(own.getInt("ArcadeScene")==BorrascaArcadeFriends.OVER&&own.getBoolean("ArcadeHomed")&&own.getInt("KelMode")==BorrascaArcadeFriends.LEFT,"with the reader gone they leave by the door: scene "+own.getInt("ArcadeScene")+" Patrick "+own.getInt("PatMode")+" at "+pat.position().subtract(Vec3.atLowerCornerOf(b))+" Kendra "+own.getInt("KenMode")+" at "+ken.position().subtract(Vec3.atLowerCornerOf(b))+" Kelly "+own.getInt("KelMode")+" at "+kel.position().subtract(Vec3.atLowerCornerOf(b)));
+              h.assertTrue(!BorrascaArcadeFriends.inside(pat,b)&&!BorrascaArcadeFriends.inside(ken,b)&&!BorrascaArcadeFriends.inside(kel,b)&&own.getInt("EliAlong")>=2&&own.getInt("WrenAlong")>=2&&own.getInt("ChildStep")>=2,"and go on up the street from it, the walk to the Tree picked up where they are: Patrick "+own.getInt("EliAlong")+" Kendra "+own.getInt("WrenAlong")+" Kelly "+own.getInt("ChildStep"));
+              h.assertTrue(!f.out.getBlockState(b.offset(BorrascaShops.DRUG_DOOR)).getValue(DoorBlock.OPEN),"the door shut behind them");
+              var account=BorrascaTexts.account(own);
+              h.assertTrue(account.contains("I got my initials over Patrick's. Patrick and Kendra came in to watch. When my initials went over his, Patrick wanted the cabinet back. He hopped every timber, and Kendra told him so each time. I told him to go round them. He had the top back before we left. Kendra fished. Kelly went through the comics."),"the account keeps the afternoon: "+account);
+              f.stage(p,2);
+          })
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the next time"))
+          .thenExecute(()->{
+              f.talk(p,"TownWren");h.assertTrue(said(f,p,"TownWren").contains("He got the top back the same afternoon"),"Kendra says how it came out: "+said(f,p,"TownWren"));
+              f.talk(p,"TownWren");h.assertTrue(!said(f,p,"TownWren").contains("same afternoon"),"once");
+              var own=new CompoundTag();own.putBoolean("ArcadeSeen",true);own.putInt("ArcadeTop",BorrascaArcadeFriends.READERS);
+              var kept=own.copy();var told=own.copy();told.putBoolean("ArcadeTold",true);var never=new CompoundTag();never.putBoolean("ArcadeSeen",true);
+              h.assertTrue(BorrascaArcadeFriends.later(kept,2).contains("still over his")&&BorrascaArcadeFriends.later(told,2).contains("still got back over him")&&BorrascaArcadeFriends.later(never,2).contains("Nobody ever got over him")&&BorrascaArcadeFriends.later(new CompoundTag(),2)==null&&BorrascaArcadeFriends.later(own,1)==null,"and has a different thing to say for each way it could have come out");
+              // A reader who left the hill in the middle of it and comes in at the gate again: it is over, and a game that was being
+              // played has its score on the table.
+              var mid=f.own(p);mid.putInt("ArcadeScene",BorrascaArcadeFriends.ON);mid.putInt("PatMode",BorrascaArcadeFriends.PLAYING);mid.putInt("PatWay",BorrascaArcade.HOPS);mid.putInt("PatScore",500);mid.putInt("KenMode",BorrascaArcadeFriends.GOING);
+              BorrascaStory.arrive(p,mid);
+              h.assertTrue(mid.getInt("ArcadeScene")==BorrascaArcadeFriends.OVER&&mid.getBoolean("ArcadeHomed")&&mid.getInt("PatMode")==BorrascaArcadeFriends.LEFT&&mid.getInt("KenMode")==BorrascaArcadeFriends.LEFT&&BorrascaArcade.table(mid,seam).stream().anyMatch(r->r[0].equals("PAT")&&r[1].equals("500")),"an afternoon left unfinished is settled at the gate: scene "+mid.getInt("ArcadeScene"));
+          })
+          .thenSucceed();
+    }
 
     /**
      * 0.4.436: both games, played tick by tick with a changing hand, score the same when the server plays them again from the runs of
@@ -729,6 +864,22 @@ public final class BorrascaTests {
         }
         var cat=BorrascaArcade.of(BorrascaArcade.CAT,5,null);while(!cat.over())cat.tick(0);
         h.assertTrue(cat.ticks<=BorrascaArcade.LONGEST[BorrascaArcade.CAT],"BIG CAT is over by dawn at the latest");
+        // 0.4.446: the others' hands. A seed is a whole game, the same every time it is played, so a screen and the server agree.
+        long hops=0,round=0;
+        for(long seed=1;seed<=24;seed++){
+            var a=BorrascaArcade.play(BorrascaArcade.SEAM,seed,BorrascaArcade.HOPS);var again=BorrascaArcade.play(BorrascaArcade.SEAM,seed,BorrascaArcade.HOPS);
+            h.assertTrue(a.score()==again.score()&&a.ticks()==again.ticks()&&Arrays.equals(a.at(),again.at())&&Arrays.equals(a.what(),again.what()),"seed "+seed+": the same hand plays the same game twice");
+            h.assertTrue(a.at().length==3&&Arrays.stream(a.what()).allMatch(k->k==BorrascaArcade.DeepSeam.TIMBER)&&a.ticks()<BorrascaArcade.LONGEST[0],"seed "+seed+": a hand that hops timbers loses all three carts to timbers: "+Arrays.toString(a.what())+" in "+a.ticks());
+            var b=BorrascaArcade.play(BorrascaArcade.SEAM,seed,BorrascaArcade.ROUND);var twice=BorrascaArcade.play(BorrascaArcade.SEAM,seed,BorrascaArcade.ROUND);
+            h.assertTrue(b.score()==twice.score()&&b.ticks()==twice.ticks()&&b.ticks()<=BorrascaArcade.LONGEST[0],"seed "+seed+": and so does the hand that goes round them");
+            var fish=BorrascaArcade.play(BorrascaArcade.CAT,seed,BorrascaArcade.FISHES);var fished=BorrascaArcade.play(BorrascaArcade.CAT,seed,BorrascaArcade.FISHES);
+            h.assertTrue(fish.score()==fished.score()&&fish.ticks()==fished.ticks()&&fish.ticks()<=BorrascaArcade.LONGEST[1]&&fish.score()>0,"seed "+seed+": and the one that fishes, who lands something: "+fish.score());
+            hops+=a.score();round+=b.score();
+        }
+        h.assertTrue(round>hops*2&&hops/24<730,"going round the timbers is worth more than twice hopping them ("+round/24+" to "+hops/24+"), and hopping them is no way to seven thirty");
+        long picked=BorrascaArcade.seed(446,BorrascaArcade.SEAM,BorrascaArcade.ROUND,g->g.score()>900&&g.ticks()<=3600,Comparator.comparingInt(g->-g.score()));
+        var good=BorrascaArcade.play(BorrascaArcade.SEAM,picked,BorrascaArcade.ROUND);
+        h.assertTrue(good.score()>900&&good.ticks()<=3600&&picked==BorrascaArcade.seed(446,BorrascaArcade.SEAM,BorrascaArcade.ROUND,g->g.score()>900&&g.ticks()<=3600,Comparator.comparingInt(g->-g.score())),"a game chosen to go over nine hundred does, and is the same choice every time: "+good.score()+" in "+good.ticks());
         h.succeed();
     }
 

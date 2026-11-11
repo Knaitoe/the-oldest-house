@@ -73,6 +73,9 @@ Then her lines go on as they do now, to the name.
 
 ## 2. Patrick and Kendra at the arcade (with the window)
 
+**Built in 0.4.446.** What is said, word for word, and how it is made: [BORRASCA_ARCADE_FRIENDS_0_4_446.md](BORRASCA_ARCADE_FRIENDS_0_4_446.md).
+Kendra takes BIG CAT at once, not only if the reader stays, and Kelly comes in to the comics.
+
 On the first visit, when the reader puts a quarter in DEEP SEAM, Patrick and Kendra come into the drugstore and stand at the
 reader's shoulder (they come in while the reader is looking at the screen). Patrick's is the top score.
 

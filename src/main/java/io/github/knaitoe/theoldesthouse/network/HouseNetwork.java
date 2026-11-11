@@ -13,7 +13,8 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("178")
+        event.registrar("179")
+                .playToClient(BorrascaArcadeWatchPayload.TYPE,BorrascaArcadeWatchPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaArcadeScreen.watch(payload)))
                 .playToClient(BorrascaComicPayload.TYPE,BorrascaComicPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaComicScreen.accept(payload)))
                 .playToServer(BorrascaComicPagePayload.TYPE,BorrascaComicPagePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaComic.page(p,payload.page());}))
                 .playToClient(BorrascaPayphonePayload.TYPE,BorrascaPayphonePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaPayphoneScreen.accept(payload)))

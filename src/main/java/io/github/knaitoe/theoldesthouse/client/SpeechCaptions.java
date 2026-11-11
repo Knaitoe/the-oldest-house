@@ -60,12 +60,17 @@ public final class SpeechCaptions {
     /** Where the lowest caption's frame ends: below the crosshair, above the action bar and the hotbar. */
     public static int bottom(int height){return Math.max(height/2+44,height-84);}
 
-    static void render(GuiGraphics g,DeltaTracker delta){
+    static void render(GuiGraphics g,DeltaTracker delta){render(g,delta,bottom(g.guiHeight()));}
+    /**
+     * 0.4.446: the same captions with the lowest frame ending at a given height, for a screen that covers the view while people
+     * about the reader go on talking (the drugstore's cabinets, with Patrick and Kendra at the reader's shoulder).
+     */
+    static void render(GuiGraphics g,DeltaTracker delta,int lowest){
         var mc=Minecraft.getInstance();if(mc.options.hideGui)return;
         var list=speakers(mc);if(list.isEmpty())return;
         var font=mc.font;int w=g.guiWidth(),h=g.guiHeight(),wrap=Math.max(120,Math.min(w-64,300));
         var cam=mc.gameRenderer.getMainCamera();Vec3 eye=cam.getPosition(),look=new Vec3(cam.getLookVector()),left=new Vec3(cam.getLeftVector());
-        int y=bottom(h);
+        int y=lowest;
         for(var a:list){
             List<FormattedCharSequence> lines=font.split(line(a),wrap);if(lines.size()>LINES)lines=lines.subList(0,LINES);
             int width=0;for(var line:lines)width=Math.max(width,font.width(line));

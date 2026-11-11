@@ -86,6 +86,8 @@ public final class BorrascaArcade {
         /** How long a hop keeps the cart off the rail, in ticks, and how long a gap in the rail is. */
         public static final int HOP=20,GAP_LONG=10;
         public int lane=1,air,lives=3,hurt,lamps;public float shown=RAILS[1],dist,light=100,v=1.5F;
+        /** What the cart last came to grief on (GAP or TIMBER), or -1. */
+        public int struck=-1;
         /** What comes down the seam: x, rail, kind, length. */
         public final List<float[]> things=new ArrayList<>();
         int next=40,hum=1800;
@@ -108,7 +110,7 @@ public final class BorrascaArcade {
                 if((int)t[1]!=lane||t[0]>=CART_X+5||t[0]+t[3]<=CART_X-5)continue;
                 int kind=(int)t[2];
                 if(kind==LAMP){lamps++;light=100;sound.play(GET,1.3F);it.remove();}
-                else if(hurt==0&&(kind==TIMBER||air==0)){lives--;hurt=40;sound.play(CRASH,.7F);it.remove();}
+                else if(hurt==0&&(kind==TIMBER||air==0)){lives--;hurt=40;struck=kind;sound.play(CRASH,.7F);it.remove();}
             }
             // Deep in, now and then, something hums under the track.
             if(--hum<=0){hum=300+random.nextInt(400);sound.play(HUM,.5F);}
@@ -159,6 +161,104 @@ public final class BorrascaArcade {
         public boolean over(){return worms<=0&&hooked<0||ticks>=LONGEST[CAT];}
     }
 
+    // ------------------------------------------------------------------------------------------------ hands that are not the reader's
+    /**
+     * 0.4.446 (docs/BORRASCA_ARCADE_FRIENDS_0_4_446.md; the owner: "Give Patrick and Kendra a turn at the arcade... Kendra knows a
+     * trick he keeps getting wrong"). How each of them plays:
+     * <ul>
+     * <li>HOPS: DEEP SEAM as Patrick plays it. He hops whatever is on his rail, fallen timbers too, which cannot be hopped, and
+     * goes after any lamp on the next rail.</li>
+     * <li>ROUND: DEEP SEAM as he plays it once he has been told. He changes rails for a timber. As the cart gets faster his nerve
+     * goes, and now and then he only watches a thing come.</li>
+     * <li>FISHES: BIG CAT as Kendra plays it. She keeps her hook up out of the perch until there is something worth a worm, goes
+     * down for a bass or for the big cat, keeps off the turtles, and lets the big one run: reels to a point, rests, reels again.</li>
+     * </ul>
+     */
+    public static final int HOPS=0,ROUND=1,FISHES=2;
+    /** How often, at the cart's top speed, the told hand freezes at a thing in its way. */
+    static final float NERVE=.3F;
+    /**
+     * The keys such a hand holds on a tick. They depend only on the game in front of it and on its own numbers, drawn from the
+     * game's seed, so a reader's screen and the server play the same game out of the same seed and nothing else need be sent.
+     */
+    public static final class Hand{
+        final int way;final Random nerve;final Set<float[]> judged=Collections.newSetFromMap(new IdentityHashMap<>());float[] frozen;boolean rest;
+        public Hand(long seed,int way){this.way=way;nerve=new Random(seed^0x5DEECE66DL);}
+        public int keys(Game g){return g instanceof DeepSeam s?seam(s):g instanceof BigCat c?cat(c):0;}
+        private static float[] ahead(DeepSeam s,int lane){float[] best=null;for(var t:s.things)if((int)t[1]==lane&&t[0]+t[3]>DeepSeam.CART_X-5&&(best==null||t[0]<best[0]))best=t;return best;}
+        /** Ticks until a thing reaches the cart. */
+        private static float eta(DeepSeam s,float[] t){return (t[0]-(DeepSeam.CART_X+5))/s.v;}
+        private int seam(DeepSeam s){
+            var t=ahead(s,s.lane);
+            if(t!=null&&(int)t[2]!=DeepSeam.LAMP){
+                if(eta(s,t)<=24&&judged.add(t)&&way==ROUND&&nerve.nextFloat()<NERVE*Math.max(0,(s.v-2.4F)/1.8F))frozen=t;
+                if(frozen==t)return 0;
+                if((int)t[2]==DeepSeam.GAP||way==HOPS)return eta(s,t)<=2&&s.air==0&&(s.prev&SPACE)==0?SPACE:0;
+                if(eta(s,t)<=20){
+                    // Round it: the next rail over that is clear, or has a lamp, or whose own trouble is furthest off.
+                    int to=-1,rank=-1;float far=-1;
+                    for(int lane=s.lane-1;lane<=s.lane+1;lane+=2){
+                        if(lane<0||lane>2)continue;var o=ahead(s,lane);
+                        int r=o==null||(int)o[2]==DeepSeam.LAMP?2:(int)o[2]==DeepSeam.GAP||eta(s,o)>14?1:0;float e=o==null?999:eta(s,o);
+                        if(r>rank||r==rank&&e>far){rank=r;far=e;to=lane;}
+                    }
+                    if(to>=0){int key=to<s.lane?UP:DOWN;if((s.prev&key)==0)return key;}
+                }
+                return 0;
+            }
+            // Nothing in the way: a lamp on the next rail.
+            if(t==null||eta(s,t)>26)for(int lane=s.lane-1;lane<=s.lane+1;lane+=2){
+                if(lane<0||lane>2)continue;var o=ahead(s,lane);
+                if(o!=null&&(int)o[2]==DeepSeam.LAMP&&eta(s,o)>3&&eta(s,o)<34){int key=lane<s.lane?UP:DOWN;if((s.prev&key)==0)return key;}
+            }
+            return 0;
+        }
+        private int cat(BigCat c){
+            if(c.hooked>=0){
+                if(c.hooked!=BigCat.CATFISH)return SPACE;
+                if(rest&&c.tension<=20)rest=false;
+                if(!rest&&c.tension>=70)rest=true;
+                return rest?0:SPACE;
+            }
+            rest=false;float[] want=null;
+            for(var f:c.swimmers)if((int)f[2]==BigCat.CATFISH){want=f;break;}
+            if(want==null){float near=Float.MAX_VALUE;for(var f:c.swimmers)if((int)f[2]==BigCat.BASS&&Math.abs(f[0]-c.hx)<near){near=Math.abs(f[0]-c.hx);want=f;}}
+            for(var f:c.swimmers)if((int)f[2]==BigCat.TURTLE&&Math.abs(f[0]-c.hx)<16&&Math.abs(f[1]-c.hy)<14)return SPACE;
+            if(want==null)return c.hy>32?SPACE:0;
+            // Where it will be by the time the hook is down to it.
+            float dy=want[1]-c.hy,t=Math.abs(dy)/(dy>0?.9F:1.6F),tx=want[0]+want[3]*want[4]*t;int k=0;
+            if(tx<c.hx-2)k|=LEFT;else if(tx>c.hx+2)k|=RIGHT;
+            if(Math.abs(tx-c.hx)<30){if(dy<-2)k|=SPACE;}else if(c.hy>32)k|=SPACE;
+            return k;
+        }
+    }
+    /**
+     * A game one of them played to its end: the score, how long it ran, and when it went wrong or right (the tick, and what it
+     * was: on DEEP SEAM a cart lost to a GAP or a TIMBER, on BIG CAT the big cat taking the hook).
+     */
+    public record Played(int score,int ticks,int[] at,int[] what){}
+    public static Played play(int game,long seed,int way){
+        var g=of(game,seed,SILENT);var hand=new Hand(seed,way);var at=new ArrayList<Integer>();var what=new ArrayList<Integer>();
+        while(!g.over()&&g.ticks<LONGEST[game]){
+            int lives=g instanceof DeepSeam s?s.lives:0,hooked=g instanceof BigCat c?c.hooked:-1;
+            g.tick(hand.keys(g));
+            if(g instanceof DeepSeam s&&s.lives<lives){at.add(g.ticks);what.add(s.struck);}
+            if(g instanceof BigCat c&&c.hooked==BigCat.CATFISH&&hooked!=BigCat.CATFISH){at.add(g.ticks);what.add(BigCat.CATFISH);}
+        }
+        return new Played(Math.max(0,g.score()),g.ticks,at.stream().mapToInt(Integer::intValue).toArray(),what.stream().mapToInt(Integer::intValue).toArray());
+    }
+    /** How many seeds are tried for a game that should come out a certain way. */
+    static final int TRIES=24;
+    /**
+     * A seed for one of their games: of a few seeds drawn from this one, the first whose game fits, and otherwise the one whose
+     * game comes nearest (the least by the comparator). Every one of them is a whole game that hand really plays.
+     */
+    public static long seed(long from,int game,int way,java.util.function.Predicate<Played> fits,Comparator<Played> nearest){
+        var draw=new Random(from);long best=0;Played kept=null;
+        for(int i=0;i<TRIES;i++){long seed=draw.nextLong();var played=play(game,seed,way);if(fits.test(played))return seed;if(kept==null||nearest.compare(played,kept)<0){kept=played;best=seed;}}
+        return best;
+    }
+
     // ------------------------------------------------------------------------------------------------ the cabinets in the drugstore
     /** A session: the game, its token (the game's seed too), and when it opened by the server's clock and by the wall clock. */
     public record Session(int game,long token,long start,long startMillis){}
@@ -174,10 +274,12 @@ public final class BorrascaArcade {
     static void click(ServerPlayer p,BlockPos at,CompoundTag own,int game){
         if(own.getInt("Visit")>=3){BorrascaStory.cue(p,"The screen is dark, and the plug hangs down the back. Through the dust on the glass the last table still shows: "+table(own,game).get(0)[0]+" at the top.");return;}
         if(SESSIONS.containsKey(p.getUUID())){BorrascaStory.cue(p,"You're already playing.");return;}
+        if(BorrascaArcadeFriends.taken(p,own,game))return; // 0.4.446: one of the others is at this cabinet, and can be watched
         if(!BorrascaPeople.payQuarter(p,own)){BorrascaStory.cue(p,"It takes a quarter. You don't have one left.");return;}
         long token=p.getRandom().nextLong();
         SESSIONS.put(p.getUUID(),new Session(game,token,p.serverLevel().getGameTime(),System.currentTimeMillis()));
         own.putInt("ArcadePlays"+game,own.getInt("ArcadePlays"+game)+1);
+        BorrascaArcadeFriends.started(p,own,game); // 0.4.446: Patrick and Kendra come in to watch
         HousePackets.send(p,new BorrascaArcadePayload(game,token,initials(p),tag(own,game)));
         p.serverLevel().playSound(null,at,SoundEvents.NOTE_BLOCK_BIT.value(),SoundSource.BLOCKS,.5F,game==SEAM?.9F:1.3F);
     }
@@ -201,6 +303,7 @@ public final class BorrascaArcade {
         if(rank>1)above=table(own,s.game()).get(rank-2)[0];
         own.putInt("ArcadeBest"+s.game(),Math.max(own.getInt("ArcadeBest"+s.game()),score));
         if(rank==1&&rows.get(0)[0].equals("PAT"))own.putBoolean("OverPatrick",true);
+        BorrascaArcadeFriends.finished(p,own,s.game(),rank==1&&rows.get(0)[0].equals("PAT")); // 0.4.446: what the two of them make of it
         LiteraryVignettes.save(d,p.getUUID(),BorrascaStory.PLACE,own);
         BorrascaStory.cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your initials go to the top, over "+rows.get(0)[0]+"'s.":"GAME OVER. "+score+". Your initials go up under "+above+"'s.");
         return true;
@@ -209,7 +312,7 @@ public final class BorrascaArcade {
     // ------------------------------------------------------------------------------------------------ the tables
     /** Who was on each cabinet's table before the reader: the town's children, Patrick, Kendra and Kelly among them, every initial a P or a K. */
     static final String[][][] SEEDED={
-        {{"PAT","2140"},{"KRT","1880"},{"KEN","1310"},{"PRY","1120"},{"KEL","760"},{"PAM","540"}},
+        {{"PAT","730"},{"KRT","610"},{"KEN","480"},{"PRY","390"},{"KEL","270"},{"PAM","150"}},
         {{"PRY","455"},{"PAT","380"},{"KEL","300"},{"KRT","240"},{"KEN","185"},{"PAM","95"}}};
     /** A reader's three letters, as a cabinet takes them. */
     public static String initials(ServerPlayer p){var n=p.getGameProfile().getName().replaceAll("[^A-Za-z0-9]","").toUpperCase(Locale.ROOT);return (n+"AAA").substring(0,3);}
