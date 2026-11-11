@@ -301,7 +301,7 @@ public final class BikeNightVisualProof extends Screen {
     private void cars(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();
         float s=width*.04F;
-        for(int k=0;k<io.github.knaitoe.theoldesthouse.labyrinth.TownCar.KINDS;k++){
+        for(int k=0;k<io.github.knaitoe.theoldesthouse.labyrinth.TownCar.CARS;k++){
             float y=24+(height-24)*(.17F+.158F*k);
             g.fill(0,(int)y,width,(int)y+8,0xff3a3a40);g.flush();
             for(int v=0;v<2;v++){
@@ -310,6 +310,9 @@ public final class BikeNightVisualProof extends Screen {
                 buffers.endBatch();pose.popPose();
             }
         }
+        // 0.4.488: one of the stock boy's carts, as a body the night moves, from in front and to one side.
+        {var at=g.pose();at.pushPose();at.translate(width*.5F+60,24+(height-24)*.115F,300);at.scale(s*1.6F,-s*1.6F,s*1.6F);at.mulPose(Axis.XP.rotationDegrees(14));
+        TownCarRenderer.draw(at,buffers.getBuffer(Sheets.cutoutBlockSheet()),io.github.knaitoe.theoldesthouse.labyrinth.TownCar.CART,-52,0,LightTexture.FULL_BRIGHT);buffers.endBatch();at.popPose();}
         // The pillowcase, as a thing is seen in a list, four times the size.
         var pose=g.pose();pose.pushPose();pose.translate(width*.5F-32,24+(height-24)*.02F,0);pose.scale(4,4,1);
         g.renderItem(new net.minecraft.world.item.ItemStack(io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry.TREAT_SACK.get()),0,0);pose.popPose();

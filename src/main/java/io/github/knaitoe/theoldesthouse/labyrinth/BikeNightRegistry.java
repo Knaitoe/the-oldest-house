@@ -179,6 +179,8 @@ public final class BikeNightRegistry {
 
     /** 0.4.486, the town's own: the laundromat's dryers, the neon's bad letter, the grocery's lights switched off, the theater's house laughing, a car radio. */
     public static final DeferredHolder<SoundEvent,SoundEvent> DRYERS=sound("town.dryers"),NEON=sound("town.neon"),BREAKER=sound("town.breaker"),LAUGHTER=sound("town.laughter"),RADIO=sound("town.radio");
+    /** 0.4.488: the stock boy's chain of carts, being wheeled. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> CARTS=sound("town.carts");
 
     private BikeNightRegistry(){}
     /** 0.4.485: the pillowcase a trick-or-treater carries. Nobody is given one. */

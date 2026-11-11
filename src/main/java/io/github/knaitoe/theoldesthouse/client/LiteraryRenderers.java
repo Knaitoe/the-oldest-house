@@ -305,6 +305,7 @@ public final class LiteraryRenderers {
             if(io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.hood(a.phase())){rightLeg.xRot=leftLeg.xRot=-1.5F;rightLeg.yRot=-.1F;leftLeg.yRot=.1F;rightLeg.zRot=leftLeg.zRot=0;rightArm.xRot=leftArm.xRot=.55F;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=.12F;leftArm.zRot=-.12F;}
             switch(gesture){
                 case io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.CHEER->{float up=-2.9F+net.minecraft.util.Mth.sin(age*.6F+a.getId())*.14F;leftArm.xRot=up;leftArm.yRot=0;leftArm.zRot=.3F;if(!bag){rightArm.xRot=up;rightArm.yRot=0;rightArm.zRot=-.3F;}}
+                case io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.PUSH->{rightArm.xRot=leftArm.xRot=-1.2F;rightArm.yRot=-.1F;leftArm.yRot=.1F;rightArm.zRot=leftArm.zRot=0;body.xRot=.1F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.BOO->{leftArm.xRot=-2.05F;leftArm.yRot=.55F;leftArm.zRot=0;if(!bag){rightArm.xRot=-2.05F;rightArm.yRot=-.55F;rightArm.zRot=0;}}
                 default->{}
             }

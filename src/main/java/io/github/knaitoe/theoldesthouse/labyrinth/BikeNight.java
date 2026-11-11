@@ -76,6 +76,8 @@ public final class BikeNight {
         CalderPeople.People people=new CalderPeople.People();
         /** 0.4.486: what changes in the town as the night goes on. */
         CalderEvening.Evening evening=new CalderEvening.Evening();
+        /** 0.4.488: the stock boy's chain of carts. */
+        CalderCarts.Chain carts=new CalderCarts.Chain();
         /** Whose each bike is tonight, by make. */
         final UUID[] owner=new UUID[6];
         /** Where each bike stands or lies while nobody is on it; null while it is ridden. */
@@ -234,6 +236,7 @@ public final class BikeNight {
             CalderTraffic.tick(l,n,here);
             CalderPeople.tick(l,n,here);
             CalderEvening.tick(l,n,here);
+            CalderCarts.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -270,6 +273,7 @@ public final class BikeNight {
         CalderTraffic.reset(l,n);
         CalderPeople.reset(l,n);
         CalderEvening.reset(l,n);
+        CalderCarts.reset(l,n);
         BikeNightSite.swingsBack(l,n.base);
         remember(l,n);
     }

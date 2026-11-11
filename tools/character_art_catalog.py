@@ -146,7 +146,7 @@ def entries():
     for name,phase in (('gus',166),('gus_bare',167),('tully',168),('ray',169),('duff',170),('tully_cap',171)):
         rows.append({'name':'literary_bike_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # Bike night's people on the pavements (0.4.485): four children out for sweets, six in the theater's line and four on two cars'
-    # hoods, on stranger phases one hundred and seventy-two to one hundred and eighty-five.
-    for phase,name in enumerate(('ghost','skeleton','pumpkin','vampire','monster','skull','robot','mummy','cat','scarecrow','letterman','denim','sweater','cap'),172):
+    # hoods, and (0.4.488) the grocery's stock boy, on stranger phases one hundred and seventy-two to one hundred and eighty-six.
+    for phase,name in enumerate(('ghost','skeleton','pumpkin','vampire','monster','skull','robot','mummy','cat','scarecrow','letterman','denim','sweater','cap','stock'),172):
         rows.append({'name':'literary_calder_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

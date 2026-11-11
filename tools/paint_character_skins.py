@@ -223,6 +223,8 @@ LOOKS = {
     'literary_calder_denim': Look('#c48e6c','#2a1e18','long','#5a7a9a','#26282e','jacket','#e8e0c8',eyes='#3a2e26',sleeve=10),
     # And two on the other car's hood: a striped sweater, and a hood with a ball cap.
     'literary_calder_sweater': Look('#e2bc9e','#8a4a2a','ponytail','#7a2f3c','#3a4a66','knit','#e8dcc0',eyes='#4a6a5a',mark='movie_stripes',sleeve=11),
+    # 0.4.488: the grocery's stock boy, in the store's apron.
+    'literary_calder_stock': Look('#d8ae8e','#3a2a1e','short','#e8e4d8','#2e3440','apron','#2f6a4a',eyes='#4a5a4a',sleeve=4,shoes='#d6d2c6'),
     'literary_calder_cap': Look('#b8845e','#1e1a16','close','#4a4f58','#2e3440','hoodie','#2f6a4a',eyes='#3a2c22',mark='bike_cap',sleeve=11,shoes='#d6d2c6'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),

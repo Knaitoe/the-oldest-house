@@ -221,7 +221,7 @@ public final class CalderTraffic {
         if(c.id!=null&&l.getEntity(c.id) instanceof TownCar body&&body.isAlive())return body;
         var body=make(l,c.kind,at,yaw);c.id=body==null?null:body.getUUID();return body;
     }
-    private static @Nullable TownCar make(ServerLevel l,int kind,Vec3 at,float yaw){
+    static @Nullable TownCar make(ServerLevel l,int kind,Vec3 at,float yaw){
         var cell=BlockPos.containing(at);
         if(!l.isLoaded(cell)||!l.areEntitiesLoaded(ChunkPos.asLong(cell))||!l.isPositionEntityTicking(cell))return null;
         var body=BikeNightRegistry.TOWN_CAR.get().create(l);if(body==null)return null;

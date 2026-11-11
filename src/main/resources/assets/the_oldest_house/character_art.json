@@ -2126,5 +2126,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 185
+  },
+  {
+    "name": "literary_calder_stock",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 186
   }
 ]

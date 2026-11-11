@@ -287,10 +287,18 @@ public final class BikeNightTexts {
         {"We've done the whole court. Nearly.","The house at the top gives whole bars."},
         {"We can't go past the corner.","I got two the same. Want to swap?"},
         {"It's the late show. The one with the hands.","We've been here since seven.","No cutting. Not even on a bike."},
-        {"The lot's closed. We're only sitting.","You should see what those three did to the swings."}};
+        {"The lot's closed. We're only sitting.","You should see what those three did to the swings."},
+        {"Forty-one carts. I count them every night.","We're shut. I'm only bringing these in."}};
+    /**
+     * 0.4.488, the grocery's stock boy: what he says when his chain of carts has waited a while for a reader in its way; when a
+     * reader rides through the gap in it; and to each of the three who is in its way.
+     */
+    public static final String[] CARTS_MIND={"Mind out! These don't stop easy.","Coming through. When you're ready."};
+    public static final String[] CARTS_THROUGH={"Through the gap! Go on!","Mind the handles!"};
+    public static final String[] CARTS_ROUND={"Not through my carts, Tully.","Go round, Ray-Ray. Go on.","Round the end, Duff."};
     /** Every line of the people on the pavements, for the case that holds them to how they talk. */
     public static List<String> peopleLines(){
-        var all=new ArrayList<String>(List.of(AT_A_STOP));all.addAll(List.of(NO_CUTTING));
+        var all=new ArrayList<String>(List.of(AT_A_STOP));all.addAll(List.of(NO_CUTTING));all.addAll(List.of(CARTS_MIND));all.addAll(List.of(CARTS_THROUGH));all.addAll(List.of(CARTS_ROUND));
         for(var lot:CHEERS)all.addAll(List.of(lot));
         for(var lot:BOOS)all.addAll(List.of(lot));
         for(var lot:PEOPLE_TALK)all.addAll(List.of(lot));

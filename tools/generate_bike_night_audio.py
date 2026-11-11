@@ -9,7 +9,8 @@ dial tone and its handset going back on the hook, and the spring rider's spring.
 dry leaves, and the three laughing as they ride off. And the cars' (0.4.484): an engine going by, a second of it, which the game
 plays over and over as a car drives; and four horns, one for each car. And the town's own (0.4.486): the laundromat's dryers, three
 seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
-house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round.
+house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round. And (0.4.488) a chain of grocery carts being
+wheeled, a second of it, played over while it moves.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -64,9 +65,11 @@ ROWS = {
     'town/breaker': ('town.breaker', 'Lights are switched off', 16),
     'town/laughter': ('town.laughter', 'An audience laughs', 16),
     'town/radio': ('town.radio', 'A car radio plays', 16),
+    # 0.4.488: the stock boy's chain of carts.
+    'town/carts': ('town.carts', 'Carts rattle', 16),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
-LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55}
+LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
 
@@ -625,7 +628,21 @@ def radio():
     return out * np.clip(t / .12, 0, 1) * np.clip((length - t) / .12, 0, 1)
 
 
-MAKERS = {'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def carts():
+    # A chain of grocery carts being wheeled: wire baskets shaking against one another, and castors on tarmac. A second of it,
+    # beginning and ending quietly so that one playing of it runs into the next.
+    length = 1.0
+    n = seconds(length)
+    t = times(n)
+    out = band(rng.standard_normal(n), 180, 900) * .25 * (.7 + .3 * np.sin(2 * np.pi * 7 * t))
+    for _ in range(46):
+        c = click(rng.uniform(.006, .02), rng.uniform(2200, 3500), rng.uniform(6000, 9000), rng.uniform(.0015, .004)) * rng.uniform(.25, .9)
+        i = int(rng.uniform(0, n - len(c)))
+        out[i:i + len(c)] += c
+    return out * np.clip(t / .15, 0, 1) * np.clip((length - t) / .15, 0, 1)
+
+
+MAKERS = {'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
