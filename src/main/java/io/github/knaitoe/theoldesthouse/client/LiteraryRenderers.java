@@ -230,7 +230,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Pinehook.cast(a.phase()))pinehook(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase()))drawing(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Corner.cast(a.phase()))corner(a.gesture(),age);
-            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.cast(a.phase()))gus(a.gesture(),age);
+            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.cast(a.phase()))gus(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.cast(a.phase()))bully(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Kept.cast(a.phase()))kept(a.gesture(),age,a.getId());
             // 0.4.221: the arcade's regulars, hands on the stick and the buttons, working them.
@@ -285,11 +285,7 @@ public final class LiteraryRenderers {
         /** 0.4.479, Bike night's three: on a bike, hands on the bars and legs going round with its cranks; pointing; coughing into both hands; kicking sand; arms folded; reaching. */
         void bully(LiteraryActor a,int gesture,float age){
             switch(gesture){
-                case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.RIDE->{
-                    float crank=a.getVehicle() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike bike?bike.crank(1F):0;
-                    rightArm.xRot=leftArm.xRot=-1.2F;rightArm.yRot=-.22F;leftArm.yRot=.22F;rightArm.zRot=leftArm.zRot=0;body.xRot=.16F;
-                    rightLeg.xRot=-.5F+net.minecraft.util.Mth.sin(crank)*.45F;leftLeg.xRot=-.5F-net.minecraft.util.Mth.sin(crank)*.45F;rightLeg.yRot=leftLeg.yRot=0;rightLeg.z=leftLeg.z=1.8F;
-                }
+                case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.RIDE->onBike(a);
                 case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.POINT->{rightArm.xRot=-1.5F;rightArm.yRot=-.1F;rightArm.zRot=0;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.COUGH->{rightArm.xRot=leftArm.xRot=-2.25F;rightArm.yRot=-.55F;leftArm.yRot=.55F;rightArm.zRot=leftArm.zRot=0;head.xRot=.45F+net.minecraft.util.Mth.sin(age*1.4F)*.12F;body.xRot=.2F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.KICK->{rightLeg.xRot=-1.1F+net.minecraft.util.Mth.sin(age*.9F)*.3F;leftArm.xRot=-.4F;rightArm.xRot=.4F;}
@@ -299,9 +295,16 @@ public final class LiteraryRenderers {
             }
             hat.copyFrom(head);
         }
-        /** 0.4.476, Bike night's Gus: a wave; pointing; both arms up; both hands out to push; his hands on the seesaw's handle; a shrug. */
-        void gus(int gesture,float age){
+        /** Somebody on a bike: hands on the bars, leaning to them, and legs going round with its cranks. */
+        void onBike(LiteraryActor a){
+            float crank=a.getVehicle() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike bike?bike.crank(1F):0;
+            rightArm.xRot=leftArm.xRot=-1.2F;rightArm.yRot=-.22F;leftArm.yRot=.22F;rightArm.zRot=leftArm.zRot=0;body.xRot=.16F;
+            rightLeg.xRot=-.5F+net.minecraft.util.Mth.sin(crank)*.45F;leftLeg.xRot=-.5F-net.minecraft.util.Mth.sin(crank)*.45F;rightLeg.yRot=leftLeg.yRot=0;rightLeg.z=leftLeg.z=1.8F;
+        }
+        /** 0.4.476, Bike night's Gus: a wave; pointing; both arms up; both hands out to push; his hands on the seesaw's handle; a shrug; and (0.4.483) on his bike. */
+        void gus(LiteraryActor a,int gesture,float age){
             switch(gesture){
+                case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.RIDE->onBike(a);
                 case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.WAVE->{rightArm.xRot=-2.7F;rightArm.yRot=0;rightArm.zRot=-.25F+net.minecraft.util.Mth.sin(age*.5F)*.35F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.POINT->{rightArm.xRot=-1.45F;rightArm.yRot=-.1F;rightArm.zRot=0;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.CHEER->{float up=-2.9F+net.minecraft.util.Mth.sin(age*.6F)*.12F;rightArm.xRot=leftArm.xRot=up;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=-.3F;leftArm.zRot=.3F;}

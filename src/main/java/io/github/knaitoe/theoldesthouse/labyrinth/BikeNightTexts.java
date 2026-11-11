@@ -184,6 +184,24 @@ public final class BikeNightTexts {
     public static final String GUS_CAP="Hey! Give it back! My mom wrote my name in that!";
     public static final String[] GUS_HIT={"You hit one. You HIT one. That was the best thing I ever saw.","Stop. No. Do it again.","We are so dead. Worth it. But so dead."};
     public static final String GUS_RUN="Bikes. BIKES. Go go go!";
+    /**
+     * 0.4.483, Gus and his bike: what he says of it when a hand is on it; about nothing, as he rides; of one of the three close behind
+     * a reader; of one gone round to wait ahead of them; near the graveyard; and when every reader's bike has been had.
+     */
+    public static final String GUS_HIS_BIKE="That one's mine. It was my brother's. The flag was my idea.";
+    public static final String[] GUS_RIDE={
+        "I'm right behind you! Mostly!",
+        "My legs. My legs are not happy.",
+        "Do they ever get tired? I'm tired. I've BEEN tired.",
+        "Is this a race? It's like a race. Are we winning?",
+        "I know a short cut. I think. I knew one in July.",
+        "This is the fastest I ever went on purpose.",
+        "They never chase me. I don't know if that's good.",
+        "Don't look back. I looked back. It didn't help."};
+    public static final String[] GUS_BEHIND={"Behind you! Right behind you!","He's on you! Go! GO!","Pedal! Don't look, just pedal!"};
+    public static final String[] GUS_ROUND={"They went round! One of them went round!","Not that way! One's waiting up there!","They split up. Since when do they split up?"};
+    public static final String GUS_CHURCH="Not the graveyard. Anywhere else. I told you the story!";
+    public static final String GUS_NOBODY="Nobody even looked at mine. I'm not sure what I think about that.";
     /** Gus, when one of the three gets a bike. */
     public static final String GUS_CAUGHT="They got a bike. They actually got a bike.";
     /** What a reader is told when the gate is opened and when the three are sent after them; and what the open gate is, looked at. */
@@ -255,6 +273,7 @@ public final class BikeNightTexts {
     public static List<String> gusLines(){
         var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN,GUS_CAUGHT));
         all.addAll(List.of(GUS_HIT));
+        all.addAll(List.of(GUS_HIS_BIKE,GUS_CHURCH,GUS_NOBODY));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
         return all;

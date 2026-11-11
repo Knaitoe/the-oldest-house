@@ -87,16 +87,14 @@ public final class BikeNightBullies {
     static final Vec3[] POST={new Vec3(-13.5,0,-23.5),new Vec3(-13.5,0,-28.5)};
 
     /** One of the three. */
-    static final class Bully {
-        final int who;@Nullable UUID id,bike;boolean riding;int doing=TO_POST,around=1;
+    static final class Bully extends BikeNightHunt.Rider {
+        final int who;@Nullable UUID id,bike;boolean riding;int doing=TO_POST;
         final ArrayDeque<Vec3> route=new ArrayDeque<>();@Nullable Vec3 goal;
-        long startAt,stunnedUntil=-1,gestureUntil=-1,actAt=-1,walkSince=-1,soonAt,aroundUntil=-1;
-        /** In the town: whether he is going in after a reader he cannot see from the end of their way, from which place, until when; and until when he lets it be. */
-        boolean closing;int closeFrom=-1;long closeBy=-1,restUntil=-1;
+        long startAt,stunnedUntil=-1,gestureUntil=-1,actAt=-1,walkSince=-1,soonAt;
         @Nullable String soon;
-        // 0.4.482, the hunt: the way through the town he has in mind, as places, and how far along it he is; where it ends; when he
-        // thinks again; until when he cannot ride straight at anybody; the bike he has taken; and whether he is off with it, or gone.
-        @Nullable int[] plan;int step,aim=-1;long planAt,blindUntil=-1,goneBy;@Nullable UUID towing;boolean leaving,gone;
+        // 0.4.482, the hunt: his way through the town is the Rider's. Here: by when he is to be gone; the bike he has taken; and
+        // whether he is off with it, or gone.
+        long goneBy;@Nullable UUID towing;boolean leaving,gone;
         Bully(int who){this.who=who;}
     }
     /** A night's three. */
@@ -322,16 +320,19 @@ public final class BikeNightBullies {
             var reader=prey.get(mine);int part=after[mine]++;
             var to=reader.position();
             if(BikeNightHunt.inTown(n,bike.position())||BikeNightHunt.inTown(n,to)){BikeNightHunt.ride(l,n,k,u,bike,reader,part);continue;}
-            u.plan=null;
-            double fence=n.base.getZ()+BikeNightSite.NORTH+.5;boolean inside=bike.getZ()>fence,theirs=to.z>fence;
-            if(inside!=theirs){var gate=BikeNightGus.at(n,inside?GATE_IN:GATE_OUT);to=BikeNightGus.flat(bike.position(),gate)<1.5*1.5?BikeNightGus.at(n,inside?GATE_OUT:GATE_IN):gate;}
-            if(bike.heldUp()&&n.tick>=u.aroundUntil){u.aroundUntil=n.tick+30;u.around=-u.around;}
-            if(n.tick<u.aroundUntil){double rad=Math.toRadians(bike.getYRot()+u.around*80);to=bike.position().add(-Math.sin(rad)*4,0,Math.cos(rad)*4);}
-            bike.toward(to,HUNT);
+            u.plan=null;parkRide(n,u,bike,to,HUNT);
         }
         BikeNightHunt.reach(l,n,k,prey);
         BikeNightHunt.afoot(l,n,k,here,!BikeNightHunt.prey(k,here).isEmpty());
         if(!any){k.stage=GONE;k.since=n.tick;}
+    }
+    /** In the park and on its street: at somewhere, by way of the gate when the railings are between, and round whatever holds him up. */
+    static void parkRide(BikeNight.Night n,BikeNightHunt.Rider u,PackBike bike,Vec3 to,float speed){
+        double fence=n.base.getZ()+BikeNightSite.NORTH+.5;boolean inside=bike.getZ()>fence,theirs=to.z>fence;
+        if(inside!=theirs){var gate=BikeNightGus.at(n,inside?GATE_IN:GATE_OUT);to=BikeNightGus.flat(bike.position(),gate)<1.5*1.5?BikeNightGus.at(n,inside?GATE_OUT:GATE_IN):gate;}
+        if(bike.heldUp()&&n.tick>=u.aroundUntil){u.aroundUntil=n.tick+30;u.around=-u.around;}
+        if(n.tick<u.aroundUntil){double rad=Math.toRadians(bike.getYRot()+u.around*80);to=bike.position().add(-Math.sin(rad)*4,0,Math.cos(rad)*4);}
+        bike.toward(to,speed);
     }
     /** For tests: whether a reader has been caught tonight, and whether they are out. */
     public static boolean caught(BlockPos b,ServerPlayer p){var n=BikeNight.night(b);return n!=null&&n.pack.caught.containsKey(p.getUUID());}
@@ -436,8 +437,11 @@ public final class BikeNightBullies {
         if(a.getVehicle() instanceof PackBike bike)bike.toward(null,0);
         say(a,u.who,BikeNightTexts.HIT[Math.min(k.hits,BikeNightTexts.HIT.length)-1]);
         if(thrower instanceof ServerPlayer p&&BikeNight.night(p)==n){var own=BikeNight.own(p);own.putInt("BullyHits",own.getInt("BullyHits")+1);BikeNight.save(p,own);}
-        BikeNightGus.sawAgain(n,BikeNightTexts.GUS_HIT[Math.min(k.hits,BikeNightTexts.GUS_HIT.length)-1]);
+        // Gus has three things to say of it, one for each of the first three. After that he has said them.
+        if(k.hits<=BikeNightTexts.GUS_HIT.length)BikeNightGus.sawAgain(n,BikeNightTexts.GUS_HIT[k.hits-1]);
     }
+    /** Whether somebody is one of the three, stopped and coughing. */
+    static boolean coughing(Entity e){return e instanceof LiteraryActor a&&is(a)&&a.gesture()==COUGH;}
     /** A hand on one of them. */
     public static void talk(ServerPlayer p,LiteraryActor a){
         var n=BikeNight.night(p);if(n==null||!is(a)||a.saying())return;var u=n.pack.b[who(a.phase())];

@@ -132,7 +132,7 @@ were, not by who was still hunting: with one of them gone, two could be after on
 
 ## Not here yet
 
-- **Gus's bike.** He still has none, and does not come into the town.
+- **Gus's bike.** He still has none, and does not come into the town. (0.4.483, `docs/BIKE_NIGHT_GUS_BIKE_0_4_483.md`.)
 - **The way out.** The north is left open and ends at the cemetery's gate, but the gate does not open yet: what is behind
   it comes with the graveyard.
 - **The traffic and the people,** who get in the three's way and cheer the readers.

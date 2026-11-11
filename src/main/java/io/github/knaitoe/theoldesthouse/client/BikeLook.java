@@ -40,8 +40,8 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
         }
     }
     public static BikeLook of(NightBike.Make make){return NIGHT.get(make);}
-    /** 0.4.479: the bikes of the three who come to the park (PackBike): the Wasp's frame and wheels in their own paint. */
-    private static final String[] PACK_NAMES={"tully","ray","duff"};
+    /** 0.4.479: the bikes of the three who come to the park (PackBike), and (0.4.483) Gus's: the Wasp's frame and wheels in their own paint. */
+    private static final String[] PACK_NAMES={"tully","ray","duff","gus"};
     private static final BikeLook[] PACK=new BikeLook[PACK_NAMES.length];
     static{
         var m=NightBike.Make.WASP;var wheel=standalone("bike_night/wasp_wheel");

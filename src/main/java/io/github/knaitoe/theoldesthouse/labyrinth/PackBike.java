@@ -8,7 +8,11 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
@@ -23,12 +27,12 @@ import net.minecraft.world.phys.Vec3;
  * told, turning no faster than a bike can and slowing into a sharp turn. It has no balance to keep, and nobody comes off it. With
  * nobody on it, it stands where it was left.
  *
- * <p>It is never saved and is nobody's to take: a hand on it does nothing.
+ * <p>It is never saved and is nobody's to take: a hand on one of the three's does nothing, and a hand on Gus's gets a word from him.
  */
 public final class PackBike extends RiddenBike {
     private static final EntityDataAccessor<Integer> LOOK=SynchedEntityData.defineId(PackBike.class,EntityDataSerializers.INT);
-    /** The looks: the three who come to the park; from MAKES up, one of Bike night's six makes. */
-    public static final int TULLY=0,RAY=1,DUFF=2,MAKES=10;
+    /** The looks: the three who come to the park; Gus's (0.4.483); from MAKES up, one of Bike night's six makes. */
+    public static final int TULLY=0,RAY=1,DUFF=2,GUS=3,MAKES=10;
     /** Degrees it turns in a tick; what it gains and loses of its speed in a tick; how far round it still has to come before it slows for the turn, and to how much. */
     public static final float TURN=9,GAIN=.02F,EASE=.03F,SHARP=50,SHARP_SPEED=.55F;
     /** Ticks of going nowhere before it counts as held up; and how far it rolls for each half turn of its cranks. */
@@ -42,6 +46,15 @@ public final class PackBike extends RiddenBike {
     @Override protected Stats stats(){return Stats.PLAIN;}
     @Override protected void parkAs(ServerLevel l,@Nullable BlockPos at,boolean lying){}
     @Override protected boolean takes(Entity e){return e instanceof LiteraryActor;}
+    /** Gus's, standing where he left it, can be touched: he says whose it is. Nobody else's can, and nobody takes any of them. */
+    @Override public boolean isPickable(){return !isRemoved()&&look()==GUS&&getPassengers().isEmpty();}
+    @Override public boolean canBeHitByProjectile(){return false;}
+    @Override public InteractionResult interact(Player p,InteractionHand hand){
+        if(look()!=GUS||!getPassengers().isEmpty())return InteractionResult.PASS;
+        if(level().isClientSide)return InteractionResult.SUCCESS;
+        if(hand==InteractionHand.MAIN_HAND&&p instanceof ServerPlayer reader)BikeNightGus.hisBike(reader);
+        return InteractionResult.CONSUME;
+    }
 
     /** Where it is to go, in the world, and how fast. With nowhere to go it rolls to a stop. */
     public void toward(@Nullable Vec3 to,float speed){toward=to;wanted=to==null?0:speed;}
