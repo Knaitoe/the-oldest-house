@@ -175,11 +175,14 @@ jobs:
 
       - name: Native smoke, the first server start of the run
         timeout-minutes: 6
+        # Run 1513: the seam and Pinehook jobs stopped two minutes in, while compiling, with "Gradle build daemon has been
+        # stopped: since the JVM garbage collector is thrashing". No case had run. Every step gave Gradle 512 MB (a few 768),
+        # which the sources have outgrown; each now gives it 1 GB. The game's own heap is separate and unchanged.
         run: |
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_charge,the_oldest_house_mirrorcheck --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-smoke.log
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_charge,the_oldest_house_mirrorcheck --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/native-smoke.log
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -192,7 +195,7 @@ jobs:
         run: |
           set -o pipefail
           export NATIVE_INTERACTIONS="CounterRangeTests#anOutdoorClickCountsTheRadiusNotTheCornersOfItsSearchBox,TensionRoomTests#theTensionRoomsPinDrawsOnlyWithTheWeightAtTheMarkAndTheCleatFast,TensionSafetyTests#theCableIsReversibleAndItsPlatformCarriesLivingRidersWithoutCrushingThem,HazardVarietyTests#nativeListingSlidesDroppedItemsAndCrouchingOrHoldingTheRailStopsTheReader,HazardVarietyTests#aListingHallRailHoldsOnlyItsReaderWithinReachWhileItStillStands,HazardVarietyTests#aTurningGravityRailAlsoLetsGoWhenItsReaderWalksAway,HazardVarietyTests#nativeGravityJumpAndFallModifiersCleanUpWithoutRemovingAnotherModsEffects,HazardVarietyTests#shrinkingFitsTheNativeSkirtingGapThenRestoresOverThreeSeconds,HazardVarietyTests#onlyTheSeventhActualOrderedLandingOpensAndPeersKeepTheirOwnCount,HazardVarietyTests#backingAwayBringsTheActualDoorIntoReachWithoutChangingItsSavedDeal,HouseReadTests#theKitchenTableReadsOnlyTheFaceTheReaderDrawsAndOpensOnceThePictureIsUp,HouseReadReaderTests#everyReaderWearsTheBodyTheHouseReadInsideTheHouseOnly,DeepTensionTests#theThreeRoomsHoldTheirCableAndTheFarSidePushBarPreservesTheWayBack,DeepTensionTests#blockedLoadsDoNotConsumeTurnsAndLivingRidersKeepTheirBodies,YardConnectorTests#theDryCulvertIsCrawledBothWaysAndRestoresTheReadersActualPose,YardConnectorTests#sheetsYieldForThePartyAndFollowingStepsEndBeyondTheLastOne,HazardVarietyTests#theOnlySconceFollowsTheWarmTorchWhileColdPortableLightsDie"
-          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_selected "-PgameTestMethods=$NATIVE_INTERACTIONS" --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-interactions.log
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_selected "-PgameTestMethods=$NATIVE_INTERACTIONS" --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/native-interactions.log
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -814,7 +817,7 @@ jobs:
         timeout-minutes: 4
         run: |
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_playtest488,the_oldest_house_nightclub --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-playtest488.log
+          timeout --signal=QUIT --kill-after=20s 3m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_playtest488,the_oldest_house_nightclub --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/native-playtest488.log
           python3 - <<'PYTEST'
           import re
           from pathlib import Path
@@ -827,7 +830,7 @@ jobs:
         timeout-minutes: 13
         run: |
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_architecture --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/architecture-native.log
+          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_architecture --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/architecture-native.log
           python3 - <<'PYTEST'
           import re
           from pathlib import Path
@@ -875,7 +878,7 @@ jobs:
           diagnostic=$!
           trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 100m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/native-gametest.log
+          timeout --signal=QUIT --kill-after=20s 100m gradle runGameTestServer --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/native-gametest.log
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -1173,7 +1176,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_hotel --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/hotel-native.log
+          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_hotel --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/hotel-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1207,7 +1210,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/uncanny-native.log
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/uncanny-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1231,7 +1234,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 26m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/literary-native.log
+          timeout --signal=QUIT --kill-after=20s 26m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_literary --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/literary-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1297,7 +1300,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/neighbours-native.log
+          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/neighbours-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1362,7 +1365,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_doors --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/hallway-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_doors --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/hallway-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1421,7 +1424,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 7m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_seam --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/seam-native.log
+          timeout --signal=QUIT --kill-after=20s 7m gradle build runGameTestServer -PgameTestNamespaces=the_oldest_house_seam --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/seam-native.log
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, json, re, zipfile
@@ -1548,7 +1551,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_staircase --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/staircase-native.log
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_staircase --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/staircase-native.log
           python3 - <<'PY_CHECK'
           import re
           from pathlib import Path
@@ -1584,7 +1587,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_multiplayer,the_oldest_house_multiplayer_story --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/multiplayer-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_multiplayer,the_oldest_house_multiplayer_story --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/multiplayer-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1622,7 +1625,7 @@ jobs:
           mkdir -p run build
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_exploration --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/exploration-native.log
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_exploration --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/exploration-native.log
           python3 - <<'PYTHON'
           import re
           from pathlib import Path
@@ -1758,7 +1761,7 @@ jobs:
         run: |
           mkdir -p build
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 9m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny,the_oldest_house_foyer -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/foyer136-native.log
+          timeout --signal=QUIT --kill-after=20s 9m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny,the_oldest_house_foyer -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/foyer136-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1812,7 +1815,7 @@ jobs:
           python3 tools/generate_silo_audio.py --check
           mkdir -p build
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_silo -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/silo-native.log
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_silo -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/silo-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -1872,7 +1875,7 @@ jobs:
           mkdir -p build
           set -o pipefail
           python3 tools/draw_uncanny_environments.py --check
-          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/uncanny-environment-native.log
+          timeout --signal=QUIT --kill-after=20s 5m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_uncanny_environment -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/uncanny-environment-native.log
       - name: Native uncanny room and waitress visual review
         if: always()
         timeout-minutes: 5
@@ -2177,7 +2180,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry,the_oldest_house_goatman_meal --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/goatman-native.log
+          timeout --signal=QUIT --kill-after=20s 11m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_goatman,the_oldest_house_wake,the_oldest_house_goatman_windows,the_oldest_house_goatman_entry,the_oldest_house_goatman_meal --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/goatman-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -2281,7 +2284,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 18m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_pinehook --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/pinehook-native.log
+          timeout --signal=QUIT --kill-after=20s 18m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_pinehook --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/pinehook-native.log
           python3 - <<'PY_CHECK'
           from pathlib import Path
           import re
@@ -2317,7 +2320,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 18m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_second_person --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/second-person-native.log
+          timeout --signal=QUIT --kill-after=20s 18m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_second_person --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/second-person-native.log
           python3 - <<'PY_CHECK'
           from pathlib import Path
           import re
@@ -2353,7 +2356,7 @@ jobs:
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_caver --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/caver-native.log
+          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_caver --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/caver-native.log
           python3 - <<'PY_CHECK'
           from pathlib import Path
           import re
@@ -2416,7 +2419,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_service --no-daemon -Dorg.gradle.jvmargs=-Xmx512m 2>&1 | tee build/service-native.log
+          timeout --signal=QUIT --kill-after=20s 6m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_service --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/service-native.log
           python3 - <<'PY_CHECK'
           import re
           from pathlib import Path
@@ -2515,7 +2518,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p build
-          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read,the_oldest_house_tailoring,the_oldest_house_coop -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx768m 2>&1 | tee build/house-read-native.log
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_house_read,the_oldest_house_tailoring,the_oldest_house_coop -PgameTestHeap=3g --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/house-read-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -2557,7 +2560,7 @@ jobs:
           python3 tools/generate_horror_audio.py --check
       - name: Native room geometry, standard/slim coats and the two-block mirror
         run: |
-          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx768m
+          ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PhouseReadSmoke --no-daemon -Dorg.gradle.jvmargs=-Xmx1g
           python3 - <<'PY'
           from pathlib import Path
           folder=Path('build/house-read139-art')
