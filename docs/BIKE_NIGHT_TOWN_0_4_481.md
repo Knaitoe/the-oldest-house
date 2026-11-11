@@ -170,7 +170,7 @@ What that showed, and what was done:
 - **Anything that moves:** cars, people on the pavements, the line outside the theater, trick-or-treaters, the stock boy
   and his chain of carts, the teenagers in the burger place's lot.
 - **The hunt:** the three splitting up and taking these back ways, being caught, and the way the chase is steered to the
-  cemetery's gate.
+  cemetery's gate. (0.4.482, `docs/BIKE_NIGHT_HUNT_0_4_482.md`.)
 - **Things that change:** the dryers turning, the grocery's lights going off aisle by aisle, the neon's one bad letter,
   tyre tracks in the dew on the field (the tracked turf is drawn and not yet laid).
 - **Sound.** The town is silent.

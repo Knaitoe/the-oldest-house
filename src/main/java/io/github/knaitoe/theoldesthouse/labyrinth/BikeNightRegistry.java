@@ -167,6 +167,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> SPRING=sound("park.spring");
     /** The merry-go-round's bearing, once a quarter of a turn. */
     public static final DeferredHolder<SoundEvent,SoundEvent> ROUNDABOUT_SQUEAK=sound("park.roundabout_squeak");
+    /** The hunt (0.4.482): somebody landing in dry leaves, and the three laughing as they go. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> LEAVES_FALL=sound("town.leaves"),LAUGH=sound("town.laugh");
 
     private BikeNightRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BLOCK_ENTITIES.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}

@@ -184,6 +184,8 @@ public final class BikeNightTexts {
     public static final String GUS_CAP="Hey! Give it back! My mom wrote my name in that!";
     public static final String[] GUS_HIT={"You hit one. You HIT one. That was the best thing I ever saw.","Stop. No. Do it again.","We are so dead. Worth it. But so dead."};
     public static final String GUS_RUN="Bikes. BIKES. Go go go!";
+    /** Gus, when one of the three gets a bike. */
+    public static final String GUS_CAUGHT="They got a bike. They actually got a bike.";
     /** What a reader is told when the gate is opened and when the three are sent after them; and what the open gate is, looked at. */
     public static final String GATE_OPENED="Three bikes come in at the gate. It stands open behind them.";
     public static final String GET_THEM_CUE="They are going for their bikes. The gate is open, and yours is where you left it.";
@@ -228,18 +230,30 @@ public final class BikeNightTexts {
     /** A hand on one of them. */
     public static final String[] HANDS_OFF={"Hands off, dork.","Did I say you could touch me?","Go play in your sand."};
     /** Called after the readers, in the chase. */
-    public static final String[] CHASE_JEERS={"You can't pedal forever!","Run, science club!","I'm keeping the hat!","Nowhere to go, dorks!","Slow down, we just want to talk!","Your bike's gonna be MY bike!"};
+    public static final String[] CHASE_JEERS={"You can't pedal forever!","Run, science club!","I'm keeping the hat!","Nowhere to go, dorks!","Slow down, we just want to talk!","Your bike's gonna be MY bike!",
+        // 0.4.482, in the town: they call to each other as much as at the readers.
+        "Go round! Go ROUND!","They went down the alley!","Cut them off at the bank!","I see you, science club!","Take the gap! The gap!","Nice shortcut. We know it too!","That's a dead end, genius!","Where's your sand now?"};
+    /** In the hunt (0.4.482): what the one who has a reader's bike says, each his own, and what each calls as they go off with it. */
+    public static final String[] CAUGHT={"Thanks for the bike!","Got it! I got the bike!","Finders keepers, science club."};
+    public static final String[] LEAVING={"See you around, dorks!","Later, science club!","Nice doing business!"};
+    /** What a reader who has been caught is told: with a bike to lose, and without; and when nobody is left to carry them. */
+    public static final String CAUGHT_CUE="%s has your bike. You are down in the leaves.";
+    public static final String CAUGHT_NO_BIKE_CUE="You are down in the leaves. They ride off laughing.";
+    public static final String OUT_CUE="Nobody is coming back this way. The way home is the way you came.";
+    /** A hand on another bike, by a reader whose own the three have had. */
+    public static final String NO_MORE="Yours is gone. These are other people's.";
     /** Every line of theirs, for the case that holds them to how they talk. */
     public static List<String> bullyLines(){
         var all=new ArrayList<String>(List.of(TULLY_GATE,TULLY_HAT,TULLY_HAT_ON,GET_THEM,DUFF_MINE,DUFF_UP,DUFF_OFF));
         all.addAll(List.of(JEERS));all.addAll(List.of(HIT));all.addAll(List.of(HANDS_OFF));all.addAll(List.of(CHASE_JEERS));
+        all.addAll(List.of(CAUGHT));all.addAll(List.of(LEAVING));
         for(var on:List.of("swing","bike","seesaw","slide","bars","spring"))all.add(jeerAt(on));
         return all;
     }
 
     /** Every line of his, for the cases that hold him to how he talks. */
     public static List<String> gusLines(){
-        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN));
+        var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN,GUS_CAUGHT));
         all.addAll(List.of(GUS_HIT));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));

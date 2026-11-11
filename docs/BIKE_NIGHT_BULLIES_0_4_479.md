@@ -91,9 +91,9 @@ middle of a jeer when they got on. He now says it when he has finished.
 ## Not here yet
 
 - **Being caught.** "A bully within arm's reach of a rider for two seconds has caught them." It comes with the town,
-  where there is somewhere to run to.
+  where there is somewhere to run to. (0.4.482, `docs/BIKE_NIGHT_HUNT_0_4_482.md`.)
 - **How they hunt.** Here each rides straight at a reader and round whatever holds him up. In the town they split up
-  and take the back ways, on the streets' own map.
+  and take the back ways, on the streets' own map. (The same.)
 - **Gus's bike.** He says to go for the bikes and has none of his own yet.
 - **A reader's own cap.** The proposal has them take "Gus's cap, or a reader's own". Gus is in every night, so it is his.
 - **The car** is a light and a sound. The cars come with the town's traffic, and this one will be one of them.
