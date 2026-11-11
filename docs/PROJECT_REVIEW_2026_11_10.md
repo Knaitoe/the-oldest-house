@@ -101,3 +101,56 @@ history folder.
 2. The window, the comic and the arcade, as you asked.
 3. The four changes under point 1, starting with the eye-level pass, on Borrasca first and then the next vignette you choose.
 4. Tag a checkpoint when the run is green.
+
+## One day on, 11 November
+
+You asked again for the step back. The review above still stands. This is what has moved since, counted from the branch today.
+
+| | 10 November | 11 November |
+|---|---|---|
+| Java | 1,670 files, 243,000 lines | 1,702 files, 247,000 lines |
+| Tests | 1,263 | 1,271 |
+| Textures | 4,380 | 4,622 |
+| Documents | 505; the README 256 KB | 527; the README 275 KB |
+| Commits | 662; 612 ahead of `main` | 684; 634 ahead |
+| A full CI run | about 55 minutes | 63 minutes (run 1516): 227 runner-minutes over 22 jobs, 59 of them the `build` job |
+| Witness | about 65 of 86 | 65 of 86: no story was added |
+
+By point:
+
+1. **The tests pass and the game is still broken where you look: partly acted on.** All forty-five notes are closed
+   (docs/BORRASCA_PLAYTEST_2026_11_10.md). Two scene rules now run as tests over the whole of Drisking: nothing hangs on glass or
+   air (0.4.444), and none of the game's own blocks stands in for something else (0.4.460). Each record since 0.4.457 ends with
+   what I could not check. Not done: building scenes in tests the way the game does, a pass at a real view distance, and the
+   eye-level frames. I said I would look at those frames before calling a thing done, and for the letter, the supper and the dog
+   I looked at pages of their models instead. I have since looked: twenty-two frames from a reader's eye height, on the street,
+   at the truck's tailgate (and from a child's height), across the church's lawn as found and as left, at the Corleys' gate and
+   porch, at the Garritys' door, and by the first marker. The truck is clear of the street with the name readable, the tables
+   show in its bed, the lawn's tables and people are where they should be, the dog is under his tree and on the porch, and the
+   letter's corner shows at the foot of the door. I found nothing to fix. People and the dog are drawn as plain columns in these
+   frames, so they say nothing about how those look or move.
+2. **Breadth is outrunning finish: held.** Nothing new has been started. Every commit since has been Drisking: the forty-five
+   notes, then your notes for more life (the window and comic, the arcade, the letter, the supper, the dog). Three vignettes are
+   part built and parked: A Place for You (its first evening), Second Person (its winter) and The Ones Already Inside (built, not
+   dealt to anyone). Bike night and the Pell house are next by your order.
+3. **The Witness ending: unchanged, and yours to decide.**
+4. **"Verified": I changed how I push.** I hold a push until the run in progress has finished, so each run verifies a batch: run
+   1515 verified 0.4.451 to 0.4.454, and run 1516 verified 0.4.455 to 0.4.458. Nothing is tagged yet.
+5. **No stable copy: unchanged, and it costs more than I said.** A new working session starts from a branch cut from `main`,
+   which is 0.4.117 of 24 October. It is handed that tree's notes for agents as its instructions: 179 KB of release history,
+   with counts and rules that stopped being true weeks ago. The branch's own notes are 46 lines and current. Bringing `main` up
+   to a green checkpoint would fix that as well as giving you something to hand to a friend.
+6. **The code: unchanged.** The letter, the supper and the dog added about thirty more state keys written as bare strings. The
+   key check and the profile with four players are not done.
+7. **The documents: worse** by twenty-two files and 19 KB of README.
+8. **Before anyone else plays it: unchanged.**
+
+What I would do next, in order:
+
+1. Bike night, as you have ordered, built from the start to the standard in point 2: its own signs and furniture, lines for every
+   state of the story, an aftermath, and an eye-level pass before I call it done.
+2. The games in Drisking (hide and seek, tag), which are all that is left of your notes for more life.
+3. The state-key check in the quick job, in a wait on CI. It is about an hour's work.
+
+Still yours to decide, so that they are not lost: a ceiling on the Witness count; merging to `main` and tagging; whether the
+README and the per-release notes are cut down; the novel's text and the borrowed names before any public release.
