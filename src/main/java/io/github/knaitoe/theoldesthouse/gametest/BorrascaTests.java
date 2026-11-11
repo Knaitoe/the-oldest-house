@@ -1125,6 +1125,13 @@ public final class BorrascaTests {
     }
     private static AABB wbox(BlockPos b,double x0,double y0,double z0,double x1,double y1,double z1){var a=BorrascaRooms.world(new Vec3(x0,y0,z0)).add(Vec3.atLowerCornerOf(b));var c=BorrascaRooms.world(new Vec3(x1,y1,z1)).add(Vec3.atLowerCornerOf(b));return new AABB(a,c);}
     private static boolean clear(Fixture f,ServerPlayer p,BlockPos b,int x,int y,int z){var w=BorrascaRooms.at(b,x,y,z);return f.out.noCollision(p,new AABB(w.getX()+.2,w.getY()+.1,w.getZ()+.2,w.getX()+.8,w.getY()+1.8,w.getZ()+.8));}
+    /** 0.4.455: the doctor's corkboard opens to a reader as a board, not as pages: everything written on what hangs there on their visit. */
+    private static String corkboard(Fixture f,ServerPlayer p,String what){
+        int visit=f.own(p).getInt("Visit");f.clickWorld(p,BorrascaShops.CARDS);
+        f.h.assertFalse(p.containerMenu instanceof LiteraryVignettes.Pages,what+" opens as a board, not as pages");
+        f.h.assertTrue(visit>=1&&f.own(p).getInt("CardsBoard")==visit,what+" is the board of visit "+visit+": "+f.own(p).getInt("CardsBoard"));
+        return BorrascaCards.board(visit).stream().map(BorrascaCards.Piece::text).reduce("",(a,b)->a+"\n"+b);
+    }
     private static ItemStack openedWorld(Fixture f,ServerPlayer p,BlockPos w,String what){f.clickWorld(p,w);f.h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,what+" opens as native pages at "+w);var book=((LiteraryVignettes.Pages)p.containerMenu).original();p.closeContainer();return book;}
     private static ItemStack opened(Fixture f,ServerPlayer p,BlockPos rel,String what){f.click(p,rel);f.h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,what+" opens as native pages at "+rel);var book=((LiteraryVignettes.Pages)p.containerMenu).original();p.closeContainer();return book;}
     private static String text(ItemStack book){return book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(page->page.raw().getString()).reduce("",String::concat);}
@@ -1231,7 +1238,20 @@ public final class BorrascaTests {
             for(var door:new BlockPos[]{BorrascaShops.DINER_DOOR,BorrascaShops.ANTIQUES_DOOR,BorrascaShops.SOCIETY_DOOR,BorrascaShops.STATION_DOOR,BorrascaShops.DOCTOR_DOOR,BorrascaShops.DRUG_DOOR,BorrascaShops.BAR_DOOR})h.assertTrue(f.out.getBlockState(b.offset(door)).getBlock() instanceof DoorBlock,"a real door at "+door);
             for(int z=-76;z>=-132;z-=4)h.assertTrue(BorrascaLand.groundAt(-12,z)==0&&BorrascaLand.groundAt(12,z)==0,"the street past the chapel is level, the way down ending at the trailhead, at z "+z);
             f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the diner's menu"))).contains(flat("Coffee .50")),"the childhood menu has its early prices");
-            f.atWorld(p,new BlockPos(10,0,-86));var cards=flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the doctor's corkboard")));h.assertTrue(cards.contains(flat("1992")),"the doctor's cards are a few weeks apart in the childhood year");
+            f.atWorld(p,new BlockPos(10,0,-86));var cards=flat(corkboard(f,p,"the doctor's corkboard"));h.assertTrue(cards.contains(flat("1992")),"the doctor's cards are a few weeks apart in the childhood year");
+            // 0.4.455 (owner: "Try to show, don't tell. Try to design an actual ui for this"): the board is a board. Five cards and the envelope
+            // hang on it; a piece is looked at once it has been in the hand, and the board is read when every piece on top has been.
+            var pinned=BorrascaCards.board(1);
+            h.assertTrue(pinned.size()==6&&pinned.get(5).envelope()&&pinned.get(5).text().equals("Dr. Hale")&&pinned.stream().noneMatch(BorrascaCards.Piece::under)&&BorrascaCards.top(1)==63,"five cards and the doctor's envelope hang on the first visit's board: "+pinned);
+            h.assertTrue(pinned.stream().limit(5).noneMatch(card->card.thanks().isEmpty()||card.name().isEmpty()||card.signed().isEmpty()),"every card has its child's name, a line to the doctor and who it is from");
+            for(int i=0;i<5;i++)BorrascaCards.seen(p,i);
+            h.assertTrue(f.own(p).getInt("Seen_Cards")==31&&!f.own(p).getBoolean("Read_Cards"),"the board is not read with the envelope still on its pin: "+f.own(p).getInt("Seen_Cards"));
+            BorrascaCards.seen(p,6);BorrascaCards.seen(p,-1);BorrascaCards.seen(p,40);
+            h.assertTrue(f.own(p).getInt("Seen_Cards")==31,"a piece that does not hang on the board is not looked at: "+f.own(p).getInt("Seen_Cards"));
+            var atBoard=p.position();f.atWorld(p,new BlockPos(-17,0,-101));BorrascaCards.seen(p,5);
+            h.assertTrue(f.own(p).getInt("Seen_Cards")==31,"nobody looks at the board from across the street");
+            p.teleportTo(atBoard.x,atBoard.y,atBoard.z);BorrascaCards.seen(p,5);
+            h.assertTrue(f.own(p).getInt("Seen_Cards")==63&&f.own(p).getBoolean("Read_Cards"),"every piece looked at is the board read: "+f.own(p).getInt("Seen_Cards"));
             // 0.4.424 (owner: "the children were named after their progenitor"): the depot's children carry their fathers' letter, P for the
             // Prescotts and K for the Sheriff: the friend, the two town children and every baby on the doctor's board.
             h.assertTrue(BorrascaStory.FRIEND.startsWith("K")&&cards.contains(flat("Kelsey Ann"))&&cards.contains(flat("Paul"))&&cards.contains(flat("Peyton and Kody")),"the friend and every baby on the board have a P or K name: "+cards);
@@ -1254,7 +1274,14 @@ public final class BorrascaTests {
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("KELLY")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");
             f.at(p,-1,6,-96);h.assertTrue(title(opened(f,p,BorrascaRooms.NOTES,"the aged notes")).contains("water-stained"),"her notes are still there, damp through");
             f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the later menu"))).contains(flat("Coffee 1.25")),"years later the menu's prices have gone up");
-            f.atWorld(p,new BlockPos(10,0,-86));var later=flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the later corkboard")));h.assertTrue(later.contains(flat("2009"))&&later.contains(flat("Kennedy"))&&later.contains(flat("Piper and Kade")),"the corkboard holds a later year's cards, the babies still named P and K: "+later);
+            f.atWorld(p,new BlockPos(10,0,-86));h.assertTrue(f.own(p).getInt("CardsBoard")==1,"the board a reader last stood at was the childhood's");BorrascaCards.seen(p,0);
+            h.assertTrue(f.own(p).getInt("Seen_CardsLater")==0,"a board from another visit is not this one");
+            var later=flat(corkboard(f,p,"the later corkboard"));h.assertTrue(later.contains(flat("2009"))&&later.contains(flat("Kennedy"))&&later.contains(flat("Piper and Kade")),"the corkboard holds a later year's cards, the babies still named P and K: "+later);
+            // 0.4.455: the childhood's cards are still under the later year's, gone yellow, and are not what reading the board asks.
+            var grownBoard=BorrascaCards.board(3);
+            h.assertTrue(grownBoard.size()==11&&grownBoard.stream().limit(5).allMatch(card->card.under()&&card.old()&&card.date().endsWith("1992"))&&grownBoard.stream().skip(5).noneMatch(BorrascaCards.Piece::under)&&grownBoard.get(10).envelope()&&grownBoard.get(10).old()&&later.contains(flat("Kelsey Ann"))&&java.util.Arrays.equals(BorrascaCards.order(3),new int[]{5,0,6,1,7,2,8,3,9,4,10}),"the old cards hang under the new, each after the one over it: "+grownBoard+" / "+java.util.Arrays.toString(BorrascaCards.order(3)));
+            for(int i=5;i<11;i++)BorrascaCards.seen(p,i);
+            h.assertTrue(f.own(p).getBoolean("Read_CardsLater")&&f.own(p).getInt("Seen_CardsLater")==BorrascaCards.top(3),"the later board is read by what hangs on top: "+f.own(p).getInt("Seen_CardsLater"));
             f.stage(p,4);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled")).thenExecute(()->{
             h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.LONG_GONE,"years later the two patches have gone grey");
@@ -1372,8 +1399,13 @@ public final class BorrascaTests {
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==2,"second visit: "+BorrascaCast.why(p)))
           .thenExecute(()->{
             h.assertTrue(person.apply(BorrascaPeople.ROY).isInvisible()&&person.apply(BorrascaPeople.JOLENE).isInvisible(),"the Tates are home with their baby");
-            f.atWorld(p,new BlockPos(10,0,-86));var cards=flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the second visit's corkboard")));
-            h.assertTrue(cards.contains(flat("TATE"))&&cards.contains(flat("Paige")),"the Tates' girl is on the board by the second visit, a P name: "+cards);
+            f.atWorld(p,new BlockPos(10,0,-86));var cards=flat(corkboard(f,p,"the second visit's corkboard"));
+            h.assertTrue(cards.contains(flat("Roy and Jolene"))&&cards.contains(flat("Paige")),"the Tates' girl is on the board by the second visit, a P name: "+cards);
+            // 0.4.455: her card is pinned over the envelope, which is still there underneath.
+            var second=BorrascaCards.board(2);
+            h.assertTrue(second.size()==7&&second.get(5).envelope()&&second.get(5).under()&&second.get(6).over()&&second.get(6).place()==second.get(5).place()&&second.get(6).family().equals("Tate")&&BorrascaCards.top(2)==95&&java.util.Arrays.equals(BorrascaCards.order(2),new int[]{0,1,2,3,4,6,5}),"the Tates' card hangs over the envelope, and a hand comes to it first: "+second+" / "+java.util.Arrays.toString(BorrascaCards.order(2)));
+            for(int i=0;i<5;i++)BorrascaCards.seen(p,i);BorrascaCards.seen(p,6);
+            h.assertTrue(f.own(p).getBoolean("Read_Cards2")&&f.own(p).getInt("Seen_Cards2")==95,"the second board is read without the envelope under the newest card: "+f.own(p).getInt("Seen_Cards2"));
             var own=f.own(p);own.putBoolean("FriendMissing",true);f.save(p,own);
             // 0.4.444: after she is taken the Sheriff no longer says "you two".
             f.talk(p,"CastSheriff");var sheriffSaid=f.actor(p,"CastSheriff").getCustomName();h.assertTrue(sheriffSaid!=null&&sheriffSaid.getString().contains("by yourself")&&!sheriffSaid.getString().contains("You two"),"after the taking the Sheriff speaks to a child who came down alone: "+sheriffSaid);
