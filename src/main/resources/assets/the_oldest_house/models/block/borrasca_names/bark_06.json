@@ -1,0 +1,124 @@
+{
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#bark"
+        },
+        "east": {
+          "cullface": "east",
+          "texture": "#bark"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#bark"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#bark"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#bark"
+        },
+        "west": {
+          "cullface": "west",
+          "texture": "#bark"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "north": {
+          "cullface": "north",
+          "texture": "#n"
+        }
+      },
+      "from": [
+        0,
+        0,
+        -0.05
+      ],
+      "to": [
+        16,
+        16,
+        0
+      ]
+    },
+    {
+      "faces": {
+        "south": {
+          "cullface": "south",
+          "texture": "#s"
+        }
+      },
+      "from": [
+        0,
+        0,
+        16
+      ],
+      "to": [
+        16,
+        16,
+        16.05
+      ]
+    },
+    {
+      "faces": {
+        "east": {
+          "cullface": "east",
+          "texture": "#e"
+        }
+      },
+      "from": [
+        16,
+        0,
+        0
+      ],
+      "to": [
+        16.05,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "west": {
+          "cullface": "west",
+          "texture": "#w"
+        }
+      },
+      "from": [
+        -0.05,
+        0,
+        0
+      ],
+      "to": [
+        0,
+        16,
+        16
+      ]
+    }
+  ],
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bark": "minecraft:block/oak_log",
+    "e": "the_oldest_house:block/borrasca_names/names_13",
+    "n": "the_oldest_house:block/borrasca_names/names_06",
+    "particle": "minecraft:block/oak_log",
+    "s": "the_oldest_house:block/borrasca_names/names_00",
+    "w": "the_oldest_house:block/borrasca_names/names_07"
+  }
+}

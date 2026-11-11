@@ -79,6 +79,8 @@ public final class BorrascaStory {
     private static final int FORT_LISTEN_TICKS=100; // The chime lasts 70 ticks. Leave a beat of silence after it.
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static final BlockPos FRONT_LEVER=new BlockPos(-15,13,-168);
+    /** What a hand on the Tree's old names finds (0.4.448). */
+    private static final String[] NAMES_SEEN={"Names, and older names under them. Some are only grooves now.","The bark has closed over most of these. A few can still be read.","Every one cut with a different knife.","Among the names, flat grey patches where a name was taken off."};
     private static final BlockPos[] CHILD_WALK={new BlockPos(1,0,-35),new BlockPos(1,0,-60),new BlockPos(3,0,-86),new BlockPos(3,6,-88),new BlockPos(1,6,-94)};
     private static final BlockPos[] DOWN={new BlockPos(2,6,-89),new BlockPos(2,6,-88),new BlockPos(3,6,-88),new BlockPos(3,0,-88),new BlockPos(2,0,-88),new BlockPos(1,0,-96)};
     private static final BlockPos[] TAKING_WALK={new BlockPos(1,0,-85),new BlockPos(2,0,-93),new BlockPos(3,0,-97),new BlockPos(3,0,-103),BorrascaRooms.trail(-108),BorrascaRooms.SHELTER_ONE,new BlockPos(6,2,-114),new BlockPos(6,3,-116),BorrascaRooms.trail(-125),BorrascaRooms.SHELTER_TWO,new BlockPos(1,6,-131),BorrascaRooms.trail(-141),BorrascaRooms.TAKING};
@@ -178,6 +180,9 @@ public final class BorrascaStory {
             if(earl!=null&&!earl.isInvisible()&&earl.distanceToSqr(p)<49)BorrascaPeople.talk(p,earl,own);else cue(p,"The cell is empty, and locked.");
             return true;
         }
+        // 0.4.448: the names all over the Tree, and the two beside the carving.
+        if(rel.equals(BorrascaRooms.FRIENDS_NAMES)){cue(p,visit<=1?"PAT. KEN. Cut this year. The wood is still pale.":visit==2?"KEN, and over it a flat pale patch the length of a short name.":visit==3?"Two flat pale patches, one over the other.":"Two flat patches, one over the other, gone grey.");return true;}
+        if(BorrascaNamesBlock.is(p.serverLevel().getBlockState(BorrascaRooms.at(b,rel)))){cue(p,NAMES_SEEN[Math.floorMod(rel.getX()*7+rel.getY()*3+rel.getZ(),NAMES_SEEN.length)]);return true;}
         if(rel.equals(BorrascaRooms.CARVING)){
             if(visit==1){
                 if(!own.getBoolean("FriendCarved")){cue(p,"Some names are only grooves now. There are old scars between them.");return true;}
@@ -208,7 +213,7 @@ public final class BorrascaStory {
                 }
                 cue(p,"Both names, side by side in the bark.");return true;
             }
-            if(visit==2){cue(p,"Both names are still there. Lower down the trunk, someone has scraped another name away.");return true;}
+            if(visit==2){cue(p,"Both names are still there. Beside them, someone has scraped another name away.");return true;}
             noticeGouge(p,own);if(visit==4)restoreName(p,b,own);
             if(own.getBoolean("RestoredName"))cue(p,FRIEND+". Cut again beside your name. The steel gouges are still under it.");
             return true;
@@ -1381,7 +1386,10 @@ public final class BorrascaStory {
         var pack=p.serverLevel().getBlockState(BorrascaRooms.at(b,BorrascaRooms.PACK));
         if(visit<=2&&pack.is(BorrascaRegistry.FITTING.get())&&pack.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.PACK)p.serverLevel().setBlock(BorrascaRooms.at(b,BorrascaRooms.PACK),Blocks.AIR.defaultBlockState(),F);
         if(visit>=3&&pack.isAir())fit(p,b,BorrascaRooms.PACK,BorrascaFittingBlock.Kind.PACK);
-        if(visit==2){p.serverLevel().setBlock(BorrascaRooms.at(b,2,0,-98),BorrascaRegistry.CARVING.get().defaultBlockState().setValue(BorrascaCarvingBlock.STAGE,3),F);var source=BorrascaRooms.at(b,BorrascaRooms.SOURCE);if(p.serverLevel().getBlockEntity(source) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){lectern.setBook(BorrascaTexts.contentNote());lectern.setChanged();p.serverLevel().sendBlockUpdated(source,lectern.getBlockState(),lectern.getBlockState(),F);}}
+        // 0.4.448: the two names beside the carving go as their owners do: his by the second visit, hers by the third. (A second carving
+        // used to be set here on the second visit, with a gouge and the same three old names as the first.)
+        if(visit>=2)p.serverLevel().setBlock(BorrascaRooms.at(b,BorrascaRooms.FRIENDS_NAMES),BorrascaNamesBlock.friends(visit),F);
+        if(visit==2){var source=BorrascaRooms.at(b,BorrascaRooms.SOURCE);if(p.serverLevel().getBlockEntity(source) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern){lectern.setBook(BorrascaTexts.contentNote());lectern.setChanged();p.serverLevel().sendBlockUpdated(source,lectern.getBlockState(),lectern.getBlockState(),F);}}
         if(visit==4){for(int x=-1;x<=1;x++)for(int y=12;y<=14;y++)p.serverLevel().setBlock(BorrascaRooms.at(b,x,y,-167),Blocks.AIR.defaultBlockState(),F);fit(p,b,new BlockPos(2,12,-168),BorrascaFittingBlock.Kind.LOCK);openDoor(p.serverLevel(),BorrascaRooms.at(b,BorrascaRooms.FACTORY_DOOR),true);}
         own.putInt("SceneryVisit",visit);
     }

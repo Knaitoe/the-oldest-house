@@ -1157,6 +1157,12 @@ public final class BorrascaTests {
             h.assertTrue(water.is(HouseReadRegistry.FITTING.get())&&water.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.COOLER&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.WATER).above()).isAir(),"the depot office's water cooler is the waiting room's: "+water);
             var hand=f.own(p);
             h.assertTrue(BorrascaStory.click(p,b,BorrascaRooms.world(BorrascaRooms.WATER),hand)&&BorrascaStory.click(p,b,BorrascaRooms.world(BorrascaRooms.FACTORY_DOOR),hand)&&!open(f,p,BorrascaRooms.FACTORY_DOOR),"the cooler and the depot's front door each answer a hand, and the door stays shut");
+            // 0.4.448 (owner: "There should be names all over this tree.")
+            int named=0;for(var at:BlockPos.betweenClosed(new BlockPos(-5,0,-102),new BlockPos(6,8,-97)))if(BorrascaNamesBlock.is(f.out.getBlockState(BorrascaRooms.at(b,at))))named++;
+            h.assertTrue(named>=60,"the burl and the trunks are cut with names all over: "+named);
+            for(int x=-3;x<2;x++)for(int y=0;y<=2;y++){var one=f.out.getBlockState(BorrascaRooms.at(b,x,y,-98));var next=f.out.getBlockState(BorrascaRooms.at(b,x+1,y,-98));if(BorrascaNamesBlock.is(one)&&BorrascaNamesBlock.is(next))h.assertTrue(!one.getValue(BorrascaNamesBlock.FACE).equals(next.getValue(BorrascaNamesBlock.FACE)),"no two blocks side by side carry the same names: "+x+","+y);}
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.CARVING)).is(BorrascaRegistry.CARVING.get())&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.BOTH&&BorrascaNamesBlock.friends(2).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.HIS_GONE,"the reader's carving keeps its place, and Patrick's and Kendra's names are cut beside it");
+            h.assertTrue(BorrascaStory.click(p,b,BorrascaRooms.world(new BlockPos(-2,1,-98)),hand)&&BorrascaStory.click(p,b,BorrascaRooms.world(BorrascaRooms.FRIENDS_NAMES),hand),"a hand on the names is answered");
             for(var sign:new BlockPos[]{new BlockPos(-8,2,-80),new BlockPos(8,2,-101)}){boolean west=sign.getX()<0;h.assertTrue(BorrascaShopBlock.is(f.out.getBlockState(b.offset(sign)),BorrascaShopBlock.Kind.OPEN)&&f.out.getBlockState(b.offset(sign).relative(west?Direction.EAST:Direction.WEST)).is(Blocks.GLASS_PANE),"the OPEN sign hangs inside the shop against its window, which keeps its glass: "+sign);}
             h.assertTrue(!BorrascaShopTexts.pump(0,false).equals(BorrascaShopTexts.pump(1,false))&&!BorrascaShopTexts.pump(0,true).equals(BorrascaShopTexts.pump(1,true)),"each pump's dials stopped at its own last sale");
             h.assertTrue(f.out.getBlockState(b.offset(20,0,-103)).getValue(BorrascaShopBlock.STAGE)!=f.out.getBlockState(b.offset(20,0,-102)).getValue(BorrascaShopBlock.STAGE),"the pharmacy's shelves are not all one arrangement");
@@ -1207,12 +1213,14 @@ public final class BorrascaTests {
             f.at(p,-9,0,-52);
             f.stage(p,3);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"adult cast recalled")).thenExecute(()->{
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.BOTH_GONE,"by the third visit both their names have been scraped off the Tree");
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[0],"the later noticeboard");h.assertTrue(text(board).contains("KELLY")&&text(board).contains("CLOSED"),"years later her own poster is up, closed");
             f.at(p,-1,6,-96);h.assertTrue(title(opened(f,p,BorrascaRooms.NOTES,"the aged notes")).contains("water-stained"),"her notes are still there, damp through");
             f.atWorld(p,new BlockPos(-13,0,-88));h.assertTrue(flat(text(openedWorld(f,p,BorrascaShops.MENU,"the later menu"))).contains(flat("Coffee 1.25")),"years later the menu's prices have gone up");
             f.atWorld(p,new BlockPos(10,0,-86));var later=flat(text(openedWorld(f,p,BorrascaShops.CARDS,"the later corkboard")));h.assertTrue(later.contains(flat("2009"))&&later.contains(flat("Kennedy"))&&later.contains(flat("Piper and Kade")),"the corkboard holds a later year's cards, the babies still named P and K: "+later);
             f.stage(p,4);
         }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"last cast recalled")).thenExecute(()->{
+            h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.FRIENDS_NAMES)).getValue(BorrascaNamesBlock.FACE)==BorrascaNamesBlock.LONG_GONE,"years later the two patches have gone grey");
             f.at(p,-13,0,-20);var board=opened(f,p,BorrascaRooms.BOARD[1],"the last noticeboard");h.assertTrue(text(board).contains("KAYLA"),"the last night's board has a new poster: visit "+f.own(p).getInt("Visit")+", "+title(board)+": "+text(board));
             var own=f.own(p);h.assertTrue(own.contains("Original_Board")&&own.contains("Original_Board3")&&own.contains("Original_Board4")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.BORRASCA),"each visit's board is its own original, and reading confers nothing");
             // 0.4.419: grown, the reader can read the frame: what the word means and what the town owes the Prescotts.

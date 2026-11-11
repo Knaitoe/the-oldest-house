@@ -36,6 +36,8 @@ public final class BorrascaRegistry {
     public static final DeferredBlock<BorrascaMachineBlock> MACHINE=BLOCKS.registerBlock("borrasca_machine",BorrascaMachineBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(-1,3600000).noOcclusion().noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BorrascaMachineBlock.Machine>> MACHINE_ENTITY=BES.register("borrasca_machine",()->BlockEntityType.Builder.of(BorrascaMachineBlock.Machine::new,MACHINE.get()).build(null));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaCarvingBlock>> CARVING_TYPE=CODECS.register("borrasca_bark",()->BorrascaCarvingBlock.CODEC);
+    /** 0.4.448: bark with names cut in it, all over the Triple Tree. */
+    public static final DeferredBlock<BorrascaNamesBlock> NAMES=BLOCKS.registerBlock("borrasca_names",BorrascaNamesBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_WOOD).strength(-1,3600000).noLootTable());
     public static final DeferredBlock<BorrascaCarvingBlock> CARVING=BLOCKS.registerBlock("borrasca_bark",BorrascaCarvingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).strength(-1,3600000).noLootTable());
     public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<BorrascaCarvingEntity>> CARVING_ENTITY=BES.register("borrasca_bark",()->BlockEntityType.Builder.of(BorrascaCarvingEntity::new,CARVING.get()).build(null));
     public static final DeferredItem<BorrascaKeepsakeItem> COMPASS=ITEMS.register("borrasca_compass",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Compass"));

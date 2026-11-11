@@ -87,6 +87,8 @@ public final class BorrascaRooms {
      * (BorrascaLand.forest), and every tree on the hill would move.
      */
     public static final int HEAD=FAR-14;
+    /** 0.4.448: the block of the burl beside the carving, with Patrick's and Kendra's names on it. */
+    public static final BlockPos FRIENDS_NAMES=new BlockPos(2,0,-98);
     /** The water cooler in the depot's office (0.4.447). */
     public static final BlockPos WATER=new BlockPos(-15,12,-171);
     /** Which part of the map a row is in. A region keeps both its end rows (its own ground, steps and all); a slope has only the rows between. */
