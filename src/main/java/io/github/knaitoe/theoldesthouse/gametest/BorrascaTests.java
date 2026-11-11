@@ -1411,6 +1411,30 @@ public final class BorrascaTests {
             f.talk(p,"CastSheriff");var sheriffSaid=f.actor(p,"CastSheriff").getCustomName();h.assertTrue(sheriffSaid!=null&&sheriffSaid.getString().contains("by yourself")&&!sheriffSaid.getString().contains("You two"),"after the taking the Sheriff speaks to a child who came down alone: "+sheriffSaid);
             f.atWorld(p,new BlockPos(-13,0,-111));var tip=dial.apply(BorrascaPayphone.SHERIFF);
             h.assertTrue(said.apply(tip).contains("no open case")&&said.apply(tip).contains(BorrascaStory.FRIEND),"the Sheriff's office has no open case for her: "+said.apply(tip));
+            // 0.4.458 (owner: "Dialogue should change on second day, after Kelly/friend is taken"): and so does the rest of the town.
+            // Each of them says what they have to say in order and then the last of it again, and none of it is what they said
+            // while there were two children.
+            java.util.function.Function<LiteraryActor,String> heard=who->who.getCustomName()==null?"":who.getCustomName().getString();
+            h.assertTrue(BorrascaPeople.taken(f.own(p)),"it is the second day and she has been taken");
+            for(int k:new int[]{BorrascaPeople.LORNA,BorrascaPeople.AMES,BorrascaPeople.ROWE,BorrascaPeople.KURT,BorrascaPeople.FENN,BorrascaPeople.WEBB,BorrascaPeople.SHERRY,BorrascaPeople.EARL,BorrascaPeople.CARRIER}){
+                var who=person.apply(k);var lines=BorrascaPeople.afterTheTaking(k);
+                h.assertTrue(who!=null&&!who.isInvisible()&&lines!=null&&lines.length>=2,"everyone at work that day has something of their own to say: "+k);
+                var mine=f.own(p);mine.remove("RoweOut");var all=new StringBuilder();
+                for(int i=0;i<=lines.length;i++){BorrascaPeople.talk(p,who,mine);String line=heard.apply(who);all.append(line).append(" / ");
+                    h.assertTrue(line.contains(lines[Math.min(i,lines.length-1)]),BorrascaPeople.name(who)+" says them in order and then the last again: "+i+" "+line);}
+                h.assertTrue(!all.toString().contains("You two")&&!all.toString().contains("your friends")&&!all.toString().contains("your folks"),BorrascaPeople.name(who)+" does not speak as if nothing had happened: "+all);
+                f.save(p,mine);p.closeContainer();
+            }
+            {var mine=f.own(p);var gus=person.apply(BorrascaPeople.GUS);BorrascaPeople.talk(p,gus,mine);h.assertTrue(heard.apply(gus).contains(BorrascaPeople.GUS_AFTER),"Gus sends the child home by the street: "+heard.apply(gus));
+             mine.putBoolean("RoweOut",true);var rowe=person.apply(BorrascaPeople.ROWE);BorrascaPeople.talk(p,rowe,mine);h.assertTrue(heard.apply(rowe).contains(BorrascaPeople.ROWE_OUT_AFTER),"on his break Mr. Rowe is not looking up the street: "+heard.apply(rowe));mine.remove("RoweOut");
+             // Mrs. Odell's rule is one. That day she gives two at once, and then has nothing else.
+             var odell=person.apply(BorrascaPeople.ODELL);int had=p.getInventory().countItem(BorrascaRegistry.LOLLIPOP.get());
+             h.assertTrue(!mine.getBoolean("Lollipop")&&BorrascaPeople.lollipop(p,mine)&&p.getInventory().countItem(BorrascaRegistry.LOLLIPOP.get())==had+2&&heard.apply(odell).contains(BorrascaPeople.ODELL_TWO),"she gives a child who came down alone two: "+heard.apply(odell)+" / "+p.getInventory().countItem(BorrascaRegistry.LOLLIPOP.get()));
+             h.assertTrue(!BorrascaPeople.lollipop(p,mine)&&p.getInventory().countItem(BorrascaRegistry.LOLLIPOP.get())==had+2&&heard.apply(odell).contains(BorrascaPeople.ODELL_DONE),"and then has nothing else for them: "+heard.apply(odell));
+             // A child who had the one already is given another.
+             mine.remove("LollipopAfter");
+             h.assertTrue(BorrascaPeople.lollipop(p,mine)&&p.getInventory().countItem(BorrascaRegistry.LOLLIPOP.get())==had+3&&heard.apply(odell).contains(BorrascaPeople.ODELL_ANOTHER)&&!BorrascaPeople.lollipop(p,mine)&&p.getInventory().countItem(BorrascaRegistry.LOLLIPOP.get())==had+3,"a child who had theirs already is given the one her rule does not allow, once: "+heard.apply(odell));
+             f.save(p,mine);}
             f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
           }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==3,"years later: "+BorrascaCast.why(p)))
           .thenExecute(()->{
@@ -1586,6 +1610,12 @@ public final class BorrascaTests {
               board(h,f,p,BorrascaPapers.Sheet.BOARD,"on the second visit");
               h.assertTrue(f.actor(p,"TownEli").isInvisible()&&!f.actor(p,"TownWren").isInvisible(),"Patrick is missing while Kendra is still in town");
               f.talk(p,"TownWren");h.assertTrue(f.own(p).getBoolean("WrenRememberedEli"),"Kendra remembers Patrick's bicycle");
+              // 0.4.458: to a reader who came down without the friend she says three other things, in order, and then the last again.
+              {var mine=f.own(p);boolean was=mine.getBoolean("FriendMissing");mine.putBoolean("FriendMissing",true);mine.remove("WrenRememberedEli");f.save(p,mine);
+               String[] hers={"You came down by yourself.","I asked him about Patrick.","tell her mom","tell her mom"};
+               for(String line:hers){f.talk(p,"TownWren");h.assertTrue(said(f,p,"TownWren").contains(line),"Kendra, after the friend is taken: "+line+" / "+said(f,p,"TownWren"));}
+               mine=f.own(p);h.assertTrue(!mine.getBoolean("WrenRememberedEli"),"and that is not her telling about the bicycle");
+               mine.putBoolean("FriendMissing",was);mine.putBoolean("WrenRememberedEli",true);mine.remove("WrenAfter");f.save(p,mine);}
               f.read(p,eliPoster,false);
               h.assertTrue(f.out.getBlockState(BorrascaRooms.at(f.base(p),BorrascaRooms.PATRICK_BIKE)).isAir(),"by the second visit Kendra has walked Patrick's bike home to his mother");
               bike(h,f,p,BorrascaRooms.KENDRA_BIKE,0,"her own still stands where she waits");

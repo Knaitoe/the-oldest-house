@@ -361,6 +361,12 @@ public final class BorrascaStory {
             "I used to think if your name was up there, nobody could take you.",
             "I'm going to the tree. If he comes back he'll look for his name first."
         };
+        // 0.4.458: after the friend is taken Kendra has three things to say, in order, and then the last of them again. They are
+        // not what she says about Patrick's bicycle, so they do not put that in the reader's account.
+        if(!eli&&BorrascaPeople.taken(own)){
+            int n=own.getInt("WrenAfter");own.putInt("WrenAfter",n+1);say(p,child,KENDRA_AFTER[Math.min(n,KENDRA_AFTER.length-1)]);
+            float yaw=toward(child,p);child.setYRot(yaw);child.setYBodyRot(yaw);child.setYHeadRot(yaw);return;
+        }
         if(eli)own.putBoolean("MetEli",true);
         else own.putBoolean(visit==1?"MetWren":"WrenRememberedEli",true);
         // 0.4.445: each of them knows whose comic the reader is carrying, and says so once before anything else.
@@ -1185,6 +1191,8 @@ public final class BorrascaStory {
     /** 0.4.444: the blood under the Sheriff's body, as his synced torn: spreading up to POOL_FULL, and POOL_DRIED on a later visit. */
     public static final int POOL_FULL=1000,POOL_DRIED=2000;
     /** 0.4.444 (owner: "Dialogue should change on second day, after Kelly/friend is taken"): what he says to a child who comes down alone. */
+    /** 0.4.458: what Kendra says to a reader who came down without the friend. Patrick went the week before. */
+    static final String[] KENDRA_AFTER={"You came down by yourself.","I'm not asking the Sheriff. I asked him about Patrick.","I'll go and tell her mom. Somebody ought to who isn't him."};
     static final String[] SHERIFF_AFTER={"You came down by yourself. Then you went up by yourself. Go on home.","Nobody's been on that road today. I'd have seen them.","Kids run off. I'll have a word with her folks. You stay off that trail."};
     private static final String[] PLEAS={"It was never my idea. There was a Sheriff before me, and he signed for it too.","You think it stops with me? There's a waiting list for this badge.","The Prescotts own the ground. I only ever kept the road clear.","Go on. Get it over with, or get out of my county."};
     private static void sheriffPleads(ServerPlayer p,LiteraryActor sheriff,CompoundTag own){int n=own.getInt("SheriffPleas");own.putInt("SheriffPleas",n+1);say(p,sheriff,PLEAS[n%PLEAS.length]);}

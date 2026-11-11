@@ -268,7 +268,7 @@ public final class BorrascaPeople {
     // ---------------------------------------------------------------------------------------------------------------- the money
     /** The purse for this visit: new change or a new wallet when the visit changes; the one carried shows what is left. */
     private static void purse(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
-        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");leave(p);jar(p,b,0);}
+        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");own.remove("LollipopAfter");own.remove("WrenAfter");for(int k=LORNA;k<=CARRIER;k++)own.remove("SaidAfter"+k);leave(p);jar(p,b,0);}
         boolean wallet=visit>=3;var held=carried(p,wallet);int cents=own.getInt("Cents");
         if(held==null)p.getInventory().add(BorrascaPurseItem.of(p,cents,wallet));
         else if(BorrascaPurseItem.cents(held)!=cents)BorrascaPurseItem.mark(held,p.getUUID(),cents);
@@ -284,11 +284,18 @@ public final class BorrascaPeople {
     public static boolean talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         if(!keeper(a))return false;if(a.isInvisible())return true;
         int visit=own.getInt("Visit");boolean grown=visit>=3;int phase=a.phase();turn(a,p);
+        boolean after=taken(own);
         if(phase==ODELL&&!grown){lollipop(p,own);return true;}
-        if(phase==GUS&&!grown){BorrascaStory.say(p,a,"Out. No kids in here.");return true;}
-        if(phase==ROWE&&own.getBoolean("RoweOut")){BorrascaStory.say(p,a,grown?"Five minutes. Go on back to the society if you like.":"I'm on my break, hon. Don't touch the clocks.");return true;}
-        String[] lines=own.getBoolean("SheriffDead")&&own.getInt("SheriffDiedVisit")<visit&&afterTheSheriff(phase)!=null?afterTheSheriff(phase):greetings(phase,visit);String key="Said"+phase;int n=own.getInt(key);own.putInt(key,n+1);
-        BorrascaStory.say(p,a,lines[n%lines.length]);
+        if(phase==GUS&&!grown){BorrascaStory.say(p,a,after?GUS_AFTER:"Out. No kids in here.");return true;}
+        if(phase==ROWE&&own.getBoolean("RoweOut")){BorrascaStory.say(p,a,grown?"Five minutes. Go on back to the society if you like.":after?ROWE_OUT_AFTER:"I'm on my break, hon. Don't touch the clocks.");return true;}
+        var gone=after?afterTheTaking(phase):null;
+        if(gone!=null){
+            // 0.4.458: said in order, and then the last of them again: they have said what they are going to say.
+            String key="SaidAfter"+phase;int n=own.getInt(key);own.putInt(key,n+1);BorrascaStory.say(p,a,gone[Math.min(n,gone.length-1)]);
+        }else{
+            String[] lines=own.getBoolean("SheriffDead")&&own.getInt("SheriffDiedVisit")<visit&&afterTheSheriff(phase)!=null?afterTheSheriff(phase):greetings(phase,visit);String key="Said"+phase;int n=own.getInt(key);own.putInt(key,n+1);
+            BorrascaStory.say(p,a,lines[n%lines.length]);
+        }
         var wares=wares(phase,grown);if(!wares.isEmpty())counter(p,a,wares,grown);
         return true;
     }
@@ -310,7 +317,7 @@ public final class BorrascaPeople {
         // 0.4.426: friends pool their coins. A child who is short with the friend beside them has her put in the rest, while she has it.
         var friend=grown?null:BorrascaStory.friend(p,own);int pool=own.getInt("FriendCents");
         if(have<price&&friend!=null&&friend.distanceToSqr(p)<64&&have+pool>=price){int top=price-have;own.putInt("FriendCents",pool-top);have=price;own.putInt("Cents",have);own.putInt("Pooled",own.getInt("Pooled")+1);BorrascaStory.say(p,friend,"Here. I've got "+BorrascaPurseItem.money(top)+". We'll split it.");}
-        if(have<price)return speak(p,a,phase==LORNA&&!grown?"That's "+BorrascaPurseItem.money(price)+", hon. You're a little short. Come back with your friends.":"That's "+BorrascaPurseItem.money(price)+". You've got "+BorrascaPurseItem.money(have)+".");
+        if(have<price)return speak(p,a,phase==LORNA&&!grown?"That's "+BorrascaPurseItem.money(price)+", hon. You're a little short."+(taken(own)?"":" Come back with your friends."):"That's "+BorrascaPurseItem.money(price)+". You've got "+BorrascaPurseItem.money(have)+".");
         own.putInt("Cents",have-price);var held=carried(p,grown);if(held!=null)BorrascaPurseItem.mark(held,p.getUUID(),have-price);
         var goods=w.goods(grown);if(!p.getInventory().add(goods))p.drop(goods,false);
         return speak(p,a,sold(phase,w,grown,visit));
@@ -360,6 +367,34 @@ public final class BorrascaPeople {
         // 0.4.426: grown, Earl says too much.
         default->visit==4?new String[]{"You're going up there tonight. I can see it on you.","Don't let them see your light past the second marker. That's all I'll say.","They quit locking me up. Nobody listens to a man who sleeps in an alley. Costs them less."}:grown?new String[]{"You again. No. You were smaller.","I wore the star once, same as Dutch and Merle. Ask them what we did with the reports.","Every kid on the board at the store, the Sheriff signs off as a runaway. Every one. They don't run anywhere.","There's a road behind the depot fence the county doesn't plow. Somebody plows it."}:new String[]{"Hey. Hey, kid. Tell the Sheriff I was asleep. That's all I was doing.","It's quiet up here. You notice that? It's always so quiet.","Go on home. Go on. It's getting dark early."};
     };}
+    /**
+     * 0.4.458 (owner: "Dialogue should change on second day, after Kelly/friend is taken"): whether this reader's friend has been
+     * taken on the trail and it is still that day. From then until the visit ends the town speaks to a child who came down alone.
+     */
+    public static boolean taken(CompoundTag own){return own.getInt("Visit")==2&&own.getBoolean("FriendMissing");}
+    /** What Gus says to that child as he puts them out, and what Mr. Rowe says on his break out front. */
+    public static final String GUS_AFTER="Out. And go home by the street. Not by the trail.",ROWE_OUT_AFTER="I'm on my break. I'm not looking up the street. Go on home.";
+    /** What Mrs. Odell says with the lollipop her own rule does not allow, with two at once, and after that. */
+    public static final String ODELL_ANOTHER="One's the rule. ...Here. Take another. I won't count it.",ODELL_TWO="Here. Take two today. I won't count them.",ODELL_DONE="That's all I have for you. Go on home.";
+    /**
+     * What each of the town says to that child, in order; the last is said again after it. Nobody says what happened and nobody asks.
+     * Each of them does what they do about it: Lorna feeds them and sends them home, Mr. Ames rubs out her account and makes room on
+     * his board, Mr. Rowe did not look up the street, Kurt says what he saw and does not know what he is saying, Mr. Fenn has her
+     * mother's prescription to make up, the Webbs saw nothing and want their own child, Earl was locked up before noon, and Mr.
+     * Dorsey will hold the family's mail. Null for those with nothing of their own to say (Mrs. Odell and Gus answer elsewhere).
+     */
+    public static @Nullable String[] afterTheTaking(int phase){return switch(phase){
+        case LORNA->new String[]{"Just the one of you? Sit at the counter, hon. I'll bring you a milk.","Drink that. Then you go straight home, and you stay in tonight.","Don't go asking in here, hon. Folks are eating."};
+        case AMES->new String[]{"Just you, then. She had a dime of candy on the book. I'll rub that out.","I'll put her sheet on the board in the morning. The bake sale's over anyhow.","Store shuts at five. Be indoors before it does."};
+        case ROWE->new String[]{"I had my smoke out front, same as every day. I didn't look up the street. I never do.","Hands in your pockets. And go home."};
+        case KURT->new String[]{"Two of Prescott's men walked up past the pumps before noon. Didn't buy a thing. They never do.","You should tell the Sheriff. He's right there on the square. That's what he's for."};
+        case FENN->new String[]{"No running in here. ...Sit at the fountain a minute.","Dr. Hale will write her mother something to sleep on. He always does. I'll have it made up by five.","Go on home now. The stool will be here tomorrow."};
+        case WEBB->new String[]{"We've sat right here since eight. We didn't see anybody go by. Neither of us.","That's for the Sheriff. It isn't ours to talk about, and it isn't yours."};
+        case SHERRY->new String[]{"Her poor mother. ...Dr. Hale will see she's looked after.","I want to go and get Paul from his grandma. Right now."};
+        case EARL->new String[]{"There were two of you this morning. I can still count.","He locked me in before noon. I hadn't had a drop. Ask him why. No. Don't ask him.","Don't give him her name. He'll write it down his way, and then that's how it is."};
+        case CARRIER->new String[]{"Came down on your own, did you. ...I didn't see it. I just carry the mail.","I'll hold the Garritys' mail at the office a while. That's how it's done."};
+        default->null;
+    };}
     /** 0.4.427: what the bar and the cell say on the visit after the Sheriff was killed on the ridge; null for everyone else. */
     private static @Nullable String[] afterTheSheriff(int phase){return switch(phase){
         case DUTCH->new String[]{"Sheriff's dead. He's still up by the tape. Nobody's gone for him.","Prescott says leave him till the county comes. So he's still lying up there."};
@@ -375,8 +410,18 @@ public final class BorrascaPeople {
     public static boolean lollipop(ServerPlayer p,CompoundTag own){
         var odell=keeper(p,own,ODELL);var b=BorrascaSites.base(p.server,p.getUUID());
         if(own.getInt("Visit")>=3||odell==null||odell.isInvisible()||b==null)return false;
-        if(own.getBoolean("Lollipop")){BorrascaStory.say(p,odell,"One's the rule.");return false;}
+        // 0.4.458: to a child who came down alone she gives one her rule does not allow, or two at once. Then she has nothing else.
+        boolean after=taken(own);
+        if(own.getBoolean("Lollipop")){
+            if(!after||own.getBoolean("LollipopAfter")){BorrascaStory.say(p,odell,after?ODELL_DONE:"One's the rule.");return false;}
+            own.putBoolean("LollipopAfter",true);var more=new ItemStack(BorrascaRegistry.LOLLIPOP.get());if(!p.getInventory().add(more))p.drop(more,false);
+            BorrascaStory.say(p,odell,ODELL_ANOTHER);return true;
+        }
         own.putBoolean("Lollipop",true);var s=new ItemStack(BorrascaRegistry.LOLLIPOP.get());if(!p.getInventory().add(s))p.drop(s,false);jar(p,b,1);
+        if(after){
+            own.putBoolean("LollipopAfter",true);var more=new ItemStack(BorrascaRegistry.LOLLIPOP.get());if(!p.getInventory().add(more))p.drop(more,false);
+            BorrascaStory.say(p,odell,ODELL_TWO);return true;
+        }
         BorrascaStory.say(p,odell,own.getInt("Visit")==2?"The Tates had their girl last night. Dr. Hale was up till all hours. Here, take one. Just one.":"Dr. Hale's with someone. Here, take one. Just one.");return true;
     }
     private static void jar(ServerPlayer p,BlockPos b,int stage){var at=b.offset(BorrascaShops.JAR);var s=p.serverLevel().getBlockState(at);if(BorrascaShopBlock.is(s,BorrascaShopBlock.Kind.JAR)&&s.getValue(BorrascaShopBlock.STAGE)!=stage)p.serverLevel().setBlock(at,s.setValue(BorrascaShopBlock.STAGE,stage),3);}
@@ -395,7 +440,7 @@ public final class BorrascaPeople {
         }
         if(visit>=3||!inBar(rel)||gus==null||gus.isInvisible())return;
         int n=own.getInt("BarTurnedOut");own.putInt("BarTurnedOut",n+1);
-        BorrascaStory.say(p,gus,n==0?"Out. No kids in here.":n==1?"I said out. Go find your folks.":"Out.");
+        BorrascaStory.say(p,gus,n==0?(taken(own)?GUS_AFTER:"Out. No kids in here."):n==1?(taken(own)?"I said out. Go home.":"I said out. Go find your folks."):"Out.");
         BorrascaStory.openDoor(p.serverLevel(),b.offset(BorrascaShops.BAR_DOOR),true);own.putBoolean("BarShove",true);shove(p,b,gus,TURNED_OUT,17);
     }
     /** The bar's door swings shut behind a child put out, unless somebody is standing in it. */
