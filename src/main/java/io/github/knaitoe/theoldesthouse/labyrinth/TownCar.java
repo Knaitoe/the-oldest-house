@@ -25,8 +25,12 @@ public final class TownCar extends Entity implements Voiced {
      * The four that drive: a station wagon with wood panels, a pickup, a long sedan, and a muscle car with its windows down. And two
      * that stand parked all night (0.4.485): a sedan and a pickup in other paint.
      */
-    public static final int WAGON=0,PICKUP=1,SEDAN=2,MUSCLE=3,BLUE=4,WHITE=5,MOVING=4,KINDS=6;
-    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white"};
+    public static final int WAGON=0,PICKUP=1,SEDAN=2,MUSCLE=3,BLUE=4,WHITE=5,MOVING=4,CARS=6;
+    /** 0.4.488: and a grocery cart, one of the stock boy's chain: the same kind of body, moved by the night. */
+    public static final int CART=6,KINDS=7;
+    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white","cart"};
+    /** Half a cart's length and half its width; and how high it is as a thing in the way: over what a bike rolls up. */
+    public static final double CART_LONG=.42,CART_WIDE=.3,CART_HIGH=1.1;
     /** Half a car's length and half its width, in blocks; and how long one goes untold where it is before it is gone, in ticks. */
     public static final double LONG=2.25,WIDE=.95;
     /** 0.4.487: how high one that stands parked is, as a thing in the way. */
@@ -50,8 +54,8 @@ public final class TownCar extends Entity implements Voiced {
     /** A parked car's own length and width, along whichever way it stands: it stands square to the streets. */
     @Override protected net.minecraft.world.phys.AABB makeBoundingBox(){
         if(entityData==null||!parked())return super.makeBoundingBox();
-        boolean alongZ=Math.abs(Mth.sin(getYRot()*Mth.DEG_TO_RAD))<.5F;double hx=alongZ?WIDE:LONG,hz=alongZ?LONG:WIDE;
-        return new net.minecraft.world.phys.AABB(getX()-hx,getY(),getZ()-hz,getX()+hx,getY()+HIGH,getZ()+hz);
+        boolean alongZ=Math.abs(Mth.sin(getYRot()*Mth.DEG_TO_RAD))<.5F,cart=kind()==CART;double far=cart?CART_LONG:LONG,wide=cart?CART_WIDE:WIDE,hx=alongZ?wide:far,hz=alongZ?far:wide;
+        return new net.minecraft.world.phys.AABB(getX()-hx,getY(),getZ()-hz,getX()+hx,getY()+(cart?CART_HIGH:HIGH),getZ()+hz);
     }
     @Override public void onSyncedDataUpdated(net.minecraft.network.syncher.EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(KIND.equals(key))setBoundingBox(makeBoundingBox());}
     /** Where it is this tick, and the way it points. */
@@ -72,7 +76,8 @@ public final class TownCar extends Entity implements Voiced {
     public boolean over(Vec3 at,double spare){
         double rad=Math.toRadians(getYRot()),dx=at.x-getX(),dz=at.z-getZ();
         double along=-Math.sin(rad)*dx+Math.cos(rad)*dz,across=Math.cos(rad)*dx+Math.sin(rad)*dz;
-        return Math.abs(along)<LONG+spare&&Math.abs(across)<WIDE+spare;
+        boolean cart=kind()==CART;
+        return Math.abs(along)<(cart?CART_LONG:LONG)+spare&&Math.abs(across)<(cart?CART_WIDE:WIDE)+spare;
     }
     @Override protected void readAdditionalSaveData(CompoundTag tag){}
     @Override protected void addAdditionalSaveData(CompoundTag tag){}

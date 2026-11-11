@@ -3426,7 +3426,7 @@ public final class BikeNightTests {
     private static Vec3 rel(BlockPos b,net.minecraft.world.entity.Entity e){return e.position().subtract(Vec3.atLowerCornerOf(b));}
 
     @GameTest(template="empty",batch="people_cast",timeoutTicks=3000)
-    public static void thePeopleOnThePavementsAreFourteenEachInASkinAndAPlaceOfTheirOwn(GameTestHelper h){
+    public static void thePeopleOfTheTownEachHaveASkinAndAPlaceOfTheirOwn(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who=new LiteraryActor[CalderPeople.COUNT];
         h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
@@ -3438,7 +3438,7 @@ public final class BikeNightTests {
                 h.assertTrue(java.util.Arrays.stream(who).allMatch(java.util.Objects::isNull)&&!CalderTraffic.going(b)&&l.getEntitiesOfClass(LiteraryActor.class,whole(f),CalderPeople::is).isEmpty(),"before the gate is opened there is nobody on the pavements");
                 CalderTraffic.startNow(b);
             })
-            .thenWaitUntil(()->h.assertTrue(people(l,b,who)&&CalderTraffic.parked(l,b,0)!=null,"waiting for the fourteen of them, and the cars four of them sit on"))
+            .thenWaitUntil(()->h.assertTrue(people(l,b,who)&&CalderTraffic.parked(l,b,0)!=null,"waiting for all of them, and the cars four of them sit on"))
             .thenIdle(12)
             .thenExecute(()->{
                 var skins=new java.util.HashSet<String>();
@@ -3462,7 +3462,7 @@ public final class BikeNightTests {
                 }
                 // Two on the hood of each parked car: over it, sitting on its top, looking the way it does.
                 h.assertTrue(CalderTraffic.parked(l,b,0).kind()==TownCar.BLUE&&CalderTraffic.parked(l,b,1)!=null&&CalderTraffic.parked(l,b,1).kind()==TownCar.WHITE,"two cars are parked in the burger place's lot");
-                for(int i=CalderPeople.HOOD_FIRST;i<CalderPeople.COUNT;i++){
+                for(int i=CalderPeople.HOOD_FIRST;i<CalderPeople.HOOD_FIRST+CalderPeople.HOOD;i++){
                     var a=who[i];var car=CalderTraffic.parked(l,b,(i-CalderPeople.HOOD_FIRST)/2);
                     h.assertTrue(car.over(a.position(),0)&&Math.abs(a.getY()-(b.getY()+CalderPeople.HOOD_TOP-CalderPeople.HIPS))<.01,"on the hood: "+a.position().subtract(car.position()));
                     h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-car.getYRot()))<1,"looking the way the car does");
@@ -3613,7 +3613,7 @@ public final class BikeNightTests {
                 boolean one=List.of(BikeNightTexts.CHEERS[3]).contains(saying(who[CalderPeople.HOOD_FIRST]))||List.of(BikeNightTexts.CHEERS[3]).contains(saying(who[CalderPeople.HOOD_FIRST+1]));
                 h.assertTrue(arms&&one,"waiting for the two on the hood to cheer them going by: the Wasp at "+rel(b,mine[0]));})
             .thenExecute(()->{
-                for(int i=CalderPeople.HOOD_FIRST;i<CalderPeople.COUNT;i++)h.assertTrue(CalderTraffic.parked(l,b,(i-CalderPeople.HOOD_FIRST)/2).over(who[i].position(),0)&&who[i].gesture()==CalderPeople.CHEER,"all four of them, and they are still sitting on their cars");
+                for(int i=CalderPeople.HOOD_FIRST;i<CalderPeople.HOOD_FIRST+CalderPeople.HOOD;i++)h.assertTrue(CalderTraffic.parked(l,b,(i-CalderPeople.HOOD_FIRST)/2).over(who[i].position(),0)&&who[i].gesture()==CalderPeople.CHEER,"all four of them, and they are still sitting on their cars");
                 for(var lot:BikeNightTexts.CHEERS)for(var line:lot)h.assertTrue(!heard(p[0],line),"what they call is never in chat: "+line);
             }).thenSucceed();
     }
@@ -3836,4 +3836,158 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="parked_cars") public static void parkedCarsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.488: the stock boy and his carts
+    private static boolean chain(ServerLevel l,BlockPos b,TownCar[] carts){
+        boolean every=true;for(int i=0;i<carts.length;i++){carts[i]=CalderCarts.cart(l,b,i);every&=carts[i]!=null;}return every;
+    }
+
+    @GameTest(template="empty",batch="carts_chain",timeoutTicks=9000)
+    public static void theStockBoyWheelsAChainOfCartsAlongTheLotAndWalksRoundItAtEachEnd(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final TownCar[] carts=new TownCar[CalderCarts.CARTS];final LiteraryActor[] boy={null};
+        final double[] off={0},was={0};final boolean[] pushed={false},walked={false};final int[] skip={0};
+        // Every tick: each cart is where the chain says, on the aisle's line. (Not for a moment after the case has moved the chain itself.)
+        Runnable watch=()->{
+            if(skip[0]>0){skip[0]--;return;}
+            if(!chain(l,b,carts))return;boy[0]=CalderPeople.find(l,b,CalderPeople.STOCK);double west=CalderCarts.west(b);
+            for(int i=0;i<carts.length;i++)off[0]=Math.max(off[0],Math.hypot(carts[i].getX()-b.getX()-west-CalderCarts.along(i),carts[i].getZ()-b.getZ()-CalderCarts.AISLE_Z));
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("carts_chain_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            // The reader is on Main Street's pavement by the lot, out of the chain's way and near enough to hear it.
+            .thenExecute(()->{
+                h.assertTrue(l.getEntitiesOfClass(TownCar.class,whole(f),c->c.kind()==TownCar.CART).isEmpty(),"before the town wakes there is no chain");
+                f.at(p[0],P,-20.5,0,-98.5);hush(p[0]);CalderTraffic.startNow(b);BikeNightSite.gateOpen(l,b);
+            })
+            .thenWaitUntil(()->{watch.run();h.assertTrue(chain(l,b,carts)&&boy[0]!=null,"waiting for the eight carts and the stock boy");})
+            .thenIdle(5)
+            .thenExecute(()->{
+                watch.run();double west=CalderCarts.west(b);
+                h.assertTrue(CalderCarts.dir(b)==1&&west>=CalderCarts.WEST&&west<CalderCarts.WEST+2,"the chain sets out east from the west end of the lot: "+west);
+                for(var c:carts){
+                    var box=c.getBoundingBox();
+                    h.assertTrue(c.kind()==TownCar.CART&&c.parked()&&c.canBeCollidedWith(),"a cart is a thing in the way");
+                    h.assertTrue(Math.abs(box.getXsize()-TownCar.CART_LONG*2)<.01&&Math.abs(box.getZsize()-TownCar.CART_WIDE*2)<.01&&Math.abs(box.getYsize()-TownCar.CART_HIGH)<.01,"as long, as wide and as high as it is: "+box);
+                    h.assertTrue(box.getYsize()>1,"and too high for a bike to roll up onto");
+                }
+                h.assertTrue(Math.abs(carts[CalderCarts.GAP_AFTER].getX()-carts[CalderCarts.GAP_AFTER-1].getX()-CalderCarts.STEP-CalderCarts.GAP)<.01&&CalderCarts.gapTo()-CalderCarts.gapFrom()>1.4,"there is a gap after the fourth, wide enough for a bike: "+(CalderCarts.gapTo()-CalderCarts.gapFrom()));
+                h.assertTrue(Math.abs(rel(b,boy[0]).x-(west-CalderCarts.BEHIND))<.4&&Math.abs(rel(b,boy[0]).z-CalderCarts.AISLE_Z)<.2,"he is behind the last of them: "+rel(b,boy[0]));
+                h.assertTrue(boy[0].phase()==CalderPeople.FIRST+CalderPeople.STOCK&&boy[0].gesture()==CalderPeople.PUSH,"pushing");
+                // The four carts that stood in the aisle are the chain now; the one left out by the bays is still there.
+                h.assertTrue(l.getBlockState(b.offset(-16,0,-105)).isAir()&&l.getBlockState(b.offset(-34,0,-103)).is(BikeNightRegistry.TOWN.get()),"the row that stood in the aisle is gone, and the one left out is not");
+                // With the chain at this end, every way of the town is clear.
+                var blocked=new ArrayList<String>();
+                for(var w:CalderRoutes.ways()){var why=CalderRoutes.blocked(l,b,w);if(why!=null)blocked.add(why);}
+                h.assertTrue(blocked.isEmpty(),"a bike gets along every way of the town with the chain at the west end: "+blocked.stream().limit(6).toList());
+                h.assertTrue(BikeNightHunt.clear(l,CalderRoutes.at(b,CalderRoutes.id("food_east")),CalderRoutes.at(b,CalderRoutes.id("yard_south"))),"the way into the yard among them");
+                was[0]=west;
+            })
+            .thenIdle(40)
+            .thenExecute(()->{
+                watch.run();double went=CalderCarts.west(b)-was[0];
+                h.assertTrue(Math.abs(went-40*CalderCarts.PACE)<.15,"it goes at a walk: "+went+" blocks in two seconds");
+                h.assertTrue(sounded(p[0],"town.carts"),"and is heard");
+                // Near the east end of its run, and quicker, for the case.
+                CalderCarts.put(b,CalderCarts.EAST-CalderCarts.span()-1.5,1,.1);skip[0]=3;
+            })
+            .thenWaitUntil(()->{watch.run();h.assertTrue(CalderCarts.dir(b)==-1&&CalderCarts.rounding(b),"waiting for it to come to the east end: "+CalderCarts.west(b));})
+            .thenExecute(()->{
+                double west=CalderCarts.west(b);
+                h.assertTrue(Math.abs(west+CalderCarts.span()-CalderCarts.EAST)<.01,"its last cart is at the east end of its run: "+(west+CalderCarts.span()));
+                // The mouth of the yard is barred from side to side, but for the gap.
+                var o=Vec3.atLowerCornerOf(b);int open=0,shut=0;
+                for(double x=-11;x<=-4.2;x+=.2){
+                    boolean free=l.noCollision(new AABB(o.x+x-.05,o.y+.3,o.z+CalderCarts.AISLE_Z-.05,o.x+x+.05,o.y+.8,o.z+CalderCarts.AISLE_Z+.05));
+                    boolean gap=x>west+CalderCarts.gapFrom()&&x<west+CalderCarts.gapTo();
+                    if(free&&!gap&&x>west-TownCar.CART_LONG+.1){boolean between=false;for(int i=0;i+1<carts.length;i++)between|=x>carts[i].getX()-o.x+TownCar.CART_LONG&&x<carts[i+1].getX()-o.x-TownCar.CART_LONG;h.assertTrue(between,"the chain is in the way at "+x);}
+                    if(gap){h.assertTrue(free,"the gap is open at "+x);open++;}else if(!free)shut++;
+                }
+                h.assertTrue(open>=6&&shut>=20,"barred but for the gap: "+open+" open, "+shut+" shut");
+                h.assertTrue(!BikeNightHunt.clear(l,CalderRoutes.at(b,CalderRoutes.id("food_east")),CalderRoutes.at(b,CalderRoutes.id("yard_south"))),"and the way into the yard is not a clear ride");
+            })
+            // He walks round to the other end of them.
+            .thenWaitUntil(()->{watch.run();if(boy[0].gesture()==0&&Math.abs(rel(b,boy[0]).z-CalderCarts.ROUND_Z)<.3)walked[0]=true;
+                h.assertTrue(!CalderCarts.rounding(b),"waiting for him to walk round to its east end: "+rel(b,boy[0]));})
+            .thenExecute(()->{
+                double west=CalderCarts.west(b);
+                h.assertTrue(walked[0],"he went round beside them, not through them");
+                h.assertTrue(Math.abs(rel(b,boy[0]).x-(west+CalderCarts.span()+CalderCarts.BEHIND))<.3&&Math.abs(rel(b,boy[0]).z-CalderCarts.AISLE_Z)<.3,"and is at their east end: "+rel(b,boy[0]));
+                h.assertTrue(Math.abs(west+CalderCarts.span()-CalderCarts.EAST)<.01,"they have not moved while he walked");
+                CalderCarts.put(b,west,-1,.1);skip[0]=3;
+            })
+            .thenWaitUntil(()->{watch.run();if(boy[0].gesture()==CalderPeople.PUSH&&Math.abs(net.minecraft.util.Mth.wrapDegrees(boy[0].getYRot()-90))<5)pushed[0]=true;
+                h.assertTrue(CalderCarts.west(b)<CalderCarts.EAST-CalderCarts.span()-4,"waiting for it to go back west: "+CalderCarts.west(b));})
+            .thenExecute(()->{
+                h.assertTrue(pushed[0],"he pushes it back the way it came");
+                h.assertTrue(off[0]<.02,"no cart was ever out of its place in the chain: "+off[0]);
+                h.assertTrue(BikeNightHunt.clear(l,CalderRoutes.at(b,CalderRoutes.id("food_east")),CalderRoutes.at(b,CalderRoutes.id("yard_south"))),"and the way into the yard is clear again");
+                // The night over: there is no chain.
+                BikeNight.resetNow(l,b);
+                h.assertTrue(l.getEntitiesOfClass(TownCar.class,whole(f),c->c.kind()==TownCar.CART&&c.isAlive()).isEmpty(),"the night over, there is no chain");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="carts_chain") public static void cartsChainDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="carts_wait",timeoutTicks=9000)
+    public static void theChainWaitsForSomebodyInItsWayAndAReaderRidesThroughTheGapOrComesOffAtACart(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final TownCar[] carts=new TownCar[CalderCarts.CARTS];final LiteraryActor[] boy={null};
+        final int[] t={0};final double[] was={0},nearest={9},least={9};final boolean[] under={false},said={false};double start=-30;
+        Runnable watch=()->{
+            chain(l,b,carts);boy[0]=CalderPeople.find(l,b,CalderPeople.STOCK);
+            for(var c:carts)if(c!=null&&mine[0]!=null&&mine[0].isAlive()){if(c.over(mine[0].position(),0))under[0]=true;nearest[0]=Math.min(nearest[0],Math.abs(mine[0].getX()-c.getX())+(Math.abs(mine[0].getZ()-c.getZ())<.6?0:9));}
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("carts_wait_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.WASP);CalderTraffic.startNow(b);})
+            .thenWaitUntil(()->{watch.run();h.assertTrue(chain(l,b,carts)&&boy[0]!=null&&f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the chain, the stock boy, and for the Wasp to be theirs");})
+            // The chain mid-lot, going east; and the reader standing on their bike a block in front of its first cart.
+            .thenExecute(()->{
+                CalderCarts.put(b,start,1,CalderCarts.PACE);
+                mine[0].moveTo(b.getX()+start+CalderCarts.span()+TownCar.CART_LONG+1,b.getY(),b.getZ()+CalderCarts.AISLE_Z,0,0);was[0]=start;hush(p[0]);
+            })
+            .thenExecuteFor(CalderCarts.MIND_AFTER+20,()->{watch.run();if(boy[0]!=null&&List.of(BikeNightTexts.CARTS_MIND).contains(saying(boy[0])))said[0]=true;})
+            .thenExecute(()->{
+                h.assertTrue(CalderCarts.waiting(b)&&Math.abs(CalderCarts.west(b)-was[0])<.11,"the chain waits for somebody in its way: it has gone "+(CalderCarts.west(b)-was[0]));
+                h.assertTrue(!under[0],"and was never where they are");
+                h.assertTrue(said[0]&&boy[0].getCustomName()!=null,"and after a moment he says so: "+saying(boy[0]));
+                h.assertTrue(boy[0].gesture()==0,"he is not pushing");
+                // They go, and it goes on.
+                mine[0].moveTo(b.getX()-20.5,b.getY(),b.getZ()-98.5,0,0);was[0]=CalderCarts.west(b);
+            })
+            .thenIdle(30)
+            .thenExecute(()->{
+                h.assertTrue(!CalderCarts.waiting(b)&&CalderCarts.west(b)-was[0]>1,"with them gone it goes on: "+(CalderCarts.west(b)-was[0]));
+                // Standing still (as near as makes no matter), and the reader rides north at the gap from the lot's south side.
+                double west=-26;CalderCarts.put(b,west,1,.00001);under[0]=false;nearest[0]=9;hush(p[0]);
+                mine[0].moveTo(b.getX()+west+(CalderCarts.gapFrom()+CalderCarts.gapTo())/2,b.getY(),b.getZ()+CalderCarts.AISLE_Z+4.5,180,0);p[0].setYRot(180);t[0]=0;
+            })
+            .thenIdle(2)
+            .thenWaitUntil(()->{watch.run();if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);}
+                h.assertTrue(mine[0].getZ()-b.getZ()<CalderCarts.AISLE_Z-2,"waiting for them to ride through the gap: at "+rel(b,mine[0])+" going "+mine[0].speedNow()+(p[0].getVehicle()==mine[0]?"":", off the bike"));})
+            .thenExecute(()->{
+                h.assertTrue(p[0].getVehicle()==mine[0]&&!under[0],"they are through, still on, and touched no cart");
+                h.assertTrue(CalderCarts.through(b)==1,"and it is counted: "+CalderCarts.through(b));
+                h.assertTrue(List.of(BikeNightTexts.CARTS_THROUGH).contains(saying(boy[0]))||said[0],"he has something to say to it: "+saying(boy[0]));
+                // And flat out at the side of the second cart, from Main Street's pavement.
+                under[0]=false;hush(p[0]);
+                mine[0].moveTo(carts[1].getX(),b.getY(),b.getZ()+CalderCarts.AISLE_Z+7,180,0);p[0].setYRot(180);t[0]=0;
+            })
+            .thenIdle(2)
+            .thenWaitUntil(()->{watch.run();
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);pedalWell(mine[0],t[0]++,3);}
+                if(mine[0].isAlive())least[0]=Math.min(least[0],mine[0].getZ()-b.getZ()-CalderCarts.AISLE_Z);
+                h.assertTrue(p[0].getVehicle()==null,"waiting for them to ride into a cart and come off: "+(mine[0].isAlive()?rel(b,mine[0])+" going "+mine[0].speedNow():"the bike is gone"));})
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],NightBikes.HEAD_ON),"waiting for them to be told"))
+            .thenExecute(()->{
+                h.assertTrue(least[0]>TownCar.CART_WIDE-.05&&!under[0],"the bike never went into the cart: it got to "+least[0]+" from the aisle's line");
+                h.assertTrue(p[0].getHealth()>=4,"and they are not badly hurt: "+p[0].getHealth());
+                for(var line:BikeNightTexts.CARTS_MIND)h.assertTrue(!heard(p[0],line),"what he says is never in chat: "+line);
+                for(var line:BikeNightTexts.CARTS_THROUGH)h.assertTrue(!heard(p[0],line),"what he says is never in chat: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="carts_wait") public static void cartsWaitDone(ServerLevel l){done();}
 }

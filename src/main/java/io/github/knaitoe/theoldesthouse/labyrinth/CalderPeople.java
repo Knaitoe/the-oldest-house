@@ -39,9 +39,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class CalderPeople {
     private CalderPeople(){}
-    /** Stranger phases, from this one up, in this order: the two pairs of trick-or-treaters, the six in the line, the two on each parked car's hood. */
-    public static final int FIRST=172,TRICK=4,LINE_FIRST=4,LINE=6,HOOD_FIRST=10,HOOD=4,COUNT=14;
-    private static final String[] SKINS={"ghost","skeleton","pumpkin","vampire","monster","skull","robot","mummy","cat","scarecrow","letterman","denim","sweater","cap"};
+    /** Stranger phases, from this one up, in this order: the two pairs of trick-or-treaters, the six in the line, the two on each parked car's hood, and (0.4.488) the grocery's stock boy, who is CalderCarts's to move. */
+    public static final int FIRST=172,TRICK=4,LINE_FIRST=4,LINE=6,HOOD_FIRST=10,HOOD=4,STOCK=14,COUNT=15;
+    private static final String[] SKINS={"ghost","skeleton","pumpkin","vampire","monster","skull","robot","mummy","cat","scarecrow","letterman","denim","sweater","cap","stock"};
     public static boolean cast(int phase){return phase>=FIRST&&phase<FIRST+COUNT;}
     public static String skin(int phase){return "calder_"+SKINS[phase-FIRST];}
     /** The trick-or-treaters are children; the rest are teenagers. */
@@ -50,16 +50,18 @@ public final class CalderPeople {
     public static boolean gown(int phase){return phase==FIRST;}
     /** The trick-or-treaters have a pillowcase in one hand, and only the other to wave. */
     public static boolean carries(int phase){return cast(phase)&&phase-FIRST<TRICK;}
-    public static boolean hood(int phase){return cast(phase)&&phase-FIRST>=HOOD_FIRST;}
+    public static boolean hood(int phase){return cast(phase)&&phase-FIRST>=HOOD_FIRST&&phase-FIRST<HOOD_FIRST+HOOD;}
     public static boolean is(@Nullable Entity e){return e instanceof LiteraryActor a&&a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int who(LiteraryActor a){return a.phase()-FIRST;}
     /** What they are called over what they say. */
-    public static String name(int who){return who<TRICK?"Trick-or-treater":who<HOOD_FIRST?"In the line":"On the hood";}
+    public static String name(int who){return who<TRICK?"Trick-or-treater":who<HOOD_FIRST?"In the line":who<STOCK?"On the hood":"Stock boy";}
     /** Their gestures: an arm up, or both, for a rider going by; a hand cupped to shout at one of the three, or both. */
     public static final int CHEER=1,BOO=2;
+    /** And the stock boy's: both hands out on a cart's handle. */
+    public static final int PUSH=3;
     /** The lots of them, each of which cheers and boos together: the Elm Court pair, the Main Street pair, the line, the hood. */
     public static final int LOTS=4;
-    static int lot(int who){return who<2?0:who<TRICK?1:who<HOOD_FIRST?2:3;}
+    static int lot(int who){return who<2?0:who<TRICK?1:who<HOOD_FIRST?2:who<STOCK?3:4;}
     static int first(int lot){return lot==0?0:lot==1?2:lot==2?LINE_FIRST:HOOD_FIRST;}
     static int count(int lot){return lot<2?2:lot==2?LINE:HOOD;}
 
@@ -140,7 +142,7 @@ public final class CalderPeople {
     public static Vec3 start(int who){
         if(who<TRICK){var s=ROUTES[who/2][0];var to=ROUTES[who/2][1];double d=Math.hypot(to.x-s.x,to.z-s.z);
             return who%2==0?new Vec3(s.x,0,s.z):new Vec3(s.x-(to.x-s.x)/d*TRAIL,0,s.z-(to.z-s.z)/d*TRAIL);}
-        return who<HOOD_FIRST?lineSpot(who-LINE_FIRST):hoodSpot(who-HOOD_FIRST);
+        return who<HOOD_FIRST?lineSpot(who-LINE_FIRST):who<STOCK?hoodSpot(who-HOOD_FIRST):CalderCarts.boyStart();
     }
     private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell))&&l.isPositionEntityTicking(cell);}
     static @Nullable LiteraryActor body(ServerLevel l,BikeNight.Night n,Person p){
@@ -151,9 +153,9 @@ public final class CalderPeople {
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,BikeNightBullies.area(n.base),CalderPeople::is))if(who(old)==p.who&&BikeNight.nightAt(l,old.blockPosition())==n){p.id=old.getUUID();p.last=old.position();return old;}
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(BikeNight.PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+p.who);
-        float look=p.who<TRICK?0:p.who<HOOD_FIRST?LINE_LOOK:hoodLook(p.who-HOOD_FIRST);
+        float look=p.who<TRICK?0:p.who<HOOD_FIRST?LINE_LOOK:p.who<STOCK?hoodLook(p.who-HOOD_FIRST):-90;
         a.moveTo(at.x,at.y,at.z,look,0);a.setYHeadRot(look);a.setYBodyRot(look);
-        if(p.who>=HOOD_FIRST){a.setNoGravity(true);a.noPhysics=true;}
+        if(p.who>=HOOD_FIRST&&p.who<STOCK){a.setNoGravity(true);a.noPhysics=true;}
         if(p.who<TRICK)a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(BikeNightRegistry.TREAT_SACK.get()));
         if(!l.addFreshEntity(a))return null;
         p.id=a.getUUID();p.last=at;return a;
@@ -171,11 +173,11 @@ public final class CalderPeople {
         var k=n.people;var bodies=new LiteraryActor[COUNT];
         for(var p:k.all){
             var a=bodies[p.who]=body(l,n,p);if(a==null)continue;
-            if(p.armsUntil>=0&&n.tick>=p.armsUntil){p.armsUntil=-1;a.gesture(0);}
+            if(p.armsUntil>=0&&n.tick>=p.armsUntil){p.armsUntil=-1;if(p.who!=STOCK)a.gesture(0);}
         }
         for(int pair=0;pair<2;pair++)walk(n,k,pair,bodies);
         line(l,n,k,bodies,here);
-        for(int i=HOOD_FIRST;i<COUNT;i++)if(bodies[i]!=null){var at=world(n.base,hoodSpot(i-HOOD_FIRST));float look=hoodLook(i-HOOD_FIRST);bodies[i].setPos(at.x,at.y,at.z);bodies[i].setDeltaMovement(Vec3.ZERO);bodies[i].setYRot(look);bodies[i].setYBodyRot(look);}
+        for(int i=HOOD_FIRST;i<HOOD_FIRST+HOOD;i++)if(bodies[i]!=null){var at=world(n.base,hoodSpot(i-HOOD_FIRST));float look=hoodLook(i-HOOD_FIRST);bodies[i].setPos(at.x,at.y,at.z);bodies[i].setDeltaMovement(Vec3.ZERO);bodies[i].setYRot(look);bodies[i].setYBodyRot(look);}
         calls(l,n,k,bodies,here);
     }
     /** A pair on its round: one behind the other to the next place; at a door or a window they stand side by side a while, and one of them says something. */

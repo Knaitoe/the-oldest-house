@@ -477,7 +477,8 @@ public final class CalderTown {
         on(l,b,CalderSigns.Sign.FOOD_A,s,wall,FOOD[0].getX(),0);on(l,b,CalderSigns.Sign.FOOD_B,s,wall,FOOD[1].getX(),0);on(l,b,CalderSigns.Sign.FOOD_C,s,wall,FOOD[2].getX(),0);
         on(l,b,CalderSigns.Sign.FOOD_DOOR,s,wall,-27,0);on(l,b,CalderSigns.Sign.FOODFAIR_NAME,s,wall,-29,3);
         for(int x=-38;x<=-8;x+=3){box(l,b,x,-1,-110,x,-1,-107,mat("lot_line"));box(l,b,x,-1,-104,x,-1,-101,mat("lot_line"));}
-        strew(l,b,CalderTownBlock.Kind.CART,-16,-105,3,0, -15,-105,3,0, -14,-105,3,0, -13,-105,3,0, -34,-103,1,0);
+        // (0.4.488: the row of four that stood in the aisle is the stock boy's chain now, and moves: CalderCarts.)
+        strew(l,b,CalderTownBlock.Kind.CART,-34,-103,1,0);
         fixed(l,b,CalderTownBlock.Kind.PUMPKIN,1,s,wall,-29,0);fixed(l,b,CalderTownBlock.Kind.PUMPKIN,3,s,wall,-24,0);
         BikeNightSite.lamp(l,b,new BlockPos(-24,0,-106),true);
         // The yard: a shutter and a door in the building's end, a dumpster by them and another out in the yard, pallets, what is thrown out.

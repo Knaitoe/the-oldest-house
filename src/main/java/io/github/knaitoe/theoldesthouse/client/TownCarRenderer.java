@@ -29,10 +29,10 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
      * own middle is, the fast car's back ones being wider.
      */
     public static final float FRONT=-10,BACK=26,ACROSS=8,AXLE=21,HUB=5.5F,RADIUS=5.5F,OUT=13,OUT_WIDE=12.5F;
-    private static final ModelResourceLocation[][] BODY=new ModelResourceLocation[TownCar.KINDS][],LIT=new ModelResourceLocation[TownCar.KINDS][];
+    private static final ModelResourceLocation[][] BODY=new ModelResourceLocation[TownCar.CARS][],LIT=new ModelResourceLocation[TownCar.CARS][];
     private static final ModelResourceLocation WHEEL=BikeLook.standalone("calder_car/wheel"),WHEEL_WIDE=BikeLook.standalone("calder_car/wheel_wide");
     static{
-        for(int k=0;k<TownCar.KINDS;k++){
+        for(int k=0;k<TownCar.CARS;k++){
             String name="calder_car/"+TownCar.NAMES[k];
             BODY[k]=new ModelResourceLocation[]{BikeLook.standalone(name+"_front"),BikeLook.standalone(name+"_back")};
             LIT[k]=new ModelResourceLocation[]{BikeLook.standalone(name+"_lit_front"),BikeLook.standalone(name+"_lit_back")};
@@ -54,13 +54,15 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     public TownCarRenderer(EntityRendererProvider.Context c){super(c);shadowRadius=1.3F;}
     @Override public ResourceLocation getTextureLocation(TownCar car){return InventoryMenu.BLOCK_ATLAS;}
     @Override public void render(TownCar car,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
+        shadowRadius=car.kind()==TownCar.CART?.4F:1.3F;
         draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),car.kind(),Mth.rotLerp(partial,car.yRotO,car.getYRot()),car.rolled(partial),light);
         super.render(car,yaw,partial,pose,buffers,light);
     }
 
     /** A car standing on the road at the pose's origin, its nose toward yaw, having rolled that many blocks. */
     public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light){
-        kind=Mth.clamp(kind,0,TownCar.KINDS-1);
+        if(kind==TownCar.CART){cart(pose,out,yaw,light);return;}
+        kind=Mth.clamp(kind,0,TownCar.CARS-1);
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));
         for(int half=0;half<2;half++){
@@ -76,6 +78,13 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
             part(pose,out,wide?WHEEL_WIDE:WHEEL,light);
             pose.popPose();
         }
+        pose.popPose();
+    }
+    /** 0.4.488: a grocery cart, which is the town's own cart block's model, its basket toward yaw and its handle behind. */
+    private static void cart(PoseStack pose,VertexConsumer out,float yaw,int light){
+        var mc=Minecraft.getInstance();var state=io.github.knaitoe.theoldesthouse.labyrinth.CalderTownBlock.of(io.github.knaitoe.theoldesthouse.labyrinth.CalderTownBlock.Kind.CART,net.minecraft.core.Direction.NORTH,0);
+        pose.pushPose();pose.mulPose(Axis.YP.rotationDegrees(180-yaw));pose.translate(-.5F,0,-.5F);
+        mc.getBlockRenderer().getModelRenderer().renderModel(pose.last(),out,state,mc.getBlockRenderer().getBlockModel(state),1F,1F,1F,light,OverlayTexture.NO_OVERLAY,ModelData.EMPTY,null);
         pose.popPose();
     }
     private static void part(PoseStack pose,VertexConsumer out,ModelResourceLocation model,int light){
