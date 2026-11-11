@@ -1966,5 +1966,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 165
+  },
+  {
+    "name": "literary_bike_gus",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 166
+  },
+  {
+    "name": "literary_bike_gus_bare",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 167
   }
 ]

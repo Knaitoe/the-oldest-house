@@ -184,6 +184,9 @@ LOOKS = {
     'literary_corner_nacho': Look('#c48e6c','#2a1e18','messy','#3a5a7a','#2e3440','tee','#d8d0c0',eyes='#3a2e26',sleeve=4,face_style='child'),
     'literary_corner_luli': Look('#e0b896','#6a3a22','ponytail','#c8607a','#3a4a5a','tee','#f0e6d0',eyes='#4a5a4a',sleeve=4,face_style='child'),
     'literary_corner_nacho_grown': Look('#c48e6c','#2a1e18','short','#4a4a52','#2e3440','jacket','#8a8478',eyes='#3a2e26',beard='stubble'),
+    # Bike night (0.4.476): Gus, in his windbreaker, his glasses and his ball cap; and without the cap, once it has been taken.
+    'literary_bike_gus': Look('#dcb090','#8a5a2e','messy','#2f7f86','#3a4f6e','jacket','#b23a30',eyes='#4f6a7a',glasses=True,mark='bike_cap',sleeve=10,face_style='child'),
+    'literary_bike_gus_bare': Look('#dcb090','#8a5a2e','messy','#2f7f86','#3a4f6e','jacket','#b23a30',eyes='#4f6a7a',glasses=True,sleeve=10,face_style='child'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -1118,6 +1121,26 @@ def paint(look):
                 d.rectangle((6,0,9,6),fill='#1e1e22');d.rectangle((4,7,11,12),fill='#26262a');d.rectangle((5,8,10,11),fill='#3a3a40')
                 if side=='right':d.line((11,11,15,13),fill='#26262a');d.line((11,12,15,14),fill='#26262a')
             elif side=='front':d.rectangle((0,12,2,14),fill='#26262a');d.point((1,13),fill='#55555c')
+            put(box,art)
+    if look.mark=='bike_cap':
+        # 0.4.476, Gus: a ball cap on the hat layer. Its crown is the accent's; the front panel is pale, with a letter on it; the
+        # brim is a dark band along the front edge; the back has the gap over its strap. (The top face's lower edge is the front.)
+        crown=look.accent;pale='#efe6d2'
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':
+                art=panel((16,16),crown,'cloth');d=ImageDraw.Draw(art)
+                d.rectangle((2,10,13,15),fill=rgb(pale));d.line((7,1,7,9),fill=shade(crown,-16));d.line((1,9,14,9),fill=shade(crown,-12))
+                d.rectangle((7,6,8,7),fill=shade(crown,26))
+            elif side=='front':
+                d.rectangle((0,0,15,4),fill=rgb(crown));d.rectangle((2,0,13,4),fill=rgb(pale));d.line((2,0,13,0),fill=shade(pale,8))
+                d.line((6,1,9,1),fill=rgb(crown));d.line((6,1,6,3),fill=rgb(crown));d.line((6,3,9,3),fill=rgb(crown))
+                d.rectangle((0,5,15,6),fill=shade(crown,-36));d.line((0,5,15,5),fill=shade(crown,-20))
+            elif side=='back':
+                d.rectangle((0,0,15,5),fill=rgb(crown));d.line((0,5,15,5),fill=shade(crown,-27));d.line((1,1,14,1),fill=shade(crown,12))
+                d.rectangle((6,3,9,5),fill=(0,0,0,0));d.line((6,2,9,2),fill=shade(crown,-27))
+            elif side!='bottom':
+                d.rectangle((0,0,15,5),fill=rgb(crown));d.line((0,5,15,5),fill=shade(crown,-27));d.line((1,1,14,1),fill=shade(crown,12))
             put(box,art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.

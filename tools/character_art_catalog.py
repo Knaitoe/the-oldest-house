@@ -60,7 +60,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -142,4 +142,7 @@ def entries():
                        # The church supper (0.4.461): the driver, three of the street's mothers and the pastor, on one hundred and sixty-one to one hundred and sixty-five.
                        ('vern',161),('hollis',162),('pruitt',163),('corley',164),('neal',165)):
         rows.append({'name':'literary_drisking_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # Bike night (0.4.476): Gus, in his cap and without it, on stranger phases one hundred and sixty-six and sixty-seven.
+    for name,phase in (('gus',166),('gus_bare',167)):
+        rows.append({'name':'literary_bike_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

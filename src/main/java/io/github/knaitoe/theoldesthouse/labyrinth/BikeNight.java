@@ -66,6 +66,8 @@ public final class BikeNight {
 
     static final class Night {
         final BlockPos base;long tick;int empty;boolean fresh=true;
+        /** 0.4.476: Gus. */
+        BikeNightGus.Friend gus=new BikeNightGus.Friend();
         /** Whose each bike is tonight, by make. */
         final UUID[] owner=new UUID[6];
         /** Where each bike stands or lies while nobody is on it; null while it is ridden. */
@@ -168,6 +170,7 @@ public final class BikeNight {
             n.owner[k]=p.getUUID();
             var own=own(p);own.putString("Bike",bike.make().getSerializedName());if(had)own.putInt("Swaps",own.getInt("Swaps")+1);save(p,own);
             n.tell.put(p.getUUID(),had?BikeNightTexts.SWAPPED:BikeNightTexts.YOURS);n.tellAt.put(p.getUUID(),n.tick+TELL_AFTER);
+            if(had)BikeNightGus.saw(n,"swap",BikeNightTexts.GUS_SWAP);else BikeNightGus.saw(n,"bike_"+bike.make().getSerializedName(),BikeNightTexts.gusBike(bike.make().getSerializedName()));
         }
         @Override public void parked(ServerLevel l,@Nullable UUID reader,NightBike.Make make,@Nullable BlockPos at,boolean lying){
             Night n=at!=null?nightAt(l,at):null;
@@ -211,6 +214,7 @@ public final class BikeNight {
             lamp(l,n);
             flights(l,n);
             barsJump(n,here);
+            BikeNightGus.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -242,6 +246,7 @@ public final class BikeNight {
         // What the night has noted for its readers' records is not the park's to tidy: a night's first reset comes a few ticks
         // after its first reader, and they may have done something by then.
         unmark(l,n);n.far=0;n.farWho=null;
+        BikeNightGus.reset(l,n);
         BikeNightSite.swingsBack(l,n.base);
         remember(l,n);
     }
@@ -263,6 +268,10 @@ public final class BikeNight {
     public static void wentOver(ServerPlayer p){
         var n=night(p);if(n==null)return;n.overBar.merge(p.getUUID(),1,Integer::sum);
         boolean first=n.wentOver.add(p.getUUID());if(first)cue(p,BikeNightTexts.OVER_BAR);
+        if(n.overBar.get(p.getUUID())==1)BikeNightGus.sawAgain(n,BikeNightTexts.GUS_OVER);else BikeNightGus.saw(n,"overagain",BikeNightTexts.GUS_OVER_AGAIN);
+        // With no other reader near enough, Gus is who saw it, if he is.
+        if(!n.overSeenBy.containsKey(p.getUUID())&&BikeNightGus.sees(p.serverLevel(),n,p,SEEN))n.overSeenBy.put(p.getUUID(),BikeNightGus.NAME);
+        BikeNightGus.cheer(n,p.serverLevel());
         for(var other:readers(p.serverLevel(),n.base)){
             if(other==p||other.distanceToSqr(p)>SEEN*SEEN)continue;
             if(first)cue(other,String.format(BikeNightTexts.OVER_SEEN,p.getGameProfile().getName()));
@@ -276,10 +285,22 @@ public final class BikeNight {
      */
     static String frame(ServerPlayer p,CompoundTag own){
         var n=night(p);
-        if(own.getInt("OverBar")>0&&!own.getBoolean("Scratched")){own.putBoolean("Scratched",true);if(n!=null&&n.didToo==null)n.didToo=p.getUUID();return BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_ADD;}
+        if(own.getInt("OverBar")>0&&!own.getBoolean("Scratched")){own.putBoolean("Scratched",true);if(n!=null&&n.didToo==null)n.didToo=p.getUUID();BikeNightGus.saw(n,"didtoo",BikeNightTexts.GUS_DID_TOO);return BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_ADD;}
+        BikeNightGus.saw(n,"post",BikeNightTexts.GUS_POST);
         if(own.getBoolean("Scratched"))return BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_OWN;
         return n!=null&&n.didToo!=null?BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_FRESH:BikeNightTexts.SWINGS;
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.476: Gus's part in the records
+    /** A reader has been said hello to by Gus. */
+    static void metGus(ServerPlayer p){var own=own(p);if(!own.getBoolean("GusMet")){own.putBoolean("GusMet",true);save(p,own);}}
+    /** A reader was near enough to hear the end of his story. */
+    static void heardStory(ServerPlayer p){var own=own(p);if(!own.getBoolean("GusStory")){own.putBoolean("GusStory",true);save(p,own);}}
+    /** Gus has pushed a reader on a swing: it is in their record as anybody's push is, and they are told the first time. */
+    static void gusPushed(ServerPlayer rider,boolean first){
+        var n=night(rider);if(n==null)return;n.pushedBy.put(rider.getUUID(),BikeNightGus.NAME);
+        if(first)cue(rider,String.format(HouseReadSwing.PUSHED_BY,BikeNightGus.NAME));
+    }
+    static String capital(String words){return words.isEmpty()?words:Character.toUpperCase(words.charAt(0))+words.substring(1);}
     static void flights(ServerLevel l,Night n){
         if(n.flights.isEmpty())return;
         for(var it=n.flights.entrySet().iterator();it.hasNext();){
@@ -297,7 +318,7 @@ public final class BikeNight {
         if(!BikeNightSite.onSand(rel(at,n.base))){cue(p,BikeNightTexts.JUMP_OFF);return;}
         n.landed.merge(p.getUUID(),paces,Math::max);
         boolean best=paces>n.far;
-        if(best){n.far=paces;n.farWho=p.getUUID();unmark(l,n);mark(l,n,p.blockPosition(),f.forward());}
+        if(best){n.far=paces;n.farWho=p.getUUID();unmark(l,n);mark(l,n,p.blockPosition(),f.forward());BikeNightGus.sawAgain(n,String.format(BikeNightTexts.GUS_JUMP,capital(Stillness.words(paces))));BikeNightGus.cheer(n,l);}
         cue(p,best?String.format(BikeNightTexts.JUMP_BEST,Stillness.words(paces)):paces==n.far?String.format(BikeNightTexts.JUMP_LEVEL,Stillness.words(paces))
             :String.format(BikeNightTexts.JUMP,Stillness.words(paces),Stillness.words(n.far)));
     }
@@ -321,7 +342,7 @@ public final class BikeNight {
 
     // ------------------------------------------------------------------------------------------------ the slide
     /** A reader has been down the slide (SlideRide). */
-    static void slid(ServerPlayer p){var n=night(p);if(n!=null)n.slid.merge(p.getUUID(),1,Integer::sum);}
+    static void slid(ServerPlayer p){var n=night(p);if(n!=null){n.slid.merge(p.getUUID(),1,Integer::sum);BikeNightGus.saw(n,"slide",BikeNightTexts.GUS_SLIDE);}}
 
     // ------------------------------------------------------------------------------------------------ the merry-go-round
     /** A reader has shoved the merry-go-round round (RoundaboutBlock.Wheel). */
@@ -334,13 +355,13 @@ public final class BikeNight {
 
     // ------------------------------------------------------------------------------------------------ the seesaw
     /** A reader on the seesaw has pushed off the sand (SeesawSeat); with whom on the other end, if anybody; and whether it was a bounce, made as they landed. */
-    static void seesawed(ServerPlayer p,@Nullable ServerPlayer other,boolean bounce){
+    static void seesawed(ServerPlayer p,@Nullable String other,boolean bounce){
         var n=night(p);if(n==null)return;n.pushed.merge(p.getUUID(),1,Integer::sum);if(bounce)n.bounced.merge(p.getUUID(),1,Integer::sum);
-        if(other!=null)n.rodeWith.put(p.getUUID(),other.getGameProfile().getName());
+        if(other!=null)n.rodeWith.put(p.getUUID(),other);
     }
     /** A reader was thrown off the top of the seesaw when the other end came down hard; under whom, if anybody. */
     static void thrownOff(ServerPlayer p,@Nullable ServerPlayer by){
-        var n=night(p);if(n==null)return;n.bumpedOff.add(p.getUUID());cue(p,BikeNightTexts.SEESAW_THROWN);
+        var n=night(p);if(n==null)return;n.bumpedOff.add(p.getUUID());cue(p,BikeNightTexts.SEESAW_THROWN);BikeNightGus.saw(n,"thrown",BikeNightTexts.GUS_THROWN);
         if(by!=null){n.bumpedWhom.put(by.getUUID(),p.getGameProfile().getName());cue(by,String.format(BikeNightTexts.SEESAW_THREW,p.getGameProfile().getName()));}
     }
 
@@ -348,7 +369,7 @@ public final class BikeNight {
     /** A reader has taken hold of the monkey bars (BarsHang). */
     static void hung(ServerPlayer p){var n=night(p);if(n!=null)n.hung.merge(p.getUUID(),1,Integer::sum);}
     /** A reader's hand let go too early and missed the next rung: they are told, and drop. */
-    static void missed(ServerPlayer p){var n=night(p);if(n==null)return;n.missed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_EARLY);}
+    static void missed(ServerPlayer p){var n=night(p);if(n==null)return;n.missed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_EARLY);BikeNightGus.saw(n,"early",BikeNightTexts.GUS_EARLY);}
     /** A reader is off the monkey bars: until they have touched the ground, a jump at the bars does not catch them. */
     static void letGoOfBars(ServerPlayer p){var n=night(p);if(n!=null)n.letGo.add(p.getUUID());}
     /**
@@ -366,7 +387,7 @@ public final class BikeNight {
         }
     }
     /** A reader has gone from one end of them to the other on one hold. */
-    static void crossed(ServerPlayer p){var n=night(p);if(n==null)return;n.crossed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_ACROSS);}
+    static void crossed(ServerPlayer p){var n=night(p);if(n==null)return;n.crossed.merge(p.getUUID(),1,Integer::sum);cue(p,BikeNightTexts.BARS_ACROSS);BikeNightGus.saw(n,"bars",BikeNightTexts.GUS_BARS);BikeNightGus.cheer(n,p.serverLevel());}
 
     // ------------------------------------------------------------------------------------------------ the sand
     /** A hand in the playground's sand packs a ball of it: one at a time, eight at most. */
@@ -385,6 +406,7 @@ public final class BikeNight {
     static void threw(ServerPlayer p){var n=night(p);if(n!=null)n.thrown.merge(p.getUUID(),1,Integer::sum);}
     /** A ball of sand has met somebody. Nobody is hurt by one; a reader on their feet is knocked a little the way it was going. */
     static void sanded(ServerLevel l,SandBall ball,net.minecraft.world.entity.Entity met){
+        if(met instanceof LiteraryActor gus&&BikeNightGus.is(gus)){BikeNightGus.sanded(l,gus);if(ball.getOwner() instanceof ServerPlayer thrower){var at=night(thrower);if(at!=null)at.hits.merge(thrower.getUUID(),1,Integer::sum);}return;}
         if(!(met instanceof ServerPlayer target))return;var n=night(target);if(n==null)return;
         if(!target.isPassenger()){var v=ball.getDeltaMovement();target.knockback(.15,-v.x,-v.z);target.hurtMarked=true;}
         if(ball.getOwner() instanceof ServerPlayer thrower&&thrower!=target)n.hits.merge(thrower.getUUID(),1,Integer::sum);
@@ -424,11 +446,12 @@ public final class BikeNight {
         Integer shoves=n.shoved.remove(id);if(shoves!=null)own.putInt("RoundPushed",own.getInt("RoundPushed")+shoves);
         // Standing on the top of the climbing dome: told once what is to be seen from there.
         if(!own.getBoolean("DomeTop")&&DomeBlock.onTop(b.offset(BikeNightSite.DOME),p)){own.putBoolean("DomeTop",true);cue(p,BikeNightTexts.DOME_TOP);}
+        if(DomeBlock.onTop(b.offset(BikeNightSite.DOME),p))BikeNightGus.saw(n,"dome",BikeNightTexts.GUS_DOME);
         if(p.getVehicle() instanceof SpringSeat){
             own.putBoolean("SpringSat",true);
             if(!own.getBoolean("SpringTold")){own.putBoolean("SpringTold",true);cue(p,BikeNightTexts.SPRING_HINT);}
         }
-        Integer rocks=n.sprung.remove(id);if(rocks!=null)own.putInt("Sprung",own.getInt("Sprung")+rocks);
+        Integer rocks=n.sprung.remove(id);if(rocks!=null){own.putInt("Sprung",own.getInt("Sprung")+rocks);BikeNightGus.saw(n,"spring",BikeNightTexts.GUS_SPRING);}
         if(p.serverLevel().getBlockEntity(b.offset(BikeNightSite.ROUNDABOUT)) instanceof RoundaboutBlock.Wheel wheel){
             boolean on=wheel.on(p),was=Boolean.TRUE.equals(n.onWheel.put(id,on)),fast=Math.abs(wheel.speed())>RoundaboutBlock.Wheel.OUT;
             if(on&&wheel.speed()!=0){
@@ -438,7 +461,7 @@ public final class BikeNight {
             }
             // Off it while it is going fast, standing up, and out past its rim: it threw them.
             var m=wheel.middle();double dx=p.getX()-m.x,dz=p.getZ()-m.z;
-            if(was&&!on&&fast&&!p.isShiftKeyDown()&&!p.isPassenger()&&dx*dx+dz*dz>RoundaboutBlock.RADIUS*RoundaboutBlock.RADIUS)own.putInt("RoundFlung",own.getInt("RoundFlung")+1);
+            if(was&&!on&&fast&&!p.isShiftKeyDown()&&!p.isPassenger()&&dx*dx+dz*dz>RoundaboutBlock.RADIUS*RoundaboutBlock.RADIUS){own.putInt("RoundFlung",own.getInt("RoundFlung")+1);BikeNightGus.saw(n,"flung",BikeNightTexts.GUS_FLUNG);}
         }
         String with=n.rodeWith.remove(id);if(with!=null)own.putString("SeesawWith",with);
         Integer bounces=n.bounced.remove(id);if(bounces!=null)own.putInt("SeesawBounces",own.getInt("SeesawBounces")+bounces);
@@ -500,13 +523,13 @@ public final class BikeNight {
                 if(s.getValue(CalderBlock.STAGE)==CalderBlock.RUNNING){cue(p,BikeNightTexts.FOUNTAIN_RUNNING);break;}
                 var at=b.offset(rel);l.setBlock(at,s.setValue(CalderBlock.STAGE,CalderBlock.RUNNING),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);l.scheduleTick(at,s.getBlock(),CalderBlock.RUNS);
                 l.playSound(null,at,BikeNightRegistry.FOUNTAIN.get(),net.minecraft.sounds.SoundSource.BLOCKS,.7F,.95F+l.getRandom().nextFloat()*.1F);
-                cue(p,BikeNightTexts.FOUNTAIN);own.putBoolean("Drank",true);
+                cue(p,BikeNightTexts.FOUNTAIN);own.putBoolean("Drank",true);BikeNightGus.saw(night(p),"fountain",BikeNightTexts.GUS_FOUNTAIN);
             }
             case PHONE->{
                 if(s.getValue(CalderBlock.STAGE)==CalderBlock.LIFTED){cue(p,BikeNightTexts.PHONE_HELD);break;}
                 var at=b.offset(rel);l.setBlock(at,s.setValue(CalderBlock.STAGE,CalderBlock.LIFTED),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);l.scheduleTick(at,s.getBlock(),CalderBlock.HELD);
                 l.playSound(null,at,BikeNightRegistry.PHONE_TONE.get(),net.minecraft.sounds.SoundSource.BLOCKS,.6F,1F);
-                cue(p,BikeNightTexts.PHONE);own.putBoolean("Phoned",true);
+                cue(p,BikeNightTexts.PHONE);own.putBoolean("Phoned",true);BikeNightGus.saw(night(p),"phone",BikeNightTexts.GUS_PHONE);
             }
             case BIN->cue(p,BikeNightTexts.BIN);
             case BORDER->cue(p,BikeNightTexts.BORDER);
