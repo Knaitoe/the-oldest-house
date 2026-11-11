@@ -64,10 +64,13 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  * <p>0.4.471, the playground's last pieces: the climbing dome as its middle's renderer draws it, from one side and from above;
  * the spring rider, upright and rocked as far as it goes each way; and the small things, the drinking fountain still and running,
  * the payphone with its handset on its hook and off it, and the plain bench beside the carved one.
+ *
+ * <p>0.4.475, over the bar: the swings' frame from one side, with a swing hanging still, one at the top of its widest arc, one
+ * kicked as far past that as kicks take it, and one over the top of the bar.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -112,9 +115,10 @@ public final class BikeNightVisualProof extends Screen {
             "the merry-go-round: as it was built, and a little way round",
             "the climbing dome: from one side, and from above",
             "the spring rider: rocked back as far as it goes, upright, and rocked forward",
-            "the small things: fountain still and running; payphone on and off its hook; bench plain and carved"}[page],8,8,0xffffffff);
+            "the small things: fountain still and running; payphone on and off its hook; bench plain and carved",
+            "over the bar: a swing hanging still; at its widest arc; kicked as far past it as kicks go; over the top"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);default->small(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);default->over(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -239,6 +243,35 @@ public final class BikeNightVisualProof extends Screen {
         // The ball of sand, as the game draws an item, large.
         pose.pushPose();pose.translate(width*.82F,24+(height-24)*.22F,200);pose.scale(6,6,1);g.renderItem(new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()),0,0);pose.popPose();
         g.drawString(font,"a ball of sand",(int)(width*.82F),(int)(24+(height-24)*.22F)+104,0xffffffff);
+    }
+
+    /**
+     * 0.4.475: a swing going over the bar. The frame as the park has it (three posts, two seats to a bay), drawn small enough to take
+     * a seat at the top of its turn: one swing hanging still, one at the top of its widest arc, one kicked as far past that as kicks
+     * take it, and one over the top. The moving ones are the still seat and its chains turned about the bar, as the game draws them.
+     */
+    private void over(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width*.043F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.9F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(10));pose.mulPose(Axis.YP.rotationDegrees(-132));pose.translate(-.5F,0,-6.5F);
+        java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
+        var behind=Direction.WEST;int top=4;
+        for(int x=-4;x<=4;x++)for(int z=-1;z<=13;z++)at.accept(Blocks.SAND.defaultBlockState(),new int[]{x,-1,z});
+        for(int z:new int[]{0,6,12}){
+            at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.FOOT),new int[]{0,0,z});
+            for(int y=1;y<top;y++)at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.SHAFT),new int[]{0,y,z});
+            at.accept(z==6?CalderPlayBlock.of(CalderPlayBlock.Kind.POST,behind,CalderPlayBlock.THROUGH):CalderPlayBlock.of(CalderPlayBlock.Kind.POST,z==0?Direction.EAST:Direction.WEST,CalderPlayBlock.END),new int[]{0,top,z});
+        }
+        for(int z=1;z<=11;z++)if(z!=6)at.accept(CalderPlayBlock.of(CalderPlayBlock.Kind.BAR,behind,z==2||z==4||z==8||z==10?CalderPlayBlock.HANGERS:0),new int[]{0,top,z});
+        var seat=CalderPlayBlock.of(CalderPlayBlock.Kind.SWING,behind,0);var chain=CalderPlayBlock.of(CalderPlayBlock.Kind.CHAIN,behind,0);
+        at.accept(seat,new int[]{0,0,2});for(int y=1;y<top;y++)at.accept(chain,new int[]{0,y,2});
+        double[][] moving={{4,io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.HIGH},{8,io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.OVER_REACH},{10,Math.PI}};
+        for(var one:moving){
+            pose.pushPose();pose.translate(.5F,top,(float)one[0]+.5F);pose.mulPose(new org.joml.Quaternionf().rotateAxis((float)one[1],0,0,1));
+            for(int y=0;y<top;y++){pose.pushPose();pose.translate(-.5F,y-top,-.5F);mc.getBlockRenderer().renderSingleBlock(y==0?seat:chain,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();}
+            pose.popPose();
+        }
+        buffers.endBatch();pose.popPose();
     }
 
     /** The slide as the builder puts it up, going down to the south, seen from the east side and a little above. */

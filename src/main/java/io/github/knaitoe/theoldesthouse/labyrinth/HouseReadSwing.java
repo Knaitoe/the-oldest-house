@@ -56,6 +56,14 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * swing hanging still is started. The park's swings are pushed as high as they are pumped. The porch's kind (Drisking's yard swing
  * is one) is pushed a little wider than its gentle arc and no further than there is room (SeatEntity.push). Any swing a reader can
  * sit on can be pushed; which hands and when is this class's to say, and the scene the swing is in keeps what it wants of it.
+ *
+ * <p>0.4.475 (owner: "it would be cute if there was a way for the player to travel all the way around the swing. it should be
+ * slightly difficult to manage"): over the bar. Nothing says how. With a park swing as high as it goes, a lean thrown the other way
+ * exactly as the swing turns at an end of its arc is a kick, and takes the arc a step past its widest; so does a push that meets
+ * it there. Every end must get its kick: the first that goes by without one loses them all. The fifth kick in a row sends the
+ * swing all the way over its bar the next time it comes through the bottom, slowest over the top, and it comes down swinging;
+ * kicks kept up send it over again, the other way. Letting go of a swing going that fast throws nobody further than its widest
+ * arc would. The rope swings never go over.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseReadSwing {
@@ -84,6 +92,20 @@ public final class HouseReadSwing {
     public static final String PUSH_FAR="Out of reach. Wait for it to come back to you.";
     public static final String PUSH_BESIDE="Not from the side. Get behind the swing, or in front of it.";
     public static final String PUSHED_BY="%s gives the swing a push.";
+    /**
+     * 0.4.475, over the bar: what each kick in time adds to the arc past HIGH; the arc the last of them leaves it at; how nearly as
+     * high as it goes a swing must be for a kick to count; what a tick adds to an arc on its way up to what its kicks have earned,
+     * and takes off one that is past what they hold up; and how much of its speed at the bottom a swing going over still has at
+     * the top, as a square root.
+     */
+    public static final int KICK=3,OVER_KICKS=5;
+    public static final double OVER_STEP=.25,OVER_REACH=HIGH+(OVER_KICKS-1)*OVER_STEP,NEAR_HIGH=.03,OVER_GROW=.02,OVER_EASE=.03,SLOW=.632;
+    /** How long a turn over the bar takes, in ticks: it leaves the bottom, and comes back to it, at the speed of the arc it was sent from. */
+    public static final double OVER_TICKS=2*Math.PI/(SLOW*OVER_REACH*RATE);
+    /** The angle a swing has turned through, {@code part} of the way (0 to 1) through a turn over the bar: quickest at the bottom, slowest over the top. */
+    public static double over(double part){double s=Math.PI*part;return 2*Math.atan2(Math.sin(s),SLOW*Math.cos(s));}
+    /** The fastest a seat is ever carried by an arc, in blocks a tick: what a rider letting go is thrown with at most. */
+    public static final double FASTEST=HIGH*RATE*LENGTH;
     public static boolean is(BlockState s){return rope(s)||pumped(s);}
     /** The porch's kind: a plank two blocks wide on ropes. */
     private static boolean rope(BlockState s){return s.is(HouseReadRegistry.FITTING.get())&&s.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.SWING;}
@@ -167,7 +189,9 @@ public final class HouseReadSwing {
         // The seat says where it is on its arc and how fast it is going: by the time sat alone, or (a pumped one) by how wide its
         // rider has made the arc as well.
         var from=seat(pivot,forward,seat.swingAngle(0)).add(0,.05,0);
-        var away=launch(seat(pivot,forward,seat.swingAngle(.5)).subtract(seat(pivot,forward,seat.swingAngle(-.5))),forward);
+        // 0.4.475: a swing kicked past its widest arc, or going over the bar, throws nobody further than its widest arc would.
+        var speed=seat(pivot,forward,seat.swingAngle(.5)).subtract(seat(pivot,forward,seat.swingAngle(-.5)));if(speed.length()>FASTEST)speed=speed.scale(FASTEST/speed.length());
+        var away=launch(speed,forward);
         seat.letGo(from);p.stopRiding();
         p.connection.teleport(from.x,from.y,from.z,p.getYRot(),p.getXRot());
         p.setDeltaMovement(away);p.hurtMarked=true;p.resetFallDistance();

@@ -86,6 +86,8 @@ public final class BikeNight {
         final Map<UUID,Boolean> onWheel=new HashMap<>();
         /** 0.4.474: pushes a reader has given somebody on the swings; whom they last pushed; and who last pushed them. */
         final Map<UUID,Integer> swingPushes=new HashMap<>();final Map<UUID,String> pushedWhom=new HashMap<>(),pushedBy=new HashMap<>();
+        /** 0.4.475: times a reader has gone over the bar on a swing; whom a reader saw go over; who saw a reader go over; who has gone over tonight; and who scratched it into the post. */
+        final Map<UUID,Integer> overBar=new HashMap<>();final Map<UUID,String> sawOver=new HashMap<>(),overSeenBy=new HashMap<>();final Set<UUID> wentOver=new HashSet<>();@Nullable UUID didToo;
         /** Who was on the other end of the seesaw when a reader last pushed off, for their record. */
         final Map<UUID,String> rodeWith=new HashMap<>();
         /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
@@ -252,6 +254,32 @@ public final class BikeNight {
         var n=night(p);if(n==null||night(rider)!=n)return;
         n.swingPushes.merge(p.getUUID(),1,Integer::sum);n.pushedWhom.put(p.getUUID(),rider.getGameProfile().getName());n.pushedBy.put(rider.getUUID(),p.getGameProfile().getName());
     }
+    /** Blocks within which somebody on their feet sees a swing go over the bar. */
+    public static final int SEEN=32;
+    /**
+     * 0.4.475: a reader has gone all the way over the bar on a swing (SeatEntity). They are told the first time in a night; so is
+     * anybody near enough to have seen it, and it goes in the records of both.
+     */
+    public static void wentOver(ServerPlayer p){
+        var n=night(p);if(n==null)return;n.overBar.merge(p.getUUID(),1,Integer::sum);
+        boolean first=n.wentOver.add(p.getUUID());if(first)cue(p,BikeNightTexts.OVER_BAR);
+        for(var other:readers(p.serverLevel(),n.base)){
+            if(other==p||other.distanceToSqr(p)>SEEN*SEEN)continue;
+            if(first)cue(other,String.format(BikeNightTexts.OVER_SEEN,p.getGameProfile().getName()));
+            n.sawOver.put(other.getUUID(),p.getGameProfile().getName());n.overSeenBy.put(p.getUUID(),other.getGameProfile().getName());
+        }
+    }
+    /**
+     * 0.4.475: a hand on the swings' frame. What is scratched into its post is the only word the park has on going over the bar.
+     * A reader who has been over scratches their answer under it, once; it is there for everybody for the rest of the night, and
+     * for them whenever they come back.
+     */
+    static String frame(ServerPlayer p,CompoundTag own){
+        var n=night(p);
+        if(own.getInt("OverBar")>0&&!own.getBoolean("Scratched")){own.putBoolean("Scratched",true);if(n!=null&&n.didToo==null)n.didToo=p.getUUID();return BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_ADD;}
+        if(own.getBoolean("Scratched"))return BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_OWN;
+        return n!=null&&n.didToo!=null?BikeNightTexts.SWINGS+" "+BikeNightTexts.SCRATCH_FRESH:BikeNightTexts.SWINGS;
+    }
     static void flights(ServerLevel l,Night n){
         if(n.flights.isEmpty())return;
         for(var it=n.flights.entrySet().iterator();it.hasNext();){
@@ -287,6 +315,8 @@ public final class BikeNight {
     @SubscribeEvent public static void fall(net.neoforged.neoforge.event.entity.living.LivingFallEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!here(p))return;var b=LiteraryVignettes.base(p,PLACE);
         if(b!=null&&BikeNightSite.onSand(rel(p.position(),b)))e.setDamageMultiplier(0);
+        // 0.4.475: nor is anybody hurt coming down off a swing, wherever it threw them.
+        var n=night(p);if(n!=null&&n.flights.containsKey(p.getUUID()))e.setDamageMultiplier(0);
     }
 
     // ------------------------------------------------------------------------------------------------ the slide
@@ -376,6 +406,9 @@ public final class BikeNight {
         Integer hands=n.swingPushes.remove(id);if(hands!=null)own.putInt("SwingPushes",own.getInt("SwingPushes")+hands);
         String pushedWhom=n.pushedWhom.remove(id);if(pushedWhom!=null)own.putString("SwingPushed",pushedWhom);
         String pushedBy=n.pushedBy.remove(id);if(pushedBy!=null)own.putString("SwingPushedBy",pushedBy);
+        Integer overs=n.overBar.remove(id);if(overs!=null)own.putInt("OverBar",own.getInt("OverBar")+overs);
+        String sawOver=n.sawOver.remove(id);if(sawOver!=null)own.putString("SawOver",sawOver);
+        String overSeenBy=n.overSeenBy.remove(id);if(overSeenBy!=null)own.putString("OverSeenBy",overSeenBy);
         Integer balls=n.thrown.remove(id);if(balls!=null)own.putInt("Sand",own.getInt("Sand")+balls);
         Integer hits=n.hits.remove(id);if(hits!=null)own.putInt("SandHits",own.getInt("SandHits")+hits);
         Integer down=n.slid.remove(id);if(down!=null)own.putInt("Slid",own.getInt("Slid")+down);
@@ -433,7 +466,7 @@ public final class BikeNight {
             }
             cue(p,switch(s.getValue(CalderPlayBlock.KIND)){
                 case LADDER->s.getValue(CalderPlayBlock.STAGE)>=CalderPlayBlock.BARS?BikeNightTexts.BARS:BikeNightTexts.SLIDE;
-                case DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->BikeNightTexts.SWINGS;});return true;
+                case DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->frame(p,own);});return true;
         }
         // The merry-go-round is shoved round by a reader on the sand beside it; one who cannot is told why.
         if(RoundaboutBlock.is(s)){

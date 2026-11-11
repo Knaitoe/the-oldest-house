@@ -33,7 +33,17 @@ public final class BikeNightTexts {
     public static final String RACK="A bike rack bolted to the path. Six places.";
     public static final String BORDER="Squared timbers round the sand, worn pale where people step over them.";
     /** 0.4.465, the swings: a hand on the frame; what a reader on one is told once; coming down off one; a hand on the mark. */
-    public static final String SWINGS="A steel frame with four swings on chains under it. The paint is worn through where hands go.";
+    public static final String SWINGS="A steel frame with four swings on chains under it. The paint is worn through where hands go. Scratched into one post: T.R. WENT OVER THE BAR. Under that, in other scratches: DID NOT.";
+    /**
+     * 0.4.475, over the bar. Nothing says how it is done; the post is the park's only word on it. What a reader who has been over
+     * adds under it, once; what they find there after; what anybody else finds there for the rest of that night; what the one who
+     * goes over is told, the first time in a night; and what anybody near enough to see it is told.
+     */
+    public static final String SCRATCH_ADD="You pick up a stone and scratch under that: DID TOO.";
+    public static final String SCRATCH_OWN="Under that, in your own scratches: DID TOO.";
+    public static final String SCRATCH_FRESH="Under that, in fresh scratches: DID TOO.";
+    public static final String OVER_BAR="All the way over the bar.";
+    public static final String OVER_SEEN="%s goes all the way over the bar.";
     public static final String SWING_HINT="Lean with the swing to take it higher. Jump to let go.";
     // 0.4.474: what somebody pushing a swing is told is the swing's own to say (HouseReadSwing), since any swing can be pushed.
     public static final String JUMP="You come down %s paces out from the swings. The furthest tonight is %s.";
@@ -107,6 +117,11 @@ public final class BikeNightTexts {
         if(far>0)p.add("I got one of the swings as high as it would go"+(pushedBy.isEmpty()?"":", with "+pushedBy+" pushing,")+" and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
         else if(own.getBoolean("Swung"))p.add(pushedBy.isEmpty()?"I sat on one of the swings for a while.":"I sat on one of the swings, and "+pushedBy+" pushed me.");
         if(!pushed.isEmpty())p.add("I pushed "+pushed+" on the swings.");
+        // 0.4.475: over the bar, and who saw.
+        int overs=own.getInt("OverBar");String seenBy=own.getString("OverSeenBy"),sawOver=own.getString("SawOver");
+        if(overs>0)p.add("I went all the way over the bar on one of the swings"+(overs>1?", and then did it again":"")+". "+(seenBy.isEmpty()?"Nobody saw.":seenBy+" saw.")
+            +(own.getBoolean("Scratched")?" I scratched DID TOO into the post, under DID NOT.":""));
+        if(!sawOver.isEmpty())p.add("I saw "+sawOver+" go all the way over the bar on the swings.");
         if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
         if(own.getInt("Crossed")>0)p.add("I went all the way across the monkey bars, hand over hand, without a foot on the sand.");
         else if(own.getInt("BarsMissed")>0)p.add("I went for the next rung of the monkey bars too early, and dropped into the sand.");
