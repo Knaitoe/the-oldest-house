@@ -322,6 +322,9 @@ final class BorrascaTown {
         // 0.4.460: steel drums, in two paints, and a bucket (barrels and a cauldron).
         for(int[] at:new int[][]{{-9,-186},{-8,-186},{-9,-187},{20,-199},{21,-199},{20,-200}})set(l,b,at[0],12,at[1],BorrascaShopBlock.of(BorrascaShopBlock.Kind.DRUM,Direction.NORTH,Math.floorMod(at[0]+at[1],2)));
         set(l,b,-8,13,-186,BorrascaShopBlock.of(BorrascaShopBlock.Kind.DRUM,Direction.NORTH,1));set(l,b,-7,12,-187,BorrascaShopBlock.of(BorrascaShopBlock.Kind.PAIL,Direction.NORTH));
+        // 0.4.461: the church's folding tables, brought back and stacked away against the refinery's wall, past the drums
+        // ("D-422: folding tables to the church, Sunday. Bring them back.").
+        set(l,b,BorrascaSupper.PUT_AWAY.getX(),BorrascaSupper.PUT_AWAY.getY(),BorrascaSupper.PUT_AWAY.getZ(),BorrascaShopBlock.of(BorrascaShopBlock.Kind.FOLDED,Direction.NORTH));
         for(int x=8;x<=10;x++)for(int z=-189;z<=-188;z++)set(l,b,x,12,z,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));set(l,b,9,12,-189,slab(Blocks.SPRUCE_SLAB,SlabType.DOUBLE));set(l,b,9,12,-190,slab(Blocks.SPRUCE_SLAB,SlabType.BOTTOM));
         box(l,b,18,12,-208,22,13,-205,Blocks.IRON_BLOCK);box(l,b,18,14,-208,22,14,-205,slab(Blocks.SMOOTH_STONE_SLAB,SlabType.BOTTOM));set(l,b,17,12,-206,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));set(l,b,17,13,-206,Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING,Direction.WEST));
         for(int[] at:new int[][]{{-12,-170},{24,-170},{24,-210},{-27,-210}}){box(l,b,at[0],12,at[1],at[0],15,at[1],Blocks.IRON_BARS);set(l,b,at[0],16,at[1],Blocks.LANTERN);}

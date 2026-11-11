@@ -1,0 +1,79 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "u": "the_oldest_house:block/borrasca_shop/folding_under",
+    "t": "the_oldest_house:block/borrasca_shop/folding",
+    "particle": "the_oldest_house:block/borrasca_shop/folding"
+  },
+  "elements": [
+    {
+      "from": [
+        9,
+        -10,
+        0
+      ],
+      "to": [
+        11,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            2,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            2,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            16,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            0,
+            1,
+            14,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#u",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

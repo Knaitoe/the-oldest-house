@@ -1759,6 +1759,142 @@ def standin_models(m):
         {'b': 'desk_bell'}, 'desk_bell')
 
 
+# 0.4.461, the church supper (docs/BORRASCA_SUPPER_0_4_461.md): folding tables, bare and laid, as they ride on edge in the truck's
+# bed and as they are stacked away; a stack of plates and a tray of forks; three pies; the checked cloth that marks where a table
+# goes; and the table and the plates as they are carried.
+TUBE, TUBE_L, TUBE_D = '#8c9296', '#b4babd', '#666c70'
+
+
+def folding():
+    """A folding table: its top from above, brown board with a pale edge band all round; and, down the right, the grey tube its
+    legs are bent from."""
+    im = new()
+    rnd = random.Random(4610)
+    for y in range(16):
+        for x in range(14):
+            dot(im, x, y, shade('#8a6442', rnd.randint(-4, 4)))
+    for x, y in ((2, 3), (3, 3), (4, 3), (8, 9), (9, 9), (5, 12), (6, 12), (10, 5)):
+        dot(im, x, y, '#7a5636')
+    for x in range(14):
+        dot(im, x, 0, '#c9c0a8'); dot(im, x, 15, '#c9c0a8')
+    for y in range(16):
+        dot(im, 14, y, TUBE_L if y % 8 < 4 else TUBE); dot(im, 15, y, TUBE_D)
+    return im
+
+
+def folding_under():
+    """A folding table's underside, as it rides on edge: raw board, the two leg frames folded flat against it, the catch."""
+    im = new()
+    fill(im, 0, 0, 16, 13, '#a58a66')
+    for x in range(16):
+        dot(im, x, 0, '#c9c0a8'); dot(im, x, 12, '#c9c0a8')
+    for x in (2, 7, 9, 14):
+        for y in range(2, 11):
+            dot(im, x, y, TUBE)
+    for x in range(2, 8):
+        dot(im, x, 2, TUBE_L); dot(im, x, 10, TUBE_D)
+    for x in range(9, 15):
+        dot(im, x, 2, TUBE_L); dot(im, x, 10, TUBE_D)
+    dot(im, 8, 6, '#3d362e')
+    fill(im, 0, 13, 16, 16, '#8a6442')
+    return im
+
+
+def gingham():
+    """A checked tablecloth: white, pale blue and blue."""
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            a, b = (x // 2) % 2, (y // 2) % 2
+            dot(im, x, y, '#f4f1e8' if a == 0 and b == 0 else '#5f86b8' if a == 1 and b == 1 else '#b3c8e0')
+    return im
+
+
+def item_table():
+    """The table carried: folded, on edge, its legs flat against it."""
+    im = new()
+    fill(im, 1, 5, 15, 12, '#8a6442')
+    for x in range(1, 15):
+        dot(im, x, 5, '#c9c0a8'); dot(im, x, 11, '#5f4129')
+    for x in (3, 7, 9, 13):
+        for y in range(6, 11):
+            dot(im, x, y, TUBE)
+    for x in range(3, 8):
+        dot(im, x, 6, TUBE_L)
+    for x in range(9, 14):
+        dot(im, x, 6, TUBE_L)
+    dot(im, 1, 5, '#5f4129'); dot(im, 14, 5, '#5f4129')
+    return im
+
+
+def item_plates():
+    """A stack of plates, carried."""
+    im = new()
+    for i, y in enumerate((11, 9, 7, 5)):
+        fill(im, 3, y, 13, y + 2, '#e9e6dc'); 
+        for x in range(3, 13):
+            dot(im, x, y + 1, '#b9b6aa')
+        dot(im, 3, y, '#c9c6ba'); dot(im, 12, y, '#c9c6ba')
+    for x in range(4, 12):
+        dot(im, x, 4, '#f6f4ec')
+    dot(im, 5, 5, '#8fa3b8'); dot(im, 10, 5, '#8fa3b8')
+    return im
+
+
+def folding_ring():
+    """A folding table's top with the ring a pie dish left on it."""
+    im = folding()
+    for x, y in ((5, 5), (6, 4), (7, 4), (8, 4), (9, 5), (10, 6), (10, 7), (10, 8), (9, 9), (8, 10), (7, 10), (6, 10), (5, 9), (4, 8), (4, 7), (4, 6)):
+        dot(im, x, y, '#6f4e30')
+    return im
+
+
+SUPPER_TEX = {'folding': folding, 'folding_under': folding_under, 'folding_ring': folding_ring, 'gingham': gingham}
+
+
+def table(stage, laid):
+    """Half of a folding table: a top the height of a block, an edge band, and the legs under its outer end (to the model's west
+    at stage 0, east at stage 1). Laid, it has its cloth and two places."""
+    x = 2 if stage == 0 else 13
+    tube = every([14, 0, 15, 14])
+    parts = [element([0, 14.5, 1], [16, 16, 15], {'all': 't'}, {'up': [0, 1, 14, 15], 'down': [0, 1, 14, 15], 'north': [0, 0, 14, 1.5], 'south': [0, 0, 14, 1.5], 'east': [0, 0, 14, 1.5], 'west': [0, 0, 14, 1.5]}),
+             element([x, 0, 2], [x + 1, 14.5, 3], {'all': 't'}, tube), element([x, 0, 13], [x + 1, 14.5, 14], {'all': 't'}, tube),
+             element([x, 5, 3], [x + 1, 6, 13], {'all': 't'}, every([14, 0, 15, 10]))]
+    tex = {'t': 'folding'}
+    if laid:
+        g = {'all': 'g'}
+        parts += [element([0, 16, .5], [16, 16.2, 15.5], g, {'up': [0, 0, 16, 15], 'down': [0, 0, 16, 15], 'north': [0, 0, 16, .2], 'south': [0, 0, 16, .2], 'east': [0, 0, 15, .2], 'west': [0, 0, 15, .2]}),
+                  element([0, 11, .5], [16, 16, .7], g, {'north': [0, 0, 16, 5], 'south': [0, 0, 16, 5], 'down': [0, 0, 16, .2]}),
+                  element([0, 11, 15.3], [16, 16, 15.5], g, {'north': [0, 0, 16, 5], 'south': [0, 0, 16, 5], 'down': [0, 0, 16, .2]})]
+        plate = {'up': [3, 3, 13, 13], 'north': [3, 12, 13, 13], 'south': [3, 12, 13, 13], 'east': [3, 12, 13, 13], 'west': [3, 12, 13, 13]}
+        parts += [element([5, 16.2, 2.5], [10, 16.7, 6.5], {'all': 'p'}, plate), element([6, 16.2, 9.5], [11, 16.7, 13.5], {'all': 'p'}, plate)]
+        tex.update({'g': 'gingham', 'p': 'plate'})
+    return model(parts, tex, 'folding')
+
+
+def supper_models(m):
+    for stage in range(2):
+        m[f'folding_{stage}'] = table(stage, False); m[f'folding_set_{stage}'] = table(stage, True)
+        # The tables as they ride in the truck: on edge, in the cell over the bed, standing on the bed's floor ten below it.
+        one = lambda x: element([x, -10, 0], [x + 2, 3, 16], {'all': 'u', 'east': 'u', 'west': 't'},
+                                {'east': [0, 0, 16, 13], 'west': [0, 1, 14, 14], 'up': [0, 0, 16, 1], 'north': [0, 0, 2, 13], 'south': [0, 0, 2, 13], 'down': [0, 0, 16, 1]})
+        m[f'tables_{stage}'] = model(([one(5)] if stage == 0 else []) + [one(9)], {'u': 'folding_under', 't': 'folding'}, 'folding')
+    plate = {'up': [3, 3, 13, 13], 'north': [3, 12, 13, 13], 'south': [3, 12, 13, 13], 'east': [3, 12, 13, 13], 'west': [3, 12, 13, 13]}
+    m['plates_0'] = model([element([3, 0, 5], [9, 4, 11], {'all': 'p'}, {**plate, 'north': [3, 9, 13, 13], 'south': [3, 9, 13, 13], 'east': [3, 9, 13, 13], 'west': [3, 9, 13, 13]}),
+                           element([10, 0, 4], [14, 1.5, 12], {'all': 's'}), element([10.5, 1.5, 5], [11, 1.8, 11], {'all': 'c'}), element([12, 1.5, 5], [12.5, 1.8, 11], {'all': 'c'}),
+                           element([13.2, 1.5, 5], [13.7, 1.8, 11], {'all': 'c'})],
+                          {'p': 'plate', 's': 'steel', 'c': 'chrome'}, 'plate')
+    for stage, top in ((0, 'pie'), (1, 'pie_cut')):
+        m[f'pies_{stage}'] = model([element([1, 0, 5], [5, 2, 9], {'all': 'c', 'up': 'p'}), element([6, 0, 3], [10, 2, 7], {'all': 'c', 'up': 'p'}),
+                                    element([10, 0, 9], [14, 2, 13], {'all': 'c', 'up': 'q'})], {'c': 'crust', 'p': 'pie', 'q': top}, 'crust')
+    # Three of them put away, flat, one on another; the top one's face up.
+    flat = lambda y, dx, face: element([1 + dx, y, 0], [15 + dx, y + 2, 16], {'all': 'u', 'up': face}, {'up': [0, 0, 14, 16], 'down': [0, 0, 14, 16], 'north': [0, 13, 14, 15], 'south': [0, 13, 14, 15], 'east': [0, 13, 16, 15], 'west': [0, 13, 16, 15]})
+    m['folded_0'] = model([flat(0, 0, 'u'), flat(2, .6, 'u'), flat(4, -.4, 'r')], {'u': 'folding_under', 'r': 'folding_ring'}, 'folding')
+    m['cloth_0'] = model([element([3, 0, 4], [13, 1.2, 12], {'all': 'g'}, {'up': [3, 4, 13, 12], 'down': [3, 4, 13, 12], 'north': [3, 0, 13, 1.2], 'south': [3, 0, 13, 1.2], 'east': [4, 0, 12, 1.2], 'west': [4, 0, 12, 1.2]}),
+                          element([3.5, 1.2, 4.5], [12.5, 2, 11.5], {'all': 'g'}, {'up': [4, 4, 13, 11], 'north': [4, 0, 13, .8], 'south': [4, 0, 13, .8], 'east': [4, 0, 11, .8], 'west': [4, 0, 11, .8]})],
+                         {'g': 'gingham'}, 'gingham')
+
+
 def textures():
     out = {f'block/borrasca_{n}.png': f() for n, f in (('checker', checker), ('lino', lino), ('tin', tin))}
     out.update({f'block/borrasca_ward_{c}.png': ward(c) for c in range(3)})
@@ -1790,6 +1926,7 @@ def textures():
         'comic': comic_sill(False), 'comic_aged': comic_sill(True),
     }
     faces.update({name: draw() for name, draw in STANDIN_TEX.items()})
+    faces.update({name: draw() for name, draw in SUPPER_TEX.items()})
     for name, im in faces.items():
         out[f'block/borrasca_shop/{name}.png'] = im
     for name, (draw, _) in ITEM_ART.items():
@@ -1954,6 +2091,7 @@ def shop_models():
     paper_models(m)
     comic_models(m)
     standin_models(m)
+    supper_models(m)
     return m
 
 
@@ -2108,6 +2246,16 @@ def item_pie():
                  'w': '#ece8e0', 's': '#bdb6a8'})
 
 
+def item_pecan():
+    """0.4.461: the church supper's slice: pecan halves on a dark filling, on a paper plate with a fluted edge."""
+    return grid(['................', '................', '................', '................',
+                 '..........nn....', '.......nNhnNn...', '....nNhnNnhnNn..', '.nNhnNnhnNnhnNC.',
+                 '.aaaaaaaaaaaacC.', '.ffgfffgffffcCC.', '.FfffFfffFfffCC.', '.CCCCCCCCCCCCCC.',
+                 'wwwwwwwwwwwwwwww', 'swswswswswswswsw', '.ssssssssssssss.', '................'],
+                {'n': '#8a5a2e', 'N': '#5b3718', 'h': '#b98548', 'a': '#7a4a1c', 'c': '#d9a252', 'C': '#a8702e', 'f': '#9a5a1e',
+                 'g': '#c58a3a', 'F': '#6e3d12', 'w': '#f4f1ea', 's': '#cfc8ba'})
+
+
 def item_mug(coffee, light):
     return grid(['................', '......g...g.....', '.....g...g......', '......g...g.....',
                  '................', '..OOOOOOOOO.....', '..OddDdddDO.....', '..OHWWWWWSOOO...',
@@ -2200,7 +2348,9 @@ ITEM_ART = {'coins': (item_coins, 'Pocket change'), 'wallet': (item_wallet, 'Wal
             'pie': (item_pie, 'Slice of pie'), 'coffee': (lambda: item_mug('#3a2416', '#5c3a24'), 'Cup of coffee'),
             'milk_coffee': (lambda: item_mug('#b88a5e', '#d4ac80'), 'Coffee, mostly milk'), 'soda': (item_soda, 'Bottle of soda'),
             'candy': (item_candy, 'Candy bar'), 'lollipop': (item_lollipop, 'Lollipop'), 'malt': (item_malt, 'Chocolate malt'),
-            'beer': (item_beer, 'Bottle of beer')}
+            'beer': (item_beer, 'Bottle of beer'),
+            'folding_table': (item_table, 'Folding table'), 'plates': (item_plates, 'Stack of plates'),
+            'pecan_pie': (item_pecan, 'Slice of pecan pie')}
 
 
 KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'payphone', 'cooler', 'candy', 'case', 'helmet', 'map', 'photos',
@@ -2209,9 +2359,11 @@ KINDS = ['pie_case', 'urn', 'menu', 'pegboard', 'pump', 'pump_top', 'price', 'pa
          'remains', 'wristband', 'smear',
          'doc_dispatch', 'doc_payroll', 'doc_signin', 'doc_intake', 'doc_tags', 'doc_forms', 'doc_ledger', 'doc_letter', 'doc_receipt', 'doc_log',
          'comic', 'pew_end', 'pew_mid', 'bench', 'bench_end', 'bench_mid', 'baton',
-         'stove', 'pipe', 'grill', 'fryer', 'sink', 'toilet', 'pail', 'drum', 'effects', 'hook', 'desk_bell', 'jukebox']
+         'stove', 'pipe', 'grill', 'fryer', 'sink', 'toilet', 'pail', 'drum', 'effects', 'hook', 'desk_bell', 'jukebox',
+         'folding', 'folding_set', 'tables', 'plates', 'pies', 'cloth', 'folded']
 STAGES = {'pie_case': 2, 'pegboard': 2, 'jar': 2, 'meds': 2, 'bike': 2, 'cabinet': 2, 'cabinet_top': 2, 'remains': 2, 'smear': 2, 'comic': 2,
-          'pump': 2, 'pump_top': 2, 'pew_end': 2, 'bench_end': 2, 'price': 2, 'pail': 2, 'drum': 2, 'effects': 2, 'jukebox': 2}
+          'pump': 2, 'pump_top': 2, 'pew_end': 2, 'bench_end': 2, 'price': 2, 'pail': 2, 'drum': 2, 'effects': 2, 'jukebox': 2,
+          'folding': 2, 'folding_set': 2, 'tables': 2, 'pies': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'borrasca_shop': 'Shop Fitting', 'borrasca_checker': 'Checkered Floor', 'borrasca_lino': 'Linoleum', 'borrasca_tin': 'Pressed Tin',
          'borrasca_ward': 'Painted Block Wall'}

@@ -99,12 +99,15 @@ On the second visit Dorsey has a letter for the Garritys and nobody at their doo
 porch door. The porch is a real one, with the box on its post at the gate. Years later the box is still there, GARRITY under tape
 gone cloudy, and the letter is where the reader put it or it is not.
 
-## 4. The church supper (later)
+## 4. The church supper (built, 0.4.461)
 
-The noticeboard's supper, held: on the first visit, on the green by the chapel, late in the day. Prescott's truck is backed up
-with the folding tables. The reader can carry a table, set plates, take a slice of pie, and stand near the grown-ups while they
-talk about shifts and their children. Somebody thanks the driver for their porch steps. On the second visit the supper is
-cancelled for a storm that does not come.
+Built as docs/BORRASCA_SUPPER_0_4_461.md. On the first visit the church's lawn is being set for Sunday's supper. Prescott's
+truck stands on the verge with the folding tables in its bed and the company's name across its tailgate. The reader can carry
+the two tables off it and stand each where a folded cloth marks the place, take the plates and lay three tables, take a slice
+of the pecan, and stand near the grown-ups while they talk about night shifts and their children. Mrs. Corley thanks the driver
+for her porch steps, which she never asked him to mend. The truck's number is the one on the depot's dispatch sheet, and the
+tables are stacked in the depot's yard. Nothing of it is there on a later visit. The noticeboard keeps its own lines, with the
+supper cancelled for a storm on the last night.
 
 ## 5. More play (later)
 
@@ -117,7 +120,7 @@ cancelled for a storm that does not come.
 
 1. The window and the comic, and room 6.
 2. The arcade.
-3. The letter (built). 4. The supper. 5. More play.
+3. The letter (built). 4. The supper (built). 5. More play.
 
 The playtest notes of the same day (docs/BORRASCA_PLAYTEST_2026_11_10.md) list what is broken in the town now; those come first
 where they touch the same places (the comic spinner, the cabinets, Dorsey).

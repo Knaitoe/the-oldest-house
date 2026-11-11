@@ -138,6 +138,8 @@ def entries():
     for name,phase in (('stranger',139),('ferris',140),('mags',141),('hob',142),('ott',143),('cass',144),('benny',145)):
         rows.append({'name':'literary_orders_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # Borrasca's town (0.4.425, 0.4.426, 0.4.428): the keepers, Earl, the patrons and the mail carrier on stranger phases one hundred and forty-six to one hundred and sixty.
-    for name,phase in (('lorna',146),('ames',147),('rowe',148),('kurt',149),('odell',150),('fenn',151),('gus',152),('earl',153),('webb',154),('sherry',155),('roy',156),('jolene',157),('dutch',158),('merle',159),('dorsey',160)):
+    for name,phase in (('lorna',146),('ames',147),('rowe',148),('kurt',149),('odell',150),('fenn',151),('gus',152),('earl',153),('webb',154),('sherry',155),('roy',156),('jolene',157),('dutch',158),('merle',159),('dorsey',160),
+                       # The church supper (0.4.461): the driver, three of the street's mothers and the pastor, on one hundred and sixty-one to one hundred and sixty-five.
+                       ('vern',161),('hollis',162),('pruitt',163),('corley',164),('neal',165)):
         rows.append({'name':'literary_drisking_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

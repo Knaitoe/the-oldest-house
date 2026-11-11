@@ -1,4 +1,4 @@
 {"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/borrasca_sign/prescott","particle":"the_oldest_house:block/borrasca_sign/prescott"},
  "elements":[
-  {"from":[0,6,15.75],"to":[15,11,15.75],"faces":{"north":{"texture":"#a","uv":[5.6667,5.0,10.6667,10.0]}}}
+  {"from":[0,5,15.75],"to":[16,12,15.75],"faces":{"north":{"texture":"#a","uv":[5.3333,4.0,10.6667,11.0]}}}
  ]}

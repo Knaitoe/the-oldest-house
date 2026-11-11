@@ -70,7 +70,14 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
          * boxed effects on steel shelving (two arrangements); a crane's block and hook; a counter bell; a jukebox (stage 1:
          * unplugged, years on).
          */
-        STOVE,PIPE,GRILL,FRYER,SINK,TOILET,PAIL,DRUM,EFFECTS,HOOK,DESK_BELL,JUKEBOX;
+        STOVE,PIPE,GRILL,FRYER,SINK,TOILET,PAIL,DRUM,EFFECTS,HOOK,DESK_BELL,JUKEBOX,
+        /**
+         * 0.4.461, the church supper (BorrascaSupper). Half of a folding table, bare and laid: its outer end, and its legs, are
+         * to the left of the way it faces at stage 0 and to the right at stage 1. Folding tables as they ride on edge in a
+         * truck's bed, in the cell over the bed (stage 0 two of them, stage 1 one). A stack of plates and three pies (stage 1,
+         * one cut), each in the cell over a table. The folded cloth that marks where a table goes. Tables stacked away.
+         */
+        FOLDING,FOLDING_SET,TABLES,PLATES,PIES,CLOTH,FOLDED;
         /** A paper lying on a desk. */
         public boolean doc(){return ordinal()>=DOC_DISPATCH.ordinal()&&ordinal()<=DOC_LOG.ordinal();}
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
@@ -137,13 +144,19 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
             case HOOK->Block.box(5,1,6,12,16,10);
             case DESK_BELL->Block.box(5,0,5,11,4.5,11);
             case JUKEBOX->MarshBlock.turned(f,1,0,4,15,23,15);
+            case FOLDING,FOLDING_SET->MarshBlock.turned(f,0,0,1,16,16,15);
+            case TABLES->MarshBlock.turned(f,5,0,0,11,3,16);
+            case PLATES->MarshBlock.turned(f,3,0,4,15,4,12);
+            case PIES->MarshBlock.turned(f,1,0,3,14,2,13);
+            case CLOTH->MarshBlock.turned(f,3,0,4,13,2,12);
+            case FOLDED->Block.box(1,0,0,16,6,16);
         };
     }
     /** What a body walks into: the counters' pieces, the pumps, the cooler, the cases and the table. Wall pieces are reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case PUMP,PUMP_TOP,COOLER,CANDY,RACK,CASE,MEDS,EXAM,SCALE,PIE_CASE,URN,HELMET,JAR,FOUNTAIN,OIL,BAIT,SNACKS,TIRES,GROCERIES,CROCKERY,CABINET,CABINET_TOP,
-                PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID,STOVE,PIPE,GRILL,FRYER,SINK,TOILET,DRUM,EFFECTS,JUKEBOX->getShape(s,l,p,c);
+                PEW_END,PEW_MID,BENCH,BENCH_END,BENCH_MID,STOVE,PIPE,GRILL,FRYER,SINK,TOILET,DRUM,EFFECTS,JUKEBOX,FOLDING,FOLDING_SET,FOLDED->getShape(s,l,p,c);
             case PAIL->Block.box(4,0,4,12,8,12);
             default->Shapes.empty();
         };

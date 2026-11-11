@@ -216,6 +216,12 @@ LOOKS = {
     'literary_drisking_merle': Look('#d2a888','#9a948a','receding','#4a5a6a','#2e3238','cardigan','#c8c0b0',eyes='#4a5058',age=2,glasses=True),
     # The town's routines (0.4.428): Mr. Dorsey, the mail carrier, in the summer uniform.
     'literary_drisking_dorsey': Look('#c49a7c','#4a3a2e','short','#8aa4c0','#2e3a52','uniform','#d8d0b8',eyes='#4a4a42',age=1,beard='moustache'),
+    # The church supper (0.4.461): Prescott's driver in the company's work shirt, three of the street's mothers and the pastor.
+    'literary_drisking_vern': Look('#c49478','#6a5a48','short','#566b4c','#3e4038','crew','#e2c25a',eyes='#4a4a42',age=1,beard='stubble'),
+    'literary_drisking_hollis': Look('#dcb69a','#7a6a5a','bun','#e8e0d0','#4a4a55','dress','#8a9ab0',eyes='#4e5a5a',age=1,sleeve=4),
+    'literary_drisking_pruitt': Look('#d6aa8e','#8a8278','bun','#5a5a66','#3a3a44','cardigan','#c8c0b8',eyes='#5a5a60',age=2),
+    'literary_drisking_corley': Look('#e0bca0','#5a3a2a','ponytail','#7a8a5a','#4a4a3e','dress','#e8e0c0',eyes='#4a5a3a',age=1,sleeve=4),
+    'literary_drisking_neal': Look('#c9a07e','#3a3430','receding','#2e2e32','#26262a','coat','#f0f0e8',eyes='#4a4a3a',age=2,glasses=True),
     'literary_polybius_kid_a': Look('#d9b08e','#8a5a32','long','#3a5a8a','#2f3a52','jacket','#d8cfb8',eyes='#4e6a7a',sleeve=10),
     'literary_polybius_kid_b': Look('#a8714f','#1e1a16','close','#c0442e','#3a3f48','tee','#f0e6d0',eyes='#3a2c22',sleeve=4),
     'literary_polybius_kid_c': Look('#e2c2a6','#c89a5a','messy','#d8d4c8','#4a5560','knit','#2e5a8a',eyes='#56677a',glasses=True,sleeve=10),
