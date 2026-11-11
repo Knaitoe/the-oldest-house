@@ -201,6 +201,8 @@ public final class BikeNightTexts {
     public static final String[] GUS_BEHIND={"Behind you! Right behind you!","He's on you! Go! GO!","Pedal! Don't look, just pedal!"};
     public static final String[] GUS_ROUND={"They went round! One of them went round!","Not that way! One's waiting up there!","They split up. Since when do they split up?"};
     public static final String GUS_CHURCH="Not the graveyard. Anywhere else. I told you the story!";
+    /** 0.4.490, in the cemetery: coming in after his friend, and past its first bank. At the row of small stones he says nothing. */
+    public static final String GUS_YARD="We're in the graveyard. We are in the graveyard.",GUS_YARD_ON="Stay on the path. That's all I'm saying. Stay on the path.";
     public static final String GUS_NOBODY="Nobody even looked at mine. I'm not sure what I think about that.";
     /** Gus, when one of the three gets a bike. */
     public static final String GUS_CAUGHT="They got a bike. They actually got a bike.";
@@ -327,10 +329,15 @@ public final class BikeNightTexts {
     /** A hand on another bike, by a reader whose own the three have had. */
     public static final String NO_MORE="Yours is gone. These are other people's.";
     /** Every line of theirs, for the case that holds them to how they talk. */
+    /** 0.4.490, at the cemetery. The proposal's own, of the one who stops at the fence. */
+    public static final String NOT_GOING_IN="I'm not going in there.";
+    /** What each of the two who go in says when he stops: Tully, Ray-Ray. After it, nothing. */
+    public static final String[] FALL_BACK={"Ray-Ray? Quit messing around.","Tully, wait up. I can't see."};
     public static List<String> bullyLines(){
         var all=new ArrayList<String>(List.of(TULLY_GATE,TULLY_HAT,TULLY_HAT_ON,GET_THEM,DUFF_MINE,DUFF_UP,DUFF_OFF));
         all.addAll(List.of(JEERS));all.addAll(List.of(HIT));all.addAll(List.of(HANDS_OFF));all.addAll(List.of(CHASE_JEERS));
         all.addAll(List.of(CAUGHT));all.addAll(List.of(LEAVING));all.addAll(List.of(TOLD_BACK));all.addAll(List.of(CUT_BACK));
+        all.add(NOT_GOING_IN);all.addAll(List.of(FALL_BACK));
         for(var on:List.of("swing","bike","seesaw","slide","bars","spring"))all.add(jeerAt(on));
         return all;
     }
@@ -339,7 +346,7 @@ public final class BikeNightTexts {
     public static List<String> gusLines(){
         var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN,GUS_CAUGHT));
         all.addAll(List.of(GUS_HIT));
-        all.addAll(List.of(GUS_HIS_BIKE,GUS_CHURCH,GUS_NOBODY));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
+        all.addAll(List.of(GUS_HIS_BIKE,GUS_CHURCH,GUS_NOBODY,GUS_YARD,GUS_YARD_ON));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
         return all;

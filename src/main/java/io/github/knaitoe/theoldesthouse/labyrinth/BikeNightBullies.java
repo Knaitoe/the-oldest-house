@@ -308,6 +308,8 @@ public final class BikeNightBullies {
             if(u.leaving){BikeNightHunt.leave(l,n,k,u,here);any|=!u.gone;continue;}
             var a=actor(l,u);var bike=bike(l,u);if(a==null||bike==null||!u.riding)continue;
             any=true;
+            // 0.4.490: one who has stopped at the cemetery's fence or on its hill is after nobody. He stands there until he is taken.
+            if(BikeNightGraveyard.stopped(n,u)){bike.toward(null,0);continue;}
             if(prey.isEmpty()){
                 // Nobody is left to go after. If they have had somebody's bike they go; if nobody was ever here, they wait.
                 if(k.caught.isEmpty()){bike.toward(null,0);continue;}
@@ -318,6 +320,8 @@ public final class BikeNightBullies {
             int mine=hunting++%prey.size();
             if(n.tick<u.stunnedUntil){bike.toward(null,0);continue;}
             var reader=prey.get(mine);int part=after[mine]++;
+            // 0.4.490: after a reader who is in the cemetery, or in it himself (BikeNightGraveyard).
+            if(BikeNightGraveyard.ride(l,n,k,u,a,bike,reader))continue;
             var to=reader.position();
             if(BikeNightHunt.inTown(n,bike.position())||BikeNightHunt.inTown(n,to)){BikeNightHunt.ride(l,n,k,u,bike,reader,part);continue;}
             u.plan=null;parkRide(n,u,bike,to,HUNT);
@@ -371,6 +375,8 @@ public final class BikeNightBullies {
         for(int i=0;i<3;i++){
             var u=k.b[(k.jeer+i)%3];var a=actor(l,u);
             if(a==null||n.tick<u.stunnedUntil||a.saying()||u.soon!=null)continue;
+            // 0.4.490: "and then their jeers stop altogether".
+            if(BikeNightGraveyard.stopped(n,u))continue;
             var near=nearest(here,a,HEARD);if(near==null)continue;
             k.jeer=(k.jeer+i+1)%3;
             say(a,u.who,line(l,k,near));

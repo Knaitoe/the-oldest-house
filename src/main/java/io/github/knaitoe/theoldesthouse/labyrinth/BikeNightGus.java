@@ -178,6 +178,8 @@ public final class BikeNightGus {
         return BikeNightTexts.GUS_IDLE[g.deck[g.idle++%g.deck.length]];
     }
     static void speak(ServerLevel l,BikeNight.Night n,Friend g,LiteraryActor a,@Nullable ServerPlayer near){
+        // 0.4.490: at the row of small stones he says nothing, and what he had been about to say is not said later.
+        if(BikeNightGraveyard.hushed(n,a.position())){g.soon.clear();return;}
         if(a.saying()||near==null||near.distanceToSqr(a)>HEARD*HEARD)return;
         String line=null;
         if(!g.soon.isEmpty()){if(n.tick>=g.soonAt)line=g.soon.poll();}
@@ -191,7 +193,7 @@ public final class BikeNightGus {
     /** A hand on him. He answers, unless he is in the middle of saying something. */
     public static void talk(ServerPlayer p,LiteraryActor actor){
         var n=BikeNight.night(p);if(n==null||!is(actor)||keptHome)return;var g=n.gus;
-        if(actor.saying())return;
+        if(actor.saying()||BikeNightGraveyard.hushed(n,actor.position()))return;
         String line=g.doing==RIDING?riding(p.serverLevel(),g)
             :BikeNight.own(p).getString("Bike").isEmpty()&&g.once.add("nobike")?BikeNightTexts.GUS_TALK_NO_BIKE:BikeNightTexts.GUS_TALK[g.talk++%BikeNightTexts.GUS_TALK.length];
         actor.say(NAME,line);actor.speaks(line);
@@ -422,6 +424,8 @@ public final class BikeNightGus {
         }
         g.friend=friend.getUUID();
         var at=bike.position();var there=friend.position();double d=Math.sqrt(flat(at,there));boolean level=Math.abs(at.y-there.y)<1.2;
+        // 0.4.490: in the cemetery, or after a friend who is, he goes through the stones (BikeNightGraveyard).
+        if(BikeNightGraveyard.friend(l,n,g.way,bike,there,d)){warn(l,n,g,a,friend);return;}
         if(d<KEEP&&level)bike.toward(null,0);
         else if(!BikeNightHunt.inTown(n,at)&&!BikeNightHunt.inTown(n,there)){g.way.plan=null;BikeNightBullies.parkRide(n,g.way,bike,there,RIDE_PACE);}
         else if(d<BikeNightHunt.SIGHT&&level&&BikeNightHunt.clear(l,at,there)){g.way.plan=null;bike.toward(there,(float)Math.min(RIDE_PACE,Math.max(.12,(d-KEEP+.6)*.16)));}
