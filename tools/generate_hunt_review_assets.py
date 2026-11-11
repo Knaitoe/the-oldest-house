@@ -46,9 +46,8 @@ def run(sheet):
         for face,turn in [('north',0),('east',90),('south',180),('west',270)]:
             states['variants'][f'facing={face},kind={name}']={'model':'the_oldest_house:block/hunt_'+name,'y':turn}
     p.write_text(json.dumps(states,indent=2)+'\n')
-    # Distinct furniture materials without changing its existing geometry or identity.
-    desk=ASSET/'models/block/furniture_reading_desk.json';model=json.loads(desk.read_text())
-    model['textures']={k:'the_oldest_house:block/hunt_fan_oak' for k in model['textures']};desk.write_text(json.dumps(model,indent=2)+'\n')
+    # 0.4.452: the reading desk is no longer put on this sheet's oak. It has three sixteen-pixel pictures of its own, and
+    # tools/draw_reading_desk.py writes its model.
     art=ROOT/'art/hunt_review_0455';art.mkdir(parents=True,exist_ok=True);shutil.copy2(sheet,art/'material-atlas.png')
     print(f'Packed {len(NAMES)} original generated materials and {len(PROPS)} distinct native prop meshes.')
 if __name__=='__main__':run(Path(sys.argv[1]))
