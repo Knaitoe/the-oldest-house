@@ -1,0 +1,146 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "taillight": "the_oldest_house:block/calder_car/taillight",
+    "particle": "the_oldest_house:block/calder_car/taillight"
+  },
+  "elements": [
+    {
+      "from": [
+        -10.35,
+        8,
+        -6
+      ],
+      "to": [
+        -10,
+        11,
+        -1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#taillight",
+          "uv": [
+            4,
+            5,
+            4.35,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            5,
+            12,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#taillight",
+          "uv": [
+            9,
+            5,
+            14,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#taillight",
+          "uv": [
+            2,
+            5,
+            7,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            2,
+            12,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            9,
+            12,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10.35,
+        8,
+        17
+      ],
+      "to": [
+        -10,
+        11,
+        22
+      ],
+      "faces": {
+        "north": {
+          "texture": "#taillight",
+          "uv": [
+            4,
+            5,
+            4.35,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            5,
+            12,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#taillight",
+          "uv": [
+            2,
+            5,
+            7,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#taillight",
+          "uv": [
+            9,
+            5,
+            14,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            9,
+            12,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            2,
+            12,
+            7
+          ]
+        }
+      }
+    }
+  ]
+}

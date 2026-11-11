@@ -1306,14 +1306,16 @@ jobs:
         with:
           gradle-version: '9.2.1'
       - name: Focused native literary neighbours
-        timeout-minutes: 21
+        # 0.4.485: thirty minutes, where it was twenty. Run 1537 was stopped at twenty with every case so far passed and the
+        # Borrasca ones still running; the run before took seventeen and a half. The limit is for a hang, not for a slow machine.
+        timeout-minutes: 31
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/neighbours-native.log
+          timeout --signal=QUIT --kill-after=20s 30m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_ghosts,the_oldest_house_fan488,the_oldest_house_lake_house,the_oldest_house_playtest492,the_oldest_house_borrasca --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/neighbours-native.log
           python3 - <<'PY'
           from pathlib import Path
           import re

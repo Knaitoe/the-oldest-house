@@ -167,9 +167,35 @@ def plank():
     return im
 
 
+def treat_sack():
+    """0.4.485: a pillowcase with sweets in the bottom of it. One sheet for its three boxes: the ticking-striped body (front and
+    back, a side, the top and bottom), the neck gathered in a fist, and the slack of the open end above it."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4851)
+    cloth, stripe, fold = '#e8e4d8', '#93a3b8', '#b9b4a6'
+    def cell(x, y, c, n=0):
+        dot(im, x, y, shade(c, n + rnd.randint(-3, 3)))
+    for y in range(9):                                                    # front and back: stripes, darker and fuller toward the bottom
+        for x in range(8):
+            cell(x, y, stripe if x in (1, 4, 6) else cloth, -3 * max(0, y - 4) - (8 if x in (0, 7) else 0))
+        for x in range(8, 13):                                            # a side
+            cell(x, y, stripe if x == 10 else cloth, -8 - 3 * max(0, y - 4))
+    for y in range(9, 14):                                                # top and bottom
+        for x in range(8):
+            cell(x, y, stripe if x in (1, 4, 6) else cloth, -16)
+    for y in range(9, 11):                                                # the neck
+        for x in range(8, 11):
+            cell(x, y, fold, -6 if x == 9 else 0)
+    for y in range(11, 16):                                               # the open end
+        for x in range(8, 13):
+            cell(x, y, cloth if (x + y) % 3 else fold, -4)
+    for x, y in ((2, 7), (5, 8), (3, 8)):                                 # what is in it, pushing at the cloth
+        cell(x, y, cloth, 10)
+    return im
+
+
 def textures():
     return {DIR + 'play.png': card(), DIR + 'chain.png': chain_links(), DIR + 'mark.png': mark(), DIR + 'sheet.png': sheet(),
-            DIR + 'tread.png': tread(), DIR + 'plank.png': plank(), 'item/sand_ball.png': sand_ball()}
+            DIR + 'tread.png': tread(), DIR + 'plank.png': plank(), 'item/sand_ball.png': sand_ball(), 'item/treat_sack.png': treat_sack()}
 
 
 # ---------------------------------------------------------------------------------------------------------------- pieces
@@ -569,13 +595,36 @@ def files():
     out['blockstates/calder_spring.json'] = {'variants': {f'facing={facing},part={part}': {'model': P + name, **({'y': y} if y else {})}
                                                           for facing, y in FACING_Y.items() for part, name in SPRING.items()}}
     out['models/item/sand_ball.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/sand_ball'}}
+    # 0.4.485: the pillowcase the trick-or-treaters carry. Held in a hand it hangs from the fist: the model's up is turned along the
+    # arm, and it is set down so that the gathered neck is where the hand closes. (A hand's own frame has the held thing's up
+    # pointing forward and its south up the arm: a quarter turn about x puts the model's up up the arm. The neck's top is five
+    # pixels over the model's middle; at eight tenths of its size that is four.) At this size its bottom clears the ground
+    # under a child's hand.
+    def faces(sides, ends, skip=()):
+        f = {k: {'uv': list(sides[0 if k in ('north', 'south') else 1]), 'texture': '#sack'} for k in ('north', 'south', 'east', 'west')}
+        f.update({k: {'uv': list(ends), 'texture': '#sack'} for k in ('up', 'down')})
+        return {k: v for k, v in f.items() if k not in skip}
+    out['models/item/treat_sack.json'] = {
+        'textures': {'sack': NS + 'item/treat_sack', 'particle': NS + 'item/treat_sack'},
+        'elements': [
+            {'from': [4, 1, 5.5], 'to': [12, 10, 10.5], 'faces': faces(((0, 0, 8, 9), (8, 0, 13, 9)), (0, 9, 8, 14))},
+            {'from': [6.5, 10, 6.75], 'to': [9.5, 11.5, 9.25], 'faces': faces(((8, 9, 11, 10.5), (8, 9, 10.5, 10.5)), (8, 9, 11, 11), ('up', 'down'))},
+            {'from': [5.5, 11.5, 6], 'to': [10.5, 13, 10], 'faces': faces(((8, 11, 13, 12.5), (8, 11, 12, 12.5)), (8, 12, 13, 16))}],
+        'display': {
+            'thirdperson_righthand': {'rotation': [90, 0, 0], 'translation': [0, 0, -4], 'scale': [.8, .8, .8]},
+            'thirdperson_lefthand': {'rotation': [90, 0, 0], 'translation': [0, 0, -4], 'scale': [.8, .8, .8]},
+            'firstperson_righthand': {'rotation': [0, 20, 0], 'translation': [1, 1, 0], 'scale': [.8, .8, .8]},
+            'firstperson_lefthand': {'rotation': [0, 20, 0], 'translation': [1, 1, 0], 'scale': [.8, .8, .8]},
+            'gui': {'rotation': [20, 30, 0], 'translation': [0, 1, 0], 'scale': [1.05, 1.05, 1.05]},
+            'ground': {'translation': [0, 2, 0], 'scale': [.6, .6, .6]},
+            'fixed': {'scale': [.9, .9, .9]}}}
     return out
 
 
 NAMES = {'block.the_oldest_house.calder_play': 'Playground Equipment', 'block.the_oldest_house.calder_mark': 'Heel Mark',
          'block.the_oldest_house.calder_seesaw': 'Seesaw', 'block.the_oldest_house.calder_roundabout': 'Merry-go-round',
          'block.the_oldest_house.calder_dome': 'Climbing Dome', 'block.the_oldest_house.calder_spring': 'Spring Rider',
-         'item.the_oldest_house.sand_ball': 'Ball of Sand', 'entity.the_oldest_house.sand_ball': 'Ball of Sand'}
+         'item.the_oldest_house.sand_ball': 'Ball of Sand', 'entity.the_oldest_house.sand_ball': 'Ball of Sand', 'item.the_oldest_house.treat_sack': 'Pillowcase of Sweets'}
 
 
 # ---------------------------------------------------------------------------------------------------------------- review

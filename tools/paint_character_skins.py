@@ -205,6 +205,25 @@ LOOKS = {
     'literary_bike_tully_cap': Look('#d2a07c','#2a2320','messy','#1d1d22','#33405a','tee','#b23a30',eyes='#4a5a3a',mark='bike_cap',sleeve=4,face_style='child',print='skull_fire',rips=True,shoes='#e4e0d4'),
     'literary_bike_ray': Look('#e3b896','#c9a24a','short','#7c2f3c','#26282e','hoodie','#e8e2d2',eyes='#5a6a7a',sleeve=11,face_style='child',stripe='#e8e2d2',shoes='#d6d2c6'),
     'literary_bike_duff': Look('#c99272','#5a3a22','close','#285a3e','#6a6250','jersey','#ecdfae',eyes='#3d4a3a',sleeve=5,face_style='child',jersey=66,under='#d4d0c2',shoes='#26262a'),
+    # 0.4.485, Bike night's people on the pavements. Costume Night's skins are entrants in a contest, each with a number pinned on, and
+    # every one of them is dressed as the same drowned girl; these are a town's Halloween. Four children out for sweets: a bedsheet
+    # ghost, a skeleton, a pumpkin on a shirt, a vampire. Six teenagers in the theater's line: a rubber monster mask, a painted
+    # skull, a cardboard robot, a mummy, a cat, a scarecrow. And four who are not dressed up, on the hoods of two cars.
+    'literary_calder_ghost': Look('#dcb090','#6a4a2c','short','#eceae2','#e2e0d8','tee','#cfcdc4',eyes='#4a5a6a',sleeve=11,face_style='child',costume='ghost',shoes='#34343a'),
+    'literary_calder_skeleton': Look('#e2ba9c','#2a2320','short','#17171a','#17171a','hoodie','#e9e7dd',eyes='#4a5a3a',sleeve=11,face_style='child',costume='skull',print='bones',stripe='#e9e7dd',shoes='#17171a'),
+    'literary_calder_pumpkin': Look('#d8a888','#8a5a2e','messy','#e07a1c','#3e5a34','tee','#2a2a2a',eyes='#4f6a7a',mark='freckles',sleeve=4,face_style='child',print='jack',shoes='#d6d2c6'),
+    'literary_calder_vampire': Look('#ece2da','#141416','short','#1a1a1e','#1a1a1e','coat','#a8242c',eyes='#5a3a3a',sleeve=11,face_style='child',costume='vampire',shoes='#17171a'),
+    'literary_calder_monster': Look('#c99a7a','#1e1d1c','short','#8a3a2e','#3e4652','flannel','#d8c8a8',costume='mask',sleeve=10),
+    'literary_calder_skull': Look('#d9b090','#3a2a1e','long','#17171a','#22242a','tee','#e9e7dd',eyes='#4a5a4a',sleeve=4,costume='skull',print='bones'),
+    'literary_calder_robot': Look('#d8ae8e','#4a3324','short','#9a9ea4','#5a5e66','crew','#d23a30',sleeve=10,costume='cardboard',print='dials'),
+    'literary_calder_mummy': Look('#d2a888','#2a211b','close','#ddd6c2','#ddd6c2','tee','#b9b09a',eyes='#4a5a3a',sleeve=11,costume='wraps'),
+    'literary_calder_cat': Look('#e0bc9f','#1a1818','ponytail','#1c1c20','#1c1c20','knit','#3a3a40',eyes='#5a7a4a',sleeve=11,costume='cat'),
+    'literary_calder_scarecrow': Look('#d6ac8c','#c9a24a','messy','#7a5a3a','#3e5a78','flannel','#c8a23a',eyes='#56677a',sleeve=10,costume='scarecrow patches'),
+    'literary_calder_letterman': Look('#d8ae8e','#5a3a24','short','#2f4a8a','#3b4656','jacket','#e8e2d2',eyes='#56677a',mark='movie_letter',sleeve=10),
+    'literary_calder_denim': Look('#c48e6c','#2a1e18','long','#5a7a9a','#26282e','jacket','#e8e0c8',eyes='#3a2e26',sleeve=10),
+    # And two on the other car's hood: a striped sweater, and a hood with a ball cap.
+    'literary_calder_sweater': Look('#e2bc9e','#8a4a2a','ponytail','#7a2f3c','#3a4a66','knit','#e8dcc0',eyes='#4a6a5a',mark='movie_stripes',sleeve=11),
+    'literary_calder_cap': Look('#b8845e','#1e1a16','close','#4a4f58','#2e3440','hoodie','#2f6a4a',eyes='#3a2c22',mark='bike_cap',sleeve=11,shoes='#d6d2c6'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -458,6 +477,14 @@ def costume_face(look):
         im=panel((16,16),'#e9e7dd','skin');d=ImageDraw.Draw(im)
         for x in (2,9):d.rectangle((x,5,x+4,9),fill='#2b2b30');d.rectangle((x+1,7,x+3,7),fill='#e9e2ce');d.point((x+2,7),fill=rgb(look.eyes))
         d.line((6,13,9,13),fill='#2b2b30');d.point((5,12),fill='#2b2b30');d.point((10,12),fill='#2b2b30')
+        return im
+    if 'skull' in c:
+        # 0.4.485: a skull in face paint: white to the hairline, the sockets and the nose blacked in, teeth drawn across the mouth.
+        im=panel((16,16),'#e9e7dd','skin');d=ImageDraw.Draw(im)
+        for x in (2,9):d.rectangle((x,5,x+4,9),fill='#1c1c20');d.point((x,5),fill='#e9e7dd');d.point((x+4,5),fill='#e9e7dd');d.point((x+2,7),fill=rgb(look.eyes))
+        d.rectangle((7,10,8,11),fill='#1c1c20');d.line((3,13,12,13),fill='#1c1c20')
+        for x in (4,6,8,10):d.line((x,12,x,14),fill='#1c1c20')
+        d.line((1,10,1,12),fill='#b9b6aa');d.line((14,10,14,12),fill='#b9b6aa')
         return im
     return None
 
@@ -734,6 +761,20 @@ def face(look):
     if 'pale' in look.costume.split():
         for x in (3,10):d.line((x-1,5,x+3,5),fill='#4a4248')
         d.line((6,13,9,13),fill='#5a2a34');d.line((6,14,9,14),fill='#7a3a44')
+    if 'vampire' in look.costume.split():
+        # 0.4.485: shadow under the brows, a red mouth, and the two teeth of a set from the dime store.
+        for x in (3,10):d.line((x-1,5,x+3,5),fill='#4a3a44')
+        d.line((6,13,9,13),fill='#8a1c24');d.point((6,14),fill='#f6f2e8');d.point((9,14),fill='#f6f2e8')
+    if 'cat' in look.costume.split():
+        # A black nose and three whiskers a side, in eyebrow pencil.
+        d.rectangle((7,10,8,10),fill='#1c1a1c')
+        for y0,y1 in ((10,10),(12,12)):d.line((1,y0,4,y1),fill='#1c1a1c');d.line((11,y1,14,y0),fill='#1c1a1c')
+        d.line((2,14,4,13),fill='#1c1a1c');d.line((11,13,13,14),fill='#1c1a1c')
+    if 'scarecrow' in look.costume.split():
+        # A patch for a nose, round red cheeks, and a mouth stitched from ear to ear.
+        d.rectangle((7,9,8,10),fill='#e07a1c');d.line((3,13,12,13),fill='#3a2a1e')
+        for x in (3,5,7,9,11):d.point((x,12),fill='#3a2a1e');d.point((x+1,14),fill='#3a2a1e')
+        for x in (2,12):d.rectangle((x,10,x+1,11),fill='#d86a5a')
     if look.cut=='receding':
         d.rectangle((0,0,1,5),fill=hair);d.rectangle((14,0,15,5),fill=hair)
         d.line((1,0,3,0),fill=hhi);d.line((12,0,14,0),fill=hhi)
@@ -879,6 +920,15 @@ def cloth_face(size,look,side='front'):
     if look.mark.startswith('borrasca_dana'):return dana_torso(size,look,side)
     im=panel(size,look.cloth,'cloth',side);d=ImageDraw.Draw(im);w,h=size
     c=rgb(look.cloth);a=rgb(look.accent);lo=shade(c,-19);hi=shade(c,16)
+    if 'wraps' in look.costume.split():
+        # 0.4.485: wound round in strips, each a little off the level, every side alike.
+        for y in range(2,h,4):d.line((0,y,w-1,y+1),fill=shade(c,-26))
+        if side=='front':d.line((w-5,h-9,w-4,h-3),fill=shade(c,-34))
+        return im
+    if 'ghost' in look.costume.split():
+        # A bedsheet: nothing at the neck, and the folds it hangs in.
+        for x in range(2,w-1,5):d.line((x,2+x%3,x,h-2-x%2),fill=shade(c,-12))
+        return im
     if look.style=='flannel':
         for x in range(3,w,7):d.line((x,0,x,h-1),fill=lo);d.line((x+1,0,x+1,h-1),fill=hi)
         for y in range(4,h,7):d.line((0,y,w-1,y),fill=lo);d.line((0,y+1,w-1,y+1),fill=shade(c,7))
@@ -1041,6 +1091,25 @@ def cloth_face(size,look,side='front'):
             for dx,ch in enumerate(row):
                 if ch!='.':d.point((mid-6+dx,5+dy),fill=ink[ch])
         for dx in (3,4,5,6,7):d.point((mid-6+dx,15),fill='#c2bca8')
+    if look.print=='jack':
+        # 0.4.485: a jack-o'-lantern's face on the front of an orange shirt.
+        rows=('..n.....n..','.nnn...nnn.','...........','.....n.....','....nnn....','...........','n.........n','nnn.n.n.nnn','.nnnnnnnnn.')
+        for dy,row in enumerate(rows):
+            for dx,ch in enumerate(row):
+                if ch!='.':d.point((mid-6+dx,6+dy),fill='#1c1a18')
+    if look.print=='bones':
+        # A rib cage printed on black: the breastbone down the middle, four ribs a side turning down at their ends, and the hips.
+        bone='#e9e7dd'
+        d.rectangle((mid-1,4,mid,15),fill=bone)
+        for y in (5,8,11,14):
+            d.line((mid-5,y,mid+4,y),fill=bone);d.point((mid-6,y+1),fill=bone);d.point((mid+5,y+1),fill=bone)
+        d.line((mid-4,18,mid+3,18),fill=bone);d.point((mid-5,19),fill=bone);d.point((mid+4,19),fill=bone);d.rectangle((mid-1,17,mid,19),fill=bone)
+    if look.print=='dials':
+        # A robot's works on a panel: three lamps, a dial, a slot.
+        d.rectangle((mid-5,5,mid+4,14),fill='#2e3238',outline='#c8ccd0')
+        for x,ink in ((mid-3,'#d23a30'),(mid-1,'#e8c23a'),(mid+1,'#4aa84a')):d.point((x,7),fill=ink)
+        d.rectangle((mid-3,9,mid-1,11),outline='#c8ccd0');d.point((mid-2,10),fill='#d23a30')
+        d.line((mid+1,10,mid+3,10),fill='#0e0f12');d.line((mid+1,12,mid+3,12),fill='#c8ccd0')
     costume_marks(d,look,w,h)
     if look.number:
         # The entry number, pinned on: a white card with red digits.
@@ -1066,6 +1135,11 @@ def numerals(d,digits,mid,y0,color):
 
 def costume_marks(d,look,w,h):
     c=set(look.costume.split())
+    if 'patches' in c:
+        for x,y,ink in ((2,8,'#c8a23a'),(10,15,'#8a3a2e')):
+            d.rectangle((x,y,x+3,y+3),fill=ink)
+            for sx,sy in ((x,y),(x+3,y),(x,y+3),(x+3,y+3)):d.point((sx,sy),fill='#2a2018')
+        for x in (5,7,9,10):d.point((x,1),fill='#d8b84a')
     if 'bags' in c:
         for x in range(-h,w,6):d.line((x,0,x+h,h),fill='#4d5058')
         for x,y in ((3,5),(11,9),(6,16),(12,19)):d.point((x,y),fill='#6a6e78')
@@ -1134,6 +1208,27 @@ def paint(look):
             if side=='front':
                 for x in (3,10):d.rectangle((x,6,x+2,8),fill='#1c1c1e')
                 d.line((5,12,10,12),fill='#7a7a80');d.line((0,15,15,15),fill='#d0cfc8')
+            put(box,art)
+    if 'ghost' in look.costume.split():
+        # 0.4.485: a bedsheet over the whole head: two eyeholes cut tall, and a round mouth drawn on.
+        for side,box in head.items():
+            art=panel((16,16),look.cloth,'cloth',side);d=ImageDraw.Draw(art)
+            if side=='front':
+                for x in (3,10):
+                    d.rectangle((x,5,x+2,9),fill='#1c1c1e')
+                    for cx,cy in ((x,5),(x+2,5),(x,9),(x+2,9)):d.point((cx,cy),fill=rgb(look.cloth))
+                d.rectangle((6,11,9,13),fill='#2c2c30')
+                for cx,cy in ((6,11),(9,11),(6,13),(9,13)):d.point((cx,cy),fill=rgb(look.cloth))
+            put(box,art)
+    if 'wraps' in look.costume.split():
+        # Bandaged to the crown: strips round the head, a gap left for the eyes.
+        for side,box in head.items():
+            art=panel((16,16),look.cloth,'cloth',side);d=ImageDraw.Draw(art)
+            for y in (1,4,10,13):d.line((0,y,15,y+1),fill=shade(look.cloth,-26))
+            if side=='front':
+                d.rectangle((2,7,13,8),fill='#2a2622')
+                for x in (4,10):d.rectangle((x,7,x+1,8),fill='#e8e2ce');d.point((x+1,8),fill=rgb(look.eyes))
+                d.line((6,12,9,12),fill=shade(look.cloth,-40))
             put(box,art)
     if 'hood' in look.costume.split():
         for side in ('top','back','left','right'):put(head[side],panel((16,16),look.cloth,'cloth',side))
@@ -1378,6 +1473,15 @@ def paint(look):
                 if side=='bottom':d.rectangle((0,0,w-1,h-1),fill=rgb(cap))
                 elif side!='top':d.rectangle((0,h-6,w-1,h-1),fill=rgb(cap));d.line((0,h-6,w-1,h-6),fill=shade(cap,-24))
                 over(box,art)
+    if 'wraps' in look.costume.split():
+        # 0.4.485: and round the arms and legs, down over the hands and the shoes; one end come loose at a wrist.
+        for k,limb in enumerate((net(40,16,4,12,4),net(32,48,4,12,4),net(0,16,4,12,4),net(16,48,4,12,4))):
+            for side,box in limb.items():
+                if side in ('top','bottom'):continue
+                w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S);art=panel((w,h),look.cloth,'cloth',side);d=ImageDraw.Draw(art)
+                for y in range(1+k%2,h,4):d.line((0,y,w-1,y+1),fill=shade(look.cloth,-26))
+                if k==0 and side=='front':d.line((w-2,h-7,w-2,h-1),fill=shade(look.cloth,-34))
+                put(box,art)
     if look.logical==128:
         # Insets serve named geometry (coat, gown, collar, cuffs, cap), never a portrait.
         fill_net(net(64,28,9,17,5),look.cloth)

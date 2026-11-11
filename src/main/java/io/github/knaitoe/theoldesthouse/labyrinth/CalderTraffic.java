@@ -38,7 +38,8 @@ import net.minecraft.world.phys.Vec3;
  * <p><b>Telling off.</b> Twice a night at most, and once for each car, a driver who comes by one of the three in the town slows beside
  * him and says what they think of him. He stops for it, as he does for a ball of sand, and answers back.
  *
- * <p>They start when the chase does: until then, as Gus says, cars do not come down here this late.
+ * <p>They start when the gate is opened, which is when a reader can first be out of the park: until then, as Gus says, cars do not
+ * come down here this late. Two more stand parked in the burger place's lot all night (0.4.485).
  */
 public final class CalderTraffic {
     private CalderTraffic(){}
@@ -116,14 +117,28 @@ public final class CalderTraffic {
     }
     /** A night's traffic. */
     static final class Traffic {
-        final Car[] cars=new Car[TownCar.KINDS];boolean going;int told;
+        final Car[] cars=new Car[TownCar.MOVING];boolean going;int told;
+        /** The bodies of the cars that stand parked. */
+        final UUID[] parked=new UUID[PARKED.length];
         Traffic(){for(int i=0;i<cars.length;i++)cars[i]=new Car(i);}
     }
+    /**
+     * 0.4.485: the cars that stand in the burger place's lot all night, nose out toward Park Street: which each is, and where. The
+     * proposal: "Teenagers sit on the hoods of their cars in the lot."
+     */
+    public static final double[][] PARKED={{TownCar.BLUE,11,-63,0},{TownCar.WHITE,17,-63,0}};
+    public static Vec3 parkedAt(BlockPos base,int i){return new Vec3(base.getX()+PARKED[i][1],base.getY(),base.getZ()+PARKED[i][2]);}
 
     // ------------------------------------------------------------------------------------------------ each tick
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var t=n.traffic;
-        if(!t.going){if(n.pack.stage<BikeNightBullies.CHASE)return;t.going=true;}
+        // From when the gate is opened: a reader can be out of the park from then on.
+        if(!t.going){if(!n.pack.open&&n.pack.stage<BikeNightBullies.CHASE)return;t.going=true;}
+        for(int i=0;i<PARKED.length;i++){
+            var at=parkedAt(n.base,i);float yaw=(float)PARKED[i][3];
+            if(t.parked[i]!=null&&l.getEntity(t.parked[i]) instanceof TownCar body&&body.isAlive()){body.place(at,yaw);continue;}
+            var body=make(l,(int)PARKED[i][0],at,yaw);t.parked[i]=body==null?null:body.getUUID();
+        }
         // What is on the roads: the readers (where their bikes are, if they are on them), and the bikes of the three and Gus.
         var riders=new ArrayList<Vec3>();
         for(var p:here)if(!p.isSpectator())riders.add(p.getVehicle()!=null?p.getVehicle().position():p.position());
@@ -204,12 +219,14 @@ public final class CalderTraffic {
     /** A car's body: the one it has, or a new one where the car is, if that part of the town is awake. */
     private static @Nullable TownCar body(ServerLevel l,Car c,Vec3 at,float yaw){
         if(c.id!=null&&l.getEntity(c.id) instanceof TownCar body&&body.isAlive())return body;
+        var body=make(l,c.kind,at,yaw);c.id=body==null?null:body.getUUID();return body;
+    }
+    private static @Nullable TownCar make(ServerLevel l,int kind,Vec3 at,float yaw){
         var cell=BlockPos.containing(at);
         if(!l.isLoaded(cell)||!l.areEntitiesLoaded(ChunkPos.asLong(cell))||!l.isPositionEntityTicking(cell))return null;
         var body=BikeNightRegistry.TOWN_CAR.get().create(l);if(body==null)return null;
-        body.kind(c.kind);body.moveTo(at.x,at.y,at.z,yaw,0);body.place(at,yaw);
-        if(!l.addFreshEntity(body))return null;
-        c.id=body.getUUID();return body;
+        body.kind(kind);body.moveTo(at.x,at.y,at.z,yaw,0);body.place(at,yaw);
+        return l.addFreshEntity(body)?body:null;
     }
     /** The light before a car: on the road ahead of its nose, and nowhere when it has no body. */
     private static void beam(ServerLevel l,Car c,@Nullable BlockPos to){
@@ -244,4 +261,5 @@ public final class CalderTraffic {
     public static @Nullable TownCar body(ServerLevel l,BlockPos b,int car){var n=BikeNight.night(b);return n!=null&&n.traffic.cars[car].id!=null&&l.getEntity(n.traffic.cars[car].id) instanceof TownCar body&&body.isAlive()?body:null;}
     public static @Nullable BlockPos light(BlockPos b,int car){var n=BikeNight.night(b);return n==null?null:n.traffic.cars[car].beam;}
     public static int told(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.traffic.told;}
+    public static @Nullable TownCar parked(ServerLevel l,BlockPos b,int i){var n=BikeNight.night(b);return n!=null&&n.traffic.parked[i]!=null&&l.getEntity(n.traffic.parked[i]) instanceof TownCar body&&body.isAlive()?body:null;}
 }

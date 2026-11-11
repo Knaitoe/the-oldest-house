@@ -3205,7 +3205,7 @@ public final class BikeNightTests {
         h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
-                h.assertTrue(CalderTraffic.rounds()==4&&TownCar.KINDS==4,"two rounds, each driven both ways, and a car for each way");
+                h.assertTrue(CalderTraffic.rounds()==4&&TownCar.MOVING==4,"two rounds, each driven both ways, and a car for each way");
                 for(int r=0;r<CalderTraffic.rounds();r++){
                     double length=CalderTraffic.length(r);
                     h.assertTrue(length>230&&length<340&&CalderTraffic.point(b,r,0).distanceTo(CalderTraffic.point(b,r,length))<1e-6,"a way round comes back to where it began, a few hundred blocks on: "+length);
@@ -3235,7 +3235,7 @@ public final class BikeNightTests {
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b),"waiting for the night"))
             .thenExecute(()->{
                 var gate=Vec3.atLowerCornerOf(b).add(-.5,0,BikeNightSite.NORTH);
-                for(int i=0;i<TownCar.KINDS;i++){
+                for(int i=0;i<TownCar.MOVING;i++){
                     double far=CalderTraffic.point(b,CalderTraffic.roundOf(i),CalderTraffic.along(b,i)).distanceTo(gate);
                     h.assertTrue(far>30,"no car starts by the park's gate: the "+TownCar.NAMES[i]+" is "+far+" from it");
                 }
@@ -3256,7 +3256,7 @@ public final class BikeNightTests {
             .thenWaitUntil(()->{for(int i=0;i<4;i++)body[i]=CalderTraffic.body(l,b,i);h.assertTrue(body[0]!=null&&body[1]!=null&&body[2]!=null&&body[3]!=null,"waiting for each car to have a body");})
             .thenIdle(300)
             .thenExecute(()->{
-                h.assertTrue(cars(l,f).size()==4,"four cars, and no more: "+cars(l,f).size());
+                h.assertTrue(cars(l,f).stream().filter(c->c.kind()<TownCar.MOVING).count()==4,"four cars on the streets, and no more: "+cars(l,f).size());
                 var origin=Vec3.atLowerCornerOf(b);
                 for(int i=0;i<4;i++){
                     int r=CalderTraffic.roundOf(i);double length=CalderTraffic.length(r),gone=(CalderTraffic.along(b,i)-from[i]+length)%length;
@@ -3371,7 +3371,7 @@ public final class BikeNightTests {
         java.util.function.IntPredicate comeBy=slot->{
             for(int i=0;i<3;i++){
                 if(bikes[i]==null||who[i]==null||who[i].gesture()==BikeNightBullies.COUGH||i==toldWho[0]||bikes[i].speedNow()<.1F||bikes[i].getZ()-b.getZ()>-60)continue;
-                for(int c=0;c<TownCar.KINDS;c++){
+                for(int c=0;c<TownCar.MOVING;c++){
                     if(c==car[0])continue;
                     var near=nearestAlong(b,CalderTraffic.roundOf(c),bikes[i].position());
                     if(near[1]>1.5&&near[1]<3){CalderTraffic.put(b,c,near[0]-3.5,CalderTraffic.CRUISE);toldWho[slot]=i;car[slot]=c;toldAt[slot]=l.getGameTime();stoodAt[slot]=bikes[i].position();return true;}
@@ -3418,4 +3418,251 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="traffic_told") public static void trafficToldDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.485: the people on the pavements
+    private static boolean people(ServerLevel l,BlockPos b,LiteraryActor[] who){
+        boolean every=true;for(int i=0;i<who.length;i++){who[i]=CalderPeople.find(l,b,i);every&=who[i]!=null;}return every;
+    }
+    private static Vec3 rel(BlockPos b,net.minecraft.world.entity.Entity e){return e.position().subtract(Vec3.atLowerCornerOf(b));}
+
+    @GameTest(template="empty",batch="people_cast",timeoutTicks=3000)
+    public static void thePeopleOnThePavementsAreFourteenEachInASkinAndAPlaceOfTheirOwn(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who=new LiteraryActor[CalderPeople.COUNT];
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("people_cast_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenIdle(30)
+            .thenExecute(()->{
+                people(l,b,who);
+                h.assertTrue(java.util.Arrays.stream(who).allMatch(java.util.Objects::isNull)&&!CalderTraffic.going(b)&&l.getEntitiesOfClass(LiteraryActor.class,whole(f),CalderPeople::is).isEmpty(),"before the gate is opened there is nobody on the pavements");
+                CalderTraffic.startNow(b);
+            })
+            .thenWaitUntil(()->h.assertTrue(people(l,b,who)&&CalderTraffic.parked(l,b,0)!=null,"waiting for the fourteen of them, and the cars four of them sit on"))
+            .thenIdle(12)
+            .thenExecute(()->{
+                var skins=new java.util.HashSet<String>();
+                for(int i=0;i<who.length;i++){
+                    var a=who[i];int phase=a.phase();
+                    h.assertTrue(a.role()==LiteraryActor.STRANGER&&phase==CalderPeople.FIRST+i&&CalderPeople.is(a)&&!BikeNightGus.is(a)&&!BikeNightBullies.is(a),"who "+i+" is: "+phase);
+                    h.assertTrue(skins.add(CalderPeople.skin(phase))&&CalderPeople.class.getResource("/assets/the_oldest_house/textures/entity/literary_"+CalderPeople.skin(phase)+".png")!=null,"each has a painted skin of their own: "+CalderPeople.skin(phase));
+                    double size=a.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE).getBaseValue();
+                    h.assertTrue(i<CalderPeople.TRICK?size<.6:size>.75&&size<.85,"the trick-or-treaters are children and the rest are teenagers: "+i+" is "+size);
+                    h.assertTrue(a.ownGestures()&&!a.reaching()&&!a.crawling(),"their gestures are their own");
+                    h.assertTrue(a.getMainHandItem().is(BikeNightRegistry.TREAT_SACK.get())==(i<CalderPeople.TRICK),"a pillowcase in a trick-or-treater's hand and in nobody else's: "+i);
+                    h.assertTrue(a.scene().equals(P.id()),"they belong to the night");
+                }
+                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,whole(f),CalderPeople::is).size()==CalderPeople.COUNT,"and there is one of each");
+                // The line, down the pavement in front of the theater, each looking at the back of the next.
+                for(int i=0;i<CalderPeople.LINE;i++){
+                    var a=who[CalderPeople.LINE_FIRST+i];var spot=CalderPeople.lineSpot(i);var r=rel(b,a);
+                    h.assertTrue(Math.hypot(r.x-spot.x,r.z-spot.z)<.2&&Math.abs(r.y)<.05&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-CalderPeople.LINE_LOOK))<5,"one of the line in their place: "+r+" looking "+a.getYRot());
+                    for(var at:new Vec3[]{spot,CalderPeople.asideSpot(i)})h.assertTrue(CalderTown.surface(net.minecraft.util.Mth.floor(at.x),net.minecraft.util.Mth.floor(at.z))!=CalderTown.ROAD,"which is not in the road, nor is where they step aside to: "+at);
+                    h.assertTrue(CalderTown.surface(net.minecraft.util.Mth.floor(spot.x),net.minecraft.util.Mth.floor(spot.z))==CalderTown.PAVEMENT,"the line is on the pavement");
+                }
+                // Two on the hood of each parked car: over it, sitting on its top, looking the way it does.
+                h.assertTrue(CalderTraffic.parked(l,b,0).kind()==TownCar.BLUE&&CalderTraffic.parked(l,b,1)!=null&&CalderTraffic.parked(l,b,1).kind()==TownCar.WHITE,"two cars are parked in the burger place's lot");
+                for(int i=CalderPeople.HOOD_FIRST;i<CalderPeople.COUNT;i++){
+                    var a=who[i];var car=CalderTraffic.parked(l,b,(i-CalderPeople.HOOD_FIRST)/2);
+                    h.assertTrue(car.over(a.position(),0)&&Math.abs(a.getY()-(b.getY()+CalderPeople.HOOD_TOP-CalderPeople.HIPS))<.01,"on the hood: "+a.position().subtract(car.position()));
+                    h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-car.getYRot()))<1,"looking the way the car does");
+                }
+                // Each door of the court's round is a house's door, and the trick-or-treaters stop on its step.
+                int doors=0;
+                for(var stop:CalderPeople.ROUTES[0]){
+                    if(!stop.stops())continue;doors++;
+                    var at=BlockPos.containing(b.getX()+stop.x(),b.getY()+.5,b.getZ()+stop.z());var state=l.getBlockState(at);
+                    h.assertTrue(state.is(BikeNightRegistry.SIGN.get())&&CalderSignBlock.sign(state)==CalderSigns.Sign.HOUSE_DOOR,"a stop of the court's round is at a house's door: "+at.subtract(b)+" is "+state);
+                }
+                h.assertTrue(doors==4,"four doors: "+doors);
+                // How they talk: short, ended, and nothing of what a reader is.
+                var lines=BikeNightTexts.peopleLines();
+                h.assertTrue(new java.util.HashSet<>(lines).size()>=lines.size()-1&&lines.contains("Go, kid, go!")&&lines.contains("Leave 'em alone, Tully!"),"the proposal's two calls are among them");
+                var barred=java.util.regex.Pattern.compile("\\b(he|she|him|his|her|hers|boy|girl|man|woman|son|daughter|sir|miss|stupid|idiot|fat|ugly|kill|die|hurt)\\b");
+                for(var line:lines){
+                    h.assertTrue(line.length()<=60&&(line.endsWith(".")||line.endsWith("!")||line.endsWith("?")),"a line of theirs is short, and ends: \""+line+"\"");
+                    h.assertTrue(!barred.matcher(line.toLowerCase(java.util.Locale.ROOT)).find(),"and says nothing of what a reader is: \""+line+"\"");
+                }
+                // A hand on one of the line, and on one of the two on the hood.
+                f.at(p[0],P,CalderPeople.lineSpot(2).x,0,CalderPeople.KERB_Z);
+                LiteraryVignettes.talk(p[0],who[CalderPeople.LINE_FIRST+2]);
+                h.assertTrue(List.of(BikeNightTexts.PEOPLE_TALK[2]).contains(saying(who[CalderPeople.LINE_FIRST+2])),"a hand on one of the line gets a word: "+saying(who[CalderPeople.LINE_FIRST+2]));
+                h.assertTrue(who[CalderPeople.LINE_FIRST+2].getCustomName()!=null&&who[CalderPeople.LINE_FIRST+2].isCustomNameVisible(),"over their head");
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                for(var line:BikeNightTexts.peopleLines())h.assertTrue(!heard(p[0],line),"what they say is never in chat: "+line);
+                // The night over: none of them is anywhere.
+                BikeNight.resetNow(l,b);
+                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,whole(f),CalderPeople::is).isEmpty(),"the night over, none of them is anywhere");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="people_cast") public static void peopleCastDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="people_rounds",timeoutTicks=9000)
+    public static void trickOrTreatersGoFromDoorToDoorRoundTheCourtAndAlongMainStreet(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who=new LiteraryActor[CalderPeople.TRICK];
+        final var stood=new java.util.TreeSet<String>();final var spoke=new java.util.TreeSet<String>();final var speakers=new java.util.TreeSet<Integer>();
+        final int[] laps={0,0},last={1,1};final double[] apart={0},high={0};final boolean[] road={false};
+        Runnable watch=()->{
+            people(l,b,who);
+            for(int pair=0;pair<2;pair++){
+                var a=who[pair*2];var c=who[pair*2+1];if(a==null||c==null)continue;
+                int next=CalderPeople.next(b,pair);if(next<last[pair])laps[pair]++;last[pair]=next;
+                apart[0]=Math.max(apart[0],a.distanceTo(c));
+                for(var body:new LiteraryActor[]{a,c}){
+                    high[0]=Math.max(high[0],Math.abs(body.getY()-b.getY()));
+                    // Main Street's pair keep to its pavement and kerb.
+                    if(pair==1&&CalderTown.surface(net.minecraft.util.Mth.floor(body.getX()-b.getX()),net.minecraft.util.Mth.floor(body.getZ()-b.getZ()))==CalderTown.ROAD)road[0]=true;
+                }
+                if(!CalderPeople.standing(b,pair))continue;
+                var stop=CalderPeople.ROUTES[pair][next];var r=rel(b,a);
+                if(Math.hypot(r.x-stop.x(),r.z-stop.z())<.3&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-stop.look()))<20)stood.add(pair+":"+next);
+                for(int i=0;i<2;i++)if(saying(who[pair*2+i]).equals(BikeNightTexts.AT_A_STOP[stop.say()])){spoke.add(pair+":"+next);speakers.add(pair*2+i);}
+            }
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("people_rounds_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            // They go at a run for this, and stand a second and a half at each stop.
+            .thenExecute(()->{CalderTraffic.startNow(b);CalderPeople.hurry(b,.3,30);f.at(p[0],P,22.5,0,-141.5);})
+            .thenWaitUntil(()->h.assertTrue(people(l,b,who),"waiting for the four of them"))
+            .thenExecute(()->{
+                for(int pair=0;pair<2;pair++){
+                    var first=CalderPeople.ROUTES[pair][0];var r=rel(b,who[pair*2]);
+                    h.assertTrue(Math.hypot(r.x-first.x(),r.z-first.z())<.5&&who[pair*2].distanceTo(who[pair*2+1])<1.2,"a pair begins at the first place of its round, one behind the other: "+r);
+                }
+            })
+            .thenWaitUntil(()->{watch.run();h.assertTrue(laps[0]>=1&&laps[1]>=1,"waiting for both pairs to go once round: the court's is making for "+CalderPeople.next(b,0)+" at "+(who[0]==null?null:rel(b,who[0]))+", Main Street's for "+CalderPeople.next(b,1)+" at "+(who[2]==null?null:rel(b,who[2]))+"; stood at "+stood);})
+            .thenExecute(()->{
+                h.assertTrue(stood.equals(new java.util.TreeSet<>(List.of("0:2","0:5","0:8","0:11","1:1","1:3"))),"the first of each pair stood at each stop of its round, looking at it: "+stood);
+                h.assertTrue(spoke.equals(stood),"and at each of them one of the pair said what is said there: "+spoke);
+                h.assertTrue(speakers.size()==4,"they take it in turns: "+speakers);
+                h.assertTrue(apart[0]<3.5,"the second of a pair is never far behind the first: "+apart[0]);
+                h.assertTrue(high[0]<.6,"and they stay on the ground: "+high[0]);
+                h.assertTrue(!road[0],"Main Street's pair keep out of the road");
+                h.assertTrue(CalderPeople.stops(b,0)>=4&&CalderPeople.stops(b,1)>=2,"four doors and two windows: "+CalderPeople.stops(b,0)+", "+CalderPeople.stops(b,1));
+                for(var line:BikeNightTexts.AT_A_STOP)h.assertTrue(!heard(p[0],line),"what they say is never in chat: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="people_rounds") public static void peopleRoundsDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="people_line",timeoutTicks=9000)
+    public static void theyCheerARiderGoingByAndTheLinePartsForOneOnThePavementAndIsBackBehindThem(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who=new LiteraryActor[CalderPeople.COUNT];
+        final NightBike[] mine={null};final int[] t={0};final double[] nearest={9},kept={9};final boolean[] parted={false,false},cheered={false,false},called={false};final long[] at={-1,-1};
+        // Riding east along a row, pedalling.
+        Runnable ride=()->{if(p[0].getVehicle()==mine[0]){p[0].setYRot(270);pedalWell(mine[0],t[0]++,3);}};
+        Runnable watch=()->{
+            people(l,b,who);
+            for(int i=0;i<CalderPeople.LINE;i++){var a=who[CalderPeople.LINE_FIRST+i];if(a!=null)nearest[0]=Math.min(nearest[0],Math.sqrt(a.distanceToSqr(mine[0].getX(),a.getY(),mine[0].getZ())));}
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("people_line_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.WASP);CalderTraffic.startNow(b);})
+            .thenWaitUntil(()->h.assertTrue(people(l,b,who)&&f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the twelve of them, and for the Wasp to be theirs"))
+            // Standing on a bike in the road in front of the line: nobody cheers somebody who is not going anywhere.
+            .thenExecute(()->{mine[0].moveTo(b.getX()-14.5,b.getY(),b.getZ()-90.5,270,0);p[0].setYRot(270);})
+            .thenExecuteFor(30,()->{watch.run();for(int i=CalderPeople.LINE_FIRST;i<CalderPeople.HOOD_FIRST;i++)if(who[i].gesture()!=0||who[i].saying())called[0]=true;if(CalderPeople.parted(b))parted[0]=true;})
+            .thenExecute(()->{
+                h.assertTrue(!called[0],"nobody cheers a rider who is standing still");
+                h.assertTrue(!parted[0],"and the line does not part for somebody in the road");
+                // Along the road past the line, from west of it.
+                mine[0].moveTo(b.getX()-27.5,b.getY(),b.getZ()-89.5,270,0);p[0].setYRot(270);t[0]=0;
+            })
+            .thenWaitUntil(()->{ride.run();watch.run();if(CalderPeople.parted(b))parted[0]=true;
+                boolean arms=true,one=false;for(int i=CalderPeople.LINE_FIRST;i<CalderPeople.HOOD_FIRST;i++){arms&=who[i].gesture()==CalderPeople.CHEER;one|=List.of(BikeNightTexts.CHEERS[2]).contains(saying(who[i]));}
+                if(arms&&one&&at[0]<0)at[0]=l.getGameTime();
+                h.assertTrue(at[0]>=0,"waiting for the line to cheer them going by: the Wasp at "+rel(b,mine[0])+" going "+mine[0].speedNow());})
+            .thenExecute(()->{
+                h.assertTrue(!parted[0],"they cheer a rider in the road, and stay where they are");
+                h.assertTrue(rel(b,mine[0]).x>CalderPeople.LINE_WEST-CalderPeople.CHEER_WITHIN[2]-1,"not before they were near: "+rel(b,mine[0]));
+            })
+            .thenExecuteFor(CalderPeople.ARMS+20,()->{ride.run();watch.run();})
+            .thenExecute(()->{
+                for(int i=CalderPeople.LINE_FIRST;i<CalderPeople.HOOD_FIRST;i++)h.assertTrue(who[i].gesture()==0,"their arms come down again");
+                // Now along the pavement, through where the line is. (From this side of the lamp that stands at the kerb.)
+                nearest[0]=9;mine[0].moveTo(b.getX()-23.2,b.getY(),b.getZ()-85,270,0);p[0].setYRot(270);t[0]=0;
+            })
+            .thenWaitUntil(()->{ride.run();watch.run();
+                var r=rel(b,mine[0]);
+                if(CalderPeople.parted(b)&&at[1]<0)at[1]=l.getGameTime();
+                if(r.x>CalderPeople.LINE_WEST-1&&r.x<CalderPeople.LINE_WEST+(CalderPeople.LINE-1)*CalderPeople.LINE_GAP+1)kept[0]=Math.min(kept[0],nearest[0]);
+                h.assertTrue(r.x>CalderPeople.LINE_WEST+(CalderPeople.LINE-1)*CalderPeople.LINE_GAP+CalderPeople.PART_WITHIN+1,"waiting for them to ride the length of the line and on: at "+r+" going "+mine[0].speedNow());})
+            .thenExecute(()->{
+                h.assertTrue(at[1]>=0,"the line parted for them");
+                h.assertTrue(kept[0]>=.55&&kept[0]<2,"and none of it was in their way as they went through: the nearest was "+kept[0]+" off");
+                h.assertTrue(Math.abs(rel(b,mine[0]).z+85)<.6&&p[0].getVehicle()==mine[0],"they rode straight through, and are still on: "+rel(b,mine[0]));
+                h.assertTrue(!CalderPeople.parted(b),"and with them gone by it is no longer parted");
+            })
+            .thenIdle(25)
+            .thenExecute(()->{
+                people(l,b,who);
+                for(int i=0;i<CalderPeople.LINE;i++){
+                    var a=who[CalderPeople.LINE_FIRST+i];var spot=CalderPeople.lineSpot(i);var r=rel(b,a);
+                    h.assertTrue(Math.hypot(r.x-spot.x,r.z-spot.z)<.2&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-CalderPeople.LINE_LOOK))<5,"each of the line is back in their place: "+r);
+                }
+                // And by the burger place's lot, along Park Street: the two on the hood.
+                mine[0].moveTo(b.getX()+1.5,b.getY(),b.getZ()-54.5,270,0);p[0].setYRot(270);t[0]=0;hush(p[0]);
+            })
+            .thenWaitUntil(()->{ride.run();people(l,b,who);
+                boolean arms=who[CalderPeople.HOOD_FIRST].gesture()==CalderPeople.CHEER&&who[CalderPeople.HOOD_FIRST+1].gesture()==CalderPeople.CHEER;
+                boolean one=List.of(BikeNightTexts.CHEERS[3]).contains(saying(who[CalderPeople.HOOD_FIRST]))||List.of(BikeNightTexts.CHEERS[3]).contains(saying(who[CalderPeople.HOOD_FIRST+1]));
+                h.assertTrue(arms&&one,"waiting for the two on the hood to cheer them going by: the Wasp at "+rel(b,mine[0]));})
+            .thenExecute(()->{
+                for(int i=CalderPeople.HOOD_FIRST;i<CalderPeople.COUNT;i++)h.assertTrue(CalderTraffic.parked(l,b,(i-CalderPeople.HOOD_FIRST)/2).over(who[i].position(),0)&&who[i].gesture()==CalderPeople.CHEER,"all four of them, and they are still sitting on their cars");
+                for(var lot:BikeNightTexts.CHEERS)for(var line:lot)h.assertTrue(!heard(p[0],line),"what they call is never in chat: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="people_line") public static void peopleLineDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="people_boo",timeoutTicks=12000)
+    public static void theyBooTheThreeAndTheLineStopsOneOfThemWhoRidesIntoItAndWalksHimOutIntoTheRoad(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final LiteraryActor[] them=new LiteraryActor[CalderPeople.COUNT];final boolean[] booed={false},told={false},answered={false},moved={false};final long[] at={-1};final int[] teller={-1};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("people_boo_reader",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE,"waiting for the chase: stage "+BikeNightBullies.stage(b)))
+            // The reader is a long way off, in the turning circle of Elm Court.
+            .thenExecute(()->{h.assertTrue(CalderTraffic.going(b),"the people are out from when the gate is opened");f.at(p[0],P,22.5,0,-141.5);})
+            .thenWaitUntil(()->h.assertTrue(people(l,b,them)&&three(l,b,who,bikes)&&bikes[0].getPassengers().contains(who[0])&&who[0].gesture()!=BikeNightBullies.COUGH,"waiting for the twelve of them, and Tully riding"))
+            // Tully, in the road in front of the theater.
+            .thenExecute(()->bikes[0].setPos(b.getX()-14.5,b.getY(),b.getZ()-90.5))
+            .thenWaitUntil(()->{
+                boolean hands=true,one=false;for(int i=CalderPeople.LINE_FIRST;i<CalderPeople.HOOD_FIRST;i++){hands&=them[i].gesture()==CalderPeople.BOO;one|=saying(them[i]).equals(BikeNightTexts.BOOS[0][0]);}
+                h.assertTrue(hands&&one,"waiting for the line to boo him: Tully's bike at "+rel(b,bikes[0]));})
+            .thenExecute(()->{
+                h.assertTrue(BikeNightTexts.BOOS[0][0].equals("Leave 'em alone, Tully!"),"what the proposal has them call");
+                h.assertTrue(!CalderPeople.held(b,0),"in the road he is not the line's to stop");
+                h.assertTrue(three(l,b,who,bikes)&&bikes[1].getPassengers().contains(who[1]),"Ray-Ray is riding");
+                // Ray-Ray, into the middle of the line.
+                var spot=CalderPeople.lineSpot(2);bikes[1].setPos(b.getX()+spot.x+.6,b.getY(),b.getZ()+spot.z);at[0]=l.getGameTime();
+            })
+            .thenExecuteFor(CalderPeople.HELD-2,()->{
+                three(l,b,who,bikes);
+                if(CalderPeople.held(b,1))told[0]|=java.util.stream.IntStream.range(CalderPeople.LINE_FIRST,CalderPeople.HOOD_FIRST).anyMatch(i->saying(them[i]).equals(BikeNightTexts.NO_CUTTING[1]));
+                if(l.getGameTime()-at[0]>6&&bikes[1].speedNow()>.05F)moved[0]=true;
+            })
+            .thenExecute(()->{
+                h.assertTrue(told[0],"one of the line tells him there is no cutting");
+                h.assertTrue(!moved[0],"and he is stopped: "+bikes[1].speedNow());
+            })
+            .thenWaitUntil(()->{three(l,b,who,bikes);if(saying(who[1]).equals(BikeNightTexts.CUT_BACK[1]))answered[0]=true;
+                h.assertTrue(!CalderPeople.held(b,1)&&answered[0],"waiting for them to let him go, and for what he says to that: "+saying(who[1]));})
+            .thenExecute(()->{
+                var r=rel(b,bikes[1]);
+                h.assertTrue(CalderTown.surface(net.minecraft.util.Mth.floor(r.x),net.minecraft.util.Mth.floor(r.z))!=CalderTown.PAVEMENT,"he has been walked out off the pavement: "+r);
+                for(int i=0;i<CalderPeople.LINE;i++){var a=them[CalderPeople.LINE_FIRST+i];var spot=CalderPeople.lineSpot(i);var q=rel(b,a);h.assertTrue(Math.hypot(q.x-spot.x,q.z-spot.z)<.2,"and the line has not moved for him: "+q);}
+                for(var lot:BikeNightTexts.BOOS)for(var line:lot)h.assertTrue(!heard(p[0],line),"what they call is never in chat: "+line);
+                for(var line:BikeNightTexts.NO_CUTTING)h.assertTrue(!heard(p[0],line),"nor what the line says: "+line);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="people_boo") public static void peopleBooDone(ServerLevel l){done();}
 }

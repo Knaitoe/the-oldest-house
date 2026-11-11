@@ -127,7 +127,7 @@ public final class BikeNightVisualProof extends Screen {
             "behind a shop: the door under its bulb, the shutter, paint on the brick, and what has been left out",
             "Main Street: hardware, bank and clock, theater and marquee; laundromat, video, barber",
             "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets",
-            "the cars: station wagon, pickup, sedan and the fast one, from in front and from behind"}[page],8,8,0xffffffff);
+            "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
         switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);default->cars(g);}
     }
@@ -297,12 +297,12 @@ public final class BikeNightVisualProof extends Screen {
         }
         buffers.endBatch();pose.popPose();
     }
-    /** 0.4.484: the four cars on a strip of road, each from in front and to one side, and from behind and to the other, its wheels a part turn round. */
+    /** 0.4.484: the cars on a strip of road (0.4.485: the two parked ones under the four that drive, and a trick-or-treater's pillowcase at the top), each from in front and to one side, and from behind and to the other, its wheels a part turn round. */
     private void cars(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();
-        float s=width*.052F;
+        float s=width*.04F;
         for(int k=0;k<io.github.knaitoe.theoldesthouse.labyrinth.TownCar.KINDS;k++){
-            float y=24+(height-24)*(.26F+.235F*k);
+            float y=24+(height-24)*(.17F+.158F*k);
             g.fill(0,(int)y,width,(int)y+8,0xff3a3a40);g.flush();
             for(int v=0;v<2;v++){
                 var pose=g.pose();pose.pushPose();pose.translate(width*(v==0?.27F:.74F),y,300);pose.scale(s,-s,s);pose.mulPose(Axis.XP.rotationDegrees(14));
@@ -310,6 +310,9 @@ public final class BikeNightVisualProof extends Screen {
                 buffers.endBatch();pose.popPose();
             }
         }
+        // The pillowcase, as a thing is seen in a list, four times the size.
+        var pose=g.pose();pose.pushPose();pose.translate(width*.5F-32,24+(height-24)*.02F,0);pose.scale(4,4,1);
+        g.renderItem(new net.minecraft.world.item.ItemStack(io.github.knaitoe.theoldesthouse.labyrinth.BikeNightRegistry.TREAT_SACK.get()),0,0);pose.popPose();
     }
     private void over(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();

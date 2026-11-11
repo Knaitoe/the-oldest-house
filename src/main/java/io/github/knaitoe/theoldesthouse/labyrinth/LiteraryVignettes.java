@@ -301,7 +301,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.MARSH_SUPPER)MarshSupper.talk(p,actor);
         else if(place==LabyrinthPlace.THE_DRAWING)Drawing.talk(p,actor);
         else if(place==LabyrinthPlace.CORNER_HOUSE)Corner.talk(p,actor);
-        else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else BikeNightGus.talk(p,actor);}
+        else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else if(CalderPeople.is(actor))CalderPeople.talk(p,actor);else BikeNightGus.talk(p,actor);}
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);
         else if(place==LabyrinthPlace.TALL_GRASS)TallGrass.talk(p,actor);
