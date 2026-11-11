@@ -22,6 +22,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>0.4.465: the swings. A steel frame along the playground's west side, its bar four blocks over the sand, with four belt seats on
  * chains under it, each looking east over the open sand a jump off one comes down on; and a lamp of their own behind them.
+ *
+ * <p>0.4.466: the slide, in the playground's north-east corner under its lamp: a ladder, a deck two blocks up, and a chute going
+ * down to the south.
  */
 public final class BikeNightSite {
     private BikeNightSite(){}
@@ -48,6 +51,9 @@ public final class BikeNightSite {
     public static final int SWING_X=-23,SWING_BAR=4;
     public static final int[] SWING_POSTS={-31,-25,-19},SWING_SEATS={-29,-27,-23,-21};
     public static final Direction SWING_FORWARD=Direction.EAST;
+    /** 0.4.466, the slide: where its ladder stands, and the way it goes down. */
+    public static final BlockPos SLIDE=new BlockPos(-10,0,-32);
+    public static final Direction SLIDE_FORWARD=Direction.SOUTH;
     public static final int LAMP_TOP=3;
     /** The sheet taped to the wall by the door (the first paper), and where a reader's account is handed over. */
     public static final BlockPos SOURCE=new BlockPos(-4,1,0),ENDING=new BlockPos(-4,2,0);
@@ -62,6 +68,10 @@ public final class BikeNightSite {
     public static boolean onSand(Vec3 r){return r.x>=SAND_W&&r.x<SAND_E+1&&r.z>=SAND_N&&r.z<SAND_S+1&&r.y>-.6&&r.y<3;}
     /** A block of the playground's sand. */
     public static boolean sandAt(BlockPos r){return r.getY()==-1&&r.getX()>=SAND_W&&r.getX()<=SAND_E&&r.getZ()>=SAND_N&&r.getZ()<=SAND_S;}
+    /** The slide's deck (the block its platform is the top of), the top block of its chute, and its level end. */
+    public static BlockPos slideDeck(){return SLIDE.relative(SLIDE_FORWARD).above();}
+    public static BlockPos slideTop(){return SLIDE.relative(SLIDE_FORWARD,2).above();}
+    public static BlockPos slideEnd(){return SLIDE.relative(SLIDE_FORWARD,2+CalderPlayBlock.CHUTES);}
     /** Where a swing's seat hangs. */
     public static BlockPos swingAt(int seat){return new BlockPos(SWING_X,0,SWING_SEATS[seat]);}
     /** Where a bike stands in the rack. */
@@ -87,6 +97,7 @@ public final class BikeNightSite {
         paths(l,b);
         sandpit(l,b);
         swings(l,b);
+        slide(l,b);
         railings(l,b);
         gate(l,b);
         for(var at:LAMPS)lamp(l,b,at,true);
@@ -158,6 +169,17 @@ public final class BikeNightSite {
             set(l,b,SWING_X,0,z,play(CalderPlayBlock.Kind.SWING,behind,0));
             for(int y=1;y<SWING_BAR;y++)set(l,b,SWING_X,y,z,play(CalderPlayBlock.Kind.CHAIN,behind,0));
         }
+    }
+    /**
+     * The slide: a ladder of two, the deck at the top of it under its guard, four blocks of chute going down the way it faces
+     * (the upper two a block higher than the lower two), and the level end.
+     */
+    static void slide(ServerLevel l,BlockPos b){
+        var f=SLIDE_FORWARD;
+        set(l,b,SLIDE,play(CalderPlayBlock.Kind.LADDER,f,0));set(l,b,SLIDE.above(),play(CalderPlayBlock.Kind.LADDER,f,1));
+        set(l,b,slideDeck(),play(CalderPlayBlock.Kind.DECK,f,0));set(l,b,slideDeck().above(),play(CalderPlayBlock.Kind.DECK,f,CalderPlayBlock.GUARD));
+        for(int k=0;k<CalderPlayBlock.CHUTES;k++){var at=slideTop().relative(f,k);set(l,b,CalderPlayBlock.chuteLow(k)?at.below():at,play(CalderPlayBlock.Kind.CHUTE,f,k));}
+        set(l,b,slideEnd(),play(CalderPlayBlock.Kind.RUNOUT,f,0));
     }
     /** Any swing left as if somebody were on it (a server stopped under a reader) hangs still again. */
     static void swingsBack(ServerLevel l,BlockPos b){

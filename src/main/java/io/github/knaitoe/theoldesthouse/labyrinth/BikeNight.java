@@ -34,6 +34,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * coming down on it. A hand in it packs a ball of sand, eight at most; a ball thrown bursts on what it meets and hurts nobody, and
  * the failing lamp, hit while it is out, comes back on.
  *
+ * <p>0.4.466, the slide: a reader who comes into the top of its chute is taken down it and let go off the end (SlideRide), and
+ * their record counts the times.
+ *
  * <p>It cannot be finished yet (the playground's equipment, the bullies, the town, the graveyard and what comes after it are later
  * slices), so the House does not deal it: {@link #dealable} says no. It is reached by an operator's test door.
  */
@@ -61,7 +64,7 @@ public final class BikeNight {
         /** Readers in the air off a swing. */
         final Map<UUID,Flight> flights=new HashMap<>();
         /** For each reader's own record, taken up on their next tick: their furthest landing, balls of sand thrown, and how many met somebody. */
-        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>();
+        final Map<UUID,Integer> landed=new HashMap<>(),thrown=new HashMap<>(),hits=new HashMap<>(),slid=new HashMap<>();
         /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
         int far;@Nullable UUID farWho;@Nullable BlockPos mark;
         Night(BlockPos b){base=b;for(var make:NightBike.Make.values())at[make.ordinal()]=b.offset(BikeNightSite.bikeAt(make));}
@@ -257,6 +260,10 @@ public final class BikeNight {
         if(b!=null&&BikeNightSite.onSand(rel(p.position(),b)))e.setDamageMultiplier(0);
     }
 
+    // ------------------------------------------------------------------------------------------------ the slide
+    /** A reader has been down the slide (SlideRide). */
+    static void slid(ServerPlayer p){var n=night(p);if(n!=null)n.slid.merge(p.getUUID(),1,Integer::sum);}
+
     // ------------------------------------------------------------------------------------------------ the sand
     /** A hand in the playground's sand packs a ball of it: one at a time, eight at most. */
     static void scoop(ServerPlayer p){
@@ -294,6 +301,7 @@ public final class BikeNight {
         Integer far=n.landed.remove(id);if(far!=null&&far>own.getInt("SwingBest"))own.putInt("SwingBest",far);
         Integer balls=n.thrown.remove(id);if(balls!=null)own.putInt("Sand",own.getInt("Sand")+balls);
         Integer hits=n.hits.remove(id);if(hits!=null)own.putInt("SandHits",own.getInt("SandHits")+hits);
+        Integer down=n.slid.remove(id);if(down!=null)own.putInt("Slid",own.getInt("Slid")+down);
     }
 
     // ------------------------------------------------------------------------------------------------ a hand on the park's things
@@ -308,7 +316,9 @@ public final class BikeNight {
             var n=night(p);var who=n==null?null:n.farWho;var other=who==null?null:p.server.getPlayerList().getPlayer(who);
             cue(p,who==null||other==null?BikeNightTexts.MARK:who.equals(p.getUUID())?BikeNightTexts.MARK_OWN:String.format(BikeNightTexts.MARK_THEIRS,other.getGameProfile().getName()));return true;
         }
-        if(s.is(BikeNightRegistry.PLAY.get())){cue(p,BikeNightTexts.SWINGS);return true;}
+        if(s.is(BikeNightRegistry.PLAY.get())){
+            cue(p,switch(s.getValue(CalderPlayBlock.KIND)){case LADDER,DECK,CHUTE,RUNOUT->BikeNightTexts.SLIDE;default->BikeNightTexts.SWINGS;});return true;
+        }
         if(CalderSignBlock.is(s)){cue(p,CalderSignBlock.sign(s).look());return true;}
         if(s.is(BikeNightRegistry.RACK.get())){cue(p,BikeNightTexts.RACK);return true;}
         if(!s.is(BikeNightRegistry.FITTING.get()))return false;

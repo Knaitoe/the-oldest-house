@@ -1,4 +1,4 @@
-"""Bike night (0.4.465): the playground in Calder Park.
+"""Bike night (0.4.465, 0.4.466): the playground in Calder Park.
 
 Draws, in native Minecraft pixels from fixed seeds, the playground's equipment, each piece a kind of one block (calder_play). This
 slice, the swings: a steel frame's posts (a foot with its two stays, a shaft, and the two tops a bar ends on or runs over), its top
@@ -6,6 +6,10 @@ bar plain and with a swing's two hangers, a swing's chains, and its belt seat on
 state in which nothing is drawn: somebody is on that swing, and the moving one is drawn in their place. Also the heel mark dug into
 the sand where the furthest jump off the swings came down (calder_mark, a block that gives way as fallen leaves do), and the night's
 one item, a ball of sand.
+
+0.4.466, the slide: its ladder (two blocks), the deck at the top on its legs and the guard over it, four blocks of chute each
+falling a block's length times the tangent of 22.5 degrees (a sheet worn bright down the middle between two painted lips), and its
+level end. A piece of the slide faces the way the slide goes down.
 
 Made as the park's fittings are (tools/draw_calder_art.py): small pieces are bars that take one pixel of a paint card, the
 playground's own; a face big enough to carry a picture takes a part of one the size it is. Sixteen pixels to the block. A piece is
@@ -17,6 +21,7 @@ Drawing or checking, it refuses a model in which two faces of different colours 
 from pathlib import Path
 import argparse
 import json
+import math
 import random
 from PIL import Image
 
@@ -100,8 +105,38 @@ def sand_ball():
     return im
 
 
+def sheet():
+    """The chute's steel, looking down it: dull at the edges, worn bright down the middle where everybody goes, scored along its length."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4660)
+    for y in range(16):
+        for x in range(16):
+            middle = max(0, 5 - abs(x - 5.5))                             # the sheet is twelve wide, from the picture's left
+            dot(im, x, y, shade('#7f8588', int(middle * 9) + rnd.randint(-4, 4)))
+    for x in (2, 4, 7, 9):
+        for y in range(16):
+            if rnd.random() < .5:
+                dot(im, x, y, shade('#a9afb2', rnd.randint(-6, 8)))
+    return im
+
+
+def tread():
+    """The deck's plate: steel with raised dashes set across each other, worn at the ladder's edge."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4661)
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, shade('#6f7477', rnd.randint(-4, 4)))
+    for y in range(0, 16, 4):
+        for x in range(0, 16, 4):
+            if (x + y) // 4 % 2:
+                dot(im, x + 1, y + 1, shade('#9a9fa2', 0)); dot(im, x + 2, y + 2, shade('#9a9fa2', 0))
+            else:
+                dot(im, x + 2, y + 1, shade('#9a9fa2', 0)); dot(im, x + 1, y + 2, shade('#9a9fa2', 0))
+    return im
+
+
 def textures():
-    return {DIR + 'play.png': card(), DIR + 'chain.png': chain_links(), DIR + 'mark.png': mark(), 'item/sand_ball.png': sand_ball()}
+    return {DIR + 'play.png': card(), DIR + 'chain.png': chain_links(), DIR + 'mark.png': mark(), DIR + 'sheet.png': sheet(),
+            DIR + 'tread.png': tread(), 'item/sand_ball.png': sand_ball()}
 
 
 # ---------------------------------------------------------------------------------------------------------------- pieces
@@ -179,6 +214,94 @@ def swing():
     return p
 
 
+# ---------------------------------------------------------------------------------------------------------------- the slide
+# As CalderPlayBlock has it: the deck is two blocks up; a block of chute falls SLOPE of a block along its length; the upper two
+# blocks of chute stand in the deck's row and the lower two in the row under it.
+SLOPE, DECK, CHUTES = math.tan(math.radians(22.5)), 2, 4
+FALL = 16 * SLOPE
+
+
+def chute_top(stage):
+    """How high over its own block's floor a chute's surface is at its uphill edge, in pixels."""
+    return 16 * (DECK - stage * SLOPE - (1 if stage < 2 else 0))
+
+
+RUNOUT_TOP = 16 * (DECK - CHUTES * SLOPE)
+
+
+def ladder(stage):
+    """The ladder up the back of the slide, its rungs against the deck (north, the way the slide goes down): two rails and a rung
+    every quarter of a block. The lower block stands on two feet."""
+    p = []
+    for x in (3, 13):
+        bar(p, [x - .6, .6 if stage == 0 else 0, .5], [x + .6, 16, 1.7], BLUE)   # the lower block's rails stand on their feet
+        if stage == 0:
+            bar(p, [x - 1, 0, 0], [x + 1, .6, 2.4], BLUE_WORN)
+    for y in (2, 6, 10, 14):
+        bar(p, [3.6, y, .7], [12.4, y + .8, 1.5], BARE)
+    return p
+
+
+def deck(guard):
+    """The platform. The deck: a tread plate in a painted frame at the top of its block, on four legs that go down through the
+    block under it. The guard: over the deck, a rail and a mid-rail each side on two posts, open at both ends, and at the uphill
+    end the two hand loops the ladder's rails come up into."""
+    p = []
+    if not guard:
+        p.append(element([1, 14, 1], [15, 15.6, 15], {'all': 'k', 'up': 't'}, {**{k: sw(BARE) for k in FACES}, 'up': [1, 1, 15, 15]}))
+        for lo, hi in (([0, 13, 0], [16, 16, 1]), ([0, 13, 15], [16, 16, 16]), ([0, 13, 1], [1, 16, 15]), ([15, 13, 1], [16, 16, 15])):
+            bar(p, lo, hi, BLUE)
+        for x in (.6, 13.8):
+            for z in (.6, 13.8):
+                bar(p, [x, -16, z], [x + 1.6, 13, z + 1.6], BLUE_WORN)
+    else:
+        for x in (0, 14.5):
+            bar(p, [x, 11, 0], [x + 1.5, 12.5, 16], BLUE)
+            bar(p, [x + .2, 5, 1.6], [x + 1.3, 6.2, 14.4], BLUE_WORN)
+            for z in (.4, 14.4):
+                bar(p, [x + .15, 0, z], [x + 1.35, 11, z + 1.2], BLUE)
+        for x in (3, 13):
+            bar(p, [x - .6, 0, 15.9], [x + .6, 9, 17.1], BLUE)             # the ladder's rails, come up past the deck
+    return p
+
+
+def trough(parts, top, level=False):
+    """A length of the chute: the sheet between its two lips. Sloping, it is turned about the middle of its block; its surface
+    is `top` pixels up at the uphill (south) edge and falls FALL to the downhill edge."""
+    if level:
+        lo, hi, rot = [2, top - .8, 0], [14, top, 16], None
+    else:
+        middle = top - FALL / 2
+        long = 8 / math.cos(math.radians(22.5))
+        lo, hi = [2, middle - .8, 8 - long], [14, middle, 8 + long]
+        rot = {'angle': -22.5, 'axis': 'x', 'origin': [8, round(middle, 3), 8]}   # down to the north
+    lo, hi = [round(v, 3) for v in lo], [round(v, 3) for v in hi]
+    parts.append(element(lo, hi, {'all': 'k', 'up': 's'}, {**{k: sw(BARE) for k in FACES}, 'up': [0, 0, 12, 16]}, rot))
+    for x0, x1 in ((.8, 2), (14, 15.2)):
+        e = element([x0, lo[1], lo[2]], [x1, round(hi[1] + 2.4, 3), hi[2]], {'all': 'k'}, {k: sw(YELLOW if x0 < 8 else YELLOW_WORN) for k in FACES}, rot)
+        parts.append(e)
+
+
+def chute(stage):
+    """One block of the chute. The second from the top stands on a leg that goes down through the block under it; the third on
+    one of its own."""
+    p = []
+    trough(p, chute_top(stage))
+    if stage == 1:
+        bar(p, [7, -16, 3], [9, chute_top(stage) - FALL * .75 - 1.2, 5], BLUE_WORN)
+    if stage == 3:
+        bar(p, [7, 0, 9], [9, chute_top(stage) - FALL * .35 - 1.2, 11], BLUE_WORN)
+    return p
+
+
+def runout():
+    """The chute's level end, on a leg."""
+    p = []
+    trough(p, RUNOUT_TOP, level=True)
+    bar(p, [7, 0, 5], [9, RUNOUT_TOP - .8, 7], BLUE_WORN)
+    return p
+
+
 def mark_model():
     p = []
     plate(p, [0, .3, 0], [16, .3, 16], 'm', {'up': (0, 0)})
@@ -188,12 +311,16 @@ def mark_model():
 PIECES = {
     'post_0': lambda: post(0), 'post_1': lambda: post(1), 'post_2': lambda: post(2), 'post_3': lambda: post(3),
     'bar_0': lambda: top_bar(False), 'bar_1': lambda: top_bar(True), 'chain_0': chain, 'swing_0': swing, 'mark_0': mark_model,
+    'ladder_0': lambda: ladder(0), 'ladder_1': lambda: ladder(1), 'deck_0': lambda: deck(False), 'deck_1': lambda: deck(True),
+    'chute_0': lambda: chute(0), 'chute_1': lambda: chute(1), 'chute_2': lambda: chute(2), 'chute_3': lambda: chute(3), 'runout_0': runout,
 }
-NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark'}
-KINDS = ['post', 'bar', 'chain', 'swing']
+NAMES_OF = {'k': 'play', 'c': 'chain', 'm': 'mark', 's': 'sheet', 't': 'tread'}
+KINDS = ['post', 'bar', 'chain', 'swing', 'ladder', 'deck', 'chute', 'runout']
 # The model each stage of a kind is drawn from; `gone` draws nothing.
 STAGES = {'post': ('post_0', 'post_1', 'post_2', 'post_3'), 'bar': ('bar_0', 'bar_1', 'bar_0', 'bar_0'),
-          'chain': ('chain_0', 'gone', 'chain_0', 'chain_0'), 'swing': ('swing_0', 'gone', 'swing_0', 'swing_0')}
+          'chain': ('chain_0', 'gone', 'chain_0', 'chain_0'), 'swing': ('swing_0', 'gone', 'swing_0', 'swing_0'),
+          'ladder': ('ladder_0', 'ladder_1', 'ladder_0', 'ladder_0'), 'deck': ('deck_0', 'deck_1', 'deck_0', 'deck_0'),
+          'chute': ('chute_0', 'chute_1', 'chute_2', 'chute_3'), 'runout': ('runout_0',) * 4}
 
 
 def model(parts, particle='play'):

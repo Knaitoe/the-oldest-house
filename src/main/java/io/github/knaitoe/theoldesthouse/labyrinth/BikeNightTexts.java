@@ -35,6 +35,8 @@ public final class BikeNightTexts {
     public static final String JUMP_OFF="You come down off the sand. That does not count.";
     public static final String MARK="A heel mark dug into the sand: the furthest out anyone has landed off the swings tonight.";
     public static final String MARK_OWN=MARK+" It is yours.",MARK_THEIRS=MARK+" It is %s's.";
+    /** 0.4.466, the slide: a hand on any part of it. */
+    public static final String SLIDE="A slide. Its chute is worn bright down the middle and dull at the edges.";
     /** The sand: a ball packed; no more to be carried; no room for one; what is left of one carried out of the night. */
     public static final String SAND="You pack a ball of sand. It holds.";
     public static final String SAND_FULL="Your pockets are full of sand.";
@@ -64,6 +66,7 @@ public final class BikeNightTexts {
         int far=own.getInt("SwingBest");
         if(far>0)p.add("I got one of the swings as high as it would go and let go of it, and came down "+Stillness.words(far)+" paces out in the sand.");
         else if(own.getBoolean("Swung"))p.add("I sat on one of the swings for a while.");
+        if(own.getInt("Slid")>0)p.add(own.getInt("Slid")>2?"I went down the slide, and then went round and did it again.":"I went down the slide.");
         if(own.getInt("Sand")>0)p.add(own.getInt("SandHits")>0?"I packed the sand into balls and threw them, and not all of them missed.":"I packed the sand into balls and threw them.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }

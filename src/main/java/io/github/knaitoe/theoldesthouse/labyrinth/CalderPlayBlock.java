@@ -29,17 +29,35 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Stage 1: gone, while somebody is on it.</li>
  * </ul>
  * A frame stops a body; the chains and the seat do not.
+ *
+ * <p>0.4.466, the slide. Each of its pieces faces the way the slide goes down.
+ * <ul>
+ * <li>LADDER: the ladder up the back of it, its rungs against the deck. Stage 0 its lower block, 1 its upper. It is climbed.</li>
+ * <li>DECK: the platform at the top, two blocks up. Stage 0 the deck and the legs it stands on; 1 the guard over it, a rail each
+ * side, open to the ladder and to the chute.</li>
+ * <li>CHUTE: the chute, four blocks of it, stage 0 at the top to 3 at the bottom, each falling SLOPE of a block along its length.
+ * A body stands and walks on it. A reader who comes into its top block is taken down it (SlideRide).</li>
+ * <li>RUNOUT: the level end of the chute, where a rider is let go.</li>
+ * </ul>
  */
 public final class CalderPlayBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CalderPlayBlock> CODEC=simpleCodec(CalderPlayBlock::new);
     public enum Kind implements StringRepresentable {
-        POST,BAR,CHAIN,SWING;
+        POST,BAR,CHAIN,SWING,LADDER,DECK,CHUTE,RUNOUT;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
     /** A post's pieces; a bar with hangers; a chain or a seat that is in use. */
     public static final int FOOT=0,SHAFT=1,END=2,THROUGH=3,HANGERS=1,GONE=1;
+    /** The deck's guard; how far a chute falls in a block of its length (22.5 degrees); how high the deck is over the ground its ladder stands on; the chute's blocks. */
+    public static final int GUARD=1,CHUTES=4;
+    public static final double SLOPE=Math.tan(Math.toRadians(22.5)),DECK_HEIGHT=2;
+    /** How high over its own block's floor a chute's surface is at the uphill edge of its block, in pixels; and which block of the chute stands a block lower than the deck's. */
+    static double chuteTop(int stage){return 16*(DECK_HEIGHT-stage*SLOPE-(stage<2?1:0));}
+    public static boolean chuteLow(int stage){return stage>=2;}
+    /** The run-out's surface over its block's floor, in pixels. */
+    static final double RUNOUT_TOP=16*(DECK_HEIGHT-CHUTES*SLOPE);
     public CalderPlayBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.POST).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return BikeNightRegistry.PLAY.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(3,stage)));}
@@ -55,7 +73,19 @@ public final class CalderPlayBlock extends HorizontalDirectionalBlock {
             case BAR->MarshBlock.turned(f,0,1,6.5,16,4,9.5);
             case CHAIN->stage==GONE?Shapes.empty():Shapes.or(MarshBlock.turned(f,1,0,7,3,16,9),MarshBlock.turned(f,13,0,7,15,16,9));
             case SWING->stage==GONE?Shapes.empty():Shapes.or(MarshBlock.turned(f,1,6,5.5,15,9,10.5),MarshBlock.turned(f,1,9,7,3,16,9),MarshBlock.turned(f,13,9,7,15,16,9));
+            case LADDER->MarshBlock.turned(f,2,0,0,14,16,2.5);
+            case DECK->stage==GUARD?Shapes.or(MarshBlock.turned(f,0,0,0,1.5,16,16),MarshBlock.turned(f,14.5,0,0,16,16,16)):Block.box(0,13,0,16,16,16);
+            // Two steps to a block, each at the height of the chute's surface over its middle: the uphill half (south, for a chute
+            // going down to the north) and the downhill half.
+            case CHUTE->{double top=chuteTop(stage),fall=16*SLOPE;yield Shapes.or(MarshBlock.turned(f,2,Math.max(0,top-fall*.25-3),8,14,top-fall*.25,16),MarshBlock.turned(f,2,Math.max(0,top-fall*.75-3),0,14,top-fall*.75,8));}
+            case RUNOUT->MarshBlock.turned(f,2,RUNOUT_TOP-3,0,14,RUNOUT_TOP,16);
         };
+    }
+    /** The slide's ladder is climbed. */
+    @Override public boolean isLadder(BlockState s,net.minecraft.world.level.LevelReader l,BlockPos p,net.minecraft.world.entity.LivingEntity e){return s.getValue(KIND)==Kind.LADDER;}
+    /** A reader who comes into the top of the chute goes down it. */
+    @Override protected void entityInside(BlockState s,net.minecraft.world.level.Level l,BlockPos pos,net.minecraft.world.entity.Entity e){
+        if(!l.isClientSide&&s.getValue(KIND)==Kind.CHUTE&&s.getValue(STAGE)==0&&e instanceof net.minecraft.server.level.ServerPlayer p)SlideRide.begin(p,pos,s.getValue(FACING));
     }
     /** The chains and the seat give way to a body, as hanging things do. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
