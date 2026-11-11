@@ -327,8 +327,189 @@ def frame_back():
     return im
 
 
+# 0.4.459, the Garritys' letter (docs/BORRASCA_LETTER_0_4_459.md). A mailbox for every gate on the street, the Garritys' as it is
+# on each visit; the corner of an envelope under a door; curtains; and the letter itself, in the pack.
+STEEL, STEEL_L, STEEL_D, STEEL_S = '#aeb4b8', '#cfd4d6', '#8a9196', '#6c7378'
+RUST, RUST_D, RUST_L = '#8f5f41', '#6e4127', '#a8794f'
+RED, RED_D = '#b3261e', '#7f1712'
+PRINT = '#4d6480'
+
+
+def box(rusted):
+    """A mailbox's faces. Its side, ten by six, with the name on a paper label under tape; its top, ten by five; its door and its
+    back, five by six; and its flag, down and up. Years on with nobody to see to it: rust, the tape gone cloudy, no flag."""
+    import random
+    im = new()
+    for y in range(6):                                         # the side
+        for x in range(10):
+            dot(im, x, y, STEEL_L if y in (0, 2) else STEEL_D if y == 5 or x in (0, 9) else STEEL)
+    for y in range(6, 11):                                     # the top, its ribs at the two ends
+        for x in range(10):
+            dot(im, x, y, STEEL_D if x in (0, 9) or y in (6, 10) else STEEL_L if y == 8 else STEEL)
+    for ox, oy, latch in ((10, 0, True), (10, 6, False)):      # the door, and the back
+        for y in range(6):
+            for x in range(5):
+                if y < 2 and x in (0, 4):
+                    continue
+                edge = x in (0, 4) or y in (0, 5) or (y == 2 and x in (0, 4))
+                dot(im, ox + x, oy + y, STEEL_D if edge else STEEL_L if y == 1 else STEEL)
+        if latch:
+            dot(im, ox + 2, oy + 2, STEEL_S); dot(im, ox + 2, oy + 3, '#3c4146')
+    # The label: white paper, a name in ink, clear tape a little longer than the paper and bright where it catches the light.
+    fill(im, 2, 2, 8, 5, '#fbf7ea')
+    for x in (3, 4, 6, 7):
+        dot(im, x, 3, BLACK)
+    dot(im, 1, 3, '#e3e7e8'); dot(im, 8, 3, '#e3e7e8'); dot(im, 2, 2, '#ffffff')
+    if not rusted:
+        for x in range(3):                                     # the flag down along the shoulder: a short arm and its tab
+            dot(im, x, 13, RED)
+        dot(im, 4, 12, RED); dot(im, 4, 13, RED_D)
+        return im
+    rnd = random.Random(459); px = im.load()
+    for y in range(12):
+        for x in range(15):
+            if px[x, y][3] and rnd.random() < .46:
+                px[x, y] = shade(rnd.choice((RUST, RUST, RUST_D, RUST_L)))
+    for x in range(10):                                        # rust runs along the bottom seam and down from the latch
+        dot(im, x, 5, RUST_D)
+    for y in range(2, 6):
+        dot(im, 12, y, RUST_D)
+    # The tape has gone cloudy over the label. Two letters still show through it.
+    fill(im, 1, 2, 9, 5, '#d5d1c2')
+    dot(im, 3, 3, FADED); dot(im, 6, 3, FADED); dot(im, 1, 2, '#e4e1d6'); dot(im, 8, 4, '#bdb8a6')
+    return im
+
+
+shade = town.shade
+
+
+def mail():
+    """What a mailbox holds after a week: three envelopes from above, a catalogue rolled up, their edges, and the dark of the box."""
+    im = new()
+    fill(im, 0, 0, 4, 5, CREAM); dot(im, 3, 0, RED); dot(im, 0, 0, PRINT); dot(im, 1, 0, PRINT); dot(im, 1, 2, INK); dot(im, 2, 2, INK); dot(im, 1, 3, INK)
+    fill(im, 4, 0, 8, 5, '#f4f3ee'); dot(im, 7, 0, '#3f6fb8'); dot(im, 5, 2, INK); dot(im, 6, 2, INK); dot(im, 5, 3, FADED)
+    fill(im, 8, 0, 12, 5, '#b8935f'); dot(im, 11, 0, '#6d7a52'); dot(im, 9, 2, '#6b5232'); dot(im, 10, 2, '#6b5232')
+    # The catalogue's cover, rolled: a red band, a yellow block, a blue one.
+    fill(im, 0, 5, 3, 10, '#f1ede2'); fill(im, 0, 5, 3, 6, '#b3261e'); fill(im, 0, 7, 2, 9, '#e0b83a'); dot(im, 2, 8, '#3f6fb8'); dot(im, 1, 9, '#3f6fb8')
+    fill(im, 3, 5, 4, 10, '#d9d5c8')
+    fill(im, 0, 10, 8, 11, CREAM_D); fill(im, 0, 11, 8, 12, '#dcdad2'); fill(im, 0, 12, 8, 13, '#9a7a4c')
+    fill(im, 0, 13, 3, 15, '#efece2'); dot(im, 0, 13, '#b3261e'); dot(im, 1, 14, '#c9c5b8'); dot(im, 2, 13, '#c9c5b8')
+    fill(im, 8, 5, 13, 11, '#1e2022'); fill(im, 9, 5, 12, 6, '#2b2e31')
+    return im
+
+
+def letter(later):
+    """The corner of an envelope that shows from under a door: the corner with the sender printed in it. Years on, yellow."""
+    paper, edge, ink = ('#d9c690', '#b59e63', '#7d7a6a') if later else (CREAM, CREAM_D, PRINT)
+    im = new()
+    fill(im, 0, 0, 6, 5, paper)
+    for x in range(6):
+        dot(im, x, 0, edge)
+    for y in range(5):
+        dot(im, 0, y, edge)
+    dot(im, 2, 2, ink); dot(im, 3, 2, ink); dot(im, 4, 2, ink); dot(im, 2, 3, ink); dot(im, 3, 3, ink)
+    if later:
+        dot(im, 4, 4, '#a68a52'); dot(im, 5, 3, '#a68a52'); dot(im, 5, 4, '#96783f')
+    fill(im, 0, 5, 6, 6, edge)
+    return im
+
+
+def curtain(later):
+    """Printed cotton drawn across a window, in folds: small flowers on cream. Years on the sun has had it."""
+    base, fold, deep = ('#d6cfb8', '#c5bda4', '#b0a88f') if later else ('#f6eed6', '#e6dbbc', '#d2c5a0')
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, deep if x % 4 == 3 else fold if x % 4 == 2 else base)
+    for x, y in ((1, 1), (9, 3), (5, 6), (13, 8), (1, 10), (9, 12), (5, 14)):
+        dot(im, x, y, '#b9aa98' if later else '#c9736b'); dot(im, x, (y + 1) % 16, '#aaa58f' if later else '#7fa37a')
+    if later:
+        for x, y in ((6, 2), (7, 2), (6, 3), (12, 11), (12, 12), (13, 12), (2, 7)):
+            dot(im, x, y, '#b4aa8e')
+    return im
+
+
+TEAL, TEAL_L, TEAL_D, TEAL_S = '#2e6e72', '#3f8a8c', '#235558', '#1a4244'
+
+
+def door(top, later):
+    """Half of a painted front door: a leaf with two sunk panels, a brass knob and its keyhole on the lower half. It has no
+    window and no slot. Years on the paint has lifted off it in long curls, down to grey wood."""
+    import random
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, TEAL_D if x in (0, 15) else TEAL)
+    # A sunk panel: dark along its top and left, light along its bottom and right.
+    y0, y1 = (3, 15) if top else (4, 13)
+    for x0, x1 in ((2, 7), (9, 14)):
+        fill(im, x0, y0, x1, y1, TEAL_D)
+        fill(im, x0 + 1, y0 + 1, x1, y1, TEAL)
+        for x in range(x0 + 1, x1):
+            dot(im, x, y1 - 1, TEAL_L)
+        for y in range(y0 + 1, y1):
+            dot(im, x1 - 1, y, TEAL_L)
+        for x in range(x0, x1):
+            dot(im, x, y0, TEAL_S)
+        for y in range(y0, y1):
+            dot(im, x0, y, TEAL_S)
+    if top:
+        for x in range(16):
+            dot(im, x, 0, TEAL_S)
+    else:
+        fill(im, 12, 1, 14, 3, GILT); dot(im, 12, 1, GILT_L); dot(im, 13, 2, GILT_D); dot(im, 13, 3, BLACK)
+        for x in range(16):
+            dot(im, x, 15, TEAL_S)
+    if later:
+        rnd = random.Random(4590 + (1 if top else 0)); px = im.load()
+        for x in range(1, 15):                                  # the curls run down the grain
+            if rnd.random() < .5:
+                y = rnd.randrange(0, 12); n = rnd.randrange(3, 9)
+                for k in range(n):
+                    if y + k < 16:
+                        px[x, y + k] = shade(rnd.choice(('#8d8478', '#7c7367', '#9a9186')))
+                if y + n < 16:
+                    px[x, y + n] = shade(TEAL_L)
+        if not top:
+            fill(im, 12, 1, 14, 3, '#7c6a3e'); dot(im, 13, 3, BLACK)
+    return im
+
+
+def door_model(top, stage):
+    """The leaf at the back of its cell, as the game's own doors stand: its face to the model's north."""
+    name = f"door_{'top' if top else 'low'}_{stage}"
+    d = {'all': 'd'}
+    return model([element([0, 0, 13], [16, 16, 16], d, {'north': [0, 0, 16, 16], 'south': [0, 0, 16, 16], 'east': [0, 0, 1, 16], 'west': [15, 0, 16, 16],
+                                                        'up': [0, 0, 16, 1], 'down': [0, 15, 16, 16]})], {'d': name}, name)
+
+
+def letter_item(later):
+    """The letter in the pack: an envelope, the sender printed in its corner, a stamp under its postmark, a typed address."""
+    paper, edge = ('#d9c690', '#a98f55') if later else (CREAM, CREAM_D)
+    im = new()
+    fill(im, 1, 4, 15, 13, paper)
+    for x in range(1, 15):
+        dot(im, x, 4, edge); dot(im, x, 12, edge)
+    for y in range(4, 13):
+        dot(im, 1, y, edge); dot(im, 14, y, edge)
+    for x, y in ((3, 6), (4, 6), (5, 6), (3, 7), (4, 7)):
+        dot(im, x, y, '#7d7a6a' if later else PRINT)
+    fill(im, 11, 6, 13, 8, '#8f4b43' if later else RED); dot(im, 10, 6, '#6c6a64'); dot(im, 10, 8, '#6c6a64'); dot(im, 9, 7, '#6c6a64')
+    for x in range(6, 11):
+        dot(im, x, 9, INK)
+    for x in range(7, 10):
+        dot(im, x, 11, INK)
+    if later:
+        dot(im, 3, 11, '#a68a52'); dot(im, 4, 11, '#a68a52'); dot(im, 3, 10, '#b59e63'); dot(im, 13, 11, '#96783f')
+    return im
+
+
 def textures():
-    return {f'block/borrasca_home/{name}.png': im for name, im in {
+    extra = {'item/borrasca_letter.png': letter_item(False), 'item/borrasca_letter_aged.png': letter_item(True)}
+    return extra | {f'block/borrasca_home/{name}.png': im for name, im in {
+        'box_0': box(False), 'box_1': box(True), 'mail': mail(), 'letter_0': letter(False), 'letter_1': letter(True),
+        'curtain_0': curtain(False), 'curtain_1': curtain(True),
+        'door_top_0': door(True, False), 'door_low_0': door(False, False), 'door_top_1': door(True, True), 'door_low_1': door(False, True),
         'maple': maple(), 'walnut': walnut(), 'rail': rail(), 'sheet_0': sheet(False), 'sheet_1': sheet(True),
         'portrait_0': portrait(False), 'portrait_1': portrait(True), 'cross': cross(), 'bible_0': bible(False), 'bible_1': bible(True),
         'tv_front': tv_front(), 'metal': metal(), 'flat': flat(), 'jacket': jacket(), 'suitcase_0': suitcase(False), 'suitcase_1': suitcase(True),
@@ -440,10 +621,68 @@ def frame_down_model():
                  {'f': 'frame_back'}, 'frame_back')
 
 
-KINDS = ['crib', 'portrait', 'cross', 'bible', 'tv', 'jacket', 'suitcase', 'atlas', 'frame_down']
-STAGES = {'cross': 1, 'frame_down': 1}
+def turned(e, face, quarter=90):
+    """Turns one face's picture a quarter round, where a long face lies the other way to the picture drawn for it."""
+    e['faces'][face]['rotation'] = quarter
+    return e
+
+
+def box_model(stage, full=False):
+    """A mailbox, in the cell over the fence post it stands on: its mouth to the model's north. Its top is a step narrower than
+    its body, for the round of it. Full, its door hangs open and a week of mail stands out of its mouth."""
+    b = {'all': 'b'}
+    side_low, side_top = [0, 2, 10, 6], [0, 0, 10, 2]
+    front, back = ({'north': 'm'}, {'north': [8, 7, 13, 11]}) if full else ({}, {'north': [10, 2, 15, 6]})
+    low = element([5.5, 0, 3], [10.5, 4, 13], {**b, **front},
+                  {'east': side_low, 'west': side_low, 'south': [10, 8, 15, 12], 'up': [0, 6, 10, 11], 'down': [0, 6, 10, 11], **back})
+    top_front = ({'north': 'm'}, {'north': [9, 5, 12, 7]}) if full else ({}, {'north': [11, 0, 14, 2]})
+    top = element([6.5, 4, 3], [9.5, 6, 13], {**b, **top_front[0]},
+                  {'east': side_top, 'west': side_top, 'south': [11, 6, 14, 8], 'up': [0, 7, 10, 10], 'down': [0, 7, 10, 10], **top_front[1]})
+    for e in (low, top):
+        turned(e, 'up'); turned(e, 'down')
+    parts = [low, top]
+    if stage == 0:                                              # the flag, down along the shoulder, clear of the label
+        parts += [element([9.5, 4.2, 6], [10, 5.2, 9], b, {**every([0, 13, 1, 14]), 'east': [0, 13, 3, 14], 'west': [0, 13, 3, 14]}),
+                  element([9.5, 4.2, 9], [10, 6.2, 10], b, {**every([4, 13, 5, 14]), 'east': [4, 12, 5, 14], 'west': [4, 12, 5, 14]})]
+    tex = {'b': f'box_{stage}'}
+    if full:
+        m = {'all': 'm'}
+        parts += [
+            # Its door, let down on its hinge, in front of the post.
+            element([5.5, -4.5, 2.5], [10.5, 0, 3], b, {**every([10, 8, 15, 8.5]), 'north': [10, 7.5, 15, 12], 'south': [10, 7.5, 15, 12]}),
+            # A cream envelope and a brown one, a catalogue rolled on top of them.
+            element([6, .2, .8], [10, .6, 6], m, {**every([0, 10, 4, 10.4]), 'up': [0, 0, 4, 5], 'down': [0, 0, 4, 5]}),
+            element([6.3, .6, 1.6], [10.3, 1, 6.6], m, {**every([0, 12, 4, 12.4]), 'up': [8, 0, 12, 5], 'down': [8, 0, 12, 5]},
+                    {'origin': [8.3, .8, 4.1], 'axis': 'y', 'angle': 22.5}),
+            element([6.7, 1, .4], [9.7, 3, 5.4], m, {'north': [0, 13, 3, 15], 'south': [0, 13, 3, 15], 'up': [0, 5, 3, 10], 'down': [0, 5, 3, 10],
+                                                      'east': [3, 5, 4, 10], 'west': [3, 5, 4, 10]}),
+        ]
+        for face in ('east', 'west'):
+            turned(parts[-1], face)
+        tex['m'] = 'mail'
+    return model(parts, tex, f'box_{stage}')
+
+
+def letter_model(stage):
+    """The corner of an envelope at a door's foot. The door is the next cell to the model's north, its leaf at that cell's far
+    side: the envelope lies under the leaf and its corner shows in the doorway."""
+    return model([element([5.5, .02, -15.6], [11.5, .3, -10.6], {'all': 'l'}, {**every([0, 5, 6, 5.3]), 'up': [0, 0, 6, 5], 'down': [0, 0, 6, 5]},
+                          {'origin': [8.5, .1, -13], 'axis': 'y', 'angle': -22.5})],
+                 {'l': f'letter_{stage}'}, f'letter_{stage}')
+
+
+def curtain_model(stage):
+    """A curtain drawn across a window, just inside the wall behind the model's south."""
+    c = {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'up': 'c', 'down': 'c'}
+    return model([element([0, 0, 14.5], [16, 16, 15.5], c, {'north': [0, 0, 16, 16], 'south': [0, 0, 16, 16], 'east': [3, 0, 4, 16], 'west': [3, 0, 4, 16],
+                                                            'up': [0, 0, 16, 1], 'down': [0, 0, 16, 1]})],
+                 {'c': f'curtain_{stage}'}, f'curtain_{stage}')
+
+
+KINDS = ['crib', 'portrait', 'cross', 'bible', 'tv', 'jacket', 'suitcase', 'atlas', 'frame_down', 'box', 'box_full', 'letter', 'curtain', 'door', 'door_top']
+STAGES = {'cross': 1, 'frame_down': 1, 'box_full': 1}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
-NAME = {'block.the_oldest_house.borrasca_home': 'Household Thing'}
+NAME = {'block.the_oldest_house.borrasca_home': 'Household Thing', 'item.the_oldest_house.borrasca_letter': 'A letter for the Garritys'}
 
 
 def models():
@@ -452,7 +691,9 @@ def models():
         m[f'crib_{stage}'] = crib(stage); m[f'portrait_{stage}'] = portrait_model(stage); m[f'bible_{stage}'] = bible_model(stage)
         m[f'tv_{stage}'] = tv_model(stage); m[f'jacket_{stage}'] = jacket_model(stage); m[f'suitcase_{stage}'] = suitcase_model(stage)
         m[f'atlas_{stage}'] = atlas_model(stage)
-    m['cross_0'] = cross_model(); m['frame_down_0'] = frame_down_model()
+        m[f'box_{stage}'] = box_model(stage); m[f'letter_{stage}'] = letter_model(stage); m[f'curtain_{stage}'] = curtain_model(stage)
+        m[f'door_{stage}'] = door_model(False, stage); m[f'door_top_{stage}'] = door_model(True, stage)
+    m['cross_0'] = cross_model(); m['frame_down_0'] = frame_down_model(); m['box_full_0'] = box_model(0, True)
     return m
 
 
@@ -467,6 +708,10 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/borrasca_home.json'] = {'variants': variants}
+    item = NS + 'item/borrasca_letter'
+    out['models/item/borrasca_letter.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': item},
+                                                 'overrides': [{'predicate': {'custom_model_data': 1}, 'model': item + '_aged'}]}
+    out['models/item/borrasca_letter_aged.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': item + '_aged'}}
     return out
 
 

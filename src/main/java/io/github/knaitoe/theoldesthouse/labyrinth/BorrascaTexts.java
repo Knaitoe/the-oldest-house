@@ -200,7 +200,10 @@ public final class BorrascaTexts {
             +(own.getInt("SocietyChild")>0?(own.getInt("SocietyChild")==1?" While Mr. Rowe smoked out front of his shop, I went into the historical society behind it.":" Behind Mr. Rowe's back I got into the historical society.")
                 +" On a map of the old workings someone had drawn a small square over the top shaft and written DEPOT."+(own.getBoolean("CaughtInSociety")?" He came back in and sent me out.":"")
                 :own.getBoolean("CaughtInSociety")?" Mr. Rowe found me in the back room of his shop and sent me out.":"")
+            // 0.4.459: the letter Mr. Dorsey gave for her family, that week and years on.
+            +BorrascaGarritys.carried(own)
             +" She was beside me when the light came. Men walked down out of it, and then she was gone. I came back grown, and someone had freshly cut her name away."
+            +BorrascaGarritys.found(own)
             +(own.getBoolean("HeardDenial")?" The Sheriff knew which marker we had reached. Nobody had ever told him.":" The Sheriff was still at the second marker, the same man, older.")
             +(own.getBoolean("Read_History")?" A framed page at the historical society said what Borrasca meant: the first mine to give out, the one that gives nothing back. The town's water had run red for two years, and after that the town grew every year.":"")
             +(own.getBoolean("Read_WrenPoster")?" Kendra had gone looking for Patrick. Her face was on the board too.":own.getBoolean("WrenRememberedEli")?" Kendra walked Patrick's bike back to his mom.":"")

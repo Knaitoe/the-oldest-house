@@ -1519,6 +1519,133 @@ public final class BorrascaTests {
           }).thenSucceed();
     }
     /**
+     * 0.4.459 (owner: "Carry a letter for Dorsey. He already mentions the Garritys' mailbox going untouched. On the second visit, he
+     * could hand you a letter to leave under their porch door. Years later, the box is still on its post, with the family name barely
+     * legible under cloudy tape. You remember where it is because you've been to that porch."): the friend's family has a house, with
+     * a door that does not open and curtains drawn; every gate has a mailbox; theirs is full on the second visit and rusted years on;
+     * Mr. Dorsey hands the letter over when asked again; it goes under the door from the hand, not from the pack; it is there years
+     * on, yellow, and comes out; and the account says only what happened.
+     */
+    @AfterBatch(batch="borrasca_letter") public static void letterDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_letter",timeoutTicks=2400)
+    public static void theGarritysLetterGoesUnderTheirDoorAndIsThereYearsOn(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_letter");String key=BorrascaGarritys.KEY;
+        java.util.function.IntFunction<LiteraryActor> person=phase->BorrascaPeople.keeper(p,f.own(p),phase);
+        java.util.function.Function<LiteraryActor,String> heard=who->who.getCustomName()==null?"":who.getCustomName().getString();
+        java.util.function.Supplier<String> knock=()->{var own=f.own(p);String line=BorrascaGarritys.door(p,f.base(p),own);f.save(p,own);return line;};
+        java.util.function.Supplier<String> dorsey=()->{var own=f.own(p);var a=person.apply(BorrascaPeople.CARRIER);BorrascaPeople.talk(p,a,own);f.save(p,own);return heard.apply(a);};
+        java.util.function.IntSupplier letters=()->p.getInventory().countItem(BorrascaRegistry.LETTER.get());
+        // The letter out of wherever it is in the pack and into the hand, or out of the hand and into the pack's far end.
+        java.util.function.Consumer<Boolean> hold=inHand->{var inv=p.getInventory();int from=-1;for(int i=0;i<inv.getContainerSize();i++)if(BorrascaBelongings.valid(p,f.own(p),key,inv.getItem(i)))from=i;
+            h.assertTrue(from>=0,"the letter is somewhere in the pack");var s=inv.getItem(from);inv.setItem(from,ItemStack.EMPTY);
+            if(inHand){var was=p.getMainHandItem();p.setItemInHand(InteractionHand.MAIN_HAND,s);if(!was.isEmpty())inv.setItem(from,was);}else{var was=inv.getItem(30);inv.setItem(30,s);if(!was.isEmpty())inv.setItem(from,was);}};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->f.enter(p)).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"town cast recalled"))
+          .thenWaitUntil(()->h.assertTrue(person.apply(BorrascaPeople.CARRIER)!=null,"Mr. Dorsey is on his round"))
+          .thenExecute(()->{
+              var b=f.base(p);
+              // The house: their own door, in two halves, which is not one of the game's and does not open.
+              var low=f.out.getBlockState(b.offset(BorrascaGarritys.DOOR));var top=f.out.getBlockState(b.offset(BorrascaGarritys.DOOR.above()));
+              h.assertTrue(BorrascaHomeBlock.is(low,BorrascaHomeBlock.Kind.DOOR)&&BorrascaHomeBlock.is(top,BorrascaHomeBlock.Kind.DOOR_TOP)&&low.getValue(BorrascaHomeBlock.FACING)==Direction.EAST&&top.getValue(BorrascaHomeBlock.FACING)==Direction.EAST&&low.getValue(BorrascaHomeBlock.STAGE)==0,"the Garritys' front door stands in its wall, facing the street: "+low+" / "+top);
+              h.assertTrue(!low.getCollisionShape(f.out,b.offset(BorrascaGarritys.DOOR)).isEmpty()&&!top.getCollisionShape(f.out,b.offset(BorrascaGarritys.DOOR.above())).isEmpty(),"and it is shut");
+              h.assertTrue(f.out.getBlockState(b.offset(BorrascaGarritys.X0,1,BorrascaGarritys.NORTH)).is(Blocks.SPRUCE_PLANKS)&&f.out.getBlockState(b.offset(BorrascaGarritys.X1,3,BorrascaGarritys.SOUTH)).is(Blocks.SPRUCE_PLANKS),"the house is of dark boards");
+              // Every pane in its walls has a curtain drawn inside it.
+              int panes=0;
+              for(int x=BorrascaGarritys.X0;x<=BorrascaGarritys.X1;x++)for(int z=BorrascaGarritys.NORTH;z<=BorrascaGarritys.SOUTH;z++)for(int y=1;y<=2;y++){
+                  if(!f.out.getBlockState(b.offset(x,y,z)).is(Blocks.GLASS_PANE))continue;panes++;
+                  var inward=x==BorrascaGarritys.X0?Direction.EAST:x==BorrascaGarritys.X1?Direction.WEST:z==BorrascaGarritys.NORTH?Direction.SOUTH:Direction.NORTH;
+                  var c=f.out.getBlockState(b.offset(x,y,z).relative(inward));
+                  h.assertTrue(BorrascaHomeBlock.is(c,BorrascaHomeBlock.Kind.CURTAIN)&&c.getValue(BorrascaHomeBlock.FACING)==inward,"a curtain is drawn inside the pane at "+x+","+y+","+z+": "+c);
+              }
+              h.assertTrue(panes==12,"six windows, two panes high: "+panes);
+              // A mailbox on a post at every gate, its mouth to the street; the four households keep their name plates too.
+              for(int house=0;house<BorrascaHomes.HOUSES;house++){
+                  var at=BorrascaGarritys.box(house);var s=f.out.getBlockState(b.offset(at));
+                  h.assertTrue(BorrascaHomeBlock.is(s,BorrascaHomeBlock.Kind.BOX)&&s.getValue(BorrascaHomeBlock.FACING)==BorrascaHomes.out(house)&&s.getValue(BorrascaHomeBlock.STAGE)==0&&f.out.getBlockState(b.offset(at.below())).is(Blocks.OAK_FENCE),"house "+house+" has a mailbox on a post at its gate: "+s);
+                  h.assertTrue(BorrascaSignBlock.is(f.out.getBlockState(b.offset(at.offset(BorrascaHomes.out(house).getStepX(),0,2)))),"and its name plate still hangs by the gate: "+f.out.getBlockState(b.offset(at.offset(BorrascaHomes.out(house).getStepX(),0,2))));
+                  var own=f.own(p);h.assertTrue(BorrascaGarritys.click(p,b,at,own),"house "+house+"'s mailbox answers a hand");
+              }
+              var theirs=f.out.getBlockState(b.offset(BorrascaGarritys.BOX));
+              h.assertTrue(BorrascaHomeBlock.is(theirs,BorrascaHomeBlock.Kind.BOX)&&theirs.getValue(BorrascaHomeBlock.FACING)==Direction.EAST&&theirs.getValue(BorrascaHomeBlock.STAGE)==0&&f.out.getBlockState(b.offset(BorrascaGarritys.BOX.below())).is(Blocks.OAK_FENCE),"the Garritys' mailbox is as any other on the first visit: "+theirs);
+              h.assertTrue(BorrascaGarritys.look(true,"GARRITY",1).contains("GARRITY")&&BorrascaGarritys.look(false,"WEBB",1).contains("WEBB")&&BorrascaGarritys.look(false,"WEBB",3).contains("new")&&!BorrascaGarritys.look(true,"GARRITY",1).equals(BorrascaGarritys.look(true,"GARRITY",2))&&BorrascaGarritys.look(true,"GARRITY",3).contains("barely, GARRITY"),"a mailbox says whose it is, and theirs is another thing on each visit");
+              h.assertTrue(f.out.getBlockState(b.offset(BorrascaGarritys.PORCH)).isAir(),"nothing lies at their door yet");
+              // A knock on the first visit: a house with people in it. With the friend there, she says whose it is.
+              var friend=f.actor(p,"CastKimber");h.assertTrue(friend!=null,"the friend is in town");
+              p.moveTo(friend.getX()+1.5,friend.getY(),friend.getZ());
+              h.assertTrue(knock.get().equals(BorrascaGarritys.KELLY_DOOR)&&heard.apply(friend).contains(BorrascaGarritys.KELLY_DOOR),"with her beside the reader, she says it is her house: "+heard.apply(friend));
+              p.moveTo(friend.getX()+40,friend.getY(),friend.getZ());
+              h.assertTrue(knock.get().equals(BorrascaGarritys.KNOCK_FIRST),"alone, a knock is answered through the door");
+              h.assertTrue(!dorsey.get().contains("Garritys")&&letters.getAsInt()==0,"on the first visit Mr. Dorsey has no letter for them");
+              h.assertTrue(BorrascaGarritys.carried(f.own(p)).isEmpty()&&BorrascaGarritys.found(f.own(p)).isEmpty(),"and the account has nothing to say of one");
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==2,"second visit: "+BorrascaCast.why(p)))
+          .thenWaitUntil(()->h.assertTrue(BorrascaHomeBlock.is(f.out.getBlockState(f.base(p).offset(BorrascaGarritys.BOX)),BorrascaHomeBlock.Kind.BOX_FULL),"on the second visit their box is full: "+f.out.getBlockState(f.base(p).offset(BorrascaGarritys.BOX))))
+          .thenExecute(()->{
+              var b=f.base(p);
+              for(int house=0;house<BorrascaHomes.HOUSES;house++)h.assertTrue(BorrascaHomeBlock.is(f.out.getBlockState(b.offset(BorrascaGarritys.box(house))),BorrascaHomeBlock.Kind.BOX),"nobody else's is");
+              h.assertTrue(knock.get().equals(BorrascaGarritys.KNOCK_SECOND),"a knock on the second visit brings nobody");
+              // Mr. Dorsey says he has it; asked again, he hands it over; after that he has his other line and where it goes.
+              h.assertTrue(dorsey.get().contains(BorrascaGarritys.DORSEY_HAS)&&letters.getAsInt()==0&&!f.own(p).getBoolean("MailGiven"),"he says he has a letter for them, and keeps it");
+              h.assertTrue(dorsey.get().contains(BorrascaGarritys.DORSEY_GIVES)&&letters.getAsInt()==1&&f.own(p).getBoolean("MailGiven")&&BorrascaBelongings.has(p,f.own(p),key),"asked again, he hands it over: "+letters.getAsInt());
+              h.assertTrue(dorsey.get().contains(BorrascaGarritys.DORSEY_MADDOX)&&dorsey.get().contains(BorrascaGarritys.DORSEY_REMINDS)&&letters.getAsInt()==1,"he has one to give, and says where it goes");
+              // Looked at, its face counts; the account says what was printed in the corner only to a reader who looked.
+              h.assertTrue(BorrascaGarritys.carried(f.own(p)).contains("did not take it")&&!BorrascaGarritys.carried(f.own(p)).contains("company"),"carried and not yet looked at: "+BorrascaGarritys.carried(f.own(p)));
+              BorrascaGarritys.seen(p,false);
+              h.assertTrue(f.own(p).getInt("MailSeen")==1&&BorrascaGarritys.carried(f.own(p)).contains("company's name"),"its face has been looked at");
+              // In the pack it stays in the pack. In the hand it goes under the door.
+              hold.accept(false);
+              h.assertTrue(knock.get().equals(BorrascaGarritys.IN_PACK)&&letters.getAsInt()==1&&!f.own(p).getBoolean("MailLeft"),"a knock with the letter in the pack leaves it there");
+              hold.accept(true);
+              h.assertTrue(knock.get().equals(BorrascaGarritys.PUSHED)&&letters.getAsInt()==0&&f.own(p).getBoolean("MailLeft")&&f.own(p).getInt("MailFirstVisit")==2&&BorrascaGarritys.lying(f.own(p)),"from the hand it goes under the door: "+letters.getAsInt());
+              var corner=f.out.getBlockState(b.offset(BorrascaGarritys.PORCH));
+              h.assertTrue(BorrascaHomeBlock.is(corner,BorrascaHomeBlock.Kind.LETTER)&&corner.getValue(BorrascaHomeBlock.FACING)==Direction.WEST&&corner.getValue(BorrascaHomeBlock.STAGE)==0&&corner.getShape(f.out,b.offset(BorrascaGarritys.PORCH)).isEmpty(),"its corner shows at the door's foot, toward the door, and is not a thing a hand finds: "+corner);
+              h.assertTrue(knock.get().equals(BorrascaGarritys.CORNER)&&letters.getAsInt()==0,"a child cannot get it back out");
+              BorrascaGarritys.seen(p,true);h.assertTrue(f.own(p).getInt("MailSeen")==1,"a reader without the letter is not looking at it");
+              h.assertTrue(dorsey.get().contains(BorrascaGarritys.DORSEY_MADDOX)&&dorsey.get().contains(BorrascaGarritys.DORSEY_LEFT),"and Mr. Dorsey hears it is done");
+              h.assertTrue(BorrascaGarritys.carried(f.own(p)).contains("pushed it under their porch door")&&BorrascaGarritys.found(f.own(p)).isEmpty(),"the account, that week: "+BorrascaGarritys.carried(f.own(p)));
+              // After she is taken, a letter still in the pack is still theirs.
+              var own=f.own(p);own.putBoolean("FriendMissing",true);own.putBoolean("MailLeft",false);f.save(p,own);
+              dorsey.get();h.assertTrue(dorsey.get().contains(BorrascaGarritys.DORSEY_STILL),"after she is taken he says the letter is still theirs");
+              own=f.own(p);own.putBoolean("MailLeft",true);f.save(p,own);
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,3);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==3,"years later: "+BorrascaCast.why(p)))
+          .thenWaitUntil(()->{var s=f.out.getBlockState(f.base(p).offset(BorrascaGarritys.BOX));h.assertTrue(BorrascaHomeBlock.is(s,BorrascaHomeBlock.Kind.BOX)&&s.getValue(BorrascaHomeBlock.STAGE)==1,"years on their box is still on its post, rusted: "+s);})
+          .thenExecute(()->{
+              var b=f.base(p);
+              for(int house=0;house<BorrascaHomes.HOUSES;house++)h.assertTrue(f.out.getBlockState(b.offset(BorrascaGarritys.box(house))).getValue(BorrascaHomeBlock.STAGE)==0,"the others' are seen to");
+              h.assertTrue(f.out.getBlockState(b.offset(BorrascaGarritys.DOOR)).getValue(BorrascaHomeBlock.STAGE)==1&&f.out.getBlockState(b.offset(BorrascaGarritys.DOOR.above())).getValue(BorrascaHomeBlock.STAGE)==1&&f.out.getBlockState(b.offset(BorrascaGarritys.X1-1,1,BorrascaGarritys.MIDDLE-2)).getValue(BorrascaHomeBlock.STAGE)==1,"the door and the curtains are years older");
+              var corner=f.out.getBlockState(b.offset(BorrascaGarritys.PORCH));
+              h.assertTrue(BorrascaHomeBlock.is(corner,BorrascaHomeBlock.Kind.LETTER)&&corner.getValue(BorrascaHomeBlock.STAGE)==1,"the letter is where the reader put it, gone yellow: "+corner);
+              // The first hand finds it; the second draws it out, and it is the yellowed one.
+              h.assertTrue(knock.get().equals(BorrascaGarritys.CORNER_LATER)&&letters.getAsInt()==0&&f.own(p).getBoolean("MailFound"),"a grown reader finds it there");
+              h.assertTrue(BorrascaGarritys.found(f.own(p)).contains("still under the Garritys' door")&&!BorrascaGarritys.found(f.own(p)).contains("I have it"),"found and left: "+BorrascaGarritys.found(f.own(p)));
+              h.assertTrue(knock.get().equals(BorrascaGarritys.DRAWN_OUT)&&letters.getAsInt()==1&&f.own(p).getBoolean("MailBack")&&!BorrascaGarritys.lying(f.own(p))&&f.out.getBlockState(b.offset(BorrascaGarritys.PORCH)).isAir(),"and draws it out: "+letters.getAsInt());
+              hold.accept(true);
+              h.assertTrue(p.getMainHandItem().has(DataComponents.CUSTOM_MODEL_DATA)&&BorrascaBelongings.valid(p,f.own(p),key,p.getMainHandItem()),"it is the yellowed one, and the reader's own");
+              h.assertTrue(BorrascaGarritys.found(f.own(p)).contains("I have it now"),"the account: "+BorrascaGarritys.found(f.own(p)));
+              // Mr. Dorsey knows it again, once.
+              h.assertTrue(dorsey.get().contains(BorrascaGarritys.DORSEY_GROWN)&&!dorsey.get().contains(BorrascaGarritys.DORSEY_GROWN),"he knows the letter again, and says so once");
+              // It can go back under.
+              h.assertTrue(knock.get().equals(BorrascaGarritys.PUT_BACK)&&letters.getAsInt()==0&&f.own(p).getInt("MailFirstVisit")==2&&f.out.getBlockState(b.offset(BorrascaGarritys.PORCH)).getValue(BorrascaHomeBlock.STAGE)==1,"put back, it is the yellow one that lies there");
+              h.assertTrue(BorrascaGarritys.found(f.own(p)).contains("put it back"),"the account: "+BorrascaGarritys.found(f.own(p)));
+              h.assertTrue(knock.get().equals(BorrascaGarritys.DRAWN_AGAIN)&&letters.getAsInt()==1&&BorrascaGarritys.found(f.own(p)).contains("I have it now"),"and it comes out again");
+              // A reader who takes it to the door for the first time years on: it goes under as it is, and comes out as it went in.
+              {var own=f.own(p);for(String flag:List.of("MailLeft","MailBack","MailDrawn","MailFound","MailFirstVisit"))own.remove(flag);
+               var s=BorrascaBelongings.remove(p,own,key);s.remove(DataComponents.CUSTOM_MODEL_DATA);own.put(key+"Original",s.save(p.registryAccess()));p.setItemInHand(InteractionHand.MAIN_HAND,s);f.save(p,own);}
+              h.assertTrue(knock.get().equals(BorrascaGarritys.PUSHED_LATE)&&f.own(p).getInt("MailFirstVisit")==3&&f.out.getBlockState(b.offset(BorrascaGarritys.PORCH)).getValue(BorrascaHomeBlock.STAGE)==0,"first taken to the door years on, it lies there as it is: "+f.out.getBlockState(b.offset(BorrascaGarritys.PORCH)));
+              h.assertTrue(knock.get().equals(BorrascaGarritys.CORNER_LOOSE)&&knock.get().equals(BorrascaGarritys.DRAWN_AGAIN)&&letters.getAsInt()==1&&BorrascaGarritys.found(f.own(p)).contains("drew it out again"),"and comes out as it went in: "+BorrascaGarritys.found(f.own(p)));
+              hold.accept(true);h.assertTrue(!p.getMainHandItem().has(DataComponents.CUSTOM_MODEL_DATA),"not yellowed");
+              // A reader who never took it to the door, and one who took it years late.
+              var kept=new CompoundTag();kept.putBoolean("MailGiven",true);
+              h.assertTrue(BorrascaGarritys.carried(kept).contains("did not take it to their door")&&BorrascaGarritys.found(kept).isEmpty(),"kept: "+BorrascaGarritys.carried(kept));
+              kept.putBoolean("MailLeft",true);kept.putInt("MailFirstVisit",3);
+              h.assertTrue(BorrascaGarritys.carried(kept).contains("did not take it to their door")&&BorrascaGarritys.found(kept).contains("years late"),"late: "+BorrascaGarritys.found(kept));
+              for(var line:List.of(BorrascaGarritys.KNOCK_FIRST,BorrascaGarritys.KNOCK_SECOND,BorrascaGarritys.KNOCK_LATER,BorrascaGarritys.CORNER,BorrascaGarritys.CORNER_LATER,BorrascaGarritys.DRAWN_OUT,BorrascaGarritys.BOX_FULL,BorrascaGarritys.BOX_LATER,BorrascaGarritys.PUSHED))
+                  for(var word:List.of("sold","paid","money","Sheriff","taken away","you feel","afraid","sad"))h.assertFalse(line.contains(word),"a line says what is there, not what it means: "+word+" in "+line);
+              f.close();
+          }).thenSucceed();
+    }
+    /**
      * 0.4.457 (owner: "Combat with the sheriff shouldn't' feel like a vanilla Minecraft fight. Punches should be sluggish with real weight.
      * The sheriff should use his baton, then drop it after being hit a few times and start swinging his own fists. He swings with one fist
      * then the other."): a blow not brought all the way back glances; his baton is raised before it comes down, lands on a reader who

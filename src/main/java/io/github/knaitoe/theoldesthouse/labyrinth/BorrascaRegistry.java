@@ -54,6 +54,8 @@ public final class BorrascaRegistry {
     public static final DeferredItem<BorrascaKeepsakeItem> PATCH=ITEMS.register("borrasca_name_patch",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Patch"));
     /** 0.4.445: the comic the friend stands in the reader's window of the fort (BorrascaComic). The reader's own, like her compass. */
     public static final DeferredItem<BorrascaKeepsakeItem> COMIC=ITEMS.register("borrasca_comic",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Comic"));
+    /** 0.4.459: the letter Mr. Dorsey hands a reader for the Garritys (BorrascaGarritys). The reader's own, like the comic. */
+    public static final DeferredItem<BorrascaKeepsakeItem> LETTER=ITEMS.register("borrasca_letter",()->new BorrascaKeepsakeItem(new Item.Properties().stacksTo(1).fireResistant(),"Mail"));
     public static final DeferredItem<Item> FLASHLIGHT=ITEMS.registerSimpleItem("borrasca_flashlight",new Item.Properties().stacksTo(1));
     /** 0.4.457: the Sheriff's baton, in his hand while he has it (BorrascaSheriffFight). */
     public static final DeferredItem<Item> BATON=ITEMS.registerSimpleItem("borrasca_baton",new Item.Properties().stacksTo(1));

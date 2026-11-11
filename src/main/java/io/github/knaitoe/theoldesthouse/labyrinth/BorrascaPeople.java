@@ -268,7 +268,7 @@ public final class BorrascaPeople {
     // ---------------------------------------------------------------------------------------------------------------- the money
     /** The purse for this visit: new change or a new wallet when the visit changes; the one carried shows what is left. */
     private static void purse(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
-        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");own.remove("LollipopAfter");own.remove("WrenAfter");for(int k=LORNA;k<=CARRIER;k++)own.remove("SaidAfter"+k);leave(p);jar(p,b,0);}
+        if(own.getInt("PurseVisit")!=visit){own.putInt("PurseVisit",visit);own.putInt("Cents",visit>=3?WALLET:CHANGE);own.putInt("FriendCents",visit<=2?FRIEND_CHANGE:0);own.remove("Lollipop");own.remove("BarTurnedOut");own.remove("LollipopAfter");own.remove("WrenAfter");own.remove("DorseyMail");for(int k=LORNA;k<=CARRIER;k++)own.remove("SaidAfter"+k);leave(p);jar(p,b,0);}
         boolean wallet=visit>=3;var held=carried(p,wallet);int cents=own.getInt("Cents");
         if(held==null)p.getInventory().add(BorrascaPurseItem.of(p,cents,wallet));
         else if(BorrascaPurseItem.cents(held)!=cents)BorrascaPurseItem.mark(held,p.getUUID(),cents);
@@ -288,7 +288,11 @@ public final class BorrascaPeople {
         if(phase==ODELL&&!grown){lollipop(p,own);return true;}
         if(phase==GUS&&!grown){BorrascaStory.say(p,a,after?GUS_AFTER:"Out. No kids in here.");return true;}
         if(phase==ROWE&&own.getBoolean("RoweOut")){BorrascaStory.say(p,a,grown?"Five minutes. Go on back to the society if you like.":after?ROWE_OUT_AFTER:"I'm on my break, hon. Don't touch the clocks.");return true;}
+        // 0.4.459: Mr. Dorsey and the Garritys' letter. On the second visit he has it and hands it over; years on he knows it again.
+        if(phase==CARRIER&&visit==2&&!after){BorrascaStory.say(p,a,BorrascaGarritys.dorsey(p,own,a));return true;}
+        if(phase==CARRIER&&grown){String known=BorrascaGarritys.dorseyGrown(p,own);if(known!=null){BorrascaStory.say(p,a,known);return true;}}
         var gone=after?afterTheTaking(phase):null;
+        if(gone!=null&&phase==CARRIER)gone=BorrascaGarritys.dorseyAfter(own,gone);
         if(gone!=null){
             // 0.4.458: said in order, and then the last of them again: they have said what they are going to say.
             String key="SaidAfter"+phase;int n=own.getInt(key);own.putInt(key,n+1);BorrascaStory.say(p,a,gone[Math.min(n,gone.length-1)]);
@@ -360,7 +364,7 @@ public final class BorrascaPeople {
         case ROY->new String[]{"Any day now, Doc says.","Don't mind us. We're just waiting on the doctor."};
         case JOLENE->new String[]{"Mrs. Odell says it's a girl. She's never wrong about it.","We picked out her name in March. Before we even knew."};
         case DUTCH->visit==4?new String[]{"Sheriff's up on the ridge tonight. He likes it quiet when he's up there.","We don't talk shop in here. That's Gus's rule."}:new String[]{"Thirty-one years with the county. Never once had to draw.","We don't talk shop in here. That's Gus's rule.","Prescott bought the department its new cruisers. Bought the old ones too."};
-        case CARRIER->visit==2?new String[]{"Got a letter here for the Garritys. Nobody's emptied their box all week.","The Maddox boy's mother asks me every day if I've seen him. Like I'd know. I just carry the mail."}
+        case CARRIER->visit==2?new String[]{BorrascaGarritys.DORSEY_HAS,BorrascaGarritys.DORSEY_MADDOX}
             :grown?new String[]{"Twenty-two years on this route. Same boxes, mostly.","The Garritys' box is still on its post. Nobody's taken it down."}
             :new String[]{"Nothing for you, kid. Unless you're expecting something.","Eleven Sears catalogues in this bag. Everybody wants the toy pages."};
         case MERLE->visit==4?new String[]{"Go home. Whatever you're thinking of doing tonight, go home.","You're not from the paper, are you?"}:new String[]{"Garrity girl? I took that report myself. Runaway, the Sheriff said. So that's what I wrote down.","Lot of kids run off from a town this size. You'd be surprised how many.","You're not from the paper, are you?"};
