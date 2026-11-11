@@ -84,6 +84,8 @@ public final class BikeNight {
         final Set<UUID> letGo=new HashSet<>();
         /** Readers thrown off the top of the seesaw; and whom a reader threw off it, for their records. */
         final Set<UUID> bumpedOff=new HashSet<>();final Map<UUID,String> bumpedWhom=new HashMap<>();
+        /** 0.4.477: when each reader was last up on the slide's deck on a bike. */
+        final Map<UUID,Long> bikeOnDeck=new HashMap<>();
         /** Whether each reader was standing on the merry-go-round when they were last looked at. */
         final Map<UUID,Boolean> onWheel=new HashMap<>();
         /** 0.4.474: pushes a reader has given somebody on the swings; whom they last pushed; and who last pushed them. */
@@ -344,11 +346,37 @@ public final class BikeNight {
     /** A reader has been down the slide (SlideRide). */
     static void slid(ServerPlayer p){var n=night(p);if(n!=null){n.slid.merge(p.getUUID(),1,Integer::sum);BikeNightGus.saw(n,"slide",BikeNightTexts.GUS_SLIDE);}}
 
+    /** Ticks a bike has to get from the slide's deck down off the end of its chute for it to have been ridden down it. */
+    public static final int SLIDE_RIDE=400;
+    /**
+     * 0.4.477: a bike on the slide. The proposal: "Riding down it on the Wasp is possible, and Gus is impressed." A bike rolls up
+     * the chute as it rolls up any steps; up on the deck there is room, just, to turn one round where it stands; and it rolls
+     * down again. A reader who has been up on the deck on a bike, and comes off the end of the chute still on it without having
+     * left the slide between, has ridden it down. Any of the six can; the Wasp turns round up there in half the time.
+     */
+    static void slideOnBike(ServerPlayer p,BlockPos b,Night n,CompoundTag own){
+        var id=p.getUUID();
+        if(!(p.getVehicle() instanceof NightBike bike)){n.bikeOnDeck.remove(id);return;}
+        var r=rel(bike.position(),b);var deck=BikeNightSite.slideDeck();var end=BikeNightSite.slideEnd();var down=BikeNightSite.SLIDE_FORWARD;
+        double dx=r.x-(deck.getX()+.5),dz=r.z-(deck.getZ()+.5);
+        // How far down the slide from the middle of its deck, and how far off its line to one side.
+        double along=dx*down.getStepX()+dz*down.getStepZ(),aside=Math.abs(dx*down.getStepZ()-dz*down.getStepX());
+        double length=(end.getX()-deck.getX())*down.getStepX()+(end.getZ()-deck.getZ())*down.getStepZ();
+        if(aside>.75||along<-.8||along>length+1.5){n.bikeOnDeck.remove(id);return;}
+        if(along<.75&&r.y>deck.getY()+.7){n.bikeOnDeck.put(id,n.tick);return;}
+        Long up=n.bikeOnDeck.get(id);if(up==null)return;
+        if(n.tick-up>SLIDE_RIDE){n.bikeOnDeck.remove(id);return;}
+        if(along<length-.3||r.y>.9)return;
+        n.bikeOnDeck.remove(id);
+        own.putString("SlideBike",bike.make().getSerializedName());own.putInt("SlideRides",own.getInt("SlideRides")+1);
+        cue(p,BikeNightTexts.SLIDE_BIKE);BikeNightGus.saw(n,"slidebike",BikeNightTexts.GUS_SLIDE_BIKE);BikeNightGus.cheer(n,p.serverLevel());
+    }
+
     // ------------------------------------------------------------------------------------------------ the merry-go-round
     /** A reader has shoved the merry-go-round round (RoundaboutBlock.Wheel). */
     static void shoved(ServerPlayer p){var n=night(p);if(n!=null)n.shoved.merge(p.getUUID(),1,Integer::sum);}
     /** How often each reader's own record is brought up to date: what a look at who is on the merry-go-round stands for. */
-    static final int LOOK=5;
+    public static final int LOOK=5;
 
     /** A reader on the spring rider has rocked it out toward a stop (SpringBlock.Rocker). */
     static void sprung(ServerPlayer p){var n=night(p);if(n!=null)n.sprung.merge(p.getUUID(),1,Integer::sum);}
@@ -434,6 +462,7 @@ public final class BikeNight {
         Integer balls=n.thrown.remove(id);if(balls!=null)own.putInt("Sand",own.getInt("Sand")+balls);
         Integer hits=n.hits.remove(id);if(hits!=null)own.putInt("SandHits",own.getInt("SandHits")+hits);
         Integer down=n.slid.remove(id);if(down!=null)own.putInt("Slid",own.getInt("Slid")+down);
+        slideOnBike(p,b,n,own);
         if(p.getVehicle() instanceof BarsHang&&!own.getBoolean("BarsTold")){own.putBoolean("BarsTold",true);cue(p,BikeNightTexts.BARS_HINT);}
         Integer holds=n.hung.remove(id);if(holds!=null)own.putInt("Hung",own.getInt("Hung")+holds);
         Integer across=n.crossed.remove(id);if(across!=null)own.putInt("Crossed",own.getInt("Crossed")+across);

@@ -90,7 +90,8 @@ meet, but they share a name; either can be renamed.
 
 - **The Wasp on the slide.** The proposal: "Riding down it on the Wasp is possible, and Gus is impressed." The slide
   (0.4.466) carries a seated reader and nothing else; a bike cannot get onto it. That was missed when the slide was built.
-  It is the next thing, with Gus's line for it.
+  It is the next thing, with Gus's line for it. (Done in 0.4.477, `docs/BIKE_NIGHT_SLIDE_BIKE_0_4_477.md`: a bike could
+  already do it; the game now notices.)
 - His bike, his riding, and the cap: with the bullies and the chase.
 
 ## Tests
