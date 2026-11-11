@@ -407,6 +407,8 @@ public final class BikeNightTests {
     @AfterBatch(batch="park_rails") public static void railsDone(ServerLevel l){done();}
     @AfterBatch(batch="park_swings") public static void swingsDone(ServerLevel l){done();}
     @AfterBatch(batch="park_pump") public static void pumpDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_push") public static void pushDone(ServerLevel l){done();}
+    @AfterBatch(batch="park_rope") public static void ropeDone(ServerLevel l){done();}
     @AfterBatch(batch="park_sand") public static void sandDone(ServerLevel l){done();}
     @AfterBatch(batch="park_slide") public static void slideDone(ServerLevel l){done();}
     @AfterBatch(batch="park_bars") public static void barsDone(ServerLevel l){done();}
@@ -829,6 +831,193 @@ public final class BikeNightTests {
                 // The night over: the mark is gone with it.
                 BikeNight.resetNow(l,b);
                 h.assertTrue(!l.getBlockState(mark[0]).is(BikeNightRegistry.MARK.get()),"when the night is over the mark is gone");
+            }).thenSucceed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.474: a push on the swings
+    /** A hand on somebody: what the game makes of a use on another player. True if something took it. */
+    private static boolean push(ServerPlayer from,ServerPlayer on){
+        var e=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract(from,InteractionHand.MAIN_HAND,on);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(e);return e.isCanceled();
+    }
+    /** Which way the swing is going (forward is positive), by the turn of its arc. */
+    private static double going(SeatEntity seat){return Math.cos(seat.swingTicks(0)*HouseReadSwing.RATE);}
+
+    @GameTest(template="empty",batch="park_push",timeoutTicks=3000)
+    public static void aReaderOnASwingIsPushedByAnotherOnTheSandWhoTimesIt(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final SeatEntity[] seat={null,null};
+        double bar=BikeNightSite.SWING_X+.5,line=BikeNightSite.SWING_SEATS[0]+.5;final double[] was={0,0};final int[] sent={0};
+        double meet=Math.sin(HouseReadSwing.MEET*HouseReadSwing.RATE);
+        // The one behind pushes each time the swing starts away from them.
+        Runnable timed=()->{
+            double before=seat[0].reach();
+            if(seat[0].swingAngle(0)<0&&going(seat[0])>0&&push(p[1],p[0])&&seat[0].reach()>before+.05)sent[0]++;
+            was[1]=Math.max(was[1],seat[0].reach());
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("swing_rider",P);p[1]=f.player("swing_hands",P);p[2]=f.player("swing_other",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenExecute(()->{
+                h.assertTrue(HouseReadSwing.PUSH_WAIT>(int)Math.ceil(Math.PI/2/HouseReadSwing.RATE)+HouseReadSwing.MEET,"the same hands get one push in as a swing leaves them, not two");
+                f.click(p[0],P,BikeNightSite.swingAt(0));seat[0]=(SeatEntity)p[0].getVehicle();
+                h.assertTrue(seat[0]!=null&&seat[0].pumped()&&seat[0].reach()==0&&seat[0].arc()==0,"on a swing, hanging still");
+                // A hand on somebody who is not on a swing is nothing of the swings'.
+                f.at(p[1],P,bar-2.6,0,line);
+                h.assertTrue(!push(p[2],p[1]),"a hand on somebody standing on the sand is not a push");
+                // From beside the swing nothing is pushed.
+                f.at(p[1],P,bar+.3,0,line+1.2);hush(p[1]);
+                h.assertTrue(push(p[1],p[0])&&seat[0].reach()==0,"from beside it the hand is taken, and pushes nothing");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],HouseReadSwing.PUSH_BESIDE),"and they are told where to stand"))
+            .thenExecute(()->{
+                // With a ball of sand in the hand, the hand throws.
+                f.at(p[1],P,bar-2.6,0,line);
+                p[1].setItemInHand(InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()));
+                h.assertTrue(!push(p[1],p[0]),"a ball of sand in the hand is thrown, not put down for a push");
+                p[1].setItemInHand(InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+                // From behind, a swing hanging still is started: away from the hands, from the bottom of its arc.
+                hush(p[1]);hush(p[0]);
+                h.assertTrue(seat[0].reach()<HouseReadSwing.STILL&&push(p[1],p[0]),"a hand on the one riding is taken");
+                h.assertTrue(seat[0].reach()>=HouseReadSwing.PUSHED&&seat[0].reach()<HouseReadSwing.PUSHED+HouseReadSwing.STILL&&Math.abs(seat[0].swingAngle(0))<1e-9&&seat[0].swingAngle(1)>.01,
+                    "a push from behind starts a still swing forward from the bottom of its arc: "+seat[0].reach()+" "+seat[0].swingAngle(1));
+                // The same hands do not push again at once.
+                was[0]=seat[0].reach();h.assertTrue(push(p[1],p[0])&&seat[0].reach()==was[0],"the same hands do not push again at once");
+                seat[0].reach(HouseReadSwing.REACH);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],HouseReadSwing.PUSH_HINT)&&heard(p[0],String.format(HouseReadSwing.PUSHED_BY,"swing_hands"))&&sounded(p[1],"park.swing_creak"),
+                "the one pushing is told how, the one pushed is told who, and the chains are heard"))
+            // Out past the middle from the hands, the swing is out of reach. (Inside the wait between two pushes nothing is said at all.)
+            .thenIdle(HouseReadSwing.PUSH_WAIT)
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)>.1,"waiting for it to go out past the middle"))
+            .thenExecute(()->{
+                hush(p[1]);was[0]=seat[0].reach();
+                h.assertTrue(push(p[1],p[0])&&seat[0].reach()==was[0],"out past the middle a push does nothing");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],HouseReadSwing.PUSH_FAR),"and they are told it is out of reach"))
+            // Coming back at the hands, and not yet near the top of its arc: a push now is too soon, and takes some of the arc off.
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)<-.05&&going(seat[0])<-(meet+.08),"waiting for it to come back at the hands: "+seat[0].swingAngle(0)+" "+going(seat[0])))
+            .thenExecute(()->{
+                hush(p[1]);was[0]=seat[0].reach();
+                h.assertTrue(push(p[1],p[0])&&Math.abs(was[0]-seat[0].reach()-HouseReadSwing.CHECKED)<1e-9,"a push made while it is still coming takes some of the swing off it: "+was[0]+" to "+seat[0].reach());
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],HouseReadSwing.PUSH_EARLY),"and they are told it was too soon"))
+            // As it stops at the top of its arc on their side, hands meet it.
+            .thenIdle(HouseReadSwing.PUSH_WAIT)
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)<-.05&&going(seat[0])<0&&going(seat[0])>-(meet-.05),"waiting for it to come up to the top of its arc at the hands: "+going(seat[0])))
+            .thenExecute(()->{
+                was[0]=seat[0].reach();
+                h.assertTrue(push(p[1],p[0])&&Math.abs(seat[0].reach()-was[0]-HouseReadSwing.PUSHED)<1e-9,"a push as it stops at the top sends it on: "+was[0]+" to "+seat[0].reach());
+            })
+            // Pushed each time it starts away, it goes as high as a swing goes, and no higher.
+            .thenExecute(()->{sent[0]=0;was[1]=0;})
+            .thenExecuteFor(520,timed)
+            .thenExecute(()->{
+                h.assertTrue(sent[0]>=5&&was[1]>HouseReadSwing.HIGH-1e-9&&was[1]<=HouseReadSwing.HIGH+1e-9&&seat[0].reach()>HouseReadSwing.HIGH-.12,
+                    "pushed as it starts away each time, the swing goes as high as it goes, and no higher: "+sent[0]+" pushes, "+was[1]+", now "+seat[0].reach());
+                h.assertTrue(HouseReadSwing.HIGH>HouseReadSwing.REACH*2,"far higher than a swing left alone");
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p[1],P).getInt("SwingPushes")>=5&&f.own(p[1],P).getString("SwingPushed").equals("swing_rider")&&f.own(p[0],P).getString("SwingPushedBy").equals("swing_hands"),
+                "it is in both their records: "+f.own(p[1],P).getInt("SwingPushes")))
+            .thenExecute(()->{
+                // Nobody pushes from a seat of their own.
+                f.click(p[2],P,BikeNightSite.swingAt(1));seat[1]=(SeatEntity)p[2].getVehicle();
+                h.assertTrue(seat[1]!=null&&!push(p[2],p[0]),"nobody pushes from a seat of their own");
+                p[2].stopRiding();
+                // From in front, the push comes as the swing starts back.
+                f.at(p[2],P,bar+3.4,0,line);seat[0].reach(HouseReadSwing.REACH);hush(p[0]);hush(p[2]);
+            })
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)>.05&&going(seat[0])<0,"waiting for it to start back from in front"))
+            .thenExecute(()->{
+                was[0]=seat[0].reach();
+                h.assertTrue(push(p[2],p[0])&&Math.abs(seat[0].reach()-was[0]-HouseReadSwing.PUSHED)<1e-9,"a push from in front, as it starts back, sends it on: "+was[0]+" to "+seat[0].reach());
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[2],HouseReadSwing.PUSH_HINT)&&heard(p[0],String.format(HouseReadSwing.PUSHED_BY,"swing_other"))&&f.own(p[0],P).getString("SwingPushedBy").equals("swing_other"),
+                "new hands are told how, and the one pushed is told whose they are"))
+            .thenExecute(()->{
+                // A still swing pushed from in front starts backward.
+                p[0].stopRiding();
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                f.click(p[0],P,BikeNightSite.swingAt(0));seat[0]=(SeatEntity)p[0].getVehicle();
+                h.assertTrue(seat[0]!=null&&seat[0].reach()==0&&push(p[2],p[0]),"back on it, hanging still, and pushed from in front");
+                h.assertTrue(seat[0].reach()>=HouseReadSwing.PUSHED&&Math.abs(seat[0].swingAngle(0))<.01&&seat[0].swingAngle(1)<-.01,"a push from in front starts a still swing backward: "+seat[0].swingAngle(0)+" "+seat[0].swingAngle(1));
+                // Their accounts.
+                var hands=told("swing_hands",p[1],f);var rider=told("swing_rider",p[0],f);
+                h.assertTrue(hands.contains("I pushed swing_rider on the swings."),"the one who pushed has it in their account: "+hands);
+                h.assertTrue(rider.contains("I sat on one of the swings, and swing_other pushed me."),"and so has the one pushed: "+rider);
+                var jumped=f.own(p[0],P).copy();jumped.putInt("SwingBest",9);
+                var after=String.join(" ",BikeNightTexts.account("swing_rider",jumped).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(after.contains("as high as it would go, with swing_other pushing, and let go of it"),"one who was pushed and then let go says so: "+after);
+            }).thenSucceed();
+    }
+
+    /**
+     * Any swing a reader can sit on can be pushed. The porch's kind (Drisking's yard swing is one) hangs on ropes and has one gentle
+     * arc: a push takes it a little wider, never as wide as there is not room for. One is hung in the air over the park for the case.
+     */
+    @GameTest(template="empty",batch="park_rope",timeoutTicks=2400)
+    public static void aRopeSwingIsPushedALittleWiderAndNoFurtherThanThereIsRoom(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final SeatEntity[] seat={null};
+        int rx=-15,ry=14,rz=-23;var at=b.offset(rx,ry,rz);double mid=rx+1,line=rz+.5;final double[] was={0};
+        java.util.function.DoublePredicate clear=arc->{
+            // The seat and the one on it at the back end of an arc this wide.
+            var end=HouseReadSwing.seat(HouseReadSwing.pivot(HouseReadSwing.pair(l,at)),Direction.SOUTH,-arc);
+            return l.noCollision(new AABB(end.x-.95,end.y-.1,end.z-.3,end.x+.95,end.y+1.1,end.z+.3));
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("rope_rider",P);p[1]=f.player("rope_hands",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.bikeAt(b,NightBike.Make.WASP)!=null,"the night has begun"))
+            .thenExecute(()->{
+                // A rope swing as Drisking's yard has it: a plank two blocks wide on its ropes under a bar, facing south.
+                var plank=HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,HouseReadPropBlock.Part.SWING).setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING,Direction.NORTH);
+                var rope=HouseReadRegistry.ROPE.get().defaultBlockState().setValue(net.minecraft.world.level.block.ChainBlock.AXIS,Direction.Axis.Y);
+                for(int dx=0;dx<=1;dx++){l.setBlock(at.east(dx),plank,3);for(int y=1;y<=3;y++)l.setBlock(at.east(dx).above(y),rope,3);}
+                for(int dx=-1;dx<=2;dx++)l.setBlock(at.east(dx).above(4),Blocks.STRIPPED_OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X),3);
+                h.assertTrue(HouseReadSwing.is(l.getBlockState(at))&&!HouseReadSwing.pumped(l.getBlockState(at))&&HouseReadSwing.forward(l.getBlockState(at))==Direction.SOUTH&&HouseReadSwing.pair(l,at).size()==2,"a rope swing, facing south");
+                f.at(p[0],P,mid,ry,line+1.5);h.assertTrue(HouseSitting.sit(p[0],at)&&p[0].getVehicle() instanceof SeatEntity s&&s.swinging()&&!s.pumped(),"a reader sits on it");
+                seat[0]=(SeatEntity)p[0].getVehicle();
+                // Hanging still, a push from behind starts it forward.
+                f.at(p[1],P,mid,ry,line-2.8);hush(p[1]);hush(p[0]);
+                h.assertTrue(seat[0].arc()==0&&push(p[1],p[0]),"a hand on the one riding is taken");
+                h.assertTrue(Math.abs(seat[0].pushed()-HouseReadSwing.PUSHED)<1e-6&&Math.abs(seat[0].swingAngle(0))<1e-9&&seat[0].swingAngle(1)>.01,"a push from behind starts a still rope swing forward: "+seat[0].pushed()+" "+seat[0].swingAngle(1));
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],HouseReadSwing.PUSH_HINT)&&heard(p[0],String.format(HouseReadSwing.PUSHED_BY,"rope_hands")),"the one pushing is told how, and the one pushed is told who"))
+            .thenExecute(()->{
+                // Left alone the push eases off, and the swing comes to the gentle arc it has always had.
+                seat[0].swing(l.getGameTime()-400);
+            })
+            .thenIdle(200)
+            .thenExecute(()->{
+                h.assertTrue(seat[0].pushed()==0&&Math.abs(seat[0].arc()-HouseReadSwing.REACH)<1e-9&&Math.abs(seat[0].swingAngle(0)-HouseReadSwing.angle(seat[0].swingTicks(0)))<1e-12,
+                    "left alone the push eases off, and the swing is on the gentle arc it has always had: "+seat[0].pushed()+" "+seat[0].arc());
+            })
+            // Pushed as it starts away, twice: a little wider than its gentle arc, and no wider than a rope swing goes.
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)<-.05&&going(seat[0])>0,"waiting for it to start away"))
+            .thenExecute(()->h.assertTrue(push(p[1],p[0])&&Math.abs(seat[0].pushed()-HouseReadSwing.PUSHED)<1e-6,"a push as it starts away takes it wider: "+seat[0].pushed()))
+            .thenIdle(HouseReadSwing.PUSH_WAIT)
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)<-.05&&going(seat[0])>0,"waiting for it to start away again"))
+            .thenExecute(()->{
+                h.assertTrue(push(p[1],p[0])&&Math.abs(seat[0].arc()-HouseReadSwing.ROPE_HIGH)<1e-6&&HouseReadSwing.ROPE_HIGH>HouseReadSwing.REACH&&HouseReadSwing.ROPE_HIGH<HouseReadSwing.HIGH,
+                    "and again, to the widest a rope swing is pushed, which is well short of a swing that is pumped: "+seat[0].arc());
+                h.assertTrue(clear.test(seat[0].arc()),"with nothing behind it there is room for that");
+                // Something behind it, where the widest arc would reach: it goes only as wide as there is room for.
+                for(int dx=-1;dx<=2;dx++)for(int y=0;y<=2;y++)l.setBlock(at.offset(dx,y,-3),Blocks.STONE.defaultBlockState(),3);
+                h.assertTrue(!clear.test(HouseReadSwing.ROPE_HIGH)&&clear.test(HouseReadSwing.ROPE_HIGH-.05),"a wall three blocks behind it stands where the widest arc would reach, and not where one a little narrower would");
+            })
+            .thenIdle(HouseReadSwing.PUSH_WAIT)
+            .thenWaitUntil(()->h.assertTrue(seat[0].swingAngle(0)<-.05&&going(seat[0])>0,"waiting for it to start away a third time"))
+            .thenExecute(()->{
+                h.assertTrue(push(p[1],p[0])&&seat[0].arc()<=HouseReadSwing.ROPE_HIGH-.05+1e-6&&seat[0].arc()>HouseReadSwing.REACH+.05&&clear.test(seat[0].arc()),
+                    "pushed again with the wall there, it goes only as wide as there is room for: "+seat[0].arc());
+                p[0].stopRiding();
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                h.assertTrue(seat[0].isRemoved()&&l.getBlockState(at.above(2)).is(HouseReadRegistry.ROPE.get()),"off it, the swing hangs still on its ropes again");
+                for(int dx=-1;dx<=2;dx++)for(int y=0;y<=4;y++)for(int dz=-3;dz<=0;dz++)l.setBlock(at.offset(dx,y,dz),Blocks.AIR.defaultBlockState(),3);
             }).thenSucceed();
     }
 

@@ -84,6 +84,8 @@ public final class BikeNight {
         final Set<UUID> bumpedOff=new HashSet<>();final Map<UUID,String> bumpedWhom=new HashMap<>();
         /** Whether each reader was standing on the merry-go-round when they were last looked at. */
         final Map<UUID,Boolean> onWheel=new HashMap<>();
+        /** 0.4.474: pushes a reader has given somebody on the swings; whom they last pushed; and who last pushed them. */
+        final Map<UUID,Integer> swingPushes=new HashMap<>();final Map<UUID,String> pushedWhom=new HashMap<>(),pushedBy=new HashMap<>();
         /** Who was on the other end of the seesaw when a reader last pushed off, for their record. */
         final Map<UUID,String> rodeWith=new HashMap<>();
         /** The furthest anyone has landed off the swings tonight, in paces; whose it is; and where its mark is in the sand. */
@@ -245,6 +247,11 @@ public final class BikeNight {
     // ------------------------------------------------------------------------------------------------ the swings
     /** A reader has let go of a park swing (HouseReadSwing.jump). How far out they come down is paced from under its bar. */
     public static void letGo(ServerPlayer p,Vec3 pivot,Direction forward){var n=night(p);if(n!=null)n.flights.put(p.getUUID(),new Flight(pivot,forward,n.tick));}
+    /** 0.4.474: a reader on the sand has pushed another on one of the park's swings (HouseReadSwing.hand). It goes in both their records. */
+    static void swingPushed(ServerPlayer p,ServerPlayer rider){
+        var n=night(p);if(n==null||night(rider)!=n)return;
+        n.swingPushes.merge(p.getUUID(),1,Integer::sum);n.pushedWhom.put(p.getUUID(),rider.getGameProfile().getName());n.pushedBy.put(rider.getUUID(),p.getGameProfile().getName());
+    }
     static void flights(ServerLevel l,Night n){
         if(n.flights.isEmpty())return;
         for(var it=n.flights.entrySet().iterator();it.hasNext();){
@@ -366,6 +373,9 @@ public final class BikeNight {
             if(!own.getBoolean("SwingTold")){own.putBoolean("SwingTold",true);cue(p,BikeNightTexts.SWING_HINT);}
         }
         Integer far=n.landed.remove(id);if(far!=null&&far>own.getInt("SwingBest"))own.putInt("SwingBest",far);
+        Integer hands=n.swingPushes.remove(id);if(hands!=null)own.putInt("SwingPushes",own.getInt("SwingPushes")+hands);
+        String pushedWhom=n.pushedWhom.remove(id);if(pushedWhom!=null)own.putString("SwingPushed",pushedWhom);
+        String pushedBy=n.pushedBy.remove(id);if(pushedBy!=null)own.putString("SwingPushedBy",pushedBy);
         Integer balls=n.thrown.remove(id);if(balls!=null)own.putInt("Sand",own.getInt("Sand")+balls);
         Integer hits=n.hits.remove(id);if(hits!=null)own.putInt("SandHits",own.getInt("SandHits")+hits);
         Integer down=n.slid.remove(id);if(down!=null)own.putInt("Slid",own.getInt("Slid")+down);
