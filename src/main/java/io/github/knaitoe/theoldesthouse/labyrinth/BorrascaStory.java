@@ -250,7 +250,7 @@ public final class BorrascaStory {
         if(rel.equals(BorrascaRooms.TRAIL_MAP)){LiteraryVignettes.open(p,PLACE,own,"Map",BorrascaTexts.document("Map"),BorrascaRooms.at(b,rel));return true;}
         // 0.4.422: the framed history hangs in the historical society now, on the street past the chapel (BorrascaShops.click).
         // 0.4.451: once the front has been papered over, the board is its own last original.
-        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){boolean covered=own.getInt("TownPostersVisit")>=BorrascaPapers.PAPERED;LiteraryVignettes.open(p,PLACE,own,covered?"BoardAfter":BorrascaTexts.boardKey(visit),covered?BorrascaTexts.boardAfter():BorrascaTexts.board(visit),BorrascaRooms.at(b,rel));return true;}
+        if(Arrays.asList(BorrascaRooms.BOARD).contains(rel)){boolean covered=own.getInt("TownPostersVisit")>=BorrascaPapers.PAPERED;LiteraryVignettes.open(p,PLACE,own,covered?"BoardAfter":BorrascaTexts.boardKey(visit,BorrascaDogs.noticeDown(own)),covered?BorrascaTexts.boardAfter():BorrascaTexts.board(visit,BorrascaDogs.noticeDown(own)),BorrascaRooms.at(b,rel));return true;}
         if(rel.equals(BorrascaRooms.NOTES)){LiteraryVignettes.open(p,PLACE,own,BorrascaTexts.notesKey(visit>=3),BorrascaTexts.notes(visit>=3),BorrascaRooms.at(b,rel));return true;}
         if(visit>=2&&rel.equals(BorrascaRooms.ELI_POSTER)){
             LiteraryVignettes.open(p,PLACE,own,"EliPoster",BorrascaTexts.document("EliPoster"),BorrascaRooms.at(b,rel));
@@ -486,6 +486,7 @@ public final class BorrascaStory {
         townBike(p,b,own,visit);
         BorrascaComic.keep(p,b,own,visit); // 0.4.445: the comic in the fort's window, for as long as it is left there
         BorrascaPeople.tick(p,b,own,visit); // 0.4.425: the keepers at their counters, the purse for this visit, the bar's door
+        BorrascaDogs.tick(p,b,own); // 0.4.462: Biscuit, by the first marker, on the rope, or home
         scene(p,b,own);
         if(!own.getBoolean("CastRecalled"))return;
         cast(own,visit,prescott,w0,w1);
@@ -842,6 +843,7 @@ public final class BorrascaStory {
             return;
         }
         if(recentSpeech(p))return;
+        if(BorrascaDogs.atMarker(p,own,eli,wren))return; // 0.4.462: before they go, Kendra hears a dog in the trees
         if(!own.getBoolean("AlongWrenSaid")){own.putBoolean("AlongWrenSaid",true);say(p,wren,FAREWELL_WREN);return;}
         own.putBoolean("AlongHeard",true);own.putBoolean("AlongHome",true);say(p,eli,FAREWELL_ELI);
     }
@@ -1319,7 +1321,7 @@ public final class BorrascaStory {
     private static void townPosters(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
         int stage=frontStage(own,visit);
         if(stage<BorrascaPapers.PATRICK||own.getInt("TownPostersVisit")>=stage||!BorrascaPapers.loaded(p.serverLevel(),b))return;
-        BorrascaPapers.hang(p.serverLevel(),b,stage);
+        BorrascaPapers.hang(p.serverLevel(),b,stage,BorrascaDogs.noticeDown(own)); // 0.4.462: with the dog's notice down, if he is home
         own.putInt("TownPostersVisit",stage);
     }
 
@@ -1445,9 +1447,10 @@ public final class BorrascaStory {
     }
     /** Capture intent; the actual door travel callback is the sole return authority. */
     public static void depart(ServerPlayer p){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);
+        BorrascaDogs.left(p,own); // 0.4.462: a dog on the rope goes back to where he was found
         // 0.4.429: her knife never leaves the hill in a pocket; it went back to her.
         if(!BorrascaBelongings.remove(p,own,BorrascaBelongings.KNIFE).isEmpty()){own.putBoolean("KnifeBack",true);own.putBoolean("KnifeKept",true);}boolean valid=BorrascaSites.inside(p)&&own.getBoolean("Here")&&!own.getBoolean("Interrupted")&&p.isAlive();if(valid&&own.getInt("Beat")>=own.getInt("Visit"))own.putInt("DepartVisit",own.getInt("Visit"));else own.remove("DepartVisit");own.putBoolean("ExitEligible",valid&&own.getInt("Visit")==4&&(own.getInt("ConfirmedVisits")&7)==7&&own.getBoolean("Ready")&&own.getBoolean("PowerOff")&&own.getBoolean("EvidenceRead")&&carriesEvidence(p,own));own.putBoolean("Here",false);save(p,own);}
-    public static void returned(ServerPlayer p){BorrascaPeople.leave(p);var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("BorrascaDeparted",true);own.putBoolean("Escorting",false);own.putInt("Suspicion",0);int returned=own.getInt("DepartVisit");if(returned>=1&&returned<=3){own.putInt("ConfirmedVisits",own.getInt("ConfirmedVisits")|(1<<(returned-1)));own.putInt("CastNextVisit",returned+1);}if(own.getBoolean("ExitEligible")&&carriesEvidence(p,own)){own.putBoolean("NameReturned",own.getBoolean("RestoredName"));own.putBoolean("Completed",true);own.putInt("Beat",4);save(p,own);WitnessAccount.resolve(p,WitnessAccount.Story.BORRASCA,"silenced_the_mountain");d.setCompleted(PLACE.id(),true);WitnessAccount.updateBook(p,false);}own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}
+    public static void returned(ServerPlayer p){BorrascaPeople.leave(p);var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);BorrascaDogs.left(p,own);own.putBoolean("BorrascaDeparted",true);own.putBoolean("Escorting",false);own.putInt("Suspicion",0);int returned=own.getInt("DepartVisit");if(returned>=1&&returned<=3){own.putInt("ConfirmedVisits",own.getInt("ConfirmedVisits")|(1<<(returned-1)));own.putInt("CastNextVisit",returned+1);}if(own.getBoolean("ExitEligible")&&carriesEvidence(p,own)){own.putBoolean("NameReturned",own.getBoolean("RestoredName"));own.putBoolean("Completed",true);own.putInt("Beat",4);save(p,own);WitnessAccount.resolve(p,WitnessAccount.Story.BORRASCA,"silenced_the_mountain");d.setCompleted(PLACE.id(),true);WitnessAccount.updateBook(p,false);}own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}
     /** 0.4.444 (owner: "Two dorseys"): a townsperson the reader's record no longer names does not come back into the world. */
     @SubscribeEvent public static void strayKeeper(EntityJoinLevelEvent event){
         if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.owner().isEmpty())return;
@@ -1455,5 +1458,5 @@ public final class BorrascaStory {
     }
     @SubscribeEvent public static void joined(EntityJoinLevelEvent event){if(!(event.getEntity() instanceof LiteraryActor a)||!(event.getLevel() instanceof ServerLevel l)||!a.scene().equals(PLACE.id())||a.role()!=LiteraryActor.BORRASCA_KIMBER||a.owner().isEmpty())return;var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),a.owner().get(),PLACE);if(own.getInt("Visit")==4){a.appearance(LiteraryActor.BORRASCA_KIMBER,GROWN);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);a.setInvisible(false);return;}if(own.getInt("Visit")>=3||own.getBoolean("FriendMissing")){a.appearance(LiteraryActor.BORRASCA_KIMBER,MISSING);a.setCustomNameVisible(false);a.setItemSlot(EquipmentSlot.OFFHAND,ItemStack.EMPTY);if(own.getInt("Visit")>=3||own.getBoolean("FriendHidden")){a.setInvisible(true);BorrascaCast.stop(a);}}}
     @SubscribeEvent public static void rejoined(PlayerEvent.PlayerLoggedInEvent event){if(!(event.getEntity() instanceof ServerPlayer p)||!BorrascaSites.inside(p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);if(own.getBoolean("Here")){own.putBoolean("CastRecalled",false);BorrascaArcadeFriends.arrived(p,own);save(p,own);}}
-    @SubscribeEvent public static void died(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&BorrascaSites.inside(p)){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);own.putBoolean("Here",false);own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}}
+    @SubscribeEvent public static void died(LivingDeathEvent event){if(event.getEntity() instanceof ServerPlayer p&&BorrascaSites.inside(p)){BorrascaCast.release(p.getUUID());BorrascaPeople.leave(p);var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);BorrascaDogs.left(p,own);own.putBoolean("Here",false);own.remove("ExitEligible");own.remove("DepartVisit");save(p,own);}}
 }

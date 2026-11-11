@@ -109,18 +109,19 @@ for her porch steps, which she never asked him to mend. The truck's number is th
 tables are stacked in the depot's yard. Nothing of it is there on a later visit. The noticeboard keeps its own lines, with the
 supper cancelled for a storm on the last night.
 
-## 5. More play (later)
+## 5. More play (the dog built, 0.4.462; the games later)
 
 - **Tag and hide and seek** with all four, in the trees behind the store, started by any of them and dropped whenever the reader
-  walks off.
-- **The animal in the woods:** the noticeboard already has "Lost: brown dog, answers to Biscuit." The children find the dog below
-  the first marker. It can be led home on a length of rope. The notice comes down on the next visit.
+  walks off. Not built yet.
+- **The animal in the woods** (built as docs/BORRASCA_BISCUIT_0_4_462.md): the noticeboard already had "Lost: brown dog, answers
+  to Biscuit." Kendra hears him in the trees by the first marker and Patrick knows whose he is. A chewed rope trails from his
+  collar, and he can be led home on it to the Corleys' gate. The notice is down on the next visit.
 
 ## Order
 
 1. The window and the comic, and room 6.
 2. The arcade.
-3. The letter (built). 4. The supper (built). 5. More play.
+3. The letter (built). 4. The supper (built). 5. More play (the dog built; the games next).
 
 The playtest notes of the same day (docs/BORRASCA_PLAYTEST_2026_11_10.md) list what is broken in the town now; those come first
 where they touch the same places (the comic spinner, the cabinets, Dorsey).

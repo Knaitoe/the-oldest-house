@@ -1588,5 +1588,9 @@
   "item.the_oldest_house.borrasca_letter": "A letter for the Garritys",
   "item.the_oldest_house.borrasca_folding_table": "Folding table",
   "item.the_oldest_house.borrasca_plates": "Stack of plates",
-  "item.the_oldest_house.borrasca_pecan_pie": "Slice of pecan pie"
+  "item.the_oldest_house.borrasca_pecan_pie": "Slice of pecan pie",
+  "entity.the_oldest_house.borrasca_dog": "Biscuit",
+  "subtitles.the_oldest_house.borrasca.dog_bark": "Dog barks",
+  "subtitles.the_oldest_house.borrasca.dog_whine": "Dog whines",
+  "subtitles.the_oldest_house.borrasca.dog_pant": "Dog pants"
 }

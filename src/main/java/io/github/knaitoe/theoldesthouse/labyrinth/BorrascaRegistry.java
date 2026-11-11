@@ -23,6 +23,9 @@ public final class BorrascaRegistry {
     /** 0.4.435: a child's bike while somebody rides it (BorrascaBike). Never saved: a bike nobody is on is a block. */
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<BorrascaBike>> BIKE=ENTITIES.register("borrasca_bike",
         ()->net.minecraft.world.entity.EntityType.Builder.<BorrascaBike>of(BorrascaBike::new,net.minecraft.world.entity.MobCategory.MISC).sized(.6F,.9F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("borrasca_bike"));
+    /** 0.4.462: Biscuit, the Corleys' lost dog (BorrascaDog, BorrascaDogs): the game's wolf with his own goals and his own skin. */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>,net.minecraft.world.entity.EntityType<BorrascaDog>> DOG=ENTITIES.register("borrasca_dog",
+        ()->net.minecraft.world.entity.EntityType.Builder.<BorrascaDog>of(BorrascaDog::new,net.minecraft.world.entity.MobCategory.CREATURE).sized(.6F,.85F).eyeHeight(.68F).clientTrackingRange(10).noSummon().build("borrasca_dog"));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<BorrascaFittingBlock>> FITTING_TYPE=CODECS.register("borrasca_fitting",()->BorrascaFittingBlock.CODEC);
     public static final DeferredBlock<BorrascaFittingBlock> FITTING=BLOCKS.registerBlock("borrasca_fitting",BorrascaFittingBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(-1,3600000).noOcclusion().noLootTable().lightLevel(s->s.getValue(BorrascaFittingBlock.KIND)==BorrascaFittingBlock.Kind.LAMP?13:0));
     /** 0.4.422: the shops' fittings (BorrascaShopBlock) and three of their surfaces, drawn by tools/draw_borrasca_town_art.py. */
@@ -68,7 +71,10 @@ public final class BorrascaRegistry {
         PECAN_PIE=food("pecan_pie",BorrascaFood.Kind.PECAN); // 0.4.461: the church supper's
     private static DeferredItem<BorrascaFood> food(String id,BorrascaFood.Kind kind){return ITEMS.register("borrasca_"+id,()->new BorrascaFood(kind));}
     public static final DeferredHolder<SoundEvent,SoundEvent> GRINDER=sound("grinder"),GRINDER_MUFFLED=sound("grinder_muffled"),MOTOR_STOP=sound("motor_stop"),TREE_CREAK=sound("tree_creak"),TOWN_WIND=sound("town_wind"),CHIME=sound("triple_chime"),STROKE=sound("stroke"),CARVE=sound("carve"),BREAKER=sound("breaker"),CHAIN=sound("chain"),MACHINE_WET=sound("machine_wet");
+    /** 0.4.462: Biscuit's voice: the game's own wolf recordings under his own subtitles (tools/draw_borrasca_dog.py). */
+    public static final DeferredHolder<SoundEvent,SoundEvent> DOG_BARK=sound("dog_bark"),DOG_WHINE=sound("dog_whine"),DOG_PANT=sound("dog_pant");
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register("borrasca."+id,()->id.equals("triple_chime")||id.equals("stroke")?SoundEvent.createFixedRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca."+id),256):SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"borrasca."+id)));}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);ENTITIES.register(bus);
+        bus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent e)->e.put(DOG.get(),net.minecraft.world.entity.animal.Wolf.createAttributes().add(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE,32).build()));}
     private BorrascaRegistry(){}
 }

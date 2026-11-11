@@ -2223,4 +2223,104 @@ public final class BorrascaTests {
               h.assertTrue(BorrascaShopTexts.look(BorrascaShopBlock.Kind.FOLDED,0,true).contains("Folding tables")&&BorrascaShopTexts.look(BorrascaShopBlock.Kind.FOLDED,0,true).contains("pie dish"),"and a hand on them finds where a pie dish stood");
           }).thenSucceed();
     }
+
+    /**
+     * 0.4.462, Borrasca life part 5 (docs/BORRASCA_BISCUIT_0_4_462.md). The owner: "I'd also add more active play - hide and seek,
+     * tag, maybe the kids find an animal in the woods." The store's board has always had "Lost: brown dog, answers to Biscuit."
+     */
+    @AfterBatch(batch="borrasca_dog") public static void dogDone(ServerLevel l){cleanup();}
+    @GameTest(template="empty",batch="borrasca_dog",timeoutTicks=4800)
+    public static void theLostDogIsFoundByTheFirstMarkerAndLedHomeOnHisRope(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_biscuit");var q=f.player("pine_stray");
+        java.util.function.Function<ServerPlayer,BorrascaDog> dog=r->BorrascaDogs.dog(f.out,f.own(r));
+        java.util.function.Function<ServerPlayer,String> hand=r->{var own=f.own(r);String line=BorrascaDogs.hand(r,dog.apply(r),own);f.save(r,own);return line;};
+        java.util.function.Function<LiteraryActor,String> heard=who->who==null||who.getCustomName()==null?"":who.getCustomName().getString();
+        java.util.function.BiFunction<ServerPlayer,Integer,String> ask=(r,phase)->{var own=f.own(r);var a=BorrascaPeople.keeper(r,own,phase);BorrascaPeople.talk(r,a,own);f.save(r,own);return heard.apply(a);};
+        java.util.function.Function<ServerPlayer,Integer> leads=r->f.out.getEntitiesOfClass(ItemEntity.class,new AABB(r.blockPosition()).inflate(24),e->e.getItem().is(Items.LEAD)).size()+r.getInventory().countItem(Items.LEAD);
+        java.util.function.BiConsumer<Entity,Vec3> put=(e,at)->{if(e instanceof ServerPlayer r){r.teleportTo(f.out,at.x,at.y,at.z,180,0);r.setDeltaMovement(Vec3.ZERO);}else e.moveTo(at.x,at.y,at.z,180,0);};
+        final java.util.UUID[] first={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->{f.enter(p);f.enter(q);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(q).getBoolean("CastRecalled"),"the cast is in place for both readers"))
+          .thenWaitUntil(()->h.assertTrue(dog.apply(p)!=null&&dog.apply(q)!=null&&BorrascaPeople.keeper(p,f.own(p),BorrascaPeople.MRS_CORLEY)!=null,"each reader's town has its dog, and Mrs. Corley is on the lawn"))
+          .thenExecute(()->{
+              var b=f.base(p);var d=dog.apply(p);first[0]=d.getUUID();var at=BorrascaRooms.at(b,BorrascaDogs.FOUND);
+              // Where he is: under a tree a few steps east of the first marker, on ground, lying down; nobody's, and not to be hurt.
+              h.assertTrue(d.position().distanceTo(Vec3.atBottomCenterOf(at))<.8&&d.isInSittingPose()&&f.out.getBlockState(at.below()).isCollisionShapeFullBlock(f.out,at.below())&&f.out.getBlockState(at).isAir(),"he lies where he is found, on ground: "+d.position());
+              h.assertTrue(at.distManhattan(BorrascaRooms.at(b,BorrascaRooms.MARKER_ONE))<=10&&f.out.getBlockState(BorrascaRooms.at(b,BorrascaDogs.FOUND.offset(2,0,0))).is(net.minecraft.tags.BlockTags.LOGS),"a few steps from the first marker, by a tree: "+f.out.getBlockState(BorrascaRooms.at(b,BorrascaDogs.FOUND.offset(2,0,0))));
+              h.assertTrue(d.getType()==BorrascaRegistry.DOG.get()&&!d.isTame()&&d.isInvulnerable()&&!d.canBeLeashed()&&!d.isFood(new ItemStack(Items.BEEF))&&d.isPersistenceRequired()&&d.getTarget()==null,"he is his own kind of dog: nobody's, not to be fed or hurt, and no lead goes on him");
+              h.assertTrue(BorrascaDogs.owns(p,d)&&!BorrascaDogs.owns(q,d)&&!dog.apply(q).getUUID().equals(d.getUUID()),"each reader's dog is their own");
+              h.assertTrue(text(BorrascaTexts.board(1,BorrascaDogs.noticeDown(f.own(p)))).contains("Lost: brown dog, answers to Biscuit.")&&BorrascaDogs.told(f.own(p)).isEmpty(),"the store's board has his notice, and the account has nothing of him yet");
+              // At the marker, before the two say goodbye, Kendra hears him and Patrick knows whose he is; then they have no more to say of him.
+              var eli=f.actor(p,"TownEli");var wren=f.actor(p,"TownWren");h.assertTrue(eli!=null&&wren!=null,"the two town children are there");
+              var own=f.own(p);
+              h.assertTrue(BorrascaDogs.atMarker(p,own,eli,wren)&&heard.apply(wren).contains(BorrascaDogs.KENDRA_HEARS)&&BorrascaDogs.atMarker(p,own,eli,wren)&&heard.apply(eli).contains(BorrascaDogs.PATRICK_KNOWS)&&!BorrascaDogs.atMarker(p,own,eli,wren),"Kendra hears him and Patrick knows whose he is, once each: "+heard.apply(wren)+" / "+heard.apply(eli));
+              f.save(p,own);
+              // A first hand looks. A second takes up the rope, and it is the game's lead from his collar to that hand.
+              put.accept(p,d.position().add(-1.5,0,0));
+              h.assertTrue(BorrascaDogs.SEEN.equals(hand.apply(p))&&!d.isLeashed()&&d.isInSittingPose()&&f.own(p).getBoolean("BiscuitSeen"),"a first hand looks at him");
+              h.assertTrue(BorrascaDogs.told(f.own(p)).contains("I left him where he was."),"a reader who only looked left him there");
+              h.assertTrue(BorrascaDogs.TOOK.equals(hand.apply(p))&&d.getLeashHolder()==p&&!d.isInSittingPose()&&BorrascaDogs.state(f.own(p))==BorrascaDogs.LED,"a second takes up the rope, and he gets up");
+              // A hand on him again lets it go. Nothing drops: the rope is his.
+              h.assertTrue(BorrascaDogs.LET_GO.equals(hand.apply(p))&&!d.isLeashed()&&d.isInSittingPose()&&BorrascaDogs.state(f.own(p))==BorrascaDogs.LOOSE&&leads.apply(p)==0,"a hand on him again lets the rope go, and no lead falls: "+leads.apply(p));
+              // The same through the game's own event: it is his alone, so no wolf's or lead's handling runs.
+              var click=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract(p,InteractionHand.MAIN_HAND,d);NeoForge.EVENT_BUS.post(click);
+              h.assertTrue(click.isCanceled()&&d.getLeashHolder()==p&&BorrascaDogs.state(f.own(p))==BorrascaDogs.LED,"a hand through the game's own event takes the rope up again, and the event goes no further");
+              var other=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract(q,InteractionHand.MAIN_HAND,d);NeoForge.EVENT_BUS.post(other);
+              h.assertTrue(other.isCanceled()&&d.getLeashHolder()==p&&BorrascaDogs.state(f.own(p))==BorrascaDogs.LED,"another reader's hand does nothing to him");
+              h.assertTrue(BorrascaDogs.told(f.own(p)).contains("I led him part of the way home.")&&BorrascaTexts.account(f.own(p)).contains(BorrascaDogs.told(f.own(p))),"the account has the rope");
+              // He follows a reader who walks off down toward the trail.
+              put.accept(p,Vec3.atBottomCenterOf(BorrascaRooms.at(b,6,0,-75)));
+          }).thenWaitUntil(()->h.assertTrue(dog.apply(p).distanceTo(p)<3.6&&dog.apply(p).getLeashHolder()==p,"he comes on behind on the rope: "+dog.apply(p).distanceTo(p)))
+          .thenExecute(()->put.accept(p,Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),3,0,-58))))
+          .thenWaitUntil(()->h.assertTrue(BorrascaDogs.state(f.own(p))==BorrascaDogs.LOOSE&&!dog.apply(p).isLeashed()&&dog.apply(p).isInSittingPose(),"a reader who gets too far ahead loses the rope, and he sits down where he is"))
+          .thenExecute(()->{
+              var b=f.base(p);var d=dog.apply(p);
+              h.assertTrue(leads.apply(p)==0&&d.distanceTo(p)>BorrascaDogs.ROPE,"and again no lead falls: "+leads.apply(p));
+              // Up the street from his own gate, on the rope again, past the church's lawn.
+              put.accept(d,Vec3.atBottomCenterOf(b.offset(4,0,-60)));put.accept(p,Vec3.atBottomCenterOf(b.offset(3,0,-59)));
+              h.assertTrue(BorrascaDogs.TOOK.equals(hand.apply(p))&&d.getLeashHolder()==p,"taken up again where he sat");
+          }).thenWaitUntil(()->{var corley=BorrascaPeople.keeper(p,f.own(p),BorrascaPeople.MRS_CORLEY);h.assertTrue(f.own(p).getBoolean("BiscuitCorley")&&heard.apply(corley).contains(BorrascaDogs.CORLEY_SEES),"Mrs. Corley, on the lawn, sees him go by on the rope: "+heard.apply(corley));})
+          .thenExecute(()->{
+              var b=f.base(p);h.assertTrue(!f.own(p).getBoolean("BiscuitHome"),"he is not home yet");
+              put.accept(p,Vec3.atBottomCenterOf(b.offset(4,0,-52)));p.setYRot(90);p.setYHeadRot(90);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("BiscuitHome")&&BorrascaDogs.state(f.own(p))>=BorrascaDogs.GOING_HOME&&!dog.apply(p).isLeashed(),"at his own gate he pulls free and is home"))
+          .thenWaitUntil(()->h.assertTrue(BorrascaDogs.state(f.own(p))==BorrascaDogs.HOME&&dog.apply(p).position().distanceTo(Vec3.atBottomCenterOf(f.base(p).offset(BorrascaDogs.PORCH)))<1.3&&dog.apply(p).isInSittingPose(),"he goes in at the gate and up the path to the porch on his own feet, and lies down: "+dog.apply(p).position().subtract(Vec3.atLowerCornerOf(f.base(p)))+" state "+BorrascaDogs.state(f.own(p))))
+          .thenExecute(()->{
+              var b=f.base(p);var d=dog.apply(p);
+              h.assertTrue(d.getUUID().equals(first[0])&&leads.apply(p)==0&&BorrascaDogs.AT_HOME.equals(hand.apply(p))&&!d.isLeashed(),"it is the same dog, and a hand on him at home leaves him be");
+              var gate=b.offset(BorrascaDogs.GATE);
+              h.assertTrue(f.out.getBlockState(gate).isAir()&&f.out.getBlockState(gate.above()).isAir()&&f.out.getBlockState(gate.north()).is(Blocks.OAK_FENCE)&&BorrascaHomeBlock.is(f.out.getBlockState(gate.north().above()),BorrascaHomeBlock.Kind.BOX)&&f.out.getBlockState(gate.north(2)).is(Blocks.IRON_BARS)&&f.out.getBlockState(gate.south(2)).is(Blocks.IRON_BARS)
+                  &&BorrascaSignBlock.is(f.out.getBlockState(gate.offset(-1,1,1)),BorrascaSigns.Sign.NAME_CORLEY),"that gate is the Corleys': the gap in their fence between their mailbox and their name: "+f.out.getBlockState(gate.north())+" "+f.out.getBlockState(gate.north(2))+" "+f.out.getBlockState(gate.south(2))+" "+f.out.getBlockState(gate.offset(-1,1,1)));
+              var told=BorrascaDogs.told(f.own(p));
+              h.assertTrue(told.contains("It was Biscuit, off the notice at the store.")&&told.contains("I led him down the street on it to his own gate.")&&BorrascaTexts.account(f.own(p)).contains(told),"the account has him home: "+told);
+              h.assertTrue(ask.apply(p,BorrascaPeople.MRS_CORLEY).contains(BorrascaDogs.CORLEY_HOME)&&!ask.apply(p,BorrascaPeople.MRS_CORLEY).contains(BorrascaDogs.CORLEY_HOME),"asked, Mrs. Corley says so once");
+              h.assertTrue(!BorrascaDogs.noticeDown(f.own(p))&&text(BorrascaTexts.board(1,BorrascaDogs.noticeDown(f.own(p)))).contains("Lost: brown dog"),"his notice is still up that day");
+              // The other reader's dog is where he was. That reader takes the rope and then leaves the town: he is back under his tree.
+              var e=dog.apply(q);var c=f.base(q);
+              h.assertTrue(BorrascaDogs.state(f.own(q))==BorrascaDogs.WAITING&&e.position().distanceTo(Vec3.atBottomCenterOf(BorrascaRooms.at(c,BorrascaDogs.FOUND)))<.8&&BorrascaDogs.told(f.own(q)).isEmpty(),"the second reader's dog has not been touched");
+              put.accept(q,e.position().add(-1.5,0,0));
+              h.assertTrue(BorrascaDogs.SEEN.equals(hand.apply(q))&&BorrascaDogs.TOOK.equals(hand.apply(q))&&e.getLeashHolder()==q,"the second reader takes his rope");
+              put.accept(e,Vec3.atBottomCenterOf(BorrascaRooms.at(c,6,0,-70)));
+              {var own=f.own(q);BorrascaDogs.left(q,own);f.save(q,own);}
+              h.assertTrue(BorrascaDogs.state(f.own(q))==BorrascaDogs.WAITING&&!e.isLeashed()&&e.isInSittingPose()&&e.position().distanceTo(Vec3.atBottomCenterOf(BorrascaRooms.at(c,BorrascaDogs.FOUND)))<.8&&leads.apply(q)==0,"left by a reader who goes, he is back where he was found");
+              // The second day.
+              f.at(p,0,0,-3);p.setYRot(0);p.setYHeadRot(0);f.stage(p,2);f.at(q,0,0,-3);q.setYRot(0);q.setYHeadRot(0);f.stage(q,2);
+          }).thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled")&&f.own(p).getInt("PurseVisit")==2&&f.own(q).getBoolean("CastRecalled")&&f.own(q).getInt("PurseVisit")==2,"second visit: "+BorrascaCast.why(p)))
+          .thenWaitUntil(()->h.assertTrue(dog.apply(p)!=null&&dog.apply(q)==null&&!f.own(q).hasUUID("Biscuit"),"on the second visit the dog who was brought home is there, and the one who was not is gone"))
+          .thenExecute(()->{
+              var b=f.base(p);var d=dog.apply(p);
+              h.assertTrue(d.getUUID().equals(first[0])&&d.position().distanceTo(Vec3.atBottomCenterOf(b.offset(BorrascaDogs.PORCH)))<1.3&&d.isInSittingPose()&&BorrascaDogs.AT_HOME.equals(hand.apply(p)),"he is on his porch the next day, the same dog");
+              // His notice is down from the board, which is a new original; the reader who left him has it still.
+              var board=text(BorrascaTexts.board(2,BorrascaDogs.noticeDown(f.own(p))));
+              h.assertTrue(BorrascaDogs.noticeDown(f.own(p))&&!board.contains("Biscuit")&&board.contains("A pin hole in a paler square of cork, where a notice was.")&&board.contains("Church supper Sunday")&&BorrascaTexts.boardKey(2,true).equals("BoardNoDog")&&BorrascaTexts.boardKey(2,false).equals(BorrascaTexts.boardKey(1)),"his notice is down the next day: "+board);
+              h.assertTrue(!BorrascaDogs.noticeDown(f.own(q))&&text(BorrascaTexts.board(2,BorrascaDogs.noticeDown(f.own(q)))).contains("Lost: brown dog, answers to Biscuit."),"for the reader who left him, it is still up");
+              // The board's own picture follows: his sheet is off the one, and on the other.
+              board(h,f,p,BorrascaPapers.Sheet.BOARD_HOME,"with the dog's notice down");board(h,f,q,BorrascaPapers.Sheet.BOARD,"with the dog's notice up");
+              h.assertTrue(BorrascaPapers.board(BorrascaPapers.PATRICK,true)==BorrascaPapers.Sheet.BOARD_HOME&&BorrascaPapers.board(BorrascaPapers.AS_BUILT,true)==BorrascaPapers.Sheet.BOARD&&BorrascaPapers.board(BorrascaPapers.KENDRA,true)==BorrascaPapers.Sheet.BOARD_THIRD,"only the second visit's board has that picture");
+              h.assertTrue(f.out.getEntitiesOfClass(BorrascaDog.class,new AABB(BorrascaRooms.at(f.base(q),BorrascaDogs.FOUND)).inflate(40)).isEmpty()&&BorrascaDogs.told(f.own(q)).contains("I led him part of the way home."),"nothing of that dog is left in the trees, and that reader's account says how far he got");
+              var pages=text(BorrascaTexts.board(1)).split("Lost: brown dog, answers to Biscuit.",-1);var down=text(BorrascaTexts.boardNoDog()).split("A pin hole in a paler square of cork, where a notice was.",-1);
+              h.assertTrue(pages.length==2&&down.length==2&&pages[0].equals(down[0])&&pages[1].equals(down[1]),"the two boards differ in that one notice and nothing else");
+          }).thenSucceed();
+    }
 }

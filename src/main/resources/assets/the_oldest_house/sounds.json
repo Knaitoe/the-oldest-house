@@ -4890,5 +4890,35 @@
         "pitch": 0.55
       }
     ]
+  },
+  "borrasca.dog_bark": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.dog_bark",
+    "sounds": [
+      {
+        "name": "minecraft:mob/wolf/bark1"
+      },
+      {
+        "name": "minecraft:mob/wolf/bark2"
+      },
+      {
+        "name": "minecraft:mob/wolf/bark3"
+      }
+    ]
+  },
+  "borrasca.dog_whine": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.dog_whine",
+    "sounds": [
+      {
+        "name": "minecraft:mob/wolf/whine"
+      }
+    ]
+  },
+  "borrasca.dog_pant": {
+    "subtitle": "subtitles.the_oldest_house.borrasca.dog_pant",
+    "sounds": [
+      {
+        "name": "minecraft:mob/wolf/panting"
+      }
+    ]
   }
 }
