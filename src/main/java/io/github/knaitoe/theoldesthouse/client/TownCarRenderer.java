@@ -65,7 +65,8 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
         pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));
         for(int half=0;half<2;half++){
             pose.pushPose();pose.translate(-(half==0?FRONT:BACK)/16F,0,-ACROSS/16F);
-            part(pose,out,BODY[kind][half],light);part(pose,out,LIT[kind][half],LightTexture.FULL_BRIGHT);
+            // 0.4.487: one that stands parked has its lights off: its lamps are drawn in the night's own light, as the rest of it is.
+            part(pose,out,BODY[kind][half],light);part(pose,out,LIT[kind][half],kind>=TownCar.MOVING?light:LightTexture.FULL_BRIGHT);
             pose.popPose();
         }
         float angle=rolled/(RADIUS/16F);

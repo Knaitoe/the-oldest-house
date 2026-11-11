@@ -29,6 +29,8 @@ public final class TownCar extends Entity implements Voiced {
     public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white"};
     /** Half a car's length and half its width, in blocks; and how long one goes untold where it is before it is gone, in ticks. */
     public static final double LONG=2.25,WIDE=.95;
+    /** 0.4.487: how high one that stands parked is, as a thing in the way. */
+    public static final double HIGH=1.3;
     public static final int LEFT_ALONE=40;
     private long told;private int spokenFor;
     /** On the client: how far it has rolled, for its wheels. */
@@ -37,16 +39,30 @@ public final class TownCar extends Entity implements Voiced {
     public TownCar(EntityType<? extends TownCar> type,Level level){super(type,level);noPhysics=true;setNoGravity(true);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){b.define(KIND,0);}
     public int kind(){return entityData.get(KIND);}
-    public void kind(int kind){entityData.set(KIND,Mth.clamp(kind,0,KINDS-1));}
+    public void kind(int kind){entityData.set(KIND,Mth.clamp(kind,0,KINDS-1));setBoundingBox(makeBoundingBox());}
+    /**
+     * 0.4.487: one that stands parked is a thing in the way, as a wall is. A body does not go through it, somebody can stand on it,
+     * and a bike that meets it has met a wall (so a rider going fast comes off, by the bike's own rule). The four that drive are
+     * not: they are never where anybody is, by their own rule.
+     */
+    public boolean parked(){return kind()>=MOVING;}
+    @Override public boolean canBeCollidedWith(){return parked();}
+    /** A parked car's own length and width, along whichever way it stands: it stands square to the streets. */
+    @Override protected net.minecraft.world.phys.AABB makeBoundingBox(){
+        if(entityData==null||!parked())return super.makeBoundingBox();
+        boolean alongZ=Math.abs(Mth.sin(getYRot()*Mth.DEG_TO_RAD))<.5F;double hx=alongZ?WIDE:LONG,hz=alongZ?LONG:WIDE;
+        return new net.minecraft.world.phys.AABB(getX()-hx,getY(),getZ()-hz,getX()+hx,getY()+HIGH,getZ()+hz);
+    }
+    @Override public void onSyncedDataUpdated(net.minecraft.network.syncher.EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(KIND.equals(key))setBoundingBox(makeBoundingBox());}
     /** Where it is this tick, and the way it points. */
-    public void place(Vec3 at,float yaw){told=level().getGameTime();setPos(at.x,at.y,at.z);setYRot(yaw);}
+    public void place(Vec3 at,float yaw){told=level().getGameTime();setYRot(yaw);setPos(at.x,at.y,at.z);}
     /** Its driver calls something out. */
     public void say(String line){setCustomName(Component.literal(line));setCustomNameVisible(true);spokenFor=Dialogue.ticks(line);}
     public boolean saying(){return spokenFor>0;}
     @Override public String speaker(){return "";}
     @Override public void tick(){
         super.tick();
-        if(level().isClientSide){rolledBefore=rolled;rolled+=Math.hypot(getX()-xo,getZ()-zo);return;}
+        if(level().isClientSide){rolledBefore=rolled;rolled+=Math.hypot(getX()-xo,getZ()-zo);if(parked())setBoundingBox(makeBoundingBox());return;}
         if(spokenFor>0&&--spokenFor==0)setCustomNameVisible(false);
         if(level().getGameTime()-told>LEFT_ALONE)discard();
     }

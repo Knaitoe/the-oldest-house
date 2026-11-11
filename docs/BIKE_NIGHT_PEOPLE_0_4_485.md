@@ -95,6 +95,24 @@ part of the town asleep) is where they were when it wakes; nobody is made twice.
 - **Nobody calls from a window.** The proposal's "windows and sidewalks" is pavements and drivers here; a lit window
   with a voice in it would be a set piece of the next slice if wanted.
 
+## 0.4.487: the parked cars are in the way
+
+As first built, the two parked cars were only something to look at. A bike went through them, and so did anybody on
+foot; and one of the three's ways across Big Top's lot ran along the middle of the bays they stand in, so the three rode
+through both. Found while the grocery's lot was being read for the stock boy, not by a case: the case that walks every
+way of the town looks for blocks in the way, and has no cars in it.
+
+- **A parked car is a thing in the way now,** as a wall is: as long, as wide and as high as it is. A body does not go
+  through it, somebody can stand on it, and a bike that meets it has met a wall, so a rider going fast comes off by the
+  bike's own rule. The four that drive are not: they are never where anybody is, by their own rule.
+- **The way across the lot** goes along its south edge, in front of the cars' noses.
+- **The three see them.** What they take for a clear ride is asked of the world, and the world now has the cars in it.
+- **Their lights are off.** This note said so from the first, and it was not so: every car's lamps were drawn lit. A
+  parked car's lamps are drawn in the night's own light now, as the rest of it is.
+
+One case: the cars' size as the world has it; every way of the town clear with the cars parked; across the bays is not a
+clear ride and in front of them is; a reader riding flat out at the side of one comes off, the bike never inside it.
+
 ## Cases
 
 Four, in `BikeNightTests` (61 in all):
