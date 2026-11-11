@@ -282,6 +282,9 @@ final class BorrascaDressing {
         box(l,b,-4,3,-101,-3,16,-101,wood);box(l,b,-4,6,-100,-4,16,-100,wood);
         box(l,b,0,5,-101,1,17,-101,wood);box(l,b,1,5,-100,1,17,-100,wood);
         box(l,b,4,0,-100,5,16,-100,wood);box(l,b,5,6,-99,5,16,-99,wood);
+        // 0.4.448: names on the thick of the east trunk at its foot, and on the trunks' other halves where they pass through the fort.
+        for(int x=4;x<=5;x++)for(int y=0;y<=2;y++)set(l,b,x,y,-100,BorrascaNamesBlock.old(x,y,-100));
+        for(int[] t:new int[][]{{-4,-100},{1,-100},{5,-99}})for(int y=6;y<=8;y++)set(l,b,t[0],y,t[1],BorrascaNamesBlock.old(t[0],y,t[1]));
         // Roots over the ground, out to the sides beyond the forks (behind the burl is the trail again, past them).
         int[][] roots={{-6,-99,0},{-7,-99,0},{-7,-100,2},{-8,-98,2},{6,-98,0},{7,-98,0},{7,-99,2},{8,-100,2},{-6,-96,0},{6,-95,0}};
         for(var r:roots)set(l,b,r[0],0,r[1],log(Blocks.OAK_LOG,r[2]==0?Direction.Axis.X:Direction.Axis.Z));

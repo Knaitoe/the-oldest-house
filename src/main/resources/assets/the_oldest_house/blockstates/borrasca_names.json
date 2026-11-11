@@ -1,0 +1,76 @@
+{
+  "variants": {
+    "face=0": {
+      "model": "the_oldest_house:block/borrasca_names/bark_00"
+    },
+    "face=1": {
+      "model": "the_oldest_house:block/borrasca_names/bark_01"
+    },
+    "face=10": {
+      "model": "the_oldest_house:block/borrasca_names/bark_10"
+    },
+    "face=11": {
+      "model": "the_oldest_house:block/borrasca_names/bark_11"
+    },
+    "face=12": {
+      "model": "the_oldest_house:block/borrasca_names/bark_12"
+    },
+    "face=13": {
+      "model": "the_oldest_house:block/borrasca_names/bark_13"
+    },
+    "face=14": {
+      "model": "the_oldest_house:block/borrasca_names/bark_14"
+    },
+    "face=15": {
+      "model": "the_oldest_house:block/borrasca_names/bark_15"
+    },
+    "face=16": {
+      "model": "the_oldest_house:block/borrasca_names/bark_16"
+    },
+    "face=17": {
+      "model": "the_oldest_house:block/borrasca_names/bark_17"
+    },
+    "face=18": {
+      "model": "the_oldest_house:block/borrasca_names/bark_18"
+    },
+    "face=19": {
+      "model": "the_oldest_house:block/borrasca_names/bark_19"
+    },
+    "face=2": {
+      "model": "the_oldest_house:block/borrasca_names/bark_02"
+    },
+    "face=20": {
+      "model": "the_oldest_house:block/borrasca_names/bark_20"
+    },
+    "face=21": {
+      "model": "the_oldest_house:block/borrasca_names/bark_21"
+    },
+    "face=22": {
+      "model": "the_oldest_house:block/borrasca_names/bark_22"
+    },
+    "face=23": {
+      "model": "the_oldest_house:block/borrasca_names/bark_23"
+    },
+    "face=3": {
+      "model": "the_oldest_house:block/borrasca_names/bark_03"
+    },
+    "face=4": {
+      "model": "the_oldest_house:block/borrasca_names/bark_04"
+    },
+    "face=5": {
+      "model": "the_oldest_house:block/borrasca_names/bark_05"
+    },
+    "face=6": {
+      "model": "the_oldest_house:block/borrasca_names/bark_06"
+    },
+    "face=7": {
+      "model": "the_oldest_house:block/borrasca_names/bark_07"
+    },
+    "face=8": {
+      "model": "the_oldest_house:block/borrasca_names/bark_08"
+    },
+    "face=9": {
+      "model": "the_oldest_house:block/borrasca_names/bark_09"
+    }
+  }
+}

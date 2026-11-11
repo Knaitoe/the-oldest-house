@@ -181,6 +181,9 @@ final class BorrascaTown {
         // The burl: one mass of bark from which the trunks part. The trail forks round it, at x -4 and x 3.
         box(l,b,-3,0,-100,2,2,-98,log(Blocks.OAK_WOOD,Direction.Axis.Y));box(l,b,-3,3,-100,1,4,-99,log(Blocks.OAK_WOOD,Direction.Axis.Y));
         set(l,b,3,3,-99,log(Blocks.OAK_WOOD,Direction.Axis.X));
+        // 0.4.448 (owner: "There should be names all over this tree."): the whole burl is cut with names, generations of them.
+        for(var at:BlockPos.betweenClosed(-3,0,-100,2,2,-98))set(l,b,at.getX(),at.getY(),at.getZ(),BorrascaNamesBlock.old(at.getX(),at.getY(),at.getZ()));
+        for(var at:BlockPos.betweenClosed(-3,3,-100,1,4,-99))set(l,b,at.getX(),at.getY(),at.getZ(),BorrascaNamesBlock.old(at.getX(),at.getY(),at.getZ()));
         set(l,b,-4,-1,-98,Blocks.MOSS_BLOCK);set(l,b,-5,0,-98,Blocks.FERN);set(l,b,4,0,-97,Blocks.FERN);set(l,b,-1,0,-102,Blocks.FERN);
         // Platform, posts and braces.
         box(l,b,-5,5,-100,5,5,-88,Blocks.SPRUCE_PLANKS);for(int[] at:new int[][]{{-2,-95},{1,-97},{3,-92},{-4,-91},{2,-99}})set(l,b,at[0],5,at[1],hash(at[0],5,at[1])%2==0?Blocks.BIRCH_PLANKS:Blocks.OAK_PLANKS);
@@ -207,8 +210,12 @@ final class BorrascaTown {
         set(l,b,0,11,-94,hanging());
         // The three trunks run up through the floor, wall and roof, and crown together above it.
         for(int[] t:new int[][]{{-3,-100,3},{0,-100,5},{4,-99,0}}){box(l,b,t[0],t[2],t[1],t[0],17,t[1],log(Blocks.OAK_LOG,Direction.Axis.Y));crown(l,b,t[0],t[1],17);}
+        // Names up the east trunk as high as a child on another's shoulders can reach, and on all three where they stand in the fort.
+        for(int y=0;y<=4;y++)set(l,b,4,y,-99,BorrascaNamesBlock.old(4,y,-99));
+        for(int[] t:new int[][]{{-3,-100},{0,-100},{4,-99}})for(int y=6;y<=8;y++)set(l,b,t[0],y,t[1],BorrascaNamesBlock.old(t[0],y,t[1]));
         for(int[] limb:new int[][]{{-5,14,-100},{-4,14,-100},{5,15,-99},{6,15,-99}})set(l,b,limb[0],limb[1],limb[2],log(Blocks.OAK_LOG,Direction.Axis.X));
         BuildBlocks.set(l,b.offset(BorrascaRooms.CARVING),BorrascaRegistry.CARVING.get().defaultBlockState(),F);
+        BuildBlocks.set(l,b.offset(BorrascaRooms.FRIENDS_NAMES),BorrascaNamesBlock.friends(1),F);
         BorrascaRooms.join(l,b,-6,6,-101,6,8,-87);
     }
     private static void crown(ServerLevel l,BlockPos b,int x,int z,int top){for(int k=0;k<6;k++){int y=top-4+k,w=k<2?3:k<4?2:1;for(int dx=-w;dx<=w;dx++)for(int dz=-w;dz<=w;dz++)if(dx*dx+dz*dz<=w*w+1&&(dx!=0||dz!=0||y>top)&&BuildBlocks.state(l,b.offset(x+dx,y,z+dz)).isAir())set(l,b,x+dx,y,z+dz,leaves());}}
