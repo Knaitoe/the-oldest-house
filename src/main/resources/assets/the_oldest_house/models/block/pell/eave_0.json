@@ -2,7 +2,7 @@
   "ambientocclusion": false,
   "textures": {
     "f": "the_oldest_house:block/pell_fascia",
-    "c": "the_oldest_house:block/pell_ceiling",
+    "c": "the_oldest_house:block/pell/soffit",
     "r": "the_oldest_house:block/pell_roof",
     "particle": "the_oldest_house:block/pell_fascia"
   },

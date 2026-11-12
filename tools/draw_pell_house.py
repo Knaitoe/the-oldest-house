@@ -206,20 +206,29 @@ def brick_low():
 
 
 def roof():
-    """Concrete roof tiles in courses, each lapping the one below, their noses in shadow."""
-    im = new('#8f5b49', 51806, 5)
+    """Concrete roof tiles in courses, each lapping the one below: every tile a shade apart from its neighbours, its rounded top
+    catching the light and its nose in shadow; a few spots of lichen."""
+    im = new('#8f5b49', 51806, 4); rnd = random.Random(51805); px = im.load()
+    for row, y0 in enumerate((0, 4, 8, 12)):
+        for x0 in range((0 if row % 2 == 0 else 4) - 8, 16, 8):
+            tone = rnd.randint(-8, 8)
+            for x in range(max(0, x0), min(16, x0 + 8)):
+                for y, k in ((y0, 12), (y0 + 1, 4), (y0 + 2, -6)):
+                    px[x, y] = shade(px[x, y], tone + k)
     for y in (3, 7, 11, 15):
         fill(im, 0, y, 16, y + 1, '#5e392e')
     for row, y in enumerate((0, 4, 8, 12)):
         for x in range(0 if row % 2 == 0 else 4, 16, 8):
             fill(im, x, y, x + 1, y + 3, '#774a3b')
     speckle(im, 51807, 9, ['#a16a57', '#7f5041'])
+    for x, y in ((5, 1), (6, 1), (12, 9), (2, 10)):
+        dot(im, x, y, '#a8a07c')
     return im
 
 
 def fascia():
     """The eaves' board: painted timber, the grain showing through the paint, a nail head, the paint flaking in two places."""
-    im = wood('#e7e0cf', 51808, 1, knot=False)
+    im = wood('#ddd5c3', 51808, 1, knot=False)
     fill(im, 0, 15, 16, 16, '#b9b09c'); fill(im, 0, 14, 16, 15, '#d6cebb'); fill(im, 0, 0, 16, 1, '#f3eee2')
     for x, y in ((3, 6), (4, 7), (11, 9), (12, 9)):
         dot(im, x, y, '#cfc6b2')
@@ -228,15 +237,33 @@ def fascia():
 
 
 def lawn(dry):
-    base = '#b59c5e' if dry else '#5c9a3a'
-    im = new(base, 51810 + dry, 7); rnd = random.Random(51812 + dry)
-    blades = ['#c9b272', '#9d8449', '#a9925a'] if dry else ['#74b24b', '#4b8530', '#67a640']
-    for _ in range(34):
-        x, y = rnd.randrange(16), rnd.randrange(15)
-        c = rnd.choice(blades); dot(im, x, y, c); dot(im, x, y + 1, c)
+    """A lawn from above: the blades in clumps, each dark at its root, lighter up its length and palest at its tip, some leaning. June's
+    is watered, with a little clover in it. Dry, the street's lawns in the watering ban: straw, bare soil showing in patches, a few
+    tufts still green. Nothing pale enough to stand out: one bright pixel would repeat on every block of lawn as a grid of dots."""
+    rnd = random.Random(51812 + dry)
     if dry:
-        for _ in range(7):
-            dot(im, rnd.randrange(16), rnd.randrange(16), '#8a7446')
+        im = new('#a88e54', 51811, 6); root, mid, tip, bright = '#86703f', '#b59c5e', '#cdb677', '#e0cc8e'
+    else:
+        im = new('#4c8730', 51810, 5); root, mid, tip, bright = '#3b6c24', '#5a9a38', '#76b44a', '#92c95e'
+    px = im.load()
+    if dry:
+        for _ in range(3):
+            x, y = rnd.randrange(16), rnd.randrange(16)
+            for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1), (2, 1)):
+                px[(x + dx) % 16, (y + dy) % 16] = shade('#8a6e46', rnd.randint(-6, 6))
+    for _ in range(50 if dry else 58):
+        x, y, lean = rnd.randrange(16), rnd.randrange(16), rnd.choice((0, 0, 1, -1))
+        px[x, (y + 2) % 16] = shade(root, rnd.randint(-3, 3))
+        px[x, (y + 1) % 16] = shade(mid, rnd.randint(-4, 4))
+        px[(x + lean) % 16, y] = shade(tip if rnd.random() < .8 else bright, rnd.randint(-3, 3))
+    if dry:
+        for _ in range(4):
+            x, y = rnd.randrange(16), rnd.randrange(16)
+            px[x, y] = shade('#7a8a40', 0); px[x, (y + 1) % 16] = shade('#5e6e30', 0)
+    else:
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            px[(x + dx) % 16, (y + dy) % 16] = shade('#4e9a48', 0)
     return im
 
 
@@ -273,7 +300,19 @@ def concrete_oil():
 
 
 def asphalt():
-    im = new('#3d3d40', 51816, 5); speckle(im, 51817, 22, ['#55555a', '#2f2f32', '#646468'])
+    """The road, sealed years ago and gone grey in the sun: the stones of its aggregate showing, some bigger and lit on their upper
+    side, and darker where the tar has come up."""
+    im = new('#47474a', 51816, 4); rnd = random.Random(51817); px = im.load()
+    for _ in range(46):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        c = rnd.choice(['#606064', '#6c6c70', '#56565a', '#7a7a7c', '#665e56'])
+        px[x, y] = shade(c, rnd.randint(-3, 3))
+        if rnd.random() < .3:
+            px[(x + 1) % 16, (y + 1) % 16] = shade(c, -16)
+    for _ in range(5):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            px[(x + dx) % 16, (y + dy) % 16] = shade('#38383b', rnd.randint(-2, 2))
     return im
 
 
@@ -339,10 +378,21 @@ def deck():
 
 
 def mulch():
-    im = new('#5b3f2c', 51828, 8); rnd = random.Random(51829)
-    for _ in range(20):
-        x, y = rnd.randrange(15), rnd.randrange(16); c = rnd.choice(['#77543a', '#463020', '#8a6444'])
-        dot(im, x, y, c); dot(im, x + 1, y, c)
+    """Bark mulch in the front garden's beds: chips of bark in several browns, each lit along its upper edge, dark gaps between them,
+    and a twig or two."""
+    im = new('#3a281b', 51828, 4); rnd = random.Random(51829); px = im.load()
+    for _ in range(24):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        w, h = rnd.choice(((2, 1), (3, 1), (2, 2), (3, 2), (1, 2)))
+        c = rnd.choice(['#6e4a30', '#7a553a', '#5e3e28', '#8a6444', '#7a6a5a'])
+        for dy in range(h):
+            for dx in range(w):
+                k = 14 if dy == 0 else -10 if dy == h - 1 else 0
+                px[(x + dx) % 16, (y + dy) % 16] = shade(c, k + rnd.randint(-4, 4))
+    for _ in range(2):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for i in range(4):
+            px[(x + i) % 16, (y + i // 2) % 16] = shade('#9a8a72', rnd.randint(-6, 6))
     return im
 
 
@@ -627,10 +677,13 @@ def glass(kind):
         for i in range(5):
             dot(im, 3 + i, 7 - i, '#f4fbfd', 150); dot(im, 9 + i, 12 - i, '#f4fbfd', 110)
     elif kind == 'blinds':
+        # Venetian blinds, down and shut: each slat lit along its top and shaded under it, a crack of the dark room between two of
+        # them, one slat bent, and the cord.
         fill(im, 0, 0, 16, 16, '#d9d2bd')
-        for y in range(1, 16, 2):
-            fill(im, 0, y, 16, y + 1, '#b3ab93')
-        fill(im, 12, 0, 13, 16, '#8f886f')
+        for y in range(0, 16, 2):
+            fill(im, 0, y, 16, y + 1, '#e4ddc9'); fill(im, 0, y + 1, 16, y + 2, '#b3ab93')
+        fill(im, 0, 9, 16, 10, '#5a554c'); fill(im, 3, 6, 7, 7, '#ece6d4'); fill(im, 3, 7, 7, 8, '#9e967e')
+        fill(im, 12, 0, 13, 16, '#8f886f'); dot(im, 12, 15, '#6e6852')
     else:
         im = new('#f1efe8', 51872, 3)
         rnd = random.Random(51873)
@@ -641,25 +694,83 @@ def glass(kind):
     return im
 
 
+def soffit():
+    """The eaves' lining from below: fibre-cement sheet painted cream and in the shade, the joint strip along its edge with its nails,
+    and a cobweb gone grey in one corner."""
+    im = enamel('#d2cab6', 51890, 2)
+    fill(im, 0, 0, 16, 1, '#b8b09c'); fill(im, 0, 1, 16, 2, '#c4bca8')
+    for x in (2, 7, 12):
+        dot(im, x, 0, '#8e8676')
+    for x, y in ((14, 13), (15, 14), (13, 14), (15, 12)):
+        dot(im, x, y, '#bdb5a3')
+    return im
+
+
 def frame():
     im = metal('#c9ccc8', 51874, 1); fill(im, 0, 0, 16, 1, '#e4e6e2'); fill(im, 0, 1, 16, 2, '#d8dad6'); fill(im, 0, 15, 16, 16, '#9a9e9a')
     fill(im, 0, 14, 16, 15, '#b2b6b2')
     return im
 
 
-def tarp(pond):
-    """The pool's cover: a blue tarpaulin gone grey along its folds. Where it sags, rainwater and leaves."""
+def tarp(plain=False):
+    """The pool's cover: a blue tarpaulin, paler where the sun has had it, faintly creased where it was folded, a little grit. Its leaves
+    have all washed down into the pond. Nothing on it runs from edge to edge, and its cells are turned at random as vanilla turns
+    grass, so it does not repeat in rows. Plain, only the cloth, which the pond's edges are drawn on."""
     im = new('#4f6f96', 51876, 4)
-    for i in range(16):
-        dot(im, i, (i * 3) % 16, '#7f96b3'); dot(im, (i * 5 + 2) % 16, i, '#3d5878')
-    fill(im, 0, 7, 16, 8, '#6a84a6')
-    if pond:
-        for y in range(2, 14):
-            for x in range(2, 14):
-                d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
-                if d < 5.6:
-                    dot(im, x, y, '#2f3f38' if d < 4.4 else '#3f5650')
-        for x, y, c in ((5, 6, '#8a6a2c'), (6, 6, '#8a6a2c'), (9, 9, '#6f5220'), (10, 8, '#9a7a34'), (7, 10, '#5a6a2a'), (4, 9, '#6f5220')):
+    if plain:
+        return im
+    rnd = random.Random(51877); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 10.5) ** 2 + (y - 4.5) ** 2) ** .5
+            if d < 5:
+                px[x, y] = shade(px[x, y], 6 if d < 3.5 else 3)
+    for x0, y0, x1, y1 in ((2, 11, 8, 8), (9, 13, 13, 12)):
+        n = max(abs(x1 - x0), abs(y1 - y0))
+        for i in range(n + 1):
+            x, y = round(x0 + (x1 - x0) * i / n), round(y0 + (y1 - y0) * i / n)
+            px[x, y] = shade(px[x, y], 9); px[x, y + 1] = shade(px[x, y + 1], -7)
+    for _ in range(6):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        px[x, y] = shade('#435470', rnd.randint(-4, 4))
+    return im
+
+
+def pond(leaves=True):
+    """Rainwater held where the cover sags: dark and still, the cover's blue showing through it here and there, the sky faint in two
+    ripples, a smear of sludge, and one fallen gum leaf (none along the pond's edges, where they would repeat cell after cell)."""
+    im = new('#2e3e3b', 51891, 3); rnd = random.Random(51892); px = im.load()
+    for _ in range(6):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        px[x, y] = shade('#33494f', rnd.randint(-3, 3))
+    for x, y, n in ((3, 3, 3), (9, 12, 2)):
+        for dx in range(n):
+            px[x + dx, y] = shade('#3e5551', rnd.randint(-2, 2))
+    for x, y in ((11, 4), (12, 4), (12, 5), (5, 10), (6, 10)):
+        px[x, y] = shade('#263431', rnd.randint(-2, 2))
+    if leaves:
+        for x, y, c in ((3, 10, '#8a6a2c'), (4, 10, '#7a5a26'), (5, 11, '#5e4a20')):
+            dot(im, x, y, c)
+    return im
+
+
+def pond_edge(corner):
+    """Where the pond meets the dry cover, as drawn facing north: the dry cloth to the north (and to the west, at a corner), the
+    cloth darkened where the water has stood, a broken line of grit where it stood highest, the water's edge catching the sky, then
+    the water. A corner's edge is a quarter circle ten pixels round its south-east corner, so it meets the straight edges six pixels
+    in, and turned copies of the two make one pond with rounded corners. A leaf has caught at each corner's edge."""
+    im = tarp(True); water = pond(False); px = im.load(); wpx = water.load(); rnd = random.Random(51893 + corner)
+    for y in range(16):
+        for x in range(16):
+            t = 16 - ((15.5 - x) ** 2 + (15.5 - y) ** 2) ** .5 if corner else y + .5
+            if t > 6:
+                px[x, y] = shade(wpx[x, y], 10) if t <= 7 else wpx[x, y]
+            elif t > 4:
+                px[x, y] = shade(px[x, y], -14 if t > 5 else -9)
+            elif t > 3 and rnd.random() < .6:
+                px[x, y] = shade('#5f5c4c', rnd.randint(-5, 5))
+    if corner:
+        for x, y, c in ((9, 8, '#8a6a2c'), (10, 8, '#7a5a26'), (10, 9, '#5e4a20')):
             dot(im, x, y, c)
     return im
 
@@ -714,8 +825,8 @@ def mat_back():
 def faces():
     out = {'tin': tin(False), 'tin_front': tin(True), 'mat': mat(), 'mat_back': mat_back(),
            'paling': paling(), 'paling_gate': paling_gate(), 'pool_bars': pool_bars(), 'pool_gate': pool_bars(True), 'pool_gate_locked': pool_bars(True, True),
-           'roller': roller(), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(),
-           'tarp': tarp(False), 'tarp_pond': tarp(True), 'post': wood('#6b6052', 51878, 3, across=True), 'pool_post': metal('#2c2e30', 51879), 'stars_glow': stars_glow()}
+           'roller': roller(), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(), 'soffit': soffit(),
+           'tarp': tarp(), 'tarp_pond': pond(), 'tarp_rim': pond_edge(False), 'tarp_corner': pond_edge(True), 'post': wood('#6b6052', 51878, 3, across=True), 'pool_post': metal('#2c2e30', 51879), 'stars_glow': stars_glow()}
     for layout in range(1, len(STAR_LAYOUTS)):
         out[f'stars_{layout}'] = ceiling_stars(layout); out[f'stars_glow_{layout}'] = stars_glow(layout)
     for kind in ('inner', 'garage', 'shed'):
@@ -809,9 +920,13 @@ def fitting_models():
         pane = [] if open_ else [element([0, 0.5 if not upper else 0, 7.8], [16, 15 if upper else 16, 8.2], {'north': 'g', 'south': 'g'}),
                                  element([0, 0, 7.5], [1, 16, 8.5], {'all': 'f'}), element([15, 0, 7.5], [16, 16, 8.5], {'all': 'f'})]
         m[f'slider_{stage}'] = model(rail + pane, {'f': 'frame', 'g': 'glass_clear'}, 'frame', 'minecraft:translucent' if pane else 'minecraft:cutout')
-    # The pool's cover, lying on the water: dry; and holding a pond.
+    # The pool's cover, lying on the water: dry; the pond in its sag; the pond's edge, the dry side to the north as drawn; and a
+    # corner of the pond, dry to the north and west. Every cell lies at the one height (0.4.529): the sheet has no sides, so a step
+    # between two cells left a gap the pool's lit tiles showed through as a bright line round the pond. The sag is in the drawing.
+    # Seen from under the water every cell is only the cloth.
     m['tarp_0'] = model([element([0, 13, 0], [16, 13.5, 16], {'up': 't', 'down': 't'})], {'t': 'tarp'}, 'tarp')
-    m['tarp_1'] = model([element([0, 12, 0], [16, 12.5, 16], {'up': 't', 'down': 't'})], {'t': 'tarp_pond'}, 'tarp_pond')
+    for stage, name in ((1, 'tarp_pond'), (2, 'tarp_rim'), (3, 'tarp_corner')):
+        m[f'tarp_{stage}'] = model([element([0, 13, 0], [16, 13.5, 16], {'up': 't', 'down': 'u'})], {'t': name, 'u': 'tarp'}, name)
     # The letterbox on its post, its front to the north as drawn; and the mat.
     m['letterbox_0'] = model([element([7, 0, 7], [9, 10, 9], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),
                               element([4, 10, 5], [12, 15, 11], {'all': 't', 'north': 'f'}, uv={'north': [0, 0, 16, 16]})], {'p': 'post', 't': 'tin', 'f': 'tin_front'}, 'tin')
@@ -824,17 +939,25 @@ def fitting_models():
         for name, out in (('wall', ('north',)), ('wall_corner', ('north', 'west'))):
             m[f'{name}_{stage}'] = {'parent': 'minecraft:block/cube', 'textures': {**{k: NS + 'block/pell_' + (course if k in out else 'plaster') for k in ('north', 'south', 'east', 'west', 'up', 'down')},
                                                                                    'particle': NS + 'block/pell_' + course}}
-    # The eaves: the top half of the cell. A painted board on its edges, the soffit underneath, tiles on top.
-    m['eave_0'] = {'ambientocclusion': False, 'textures': {'f': NS + 'block/pell_fascia', 'c': NS + 'block/pell_ceiling', 'r': NS + 'block/pell_roof', 'particle': NS + 'block/pell_fascia'},
+    # The eaves: the top half of the cell. A painted board on its edges, the soffit's lining underneath, tiles on top.
+    m['eave_0'] = {'ambientocclusion': False, 'textures': {'f': NS + 'block/pell_fascia', 'c': P + 'soffit', 'r': NS + 'block/pell_roof', 'particle': NS + 'block/pell_fascia'},
                    'elements': [element([0, 8, 0], [16, 16, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'up': 'r', 'down': 'c'},
                                         uv={k: [0, 8, 16, 16] for k in ('north', 'south', 'east', 'west')})]}
     return m
 
 
 KINDS = ['fence', 'pool_fence', 'pool_gate', 'gate', 'door', 'garage_door', 'shed_door', 'screen', 'roller', 'window', 'slider', 'tarp', 'letterbox', 'doormat', 'wall', 'wall_corner', 'eave']
-STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 2, 'wall': 3, 'wall_corner': 3}
+STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 4, 'wall': 3, 'wall_corner': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
+# Turned a quarter at random cell by cell, whatever their facing, as vanilla turns grass, so a surface with nothing running across it
+# does not repeat in rows: the ground's loose surfaces, and the pool cover's dry cloth and the middle of its pond.
+TURNED = ('lawn', 'lawn_dry', 'mulch', 'asphalt')
+TURNED_FITTINGS = (('tarp', 0), ('tarp', 1))
+
+
+def turned(model_id):
+    return [{'model': model_id, **({'y': y} if y else {})} for y in (0, 90, 180, 270)]
 NAMES = {'pell_fitting': 'House Fitting', 'pell_brick': 'Brick Veneer', 'pell_brick_low': 'Brick Veneer, Lowest Course', 'pell_brick_new': 'Newer Brick',
          'pell_roof': 'Roof Tiles', 'pell_fascia': 'Eaves Board', 'pell_lawn': 'Watered Lawn', 'pell_lawn_dry': 'Dry Lawn', 'pell_concrete': 'Concrete',
          'pell_concrete_print': 'Concrete, Handprint', 'pell_concrete_oil': 'Concrete, Stained', 'pell_asphalt': 'Road', 'pell_curb': 'Curb', 'pell_paver': 'Patio Pavers', 'pell_coping': 'Pool Coping', 'pell_pool_tile': 'Pool Tiles',
@@ -857,7 +980,8 @@ def files():
     out = {}
     for name in materials():
         out[f'models/block/pell_{name}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + f'block/pell_{name}'}}
-        out[f'blockstates/pell_{name}.json'] = {'variants': {'': {'model': NS + f'block/pell_{name}'}}}
+        model_id = NS + f'block/pell_{name}'
+        out[f'blockstates/pell_{name}.json'] = {'variants': {'': turned(model_id) if name in TURNED else {'model': model_id}}}
     # The stars show in the dark: the ceiling, and under it a sheet of the stars alone that lights itself.
     cube = {k: {'texture': '#all', 'cullface': k} for k in ('north', 'south', 'east', 'west', 'up', 'down')}
     stars = []
@@ -880,7 +1004,9 @@ def files():
             for stage in range(MAX_STAGE):
                 drawn = stage if stage < STAGES.get(kind, 1) else 0
                 v = {'model': NS + f'block/pell/{kind}_{drawn}'}
-                if y:
+                if (kind, drawn) in TURNED_FITTINGS:
+                    v = turned(v['model'])
+                elif y:
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/pell_fitting.json'] = {'variants': variants}
