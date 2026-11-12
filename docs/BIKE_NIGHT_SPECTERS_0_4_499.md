@@ -1,4 +1,4 @@
-# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500; the werewolf, 0.4.501)
+# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500; the werewolf, 0.4.501; the headless rider, 0.4.502)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"): "**Specters chase**", and "Being caught by any of them is
 the Hollow's failure." As answered on November 11: the Hollow is one shared course, and each specter is private to
@@ -168,9 +168,57 @@ The proof's page of the specters has him between the witch and the ghosts: runni
 quarter, gathered, and in the air. I have looked at it. His ears were a pixel thick and showed as a spike from the
 side; they are two.
 
+## 0.4.502: the headless rider
+
+"a **headless rider on a headless horse** comes up behind on the last stretch", and "The headless rider on the last
+stretch is a check on pace."
+
+**Who he is.** All in one dark cloth to the wrists, gloves and boots, and no head; nothing is drawn where it would be.
+His horse is the colour of slate, with a saddle on a cloth and the stump of a neck that ends in nothing with a pale
+rim. No wound is drawn on either of them. His skin is painted with the rest of the cast (stranger phase 192); the
+horse is its own model and sheet, drawn in code, with legs that go in pairs. He sits it leaning into the gallop.
+
+**Where and when.** He comes for a reader who rides onto the last stretch, ten blocks behind them and no further
+back than the top, and rides after them up the middle of the way. His horse does not mind the gap.
+
+**The pace.** He makes 0.22 of a block a tick. A bike is pedalled at 0.32. So somebody who keeps going draws away
+from him; somebody who stops, or waits too long at the gap, or goes down and is set back, has him come up. They hear
+the horse, louder as he closes.
+
+**Caught.** Whoever he comes within a block and a fifth of is caught, as the witch's and the werewolf's are. He pulls
+up and is gone when his reader is on the far side's ground. He comes once for each reader in a night.
+
+**With the werewolf.** The gap in the last stretch is one of the werewolf's. A rider who reaches it at speed has the
+rider some thirteen blocks behind, which he covers in about three seconds; the werewolf's cycle is two and a half.
+So there is time to wait for the werewolf to land once, and not twice. (This is arithmetic. No case rides it with
+both of them there.)
+
+One sound: "Hooves come up behind" (44 cues).
+
+Each specter's case now runs with only its own specter coming (`BikeNightSpecters.only`), so that the rider's case is
+not also the werewolf's.
+
+### Cases
+
+One (90 in the namespace). It passed the first time it was run.
+
+- On the top, nobody is behind anybody.
+- **A reader who rides onto the last stretch and stops** has him come ten blocks behind them on the ground that is
+  there; he comes on and never falls back; he is their reader's alone, who hears the horse; and he has them in about
+  two seconds, at his own pace. It is in their record that it was him. A second reader on the top is not his.
+- **A reader who rides the last stretch without stopping**, with a tap at its gap, is on the far side's ground with
+  him never having been within three blocks of them, and he is gone.
+
+The proof has a page of him: from the side at two moments of the horse's stride, from the front quarter, and from
+behind (26 pages). I have looked at it. The first drawing of him was all one black, which would not have been seen
+at night, and had the pale front of a shirt at his collar with a dark line down it, which read as a wound; the horse
+is slate now and he is one dark cloth.
+
 ## Not built, not seen, and left with the owner
 
-- **The headless rider**, and the ghouls and goblins that jump out.
+- **The ghouls and goblins that jump out.**
+- The rider's numbers are first guesses: ten blocks, 0.22, a block and a fifth. Whether three seconds at the last gap
+  with the werewolf across it is fair for a failure that is for good is the owner's to say.
 - The werewolf's numbers are first guesses: thirty-six ticks, fourteen in the air, a block and a third. A rider who
   does not look and rides straight at the gap is over it for about a third of a second, and he is in the air for
   seven tenths of a second in every two and a half; whether that is the right chance of being caught for good is the

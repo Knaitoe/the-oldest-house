@@ -2174,5 +2174,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 191
+  },
+  {
+    "name": "literary_hollow_rider",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 192
   }
 ]

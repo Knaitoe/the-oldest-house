@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
  * caught by any of them is the Hollow's failure." As answered: the Hollow is one shared course, and each specter is private to
  * whoever it is after, as the House's other private actors are.
  *
- * <p>0.4.500: the ghosts are here too, which catch nobody (see {@link Haunt}). 0.4.501: and the werewolf (see {@link Wolf}).
+ * <p>0.4.500: the ghosts are here too, which catch nobody (see {@link Haunt}). 0.4.501: and the werewolf (see {@link Wolf}). 0.4.502: and the headless rider (see {@link Rider}).
  *
  * <p>The first of them is here: "witches swoop low on brooms across the path, to be ducked or dodged", and "ducking a witch is the
  * hop's crouch, so a witch just before a gap is a choice." A witch crosses the plain way at each of {@link #SWOOPS}: two of them a
@@ -38,9 +38,11 @@ public final class BikeNightSpecters {
     public static final int GHOST=188,GHOSTS=3,DRIFT=2;
     /** 0.4.501: the werewolf, and what he is doing: running, gathered to leap, in the air. */
     public static final int WOLF=191,RUN=3,CROUCH=4,LEAP=5;
-    public static boolean cast(int phase){return phase>=WITCH&&phase<=WOLF;}
+    /** 0.4.502: the headless rider, and his horse going flat out. */
+    public static final int RIDER=192,GALLOP=6;
+    public static boolean cast(int phase){return phase>=WITCH&&phase<=RIDER;}
     public static boolean ghost(int phase){return phase>=GHOST&&phase<GHOST+GHOSTS;}
-    public static String skin(int phase){return phase==WOLF?"hollow_wolf":ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
+    public static String skin(int phase){return phase==RIDER?"hollow_rider":phase==WOLF?"hollow_wolf":ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     /** A row a witch crosses the plain way on (along its middle): the row, the middle of the way there, and how high its ground is. */
     public record Swoop(int z,double x,double top){}
@@ -97,6 +99,26 @@ public final class BikeNightSpecters {
         Wolf(int gap,UUID actor,double z){this.gap=gap;this.actor=actor;this.z=z;}
     }
 
+    /**
+     * 0.4.502, the headless rider. "a **headless rider on a headless horse** comes up behind on the last stretch", and "The
+     * headless rider on the last stretch is a check on pace." He comes for a reader who rides onto the last stretch (north of
+     * RIDER_FROM), RIDER_BEHIND blocks behind them and no further back than the top, and rides after them up the middle of the way
+     * at RIDER_PACE: slower than a bike is pedalled, so somebody who keeps going draws away from him, and somebody who stops, or
+     * waits too long at the gap, or goes down and is set back, has him come up. His horse does not mind the gap. They hear its
+     * hooves, louder as he closes. Whoever he comes within RIDER_REACH of is caught (BikeNightHollow.taken). He pulls up and is gone
+     * when his reader is on the far side's ground.
+     */
+    public static final double RIDER_BEHIND=10,RIDER_PACE=.22,RIDER_REACH=1.2;
+    public static final int RIDER_FROM=-396,RIDER_START=-386,HOOVES_EVERY=10;
+    /** One rider coming. */
+    static final class Rider{
+        final UUID actor;double z,y;
+        Rider(UUID actor,double z,double y){this.actor=actor;this.z=z;this.y=y;}
+    }
+    /** Which of the specters come at all, or null for all of them: "witch", "ghosts", "wolf", "rider". For tests of one of them. */
+    public static @Nullable java.util.Set<String> only;
+    private static boolean comes(String which){return only==null||only.contains(which);}
+
     /** One witch on her way across. */
     static final class Pass{
         final int row,side;@Nullable UUID actor;double f,df;boolean committed,over;
@@ -107,6 +129,8 @@ public final class BikeNightSpecters {
         final Map<UUID,Pass> passes=new HashMap<>();final Map<UUID,Integer> had=new HashMap<>(),over=new HashMap<>();
         /** 0.4.500: each reader's ghosts, when the next may come, and how many have gone through them. */
         /** 0.4.501: each reader's werewolf, which gaps they have had him at, and how many times he has leapt for them. */
+        /** 0.4.502: each reader's rider, and who has had him. */
+        final Map<UUID,Rider> riders=new HashMap<>();final java.util.Set<UUID> ridden=new java.util.HashSet<>();
         final Map<UUID,Wolf> wolves=new HashMap<>();final Map<UUID,Integer> wolfHad=new HashMap<>(),leaps=new HashMap<>();
         final Map<UUID,List<Drift>> drifts=new HashMap<>();final Map<UUID,Long> nextGhost=new HashMap<>();final Map<UUID,Integer> chills=new HashMap<>(),ghosts=new HashMap<>();
     }
@@ -116,8 +140,10 @@ public final class BikeNightSpecters {
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var s=n.specters;if(keptAway)return;
-        haunt(l,n,here);
-        prowl(l,n,here);
+        if(comes("ghosts"))haunt(l,n,here);
+        if(comes("wolf"))prowl(l,n,here);
+        if(comes("rider"))chase(l,n,here);
+        if(!comes("witch"))return;
         for(var p:here){
             var id=p.getUUID();
             if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id)){end(l,s,id);continue;}
@@ -134,6 +160,36 @@ public final class BikeNightSpecters {
         // A witch whose reader has gone is gone.
         for(var id:List.copyOf(s.passes.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there)end(l,s,id);}
     }
+    /** The headless rider: coming up behind whoever is on the last stretch. */
+    private static void chase(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var s=n.specters;
+        for(var p:here){
+            var id=p.getUUID();boolean out=!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id);
+            Entity body=p.getVehicle() instanceof NightBike bike?bike:p;var at=BikeNightHollow.from(n,body.position());
+            var r=s.riders.get(id);
+            if(r==null){
+                double top=CalderHollow.top(Mth.floor(at.x),Mth.floor(at.z));
+                if(out||s.ridden.contains(id)||at.z>=RIDER_FROM||at.z<=CalderHollow.FAR_SIDE+1||Double.isNaN(top)||Math.abs(at.y-top)>1.5||Math.abs(at.x-.5)>3)continue;
+                double z=Math.min(RIDER_START,at.z+RIDER_BEHIND),y=height(z,top);
+                var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
+                a.bind(BikeNight.PLACE,id);a.appearance(LiteraryActor.STRANGER,RIDER);a.gesture(GALLOP);a.setNoGravity(true);a.noPhysics=true;
+                a.moveTo(n.base.getX()+.5,n.base.getY()+y,n.base.getZ()+z,180,0);a.setYHeadRot(180);a.setYBodyRot(180);
+                if(l.addFreshEntity(a)){s.riders.put(id,new Rider(a.getUUID(),z,y));s.ridden.add(id);}
+                continue;
+            }
+            var a=l.getEntity(r.actor) instanceof LiteraryActor found?found:null;
+            // He pulls up when they are on the far side's ground, or he is.
+            if(a==null||out||at.z<=CalderHollow.FAR_SIDE+1||r.z<=CalderHollow.FAR_SIDE+2){if(a!=null)a.discard();s.riders.remove(id);continue;}
+            r.z-=RIDER_PACE;r.y=height(r.z,r.y);
+            a.moveTo(n.base.getX()+.5,n.base.getY()+r.y,n.base.getZ()+r.z,180,0);a.setYHeadRot(180);a.setYBodyRot(180);
+            double off=Math.abs(at.z-r.z);
+            if(n.tick%HOOVES_EVERY==0)p.playNotifySound(BikeNightRegistry.HOOVES.get(),SoundSource.HOSTILE,(float)Mth.clamp(1.2-off/14,.15,1),1F);
+            if(off<RIDER_REACH&&Math.abs(at.x-.5)<2.5&&Math.abs(at.y-r.y)<3){a.discard();s.riders.remove(id);BikeNightHollow.taken(l,n,p,"rider");}
+        }
+        for(var id:List.copyOf(s.riders.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there){if(l.getEntity(s.riders.get(id).actor) instanceof LiteraryActor a)a.discard();s.riders.remove(id);}}
+    }
+    /** How high the plain way is at a row on the gate's line; over a gap, what it was. */
+    private static double height(double z,double last){double top=CalderHollow.top(0,Mth.floor(z));return Double.isNaN(top)?last:top;}
     /** The werewolf: coming, running up beside his reader, leaping the gap on his rhythm, going. */
     private static void prowl(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var s=n.specters;
@@ -267,6 +323,7 @@ public final class BikeNightSpecters {
         for(var id:List.copyOf(n.specters.passes.keySet()))end(l,n.specters,id);
         for(var id:List.copyOf(n.specters.drifts.keySet()))clear(l,n.specters,id);
         for(var w:n.specters.wolves.values())if(l.getEntity(w.actor) instanceof LiteraryActor a)a.discard();
+        for(var r:n.specters.riders.values())if(l.getEntity(r.actor) instanceof LiteraryActor a)a.discard();
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,BikeNightBullies.area(n.base).inflate(0,0,300),BikeNightSpecters::is))if(BikeNight.nightAt(l,a.blockPosition())==n)a.discard();
         n.specters=new Flight();
     }
@@ -276,6 +333,11 @@ public final class BikeNightSpecters {
     public static @Nullable LiteraryActor witch(ServerPlayer p){
         var n=BikeNight.night(p);if(n==null)return null;var pass=n.specters.passes.get(p.getUUID());
         return pass!=null&&pass.actor!=null&&p.serverLevel().getEntity(pass.actor) instanceof LiteraryActor a?a:null;
+    }
+    /** The headless rider that is after a reader, if one is. */
+    public static @Nullable LiteraryActor rider(ServerPlayer p){
+        var n=BikeNight.night(p);if(n==null)return null;var r=n.specters.riders.get(p.getUUID());
+        return r!=null&&p.serverLevel().getEntity(r.actor) instanceof LiteraryActor a?a:null;
     }
     /** The werewolf that is at a gap for a reader, if one is; and how many times he has leapt for them tonight. */
     public static @Nullable LiteraryActor wolf(ServerPlayer p){

@@ -5307,5 +5307,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.hollow.howl"
+  },
+  "hollow.hooves": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hollow/hooves",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.hollow.hooves"
   }
 }
