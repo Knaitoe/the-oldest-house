@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.513** gives more than six readers a town of their own in Bike night. There are six bikes, so a town takes six readers; the seventh is given a second Calder Falls, built by the House's scene-copy system, with a night of its own. Friends still go into the same town and follow each other in, and somebody who steps out comes back to the town they were in. `docs/BIKE_NIGHT_CROWD_0_4_513.md`.
+
 Development candidate **0.4.512** gives Bike night's account its co-op lines. Each reader's account says who rode with them (whoever was in the park when Tully said go) and, by name, who was on the pegs behind them or whom they were on the pegs behind. `docs/BIKE_NIGHT_TOGETHER_0_4_512.md`.
 
 Development candidate **0.4.511** builds the last of being caught in Bike night's town. The bike a reader lost to one of the three turns up later, in a later hall: two bays of a school fence against the wall, and their bike chained to it through its frame with its front wheel bent. It is in the third crossing after the night or later, in the first plain hall with room for it against a wall and out of the way through; it is theirs alone (nobody else is sent it, and nothing collides with it); and it is found once. Looked at, they hear the chain and are told what it is and that the padlock is the one off the park gate. `docs/BIKE_NIGHT_CHAINED_0_4_511.md`.
