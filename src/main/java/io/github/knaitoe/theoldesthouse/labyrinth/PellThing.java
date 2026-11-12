@@ -54,6 +54,10 @@ public final class PellThing extends HorizontalDirectionalBlock {
     public static int cell(BlockState s){Direction f=s.getValue(FACING);int at=0;for(int i=0;i<4;i++)if(ORDER[i]==f)at=i;return at*4+s.getValue(STAGE);}
     public static boolean is(BlockState s,Kind kind){return s.is(PellRegistry.THING.get())&&s.getValue(KIND)==kind;}
     public static boolean is(BlockState s){return s.is(PellRegistry.THING.get());}
+    /** 0.4.526: what a body sits in (the kitchen chairs), for a reader (HouseSitting) and for the house's people (their renderer). */
+    public static boolean seat(BlockState s){return is(s,Kind.CHAIR);}
+    /** How high a seat holds the hips, in sixteenths of a block: the kitchen chair's seat is ten up. */
+    public static int seatHeight(BlockState s){return 10;}
     /** The cell to the right of a thing facing f, as one faces its front: half 1 of a thing two cells wide. */
     public static BlockPos right(BlockPos at,Direction f){return at.relative(f.getCounterClockWise());}
     /** The cell a thing's FACING points to: end 1 of a thing two cells long. */

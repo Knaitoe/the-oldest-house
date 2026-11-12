@@ -45,6 +45,12 @@ public final class PellRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> CANE=ITEMS.register("pell_cane",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> FOLDER=ITEMS.register("pell_folder",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.526: June's dinner things (PellVisit): her plates as they lie on the table (laid, served, scraped) and the saucepan she serves
+     *  from. Drawn by tools/draw_pell_people.py; nobody is given one. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> PLATE=ITEMS.register("pell_plate",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> DINNER=ITEMS.register("pell_dinner",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SCRAPED=ITEMS.register("pell_plate_scraped",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SAUCEPAN=ITEMS.register("pell_saucepan",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: so far, Gail's car leaving (PellVisit). */
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}

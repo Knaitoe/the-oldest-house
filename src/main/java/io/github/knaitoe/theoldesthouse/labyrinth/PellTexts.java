@@ -187,6 +187,23 @@ public final class PellTexts {
         JUNE_POOL="The pool gate stays locked. That's the one thing in this house I'll ask twice.",
         JUNE_GARAGE="You're in the garage. It's all done up. For your privacy.",
         JUNE_DINNER="Dinner's at six. I'll give you a call.";
+    /**
+     * 0.4.526, the first evening (PellVisit, docs/PELL_HOUSE_DINNER_0_4_526.md): June's call, what she says as she serves and clears,
+     * and what a hand on the table finds at each place. Callum, at the table, does not speak either.
+     */
+    public static final String JUNE_CALLS="Dinner!",
+        CALLED_FAR="June, calling from the kitchen: \u201cDinner!\u201d",
+        JUNE_SERVES_TILLY="There you go, love.",
+        JUNE_SERVES="And one for you.",
+        JUNE_ASKS="Is that all right, love? Tell me if it's too hot.",
+        JUNE_CLEARS="Leave those. I'll do them.";
+    public static final String TILLYS_PLATE="Tilly's dinner.",TILLYS_EATEN="Tilly's plate. She has eaten it all.",
+        CALLUMS_PLATE="His plate. Nothing on it.",NOBODY_PLACE="A place laid. Nobody sits there.",PLATE_EMPTY="A plate. Nothing on it yet.",
+        SCRAPED_PLATE="Scraped clean.",ATE="Sausages, mash and peas, the gravy thick on the mash. You eat it all.";
+    public static final String[] CALLUM_TABLE={
+        "His hands stay under the table.",
+        "He watches Tilly's plate.",
+        "He doesn't look at his own."};
     /** June's four rules, as bits of a reader's record ("Rules"): the line, the pool gate, Nessa's room, the garage. */
     public static final int RULE_LINE=1,RULE_POOL=2,RULE_NESSA=4,RULE_GARAGE=8,RULES=15;
     /** The rule a line of June's gives, from the tour or from a hand on her, or none. */

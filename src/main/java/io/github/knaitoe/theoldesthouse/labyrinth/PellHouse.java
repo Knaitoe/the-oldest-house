@@ -47,7 +47,7 @@ public final class PellHouse {
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
-        if(PellThing.is(st)){thing(p,l,b.offset(rel),st);return true;}
+        if(PellThing.is(st)){thing(p,l,b,b.offset(rel),st,own);return true;}
         // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
         if(PellLine.is(st)){cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE)));return true;}
         if(!st.is(PellRegistry.FITTING.get()))return false;
@@ -78,7 +78,7 @@ public final class PellHouse {
      * 0.4.522: a hand on one of the house's things. Each says what it is (PellTexts.thing); the wardrobe opens and shuts, the
      * garage's bulb goes on and off by its cord, and the clock on Nessa's drawers says the time.
      */
-    static void thing(ServerPlayer p,ServerLevel l,BlockPos at,BlockState st){
+    static void thing(ServerPlayer p,ServerLevel l,BlockPos b,BlockPos at,BlockState st,CompoundTag own){
         var kind=st.getValue(PellThing.KIND);int stage=st.getValue(PellThing.STAGE);
         switch(kind){
             case WARDROBE->{
@@ -94,7 +94,10 @@ public final class PellHouse {
                 l.playSound(null,at,SoundEvents.STONE_BUTTON_CLICK_ON,SoundSource.BLOCKS,.4F,1.6F);
                 cue(p,PellTexts.thing(kind,stage==0?1:0));
             }
-            case DRAWERS->cue(p,PellTexts.thing(kind,stage)+" "+PellTexts.clock(l.getDayTime()));
+            // 0.4.526: the talking clock says the house's own hour.
+            case DRAWERS->cue(p,PellTexts.thing(kind,stage)+" "+PellTexts.clock(PellVisit.hour(b)));
+            // 0.4.526: at dinner, what is at the place nearest the hand, or the reader's own dinner, eaten.
+            case TABLE->{if(!PellVisit.table(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }

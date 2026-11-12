@@ -39,6 +39,7 @@ public final class HouseNetwork {
                 .playToClient(FaceLossPayload.TYPE,FaceLossPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.labyrinth.FaceLoss.clientSet(payload.player(),payload.gone())))
                 .playToClient(CityPayload.TYPE,CityPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CityClient.accept(payload)))
                 .playToClient(CornerPayload.TYPE,CornerPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CornerClient.accept(payload)))
+                .playToClient(PellPayload.TYPE,PellPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PellClient.accept(payload)))
                 .playToClient(SecondPersonPayload.TYPE,SecondPersonPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SecondPersonClient.accept(payload)))
                 .playToClient(CrossingPayload.TYPE,CrossingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CrossingClient.accept(payload)))
                 .playToClient(KeptStatePayload.TYPE,KeptStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.KeptClient.accept(payload)))
