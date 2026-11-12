@@ -373,4 +373,83 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_people") public static void peopleDone(ServerLevel l){done();}
+    private static int rules(LiteraryTests.Fixture f,ServerPlayer p){return f.own(p,P).getInt("Rules");}
+    private static boolean at(LiteraryActor a,BlockPos b,double x,double z,double within){return a!=null&&Math.hypot(a.getX()-(b.getX()+x),a.getZ()-(b.getZ()+z))<within;}
+    /**
+     * 0.4.525, the first visit's day (docs/PELL_HOUSE_VISIT_0_4_525.md). Gail's car is at the curb. Nobody is greeted until a reader
+     * comes up to Gail; then Gail greets them, June says hello, Gail hands over and says goodbye, and June gives the line at the step.
+     * A second reader hanging back at the turning circle does not hear it. Gail goes, and her car with her, while they are inside
+     * and cannot see. June shows them round, waiting at each stop for somebody: Callum from the hall; Nessa's room, opened; the pool,
+     * through the glass; the garage across the yard, opened. Each rule is heard by whoever is within earshot, as their own: the reader
+     * who went out to the garage has all four, the one who stayed in the living room has the two they were there for. Tilly follows
+     * June in and goes into Nessa's room; June goes back to her kitchen. A hand on June gives a rule too. And when the house is left,
+     * the visit begins again: everybody back where the first visit puts them, Gail and her car at the curb, June's doors shut.
+     */
+    @GameTest(template="empty",batch="pell_visit",timeoutTicks=6000)
+    public static void theFirstVisitShowsThemRoundAndGivesJunesRules(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_visit_reader",P);var q=f.player("pell_visit_other",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for Gail's car");})
+        .thenIdle(10).thenExecute(()->{
+            var car=PellVisit.car(l,b);
+            h.assertTrue(car.kind()==TownCar.BLUE&&car.parked()&&Math.abs(car.getX()-(b.getX()+PellVisit.CAR.x))<.1&&Math.abs(car.getZ()-(b.getZ()+PellVisit.CAR.z))<.1,"Gail's car is parked at the curb: "+car.position());
+            h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&!who(h,l,b,PellPeople.GAIL).saying(),"nobody is greeted before a reader comes up");
+            // Up to Gail, from the street.
+            f.at(p,P,.5,0,-49.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.JUNE_HELLO,"Gail turns to the reader"))
+        .thenExecute(()->h.assertTrue(said(who(h,l,b,PellPeople.GAIL)).equals(PellTexts.GAIL_GREETS),"Gail greets them first"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TOUR,"June gives the first rule at the step"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_LINE),"the line, at the step: "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(rules(f,p)==PellTexts.RULE_LINE,"the reader at the step heard it: "+rules(f,p));
+            h.assertTrue(rules(f,q)==0,"the reader back at the turning circle did not: "+rules(f,q));
+            // Both go in ahead of June, to the passage from the front door, clear of her way.
+            f.at(p,P,1.5,0,-63.5);f.at(q,P,1.5,0,-61.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TOUR+1,"June shows them Callum from the hall"))
+        .thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,PellSite.FRONT_DOOR),"she opened the front door on her way in");
+            h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,.5,-65.5,.6),"June in the hall");
+            // Along the hall to Nessa's door, the one reader nearer than the other.
+            f.at(p,P,-5.5,0,-64.5);f.at(q,P,-1.5,0,-64.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.gailGone(b)&&PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"Gail and her car go while they are inside"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TOUR+2,"June shows them Nessa's room"))
+        .thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,PellSite.NESSA_DOOR),"she opened Nessa's door");
+            h.assertTrue((rules(f,p)&PellTexts.RULE_NESSA)!=0&&(rules(f,q)&PellTexts.RULE_NESSA)!=0,"both heard it");
+            // Into the living room, either side of the way June comes.
+            f.at(p,P,2.5,0,-69.5);f.at(q,P,-3.5,0,-68.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TOUR+3,"June shows them the pool through the glass"))
+        .thenExecute(()->{
+            h.assertTrue((rules(f,p)&PellTexts.RULE_POOL)!=0&&(rules(f,q)&PellTexts.RULE_POOL)!=0,"both heard the pool gate");
+            // One goes out to the garage; the other stays in the living room, out of earshot of it.
+            f.at(p,P,12.5,0,-82);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TOUR+4,"June shows the garage"))
+        .thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,PellSite.SLIDER)&&PellSite.open(l,b,PellSite.GARAGE_DOOR),"she went out by the sliding door and opened the garage");
+            h.assertTrue(rules(f,p)==PellTexts.RULES,"the reader at the garage has all four of June's rules: "+rules(f,p));
+            h.assertTrue(rules(f,q)==(PellTexts.RULE_NESSA|PellTexts.RULE_POOL),"the other has the two they were there for: "+rules(f,q));
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.SETTLED,"June goes back to her kitchen"))
+        .thenWaitUntil(()->h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.7),"Tilly is in Nessa's room: "+who(h,l,b,PellPeople.TILLY).position()))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(at(june,b,PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z(),.6),"June is in her kitchen: "+june.position());
+            var s=PellPeople.FIRST_VISIT[PellPeople.CALLUM];
+            h.assertTrue(at(who(h,l,b,PellPeople.CALLUM),b,s.x(),s.z(),.3),"Callum has not moved from the end of the hall");
+            // A hand on June gives a rule too: the other reader, in the kitchen, gets the line from her.
+            f.at(q,P,-8.5,0,-67.5);june.hush();
+            LiteraryVignettes.talk(q,june);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_TALK[0]),"her first line to a hand: "+said(june));
+            june.hush();LiteraryVignettes.talk(q,june);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_TALK[1])&&(rules(f,q)&PellTexts.RULE_LINE)!=0,"and the line, which the other reader now has: "+rules(f,q));
+            // Everybody out in the street, and the house left: when somebody is next at it, the visit begins again.
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);
+            PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellPeople.find(l,b,PellPeople.GAIL)!=null&&!PellVisit.gailGone(b)&&PellVisit.car(l,b)!=null&&PellVisit.step(b)==PellVisit.GREET,"the visit begins again"))
+        .thenExecute(()->{
+            for(int i=0;i<PellPeople.COUNT;i++){var s=PellPeople.FIRST_VISIT[i];h.assertTrue(at(who(h,l,b,i),b,s.x(),s.z(),.3),PellPeople.name(i)+" is back where the first visit puts them");}
+            for(var door:PellVisit.HER_DOORS)h.assertFalse(PellSite.open(l,b,door),"June's door is shut again: "+door);
+            h.assertTrue(rules(f,p)==PellTexts.RULES,"and each reader keeps what they heard");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_visit") public static void visitDone(ServerLevel l){done();}
 }

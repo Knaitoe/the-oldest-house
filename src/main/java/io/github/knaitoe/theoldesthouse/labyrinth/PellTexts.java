@@ -153,7 +153,7 @@ public final class PellTexts {
         "Inside the line after dark, love. It's for the dog.",
         "The pool gate stays locked. That's the one thing in this house I'll ask twice.",
         "You're in the garage. It's all done up. For your privacy.",
-        "Tilly's in the front room. I've kept it nice.",
+        "Tilly's in Nessa's room now. I've kept it nice.",
         "Callum doesn't say much. He'll come round to you."};
     public static final String[] GAIL_TALK={
         "I've just been talking to June. She's got everything ready for you.",
@@ -173,6 +173,30 @@ public final class PellTexts {
         "He steps back, as far as you stepped forward.",
         "His hair drips on the carpet. Nobody has been swimming.",
         "He holds out his hand the way you held out yours, a moment late."};
+    /**
+     * 0.4.525, the first visit's day (PellVisit, docs/PELL_HOUSE_VISIT_0_4_525.md): what Gail and June say at the step as the
+     * siblings arrive, and what June says at each stop as she shows them round. Nothing here says what the reader is.
+     */
+    public static final String GAIL_GREETS="There you are. Come and meet June.",
+        JUNE_GREETS="Hello, love. Gail's told me all about you.",
+        GAIL_READY="She's got everything ready for you. I'll ring in the morning and see how the first night went.",
+        GAIL_GOES="I have to get going. I've another one to see before four.",
+        JUNE_LINE="Come in out of the heat. And inside the line after dark, love. It's for the dog.",
+        JUNE_CALLUM="That's Callum. He doesn't say much. He'll come round to you.",
+        JUNE_NESSA="This was Nessa's room. It's Tilly's now.",
+        JUNE_POOL="The pool gate stays locked. That's the one thing in this house I'll ask twice.",
+        JUNE_GARAGE="You're in the garage. It's all done up. For your privacy.",
+        JUNE_DINNER="Dinner's at six. I'll give you a call.";
+    /** June's four rules, as bits of a reader's record ("Rules"): the line, the pool gate, Nessa's room, the garage. */
+    public static final int RULE_LINE=1,RULE_POOL=2,RULE_NESSA=4,RULE_GARAGE=8,RULES=15;
+    /** The rule a line of June's gives, from the tour or from a hand on her, or none. */
+    public static int rule(String line){
+        if(line.equals(JUNE_LINE)||line.equals(JUNE_TALK[1]))return RULE_LINE;
+        if(line.equals(JUNE_POOL)||line.equals(JUNE_TALK[2]))return RULE_POOL;
+        if(line.equals(JUNE_NESSA)||line.equals(JUNE_TALK[4]))return RULE_NESSA;
+        if(line.equals(JUNE_GARAGE)||line.equals(JUNE_TALK[3]))return RULE_GARAGE;
+        return 0;
+    }
 
     /** The first paper: the placement notice, as it was put through the letterbox. */
     public static ItemStack source(){

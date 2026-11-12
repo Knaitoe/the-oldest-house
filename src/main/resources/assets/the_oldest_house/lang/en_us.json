@@ -1768,5 +1768,6 @@
   "block.the_oldest_house.pell_thing": "Belongings",
   "block.the_oldest_house.pell_line": "Painted Line",
   "item.the_oldest_house.pell_cane": "Long Cane",
-  "item.the_oldest_house.pell_folder": "Folder"
+  "item.the_oldest_house.pell_folder": "Folder",
+  "subtitles.the_oldest_house.pell.car_away": "A car door shuts and a car pulls away"
 }

@@ -73,12 +73,21 @@ public final class PellPeople {
     /** How far a head turns from where the body faces, in degrees, before the body comes round too (Callum's does). */
     public static final float HEAD_TURN=70;
 
-    /** The four at one house: who they are by body. */
+    /** The four at one house: who they are by body; and, from 0.4.525, where the visit is (PellVisit). */
     static final class Household {
         final UUID[] ids=new UUID[COUNT];long lastTick=-1;final int[] said=new int[COUNT];
+        /** Which way each faces when at rest, and who walked this tick (their heads are the walk's). */
+        final float[] rest=new float[COUNT];final boolean[] moving=new boolean[COUNT];
+        /** The visit: begun again from the start when fresh; how far it has got; when the next line may come. */
+        boolean fresh=true,gailGone,tillyHome;int step,waypoint,gailStep,tillyStep,stuck,empty;long next;UUID car;
+        /** Where June has walked, newest last, for Tilly to follow. */
+        final java.util.ArrayDeque<Vec3> trail=new java.util.ArrayDeque<>();
+        Household(){for(int i=0;i<COUNT;i++)rest[i]=FIRST_VISIT[i].look();}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
     public static void clearAll(){HOUSES.clear();}
+    /** The house as if everybody had gone: its visit begins again from the start when a reader is next at it. */
+    public static void vacate(BlockPos b){household(b).fresh=true;}
     static Household household(BlockPos b){return HOUSES.computeIfAbsent(b.immutable(),k->new Household());}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()+PellSite.WEST,b.getY()-4,b.getZ()+PellSite.NORTH,b.getX()+PellSite.EAST+1,b.getY()+PellSite.ROOF+2,b.getZ()+2);}
@@ -99,6 +108,8 @@ public final class PellPeople {
     public static void ensure(ServerLevel l,BlockPos b){
         var h=household(b);
         for(int who=0;who<COUNT;who++){
+            // 0.4.525: Gail, once she has gone, is not made again until the visit begins again.
+            if(who==GAIL&&h.gailGone&&!h.fresh)continue;
             if(find(l,b,who)!=null)continue;
             var at=world(b,FIRST_VISIT[who]);if(!live(l,at))continue;
             var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
@@ -123,20 +134,29 @@ public final class PellPeople {
      */
     @SubscribeEvent public static void serverTick(ServerTickEvent.Post e){
         if(HOUSES.isEmpty())return;var l=e.getServer().getLevel(NovelRooms.dimension(PellHouse.PLACE));if(l==null)return;
-        for(var b:List.copyOf(HOUSES.keySet())){var here=PellHouse.readers(l,b);if(!here.isEmpty())tick(l,b,here);}
+        for(var entry:List.copyOf(HOUSES.entrySet())){
+            var b=entry.getKey();var h=entry.getValue();var here=PellHouse.readers(l,b);
+            // 0.4.525: a house left empty long enough begins its visit again when somebody next comes.
+            if(here.isEmpty()){if(++h.empty>=PellVisit.EMPTY)h.fresh=true;continue;}
+            h.empty=0;tick(l,b,here);
+        }
     }
     /** Once a tick for the house, however many readers are at it: each of them looks at the nearest reader near enough to look at. */
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
+        // 0.4.525: the visit moves them first; whoever walked this tick has their head where the walk put it.
+        PellVisit.tick(l,b,h,here);
         for(int who=0;who<COUNT;who++){
+            if(h.moving[who])continue;
             var a=find(l,b,who);if(a==null)continue;
             double reach=who==CALLUM?WATCH:NEAR;ServerPlayer near=null;double best=reach*reach;
             for(var p:here){if(p.isSpectator()||!p.isAlive())continue;double d=a.distanceToSqr(p);if(d<best){best=d;near=p;}}
-            float rest=FIRST_VISIT[who].look();
+            float rest=h.rest[who];
             if(near==null){turnHead(a,rest,rest);continue;}
             float toward=yawTo(a,near.getEyePosition());
-            // Callum turns to follow whoever he is watching; the others turn only their heads, as far as a head turns.
-            float body=who==CALLUM?toward:a.getYRot();
+            // Callum turns to follow whoever he is watching; the others turn only their heads, as far as a head turns, and their
+            // bodies settle the way they stand.
+            float body=who==CALLUM?toward:rest;
             turnHead(a,body,toward);
         }
     }
@@ -149,7 +169,7 @@ public final class PellPeople {
     }
 
     /** A hand on one of them: June, Gail and Tilly say the next of their lines; Callum does something instead. */
-    public static void talk(ServerPlayer p,LiteraryActor a){
+    public static void talk(ServerPlayer p,LiteraryActor a,net.minecraft.nbt.CompoundTag own){
         if(!is(a))return;var b=LiteraryVignettes.base(p,PellHouse.PLACE);if(b==null)return;
         int who=who(a);var h=household(b);
         if(who==CALLUM){var lines=PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
@@ -157,5 +177,8 @@ public final class PellPeople {
         var lines=switch(who){case JUNE->PellTexts.JUNE_TALK;case TILLY->PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
         String line=lines[h.said[who]++%lines.length];
         a.say(name(who),line);a.speaks(line);
+        // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the
+        // record the talk saves after this (LiteraryVignettes.talk), so it is written there and not saved under it.
+        PellVisit.heard(a,PellTexts.rule(line),PellHouse.readers(p.serverLevel(),b),p,own);
     }
 }
