@@ -154,4 +154,6 @@ def entries():
     # And the ghosts (0.4.500), on phases one hundred and eighty-eight to ninety.
     for phase,name in enumerate(('a','b','c'),188):
         rows.append({'name':'literary_hollow_ghost_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # And the werewolf (0.4.501), on phase one hundred and ninety-one.
+    rows.append({'name':'literary_hollow_wolf','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':191})
     return rows

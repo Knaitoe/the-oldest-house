@@ -11,7 +11,7 @@ plays over and over as a car drives; and four horns, one for each car. And the t
 seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
 house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round. And (0.4.488) a chain of grocery carts being
 wheeled, a second of it, played over while it moves. And the Hollow's (0.4.495): what is in the mist under it, heard by somebody
-who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes; and (0.4.500) a ghost going through somebody.
+who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes; and (0.4.500) a ghost going through somebody; and (0.4.501) the werewolf's howl.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -76,6 +76,8 @@ ROWS = {
     'hollow/cackle': ('hollow.cackle', 'A witch cackles', 24),
     # 0.4.500: a ghost going through somebody.
     'hollow/ghost': ('hollow.ghost', 'A ghost goes through you', 16),
+    # 0.4.501: the werewolf taking his perch.
+    'hollow/howl': ('hollow.howl', 'A werewolf howls', 32),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -732,7 +734,24 @@ def ghost():
     return (wind + note) * swell
 
 
-MAKERS = {'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def howl():
+    # A howl: one long note that climbs a fifth, holds with a slow waver, and falls away; breath on it, rough at its start.
+    length = 2.2
+    n = seconds(length)
+    t = times(n)
+    rise = np.clip(t / .5, 0, 1)
+    fall = np.clip((t - 1.5) / .7, 0, 1)
+    pitch = 300 + 150 * rise ** .7 - 110 * fall ** 1.5
+    pitch *= 1 + .012 * np.sin(2 * np.pi * 5.2 * t) * np.clip((t - .5) / .4, 0, 1)
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    voice = np.sin(phase) * .55 + np.sin(2 * phase) * .28 + np.sin(3 * phase) * .12 + np.sin(4 * phase) * .05
+    rough = 1 + .5 * np.sign(np.sin(2 * np.pi * 38 * t)) * np.exp(-t / .25)
+    breath = band(rng.standard_normal(n), 700, 3000) * .12
+    shape = np.clip(t / .12, 0, 1) * np.clip((length - t) / .5, 0, 1)
+    return (voice * rough + breath) * shape
+
+
+MAKERS = {'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,

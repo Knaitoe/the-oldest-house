@@ -137,7 +137,7 @@ public final class BikeNightVisualProof extends Screen {
             "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back",
             "the cemetery's things: headstones; small row, crosses, obelisk, angel, doors; heap, tarps, goods; the Hollow's",
             "the hill: a bank and the pier on it, the gate's path, two rows, and the open grave behind its heap",
-            "the Hollow's witch: on her broom from the side, the front, and behind and above; and standing. Below: the three ghosts, adrift, half there"}[page],8,8,0xffffffff);
+            "the Hollow's witch: on her broom from the side, the front, and behind and above; and standing. The werewolf: running, gathered, and in the air. The three ghosts, adrift, half there"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
         switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);default->specters(g);}
     }
@@ -548,7 +548,7 @@ public final class BikeNightVisualProof extends Screen {
      */
     private void specters(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
-        float s=width/13F,low=24+(height-24)*.5F;
+        float s=width/17F,low=24+(height-24)*.34F;
         // {across the page, turned about her own height (degrees; 180 faces us), tipped toward us, flying}
         float[][] views={{.14F,90,6,1},{.4F,180,8,1},{.64F,-35,22,1},{.87F,165,6,0}};
         for(var v:views){
@@ -557,8 +557,17 @@ public final class BikeNightVisualProof extends Screen {
             LiteraryRenderers.drawWitch(pose,buffers,LightTexture.FULL_BRIGHT,v[3]>0,8);
             buffers.endBatch();pose.popPose();
         }
+        // The werewolf: running from the side and from the front quarter, gathered to leap, and in the air.
+        float mid=24+(height-24)*.65F;
+        float[][] wolves={{.13F,90,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightSpecters.RUN,2},{.37F,150,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightSpecters.RUN,4},{.62F,90,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightSpecters.CROUCH,0},{.86F,90,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightSpecters.LEAP,0}};
+        for(var v:wolves){
+            var pose=g.pose();pose.pushPose();pose.translate(width*v[0],mid-1.5F*s-(v[2]==io.github.knaitoe.theoldesthouse.labyrinth.BikeNightSpecters.LEAP?.6F*s:0),400);pose.scale(s,s,s);
+            pose.mulPose(Axis.XP.rotationDegrees(-6));pose.mulPose(Axis.YP.rotationDegrees(v[1]));
+            LiteraryRenderers.drawWolf(pose,buffers,LightTexture.FULL_BRIGHT,(int)v[2],v[3]);
+            buffers.endBatch();pose.popPose();
+        }
         // The ghosts, over a dark band so that what shows through them is seen: each from the front, and the first from the side.
-        float under=24+(height-24)*.97F;g.fill(0,(int)(24+(height-24)*.56F),width,height,0xff1c2630);g.flush();
+        float under=24+(height-24)*.98F;g.fill(0,(int)(24+(height-24)*.69F),width,height,0xff1c2630);g.flush();
         float[][] ghosts={{.14F,180,0},{.36F,180,1},{.58F,180,2},{.82F,90,0}};
         for(var v:ghosts){
             var pose=g.pose();pose.pushPose();pose.translate(width*v[0],under-1.5F*s-.3F*s,400);pose.scale(s,s,s);
