@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/pell/pool_gate",
+    "particle": "the_oldest_house:block/pell/pool_gate"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        7.5
+      ],
+      "to": [
+        16,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        }
+      }
+    }
+  ]
+}

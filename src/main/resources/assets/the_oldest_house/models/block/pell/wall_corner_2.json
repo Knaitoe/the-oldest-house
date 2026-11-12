@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "the_oldest_house:block/pell_brick_new",
+    "south": "the_oldest_house:block/pell_plaster",
+    "east": "the_oldest_house:block/pell_plaster",
+    "west": "the_oldest_house:block/pell_brick_new",
+    "up": "the_oldest_house:block/pell_plaster",
+    "down": "the_oldest_house:block/pell_plaster",
+    "particle": "the_oldest_house:block/pell_brick_new"
+  }
+}

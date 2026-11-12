@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/pell/tarp_pond",
+    "particle": "the_oldest_house:block/pell/tarp_pond"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        12,
+        0
+      ],
+      "to": [
+        16,
+        12.5,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

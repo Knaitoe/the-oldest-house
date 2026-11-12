@@ -1,6 +1,6 @@
 # The Pell house — a proposal (November 10)
 
-The owner asked to brainstorm a vignette based on *Bring Her Back*. This is the proposal that came out of it, for review. It is not built, and it waits until Borrasca is finished (the owner: "after").
+The owner asked to brainstorm a vignette based on *Bring Her Back*. This is the proposal that came out of it, for review. It waited until Borrasca was finished (the owner: "after"). It is being built in slices: the street and the lot, 0.4.518 (`docs/PELL_HOUSE_STREET_0_4_518.md`).
 
 The owner's decisions so far:
 - **Tilly is a co-op role only.** A reader plays her only when a second reader is there. A solo reader is always the older sibling, with Tilly as a character.

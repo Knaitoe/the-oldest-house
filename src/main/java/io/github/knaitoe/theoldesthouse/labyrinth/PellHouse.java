@@ -1,0 +1,66 @@
+package io.github.knaitoe.theoldesthouse.labyrinth;
+
+import java.util.UUID;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+
+/**
+ * 0.4.518, the Pell house (docs/PELL_HOUSE_PROPOSAL.md; the owner: "the house itself carries the story"). This slice: the place, and
+ * its doors. The house is not dealt until it can be finished.
+ *
+ * <p>Doors open and shut to a hand. June's door does not. The shed's door and the pool's gate are padlocked. The garage's roller door
+ * is never opened, and the sliding door's west half is fixed glass.
+ */
+public final class PellHouse {
+    private PellHouse(){}
+    public static final LabyrinthPlace PLACE=LabyrinthPlace.PELL_HOUSE;
+    static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
+    static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
+    static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+
+    /** Not until the house can be finished: it is being built in slices. */
+    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){}
+    /** Every reader tick. */
+    public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
+        if(!own.getBoolean("WentIn")&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){own.putBoolean("WentIn",true);save(p,own);}
+    }
+    public static void clearAll(){}
+
+    /** A hand on something of the house's. True if it was the house's to answer. */
+    public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
+        if(!st.is(PellRegistry.FITTING.get()))return false;
+        var kind=st.getValue(PellBlock.KIND);
+        if(kind==PellBlock.Kind.ROLLER){cue(p,PellTexts.ROLLER);return true;}
+        // The letterbox and the mat are the first paper's and the account's: the House's own reading answers a hand on them.
+        if(kind==PellBlock.Kind.LETTERBOX||kind==PellBlock.Kind.DOORMAT)return false;
+        if(kind==PellBlock.Kind.WINDOW||kind==PellBlock.Kind.FENCE||kind==PellBlock.Kind.POOL_FENCE||kind==PellBlock.Kind.TARP)return true;
+        var door=PellSite.doorAt(l,b,rel);if(door==null)return true;
+        // A neighbour's door: nobody answers it.
+        if(!PellSite.onLot(new net.minecraft.world.phys.Vec3(door.getX()+.5,0,door.getZ()+.5))){cue(p,PellTexts.NOBODY_HOME);return true;}
+        if(door.equals(PellSite.JUNE_DOOR)){cue(p,PellTexts.JUNES_DOOR);return true;}
+        if(door.equals(PellSite.SHED_DOOR)){cue(p,PellTexts.PADLOCKED);return true;}
+        if(door.equals(PellSite.POOL_GATE)){cue(p,PellTexts.POOL_GATE);return true;}
+        if(door.equals(PellSite.SLIDER.west())){cue(p,PellTexts.FIXED_GLASS);return true;}
+        toggle(l,b,door);
+        return true;
+    }
+    /** Opens a shut door or gate and shuts an open one, both cells of it. */
+    public static void toggle(ServerLevel l,BlockPos b,BlockPos door){
+        var at=b.offset(door);var st=l.getBlockState(at);if(!st.is(PellRegistry.FITTING.get()))return;
+        var kind=st.getValue(PellBlock.KIND);boolean open=PellBlock.open(st);Direction f=st.getValue(PellBlock.FACING);
+        if(kind.leaf())PellSite.leaf(l,b,door,kind,f,!open);
+        else if(kind==PellBlock.Kind.GATE)l.setBlock(at,PellBlock.of(kind,f,open?0:1),3);
+        else return;
+        l.playSound(null,at,kind==PellBlock.Kind.GATE?(open?SoundEvents.FENCE_GATE_CLOSE:SoundEvents.FENCE_GATE_OPEN):kind==PellBlock.Kind.SHED_DOOR||kind==PellBlock.Kind.SCREEN||kind==PellBlock.Kind.SLIDER
+            ?(open?SoundEvents.IRON_DOOR_CLOSE:SoundEvents.IRON_DOOR_OPEN):(open?SoundEvents.WOODEN_DOOR_CLOSE:SoundEvents.WOODEN_DOOR_OPEN),SoundSource.BLOCKS,.7F,1F);
+    }
+}

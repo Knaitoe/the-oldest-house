@@ -1,0 +1,107 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/pell/pool_bars",
+    "t": "the_oldest_house:block/pell/pool_post",
+    "particle": "the_oldest_house:block/pell/pool_bars"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        7.5
+      ],
+      "to": [
+        8.5,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            7.5,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            8.5,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        0,
+        0
+      ],
+      "to": [
+        8.5,
+        16,
+        7.5
+      ],
+      "faces": {
+        "east": {
+          "texture": "#b",
+          "uv": [
+            8.5,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            7.5,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}
