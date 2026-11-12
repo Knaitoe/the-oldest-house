@@ -235,6 +235,8 @@ public final class BorrascaTexts {
             +(own.getBoolean("GravesSeen")?" Behind the shed there were numbers in the ground.":"")
             // 0.4.427: what the reader did to the Sheriff, grown.
             +(own.getBoolean("SheriffDead")?" I killed the Sheriff on the ridge. He talked until he couldn't, and none of it was sorry.":own.getBoolean("SheriffBeaten")?" I beat the Sheriff down into the dirt and left him there, still talking.":"")
+            // 0.4.516: Prescott at his office door.
+            +BorrascaPrescott.told(own)
             // 0.4.439: the woman from room 2 on the belt, and whether the breaker came in time.
             +(own.getBoolean("DanaSaved")?" A woman was lying on the belt when I came up to the yard, two men standing by it to watch her go. I pulled the breaker before it took her in. She stayed where they had put her, looking up, and never once looked at me."+(own.getBoolean("DanaIgnored")?" I held out my hand. She didn't take it.":"")
               :own.getBoolean("DanaLate")?" A woman was lying on the belt when I came up to the yard, two men standing by it to watch her go. I pulled the breaker when it already had "+(own.getInt("DanaLateAt")<400?"her feet.":own.getInt("DanaLateAt")<800?"her legs.":"half of her.")+" She went quiet a little after the belt stopped."

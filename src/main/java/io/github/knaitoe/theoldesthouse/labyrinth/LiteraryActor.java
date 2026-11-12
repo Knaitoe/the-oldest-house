@@ -176,6 +176,17 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
                 return hit;
             }
         }
+        if(role()==BORRASCA_PRESCOTT&&phase()<BorrascaStory.WORKER){
+            var night=BorrascaPrescott.night(p,this);
+            if(night!=null){
+                // 0.4.516: on the last night a grown reader's blow puts him down; once he is down, the next one kills him.
+                if(amount<=0)return false;
+                if(night.getBoolean("PrescottDown")){if(!BorrascaPrescott.finished(p,this,night))return false;super.hurt(source,Math.min(1,getHealth()-1));return true;}
+                boolean hit=super.hurt(source,Math.min(BorrascaPrescott.BLOW,getHealth()-1));
+                if(hit)BorrascaPrescott.struck(p,this,night);
+                return hit;
+            }
+        }
         if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
     @Override public boolean broadcastToPlayer(ServerPlayer p){
         // Match the renderer's privacy rule at native tracking too. A hidden peer's

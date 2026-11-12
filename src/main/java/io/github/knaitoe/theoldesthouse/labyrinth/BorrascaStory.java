@@ -68,6 +68,8 @@ public final class BorrascaStory {
     public static final int LED=6,TAKING_HAND=7,HOLD_LEFT=8,HOLD_RIGHT=9,CARRIED=11,CARRY=12,WARNING=13,SCARED=14;
     /** 0.4.427: the Sheriff beaten down into the dirt, sitting with his hands up (KNELT), and dead on his back (FALLEN). */
     public static final int KNELT=15,FALLEN=16;
+    /** 0.4.516: nothing done with the body; a child who is playing (BorrascaGames) grins. */
+    public static final int GLAD=29;
     /** 0.4.439: Dana, 141-A, on the town cast's phase DANA; lying on her back (LAID, arms over the sides, swaying), and LAID_STILL. */
     public static final int DANA=3,LAID=17,LAID_STILL=18;
     /** 0.4.439: Dana at the blade, still alive (TORN_LIVE, thrashing and screaming) and after (TORN_DEAD). Both lie on the belt. */
@@ -336,6 +338,7 @@ public final class BorrascaStory {
             }else if(own.getBoolean("PowerOff"))sheriffShutdownLine(p,a,own);
             else say(p,a,"Yard's closed. Go back the way you came.");
         }
+        else if(a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER&&visit>=4)BorrascaPrescott.talk(p,a,own); // 0.4.516
         else if(a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<WORKER){own.putBoolean("MetPrescott",true);say(p,a,visit==1?"Evening. Tell your folks the delivery's at the trailhead.":"This is a work entrance.");}
     }
     public static boolean worker(int role,int phase){return role==LiteraryActor.BORRASCA_KYLE&&(phase==WORKER||phase==WORKER+1);}
@@ -496,6 +499,7 @@ public final class BorrascaStory {
             if(hat==0)sheriff.gesture(0);
         }
         BorrascaArcadeFriends.tick(p,b,own,eli,wren); // 0.4.446: Patrick and Kendra at the drugstore's cabinets
+        BorrascaGames.faces(own,friend,eli,wren); // 0.4.516: the three grin while a game is on, and not after
         if(visit==1&&!BorrascaArcadeFriends.on(own)&&!BorrascaGames.on(own))tagAlong(p,b,own,friend,eli,wren);
         switch(visit){
             case 1->visitOne(p,b,own,friend,sheriff,prescott);
@@ -512,7 +516,8 @@ public final class BorrascaStory {
     private static void cast(CompoundTag own,int visit,@Nullable LiteraryActor prescott,@Nullable LiteraryActor w0,@Nullable LiteraryActor w1){
         boolean taking=visit==2&&own.getInt("TakingTicks")>0;
         for(var w:new LiteraryActor[]{w0,w1}){if(w==null)continue;if(w.phase()==WORKER&&w==w1)w.appearance(LiteraryActor.BORRASCA_KYLE,WORKER+1);if(visit==3){w.setInvisible(false);w.gesture(0);}else if(!taking&&!(visit==4&&BorrascaFeeding.workersOut(own))){w.setInvisible(true);BorrascaCast.stop(w);}}
-        if(prescott!=null){prescott.setInvisible(visit>=4);if(visit>=4)BorrascaCast.stop(prescott);}
+        // 0.4.516: on the last night he is nowhere until the reader has seen the machine; then at his office door (BorrascaPrescott).
+        if(prescott!=null){boolean away=visit>=4&&!BorrascaPrescott.out(own);prescott.setInvisible(away);if(away)BorrascaCast.stop(prescott);}
     }
 
     // ------------------------------------------------------------------ the first visit: the pact
@@ -1157,6 +1162,7 @@ public final class BorrascaStory {
     private static void visitFour(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LiteraryActor friend,@Nullable LiteraryActor sheriff){
         if(friend!=null)grownKelly(p,b,own,friend);
         if(sheriff!=null&&!retribution(p,own,sheriff))patrolRefinery(p,b,own,sheriff);
+        BorrascaPrescott.tick(p,b,own,actor(p,own,"CastPrescott")); // 0.4.516: Prescott at his office door, once the machine has been seen
         if(!own.getBoolean("PowerOff")&&own.getInt("TrailClock")%200==0)heard(p,BorrascaRegistry.CHIME.get(),BorrascaRooms.at(b,BorrascaRooms.MACHINE),1);
         if(!own.getBoolean("GougeSeen")&&looksAt(p,BorrascaRooms.at(b,BorrascaRooms.CARVING),7))noticeGouge(p,own);
         if(carriesEvidence(p,own))own.putBoolean("PatchRecovered",true);
@@ -1442,7 +1448,7 @@ public final class BorrascaStory {
     /** What the reader notices, on the action bar. */
     static void cue(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text),true);}
     /** The House's own word, grey and italic. */
-    private static void house(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
+    static void house(ServerPlayer p,String text){p.displayClientMessage(Component.literal(text).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     static void heard(ServerPlayer p,net.minecraft.sounds.SoundEvent sound,BlockPos at,float volume){LiteraryVignettes.heard(p,sound,at,volume,1);}
     private static void dust(ServerPlayer p){p.serverLevel().sendParticles(p,ParticleTypes.ASH,false,p.getX(),p.getY()+.4,p.getZ(),32,2,.5,2,.03);}
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}

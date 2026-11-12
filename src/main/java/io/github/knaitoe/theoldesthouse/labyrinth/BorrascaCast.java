@@ -32,7 +32,9 @@ public final class BorrascaCast {
      */
     public static BlockPos target(String key,int visit){return BorrascaRooms.world(authoredTarget(key,visit));}
     /** 0.4.427: a dead Sheriff stays where he fell, on every later visit; null while he lives. Absolute world position. */
-    public static @javax.annotation.Nullable BlockPos body(CompoundTag own,String key){return key.equals("CastSheriff")&&own.getBoolean("SheriffDead")&&own.contains("SheriffBody")?BlockPos.of(own.getLong("SheriffBody")):null;}
+    public static @javax.annotation.Nullable BlockPos body(CompoundTag own,String key){
+        if(key.equals("CastPrescott")&&own.getBoolean("PrescottDead")&&own.contains("PrescottBody"))return BlockPos.of(own.getLong("PrescottBody")); // 0.4.516
+        return key.equals("CastSheriff")&&own.getBoolean("SheriffDead")&&own.contains("SheriffBody")?BlockPos.of(own.getLong("SheriffBody")):null;}
     private static BlockPos authoredTarget(String key,int visit){return switch(key){
         case "CastKimber"->visit>=4?BorrascaRooms.KELLY:visit==3?new BlockPos(39,-4,-57):visit==2?new BlockPos(1,0,-76):new BlockPos(1,0,-18);
         case "CastSheriff"->visit>=4?BorrascaRooms.YARD_PATROL_START:visit==3?BorrascaRooms.SHERIFF:new BlockPos(4,0,-16);
