@@ -18,6 +18,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, ROOT, new, fill, dot, speckle, shade, rgb, element  # noqa: E402
+from draw_pell_house import wood, metal, enamel, cloth, card, plastic, bevel, inset  # noqa: E402
 from draw_pell_house import materials as house_materials  # noqa: E402
 
 def line(im, pts, colour, a=255):
@@ -50,25 +51,27 @@ def face(im, x, y, size, hair, skin='#e8c4a0', eyes='#3a2a20', fringe=True):
 def laminate_top():
     """The benches' laminate: cream with a fine speckle, the front edge a chrome strip."""
     im = new('#e3dcc4', 52201, 2); speckle(im, 52202, 18, ['#d2c9ae', '#ece6d2', '#c9bfa2'])
-    fill(im, 0, 15, 16, 16, '#9ea3a6')
+    for x in range(16):
+        dot(im, x, 15, '#c9ced1' if x % 5 == 1 else '#a3a8ab' if x % 5 == 3 else '#9ea3a6')
     return im
 
 
 def cupboard():
-    """A bench's front: two doors in a teak-look laminate with a groove for a handle along the top, a kick under them."""
-    im = new('#9a6a40', 52203, 3)
-    for y in range(1, 13):
-        for x in range(16):
-            if (x * 7 + y * 3) % 11 == 0:
-                dot(im, x, y, '#8c5f38')
-    fill(im, 0, 0, 16, 1, '#7a5230'); fill(im, 7, 1, 9, 13, '#6e4a2b')
+    """A bench's front: two doors in a teak-look laminate, its grain running up them, each door's edges lit along the top and left
+    and shaded along the others, with a groove for a handle along its top (its lower lip catching the light); a kick under them,
+    darkest under the doors' overhang."""
+    im = wood('#9a6a40', 52203, across=True)
+    fill(im, 0, 0, 16, 1, '#7a5230'); fill(im, 7, 1, 9, 13, '#5a3c22')
+    bevel(im, 0, 1, 7, 13, 12); bevel(im, 9, 1, 16, 13, 12)
     fill(im, 1, 1, 7, 2, '#3e2a18'); fill(im, 9, 1, 15, 2, '#3e2a18')
-    fill(im, 0, 13, 16, 16, '#2e2a26')
+    for x in list(range(1, 7)) + list(range(9, 15)):
+        dot(im, x, 2, shade(im.getpixel((x, 2)), 12))
+    fill(im, 0, 13, 16, 16, '#2e2a26'); fill(im, 0, 13, 16, 14, '#221f1c')
     return im
 
 
 def cupboard_side():
-    im = new('#9a6a40', 52204, 3); fill(im, 0, 13, 16, 16, '#2e2a26')
+    im = wood('#9a6a40', 52204, across=True); fill(im, 0, 13, 16, 16, '#2e2a26'); fill(im, 0, 13, 16, 14, '#221f1c')
     return im
 
 
@@ -76,38 +79,50 @@ def sink_top():
     """The sink under the window: a stainless bowl in the laminate, its drainer ridged, the plug on its chain, a tea towel over the
     edge where it always hangs."""
     im = laminate_top()
-    fill(im, 2, 2, 10, 12, '#aeb4b8'); fill(im, 3, 3, 9, 11, '#c8ced1')
-    dot(im, 6, 8, '#5a6064'); dot(im, 7, 8, '#5a6064'); line(im, [(7, 9), (8, 10)], '#7c8286')
-    for x in range(11, 15):
-        for y in range(2, 12, 2):
-            dot(im, x, y, '#b9bfc2')
-    fill(im, 10, 2, 11, 12, '#9ea4a8')
+    steel = metal('#c8ced1', 52290)
+    for y in range(2, 12):
+        for x in range(2, 15):
+            im.putpixel((x, y), steel.getpixel((x, y)))
+    frame(im, 2, 2, 10, 12, '#e3e7e9')
+    inset(im, 3, 3, 9, 11, 18)
+    dot(im, 6, 8, '#4a5054'); dot(im, 7, 8, '#4a5054'); dot(im, 6, 7, '#7e8589'); line(im, [(7, 9), (8, 10)], '#7c8286')
+    for y in range(2, 12):
+        for x in range(11, 15):
+            dot(im, x, y, '#dde2e4' if y % 2 == 0 else '#a3a9ad')
+    fill(im, 10, 2, 11, 12, '#8e9599')
     return im
 
 
 def stove_front():
     """An enamel stove: the four knobs and the clock along the top, the oven door's glass gone brown, its handle."""
-    im = new('#efece2', 52205, 2)
-    fill(im, 0, 0, 16, 3, '#d9d5c9')
+    im = enamel('#efece2', 52205)
+    fill(im, 0, 0, 16, 3, '#d9d5c9'); fill(im, 0, 0, 16, 1, '#e6e2d7'); fill(im, 0, 3, 16, 4, '#cdc9bd')
     for x in (1, 4, 11, 14):
-        dot(im, x, 1, '#2b2b2b')
-    fill(im, 6, 0, 10, 3, '#3a3a36'); dot(im, 8, 1, '#c9c2a2')
-    fill(im, 1, 4, 15, 5, '#b8b9b6')
-    fill(im, 2, 6, 14, 12, '#3b2f24'); fill(im, 3, 7, 13, 11, '#5a4634')
+        dot(im, x, 1, '#2b2b2b'); dot(im, x, 2, '#b4b0a4')
+    fill(im, 6, 0, 10, 3, '#3a3a36'); dot(im, 7, 1, '#e0d8b4'); dot(im, 8, 1, '#c9c2a2')
+    for x in range(1, 15):
+        dot(im, x, 4, '#8e8f8c' if x in (1, 14) else '#eef0ee' if x == 2 else '#cfd0cd')
+    bevel(im, 1, 5, 15, 13, 10)
+    fill(im, 2, 6, 14, 12, '#3b2f24'); fill(im, 3, 7, 13, 11, '#5a4634'); inset(im, 3, 7, 13, 11, 10)
+    for x, y in ((4, 10), (5, 9), (6, 8), (8, 10), (9, 9)):
+        dot(im, x, y, '#86705a')
     fill(im, 0, 13, 16, 16, '#2e2a26')
     return im
 
 
 def stove_top():
     """Four coil elements, one with a pan left on it, and a burn in the enamel beside the front left."""
-    im = new('#efece2', 52206, 2)
+    im = enamel('#efece2', 52206)
     for cx, cy in ((4, 4), (12, 4), (4, 11), (12, 11)):
         for y in range(cy - 2, cy + 3):
             for x in range(cx - 2, cx + 3):
                 d = ((x - cx) ** 2 + (y - cy) ** 2) ** .5
                 if 1.2 < d < 2.6:
-                    dot(im, x, y, '#3a3632')
+                    dot(im, x, y, '#5a5550' if x + y < cx + cy - 1 else '#3a3632' if x + y < cx + cy + 2 else '#2a2724')
+        dot(im, cx, cy, '#cfcabd')
     fill(im, 10, 2, 15, 7, '#6e6a66'); fill(im, 11, 3, 14, 6, '#8c8884'); fill(im, 15, 4, 16, 5, '#2b2b2b')
+    line(im, [(10, 2), (11, 2), (12, 2), (13, 2), (10, 3), (10, 4)], '#a29e9a'); line(im, [(14, 6), (13, 6), (14, 5)], '#4e4a46')
+    dot(im, 11, 3, '#5e5a56'); dot(im, 12, 3, '#6a6662')
     dot(im, 1, 14, '#8a6a3c'); dot(im, 2, 14, '#6b4e2a'); dot(im, 2, 15, '#8a6a3c')
     return im
 
@@ -116,8 +131,9 @@ def fridge_front(upper, stage=0):
     """The fridge: white enamel, its handle; on the upper door, the photographs. Nessa in every year, held up by magnets: a baby,
     small, starting school, missing a tooth, in a school jumper; one older photograph with a magnet square over the face. In the
     second stage two more, new, at the edge: two children on a doorstep, the day they came."""
-    im = new('#f2f0ea', 52207 + upper, 1)
+    im = enamel('#f2f0ea', 52207 + upper)
     fill(im, 13, 0 if upper else 1, 15, 16 if upper else 9, '#c9c6bd')
+    fill(im, 13, 0 if upper else 1, 14, 16 if upper else 9, '#e2dfd7'); fill(im, 15, 0 if upper else 1, 16, 16 if upper else 9, '#dad7cf')
     if not upper:
         fill(im, 0, 0, 16, 1, '#c9c6bd')
         fill(im, 0, 14, 16, 16, '#3b3832')
@@ -128,6 +144,9 @@ def fridge_front(upper, stage=0):
     shots = [(1, 1, 4, 3), (6, 1, 5, 3), (1, 6, 5, 4), (7, 6, 5, 5), (1, 11, 4, 3), (7, 12, 4, 3)]
     for i, (x, y, w, s) in enumerate(shots):
         fill(im, x, y, x + w, y + w, '#f8f6ef'); fill(im, x, y, x + w, y + 1, '#d8d5cc')
+        for i in range(w):
+            if y + w < 16 and x + i + 1 < 13:
+                dot(im, x + i + 1, y + w, '#d9d6cd')
         fill(im, x + 1, y + 1, x + w - 1, y + w - 1, '#9fb4a8' if i % 2 else '#c9b48e')
         if i == 3:
             # The covered one: a magnet square over the face.
@@ -145,7 +164,7 @@ def fridge_front(upper, stage=0):
 
 
 def fridge_side():
-    im = new('#e9e7e0', 52209, 1); fill(im, 0, 0, 16, 1, '#c9c6bd')
+    im = enamel('#e9e7e0', 52209); fill(im, 0, 0, 16, 1, '#c9c6bd'); fill(im, 0, 1, 16, 2, '#f2f0ea')
     return im
 
 
@@ -156,7 +175,13 @@ def knife_block(stage):
     if stage == 2:
         fill(im, 5, 5, 11, 11, '#ece6d2')
         return im
-    fill(im, 5, 5, 11, 11, '#8a5a32')
+    blk = wood('#8a5a32', 52291)
+    for y in range(5, 11):
+        for x in range(5, 11):
+            im.putpixel((x, y), blk.getpixel((x, y)))
+    bevel(im, 5, 5, 11, 11, 16)
+    for x in range(6, 12):
+        dot(im, x, 11, '#bcb39a')
     for i, x in enumerate((6, 7, 8, 9)):
         if not (stage == 1 and i == 2):
             dot(im, x, 6, '#1e1a16'); dot(im, x, 7, '#2c2620')
@@ -166,10 +191,7 @@ def knife_block(stage):
 
 
 def wood_block():
-    im = new('#8a5a32', 52210, 4)
-    for y in range(16):
-        dot(im, 3, y, '#7a4e2a'); dot(im, 11, y, '#7a4e2a')
-    return im
+    return wood('#8a5a32', 52210, across=True)
 
 
 def lunchboxes():
@@ -179,11 +201,16 @@ def lunchboxes():
     line(im, [(3, 8), (4, 8), (5, 8)], '#2b2b2b')
     fill(im, 9, 4, 14, 12, '#d64a6a'); fill(im, 9, 4, 14, 5, '#a8364f'); fill(im, 10, 7, 13, 9, '#e9d6c2')
     line(im, [(10, 8), (12, 7), (11, 8)], '#b89a86')
+    bevel(im, 2, 5, 7, 12, 18); bevel(im, 9, 5, 14, 12, 18)
+    for x in range(3, 8):
+        dot(im, x, 12, '#bcb39a')
+    for x in range(10, 15):
+        dot(im, x, 12, '#bcb39a')
     return im
 
 
 def lunchbox_side():
-    im = new('#3a8acb', 52211, 2); fill(im, 0, 0, 16, 2, '#2a6aa0')
+    im = plastic('#3a8acb', 52211); fill(im, 0, 0, 16, 2, '#2a6aa0'); fill(im, 0, 2, 16, 3, '#5aa2db')
     return im
 
 
@@ -211,24 +238,27 @@ def table_top():
     """The kitchen table's top: laminate edged in chrome, a ring from a mug."""
     im = new('#d8cfb2', 52212, 2); speckle(im, 52213, 12, ['#cbc1a2', '#e2dac0'])
     for i in range(16):
-        dot(im, i, 0, '#a6abae'); dot(im, i, 15, '#a6abae'); dot(im, 0, i, '#a6abae'); dot(im, 15, i, '#a6abae')
+        dot(im, i, 15, '#868b8e'); dot(im, 15, i, '#868b8e'); dot(im, i, 0, '#c9ced1'); dot(im, 0, i, '#c9ced1')
+    dot(im, 15, 0, '#a6abae'); dot(im, 0, 15, '#a6abae')
     for x, y in ((5, 6), (6, 5), (7, 5), (8, 6), (8, 7), (7, 8), (6, 8), (5, 7)):
         dot(im, x, y, '#c4ba98')
     return im
 
 
 def chrome():
-    im = new('#b9bec1', 52214, 6)
+    im = metal('#b9bec1', 52214, 3)
     for y in range(16):
-        dot(im, 0, y, '#e6eaec'); dot(im, 15, y, '#7d8285')
+        dot(im, 0, y, '#e6eaec'); dot(im, 1, y, '#f4f7f8'); dot(im, 14, y, '#9aa0a3'); dot(im, 15, y, '#7d8285')
     return im
 
 
 def vinyl(colour='#a8452e', seed=52215):
     """Vinyl on a chair's seat and back, buttoned, a split mended with tape on one."""
-    im = new(colour, seed, 3)
+    im = plastic(colour, seed)
     for x, y in ((4, 4), (11, 4), (4, 11), (11, 11)):
-        dot(im, x, y, shade(colour, -40))
+        dot(im, x - 1, y - 1, shade(colour, 14)); dot(im, x, y, shade(colour, -44)); dot(im, x + 1, y + 1, shade(colour, -20))
+        for d in (2, 3):
+            dot(im, x + d, y + d // 3, shade(colour, -9)); dot(im, x - d, y - d // 3, shade(colour, -9))
     return im
 
 
@@ -274,9 +304,12 @@ def width(s, gap=1):
 def recliner(worn):
     """The recliner's brown vinyl. Worn: the seat's front edge and the right arm's end gone pale and cracked, where one person has
     sat every night with her hand on the arm."""
-    im = new('#6a4a32', 52220, 3)
+    im = plastic('#6a4a32', 52220)
     for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
-        dot(im, x, y, '#4e3422')
+        dot(im, x - 1, y - 1, '#7e5c42'); dot(im, x, y, '#3e2a1a'); dot(im, x + 1, y + 1, '#55392a')
+    for i in range(4, 12):
+        if i % 2:
+            dot(im, i, 3, '#5a3e2a'); dot(im, i, 12, '#5a3e2a'); dot(im, 3, i, '#5a3e2a'); dot(im, 12, i, '#5a3e2a')
     if worn:
         for y in range(9, 16):
             for x in range(2, 14):
@@ -289,8 +322,9 @@ def recliner(worn):
 def tape_cabinet():
     """The cabinet under the television: two glass doors, and behind them home tapes on their spines, each labelled in June's hand
     with a birthday and nothing else."""
-    im = new('#7a5232', 52221, 3)
-    fill(im, 1, 1, 15, 15, '#2a2420')
+    im = wood('#7a5232', 52221)
+    bevel(im, 0, 0, 16, 16, 12)
+    fill(im, 1, 1, 15, 15, '#2a2420'); inset(im, 1, 1, 15, 15, 10)
     for row, y0 in enumerate((2, 8)):
         x = 2
         rnd = random.Random(52222 + row)
@@ -308,13 +342,19 @@ def tape_cabinet():
 
 def tv_front(lit=False):
     """A big wooden-cased television, its screen dark and curved, a row of buttons beneath; a doily and nothing else on top."""
-    im = new('#6a4a2e', 52223, 3)
-    fill(im, 1, 1, 13, 12, '#1c1e1e'); fill(im, 2, 2, 12, 11, '#2c3232' if not lit else '#9fb7c4')
-    dot(im, 3, 3, '#4a5454'); dot(im, 4, 3, '#4a5454'); dot(im, 3, 4, '#4a5454')
+    im = wood('#6a4a2e', 52223)
+    bevel(im, 0, 0, 16, 16, 12)
+    fill(im, 1, 1, 13, 12, '#1c1e1e'); fill(im, 1, 1, 13, 2, '#121414'); fill(im, 1, 1, 2, 12, '#121414')
+    fill(im, 2, 2, 12, 11, '#2c3232' if not lit else '#9fb7c4')
+    if not lit:
+        dot(im, 3, 3, '#4a5454'); dot(im, 4, 3, '#4a5454'); dot(im, 3, 4, '#4a5454'); dot(im, 10, 9, '#384040'); dot(im, 9, 9, '#343a3a')
     fill(im, 14, 2, 15, 11, '#3a2a1a')
+    for y in range(2, 11):
+        if y % 2 == 0:
+            dot(im, 14, y, '#2a1e12')
     for y in (3, 5, 7):
         dot(im, 14, y, '#c9b36a')
-    fill(im, 1, 13, 15, 15, '#4e3622')
+    fill(im, 1, 13, 15, 15, '#4e3622'); bevel(im, 1, 13, 15, 15, 10)
     return im
 
 
@@ -403,76 +443,86 @@ def tv_tape():
 
 
 def wood_dark():
-    im = new('#6a4a2e', 52224, 3)
-    for y in range(0, 16, 4):
-        for x in range(16):
-            if (x + y) % 5 == 0:
-                dot(im, x, y, '#5a3c24')
-    return im
+    return wood('#6a4a2e', 52224)
 
 
 def mantel_front():
     """The fireplace in the living room's wall: cream brick round a gas heater's grille, its pilot window dark."""
-    im = new('#d9c9a8', 52225, 4)
+    im = new('#d9c9a8', 52225, 3)
+    rnd = random.Random(52226)
     for y in range(0, 16, 3):
+        off = 0 if (y // 3) % 2 else 3
+        for x0 in range(off - 6, 16, 6):
+            tone = rnd.randint(-8, 8)
+            for yy in range(y + 1, min(16, y + 3)):
+                for x in range(x0 + 1, x0 + 6):
+                    if 0 <= x < 16:
+                        dot(im, x, yy, shade(im.getpixel((x, yy)), tone + (6 if yy == y + 1 else 0)))
         for x in range(16):
             dot(im, x, y, '#bfae8c')
-        off = 0 if (y // 3) % 2 else 3
         for x in range(off, 16, 6):
             for yy in range(y, min(16, y + 3)):
-                dot(im, x, yy, '#bfae8c')
+                dot(im, x, yy, '#b5a382')
     fill(im, 3, 4, 13, 16, '#2a2622'); fill(im, 4, 5, 12, 14, '#5a5650')
     for y in range(6, 13, 2):
-        fill(im, 5, y, 11, y + 1, '#3a3632')
-    dot(im, 8, 14, '#c86a2a')
+        fill(im, 5, y, 11, y + 1, '#3a3632'); fill(im, 5, y + 1, 11, y + 2, '#6c6862')
+    dot(im, 8, 14, '#e08a3a'); dot(im, 7, 14, '#8a4a22'); dot(im, 9, 14, '#8a4a22')
     return im
 
 
 
 def seat_cushion():
     """The window seat's cushion: faded floral cotton, the side to the window paler."""
-    im = new('#c9b2a0', 52227, 3)
+    im = cloth('#c9b2a0', 52227)
     rnd = random.Random(52228)
-    for _ in range(14):
-        x, y = rnd.randrange(16), rnd.randrange(16)
-        dot(im, x, y, '#b07a7a'); dot(im, x + 1, y, '#8ca07a')
-    fill(im, 0, 0, 16, 3, '#dcc9b8')
+    for _ in range(9):
+        x, y = rnd.randrange(1, 15), rnd.randrange(4, 15)
+        dot(im, x, y, '#a86a6a'); dot(im, x - 1, y, '#c48e8e'); dot(im, x + 1, y, '#c48e8e'); dot(im, x, y - 1, '#c48e8e')
+        dot(im, x + 1, y + 1, '#8ca07a')
+    for y in range(3):
+        for x in range(16):
+            dot(im, x, y, shade(im.getpixel((x, y)), 14))
+    fill(im, 0, 15, 16, 16, '#a8907e')
     return im
 
 
 def remote():
     """The television's remote: black, its buttons worn grey where a thumb goes."""
-    im = new('#1e1e20', 52329, 2)
+    im = plastic('#1e1e20', 52329)
+    bevel(im, 0, 0, 16, 16, 16)
     for y in range(2, 14, 2):
         for x in range(2, 14, 3):
-            dot(im, x, y, '#6a6a6c' if y < 8 else '#4a4a4c')
-    dot(im, 8, 1, '#c03a3a')
+            dot(im, x, y, '#7a7a7c' if y < 8 else '#4a4a4c'); dot(im, x, y + 1, '#101012')
+    dot(im, 8, 1, '#d84a4a'); dot(im, 7, 1, '#e87a6a')
     return im
 
 
 def mug_top():
     """The mug from above: its white rim, the tea gone cold in it with a skin on top."""
-    im = new('#f2efe6', 52330, 1)
-    fill(im, 2, 2, 14, 14, '#7a5a3a')
+    im = enamel('#f2efe6', 52330, 1)
+    bevel(im, 0, 0, 16, 16, 10)
+    fill(im, 2, 2, 14, 14, '#7a5a3a'); fill(im, 2, 2, 14, 3, '#5a3e24'); fill(im, 2, 2, 3, 14, '#5a3e24')
     for x, y in ((5, 5), (6, 5), (9, 7), (10, 8), (6, 10), (7, 10), (11, 11)):
         dot(im, x, y, '#a08060')
+    dot(im, 10, 4, '#c8a882'); dot(im, 11, 4, '#b8946e')
     return im
 
 
 def tape_case():
     """A tape's case, open and empty: black plastic, the white label on its spine with a date in June's hand."""
-    im = new('#202022', 52331, 2)
-    fill(im, 1, 2, 15, 14, '#2c2c30'); fill(im, 2, 6, 14, 10, '#f0ecdf')
+    im = plastic('#202022', 52331)
+    fill(im, 1, 2, 15, 14, '#2c2c30'); bevel(im, 1, 2, 15, 14, 12); fill(im, 2, 6, 14, 10, '#f0ecdf'); fill(im, 2, 9, 14, 10, '#d8d3c4')
     line(im, [(x, 8) for x in range(4, 12) if x % 3], '#3a3a8a')
     return im
 
 
 def lamp_shade(lit):
     """A standard lamp's shade: pleated cloth gone the shade of old paper; lit, the light through it."""
-    im = new('#fff0c4' if lit else '#e2d6b8', 52332 + lit, 2)
+    im = cloth('#fff0c4' if lit else '#e2d6b8', 52332 + lit, 1)
     for x in range(0, 16, 2):
-        line(im, [(x, y) for y in range(16)], '#fff8dc' if lit else '#d2c6a8')
-    fill(im, 0, 14, 16, 16, '#c8a060' if lit else '#a89068')
+        line(im, [(x, y) for y in range(16)], '#fff8dc' if lit else '#eee4c8')
+        line(im, [(x + 1, y) for y in range(16) if y % 3], '#f6e2b0' if lit else '#cdc0a0')
+    fill(im, 0, 14, 16, 16, '#c8a060' if lit else '#a89068'); fill(im, 0, 14, 16, 15, '#dcb878' if lit else '#bca47a')
     return im
 
 
@@ -495,7 +545,16 @@ def school_photos(year):
     the girl a little older in each. The first is a small child's, low in the frame, her hair short and a rosy jumper; then sat up
     taller; then her hair grown past her jaw; then the school jumper with its collar, taller again."""
     im = clear()
-    frame(im, 2, 1, 14, 15, '#3a2a1a'); fill(im, 3, 2, 13, 14, '#7f9ec4')
+    frame(im, 2, 1, 14, 15, '#3a2a1a')
+    for x in range(2, 14):
+        dot(im, x, 1, '#5a4430')
+    for y in range(1, 15):
+        dot(im, 2, y, '#5a4430')
+    for x in range(2, 14):
+        dot(im, x, 14, '#24180c')
+    for y in range(1, 15):
+        dot(im, 13, y, '#24180c')
+    fill(im, 3, 2, 13, 14, '#7f9ec4')
     for y in range(2, 14):
         for x in range(3, 13):
             if abs(x - 7.5) + abs(y - 7) < 4:
@@ -514,6 +573,7 @@ def school_photos(year):
             if year == 0 and gy == 7 and c == 'H':
                 c = 'S'
             dot(im, 4 + gx, top + gy, NESSA[c])
+    dot(im, 12, 2, '#c4d6ea'); dot(im, 11, 2, '#a8c0dc'); dot(im, 12, 3, '#a8c0dc')
     return im
 
 
@@ -535,12 +595,24 @@ def coat_hook(stage):
     """The hook board inside the front door: a small coat on one peg and, on the other, a long white cane with a red band. Stage 1
     the cane gone, its peg bare; stage 2 the coat gone as well."""
     im = clear()
-    fill(im, 0, 1, 16, 3, '#7a5232')
+    board = wood('#7a5232', 52293)
+    for y in (1, 2):
+        for x in range(16):
+            im.putpixel((x, y), board.getpixel((x, y)))
+    for x in range(16):
+        dot(im, x, 1, shade(im.getpixel((x, 1)), 12)); dot(im, x, 2, shade(im.getpixel((x, 2)), -10))
     for x in (4, 11):
-        dot(im, x, 3, '#b08a3a'); dot(im, x, 4, '#b08a3a')
+        dot(im, x, 3, '#d8b860'); dot(im, x, 4, '#9a7a2a')
     if stage < 2:
-        fill(im, 2, 4, 7, 14, '#c8a040'); fill(im, 2, 4, 7, 5, '#a8862a'); dot(im, 4, 6, '#8a6a2a'); dot(im, 4, 9, '#8a6a2a')
-        fill(im, 3, 14, 6, 15, '#c8a040')
+        coat = cloth('#c8a040', 52294)
+        for y in range(4, 14):
+            for x in range(2, 7):
+                im.putpixel((x, y), coat.getpixel((x, y)))
+        fill(im, 2, 4, 7, 5, '#a8862a'); dot(im, 4, 6, '#6a4a1a'); dot(im, 4, 9, '#6a4a1a')
+        for y in range(5, 14):
+            dot(im, 2, y, shade(im.getpixel((2, y)), 14)); dot(im, 6, y, shade(im.getpixel((6, y)), -16))
+        fill(im, 3, 10, 4, 12, '#b08c30')
+        fill(im, 3, 14, 6, 15, '#c8a040'); dot(im, 5, 14, '#a8862a')
     if stage < 1:
         for y in range(4, 16):
             dot(im, 11, y, '#f4f4f0')
@@ -555,8 +627,12 @@ def quilt(foot):
     for y in range(0, 16, 4):
         for x in range(0, 16, 4):
             c = ['#b9cfe0', '#e6c4cf', '#d5e3c4', '#efe0b8'][((x + y) // 4) % 4]
-            fill(im, x, y, x + 4, y + 4, c)
+            patch = cloth(c, 52240 + x + y * 4)
+            for yy in range(y, y + 4):
+                for xx in range(x, x + 4):
+                    im.putpixel((xx, yy), patch.getpixel((xx, yy)))
             dot(im, x + 1, y + 1, '#ffffff'); dot(im, x + 2, y + 2, '#a89a86')
+            dot(im, x + 3, y + 1, shade(c, -16)); dot(im, x + 3, y + 3, shade(c, -16)); dot(im, x + 1, y + 3, shade(c, -16))
     if foot:
         for x in range(9, 16):
             for y in range(10, 16):
@@ -566,25 +642,26 @@ def quilt(foot):
 
 
 def pillow():
-    im = new('#f4f0e4', 52232, 2); fill(im, 0, 0, 16, 1, '#e2dccb'); fill(im, 0, 15, 16, 16, '#e2dccb')
+    im = cloth('#f4f0e4', 52232, 1); fill(im, 0, 0, 16, 1, '#e2dccb'); fill(im, 0, 15, 16, 16, '#e2dccb')
+    for x in range(16):
+        dot(im, x, 1, shade(im.getpixel((x, 1)), 6)); dot(im, x, 14, shade(im.getpixel((x, 14)), -8))
+    for i in range(5, 11):
+        dot(im, i, i - 1, shade(im.getpixel((i, i - 1)), -9))
     return im
 
 
 def bed_frame():
-    im = new('#e8e2d2', 52233, 2)
+    im = enamel('#e8e2d2', 52233)
     for y in range(16):
-        dot(im, 0, y, '#cfc8b4'); dot(im, 15, y, '#cfc8b4')
+        dot(im, 0, y, '#d8d2c0'); dot(im, 1, y, '#f2eee2'); dot(im, 14, y, '#d4cdb9'); dot(im, 15, y, '#c4bda8')
+        if y % 5 == 2:
+            dot(im, 6, y, '#ddd6c4'); dot(im, 10, y + 1, '#ddd6c4')
     return im
 
 
 def veneer(seed=52234):
     """Pale timber veneer: the children's furniture, bought as a set."""
-    im = new('#c99a62', seed, 3)
-    for y in range(16):
-        for x in range(16):
-            if (x * 3 + y * 7) % 13 == 0:
-                dot(im, x, y, '#b98a54')
-    return im
+    return wood('#c99a62', seed)
 
 
 # The dots on each drawer's label, two cells of two by three (what each says is for the slice that reads them).
@@ -595,9 +672,12 @@ def drawers_front():
     """Three drawers, each with a round knob and beside it a clear label strip, its raised dots catching the light."""
     im = veneer(52235)
     for i, y0 in enumerate((1, 6, 11)):
-        fill(im, 1, y0, 15, y0 + 4, '#d2a46c'); fill(im, 1, y0 + 4, 15, y0 + 5, '#8a6438')
-        fill(im, 10, y0 + 1, 12, y0 + 3, '#7a5430'); dot(im, 10, y0 + 1, '#9a7450')
-        fill(im, 2, y0 + 1, 8, y0 + 4, '#e6dcc4')
+        for y in range(y0, y0 + 4):
+            for x in range(1, 15):
+                dot(im, x, y, shade(im.getpixel((x, y)), 8))
+        bevel(im, 1, y0, 15, y0 + 4, 14); fill(im, 1, y0 + 4, 15, y0 + 5, '#7a5430')
+        fill(im, 10, y0 + 1, 12, y0 + 3, '#7a5430'); dot(im, 10, y0 + 1, '#b08a60'); dot(im, 11, y0 + 2, '#5a3c20')
+        fill(im, 2, y0 + 1, 8, y0 + 4, '#e6dcc4'); fill(im, 2, y0 + 1, 8, y0 + 2, '#f2ebda')
         for dx, dy in BRAILLE[i]:
             dot(im, 2 + dx, y0 + 1 + dy, '#9a8c74')
     return im
@@ -607,37 +687,49 @@ def cutlery_front():
     """The little chest Callum keeps the cutlery in: two plain drawers, a wooden knob on each (its body shows the lower ten rows)."""
     im = veneer(52248)
     for y0 in (6, 11):
-        fill(im, 1, y0, 15, y0 + 4, '#d2a46c'); fill(im, 1, y0 + 4, 15, y0 + 5, '#8a6438')
-        fill(im, 7, y0 + 1, 9, y0 + 3, '#7a5430'); dot(im, 7, y0 + 1, '#9a7450')
+        for y in range(y0, y0 + 4):
+            for x in range(1, 15):
+                dot(im, x, y, shade(im.getpixel((x, y)), 8))
+        bevel(im, 1, y0, 15, y0 + 4, 14); fill(im, 1, y0 + 4, 15, y0 + 5, '#7a5430')
+        fill(im, 7, y0 + 1, 9, y0 + 3, '#7a5430'); dot(im, 7, y0 + 1, '#b08a60'); dot(im, 8, y0 + 2, '#5a3c20')
     return im
 
 
 def talking_clock():
     """A talking clock: a white box with a big speaker grille and one large button on top."""
-    im = new('#f2f0ea', 52236, 1)
-    fill(im, 3, 3, 13, 13, '#d0cdc4')
+    im = plastic('#f2f0ea', 52236)
+    bevel(im, 0, 0, 16, 16, 10)
+    fill(im, 3, 3, 13, 13, '#d0cdc4'); inset(im, 3, 3, 13, 13, 12)
     for y in range(4, 13, 2):
         for x in range(4, 13, 2):
-            dot(im, x, y, '#6a6862')
+            dot(im, x, y, '#5a5852'); dot(im, x + 1, y + 1, '#e0ddd4')
     return im
 
 
 def desk_top():
     """The desk: a magnifier on its stand, a sheet of paper under it with the letters drawn large."""
     im = veneer(52237)
+    for x in range(3, 11):
+        dot(im, x, 13, shade(im.getpixel((x, 13)), -26))
+    for y in range(4, 13):
+        dot(im, 10, y, shade(im.getpixel((10, y)), -26))
     fill(im, 2, 3, 10, 13, '#fbfaf4')
     for y in (5, 8, 11):
         fill(im, 3, y, 8, y + 1, '#2a2a2a')
     for y in range(6, 12):
         for x in range(9, 15):
-            if ((x - 11.5) ** 2 + (y - 8.5) ** 2) ** .5 < 2.8:
+            d = ((x - 11.5) ** 2 + (y - 8.5) ** 2) ** .5
+            if d < 2.8:
                 dot(im, x, y, '#c8d8e0', 160)
+            elif d < 3.4:
+                dot(im, x, y, '#2a2a2a')
+    dot(im, 10, 7, '#f4fafc')
     return im
 
 
 def large_books():
     """The shelf of large-print books: thick spines, the titles in letters big enough to see across the room, a gap where one is out."""
-    im = new('#c99a62', 52238, 3)
+    im = wood('#c99a62', 52238)
     for row, y0 in enumerate((1, 9)):
         fill(im, 0, y0 + 6, 16, y0 + 7, '#8a6438')
         x = 1; rnd = random.Random(52239 + row)
@@ -647,6 +739,14 @@ def large_books():
                 x += 3; continue
             c = rnd.choice(['#8a4a3a', '#3a5a7a', '#a8863e', '#4a6a4a', '#6a4a5e'])
             fill(im, x, y0, x + w, y0 + 6, c); fill(im, x, y0 + 2, x + w, y0 + 4, '#ece4cc'); dot(im, x, y0, shade(c, 12))
+            for yy in (y0 + 1, y0 + 5):
+                for xx in range(x, x + w):
+                    dot(im, xx, yy, shade(c, -22))
+            for yy in range(y0, y0 + 6):
+                if yy not in (y0 + 2, y0 + 3):
+                    dot(im, x, yy, shade(im.getpixel((x, yy)), 14))
+                    if x + w - 1 < 16:
+                        dot(im, x + w - 1, yy, shade(im.getpixel((x + w - 1, yy)), -14))
             x += w
     return im
 
@@ -667,17 +767,18 @@ def wardrobe_front(upper, opened):
             fill(im, 8, 10, 14, 16, '#e6c4cf')
         return im
     for y in range(16):
-        dot(im, 8, y, '#8a6438')
+        dot(im, 8, y, '#6e4c28'); dot(im, 0, y, shade(im.getpixel((0, y)), 12)); dot(im, 9, y, shade(im.getpixel((9, y)), 12))
+        dot(im, 7, y, shade(im.getpixel((7, y)), -12)); dot(im, 15, y, shade(im.getpixel((15, y)), -12))
     if not upper:
-        dot(im, 6, 1, '#d8c9a0'); dot(im, 10, 1, '#d8c9a0')
+        dot(im, 6, 1, '#e8dcb4'); dot(im, 10, 1, '#e8dcb4'); dot(im, 6, 2, '#8a6438'); dot(im, 10, 2, '#8a6438')
     return im
 
 
 def switch_plate():
     """The light switch: a white plate, and over its rocker a strip of bumpy tape that a hand can find in the dark."""
     im = clear()
-    fill(im, 5, 3, 11, 13, '#f4f2ea'); frame(im, 5, 3, 11, 13, '#d8d4c8')
-    fill(im, 7, 6, 9, 10, '#e4e0d4')
+    fill(im, 5, 3, 11, 13, '#f4f2ea'); bevel(im, 5, 3, 11, 13, 10)
+    fill(im, 7, 6, 9, 10, '#e4e0d4'); inset(im, 7, 6, 9, 10, 10)
     for y in (6, 8):
         dot(im, 7, y, '#c8a040'); dot(im, 8, y + 1, '#c8a040')
     return im
@@ -718,12 +819,18 @@ def border(crooked):
 # ------------------------------------------------------------------------------------------------ Callum's room
 def mattress(foot):
     """A mattress on the floor and no bed: striped ticking, a folded blanket at the head."""
-    im = new('#e2ddd0', 52245 + foot, 2)
+    im = cloth('#e2ddd0', 52245 + foot, 1)
     for x in range(0, 16, 3):
         for y in range(16):
-            dot(im, x, y, '#9fb0c4')
+            dot(im, x, y, '#9fb0c4' if y % 2 else '#93a4b8')
+    for x, y in ((4, 4), (10, 4), (4, 12), (10, 12)):
+        dot(im, x, y, '#bdb8aa'); dot(im, x - 1, y - 1, '#f2eee4')
     if not foot:
-        fill(im, 1, 10, 15, 15, '#7a8a6a'); fill(im, 1, 10, 15, 11, '#5e6e50')
+        blanket = cloth('#7a8a6a', 52246)
+        for y in range(10, 15):
+            for x in range(1, 15):
+                im.putpixel((x, y), blanket.getpixel((x, y)))
+        fill(im, 1, 10, 15, 11, '#5e6e50'); fill(im, 1, 12, 15, 13, '#6c7c5c'); fill(im, 1, 14, 15, 15, '#56664a')
     return im
 
 
@@ -744,14 +851,23 @@ def circle_cell(cx, cz, ox, oz, r):
 
 def shoe(colour, top, seed):
     """A small shoe's leather: from the side its colour with the clean white sole along the bottom; from above, the laces."""
-    im = new(colour, seed, 2)
+    im = enamel(colour, seed, 2)
     if top:
         for y in range(0, 16, 2):
             for x in range(16):
                 if (x + y // 2) % 4 == 1:
-                    dot(im, x, y, '#ecebe4')
+                    dot(im, x, y, '#ecebe4'); dot(im, x, y + 1, shade(colour, -24))
+                elif (x + y // 2) % 4 == 3:
+                    dot(im, x, y, shade(colour, -30))
     else:
+        fill(im, 0, 0, 16, 1, shade(colour, 16))
+        for x, y in ((3, 6), (4, 7), (5, 7), (6, 6)):
+            dot(im, x, y, shade(colour, -18))
+        for x in range(10, 15):
+            dot(im, x, 9, shade(colour, 12))
         fill(im, 0, 15, 16, 16, '#ecebe4')
+        for x in range(0, 16, 2):
+            dot(im, x, 14, '#d2d0c6')
     return im
 
 
@@ -761,10 +877,14 @@ SHOES = ((2.5, 'b'), (5, 'b'), (9, 'r'), (11.5, 'r'))
 
 def cutlery(knives):
     """The drawer he keeps: the house's missing spoons and forks laid in rows, neat as a shop's. From the second visit, a knife."""
-    im = new('#c99a62', 52247, 3)
-    fill(im, 1, 1, 15, 15, '#e8dcc4')
+    im = wood('#c99a62', 52247)
+    felt = cloth('#e8dcc4', 52249, 1)
+    for y in range(1, 15):
+        for x in range(1, 15):
+            im.putpixel((x, y), felt.getpixel((x, y)))
+    inset(im, 1, 1, 15, 15, 12)
     for i, x in enumerate(range(2, 14, 2)):
-        line(im, [(x, y) for y in range(3, 13)], '#b9bec1')
+        line(im, [(x, y) for y in range(3, 13)], '#b9bec1'); line(im, [(x + 1, y) for y in range(4, 13)], '#d0c4ac')
         if i % 2:
             dot(im, x, 3, '#dfe3e5'); dot(im, x, 4, '#dfe3e5')
         else:
@@ -804,9 +924,15 @@ def callum():
 
 def vanity_front():
     """The vanity under the basin: one door, a towel on its rail."""
-    im = new('#f2efe6', 52251, 1)
-    frame(im, 1, 1, 15, 13, '#d8d3c4'); dot(im, 12, 7, '#9a9488')
-    fill(im, 2, 3, 9, 10, '#7aa0b8'); fill(im, 2, 3, 9, 4, '#5a8098'); line(im, [(3, 9), (5, 9), (7, 9)], '#5a8098')
+    im = enamel('#f2efe6', 52251)
+    bevel(im, 1, 1, 15, 13, 10); dot(im, 12, 7, '#7a7468'); dot(im, 12, 6, '#c8c2b4')
+    towel = cloth('#7aa0b8', 52250)
+    for y in range(3, 10):
+        for x in range(2, 9):
+            im.putpixel((x, y), towel.getpixel((x, y)))
+    fill(im, 2, 3, 9, 4, '#5a8098'); fill(im, 2, 6, 9, 7, '#9abcd0'); line(im, [(3, 9), (5, 9), (7, 9)], '#5a8098')
+    for y in range(4, 10):
+        dot(im, 8, y, shade(im.getpixel((8, y)), -14))
     fill(im, 0, 13, 16, 16, '#3b3832')
     return im
 
@@ -814,13 +940,15 @@ def vanity_front():
 def basin_top():
     """The basin from above: white, the bowl sunk into it with its rim in shadow and its back darker, the plug. The taps and the cup
     with two toothbrushes (one old and dry, kept; the new one) stand behind it, in the model."""
-    im = new('#f6f4ee', 52252, 1)
+    im = enamel('#f6f4ee', 52252)
     for y in range(2, 14):
         for x in range(1, 13):
             d = (x - 6.5) ** 2 / 20 + (y - 7.5) ** 2 / 25
             if d < 1:
                 dot(im, x, y, '#cfcdc4' if d > .72 else shade('#e8e6de', -int((y - 2) * 2.2)))
-    fill(im, 6, 8, 8, 9, '#7a7a74'); dot(im, 6, 8, '#9a9a94')
+    fill(im, 6, 8, 8, 9, '#7a7a74'); dot(im, 6, 8, '#9a9a94'); dot(im, 7, 9, '#c8c6be')
+    for x, y in ((3, 11), (4, 12), (9, 12), (10, 11)):
+        dot(im, x, y, '#f8f7f2')
     return im
 
 
@@ -828,10 +956,19 @@ def mirror(steamed):
     """The mirror cabinet over the basin: chrome edge, the glass. Steamed, a word shows on it that was written once with a finger:
     NESSA."""
     im = clear()
-    fill(im, 1, 1, 15, 15, '#c9ced1'); fill(im, 2, 2, 14, 14, '#9fb4bd' if not steamed else '#d6dcdc')
+    fill(im, 1, 1, 15, 15, '#c9ced1'); bevel(im, 1, 1, 15, 15, 18)
+    fill(im, 2, 2, 14, 14, '#9fb4bd' if not steamed else '#d6dcdc')
     if not steamed:
+        for y in range(2, 14):
+            for x in range(2, 14):
+                if x + y < 10:
+                    dot(im, x, y, '#a9bec6')
+                elif x + y > 22:
+                    dot(im, x, y, '#93a8b1')
         for i in range(4):
             dot(im, 3 + i, 9 - i, '#c8dce4'); dot(im, 4 + i, 9 - i, '#c8dce4')
+        for i in range(2):
+            dot(im, 9 + i, 12 - i, '#b8ccd4')
     else:
         text(im, 3, 3, 'NES', '#8fa6ae', 0)
         text(im, 4, 9, 'SA', '#8fa6ae', 0)
@@ -840,15 +977,18 @@ def mirror(steamed):
 
 def bath_side(end):
     """The bath's apron: white enamel; at its tap end the taps and the shower's hose."""
-    im = new('#f4f2ec', 52253 + end, 1)
-    fill(im, 0, 0, 16, 2, '#e4e1d8')
+    im = enamel('#f4f2ec', 52253 + end)
+    fill(im, 0, 0, 16, 1, '#fbfaf6'); fill(im, 0, 1, 16, 2, '#e4e1d8'); fill(im, 0, 2, 16, 3, '#ebe8e0')
+    fill(im, 0, 15, 16, 16, '#dedbd2')
     return im
 
 
 def bath_top(end):
     """Inside the bath, from above: the non-slip mat down its length, its suckers. End 0 is the tap end (the south as drawn), the
     plughole under the taps; end 1 the far end, where a bath toy sits on the rack, a duck sun-bleached on one side."""
-    im = new('#f4f2ec', 52255 + end, 1)
+    im = enamel('#f4f2ec', 52255 + end)
+    for i in range(16):
+        dot(im, i, 0, '#dcd9d0'); dot(im, 0, i, '#e2dfd6'); dot(im, 15, i, '#fbfaf6')
     if end == 0:
         fill(im, 2, 0, 14, 14, '#e8e6de'); fill(im, 4, 0, 12, 10, '#9ac4c0')
         for y in range(1, 10, 2):
@@ -865,16 +1005,18 @@ def bath_top(end):
 
 
 def toilet():
-    im = new('#f6f4ee', 52257, 1); fill(im, 3, 3, 13, 13, '#e2e0d8'); fill(im, 5, 5, 11, 11, '#c8d8dc')
+    im = enamel('#f6f4ee', 52257); fill(im, 3, 3, 13, 13, '#e2e0d8'); bevel(im, 3, 3, 13, 13, 10)
+    fill(im, 5, 5, 11, 11, '#c8d8dc'); inset(im, 5, 5, 11, 11, 14); dot(im, 6, 6, '#e8f2f4'); dot(im, 7, 6, '#dceaee')
     return im
 
 
 # ------------------------------------------------------------------------------------------------ the laundry
 def freezer_lid(end, unlocked=False):
     """The chest freezer's lid: white, frost at the seal. On it at one end a folded towel and a hairbrush with long hair in it."""
-    im = new('#f4f3ee', 52258 + end, 1)
+    im = enamel('#f4f3ee', 52258 + end)
     for x in range(16):
-        dot(im, x, 0, '#e8f2f6'); dot(im, x, 15, '#e8f2f6')
+        dot(im, x, 0, '#e8f2f6' if x % 3 else '#ffffff'); dot(im, x, 15, '#e8f2f6' if x % 4 else '#d4e4ec')
+        dot(im, x, 1, '#eef0ee')
     if end == 1:
         fill(im, 3, 3, 12, 10, '#d6a8a8'); fill(im, 3, 9, 12, 10, '#b88888'); line(im, [(4, 4), (11, 4)], '#e8c4c4')
         fill(im, 5, 11, 12, 13, '#3a2a20'); fill(im, 3, 11, 6, 13, '#7a4a2a')
@@ -886,25 +1028,30 @@ def freezer_lid(end, unlocked=False):
 
 def freezer_front(end, unlocked=False):
     """The freezer's front: the hum's grille at the bottom, frost along the seal, and on the lock end a padlock through the hasp."""
-    im = new('#f4f3ee', 52260 + end, 1)
+    im = enamel('#f4f3ee', 52260 + end)
     for x in range(16):
-        dot(im, x, 1, '#dce8ee')
+        dot(im, x, 0, '#e2e0d8'); dot(im, x, 1, '#dce8ee' if x % 3 else '#f4fbfe'); dot(im, x, 2, '#e4e2da')
     for y in (12, 14):
         for x in range(2, 14, 2):
-            dot(im, x, y, '#b8b6ae')
+            dot(im, x, y, '#8a8880'); dot(im, x + 1, y, '#d4d2ca')
     if end == 0:
-        fill(im, 7, 1, 10, 4, '#b8bcc0')
+        fill(im, 7, 1, 10, 4, '#b8bcc0'); dot(im, 7, 1, '#dce0e3'); dot(im, 9, 3, '#8e9396')
         if not unlocked:
-            fill(im, 7, 4, 10, 8, '#c8a040'); fill(im, 8, 3, 9, 5, '#8a8e92'); dot(im, 8, 6, '#3a3a3a')
+            fill(im, 7, 4, 10, 8, '#c8a040'); dot(im, 7, 4, '#e8c868'); dot(im, 7, 5, '#dcb850'); fill(im, 9, 5, 10, 8, '#a07c28')
+            fill(im, 8, 3, 9, 5, '#8a8e92'); dot(im, 8, 6, '#3a3a3a'); dot(im, 8, 7, '#5a4a2a')
     return im
 
 
 def stool():
     """The step stool beside the freezer: two steps of painted wood, the top worn bare in the middle where someone sits."""
-    im = new('#d6cdb8', 52262, 2)
-    for y in range(4, 12):
-        for x in range(4, 12):
-            dot(im, x, y, '#b89a72' if (x + y) % 3 else '#a88a62')
+    im = enamel('#d6cdb8', 52262, 4)
+    bare = wood('#b89a72', 52263)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            d = max(abs(x - 7.5), abs(y - 7.5))
+            if d < 4 or (d < 5 and (x * 7 + y * 5) % 3 == 0):
+                im.putpixel((x, y), bare.getpixel((x, y)))
+    bevel(im, 0, 0, 16, 16, 10)
     return im
 
 
@@ -912,8 +1059,9 @@ def power_point():
     """A power point low on the wall: the freezer's plug in it, its switch taped down, and a note taped over the tape: DO NOT
     SWITCH OFF."""
     im = clear()
-    fill(im, 3, 9, 13, 15, '#f4f2ea'); frame(im, 3, 9, 13, 15, '#d8d4c8')
-    fill(im, 5, 11, 7, 14, '#3a3a3a'); fill(im, 9, 11, 11, 13, '#e8e4d4')
+    fill(im, 3, 9, 13, 15, '#f4f2ea'); bevel(im, 3, 9, 13, 15, 12)
+    fill(im, 5, 11, 7, 14, '#3a3a3a'); dot(im, 5, 11, '#5a5a5a'); fill(im, 9, 11, 11, 13, '#e8e4d4'); inset(im, 9, 11, 11, 13, 10)
+    fill(im, 1, 1, 15, 2, '#d8c88a')
     fill(im, 2, 1, 14, 9, '#fbf6c8'); text(im, 3, 2, 'DO', '#c03a3a', 0); text(im, 3, 2 + 5, '', '#c03a3a')
     line(im, [(9, 3), (11, 3), (9, 5), (12, 5), (9, 7), (12, 7)], '#c03a3a')
     return im
@@ -931,7 +1079,12 @@ def cord():
 
 def trough():
     """The laundry trough: a deep steel tub, a tap over it."""
-    im = new('#b9bec1', 52263, 4); fill(im, 2, 2, 14, 14, '#8e9497'); fill(im, 3, 3, 13, 13, '#a6acaf'); dot(im, 8, 8, '#4a4e50')
+    im = metal('#b9bec1', 52263); fill(im, 2, 2, 14, 14, '#8e9497'); inset(im, 2, 2, 14, 14, 18)
+    inner = metal('#a6acaf', 52264)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            im.putpixel((x, y), inner.getpixel((x, y)))
+    inset(im, 3, 3, 13, 13, 10); dot(im, 8, 8, '#3a3e40'); dot(im, 9, 9, '#c4cacd')
     return im
 
 
@@ -942,25 +1095,33 @@ def bucket_top():
         for x in range(16):
             d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
             if d < 6.5:
-                dot(im, x, y, '#3a7ab8' if d > 5.4 else '#2e5e8e')
-    fill(im, 2, 6, 14, 9, '#b8946a'); fill(im, 3, 9, 13, 10, '#e2d2a0')
+                dot(im, x, y, ('#5a9ad0' if x + y < 13 else '#3a7ab8' if x + y < 18 else '#2a6098') if d > 5.4 else '#2e5e8e' if x + y > 12 else '#24507a')
+    fill(im, 2, 6, 14, 9, '#b8946a'); fill(im, 2, 6, 14, 7, '#d0ac80'); fill(im, 2, 8, 14, 9, '#9a7650')
+    for x in range(3, 13):
+        dot(im, x, 9, '#e2d2a0' if x % 2 else '#c8b888')
     return im
 
 
 def chlorine():
     """A drum of pool chlorine, far too big for one pool, its label sun-faded."""
-    im = new('#e8e6de', 52264, 2); fill(im, 2, 5, 14, 12, '#2a6ab8'); fill(im, 3, 7, 13, 10, '#f4f4f0')
+    im = plastic('#e8e6de', 52264)
+    for x in range(0, 16, 4):
+        for y in range(16):
+            dot(im, x, y, shade(im.getpixel((x, y)), -10)); dot(im, x + 1, y, shade(im.getpixel((x + 1, y)), 8))
+    fill(im, 2, 5, 14, 12, '#2a6ab8'); fill(im, 3, 7, 13, 10, '#f4f4f0')
     line(im, [(4, 8), (6, 8), (8, 8), (10, 8)], '#2a6ab8')
+    for x in range(9, 14):
+        dot(im, x, 6, '#5a8ac8'); dot(im, x, 10, '#5a8ac8')
     return im
 
 
 def washer_front():
     """A top-loading washing machine: white, its dials on the backsplash."""
-    im = new('#f2f0ea', 52265, 1)
-    fill(im, 0, 0, 16, 4, '#dcd8cc')
+    im = enamel('#f2f0ea', 52265)
+    fill(im, 0, 0, 16, 4, '#dcd8cc'); fill(im, 0, 0, 16, 1, '#ebe8de'); fill(im, 0, 4, 16, 5, '#c8c4b8')
     for x in (3, 8, 12):
-        dot(im, x, 2, '#5a5a56')
-    fill(im, 0, 14, 16, 16, '#3b3832')
+        dot(im, x, 2, '#5a5a56'); dot(im, x - 1, 1, '#b8b4a8'); dot(im, x + 1, 2, '#c4c0b4'); dot(im, x, 3, '#c4c0b4'); dot(im, x, 1, '#2a2a28')
+    fill(im, 0, 14, 16, 16, '#3b3832'); fill(im, 0, 13, 16, 14, '#e2e0d8')
     return im
 
 
@@ -968,23 +1129,39 @@ def washer_front():
 def canvas(head=False):
     """The camp bed's canvas: khaki, a sleeping bag on it, unzipped; at the head (the south as drawn) its open top, and a jumper
     rolled up for a pillow."""
-    im = new('#8a8a5a', 52266, 3)
-    fill(im, 2, 0, 14, 16, '#3a5a8a')
+    im = cloth('#8a8a5a', 52266)
+    bag = cloth('#3a5a8a', 52267)
+    for y in range(16):
+        for x in range(2, 14):
+            im.putpixel((x, y), bag.getpixel((x, y)))
+    for y in range(1, 16, 3):
+        for x in range(2, 14):
+            dot(im, x, y, '#2e4c78')
+    for y in range(16):
+        dot(im, 2, y, '#4a6c9c'); dot(im, 13, y, '#2a4468')
+        if y % 2 == 0:
+            dot(im, 12, y, '#c8ccd0')
     if head:
-        fill(im, 2, 13, 14, 16, '#2a4a7a'); fill(im, 4, 10, 12, 13, '#8a3a3a'); fill(im, 4, 10, 12, 11, '#a84a4a')
+        fill(im, 2, 13, 14, 16, '#2a4a7a'); fill(im, 2, 13, 14, 14, '#4a6c9c')
+        jumper = cloth('#8a3a3a', 52269)
+        for y in range(10, 13):
+            for x in range(4, 12):
+                im.putpixel((x, y), jumper.getpixel((x, y)))
+        fill(im, 4, 10, 12, 11, '#a84a4a'); fill(im, 4, 12, 12, 13, '#6e2c2c')
     return im
 
 
 def aluminium():
-    im = new('#b8bcbe', 52267, 3)
-    return im
+    return metal('#b8bcbe', 52267)
 
 
 def carton(label):
     """A cardboard box, taped shut, and its label in marker: NESSA, WINTER; NESSA, BOOKS; NESSA, DON'T. The last word is written
     smaller, and gone over twice."""
-    im = new('#b8946a', 52268 + len(label), 4)
-    fill(im, 0, 7, 16, 9, '#c8a87a')
+    im = card('#b8946a', 52268 + len(label))
+    fill(im, 0, 7, 16, 9, '#c8a87a'); fill(im, 0, 7, 16, 8, '#dcc094')
+    for x in range(0, 16, 5):
+        dot(im, x, 8, '#b8986a')
     if label:
         text(im, 0, 1, 'NESSA', '#1e1a16', 0)
         text(im, 1 if label != "DON'T" else 2, 10, label[:4] if len(label) > 4 else label, '#1e1a16', 0 if len(label) > 4 else 1)
@@ -994,10 +1171,10 @@ def carton(label):
 def pegboard(half, second):
     """The pegboard: hardboard with holes, each tool's outline painted on it in white. Some outlines are empty, one of them a
     knife's; from the second visit, a second knife's outline is empty as well."""
-    im = new('#b08a5a', 52270 + half, 3)
+    im = card('#b08a5a', 52270 + half)
     for y in range(1, 16, 2):
         for x in range(1, 16, 2):
-            dot(im, x, y, '#7a5a3a')
+            dot(im, x, y, '#4e3622'); dot(im, x + 1, y + 1, '#c49e6e')
     if half == 0:
         line(im, [(3, y) for y in range(3, 12)] + [(2, 12), (4, 12)], '#f4f2ea')
         line(im, [(3, y) for y in range(4, 11)], '#5a5a5a')
@@ -1015,14 +1192,16 @@ def pegboard(half, second):
 
 def bulb():
     im = clear(); fill(im, 5, 5, 11, 12, '#f4eec0'); fill(im, 6, 4, 10, 5, '#b8b4a8')
+    fill(im, 6, 6, 7, 10, '#fffbe4'); fill(im, 10, 6, 11, 11, '#e2d8a4'); fill(im, 6, 11, 10, 12, '#e8deb0')
+    dot(im, 7, 4, '#d8d4c8'); dot(im, 9, 4, '#8e8a80')
     return im
 
 
 def towel_rolled():
-    im = new('#a8b8c8', 52272, 3)
+    im = cloth('#a8b8c8', 52272)
     for x in range(0, 16, 3):
         for y in range(16):
-            dot(im, x, y, '#98a8b8')
+            dot(im, x, y, '#94a4b4' if y % 2 else '#8a9aaa')
     return im
 
 
@@ -1030,10 +1209,11 @@ def towel_rolled():
 def tape_spines(upper):
     """The shed's shelf of tapes in plain cases: each spine with a date in June's hand, in order. Two dates written over, one case
     empty."""
-    im = new('#6a6050', 52273 + upper, 3)
-    fill(im, 0, 14, 16, 16, '#5a5040')
+    im = wood('#6a6050', 52273 + upper)
+    fill(im, 0, 14, 16, 16, '#5a5040'); fill(im, 0, 14, 16, 15, '#7a705e')
     for x in range(1, 15, 2):
-        fill(im, x, 2, x + 2, 14, '#1e1e1e'); fill(im, x, 4, x + 2, 11, '#f0ecdf')
+        fill(im, x, 2, x + 2, 14, '#1e1e1e'); dot(im, x, 2, '#3a3a3a'); dot(im, x, 13, '#3a3a3a')
+        fill(im, x, 4, x + 2, 11, '#f0ecdf'); dot(im, x + 1, 10, '#d8d2c0')
         dot(im, x, 6, '#2a2a6a'); dot(im, x + 1, 8, '#2a2a6a')
     if upper:
         fill(im, 9, 4, 11, 11, '#2a2a2a')
@@ -1045,9 +1225,11 @@ def tape_spines(upper):
 
 def bench_top():
     """The workbench's top: scarred timber, a ring of white paint where a tin always stands."""
-    im = new('#8a6a4a', 52275, 4)
+    im = wood('#8a6a4a', 52275, 3)
     for x, y in ((3, 3), (4, 3), (5, 4), (11, 9), (12, 10)):
-        dot(im, x, y, '#5a4430')
+        dot(im, x, y, '#5a4430'); dot(im, x, y + 1, '#a08060')
+    for x, y in ((9, 2), (10, 2), (8, 13), (13, 5)):
+        dot(im, x, y, '#4a3826')
     for y in range(9, 14):
         for x in range(2, 7):
             if abs(((x - 4) ** 2 + (y - 11) ** 2) ** .5 - 2) < .6:
@@ -1057,33 +1239,50 @@ def bench_top():
 
 def deck_front():
     """The video deck: silver, its slot, and the tracking dial worn smooth."""
-    im = new('#a8acb0', 52276, 2)
-    fill(im, 2, 5, 10, 7, '#1e1e1e'); dot(im, 13, 6, '#4a4e50'); dot(im, 12, 6, '#7a7e80'); dot(im, 13, 7, '#7a7e80')
+    im = metal('#a8acb0', 52276)
+    bevel(im, 0, 0, 16, 16, 14)
+    fill(im, 2, 5, 10, 7, '#1e1e1e'); fill(im, 2, 7, 10, 8, '#c8ccd0'); fill(im, 2, 4, 10, 5, '#7e8286')
+    dot(im, 13, 6, '#4a4e50'); dot(im, 12, 6, '#7a7e80'); dot(im, 13, 7, '#7a7e80'); dot(im, 12, 5, '#d8dcde')
     dot(im, 3, 10, '#c03a3a'); line(im, [(5, 10), (6, 10), (8, 10)], '#5a5e60')
     return im
 
 
 def portable_tv():
     """The portable television: grey plastic, a small screen, a handle on top, an aerial bent back."""
-    im = new('#7a7e80', 52277, 3)
-    fill(im, 1, 2, 12, 12, '#1c1e1e'); fill(im, 2, 3, 11, 11, '#3a4040')
+    im = plastic('#7a7e80', 52277)
+    bevel(im, 0, 0, 16, 16, 14)
+    fill(im, 1, 2, 12, 12, '#1c1e1e'); fill(im, 2, 3, 11, 11, '#3a4040'); inset(im, 2, 3, 11, 11, 8)
+    dot(im, 3, 4, '#5a6464'); dot(im, 4, 4, '#4e5858'); dot(im, 3, 5, '#4e5858')
     for y in (4, 6, 8):
-        dot(im, 13, y, '#d8d8d4')
+        dot(im, 13, y, '#d8d8d4'); dot(im, 13, y + 1, '#4a4e50')
+    for y in range(10, 14):
+        if y % 2 == 0:
+            fill(im, 13, y, 15, y + 1, '#5a5e60')
     return im
 
 
 def tin(label):
     """A paint tin: white paint run down its side. The full one's lid has a word on it in marker, too small to read from standing
     (a hand gets it: LINE)."""
-    im = new('#c8ccd0', 52278 + label, 4)
+    im = metal('#c8ccd0', 52278 + label)
+    for y in range(16):
+        dot(im, 0, y, '#e6eaec'); dot(im, 1, y, '#dde1e4'); dot(im, 14, y, '#a4a8ac'); dot(im, 15, y, '#8e9296')
+    fill(im, 0, 0, 16, 1, '#9a9ea2'); fill(im, 0, 15, 16, 16, '#9a9ea2')
     for x in (3, 4, 9):
-        line(im, [(x, y) for y in range(0, 6 + x % 4)], '#f4f2ea')
+        line(im, [(x, y) for y in range(0, 6 + x % 4)], '#f4f2ea'); dot(im, x, 6 + x % 4, '#e2e0d8')
     return im
 
 
 def tin_lid_line():
     """The full tin's lid: the rim, paint dried round it, and the word in marker across the middle."""
-    im = new('#b8bcc0', 52319, 4)
+    im = metal('#b8bcc0', 52319)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if 6.2 < d < 7.4:
+                dot(im, x, y, '#dde1e4' if x + y < 15 else '#8e9296')
+            elif 5.4 < d <= 6.2:
+                dot(im, x, y, '#9a9ea2')
     for x, y in ((5, 8), (6, 7), (6, 8), (7, 7), (8, 8), (9, 7), (9, 8), (10, 7)):
         dot(im, x, y, '#1e1a16')
     for x in range(4, 12):
@@ -1146,9 +1345,16 @@ def stake_tag(tilly):
 
 def kennel_wall():
     """The kennel's boards, painted a long time ago; no smell of dog."""
-    im = new('#b88a5a', 52280, 3)
+    im = wood('#b88a5a', 52280)
     for y in range(1, 16, 4):
         line(im, [(x, y) for x in range(16)], '#8a6438')
+        if y + 1 < 16:
+            line(im, [(x, y + 1) for x in range(16)], '#c99c6c')
+    rnd = random.Random(52281)
+    for _ in range(6):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        if y % 4 != 1:
+            dot(im, x, y, '#9a8a72')
     return im
 
 
@@ -1159,7 +1365,7 @@ def kennel_pair():
         rnd = random.Random(52292)
         for y in range(16):
             for x in range(32):
-                im.putpixel((x, y), shade('#8a6438' if y % 4 == 1 else '#b88a5a', rnd.randint(-5, 5)))
+                im.putpixel((x, y), shade('#8a6438' if y % 4 == 1 else '#c99c6c' if y % 4 == 2 else '#b88a5a', rnd.randint(-5, 5)))
         for y in range(KENNEL_DOOR_V, 16):
             for x in range(16 - KENNEL_DOOR_HALF, 16 + KENNEL_DOOR_HALF):
                 im.putpixel((x, y), shade('#1a1410', 0))
@@ -1198,20 +1404,22 @@ def bowl_leaves():
         for x in range(16):
             d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
             if d < 5.5:
-                dot(im, x, y, '#c8ccd0' if d > 4.4 else ['#8a6a3a', '#a8783a', '#6a5a2a'][(x * 3 + y) % 3])
+                dot(im, x, y, ('#e2e6e8' if x + y < 14 else '#c8ccd0' if x + y < 18 else '#9ea2a6') if d > 4.4 else ['#8a6a3a', '#a8783a', '#6a5a2a'][(x * 3 + y) % 3])
     return im
 
 
 def pool_chair():
     """The pool chair's white plastic slats, and over its back a beach towel faded on one side only."""
-    im = new('#f2f2ee', 52282, 1)
+    im = plastic('#f2f2ee', 52282)
     for y in range(1, 16, 3):
-        line(im, [(x, y) for x in range(16)], '#d0d0c8')
+        line(im, [(x, y) for x in range(16)], '#c4c4bc')
+        if y + 1 < 16:
+            line(im, [(x, y + 1) for x in range(16)], '#fbfbf8')
     return im
 
 
 def towel_faded():
-    im = new('#3a8ac8', 52283, 3)
+    im = cloth('#3a8ac8', 52283)
     for y in range(16):
         for x in range(8, 16):
             r, g, b, _ = im.getpixel((x, y)); k = (x - 8) * 9
@@ -1223,7 +1431,9 @@ def towel_faded():
 
 def pump():
     """The pool pump's housing: grey plastic, its basket's clear lid, and the hum."""
-    im = new('#8a9094', 52284, 3); fill(im, 3, 3, 13, 13, '#6a7074'); fill(im, 5, 5, 11, 11, '#a8c8d0')
+    im = plastic('#8a9094', 52284); bevel(im, 0, 0, 16, 16, 12)
+    fill(im, 3, 3, 13, 13, '#6a7074'); bevel(im, 3, 3, 13, 13, 12)
+    fill(im, 5, 5, 11, 11, '#a8c8d0'); inset(im, 5, 5, 11, 11, 12); dot(im, 6, 6, '#e0f0f4'); dot(im, 7, 6, '#cce2e8')
     return im
 
 
@@ -1362,16 +1572,16 @@ def toys():
 
 
 def small():
-    out = {'enamel': new('#f4f2ec', 52300, 1), 'steel': new('#b9bec1', 52301, 4), 'grey_plastic': new('#7a7e80', 52302, 3),
-           'shelf_wood': new('#9a8462', 52303, 4), 'stake_wood': new('#a8885a', 52304, 4), 'paint_cream': new('#e8e0c8', 52305, 2),
-           'peg_edge': new('#8a6a42', 52306, 3), 'mattress_side': new('#d8d2c2', 52307, 2), 'brass': new('#b08a3a', 52327, 3), 'kennel_dark': new('#1a1410', 52328, 2), 'kennel_floor': kennel_floor(),
-           'kennel_roof': new('#6a4a3a', 52309, 4), 'box_top': new('#c8a47a', 52310, 3), 'card_back': new('#f4f1ea', 52311, 1),
-           'chain': new('#8a8e92', 52312, 6), 'cord_flex': new('#e8e6de', 52313, 1), 'lens': new('#c8d8e0', 52314, 2),
-           'cup': new('#e0d8a0', 52315, 3), 'brush_old': new('#c8c4b4', 52316, 2), 'brush_new': new('#4a9ac8', 52317, 2),
-           'handle': new('#1e1a16', 52318, 2), 'tin_lid': new('#b8bcc0', 52319, 4), 'brush': new('#b8946a', 52320, 4),
-           'chlorine_lid': new('#2a6ab8', 52321, 3), 'washer_lid': new('#ecebe4', 52322, 1), 'doily': clear(),
-           'seedling_dead': clear(), 'seedling_fresh': clear(), 'lunchbox_side_pink': new('#d64a6a', 52323, 2),
-           'bucket_side': new('#3a7ab8', 52324, 3), 'canvas_head': canvas(True), 'mantel_top': new('#7a5232', 52325, 3)}
+    out = {'enamel': enamel('#f4f2ec', 52300), 'steel': metal('#b9bec1', 52301), 'grey_plastic': plastic('#7a7e80', 52302),
+           'shelf_wood': wood('#9a8462', 52303), 'stake_wood': wood('#a8885a', 52304, across=True), 'paint_cream': enamel('#e8e0c8', 52305),
+           'peg_edge': wood('#8a6a42', 52306), 'mattress_side': cloth('#d8d2c2', 52307, 1), 'brass': metal('#b08a3a', 52327), 'kennel_dark': new('#1a1410', 52328, 2), 'kennel_floor': kennel_floor(),
+           'kennel_roof': wood('#6a4a3a', 52309), 'box_top': card('#c8a47a', 52310), 'card_back': new('#f4f1ea', 52311, 1),
+           'chain': metal('#8a8e92', 52312, 3), 'cord_flex': plastic('#e8e6de', 52313), 'lens': new('#c8d8e0', 52314, 2),
+           'cup': plastic('#e0d8a0', 52315), 'brush_old': new('#c8c4b4', 52316, 2), 'brush_new': plastic('#4a9ac8', 52317),
+           'handle': plastic('#1e1a16', 52318), 'tin_lid': metal('#b8bcc0', 52319), 'brush': wood('#b8946a', 52320),
+           'chlorine_lid': plastic('#2a6ab8', 52321), 'washer_lid': enamel('#ecebe4', 52322), 'doily': clear(),
+           'seedling_dead': clear(), 'seedling_fresh': clear(), 'lunchbox_side_pink': plastic('#d64a6a', 52323),
+           'bucket_side': plastic('#3a7ab8', 52324), 'canvas_head': canvas(True), 'mantel_top': wood('#7a5232', 52325)}
     d = out['doily']
     for y in range(16):
         for x in range(16):
@@ -1384,8 +1594,13 @@ def small():
         line(im, [(8, y) for y in range(8 if alive else 10, 16)], c)
         line(im, [(6, 9), (7, 10), (9, 9), (10, 8)] if alive else [(6, 13), (7, 12), (9, 14)], c)
     wd = washer_front(); fill(wd, 0, 4, 16, 16, '#dcd8cc'); out['washer_dials'] = wd
-    out['cupboard_upper'] = cupboard(); fill(out['cupboard_upper'], 0, 13, 16, 16, '#9a6a40')
-    ci = new('#efe6d2', 52326, 2); line(ci, [(x, 8) for x in range(16)], '#c8bfa4'); out['cupboard_inside'] = ci
+    up = cupboard(); grain = wood('#9a6a40', 52203, across=True)
+    for y in range(13, 16):
+        for x in range(16):
+            up.putpixel((x, y), grain.getpixel((x, y)))
+    out['cupboard_upper'] = up
+    ci = enamel('#efe6d2', 52326); line(ci, [(x, 8) for x in range(16)], '#c8bfa4'); line(ci, [(x, 7) for x in range(16)], '#f8f2e2')
+    line(ci, [(x, 9) for x in range(16)], '#d8cfb8'); out['cupboard_inside'] = ci
     return out
 
 
