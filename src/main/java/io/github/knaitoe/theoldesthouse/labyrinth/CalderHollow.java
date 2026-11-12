@@ -206,6 +206,37 @@ public final class CalderHollow {
      */
     public record Leap(double z,double south,double north,double x,double top,double west,double east,double run){}
     public static final List<Leap> LEAPS=List.of(new Leap(-271,-270,-272,1.5,2,-6.5,9.5,-263.5),new Leap(-409,-408,-410,.5,3,-5.5,6.5,-399.5));
+    // ------------------------------------------------------------------------------------------------ 0.4.507, the line Gus rides
+    /** A place on the line (from the park's base), and whether it is in the air over a gap. */
+    public record Mark(Vec3 at,boolean air){}
+    /**
+     * As answered: "Gus rides the plain way through the Hollow." The plain way as somebody rides it who never misses: from the
+     * hill on the gate's line to the far side's ground, up the middle of each piece and round the fences' pickets, and over each
+     * gap on an arc as a hop makes. Places a fifth of a block apart, in the order they are ridden.
+     */
+    public static final List<Mark> TRAIL=trail();
+    private static List<Mark> trail(){
+        int level=CalderGraves.level(EDGE);var at=new ArrayList<Vec3>();var hop=new ArrayList<Boolean>();
+        at.add(new Vec3(.5,level,EDGE+3.5));hop.add(false);at.add(new Vec3(.5,level,EDGE+.3));hop.add(false);
+        Piece last=null;
+        for(var p:WAY){
+            double x=(p.x0()+p.x1()+1)/2.0;
+            at.add(new Vec3(x,p.top(),p.zSouth()+.7));hop.add(last==null||p.zSouth()<last.zNorth()-1);
+            if(p.name().equals("the fences")){
+                for(double[] m:new double[][]{{1.5,-293},{1.5,-298},{-1,-302},{-1,-306},{.5,-309}}){at.add(new Vec3(m[0],p.top(),m[1]));hop.add(false);}
+                x=.5;
+            }
+            at.add(new Vec3(x,p.top(),p.zNorth()+.3));hop.add(false);last=p;
+        }
+        at.add(new Vec3(.5,level,FAR_SIDE-3));hop.add(false);
+        var out=new ArrayList<Mark>();out.add(new Mark(at.get(0),false));
+        for(int i=1;i<at.size();i++){
+            var a=at.get(i-1);var c=at.get(i);boolean air=hop.get(i);double far=a.distanceTo(c),high=air?Math.min(1.2,Math.max(.3,far*.25)):0;
+            int steps=Math.max(1,(int)Math.ceil(far/.2));
+            for(int k=1;k<=steps;k++){double f=k/(double)steps;out.add(new Mark(a.lerp(c,f).add(0,high*4*f*(1-f),0),air&&k<steps));}
+        }
+        return List.copyOf(out);
+    }
     /** Every way, each in the order it is ridden; and every piece of all of them. */
     public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG,STEEP,TIGHT,DARK);
     public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();

@@ -56,12 +56,26 @@ public final class PackBike extends RiddenBike {
         return InteractionResult.CONSUME;
     }
 
+    /**
+     * 0.4.507: set down this tick where it is told, pointing as it is told and turning its cranks at the speed it is told, and
+     * not ridden there: over ground it has no way of riding (it has no hop, and the Hollow is all gaps).
+     */
+    public void carry(Vec3 to,float yaw,float shown){carried=to;carriedYaw=yaw;carriedSpeed=shown;}
+    private @Nullable Vec3 carried;private float carriedYaw,carriedSpeed;
     /** Where it is to go, in the world, and how fast. With nowhere to go it rolls to a stop. */
     public void toward(@Nullable Vec3 to,float speed){toward=to;wanted=to==null?0:speed;}
     /** Whether it has been trying to go and getting nowhere: something is in its way. */
     public boolean heldUp(){return held>HELD;}
 
     @Override protected void driven(){
+        if(carried!=null){
+            double went=Math.hypot(carried.x-getX(),carried.z-getZ());
+            setYRot(carriedYaw);setPos(carried.x,carried.y,carried.z);setDeltaMovement(Vec3.ZERO);setOnGround(true);resetFallDistance();
+            speed=carriedSpeed;lean*=.7F;toward=null;wanted=0;held=0;carried=null;
+            rolled+=went;if(rolled>=STROKE){rolled=0;side=-side;stroke(side);}
+            if(speed>STOPPED&&tickCount%14==0)level().playSound(null,getX(),getY(),getZ(),BikeNightRegistry.FREEWHEEL.get(),SoundSource.NEUTRAL,.3F,.9F+Math.min(.5F,speed));
+            show(lean,speed);return;
+        }
         boolean grounded=onGround(),going=toward!=null&&wanted>0&&!getPassengers().isEmpty();float want=0;
         if(going){
             double dx=toward.x-getX(),dz=toward.z-getZ();

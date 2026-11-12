@@ -372,6 +372,6 @@ It is large. It has three acts, a town, and a course in the air. In slices:
    open? **Answered, November 11: no. As Claude has it.**
 8. **Gus in the Hollow** (asked November 11): he rides the plain way with no specter ever his, so he is at the back gate
    whenever the reader is; or he stops at the edge where the ground falls away, and is waiting at the back gate.
-   **Answered, November 11: the first. He rides the plain way.**
+   **Answered, November 11: the first. He rides the plain way.** *(built 0.4.507)*
 9. **One course or one each** (asked November 11, and the same as 5): Claude plans on one shared course, with each specter
    private to whoever it chases. **Answered, November 11: yes, one shared course.** (Which answers 5.)

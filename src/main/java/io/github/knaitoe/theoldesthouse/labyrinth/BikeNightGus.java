@@ -105,6 +105,8 @@ public final class BikeNightGus {
         @Nullable UUID bike,friend;final BikeNightHunt.Rider way=new BikeNightHunt.Rider();long warnAt;int rides,warned;int[] rideDeck={};
         /** Whether the last thing he called out was of one gone round; and, for tests, whether he has been told to ride without the three. */
         boolean lastRound,called;
+        /** 0.4.507: how far along the Hollow's line he is (CalderHollow.TRAIL), or -1 while he is not on it. */
+        double trail=-1;
         long since,nextIdle,soonAt,replan,gestureUntil=-1,pushAt=-1,aloneSince=-1,swingSince=-1,seesawSince=-1,stuckSince=-1;
         boolean left,wasDown,walking;
         @Nullable Vec3 goal;final ArrayDeque<Vec3> route=new ArrayDeque<>();
@@ -424,6 +426,8 @@ public final class BikeNightGus {
         }
         g.friend=friend.getUUID();
         var at=bike.position();var there=friend.position();double d=Math.sqrt(flat(at,there));boolean level=Math.abs(at.y-there.y)<1.2;
+        // 0.4.507: after a friend who is past the hill's edge, he rides the Hollow's plain way, and says nothing.
+        if(BikeNightHollow.gus(l,n,g,bike,friend,d))return;
         // 0.4.490: in the cemetery, or after a friend who is, he goes through the stones (BikeNightGraveyard).
         if(BikeNightGraveyard.friend(l,n,g.way,bike,there,d)){warn(l,n,g,a,friend);return;}
         if(d<KEEP&&level)bike.toward(null,0);

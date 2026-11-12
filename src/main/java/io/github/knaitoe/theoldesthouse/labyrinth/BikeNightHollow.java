@@ -329,6 +329,49 @@ public final class BikeNightHollow {
     /** How many of the tendril's rows are gone in this park, and whether it is curling up. For tests. */
     public static int curlGone(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.hollow.curlGone;}
     public static boolean curlGoing(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.curlAt>=0;}
+    /**
+     * 0.4.507, Gus. As answered: "Gus rides the plain way through the Hollow with no specter of his own", "so he is at the back
+     * gate whenever the reader is." With a friend who is past the hill's edge, he comes through the stones to the gate's line at
+     * the edge, and from there he is on the Hollow's line (CalderHollow.TRAIL): as far along it as his friend is north, less the
+     * distance he keeps from them anywhere; at the pace he rides at anywhere; never back along it, and never stopping in the air.
+     * He does not ride it as a reader does, and cannot miss. Nothing in the Hollow is his: the specters are each some reader's,
+     * and what jumps out comes out for readers. Past its end he rides after his friend again as he does on any ground. True if
+     * this has said where he rides this tick.
+     */
+    static boolean gus(ServerLevel l,BikeNight.Night n,BikeNightGus.Friend g,PackBike bike,ServerPlayer friend,double d){
+        var there=from(n,friend.position());var trail=CalderHollow.TRAIL;int last=trail.size()-1;
+        boolean out=there.z<CalderHollow.EDGE+.5&&there.x>CalderGraves.W-1&&there.x<CalderGraves.E+2;
+        if(g.trail<0){
+            if(!out)return false;
+            // To where the line begins: by the gate and through the stones, as after a friend who stood at the hill's edge on the
+            // gate's line. He stops as far short of them as he keeps from anybody, which is where it begins.
+            var start=BikeNightGus.at(n,trail.get(0).at());var brink=start.add(0,0,-BikeNightGus.KEEP);
+            if(BikeNightGus.flat(bike.position(),start)<2*2){g.trail=0;g.way.plan=null;}
+            else return BikeNightGraveyard.friend(l,n,g.way,bike,brink,Math.sqrt(BikeNightGus.flat(bike.position(),brink)));
+        }
+        if(g.trail>=last){
+            // Off its far end: after them on the far side's ground and through the gate; waiting, if they are back out on the course.
+            if(there.z>CalderHollow.FAR_SIDE+1||d<BikeNightGus.KEEP)bike.toward(null,0);
+            else bike.toward(friend.position(),(float)Math.min(BikeNightGus.RIDE_PACE,Math.max(.12,(d-BikeNightGus.KEEP+.6)*.16)));
+            return true;
+        }
+        double to=there.z+BikeNightGus.KEEP,left=BikeNightGus.RIDE_PACE;boolean moved=false;
+        while(left>0&&g.trail<last){
+            int i=(int)Math.floor(g.trail);var a=trail.get(i);var c=trail.get(i+1);
+            // On as far as his friend is north, and over a gap only if where he comes down is no further than that; from the air, on
+            // to the ground.
+            if(!a.air()){int land=i+1;while(land<last&&trail.get(land).air())land++;if(trail.get(land).at().z<to)break;}
+            double seg=a.at().distanceTo(c.at()),rest=(1-(g.trail-i))*seg;
+            if(rest<=left){g.trail=i+1;left-=rest;}else{g.trail+=left/Math.max(seg,1e-6);left=0;}
+            moved=true;
+        }
+        int i=Math.min(last-1,(int)Math.floor(g.trail));var a=trail.get(i).at();var c=trail.get(i+1).at();var at=a.lerp(c,Mth.clamp(g.trail-i,0,1));
+        float yaw=(float)Math.toDegrees(Math.atan2(-(c.x-a.x),c.z-a.z));
+        bike.carry(BikeNightGus.at(n,at),yaw,moved?BikeNightGus.RIDE_PACE:0);
+        return true;
+    }
+    /** How far along the Hollow's line Gus is in this park, or -1. For tests. */
+    public static double gusTrail(BlockPos b){var n=BikeNight.night(b);return n==null?-1:n.gus.trail;}
     /** The ways a reader has had under them tonight other than the plain one. For tests. */
     public static java.util.Set<String> ways(ServerPlayer p){var n=BikeNight.night(p);var ways=n==null?null:n.hollow.ways.get(p.getUUID());return ways==null?java.util.Set.of():java.util.Set.copyOf(ways);}
     /** Whether the bank is gone in this park, and whether somebody has been on it and it has yet to go. For tests. */

@@ -6017,4 +6017,84 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_dark") public static void hollowDarkDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.507, Gus in the Hollow
+    /** How far somewhere (from the park's base) is from the nearest place on the Hollow's line. */
+    private static double offTrail(Vec3 at){double best=99;for(var m:CalderHollow.TRAIL)best=Math.min(best,m.at().distanceTo(at));return best;}
+
+    @GameTest(template="empty",batch="hollow_gus",timeoutTicks=14000)
+    public static void gusRidesThePlainWayAfterHisFriendOverEveryGapSayingNothingAndIsAtTheBackGateWhenTheyAre(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;BikeNightSpecters.keptAway=false;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] gus={null};final PackBike[] his={null};
+        var trail=CalderHollow.TRAIL;int last=trail.size()-1,level=CalderGraves.level(CalderHollow.EDGE);
+        final double[] off={0},high={0},low={99},north={0};final int[] spoke={0},specters={0},t={0};final boolean[] rode={true};final String[] lastSaid={""};final int[] seen={0};
+        // What is watched while he is on the line: that he is on it, on his bike, saying nothing, and that nothing of the Hollow's is his.
+        Runnable watch=()->{
+            var at=his[0].position().subtract(b.getX(),b.getY(),b.getZ());double along=BikeNightHollow.gusTrail(b);
+            // A line he begins out there, not the end of one he began before it.
+            var now=saying(gus[0]);
+            if(along>=0&&along<last){off[0]=Math.max(off[0],offTrail(at));if(!now.isEmpty()&&!now.equals(lastSaid[0]))spoke[0]++;}
+            lastSaid[0]=now;
+            high[0]=Math.max(high[0],at.y);if(along>0)low[0]=Math.min(low[0],at.y);north[0]=at.z;rode[0]&=gus[0].getVehicle()==his[0];
+            // Whatever is out there for somebody is out there for the reader: none of it is anybody else's.
+            for(var a:l.getEntitiesOfClass(LiteraryActor.class,hollow(f),BikeNightSpecters::is)){seen[0]++;if(a.owner().isPresent()&&!a.owner().get().equals(p[0].getUUID()))specters[0]++;}
+            if(++t[0]%40==0)BikeNightGus.idleNow(b);
+        };
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // The line: from the hill to the far side's ground, a fifth of a block at a time, in the air only over nothing.
+                h.assertTrue(trail.get(0).at().z>CalderHollow.EDGE&&trail.get(last).at().z<CalderHollow.FAR_SIDE&&trail.get(0).at().y==level&&trail.get(last).at().y==level,"from the hill to the far side: "+trail.get(0)+" to "+trail.get(last));
+                int air=0,hops=0;boolean was=false;
+                for(int i=0;i<=last;i++){
+                    var m=trail.get(i);if(i>0)h.assertTrue(m.at().distanceTo(trail.get(i-1).at())<.36&&m.at().z<=trail.get(i-1).at().z+1e-6,"its places are close, and none is back along it: "+i);
+                    double top=CalderHollow.top((int)Math.floor(m.at().x),(int)Math.floor(m.at().z));boolean ground=m.at().z>=CalderHollow.EDGE||m.at().z<CalderHollow.FAR_SIDE+1;
+                    if(m.air()){air++;if(!was)hops++;h.assertTrue(m.at().y>-.01,"its arcs are over the course, not under it");}
+                    else h.assertTrue(ground?Math.abs(m.at().y-level)<.01:!Double.isNaN(top)&&m.at().y>=top-.51&&m.at().y<=top+.51,"on the ground it is on a piece, at its height or coming up to it: "+m+" over "+top);
+                    was=m.air();
+                }
+                h.assertTrue(hops>=14&&air>60,"an arc over every gap: "+hops+" of them");
+                p[0]=f.player("hollow_gus_reader",P);
+            })
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);his[0]=BikeNightGus.bikeOf(l,b);
+                h.assertTrue(BikeNight.begun(b)&&gus[0]!=null&&his[0]!=null&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night, Gus, his bike, and the reader to be the park's size");})
+            .thenExecute(()->take(h,f,p[0],NightBike.Make.WASP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the Wasp to be theirs"))
+            .thenExecute(()->f.at(p[0],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGus.doing(b)==BikeNightGus.RIDING&&BikeNightGraveyard.gateOpen(b),"waiting for the chase, the gate, and for him to be on his bike: stage "+BikeNightBullies.stage(b)+", doing "+BikeNightGus.doing(b)))
+            // The reader is out on the first grave; Gus is on the hill's top, on the gate's line, short of the small stones.
+            .thenExecute(()->{var at=CalderHollow.ISLANDS.get(1).place();f.at(p[0],P,at.x,at.y,at.z);his[0].moveTo(b.getX()+.5,b.getY()+level,b.getZ()+CalderGraves.SMALL_ROW+6.5,180,0);})
+            .thenWaitUntil(()->{watch.run();h.assertTrue(BikeNightHollow.gusTrail(b)>=0,"waiting for him to come to the edge after them and be on the line: at "+rel(b,his[0]));})
+            .thenExecute(()->t[0]=0)
+            .thenWaitUntil(()->{watch.run();h.assertTrue(t[0]>=60,"giving him three seconds to go on if he is going to");})
+            .thenExecute(()->{
+                // With them a grave out, he is at the hill's edge: the first grave's near end is nearer them than he keeps.
+                h.assertTrue(north[0]>CalderHollow.EDGE&&north[0]<CalderHollow.EDGE+1.5&&his[0].speedNow()==0,"he waits at the hill's edge while they are on the first grave: at "+rel(b,his[0]));
+                var at=CalderHollow.ISLANDS.get(3).place();f.at(p[0],P,at.x,at.y,at.z);high[0]=0;
+            })
+            // To the third grave: he is over two gaps and on the second grave's far end.
+            .thenWaitUntil(()->{watch.run();h.assertTrue(his[0].speedNow()==0&&north[0]<-270,"waiting for him to have come on after them and stopped: at "+rel(b,his[0]));})
+            .thenExecute(()->{
+                var second=CalderHollow.WAY.get(1);
+                h.assertTrue(Math.abs(north[0]-second.zNorth()-.3)<.3&&Math.abs(his[0].getY()-b.getY()-second.top())<.01,"on the second grave's far end, as near them as he keeps: at "+rel(b,his[0]));
+                h.assertTrue(high[0]>second.top()+.4&&low[0]>=second.top()-.01,"over the two gaps on the way, and never under the graves: "+low[0]+" to "+high[0]);
+                // To the far side.
+                var at=CalderHollow.ISLANDS.get(CalderHollow.FAR_ISLAND).place();f.at(p[0],P,at.x,at.y,at.z);high[0]=0;low[0]=99;
+            })
+            .thenWaitUntil(()->{watch.run();h.assertTrue(north[0]<CalderHollow.FAR_SIDE+2&&his[0].speedNow()<.03,"waiting for him to ride the rest of it to the far side and stop by them: at "+rel(b,his[0])+", "+BikeNightHollow.gusTrail(b)+" of "+last);})
+            .thenExecute(()->{
+                h.assertTrue(rode[0]&&off[0]<.25,"he was on his bike and on the line all the way: "+off[0]+" off it at most");
+                h.assertTrue(high[0]>5.1&&low[0]>-.01,"as high as over the top, and never under the lowest piece: "+low[0]+" to "+high[0]);
+                h.assertTrue(spoke[0]==0,"he began nothing out there, with something to say every two seconds: "+spoke[0]);
+                h.assertTrue(specters[0]==0&&seen[0]>0&&BikeNightHollow.fell(p[0])==0,"what the Hollow sent out while he rode it was his friend's, and none of it his: "+specters[0]+" of "+seen[0]);
+                h.assertTrue(his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+2,"he is by them on the far side: "+rel(b,his[0]));
+                // Out by the back gate, onto the lane.
+                h.assertTrue(BikeNightHollow.gateOpen(b),"the back gate has opened for them");
+                f.at(p[0],P,.5,level,CalderHollow.BACK-2.5);
+            })
+            .thenWaitUntil(()->{watch.run();h.assertTrue(BikeNightHollow.through(p[0])&&north[0]<CalderHollow.FAR_SIDE-6&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+1.5&&his[0].speedNow()<.03,"waiting for them to be through the back gate and for him to come up to it after them: at "+rel(b,his[0]));})
+            .thenExecute(()->h.assertTrue(rode[0]&&BikeNightHollow.through(p[0])&&north[0]<CalderHollow.FAR_SIDE-6,"he is at the back gate when they are through it: at "+rel(b,his[0])))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_gus") public static void hollowGusDone(ServerLevel l){done();}
 }
