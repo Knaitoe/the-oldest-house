@@ -338,12 +338,20 @@ def crate_side():
 
 
 def milk_crate():
-    """A plastic crate: a red lattice with nothing between, a solid band round its top."""
+    """A plastic crate: a red lattice with nothing between. One picture gives a side (ten wide and eight high, from 3,5: a band two
+    deep round its top, a bar across its middle and its foot, a post at each end and two between) and the floor (ten square, from
+    3,6: the same posts, and a bar every third row).
+
+    0.4.519, the owner, of this crate: "the mirroring on this crate doesn't work too well". Its bars had been every fourth pixel
+    of a side ten wide, so a side had a post at one end and none at the other, a corner was a post from one side and a gap from the
+    next, and nothing was drawn of a wall's inside. Now a side is the same read from either end, its paint included, so a wall's
+    inside (the same picture, seen from behind) lies exactly on its outside."""
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4902)
-    for y in range(16):
-        for x in range(16):
-            if y < 2 or x % 4 == 3 or y % 4 == 3:
-                dot(im, x, y, shade('#b83a2e', rnd.randint(-10, 8)))
+    tone = [[rnd.randint(-10, 8) for _ in range(5)] for _ in range(16)]
+    for y in range(5, 16):
+        for x in range(3, 13):
+            if x % 3 == 0 or y in (5, 6, 9, 12, 15):
+                dot(im, x, y, shade('#b83a2e', tone[y][min(x - 3, 12 - x)]))
     return im
 
 
@@ -640,8 +648,15 @@ def crate(stage):
     if stage == 0:
         plate(p, [1, 0, 1], [15, 14, 15], 'x', {'north': (1, 1), 'south': (1, 1), 'east': (1, 1), 'west': (1, 1), 'up': (1, 1), 'down': (1, 1)})
     elif stage == 1:
-        plate(p, [3, 0, 3], [13, 8, 13], 'y', {'north': (3, 0), 'south': (3, 0), 'east': (3, 0), 'west': (3, 0)})
-        plate(p, [3, .04, 3], [13, .06, 13], 'y', {'up': (3, 3)})
+        # Four walls, each with an outside, an inside and a rim, and a floor seen from over it and from under.
+        side, floor, wall = (3, 5), (3, 6), .6
+        plate(p, [3, 0, 3], [13, 8, 3 + wall], 'y', {'north': side, 'south': side, 'up': side})
+        plate(p, [3, 0, 13 - wall], [13, 8, 13], 'y', {'north': side, 'south': side, 'up': side})
+        plate(p, [3, 0, 3], [3 + wall, 8, 13], 'y', {'east': side, 'west': side})
+        plate(p, [13 - wall, 0, 3], [13, 8, 13], 'y', {'east': side, 'west': side})
+        for x in (3, 13 - wall):                                                             # the two rims the long walls do not have
+            plate(p, [x, 7.99, 3 + wall], [x + wall, 8, 13 - wall], 'y', {'up': side})
+        plate(p, [3, .3, 3], [13, .4, 13], 'y', {'up': floor, 'down': floor})
     elif stage == 2:
         for z in (1, 6.5, 12):
             bar(p, [0, 2, z], [16, 3, z + 3], WOOD)

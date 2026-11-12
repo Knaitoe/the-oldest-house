@@ -29,6 +29,11 @@ import net.minecraft.world.phys.Vec3;
  * and the video shop's. Six teenagers in costume in a line down the middle of the pavement in front of the theater. Two who are not
  * dressed up on the hood of each of the two cars parked in the burger place's lot.
  *
+ * <p>0.4.519, the owner, playing it on 12 November: "you should have the line curve towards the window. last person should be facing
+ * the ticket window". The six had stood in a row down the middle of the pavement, all looking east, the first of them past the
+ * window with their back to it. Now the first stands at the window and looks at it, and the line comes round from the pavement in
+ * a quarter turn to them, each looking at the back of the one ahead.
+ *
  * <p><b>What they do.</b> Any of them a reader rides by cheers, and one of them calls. Any of them one of the three rides by boos,
  * and one of them says what they think of him. The line parts for a reader riding along the pavement, every other one of them to the
  * wall and the rest to the kerb, and is back in its places behind them: one of the three who rides into it is stopped, told there is
@@ -82,13 +87,25 @@ public final class CalderPeople {
          on(27,-132.5),at(31.4,-132.5,-90),on(27,-132.5),on(27,-127)},
         {on(7.5,-98.5),at(13,-98.5,180,1),on(20,-98.5),at(23.5,-98.5,180,2),on(30.5,-98.5),on(39.5,-98.5),on(30.5,-98.5),on(20,-98.5)}};
     /**
-     * The line: down the middle of the pavement in front of the theater, each looking east at the back of the next. To let a rider
-     * by, every other one of them steps to the wall and the rest to the kerb.
+     * The line. Its head (the last of the six, the scarecrow) stands at the theater's ticket window, which is the east end of its
+     * front, and looks at it: south. The rest come along the pavement from the west, each looking at the back of the one ahead, and
+     * round a quarter turn of TURN blocks to the window. WINDOW_X is the middle of the window's pane (tools/draw_calder_signs.py,
+     * theater_front) and WINDOW_Z an arm's length off the wall. To let a rider by, every other one of them steps to the wall, the
+     * one at the window first, and the rest to the kerb.
      */
-    public static final double LINE_Z=-85.1,LINE_WEST=-18.5,LINE_GAP=1.6,WALL_Z=-84.3,KERB_Z=-86.3;
-    public static final float LINE_LOOK=-90;
-    public static Vec3 lineSpot(int i){return new Vec3(LINE_WEST+i*LINE_GAP,0,LINE_Z);}
-    public static Vec3 asideSpot(int i){return new Vec3(LINE_WEST+i*LINE_GAP,0,i%2==0?WALL_Z:KERB_Z);}
+    public static final double WINDOW_X=-11.06,WINDOW_Z=-84.55,TURN=1.2,LINE_GAP=1.25,WALL_Z=-84.3,KERB_Z=-86.3;
+    /** How far back along the line somebody is from the window: the head none. */
+    private static double back(int i){return (LINE-1-i)*LINE_GAP;}
+    public static Vec3 lineSpot(int i){
+        double s=back(i),arc=TURN*Math.PI/2;
+        if(s>arc)return new Vec3(WINDOW_X-TURN-(s-arc),0,WINDOW_Z-TURN);
+        double t=s/TURN;return new Vec3(WINDOW_X-TURN+TURN*Math.cos(t),0,WINDOW_Z-TURN*Math.sin(t));
+    }
+    /** Which way one of the line looks, in degrees: the head south at the window, those on the turn round it, the rest east. */
+    public static float lineLook(int i){double s=back(i),arc=TURN*Math.PI/2;return s>arc?-90:(float)-Math.toDegrees(s/TURN);}
+    public static Vec3 asideSpot(int i){return new Vec3(lineSpot(i).x,0,(LINE-1-i)%2==0?WALL_Z:KERB_Z);}
+    /** The line's two ends along the street: its tail, and its head at the window. */
+    public static final double LINE_WEST=lineSpot(0).x,LINE_EAST=WINDOW_X;
     /**
      * Where they sit: two on the hood of each parked car, side by side, looking the way it does, their legs out along it. A
      * hood's top is thirteen pixels up; somebody their size sitting has their hips half a block over where they are.
@@ -153,7 +170,7 @@ public final class CalderPeople {
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,BikeNightBullies.area(n.base),CalderPeople::is))if(who(old)==p.who&&BikeNight.nightAt(l,old.blockPosition())==n){p.id=old.getUUID();p.last=old.position();return old;}
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(BikeNight.PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+p.who);
-        float look=p.who<TRICK?0:p.who<HOOD_FIRST?LINE_LOOK:p.who<STOCK?hoodLook(p.who-HOOD_FIRST):-90;
+        float look=p.who<TRICK?0:p.who<HOOD_FIRST?lineLook(p.who-LINE_FIRST):p.who<STOCK?hoodLook(p.who-HOOD_FIRST):-90;
         a.moveTo(at.x,at.y,at.z,look,0);a.setYHeadRot(look);a.setYBodyRot(look);
         if(p.who>=HOOD_FIRST&&p.who<STOCK){a.setNoGravity(true);a.noPhysics=true;}
         if(p.who<TRICK)a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(BikeNightRegistry.TREAT_SACK.get()));
@@ -209,7 +226,7 @@ public final class CalderPeople {
     }
     /** The line: parted for a rider on the pavement, back in its places behind them, and no way through for one of the three. */
     private static void line(ServerLevel l,BikeNight.Night n,People k,LiteraryActor[] bodies,List<ServerPlayer> here){
-        var b=n.base;double west=b.getX()+LINE_WEST,east=west+(LINE-1)*LINE_GAP;
+        var b=n.base;double west=b.getX()+LINE_WEST,east=b.getX()+LINE_EAST;
         boolean rider=false;
         for(var p:here){
             if(p.isSpectator()||!(p.getVehicle() instanceof RiddenBike))continue;
@@ -221,7 +238,7 @@ public final class CalderPeople {
             var a=bodies[LINE_FIRST+i];if(a==null)continue;
             var to=world(b,k.parted?asideSpot(i):lineSpot(i));
             if(BikeNightGus.flat(a.position(),to)>.12*.12)SceneFootpaths.step(a,to,SHUFFLE);
-            else{a.setYRot(LINE_LOOK);a.setYBodyRot(LINE_LOOK);a.setYHeadRot(LINE_LOOK);}
+            else{float look=k.parted?-90:lineLook(i);a.setYRot(look);a.setYBodyRot(look);a.setYHeadRot(look);}
         }
         for(var u:n.pack.b){
             var his=BikeNightBullies.bike(l,u);if(his==null||!u.riding||u.leaving||u.gone)continue;

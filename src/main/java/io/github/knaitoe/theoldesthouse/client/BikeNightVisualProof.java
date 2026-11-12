@@ -74,7 +74,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters","rider","pops","after","chained","kept"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters","rider","pops","after","chained","kept","riding"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -132,7 +132,7 @@ public final class BikeNightVisualProof extends Screen {
             "the merry-go-round: as it was built, and a little way round",
             "the climbing dome: from one side, and from above",
             "the spring rider: rocked back as far as it goes, upright, and rocked forward",
-            "the small things: fountain still and running; payphone on and off its hook; bench plain and carved",
+            "the small things: fountain still and running; payphone on and off its hook; the three benches: initials cut out, the heart, the worn seat",
             "over the bar: a swing hanging still; at its widest arc; kicked as far past it as kicks go; over the top",
             "the three's bikes, Gus's below them, and the gate as Tully leaves it",
             "the town's things: on walls; fences; pumpkins; dumpsters; crates, drums, tyres; litter",
@@ -147,9 +147,10 @@ public final class BikeNightVisualProof extends Screen {
             "what jumps out in the Hollow. The ghoul: waiting; out, from the front, the side and behind. The goblin, at its size beside it: the same",
             "what follows. The three's bikes as they lie outside the front gate; the cap on the back gate's post; a new stone at the row's end, and a bike left against it",
             "a caught reader's bike in a later hall: chained to a school fence, its front wheel bent. The Rattler from the hall's side; the Wasp from along the wall",
-            "the keepsake: the bike a reader rode out on, in a slot. Each of the six, large, and at a slot's own size"}[page],8,8,0xffffffff);
+            "the keepsake: the bike a reader rode out on, in a slot. Each of the six, large, and at a slot's own size",
+            "riding: Tully, Ray-Ray, Duff and Gus on their bikes; from the side, cranks level; from the front, cranks upright"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);case 24->specters(g);case 25->rider(g);case 26->pops(g);case 27->after(g);case 28->chained(g);default->kept(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);case 24->specters(g);case 25->rider(g);case 26->pops(g);case 27->after(g);case 28->chained(g);case 29->kept(g);default->riding(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -447,20 +448,29 @@ public final class BikeNightVisualProof extends Screen {
         buffers.endBatch();pose.popPose();
     }
 
-    /** The small things in a row, looked at from in front: the fountain still and running, the payphone on its hook and off it, the plain bench and the carved one. */
+    /**
+     * The small things in a row, looked at from in front: the fountain still and running, the payphone on its hook and off it, and
+     * (0.4.519) the park's three benches, each whole: the one with initials cut out again, the one with the heart, the one with
+     * the worn seat.
+     */
     private void small(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
-        float s=width*.1F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.68F,400);pose.scale(s,-s,s);
-        pose.mulPose(Axis.XP.rotationDegrees(24));pose.mulPose(Axis.YP.rotationDegrees(-10));pose.translate(-4.5F,0,-1F);
+        float s=width*.068F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.66F,400);pose.scale(s,-s,s);
+        pose.mulPose(Axis.XP.rotationDegrees(24));pose.mulPose(Axis.YP.rotationDegrees(-8));pose.translate(-7F,0,-1F);
         java.util.function.BiConsumer<BlockState,int[]> at=(state,p)->{pose.pushPose();pose.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,pose,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);pose.popPose();};
-        for(int x=0;x<=8;x++)for(int z=0;z<=2;z++)at.accept(BikeNightRegistry.material("paving").defaultBlockState(),new int[]{x,-1,z});
+        for(int x=0;x<=13;x++)for(int z=0;z<=2;z++)at.accept(BikeNightRegistry.material("paving").defaultBlockState(),new int[]{x,-1,z});
         // They are looked at from the south: each faces south, as a thing on a north wall does.
         var f=Direction.SOUTH;
         at.accept(CalderBlock.of(CalderBlock.Kind.FOUNTAIN,f,0),new int[]{0,0,1});at.accept(CalderBlock.of(CalderBlock.Kind.FOUNTAIN,f,CalderBlock.RUNNING),new int[]{1,0,1});
         at.accept(BikeNightRegistry.material("brick").defaultBlockState(),new int[]{3,1,0});at.accept(BikeNightRegistry.material("brick").defaultBlockState(),new int[]{4,1,0});
         at.accept(BikeNightRegistry.material("brick").defaultBlockState(),new int[]{3,0,0});at.accept(BikeNightRegistry.material("brick").defaultBlockState(),new int[]{4,0,0});
         at.accept(CalderBlock.of(CalderBlock.Kind.PHONE,f,0),new int[]{3,1,1});at.accept(CalderBlock.of(CalderBlock.Kind.PHONE,f,CalderBlock.LIFTED),new int[]{4,1,1});
-        at.accept(CalderBlock.of(CalderBlock.Kind.BENCH,f,0),new int[]{6,0,1});at.accept(CalderBlock.of(CalderBlock.Kind.BENCH,f,CalderBlock.CARVED),new int[]{8,0,1});
+        // A bench's right end is on the left from before it, and is where what it is told by begins.
+        int[][] benches={{6,CalderBlock.CUT_OUT,1},{9,CalderBlock.HEART,CalderBlock.CARVED},{12,CalderBlock.WORN,1}};
+        for(var bench:benches){
+            at.accept(CalderBlock.of(CalderBlock.Kind.BENCH_CUT,f,bench[1]),new int[]{bench[0],0,1});
+            at.accept(CalderBlock.of(CalderBlock.Kind.BENCH,f,bench[2]),new int[]{bench[0]+1,0,1});
+        }
         buffers.endBatch();pose.popPose();
     }
 
@@ -661,6 +671,26 @@ public final class BikeNightVisualProof extends Screen {
     /** 0.4.517: a kept bike (KeptBikeItem) as it is in a slot: each of the six, large; and under each, at its size in a slot of a slot's size. */
     private static final int SLOT=0xff8b8b8b,SLOT_EDGE=0xff373737;
     private int keptBig(){return Math.max(2,(int)(width/6F*.8F/16));}
+    /**
+     * 0.4.519, the three and Gus on their bikes as the game draws them (the owner: "the animation for the boys on their bikes needs to
+     * be fixed"): along the top, each from the side with the cranks level, one foot forward and one back; along the bottom, each from
+     * in front and to one side with the cranks upright, one foot up and one down.
+     */
+    private void riding(GuiGraphics g){
+        var buffers=Minecraft.getInstance().renderBuffers().bufferSource();
+        float s=width*.1F;
+        int[] phases={io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.TULLY,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.RAY,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.DUFF,io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.GUS};
+        for(int row=0;row<2;row++){
+            float y=24+(height-24)*(row==0?.44F:.94F);g.fill(0,(int)y,width,(int)y+8,GROUND);g.flush();
+            for(int i=0;i<phases.length;i++){
+                int look=i<3?i:io.github.knaitoe.theoldesthouse.labyrinth.PackBike.GUS;
+                float size=i<3?(float)io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.size(phases[i]):.54F;
+                var pose=g.pose();pose.pushPose();pose.translate(width*(.13F+.245F*i),y,300);pose.scale(s,-s,s);pose.mulPose(Axis.XP.rotationDegrees(row==0?6:16));
+                LiteraryRenderers.drawRider(pose,buffers,LightTexture.FULL_BRIGHT,phases[i],size,BikeLook.pack(look),io.github.knaitoe.theoldesthouse.labyrinth.PackBike.saddleOf(look),row==0?-90:-48,row==0?(float)Math.PI/2:0);
+                buffers.endBatch();pose.popPose();
+            }
+        }
+    }
     private void kept(GuiGraphics g){
         g.fill(0,24,width,height,0xffc6c6c6);g.flush();
         var makes=NightBike.Make.values();float cell=width/(float)makes.length;int big=keptBig();

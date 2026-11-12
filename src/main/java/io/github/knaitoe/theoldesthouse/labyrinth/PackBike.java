@@ -64,6 +64,17 @@ public final class PackBike extends RiddenBike {
     public int laid(){return entityData.get(LAID);}
     private float laidSpin;
     @Override protected Stats stats(){return Stats.PLAIN;}
+    /**
+     * 0.4.519: the saddle a bike of that look has, in blocks, less what a body settles into it (as NightBike's): the three's and Gus's
+     * are drawn on the Wasp's frame; the rest are one of the six makes. It had been Borrasca's bikes' saddle, a pixel and a half
+     * higher than the one drawn under them.
+     */
+    public static double saddleOf(int look){
+        var makes=NightBike.Make.values();
+        var m=look>=RUSTED?makes[Math.min(makes.length-1,look-RUSTED)]:look>=MAKES?makes[Math.min(makes.length-1,look-MAKES)]:NightBike.Make.WASP;
+        return m.saddle()/16-.03;
+    }
+    @Override protected double saddle(){return saddleOf(look());}
     @Override protected void parkAs(ServerLevel l,@Nullable BlockPos at,boolean lying){}
     @Override protected boolean takes(Entity e){return laid()==0&&e instanceof LiteraryActor;}
     /** Gus's, standing where he left it, can be touched: he says whose it is. Nobody else's can, and nobody takes any of them. */

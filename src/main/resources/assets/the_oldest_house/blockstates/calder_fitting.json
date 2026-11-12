@@ -659,6 +659,66 @@
     "facing=west,kind=hat,stage=3": {
       "model": "the_oldest_house:block/calder/hat_0",
       "y": 270
+    },
+    "facing=north,kind=bench_cut,stage=0": {
+      "model": "the_oldest_house:block/calder/bench_cut_0"
+    },
+    "facing=north,kind=bench_cut,stage=1": {
+      "model": "the_oldest_house:block/calder/bench_cut_1"
+    },
+    "facing=north,kind=bench_cut,stage=2": {
+      "model": "the_oldest_house:block/calder/bench_cut_2"
+    },
+    "facing=north,kind=bench_cut,stage=3": {
+      "model": "the_oldest_house:block/calder/bench_cut_0"
+    },
+    "facing=east,kind=bench_cut,stage=0": {
+      "model": "the_oldest_house:block/calder/bench_cut_0",
+      "y": 90
+    },
+    "facing=east,kind=bench_cut,stage=1": {
+      "model": "the_oldest_house:block/calder/bench_cut_1",
+      "y": 90
+    },
+    "facing=east,kind=bench_cut,stage=2": {
+      "model": "the_oldest_house:block/calder/bench_cut_2",
+      "y": 90
+    },
+    "facing=east,kind=bench_cut,stage=3": {
+      "model": "the_oldest_house:block/calder/bench_cut_0",
+      "y": 90
+    },
+    "facing=south,kind=bench_cut,stage=0": {
+      "model": "the_oldest_house:block/calder/bench_cut_0",
+      "y": 180
+    },
+    "facing=south,kind=bench_cut,stage=1": {
+      "model": "the_oldest_house:block/calder/bench_cut_1",
+      "y": 180
+    },
+    "facing=south,kind=bench_cut,stage=2": {
+      "model": "the_oldest_house:block/calder/bench_cut_2",
+      "y": 180
+    },
+    "facing=south,kind=bench_cut,stage=3": {
+      "model": "the_oldest_house:block/calder/bench_cut_0",
+      "y": 180
+    },
+    "facing=west,kind=bench_cut,stage=0": {
+      "model": "the_oldest_house:block/calder/bench_cut_0",
+      "y": 270
+    },
+    "facing=west,kind=bench_cut,stage=1": {
+      "model": "the_oldest_house:block/calder/bench_cut_1",
+      "y": 270
+    },
+    "facing=west,kind=bench_cut,stage=2": {
+      "model": "the_oldest_house:block/calder/bench_cut_2",
+      "y": 270
+    },
+    "facing=west,kind=bench_cut,stage=3": {
+      "model": "the_oldest_house:block/calder/bench_cut_0",
+      "y": 270
     }
   }
 }

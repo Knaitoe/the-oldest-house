@@ -2007,7 +2007,7 @@ jobs:
         run: |
           ALSOFT_DRIVERS=null LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a timeout --signal=QUIT --kill-after=15s 4m gradle runClient -PbikeNightSmoke --no-daemon
           test -s build/font-smoke/bike-night-assets-passed.txt
-          for view in bikes ridden lying rack hud park signs swings slide bars seesaw roundabout dome spring small over pack town alley fronts fronts2 cars graves hill specters rider pops after chained kept; do test -s build/font-smoke/native-bike-night-$view.png; done
+          for view in bikes ridden lying rack hud park signs swings slide bars seesaw roundabout dome spring small over pack town alley fronts fronts2 cars graves hill specters rider pops after chained kept riding; do test -s build/font-smoke/native-bike-night-$view.png; done
           python3 -c "from pathlib import Path; assert 'Missing textures in model the_oldest_house:' not in Path('run/logs/latest.log').read_text()"
       - uses: actions/upload-artifact@v4
         if: always()

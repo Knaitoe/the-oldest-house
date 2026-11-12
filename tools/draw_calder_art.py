@@ -23,7 +23,7 @@ import json
 import random
 from PIL import Image
 
-from draw_borrasca_town_art import shade, new, fill, dot, element
+from draw_borrasca_town_art import rgb, shade, new, fill, dot, element
 from flicker import fights
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -227,19 +227,57 @@ def hat():
     return im
 
 
+# What is cut into the benches (0.4.519): letters three wide and four high, and a heart five wide.
+LETTERS = {'R': ('XX.', 'X.X', 'XX.', 'X.X'), 'D': ('XX.', 'X.X', 'X.X', 'XX.'), 'A': ('.X.', 'X.X', 'XXX', 'X.X'), 'L': ('X..', 'X..', 'X..', 'XXX')}
+HEART = ('.X.X.', 'XXXXX', '.XXX.', '..X..')
+# The bands of the benches' picture, each four rows deep from this row: the second pair of letters, the first pair and the heart,
+# the initials cut out again, and the worn seat.
+CUT_AL, CUT_RD, CUT_OUT, WORN = 0, 4, 8, 12
+
+
 def carving():
-    """What is cut into the bench's back, fourteen wide and four high from the corner: its upper two rows go on the top slat and
-    its lower two on the slat under it. A heart across both slats, and either side of it the strokes of a pair of letters. Only
-    the cuts are drawn; the wood under them is the slats' own. Cut long ago: grey, not pale."""
+    """What tells the park's three benches apart, in four bands each fourteen wide and four high. Of a band cut into a bench's
+    back, the upper two rows go on its top slat and the lower two on the slat under it. Only the cuts are drawn; the wood under
+    them is the slats' own. Cut long ago: weathered grey, lighter than the wood but not the pale of a fresh cut.
+
+    0.4.519, the owner, playing it: "the benches also don't have the initials referenced in descriptor text. both benches should
+    have unique text". The carved bench had a heart and strokes that were no letters, and the other two had nothing though their
+    line spoke of initials. Now, as somebody standing before a bench reads it, left to right:
+    - the bench by the playground has R D, a heart, and (on its other end) A L, in letters that are letters;
+    - the bench by the bin has two places where a pair of initials has been cut away to the raw wood, and the cross that was
+      between them still there;
+    - the bench by the gate has no cuts: the end of its seat nearest the gate is worn."""
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4710)
-    rows = ('X..X..X.X..X.X',
-            'XX.X.XXXXX.X.X',
-            'X..X..XXX..X.X',
-            'X.XX...X...XX.')
-    for y, row in enumerate(rows):
+
+    def cut(x, y):
+        dot(im, x, y, shade('#a39b88', rnd.randint(-6, 6)))
+
+    def glyph(rows, x0, y0):
+        for y, row in enumerate(rows):
+            for x, c in enumerate(row):
+                if c == 'X':
+                    cut(x0 + x, y0 + y)
+    glyph(LETTERS['A'], 2, CUT_AL); glyph(LETTERS['L'], 6, CUT_AL)
+    glyph(LETTERS['R'], 0, CUT_RD); glyph(LETTERS['D'], 4, CUT_RD); glyph(HEART, 9, CUT_RD)
+    # Cut out again: the top of the slat shaved off where each pair was, raw wood with the knife's edge round it, and the cross left.
+    raw = ('.RrR......RrR.',
+           'RrRRR..X..RRrR',
+           'RRRrR.XXX.rRRR',
+           '.RrR...X..RRr.')
+    for y, row in enumerate(raw):
         for x, c in enumerate(row):
             if c == 'X':
-                dot(im, x, y, shade('#3b3a36', rnd.randint(-4, 6) if x < 5 or x > 9 else 0))
+                cut(x, CUT_OUT + y)
+            elif c in 'Rr':
+                dot(im, x, CUT_OUT + y, shade('#b3905f' if c == 'R' else '#9c7a4e', rnd.randint(-5, 5)))
+    for x, y in ((4, 0), (0, 3), (13, 0), (13, 3)):                                           # where the blade went in
+        cut(x, CUT_OUT + y)
+    # A seat's slats worn where somebody has sat: eight long, the wear thinning out at its two ends.
+    for y in range(4):
+        for x, k in enumerate((.3, .65, 1, 1, 1, 1, .65, .3)):
+            a, b = rgb(CARD[WOOD]), rgb('#b3956a')
+            tone = tuple(int(a[i] + (b[i] - a[i]) * k) for i in range(3))
+            dot(im, x, WORN + y, shade(tone, rnd.randint(-4, 4)))
     return im
 
 
@@ -364,13 +402,19 @@ def lamp(stage):
     return p
 
 
-def bench(ends, carved=False):
+def bench(ends, mark=None):
     """A park bench looking north, its back to the south: slats on iron ends. `ends` says which of its ends this block has.
-    Carved, a heart and two pairs of letters are cut into the front of its back, across both slats."""
+    `mark` is one of the picture's bands (carving): one cut into the front of its back, across both slats, on the fourteen pixels
+    of them that are clear of the iron end; or WORN, laid on the seat's three slats and the front edge of the first."""
     p = []
-    if carved:
-        plate(p, [2, 12.85, 11.55], [16, 14.85, 11.6], 'h', {'north': (0, 0)})
-        plate(p, [2, 10.35, 11.55], [16, 12.35, 11.6], 'h', {'north': (0, 2)})
+    if mark == WORN:
+        for z0, z1 in ((4, 6.3), (6.8, 9.1), (9.6, 11.2)):
+            plate(p, [5, 7.9, z0], [13, 7.93, z1], 'h', {'up': (0, WORN)})
+        plate(p, [5, 7, 3.97], [13, 7.9, 4], 'h', {'north': (0, WORN)})
+    elif mark is not None:
+        x0, x1 = (2, 16) if 'west' in ends else (0, 14)
+        plate(p, [x0, 12.85, 11.55], [x1, 14.85, 11.6], 'h', {'north': (0, mark)})
+        plate(p, [x0, 10.35, 11.55], [x1, 12.35, 11.6], 'h', {'north': (0, mark + 2)})
     for side in ends:
         x0, x1 = (.5, 1.7) if side == 'west' else (14.3, 15.5)
         bar(p, [x0, 0, 4.5], [x1, 7, 5.7], IRON)                          # front leg
@@ -487,7 +531,9 @@ FITTINGS = {
     'gate_0': (lambda: gate(0), 'park'), 'gate_1': (lambda: gate(1), 'park'), 'gate_2': (lambda: gate(2), 'park'), 'gate_3': (lambda: gate(3), 'park'),
     'lamp_0': (lambda: lamp(0), 'park'), 'lamp_1': (lambda: lamp(1), 'park'), 'lamp_2': (lambda: lamp(2), 'lamp_lit'), 'lamp_3': (lambda: lamp(3), 'lamp_dark'),
     'bench_0': (lambda: bench(('west', 'east')), 'park'), 'bench_1': (lambda: bench(('west',)), 'park'), 'bench_2': (lambda: bench(('east',)), 'park'),
-    'bench_3': (lambda: bench(('west',), True), 'park'),
+    'bench_3': (lambda: bench(('west',), CUT_AL), 'park'),
+    'bench_cut_0': (lambda: bench(('east',), CUT_OUT), 'park'), 'bench_cut_1': (lambda: bench(('east',), CUT_RD), 'park'),
+    'bench_cut_2': (lambda: bench(('east',), WORN), 'park'),
     'fountain_0': (lambda: fountain(False), 'park'), 'fountain_1': (lambda: fountain(True), 'park'),
     'phone_0': (lambda: phone(False), 'park'), 'phone_1': (lambda: phone(True), 'park'),
     'bin_0': (bin_, 'park'), 'border_0': (lambda: border(False), 'park'), 'border_1': (lambda: border(True), 'park'), 'cap_0': (cap, '/calder_kerb'),
@@ -499,8 +545,8 @@ FITTINGS = {
 # A name that begins with a slash is one of the materials, in the blocks' own folder.
 NAMES_OF = {'k': 'park', 'h': 'carving', 'w': 'water', 'l': 'lamp_lit', 'd': 'lamp_dark', 'm': 'mesh', 'f0': 'litter_0', 'f1': 'litter_1', 'f2': 'litter_2', 'f3': 'litter_3', 'n': 'note', 'g': 'hat',
             'b': '/calder_brick', 'c': '/calder_kerb'}
-KINDS = ['fence', 'gate', 'lamp', 'bench', 'bin', 'border', 'note', 'cap', 'fountain', 'phone', 'hat']
-STAGES = {'fence': 2, 'gate': 4, 'lamp': 4, 'bench': 4, 'border': 2, 'fountain': 2, 'phone': 2}
+KINDS = ['fence', 'gate', 'lamp', 'bench', 'bin', 'border', 'note', 'cap', 'fountain', 'phone', 'hat', 'bench_cut']
+STAGES = {'fence': 2, 'gate': 4, 'lamp': 4, 'bench': 4, 'border': 2, 'fountain': 2, 'phone': 2, 'bench_cut': 3}
 MAX_STAGE = 4
 
 

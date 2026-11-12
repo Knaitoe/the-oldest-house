@@ -660,7 +660,7 @@ public final class BikeNight {
             case GATE->{if(BikeNightBullies.open(b)){cue(p,BikeNightTexts.GATE_OPEN);break;}cue(p,BikeNightTexts.GATE);l.playSound(null,b.offset(rel),BikeNightRegistry.CHAIN.get(),net.minecraft.sounds.SoundSource.BLOCKS,.8F,.95F+l.getRandom().nextFloat()*.1F);}
             case FENCE->cue(p,BikeNightTexts.RAILINGS);
             case LAMP->{boolean failing=rel.getX()==BikeNightSite.FLICKER.getX()&&rel.getZ()==BikeNightSite.FLICKER.getZ();cue(p,failing?BikeNightTexts.LAMP_FAILING:BikeNightTexts.LAMP);}
-            case BENCH->cue(p,s.getValue(CalderBlock.STAGE)==CalderBlock.CARVED?BikeNightTexts.CARVED:BikeNightTexts.BENCH);
+            case BENCH,BENCH_CUT->cue(p,BikeNightTexts.bench(BikeNightSite.benchAt(rel)));
             // The fountain runs for a little while when its button is pressed; the payphone's handset is held for a little while.
             case FOUNTAIN->{
                 if(s.getValue(CalderBlock.STAGE)==CalderBlock.RUNNING){cue(p,BikeNightTexts.FOUNTAIN_RUNNING);break;}

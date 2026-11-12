@@ -317,13 +317,27 @@ public final class BikeNightSite {
         var right=new BlockPos(x,0,z).relative(facing.getClockWise());
         set(l,b,right,fit(CalderBlock.Kind.BENCH,facing,2));
     }
+    /**
+     * 0.4.519, the park's three benches, each by the end on its sitter's left; all look west. The one by the bin, where initials have
+     * been cut out again; the one by the playground, with the heart; the one nearest the gate, whose seat is worn.
+     */
+    public static final List<BlockPos> BENCHES=List.of(new BlockPos(3,0,-16),new BlockPos(-5,0,-23),new BlockPos(3,0,-30));
+    public static final int BY_THE_BIN=0,BY_THE_PLAYGROUND=1,BY_THE_GATE=2;
+    /** Which of the park's benches a cell is part of, or -1. */
+    public static int benchAt(BlockPos rel){
+        for(int i=0;i<BENCHES.size();i++){var at=BENCHES.get(i);if(rel.getX()==at.getX()&&rel.getY()==0&&(rel.getZ()==at.getZ()||rel.getZ()==at.getZ()-1))return i;}
+        return -1;
+    }
     static void benches(ServerLevel l,BlockPos b){
-        bench(l,b,3,-16,Direction.WEST);set(l,b,3,0,-18,fit(CalderBlock.Kind.BIN,Direction.NORTH,0));   // by the path, looking across it
-        bench(l,b,-5,-23,Direction.WEST);                                                           // by the playground, looking at it
-        set(l,b,-5,0,-23,fit(CalderBlock.Kind.BENCH,Direction.WEST,CalderBlock.CARVED));                // the one with the heart cut in it
+        for(var at:BENCHES)bench(l,b,at.getX(),at.getZ(),Direction.WEST);
+        set(l,b,3,0,-18,fit(CalderBlock.Kind.BIN,Direction.NORTH,0));                                   // by the first, on the path
+        // What each is told by. A bench's right end is the one on the left of whoever stands before it, where reading begins.
+        set(l,b,BENCHES.get(BY_THE_BIN).north(),fit(CalderBlock.Kind.BENCH_CUT,Direction.WEST,CalderBlock.CUT_OUT));
+        set(l,b,BENCHES.get(BY_THE_PLAYGROUND).north(),fit(CalderBlock.Kind.BENCH_CUT,Direction.WEST,CalderBlock.HEART));
+        set(l,b,BENCHES.get(BY_THE_PLAYGROUND),fit(CalderBlock.Kind.BENCH,Direction.WEST,CalderBlock.CARVED));
+        set(l,b,BENCHES.get(BY_THE_GATE).north(),fit(CalderBlock.Kind.BENCH_CUT,Direction.WEST,CalderBlock.WORN));
         set(l,b,FOUNTAIN,fit(CalderBlock.Kind.FOUNTAIN,Direction.NORTH,0));
         set(l,b,PHONE,fit(CalderBlock.Kind.PHONE,Direction.NORTH,0));
-        bench(l,b,3,-30,Direction.WEST);
     }
     /** The rack by the gate, and the six bikes in it, in the order they are named. */
     static void rack(ServerLevel l,BlockPos b){
