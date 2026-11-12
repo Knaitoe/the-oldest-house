@@ -244,6 +244,15 @@ LOOKS = {
     # of new leaves, in a sack of a shirt. Both barefoot.
     'literary_hollow_ghoul': Look('#8d9884','#565b4e','close','#6e6959','#58544a','shirt','#48443a',eyes='#d6d09c',age=2,sleeve=5,face_style='frail',rips=True,shoes='#8d9884'),
     'literary_hollow_goblin': Look('#6c9848','#1e2416','messy','#5c4832','#40362a','tee','#2a2418',eyes='#e6d048',sleeve=4,face_style='child',shoes='#6c9848'),
+    # 0.4.524, the Pell house (docs/PELL_HOUSE_PEOPLE_0_4_524.md). June: a cardigan with its sleeves pushed up, her reading glasses
+    # on their chain hanging on her front, and paint at the quick of two nails of her right hand that never quite comes off.
+    'literary_pell_june': Look('#dcae90','#8e7258','bun','#a99a74','#55534d','cardigan','#ece4d0',eyes='#5d6a58',age=1,mark='pell_june',sleeve=7,shoes='#4a4440'),
+    # Tilly: a sunhat she keeps on outside, a backpack with a keyring on its pocket. Her cane is in her hand (PellPeople).
+    'literary_pell_tilly': Look('#e2b998','#b5895a','long','#e4c86a','#4e6684','tee','#f2ecd8',eyes='#5a6a7a',mark='pell_tilly',sleeve=4,face_style='child',shoes='#d8d4c8'),
+    # Callum: barefoot, in a jumper and trousers that were somebody else's first; his hair wet, and the jumper wet where it drips.
+    'literary_pell_callum': Look('#d6ae8e','#241f1c','messy','#7c8a76','#5f5a4e','knit','#a4ad9c',eyes='#4a5244',mark='pell_callum',sleeve=11,face_style='child'),
+    # Gail: a lanyard and the card on it. Her folder is in her hands (PellPeople).
+    'literary_pell_gail': Look('#b98966','#2e241e','part','#5f7088','#3a3c44','shirt','#e8e2d4',eyes='#3e3226',mark='pell_gail',sleeve=10,shoes='#2a2624'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -821,6 +830,9 @@ def face(look):
     else:
         d.polygon([(0,0),(15,0),(15,3),(12,2),(8,2),(5,4),(2,3),(0,4)],fill=hair)
         d.line((2,1,7,1),fill=hhi);d.line((10,0,10,2),fill=hlo)
+    if look.mark=='pell_callum':
+        # A drop run down from his wet hair to his temple.
+        d.point((13,5),fill=shade(skin,24));d.point((13,6),fill=shade(skin,12))
     if look.mark=='possessed':
         for x,y0,y1 in ((2,4,15),(13,4,15)):d.line((x,y0,x,y1),fill=hair)
         d.line((6,3,6,5),fill=hlo);d.line((11,3,11,5),fill=hlo)
@@ -977,6 +989,12 @@ def cloth_face(size,look,side='front'):
             d.line((0,h-2,w-1,h-2),fill=lo)
         if look.style=='jersey':
             d.rectangle((0,0,2,1),fill=a);d.rectangle((w-3,0,w-1,1),fill=a);numerals(d,str(look.jersey),w//2,6,a)
+        if look.mark=='pell_tilly':
+            # 0.4.524: her backpack, worn: its body, the flap over its top, a pocket on its front with the zip along it; and on the
+            # zip's pull a keyring, two keys and a plastic fob.
+            pack='#5d7f9e';d.rectangle((2,3,w-3,h-3),fill=pack);d.rectangle((2,3,w-3,8),fill=shade(pack,-14));d.line((2,8,w-3,8),fill=shade(pack,-32))
+            d.rectangle((4,12,w-5,h-5),fill=shade(pack,10),outline=shade(pack,-24));d.line((5,12,w-6,12),fill='#c8ccd0')
+            d.point((w-6,13),fill='#d8d0b0');d.point((w-6,14),fill='#d8d0b0');d.point((w-7,15),fill='#d8d0b0');d.point((w-5,15),fill='#e0c23a')
         return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
     if side!='front':return borrasca_cloth(im,look,side) if look.mark.startswith('borrasca_') else im
     mid=w//2
@@ -1100,6 +1118,27 @@ def cloth_face(size,look,side='front'):
         # 0.4.227: the attendant's lanyard down from the collar, and the whistle on it.
         for k in range(0,6):d.point((mid-4+k//2,4+k),fill='#2a3a6a');d.point((mid+3-k//2,4+k),fill='#2a3a6a')
         d.rectangle((mid-1,10,mid+1,11),fill='#c8c8cc');d.point((mid+2,10),fill='#9a9aa0')
+    if look.mark=='pell_june':
+        # 0.4.524: her reading glasses hanging on their chain on her front: the chain from either side of her collar down to the two
+        # rims and the bridge between them.
+        chain='#b39a5a';rim='#3e3a34'
+        d.line((mid-4,0,mid-4,3,mid-3,7),fill=chain);d.line((mid+3,0,mid+3,3,mid+2,7),fill=chain)
+        for x in (mid-5,mid+1):d.rectangle((x,8,x+3,10),outline=rim);d.line((x+1,9,x+2,9),fill='#c3d0d2')
+        d.line((mid-1,8,mid,8),fill=rim)
+    if look.mark=='pell_tilly':
+        # The backpack's two straps over her shoulders.
+        strap='#4a6680'
+        for x in (2,w-4):d.rectangle((x,0,x+1,10),fill=strap);d.line((x,10,x+1,10),fill=shade(strap,-20))
+    if look.mark=='pell_callum':
+        # A jumper that was somebody else's first: its neck stretched wide; and wet through at the shoulders, where his hair drips.
+        d.rectangle((mid-3,0,mid+2,2),fill=rgb(look.skin));d.line((mid-4,2,mid-3,3,mid+2,3,mid+3,2),fill=lo)
+        for x0 in (0,w-4):d.rectangle((x0,0,x0+3,3),fill=shade(c,-20))
+        d.point((2,4),fill=shade(c,-20));d.point((w-3,5),fill=shade(c,-20))
+    if look.mark=='pell_gail':
+        # Her lanyard, down from her collar to the card on it: a photograph, and a strip under it.
+        cord='#3c5f8a'
+        for k in range(0,8):d.point((mid-4+k//3,2+k),fill=cord);d.point((mid+3-k//3,2+k),fill=cord)
+        d.rectangle((mid-2,10,mid+1,14),fill='#f2f0ea',outline='#9c9a92');d.rectangle((mid-1,11,mid,12),fill='#6a5a4c');d.line((mid-1,13,mid,13),fill=cord)
     if look.style=='ragged':
         d.line((mid,3,mid,h-3),fill=lo);d.rectangle((3,h-7,5,h-4),fill=shade(c,16))
         for y in (6,12,18):d.point((mid+1,y),fill=a)
@@ -1313,6 +1352,25 @@ def paint(look):
             elif side!='bottom':
                 d.rectangle((0,0,15,5),fill=rgb(crown));d.line((0,5,15,5),fill=shade(crown,-27));d.line((1,1,14,1),fill=shade(crown,12))
             put(box,art)
+    if look.mark=='pell_tilly':
+        # 0.4.524: Tilly's sunhat on the hat layer: a soft crown, a band round it, and the brim turned down all round, clear of her brows.
+        hat='#ece0bf';band='#b8604f'
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':
+                art=panel((16,16),hat,'cloth');d=ImageDraw.Draw(art);d.line((2,7,13,8),fill=shade(hat,-12));d.point((7,7),fill=shade(hat,-24))
+            elif side!='bottom':
+                d.rectangle((0,0,15,2),fill=rgb(hat));d.line((1,1,14,1),fill=shade(hat,8));d.line((0,3,15,3),fill=rgb(band))
+                d.rectangle((0,4,15,5),fill=shade(hat,6));d.line((0,5,15,5),fill=shade(hat,-26))
+            put(box,art)
+    if look.mark=='pell_callum':
+        # 0.4.524: his hair, wet: a shine across the crown and down the back, where it lies flat and drips.
+        for side in ('top','back'):
+            art=panel((16,16),look.hair,'hair',side);d=ImageDraw.Draw(art)
+            for x,y in ((3,2),(4,3),(9,5),(10,6),(6,10),(12,11),(2,13)):d.point((x,y),fill=shade(look.hair,40))
+            if side=='back':
+                for x in (3,8,12):d.line((x,12,x,15),fill=shade(look.hair,24))
+            put(head[side],art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.
         for side,box in net(32,0,8,8,8).items():
@@ -1386,6 +1444,11 @@ def paint(look):
                 if h>=20:
                     d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-18));d.point((w-2,h-4),fill=shade(look.skin,7))
                     if side in ('left','right'):d.line((1,h-5,1,h-3),fill=shade(look.skin,-22))
+                if look.mark=='pell_june':
+                    # 0.4.524: her sleeves pushed up past the elbow, bunched; and on her right hand paint at the quick of two nails.
+                    d.rectangle((0,cuff-3,w-1,cuff-1),fill=shade(look.cloth,12));d.line((0,cuff-2,w-1,cuff-2),fill=shade(look.cloth,-16))
+                    if ai==0 and side=='front':
+                        for x in (1,3):d.point((x,h-1),fill='#eceae2')
             elif side=='bottom':art=panel((w,h),'#a48f64' if look.mark=='borrasca_worker' else look.skin,'skin',side)
             if look.mark in ('truant','truant_leer') and side not in ('top','bottom'):
                 # Ink on his hands: a few dark blue marks across the knuckles and the back of the hand.
@@ -1421,7 +1484,12 @@ def paint(look):
                 d.line((1,0,w-2,0),fill=shade(look.pants,-20))
                 if side in ('front','back'):d.line((w//2,3,w//2,h-7),fill=shade(look.pants,7))
                 if side=='back':d.rectangle((1,2,w-2,5),outline=shade(look.pants,-15))
-                if look.style=='swim':
+                if look.mark=='pell_callum':
+                    # 0.4.524: trousers too long for him, rolled twice at the ankle; bare feet under them, the soles dirty.
+                    d.rectangle((0,h-9,w-1,h-7),fill=shade(look.pants,14));d.line((0,h-8,w-1,h-8),fill=shade(look.pants,-14))
+                    d.rectangle((0,h-6,w-1,h-1),fill=rgb(look.skin));d.line((0,h-1,w-1,h-1),fill=shade(look.skin,-40))
+                    if side=='front':d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-12))
+                elif look.style=='swim':
                     d.rectangle((0,2,w-1,h-1),fill=rgb(look.skin));d.line((0,1,w-1,1),fill=rgb(look.accent))
                 elif look.mark=='trunks':
                     # Swim trunks to the middle of the thigh, a pale hem, and bare legs below.
@@ -1459,7 +1527,7 @@ def paint(look):
                         d.rectangle((0,h-5,w-1,h-1),fill=rgb(look.shoes));d.line((1,h-4,w-2,h-4),fill=shade(look.shoes,-38));d.line((0,h-1,w-1,h-1),fill=shade(look.shoes,24) if sum(rgb(look.shoes))<300 else shade(look.shoes,-60))
                     else:
                         d.rectangle((0,h-5,w-1,h-1),fill='#34302c');d.line((1,h-4,w-2,h-4),fill='#635442');d.line((0,h-1,w-1,h-1),fill='#222522')
-            if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark in ('possessed','trunks') else '#292c28','skin')
+            if side=='bottom':art=panel((w,h),look.skin if look.style=='swim' or look.mark in ('possessed','trunks','pell_callum') else '#292c28','skin')
             if side=='bottom' and look.mark.startswith('borrasca_dana'):art=panel((w,h),'#d6d0c2','skin')
             put(box,art)
     if look.mark=='winter':

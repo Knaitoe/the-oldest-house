@@ -41,6 +41,10 @@ public final class PellRegistry {
     /** 0.4.523: the line round the lot (PellLine), painted into the ground it lies on; drawn by tools/draw_pell_line.py. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellLine>> LINE_TYPE=CODECS.register("pell_line",()->PellLine.CODEC);
     public static final DeferredBlock<PellLine> LINE=BLOCKS.registerBlock("pell_line",PellLine::new,fixed(Blocks.STONE));
+    /** 0.4.524: Tilly's cane and Gail's folder, in their hands (PellPeople); drawn by tools/draw_pell_people.py. Nobody is given one. */
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> CANE=ITEMS.register("pell_cane",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> FOLDER=ITEMS.register("pell_folder",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     private PellRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }

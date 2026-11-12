@@ -144,6 +144,36 @@ public final class PellTexts {
         return "The clock on top, pressed: \"The time is "+h+" "+m+(hour<12?" a.m.":" p.m.")+"\"";
     }
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
+    /**
+     * 0.4.524, the people (PellPeople): what a hand on each of them gets, in turn, on the first visit. June is kind and specific, and
+     * slightly wrong; Gail has always just spoken to June; Tilly asks what she cannot see. None of it names the reader as anything.
+     */
+    public static final String[] JUNE_TALK={
+        "There you both are. Come in out of the heat.",
+        "Inside the line after dark, love. It's for the dog.",
+        "The pool gate stays locked. That's the one thing in this house I'll ask twice.",
+        "You're in the garage. It's all done up. For your privacy.",
+        "Tilly's in the front room. I've kept it nice.",
+        "Callum doesn't say much. He'll come round to you."};
+    public static final String[] GAIL_TALK={
+        "I've just been talking to June. She's got everything ready for you.",
+        "You're in good hands. June's been doing this a long time.",
+        "I'll ring in the morning and see how the first night went.",
+        "I'm sorry it's all so fast. It won't always be.",
+        "I have to get going. I've another one to see before four."};
+    public static final String[] TILLY_TALK={
+        "Is it nice? Tell me what it looks like.",
+        "It smells like a swimming pool. Is there a pool?",
+        "Someone's in the hall. I can hear them breathing.",
+        "I'm keeping my hat on.",
+        "Don't go far, okay?"};
+    /** Callum does not speak. A hand on him gets what he does instead. */
+    public static final String[] CALLUM_HAND={
+        "He doesn't answer. He looks at your hand, then at you.",
+        "He steps back, as far as you stepped forward.",
+        "His hair drips on the carpet. Nobody has been swimming.",
+        "He holds out his hand the way you held out yours, a moment late."};
+
     /** The first paper: the placement notice, as it was put through the letterbox. */
     public static ItemStack source(){
         return HouseWriting.book("Notice of placement","G. Mercer",pages(

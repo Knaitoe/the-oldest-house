@@ -1,3 +1,5 @@
+November 12 candidate 0.4.524 (docs/PELL_HOUSE_PEOPLE_0_4_524.md): the Pell house's people (slice 4). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (all four cases), the architecture namespace, tools/paint_character_skins.py --check with tools/verify_character_art.py (four new catalogued skins), and tools/draw_pell_people.py --check.
+
 November 12 candidate 0.4.523 (docs/PELL_HOUSE_LINE_0_4_523.md): the Pell house's line (slice 3). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (all three cases), the architecture namespace, and tools/draw_pell_line.py --check with tools/draw_pell_things.py --check and tools/draw_pell_house.py --check.
 
 November 12 candidate 0.4.522 (docs/PELL_HOUSE_THINGS_0_4_522.md): the Pell house's rooms furnished (slice 2). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (both cases), the architecture namespace, and tools/draw_pell_things.py --check with tools/draw_pell_house.py --check.

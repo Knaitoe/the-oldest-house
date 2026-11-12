@@ -2198,5 +2198,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 194
+  },
+  {
+    "name": "literary_pell_june",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 195
+  },
+  {
+    "name": "literary_pell_tilly",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 196
+  },
+  {
+    "name": "literary_pell_callum",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 197
+  },
+  {
+    "name": "literary_pell_gail",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 198
   }
 ]
