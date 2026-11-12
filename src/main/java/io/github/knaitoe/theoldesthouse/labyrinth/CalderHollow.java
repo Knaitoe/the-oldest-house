@@ -40,7 +40,7 @@ public final class CalderHollow {
     /** The far side: how wide its ground is, and the lane behind its railings. */
     public static final int SIDE=24,LANE_N=-440,LANE_S=-437;
     /** What a piece of the course is made of. */
-    public enum Made{SOD,LID,VINE,STONE,EARTH,BANK}
+    public enum Made{SOD,LID,VINE,STONE,EARTH,BANK,TENDRIL}
     /** A piece: a rectangle of ground at one height. */
     public record Piece(String name,Made made,int x0,int x1,int zSouth,int zNorth,double top){
         public boolean has(int x,int z){return x>=x0&&x<=x1&&z<=zSouth&&z>=zNorth;}
@@ -143,6 +143,40 @@ public final class CalderHollow {
         for(int i=0;i<BANK_ROWS;i++)for(int x=BANK_X0;x<=BANK_X1;x++)for(int y=BANK_FOOT-1;y<=BANK_FOOT+i;y++)l.setBlock(b.offset(x,y,BANK_SOUTH-i),s,Block.UPDATE_CLIENTS);
     }
     /**
+     * 0.4.505, the tight way. The proposal: "tight: a twisting path along the vine only the Wasp turns sharply enough for". East
+     * of the vine, from the high way's foot to the stairs' foot: a tendril of the vine with walls of it either side, {@link
+     * #TIGHT_ROWS} rows, crossed every {@link #GATE_EVERY} rows from the row {@link #GATE_FIRST} by a wall with one block's
+     * opening, at the west side and the east side by turns. So the way through swings four blocks across in six along, and
+     * back. It curls up from its near end behind whoever is in it (BikeNightHollow.curl), so it is ridden at speed or not at
+     * all. At a bike's top speed the Wasp turns in under two blocks and an ordinary bike in three; the Wasp keeps four fifths
+     * of its way off a wall it meets at any slant, and anything else, meeting a wall square, puts its rider off.
+     */
+    public static final int TIGHT_X0=5,TIGHT_X1=9,TIGHT_SOUTH=-339,TIGHT_ROWS=26,GATE_FIRST=5,GATE_EVERY=6,GATE_HIGH=3;
+    public static final List<Piece> TIGHT=tightWay();
+    private static List<Piece> tightWay(){
+        var out=new ArrayList<Piece>();
+        for(int i=0;i<TIGHT_ROWS;i++)out.add(new Piece("tendril "+i,Made.TENDRIL,TIGHT_X0-1,TIGHT_X1+1,TIGHT_SOUTH-i,TIGHT_SOUTH-i,0));
+        out.add(new Piece("the tight way's step",Made.VINE,TIGHT_X0,TIGHT_X1,TIGHT_SOUTH-TIGHT_ROWS,TIGHT_SOUTH-TIGHT_ROWS-1,.5));
+        out.add(new Piece("the tight way's foot",Made.VINE,TIGHT_X0-1,TIGHT_X1,TIGHT_SOUTH-TIGHT_ROWS-2,TIGHT_SOUTH-TIGHT_ROWS-5,1));
+        return List.copyOf(out);
+    }
+    /** Which of the tendril's gates a row of it is, or -1. */
+    public static int gate(int row){return row>=GATE_FIRST&&row<TIGHT_ROWS&&(row-GATE_FIRST)%GATE_EVERY==0?(row-GATE_FIRST)/GATE_EVERY:-1;}
+    /** The one block a gate is open at: the west side's for the first, the east side's for the next, and so on. */
+    public static int gateOpen(int gate){return gate%2==0?TIGHT_X0:TIGHT_X1;}
+    /** Whether a place (from the park's base) is on the tendril, its walls' rows with it, and which of its rows; -1 off it. */
+    public static int tendrilRow(double x,double z){
+        if(x<TIGHT_X0-1||x>=TIGHT_X1+2)return -1;int row=TIGHT_SOUTH-(int)Math.floor(z);return row>=0&&row<TIGHT_ROWS?row:-1;
+    }
+    /** One row of the tendril, its walls and its gate with it: there, or gone. What lies in the way between the walls is left alone. */
+    public static void tendrilRow(ServerLevel l,BlockPos b,int row,boolean there){
+        var s=there?mat("vine"):Blocks.AIR.defaultBlockState();int z=TIGHT_SOUTH-row,gate=gate(row);
+        for(int x=TIGHT_X0-1;x<=TIGHT_X1+1;x++){
+            l.setBlock(b.offset(x,-1,z),s,Block.UPDATE_CLIENTS);
+            if(x<TIGHT_X0||x>TIGHT_X1||gate>=0&&x!=gateOpen(gate))for(int y=0;y<GATE_HIGH;y++)l.setBlock(b.offset(x,y,z),s,Block.UPDATE_CLIENTS);
+        }
+    }
+    /**
      * 0.4.501, the werewolf's ground. The proposal: "a werewolf runs alongside on a parallel island and leaps across at gaps."
      * Beside two of the plain way's gaps (the first grave to the second; the one in the last stretch): a strip he runs up beside
      * the riders, a perch at its end level with the gap, and a perch across the way from it. None of it is a way for anybody or an
@@ -158,7 +192,7 @@ public final class CalderHollow {
     public record Leap(double z,double south,double north,double x,double top,double west,double east,double run){}
     public static final List<Leap> LEAPS=List.of(new Leap(-271,-270,-272,1.5,2,-6.5,9.5,-263.5),new Leap(-409,-408,-410,.5,3,-5.5,6.5,-399.5));
     /** Every way, each in the order it is ridden; and every piece of all of them. */
-    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG,STEEP);
+    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG,STEEP,TIGHT);
     public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();
     /** How high a body stands at a place on the course; NaN where there is none of it. */
     public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();for(var p:WOLFS)if(p.has(x,z))return p.top();return Double.NaN;}
@@ -195,7 +229,7 @@ public final class CalderHollow {
                 int near=way.get(i).zSouth(),end=way.get(j).zNorth();
                 if(near-end+1>=STAND){
                     int z=Math.min(near-1,end+RUN),index=out.size();
-                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":way==LONG?"long":"steep",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":way==LONG?"long":way==STEEP?"steep":"tight",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
                 }
                 i=j+1;
             }
@@ -204,8 +238,8 @@ public final class CalderHollow {
         }
         FAR_ISLAND=far;ISLANDS=List.copyOf(out);
     }
-    /** Lids are never part of an island: the plain way's are a bridge, and the long way's give way. Nor is the steep way's bank, which slides. */
-    private static boolean touch(Piece a,Piece c){return a.made()!=Made.LID&&c.made()!=Made.LID&&a.made()!=Made.BANK&&c.made()!=Made.BANK&&c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
+    /** Lids are never part of an island: the plain way's are a bridge, and the long way's give way. Nor is the steep way's bank, which slides, or the tight way's tendril, which curls up. */
+    private static boolean touch(Piece a,Piece c){return a.made()!=Made.LID&&c.made()!=Made.LID&&a.made()!=Made.BANK&&c.made()!=Made.BANK&&a.made()!=Made.TENDRIL&&c.made()!=Made.TENDRIL&&c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
     private static String name(Piece first,Piece last){
         String a=first.name().replaceAll(" [0-9]+$",""),c=last.name().replaceAll(" [0-9]+$","");
         return a.equals(c)?a:a+" and "+c;
@@ -255,6 +289,7 @@ public final class CalderHollow {
         dress(l,b);
         farSide(l,b,rnd);
         for(var p:WOLFS)piece(l,b,p,rnd);
+        for(int row=0;row<TIGHT_ROWS;row++)tendrilRow(l,b,row,true);
     }
     /** The hill's ground ends ragged: off the gate's line it reaches a row or three further, and what is left of the side railings ends in a pier. */
     static void edge(ServerLevel l,BlockPos b,Random rnd){
@@ -283,6 +318,8 @@ public final class CalderHollow {
                 case VINE->{if(whole)set(l,b,x,y-1,z,mat("vine"));else set(l,b,x,y,z,half(BikeNightRegistry.VINE_SLAB.get(),false));}
                 case STONE->{if(whole)set(l,b,x,y-1,z,half(BikeNightRegistry.STONE_STEP.get(),true));else set(l,b,x,y,z,half(BikeNightRegistry.STONE_STEP.get(),false));}
                 case EARTH->set(l,b,x,y-1,z,mat("hollow_earth"));
+                // The tendril's walls and gates are stood on it when the course is built (tendrilRow).
+                case TENDRIL->set(l,b,x,y-1,z,mat("vine"));
                 // A bank is earth all the way down to its foot.
                 case BANK->{for(int under=BANK_FOOT-1;under<y;under++)set(l,b,x,under,z,mat("hollow_earth"));}
             }

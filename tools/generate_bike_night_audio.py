@@ -84,6 +84,8 @@ ROWS = {
     'hollow/pop': ('hollow.pop', 'Something jumps out', 24),
     # 0.4.504: the steep way's bank going.
     'hollow/slide': ('hollow.slide', 'Earth slides away', 32),
+    # 0.4.505: the tight way's tendril curling up.
+    'hollow/curl': ('hollow.curl', 'The vine curls up', 24),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -814,7 +816,22 @@ def slide_away():
     return heave + rush + clods
 
 
-MAKERS = {'hollow/slide': slide_away, 'hollow/pop': pop, 'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def curl():
+    # A great green stem winding in on itself: a wet creak that climbs as it tightens, and leaves dragged after it.
+    length = .9
+    n = seconds(length)
+    t = times(n)
+    pitch = 70 + 160 * (t / length) ** 1.6
+    phase = 2 * np.pi * np.cumsum(pitch) / RATE
+    grain = np.sign(np.sin(2 * np.pi * np.cumsum(18 + 30 * t / length) / RATE))
+    creak = (np.sin(phase) * .5 + np.sin(2.01 * phase) * .3 + np.sin(3.3 * phase) * .15) * (.55 + .45 * grain)
+    creak *= np.clip(t / .05, 0, 1) * np.clip((length - t) / .2, 0, 1)
+    leaves = band(rng.standard_normal(n), 1800, 7000) * .25 * np.clip(t / .3, 0, 1) * np.clip((length - t) / .15, 0, 1)
+    leaves *= 1 + .6 * np.sin(2 * np.pi * 11 * t)
+    return band(creak, 60, 2400) + leaves
+
+
+MAKERS = {'hollow/curl': curl, 'hollow/slide': slide_away, 'hollow/pop': pop, 'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
