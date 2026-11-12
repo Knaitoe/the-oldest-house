@@ -204,6 +204,19 @@ above is marked.
 - a course of floating ground, high and low, over nothing.
 
 **The Hollow** is the owner's platforming realm.
+
+*Measured, November 12 (a probe case, not kept), for laying its gaps out. On level ground at each bike's own top speed,
+from leaving the ground to being on it again:*
+
+| Bike | Top speed | A tap of the hop | A full hold |
+|---|---|---|---|
+| Wasp, Hare, Lamp (and any plain bike) | 0.32 blocks a tick | 2.3 blocks, 0.6 high, 7 ticks | 3.3 blocks, 1.2 high, 11 ticks |
+| Comet | 0.46 | 3.4 blocks, 0.6 high | 4.8 blocks, 1.2 high |
+| Hopper | 0.32 | 2.3 blocks, 0.6 high | 3.7 blocks, 2.1 high, 14 ticks |
+
+*A bike is 0.6 of a block long and is on the ground while any of it is, so a gap can be up to about half a block wider
+than these. Off the open grave's heap (two thirds of a block up in one block) a plain bike flat out comes down a little
+under three blocks on (0.4.489). The Rattler's burst was not measured.*
 - **The ground:**
   - islands of graveyard turf with their headstones still in them;
   - crooked fences;
