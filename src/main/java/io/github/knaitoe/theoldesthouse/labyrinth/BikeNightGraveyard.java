@@ -105,13 +105,21 @@ public final class BikeNightGraveyard {
      * that for the rider of a Lamp that is throwing its light, "and whoever rides close".
      */
     public static int mist(ServerLevel l,BlockPos b,ServerPlayer p){
-        if(!in(b,p.position()))return 0;
-        double z=p.getZ()-b.getZ();int rows=0;
-        for(int row:CalderGraves.ROWS)if(z<row+.5)rows++;
-        float m=MIST_GATE+(MIST_BACK-MIST_GATE)*rows/(float)CalderGraves.ROWS.length;
-        if(lamp(l,p))m*=LAMP_CUTS;
+        double z=p.getZ()-b.getZ();float m=0;
+        if(in(b,p.position())){
+            int rows=0;for(int row:CalderGraves.ROWS)if(z<row+.5)rows++;
+            m=MIST_GATE+(MIST_BACK-MIST_GATE)*rows/(float)CalderGraves.ROWS.length;
+        }
+        // 0.4.506: the Hollow's dark way lies in a bank of it, thicker than any in the cemetery.
+        if(CalderHollow.dark(p.getX()-b.getX(),z))m=Math.max(m,DARK_MIST);
+        if(m>0&&lamp(l,p))m*=LAMP_CUTS;
         return Math.round(m);
     }
+    /**
+     * 0.4.506: how thick the dark way's bank is, in a hundred of what the cemetery's thickest is: somebody in it sees two blocks
+     * and a half (BikeNightMistClient.sight), and beside a Lamp that is throwing its light, eighteen.
+     */
+    public static final int DARK_MIST=140;
     /** Whether a Lamp that is ridden and making light is near somebody. Its dynamo makes light only while the wheel turns: stopped, it cuts nothing. */
     public static boolean lamp(ServerLevel l,ServerPlayer p){
         return !l.getEntitiesOfClass(NightBike.class,p.getBoundingBox().inflate(LAMP_NEAR),bike->bike.make()==NightBike.Make.LAMP&&bike.lit()>0&&!bike.getPassengers().isEmpty()).isEmpty();

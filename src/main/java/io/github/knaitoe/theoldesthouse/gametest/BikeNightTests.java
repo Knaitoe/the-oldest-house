@@ -4809,7 +4809,7 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 var islands=CalderHollow.ISLANDS;var names=islands.stream().map(CalderHollow.Island::name).toList();
                 h.assertTrue(names.equals(List.of("the hill","first grave","second grave","third grave","the fences","the grave past the lids","vine","stair and the top","stretch","stretch","the far side",
-                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot","the steep way's turn and the loose earth","the steep way's head","the tight way's step and the tight way's foot")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's, the long way's, the steep way's and the tight way's: "+names);
+                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot","the steep way's turn and the loose earth","the steep way's head","the tight way's step and the tight way's foot","the dark way's first island","the dark way's second island","the dark way's third island")),"the islands: the plain way's in the order they are ridden, the far side, then the other ways' in turn: "+names);
                 h.assertTrue(islands.get(CalderHollow.FAR_ISLAND).name().equals("the far side"),"the far side is where it says");
                 h.assertTrue(CalderHollow.HILL==0&&islands.get(0).name().equals("the hill"),"the hill is the first");
                 // The lids are a bridge: somebody standing on one has no island under them.
@@ -5898,4 +5898,123 @@ public final class BikeNightTests {
         return false;
     }
     @AfterBatch(batch="hollow_tight") public static void hollowTightDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.506, the dark way
+    @GameTest(template="empty",batch="hollow_dark",timeoutTicks=6000)
+    public static void theDarkWaysBankIsTooThickToSeeTheNextIslandInButBesideALampThatIsThrowingItsLight(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};
+        var way=CalderHollow.DARK;int first=islandNamed("the dark way's first island"),second=islandNamed("the dark way's second island"),third=islandNamed("the dark way's third island");
+        int top=CalderGraves.level(CalderHollow.EDGE),cut=Math.round(BikeNightGraveyard.DARK_MIST*BikeNightGraveyard.LAMP_CUTS);final boolean[] held={false};final int[] t={0},taps={0};
+        var over=new java.util.TreeSet<Integer>();
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                var sod=BikeNightRegistry.material("hollow_sod");
+                // Three islands, nothing else's ground, all of them in the bank.
+                h.assertTrue(way.size()==3,"three islands: "+way);
+                for(var piece:way)for(int x=piece.x0();x<=piece.x1();x++)for(int z=piece.zNorth();z<=piece.zSouth();z++){
+                    int shared=0;for(var other:CalderHollow.ALL)if(other.has(x,z))shared++;
+                    h.assertTrue(shared==1&&CalderHollow.dark(x+.5,z+.5)&&l.getBlockState(b.offset(x,(int)piece.top()-1,z)).is(sod),piece.name()+" at "+x+","+z+": its own, in the bank, and sod");
+                }
+                // The hill ends square at its mouth: three rows of nothing to the first island from wherever along it.
+                for(int x=CalderHollow.DARK_MOUTH_W;x<=CalderHollow.DARK_MOUTH_E;x++){
+                    h.assertTrue(l.getBlockState(b.offset(x,top-1,CalderHollow.EDGE)).is(sod)&&l.getBlockState(b.offset(x,top-1,CalderHollow.EDGE-1)).isAir(),"the hill's edge is square at the mouth: x="+x);
+                    h.assertTrue(x<way.get(0).x0()||x>way.get(0).x1()||way.get(0).zSouth()==CalderHollow.EDGE-4,"three rows of nothing off the hill");
+                }
+                // Each gap is three rows; each island has one block's width in line with the last, and it is not the same block twice.
+                int[] line=new int[2];
+                for(int i=0;i+1<way.size();i++){
+                    var a=way.get(i);var c=way.get(i+1);int lo=Math.max(a.x0(),c.x0()),hi=Math.min(a.x1(),c.x1());
+                    h.assertTrue(c.zSouth()==a.zNorth()-4&&hi==lo,c.name()+" is three rows on from "+a.name()+" with one block in line: "+lo+".."+hi);line[i]=lo;
+                    // Straight on from the middle of the nearer one is nothing.
+                    double mid=(a.x0()+a.x1()+1)/2.0;for(double x:new double[]{mid-.3,mid+.3})for(int z=a.zNorth()-1;z>=c.zNorth();z--)h.assertTrue(Double.isNaN(CalderHollow.top((int)Math.floor(x),z)),"nothing straight on from the middle of "+a.name()+" at "+x+","+z);
+                }
+                h.assertTrue(line[0]!=line[1],"no one line through all three: "+line[0]+", "+line[1]);
+                // And off the third's east end, two blocks over, the third grave, a block lower.
+                var last=way.get(2);h.assertTrue(Double.isNaN(CalderHollow.top(last.x1()+1,last.zNorth()+2))&&Double.isNaN(CalderHollow.top(last.x1()+2,last.zNorth()+2))&&CalderHollow.top(last.x1()+3,last.zNorth()+2)==last.top()-1&&CalderHollow.stood(last.x1()+3.5,last.top()-1,last.zNorth()+2.5)==3,"the third grave is two blocks off its east end");
+                p[0]=f.player("hollow_dark_lamp",P);p[1]=f.player("hollow_dark_wasp",P);p[2]=f.player("hollow_dark_walker",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[2]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);mine[1]=take(h,f,p[1],NightBike.Make.WASP);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("wasp"),"waiting for the bikes to be theirs"))
+            // How thick it is. The Wasp's rider on the first island; the walker on the plain way's first grave; the Lamp standing on the hill's back, well away.
+            .thenExecute(()->{
+                var at=islandPlace(b,first);mine[1].moveTo(at.x,at.y,at.z,180,0);p[1].setYRot(180);
+                var grave=islandPlace(b,1);p[2].teleportTo(grave.x,grave.y,grave.z);
+                mine[0].moveTo(b.getX()+10.5,b.getY()+top,b.getZ()+CalderHollow.EDGE+2.5,180,0);p[0].setYRot(180);
+            })
+            .thenIdle(BikeNightGraveyard.MIST_EVERY+2)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightGraveyard.mist(l,b,p[1])==BikeNightGraveyard.DARK_MIST&&toldMist(p[1])==BikeNightGraveyard.DARK_MIST,"on the dark way's first island the bank is as thick as it gets, and its rider is told: "+BikeNightGraveyard.mist(l,b,p[1]));
+                h.assertTrue(BikeNightGraveyard.DARK_MIST>BikeNightGraveyard.MIST_BACK&&BikeNightGraveyard.mist(l,b,p[0])==BikeNightGraveyard.MIST_BACK,"thicker than the cemetery's thickest, which is what the hill's back has away from the mouth: "+BikeNightGraveyard.mist(l,b,p[0]));
+                h.assertTrue(BikeNightGraveyard.mist(l,b,p[2])==0,"and there is none out on the plain way: "+BikeNightGraveyard.mist(l,b,p[2]));
+                // The walker to the hill's edge at the mouth: the bank is over the hill there already.
+                p[2].teleportTo(b.getX()+CalderHollow.DARK_MOUTH_W+2.5,b.getY()+top,b.getZ()+CalderHollow.EDGE+1.5);
+            })
+            .thenIdle(2)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightGraveyard.mist(l,b,p[2])==BikeNightGraveyard.DARK_MIST,"the bank is over the hill at its mouth: "+BikeNightGraveyard.mist(l,b,p[2]));
+                // The Lamp, standing by the Wasp on the first island: stopped, it throws no light and cuts nothing.
+                var at=islandPlace(b,first);mine[0].moveTo(at.x+1,at.y,at.z,180,0);mine[0].steady(0,0);p[0].setYRot(180);
+            })
+            .thenIdle(12)
+            .thenExecute(()->{
+                h.assertTrue(mine[0].lit()==0&&BikeNightGraveyard.mist(l,b,p[0])==BikeNightGraveyard.DARK_MIST&&BikeNightGraveyard.mist(l,b,p[1])==BikeNightGraveyard.DARK_MIST,"a Lamp that is standing cuts nothing, for its rider or anybody: "+mine[0].lit()+", "+BikeNightGraveyard.mist(l,b,p[0]));
+                // The Wasp's rider straight on from the middle of the first island, with the hop held: nothing is there.
+                mine[1].keys(true,false);
+            })
+            .thenWaitUntil(()->{
+                if(BikeNightHollow.fell(p[1])==0){p[1].setYRot(180);double z=mine[1].getZ()-b.getZ();
+                    if(mine[1].onGround()){mine[1].steady(0,RiddenBike.TOP);if(z<way.get(0).zNorth()+.4)mine[1].keys(false,false);}}
+                h.assertTrue(BikeNightHollow.fell(p[1])==1,"waiting for the Wasp's rider to go down off the first island: at "+where(b,mine[1]));
+            })
+            .thenExecute(()->{
+                h.assertTrue(p[1].getVehicle()==mine[1]&&mine[1].position().distanceTo(islandPlace(b,first))<.05&&BikeNightHollow.island(p[1])==first,"straight on is nothing: they are set back on the first island: "+where(b,mine[1]));
+                // The Lamp from the hill, on the line the first two islands share.
+                mine[0].moveTo(b.getX()+way.get(1).x0()+.5,b.getY()+top,b.getZ()+CalderHollow.EDGE+3.5,180,0);p[0].setYRot(180);t[0]=0;held[0]=false;
+            })
+            .thenWaitUntil(()->{
+                h.assertTrue(p[0].getVehicle()==mine[0]&&BikeNightHollow.fell(p[0])==0,"the Lamp's rider is still on it and has not gone down: "+where(b,mine[0]));
+                double x=mine[0].getX()-b.getX(),y=mine[0].getY()-b.getY(),z=mine[0].getZ()-b.getZ();boolean ground=mine[0].onGround();
+                int on=CalderHollow.stood(x,y,z);if(ground&&on>0)over.add(on);
+                // While it is going its lamp is lit, and the bank is cut for its rider.
+                if(ground&&mine[0].lit()>0&&CalderHollow.dark(x,z))h.assertTrue(BikeNightGraveyard.mist(l,b,p[0])==cut,"a Lamp that is throwing its light cuts the bank for its rider: "+BikeNightGraveyard.mist(l,b,p[0]));
+                var a=way.get(0);var c=way.get(1);var d=way.get(2);
+                if(on==third||ground&&z<d.zSouth()+1&&Math.abs(y-d.top())<.1){
+                    // Along the third island to its east end, and a tap off it.
+                    p[0].setYRot(-90);double brink=d.x1()+1-x;
+                    if(ground){pedalWell(mine[0],t[0]++,3);if(brink<=.4&&!held[0]){mine[0].keys(true,false);held[0]=true;taps[0]++;}else if(held[0]){mine[0].keys(false,false);held[0]=false;}}
+                }else if(ground){
+                    // North: on the hill and the first island along the block they share with the second; on the second, for the third's west end.
+                    boolean onSecond=z<c.zSouth()+1&&z>=c.zNorth();
+                    double aimX=onSecond?d.x0()+1.5:c.x0()+.5,aimZ=onSecond?d.zSouth()+.5:z-3.5;
+                    p[0].setYRot((float)Math.toDegrees(Math.atan2(-(aimX-x),aimZ-z)));pedalWell(mine[0],t[0]++,3);
+                    // The hop held from the start of each run, and let go at its brink.
+                    double brink=z>CalderHollow.EDGE?z-CalderHollow.EDGE:z>a.zNorth()?z-a.zNorth():z-c.zNorth();
+                    if(brink>.4){mine[0].keys(true,false);held[0]=true;}else if(held[0]){mine[0].keys(false,false);held[0]=false;}
+                }
+                h.assertTrue(ground&&CalderHollow.stood(x,y,z)==3,"waiting for the Lamp to be ridden island to island and onto the third grave: at "+where(b,mine[0])+", over "+over);
+            })
+            .thenExecute(()->{
+                mine[0].keys(false,false);mine[0].steady(0,0);
+                h.assertTrue(over.containsAll(List.of(first,second,third)),"over all three islands: "+over);
+                h.assertTrue(BikeNightHollow.ways(p[0]).contains("dark")&&BikeNightHollow.fell(p[0])==0&&taps[0]==1,"the dark way is one they have had under them, and they never went down: "+BikeNightHollow.ways(p[0]));
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.island(p[0])==3,"waiting for the third grave to be their island"))
+            // And whoever rides close: the walker beside the Lamp as it goes along the first island; not the Wasp's rider, away on the third.
+            .thenExecute(()->{
+                var at=islandPlace(b,first);mine[0].moveTo(at.x,at.y,at.z+1,180,0);p[0].setYRot(180);p[2].teleportTo(at.x+1.5,at.y,at.z);
+                var far=islandPlace(b,third);mine[1].moveTo(far.x,far.y,far.z,180,0);mine[1].steady(0,0);
+            })
+            .thenWaitUntil(()->{
+                if(mine[0].onGround())mine[0].steady(0,.1F);p[0].setYRot(180);
+                h.assertTrue(mine[0].lit()>0&&BikeNightGraveyard.mist(l,b,p[2])==cut,"waiting for the Lamp's light to be cutting the bank for somebody beside it: "+mine[0].lit()+", "+BikeNightGraveyard.mist(l,b,p[2]));
+            })
+            .thenExecute(()->{
+                h.assertTrue(p[1].distanceTo(mine[0])>BikeNightGraveyard.LAMP_NEAR&&BikeNightGraveyard.mist(l,b,p[1])==BikeNightGraveyard.DARK_MIST,"and for nobody out of its reach: "+BikeNightGraveyard.mist(l,b,p[1])+" at "+p[1].distanceTo(mine[0]));
+                mine[0].steady(0,0);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_dark") public static void hollowDarkDone(ServerLevel l){done();}
 }
