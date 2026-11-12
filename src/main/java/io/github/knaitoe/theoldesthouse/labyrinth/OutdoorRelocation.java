@@ -31,6 +31,17 @@ public final class OutdoorRelocation {
         int far=place==LabyrinthPlace.PLAIN?-184:r.minZ()-9;
         return new AABB(Vec3.atLowerCornerOf(base.offset(-half,r.minY()-8,far)),Vec3.atLowerCornerOf(base.offset(half+1,Math.max(32,r.maxY()+10),21)));
     }
+    /**
+     * 0.4.521: the parts of an outdoor place that are built on, for holding their chunks: its bounds; but Bike night's are its town and
+     * the cemetery fold's far side (BikeNightFold), without the thousand empty blocks between them.
+     */
+    public static java.util.List<AABB> parts(BlockPos base,LabyrinthPlace place){
+        var all=bounds(base,place);
+        if(place!=LabyrinthPlace.BIKE_NIGHT)return java.util.List.of(all);
+        var parts=new java.util.ArrayList<AABB>();
+        for(var z:BikeNightFold.built())parts.add(new AABB(all.minX,all.minY,Math.max(all.minZ,base.getZ()+z[0]),all.maxX,all.maxY,Math.min(all.maxZ,base.getZ()+z[1]+1)));
+        return parts;
+    }
     private static String key(BlockPos origin,LabyrinthPlace place){return origin.asLong()+":"+place.id();}
     public static boolean upgrade(MinecraftServer server,BlockPos origin){
         var d=LabyrinthData.get(server);if(d.builtVersion()<21||d.builtVersion()>=27||!origin.equals(d.builtOrigin()))return true;

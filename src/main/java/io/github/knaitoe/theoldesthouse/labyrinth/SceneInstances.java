@@ -325,8 +325,9 @@ public final class SceneInstances {
         var j=job;var l=j.level;
         if(j.chunks.isEmpty()){
             // An outdoor copy holds the same wider ground its original is built over, woods and banks included.
-            var box=NovelRooms.outside(j.place)?OutdoorRelocation.bounds(j.base,j.place).minmax(AABB.of(j.slot)):AABB.of(j.slot);
-            for(int x=((int)Math.floor(box.minX)-2)>>4;x<=((int)Math.ceil(box.maxX)+2)>>4;x++)for(int z=((int)Math.floor(box.minZ)-2)>>4;z<=((int)Math.ceil(box.maxZ)+2)>>4;z++){var c=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(TICKET,c,1,c);j.chunks.add(c);}
+            // 0.4.521: Bike night's copy holds its town and its fold's far side, not the thousand empty blocks between (OutdoorRelocation.parts).
+            var boxes=!NovelRooms.outside(j.place)?List.of(AABB.of(j.slot)):j.place==LabyrinthPlace.BIKE_NIGHT?OutdoorRelocation.parts(j.base,j.place):List.of(OutdoorRelocation.bounds(j.base,j.place).minmax(AABB.of(j.slot)));
+            for(var box:boxes)for(int x=((int)Math.floor(box.minX)-2)>>4;x<=((int)Math.ceil(box.maxX)+2)>>4;x++)for(int z=((int)Math.floor(box.minZ)-2)>>4;z<=((int)Math.ceil(box.maxZ)+2)>>4;z++){var c=new ChunkPos(x,z);if(j.chunks.contains(c))continue;l.getChunkSource().addRegionTicket(TICKET,c,1,c);j.chunks.add(c);}
         }
         // Never call a synchronous chunk getter as a fallback; the entity sections take the scene's own installs.
         for(var c:j.chunks)if(l.getChunkSource().getChunkNow(c.x,c.z)==null||!l.areEntitiesLoaded(c.toLong()))return;

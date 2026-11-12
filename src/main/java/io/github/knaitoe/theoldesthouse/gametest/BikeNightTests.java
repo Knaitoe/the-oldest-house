@@ -4186,16 +4186,17 @@ public final class BikeNightTests {
                 h.assertTrue(wrong==0,"grass, gravel on the paths, and half blocks up each bank: "+wrong+" places are not, the first "+first);
                 // "the iron fence with spear tops, which must be connected properly": no gap anywhere in it, a pier at every corner and on every bank.
                 var brick=BikeNightRegistry.material("brick");
-                for(int z=CalderGraves.FRONT;z>CalderGraves.BACK;z--)for(int x:new int[]{CalderGraves.W,CalderGraves.E}){
+                for(int z=CalderGraves.FRONT;z>=CalderGraves.BACK;z--)for(int x:new int[]{CalderGraves.W,CalderGraves.E}){
                     int y=CalderGraves.level(z);var at=b.offset(x,y,z);var s=l.getBlockState(at);
                     h.assertTrue(!s.getCollisionShape(l,at).isEmpty()&&!l.getBlockState(at.above()).getCollisionShape(l,at.above()).isEmpty(),"the side railings are whole, two high, at "+x+","+z);
-                    boolean corner=z==CalderGraves.FRONT||z==CalderGraves.BACK+1;
+                    // 0.4.521: the back corners are the back railings' end piers.
+                    boolean corner=z==CalderGraves.FRONT||z==CalderGraves.BACK;
                     if(corner||CalderGraves.bank(z))h.assertTrue(s.is(brick),"a pier at "+(corner?"the corner ":"the bank ")+x+","+z+": "+s);
                     else h.assertTrue(s.is(brick)||CalderBlock.is(s,CalderBlock.Kind.FENCE)&&s.getValue(CalderBlock.FACING).getAxis()==Direction.Axis.X,"railings along the side at "+x+","+z+": "+s);
                     // A pier on a bank reaches the rails above it as well as the ones below.
                     if(CalderGraves.bank(z))h.assertTrue(l.getBlockState(at.above(2)).is(brick)&&CalderBlock.is(l.getBlockState(at.above(3)),CalderBlock.Kind.CAP),"the pier on the bank at "+x+","+z+" stands a block taller");
                 }
-                // (0.4.494: the back railings and the back gate are on the Hollow's far side, and are looked at there.)
+                // (0.4.521: the back railings, the lane and the wood behind them are looked at with the fold, theTownsCemeteryEnds...)
                 // "headstones at every lean and height": rows of them across the hill, fuller toward the back, with the gate's line clear in every one.
                 var kinds=new java.util.HashSet<Integer>();int stones=0,crosses=0,lowOnes=0,goods=0,lanterns=0;int[] inRow=new int[CalderGraves.ROWS.length];
                 for(int r=0;r<CalderGraves.ROWS.length;r++){
@@ -4762,7 +4763,8 @@ public final class BikeNightTests {
     @AfterBatch(batch="yard_dark") public static void yardDarkDone(ServerLevel l){done();}
 
     // ------------------------------------------------------------------------------------------------ 0.4.494, the Hollow's plain way
-    private static AABB hollow(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()+CalderGraves.W-1,b.getY()-6,b.getZ()+CalderHollow.FAR-1,b.getX()+CalderGraves.E+2,b.getY()+CalderGraves.TOP+2,b.getZ()+CalderGraves.SMALL_ROW+8);}
+    /** 0.4.521: the cemetery fold's far side: the expanse from its south end, the Hollow, and the lane past it. The town is a thousand blocks south. */
+    private static AABB hollow(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()+CalderGraves.W-1,b.getY()-6,b.getZ()+CalderHollow.WALL-2,b.getX()+CalderGraves.E+2,b.getY()+CalderGraves.TOP+2,b.getZ()+BikeNightFold.SOUTH+8);}
 
     @GameTest(template="empty",batch="hollow_built",timeoutTicks=2400)
     public static void pastTheHillsEdgeThereIsNothingButThePlainWayWhichNoGapOfBreaksForMoreThanATapClearsButOne(GameTestHelper h){
@@ -4854,10 +4856,10 @@ public final class BikeNightTests {
 
     /** Where a rider on the plain way steers for, by how far north they are: the middle of the piece ahead, and round the fences. */
     private static double hollowAim(double z){
-        if(z> -264)return 0;
-        if(z<=-291&&z> -299)return 1.5;
-        if(z<=-299&&z> -307)return -1;
-        if(z<=-307&&z>=-314)return .5;
+        if(z> -1320)return 0;
+        if(z<=-1347&&z> -1355)return 1.5;
+        if(z<=-1355&&z> -1363)return -1;
+        if(z<=-1363&&z>=-1370)return .5;
         // The piece a little ahead, or the one after the gap.
         for(var piece:CalderHollow.WAY)if(z-2.5<=piece.zSouth()+1&&z-2.5>=piece.zNorth())return (piece.x0()+piece.x1()+1)/2.0;
         for(var piece:CalderHollow.WAY)if(piece.zSouth()+1<z-2.5)return (piece.x0()+piece.x1()+1)/2.0;
@@ -4878,14 +4880,14 @@ public final class BikeNightTests {
     public static void aPlainBikeIsRiddenTheWholeOfThePlainWayFromTheHillToTheFarSide(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final int[] t={0},hops={0,0};final double[] lowest={99},highest={0};
         final boolean[] held={false};var crossed=new java.util.TreeSet<String>();
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->p[0]=f.player("hollow_ride_reader",P))
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
             .thenExecute(()->mine[0]=take(h,f,p[0],NightBike.Make.LAMP))
             .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
-            // On the hill's top, on the gate's line, a little behind the small stones.
-            .thenExecute(()->{mine[0].moveTo(b.getX()+.0,b.getY()+3,b.getZ()+CalderGraves.SMALL_ROW+3.5,180,0);p[0].setYRot(180);})
+            // On the hill's top, on the gate's line, as far short of the edge as the town's small stones were: past the fold (0.4.521).
+            .thenExecute(()->{mine[0].moveTo(b.getX()+.0,b.getY()+3,b.getZ()+CalderHollow.EDGE+8.5,180,0);p[0].setYRot(180);})
             .thenWaitUntil(()->{
                 h.assertTrue(p[0].getVehicle()==mine[0],"they are still on it: at "+rel(b,mine[0])+", over "+crossed);
                 double x=mine[0].getX()-b.getX(),z=mine[0].getZ()-b.getZ(),y=mine[0].getY()-b.getY();
@@ -4924,7 +4926,7 @@ public final class BikeNightTests {
     @GameTest(template="empty",batch="hollow_islands",timeoutTicks=2400)
     public static void theHollowsIslandsAreTheHillEachRunOfGroundLongEnoughToGetGoingOnAndTheFarSideAndEachHasAPlaceToBeSetDown(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 var islands=CalderHollow.ISLANDS;var names=islands.stream().map(CalderHollow.Island::name).toList();
@@ -4952,10 +4954,10 @@ public final class BikeNightTests {
                 }
                 // What is near enough to come down on, by how far north somebody is.
                 h.assertTrue(CalderHollow.floor(.5,CalderHollow.EDGE-1)==2,"by the hill's edge the lowest ground near is the first grave: "+CalderHollow.floor(.5,CalderHollow.EDGE-1));
-                h.assertTrue(CalderHollow.floor(0,-322)==0,"at the lids it is the lids: "+CalderHollow.floor(0,-322));
-                h.assertTrue(CalderHollow.floor(.5,-392)==4,"on the top it is the last stretch's beginning: "+CalderHollow.floor(.5,-392));
-                h.assertTrue(CalderHollow.floor(-4.5,-392)==5&&CalderHollow.floor(5,-392)==1,"off the top's west side it is the top, and off its east side the steep way's run, four blocks under: "+CalderHollow.floor(-4.5,-392)+", "+CalderHollow.floor(5,-392));
-                h.assertTrue(CalderHollow.floor(12.5,-285.5)==1&&CalderHollow.floor(-20,-392)==1,"well off to one side, over nothing, it is the lowest ground that far north: "+CalderHollow.floor(12.5,-285.5)+", "+CalderHollow.floor(-20,-392));
+                h.assertTrue(CalderHollow.floor(0,-1378)==0,"at the lids it is the lids: "+CalderHollow.floor(0,-1378));
+                h.assertTrue(CalderHollow.floor(.5,-1448)==4,"on the top it is the last stretch's beginning: "+CalderHollow.floor(.5,-1448));
+                h.assertTrue(CalderHollow.floor(-4.5,-1448)==5&&CalderHollow.floor(5,-1448)==1,"off the top's west side it is the top, and off its east side the steep way's run, four blocks under: "+CalderHollow.floor(-4.5,-1448)+", "+CalderHollow.floor(5,-1448));
+                h.assertTrue(CalderHollow.floor(12.5,-1341.5)==1&&CalderHollow.floor(-20,-1448)==1,"well off to one side, over nothing, it is the lowest ground that far north: "+CalderHollow.floor(12.5,-1341.5)+", "+CalderHollow.floor(-20,-1448));
                 h.assertTrue(CalderHollow.floor(.5,CalderHollow.FAR_SIDE+2)==3,"and at the far side, the far side: "+CalderHollow.floor(.5,CalderHollow.FAR_SIDE+2));
             }).thenSucceed();
     }
@@ -4965,7 +4967,7 @@ public final class BikeNightTests {
     public static void aRiderWhoMissesInTheHollowIsSetDownOnTheLastIslandTheyStoodOnStillOnTheirBikeAndALidIsNotAnIsland(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final int[] t={0};final float[] health={0};
         int first=1,second=2,fences=4;
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->p[0]=f.player("hollow_missed_reader",P))
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
@@ -5004,7 +5006,7 @@ public final class BikeNightTests {
             // The fences, and from them onto a lid: a lid is not an island, so off a lid they go back to the fences.
             .thenExecute(()->{var at=islandPlace(b,fences);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);})
             .thenWaitUntil(()->h.assertTrue(mine[0].onGround()&&BikeNightHollow.island(p[0])==fences,"waiting for the fences to be their island"))
-            .thenExecute(()->{mine[0].moveTo(b.getX()+0.0,b.getY()+0,b.getZ()-324.0,-90,0);p[0].setYRot(-90);})
+            .thenExecute(()->{mine[0].moveTo(b.getX()+0.0,b.getY()+0,b.getZ()-1380,-90,0);p[0].setYRot(-90);})
             .thenWaitUntil(()->h.assertTrue(mine[0].onGround(),"waiting for the bike to be on the third lid"))
             .thenExecute(()->h.assertTrue(BikeNightHollow.island(p[0])==fences,"on a lid, the fences are still the last island they stood on: "+BikeNightHollow.island(p[0])))
             .thenWaitUntil(()->{
@@ -5022,7 +5024,7 @@ public final class BikeNightTests {
     public static void somebodyOnFootWhoMissesIsSetDownOnFootAndABikeLetGoOfOverNothingOrLeftWhereTheyCannotWalkToItIsLaidByThem(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final NightBike[] mine={null};final BlockPos[] want={null},mineLid={null};final float[] health={0};
         int third=3;var rack=b.offset(BikeNightSite.bikeAt(NightBike.Make.WASP));
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->p[0]=f.player("hollow_lost_reader",P))
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
@@ -5044,7 +5046,7 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 want[0]=BikeNightHollow.beside(l,islandPlace(b,third));
                 h.assertTrue(want[0]!=null&&l.getBlockState(want[0]).isAir(),"there is somewhere by the third grave's place to lay a bike");
-                mine[0].moveTo(b.getX()+12.5,b.getY()+2,b.getZ()-285.5,180,0);getOff(p[0]);
+                mine[0].moveTo(b.getX()+12.5,b.getY()+2,b.getZ()-1341.5,180,0);getOff(p[0]);
             })
             .thenWaitUntil(()->h.assertTrue(!p[0].isPassenger()&&mine[0].isRemoved(),"waiting for them to be off it"))
             .thenExecute(()->{
@@ -5052,7 +5054,7 @@ public final class BikeNightTests {
                 h.assertTrue(s.is(BikeNightRegistry.BIKE_BLOCK.get())&&s.getValue(NightBikeBlock.MAKE)==NightBike.Make.WASP&&s.getValue(NightBikeBlock.LYING),"let go of over nothing, the Wasp lies by the third grave's place: "+s);
                 h.assertTrue(l.getBlockState(rack).isAir(),"and has not gone back to the rack");
                 // Its rider is in the air where they let go: down they go.
-                p[0].teleportTo(b.getX()+12.5,b.getY()-1.5,b.getZ()-285.5);
+                p[0].teleportTo(b.getX()+12.5,b.getY()-1.5,b.getZ()-1341.5);
             })
             .thenWaitUntil(()->h.assertTrue(BikeNightHollow.fell(p[0])==2,"waiting for them to have gone down after it"))
             .thenExecute(()->{
@@ -5064,18 +5066,18 @@ public final class BikeNightTests {
                 h.assertTrue(p[0].getVehicle() instanceof NightBike again&&again.make()==NightBike.Make.WASP,"and they can get back on it");
                 mine[0]=(NightBike)p[0].getVehicle();
                 // Onto the first lid, and off the bike there: it stands on the lid.
-                mine[0].moveTo(b.getX()+0.0,b.getY()+0,b.getZ()-318.0,180,0);
+                mine[0].moveTo(b.getX()+0.0,b.getY()+0,b.getZ()-1374,180,0);
             })
             .thenWaitUntil(()->h.assertTrue(mine[0].onGround(),"waiting for the Wasp to be on the first lid"))
             .thenExecute(()->getOff(p[0]))
             .thenWaitUntil(()->h.assertTrue(!p[0].isPassenger()&&mine[0].isRemoved(),"waiting for them to be off it on the lid"))
             .thenExecute(()->{
                 stand(p[0]);
-                var on=BlockPos.betweenClosedStream(b.offset(-3,0,-320),b.offset(2,1,-317)).map(BlockPos::immutable).filter(at->l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())).toList();
+                var on=BlockPos.betweenClosedStream(b.offset(-3,0,-1376),b.offset(2,1,-1373)).map(BlockPos::immutable).filter(at->l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())).toList();
                 h.assertTrue(on.size()==1&&l.getBlockState(want[0]).isAir(),"the Wasp stands on the lid, and nowhere else: "+on);
                 mineLid[0]=on.get(0);
                 // On foot off the lid's side.
-                p[0].teleportTo(b.getX()+3.5,b.getY()-2.5,b.getZ()-318.0);
+                p[0].teleportTo(b.getX()+3.5,b.getY()-2.5,b.getZ()-1374);
             })
             .thenWaitUntil(()->h.assertTrue(BikeNightHollow.fell(p[0])==3,"waiting for them to have gone down off the lid"))
             .thenExecute(()->{
@@ -5091,7 +5093,7 @@ public final class BikeNightTests {
     public static void whoeverIsOnTheHoppersPegsGoesDownAndIsSetDownWithTheOnePedalling(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};final int[] t={0};
         int top=7;
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{p[0]=f.player("hollow_pegs_pedalling",P);p[1]=f.player("hollow_pegs_carried",P);})
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
@@ -5127,7 +5129,7 @@ public final class BikeNightTests {
     }
     /** Somebody on the second grave, on the line the high way is on, going flat out north with the hop held; let go at the brink. */
     private static void atTheLedge(ServerPlayer p,NightBike bike,BlockPos b){
-        bike.moveTo(b.getX()+5.0,b.getY()+2,b.getZ()-273.4,180,0);p.setYRot(180);bike.steady(0,RiddenBike.TOP);bike.keys(true,false);
+        bike.moveTo(b.getX()+5.0,b.getY()+2,b.getZ()-1329.4,180,0);p.setYRot(180);bike.steady(0,RiddenBike.TOP);bike.keys(true,false);
     }
 
     @GameTest(template="empty",batch="hollow_high",timeoutTicks=6000)
@@ -5135,7 +5137,7 @@ public final class BikeNightTests {
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};final int[] t={0},taps={0};
         final boolean[] held={false},let={false},cameOff={false};final double[] highest={0};var over=new java.util.TreeSet<String>();
         var high=CalderHollow.HIGH;var second=CalderHollow.WAY.get(1);var past=CalderHollow.WAY.stream().filter(piece->piece.name().equals("the grave past the lids")).findFirst().orElseThrow();
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // Where it is: a ledge two blocks up across two blocks of nothing from the second grave, in line with its east side.
@@ -5176,7 +5178,7 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 h.assertTrue(BikeNightHollow.island(p[1])==2&&p[1].position().distanceTo(islandPlace(b,2))<1.6,"they are back on the second grave, never having been on the ledge: "+where(b,p[1])+", island "+BikeNightHollow.island(p[1]));
                 boolean riding=p[1].getVehicle() instanceof NightBike;
-                var laid=BlockPos.betweenClosedStream(b.offset(-2,1,-281),b.offset(7,6,-270)).map(BlockPos::immutable).filter(at->l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())).toList();
+                var laid=BlockPos.betweenClosedStream(b.offset(-2,1,-1337),b.offset(7,6,-1326)).map(BlockPos::immutable).filter(at->l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())).toList();
                 h.assertTrue(riding||laid.size()==1&&laid.get(0).getY()-b.getY()==2,"and the Comet is with them, on the second grave and not up on the ledge: riding "+riding+", lying "+laid);
                 h.assertTrue(cameOff[0]!=riding,"either they came off against the ledge's side and it was laid by them, or they went under it still riding: came off "+cameOff[0]);
             })
@@ -5191,7 +5193,7 @@ public final class BikeNightTests {
                     // Flat out with the hop held, and let go at the brink.
                     if(mine[0].onGround())mine[0].steady(0,RiddenBike.TOP);
                     if(z<=second.zNorth()+.3){mine[0].keys(false,false);let[0]=true;}
-                }else if(z> -330.5){
+                }else if(z> -1386.5){
                     // Along it: a tap at each gap, the middle of what is left to ride on.
                     p[0].setYRot(mine[0].onGround()?(float)Math.toDegrees(Math.atan2(-(5.0-x),-3.5)):mine[0].getYRot());
                     var gap=gapOn(high,z);boolean brink=gap[1]<=.4&&mine[0].onGround();
@@ -5199,7 +5201,7 @@ public final class BikeNightTests {
                     if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);
                 }else{
                     // At its foot: round onto the grave past the lids, at its middle.
-                    if(mine[0].onGround()){p[0].setYRot((float)Math.toDegrees(Math.atan2(-(.5-x),-336.5-z)));pedalWell(mine[0],t[0]++,3);}
+                    if(mine[0].onGround()){p[0].setYRot((float)Math.toDegrees(Math.atan2(-(.5-x),-1392.5-z)));pedalWell(mine[0],t[0]++,3);}
                 }
                 for(var piece:high)if(mine[0].onGround()&&piece.has((int)Math.floor(x),(int)Math.floor(z))&&Math.abs(y-piece.top())<.1)over.add(piece.name().replaceAll(" [0-9]+$",""));
                 h.assertTrue(mine[0].onGround()&&x<past.x1()&&CalderHollow.stood(x,y,z)==5,"waiting for the Hopper to come down the high way onto the grave past the lids: at "+where(b,mine[0])+" going "+mine[0].speedNow()+", over "+over);
@@ -5226,7 +5228,7 @@ public final class BikeNightTests {
             .thenWaitUntil(()->h.assertTrue(mine[i].onGround()&&BikeNightHollow.island(p[i])==past,"waiting for the grave past the lids to be their island"))
             .thenExecute(()->{
                 h.assertTrue(!BikeNightHollow.runGoing(b)&&BikeNightHollow.runGone(b)==0&&runRowThere(l,b,0)&&runRowThere(l,b,CalderHollow.RUN_ROWS-1),"the run is whole and still before they are on it");
-                mine[i].moveTo(b.getX()+CalderHollow.RUN_X0+1.0,b.getY(),b.getZ()-336.6,180,0);p[i].setYRot(180);far[i]=-1;behind[0]=false;
+                mine[i].moveTo(b.getX()+CalderHollow.RUN_X0+1.0,b.getY(),b.getZ()-1392.6,180,0);p[i].setYRot(180);far[i]=-1;behind[0]=false;
             })
             .thenWaitUntil(()->{
                 int fell=BikeNightHollow.fell(p[i]);
@@ -5253,7 +5255,7 @@ public final class BikeNightTests {
     public static void theLongWaysRunGivesWayBehindWhoeverIsOnItAndOnlyTheCometAndTheRattlerInItsBurstStayAheadOfIt(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};final int[] far={-1,-1,-1},t={0};final boolean[] behind={false};
         var way=CalderHollow.LONG;int rows=CalderHollow.RUN_ROWS;int pastIsland=islandNamed("the grave past the lids"),foot=islandNamed("long step and the long way's foot");
-        var q=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        var q=h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 var past=CalderHollow.WAY.stream().filter(piece->piece.name().equals("the grave past the lids")).findFirst().orElseThrow();
@@ -5303,7 +5305,7 @@ public final class BikeNightTests {
     public static void theBackGateOpensForWhoeverReachesTheFarSideAndGoingThroughItIsInTheirRecordWithTheTownsLightsOnAgain(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};final int[] t={0};final boolean[] openedBefore={false};
         int top=CalderGraves.level(CalderHollow.EDGE),back=CalderHollow.BACK,high=islandNamed("high grave"),stretch=CalderHollow.FAR_ISLAND-1;
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{p[0]=f.player("hollow_out_pedalling",P);p[1]=f.player("hollow_out_carried",P);})
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
@@ -5323,7 +5325,7 @@ public final class BikeNightTests {
             .thenWaitUntil(()->h.assertTrue(mine[0].onGround()&&BikeNightHollow.island(p[0])==stretch,"waiting for the last stretch to be their island"))
             .thenExecute(()->{h.assertTrue(!CalderHollow.backGateOpen(l,b),"out on the last stretch, the gate is still shut");hush(p[0]);hush(p[1]);})
             .thenWaitUntil(()->{
-                double x=mine[0].getX()-b.getX(),z=mine[0].getZ()-b.getZ();
+                double x=mine[0].getX()-b.getX(),z=mine[0].getZ()-b.getZ();if(BikeNightFold.pastBack(z))z-=BikeNightFold.EXIT;
                 h.assertTrue(p[0].getVehicle()==mine[0]&&BikeNightHollow.fell(p[0])==0,"they are riding: at "+where(b,mine[0]));
                 // Up the gate's line, at the middle of the gateway.
                 p[0].setYRot((float)Math.toDegrees(Math.atan2(-(0.0-x),-3.5)));if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);
@@ -5336,7 +5338,9 @@ public final class BikeNightTests {
                 for(int x:new int[]{CalderGraves.PATH_W,CalderGraves.PATH_E})for(int z=back-2;z<=back-1;z++)for(int y=top;y<top+2;y++)
                     h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,y,z)),CalderBlock.Kind.GATE),"its leaves stand end-on on the lane's side at "+x+","+y+","+z);
                 for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)h.assertTrue(l.getBlockState(b.offset(x,top,back)).isAir()&&l.getBlockState(b.offset(x,top+1,back)).isAir(),"nothing hangs between its piers at x="+x);
-                h.assertTrue(mine[0].getZ()-b.getZ()<back&&Math.abs(mine[0].getY()-b.getY()-top)<.6,"they are on the lane: "+where(b,mine[0]));
+                // 0.4.521: the fold has them in the lane above the town, behind its cemetery's back gate, which stands open as the Hollow's does.
+                h.assertTrue(BikeNightFold.pastBack(mine[0].getZ()-b.getZ())&&Math.abs(mine[0].getY()-b.getY()-top)<.6&&BikeNightFold.folds(p[0])==1&&BikeNightFold.folds(p[1])==1,"they are on the lane above the town: "+where(b,mine[0]));
+                for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)h.assertTrue(l.getBlockState(b.offset(x,top,CalderGraves.BACK)).isAir(),"the town cemetery's back gate stands open at x="+x);
                 for(var who:p){
                     var own=f.own(who,P);
                     h.assertTrue(own.getBoolean("Through")&&own.getString("ThroughOn").equals("hopper")&&own.getString("HollowWays").equals("high")&&own.getInt("HollowFell")==0,who.getGameProfile().getName()+"'s record has that they are through, on the Hopper, by the high way, never having gone down: "+own);
@@ -5361,7 +5365,7 @@ public final class BikeNightTests {
         var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("witch");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};
         final double[] lowest={99},west={99},east={-99},lastZ={0};final boolean[] seen={false},own={true};final float[] health={0};
         var rows=BikeNightSpecters.SWOOPS;var rack=b.offset(BikeNightSite.bikeAt(NightBike.Make.LAMP));
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // Her rows are on the plain way; the first and the last are a little short of a brink.
@@ -5435,7 +5439,7 @@ public final class BikeNightTests {
             .thenWaitUntil(()->{drain(p[0]);h.assertTrue(DAWN.contains(p[0].getUUID()),"waiting for them to be told again that it is dawn");})
             .thenExecute(()->{drain(p[1]);drain(p[2]);h.assertTrue(!DAWN.contains(p[1].getUUID())&&!DAWN.contains(p[2].getUUID()),"and nobody else is");})
             // The Hare, flat out up the fences from well short of her first row, sitting up: she times herself to them, and has them at her row.
-            .thenExecute(()->{mine[1].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-293.0,180,0);p[1].setYRot(180);lastZ[0]=0;})
+            .thenExecute(()->{mine[1].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-1349,180,0);p[1].setYRot(180);lastZ[0]=0;})
             .thenWaitUntil(()->{
                 if(!BikeNightHollow.taken(p[1])){p[1].setYRot(180);if(mine[1].onGround())mine[1].steady(0,RiddenBike.TOP);lastZ[0]=mine[1].getZ()-b.getZ();
                     h.assertTrue(lastZ[0]>rows.get(0).z()-1.2,"they did not get past her row: "+lastZ[0]);}
@@ -5443,7 +5447,7 @@ public final class BikeNightTests {
             })
             .thenExecute(()->h.assertTrue(Math.abs(lastZ[0]-rows.get(0).z()-.5)<1.6&&f.own(p[1],P).getString("TakenBy").equals("witch"),"caught at her row, going flat out: "+lastZ[0]))
             // The Hopper the same, but down over the bars from six blocks short: she goes over, and they ride on.
-            .thenExecute(()->{mine[2].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-293.0,180,0);p[2].setYRot(180);})
+            .thenExecute(()->{mine[2].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-1349,180,0);p[2].setYRot(180);})
             .thenWaitUntil(()->{
                 double z=mine[2].getZ()-b.getZ();
                 if(BikeNightSpecters.over(p[2])==0){p[2].setYRot(180);if(mine[2].onGround())mine[2].steady(0,RiddenBike.TOP);if(z<=rows.get(0).z()+6)mine[2].keys(true,false);}
@@ -5460,7 +5464,7 @@ public final class BikeNightTests {
     public static void ghostsDriftAcrossAHauntedStretchForOneReaderHalfThereAndOneThatGoesThroughThemChillsTheirViewAndCatchesNobody(GameTestHelper h){
         var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("ghosts");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};
         final int[] most={0},come={0};final boolean[] own={true},thin={false},full={false};final double[] west={99},east={-99};final float[] health={0};final LiteraryActor[] inside={null};
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // The haunted stretches are on the plain way.
@@ -5471,11 +5475,11 @@ public final class BikeNightTests {
             .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);health[0]=p[0].getHealth();var hill=islandPlace(b,CalderHollow.HILL);p[1].teleportTo(hill.x,hill.y,hill.z+4);})
             .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
             // Standing on the foot of the stairs, which are haunted.
-            .thenExecute(()->{mine[0].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-370.5,180,0);p[0].setYRot(180);hush(p[0]);hush(p[1]);})
+            .thenExecute(()->{mine[0].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-1426.5,180,0);p[0].setYRot(180);hush(p[0]);hush(p[1]);})
             .thenWaitUntil(()->h.assertTrue(BikeNightSpecters.ghosts(p[0]).size()==1,"waiting for a ghost to come for them"))
             .thenExecute(()->{
                 var g=BikeNightSpecters.ghosts(p[0]).get(0);double x=g.getX()-b.getX(),z=g.getZ()-b.getZ(),y=g.getY()-b.getY();
-                h.assertTrue(Math.abs(Math.abs(x-.5)-BikeNightSpecters.OUT)<.3&&z<=-370.5-BikeNightSpecters.AHEAD+.01&&z>=-370.5-BikeNightSpecters.AHEAD-3.01,"it comes from nine blocks to one side, five to eight ahead of them: "+x+", "+z);
+                h.assertTrue(Math.abs(Math.abs(x-.5)-BikeNightSpecters.OUT)<.3&&z<=-1426.5-BikeNightSpecters.AHEAD+.01&&z>=-1426.5-BikeNightSpecters.AHEAD-3.01,"it comes from nine blocks to one side, five to eight ahead of them: "+x+", "+z);
                 double ground=CalderHollow.top(0,(int)Math.floor(z));h.assertTrue(!Double.isNaN(ground)&&Math.abs(y-ground-BikeNightSpecters.OVER_GROUND)<.15,"a little over the stairs where it will cross them: "+y+" over "+ground);
                 h.assertTrue(BikeNightSpecters.ghost(g.phase())&&g.gesture()==BikeNightSpecters.DRIFT&&g.fade()>BikeNightSpecters.GHOST_FADE,"one of the three, adrift, and thin as it comes: "+g.phase()+", "+g.fade());
             })
@@ -5528,7 +5532,7 @@ public final class BikeNightTests {
         var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("wolf");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};
         final double[] west={99},east={-99},highest={0},ran={0};final boolean[] own={true},gathered={false},air={false},held={false};final int[] t={0},leapt={0};final long[] landed={0};
         var g=CalderHollow.LEAPS.get(0);
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // His ground: beside two of the plain way's gaps, level with them, and nowhere within two blocks of ground anybody rides.
@@ -5610,14 +5614,14 @@ public final class BikeNightTests {
     public static void theHeadlessRiderComesUpBehindOneReaderOnTheLastStretchAndHasWhoeverStopsAndNotWhoeverKeepsGoing(GameTestHelper h){
         var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("rider");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};
         final long[] came={0};final double[] nearest={99},first={0};final boolean[] own={true},held={false};final int[] t={0};int stretch=CalderHollow.FAR_ISLAND-2,top=7;
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{p[0]=f.player("hollow_rider_lamp",P);p[1]=f.player("hollow_rider_hare",P);})
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[1]),"waiting for the night"))
             .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);mine[1]=take(h,f,p[1],NightBike.Make.HARE);})
             .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("hare"),"waiting for the bikes to be theirs"))
             // On the top, both: he does not come for anybody who is not on the last stretch.
-            .thenExecute(()->{var at=islandPlace(b,top);for(int i=0;i<2;i++){mine[i].moveTo(b.getX()+(i==0?-1.5:2.5),b.getY()+5,b.getZ()-391.5,180,0);p[i].setYRot(180);hush(p[i]);}})
+            .thenExecute(()->{var at=islandPlace(b,top);for(int i=0;i<2;i++){mine[i].moveTo(b.getX()+(i==0?-1.5:2.5),b.getY()+5,b.getZ()-1447.5,180,0);p[i].setYRot(180);hush(p[i]);}})
             .thenIdle(40)
             .thenExecute(()->{
                 h.assertTrue(BikeNightSpecters.rider(p[0])==null&&BikeNightSpecters.rider(p[1])==null,"on the top, nobody is behind anybody");
@@ -5670,7 +5674,7 @@ public final class BikeNightTests {
         var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("pops");var b=f.base(P);var l=f.level(P);f.build(P);
         final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};var pops=BikeNightSpecters.POPS;
         final boolean[] seen={false},up={false},shared={true};final double[] lowest={99},highest={-99},far={0};final long[] since={0};final float[] health={0};final int[] t={0};final Vec3[] stood={null};
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 h.assertTrue(pops.size()==6,"six places: "+pops);
@@ -5685,7 +5689,7 @@ public final class BikeNightTests {
                     }else h.assertTrue(pop.fromX()==pop.x()&&pop.fromZ()==pop.z()&&pop.fromY()==pop.top()-BikeNightSpecters.GHOUL_UNDER&&pop.outY()==pop.top()-BikeNightSpecters.GHOUL_OUT,"a ghoul comes straight up: "+pop);
                 }
                 // The ghoul between the lids comes up through nothing, with a lid either side; the vine's two through the vine's middle.
-                var lid=pops.get(2);h.assertTrue(Double.isNaN(CalderHollow.top(0,-323))&&CalderHollow.top(0,-322)==lid.top()&&CalderHollow.top(-1,-324)==lid.top(),"between two lids");
+                var lid=pops.get(2);h.assertTrue(Double.isNaN(CalderHollow.top(0,-1379))&&CalderHollow.top(0,-1378)==lid.top()&&CalderHollow.top(-1,-1380)==lid.top(),"between two lids");
                 for(int i=4;i<6;i++){var v=pops.get(i);h.assertTrue(CalderHollow.top((int)Math.floor(v.x()-.5),(int)Math.floor(v.z()))==v.top()&&CalderHollow.top((int)Math.floor(v.x()+.4),(int)Math.floor(v.z()))==v.top(),"in the middle of the vine: "+v);}
                 p[0]=f.player("hollow_pops_lamp",P);p[1]=f.player("hollow_pops_hare",P);p[2]=f.player("hollow_pops_wasp",P);
             })
@@ -5802,7 +5806,7 @@ public final class BikeNightTests {
      */
     private static net.minecraft.gametest.framework.GameTestSequence steepRide(net.minecraft.gametest.framework.GameTestSequence q,GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer[] p,NightBike[] mine,int i,int every,float flat,boolean card,int ticks,double[] far,double[] high,int[] on){
         var b=f.base(P);final int[] t={0};
-        return q.thenExecute(()->{mine[i].moveTo(b.getX()+4.0,b.getY()+CalderHollow.BANK_FOOT,b.getZ()-370.6,180,0);p[i].setYRot(180);mine[i].steady(0,flat);far[i]=99;high[i]=0;on[i]=0;})
+        return q.thenExecute(()->{mine[i].moveTo(b.getX()+4.0,b.getY()+CalderHollow.BANK_FOOT,b.getZ()-1426.6,180,0);p[i].setYRot(180);mine[i].steady(0,flat);far[i]=99;high[i]=0;on[i]=0;})
             .thenWaitUntil(()->{
                 h.assertTrue(p[i].getVehicle()==mine[i],"they are still on it: "+where(b,p[i]));
                 double x=mine[i].getX()-b.getX(),y=mine[i].getY()-b.getY(),z=mine[i].getZ()-b.getZ();boolean loose=z<=CalderHollow.LOOSE_SOUTH+1;
@@ -5821,7 +5825,7 @@ public final class BikeNightTests {
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null,null};final NightBike[] mine={null,null,null,null};
         final double[] far=new double[4],high=new double[4];final int[] on=new int[4];final long[] since={0};
         int island=islandNamed("the steep way's turn and the loose earth"),head=islandNamed("the steep way's head");double face=CalderHollow.BANK_SOUTH+1;
-        var q=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        var q=h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 var way=CalderHollow.STEEP;var earth=BikeNightRegistry.material("hollow_earth");int loose=0,bank=0;
@@ -5829,8 +5833,8 @@ public final class BikeNightTests {
                 for(var piece:way)for(int x=piece.x0();x<=piece.x1();x++)for(int z=piece.zNorth();z<=piece.zSouth();z++){int over=0;for(var other:CalderHollow.ALL)if(other.has(x,z))over++;h.assertTrue(over==1,piece.name()+" shares "+x+","+z);}
                 for(int i=0;i+1<way.size();i++)h.assertTrue(way.get(i+1).zSouth()==way.get(i).zNorth()-1&&way.get(i+1).x0()<=way.get(i).x1()&&way.get(i+1).x1()>=way.get(i).x0(),way.get(i+1).name()+" runs on from "+way.get(i).name());
                 // Off the stairs' first pair, level with it; onto the last stretch's first piece, level with it.
-                h.assertTrue(CalderHollow.top(1,-371)==CalderHollow.BANK_FOOT&&CalderHollow.top(2,-371)==CalderHollow.BANK_FOOT,"its turn is off the stairs' first pair, at its height");
-                h.assertTrue(CalderHollow.top(1,-397)==CalderHollow.top(2,-397)&&CalderHollow.top(2,-397)==CalderHollow.BANK_FOOT+CalderHollow.BANK_ROWS,"its head is beside the last stretch's first piece, at its height");
+                h.assertTrue(CalderHollow.top(1,-1427)==CalderHollow.BANK_FOOT&&CalderHollow.top(2,-1427)==CalderHollow.BANK_FOOT,"its turn is off the stairs' first pair, at its height");
+                h.assertTrue(CalderHollow.top(1,-1453)==CalderHollow.top(2,-1453)&&CalderHollow.top(2,-1453)==CalderHollow.BANK_FOOT+CalderHollow.BANK_ROWS,"its head is beside the last stretch's first piece, at its height");
                 for(var piece:way){
                     if(piece.made()==CalderHollow.Made.EARTH){loose++;h.assertTrue(piece.top()==CalderHollow.BANK_FOOT&&l.getBlockState(b.offset(piece.x0(),CalderHollow.BANK_FOOT-1,piece.zNorth())).is(earth),piece.name()+" is loose earth, level with the run");}
                     if(piece.made()==CalderHollow.Made.BANK){h.assertTrue(piece.top()==CalderHollow.BANK_FOOT+1+bank,piece.name()+" is a whole block up from the last");bank++;}
@@ -5948,7 +5952,7 @@ public final class BikeNightTests {
         int rows=CalderHollow.TIGHT_ROWS,foot=islandNamed("the tight way's step and the tight way's foot");
         // Where the second gate's wall faces a rider coming up to it, and the third's.
         double second=CalderHollow.TIGHT_SOUTH-CalderHollow.GATE_FIRST-CalderHollow.GATE_EVERY+1,third=second-CalderHollow.GATE_EVERY;
-        var q=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        var q=h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 var way=CalderHollow.TIGHT;int gates=0;
@@ -6035,7 +6039,7 @@ public final class BikeNightTests {
         var way=CalderHollow.DARK;int first=islandNamed("the dark way's first island"),second=islandNamed("the dark way's second island"),third=islandNamed("the dark way's third island");
         int top=CalderGraves.level(CalderHollow.EDGE),cut=Math.round(BikeNightGraveyard.DARK_MIST*BikeNightGraveyard.LAMP_CUTS);final boolean[] held={false};final int[] t={0},taps={0};
         var over=new java.util.TreeSet<Integer>();
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 var sod=BikeNightRegistry.material("hollow_sod");
@@ -6172,7 +6176,7 @@ public final class BikeNightTests {
             for(var a:l.getEntitiesOfClass(LiteraryActor.class,hollow(f),BikeNightSpecters::is)){seen[0]++;if(a.owner().isPresent()&&!a.owner().get().equals(p[0].getUUID()))specters[0]++;}
             if(++t[0]%40==0)BikeNightGus.idleNow(b);
         };
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f).minmax(graves(f)));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // The line: from the hill to the far side's ground, a fifth of a block at a time, in the air only over nothing.
@@ -6205,7 +6209,7 @@ public final class BikeNightTests {
                 var at=CalderHollow.ISLANDS.get(3).place();f.at(p[0],P,at.x,at.y,at.z);high[0]=0;
             })
             // To the third grave: he is over two gaps and on the second grave's far end.
-            .thenWaitUntil(()->{watch.run();h.assertTrue(his[0].speedNow()==0&&north[0]<-270,"waiting for him to have come on after them and stopped: at "+rel(b,his[0]));})
+            .thenWaitUntil(()->{watch.run();h.assertTrue(his[0].speedNow()==0&&north[0]<-1326,"waiting for him to have come on after them and stopped: at "+rel(b,his[0]));})
             .thenExecute(()->{
                 var second=CalderHollow.WAY.get(1);
                 h.assertTrue(Math.abs(north[0]-second.zNorth()-.3)<.3&&Math.abs(his[0].getY()-b.getY()-second.top())<.01,"on the second grave's far end, as near them as he keeps: at "+rel(b,his[0]));
@@ -6243,8 +6247,9 @@ public final class BikeNightTests {
                 h.assertTrue(BikeNightHollow.gateOpen(b),"the back gate has opened for them");
                 f.at(p[0],P,.5,level,CalderHollow.BACK-2.5);
             })
-            .thenWaitUntil(()->{watch.run();h.assertTrue(BikeNightHollow.through(p[0])&&north[0]<CalderHollow.FAR_SIDE-6&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+1.5&&his[0].speedNow()<.03,"waiting for them to be through the back gate and for him to come up to it after them: at "+rel(b,his[0]));})
-            .thenExecute(()->h.assertTrue(rode[0]&&BikeNightHollow.through(p[0])&&north[0]<CalderHollow.FAR_SIDE-6,"he is at the back gate when they are through it: at "+rel(b,his[0])))
+            // 0.4.521: through the gate the fold has them in the lane above the town; he comes through it after them, and is by them there.
+            .thenWaitUntil(()->{watch.run();h.assertTrue(BikeNightHollow.through(p[0])&&BikeNightFold.pastBack(north[0])&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+1.5&&his[0].speedNow()<.03,"waiting for them to be through the back gate and for him to come through it after them: at "+rel(b,his[0])+", them at "+rel(b,p[0]));})
+            .thenExecute(()->h.assertTrue(rode[0]&&BikeNightHollow.through(p[0])&&BikeNightFold.pastBack(north[0])&&BikeNightFold.pastBack(p[0].getZ()-b.getZ()),"he is out in the lane by them when they are through it: at "+rel(b,his[0])))
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_gus") public static void hollowGusDone(ServerLevel l){done();}
@@ -6255,7 +6260,7 @@ public final class BikeNightTests {
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final PackBike[] lies={null,null,null};final int[] t={0};
         int level=CalderGraves.level(CalderHollow.EDGE),rails=CalderTown.RAILS;var post=b.offset(CalderHollow.CAP_X,level+CalderHollow.CAP_UP,CalderHollow.CAP_Z);
         java.util.function.Supplier<List<PackBike>> lying=()->l.getEntitiesOfClass(PackBike.class,new AABB(b.getX()-14,b.getY()-1,b.getZ()+rails,b.getX()+14,b.getY()+3,b.getZ()+rails+8),e->e.isAlive()&&e.laid()!=0);
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f).minmax(graves(f)));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{p[0]=f.player("after_front",P);p[1]=f.player("after_back",P);})
             .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
@@ -6338,7 +6343,7 @@ public final class BikeNightTests {
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final int[] t={0};
         int row=CalderGraves.SMALL_ROW,level=CalderGraves.level(row);var small=CalderGraveBlock.Kind.SMALL;
         java.util.function.IntPredicate stands=i->{var s=l.getBlockState(BikeNightStones.cell(b,i));return CalderGraveBlock.is(s,small)&&s.getValue(CalderGraveBlock.STAGE)==CalderGraveBlock.NEW_STONE;};
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f).minmax(graves(f)));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // The places: east of the row and then west of it, at the row's own spacing; every one open grass in a new town.
@@ -6417,7 +6422,7 @@ public final class BikeNightTests {
         int level=CalderGraves.level(CalderHollow.EDGE);var story=WitnessAccount.Story.BIKE_NIGHT;
         // The Hopper kept away from whoever comes for it, as a rider would keep it: to the other end of Church Lane.
         Runnable away=()->{three(l,b,who,bikes);for(var bike:bikes)if(bike!=null&&bike.isAlive()&&bike.position().distanceTo(ride[0].position())<16){ride[0].moveTo(b.getX()+(ride[0].getX()-b.getX()>0?-40:40),b.getY(),b.getZ()-164.5,90,0);break;}};
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f).minmax(graves(f)));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             // The park.
             .thenExecute(()->{p[0]=f.player("whole_one",P);p[1]=f.player("whole_two",P);})
@@ -6535,7 +6540,7 @@ public final class BikeNightTests {
                 var e=SceneInstances.enter(p[6],P);
                 h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry"))&&e.door().lower.equals(f.data().door(P.entryDoorId()).lower.offset(mine[0].subtract(b)))&&SceneInstances.kept(f.data(),p[6].getUUID(),P)==1,"the seventh's door opens on the second town, and it is theirs to come back to: "+e);
                 var onward=f.data().door(SceneInstances.doorId(P,1,OnwardDoors.name(P)));
-                h.assertTrue(onward!=null&&OnwardDoors.placeOf(onward)==P&&onward.lower.equals(mine[0].offset(CalderHollow.DOOR_X,CalderGraves.level(CalderHollow.EDGE),CalderHollow.WALL)),"it has its own way on, in its own lane's wall: "+(onward==null?null:onward.lower));
+                h.assertTrue(onward!=null&&OnwardDoors.placeOf(onward)==P&&onward.lower.equals(mine[0].offset(CalderHollow.DOOR_X,CalderGraves.level(CalderHollow.EDGE),CalderHollow.WALL+BikeNightFold.EXIT)),"it has its own way on, in its own lane's wall: "+(onward==null?null:onward.lower));
                 // Its ground is kept in reach to be looked at.
                 var by=mine[0].subtract(b);f.chunks.hold(l,room(f).move(by.getX(),by.getY(),by.getZ()));
             })
@@ -6688,20 +6693,22 @@ public final class BikeNightTests {
     public static void whoeverIsThroughTheBackGateAndLeavesHasFinishedItOnceWithTheirAccountAndWhoeverWasCaughtIsNeverDealtItAgain(GameTestHelper h){
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};final int[] t={0};
         int top=CalderGraves.level(CalderHollow.EDGE),back=CalderHollow.BACK;var story=WitnessAccount.Story.BIKE_NIGHT;
-        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f));f.chunks.hold(l,hollow(f));})
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 // The wall along the lane's far verge, capped, standing back from the lane, and round the lane's two ends.
                 var brick=BikeNightRegistry.material("brick");
                 h.assertTrue(CalderHollow.WALL<CalderHollow.LANE_N-2&&back-CalderHollow.WALL>=8,"the wall stands back from the lane, eight blocks from the gate");
-                for(int x=-CalderHollow.SIDE-1;x<=CalderHollow.SIDE+1;x++){
-                    for(int dy=0;dy<CalderHollow.WALL_HIGH;dy++)if(x!=CalderHollow.DOOR_X||dy>=2)h.assertTrue(l.getBlockState(b.offset(x,top+dy,CalderHollow.WALL)).is(brick),"the wall is whole at "+x+", "+dy+" up");
-                    h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,top+CalderHollow.WALL_HIGH,CalderHollow.WALL)),CalderBlock.Kind.CAP),"and capped at "+x);
+                // 0.4.521: the lane past the Hollow's back gate is the town's own lane, past its cemetery's back gate (BikeNightFold.EXIT):
+                // the door is in the town's lane's wall, and the far side's wall is whole.
+                for(int dz:new int[]{0,BikeNightFold.EXIT})for(int x=-CalderHollow.SIDE-1;x<=CalderHollow.SIDE+1;x++){
+                    for(int dy=0;dy<CalderHollow.WALL_HIGH;dy++)if(dz==0||x!=CalderHollow.DOOR_X||dy>=2)h.assertTrue(l.getBlockState(b.offset(x,top+dy,CalderHollow.WALL+dz)).is(brick),"the wall is whole at "+x+", "+dy+" up, "+(dz==0?"past the Hollow":"above the town"));
+                    h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,top+CalderHollow.WALL_HIGH,CalderHollow.WALL+dz)),CalderBlock.Kind.CAP),"and capped at "+x);
                 }
-                for(int x:new int[]{-CalderHollow.SIDE-1,CalderHollow.SIDE+1})for(int z=CalderHollow.FAR;z<back;z++)h.assertTrue(l.getBlockState(b.offset(x,top,z)).is(brick)&&l.getBlockState(b.offset(x,top+2,z)).is(brick),"the lane's end is walled at "+x+","+z);
+                for(int dz:new int[]{0,BikeNightFold.EXIT})for(int x:new int[]{-CalderHollow.SIDE-1,CalderHollow.SIDE+1})for(int z=CalderHollow.FAR;z<back;z++)h.assertTrue(l.getBlockState(b.offset(x,top,z+dz)).is(brick)&&l.getBlockState(b.offset(x,top+2,z+dz)).is(brick),"the lane's end is walled at "+x+","+(z+dz));
                 // The door in it, east of the gate's line, with the House knowing of it.
                 // A fixture builds the place without its way on (the builder fits that, or the pass that waits until nobody is looking): the case fits it itself, so it never waits on who else is about.
-                var at=b.offset(CalderHollow.DOOR_X,top,CalderHollow.WALL);h.assertTrue(f.data().door(OnwardDoors.id(P))!=null||OnwardDoors.install(l,b,P),"the fitted door goes in where it was placed: "+l.getBlockState(at)+" before "+l.getBlockState(at.relative(net.minecraft.core.Direction.SOUTH)));var door=f.data().door(OnwardDoors.id(P));
+                var at=b.offset(CalderHollow.DOOR_X,top,CalderHollow.WALL+BikeNightFold.EXIT);h.assertTrue(f.data().door(OnwardDoors.id(P))!=null||OnwardDoors.install(l,b,P),"the fitted door goes in where it was placed: "+l.getBlockState(at)+" before "+l.getBlockState(at.relative(net.minecraft.core.Direction.SOUTH)));var door=f.data().door(OnwardDoors.id(P));
                 h.assertTrue(CalderHollow.DOOR_X>CalderGraves.PATH_E+2,"the door is off the gate's line");
                 h.assertTrue(l.getBlockState(at).is(OnwardRegistry.PANEL.get())&&l.getBlockState(at.above()).is(OnwardRegistry.PANEL.get()),"a door stands in the wall: "+l.getBlockState(at));
                 h.assertTrue(door!=null&&door.lower.equals(at),"and it is the night's way on: "+(door==null?null:door.lower));
@@ -6836,4 +6843,127 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="kept_bike") public static void keptBikeDone(ServerLevel l){close(l);done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.521, the cemetery's fold
+    /** The back of the town's cemetery: its last rows, its back railings, the lane, the lane's wall and the wood behind it. */
+    private static AABB backOfTown(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()+CalderGraves.W-3,b.getY()-5,b.getZ()+CalderGraves.WOOD_N-3,b.getX()+CalderGraves.E+4,b.getY()+CalderGraves.TOP+2,b.getZ()+CalderGraves.SMALL_ROW+2);}
+
+    @GameTest(template="empty",batch="fold_built",timeoutTicks=2400)
+    public static void theTownsCemeteryEndsAtItsBackRailingsWithTheLaneBehindThemAndTheHollowIsFurtherOffThanAnybodySees(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);int top=CalderGraves.level(CalderHollow.EDGE);
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,backOfTown(f));f.chunks.hold(l,hollow(f));})
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the back of the town's cemetery and the fold's far side are resident"))
+            .thenExecute(()->{
+                // The owner, 12 November: "the player shouldn't see it looming in the horizon". What is built in the town and what is
+                // built past the fold are further apart than any client draws (thirty-two chunks).
+                var rows=BikeNightFold.built();int gap=rows.get(1)[0]-rows.get(0)[1];
+                h.assertTrue(gap>32*16,"the town and the fold's far side are "+gap+" blocks apart");
+                for(var piece:CalderHollow.ALL)h.assertTrue(piece.zSouth()<=CalderHollow.EDGE&&piece.zNorth()>=CalderHollow.FAR,"every way over the Hollow is past the fold: "+piece.name());
+                // The town's cemetery is shut at the back again: railings all the way across, a pier at each end, the gate shut in them.
+                var brick=BikeNightRegistry.material("brick");
+                for(int x=CalderGraves.W;x<=CalderGraves.E;x++){var at=b.offset(x,top,CalderGraves.BACK);h.assertTrue(!l.getBlockState(at).getCollisionShape(l,at).isEmpty()&&!l.getBlockState(at.above()).getCollisionShape(l,at.above()).isEmpty(),"the back railings close it at x="+x+": "+l.getBlockState(at));}
+                for(int x:new int[]{CalderGraves.W,CalderGraves.E})h.assertTrue(l.getBlockState(b.offset(x,top,CalderGraves.BACK)).is(brick),"a pier at its end at x="+x);
+                for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)for(int dy=0;dy<2;dy++)h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,top+dy,CalderGraves.BACK)),CalderBlock.Kind.GATE),"the back gate in them, shut, at x="+x);
+                h.assertTrue(!CalderHollow.backGateOpen(l,b,BikeNightFold.EXIT),"and it reads as shut");
+                // Behind them the lane: its asphalt, between its verges; and a wood behind the lane's wall.
+                var asphalt=BikeNightRegistry.material("asphalt");
+                for(int z=CalderHollow.LANE_N;z<=CalderHollow.LANE_S;z++)h.assertTrue(l.getBlockState(b.offset(0,top-1,z+BikeNightFold.EXIT)).is(asphalt),"the lane's asphalt at z="+(z+BikeNightFold.EXIT));
+                int logs=0;for(var at:BlockPos.betweenClosed(b.offset(CalderGraves.W,top,CalderGraves.WOOD_N),b.offset(CalderGraves.E,top+8,CalderHollow.WALL+BikeNightFold.EXIT-1)))if(l.getBlockState(at).is(net.minecraft.tags.BlockTags.LOGS))logs++;
+                h.assertTrue(logs>=12,"a wood stands behind the lane's wall: "+logs+" logs");
+                // The far side's own back: its railings and gate as the town's, and its lane's wall with no door in it.
+                for(int x=-CalderHollow.SIDE;x<=CalderHollow.SIDE;x++){var at=b.offset(x,top,CalderHollow.BACK);h.assertTrue(!l.getBlockState(at).getCollisionShape(l,at).isEmpty(),"the far side's back railings at x="+x);}
+                // The expanse: the town's cemetery as it is, going on where the town's stops: rows of stones where the back railings
+                // stand, and no railings anywhere in it.
+                int stones=0,beyond=0,fences=0;
+                for(int z=BikeNightFold.SOUTH;z>CalderHollow.EDGE;z--)for(int x=CalderGraves.W-1;x<=CalderGraves.E+1;x++){
+                    int y=CalderGraves.level(z-BikeNightFold.ENTRY);
+                    for(int dy=0;dy<2;dy++){var s=l.getBlockState(b.offset(x,y+dy,z));
+                        if(CalderBlock.is(s,CalderBlock.Kind.FENCE)||CalderBlock.is(s,CalderBlock.Kind.GATE))fences++;
+                        if(dy==0&&(CalderGraveBlock.is(s,CalderGraveBlock.Kind.STONE)||CalderGraveBlock.is(s,CalderGraveBlock.Kind.CROSS))){stones++;if(z<CalderGraves.BACK+BikeNightFold.ENTRY)beyond++;}}
+                }
+                h.assertTrue(fences==0,"there are no railings in the expanse: "+fences);
+                h.assertTrue(stones>=60&&beyond>=20,"rows of stones in it, and past where the town's back railings are: "+stones+", "+beyond+" past");
+                h.assertTrue(CalderGraveBlock.is(l.getBlockState(b.offset(CalderGraves.EXPANSE_ANGEL)),CalderGraveBlock.Kind.ANGEL)&&CalderGraveBlock.is(l.getBlockState(b.offset(CalderGraves.EXPANSE_OBELISK)),CalderGraveBlock.Kind.OBELISK),"and an angel and an obelisk the town's cemetery has none of");
+                for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)for(int z=BikeNightFold.SOUTH-2;z>CalderHollow.EDGE;z--){
+                    int y=CalderGraves.level(z-BikeNightFold.ENTRY);var at=l.getBlockState(b.offset(x,y,z));var over=l.getBlockState(b.offset(x,y+1,z));
+                    boolean step=at.getBlock() instanceof net.minecraft.world.level.block.SlabBlock&&at.getValue(net.minecraft.world.level.block.SlabBlock.TYPE)==net.minecraft.world.level.block.state.properties.SlabType.BOTTOM;
+                    h.assertTrue((!at.blocksMotion()||step)&&!over.blocksMotion(),"the gate's line is clear through it, but for the banks' half steps, at "+x+","+z+": "+at+" under "+over);
+                }
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="fold_built") public static void foldBuiltDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="fold_closed",timeoutTicks=2400)
+    public static void beforeTheChaseNobodyIsCarriedAndTheTownsCemeteryEndsAtItsBackRailings(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final int[] t={0};
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f).minmax(graves(f)));f.chunks.hold(l,hollow(f));})
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("fold_early",P))
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0]),"waiting for the night"))
+            // Past where the fold is, at the back railings, with nobody after them.
+            .thenExecute(()->{h.assertTrue(!BikeNightGraveyard.gateOpen(b),"no chase, and the cemetery's gate shut");f.at(p[0],P,.5,CalderGraves.level(CalderGraves.BACK),BikeNightFold.SEAM-2);hush(p[0]);})
+            .thenWaitUntil(()->h.assertTrue(++t[0]>=20,"a second"))
+            .thenExecute(()->{
+                double z=p[0].getZ()-b.getZ();
+                h.assertTrue(BikeNightFold.folds(p[0])==0&&!BikeNightFold.far(z)&&z>CalderGraves.BACK,"nobody is carried before the chase: they are still in the town's cemetery at "+where(b,p[0]));
+                h.assertTrue(!sounded(p[0],"hollow.fold")&&!BikeNightFold.holding(b),"nothing is heard, and nothing past the fold is held");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="fold_closed") public static void foldClosedDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="fold_through",timeoutTicks=9000)
+    public static void inTheChaseTheMistClosesOverWhoeverGoesPastTheLastRowsAndTheCemeteryGoesOnWithoutItsRailings(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};final int[] t={0};
+        h.startSequence().thenExecute(()->{f.chunks.hold(l,whole(f).minmax(graves(f)));f.chunks.hold(l,hollow(f));})
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("fold_rider",P);p[1]=f.player("fold_walker",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->mine[0]=take(h,f,p[0],NightBike.Make.WASP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("wasp"),"waiting for the Wasp to be theirs"))
+            .thenExecute(()->f.at(p[1],P,-14.5,0,-20.5))
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGraveyard.gateOpen(b),"waiting for the chase, and the cemetery's gate: stage "+BikeNightBullies.stage(b));})
+            // The three fall back, and the Wasp's rider is on the hill's top, on the gate's line, a little behind the small stones.
+            .thenExecute(()->{
+                for(int i=0;i<3;i++)BikeNightGraveyard.takeNow(l,b,i,true);
+                hush(p[0]);mine[0].moveTo(b.getX()+.5,b.getY()+3,b.getZ()+CalderGraves.SMALL_ROW+3.5,180,0);p[0].setYRot(180);t[0]=0;
+            })
+            .thenWaitUntil(()->{
+                if(p[0].getVehicle()==mine[0]){p[0].setYRot(180);if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);}
+                h.assertTrue(BikeNightFold.folds(p[0])==1,"waiting for the mist to close over them past the last rows: at "+where(b,mine[0]));
+            })
+            .thenExecute(()->{
+                double x=mine[0].getX()-b.getX(),z=mine[0].getZ()-b.getZ();
+                // Carried with their bike, still on it, into the expanse, the fold's own width north of where they were.
+                h.assertTrue(p[0].getVehicle()==mine[0]&&BikeNightFold.expanse(x,z)&&z<BikeNightFold.SEAM+BikeNightFold.ENTRY+1&&z>BikeNightFold.BACK_SEAM-3,"carried on their bike into the expanse: at "+where(b,mine[0]));
+                h.assertTrue(sounded(p[0],"hollow.fold")&&mistOver(p[0])&&OVER.get(p[0].getUUID())==BikeNightFold.SURGE,"the mist closes over them while it is done, and they hear it: "+OVER.get(p[0].getUUID()));
+                h.assertTrue(BikeNightFold.holding(b),"the ground on both sides of the fold is held while somebody is near it in the chase");
+                // As it thins, there are rows on every side: the expanse's mist is thinner than the town's last rows', and thickens by the
+                // hill's back as theirs did.
+                int mist=BikeNightGraveyard.mist(l,b,p[0]);
+                h.assertTrue(mist==Math.round(BikeNightFold.mist(z))&&mist<BikeNightGraveyard.MIST_BACK&&Math.round(BikeNightFold.mist(CalderHollow.EDGE+2))==BikeNightGraveyard.MIST_BACK,"the mist where the fold lets them out is thin enough to see the rows by: "+mist);
+                h.assertTrue(BikeNightHollow.in(new Vec3(x,3,z)),"the expanse is the Hollow's, for what it does");
+                // Somebody on foot, going north past the last rows: carried as well.
+                f.at(p[1],P,3.5,CalderGraves.level(CalderGraves.BACK),BikeNightFold.SEAM-.6);hush(p[1]);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightFold.folds(p[1])==1,"waiting for the walker to be carried: at "+where(b,p[1])))
+            .thenExecute(()->{
+                double z=p[1].getZ()-b.getZ();
+                h.assertTrue(Math.abs(z-(BikeNightFold.SEAM-.6+BikeNightFold.ENTRY))<1.5&&Math.abs(p[1].getX()-b.getX()-3.5)<.01,"on foot too, the fold's own width north: at "+where(b,p[1]));
+                // And back: south past the fold's far side, they are in the town's cemetery again, a few rows short of its back.
+                f.at(p[1],P,3.5,CalderGraves.level(CalderGraves.BACK),BikeNightFold.BACK_SEAM+.6);hush(p[1]);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightFold.folds(p[1])==2,"waiting for the walker to be carried back: at "+where(b,p[1])))
+            .thenExecute(()->{
+                double z=p[1].getZ()-b.getZ();
+                h.assertTrue(!BikeNightFold.far(z)&&z>CalderGraves.BACK+1&&z>BikeNightFold.SEAM,"back in the town's cemetery, short of the fold: at "+where(b,p[1]));
+                // Somebody the Hollow has had is not let through again.
+                var own=f.own(p[1],P);own.putBoolean("Taken",true);LiteraryVignettes.save(f.data(),p[1].getUUID(),P,own);
+                f.at(p[1],P,3.5,CalderGraves.level(CalderGraves.BACK),BikeNightFold.SEAM-1.5);t[0]=0;
+            })
+            .thenWaitUntil(()->h.assertTrue(++t[0]>=20,"a second"))
+            .thenExecute(()->h.assertTrue(BikeNightFold.folds(p[1])==2&&!BikeNightFold.far(p[1].getZ()-b.getZ()),"somebody the Hollow has had comes to the back railings, and nothing else: at "+where(b,p[1])))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="fold_through") public static void foldThroughDone(ServerLevel l){done();}
 }

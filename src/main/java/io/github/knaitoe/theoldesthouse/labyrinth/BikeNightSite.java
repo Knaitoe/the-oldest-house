@@ -127,6 +127,8 @@ public final class BikeNightSite {
         street(l,b);
         CalderTown.build(l,b);
         CalderGraves.build(l,b);
+        // 0.4.521: the cemetery as it is past the fold, before the Hollow that begins at its edge (BikeNightFold).
+        CalderGraves.expanse(l,b);
         CalderHollow.build(l,b);
         paths(l,b);
         sandpit(l,b);

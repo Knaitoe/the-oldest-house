@@ -106,7 +106,7 @@ public final class BikeNightGraveyard {
     }
     /** Whether somewhere is past the last full row, where the small stones are. */
     public static boolean hushed(BlockPos b,Vec3 at){
-        // 0.4.507: and out over the Hollow, as far as its far side's ground.
+        // 0.4.507: and out over the Hollow, as far as its far side's ground (0.4.521: and in the expanse before it).
         if(BikeNightHollow.in(at.subtract(b.getX(),b.getY(),b.getZ())))return true;
         return in(b,at)&&at.z-b.getZ()<CalderGraves.ROWS[CalderGraves.ROWS.length-1]-.5;
     }
@@ -148,6 +148,8 @@ public final class BikeNightGraveyard {
             int rows=0;for(int row:CalderGraves.ROWS)if(z<row+.5)rows++;
             m=MIST_GATE+(MIST_BACK-MIST_GATE)*rows/(float)CalderGraves.ROWS.length;
         }
+        // 0.4.521: the expanse past the fold has a mist of its own, thinner than the town's last rows: rows on every side in it.
+        if(BikeNightFold.expanse(p.getX()-b.getX(),z))m=Math.max(m,BikeNightFold.mist(z));
         // 0.4.506: the Hollow's dark way lies in a bank of it, thicker than any in the cemetery.
         if(CalderHollow.dark(p.getX()-b.getX(),z))m=Math.max(m,DARK_MIST);
         if(m>0&&lamp(l,p))m*=LAMP_CUTS;
@@ -335,8 +337,13 @@ public final class BikeNightGraveyard {
      * Gus after his friend, when either of them is in the cemetery: true if this has said where he rides this tick. He keeps the
      * distance from them he keeps anywhere.
      */
+    /** 0.4.521: whether a place is among the stones: the town's cemetery, or the expanse past the fold as far as the Hollow's ragged edge. */
+    static boolean stones(BlockPos b,Vec3 at){
+        double x=at.x-b.getX(),z=at.z-b.getZ();
+        return in(b,at)||BikeNightFold.far(z)&&z>CalderHollow.EDGE-4&&z<BikeNightFold.SOUTH+1&&x>CalderGraves.W&&x<CalderGraves.E+1;
+    }
     static boolean friend(ServerLevel l,BikeNight.Night n,BikeNightHunt.Rider way,PackBike bike,Vec3 there,double d){
-        var b=n.base;var here=bike.position();boolean theyIn=in(b,there),himIn=in(b,here);
+        var b=n.base;var here=bike.position();boolean theyIn=stones(b,there),himIn=stones(b,here);
         if(!n.yard.gateOpen||(!theyIn&&!himIn))return false;
         var gate=CalderRoutes.at(b,CalderRoutes.id("cemetery_gate"));var inside=new Vec3(b.getX()+GATE_X,b.getY(),b.getZ()+GATE_IN);
         if(!himIn){

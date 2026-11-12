@@ -218,6 +218,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> CACKLE=sound("hollow.cackle");
     /** 0.4.497: the long way's lids going. */
     public static final DeferredHolder<SoundEvent,SoundEvent> DROP=sound("hollow.drop");
+    /** 0.4.521: the cemetery's fold, closing over somebody it carries (BikeNightFold). */
+    public static final DeferredHolder<SoundEvent,SoundEvent> FOLD=sound("hollow.fold");
 
     private BikeNightRegistry(){}
     /** 0.4.485: the pillowcase a trick-or-treater carries. Nobody is given one. */

@@ -51,7 +51,7 @@ public final class BikeNightSpecters {
     /** A row a witch crosses the plain way on (along its middle): the row, the middle of the way there, and how high its ground is. */
     public record Swoop(int z,double x,double top){}
     /** A little short of the three (which wants the hop held anyway), on the vine's top, and on the top itself. */
-    public static final List<Swoop> SWOOPS=swoops(-312,-356,-392);
+    public static final List<Swoop> SWOOPS=swoops(-1368,-1412,-1448);
     private static List<Swoop> swoops(int... rows){
         var out=new ArrayList<Swoop>();
         for(int z:rows)for(var p:CalderHollow.WAY)if(z<=p.zSouth()&&z>=p.zNorth()){out.add(new Swoop(z,(p.x0()+p.x1()+1)/2.0,p.top()));break;}
@@ -77,7 +77,7 @@ public final class BikeNightSpecters {
      * through), and they hear it go by.
      */
     public record Haunt(int zSouth,int zNorth){}
-    public static final List<Haunt> HAUNTS=List.of(new Haunt(-264,-288),new Haunt(-333,-338),new Haunt(-371,-388));
+    public static final List<Haunt> HAUNTS=List.of(new Haunt(-1320,-1344),new Haunt(-1389,-1394),new Haunt(-1427,-1444));
     public static final int AT_ONCE=2,EVERY=50,CHILL=30,CHILL_SHARE=60,GHOST_FADE=55,THIN=20;
     public static final double OUT=9,AHEAD=5,DRIFT_PACE=.07,OVER_GROUND=.3,THROUGH=1.2;
     /** One ghost on its way across. */
@@ -113,7 +113,7 @@ public final class BikeNightSpecters {
      * when his reader is on the far side's ground.
      */
     public static final double RIDER_BEHIND=10,RIDER_PACE=.22,RIDER_REACH=1.2;
-    public static final int RIDER_FROM=-396,RIDER_START=-386,HOOVES_EVERY=10;
+    public static final int RIDER_FROM=-1452,RIDER_START=-1442,HOOVES_EVERY=10;
     /** One rider coming. */
     static final class Rider{
         final UUID actor;double z,y;
@@ -145,9 +145,9 @@ public final class BikeNightSpecters {
      * ghouls in the vine, on its first level rows and on its last.
      */
     public static final List<Pop> POPS=List.of(
-        goblin("the goblin behind the cross",-1,-275,2.2,-275.5),goblin("the goblin on the third grave",-4,-284,-1.5,-284.5),
-        new Pop("the ghoul between the lids",GHOUL,0,-322.5,0,0,-322.5,-GHOUL_UNDER,-GHOUL_OUT,0),
-        goblin("the goblin past the lids",-3,-335,-.3,-335.5),ghoul("the ghoul in the vine",-346),ghoul("the vine's second ghoul",-365));
+        goblin("the goblin behind the cross",-1,-1331,2.2,-1331.5),goblin("the goblin on the third grave",-4,-1340,-1.5,-1340.5),
+        new Pop("the ghoul between the lids",GHOUL,0,-1378.5,0,0,-1378.5,-GHOUL_UNDER,-GHOUL_OUT,0),
+        goblin("the goblin past the lids",-3,-1391,-.3,-1391.5),ghoul("the ghoul in the vine",-1402),ghoul("the vine's second ghoul",-1421));
     /** A goblin: the stone it is behind (on its north side, as a rider comes), and where in the way it jumps to. */
     private static Pop goblin(String name,int stoneX,int stoneZ,double x,double z){
         double top=CalderHollow.top(Mth.floor(x),Mth.floor(z));
@@ -424,7 +424,7 @@ public final class BikeNightSpecters {
         for(var id:List.copyOf(n.specters.drifts.keySet()))clear(l,n.specters,id);
         for(var w:n.specters.wolves.values())if(l.getEntity(w.actor) instanceof LiteraryActor a)a.discard();
         for(var r:n.specters.riders.values())if(l.getEntity(r.actor) instanceof LiteraryActor a)a.discard();
-        for(var a:l.getEntitiesOfClass(LiteraryActor.class,BikeNightBullies.area(n.base).inflate(0,0,300),BikeNightSpecters::is))if(BikeNight.nightAt(l,a.blockPosition())==n)a.discard();
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,BikeNight.area(n.base),BikeNightSpecters::is))if(BikeNight.nightAt(l,a.blockPosition())==n)a.discard();
         n.specters=new Flight();
     }
 
