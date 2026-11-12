@@ -84,6 +84,8 @@ public final class BikeNight {
         BikeNightHollow.Course hollow=new BikeNightHollow.Course();
         /** 0.4.499: the Hollow's specters. */
         BikeNightSpecters.Flight specters=new BikeNightSpecters.Flight();
+        /** 0.4.521: how many times each reader has been carried through the cemetery's fold tonight (BikeNightFold). */
+        final Map<UUID,Integer> folds=new HashMap<>();
         /** Whose each bike is tonight, by make. */
         final UUID[] owner=new UUID[6];
         /** Where each bike stands or lies while nobody is on it; null while it is ridden. */
@@ -115,7 +117,7 @@ public final class BikeNight {
         Night(BlockPos b){base=b;for(var make:NightBike.Make.values())at[make.ordinal()]=b.offset(BikeNightSite.bikeAt(make));}
     }
     private static final Map<Long,Night> NIGHTS=new HashMap<>();
-    public static void clearAll(){NIGHTS.clear();}
+    public static void clearAll(){NIGHTS.clear();BikeNightFold.clear();}
     /** 0.4.513: how many readers a town takes: one to a bike. More get a town of their own (SceneInstances.crowd). */
     public static final int RIDERS=NightBike.Make.values().length;
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
@@ -172,6 +174,8 @@ public final class BikeNight {
 
     // ------------------------------------------------------------------------------------------------ for tests
     @Nullable static Night night(BlockPos b){return NIGHTS.get(b.asLong());}
+    /** 0.4.521: the whole place, from the park to the lane past the Hollow on the fold's far side (BikeNightFold), to look for what is the night's in. */
+    public static net.minecraft.world.phys.AABB area(BlockPos b){var r=PLACE.room();return new net.minecraft.world.phys.AABB(b.getX()+r.minX()-46,b.getY()+r.minY(),b.getZ()+r.minZ()-6,b.getX()+r.maxX()+47,b.getY()+r.maxY(),b.getZ()+r.maxZ()+40);}
     @Nullable public static UUID owner(BlockPos b,NightBike.Make make){var n=night(b);return n==null?null:n.owner[make.ordinal()];}
     /** Where a bike is while nobody rides it, or null. */
     @Nullable public static BlockPos bikeAt(BlockPos b,NightBike.Make make){var n=night(b);return n==null?null:n.at[make.ordinal()];}
@@ -299,7 +303,7 @@ public final class BikeNight {
         if(NIGHTS.isEmpty())return;var l=e.getServer().getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
         for(var n:List.copyOf(NIGHTS.values())){
             var here=readers(l,n.base);
-            if(here.isEmpty()){if(++n.empty>=EMPTY_RESET&&loaded(l,n)){reset(l,n);NIGHTS.remove(n.base.asLong());}continue;}
+            if(here.isEmpty()){BikeNightFold.reset(l,n);if(++n.empty>=EMPTY_RESET&&loaded(l,n)){reset(l,n);NIGHTS.remove(n.base.asLong());}continue;}
             n.empty=0;n.tick++;
             if(n.fresh){if(!loaded(l,n))continue;n.fresh=false;recall(l,n);reset(l,n);CalderTown.newNight(l,n.base);}
             lamp(l,n);
@@ -314,6 +318,8 @@ public final class BikeNight {
             CalderCarts.tick(l,n,here);
             BikeNightGraveyard.tick(l,n,here);
             BikeNightHollow.tick(l,n,here);
+            // 0.4.521: after the Hollow has seen who is through its back gate, the fold carries them.
+            BikeNightFold.tick(l,n,here);
             streets(n,here);
             BikeNightSpecters.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
@@ -335,7 +341,7 @@ public final class BikeNight {
     }
     /** The night over: every bike back in the rack on its stand, nobody's; the failing lamp lit. */
     static void reset(ServerLevel l,Night n){
-        for(var bike:l.getEntitiesOfClass(NightBike.class,new net.minecraft.world.phys.AABB(n.base).inflate(110,70,450)))if(nightAt(l,bike.blockPosition())==n&&bike.getPassengers().isEmpty())bike.discard();
+        for(var bike:l.getEntitiesOfClass(NightBike.class,area(n.base)))if(nightAt(l,bike.blockPosition())==n&&bike.getPassengers().isEmpty())bike.discard();
         for(var make:NightBike.Make.values()){
             int k=make.ordinal();var home=n.base.offset(BikeNightSite.bikeAt(make));
             if(n.at[k]!=null&&!n.at[k].equals(home)&&l.isLoaded(n.at[k])){var s=l.getBlockState(n.at[k]);if(s.is(BikeNightRegistry.BIKE_BLOCK.get())&&s.getValue(NightBikeBlock.MAKE)==make)l.setBlock(n.at[k],Blocks.AIR.defaultBlockState(),3);}

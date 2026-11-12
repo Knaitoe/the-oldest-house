@@ -11,7 +11,8 @@ plays over and over as a car drives; and four horns, one for each car. And the t
 seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
 house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round. And (0.4.488) a chain of grocery carts being
 wheeled, a second of it, played over while it moves. And the Hollow's (0.4.495): what is in the mist under it, heard by somebody
-who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes; and (0.4.500) a ghost going through somebody; and (0.4.501) the werewolf's howl; and (0.4.502) the headless rider's horse, half a second of it, played over as he comes.
+who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes; and (0.4.500) a ghost going through somebody; and (0.4.501) the werewolf's howl; and (0.4.502) the headless rider's horse, half a second of it, played over as he comes; and (0.4.521) the mist closing over
+somebody as the cemetery folds, the air thickening in the ears and thinning again.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -86,6 +87,8 @@ ROWS = {
     'hollow/slide': ('hollow.slide', 'Earth slides away', 32),
     # 0.4.505: the tight way's tendril curling up.
     'hollow/curl': ('hollow.curl', 'The vine curls up', 24),
+    # 0.4.521: the cemetery's fold, heard by somebody it carries.
+    'hollow/fold': ('hollow.fold', 'The mist closes in', 16),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -831,7 +834,23 @@ def curl():
     return band(creak, 60, 2400) + leaves
 
 
-MAKERS = {'hollow/curl': curl, 'hollow/slide': slide_away, 'hollow/pop': pop, 'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def fold():
+    # The mist closing over somebody: the air thickening round the head as if a door had shut on it, the ears closing on a low
+    # weight, a long breath of wind turning past, and the night's thin air coming back as it lets go.
+    length = 1.7
+    n = seconds(length)
+    t = times(n)
+    close = np.clip(t / .22, 0, 1) ** 2
+    let_go = np.exp(-np.clip(t - .45, 0, None) / .5)
+    noise = rng.standard_normal(n)
+    turn = 1 + .5 * np.sin(2 * np.pi * .9 * t + 1.2)
+    wind = (band(noise, 110, 700) * .75 + band(noise, 700, 1800) * .3 * turn) * close * let_go
+    weight = np.sin(2 * np.pi * np.cumsum(52 - 14 * np.clip(t / .6, 0, 1)) / RATE) * .55 * close * np.exp(-np.clip(t - .2, 0, None) / .35)
+    thin = band(rng.standard_normal(n), 2600, 6800) * .12 * np.clip((t - .7) / .5, 0, 1) * np.clip((length - t) / .4, 0, 1)
+    return wind + weight + thin
+
+
+MAKERS = {'hollow/fold': fold, 'hollow/curl': curl, 'hollow/slide': slide_away, 'hollow/pop': pop, 'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,

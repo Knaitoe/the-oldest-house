@@ -33,10 +33,12 @@ public final class CalderGraves {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /**
      * The railings: the town's along the front, and these down both sides. BACK is the first row north of the hill's last: the hill's
-     * ground stops there (0.4.494), and what is past it is the Hollow's (CalderHollow), which has the back railings and the back gate
-     * on its far side.
+     * ground stops there. From 0.4.494 the Hollow (CalderHollow) began past it; from 0.4.521 that is on the fold's far side
+     * (BikeNightFold), and BACK has the cemetery's back railings and back gate again, with the lane and a wood behind them ({@link #back}).
      */
-    public static final int W=CalderTown.W,E=CalderTown.E,FRONT=CalderTown.RAILS,BACK=CalderHollow.EDGE-1,TOP=17;
+    public static final int W=CalderTown.W,E=CalderTown.E,FRONT=CalderTown.RAILS,BACK=-262,TOP=17;
+    /** 0.4.521: how far north the wood behind the back railings reaches. */
+    public static final int WOOD_N=-300;
     /** The banks: each row is half blocks, and north of it the ground is a block higher. */
     public static final int[] BANKS={-190,-208,-226};
     /** The gate's path, as wide as the gate, and where it ends. */
@@ -136,7 +138,96 @@ public final class CalderGraves {
             for(int row:ROWS)if(row==t[1])throw new IllegalStateException("a tree at "+t[0]+","+t[1]+" would stand in a row of stones");
             tree(l,b,t[0],t[1],t[2],rnd);
         }
+        back(l,b,new Random(52102));
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.521, the back and the expanse
+    /**
+     * 0.4.521: the cemetery's back. Since the Hollow went to the fold's far side, nothing is past the last row but the back railings,
+     * with the back gate in them (shut; opened with the far side's, CalderHollow.backGate), the lane behind them that somebody through
+     * the far side's gate comes out on, its wall with the way on in it, and a wood of old trees on the rest of the hill's top.
+     */
+    static void back(ServerLevel l,BlockPos b,Random rnd){
+        var air=Blocks.AIR.defaultBlockState();var dirt=Blocks.DIRT.defaultBlockState();int y=level(BACK);
+        box(l,b,W-2,-4,WOOD_N,E+2,TOP,BACK,air);
+        int laneWall=CalderHollow.WALL+BikeNightFold.EXIT,laneSide=CalderHollow.SIDE+1;
+        for(int z=WOOD_N;z<BACK;z++)for(int x=W;x<=E;x++){
+            if(Math.abs(x)<=laneSide&&z>=laneWall)continue;
+            box(l,b,x,-4,z,x,y-2,z,dirt);
+            set(l,b,x,y-1,z,rnd.nextInt(5)==0?Blocks.COARSE_DIRT.defaultBlockState():rnd.nextInt(4)==0?Blocks.PODZOL.defaultBlockState():Blocks.GRASS_BLOCK.defaultBlockState());
+        }
+        CalderHollow.back(l,b,BikeNightFold.EXIT,W,E);
+        for(int z=BACK-3;z>=WOOD_N+2;z-=2+rnd.nextInt(3))for(int x=W+2+rnd.nextInt(3);x<=E-2;x+=3+rnd.nextInt(3)){
+            if(Math.abs(x)<=laneSide+2&&z>=laneWall-2)continue;
+            if(!free(l,b,x,y,z))continue;
+            tree(l,b,x,z,6+rnd.nextInt(4),rnd);
+        }
+    }
+    /** Whether a place (from the base, in the town) is the wood's or the lane's: past the back railings. */
+    public static boolean pastBack(int z){return z<BACK&&z>=WOOD_N;}
+    /**
+     * 0.4.521, the expanse (BikeNightFold): the cemetery on the fold's far side, from BikeNightFold.SOUTH to the Hollow's edge. It is
+     * the town's cemetery as it is past its last full row, the same ground at the hill's top under the same stones and trees, and it
+     * goes on: no railings, no back, row after row as far as the mist lets anybody see, fuller toward the edge, where the ground
+     * breaks off and the Hollow begins. Its own sides and its south end are ragged; nobody is meant to stand at either. The gate's
+     * line runs clear through it, as it does through the town's.
+     */
+    public static void expanse(ServerLevel l,BlockPos b){
+        var rnd=new Random(52101);var air=Blocks.AIR.defaultBlockState();var dirt=Blocks.DIRT.defaultBlockState();
+        var turf=mat("grave_turf");var gravel=mat("gravel");
+        var turfStep=BikeNightRegistry.GRAVE_TURF_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+        var gravelStep=BikeNightRegistry.GRAVEL_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
+        int e=BikeNightFold.ENTRY,south=BikeNightFold.SOUTH,north=CalderHollow.EDGE;
+        box(l,b,W-1,-4,north,E+1,TOP,south+3,air);
+        int[] west=new int[south-north+1],east=new int[south-north+1];
+        for(int i=0;i<west.length;i++){west[i]=W+rnd.nextInt(3);east[i]=E-rnd.nextInt(3);}
+        for(int z=north;z<=south;z++){
+            int as=z-e,y=level(as);
+            for(int x=west[z-north];x<=east[z-north];x++){
+                // The south end is ragged too.
+                if(z>south-3&&rnd.nextInt(3)<z-(south-3))continue;
+                box(l,b,x,-4,z,x,y-2,z,dirt);
+                boolean walk=path(x,as);
+                set(l,b,x,y-1,z,walk?gravel:turf);
+                if(bank(as))set(l,b,x,y,z,walk?gravelStep:turfStep);
+            }
+        }
+        // Two memorials the town's cemetery has none of, out on either side.
+        for(int i=0;i<3;i++){
+            put(l,b,EXPANSE_ANGEL.getX(),EXPANSE_ANGEL.getY()+i,EXPANSE_ANGEL.getZ(),CalderGraveBlock.Kind.ANGEL,Direction.SOUTH,i);
+            put(l,b,EXPANSE_OBELISK.getX(),EXPANSE_OBELISK.getY()+i,EXPANSE_OBELISK.getZ(),CalderGraveBlock.Kind.OBELISK,Direction.SOUTH,i);
+        }
+        // The town's trees past its last full row, and more of them, standing in the expanse as they stood.
+        for(int[] t:TREES)if(t[1]+e<=south-4&&t[1]+e>=north+4)tree(l,b,t[0],t[1]+e,t[2],rnd);
+        // Rows across it, every three or four, a little fuller each one north; the gate's line clear in every row.
+        int row=south-6,r=0;
+        while(row>north+3){
+            int as=row-e,y=level(as);
+            if(!bank(as)&&!bank(as+1)){
+                int empty=Math.max(6,32-r*2);
+                for(int x=west[row-north]+2+rnd.nextInt(2);x<=east[row-north]-2;x+=2+rnd.nextInt(3)){
+                    if(kept(x,as)||path(x,as)||rnd.nextInt(100)<empty||!free(l,b,x,y,row)||near(x,row,EXPANSE_ANGEL)||near(x,row,EXPANSE_OBELISK))continue;
+                    if(rnd.nextInt(11)==0)put(l,b,x,y,row,CalderGraveBlock.Kind.CROSS,Direction.SOUTH,rnd.nextInt(3)==0?1:0);
+                    else put(l,b,x,y,row,CalderGraveBlock.Kind.STONE,Direction.SOUTH,rnd.nextInt(CalderGraveBlock.STONES));
+                    if(rnd.nextInt(14)==0&&!path(x,as+1)&&!bank(as+1)&&free(l,b,x,level(as+1),row+1)){
+                        int what=rnd.nextInt(20);
+                        put(l,b,x,level(as+1),row+1,CalderGraveBlock.Kind.GOODS,Direction.SOUTH,what<10?CalderGraveBlock.FLOWERS:what<14?CalderGraveBlock.WREATH:what<17?CalderGraveBlock.FLAG:CalderGraveBlock.LANTERN);
+                    }
+                }
+                r++;
+            }
+            row-=3+rnd.nextInt(2);
+        }
+        // Trees here and there between the rows.
+        for(int z=south-8;z>north+6;z-=5+rnd.nextInt(5)){
+            int x=(rnd.nextBoolean()?1:-1)*(10+rnd.nextInt(Math.max(1,E-14)));
+            int as=z-e;if(path(x,as)||bank(as)||!free(l,b,x,level(as),z))continue;
+            tree(l,b,x,z,6+rnd.nextInt(3),rnd);
+        }
+    }
+    private static boolean near(int x,int z,BlockPos m){return Math.abs(x-m.getX())<=1&&Math.abs(z-m.getZ())<=1;}
+    /** 0.4.521: the expanse's angel and obelisk (their bases), off the gate's line on either side. */
+    public static final BlockPos EXPANSE_ANGEL=new BlockPos(-27,3,-1297),EXPANSE_OBELISK=new BlockPos(31,3,-1305);
     /** The hill: earth under it, the cemetery's grass over it and gravel on the paths, with a row of half blocks up each bank. */
     static void ground(ServerLevel l,BlockPos b){
         var air=Blocks.AIR.defaultBlockState();var dirt=Blocks.DIRT.defaultBlockState();var turf=mat("grave_turf");var gravel=mat("gravel");

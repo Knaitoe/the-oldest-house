@@ -109,9 +109,13 @@ public final class BikeNightHollow {
     public static final float ON=180;
 
     static Vec3 from(BikeNight.Night n,Vec3 at){return at.subtract(n.base.getX(),n.base.getY(),n.base.getZ());}
-    /** In the Hollow: past the hill's edge (and on what is left of its last rows), and short of the far side's ground but for its first rows. */
+    /**
+     * In the Hollow: past the hill's edge (and on what is left of its last rows), and short of the far side's ground but for its first
+     * rows. (0.4.521: and in the expanse before it, past the fold, whose sides fall away as the Hollow's do: somebody who goes off them
+     * has missed, and is set down on the hill.)
+     */
     public static boolean in(Vec3 at){
-        return at.z<CalderHollow.EDGE+1&&at.z>CalderHollow.FAR_SIDE-2&&at.x>CalderGraves.W-1&&at.x<CalderGraves.E+2;
+        return at.z<CalderHollow.EDGE+1&&at.z>CalderHollow.FAR_SIDE-2&&at.x>CalderGraves.W-1&&at.x<CalderGraves.E+2||BikeNightFold.expanse(at.x,at.z);
     }
     /** Where somebody is set down on an island, in the world. */
     static Vec3 place(BikeNight.Night n,int island){
@@ -345,8 +349,9 @@ public final class BikeNightHollow {
      */
     /** 0.4.509, in blocks: how near the place by the post Gus stops for his cap, and how near him his friend is before he takes it down. */
     public static final double CAP_REACH=1.3,CAP_WATCH=16;
-    static boolean gus(ServerLevel l,BikeNight.Night n,BikeNightGus.Friend g,PackBike bike,ServerPlayer friend,double d){
-        var there=from(n,friend.position());var trail=CalderHollow.TRAIL;int last=trail.size()-1;
+    static boolean gus(ServerLevel l,BikeNight.Night n,BikeNightGus.Friend g,PackBike bike,ServerPlayer friend,Vec3 seen,double d){
+        // 0.4.521: where his friend is as he would get to them, through the fold if they are on its other side (BikeNightFold.near).
+        var there=from(n,seen);var trail=CalderHollow.TRAIL;int last=trail.size()-1;
         boolean out=there.z<CalderHollow.EDGE+.5&&there.x>CalderGraves.W-1&&there.x<CalderGraves.E+2;
         if(g.trail<0){
             if(!out)return false;
@@ -367,7 +372,7 @@ public final class BikeNightHollow {
             }
             // Off its far end: after them on the far side's ground and through the gate; waiting, if they are back out on the course.
             if(there.z>CalderHollow.FAR_SIDE+1||d<BikeNightGus.KEEP)bike.toward(null,0);
-            else bike.toward(friend.position(),(float)Math.min(BikeNightGus.RIDE_PACE,Math.max(.12,(d-BikeNightGus.KEEP+.6)*.16)));
+            else bike.toward(seen,(float)Math.min(BikeNightGus.RIDE_PACE,Math.max(.12,(d-BikeNightGus.KEEP+.6)*.16)));
             return true;
         }
         double to=there.z+BikeNightGus.KEEP,left=BikeNightGus.RIDE_PACE;boolean moved=false;
@@ -402,7 +407,7 @@ public final class BikeNightHollow {
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         if(n.hollow.runGone>0&&l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH)))for(int i=0;i<CalderHollow.RUN_ROWS;i++)CalderHollow.runRow(l,n.base,i,true);
-        if(n.hollow.gate&&l.isLoaded(n.base.offset(0,0,CalderHollow.BACK)))CalderHollow.backGate(l,n.base,false);
+        if(n.hollow.gate)CalderHollow.backGate(l,n.base,false);
         if(n.hollow.bankGone&&l.isLoaded(n.base.offset(CalderHollow.BANK_X0,0,CalderHollow.BANK_SOUTH)))CalderHollow.bank(l,n.base,true);
         if(n.hollow.curlGone>0&&l.isLoaded(n.base.offset(CalderHollow.TIGHT_X0,0,CalderHollow.TIGHT_SOUTH)))for(int i=0;i<CalderHollow.TIGHT_ROWS;i++)CalderHollow.tendrilRow(l,n.base,i,true);
         n.hollow=new Course();

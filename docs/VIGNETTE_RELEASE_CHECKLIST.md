@@ -1,3 +1,5 @@
+November 12 candidate 0.4.521 (docs/BIKE_NIGHT_FOLD_0_4_521.md): Bike night's geography (the Hollow past a fold in the cemetery, its own architecture view). No change to the source, its resolution, the Witness pool or the endings; the account's lane is the town's lane.
+
 November 12 candidate 0.4.520 (docs/BIKE_PRECISION_0_4_520.md): Bike night's bike handling (RiddenBike). No change to the source, its resolution, the Witness pool or the endings.
 
 November 12 candidate 0.4.519 (docs/BIKE_NIGHT_PLAYTEST_0_4_519.md): Bike night playtest fixes (riders' seat and pose, benches, the ticket line, the crate). No change to the source, its resolution, the Witness pool or the endings.

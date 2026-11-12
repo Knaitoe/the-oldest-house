@@ -141,7 +141,11 @@ public final class VignetteAudit {
                 if (base == null) continue;
                 ServerLevel level = server.getLevel(NovelRooms.dimension(scene));
                 if (level == null) continue;
-                report.append(scene(level, base, scene));
+                // 0.4.521: Bike night's town and its cemetery fold's far side, each audited as itself; nothing is built between them.
+                if (scene == LabyrinthPlace.BIKE_NIGHT) {
+                    for (int[] rows : io.github.knaitoe.theoldesthouse.labyrinth.BikeNightFold.built())
+                        report.append(scene(level, base, scene, rows[0], rows[1], scene.id() + (rows[1] < -400 ? " (the fold's far side)" : "")));
+                } else report.append(scene(level, base, scene));
             } catch (Exception e) {
                 report.append("## ").append(scene.id()).append(": audit failed ").append(e).append('\n');
             }
@@ -156,7 +160,12 @@ public final class VignetteAudit {
 
     private static String scene(ServerLevel level, BlockPos base, LabyrinthPlace scene) {
         var r = scene.room();
-        int minX = r.minX(), minY = r.minY(), minZ = r.minZ(), maxX = r.maxX(), maxY = r.maxY(), maxZ = r.maxZ();
+        return scene(level, base, scene, r.minZ(), r.maxZ(), scene.id());
+    }
+
+    private static String scene(ServerLevel level, BlockPos base, LabyrinthPlace scene, int minZ, int maxZ, String label) {
+        var r = scene.room();
+        int minX = r.minX(), minY = r.minY(), maxX = r.maxX(), maxY = r.maxY();
         int sx = maxX - minX + 1, sy = maxY - minY + 1, sz = maxZ - minZ + 1;
         boolean outdoor = NovelRooms.outside(scene);
         BitSet solid = new BitSet(sx * sy * sz);
@@ -260,7 +269,8 @@ public final class VignetteAudit {
         }
 
         // Block light over the floor, propagated through the actual blocks (sky ignored).
-        int darkPercent = (int) Math.round(100 * io.github.knaitoe.theoldesthouse.labyrinth.ScenePolish.darkFraction(level, base, scene));
+        // Only an indoor scene's dark floor is reported (0.4.521: an outdoor scene's whole box is not walked for it).
+        int darkPercent = outdoor ? 0 : (int) Math.round(100 * io.github.knaitoe.theoldesthouse.labyrinth.ScenePolish.darkFraction(level, base, scene));
         // Count only floor a visitor can reach from a doorway.
         if (!outdoor) floor = io.github.knaitoe.theoldesthouse.labyrinth.ScenePolish.reachableFloor(level, base, scene);
         // Outdoor edges: perimeter columns whose ground ends at the void just past the edge.
@@ -300,7 +310,7 @@ public final class VignetteAudit {
         }
 
         StringBuilder out = new StringBuilder();
-        out.append("## ").append(scene.id()).append(outdoor ? " [outdoor " : " [").append(sx).append('x').append(sy).append('x').append(sz).append("] ");
+        out.append("## ").append(label).append(outdoor ? " [outdoor " : " [").append(sx).append('x').append(sy).append('x').append(sz).append("] ");
         out.append("floor=").append(floor.size()).append(" detail/floor=").append(floor.isEmpty() ? "-" : String.format("%.2f", detail / (double) floor.size()));
         out.append(" materials=").append(materials.size()).append(" lights=").append(emitters.size());
         if (!outdoor) out.append(" darkFloor=").append(floor.isEmpty() ? "-" : darkPercent + "%");

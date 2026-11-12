@@ -483,6 +483,11 @@ public abstract class RiddenBike extends Entity {
      * 0.4.495: set down somewhere else as it is, with whoever is on it, stopped and upright and pointing {@code yaw}. The Hollow puts
      * a rider who has missed a jump back on the last island they stood on (BikeNightHollow).
      */
+    /**
+     * 0.4.521, carried through the cemetery's fold (BikeNightFold): the same bike, somewhere else, with whoever is on it and its way,
+     * lean and wound-up hop kept. What it had been riding over is behind it.
+     */
+    public void fold(double by){teleportTo(getX(),getY(),getZ()+by);onRoad=0;onSheet=0;resetFallDistance();}
     public void putBack(double x,double y,double z,float yaw){
         setYRot(yaw);yRotO=yaw;teleportTo(x,y,z);setDeltaMovement(Vec3.ZERO);setOnGround(true);resetFallDistance();
         speed=0;lean=0;charge=0;coyote=-1;paceTicks=0;paceSide=0;lift=0;onRoad=0;onSheet=0;lastSide=0;
@@ -533,7 +538,13 @@ public abstract class RiddenBike extends Entity {
         float to=run>.02?(float)Mth.clamp(Math.atan2(rise,Math.max(run,.1)),-.6,.6):0;
         pitchO=pitch;pitch+=(to-pitch)*.35F;
     }
-    @Override public void lerpTo(double x,double y,double z,float yRot,float xRot,int steps){lerpX=x;lerpY=y;lerpZ=z;lerpYRot=yRot;lerpSteps=3;}
+    @Override public void lerpTo(double x,double y,double z,float yRot,float xRot,int steps){
+        // 0.4.521: carried through the fold, or set down far off: there at once, and whoever is on it with it, not swept across what lies between.
+        if(distanceToSqr(x,y,z)>FAR_LERP*FAR_LERP){setPos(x,y,z);setYRot(yRot);setOldPosAndRot();lerpSteps=0;for(var e:getPassengers()){positionRider(e);e.setOldPosAndRot();}return;}
+        lerpX=x;lerpY=y;lerpZ=z;lerpYRot=yRot;lerpSteps=3;
+    }
+    /** 0.4.521: past this many blocks, a bike is moved on a client at once. */
+    public static final double FAR_LERP=24;
     @Override public double lerpTargetX(){return lerpSteps>0?lerpX:getX();}
     @Override public double lerpTargetY(){return lerpSteps>0?lerpY:getY();}
     @Override public double lerpTargetZ(){return lerpSteps>0?lerpZ:getZ();}

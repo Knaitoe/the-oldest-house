@@ -180,6 +180,8 @@ public final class ArchitectureTests {
                 if(scene==LabyrinthPlace.FEET_UP){export(level,base,scene,"feet_up_upstairs");export(level,base,scene,"feet_up_attic");}
                 // 0.4.202: the lookout's clearing is the scene's own view; its cab and the forest of towers have theirs.
                 if(scene==LabyrinthPlace.WHISTLERS){export(level,base,scene,"whistlers_cab");export(level,base,scene,"whistlers_towers");}
+                // 0.4.521: Bike night's town is the scene's own view; the cemetery's fold's far side (the expanse and the Hollow) has its own.
+                if(scene==LabyrinthPlace.BIKE_NIGHT)export(level,base,scene,"bike_night_hollow");
                 wallProps(level,base,scene,looseAndSteps);doorSteps(level,base,scene,looseAndSteps);}
             h.assertTrue(looseAndSteps.isEmpty(),"every scene sets its small things on something and has nothing to climb inside a doorway: "+looseAndSteps);
             for(var hazard:LabyrinthPlace.values())if(HazardVariety.added(hazard))export(interior,LabyrinthPlaces.base(origin,hazard),hazard);
@@ -586,7 +588,7 @@ public final class ArchitectureTests {
      *  something: none of them hang in the air of an open room. All of them are listed, not only the first. */
     private static void wallProps(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene,List<String> out){
         var r=scene.room();int lowest=Math.max(r.minY(),-8),highest=Math.min(r.maxY(),14);var loose=new ArrayList<String>();
-        for(var at:BlockPos.betweenClosed(b.offset(r.minX(),lowest,r.minZ()),b.offset(r.maxX(),highest,r.maxZ()))){
+        for(var z:built(scene))for(var at:BlockPos.betweenClosed(b.offset(r.minX(),lowest,z[0]),b.offset(r.maxX(),highest,z[1]))){
             var state=l.getBlockState(at);
             if(state.is(HouseBlocks.SCENE_DETAIL.get())&&!SceneDetailBlock.supported(l,at,state))
                 loose.add(state.getValue(SceneDetailBlock.KIND).getSerializedName()+"@"+at.subtract(b).toShortString());
@@ -598,7 +600,7 @@ public final class ArchitectureTests {
      *  A door onto a solid wall (the Winchester's) is not a step. */
     private static void doorSteps(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene,List<String> out){
         var r=scene.room();var bad=new ArrayList<String>();
-        for(var at:BlockPos.betweenClosed(b.offset(r.minX(),Math.max(r.minY(),-8),r.minZ()),b.offset(r.maxX(),Math.min(r.maxY(),14),r.maxZ()))){
+        for(var z:built(scene))for(var at:BlockPos.betweenClosed(b.offset(r.minX(),Math.max(r.minY(),-8),z[0]),b.offset(r.maxX(),Math.min(r.maxY(),14),z[1]))){
             var s=l.getBlockState(at);
             if(!(s.getBlock() instanceof DoorBlock)||s.getValue(DoorBlock.HALF)!=net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)continue;
             var lintel=at.above(2);if(l.getBlockState(lintel).getCollisionShape(l,lintel).isEmpty())continue;
@@ -611,6 +613,12 @@ public final class ArchitectureTests {
             }
         }
         if(!bad.isEmpty())out.add(scene.id()+" doorway "+bad);
+    }
+    /** 0.4.521: the rows of a scene that are built on, from south to north as {min z, max z} pairs: its room, but Bike night's are its
+     *  town and the cemetery fold's far side, and the thousand rows between them are never built (nor loaded). */
+    private static List<int[]> built(LabyrinthPlace scene){
+        var r=scene.room();
+        return scene==LabyrinthPlace.BIKE_NIGHT?BikeNightFold.built():List.of(new int[]{r.minZ(),r.maxZ()});
     }
     private static void export(net.minecraft.server.level.ServerLevel l,BlockPos b,LabyrinthPlace scene,String name)throws Exception{
         var r=scene.room();JsonObject file=new JsonObject();file.addProperty("name",name);
@@ -636,6 +644,9 @@ public final class ArchitectureTests {
         if(scene==LabyrinthPlace.BLIND_STRETCH)maxY=2;if(LiteraryRooms.isLiterary(scene)){minY=Math.max(scene.room().minY(),-6);maxY=NovelRooms.outside(scene)?Math.min(7,scene.room().maxY()):Math.min(4,scene.room().maxY());if(scene==LabyrinthPlace.WINCHESTER)maxY=10;if(scene==LabyrinthPlace.DEVILS_ROCK)maxY=3;}
         if(scene==LabyrinthPlace.COSTUME_NIGHT||scene==LabyrinthPlace.MOVIE_NIGHT||scene==LabyrinthPlace.WINTER_LAKE)maxY=Math.min(17,r.maxY()-1); // 0.4.279: the Idaho banks climb to seven blocks and their pines stand well above the outdoor cut
         if(scene==LabyrinthPlace.WORK_PRINT)maxY=3;
+        // 0.4.521: Bike night's town to the wood behind its cemetery; and the fold's far side, the expanse to the lane past the Hollow, its high ways included.
+        if(scene==LabyrinthPlace.BIKE_NIGHT&&!name.equals("bike_night_hollow"))minZ=CalderGraves.WOOD_N-6;
+        if(name.equals("bike_night_hollow")){minZ=CalderHollow.WALL-2;maxZ=BikeNightFold.SOUTH+4;maxY=14;}
         if(scene==LabyrinthPlace.OWN_LIGHT){minX=-5;maxX=5;minZ=-50;maxZ=0;minY=-1;maxY=4;} // 0.4.213: the lobby, the branches and the far room
         if(scene==LabyrinthPlace.LINE){minX=-25;maxX=25;minZ=-90;maxZ=0;minY=-1;maxY=6;} // 0.4.212: the hall, the frame and the space
         if(scene==LabyrinthPlace.STILLNESS){minX=-7;maxX=7;minZ=-51;maxZ=0;minY=-1;maxY=4;} // 0.4.211: the low hall

@@ -700,7 +700,7 @@ public enum LabyrinthPlace {
      * (CalderGraves), as far as its back railings. 0.4.492: it stands at its own height (BikeNightSite.BASE_Y) with room far over
      * and under it, for the Hollow. Not dealt until the night can be finished; its room grows north as what lies past the graveyard
      * is built. */
-    BIKE_NIGHT("bike_night",Kind.ONE_SHOT,238,new BoundingBox(-64,-48,-444,64,72,1),literaryEntry()),
+    BIKE_NIGHT("bike_night",Kind.ONE_SHOT,238,new BoundingBox(-64,-48,-1502,64,72,1),literaryEntry()), // 0.4.521: to the lane past the Hollow, on the cemetery fold's far side (BikeNightFold)
     /** 0.4.518, the Pell house (PellHouse, docs/PELL_HOUSE_PROPOSAL.md): Wren Close at the end of summer, and June Pell's bungalow at
      * its head (PellSite). Three stays. This slice, the street and the lot: the ground, the walls and the doors. Not dealt until the
      * house can be finished. */

@@ -438,16 +438,17 @@ public final class BikeNightGus {
         if(a.getVehicle()!=bike){a.startRiding(bike,true);a.gesture(RIDE);}
         a.setYRot(bike.getYRot());a.setYHeadRot(bike.getYRot());a.setYBodyRot(bike.getYRot());
         ServerPlayer friend=null;double best=Double.MAX_VALUE;
-        for(var p:BikeNightHunt.prey(n.pack,here)){double d=flat(p.position(),bike.position())*(p.getUUID().equals(g.friend)?.5:1);if(d<best){best=d;friend=p;}}
+        for(var p:BikeNightHunt.prey(n.pack,here)){double d=flat(BikeNightFold.near(n.base,bike.position(),p.position()),bike.position())*(p.getUUID().equals(g.friend)?.5:1);if(d<best){best=d;friend=p;}}
         if(friend==null){
             bike.toward(null,0);
             if(!n.pack.caught.isEmpty()&&g.once.add("nobody"))later(g,n,BikeNightTexts.GUS_NOBODY,40);
             return;
         }
         g.friend=friend.getUUID();
-        var at=bike.position();var there=friend.position();double d=Math.sqrt(flat(at,there));boolean level=Math.abs(at.y-there.y)<1.2;
+        // 0.4.521: his friend where he would get to them, through the cemetery's fold if they are on its other side.
+        var at=bike.position();var there=BikeNightFold.near(n.base,at,friend.position());double d=Math.sqrt(flat(at,there));boolean level=Math.abs(at.y-there.y)<1.2;
         // 0.4.507: after a friend who is past the hill's edge, he rides the Hollow's plain way, and says nothing.
-        if(BikeNightHollow.gus(l,n,g,bike,friend,d))return;
+        if(BikeNightHollow.gus(l,n,g,bike,friend,there,d))return;
         // 0.4.490: in the cemetery, or after a friend who is, he goes through the stones (BikeNightGraveyard).
         if(BikeNightGraveyard.friend(l,n,g.way,bike,there,d)){warn(l,n,g,a,friend);return;}
         if(d<KEEP&&level)bike.toward(null,0);

@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.521** puts the Hollow out of sight of Calder Falls. The town's cemetery ends at its back railings again, with a lane and a wood behind them. In the chase, whoever rides up past its last rows is carried, under a surge of the mist, into a cemetery that goes on where the town's stopped, with the Hollow past it. Out of the Hollow's back gate, they come out in the lane behind the town's cemetery. Nobody sees the Hollow from the town, and nobody goes back to it. `docs/BIKE_NIGHT_FOLD_0_4_521.md`.
+
 Development candidate **0.4.520** makes the bike more precise on the Hollow's jumps. Holding forward keeps the pace the pedals have made, so a run-up can be judged. A hop let go just over the brink still pops. In the air the bars answer better and the brake brings a jump down shorter. A landing a little off level stays on both wheels, the bike wanders less while a hop is wound up, and it turns better at a crawl. `docs/BIKE_PRECISION_0_4_520.md`.
 
 Development candidate **0.4.519** fixes four things from playing Bike night: the three boys and Gus sit on their bikes and pedal, the park's three benches each have their own marks and words, the queue outside the theater curves in to the ticket window, and the milk crate's lattice lines up.

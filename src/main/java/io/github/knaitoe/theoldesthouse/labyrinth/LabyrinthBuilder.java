@@ -413,26 +413,28 @@ public final class LabyrinthBuilder {
     }
 
     private static boolean chunksReady(ServerLevel level, LabyrinthPlace place, BlockPos base) {
-        int minX, maxX, minZ, maxZ;
+        // 0.4.521: an outdoor place's built parts (OutdoorRelocation.parts: Bike night's town and its fold's far side, not between).
+        java.util.List<int[]> boxes = new java.util.ArrayList<>();
         if (NovelRooms.outside(place)) {
-            AABB box = OutdoorRelocation.bounds(base, place);
-            minX = (int) Math.floor(box.minX); maxX = (int) Math.ceil(box.maxX);
-            minZ = (int) Math.floor(box.minZ); maxZ = (int) Math.ceil(box.maxZ);
+            for (AABB box : OutdoorRelocation.parts(base, place))
+                boxes.add(new int[]{(int) Math.floor(box.minX), (int) Math.ceil(box.maxX), (int) Math.floor(box.minZ), (int) Math.ceil(box.maxZ)});
         } else {
             BoundingBox slot = LabyrinthPlaces.slotBounds(pendingOrigin, place);
             if (slot == null) return true;
-            minX = slot.minX(); maxX = slot.maxX(); minZ = slot.minZ(); maxZ = slot.maxZ();
+            boxes.add(new int[]{slot.minX(), slot.maxX(), slot.minZ(), slot.maxZ()});
         }
         if (preparationLevel == null) preparationLevel = level;
         boolean ready = true;
-        for (int x = minX >> 4; x <= maxX >> 4; x++) {
-            for (int z = minZ >> 4; z <= maxZ >> 4; z++) {
-                ChunkPos chunk = new ChunkPos(x, z);
-                if (!preparationChunks.contains(chunk)) {
-                    level.getChunkSource().addRegionTicket(CARVE_TICKET, chunk, 1, chunk);
-                    preparationChunks.add(chunk);
+        for (int[] box : boxes) {
+            for (int x = box[0] >> 4; x <= box[1] >> 4; x++) {
+                for (int z = box[2] >> 4; z <= box[3] >> 4; z++) {
+                    ChunkPos chunk = new ChunkPos(x, z);
+                    if (!preparationChunks.contains(chunk)) {
+                        level.getChunkSource().addRegionTicket(CARVE_TICKET, chunk, 1, chunk);
+                        preparationChunks.add(chunk);
+                    }
+                    ready &= level.getChunkSource().getChunkNow(x, z) != null;
                 }
-                ready &= level.getChunkSource().getChunkNow(x, z) != null;
             }
         }
         return ready;

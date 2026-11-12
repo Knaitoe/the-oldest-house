@@ -19,6 +19,11 @@ import net.minecraft.world.phys.Vec3;
  * lids; a pumpkin vine the size of a road, curling up and down; stairs of tilted stones"; and "The Hollow folds back down into the
  * graveyard's far side. The riders come out through the back gate onto a quiet lane above the town."
  *
+ * <p>0.4.521: it is no longer past the town's own cemetery, where its ground stood over the hill for the town to see. It lies past
+ * the cemetery's fold (BikeNightFold), ENTRY-EXTRA blocks north of where it was, beyond the expanse (CalderExpanse); every position
+ * here is where it is now, and the hill's edge is the expanse's. Its back gate and the lane behind it are built twice: here, and
+ * behind the town's cemetery, where somebody who goes through this one is carried ({@link #back}).
+ *
  * <p>This is the plain way through, which any bike takes, and (0.4.496) the first of the ways the bikes' own perks open: the high
  * way, the Hopper's ({@link #HIGH}), and (0.4.497) the long way, the Comet's ({@link #LONG}). The other three are not built. The hill's
  * ground stops at {@link #EDGE}, ragged, and from there to {@link #FAR_SIDE} there is nothing but the course. The cemetery's back
@@ -36,9 +41,9 @@ public final class CalderHollow {
     private CalderHollow(){}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /** The last row the hill's ground reaches on the gate's line; where the far side's ground begins; its back railings; and how far north anything is. */
-    public static final int EDGE=-261,FAR_SIDE=-420,BACK=-435,FAR=-442;
+    public static final int EDGE=-1317,FAR_SIDE=-1476,BACK=-1491,FAR=-1498;
     /** The far side: how wide its ground is, and the lane behind its railings. */
-    public static final int SIDE=24,LANE_N=-440,LANE_S=-437;
+    public static final int SIDE=24,LANE_N=-1496,LANE_S=-1493;
     /**
      * 0.4.508, the way on. A brick wall runs along the lane's far verge and round its two ends, and in it, east of the gate's
      * line, is a door (OnwardPlacements). It stands three rows back from the lane, so that somebody who comes through the back gate
@@ -56,24 +61,24 @@ public final class CalderHollow {
     private static List<Piece> way(){
         var out=new ArrayList<Piece>();
         // Graves that have come away, each a little off the line of the last.
-        out.add(new Piece("first grave",Made.SOD,-3,3,-264,-270,2));
-        out.add(new Piece("second grave",Made.SOD,-1,5,-273,-279,2));
-        out.add(new Piece("third grave",Made.SOD,-5,1,-282,-288,1));
+        out.add(new Piece("first grave",Made.SOD,-3,3,-1320,-1326,2));
+        out.add(new Piece("second grave",Made.SOD,-1,5,-1329,-1335,2));
+        out.add(new Piece("third grave",Made.SOD,-5,1,-1338,-1344,1));
         // "crooked fences": a long strip with board fence half across it, one side and then the other.
-        out.add(new Piece("the fences",Made.SOD,-2,2,-291,-314,1));
+        out.add(new Piece("the fences",Made.SOD,-2,2,-1347,-1370,1));
         // "a bridge of coffin lids": two blocks of lid, one of nothing. (The gap before it is the one of three.)
-        for(int i=0;i<5;i++)out.add(new Piece("lid "+(i+1),Made.LID,-1,0,-318-3*i,-319-3*i,0));
-        out.add(new Piece("the grave past the lids",Made.SOD,-3,3,-333,-338,0));
+        for(int i=0;i<5;i++)out.add(new Piece("lid "+(i+1),Made.LID,-1,0,-1374-3*i,-1375-3*i,0));
+        out.add(new Piece("the grave past the lids",Made.SOD,-3,3,-1389,-1394,0));
         // "a pumpkin vine the size of a road, curling up and down": up three blocks by half blocks, over, and down, swinging east and back.
         int[] east={0,0,0,0,1,1,1,2,2,2,2,2,2,2,1,1,1,0,0,0,0,0,0,0,0,0,0,0};
         double[] high={0,0,.5,.5,1,1,1.5,1.5,2,2,2.5,2.5,3,3,3,3,3,3,2.5,2.5,2,2,1.5,1.5,1.5,1.5,1.5,1.5};
-        for(int i=0;i<east.length;i++)out.add(new Piece("vine "+i,Made.VINE,-1+east[i],east[i],-341-i,-341-i,high[i]));
+        for(int i=0;i<east.length;i++)out.add(new Piece("vine "+i,Made.VINE,-1+east[i],east[i],-1397-i,-1397-i,high[i]));
         // "stairs of tilted stones": up from 1 to 5, half a block every two.
-        for(int i=0;i<9;i++)out.add(new Piece("stair "+i,Made.STONE,-1,1,-371-2*i,-372-2*i,1+.5*i));
-        out.add(new Piece("the top",Made.SOD,-3,3,-389,-394,5));
+        for(int i=0;i<9;i++)out.add(new Piece("stair "+i,Made.STONE,-1,1,-1427-2*i,-1428-2*i,1+.5*i));
+        out.add(new Piece("the top",Made.SOD,-3,3,-1445,-1450,5));
         // The last stretch: a strip running down to the far side, with one gap in it.
-        for(int i=0;i<4;i++)out.add(new Piece("stretch "+i,Made.SOD,-1,1,-397-3*i,-399-3*i,4-.5*(i/2)));
-        for(int i=0;i<3;i++)out.add(new Piece("stretch "+(4+i),Made.SOD,-1,1,-411-3*i,-413-3*i,3));
+        for(int i=0;i<4;i++)out.add(new Piece("stretch "+i,Made.SOD,-1,1,-1453-3*i,-1455-3*i,4-.5*(i/2)));
+        for(int i=0;i<3;i++)out.add(new Piece("stretch "+(4+i),Made.SOD,-1,1,-1467-3*i,-1469-3*i,3));
         return List.copyOf(out);
     }
     /**
@@ -85,12 +90,12 @@ public final class CalderHollow {
     public static final List<Piece> HIGH=high();
     private static List<Piece> high(){
         var out=new ArrayList<Piece>();
-        out.add(new Piece("high grave 1",Made.SOD,4,6,-282,-299,4));
-        out.add(new Piece("high grave 2",Made.SOD,4,6,-302,-317,4));
-        out.add(new Piece("high grave 3",Made.SOD,4,6,-320,-325,3));
-        for(int i=0;i<5;i++)out.add(new Piece("high step "+i,Made.STONE,4,6,-326-i,-326-i,2.5-.5*i));
+        out.add(new Piece("high grave 1",Made.SOD,4,6,-1338,-1355,4));
+        out.add(new Piece("high grave 2",Made.SOD,4,6,-1358,-1373,4));
+        out.add(new Piece("high grave 3",Made.SOD,4,6,-1376,-1381,3));
+        for(int i=0;i<5;i++)out.add(new Piece("high step "+i,Made.STONE,4,6,-1382-i,-1382-i,2.5-.5*i));
         // Its foot is long: a bike comes down the steps fast, and has the length of the grave beside it to turn onto it.
-        out.add(new Piece("the high way's foot",Made.SOD,4,6,-331,-338,0));
+        out.add(new Piece("the high way's foot",Made.SOD,4,6,-1387,-1394,0));
         return List.copyOf(out);
     }
     /**
@@ -99,15 +104,15 @@ public final class CalderHollow {
      * on it, faster than any bike goes but the Comet, and the Rattler in its burst (BikeNightHollow.run). It is level where the
      * vine climbs three blocks, swings and comes down again; past it, steps up to the stairs' second pair.
      */
-    public static final int RUN_X0=-5,RUN_X1=-4,RUN_SOUTH=-341,RUN_ROWS=28;
+    public static final int RUN_X0=-5,RUN_X1=-4,RUN_SOUTH=-1397,RUN_ROWS=28;
     public static final List<Piece> LONG=longWay();
     private static List<Piece> longWay(){
         var out=new ArrayList<Piece>();
-        out.add(new Piece("the long way's head",Made.SOD,RUN_X0,RUN_X1,-337,-340,0));
+        out.add(new Piece("the long way's head",Made.SOD,RUN_X0,RUN_X1,-1393,-1396,0));
         for(int i=0;i<RUN_ROWS;i++)out.add(new Piece("run "+i,Made.LID,RUN_X0,RUN_X1,RUN_SOUTH-i,RUN_SOUTH-i,0));
-        out.add(new Piece("long step 0",Made.STONE,RUN_X0,RUN_X1+1,-369,-369,.5));
-        out.add(new Piece("long step 1",Made.STONE,RUN_X0,RUN_X1+1,-370,-371,1));
-        out.add(new Piece("the long way's foot",Made.SOD,RUN_X0,-2,-372,-375,1.5));
+        out.add(new Piece("long step 0",Made.STONE,RUN_X0,RUN_X1+1,-1425,-1425,.5));
+        out.add(new Piece("long step 1",Made.STONE,RUN_X0,RUN_X1+1,-1426,-1427,1));
+        out.add(new Piece("the long way's foot",Made.SOD,RUN_X0,-2,-1428,-1431,1.5));
         return List.copyOf(out);
     }
     /** Whether a place (from the park's base) is on the run, and which of its rows; -1 off it. */
@@ -128,12 +133,12 @@ public final class CalderHollow {
      * third (and the Rattler while its card has it, pedalled as well). And the bank does not wait: once somebody is on it, it slides away (BikeNightHollow.bank). It comes up three blocks in three rows
      * where the stairs take twelve, and misses the top, where a witch crosses.
      */
-    public static final int BANK_X0=4,BANK_X1=5,LOOSE_SOUTH=-388,LOOSE_ROWS=4,BANK_SOUTH=LOOSE_SOUTH-LOOSE_ROWS,BANK_ROWS=3,BANK_FOOT=1;
+    public static final int BANK_X0=4,BANK_X1=5,LOOSE_SOUTH=-1444,LOOSE_ROWS=4,BANK_SOUTH=LOOSE_SOUTH-LOOSE_ROWS,BANK_ROWS=3,BANK_FOOT=1;
     public static final List<Piece> STEEP=steepWay();
     private static List<Piece> steepWay(){
         var out=new ArrayList<Piece>();
-        out.add(new Piece("the steep way's turn",Made.SOD,2,BANK_X1,-371,-376,BANK_FOOT));
-        out.add(new Piece("the steep way's run",Made.SOD,BANK_X0,BANK_X1,-377,LOOSE_SOUTH+1,BANK_FOOT));
+        out.add(new Piece("the steep way's turn",Made.SOD,2,BANK_X1,-1427,-1432,BANK_FOOT));
+        out.add(new Piece("the steep way's run",Made.SOD,BANK_X0,BANK_X1,-1433,LOOSE_SOUTH+1,BANK_FOOT));
         for(int i=0;i<LOOSE_ROWS;i++)out.add(new Piece("the loose earth "+i,Made.EARTH,BANK_X0,BANK_X1,LOOSE_SOUTH-i,LOOSE_SOUTH-i,BANK_FOOT));
         for(int i=0;i<BANK_ROWS;i++)out.add(new Piece("bank "+i,Made.BANK,BANK_X0,BANK_X1,BANK_SOUTH-i,BANK_SOUTH-i,BANK_FOOT+1+i));
         out.add(new Piece("the steep way's head",Made.SOD,2,BANK_X1,BANK_SOUTH-BANK_ROWS,BANK_SOUTH-BANK_ROWS-4,BANK_FOOT+BANK_ROWS));
@@ -157,7 +162,7 @@ public final class CalderHollow {
      * all. At a bike's top speed the Wasp turns in under two blocks and an ordinary bike in three; the Wasp keeps four fifths
      * of its way off a wall it meets at any slant, and anything else, meeting a wall square, puts its rider off.
      */
-    public static final int TIGHT_X0=5,TIGHT_X1=9,TIGHT_SOUTH=-339,TIGHT_ROWS=26,GATE_FIRST=5,GATE_EVERY=6,GATE_HIGH=3;
+    public static final int TIGHT_X0=5,TIGHT_X1=9,TIGHT_SOUTH=-1395,TIGHT_ROWS=26,GATE_FIRST=5,GATE_EVERY=6,GATE_HIGH=3;
     public static final List<Piece> TIGHT=tightWay();
     private static List<Piece> tightWay(){
         var out=new ArrayList<Piece>();
@@ -191,10 +196,10 @@ public final class CalderHollow {
      * of an island goes down. A Lamp that is throwing its light cuts the bank for its rider and whoever rides close, and they
      * see the next island from the last.
      */
-    public static final int DARK_W=-24,DARK_E=-6,DARK_SOUTH=EDGE+3,DARK_NORTH=-289,DARK_MOUTH_W=-20,DARK_MOUTH_E=-15;
+    public static final int DARK_W=-24,DARK_E=-6,DARK_SOUTH=EDGE+3,DARK_NORTH=-1345,DARK_MOUTH_W=-20,DARK_MOUTH_E=-15;
     public static final List<Piece> DARK=List.of(
-        new Piece("the dark way's first island",Made.SOD,-19,-16,-265,-269,2),new Piece("the dark way's second island",Made.SOD,-16,-13,-273,-277,2),
-        new Piece("the dark way's third island",Made.SOD,-13,-8,-281,-285,2));
+        new Piece("the dark way's first island",Made.SOD,-19,-16,-1321,-1325,2),new Piece("the dark way's second island",Made.SOD,-16,-13,-1329,-1333,2),
+        new Piece("the dark way's third island",Made.SOD,-13,-8,-1337,-1341,2));
     /** Whether a place (from the park's base) is in the dark way's bank of mist. */
     public static boolean dark(double x,double z){return x>=DARK_W&&x<DARK_E&&z<DARK_SOUTH&&z>DARK_NORTH;}
     /**
@@ -204,14 +209,14 @@ public final class CalderHollow {
      * island, and none of it is within two blocks of ground that is.
      */
     public static final List<Piece> WOLFS=List.of(
-        new Piece("wolf run 1",Made.SOD,-8,-7,-264,-269,2),new Piece("wolf perch 1 west",Made.SOD,-8,-6,-270,-273,2),new Piece("wolf perch 1 east",Made.SOD,8,10,-270,-273,2),
-        new Piece("wolf run 2",Made.SOD,-7,-6,-400,-407,3),new Piece("wolf perch 2 west",Made.SOD,-7,-5,-408,-411,3),new Piece("wolf perch 2 east",Made.SOD,5,7,-408,-411,3));
+        new Piece("wolf run 1",Made.SOD,-8,-7,-1320,-1325,2),new Piece("wolf perch 1 west",Made.SOD,-8,-6,-1326,-1329,2),new Piece("wolf perch 1 east",Made.SOD,8,10,-1326,-1329,2),
+        new Piece("wolf run 2",Made.SOD,-7,-6,-1456,-1463,3),new Piece("wolf perch 2 west",Made.SOD,-7,-5,-1464,-1467,3),new Piece("wolf perch 2 east",Made.SOD,5,7,-1464,-1467,3));
     /**
      * A gap he leaps: where along the way its middle and its two brinks are; where across the way its middle is, and how high his
      * ground is there; the middles of his two perches; and where his run begins.
      */
     public record Leap(double z,double south,double north,double x,double top,double west,double east,double run){}
-    public static final List<Leap> LEAPS=List.of(new Leap(-271,-270,-272,1.5,2,-6.5,9.5,-263.5),new Leap(-409,-408,-410,.5,3,-5.5,6.5,-399.5));
+    public static final List<Leap> LEAPS=List.of(new Leap(-1327,-1326,-1328,1.5,2,-6.5,9.5,-1319.5),new Leap(-1465,-1464,-1466,.5,3,-5.5,6.5,-1455.5));
     // ------------------------------------------------------------------------------------------------ 0.4.507, the line Gus rides
     /** A place on the line (from the park's base), and whether it is in the air over a gap. */
     public record Mark(Vec3 at,boolean air){}
@@ -229,7 +234,7 @@ public final class CalderHollow {
             double x=(p.x0()+p.x1()+1)/2.0;
             at.add(new Vec3(x,p.top(),p.zSouth()+.7));hop.add(last==null||p.zSouth()<last.zNorth()-1);
             if(p.name().equals("the fences")){
-                for(double[] m:new double[][]{{1.5,-293},{1.5,-298},{-1,-302},{-1,-306},{.5,-309}}){at.add(new Vec3(m[0],p.top(),m[1]));hop.add(false);}
+                for(double[] m:new double[][]{{1.5,-1349},{1.5,-1354},{-1,-1358},{-1,-1362},{.5,-1365}}){at.add(new Vec3(m[0],p.top(),m[1]));hop.add(false);}
                 x=.5;
             }
             at.add(new Vec3(x,p.top(),p.zNorth()+.3));hop.add(false);last=p;
@@ -343,7 +348,7 @@ public final class CalderHollow {
         for(var p:WOLFS)piece(l,b,p,rnd);
         for(int row=0;row<TIGHT_ROWS;row++)tendrilRow(l,b,row,true);
     }
-    /** The hill's ground ends ragged: off the gate's line it reaches a row or three further, and what is left of the side railings ends in a pier. */
+    /** The hill's ground ends ragged: off the gate's line it reaches a row or three further. (0.4.521: the expanse's ground; there are no side railings to end.) */
     static void edge(ServerLevel l,BlockPos b,Random rnd){
         int y=CalderGraves.level(EDGE);var sod=mat("hollow_sod");
         for(int x=CalderGraves.W+1;x<CalderGraves.E;x++){
@@ -355,9 +360,7 @@ public final class CalderHollow {
             // The row the ground ends on is sod too: it is the side of the hill now.
             set(l,b,x,y-1,EDGE,sod);
         }
-        for(int x:new int[]{CalderGraves.W,CalderGraves.E}){
-            box(l,b,x,y,EDGE,x,y+1,EDGE,mat("brick"));set(l,b,x,y+2,EDGE,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
-        }
+        // 0.4.521: the expanse has no side railings, so nothing ends in a pier here.
     }
     /** One piece: its ground at its height, and under a piece of sod, here and there, roots. */
     static void piece(ServerLevel l,BlockPos b,Piece p,Random rnd){
@@ -383,11 +386,11 @@ public final class CalderHollow {
     static void dress(ServerLevel l,BlockPos b){
         var stone=CalderGraveBlock.Kind.STONE;var picket=CalderGraveBlock.Kind.PICKET;var south=Direction.SOUTH;
         // {x, z, kind's ordinal, stage}: each stands on its piece, at its piece's height.
-        Object[][] things={{-2,-266,stone,1},{2,-268,stone,6},{-1,-275,CalderGraveBlock.Kind.CROSS,1},{-4,-284,stone,9},{0,-287,stone,13},
-            {-2,-297,picket,0},{-1,-297,picket,1},{1,-305,picket,2},{2,-305,picket,0},{-2,-301,picket,3},{2,-310,picket,3},{-2,-312,picket,2},
-            {-3,-335,stone,3},{3,-336,stone,14},{-3,-391,stone,10},{3,-392,CalderGraveBlock.Kind.CROSS,0},
+        Object[][] things={{-2,-1322,stone,1},{2,-1324,stone,6},{-1,-1331,CalderGraveBlock.Kind.CROSS,1},{-4,-1340,stone,9},{0,-1343,stone,13},
+            {-2,-1353,picket,0},{-1,-1353,picket,1},{1,-1361,picket,2},{2,-1361,picket,0},{-2,-1357,picket,3},{2,-1366,picket,3},{-2,-1368,picket,2},
+            {-3,-1391,stone,3},{3,-1392,stone,14},{-3,-1447,stone,10},{3,-1448,CalderGraveBlock.Kind.CROSS,0},
             // The high way's: along its east side, which leaves two blocks to ride on.
-            {6,-287,stone,5},{6,-296,stone,11},{6,-306,CalderGraveBlock.Kind.CROSS,0},{6,-314,stone,2},{6,-322,stone,8}};
+            {6,-1343,stone,5},{6,-1352,stone,11},{6,-1362,CalderGraveBlock.Kind.CROSS,0},{6,-1370,stone,2},{6,-1378,stone,8}};
         for(var t:things){
             int x=(Integer)t[0],z=(Integer)t[1];double top=top(x,z);
             if(Double.isNaN(top)||top!=Math.floor(top))throw new IllegalStateException("nothing whole to stand a thing on at "+x+","+z);
@@ -410,33 +413,61 @@ public final class CalderHollow {
         for(int z=FAR_SIDE;z>BACK;z--)for(int x:new int[]{-SIDE-1,SIDE+1}){
             if(z==FAR_SIDE||(FAR_SIDE-z)%7==0)pier(l,b,x,y,z);else rail(l,b,x,y,z,Direction.EAST);
         }
-        for(int x=-SIDE-1;x<=SIDE+1;x++){
-            if(x>=CalderGraves.PATH_W&&x<=CalderGraves.PATH_E){
-                var facing=(x-CalderGraves.PATH_W)%2==0?Direction.NORTH:Direction.SOUTH;
-                set(l,b,x,y,BACK,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,0));set(l,b,x,y+1,BACK,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,1));
-            }else if(x==pw||x==pe||Math.abs(x)==SIDE+1||(x<pw&&(pw-x)%7==0)||(x>pe&&(x-pe)%7==0))pier(l,b,x,y,BACK);
-            else rail(l,b,x,y,BACK,Direction.NORTH);
-        }
-        // 0.4.508: the wall along the lane's far verge and round its ends, capped, with the doorway left in it.
-        var brick=mat("brick");
-        for(int x=-SIDE-1;x<=SIDE+1;x++){
-            box(l,b,x,y-3,WALL,x,y-1,WALL,dirt);
-            boolean doorway=x==DOOR_X;
-            for(int dy=0;dy<WALL_HIGH;dy++)if(!doorway||dy>=2)set(l,b,x,y+dy,WALL,brick);
-            set(l,b,x,y+WALL_HIGH,WALL,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
-        }
-        for(int x:new int[]{-SIDE-1,SIDE+1})for(int z=FAR;z<BACK;z++){
-            for(int dy=0;dy<WALL_HIGH;dy++)set(l,b,x,y+dy,z,brick);
-            set(l,b,x,y+WALL_HIGH,z,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
-        }
-        int[][] stones={{-18,-424,2},{-12,-427,7},{-7,-423,12},{8,-425,4},{14,-428,15},{20,-424,8},{-20,-431,0},{11,-432,5}};
+        back(l,b,0,-SIDE-1,SIDE+1);
+        int[][] stones={{-18,-1480,2},{-12,-1483,7},{-7,-1479,12},{8,-1481,4},{14,-1484,15},{20,-1480,8},{-20,-1487,0},{11,-1488,5}};
         for(int[] s:stones)set(l,b,s[0],y,s[1],grave(CalderGraveBlock.Kind.STONE,Direction.SOUTH,s[2]));
     }
     /**
-     * 0.4.498, the back gate: open, its leaves end-on on the lane's side of its piers, or shut as it is built. "The riders come out
+     * The back railings with the back gate in them, from {@code west} to {@code east}, and behind them the lane, the wall along its far
+     * verge and round its ends: on the Hollow's far side ({@code dz} 0), where it is the railings' own width; and (0.4.521) behind
+     * the town's cemetery ({@code dz} BikeNightFold.EXIT), across the cemetery's width, where the lane is somebody who comes through
+     * the far side's gate is carried to. Only the town's wall has the doorway in it: nobody stands on the far side's lane.
+     */
+    public static void back(ServerLevel l,BlockPos b,int dz,int west,int east){
+        int y=CalderGraves.level(EDGE);var turf=mat("grave_turf");var dirt=Blocks.DIRT.defaultBlockState();var brick=mat("brick");
+        if(dz!=0)for(int x=-SIDE-1;x<=SIDE+1;x++)for(int z=WALL+1;z<BACK;z++){
+            box(l,b,x,y-3,z+dz,x,y-2,z+dz,dirt);
+            set(l,b,x,y-1,z+dz,z<=LANE_S&&z>=LANE_N?mat("asphalt"):turf);
+        }
+        int pw=CalderGraves.PATH_W-1,pe=CalderGraves.PATH_E+1;
+        for(int x=west;x<=east;x++){
+            if(dz!=0)box(l,b,x,y-3,BACK+dz,x,y-1,BACK+dz,dirt);
+            if(x>=CalderGraves.PATH_W&&x<=CalderGraves.PATH_E){
+                var facing=(x-CalderGraves.PATH_W)%2==0?Direction.NORTH:Direction.SOUTH;
+                set(l,b,x,y,BACK+dz,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,0));set(l,b,x,y+1,BACK+dz,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,1));
+            }else if(x==pw||x==pe||x==west||x==east||Math.abs(x)==SIDE+1||(x<pw&&(pw-x)%7==0)||(x>pe&&(x-pe)%7==0))pier(l,b,x,y,BACK+dz);
+            else rail(l,b,x,y,BACK+dz,Direction.NORTH);
+        }
+        // 0.4.508: the wall along the lane's far verge and round its ends, capped, with the doorway left in it.
+        for(int x=-SIDE-1;x<=SIDE+1;x++){
+            box(l,b,x,y-3,WALL+dz,x,y-1,WALL+dz,dirt);
+            boolean doorway=x==DOOR_X&&dz!=0;
+            for(int dy=0;dy<WALL_HIGH;dy++)if(!doorway||dy>=2)set(l,b,x,y+dy,WALL+dz,brick);
+            set(l,b,x,y+WALL_HIGH,WALL+dz,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
+        }
+        for(int x:new int[]{-SIDE-1,SIDE+1})for(int z=FAR;z<BACK;z++){
+            for(int dy=0;dy<WALL_HIGH;dy++)set(l,b,x,y+dy,z+dz,brick);
+            set(l,b,x,y+WALL_HIGH,z+dz,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
+        }
+    }
+    /**
+     * 0.4.498, the back gate: open, its leaves end-on on the lane's side of its piers, or shut as it is built. (0.4.521: both of them,
+     * the far side's and the town cemetery's, together.) "The riders come out
      * through the back gate onto a quiet lane above the town."
      */
     public static void backGate(ServerLevel l,BlockPos b,boolean open){
+        for(int dz:new int[]{0,BikeNightFold.EXIT})if(backGateLoaded(l,b,dz))backGate(l,b,open,dz);
+    }
+    /** Whether one of the two back gates (dz 0 the Hollow's, EXIT the town cemetery's) has its ground in. */
+    public static boolean backGateLoaded(ServerLevel l,BlockPos b,int dz){
+        int y=CalderGraves.level(EDGE);return l.isLoaded(b.offset(CalderGraves.PATH_W,y,BACK+dz))&&l.isLoaded(b.offset(CalderGraves.PATH_E,y,BACK+dz-2));
+    }
+    /** Whether one of the two back gates stands open: nothing between its piers. */
+    public static boolean backGateOpen(ServerLevel l,BlockPos b,int dz){
+        return l.getBlockState(b.offset(CalderGraves.PATH_W,CalderGraves.level(EDGE),BACK+dz)).isAir();
+    }
+    static void backGate(ServerLevel l,BlockPos o,boolean open,int dz){
+        var b=o.offset(0,0,dz);
         int y=CalderGraves.level(EDGE);var air=Blocks.AIR.defaultBlockState();var gate=CalderBlock.Kind.GATE;
         for(int x:new int[]{CalderGraves.PATH_W,CalderGraves.PATH_E})for(int z=BACK-2;z<=BACK-1;z++)for(int dy=0;dy<2;dy++)if(CalderBlock.is(l.getBlockState(b.offset(x,y+dy,z)),gate))l.setBlock(b.offset(x,y+dy,z),air,3);
         for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)for(int dy=0;dy<2;dy++){
