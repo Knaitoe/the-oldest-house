@@ -74,6 +74,8 @@ public final class NightBike extends RiddenBike {
         public float saddle(){return shape[8];}
         /** Its name, as the kids who ride it say it. */
         public String title(){return "The "+name().charAt(0)+name().substring(1).toLowerCase(Locale.ROOT);}
+        /** The make with this id, or null. */
+        public static @Nullable Make of(String id){for(var m:values())if(m.id().equals(id))return m;return null;}
     }
     /** The Rattler's burst: how long it lasts and how long it takes to come back (ticks), what it adds each tick, and how far past the bike's top it goes. */
     public static final int TURBO_TICKS=40,TURBO_BACK=300;
@@ -82,6 +84,10 @@ public final class NightBike extends RiddenBike {
     public static final float CARRYING=.85F;
 
     private float turbo=1;private boolean burning;
+    /** 0.4.517: somebody's own, ridden out of their hand (KeptBikeItem). It is never stood or laid anywhere: off it, it is in the hand again. */
+    private boolean kept;
+    public void keep(){kept=true;}
+    public boolean kept(){return kept;}
     private @Nullable BlockPos beam;
 
     public NightBike(EntityType<? extends NightBike> type,Level level){super(type,level);}
@@ -139,6 +145,8 @@ public final class NightBike extends RiddenBike {
     // ------------------------------------------------------------------ each tick somebody rides it
     @Override protected void ridden(ServerPlayer p){
         Make m=make();
+        // A kept bike goes only where it may be ridden: ridden on to anywhere else, its reader is off it.
+        if(kept){String no=KeptBikeItem.refuse(p);if(no!=null){NightBikes.cue(p,no);p.stopRiding();return;}}
         if(m==Make.LAMP)lamp();
         if(m==Make.RATTLER)card();
         NightBikes.night.rode(p,this);
@@ -192,6 +200,7 @@ public final class NightBike extends RiddenBike {
 
     @Override protected void came(ServerPlayer p,int side,Off why){NightBikes.cameOff(p,this,why);}
     @Override protected void parkAs(ServerLevel l,@Nullable BlockPos at,boolean lying){
+        if(kept)return;
         if(at!=null)l.setBlock(at,NightBikeBlock.of(make(),Direction.fromYRot(getYRot()),lying),3);
         NightBikes.night.parked(l,reader,make(),at,lying);
     }

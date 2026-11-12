@@ -1,3 +1,5 @@
+November 12 candidate 0.4.517 (docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md): Bike night, the keepsake (the bike ridden out on). No change to the source, its resolution, the pool or the dealing. Require BikeNightTests, whose new case keeps the bike, rides it in the reader's own world and is refused in the House, and the Bike night proof with its kept page.
+
 November 12 candidate 0.4.516 (docs/BORRASCA_FACES_AND_PRESCOTT_0_4_516.md): Borrasca, faces for the cast and Prescott at his office door on the last night. Optional; no change to the source, its resolution, the pool or the dealing. Require BorrascaTests, whose new case meets him, puts him down and kills him, and the Borrasca proof with its faces page.
 
 November 12 candidate 0.4.515 (docs/BORRASCA_GAMES_0_4_515.md): Borrasca, the games behind the store on the first visit. Optional; no change to the source, its resolution, the pool or the dealing. Require BorrascaTests, whose two new cases play the games through and drop them.

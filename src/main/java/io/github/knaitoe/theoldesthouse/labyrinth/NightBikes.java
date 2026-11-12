@@ -77,6 +77,11 @@ public final class NightBikes {
         l.setBlock(at,Blocks.AIR.defaultBlockState(),3);
         bike.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);bike.setUp(p,make,yaw);l.addFreshEntity(bike);
         if(!p.startRiding(bike,true)){bike.discard();l.setBlock(at,s,3);return null;}
+        keys(p,make);
+        return bike;
+    }
+    /** The keys, shown once in grey to somebody getting on (and the Rattler's own the first time it is the Rattler). */
+    static void keys(ServerPlayer p,NightBike.Make make){
         boolean keys=!seen(p,KEYS),card=make==NightBike.Make.RATTLER&&!seen(p,CARD_KEY);
         if(keys||card){
             var line=Component.empty();
@@ -87,7 +92,6 @@ public final class NightBikes {
             p.displayClientMessage(line.withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
             see(p,KEYS|(card?CARD_KEY:0));
         }
-        return bike;
     }
 
     static void cameOff(ServerPlayer p,NightBike bike,RiddenBike.Off why){

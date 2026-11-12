@@ -723,10 +723,43 @@ def geometry():
     return out
 
 
+# 0.4.517: a kept bike in the hand (KeptBikeItem) is the standing bike itself, small. In a slot and in a frame it is seen from its side.
+# The longest of the six is twenty-five pixels from tyre to tyre (the Comet), so it is drawn at .62 of its size to stand inside sixteen.
+ITEM_FIT = .62
+ITEM_DISPLAY = {
+    'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [ITEM_FIT, ITEM_FIT, ITEM_FIT]},
+    'fixed': {'rotation': [0, 180, 0], 'translation': [0, 0, 0], 'scale': [ITEM_FIT, ITEM_FIT, ITEM_FIT]},
+    'ground': {'rotation': [0, 0, 0], 'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
+    'thirdperson_righthand': {'rotation': [0, 90, 0], 'translation': [0, 3, -2], 'scale': [.5, .5, .5]},
+    'thirdperson_lefthand': {'rotation': [0, 90, 0], 'translation': [0, 3, -2], 'scale': [.5, .5, .5]},
+    'firstperson_righthand': {'rotation': [0, 100, 0], 'translation': [2, 0, 0], 'scale': [.5, .5, .5]},
+    'firstperson_lefthand': {'rotation': [0, 100, 0], 'translation': [2, 0, 0], 'scale': [.5, .5, .5]},
+}
+
+
+def kept_items():
+    """One item, the six bikes by its model data, in NightBike.Make's order (which is MAKES')."""
+    def item(make):
+        return {'parent': f'{P}{make}_0', 'gui_light': 'front', 'display': ITEM_DISPLAY}
+    out = {}
+    base = item(MAKES[0])
+    base['overrides'] = [{'predicate': {'custom_model_data': i}, 'model': f'{NS}item/kept_bike_{make}'} for i, make in enumerate(MAKES) if i]
+    out['models/item/kept_bike.json'] = base
+    for make in MAKES[1:]:
+        out[f'models/item/kept_bike_{make}.json'] = item(make)
+    return out
+
+
 def files():
     out = {}
     for key, obj in models().items():
         out[f'models/{DIR}{key}.json'] = obj
+    out.update(kept_items())
+    # Every bike stands inside a slot at that size: its tyres' ends, about the block's middle.
+    for make, build in BIKES.items():
+        b = build()
+        lo, hi = b.back[0] - b.r_back, b.front[0] + b.r_front
+        assert 8 + (lo - 8) * ITEM_FIT >= 0 and 8 + (hi - 8) * ITEM_FIT <= 16, (make, lo, hi)
     variants = {}
     for make in MAKES:
         for facing, y in FACING_Y.items():
@@ -755,7 +788,8 @@ def java_shapes():
 
 
 NAMES = {'block.the_oldest_house.night_bike': 'Bike', 'block.the_oldest_house.bike_rack': 'Bike rack', 'block.the_oldest_house.bike_ramp': 'Plank ramp',
-         'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike', 'entity.the_oldest_house.pack_bike': 'Bike', 'entity.the_oldest_house.chained_bike': 'Bike'}
+         'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike', 'entity.the_oldest_house.pack_bike': 'Bike', 'entity.the_oldest_house.chained_bike': 'Bike',
+         'item.the_oldest_house.kept_bike': 'Bike'}
 
 
 # ---------------------------------------------------------------------------------------------------------------- review
@@ -855,11 +889,12 @@ def main():
     check = args.check
     images, data = textures(), files()
     shapes = java_shapes()
+    assert list(shapes) == list(MAKES), (list(shapes), MAKES)
     for make, g in geometry().items():
         want = g['back'] + g['front'] + g['axle'] + [g['r_back'], g['r_front'], g['saddle']]
         assert shapes.get(make) == [float(v) for v in want], (make, shapes.get(make), want)
     for key, obj in data.items():
-        if key.startswith('models/'):
+        if key.startswith('models/') and not key.startswith('models/item/'):
             for tex in obj['textures'].values():
                 assert tex.split(DIR)[1] + '.png' in {k.split(DIR)[1] for k in images}, (key, tex)
             for e in obj['elements']:

@@ -74,7 +74,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters","rider","pops","after","chained"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters","rider","pops","after","chained","kept"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -115,6 +115,7 @@ public final class BikeNightVisualProof extends Screen {
         for(var state:BikeNightRegistry.DOME.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.SPRING_RIDER.get().getStateDefinition().getPossibleStates())need(state);
         if(mc.getItemRenderer().getModel(new net.minecraft.world.item.ItemStack(BikeNightRegistry.SAND_BALL.get()),null,null,0)==missing)throw new IllegalStateException("Missing the ball of sand's model");
+        for(var make:NightBike.Make.values())if(mc.getItemRenderer().getModel(io.github.knaitoe.theoldesthouse.labyrinth.KeptBikeItem.of(make),null,null,0)==missing)throw new IllegalStateException("Missing the kept "+make+"'s model");
         if(!TownCarRenderer.missing().isEmpty())throw new IllegalStateException("Missing car parts "+TownCarRenderer.missing());
     }
     private static void need(BlockState s){var mc=Minecraft.getInstance();if(mc.getBlockRenderer().getBlockModel(s)==mc.getModelManager().getMissingModel())throw new IllegalStateException("Missing Bike night model for "+s);}
@@ -145,9 +146,10 @@ public final class BikeNightVisualProof extends Screen {
             "the Hollow's headless rider on his horse: from the side at two moments of its stride, from the front quarter, and from behind",
             "what jumps out in the Hollow. The ghoul: waiting; out, from the front, the side and behind. The goblin, at its size beside it: the same",
             "what follows. The three's bikes as they lie outside the front gate; the cap on the back gate's post; a new stone at the row's end, and a bike left against it",
-            "a caught reader's bike in a later hall: chained to a school fence, its front wheel bent. The Rattler from the hall's side; the Wasp from along the wall"}[page],8,8,0xffffffff);
+            "a caught reader's bike in a later hall: chained to a school fence, its front wheel bent. The Rattler from the hall's side; the Wasp from along the wall",
+            "the keepsake: the bike a reader rode out on, in a slot. Each of the six, large, and at a slot's own size"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);case 24->specters(g);case 25->rider(g);case 26->pops(g);case 27->after(g);default->chained(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);case 24->specters(g);case 25->rider(g);case 26->pops(g);case 27->after(g);case 28->chained(g);default->kept(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -656,6 +658,22 @@ public final class BikeNightVisualProof extends Screen {
             buffers.endBatch();pose.popPose();
         }
     }
+    /** 0.4.517: a kept bike (KeptBikeItem) as it is in a slot: each of the six, large; and under each, at its size in a slot of a slot's size. */
+    private static final int SLOT=0xff8b8b8b,SLOT_EDGE=0xff373737;
+    private int keptBig(){return Math.max(2,(int)(width/6F*.8F/16));}
+    private void kept(GuiGraphics g){
+        g.fill(0,24,width,height,0xffc6c6c6);g.flush();
+        var makes=NightBike.Make.values();float cell=width/(float)makes.length;int big=keptBig();
+        for(int i=0;i<makes.length;i++){
+            var stack=io.github.knaitoe.theoldesthouse.labyrinth.KeptBikeItem.of(makes[i]);
+            int x=(int)(i*cell+(cell-16*big)/2),y=44;
+            g.fill(x-2,y-2,x+16*big+2,y+16*big+2,SLOT_EDGE);g.fill(x,y,x+16*big,y+16*big,SLOT);
+            var pose=g.pose();pose.pushPose();pose.translate(x,y,0);pose.scale(big,big,1);g.renderItem(stack,0,0);pose.popPose();
+            g.drawString(font,makes[i].title(),(int)(i*cell+cell/2)-font.width(makes[i].title())/2,y+16*big+8,0xff202020,false);
+            int sx=(int)(i*cell+cell/2)-9,sy=y+16*big+26;g.fill(sx,sy,sx+18,sy+18,SLOT_EDGE);g.fill(sx+1,sy+1,sx+17,sy+17,SLOT);g.renderItem(stack,sx+1,sy+1);
+        }
+        g.flush();
+    }
     /** 0.4.502, the Hollow's headless rider on his horse, as the game draws them. */
     private void rider(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
@@ -766,6 +784,16 @@ public final class BikeNightVisualProof extends Screen {
 
     /** Every bike's cell must have something in it that is not the sky or the ground: its model drew. */
     private void drawn(NativeImage image){
+        if(PAGES[page].equals("kept")){
+            // Each large slot has something in it that is not the slot: the item's model drew.
+            float k=image.getWidth()/(float)width;var makes=NightBike.Make.values();float cell=width/(float)makes.length;int big=keptBig();
+            for(int i=0;i<makes.length;i++){
+                int x0=(int)((i*cell+(cell-16*big)/2)*k),y0=(int)(44*k),x1=x0+(int)(16*big*k),y1=y0+(int)(16*big*k),seen=0;
+                for(int y=y0;y<y1;y+=2)for(int x=x0;x<x1;x+=2)if((image.getPixelRGBA(x,y)&0xffffff)!=(SLOT&0xffffff))seen++;
+                if(seen<60)throw new IllegalStateException("Nothing is drawn of the kept "+makes[i]+" in its slot: "+seen+" pixels");
+            }
+            return;
+        }
         if(page>2)return;
         for(int i=0;i<6;i++){
             int w=image.getWidth(),h=image.getHeight(),x0=(int)(w*(.04F+.31F*(i%3))),x1=x0+(int)(w*.29F),y0=(int)(h*(i<3?.12F:.56F)),y1=y0+(int)(h*.36F),seen=0;

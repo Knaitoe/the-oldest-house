@@ -121,6 +121,7 @@ public final class Keepsakes {
             case "ghosts_set/Film" -> "Played, it keeps the family's voices and whatever else your lens caught. The show used less of it.";
             case "elk_fan/Tooth" -> "Heavier than it looks. In your other hand it keeps your feet under you.";
             case "elk_fan/Lightbulb" -> "It still lights for a little while, if you ask it.";
+            case "bike_night/Bike" -> "Yours now. Away from the House it is under you whenever you want it, and it goes as it went that night.";
             case "holy_rabbit/Knife" -> "Father wasted nothing he killed.";
             case "holy_rabbit/RabbitFoot" -> "Carried, things fall your way a little more often.";
             case "mapping_interior/Bead" -> "One bead, found where he walked. Kept close, it watches over yours.";

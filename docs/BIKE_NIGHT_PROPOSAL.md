@@ -265,7 +265,7 @@ The owner has asked for permanent failures (as for the Pell house). These follow
   - which streets they took;
   - whether they carried anyone;
   - which way they went through the Hollow, high or low.
-- **The keepsake:** Claude suggests the bike itself, owner-bound, rideable in the Overworld and the House with its perk. A smaller alternative is the Rattler's spoke card. The owner's call.
+- **The keepsake:** Claude suggests the bike itself, owner-bound, rideable in the Overworld and the House with its perk. A smaller alternative is the Rattler's spoke card. The owner's call. (Built as the bike itself, 0.4.517, `docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md`: ridden in the reader's own world and the manor, not in the halls.)
 
 ### Failure: caught in town
 
@@ -363,7 +363,7 @@ It is large. It has three acts, a town, and a course in the air. In slices:
 
 1. **Halloween:** is it Halloween night, as assumed here?
 2. **Controls:** keep the existing pedal-to-balance controls for the chase, or give these bikes a simpler ride, holding forward to pedal, so the chase is about the route?
-3. **The keepsake:** the bike itself, rideable outside the vignette, or the spoke card?
+3. **The keepsake:** the bike itself, rideable outside the vignette, or the spoke card? (Built as the bike, 0.4.517; the card is still open if it is wanted.)
 4. **Permanent failures:** both permanent, as written, or is this a lighter vignette where being caught in town lets the reader walk back and try again?
 5. **The Hollow:** one shared course as suggested, or a course instanced per rider as in the owner's notes?
 6. **Order:** where does it go in the queue, before or after the Pell house?

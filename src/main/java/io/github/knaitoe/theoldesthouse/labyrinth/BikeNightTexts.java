@@ -421,6 +421,8 @@ public final class BikeNightTexts {
         if(lying>0)p.add((lying>=3?"Their three bikes were":lying==2?"Two of their bikes were":"One of their bikes was")+" lying on the pavement outside the cemetery's front gate. Nobody was with "+(lying==1?"it":"them")+".");
         String left=own.getString("Left");
         if(!left.isEmpty())p.add(left.equals("park")?"I went back the way I had come.":"There was a door in the wall across the lane.");
+        // 0.4.517: Gus's page said of the rack's bikes that nobody comes back for them.
+        if(own.getBoolean("KeptBike"))p.add("I kept the bike. Nobody was coming back for it.");
     }
     private static List<Component> pages(HouseWriting.WritingStyle style,String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(style,p));return out;}
     /** A sheet from a school pad, in pencil. (Not the House's child's hand, which is a small child's and loses letters: Gus can spell.) */
