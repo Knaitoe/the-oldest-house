@@ -107,7 +107,7 @@ public final class BorrascaArcadeFriends {
 
     /** The reader's first quarter in DEEP SEAM on the first visit. */
     static void started(ServerPlayer p,CompoundTag own,int game){
-        if(own.getInt("Visit")!=1||game!=BorrascaArcade.SEAM||own.getInt("ArcadeScene")!=NONE||actor(p,own,"TownEli")==null||actor(p,own,"TownWren")==null)return;
+        if(own.getInt("Visit")!=1||game!=BorrascaArcade.SEAM||own.getInt("ArcadeScene")!=NONE||BorrascaGames.on(own)||actor(p,own,"TownEli")==null||actor(p,own,"TownWren")==null)return;
         own.putInt("ArcadeScene",ON);
     }
     /** A cabinet one of them is at: the reader watches, and does not pay. */

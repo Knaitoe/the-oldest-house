@@ -1,3 +1,5 @@
+November 12 candidate 0.4.515 (docs/BORRASCA_GAMES_0_4_515.md): Borrasca, the games behind the store on the first visit. Optional; no change to the source, its resolution, the pool or the dealing. Require BorrascaTests, whose two new cases play the games through and drop them.
+
 November 12 candidate 0.4.514 (docs/BIKE_NIGHT_WHOLE_0_4_514.md): Bike night, one case from the park to the lane for two readers, one caught and carried. No change to the game. Require BikeNightTests (bike-night-gameplay).
 
 November 12 candidate 0.4.513 (docs/BIKE_NIGHT_CROWD_0_4_513.md): Bike night has copies: six readers to a town, the seventh into the next, built by the scene-copy system. No change to the source, its resolution, the pool or the dealing; each town's night, way on and stones are its own. Require BikeNightTests (bike-night-gameplay), whose new case builds a real second town, and the shared-scene and copy suites (CoopTests).

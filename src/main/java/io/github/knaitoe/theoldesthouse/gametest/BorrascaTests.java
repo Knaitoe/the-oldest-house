@@ -157,6 +157,138 @@ public final class BorrascaTests {
             .thenSucceed();
     }
 
+    // ---- 0.4.515: the games in the trees behind the store ----------------------------------------------------------------
+    @AfterBatch(batch="borrasca_games") public static void gamesDone(ServerLevel l){cleanup();}
+    @AfterBatch(batch="borrasca_games_dropped") public static void gamesDroppedDone(ServerLevel l){cleanup();}
+    private static LiteraryActor child(Fixture f,ServerPlayer p,int who){return f.actor(p,who==BorrascaGames.KEL?"CastKimber":who==BorrascaGames.PAT?"TownEli":"TownWren");}
+    private static String three(Fixture f,ServerPlayer p){var own=f.own(p);return " games="+own.getInt("Games")+" beat="+own.getInt("GamesBeat")+" ticks="+own.getInt("GamesTicks")+" said="+own.getInt("GamesSaid")+" kelly="+f.rel(child(f,p,0),p)+" patrick="+f.rel(child(f,p,1),p)+" kendra="+f.rel(child(f,p,2),p)+" reader="+f.rel(p,p);}
+    /** Kelly's own game on the street, played through: met at the sign, tagged, found behind her oak. */
+    private static GameTestSequence foundOnTheStreet(GameTestSequence s,GameTestHelper h,Fixture f,ServerPlayer p){
+        return s.thenExecute(()->{f.enter(p);f.at(p,1,0,-18);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("MetFriend"),"Kelly starts her game at the sign"))
+            .thenExecute(()->f.at(p,1,0,-28))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("TaggedNell"),"the reader tags her"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("HideLeg")==2,"she hides behind one of the street's two oaks"))
+            .thenExecute(()->f.at(p,f.own(p).getInt("HideSide"),0,-35))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("FoundNell")&&f.own(p).getBoolean("PlayDone"),"the reader finds her"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.CALLED,"found, she and the other two are called to the trees behind the store:"+three(f,p)));
+    }
+    private static void where(GameTestHelper h,Fixture f,ServerPlayer p,int who,int point,String what){
+        h.assertTrue(child(f,p,who).position().distanceTo(BorrascaGames.at(f.base(p),point))<.8,what+":"+three(f,p));
+    }
+
+    @GameTest(template="empty",batch="borrasca_games",timeoutTicks=14000)
+    public static void theFourPlayInTheTreesBehindTheStoreKellyCountsThenTheReaderCountsThenTag(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_games");final boolean[] chase={false};final double[] ran={0};
+        h.onEachTick(()->{
+            // Tag: the reader is put on whoever is still running, tick after tick, as a reader who has caught up would be.
+            if(!chase[0])return;var own=f.own(p);
+            for(String who:new String[]{"Kel","Pat","Ken"})if(!own.getBoolean("Games"+who+"Out")){var kid=f.actor(p,who.equals("Kel")?"CastKimber":who.equals("Pat")?"TownEli":"TownWren");p.teleportTo(f.out,kid.getX(),kid.getY(),kid.getZ(),180,0);p.setDeltaMovement(Vec3.ZERO);return;}
+        });
+        foundOnTheStreet(h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")),h,f,p)
+          .thenExecute(()->{
+              var b=f.base(p);
+              for(var tree:new BlockPos[]{BorrascaGames.HOME,BorrascaGames.NORTH_OAK,BorrascaGames.EAST_OAK})
+                  h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,tree)).is(Blocks.OAK_LOG)&&f.out.getBlockState(BorrascaRooms.at(b,tree).above(3)).is(Blocks.OAK_LOG),"an oak's trunk stands at "+tree);
+              for(var cell:BorrascaGames.WOODPILE)h.assertTrue(f.out.getBlockState(BorrascaRooms.at(b,cell)).is(Blocks.OAK_LOG)&&f.out.getBlockState(BorrascaRooms.at(b,cell).above()).is(Blocks.OAK_LOG)&&f.out.getBlockState(BorrascaRooms.at(b,cell).above(2)).isAir(),"the firewood is stacked two high at "+cell);
+              // Every line any of them walks is clear from end to end, for a body their size, with ground under it.
+              for(var line:BorrascaGames.LINES){
+                  Vec3 a=BorrascaGames.at(b,line[0]),c=BorrascaGames.at(b,line[1]);int n=(int)Math.ceil(a.distanceTo(c)*4);
+                  for(int i=0;i<=n;i++){var at=a.lerp(c,i/(double)n);
+                      h.assertTrue(f.out.noCollision(new AABB(at.x-.26,at.y+.05,at.z-.26,at.x+.26,at.y+1.5,at.z+.26)),"the line from point "+line[0]+" to point "+line[1]+" is clear at "+at.subtract(Vec3.atLowerCornerOf(b)));
+                      var under=BlockPos.containing(at.x,at.y-.5,at.z);
+                      h.assertTrue(!f.out.getBlockState(under).getCollisionShape(f.out,under).isEmpty(),"and has ground under it at "+at.subtract(Vec3.atLowerCornerOf(b)));}
+              }
+              // Every hiding place is out of sight of the oak where the count is made, for the reader's eye and for Kelly's.
+              for(var places:BorrascaGames.PLACES)for(int place:places)for(double eye:new double[]{.95,1.3}){
+                  var hit=f.out.clip(new ClipContext(BorrascaGames.at(b,BorrascaGames.COUNT).add(0,eye,0),BorrascaGames.at(b,place).add(0,1.3,0),ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,net.minecraft.world.phys.shapes.CollisionContext.empty()));
+                  h.assertTrue(hit.getType()==HitResult.Type.BLOCK,"hiding place "+place+" cannot be seen from the big oak at eye height "+eye);
+              }
+              var own=f.own(p);own.putInt("GamesSeed",0);f.save(p,own);
+              // The reader goes after them, down the alley and into the trees.
+              f.at(p,-31,0,-31);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.KELLY_SEEKS,"all three are behind the store, and Kelly is it:"+three(f,p)))
+          .thenExecute(()->{
+              where(h,f,p,BorrascaGames.KEL,BorrascaGames.COUNT,"Kelly counts at the big oak");
+              h.assertTrue(!BorrascaTexts.account(f.own(p)).contains("behind the store"),"nothing is in the account before a game has been played");
+              // The reader hides a long way down the alley, further than she looks.
+              f.at(p,-14,0,-32);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("GamesBeat")==1,"she counts, and turns round:"+three(f,p)))
+          .thenExecute(()->{
+              h.assertTrue(f.own(p).getInt("GamesTicks")<=10,"at the end of her count, not before");
+              where(h,f,p,BorrascaGames.PAT,BorrascaGames.BEHIND_WOODPILE,"by twenty Patrick is behind the woodpile");
+              where(h,f,p,BorrascaGames.KEN,BorrascaGames.BEHIND_EAST_OAK,"and Kendra behind the oak");
+              h.assertTrue(!child(f,p,0).hasLineOfSight(child(f,p,1))&&!child(f,p,0).hasLineOfSight(child(f,p,2)),"and she can see neither from where she counted");})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.READER_SEEKS,"she walks the trees, finds the two and gives the reader up: stop="+f.own(p).getInt("GamesStop")+three(f,p)))
+          .thenExecute(()->{var own=f.own(p);
+              h.assertTrue(own.getBoolean("GrovePlayed")&&own.getBoolean("GroveHid")&&!own.getBoolean("GamesCaught")&&!own.getBoolean("GamesPatHid")&&!own.getBoolean("GamesKenHid"),"both were found on her way round, and the reader was not");
+              h.assertTrue(TalkHistory.conversations(p.server,p.getUUID()).stream().map(CompoundTag.class::cast).flatMap(t->t.getList("Lines",10).stream()).map(CompoundTag.class::cast)
+                  .anyMatch(line->line.getString("T").equals("Patrick. The woodpile. You always pick the woodpile.")),"what she said when she found him is in the journal");
+              // The reader's turn: to the big oak.
+              f.at(p,-35,0,-22);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.READER_SEEKS&&f.own(p).getInt("GamesBeat")==2,"with the reader at the oak the three hide, and Kelly calls that they are ready:"+three(f,p)))
+          .thenExecute(()->{
+              int[] places={BorrascaGames.BEHIND_NORTH_OAK,BorrascaGames.ROUND_THE_CORNER,BorrascaGames.BEHIND_FAR_TRUNK};
+              for(int who=0;who<3;who++){where(h,f,p,who,places[who],"each took the other of their two places");h.assertTrue(!p.hasLineOfSight(child(f,p,who)),"out of the reader's sight from the oak: "+who);}
+              f.at(p,-34,0,-31);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("GroveFound")==1&&!f.own(p).getBoolean("GamesKelHid"),"Kelly is found behind the north oak:"+three(f,p)))
+          .thenExecute(()->f.at(p,-26,0,-32))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("GroveFound")==2&&!f.own(p).getBoolean("GamesPatHid"),"Patrick round the corner of the store:"+three(f,p)))
+          .thenExecute(()->f.at(p,-33,0,-40))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("GroveFound")==3,"and Kendra behind the far trunk:"+three(f,p)))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.TAG&&f.own(p).getInt("GamesBeat")==1,"Kendra calls tag:"+three(f,p)))
+          // Patrick runs to the north end of the rings and stands there until the reader comes near.
+          .thenWaitUntil(()->{where(h,f,p,BorrascaGames.PAT,BorrascaGames.NORTH,"Patrick runs to the north end");where(h,f,p,BorrascaGames.KEL,BorrascaGames.EAST,"Kelly to the east side");where(h,f,p,BorrascaGames.KEN,BorrascaGames.WEST,"Kendra to the west");})
+          .thenExecute(()->{h.assertTrue(f.own(p).getInt("GroveTagged")==0,"nobody is caught by standing far off");f.at(p,-33,0,-36);ran[0]=child(f,p,1).getZ();})
+          .thenWaitUntil(()->h.assertTrue(child(f,p,1).distanceTo(p)>7&&f.own(p).getInt("GamesPatRuns")>=1&&!f.own(p).getBoolean("GamesPatOut"),"with the reader four blocks off he bolts, away from them:"+three(f,p)))
+          .thenExecute(()->{h.assertTrue(child(f,p,1).getZ()>ran[0]+2,"south, the way that leads furthest from the reader: from z "+ran[0]+three(f,p));chase[0]=true;})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("GroveTagged")==3,"each is tagged when the reader reaches them:"+three(f,p)))
+          .thenExecute(()->{chase[0]=false;f.at(p,-33,0,-28);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.LEAVING,"Kelly calls it, and they start back out:"+three(f,p)))
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.OVER,"they go back out by the alley:"+three(f,p)))
+          .thenExecute(()->{
+              where(h,f,p,BorrascaGames.KEL,BorrascaGames.KELLY_STREET,"Kelly is on the street again");where(h,f,p,BorrascaGames.PAT,BorrascaGames.PATRICK_STREET,"Patrick where the street has him");where(h,f,p,BorrascaGames.KEN,BorrascaGames.MOUTH,"and Kendra by her bike");
+              String told=BorrascaTexts.account(f.own(p));
+              h.assertTrue(told.contains("After that all four of us played in the trees behind the store. Kelly counted, and she never found me. I tagged all three of them. "),"the account has the games, that she never found the reader, and that all three were tagged: "+told);
+              h.assertTrue(f.own(p).getInt("ChildStep")==0,"she does not set off without a reader who is still in the trees (she waits for one far behind her, as she always has)");
+              // The reader comes out to the street after them.
+              f.at(p,1,0,-30);})
+          // Her walk to the Tree begins from the street as it always did, and the other two come behind.
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("ChildStep")>=1&&f.own(p).getBoolean("AlongStarted"),"Kelly sets off for the Tree and the two follow:"+three(f,p)))
+          .thenSucceed();
+    }
+
+    @GameTest(template="empty",batch="borrasca_games_dropped",timeoutTicks=14000)
+    public static void theGamesBehindTheStoreAreDroppedForAReaderWhoNeverComesOrWalksOffAndNothingWaitsOnThem(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_no_games");var q=f.player("pine_walks_off");
+        var s=foundOnTheStreet(h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded")),h,f,p)
+          // The first reader hears them out and goes on up the street.
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("GamesSaid")>=3,"Patrick, Kendra and Kelly have each said their piece:"+three(f,p)))
+          .thenExecute(()->{h.assertTrue(child(f,p,2).position().distanceTo(BorrascaGames.at(f.base(p),BorrascaGames.MOUTH))>3,"Kendra is off down the alley");f.at(p,1,0,-45);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.OVER,"nobody calls the reader back; the three come out again:"+three(f,p)))
+          .thenExecute(()->{
+              where(h,f,p,BorrascaGames.KEL,BorrascaGames.KELLY_STREET,"Kelly is on the street");where(h,f,p,BorrascaGames.PAT,BorrascaGames.PATRICK_STREET,"Patrick where the street has him");where(h,f,p,BorrascaGames.KEN,BorrascaGames.MOUTH,"and Kendra by her bike");
+              h.assertTrue(!f.own(p).getBoolean("GrovePlayed")&&!BorrascaTexts.account(f.own(p)).contains("behind the store"),"no game was played, and the account has none");})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("ChildStep")>=1&&f.own(p).getBoolean("AlongStarted"),"Kelly's walk to the Tree begins, the two behind her:"+three(f,p)));
+        // The second reader comes to the trees, and walks off while Kelly is counting.
+        foundOnTheStreet(s,h,f,q)
+          .thenExecute(()->f.at(q,-31,0,-31))
+          .thenWaitUntil(()->h.assertTrue(f.own(q).getInt("Games")==BorrascaGames.KELLY_SEEKS&&f.own(q).getInt("GamesTicks")>=40,"Kelly is counting:"+three(f,q)))
+          .thenExecute(()->f.at(q,1,0,-30))
+          .thenWaitUntil(()->h.assertTrue(f.own(q).getInt("Games")==BorrascaGames.LEAVING,"a reader gone from the trees for a few seconds ends it:"+three(f,q)))
+          .thenExecute(()->h.assertTrue(f.own(q).getInt("GamesAway")>=BorrascaGames.AWAY,"after "+BorrascaGames.AWAY+" ticks away, not at the first step out"))
+          .thenWaitUntil(()->h.assertTrue(f.own(q).getInt("Games")==BorrascaGames.OVER,"and the three come back out to the street:"+three(f,q)))
+          .thenExecute(()->{
+              where(h,f,q,BorrascaGames.KEL,BorrascaGames.KELLY_STREET,"Kelly is on the street");where(h,f,q,BorrascaGames.PAT,BorrascaGames.PATRICK_STREET,"Patrick where the street has him");where(h,f,q,BorrascaGames.KEN,BorrascaGames.MOUTH,"and Kendra by her bike");
+              h.assertTrue(!f.own(q).getBoolean("GrovePlayed")&&!BorrascaTexts.account(f.own(q)).contains("behind the store"),"a game left before it was played out is not in the account");
+              // A reader who leaves Drisking in the middle of a game finds it over when they come back, and the three where the street has them.
+              var left=f.own(q).copy();left.putInt("Games",BorrascaGames.TAG);left.putLong("TownEliAt",1L);left.putLong("TownWrenAt",1L);left.putLong("CastKimberAt",1L);
+              BorrascaStory.arrive(q,left);
+              h.assertTrue(left.getInt("Games")==BorrascaGames.OVER&&!left.contains("TownEliAt")&&!left.contains("TownWrenAt")&&!left.contains("CastKimberAt"),"games left in the middle are over on the way back in");})
+          .thenWaitUntil(()->h.assertTrue(f.own(q).getInt("ChildStep")>=1,"Kelly's walk to the Tree begins:"+three(f,q)))
+          .thenSucceed();
+    }
+
     @GameTest(template="empty",batch="borrasca_motion",timeoutTicks=7200)
     public static void nativeChildAndTheOriginalFriendClimbTheActualFortWithoutRelocation(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("triple_tree_climber");final boolean[] moving={false};final int[] rises={0},friendRises={0},playerRoute={0};final double[] last={0,0};
@@ -1923,6 +2055,8 @@ public final class BorrascaTests {
           .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"the cast is in place"))
           .thenExecute(()->{var own=f.own(p);own.putBoolean("MetFriend",true);own.putBoolean("PlayDone",true);f.save(p,own);})
           // Walking beside Kelly, the two come up the trail behind.
+          // 0.4.515: a reader who did not find Kelly on the street is not called to the trees behind the store.
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getInt("Games")==BorrascaGames.OVER&&!f.own(p).getBoolean("GamesCame")&&f.own(p).getInt("GamesSaid")==0,"no games for a reader who never found her"))
           .thenWaitUntil(()->{if(!f.own(p).getBoolean("KimberAtFort")&&f.rel(f.actor(p,"CastKimber"),p).y<5)behind.accept(2);
               h.assertTrue(f.own(p).getBoolean("AlongStarted")&&there.test(2),"they follow her up the trail: eli="+f.own(p).getInt("EliAlong")+" wren="+f.own(p).getInt("WrenAlong")
                   +" patrick="+f.rel(f.actor(p,"TownEli"),p)+" kendra="+f.rel(f.actor(p,"TownWren"),p));})

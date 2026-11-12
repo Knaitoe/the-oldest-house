@@ -192,6 +192,8 @@ public final class BorrascaTexts {
     public static String account(){return account(new CompoundTag());}
     public static String account(CompoundTag own){
         return (own.getBoolean("FoundNell")?"She called out which way to look when we played hide-and-seek. ":"")
+            // 0.4.515: the games in the trees behind the store.
+            +BorrascaGames.told(own)
             // 0.4.433: the two who came part of the way.
             +(own.getBoolean("AlongHeard")?"Patrick and Kendra came with us as far as the first marker. Patrick said he would go up by the second one some other time. ":"")
             // 0.4.462: the dog in the trees by the first marker.

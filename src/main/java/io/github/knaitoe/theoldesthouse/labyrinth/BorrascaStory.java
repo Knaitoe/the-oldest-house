@@ -146,6 +146,7 @@ public final class BorrascaStory {
         int visit=own.getInt("Visit");if(visit==0)visit=1;else if(own.getBoolean("BorrascaDeparted")&&(own.getInt("ConfirmedVisits")&(1<<(visit-1)))!=0)visit=Math.min(4,visit+1);
         own.putInt("Visit",visit);own.putInt("GrabTicks",0);own.putInt("Approach",0);own.remove("ApproachArmed");own.putInt("ApproachAway",0);own.putBoolean("BorrascaDeparted",false);own.putBoolean("Here",true);own.putBoolean("Interrupted",false);own.remove("ExitEligible");own.remove("DepartVisit");p.getPersistentData().remove("BorrascaSpeechAt");own.putInt("Present",0);own.putInt("TrailClock",0);own.putBoolean("CastRecalled",false);
         BorrascaArcadeFriends.arrived(p,own); // 0.4.446: an afternoon at the cabinets left unfinished is over
+        BorrascaGames.arrived(own); // 0.4.515: and so are games behind the store left in the middle
         cue(p,switch(visit){case 1->"The pine trail. Someone is waiting at the sign.";case 2->FRIEND+" is waiting by the first marker. A note is waiting by the door.";case 3->"Years later. You remember the way to the three trees.";default->"The ridge after dark. The way back stays open.";});
         send(p,own);
     }
@@ -307,6 +308,7 @@ public final class BorrascaStory {
             if(own.getBoolean("FriendMissing")||visit>=3)return;
             if(visit==1){
                 if(knifeTalk(p,a,own))return;
+                if(BorrascaGames.on(own))return; // 0.4.515: in the middle of a game she has her own things to say
                 if(!own.getBoolean("MetFriend")){own.putBoolean("MetFriend",true);return;}
                 if(!own.getBoolean("PlayDone")&&own.getInt("ChildStep")==0)return;
                 if(own.getBoolean("KimberAtFort")&&!own.getBoolean("LegendDone"))return;
@@ -345,6 +347,7 @@ public final class BorrascaStory {
     private static void talkTownChild(ServerPlayer p,LiteraryActor child,CompoundTag own,int visit){
         if(child.isInvisible())return;
         if(BorrascaArcadeFriends.talk(p,child,own))return; // 0.4.446: at the cabinets, they have other things to say
+        if(BorrascaGames.on(own))return; // 0.4.515: and in the middle of a game
         boolean eli=child.phase()==ELI;
         String key=(eli?"Eli":"Wren")+"Talk"+visit; // 0.4.421: the keys keep the old first names (the children are now Patrick and Kendra, 0.4.424)
         int said=own.getInt(key);
@@ -493,14 +496,14 @@ public final class BorrascaStory {
             if(hat==0)sheriff.gesture(0);
         }
         BorrascaArcadeFriends.tick(p,b,own,eli,wren); // 0.4.446: Patrick and Kendra at the drugstore's cabinets
-        if(visit==1&&!BorrascaArcadeFriends.on(own))tagAlong(p,b,own,friend,eli,wren);
+        if(visit==1&&!BorrascaArcadeFriends.on(own)&&!BorrascaGames.on(own))tagAlong(p,b,own,friend,eli,wren);
         switch(visit){
             case 1->visitOne(p,b,own,friend,sheriff,prescott);
             case 2->visitTwo(p,b,own,friend,w0,w1);
             case 3->visitThree(p,b,own,friend,sheriff);
             default->{visitFour(p,b,own,friend,sheriff);BorrascaFeeding.tick(p,b,own,dana,w0,w1);}
         }
-        if((visit!=1||!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))&&!BorrascaArcadeFriends.on(own))greetChildren(p,own,visit,eli,wren);
+        if((visit!=1||!own.getBoolean("KimberAtFort")||own.getBoolean("LegendDone"))&&!BorrascaArcadeFriends.on(own)&&!BorrascaGames.on(own))greetChildren(p,own,visit,eli,wren);
         boolean light=lit(own);if(own.getInt("Present")%20==0||light||light!=own.getBoolean("LightSent")){own.putBoolean("LightSent",light);send(p,own);}
     }
     /** The ridge light is on from the moment she sees someone until she is gone. */
@@ -533,6 +536,8 @@ public final class BorrascaStory {
         }
         if(ahead)own.putBoolean("PlayDone",true);
         if(BorrascaPlay.tick(p,b,own,friend))return;
+        // 0.4.515: found on the street, she is called to the trees behind the store with the other two, and the reader may follow.
+        if(BorrascaGames.tick(p,b,own,friend))return;
         // 0.4.446: on her way up the street she comes into the drugstore with the others while the reader is at the cabinets.
         if(!own.getBoolean("KimberAtFort")&&BorrascaArcadeFriends.kelly(p,b,own,friend))return;
         // She goes to the Tree at her own pace, whether the reader is beside her, behind her or already there.
