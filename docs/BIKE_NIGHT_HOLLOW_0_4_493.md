@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -302,6 +302,45 @@ reached the foot, before the night had looked.
   who starts it late, are the owner's to try.
 - A bike laid by its rider is never laid on the run. A bike left standing on the run when it goes is left in the air
   where it stood until its rider is set down and it is laid by them.
+
+## 0.4.498: the way out
+
+The proposal: "The Hollow folds back down into the graveyard's far side. The riders come out through the back gate
+onto a quiet lane above the town, with the lights of Calder Falls on again below."
+
+**The back gate** is shut until somebody is on the far side's ground within sixteen blocks of it. Then it opens (its
+chain is heard) and stands open for the rest of the night, its leaves end-on on the lane's side of its piers.
+
+**Through it.** Whoever goes through it onto the lane, riding, carried or on foot, is through. It goes in their
+record: that they are through, what they were on, which ways they had under them other than the plain one ("high",
+"long", both, or "plain"), and how many times they went down. The proposal's account "remembers ... which way they went
+through the Hollow, high or low"; this is what it will read. They are told: "The gate is behind you. Down the hill,
+the lights of Calder Falls are on again."
+
+**The town's lamps come back on**, and stay on: what put them out behind the riders does not put them out again that
+night. The town is a long way behind somebody at the back gate and may not be loaded; the lamps there are lit as it
+comes back in.
+
+### Cases
+
+One (86 in the namespace). With every street's lamps out, two on the Hopper (one on its pegs) who have been on a
+high grave ride from the last stretch up the gate's line: the gate is shut while they are out on the stretch and
+until they are near, stands open before they reach it with its leaves on the lane's side and nothing between its
+piers, and both are through it onto the lane with it in both their records (on the Hopper, by the high way, never
+having gone down); each is told; every lamp is lit again and stays lit. It passed the first time it was run.
+
+The lamps are put out in the case by hand, all at once. They were not put out by riders in the cemetery, as they are
+in the lights' own case.
+
+### Not built, and not seen
+
+- **Nothing happens after the lane.** It is a strip of road behind the railings with nothing at either end. The
+  ending (the account, the keepsake, the Witness source, the way home, Gus there, the cap on the gate) is the next
+  part of the proposal's build order and is not begun. The night still cannot be finished, and the House still does
+  not deal it.
+- The tight, steep and dark ways; what jumps out; what chases; being caught.
+- Not seen in a client. Whether the lights of the town can be seen from the lane at all depends on how far a
+  reader's game draws: it is some two hundred and sixty blocks off.
 
 ## The place
 

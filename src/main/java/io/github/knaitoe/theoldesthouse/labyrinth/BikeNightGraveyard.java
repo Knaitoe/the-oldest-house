@@ -70,6 +70,8 @@ public final class BikeNightGraveyard {
         final java.util.Map<java.util.UUID,Integer> mist=new java.util.HashMap<>();
         /** How many of the town's streets are dark, when the next goes, and where the town's lamps stand (found when the first goes). */
         int dark;long darkAt=-1;@javax.annotation.Nullable java.util.List<BlockPos> lamps;
+        /** 0.4.498: somebody is out by the back gate, and the town's lamps are on again for the rest of the night. */
+        boolean on;
     }
 
     // ------------------------------------------------------------------------------------------------ for tests, and for the night
@@ -141,7 +143,29 @@ public final class BikeNightGraveyard {
         }
         return out;
     }
+    /** 0.4.498: "with the lights of Calder Falls on again below". Every lamp that went out is lit, and none goes out again tonight. */
+    static void lightsOn(ServerLevel l,BikeNight.Night n){
+        var y=n.yard;if(y.on)return;y.on=true;y.dark=0;relight(l,n);
+    }
+    /** The lamps that went out, lit again where the town is loaded: the rest are lit as it comes back in. */
+    private static void relight(ServerLevel l,BikeNight.Night n){
+        if(n.yard.lamps!=null)for(var at:n.yard.lamps)if(l.isLoaded(n.base.offset(at)))BikeNightSite.lantern(l,n.base,at,true);
+    }
+    /** Every street's lamps go out now, as they do one street at a time behind riders who are in the cemetery. For tests. */
+    public static void darkNow(ServerLevel l,BlockPos b){
+        var n=BikeNight.night(b);if(n==null||n.yard.on)return;var y=n.yard;
+        if(y.lamps==null)y.lamps=townLamps(l,b);
+        for(var at:y.lamps)BikeNightSite.lantern(l,b,at,false);
+        y.dark=STREETS.length;
+    }
+    /** How many of the lamps that the town's lights rule knows are lit, and how many it knows. For tests. */
+    public static int[] lit(ServerLevel l,BlockPos b){
+        var n=BikeNight.night(b);if(n==null||n.yard.lamps==null)return new int[]{0,0};int lit=0;
+        for(var at:n.yard.lamps)if(BikeNightSite.lit(l,b,at))lit++;
+        return new int[]{lit,n.yard.lamps.size()};
+    }
     private static void lights(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        if(n.yard.on){if(n.tick%20==0)relight(l,n);return;}
         var y=n.yard;var b=n.base;
         if(y.dark>=STREETS.length||n.tick<y.darkAt)return;
         if(y.dark==0){

@@ -131,7 +131,7 @@ public final class CalderHollow {
      * Its place is where somebody is set down on it: on its own line, RUN short of its far end, or a block in from its near end if
      * it is shorter than that. {@code x}, {@code top} and {@code z} are that place: the row, and where across it.
      */
-    public record Island(String name,int zNear,int zFar,double x,double top,int z){
+    public record Island(String name,String way,int zNear,int zFar,double x,double top,int z){
         /** Where a body is set down, from the park's base. */
         public Vec3 place(){return new Vec3(x,top,z+.5);}
     }
@@ -144,19 +144,19 @@ public final class CalderHollow {
     static{
         var out=new ArrayList<Island>();OF=new int[ALL.size()];java.util.Arrays.fill(OF,-1);int top=CalderGraves.level(EDGE),far=0,base=0;
         // The hill: the gate's line, between the small stones.
-        out.add(new Island("the hill",CalderGraves.SMALL_ROW,EDGE,0,top,EDGE+RUN));
+        out.add(new Island("the hill","",CalderGraves.SMALL_ROW,EDGE,0,top,EDGE+RUN));
         for(var way:WAYS){
             for(int i=0;i<way.size();){
                 int j=i;while(j+1<way.size()&&touch(way.get(j),way.get(j+1)))j++;
                 int near=way.get(i).zSouth(),end=way.get(j).zNorth();
                 if(near-end+1>=STAND){
                     int z=Math.min(near-1,end+RUN),index=out.size();
-                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":"long",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
                 }
                 i=j+1;
             }
             base+=way.size();
-            if(way==WAY){far=out.size();out.add(new Island("the far side",FAR_SIDE,BACK+1,0,top,FAR_SIDE-3));}
+            if(way==WAY){far=out.size();out.add(new Island("the far side","",FAR_SIDE,BACK+1,0,top,FAR_SIDE-3));}
         }
         FAR_ISLAND=far;ISLANDS=List.copyOf(out);
     }
@@ -274,6 +274,23 @@ public final class CalderHollow {
         int[][] stones={{-18,-424,2},{-12,-427,7},{-7,-423,12},{8,-425,4},{14,-428,15},{20,-424,8},{-20,-431,0},{11,-432,5}};
         for(int[] s:stones)set(l,b,s[0],y,s[1],grave(CalderGraveBlock.Kind.STONE,Direction.SOUTH,s[2]));
     }
+    /**
+     * 0.4.498, the back gate: open, its leaves end-on on the lane's side of its piers, or shut as it is built. "The riders come out
+     * through the back gate onto a quiet lane above the town."
+     */
+    public static void backGate(ServerLevel l,BlockPos b,boolean open){
+        int y=CalderGraves.level(EDGE);var air=Blocks.AIR.defaultBlockState();var gate=CalderBlock.Kind.GATE;
+        for(int x:new int[]{CalderGraves.PATH_W,CalderGraves.PATH_E})for(int z=BACK-2;z<=BACK-1;z++)for(int dy=0;dy<2;dy++)if(CalderBlock.is(l.getBlockState(b.offset(x,y+dy,z)),gate))l.setBlock(b.offset(x,y+dy,z),air,3);
+        for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)for(int dy=0;dy<2;dy++){
+            var facing=(x-CalderGraves.PATH_W)%2==0?Direction.NORTH:Direction.SOUTH;
+            l.setBlock(b.offset(x,y+dy,BACK),open?air:BikeNightSite.fit(gate,facing,dy),3);
+        }
+        if(open)for(int x:new int[]{CalderGraves.PATH_W,CalderGraves.PATH_E})for(int dy=0;dy<2;dy++){
+            l.setBlock(b.offset(x,y+dy,BACK-1),BikeNightSite.fit(gate,Direction.WEST,dy),3);
+            l.setBlock(b.offset(x,y+dy,BACK-2),BikeNightSite.fit(gate,Direction.EAST,dy),3);
+        }
+    }
+    public static boolean backGateOpen(ServerLevel l,BlockPos b){return !CalderBlock.is(l.getBlockState(b.offset(CalderGraves.PATH_W,CalderGraves.level(EDGE),BACK)),CalderBlock.Kind.GATE);}
     private static void pier(ServerLevel l,BlockPos b,int x,int y,int z){box(l,b,x,y,z,x,y+1,z,mat("brick"));set(l,b,x,y+2,z,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));}
     private static void rail(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing){set(l,b,x,y,z,BikeNightSite.fit(CalderBlock.Kind.FENCE,facing,0));set(l,b,x,y+1,z,BikeNightSite.fit(CalderBlock.Kind.FENCE,facing,1));}
 }
