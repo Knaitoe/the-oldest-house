@@ -1,6 +1,6 @@
 # The Pell house — a proposal (November 10)
 
-The owner asked to brainstorm a vignette based on *Bring Her Back*. This is the proposal that came out of it, for review. It waited until Borrasca was finished (the owner: "after"). It is being built in slices: the street and the lot, 0.4.518 (`docs/PELL_HOUSE_STREET_0_4_518.md`); what is in the rooms, 0.4.522 (`docs/PELL_HOUSE_THINGS_0_4_522.md`); the line, 0.4.523 (`docs/PELL_HOUSE_LINE_0_4_523.md`); the people, 0.4.524 (`docs/PELL_HOUSE_PEOPLE_0_4_524.md`); the first visit by day, 0.4.525 (`docs/PELL_HOUSE_VISIT_0_4_525.md`).
+The owner asked to brainstorm a vignette based on *Bring Her Back*. This is the proposal that came out of it, for review. It waited until Borrasca was finished (the owner: "after"). It is being built in slices: the street and the lot, 0.4.518 (`docs/PELL_HOUSE_STREET_0_4_518.md`); what is in the rooms, 0.4.522 (`docs/PELL_HOUSE_THINGS_0_4_522.md`); the line, 0.4.523 (`docs/PELL_HOUSE_LINE_0_4_523.md`); the people, 0.4.524 (`docs/PELL_HOUSE_PEOPLE_0_4_524.md`); the first visit by day, 0.4.525 (`docs/PELL_HOUSE_VISIT_0_4_525.md`); the first evening, 0.4.526 (`docs/PELL_HOUSE_DINNER_0_4_526.md`).
 
 The owner's decisions so far:
 - **Tilly is a co-op role only.** A reader plays her only when a second reader is there. A solo reader is always the older sibling, with Tilly as a character.

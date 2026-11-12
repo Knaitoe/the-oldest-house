@@ -452,4 +452,109 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_visit") public static void visitDone(ServerLevel l){done();}
+
+    /** A hand on a cell of the house, from wherever the reader is: the event a right-click sends, nothing moved. */
+    private static void hand(ServerPlayer p,BlockPos at){
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(p,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),Direction.UP,at,false)));
+    }
+    /** The plates lying on the table, as bodies. */
+    private static List<net.minecraft.world.entity.Display.ItemDisplay> plates(ServerLevel l,BlockPos b){return l.getEntitiesOfClass(net.minecraft.world.entity.Display.ItemDisplay.class,PellPeople.area(b),d->d.getTags().contains(PellVisit.PLATE_TAG));}
+    /** Somebody sitting in this place's chair. */
+    private static boolean inChair(LiteraryActor a,BlockPos b,int place){var c=PellVisit.TABLE[place].chair();return a!=null&&a.blockPosition().equals(b.offset(c));}
+    /**
+     * 0.4.526, the first evening (docs/PELL_HOUSE_DINNER_0_4_526.md). The day settled, the house's hour goes on to six and holds there.
+     * June calls; a reader out in the garage hears it from there, the one in the living room hears June herself. She lays four
+     * places; Tilly sits by the hall door and Callum by the stove. With a reader at the table she serves: Tilly first, then a place for
+     * each reader (where the one sitting is sitting, then a free one for the other), and Callum's plate she passes over. The reader at
+     * the table saw Tilly served; the one in the garage did not. A hand on the table at a reader's place eats their dinner, once; at
+     * Callum's, his plate is empty. With the plates done she clears, Tilly and Callum go back where they were, and the evening goes on
+     * to half past eight and holds. Left, the house begins again: the afternoon, the table bare.
+     */
+    @GameTest(template="empty",batch="pell_dinner",timeoutTicks=6000)
+    public static void dinnerAtSixServesTillyFirst(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_dinner_reader",P);var q=f.player("pell_dinner_other",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        long[] mark={0};int[] fed={0};
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==PellVisit.AFTERNOON,"the visit begins in the late afternoon: "+PellVisit.hour(b));
+            PellVisit.settle(l,b);mark[0]=PellVisit.hour(b);
+            // One reader out in the garage, one in the living room, near enough to hear June in the kitchen.
+            f.at(p,P,13.5,0,-92.5);f.at(q,P,-2.5,0,-68.5);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)>=mark[0]+15&&PellVisit.step(b)==PellVisit.SETTLED,"once the day is settled the hour goes on toward six: "+mark[0]+" to "+PellVisit.hour(b));
+            told(p);told(q);PellVisit.hurry(b,PellVisit.SIX-5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CALLED,"June calls them at six"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_CALLS),"June calls: "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(told(p).contains(PellTexts.CALLED_FAR),"the reader in the garage hears the call from there");
+            h.assertFalse(told(q).contains(PellTexts.CALLED_FAR),"the reader in the living room hears June herself");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.LAID,"June lays the table"))
+        .thenExecute(()->{
+            for(int i=0;i<4;i++)h.assertTrue(PellVisit.plate(b,i)==PellVisit.LAID_PLATE,"a place laid at "+i);
+            h.assertTrue(plates(l,b).size()==4,"four plates on the table: "+plates(l,b).size());
+            h.assertTrue(PellVisit.diner(b,0)==PellPeople.TILLY&&PellVisit.diner(b,1)==PellPeople.CALLUM,"Tilly's place by the hall door and Callum's by the stove");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"Tilly and Callum sit down"))
+        .thenExecute(()->{
+            h.assertTrue(inChair(who(h,l,b,PellPeople.TILLY),b,0)&&inChair(who(h,l,b,PellPeople.CALLUM),b,1),"each in their chair");
+            h.assertTrue(PellVisit.step(b)==PellVisit.LAID,"nobody is served before a reader comes");
+            // The reader in the living room comes and sits at the far side of the table.
+            f.at(q,P,-9.5,0,-67.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(q,b.offset(PellVisit.TABLE[3].chair())),"a reader sits at the table");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.EATING,"June serves"))
+        .thenExecute(()->{
+            var order=PellVisit.served(b);
+            h.assertTrue(order.equals(List.of(0,3,2)),"Tilly first, then the reader where they sit, then a place for the other: "+order);
+            h.assertTrue(PellVisit.plate(b,0)==PellVisit.SERVED&&PellVisit.plate(b,3)==PellVisit.SERVED&&PellVisit.plate(b,2)==PellVisit.SERVED,"three dinners on the table");
+            h.assertTrue(PellVisit.plate(b,1)==PellVisit.LAID_PLATE,"Callum's plate is passed over");
+            h.assertTrue(f.own(q,P).getBoolean("SawTillyServed")&&!f.own(p,P).getBoolean("SawTillyServed"),"the reader at the table saw Tilly served first; the one in the garage did not");
+            // A hand on the table at the reader's own place: their dinner, eaten. (What a reader is told reaches them at the end of the
+            // tick it was said in, so it is read on the next.)
+            q.getFoodData().setFoodLevel(8);told(q);hand(q,b.offset(-12,0,-69));
+            h.assertTrue(q.getFoodData().getFoodLevel()==14&&PellVisit.plate(b,3)==PellVisit.SCRAPED&&f.own(q,P).getBoolean("Ate"),"the reader eats their dinner: "+q.getFoodData().getFoodLevel());
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(q);h.assertTrue(heard.contains(PellTexts.ATE),"and is told what it was: "+heard);
+            hand(q,b.offset(-12,0,-69));
+            h.assertTrue(q.getFoodData().getFoodLevel()==14,"a second hand eats nothing more");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.SCRAPED_PLATE),"a second hand finds the plate scraped");
+            // The other comes in from the garage. Beside Callum's chair, the table's nearest place is his: nothing on it.
+            f.at(p,P,-9.5,0,-69.5);told(p);hand(p,b.offset(-11,0,-69));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CALLUMS_PLATE),"Callum's plate has nothing on it");
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_TABLE[0]),"a hand on Callum at the table");
+            // Then sits at the place laid for them, and eats.
+            h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[2].chair())),"the other reader sits");
+            hand(p,b.offset(-12,0,-69));
+            h.assertTrue(PellVisit.plate(b,2)==PellVisit.SCRAPED&&f.own(p,P).getBoolean("Ate"),"and eats theirs");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.plate(b,0)==PellVisit.SCRAPED,"Tilly eats hers"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CLEARING,"June clears"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_CLEARS),"\"Leave those\"");
+            h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)<0&&PellVisit.placeOf(b,PellPeople.CALLUM)<0,"Tilly and Callum get down");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CLEARED&&plates(l,b).isEmpty(),"the table cleared"))
+        .thenExecute(()->{
+            for(int i=0;i<4;i++)h.assertTrue(PellVisit.plate(b,i)==PellVisit.NONE,"nothing left at "+i);
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).getMainHandItem().is(PellRegistry.SCRAPED.get()),"June takes the plates to the sink");
+            mark[0]=PellVisit.hour(b);
+        }).thenWaitUntil(()->h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.7),"Tilly goes back to Nessa's room"))
+        .thenWaitUntil(()->{var s=PellPeople.FIRST_VISIT[PellPeople.CALLUM];h.assertTrue(at(who(h,l,b,PellPeople.CALLUM),b,s.x(),s.z(),.7),"Callum goes back to the end of the hall");})
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)>mark[0],"after dinner the evening goes on: "+mark[0]+" to "+PellVisit.hour(b));
+            PellVisit.hurry(b,PellVisit.EVENING-3);
+        }).thenIdle(10).thenExecute(()->h.assertTrue(PellVisit.hour(b)==PellVisit.EVENING,"and holds at half past eight: "+PellVisit.hour(b)))
+        .thenIdle(10).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==PellVisit.EVENING,"still half past eight");
+            // Everybody out in the street, and the house left: the afternoon again, the table bare.
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);
+            PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==PellVisit.AFTERNOON&&plates(l,b).isEmpty(),"the afternoon again, the table bare");
+            h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)<0&&PellVisit.placeOf(b,PellPeople.CALLUM)<0,"nobody sitting");
+            h.assertTrue(f.own(p,P).getBoolean("Ate")&&f.own(q,P).getBoolean("Ate"),"what each reader did stays theirs");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_dinner") public static void dinnerDone(ServerLevel l){done();}
 }

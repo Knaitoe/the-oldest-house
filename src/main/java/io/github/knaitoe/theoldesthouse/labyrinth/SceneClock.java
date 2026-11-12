@@ -54,7 +54,7 @@ public final class SceneClock {
             case VACANT_POSSESSION->3; // 0.4.228: moving day, the light going over the street
             case LAST_SWIMMER->9; // 0.4.227: closing time at the pool, dark over the skylight
             case POLAROID_TRAIL->3; // 0.4.204: late autumn twilight over the yard and the pines
-            case PELL_HOUSE->16; // 0.4.518: a late afternoon at the end of summer, until the house keeps its own hours
+            case PELL_HOUSE->22; // 0.4.518: a late afternoon at the end of summer; 0.4.526: the house keeps its own hours (PellVisit, PellClient)
             case BIKE_NIGHT->9; // 0.4.464: the last night of October in Calder Falls
             case WHISTLERS->9; // 0.4.202: night at the lookout, stars over the forest of towers // 0.4.201: midnight at the Sandersons' and in the park
             default->0;
@@ -62,6 +62,6 @@ public final class SceneClock {
     }
     public static long time(int mode,int elapsed,long nativeTime){return switch(mode){
         case 1->21000;case 3,10->12500;case 7,8,9->18000;case 4->6000;
-        case 11->1000;case 18->4000;case 19->8000;case 20->11400;case 15->7000;case 17->1000;case 16->10800;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
+        case 11->1000;case 18->4000;case 19->8000;case 20->11400;case 15->7000;case 17->1000;case 16,22->10800;case 12->3000;case 13->20820;case 14->23200;case 5->18000+Math.min(6000,Math.max(0,elapsed)*6000L/3600);default->nativeTime;
     };}
 }

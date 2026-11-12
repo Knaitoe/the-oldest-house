@@ -60,6 +60,8 @@ public final class LiteraryRenderers {
         if(io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.Kind.CHAIR))return new Seat(8,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.FACING));
         // The familiar kitchen's chairs (0.4.331), where its visitors sit: the seat ten pixels up.
         if(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.Kind.CHAIR))return new Seat(10,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.FACING));
+        // The Pell house's kitchen chairs (0.4.526), where Tilly and Callum sit at dinner.
+        if(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seat(state))return new Seat(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seatHeight(state),state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.
         if(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.Kind.CHAIR))return new Seat(9,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.FACING));
         // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.

@@ -2,6 +2,9 @@
 """The Pell house's people's things (docs/PELL_HOUSE_PEOPLE_0_4_524.md): what two of them have in their hands. Tilly's long cane,
 and Gail's folder. Drawn at sixteen pixels to the block. The people themselves are painted by tools/paint_character_skins.py.
 
+0.4.526 (docs/PELL_HOUSE_DINNER_0_4_526.md): June's dinner things. Her plates, seen from above as they lie on the table: laid, served
+(sausages, mash with the gravy on it, peas) and scraped; and her saucepan, in her hand while she serves, with the spoon in it.
+
 Run it to draw; --check verifies the pack against it (CI runs that).
 """
 import argparse
@@ -14,8 +17,10 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot  # noqa: E402
 
-ITEMS = ('pell_cane', 'pell_folder')
-NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder'}
+ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan')
+NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
+         'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
+         'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan'}
 
 
 def cane():
@@ -60,6 +65,95 @@ def folder():
     return im
 
 
+def round_cells(cx, cy, r):
+    """The cells of a disc centred at (cx, cy), measured from each cell's middle."""
+    return [(x, y) for y in range(16) for x in range(16) if (x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r]
+
+
+def plate():
+    """June's plate from above: white, a blue band near the rim, the well a shade lighter than the rim and ringed where it dips. Lit
+    from the top left, so the rim's far side is a little greyer."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for x, y in round_cells(8, 8, 7.9):
+        d = ((x + .5 - 8) ** 2 + (y + .5 - 8) ** 2) ** .5
+        far = x + y > 17
+        if d > 7.1:
+            c = '#cfc9bb' if far else '#ddd8cb'
+        elif d > 6.2:
+            c = '#5f7f9f' if far else '#7193b3'
+        elif d > 5.3:
+            c = '#e4dfd3' if far else '#efebe2'
+        elif d > 4.6:
+            c = '#e0dbcf'
+        else:
+            c = '#f5f2eb' if not far else '#ece8de'
+        dot(im, x, y, c)
+    return im
+
+
+def dinner():
+    """The plate served: a mound of mash with the gravy on it, two sausages side by side, and the peas against the mash."""
+    im = plate()
+    # The mash, heaped, lit on its top left; a little gravy run into a hollow on its top and down one side.
+    for x, y in round_cells(5.4, 6.2, 3.0):
+        dot(im, x, y, '#d6c286' if x + y > 12 else '#eadcac')
+    for x, y in ((3, 4), (4, 4), (4, 3), (3, 5)):
+        dot(im, x, y, '#f8f0d0')
+    for x, y in ((5, 6), (6, 6), (5, 7), (6, 7), (7, 8)):
+        dot(im, x, y, '#7a4826')
+    dot(im, 5, 6, '#a0673a'); dot(im, 7, 8, '#5f361b')
+    # Two sausages lying side by side along the plate's right, a gap of plate between them, browned on top and rounded at the ends.
+    for y0 in (4, 8):
+        fill(im, 10, y0, 13, y0 + 1, '#b67140')
+        fill(im, 9, y0 + 1, 14, y0 + 2, '#8c522d')
+        fill(im, 10, y0 + 2, 13, y0 + 3, '#653620')
+        dot(im, 9, y0 + 1, '#764324'); dot(im, 13, y0 + 1, '#764324')
+        dot(im, 11, y0 + 1, '#a5643a')
+    # The peas, in a heap below the mash.
+    for x, y in ((4, 9), (5, 9), (6, 9), (3, 10), (4, 10), (5, 10), (6, 10), (7, 10), (4, 11), (5, 11), (6, 11)):
+        dot(im, x, y, '#5c9a34')
+    for x, y in ((4, 9), (6, 10), (4, 11)):
+        dot(im, x, y, '#90c65a')
+    return im
+
+
+def scraped():
+    """The plate eaten from: gravy dragged round the well by the knife, a few peas left at the edge, the knife and fork laid
+    together across it."""
+    im = plate()
+    for x, y in ((5, 5), (6, 5), (4, 6), (5, 7), (6, 8), (7, 8), (9, 7), (10, 6)):
+        dot(im, x, y, '#c49e74')
+    for x, y in ((4, 7), (8, 8)):
+        dot(im, x, y, '#a87c52')
+    for x, y in ((4, 10), (5, 11)):
+        dot(im, x, y, '#5c9a34')
+    # The knife and the fork, handles toward the reader's right hand.
+    for i in range(6):
+        dot(im, 8 + i, 7 + i, '#b9c0c5'); dot(im, 9 + i, 6 + i, '#8d959b')
+    dot(im, 13, 12, '#2f2b29'); dot(im, 14, 11, '#2f2b29')
+    return im
+
+
+def saucepan():
+    """June's saucepan, held as a hand holds a tool: the pan at the top right with its rim catching the light, the black handle down
+    to the bottom left, and a wooden spoon standing in it."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 11, 1, 12, 5, '#c79d6b'); dot(im, 11, 1, '#a57d4f')
+    fill(im, 6, 5, 15, 6, '#cfd6da')
+    fill(im, 6, 6, 15, 11, '#99a1a6')
+    fill(im, 7, 6, 8, 11, '#c3cacf')
+    fill(im, 13, 6, 15, 11, '#6e767b')
+    fill(im, 7, 11, 14, 12, '#5b6267')
+    for i in range(6):
+        dot(im, 5 - i, 8 + i, '#262222'); dot(im, 5 - i, 9 + i, '#3f3a39')
+    return im
+
+
+def flat(name, parent='minecraft:item/generated'):
+    """A flat thing, from its picture: the plates lie on the table (laid there as item displays, face up) and the saucepan is held."""
+    return {'parent': parent, 'textures': {'layer0': NS + 'item/' + name}}
+
+
 def faces(side, end, texture):
     f = {k: {'uv': list(side), 'texture': texture} for k in ('north', 'south', 'east', 'west')}
     f.update({k: {'uv': list(end), 'texture': texture} for k in ('up', 'down')})
@@ -102,12 +196,15 @@ def models():
             'gui': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
             'ground': {'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
             'fixed': {'scale': [.9, .9, .9]}}}
-    return {'pell_cane': cane_model, 'pell_folder': folder_model}
+    return {'pell_cane': cane_model, 'pell_folder': folder_model, 'pell_plate': flat('pell_plate'), 'pell_dinner': flat('pell_dinner'),
+            'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
-    images, data = {'pell_cane': cane(), 'pell_folder': folder()}, models()
+    images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
+              'pell_saucepan': saucepan()}
+    data = models()
     assert set(images) == set(ITEMS) == set(data)
     for name, im in images.items():
         path = A / 'textures/item' / f'{name}.png'
@@ -117,7 +214,7 @@ def main():
         else:
             im.save(path, optimize=True)
     for name, obj in data.items():
-        for el in obj['elements']:
+        for el in obj.get('elements', []):
             for axis in range(3):
                 assert -16 <= el['from'][axis] <= el['to'][axis] <= 32, (name, el)
         path = A / 'models/item' / f'{name}.json'

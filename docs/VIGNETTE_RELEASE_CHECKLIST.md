@@ -1,3 +1,5 @@
+November 12 candidate 0.4.526 (docs/PELL_HOUSE_DINNER_0_4_526.md): the Pell house's first evening (slice 6). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (all six cases, the first visit's case with the evening after it), the architecture namespace, and tools/draw_pell_people.py --check (four new items).
+
 November 12 candidate 0.4.525 (docs/PELL_HOUSE_VISIT_0_4_525.md): the Pell house's first visit by day (slice 5). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (all five cases, the people's case with the visit running), the architecture namespace, and tools/generate_pell_audio.py --check (one new subtitled sound).
 
 November 12 candidate 0.4.524 (docs/PELL_HOUSE_PEOPLE_0_4_524.md): the Pell house's people (slice 4). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (all four cases), the architecture namespace, tools/paint_character_skins.py --check with tools/verify_character_art.py (four new catalogued skins), and tools/draw_pell_people.py --check.

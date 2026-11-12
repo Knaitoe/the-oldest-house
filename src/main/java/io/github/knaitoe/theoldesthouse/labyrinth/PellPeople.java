@@ -82,7 +82,18 @@ public final class PellPeople {
         boolean fresh=true,gailGone,tillyHome;int step,waypoint,gailStep,tillyStep,stuck,empty;long next;UUID car;
         /** Where June has walked, newest last, for Tilly to follow. */
         final java.util.ArrayDeque<Vec3> trail=new java.util.ArrayDeque<>();
-        Household(){for(int i=0;i<COUNT;i++)rest[i]=FIRST_VISIT[i].look();}
+        /** 0.4.526: the house's own hour, and whether it is going on; who has been sent it. */
+        long time=PellVisit.AFTERNOON;int rate;final java.util.Set<UUID> told=new java.util.HashSet<>();
+        /** 0.4.526: who is sitting, and in which of the table's places (PellVisit.TABLE); where each is walking to, and what they do
+         *  when they get there (sit at a place, or stand facing a way). */
+        final boolean[] seated=new boolean[COUNT];final int[] place={-1,-1,-1,-1};
+        @SuppressWarnings("unchecked") final java.util.ArrayDeque<Vec3>[] way=new java.util.ArrayDeque[COUNT];
+        final int[] sitAt={-1,-1,-1,-1};final float[] endLook=new float[COUNT];final int[] stuckFor=new int[COUNT];
+        /** 0.4.526, dinner: each place's plate (PellVisit.NONE to SCRAPED), its body on the table, who eats there (a person, a reader,
+         *  or nobody), the order June serves in, and when it was called, served and cleared. */
+        final int[] plate=new int[4];final UUID[] plates=new UUID[4];final int[] diner={-1,-1,-1,-1};
+        final java.util.List<Integer> order=new java.util.ArrayList<>();int serving;long calledAt,servedAt,clearedAt;
+        Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
     public static void clearAll(){HOUSES.clear();}
@@ -125,6 +136,7 @@ public final class PellPeople {
     /** None of the four is at the house: for a house built again from nothing, and for tests. */
     public static void reset(ServerLevel l,BlockPos b){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),PellPeople::is))old.discard();
+        PellVisit.clearPlates(l,b);
         HOUSES.remove(b);
     }
 
@@ -155,8 +167,8 @@ public final class PellPeople {
             if(near==null){turnHead(a,rest,rest);continue;}
             float toward=yawTo(a,near.getEyePosition());
             // Callum turns to follow whoever he is watching; the others turn only their heads, as far as a head turns, and their
-            // bodies settle the way they stand.
-            float body=who==CALLUM?toward:rest;
+            // bodies settle the way they stand. Anybody sitting at the table stays turned to it.
+            float body=who==CALLUM&&!h.seated[who]?toward:rest;
             turnHead(a,body,toward);
         }
     }
@@ -172,7 +184,7 @@ public final class PellPeople {
     public static void talk(ServerPlayer p,LiteraryActor a,net.minecraft.nbt.CompoundTag own){
         if(!is(a))return;var b=LiteraryVignettes.base(p,PellHouse.PLACE);if(b==null)return;
         int who=who(a);var h=household(b);
-        if(who==CALLUM){var lines=PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
+        if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         if(a.saying())return;
         var lines=switch(who){case JUNE->PellTexts.JUNE_TALK;case TILLY->PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
         String line=lines[h.said[who]++%lines.length];
