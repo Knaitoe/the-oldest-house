@@ -155,6 +155,33 @@ public final class BikeNightTests {
         }).thenSucceed();
     }
 
+    /**
+     * 0.4.492: square into a wall above the crash speed, the rider comes off, wherever in its stride the bike meets the wall. It used
+     * to depend on that: what a bike "kept" was how much of the tick's move it got in before the wall, so one with a good half of
+     * a tick's travel still to go was let off as a glance, was under the crash speed by the next tick, and stood against the
+     * wall with its rider on. The graveyard's own case found it, one run in three.
+     */
+    @AfterBatch(batch="bike_square") public static void squareDone(ServerLevel l){close(l);}
+    // A batch of its own: the cases on the strips each take the makes they need, and two cases at once cannot both have the Wasp.
+    @GameTest(template="empty",batch="bike_square",timeoutTicks=900)
+    public static void squareIntoAWallFlatOutTheRiderComesOffWhereverInItsStrideTheBikeMeetsIt(GameTestHelper h){
+        var s=new Strip(h,10,20);final NightBike[] b=new NightBike[5];final ServerPlayer[] p=new ServerPlayer[5];
+        var makes=new NightBike.Make[]{NightBike.Make.HARE,NightBike.Make.HOPPER,NightBike.Make.LAMP,NightBike.Make.RATTLER,NightBike.Make.WASP};
+        // How much of a tick's travel each has left to the wall when the tick starts.
+        double[] left={.1,.3,.5,.7,.9};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(s.ready(),"the road's sections are in")).thenExecute(()->{
+            s.lay();
+            for(int x=-2;x<=2;x++)for(int y=0;y<3;y++)s.l.setBlock(s.at.offset(x,y,-12),Blocks.STONE.defaultBlockState(),3);
+            for(int i=0;i<5;i++){
+                p[i]=s.reader("bike_square_"+i);b[i]=s.on(p[i],makes[i],i-2,-2);
+                p[i].setYRot(180);b[i].setYRot(180);b[i].steady(0,RiddenBike.TOP);
+                // The wall's face is eleven blocks up the road; a bike is three tenths of a block from its middle to its front.
+                b[i].setPos(s.at.getX()+i-2+.5,s.at.getY(),s.at.getZ()-11+.3+RiddenBike.TOP*left[i]);
+            }
+        }).thenIdle(3).thenExecute(()->{
+            for(int i=0;i<5;i++)h.assertTrue(p[i].getVehicle()==null,"the rider who had "+left[i]+" of a tick's travel left to the wall comes off: still on the "+makes[i].id()+(b[i].isAlive()?" going "+b[i].speedNow():""));
+        }).thenSucceed();
+    }
     @GameTest(template="empty",batch="bike_night",timeoutTicks=900)
     public static void theWaspTurnsTighterAndAWallHardlySlowsIt(GameTestHelper h){
         var s=new Strip(h,2,20);final NightBike[] b={null,null};final ServerPlayer[] p={null,null};

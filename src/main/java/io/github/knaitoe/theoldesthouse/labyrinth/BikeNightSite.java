@@ -31,6 +31,12 @@ public final class BikeNightSite {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.BIKE_NIGHT;
     /** The railings' three lines (the back wall is at z 1), and how far the park's own ground is laid past them: north, to Park Street's far pavement, where the town's begins (CalderTown). */
     public static final int WEST=-31,EAST=31,NORTH=-45,FAR_WEST=-56,FAR_EAST=56,FAR_NORTH=-58;
+    /**
+     * 0.4.492: the height the park's ground is at, in the outside dimension. The place stands at its own height and not in the stacked
+     * slots, as the lookout and the Black City do: a slot is twenty-four blocks high, and the Hollow is floating ground far over and
+     * under the hill it starts from (LabyrinthPlaces.baseAtSpacing, reach).
+     */
+    public static final int BASE_Y=96;
     /** The path from the door to the gate, and the gateway's four blocks between its piers. */
     public static final int PATH_W=-2,PATH_E=1,PIER_W=-3,PIER_E=2;
     /** The playground's sand, and the gap in its edging where the side path comes in. */

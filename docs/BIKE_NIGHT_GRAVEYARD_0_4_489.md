@@ -126,7 +126,9 @@ What the runs before they passed found, all of it the cases' own but the pit:
 - the hands case asked what was heard in the tick it clicked, where what is said arrives the tick after (the park's
   own hands case waits, and this one does now); and it took the oldest low marker's year for the first year anybody
   died in, where that is 1880;
-- taken straight from the bump over a low marker to a run at a standing stone, the case's rider reached the stone at
+- (This one is wrong about why: see 0.4.492 in `docs/BIKE_NIGHT_MIST_0_4_491.md`. The bike was going flat out, and the
+  bike's own rule for a head-on hit let it off by where in its stride it met the stone.)
+  Taken straight from the bump over a low marker to a run at a standing stone, the case's rider reached the stone at
   under the crash speed and stayed on, pedalling at it. Why it was slow was not found: the likeliest is that it came
   down off the marker leaning and the case's pedalling, which pushes one side to right a lean, never got it going
   again. The cases brake to a stop between their parts now, so each part starts upright from standing. If a bump does
