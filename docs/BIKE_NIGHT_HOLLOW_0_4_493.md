@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -36,7 +36,78 @@ So, as planned and not yet built: two-block gaps on the plain way (a tap clears 
 where a full hold is asked for, a gap of about five level blocks for the run "only the Comet's top speed carries", and
 a ledge two blocks up for the "gap only the Hopper's jump clears".
 
+## 0.4.494: the plain way
+
+"Every bike has a way through." This is it: the way any bike takes, from the hill to the cemetery's far side. The five
+ways the bikes' own perks open are not built.
+
+**The hill's ground stops** on the row behind the small stones' own trees, ragged off the gate's line, and what is left
+of the side railings ends in a pier on each side. From there north, for a hundred and sixty blocks, there is the
+course and nothing else. **The cemetery's back railings and its back gate are on the far side of it now**, where its
+ground begins again at the height of the hill's top; behind them is the lane.
+
+In the order it is ridden (heights are where a body stands; the hill's top is 3):
+
+| | Piece | Height | Reached over |
+|---|---|---|---|
+| 1 | A grave that has come away, seven blocks square, two stones still in it | 2 | two blocks of nothing, a block down |
+| 2 | Another, two blocks east of the line | 2 | two, level |
+| 3 | Another, two blocks west | 1 | two, a block down |
+| 4 | "Crooked fences": a strip five wide and twenty-four long with board fence half across it at two places, one side and then the other, and broken boards between | 1 | two, level |
+| 5 | "A bridge of coffin lids": five, each two blocks long, a block of nothing between them | 0 | **three**, a block down |
+| 6 | A grave past the lids | 0 | one |
+| 7 | "A pumpkin vine the size of a road, curling up and down": two blocks wide, up three by half blocks, over, and down one and a half, swinging two blocks east and back | 0 to 3 to 1.5 | two, level |
+| 8 | "Stairs of tilted stones": laid headstones, three wide, half a block up every two | 1 to 5 | two, half a block down |
+| 9 | The top: the highest piece | 5 | it touches the stairs |
+| 10 | The last stretch: a strip three wide running down, with one gap in it | 4 to 3 | two, a block down; its own gap half a block down |
+| | The far side | 3 | it touches the stretch |
+
+**Every gap is two blocks but one, and most of them come down.** On the level a tap of the hop carries a plain bike
+2.3 blocks and a held hop 3.3, and a bike is on the ground while any of its 0.6 of a block is. So on the level a tap
+clears two blocks only if it is made in the last block before the brink, and a held hop clears three only from the
+brink itself. The way was first laid out level, with the three wanting the hop held: the case that rides it passed
+once, and the second time its rider came down a few tenths short of the lids and came off against the first of them.
+That is too fine a thing to ask on the way every bike is meant to manage.
+
+So the piece past the three is a block lower, and so are the pieces past four of the twos (a block, or half a block):
+falling gives a hop time to carry. Three of the twos are level and are the harder kind. The height that loses is got
+back by steps (the vine, the stairs), never by a jump. The lids' own gaps of one are ridden over at speed without a
+hop.
+
+### Cases
+
+Two (79 in the namespace):
+
+- on the gate's line and twelve blocks to either side, from the edge to the far side, nothing floats but the way's own
+  pieces, what hangs under them and what stands on them; the hill stops at its edge with the first piece two blocks
+  off and a block down; piece to piece is never more than three blocks, three only once and that one a block down,
+  the lids a block apart, no more than three of the twos level; nothing is higher than
+  the piece before it by more than a step, and each is in line with the last by two blocks at least over a gap (one
+  where they touch: the vine swings a block at a time); from 0 to 5 high;
+  each piece is made of what it is and stood on at its height; roots under the sod; stones still in the graves and
+  fences across the strip; the far side's railings whole, its gate shut between two piers, gravel to it and the lane
+  behind;
+- **a plain bike (the Lamp) is ridden the whole of it** from behind the small stones to the far side's ground by a
+  case that steers at the middle of what is ahead and round the fences, taps the hop at the brink of each two-block
+  gap, and holds it from four blocks short of the three. It crosses every part, is never lower than the lowest
+  piece, and ends on the far side still ridden. (On the way as it was first laid out, level, it passed once and failed
+  once; see above.)
+
+The layout case failed twice on its own rules before it passed: on the hill's ragged edge, which is the hill's and
+is meant to be there; and on the vine, which is two wide and swings a block at a time, so that one row shares one
+block with the next, where the case asked for two everywhere and should have asked that only across a gap.
+
+### Not built, and not seen
+
+- **A rider who misses a jump falls.** The proposal's "drops them onto the last island they stood on (a checkpoint),
+  with a scare" is not built: they fall out of the place's room and are put back by the rule every outdoor place has,
+  without their bike. That is the next thing.
+- No perk ways, nothing that jumps out, nothing that chases, no way out by the back gate (it is shut).
+- The mist in the Hollow is what it is outside the railings: none. What a rider should see out there is undecided.
+- None of it has been seen in a client. Whether the gaps feel fair from a saddle, and whether the fences can be
+  ridden round at speed by a person and not only by a case, are the owner's to judge.
+
 ## The place
 
 Since 0.4.492 the place stands at its own height with room seventy-two blocks over its ground and forty-eight under.
-It reaches no further north yet.
+Since 0.4.494 it reaches 444 blocks north of the park's wall, where it reached 272.

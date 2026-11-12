@@ -31,8 +31,12 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 public final class CalderGraves {
     private CalderGraves(){}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    /** The railings: the town's along the front, these down both sides and across the back. The ground goes on a little behind them. */
-    public static final int W=CalderTown.W,E=CalderTown.E,FRONT=CalderTown.RAILS,BACK=-266,FAR=-272,TOP=17;
+    /**
+     * The railings: the town's along the front, and these down both sides. BACK is the first row north of the hill's last: the hill's
+     * ground stops there (0.4.494), and what is past it is the Hollow's (CalderHollow), which has the back railings and the back gate
+     * on its far side.
+     */
+    public static final int W=CalderTown.W,E=CalderTown.E,FRONT=CalderTown.RAILS,BACK=CalderHollow.EDGE-1,TOP=17;
     /** The banks: each row is half blocks, and north of it the ground is a block higher. */
     public static final int[] BANKS={-190,-208,-226};
     /** The gate's path, as wide as the gate, and where it ends. */
@@ -58,7 +62,7 @@ public final class CalderGraves {
     public static final int PIT_W=-1,PIT_E=0,PIT_S=-245,PIT_N=-246,PIT_DEEP=2,HEAP=-244;
     private static final int[][] TREES={{-58,-184,6},{-52,-192,7},{-44,-206,6},{-57,-210,7},{-40,-224,6},{-55,-228,8},{-48,-244,7},{-58,-252,6},{-24,-188,6},{-20,-246,7},
         {56,-185,7},{50,-192,6},{42,-207,7},{57,-213,6},{46,-224,8},{54,-229,6},{52,-245,7},{58,-253,6},{22,-189,6},{18,-228,7},
-        {-36,-262,7},{-12,-261,6},{12,-262,7},{34,-261,6},{-52,-262,8},{52,-262,7}};
+        {-36,-259,7},{-12,-259,6},{12,-259,7},{34,-259,6},{-52,-259,8},{52,-259,7}};
 
     // ------------------------------------------------------------------------------------------------ where things are
     /** How many banks are south of a row: the block a body stands in there (on a bank's own row, half a block up it). */
@@ -115,7 +119,7 @@ public final class CalderGraves {
             if(d>3.1||(dx==0&&dz==0&&dy<=0))continue;
             if(d>2.2&&rnd.nextInt(3)==0)continue;
             if(rnd.nextInt(9)==0)continue;
-            if(top+dy<=TOP&&Math.abs(x+dx)<=E&&z+dz>=FAR&&free(l,b,x+dx,top+dy,z+dz))set(l,b,x+dx,top+dy,z+dz,BikeNightSite.leaves());
+            if(top+dy<=TOP&&Math.abs(x+dx)<=E&&free(l,b,x+dx,top+dy,z+dz))set(l,b,x+dx,top+dy,z+dz,BikeNightSite.leaves());
         }
     }
 
@@ -132,8 +136,6 @@ public final class CalderGraves {
             for(int row:ROWS)if(row==t[1])throw new IllegalStateException("a tree at "+t[0]+","+t[1]+" would stand in a row of stones");
             tree(l,b,t[0],t[1],t[2],rnd);
         }
-        // The dark behind the back railings.
-        for(int x=W+2;x<=E-2;x+=4+rnd.nextInt(3))tree(l,b,x,BACK-2-rnd.nextInt(4),6+rnd.nextInt(3),rnd);
     }
     /** The hill: earth under it, the cemetery's grass over it and gravel on the paths, with a row of half blocks up each bank. */
     static void ground(ServerLevel l,BlockPos b){
@@ -141,8 +143,8 @@ public final class CalderGraves {
         var turfStep=BikeNightRegistry.GRAVE_TURF_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
         var gravelStep=BikeNightRegistry.GRAVEL_SLAB.get().defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM);
         // North of what the town cleared for itself.
-        box(l,b,W,-4,FAR,E,TOP,CalderTown.N-1,air);
-        for(int z=FAR;z<FRONT;z++){
+        box(l,b,W,-4,BACK+1,E,TOP,CalderTown.N-1,air);
+        for(int z=BACK+1;z<FRONT;z++){
             int y=level(z);
             box(l,b,W,-4,z,E,y-2,z,dirt);
             for(int x=W;x<=E;x++){
@@ -154,20 +156,12 @@ public final class CalderGraves {
     }
     /**
      * The fence, joined all the way round ("which must be connected properly"): the town's front railings end in a pier at each corner
-     * and these start from it; a pier stands on every bank, tall enough to meet the rails below it and above; and the back has its
-     * own corners, and a gate between two piers in the gate's line, shut.
+     * and these start from it; and a pier stands on every bank, tall enough to meet the rails below it and above. They run to
+     * where the hill's ground stops. (0.4.494: the back railings and the back gate are on the Hollow's far side.)
      */
     static void railings(ServerLevel l,BlockPos b){
         for(int z=FRONT-1;z>BACK;z--)for(int x:new int[]{W,E}){
             if(bank(z)||(FRONT-z)%9==0)pier(l,b,x,z);else rail(l,b,x,z,Direction.EAST);
-        }
-        int pw=PATH_W-1,pe=PATH_E+1,y=level(BACK);
-        for(int x=W;x<=E;x++){
-            if(x>=PATH_W&&x<=PATH_E){
-                var facing=(x-PATH_W)%2==0?Direction.NORTH:Direction.SOUTH;
-                set(l,b,x,y,BACK,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,0));set(l,b,x,y+1,BACK,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,1));
-            }else if(x==pw||x==pe||x==W||x==E||(x<pw&&(pw-x)%7==0)||(x>pe&&(x-pe)%7==0))pier(l,b,x,BACK);
-            else rail(l,b,x,BACK,Direction.NORTH);
         }
     }
     /**

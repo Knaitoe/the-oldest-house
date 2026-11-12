@@ -700,7 +700,7 @@ public enum LabyrinthPlace {
      * (CalderGraves), as far as its back railings. 0.4.492: it stands at its own height (BikeNightSite.BASE_Y) with room far over
      * and under it, for the Hollow. Not dealt until the night can be finished; its room grows north as what lies past the graveyard
      * is built. */
-    BIKE_NIGHT("bike_night",Kind.ONE_SHOT,238,new BoundingBox(-64,-48,-272,64,72,1),literaryEntry());
+    BIKE_NIGHT("bike_night",Kind.ONE_SHOT,238,new BoundingBox(-64,-48,-444,64,72,1),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {
