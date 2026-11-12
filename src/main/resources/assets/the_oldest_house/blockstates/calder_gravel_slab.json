@@ -7,7 +7,7 @@
       "model": "the_oldest_house:block/calder_gravel_slab_top"
     },
     "type=double": {
-      "model": "the_oldest_house:block/calder_gravel"
+      "model": "the_oldest_house:block/calder_gravel_slab_double"
     }
   }
 }

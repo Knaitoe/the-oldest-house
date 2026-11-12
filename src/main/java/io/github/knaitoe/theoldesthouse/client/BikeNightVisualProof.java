@@ -98,6 +98,9 @@ public final class BikeNightVisualProof extends Screen {
         for(var state:BikeNightRegistry.GRAVE.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.GRAVE_TURF_SLAB.get().getStateDefinition().getPossibleStates())need(state);
         for(var state:BikeNightRegistry.GRAVEL_SLAB.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.VINE_SLAB.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.COFFIN_LID.get().getStateDefinition().getPossibleStates())need(state);
+        for(var state:BikeNightRegistry.STONE_STEP.get().getStateDefinition().getPossibleStates())need(state);
         for(var name:BikeNightRegistry.MATERIAL_NAMES)need(BikeNightRegistry.material(name).defaultBlockState());
         for(var state:BikeNightRegistry.ROAD_LINE.get().getStateDefinition().getPossibleStates())need(state);
         need(BikeNightRegistry.LEAVES.get().defaultBlockState());
@@ -132,7 +135,7 @@ public final class BikeNightVisualProof extends Screen {
             "Main Street: hardware, bank and clock, theater and marquee; laundromat, video, barber",
             "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets",
             "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back",
-            "the cemetery's things: headstones; the small row, crosses, obelisk, angel, doors; heap, tarps, what is left",
+            "the cemetery's things: headstones; small row, crosses, obelisk, angel, doors; heap, tarps, goods; the Hollow's",
             "the hill: a bank and the pier on it, the gate's path, two rows, and the open grave behind its heap"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
         switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);default->hill(g);}
@@ -527,6 +530,14 @@ public final class BikeNightVisualProof extends Screen {
         at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.MOUND,Direction.NORTH,0),new int[]{0,0,4});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.MOUND,Direction.EAST,0),new int[]{2,0,4});
         at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.TARP,f,0),new int[]{4,0,4});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.TARP,f,CalderGraveBlock.HEAPED),new int[]{6,0,4});
         for(int i=0;i<4;i++)at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.GOODS,f,i),new int[]{8+i*2,0,4});
+        // 0.4.493, the Hollow's: a piece of sod with roots under it; the vine and its step; a coffin, its lid, a laid stone; pickets.
+        var sod=BikeNightRegistry.material("hollow_sod").defaultBlockState();var top=net.minecraft.world.level.block.state.properties.SlabType.TOP;
+        for(int x=0;x<=2;x++){at.accept(sod,new int[]{x,3,6});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.ROOTS,f,x),new int[]{x,2,6});}
+        at.accept(BikeNightRegistry.material("vine").defaultBlockState(),new int[]{4,2,6});at.accept(BikeNightRegistry.VINE_SLAB.get().defaultBlockState(),new int[]{5,2,6});
+        at.accept(BikeNightRegistry.material("coffin").defaultBlockState(),new int[]{7,2,6});
+        at.accept(BikeNightRegistry.COFFIN_LID.get().defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,top),new int[]{8,2,6});
+        at.accept(BikeNightRegistry.STONE_STEP.get().defaultBlockState(),new int[]{10,2,6});at.accept(BikeNightRegistry.STONE_STEP.get().defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,top),new int[]{11,2,6});
+        for(int i=0;i<4;i++){at.accept(sod,new int[]{13+i,2,6});at.accept(CalderGraveBlock.of(CalderGraveBlock.Kind.PICKET,f,i),new int[]{13+i,3,6});}
         buffers.endBatch();pose.popPose();
     }
     /** 0.4.489: a strip of the hill put together as the builder puts it. */

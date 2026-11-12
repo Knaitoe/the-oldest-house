@@ -29,6 +29,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <li>TARP: a tarpaulin pegged out flat (0), or thrown over a heap (1).</li>
  * <li>GOODS: what is left at a grave: flowers, a lantern (lit), a wreath, a flag.</li>
  * <li>DOOR: a quarter of the mausoleum's iron doors, flat against the back of its block.</li>
+ * <li>ROOTS (0.4.493): what hangs under a piece of ground that has come away. In nobody's way.</li>
+ * <li>PICKET (0.4.493): a length of old board fence on the block's middle line, across the way it faces: upright (0), leaning to
+ * either side (1, 2), broken off short (3). It is a fence where it stands, whatever it leans to; broken, it is a bump.</li>
  * </ul>
  *
  * <p>The proposal: "A stone is a wall: a glance off it is fine, a head-on hit puts the rider over the bars." A bike takes a step a
@@ -42,7 +45,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class CalderGraveBlock extends HorizontalDirectionalBlock implements BikeSurface {
     public static final MapCodec<CalderGraveBlock> CODEC=simpleCodec(CalderGraveBlock::new);
     public enum Kind implements StringRepresentable {
-        STONE,SMALL,CROSS,OBELISK,ANGEL,MOUND,TARP,GOODS,DOOR;
+        STONE,SMALL,CROSS,OBELISK,ANGEL,MOUND,TARP,GOODS,DOOR,ROOTS,PICKET;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -53,6 +56,8 @@ public final class CalderGraveBlock extends HorizontalDirectionalBlock implement
     public static final int FLOWERS=0,LANTERN=1,WREATH=2,FLAG=3;
     /** A tarpaulin over a heap. */
     public static final int HEAPED=1;
+    /** A picket broken off short. */
+    public static final int BROKEN=3;
     /** How high a standing stone is to a bike, in pixels; and the mound's sheet at its low end and at its top. */
     public static final double STANDING=24,MOUND_FROM=2,MOUND_TO=12;
     public CalderGraveBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.STONE).setValue(STAGE,0));}
@@ -80,6 +85,8 @@ public final class CalderGraveBlock extends HorizontalDirectionalBlock implement
             case TARP->stage==HEAPED?Block.box(.5,0,.5,15.5,6,15.5):Block.box(0,0,0,16,1,16);
             case GOODS->Block.box(4,0,4,12,11,12);
             case DOOR->MarshBlock.turned(f,0,0,14.5,16,16,16);
+            case ROOTS->Block.box(2,2,2,14,16,14);
+            case PICKET->MarshBlock.turned(f,0,0,7,16,high>0?high:stage==BROKEN?8:16,9);
         };
     }
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return stands(s,0);}
@@ -93,7 +100,9 @@ public final class CalderGraveBlock extends HorizontalDirectionalBlock implement
             case STONE,SMALL->bike&&!low(s)?stands(s,STANDING):stands(s,0);
             case CROSS->bike?stands(s,STANDING):stands(s,0);
             case MOUND->bike?Shapes.empty():stands(s,0);
-            case GOODS->Shapes.empty();
+            case GOODS,ROOTS->Shapes.empty();
+            // A standing picket is a fence: half a block higher than it looks, to everybody. Broken off short, it is what it is.
+            case PICKET->s.getValue(STAGE)==BROKEN?stands(s,0):stands(s,STANDING);
             case TARP->s.getValue(STAGE)==HEAPED?stands(s,0):Shapes.empty();
             default->stands(s,0);
         };

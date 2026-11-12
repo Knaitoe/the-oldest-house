@@ -2159,6 +2159,486 @@
     "facing=west,kind=door,stage=15": {
       "model": "the_oldest_house:block/calder_grave/door_0",
       "y": 270
+    },
+    "facing=north,kind=roots,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/roots_1"
+    },
+    "facing=north,kind=roots,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/roots_2"
+    },
+    "facing=north,kind=roots,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=north,kind=roots,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/roots_0"
+    },
+    "facing=east,kind=roots,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/roots_1",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/roots_2",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=east,kind=roots,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 90
+    },
+    "facing=south,kind=roots,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/roots_1",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/roots_2",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=south,kind=roots,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 180
+    },
+    "facing=west,kind=roots,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/roots_1",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/roots_2",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=west,kind=roots,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/roots_0",
+      "y": 270
+    },
+    "facing=north,kind=picket,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/picket_1"
+    },
+    "facing=north,kind=picket,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/picket_2"
+    },
+    "facing=north,kind=picket,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/picket_3"
+    },
+    "facing=north,kind=picket,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=north,kind=picket,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/picket_0"
+    },
+    "facing=east,kind=picket,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/picket_1",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/picket_2",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/picket_3",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=east,kind=picket,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 90
+    },
+    "facing=south,kind=picket,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/picket_1",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/picket_2",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/picket_3",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=south,kind=picket,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 180
+    },
+    "facing=west,kind=picket,stage=0": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=1": {
+      "model": "the_oldest_house:block/calder_grave/picket_1",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=2": {
+      "model": "the_oldest_house:block/calder_grave/picket_2",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=3": {
+      "model": "the_oldest_house:block/calder_grave/picket_3",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=4": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=5": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=6": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=7": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=8": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=9": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=10": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=11": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=12": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=13": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=14": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
+    },
+    "facing=west,kind=picket,stage=15": {
+      "model": "the_oldest_house:block/calder_grave/picket_0",
+      "y": 270
     }
   }
 }
