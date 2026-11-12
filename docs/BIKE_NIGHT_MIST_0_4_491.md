@@ -85,7 +85,7 @@ enough, and whether its grey is right against this night's sky are the owner's t
 the numbers are `BikeNightMistClient.THIN`, `THICK` and `EASE`, and `BikeNightGraveyard.MIST_GATE` and `LAMP_CUTS`.
 
 Protocol 183 (one payload: how thick a reader's mist is). Since 0.4.495 the payload also says for how long the mist is
-over everything, and the protocol is 184.
+over everything, and the protocol is 184. Since 0.4.500 it says how much of it, and the protocol is 185.
 
 ## 0.4.492: square into a wall, the rider comes off
 

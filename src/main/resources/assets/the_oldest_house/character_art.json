@@ -2142,5 +2142,29 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 187
+  },
+  {
+    "name": "literary_hollow_ghost_a",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 188
+  },
+  {
+    "name": "literary_hollow_ghost_b",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 189
+  },
+  {
+    "name": "literary_hollow_ghost_c",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 190
   }
 ]

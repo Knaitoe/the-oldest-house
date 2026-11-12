@@ -19,6 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * caught by any of them is the Hollow's failure." As answered: the Hollow is one shared course, and each specter is private to
  * whoever it is after, as the House's other private actors are.
  *
+ * <p>0.4.500: the ghosts are here too, which catch nobody (see {@link Haunt}).
+ *
  * <p>The first of them is here: "witches swoop low on brooms across the path, to be ducked or dodged", and "ducking a witch is the
  * hop's crouch, so a witch just before a gap is a choice." A witch crosses the plain way at each of {@link #SWOOPS}: two of them a
  * little short of a brink, one on the vine's top where it is two blocks wide and swinging. She is there for one reader: she comes for them when they are within APPROACH of her row, from one side or the other,
@@ -32,8 +34,11 @@ public final class BikeNightSpecters {
     private BikeNightSpecters(){}
     /** The witch's phase among the strangers, and her gesture on her broom. */
     public static final int WITCH=187,FLY=1;
-    public static boolean cast(int phase){return phase==WITCH;}
-    public static String skin(int phase){return "hollow_witch";}
+    /** 0.4.500: the ghosts, three of them, on the phases after hers; and how they hang in the air. */
+    public static final int GHOST=188,GHOSTS=3,DRIFT=2;
+    public static boolean cast(int phase){return phase>=WITCH&&phase<GHOST+GHOSTS;}
+    public static boolean ghost(int phase){return phase>=GHOST&&phase<GHOST+GHOSTS;}
+    public static String skin(int phase){return ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     /** A row a witch crosses the plain way on (along its middle): the row, the middle of the way there, and how high its ground is. */
     public record Swoop(int z,double x,double top){}
@@ -54,6 +59,25 @@ public final class BikeNightSpecters {
     /** How far down over the bars a rider is before she passes over them, of the whole of the hop's crouch. */
     public static final float DUCKED=.3F;
 
+    /**
+     * 0.4.500, the ghosts. "**ghosts** drift through the course and through the riders, chilling their view." Three stretches of
+     * the plain way are haunted ({@link #HAUNTS}: the three graves, the grave past the lids, the stairs). While a reader is on one,
+     * ghosts come for them one after another, never more than AT_ONCE: each from one side, OUT blocks off and a little ahead of
+     * where the reader is, drifting across the way at DRIFT_PACE, a little over the ground, and on out the other side. They are
+     * half there (GHOST_FADE), and come and go by thinning. They catch nobody. One that passes within THROUGH of its reader chills
+     * their view once: the mist is over them by CHILL_SHARE of a hundred for CHILL ticks (as much as their comfort setting lets
+     * through), and they hear it go by.
+     */
+    public record Haunt(int zSouth,int zNorth){}
+    public static final List<Haunt> HAUNTS=List.of(new Haunt(-264,-288),new Haunt(-333,-338),new Haunt(-371,-388));
+    public static final int AT_ONCE=2,EVERY=50,CHILL=30,CHILL_SHARE=60,GHOST_FADE=55,THIN=20;
+    public static final double OUT=9,AHEAD=5,DRIFT_PACE=.07,OVER_GROUND=.3,THROUGH=1.2;
+    /** One ghost on its way across. */
+    static final class Drift{
+        final UUID actor;final int side;final double z,y;double x;int age;boolean chilled;
+        Drift(UUID actor,int side,double x,double y,double z){this.actor=actor;this.side=side;this.x=x;this.y=y;this.z=z;}
+    }
+
     /** One witch on her way across. */
     static final class Pass{
         final int row,side;@Nullable UUID actor;double f,df;boolean committed,over;
@@ -62,6 +86,8 @@ public final class BikeNightSpecters {
     /** What the specters keep for a night: who is being crossed, which rows each reader has had, and how many witches have gone over each. */
     static final class Flight{
         final Map<UUID,Pass> passes=new HashMap<>();final Map<UUID,Integer> had=new HashMap<>(),over=new HashMap<>();
+        /** 0.4.500: each reader's ghosts, when the next may come, and how many have gone through them. */
+        final Map<UUID,List<Drift>> drifts=new HashMap<>();final Map<UUID,Long> nextGhost=new HashMap<>();final Map<UUID,Integer> chills=new HashMap<>(),ghosts=new HashMap<>();
     }
 
     /** No specter comes for anybody. For tests of the course that are not about them. */
@@ -69,6 +95,7 @@ public final class BikeNightSpecters {
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var s=n.specters;if(keptAway)return;
+        haunt(l,n,here);
         for(var p:here){
             var id=p.getUUID();
             if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id)){end(l,s,id);continue;}
@@ -84,6 +111,48 @@ public final class BikeNightSpecters {
         }
         // A witch whose reader has gone is gone.
         for(var id:List.copyOf(s.passes.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there)end(l,s,id);}
+    }
+    /** The ghosts: coming for whoever is on a haunted stretch, drifting, chilling, going. */
+    private static void haunt(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var s=n.specters;
+        for(var p:here){
+            var id=p.getUUID();var mine=s.drifts.computeIfAbsent(id,k->new ArrayList<>());
+            boolean out=!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id);
+            Entity body=p.getVehicle() instanceof NightBike bike?bike:p;var at=BikeNightHollow.from(n,body.position());
+            // Another one, if they are on a haunted stretch and it is time.
+            if(!out&&mine.size()<AT_ONCE&&n.tick>=s.nextGhost.getOrDefault(id,0L))for(var h:HAUNTS){
+                if(at.z>h.zSouth()+1||at.z<h.zNorth()||Math.abs(at.x)>8)continue;
+                double top=CalderHollow.top(Mth.floor(at.x),Mth.floor(at.z));if(Double.isNaN(top)||Math.abs(at.y-top)>1.5)continue;
+                int side=l.random.nextBoolean()?1:-1,which=s.ghosts.merge(id,1,Integer::sum)-1;
+                var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)break;
+                a.bind(BikeNight.PLACE,id);a.appearance(LiteraryActor.STRANGER,GHOST+which%GHOSTS);a.gesture(DRIFT);a.setNoGravity(true);a.noPhysics=true;a.fade(100);
+                // Over the ground where it crosses the way, which may not be the height its reader is at.
+                double z=at.z-AHEAD-l.random.nextDouble()*3,there=CalderHollow.top(Mth.floor(at.x),Mth.floor(z));
+                var d=new Drift(a.getUUID(),side,at.x+side*OUT,(Double.isNaN(there)?top:there)+OVER_GROUND,z);
+                float yaw=side>0?90:-90;a.moveTo(n.base.getX()+d.x,n.base.getY()+d.y,n.base.getZ()+d.z,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+                if(l.addFreshEntity(a)){mine.add(d);s.nextGhost.put(id,n.tick+EVERY);}
+                break;
+            }
+            for(var it=mine.iterator();it.hasNext();){
+                var d=it.next();d.age++;d.x-=d.side*DRIFT_PACE;
+                int life=(int)Math.ceil(2*OUT/DRIFT_PACE);
+                var a=l.getEntity(d.actor) instanceof LiteraryActor found?found:null;
+                if(a==null||out||d.age>=life){if(a!=null)a.discard();it.remove();continue;}
+                float yaw=d.side>0?90:-90;a.moveTo(n.base.getX()+d.x,n.base.getY()+d.y+Math.sin(d.age*.08)*.08,n.base.getZ()+d.z,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+                // Thinning in and out.
+                int edge=Math.min(d.age,life-d.age);a.fade(edge>=THIN?GHOST_FADE:100-(100-GHOST_FADE)*edge/THIN);
+                if(!d.chilled&&new Vec3(d.x,d.y+.8,d.z).distanceTo(at.add(0,.8,0))<THROUGH){
+                    d.chilled=true;s.chills.merge(id,1,Integer::sum);
+                    io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload(BikeNightGraveyard.mist(l,n.base,p),CHILL,CHILL_SHARE));
+                    p.playNotifySound(BikeNightRegistry.GHOST_BY.get(),SoundSource.HOSTILE,.8F,.9F+l.random.nextFloat()*.2F);
+                }
+            }
+        }
+        for(var id:List.copyOf(s.drifts.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there)clear(l,s,id);}
+    }
+    private static void clear(ServerLevel l,Flight s,UUID reader){
+        var mine=s.drifts.remove(reader);if(mine==null)return;
+        for(var d:mine)if(l.getEntity(d.actor) instanceof LiteraryActor a)a.discard();
     }
     private static Vec3 where(BikeNight.Night n,Swoop w,Pass pass){
         double x=w.x()+pass.side*FROM*(1-2*pass.f),y=w.top()+LOW+(HIGH-LOW)*Math.pow(2*pass.f-1,2);
@@ -124,6 +193,7 @@ public final class BikeNightSpecters {
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         for(var id:List.copyOf(n.specters.passes.keySet()))end(l,n.specters,id);
+        for(var id:List.copyOf(n.specters.drifts.keySet()))clear(l,n.specters,id);
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,BikeNightBullies.area(n.base).inflate(0,0,300),BikeNightSpecters::is))if(BikeNight.nightAt(l,a.blockPosition())==n)a.discard();
         n.specters=new Flight();
     }
@@ -134,6 +204,14 @@ public final class BikeNightSpecters {
         var n=BikeNight.night(p);if(n==null)return null;var pass=n.specters.passes.get(p.getUUID());
         return pass!=null&&pass.actor!=null&&p.serverLevel().getEntity(pass.actor) instanceof LiteraryActor a?a:null;
     }
+    /** The ghosts that are drifting for a reader, how many have come for them tonight, and how many have gone through them. */
+    public static List<LiteraryActor> ghosts(ServerPlayer p){
+        var out=new ArrayList<LiteraryActor>();var n=BikeNight.night(p);if(n==null)return out;
+        for(var d:n.specters.drifts.getOrDefault(p.getUUID(),List.of()))if(p.serverLevel().getEntity(d.actor) instanceof LiteraryActor a)out.add(a);
+        return out;
+    }
+    public static int ghostsCome(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.specters.ghosts.getOrDefault(p.getUUID(),0);}
+    public static int chills(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.specters.chills.getOrDefault(p.getUUID(),0);}
     /** How many of her rows a reader has had a witch come at, and how many have gone over them. */
     public static int had(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:Integer.bitCount(n.specters.had.getOrDefault(p.getUUID(),0));}
     public static int over(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.specters.over.getOrDefault(p.getUUID(),0);}

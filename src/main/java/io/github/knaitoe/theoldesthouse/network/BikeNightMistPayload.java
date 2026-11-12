@@ -10,9 +10,13 @@ import net.minecraft.resources.ResourceLocation;
  *
  * <p>0.4.495: {@code over} is for how many ticks the mist is over everything, whatever its thickness: somebody in the Hollow has
  * gone down into it (BikeNightHollow). Nothing, but then.
+ *
+ * <p>0.4.500: and {@code share} is how much of it is over them, of a hundred: all of it for somebody who has gone down or been
+ * caught, some of it for somebody a ghost has gone through (BikeNightSpecters).
  */
-public record BikeNightMistPayload(int mist,int over) implements CustomPacketPayload {
+public record BikeNightMistPayload(int mist,int over,int share) implements CustomPacketPayload {
+    public BikeNightMistPayload(int mist,int over){this(mist,over,100);}
     public static final Type<BikeNightMistPayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"bike_night_mist"));
-    public static final StreamCodec<ByteBuf,BikeNightMistPayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,BikeNightMistPayload::mist,ByteBufCodecs.VAR_INT,BikeNightMistPayload::over,BikeNightMistPayload::new);
+    public static final StreamCodec<ByteBuf,BikeNightMistPayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,BikeNightMistPayload::mist,ByteBufCodecs.VAR_INT,BikeNightMistPayload::over,ByteBufCodecs.VAR_INT,BikeNightMistPayload::share,BikeNightMistPayload::new);
     @Override public Type<BikeNightMistPayload> type(){return TYPE;}
 }
