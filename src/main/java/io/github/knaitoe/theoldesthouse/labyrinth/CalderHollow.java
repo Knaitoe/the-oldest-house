@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * 0.4.494, Bike night (docs/BIKE_NIGHT_PROPOSAL.md, "Act three"): the Hollow's ground. The proposal: "a course of floating ground,
@@ -70,6 +71,69 @@ public final class CalderHollow {
     }
     /** How high a body stands at a place on the plain way; NaN where there is none of it. */
     public static double top(int x,int z){for(var p:WAY)if(p.has(x,z))return p.top();return Double.NaN;}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.495, the islands
+    /**
+     * How long a run of ground must be to be an island; how far short of its far end somebody who has missed is set down on it (the
+     * run they have to get going again); and how far along the way ground counts as near somebody in the air. Blocks.
+     */
+    public static final int STAND=5,RUN=8,NEAR=6;
+    /**
+     * "Missing a jump drops them onto the last island they stood on (a checkpoint)." An island: the hill, the far side, and each run
+     * of pieces that touch and is long enough to get going on again. The lids are not islands: each is two blocks long, and a bridge.
+     * Its place is where somebody is set down on it: on its own line, RUN short of its far end, or a block in from its near end if
+     * it is shorter than that. {@code x}, {@code top} and {@code z} are that place: the row, and where across it.
+     */
+    public record Island(String name,int zNear,int zFar,double x,double top,int z){
+        /** Where a body is set down, from the park's base. */
+        public Vec3 place(){return new Vec3(x,top,z+.5);}
+    }
+    /** The hill is the first island, and the far side the last. */
+    public static final int HILL=0;
+    public static final List<Island> ISLANDS;
+    /** Which island each piece of the way is part of, or -1. */
+    private static final int[] OF;
+    static{
+        var out=new ArrayList<Island>();OF=new int[WAY.size()];java.util.Arrays.fill(OF,-1);int top=CalderGraves.level(EDGE);
+        // The hill: the gate's line, between the small stones.
+        out.add(new Island("the hill",CalderGraves.SMALL_ROW,EDGE,0,top,EDGE+RUN));
+        for(int i=0;i<WAY.size();){
+            int j=i;while(j+1<WAY.size()&&touch(WAY.get(j),WAY.get(j+1)))j++;
+            int near=WAY.get(i).zSouth(),far=WAY.get(j).zNorth();
+            if(near-far+1>=STAND){
+                int z=Math.min(near-1,far+RUN),index=out.size();
+                for(int k=i;k<=j;k++){var p=WAY.get(k);OF[k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(WAY.get(i),WAY.get(j)),near,far,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+            }
+            i=j+1;
+        }
+        out.add(new Island("the far side",FAR_SIDE,BACK+1,0,top,FAR_SIDE-3));
+        ISLANDS=List.copyOf(out);
+    }
+    private static boolean touch(Piece a,Piece c){return c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
+    private static String name(Piece first,Piece last){
+        String a=first.name().replaceAll(" [0-9]+$",""),c=last.name().replaceAll(" [0-9]+$","");
+        return a.equals(c)?a:a+" and "+c;
+    }
+    /**
+     * The island somebody has under them, standing at a place (from the park's base): the one whose ground their feet are on, or
+     * that a wheel is still on at its brink. -1 on a lid, on anything standing on a piece, or over nothing.
+     */
+    public static int stood(double x,double y,double z){
+        for(double dx:new double[]{0,-.3,.3})for(double dz:new double[]{0,-.3,.3}){
+            int bx=(int)Math.floor(x+dx),bz=(int)Math.floor(z+dz);
+            for(int i=0;i<WAY.size();i++){var p=WAY.get(i);if(p.has(bx,bz)&&Math.abs(y-p.top())<.1)return OF[i];}
+        }
+        if(Math.abs(y-CalderGraves.level(EDGE))>=.1)return -1;
+        // The hill reaches as far as three rows past its edge, off the gate's line.
+        return z>=EDGE-3.3?HILL:z<FAR_SIDE+1.3?ISLANDS.size()-1:-1;
+    }
+    /** The lowest ground anywhere near somebody who is that far north: under it by enough, they have missed everything. */
+    public static double floor(double z){
+        double low=Double.POSITIVE_INFINITY;
+        for(var p:WAY)if(z<=p.zSouth()+1+NEAR&&z>=p.zNorth()-NEAR)low=Math.min(low,p.top());
+        if(z>=EDGE-NEAR||z<=FAR_SIDE+1+NEAR)low=Math.min(low,CalderGraves.level(EDGE));
+        return low==Double.POSITIVE_INFINITY?0:low;
+    }
 
     private static void set(ServerLevel l,BlockPos b,int x,int y,int z,BlockState s){BuildBlocks.set(l,b.offset(x,y,z),s,F);}
     private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s){

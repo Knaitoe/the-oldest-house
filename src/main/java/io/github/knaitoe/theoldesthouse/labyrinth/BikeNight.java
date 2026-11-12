@@ -80,6 +80,8 @@ public final class BikeNight {
         CalderCarts.Chain carts=new CalderCarts.Chain();
         /** 0.4.490: what happens in the graveyard. */
         BikeNightGraveyard.Yard yard=new BikeNightGraveyard.Yard();
+        /** 0.4.495: the Hollow's islands, and who has gone down. */
+        BikeNightHollow.Course hollow=new BikeNightHollow.Course();
         /** Whose each bike is tonight, by make. */
         final UUID[] owner=new UUID[6];
         /** Where each bike stands or lies while nobody is on it; null while it is ridden. */
@@ -194,7 +196,12 @@ public final class BikeNight {
             Night n=at!=null?nightAt(l,at):null;
             if(n==null&&reader!=null){var p=l.getServer().getPlayerList().getPlayer(reader);if(p!=null)n=night(p);}
             if(n==null)return;
-            if(at==null){at=n.base.offset(BikeNightSite.bikeAt(make));stand(l,at,make);}   // nowhere to set it down: it is back in the rack
+            if(at==null){
+                // Nowhere to set it down. In the Hollow it is laid by its rider's island's place (0.4.495); anywhere else it is back in the rack.
+                at=BikeNightHollow.lost(l,n,reader);
+                if(at!=null)l.setBlock(at,NightBikeBlock.of(make,Direction.NORTH,true),3);
+                else{at=n.base.offset(BikeNightSite.bikeAt(make));stand(l,at,make);}
+            }
             n.at[make.ordinal()]=at;remember(l,n);
         }
         @Override public void carried(ServerPlayer onPegs,ServerPlayer pedalling){
@@ -240,6 +247,7 @@ public final class BikeNight {
             CalderEvening.tick(l,n,here);
             CalderCarts.tick(l,n,here);
             BikeNightGraveyard.tick(l,n,here);
+            BikeNightHollow.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -259,7 +267,7 @@ public final class BikeNight {
     }
     /** The night over: every bike back in the rack on its stand, nobody's; the failing lamp lit. */
     static void reset(ServerLevel l,Night n){
-        for(var bike:l.getEntitiesOfClass(NightBike.class,new net.minecraft.world.phys.AABB(n.base).inflate(110,70,310)))if(nightAt(l,bike.blockPosition())==n&&bike.getPassengers().isEmpty())bike.discard();
+        for(var bike:l.getEntitiesOfClass(NightBike.class,new net.minecraft.world.phys.AABB(n.base).inflate(110,70,450)))if(nightAt(l,bike.blockPosition())==n&&bike.getPassengers().isEmpty())bike.discard();
         for(var make:NightBike.Make.values()){
             int k=make.ordinal();var home=n.base.offset(BikeNightSite.bikeAt(make));
             if(n.at[k]!=null&&!n.at[k].equals(home)&&l.isLoaded(n.at[k])){var s=l.getBlockState(n.at[k]);if(s.is(BikeNightRegistry.BIKE_BLOCK.get())&&s.getValue(NightBikeBlock.MAKE)==make)l.setBlock(n.at[k],Blocks.AIR.defaultBlockState(),3);}
@@ -278,6 +286,7 @@ public final class BikeNight {
         CalderEvening.reset(l,n);
         CalderCarts.reset(l,n);
         BikeNightGraveyard.reset(l,n);
+        BikeNightHollow.reset(l,n);
         BikeNightSite.swingsBack(l,n.base);
         remember(l,n);
     }

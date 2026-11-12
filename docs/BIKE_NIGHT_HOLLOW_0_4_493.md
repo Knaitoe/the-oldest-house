@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -101,11 +101,100 @@ block with the next, where the case asked for two everywhere and should have ask
 
 - **A rider who misses a jump falls.** The proposal's "drops them onto the last island they stood on (a checkpoint),
   with a scare" is not built: they fall out of the place's room and are put back by the rule every outdoor place has,
-  without their bike. That is the next thing.
+  without their bike. That is the next thing. (Built in 0.4.495, below.)
 - No perk ways, nothing that jumps out, nothing that chases, no way out by the back gate (it is shut).
 - The mist in the Hollow is what it is outside the railings: none. What a rider should see out there is undecided.
 - None of it has been seen in a client. Whether the gaps feel fair from a saddle, and whether the fences can be
   ridden round at speed by a person and not only by a case, are the owner's to judge.
+
+## 0.4.495: somebody who misses
+
+The proposal: "Missing a jump drops them onto the last island they stood on (a checkpoint), with a scare."
+
+**Islands.** An island is the hill, the far side, or a run of the course's pieces that touch one another and is at
+least five blocks long: long enough to get going on again. In the order they are ridden: the hill; the three graves;
+the fences; the grave past the lids; the vine; the stairs with the top; the first half of the last stretch; its second
+half; the far side. **The lids are not islands.** Each is two blocks long, and they are a bridge: somebody who goes
+down from a lid goes back to the fences.
+
+**Each island has one place** where somebody is set down on it: on its own line, eight blocks short of its far end
+(the run they need to get going), or a block in from its near end where it is shorter than that. On the hill it is
+on the gate's line between the small stones.
+
+**Whose.** A reader's last island is their own, and is the hill until they have stood on another. On a bike it is the
+island the bike is on the ground on. Whoever is on a Hopper's pegs has the island of the one pedalling.
+
+**Missing.** Somebody has missed when they are two blocks under the lowest ground within six blocks of them along the
+way, so nobody is taken out of a jump they might still land. They are set down at once on their island at its place,
+pointing north, the way on, unhurt:
+
+- riding, they are still on the bike, the bike stopped and upright, with whoever was on its pegs;
+- on foot, they are on foot.
+
+**The bike.** One let go of over nothing (its rider got off, or came off, in the air) is laid by its rider's island's
+place, where they are about to be. It used to go back to the rack in the park, as it still does anywhere else. One
+that lies in the Hollow anywhere but on its rider's island when they go down on foot (on a lid, on the next island) is
+laid by them too: they could not have walked back to it. "By them" is the nearest free cell on whole ground beside
+the place, or up to four rows behind it, and never where they stand.
+
+**The scare** is theirs alone:
+
+- the mist is over everything at once: as near as a block and a half, held for a little over a second, and gone again
+  in a second. This is the one sudden change of the whole view in Bike night. It is as much of one as the reader's
+  comfort setting lets through, and nothing at all with that at nothing;
+- what is in the mist is heard: one new sound, subtitled "Something stirs in the mist" (39 cues);
+- and a line: "You go down into the mist. Something in it has the back wheel, and lets go." On foot: "Something in it
+  has your ankle, and lets go."
+
+Anybody else sees mist where they went down and where they are.
+
+**That there is mist under the Hollow, and something in it, is Claude's reading.** The proposal has the course "over
+nothing", and has the Hollow's failure as "The screen goes to mist." Nothing is drawn down there.
+
+### Cases
+
+Four (83 in the namespace). All four passed the first time they were run.
+
+- The islands are those, in that order; no lid is one; each place is a run short of its island's far end or a block in
+  from its near end, has ground under it and room over it, and has somewhere by it to lay a bike; and what counts as
+  the lowest ground near is the first grave by the hill's edge, the lids at the lids, the last stretch's beginning on
+  the top, and the far side at the far side.
+- **A rider on the Lamp** rides off the side of the first grave and is on it again at its place, on the bike, stopped,
+  upright, pointing north, unhurt, told, with what is in the mist heard and the mist put over them; a second and a
+  half later they have not moved. Off the second grave they are set down on the second, not the first. From the
+  fences onto a lid and off the lid, they are set down on the fences.
+- **Somebody on foot** who goes down off the hill's last rows, well off the gate's line, is set down on the hill on
+  foot. On the Wasp, out over nothing, they get off: the Wasp lies by the third grave's place and has not gone back to
+  the rack; they go down after it and are set down beside it, stand it up and get on. They leave it standing on the
+  first lid and go down on foot off the lid's side: they are set down on the third grave, and the Wasp is off the lid
+  and lying by them.
+- **Two on the Hopper**, one on its pegs, go down off the stairs together and are set down together, both still on it,
+  each told, each hearing it, each with the mist over them.
+
+The cases move a reader on foot down by hand: a test's reader does not fall by themselves.
+
+### Found by CI (run 1542, on 0.4.492's head)
+
+The Bike night job failed on one case, the Wasp's: "in the same four ticks the Wasp has turned much further: 0.0
+degrees against 0.0". Neither bike had turned at all. A strip case's road said it was ready when its chunks were
+loaded. A chunk is promoted to ticking entities a ticket-level update after that, and this case measures four ticks
+from the moment it puts its riders on: on the runner the promotion landed later than those four ticks, and the bikes
+had not ticked. A strip now waits until both ends of its road tick entities (`NativeTestChunks.entityTicking`, which
+was written for this after run 1370). Every other job that finished passed. `build` was cancelled by the next push,
+so the cases that build every place, and the client proof, have not been run by CI on anything since 0.4.488.
+
+### Not built, and not seen
+
+- No perk ways, nothing that jumps out, nothing that chases, no way out by the back gate (it is shut).
+- Nothing is drawn under the Hollow, and out on the course the mist is still none. What a rider sees out there is
+  undecided.
+- The mist over everything has not been seen in a client, and the sound has not been heard by anybody. Whether a
+  block and a half for a second is a scare or a nuisance, and the two lines, are the owner's to judge.
+- One place for each island, a run short of its far end, is a choice. Being set down where they left the ground would
+  be kinder; at the island's near end, harsher.
+- How many times somebody has gone down is counted for the night and is not yet in their record or the account.
+- A reader's last island is kept with the night, not with the world: after the server stops and starts in the middle
+  of the Hollow it is the hill again.
 
 ## The place
 

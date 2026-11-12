@@ -331,6 +331,9 @@ public final class BikeNightTexts {
     /** Every line of theirs, for the case that holds them to how they talk. */
     /** 0.4.490, at the cemetery. The proposal's own, of the one who stops at the fence. */
     public static final String NOT_GOING_IN="I'm not going in there.";
+    /** 0.4.495: somebody in the Hollow has missed, on a bike and on foot. */
+    public static final String UNDER_RIDING="You go down into the mist. Something in it has the back wheel, and lets go.";
+    public static final String UNDER_WALKING="You go down into the mist. Something in it has your ankle, and lets go.";
     /** What each of the two who go in says when he stops: Tully, Ray-Ray. After it, nothing. */
     public static final String[] FALL_BACK={"Ray-Ray? Quit messing around.","Tully, wait up. I can't see."};
     public static List<String> bullyLines(){

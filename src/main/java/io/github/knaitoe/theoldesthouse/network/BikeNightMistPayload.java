@@ -7,9 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * 0.4.491, Bike night: how thick one reader's own mist is in the graveyard, 0 to 100 (BikeNightGraveyard.mist). Sent while
  * they are in it, and once as nothing when they leave; the client lets it go by itself if it stops hearing.
+ *
+ * <p>0.4.495: {@code over} is for how many ticks the mist is over everything, whatever its thickness: somebody in the Hollow has
+ * gone down into it (BikeNightHollow). Nothing, but then.
  */
-public record BikeNightMistPayload(int mist) implements CustomPacketPayload {
+public record BikeNightMistPayload(int mist,int over) implements CustomPacketPayload {
     public static final Type<BikeNightMistPayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"bike_night_mist"));
-    public static final StreamCodec<ByteBuf,BikeNightMistPayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,BikeNightMistPayload::mist,BikeNightMistPayload::new);
+    public static final StreamCodec<ByteBuf,BikeNightMistPayload> STREAM_CODEC=StreamCodec.composite(ByteBufCodecs.VAR_INT,BikeNightMistPayload::mist,ByteBufCodecs.VAR_INT,BikeNightMistPayload::over,BikeNightMistPayload::new);
     @Override public Type<BikeNightMistPayload> type(){return TYPE;}
 }

@@ -402,6 +402,16 @@ public abstract class RiddenBike extends Entity {
         if(!level().isClientSide&&!done&&pedalling&&e instanceof ServerPlayer p)park(p,false);
     }
 
+    /**
+     * 0.4.495: set down somewhere else as it is, with whoever is on it, stopped and upright and pointing {@code yaw}. The Hollow puts
+     * a rider who has missed a jump back on the last island they stood on (BikeNightHollow).
+     */
+    public void putBack(double x,double y,double z,float yaw){
+        setYRot(yaw);yRotO=yaw;teleportTo(x,y,z);setDeltaMovement(Vec3.ZERO);setOnGround(true);resetFallDistance();
+        speed=0;lean=0;charge=0;lift=0;onRoad=0;onSheet=0;lastSide=0;
+        entityData.set(LEAN,0F);entityData.set(SPEED,0F);entityData.set(CROUCH,0F);
+    }
+
     /** Taken from under whoever is on it: it is gone without being stood anywhere, and everyone on it is left where they were. */
     public void taken(){done=true;discard();}
 
