@@ -246,7 +246,9 @@ public abstract class RiddenBike extends Entity {
         double fall=pop>0?pop:grounded?-.08:getDeltaMovement().y-.08;double y0=getY(),x0=getX(),z0=getZ();
         // Coming down, the front wheel catches a low lip and rolls up it, as on the ground it rolls up a block.
         catching=!grounded&&fall<0;if(catching)setOnGround(true);
-        move(MoverType.SELF,new Vec3(dir.x*speed,fall,dir.z*speed));
+        // What it asks to move by this tick: its speed is changed by the ground under it before what stopped it is looked at.
+        final double askedX=dir.x*speed,askedZ=dir.z*speed;
+        move(MoverType.SELF,new Vec3(askedX,fall,askedZ));
         catching=false;
         // A plank ramp: the bike rides the sheet itself, where the middle of its wheels is.
         float sheet=0;
@@ -296,7 +298,16 @@ public abstract class RiddenBike extends Entity {
         }
         if(landed)lift=0;
         // Into something: a glance along a wall keeps most of the way on; head on at speed, the rider comes off.
-        if(horizontalCollision&&speed>.001F){double kept=went/speed;if(kept<s.headOn&&speed>CRASH){off(p,lean>=0?1:-1,Off.HEAD_ON);return;}speed*=(float)Mth.clamp(kept,s.glance,1);}
+        // 0.4.492: what it keeps is the share of its way that lay along the thing, not how much of this tick's move it got in before
+        // it met it. By that measure a bike going flat out square at a wall, with more than two fifths of a tick's travel left
+        // to the wall, was let off as a glance, came down to under the crash speed in that tick, and stood against the wall with its
+        // rider on: about one hit in five at top speed, by where in its stride the bike happened to be.
+        if(horizontalCollision&&speed>.001F){
+            boolean stopX=Math.abs(getX()-x0-askedX)>1e-4,stopZ=Math.abs(getZ()-z0-askedZ)>1e-4;
+            double asked=Math.hypot(askedX,askedZ),kept=asked<1e-6?0:Math.hypot(stopX?0:askedX,stopZ?0:askedZ)/asked;
+            if(kept<s.headOn&&speed>CRASH){off(p,lean>=0?1:-1,Off.HEAD_ON);return;}
+            speed*=(float)Mth.clamp(kept,s.glance,1);
+        }
         // Landing. Level, it keeps its way. Crooked, it tips much further the way it leaned and loses some. Far too hard, the rider is off.
         if(!grounded&&landed){
             float impact=(float)-fall,hard=Mth.clamp((impact-SOFT)/(HARD-SOFT),0,1);

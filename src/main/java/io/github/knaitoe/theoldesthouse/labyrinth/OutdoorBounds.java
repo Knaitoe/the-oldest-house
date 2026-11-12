@@ -47,6 +47,9 @@ public final class OutdoorBounds {
             case BARN_WELL -> new Area(-19, 19, -41, vestibule, r.minY() - 3);
             // 0.4.201: the way out has no rim; the dream ends before the reader reaches this (WayOut.beyond).
             case WAY_OUT -> new Area(-WayOutRooms.WALK - 6, WayOutRooms.WALK + 6, WayOutRooms.WALK_FAR - 6, WayOutRooms.WALK_BACK + 6, r.minY() - 3);
+            // 0.4.492: Bike night's room goes far under its ground, for the Hollow. Off the edge of the town somebody is put back
+            // as soon as they were when its room was a slot high, not after a fall of fifty blocks.
+            case BIKE_NIGHT -> new Area(r.minX() - 2, r.maxX() + 2, r.minZ() - 2, vestibule, -9);
             default -> new Area(r.minX() - 2, r.maxX() + 2, r.minZ() - 2, vestibule, r.minY() - 4);
         };
     }

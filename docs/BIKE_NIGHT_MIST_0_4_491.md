@@ -83,3 +83,42 @@ enough, and whether its grey is right against this night's sky are the owner's t
 the numbers are `BikeNightMistClient.THIN`, `THICK` and `EASE`, and `BikeNightGraveyard.MIST_GATE` and `LAMP_CUTS`.
 
 Protocol 183 (one payload: how thick a reader's mist is).
+
+## 0.4.492: square into a wall, the rider comes off
+
+The proposal: "A stone is a wall: a glance off it is fine, a head-on hit puts the rider over the bars." That is the
+bike's own rule for anything it runs into (0.4.463), and **it did not always hold**. What a bike "kept" of its way was
+measured as how much of that tick's move it got in before it met the thing. A bike going flat out square at a wall,
+with more than two fifths of a tick's travel still to go when the tick began, was let off as a glance; that tick took
+its speed to under the crash speed; and the next tick it was standing against the wall, going too slowly to come off,
+with its rider on. **About one square hit in five at top speed**, and more at lower speeds, by nothing but where in
+its stride the bike happened to be.
+
+What it keeps now is the share of its way that lay along the thing: none of it, square on; half of it, at thirty
+degrees to a wall. A glance is what it was. A head-on hit above the crash speed puts the rider off every time, into a
+wall, a parked car, a cart, a standing stone, and in Borrasca as here.
+
+The graveyard's riding case found it: it passed three runs and failed one in the same place, with the bike against
+the stone at the speed of somebody pedalling into a wall. Its earlier failure (0.4.489), put down there to a wobble
+off a low marker, was this, and the record of it in `docs/BIKE_NIGHT_GRAVEYARD_0_4_489.md` is wrong about why.
+
+One case: five bikes flat out and square at a wall, each with a different part of a tick's travel left to it (a tenth
+to nine tenths). All five riders come off. Before the change the middle one stayed on.
+
+## 0.4.492: the place at its own height
+
+A place in the outside dimension stands in a stack of slots, each twenty-four blocks high, and Bike night's room was
+one slot. The Hollow, which is next, is "a course of floating ground, high and low, over nothing": far over and under
+the hill it starts from.
+
+So the place stands at a height of its own now (`BikeNightSite.BASE_Y`, 96), out of the stack, as the lookout, the
+Black City, Borrasca and the lake house do; a position is matched to it by its own bounds and not by a slot; and its
+room is seventy-two blocks over the park's ground and forty-eight under, where it was eighteen and five. It is no
+longer north or south than it was: the room grows north when there is ground there.
+
+Somebody who goes off the edge of the town is put back as soon as they were before, nine blocks down, and not at the
+bottom of the new room.
+
+Nothing is built in the new room and nothing else about the night changed. This is on its own so that the cases that
+build every place and walk between them (which only the workflow's long job runs) meet it before the Hollow does. Here
+it was run against the whole Bike night namespace and the client proof.
