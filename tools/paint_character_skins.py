@@ -240,6 +240,10 @@ LOOKS = {
     # 0.4.502, the Hollow's headless rider: all in one dark cloth to the wrists, gloves, boots; nothing at his collar. His head
     # is not drawn. His horse is its own model and sheet (tools/draw_calder_specters_art.py).
     'literary_hollow_rider': Look('#24242c','#1a1a1c','short','#2c2c36','#24242c','knit','#3f414d',eyes='#2a2a2e',age=1,sleeve=11,shoes='#15151a'),
+    # 0.4.503, what jumps out in the Hollow: a ghoul, grey and thin in what is left of a shirt, and a goblin, small, the colour
+    # of new leaves, in a sack of a shirt. Both barefoot.
+    'literary_hollow_ghoul': Look('#8d9884','#565b4e','close','#6e6959','#58544a','shirt','#48443a',eyes='#d6d09c',age=2,sleeve=5,face_style='frail',rips=True,shoes='#8d9884'),
+    'literary_hollow_goblin': Look('#6c9848','#1e2416','messy','#5c4832','#40362a','tee','#2a2418',eyes='#e6d048',sleeve=4,face_style='child',shoes='#6c9848'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),

@@ -1,4 +1,4 @@
-# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500; the werewolf, 0.4.501; the headless rider, 0.4.502)
+# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500; the werewolf, 0.4.501; the headless rider, 0.4.502; what jumps out, 0.4.503)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"): "**Specters chase**", and "Being caught by any of them is
 the Hollow's failure." As answered on November 11: the Hollow is one shared course, and each specter is private to
@@ -214,9 +214,80 @@ behind (26 pages). I have looked at it. The first drawing of him was all one bla
 at night, and had the pale front of a shirt at his collar with a dark line down it, which read as a wound; the horse
 is slate now and he is one dark cloth.
 
+## 0.4.503: what jumps out
+
+The proposal: "**Ghouls and goblins** jump out: from behind stones, from under coffin lids and from inside the vine;
+they are pop-up obstacles in the rider's path, swerved round or hopped over; they never touch anyone, only startle and
+block."
+
+**They are the course's, not anybody's.** Each specter is private to whoever it is after. These catch nobody, so
+there is nothing of theirs to keep private; and a thing that stops a bike has to be seen by whoever is on its pegs
+and whoever is riding behind it. So everybody in the Hollow sees the same one come out, and it is in every bike's
+way. This is Claude's reading: the owner's answer was about the specters.
+
+**Where.** Six places on the plain way (`BikeNightSpecters.POPS`):
+
+- a goblin behind the second grave's cross, which jumps out into the middle of the grave;
+- a goblin behind a stone on the third grave;
+- a ghoul that comes up between the second coffin lid and the third, where the way is two blocks wide and there is
+  no going round;
+- a goblin behind a stone on the grave past the lids, which jumps to where a rider comes off the last lid;
+- two ghouls in the vine, which is two blocks wide as well: on its first level rows going up, and on its last
+  coming down.
+
+**When.** One comes out when somebody is coming up to it from the south, on its piece: within six blocks of it, or
+within twenty-four ticks' riding at the speed they are making, whichever is further (so the Comet's rider has the
+warning anybody has), and no nearer than a block and a half. It waits six ticks where it hides, is out in four, stays
+forty-four with its arms up, and goes back in eight. Then its place is quiet for ten seconds. Everybody near hears it
+come. A goblin jumps from behind its stone into the way; a ghoul comes up out of the ground to its chest.
+
+**What it does.** While it is out it is in the way as a wall is. A bike that is ridden into it (within six tenths of
+a block of it, pointing at it, with its wheels less than four tenths of a block over the ground there) is stopped.
+Going faster than a bike rides into a wall at, its rider comes off as off any wall, and the bike lies where it
+stopped (`RiddenBike.struck`). Slower, the bike stops dead (`RiddenBike.balk`) and is kept at the thing's edge for as
+long as they push at it. That is all it does: it has nobody, hurts nobody (the half heart is the wall's) and moves
+nobody. A bike that is four tenths of a block over the ground as it passes goes over it. A tap of the hop reaches six
+tenths and is that high for about a block and a quarter of its flight, so a tap has to be timed; a held hop goes over
+with room. Somebody on foot it only startles.
+
+**What they look like.** The ghoul is grey and thin, in what is left of a shirt, and has both arms out ahead of it
+and its head on one side. The goblin is the colour of new leaves, two fifths the height of a grown person (smaller
+than the children), with its arms up and wide and its feet apart, and shakes its arms at whoever is coming. The
+painter paints both (stranger phases 193 and 194; 288 rows in `character_art.json`). One sound, for either: lower for
+the ghoul.
+
+### The case
+
+`BikeNightTests`, one case, three readers:
+
+- **The places are what they say**: each goblin's place is on a grave, and where it hides is the far side of a stone
+  that is there and is taller than it; each ghoul comes straight up; the one between the lids comes up through
+  nothing, with a lid either side.
+- **A rider who rides flat out at the ghoul between the lids** has it come up from wholly under the lids to its chest
+  over them, for everybody (it is nobody's own; a reader back on the hill is told of it, and is too far to hear it);
+  is stopped at it and comes off, as off any wall; and nothing has them. It goes back in its time, and its place is
+  quiet after.
+- **A rider who comes onto the grave past the lids to one side** sees a small goblin behind its stone, then in the
+  way on the ground, and rides by it; it stops nobody.
+- **A rider who rides slowly at the third grave's goblin** does not come off and does not get through, however long
+  they push; is unhurt; and rides on over its place when it has gone back.
+- **A rider on the vine who winds the hop while its second ghoul comes up** goes over it, well clear, and it stops
+  nobody.
+- **Somebody on foot** has the ghoul between the lids come up for them when its place has rested, and standing at it
+  is where they stood.
+
+The proof has a page of them: the ghoul waiting and out, from the front, the side and behind; and the goblin the
+same, at its size beside the ghoul's (27 pages). I have looked at it.
+
 ## Not built, not seen, and left with the owner
 
-- **The ghouls and goblins that jump out.**
+- **What jumps out is everybody's, not private**, as above. If the owner wants them private, a passenger and a
+  following rider will see a bike stop at nothing.
+- **Riding into one at speed puts the rider off the bike**, as riding into a wall does. "They never touch anyone,
+  only startle and block": I took the block to be a wall's. If coming off is more than was meant, stopping dead at
+  any speed is one line.
+- What jumps out is on the plain way only, and its numbers are first guesses: six blocks or twenty-four ticks, ten
+  ticks to be out, a little over two seconds out, ten seconds' rest, four tenths of a block to clear.
 - The rider's numbers are first guesses: ten blocks, 0.22, a block and a fifth. Whether three seconds at the last gap
   with the werewolf across it is fair for a failure that is for good is the owner's to say.
 - The werewolf's numbers are first guesses: thirty-six ticks, fourteen in the air, a block and a third. A rider who

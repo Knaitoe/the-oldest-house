@@ -2182,5 +2182,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 192
+  },
+  {
+    "name": "literary_hollow_ghoul",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 193
+  },
+  {
+    "name": "literary_hollow_goblin",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 194
   }
 ]

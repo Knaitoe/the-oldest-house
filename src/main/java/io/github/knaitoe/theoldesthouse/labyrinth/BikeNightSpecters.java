@@ -19,6 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * caught by any of them is the Hollow's failure." As answered: the Hollow is one shared course, and each specter is private to
  * whoever it is after, as the House's other private actors are.
  *
+ * <p>0.4.503: and what jumps out, which is nobody's own and catches nobody (see {@link Pop}).
+ *
  * <p>0.4.500: the ghosts are here too, which catch nobody (see {@link Haunt}). 0.4.501: and the werewolf (see {@link Wolf}). 0.4.502: and the headless rider (see {@link Rider}).
  *
  * <p>The first of them is here: "witches swoop low on brooms across the path, to be ducked or dodged", and "ducking a witch is the
@@ -40,9 +42,11 @@ public final class BikeNightSpecters {
     public static final int WOLF=191,RUN=3,CROUCH=4,LEAP=5;
     /** 0.4.502: the headless rider, and his horse going flat out. */
     public static final int RIDER=192,GALLOP=6;
-    public static boolean cast(int phase){return phase>=WITCH&&phase<=RIDER;}
+    /** 0.4.503: what jumps out, a ghoul and a goblin; and how they are once they are out, with their arms up. */
+    public static final int GHOUL=193,GOBLIN=194,UP=7;
+    public static boolean cast(int phase){return phase>=WITCH&&phase<=GOBLIN;}
     public static boolean ghost(int phase){return phase>=GHOST&&phase<GHOST+GHOSTS;}
-    public static String skin(int phase){return phase==RIDER?"hollow_rider":phase==WOLF?"hollow_wolf":ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
+    public static String skin(int phase){return phase==GHOUL?"hollow_ghoul":phase==GOBLIN?"hollow_goblin":phase==RIDER?"hollow_rider":phase==WOLF?"hollow_wolf":ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     /** A row a witch crosses the plain way on (along its middle): the row, the middle of the way there, and how high its ground is. */
     public record Swoop(int z,double x,double top){}
@@ -115,7 +119,51 @@ public final class BikeNightSpecters {
         final UUID actor;double z,y;
         Rider(UUID actor,double z,double y){this.actor=actor;this.z=z;this.y=y;}
     }
-    /** Which of the specters come at all, or null for all of them: "witch", "ghosts", "wolf", "rider". For tests of one of them. */
+    /**
+     * 0.4.503, what jumps out. "**Ghouls and goblins** jump out: from behind stones, from under coffin lids and from inside the
+     * vine; they are pop-up obstacles in the rider's path, swerved round or hopped over; they never touch anyone, only startle and
+     * block." They are the course's, not anybody's: everybody in the Hollow sees the same one come out, and it is in every bike's
+     * way. Each has its place on the plain way ({@link #POPS}). One comes out when somebody is coming up to it from the south, on
+     * its piece, within POP_NEAR blocks or POP_LEAD ticks' riding, whichever is further, and no nearer than POP_LEAST. It waits
+     * POP_WAIT ticks where it hides, is out in POP_OUT (a goblin jumps from behind its stone into the way; a ghoul comes up out of
+     * the ground to its chest), stays POP_STAY with its arms up, and goes back in POP_BACK; then that place is quiet for POP_REST.
+     * Everybody near hears it come.
+     *
+     * <p>While it is out it is in the way as a wall is. A bike that is ridden into it (within POP_REACH of it, pointing at it, with
+     * its wheels less than POP_CLEAR over the ground there) is stopped: going faster than a bike rides into a wall at, its rider
+     * comes off, as off any wall (RiddenBike.struck); slower, it stops dead (RiddenBike.balk) and is kept at the thing's edge. A bike that is POP_CLEAR over the
+     * ground as it passes goes over it: a tap of the hop, well timed, or a held one. Somebody on foot it only startles.
+     */
+    public record Pop(String name,int phase,double x,double z,double top,double fromX,double fromZ,double fromY,double outY,double leap){}
+    public static final double POP_NEAR=6,POP_LEAST=1.5,POP_ASIDE=4,POP_REACH=.6,POP_CLEAR=.4;
+    public static final int POP_LEAD=24,POP_WAIT=6,POP_OUT=4,POP_STAY=44,POP_BACK=8,POP_REST=200;
+    /** How far under the ground a ghoul waits, and how far under it stands once it is out; and how high a goblin's jump is. */
+    public static final double GHOUL_UNDER=2,GHOUL_OUT=.95,GOBLIN_LEAP=.5;
+    /**
+     * Where they are: a goblin behind the second grave's cross, and one behind a stone on the third; a ghoul that comes up between
+     * the second lid and the third, where there is no going round; a goblin behind a stone on the grave past the lids; and two
+     * ghouls in the vine, on its first level rows and on its last.
+     */
+    public static final List<Pop> POPS=List.of(
+        goblin("the goblin behind the cross",-1,-275,2.2,-275.5),goblin("the goblin on the third grave",-4,-284,-1.5,-284.5),
+        new Pop("the ghoul between the lids",GHOUL,0,-322.5,0,0,-322.5,-GHOUL_UNDER,-GHOUL_OUT,0),
+        goblin("the goblin past the lids",-3,-335,-.3,-335.5),ghoul("the ghoul in the vine",-346),ghoul("the vine's second ghoul",-365));
+    /** A goblin: the stone it is behind (on its north side, as a rider comes), and where in the way it jumps to. */
+    private static Pop goblin(String name,int stoneX,int stoneZ,double x,double z){
+        double top=CalderHollow.top(Mth.floor(x),Mth.floor(z));
+        return new Pop(name,GOBLIN,x,z,top,stoneX+.5,stoneZ+.1,top,top,GOBLIN_LEAP);
+    }
+    /** A ghoul in the middle of the plain way's piece at a row. */
+    private static Pop ghoul(String name,int row){
+        for(var p:CalderHollow.WAY)if(row<=p.zSouth()&&row>=p.zNorth()){double x=(p.x0()+p.x1()+1)/2.0;return new Pop(name,GHOUL,x,row+.5,p.top(),x,row+.5,p.top()-GHOUL_UNDER,p.top()-GHOUL_OUT,0);}
+        throw new IllegalStateException("no piece of the plain way at row "+row);
+    }
+    /** One of them out: its actor, who it came for, when, and who has been over it and who it has stopped. */
+    static final class Sprung{
+        final UUID actor,reader;final long at;final java.util.Set<UUID> over=new java.util.HashSet<>(),stopped=new java.util.HashSet<>();
+        Sprung(UUID actor,UUID reader,long at){this.actor=actor;this.reader=reader;this.at=at;}
+    }
+    /** Which of the specters come at all, or null for all of them: "witch", "ghosts", "wolf", "rider", "pops". For tests of one of them. */
     public static @Nullable java.util.Set<String> only;
     private static boolean comes(String which){return only==null||only.contains(which);}
 
@@ -131,6 +179,8 @@ public final class BikeNightSpecters {
         /** 0.4.501: each reader's werewolf, which gaps they have had him at, and how many times he has leapt for them. */
         /** 0.4.502: each reader's rider, and who has had him. */
         final Map<UUID,Rider> riders=new HashMap<>();final java.util.Set<UUID> ridden=new java.util.HashSet<>();
+        /** 0.4.503: which of what jumps out is out, when each place may next have one, and how many each reader has been stopped by and gone over. */
+        final Map<Integer,Sprung> sprung=new HashMap<>();final Map<Integer,Long> rest=new HashMap<>();final Map<UUID,Integer> stopped=new HashMap<>(),hopped=new HashMap<>();
         final Map<UUID,Wolf> wolves=new HashMap<>();final Map<UUID,Integer> wolfHad=new HashMap<>(),leaps=new HashMap<>();
         final Map<UUID,List<Drift>> drifts=new HashMap<>();final Map<UUID,Long> nextGhost=new HashMap<>();final Map<UUID,Integer> chills=new HashMap<>(),ghosts=new HashMap<>();
     }
@@ -140,6 +190,7 @@ public final class BikeNightSpecters {
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var s=n.specters;if(keptAway)return;
+        if(comes("pops"))spring(l,n,here);
         if(comes("ghosts"))haunt(l,n,here);
         if(comes("wolf"))prowl(l,n,here);
         if(comes("rider"))chase(l,n,here);
@@ -159,6 +210,55 @@ public final class BikeNightSpecters {
         }
         // A witch whose reader has gone is gone.
         for(var id:List.copyOf(s.passes.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there)end(l,s,id);}
+    }
+    /** What jumps out: coming out for whoever is coming, in every bike's way while it is out, going back. */
+    private static void spring(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var s=n.specters;double bx=n.base.getX(),by=n.base.getY(),bz=n.base.getZ();
+        for(int i=0;i<POPS.size();i++){
+            var pop=POPS.get(i);var up=s.sprung.get(i);
+            if(up==null){
+                if(n.tick<s.rest.getOrDefault(i,0L))continue;
+                for(var p:here){
+                    var id=p.getUUID();if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id))continue;
+                    Entity body=p.getVehicle() instanceof NightBike bike?bike:p;var at=BikeNightHollow.from(n,body.position());
+                    double speed=body instanceof RiddenBike bike?bike.speedNow():.15,ahead=at.z-pop.z();
+                    if(ahead<POP_LEAST||ahead>Math.max(POP_NEAR,speed*POP_LEAD)||Math.abs(at.x-pop.x())>POP_ASIDE||Math.abs(at.y-pop.top())>1.5)continue;
+                    var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)break;
+                    a.bind(BikeNight.PLACE,null);a.appearance(LiteraryActor.STRANGER,pop.phase());a.gesture(0);a.setNoGravity(true);a.noPhysics=true;
+                    a.moveTo(bx+pop.fromX(),by+pop.fromY(),bz+pop.fromZ(),0,0);a.setYHeadRot(0);a.setYBodyRot(0);
+                    if(l.addFreshEntity(a))s.sprung.put(i,new Sprung(a.getUUID(),id,n.tick));
+                    break;
+                }
+                continue;
+            }
+            var a=l.getEntity(up.actor) instanceof LiteraryActor found?found:null;long age=n.tick-up.at;int out=POP_WAIT+POP_OUT,back=out+POP_STAY;
+            if(a==null||age>=back+POP_BACK){
+                if(a!=null)a.discard();s.sprung.remove(i);s.rest.put(i,n.tick+POP_REST);
+                for(var id:up.over)if(!up.stopped.contains(id))s.hopped.merge(id,1,Integer::sum);
+                continue;
+            }
+            // How far out it is: nothing where it hides, the whole of it in the way.
+            double f=age<POP_WAIT?0:age<out?(age-POP_WAIT+1)/(double)POP_OUT:age<back?1:1-(age-back+1)/(double)POP_BACK;
+            double x=Mth.lerp(f,pop.fromX(),pop.x()),z=Mth.lerp(f,pop.fromZ(),pop.z()),y=Mth.lerp(f,pop.fromY(),pop.outY())+pop.leap()*4*f*(1-f);
+            // It looks at whoever it came for, while they are there to be looked at.
+            float yaw=a.getYRot();for(var p:here)if(p.getUUID().equals(up.reader))yaw=(float)Math.toDegrees(Math.atan2(-(p.getX()-bx-x),p.getZ()-bz-z));
+            a.gesture(f>=1?UP:0);a.moveTo(bx+x,by+y,bz+z,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+            if(age==POP_WAIT)l.playSound(null,bx+pop.x(),by+pop.top()+.5,bz+pop.z(),BikeNightRegistry.POP.get(),SoundSource.HOSTILE,1F,(pop.phase()==GOBLIN?1.25F:.8F)+l.random.nextFloat()*.1F);
+            if(f<1)continue;
+            for(var p:here){
+                if(!(p.getVehicle() instanceof NightBike bike)||bike.getFirstPassenger()!=p)continue;
+                var at=BikeNightHollow.from(n,bike.position());double dx=pop.x()-at.x,dz=pop.z()-at.z;
+                if(dx*dx+dz*dz>=POP_REACH*POP_REACH||at.y<pop.top()-1)continue;
+                if(at.y-pop.top()>=POP_CLEAR){up.over.add(p.getUUID());continue;}
+                // Under that, and pointing at it: it is in the way.
+                float turned=bike.getYRot()*Mth.DEG_TO_RAD;if(-Mth.sin(turned)*dx+Mth.cos(turned)*dz<=0)continue;
+                if(up.stopped.add(p.getUUID()))s.stopped.merge(p.getUUID(),1,Integer::sum);
+                if(bike.struck())continue;
+                // Too slow to come off at: stopped, and kept at its edge for as long as they push at it.
+                bike.balk();double off=Math.sqrt(dx*dx+dz*dz);
+                if(off>1e-3)bike.setPos(bx+pop.x()-dx/off*POP_REACH,bike.getY(),bz+pop.z()-dz/off*POP_REACH);
+            }
+        }
     }
     /** The headless rider: coming up behind whoever is on the last stretch. */
     private static void chase(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
@@ -329,6 +429,13 @@ public final class BikeNightSpecters {
     }
 
     // ------------------------------------------------------------------------------------------------ for tests
+    /** What has jumped out at one of the places, if something is out there; and how many a reader has been stopped by, and gone over. */
+    public static @Nullable LiteraryActor sprung(ServerLevel l,BlockPos base,int place){
+        var n=BikeNight.nightAt(l,base);if(n==null)return null;var up=n.specters.sprung.get(place);
+        return up!=null&&l.getEntity(up.actor) instanceof LiteraryActor a?a:null;
+    }
+    public static int stopped(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.specters.stopped.getOrDefault(p.getUUID(),0);}
+    public static int hopped(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.specters.hopped.getOrDefault(p.getUUID(),0);}
     /** The witch that is crossing for a reader, if one is. */
     public static @Nullable LiteraryActor witch(ServerPlayer p){
         var n=BikeNight.night(p);if(n==null)return null;var pass=n.specters.passes.get(p.getUUID());

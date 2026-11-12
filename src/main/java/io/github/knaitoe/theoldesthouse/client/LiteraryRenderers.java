@@ -236,6 +236,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.STRANGER&&BikeNightSpecters.cast(a.phase())&&a.gesture()==BikeNightSpecters.FLY)astride(age);
             if(a.role()==LiteraryActor.STRANGER&&BikeNightSpecters.cast(a.phase())&&a.gesture()==BikeNightSpecters.DRIFT)adrift(age+a.getId()*7);
             if(a.role()==LiteraryActor.STRANGER&&a.phase()==BikeNightSpecters.WOLF&&a.gesture()>=BikeNightSpecters.RUN)onFour(a.gesture(),age);
+            if(a.role()==LiteraryActor.STRANGER&&(a.phase()==BikeNightSpecters.GHOUL||a.phase()==BikeNightSpecters.GOBLIN)&&a.gesture()==BikeNightSpecters.UP)popped(a.phase(),age+a.getId()*5);
             // One model draws the whole cast: what the rider's seat moves sideways is put back for everybody else.
             head.visible=!(a.role()==LiteraryActor.STRANGER&&a.phase()==BikeNightSpecters.RIDER);
             rightLeg.x=rightLeg.getInitialPose().x;leftLeg.x=leftLeg.getInitialPose().x;
@@ -340,6 +341,23 @@ public final class LiteraryRenderers {
             rightArm.xRot=leftArm.xRot=.18F+slow*.06F;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=.2F+slow*.05F;leftArm.zRot=-.2F-slow*.05F;
             rightLeg.xRot=leftLeg.xRot=.42F+slow*.05F;rightLeg.yRot=leftLeg.yRot=0;rightLeg.zRot=.03F;leftLeg.zRot=-.03F;
             rightLeg.z=leftLeg.z=12*net.minecraft.util.Mth.sin(.12F);rightLeg.y=leftLeg.y=12*net.minecraft.util.Mth.cos(.12F);
+        }
+        /**
+         * 0.4.503, what jumps out in the Hollow, once it is out. The ghoul has both arms out ahead of it and up, one higher than
+         * the other, and its head on one side. The goblin has its arms up and wide and its feet apart, its head back, and shakes
+         * its arms at whoever is coming.
+         */
+        void popped(int phase,float age){
+            float shake=net.minecraft.util.Mth.sin(age*.9F);
+            if(phase==BikeNightSpecters.GHOUL){
+                rightArm.xRot=-1.75F+shake*.05F;leftArm.xRot=-2.2F-shake*.05F;rightArm.yRot=-.12F;leftArm.yRot=.2F;rightArm.zRot=leftArm.zRot=0;
+                head.xRot=-.15F;head.yRot=0;head.zRot=.3F;
+            }else{
+                rightArm.xRot=leftArm.xRot=-2.9F;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=-.7F+shake*.18F;leftArm.zRot=.7F-shake*.18F;
+                head.xRot=-.3F;head.yRot=0;head.zRot=shake*.1F;
+                rightLeg.xRot=leftLeg.xRot=0;rightLeg.zRot=.25F;leftLeg.zRot=-.25F;
+            }
+            hat.copyFrom(head);
         }
         /**
          * 0.4.501, the Hollow's werewolf, down on four legs: his back level, his arms and legs under him, his head up. Running,
@@ -632,6 +650,12 @@ public final class LiteraryRenderers {
         model.young=false;model.dress(LiteraryActor.STRANGER,BikeNightSpecters.WOLF);model.onFour(gesture,age);
         model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(LiteraryActor.STRANGER,BikeNightSpecters.WOLF))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,-1);
         WolfLayer.draw(model,things.getChild("face"),things.getChild("tail"),p,out,light);
+    }
+    /** What jumps out in the Hollow as the game draws it, for the proof's page: the cast's own model in the ghoul's skin or the goblin's, waiting or out with its arms up. */
+    public static void drawPop(PoseStack p,MultiBufferSource out,int light,int phase,boolean up,float age){
+        var model=new CastModel(Minecraft.getInstance().getEntityModels().bakeLayer(CAST));
+        model.young=false;model.dress(LiteraryActor.STRANGER,phase);if(up)model.popped(phase,age);
+        model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(LiteraryActor.STRANGER,phase))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,-1);
     }
     /** One of the Hollow's ghosts as the game draws it, for the proof's page: the cast's own model in its skin, adrift, half there. */
     public static void drawGhost(PoseStack p,MultiBufferSource out,int light,int which,float age){

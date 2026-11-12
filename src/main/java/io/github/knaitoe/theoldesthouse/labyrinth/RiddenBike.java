@@ -411,6 +411,12 @@ public abstract class RiddenBike extends Entity {
         off(p,lean>=0?1:-1,Off.HEAD_ON);return true;
     }
 
+    /**
+     * 0.4.503: stopped dead by something that has no body to be ridden into, going too slowly to come off at: as a front wheel
+     * against a kerb. What it has of rising or falling it keeps.
+     */
+    public void balk(){if(done)return;setDeltaMovement(0,getDeltaMovement().y,0);show(lean,0);}
+
     /** Only the one pedalling takes the bike with them when they get off: a second rider stepping down leaves it going. */
     @Override protected void removePassenger(Entity e){
         boolean pedalling=getFirstPassenger()==e;super.removePassenger(e);

@@ -158,4 +158,7 @@ def entries():
     rows.append({'name':'literary_hollow_wolf','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':191})
     # And the headless rider (0.4.502), on phase one hundred and ninety-two.
     rows.append({'name':'literary_hollow_rider','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':192})
+    # And what jumps out (0.4.503): the ghoul and the goblin, on phases one hundred and ninety-three and ninety-four.
+    for phase,name in enumerate(('ghoul','goblin'),193):
+        rows.append({'name':'literary_hollow_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows
