@@ -109,6 +109,31 @@ public final class PellTexts {
             case PUMP->"The pool pump. It runs all the time.";
         };
     }
+    /**
+     * 0.4.523: what a hand on the line finds, by what it is painted on and how it is now. Each says what is there; none says what the
+     * line is for, and none names a colour.
+     */
+    public static String line(PellLine.Surface surface,boolean thin,int stage){
+        String where=thin?"Behind the shed the line is at its thinnest, barely a finger wide. The grass shows through it."
+            :switch(surface){
+                case CONCRETE->"A line of paint across the concrete, a hand wide. It has soaked in.";
+                case TYRE->"The line goes across the drive. Tyres have run over it, and their marks are painted over.";
+                case PAVER->"Paint on the pavers, a hand wide. It sits up in beads where it would not take, and has run into the joins.";
+                case LAWN->"A line of paint through the grass, a hand wide, sitting on the blades. Under it the grass is dead.";
+                case MULCH->"Paint pooled in the mulch of the bed. It has been laid twice here; the first coat sank in.";
+                case DECK->"Paint across the deck boards, a hand wide, lifting and flaking along the grain.";
+            };
+        return switch(stage){
+            case PellLine.SECOND->where+" It has been gone over again, not long ago.";
+            case PellLine.LAST->where+" It is wet in places. It comes away on a finger.";
+            case PellLine.FOOTPRINT->where+" It is wet, and a shoe has gone through it and dragged it.";
+            case PellLine.HALF_SCRUBBED->"The paint here has been scrubbed half away.";
+            case PellLine.GAP->surface==PellLine.Surface.LAWN?"The line is scrubbed out here. The dead grass shows where it ran.":"The line is scrubbed out here. The ground shows where it ran.";
+            default->where;
+        };
+    }
+    /** 0.4.523: the mat at the step, lifted and put back. */
+    public static final String MAT_LIFTED="Under the mat the line runs straight on, unbroken.",MAT_DOWN="The mat goes back over it.";
     /** What the talking clock on Nessa's drawers says when it is pressed. */
     public static String clock(long dayTime){
         int minutes=(int)(((dayTime%24000)+24000)%24000*60/1000),hour=(minutes/60+6)%24,minute=minutes%60/5*5;

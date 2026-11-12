@@ -530,8 +530,18 @@ def mat():
     return im
 
 
+def mat_back():
+    """The mat's underside, turned up when its near edge is lifted: rubber backing in a grid of nubs, and grit."""
+    im = new('#36322d', 51885, 3)
+    for y in range(1, 16, 3):
+        for x in range(1 + (y // 3) % 2, 16, 3):
+            dot(im, x, y, '#48433c')
+    speckle(im, 51886, 7, ['#6a604f', '#57503f'])
+    return im
+
+
 def faces():
-    out = {'tin': tin(False), 'tin_front': tin(True), 'mat': mat(),
+    out = {'tin': tin(False), 'tin_front': tin(True), 'mat': mat(), 'mat_back': mat_back(),
            'paling': paling(), 'paling_gate': paling_gate(), 'pool_bars': pool_bars(), 'pool_gate': pool_bars(True), 'pool_gate_locked': pool_bars(True, True),
            'roller': roller(), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(),
            'tarp': tarp(False), 'tarp_pond': tarp(True), 'post': new('#6b6052', 51878, 3), 'pool_post': new('#2c2e30', 51879, 2), 'stars_glow': stars_glow()}
@@ -612,12 +622,14 @@ def fitting_models():
                                uv={'north': [0, 0, 1, 16], 'south': [15, 0, 16, 16], 'up': [0, 0, 1, 16], 'down': [0, 0, 1, 16]})]
             m[f'{name}_{stage}'] = model(els, {'o': o, 'i': i}, o)
     m['roller_0'] = model([element([0, 0, 6], [16, 16, 10], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'up': 'r', 'down': 'r'})], {'r': 'roller'}, 'roller')
-    # A window: an aluminium frame in the wall's thickness, and a pane. Clear; blinds down; painted over from inside.
+    # A window: an aluminium frame in the wall's thickness, and a pane. Clear; blinds down; painted over from inside. Clear glass
+    # is drawn translucent: under cutout its faint tint would show as a solid pane, and the garage window has to be seen through.
     def window(pane):
         return model([element([0, 0, 6], [16, 1, 10], {'all': 'f'}), element([0, 15, 6], [16, 16, 10], {'all': 'f'}),
                       element([0, 1, 6], [1, 15, 10], {'all': 'f'}), element([15, 1, 6], [16, 15, 10], {'all': 'f'}),
                       element([7.5, 1, 7], [8.5, 15, 9], {'all': 'f'}),
-                      element([1, 1, 7.8], [15, 15, 8.2], {'north': 'g', 'south': 'g'})], {'f': 'frame', 'g': pane}, 'frame')
+                      element([1, 1, 7.8], [15, 15, 8.2], {'north': 'g', 'south': 'g'})], {'f': 'frame', 'g': pane}, 'frame',
+                     'minecraft:translucent' if pane == 'glass_clear' else 'minecraft:cutout')
     m['window_0'] = window('glass_clear'); m['window_1'] = window('glass_blinds'); m['window_2'] = window('glass_painted')
     # The glass sliding door: stage bit 0 open (slid behind its fixed half, so there is nothing in the way), bit 1 the upper cell.
     for stage in range(4):
@@ -625,7 +637,7 @@ def fitting_models():
         rail = [element([0, 15, 7], [16, 16, 9], {'all': 'f'})] if upper else [element([0, 0, 7], [16, 0.5, 9], {'all': 'f'})]
         pane = [] if open_ else [element([0, 0.5 if not upper else 0, 7.8], [16, 15 if upper else 16, 8.2], {'north': 'g', 'south': 'g'}),
                                  element([0, 0, 7.5], [1, 16, 8.5], {'all': 'f'}), element([15, 0, 7.5], [16, 16, 8.5], {'all': 'f'})]
-        m[f'slider_{stage}'] = model(rail + pane, {'f': 'frame', 'g': 'glass_clear'}, 'frame')
+        m[f'slider_{stage}'] = model(rail + pane, {'f': 'frame', 'g': 'glass_clear'}, 'frame', 'minecraft:translucent' if pane else 'minecraft:cutout')
     # The pool's cover, lying on the water: dry; and holding a pond.
     m['tarp_0'] = model([element([0, 13, 0], [16, 13.5, 16], {'up': 't', 'down': 't'})], {'t': 'tarp'}, 'tarp')
     m['tarp_1'] = model([element([0, 12, 0], [16, 12.5, 16], {'up': 't', 'down': 't'})], {'t': 'tarp_pond'}, 'tarp_pond')
@@ -633,6 +645,9 @@ def fitting_models():
     m['letterbox_0'] = model([element([7, 0, 7], [9, 10, 9], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),
                               element([4, 10, 5], [12, 15, 11], {'all': 't', 'north': 'f'}, uv={'north': [0, 0, 16, 16]})], {'p': 'post', 't': 'tin', 'f': 'tin_front'}, 'tin')
     m['doormat_0'] = model([element([1, 0, 3], [15, 0.6, 13], {'all': 'm'})], {'m': 'mat'}, 'mat')
+    # Its near edge lifted and folded back toward the door: the line shows running on under it.
+    m['doormat_1'] = model([element([1, 0, 9], [15, 0.6, 13], {'all': 'm'}),
+                            element([1, 0.6, 9], [15, 1.2, 13], {'up': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'})], {'m': 'mat', 'b': 'mat_back'}, 'mat')
     # The house's outside wall: brick to the weather (the north face as drawn; a corner's north and west), plaster to the rooms.
     for stage, course in enumerate(('brick', 'brick_low', 'brick_new')):
         for name, out in (('wall', ('north',)), ('wall_corner', ('north', 'west'))):
@@ -646,7 +661,7 @@ def fitting_models():
 
 
 KINDS = ['fence', 'pool_fence', 'pool_gate', 'gate', 'door', 'garage_door', 'shed_door', 'screen', 'roller', 'window', 'slider', 'tarp', 'letterbox', 'doormat', 'wall', 'wall_corner', 'eave']
-STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 2, 'wall': 3, 'wall_corner': 3}
+STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 2, 'wall': 3, 'wall_corner': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'pell_fitting': 'House Fitting', 'pell_brick': 'Brick Veneer', 'pell_brick_low': 'Brick Veneer, Lowest Course', 'pell_brick_new': 'Newer Brick',

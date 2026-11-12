@@ -1094,6 +1094,19 @@ def kennel_pair():
 KENNEL_DOOR_HALF, KENNEL_DOOR_V = 5, 9
 
 
+def kennel_floor():
+    """The floor inside the kennel's opening, in its shadow: the line runs straight across it, the kennel set down on the paint and
+    the paint gone on through it. A few dead leaves."""
+    im = new('#1a1410', 52329, 2)
+    rnd = random.Random(52330)
+    for x in range(16):
+        for y in (7, 8):
+            im.putpixel((x, y), shade('#8c887e' if rnd.random() < .8 else '#6f6b62', rnd.randint(-4, 4)))
+    for x, y in ((3, 4), (4, 4), (12, 11), (13, 12), (9, 13)):
+        im.putpixel((x, y), shade('#5a4426', rnd.randint(-6, 6)))
+    return im
+
+
 def bowl_leaves():
     im = clear()
     for y in range(16):
@@ -1266,7 +1279,7 @@ def toys():
 def small():
     out = {'enamel': new('#f4f2ec', 52300, 1), 'steel': new('#b9bec1', 52301, 4), 'grey_plastic': new('#7a7e80', 52302, 3),
            'shelf_wood': new('#9a8462', 52303, 4), 'stake_wood': new('#a8885a', 52304, 4), 'paint_cream': new('#e8e0c8', 52305, 2),
-           'peg_edge': new('#8a6a42', 52306, 3), 'mattress_side': new('#d8d2c2', 52307, 2), 'brass': new('#b08a3a', 52327, 3), 'kennel_dark': new('#1a1410', 52328, 2),
+           'peg_edge': new('#8a6a42', 52306, 3), 'mattress_side': new('#d8d2c2', 52307, 2), 'brass': new('#b08a3a', 52327, 3), 'kennel_dark': new('#1a1410', 52328, 2), 'kennel_floor': kennel_floor(),
            'kennel_roof': new('#6a4a3a', 52309, 4), 'box_top': new('#c8a47a', 52310, 3), 'card_back': new('#f4f1ea', 52311, 1),
            'chain': new('#8a8e92', 52312, 6), 'cord_flex': new('#e8e6de', 52313, 1), 'lens': new('#c8d8e0', 52314, 2),
            'cup': new('#e0d8a0', 52315, 3), 'brush_old': new('#c8c4b4', 52316, 2), 'brush_new': new('#4a9ac8', 52317, 2),
@@ -1586,14 +1599,14 @@ def thing_models():
         els = [element([side_lo, 0, 2], [side_hi, 14, 15], {'north': 'f', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w', jamb: 'k'}),
                element([d0, dh, 2], [d1, 14, 15], {'north': 'f', 'south': 'w', 'down': 'k', 'east': 'w', 'west': 'w'}),
                element([d0, 0, 14], [d1, dh, 15], {'north': 'k'}),
-               element([d0, 0, 2], [d1, 0.1, 14], {'up': 'k'}),
+               element([d0, 0, 2], [d1, 0.1, 14], {'up': 'l'}),
                element([lo - (1 if half else 0), 16.5, -1], [hi + (0 if half else 1), 17.5, 8.2], {k: 'r' for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot={'origin': [8, 17, 8], 'axis': 'x', 'angle': -22.5}),
                element([lo - (1 if half else 0), 16.5, 7.8], [hi + (0 if half else 1), 17.5, 17], {k: 'r' for k in ('north', 'south', 'east', 'west', 'up', 'down')}, rot={'origin': [8, 17, 8], 'axis': 'x', 'angle': 22.5})]
         # The gable at the outer end, stepped under the roof.
         gx = [14.5, 15] if half == 0 else [1, 1.5]
         for (y0, y1, z0, z1) in ((14, 15, 4.4, 11.6), (15, 16, 6.8, 9.2)):
             els.append(element([gx[0], y0, z0], [gx[1], y1, z1], {k: 'w' for k in ('north', 'south', 'east', 'west', 'up')}))
-        out[f'kennel_{half}'] = m(els, {'f': f'kennel_front_{half}', 'w': 'kennel_wall', 'r': 'kennel_roof', 'k': 'kennel_dark'}, 'kennel_wall')
+        out[f'kennel_{half}'] = m(els, {'f': f'kennel_front_{half}', 'w': 'kennel_wall', 'r': 'kennel_roof', 'k': 'kennel_dark', 'l': 'kennel_floor'}, 'kennel_wall')
     out['bowl_0'] = m([element([4, 0, 4], [12, 2, 12], {'up': 'b', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}),
                        box([12, 0.2, 7.5], [16, 0.7, 8.5], 'c')], {'b': 'bowl_leaves', 's': 'steel', 'c': 'chain'}, 'bowl_leaves')
     out['pool_chair_0'] = m([element([1, 6, 1], [15, 7, 15], {'up': 'p', 'down': 'p', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),

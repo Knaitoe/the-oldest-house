@@ -39,11 +39,21 @@ public final class PellHouse {
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(PellThing.is(st)){thing(p,l,b.offset(rel),st);return true;}
+        // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
+        if(PellLine.is(st)){cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE)));return true;}
         if(!st.is(PellRegistry.FITTING.get()))return false;
         var kind=st.getValue(PellBlock.KIND);
         if(kind==PellBlock.Kind.ROLLER){cue(p,PellTexts.ROLLER);return true;}
-        // The letterbox and the mat are the first paper's and the account's: the House's own reading answers a hand on them.
-        if(kind==PellBlock.Kind.LETTERBOX||kind==PellBlock.Kind.DOORMAT)return false;
+        // The letterbox is the first paper's: the House's own reading answers a hand on it. The mat is the account's once it is ready
+        // (the House's reading answers that first); before then a hand lifts its corner, and the line runs on under it.
+        if(kind==PellBlock.Kind.LETTERBOX)return false;
+        if(kind==PellBlock.Kind.DOORMAT){
+            boolean lift=st.getValue(PellBlock.STAGE)==0;
+            l.setBlock(b.offset(rel),st.setValue(PellBlock.STAGE,lift?1:0),3);
+            l.playSound(null,b.offset(rel),SoundEvents.WOOL_PLACE,SoundSource.BLOCKS,.5F,.8F);
+            cue(p,lift?PellTexts.MAT_LIFTED:PellTexts.MAT_DOWN);
+            return true;
+        }
         if(kind==PellBlock.Kind.WINDOW||kind==PellBlock.Kind.FENCE||kind==PellBlock.Kind.POOL_FENCE||kind==PellBlock.Kind.TARP)return true;
         var door=PellSite.doorAt(l,b,rel);if(door==null)return true;
         // A neighbour's door: nobody answers it.
