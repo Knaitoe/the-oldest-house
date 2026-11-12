@@ -112,6 +112,7 @@ STORY_ICONS = {
     'the_black_city': 'minecraft:packed_ice',
     'the_kept': 'minecraft:observer',
     'last_orders': 'minecraft:paper',
+    'bike_night': NS + ':treat_sack',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

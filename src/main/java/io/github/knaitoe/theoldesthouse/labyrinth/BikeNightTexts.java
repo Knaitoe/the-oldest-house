@@ -359,6 +359,45 @@ public final class BikeNightTexts {
         return all;
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.508, the rest of the account
+    private static final Map<String,String> STREET_NAMES=Map.of("park","Park Street","west","West Avenue","church","Church Lane","east","East Avenue","main","Main Street",
+        "mill","Mill Street","mill_north","Mill Street","elm","Elm Street","court","Elm Court","circle","Elm Court");
+    private static String listed(List<String> of){
+        if(of.size()==1)return of.get(0);
+        return String.join(", ",of.subList(0,of.size()-1))+" and "+of.get(of.size()-1);
+    }
+    /**
+     * What the account has to tell after the park. The proposal: "The account (survival kind) remembers: the bike; the best thing
+     * they did on the playground; how many sand balls hit; which streets they took; whether they carried anyone; which way they
+     * went through the Hollow, high or low." The streets are by their signs, in the order they were come to.
+     */
+    private static void rest(List<String> p,CompoundTag own){
+        var streets=new ArrayList<String>();
+        for(String id:own.getString("Streets").split(",")){String street=STREET_NAMES.get(id);if(street!=null&&!streets.contains(street))streets.add(street);}
+        if(!streets.isEmpty())p.add("I went by "+listed(streets)+".");
+        if(own.getBoolean("CarriedSomeone"))p.add("For some of it I had somebody on the pegs behind me.");
+        if(own.getBoolean("Carried"))p.add("For some of it I was on the pegs of somebody else's bike.");
+        if(!own.getBoolean("Through"))return;
+        p.add("They fell back at the cemetery gate. Past the last of the stones the hill gave out, and there were graves standing on nothing.");
+        var ways=new ArrayList<String>();
+        for(String way:own.getString("HollowWays").split(","))switch(way){
+            case "high"->ways.add("over the high graves, where only a bike that jumps will go");
+            case "long"->ways.add("along the lids that were going as I crossed them");
+            case "steep"->ways.add("up the loose bank before it slid");
+            case "tight"->ways.add("through the vine, between its walls, with it curling up behind me");
+            case "dark"->ways.add("through the bank of mist, by the lamp");
+            default->{}
+        }
+        int fell=own.getInt("HollowFell");
+        p.add((ways.isEmpty()?"I kept to what was straight ahead of me.":"I went "+listed(ways)+".")
+            +(fell==0?"":fell==1?" I went down into the mist once. Something in it had hold of me, and let go.":" I went down into the mist "+Stillness.words(fell)+" times. Each time something in it had hold of me, and let go."));
+        p.add(switch(own.getString("ThroughOn")){
+            case "foot"->"I walked out by the back gate onto a lane";
+            default->own.getBoolean("ThroughOnPegs")?"I came out by the back gate on the pegs of somebody else's bike, onto a lane":"I rode out by the back gate onto a lane";
+        }+", and down the hill the lights of the town were on again.");
+        String left=own.getString("Left");
+        if(!left.isEmpty())p.add(left.equals("park")?"I went back the way I had come.":"There was a door in the wall across the lane.");
+    }
     private static List<Component> pages(HouseWriting.WritingStyle style,String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(style,p));return out;}
     /** A sheet from a school pad, in pencil. (Not the House's child's hand, which is a small child's and loses letters: Gus can spell.) */
     public static ItemStack source(){
@@ -372,7 +411,7 @@ public final class BikeNightTexts {
     static String bike(String make){
         return switch(make){case "wasp"->"the Wasp";case "hare"->"the Hare";case "comet"->"the Comet";case "hopper"->"the Hopper";case "lamp"->"the Lamp";case "rattler"->"the Rattler";default->"";};
     }
-    /** The account, from the reader's own record. There is only the park to tell of yet. */
+    /** The account, from the reader's own record: the park, and (0.4.508) the streets, the Hollow and the way out of it. */
     public static ItemStack account(String name,CompoundTag own){
         var p=new ArrayList<String>();
         p.add("It was the last night of October in a town called Calder Falls, and I was in the park after it had shut.");
@@ -419,6 +458,7 @@ public final class BikeNightTexts {
         int struck=own.getInt("BullyHits");
         if(struck>0)p.add("I threw sand at them, and "+(struck==1?"one ball":Stillness.words(struck)+" balls")+" of it landed.");
         if(own.getBoolean("GetThem"))p.add("Tully said to get us.");
+        rest(p,own);
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.BIKE_NIGHT),name,pages(HouseWriting.WritingStyle.WILL,p.toArray(String[]::new)));
     }
 }

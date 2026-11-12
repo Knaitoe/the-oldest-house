@@ -50,8 +50,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * record has how often they shoved it, how far round they went standing on it, and whether they came off it while it was going
  * fast.
  *
- * <p>It cannot be finished yet (the playground's equipment, the bullies, the town, the graveyard and what comes after it are later
- * slices), so the House does not deal it: {@link #dealable} says no. It is reached by an operator's test door.
+ * <p>0.4.508: it can be finished (docs/BIKE_NIGHT_ENDINGS_0_4_508.md): whoever is through the cemetery's back gate and leaves has
+ * finished it, with their account. So the House deals it ({@link #dealable}): once, and never again to somebody who was caught.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class BikeNight {
@@ -119,7 +119,48 @@ public final class BikeNight {
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
 
     /** The House does not deal the night until it can be finished. */
-    public static boolean dealable(LabyrinthData d,UUID p){return false;}
+    public static boolean dealable(LabyrinthData d,UUID p){
+        // 0.4.508: once. Not to somebody who has finished it, and never again to somebody who was caught: in the town ("Out"), or
+        // in the Hollow ("Taken"). "The night is over for them, and the vignette is never dealt to them again."
+        var o=LiteraryVignettes.personal(d,p,PLACE);return !o.getBoolean("Completed")&&!o.getBoolean("Taken")&&!o.getBoolean("Out");
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.508, out of it
+    /** Through the door they came in by. */
+    public static void returned(ServerPlayer p,LabyrinthData.Door door){if(SceneInstances.plain(door.id).equals(PLACE.entryDoorId()))leave(p,"park");}
+    /** Through the door in the wall across the lane behind the cemetery (the way on). */
+    public static void onward(ServerPlayer p,LabyrinthData.Door door){if(SceneInstances.plain(door.id).equals(OnwardDoors.id(PLACE)))leave(p,"lane");}
+    /**
+     * Out of the night. "Success: out the back gate. The condition: the reader rides out of the far gate." Whoever is through the
+     * back gate and then leaves, by the lane's door or the way they came in, has finished it: once, and their account goes out
+     * with them. Whoever leaves before that has not, and may come back. Whoever was caught has nothing to finish.
+     */
+    public static void leave(ServerPlayer p,String how){
+        var d=LabyrinthData.get(p.server);var o=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
+        if(o.getBoolean("Completed")||o.getBoolean("Taken")||o.getBoolean("Out")||!o.getBoolean("Through"))return;
+        String outcome=o.getString("ThroughOn").equals("foot")?"walked_out_by_the_back_gate":o.getBoolean("ThroughOnPegs")?"came_out_by_the_back_gate_on_the_pegs":"rode_out_by_the_back_gate";
+        o.putString("Left",how);o.putBoolean("Ready",true);o.putString("Outcome",outcome);o.putBoolean("Completed",true);o.putInt("Beat",o.getInt("Visit"));
+        LiteraryVignettes.save(d,p.getUUID(),PLACE,o);
+        WitnessAccount.resolve(p,WitnessAccount.Story.BIKE_NIGHT,outcome);d.setCompleted(PLACE.id(),true);
+        LiteraryVignettes.reward(p,PLACE,o,"Ending",BikeNightTexts.account(p.getGameProfile().getName(),o));
+    }
+    /**
+     * Which of the town's streets a reader has ridden, in the order they came to them (CalderTown.Street's names, with commas).
+     * The proposal's account remembers "which streets they took". Looked at once a second, for whoever is on a bike.
+     */
+    static void streets(Night n,List<ServerPlayer> here){
+        if(n.tick%20!=0)return;
+        for(var p:here){
+            if(!(p.getVehicle() instanceof NightBike))continue;
+            double x=p.getX()-n.base.getX(),z=p.getZ()-n.base.getZ();
+            for(var s:CalderTown.STREETS){
+                if(s.from(x,z)>s.half()+.5)continue;
+                var own=own(p);String had=own.getString("Streets");
+                if(!(","+had+",").contains(","+s.name()+",")){own.putString("Streets",had.isEmpty()?s.name():had+","+s.name());save(p,own);}
+                break;
+            }
+        }
+    }
 
     // ------------------------------------------------------------------------------------------------ for tests
     @Nullable static Night night(BlockPos b){return NIGHTS.get(b.asLong());}
@@ -250,6 +291,7 @@ public final class BikeNight {
             CalderCarts.tick(l,n,here);
             BikeNightGraveyard.tick(l,n,here);
             BikeNightHollow.tick(l,n,here);
+            streets(n,here);
             BikeNightSpecters.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));

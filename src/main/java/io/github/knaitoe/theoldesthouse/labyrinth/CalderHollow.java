@@ -39,6 +39,12 @@ public final class CalderHollow {
     public static final int EDGE=-261,FAR_SIDE=-420,BACK=-435,FAR=-442;
     /** The far side: how wide its ground is, and the lane behind its railings. */
     public static final int SIDE=24,LANE_N=-440,LANE_S=-437;
+    /**
+     * 0.4.508, the way on. A brick wall runs along the lane's far verge and round its two ends, and in it, east of the gate's
+     * line, is a door (OnwardPlacements). It stands three rows back from the lane, so that somebody who comes through the back gate
+     * at speed has eight blocks to turn or stop in.
+     */
+    public static final int WALL=FAR-1,WALL_HIGH=3,DOOR_X=5;
     /** What a piece of the course is made of. */
     public enum Made{SOD,LID,VINE,STONE,EARTH,BANK,TENDRIL}
     /** A piece: a rectangle of ground at one height. */
@@ -410,6 +416,18 @@ public final class CalderHollow {
                 set(l,b,x,y,BACK,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,0));set(l,b,x,y+1,BACK,BikeNightSite.fit(CalderBlock.Kind.GATE,facing,1));
             }else if(x==pw||x==pe||Math.abs(x)==SIDE+1||(x<pw&&(pw-x)%7==0)||(x>pe&&(x-pe)%7==0))pier(l,b,x,y,BACK);
             else rail(l,b,x,y,BACK,Direction.NORTH);
+        }
+        // 0.4.508: the wall along the lane's far verge and round its ends, capped, with the doorway left in it.
+        var brick=mat("brick");
+        for(int x=-SIDE-1;x<=SIDE+1;x++){
+            box(l,b,x,y-3,WALL,x,y-1,WALL,dirt);
+            boolean doorway=x==DOOR_X;
+            for(int dy=0;dy<WALL_HIGH;dy++)if(!doorway||dy>=2)set(l,b,x,y+dy,WALL,brick);
+            set(l,b,x,y+WALL_HIGH,WALL,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
+        }
+        for(int x:new int[]{-SIDE-1,SIDE+1})for(int z=FAR;z<BACK;z++){
+            for(int dy=0;dy<WALL_HIGH;dy++)set(l,b,x,y+dy,z,brick);
+            set(l,b,x,y+WALL_HIGH,z,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));
         }
         int[][] stones={{-18,-424,2},{-12,-427,7},{-7,-423,12},{8,-425,4},{14,-428,15},{20,-424,8},{-20,-431,0},{11,-432,5}};
         for(int[] s:stones)set(l,b,s[0],y,s[1],grave(CalderGraveBlock.Kind.STONE,Direction.SOUTH,s[2]));

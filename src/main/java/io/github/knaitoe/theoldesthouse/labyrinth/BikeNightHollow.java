@@ -224,6 +224,7 @@ public final class BikeNightHollow {
         var own=BikeNight.own(p);var ways=n.hollow.ways.get(p.getUUID());
         own.putBoolean("Through",true);
         own.putString("ThroughOn",p.getVehicle() instanceof NightBike bike?bike.make().getSerializedName():"foot");
+        own.putBoolean("ThroughOnPegs",p.getVehicle() instanceof NightBike carried&&carried.getFirstPassenger()!=p);
         own.putString("HollowWays",ways==null||ways.isEmpty()?"plain":String.join(",",ways));
         own.putInt("HollowFell",n.hollow.fell.getOrDefault(p.getUUID(),0));
         BikeNight.save(p,own);
