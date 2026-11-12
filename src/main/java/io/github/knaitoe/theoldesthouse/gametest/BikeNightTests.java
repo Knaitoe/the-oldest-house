@@ -6300,6 +6300,102 @@ public final class BikeNightTests {
     }
     @AfterBatch(batch="stone_row") public static void stoneRowDone(ServerLevel l){done();}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.514, the whole night
+    @GameTest(template="empty",batch="whole_night",timeoutTicks=30000)
+    public static void twoReadersRideTheWholeNightFromTheParkToTheLaneOneOfThemCaughtAndCarriedAndEachHasItInTheirAccount(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final LiteraryActor[] who={null,null,null};final PackBike[] bikes={null,null,null};
+        final NightBike[] ride={null,null};final int[] t={0},hops={0,0};final boolean[] held={false};final double[] lowest={99};final float[] trace={0,0,0};
+        int level=CalderGraves.level(CalderHollow.EDGE);var story=WitnessAccount.Story.BIKE_NIGHT;
+        // The Hopper kept away from whoever comes for it, as a rider would keep it: to the other end of Church Lane.
+        Runnable away=()->{three(l,b,who,bikes);for(var bike:bikes)if(bike!=null&&bike.isAlive()&&bike.position().distanceTo(ride[0].position())<16){ride[0].moveTo(b.getX()+(ride[0].getX()-b.getX()>0?-40:40),b.getY(),b.getZ()-164.5,90,0);break;}};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            // The park.
+            .thenExecute(()->{p[0]=f.player("whole_one",P);p[1]=f.player("whole_two",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1])&&BikeNightGus.find(l,b)!=null,"waiting for the night, for both to be the park's size, and for Gus"))
+            .thenExecute(()->{
+                h.assertTrue(BikeNight.dealable(f.data(),p[0].getUUID())&&!WitnessAccount.has(f.data(),p[0].getUUID(),story)&&accounts(p[0])==0&&accounts(p[1])==0,"nothing of it is theirs yet");
+                ride[0]=take(h,f,p[0],NightBike.Make.HOPPER);ride[1]=take(h,f,p[1],NightBike.Make.WASP);
+            })
+            .thenWaitUntil(()->{three(l,b,who,bikes);h.assertTrue(BikeNightBullies.stage(b)==BikeNightBullies.CHASE&&BikeNightGraveyard.gateOpen(b),"waiting for the three, the chase, and the cemetery gate: stage "+BikeNightBullies.stage(b));})
+            // The town. The Wasp stands on Main Street until one of them has it; the Hopper keeps away on Church Lane.
+            .thenExecute(()->{
+                h.assertTrue(f.own(p[0],P).getString("RodeWith").equals("whole_two")&&f.own(p[1],P).getString("RodeWith").equals("whole_one"),"each has who rode with them");
+                ride[1].moveTo(b.getX()-29.5,b.getY(),b.getZ()-91.5,90,0);ride[0].moveTo(b.getX()+40,b.getY(),b.getZ()-164.5,90,0);
+            })
+            .thenWaitUntil(()->{away.run();h.assertTrue(BikeNightBullies.caught(b,p[1]),"waiting for the one on the Wasp to be caught");})
+            .thenExecute(()->{
+                h.assertTrue(f.own(p[1],P).getBoolean("Caught")&&!BikeNightBullies.out(b,p[1])&&p[1].getVehicle()==null&&p[0].getVehicle()==ride[0],"caught, and not out: a friend is still riding");
+                h.assertTrue(f.own(p[0],P).getString("Streets").contains("church")&&f.own(p[1],P).getString("Streets").contains("main"),"each has the street they were on: "+f.own(p[0],P).getString("Streets")+" / "+f.own(p[1],P).getString("Streets"));
+                // The friend comes back for them, and then up to the cemetery, in at its gate, to the top of the hill.
+                ride[0].moveTo(p[1].getX()+1.2,b.getY(),p[1].getZ(),90,0);
+                h.assertTrue(ride[0].interact(p[1],InteractionHand.MAIN_HAND).consumesAction()&&p[1].getVehicle()==ride[0]&&ride[0].getFirstPassenger()==p[0],"a hand on the Hopper puts them on its pegs");
+                ride[0].moveTo(b.getX()+.0,b.getY()+3,b.getZ()+CalderGraves.SMALL_ROW+3.5,180,0);p[0].setYRot(180);
+                // The three fall back, and are gone, Tully with the cap on.
+                for(int i=0;i<3;i++)BikeNightGraveyard.takeNow(l,b,i,true);
+            })
+            // The Hollow, two up, by the plain way.
+            .thenWaitUntil(()->{
+                h.assertTrue(p[0].getVehicle()==ride[0]&&p[1].getVehicle()==ride[0],"both are still on it: at "+rel(b,ride[0])+", down "+BikeNightHollow.fell(p[0])+" times; pedalling on "+p[0].getVehicle()+", pegs on "+p[1].getVehicle()+", the bike alive "+ride[0].isAlive()+", was going "+trace[0]+", leaning "+trace[1]+", on the ground "+trace[2]+", hops "+hops[0]+"+"+hops[1]+", the one pedalling at "+rel(b,p[0])+", the other at "+rel(b,p[1]));
+                trace[0]=ride[0].speedNow();trace[1]=ride[0].leanNow();trace[2]=ride[0].onGround()?1:0;
+                double x=ride[0].getX()-b.getX(),z=ride[0].getZ()-b.getZ(),y=ride[0].getY()-b.getY();lowest[0]=Math.min(lowest[0],y);
+                double aim=hollowAim(z);float yaw=(float)Math.toDegrees(Math.atan2(-(aim-x),-3.5));
+                p[0].setYRot(ride[0].onGround()?yaw:ride[0].getYRot());
+                // With somebody on the pegs a hop gets less far (NightBike.CARRYING): the tap that takes one rider over two blocks of
+                // nothing does not take two. So every gap is wound up for: from two and a half blocks short of a gap of two, from
+                // four of a gap of three, and let go at the brink.
+                var gap=hollowGap(z);boolean brink=gap[1]<=.4&&ride[0].onGround();
+                if(gap[0]>=2){
+                    if(gap[1]<=(gap[0]>=3?4.3:2.5)&&!held[0]&&ride[0].onGround()){ride[0].keys(true,false);held[0]=true;}
+                    if(held[0]&&brink){ride[0].keys(false,false);held[0]=false;hops[gap[0]>=3?1:0]++;}
+                }else if(held[0]){ride[0].keys(false,false);held[0]=false;}
+                if(ride[0].onGround())pedalWell(ride[0],t[0]++,3);
+                h.assertTrue(z<CalderHollow.FAR_SIDE-3,"waiting for the Hopper to carry both of them over the plain way: at "+rel(b,ride[0])+" going "+ride[0].speedNow()+", down "+BikeNightHollow.fell(p[0])+" times, lowest "+lowest[0]);
+            })
+            .thenExecute(()->{
+                h.assertTrue(BikeNightHollow.fell(p[0])==0&&BikeNightHollow.fell(p[1])==0&&lowest[0]>-.1,"two up, and neither went down: "+BikeNightHollow.fell(p[0])+", lowest "+lowest[0]);
+                h.assertTrue(BikeNightGraveyard.dropped(b)==3&&CalderHollow.capHung(l,b),"behind them the three's bikes lie at the front gate, and ahead the cap is on the back gate's post");
+                // On to the gate, and through it.
+                ride[0].keys(false,false);
+            })
+            .thenWaitUntil(()->{
+                double x=ride[0].getX()-b.getX();p[0].setYRot((float)Math.toDegrees(Math.atan2(-(.5-x),-3.5)));
+                if(ride[0].onGround())pedalWell(ride[0],t[0]++,3);
+                h.assertTrue(BikeNightHollow.through(p[0])&&BikeNightHollow.through(p[1]),"waiting for them to ride out through the back gate: at "+rel(b,ride[0])+", the gate open "+BikeNightHollow.gateOpen(b));
+            })
+            .thenExecute(()->{
+                var one=f.own(p[0],P);var two=f.own(p[1],P);
+                h.assertTrue(one.getBoolean("Through")&&one.getString("ThroughOn").equals("hopper")&&!one.getBoolean("ThroughOnPegs")&&two.getBoolean("Through")&&two.getBoolean("ThroughOnPegs"),"one riding, one on the pegs: "+one.getString("ThroughOn")+" / "+two.getBoolean("ThroughOnPegs"));
+                h.assertTrue(one.getString("CarriedWho").equals("whole_two")&&two.getString("CarriedBy").equals("whole_one"),"and each has who carried whom");
+                h.assertTrue(!one.getBoolean("Completed")&&!two.getBoolean("Completed")&&accounts(p[0])==0,"through, and not finished until they leave");
+                // They stop in the lane.
+                for(var q:p)q.setPlayerInput(0,0,false,true);
+            })
+            .thenIdle(5)
+            // Gus comes through after them, by way of his cap.
+            .thenWaitUntil(()->{for(var q:p)q.setPlayerInput(0,0,false,false);h.assertTrue(BikeNightGus.capBack(b)&&!CalderHollow.capHung(l,b),"waiting for Gus to come off the Hollow after them and take his cap down: along "+BikeNightHollow.gusTrail(b));})
+            // Out by the lane's door, each for themselves.
+            .thenExecute(()->{
+                h.assertTrue(f.data().door(OnwardDoors.id(P))!=null||OnwardDoors.install(l,b,P),"the lane's door stands");
+                var door=f.data().door(OnwardDoors.id(P));
+                BikeNight.onward(p[0],door);BikeNight.onward(p[1],door);
+                for(int i=0;i<2;i++){
+                    var own=f.own(p[i],P);
+                    h.assertTrue(own.getBoolean("Completed")&&own.getString("Left").equals("lane")&&WitnessAccount.has(f.data(),p[i].getUUID(),story)&&!BikeNight.dealable(f.data(),p[i].getUUID())&&accounts(p[i])==1,"reader "+i+" has finished it, with the Witness and their account, once: "+own.getString("Outcome"));
+                }
+                h.assertTrue(f.own(p[0],P).getString("Outcome").equals("rode_out_by_the_back_gate")&&f.own(p[1],P).getString("Outcome").equals("came_out_by_the_back_gate_on_the_pegs"),"each by how they came through the gate");
+                // What each account says, in the order it happened.
+                String one=told("whole_one",p[0],f),two=told("whole_two",p[1],f);
+                String[] first={"I took the Hopper","Tully said to get us.","whole_two rode with me.","I went by Church Lane","For some of it I had whole_two on the pegs behind me.","They fell back at the cemetery gate.","I kept to what was straight ahead of me.","I rode out by the back gate onto a lane","There was a door in the wall across the lane."};
+                String[] second={"I took the Wasp","Tully said to get us.","whole_one rode with me.","I went by Main Street","For some of it I was on the pegs behind whole_one.","They fell back at the cemetery gate.","I came out by the back gate on the pegs of somebody else's bike, onto a lane","There was a door in the wall across the lane."};
+                int at=-1;for(var part:first){int next=one.indexOf(part,at+1);h.assertTrue(next>at,"the first's account has, in order: \""+part+"\": "+one);at=next;}
+                at=-1;for(var part:second){int next=two.indexOf(part,at+1);h.assertTrue(next>at,"the second's account has, in order: \""+part+"\": "+two);at=next;}
+                h.assertTrue(!one.contains("I went down into the mist")&&!two.contains("I went down into the mist"),"and neither says they went down");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="whole_night") public static void wholeNightDone(ServerLevel l){done();}
+
     // ------------------------------------------------------------------------------------------------ 0.4.513, more than six
     @GameTest(template="empty",batch="crowd_town",timeoutTicks=24000)
     public static void aSeventhReaderIsGivenATownOfTheirOwnBuiltAsTheFirstIsAndANightOfItsOwn(GameTestHelper h){

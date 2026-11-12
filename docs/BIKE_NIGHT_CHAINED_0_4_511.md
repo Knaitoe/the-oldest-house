@@ -78,7 +78,8 @@ across. A reader who is out on the Rattler, and one who is not.
 - **It cannot be taken or freed.** There is no key. If the keepsake turns out to be the bike, this is where a reader
   who lost theirs might get it back; that is the owner's call with the keepsake.
 - **Numbers:** three crossings; six to sixteen steps in; five blocks to be told; ten seconds after they leave.
-- Somebody who is out is still only told, in the town, what they were told before: nothing says "walk home". They
-  leave by the door they came in by.
+- Somebody who is out is told the way home as before ("Nobody is coming back this way. The way home is the way you
+  came."), and leaves by the door they came in by. (This line first said that nothing told them. That was wrong, and
+  was corrected in 0.4.514.)
 - None of it has been seen in a client except the proof's page.
 - Still not built: the keepsake (the owner's call).
