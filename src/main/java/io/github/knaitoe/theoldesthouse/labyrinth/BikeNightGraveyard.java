@@ -27,6 +27,13 @@ import net.minecraft.world.phys.Vec3;
  * stopped is gone, with his bike, the first moment after five seconds that nobody is near enough and turned his way to see it. The
  * one at the fence is the last.
  *
+ * <p><b>0.4.509, what follows</b> (the proposal's "Success: out the back gate"): "the taken cap is hanging on the gate; the
+ * bullies' three bikes lie abandoned by the front gate, and the bullies are nowhere." What each of the three rode lies on its side
+ * on the pavement outside the front gate, set down there the first moment after he is taken that nobody could be looking at the
+ * place: as answered, "readable as having dropped their bikes and run". The wheels of the last of them are still going round
+ * when somebody comes on them. If Tully had Gus's cap on, it is on a nail in the back gate's post, put there unseen as well.
+ * Nothing says who hung it.
+ *
  * <p><b>Gus</b> comes in after his friend, through the stones, and says what he thinks of it twice. Past the last full row, where the
  * small stones are, "he says nothing": not what he had been about to say, and not to a hand on him.
  */
@@ -44,6 +51,16 @@ public final class BikeNightGraveyard {
     public static final int IN_MOST=400,TAKEN_AFTER=100;
     /** In blocks: how near somebody must be to see the gate move; to see one of them go; how far ahead a rider looks for a way between the stones. */
     public static final double GATE_SEEN=48,SEEN=40,LOOK=3;
+    /**
+     * 0.4.509: where each of the three's bikes lies outside the front gate, the way it points and the side it lies on (Tully's and
+     * Ray-Ray's west of the gateway, Duff's east of it, where he stopped, under the street lamp that stands there; all on the
+     * pavement, clear of the gateway and the lane);
+     * and how near them a reader has come on them, in blocks.
+     */
+    public static final Vec3[] DROPS={new Vec3(-5,0,CalderTown.RAILS+2.2),new Vec3(-7.9,0,CalderTown.RAILS+2.7),new Vec3(7.3,0,CalderTown.RAILS+2.5)};
+    public static final float[] DROP_YAW={205,120,150};
+    public static final int[] DROP_SIDE={1,-1,1};
+    public static final double BIKES_NEAR=8;
     /** The middle of the gateway, and how far inside it a rider is in. */
     public static final double GATE_X=0,GATE_IN=CalderTown.RAILS-2.5;
 
@@ -66,6 +83,8 @@ public final class BikeNightGraveyard {
     static final class Yard {
         boolean gateOpen;
         final int[] state=new int[3];final long[] since={-1,-1,-1};
+        /** 0.4.509: whose bike lies outside the front gate; and whether the cap has been hung on the back gate's post this night. */
+        final boolean[] dropped=new boolean[3];boolean capHung;
         /** What each reader was last told of their mist. */
         final java.util.Map<java.util.UUID,Integer> mist=new java.util.HashMap<>();
         /** How many of the town's streets are dark, when the next goes, and where the town's lamps stand (found when the first goes). */
@@ -97,10 +116,23 @@ public final class BikeNightGraveyard {
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         if(CalderGraves.gateIsOpen(l,n.base))CalderGraves.gateShut(l,n.base);
+        // The cap comes down with the night. (The bikes that lie by the front gate go with the rest of the three's: BikeNightBullies.reset.)
+        if(l.isLoaded(n.base.offset(CalderHollow.CAP_X,0,CalderHollow.CAP_Z)))CalderHollow.hungCap(l,n.base,false);
         if(n.yard.lamps!=null)for(var at:n.yard.lamps)BikeNightSite.lantern(l,n.base,at,true);
         n.yard=new Yard();
     }
     public static int dark(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.yard.dark;}
+    /** How many of the three's bikes lie outside the front gate, and whether the cap has been hung on the back gate's post. For tests. */
+    public static int dropped(BlockPos b){var n=BikeNight.night(b);int k=0;if(n!=null)for(boolean d:n.yard.dropped)if(d)k++;return k;}
+    public static boolean capHung(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.yard.capHung;}
+    /** For tests: he is taken now, whoever can see him, as he is when nobody can; and, of Tully, with Gus's cap on or not. */
+    public static void takeNow(ServerLevel l,BlockPos b,int who,boolean capOn){
+        var n=BikeNight.night(b);if(n==null)return;var u=n.pack.b[who];if(who==0)n.pack.capWorn=capOn;
+        var a=BikeNightBullies.actor(l,u);var bike=BikeNightBullies.bike(l,u);
+        if(a!=null){a.stopRiding();a.discard();}
+        if(bike!=null)bike.discard();
+        u.gone=true;u.riding=false;u.plan=null;n.yard.state[who]=TAKEN;
+    }
 
     // ------------------------------------------------------------------------------------------------ the mist
     /**
@@ -212,6 +244,39 @@ public final class BikeNightGraveyard {
             if(a!=null){a.stopRiding();a.discard();}
             if(bike!=null)bike.discard();
             u.gone=true;u.riding=false;u.plan=null;y.state[u.who]=TAKEN;
+        }
+        after(l,n,here);
+    }
+    /** 0.4.509, what follows: the three's bikes outside the front gate, and the cap on the back gate's post. */
+    private static void after(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var y=n.yard;int lying=0;
+        for(var u:n.pack.b){
+            if(y.dropped[u.who]){lying++;continue;}
+            if(y.state[u.who]!=TAKEN)continue;
+            var at=BikeNightGus.at(n,DROPS[u.who]);var cell=BlockPos.containing(at);
+            if(!l.isLoaded(cell)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(cell)))continue;
+            boolean watched=false;for(var p:l.players())watched|=seen(p,at.add(0,.4,0),SEEN);
+            if(watched)continue;
+            var bike=BikeNightRegistry.PACK_BIKE.get().create(l);if(bike==null)continue;
+            bike.look(u.who);bike.moveTo(at.x,at.y,at.z,DROP_YAW[u.who],0);bike.lay(DROP_SIDE[u.who],u.who==AT_FENCE?PackBike.SPIN:0);
+            if(l.addFreshEntity(bike)){y.dropped[u.who]=true;lying++;}
+        }
+        // The cap, once the one who had it on is gone. (One left from a night that ended with its post out of reach comes down the
+        // same way it went up.)
+        boolean due=n.pack.capWorn&&y.state[0]==TAKEN;
+        if(!y.capHung&&(due||n.tick%20==0)){
+            var post=n.base.offset(CalderHollow.CAP_X,CalderGraves.level(CalderHollow.EDGE)+CalderHollow.CAP_UP,CalderHollow.CAP_Z);
+            if(l.isLoaded(post)&&(due||CalderHollow.capHung(l,n.base))){
+                boolean watched=false;for(var p:l.players())watched|=seen(p,Vec3.atCenterOf(post),GATE_SEEN);
+                if(!watched&&CalderHollow.hungCap(l,n.base,due)&&due)y.capHung=true;
+            }
+        }
+        // Whoever comes on the bikes has it in their record: how many of them were lying there.
+        if(lying>0&&n.tick%10==0)for(var p:here){
+            if(!p.isAlive()||p.isSpectator())continue;boolean near=false;
+            for(int who=0;who<3;who++)near|=y.dropped[who]&&BikeNightGus.flat(p.position(),BikeNightGus.at(n,DROPS[who]))<BIKES_NEAR*BIKES_NEAR;
+            if(!near)continue;var own=BikeNight.own(p);
+            if(own.getInt("BikesSeen")<lying){own.putInt("BikesSeen",lying);BikeNight.save(p,own);}
         }
     }
     /** Whether one of the two who go in is still to be taken: he is in there, or stopped there. */

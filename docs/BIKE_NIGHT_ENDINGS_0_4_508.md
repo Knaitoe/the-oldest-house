@@ -82,7 +82,8 @@ operator cases. They pass.
 
 - **The keepsake.** The proposal leaves it to the owner: the bike itself, or the Rattler's spoke card. Nothing is
   kept yet. The reader's bike stays where they got off it.
-- **What follows at the front gate**: the three's bikes lying by it, the cap hanging on it, Gus there.
+- **What follows at the gates**: the three's bikes lying by the front one, the cap hanging on the back one, Gus
+  there. (Built in 0.4.509: `docs/BIKE_NIGHT_AFTER_0_4_509.md`.)
 - **Dawn** for somebody the Hollow has had: it is still night outside the gate.
 - **The headstone** with a caught reader's name at the end of the old row in every copy of the town, and their bike
   rusting against it; and **the bike chained to a school fence** in a later hall for somebody caught in the town.

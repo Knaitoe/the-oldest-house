@@ -448,6 +448,20 @@ public final class CalderHollow {
             l.setBlock(b.offset(x,y+dy,BACK-2),BikeNightSite.fit(gate,Direction.EAST,dy),3);
         }
     }
+    /**
+     * 0.4.509. "the taken cap is hanging on the gate": the cell it hangs in, against the town's side of the back gate's east post,
+     * at a child's eye; and where somebody on a bike stops to reach it.
+     */
+    public static final int CAP_X=CalderGraves.PATH_E+1,CAP_Z=BACK+1,CAP_UP=1;
+    public static final Vec3 CAP_BY=new Vec3(CAP_X+.5,CalderGraves.level(EDGE),CAP_Z+1.4);
+    /** The cap hung there, or taken down. True if the cell is as asked: nothing else is ever put out of it. */
+    public static boolean hungCap(ServerLevel l,BlockPos b,boolean hung){
+        var at=b.offset(CAP_X,CalderGraves.level(EDGE)+CAP_UP,CAP_Z);var now=l.getBlockState(at);boolean is=CalderBlock.is(now,CalderBlock.Kind.HAT);
+        if(hung==is)return true;
+        if(hung&&!now.isAir())return false;
+        l.setBlock(at,hung?BikeNightSite.fit(CalderBlock.Kind.HAT,Direction.SOUTH,0):Blocks.AIR.defaultBlockState(),3);return true;
+    }
+    public static boolean capHung(ServerLevel l,BlockPos b){return CalderBlock.is(l.getBlockState(b.offset(CAP_X,CalderGraves.level(EDGE)+CAP_UP,CAP_Z)),CalderBlock.Kind.HAT);}
     public static boolean backGateOpen(ServerLevel l,BlockPos b){return !CalderBlock.is(l.getBlockState(b.offset(CalderGraves.PATH_W,CalderGraves.level(EDGE),BACK)),CalderBlock.Kind.GATE);}
     private static void pier(ServerLevel l,BlockPos b,int x,int y,int z){box(l,b,x,y,z,x,y+1,z,mat("brick"));set(l,b,x,y+2,z,BikeNightSite.fit(CalderBlock.Kind.CAP,Direction.NORTH,0));}
     private static void rail(ServerLevel l,BlockPos b,int x,int y,int z,Direction facing){set(l,b,x,y,z,BikeNightSite.fit(CalderBlock.Kind.FENCE,facing,0));set(l,b,x,y+1,z,BikeNightSite.fit(CalderBlock.Kind.FENCE,facing,1));}

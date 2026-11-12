@@ -28,9 +28,20 @@ import net.minecraft.world.phys.Vec3;
  * nobody on it, it stands where it was left.
  *
  * <p>It is never saved and is nobody's to take: a hand on one of the three's does nothing, and a hand on Gus's gets a word from him.
+ *
+ * <p>0.4.509: one may lie on its side where it was dropped ({@link #lay}). It goes nowhere, nobody gets on it, and a wheel of it
+ * may still be going round when somebody comes on it.
  */
 public final class PackBike extends RiddenBike {
     private static final EntityDataAccessor<Integer> LOOK=SynchedEntityData.defineId(PackBike.class,EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LAID=SynchedEntityData.defineId(PackBike.class,EntityDataSerializers.INT);
+    /**
+     * 0.4.509, lying on its side: how far over it is drawn, in degrees, and how far above the ground the line it turns about, so
+     * that its lower pedal and the end of its bars are what rest on the ground; how fast its wheels may still be going round, in
+     * blocks a tick; what that loses in each tick somebody is near it; and how near that is, in blocks.
+     */
+    public static final float LAID_DEGREES=80,LAID_LIFT=.16F,SPIN=.05F,SPIN_EASE=.00035F;
+    public static final double SPIN_NEAR=14;
     /** The looks: the three who come to the park; Gus's (0.4.483); from MAKES up, one of Bike night's six makes. */
     public static final int TULLY=0,RAY=1,DUFF=2,GUS=3,MAKES=10;
     /** Degrees it turns in a tick; what it gains and loses of its speed in a tick; how far round it still has to come before it slows for the turn, and to how much. */
@@ -40,12 +51,17 @@ public final class PackBike extends RiddenBike {
     private @Nullable Vec3 toward;private float wanted;private double rolled;private int side=1,held;
 
     public PackBike(EntityType<? extends PackBike> type,Level level){super(type,level);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(LOOK,0);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(LOOK,0);b.define(LAID,0);}
     public int look(){return entityData.get(LOOK);}
     public void look(int look){entityData.set(LOOK,look);}
+    /** 0.4.509: it lies on that side (-1 its left, 1 its right) where it is, its wheels going round that fast, and is not ridden again. */
+    public void lay(int side,float spin){entityData.set(LAID,side<0?-1:1);laidSpin=spin;ejectPassengers();}
+    /** The side it lies on, or nothing if it stands. */
+    public int laid(){return entityData.get(LAID);}
+    private float laidSpin;
     @Override protected Stats stats(){return Stats.PLAIN;}
     @Override protected void parkAs(ServerLevel l,@Nullable BlockPos at,boolean lying){}
-    @Override protected boolean takes(Entity e){return e instanceof LiteraryActor;}
+    @Override protected boolean takes(Entity e){return laid()==0&&e instanceof LiteraryActor;}
     /** Gus's, standing where he left it, can be touched: he says whose it is. Nobody else's can, and nobody takes any of them. */
     @Override public boolean isPickable(){return !isRemoved()&&look()==GUS&&getPassengers().isEmpty();}
     @Override public boolean canBeHitByProjectile(){return false;}
@@ -68,6 +84,13 @@ public final class PackBike extends RiddenBike {
     public boolean heldUp(){return held>HELD;}
 
     @Override protected void driven(){
+        if(laid()!=0){
+            // Dropped: it lies where it is. Its wheels run down once somebody is near enough to have seen them going.
+            setDeltaMovement(Vec3.ZERO);toward=null;wanted=0;held=0;carried=null;
+            if(laidSpin>0&&level().getNearestPlayer(this,SPIN_NEAR)!=null)laidSpin=Math.max(0,laidSpin-SPIN_EASE);
+            if(laidSpin>STOPPED&&tickCount%14==0)level().playSound(null,getX(),getY(),getZ(),BikeNightRegistry.FREEWHEEL.get(),SoundSource.NEUTRAL,.25F,.8F);
+            show(0,laidSpin);return;
+        }
         if(carried!=null){
             double went=Math.hypot(carried.x-getX(),carried.z-getZ());
             setYRot(carriedYaw);setPos(carried.x,carried.y,carried.z);setDeltaMovement(Vec3.ZERO);setOnGround(true);resetFallDistance();

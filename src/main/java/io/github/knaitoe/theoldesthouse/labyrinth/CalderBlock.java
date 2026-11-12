@@ -34,12 +34,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * button is pressed.</li>
  * <li>PHONE (0.4.471): a payphone on the wall behind it, looking the way it faces. Stage 1: its handset off the hook, for a little
  * while after it is lifted.</li>
+ * <li>HAT (0.4.509): a ball cap on a nail in what is behind it, at a child's eye.</li>
  * </ul>
  */
 public final class CalderBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CalderBlock> CODEC=simpleCodec(CalderBlock::new);
     public enum Kind implements StringRepresentable {
-        FENCE,GATE,LAMP,BENCH,BIN,BORDER,NOTE,CAP,FOUNTAIN,PHONE;
+        FENCE,GATE,LAMP,BENCH,BIN,BORDER,NOTE,CAP,FOUNTAIN,PHONE,HAT;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -70,6 +71,7 @@ public final class CalderBlock extends HorizontalDirectionalBlock {
             case CAP->Shapes.block();
             case FOUNTAIN->Shapes.or(Block.box(5,0,5,11,FOUNTAIN_HIGH,11),Block.box(3.5,FOUNTAIN_HIGH,3.5,12.5,FOUNTAIN_HIGH+3,12.5));
             case PHONE->MarshBlock.turned(f,2,1,9.5,13,15,16);
+            case HAT->MarshBlock.turned(f,5,7.5,10,11,12.1,16);
         };
     }
     /** A fountain stops running, and a payphone's handset goes back on its hook, by themselves. */
@@ -83,7 +85,7 @@ public final class CalderBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case FENCE,GATE->MarshBlock.turned(s.getValue(FACING),0,0,7,16,s.getValue(KIND)==Kind.FENCE&&s.getValue(STAGE)==0||s.getValue(KIND)==Kind.GATE&&s.getValue(STAGE)!=1?16:24,9);
-            case NOTE->Shapes.empty();
+            case NOTE,HAT->Shapes.empty();
             default->getShape(s,l,p,c);
         };
     }

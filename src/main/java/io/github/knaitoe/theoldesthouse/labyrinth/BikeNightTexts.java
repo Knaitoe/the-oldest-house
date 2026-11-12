@@ -203,6 +203,9 @@ public final class BikeNightTexts {
     public static final String GUS_CHURCH="Not the graveyard. Anywhere else. I told you the story!";
     /** 0.4.490, in the cemetery: coming in after his friend, and past its first bank. At the row of small stones he says nothing. */
     public static final String GUS_YARD="We're in the graveyard. We are in the graveyard.",GUS_YARD_ON="Stay on the path. That's all I'm saying. Stay on the path.";
+    /** 0.4.509: Gus, with his cap down off the back gate's post and on him again; and the cap, looked at where it hangs. */
+    public static final String[] GUS_CAP_BACK={"That's my cap. That's my mom's writing in it. So it's mine.","Tully had it on. I'm not asking."};
+    public static final String HUNG_CAP="A ball cap, on a nail in the gatepost. There is a name inside the band, in pen: Gus.";
     public static final String GUS_NOBODY="Nobody even looked at mine. I'm not sure what I think about that.";
     /** Gus, when one of the three gets a bike. */
     public static final String GUS_CAUGHT="They got a bike. They actually got a bike.";
@@ -353,7 +356,7 @@ public final class BikeNightTexts {
     public static List<String> gusLines(){
         var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN,GUS_CAUGHT));
         all.addAll(List.of(GUS_HIT));
-        all.addAll(List.of(GUS_HIS_BIKE,GUS_CHURCH,GUS_NOBODY,GUS_YARD,GUS_YARD_ON));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
+        all.addAll(List.of(GUS_HIS_BIKE,GUS_CHURCH,GUS_NOBODY,GUS_YARD,GUS_YARD_ON));all.addAll(List.of(GUS_CAP_BACK));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
         return all;
@@ -395,6 +398,9 @@ public final class BikeNightTexts {
             case "foot"->"I walked out by the back gate onto a lane";
             default->own.getBoolean("ThroughOnPegs")?"I came out by the back gate on the pegs of somebody else's bike, onto a lane":"I rode out by the back gate onto a lane";
         }+", and down the hill the lights of the town were on again.");
+        if(own.getBoolean("CapBack"))p.add("Gus's cap was on a nail in the gatepost. He took it down and looked inside it, and put it on.");
+        int lying=own.getInt("BikesSeen");
+        if(lying>0)p.add((lying>=3?"Their three bikes were":lying==2?"Two of their bikes were":"One of their bikes was")+" lying on the pavement outside the cemetery's front gate. Nobody was with "+(lying==1?"it":"them")+".");
         String left=own.getString("Left");
         if(!left.isEmpty())p.add(left.equals("park")?"I went back the way I had come.":"There was a door in the wall across the lane.");
     }

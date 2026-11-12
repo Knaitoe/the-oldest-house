@@ -194,6 +194,39 @@ def note():
     return im
 
 
+def hat():
+    """0.4.509, Gus's ball cap, as the painter has it on him (its crown the accent of his look, a pale front panel with a letter
+    on it, a dark bill), laid out for the hung cap's faces: the front at the corner, a side beside it, the inside past that; the top
+    under the front; the bill's top and its underside under that, and its edges."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4509)
+    crown, pale = '#b23a30', '#efe6d2'
+    for y in range(4):                                                   # the front: the pale panel between the crown's edges
+        for x in range(6):
+            dot(im, x, y, shade(pale if 1 <= x <= 4 else crown, rnd.randint(-3, 3) + (6 if y == 0 else 0)))
+    for x, y in ((2, 1), (3, 1), (2, 2), (2, 3), (3, 3)):                 # its letter
+        dot(im, x, y, shade(crown, -6))
+    for y in range(4):                                                   # a side, with its seam
+        for x in range(6, 10):
+            dot(im, x, y, shade(crown, rnd.randint(-4, 4) - (14 if x == 8 else 0)))
+    for y in range(4):                                                   # the inside
+        for x in range(10, 16):
+            dot(im, x, y, shade(crown, -58 + rnd.randint(-3, 3)))
+    for y in range(4, 8):                                                # the top: its seams, and the button
+        for x in range(6):
+            dot(im, x, y, shade(crown, rnd.randint(-4, 4) - (14 if x == 3 else 0)))
+    dot(im, 3, 6, shade(crown, 28))
+    for y in range(8, 11):                                               # the bill's top, and its underside
+        for x in range(5):
+            dot(im, x, y, shade(crown, -36 + rnd.randint(-3, 3) + (10 if y == 8 else 0)))
+        for x in range(6, 11):
+            dot(im, x, y, shade(crown, -64 + rnd.randint(-3, 3)))
+    for x in range(5):                                                   # its edges
+        dot(im, x, 11, shade(crown, -24))
+    for x in range(3):
+        dot(im, x, 12, shade(crown, -30))
+    return im
+
+
 def carving():
     """What is cut into the bench's back, fourteen wide and four high from the corner: its upper two rows go on the top slat and
     its lower two on the slat under it. A heart across both slats, and either side of it the strokes of a pair of letters. Only
@@ -230,6 +263,7 @@ def textures():
     for k in range(4):
         out[DIR + f'litter_{k}.png'] = litter(k)
     out[DIR + 'note.png'] = note()
+    out[DIR + 'hat.png'] = hat()
     return out
 
 
@@ -439,6 +473,15 @@ def note_model():
     return p
 
 
+def hat_model():
+    """0.4.509: a ball cap on a nail in what is behind it, at a child's eye: its crown, its bill out over the front, the nail."""
+    p = []
+    plate(p, [5, 7.5, 12.4], [11, 11.5, 15.9], 'g', {'north': (0, 0), 'east': (6, 0), 'west': (6, 0), 'up': (0, 4), 'down': (10, 0)})
+    plate(p, [5.5, 7.5, 10], [10.5, 8.1, 12.4], 'g', {'up': (0, 8), 'down': (6, 8), 'north': (0, 11), 'east': (0, 12), 'west': (0, 12)})
+    bar(p, [7.6, 11.2, 15.2], [8.4, 12.1, 15.95], IRON)
+    return p
+
+
 FITTINGS = {
     'fence_0': (lambda: fence(False), 'park'), 'fence_1': (lambda: fence(True), 'park'),
     'gate_0': (lambda: gate(0), 'park'), 'gate_1': (lambda: gate(1), 'park'), 'gate_2': (lambda: gate(2), 'park'), 'gate_3': (lambda: gate(3), 'park'),
@@ -451,11 +494,12 @@ FITTINGS = {
     'litter_0': (lambda: litter_model(0), 'litter_0'), 'litter_1': (lambda: litter_model(1), 'litter_1'),
     'litter_2': (lambda: litter_model(2), 'litter_2'), 'litter_3': (lambda: litter_model(3), 'litter_3'),
     'note_0': (note_model, 'note'),
+    'hat_0': (hat_model, 'hat'),
 }
 # A name that begins with a slash is one of the materials, in the blocks' own folder.
-NAMES_OF = {'k': 'park', 'h': 'carving', 'w': 'water', 'l': 'lamp_lit', 'd': 'lamp_dark', 'm': 'mesh', 'f0': 'litter_0', 'f1': 'litter_1', 'f2': 'litter_2', 'f3': 'litter_3', 'n': 'note',
+NAMES_OF = {'k': 'park', 'h': 'carving', 'w': 'water', 'l': 'lamp_lit', 'd': 'lamp_dark', 'm': 'mesh', 'f0': 'litter_0', 'f1': 'litter_1', 'f2': 'litter_2', 'f3': 'litter_3', 'n': 'note', 'g': 'hat',
             'b': '/calder_brick', 'c': '/calder_kerb'}
-KINDS = ['fence', 'gate', 'lamp', 'bench', 'bin', 'border', 'note', 'cap', 'fountain', 'phone']
+KINDS = ['fence', 'gate', 'lamp', 'bench', 'bin', 'border', 'note', 'cap', 'fountain', 'phone', 'hat']
 STAGES = {'fence': 2, 'gate': 4, 'lamp': 4, 'bench': 4, 'border': 2, 'fountain': 2, 'phone': 2}
 MAX_STAGE = 4
 

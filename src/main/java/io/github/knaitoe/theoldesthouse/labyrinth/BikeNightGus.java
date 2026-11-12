@@ -107,6 +107,8 @@ public final class BikeNightGus {
         boolean lastRound,called;
         /** 0.4.507: how far along the Hollow's line he is (CalderHollow.TRAIL), or -1 while he is not on it. */
         double trail=-1;
+        /** 0.4.509: he has taken his cap down off the back gate's post. */
+        boolean capBack;
         long since,nextIdle,soonAt,replan,gestureUntil=-1,pushAt=-1,aloneSince=-1,swingSince=-1,seesawSince=-1,stuckSince=-1;
         boolean left,wasDown,walking;
         @Nullable Vec3 goal;final ArrayDeque<Vec3> route=new ArrayDeque<>();
@@ -204,6 +206,24 @@ public final class BikeNightGus {
     }
     /** 0.4.479: Tully has his cap. */
     static void capTaken(ServerLevel l,BikeNight.Night n){var a=body(l,n);if(a!=null)a.appearance(LiteraryActor.STRANGER,GUS_BARE);if(!keptHome)later(n.gus,n,BikeNightTexts.GUS_CAP,20);}
+    /**
+     * 0.4.509: his cap is on the back gate's post, he has ridden up to it and his friend is there to see. He takes it down, has
+     * it on, and says whose it is. It goes in the record of whoever was near enough to see him.
+     */
+    public static final double CAP_SEEN=24;
+    static void capBack(ServerLevel l,BikeNight.Night n){
+        var g=n.gus;if(g.capBack)return;g.capBack=true;
+        CalderHollow.hungCap(l,n.base,false);
+        var a=body(l,n);if(a!=null)a.appearance(LiteraryActor.STRANGER,GUS);
+        if(!keptHome)for(var line:BikeNightTexts.GUS_CAP_BACK)later(g,n,line,6);
+        var post=at(n,CalderHollow.CAP_BY);
+        for(var p:l.players()){
+            if(BikeNight.night(p)!=n||p.isSpectator()||p.position().distanceToSqr(post)>CAP_SEEN*CAP_SEEN)continue;
+            var own=BikeNight.own(p);own.putBoolean("CapBack",true);BikeNight.save(p,own);
+        }
+    }
+    /** Whether he has his cap back, in this park. For tests. */
+    public static boolean capBack(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.gus.capBack;}
     /** A ball of sand has met him. */
     static void sanded(ServerLevel l,LiteraryActor a){
         var n=BikeNight.nightAt(l,a.blockPosition());if(n==null||keptHome)return;var g=n.gus;g.sandHits++;

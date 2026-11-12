@@ -339,6 +339,8 @@ public final class BikeNightHollow {
      * and what jumps out comes out for readers. Past its end he rides after his friend again as he does on any ground. True if
      * this has said where he rides this tick.
      */
+    /** 0.4.509, in blocks: how near the place by the post Gus stops for his cap, and how near him his friend is before he takes it down. */
+    public static final double CAP_REACH=1.3,CAP_WATCH=16;
     static boolean gus(ServerLevel l,BikeNight.Night n,BikeNightGus.Friend g,PackBike bike,ServerPlayer friend,double d){
         var there=from(n,friend.position());var trail=CalderHollow.TRAIL;int last=trail.size()-1;
         boolean out=there.z<CalderHollow.EDGE+.5&&there.x>CalderGraves.W-1&&there.x<CalderGraves.E+2;
@@ -351,6 +353,14 @@ public final class BikeNightHollow {
             else return BikeNightGraveyard.friend(l,n,g.way,bike,brink,Math.sqrt(BikeNightGus.flat(bike.position(),brink)));
         }
         if(g.trail>=last){
+            // 0.4.509: his cap is on the back gate's post. With his friend on the far side to see it, he goes to it first, stops
+            // beside it, and takes it down.
+            if(n.yard.capHung&&!g.capBack&&there.z<=CalderHollow.FAR_SIDE+1){
+                var by=BikeNightGus.at(n,CalderHollow.CAP_BY);double off=Math.sqrt(BikeNightGus.flat(bike.position(),by));
+                if(off>CAP_REACH)bike.toward(by,(float)Math.min(BikeNightGus.RIDE_PACE,Math.max(.12,off*.16)));
+                else{bike.toward(null,0);if(bike.speedNow()<RiddenBike.STOPPED&&d<CAP_WATCH)BikeNightGus.capBack(l,n);}
+                return true;
+            }
             // Off its far end: after them on the far side's ground and through the gate; waiting, if they are back out on the course.
             if(there.z>CalderHollow.FAR_SIDE+1||d<BikeNightGus.KEEP)bike.toward(null,0);
             else bike.toward(friend.position(),(float)Math.min(BikeNightGus.RIDE_PACE,Math.max(.12,(d-BikeNightGus.KEEP+.6)*.16)));

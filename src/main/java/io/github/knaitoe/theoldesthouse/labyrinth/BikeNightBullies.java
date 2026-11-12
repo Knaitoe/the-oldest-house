@@ -100,6 +100,8 @@ public final class BikeNightBullies {
     /** A night's three. */
     static final class Pack {
         int stage=QUIET,hits,jeer,jeers,touched;long since,nextJeer,saidAt=-1,loiterSince=-1;boolean open,capTaken;
+        /** 0.4.509: Tully has it on (capTaken is also true of a night he never got it in). */
+        boolean capWorn;
         final Bully[] b={new Bully(0),new Bully(1),new Bully(2)};
         @Nullable BlockPos beam;int[] deck={};final Set<String> once=new HashSet<>();
         // 0.4.482, the hunt: how long each reader has been within reach; who has been caught, and when; who is out; and where each
@@ -229,7 +231,7 @@ public final class BikeNightBullies {
             SceneFootpaths.face(a,gus.position(),180);
             if(u.actAt<0){u.actAt=n.tick+26;gesture(n,u,a,REACH,26);say(a,0,BikeNightTexts.TULLY_HAT);return;}
             if(n.tick<u.actAt)return;
-            k.capTaken=true;u.actAt=-1;u.walkSince=-1;a.appearance(LiteraryActor.STRANGER,TULLY_CAP);BikeNightGus.capTaken(l,n);
+            k.capTaken=true;k.capWorn=true;u.actAt=-1;u.walkSince=-1;a.appearance(LiteraryActor.STRANGER,TULLY_CAP);BikeNightGus.capTaken(l,n);
             u.soon=BikeNightTexts.TULLY_HAT_ON;u.soonAt=n.tick+80;
             for(var p:here){var own=BikeNight.own(p);if(!own.getBoolean("CapTaken")){own.putBoolean("CapTaken",true);BikeNight.save(p,own);}}
             return;
