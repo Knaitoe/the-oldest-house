@@ -179,6 +179,21 @@ public abstract class RiddenBike extends Entity {
         double s=rider instanceof LivingEntity le?le.getScale():1;
         return new Vec3(0,saddle()-.675*s+.6*s,0);
     }
+    /**
+     * 0.4.496: whoever gets off, or comes off, is beside the bike with their feet where its wheels are: to its right if there is
+     * room for them there, else its left, else where it is. The game's own rule sets a passenger down on top of what they were
+     * riding, which for a rider thrown off against the face of a ledge was above the ledge: they could step onto ground their
+     * bike could not reach (the Hollow's high way).
+     */
+    public static final double BESIDE=.7;
+    @Override public Vec3 getDismountLocationForPassenger(LivingEntity passenger){
+        double rad=Math.toRadians(getYRot());var right=new Vec3(-Math.cos(rad),0,-Math.sin(rad));
+        for(double side:new double[]{BESIDE,-BESIDE}){
+            var at=position().add(right.scale(side));
+            if(level().noCollision(passenger,passenger.getDimensions(passenger.getPose()).makeBoundingBox(at)))return at;
+        }
+        return position();
+    }
     /** On the ground a bike rolls up a whole block. Coming down, its front wheel catches a lip no higher than LIP. */
     @Override public float maxUpStep(){return catching?LIP:1F;}
     @Override public boolean isPickable(){return false;}

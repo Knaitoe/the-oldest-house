@@ -4802,14 +4802,16 @@ public final class BikeNightTests {
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
             .thenExecute(()->{
                 var islands=CalderHollow.ISLANDS;var names=islands.stream().map(CalderHollow.Island::name).toList();
-                h.assertTrue(names.equals(List.of("the hill","first grave","second grave","third grave","the fences","the grave past the lids","vine","stair and the top","stretch","stretch","the far side")),"the islands, in the order they are ridden: "+names);
+                h.assertTrue(names.equals(List.of("the hill","first grave","second grave","third grave","the fences","the grave past the lids","vine","stair and the top","stretch","stretch","the far side",
+                    "high grave","high grave","high grave and the high way's foot")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's: "+names);
+                h.assertTrue(islands.get(CalderHollow.FAR_ISLAND).name().equals("the far side"),"the far side is where it says");
                 h.assertTrue(CalderHollow.HILL==0&&islands.get(0).name().equals("the hill"),"the hill is the first");
                 // The lids are a bridge: somebody standing on one has no island under them.
                 for(var piece:CalderHollow.WAY)if(piece.made()==CalderHollow.Made.LID)h.assertTrue(CalderHollow.stood((piece.x0()+piece.x1()+1)/2.0,piece.top(),(piece.zSouth()+piece.zNorth()+1)/2.0)==-1,piece.name()+" is not an island");
                 for(int i=0;i<islands.size();i++){
                     var island=islands.get(i);var at=islandPlace(b,i);String what=island.name()+" ("+i+")";
                     // A run short of its far end, or a block in from its near end where it is shorter than that.
-                    if(i>0&&i<islands.size()-1){
+                    if(i!=CalderHollow.HILL&&i!=CalderHollow.FAR_ISLAND){
                         h.assertTrue(island.zNear()-island.zFar()+1>=CalderHollow.STAND,what+" is long enough to get going on");
                         h.assertTrue(island.z()-island.zFar()==Math.min(CalderHollow.RUN,island.zNear()-1-island.zFar()),what+": its place is a run short of its far end, or a block in from its near end: "+island);
                     }
@@ -4985,4 +4987,100 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_pegs") public static void hollowPegsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.496, the high way
+    /** How wide the nothing ahead of a rider on a way is, and how far off: {width, distance to it}; or {0, 99} with none within six blocks. */
+    private static double[] gapOn(List<CalderHollow.Piece> way,double z){
+        for(int i=0;i+1<way.size();i++){
+            var a=way.get(i);var c=way.get(i+1);int gap=a.zNorth()-c.zSouth()-1;
+            if(gap>0&&z>=a.zNorth()&&z<=a.zSouth()+1&&z-a.zNorth()<6)return new double[]{gap,z-a.zNorth()};
+        }
+        return new double[]{0,99};
+    }
+    /** Somebody on the second grave, on the line the high way is on, going flat out north with the hop held; let go at the brink. */
+    private static void atTheLedge(ServerPlayer p,NightBike bike,BlockPos b){
+        bike.moveTo(b.getX()+5.0,b.getY()+2,b.getZ()-273.4,180,0);p.setYRot(180);bike.steady(0,RiddenBike.TOP);bike.keys(true,false);
+    }
+
+    @GameTest(template="empty",batch="hollow_high",timeoutTicks=6000)
+    public static void theHighWayIsReachedByTheHoppersHeldHopAndByNoOtherBikesAndRunsOverTheFencesAndTheLidsToTheGravePastThem(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};final int[] t={0},taps={0};
+        final boolean[] held={false},let={false},cameOff={false};final double[] highest={0};var over=new java.util.TreeSet<String>();
+        var high=CalderHollow.HIGH;var second=CalderHollow.WAY.get(1);var past=CalderHollow.WAY.stream().filter(piece->piece.name().equals("the grave past the lids")).findFirst().orElseThrow();
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // Where it is: a ledge two blocks up across two blocks of nothing from the second grave, in line with its east side.
+                var ledge=high.get(0);
+                h.assertTrue(second.name().equals("second grave")&&ledge.top()==second.top()+2&&second.zNorth()-ledge.zSouth()-1==2,"the ledge is two blocks up from the second grave across two blocks of nothing: "+ledge);
+                h.assertTrue(Math.min(second.x1(),ledge.x1())-Math.max(second.x0(),ledge.x0())+1>=2,"and in line with it by two blocks");
+                // Over the fences and the lids, clear of them: nothing of it is over or against the plain way but its foot.
+                for(var piece:high)for(var plain:CalderHollow.WAY){
+                    boolean beside=piece.x0()<=plain.x1()+1&&piece.x1()>=plain.x0()-1&&piece.zNorth()<=plain.zSouth()&&piece.zSouth()>=plain.zNorth();
+                    if(beside&&!piece.name().equals("the high way's foot"))h.assertTrue(piece.x0()>plain.x1()+1||piece.top()<=plain.top()+2.5||plain==past,piece.name()+" hangs over "+plain.name());
+                }
+                // On it: gaps of two that a tap clears, level or coming down; and down by half blocks to its foot, level with the grave past the lids and against it.
+                for(int i=0;i+1<high.size();i++){
+                    var a=high.get(i);var c=high.get(i+1);int gap=a.zNorth()-c.zSouth()-1;
+                    h.assertTrue((gap==0||gap==2)&&c.top()<=a.top()&&(gap>0||a.top()-c.top()<=.5),"from "+a.name()+" to "+c.name()+": "+gap+" blocks of nothing, "+a.top()+" to "+c.top());
+                }
+                var foot=high.get(high.size()-1);
+                h.assertTrue(foot.top()==past.top()&&foot.x0()==past.x1()+1&&foot.zNorth()==past.zNorth()&&foot.zSouth()>=past.zSouth(),"its foot is level with the grave past the lids and lies along the whole of its east side: "+foot);
+                p[0]=f.player("hollow_high_hopper",P);p[1]=f.player("hollow_high_plain",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.HOPPER);mine[1]=take(h,f,p[1],NightBike.Make.COMET);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("hopper")&&f.own(p[1],P).getString("Bike").equals("comet"),"waiting for the bikes to be theirs"))
+            // The Comet first, the fastest of the others and the one that jumps furthest: it does not get up.
+            .thenExecute(()->{var at=islandPlace(b,2);mine[1].moveTo(at.x,at.y,at.z,180,0);p[1].setYRot(180);})
+            .thenWaitUntil(()->h.assertTrue(mine[1].onGround()&&BikeNightHollow.island(p[1])==2,"waiting for the second grave to be the Comet's rider's island"))
+            .thenExecute(()->{atTheLedge(p[1],mine[1],b);mine[1].steady(0,NightBike.Make.COMET.stats.top);let[0]=false;})
+            .thenWaitUntil(()->{
+                if(!let[0]&&mine[1].isAlive()&&mine[1].getZ()-b.getZ()<=second.zNorth()+.3){mine[1].keys(false,false);let[0]=true;}
+                if(!let[0]&&mine[1].isAlive()&&mine[1].onGround())mine[1].steady(0,NightBike.Make.COMET.stats.top);
+                // Thrown off against the ledge's side, they are in the air over nothing; a test's reader does not fall by themselves.
+                if(let[0]&&!p[1].isPassenger()&&BikeNightHollow.fell(p[1])==0){
+                    h.assertTrue(p[1].getY()-b.getY()<high.get(0).top()-.5&&p[1].getZ()-b.getZ()>high.get(0).zSouth()+1,"they came off against the ledge's face with their feet well under its top, short of it: "+where(b,p[1]));
+                    cameOff[0]=true;p[1].teleportTo(p[1].getX(),b.getY()-1.5,p[1].getZ());
+                }
+                h.assertTrue(BikeNightHollow.fell(p[1])==1,"waiting for the Comet's rider to have gone down: at "+where(b,p[1]));
+            })
+            .thenExecute(()->{
+                h.assertTrue(BikeNightHollow.island(p[1])==2&&p[1].position().distanceTo(islandPlace(b,2))<1.6,"they are back on the second grave, never having been on the ledge: "+where(b,p[1])+", island "+BikeNightHollow.island(p[1]));
+                boolean riding=p[1].getVehicle() instanceof NightBike;
+                var laid=BlockPos.betweenClosedStream(b.offset(-2,1,-281),b.offset(7,6,-270)).map(BlockPos::immutable).filter(at->l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())).toList();
+                h.assertTrue(riding||laid.size()==1&&laid.get(0).getY()-b.getY()==2,"and the Comet is with them, on the second grave and not up on the ledge: riding "+riding+", lying "+laid);
+                h.assertTrue(cameOff[0]!=riding,"either they came off against the ledge's side and it was laid by them, or they went under it still riding: came off "+cameOff[0]);
+            })
+            // The Hopper: up onto the ledge, and the whole of the high way.
+            .thenExecute(()->{var at=islandPlace(b,2);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);})
+            .thenWaitUntil(()->h.assertTrue(mine[0].onGround()&&BikeNightHollow.island(p[0])==2,"waiting for the second grave to be the Hopper's rider's island"))
+            .thenExecute(()->{atTheLedge(p[0],mine[0],b);let[0]=false;})
+            .thenWaitUntil(()->{
+                h.assertTrue(p[0].getVehicle()==mine[0]&&BikeNightHollow.fell(p[0])==0,"the Hopper's rider is on it and has not gone down: at "+where(b,mine[0])+", over "+over);
+                double x=mine[0].getX()-b.getX(),z=mine[0].getZ()-b.getZ(),y=mine[0].getY()-b.getY();highest[0]=Math.max(highest[0],y);
+                if(!let[0]){
+                    // Flat out with the hop held, and let go at the brink.
+                    if(mine[0].onGround())mine[0].steady(0,RiddenBike.TOP);
+                    if(z<=second.zNorth()+.3){mine[0].keys(false,false);let[0]=true;}
+                }else if(z> -330.5){
+                    // Along it: a tap at each gap, the middle of what is left to ride on.
+                    p[0].setYRot(mine[0].onGround()?(float)Math.toDegrees(Math.atan2(-(5.0-x),-3.5)):mine[0].getYRot());
+                    var gap=gapOn(high,z);boolean brink=gap[1]<=.4&&mine[0].onGround();
+                    if(gap[0]>=2&&brink&&!held[0]){mine[0].keys(true,false);held[0]=true;taps[0]++;}else if(held[0]){mine[0].keys(false,false);held[0]=false;}
+                    if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);
+                }else{
+                    // At its foot: round onto the grave past the lids, at its middle.
+                    if(mine[0].onGround()){p[0].setYRot((float)Math.toDegrees(Math.atan2(-(.5-x),-336.5-z)));pedalWell(mine[0],t[0]++,3);}
+                }
+                for(var piece:high)if(mine[0].onGround()&&piece.has((int)Math.floor(x),(int)Math.floor(z))&&Math.abs(y-piece.top())<.1)over.add(piece.name().replaceAll(" [0-9]+$",""));
+                h.assertTrue(mine[0].onGround()&&x<past.x1()&&CalderHollow.stood(x,y,z)==5,"waiting for the Hopper to come down the high way onto the grave past the lids: at "+where(b,mine[0])+" going "+mine[0].speedNow()+", over "+over);
+            })
+            .thenExecute(()->{
+                h.assertTrue(over.containsAll(List.of("high grave","the high way's foot")),"over the high way to its foot (the steps are come down mostly in the air): "+over);
+                h.assertTrue(highest[0]>4.5&&taps[0]==2,"up past the ledge's height, and a tap at each of its two gaps: "+highest[0]+", "+taps[0]+" taps");
+                h.assertTrue(BikeNightHollow.island(p[0])==5&&BikeNightHollow.fell(p[0])==0,"and the grave past the lids is their island now");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="hollow_high") public static void hollowHighDone(ServerLevel l){done();}
 }

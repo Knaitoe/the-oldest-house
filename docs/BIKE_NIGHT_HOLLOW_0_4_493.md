@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -195,6 +195,61 @@ so the cases that build every place, and the client proof, have not been run by 
 - How many times somebody has gone down is counted for the night and is not yet in their record or the account.
 - A reader's last island is kept with the night, not with the world: after the server stops and starts in the middle
   of the Hollow it is the hill again.
+
+## 0.4.496: the high way
+
+The proposal: "high: a gap only the Hopper's jump clears, or the Rattler with its turbo". This is the first of the
+five ways the bikes' own perks open.
+
+**Where.** East of the line. From the second grave a ledge stands two blocks up across two blocks of nothing. A held
+hop on the Hopper goes two blocks high; on any other bike, a block and a quarter. From the ledge the high way runs
+level over the fences and the lids: three graves, the first two with two blocks of nothing between them, the third a
+block lower across two more; a tap clears each. Then it comes down by half-block steps of laid stones to its foot,
+which lies along the whole east side of the grave past the lids, level with it. Headstones stand along its east
+edge, which leaves two blocks to ride on.
+
+**What it is worth.** Whoever is up there does not weave the fences, does not hold a hop for the three, and does not
+cross the lids. Its graves are islands like any others: somebody who goes down from it is set down on it.
+
+**Not the Rattler.** The proposal gives the high gap to the Rattler's burst as well. The burst as built is speed and
+not height: it takes the Rattler half as fast again and no higher. So the high way is the Hopper's alone, and the
+Rattler's burst is for the way that wants speed, which is not built. If the owner wants the Rattler up here, its burst
+would have to lift it.
+
+**Whoever comes off a bike is beside it** (this changes every ridden bike, Borrasca's too). The game sets a passenger
+down on top of what they were riding. The case's first run showed what that meant here: a Comet ridden flat out at the
+ledge met its face and threw its rider, who was left at saddle height, above the ledge's top, a third of a block
+short of it. A person could have stepped onto the high way from there, and the bike had been stood up on the ledge
+too (a bike that comes to rest looks a block up for ground). Now whoever gets off, or comes off, is at the bike's own
+level, a little to its right if there is room for them there, else to its left, else where it is. The Comet's rider
+comes off under the ledge's top, goes down, and is set down on the second grave with the Comet laid by them.
+
+**The foot was two rows long** when the case first rode it: the Hopper came down the steps fast, had two blocks in
+which to turn onto the grave beside it, and went off the end. The foot is eight rows now, the length of that grave
+and two more.
+
+### Cases
+
+One (84 in the namespace), and the islands' case knows the high way's three. Where the high way is and what it is
+made of; then two riders from the second grave, on the line the ledge is on, flat out with the hop held and let go at
+the brink:
+
+- **the Comet** (the fastest of the others, and the one that jumps furthest) comes off against the ledge's face with
+  its rider's feet well under the ledge's top, and its rider is set down on the second grave with the Comet by them
+  and not up on the ledge;
+- **the Hopper** lands on the ledge, rides the high way with a tap at each of its two gaps, comes down the steps
+  (mostly in the air), turns onto the grave past the lids and has it for its island, without going down once.
+
+It failed twice before it passed, on the two things above.
+
+### Not built, and not seen
+
+- The other four ways (the long one, the tight one, the steep one, the dark one), what jumps out, what chases, the
+  way out.
+- The high way has not been ridden by a person. Whether letting the hop go within a block of the brink is fair from a
+  saddle is the owner's to judge. A Hopper that lets go more than about a block early meets the ledge's face.
+- A bike that comes to rest still looks a block up for ground, so a bike thrown at a ledge can be stood on it; in the
+  Hollow it is laid by its rider when they are set down. Elsewhere (a low wall in the town) it is as it was.
 
 ## The place
 
