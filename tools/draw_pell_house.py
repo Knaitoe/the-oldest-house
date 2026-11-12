@@ -59,6 +59,123 @@ def speckle(im, seed, n, colours):
         dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(colours))
 
 
+# ------------------------------------------------------------------------------------------------ what things are made of
+# 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md), the owner: "add a little more detail to textures". Still sixteen pixels to the block:
+# surfaces with what they are made of showing in them, from fixed seeds. Each one tiles, so a part that takes a strip of it from
+# anywhere shows the same stuff; panels drawn over them take their light from the upper left (bevel, inset).
+def wood(base, seed, spread=2, across=False, knot=True):
+    """Timber: lines of grain along the board, each a shade off the next and drifting, darker streaks running along them, and now
+    and then a small knot. The grain runs left to right, or up and down when across."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load()
+    tone, lines = 0, []
+    for _ in range(16):
+        tone = max(-8, min(8, tone + rnd.choice((-4, -2, 0, 0, 2, 4))))
+        lines.append(tone)
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(base, lines[x if across else y] + rnd.randint(-spread, spread))
+    for _ in range(6):
+        ln, start, n, k = rnd.randrange(16), rnd.randrange(16), rnd.randint(3, 9), rnd.choice((-17, -12, -9, 8))
+        for i in range(start, start + n):
+            x, y = (ln, i % 16) if across else (i % 16, ln)
+            px[x, y] = shade(px[x, y], k)
+    if knot and rnd.random() < .45:
+        cx, cy = rnd.randrange(2, 14), rnd.randrange(2, 14)
+        for dx, dy, k in ((0, 0, -26), (1, 0, -16), (-1, 0, -12), (0, 1, -9), (0, -1, -9)):
+            px[cx + dx, cy + dy] = shade(px[cx + dx, cy + dy], k)
+    return im
+
+
+def metal(base, seed, spread=2):
+    """Brushed metal: fine lines along it, some catching the light and some dull."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load()
+    rows = [rnd.choice((-3, -1, 0, 0, 1, 3)) for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(base, rows[y] + rnd.randint(-spread, spread))
+    for _ in range(7):
+        y, x0, n, k = rnd.randrange(16), rnd.randrange(16), rnd.randint(3, 8), rnd.choice((13, 9, -9, -12))
+        for x in range(x0, x0 + n):
+            px[x % 16, y] = shade(px[x % 16, y], k)
+    return im
+
+
+def enamel(base, seed, specks=3):
+    """Enamel, glaze or gloss paint: nearly even, a faint unevenness in the coat and a few specks."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(base, rnd.choice((-2, -1, 0, 0, 0, 1)))
+    for _ in range(specks):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        px[x, y] = shade(px[x, y], -9)
+    return im
+
+
+def cloth(base, seed, spread=2):
+    """Woven cloth: a fine twill, the weave catching the light on alternate threads."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            k = (2 if (x + y) % 2 == 0 else -2) + (-4 if (x - y) % 4 == 0 else 0) + rnd.randint(-spread, spread)
+            px[x, y] = shade(base, k)
+    return im
+
+
+def card(base, seed):
+    """Cardboard: the flutes under its face showing as faint bands, a few fibres and specks."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(base, (-4 if y % 3 == 2 else 2 if y % 3 == 0 else 0) + rnd.randint(-2, 2))
+    for _ in range(5):
+        x, y, n = rnd.randrange(16), rnd.randrange(16), rnd.randint(2, 3)
+        for i in range(n):
+            px[(x + i) % 16, y] = shade(px[(x + i) % 16, y], -11)
+    for _ in range(4):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        px[x, y] = shade(px[x, y], 10)
+    return im
+
+
+def plastic(base, seed):
+    """Moulded plastic: smooth, a soft sheen, a scuff or two."""
+    rnd = random.Random(seed)
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(base, rnd.choice((-1, 0, 0, 1)))
+    for _ in range(2):
+        x, y, n = rnd.randrange(16), rnd.randrange(16), rnd.randint(2, 4)
+        for i in range(n):
+            px[(x + i) % 16, (y + i) % 16] = shade(px[(x + i) % 16, (y + i) % 16], -7)
+    return im
+
+
+def bevel(im, x0, y0, x1, y1, k=14):
+    """A raised panel from (x0, y0) to before (x1, y1): its top and left edges catch the light, its bottom and right edges are in
+    shadow. What is drawn there keeps its own texture, lighter or darker."""
+    px = im.load()
+    for x in range(max(0, x0), min(16, x1)):
+        for y, d in ((y0, k), (y1 - 1, -k)):
+            if 0 <= y < 16 and px[x, y][3]:
+                px[x, y] = shade(px[x, y], d, px[x, y][3])
+    for y in range(max(0, y0 + 1), min(16, y1 - 1)):
+        for x, d in ((x0, k), (x1 - 1, -k)):
+            if 0 <= x < 16 and px[x, y][3]:
+                px[x, y] = shade(px[x, y], d, px[x, y][3])
+
+
+def inset(im, x0, y0, x1, y1, k=14):
+    """A recess (a bowl, a screen, a groove): the opposite of a bevel, its top and left edges in shadow, its bottom and right lit."""
+    bevel(im, x0, y0, x1, y1, -k)
+
+
 # ------------------------------------------------------------------------------------------------ materials
 def brick(face='#a8664a', mortar='#cdbfa8', seed=51801, vary=9):
     """Running bond: four courses to a block, a brick seven pixels long and three high between one-pixel joints."""
@@ -70,7 +187,7 @@ def brick(face='#a8664a', mortar='#cdbfa8', seed=51801, vary=9):
             for x in range(start, start + 7):
                 for y in range(y0, y0 + 3):
                     if 0 <= x < 16:
-                        px[x, y] = shade(face, tone + rnd.randint(-3, 3))
+                        px[x, y] = shade(face, tone + rnd.randint(-3, 3) + (7 if y == y0 else -7 if y == y0 + 2 else 0))
     return im
 
 
@@ -101,10 +218,12 @@ def roof():
 
 
 def fascia():
-    im = new('#e7e0cf', 51808, 3)
-    fill(im, 0, 15, 16, 16, '#b9b09c'); fill(im, 0, 0, 16, 1, '#f3eee2')
+    """The eaves' board: painted timber, the grain showing through the paint, a nail head, the paint flaking in two places."""
+    im = wood('#e7e0cf', 51808, 1, knot=False)
+    fill(im, 0, 15, 16, 16, '#b9b09c'); fill(im, 0, 14, 16, 15, '#d6cebb'); fill(im, 0, 0, 16, 1, '#f3eee2')
     for x, y in ((3, 6), (4, 7), (11, 9), (12, 9)):
         dot(im, x, y, '#cfc6b2')
+    dot(im, 8, 7, '#8e8a80'); dot(im, 9, 8, '#d0c8b4')
     return im
 
 
@@ -122,7 +241,7 @@ def lawn(dry):
 
 
 def concrete(seed=51814, joint=True):
-    im = new('#b7b3a8', seed, 4); speckle(im, seed + 1, 12, ['#a5a196', '#c6c2b8', '#9c988e'])
+    im = new('#b7b3a8', seed, 4); speckle(im, seed + 1, 22, ['#a5a196', '#c6c2b8', '#9c988e', '#cdc9bf', '#8f8b82'])
     if joint:
         fill(im, 0, 0, 16, 1, '#8f8b81'); fill(im, 0, 0, 1, 16, '#8f8b81')
     return im
@@ -159,13 +278,21 @@ def asphalt():
 
 
 def kerb():
-    im = new('#a19f98', 51818, 3)
+    im = new('#a19f98', 51818, 3); speckle(im, 51819, 14, ['#8f8d86', '#b2b0a9', '#97958e'])
     fill(im, 0, 0, 16, 1, '#c2c0ba'); fill(im, 0, 15, 16, 16, '#7f7d77'); fill(im, 7, 0, 8, 16, '#8a8882')
     return im
 
 
 def paver():
     im = new('#c7ab8b', 51820, 5)
+    rnd = random.Random(51822)
+    for oy in (0, 8):
+        for ox in (0, 8):
+            tone = rnd.randint(-7, 7)
+            for y in range(oy + 1, oy + 8):
+                for x in range(ox + 1, ox + 8):
+                    edge = 10 if (y == oy + 1 or x == ox + 1) else -9 if (y == oy + 7 or x == ox + 7) else 0
+                    dot(im, x, y, shade(im.getpixel((x, y)), tone + edge))
     for i in range(16):
         dot(im, i, 0, '#96806a'); dot(im, i, 8, '#96806a'); dot(im, 0, i, '#96806a'); dot(im, 8, i, '#96806a')
     speckle(im, 51821, 8, ['#b39878', '#d6bd9f'])
@@ -173,10 +300,10 @@ def paver():
 
 
 def coping():
-    im = new('#dcd5c4', 51822, 3)
-    fill(im, 0, 0, 16, 2, '#efeadd'); fill(im, 0, 14, 16, 16, '#bdb5a2')
+    im = new('#dcd5c4', 51822, 3); speckle(im, 51823, 10, ['#cfc8b6', '#e6e0d1', '#c4bcaa'])
+    fill(im, 0, 0, 16, 2, '#efeadd'); fill(im, 0, 0, 16, 1, '#f7f3ea'); fill(im, 0, 14, 16, 16, '#bdb5a2'); fill(im, 0, 15, 16, 16, '#aaa290')
     for x in (0, 8):
-        fill(im, x, 0, x + 1, 16, '#b3ab98')
+        fill(im, x, 0, x + 1, 16, '#b3ab98'); fill(im, x + 1, 2, x + 2, 14, '#e4ded0')
     return im
 
 
@@ -190,6 +317,7 @@ def pool_tile(band=False):
         for tx in range(4):
             if rnd.random() < .3:
                 fill(im, tx * 4, ty * 4, tx * 4 + 3, ty * 4 + 3, rnd.choice(['#5eb2c4', '#78c9d8']))
+            dot(im, tx * 4, ty * 4, shade(im.getpixel((tx * 4, ty * 4)), 22))
     if band:
         for tx in range(4):
             fill(im, tx * 4, 0, tx * 4 + 3, 3, '#1f5f8c' if tx % 2 == 0 else '#2c79a6')
@@ -198,7 +326,10 @@ def pool_tile(band=False):
 
 
 def deck():
-    im = new('#8d6f4f', 51826, 4)
+    im = wood('#8d6f4f', 51826, 3, knot=False)
+    for y in (0, 4, 8, 12):
+        for x in range(16):
+            dot(im, x, y, shade(im.getpixel((x, y)), 9))
     for y in (3, 7, 11, 15):
         fill(im, 0, y, 16, y + 1, '#4f3d2b')
     for x, y in ((2, 1), (13, 1), (6, 5), (10, 9), (3, 13), (12, 13)):
@@ -231,12 +362,23 @@ def iron():
 
 
 def plaster():
+    """Plaster, painted: the trowel's long sweeps under the paint, faintly lighter and darker."""
     im = new('#e9e3d4', 51832, 2); speckle(im, 51833, 8, ['#dfd8c7', '#f0ebdf'])
+    rnd = random.Random(51831)
+    for _ in range(4):
+        y, x0, n, k = rnd.randrange(16), rnd.randrange(16), rnd.randint(4, 8), rnd.choice((4, -4))
+        for i in range(n):
+            x = (x0 + i) % 16; yy = (y + (i // 3) * (1 if k > 0 else -1)) % 16
+            dot(im, x, yy, shade(im.getpixel((x, yy)), k))
     return im
 
 
 def ceiling():
-    im = new('#f1eee6', 51834, 2); speckle(im, 51835, 14, ['#e6e2d8'])
+    """The ceiling's stipple: a fine bumpy finish, its bumps lit on one side."""
+    im = new('#f1eee6', 51834, 2); rnd = random.Random(51835)
+    for _ in range(26):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        dot(im, x, y, '#e2ded3'); dot(im, (x + 15) % 16, (y + 15) % 16, '#f8f6f0')
     return im
 
 
@@ -274,8 +416,14 @@ def stars_glow(layout=0):
 
 
 def carpet(worn):
-    im = new('#8b806d', 51836, 6); rnd = random.Random(51837)
-    for _ in range(40):
+    im = new('#8b806d', 51836, 4); rnd = random.Random(51837)
+    for y in range(16):
+        for x in range(16):
+            if (x + 2 * y) % 4 == 0:
+                dot(im, x, y, shade(im.getpixel((x, y)), -7))
+            elif (x + 2 * y) % 4 == 2:
+                dot(im, x, y, shade(im.getpixel((x, y)), 5))
+    for _ in range(30):
         dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(['#7a705f', '#9a8f7b']))
     if worn:
         # A path worn down the middle of it, paler and flat, where one person has walked every day.
@@ -289,11 +437,13 @@ def carpet(worn):
 
 
 def lino():
-    im = new('#d2caa9', 51838, 3)
+    im = new('#d2caa9', 51838, 3); speckle(im, 51839, 10, ['#c8bf9c', '#dcd5b6'])
     for i in range(16):
         dot(im, i, i, '#b9b08c'); dot(im, 15 - i, i, '#b9b08c')
     for x, y in ((0, 8), (8, 0), (15, 8), (8, 15), (8, 8)):
         dot(im, x, y, '#a89f7c')
+    for x, y in ((4, 8), (8, 4), (12, 8), (8, 12)):
+        dot(im, x, y, '#bfb692')
     return im
 
 
@@ -323,7 +473,7 @@ def lino_burn():
 
 
 def slab(oil):
-    im = new('#a4a097', 51840, 4); speckle(im, 51841, 16, ['#948f86', '#b3afa6'])
+    im = new('#a4a097', 51840, 4); speckle(im, 51841, 24, ['#948f86', '#b3afa6', '#8a857c', '#bcb8af'])
     if oil:
         for y in range(4, 13):
             for x in range(3, 13):
@@ -350,8 +500,12 @@ def like(name):
 
 # ------------------------------------------------------------------------------------------------ fittings' faces
 def paling():
-    """A paling fence: boards four pixels wide with a gap of shadow between, grey with weather, a rail's nails across."""
-    im = new('#9a8c78', 51850, 4)
+    """A paling fence: boards four pixels wide with a gap of shadow between, grey with weather and the grain standing up in it, each
+    board's left edge catching the light, a rail's nails across."""
+    im = wood('#9a8c78', 51850, 3, across=True)
+    for x in (0, 4, 8, 12):
+        for y in range(16):
+            dot(im, x, y, shade(im.getpixel((x, y)), 9))
     for x in (3, 7, 11, 15):
         fill(im, x, 0, x + 1, 16, '#5e5446')
     for x in (1, 5, 9, 13):
@@ -376,7 +530,11 @@ def pool_bars(gate=False, lock=False):
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     for x in range(1, 16, 3):
         fill(im, x, 1, x + 1, 16, '#26282a')
+        for y in range(2, 16, 5):
+            dot(im, x, y, '#4a4e52')
     fill(im, 0, 1, 16, 2, '#34373a'); fill(im, 0, 13, 16, 14, '#34373a')
+    for x in range(0, 16, 4):
+        dot(im, x, 1, '#4e5256'); dot(im, x, 13, '#4e5256')
     if gate:
         fill(im, 11, 4, 14, 8, '#1c1d1f'); dot(im, 12, 5, '#6a6d70')
         fill(im, 0, 1, 1, 16, '#34373a'); fill(im, 15, 1, 16, 16, '#34373a')
@@ -394,17 +552,21 @@ def door(upper, kind):
             fill(im, 10, 2, 15, 4, '#55595c'); fill(im, 11, 4, 14, 8, '#c9a53a'); dot(im, 12, 6, '#6e5814')
         return im
     base = '#efe9da' if kind == 'inner' else '#b9c2b0'
-    im = new(base, 51860 + upper + (5 if kind == 'garage' else 0), 2)
+    seed = 51860 + upper + (5 if kind == 'garage' else 0)
+    im = enamel(base, seed) if kind == 'inner' else wood(base, seed, 2, across=True, knot=False)
     fill(im, 0, 0, 1, 16, shade(base, -34)); fill(im, 15, 0, 16, 16, shade(base, -34))
+    fill(im, 1, 0, 2, 16, shade(base, 8)); fill(im, 14, 0, 15, 16, shade(base, -12))
     if upper:
         fill(im, 0, 0, 16, 1, shade(base, -34))
     if kind == 'inner':
-        fill(im, 3, 2 if upper else 1, 13, 14 if upper else 13, shade(base, -9)); fill(im, 4, 3 if upper else 2, 12, 13 if upper else 12, shade(base, 3))
+        y0, y1 = (2, 14) if upper else (1, 13)
+        fill(im, 3, y0, 13, y1, shade(base, -9)); fill(im, 4, y0 + 1, 12, y1 - 1, shade(base, 3))
+        inset(im, 3, y0, 13, y1, 10); bevel(im, 4, y0 + 1, 12, y1 - 1, 8)
         if not upper:
-            fill(im, 12, 12, 14, 14, '#b8a25a'); dot(im, 12, 12, '#e3d08c')
+            fill(im, 12, 12, 14, 14, '#b8a25a'); dot(im, 12, 12, '#e3d08c'); dot(im, 13, 13, '#8a7638'); dot(im, 13, 14, shade(base, -16))
     else:
         for y in (3, 12):
-            fill(im, 1, y, 15, y + 2, shade(base, -22))
+            fill(im, 1, y, 15, y + 2, shade(base, -22)); fill(im, 1, y, 15, y + 1, shade(base, -14)); fill(im, 1, y + 2, 15, y + 3, shade(base, -30))
         for x in (5, 10):
             fill(im, x, 0, x + 1, 16, shade(base, -16))
         if not upper:
@@ -447,10 +609,12 @@ def screen(upper):
 
 def roller():
     """The garage's roller door: slats a pixel of shadow apart, never opened; a handle low in the middle."""
-    im = new('#cfd3cf', 51870, 2)
+    im = metal('#cfd3cf', 51870, 1)
     for y in range(1, 16, 2):
         fill(im, 0, y, 16, y + 1, '#aab0ab')
-    fill(im, 6, 13, 10, 14, '#55595c')
+        if y + 1 < 16:
+            fill(im, 0, y + 1, 16, y + 2, '#dde1dd')
+    fill(im, 6, 13, 10, 14, '#55595c'); dot(im, 6, 13, '#7a7e82'); fill(im, 6, 14, 10, 15, '#8e928e')
     return im
 
 
@@ -478,7 +642,8 @@ def glass(kind):
 
 
 def frame():
-    im = new('#c9ccc8', 51874, 2); fill(im, 0, 0, 16, 1, '#e4e6e2'); fill(im, 0, 15, 16, 16, '#9a9e9a')
+    im = metal('#c9ccc8', 51874, 1); fill(im, 0, 0, 16, 1, '#e4e6e2'); fill(im, 0, 1, 16, 2, '#d8dad6'); fill(im, 0, 15, 16, 16, '#9a9e9a')
+    fill(im, 0, 14, 16, 15, '#b2b6b2')
     return im
 
 
@@ -521,8 +686,14 @@ def tin(front):
 def mat():
     """A coir doormat: bristle, a darker border, worn pale where feet land."""
     im = new('#8a6a3c', 51884, 9)
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 2 == 0:
+                dot(im, x, y, shade(im.getpixel((x, y)), 7))
     for i in range(16):
         dot(im, i, 0, '#5c4526'); dot(im, i, 15, '#5c4526'); dot(im, 0, i, '#5c4526'); dot(im, 15, i, '#5c4526')
+        if 0 < i < 15:
+            dot(im, i, 1, '#6e5532')
     for y in range(5, 11):
         for x in range(4, 12):
             if (x + y) % 2 == 0:
@@ -544,7 +715,7 @@ def faces():
     out = {'tin': tin(False), 'tin_front': tin(True), 'mat': mat(), 'mat_back': mat_back(),
            'paling': paling(), 'paling_gate': paling_gate(), 'pool_bars': pool_bars(), 'pool_gate': pool_bars(True), 'pool_gate_locked': pool_bars(True, True),
            'roller': roller(), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(),
-           'tarp': tarp(False), 'tarp_pond': tarp(True), 'post': new('#6b6052', 51878, 3), 'pool_post': new('#2c2e30', 51879, 2), 'stars_glow': stars_glow()}
+           'tarp': tarp(False), 'tarp_pond': tarp(True), 'post': wood('#6b6052', 51878, 3, across=True), 'pool_post': metal('#2c2e30', 51879), 'stars_glow': stars_glow()}
     for layout in range(1, len(STAR_LAYOUTS)):
         out[f'stars_{layout}'] = ceiling_stars(layout); out[f'stars_glow_{layout}'] = stars_glow(layout)
     for kind in ('inner', 'garage', 'shed'):
