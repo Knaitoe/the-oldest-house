@@ -750,7 +750,7 @@ public final class BikeNightTests {
                 BikeNightTexts.CARVED,BikeNightTexts.FOUNTAIN,BikeNightTexts.FOUNTAIN_RUNNING,BikeNightTexts.PHONE,BikeNightTexts.PHONE_HELD,
                 HouseReadSwing.PUSH_HINT,HouseReadSwing.PUSH_EARLY,HouseReadSwing.PUSH_FAR,HouseReadSwing.PUSH_BESIDE,HouseReadSwing.PUSHED_BY,
                 BikeNightTexts.SCRATCH_ADD,BikeNightTexts.SCRATCH_OWN,BikeNightTexts.SCRATCH_FRESH,BikeNightTexts.OVER_BAR,BikeNightTexts.OVER_SEEN,
-                BikeNightTexts.GATE_OPENED,BikeNightTexts.GET_THEM_CUE,BikeNightTexts.GATE_OPEN,BikeNightTexts.SLIDE_BIKE)){
+                BikeNightTexts.GATE_OPENED,BikeNightTexts.GET_THEM_CUE,BikeNightTexts.GATE_OPEN,BikeNightTexts.SLIDE_BIKE,BikeNightTexts.HUNG_CAP)){
                 var low=line.toLowerCase(java.util.Locale.ROOT);
                 for(var word:List.of(" red"," green"," blue"," yellow"," orange"," black"," white"," grey"," gray"," brown"," he "," she "," his "," her "," boy"," girl"," afraid"," scared"," you feel"))
                     h.assertTrue(!low.contains(word),"the park's own lines name no colour, gender the reader never, and do not say how they feel: \""+line+"\" has \""+word.trim()+"\"");
@@ -4450,6 +4450,14 @@ public final class BikeNightTests {
                 // "Nothing is shown happening to them": nothing was said or heard of it.
                 h.assertTrue(said.size()==after[0]&&!BikeNightBullies.caught(b,p[0])&&p[0].getHealth()>=p[0].getMaxHealth(),"nothing more was said, and the reader is as they were");
                 for(var line:List.of(BikeNightTexts.NOT_GOING_IN,BikeNightTexts.FALL_BACK[0],BikeNightTexts.FALL_BACK[1]))h.assertTrue(!heard(p[0],line),"what they say is never in chat: "+line);
+            })
+            // 0.4.509: "the bullies' three bikes lie abandoned by the front gate, and the bullies are nowhere." The reader is still
+            // looking up the hill.
+            .thenWaitUntil(()->{p[0].setYRot(180);h.assertTrue(BikeNightGraveyard.dropped(b)==3,"waiting for what they rode to be lying outside the gate: "+BikeNightGraveyard.dropped(b));})
+            .thenExecute(()->{
+                var lying=l.getEntitiesOfClass(PackBike.class,new AABB(b.getX()-14,b.getY()-1,b.getZ()+CalderTown.RAILS,b.getX()+14,b.getY()+3,b.getZ()+CalderTown.RAILS+8),e->e.isAlive()&&e.laid()!=0);
+                h.assertTrue(lying.size()==3&&lying.stream().map(PackBike::look).distinct().count()==3&&lying.stream().allMatch(e->e.getPassengers().isEmpty()),"one of each of theirs, on its side, with nobody on it: "+lying.size());
+                for(int i=0;i<3;i++)h.assertTrue(BikeNightBullies.find(l,b,i)==null,"and "+BikeNightBullies.NAMES[i]+" is nowhere");
             }).thenSucceed();
     }
     @AfterBatch(batch="yard_three") public static void yardThreeDone(ServerLevel l){done();}
@@ -6028,13 +6036,16 @@ public final class BikeNightTests {
         var f=park(h);BikeNightGus.keptHome=false;BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;BikeNightSpecters.keptAway=false;
         var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] gus={null};final PackBike[] his={null};
         var trail=CalderHollow.TRAIL;int last=trail.size()-1,level=CalderGraves.level(CalderHollow.EDGE);
-        final double[] off={0},high={0},low={99},north={0};final int[] spoke={0},specters={0},t={0};final boolean[] rode={true};final String[] lastSaid={""};final int[] seen={0};
+        final double[] off={0},high={0},low={99},north={0};final int[] spoke={0},specters={0},t={0};final boolean[] rode={true};final String[] lastSaid={""};final int[] seen={0};var words=new ArrayList<String>();
         // What is watched while he is on the line: that he is on it, on his bike, saying nothing, and that nothing of the Hollow's is his.
         Runnable watch=()->{
             var at=his[0].position().subtract(b.getX(),b.getY(),b.getZ());double along=BikeNightHollow.gusTrail(b);
             // A line he begins out there, not the end of one he began before it.
             var now=saying(gus[0]);
-            if(along>=0&&along<last){off[0]=Math.max(off[0],offTrail(at));if(!now.isEmpty()&&!now.equals(lastSaid[0]))spoke[0]++;}
+            // (0.4.509: the line's last three blocks are the far side's ground, where he may talk again. Until this slice he never
+            // rode them while the case watched: he stopped short of his friend, who stood at its end.)
+            if(along>=0&&along<last){off[0]=Math.max(off[0],offTrail(at));if(!now.isEmpty()&&!now.equals(lastSaid[0])&&BikeNightGraveyard.hushed(b,his[0].position()))spoke[0]++;}
+            if(!now.isEmpty()&&!now.equals(lastSaid[0]))words.add(now);
             lastSaid[0]=now;
             high[0]=Math.max(high[0],at.y);if(along>0)low[0]=Math.min(low[0],at.y);north[0]=at.z;rode[0]&=gus[0].getVehicle()==his[0];
             // Whatever is out there for somebody is out there for the reader: none of it is anybody else's.
@@ -6079,11 +6090,30 @@ public final class BikeNightTests {
                 var second=CalderHollow.WAY.get(1);
                 h.assertTrue(Math.abs(north[0]-second.zNorth()-.3)<.3&&Math.abs(his[0].getY()-b.getY()-second.top())<.01,"on the second grave's far end, as near them as he keeps: at "+rel(b,his[0]));
                 h.assertTrue(high[0]>second.top()+.4&&low[0]>=second.top()-.01,"over the two gaps on the way, and never under the graves: "+low[0]+" to "+high[0]);
-                // To the far side.
-                var at=CalderHollow.ISLANDS.get(CalderHollow.FAR_ISLAND).place();f.at(p[0],P,at.x,at.y,at.z);high[0]=0;low[0]=99;
+                // To the far side, looking back over the Hollow. 0.4.509: the three are gone by now, Tully with the cap on.
+                var at=CalderHollow.ISLANDS.get(CalderHollow.FAR_ISLAND).place();f.at(p[0],P,at.x,at.y,at.z);p[0].setYRot(0);p[0].setXRot(0);high[0]=0;low[0]=99;
+                for(int who=0;who<3;who++)BikeNightGraveyard.takeNow(l,b,who,true);
             })
-            .thenWaitUntil(()->{watch.run();h.assertTrue(north[0]<CalderHollow.FAR_SIDE+2&&his[0].speedNow()<.03,"waiting for him to ride the rest of it to the far side and stop by them: at "+rel(b,his[0])+", "+BikeNightHollow.gusTrail(b)+" of "+last);})
+            // "the taken cap is hanging on the gate": it is on the post before he is off the Hollow's line.
+            .thenWaitUntil(()->{watch.run();p[0].setYRot(0);h.assertTrue(CalderHollow.capHung(l,b),"waiting for the cap to be on the back gate's post");})
+            // His friend goes on toward the gate, and he comes off the line after them: to the post first.
             .thenExecute(()->{
+                h.assertTrue(BikeNightHollow.gusTrail(b)<last&&!BikeNightGus.capBack(b),"it is there before he is: he is "+BikeNightHollow.gusTrail(b)+" of "+last+" along");
+                f.at(p[0],P,.5,level,CalderHollow.BACK+5.5);p[0].setYRot(0);
+            })
+            .thenWaitUntil(()->{
+                watch.run();p[0].setYRot(0);
+                h.assertTrue(BikeNightGus.capBack(b)&&words.containsAll(List.of(BikeNightTexts.GUS_CAP_BACK))&&north[0]<CalderHollow.FAR_SIDE+2&&his[0].speedNow()<.03&&his[0].position().distanceTo(p[0].position())<BikeNightGus.KEEP+2,
+                    "waiting for him to ride the rest of it, take his cap down off the post, say whose it is, and stop by them: at "+rel(b,his[0])+", "+BikeNightHollow.gusTrail(b)+" of "+last+", cap back "+BikeNightGus.capBack(b)+", "+words);
+            })
+            .thenExecute(()->{
+                // 0.4.509: off the post and on him; what he says of it, in order, over his head; and it is in his friend's record.
+                h.assertTrue(!CalderHollow.capHung(l,b)&&gus[0].phase()==BikeNightGus.GUS,"the cap is off the post and on him: phase "+gus[0].phase());
+                int first=words.indexOf(BikeNightTexts.GUS_CAP_BACK[0]),second=words.indexOf(BikeNightTexts.GUS_CAP_BACK[1]);
+                h.assertTrue(first>=0&&second>first,"he says whose it is, and then what he is not asking: "+words);
+                for(var line:BikeNightTexts.GUS_CAP_BACK)h.assertTrue(!heard(p[0],line),"what he says is over his head and never in chat: "+line);
+                var own=f.own(p[0],P).copy();own.putBoolean("Through",true);
+                h.assertTrue(f.own(p[0],P).getBoolean("CapBack")&&String.join(" ",BikeNightTexts.account("x",own).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList()).contains("Gus's cap was on a nail in the gatepost."),"and it is in the record, and the account, of who was there");
                 h.assertTrue(rode[0]&&off[0]<.25,"he was on his bike and on the line all the way: "+off[0]+" off it at most");
                 h.assertTrue(high[0]>5.1&&low[0]>-.01,"as high as over the top, and never under the lowest piece: "+low[0]+" to "+high[0]);
                 h.assertTrue(spoke[0]==0,"he began nothing out there, with something to say every two seconds: "+spoke[0]);
@@ -6098,6 +6128,89 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_gus") public static void hollowGusDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.509, what follows
+    @GameTest(template="empty",batch="after_gates",timeoutTicks=6000)
+    public static void theThreesBikesLieOutsideTheFrontGateAndTheCapHangsOnTheBackGatesPostEachPutThereOnlyWhenNobodyCouldBeLooking(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final PackBike[] lies={null,null,null};final int[] t={0};
+        int level=CalderGraves.level(CalderHollow.EDGE),rails=CalderTown.RAILS;var post=b.offset(CalderHollow.CAP_X,level+CalderHollow.CAP_UP,CalderHollow.CAP_Z);
+        java.util.function.Supplier<List<PackBike>> lying=()->l.getEntitiesOfClass(PackBike.class,new AABB(b.getX()-14,b.getY()-1,b.getZ()+rails,b.getX()+14,b.getY()+3,b.getZ()+rails+8),e->e.isAlive()&&e.laid()!=0);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("after_front",P);p[1]=f.player("after_back",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{
+                // Where they lie: pavement beside the gateway, outside the railings, off the lane, with nothing standing in it.
+                for(int who=0;who<3;who++){
+                    var d=BikeNightGraveyard.DROPS[who];int x=(int)Math.floor(d.x),z=(int)Math.floor(d.z);var cell=b.offset(x,0,z);
+                    h.assertTrue(Math.abs(d.x)>CalderTown.GATE_E+2&&d.z>rails+1&&d.z<rails+4,"beside the gateway, outside the railings: "+d);
+                    h.assertTrue(CalderTown.surface(x,z)!=CalderTown.ROAD&&l.getBlockState(cell).isAir()&&l.getBlockState(cell.below()).isCollisionShapeFullBlock(l,cell.below()),
+                        "on open ground that is not the lane, for "+BikeNightBullies.NAMES[who]+"'s: surface "+CalderTown.surface(x,z)+", "+l.getBlockState(cell)+" over "+l.getBlockState(cell.below()));
+                    // A bike on its side is as long as it stands and as wide as it stood high: a block every way from its middle is clear.
+                    h.assertTrue(l.noCollision(new AABB(b.getX()+d.x-1,b.getY()+.05,b.getZ()+d.z-1,b.getX()+d.x+1,b.getY()+.7,b.getZ()+d.z+1)),"with room to lie in, for "+BikeNightBullies.NAMES[who]+"'s");
+                }
+                for(int i=0;i<3;i++)for(int j=i+1;j<3;j++)h.assertTrue(Math.abs(Mth.wrapDegrees(BikeNightGraveyard.DROP_YAW[i]-BikeNightGraveyard.DROP_YAW[j]))>25&&BikeNightGraveyard.DROPS[i].distanceTo(BikeNightGraveyard.DROPS[j])>2,"no two of them lie the same way or on top of each other: dropped, not stood in a row");
+                h.assertTrue(lying.get().isEmpty()&&!CalderHollow.capHung(l,b)&&BikeNightGraveyard.dropped(b)==0,"nothing lies there and nothing hangs there while the three are about");
+                // One reader stands on the lane looking at the front gate; the other on the far side, looking at the back gate.
+                f.at(p[0],P,.5,0,rails+9.5);p[0].setYRot(180);p[0].setXRot(0);
+                f.at(p[1],P,.5,level,CalderHollow.BACK+7.5);p[1].setYRot(180);p[1].setXRot(0);
+                for(int who=0;who<3;who++)BikeNightGraveyard.takeNow(l,b,who,true);t[0]=0;
+            })
+            .thenWaitUntil(()->{
+                p[0].setYRot(180);p[1].setYRot(180);
+                h.assertTrue(lying.get().isEmpty()&&BikeNightGraveyard.dropped(b)==0&&!CalderHollow.capHung(l,b)&&!BikeNightGraveyard.capHung(b),"nothing is put where somebody could be looking: "+BikeNightGraveyard.dropped(b)+" bikes, the cap "+CalderHollow.capHung(l,b));
+                h.assertTrue(++t[0]>=60,"waiting three seconds with both of them looking");
+            })
+            // They turn their backs.
+            .thenWaitUntil(()->{p[0].setYRot(0);p[1].setYRot(0);h.assertTrue(BikeNightGraveyard.dropped(b)==3&&BikeNightGraveyard.capHung(b),"waiting for the bikes and the cap once nobody is looking: "+BikeNightGraveyard.dropped(b)+" bikes, the cap "+BikeNightGraveyard.capHung(b));})
+            .thenExecute(()->{
+                var all=lying.get();h.assertTrue(all.size()==3,"three bikes lie outside the front gate: "+all.size());
+                for(var bike:all){
+                    int who=bike.look();h.assertTrue(who>=0&&who<3&&lies[who]==null,"each is one of the three's, and there is one of each: "+who);lies[who]=bike;
+                    var d=BikeNightGraveyard.DROPS[who];
+                    h.assertTrue(Math.abs(bike.getX()-b.getX()-d.x)<.05&&Math.abs(bike.getZ()-b.getZ()-d.z)<.05&&Math.abs(bike.getY()-b.getY())<.05,"where it was dropped: "+rel(b,bike));
+                    h.assertTrue(bike.laid()==BikeNightGraveyard.DROP_SIDE[who]&&Math.abs(Mth.wrapDegrees(bike.getYRot()-BikeNightGraveyard.DROP_YAW[who]))<.5&&bike.getPassengers().isEmpty()&&!bike.isPickable(),
+                        BikeNightBullies.NAMES[who]+"'s is on its side, pointing as it fell, with nobody on it, and is nobody's to take");
+                }
+                // The last of them was the one at the fence: his wheels are still going round. The others' have stopped.
+                h.assertTrue(lies[BikeNightGraveyard.AT_FENCE].speedNow()>0&&lies[0].speedNow()==0&&lies[1].speedNow()==0,"the last one's wheels are still going round: "+lies[2].speedNow());
+                for(int i=0;i<3;i++)h.assertTrue(BikeNightBullies.find(l,b,i)==null&&BikeNightBullies.bikeOf(l,b,i)==null,"and "+BikeNightBullies.NAMES[i]+" is nowhere");
+                // The cap: against the town's side of the back gate's east post, at a child's eye, facing whoever comes up out of the Hollow.
+                var s=l.getBlockState(post);
+                h.assertTrue(CalderBlock.is(s,CalderBlock.Kind.HAT)&&s.getValue(CalderBlock.FACING)==Direction.SOUTH&&l.getBlockState(post.north()).is(BikeNightRegistry.material("brick"))&&CalderBlock.is(l.getBlockState(post.north().above()),CalderBlock.Kind.CAP),"the cap hangs on the gatepost, under its coping: "+s+" on "+l.getBlockState(post.north()));
+                h.assertTrue(post.getX()-b.getX()==CalderGraves.PATH_E+1&&post.getZ()-b.getZ()==CalderHollow.BACK+1&&s.getCollisionShape(l,post).isEmpty(),"beside the gateway, and in nobody's way");
+                // A hand on it.
+                hush(p[1]);f.click(p[1],P,post.subtract(b));
+                // The reader at the front walks up to the bikes.
+                f.at(p[0],P,-2.5,0,rails+4.5);t[0]=0;
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.HUNG_CAP),"a hand on the cap says whose it is"))
+            .thenWaitUntil(()->{t[0]++;h.assertTrue(lies[2].speedNow()==0,"waiting for the wheels to run down with somebody by: "+lies[2].speedNow());})
+            .thenExecute(()->{
+                h.assertTrue(t[0]>=100&&t[0]<=200,"they went on a while with somebody there to see them, and stopped: "+t[0]+" ticks");
+                h.assertTrue(f.own(p[0],P).getInt("BikesSeen")==3&&f.own(p[1],P).getInt("BikesSeen")==0,"whoever came on them has it in their record, and nobody else");
+                var own=f.own(p[0],P).copy();own.putBoolean("Through",true);
+                var told=String.join(" ",BikeNightTexts.account("x",own).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(told.contains("Their three bikes were lying on the pavement outside the cemetery's front gate. Nobody was with them."),"and their account has it: "+told);
+                own.putInt("BikesSeen",1);
+                h.assertTrue(String.join(" ",BikeNightTexts.account("x",own).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList()).contains("One of their bikes was lying on the pavement outside the cemetery's front gate. Nobody was with it."),"or one, if one was all that lay there");
+                // The night over: nothing lies there and nothing hangs there.
+                BikeNight.resetNow(l,b);
+                h.assertTrue(lying.get().isEmpty()&&!CalderHollow.capHung(l,b),"the night over, the bikes are gone from the gate and the cap from the post");
+            })
+            // Another night, in which Tully never had the cap on.
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&BikeNightGraveyard.dropped(b)==0,"waiting for another night"))
+            .thenExecute(()->{
+                f.at(p[0],P,.5,0,rails+9.5);f.at(p[1],P,.5,level,CalderHollow.BACK+7.5);p[0].setYRot(0);p[1].setYRot(0);
+                // A cap left from a night that ended with its post out of reach.
+                h.assertTrue(CalderHollow.hungCap(l,b,true),"a cap is left on the post");
+                for(int who=0;who<3;who++)BikeNightGraveyard.takeNow(l,b,who,false);t[0]=0;
+            })
+            .thenWaitUntil(()->{p[0].setYRot(0);p[1].setYRot(0);h.assertTrue(BikeNightGraveyard.dropped(b)==3&&++t[0]>=60,"waiting three seconds, and for the bikes");})
+            .thenExecute(()->h.assertTrue(!BikeNightGraveyard.capHung(b)&&!CalderHollow.capHung(l,b),"with no cap on him there is none to hang, and one left from another night has come down"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="after_gates") public static void afterGatesDone(ServerLevel l){done();}
 
     // ------------------------------------------------------------------------------------------------ 0.4.508, out of it
     /** How many copies of the night's account somebody is carrying. */

@@ -591,6 +591,8 @@ public final class BikeNight {
         // is not looking, it is throwing (SandBallItem), so this says nothing and lets it.
         if(s.is(Blocks.SAND)&&BikeNightSite.sandAt(rel)||s.is(BikeNightRegistry.MARK.get())&&p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get())){scoop(p);return true;}
         if(p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get()))return false;
+        // 0.4.509: a hand on the cap on the back gate's post.
+        if(CalderBlock.is(s,CalderBlock.Kind.HAT)){cue(p,BikeNightTexts.HUNG_CAP);return true;}
         // 0.4.489: a hand on a stone in the cemetery is told what is cut on it.
         if(CalderGraveBlock.carved(s)){cue(p,CalderGraves.inscription(s,rel));return true;}
         if(s.is(BikeNightRegistry.MARK.get())){
