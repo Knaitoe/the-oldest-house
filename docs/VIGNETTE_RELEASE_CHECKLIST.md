@@ -1,3 +1,5 @@
+November 12 candidate 0.4.519 (docs/BIKE_NIGHT_PLAYTEST_0_4_519.md): Bike night playtest fixes (riders' seat and pose, benches, the ticket line, the crate). No change to the source, its resolution, the Witness pool or the endings.
+
 November 12 candidate 0.4.518 (docs/PELL_HOUSE_STREET_0_4_518.md): the Pell house, a new place being built in slices (the street and the lot). Not dealt and no source yet, so the pool, the quota and the dealing are unchanged. Require PellHouseTests, the architecture cases and the literary registry case (which hold that a place still being built is never dealt and is no source), and tools/draw_pell_house.py --check.
 
 November 12 candidate 0.4.517 (docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md): Bike night, the keepsake (the bike ridden out on). No change to the source, its resolution, the pool or the dealing. Require BikeNightTests, whose new case keeps the bike, rides it in the reader's own world and is refused in the House, and the Bike night proof with its kept page.

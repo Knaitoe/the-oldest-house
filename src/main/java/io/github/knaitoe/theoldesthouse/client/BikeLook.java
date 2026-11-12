@@ -40,6 +40,8 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
         }
     }
     public static BikeLook of(NightBike.Make make){return NIGHT.get(make);}
+    /** 0.4.519: the look a ridden bike is drawn with. */
+    public static BikeLook of(RiddenBike b){return b instanceof NightBike night?of(night.make()):b instanceof io.github.knaitoe.theoldesthouse.labyrinth.PackBike pack?pack(pack.look()):BORRASCA;}
     /** 0.4.510: each of the six left out and rusted (PackBike.RUSTED): the same pieces, in rust. */
     private static final Map<NightBike.Make,BikeLook> RUST=new EnumMap<>(NightBike.Make.class);
     static{

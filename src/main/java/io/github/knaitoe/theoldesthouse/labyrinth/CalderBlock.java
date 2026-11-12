@@ -25,7 +25,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * upper, 2 the lower with the chain round it, 3 the same with the padlock on it. Shut, and as tall as the railings.</li>
  * <li>LAMP: a lamp post in pieces. Stage 0 its foot, 1 its post, 2 its lantern lit, 3 its lantern dark.</li>
  * <li>BENCH: a slatted bench on iron ends, looking the way it faces. Stage 0 one block long; 1 and 2 the two ends of a longer one,
- * the end on the sitter's left and the end on their right; 3 (0.4.471) a left end with a heart cut into its top slat.</li>
+ * the end on the sitter's left and the end on their right; 3 (0.4.471, 0.4.519) the left end of the bench by the playground,
+ * the second pair of letters cut into its back.</li>
+ * <li>BENCH_CUT (0.4.519): a longer bench's right end with something to tell it by, which is on the left of whoever stands before
+ * it. Stage 0, initials cut into its back and cut out again; 1, a pair of letters and a heart; 2, its seat worn where somebody has
+ * sat.</li>
  * <li>BIN: a wire litter bin.</li>
  * <li>BORDER: the sandpit's timber edging along the edge it faces; stage 1 a corner, with another along the edge to its left.</li>
  * <li>NOTE: a sheet of lined paper taped to what is behind it.</li>
@@ -40,7 +44,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class CalderBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CalderBlock> CODEC=simpleCodec(CalderBlock::new);
     public enum Kind implements StringRepresentable {
-        FENCE,GATE,LAMP,BENCH,BIN,BORDER,NOTE,CAP,FOUNTAIN,PHONE,HAT;
+        FENCE,GATE,LAMP,BENCH,BIN,BORDER,NOTE,CAP,FOUNTAIN,PHONE,HAT,BENCH_CUT;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -49,6 +53,8 @@ public final class CalderBlock extends HorizontalDirectionalBlock {
     public static final int FOOT=0,POST=1,LIT=2,DARK=3;
     /** The bench with the heart cut in it; a fountain running, and how long it runs; a payphone's handset lifted, and how long it is held. */
     public static final int CARVED=3,RUNNING=1,LIFTED=1,RUNS=50,HELD=80;
+    /** A BENCH_CUT's stages: initials cut out again; the first pair of letters and the heart; a worn seat. */
+    public static final int CUT_OUT=0,HEART=1,WORN=2;
     /** How high the fountain's pedestal is, in pixels: its bowl is under a child's chin. */
     public static final int FOUNTAIN_HIGH=7;
     public CalderBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.FENCE).setValue(STAGE,0));}
@@ -64,7 +70,7 @@ public final class CalderBlock extends HorizontalDirectionalBlock {
         return switch(s.getValue(KIND)){
             case FENCE,GATE->MarshBlock.turned(f,0,0,7,16,16,9);
             case LAMP->stage==FOOT?Block.box(4.5,0,4.5,11.5,16,11.5):stage==POST?Block.box(6.5,0,6.5,9.5,16,9.5):Block.box(3.5,0,3.5,12.5,15.5,12.5);
-            case BENCH->Shapes.or(MarshBlock.turned(f,0,0,4,16,8,12.5),MarshBlock.turned(f,0,8,11.3,16,15,12.5));
+            case BENCH,BENCH_CUT->Shapes.or(MarshBlock.turned(f,0,0,4,16,8,12.5),MarshBlock.turned(f,0,8,11.3,16,15,12.5));
             case BIN->Block.box(3.5,0,3.5,12.5,12,12.5);
             case BORDER->stage==1?Shapes.or(MarshBlock.turned(f,0,0,0,16,3,3),MarshBlock.turned(f,0,0,3,3,3,16)):MarshBlock.turned(f,0,0,0,16,3,3);
             case NOTE->MarshBlock.turned(f,4,3.5,15,12,13.5,16);

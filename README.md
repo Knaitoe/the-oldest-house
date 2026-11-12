@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.519** fixes four things from playing Bike night: the three boys and Gus sit on their bikes and pedal, the park's three benches each have their own marks and words, the queue outside the theater curves in to the ticket window, and the milk crate's lattice lines up.
+
 Development candidate **0.4.518** begins the Pell house, the next unfinished vignette: a foster placement in a brick bungalow at the head of a cul-de-sac, with a line painted all the way round it. This first slice is the place and its doors, and nothing happens in it yet: Wren Close and its four closed houses, June Pell's lot with the street's only green lawn, the house's rooms, the garage in the back corner, the pool under its cover behind its own fence, and the padlocked shed, all in the house's own materials. The House does not deal it until it can be finished. `docs/PELL_HOUSE_STREET_0_4_518.md`.
 
 Development candidate **0.4.517** finishes Bike night with its keepsake: whoever rides out by the back gate keeps the bike that was under them. It is the bike in the hand. Used in the reader's own world or the manor it is under them and rides as it did that night, with the one thing its make does; off it, it is in the hand again, so it is never left anywhere. It is its reader's alone, and it is not ridden in the House's halls or scenes. Somebody carried out, or who walked out, has none. `docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md`.

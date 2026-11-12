@@ -22,10 +22,14 @@ public final class BikeNightTexts {
     public static final String GATE="The gate is chained, and the padlock on the chain is new.";
     public static final String RAILINGS="Iron railings, taller than you are, with points on them.";
     public static final String LAMP="A park lamp. It gives a small light and a hum.",LAMP_FAILING="This one keeps going out. Each time it comes back a little later.";
-    public static final String BENCH="A park bench. Somebody has cut initials into the top slat, and somebody else has cut them out again.";
+    public static final String BENCH="A park bench. Somebody has cut initials into its back, and somebody else has cut them out again. The cross that was between them is still there.";
     public static final String BIN="A wire bin, a third full: wrappers, a paper bag, a burst balloon.";
     /** 0.4.471: the bench by the playground; the drinking fountain, pressed and already running; the payphone, lifted and already held. */
-    public static final String CARVED="A park bench. A heart cut into the top slat, long ago, and gone the same weathered way as the wood. Inside it: R.D. + A.L. Nobody has cut these out.";
+    public static final String CARVED="A park bench. Cut into its back long ago, and gone the same weathered way as the wood: R.D., a heart, A.L. Nobody has cut these out.";
+    /** 0.4.519 (the owner: "both benches should have unique text"): the third bench, nearest the gate. */
+    public static final String BENCH_WORN="A park bench. Its seat is worn smooth at the end nearest the gate, where somebody has waited a great many evenings.";
+    /** What a hand on one of the park's benches says: each its own (BikeNightSite.BENCHES). */
+    public static String bench(int which){return which==BikeNightSite.BY_THE_PLAYGROUND?CARVED:which==BikeNightSite.BY_THE_GATE?BENCH_WORN:BENCH;}
     public static final String FOUNTAIN="You press the button and drink. The water is cold, and tastes of the pipe.";
     public static final String FOUNTAIN_RUNNING="It is still running.";
     public static final String PHONE="A payphone. You lift the handset: a dial tone. It wants a coin, and you have not got one.";

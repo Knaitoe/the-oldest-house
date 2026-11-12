@@ -179,9 +179,23 @@ public abstract class RiddenBike extends Entity {
      * for whoever is riding: hips on the saddle, eyes well above the bars, which now sit low in the view where a rider's are.
      */
     @Override public boolean shouldRiderSit(){return false;}
+    /**
+     * 0.4.519: how high a rider's hips are above their feet, in blocks at their own size. A reader's are twelve of a body's thirty-two
+     * pixels, 1.8 tall; one of the House's people is drawn on a humanoid model two blocks to its thirty-two pixels, so theirs are
+     * twelve of those.
+     */
+    public static final double READER_HIPS=.675,CAST_HIPS=.75;
+    public static double hips(@Nullable Entity rider){return rider instanceof Player?READER_HIPS:CAST_HIPS;}
+    /**
+     * Where a rider is carried: their hips on the saddle. The game sets a passenger at this point less their own vehicle attachment.
+     * 0.4.519 (the owner, of Bike night's three: "the animation for the boys on their bikes needs to be fixed"): this had added a
+     * reader's attachment, .6 of their size, for everybody; one of the House's people has none, so the three and Gus were carried
+     * that much higher than a reader, their feet where their hips should have been, standing on the saddle. Each rider's own is
+     * taken now. A reader is carried where they were.
+     */
     @Override protected Vec3 getPassengerAttachmentPoint(Entity rider,EntityDimensions d,float scale){
         double s=rider instanceof LivingEntity le?le.getScale():1;
-        return new Vec3(0,saddle()-.675*s+.6*s,0);
+        return new Vec3(0,saddle()-hips(rider)*s+rider.getVehicleAttachmentPoint(this).y,0);
     }
     /**
      * 0.4.496: whoever gets off, or comes off, is beside the bike with their feet where its wheels are: to its right if there is

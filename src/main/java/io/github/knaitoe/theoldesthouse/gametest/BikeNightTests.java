@@ -570,8 +570,24 @@ public final class BikeNightTests {
                     h.assertTrue(CalderBlock.is(foot,CalderBlock.Kind.LAMP)&&foot.getValue(CalderBlock.STAGE)==CalderBlock.FOOT&&l.getBlockState(b.offset(at).above()).getValue(CalderBlock.STAGE)==CalderBlock.POST&&l.getBlockState(b.offset(at).above(2)).getValue(CalderBlock.STAGE)==CalderBlock.POST,"a lamp post's foot and two of post at "+at);
                     h.assertTrue(BikeNightSite.lit(l,b,at)&&l.getBlockState(top).getLightEmission(l,top)==14,"and its lantern, lit, giving light");
                 }
-                h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(3,0,-16)),CalderBlock.Kind.BENCH)&&l.getBlockState(b.offset(3,0,-16)).getValue(CalderBlock.STAGE)==1&&l.getBlockState(b.offset(3,0,-17)).getValue(CalderBlock.STAGE)==2
+                h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(3,0,-16)),CalderBlock.Kind.BENCH)&&l.getBlockState(b.offset(3,0,-16)).getValue(CalderBlock.STAGE)==1
+                    &&CalderBlock.is(l.getBlockState(b.offset(3,0,-17)),CalderBlock.Kind.BENCH_CUT)&&l.getBlockState(b.offset(3,0,-17)).getValue(CalderBlock.STAGE)==CalderBlock.CUT_OUT
                     &&l.getBlockState(b.offset(3,0,-16)).getValue(CalderBlock.FACING)==Direction.WEST&&CalderBlock.is(l.getBlockState(b.offset(3,0,-18)),CalderBlock.Kind.BIN),"a bench two blocks long looking across the path, a bin by it");
+                // 0.4.519 (the owner: "the benches also don't have the initials referenced in descriptor text. both benches should have
+                // unique text"): three benches, each of two ends looking west, and each told by something of its own that is drawn on it.
+                h.assertTrue(BikeNightSite.BENCHES.size()==3&&new java.util.HashSet<>(List.of(BikeNightTexts.bench(0),BikeNightTexts.bench(1),BikeNightTexts.bench(2))).size()==3,"three benches, and no two say the same");
+                for(int i=0;i<BikeNightSite.BENCHES.size();i++){
+                    var left=BikeNightSite.BENCHES.get(i);var right=left.north();var ls=l.getBlockState(b.offset(left));var rs=l.getBlockState(b.offset(right));
+                    h.assertTrue(CalderBlock.is(ls,CalderBlock.Kind.BENCH)&&CalderBlock.is(rs,CalderBlock.Kind.BENCH_CUT)&&ls.getValue(CalderBlock.FACING)==Direction.WEST&&rs.getValue(CalderBlock.FACING)==Direction.WEST,"bench "+i+" has both its ends, looking west: "+ls+", "+rs);
+                    h.assertTrue(BikeNightSite.benchAt(left)==i&&BikeNightSite.benchAt(right)==i&&BikeNightSite.benchAt(left.south())==-1&&BikeNightSite.benchAt(right.north())==-1,"and both its ends are that bench and nothing beside it is");
+                    h.assertTrue(rs.getValue(CalderBlock.STAGE)==(i==BikeNightSite.BY_THE_BIN?CalderBlock.CUT_OUT:i==BikeNightSite.BY_THE_PLAYGROUND?CalderBlock.HEART:CalderBlock.WORN),"what it is told by is on the end a reader before it reads first: "+rs);
+                    h.assertTrue(ls.getValue(CalderBlock.STAGE)==(i==BikeNightSite.BY_THE_PLAYGROUND?CalderBlock.CARVED:1),"and the heart's bench has its second pair of letters on its other end: "+ls);
+                    h.assertTrue(!rs.getCollisionShape(l,b.offset(right)).isEmpty()&&rs.getCollisionShape(l,b.offset(right)).bounds().equals(CalderBlock.of(CalderBlock.Kind.BENCH,Direction.WEST,2).getCollisionShape(l,b.offset(right)).bounds()),"a marked end is as solid as a plain one");
+                }
+                h.assertTrue(BikeNightTexts.BENCH.contains("initials")&&BikeNightTexts.BENCH.contains("cut them out")&&BikeNightTexts.CARVED.contains("R.D.")&&BikeNightTexts.CARVED.contains("A.L.")&&BikeNightTexts.CARVED.contains("heart")&&BikeNightTexts.BENCH_WORN.contains("gate"),
+                    "the cut-out initials, the heart's two pairs, and the worn end nearest the gate are what the three lines are of");
+                h.assertTrue(BikeNightSite.BENCHES.get(BikeNightSite.BY_THE_GATE).getZ()<BikeNightSite.BENCHES.get(BikeNightSite.BY_THE_BIN).getZ()&&BikeNightSite.BENCHES.get(BikeNightSite.BY_THE_GATE).north().getZ()<BikeNightSite.BENCHES.get(BikeNightSite.BY_THE_GATE).getZ(),
+                    "the worn end is the end of the bench nearest the gate, which is north");
                 // The rack and the six bikes.
                 for(var make:NightBike.Make.values()){
                     var rack=l.getBlockState(b.offset(BikeNightSite.RACK_X+make.ordinal(),0,BikeNightSite.RACK_Z));var bike=l.getBlockState(b.offset(BikeNightSite.bikeAt(make)));
@@ -730,12 +746,12 @@ public final class BikeNightTests {
         var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};
         record Thing(BlockPos at,String says){}
         var things=List.of(new Thing(new BlockPos(BikeNightSite.PATH_W+1,0,BikeNightSite.NORTH),BikeNightTexts.GATE),new Thing(new BlockPos(-6,0,BikeNightSite.NORTH),BikeNightTexts.RAILINGS),
-            new Thing(BikeNightSite.FLICKER,BikeNightTexts.LAMP_FAILING),new Thing(BikeNightSite.PLAY_LAMP.above(),BikeNightTexts.LAMP),new Thing(new BlockPos(3,0,-16),BikeNightTexts.BENCH),
+            new Thing(BikeNightSite.FLICKER,BikeNightTexts.LAMP_FAILING),new Thing(BikeNightSite.PLAY_LAMP.above(),BikeNightTexts.LAMP),new Thing(new BlockPos(3,0,-16),BikeNightTexts.BENCH),new Thing(new BlockPos(3,0,-17),BikeNightTexts.BENCH),new Thing(new BlockPos(3,0,-30),BikeNightTexts.BENCH_WORN),new Thing(new BlockPos(3,0,-31),BikeNightTexts.BENCH_WORN),
             new Thing(new BlockPos(3,0,-18),BikeNightTexts.BIN),new Thing(new BlockPos(BikeNightSite.RACK_X+2,0,BikeNightSite.RACK_Z),BikeNightTexts.RACK),new Thing(new BlockPos(-16,0,BikeNightSite.SAND_N),BikeNightTexts.BORDER),
             new Thing(new BlockPos(6,1,0),CalderSigns.Sign.RULES.look()),new Thing(new BlockPos(0,3,BikeNightSite.NORTH),CalderSigns.Sign.ARCH.look()),
             new Thing(BikeNightSite.SLIDE,BikeNightTexts.SLIDE),new Thing(BikeNightSite.slideEnd(),BikeNightTexts.SLIDE),
             new Thing(BikeNightSite.barsLadder(0),BikeNightTexts.BARS),new Thing(BikeNightSite.barsLadder(1).above(),BikeNightTexts.BARS),new Thing(BikeNightSite.rungsAt(2),BikeNightTexts.BARS_FAR),new Thing(BikeNightSite.SEESAW,BikeNightTexts.SEESAW),new Thing(BikeNightSite.ROUNDABOUT,BikeNightTexts.ROUNDABOUT),
-            new Thing(BikeNightSite.DOME.above(),BikeNightTexts.DOME),new Thing(new BlockPos(-5,0,-23),BikeNightTexts.CARVED),new Thing(BikeNightSite.FOUNTAIN,BikeNightTexts.FOUNTAIN),new Thing(BikeNightSite.PHONE,BikeNightTexts.PHONE),
+            new Thing(BikeNightSite.DOME.above(),BikeNightTexts.DOME),new Thing(new BlockPos(-5,0,-23),BikeNightTexts.CARVED),new Thing(new BlockPos(-5,0,-24),BikeNightTexts.CARVED),new Thing(BikeNightSite.FOUNTAIN,BikeNightTexts.FOUNTAIN),new Thing(BikeNightSite.PHONE,BikeNightTexts.PHONE),
             new Thing(new BlockPos(BikeNightSite.SWING_X,1,BikeNightSite.SWING_POSTS[1]),BikeNightTexts.SWINGS),new Thing(new BlockPos(BikeNightSite.SWING_X,BikeNightSite.SWING_BAR,BikeNightSite.SWING_POSTS[1]+1),BikeNightTexts.SWINGS));
         var seq=h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
@@ -743,7 +759,7 @@ public final class BikeNightTests {
         for(var thing:things)seq=seq.thenExecute(()->{hush(p[0]);f.click(p[0],P,thing.at());})
             .thenWaitUntil(()->h.assertTrue(heard(p[0],thing.says()),"a hand at "+thing.at().toShortString()+" says: "+thing.says()));
         seq.thenExecute(()->{
-            for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look(),
+            for(var line:List.of(BikeNightTexts.GATE,BikeNightTexts.RAILINGS,BikeNightTexts.LAMP,BikeNightTexts.LAMP_FAILING,BikeNightTexts.BENCH,BikeNightTexts.BENCH_WORN,BikeNightTexts.BIN,BikeNightTexts.RACK,BikeNightTexts.BORDER,BikeNightTexts.ARRIVE,BikeNightTexts.YOURS,BikeNightTexts.SWAPPED,CalderSigns.Sign.RULES.look(),CalderSigns.Sign.ARCH.look(),
                 BikeNightTexts.SWINGS,BikeNightTexts.SWING_HINT,BikeNightTexts.JUMP,BikeNightTexts.JUMP_LEVEL,BikeNightTexts.JUMP_BEST,BikeNightTexts.JUMP_OFF,BikeNightTexts.MARK,BikeNightTexts.MARK_OWN,BikeNightTexts.MARK_THEIRS,
                 BikeNightTexts.SAND,BikeNightTexts.SAND_FULL,BikeNightTexts.SAND_NO_ROOM,BikeNightTexts.SAND_GONE,BikeNightTexts.SLIDE,
                 BikeNightTexts.BARS,BikeNightTexts.BARS_LOW,BikeNightTexts.BARS_ON,BikeNightTexts.BARS_FAR,BikeNightTexts.BARS_HINT,BikeNightTexts.BARS_ACROSS,BikeNightTexts.BARS_EARLY,BikeNightTexts.SEESAW_THROWN,BikeNightTexts.SEESAW_THREW,
@@ -1592,6 +1608,10 @@ public final class BikeNightTests {
                 h.assertTrue(lit[0]&&!left&&sounded(p[0],"park.car_pass"),"a car's lights went along the street, were heard from the sand, and left no light behind: lit "+lit[0]+", left "+left);
                 for(int i=0;i<3;i++){
                     h.assertTrue(who[i].getVehicle()==bikes[i]&&bikes[i].look()==i&&who[i].gesture()==BikeNightBullies.RIDE,BikeNightBullies.NAMES[i]+" is on a bike of his own, his hands on its bars");
+                    // 0.4.519 (the owner: "the animation for the boys on their bikes needs to be fixed"): he sits on it, his hips on the saddle
+                    // drawn under him (the Wasp's frame's), and not a third of a block over it as a reader's rule had him.
+                    double hips=who[i].getY()-bikes[i].getY()+RiddenBike.CAST_HIPS*who[i].getScale();
+                    h.assertTrue(Math.abs(hips-PackBike.saddleOf(i))<.002&&Math.abs(PackBike.saddleOf(i)-(NightBike.Make.WASP.saddle()/16-.03))<1e-9,BikeNightBullies.NAMES[i]+" sits on his saddle: his hips are "+hips+" up and it is "+PackBike.saddleOf(i));
                     h.assertTrue(who[i].getBbHeight()>p[0].getBbHeight()+.05&&who[i].getBbHeight()<p[0].getBbHeight()*1.3,BikeNightBullies.NAMES[i]+" is a child, a little bigger than a reader: "+who[i].getBbHeight()+" against "+p[0].getBbHeight());
                 }
             })
@@ -3495,9 +3515,31 @@ public final class BikeNightTests {
                 // The line, down the pavement in front of the theater, each looking at the back of the next.
                 for(int i=0;i<CalderPeople.LINE;i++){
                     var a=who[CalderPeople.LINE_FIRST+i];var spot=CalderPeople.lineSpot(i);var r=rel(b,a);
-                    h.assertTrue(Math.hypot(r.x-spot.x,r.z-spot.z)<.2&&Math.abs(r.y)<.05&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-CalderPeople.LINE_LOOK))<5,"one of the line in their place: "+r+" looking "+a.getYRot());
+                    h.assertTrue(Math.hypot(r.x-spot.x,r.z-spot.z)<.2&&Math.abs(r.y)<.05&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-CalderPeople.lineLook(i)))<5,"one of the line in their place: "+r+" looking "+a.getYRot());
                     for(var at:new Vec3[]{spot,CalderPeople.asideSpot(i)})h.assertTrue(CalderTown.surface(net.minecraft.util.Mth.floor(at.x),net.minecraft.util.Mth.floor(at.z))!=CalderTown.ROAD,"which is not in the road, nor is where they step aside to: "+at);
                     h.assertTrue(CalderTown.surface(net.minecraft.util.Mth.floor(spot.x),net.minecraft.util.Mth.floor(spot.z))==CalderTown.PAVEMENT,"the line is on the pavement");
+                }
+                // 0.4.519 (the owner: "you should have the line curve towards the window. last person should be facing the ticket window"):
+                // the head of the line is at the ticket window, an arm's length off it, and looks at it; the window is the two cells of
+                // the theater's front before them; and the rest come round to them from along the pavement, each looking at the back
+                // of the one ahead.
+                {
+                    var head=who[CalderPeople.LINE_FIRST+CalderPeople.LINE-1];var hr=rel(b,head);
+                    h.assertTrue(Math.abs(hr.x-CalderPeople.WINDOW_X)<.2&&hr.z>-85&&hr.z<-84.3,"the head of the line stands at the ticket window: "+hr);
+                    h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(head.getYRot()))<5&&Math.abs(net.minecraft.util.Mth.wrapDegrees(head.getYHeadRot()))<5,"and looks at it, south: "+head.getYRot());
+                    var pane=l.getBlockState(b.offset(net.minecraft.util.Mth.floor(hr.x),1,-85));
+                    h.assertTrue(CalderSignBlock.is(pane,CalderSigns.Sign.THEATER_FRONT)&&(pane.getValue(CalderSignBlock.PIECE)-CalderSigns.Sign.THEATER_FRONT.first())%CalderSigns.Sign.THEATER_FRONT.cols<=1,
+                        "what is before them is the window's pane, the first two columns of the theater's front: "+pane);
+                    for(int i=0;i<CalderPeople.LINE-1;i++){
+                        var a=who[CalderPeople.LINE_FIRST+i];var ahead=who[CalderPeople.LINE_FIRST+i+1];var r=rel(b,a);var to=rel(b,ahead).subtract(r);
+                        double want=Math.toDegrees(Math.atan2(-to.x,to.z));
+                        h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-want))<35,"each of the rest looks at the back of the one ahead: "+i+" looks "+a.getYRot()+" and the next is "+want+" off");
+                        h.assertTrue(to.length()>1&&to.length()<1.5,"and stands a step behind them: "+to.length());
+                        h.assertTrue(to.z>=-.01&&to.x>0,"the line comes east along the pavement and in toward the wall, never away from it: "+to);
+                    }
+                    var tail=rel(b,who[CalderPeople.LINE_FIRST]);var second=rel(b,who[CalderPeople.LINE_FIRST+CalderPeople.LINE-2]);
+                    h.assertTrue(hr.z-tail.z>1&&second.z>tail.z+.05&&second.z<hr.z-.5,"it bends: the tail is out on the pavement, the one behind the head is part way in, and the head is at the wall: "+tail.z+", "+second.z+", "+hr.z);
+                    h.assertTrue(tail.x>-17.2,"and all of it is in front of the theater: its tail at "+tail.x);
                 }
                 // Two on the hood of each parked car: over it, sitting on its top, looking the way it does.
                 h.assertTrue(CalderTraffic.parked(l,b,0).kind()==TownCar.BLUE&&CalderTraffic.parked(l,b,1)!=null&&CalderTraffic.parked(l,b,1).kind()==TownCar.WHITE,"two cars are parked in the burger place's lot");
@@ -3523,7 +3565,7 @@ public final class BikeNightTests {
                     h.assertTrue(!barred.matcher(line.toLowerCase(java.util.Locale.ROOT)).find(),"and says nothing of what a reader is: \""+line+"\"");
                 }
                 // A hand on one of the line, and on one of the two on the hood.
-                f.at(p[0],P,CalderPeople.lineSpot(2).x,0,CalderPeople.KERB_Z);
+                f.at(p[0],P,CalderPeople.lineSpot(2).x,0,CalderPeople.WALL_Z);
                 LiteraryVignettes.talk(p[0],who[CalderPeople.LINE_FIRST+2]);
                 h.assertTrue(List.of(BikeNightTexts.PEOPLE_TALK[2]).contains(saying(who[CalderPeople.LINE_FIRST+2])),"a hand on one of the line gets a word: "+saying(who[CalderPeople.LINE_FIRST+2]));
                 h.assertTrue(who[CalderPeople.LINE_FIRST+2].getCustomName()!=null&&who[CalderPeople.LINE_FIRST+2].isCustomNameVisible(),"over their head");
@@ -3629,8 +3671,8 @@ public final class BikeNightTests {
             .thenWaitUntil(()->{ride.run();watch.run();
                 var r=rel(b,mine[0]);
                 if(CalderPeople.parted(b)&&at[1]<0)at[1]=l.getGameTime();
-                if(r.x>CalderPeople.LINE_WEST-1&&r.x<CalderPeople.LINE_WEST+(CalderPeople.LINE-1)*CalderPeople.LINE_GAP+1)kept[0]=Math.min(kept[0],nearest[0]);
-                h.assertTrue(r.x>CalderPeople.LINE_WEST+(CalderPeople.LINE-1)*CalderPeople.LINE_GAP+CalderPeople.PART_WITHIN+1,"waiting for them to ride the length of the line and on: at "+r+" going "+mine[0].speedNow());})
+                if(r.x>CalderPeople.LINE_WEST-1&&r.x<CalderPeople.LINE_EAST+1)kept[0]=Math.min(kept[0],nearest[0]);
+                h.assertTrue(r.x>CalderPeople.LINE_EAST+CalderPeople.PART_WITHIN+1,"waiting for them to ride the length of the line and on: at "+r+" going "+mine[0].speedNow());})
             .thenExecute(()->{
                 h.assertTrue(at[1]>=0,"the line parted for them");
                 h.assertTrue(kept[0]>=.55&&kept[0]<2,"and none of it was in their way as they went through: the nearest was "+kept[0]+" off");
@@ -3642,7 +3684,7 @@ public final class BikeNightTests {
                 people(l,b,who);
                 for(int i=0;i<CalderPeople.LINE;i++){
                     var a=who[CalderPeople.LINE_FIRST+i];var spot=CalderPeople.lineSpot(i);var r=rel(b,a);
-                    h.assertTrue(Math.hypot(r.x-spot.x,r.z-spot.z)<.2&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-CalderPeople.LINE_LOOK))<5,"each of the line is back in their place: "+r);
+                    h.assertTrue(Math.hypot(r.x-spot.x,r.z-spot.z)<.2&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-CalderPeople.lineLook(i)))<5,"each of the line is back in their place: "+r);
                 }
                 // And by the burger place's lot, along Park Street: the two on the hood.
                 mine[0].moveTo(b.getX()+1.5,b.getY(),b.getZ()-54.5,270,0);p[0].setYRot(270);t[0]=0;hush(p[0]);

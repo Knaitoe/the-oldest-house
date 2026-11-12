@@ -787,6 +787,28 @@ def java_shapes():
     return out
 
 
+def rider_numbers():
+    """0.4.519: what client/BikeRiderPose poses a rider to, from these drawings: each pedal's middle from the crank axle (cranks(),
+    its two pedals are the pieces in tyre rubber), and the Wasp's grips from the bike's middle (bmx(), the two pieces in the grips'
+    paint). The game's numbers must be these."""
+    def middle(e):
+        return [(a + b) / 2 for a, b in zip(e['from'], e['to'])]
+    pedals = sorted((middle(e) for e in cranks() if all(f.get('texture') == '#k' for f in e['faces'].values())), key=lambda m: m[2])
+    grips = sorted((middle(e) for e in wasp().parts if all(f.get('texture') == '#f' and f.get('uv') == [GRIP, 7, GRIP + 1, 8] for f in e['faces'].values())), key=lambda m: m[2])
+    assert len(pedals) == 2 and len(grips) == 2, (pedals, grips)
+    (lx, ly, lz), (rx, ry, rz) = pedals
+    assert abs((8 - ly) - (ry - 8)) < 1e-9 and abs((8 - lz) - (rz - 8)) < 1e-9 and lx == rx == 8, pedals
+    (gx, gy, gz), (hx, hy, hz) = grips
+    assert gx == hx and gy == hy and abs((8 - gz) - (hz - 8)) < 1e-9, grips
+    return {'PEDAL_DROP': 8 - ly, 'PEDAL_OUT': 8 - lz, 'GRIP_AHEAD': gx - 8, 'GRIP_UP': gy, 'GRIP_OUT': 8 - gz}
+
+
+def java_rider_numbers():
+    import re
+    text = (ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/client/BikeRiderPose.java').read_text()
+    return {k: float(v) for k, v in re.findall(r'\b(PEDAL_DROP|PEDAL_OUT|GRIP_AHEAD|GRIP_UP|GRIP_OUT)=([0-9.]+)F', text)}
+
+
 NAMES = {'block.the_oldest_house.night_bike': 'Bike', 'block.the_oldest_house.bike_rack': 'Bike rack', 'block.the_oldest_house.bike_ramp': 'Plank ramp',
          'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike', 'entity.the_oldest_house.pack_bike': 'Bike', 'entity.the_oldest_house.chained_bike': 'Bike',
          'item.the_oldest_house.kept_bike': 'Bike'}
@@ -893,6 +915,8 @@ def main():
     for make, g in geometry().items():
         want = g['back'] + g['front'] + g['axle'] + [g['r_back'], g['r_front'], g['saddle']]
         assert shapes.get(make) == [float(v) for v in want], (make, shapes.get(make), want)
+    rider, java_rider = rider_numbers(), java_rider_numbers()
+    assert set(rider) == set(java_rider) and all(abs(rider[k] - java_rider[k]) < 1e-6 for k in rider), (rider, java_rider)
     for key, obj in data.items():
         if key.startswith('models/') and not key.startswith('models/item/'):
             for tex in obj['textures'].values():
