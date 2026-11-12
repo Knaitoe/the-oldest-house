@@ -82,6 +82,8 @@ public final class BikeNight {
         BikeNightGraveyard.Yard yard=new BikeNightGraveyard.Yard();
         /** 0.4.495: the Hollow's islands, and who has gone down. */
         BikeNightHollow.Course hollow=new BikeNightHollow.Course();
+        /** 0.4.499: the Hollow's specters. */
+        BikeNightSpecters.Flight specters=new BikeNightSpecters.Flight();
         /** Whose each bike is tonight, by make. */
         final UUID[] owner=new UUID[6];
         /** Where each bike stands or lies while nobody is on it; null while it is ridden. */
@@ -177,7 +179,7 @@ public final class BikeNight {
         @Override public @Nullable String refuse(ServerPlayer p,NightBike.Make make,BlockPos at){
             var n=night(p);if(n==null)return null;var who=n.owner[make.ordinal()];
             // 0.4.482: a reader whose bike the three have had does not take another. They can still be carried on a Hopper's pegs.
-            if(n.pack.caught.containsKey(p.getUUID()))return BikeNightTexts.NO_MORE;
+            if(n.pack.caught.containsKey(p.getUUID())||n.hollow.taken.contains(p.getUUID()))return BikeNightTexts.NO_MORE;
             if(who==null||who.equals(p.getUUID()))return null;
             var other=p.server.getPlayerList().getPlayer(who);
             return other==null?BikeNightTexts.SOMEONES:String.format(BikeNightTexts.THEIRS,other.getGameProfile().getName());
@@ -248,6 +250,7 @@ public final class BikeNight {
             CalderCarts.tick(l,n,here);
             BikeNightGraveyard.tick(l,n,here);
             BikeNightHollow.tick(l,n,here);
+            BikeNightSpecters.tick(l,n,here);
             for(var it=n.tellAt.entrySet().iterator();it.hasNext();){var t=it.next();if(n.tick<t.getValue())continue;
                 var p=l.getServer().getPlayerList().getPlayer(t.getKey());if(p!=null&&night(p)==n)cue(p,n.tell.get(t.getKey()));
                 n.tell.remove(t.getKey());it.remove();}
@@ -287,6 +290,7 @@ public final class BikeNight {
         CalderCarts.reset(l,n);
         BikeNightGraveyard.reset(l,n);
         BikeNightHollow.reset(l,n);
+        BikeNightSpecters.reset(l,n);
         BikeNightSite.swingsBack(l,n.base);
         remember(l,n);
     }

@@ -11,7 +11,7 @@ plays over and over as a car drives; and four horns, one for each car. And the t
 seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
 house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round. And (0.4.488) a chain of grocery carts being
 wheeled, a second of it, played over while it moves. And the Hollow's (0.4.495): what is in the mist under it, heard by somebody
-who has gone down into it; and (0.4.497) the lids of the long way going.
+who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -72,6 +72,8 @@ ROWS = {
     'hollow/under': ('hollow.under', 'Something stirs in the mist', 16),
     # 0.4.497: the long way's run giving way.
     'hollow/drop': ('hollow.drop', 'Lids fall away', 24),
+    # 0.4.499: a witch coming for somebody.
+    'hollow/cackle': ('hollow.cackle', 'A witch cackles', 24),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -691,7 +693,28 @@ def drop():
     return out * np.clip((length - t) / .1, 0, 1)
 
 
-MAKERS = {'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def cackle():
+    # A witch's cackle: a dozen short cracked barks from one thin throat, climbing and then coming down, each breaking at its end.
+    length = 1.5
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    at = .02
+    for k in range(13):
+        pitch = 520 + 260 * np.sin(np.pi * k / 12) + rng.uniform(-25, 25)
+        long = .075 + .012 * (k > 9)
+        local = np.clip(t - at, 0, None)
+        shape = np.clip(local / .006, 0, 1) * np.exp(-local / .03) * (t >= at) * (t < at + long)
+        f = pitch * (1 + .5 * local / long * (t < at + long))
+        phase = 2 * np.pi * np.cumsum(f) / RATE
+        tone = np.sign(np.sin(phase)) * .35 + np.sin(phase) * .4 + np.sin(2 * phase) * .25
+        rasp = band(rng.standard_normal(n), 1800, 6000) * .45
+        out += (tone + rasp) * shape * (.6 + .4 * np.sin(np.pi * k / 12))
+        at += .095 + .004 * k + rng.uniform(-.008, .008)
+    return band(out, 350, 7000)
+
+
+MAKERS = {'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,

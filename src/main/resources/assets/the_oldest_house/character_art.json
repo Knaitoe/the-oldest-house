@@ -2134,5 +2134,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 186
+  },
+  {
+    "name": "literary_hollow_witch",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 187
   }
 ]

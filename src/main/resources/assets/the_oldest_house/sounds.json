@@ -5280,5 +5280,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.hollow.drop"
+  },
+  "hollow.cackle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hollow/cackle",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.hollow.cackle"
   }
 }
