@@ -222,5 +222,7 @@ public final class BikeNightRegistry {
     private BikeNightRegistry(){}
     /** 0.4.485: the pillowcase a trick-or-treater carries. Nobody is given one. */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> TREAT_SACK=ITEMS.register("treat_sack",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.517: the bike a reader rode out on, kept (KeptBikeItem). One item; which of the six it is, is on the stack. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<KeptBikeItem> KEPT_BIKE=ITEMS.register("kept_bike",()->new KeptBikeItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BLOCK_ENTITIES.register(bus);ENTITIES.register(bus);SOUNDS.register(bus);}
 }

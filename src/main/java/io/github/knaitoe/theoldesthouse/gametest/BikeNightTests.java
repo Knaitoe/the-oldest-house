@@ -6657,4 +6657,75 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="ending_out") public static void endingOutDone(ServerLevel l){done();}
+
+    private static List<net.minecraft.world.item.ItemStack> keptBikes(ServerPlayer p){
+        var out=new ArrayList<net.minecraft.world.item.ItemStack>();
+        for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);if(s.is(BikeNightRegistry.KEPT_BIKE.get()))out.add(s);}
+        return out;
+    }
+    /**
+     * 0.4.517, the keepsake (docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md). Whoever rides out by the back gate keeps the bike that was under
+     * them; somebody carried out on the pegs, or who walked out, has none. It is the bike in the hand: used in its reader's own
+     * world it is under them and they are on it, a Hopper still carries a friend on its pegs, and off it, it is in the hand again
+     * with nothing left standing. It is nobody else's to ride, and it is not ridden in the House.
+     */
+    @GameTest(template="empty",batch="kept_bike",timeoutTicks=1200)
+    public static void whoeverRidesOutKeepsTheirBikeAndRidesItInTheirOwnWorldAndNowhereInTheHouse(GameTestHelper h){
+        var f=park(h);var s=new Strip(h,11,30);ServerPlayer[] p=new ServerPlayer[3];NightBike[] bike={null};int[] t={0};double[] from={0};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(s.ready(),"waiting for the road"))
+            .thenExecute(()->{
+                s.lay();p[0]=s.reader("kept_rider");p[1]=s.reader("kept_pegs");p[2]=s.reader("kept_foot");
+                // Three who came through the back gate: on the Hopper, on the Hopper's pegs, and on foot. Each leaves by the lane's door.
+                for(int i=0;i<3;i++){
+                    var o=f.own(p[i],P);o.putInt("Visit",1);o.putBoolean("Through",true);o.putString("Bike",i==2?"wasp":"hopper");o.putString("ThroughOn",i==2?"foot":"hopper");if(i==1)o.putBoolean("ThroughOnPegs",true);
+                    LiteraryVignettes.save(f.data(),p[i].getUUID(),P,o);BikeNight.leave(p[i],"lane");
+                }
+                var kept=keptBikes(p[0]);
+                h.assertTrue(kept.size()==1&&accounts(p[0])==1,"whoever rode out has their account and one bike: "+kept.size()+" and "+accounts(p[0]));
+                var mine=kept.get(0);
+                h.assertTrue(KeptBikeItem.make(mine)==NightBike.Make.HOPPER&&mine.get(DataComponents.CUSTOM_MODEL_DATA).value()==NightBike.Make.HOPPER.ordinal()&&mine.getHoverName().getString().equals("The Hopper"),"it is the bike that was under them at the gate: "+mine.getHoverName().getString());
+                h.assertTrue(Keepsakes.mine(mine,p[0],P,KeptBikeItem.KEY)&&!Keepsakes.mine(mine,p[1],P,KeptBikeItem.KEY),"and it is theirs alone");
+                h.assertTrue(mine.getOrDefault(DataComponents.LORE,net.minecraft.world.item.component.ItemLore.EMPTY).lines().stream().anyMatch(c->c.getString().equals(Keepsakes.line(P,KeptBikeItem.KEY))),"with its own line under its name");
+                h.assertTrue(told("kept_rider",p[0],f).endsWith("I kept the bike. Nobody was coming back for it."),"their account ends with it: "+told("kept_rider",p[0],f));
+                for(int i=1;i<3;i++){
+                    h.assertTrue(f.own(p[i],P).getBoolean("Completed")&&accounts(p[i])==1&&keptBikes(p[i]).isEmpty(),"somebody carried out, or who walked out, has finished and has no bike to keep: "+i);
+                    h.assertFalse(told("x",p[i],f).contains("I kept the bike"),"and their account says nothing of one");
+                }
+                BikeNight.leave(p[0],"park");h.assertTrue(keptBikes(p[0]).size()==1,"once");
+                // In somebody else's hand it will not be got on.
+                p[1].setYRot(180);hush(p[1]);
+                h.assertTrue(KeptBikeItem.ride(p[1],mine)==null&&!p[1].isPassenger(),"nobody else gets on it");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],KeptBikeItem.NOT_YOURS),"waiting for them to be told it is not theirs"))
+            // In its reader's own world: used, it is under them.
+            .thenExecute(()->{
+                // It is taken in the hand where it lies among their things (the slot it was handed into), and used.
+                var inv=p[0].getInventory();for(int i=0;i<9;i++)if(inv.getItem(i).is(BikeNightRegistry.KEPT_BIKE.get()))inv.selected=i;
+                var mine=p[0].getMainHandItem();h.assertTrue(mine.is(BikeNightRegistry.KEPT_BIKE.get()),"it is in their hand");p[0].setYRot(180);p[0].setXRot(0);
+                mine.use(h.getLevel(),p[0],InteractionHand.MAIN_HAND);
+                h.assertTrue(p[0].getVehicle() instanceof NightBike b&&b.make()==NightBike.Make.HOPPER&&b.kept(),"used, it is under its reader and they are on it");
+                bike[0]=(NightBike)p[0].getVehicle();from[0]=s.along(bike[0]);
+                h.assertTrue(keptBikes(p[0]).size()==1,"and it is still theirs in the hand");
+                // A Hopper carries a friend, here as in the park.
+                h.assertTrue(bike[0].interact(p[1],InteractionHand.MAIN_HAND).consumesAction()&&p[1].getVehicle()==bike[0],"a friend steps onto its pegs");
+            })
+            // It rides.
+            .thenWaitUntil(()->{if(bike[0].onGround())pedalWell(bike[0],t[0]++,3);h.assertTrue(s.along(bike[0])-from[0]>6,"waiting for it to be ridden up the road: "+(s.along(bike[0])-from[0]));})
+            .thenExecute(()->{p[1].stopRiding();bike[0].steady(0,0);getOff(p[0]);})
+            .thenWaitUntil(()->h.assertTrue(!p[0].isPassenger()&&!bike[0].isAlive(),"waiting for its reader to be off it"))
+            .thenExecute(()->{
+                stand(p[0]);
+                // Nothing is left standing or lying anywhere on the road, and it is in the hand.
+                for(int z=3;z>=-s.length;z--)for(int x=-2;x<=2;x++)for(int y=0;y<3;y++)h.assertFalse(s.l.getBlockState(s.at.offset(x,y,z)).is(BikeNightRegistry.BIKE_BLOCK.get()),"no bike is left on the road at "+x+","+y+","+z);
+                h.assertTrue(s.l.getEntitiesOfClass(NightBike.class,new AABB(s.at).inflate(40)).isEmpty()&&keptBikes(p[0]).size()==1,"off it, it is in the hand again");
+                // And not in the House: neither in its scenes nor in its halls.
+                var mine=keptBikes(p[0]).get(0);
+                p[0].teleportTo(f.out,p[0].getX(),p[0].getY(),p[0].getZ(),180,0);hush(p[0]);
+                h.assertTrue(String.valueOf(KeptBikeItem.refuse(p[0])).equals(KeptBikeItem.NOT_HERE)&&KeptBikeItem.ride(p[0],mine)==null&&!p[0].isPassenger(),"it is not ridden in the House");
+                p[0].teleportTo(h.getLevel(),s.at.getX()+.5,s.at.getY(),s.at.getZ()+2.5,180,0);
+                h.assertTrue(KeptBikeItem.refuse(p[0])==null,"and is again in their own world");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="kept_bike") public static void keptBikeDone(ServerLevel l){close(l);done();}
 }

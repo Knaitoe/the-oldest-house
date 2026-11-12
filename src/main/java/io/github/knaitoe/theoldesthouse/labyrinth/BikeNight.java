@@ -141,10 +141,16 @@ public final class BikeNight {
         var d=LabyrinthData.get(p.server);var o=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
         if(o.getBoolean("Completed")||o.getBoolean("Taken")||o.getBoolean("Out")||!o.getBoolean("Through"))return;
         String outcome=o.getString("ThroughOn").equals("foot")?"walked_out_by_the_back_gate":o.getBoolean("ThroughOnPegs")?"came_out_by_the_back_gate_on_the_pegs":"rode_out_by_the_back_gate";
+        // 0.4.517: whoever rode out keeps the bike they rode. Somebody carried out, or who walked out, had none to keep.
+        // It is the bike that was under them at the gate (ThroughOn), which is theirs for the night unless they had only just swapped.
+        var kept=outcome.equals("rode_out_by_the_back_gate")?NightBike.Make.of(o.getString("ThroughOn")):null;
+        if(kept==null&&outcome.equals("rode_out_by_the_back_gate"))kept=NightBike.Make.of(o.getString("Bike"));
         o.putString("Left",how);o.putBoolean("Ready",true);o.putString("Outcome",outcome);o.putBoolean("Completed",true);o.putInt("Beat",o.getInt("Visit"));
+        if(kept!=null)o.putBoolean("KeptBike",true);
         LiteraryVignettes.save(d,p.getUUID(),PLACE,o);
         WitnessAccount.resolve(p,WitnessAccount.Story.BIKE_NIGHT,outcome);d.setCompleted(PLACE.id(),true);
         LiteraryVignettes.reward(p,PLACE,o,"Ending",BikeNightTexts.account(p.getGameProfile().getName(),o));
+        if(kept!=null)LiteraryVignettes.reward(p,PLACE,o,KeptBikeItem.KEY,KeptBikeItem.of(kept));
     }
     /**
      * Which of the town's streets a reader has ridden, in the order they came to them (CalderTown.Street's names, with commas).
