@@ -1,4 +1,4 @@
-# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500)
+# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500; the werewolf, 0.4.501)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"): "**Specters chase**", and "Being caught by any of them is
 the Hollow's failure." As answered on November 11: the Hollow is one shared course, and each specter is private to
@@ -107,16 +107,74 @@ ghost come from nine blocks to one side, five to eight ahead, a little over the 
 as it comes. Over the next sixteen seconds they come one after another, two at the most at once, each its reader's
 alone, never more than half there, crossing from one side to the other; nothing happens to the reader, and none
 comes for a second reader on the hill. Moved into one's way as it crosses, the reader has it go through them: they
-hear it and some of the mist is over them; it does not chill them twice; they are not caught or hurt and are still
-riding. Off the haunted stretch, the ones that are out go and no more come.
+hear it and some of the mist is over them; kept inside it for a second, they are chilled the once; they are not caught
+or hurt and are still riding. Off the haunted stretch, the ones that are out go and no more come.
+
+The case first said that nothing chilled the reader again in the two seconds after. The full gate's run with the
+werewolf showed that it could: with two ghosts out, the other one went through them too. The case now keeps its
+reader inside one ghost and counts.
 
 The proof's page of the specters has the three of them under the witch, over a dark band, so that what shows
 through them is seen. I have looked at it: they are pale and alike, and read as three people more than as three
 different people.
 
+## 0.4.501: the werewolf
+
+"a **werewolf** runs alongside on a parallel island and leaps across at gaps", and "The werewolf leaps at gaps, so a
+gap is timed."
+
+**Who he is.** Fur where skin would be and on his face, yellow eyes, what is left of a flannel shirt and a pair of
+jeans; a muzzle, two ears and a tail. His skin is painted with the rest of the cast (stranger phase 191); the muzzle,
+ears and tail are their own small model and sheet, drawn in code. He goes on four legs: running, gathered to leap,
+and stretched out in the air.
+
+**His ground.** He has two of the plain way's gaps: from the first grave to the second, and the one in the last
+stretch. Beside each there is a strip of sod he runs up, a perch at its end level with the gap, and a perch across the
+way from it. It is real ground, but none of it is within two blocks of ground anybody rides, and none of it is an
+island.
+
+**For one reader.** He comes for a reader who is within fourteen blocks of one of his gaps, at the far end of his
+run, and runs up it keeping six blocks ahead of them as far as his perch. They hear him howl when he takes it.
+
+**The rhythm.** From his perch he leaps across the way, over the middle of the gap, to his other perch; and back; and
+so on. He is on a perch for thirty-six ticks, the last ten of them gathered, and in the air for fourteen, a little over
+two blocks high at the top: two and a half seconds from one leap to the next.
+
+**Caught.** Whoever is over the gap, between its brinks, within a block and a third of him as he crosses, is caught,
+as a reader the witch has is. Whoever is on the ground is not his, however near he passes. So the gap is crossed just
+after he lands: there is nearly two seconds before he is in the air again.
+
+**He goes** when his reader is four blocks past the gap, or well back from it. He is at each gap once for each reader
+in a night: somebody who goes down at his gap and comes back to it finds it empty.
+
+One sound: "A werewolf howls" (43 cues).
+
+### Cases
+
+One (89 in the namespace). It passed the first time it was run.
+
+- His ground is beside two of the plain way's gaps of two, level with them; each perch is ground and nobody's island;
+  no part of it is within two blocks of any piece of any way.
+- **A reader standing a block short of the brink**: he comes at the far end of his run, runs up it, and leaps from
+  one perch to the other and back, over the middle of the gap, in an arc, at least three times in ten seconds; he
+  gathers before each; he is his reader's alone, who heard him howl; a second reader on the hill has no wolf and
+  heard nothing. On the ground, the reader is never caught.
+- **Just after he lands**, the same reader rides at the brink, taps the hop, and is on the second grave without being
+  caught or going down; and he is gone when they are past.
+- **A second reader put out over the gap as he crosses** is caught: outside the front gate on foot, their bike gone,
+  and it is in their record that it was him.
+
+The proof's page of the specters has him between the witch and the ghosts: running from the side and from the front
+quarter, gathered, and in the air. I have looked at it. His ears were a pixel thick and showed as a spike from the
+side; they are two.
+
 ## Not built, not seen, and left with the owner
 
-- **The werewolf and the headless rider**, and the ghouls and goblins that jump out.
+- **The headless rider**, and the ghouls and goblins that jump out.
+- The werewolf's numbers are first guesses: thirty-six ticks, fourteen in the air, a block and a third. A rider who
+  does not look and rides straight at the gap is over it for about a third of a second, and he is in the air for
+  seven tenths of a second in every two and a half; whether that is the right chance of being caught for good is the
+  owner's to say.
 - **"At dawn"** is not built: it is still night outside the gate. **The headstone** with the reader's name, the
   rusting bike, and **"the vignette is never dealt to them again"** are the endings' part and are not built; the House
   does not deal the night to anybody yet.

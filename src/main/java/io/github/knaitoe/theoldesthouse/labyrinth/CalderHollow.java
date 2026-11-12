@@ -113,11 +113,26 @@ public final class CalderHollow {
         var s=there?half(BikeNightRegistry.COFFIN_LID.get(),true):Blocks.AIR.defaultBlockState();
         for(int x=RUN_X0;x<=RUN_X1;x++)l.setBlock(b.offset(x,-1,RUN_SOUTH-row),s,Block.UPDATE_CLIENTS);
     }
+    /**
+     * 0.4.501, the werewolf's ground. The proposal: "a werewolf runs alongside on a parallel island and leaps across at gaps."
+     * Beside two of the plain way's gaps (the first grave to the second; the one in the last stretch): a strip he runs up beside
+     * the riders, a perch at its end level with the gap, and a perch across the way from it. None of it is a way for anybody or an
+     * island, and none of it is within two blocks of ground that is.
+     */
+    public static final List<Piece> WOLFS=List.of(
+        new Piece("wolf run 1",Made.SOD,-8,-7,-264,-269,2),new Piece("wolf perch 1 west",Made.SOD,-8,-6,-270,-273,2),new Piece("wolf perch 1 east",Made.SOD,8,10,-270,-273,2),
+        new Piece("wolf run 2",Made.SOD,-7,-6,-400,-407,3),new Piece("wolf perch 2 west",Made.SOD,-7,-5,-408,-411,3),new Piece("wolf perch 2 east",Made.SOD,5,7,-408,-411,3));
+    /**
+     * A gap he leaps: where along the way its middle and its two brinks are; where across the way its middle is, and how high his
+     * ground is there; the middles of his two perches; and where his run begins.
+     */
+    public record Leap(double z,double south,double north,double x,double top,double west,double east,double run){}
+    public static final List<Leap> LEAPS=List.of(new Leap(-271,-270,-272,1.5,2,-6.5,9.5,-263.5),new Leap(-409,-408,-410,.5,3,-5.5,6.5,-399.5));
     /** Every way, each in the order it is ridden; and every piece of all of them. */
     public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG);
     public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();
     /** How high a body stands at a place on the course; NaN where there is none of it. */
-    public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();return Double.NaN;}
+    public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();for(var p:WOLFS)if(p.has(x,z))return p.top();return Double.NaN;}
 
     // ------------------------------------------------------------------------------------------------ 0.4.495, the islands
     /**
@@ -203,6 +218,7 @@ public final class CalderHollow {
         for(var p:ALL)piece(l,b,p,rnd);
         dress(l,b);
         farSide(l,b,rnd);
+        for(var p:WOLFS)piece(l,b,p,rnd);
     }
     /** The hill's ground ends ragged: off the gate's line it reaches a row or three further, and what is left of the side railings ends in a pier. */
     static void edge(ServerLevel l,BlockPos b,Random rnd){

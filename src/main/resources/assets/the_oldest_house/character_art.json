@@ -2166,5 +2166,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 190
+  },
+  {
+    "name": "literary_hollow_wolf",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 191
   }
 ]

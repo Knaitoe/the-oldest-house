@@ -234,6 +234,9 @@ LOOKS = {
     'literary_hollow_ghost_a': Look('#d3dadd','#c2c9cd','long','#ccd3d7','#bec6ca','dress','#a9b1b6',eyes='#2b3338',age=1,sleeve=11,face_style='frail',shoes='#b8c0c4'),
     'literary_hollow_ghost_b': Look('#cfd6d9','#9aa3a8','short','#b6bec3','#a8b0b5','coat','#8e979c',eyes='#2b3338',age=2,sleeve=11,face_style='frail',shoes='#97a0a5'),
     'literary_hollow_ghost_c': Look('#d7dee1','#b9c1c5','close','#c3cbcf','#b2babf','shirt','#9da6ab',eyes='#2b3338',age=2,beard='full',sleeve=9,face_style='frail',shoes='#a2abb0'),
+    # 0.4.501, the Hollow's werewolf: fur where skin would be, and on his face; what is left of a shirt and a pair of jeans.
+    # His muzzle, ears and tail are their own model and sheet (tools/draw_calder_specters_art.py).
+    'literary_hollow_wolf': Look('#6a5240','#4a382a','messy','#7c2e2a','#39465a','flannel','#2a2422',eyes='#e0b63a',age=1,beard='full',sleeve=5,rips=True,shoes='#5a4636'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),

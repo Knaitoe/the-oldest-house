@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
  * caught by any of them is the Hollow's failure." As answered: the Hollow is one shared course, and each specter is private to
  * whoever it is after, as the House's other private actors are.
  *
- * <p>0.4.500: the ghosts are here too, which catch nobody (see {@link Haunt}).
+ * <p>0.4.500: the ghosts are here too, which catch nobody (see {@link Haunt}). 0.4.501: and the werewolf (see {@link Wolf}).
  *
  * <p>The first of them is here: "witches swoop low on brooms across the path, to be ducked or dodged", and "ducking a witch is the
  * hop's crouch, so a witch just before a gap is a choice." A witch crosses the plain way at each of {@link #SWOOPS}: two of them a
@@ -36,9 +36,11 @@ public final class BikeNightSpecters {
     public static final int WITCH=187,FLY=1;
     /** 0.4.500: the ghosts, three of them, on the phases after hers; and how they hang in the air. */
     public static final int GHOST=188,GHOSTS=3,DRIFT=2;
-    public static boolean cast(int phase){return phase>=WITCH&&phase<GHOST+GHOSTS;}
+    /** 0.4.501: the werewolf, and what he is doing: running, gathered to leap, in the air. */
+    public static final int WOLF=191,RUN=3,CROUCH=4,LEAP=5;
+    public static boolean cast(int phase){return phase>=WITCH&&phase<=WOLF;}
     public static boolean ghost(int phase){return phase>=GHOST&&phase<GHOST+GHOSTS;}
-    public static String skin(int phase){return ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
+    public static String skin(int phase){return phase==WOLF?"hollow_wolf":ghost(phase)?"hollow_ghost_"+(char)('a'+phase-GHOST):"hollow_witch";}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     /** A row a witch crosses the plain way on (along its middle): the row, the middle of the way there, and how high its ground is. */
     public record Swoop(int z,double x,double top){}
@@ -78,6 +80,23 @@ public final class BikeNightSpecters {
         Drift(UUID actor,int side,double x,double y,double z){this.actor=actor;this.side=side;this.x=x;this.y=y;this.z=z;}
     }
 
+    /**
+     * 0.4.501, the werewolf. "a **werewolf** runs alongside on a parallel island and leaps across at gaps", and "The werewolf leaps
+     * at gaps, so a gap is timed." He has two of the plain way's gaps (CalderHollow.LEAPS). He comes for a reader who is within
+     * WOLF_NEAR of one, at the far end of his run beside the way, and runs up it keeping WOLF_LEAD ahead of them as far as his
+     * perch beside the gap. From there he leaps across the way, over the gap, to his other perch, and back, every WOLF_EVERY ticks:
+     * WOLF_CROUCH ticks gathered, WOLF_AIR in the air. They hear him howl when he takes his perch. Whoever is over the gap, between
+     * its brinks, within WOLF_REACH of him as he crosses is caught (BikeNightHollow.taken). Whoever is on the ground is not his,
+     * however near. So the gap is crossed just after he lands. He goes when his reader is well past the gap or well back from it.
+     */
+    public static final double WOLF_NEAR=14,WOLF_LEAD=6,WOLF_PACE=.5,WOLF_REACH=1.3,WOLF_HIGH=2.2,WOLF_PAST=4;
+    public static final int WOLF_EVERY=36,WOLF_CROUCH=10,WOLF_AIR=14;
+    /** One werewolf at his gap. */
+    static final class Wolf{
+        final int gap;final UUID actor;int side=-1;double z;boolean perched;long nextLeap,leapAt=-1;
+        Wolf(int gap,UUID actor,double z){this.gap=gap;this.actor=actor;this.z=z;}
+    }
+
     /** One witch on her way across. */
     static final class Pass{
         final int row,side;@Nullable UUID actor;double f,df;boolean committed,over;
@@ -87,6 +106,8 @@ public final class BikeNightSpecters {
     static final class Flight{
         final Map<UUID,Pass> passes=new HashMap<>();final Map<UUID,Integer> had=new HashMap<>(),over=new HashMap<>();
         /** 0.4.500: each reader's ghosts, when the next may come, and how many have gone through them. */
+        /** 0.4.501: each reader's werewolf, which gaps they have had him at, and how many times he has leapt for them. */
+        final Map<UUID,Wolf> wolves=new HashMap<>();final Map<UUID,Integer> wolfHad=new HashMap<>(),leaps=new HashMap<>();
         final Map<UUID,List<Drift>> drifts=new HashMap<>();final Map<UUID,Long> nextGhost=new HashMap<>();final Map<UUID,Integer> chills=new HashMap<>(),ghosts=new HashMap<>();
     }
 
@@ -96,6 +117,7 @@ public final class BikeNightSpecters {
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var s=n.specters;if(keptAway)return;
         haunt(l,n,here);
+        prowl(l,n,here);
         for(var p:here){
             var id=p.getUUID();
             if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id)){end(l,s,id);continue;}
@@ -111,6 +133,56 @@ public final class BikeNightSpecters {
         }
         // A witch whose reader has gone is gone.
         for(var id:List.copyOf(s.passes.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there)end(l,s,id);}
+    }
+    /** The werewolf: coming, running up beside his reader, leaping the gap on his rhythm, going. */
+    private static void prowl(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var s=n.specters;
+        for(var p:here){
+            var id=p.getUUID();boolean out=!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(id)||n.hollow.through.contains(id);
+            Entity body=p.getVehicle() instanceof NightBike bike?bike:p;var at=BikeNightHollow.from(n,body.position());
+            var w=s.wolves.get(id);
+            if(w==null){
+                if(out)continue;int had=s.wolfHad.getOrDefault(id,0);
+                for(int i=0;i<CalderHollow.LEAPS.size();i++){
+                    var g=CalderHollow.LEAPS.get(i);double ahead=at.z-g.south();
+                    if((had>>i&1)!=0||ahead<=0||ahead>WOLF_NEAR||Math.abs(at.x-g.x())>5||Math.abs(at.y-g.top())>2.5)continue;
+                    var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)break;
+                    a.bind(BikeNight.PLACE,id);a.appearance(LiteraryActor.STRANGER,WOLF);a.gesture(RUN);a.setNoGravity(true);a.noPhysics=true;
+                    a.moveTo(n.base.getX()+g.west()-.5,n.base.getY()+g.top(),n.base.getZ()+g.run(),180,0);a.setYHeadRot(180);a.setYBodyRot(180);
+                    if(l.addFreshEntity(a)){s.wolves.put(id,new Wolf(i,a.getUUID(),g.run()));s.wolfHad.put(id,had|1<<i);}
+                    break;
+                }
+                continue;
+            }
+            var g=CalderHollow.LEAPS.get(w.gap);var a=l.getEntity(w.actor) instanceof LiteraryActor found?found:null;
+            if(a==null||out||at.z<g.north()-WOLF_PAST||at.z>g.south()+WOLF_NEAR+6){if(a!=null)a.discard();s.wolves.remove(id);continue;}
+            double bx=n.base.getX(),by=n.base.getY(),bz=n.base.getZ();
+            if(!w.perched){
+                // Up his run, ahead of them, as far as his perch.
+                double to=Math.min(g.run(),Math.max(g.z(),at.z-WOLF_LEAD));
+                w.z+=Mth.clamp(to-w.z,-WOLF_PACE,WOLF_PACE);boolean moving=Math.abs(to-w.z)>.01;
+                a.gesture(moving?RUN:CROUCH);a.moveTo(bx+g.west()-.5,by+g.top(),bz+w.z,180,0);a.setYHeadRot(180);a.setYBodyRot(180);
+                if(Math.abs(w.z-g.z())<.6){
+                    w.perched=true;w.z=g.z();w.nextLeap=n.tick+WOLF_CROUCH*2;
+                    p.playNotifySound(BikeNightRegistry.HOWL.get(),SoundSource.HOSTILE,1F,.95F+l.random.nextFloat()*.1F);
+                }
+                continue;
+            }
+            double from=w.side<0?g.west():g.east(),over=w.side<0?g.east():g.west();float yaw=w.side<0?-90:90;
+            if(w.leapAt<0){
+                // On his perch, facing the way; gathered before he goes.
+                a.gesture(n.tick>=w.nextLeap-WOLF_CROUCH?CROUCH:RUN);a.moveTo(bx+from,by+g.top(),bz+g.z(),yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+                if(n.tick>=w.nextLeap){w.leapAt=n.tick;a.gesture(LEAP);}
+                continue;
+            }
+            double f=(n.tick-w.leapAt)/(double)WOLF_AIR;
+            if(f>=1){w.side=-w.side;w.leapAt=-1;w.nextLeap=n.tick+WOLF_EVERY;s.leaps.merge(id,1,Integer::sum);a.gesture(RUN);a.moveTo(bx+over,by+g.top(),bz+g.z(),-yaw,0);a.setYHeadRot(-yaw);a.setYBodyRot(-yaw);continue;}
+            double x=Mth.lerp(f,from,over),y=g.top()+WOLF_HIGH*4*f*(1-f);
+            a.moveTo(bx+x,by+y,bz+g.z(),yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
+            // Over the gap, between its brinks, in his reach: theirs is the one time a gap costs everything.
+            if(at.z<g.south()&&at.z>g.north()&&Math.abs(at.x-x)<WOLF_REACH&&Math.abs(at.y-g.top())<3){a.discard();s.wolves.remove(id);BikeNightHollow.taken(l,n,p,"wolf");}
+        }
+        for(var id:List.copyOf(s.wolves.keySet())){boolean there=false;for(var p:here)there|=p.getUUID().equals(id);if(!there){if(l.getEntity(s.wolves.get(id).actor) instanceof LiteraryActor a)a.discard();s.wolves.remove(id);}}
     }
     /** The ghosts: coming for whoever is on a haunted stretch, drifting, chilling, going. */
     private static void haunt(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
@@ -194,6 +266,7 @@ public final class BikeNightSpecters {
     static void reset(ServerLevel l,BikeNight.Night n){
         for(var id:List.copyOf(n.specters.passes.keySet()))end(l,n.specters,id);
         for(var id:List.copyOf(n.specters.drifts.keySet()))clear(l,n.specters,id);
+        for(var w:n.specters.wolves.values())if(l.getEntity(w.actor) instanceof LiteraryActor a)a.discard();
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,BikeNightBullies.area(n.base).inflate(0,0,300),BikeNightSpecters::is))if(BikeNight.nightAt(l,a.blockPosition())==n)a.discard();
         n.specters=new Flight();
     }
@@ -204,6 +277,12 @@ public final class BikeNightSpecters {
         var n=BikeNight.night(p);if(n==null)return null;var pass=n.specters.passes.get(p.getUUID());
         return pass!=null&&pass.actor!=null&&p.serverLevel().getEntity(pass.actor) instanceof LiteraryActor a?a:null;
     }
+    /** The werewolf that is at a gap for a reader, if one is; and how many times he has leapt for them tonight. */
+    public static @Nullable LiteraryActor wolf(ServerPlayer p){
+        var n=BikeNight.night(p);if(n==null)return null;var w=n.specters.wolves.get(p.getUUID());
+        return w!=null&&p.serverLevel().getEntity(w.actor) instanceof LiteraryActor a?a:null;
+    }
+    public static int leaps(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.specters.leaps.getOrDefault(p.getUUID(),0);}
     /** The ghosts that are drifting for a reader, how many have come for them tonight, and how many have gone through them. */
     public static List<LiteraryActor> ghosts(ServerPlayer p){
         var out=new ArrayList<LiteraryActor>();var n=BikeNight.night(p);if(n==null)return out;

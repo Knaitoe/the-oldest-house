@@ -1,4 +1,5 @@
-"""Bike night's specters, the things they have that are not their skins (0.4.499): the witch's hat and her broom.
+"""Bike night's specters, the things they have that are not their skins: the witch's hat and her broom (0.4.499), and the
+werewolf's muzzle, ears and tail (0.4.501).
 
 Her skin is painted with the rest of the cast (tools/paint_character_skins.py, literary_hollow_witch). This is the sheet her hat
 and broom are drawn from (client/LiteraryRenderers.WitchLayer): each box's faces laid out as the game unwraps a box, sixteen pixels
@@ -83,15 +84,65 @@ def draw():
     return im
 
 
+WOLF_OUT = OUT.with_name('literary_hollow_wolf_things.png')
+WOLF_SIZE = (64, 32)
+# The werewolf's (client/LiteraryRenderers.WolfLayer): on his head a muzzle with a nose on it and two ears; from his back, a tail.
+WOLF_BOXES = {
+    'muzzle': (0, 0, 4, 3, 3),
+    'nose': (14, 0, 2, 1, 1),
+    'ear': (22, 0, 2, 3, 2),
+    'tail': (0, 8, 3, 9, 3),
+}
+FUR, FUR_DARK, FUR_LIGHT, NOSE, EAR = (106, 82, 64), (74, 56, 42), (134, 108, 86), (28, 22, 20), (150, 112, 100)
+
+
+def draw_wolf():
+    rng = random.Random(5010)
+    im = Image.new('RGBA', WOLF_SIZE, (0, 0, 0, 0))
+    px = im.load()
+    for box in ('muzzle', 'ear', 'tail'):
+        for x0, y0, w, h in faces(*WOLF_BOXES[box]).values():
+            for x in range(x0, x0 + w):
+                for y in range(y0, y0 + h):
+                    r = rng.random()
+                    px[x, y] = (FUR_DARK if r < .28 else FUR_LIGHT if r > .9 else FUR) + (255,)
+    for x0, y0, w, h in faces(*WOLF_BOXES['nose']).values():
+        for x in range(x0, x0 + w):
+            for y in range(y0, y0 + h):
+                px[x, y] = NOSE + (255,)
+    # The mouth: a dark line along the muzzle's sides and across its front, a row up from the bottom.
+    f = faces(*WOLF_BOXES['muzzle'])
+    for name in ('west', 'north', 'east'):
+        x0, y0, w, h = f[name]
+        for x in range(x0, x0 + w):
+            px[x, y0 + h - 1] = NOSE + (255,)
+    # The ear's inside, on its front.
+    x0, y0, w, h = faces(*WOLF_BOXES['ear'])['north']
+    for y in range(y0 + 1, y0 + h):
+        px[x0 + w // 2, y] = EAR + (255,)
+    # The tail's tip, at its far end (the bottom of the box as it hangs), lighter.
+    f = faces(*WOLF_BOXES['tail'])
+    for name in ('west', 'north', 'east', 'south'):
+        x0, y0, w, h = f[name]
+        for x in range(x0, x0 + w):
+            for y in range(y0 + h - 2, y0 + h):
+                px[x, y] = FUR_LIGHT + (255,)
+    x0, y0, w, h = f['bottom']
+    for x in range(x0, x0 + w):
+        for y in range(y0, y0 + h):
+            px[x, y] = FUR_LIGHT + (255,)
+    return im
+
+
 def main():
-    im = draw()
-    if '--check' in sys.argv:
-        with Image.open(OUT) as saved:
-            assert saved.size == im.size and saved.convert('RGBA').tobytes() == im.tobytes(), OUT.name
-        print('Verified the witch\'s hat and broom: 1 sheet, 6 boxes.')
-    else:
-        im.save(OUT, optimize=True)
-        print('Drew the witch\'s hat and broom: 1 sheet, 6 boxes.')
+    sheets = ((OUT, draw()), (WOLF_OUT, draw_wolf()))
+    for path, im in sheets:
+        if '--check' in sys.argv:
+            with Image.open(path) as saved:
+                assert saved.size == im.size and saved.convert('RGBA').tobytes() == im.tobytes(), path.name
+        else:
+            im.save(path, optimize=True)
+    print(('Verified' if '--check' in sys.argv else 'Drew') + ' the specters\' things: 2 sheets, 10 boxes.')
 
 
 if __name__ == '__main__':

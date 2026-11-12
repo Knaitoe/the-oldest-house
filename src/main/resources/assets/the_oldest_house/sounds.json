@@ -5298,5 +5298,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.hollow.ghost"
+  },
+  "hollow.howl": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hollow/howl",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.hollow.howl"
   }
 }
