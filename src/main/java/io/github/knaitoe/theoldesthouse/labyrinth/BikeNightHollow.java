@@ -42,7 +42,17 @@ public final class BikeNightHollow {
         final Map<UUID,Integer> stood=new HashMap<>(),fell=new HashMap<>();
         /** The long way's run: when it began to give way (-1 while it is whole and nobody is on it), how many of its rows are gone, and when it is back (-1 unless it is all gone). */
         long runAt=-1,runBackAt=-1;int runGone;
+        /** 0.4.498: the ways each reader has had under them other than the plain one; whether the back gate is open; who is out by it. */
+        final Map<UUID,java.util.TreeSet<String>> ways=new HashMap<>();boolean gate;final java.util.Set<UUID> through=new java.util.HashSet<>();
     }
+    /**
+     * 0.4.498, the way out. "The Hollow folds back down into the graveyard's far side. The riders come out through the back gate
+     * onto a quiet lane above the town, with the lights of Calder Falls on again below." The back gate is shut until somebody is on
+     * the far side's ground within GATE_NEAR blocks of it; then it stands open for the rest of the night. Whoever goes through it
+     * onto the lane is through: it goes in their record with what they were on, the ways they took and how often they went down,
+     * they are told, and the town's lamps come back on.
+     */
+    public static final int GATE_NEAR=16;
     /**
      * 0.4.497, the long way's run (CalderHollow.LONG). "long: a run only the Comet's top speed carries": once somebody is on it, it
      * gives way from its near end, GRACE ticks later and then PACE rows a tick: faster than a bike is pedalled (RiddenBike.TOP),
@@ -71,6 +81,7 @@ public final class BikeNightHollow {
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         run(l,n,here);
+        out(l,n,here);
         for(var p:here){
             if(!p.isAlive()||p.isSpectator())continue;
             NightBike bike=p.getVehicle() instanceof NightBike b?b:null;
@@ -81,8 +92,11 @@ public final class BikeNightHollow {
             // A bike is on the ground when it says so. A body on foot is where its reader's own game says, so it is asked of the ground.
             int island=bike!=null&&!bike.onGround()?-1:CalderHollow.stood(at.x,at.y,at.z);
             if(island>=0){
-                if(bike!=null)for(var e:bike.getPassengers())n.hollow.stood.put(e.getUUID(),island);
-                else n.hollow.stood.put(p.getUUID(),island);
+                String way=CalderHollow.ISLANDS.get(island).way();
+                for(var e:bike!=null?bike.getPassengers():List.<Entity>of(p)){
+                    n.hollow.stood.put(e.getUUID(),island);
+                    if(!way.isEmpty()&&!way.equals("plain"))n.hollow.ways.computeIfAbsent(e.getUUID(),k->new java.util.TreeSet<>()).add(way);
+                }
             }else if(at.y<CalderHollow.floor(at.z)-UNDER)missed(l,n,p);
         }
     }
@@ -151,6 +165,34 @@ public final class BikeNightHollow {
         var own=BlockPos.containing(to.x,to.y+.01,to.z);var there=l.getBlockState(own);
         return there.isAir()||there.canBeReplaced()?own:null;
     }
+    /** The back gate opening for whoever is on the far side, and whoever goes through it. */
+    static void out(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var c=n.hollow;int level=CalderGraves.level(CalderHollow.EDGE);
+        var gateAt=n.base.offset(0,level,CalderHollow.BACK);if(!l.isLoaded(gateAt))return;
+        for(var p:here){
+            if(!p.isAlive()||p.isSpectator())continue;
+            var at=from(n,p.getVehicle() instanceof NightBike bike?bike.position():p.position());
+            if(Math.abs(at.y-level)>1.5||Math.abs(at.x)>CalderHollow.SIDE+1)continue;
+            if(!c.gate&&at.z<=CalderHollow.FAR_SIDE+1&&at.z>CalderHollow.BACK&&at.z-CalderHollow.BACK<GATE_NEAR&&Math.abs(at.x)<GATE_NEAR){
+                c.gate=true;CalderHollow.backGate(l,n.base,true);
+                l.playSound(null,gateAt,BikeNightRegistry.CHAIN.get(),SoundSource.BLOCKS,1F,.8F);
+            }
+            if(c.gate&&at.z<CalderHollow.BACK-.5&&at.z>CalderHollow.FAR&&c.through.add(p.getUUID()))through(l,n,p);
+        }
+    }
+    private static void through(ServerLevel l,BikeNight.Night n,ServerPlayer p){
+        var own=BikeNight.own(p);var ways=n.hollow.ways.get(p.getUUID());
+        own.putBoolean("Through",true);
+        own.putString("ThroughOn",p.getVehicle() instanceof NightBike bike?bike.make().getSerializedName():"foot");
+        own.putString("HollowWays",ways==null||ways.isEmpty()?"plain":String.join(",",ways));
+        own.putInt("HollowFell",n.hollow.fell.getOrDefault(p.getUUID(),0));
+        BikeNight.save(p,own);
+        BikeNightGraveyard.lightsOn(l,n);
+        BikeNight.cue(p,BikeNightTexts.THROUGH);
+    }
+    /** Whether the back gate is open in this park, and whether a reader is through it. For tests. */
+    public static boolean gateOpen(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.gate;}
+    public static boolean through(ServerPlayer p){var n=BikeNight.night(p);return n!=null&&n.hollow.through.contains(p.getUUID());}
     /** The long way's run, giving way and coming back. */
     static void run(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         var c=n.hollow;
@@ -190,6 +232,7 @@ public final class BikeNightHollow {
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         if(n.hollow.runGone>0&&l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH)))for(int i=0;i<CalderHollow.RUN_ROWS;i++)CalderHollow.runRow(l,n.base,i,true);
+        if(n.hollow.gate&&l.isLoaded(n.base.offset(0,0,CalderHollow.BACK)))CalderHollow.backGate(l,n.base,false);
         n.hollow=new Course();
     }
 }

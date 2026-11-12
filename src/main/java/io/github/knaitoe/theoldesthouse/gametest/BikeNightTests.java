@@ -5169,4 +5169,59 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_long") public static void hollowLongDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.498, the way out
+    @GameTest(template="empty",batch="hollow_out",timeoutTicks=4000)
+    public static void theBackGateOpensForWhoeverReachesTheFarSideAndGoingThroughItIsInTheirRecordWithTheTownsLightsOnAgain(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};final int[] t={0};final boolean[] openedBefore={false};
+        int top=CalderGraves.level(CalderHollow.EDGE),back=CalderHollow.BACK,high=islandNamed("high grave"),stretch=CalderHollow.FAR_ISLAND-1;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("hollow_out_pedalling",P);p[1]=f.player("hollow_out_carried",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{
+                h.assertTrue(!CalderHollow.backGateOpen(l,b)&&!BikeNightHollow.gateOpen(b),"the back gate is shut");
+                // The town's lamps have gone out behind them, as they do.
+                BikeNightGraveyard.darkNow(l,b);var lit=BikeNightGraveyard.lit(l,b);
+                h.assertTrue(lit[1]>=12&&lit[0]==0&&BikeNightGraveyard.dark(b)==BikeNightGraveyard.STREETS.length,"every street's lamps are out: "+lit[0]+" of "+lit[1]+" lit");
+                mine[0]=take(h,f,p[0],NightBike.Make.HOPPER);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("hopper"),"waiting for the Hopper to be theirs"))
+            .thenExecute(()->h.assertTrue(mine[0].interact(p[1],InteractionHand.MAIN_HAND).consumesAction()&&p[1].getVehicle()==mine[0],"a hand on the Hopper puts the second reader on its pegs"))
+            // They have been on the high way; then they are on the last stretch.
+            .thenExecute(()->{var at=islandPlace(b,high);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);})
+            .thenWaitUntil(()->h.assertTrue(mine[0].onGround()&&BikeNightHollow.island(p[0])==high&&BikeNightHollow.island(p[1])==high,"waiting for a high grave to be their island"))
+            .thenExecute(()->{var at=islandPlace(b,stretch);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);})
+            .thenWaitUntil(()->h.assertTrue(mine[0].onGround()&&BikeNightHollow.island(p[0])==stretch,"waiting for the last stretch to be their island"))
+            .thenExecute(()->{h.assertTrue(!CalderHollow.backGateOpen(l,b),"out on the last stretch, the gate is still shut");hush(p[0]);hush(p[1]);})
+            .thenWaitUntil(()->{
+                double x=mine[0].getX()-b.getX(),z=mine[0].getZ()-b.getZ();
+                h.assertTrue(p[0].getVehicle()==mine[0]&&BikeNightHollow.fell(p[0])==0,"they are riding: at "+where(b,mine[0]));
+                // Up the gate's line, at the middle of the gateway.
+                p[0].setYRot((float)Math.toDegrees(Math.atan2(-(0.0-x),-3.5)));if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);
+                if(z-back<3&&z>back)openedBefore[0]|=CalderHollow.backGateOpen(l,b);
+                if(z-back>BikeNightHollow.GATE_NEAR+1)h.assertTrue(!CalderHollow.backGateOpen(l,b),"it does not open until somebody is near it: "+(z-back)+" off");
+                h.assertTrue(BikeNightHollow.through(p[0])&&BikeNightHollow.through(p[1]),"waiting for them to ride through the back gate: at "+where(b,mine[0]));
+            })
+            .thenExecute(()->{
+                h.assertTrue(openedBefore[0]&&CalderHollow.backGateOpen(l,b)&&BikeNightHollow.gateOpen(b),"the gate stood open before they reached it, and stands open");
+                for(int x:new int[]{CalderGraves.PATH_W,CalderGraves.PATH_E})for(int z=back-2;z<=back-1;z++)for(int y=top;y<top+2;y++)
+                    h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,y,z)),CalderBlock.Kind.GATE),"its leaves stand end-on on the lane's side at "+x+","+y+","+z);
+                for(int x=CalderGraves.PATH_W;x<=CalderGraves.PATH_E;x++)h.assertTrue(l.getBlockState(b.offset(x,top,back)).isAir()&&l.getBlockState(b.offset(x,top+1,back)).isAir(),"nothing hangs between its piers at x="+x);
+                h.assertTrue(mine[0].getZ()-b.getZ()<back&&Math.abs(mine[0].getY()-b.getY()-top)<.6,"they are on the lane: "+where(b,mine[0]));
+                for(var who:p){
+                    var own=f.own(who,P);
+                    h.assertTrue(own.getBoolean("Through")&&own.getString("ThroughOn").equals("hopper")&&own.getString("HollowWays").equals("high")&&own.getInt("HollowFell")==0,who.getGameProfile().getName()+"'s record has that they are through, on the Hopper, by the high way, never having gone down: "+own);
+                }
+                var lit=BikeNightGraveyard.lit(l,b);
+                h.assertTrue(lit[0]==lit[1]&&lit[1]>=12&&BikeNightGraveyard.dark(b)==0,"the town's lamps are on again: "+lit[0]+" of "+lit[1]);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.THROUGH)&&heard(p[1],BikeNightTexts.THROUGH),"each is told"))
+            // And they stay on: what put them out does not put them out again.
+            .thenExecute(()->BikeNightGraveyard.darkNow(l,b))
+            .thenIdle(30)
+            .thenExecute(()->{var lit=BikeNightGraveyard.lit(l,b);h.assertTrue(lit[0]==lit[1]&&BikeNightGraveyard.dark(b)==0,"the lamps stay on for the rest of the night: "+lit[0]+" of "+lit[1]);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_out") public static void hollowOutDone(ServerLevel l){done();}
 }
