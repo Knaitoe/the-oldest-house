@@ -68,6 +68,7 @@ final class OnwardPlacements {
         r.put(CORNER_HOUSE,CornerSite.ONWARD.getX(),0,CornerSite.ONWARD.getZ(),SOUTH,()->Blocks.DARK_OAK_DOOR); // 0.4.408: a door across the cross street, facing up the main street
         r.put(MARSH_SUPPER,MarshSupperSite.GATE.getX(),0,MarshSupperSite.GATE.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.348: the gate onto the county road past the oak
         r.put(DEER_ROAD,-4,-2,-84,SOUTH,DeerRoadRegistry.GATE); // 0.4.310: the drainage gate at the head of the ditch
+        r.put(BIKE_NIGHT,CalderHollow.DOOR_X,CalderGraves.level(CalderHollow.EDGE),CalderHollow.WALL,SOUTH,OnwardRegistry.PANEL); // 0.4.508: the door in the wall across the lane behind the cemetery
         r.put(SECOND_PERSON,-6,0,0,NORTH,()->Blocks.DARK_OAK_DOOR); // 0.4.274: a neighbour's front door in the terrace, opened from the street
         r.put(PLACE_FOR_YOU,8,0,0,NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.257: a second door in the garden wall, further along the road, opened from the road
         r.put(VACANT_POSSESSION,VacantSite.BACK_X,VacantSite.GROUND,VacantSite.BACK_Z,EAST,()->Blocks.SPRUCE_DOOR); // 0.4.228: the back door at the end of the downstairs hall

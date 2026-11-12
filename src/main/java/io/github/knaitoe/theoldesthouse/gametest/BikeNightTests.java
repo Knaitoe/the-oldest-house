@@ -528,8 +528,9 @@ public final class BikeNightTests {
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
             .thenExecute(()->{
                 h.assertTrue(LiteraryRooms.isLiterary(P)&&LiteraryRooms.outside(P)&&P.kind()==LabyrinthPlace.Kind.ONE_SHOT&&P.authored()&&SceneClock.at(f.origin,b.offset(0,0,-20),HouseDimensions.OUTSIDE)==9,"a literary place outside, finished once, built whole, at midnight");
-                h.assertTrue(WitnessAccount.Story.of(P.id())==null&&WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED&&!LiteraryVignettes.canDeal(f.data(),UUID.randomUUID(),P),
-                    "not a source yet, the quota as it was, and not dealt until the night can be finished");
+                // 0.4.508: the night can be finished, so it is a source, and is dealt to somebody who has not had it.
+                h.assertTrue(WitnessAccount.Story.of(P.id())==WitnessAccount.Story.BIKE_NIGHT&&WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED&&BikeNight.dealable(f.data(),UUID.randomUUID()),
+                    "a source, the quota derived from the pool with it in, and dealt to somebody who has not had it");
                 // The back wall and the shed's door in it; the paper and the rules beside it.
                 h.assertTrue(l.getBlockState(b.offset(0,0,1)).getBlock() instanceof DoorBlock&&l.getBlockState(b.offset(0,1,1)).getBlock() instanceof DoorBlock,"the tool shed's door, in the back wall");
                 var brick=BikeNightRegistry.material("brick");var kerb=BikeNightRegistry.material("kerb");
@@ -6097,4 +6098,94 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_gus") public static void hollowGusDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.508, out of it
+    /** How many copies of the night's account somebody is carrying. */
+    private static int accounts(ServerPlayer p){
+        int n=0;String title=LiteraryTexts.accountTitle(P);
+        for(int i=0;i<p.getInventory().getContainerSize();i++){var book=p.getInventory().getItem(i).get(DataComponents.WRITTEN_BOOK_CONTENT);if(book!=null&&book.title().raw().equals(title))n++;}
+        return n;
+    }
+
+    @GameTest(template="empty",batch="ending_out",timeoutTicks=6000)
+    public static void whoeverIsThroughTheBackGateAndLeavesHasFinishedItOnceWithTheirAccountAndWhoeverWasCaughtIsNeverDealtItAgain(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};final int[] t={0};
+        int top=CalderGraves.level(CalderHollow.EDGE),back=CalderHollow.BACK;var story=WitnessAccount.Story.BIKE_NIGHT;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // The wall along the lane's far verge, capped, standing back from the lane, and round the lane's two ends.
+                var brick=BikeNightRegistry.material("brick");
+                h.assertTrue(CalderHollow.WALL<CalderHollow.LANE_N-2&&back-CalderHollow.WALL>=8,"the wall stands back from the lane, eight blocks from the gate");
+                for(int x=-CalderHollow.SIDE-1;x<=CalderHollow.SIDE+1;x++){
+                    for(int dy=0;dy<CalderHollow.WALL_HIGH;dy++)if(x!=CalderHollow.DOOR_X||dy>=2)h.assertTrue(l.getBlockState(b.offset(x,top+dy,CalderHollow.WALL)).is(brick),"the wall is whole at "+x+", "+dy+" up");
+                    h.assertTrue(CalderBlock.is(l.getBlockState(b.offset(x,top+CalderHollow.WALL_HIGH,CalderHollow.WALL)),CalderBlock.Kind.CAP),"and capped at "+x);
+                }
+                for(int x:new int[]{-CalderHollow.SIDE-1,CalderHollow.SIDE+1})for(int z=CalderHollow.FAR;z<back;z++)h.assertTrue(l.getBlockState(b.offset(x,top,z)).is(brick)&&l.getBlockState(b.offset(x,top+2,z)).is(brick),"the lane's end is walled at "+x+","+z);
+                // The door in it, east of the gate's line, with the House knowing of it.
+                // A fixture builds the place without its way on (the builder fits that, or the pass that waits until nobody is looking): the case fits it itself, so it never waits on who else is about.
+                var at=b.offset(CalderHollow.DOOR_X,top,CalderHollow.WALL);h.assertTrue(f.data().door(OnwardDoors.id(P))!=null||OnwardDoors.install(l,b,P),"the fitted door goes in where it was placed: "+l.getBlockState(at)+" before "+l.getBlockState(at.relative(net.minecraft.core.Direction.SOUTH)));var door=f.data().door(OnwardDoors.id(P));
+                h.assertTrue(CalderHollow.DOOR_X>CalderGraves.PATH_E+2,"the door is off the gate's line");
+                h.assertTrue(l.getBlockState(at).is(OnwardRegistry.PANEL.get())&&l.getBlockState(at.above()).is(OnwardRegistry.PANEL.get()),"a door stands in the wall: "+l.getBlockState(at));
+                h.assertTrue(door!=null&&door.lower.equals(at),"and it is the night's way on: "+(door==null?null:door.lower));
+                h.assertTrue(story.kind.equals("survival")&&WitnessAccount.Story.of(P.id())==story,"the night is a source of the survival kind");
+                p[0]=f.player("ending_rider",P);p[1]=f.player("ending_taken",P);p[2]=f.player("ending_early",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[2]),"waiting for the night"))
+            .thenExecute(()->{
+                for(var who:p)h.assertTrue(BikeNight.dealable(f.data(),who.getUUID())&&!WitnessAccount.has(f.data(),who.getUUID(),story),"nobody has finished it, and it may be dealt to any of them");
+                mine[0]=take(h,f,p[0],NightBike.Make.LAMP);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
+            // Along Main Street for a second, and down Mill Street for another: the streets they took are kept, in order.
+            .thenExecute(()->{mine[0].moveTo(b.getX()+12.5,b.getY(),b.getZ()-91.5,90,0);p[0].setYRot(90);})
+            .thenWaitUntil(()->{if(mine[0].onGround())mine[0].steady(0,.1F);h.assertTrue(f.own(p[0],P).getString("Streets").equals("main"),"waiting for Main Street to be one they took: "+f.own(p[0],P).getString("Streets"));})
+            .thenExecute(()->{mine[0].moveTo(b.getX()+.5,b.getY(),b.getZ()-70.5,0,0);p[0].setYRot(0);})
+            .thenWaitUntil(()->{if(mine[0].onGround())mine[0].steady(0,.1F);h.assertTrue(f.own(p[0],P).getString("Streets").equals("main,mill"),"waiting for Mill Street to be the next: "+f.own(p[0],P).getString("Streets"));})
+            // Somebody who leaves before the back gate has not finished it, and may come back.
+            .thenExecute(()->{
+                mine[0].steady(0,0);
+                BikeNight.leave(p[2],"park");var own=f.own(p[2],P);
+                h.assertTrue(!own.getBoolean("Completed")&&accounts(p[2])==0&&!WitnessAccount.has(f.data(),p[2].getUUID(),story)&&BikeNight.dealable(f.data(),p[2].getUUID()),"leaving before the back gate finishes nothing");
+                // Somebody the Hollow has had: there is nothing for them to finish, and it is never dealt to them again.
+                var taken=f.own(p[1],P);taken.putBoolean("Taken",true);taken.putString("TakenBy","witch");LiteraryVignettes.save(f.data(),p[1].getUUID(),P,taken);
+                BikeNight.leave(p[1],"park");
+                h.assertTrue(!f.own(p[1],P).getBoolean("Completed")&&accounts(p[1])==0&&!WitnessAccount.has(f.data(),p[1].getUUID(),story)&&!BikeNight.dealable(f.data(),p[1].getUUID()),"somebody who was caught in the Hollow has no account, and is never dealt the night again");
+                // And somebody the three caught in the town.
+                var out=f.own(p[2],P);out.putBoolean("Out",true);LiteraryVignettes.save(f.data(),p[2].getUUID(),P,out);
+                h.assertTrue(!BikeNight.dealable(f.data(),p[2].getUUID()),"nor is somebody who was caught in the town");
+                // The Lamp's rider to the far side, on the gate's line.
+                var at=islandPlace(b,CalderHollow.FAR_ISLAND);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);
+            })
+            .thenWaitUntil(()->{
+                double x=mine[0].getX()-b.getX();
+                p[0].setYRot((float)Math.toDegrees(Math.atan2(-(0.0-x),-3.5)));if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);
+                h.assertTrue(BikeNightHollow.through(p[0]),"waiting for them to ride through the back gate: at "+where(b,mine[0]));
+            })
+            .thenExecute(()->{
+                mine[0].steady(0,0);var own=f.own(p[0],P);
+                h.assertTrue(own.getBoolean("Through")&&!own.getBoolean("ThroughOnPegs")&&!own.getBoolean("Completed")&&accounts(p[0])==0,"through the gate, and not finished until they leave: "+own);
+                // Through the door in the wall.
+                BikeNight.onward(p[0],f.data().door(OnwardDoors.id(P)));
+            })
+            .thenExecute(()->{
+                var own=f.own(p[0],P);String told=told("ending_rider",p[0],f);
+                h.assertTrue(own.getBoolean("Completed")&&own.getString("Outcome").equals("rode_out_by_the_back_gate")&&own.getString("Left").equals("lane"),"finished, by the lane's door: "+own.getString("Outcome"));
+                h.assertTrue(WitnessAccount.has(f.data(),p[0].getUUID(),story)&&!BikeNight.dealable(f.data(),p[0].getUUID()),"it is theirs with the Witness, and is not dealt to them again");
+                h.assertTrue(accounts(p[0])==1,"their account goes out with them: "+accounts(p[0]));
+                h.assertTrue(told.contains("I took the Lamp.")&&told.contains("I went by Main Street and Mill Street.")&&told.contains("I kept to what was straight ahead of me.")
+                    &&told.contains("I rode out by the back gate onto a lane, and down the hill the lights of the town were on again.")&&told.contains("There was a door in the wall across the lane."),"and tells of the bike, the streets, the way through and the way out: "+told);
+                h.assertTrue(!told.contains("pegs")&&!told.contains("went down into the mist"),"and of nothing that did not happen: "+told);
+                // Again: nothing more.
+                BikeNight.onward(p[0],f.data().door(OnwardDoors.id(P)));BikeNight.leave(p[0],"park");
+                h.assertTrue(accounts(p[0])==1&&f.own(p[0],P).getString("Left").equals("lane"),"once");
+                // What the account says of the other ways, of going down, and of the pegs.
+                var other=f.own(p[0],P).copy();other.putString("HollowWays","dark,high");other.putInt("HollowFell",2);other.putBoolean("ThroughOnPegs",true);other.putBoolean("Carried",true);other.putString("Left","park");
+                String told2=String.join(" ",BikeNightTexts.account("x",other).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());
+                h.assertTrue(told2.contains("I went through the bank of mist, by the lamp and over the high graves, where only a bike that jumps will go.")&&told2.contains("I went down into the mist two times.")
+                    &&told2.contains("I came out by the back gate on the pegs of somebody else's bike, onto a lane")&&told2.contains("For some of it I was on the pegs of somebody else's bike.")&&told2.contains("I went back the way I had come."),"the other ways, going down, the pegs, and back by the park: "+told2);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="ending_out") public static void endingOutDone(ServerLevel l){done();}
 }

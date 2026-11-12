@@ -21,8 +21,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.409, the city on the ice: 84 / 63 / 61.
  0.4.410, the Kept: 85 / 64 / 62.
  0.4.416, Last orders: 86 / 65 / 63.
+ 0.4.508, Bike night (a source with no first paper, so not among the literary places counted here): 87 / 66 / 63.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=86,REQUIRED=65,LITERARY=63;
+    static final int SOURCES=87,REQUIRED=66,LITERARY=63;
 }

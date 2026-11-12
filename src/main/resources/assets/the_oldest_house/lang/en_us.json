@@ -1729,5 +1729,7 @@
   "subtitles.the_oldest_house.hollow.pop": "Something jumps out",
   "block.the_oldest_house.calder_hollow_earth": "Loose Earth",
   "subtitles.the_oldest_house.hollow.slide": "Earth slides away",
-  "subtitles.the_oldest_house.hollow.curl": "The vine curls up"
+  "subtitles.the_oldest_house.hollow.curl": "The vine curls up",
+  "advancements.the_oldest_house.account.bike_night.title": "Bike night",
+  "advancements.the_oldest_house.account.bike_night.description": "I got out of a park on a bike with three coming after me, through a town and up into its graveyard."
 }
