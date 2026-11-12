@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * graveyard's far side. The riders come out through the back gate onto a quiet lane above the town."
  *
  * <p>This is the plain way through, which any bike takes, and (0.4.496) the first of the ways the bikes' own perks open: the high
- * way, the Hopper's ({@link #HIGH}). The other four are not built. The hill's
+ * way, the Hopper's ({@link #HIGH}), and (0.4.497) the long way, the Comet's ({@link #LONG}). The other three are not built. The hill's
  * ground stops at {@link #EDGE}, ragged, and from there to {@link #FAR_SIDE} there is nothing but the course. The cemetery's back
  * railings and its back gate are on the far side of it now, where its ground begins again.
  *
@@ -87,8 +87,34 @@ public final class CalderHollow {
         out.add(new Piece("the high way's foot",Made.SOD,4,6,-331,-338,0));
         return List.copyOf(out);
     }
+    /**
+     * 0.4.497, the long way. The proposal: "long: a run only the Comet's top speed carries". West of the vine, from the grave
+     * past the lids to the stairs: a run of coffin lids, {@link #RUN_ROWS} rows, that gives way from its near end once somebody is
+     * on it, faster than any bike goes but the Comet, and the Rattler in its burst (BikeNightHollow.run). It is level where the
+     * vine climbs three blocks, swings and comes down again; past it, steps up to the stairs' second pair.
+     */
+    public static final int RUN_X0=-5,RUN_X1=-4,RUN_SOUTH=-341,RUN_ROWS=28;
+    public static final List<Piece> LONG=longWay();
+    private static List<Piece> longWay(){
+        var out=new ArrayList<Piece>();
+        out.add(new Piece("the long way's head",Made.SOD,RUN_X0,RUN_X1,-337,-340,0));
+        for(int i=0;i<RUN_ROWS;i++)out.add(new Piece("run "+i,Made.LID,RUN_X0,RUN_X1,RUN_SOUTH-i,RUN_SOUTH-i,0));
+        out.add(new Piece("long step 0",Made.STONE,RUN_X0,RUN_X1+1,-369,-369,.5));
+        out.add(new Piece("long step 1",Made.STONE,RUN_X0,RUN_X1+1,-370,-371,1));
+        out.add(new Piece("the long way's foot",Made.SOD,RUN_X0,-2,-372,-375,1.5));
+        return List.copyOf(out);
+    }
+    /** Whether a place (from the park's base) is on the run, and which of its rows; -1 off it. */
+    public static int runRow(double x,double z){
+        if(x<RUN_X0||x>=RUN_X1+1)return -1;int row=RUN_SOUTH-(int)Math.floor(z);return row>=0&&row<RUN_ROWS?row:-1;
+    }
+    /** One row of the run: there, or gone. */
+    public static void runRow(ServerLevel l,BlockPos b,int row,boolean there){
+        var s=there?half(BikeNightRegistry.COFFIN_LID.get(),true):Blocks.AIR.defaultBlockState();
+        for(int x=RUN_X0;x<=RUN_X1;x++)l.setBlock(b.offset(x,-1,RUN_SOUTH-row),s,Block.UPDATE_CLIENTS);
+    }
     /** Every way, each in the order it is ridden; and every piece of all of them. */
-    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH);
+    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG);
     public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();
     /** How high a body stands at a place on the course; NaN where there is none of it. */
     public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();return Double.NaN;}
@@ -134,7 +160,8 @@ public final class CalderHollow {
         }
         FAR_ISLAND=far;ISLANDS=List.copyOf(out);
     }
-    private static boolean touch(Piece a,Piece c){return c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
+    /** Lids are never part of an island: the plain way's are a bridge, and the long way's give way. */
+    private static boolean touch(Piece a,Piece c){return a.made()!=Made.LID&&c.made()!=Made.LID&&c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
     private static String name(Piece first,Piece last){
         String a=first.name().replaceAll(" [0-9]+$",""),c=last.name().replaceAll(" [0-9]+$","");
         return a.equals(c)?a:a+" and "+c;

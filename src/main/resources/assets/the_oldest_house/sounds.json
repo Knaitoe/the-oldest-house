@@ -5271,5 +5271,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.hollow.under"
+  },
+  "hollow.drop": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:hollow/drop",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.hollow.drop"
   }
 }

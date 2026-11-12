@@ -11,7 +11,7 @@ plays over and over as a car drives; and four horns, one for each car. And the t
 seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
 house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round. And (0.4.488) a chain of grocery carts being
 wheeled, a second of it, played over while it moves. And the Hollow's (0.4.495): what is in the mist under it, heard by somebody
-who has gone down into it.
+who has gone down into it; and (0.4.497) the lids of the long way going.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -70,6 +70,8 @@ ROWS = {
     'town/carts': ('town.carts', 'Carts rattle', 16),
     # 0.4.495: under the Hollow.
     'hollow/under': ('hollow.under', 'Something stirs in the mist', 16),
+    # 0.4.497: the long way's run giving way.
+    'hollow/drop': ('hollow.drop', 'Lids fall away', 24),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -672,7 +674,24 @@ def under():
     return (rush + moan * .8) * swell + fingers * np.clip(t / .3, 0, 1) + breath
 
 
-MAKERS = {'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def drop():
+    # Old coffin lids letting go: a dry crack, two boards knocking as they turn over, and nothing after.
+    length = .55
+    n = seconds(length)
+    t = times(n)
+    out = np.zeros(n)
+    crack = click(.03, 700, 5200, .006)
+    out[:len(crack)] += crack
+    for at, pitch, level in ((.04, 190, .7), (.13, 150, .5), (.24, 230, .3)):
+        i = int(at * RATE)
+        m = n - i
+        tt = times(m)
+        knock = np.sin(2 * np.pi * pitch * tt * (1 - .2 * tt)) * np.exp(-tt / .035) + band(rng.standard_normal(m), 300, 1800) * np.exp(-tt / .02) * .5
+        out[i:] += knock * level
+    return out * np.clip((length - t) / .1, 0, 1)
+
+
+MAKERS = {'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,
