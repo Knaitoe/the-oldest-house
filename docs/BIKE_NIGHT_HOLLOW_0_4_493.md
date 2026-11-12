@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504; the tight way, 0.4.505)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504; the tight way, 0.4.505; the dark way, 0.4.506)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -483,6 +483,60 @@ It passed three times running.
 - A rider put off at a gate is on foot in a tendril that is curling up. They go down with it and are set back, with
   their bike laid by them, as anybody is.
 - The dark way.
+
+## 0.4.506: the dark way
+
+The proposal: "**dark:** only the Lamp shows where the ground is." And of the Lamp: "It shows the path in the mist
+and the ground in the dark", and "The Lamp's light helps whoever rides near it."
+
+**Where.** West of the first two graves (`CalderHollow.DARK`): three islands of sod from the hill's edge to the
+third grave. Each is five rows long and stands three rows of nothing on from the last, a block lower than the hill.
+Each is set across from the last with one block of its width in line: the second is east of the first, the third
+east of the second, and the third grave is two blocks off the third's east end. There is no one line through all
+three, and straight on from the middle of an island is nothing. The hill ends square at the dark way's mouth, so the
+first gap is the same from wherever along it somebody leaves the hill.
+
+**The bank.** All of it, and the hill's edge at its mouth, lies in a bank of mist (`CalderHollow.dark`,
+`BikeNightGraveyard.DARK_MIST`): a hundred and forty of the cemetery's hundred. In the cemetery's thickest somebody
+sees seven blocks; in the bank, two and a half, which is less than any of its gaps. It is each reader's own, as the
+cemetery's mist is. What is over a hundred of it comes and goes in under a second: a bank has an edge.
+
+**The Lamp.** A Lamp that is throwing its light cuts the bank to under half for its rider and for whoever is within
+seven blocks, as it does the cemetery's: they see about eighteen blocks, which is the next island from the last one.
+Its dynamo makes light only while the wheel turns. A Lamp that stops cuts nothing, and the bank closes in again in
+under a second.
+
+It misses the first gap the werewolf leaps, the goblin behind the cross, and the ghosts of the first two graves.
+
+### The case
+
+One (94 in the namespace), three readers.
+
+- Three islands, nothing else's ground, all in the bank, all sod; the hill's edge square at the mouth; each gap
+  three rows; one block in line from each island to the next, and not the same block twice; nothing straight on from
+  the middle of an island; the third grave two blocks off the third's east end, a block lower.
+- **How thick.** On the first island the bank is at its thickest and its rider is told so. It is thicker than the
+  cemetery's thickest, which is what the hill's back has away from the mouth. There is none out on the plain way.
+  It is over the hill at the mouth.
+- **A Lamp standing** on the first island cuts nothing, for its rider or the rider beside it.
+- **A rider straight on from the middle of the first island**, the hop held, goes down, and is set back on it.
+- **The Lamp ridden from the hill**, along the block the first two islands share, across the second for the third,
+  and off the third's east end: over all three and onto the third grave, never having gone down, with the bank cut
+  for its rider all the way. The dark way is one it has had under it.
+- **Whoever rides close**: somebody on foot beside the Lamp as it goes has the bank cut for them; a rider out of its
+  reach on the third island has not.
+
+It passed twice running.
+
+### Not built, not seen, and left with the owner
+
+- **Nobody has seen it.** What two blocks and a half of sight is like from a saddle, whether eighteen is enough to
+  pick out an island across a gap at night, and whether a second is the right time for the bank to close, are the
+  owner's to see. The numbers are one constant each.
+- It can be learned. The islands are where they are every night, and somebody who has gone down off each of them
+  once knows the way without a Lamp. Whether they should move from night to night is the owner's to say.
+- Somebody who goes down in the bank has the mist over them as anybody who misses does, on top of the bank.
+- **Gus**, who rides the plain way with no specter of his own; and what a rider sees under the Hollow.
 
 ## The place
 

@@ -33,11 +33,16 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 public final class BikeNightMistClient {
     /** How far somebody sees with no mist and with all of it, in blocks; the fog's near plane, as a share of that; how fast it comes and goes, a tick. */
     public static final float THIN=96,THICK=7,NEAR=.2F,EASE=.008F;
+    /**
+     * 0.4.506, the Hollow's dark way: its bank is thicker than all of the cemetery's (more than a hundred of it, as far as BANK),
+     * and what is over a hundred comes and goes in under a second: a bank has an edge, and a Lamp that stops stops cutting it.
+     */
+    public static final float BANK=1.5F,BANK_EASE=.03F;
     /** With the mist over everything: how far somebody sees, in blocks, and how fast it goes again, a tick. */
     public static final float OVER=1.5F,OVER_EASE=.05F;
     private static int lease,hold;private static float target,mist,oMist,over,oOver;private static ClientLevel world;
     private BikeNightMistClient(){}
-    public static void accept(BikeNightMistPayload p){var mc=Minecraft.getInstance();if(mc.level==null)return;world=mc.level;lease=40;target=Mth.clamp(p.mist()/100F,0,1);
+    public static void accept(BikeNightMistPayload p){var mc=Minecraft.getInstance();if(mc.level==null)return;world=mc.level;lease=40;target=Mth.clamp(p.mist()/100F,0,BANK);
         if(p.over()>0){hold=p.over();over=Math.max(over,(float)Comfort.effects()*Mth.clamp(p.share()/100F,0,1));}
     }
     /** How much the mist is over everything, from nothing to one. */
@@ -51,7 +56,7 @@ public final class BikeNightMistClient {
         if(lease>0)lease--;
         if(lease<=0||!active())target=0;
         if(!active()){oMist=mist=0;oOver=over=0;hold=0;return;}
-        oMist=mist;mist+=Mth.clamp(target-mist,-EASE,EASE);
+        oMist=mist;float ease=mist>1||target>1?BANK_EASE:EASE;mist+=Mth.clamp(target-mist,-ease,ease);
         oOver=over;if(hold>0)hold--;else over=Math.max(0,over-OVER_EASE);
         if(mist<=.02F||mc.isPaused())return;
         // "It rises off the grass": wisps low over the ground round whoever is in it, fewer for whoever has asked for fewer.

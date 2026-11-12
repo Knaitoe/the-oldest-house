@@ -177,6 +177,21 @@ public final class CalderHollow {
         }
     }
     /**
+     * 0.4.506, the dark way. The proposal: "dark: only the Lamp shows where the ground is". West of the first two graves, from
+     * the hill's edge to the third grave: three islands in a bank of mist ({@link #dark}; BikeNightGraveyard.mist) so thick that
+     * somebody in it sees two blocks and a half. Every gap is three blocks, which is further than that, and each island is set
+     * across from the last, a block of it in line: the second east of the first, the third east of the second, and the third
+     * grave off the third's east end. There is no one line through all of it, and somebody who rides straight on from the middle
+     * of an island goes down. A Lamp that is throwing its light cuts the bank for its rider and whoever rides close, and they
+     * see the next island from the last.
+     */
+    public static final int DARK_W=-24,DARK_E=-6,DARK_SOUTH=EDGE+3,DARK_NORTH=-289,DARK_MOUTH_W=-20,DARK_MOUTH_E=-15;
+    public static final List<Piece> DARK=List.of(
+        new Piece("the dark way's first island",Made.SOD,-19,-16,-265,-269,2),new Piece("the dark way's second island",Made.SOD,-16,-13,-273,-277,2),
+        new Piece("the dark way's third island",Made.SOD,-13,-8,-281,-285,2));
+    /** Whether a place (from the park's base) is in the dark way's bank of mist. */
+    public static boolean dark(double x,double z){return x>=DARK_W&&x<DARK_E&&z<DARK_SOUTH&&z>DARK_NORTH;}
+    /**
      * 0.4.501, the werewolf's ground. The proposal: "a werewolf runs alongside on a parallel island and leaps across at gaps."
      * Beside two of the plain way's gaps (the first grave to the second; the one in the last stretch): a strip he runs up beside
      * the riders, a perch at its end level with the gap, and a perch across the way from it. None of it is a way for anybody or an
@@ -192,7 +207,7 @@ public final class CalderHollow {
     public record Leap(double z,double south,double north,double x,double top,double west,double east,double run){}
     public static final List<Leap> LEAPS=List.of(new Leap(-271,-270,-272,1.5,2,-6.5,9.5,-263.5),new Leap(-409,-408,-410,.5,3,-5.5,6.5,-399.5));
     /** Every way, each in the order it is ridden; and every piece of all of them. */
-    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG,STEEP,TIGHT);
+    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG,STEEP,TIGHT,DARK);
     public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();
     /** How high a body stands at a place on the course; NaN where there is none of it. */
     public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();for(var p:WOLFS)if(p.has(x,z))return p.top();return Double.NaN;}
@@ -229,7 +244,7 @@ public final class CalderHollow {
                 int near=way.get(i).zSouth(),end=way.get(j).zNorth();
                 if(near-end+1>=STAND){
                     int z=Math.min(near-1,end+RUN),index=out.size();
-                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":way==LONG?"long":way==STEEP?"steep":"tight",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":way==LONG?"long":way==STEEP?"steep":way==TIGHT?"tight":"dark",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
                 }
                 i=j+1;
             }
@@ -297,6 +312,8 @@ public final class CalderHollow {
         for(int x=CalderGraves.W+1;x<CalderGraves.E;x++){
             // Not beside the first piece of the way: the only way onto it is over the gap.
             int more=Math.abs(x)<=6?0:1+rnd.nextInt(3);
+            // Nor at the dark way's mouth: its first gap is the same from wherever along it somebody leaves the hill.
+            if(x>=DARK_MOUTH_W&&x<=DARK_MOUTH_E)more=0;
             for(int z=EDGE-1;z>=EDGE-more;z--){set(l,b,x,y-1,z,sod);if(rnd.nextInt(3)==0)set(l,b,x,y-2,z,grave(CalderGraveBlock.Kind.ROOTS,Direction.NORTH,rnd.nextInt(3)));}
             // The row the ground ends on is sod too: it is the side of the hill now.
             set(l,b,x,y-1,EDGE,sod);

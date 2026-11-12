@@ -125,3 +125,10 @@ bottom of the new room.
 Nothing is built in the new room and nothing else about the night changed. This is on its own so that the cases that
 build every place and walk between them (which only the workflow's long job runs) meet it before the Hollow does. Here
 it was run against the whole Bike night namespace and the client proof.
+
+## 0.4.506: a bank thicker than this
+
+The Hollow's dark way lies in a bank of mist that is a hundred and forty of this mist's hundred
+(`docs/BIKE_NIGHT_HOLLOW_0_4_493.md`). The same rule sees to it: by shares, so a hundred and forty is two blocks and
+a half of sight; a lit Lamp cuts it to under half as it does the cemetery's. What is over a hundred comes and goes in
+under a second, where the cemetery's takes a few: a bank has an edge.
