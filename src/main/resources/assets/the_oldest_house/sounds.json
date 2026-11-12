@@ -5352,5 +5352,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.hollow.fold"
+  },
+  "pell.car_away": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/car_away",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.car_away"
   }
 }
