@@ -11,7 +11,7 @@ plays over and over as a car drives; and four horns, one for each car. And the t
 seconds of them, played over and over; the neon's one bad letter; a row of the grocery's lights switched off at the box; a full
 house laughing in the theater, heard from the street; and eight seconds of a tune on a car radio, which goes round. And (0.4.488) a chain of grocery carts being
 wheeled, a second of it, played over while it moves. And the Hollow's (0.4.495): what is in the mist under it, heard by somebody
-who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes; and (0.4.500) a ghost going through somebody; and (0.4.501) the werewolf's howl.
+who has gone down into it; and (0.4.497) the lids of the long way going; and (0.4.499) a witch's cackle as she comes; and (0.4.500) a ghost going through somebody; and (0.4.501) the werewolf's howl; and (0.4.502) the headless rider's horse, half a second of it, played over as he comes.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one at the
 bike. The game plays the card and the dynamo over and over while the bike moves, higher and louder the faster it goes, so each is a
@@ -78,6 +78,8 @@ ROWS = {
     'hollow/ghost': ('hollow.ghost', 'A ghost goes through you', 16),
     # 0.4.501: the werewolf taking his perch.
     'hollow/howl': ('hollow.howl', 'A werewolf howls', 32),
+    # 0.4.502: the headless rider's horse.
+    'hollow/hooves': ('hollow.hooves', 'Hooves come up behind', 24),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -751,7 +753,21 @@ def howl():
     return (voice * rough + breath) * shape
 
 
-MAKERS = {'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def hooves():
+    # A horse flat out: four feet down in a run, the last two close together, on hard turf.
+    length = .5
+    n = seconds(length)
+    out = np.zeros(n)
+    for at, level in ((.0, .9), (.11, .7), (.22, 1.0), (.29, .8)):
+        i = int(at * RATE)
+        m = n - i
+        tt = times(m)
+        thud = np.sin(2 * np.pi * (95 - 60 * tt) * tt) * np.exp(-tt / .035) + band(rng.standard_normal(m), 400, 2200) * np.exp(-tt / .012) * .5
+        out[i:] += thud * level
+    return out
+
+
+MAKERS = {'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,

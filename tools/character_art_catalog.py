@@ -156,4 +156,6 @@ def entries():
         rows.append({'name':'literary_hollow_ghost_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # And the werewolf (0.4.501), on phase one hundred and ninety-one.
     rows.append({'name':'literary_hollow_wolf','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':191})
+    # And the headless rider (0.4.502), on phase one hundred and ninety-two.
+    rows.append({'name':'literary_hollow_rider','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':192})
     return rows

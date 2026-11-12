@@ -237,6 +237,9 @@ LOOKS = {
     # 0.4.501, the Hollow's werewolf: fur where skin would be, and on his face; what is left of a shirt and a pair of jeans.
     # His muzzle, ears and tail are their own model and sheet (tools/draw_calder_specters_art.py).
     'literary_hollow_wolf': Look('#6a5240','#4a382a','messy','#7c2e2a','#39465a','flannel','#2a2422',eyes='#e0b63a',age=1,beard='full',sleeve=5,rips=True,shoes='#5a4636'),
+    # 0.4.502, the Hollow's headless rider: all in one dark cloth to the wrists, gloves, boots; nothing at his collar. His head
+    # is not drawn. His horse is its own model and sheet (tools/draw_calder_specters_art.py).
+    'literary_hollow_rider': Look('#24242c','#1a1a1c','short','#2c2c36','#24242c','knit','#3f414d',eyes='#2a2a2e',age=1,sleeve=11,shoes='#15151a'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),

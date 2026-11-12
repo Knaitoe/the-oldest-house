@@ -464,7 +464,7 @@ public final class BikeNightTests {
     private static final Map<UUID,Integer> OVER=new HashMap<>(),SHARE=new HashMap<>();
     /** 0.4.476: the playground's own cases have it to themselves: Gus stays at his place and says nothing, but for the cases that are his. */
     private static LiteraryTests.Fixture park(GameTestHelper h){done();BikeNightGus.keptHome=true;BikeNightBullies.keptAway=true;BikeNightSpecters.keptAway=true;active=new LiteraryTests.Fixture(h);return active;}
-    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();SHARE.clear();BikeNightSpecters.keptAway=false;BikeNightGus.keptHome=false;
+    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();SHARE.clear();BikeNightSpecters.keptAway=false;BikeNightSpecters.only=null;BikeNightGus.keptHome=false;
         BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=BikeNightBullies.ARRIVE;BikeNightBullies.patience=BikeNightBullies.PATIENCE;}
     /** The park and Park Street: what the park's own cases keep resident. (0.4.481: the place is the town too; its cases keep that, {@link #town}.) */
     private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-58,b.getY()-5,b.getZ()-74,b.getX()+59,b.getY()+19,b.getZ()+2);}
@@ -5230,7 +5230,7 @@ public final class BikeNightTests {
 
     @GameTest(template="empty",batch="hollow_witch",timeoutTicks=5000)
     public static void aWitchCrossesTheWayForOneReaderAndGoesOverWhoeverIsDownOverTheirBarsAndWhoeverIsNotIsCaughtAndComesRoundOutsideTheGate(GameTestHelper h){
-        var f=park(h);BikeNightSpecters.keptAway=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};
+        var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("witch");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};
         final double[] lowest={99},west={99},east={-99},lastZ={0};final boolean[] seen={false},own={true};final float[] health={0};
         var rows=BikeNightSpecters.SWOOPS;var rack=b.offset(BikeNightSite.bikeAt(NightBike.Make.LAMP));
         h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
@@ -5321,7 +5321,7 @@ public final class BikeNightTests {
     // ------------------------------------------------------------------------------------------------ 0.4.500, the ghosts
     @GameTest(template="empty",batch="hollow_ghosts",timeoutTicks=5000)
     public static void ghostsDriftAcrossAHauntedStretchForOneReaderHalfThereAndOneThatGoesThroughThemChillsTheirViewAndCatchesNobody(GameTestHelper h){
-        var f=park(h);BikeNightSpecters.keptAway=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};
+        var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("ghosts");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};
         final int[] most={0},come={0};final boolean[] own={true},thin={false},full={false};final double[] west={99},east={-99};final float[] health={0};final LiteraryActor[] inside={null};
         h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
             .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
@@ -5388,7 +5388,7 @@ public final class BikeNightTests {
     // ------------------------------------------------------------------------------------------------ 0.4.501, the werewolf
     @GameTest(template="empty",batch="hollow_wolf",timeoutTicks=5000)
     public static void theWerewolfRunsUpBesideOneReaderAndLeapsTheGapOnHisRhythmAndCatchesWhoeverIsOverItAsHeCrossesAndNobodyOnTheGround(GameTestHelper h){
-        var f=park(h);BikeNightSpecters.keptAway=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};
+        var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("wolf");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};
         final double[] west={99},east={-99},highest={0},ran={0};final boolean[] own={true},gathered={false},air={false},held={false};final int[] t={0},leapt={0};final long[] landed={0};
         var g=CalderHollow.LEAPS.get(0);
         h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
@@ -5467,4 +5467,61 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="hollow_wolf") public static void hollowWolfDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.502, the headless rider
+    @GameTest(template="empty",batch="hollow_rider",timeoutTicks=5000)
+    public static void theHeadlessRiderComesUpBehindOneReaderOnTheLastStretchAndHasWhoeverStopsAndNotWhoeverKeepsGoing(GameTestHelper h){
+        var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("rider");var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null,null};
+        final long[] came={0};final double[] nearest={99},first={0};final boolean[] own={true},held={false};final int[] t={0};int stretch=CalderHollow.FAR_ISLAND-2,top=7;
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{p[0]=f.player("hollow_rider_lamp",P);p[1]=f.player("hollow_rider_hare",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);mine[1]=take(h,f,p[1],NightBike.Make.HARE);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("hare"),"waiting for the bikes to be theirs"))
+            // On the top, both: he does not come for anybody who is not on the last stretch.
+            .thenExecute(()->{var at=islandPlace(b,top);for(int i=0;i<2;i++){mine[i].moveTo(b.getX()+(i==0?-1.5:2.5),b.getY()+5,b.getZ()-391.5,180,0);p[i].setYRot(180);hush(p[i]);}})
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightSpecters.rider(p[0])==null&&BikeNightSpecters.rider(p[1])==null,"on the top, nobody is behind anybody");
+                // The Lamp's rider onto the last stretch, and stops there.
+                var at=islandPlace(b,stretch);mine[0].moveTo(at.x,at.y,at.z,180,0);mine[0].steady(0,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightSpecters.rider(p[0])!=null,"waiting for him to come up behind the Lamp's rider"))
+            .thenExecute(()->{
+                var r=BikeNightSpecters.rider(p[0]);came[0]=l.getGameTime();first[0]=r.getZ()-mine[0].getZ();
+                h.assertTrue(r.phase()==BikeNightSpecters.RIDER&&r.gesture()==BikeNightSpecters.GALLOP&&Math.abs(first[0]-BikeNightSpecters.RIDER_BEHIND)<.5,"he comes ten blocks behind them, on the way: "+first[0]+" behind, at "+where(b,r));
+                h.assertTrue(Math.abs(r.getY()-b.getY()-CalderHollow.top(0,(int)Math.floor(r.getZ()-b.getZ())))<.01,"on the ground that is there");
+            })
+            .thenWaitUntil(()->{
+                var r=BikeNightSpecters.rider(p[0]);
+                if(r!=null){
+                    double off=r.getZ()-mine[0].getZ();h.assertTrue(off<nearest[0]+.001,"he comes on and never falls back: "+off);nearest[0]=off;
+                    own[0]&=r.owner().isPresent()&&r.owner().get().equals(p[0].getUUID())&&r.broadcastToPlayer(p[0])&&!r.broadcastToPlayer(p[1]);
+                }
+                h.assertTrue(BikeNightHollow.taken(p[0]),"waiting for him to reach the reader who has stopped: "+nearest[0]+" off");
+            })
+            .thenExecute(()->{
+                long took=l.getGameTime()-came[0];double should=(BikeNightSpecters.RIDER_BEHIND-BikeNightSpecters.RIDER_REACH)/BikeNightSpecters.RIDER_PACE;
+                h.assertTrue(Math.abs(took-should)<6&&nearest[0]<BikeNightSpecters.RIDER_REACH+BikeNightSpecters.RIDER_PACE+.01,"at his own pace, in about two seconds: "+took+" ticks for "+should);
+                h.assertTrue(own[0]&&sounded(p[0],"hollow.hooves")&&!sounded(p[1],"hollow.hooves"),"he was his reader's alone, who heard his horse; the other did not");
+                h.assertTrue(BikeNightSpecters.rider(p[0])==null&&f.own(p[0],P).getString("TakenBy").equals("rider")&&!p[0].isPassenger()&&mine[0].isRemoved(),"they are caught, and it is in their record that it was him");
+                h.assertTrue(!BikeNightHollow.taken(p[1])&&BikeNightSpecters.rider(p[1])==null,"the reader on the top is not his");
+            })
+            // The Hare's rider rides the last stretch without stopping: he comes, and does not catch them.
+            .thenExecute(()->{var at=islandPlace(b,stretch);mine[1].moveTo(at.x,at.y,at.z+2,180,0);p[1].setYRot(180);nearest[0]=99;})
+            .thenWaitUntil(()->{
+                double x=mine[1].getX()-b.getX(),z=mine[1].getZ()-b.getZ();
+                h.assertTrue(!BikeNightHollow.taken(p[1])&&p[1].getVehicle()==mine[1]&&BikeNightHollow.fell(p[1])==0,"the rider who keeps going is not caught and does not go down: at "+where(b,mine[1])+", him "+nearest[0]+" off");
+                var r=BikeNightSpecters.rider(p[1]);if(r!=null)nearest[0]=Math.min(nearest[0],r.getZ()-mine[1].getZ());
+                p[1].setYRot(mine[1].onGround()?(float)Math.toDegrees(Math.atan2(-(.5-x),-3.5)):mine[1].getYRot());
+                var gap=hollowGap(z);boolean brink=gap[1]<=.4&&mine[1].onGround();
+                if(gap[0]>=2&&brink&&!held[0]){mine[1].keys(true,false);held[0]=true;}else if(held[0]){mine[1].keys(false,false);held[0]=false;}
+                if(mine[1].onGround())pedalWell(mine[1],t[0]++,3);
+                h.assertTrue(BikeNightHollow.island(p[1])==CalderHollow.FAR_ISLAND&&BikeNightSpecters.rider(p[1])==null,"waiting for them to be on the far side and him to have pulled up: at "+where(b,mine[1]));
+            })
+            .thenExecute(()->h.assertTrue(nearest[0]>3&&nearest[0]<90,"he came, and was never within three blocks of them: "+nearest[0]))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_rider") public static void hollowRiderDone(ServerLevel l){done();}
 }

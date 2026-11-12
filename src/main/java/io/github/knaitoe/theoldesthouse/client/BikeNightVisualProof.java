@@ -73,7 +73,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters","rider"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -137,9 +137,10 @@ public final class BikeNightVisualProof extends Screen {
             "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back",
             "the cemetery's things: headstones; small row, crosses, obelisk, angel, doors; heap, tarps, goods; the Hollow's",
             "the hill: a bank and the pier on it, the gate's path, two rows, and the open grave behind its heap",
-            "the Hollow's witch: on her broom from the side, the front, and behind and above; and standing. The werewolf: running, gathered, and in the air. The three ghosts, adrift, half there"}[page],8,8,0xffffffff);
+            "the Hollow's witch: on her broom from the side, the front, and behind and above; and standing. The werewolf: running, gathered, and in the air. The three ghosts, adrift, half there",
+            "the Hollow's headless rider on his horse: from the side at two moments of its stride, from the front quarter, and from behind"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);default->specters(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);case 24->specters(g);default->rider(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -573,6 +574,19 @@ public final class BikeNightVisualProof extends Screen {
             var pose=g.pose();pose.pushPose();pose.translate(width*v[0],under-1.5F*s-.3F*s,400);pose.scale(s,s,s);
             pose.mulPose(Axis.XP.rotationDegrees(-6));pose.mulPose(Axis.YP.rotationDegrees(v[1]));
             LiteraryRenderers.drawGhost(pose,buffers,LightTexture.FULL_BRIGHT,(int)v[2],8+v[2]*30);
+            buffers.endBatch();pose.popPose();
+        }
+    }
+    /** 0.4.502, the Hollow's headless rider on his horse, as the game draws them. */
+    private void rider(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width/11F,low=24+(height-24)*.5F;
+        // {across the page, down the page, turned (degrees; 180 faces us), where in its stride}
+        float[][] views={{.25F,.46F,90,1},{.73F,.46F,90,3},{.25F,.95F,145,2},{.73F,.95F,-20,0}};
+        for(var v:views){
+            var pose=g.pose();pose.pushPose();pose.translate(width*v[0],24+(height-24)*v[1]-1.5F*s,400);pose.scale(s,s,s);
+            pose.mulPose(Axis.XP.rotationDegrees(-6));pose.mulPose(Axis.YP.rotationDegrees(v[2]));
+            LiteraryRenderers.drawRider(pose,buffers,LightTexture.FULL_BRIGHT,v[3]*2);
             buffers.endBatch();pose.popPose();
         }
     }

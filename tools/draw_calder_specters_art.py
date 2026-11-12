@@ -1,5 +1,5 @@
 """Bike night's specters, the things they have that are not their skins: the witch's hat and her broom (0.4.499), and the
-werewolf's muzzle, ears and tail (0.4.501).
+werewolf's muzzle, ears and tail (0.4.501), and the headless rider's horse (0.4.502).
 
 Her skin is painted with the rest of the cast (tools/paint_character_skins.py, literary_hollow_witch). This is the sheet her hat
 and broom are drawn from (client/LiteraryRenderers.WitchLayer): each box's faces laid out as the game unwraps a box, sixteen pixels
@@ -134,15 +134,82 @@ def draw_wolf():
     return im
 
 
+HORSE_OUT = OUT.with_name('literary_hollow_horse.png')
+HORSE_SIZE = (64, 64)
+# The headless rider's horse (client/LiteraryRenderers.RiderLayer): a barrel, four legs off one drawing, the stump of a neck, a
+# tail, and a saddle on a cloth.
+HORSE_BOXES = {
+    'barrel': (0, 0, 10, 10, 22),
+    'leg': (0, 32, 4, 12, 4),
+    'neck': (16, 32, 4, 9, 6),
+    'tail': (36, 32, 3, 12, 3),
+    'saddle': (0, 48, 10, 1, 8),
+}
+COAT, COAT_LIGHT, HOOF, CUT, CUT_RIM, HAIR, LEATHER, CLOTH = (72, 76, 90), (98, 103, 120), (24, 24, 30), (10, 10, 13), (130, 136, 152), (40, 42, 52), (58, 44, 36), (52, 54, 66)
+
+
+def draw_horse():
+    rng = random.Random(5020)
+    im = Image.new('RGBA', HORSE_SIZE, (0, 0, 0, 0))
+    px = im.load()
+
+    def fill(box, base, light, share):
+        for x0, y0, w, h in faces(*HORSE_BOXES[box]).values():
+            for x in range(x0, x0 + w):
+                for y in range(y0, y0 + h):
+                    px[x, y] = (light if rng.random() < share else base) + (255,)
+
+    fill('barrel', COAT, COAT_LIGHT, .12)
+    fill('leg', COAT, COAT_LIGHT, .1)
+    fill('neck', COAT, COAT_LIGHT, .12)
+    fill('tail', HAIR, COAT_LIGHT, .2)
+    fill('saddle', LEATHER, CLOTH, 0)
+    # Hooves: the foot of each leg.
+    f = faces(*HORSE_BOXES['leg'])
+    for name in ('west', 'north', 'east', 'south'):
+        x0, y0, w, h = f[name]
+        for x in range(x0, x0 + w):
+            for y in range(y0 + h - 2, y0 + h):
+                px[x, y] = HOOF + (255,)
+    x0, y0, w, h = f['bottom']
+    for x in range(x0, x0 + w):
+        for y in range(y0, y0 + h):
+            px[x, y] = HOOF + (255,)
+    # Where the neck stops: nothing, with a pale rim. No wound is drawn.
+    x0, y0, w, h = faces(*HORSE_BOXES['neck'])['top']
+    for x in range(x0, x0 + w):
+        for y in range(y0, y0 + h):
+            edge = x in (x0, x0 + w - 1) or y in (y0, y0 + h - 1)
+            px[x, y] = (CUT_RIM if edge else CUT) + (255,)
+    # A mane down the back of the neck.
+    x0, y0, w, h = faces(*HORSE_BOXES['neck'])['south']
+    for x in range(x0 + 1, x0 + w - 1):
+        for y in range(y0, y0 + h):
+            px[x, y] = HAIR + (255,)
+    # The saddle's cloth: its edges.
+    f = faces(*HORSE_BOXES['saddle'])
+    x0, y0, w, h = f['top']
+    for x in range(x0, x0 + w):
+        for y in range(y0, y0 + h):
+            if x in (x0, x0 + w - 1) or y in (y0, y0 + h - 1):
+                px[x, y] = CLOTH + (255,)
+    for name in ('west', 'north', 'east', 'south'):
+        x0, y0, w, h = f[name]
+        for x in range(x0, x0 + w):
+            for y in range(y0, y0 + h):
+                px[x, y] = CLOTH + (255,)
+    return im
+
+
 def main():
-    sheets = ((OUT, draw()), (WOLF_OUT, draw_wolf()))
+    sheets = ((OUT, draw()), (WOLF_OUT, draw_wolf()), (HORSE_OUT, draw_horse()))
     for path, im in sheets:
         if '--check' in sys.argv:
             with Image.open(path) as saved:
                 assert saved.size == im.size and saved.convert('RGBA').tobytes() == im.tobytes(), path.name
         else:
             im.save(path, optimize=True)
-    print(('Verified' if '--check' in sys.argv else 'Drew') + ' the specters\' things: 2 sheets, 10 boxes.')
+    print(('Verified' if '--check' in sys.argv else 'Drew') + ' the specters\' things: 3 sheets, 15 boxes.')
 
 
 if __name__ == '__main__':
