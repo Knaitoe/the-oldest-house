@@ -30,6 +30,8 @@ import net.minecraft.world.phys.Vec3;
  * was on its pegs; unhurt. A bike whose rider let go of it over nothing, or which lies where its rider cannot walk back to it, is
  * laid by them.
  *
+ * <p>0.4.497: the long way's run gives way under whoever is on it (see {@link #run}).
+ *
  * <p>The scare is theirs alone: the mist over everything for a moment (as much of it as their comfort setting lets through), what is
  * in it heard, and a line. Anybody else sees mist where they went down and where they are.
  */
@@ -38,7 +40,16 @@ public final class BikeNightHollow {
     /** What the Hollow keeps for a night: each reader's last island, and how many times each has gone down. */
     static final class Course {
         final Map<UUID,Integer> stood=new HashMap<>(),fell=new HashMap<>();
+        /** The long way's run: when it began to give way (-1 while it is whole and nobody is on it), how many of its rows are gone, and when it is back (-1 unless it is all gone). */
+        long runAt=-1,runBackAt=-1;int runGone;
     }
+    /**
+     * 0.4.497, the long way's run (CalderHollow.LONG). "long: a run only the Comet's top speed carries": once somebody is on it, it
+     * gives way from its near end, GRACE ticks later and then PACE rows a tick: faster than a bike is pedalled (RiddenBike.TOP),
+     * slower than the Comet, or the Rattler while its card has it. All of it goes, whoever is still on it; BACK ticks after the
+     * last row it is whole again.
+     */
+    public static final int GRACE=6,BACK=100;public static final float PACE=.4F;
     /** How far under the lowest ground near them somebody is before they have missed, in blocks; and how long the mist is over them, in ticks. */
     public static final double UNDER=2;
     public static final int OVER=24;
@@ -59,6 +70,7 @@ public final class BikeNightHollow {
     public static int fell(ServerPlayer p){var n=BikeNight.night(p);return n==null?0:n.hollow.fell.getOrDefault(p.getUUID(),0);}
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        run(l,n,here);
         for(var p:here){
             if(!p.isAlive()||p.isSpectator())continue;
             NightBike bike=p.getVehicle() instanceof NightBike b?b:null;
@@ -125,8 +137,8 @@ public final class BikeNightHollow {
         return beside(l,place(n,n.hollow.stood.getOrDefault(reader,CalderHollow.HILL)));
     }
     /**
-     * A cell by an island's place to lay a bike in: beside where a body stands there, or a little behind, on whole ground. Not the
-     * cell they stand in.
+     * A cell by an island's place to lay a bike in: beside where a body stands there, or a little behind, on whole ground that
+     * stays (not the long way's run). Not the cell they stand in, unless there is nowhere else.
      */
     public static @Nullable BlockPos beside(ServerLevel l,Vec3 to){
         int bx=Mth.floor(to.x),by=Mth.floor(to.y+.5),bz=Mth.floor(to.z);
@@ -134,9 +146,50 @@ public final class BikeNightHollow {
             var at=new BlockPos(bx+dx,by+dy,bz+back);
             if(back==0&&at.getX()+1>to.x-.35&&at.getX()<to.x+.35)continue;
             var here=l.getBlockState(at);
-            if((here.isAir()||here.canBeReplaced())&&l.getBlockState(at.below()).isFaceSturdy(l,at.below(),Direction.UP))return at;
+            if((here.isAir()||here.canBeReplaced())&&l.getBlockState(at.below()).isFaceSturdy(l,at.below(),Direction.UP)&&!onRun(l,at))return at;
         }
-        return null;
+        var own=BlockPos.containing(to.x,to.y+.01,to.z);var there=l.getBlockState(own);
+        return there.isAir()||there.canBeReplaced()?own:null;
     }
-    static void reset(ServerLevel l,BikeNight.Night n){n.hollow=new Course();}
+    /** The long way's run, giving way and coming back. */
+    static void run(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var c=n.hollow;
+        if(!l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH))||!l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH-CalderHollow.RUN_ROWS)))return;
+        if(c.runAt<0){
+            if(c.runBackAt>=0){
+                if(n.tick<c.runBackAt)return;
+                for(int i=0;i<CalderHollow.RUN_ROWS;i++)CalderHollow.runRow(l,n.base,i,true);
+                var mid=n.base.offset(CalderHollow.RUN_X0+1,0,CalderHollow.RUN_SOUTH-CalderHollow.RUN_ROWS/2);
+                l.sendParticles(ParticleTypes.WHITE_SMOKE,mid.getX(),mid.getY()+.1,mid.getZ()+.5,60,.6,.1,CalderHollow.RUN_ROWS/2.0,.01);
+                c.runGone=0;c.runBackAt=-1;return;
+            }
+            // It begins to give way when somebody is on it: a bike that is on the ground there, or somebody on their feet.
+            for(var p:here){
+                if(!p.isAlive()||p.isSpectator())continue;
+                Entity body=p.getVehicle() instanceof NightBike b?b:p;var at=from(n,body.position());
+                if(Math.abs(at.y)<.1&&CalderHollow.runRow(at.x,at.z)>=0&&(body==p||body.onGround())){c.runAt=n.tick;break;}
+            }
+            return;
+        }
+        int gone=Mth.clamp((int)Math.floor((n.tick-c.runAt-GRACE)*PACE),0,CalderHollow.RUN_ROWS);
+        while(c.runGone<gone){
+            int row=c.runGone++;CalderHollow.runRow(l,n.base,row,false);
+            var at=n.base.offset(CalderHollow.RUN_X0+1,0,CalderHollow.RUN_SOUTH-row);
+            l.sendParticles(ParticleTypes.WHITE_SMOKE,at.getX(),at.getY()-.3,at.getZ()+.5,5,.6,.1,.3,.01);
+            if(row%3==0)l.playSound(null,at.getX(),at.getY(),at.getZ()+.5,BikeNightRegistry.DROP.get(),SoundSource.BLOCKS,.8F,.9F+l.random.nextFloat()*.2F);
+        }
+        if(c.runGone>=CalderHollow.RUN_ROWS){c.runAt=-1;c.runBackAt=n.tick+BACK;}
+    }
+    /** How many of the run's rows are gone in this park, and whether it is giving way. For tests. */
+    public static int runGone(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.hollow.runGone;}
+    public static boolean runGoing(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.runAt>=0;}
+    /** Whether a cell's ground is one of the run's rows, in whichever park's Hollow the cell is. */
+    private static boolean onRun(ServerLevel l,BlockPos at){
+        var n=BikeNight.nightAt(l,at);if(n==null)return false;var r=at.subtract(n.base);
+        return r.getY()==0&&CalderHollow.runRow(r.getX()+.5,r.getZ()+.5)>=0;
+    }
+    static void reset(ServerLevel l,BikeNight.Night n){
+        if(n.hollow.runGone>0&&l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH)))for(int i=0;i<CalderHollow.RUN_ROWS;i++)CalderHollow.runRow(l,n.base,i,true);
+        n.hollow=new Course();
+    }
 }

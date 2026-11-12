@@ -4803,7 +4803,7 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 var islands=CalderHollow.ISLANDS;var names=islands.stream().map(CalderHollow.Island::name).toList();
                 h.assertTrue(names.equals(List.of("the hill","first grave","second grave","third grave","the fences","the grave past the lids","vine","stair and the top","stretch","stretch","the far side",
-                    "high grave","high grave","high grave and the high way's foot")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's: "+names);
+                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's and the long way's: "+names);
                 h.assertTrue(islands.get(CalderHollow.FAR_ISLAND).name().equals("the far side"),"the far side is where it says");
                 h.assertTrue(CalderHollow.HILL==0&&islands.get(0).name().equals("the hill"),"the hill is the first");
                 // The lids are a bridge: somebody standing on one has no island under them.
@@ -5083,4 +5083,90 @@ public final class BikeNightTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="hollow_high") public static void hollowHighDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.497, the long way
+    private static int islandNamed(String name){for(int i=0;i<CalderHollow.ISLANDS.size();i++)if(CalderHollow.ISLANDS.get(i).name().equals(name))return i;throw new IllegalStateException(name);}
+    private static boolean runRowThere(ServerLevel l,BlockPos b,int row){return l.getBlockState(b.offset(CalderHollow.RUN_X0,-1,CalderHollow.RUN_SOUTH-row)).is(BikeNightRegistry.COFFIN_LID.get())&&l.getBlockState(b.offset(CalderHollow.RUN_X1,-1,CalderHollow.RUN_SOUTH-row)).is(BikeNightRegistry.COFFIN_LID.get());}
+    /**
+     * One rider at the long way: from the grave past the lids (so that it is their island) to the head of the run, then north along
+     * it pedalling as hard as a rider can, the Rattler with its card held from the run's first row. {@code far[i]} is the furthest
+     * row they had under them; the step ends when they are on the long way's foot or have gone down.
+     */
+    private static net.minecraft.gametest.framework.GameTestSequence longRide(net.minecraft.gametest.framework.GameTestSequence q,GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer[] p,NightBike[] mine,int i,int[] far,int[] t,boolean[] behind){
+        var b=f.base(P);var l=f.level(P);int past=islandNamed("the grave past the lids"),foot=islandNamed("long step and the long way's foot");
+        return q.thenExecute(()->{var at=islandPlace(b,past);mine[i].moveTo(at.x,at.y,at.z,180,0);p[i].setYRot(180);})
+            .thenWaitUntil(()->h.assertTrue(mine[i].onGround()&&BikeNightHollow.island(p[i])==past,"waiting for the grave past the lids to be their island"))
+            .thenExecute(()->{
+                h.assertTrue(!BikeNightHollow.runGoing(b)&&BikeNightHollow.runGone(b)==0&&runRowThere(l,b,0)&&runRowThere(l,b,CalderHollow.RUN_ROWS-1),"the run is whole and still before they are on it");
+                mine[i].moveTo(b.getX()+CalderHollow.RUN_X0+1.0,b.getY(),b.getZ()-336.6,180,0);p[i].setYRot(180);far[i]=-1;behind[0]=false;
+            })
+            .thenWaitUntil(()->{
+                int fell=BikeNightHollow.fell(p[i]);
+                if(fell==0&&p[i].getVehicle()==mine[i]){
+                    double x=mine[i].getX()-b.getX(),z=mine[i].getZ()-b.getZ(),y=mine[i].getY()-b.getY();
+                    p[i].setYRot(mine[i].onGround()?(float)Math.toDegrees(Math.atan2(-(CalderHollow.RUN_X0+1.0-x),-3.5)):mine[i].getYRot());
+                    if(mine[i].make()==NightBike.Make.RATTLER&&z<=CalderHollow.RUN_SOUTH+1)mine[i].keys(false,true);
+                    if(mine[i].onGround()){
+                        pedalWell(mine[i],t[0]++,3);int row=CalderHollow.runRow(x,z);
+                        if(row>=0&&Math.abs(y)<.1){
+                            far[i]=Math.max(far[i],row);
+                            // Well along it, the rows they first rode over are gone.
+                            if(row>=12){h.assertTrue(BikeNightHollow.runGoing(b)&&!runRowThere(l,b,0)&&!runRowThere(l,b,3),"with them on row "+row+" the run has given way behind them: "+BikeNightHollow.runGone(b)+" rows gone");behind[0]=true;}
+                            h.assertTrue(runRowThere(l,b,row),"the row a bike is on the ground on is there: "+row);
+                        }
+                    }
+                }
+                double x=mine[i].getX()-b.getX(),z=mine[i].getZ()-b.getZ(),y=mine[i].getY()-b.getY();
+                h.assertTrue(fell>0||mine[i].isAlive()&&mine[i].onGround()&&CalderHollow.stood(x,y,z)==foot&&BikeNightHollow.island(p[i])==foot,"waiting for the "+mine[i].make().id()+"'s rider to be over the run or to have gone down: at "+where(b,p[i])+" going "+(mine[i].isAlive()?mine[i].speedNow():0)+", furthest row "+far[i]+", "+BikeNightHollow.runGone(b)+" gone");
+            });
+    }
+
+    @GameTest(template="empty",batch="hollow_long",timeoutTicks=8000)
+    public static void theLongWaysRunGivesWayBehindWhoeverIsOnItAndOnlyTheCometAndTheRattlerInItsBurstStayAheadOfIt(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};final int[] far={-1,-1,-1},t={0};final boolean[] behind={false};
+        var way=CalderHollow.LONG;int rows=CalderHollow.RUN_ROWS;int pastIsland=islandNamed("the grave past the lids"),foot=islandNamed("long step and the long way's foot");
+        var q=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                var past=CalderHollow.WAY.stream().filter(piece->piece.name().equals("the grave past the lids")).findFirst().orElseThrow();
+                var head=way.get(0);var last=way.get(way.size()-1);
+                h.assertTrue(head.top()==past.top()&&head.x1()==past.x0()-1&&head.zSouth()<=past.zSouth()&&head.zSouth()>=past.zNorth(),"its head is level with the grave past the lids and against its west side: "+head);
+                int lids=0;for(var piece:way)if(piece.made()==CalderHollow.Made.LID){h.assertTrue(piece.top()==head.top()&&piece.x0()==CalderHollow.RUN_X0&&piece.x1()==CalderHollow.RUN_X1&&piece.zSouth()==CalderHollow.RUN_SOUTH-lids&&piece.zNorth()==piece.zSouth(),"the run is lids, two wide, one row each, level: "+piece);lids++;}
+                h.assertTrue(lids==rows&&rows>=24,"a long run: "+lids+" rows");
+                // Past it, up by half blocks to its foot, which is against the stairs and level with the pair it meets.
+                var stair=CalderHollow.WAY.stream().filter(piece->piece.name().startsWith("stair")&&piece.zSouth()<=last.zSouth()&&piece.zSouth()>=last.zNorth()&&piece.top()==last.top()).findFirst();
+                h.assertTrue(stair.isPresent()&&last.x1()==stair.get().x0()-1,"its foot is against the stairs, level with the pair it meets: "+last);
+                // It is no way round anything on the plain way: nothing of it is within a block of the vine, or of the gap between the vine and the stairs.
+                for(var piece:way)for(var plain:CalderHollow.WAY)if(plain.name().startsWith("vine"))
+                    h.assertTrue(piece.x1()<plain.x0()-1||piece.zSouth()<plain.zNorth()-2||piece.zNorth()>plain.zSouth()+2,piece.name()+" is within reach of "+plain.name());
+                // How fast it goes: faster than a bike is pedalled, slower than the Comet and than the Rattler's burst.
+                h.assertTrue(BikeNightHollow.PACE>RiddenBike.TOP*1.15F&&BikeNightHollow.PACE<NightBike.Make.COMET.stats.top*.92F&&BikeNightHollow.PACE<RiddenBike.TOP*NightBike.TURBO_TOP*.92F,"it gives way faster than a bike is pedalled and slower than the Comet or the Rattler's burst: "+BikeNightHollow.PACE);
+                for(var make:NightBike.Make.values())if(make!=NightBike.Make.COMET)h.assertTrue(make.stats.top<BikeNightHollow.PACE,"no bike but the Comet is pedalled as fast as it goes: "+make.id());
+                p[0]=f.player("hollow_long_lamp",P);p[1]=f.player("hollow_long_comet",P);p[2]=f.player("hollow_long_rattler",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&p[2].getBbHeight()<1.1&&BikeNight.here(p[2]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);mine[1]=take(h,f,p[1],NightBike.Make.COMET);mine[2]=take(h,f,p[2],NightBike.Make.RATTLER);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("comet")&&f.own(p[2],P).getString("Bike").equals("rattler"),"waiting for the bikes to be theirs"));
+        // The Lamp, pedalled as hard as any bike but the Comet can be: caught.
+        q=longRide(q,h,f,p,mine,0,far,t,behind)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightHollow.fell(p[0])==1&&far[0]>=4&&far[0]<rows-6,"the run went from under the Lamp partway along it: furthest row "+far[0]);
+                h.assertTrue(p[0].getVehicle()==mine[0]&&mine[0].position().distanceTo(islandPlace(b,pastIsland))<.1,"and its rider is set down on the grave past the lids, still on it: "+where(b,mine[0]));
+            })
+            // All of it goes, and then it is whole again.
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.runGone(b)==rows&&!runRowThere(l,b,rows-1),"waiting for all of the run to have gone: "+BikeNightHollow.runGone(b)))
+            .thenWaitUntil(()->h.assertTrue(!BikeNightHollow.runGoing(b)&&BikeNightHollow.runGone(b)==0&&runRowThere(l,b,0)&&runRowThere(l,b,rows-1),"waiting for the run to be whole again"));
+        // The Comet: over it.
+        q=longRide(q,h,f,p,mine,1,far,t,behind)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightHollow.fell(p[1])==0&&p[1].getVehicle()==mine[1]&&far[1]>=rows-2&&behind[0],"the Comet stayed ahead of it the whole way, and it gave way behind: furthest row "+far[1]);
+                h.assertTrue(BikeNightHollow.island(p[1])==foot,"and the long way's foot is its rider's island");
+            })
+            .thenWaitUntil(()->h.assertTrue(!BikeNightHollow.runGoing(b)&&BikeNightHollow.runGone(b)==0&&runRowThere(l,b,0),"waiting for the run to be whole again"));
+        // The Rattler, with its card held from the first row.
+        longRide(q,h,f,p,mine,2,far,t,behind)
+            .thenExecute(()->h.assertTrue(BikeNightHollow.fell(p[2])==0&&p[2].getVehicle()==mine[2]&&far[2]>=rows-2&&behind[0],"the Rattler in its burst stayed ahead of it too: furthest row "+far[2]))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_long") public static void hollowLongDone(ServerLevel l){done();}
 }

@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -250,6 +250,58 @@ It failed twice before it passed, on the two things above.
   saddle is the owner's to judge. A Hopper that lets go more than about a block early meets the ledge's face.
 - A bike that comes to rest still looks a block up for ground, so a bike thrown at a ledge can be stood on it; in the
   Hollow it is laid by its rider when they are set down. Elsewhere (a low wall in the town) it is as it was.
+
+## 0.4.497: the long way
+
+The proposal: "long: a run only the Comet's top speed carries".
+
+**Where.** West of the vine. Its head lies against the west side of the grave past the lids, level with it. From
+there a run of coffin lids, two wide and twenty-eight rows long, goes straight and level to where the stairs begin,
+past everything the vine does: up three blocks, two blocks east, down again. Past the run, three rows of steps up to
+its foot, which is against the stairs and level with their second pair. Nothing of it is within a block of the vine
+or of the gap between the vine and the stairs, so it is no way round anything on the plain way.
+
+**The run gives way.** It is whole and still until somebody is on it (a bike on the ground there, or somebody on
+their feet). Six ticks later it begins to go from its near end, and goes at 0.4 of a row a tick. A bike is pedalled
+at 0.32 and no faster; the Comet at 0.46; the Rattler goes 0.48 while its card has it. So the Comet stays ahead of it,
+the Rattler does if its rider lets the card take it from the first row, and any other bike has the rows go from under
+it partway along (by these numbers about a third of the way; the case asks only that it is between the fourth
+row and the twenty-second). All of the run goes, whoever is or is not still on it. Five seconds after the last
+row it is whole again. Somebody who goes down with it is set down on the grave past the lids: its head is too short
+to be an island, and lids never are.
+
+**It is the Rattler's way as well as the Comet's.** The proposal pairs the Rattler with the high gap; its burst is
+speed (0.4.496).
+
+**The course is shared**, so the run is: it goes for everybody at once. Two Comets together both get over. Somebody
+who arrives while it is going, or gone, waits for it or takes the vine.
+
+One sound, subtitled "Lids fall away" (40 cues); mist comes up where each row went.
+
+### Cases
+
+One (85 in the namespace); the islands' case knows the long way's one. Where it is and what it is made of, that it
+gives way faster than a bike is pedalled and slower than the Comet or the Rattler's burst, and that no bike but the
+Comet is pedalled that fast. Then three riders, one after another, each from the head of the run pedalling as hard
+as a rider can:
+
+- **the Lamp** has the run go from under it partway along and is set down on the grave past the lids, still on it;
+  all of the run goes, and then it is whole again;
+- **the Comet** stays ahead of it the whole way, with the rows it first rode over gone behind it, and is on the long
+  way's foot;
+- **the Rattler**, its card held from the first row, does the same.
+
+Its first run failed on the case's own timing: it asked which island the Comet's rider had in the tick the bike
+reached the foot, before the night had looked.
+
+### Not built, and not seen
+
+- The tight, steep and dark ways; what jumps out; what chases; the way out.
+- Not ridden by a person. The six ticks, the 0.4, and the five seconds are first guesses that the cases pass with.
+  How much lead a person on a Comet has from a slow start, and whether a Rattler's burst lasts the run for somebody
+  who starts it late, are the owner's to try.
+- A bike laid by its rider is never laid on the run. A bike left standing on the run when it goes is left in the air
+  where it stood until its rider is set down and it is laid by them.
 
 ## The place
 
