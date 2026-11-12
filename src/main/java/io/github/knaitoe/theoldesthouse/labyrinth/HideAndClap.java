@@ -262,9 +262,32 @@ public final class HideAndClap {
         });
     }
 
+    /**
+     * Whether the wall can take its frames: the chunk each hangs in is whole, with its entities in. They hang twelve blocks from the
+     * room's base, as often as not in the next chunk.
+     *
+     * <p>Run 1558: only the base's chunk was asked. In a copy just made, the base's chunk had its entities and the wall's did not:
+     * the frames were hung into a chunk that was not in yet, where they could not be seen or taken down again, and the room was
+     * neither owed its blindfold nor had it. Nobody can begin the game without it.
+     */
+    private static boolean wallLoaded(ServerLevel level, BlockPos base) {
+        for (BlockPos rel : new BlockPos[] {BlockPos.ZERO, NOTE_FRAME, BLINDFOLD_FRAME}) {
+            BlockPos at = base.offset(rel);
+            if (!level.hasChunkAt(at) || !level.areEntitiesLoaded(ChunkPos.asLong(at))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether a room is still owed its frames (the wall's chunk was not in when they were last tried). */
+    public static boolean framesOwed(int copy) {
+        return PENDING.contains(copy);
+    }
+
     /** The frames on the wall: the note always, the blindfold until the game has been won in this room. */
     private static void placeEntitiesIfLoaded(ServerLevel level, BlockPos base, LabyrinthData data, int copy) {
-        if (!PENDING.contains(copy) || !level.areEntitiesLoaded(ChunkPos.asLong(base))) {
+        if (!PENDING.contains(copy) || !wallLoaded(level, base)) {
             return;
         }
         PENDING.remove(copy);
@@ -275,11 +298,18 @@ public final class HideAndClap {
 
         ItemFrame noteFrame = new ItemFrame(level, base.offset(NOTE_FRAME), Direction.SOUTH);
         noteFrame.setItem(note(), false);
-        level.addFreshEntity(noteFrame);
+        boolean hung = level.addFreshEntity(noteFrame) && level.getEntity(noteFrame.getUUID()) == noteFrame;
+        ItemFrame blindfoldFrame = null;
         if (!completed(data, copy)) {
-            ItemFrame blindfoldFrame = new ItemFrame(level, base.offset(BLINDFOLD_FRAME), Direction.SOUTH);
+            blindfoldFrame = new ItemFrame(level, base.offset(BLINDFOLD_FRAME), Direction.SOUTH);
             blindfoldFrame.setItem(new ItemStack(LabyrinthRegistry.BLINDFOLD.get()), false);
-            level.addFreshEntity(blindfoldFrame);
+            hung &= level.addFreshEntity(blindfoldFrame) && level.getEntity(blindfoldFrame.getUUID()) == blindfoldFrame;
+        }
+        // A frame the world did not take, or took where it cannot be reached, is taken back and the room is owed them still.
+        if (!hung) {
+            noteFrame.discard();
+            if (blindfoldFrame != null) blindfoldFrame.discard();
+            PENDING.add(copy);
         }
     }
 

@@ -619,7 +619,10 @@ public final class CoopTests {
             })
             .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),place,1),"a copy of the room stands ready"))
             .thenExecute(()->f.chunks.hold(f.in,IndianLakeRooms.bounds(SceneInstances.base(server,place,1),place)))
-            .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&clothOnWall.test(SceneInstances.base(server,place,1)),"the copy is resident, with its own blindfold on the wall"))
+            // Run 1558: the copy's blindfold was hung into a chunk that was not in yet, and was neither on the wall nor owed to it.
+            .thenWaitUntil(()->{var room=SceneInstances.base(server,place,1);
+                h.assertTrue(clothOnWall.test(room)||HideAndClap.framesOwed(1),"the copy's blindfold is on its wall or still owed to it, never neither");
+                h.assertTrue(f.chunks.ready()&&clothOnWall.test(room),"the copy is resident, with its own blindfold on the wall");})
             .thenExecute(()->{
                 var chosen=SceneInstances.enter(second,place);var room=SceneInstances.base(server,place,1);
                 h.assertTrue(chosen.door()!=null&&chosen.copy()==1,"the second reader's door opens onto the copy");
