@@ -1,0 +1,76 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/pell/post",
+    "t": "the_oldest_house:block/pell/tin",
+    "f": "the_oldest_house:block/pell/tin_front",
+    "particle": "the_oldest_house:block/pell/tin"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        10,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        10,
+        5
+      ],
+      "to": [
+        12,
+        15,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

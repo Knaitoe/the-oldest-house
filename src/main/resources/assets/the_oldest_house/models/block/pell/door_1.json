@@ -1,0 +1,67 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "o": "the_oldest_house:block/pell/door_inner_0",
+    "i": "the_oldest_house:block/pell/door_inner_0",
+    "particle": "the_oldest_house:block/pell/door_inner_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        2,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#o",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#o",
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#o",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#o",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "g": "the_oldest_house:block/pell/paling_gate",
+    "t": "the_oldest_house:block/pell/post",
+    "particle": "the_oldest_house:block/pell/paling_gate"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        1,
+        7
+      ],
+      "to": [
+        16,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            0,
+            0,
+            16,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            0,
+            0,
+            16,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

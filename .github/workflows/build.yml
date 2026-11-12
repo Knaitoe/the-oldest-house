@@ -81,6 +81,7 @@ jobs:
           python3 tools/draw_borrasca_homes.py --check
           python3 tools/draw_borrasca_dog.py --check
           python3 tools/draw_bike_night_art.py --check
+          python3 tools/draw_pell_house.py --check
           python3 tools/draw_calder_art.py --check
           python3 tools/draw_calder_signs.py --check
           python3 tools/draw_calder_town_art.py --check
@@ -2333,6 +2334,42 @@ jobs:
         with:
           name: bike-night-diagnostics-${{ github.sha }}
           path: build/bike-night-native.log
+
+  pell-house-gameplay:
+    needs: quick
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native Pell house, the street, the lot and every door
+        timeout-minutes: 13
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_pell --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/pell-house-native.log
+          python3 - <<'PY_CHECK'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/pell-house-native.log').read_text())
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/PellHouseTests.java').read_text()))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} native Pell house cases passed; the complete suite remains required.')
+          PY_CHECK
+      - name: Upload Pell house diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pell-house-diagnostics-${{ github.sha }}
+          path: build/pell-house-native.log
 
   pinehook-gameplay:
     needs: quick
