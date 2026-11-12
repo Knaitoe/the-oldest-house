@@ -12,6 +12,9 @@ handle, and the brush she paints the line with. The brush is drawn flat, as the 
 hand, upright whichever way she turns, so they are built from the things' own block art (tools/draw_pell_things.py), not drawn here:
 the lantern is the one she sets down on the grass, its globe lit, and the tin is the one from the bench with its wire handle up.
 
+0.4.531 (docs/PELL_HOUSE_MORNING_0_4_531.md): breakfast as June lays it, from above on the same plate: a fried egg and two slices of
+toast.
+
 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md), the owner: "add a little more detail to textures". Still sixteen pixels to the block;
 each thing drawn again with light from the upper left, an outline in a darker shade of its own colour where it stands against
 nothing, four or five tones where there were two, and what it is made of showing: the brush's cushion and bristles, the pan's
@@ -32,12 +35,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
-         'pell_lantern', 'pell_tin', 'pell_paintbrush')
+         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
          'item.the_oldest_house.pell_hairbrush': 'Hairbrush', 'item.the_oldest_house.pell_lantern': 'Lantern',
-         'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush'}
+         'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush',
+         'item.the_oldest_house.pell_breakfast': 'Breakfast'}
 
 
 def blank():
@@ -200,6 +204,57 @@ def scraped():
     for x, y in ((13, 10), (14, 11)):
         dot(im, x, y, '#2f2927')
     dot(im, 12, 11, '#5c524d'); dot(im, 13, 10, '#4f4642')
+    return im
+
+
+def breakfast():
+    """0.4.531: breakfast, laid. A fried egg at the far side: the white spread thin, lit toward the upper left and frilled brown where
+    its edge caught the pan, the yolk standing up out of it with a bright point on it. Two slices of toast at the near side, one half
+    over the other: the crust darker round each, the bread lit along its top and left, butter melted into the top slice. Each throws a
+    little shadow on the plate."""
+    im = plate()
+    egg = set()
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + .5 - 10.4, y + .5 - 5.6
+            if math.hypot(dx, dy * 1.12) <= 2.75 + .35 * math.sin(math.atan2(dy, dx) * 3 + 1):
+                egg.add((x, y))
+    slices = [(2, 6), (4, 9)]
+    toast = [{(x, y) for x in range(x0, x0 + 5) for y in range(y0, y0 + 5)} for x0, y0 in slices]
+    # Shadows on the plate, down and to the right of each.
+    for cells in (egg, *toast):
+        for (x, y) in cells:
+            if (x + 1, y + 1) not in cells and im.getpixel((x + 1, y + 1))[3]:
+                dot(im, x + 1, y + 1, '#d6d0c3')
+    for (x, y) in egg:
+        dx, dy = x + .5 - 10.4, y + .5 - 5.6
+        l = lit(dx, dy)
+        if edge(egg, x, y) and l < .2:
+            dot(im, x, y, '#c99a58' if (x + y) % 2 else '#b9853f')
+        else:
+            dot(im, x, y, '#fdfcf7' if l > .35 else '#f3f0e6' if l > -.3 else '#e2dccd')
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + .5 - 10.0, y + .5 - 5.2
+            if math.hypot(dx, dy) <= 1.45:
+                l = lit(dx, dy)
+                dot(im, x, y, '#ffc85a' if l > .3 else '#f2a92e' if l > -.4 else '#d98a1c')
+    dot(im, 9, 4, '#fff1c4')
+    for i, cells in enumerate(toast):
+        x0, y0 = slices[i]
+        for (x, y) in cells:
+            if x in (x0, x0 + 4) or y in (y0, y0 + 4):
+                tone = '#a8692f' if x == x0 or y == y0 else '#7f4a1e'
+            else:
+                toward = -(x - x0 - 2) - (y - y0 - 2)
+                tone = '#ebbd70' if toward >= 2 else '#dca456' if toward >= 0 else '#c98d42'
+            dot(im, x, y, tone)
+    # Butter melted into the top slice, and a crumb or two.
+    for x, y in ((6, 11), (7, 11), (6, 12)):
+        dot(im, x, y, '#f6d98a')
+    dot(im, 7, 12, '#f1cb6e')
+    for x, y in ((9, 13), (3, 12)):
+        dot(im, x, y, '#c48a45')
     return im
 
 
@@ -423,13 +478,13 @@ def models():
     return {'pell_cane': cane_model, 'pell_folder': folder_model, 'pell_plate': flat('pell_plate'), 'pell_dinner': flat('pell_dinner'),
             'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
             'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
-            'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld')}
+            'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
-              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush()}
+              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own.
     built = {'pell_lantern', 'pell_tin'}

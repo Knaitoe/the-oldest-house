@@ -24,4 +24,15 @@ public final class PellClient {
     public static long current(){return time<0?-1:time+(long)rate*(ticks-at);}
     /** At the Pell house (mode 22), its own hour; anywhere else, what it would be. */
     public static long time(Level level,long ordinary){return time>=0&&NovelSceneClient.clockMode(level)==22?current():ordinary;}
+
+    /** 0.4.531: the game lays a sleeper at a bed's height, and the camp bed's canvas is lower by this much, so a reader asleep on it is
+     *  drawn lowered onto it (as the park's swing tilts a reader's body, SwingClient). */
+    private static final float CAMP_BED_DROP=2/16F;
+    private static final java.util.Set<net.minecraft.world.entity.player.Player> LOWERED=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST) public static void lower(net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre e){
+        var p=e.getEntity();var at=p.getSleepingPos().orElse(null);
+        if(at==null||!io.github.knaitoe.theoldesthouse.labyrinth.PellThing.is(p.level().getBlockState(at),io.github.knaitoe.theoldesthouse.labyrinth.PellThing.Kind.CAMP_BED))return;
+        e.getPoseStack().pushPose();e.getPoseStack().translate(0,-CAMP_BED_DROP,0);LOWERED.add(p);
+    }
+    @SubscribeEvent public static void raise(net.neoforged.neoforge.client.event.RenderPlayerEvent.Post e){if(LOWERED.remove(e.getEntity()))e.getPoseStack().popPose();}
 }

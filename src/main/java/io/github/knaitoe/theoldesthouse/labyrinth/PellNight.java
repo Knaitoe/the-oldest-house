@@ -43,6 +43,10 @@ import net.minecraft.world.phys.Vec3;
  * is to come out. Nobody is hurt and nothing is forced.
  *
  * <p>Tilly's singing through the wall reaches only a reader playing Tilly, and no reader plays her yet; it waits for that.
+ *
+ * <p>0.4.531 (PellMorning): a reader asleep on the camp bed is woken at eleven by the back door's lock as June goes out. A reader
+ * asleep sees nothing and Callum does not copy them; while every reader at the house is asleep, June's rounds are done at once. The
+ * small hours go on to the morning.
  */
 public final class PellNight {
     private PellNight(){}
@@ -126,8 +130,10 @@ public final class PellNight {
             case 1->{
                 if(!still)break;
                 if(h.waypoint==0){
-                    // Inside the back door: the lock turned back and the door opened, and out onto the step.
+                    // Inside the back door: the lock turned back and the door opened, and out onto the step. 0.4.531: it wakes anyone
+                    // asleep in the garage.
                     PellVisit.unlock(b,PellSite.BACK_DOOR);lock(l,b,PellSite.BACK_DOOR);
+                    PellMorning.wakeAll(l,b,h,here,PellTexts.WOKEN_BY_LOCK,"WokenByTheLock");
                     if(!PellSite.open(l,b,PellSite.BACK_DOOR))PellHouse.toggle(l,b,PellSite.BACK_DOOR);
                     PellVisit.go(h,J,-1,0,v(8.5,-72.4),BACK_STEP);h.waypoint=1;break;
                 }
@@ -228,7 +234,8 @@ public final class PellNight {
                     }
                 }
             }
-            default->{}
+            // 0.4.531: the small hours, first light, and the morning.
+            default->PellMorning.tick(l,b,h,june,here,now);
         }
         callum(l,b,h,here);
         smears(l,b,h,june,here,now);
@@ -263,7 +270,8 @@ public final class PellNight {
         if(h.paintedAt==0){h.paintedAt=now;june.gesture(PellPeople.PAINT);}
         long t=now-h.paintedAt;
         if(t%STROKE==0){var at=b.offset(x,0,PellSite.LINE_N);l.playSound(null,at.getX()+.5,at.getY()+.1,at.getZ()+.5,PellRegistry.PAINT.get(),SoundSource.NEUTRAL,.8F,.9F+(float)((now/STROKE)%3)*.08F);}
-        if(t<STROKES)return;
+        // 0.4.531: with every reader asleep, done at once.
+        if(t<STROKES&&!h.hurried)return;
         paint(l,b,x,PellLine.LAST);
         h.paintedAt=0;h.feetSaid=-1;
         if(h.cell<CELLS.length)h.cell++;
@@ -360,7 +368,8 @@ public final class PellNight {
         int C=PellPeople.CALLUM;var c=PellPeople.find(l,b,C);if(c==null)return;
         float body=CALLUM_LINE.look();
         if(!h.callumOut){
-            if(h.step<TO_SHED)return;
+            // 0.4.531: once it is light he does not go out again.
+            if(h.step<TO_SHED||h.dawned)return;
             var spot=PellPeople.world(b,CALLUM_LINE);
             if(LiteraryVignettes.watched(l,c.getEyePosition())||LiteraryVignettes.watched(l,spot.add(0,c.getEyeHeight(),0)))return;
             for(var p:here)if(p.position().distanceToSqr(spot)<1.5*1.5)return;
@@ -370,7 +379,7 @@ public final class PellNight {
         }
         h.moving[C]=true;c.setYRot(body);c.setYBodyRot(body);
         ServerPlayer near=null;double best=COPY*COPY;
-        for(var p:here){if(!p.isAlive()||p.isSpectator())continue;double d=p.distanceToSqr(c);if(d<best){best=d;near=p;}}
+        for(var p:here){if(!p.isAlive()||p.isSpectator()||p.isSleeping())continue;double d=p.distanceToSqr(c);if(d<best){best=d;near=p;}}
         if(near==null){
             h.copied=0;h.copyOf=null;c.gesture(0);c.setXRot(0);c.setYHeadRot(Mth.approachDegrees(c.getYHeadRot(),body,6));return;
         }
@@ -416,7 +425,8 @@ public final class PellNight {
         var callum=h.callumOut?PellPeople.find(l,b,PellPeople.CALLUM):null;
         if(!out&&callum==null)return;
         for(var p:here){
-            if(!p.isAlive()||p.isSpectator())continue;
+            // 0.4.531: asleep, a reader sees nothing.
+            if(!p.isAlive()||p.isSpectator()||p.isSleeping())continue;
             var own=PellHouse.own(p);boolean changed=false;
             if(out&&sees(p,june.getEyePosition(),SEE)){
                 changed|=mark(own,"SawJuneOut");
