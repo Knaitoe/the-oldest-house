@@ -279,6 +279,7 @@ public final class BikeNightBullies {
             if(tully!=null){say(tully,0,BikeNightTexts.GET_THEM);if(!k.b[0].riding)gesture(n,k.b[0],tully,POINT,30);}
             BikeNightGus.sawAgain(n,BikeNightTexts.GUS_RUN);
             for(var p:here){BikeNight.cue(p,BikeNightTexts.GET_THEM_CUE);var own=BikeNight.own(p);if(!own.getBoolean("GetThem")){own.putBoolean("GetThem",true);BikeNight.save(p,own);}}
+            BikeNight.together(here);
             return;
         }
         boolean up=true;
