@@ -70,6 +70,7 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
         for(var look:new BikeLook[]{BORRASCA})look.each(to);
         for(var look:NIGHT.values())look.each(to);
         for(var look:RUST.values())look.each(to);
+        ChainedBikeRenderer.register(to);
         for(var look:PACK)look.each(to);
     }
     private void each(java.util.function.Consumer<ModelResourceLocation> to){to.accept(frame);to.accept(frontWheel);to.accept(backWheel);to.accept(cranks);if(glow!=null)to.accept(glow);}
@@ -78,7 +79,11 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
      * The bike standing at the pose's origin, its front toward yaw, leaning that far over (one is just before it goes), its nose up by
      * pitch (radians), having rolled that many blocks, its cranks turned. With {@code lit}, the lamp's lens is drawn over, full bright.
      */
-    public void draw(PoseStack pose,VertexConsumer out,float yaw,float lean,float pitch,float rolled,float crank,int light,boolean lit){
+    public void draw(PoseStack pose,VertexConsumer out,float yaw,float lean,float pitch,float rolled,float crank,int light,boolean lit){draw(pose,out,yaw,lean,pitch,rolled,crank,light,lit,false);}
+    /** 0.4.511: how a buckled front wheel is drawn: turned out of the bike's plane about its hub, and tipped, in degrees. */
+    public static final float BENT_TURN=26,BENT_TIP=13;
+    /** The same, and with {@code bent} its front wheel buckled (ChainedBike). */
+    public void draw(PoseStack pose,VertexConsumer out,float yaw,float lean,float pitch,float rolled,float crank,int light,boolean lit,boolean bent){
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));
         pose.mulPose(Axis.XP.rotationDegrees(lean*RiddenBike.LEAN_DEGREES));
@@ -87,7 +92,10 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
         pose.translate(-.5,0,-.5);
         part(pose,out,frame,light);
         turned(pose,out,backWheel,backX,backY,rolled/(backRadius/16F),light);
-        turned(pose,out,frontWheel,frontX,frontY,rolled/(frontRadius/16F),light);
+        if(bent){
+            pose.pushPose();pose.translate(frontX/16F,frontY/16F,.5F);pose.mulPose(Axis.YP.rotationDegrees(BENT_TURN));pose.mulPose(Axis.XP.rotationDegrees(BENT_TIP));
+            pose.translate(-.5F,-.5F,-.5F);part(pose,out,frontWheel,light);pose.popPose();
+        }else turned(pose,out,frontWheel,frontX,frontY,rolled/(frontRadius/16F),light);
         turned(pose,out,cranks,axleX,axleY,crank,light);
         if(lit&&glow!=null)part(pose,out,glow,LightTexture.FULL_BRIGHT);
         pose.popPose();

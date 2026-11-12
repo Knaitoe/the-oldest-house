@@ -88,7 +88,7 @@ operator cases. They pass.
   `docs/BIKE_NIGHT_STAYS_0_4_510.md`.)
 - **The headstone** with a caught reader's name at the end of the old row in every copy of the town, and their bike
   rusting against it (built in 0.4.510); and **the bike chained to a school fence** in a later hall for somebody
-  caught in the town.
+  caught in the town (built in 0.4.511: `docs/BIKE_NIGHT_CHAINED_0_4_511.md`).
 - Somebody who was caught and then walks out by the door they came in by simply leaves. Nothing is said to them.
 - Nobody has played the night from the park to the lane. Each part has its own cases; the whole has none.
 - The door is the House's own way-on door, in brick. Whether the lane wants a door of its own is the owner's to see.

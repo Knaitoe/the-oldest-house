@@ -6300,6 +6300,80 @@ public final class BikeNightTests {
     }
     @AfterBatch(batch="stone_row") public static void stoneRowDone(ServerLevel l){done();}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.511, in a later hall
+    /** A hall of the case's own: its floor, two walls and a roof, {@code wide} clear cells across (odd), running north from a door at {@code o} that faces south. */
+    private static LabyrinthData.Door hall(ServerLevel l,BlockPos o,int wide,int from,int to,String id){
+        var stone=Blocks.STONE.defaultBlockState();var air=Blocks.AIR.defaultBlockState();int half=wide/2;
+        for(int z=-to;z<=-from;z++)for(int x=-half-1;x<=half+1;x++)for(int y=-1;y<=3;y++)l.setBlock(o.offset(x,y,z),y<0||y>2||Math.abs(x)>half?stone:air,3);
+        return new LabyrinthData.Door(id,l.dimension(),o,Direction.SOUTH,LabyrinthData.DEALT,false);
+    }
+    @GameTest(template="empty",batch="chained_hall",timeoutTicks=3000)
+    public static void theBikeOfAReaderCaughtInTheTownTurnsUpInALaterHallChainedToAFenceForThemAloneUntilTheyHaveSeenIt(GameTestHelper h){
+        var f=park(h);var l=f.in;final ServerPlayer[] p={null,null};final ChainedBike[] bike={null};final int[] t={0};
+        var o=f.origin.offset(420,40,420);var narrow=o.offset(40,0,0);var box=new AABB(o).inflate(60,8,30);
+        final LabyrinthData.Door[] door={null,null};
+        LabyrinthPlace gray=java.util.Arrays.stream(LabyrinthPlace.values()).filter(q->q.kind()==LabyrinthPlace.Kind.GRAY).findFirst().orElseThrow();
+        java.util.function.Supplier<List<ChainedBike>> all=()->l.getEntitiesOfClass(ChainedBike.class,box,Entity::isAlive);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the halls' ground is resident"))
+            .thenExecute(()->{
+                door[0]=hall(l,o,5,0,22,"case/chained");door[1]=hall(l,narrow,1,0,22,"case/narrow");
+                p[0]=NativeTestPlayers.survival(h,"chained_out");p[1]=NativeTestPlayers.survival(h,"chained_other");f.players.add(p[0]);f.players.add(p[1]);
+                for(var q:p){q.teleportTo(l,o.getX()+.5,o.getY(),o.getZ()-1.5,180,0);q.setNoGravity(true);q.setDeltaMovement(Vec3.ZERO);}
+                // The first was caught in the town on the Rattler, and nobody carried them: they are out. The other was not.
+                var own=f.own(p[0],P);own.putBoolean("Caught",true);own.putBoolean("Out",true);own.putString("Bike","rattler");LiteraryVignettes.save(f.data(),p[0].getUUID(),P,own);
+                h.assertTrue(!BikeNight.dealable(f.data(),p[0].getUUID())&&BikeNight.dealable(f.data(),p[1].getUUID()),"the night is never dealt again to the one who is out");
+                // Where it would stand, in a hall with room: by the first two cells of wall past the door's own stretch, on the side.
+                var spot=BikeNightHalls.spot(l,door[0]);
+                h.assertTrue(spot!=null&&spot.out()==Direction.WEST&&Math.abs(spot.at().x-(o.getX()+3))<.01&&Math.abs(spot.at().y-o.getY())<.01&&Math.abs(spot.at().z-(o.getZ()-BikeNightHalls.FROM))<.01,"against the east wall, six steps in: "+spot);
+                h.assertTrue(BikeNightHalls.spot(l,door[1])==null,"and nowhere in a way one cell wide: it is never put in the way through");
+                // A door in that wall, where it would stand: it stands past it.
+                l.setBlock(o.offset(3,0,-BikeNightHalls.FROM),Blocks.OAK_DOOR.defaultBlockState(),3);
+                var past=BikeNightHalls.spot(l,door[0]);
+                h.assertTrue(past!=null&&!(past.out()==Direction.WEST&&past.at().z>o.getZ()-BikeNightHalls.FROM-1.4),"never across a door in the wall: "+past);
+                l.setBlock(o.offset(3,0,-BikeNightHalls.FROM),Blocks.STONE.defaultBlockState(),3);
+                // The first crossings after the night: nothing yet. And nothing in a place that is not a plain hall.
+                for(int i=1;i<BikeNightHalls.WAIT;i++){BikeNightHalls.arrived(p[0],gray,door[0]);BikeNightHalls.arrived(p[1],gray,door[0]);}
+                h.assertTrue(all.get().isEmpty(),"not in the first halls after the night");
+                BikeNightHalls.arrived(p[0],P,door[0]);
+                h.assertTrue(all.get().isEmpty()&&f.own(p[0],P).getInt("OutCrossings")==BikeNightHalls.WAIT,"and not in a place that is a scene of its own, however many crossings it has been");
+                // Then a plain hall.
+                BikeNightHalls.arrived(p[0],gray,door[0]);BikeNightHalls.arrived(p[1],gray,door[0]);
+                var there=all.get();h.assertTrue(there.size()==1,"it is in the next plain hall, once: "+there.size());bike[0]=there.get(0);
+                h.assertTrue(bike[0].ownedBy(p[0].getUUID())&&bike[0].broadcastToPlayer(p[0])&&!bike[0].broadcastToPlayer(p[1])&&bike[0].make()==NightBike.Make.RATTLER,"the Rattler, and theirs alone: nobody else is sent it");
+                h.assertTrue(bike[0].position().distanceTo(spot.at())<.01&&Math.abs(Mth.wrapDegrees(bike[0].getYRot()-Direction.WEST.toYRot()))<.5&&!bike[0].canBeCollidedWith()&&bike[0].isPickable(),"at the foot of the wall, facing out of it, in nobody's way: "+bike[0].position());
+                // They stand by the door with their back to it.
+                p[0].setYRot(0);p[0].setXRot(0);hush(p[0]);t[0]=0;
+            })
+            .thenWaitUntil(()->{p[0].setYRot(0);h.assertTrue(!f.own(p[0],P).getBoolean("ChainedSeen")&&bike[0].isAlive(),"not looked at, it is still owed");h.assertTrue(++t[0]>=30,"waiting a second and a half with their back to it");})
+            .thenExecute(()->{
+                // On into another hall without having looked: the one behind them goes, and it is in the next.
+                BikeNightHalls.arrived(p[0],gray,door[0]);
+                var there=all.get();h.assertTrue(there.size()==1&&there.get(0)!=bike[0]&&!bike[0].isAlive(),"one at a time: "+there.size());bike[0]=there.get(0);
+                // They walk up to it and look at it.
+                p[0].teleportTo(l,o.getX()+.5,o.getY(),o.getZ()-BikeNightHalls.FROM+.5,0,0);p[0].lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,bike[0].position().add(0,.6,0));
+            })
+            .thenWaitUntil(()->{p[0].lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,bike[0].position().add(0,.6,0));
+                h.assertTrue(heard(p[0],String.format(BikeNightTexts.CHAINED,"the Rattler"))&&f.own(p[0],P).getBoolean("ChainedSeen")&&sounded(p[0],"park.chain"),"waiting for them to be told what it is");})
+            .thenExecute(()->{
+                h.assertTrue(BikeNightTexts.CHAINED.contains("front wheel is bent")&&!heard(p[1],"front wheel"),"they are told the chain and the wheel, and nobody else is told anything");
+                hush(p[0]);bike[0].interact(p[0],net.minecraft.world.InteractionHand.MAIN_HAND);bike[0].interact(p[1],net.minecraft.world.InteractionHand.MAIN_HAND);
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.CHAINED_HAND),"a hand on it is told the chain is tight"))
+            .thenExecute(()->{
+                h.assertTrue(!heard(p[1],BikeNightTexts.CHAINED_HAND),"and somebody else's hand is told nothing");
+                // Found, it turns up nowhere again.
+                int had=f.own(p[0],P).getInt("OutCrossings");
+                for(int i=0;i<4;i++)BikeNightHalls.arrived(p[0],gray,door[0]);
+                h.assertTrue(all.get().size()==1&&all.get().get(0)==bike[0]&&f.own(p[0],P).getInt("OutCrossings")==had,"once found it is not put anywhere again: "+all.get().size());
+                // They go, and it goes after them.
+                p[0].teleportTo(l,o.getX()+.5,o.getY(),o.getZ()+ChainedBike.FAR+10,0,0);t[0]=0;
+            })
+            .thenWaitUntil(()->h.assertTrue(!bike[0].isAlive(),"waiting for it to go once they have left it"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="chained_hall") public static void chainedHallDone(ServerLevel l){done();}
+
     // ------------------------------------------------------------------------------------------------ 0.4.508, out of it
     /** How many copies of the night's account somebody is carrying. */
     private static int accounts(ServerPlayer p){

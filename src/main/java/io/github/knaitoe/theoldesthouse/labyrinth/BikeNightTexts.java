@@ -203,6 +203,12 @@ public final class BikeNightTexts {
     public static final String GUS_CHURCH="Not the graveyard. Anywhere else. I told you the story!";
     /** 0.4.490, in the cemetery: coming in after his friend, and past its first bank. At the row of small stones he says nothing. */
     public static final String GUS_YARD="We're in the graveyard. We are in the graveyard.",GUS_YARD_ON="Stay on the path. That's all I'm saying. Stay on the path.";
+    /**
+     * 0.4.511: what somebody who was caught in the town is told of their bike when it turns up in a later hall (the make's name
+     * goes in), and what a hand on it is told after that.
+     */
+    public static final String CHAINED="It is %s. A chain goes round its frame and through the fence, and the front wheel is bent. The padlock is the one off the park gate.";
+    public static final String CHAINED_HAND="The chain is tight, and the padlock is shut.";
     /** 0.4.509: Gus, with his cap down off the back gate's post and on him again; and the cap, looked at where it hangs. */
     public static final String[] GUS_CAP_BACK={"That's my cap. That's my mom's writing in it. So it's mine.","Tully had it on. I'm not asking."};
     public static final String HUNG_CAP="A ball cap, on a nail in the gatepost. There is a name inside the band, in pen: Gus.";

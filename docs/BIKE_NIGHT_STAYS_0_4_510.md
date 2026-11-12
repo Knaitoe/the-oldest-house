@@ -84,5 +84,5 @@ One new case, 98 in the Bike night namespace, and the case in which the Hollow h
   it whole, and the face of the stone only ever shows the line of a name, as the row's do.
 - **Dawn** is the sky and the light only. The town's lamps, people and cars are as they are for everybody.
 - Nobody has seen the dawn in a client: the cases see that the reader is told, and the proof does not draw skies.
-- Still not built: the keepsake (the owner's call), and the bike chained to a school fence for somebody caught in the
-  town.
+- Still not built: the keepsake (the owner's call). (The bike chained to a school fence for somebody caught in the
+  town: 0.4.511, `docs/BIKE_NIGHT_CHAINED_0_4_511.md`.)
