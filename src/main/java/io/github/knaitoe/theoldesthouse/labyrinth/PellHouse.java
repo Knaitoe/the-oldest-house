@@ -68,13 +68,16 @@ public final class PellHouse {
         // A neighbour's door: nobody answers it.
         if(!PellSite.onLot(new net.minecraft.world.phys.Vec3(door.getX()+.5,0,door.getZ()+.5))){cue(p,PellTexts.NOBODY_HOME);return true;}
         if(door.equals(PellSite.JUNE_DOOR)){cue(p,PellTexts.JUNES_DOOR);return true;}
-        if(door.equals(PellSite.SHED_DOOR)){cue(p,PellTexts.PADLOCKED);return true;}
+        // 0.4.530: open at night while June has the tin out, its padlock hangs on the hasp; a hand does not shut it.
+        if(door.equals(PellSite.SHED_DOOR)){cue(p,PellSite.open(l,b,door)?PellTexts.SHED_OPEN:PellTexts.PADLOCKED);return true;}
         if(door.equals(PellSite.POOL_GATE)){cue(p,PellTexts.POOL_GATE);return true;}
         if(door.equals(PellSite.SLIDER.west())){cue(p,PellTexts.FIXED_GLASS);return true;}
         // 0.4.527: a door June has locked. From inside, its lock turns and it opens; from outside it does not.
         if(PellVisit.locked(b,door)){
             if(!PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){
-                l.playSound(null,b.offset(door),SoundEvents.WOODEN_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.3F,1.8F);cue(p,PellTexts.locked(door));return true;
+                // 0.4.530: while June is out with the tin she has locked the back door behind her with her key.
+                l.playSound(null,b.offset(door),SoundEvents.WOODEN_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.3F,1.8F);
+                cue(p,door.equals(PellSite.BACK_DOOR)&&PellNight.juneOut(l,b)?PellTexts.BACK_LOCKED_OUT:PellTexts.locked(door));return true;
             }
             PellVisit.unlock(b,door);l.playSound(null,b.offset(door),PellRegistry.LOCK.get(),SoundSource.BLOCKS,.6F,1.1F);
         }

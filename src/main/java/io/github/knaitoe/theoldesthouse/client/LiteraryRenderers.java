@@ -325,6 +325,28 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.FOLDER->{rightArm.xRot=-.78F;rightArm.yRot=-.5F;rightArm.zRot=0;leftArm.xRot=-.7F;leftArm.yRot=.56F;leftArm.zRot=0;}
                 // 0.4.527: asleep, lying along the bed (CastRenderer.setupRotations lays the body down).
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.ASLEEP->asleep(age);
+                // 0.4.530: June at the line at night, kneeling up on the grass and bent forward from the hips over the paint, her left
+                // hand flat on the grass, her right drawing the brush along the line and back, her head down to her work.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.PAINT->{
+                    float stroke=net.minecraft.util.Mth.sin(age*.32F);
+                    // The hips stand a thigh above the ground over the knees; the shins lie on the grass behind them, inside the
+                    // ground where a knee rests (a leg is one piece, so it cannot fold). The body bends from the hips, not the neck:
+                    // its pivot is set back along the lean so its lower end stays on them, and the head and shoulders go forward with it.
+                    float lean=1F,c=net.minecraft.util.Mth.cos(lean),s=net.minecraft.util.Mth.sin(lean),hips=18;
+                    leftLeg.y=rightLeg.y=hips;leftLeg.z=rightLeg.z=0;leftLeg.xRot=rightLeg.xRot=-.1F;leftLeg.yRot=-.05F;rightLeg.yRot=.05F;leftLeg.zRot=rightLeg.zRot=0;
+                    body.xRot=lean;body.y=hips-12*c;body.z=-12*s;
+                    head.y=body.y;head.z=body.z;head.xRot=lean+.25F;head.yRot=0;head.zRot=0;
+                    leftArm.y=rightArm.y=body.y+2*c;leftArm.z=rightArm.z=body.z+2*s;
+                    // The brush hand a little behind straight down, so the brush held in it points down onto the line; it sweeps
+                    // along the line and back.
+                    rightArm.xRot=.25F+stroke*.05F;rightArm.yRot=stroke*.3F;rightArm.zRot=.04F;
+                    leftArm.xRot=-.15F;leftArm.yRot=0;leftArm.zRot=-.12F;
+                }
+                // 0.4.530: Callum crouched, as a reader crouches, a beat late: the game's own crouch.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.CROUCH->{
+                    body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=leftLeg.z=4;rightLeg.y=leftLeg.y=12.2F;
+                    head.y=4.2F;body.y=3.2F;leftArm.y=rightArm.y=5.2F;
+                }
                 default->{}
             }
             hat.copyFrom(head);

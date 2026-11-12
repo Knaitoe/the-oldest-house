@@ -1290,6 +1290,47 @@ def tin_lid_line():
     return im
 
 
+def tin_paint():
+    """0.4.530: the open tin from above, standing on the grass beside June while she paints (PellNight). Its top is the square x and z
+    4 to 10 of its cell: the rim round it, lit toward the upper left and dark round the lower right; the paint inside, wet, with the
+    light on it; and paint wiped over the rim on one side where the brush is drawn across it."""
+    im = metal('#b8bcc0', 52331)
+    for y in range(4, 11):
+        for x in range(4, 11):
+            if x in (4, 10) or y in (4, 10):
+                dot(im, x, y, '#dde1e4' if x + y < 14 else '#8e9296')
+            else:
+                dot(im, x, y, '#efede6')
+    for x, y in ((6, 6), (7, 6), (6, 7)):
+        dot(im, x, y, '#ffffff')
+    for x, y in ((8, 8), (9, 8), (8, 9), (9, 9)):
+        dot(im, x, y, '#dad7cd')
+    for x in range(6, 9):
+        dot(im, x, 4, '#f4f2ea')
+    return im
+
+
+def lantern_body():
+    """0.4.530: June's battery lantern, its base and cap: moulded plastic, the top edge of each catching the light, and the base's switch
+    on its front. The base's side is rows 14 and 15 of the picture as its model takes them, the cap's rows 6 and 7."""
+    im = plastic('#35503f', 52332)
+    for x in range(16):
+        dot(im, x, 14, '#4a6a56'); dot(im, x, 15, '#2a3f32'); dot(im, x, 6, '#4a6a56'); dot(im, x, 7, '#2a3f32')
+    dot(im, 7, 15, '#c8ccc4'); dot(im, 8, 15, '#9aa098')
+    return im
+
+
+def lantern_globe():
+    """Its globe, frosted and lit: warm and pale, brightest down its middle, darker at its corners where the cage's ribs run, and
+    shaded under the cap. Its sides are columns 5 to 10 and rows 8 to 13 of the picture as its model takes them."""
+    im = new('#f4e4a8', 52333, 2)
+    for y in range(16):
+        for x in range(16):
+            k = {5: -26, 6: -6, 7: 10, 8: 10, 9: -2, 10: -22}.get(x, 0)
+            dot(im, x, y, shade('#f4e4a8', k + (-12 if y == 8 else -5 if y == 13 else 0)))
+    return im
+
+
 def transcript(section):
     """Pages taped up in a row on the shed's wall: the tapes written out by hand in pencil, June's corrections in red down the
     margins. Down the side of the last, one word written over and over."""
@@ -1455,13 +1496,14 @@ def garage():
 
 def shed():
     return {'tapes_0': tape_spines(0), 'tapes_1': tape_spines(1), 'bench_top': bench_top(), 'deck_front': deck_front(), 'portable_tv': portable_tv(),
-            'tin': tin(0), 'tin_lid_line': tin_lid_line(), 'transcript_0': transcript(0), 'transcript_1': transcript(1), 'transcript_2': transcript(2),
+            'tin': tin(0), 'tin_lid_line': tin_lid_line(), 'tin_paint': tin_paint(), 'transcript_0': transcript(0), 'transcript_1': transcript(1), 'transcript_2': transcript(2),
             'chemist_0': chemist_calendar(0), 'chemist_1': chemist_calendar(1), 'chemist_2': chemist_calendar(2)}
 
 
 def outside():
     return {'stake_nessa': stake_tag(0), 'stake_tilly': stake_tag(1), 'kennel_wall': kennel_wall(),
-            'bowl_leaves': bowl_leaves(), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'pump': pump()}
+            'bowl_leaves': bowl_leaves(), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'pump': pump(),
+            'lantern_body': lantern_body(), 'lantern_globe': lantern_globe()}
 
 
 # ------------------------------------------------------------------------------------------------ the rest
@@ -1876,6 +1918,9 @@ def thing_models():
     out['tin_0'] = m([element([4, -1, 4], [11, 7, 11], {'north': 'l', 'south': 'n', 'east': 'n', 'west': 'n', 'up': 'k'}),
                       element([11, -1, 6], [15, 0, 8], {'up': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'})],
                      {'l': 'tin', 'n': 'tin', 'k': 'tin_lid_line', 'b': 'brush'}, 'tin')
+    # 0.4.530: open on the grass beside June at night while she paints the line (PellNight): its lid off, the paint showing.
+    out['tin_1'] = m([element([4, 0, 4], [11, 8, 11], {'north': 'n', 'south': 'n', 'east': 'n', 'west': 'n', 'up': 'p', 'down': 'n'})],
+                     {'n': 'tin', 'p': 'tin_paint'}, 'tin')
     for section in range(3):
         out[f'transcript_{section}'] = m([element([0, 0, 15.7], [16, 16, 16], {'north': 't'})], {'t': f'transcript_{section}'}, f'transcript_{section}')
     for stage in range(3):
@@ -1917,6 +1962,13 @@ def thing_models():
                             {'p': 'pool_chair', 't': 'towel_faded'}, 'pool_chair')
     out['pump_0'] = m([element([2, 0, 3], [14, 8, 13], {'north': 'f', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'f', 'down': 'g'}), box([4, 8, 5], [12, 11, 11], 'g', up='f')],
                       {'f': 'pump', 'g': 'grey_plastic'}, 'pump')
+    # 0.4.530: June's battery lantern, set down on the grass behind the shed while she paints (PellNight): a base, the globe lit (it
+    # gives its own light, so it shows in the dark), the cap, and the handle up over it.
+    glow = element([5, 2, 5], [11, 8, 11], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g'})
+    glow['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
+    out['lantern_0'] = m([box([4, 0, 4], [12, 2, 12], 'b'), glow, box([4, 8, 4], [12, 10, 12], 'b'),
+                          box([5, 10, 7], [6, 12, 9], 'b'), box([10, 10, 7], [11, 12, 9], 'b'), box([5, 12, 7], [11, 13, 9], 'b')],
+                         {'b': 'lantern_body', 'g': 'lantern_globe'}, 'lantern_globe')
     return out
 
 
@@ -1955,7 +2007,7 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'freezer', 'stool', 'power', 'cord', 'trough', 'bucket', 'chlorine', 'washer',
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
-         'stake', 'kennel', 'bowl', 'pool_chair', 'pump']
+         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern']
 
 
 # ------------------------------------------------------------------------------------------------ the block

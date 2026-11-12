@@ -35,7 +35,7 @@ public final class PellThing extends HorizontalDirectionalBlock {
         FREEZER,STOOL,POWER,CORD,TROUGH,BUCKET,CHLORINE,WASHER,
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
-        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP;
+        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, on the floor or hung: nothing a body bumps into. */
         public boolean flat(){return switch(this){case CHORE_CHART,CALENDAR,PHOTOS,HOOKS,COAT_HOOK,SWITCH,MARKS,BORDER,MIRROR,POWER,CORD,BULB,PEGBOARD,TOWEL,
@@ -73,9 +73,9 @@ public final class PellThing extends HorizontalDirectionalBlock {
     /** The cell a thing's FACING points to: end 1 of a thing two cells long. */
     public static BlockPos ahead(BlockPos at,Direction f){return at.relative(f);}
     /** The bare bulb lights the garage while it is on (stage 0); the standard lamp lights the chair while it is on (stage 1); the
-     * television gives a little while it plays (stage 1). */
+     * television gives a little while it plays (stage 1); 0.4.530: June's lantern, set down on the grass at night, lights the strip. */
     public static int light(BlockState s){return switch(s.getValue(KIND)){case BULB->s.getValue(STAGE)==0?13:0;case FLOOR_LAMP->s.getValue(STAGE)==1?10:0;
-        case TV_CABINET->s.getValue(STAGE)==1?6:0;default->0;};}
+        case TV_CABINET->s.getValue(STAGE)==1?6:0;case LANTERN->12;default->0;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     private static VoxelShape t(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){return MarshBlock.turned(f,x0,y0,z0,x1,y1,z1);}
@@ -126,12 +126,14 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case TAPES->t(f,0,0,6,16,16,16);
             case WORKBENCH->t(f,0,0,1,16,15,16);
             case SHED_TV->t(f,1,0,4,15,13,14);
-            case TIN->Block.box(4,0,4,15,8,11);
+            // 0 on the bench with the brush beside it; 1 open on the grass.
+            case TIN->stage==1?Block.box(4,0,4,11,8,11):Block.box(4,0,4,15,8,11);
             case STAKE->Block.box(6,0,6,10,11,10);
             case KENNEL->t(f,0,0,2,16,14,15);
             case BOWL->Block.box(4,0,4,12,2,12);
             case POOL_CHAIR->Shapes.or(t(f,1,0,1,15,8,15),t(f,1,7,12,15,16,16));
             case PUMP->t(f,2,0,3,14,11,13);
+            case LANTERN->Block.box(4,0,4,12,13,12);
         };
     }
     /** What stops a body: everything standing on the floor except the flat things, which nobody bumps into. */

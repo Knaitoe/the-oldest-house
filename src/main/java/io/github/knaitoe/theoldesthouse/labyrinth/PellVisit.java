@@ -48,6 +48,9 @@ import net.minecraft.world.phys.Vec3;
  * waits until nobody is, and locks the sliding door, the back door and the front door from inside; then she goes to her room and shuts
  * the door, and the hour goes on to ten, where the night waits for what comes next.
  *
+ * <p><b>0.4.530, the first night</b> (PellNight, docs/PELL_HOUSE_NIGHT_0_4_530.md). From the moment the house is locked up, the night is
+ * PellNight's: the hour goes on to eleven, June goes out with the tin and paints the line behind the shed, and Callum stands on it.
+ *
  * <p><b>It is the house's, for everyone at it.</b> One visit for every reader at the house; each step waits for whoever is nearest.
  * When the house has been empty for a while it begins again from the start: everyone back where the first visit puts them, Gail and
  * her car back at the curb, June's doors shut.
@@ -155,6 +158,8 @@ public final class PellVisit {
         h.chairSaid=false;h.brushSaid=0;h.lockIndex=0;h.watchSaid=0;h.tapeAt=0;h.brushedAt=0;h.nudgedAt=0;
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
+        // 0.4.530: the night undone (PellNight.restart).
+        PellNight.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
     }
     /** Each of them as they are by day: Tilly with her cane held out, Gail with her folder, June and Callum with nothing in hand. */
@@ -171,9 +176,9 @@ public final class PellVisit {
         }
         return false;
     }
-    private static void say(PellPeople.Household h,LiteraryActor a,int who,String line,long now){a.say(PellPeople.name(who),line);a.speaks(line);h.next=now+Dialogue.ticks(line)+GAP;}
+    static void say(PellPeople.Household h,LiteraryActor a,int who,String line,long now){a.say(PellPeople.name(who),line);a.speaks(line);h.next=now+Dialogue.ticks(line)+GAP;}
     /** What was last said has had its time, and whoever speaks next is not in the middle of something. */
-    private static boolean ready(PellPeople.Household h,long now,LiteraryActor next){return now>=h.next&&!next.saying();}
+    static boolean ready(PellPeople.Household h,long now,LiteraryActor next){return now>=h.next&&!next.saying();}
     /** Every reader near enough to hear it has heard this rule, as their own. */
     static void heard(LiteraryActor speaker,int rule,List<ServerPlayer> here){heard(speaker,rule,here,null,null);}
     /** As above, with the reader whose hand is on the speaker: their rule goes into {@code talkers}, the record the talk is holding
@@ -320,18 +325,20 @@ public final class PellVisit {
         for(var door:HER_DOORS)if(!PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         h.tillyHome=true;h.tillyStep=TILLY_IN.length;h.trail.clear();h.step=SETTLED;h.waypoint=0;h.next=0;h.stuck=0;
     }
-    private static void stand(ServerLevel l,BlockPos b,PellPeople.Household h,int who,PellPeople.Spot s){
+    static void stand(ServerLevel l,BlockPos b,PellPeople.Household h,int who,PellPeople.Spot s){
         var a=PellPeople.find(l,b,who);if(a==null)return;
         a.moveTo(b.getX()+s.x(),b.getY(),b.getZ()+s.z(),s.look(),0);a.setYHeadRot(s.look());a.setYBodyRot(s.look());a.setDeltaMovement(Vec3.ZERO);
         h.rest[who]=s.look();h.seated[who]=false;h.place[who]=-1;h.way[who].clear();h.sitAt[who]=-1;
     }
 
     /** The house's hour: held through the tour and through dinner, going on to six once the day is settled and on into the evening
-     *  after; sent to every reader at the house when it starts or stops going on, when they first come, and once a second. */
+     *  after; sent to every reader at the house when it starts or stops going on, when they first come, and once a second. 0.4.530:
+     *  locked up, it goes on to eleven, faster while June is in her room; from her rounds to midnight. */
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
-        long to=h.step==SETTLED?SIX:h.step>=NIGHT?LATE:h.step>=CLEARED?EVENING:h.time;
-        if(h.time<to)h.time++;
-        int rate=h.time<to?1:0;boolean changed=rate!=h.rate;h.rate=rate;
+        long to=h.step==SETTLED?SIX:h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
+        int pace=h.step==NIGHT?PellNight.NIGHT_PACE:1;
+        if(h.time<to)h.time=Math.min(to,h.time+pace);
+        int rate=h.time<to?pace:0;boolean changed=rate!=h.rate;h.rate=rate;
         var payload=new io.github.knaitoe.theoldesthouse.network.PellPayload(h.time,h.rate);
         for(var p:here)if(changed||now%20==0||!h.told.contains(p.getUUID())){h.told.add(p.getUUID());io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,payload);}
     }
@@ -395,6 +402,8 @@ public final class PellVisit {
 
     /** After the day: dinner at six, and the evening. */
     static void evening(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
+        // 0.4.530: locked up, the night is PellNight's.
+        if(h.step>=NIGHT){PellNight.tick(l,b,h,june,here,now);return;}
         int J=PellPeople.JUNE,T=PellPeople.TILLY,C=PellPeople.CALLUM;
         boolean juneStill=h.way[J].isEmpty();
         // By how far past the settled day the visit is (the steps follow the tour, whose length is the stops'): settled, called,
@@ -490,10 +499,6 @@ public final class PellVisit {
                 h.nudgedAt=now;h.lockIndex=0;h.step=SENDING;
             }
             case 11,12->locking(l,b,h,june,here,now);
-            case 13->{
-                // In her room: she shuts the door behind her.
-                if(juneStill&&near(june,b,v(HER_ROOM.x(),HER_ROOM.z()),.6)&&PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
-            }
             default->{}
         }
     }
@@ -556,7 +561,7 @@ public final class PellVisit {
     }
 
     // ------------------------------------------------------------------------------------------------ 0.4.527: bedtime
-    /** Ten o'clock: once the house is locked up the hour goes on to it, and waits there for the night. */
+    /** Ten o'clock. 0.4.530: once the house is locked up the hour goes on past it to eleven, when June goes out (PellNight). */
     public static final long LATE=16000;
     /**
      * After the washing up: June in her chair with the tape on; bedtime called; Tilly's hair being brushed; Tilly lying down and June on
@@ -583,9 +588,9 @@ public final class PellVisit {
     public static final List<BlockPos> LOCKS=List.of(PellSite.SLIDER,PellSite.BACK_DOOR,PellSite.FRONT_DOOR);
     public static final PellPeople.Spot[] AT_LOCK={new PellPeople.Spot(.5,-70.6,180),new PellPeople.Spot(8.5,-70.5,180),new PellPeople.Spot(.5,-59.6,0)};
     public static final PellPeople.Spot HER_ROOM=new PellPeople.Spot(8.5,-61.5,0);
-    /** Every door of the house's own, shut when the visit begins again. */
+    /** Every door of the house's own, shut when the visit begins again (0.4.530: the shed's too, which June opens at night). */
     static final List<BlockPos> ALL_DOORS=List.of(PellSite.FRONT_DOOR,PellSite.NESSA_DOOR,PellSite.CALLUM_DOOR,PellSite.BATH_DOOR,PellSite.JUNE_DOOR,PellSite.LAUNDRY_DOOR,
-        PellSite.BACK_DOOR,PellSite.SLIDER,PellSite.GARAGE_DOOR);
+        PellSite.BACK_DOOR,PellSite.SLIDER,PellSite.GARAGE_DOOR,PellSite.SHED_DOOR);
     /** The inside doors the people open as they come to them, and June's own, which only she opens. */
     private static final List<BlockPos> INSIDE_DOORS=List.of(PellSite.NESSA_DOOR,PellSite.CALLUM_DOOR,PellSite.LAUNDRY_DOOR,PellSite.BATH_DOOR);
     private static final Vec3[] TO_RECLINER={v(-9.5,-68.5),v(-9.5,-65.6),v(0,-65.6),v(0,-68.5),v(-2.6,-68.6),v(-2.6,-69.5)},

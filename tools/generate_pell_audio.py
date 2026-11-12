@@ -1,7 +1,8 @@
 """Original sounds for the Pell house (docs/PELL_HOUSE_PROPOSAL.md, "Sound"). So far: Gail's car leaving the curb once she has
 handed the siblings over (docs/PELL_HOUSE_VISIT_0_4_525.md), heard from inside the house; and (docs/PELL_HOUSE_BEDTIME_0_4_527.md)
 the home tape June plays in the evening, a birthday sung in her kitchen, through the television; the hairbrush at bedtime; and the
-lock turning on each door when she locks up.
+lock turning on each door when she locks up. From docs/PELL_HOUSE_NIGHT_0_4_530.md: her brush on the line at night, and the tin's
+lid.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -16,6 +17,8 @@ ROWS = {
     'tape': ('A home tape plays: a birthday', 16),
     'brush': ('A hairbrush, slowly', 8),
     'lock': ('A lock turns', 12),
+    'paint': ('A paintbrush, in strokes', 14),
+    'tin': ("A paint tin's lid", 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -166,7 +169,42 @@ def lock():
     return out
 
 
-MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock}
+def paint():
+    # A wide brush loaded with paint, drawn along the ground and back: each stroke starts with the soft wet slap of the bristles going
+    # down, then drags, a coarse hiss with the paint's sticky catches in it, and lifts off thinner than it went down.
+    n = seconds(1.5)
+    out = np.zeros(n)
+    for i, (at, length) in enumerate(((.03, .55), (.72, .5))):
+        k = seconds(length)
+        tk = times(k)
+        drag = np.sin(np.pi * np.minimum(tk / length, 1)) ** 1.4 * np.exp(-tk / (length * 1.6))
+        hiss = band(rng.standard_normal(k), 900, 5200) * drag * .55
+        wet = band(rng.standard_normal(k), 180, 900) * drag * .5
+        catches = band((rng.random(k) > .996).astype(float), 600, 3500) * 2.2 * drag
+        slap = np.zeros(k)
+        m = seconds(.06)
+        tm = times(m)
+        slap[:m] = band(rng.standard_normal(m), 150, 1400) * np.exp(-tm / .015) * .9
+        place(out, (hiss + wet + catches + slap) * (1 - .18 * i), at)
+    return out
+
+
+def tin():
+    # A paint tin's lid: the scrape of something levered under its rim, then the lid lifting with a dull tinny ring; or pressed back
+    # down, the same ring shorter. One sound for both, pitched by the game.
+    n = seconds(.7)
+    out = np.zeros(n)
+    k = seconds(.16)
+    tk = times(k)
+    place(out, band(rng.standard_normal(k), 1200, 6000) * np.sin(np.pi * tk / .16) * .25, .02)
+    k = seconds(.45)
+    tk = times(k)
+    ring = sum(a * np.sin(2 * np.pi * f * tk) * np.exp(-tk / d) for f, a, d in ((1180, .5, .09), (2730, .35, .06), (4410, .2, .035), (690, .4, .05)))
+    place(out, ring + band(rng.standard_normal(k), 300, 2500) * np.exp(-tk / .01) * .6, .17)
+    return out
+
+
+MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin}
 
 
 def main():

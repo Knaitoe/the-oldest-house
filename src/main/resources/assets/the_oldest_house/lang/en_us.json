@@ -1777,5 +1777,10 @@
   "item.the_oldest_house.pell_hairbrush": "Hairbrush",
   "subtitles.the_oldest_house.pell.tape": "A home tape plays: a birthday",
   "subtitles.the_oldest_house.pell.brush": "A hairbrush, slowly",
-  "subtitles.the_oldest_house.pell.lock": "A lock turns"
+  "subtitles.the_oldest_house.pell.lock": "A lock turns",
+  "item.the_oldest_house.pell_lantern": "Lantern",
+  "item.the_oldest_house.pell_tin": "Paint Tin",
+  "item.the_oldest_house.pell_paintbrush": "Paintbrush",
+  "subtitles.the_oldest_house.pell.paint": "A paintbrush, in strokes",
+  "subtitles.the_oldest_house.pell.tin": "A paint tin's lid"
 }
