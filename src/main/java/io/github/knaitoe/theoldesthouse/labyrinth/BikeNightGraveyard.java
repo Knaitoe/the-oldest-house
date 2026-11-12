@@ -84,7 +84,11 @@ public final class BikeNightGraveyard {
         return z<CalderTown.RAILS+.5&&z>CalderGraves.BACK&&x>CalderGraves.W&&x<CalderGraves.E+1;
     }
     /** Whether somewhere is past the last full row, where the small stones are. */
-    public static boolean hushed(BlockPos b,Vec3 at){return in(b,at)&&at.z-b.getZ()<CalderGraves.ROWS[CalderGraves.ROWS.length-1]-.5;}
+    public static boolean hushed(BlockPos b,Vec3 at){
+        // 0.4.507: and out over the Hollow, as far as its far side's ground.
+        if(BikeNightHollow.in(at.subtract(b.getX(),b.getY(),b.getZ())))return true;
+        return in(b,at)&&at.z-b.getZ()<CalderGraves.ROWS[CalderGraves.ROWS.length-1]-.5;
+    }
     static boolean hushed(BikeNight.Night n,Vec3 at){return hushed(n.base,at);}
     /** Whether somebody could be watching a place: near enough, and it is in front of them or right beside them. */
     static boolean seen(ServerPlayer p,Vec3 at,double within){

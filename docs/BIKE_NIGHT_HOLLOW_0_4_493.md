@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504; the tight way, 0.4.505; the dark way, 0.4.506)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504; the tight way, 0.4.505; the dark way, 0.4.506; Gus, 0.4.507)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -537,6 +537,67 @@ It passed twice running.
   once knows the way without a Lamp. Whether they should move from night to night is the owner's to say.
 - Somebody who goes down in the bank has the mist over them as anybody who misses does, on top of the bank.
 - **Gus**, who rides the plain way with no specter of his own; and what a rider sees under the Hollow.
+
+## 0.4.507: Gus
+
+As asked and answered (November 11): "Gus in the Hollow: he rides the plain way with no specter ever his, so he is at
+the back gate whenever the reader is." "The first. He rides the plain way."
+
+**The line.** `CalderHollow.TRAIL` is the plain way as somebody rides it who never misses: from the hill on the
+gate's line to the far side's ground, up the middle of each piece and round the fences' pickets, and over each gap on
+an arc as a hop makes. Places a fifth of a block apart.
+
+**How he rides it** (`BikeNightHollow.gus`). With a friend who is past the hill's edge, he comes through the stones
+to the edge on the gate's line, as he comes after a friend anywhere in the cemetery, and from there he is on the
+line: as far along it as his friend is north, less the distance he keeps from them anywhere; at the pace he rides at
+anywhere; never back along it. He starts over a gap only if where he comes down is no nearer his friend than he
+keeps, and he does not stop in the air. If his friend goes down and is set back behind him, he waits where he is.
+Off the line's far end he rides after them again as he does on any ground, and through the back gate.
+
+His bike has no hop (the three's and his go where they are told and nobody comes off them), so on the line it is set
+down from place to place (`PackBike.carry`) and not ridden. He cannot miss.
+
+**Nothing in the Hollow is his.** The specters are each some reader's, and come for readers. What jumps out comes
+out for readers and is in readers' bikes' way: he goes through it.
+
+**He says nothing.** He says nothing past the cemetery's last full row, and that holds out over the Hollow as far as
+its far side's ground: not what he was about to say, and not to a hand on him.
+
+He takes the plain way whichever way his friend takes.
+
+### The case
+
+One (95 in the namespace), one reader, with the specters coming.
+
+- The line runs from the hill to the far side, its places close and none back along it; on the ground it is on a
+  piece at its height; in the air it is over the course; there is an arc over every gap.
+- **His friend on the first grave**: he comes to the hill's edge after them, is on the line, and waits there: the
+  first grave's near end is nearer them than he keeps.
+- **His friend on the third grave**: he is over two gaps and stops on the second grave's far end, never under the
+  graves.
+- **His friend on the far side**: he rides the rest of it, on his bike and on the line all the way, as high as over
+  the top and never under the lowest piece; he begins nothing out there with something to say every two seconds;
+  what the Hollow sent out meanwhile was his friend's and none of it his; and he stops by them.
+- **His friend through the back gate**: he comes up to it after them.
+
+It passed twice running.
+
+### Found on the way, and what changed
+
+- He went over a gap he should have waited at, and came down a block from his friend: the rule looked one place
+  ahead and not at where the arc came down.
+- The case's first "he says nothing" counted the end of a line he had begun on the hill, and its first "nothing came"
+  counted what came for his friend standing on the graves.
+
+### Not built, not seen, and left with the owner
+
+- Not seen. He is set down a fifth of a block at a time and his cranks turn by how far he has gone; whether his
+  arcs read as hops, and whether he reads as riding the lids and the vine, are the owner's to see.
+- He goes through a ghoul or a goblin that is out. They are in readers' bikes' way and not his.
+- If his friend is caught, he stays where he is on the line. What becomes of him then is the endings' to say
+  ("Gus is there if he made it").
+- With several readers he rides after whichever is nearest, as he does in the town.
+- What a rider sees under the Hollow.
 
 ## The place
 
