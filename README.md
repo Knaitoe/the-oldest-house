@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.515** adds the games behind the store to Drisking, the last of the owner's life notes for Borrasca ("I'd also add more active play - hide and seek, tag"). On the first visit, when the reader has found Kelly in her own game on the street, Patrick says it doesn't count with one tree on the whole street, and the three run for the trees behind the general store. A reader who follows plays three games: Kelly counts and everybody hides, the reader counts and finds the three, and then tag, with the reader it. Nothing waits on any of it: a reader who goes on up the street, or walks off in the middle, is not called back, and the walk to the Tree begins as it always has. `docs/BORRASCA_GAMES_0_4_515.md`.
+
 Development candidate **0.4.514** plays a whole Bike night once through, for two readers, in one test: from the park to the lane's door, one of them caught and carried on the Hopper's pegs through the Hollow. It adds no behaviour. It found that a quick tap of the hop does not carry two over a gap, and that winding the hop up does. `docs/BIKE_NIGHT_WHOLE_0_4_514.md`.
 
 Development candidate **0.4.513** gives more than six readers a town of their own in Bike night. There are six bikes, so a town takes six readers; the seventh is given a second Calder Falls, built by the House's scene-copy system, with a night of its own. Friends still go into the same town and follow each other in, and somebody who steps out comes back to the town they were in. `docs/BIKE_NIGHT_CROWD_0_4_513.md`.
