@@ -948,4 +948,158 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_morning_watched") public static void watchedDone(ServerLevel l){done();}
+
+    /** What a reader has kept, written as the house would (the record read in a case is a copy). */
+    private static void keep(LiteraryTests.Fixture f,ServerPlayer p,String key){var own=f.own(p,P);own.putBoolean(key,true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);}
+    private static boolean telling(ServerPlayer p,String speaker,String line){return Talk.lines(p).contains(speaker+": "+line);}
+
+    /**
+     * 0.4.532, Gail's call, with two readers: one in the kitchen, who saw June out in the night and Callum on the line, and one out in
+     * the garage. The morning as breakfast leaves it. The telephone rings and June says it will be Gail; the reader in the kitchen lifts
+     * it first, Gail asks for June, and June takes it from them. A hand on June while she is on it gets her finger. She has her say to
+     * Gail (the pair of them slept like logs, Tilly, Callum) and holds the receiver out; the reader in the garage is told she is calling.
+     * The reader in the kitchen takes it: Gail has just been talking to June, asks how the first night was, and they are offered what
+     * they saw. The other reader, come in, finds it busy. The first tells Gail June was out in the garden; Gail has June's version and
+     * asks for June back. Given back, June holds it out to the other ("Your turn"), who takes it from her hand and says nothing. Back on,
+     * June answers what was said in front of her, says goodbye and hangs up, and tells the room to keep inside the line. Each reader
+     * keeps what they said; left, the house begins again with the receiver on its hook.
+     */
+    @GameTest(template="empty",batch="pell_call",timeoutTicks=9000)
+    public static void gailRingsAndEachReaderHasAWordWithHer(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_call_first",P);var q=f.player("pell_call_second",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var phone=b.offset(PellCall.PHONE);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            h.assertTrue(thing(l,b,-7,1,-69,PHONE,0)&&facing(l,b,-7,1,-69)==Direction.WEST,"the telephone on the kitchen wall, its receiver on the hook");
+            keep(f,p,"SawJuneOut");keep(f,p,"SawCallumOnLine");
+            PellCall.afterBreakfast(l,b);
+            f.at(p,P,-9.5,0,-67.5);f.at(q,P,14.5,0,-89.5);
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.RINGING,"the telephone rings"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_THATLL_BE_GAIL),"\"That'll be Gail.\"");
+            hand(p,phone);
+            h.assertTrue(PellCall.off(l,b),"the reader in the kitchen lifts it first");
+            h.assertTrue(telling(p,"Gail",PellTexts.GAIL_FOR_JUNE),"Gail asks for June: "+Talk.lines(p));
+            h.assertTrue(f.own(p,P).getBoolean("AnsweredThePhone"),"and they keep that they answered it");
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.ON_PHONE,"June takes it from them"))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(june.getMainHandItem().is(PellRegistry.RECEIVER.get())&&june.gesture()==PellPeople.PHONE,"the receiver at June's ear");
+            h.assertTrue(Talk.key(p).isEmpty(),"out of the reader's hands");
+            told(p);LiteraryVignettes.talk(p,june);
+        }).thenIdle(1).thenExecute(()->h.assertTrue(told(p).contains(PellTexts.JUNE_ON_PHONE),"a hand on June while she is on it: a finger"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_SORRY),"\"Gail? Sorry, love\""))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_SLEPT),"the pair of them slept like logs"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_CALLUM_GOOD),"and Callum good as gold"))
+        .thenExecute(()->told(q))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_HOLDS_OUT)&&june.gesture()==PellPeople.OFFER&&june.getMainHandItem().is(PellRegistry.RECEIVER.get()),"\"She wants a word\", the receiver held out");
+            h.assertTrue(told(q).contains(PellTexts.PHONE_FAR),"the reader in the garage is told");
+            h.assertTrue(f.own(p,P).getBoolean("HeardJuneOnPhone")&&!f.own(q,P).getBoolean("HeardJuneOnPhone"),"only the reader in the kitchen heard June's side");
+            hand(p,phone);
+            h.assertTrue(p.getUUID().equals(PellCall.caller(b)),"the reader in the kitchen takes it");
+            h.assertTrue(telling(p,"Gail",PellTexts.GAIL_ASKS),"Gail has just been talking to June: "+Talk.lines(p));
+            var r=Talk.replies(p);
+            h.assertTrue(r.contains(PellTexts.TELL_JUNE_OUT)&&r.contains(PellTexts.TELL_CALLUM)&&r.contains(PellTexts.TELL_FINE)&&r.contains(PellTexts.TELL_LEAVE)&&r.contains(PellTexts.TELL_NOTHING),"what they saw is theirs to tell: "+r);
+            h.assertTrue(june.getMainHandItem().isEmpty(),"out of June's hand");
+            f.at(q,P,-8.5,0,-67.6);told(q);hand(q,phone);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.PHONE_BUSY),"the other reader finds it busy");
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_JUNE_OUT),"the first tells Gail June was out in the garden");
+            h.assertTrue(telling(p,"Gail","In the garden? In the dark?")&&telling(p,"Gail",PellTexts.GAIL_BYE),"Gail has June's version, and asks for June back: "+Talk.lines(p));
+            h.assertTrue(PellTexts.JUNE_OUT.equals(f.own(p,P).getString("ToldGail"))&&f.own(p,P).getBoolean("SpokeToGail"),"they keep what they said");
+            h.assertTrue(Talk.choose(p,PellTexts.HAND_BACK),"and give it back");
+        }).thenIdle(1).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(PellCall.caller(b)==null&&said(june).equals(PellTexts.JUNE_NEXT)&&june.gesture()==PellPeople.OFFER,"\"Your turn\", held out to the other");
+            told(p);hand(p,phone);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.HAD_A_TURN),"one turn each");
+            LiteraryVignettes.talk(q,who(h,l,b,PellPeople.JUNE));
+            h.assertTrue(q.getUUID().equals(PellCall.caller(b)),"the other takes it from June's hand");
+            var r=Talk.replies(q);
+            h.assertFalse(r.contains(PellTexts.TELL_JUNE_OUT)||r.contains(PellTexts.TELL_CALLUM),"nothing offered that they did not see: "+r);
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_NOTHING),"and says nothing");
+            h.assertTrue(telling(q,"Gail","Hello? Are you there, love?"),"Gail on a silent line: "+Talk.lines(q));
+            h.assertTrue(Talk.choose(q,PellTexts.HAND_BACK),"given back");
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.BACK,"June back on"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_ABOUT_LINE),"June answers what was said in front of her"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_BYE),"and says goodbye"))
+        .thenWaitUntil(()->h.assertFalse(PellCall.off(l,b),"the receiver back on its hook"))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(june.getMainHandItem().isEmpty(),"out of her hand");
+            h.assertTrue(said(june).equals(PellTexts.JUNE_INSIDE_LINE),"\"Inside the line after dark, love. I did say.\"");
+            for(var r:new ServerPlayer[]{p,q})h.assertTrue(f.own(r,P).getBoolean("GailRang")&&f.own(r,P).getBoolean("SpokeToGail"),"each reader keeps that Gail rang, and that they spoke to her");
+            h.assertTrue(PellTexts.NOTHING.equals(f.own(q,P).getString("ToldGail")),"and what they said");
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"hung up, the morning waits"))
+        .thenExecute(()->{told(p);hand(p,phone);})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(PHONE,0)),"a hand on the telephone afterwards: what it is");
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
+        .thenExecute(()->{
+            h.assertTrue(thing(l,b,-7,1,-69,PHONE,0)&&PellCall.caller(b)==null,"the receiver on its hook, nobody on the line");
+            h.assertTrue(PellTexts.JUNE_OUT.equals(f.own(p,P).getString("ToldGail")),"what each reader said stays theirs");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_call") public static void callDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.532, a reader who walks off with the receiver. The reader spoke to June in the night, so June tells Gail one of them was up and
+     * she saw them back to bed. The reader takes the receiver and goes out into the yard with it, saying nothing: June has it back, the
+     * panel is gone, and what they never said stays unsaid ("walked off"). With nothing said to her, June tells Gail they are shy, says
+     * goodbye and hangs up, with nothing to say to the room.
+     */
+    @GameTest(template="empty",batch="pell_call_walked",timeoutTicks=6000)
+    public static void aReaderWhoWalksOffWithTheReceiverLeavesItUnsaid(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_call_walker",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        var phone=b.offset(PellCall.PHONE);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{keep(f,p,"SpokeToJuneAtNight");PellCall.afterBreakfast(l,b);f.at(p,P,-9.5,0,-67.5);})
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_UP),"June tells Gail one of them was up in the night"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenExecute(()->{
+            hand(p,phone);
+            h.assertTrue(p.getUUID().equals(PellCall.caller(b))&&Talk.key(p).equals("pell_gail"),"the reader takes it");
+            f.at(p,P,14.5,0,-89.5);
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.BACK,"gone off with it: June has it back"))
+        .thenExecute(()->{
+            h.assertTrue(Talk.key(p).isEmpty(),"the line gone from the reader");
+            h.assertTrue(PellTexts.WALKED_OFF.equals(f.own(p,P).getString("ToldGail")),"what they never said stays unsaid");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).getMainHandItem().is(PellRegistry.RECEIVER.get()),"the receiver at June's ear");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_SHY),"\"Shy. It'll come.\""))
+        .thenWaitUntil(()->h.assertFalse(PellCall.off(l,b),"hung up"))
+        .thenIdle(5).thenExecute(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_BYE),"nothing to say to the room"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_call_walked") public static void walkedDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.532, nobody comes to the telephone. The one reader stays out in the garage; June holds the receiver out and calls, and they are
+     * told. Nobody comes for it in a while, so June speaks for them: they are a bit shy yet, she'll tell them Gail rang. She hangs up and
+     * goes back to the sink. The reader keeps that Gail rang, and not that they spoke to her.
+     */
+    @GameTest(template="empty",batch="pell_call_nobody",timeoutTicks=6000)
+    public static void nobodyComesToThePhoneAndJuneSpeaksForThem(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_call_away",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{PellCall.afterBreakfast(l,b);f.at(p,P,14.5,0,-89.5);told(p);})
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenIdle(1).thenExecute(()->h.assertTrue(told(p).contains(PellTexts.PHONE_FAR),"the reader in the garage is told"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.BACK,"nobody comes: June has it back"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_NOBODY),"\"They're a bit shy yet\""))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"hung up"))
+        .thenWaitUntil(()->h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.SINK.x(),PellVisit.SINK.z(),.7),"June back at the sink"))
+        .thenExecute(()->{
+            h.assertTrue(f.own(p,P).getBoolean("GailRang"),"the reader keeps that Gail rang");
+            h.assertFalse(f.own(p,P).getBoolean("SpokeToGail")||f.own(p,P).contains("ToldGail"),"and not that they spoke to her");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_call_nobody") public static void nobodyDone(ServerLevel l){done();}
 }

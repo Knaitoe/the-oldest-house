@@ -113,6 +113,8 @@ public final class PellHouse {
             case TV_CABINET->{if(!PellVisit.tvHand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.531: from when June sends them out until breakfast is called, the reader lies down on it.
             case CAMP_BED->{if(!PellMorning.lieDown(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.532: in the morning the telephone rings, and it is Gail.
+            case PHONE->{if(!PellCall.hand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }

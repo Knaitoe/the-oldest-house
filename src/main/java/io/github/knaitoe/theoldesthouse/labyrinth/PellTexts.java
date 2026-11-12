@@ -111,6 +111,8 @@ public final class PellTexts {
             case PUMP->"The pool pump. It runs all the time.";
             // 0.4.530: June's, set down on the grass behind the shed while she paints.
             case LANTERN->"A battery lantern, set down on the grass, turned low.";
+            // 0.4.532: the kitchen's telephone. Stage 1: its receiver off the hook.
+            case PHONE->stage==1?"The receiver is off the hook.":"A telephone on the wall, its cord stretched out of its curl. On a strip of tape beside it, in pencil: GAIL, and a number.";
         };
     }
     /**
@@ -281,6 +283,62 @@ public final class PellTexts {
         "Morning, love. Sleep all right?",
         "There's more toast if you want it.",
         "Callum's had his."};
+    /**
+     * 0.4.532, Gail's call (PellCall, docs/PELL_HOUSE_CALL_0_4_532.md). June answers it and has her say first; then each reader at the
+     * house may take the receiver and answer Gail on the conversation panel; then June has it back, and her goodbye answers what was
+     * said in front of her. Gail has always just spoken to June. None of it names the reader as anything.
+     */
+    public static final String JUNE_THATLL_BE_GAIL="That'll be Gail.",
+        GAIL_FOR_JUNE="Hello? June? Oh, hello, love. It's Gail. Is June there? Put her on for me first, would you?",
+        JUNE_TAKES="I'll take that, love.",
+        JUNE_ON_PHONE="June has the receiver to her ear. She lifts a finger: a minute.",
+        PHONE_BUSY="Somebody else has the receiver.",
+        HOLDING="You have the receiver. Gail is waiting for June.",
+        HAD_A_TURN="Gail has had her word with you.",
+        JUNE_HOLDS_OUT="It's Gail, love. She wants a word.",
+        JUNE_NEXT="Your turn, love. Gail wants a word.",
+        PHONE_FAR="June, calling from the kitchen: “Phone, love! It's Gail.”",
+        // June's side, to Gail.
+        JUNE_HELLO="Hello? Oh, Gail. Morning, love.",
+        JUNE_SORRY="Gail? Sorry, love. Morning.",
+        JUNE_NO_TROUBLE="No, no. No trouble at all.",
+        JUNE_SLEPT="Slept like logs, the pair of them.",
+        JUNE_UP="Slept like logs. Well, one of them was up and about in the night. I saw them back to bed.",
+        JUNE_TILLY_ATE="Tilly ate every bite. She's a love.",
+        JUNE_CALLUM_GOOD="And Callum's been good as gold.",
+        JUNE_PUT_ON="Hang on, I'll put them on.",
+        // Gail, to a reader on the line, and what they can say to her.
+        GAIL_HELLO="Hello, love. It's Gail.",
+        GAIL_ASKS="I've just been talking to June. She says you've settled in. How was the first night?",
+        TELL_FINE="It was fine.",TELL_NO_SLEEP="I didn't sleep much.",TELL_JUNE_OUT="June was out in the garden in the night.",
+        TELL_CALLUM="Callum was standing outside in the dark.",TELL_LEAVE="I don't want to stay here.",TELL_NOTHING="Say nothing.",
+        GAIL_BYE="I'll ring again tomorrow. Put June back on for me, would you?",
+        HAND_BACK="Give the receiver back to June.",
+        // June, back on.
+        JUNE_BACK="Gail? It's me.",
+        JUNE_NOBODY="Gail? They're a bit shy yet. I'll tell them you rang.",
+        JUNE_ABOUT_LINE="Oh, that. I don't sleep, you know me. I was only seeing to the garden.",
+        JUNE_ABOUT_CALLUM="He does wander. I keep an eye on him.",
+        JUNE_EARLY_DAYS="It's early days, Gail. Early days.",
+        JUNE_SHY="Shy. It'll come.",
+        JUNE_BYE="Same time tomorrow. Bye now, love.",
+        // To the room, once she has hung up.
+        JUNE_INSIDE_LINE="Inside the line after dark, love. I did say.",
+        JUNE_GIVE_IT_TIME="Give it time, love. That's all.";
+    /** What each reader can tell Gail, kept in their record ("ToldGail"); and walking off with the receiver without a word. */
+    public static final String FINE="fine",NO_SLEEP="no_sleep",JUNE_OUT="june_out",CALLUM="callum",LEAVE="leave",NOTHING="nothing",WALKED_OFF="walked_off";
+    /** What Gail says to an answer, before her goodbye: she has June's version already. */
+    public static List<String> gail(String told,boolean juneToldUp){
+        return switch(told){
+            case FINE->List.of("Good. That's good, love.","June's been doing this a long time. You're in good hands.");
+            case NO_SLEEP->juneToldUp?List.of("June said somebody was up and about.","First nights are hard. It gets easier, I promise it does.")
+                :List.of("No, I don't suppose you did. First nights are hard.","It gets easier. I promise it does.");
+            case JUNE_OUT->List.of("In the garden? In the dark?","She'll have been seeing to something, love. She's always up at all hours, June.");
+            case CALLUM->List.of("Callum does that. June did say.","He won't hurt anybody. Let him be, love.");
+            case LEAVE->List.of("Oh, love. I know.","Nowhere's going to be home for a while. Give it a week. Give June a week. That's all I'm asking.");
+            default->List.of("Hello? Are you there, love?","That's all right. You don't have to say anything.");
+        };
+    }
     /** A hand on an outside door June has locked, from outside it. */
     public static String locked(BlockPos door){
         if(door.equals(PellSite.FRONT_DOOR))return "The screen door is locked. The lock is on the inside.";

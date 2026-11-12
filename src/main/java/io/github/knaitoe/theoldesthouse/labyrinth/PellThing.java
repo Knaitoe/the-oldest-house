@@ -35,11 +35,11 @@ public final class PellThing extends HorizontalDirectionalBlock {
         FREEZER,STOOL,POWER,CORD,TROUGH,BUCKET,CHLORINE,WASHER,
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
-        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN;
+        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, on the floor or hung: nothing a body bumps into. */
         public boolean flat(){return switch(this){case CHORE_CHART,CALENDAR,PHOTOS,HOOKS,COAT_HOOK,SWITCH,MARKS,BORDER,MIRROR,POWER,CORD,BULB,PEGBOARD,TOWEL,
-            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE->true;default->false;};}
+            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
@@ -142,6 +142,8 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case POOL_CHAIR->Shapes.or(t(f,1,0,1,15,8,15),t(f,1,7,12,15,16,16));
             case PUMP->t(f,2,0,3,14,11,13);
             case LANTERN->Block.box(4,0,4,12,13,12);
+            // 0.4.532: the kitchen's telephone, on the wall by the arch.
+            case PHONE->t(f,5,1,13,11,14,16);
         };
     }
     /** What stops a body: everything standing on the floor except the flat things, which nobody bumps into. */
