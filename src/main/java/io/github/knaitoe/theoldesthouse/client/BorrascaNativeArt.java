@@ -113,7 +113,7 @@ public final class BorrascaNativeArt {
             // his chest and head. It spreads with his synced torn, and has dried dark on a later visit.
             addLayer(new net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryActor,CastModel>(this){
                 @Override public void render(PoseStack pose,MultiBufferSource buffers,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
-                    if(a.role()!=LiteraryActor.BORRASCA_SHERIFF||a.gesture()!=BorrascaStory.FALLEN||a.torn()<=0||a.isInvisible())return;
+                    if(!falls(a)||a.gesture()!=BorrascaStory.FALLEN||a.torn()<=0||a.isInvisible())return;
                     boolean dried=a.torn()>BorrascaStory.POOL_FULL;float s=(float)Math.sqrt(Math.min(BorrascaStory.POOL_FULL,a.torn())/(float)BorrascaStory.POOL_FULL);
                     float cx=-.08F,cy=.3F,hw=.95F*s,hh=.85F*s,z=-FALLEN_LIFT+1/64F;int c=dried?0xFF7A5148:0xFFFFFFFF;
                     var out=buffers.getBuffer(RenderType.entityTranslucent(POOL));var m=pose.last();
@@ -143,10 +143,12 @@ public final class BorrascaNativeArt {
                 if(a.gesture()==BorrascaStory.TORN_LIVE){float t=age+a.getId()*7;pose.translate(0,0,-.035F*Math.max(0,net.minecraft.util.Mth.sin(t*1.3F)));
                     pose.mulPose(Axis.YP.rotationDegrees(7*net.minecraft.util.Mth.sin(t*.9F)+4*net.minecraft.util.Mth.sin(t*2.7F)));}
                 return;}
-            if(a.role()!=LiteraryActor.BORRASCA_SHERIFF)return;
+            if(!falls(a))return;
             if(a.gesture()==BorrascaStory.KNELT)pose.translate(0,-.6F,0);
             else if(a.gesture()==BorrascaStory.FALLEN){pose.translate(0,FALLEN_LIFT,0);pose.mulPose(Axis.XP.rotationDegrees(-90));}
         }
+        /** 0.4.516: who can be put down in the dirt and killed: the Sheriff, and Prescott himself. */
+        static boolean falls(LiteraryActor a){return a.role()==LiteraryActor.BORRASCA_SHERIFF||a.role()==LiteraryActor.BORRASCA_PRESCOTT&&a.phase()<BorrascaStory.WORKER;}
         @Override protected boolean shouldShowName(LiteraryActor a){return a.isCustomNameVisible()&&!a.isInvisible()&&super.shouldShowName(a);}
     }
     public static final class CastModel extends HumanoidModel<LiteraryActor>{
@@ -244,16 +246,81 @@ public final class BorrascaNativeArt {
             head.yRot=net.minecraft.util.Mth.clamp(head.yRot,-.95F,.95F);
             if(BorrascaNativeArt.laid(a))lie(a.gesture()==BorrascaStory.LAID,age+a.getId()*13);
             if(BorrascaNativeArt.torn(a)){if(a.gesture()==BorrascaStory.TORN_LIVE)thrash(age+a.getId()*13);else limp();cut(a.torn()/1000F*16);}
-            brow=tilt=mouth=0;
-            gesture=a.gesture();
-            if(a.role()==LiteraryActor.BORRASCA_KIMBER){
-                if(gesture==10){brow=.28F;mouth=.8F;}
-                if(gesture==BorrascaStory.SCARED||gesture==BorrascaStory.CARRIED){brow=.85F;tilt=.45F;mouth=-.65F;}
-            }else if(BorrascaStory.worker(a.role(),a.phase())&&
-                    (gesture==BorrascaStory.WARNING||gesture==BorrascaStory.TAKING_HAND||gesture==BorrascaStory.CARRY)){
-                brow=-.85F;tilt=-.62F;mouth=-.6F;
-            }
+            // 0.4.516: a face goes from one look to the next over a few ticks, each actor's own (the model is shared).
+            int person=BorrascaNativeArt.person(a);float[] look=face(person,a.gesture()),to={look[0],look[1],look[2],hat(person,a.gesture())},now=FACES.get(a);
+            if(now==null){now=new float[]{to[0],to[1],to[2],to[3],age};FACES.put(a,now);}
+            else{float k=1-(float)Math.pow(FACE_HOLDS,net.minecraft.util.Mth.clamp(age-now[4],0,4));for(int i=0;i<4;i++)now[i]+=(to[i]-now[i])*k;now[4]=age;}
+            brow=now[0];tilt=now[1];mouth=now[2];hat(now[3]);
         }
+        /**
+         * 0.4.516: the Sheriff's brows are under the brim of his hat, so nothing they did could be seen. How far his hat has been
+         * knocked: not at all; up at the front by a blow, while he reels (it drops back as he steadies); right back on his head, once
+         * he is beaten and sitting in the dirt, so his whole face is open; and off (2), when he is dead.
+         */
+        public static float hat(int person,int gesture){
+            // Prescott's cap comes down to his brows: knocked back when he is down, and off when he is dead, as the Sheriff's hat is.
+            if(person!=2&&person!=3)return 0;
+            return gesture==BorrascaSheriffFight.REEL?HAT_JOLT:gesture==BorrascaStory.KNELT?1:gesture==BorrascaStory.FALLEN?2:0;
+        }
+        static final float HAT_JOLT=.45F,HAT_BACK=-.38F,HAT_HINGE_Y=-6,HAT_HINGE_Z=4.5F;
+        /**
+         * Where a dead man's hat lies, in pixels from his neck. He lies face down (setupRotations), so the ground is in front of
+         * him: the hat is to his left, level with his head, its brim on the ground and its crown up.
+         */
+        static final float HAT_OFF_X=10,HAT_OFF_Y=-4,HAT_OFF_Z=-8.4F;
+        private void hat(float back){
+            if(back<=0)return;
+            if(back<=1.5F){
+                // Tipped back about the back of its band, as on a hinge there: the brim comes up off his brows and nothing cuts into his head.
+                float a=HAT_BACK*Math.min(1,back),c=net.minecraft.util.Mth.cos(a),s=net.minecraft.util.Mth.sin(a);
+                paintedHat.xRot=a;paintedHat.y=HAT_HINGE_Y-(HAT_HINGE_Y*c-HAT_HINGE_Z*s);paintedHat.z=HAT_HINGE_Z-(HAT_HINGE_Y*s+HAT_HINGE_Z*c);return;
+            }
+            // Off: crown up on the ground beside his head, whichever way his head has rolled.
+            float t=head.yRot,c=net.minecraft.util.Mth.cos(t),s=net.minecraft.util.Mth.sin(t);
+            paintedHat.xRot=-net.minecraft.util.Mth.HALF_PI;paintedHat.yRot=-t;paintedHat.x=HAT_OFF_X*c-HAT_OFF_Z*s;paintedHat.y=HAT_OFF_Y;paintedHat.z=HAT_OFF_X*s+HAT_OFF_Z*c;
+        }
+        /** How much of the old look is left after a tick. */
+        private static final float FACE_HOLDS=.62F;
+        private static final java.util.Map<LiteraryActor,float[]> FACES=new java.util.WeakHashMap<>();
+        private static final float[] PLAIN={0,0,0};
+        /**
+         * What a face is doing, by whose it is (BorrascaNativeArt.person) and what they are doing: how far the brows are lifted, how far
+         * their inner ends are raised (worry) or drawn down (anger), and the mouth's corners up or down. The brows and the lip are the
+         * person's own painted pixels, moved (GhostsSkinMesh.standardExpression), as in the Ghosts set.
+         *
+         * <p>0.4.516, the owner: "It might be worth wiring ghosts set's facial expressions in, too. Thinking specifically for the sheriff
+         * and his final fight." Kelly (the compass, and frightened) and the two men (taking her) had theirs since 0.4.262. The Sheriff
+         * now has one for each thing he does: easy when he tips his hat to a child; hard behind his light; set, with his hands up; his
+         * brows down hard and his mouth pulled as a blow is drawn back, and all the way as it is thrown; open and hurt when he reels;
+         * pleading in the dirt; and slack, dead. The children grin while a game is on.
+         */
+        public static float[] face(int person,int gesture){
+            if(person==1){
+                if(gesture==10)return new float[]{.28F,0,.8F};
+                if(gesture==BorrascaStory.SCARED||gesture==BorrascaStory.CARRIED)return new float[]{.85F,.45F,-.65F};
+                if(gesture==BorrascaStory.GLAD)return GRIN;
+            }else if(person==4||person==5){
+                if(gesture==BorrascaStory.WARNING||gesture==BorrascaStory.TAKING_HAND||gesture==BorrascaStory.CARRY)return new float[]{-.85F,-.62F,-.6F};
+            }else if(person==6||person==7){
+                if(gesture==BorrascaStory.GLAD)return GRIN;
+            }else if(person==3){
+                // Prescott: put down against his own door, bargaining; and dead.
+                if(gesture==BorrascaStory.KNELT)return new float[]{.8F,1,-.8F};
+                if(gesture==BorrascaStory.FALLEN)return new float[]{-.35F,.1F,-.35F};
+            }else if(person==2)return switch(gesture){
+                case 1->new float[]{.25F,0,.6F};
+                case 4,BorrascaStory.WARNING->new float[]{-.45F,-.5F,-.3F};
+                case BorrascaSheriffFight.GUARD->new float[]{-.7F,-.85F,-.5F};
+                case BorrascaSheriffFight.BATON_UP,BorrascaSheriffFight.LEFT_BACK,BorrascaSheriffFight.RIGHT_BACK->new float[]{-.9F,-1,-.75F};
+                case BorrascaSheriffFight.BATON_DOWN,BorrascaSheriffFight.LEFT_OUT,BorrascaSheriffFight.RIGHT_OUT->new float[]{-1,-1,-1};
+                case BorrascaSheriffFight.REEL->new float[]{.9F,.7F,-.8F};
+                case BorrascaStory.KNELT->new float[]{.7F,1,-.9F};
+                case BorrascaStory.FALLEN->new float[]{-.35F,.1F,-.35F};
+                default->PLAIN;
+            };
+            return PLAIN;
+        }
+        private static final float[] GRIN={.35F,0,1};
         /**
          * 0.4.439: Dana on her back. She stares straight up; her arms hang out over the sides of the belt (or the cot) and, while she
          * lives, sway a little with it. Nothing else moves.
@@ -278,7 +345,7 @@ public final class BorrascaNativeArt {
             if(gesture==BorrascaStory.KNELT||gesture==BorrascaStory.FALLEN)return;
             if(amount<=.01F)return;float c=net.minecraft.util.Mth.cos(phase),swing=.72F*amount;
             if(gesture!=5&&gesture!=BorrascaStory.CARRIED){rightLeg.xRot+=c*swing;leftLeg.xRot-=c*swing;}
-            boolean right=gesture==0||gesture==8,left=gesture!=3&&gesture!=5&&gesture!=8&&gesture!=BorrascaStory.CARRY&&gesture!=10&&(gesture<BorrascaSheriffFight.GUARD||gesture>BorrascaSheriffFight.REEL);
+            boolean right=gesture==0||gesture==8||gesture==BorrascaStory.GLAD,left=gesture!=3&&gesture!=5&&gesture!=8&&gesture!=BorrascaStory.CARRY&&gesture!=10&&(gesture<BorrascaSheriffFight.GUARD||gesture>BorrascaSheriffFight.REEL);
             if(right)rightArm.xRot-=c*.5F*amount;if(left)leftArm.xRot+=c*.5F*amount;
             float bob=-Math.abs(net.minecraft.util.Mth.sin(phase))*.22F*amount;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=bob;
         }
@@ -321,12 +388,17 @@ public final class BorrascaNativeArt {
                 default->{}
             }}
         /** Keep the approved child review poses; adults use the same full-length body as their live renderer. */
-        public void preview(int person,float age,float stride){brow=tilt=mouth=0;HumanoidMotion.reset(this);whole();young=person<2||person==6||person==7;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
+        public void preview(int person,float age,float stride){brow=tilt=mouth=0;HumanoidMotion.reset(this);whole();paintedHat.visible=true;young=person<2||person==6||person==7;crouching=false;riding=false;attackTime=0;HumanoidMotion.gait(this,age*.22F,stride,false);head.yRot=.22F*(float)Math.sin(age*.02F);HumanoidMotion.connect(this);}
         /** 0.4.439: Dana as she lies on the belt, for the proof. */
         public void previewLaid(float age){preview(9,age,0);lie(true,age);HumanoidMotion.connect(this);}
         /** 0.4.439: Dana at the blade with {@code consumed} pixels of her taken, alive or after, for the proof. */
         public void previewTorn(float age,float consumed,boolean living){preview(9,age,0);lie(false,age);if(living)thrash(age);else limp();HumanoidMotion.connect(this);cut(consumed);}
-        public void previewPose(int person,int gesture,float age){preview(person,age,0);pose(gesture,person==2,age);HumanoidMotion.connect(this);}
+        public void previewPose(int person,int gesture,float age){preview(person,age,0);pose(gesture,person==2,age);HumanoidMotion.connect(this);var look=face(person,gesture);brow=look[0];tilt=look[1];mouth=look[2];hat(hat(person,gesture));}
+        /**
+         * 0.4.516: a head alone, level and square on, wearing the look that goes with a gesture, for the proof. Full size, as in the
+         * world, where a child is the whole figure made smaller: the review poses' child proportions move the head and not the look.
+         */
+        public void previewFace(int person,int gesture){preview(person,0,0);young=false;head.xRot=head.yRot=head.zRot=0;var look=face(person,gesture);brow=look[0];tilt=look[1];mouth=look[2];float back=hat(person,gesture);paintedHat.visible=back<=1.5F;if(back<=1.5F)hat(back);}
     }
     public static void cube(PoseStack p,VertexConsumer out,float x0,float y0,float z0,float x1,float y1,float z1,int tile,int light,int overlay,int colour){
         quad(p,out,new float[][]{{x0,y0,z0},{x1,y0,z0},{x1,y1,z0},{x0,y1,z0}},tile,0,0,-1,light,overlay,colour);

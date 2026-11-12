@@ -136,15 +136,15 @@ public final class BorrascaGames {
         var end=at(b,to);var d=a.position().subtract(end);
         if(d.horizontalDistance()>=.45||Math.abs(d.y)>=1.2){
             if(from!=to&&a.position().subtract(at(b,from)).horizontalDistance()+FAR[from][goal]+.5<d.horizontalDistance()+FAR[to][goal]){
-                own.putInt(k+"From",to);own.putInt(k+"To",from);own.putInt(k+"Leg",0);a.gesture(0);BorrascaCast.walk(a,at(b,from),speed);return false;
+                own.putInt(k+"From",to);own.putInt(k+"To",from);own.putInt(k+"Leg",0);BorrascaCast.walk(a,at(b,from),speed);return false;
             }
             int leg=own.getInt(k+"Leg")+5;own.putInt(k+"Leg",leg);int limit=60+(int)(FAR[from][to]*10);
-            if(leg<limit||leg<limit+100&&LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())){a.gesture(0);BorrascaCast.walk(a,end,speed);return false;}
+            if(leg<limit||leg<limit+100&&LiteraryVignettes.watched(p.serverLevel(),a.getEyePosition())){BorrascaCast.walk(a,end,speed);return false;}
             BorrascaCast.stop(a);a.moveTo(end.x,end.y,end.z,a.getYRot(),0);
         }
         own.putInt(k+"From",to);own.putInt(k+"Leg",0);
         if(to==goal){BorrascaCast.stop(a);return true;}
-        own.putInt(k+"To",NEXT[to][goal]);a.gesture(0);BorrascaCast.walk(a,at(b,NEXT[to][goal]),speed);return false;
+        own.putInt(k+"To",NEXT[to][goal]);BorrascaCast.walk(a,at(b,NEXT[to][goal]),speed);return false;
     }
     /** The next of a beat's lines, once the one before has been read. True when all of them have been said. */
     private static boolean lines(ServerPlayer p,CompoundTag own,LiteraryActor[] cast,Object... script){
@@ -372,6 +372,17 @@ public final class BorrascaGames {
         }
         if(all)for(String key:new String[]{"CastKimber","TownEli","TownWren"})BorrascaCast.remember(own,key,actor(p,own,key));
         return all;
+    }
+    /**
+     * 0.4.516: while a game is on the three grin (BorrascaStory.GLAD: nothing done with the body, the face only); when none is, a
+     * grin left on any of them comes off. Whatever else one of them is doing with their hands is left alone.
+     */
+    static void faces(CompoundTag own,@Nullable LiteraryActor kel,@Nullable LiteraryActor pat,@Nullable LiteraryActor ken){
+        int state=own.getInt("Games");boolean glad=state>=CALLED&&state<=TAG;
+        for(var a:new LiteraryActor[]{kel,pat,ken}){
+            if(a==null)continue;
+            if(glad&&a.gesture()==0)a.gesture(BorrascaStory.GLAD);else if(!glad&&a.gesture()==BorrascaStory.GLAD)a.gesture(0);
+        }
     }
     /** Back in town after being away: games left in the middle are over, and the three are where the street has them. */
     static void arrived(CompoundTag own){

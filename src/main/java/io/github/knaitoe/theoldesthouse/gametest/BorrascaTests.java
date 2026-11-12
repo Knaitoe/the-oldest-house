@@ -289,6 +289,62 @@ public final class BorrascaTests {
           .thenSucceed();
     }
 
+    // ---- 0.4.516: Prescott on the last night; the faces ------------------------------------------------------------------
+    @AfterBatch(batch="borrasca_prescott") public static void prescottDone(ServerLevel l){cleanup();}
+    private static boolean hitPrescott(Fixture f,ServerPlayer p){return f.actor(p,"CastPrescott").hurt(p.damageSources().playerAttack(p),8);}
+    private static String said(LiteraryActor a){return a.getCustomName()==null?"":a.getCustomName().getString();}
+    @GameTest(template="empty",batch="borrasca_prescott",timeoutTicks=4800)
+    public static void prescottComesToHisOfficeDoorOnceTheMachineIsSeenAndAGrownReaderCanPutHimDownAndKillHim(GameTestHelper h){
+        var f=new Fixture(h);var p=f.player("pine_prescott");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.loaded(),"native sections loaded"))
+          .thenExecute(()->{f.enter(p);f.stage(p,4);f.at(p,0,12,-170);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("CastRecalled"),"fourth visit cast recalled"))
+          .thenIdle(60)
+          .thenExecute(()->{var a=f.actor(p,"CastPrescott");var own=f.own(p);
+              h.assertTrue(a!=null&&a.isInvisible()&&!own.getBoolean("MachineSeen")&&!BorrascaPrescott.out(own)&&BorrascaPrescott.night(p,a)==null,"until the machine has been seen he is nowhere on the ridge, and no blow can find him");
+              h.assertTrue(!BorrascaTexts.account(own).contains("Prescott was at the door"),"and the account has nothing of him");
+              // The reader goes in at the refinery's doorway, beside the belt, and stands looking at the machine.
+              f.at(p,1,12,-182);})
+          .thenWaitUntil(()->h.assertTrue(f.own(p).getBoolean("MachineSeen"),"at the refinery's doorway the machine has been seen"))
+          // Their back is to the depot. He comes to his door.
+          .thenWaitUntil(()->{var a=f.actor(p,"CastPrescott");
+              h.assertTrue(BorrascaPrescott.out(f.own(p))&&!a.isInvisible()&&a.position().distanceTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),BorrascaPrescott.DOORWAY)))<.6,"he comes to the door of his office when nobody sees him come: "+f.rel(a,p));})
+          .thenExecute(()->{var a=f.actor(p,"CastPrescott");
+              h.assertTrue(!f.own(p).getBoolean("PrescottMet")&&a.gesture()==0&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()+90))<1,"he says nothing across the yard, and stands watching the refinery: yaw "+a.getYRot());
+              p.teleportTo(f.out,a.getX()+3,a.getY(),a.getZ(),90,0);p.setDeltaMovement(Vec3.ZERO);})
+          .thenWaitUntil(()->{var a=f.actor(p,"CastPrescott");h.assertTrue(f.own(p).getBoolean("PrescottMet")&&said(a).equals(BorrascaPrescott.FIRST),"near him, he knows who the reader is: "+said(a));})
+          .thenExecute(()->{var a=f.actor(p,"CastPrescott");
+              for(int i=0;i<3;i++){f.talk(p,"CastPrescott");h.assertTrue(said(a).equals(BorrascaPrescott.LINES[i]),"a word to him gets the next of what he has to say ("+i+"): "+said(a));}
+              f.talk(p,"CastPrescott");h.assertTrue(said(a).equals(BorrascaPrescott.LINES[4])&&!f.own(p).getBoolean("PrescottChildren"),"he does not speak of her children to a reader who never found her room: "+said(a));
+              f.talk(p,"CastPrescott");h.assertTrue(said(a).equals(BorrascaPrescott.LINES[4]),"his last line is said again");
+              var own=f.own(p);own.putBoolean("NellsRoom",true);own.putInt("PrescottSaid",BorrascaPrescott.CHILDREN);f.save(p,own);
+              f.talk(p,"CastPrescott");h.assertTrue(said(a).equals(BorrascaPrescott.LINES[BorrascaPrescott.CHILDREN])&&f.own(p).getBoolean("PrescottChildren"),"to one who has, he says where her children are: "+said(a));
+              String told=BorrascaTexts.account(f.own(p));
+              h.assertTrue(told.contains(" Prescott was at the door of his office on the yard, watching the refinery. He told me her children were in town, and that he could tell me the street.")&&!told.contains("I killed him")&&!told.contains("I put him down"),"the account has that he was there and what he told them: "+told);
+              h.assertTrue(TalkHistory.conversations(p.server,p.getUUID()).stream().map(CompoundTag.class::cast).flatMap(t->t.getList("Lines",10).stream()).map(CompoundTag.class::cast)
+                  .anyMatch(line->line.getString("T").equals(BorrascaPrescott.LINES[0])),"what he said is in the journal");
+              h.assertTrue(hitPrescott(f,p),"a grown reader's blow lands on him");
+              h.assertTrue(a.isAlive()&&f.own(p).getBoolean("PrescottDown")&&a.gesture()==BorrascaStory.KNELT&&said(a).equals(BorrascaPrescott.DOWN),"one blow puts him down against his own door: health "+a.getHealth()+" said "+said(a));
+              h.assertFalse(hitPrescott(f,p),"a blow in the moment he goes down does not finish him");
+              f.talk(p,"CastPrescott");h.assertTrue(said(a).equals(BorrascaPrescott.PLEAS[0]),"down, he bargains: "+said(a));
+              f.talk(p,"CastPrescott");h.assertTrue(said(a).equals(BorrascaPrescott.PLEAS[1]),"and again: "+said(a));
+              h.assertTrue(BorrascaTexts.account(f.own(p)).contains(" I put him down against his own door and left him there, offering me things."),"left there, the account says so");
+          }).thenIdle(BorrascaPrescott.FINISH_AFTER+4)
+          .thenExecute(()->{var a=f.actor(p,"CastPrescott");
+              h.assertTrue(hitPrescott(f,p),"a blow after that lands");
+              h.assertTrue(a.isAlive()&&f.own(p).getBoolean("PrescottDead")&&!f.own(p).getBoolean("PrescottDown")&&a.gesture()==BorrascaStory.FALLEN&&!a.isCustomNameVisible(),"and kills him: he lies where he fell, saying nothing");
+              h.assertTrue(BorrascaPrescott.night(p,a)==null,"the body takes no more of the reader's blows as his");
+              h.assertTrue(BorrascaTexts.account(f.own(p)).contains(" I killed him there. He was still offering me things."),"the account says what the reader did");
+              // The reader goes back across the yard.
+              f.at(p,1,12,-175);})
+          .thenIdle(60)
+          .thenExecute(()->{var a=f.actor(p,"CastPrescott");
+              h.assertTrue(!a.isInvisible()&&a.gesture()==BorrascaStory.FALLEN&&a.torn()>0&&a.position().distanceTo(Vec3.atBottomCenterOf(BorrascaRooms.at(f.base(p),BorrascaPrescott.DOORWAY)))<1.2,"the body stays at his door, and the blood spreads under it: torn "+a.torn()+" at "+f.rel(a,p));
+              // Nothing waited on him: the machine can still be stopped.
+              f.use(p,BorrascaRooms.POWER);h.assertTrue(f.own(p).getBoolean("PowerOff"),"the night goes on: the breaker still stops the machine");})
+          .thenSucceed();
+    }
+
     @GameTest(template="empty",batch="borrasca_motion",timeoutTicks=7200)
     public static void nativeChildAndTheOriginalFriendClimbTheActualFortWithoutRelocation(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("triple_tree_climber");final boolean[] moving={false};final int[] rises={0},friendRises={0},playerRoute={0};final double[] last={0,0};
