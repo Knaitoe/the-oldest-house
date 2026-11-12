@@ -60,7 +60,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -149,4 +149,6 @@ def entries():
     # hoods, and (0.4.488) the grocery's stock boy, on stranger phases one hundred and seventy-two to one hundred and eighty-six.
     for phase,name in enumerate(('ghost','skeleton','pumpkin','vampire','monster','skull','robot','mummy','cat','scarecrow','letterman','denim','sweater','cap','stock'),172):
         rows.append({'name':'literary_calder_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # The Hollow's specters (0.4.499), each private to the reader it is after: the witch, on stranger phase one hundred and eighty-seven.
+    rows.append({'name':'literary_hollow_witch','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':187})
     return rows

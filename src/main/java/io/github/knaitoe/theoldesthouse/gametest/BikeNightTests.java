@@ -463,8 +463,8 @@ public final class BikeNightTests {
     /** 0.4.495: for how many ticks a reader was last told the mist is over everything. */
     private static final Map<UUID,Integer> OVER=new HashMap<>();
     /** 0.4.476: the playground's own cases have it to themselves: Gus stays at his place and says nothing, but for the cases that are his. */
-    private static LiteraryTests.Fixture park(GameTestHelper h){done();BikeNightGus.keptHome=true;BikeNightBullies.keptAway=true;active=new LiteraryTests.Fixture(h);return active;}
-    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();BikeNightGus.keptHome=false;
+    private static LiteraryTests.Fixture park(GameTestHelper h){done();BikeNightGus.keptHome=true;BikeNightBullies.keptAway=true;BikeNightSpecters.keptAway=true;active=new LiteraryTests.Fixture(h);return active;}
+    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();BikeNightSpecters.keptAway=false;BikeNightGus.keptHome=false;
         BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=BikeNightBullies.ARRIVE;BikeNightBullies.patience=BikeNightBullies.PATIENCE;}
     /** The park and Park Street: what the park's own cases keep resident. (0.4.481: the place is the town too; its cases keep that, {@link #town}.) */
     private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-58,b.getY()-5,b.getZ()-74,b.getX()+59,b.getY()+19,b.getZ()+2);}
@@ -5224,4 +5224,97 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_out") public static void hollowOutDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.499, the witch, and being caught
+    private static Vec3 atRow(BlockPos b,int row,double south){var w=BikeNightSpecters.SWOOPS.get(row);return new Vec3(b.getX()+w.x(),b.getY()+w.top(),b.getZ()+w.z()+south);}
+
+    @GameTest(template="empty",batch="hollow_witch",timeoutTicks=5000)
+    public static void aWitchCrossesTheWayForOneReaderAndGoesOverWhoeverIsDownOverTheirBarsAndWhoeverIsNotIsCaughtAndComesRoundOutsideTheGate(GameTestHelper h){
+        var f=park(h);BikeNightSpecters.keptAway=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};
+        final double[] lowest={99},west={99},east={-99},lastZ={0};final boolean[] seen={false},own={true};final float[] health={0};
+        var rows=BikeNightSpecters.SWOOPS;var rack=b.offset(BikeNightSite.bikeAt(NightBike.Make.LAMP));
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // Her rows are on the plain way; the first and the last are a little short of a brink.
+                h.assertTrue(rows.size()==3,"three rows: "+rows);
+                for(int i=0;i<3;i++){
+                    var w=rows.get(i);var gap=hollowGap(w.z()+.5);
+                    h.assertTrue(!Double.isNaN(CalderHollow.top((int)Math.floor(w.x()),w.z()))&&w.top()==CalderHollow.top((int)Math.floor(w.x()),w.z()),"a row on the way, at its height: "+w);
+                    if(i!=1)h.assertTrue(gap[0]>=2&&gap[1]<=3,"within three blocks of a brink: "+w+", "+gap[0]+" wide "+gap[1]+" off");
+                }
+                p[0]=f.player("hollow_witch_lamp",P);p[1]=f.player("hollow_witch_hare",P);p[2]=f.player("hollow_witch_hopper",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&p[2].getBbHeight()<1.1&&BikeNight.here(p[2]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);mine[1]=take(h,f,p[1],NightBike.Make.HARE);mine[2]=take(h,f,p[2],NightBike.Make.HOPPER);health[0]=p[0].getHealth();})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("hare")&&f.own(p[2],P).getString("Bike").equals("hopper"),"waiting for the bikes to be theirs"))
+            // The other two wait on the hill. The Lamp's rider stands half a block short of her first row, down over the bars.
+            .thenExecute(()->{
+                for(int i=1;i<3;i++){var at=islandPlace(b,CalderHollow.HILL);mine[i].moveTo(at.x+(i==1?-1.5:1.5),at.y,at.z+4,180,0);}
+                var at=atRow(b,0,1);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);mine[0].keys(true,false);for(var who:p)hush(who);
+            })
+            .thenWaitUntil(()->{
+                var w=BikeNightSpecters.witch(p[0]);
+                if(w!=null){
+                    seen[0]=true;double x=w.getX()-b.getX();lowest[0]=Math.min(lowest[0],w.getY()-b.getY()-rows.get(0).top());west[0]=Math.min(west[0],x);east[0]=Math.max(east[0],x);
+                    // She is her reader's alone: the others are not told of her at all.
+                    own[0]&=BikeNightSpecters.is(w)&&w.gesture()==BikeNightSpecters.FLY&&w.owner().isPresent()&&w.owner().get().equals(p[0].getUUID())&&w.broadcastToPlayer(p[0])&&!w.broadcastToPlayer(p[1])&&!w.broadcastToPlayer(p[2]);
+                    h.assertTrue(Math.abs(w.getZ()-b.getZ()-rows.get(0).z()-.5)<.01,"she keeps to her row");
+                }
+                h.assertTrue(!BikeNightHollow.taken(p[0]),"down over the bars, they are not caught");
+                h.assertTrue(seen[0]&&w==null&&BikeNightSpecters.over(p[0])==1,"waiting for a witch to have come and gone over them: seen "+seen[0]+", over "+BikeNightSpecters.over(p[0]));
+            })
+            .thenExecute(()->{
+                h.assertTrue(own[0],"she was there for her reader and nobody else");
+                h.assertTrue(west[0]<rows.get(0).x()-BikeNightSpecters.FROM+1&&east[0]>rows.get(0).x()+BikeNightSpecters.FROM-1,"she crossed the way from one side to the other: "+west[0]+" to "+east[0]);
+                h.assertTrue(Math.abs(lowest[0]-BikeNightSpecters.LOW)<.1,"as low as a rider's head over the way, and no lower: "+lowest[0]);
+                h.assertTrue(sounded(p[0],"hollow.cackle")&&!sounded(p[1],"hollow.cackle")&&!sounded(p[2],"hollow.cackle"),"her reader heard her coming, and nobody else did");
+                h.assertTrue(p[0].getVehicle()==mine[0]&&BikeNightHollow.fell(p[0])==0&&BikeNightSpecters.had(p[0])==1&&BikeNightSpecters.had(p[1])==0&&BikeNightSpecters.had(p[2])==0,"they are still riding; nobody on the hill has had a witch come");
+                mine[0].keys(false,false);
+            })
+            // That row is done with for them: standing in it again, nothing comes.
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightSpecters.witch(p[0])==null&&BikeNightSpecters.had(p[0])==1,"her first row is crossed once for a reader");
+                // Half a block short of her second row, sitting up.
+                var at=atRow(b,1,1);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);mine[0].steady(0,0);hush(p[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.taken(p[0]),"waiting for the witch at the second row to catch them: over "+BikeNightSpecters.over(p[0])))
+            .thenExecute(()->{
+                var out=new Vec3(b.getX()+BikeNightGraveyard.GATE_X,b.getY(),b.getZ()+CalderTown.RAILS+3.5);
+                h.assertTrue(BikeNightSpecters.witch(p[0])==null&&BikeNightSpecters.had(p[0])==2&&BikeNightSpecters.over(p[0])==1,"she is gone, having caught them");
+                h.assertTrue(!p[0].isPassenger()&&p[0].position().distanceTo(out)<.05&&Math.abs(Mth.wrapDegrees(p[0].getYRot()-180))<1,"they are on the pavement outside the cemetery's front gate, on foot, facing it: "+where(b,p[0]));
+                h.assertTrue(l.noCollision(p[0])&&!l.noCollision(p[0].getBoundingBox().move(0,-.1,0)),"with room to stand there and ground under them");
+                h.assertTrue(p[0].getHealth()==health[0],"unhurt: "+p[0].getHealth());
+                // The bike is gone: not under them, not where they were, not back in the rack.
+                h.assertTrue(mine[0].isRemoved()&&l.getBlockState(rack).isAir(),"the Lamp is gone from under them and has not gone back to the rack");
+                var near=atRow(b,1,1);int lying=0;for(var at:BlockPos.betweenClosed(BlockPos.containing(near.x-4,near.y-2,near.z-4),BlockPos.containing(near.x+4,near.y+3,near.z+4)))if(l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get()))lying++;
+                h.assertTrue(lying==0&&l.getEntitiesOfClass(NightBike.class,hollow(f),bike->bike.make()==NightBike.Make.LAMP).isEmpty(),"and is nowhere on the course");
+                var rec=f.own(p[0],P);h.assertTrue(rec.getBoolean("Taken")&&rec.getString("TakenBy").equals("witch")&&!rec.getBoolean("Through"),"it is in their record, with what caught them: "+rec);
+                // And they take no other bike tonight.
+                var wasp=b.offset(BikeNightSite.bikeAt(NightBike.Make.WASP));hand(f,p[0],wasp);hand(f,p[0],wasp);
+                h.assertTrue(!p[0].isPassenger()&&l.getBlockState(wasp).is(BikeNightRegistry.BIKE_BLOCK.get()),"a hand on another bike does not put them on it");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.TAKEN)&&heard(p[0],BikeNightTexts.NO_MORE)&&OVER.getOrDefault(p[0].getUUID(),0)==BikeNightHollow.TAKEN_OVER&&sounded(p[0],"hollow.under"),"they are told, with the mist over them for as long as that takes"))
+            .thenExecute(()->h.assertTrue(!BikeNightHollow.taken(p[1])&&!BikeNightHollow.taken(p[2])&&p[1].getVehicle()==mine[1]&&p[2].getVehicle()==mine[2],"the others ride on"))
+            // The Hare, flat out up the fences from well short of her first row, sitting up: she times herself to them, and has them at her row.
+            .thenExecute(()->{mine[1].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-293.0,180,0);p[1].setYRot(180);lastZ[0]=0;})
+            .thenWaitUntil(()->{
+                if(!BikeNightHollow.taken(p[1])){p[1].setYRot(180);if(mine[1].onGround())mine[1].steady(0,RiddenBike.TOP);lastZ[0]=mine[1].getZ()-b.getZ();
+                    h.assertTrue(lastZ[0]>rows.get(0).z()-1.2,"they did not get past her row: "+lastZ[0]);}
+                h.assertTrue(BikeNightHollow.taken(p[1]),"waiting for her to catch the Hare's rider at her row: at "+lastZ[0]);
+            })
+            .thenExecute(()->h.assertTrue(Math.abs(lastZ[0]-rows.get(0).z()-.5)<1.6&&f.own(p[1],P).getString("TakenBy").equals("witch"),"caught at her row, going flat out: "+lastZ[0]))
+            // The Hopper the same, but down over the bars from six blocks short: she goes over, and they ride on.
+            .thenExecute(()->{mine[2].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-293.0,180,0);p[2].setYRot(180);})
+            .thenWaitUntil(()->{
+                double z=mine[2].getZ()-b.getZ();
+                if(BikeNightSpecters.over(p[2])==0){p[2].setYRot(180);if(mine[2].onGround())mine[2].steady(0,RiddenBike.TOP);if(z<=rows.get(0).z()+6)mine[2].keys(true,false);}
+                h.assertTrue(!BikeNightHollow.taken(p[2]),"down over the bars, the Hopper's rider is not caught: at "+z);
+                h.assertTrue(BikeNightSpecters.over(p[2])==1,"waiting for her to go over the Hopper's rider: at "+z);
+            })
+            .thenExecute(()->h.assertTrue(p[2].getVehicle()==mine[2]&&Math.abs(mine[2].getZ()-b.getZ()-rows.get(0).z()-.5)<1.6,"she went over them at her row, and they are still riding: "+where(b,mine[2])))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_witch") public static void hollowWitchDone(ServerLevel l){done();}
 }

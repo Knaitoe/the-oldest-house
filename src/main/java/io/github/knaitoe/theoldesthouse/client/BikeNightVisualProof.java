@@ -73,7 +73,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightVisualProof extends Screen {
-    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill"};
+    static final String[] PAGES={"bikes","ridden","lying","rack","hud","park","signs","swings","slide","bars","seesaw","roundabout","dome","spring","small","over","pack","town","alley","fronts","fronts2","cars","graves","hill","specters"};
     private static final int SKY=0xff6d8496,GROUND=0xff5f513e;
     private int page,frames;private static boolean launched;
     public BikeNightVisualProof(){super(Component.literal("Bike night / the six bikes"));}
@@ -136,9 +136,10 @@ public final class BikeNightVisualProof extends Screen {
             "burger place, grocery, scoreboard, post signs; school, a front door and windows, one-sheets",
             "the cars: wagon, pickup, sedan and the fast one, and the two that stand parked; front and back",
             "the cemetery's things: headstones; small row, crosses, obelisk, angel, doors; heap, tarps, goods; the Hollow's",
-            "the hill: a bank and the pier on it, the gate's path, two rows, and the open grave behind its heap"}[page],8,8,0xffffffff);
+            "the hill: a bank and the pier on it, the gate's path, two rows, and the open grave behind its heap",
+            "the Hollow's witch: on her broom from the side, the front, and behind and above; and standing"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
-        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);default->hill(g);}
+        switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);default->specters(g);}
     }
     /** The cell a bike is shown in: three across, two down. */
     private float cx(int i){return width*(.19F+.31F*(i%3));}
@@ -541,6 +542,22 @@ public final class BikeNightVisualProof extends Screen {
         buffers.endBatch();pose.popPose();
     }
     /** 0.4.489: a strip of the hill put together as the builder puts it. */
+    /**
+     * 0.4.499, the Hollow's specters as the game draws them. The witch: on her broom from the side, from the front and from
+     * behind and above, and standing, to show her hat without it.
+     */
+    private void specters(GuiGraphics g){
+        var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
+        float s=width/9.5F,low=24+(height-24)*.86F;
+        // {across the page, turned about her own height (degrees; 180 faces us), tipped toward us, flying}
+        float[][] views={{.14F,90,6,1},{.4F,180,8,1},{.64F,-35,22,1},{.87F,165,6,0}};
+        for(var v:views){
+            var pose=g.pose();pose.pushPose();pose.translate(width*v[0],low-1.5F*s-(v[3]>0?.9F*s:0),400);pose.scale(s,s,s);
+            pose.mulPose(Axis.XP.rotationDegrees(-v[2]));pose.mulPose(Axis.YP.rotationDegrees(v[1]));
+            LiteraryRenderers.drawWitch(pose,buffers,LightTexture.FULL_BRIGHT,v[3]>0,8);
+            buffers.endBatch();pose.popPose();
+        }
+    }
     private void hill(GuiGraphics g){
         var mc=Minecraft.getInstance();var buffers=mc.renderBuffers().bufferSource();g.flush();
         float s=width/19F;var pose=g.pose();pose.pushPose();pose.translate(width*.5F,24+(height-24)*.8F,400);pose.scale(s,-s,s);

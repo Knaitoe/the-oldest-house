@@ -44,7 +44,41 @@ public final class BikeNightHollow {
         long runAt=-1,runBackAt=-1;int runGone;
         /** 0.4.498: the ways each reader has had under them other than the plain one; whether the back gate is open; who is out by it. */
         final Map<UUID,java.util.TreeSet<String>> ways=new HashMap<>();boolean gate;final java.util.Set<UUID> through=new java.util.HashSet<>();
+        /** 0.4.499: who a specter has caught tonight. */
+        final java.util.Set<UUID> taken=new java.util.HashSet<>();
     }
+    /**
+     * 0.4.499, caught. "Being caught by any of them is the Hollow's failure": "The screen goes to mist", and "they come round at
+     * dawn outside the graveyard's front gate, alive, the bike gone." The mist is over them for TAKEN_OVER ticks (as much as their
+     * comfort setting lets through); they are on the pavement outside the front gate, on foot, unhurt; their bike is gone from
+     * under them or from where it lay, and is nobody's for the rest of the night; it goes in their record with what caught them;
+     * and they take no other bike tonight. Whoever was on their pegs is left where they were, over whatever was under them.
+     */
+    public static final int TAKEN_OVER=80;
+    static void taken(ServerLevel l,BikeNight.Night n,ServerPlayer p,String by){
+        if(!n.hollow.taken.add(p.getUUID()))return;
+        var from=p.position();
+        if(p.getVehicle() instanceof NightBike bike){if(bike.getFirstPassenger()==p)bike.taken();else p.stopRiding();}
+        for(var make:NightBike.Make.values()){
+            int k=make.ordinal();if(!p.getUUID().equals(n.owner[k])||n.at[k]==null)continue;
+            var s=l.getBlockState(n.at[k]);
+            if(s.is(BikeNightRegistry.BIKE_BLOCK.get())&&s.getValue(NightBikeBlock.MAKE)==make)l.setBlock(n.at[k],Blocks.AIR.defaultBlockState(),3);
+            n.at[k]=null;
+        }
+        BikeNight.remember(l,n);
+        var to=outside(n);
+        if(p.isPassenger())p.stopRiding();
+        p.connection.teleport(to.x,to.y,to.z,ON,0);p.setDeltaMovement(Vec3.ZERO);p.hurtMarked=true;p.resetFallDistance();
+        var own=BikeNight.own(p);own.putBoolean("Taken",true);own.putString("TakenBy",by);BikeNight.save(p,own);
+        HousePackets.send(p,new BikeNightMistPayload(BikeNightGraveyard.mist(l,n.base,p),TAKEN_OVER));
+        p.playNotifySound(BikeNightRegistry.UNDER.get(),SoundSource.AMBIENT,.9F,.8F);
+        BikeNight.cue(p,BikeNightTexts.TAKEN);
+        l.sendParticles(ParticleTypes.WHITE_SMOKE,from.x,from.y+.8,from.z,40,.6,.8,.6,.02);
+    }
+    /** Outside the cemetery's front gate, on the town's side, facing it. */
+    static Vec3 outside(BikeNight.Night n){return new Vec3(n.base.getX()+BikeNightGraveyard.GATE_X,n.base.getY(),n.base.getZ()+CalderTown.RAILS+3.5);}
+    /** Whether a specter has caught a reader tonight. For tests. */
+    public static boolean taken(ServerPlayer p){var n=BikeNight.night(p);return n!=null&&n.hollow.taken.contains(p.getUUID());}
     /**
      * 0.4.498, the way out. "The Hollow folds back down into the graveyard's far side. The riders come out through the back gate
      * onto a quiet lane above the town, with the lights of Calder Falls on again below." The back gate is shut until somebody is on
@@ -66,7 +100,7 @@ public final class BikeNightHollow {
     /** The way on: north. */
     public static final float ON=180;
 
-    private static Vec3 from(BikeNight.Night n,Vec3 at){return at.subtract(n.base.getX(),n.base.getY(),n.base.getZ());}
+    static Vec3 from(BikeNight.Night n,Vec3 at){return at.subtract(n.base.getX(),n.base.getY(),n.base.getZ());}
     /** In the Hollow: past the hill's edge (and on what is left of its last rows), and short of the far side's ground but for its first rows. */
     public static boolean in(Vec3 at){
         return at.z<CalderHollow.EDGE+1&&at.z>CalderHollow.FAR_SIDE-2&&at.x>CalderGraves.W-1&&at.x<CalderGraves.E+2;
@@ -83,7 +117,7 @@ public final class BikeNightHollow {
         run(l,n,here);
         out(l,n,here);
         for(var p:here){
-            if(!p.isAlive()||p.isSpectator())continue;
+            if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(p.getUUID()))continue;
             NightBike bike=p.getVehicle() instanceof NightBike b?b:null;
             // Somebody on the pegs goes where the one pedalling goes.
             if(bike!=null&&bike.getFirstPassenger()!=p)continue;

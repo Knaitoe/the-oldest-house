@@ -196,6 +196,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> CARTS=sound("town.carts");
     /** 0.4.495: what is in the mist under the Hollow. */
     public static final DeferredHolder<SoundEvent,SoundEvent> UNDER=sound("hollow.under");
+    /** 0.4.499: a witch coming. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> CACKLE=sound("hollow.cackle");
     /** 0.4.497: the long way's lids going. */
     public static final DeferredHolder<SoundEvent,SoundEvent> DROP=sound("hollow.drop");
 

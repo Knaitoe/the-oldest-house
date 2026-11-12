@@ -226,6 +226,9 @@ LOOKS = {
     # 0.4.488: the grocery's stock boy, in the store's apron.
     'literary_calder_stock': Look('#d8ae8e','#3a2a1e','short','#e8e4d8','#2e3440','apron','#2f6a4a',eyes='#4a5a4a',sleeve=4,shoes='#d6d2c6'),
     'literary_calder_cap': Look('#b8845e','#1e1a16','close','#4a4f58','#2e3440','hoodie','#2f6a4a',eyes='#3a2c22',mark='bike_cap',sleeve=11,shoes='#d6d2c6'),
+    # 0.4.499, the Hollow's witch: a long face the colour of old leaves, hair down her back, all in black. Her hat and her broom
+    # are their own model and sheet (tools/draw_calder_specters_art.py).
+    'literary_hollow_witch': Look('#8fa67c','#1b1a20','long','#18171d','#18171d','knit','#2c2834',eyes='#d9c64a',age=2,sleeve=11,shoes='#121114'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),

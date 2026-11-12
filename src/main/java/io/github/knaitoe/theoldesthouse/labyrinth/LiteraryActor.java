@@ -74,7 +74,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * as low; the bar's whistle is four, which is also the plain reach. A body whose scene keeps its own gestures takes neither of the
      * shared poses. A scene that gives its cast a gesture table of its own belongs in this list.
      */
-    public boolean ownGestures(){int phase=phase();return role()==STRANGER&&(LastOrders.cast(phase)||Kept.cast(phase)||Pinehook.cast(phase)||Truant.phase(phase)||Drawing.cast(phase)||Corner.cast(phase)||BikeNightGus.cast(phase)||BikeNightBullies.cast(phase)||CalderPeople.cast(phase));}
+    public boolean ownGestures(){int phase=phase();return role()==STRANGER&&(LastOrders.cast(phase)||Kept.cast(phase)||Pinehook.cast(phase)||Truant.phase(phase)||Drawing.cast(phase)||Corner.cast(phase)||BikeNightGus.cast(phase)||BikeNightBullies.cast(phase)||CalderPeople.cast(phase)||BikeNightSpecters.cast(phase));}
     /** On all fours (Costume Night's crawl, 0.4.103), and as low as that. */
     public boolean crawling(){return gesture()==CostumeNight.CRAWL&&!ownGestures();}
     /** Both arms out in front (the plain reach). */
