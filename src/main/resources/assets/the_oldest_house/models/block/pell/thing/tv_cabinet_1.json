@@ -1,0 +1,97 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/pell/thing/tape_cabinet",
+    "d": "the_oldest_house:block/pell/thing/wood_dark",
+    "t": "the_oldest_house:block/pell/thing/tv_lit",
+    "o": "the_oldest_house:block/pell/thing/doily",
+    "particle": "the_oldest_house:block/pell/thing/wood_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        2
+      ],
+      "to": [
+        16,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            3,
+            16,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        },
+        "down": {
+          "texture": "#d"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        10,
+        4
+      ],
+      "to": [
+        14,
+        22,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        22,
+        8
+      ],
+      "to": [
+        12,
+        22.2,
+        12
+      ],
+      "faces": {
+        "up": {
+          "texture": "#o"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars"
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_1"
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_1",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_1",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_1",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_2"
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_2",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_2",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_2",
+        "y": 270
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_3"
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_3",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_3",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/pell_ceiling_stars_3",
+        "y": 270
+      }
+    ]
+  }
+}

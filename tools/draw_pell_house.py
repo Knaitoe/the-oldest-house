@@ -128,6 +128,31 @@ def concrete(seed=51814, joint=True):
     return im
 
 
+def concrete_print():
+    """The path's slab with a small hand pressed into it when it was wet, and a date scratched beside it with a stick."""
+    im = concrete(51814, True)
+    for x, y in ((5, 7), (6, 7), (7, 7), (5, 8), (6, 8), (7, 8), (8, 8), (5, 9), (6, 9), (7, 9), (8, 9), (6, 10), (7, 10)):
+        dot(im, x, y, '#97938a')
+    for x, y in ((4, 5), (5, 4), (6, 4), (7, 4), (8, 5), (9, 7)):
+        dot(im, x, y, '#97938a')
+    for x in range(10, 15):
+        if x != 12:
+            dot(im, x, 12, '#8a867c')
+    dot(im, 12, 13, '#8a867c'); dot(im, 10, 13, '#8a867c'); dot(im, 14, 11, '#8a867c')
+    return im
+
+
+def concrete_oil():
+    """The drive where a second car used to stand: an old oil stain, gone dull."""
+    im = concrete(51815, True)
+    for y in range(3, 14):
+        for x in range(2, 14):
+            d = ((x - 8) ** 2 + (y - 8.5) ** 2 * 1.5) ** .5
+            if d < 5.2:
+                dot(im, x, y, '#7d796f' if d < 3 else '#9a968c')
+    return im
+
+
 def asphalt():
     im = new('#3d3d40', 51816, 5); speckle(im, 51817, 22, ['#55555a', '#2f2f32', '#646468'])
     return im
@@ -215,6 +240,39 @@ def ceiling():
     return im
 
 
+# Nessa's stuck-on stars: four layouts, so the ceiling is no pattern. Small stars, a few five-pointed ones, single specks, and in
+# one a moon; every block of the ceiling takes one of the four, turned one of four ways (its blockstate picks by place).
+STAR_SHAPES = {'s': ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)), 'd': ((0, 0),),
+               'f': ((0, -2), (0, -1), (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (-1, 1), (0, 1), (1, 1), (-1, 2), (1, 2)),
+               'm': ((1, 0), (2, 0), (0, 1), (1, 1), (0, 2), (0, 3), (0, 4), (1, 4), (1, 5), (2, 5))}
+STAR_LAYOUTS = [[('s', 3, 3), ('f', 10, 9), ('d', 13, 3), ('d', 5, 12)],
+                [('s', 11, 4), ('s', 4, 10), ('d', 8, 7), ('d', 13, 13)],
+                [('m', 8, 5), ('d', 3, 3), ('s', 3, 12), ('d', 13, 12)],
+                [('f', 5, 5), ('s', 12, 11), ('d', 12, 3), ('d', 2, 12), ('d', 8, 14)]]
+
+
+def star_points(layout):
+    for kind, x, y in STAR_LAYOUTS[layout]:
+        for i, (dx, dy) in enumerate(STAR_SHAPES[kind]):
+            yield x + dx, y + dy, kind == 'd' or (kind == 's' and i == 0) or kind in 'fm'
+
+
+def ceiling_stars(layout=0):
+    """Nessa's ceiling: stuck-on stars, pale by day."""
+    im = ceiling()
+    for x, y, _ in star_points(layout):
+        dot(im, x, y, '#e4e6d2')
+    return im
+
+
+def stars_glow(layout=0):
+    """The same stars, as they show in the dark (drawn over the ceiling, lit by themselves)."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for x, y, bright in star_points(layout):
+        dot(im, x, y, '#c8f0b0', 210 if bright else 140)
+    return im
+
+
 def carpet(worn):
     im = new('#8b806d', 51836, 6); rnd = random.Random(51837)
     for _ in range(40):
@@ -239,6 +297,31 @@ def lino():
     return im
 
 
+def lino_worn():
+    """The kitchen's lino where one person has walked between the sink and the door every day: the pattern gone."""
+    im = lino()
+    px = im.load()
+    for y in range(16):
+        for x in range(3, 13):
+            r, g, b, _ = px[x, y]; k = 8 if x in (3, 12) else 16
+            px[x, y] = (min(255, r + k), min(255, g + k), min(255, b + k), 255)
+    return im
+
+
+def lino_burn():
+    """In front of the stove: a burn in the lino the shape of a pan's base, and a smaller one."""
+    im = lino()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7) ** 2 + (y - 6) ** 2) ** .5
+            if 3.2 < d < 4.6:
+                dot(im, x, y, '#6a5a3a')
+            elif d <= 3.2:
+                dot(im, x, y, '#8a7a56')
+    dot(im, 12, 12, '#6a5a3a'); dot(im, 13, 12, '#6a5a3a'); dot(im, 12, 13, '#6a5a3a')
+    return im
+
+
 def slab(oil):
     im = new('#a4a097', 51840, 4); speckle(im, 51841, 16, ['#948f86', '#b3afa6'])
     if oil:
@@ -253,9 +336,10 @@ def slab(oil):
 
 def materials():
     return {'brick': brick(), 'brick_low': brick_low(), 'brick_new': brick('#b67253', '#e2d9c8', 51802, 4), 'roof': roof(), 'fascia': fascia(),
-            'lawn': lawn(0), 'lawn_dry': lawn(1), 'concrete': concrete(), 'asphalt': asphalt(), 'curb': kerb(), 'paver': paver(),
+            'lawn': lawn(0), 'lawn_dry': lawn(1), 'concrete': concrete(), 'concrete_print': concrete_print(), 'concrete_oil': concrete_oil(), 'asphalt': asphalt(), 'curb': kerb(), 'paver': paver(),
             'coping': coping(), 'pool_tile': pool_tile(), 'pool_band': pool_tile(True), 'deck': deck(), 'mulch': mulch(), 'iron': iron(),
-            'plaster': plaster(), 'ceiling': ceiling(), 'carpet': carpet(False), 'carpet_worn': carpet(True), 'lino': lino(),
+            'plaster': plaster(), 'ceiling': ceiling(), 'ceiling_stars': ceiling_stars(), 'carpet': carpet(False), 'carpet_worn': carpet(True), 'lino': lino(),
+            'lino_worn': lino_worn(), 'lino_burn': lino_burn(),
             'slab': slab(False), 'slab_oil': slab(True)}
 
 
@@ -450,7 +534,9 @@ def faces():
     out = {'tin': tin(False), 'tin_front': tin(True), 'mat': mat(),
            'paling': paling(), 'paling_gate': paling_gate(), 'pool_bars': pool_bars(), 'pool_gate': pool_bars(True), 'pool_gate_locked': pool_bars(True, True),
            'roller': roller(), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(),
-           'tarp': tarp(False), 'tarp_pond': tarp(True), 'post': new('#6b6052', 51878, 3), 'pool_post': new('#2c2e30', 51879, 2)}
+           'tarp': tarp(False), 'tarp_pond': tarp(True), 'post': new('#6b6052', 51878, 3), 'pool_post': new('#2c2e30', 51879, 2), 'stars_glow': stars_glow()}
+    for layout in range(1, len(STAR_LAYOUTS)):
+        out[f'stars_{layout}'] = ceiling_stars(layout); out[f'stars_glow_{layout}'] = stars_glow(layout)
     for kind in ('inner', 'garage', 'shed'):
         for upper in (0, 1):
             out[f'door_{kind}_{upper}'] = door(upper, kind)
@@ -565,10 +651,10 @@ FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'pell_fitting': 'House Fitting', 'pell_brick': 'Brick Veneer', 'pell_brick_low': 'Brick Veneer, Lowest Course', 'pell_brick_new': 'Newer Brick',
          'pell_roof': 'Roof Tiles', 'pell_fascia': 'Eaves Board', 'pell_lawn': 'Watered Lawn', 'pell_lawn_dry': 'Dry Lawn', 'pell_concrete': 'Concrete',
-         'pell_asphalt': 'Road', 'pell_curb': 'Curb', 'pell_paver': 'Patio Pavers', 'pell_coping': 'Pool Coping', 'pell_pool_tile': 'Pool Tiles',
+         'pell_concrete_print': 'Concrete, Handprint', 'pell_concrete_oil': 'Concrete, Stained', 'pell_asphalt': 'Road', 'pell_curb': 'Curb', 'pell_paver': 'Patio Pavers', 'pell_coping': 'Pool Coping', 'pell_pool_tile': 'Pool Tiles',
          'pell_pool_band': 'Pool Tiles, Waterline', 'pell_deck': 'Deck Boards', 'pell_mulch': 'Bark Mulch', 'pell_iron': 'Corrugated Iron',
-         'pell_plaster': 'Painted Plaster', 'pell_ceiling': 'Ceiling', 'pell_carpet': 'Carpet', 'pell_carpet_worn': 'Carpet, Worn',
-         'pell_lino': 'Lino', 'pell_slab': 'Garage Slab', 'pell_slab_oil': 'Garage Slab, Stained'}
+         'pell_plaster': 'Painted Plaster', 'pell_ceiling': 'Ceiling', 'pell_ceiling_stars': 'Ceiling, Stars', 'pell_carpet': 'Carpet', 'pell_carpet_worn': 'Carpet, Worn',
+         'pell_lino': 'Lino', 'pell_lino_worn': 'Lino, Worn', 'pell_lino_burn': 'Lino, Burnt', 'pell_slab': 'Garage Slab', 'pell_slab_oil': 'Garage Slab, Stained'}
 
 
 def java_names():
@@ -586,6 +672,20 @@ def files():
     for name in materials():
         out[f'models/block/pell_{name}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + f'block/pell_{name}'}}
         out[f'blockstates/pell_{name}.json'] = {'variants': {'': {'model': NS + f'block/pell_{name}'}}}
+    # The stars show in the dark: the ceiling, and under it a sheet of the stars alone that lights itself.
+    cube = {k: {'texture': '#all', 'cullface': k} for k in ('north', 'south', 'east', 'west', 'up', 'down')}
+    stars = []
+    for layout in range(len(STAR_LAYOUTS)):
+        name = 'pell_ceiling_stars' + (f'_{layout}' if layout else '')
+        day, glow = (NS + 'block/pell_ceiling_stars', P + 'stars_glow') if not layout else (P + f'stars_{layout}', P + f'stars_glow_{layout}')
+        out[f'models/block/{name}.json'] = {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout',
+            'textures': {'all': day, 'glow': glow, 'particle': day},
+            'elements': [{'from': [0, 0, 0], 'to': [16, 16, 16], 'faces': cube},
+                         {'from': [0, -0.05, 0], 'to': [16, -0.05, 16], 'shade': False, 'faces': {'down': {'texture': '#glow'}},
+                          'neoforge_data': {'block_light': 15, 'sky_light': 15}}]}
+        for y in (0, 90, 180, 270):
+            stars.append({'model': NS + f'block/{name}', **({'y': y} if y else {})})
+    out['blockstates/pell_ceiling_stars.json'] = {'variants': {'': stars}}
     for key, obj in fitting_models().items():
         out[f'models/block/pell/{key}.json'] = obj
     variants = {}

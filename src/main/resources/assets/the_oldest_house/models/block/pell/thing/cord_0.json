@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/pell/thing/cord",
+    "particle": "the_oldest_house:block/pell/thing/cord"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0.05,
+        0
+      ],
+      "to": [
+        16,
+        0.3,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/pell/thing/power_point",
+    "c": "the_oldest_house:block/pell/thing/cord",
+    "particle": "the_oldest_house:block/pell/thing/power_point"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.6
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        0.05,
+        3
+      ],
+      "to": [
+        9,
+        0.3,
+        15.6
+      ],
+      "faces": {
+        "up": {
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            9,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/pell/thing/box_winter_0",
+    "p": "the_oldest_house:block/pell/thing/box_plain",
+    "t": "the_oldest_house:block/pell/thing/box_top",
+    "particle": "the_oldest_house:block/pell/thing/box_winter_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "s": "the_oldest_house:block/pell/thing/switch",
+    "particle": "the_oldest_house:block/pell/thing/switch"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        3,
+        15.6
+      ],
+      "to": [
+        11,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            5,
+            3,
+            11,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "c": "the_oldest_house:block/pell/thing/calendar_kitchen",
+    "particle": "the_oldest_house:block/pell/thing/calendar_kitchen"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        15.6
+      ],
+      "to": [
+        14,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

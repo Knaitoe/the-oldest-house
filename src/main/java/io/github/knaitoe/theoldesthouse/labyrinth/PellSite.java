@@ -92,6 +92,7 @@ public final class PellSite {
         doors(l,b);
         set(l,b,SOURCE,fit(PellBlock.Kind.LETTERBOX,Direction.SOUTH,0));
         set(l,b,ENDING,fit(PellBlock.Kind.DOORMAT,Direction.SOUTH,0));
+        things(l,b);
     }
     /**
      * The House's door is in a brick substation that stands across the street's mouth: its front, where the vestibule behind the
@@ -198,6 +199,91 @@ public final class PellSite {
         // In the west wall, a window bricked up: newer bricks that do not match.
         for(int z:new int[]{-62,-61})set(l,b,HOUSE_W,1,z,fit(PellBlock.Kind.WALL,Direction.WEST,2));
     }
+    private static void put(ServerLevel l,BlockPos b,int x,int y,int z,PellThing.Kind kind,Direction f,int stage){set(l,b,x,y,z,PellThing.of(kind,f,stage));}
+    /** A thing two cells wide: half 0 here, half 1 in the cell to its right as one faces it. */
+    private static void pair(ServerLevel l,BlockPos b,int x,int y,int z,PellThing.Kind kind,Direction f,int stage0,int stage1){
+        var at=new BlockPos(x,y,z);set(l,b,at,PellThing.of(kind,f,stage0));set(l,b,PellThing.right(at,f),PellThing.of(kind,f,stage1));
+    }
+    /** A thing two cells long: its head here, its foot in the cell it faces. */
+    private static void lengthwise(ServerLevel l,BlockPos b,int x,int y,int z,PellThing.Kind kind,Direction f){
+        var at=new BlockPos(x,y,z);set(l,b,at,PellThing.of(kind,f,0));set(l,b,PellThing.ahead(at,f),PellThing.of(kind,f,1));
+    }
+    /**
+     * 0.4.522, what is in each room as it is on the first visit (docs/PELL_HOUSE_THINGS_0_4_522.md, the proposal's "The house, room
+     * by room"). The marks on the floors and Nessa's ceiling are materials of the house's own.
+     */
+    static void things(ServerLevel l,BlockPos b){
+        Direction n=Direction.NORTH,s=Direction.SOUTH,e=Direction.EAST,w=Direction.WEST;
+        // The kitchen: the fridge in the corner, the benches along the back wall with the sink under the window onto the pool, the
+        // cupboards over them; the table and four chairs; the chore chart and the calendar on the west wall; the lino worn from the
+        // door to the sink, and burnt in front of the stove.
+        put(l,b,-13,0,-71,PellThing.Kind.FRIDGE,s,0);put(l,b,-13,1,-71,PellThing.Kind.FRIDGE_TOP,s,0);
+        put(l,b,-12,0,-71,PellThing.Kind.LUNCHBOXES,s,0);put(l,b,-11,0,-71,PellThing.Kind.KNIFE_BLOCK,s,0);put(l,b,-10,0,-71,PellThing.Kind.SINK,s,0);
+        put(l,b,-9,0,-71,PellThing.Kind.COUNTER,s,0);put(l,b,-8,0,-71,PellThing.Kind.STOVE,s,0);put(l,b,-7,0,-71,PellThing.Kind.COUNTER,s,0);
+        for(int x:new int[]{-13,-12,-11,-8,-7})put(l,b,x,2,-71,PellThing.Kind.CUPBOARD_UPPER,s,0);
+        pair(l,b,-11,0,-69,PellThing.Kind.TABLE,n,0,1);
+        put(l,b,-12,0,-70,PellThing.Kind.CHAIR,s,0);put(l,b,-11,0,-70,PellThing.Kind.CHAIR,s,0);put(l,b,-12,0,-68,PellThing.Kind.CHAIR,n,0);put(l,b,-11,0,-68,PellThing.Kind.CHAIR,n,0);
+        pair(l,b,-13,1,-69,PellThing.Kind.CHORE_CHART,e,0,1);put(l,b,-13,1,-68,PellThing.Kind.CALENDAR,e,0);
+        for(int z=-70;z<=-68;z++)set(l,b,-10,-1,z,mat("lino_worn"));
+        set(l,b,-8,-1,-70,mat("lino_burn"));
+        // The living room: the television against the west wall with the recliner turned to it, the side table at its arm and the
+        // standard lamp behind that, off; the window seat under the window onto the pool, the mantel on the east wall.
+        put(l,b,-5,0,-70,PellThing.Kind.TV_CABINET,e,0);put(l,b,-2,0,-70,PellThing.Kind.RECLINER,w,0);
+        put(l,b,-2,0,-71,PellThing.Kind.SIDE_TABLE,s,0);put(l,b,-3,0,-71,PellThing.Kind.FLOOR_LAMP,s,0);
+        put(l,b,2,0,-71,PellThing.Kind.WINDOW_SEAT,s,0);put(l,b,3,0,-71,PellThing.Kind.WINDOW_SEAT,s,0);
+        put(l,b,4,0,-69,PellThing.Kind.MANTEL,w,0);
+        // The hall: the school photographs along the back wall, a year to each, read left to right; after the last, the empty
+        // hooks; inside the front door, the hook board.
+        for(int i=0;i<4;i++)put(l,b,-8+i,1,-66,PellThing.Kind.PHOTOS,s,i);
+        for(int x=-4;x<=-2;x++)put(l,b,x,1,-66,PellThing.Kind.HOOKS,s,0);
+        put(l,b,1,1,-60,PellThing.Kind.COAT_HOOK,w,0);
+        // Nessa's room: the bed with its head to the west wall; the drawers with the clock, the desk under the window, the large
+        // books, the wardrobe; the taped switch and the height marks by the door; the border round the top of the walls, put back
+        // crooked behind the bed; the stars on the ceiling.
+        lengthwise(l,b,-13,0,-61,PellThing.Kind.BED,e);
+        put(l,b,-8,0,-63,PellThing.Kind.DRAWERS,s,0);put(l,b,-11,0,-59,PellThing.Kind.DESK,n,0);put(l,b,-13,0,-63,PellThing.Kind.BOOKSHELF,e,0);
+        put(l,b,-8,0,-59,PellThing.Kind.WARDROBE,w,0);put(l,b,-8,1,-59,PellThing.Kind.WARDROBE,w,1);
+        put(l,b,-9,1,-63,PellThing.Kind.SWITCH,s,0);put(l,b,-11,0,-63,PellThing.Kind.MARKS,s,0);put(l,b,-11,1,-63,PellThing.Kind.MARKS,s,3);
+        for(int z=-63;z<=-59;z++)put(l,b,-13,2,z,PellThing.Kind.BORDER,e,z>=-62&&z<=-60?1:0);
+        for(int x=-12;x<=-8;x++)put(l,b,x,2,-63,PellThing.Kind.BORDER,s,0);
+        for(int x=-12;x<=-9;x++)put(l,b,x,2,-59,PellThing.Kind.BORDER,n,0);
+        for(int z=-62;z<=-59;z++)put(l,b,-8,2,z,PellThing.Kind.BORDER,w,0);
+        box(l,b,-13,ROOF,-63,-8,ROOF,-59,mat("ceiling_stars"));
+        // Callum's room: the circle painted on the floor with the toys on its line, the mattress inside it; the shoes at the door;
+        // the drawer of cutlery.
+        for(int i=0;i<12;i++)set(l,b,-5+i%3,-1,-62+i/3,PellThing.circle(i));
+        lengthwise(l,b,-4,0,-60,PellThing.Kind.MATTRESS,n);
+        put(l,b,-5,0,-63,PellThing.Kind.SHOES,s,0);put(l,b,-6,0,-61,PellThing.Kind.CUTLERY,e,0);
+        // The bathroom: the bath under the window, the basin and its mirror, the toilet.
+        lengthwise(l,b,5,0,-59,PellThing.Kind.BATH,w);
+        put(l,b,3,0,-61,PellThing.Kind.VANITY,e,0);put(l,b,3,1,-61,PellThing.Kind.MIRROR,e,0);put(l,b,5,0,-62,PellThing.Kind.TOILET,w,0);
+        // The laundry: the freezer against the east wall, its cord taped across the floor from the power point; the stool by it;
+        // the trough and the washing machine; the bucket and the chlorine.
+        pair(l,b,9,0,-70,PellThing.Kind.FREEZER,w,0,1);
+        put(l,b,6,0,-70,PellThing.Kind.POWER,e,0);put(l,b,7,0,-70,PellThing.Kind.CORD,e,0);put(l,b,8,0,-70,PellThing.Kind.CORD,e,0);
+        put(l,b,8,0,-69,PellThing.Kind.STOOL,e,0);put(l,b,6,0,-71,PellThing.Kind.TROUGH,s,0);put(l,b,7,0,-71,PellThing.Kind.WASHER,s,0);
+        put(l,b,6,0,-68,PellThing.Kind.BUCKET,s,0);put(l,b,9,0,-68,PellThing.Kind.CHLORINE,w,0);
+        // The garage: the camp bed over the oil stain, the bulb over it; the three boxes along the east wall, read from the room left
+        // to right, WINTER, BOOKS, then DON'T by the camp bed's head; the pegboard.
+        lengthwise(l,b,15,0,-89,PellThing.Kind.CAMP_BED,n);put(l,b,15,2,-89,PellThing.Kind.BULB,n,0);
+        pair(l,b,17,0,-93,PellThing.Kind.BOX_WINTER,w,0,1);pair(l,b,17,0,-91,PellThing.Kind.BOX_BOOKS,w,0,1);pair(l,b,17,0,-89,PellThing.Kind.BOX_DONT,w,0,1);
+        pair(l,b,14,1,-95,PellThing.Kind.PEGBOARD,s,0,1);
+        // The shed: the tapes along the back wall, the workbench with the television, the deck and the tin on it and the empty tins
+        // under it; the transcript on the east wall, the calendar on the west.
+        for(int x=5;x<=6;x++){put(l,b,x,0,-93,PellThing.Kind.TAPES,s,0);put(l,b,x,1,-93,PellThing.Kind.TAPES,s,1);}
+        put(l,b,7,0,-93,PellThing.Kind.WORKBENCH,s,1);put(l,b,8,0,-93,PellThing.Kind.WORKBENCH,s,0);put(l,b,7,1,-93,PellThing.Kind.SHED_TV,s,0);put(l,b,8,1,-93,PellThing.Kind.TIN,s,0);
+        put(l,b,8,1,-91,PellThing.Kind.TRANSCRIPT,w,0);put(l,b,8,1,-92,PellThing.Kind.TRANSCRIPT,w,1);put(l,b,8,2,-92,PellThing.Kind.TRANSCRIPT,w,2);
+        put(l,b,5,1,-92,PellThing.Kind.SHED_CALENDAR,e,0);
+        // Outside: the stakes in the front bed, the newest nearest the step; the kennel and its bowl by the drive; the pool chair
+        // turned to the water and the pump; the handprint in the path, and the stain on the drive. The kennel is two cells wide, so
+        // its name reads over the opening.
+        for(int x=-12;x<=-4;x+=2)put(l,b,x,0,-57,PellThing.Kind.STAKE,s,0);
+        put(l,b,-2,0,-57,PellThing.Kind.STAKE,s,1);
+        pair(l,b,19,0,-80,PellThing.Kind.KENNEL,w,0,1);put(l,b,19,0,-78,PellThing.Kind.BOWL,w,0);
+        put(l,b,-14,0,-86,PellThing.Kind.POOL_CHAIR,e,0);put(l,b,1,0,-90,PellThing.Kind.PUMP,w,0);
+        set(l,b,1,-1,-54,mat("concrete_print"));set(l,b,17,-1,-68,mat("concrete_oil"));
+    }
+
     /** One course of the house's outside wall round a box: each cell turns its brick outward, and the corners have two brick faces. */
     static void ring(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,int y,int stage){
         for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){

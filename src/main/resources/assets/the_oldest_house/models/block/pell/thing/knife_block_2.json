@@ -1,0 +1,101 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/pell/thing/cupboard",
+    "s": "the_oldest_house:block/pell/thing/cupboard_side",
+    "t": "the_oldest_house:block/pell/thing/laminate_top",
+    "e": "the_oldest_house:block/pell/thing/chrome",
+    "w": "the_oldest_house:block/pell/thing/wood_block",
+    "h": "the_oldest_house:block/pell/thing/handle",
+    "g": "the_oldest_house:block/pell/thing/knife_2",
+    "particle": "the_oldest_house:block/pell/thing/wood_block"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    }
+  ]
+}

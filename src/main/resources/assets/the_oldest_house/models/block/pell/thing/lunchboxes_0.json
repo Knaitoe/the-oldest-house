@@ -1,0 +1,171 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/pell/thing/cupboard",
+    "s": "the_oldest_house:block/pell/thing/cupboard_side",
+    "t": "the_oldest_house:block/pell/thing/laminate_top",
+    "e": "the_oldest_house:block/pell/thing/chrome",
+    "b": "the_oldest_house:block/pell/thing/lunchbox_side",
+    "p": "the_oldest_house:block/pell/thing/lunchbox_side_pink",
+    "l": "the_oldest_house:block/pell/thing/lunchboxes",
+    "particle": "the_oldest_house:block/pell/thing/lunchboxes"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        16,
+        4
+      ],
+      "to": [
+        7,
+        19.5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            2,
+            4,
+            7,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        16,
+        4
+      ],
+      "to": [
+        14,
+        19.5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            9,
+            4,
+            14,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}
