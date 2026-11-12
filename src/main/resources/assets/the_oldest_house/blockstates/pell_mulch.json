@@ -1,7 +1,21 @@
 {
   "variants": {
-    "": {
-      "model": "the_oldest_house:block/pell_mulch"
-    }
+    "": [
+      {
+        "model": "the_oldest_house:block/pell_mulch"
+      },
+      {
+        "model": "the_oldest_house:block/pell_mulch",
+        "y": 90
+      },
+      {
+        "model": "the_oldest_house:block/pell_mulch",
+        "y": 180
+      },
+      {
+        "model": "the_oldest_house:block/pell_mulch",
+        "y": 270
+      }
+    ]
   }
 }

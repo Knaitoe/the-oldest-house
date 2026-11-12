@@ -21,7 +21,8 @@ import net.minecraft.world.phys.shapes.*;
  * <li>ROLLER: the garage's roller door, which is never opened.</li>
  * <li>WINDOW: a window in the wall's thickness. Stage 0 clear, 1 blinds down, 2 painted over from inside.</li>
  * <li>SLIDER: the glass sliding door. Stage bit 0 open, bit 1 the upper cell.</li>
- * <li>TARP: the pool's cover lying on the water; stage 1 where it sags and holds a pond.</li>
+ * <li>TARP: the pool's cover lying on the water; where it sags it holds one pond: stage 1 the pond's inside, 2 its edge with the dry
+ * cloth on the side the cell faces, 3 a rounded corner of it, dry to the facing and to the left of it as drawn facing north.</li>
  * <li>LETTERBOX: a bent tin box on a post, the house's number in stick-on figures with one gone (the first paper is in it).
  * DOORMAT: the mat at the front step (where each reader's account waits), on the line; stage 1 its near edge lifted and folded
  * back, so the line shows running on under it.</li>

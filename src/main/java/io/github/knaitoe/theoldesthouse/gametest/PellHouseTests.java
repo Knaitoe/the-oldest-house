@@ -112,6 +112,12 @@ public final class PellHouseTests {
             h.assertFalse(in.contains(new BlockPos(8,0,-61))||in.contains(new BlockPos(-5,0,-85))||in.contains(new BlockPos(6,0,-92)),"and still not into June's room, the pool's yard or the shed");
             // The pool: under its cover; tiles, the band at the waterline; shallow at the south end and deep at the north.
             h.assertTrue(fitting(l,b,new BlockPos(PellSite.WATER_W,-1,PellSite.WATER_S),PellBlock.Kind.TARP)&&l.getBlockState(b.offset(-7,-1,-86)).getValue(PellBlock.STAGE)==1,"the cover lies on it, sagging in the middle");
+            // 0.4.529: the sag holds one pond, its edges facing the dry cloth and its corners rounded, not a puddle in every cell.
+            java.util.function.BiPredicate<BlockPos,Integer> cover=(at,stage)->l.getBlockState(b.offset(at)).getValue(PellBlock.STAGE)==stage;
+            java.util.function.BiPredicate<BlockPos,Direction> facing=(at,d)->l.getBlockState(b.offset(at)).getValue(PellBlock.FACING)==d;
+            h.assertTrue(cover.test(new BlockPos(-9,-1,-90),3)&&facing.test(new BlockPos(-9,-1,-90),Direction.NORTH)&&cover.test(new BlockPos(-5,-1,-83),3)&&facing.test(new BlockPos(-5,-1,-83),Direction.SOUTH)
+                    &&cover.test(new BlockPos(-7,-1,-90),2)&&facing.test(new BlockPos(-7,-1,-90),Direction.NORTH)&&cover.test(new BlockPos(-9,-1,-86),2)&&facing.test(new BlockPos(-9,-1,-86),Direction.WEST)
+                    &&cover.test(new BlockPos(-10,-1,-86),0)&&cover.test(new BlockPos(-7,-1,-91),0),"one pond in the sag: rounded corners, edges facing the dry cloth, dry beyond");
             h.assertTrue(l.getBlockState(b.offset(-7,-2,-82)).is(Blocks.WATER)&&is(l,b,-7,PellSite.SHALLOW,-82,"pool_tile")&&l.getBlockState(b.offset(-7,PellSite.DEEP+1,-90)).is(Blocks.WATER)&&is(l,b,-7,PellSite.DEEP,-90,"pool_tile"),"water over tile, shallow and deep");
             h.assertTrue(is(l,b,PellSite.WATER_W-1,-2,-85,"pool_band")&&is(l,b,PellSite.WATER_W-1,-1,-85,"coping"),"the band at the waterline under the coping");
             PellSite.pool(l,b,false);

@@ -397,9 +397,25 @@ public final class PellSite {
         var water=Blocks.WATER.defaultBlockState();
         for(int x=WATER_W;x<=WATER_E;x++)for(int z=WATER_N;z<=WATER_S;z++){
             for(int y=floor(z)+1;y<=-2;y++)set(l,b,x,y,z,water);
-            boolean middle=Math.abs(x-(WATER_W+WATER_E)/2)<=2&&z<=WATER_S-3&&z>=WATER_N+3;
-            set(l,b,x,-1,z,covered?fit(PellBlock.Kind.TARP,Direction.NORTH,middle?1:0):water);
+            set(l,b,x,-1,z,covered?cover(x,z):water);
         }
+    }
+    /**
+     * The cover at one cell of the pool (0.4.529). Where it sags, five cells by eight in the middle, it holds one pond: water across
+     * the pond's inside (stage 1), the pond's edge along its sides with the dry cloth on the side the cell faces (stage 2), and a
+     * rounded corner at each of its corners (stage 3, facing north at the north-west corner, then east, south and west going round).
+     * Everywhere else it lies dry (stage 0). The dry cloth and the pond's inside are turned at random by their block states.
+     */
+    static BlockState cover(int x,int z){
+        int w=(WATER_W+WATER_E)/2-2,e=w+4,n=WATER_N+3,s=WATER_S-3;
+        if(x<w||x>e||z<n||z>s)return fit(PellBlock.Kind.TARP,Direction.NORTH,0);
+        boolean west=x==w,east=x==e,north=z==n,south=z==s;
+        if(north&&west)return fit(PellBlock.Kind.TARP,Direction.NORTH,3);
+        if(north&&east)return fit(PellBlock.Kind.TARP,Direction.EAST,3);
+        if(south&&east)return fit(PellBlock.Kind.TARP,Direction.SOUTH,3);
+        if(south&&west)return fit(PellBlock.Kind.TARP,Direction.WEST,3);
+        if(north||east||south||west)return fit(PellBlock.Kind.TARP,north?Direction.NORTH:east?Direction.EAST:south?Direction.SOUTH:Direction.WEST,2);
+        return fit(PellBlock.Kind.TARP,Direction.NORTH,1);
     }
     /** The pool's floor under a row of its water: the shallow end's, or the deep end's. */
     public static int floor(int z){return z<=DEEP_S?DEEP:SHALLOW;}
