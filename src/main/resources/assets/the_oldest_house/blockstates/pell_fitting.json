@@ -784,7 +784,7 @@
       "model": "the_oldest_house:block/pell/doormat_0"
     },
     "facing=north,kind=doormat,stage=1": {
-      "model": "the_oldest_house:block/pell/doormat_0"
+      "model": "the_oldest_house:block/pell/doormat_1"
     },
     "facing=north,kind=doormat,stage=2": {
       "model": "the_oldest_house:block/pell/doormat_0"
@@ -797,7 +797,7 @@
       "y": 90
     },
     "facing=east,kind=doormat,stage=1": {
-      "model": "the_oldest_house:block/pell/doormat_0",
+      "model": "the_oldest_house:block/pell/doormat_1",
       "y": 90
     },
     "facing=east,kind=doormat,stage=2": {
@@ -813,7 +813,7 @@
       "y": 180
     },
     "facing=south,kind=doormat,stage=1": {
-      "model": "the_oldest_house:block/pell/doormat_0",
+      "model": "the_oldest_house:block/pell/doormat_1",
       "y": 180
     },
     "facing=south,kind=doormat,stage=2": {
@@ -829,7 +829,7 @@
       "y": 270
     },
     "facing=west,kind=doormat,stage=1": {
-      "model": "the_oldest_house:block/pell/doormat_0",
+      "model": "the_oldest_house:block/pell/doormat_1",
       "y": 270
     },
     "facing=west,kind=doormat,stage=2": {

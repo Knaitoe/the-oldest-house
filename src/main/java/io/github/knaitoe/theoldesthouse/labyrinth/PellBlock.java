@@ -23,7 +23,8 @@ import net.minecraft.world.phys.shapes.*;
  * <li>SLIDER: the glass sliding door. Stage bit 0 open, bit 1 the upper cell.</li>
  * <li>TARP: the pool's cover lying on the water; stage 1 where it sags and holds a pond.</li>
  * <li>LETTERBOX: a bent tin box on a post, the house's number in stick-on figures with one gone (the first paper is in it).
- * DOORMAT: the mat at the front step (where each reader's account waits).</li>
+ * DOORMAT: the mat at the front step (where each reader's account waits), on the line; stage 1 its near edge lifted and folded
+ * back, so the line shows running on under it.</li>
  * <li>WALL: a cell of the house's outside wall, brick veneer on the face it turns to the weather (FACING) and plaster on the rest.
  * Stage 0 the veneer, 1 its lowest course, 2 the newer brick of the bricked-up window. WALL_CORNER: the same at a corner, brick on
  * its north and west faces as drawn.</li>

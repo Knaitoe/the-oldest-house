@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "the_oldest_house:block/pell/line/tyre_corner_wn_0",
+    "bottom": "the_oldest_house:block/pell_concrete",
+    "side": "the_oldest_house:block/pell_concrete",
+    "particle": "the_oldest_house:block/pell_concrete"
+  }
+}

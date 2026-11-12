@@ -21,7 +21,8 @@ import net.minecraft.world.phys.Vec3;
  * the yard's west half behind its own fence, the shed is against the back fence, and between the shed's back and the fence is the
  * strip only the garage's window sees.
  *
- * <p>This slice is the ground, the walls and the doors. What stands in the rooms, the line, and the people come after.
+ * <p>The ground, the walls and the doors (0.4.518); what stands in the rooms (0.4.522); the line round the lot, painted into the
+ * ground it crosses (0.4.523). The people come after.
  */
 public final class PellSite {
     private PellSite(){}
@@ -37,6 +38,14 @@ public final class PellSite {
     public static final int DRIVE_W=12,DRIVE_E=18,GARAGE_W=12,GARAGE_E=18,GARAGE_S=-86,GARAGE_N=-96,SHED_W=4,SHED_E=9,SHED_S=-90,SHED_N=-94;
     /** The pool's fence (its south run and its east run; the lot's fences are its other two sides), and the water. */
     public static final int POOL_FENCE_S=-76,POOL_FENCE_E=2,WATER_W=-11,WATER_E=-3,WATER_S=-80,WATER_N=-93,DEEP_S=-86,SHALLOW=-3,DEEP=-5;
+    /** 0.4.523: the deck along the pool's west side, where the chair stands. */
+    public static final int DECK_W=-19,DECK_E=-13,DECK_S=-77,DECK_N=-96;
+    /**
+     * 0.4.523, the line (PellLine): its four runs. Along the front at the step, under the mat; up the west side under the side gate;
+     * along the back fence, behind the shed; down the east side, through the kennel. The drive's wheels ran at the two cells WHEELS.
+     */
+    public static final int LINE_W=-17,LINE_E=19,LINE_S=-57,LINE_N=-97;
+    public static final int[] WHEELS={14,16};
     /** The front door (the screen), June's door, and the rest of the house's doors: each a lower cell and the way its outside faces. */
     public static final BlockPos FRONT_DOOR=new BlockPos(0,0,-58),NESSA_DOOR=new BlockPos(-10,0,-64),CALLUM_DOOR=new BlockPos(-4,0,-64),BATH_DOOR=new BlockPos(4,0,-64),
         JUNE_DOOR=new BlockPos(8,0,-64),LAUNDRY_DOOR=new BlockPos(7,0,-67),BACK_DOOR=new BlockPos(8,0,-72),SLIDER=new BlockPos(0,0,-72),
@@ -87,12 +96,14 @@ public final class PellSite {
         house(l,b);
         garage(l,b);
         shed(l,b);
+        poolYard(l,b);
         pool(l,b,true);
         fences(l,b);
         doors(l,b);
         set(l,b,SOURCE,fit(PellBlock.Kind.LETTERBOX,Direction.SOUTH,0));
         set(l,b,ENDING,fit(PellBlock.Kind.DOORMAT,Direction.SOUTH,0));
         things(l,b);
+        line(l,b);
     }
     /**
      * The House's door is in a brick substation that stands across the street's mouth: its front, where the vestibule behind the
@@ -166,8 +177,9 @@ public final class PellSite {
         box(l,b,8,-1,LOT_S+1,DRIVE_E,-1,-43,mat("concrete"));
         // The patio behind the house, pavers from the side passage to the drive.
         box(l,b,LOT_W+1,-1,HOUSE_N-1,DRIVE_W-1,-1,POOL_FENCE_S+1,mat("paver"));
-        // A garden bed along the front wall, either side of the step.
-        box(l,b,HOUSE_W,-1,HOUSE_S+1,-1,-1,HOUSE_S+1,mat("mulch"));box(l,b,2,-1,HOUSE_S+1,HOUSE_E,-1,HOUSE_S+1,mat("mulch"));
+        // A garden bed along the front wall, either side of the step, two rows deep: the line runs along the row by the wall, the
+        // stakes stand in the other.
+        box(l,b,HOUSE_W,-1,HOUSE_S+1,-1,-1,HOUSE_S+2,mat("mulch"));box(l,b,2,-1,HOUSE_S+1,HOUSE_E,-1,HOUSE_S+2,mat("mulch"));
     }
 
     /** The bungalow: brick outside, plaster inside; carpet in the hall and the rooms, lino where there is water. */
@@ -277,12 +289,55 @@ public final class PellSite {
         // Outside: the stakes in the front bed, the newest nearest the step; the kennel and its bowl by the drive; the pool chair
         // turned to the water and the pump; the handprint in the path, and the stain on the drive. The kennel is two cells wide, so
         // its name reads over the opening.
-        for(int x=-12;x<=-4;x+=2)put(l,b,x,0,-57,PellThing.Kind.STAKE,s,0);
-        put(l,b,-2,0,-57,PellThing.Kind.STAKE,s,1);
-        pair(l,b,19,0,-80,PellThing.Kind.KENNEL,w,0,1);put(l,b,19,0,-78,PellThing.Kind.BOWL,w,0);
+        for(int x=-12;x<=-4;x+=2)put(l,b,x,0,-56,PellThing.Kind.STAKE,s,0);
+        put(l,b,-2,0,-56,PellThing.Kind.STAKE,s,1);
+        pair(l,b,19,0,-80,PellThing.Kind.KENNEL,w,0,1);put(l,b,18,0,-79,PellThing.Kind.BOWL,w,0);
         put(l,b,-14,0,-86,PellThing.Kind.POOL_CHAIR,e,0);put(l,b,1,0,-90,PellThing.Kind.PUMP,w,0);
         set(l,b,1,-1,-54,mat("concrete_print"));set(l,b,17,-1,-68,mat("concrete_oil"));
     }
+
+    /**
+     * 0.4.523, the line (docs/PELL_HOUSE_LINE_0_4_523.md): painted round the whole lot into whatever ground it crosses, unbroken, as on
+     * the first visit. It crosses the path at the step, under the mat; goes under the side gate; over the pool fence's footing twice;
+     * across the deck and the pavers; behind the shed, where it is thinnest; down the east side through the kennel; and across the
+     * drive, where the tyres' marks on it have been painted over.
+     */
+    static void line(ServerLevel l,BlockPos b){
+        var route=route();int n=route.size();
+        for(int i=0;i<n;i++){
+            var at=route.get(i);
+            var state=PellLine.of(toward(at,route.get((i+n-1)%n)),toward(at,route.get((i+1)%n)),surface(l,b,at),PellLine.FIRST,thin(at));
+            set(l,b,at.getX(),-1,at.getZ(),state);
+        }
+    }
+    /**
+     * The line's cells in order, at the height people stand (the paint is in the ground under each): up the west side from the front's
+     * west corner, along the back, down the east side, and back along the front, under the mat at the step.
+     */
+    public static List<BlockPos> route(){
+        var out=new ArrayList<BlockPos>();
+        for(int z=LINE_S;z>LINE_N;z--)out.add(new BlockPos(LINE_W,0,z));
+        for(int x=LINE_W;x<LINE_E;x++)out.add(new BlockPos(x,0,LINE_N));
+        for(int z=LINE_N;z<LINE_S;z++)out.add(new BlockPos(LINE_E,0,z));
+        for(int x=LINE_E;x>LINE_W;x--)out.add(new BlockPos(x,0,LINE_S));
+        return out;
+    }
+    /** Whether a cell is on the line's route. */
+    public static boolean onLine(BlockPos at){
+        int x=at.getX(),z=at.getZ();
+        return (x==LINE_W||x==LINE_E)&&z<=LINE_S&&z>=LINE_N||(z==LINE_S||z==LINE_N)&&x>=LINE_W&&x<=LINE_E;
+    }
+    /** Behind the shed, the line at its thinnest. */
+    public static boolean thin(BlockPos at){return at.getZ()==LINE_N&&at.getX()>=SHED_W&&at.getX()<=SHED_E;}
+    /** What the line lies on at a cell of its route: the ground laid there, and on the drive where the wheels ran, their marks. */
+    static PellLine.Surface surface(ServerLevel l,BlockPos b,BlockPos at){
+        var ground=l.getBlockState(b.offset(at.getX(),-1,at.getZ()));
+        boolean wheel=at.getZ()==LINE_S&&Arrays.stream(WHEELS).anyMatch(x->x==at.getX());
+        for(var surface:PellLine.Surface.values())if(surface!=PellLine.Surface.TYRE&&ground.is(PellRegistry.material(surface.material())))
+            return surface==PellLine.Surface.CONCRETE&&wheel?PellLine.Surface.TYRE:surface;
+        return PellLine.Surface.LAWN;
+    }
+    private static Direction toward(BlockPos from,BlockPos to){int dx=to.getX()-from.getX(),dz=to.getZ()-from.getZ();return dx>0?Direction.EAST:dx<0?Direction.WEST:dz>0?Direction.SOUTH:Direction.NORTH;}
 
     /** One course of the house's outside wall round a box: each cell turns its brick outward, and the corners have two brick faces. */
     static void ring(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,int y,int stage){
@@ -318,12 +373,21 @@ public final class PellSite {
     }
 
     /**
-     * The pool. Coping round the water, pavers to the fence, tiles down the walls with the darker band at the waterline. The south
-     * end is shallow and the north end deep. Covered, a tarpaulin lies where the top of the water would be and has sagged in its
-     * middle; uncovered, there is water to the brim.
+     * The pool's yard inside its fence: pavers to the fence, and along the pool's west side a deck where the chair stands. Under the
+     * fence, its concrete footing. Laid once, so that covering and uncovering the pool never touches the ground round it (the line
+     * crosses it).
+     */
+    static void poolYard(ServerLevel l,BlockPos b){
+        box(l,b,LOT_W+1,-1,LOT_N+1,POOL_FENCE_E-1,-1,POOL_FENCE_S-1,mat("paver"));
+        box(l,b,DECK_W,-1,DECK_N,DECK_E,-1,DECK_S,mat("deck"));
+        box(l,b,LOT_W+1,-1,POOL_FENCE_S,POOL_FENCE_E,-1,POOL_FENCE_S,mat("concrete"));box(l,b,POOL_FENCE_E,-1,LOT_N+1,POOL_FENCE_E,-1,POOL_FENCE_S,mat("concrete"));
+    }
+    /**
+     * The pool. Coping round the water, tiles down the walls with the darker band at the waterline. The south end is shallow and the
+     * north end deep. Covered, a tarpaulin lies where the top of the water would be and has sagged in its middle; uncovered, there is
+     * water to the brim.
      */
     public static void pool(ServerLevel l,BlockPos b,boolean covered){
-        box(l,b,LOT_W+1,-1,LOT_N+1,POOL_FENCE_E-1,-1,POOL_FENCE_S-1,mat("paver"));
         box(l,b,WATER_W-1,-1,WATER_N-1,WATER_E+1,-1,WATER_S+1,mat("coping"));
         // The shell: tile from the bottom up, with the band as its top course; then the shallow end and the deep end cut out of it.
         box(l,b,WATER_W-1,DEEP,WATER_N-1,WATER_E+1,-3,WATER_S+1,mat("pool_tile"));

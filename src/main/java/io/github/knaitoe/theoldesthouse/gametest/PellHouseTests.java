@@ -173,10 +173,10 @@ public final class PellHouseTests {
             h.assertTrue(thing(l,b,5,0,-93,TAPES,0)&&thing(l,b,5,1,-93,TAPES,1)&&thing(l,b,7,0,-93,WORKBENCH,1)&&thing(l,b,8,2,-92,TRANSCRIPT,2)&&thing(l,b,5,1,-92,SHED_CALENDAR,0),
                 "the tapes, the bench and its empty tins, the transcript and the calendar");
             // Outside.
-            h.assertTrue(thing(l,b,-12,0,-57,STAKE,0)&&thing(l,b,-2,0,-57,STAKE,1)&&thing(l,b,-14,0,-86,POOL_CHAIR,0)&&facing(l,b,-14,0,-86)==Direction.EAST,
+            h.assertTrue(thing(l,b,-12,0,-56,STAKE,0)&&thing(l,b,-2,0,-56,STAKE,1)&&thing(l,b,-14,0,-86,POOL_CHAIR,0)&&facing(l,b,-14,0,-86)==Direction.EAST,
                 "the stakes, the newest by the step; the pool chair turned to the water");
             h.assertTrue(thing(l,b,19,0,-80,KENNEL,0)&&thing(l,b,19,0,-79,KENNEL,1)&&PellThing.right(new BlockPos(19,0,-80),Direction.WEST).equals(new BlockPos(19,0,-79))
-                    &&thing(l,b,19,0,-78,BOWL,0),"the kennel, two cells, its name read left to right from the drive; the bowl beside it");
+                    &&thing(l,b,18,0,-79,BOWL,0),"the kennel, two cells, its name read left to right from the drive; the bowl at its door");
             h.assertTrue(is(l,b,1,-1,-54,"concrete_print")&&is(l,b,17,-1,-68,"concrete_oil"),"the handprint in the path and the stain on the drive");
             // Nothing stands across a doorway: the cell either side of every door is clear for a body.
             for(var door:List.of(PellSite.FRONT_DOOR,PellSite.NESSA_DOOR,PellSite.CALLUM_DOOR,PellSite.BATH_DOOR,PellSite.LAUNDRY_DOOR,PellSite.BACK_DOOR,PellSite.SLIDER,PellSite.GARAGE_DOOR,PellSite.SHED_DOOR)){
@@ -187,7 +187,7 @@ public final class PellHouseTests {
             // A hand on things.
             told(p);
             for(var at:List.of(new BlockPos(-10,0,-71),new BlockPos(-13,1,-71),new BlockPos(-5,0,-70),new BlockPos(-8,1,-66),new BlockPos(-6,0,-61),new BlockPos(9,0,-70),new BlockPos(17,0,-89),
-                    new BlockPos(8,1,-93),new BlockPos(-2,0,-57),new BlockPos(19,0,-79),new BlockPos(-8,0,-63),new BlockPos(-2,0,-71)))
+                    new BlockPos(8,1,-93),new BlockPos(-2,0,-56),new BlockPos(19,0,-79),new BlockPos(-8,0,-63),new BlockPos(-2,0,-71)))
                 f.click(p,P,at);
             f.click(p,P,new BlockPos(-8,1,-59));f.click(p,P,new BlockPos(15,2,-89));f.click(p,P,new BlockPos(-3,0,-71));
         }).thenIdle(2).thenExecute(()->{
@@ -212,4 +212,81 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_things") public static void thingsDone(ServerLevel l){done();}
+    private static PellLine.Surface surface(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SURFACE);}
+    private static PellLine.Shape shape(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SHAPE);}
+    /**
+     * 0.4.523, the line (docs/PELL_HOUSE_LINE_0_4_523.md). It goes round the whole lot unbroken: from the step, each cell runs out to
+     * the next and the last back to the first. It is painted into the ground it lies on and takes as that ground does: the path's
+     * concrete at the step, the drive where the wheels crossed it, the beds' mulch, the lawn, the patio's pavers, the pool fence's
+     * footing twice, the deck, the pool yard's pavers; behind the shed it is at its thinnest, and only there. Nothing stands on it
+     * but what was set there: the mat at the step, the side gate, the pool fence on its footing, the kennel. A body walks along it.
+     * A hand on it gets what it is painted on; the mat lifts to show it running on under, and goes back down. Uncovering the pool
+     * leaves it, and the ground round it, as they were.
+     */
+    @GameTest(template="empty",batch="pell_line",timeoutTicks=1200)
+    public static void theLineGoesRoundTheWholeLotUnbrokenAndTakesAsItsGroundDoes(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_line_reader",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            // Round the whole lot, from the step: each cell runs out to the next, and the last back to the first.
+            var start=new BlockPos(0,-1,PellSite.LINE_S);var at=start;Direction from=null;int cells=0;var seen=new HashSet<BlockPos>();
+            do{
+                var s=l.getBlockState(b.offset(at));
+                h.assertTrue(PellLine.unbroken(s)&&s.getValue(PellLine.STAGE)==PellLine.FIRST,"the line is here, as on the first visit: "+at+" "+s);
+                h.assertTrue(PellSite.onLine(at)&&seen.add(at),"on its route, and once: "+at);
+                var ends=PellLine.ends(s);
+                if(from!=null)h.assertTrue(ends.contains(from),"it runs in from where it came: "+at+" "+ends+" "+from);
+                var out=from==null||ends.get(1)==from?ends.get(0):ends.get(1);
+                at=at.relative(out);from=out.getOpposite();cells++;
+            }while(!at.equals(start)&&cells<1000);
+            h.assertTrue(at.equals(start)&&PellLine.ends(l.getBlockState(b.offset(start))).contains(from),"it comes back round to the step and joins up");
+            h.assertTrue(cells==PellSite.route().size()&&cells==2*((PellSite.LINE_E-PellSite.LINE_W)+(PellSite.LINE_S-PellSite.LINE_N)),"the whole way round: "+cells+" cells");
+            for(var corner:List.of(new BlockPos(PellSite.LINE_W,0,PellSite.LINE_S),new BlockPos(PellSite.LINE_E,0,PellSite.LINE_S),new BlockPos(PellSite.LINE_W,0,PellSite.LINE_N),new BlockPos(PellSite.LINE_E,0,PellSite.LINE_N)))
+                h.assertTrue(shape(l,b,corner.getX(),corner.getZ())==PellLine.Shape.CORNER,"it turns at the corner "+corner);
+            // What it is painted on.
+            h.assertTrue(surface(l,b,0,PellSite.LINE_S)==PellLine.Surface.CONCRETE&&surface(l,b,1,PellSite.LINE_S)==PellLine.Surface.CONCRETE,"the path, just short of the step");
+            for(int x:PellSite.WHEELS)h.assertTrue(surface(l,b,x,PellSite.LINE_S)==PellLine.Surface.TYRE,"across the drive where the wheels ran: "+x);
+            h.assertTrue(surface(l,b,PellSite.DRIVE_W,PellSite.LINE_S)==PellLine.Surface.CONCRETE&&surface(l,b,15,PellSite.LINE_S)==PellLine.Surface.CONCRETE,"and the rest of the drive");
+            h.assertTrue(surface(l,b,-5,PellSite.LINE_S)==PellLine.Surface.MULCH&&surface(l,b,5,PellSite.LINE_S)==PellLine.Surface.MULCH,"through the beds");
+            h.assertTrue(surface(l,b,-16,PellSite.LINE_S)==PellLine.Surface.LAWN&&surface(l,b,PellSite.LINE_W,-65)==PellLine.Surface.LAWN&&surface(l,b,PellSite.LINE_E,-70)==PellLine.Surface.LAWN
+                &&surface(l,b,15,PellSite.LINE_N)==PellLine.Surface.LAWN,"over the lawn: the front, the side passage, the east side, behind the garage");
+            h.assertTrue(surface(l,b,PellSite.LINE_W,-74)==PellLine.Surface.PAVER&&surface(l,b,-5,PellSite.LINE_N)==PellLine.Surface.PAVER&&surface(l,b,PellSite.LINE_W,PellSite.LINE_N)==PellLine.Surface.PAVER,"the patio's pavers and the pool yard's");
+            h.assertTrue(surface(l,b,PellSite.LINE_W,PellSite.POOL_FENCE_S)==PellLine.Surface.CONCRETE&&surface(l,b,PellSite.POOL_FENCE_E,PellSite.LINE_N)==PellLine.Surface.CONCRETE,"over the pool fence's footing, twice");
+            h.assertTrue(surface(l,b,PellSite.LINE_W,-85)==PellLine.Surface.DECK&&is(l,b,-15,-1,-85,"deck"),"across the deck the chair stands on");
+            h.assertTrue(is(l,b,-10,-1,PellSite.POOL_FENCE_S,"concrete")&&is(l,b,PellSite.POOL_FENCE_E,-1,-90,"concrete"),"the fence stands on its footing all along");
+            for(int x=PellSite.SHED_W;x<=PellSite.SHED_E;x++)h.assertTrue(shape(l,b,x,PellSite.LINE_N)==PellLine.Shape.THIN,"behind the shed it is at its thinnest: "+x);
+            h.assertTrue(shape(l,b,PellSite.SHED_W-1,PellSite.LINE_N)==PellLine.Shape.STRAIGHT&&shape(l,b,PellSite.SHED_E+1,PellSite.LINE_N)==PellLine.Shape.STRAIGHT,"and only there");
+            // Nothing stands on it but what was set there.
+            var kennel=List.of(new BlockPos(PellSite.LINE_E,0,-80),new BlockPos(PellSite.LINE_E,0,-79));
+            for(var cell:PellSite.route()){
+                var s=l.getBlockState(b.offset(cell));
+                if(cell.equals(PellSite.ENDING))h.assertTrue(PellBlock.is(s,PellBlock.Kind.DOORMAT),"the mat lies over it at the step");
+                else if(cell.equals(PellSite.SIDE_GATE))h.assertTrue(PellBlock.is(s,PellBlock.Kind.GATE),"it goes under the side gate");
+                else if(cell.equals(new BlockPos(PellSite.LINE_W,0,PellSite.POOL_FENCE_S))||cell.equals(new BlockPos(PellSite.POOL_FENCE_E,0,PellSite.LINE_N)))h.assertTrue(PellBlock.is(s,PellBlock.Kind.POOL_FENCE),"the pool fence over it at "+cell);
+                else if(kennel.contains(cell))h.assertTrue(PellThing.is(s,KENNEL),"it runs through the kennel at "+cell);
+                else h.assertTrue(s.isAir(),"nothing else stands on it: "+cell+" "+s);
+            }
+            // A body walks along it, from the street.
+            var out=walked(l,b,BlockPos.ZERO);
+            for(var cell:List.of(new BlockPos(0,0,PellSite.LINE_S),new BlockPos(PellSite.LINE_E,0,PellSite.LINE_S),new BlockPos(PellSite.LINE_E,0,-70),new BlockPos(PellSite.LINE_E,0,-90),new BlockPos(6,0,PellSite.LINE_N)))
+                h.assertTrue(out.contains(cell),"a body stands on the line at "+cell);
+            // A hand on it, and on the mat.
+            told(p);
+            for(var cell:List.of(new BlockPos(PellSite.LINE_W,-1,-65),new BlockPos(6,-1,PellSite.LINE_N),new BlockPos(PellSite.WHEELS[0],-1,PellSite.LINE_S),new BlockPos(PellSite.LINE_W,-1,-85)))f.click(p,P,cell);
+            f.click(p,P,PellSite.ENDING);
+        }).thenIdle(2).thenExecute(()->{
+            var said=told(p);
+            for(var line:List.of(PellTexts.line(PellLine.Surface.LAWN,false,0),PellTexts.line(PellLine.Surface.LAWN,true,0),PellTexts.line(PellLine.Surface.TYRE,false,0),
+                    PellTexts.line(PellLine.Surface.DECK,false,0),PellTexts.MAT_LIFTED))
+                h.assertTrue(said.contains(line),"a hand gets: "+line+" (told "+said+")");
+            h.assertTrue(l.getBlockState(b.offset(PellSite.ENDING)).getValue(PellBlock.STAGE)==1&&PellLine.unbroken(l.getBlockState(b.offset(PellSite.ENDING.below()))),"the mat is lifted, and the line runs on under it");
+            f.click(p,P,PellSite.ENDING);
+            h.assertTrue(l.getBlockState(b.offset(PellSite.ENDING)).getValue(PellBlock.STAGE)==0,"and it goes back down");
+            // Uncovering the pool leaves the line, and the ground round it, as they were.
+            PellSite.pool(l,b,false);
+            h.assertTrue(PellLine.unbroken(l.getBlockState(b.offset(-5,-1,PellSite.LINE_N)))&&PellLine.unbroken(l.getBlockState(b.offset(PellSite.LINE_W,-1,-85))),"the pool uncovered, the line is as it was");
+            h.assertTrue(is(l,b,-15,-1,-85,"deck")&&is(l,b,-5,-1,-95,"paver"),"and so is the ground round the pool");
+            PellSite.pool(l,b,true);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_line") public static void lineDone(ServerLevel l){done();}
 }

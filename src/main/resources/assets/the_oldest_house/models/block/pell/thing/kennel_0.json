@@ -6,6 +6,7 @@
     "w": "the_oldest_house:block/pell/thing/kennel_wall",
     "r": "the_oldest_house:block/pell/thing/kennel_roof",
     "k": "the_oldest_house:block/pell/thing/kennel_dark",
+    "l": "the_oldest_house:block/pell/thing/kennel_floor",
     "particle": "the_oldest_house:block/pell/thing/kennel_wall"
   },
   "elements": [
@@ -97,7 +98,7 @@
       ],
       "faces": {
         "up": {
-          "texture": "#k"
+          "texture": "#l"
         }
       }
     },

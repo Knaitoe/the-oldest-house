@@ -1,6 +1,6 @@
 {
   "ambientocclusion": false,
-  "render_type": "minecraft:cutout",
+  "render_type": "minecraft:translucent",
   "textures": {
     "f": "the_oldest_house:block/pell/frame",
     "g": "the_oldest_house:block/pell/glass_clear",

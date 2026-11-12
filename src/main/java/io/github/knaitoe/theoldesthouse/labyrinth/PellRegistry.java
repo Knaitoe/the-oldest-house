@@ -38,6 +38,9 @@ public final class PellRegistry {
     /** 0.4.522: what is in the rooms (PellThing), drawn by tools/draw_pell_things.py. The bare bulb and the television give light. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellThing>> THING_TYPE=CODECS.register("pell_thing",()->PellThing.CODEC);
     public static final DeferredBlock<PellThing> THING=BLOCKS.registerBlock("pell_thing",PellThing::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(PellThing::light));
+    /** 0.4.523: the line round the lot (PellLine), painted into the ground it lies on; drawn by tools/draw_pell_line.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellLine>> LINE_TYPE=CODECS.register("pell_line",()->PellLine.CODEC);
+    public static final DeferredBlock<PellLine> LINE=BLOCKS.registerBlock("pell_line",PellLine::new,fixed(Blocks.STONE));
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);}
 }
