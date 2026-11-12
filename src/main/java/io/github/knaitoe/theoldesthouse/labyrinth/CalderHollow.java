@@ -19,7 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * lids; a pumpkin vine the size of a road, curling up and down; stairs of tilted stones"; and "The Hollow folds back down into the
  * graveyard's far side. The riders come out through the back gate onto a quiet lane above the town."
  *
- * <p>This is the plain way through, which any bike takes; the five ways the bikes' own perks open are another slice's. The hill's
+ * <p>This is the plain way through, which any bike takes, and (0.4.496) the first of the ways the bikes' own perks open: the high
+ * way, the Hopper's ({@link #HIGH}). The other four are not built. The hill's
  * ground stops at {@link #EDGE}, ragged, and from there to {@link #FAR_SIDE} there is nothing but the course. The cemetery's back
  * railings and its back gate are on the far side of it now, where its ground begins again.
  *
@@ -69,8 +70,28 @@ public final class CalderHollow {
         for(int i=0;i<3;i++)out.add(new Piece("stretch "+(4+i),Made.SOD,-1,1,-411-3*i,-413-3*i,3));
         return List.copyOf(out);
     }
-    /** How high a body stands at a place on the plain way; NaN where there is none of it. */
-    public static double top(int x,int z){for(var p:WAY)if(p.has(x,z))return p.top();return Double.NaN;}
+    /**
+     * 0.4.496, the high way. The proposal: "high: a gap only the Hopper's jump clears". From the second grave, east of the line,
+     * a ledge two blocks up across two blocks of nothing: a held hop on the Hopper goes as high as that, and on any other bike a
+     * block and a quarter. From there it runs level over the fences and the lids, three graves long, and comes down by steps to
+     * its foot, which lies along the east side of the grave past the lids, level with it.
+     */
+    public static final List<Piece> HIGH=high();
+    private static List<Piece> high(){
+        var out=new ArrayList<Piece>();
+        out.add(new Piece("high grave 1",Made.SOD,4,6,-282,-299,4));
+        out.add(new Piece("high grave 2",Made.SOD,4,6,-302,-317,4));
+        out.add(new Piece("high grave 3",Made.SOD,4,6,-320,-325,3));
+        for(int i=0;i<5;i++)out.add(new Piece("high step "+i,Made.STONE,4,6,-326-i,-326-i,2.5-.5*i));
+        // Its foot is long: a bike comes down the steps fast, and has the length of the grave beside it to turn onto it.
+        out.add(new Piece("the high way's foot",Made.SOD,4,6,-331,-338,0));
+        return List.copyOf(out);
+    }
+    /** Every way, each in the order it is ridden; and every piece of all of them. */
+    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH);
+    public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();
+    /** How high a body stands at a place on the course; NaN where there is none of it. */
+    public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();return Double.NaN;}
 
     // ------------------------------------------------------------------------------------------------ 0.4.495, the islands
     /**
@@ -88,26 +109,30 @@ public final class CalderHollow {
         /** Where a body is set down, from the park's base. */
         public Vec3 place(){return new Vec3(x,top,z+.5);}
     }
-    /** The hill is the first island, and the far side the last. */
+    /** The hill is the first island. The plain way's follow it, then the far side ({@link #FAR_ISLAND}), then the other ways' in turn. */
     public static final int HILL=0;
+    public static final int FAR_ISLAND;
     public static final List<Island> ISLANDS;
-    /** Which island each piece of the way is part of, or -1. */
+    /** Which island each piece of {@link #ALL} is part of, or -1. */
     private static final int[] OF;
     static{
-        var out=new ArrayList<Island>();OF=new int[WAY.size()];java.util.Arrays.fill(OF,-1);int top=CalderGraves.level(EDGE);
+        var out=new ArrayList<Island>();OF=new int[ALL.size()];java.util.Arrays.fill(OF,-1);int top=CalderGraves.level(EDGE),far=0,base=0;
         // The hill: the gate's line, between the small stones.
         out.add(new Island("the hill",CalderGraves.SMALL_ROW,EDGE,0,top,EDGE+RUN));
-        for(int i=0;i<WAY.size();){
-            int j=i;while(j+1<WAY.size()&&touch(WAY.get(j),WAY.get(j+1)))j++;
-            int near=WAY.get(i).zSouth(),far=WAY.get(j).zNorth();
-            if(near-far+1>=STAND){
-                int z=Math.min(near-1,far+RUN),index=out.size();
-                for(int k=i;k<=j;k++){var p=WAY.get(k);OF[k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(WAY.get(i),WAY.get(j)),near,far,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+        for(var way:WAYS){
+            for(int i=0;i<way.size();){
+                int j=i;while(j+1<way.size()&&touch(way.get(j),way.get(j+1)))j++;
+                int near=way.get(i).zSouth(),end=way.get(j).zNorth();
+                if(near-end+1>=STAND){
+                    int z=Math.min(near-1,end+RUN),index=out.size();
+                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+                }
+                i=j+1;
             }
-            i=j+1;
+            base+=way.size();
+            if(way==WAY){far=out.size();out.add(new Island("the far side",FAR_SIDE,BACK+1,0,top,FAR_SIDE-3));}
         }
-        out.add(new Island("the far side",FAR_SIDE,BACK+1,0,top,FAR_SIDE-3));
-        ISLANDS=List.copyOf(out);
+        FAR_ISLAND=far;ISLANDS=List.copyOf(out);
     }
     private static boolean touch(Piece a,Piece c){return c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
     private static String name(Piece first,Piece last){
@@ -121,16 +146,16 @@ public final class CalderHollow {
     public static int stood(double x,double y,double z){
         for(double dx:new double[]{0,-.3,.3})for(double dz:new double[]{0,-.3,.3}){
             int bx=(int)Math.floor(x+dx),bz=(int)Math.floor(z+dz);
-            for(int i=0;i<WAY.size();i++){var p=WAY.get(i);if(p.has(bx,bz)&&Math.abs(y-p.top())<.1)return OF[i];}
+            for(int i=0;i<ALL.size();i++){var p=ALL.get(i);if(p.has(bx,bz)&&Math.abs(y-p.top())<.1)return OF[i];}
         }
         if(Math.abs(y-CalderGraves.level(EDGE))>=.1)return -1;
         // The hill reaches as far as three rows past its edge, off the gate's line.
-        return z>=EDGE-3.3?HILL:z<FAR_SIDE+1.3?ISLANDS.size()-1:-1;
+        return z>=EDGE-3.3?HILL:z<FAR_SIDE+1.3?FAR_ISLAND:-1;
     }
     /** The lowest ground anywhere near somebody who is that far north: under it by enough, they have missed everything. */
     public static double floor(double z){
         double low=Double.POSITIVE_INFINITY;
-        for(var p:WAY)if(z<=p.zSouth()+1+NEAR&&z>=p.zNorth()-NEAR)low=Math.min(low,p.top());
+        for(var p:ALL)if(z<=p.zSouth()+1+NEAR&&z>=p.zNorth()-NEAR)low=Math.min(low,p.top());
         if(z>=EDGE-NEAR||z<=FAR_SIDE+1+NEAR)low=Math.min(low,CalderGraves.level(EDGE));
         return low==Double.POSITIVE_INFINITY?0:low;
     }
@@ -148,7 +173,7 @@ public final class CalderHollow {
         // Past the edge there is nothing: the hill's ground, its back railings and the trees behind them are gone from here on.
         box(l,b,CalderGraves.W,-4,FAR,CalderGraves.E,CalderGraves.TOP,EDGE-1,air);
         edge(l,b,rnd);
-        for(var p:WAY)piece(l,b,p,rnd);
+        for(var p:ALL)piece(l,b,p,rnd);
         dress(l,b);
         farSide(l,b,rnd);
     }
@@ -185,9 +210,11 @@ public final class CalderHollow {
     static void dress(ServerLevel l,BlockPos b){
         var stone=CalderGraveBlock.Kind.STONE;var picket=CalderGraveBlock.Kind.PICKET;var south=Direction.SOUTH;
         // {x, z, kind's ordinal, stage}: each stands on its piece, at its piece's height.
-        Object[][] things={{-2,-266,stone,1},{2,-268,stone,6},{4,-276,CalderGraveBlock.Kind.CROSS,1},{-4,-284,stone,9},{0,-287,stone,13},
+        Object[][] things={{-2,-266,stone,1},{2,-268,stone,6},{-1,-275,CalderGraveBlock.Kind.CROSS,1},{-4,-284,stone,9},{0,-287,stone,13},
             {-2,-297,picket,0},{-1,-297,picket,1},{1,-305,picket,2},{2,-305,picket,0},{-2,-301,picket,3},{2,-310,picket,3},{-2,-312,picket,2},
-            {-3,-335,stone,3},{3,-336,stone,14},{-3,-391,stone,10},{3,-392,CalderGraveBlock.Kind.CROSS,0}};
+            {-3,-335,stone,3},{3,-336,stone,14},{-3,-391,stone,10},{3,-392,CalderGraveBlock.Kind.CROSS,0},
+            // The high way's: along its east side, which leaves two blocks to ride on.
+            {6,-287,stone,5},{6,-296,stone,11},{6,-306,CalderGraveBlock.Kind.CROSS,0},{6,-314,stone,2},{6,-322,stone,8}};
         for(var t:things){
             int x=(Integer)t[0],z=(Integer)t[1];double top=top(x,z);
             if(Double.isNaN(top)||top!=Math.floor(top))throw new IllegalStateException("nothing whole to stand a thing on at "+x+","+z);
