@@ -1766,5 +1766,7 @@
   "block.the_oldest_house.pell_lino_worn": "Lino, Worn",
   "block.the_oldest_house.pell_lino_burn": "Lino, Burnt",
   "block.the_oldest_house.pell_thing": "Belongings",
-  "block.the_oldest_house.pell_line": "Painted Line"
+  "block.the_oldest_house.pell_line": "Painted Line",
+  "item.the_oldest_house.pell_cane": "Long Cane",
+  "item.the_oldest_house.pell_folder": "Folder"
 }

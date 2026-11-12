@@ -289,4 +289,88 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_line") public static void lineDone(ServerLevel l){done();}
+    /** How far, in degrees, a yaw is from looking straight at a point, from where this one stands. */
+    private static double off(LiteraryActor a,float yaw,net.minecraft.world.phys.Vec3 at){
+        var d=at.subtract(a.position());var look=net.minecraft.world.phys.Vec3.directionFromRotation(0,yaw);
+        return Math.toDegrees(Math.acos(net.minecraft.util.Mth.clamp((look.x*d.x+look.z*d.z)/Math.sqrt(d.x*d.x+d.z*d.z),-1,1)));
+    }
+    private static LiteraryActor who(GameTestHelper h,ServerLevel l,BlockPos b,int who){var a=PellPeople.find(l,b,who);h.assertTrue(a!=null,PellPeople.name(who)+" is at the house");return a;}
+    private static String said(LiteraryActor a){return a.getCustomName()==null?"":a.getCustomName().getString();}
+    /**
+     * 0.4.524, the people (docs/PELL_HOUSE_PEOPLE_0_4_524.md). The four are at the house when a reader comes up the street, each where
+     * the first visit puts them and turned the way it says, in their own skins and sizes; Tilly holds her cane and Gail her folder,
+     * and June and Callum hold nothing. Asked again, nobody is made twice, even with the house's memory of them gone (a reload); one
+     * taken away is made again, and only that one. A hand on June, Gail and Tilly gets the first of their lines as a caption over
+     * them, never in chat; a second hand while the line is up does not cut it short, and the next hand after it gets the next line.
+     * A hand on Callum gets what he does, and no caption. A reader near June turns her head and not her body; Callum turns his whole
+     * body to a reader he can watch from across the house.
+     */
+    @GameTest(template="empty",batch="pell_people",timeoutTicks=1600)
+    public static void thePeopleStandWhereTheFirstVisitPutsThem(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_people_reader",P);var l=f.level(P);var b=f.base(P);
+        // Up the street to just short of the letterbox: near enough for the ground the people stand on to have loaded, too far to be
+        // looked at.
+        f.at(p,P,.5,0,-44);
+        var ids=new java.util.UUID[PellPeople.COUNT];
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));}).thenExecute(()->{
+            for(int i=0;i<PellPeople.COUNT;i++){
+                var a=who(h,l,b,i);var spot=PellPeople.FIRST_VISIT[i];
+                h.assertTrue(Math.abs(a.getX()-(b.getX()+spot.x()))<.3&&Math.abs(a.getZ()-(b.getZ()+spot.z()))<.3&&Math.abs(a.getY()-b.getY())<.1,PellPeople.name(i)+" stands where the first visit puts them: "+a.position());
+                h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-spot.look()))<1&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYHeadRot()-spot.look()))<1,PellPeople.name(i)+" faces the way the first visit says: "+a.getYRot()+" "+a.getYHeadRot());
+                h.assertTrue(a.role()==LiteraryActor.STRANGER&&a.phase()==PellPeople.FIRST+i&&PellPeople.is(a)&&PellPeople.who(a)==i,PellPeople.name(i)+" in their own skin");
+                ids[i]=a.getUUID();
+            }
+            var june=who(h,l,b,PellPeople.JUNE);var tilly=who(h,l,b,PellPeople.TILLY);var callum=who(h,l,b,PellPeople.CALLUM);var gail=who(h,l,b,PellPeople.GAIL);
+            h.assertFalse(PellSite.onLine(BlockPos.containing(june.getX()-b.getX(),0,june.getZ()-b.getZ())),"June stands short of the line, not on it");
+            h.assertTrue(Math.abs(june.getBbHeight()-gail.getBbHeight())<.01&&tilly.getBbHeight()<june.getBbHeight()*.7&&callum.getBbHeight()<tilly.getBbHeight(),
+                "June and Gail are grown, Tilly and Callum children, Callum the smaller: "+june.getBbHeight()+" "+tilly.getBbHeight()+" "+callum.getBbHeight());
+            h.assertTrue(tilly.getMainHandItem().is(PellRegistry.CANE.get())&&tilly.gesture()==PellPeople.CANE,"Tilly has her cane in her hand, held out ahead of her");
+            h.assertTrue(gail.getMainHandItem().is(PellRegistry.FOLDER.get())&&gail.gesture()==PellPeople.FOLDER,"Gail has her folder, held to her chest");
+            h.assertTrue(june.getMainHandItem().isEmpty()&&callum.getMainHandItem().isEmpty()&&june.getOffhandItem().isEmpty()&&callum.getOffhandItem().isEmpty(),"June and Callum hold nothing");
+            // Asked again, nobody is made twice; nor with the house's memory of them gone, as after a reload.
+            PellPeople.ensure(l,b);PellPeople.clearAll();PellPeople.ensure(l,b);
+            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is).size()==PellPeople.COUNT,"asked again, nobody is made twice");
+            for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i).getUUID().equals(ids[i]),"the same "+PellPeople.name(i)+", taken up again");
+            // Callum taken away is made again, where he stands on the first visit; nobody else is.
+            callum.discard();PellPeople.ensure(l,b);
+            var again=who(h,l,b,PellPeople.CALLUM);var spot=PellPeople.FIRST_VISIT[PellPeople.CALLUM];
+            h.assertTrue(!again.getUUID().equals(ids[PellPeople.CALLUM])&&Math.abs(again.getX()-(b.getX()+spot.x()))<.3&&Math.abs(again.getZ()-(b.getZ()+spot.z()))<.3,"Callum, taken away, is made again where he stands");
+            for(int i=0;i<PellPeople.COUNT;i++)if(i!=PellPeople.CALLUM)h.assertTrue(PellPeople.find(l,b,i).getUUID().equals(ids[i]),"and nobody else is: "+PellPeople.name(i));
+            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is).size()==PellPeople.COUNT,"still four of them");
+            // A hand on June, Gail and Tilly, from the path between them.
+            f.at(p,P,3.5,0,-53.5);told(p);
+            for(int i:new int[]{PellPeople.JUNE,PellPeople.GAIL,PellPeople.TILLY})LiteraryVignettes.talk(p,who(h,l,b,i));
+            h.assertTrue(june.saying()&&said(june).equals(PellTexts.JUNE_TALK[0])&&june.speaker().equals("June"),"June says her first line, over her, with her name: "+said(june));
+            h.assertTrue(gail.saying()&&said(gail).equals(PellTexts.GAIL_TALK[0])&&gail.speaker().equals("Gail"),"Gail says hers: "+said(gail));
+            h.assertTrue(tilly.saying()&&said(tilly).equals(PellTexts.TILLY_TALK[0])&&tilly.speaker().equals("Tilly"),"Tilly says hers: "+said(tilly));
+            LiteraryVignettes.talk(p,june);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_TALK[0]),"a second hand while June's line is up does not cut it short");
+        }).thenIdle(2).thenExecute(()->{
+            var chat=told(p);
+            for(var line:List.of(PellTexts.JUNE_TALK[0],PellTexts.GAIL_TALK[0],PellTexts.TILLY_TALK[0]))h.assertFalse(chat.contains(line),"never in chat: "+line+" "+chat);
+        }).thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June's line stays up to be read")).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);LiteraryVignettes.talk(p,june);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_TALK[1]),"the next hand gets June's next line: "+said(june));
+            // A hand on Callum, from along the hall.
+            f.at(p,P,-8.5,0,-65.5);told(p);
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(2).thenExecute(()->{
+            var callum=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_HAND[0]),"a hand on Callum gets what he does");
+            h.assertFalse(callum.saying()||callum.getCustomName()!=null,"and he says nothing");
+            // Near June, to one side of her: she turns her head, not her body.
+            f.at(p,P,3.5,0,-53.5);
+        }).thenIdle(10).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);var rest=PellPeople.FIRST_VISIT[PellPeople.JUNE].look();
+            h.assertTrue(off(june,june.getYHeadRot(),p.getEyePosition())<3&&off(june,rest,p.getEyePosition())>20,"June turns her head to a reader near her: "+off(june,june.getYHeadRot(),p.getEyePosition()));
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(june.getYRot()-rest))<1&&Math.abs(net.minecraft.util.Mth.wrapDegrees(june.yBodyRot-rest))<1,"and not her body: "+june.getYRot()+" "+june.yBodyRot);
+            // At the step, across the house from Callum: he turns his whole body to keep them in sight.
+            f.at(p,P,-.5,0,-56.5);
+        }).thenIdle(15).thenExecute(()->{
+            var callum=who(h,l,b,PellPeople.CALLUM);var rest=PellPeople.FIRST_VISIT[PellPeople.CALLUM].look();
+            h.assertTrue(off(callum,rest,p.getEyePosition())>20&&off(callum,callum.getYRot(),p.getEyePosition())<3&&off(callum,callum.getYHeadRot(),p.getEyePosition())<3,
+                "Callum turns his body and head to a reader across the house: "+callum.getYRot()+" "+off(callum,callum.getYRot(),p.getEyePosition()));
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_people") public static void peopleDone(ServerLevel l){done();}
 }

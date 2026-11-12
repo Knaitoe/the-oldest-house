@@ -28,12 +28,21 @@ public final class PellHouse {
 
     /** Not until the house can be finished: it is being built in slices. */
     public static boolean dealable(LabyrinthData d,UUID reader){return false;}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){}
+    /** 0.4.524: the people are at the house, where the first visit puts them. */
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){PellPeople.ensure(p.serverLevel(),b);}
     /** Every reader tick. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!own.getBoolean("WentIn")&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){own.putBoolean("WentIn",true);save(p,own);}
+        // The people are made here if they are missing; they look about on their own tick (PellPeople.serverTick).
+        PellPeople.ensure(p.serverLevel(),b);
     }
-    public static void clearAll(){}
+    /** Everyone at this house now. */
+    static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){
+        var out=new java.util.ArrayList<ServerPlayer>();
+        for(var p:l.players())if(LiteraryVignettes.participant(p)&&LiteraryVignettes.current(p)==PLACE&&b.equals(LiteraryVignettes.base(p,PLACE)))out.add(p);
+        return out;
+    }
+    public static void clearAll(){PellPeople.clearAll();}
 
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
