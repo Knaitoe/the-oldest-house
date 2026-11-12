@@ -254,6 +254,72 @@ public final class BikeNightTests {
         }).thenSucceed();
     }
 
+    /**
+     * 0.4.520, the owner: "the bike controls should be more precise for the sort of platforming included". Holding forward keeps the
+     * pace the pedals made, its cranks going round; a hop still wound up when the wheels roll off an edge pops if it is let go within
+     * COYOTE ticks, and not after.
+     */
+    @GameTest(template="empty",batch="bike_night",timeoutTicks=900)
+    public static void holdingForwardKeepsThePaceAndAHopLetGoJustOverTheBrinkStillPops(GameTestHelper h){
+        var s=new Strip(h,12,30);final NightBike[] b={null,null};final ServerPlayer[] p={null,null};final int[] strokes={0,0},air={-1,-1};final double[] top={-9,-9};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(s.ready(),"the road's sections are in")).thenExecute(()->{
+            s.lay();p[0]=s.reader("bike_pace");p[1]=s.reader("bike_coast");
+            b[0]=s.on(p[0],NightBike.Make.HARE,-1,0);b[1]=s.on(p[1],NightBike.Make.HARE,1,0);
+            for(var bike:b)bike.steady(0,.25F);
+            // The pace rider's own last push is on the left pedal; a kept pace must not change which pedal a push follows.
+            b[0].pedal(-1);b[0].steady(0,.25F);strokes[0]=b[0].strokes();strokes[1]=b[1].strokes();
+        }).thenExecuteFor(40,()->{p[0].zza=1;p[1].zza=0;}).thenExecute(()->{
+            h.assertTrue(b[0].speedNow()>.24F,"held forward, the bike keeps the pace it had: "+b[0].speedNow());
+            h.assertTrue(b[1].speedNow()<.17F,"left to roll, it slows: "+b[1].speedNow());
+            h.assertTrue(b[0].strokes()!=strokes[0]&&b[1].strokes()==strokes[1],"and the cranks go round at a kept pace, and not for a bike rolling by itself");
+            h.assertTrue(p[0].getVehicle()==b[0]&&p[1].getVehicle()==b[1]&&Math.abs(b[0].leanNow())<.3F,"both still ridden, upright: "+b[0].leanNow());
+            p[0].zza=0;
+            // The cranks went round at the kept pace, but the push after it still follows the rider's own last push: a right after a left.
+            b[0].steady(b[0].leanNow(),.2F);b[0].pedal(1);
+            h.assertTrue(b[0].speedNow()>.28F,"a push on the other pedal after a kept pace drives the bike as a push in turn does: "+b[0].speedNow());
+            // A ledge: the road drops three blocks from twelve on.
+            for(int z=-12;z>=-s.length;z--)for(int x=-2;x<=2;x++){s.l.setBlock(s.at.offset(x,-1,z),Blocks.AIR.defaultBlockState(),3);s.l.setBlock(s.at.offset(x,-4,z),Blocks.STONE.defaultBlockState(),3);}
+            for(int i=0;i<2;i++){b[i].moveTo(s.at.getX()+(i==0?-.5:1.5),s.at.getY(),s.at.getZ()+.5,180,0);b[i].steady(0,.28F);b[i].keys(true,false);}
+        }).thenExecuteFor(75,()->{
+            // Twelve blocks to the ledge at .28 a tick is about forty-five ticks; then the drop.
+            for(int i=0;i<2;i++){
+                if(b[i].onGround()&&air[i]<0)b[i].steady(0,.28F);
+                if(!b[i].onGround()&&air[i]<0&&s.over(b[i])<0)air[i]=0;
+                if(air[i]>=0)air[i]++;
+                // The first lets go two ticks over the brink, the second well past the time allowed.
+                if(i==0&&air[i]==2||i==1&&air[i]==RiddenBike.COYOTE+3)b[i].keys(false,false);
+                if(air[i]>0)top[i]=Math.max(top[i],s.over(b[i]));
+            }
+        }).thenExecute(()->{
+            h.assertTrue(air[0]>0&&air[1]>0,"both rolled off the edge with the hop wound up: "+air[0]+", "+air[1]);
+            h.assertTrue(top[0]>.25,"let go just over the brink, the hop still pops, up over the edge it left: "+top[0]);
+            h.assertTrue(top[1]<0,"let go well past it, nothing pops: "+top[1]);
+        }).thenSucceed();
+    }
+
+    /** 0.4.520: in the air the brake sits the rider back and the bike comes down shorter; a landing a little off level is down on both wheels. */
+    @GameTest(template="empty",batch="bike_night",timeoutTicks=900)
+    public static void theBrakeInTheAirComesDownShorterAndALittleOffLevelIsStillDownOnBothWheels(GameTestHelper h){
+        var s=new Strip(h,13,40);final NightBike[] b={null,null};final ServerPlayer[] p={null,null};final double[] from={0,0},landed={-1,-1};final float[] lean={-1,-1};final boolean[] up={false,false};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(s.ready(),"the road's sections are in")).thenExecute(()->{
+            s.lay();p[0]=s.reader("bike_sitback");p[1]=s.reader("bike_ride_on");
+            b[0]=s.on(p[0],NightBike.Make.HARE,-1,0);b[1]=s.on(p[1],NightBike.Make.HARE,1,0);
+            for(var bike:b){bike.steady(0,.3F);bike.keys(true,false);}
+        }).thenExecuteFor(RiddenBike.CHARGE+1,()->{for(var bike:b)bike.steady(0,.3F);}).thenExecute(()->{
+            for(int i=0;i<2;i++){from[i]=s.along(b[i]);b[i].keys(false,false);}
+        }).thenExecuteFor(30,()->{
+            for(int i=0;i<2;i++){
+                if(!b[i].onGround()){up[i]=true;b[i].steady(i==1?.15F:0,b[i].speedNow());p[i].zza=i==0?-1:0;}
+                else if(up[i]&&landed[i]<0){landed[i]=s.along(b[i])-from[i];lean[i]=b[i].leanNow();p[i].zza=0;}
+            }
+        }).thenExecute(()->{
+            h.assertTrue(landed[0]>0&&landed[1]>0,"both hopped and came down: "+landed[0]+", "+landed[1]);
+            h.assertTrue(landed[1]-landed[0]>.4,"holding the brake in the air, it comes down shorter: "+landed[0]+" against "+landed[1]);
+            h.assertTrue(Math.abs(lean[1])<.17F,"down a little off level (.15) from a full hop, it is down on both wheels and not tipped: "+lean[1]);
+            h.assertTrue(RiddenBike.LEVEL>.15F&&RiddenBike.AIR_TURN>.5F,"the bike is kept true in the air and on landing: "+RiddenBike.LEVEL+", "+RiddenBike.AIR_TURN);
+        }).thenSucceed();
+    }
+
     @GameTest(template="empty",batch="bike_night",timeoutTicks=900)
     public static void aRampThrowsAMovingBikeUpByItsOwnSpeed(GameTestHelper h){
         var s=new Strip(h,4,40);final NightBike[] b={null,null,null};final ServerPlayer[] p={null,null,null};final double[] top={0,0,0};final int[] air={0,0,0};final boolean[] left={false,false,false};

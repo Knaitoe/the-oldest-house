@@ -46,6 +46,14 @@ import net.minecraft.world.phys.Vec3;
  * it much further the way it leaned and takes some of the way off, so the rider must push out of it at once. Coming down far too hard
  * puts them over the bars. A bike coming down that just fails to clear a lip catches it with its front wheel and rolls up.
  *
+ * <p><b>Precision</b> (0.4.520, the owner, after riding the Hollow: "the bike controls should be more precise for the sort of
+ * platforming included"). Five changes, none of which does the riding for the rider. Holding forward keeps the pace: on the
+ * ground the bike holds the speed the pedals have given it, its cranks turning, so that a run-up can be judged; pushes still make
+ * the speed and keep the balance. A hop wound up when the wheels roll off an edge still pops if it is let go in the next few ticks
+ * (COYOTE), as it would have from the brink. In the air the bike answers the bars better (AIR_TURN), and the brake sits the rider
+ * back to come down shorter (AIR_BRAKE). Down on both wheels is a little wider (LEVEL). Wound up for a hop, the rider is braced:
+ * the bike wanders off true half as much; and turning slowly takes less way than it did.
+ *
  * <p>The server decides everything. The client sends its strafe keys as any rider does, and whether the jump and sprint keys are held
  * ({@code BikeKeysPayload}), and draws the bike from what the server says. A bike is never saved: an unridden bike is always a block,
  * and anything that takes the rider off it (getting off, a fall, a door, a teleport, logging out) puts the block back first.
@@ -70,12 +78,19 @@ public abstract class RiddenBike extends Entity {
     /** The hop: ticks of holding for the highest, the speed upward of the least and of the highest, in blocks a tick. */
     public static final int CHARGE=12;
     public static final float POP_LOW=.26F,POP_HIGH=.42F;
-    /** In the air: how far a push on a pedal shifts the rider's weight, and how much of its turning the bike keeps. */
-    public static final float AIR_TIP=.1F,AIR_TURN=.35F;
+    /** In the air: how far a push on a pedal shifts the rider's weight, and how much of its turning the bike keeps (0.4.520: was .35). */
+    public static final float AIR_TIP=.1F,AIR_TURN=.6F;
+    /**
+     * 0.4.520: ticks after a bike has rolled off an edge in which a hop still wound up pops if it is let go; what of its way a bike
+     * in the air keeps each tick while its rider holds the brake; and the least share of its turning a bike has when it is barely
+     * moving (was .3).
+     */
+    public static final int COYOTE=5;
+    public static final float AIR_BRAKE=.965F,SLOW_TURN=.55F;
     /** Coming down: slower than SOFT is nothing; from there to HARD a crooked landing tips more and more; faster than a bike's own limit, the rider comes off. */
     public static final float SOFT=.3F,HARD=1.1F,HARD_FALL=1F;
-    /** A lean within LEVEL at landing is on both wheels, and keeps the way on. Past it, the lean grows by this much of itself for a landing as hard as HARD. */
-    public static final float LEVEL=.12F,LAND_TIP=3.2F;
+    /** A lean within LEVEL at landing is on both wheels, and keeps the way on (0.4.520: was .12). Past it, the lean grows by this much of itself for a landing as hard as HARD. */
+    public static final float LEVEL=.2F,LAND_TIP=3.2F;
     /** Off a ramp: how much of the climb's own speed throws the bike up, the most it can, and the steepest slope that counts as one. */
     public static final float RAMP_GAIN=1.15F,RAMP_MAX=.7F,RAMP_SLOPE=1F;
     /** How high a lip a bike coming down can still catch with its front wheel and roll up. */
@@ -119,6 +134,10 @@ public abstract class RiddenBike extends Entity {
     protected float lean,speed;private int lastSide,strokes;private boolean leftDown,rightDown;protected boolean done;
     protected @Nullable UUID reader;
     private boolean jumpHeld;protected boolean turboHeld;private int charge;
+    /** 0.4.520: ticks since it rolled off an edge with a hop wound up, or -1; and ticks since the cranks last went round at a kept pace. */
+    private int coyote=-1,paceTicks,paceSide;
+    /** 0.4.520: how far a bike rolls for each half turn of its cranks, for how often they go round at a kept pace. */
+    public static final float STROKE=1.1F;
     /** The last eight ticks on the ground: how far along it went and how far it climbed in each, for the slope it leaves a ramp at. */
     private final float[] runs=new float[8],climbs=new float[8];private int onRoad;
     /** How steeply it climbed a plank ramp's sheet in the last tick, or nothing if it was not on one or not going up it. */
@@ -236,7 +255,7 @@ public abstract class RiddenBike extends Entity {
         if(left&&!leftDown)pedal(-1);
         if(right&&!rightDown)pedal(1);
         leftDown=left;rightDown=right;
-        ride(p,p.zza< -.5F);
+        ride(p,p.zza< -.5F,p.zza>.5F);
     }
 
     /** One push on a pedal: -1 the left, 1 the right. In the air it drives nothing, and only shifts the rider's weight that way. */
@@ -254,25 +273,36 @@ public abstract class RiddenBike extends Entity {
     /** Drives the bike on, to no more than {@code limit}: the Rattler's card. */
     protected void boost(float push,float limit){if(speed<limit)speed=Math.min(limit,speed+push);}
 
-    private void ride(ServerPlayer p,boolean braking){
+    private void ride(ServerPlayer p,boolean braking,boolean pacing){
         Stats s=stats();boolean grounded=onGround();
         // The hop: held on the ground, the rider crouches over the bars; let go, the bike pops up, higher for a longer hold.
+        // 0.4.520: just over the brink, rolled off an edge with it still wound up, letting go pops it as it would have from the edge.
         double pop=0;
         if(grounded){
+            coyote=-1;
             if(jumpHeld)charge=Math.min(CHARGE,charge+1);
             else if(charge>0){pop=Mth.lerp(charge/(float)CHARGE,POP_LOW,s.popHigh)*load();charge=0;}
-        }else charge=0;
+        }else if(charge>0&&coyote>=0&&coyote<COYOTE&&getDeltaMovement().y<=0){
+            coyote++;
+            if(!jumpHeld){pop=Mth.lerp(charge/(float)CHARGE,POP_LOW,s.popHigh)*load();charge=0;coyote=-1;}
+        }else{charge=0;coyote=-1;}
         // Where the rider looks, as fast as a bike turns. Turning at speed leans it into the turn: a turn to the right (yaw going up) leans right.
-        float want=Mth.wrapDegrees(p.getYRot()-getYRot());float turn=Mth.clamp(want,-s.turn,s.turn)*Math.min(1,.3F+speed/STEADY);
+        float want=Mth.wrapDegrees(p.getYRot()-getYRot());float turn=Mth.clamp(want,-s.turn,s.turn)*Math.min(1,SLOW_TURN+speed/STEADY);
         if(!grounded)turn*=AIR_TURN;
         setYRot(getYRot()+turn);lean+=turn*s.turnLean*speed/TOP;
         if(braking&&grounded)speed=Math.max(0,speed*s.brake-GRIP*(1-s.brake)*10);
+        // 0.4.520: in the air the brake sits the rider back, and the bike comes down a little shorter.
+        else if(braking)speed*=AIR_BRAKE;
         if(isInWater())speed*=.6F;
         // Balance. Stopped, a foot goes down. Moving, it leans further the way it leans, faster when slow, with a little wobble of its own.
         // In the air there is nothing to fall against: it keeps the lean it left the ground with, but for the rider's own weight.
         if(grounded){
             if(speed<STOPPED)lean*=.85F;
-            else{float steady=Math.min(1,speed/STEADY);lean+=lean*(.03F*(1-steady)+.006F*steady)+(float)random.nextGaussian()*(.004F+.008F*(1-steady));}
+            else{
+                // 0.4.520: wound up for a hop, the rider is braced over the bars, and the bike wanders off true half as much.
+                float steady=Math.min(1,speed/STEADY),braced=charge>0?.5F:1;
+                lean+=braced*(lean*(.03F*(1-steady)+.006F*steady)+(float)random.nextGaussian()*(.004F+.008F*(1-steady)));
+            }
         }else lean=Mth.clamp(lean,-.95F,.95F);
         // On along the road.
         double rad=Math.toRadians(getYRot());var dir=new Vec3(-Math.sin(rad),0,Math.cos(rad));
@@ -309,7 +339,9 @@ public abstract class RiddenBike extends Entity {
                 float up=Math.min(RAMP_MAX,speed*slope*RAMP_GAIN);hopped(up);
                 // What it goes up by in the next tick, before that tick's own share of falling is taken off.
                 next=up+.08;
-            }
+                // Thrown up, a hop wound up for the lip is spent: there is no second pop off nothing.
+                charge=0;coyote=-1;
+            }else if(charge>0)coyote=0;
         }
         setDeltaMovement(0,next,0);
         if(grounded&&landed){runs[onRoad&7]=went;climbs[onRoad&7]=(float)Math.max(0,climbed);onRoad++;}else onRoad=0;
@@ -351,7 +383,13 @@ public abstract class RiddenBike extends Entity {
                 touched(hard);
             }
         }
-        speed=Mth.clamp(speed*.988F*(grounded&&landed?drag():1),0,Math.max(s.top*1.4F,cap()));
+        // 0.4.520: holding forward on the ground keeps the pace the pedals have made: nothing is lost to rolling, and the cranks
+        // go round at it. It makes no speed of its own, and the ground's own drag (sand, mud) is still taken.
+        boolean paced=pacing&&grounded&&landed&&speed>=STOPPED&&speed<=s.top;
+        // The kept pace's strokes are only drawn: the pedal a push follows is still the rider's own last push.
+        if(!paced)paceSide=0;
+        else if(++paceTicks>=Math.max(3,Math.round(STROKE/Math.max(.05F,speed)))){paceTicks=0;paceSide=paceSide==0?-(lastSide==0?1:lastSide):-paceSide;strokes++;entityData.set(STROKES,paceSide*strokes);}
+        speed=Mth.clamp(speed*(paced?1:.988F)*(grounded&&landed?drag():1),0,Math.max(s.top*1.4F,cap()));
         // Stopped is stopped (0.4.478): with a foot down the bike stands where it is, on the level or on a slope. It used to creep on
         // at whatever was left, which over the many ticks of turning round where it stood took it most of a block.
         if(landed&&speed<STOPPED)speed=0;
@@ -447,7 +485,7 @@ public abstract class RiddenBike extends Entity {
      */
     public void putBack(double x,double y,double z,float yaw){
         setYRot(yaw);yRotO=yaw;teleportTo(x,y,z);setDeltaMovement(Vec3.ZERO);setOnGround(true);resetFallDistance();
-        speed=0;lean=0;charge=0;lift=0;onRoad=0;onSheet=0;lastSide=0;
+        speed=0;lean=0;charge=0;coyote=-1;paceTicks=0;paceSide=0;lift=0;onRoad=0;onSheet=0;lastSide=0;
         entityData.set(LEAN,0F);entityData.set(SPEED,0F);entityData.set(CROUCH,0F);
     }
 
