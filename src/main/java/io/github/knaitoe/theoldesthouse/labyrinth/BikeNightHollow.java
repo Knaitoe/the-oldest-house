@@ -42,6 +42,8 @@ public final class BikeNightHollow {
         final Map<UUID,Integer> stood=new HashMap<>(),fell=new HashMap<>();
         /** The long way's run: when it began to give way (-1 while it is whole and nobody is on it), how many of its rows are gone, and when it is back (-1 unless it is all gone). */
         long runAt=-1,runBackAt=-1;int runGone;
+        /** 0.4.504, the steep way's bank: when somebody was first on it (-1 while nobody has been), whether it is gone, and when it is back. */
+        long bankAt=-1,bankBackAt=-1;boolean bankGone;
         /** 0.4.498: the ways each reader has had under them other than the plain one; whether the back gate is open; who is out by it. */
         final Map<UUID,java.util.TreeSet<String>> ways=new HashMap<>();boolean gate;final java.util.Set<UUID> through=new java.util.HashSet<>();
         /** 0.4.499: who a specter has caught tonight. */
@@ -115,6 +117,7 @@ public final class BikeNightHollow {
 
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         run(l,n,here);
+        bank(l,n,here);
         out(l,n,here);
         for(var p:here){
             if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(p.getUUID()))continue;
@@ -131,7 +134,7 @@ public final class BikeNightHollow {
                     n.hollow.stood.put(e.getUUID(),island);
                     if(!way.isEmpty()&&!way.equals("plain"))n.hollow.ways.computeIfAbsent(e.getUUID(),k->new java.util.TreeSet<>()).add(way);
                 }
-            }else if(at.y<CalderHollow.floor(at.z)-UNDER)missed(l,n,p);
+            }else if(at.y<CalderHollow.floor(at.x,at.z)-UNDER)missed(l,n,p);
         }
     }
 
@@ -256,17 +259,53 @@ public final class BikeNightHollow {
         }
         if(c.runGone>=CalderHollow.RUN_ROWS){c.runAt=-1;c.runBackAt=n.tick+BACK;}
     }
+    /**
+     * 0.4.504, the steep way's bank (CalderHollow.STEEP). "steep: a climb only the Hare gets going up in time": BANK_HOLDS ticks
+     * after somebody is first on it (a bike on the ground there, or somebody on their feet), all of it slides away, whoever is
+     * still on it; BANK_BACK ticks later it is there again, when nobody is where it was.
+     */
+    public static final int BANK_HOLDS=80,BANK_BACK=100;
+    static void bank(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var c=n.hollow;var foot=n.base.offset(CalderHollow.BANK_X0,CalderHollow.BANK_FOOT,CalderHollow.BANK_SOUTH);
+        if(!l.isLoaded(foot)||!l.isLoaded(foot.offset(0,0,-CalderHollow.BANK_ROWS)))return;
+        if(c.bankGone){
+            if(n.tick<c.bankBackAt)return;
+            // Not under anybody who is where it was.
+            for(var p:here){var at=from(n,p.position());if(CalderHollow.bankRow(at.x,at.z)>=0&&at.y>CalderHollow.BANK_FOOT-3&&at.y<CalderHollow.BANK_FOOT+CalderHollow.BANK_ROWS+2)return;}
+            CalderHollow.bank(l,n.base,true);c.bankGone=false;c.bankBackAt=-1;
+            l.sendParticles(ParticleTypes.WHITE_SMOKE,foot.getX()+1,foot.getY()+1.5,foot.getZ()-1,40,.6,1,1,.01);return;
+        }
+        if(c.bankAt<0){
+            for(var p:here){
+                if(!p.isAlive()||p.isSpectator())continue;
+                Entity body=p.getVehicle() instanceof NightBike b?b:p;var at=from(n,body.position());int row=CalderHollow.bankRow(at.x,at.z);
+                if(row>=0&&Math.abs(at.y-CalderHollow.BANK_FOOT-1-row)<.1&&(body==p||body.onGround())){c.bankAt=n.tick;break;}
+            }
+            return;
+        }
+        if(n.tick-c.bankAt<BANK_HOLDS)return;
+        CalderHollow.bank(l,n.base,false);c.bankGone=true;c.bankAt=-1;c.bankBackAt=n.tick+BANK_BACK;
+        var earth=new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK,BikeNightRegistry.material("hollow_earth").defaultBlockState());
+        l.sendParticles(earth,foot.getX()+1,foot.getY()+1,foot.getZ()-1,120,.7,1.2,1.2,.05);
+        l.playSound(null,foot.getX()+1,foot.getY()+1,foot.getZ()-1,BikeNightRegistry.SLIDE_AWAY.get(),SoundSource.BLOCKS,1F,.95F+l.random.nextFloat()*.1F);
+    }
+    /** The ways a reader has had under them tonight other than the plain one. For tests. */
+    public static java.util.Set<String> ways(ServerPlayer p){var n=BikeNight.night(p);var ways=n==null?null:n.hollow.ways.get(p.getUUID());return ways==null?java.util.Set.of():java.util.Set.copyOf(ways);}
+    /** Whether the bank is gone in this park, and whether somebody has been on it and it has yet to go. For tests. */
+    public static boolean bankGone(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.bankGone;}
+    public static boolean bankGoing(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.bankAt>=0;}
     /** How many of the run's rows are gone in this park, and whether it is giving way. For tests. */
     public static int runGone(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.hollow.runGone;}
     public static boolean runGoing(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.runAt>=0;}
     /** Whether a cell's ground is one of the run's rows, in whichever park's Hollow the cell is. */
     private static boolean onRun(ServerLevel l,BlockPos at){
         var n=BikeNight.nightAt(l,at);if(n==null)return false;var r=at.subtract(n.base);
-        return r.getY()==0&&CalderHollow.runRow(r.getX()+.5,r.getZ()+.5)>=0;
+        return r.getY()==0&&CalderHollow.runRow(r.getX()+.5,r.getZ()+.5)>=0||CalderHollow.bankRow(r.getX()+.5,r.getZ()+.5)>=0;
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         if(n.hollow.runGone>0&&l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH)))for(int i=0;i<CalderHollow.RUN_ROWS;i++)CalderHollow.runRow(l,n.base,i,true);
         if(n.hollow.gate&&l.isLoaded(n.base.offset(0,0,CalderHollow.BACK)))CalderHollow.backGate(l,n.base,false);
+        if(n.hollow.bankGone&&l.isLoaded(n.base.offset(CalderHollow.BANK_X0,0,CalderHollow.BANK_SOUTH)))CalderHollow.bank(l,n.base,true);
         n.hollow=new Course();
     }
 }

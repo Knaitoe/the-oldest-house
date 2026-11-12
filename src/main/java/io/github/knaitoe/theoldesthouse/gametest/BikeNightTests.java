@@ -4661,6 +4661,8 @@ public final class BikeNightTests {
                     double here=CalderHollow.top(x,z);
                     // What a piece is: its ground, what hangs under it, what stands on it.
                     boolean part=!Double.isNaN(here)&&y>=Math.floor(here)-2&&y<=Math.floor(here)+1;
+                    // The steep way's bank is earth down to its foot.
+                    part|=CalderHollow.bankRow(x+.5,z+.5)>=0&&y>=CalderHollow.BANK_FOOT-1&&y<here;
                     if(!part&&stray++<4)strays+=" "+s.getBlock()+" at "+x+","+y+","+z;
                     h.assertTrue(mine(s),"nothing vanilla floats there: "+s+" at "+x+","+y+","+z);
                 }
@@ -4698,7 +4700,8 @@ public final class BikeNightTests {
                         case SOD->whole?s.is(sod):s.is(BikeNightRegistry.GRAVE_TURF_SLAB.get());
                         case LID->s.is(BikeNightRegistry.COFFIN_LID.get())&&s.getValue(net.minecraft.world.level.block.SlabBlock.TYPE)==net.minecraft.world.level.block.state.properties.SlabType.TOP;
                         case VINE->whole?s.is(vine):s.is(BikeNightRegistry.VINE_SLAB.get());
-                        case STONE->s.is(BikeNightRegistry.STONE_STEP.get());};
+                        case STONE->s.is(BikeNightRegistry.STONE_STEP.get());
+                        case EARTH,BANK->s.is(BikeNightRegistry.material("hollow_earth"));};
                     h.assertTrue(ok,piece.name()+" is made of "+piece.made()+": "+s);
                     // Where a body stands on it is where the piece says.
                     var at=b.offset(piece.x0(),whole?y-1:y,piece.zNorth());
@@ -4803,7 +4806,7 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 var islands=CalderHollow.ISLANDS;var names=islands.stream().map(CalderHollow.Island::name).toList();
                 h.assertTrue(names.equals(List.of("the hill","first grave","second grave","third grave","the fences","the grave past the lids","vine","stair and the top","stretch","stretch","the far side",
-                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's and the long way's: "+names);
+                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot","the steep way's turn and the loose earth","the steep way's head")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's, the long way's and the steep way's: "+names);
                 h.assertTrue(islands.get(CalderHollow.FAR_ISLAND).name().equals("the far side"),"the far side is where it says");
                 h.assertTrue(CalderHollow.HILL==0&&islands.get(0).name().equals("the hill"),"the hill is the first");
                 // The lids are a bridge: somebody standing on one has no island under them.
@@ -4825,10 +4828,12 @@ public final class BikeNightTests {
                     h.assertTrue(laid.getZ()>=Mth.floor(at.z)&&laid.getZ()-Mth.floor(at.z)<=4&&Math.abs(laid.getX()+.5-at.x)<=2.5&&!new AABB(laid).intersects(new AABB(at.x-.3,at.y,at.z-.3,at.x+.3,at.y+1,at.z+.3)),what+": beside or a little behind, and not where they stand: "+laid.subtract(b));
                 }
                 // What is near enough to come down on, by how far north somebody is.
-                h.assertTrue(CalderHollow.floor(CalderHollow.EDGE-1)==2,"by the hill's edge the lowest ground near is the first grave: "+CalderHollow.floor(CalderHollow.EDGE-1));
-                h.assertTrue(CalderHollow.floor(-322)==0,"at the lids it is the lids: "+CalderHollow.floor(-322));
-                h.assertTrue(CalderHollow.floor(-392)==4,"on the top it is the last stretch's beginning: "+CalderHollow.floor(-392));
-                h.assertTrue(CalderHollow.floor(CalderHollow.FAR_SIDE+2)==3,"and at the far side, the far side: "+CalderHollow.floor(CalderHollow.FAR_SIDE+2));
+                h.assertTrue(CalderHollow.floor(.5,CalderHollow.EDGE-1)==2,"by the hill's edge the lowest ground near is the first grave: "+CalderHollow.floor(.5,CalderHollow.EDGE-1));
+                h.assertTrue(CalderHollow.floor(0,-322)==0,"at the lids it is the lids: "+CalderHollow.floor(0,-322));
+                h.assertTrue(CalderHollow.floor(.5,-392)==4,"on the top it is the last stretch's beginning: "+CalderHollow.floor(.5,-392));
+                h.assertTrue(CalderHollow.floor(-4.5,-392)==5&&CalderHollow.floor(5,-392)==1,"off the top's west side it is the top, and off its east side the steep way's run, four blocks under: "+CalderHollow.floor(-4.5,-392)+", "+CalderHollow.floor(5,-392));
+                h.assertTrue(CalderHollow.floor(12.5,-285.5)==1&&CalderHollow.floor(-20,-392)==1,"well off to one side, over nothing, it is the lowest ground that far north: "+CalderHollow.floor(12.5,-285.5)+", "+CalderHollow.floor(-20,-392));
+                h.assertTrue(CalderHollow.floor(.5,CalderHollow.FAR_SIDE+2)==3,"and at the far side, the far side: "+CalderHollow.floor(.5,CalderHollow.FAR_SIDE+2));
             }).thenSucceed();
     }
     @AfterBatch(batch="hollow_islands") public static void hollowIslandsDone(ServerLevel l){done();}
@@ -4970,12 +4975,12 @@ public final class BikeNightTests {
             .thenExecute(()->mine[0]=take(h,f,p[0],NightBike.Make.HOPPER))
             .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("hopper"),"waiting for the Hopper to be theirs"))
             .thenExecute(()->h.assertTrue(mine[0].interact(p[1],InteractionHand.MAIN_HAND).consumesAction()&&p[1].getVehicle()==mine[0]&&mine[0].getFirstPassenger()==p[0],"a hand on the Hopper puts the second reader on its pegs"))
-            // On the stairs under the top, at that island's place, pointing east: off its side.
-            .thenExecute(()->{var at=islandPlace(b,top);mine[0].moveTo(at.x,at.y,at.z,-90,0);p[0].setYRot(-90);})
+            // On the stairs under the top, at that island's place, pointing west: off its side. (East of them is the steep way.)
+            .thenExecute(()->{var at=islandPlace(b,top);mine[0].moveTo(at.x,at.y,at.z,90,0);p[0].setYRot(90);})
             .thenWaitUntil(()->h.assertTrue(mine[0].onGround()&&BikeNightHollow.island(p[0])==top&&BikeNightHollow.island(p[1])==top,"waiting for the stairs and the top to be the island both stood on: "+BikeNightHollow.island(p[0])+", "+BikeNightHollow.island(p[1])))
             .thenExecute(()->{hush(p[0]);hush(p[1]);})
             .thenWaitUntil(()->{
-                if(BikeNightHollow.fell(p[0])==0){p[0].setYRot(-90);if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);}
+                if(BikeNightHollow.fell(p[0])==0){p[0].setYRot(90);if(mine[0].onGround())pedalWell(mine[0],t[0]++,3);}
                 h.assertTrue(BikeNightHollow.fell(p[0])==1,"waiting for them to ride off the stairs' side and go down: at "+where(b,mine[0]));
             })
             .thenExecute(()->{
@@ -5647,4 +5652,120 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_pops") public static void hollowPopsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.504, the steep way
+    /** Whether every block of the steep way's bank is earth ({@code there}), or every one is air. */
+    private static boolean bankIs(ServerLevel l,BlockPos b,boolean there){
+        var earth=BikeNightRegistry.material("hollow_earth");
+        for(int i=0;i<CalderHollow.BANK_ROWS;i++)for(int x=CalderHollow.BANK_X0;x<=CalderHollow.BANK_X1;x++)for(int y=CalderHollow.BANK_FOOT-1;y<=CalderHollow.BANK_FOOT+i;y++){
+            var s=l.getBlockState(b.offset(x,y,CalderHollow.BANK_SOUTH-i));if(there?!s.is(earth):!s.isAir())return false;
+        }
+        return true;
+    }
+    /**
+     * One rider at the steep way: from the south end of its turn, north along its run and onto the loose earth, with a push on the
+     * pedals every {@code every} ticks ({@code flat}, if it is anything, is the speed they are kept at as far as the loose earth;
+     * {@code card} holds the Rattler's card from there). The step ends when they are on the head, or after {@code ticks}.
+     * {@code far[i]} is the furthest north they got, {@code high[i]} the highest, {@code on[i]} how long they were on the bank.
+     */
+    private static net.minecraft.gametest.framework.GameTestSequence steepRide(net.minecraft.gametest.framework.GameTestSequence q,GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer[] p,NightBike[] mine,int i,int every,float flat,boolean card,int ticks,double[] far,double[] high,int[] on){
+        var b=f.base(P);final int[] t={0};
+        return q.thenExecute(()->{mine[i].moveTo(b.getX()+4.0,b.getY()+CalderHollow.BANK_FOOT,b.getZ()-370.6,180,0);p[i].setYRot(180);mine[i].steady(0,flat);far[i]=99;high[i]=0;on[i]=0;})
+            .thenWaitUntil(()->{
+                h.assertTrue(p[i].getVehicle()==mine[i],"they are still on it: "+where(b,p[i]));
+                double x=mine[i].getX()-b.getX(),y=mine[i].getY()-b.getY(),z=mine[i].getZ()-b.getZ();boolean loose=z<=CalderHollow.LOOSE_SOUTH+1;
+                far[i]=Math.min(far[i],z);high[i]=Math.max(high[i],y);if(CalderHollow.bankRow(x,z)>=0&&y>CalderHollow.BANK_FOOT+.5)on[i]++;
+                p[i].setYRot(mine[i].onGround()?(float)Math.toDegrees(Math.atan2(-(5.0-x),-3.5)):mine[i].getYRot());
+                if(card&&loose)mine[i].keys(false,true);
+                if(mine[i].onGround()){if(flat>0&&!loose)mine[i].steady(0,flat);else pedalWell(mine[i],t[0],every);}
+                boolean up=mine[i].onGround()&&z<CalderHollow.BANK_SOUTH-CalderHollow.BANK_ROWS+.5&&Math.abs(y-CalderHollow.BANK_FOOT-CalderHollow.BANK_ROWS)<.05;
+                h.assertTrue(up||++t[0]>=ticks,"waiting for them to be on the head, or to have had long enough: at "+where(b,mine[i])+" going "+mine[i].speedNow());
+            })
+            .thenExecute(()->{mine[i].keys(false,false);mine[i].steady(0,0);});
+    }
+
+    @GameTest(template="empty",batch="hollow_steep",timeoutTicks=9000)
+    public static void theSteepWaysLooseEarthStopsEveryBikeAtItsBankButTheHareWhichIsUpItBeforeItSlidesAway(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null,null,null};final NightBike[] mine={null,null,null,null};
+        final double[] far=new double[4],high=new double[4];final int[] on=new int[4];final long[] since={0};
+        int island=islandNamed("the steep way's turn and the loose earth"),head=islandNamed("the steep way's head");double face=CalderHollow.BANK_SOUTH+1;
+        var q=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                var way=CalderHollow.STEEP;var earth=BikeNightRegistry.material("hollow_earth");int loose=0,bank=0;
+                // It is nothing else's ground, and each of its pieces runs on from the last.
+                for(var piece:way)for(int x=piece.x0();x<=piece.x1();x++)for(int z=piece.zNorth();z<=piece.zSouth();z++){int over=0;for(var other:CalderHollow.ALL)if(other.has(x,z))over++;h.assertTrue(over==1,piece.name()+" shares "+x+","+z);}
+                for(int i=0;i+1<way.size();i++)h.assertTrue(way.get(i+1).zSouth()==way.get(i).zNorth()-1&&way.get(i+1).x0()<=way.get(i).x1()&&way.get(i+1).x1()>=way.get(i).x0(),way.get(i+1).name()+" runs on from "+way.get(i).name());
+                // Off the stairs' first pair, level with it; onto the last stretch's first piece, level with it.
+                h.assertTrue(CalderHollow.top(1,-371)==CalderHollow.BANK_FOOT&&CalderHollow.top(2,-371)==CalderHollow.BANK_FOOT,"its turn is off the stairs' first pair, at its height");
+                h.assertTrue(CalderHollow.top(1,-397)==CalderHollow.top(2,-397)&&CalderHollow.top(2,-397)==CalderHollow.BANK_FOOT+CalderHollow.BANK_ROWS,"its head is beside the last stretch's first piece, at its height");
+                for(var piece:way){
+                    if(piece.made()==CalderHollow.Made.EARTH){loose++;h.assertTrue(piece.top()==CalderHollow.BANK_FOOT&&l.getBlockState(b.offset(piece.x0(),CalderHollow.BANK_FOOT-1,piece.zNorth())).is(earth),piece.name()+" is loose earth, level with the run");}
+                    if(piece.made()==CalderHollow.Made.BANK){h.assertTrue(piece.top()==CalderHollow.BANK_FOOT+1+bank,piece.name()+" is a whole block up from the last");bank++;}
+                }
+                h.assertTrue(loose==CalderHollow.LOOSE_ROWS&&bank==CalderHollow.BANK_ROWS&&bankIs(l,b,true),"rows of loose earth, and the bank, earth down to its foot: "+loose+" and "+bank);
+                // The bank is no island; what is under it and what is over it are.
+                var under=CalderHollow.ISLANDS.get(island);var over=CalderHollow.ISLANDS.get(head);
+                h.assertTrue(under.way().equals("steep")&&over.way().equals("steep")&&under.zFar()==CalderHollow.BANK_SOUTH+1&&over.zNear()==CalderHollow.BANK_SOUTH-CalderHollow.BANK_ROWS,"an island up to the bank and one past it: "+under+", "+over);
+                for(int i=0;i<CalderHollow.BANK_ROWS;i++)h.assertTrue(CalderHollow.stood(CalderHollow.BANK_X0+1,CalderHollow.BANK_FOOT+1+i,CalderHollow.BANK_SOUTH-i+.5)==-1,"the bank's row "+i+" is nobody's island");
+                String[] names={"hollow_steep_lamp","hollow_steep_comet","hollow_steep_hare","hollow_steep_rattler"};for(int i=0;i<4;i++)p[i]=f.player(names[i],P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[3].getBbHeight()<1.1&&BikeNight.here(p[3]),"waiting for the night"))
+            .thenExecute(()->{NightBike.Make[] makes={NightBike.Make.LAMP,NightBike.Make.COMET,NightBike.Make.HARE,NightBike.Make.RATTLER};for(int i=0;i<4;i++)mine[i]=take(h,f,p[i],makes[i]);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("comet")&&f.own(p[2],P).getString("Bike").equals("hare")&&f.own(p[3],P).getString("Bike").equals("rattler"),"waiting for the bikes to be theirs"))
+            .thenExecute(()->{for(int i=0;i<4;i++){var at=islandPlace(b,CalderHollow.HILL);mine[i].moveTo(at.x-3+2*i,at.y,at.z+4,180,0);}});
+        // A plain bike, pedalled as fast as hands can: a push every other tick, ten a second.
+        q=steepRide(q,h,f,p,mine,0,2,0,false,260,far,high,on)
+            .thenExecute(()->{
+                h.assertTrue(far[0]<face+1&&far[0]>face+.05&&high[0]<CalderHollow.BANK_FOOT+.05,"the Lamp is ridden to the bank's face and no further, and never up it: "+far[0]+", "+high[0]+" high");
+                h.assertTrue(mine[0].speedNow()<.2&&!BikeNightHollow.bankGoing(b)&&!BikeNightHollow.bankGone(b)&&BikeNightHollow.island(p[0])==island,"at a crawl; the bank has had nobody on it; the ground under it is their island");
+            });
+        // The Comet, flat out as far as the loose earth, and after that a push every other tick: ten a second.
+        q=steepRide(q,h,f,p,mine,1,2,.46F,false,200,far,high,on)
+            .thenExecute(()->{
+                h.assertTrue(far[1]<face+1&&far[1]>face+.05&&high[1]<CalderHollow.BANK_FOOT+.05,"the Comet's speed is gone in the loose earth, and it is not up the bank either: "+far[1]+", "+high[1]+" high");
+                h.assertTrue(!BikeNightHollow.bankGoing(b)&&!BikeNightHollow.bankGone(b),"the bank has had nobody on it");
+            });
+        // The Hare, with a push every fifth tick: four a second.
+        q=steepRide(q,h,f,p,mine,2,5,0,false,400,far,high,on)
+            .thenExecute(()->{
+                h.assertTrue(far[2]<CalderHollow.BANK_SOUTH-CalderHollow.BANK_ROWS+.5&&Math.abs(high[2]-CalderHollow.BANK_FOOT-CalderHollow.BANK_ROWS)<.05,"the Hare is up the bank and on the head: "+far[2]+", "+high[2]+" high");
+                h.assertTrue(on[2]>0&&on[2]<BikeNightHollow.BANK_HOLDS-10,"in time, at the slowest it can be pedalled up at all: "+on[2]+" ticks on it");
+                h.assertTrue(BikeNightHollow.ways(p[2]).contains("steep")&&BikeNightHollow.fell(p[2])==0,"the steep way is one they have had under them: "+BikeNightHollow.ways(p[2]));
+                h.assertTrue(BikeNightHollow.bankGoing(b)&&bankIs(l,b,true),"the bank is whole yet, and will go");
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.island(p[2])==head,"waiting for the head to be their island"))
+            // It goes when its time is up, with nobody on it, and comes back.
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.bankGone(b),"waiting for the bank to slide away"))
+            .thenExecute(()->{h.assertTrue(bankIs(l,b,false)&&!BikeNightHollow.bankGoing(b),"all of it is gone");h.assertTrue(p[2].getVehicle()==mine[2]&&BikeNightHollow.fell(p[2])==0,"the Hare's rider is past it");since[0]=l.getGameTime();})
+            .thenWaitUntil(()->h.assertTrue(!BikeNightHollow.bankGone(b),"waiting for the bank to be back"))
+            .thenExecute(()->h.assertTrue(bankIs(l,b,true)&&l.getGameTime()-since[0]>=BikeNightHollow.BANK_BACK-1,"whole again, after its time: "+(l.getGameTime()-since[0])));
+        // The Rattler, with a push every third tick and its card held from the loose earth: its burst has it up too.
+        q=steepRide(q,h,f,p,mine,3,3,0,true,400,far,high,on)
+            .thenExecute(()->h.assertTrue(far[3]<CalderHollow.BANK_SOUTH-CalderHollow.BANK_ROWS+.5&&Math.abs(high[3]-CalderHollow.BANK_FOOT-CalderHollow.BANK_ROWS)<.05&&on[3]<BikeNightHollow.BANK_HOLDS,"the Rattler in its burst is up it too: "+far[3]+", "+high[3]+" high, "+on[3]+" ticks on it"))
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.bankGone(b),"waiting for the bank to go again"))
+            .thenWaitUntil(()->h.assertTrue(!BikeNightHollow.bankGone(b)&&!BikeNightHollow.bankGoing(b),"waiting for the bank to be back again"))
+            // The Hare's rider again: onto the bank's first step, and stops there.
+            .thenExecute(()->{mine[2].moveTo(b.getX()+5.0,b.getY()+CalderHollow.BANK_FOOT,b.getZ()+face+1.2,180,0);p[2].setYRot(180);mine[2].steady(0,.2F);hush(p[2]);})
+            .thenWaitUntil(()->{
+                double y=mine[2].getY()-b.getY(),z=mine[2].getZ()-b.getZ();
+                // On until the middle of the bike is over the step, and no further.
+                if(mine[2].onGround())mine[2].steady(0,z>face-.55?.2F:0);
+                h.assertTrue(mine[2].onGround()&&Math.abs(y-CalderHollow.BANK_FOOT-1)<.05&&z<=face-.55&&BikeNightHollow.bankGoing(b),"waiting for the Hare to be wholly on the bank's first step: "+where(b,mine[2]));
+            })
+            .thenExecute(()->since[0]=l.getGameTime())
+            .thenWaitUntil(()->{
+                if(mine[2].onGround()&&!BikeNightHollow.bankGone(b))mine[2].steady(0,0);
+                h.assertTrue(BikeNightHollow.fell(p[2])==1,"waiting for the bank to go from under them, and for them to have gone down: "+where(b,mine[2]));
+            })
+            .thenExecute(()->{
+                h.assertTrue(BikeNightHollow.bankGone(b)&&bankIs(l,b,false)&&l.getGameTime()-since[0]>=BikeNightHollow.BANK_HOLDS-2,"it held as long as it holds, and went: "+(l.getGameTime()-since[0]));
+                var at=islandPlace(b,island);
+                h.assertTrue(p[2].getVehicle()==mine[2]&&mine[2].position().distanceTo(at)<.05&&BikeNightHollow.island(p[2])==island,"they are back on the run under it, on their bike: "+where(b,mine[2]));
+                h.assertTrue(sounded(p[2],"hollow.slide")&&sounded(p[2],"hollow.under"),"having heard it go, and what was under it");
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[2],BikeNightTexts.UNDER_RIDING),"and they are told"));
+        q.thenSucceed();
+    }
+    @AfterBatch(batch="hollow_steep") public static void hollowSteepDone(ServerLevel l){done();}
 }

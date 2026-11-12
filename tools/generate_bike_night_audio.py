@@ -82,6 +82,8 @@ ROWS = {
     'hollow/hooves': ('hollow.hooves', 'Hooves come up behind', 24),
     # 0.4.503: something jumping out.
     'hollow/pop': ('hollow.pop', 'Something jumps out', 24),
+    # 0.4.504: the steep way's bank going.
+    'hollow/slide': ('hollow.slide', 'Earth slides away', 32),
 }
 # How loud each is in itself, where it is not as loud as a sound can be.
 LEVELS = {'town/dryers': .4, 'town/radio': .32, 'town/laughter': .5, 'town/neon': .55, 'town/carts': .5}
@@ -791,7 +793,28 @@ def pop():
     return band(out, 250, 7000)
 
 
-MAKERS = {'hollow/pop': pop, 'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
+def slide_away():
+    # A bank of wet earth letting go: a low heave, then a long rush of clods going down, thinning.
+    length = 1.8
+    n = seconds(length)
+    t = times(n)
+    heave = np.sin(2 * np.pi * (58 - 18 * t) * t) * np.exp(-t / .3) * .9
+    rush = np.zeros(n)
+    noise = rng.standard_normal(n)
+    for lo, hi, level in ((90, 400, .8), (400, 1400, .5), (1400, 3600, .18)):
+        rush += band(noise, lo, hi) * level
+    rush *= np.clip(t / .15, 0, 1) * np.exp(-t / .65)
+    clods = np.zeros(n)
+    for _ in range(26):
+        at = rng.uniform(.1, 1.3)
+        i = int(at * RATE)
+        m = n - i
+        tt = times(m)
+        clods[i:] += np.sin(2 * np.pi * rng.uniform(70, 160) * tt) * np.exp(-tt / .03) * rng.uniform(.15, .5) * (1 - at / 1.6)
+    return heave + rush + clods
+
+
+MAKERS = {'hollow/slide': slide_away, 'hollow/pop': pop, 'hollow/hooves': hooves, 'hollow/howl': howl, 'hollow/ghost': ghost, 'hollow/cackle': cackle, 'hollow/drop': drop, 'hollow/under': under, 'town/carts': carts, 'town/dryers': dryers, 'town/neon': neon, 'town/breaker': breaker, 'town/laughter': laughter, 'town/radio': radio,
           'town/engine': engine, 'town/horn_wagon': lambda: horn(349, 440, .7), 'town/horn_pickup': lambda: horn(294, 311, .8, .25, True),
           'town/horn_sedan': lambda: horn(392, 494, .65), 'town/horn_muscle': lambda: horn(466, 587, .95, .15),
           'town/leaves': leaves, 'town/laugh': laugh, 'bike/freewheel': freewheel, 'park/car_pass': car_pass, 'park/padlock': padlock, 'park/cough': cough, 'park/sand_kick': sand_kick, 'bike/hop': hop, 'bike/land': land, 'bike/card': card, 'bike/turbo': turbo, 'bike/dynamo': dynamo, 'park/lamp_buzz': lamp_buzz, 'park/chain': chain,

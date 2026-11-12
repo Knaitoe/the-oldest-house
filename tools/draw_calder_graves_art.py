@@ -197,6 +197,18 @@ def grave_earth():
     return im
 
 
+def hollow_earth():
+    # The Hollow's loose earth: darker and wetter than a grave's, all clods, with the pale ends of roots in it.
+    im = noise('#3f342a', 5041, 9); rnd = random.Random(5041)
+    for _ in range(22):
+        put(im, rnd.randrange(16), rnd.randrange(16), '#3f342a', -22 + rnd.randrange(10))
+    for _ in range(12):
+        put(im, rnd.randrange(16), rnd.randrange(16), '#3f342a', 12 + rnd.randrange(8))
+    for _ in range(5):
+        put(im, rnd.randrange(16), rnd.randrange(16), '#a89878', rnd.randint(-8, 8))
+    return im
+
+
 def tarp():
     im = noise(TARP, 4894, 3)
     for y in (5, 11):
@@ -403,6 +415,7 @@ def textures():
     for k in range(4):
         out[DIR + f'side_{k}.png'] = plain(STONE[k], 4898 + k)
         out[DIR + f'door_{k}.png'] = door(k)
+    out['block/calder_hollow_earth.png'] = hollow_earth()
     out['block/calder_hollow_sod.png'] = sod_side()
     out['block/calder_hollow_under.png'] = sod_under()
     out['block/calder_vine.png'] = vine()
@@ -569,7 +582,7 @@ FITTINGS = {
 KINDS = ['stone', 'small', 'cross', 'obelisk', 'angel', 'mound', 'tarp', 'goods', 'door', 'roots', 'picket']
 STAGES = {'stone': len(STONES), 'small': SMALL, 'cross': 2, 'obelisk': 3, 'angel': 3, 'mound': 1, 'tarp': 2, 'goods': 4, 'door': 4, 'roots': 3, 'picket': 4}
 MAX_STAGE = 16
-MATERIALS = ('grave_turf', 'grave_earth', 'marble', 'vine', 'coffin')
+MATERIALS = ('grave_turf', 'grave_earth', 'marble', 'vine', 'coffin', 'hollow_earth')
 # A half block: what its top and bottom are drawn with, and its sides.
 SLABS = {'grave_turf_slab': ('calder_grave_turf', 'calder_grave_turf'), 'gravel_slab': ('calder_gravel', 'calder_gravel'),
          'vine_slab': ('calder_vine', 'calder_vine'), 'coffin_lid': ('calder_grave/lid', 'calder_coffin'), 'stone_step': ('calder_grave/laid', 'calder_grave/side_0')}
@@ -622,7 +635,7 @@ NAMES = {'block.the_oldest_house.calder_grave': 'Grave Fitting', 'block.the_olde
          'block.the_oldest_house.calder_grave_turf_slab': 'Cemetery Grass Step', 'block.the_oldest_house.calder_gravel_slab': 'Gravel Step',
          'block.the_oldest_house.calder_hollow_sod': 'Sod', 'block.the_oldest_house.calder_vine': 'Vine', 'block.the_oldest_house.calder_coffin': 'Coffin Wood',
          'block.the_oldest_house.calder_vine_slab': 'Vine Step', 'block.the_oldest_house.calder_coffin_lid': 'Coffin Lid',
-         'block.the_oldest_house.calder_stone_step': 'Laid Headstone'}
+         'block.the_oldest_house.calder_stone_step': 'Laid Headstone', 'block.the_oldest_house.calder_hollow_earth': 'Loose Earth'}
 
 
 def review(path):
