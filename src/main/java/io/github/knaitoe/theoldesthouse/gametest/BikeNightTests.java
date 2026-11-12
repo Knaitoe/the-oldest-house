@@ -462,9 +462,11 @@ public final class BikeNightTests {
     private static final Map<UUID,List<String>> HEARD=new HashMap<>(),SOUNDED=new HashMap<>();
     /** 0.4.495: for how many ticks a reader was last told the mist is over everything. */
     private static final Map<UUID,Integer> OVER=new HashMap<>(),SHARE=new HashMap<>();
+    /** 0.4.510: who has been told it is dawn for them. */
+    private static final java.util.Set<UUID> DAWN=new java.util.HashSet<>();
     /** 0.4.476: the playground's own cases have it to themselves: Gus stays at his place and says nothing, but for the cases that are his. */
     private static LiteraryTests.Fixture park(GameTestHelper h){done();BikeNightGus.keptHome=true;BikeNightBullies.keptAway=true;BikeNightSpecters.keptAway=true;active=new LiteraryTests.Fixture(h);return active;}
-    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();SHARE.clear();BikeNightSpecters.keptAway=false;BikeNightSpecters.only=null;BikeNightGus.keptHome=false;
+    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();SHARE.clear();DAWN.clear();BikeNightSpecters.keptAway=false;BikeNightSpecters.only=null;BikeNightGus.keptHome=false;
         BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=BikeNightBullies.ARRIVE;BikeNightBullies.patience=BikeNightBullies.PATIENCE;}
     /** The park and Park Street: what the park's own cases keep resident. (0.4.481: the place is the town too; its cases keep that, {@link #town}.) */
     private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-58,b.getY()-5,b.getZ()-74,b.getX()+59,b.getY()+19,b.getZ()+2);}
@@ -478,11 +480,12 @@ public final class BikeNightTests {
             if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)said.add(chat.content().getString());
             if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)rang.add(sound.getSound().value().getLocation().getPath());
             if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload mist&&mist.over()>0){OVER.put(p.getUUID(),mist.over());SHARE.put(p.getUUID(),mist.share());}
+            if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload mist&&mist.dawn())DAWN.add(p.getUUID());
         }
     }
     private static boolean heard(ServerPlayer p,String part){drain(p);return HEARD.get(p.getUUID()).stream().anyMatch(m->m.contains(part));}
     private static boolean sounded(ServerPlayer p,String name){drain(p);return SOUNDED.get(p.getUUID()).contains(name);}
-    private static void hush(ServerPlayer p){drain(p);HEARD.remove(p.getUUID());SOUNDED.remove(p.getUUID());OVER.remove(p.getUUID());SHARE.remove(p.getUUID());}
+    private static void hush(ServerPlayer p){drain(p);HEARD.remove(p.getUUID());SOUNDED.remove(p.getUUID());OVER.remove(p.getUUID());SHARE.remove(p.getUUID());DAWN.remove(p.getUUID());}
     /** A hand on a bike nobody is on: the block's own use. */
     private static void hand(LiteraryTests.Fixture f,ServerPlayer p,BlockPos at){var l=f.level(P);NightBikes.use(p,l,at,l.getBlockState(at));}
     /** A reader who has looked at this bike gets on it where it stands in the rack. */
@@ -5313,7 +5316,16 @@ public final class BikeNightTests {
                 h.assertTrue(!p[0].isPassenger()&&l.getBlockState(wasp).is(BikeNightRegistry.BIKE_BLOCK.get()),"a hand on another bike does not put them on it");
             })
             .thenWaitUntil(()->h.assertTrue(heard(p[0],BikeNightTexts.TAKEN)&&heard(p[0],BikeNightTexts.NO_MORE)&&OVER.getOrDefault(p[0].getUUID(),0)==BikeNightHollow.TAKEN_OVER&&sounded(p[0],"hollow.under"),"they are told, with the mist over them for as long as that takes"))
-            .thenExecute(()->h.assertTrue(!BikeNightHollow.taken(p[1])&&!BikeNightHollow.taken(p[2])&&p[1].getVehicle()==mine[1]&&p[2].getVehicle()==mine[2],"the others ride on"))
+            .thenExecute(()->{
+                h.assertTrue(!BikeNightHollow.taken(p[1])&&!BikeNightHollow.taken(p[2])&&p[1].getVehicle()==mine[1]&&p[2].getVehicle()==mine[2],"the others ride on");
+                // 0.4.510: "they come round at dawn". It is dawn for them, told with the mist that was over them, and for nobody else.
+                drain(p[1]);drain(p[2]);
+                h.assertTrue(DAWN.contains(p[0].getUUID())&&!DAWN.contains(p[1].getUUID())&&!DAWN.contains(p[2].getUUID())&&BikeNightTexts.TAKEN.contains("It is getting light."),"it is dawn for the one who was caught, and still the night for the others");
+                hush(p[0]);
+            })
+            // And they go on being told, out on the pavement where there is no mist to tell them of.
+            .thenWaitUntil(()->{drain(p[0]);h.assertTrue(DAWN.contains(p[0].getUUID()),"waiting for them to be told again that it is dawn");})
+            .thenExecute(()->{drain(p[1]);drain(p[2]);h.assertTrue(!DAWN.contains(p[1].getUUID())&&!DAWN.contains(p[2].getUUID()),"and nobody else is");})
             // The Hare, flat out up the fences from well short of her first row, sitting up: she times herself to them, and has them at her row.
             .thenExecute(()->{mine[1].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-293.0,180,0);p[1].setYRot(180);lastZ[0]=0;})
             .thenWaitUntil(()->{
@@ -6211,6 +6223,82 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="after_gates") public static void afterGatesDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.510, what stays
+    @GameTest(template="empty",batch="stone_row",timeoutTicks=6000)
+    public static void whoeverTheHollowHasHadHasANewStoneAtTheEndOfTheRowWithTheirNameAndTheirBikeRustingAgainstItInEveryNightAfter(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final int[] t={0};
+        int row=CalderGraves.SMALL_ROW,level=CalderGraves.level(row);var small=CalderGraveBlock.Kind.SMALL;
+        java.util.function.IntPredicate stands=i->{var s=l.getBlockState(BikeNightStones.cell(b,i));return CalderGraveBlock.is(s,small)&&s.getValue(CalderGraveBlock.STAGE)==CalderGraveBlock.NEW_STONE;};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(graves(f)).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // The places: east of the row and then west of it, at the row's own spacing; every one open grass in a new town.
+                h.assertTrue(BikeNightStones.x(0)==CalderGraves.SMALL_X[5]+3&&BikeNightStones.x(1)==BikeNightStones.x(0)+3&&BikeNightStones.x(BikeNightStones.MOST/2)==CalderGraves.SMALL_X[0]-3&&BikeNightStones.x(BikeNightStones.MOST/2+1)==CalderGraves.SMALL_X[0]-6,"they go on from the row's ends at its spacing, east first");
+                for(int i=0;i<BikeNightStones.MOST;i++){
+                    int x=BikeNightStones.x(i);var at=BikeNightStones.cell(b,i);
+                    h.assertTrue(x>CalderGraves.W+2&&x<CalderGraves.E-2&&BikeNightStones.index(at.subtract(b))==i&&at.getY()-b.getY()==level,"place "+i+" is in the cemetery, on the row: "+x);
+                    h.assertTrue(l.getBlockState(at).isAir()&&l.getBlockState(at.below()).isCollisionShapeFullBlock(l,at.below())&&l.getBlockState(at.north()).isAir()&&!CalderGraves.path(x,row),"place "+i+" is open grass, with room behind it: "+l.getBlockState(at)+" over "+l.getBlockState(at.below()));
+                }
+                for(int i=0;i<CalderGraves.SMALL_X.length;i++){var s=l.getBlockState(b.offset(CalderGraves.SMALL_X[i],level,row));h.assertTrue(CalderGraveBlock.is(s,small)&&s.getValue(CalderGraveBlock.STAGE)==i,"the row's own stones stand: "+i);}
+                h.assertTrue(BikeNightStones.all(l.getServer()).isEmpty()&&BikeNightTexts.NIGHT_YEAR>BikeNightTexts.LAST_YEAR&&BikeNightTexts.NIGHT_YEAR>BikeNightTexts.SMALL_YEAR+20,"nobody yet; and the night is years after the row's, and after the last of the other stones");
+                p[0]=f.player("stone_taken",P);p[1]=f.player("stone_other",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->take(h,f,p[0],NightBike.Make.LAMP))
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
+            .thenExecute(()->{
+                // The other stands on the hill, six blocks off, looking at the place. The Hollow has the first.
+                f.at(p[1],P,BikeNightStones.x(0)+.5,level,row+6.5);p[1].setYRot(180);p[1].setXRot(0);
+                BikeNightHollow.takeNow(l,b,p[0],"witch");t[0]=0;
+                var all=BikeNightStones.all(l.getServer());
+                h.assertTrue(all.size()==1&&all.get(0).id().equals(p[0].getUUID())&&all.get(0).name().equals("stone_taken")&&all.get(0).make().equals("lamp"),"it is kept with the world: who, and what they were on: "+all);
+            })
+            .thenWaitUntil(()->{
+                p[1].setYRot(180);
+                h.assertTrue(!stands.test(0)&&BikeNightStones.leaning(l,b,0)==null,"nothing is put where somebody could be looking");
+                h.assertTrue(++t[0]>=60,"waiting three seconds with the other looking at the place");
+            })
+            .thenWaitUntil(()->{p[1].setYRot(0);h.assertTrue(stands.test(0)&&BikeNightStones.leaning(l,b,0)!=null,"waiting for the stone and the bike once nobody is looking");})
+            .thenExecute(()->{
+                var at=BikeNightStones.cell(b,0);var s=l.getBlockState(at);var bike=BikeNightStones.leaning(l,b,0);
+                h.assertTrue(s.getValue(CalderGraveBlock.FACING)==Direction.SOUTH&&CalderGraveBlock.carved(s)&&CalderGraveBlock.low(s),"a small stone, its name toward the gate as the row's are: "+s);
+                h.assertTrue(bike.look()==PackBike.RUSTED+NightBike.Make.LAMP.ordinal()&&bike.laid()==2&&bike.getPassengers().isEmpty()&&!bike.isPickable(),"the Lamp, rusted, leaning, and nobody's to take: look "+bike.look()+", "+bike.laid());
+                h.assertTrue(Math.abs(bike.getX()-at.getX()-.5)<.01&&Math.abs(bike.getZ()-(at.getZ()+.5-BikeNightStones.BIKE_BACK))<.01&&Math.abs(bike.getY()-at.getY())<.01&&Math.abs(Mth.wrapDegrees(bike.getYRot()-BikeNightStones.BIKE_YAW))<.5,"behind the stone, along it, where it can lean on the back of it: "+rel(b,bike));
+                h.assertTrue(!stands.test(1)&&BikeNightStones.leaning(l,b,1)==null,"and nothing in the next place");
+                for(int i=0;i<CalderGraves.SMALL_X.length;i++){var old=l.getBlockState(b.offset(CalderGraves.SMALL_X[i],level,row));h.assertTrue(CalderGraveBlock.is(old,small)&&old.getValue(CalderGraveBlock.STAGE)==i,"the row's own stones are as they were: "+i);}
+                // A hand on it, and on one of the row's.
+                hush(p[1]);f.click(p[1],P,at.subtract(b));
+            })
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],"STONE_TAKEN. "+BikeNightTexts.NIGHT_DATE+"."),"a hand on it is told the name and the date of their night"))
+            .thenExecute(()->{hush(p[1]);f.click(p[1],P,new BlockPos(CalderGraves.SMALL_X[5],level,row));})
+            .thenWaitUntil(()->h.assertTrue(heard(p[1],BikeNightTexts.SMALL_NAMES[5]+". "+BikeNightTexts.SMALL_DATE+"."),"and one of the row's still says what it said"))
+            // The night over. The stone stays; the bike is stood there again in the next.
+            .thenExecute(()->{
+                BikeNight.resetNow(l,b);
+                h.assertTrue(stands.test(0)&&BikeNightStones.leaning(l,b,0)==null&&BikeNightStones.all(l.getServer()).size()==1,"the night over, the stone stands and what leaned on it has gone with the night");
+                f.at(p[1],P,BikeNightStones.x(0)+.5,level,row+6.5);p[1].setYRot(0);
+            })
+            .thenWaitUntil(()->{p[1].setYRot(0);h.assertTrue(BikeNight.begun(b)&&BikeNightStones.leaning(l,b,0)!=null,"waiting for another night, and the bike against the stone again");})
+            .thenExecute(()->{
+                // The same reader again, on another night: one stone is all they have. And the other, on foot: a stone, and no bike.
+                BikeNightHollow.takeNow(l,b,p[0],"wolf");BikeNightHollow.takeNow(l,b,p[1],"wolf");
+                var all=BikeNightStones.all(l.getServer());
+                h.assertTrue(all.size()==2&&all.get(1).id().equals(p[1].getUUID())&&all.get(1).make().isEmpty(),"one each, in the order it had them: "+all);
+                // And a new stone that is nobody's, left by a world that has lost its name.
+                l.setBlock(BikeNightStones.cell(b,7),CalderGraveBlock.of(small,Direction.SOUTH,CalderGraveBlock.NEW_STONE),3);t[0]=0;
+            })
+            .thenWaitUntil(()->h.assertTrue(stands.test(1)&&!stands.test(7)&&++t[0]>=40,"waiting for the second stone, for the one that is nobody's to go, and two seconds more"))
+            .thenExecute(()->{
+                h.assertTrue(BikeNightStones.leaning(l,b,1)==null&&BikeNightStones.leaning(l,b,0)!=null&&!stands.test(2),"somebody caught on foot has a stone and no bike against it");
+                h.assertTrue(BikeNightStones.inscription(l.getServer(),new BlockPos(BikeNightStones.x(1),level,row)).equals("STONE_OTHER. "+BikeNightTexts.NIGHT_DATE+".")&&BikeNightStones.inscription(l.getServer(),new BlockPos(BikeNightStones.x(7),level,row)).equals(BikeNightTexts.NEW_STONE_BLANK),"each says whose it is");
+                // The world is other cases' too: what this one stood in it comes down.
+                BikeNight.resetNow(l,b);
+                for(int i=0;i<BikeNightStones.MOST;i++)if(stands.test(i))l.setBlock(BikeNightStones.cell(b,i),Blocks.AIR.defaultBlockState(),3);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="stone_row") public static void stoneRowDone(ServerLevel l){done();}
 
     // ------------------------------------------------------------------------------------------------ 0.4.508, out of it
     /** How many copies of the night's account somebody is carrying. */

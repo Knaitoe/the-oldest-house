@@ -22,7 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * town's fittings are kinds of {@link CalderTownBlock}. What a stone faces is the way its inscription looks.
  * <ul>
  * <li>STONE: a headstone. Its stage is which: four shapes of four each, and the last four are low markers.</li>
- * <li>SMALL: one of the row of small stones near the back. Its stage is which of the row.</li>
+ * <li>SMALL: one of the row of small stones near the back. Its stage is which of the row. (0.4.510: and stage NEW_STONE is a
+ * new one, at the row's end: BikeNightStones.)</li>
  * <li>CROSS: of stone (0), or of wood and leaning (1).</li>
  * <li>OBELISK, ANGEL: three blocks each; the stage counts up from the base.</li>
  * <li>MOUND: the heap of earth beside an open grave. FACING is the way up it.</li>
@@ -52,6 +53,8 @@ public final class CalderGraveBlock extends HorizontalDirectionalBlock implement
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,15);
     /** How many headstones there are, the first of the low markers among them, and how many small stones the row has. */
     public static final int STONES=16,LOW=12,SMALL_STONES=6;
+    /** 0.4.510: the small stone that is new. */
+    public static final int NEW_STONE=SMALL_STONES;
     /** What is left at a grave. */
     public static final int FLOWERS=0,LANTERN=1,WREATH=2,FLAG=3;
     /** A tarpaulin over a heap. */

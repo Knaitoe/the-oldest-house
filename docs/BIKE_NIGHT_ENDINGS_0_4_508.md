@@ -84,9 +84,11 @@ operator cases. They pass.
   kept yet. The reader's bike stays where they got off it.
 - **What follows at the gates**: the three's bikes lying by the front one, the cap hanging on the back one, Gus
   there. (Built in 0.4.509: `docs/BIKE_NIGHT_AFTER_0_4_509.md`.)
-- **Dawn** for somebody the Hollow has had: it is still night outside the gate.
+- **Dawn** for somebody the Hollow has had: it is still night outside the gate. (Built in 0.4.510:
+  `docs/BIKE_NIGHT_STAYS_0_4_510.md`.)
 - **The headstone** with a caught reader's name at the end of the old row in every copy of the town, and their bike
-  rusting against it; and **the bike chained to a school fence** in a later hall for somebody caught in the town.
+  rusting against it (built in 0.4.510); and **the bike chained to a school fence** in a later hall for somebody
+  caught in the town.
 - Somebody who was caught and then walks out by the door they came in by simply leaves. Nothing is said to them.
 - Nobody has played the night from the park to the lane. Each part has its own cases; the whole has none.
 - The door is the House's own way-on door, in brick. Whether the lane wants a door of its own is the owner's to see.

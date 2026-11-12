@@ -54,7 +54,7 @@ public final class BikeNightHollow {
     /**
      * 0.4.499, caught. "Being caught by any of them is the Hollow's failure": "The screen goes to mist", and "they come round at
      * dawn outside the graveyard's front gate, alive, the bike gone." The mist is over them for TAKEN_OVER ticks (as much as their
-     * comfort setting lets through); they are on the pavement outside the front gate, on foot, unhurt; their bike is gone from
+     * comfort setting lets through); (0.4.510) it is dawn for them from then on (BikeNightGraveyard.dawn; their own sky, nobody else's); they are on the pavement outside the front gate, on foot, unhurt; their bike is gone from
      * under them or from where it lay, and is nobody's for the rest of the night; it goes in their record with what caught them;
      * and they take no other bike tonight. Whoever was on their pegs is left where they were, over whatever was under them.
      */
@@ -74,13 +74,17 @@ public final class BikeNightHollow {
         if(p.isPassenger())p.stopRiding();
         p.connection.teleport(to.x,to.y,to.z,ON,0);p.setDeltaMovement(Vec3.ZERO);p.hurtMarked=true;p.resetFallDistance();
         var own=BikeNight.own(p);own.putBoolean("Taken",true);own.putString("TakenBy",by);BikeNight.save(p,own);
-        HousePackets.send(p,new BikeNightMistPayload(BikeNightGraveyard.mist(l,n.base,p),TAKEN_OVER));
+        // 0.4.510: and it stays: their name, and the make they were on, for the stone at the end of the row.
+        BikeNightStones.add(p,own.getString("Bike"));
+        HousePackets.send(p,new BikeNightMistPayload(BikeNightGraveyard.mist(l,n.base,p),TAKEN_OVER,100,true));
         p.playNotifySound(BikeNightRegistry.UNDER.get(),SoundSource.AMBIENT,.9F,.8F);
         BikeNight.cue(p,BikeNightTexts.TAKEN);
         l.sendParticles(ParticleTypes.WHITE_SMOKE,from.x,from.y+.8,from.z,40,.6,.8,.6,.02);
     }
     /** Outside the cemetery's front gate, on the town's side, facing it. */
     static Vec3 outside(BikeNight.Night n){return new Vec3(n.base.getX()+BikeNightGraveyard.GATE_X,n.base.getY(),n.base.getZ()+CalderTown.RAILS+3.5);}
+    /** For tests: something of the Hollow's has this reader now, as it has one it catches. */
+    public static void takeNow(ServerLevel l,BlockPos b,ServerPlayer p,String by){var n=BikeNight.night(b);if(n!=null)taken(l,n,p,by);}
     /** Whether a specter has caught a reader tonight. For tests. */
     public static boolean taken(ServerPlayer p){var n=BikeNight.night(p);return n!=null&&n.hollow.taken.contains(p.getUUID());}
     /**

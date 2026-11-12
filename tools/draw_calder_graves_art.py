@@ -62,6 +62,8 @@ STONES = [(0, 0, '', 'cross', ''), (0, 2, 'back', 'willow', ''), (0, 1, 'left', 
           (2, 1, '', 'cross', ''), (2, 0, 'left', 'urn', ''), (2, 2, '', 'willow', ''), (2, 3, 'right', 'star', ''),
           (3, 0, '', '', '1934'), (3, 2, '', '', '1911'), (3, 1, '', '', '1946'), (3, 3, '', '', '1898')]
 SMALL = 6
+# 0.4.510: one more of them, new, for the end of the row: the year of the night itself (BikeNightTexts.NIGHT_YEAR), and no weather.
+NEW_YEAR = '1984'
 # The heap: how many lumps it rises in, how far each is in from the sides, and how high each is (CalderGraveBlock's sheet runs from 2
 # to 12 pixels along it, and a lump is as high as the sheet is over its middle).
 MOUND_STEPS = 8
@@ -147,7 +149,17 @@ def stone_face(k):
 
 
 def small_face(k):
-    """One of the row: its year, and over it the line of a name."""
+    """One of the row: its year, and over it the line of a name. The last (0.4.510) is new: marble not yet gone grey, cut sharp,
+    with nothing grown on it and no rain run down it."""
+    if k == SMALL:
+        base = STONE[2]; im = noise(base, 48950 + k, 3)
+        for x in range(16):
+            put(im, x, 0, base, 12)
+        for x in range(3, 13):
+            if x % 4:
+                put(im, x, 8, base, -46)
+        digits(im, NEW_YEAR, 1, 10, base, -70)
+        return im
     base = STONE[(1, 0, 1, 3, 0, 1)[k]]; rnd = random.Random(48950 + k); im = noise(base, 48950 + k)
     weather(im, rnd, base, False)
     for x in range(3 + k % 2, 13 - (k * 2) % 3):
@@ -410,7 +422,7 @@ def textures():
     out = {'block/calder_grave_turf.png': grave_turf(), 'block/calder_grave_earth.png': grave_earth(), 'block/calder_marble.png': marble()}
     for k in range(len(STONES)):
         out[DIR + f'stone_{k}.png'] = stone_face(k)
-    for k in range(SMALL):
+    for k in range(SMALL + 1):
         out[DIR + f'small_{k}.png'] = small_face(k)
     for k in range(4):
         out[DIR + f'side_{k}.png'] = plain(STONE[k], 4898 + k)
@@ -568,7 +580,7 @@ def door_model(k):
 
 FITTINGS = {
     **{f'stone_{k}': ((lambda k=k: stone(k)), {'f': f'stone_{k}', 's': f'side_{STONES[k][1]}'}) for k in range(len(STONES))},
-    **{f'small_{k}': ((lambda k=k: small(k)), {'f': f'small_{k}', 's': f'side_{(1, 0, 1, 3, 0, 1)[k]}'}) for k in range(SMALL)},
+    **{f'small_{k}': ((lambda k=k: small(k)), {'f': f'small_{k}', 's': f'side_{(1, 0, 1, 3, 0, 1, 2)[k]}'}) for k in range(SMALL + 1)},
     'cross_0': (lambda: cross(0), {'m': 'side_0'}), 'cross_1': (lambda: cross(1), {'w': 'wood'}),
     **{f'obelisk_{k}': ((lambda k=k: obelisk(k)), {'m': 'marble'}) for k in range(3)},
     **{f'angel_{k}': ((lambda k=k: angel(k)), {'m': 'marble'}) for k in range(3)},
@@ -580,7 +592,7 @@ FITTINGS = {
     **{f'picket_{k}': ((lambda k=k: picket_model(k)), {'r': 'roots'}) for k in range(4)},
 }
 KINDS = ['stone', 'small', 'cross', 'obelisk', 'angel', 'mound', 'tarp', 'goods', 'door', 'roots', 'picket']
-STAGES = {'stone': len(STONES), 'small': SMALL, 'cross': 2, 'obelisk': 3, 'angel': 3, 'mound': 1, 'tarp': 2, 'goods': 4, 'door': 4, 'roots': 3, 'picket': 4}
+STAGES = {'stone': len(STONES), 'small': SMALL + 1, 'cross': 2, 'obelisk': 3, 'angel': 3, 'mound': 1, 'tarp': 2, 'goods': 4, 'door': 4, 'roots': 3, 'picket': 4}
 MAX_STAGE = 16
 MATERIALS = ('grave_turf', 'grave_earth', 'marble', 'vine', 'coffin', 'hollow_earth')
 # A half block: what its top and bottom are drawn with, and its sides.
@@ -670,7 +682,7 @@ def main():
     for kind in KINDS:
         for stage in range(STAGES[kind]):
             assert f'{kind}_{stage}' in models, (kind, stage)
-    assert len({im.tobytes() for rel, im in images.items() if 'small_' in rel}) == SMALL, 'two small stones are the same'
+    assert len({im.tobytes() for rel, im in images.items() if 'small_' in rel}) == SMALL + 1, 'two small stones are the same'
     for key, obj in models.items():
         for tex in obj['textures'].values():
             assert tex.split(':')[1] + '.png' in images, (key, tex)

@@ -99,5 +99,5 @@ One new case, 97 in the Bike night namespace, and two older ones go further.
 - **Numbers:** where the bikes lie; eight blocks to have come on them; sixteen for Gus to take his cap; seven seconds
   for the wheels.
 - None of this has been seen in a client except the proof's page.
-- Still not built: the keepsake (the owner's call), dawn for a reader the Hollow has had, the headstone and the
-  rusting bike, and the bike chained to a school fence.
+- Still not built: the keepsake (the owner's call), and the bike chained to a school fence. (Dawn for a reader the
+  Hollow has had, the headstone and the rusting bike: 0.4.510, `docs/BIKE_NIGHT_STAYS_0_4_510.md`.)
