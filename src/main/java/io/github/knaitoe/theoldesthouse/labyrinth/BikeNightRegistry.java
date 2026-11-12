@@ -198,6 +198,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> UNDER=sound("hollow.under");
     /** 0.4.502: the headless rider's horse. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOOVES=sound("hollow.hooves");
+    /** 0.4.503: something jumping out. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> POP=sound("hollow.pop");
     /** 0.4.501: the werewolf taking his perch. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOWL=sound("hollow.howl");
     /** 0.4.500: a ghost going through somebody. */

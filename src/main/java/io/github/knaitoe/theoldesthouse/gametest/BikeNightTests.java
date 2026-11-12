@@ -5524,4 +5524,127 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_rider") public static void hollowRiderDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.503, what jumps out
+    private static Vec3 popPlace(BlockPos b,int i,double aside,double south){var pop=BikeNightSpecters.POPS.get(i);return new Vec3(b.getX()+pop.x()+aside,b.getY()+pop.top(),b.getZ()+pop.z()+south);}
+
+    @GameTest(template="empty",batch="hollow_pops",timeoutTicks=6000)
+    public static void whatJumpsOutIsInEveryBikesWayAndStopsOneRiddenIntoItAndIsGoneRoundOrHoppedOverAndHasNobody(GameTestHelper h){
+        var f=park(h);BikeNightSpecters.keptAway=false;BikeNightSpecters.only=java.util.Set.of("pops");var b=f.base(P);var l=f.level(P);f.build(P);
+        final ServerPlayer[] p={null,null,null};final NightBike[] mine={null,null,null};var pops=BikeNightSpecters.POPS;
+        final boolean[] seen={false},up={false},shared={true};final double[] lowest={99},highest={-99},far={0};final long[] since={0};final float[] health={0};final int[] t={0};final Vec3[] stood={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                h.assertTrue(pops.size()==6,"six places: "+pops);
+                for(var pop:pops){
+                    double top=CalderHollow.top((int)Math.floor(pop.x()),(int)Math.floor(pop.z()));
+                    if(pop.phase()==BikeNightSpecters.GOBLIN){
+                        // A goblin's place is on a grave, and where it hides is behind a stone that is there and is taller than it is.
+                        h.assertTrue(top==pop.top()&&pop.outY()==top&&pop.fromY()==top,"a goblin's place is on the way, at its height: "+pop);
+                        var stone=l.getBlockState(b.offset((int)Math.floor(pop.fromX()),(int)top,(int)Math.floor(pop.fromZ())));
+                        h.assertTrue(stone.getBlock() instanceof CalderGraveBlock&&stone.getShape(l,BlockPos.ZERO).max(net.minecraft.core.Direction.Axis.Y)>=.8,"behind a stone that hides it: "+pop+", "+stone);
+                        h.assertTrue(pop.fromZ()-Math.floor(pop.fromZ())<.3&&Math.hypot(pop.fromX()-pop.x(),pop.fromZ()-pop.z())>1.5,"on the stone's far side as a rider comes, a jump from the way: "+pop);
+                    }else h.assertTrue(pop.fromX()==pop.x()&&pop.fromZ()==pop.z()&&pop.fromY()==pop.top()-BikeNightSpecters.GHOUL_UNDER&&pop.outY()==pop.top()-BikeNightSpecters.GHOUL_OUT,"a ghoul comes straight up: "+pop);
+                }
+                // The ghoul between the lids comes up through nothing, with a lid either side; the vine's two through the vine's middle.
+                var lid=pops.get(2);h.assertTrue(Double.isNaN(CalderHollow.top(0,-323))&&CalderHollow.top(0,-322)==lid.top()&&CalderHollow.top(-1,-324)==lid.top(),"between two lids");
+                for(int i=4;i<6;i++){var v=pops.get(i);h.assertTrue(CalderHollow.top((int)Math.floor(v.x()-.5),(int)Math.floor(v.z()))==v.top()&&CalderHollow.top((int)Math.floor(v.x()+.4),(int)Math.floor(v.z()))==v.top(),"in the middle of the vine: "+v);}
+                p[0]=f.player("hollow_pops_lamp",P);p[1]=f.player("hollow_pops_hare",P);p[2]=f.player("hollow_pops_wasp",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&p[2].getBbHeight()<1.1&&BikeNight.here(p[2]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);mine[1]=take(h,f,p[1],NightBike.Make.HARE);mine[2]=take(h,f,p[2],NightBike.Make.WASP);health[0]=p[0].getHealth();})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp")&&f.own(p[1],P).getString("Bike").equals("hare")&&f.own(p[2],P).getString("Bike").equals("wasp"),"waiting for the bikes to be theirs"))
+            // The other two wait on the hill. The Lamp's rider is on the first lid, five blocks short of the ghoul's place, and rides at it flat out.
+            .thenExecute(()->{
+                for(int i=1;i<3;i++){var at=islandPlace(b,CalderHollow.HILL);mine[i].moveTo(at.x+(i==1?-1.5:1.5),at.y,at.z+4,180,0);}
+                var at=popPlace(b,2,0,5);mine[0].moveTo(at.x,at.y,at.z,180,0);p[0].setYRot(180);far[0]=99;for(var who:p)hush(who);
+            })
+            .thenWaitUntil(()->{
+                var a=BikeNightSpecters.sprung(l,b,2);var pop=pops.get(2);
+                if(a!=null){
+                    seen[0]=true;double y=a.getY()-b.getY();lowest[0]=Math.min(lowest[0],y);highest[0]=Math.max(highest[0],y);up[0]|=a.gesture()==BikeNightSpecters.UP;
+                    // It is the course's: nobody's own, and everybody is told of it.
+                    shared[0]&=BikeNightSpecters.is(a)&&a.phase()==BikeNightSpecters.GHOUL&&a.owner().isEmpty()&&a.broadcastToPlayer(p[0])&&a.broadcastToPlayer(p[1]);
+                    h.assertTrue(Math.abs(a.getX()-b.getX()-pop.x())<.01&&Math.abs(a.getZ()-b.getZ()-pop.z())<.01,"it comes straight up: "+where(b,a));
+                }
+                if(p[0].getVehicle()==mine[0]){
+                    p[0].setYRot(180);if(mine[0].onGround())mine[0].steady(0,RiddenBike.TOP);far[0]=mine[0].getZ()-b.getZ();
+                    h.assertTrue(far[0]>pop.z()-.2,"they did not ride through it: "+far[0]);
+                }
+                h.assertTrue(BikeNightSpecters.stopped(p[0])==1&&p[0].getVehicle()==null,"waiting for the Lamp's rider to ride into it and come off: at "+far[0]+", seen "+seen[0]);
+            })
+            .thenExecute(()->{
+                var pop=pops.get(2);
+                h.assertTrue(seen[0]&&up[0]&&shared[0],"a ghoul came up, for everybody: seen "+seen[0]+", up "+up[0]+", shared "+shared[0]);
+                h.assertTrue(Math.abs(lowest[0]-pop.fromY())<.01&&Math.abs(highest[0]-pop.outY())<.01,"from wholly under the lids to its chest over them: "+lowest[0]+" to "+highest[0]);
+                h.assertTrue(sounded(p[0],"hollow.pop")&&!sounded(p[1],"hollow.pop"),"whoever is near heard it come; nobody back on the hill did");
+                h.assertTrue(far[0]>pop.z()+.2&&far[0]<pop.z()+BikeNightSpecters.POP_REACH+.4,"stopped at it: "+far[0]);
+                h.assertTrue(p[0].isAlive()&&!BikeNightHollow.taken(p[0])&&p[0].getHealth()>=health[0]-1&&BikeNightSpecters.hopped(p[0])==0,"they are off their bike as off any wall, and nothing has them: "+where(b,p[0])+", health "+p[0].getHealth());
+                since[0]=l.getGameTime();
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightSpecters.sprung(l,b,2)==null,"waiting for it to go back"))
+            // On foot, five blocks short of its place again: it is quiet for a while.
+            .thenExecute(()->{
+                h.assertTrue(l.getGameTime()-since[0]<=BikeNightSpecters.POP_STAY+BikeNightSpecters.POP_BACK+2,"it stays as long as it stays, and goes: "+(l.getGameTime()-since[0]));
+                var at=popPlace(b,2,0,5);p[0].teleportTo(at.x,at.y,at.z);
+            })
+            .thenIdle(60)
+            .thenExecute(()->h.assertTrue(BikeNightSpecters.sprung(l,b,2)==null,"its place is quiet for a while after"))
+            // The Wasp's rider comes onto the grave past the lids a block and a half to one side of where its goblin jumps to, and rides by.
+            .thenExecute(()->{var at=popPlace(b,3,1.6,3.2);mine[2].moveTo(at.x,at.y,at.z,180,0);p[2].setYRot(180);seen[0]=false;up[0]=false;far[0]=99;hush(p[2]);})
+            .thenWaitUntil(()->{
+                var a=BikeNightSpecters.sprung(l,b,3);var pop=pops.get(3);
+                if(a!=null){
+                    if(!seen[0]){seen[0]=true;h.assertTrue(a.phase()==BikeNightSpecters.GOBLIN&&Math.abs(a.getX()-b.getX()-pop.fromX())<.01&&Math.abs(a.getZ()-b.getZ()-pop.fromZ())<.01&&a.getBbHeight()<.8,"a goblin, small, behind its stone: "+where(b,a)+", "+a.getBbHeight()+" high");}
+                    if(a.gesture()==BikeNightSpecters.UP){up[0]=true;h.assertTrue(Math.abs(a.getX()-b.getX()-pop.x())<.01&&Math.abs(a.getZ()-b.getZ()-pop.z())<.01&&Math.abs(a.getY()-b.getY()-pop.top())<.01,"out, it is in the way, on the ground: "+where(b,a));}
+                }
+                double z=mine[2].getZ()-b.getZ();p[2].setYRot(180);if(mine[2].onGround())mine[2].steady(0,z>pop.z()-1.5?RiddenBike.TOP:0);
+                if(Math.abs(z-pop.z())<.5)far[0]=Math.min(far[0],Math.abs(mine[2].getX()-b.getX()-pop.x()));
+                h.assertTrue(p[2].getVehicle()==mine[2],"they are still riding: "+where(b,mine[2]));
+                h.assertTrue(z<pop.z()-1.5&&seen[0]&&up[0],"waiting for them to ride by it: at "+z+", seen "+seen[0]+", up "+up[0]);
+            })
+            .thenExecute(()->h.assertTrue(BikeNightSpecters.stopped(p[2])==0&&far[0]>BikeNightSpecters.POP_REACH&&far[0]<3&&sounded(p[2],"hollow.pop"),"round it, it stops nobody: passed "+far[0]+" off"))
+            // The Hare's rider, on the third grave three blocks short of where its goblin jumps to, rides at it more slowly than a bike comes off at.
+            .thenExecute(()->{var at=popPlace(b,1,0,3);mine[1].moveTo(at.x,at.y,at.z,180,0);p[1].setYRot(180);far[0]=99;t[0]=0;})
+            .thenWaitUntil(()->{
+                var pop=pops.get(1);double z=mine[1].getZ()-b.getZ();far[0]=Math.min(far[0],z);
+                p[1].setYRot(180);if(mine[1].onGround())mine[1].steady(0,.12F);
+                h.assertTrue(p[1].getVehicle()==mine[1],"going slowly, they do not come off: "+where(b,mine[1]));
+                h.assertTrue(z>pop.z()+.2,"and do not get through it, however long they push: "+z);
+                if(BikeNightSpecters.stopped(p[1])==1)t[0]++;
+                h.assertTrue(t[0]>=20,"waiting for the Hare's rider to be stopped by it, and kept there: at "+z);
+            })
+            .thenExecute(()->{var pop=pops.get(1);h.assertTrue(far[0]>pop.z()+BikeNightSpecters.POP_REACH-.15&&p[1].getHealth()==health[0]&&!BikeNightHollow.taken(p[1]),"kept at its edge, unhurt: "+far[0]);})
+            // It goes back, and they ride on over where it was.
+            .thenWaitUntil(()->{
+                var pop=pops.get(1);double z=mine[1].getZ()-b.getZ();p[1].setYRot(180);if(mine[1].onGround())mine[1].steady(0,z>pop.z()-1.5?.12F:0);
+                h.assertTrue(p[1].getVehicle()==mine[1],"still riding: "+where(b,mine[1]));
+                h.assertTrue(z<pop.z()-1.5&&BikeNightSpecters.sprung(l,b,1)==null,"waiting for it to go back and for them to ride on over its place: at "+z);
+            })
+            .thenExecute(()->h.assertTrue(BikeNightSpecters.stopped(p[1])==1&&BikeNightSpecters.hopped(p[1])==0,"stopped the once, and that is not a hop"))
+            // The Wasp's rider, on the vine a little short of its second ghoul, winds the hop while it comes up, and goes over it.
+            .thenExecute(()->{var at=popPlace(b,5,0,2.3);mine[2].moveTo(at.x,at.y,at.z,180,0);p[2].setYRot(180);mine[2].steady(0,0);mine[2].keys(true,false);lowest[0]=99;})
+            .thenWaitUntil(()->{var a=BikeNightSpecters.sprung(l,b,5);h.assertTrue(a!=null&&a.gesture()==BikeNightSpecters.UP&&mine[2].crouch()>=.99F,"waiting for the vine's ghoul to be up and the hop wound: "+mine[2].crouch());})
+            .thenWaitUntil(()->{
+                var pop=pops.get(5);double z=mine[2].getZ()-b.getZ(),y=mine[2].getY()-b.getY()-pop.top();p[2].setYRot(180);
+                if(mine[2].onGround()){if(z>pop.z()+1.6)mine[2].steady(0,RiddenBike.TOP);else if(z>pop.z())mine[2].keys(false,false);else mine[2].steady(0,0);}
+                if(Math.abs(z-pop.z())<BikeNightSpecters.POP_REACH)lowest[0]=Math.min(lowest[0],y);
+                h.assertTrue(p[2].getVehicle()==mine[2]&&BikeNightSpecters.sprung(l,b,5)!=null,"they are still riding, and it is still up: "+where(b,mine[2]));
+                h.assertTrue(z<pop.z()-1&&mine[2].onGround(),"waiting for them to come down past it: at "+z+", "+y+" over");
+            })
+            .thenExecute(()->h.assertTrue(lowest[0]>=BikeNightSpecters.POP_CLEAR&&lowest[0]<3,"over it, well clear: "+lowest[0]))
+            .thenWaitUntil(()->h.assertTrue(BikeNightSpecters.sprung(l,b,5)==null,"waiting for it to go back"))
+            .thenExecute(()->h.assertTrue(BikeNightSpecters.hopped(p[2])==1&&BikeNightSpecters.stopped(p[2])==0&&p[2].getVehicle()==mine[2],"they hopped it, and it stopped nobody"))
+            // The ghoul between the lids comes up again in its time, for somebody on foot: who is only startled.
+            .thenWaitUntil(()->{var a=BikeNightSpecters.sprung(l,b,2);h.assertTrue(a!=null&&a.gesture()==BikeNightSpecters.UP,"waiting for the ghoul between the lids to come up again, for somebody on foot");})
+            .thenExecute(()->{var at=popPlace(b,2,0,.7);p[0].teleportTo(at.x,at.y,at.z);stood[0]=p[0].position();})
+            .thenIdle(10)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightSpecters.sprung(l,b,2)!=null&&p[0].position().distanceTo(stood[0])<.01&&BikeNightSpecters.stopped(p[0])==1,"standing at it, they are where they stood: "+where(b,p[0]));
+                for(var who:p)h.assertTrue(who.isAlive()&&!BikeNightHollow.taken(who)&&BikeNightHollow.fell(who)==0,"and it has had nobody, and put nobody down: "+who.getGameProfile().getName());
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_pops") public static void hollowPopsDone(ServerLevel l){done();}
 }
