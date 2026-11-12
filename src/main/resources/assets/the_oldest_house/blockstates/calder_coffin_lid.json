@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/calder_coffin_lid"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/calder_coffin_lid_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/calder_coffin_lid_double"
+    }
+  }
+}

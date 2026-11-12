@@ -16,6 +16,14 @@ calder_grave, of nine kinds:
 - tarp: a tarpaulin pegged out flat; and one thrown over a heap.
 - goods: what is left at a grave: flowers in a jar, a lantern with a candle in it, a wreath on its stand, a small flag.
 - door: the mausoleum's iron doors, two blocks wide and two high, in four pieces.
+- roots: what hangs under a piece of ground that has come away: three clumps of them. It hangs from the top of its block.
+- picket: a length of old board fence on the block's middle line, across the way it faces: upright, leaning to either side, and
+  broken off short.
+
+0.4.493, for the Hollow (the proposal: "islands of graveyard turf with their headstones still in them; crooked fences; a bridge
+of coffin lids; a pumpkin vine the size of a road, curling up and down; stairs of tilted stones"): the sod an island is made of
+(grass on top, earth with roots hanging at its sides, root ends underneath), the vine's own green, a coffin's wood, and three half
+blocks: the vine's, a coffin's lid, and a headstone laid flat for a step.
 
 A fitting is drawn facing north (its inscription looks north); its block state turns it. Nothing here is a photograph or a stock
 texture. Writes textures, models, block states and names. --check verifies everything; --sheet PATH draws a page to look at. It
@@ -250,6 +258,142 @@ def door(k):
     return im
 
 
+ROOT, VINE, COFFIN = '#7a6248', '#3f6a2e', '#4a3526'
+
+
+def sod_side():
+    """The side of a piece of ground that has come away: the grass's fringe at the top, cut earth, and roots hanging out of the bottom of it."""
+    im = grave_earth(); rnd = random.Random(4930)
+    for x in range(16):
+        for y in range(2 + rnd.randrange(2)):
+            put(im, x, y, '#3d5230', rnd.randint(-9, 9))
+    for x in (1, 4, 6, 9, 12, 14):
+        top = 9 + rnd.randrange(4)
+        for y in range(top, 16):
+            put(im, (x + (1 if y % 3 == 2 and rnd.randrange(2) else 0)) % 16, y, ROOT, rnd.randint(-10, 8))
+    return im
+
+
+def sod_under():
+    """Underneath: dark earth and the ends of roots."""
+    im = noise(EARTH, 4931, 6); rnd = random.Random(4931); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(EARTH, -18 + rnd.randint(-6, 6))
+    for _ in range(12):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        put(im, x, y, ROOT, rnd.randint(-6, 10)); put(im, (x + 1) % 16, (y + rnd.randrange(2)) % 16, ROOT, rnd.randint(-16, 0))
+    return im
+
+
+def vine():
+    """The pumpkin vine, the size of a road: ribbed along its length, with a paler vein and the bristle of it."""
+    im = noise(VINE, 4932, 4)
+    for y in range(16):
+        for x in (2, 7, 8, 13):
+            put(im, x, y, VINE, (10 if x in (7, 8) else -12) + (y * 5 + x) % 4)
+    rnd = random.Random(4932)
+    for _ in range(10):
+        put(im, rnd.randrange(16), rnd.randrange(16), '#6a8a3e', rnd.randint(-6, 6))
+    return im
+
+
+def coffin():
+    """A coffin's wood: dark stained boards."""
+    im = noise(COFFIN, 4933, 3)
+    for x in range(16):
+        for y in (0, 5, 10, 15):
+            put(im, x, y, COFFIN, -14)
+    for x, y in ((3, 2), (11, 7), (6, 12)):
+        put(im, x, y, COFFIN, 12); put(im, x + 1, y, COFFIN, 9)
+    return im
+
+
+def lid():
+    """A coffin's lid from above: its boards, a pale cross let into it, and a brass handle at each side."""
+    im = coffin()
+    for y in range(2, 14):
+        put(im, 7, y, '#b9a77a', -6 + y % 3); put(im, 8, y, '#b9a77a', -12 + y % 3)
+    for x in range(4, 12):
+        put(im, x, 5, '#b9a77a', -6); put(im, x, 6, '#b9a77a', -14)
+    for x in (1, 14):
+        for y in (7, 8, 9):
+            put(im, x, y, '#b08d3a', 4 - y % 2 * 10)
+    for x in range(16):
+        put(im, x, 0, COFFIN, -22); put(im, x, 15, COFFIN, -22)
+    for y in range(16):
+        put(im, 0, y, COFFIN, -22); put(im, 15, y, COFFIN, -22)
+    return im
+
+
+def laid():
+    """A headstone laid flat for a step: its face up, a border cut round it, the lines of its name, and moss in the cuts."""
+    base = STONE[0]; im = noise(base, 4934); rnd = random.Random(4934)
+    for i in range(1, 15):
+        for x, y in ((i, 1), (i, 14), (1, i), (14, i)):
+            put(im, x, y, base, -26)
+    for line, (a, b) in enumerate(((4, 12), (5, 11), (4, 12))):
+        for x in range(a, b):
+            if (x * 5 + line) % 6:
+                put(im, x, 5 + line * 3, base, -32)
+    for _ in range(7):
+        put(im, rnd.randrange(16), rnd.randrange(16), MOSS, rnd.randint(-8, 8))
+    return im
+
+
+def roots():
+    """Roots, on one sheet: three swatches of the root's brown, light to dark, and one of earth."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(4935); px = im.load()
+    for i, colour in enumerate((ROOT, '#6a543c', '#5a4632', EARTH)):
+        for y in range(8):
+            for x in range(4):
+                px[4 * i + x, y] = shade(colour, rnd.randint(-5, 5))
+    for i, colour in enumerate((WOOD, '#5e4a36', '#7a6650', '#4e3e2e')):
+        for y in range(8, 16):
+            for x in range(4):
+                px[4 * i + x, y] = shade(colour, rnd.randint(-5, 5) - (6 if x == 0 else 0))
+    return im
+
+
+def strand(parts, x, z, long, i, sway=0):
+    """A root hanging from the top of the block: a thin piece, in one of the sheet's browns."""
+    u = 4 * i + 1
+    parts.append(element([round(x, 2), round(16 - long, 2), round(z, 2)], [round(x + 1, 2), 16, round(z + 1, 2)], {'all': 'r'},
+                         {k: [u, 1, u + 1, 2] for k in FACES},
+                         {'angle': sway, 'axis': 'z', 'origin': [round(x + .5, 2), 16, round(z + .5, 2)]} if sway else None))
+
+
+def roots_model(k):
+    p = []
+    sets = (((2, 3, 9, 0, 0), (6, 9, 13, 1, 22.5), (10, 4, 7, 2, 0), (12, 11, 11, 0, -22.5), (4, 12, 6, 1, 0)),
+            ((3, 6, 14, 0, 0), (8, 3, 9, 2, 22.5), (11, 10, 12, 1, 0), (6, 12, 5, 0, 0)),
+            ((2, 9, 6, 1, -22.5), (7, 5, 15, 0, 0), (12, 7, 8, 2, 0), (9, 12, 10, 1, 22.5), (4, 3, 4, 0, 0), (13, 2, 5, 2, 0)))
+    for x, z, long, i, sway in sets[k]:
+        strand(p, x, z, long, i, sway)
+    # A clod of the earth they came out of, still on them.
+    u = 13
+    p.append(element([5.25, 12.5, 5.25], [10.75, 15.5, 10.75], {'all': 'r'}, {f: [u, 1, u + 1, 2] for f in FACES}))
+    return p
+
+
+def board(parts, x, high, i, rot=None):
+    """One board of an old fence, on the block's middle line."""
+    u = 4 * i + 1
+    parts.append(element([x, 0, 7.25], [x + 3, high, 8.75], {'all': 'r'}, {k: [u, 9, u + 1, 10] for k in FACES}, rot))
+
+
+def picket_model(k):
+    p = []
+    lean = None if k in (0, 3) else {'angle': 22.5 if k == 1 else -22.5, 'axis': 'z', 'origin': [8, 0, 8]}
+    highs = ((15, 13, 16, 14), (14, 16, 13, 15), (16, 13, 15, 14), (6, 9, 4, 7))[k]
+    for n, high in enumerate(highs):
+        board(p, .5 + 4 * n, high, n, lean)
+    if k != 3:                                                               # the rail the boards are nailed to
+        u = 9
+        p.append(element([0, 8, 8.75], [16, 10, 9.75], {'all': 'r'}, {f: [u, 9, u + 1, 10] for f in FACES}, lean))
+    return p
+
+
 def textures():
     out = {'block/calder_grave_turf.png': grave_turf(), 'block/calder_grave_earth.png': grave_earth(), 'block/calder_marble.png': marble()}
     for k in range(len(STONES)):
@@ -259,6 +403,13 @@ def textures():
     for k in range(4):
         out[DIR + f'side_{k}.png'] = plain(STONE[k], 4898 + k)
         out[DIR + f'door_{k}.png'] = door(k)
+    out['block/calder_hollow_sod.png'] = sod_side()
+    out['block/calder_hollow_under.png'] = sod_under()
+    out['block/calder_vine.png'] = vine()
+    out['block/calder_coffin.png'] = coffin()
+    out[DIR + 'lid.png'] = lid()
+    out[DIR + 'laid.png'] = laid()
+    out[DIR + 'roots.png'] = roots()
     out[DIR + 'earth.png'] = grave_earth()
     out[DIR + 'marble.png'] = marble()
     out[DIR + 'tarp.png'] = tarp()
@@ -412,12 +563,16 @@ FITTINGS = {
     'tarp_0': (lambda: tarp_model(0), {'t': 'tarp', 'g': 'goods'}), 'tarp_1': (lambda: tarp_model(1), {'t': 'tarp'}),
     **{f'goods_{k}': ((lambda k=k: goods_model(k)), {'g': 'goods'}) for k in range(4)},
     **{f'door_{k}': ((lambda k=k: door_model(k)), {'d': f'door_{k}', 'i': 'side_1'}) for k in range(4)},
+    **{f'roots_{k}': ((lambda k=k: roots_model(k)), {'r': 'roots'}) for k in range(3)},
+    **{f'picket_{k}': ((lambda k=k: picket_model(k)), {'r': 'roots'}) for k in range(4)},
 }
-KINDS = ['stone', 'small', 'cross', 'obelisk', 'angel', 'mound', 'tarp', 'goods', 'door']
-STAGES = {'stone': len(STONES), 'small': SMALL, 'cross': 2, 'obelisk': 3, 'angel': 3, 'mound': 1, 'tarp': 2, 'goods': 4, 'door': 4}
+KINDS = ['stone', 'small', 'cross', 'obelisk', 'angel', 'mound', 'tarp', 'goods', 'door', 'roots', 'picket']
+STAGES = {'stone': len(STONES), 'small': SMALL, 'cross': 2, 'obelisk': 3, 'angel': 3, 'mound': 1, 'tarp': 2, 'goods': 4, 'door': 4, 'roots': 3, 'picket': 4}
 MAX_STAGE = 16
-MATERIALS = ('grave_turf', 'grave_earth', 'marble')
-SLABS = {'grave_turf_slab': 'calder_grave_turf', 'gravel_slab': 'calder_gravel'}
+MATERIALS = ('grave_turf', 'grave_earth', 'marble', 'vine', 'coffin')
+# A half block: what its top and bottom are drawn with, and its sides.
+SLABS = {'grave_turf_slab': ('calder_grave_turf', 'calder_grave_turf'), 'gravel_slab': ('calder_gravel', 'calder_gravel'),
+         'vine_slab': ('calder_vine', 'calder_vine'), 'coffin_lid': ('calder_grave/lid', 'calder_coffin'), 'stone_step': ('calder_grave/laid', 'calder_grave/side_0')}
 
 
 def model(parts, names):
@@ -436,12 +591,17 @@ def files():
     for name in MATERIALS:
         out[f'models/block/calder_{name}.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + f'block/calder_{name}'}}
         out[f'blockstates/calder_{name}.json'] = {'variants': {'': {'model': NS + f'block/calder_{name}'}}}
-    for name, tex in SLABS.items():
-        t = {'bottom': NS + 'block/' + tex, 'top': NS + 'block/' + tex, 'side': NS + 'block/' + tex}
+    # The sod an island is made of: grass on top, cut earth with roots at its sides, root ends underneath.
+    out['models/block/calder_hollow_sod.json'] = {'parent': 'minecraft:block/cube_bottom_top', 'textures': {
+        'top': NS + 'block/calder_grave_turf', 'side': NS + 'block/calder_hollow_sod', 'bottom': NS + 'block/calder_hollow_under'}}
+    out['blockstates/calder_hollow_sod.json'] = {'variants': {'': {'model': NS + 'block/calder_hollow_sod'}}}
+    for name, (flat, side) in SLABS.items():
+        t = {'bottom': NS + 'block/' + flat, 'top': NS + 'block/' + flat, 'side': NS + 'block/' + side}
         out[f'models/block/calder_{name}.json'] = {'parent': 'minecraft:block/slab', 'textures': t}
         out[f'models/block/calder_{name}_top.json'] = {'parent': 'minecraft:block/slab_top', 'textures': t}
+        out[f'models/block/calder_{name}_double.json'] = {'parent': 'minecraft:block/cube_bottom_top', 'textures': t}
         out[f'blockstates/calder_{name}.json'] = {'variants': {'type=bottom': {'model': NS + f'block/calder_{name}'}, 'type=top': {'model': NS + f'block/calder_{name}_top'},
-                                                               'type=double': {'model': NS + 'block/' + tex}}}
+                                                               'type=double': {'model': NS + f'block/calder_{name}_double'}}}
     for key, obj in fitting_models().items():
         out[f'models/{DIR}{key}.json'] = obj
     variants = {}
@@ -459,7 +619,10 @@ def files():
 
 NAMES = {'block.the_oldest_house.calder_grave': 'Grave Fitting', 'block.the_oldest_house.calder_grave_turf': 'Cemetery Grass',
          'block.the_oldest_house.calder_grave_earth': 'Grave Earth', 'block.the_oldest_house.calder_marble': 'Marble',
-         'block.the_oldest_house.calder_grave_turf_slab': 'Cemetery Grass Step', 'block.the_oldest_house.calder_gravel_slab': 'Gravel Step'}
+         'block.the_oldest_house.calder_grave_turf_slab': 'Cemetery Grass Step', 'block.the_oldest_house.calder_gravel_slab': 'Gravel Step',
+         'block.the_oldest_house.calder_hollow_sod': 'Sod', 'block.the_oldest_house.calder_vine': 'Vine', 'block.the_oldest_house.calder_coffin': 'Coffin Wood',
+         'block.the_oldest_house.calder_vine_slab': 'Vine Step', 'block.the_oldest_house.calder_coffin_lid': 'Coffin Lid',
+         'block.the_oldest_house.calder_stone_step': 'Laid Headstone'}
 
 
 def review(path):

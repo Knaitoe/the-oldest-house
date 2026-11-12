@@ -62,8 +62,10 @@ public final class BikeNightRegistry {
         // down it, and a hedge.
         "stucco","tanbrick","siding","concrete","roofing","shingle","lot","lot_line","plank","gravel","turf","turf_track","turf_line","hedge",
         // 0.4.489, the cemetery's: its grass, the earth of a fresh grave, the mausoleum's marble.
-        "grave_turf","grave_earth","marble");
-    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge","grave_turf"->Blocks.MOSS_BLOCK;case "grave_earth"->Blocks.COARSE_DIRT;default->Blocks.STONE;};}
+        "grave_turf","grave_earth","marble",
+        // 0.4.493, the Hollow's: the sod its islands are made of, the vine's green, a coffin's wood.
+        "hollow_sod","vine","coffin");
+    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge","grave_turf","hollow_sod","vine"->Blocks.MOSS_BLOCK;case "grave_earth"->Blocks.COARSE_DIRT;case "coffin"->Blocks.OAK_PLANKS;default->Blocks.STONE;};}
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("calder_"+name,fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     /** Asphalt with the street's centre line on it, along its axis. */
@@ -86,6 +88,10 @@ public final class BikeNightRegistry {
     public static final DeferredBlock<CalderGraveBlock> GRAVE=BLOCKS.registerBlock("calder_grave",CalderGraveBlock::new,fixed(Blocks.STONE).noOcclusion().lightLevel(CalderGraveBlock::light));
     public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> GRAVE_TURF_SLAB=BLOCKS.registerBlock("calder_grave_turf_slab",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.MOSS_BLOCK));
     public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> GRAVEL_SLAB=BLOCKS.registerBlock("calder_gravel_slab",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.GRAVEL));
+    /** 0.4.493, the Hollow's half blocks: the vine's, a coffin's lid, and a headstone laid flat for a step. */
+    public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> VINE_SLAB=BLOCKS.registerBlock("calder_vine_slab",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.MOSS_BLOCK));
+    public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> COFFIN_LID=BLOCKS.registerBlock("calder_coffin_lid",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.OAK_PLANKS));
+    public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> STONE_STEP=BLOCKS.registerBlock("calder_stone_step",net.minecraft.world.level.block.SlabBlock::new,fixed(Blocks.STONE));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CalderDigitBlock>> DIGIT_TYPE=CODECS.register("calder_digit",()->CalderDigitBlock.CODEC);
     public static final DeferredBlock<CalderDigitBlock> DIGIT=BLOCKS.registerBlock("calder_digit",CalderDigitBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(s->7));
     public static final DeferredBlock<CalderPlayBlock> PLAY=BLOCKS.registerBlock("calder_play",CalderPlayBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());

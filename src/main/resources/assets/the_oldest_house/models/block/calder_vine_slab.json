@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "the_oldest_house:block/calder_vine",
+    "top": "the_oldest_house:block/calder_vine",
+    "side": "the_oldest_house:block/calder_vine"
+  }
+}

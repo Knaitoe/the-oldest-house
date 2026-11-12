@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/calder_stone_step"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/calder_stone_step_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/calder_stone_step_double"
+    }
+  }
+}
