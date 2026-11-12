@@ -387,12 +387,17 @@ public final class BikeNightTexts {
      * they did on the playground; how many sand balls hit; which streets they took; whether they carried anyone; which way they
      * went through the Hollow, high or low." The streets are by their signs, in the order they were come to.
      */
+    private static List<String> names(String list){var out=new ArrayList<String>();for(String name:list.split(","))if(!name.isEmpty())out.add(name);return out;}
     private static void rest(List<String> p,CompoundTag own){
+        // 0.4.512: "co-op lines for who rode with whom and who carried whom."
+        var with=names(own.getString("RodeWith"));
+        if(!with.isEmpty())p.add(listed(with)+" rode with me.");
         var streets=new ArrayList<String>();
         for(String id:own.getString("Streets").split(",")){String street=STREET_NAMES.get(id);if(street!=null&&!streets.contains(street))streets.add(street);}
         if(!streets.isEmpty())p.add("I went by "+listed(streets)+".");
-        if(own.getBoolean("CarriedSomeone"))p.add("For some of it I had somebody on the pegs behind me.");
-        if(own.getBoolean("Carried"))p.add("For some of it I was on the pegs of somebody else's bike.");
+        var who=names(own.getString("CarriedWho"));var by=names(own.getString("CarriedBy"));
+        if(own.getBoolean("CarriedSomeone"))p.add("For some of it I had "+(who.isEmpty()?"somebody":listed(who))+" on the pegs behind me.");
+        if(own.getBoolean("Carried"))p.add(by.isEmpty()?"For some of it I was on the pegs of somebody else's bike.":"For some of it I was on the pegs behind "+listed(by)+".");
         if(!own.getBoolean("Through"))return;
         p.add("They fell back at the cemetery gate. Past the last of the stones the hill gave out, and there were graves standing on nothing.");
         var ways=new ArrayList<String>();

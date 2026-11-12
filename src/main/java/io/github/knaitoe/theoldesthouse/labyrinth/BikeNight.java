@@ -249,10 +249,25 @@ public final class BikeNight {
         }
         @Override public void carried(ServerPlayer onPegs,ServerPlayer pedalling){
             if(night(onPegs)==null)return;
-            var own=own(onPegs);own.putBoolean("Carried",true);save(onPegs,own);
-            var theirs=own(pedalling);theirs.putBoolean("CarriedSomeone",true);save(pedalling,theirs);
+            // 0.4.512: and who. "accounts are each reader's own, with co-op lines for who rode with whom and who carried whom."
+            var own=own(onPegs);own.putBoolean("Carried",true);own.putString("CarriedBy",named(own.getString("CarriedBy"),pedalling));save(onPegs,own);
+            var theirs=own(pedalling);theirs.putBoolean("CarriedSomeone",true);theirs.putString("CarriedWho",named(theirs.getString("CarriedWho"),onPegs));save(pedalling,theirs);
         }
     };
+    /** A list of names with this reader's in it, once. */
+    static String named(String list,ServerPlayer p){
+        String name=p.getGameProfile().getName();
+        for(String had:list.split(","))if(had.equals(name))return list;
+        return list.isEmpty()?name:list+","+name;
+    }
+    /** 0.4.512: Tully has said go. Each reader who is here has it in their record who else was. */
+    static void together(List<ServerPlayer> here){
+        for(var p:here){
+            if(p.isSpectator())continue;var own=own(p);String with=own.getString("RodeWith");
+            for(var q:here)if(q!=p&&!q.isSpectator())with=named(with,q);
+            if(!with.equals(own.getString("RodeWith"))){own.putString("RodeWith",with);save(p,own);}
+        }
+    }
     // Where the bikes are is kept with the world, so that a night cut short by the server stopping leaves none of them behind:
     // the next night finds each where it was left and takes it back to the rack.
     static String key(Night n){return "Bikes_"+n.base.asLong();}

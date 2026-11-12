@@ -6300,6 +6300,39 @@ public final class BikeNightTests {
     }
     @AfterBatch(batch="stone_row") public static void stoneRowDone(ServerLevel l){done();}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.512, who rode with whom
+    @GameTest(template="empty",batch="coop_lines",timeoutTicks=9000)
+    public static void eachReadersAccountSaysWhoRodeWithThemAndWhoCarriedWhom(GameTestHelper h){
+        var f=park(h);BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=60;BikeNightBullies.patience=120;
+        var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};
+        java.util.function.Function<net.minecraft.nbt.CompoundTag,String> told=own->{var through=own.copy();through.putBoolean("Through",true);return String.join(" ",BikeNightTexts.account("x",through).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{p[0]=f.player("coop_one",P);p[1]=f.player("coop_two",P);})
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&BikeNight.here(p[0])&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{
+                h.assertTrue(f.own(p[0],P).getString("RodeWith").isEmpty()&&!told.apply(f.own(p[0],P)).contains("rode with me"),"nobody has ridden with anybody before the three come");
+                f.at(p[0],P,-14.5,0,-20.5);f.at(p[1],P,-12.5,0,-20.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getBoolean("GetThem")&&f.own(p[1],P).getBoolean("GetThem"),"waiting for Tully to say go: stage "+BikeNightBullies.stage(b)))
+            .thenExecute(()->{
+                // Who rode with whom: whoever was in the park when Tully said go.
+                h.assertTrue(f.own(p[0],P).getString("RodeWith").equals("coop_two")&&f.own(p[1],P).getString("RodeWith").equals("coop_one"),"each has the other: "+f.own(p[0],P).getString("RodeWith")+" / "+f.own(p[1],P).getString("RodeWith"));
+                h.assertTrue(told.apply(f.own(p[0],P)).contains("coop_two rode with me.")&&told.apply(f.own(p[1],P)).contains("coop_one rode with me."),"and their accounts say so");
+                // Who carried whom: the second on the first's pegs, twice.
+                NightBikes.night.carried(p[1],p[0]);NightBikes.night.carried(p[1],p[0]);
+                var one=f.own(p[0],P);var two=f.own(p[1],P);
+                h.assertTrue(one.getString("CarriedWho").equals("coop_two")&&one.getBoolean("CarriedSomeone")&&!one.getBoolean("Carried")&&two.getString("CarriedBy").equals("coop_one")&&two.getBoolean("Carried")&&!two.getBoolean("CarriedSomeone"),"each has who, once: "+one.getString("CarriedWho")+" / "+two.getString("CarriedBy"));
+                h.assertTrue(told.apply(one).contains("For some of it I had coop_two on the pegs behind me.")&&told.apply(two).contains("For some of it I was on the pegs behind coop_one."),"and their accounts say who: "+told.apply(two));
+                // More of them, and an older record that has nobody's name in it.
+                var many=one.copy();many.putString("RodeWith","a,b,c");many.putString("CarriedWho","b,c");
+                h.assertTrue(told.apply(many).contains("a, b and c rode with me.")&&told.apply(many).contains("For some of it I had b and c on the pegs behind me."),"three are listed as three: "+told.apply(many));
+                var old=new net.minecraft.nbt.CompoundTag();old.putBoolean("Carried",true);old.putBoolean("CarriedSomeone",true);
+                h.assertTrue(told.apply(old).contains("For some of it I had somebody on the pegs behind me.")&&told.apply(old).contains("For some of it I was on the pegs of somebody else's bike.")&&!told.apply(old).contains("rode with me"),"a record with no names in it says somebody");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="coop_lines") public static void coopLinesDone(ServerLevel l){done();}
+
     // ------------------------------------------------------------------------------------------------ 0.4.511, in a later hall
     /** A hall of the case's own: its floor, two walls and a roof, {@code wide} clear cells across (odd), running north from a door at {@code o} that faces south. */
     private static LabyrinthData.Door hall(ServerLevel l,BlockPos o,int wide,int from,int to,String id){
