@@ -5388,5 +5388,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pell.lock"
+  },
+  "pell.paint": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/paint",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.paint"
+  },
+  "pell.tin": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/tin",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.tin"
   }
 }

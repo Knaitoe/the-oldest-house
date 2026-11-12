@@ -52,15 +52,17 @@ public final class PellPeople {
     public static String skin(int phase){return "pell_"+SKINS[phase-FIRST];}
     /** How big each is: the two grown women at full size, the two children smaller, Callum the smaller of them. */
     public static double size(int phase){return switch(phase-FIRST){case TILLY->.62;case CALLUM->.58;default->1;};}
-    /** Tilly has her cane in her hand, and Gail her folder. */
-    public static boolean carries(int phase){return phase==FIRST+TILLY||phase==FIRST+GAIL;}
+    /** What each has in hand is drawn: Tilly's cane, Gail's folder, and (0.4.530, which found it was never drawn) whatever June is
+     *  holding, the saucepan at dinner, the hairbrush at bedtime and the tin, the brush and the lantern at night. */
+    public static boolean carries(int phase){return cast(phase);}
     public static boolean is(@Nullable Entity e){return e instanceof LiteraryActor a&&a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int who(LiteraryActor a){return a.phase()-FIRST;}
     /** What each is called over what they say. */
     public static String name(int who){return switch(who){case JUNE->"June";case TILLY->"Tilly";case CALLUM->"Callum";default->"Gail";};}
     /** Their gestures, for the renderer: Tilly's cane held out ahead of her, Gail's folder held to her chest; from 0.4.527, asleep (lying
-     *  along a bed), June brushing Tilly's hair, and Tilly having it brushed. */
-    public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5;
+     *  along a bed), June brushing Tilly's hair, and Tilly having it brushed; from 0.4.530, June kneeling at the line with the brush,
+     *  and Callum crouched (as a reader crouches, a beat late). */
+    public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5,PAINT=6,CROUCH=7;
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
     public record Spot(double x,double z,float look){}
@@ -102,6 +104,13 @@ public final class PellPeople {
         final Vec3[] sleepAt=new Vec3[COUNT];final boolean[] asleep=new boolean[COUNT];
         final java.util.Set<net.minecraft.core.BlockPos> locked=new java.util.HashSet<>();
         boolean chairSaid;int brushSaid,lockIndex,watchSaid;long tapeAt,brushedAt,nudgedAt;
+        /** 0.4.530, the first night (PellNight): how far June has got along the thin stretch (an index into PellNight.CELLS) and when
+         *  she knelt at the cell she is on; whether she has spoken to a reader who came near, about the paint under a foot, or to a reader
+         *  standing where she is painting; what a hand on her has had; whether Callum is out on the line; and his copy of the reader
+         *  nearest him, a beat behind: how far their look was turned off him, their pitch, whether they crouched, and whose. */
+        int cell,nightSaid,feetSaid=-1;long paintedAt;boolean noticed,smearSaid,smearDue,callumOut;
+        final float[] copyYaw=new float[PellNight.BEAT+1],copyPitch=new float[PellNight.BEAT+1];final boolean[] copyCrouch=new boolean[PellNight.BEAT+1];
+        int copied;UUID copyOf;
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -196,12 +205,16 @@ public final class PellPeople {
         int who=who(a);var h=household(b);
         // 0.4.527: asleep, they are only looked at.
         if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
+        // 0.4.530: on the line at night, Callum stands and does not move for the hand.
+        if(who==CALLUM&&h.callumOut){PellHouse.cue(p,PellTexts.CALLUM_NIGHT[h.said[who]++%PellTexts.CALLUM_NIGHT.length]);own.putBoolean("TouchedCallumAtNight",true);return;}
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         if(a.saying())return;
         var lines=switch(who){case JUNE->PellTexts.JUNE_TALK;case TILLY->PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
         String line;
         // 0.4.527: in her chair with the tape on, June talks about the girl on it first.
         if(who==JUNE&&PellVisit.watching(b)&&h.watchSaid<PellTexts.JUNE_WATCHING.length)line=PellTexts.JUNE_WATCHING[h.watchSaid++];
+        // 0.4.530: up at night with the tin, June has her own lines, and the reader keeps that they spoke to her.
+        else if(who==JUNE&&PellNight.up(b)){line=PellTexts.JUNE_NIGHT[h.nightSaid++%PellTexts.JUNE_NIGHT.length];own.putBoolean("SpokeToJuneAtNight",true);}
         else line=lines[h.said[who]++%lines.length];
         a.say(name(who),line);a.speaks(line);
         // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the

@@ -95,7 +95,8 @@ public final class PellTexts {
             // 1: the empty tins under it.
             case WORKBENCH->stage==0?"The workbench.":"Three empty paint tins under the bench.";
             case SHED_TV->"A portable television on a video deck. The deck's tracking dial is worn smooth.";
-            case TIN->"A tin of paint and a brush. On the lid, in marker: LINE.";
+            // 0 on the bench, shut, the brush beside it; 1 (0.4.530) open on the grass beside June while she paints.
+            case TIN->stage==0?"A tin of paint and a brush. On the lid, in marker: LINE.":"The tin of paint, open. The paint on its rim is wet.";
             // 2: the last page.
             case TRANSCRIPT->stage<2?"Pages taped to the wall: the tapes written out by hand, corrections down the margins."
                 :"The last page. Down its side, one word over and over: Nessa.";
@@ -108,6 +109,8 @@ public final class PellTexts {
             case BOWL->"A steel bowl full of leaves.";
             case POOL_CHAIR->"A pool chair turned to face the water. The towel on its back is faded on one side only.";
             case PUMP->"The pool pump. It runs all the time.";
+            // 0.4.530: June's, set down on the grass behind the shed while she paints.
+            case LANTERN->"A battery lantern, set down on the grass, turned low.";
         };
     }
     /**
@@ -233,6 +236,29 @@ public final class PellTexts {
         "Garage, love. I want to lock up."};
     public static final String TILLY_ASLEEP="Tilly is asleep, her hair brushed out across the pillow.",
         CALLUM_ASLEEP="Callum is asleep in the middle of the circle, on his back, very still.";
+    /**
+     * 0.4.530, the first night (PellNight, docs/PELL_HOUSE_NIGHT_0_4_530.md): what June says out at the line, to a reader who comes near,
+     * steps in the paint, stands where she is painting, or follows her in; what a hand on her has while she is out, in turn; what a hand
+     * on Callum finds while he stands on the line. None of it says what the line is for beyond what June says, and none names the reader.
+     */
+    public static final String JUNE_NOTICES="Can't sleep, love? It's only me.",
+        JUNE_MIND_PAINT="Oh, love. Mind the paint.",
+        JUNE_FEET="Feet, love. I'm doing that bit.",
+        JUNE_OUT_YOU_COME="Out you come, love. Not tonight.",
+        JUNE_OUT_OF_SHED="Out of there, love. I'm locking up.",
+        JUNE_BACK_OUT="Back out you go, love. Bed.",
+        SHED_OPEN="The padlock hangs open on its hasp.",
+        BACK_LOCKED_OUT="The back door is locked. June has the key with her.";
+    public static final String[] JUNE_NIGHT={
+        "You should be asleep, love. It's late.",
+        "Just going over it. It wears, out here.",
+        "Mind the paint. It's still wet.",
+        "Biscuit needs it bright. He's used to it.",
+        "Go on, back to bed. I won't be long."};
+    public static final String[] CALLUM_NIGHT={
+        "Callum is standing on the line, barefoot, facing the house. His hair is wet.",
+        "He doesn't move for your hand.",
+        "The grass round his feet is dry."};
     /** A hand on an outside door June has locked, from outside it. */
     public static String locked(BlockPos door){
         if(door.equals(PellSite.FRONT_DOOR))return "The screen door is locked. The lock is on the inside.";

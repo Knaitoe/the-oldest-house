@@ -3292,7 +3292,7 @@
       "model": "the_oldest_house:block/pell/thing/tin_0"
     },
     "facing=north,kind=tin,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/tin_0"
+      "model": "the_oldest_house:block/pell/thing/tin_1"
     },
     "facing=north,kind=tin,stage=2": {
       "model": "the_oldest_house:block/pell/thing/tin_0"
@@ -3305,7 +3305,7 @@
       "y": 90
     },
     "facing=east,kind=tin,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/tin_0",
+      "model": "the_oldest_house:block/pell/thing/tin_1",
       "y": 90
     },
     "facing=east,kind=tin,stage=2": {
@@ -3321,7 +3321,7 @@
       "y": 180
     },
     "facing=south,kind=tin,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/tin_0",
+      "model": "the_oldest_house:block/pell/thing/tin_1",
       "y": 180
     },
     "facing=south,kind=tin,stage=2": {
@@ -3337,7 +3337,7 @@
       "y": 270
     },
     "facing=west,kind=tin,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/tin_0",
+      "model": "the_oldest_house:block/pell/thing/tin_1",
       "y": 270
     },
     "facing=west,kind=tin,stage=2": {
@@ -3766,6 +3766,66 @@
     },
     "facing=west,kind=pump,stage=3": {
       "model": "the_oldest_house:block/pell/thing/pump_0",
+      "y": 270
+    },
+    "facing=north,kind=lantern,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0"
+    },
+    "facing=north,kind=lantern,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0"
+    },
+    "facing=north,kind=lantern,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0"
+    },
+    "facing=north,kind=lantern,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0"
+    },
+    "facing=east,kind=lantern,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 90
+    },
+    "facing=east,kind=lantern,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 90
+    },
+    "facing=east,kind=lantern,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 90
+    },
+    "facing=east,kind=lantern,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 90
+    },
+    "facing=south,kind=lantern,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 180
+    },
+    "facing=south,kind=lantern,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 180
+    },
+    "facing=south,kind=lantern,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 180
+    },
+    "facing=south,kind=lantern,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 180
+    },
+    "facing=west,kind=lantern,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 270
+    },
+    "facing=west,kind=lantern,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 270
+    },
+    "facing=west,kind=lantern,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
+      "y": 270
+    },
+    "facing=west,kind=lantern,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/lantern_0",
       "y": 270
     }
   }

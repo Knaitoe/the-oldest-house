@@ -1,3 +1,5 @@
+November 12 candidate 0.4.530 (docs/PELL_HOUSE_NIGHT_0_4_530.md): the Pell house's first night. Require the new night case (PellHouseTests.theFirstNightJuneRepaintsTheLineAndCallumStandsOnIt, two readers: the garage window, Callum's copy a beat late, the smear), the bedtime case's new ending, tools/draw_pell_things.py, draw_pell_people.py and generate_pell_audio.py --check, and the architecture namespace unchanged.
+
 November 12 candidate 0.4.529 (docs/PELL_HOUSE_OUTDOORS_0_4_529.md): the Pell house's outside textures and the pool cover's one pond. Require tools/draw_pell_house.py, draw_pell_line.py, draw_pell_things.py and draw_pell_people.py --check, the Pell house's cases (the first now checks the pond's corners and edges) and the architecture namespace unchanged.
 
 November 12 candidate 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md): the Pell house's textures with more detail; art only. Require tools/draw_pell_house.py, draw_pell_things.py, draw_pell_line.py and draw_pell_people.py --check (all four redrawn), the Pell house's cases and the architecture namespace unchanged.

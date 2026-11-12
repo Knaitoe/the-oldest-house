@@ -7,6 +7,11 @@ and Gail's folder. Drawn at sixteen pixels to the block. The people themselves a
 
 0.4.527 (docs/PELL_HOUSE_BEDTIME_0_4_527.md): June's hairbrush, in her hand while she brushes Tilly's hair at bedtime.
 
+0.4.530 (docs/PELL_HOUSE_NIGHT_0_4_530.md): what June carries out at night: her battery lantern, the tin of paint by its wire
+handle, and the brush she paints the line with. The brush is drawn flat, as the hairbrush is. The lantern and the tin hang from her
+hand, upright whichever way she turns, so they are built from the things' own block art (tools/draw_pell_things.py), not drawn here:
+the lantern is the one she sets down on the grass, its globe lit, and the tin is the one from the bench with its wire handle up.
+
 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md), the owner: "add a little more detail to textures". Still sixteen pixels to the block;
 each thing drawn again with light from the upper left, an outline in a darker shade of its own colour where it stands against
 nothing, four or five tones where there were two, and what it is made of showing: the brush's cushion and bristles, the pan's
@@ -26,11 +31,13 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
-ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush')
+ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
+         'pell_lantern', 'pell_tin', 'pell_paintbrush')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
-         'item.the_oldest_house.pell_hairbrush': 'Hairbrush'}
+         'item.the_oldest_house.pell_hairbrush': 'Hairbrush', 'item.the_oldest_house.pell_lantern': 'Lantern',
+         'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush'}
 
 
 def blank():
@@ -276,6 +283,46 @@ def hairbrush():
     return im
 
 
+BRUSH_TIP, BRUSH_END = (14.5, 1.5), (1.5, 14.5)
+
+
+def paintbrush():
+    """0.4.530: June's paintbrush, held as the hairbrush is: the bristles at the top right, wide and flat, their ends loaded with wet
+    white paint and the paint working back into them; the metal band that holds them, a bright line across it; and the wooden handle
+    down to the bottom left, rounded, lit along one side, with the hole in its end to hang it by."""
+    im = blank()
+    ax, ay = BRUSH_END[0] - BRUSH_TIP[0], BRUSH_END[1] - BRUSH_TIP[1]
+    length = math.hypot(ax, ay)
+    for y in range(16):
+        for x in range(16):
+            px, py = x + .5 - BRUSH_TIP[0], y + .5 - BRUSH_TIP[1]
+            t = (px * ax + py * ay) / length / length
+            side = (px * ay - py * ax) / length
+            if t < 0 or t > 1:
+                continue
+            if t < .3:
+                half = 1.9 - t * 1.2
+                if abs(side) > half:
+                    continue
+                wet = t < .14
+                lit = side < -half * .35
+                tone = ('#ffffff' if lit else '#f2efe6' if side < half * .4 else '#d8d4c8') if wet else ('#e8dcc4' if lit else '#c9a979' if side < half * .4 else '#a6865a')
+                dot(im, x, y, tone)
+            elif t < .4:
+                if abs(side) > 1.5:
+                    continue
+                dot(im, x, y, '#eef2f4' if abs(side) < .5 and side < 0 else '#b8bec4' if side < .7 else '#80868c')
+            else:
+                half = .95 + (.35 if t > .86 else 0)
+                if abs(side) > half:
+                    continue
+                dot(im, x, y, '#d09a5e' if side < -.3 else '#a0703c' if side < .35 else '#6e4a26')
+    # The hole in the handle's end, and paint on the band where the brush has been wiped.
+    dot(im, 2, 13, '#3a2414')
+    dot(im, 10, 5, '#f4f2ea')
+    return im
+
+
 def flat(name, parent='minecraft:item/generated'):
     """A flat thing, from its picture: the plates lie on the table (laid there as item displays, face up) and the saucepan is held."""
     return {'parent': parent, 'textures': {'layer0': NS + 'item/' + name}}
@@ -285,6 +332,56 @@ def faces(side, end, texture):
     f = {k: {'uv': list(side), 'texture': texture} for k in ('north', 'south', 'east', 'west')}
     f.update({k: {'uv': list(end), 'texture': texture} for k in ('up', 'down')})
     return f
+
+
+THING = NS + 'block/pell/thing/'
+# In the hand the model's up is ahead; turned a quarter about the hand's width it is up the arm, so a thing hangs upright below the
+# fist. Half size; drawn back two to stand under the arm rather than at its front; and down by its height over the middle, less
+# one, so its handle is in the bottom of the fist.
+HANG = {'rotation': [90, 0, 0], 'scale': [.5, .5, .5]}
+
+
+def hanging(elements, textures, top):
+    """0.4.530: a thing carried hanging from the hand by its handle, whose top is at `top` in the model. The same for either hand."""
+    hold = dict(HANG, translation=[0, -2, -(top - 8) * .5 - 1])
+    return {'textures': textures, 'elements': elements, 'display': {
+        'thirdperson_righthand': hold, 'thirdperson_lefthand': hold,
+        'firstperson_righthand': {'rotation': [0, -20, 0], 'translation': [0, 0, 0], 'scale': [.5, .5, .5]},
+        'firstperson_lefthand': {'rotation': [0, 20, 0], 'translation': [0, 0, 0], 'scale': [.5, .5, .5]},
+        'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [.75, .75, .75]},
+        'ground': {'translation': [0, 3, 0], 'scale': [.4, .4, .4]},
+        'fixed': {'scale': [.75, .75, .75]}}}
+
+
+def box(lo, hi, texture, uv=None, glow=False, sides=('north', 'south', 'east', 'west', 'up', 'down')):
+    face = {'texture': texture} if uv is None else {'uv': list(uv), 'texture': texture}
+    el = {'from': list(lo), 'to': list(hi), 'faces': {k: dict(face) for k in sides}}
+    if glow:
+        el['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
+    return el
+
+
+def lantern_model():
+    """0.4.530: the battery lantern as June carries it, by its handle: the lantern she sets down on the grass (its model in
+    tools/draw_pell_things.py), the base, the lit globe, the cap and the handle's arch, with its own light."""
+    return hanging([box((4, 0, 4), (12, 2, 12), '#b'), box((5, 2, 5), (11, 8, 11), '#g', glow=True, sides=('north', 'south', 'east', 'west')),
+                    box((4, 8, 4), (12, 10, 12), '#b'), box((5, 10, 7), (6, 12, 9), '#b'), box((10, 10, 7), (11, 12, 9), '#b'),
+                    box((5, 12, 7), (11, 13, 9), '#b')],
+                   {'b': THING + 'lantern_body', 'g': THING + 'lantern_globe', 'particle': THING + 'lantern_globe'}, 13)
+
+
+def tin_model():
+    """0.4.530: the tin of paint as June carries it, by its wire handle: the tin from the bench (its side, the paint run down it, and
+    its lid marked LINE), the wire up from its ears and over the lid, and the wooden grip on the wire. The wire is the tin's own
+    grey rim; the grip, the brush's handle."""
+    w, g = (5, 0, 6, 1), (0, 0, 3, 1)
+    return hanging([{'from': [4.5, 0, 4.5], 'to': [11.5, 8, 11.5], 'faces': {
+                        'north': {'uv': [4, 8, 11, 16], 'texture': '#n'}, 'south': {'uv': [5, 8, 12, 16], 'texture': '#n'},
+                        'east': {'uv': [4, 8, 11, 16], 'texture': '#n'}, 'west': {'uv': [5, 8, 12, 16], 'texture': '#n'},
+                        'up': {'texture': '#k'}, 'down': {'uv': [4, 15, 11, 16], 'texture': '#n'}}},
+                    box((4, 5, 7.5), (4.5, 9.5, 8.5), '#n', w), box((11.5, 5, 7.5), (12, 9.5, 8.5), '#n', w),
+                    box((4, 9.5, 7.5), (12, 10, 8.5), '#n', w), box((6.5, 10, 7.25), (9.5, 11, 8.75), '#w', g)],
+                   {'n': THING + 'tin', 'k': THING + 'tin_lid_line', 'w': THING + 'brush', 'particle': THING + 'tin'}, 11)
 
 
 def models():
@@ -325,15 +422,20 @@ def models():
             'fixed': {'scale': [.9, .9, .9]}}}
     return {'pell_cane': cane_model, 'pell_folder': folder_model, 'pell_plate': flat('pell_plate'), 'pell_dinner': flat('pell_dinner'),
             'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
-            'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld')}
+            'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
+            'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
-              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush()}
+              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush()}
     data = models()
-    assert set(images) == set(ITEMS) == set(data)
+    # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own.
+    built = {'pell_lantern', 'pell_tin'}
+    assert set(images) | built == set(ITEMS) == set(data) and not set(images) & built
+    for name in built:
+        assert not (A / 'textures/item' / f'{name}.png').exists(), name
     for name, im in images.items():
         path = A / 'textures/item' / f'{name}.png'
         if check:
@@ -358,7 +460,7 @@ def main():
             lang[key] = name
     if not check:
         lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
-    print(f'{"Verified" if check else "Drew"} the Pell house\'s people\'s things: {len(images)} textures and models.')
+    print(f'{"Verified" if check else "Drew"} the Pell house\'s people\'s things: {len(images)} textures, {len(data)} models.')
 
 
 if __name__ == '__main__':
