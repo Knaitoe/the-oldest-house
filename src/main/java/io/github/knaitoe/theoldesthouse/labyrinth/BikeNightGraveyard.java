@@ -120,7 +120,7 @@ public final class BikeNightGraveyard {
         for(var p:here){
             int m=mist(l,n.base,p);Integer was=y.mist.put(p.getUUID(),m);
             // Told while they are in it, and once more when they are out of it.
-            if(m>0||was!=null&&was>0)io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload(m));
+            if(m>0||was!=null&&was>0)io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload(m,0));
         }
     }
 

@@ -40,6 +40,8 @@ close again. The fog takes the mist's own grey. Wisps rise off the ground round 
 asked the game for fewer particles.
 
 It is fog and wisps. Nothing flashes and nothing shakes, so there is nothing here for the comfort setting to scale.
+(Since 0.4.495 there is one thing: somebody who misses a jump in the Hollow has the mist put over everything at once
+for a moment, and that is scaled by the comfort setting, with no floor. `docs/BIKE_NIGHT_HOLLOW_0_4_493.md`.)
 
 ## The town's lights
 
@@ -82,7 +84,8 @@ is tested is what the server says of it and to whom. How it looks, whether seven
 enough, and whether its grey is right against this night's sky are the owner's to judge on a client;
 the numbers are `BikeNightMistClient.THIN`, `THICK` and `EASE`, and `BikeNightGraveyard.MIST_GATE` and `LAMP_CUTS`.
 
-Protocol 183 (one payload: how thick a reader's mist is).
+Protocol 183 (one payload: how thick a reader's mist is). Since 0.4.495 the payload also says for how long the mist is
+over everything, and the protocol is 184.
 
 ## 0.4.492: square into a wall, the rider comes off
 
