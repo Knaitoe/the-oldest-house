@@ -127,6 +127,7 @@ public final class BikeNightSite {
         street(l,b);
         CalderTown.build(l,b);
         CalderGraves.build(l,b);
+        CalderHollow.build(l,b);
         paths(l,b);
         sandpit(l,b);
         swings(l,b);
