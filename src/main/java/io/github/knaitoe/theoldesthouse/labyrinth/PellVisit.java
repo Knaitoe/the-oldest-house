@@ -51,6 +51,10 @@ import net.minecraft.world.phys.Vec3;
  * <p><b>0.4.530, the first night</b> (PellNight, docs/PELL_HOUSE_NIGHT_0_4_530.md). From the moment the house is locked up, the night is
  * PellNight's: the hour goes on to eleven, June goes out with the tin and paints the line behind the shed, and Callum stands on it.
  *
+ * <p><b>0.4.531, the first morning</b> (PellMorning, docs/PELL_HOUSE_MORNING_0_4_531.md). A reader can lie down on the camp bed; while
+ * every reader at the house is asleep the night hurries on. At first light the line is dry and Callum is in; June gets up, unlocks,
+ * lays breakfast, and calls them to it at seven.
+ *
  * <p><b>It is the house's, for everyone at it.</b> One visit for every reader at the house; each step waits for whoever is nearest.
  * When the house has been empty for a while it begins again from the start: everyone back where the first visit puts them, Gail and
  * her car back at the curb, June's doors shut.
@@ -124,6 +128,8 @@ public final class PellVisit {
         }
         if(june==null)return;
         long now=l.getGameTime();
+        // 0.4.531: who is asleep, and whether everybody is (the night hurries on).
+        PellMorning.sleepers(l,b,h,here,now);
         clock(h,here,now);
         if(!h.gailGone)car(l,b,h);
         if(gail!=null&&h.step>=FIRST_RULE)leave(l,b,h,gail);
@@ -158,8 +164,8 @@ public final class PellVisit {
         h.chairSaid=false;h.brushSaid=0;h.lockIndex=0;h.watchSaid=0;h.tapeAt=0;h.brushedAt=0;h.nudgedAt=0;
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
-        // 0.4.530: the night undone (PellNight.restart).
-        PellNight.restart(l,b,h);
+        // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart).
+        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
     }
     /** Each of them as they are by day: Tilly with her cane held out, Gail with her folder, June and Callum with nothing in hand. */
@@ -281,8 +287,11 @@ public final class PellVisit {
     /** How long June waits after calling before she serves whoever has come; how long Tilly takes over hers; how long dinner lasts
      *  at most; how long June waits for the children to leave the kitchen before she clears; how long she is at the sink. */
     public static final int SERVE_BY=600,TILLY_EATS=300,DINNER_LONGEST=1200,LEAVE_TABLE=100,WASHING=200;
-    /** A plate: not there, laid, served, scraped. Who a place is for besides the house's people: a reader, or nobody. */
-    public static final int NONE=0,LAID_PLATE=1,SERVED=2,SCRAPED=3,GUEST=10,NOBODY=-1;
+    /** A plate: not there, laid, served, scraped; 0.4.531, breakfast on it. Who a place is for besides the house's people: a reader,
+     *  or nobody. */
+    public static final int NONE=0,LAID_PLATE=1,SERVED=2,SCRAPED=3,BREAKFAST=4,GUEST=10,NOBODY=-1;
+    /** A plate with a meal on it, dinner or breakfast. */
+    static boolean full(int state){return state==SERVED||state==BREAKFAST;}
     /** One of the table's four places: its chair, where its plate lies on the table, which way a body sitting there faces, and where
      *  one stands to get into it. Tilly's is by the hall door and Callum's by the stove; the two by the fridge are on the far side,
      *  got into from the near end. */
@@ -294,8 +303,8 @@ public final class PellVisit {
         new Place(new BlockPos(-12,0,-68),new Vec3(-11.5,.95,-68.27),180,v(-9.5,-67.5))};
     /** Where June stands to lay the table, serve and clear: its near end. Where she stands to wash up: at the sink. */
     public static final PellPeople.Spot TABLE_END=new PellPeople.Spot(-9.5,-68.6,90),SINK=new PellPeople.Spot(-9.5,-69.6,180);
-    /** Tilly's way from Nessa's room to the kitchen door, and Callum's from the end of the hall; and back. */
-    private static final Vec3[] TILLY_TO_KITCHEN={v(-9.5,-62.8),v(-9.5,-64.6),v(-9.5,-65.6),v(-9.5,-66.6)},
+    /** Tilly's way from Nessa's room to the kitchen door, and Callum's from the end of the hall; and back (0.4.531: after breakfast too). */
+    static final Vec3[] TILLY_TO_KITCHEN={v(-9.5,-62.8),v(-9.5,-64.6),v(-9.5,-65.6),v(-9.5,-66.6)},
         TILLY_BACK={v(-9.5,-66.6),v(-9.5,-65.6),v(-9.5,-64.6),v(-9.5,-62.8),v(TILLY_ROOM.x(),TILLY_ROOM.z())},
         CALLUM_TO_KITCHEN={v(-9.5,-65.6),v(-9.5,-66.6)},
         CALLUM_BACK={v(-9.5,-66.6),v(-9.5,-65.6),v(PellPeople.FIRST_VISIT[PellPeople.CALLUM].x(),PellPeople.FIRST_VISIT[PellPeople.CALLUM].z())};
@@ -333,10 +342,14 @@ public final class PellVisit {
 
     /** The house's hour: held through the tour and through dinner, going on to six once the day is settled and on into the evening
      *  after; sent to every reader at the house when it starts or stops going on, when they first come, and once a second. 0.4.530:
-     *  locked up, it goes on to eleven, faster while June is in her room; from her rounds to midnight. */
+     *  locked up, it goes on to eleven, faster while June is in her room; from her rounds to midnight. 0.4.531: from June's return to
+     *  her room, on through the night to six, as fast again; while she goes round the doors to the kitchen, to half past; once breakfast
+     *  is laid, to seven; from breakfast's call to eight, as by day; and while every reader at the house is asleep, much faster. */
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
-        long to=h.step==SETTLED?SIX:h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
-        int pace=h.step==NIGHT?PellNight.NIGHT_PACE:1;
+        long to=h.step==SETTLED?SIX:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
+            :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
+            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
+        int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;
         if(h.time<to)h.time=Math.min(to,h.time+pace);
         int rate=h.time<to?pace:0;boolean changed=rate!=h.rate;h.rate=rate;
         var payload=new io.github.knaitoe.theoldesthouse.network.PellPayload(h.time,h.rate);
@@ -354,6 +367,9 @@ public final class PellVisit {
     static void walkers(ServerLevel l,BlockPos b,PellPeople.Household h){
         for(int who=0;who<PellPeople.COUNT;who++){
             if(h.way[who].isEmpty())continue;var a=PellPeople.find(l,b,who);if(a==null)continue;
+            // 0.4.531: with every reader asleep, straight to the end of the way.
+            if(h.hurried){var end=world(b,h.way[who].peekLast());a.moveTo(end.x,end.y,end.z,h.endLook[who],0);a.setYHeadRot(h.endLook[who]);a.setYBodyRot(h.endLook[who]);h.way[who].clear();h.stuckFor[who]=0;}
+            if(h.way[who].isEmpty()){arrive(l,b,h,who,a);continue;}
             var to=world(b,h.way[who].peekFirst());var before=a.position();
             through(l,b,who,a);
             boolean there=SceneFootpaths.walk(a,to,pace(who));h.moving[who]=true;
@@ -361,12 +377,16 @@ public final class PellVisit {
             else if(a.position().distanceToSqr(before)>1e-4)h.stuckFor[who]=0;
             else if(++h.stuckFor[who]>STUCK&&!LiteraryVignettes.watched(l,a.getEyePosition())){a.moveTo(to.x,to.y,to.z,a.getYRot(),0);h.way[who].pollFirst();h.stuckFor[who]=0;}
             if(!h.way[who].isEmpty())continue;
-            if(h.sitAt[who]>=0)sit(l,b,h,who,a,h.sitAt[who]);
-            else if(h.perchTo[who]!=null)perch(l,b,h,who,a,h.perchTo[who]);
-            else if(h.sleepAt[who]!=null)lie(l,b,h,who,a,h.sleepAt[who]);
-            else h.rest[who]=h.endLook[who];
-            h.sitAt[who]=-1;h.perchTo[who]=null;h.sleepAt[who]=null;
+            arrive(l,b,h,who,a);
         }
+    }
+    /** At the end of their way: they sit, perch, lie down, or stand as they were sent to. */
+    private static void arrive(ServerLevel l,BlockPos b,PellPeople.Household h,int who,LiteraryActor a){
+        if(h.sitAt[who]>=0)sit(l,b,h,who,a,h.sitAt[who]);
+        else if(h.perchTo[who]!=null)perch(l,b,h,who,a,h.perchTo[who]);
+        else if(h.sleepAt[who]!=null)lie(l,b,h,who,a,h.sleepAt[who]);
+        else h.rest[who]=h.endLook[who];
+        h.sitAt[who]=-1;h.perchTo[who]=null;h.sleepAt[who]=null;
     }
     /** Into a chair at the table, turned to it; or, if a reader has sat there since, the next one free; or standing, if none is. */
     static void sit(ServerLevel l,BlockPos b,PellPeople.Household h,int who,LiteraryActor a,int place){
@@ -533,7 +553,7 @@ public final class PellVisit {
         var old=h.plates[i]==null?null:l.getEntity(h.plates[i]);if(old!=null)old.discard();
         h.plates[i]=null;h.plate[i]=state;
         if(state==NONE)return;
-        var item=new ItemStack(switch(state){case SERVED->PellRegistry.DINNER.get();case SCRAPED->PellRegistry.SCRAPED.get();default->PellRegistry.PLATE.get();});
+        var item=new ItemStack(switch(state){case SERVED->PellRegistry.DINNER.get();case BREAKFAST->PellRegistry.BREAKFAST.get();case SCRAPED->PellRegistry.SCRAPED.get();default->PellRegistry.PLATE.get();});
         var d=KitchenFittings.lay(l,world(b,TABLE[i].plate()),item,TABLE[i].look(),PLATE_TAG,.45F);
         if(d!=null)h.plates[i]=d.getUUID();
     }
@@ -549,14 +569,16 @@ public final class PellVisit {
         for(int i=0;i<TABLE.length;i++){if(h.plate[i]==NONE)continue;double d=p.position().subtract(world(b,TABLE[i].plate())).horizontalDistanceSqr();if(d<bestD){bestD=d;best=i;}}
         if(best<0)return false;
         int state=h.plate[best],diner=h.diner[best];
-        if(diner==PellPeople.TILLY){PellHouse.cue(p,state==SCRAPED?PellTexts.TILLYS_EATEN:state==SERVED?PellTexts.TILLYS_PLATE:PellTexts.PLATE_EMPTY);return true;}
+        if(diner==PellPeople.TILLY){PellHouse.cue(p,state==SCRAPED?PellTexts.TILLYS_EATEN:state==SERVED?PellTexts.TILLYS_PLATE:state==BREAKFAST?PellTexts.TILLYS_BREAKFAST:PellTexts.PLATE_EMPTY);return true;}
         if(diner==PellPeople.CALLUM){PellHouse.cue(p,PellTexts.CALLUMS_PLATE);return true;}
-        if(diner!=GUEST){PellHouse.cue(p,h.step>=SERVING?PellTexts.NOBODY_PLACE:PellTexts.PLATE_EMPTY);return true;}
+        if(diner!=GUEST){PellHouse.cue(p,h.step>=SERVING&&h.step<PellMorning.RISING||h.step>=PellMorning.LAID?PellTexts.NOBODY_PLACE:PellTexts.PLATE_EMPTY);return true;}
         if(state==LAID_PLATE){PellHouse.cue(p,PellTexts.PLATE_EMPTY);return true;}
         if(state==SCRAPED){PellHouse.cue(p,PellTexts.SCRAPED_PLATE);return true;}
-        p.getFoodData().eat(6,.6F);
+        // 0.4.531: breakfast as dinner was.
+        boolean morning=state==BREAKFAST;
+        p.getFoodData().eat(morning?5:6,.6F);
         p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),SoundEvents.GENERIC_EAT,SoundSource.PLAYERS,.8F,1F);
-        plate(p.serverLevel(),b,h,best,SCRAPED);own.putBoolean("Ate",true);PellHouse.cue(p,PellTexts.ATE);
+        plate(p.serverLevel(),b,h,best,SCRAPED);own.putBoolean(morning?"AteBreakfast":"Ate",true);PellHouse.cue(p,morning?PellTexts.ATE_BREAKFAST:PellTexts.ATE);
         return true;
     }
 

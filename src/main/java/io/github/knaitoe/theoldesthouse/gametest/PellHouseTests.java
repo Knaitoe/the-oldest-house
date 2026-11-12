@@ -673,8 +673,9 @@ public final class PellHouseTests {
      * moment nobody sees, standing on it, facing in. When the reader in the yard looks at him and crouches, he crouches a beat late and
      * stands a beat after they do, and a hand on him finds him there. A foot in the wet paint smears it, June says so, and she paints it
      * over before she packs up. Then the tin goes back on the bench, the lantern goes with her, the shed and the back door are locked
-     * behind her, and June is in her room with the door shut and her hands empty. The night waits with Callum still on the line. Left,
-     * the house begins again: the line as it was, the tin on the bench, Callum back at the end of the hall, and what each reader saw kept.
+     * behind her, and June is in her room with the door shut and her hands empty. The small hours go on (0.4.531: toward the morning,
+     * the next cases) with Callum still on the line. Left, the house begins again: the line as it was, the tin on the bench, Callum back
+     * at the end of the hall, and what each reader saw kept.
      */
     @GameTest(template="empty",batch="pell_night",timeoutTicks=9000)
     public static void theFirstNightJuneRepaintsTheLineAndCallumStandsOnIt(GameTestHelper h){
@@ -762,7 +763,7 @@ public final class PellHouseTests {
             h.assertTrue(f.own(p,P).getBoolean("SawJuneOut"),"the reader in the garage saw June out");
             mark[0]=PellVisit.hour(b);
         }).thenIdle(10).thenExecute(()->{
-            h.assertTrue(PellVisit.hour(b)>mark[0]||PellVisit.hour(b)==PellNight.TWELVE,"the hour goes on to midnight: "+mark[0]+" to "+PellVisit.hour(b));
+            h.assertTrue(PellVisit.hour(b)>mark[0],"the hour goes on through the small hours: "+mark[0]+" to "+PellVisit.hour(b));
             // Everybody out in the street, and the house left.
             f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
         }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
@@ -775,4 +776,176 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_night") public static void nightDone(ServerLevel l){done();}
+
+    /** The camp bed in the garage: its head, where a hand on either cell lies the reader down. */
+    private static final BlockPos CAMP_BED_AT=new BlockPos(15,0,-89);
+    /**
+     * 0.4.531, the first morning (docs/PELL_HOUSE_MORNING_0_4_531.md). Locked up, both readers out in the garage. One lies down on the
+     * camp bed, and while the other is up the night does not hurry. The other lies down too, and it does: the hour goes on fast to
+     * eleven, when the back door's lock, as June lets herself out, wakes them both, and each keeps that it did. Lying down again, they
+     * sleep through June's rounds and the small hours. At first light the stretch she painted has dried and Callum is in; June gets up,
+     * unlocks the three outside doors on her way to the kitchen and lays breakfast, and at seven her call wakes them, heard from the
+     * garage. Tilly, with her cane, and Callum come to the table. The readers come in and sit at the places laid for them; Tilly says
+     * somebody was singing in the night, in the wall by her bed, and June says it will be the pipes, and both readers heard it. Each
+     * eats their breakfast. June says to leave the plates, Tilly and Callum get down, and the table is cleared. Left, the house begins
+     * again, and what each reader did stays theirs.
+     */
+    @GameTest(template="empty",batch="pell_morning",timeoutTicks=12000)
+    public static void theNightPassesWhileTheySleepAndJuneCallsThemToBreakfast(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_morning_reader",P);var q=f.player("pell_morning_other",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var bed=b.offset(CAMP_BED_AT);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            PellNight.lockedUp(l,b);
+            // Both readers out in the garage, beside the camp bed.
+            f.at(p,P,14.5,0,-89.5);f.at(q,P,13.5,0,-91.5);
+            hand(p,bed);
+            h.assertTrue(p.isSleeping()&&f.own(p,P).getBoolean("SleptInGarage"),"a hand on the camp bed lies the reader down on it");
+        }).thenIdle(PellMorning.SETTLE+5).thenExecute(()->{
+            h.assertTrue(p.isSleeping(),"and they stay there");
+            h.assertFalse(PellMorning.hurried(b),"with the other reader up, the night does not hurry");
+            hand(q,b.offset(CAMP_BED_AT.north()));
+            h.assertTrue(q.isSleeping(),"the other lies down too, from the bed's foot");
+            told(p);told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellMorning.hurried(b),"with every reader at the house asleep, the night hurries on"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellNight.ROUNDS&&!p.isSleeping()&&!q.isSleeping(),"eleven: June goes out, and the back door's lock wakes them"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.WOKEN_BY_LOCK)&&told(q).contains(PellTexts.WOKEN_BY_LOCK),"each is told what woke them");
+            h.assertTrue(f.own(p,P).getBoolean("WokenByTheLock")&&f.own(q,P).getBoolean("WokenByTheLock"),"and keeps that it did");
+            h.assertFalse(PellMorning.hurried(b),"awake, the night goes at its own pace");
+            hand(p,bed);hand(q,bed);
+            h.assertTrue(p.isSleeping()&&q.isSleeping(),"they lie down again");
+            told(p);told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.CALLED,"they sleep through to breakfast"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertFalse(p.isSleeping()||q.isSleeping(),"June's call wakes them");
+            h.assertTrue(told(p).contains(PellTexts.BREAKFAST_FAR)&&told(q).contains(PellTexts.BREAKFAST_FAR),"heard from the garage");
+            h.assertTrue(PellVisit.hour(b)>=PellMorning.SEVEN,"at seven: "+PellVisit.hour(b));
+            for(int x:PellNight.CELLS)h.assertTrue(PellNight.stage(l,b,x)==PellLine.SECOND,"the stretch June painted in the night has dried at "+x);
+            h.assertFalse(PellNight.callumOut(b),"Callum in off the line");
+            for(var door:PellVisit.LOCKS)h.assertFalse(PellVisit.locked(b,door),"June has unlocked "+door);
+            h.assertTrue(PellVisit.diner(b,0)==PellPeople.TILLY&&PellVisit.plate(b,0)==PellVisit.BREAKFAST,"Tilly's breakfast at her place");
+            h.assertTrue(PellVisit.diner(b,1)==PellPeople.CALLUM&&PellVisit.plate(b,1)==PellVisit.LAID_PLATE,"Callum's plate with nothing on it");
+            for(int i=2;i<4;i++)h.assertTrue(PellVisit.diner(b,i)==PellVisit.GUEST&&PellVisit.plate(b,i)==PellVisit.BREAKFAST,"a breakfast for a reader at "+i);
+            h.assertTrue(plates(l,b).size()==4,"four plates on the table: "+plates(l,b).size());
+            h.assertFalse(PellVisit.asleep(b,PellPeople.TILLY)||PellVisit.asleep(b,PellPeople.CALLUM),"Tilly and Callum up");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"Tilly and Callum come to the table"))
+        .thenExecute(()->{
+            h.assertTrue(who(h,l,b,PellPeople.TILLY).getMainHandItem().is(PellRegistry.CANE.get()),"Tilly with her cane");
+            // The readers come in from the garage and sit at the places laid for them.
+            f.at(q,P,-9.5,0,-67.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(q,b.offset(PellVisit.TABLE[3].chair())),"a reader sits at the table");
+            f.at(p,P,-9.5,0,-69.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[2].chair())),"the other sits");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_SINGING),"Tilly: somebody was singing last night"))
+        .thenExecute(()->h.assertTrue(f.own(p,P).getBoolean("HeardAboutSinging")&&f.own(q,P).getBoolean("HeardAboutSinging"),"both readers heard her say so"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WAS_THERE),"June: was there?"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_IN_THE_WALL),"Tilly: in the wall by her bed"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_PIPES),"June: the pipes"))
+        .thenExecute(()->{
+            // A hand on the table at each reader's own place: their breakfast, eaten.
+            p.getFoodData().setFoodLevel(8);told(p);
+            hand(p,b.offset(-12,0,-69));hand(q,b.offset(-12,0,-69));
+            h.assertTrue(PellVisit.plate(b,2)==PellVisit.SCRAPED&&PellVisit.plate(b,3)==PellVisit.SCRAPED,"each eats their breakfast");
+            h.assertTrue(p.getFoodData().getFoodLevel()==13,"a breakfast's worth: "+p.getFoodData().getFoodLevel());
+            h.assertTrue(f.own(p,P).getBoolean("AteBreakfast")&&f.own(q,P).getBoolean("AteBreakfast"),"each keeps that they ate");
+        }).thenIdle(1).thenExecute(()->{var heard=told(p);h.assertTrue(heard.contains(PellTexts.ATE_BREAKFAST),"and is told what it was: "+heard);})
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.AFTER,"breakfast done"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_CLEARS),"\"Leave those\"");
+            h.assertTrue(PellVisit.plate(b,0)==PellVisit.SCRAPED,"Tilly has eaten hers");
+            h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)<0&&PellVisit.placeOf(b,PellPeople.CALLUM)<0,"Tilly and Callum get down");
+            h.assertTrue(f.own(p,P).getBoolean("FirstMorning")&&f.own(q,P).getBoolean("FirstMorning"),"each keeps that they had the first morning");
+        }).thenWaitUntil(()->h.assertTrue(plates(l,b).isEmpty(),"the table cleared"))
+        .thenWaitUntil(()->h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.7),"Tilly goes back to Nessa's room"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)<=PellMorning.EIGHT,"the morning goes on no further than eight: "+PellVisit.hour(b));
+            // Everybody out in the street, and the house left.
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
+        .thenExecute(()->{
+            h.assertFalse(PellMorning.dawned(b),"night and morning undone");
+            h.assertTrue(plates(l,b).isEmpty()&&PellVisit.hour(b)==PellVisit.AFTERNOON,"the afternoon again, the table bare");
+            h.assertTrue(f.own(p,P).getBoolean("SleptInGarage")&&f.own(q,P).getBoolean("SleptInGarage")&&f.own(q,P).getBoolean("AteBreakfast"),"what each reader did stays theirs");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_morning") public static void morningDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.531, the first morning with one reader awake. In the small hours, one reader asleep in the garage and the other out by the
+     * drive, the night does not hurry. The reader awake steps in the wet paint behind the shed. At first light the stretch dries, and the
+     * smear dries as it was. Callum, watched, stays out on the line through June's getting up and unlocking and her call to breakfast,
+     * which wakes the reader asleep. Once breakfast is called the camp bed is only looked at. June calls Callum in, and the moment
+     * nobody sees he is in his chair at the table. A hand on June in the morning gets her morning lines, and a hand on the smear finds it
+     * dried as it was. Left, the house begins again, the line as it was and Callum at the end of the hall.
+     */
+    @GameTest(template="empty",batch="pell_morning_watched",timeoutTicks=12000)
+    public static void watchedCallumStaysOutUntilNobodySeesAndJuneCallsHimIn(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_watch_sleeper",P);var q=f.player("pell_watch_waker",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var bed=b.offset(CAMP_BED_AT);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            PellMorning.smallHours(l,b);
+            f.at(p,P,14.5,0,-89.5);hand(p,bed);
+            h.assertTrue(p.isSleeping(),"one reader asleep in the garage");
+            // The other steps into the wet paint behind the shed.
+            f.at(q,P,9.5,0,-96.5);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(PellNight.stage(l,b,9)==PellLine.FOOTPRINT&&f.own(q,P).getBoolean("Smeared"),"a foot in the wet paint smears it");
+            // Then out by the drive, looking at Callum on the line.
+            f.at(q,P,14.5,0,-82.5);lookAt(q,who(h,l,b,PellPeople.CALLUM).getEyePosition());
+        }).thenIdle(PellMorning.SETTLE+5).thenExecute(()->{
+            h.assertFalse(PellMorning.hurried(b),"with a reader awake, the night does not hurry");
+            h.assertTrue(PellNight.callumOut(b),"Callum on the line");
+            PellVisit.hurry(b,PellMorning.DAWN-30);
+        }).thenWaitUntil(()->h.assertTrue(PellMorning.dawned(b),"first light"))
+        .thenIdle(5).thenExecute(()->{
+            for(int x:PellNight.CELLS)if(x!=9)h.assertTrue(PellNight.stage(l,b,x)==PellLine.SECOND,"dried at "+x);
+            h.assertTrue(PellNight.stage(l,b,9)==PellLine.FOOTPRINT,"the smear dries as it was");
+            h.assertTrue(PellNight.callumOut(b),"Callum, watched, stays out");
+            h.assertTrue(p.isSleeping(),"the reader asleep sleeps on");
+            PellVisit.hurry(b,PellMorning.UP-3);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.RISING,"six: June gets up"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.LAID,"June unlocks her way to the kitchen and lays breakfast"))
+        .thenExecute(()->{
+            for(var door:PellVisit.LOCKS)h.assertFalse(PellVisit.locked(b,door),"June has unlocked "+door);
+            h.assertFalse(PellSite.open(l,b,PellSite.JUNE_DOOR),"her door shut behind her");
+            h.assertTrue(PellNight.callumOut(b),"Callum, still watched, still out");
+            PellVisit.hurry(b,PellMorning.SEVEN-3);told(p);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.CALLED,"seven: breakfast"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertFalse(p.isSleeping(),"June's call wakes the reader asleep");
+            h.assertTrue(told(p).contains(PellTexts.BREAKFAST_FAR),"who hears it from the garage");
+            h.assertTrue(PellNight.callumOut(b),"Callum stays out");
+            told(p);hand(p,bed);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertFalse(p.isSleeping(),"once breakfast is called the camp bed is only looked at");
+            h.assertTrue(told(p).contains(PellTexts.thing(CAMP_BED,0)),"and said what it is");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_CALLUM_IN),"June calls him in"))
+        .thenExecute(()->{
+            h.assertTrue(PellNight.callumOut(b),"still out while watched");
+            // The reader looks down at the ground.
+            face(q,0,90);
+        }).thenWaitUntil(()->h.assertTrue(!PellNight.callumOut(b)&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"the moment nobody sees, Callum is in his chair"))
+        .thenExecute(()->h.assertTrue(inChair(who(h,l,b,PellPeople.CALLUM),b,1),"at his place"))
+        .thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June between lines"))
+        .thenExecute(()->{f.at(q,P,-7.5,0,-68.5);LiteraryVignettes.talk(q,who(h,l,b,PellPeople.JUNE));})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_MORNING[0]),"a hand on June in the morning: "+said(who(h,l,b,PellPeople.JUNE)));
+            // The reader awake goes back behind the shed, to the smear.
+            f.at(q,P,10.5,0,-94.5);told(q);hand(q,b.offset(9,-1,PellSite.LINE_N));
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(q);
+            String dry=PellTexts.line(l.getBlockState(b.offset(9,-1,PellSite.LINE_N)).getValue(PellLine.SURFACE),true,PellLine.FOOTPRINT,true);
+            h.assertTrue(heard.contains(dry),"a hand on the smear finds it dried as it was: "+heard);
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
+        .thenExecute(()->{
+            for(int x:PellNight.CELLS)h.assertTrue(PellNight.stage(l,b,x)==PellLine.FIRST,"the line as the first visit has it at "+x);
+            h.assertFalse(PellNight.callumOut(b)||PellMorning.dawned(b),"night and morning undone");
+            h.assertTrue(at(who(h,l,b,PellPeople.CALLUM),b,PellPeople.FIRST_VISIT[PellPeople.CALLUM].x(),PellPeople.FIRST_VISIT[PellPeople.CALLUM].z(),.3),"Callum at the end of the hall");
+            h.assertTrue(f.own(q,P).getBoolean("Smeared")&&f.own(p,P).getBoolean("SleptInGarage"),"what each reader did stays theirs");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_morning_watched") public static void watchedDone(ServerLevel l){done();}
 }

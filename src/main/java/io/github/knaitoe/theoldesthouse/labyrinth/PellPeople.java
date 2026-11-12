@@ -111,6 +111,11 @@ public final class PellPeople {
         int cell,nightSaid,feetSaid=-1;long paintedAt;boolean noticed,smearSaid,smearDue,callumOut;
         final float[] copyYaw=new float[PellNight.BEAT+1],copyPitch=new float[PellNight.BEAT+1];final boolean[] copyCrouch=new boolean[PellNight.BEAT+1];
         int copied;UUID copyOf;
+        /** 0.4.531, the first morning (PellMorning): whether every reader at the house is asleep, so the night hurries on; when each
+         *  reader lying on the camp bed lay down; whether first light has come; how far what is said at breakfast has got; when Tilly sat
+         *  down to it and when it was called; whether June has called Callum in to it. */
+        boolean hurried,dawned,callumCalled;int morningSaid;long tillySat,breakfastAt;
+        final Map<UUID,Long> sleptAt=new HashMap<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -181,7 +186,7 @@ public final class PellPeople {
             if(h.moving[who]||h.asleep[who])continue;
             var a=find(l,b,who);if(a==null)continue;
             double reach=who==CALLUM?WATCH:NEAR;ServerPlayer near=null;double best=reach*reach;
-            for(var p:here){if(p.isSpectator()||!p.isAlive())continue;double d=a.distanceToSqr(p);if(d<best){best=d;near=p;}}
+            for(var p:here){if(p.isSpectator()||!p.isAlive()||p.isSleeping())continue;double d=a.distanceToSqr(p);if(d<best){best=d;near=p;}}
             float rest=h.rest[who];
             if(near==null){turnHead(a,rest,rest);continue;}
             float toward=yawTo(a,near.getEyePosition());
@@ -215,6 +220,8 @@ public final class PellPeople {
         if(who==JUNE&&PellVisit.watching(b)&&h.watchSaid<PellTexts.JUNE_WATCHING.length)line=PellTexts.JUNE_WATCHING[h.watchSaid++];
         // 0.4.530: up at night with the tin, June has her own lines, and the reader keeps that they spoke to her.
         else if(who==JUNE&&PellNight.up(b)){line=PellTexts.JUNE_NIGHT[h.nightSaid++%PellTexts.JUNE_NIGHT.length];own.putBoolean("SpokeToJuneAtNight",true);}
+        // 0.4.531: up in the morning, from when she gets up until breakfast is cleared.
+        else if(who==JUNE&&PellMorning.morning(b)){line=PellTexts.JUNE_MORNING[h.nightSaid++%PellTexts.JUNE_MORNING.length];}
         else line=lines[h.said[who]++%lines.length];
         a.say(name(who),line);a.speaks(line);
         // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the

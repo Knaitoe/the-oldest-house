@@ -51,6 +51,8 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> DINNER=ITEMS.register("pell_dinner",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SCRAPED=ITEMS.register("pell_plate_scraped",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SAUCEPAN=ITEMS.register("pell_saucepan",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.531: breakfast as it lies on the table (PellMorning), toast and a fried egg. Nobody is given one. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> BREAKFAST=ITEMS.register("pell_breakfast",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.527: June's hairbrush, in her hand while she brushes Tilly's hair at bedtime (PellVisit). Nobody is given one. */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> HAIRBRUSH=ITEMS.register("pell_hairbrush",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.530: what June carries out at night (PellNight): her lantern, the tin of paint and the brush. Nobody is given one. */

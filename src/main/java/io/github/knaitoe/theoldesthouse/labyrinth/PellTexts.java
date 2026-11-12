@@ -117,7 +117,9 @@ public final class PellTexts {
      * 0.4.523: what a hand on the line finds, by what it is painted on and how it is now. Each says what is there; none says what the
      * line is for, and none names a colour.
      */
-    public static String line(PellLine.Surface surface,boolean thin,int stage){
+    public static String line(PellLine.Surface surface,boolean thin,int stage){return line(surface,thin,stage,false);}
+    /** 0.4.531: as above, after first light, when the paint put down in the night has dried. */
+    public static String line(PellLine.Surface surface,boolean thin,int stage,boolean dry){
         String where=thin?"Behind the shed the line is at its thinnest, barely a finger wide. The grass shows through it."
             :switch(surface){
                 case CONCRETE->"A line of paint across the concrete, a hand wide. It has soaked in.";
@@ -130,7 +132,7 @@ public final class PellTexts {
         return switch(stage){
             case PellLine.SECOND->where+" It has been gone over again, not long ago.";
             case PellLine.LAST->where+" It is wet in places. It comes away on a finger.";
-            case PellLine.FOOTPRINT->where+" It is wet, and a shoe has gone through it and dragged it.";
+            case PellLine.FOOTPRINT->where+(dry?" A shoe went through it while it was wet and dragged it. It has dried like that.":" It is wet, and a shoe has gone through it and dragged it.");
             case PellLine.HALF_SCRUBBED->"The paint here has been scrubbed half away.";
             case PellLine.GAP->surface==PellLine.Surface.LAWN?"The line is scrubbed out here. The dead grass shows where it ran.":"The line is scrubbed out here. The ground shows where it ran.";
             default->where;
@@ -259,6 +261,26 @@ public final class PellTexts {
         "Callum is standing on the line, barefoot, facing the house. His hair is wet.",
         "He doesn't move for your hand.",
         "The grass round his feet is dry."};
+    /**
+     * 0.4.531, the first morning (PellMorning, docs/PELL_HOUSE_MORNING_0_4_531.md): what wakes a reader asleep in the garage at eleven;
+     * June's call to breakfast and what is heard of it from further off; her calling Callum in; what Tilly says she heard in the night
+     * and what June says to it; what a hand on the table finds at breakfast; and what a hand on June gets in the morning, in turn. None of
+     * it says what was singing.
+     */
+    public static final String WOKEN_BY_LOCK="Across the yard, a key turns in a lock.",
+        JUNE_BREAKFAST="Breakfast!",
+        BREAKFAST_FAR="June, calling from the kitchen: “Breakfast!”",
+        JUNE_CALLUM_IN="Callum. Breakfast.",
+        TILLY_SINGING="Somebody was singing last night.",
+        JUNE_WAS_THERE="Was there, love?",
+        TILLY_IN_THE_WALL="In the wall by my bed. The same bit, over and over.",
+        JUNE_PIPES="That'll be the pipes, love. Eat your egg.";
+    public static final String TILLYS_BREAKFAST="Tilly's breakfast. Her toast is cut into fingers, the crusts off.",
+        ATE_BREAKFAST="Toast and a fried egg, the yolk still soft. You eat it all.";
+    public static final String[] JUNE_MORNING={
+        "Morning, love. Sleep all right?",
+        "There's more toast if you want it.",
+        "Callum's had his."};
     /** A hand on an outside door June has locked, from outside it. */
     public static String locked(BlockPos door){
         if(door.equals(PellSite.FRONT_DOOR))return "The screen door is locked. The lock is on the inside.";

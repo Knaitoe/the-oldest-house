@@ -49,7 +49,8 @@ public final class PellHouse {
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(PellThing.is(st)){thing(p,l,b,b.offset(rel),st,own);return true;}
         // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
-        if(PellLine.is(st)){cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE)));return true;}
+        // 0.4.531: after first light, paint put down in the night is dry.
+        if(PellLine.is(st)){cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE),PellMorning.dawned(b)));return true;}
         if(!st.is(PellRegistry.FITTING.get()))return false;
         var kind=st.getValue(PellBlock.KIND);
         if(kind==PellBlock.Kind.ROLLER){cue(p,PellTexts.ROLLER);return true;}
@@ -110,6 +111,8 @@ public final class PellHouse {
             case TABLE->{if(!PellVisit.table(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.527: while June's tape plays, what is on it.
             case TV_CABINET->{if(!PellVisit.tvHand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.531: from when June sends them out until breakfast is called, the reader lies down on it.
+            case CAMP_BED->{if(!PellMorning.lieDown(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }
