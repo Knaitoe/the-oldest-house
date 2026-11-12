@@ -71,6 +71,13 @@ public final class PellHouse {
         if(door.equals(PellSite.SHED_DOOR)){cue(p,PellTexts.PADLOCKED);return true;}
         if(door.equals(PellSite.POOL_GATE)){cue(p,PellTexts.POOL_GATE);return true;}
         if(door.equals(PellSite.SLIDER.west())){cue(p,PellTexts.FIXED_GLASS);return true;}
+        // 0.4.527: a door June has locked. From inside, its lock turns and it opens; from outside it does not.
+        if(PellVisit.locked(b,door)){
+            if(!PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){
+                l.playSound(null,b.offset(door),SoundEvents.WOODEN_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.3F,1.8F);cue(p,PellTexts.locked(door));return true;
+            }
+            PellVisit.unlock(b,door);l.playSound(null,b.offset(door),PellRegistry.LOCK.get(),SoundSource.BLOCKS,.6F,1.1F);
+        }
         toggle(l,b,door);
         return true;
     }
@@ -98,6 +105,8 @@ public final class PellHouse {
             case DRAWERS->cue(p,PellTexts.thing(kind,stage)+" "+PellTexts.clock(PellVisit.hour(b)));
             // 0.4.526: at dinner, what is at the place nearest the hand, or the reader's own dinner, eaten.
             case TABLE->{if(!PellVisit.table(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.527: while June's tape plays, what is on it.
+            case TV_CABINET->{if(!PellVisit.tvHand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }

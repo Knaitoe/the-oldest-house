@@ -42,6 +42,12 @@ import net.minecraft.world.phys.Vec3;
  * has gone on long enough, June clears; Tilly goes back to Nessa's room and Callum to the end of the hall, and the evening goes on to
  * half past eight, where it waits for what comes next.
  *
+ * <p><b>0.4.527, bedtime</b> (docs/PELL_HOUSE_BEDTIME_0_4_527.md). After the washing up June sits in her recliner with a birthday tape
+ * on the television. At half past eight she turns it off and calls Tilly to bed; on the edge of Nessa's bed she brushes Tilly's hair, and
+ * Tilly lies down. Callum goes to his room and lies down in his circle. June sends whoever is still in the house out to the garage,
+ * waits until nobody is, and locks the sliding door, the back door and the front door from inside; then she goes to her room and shuts
+ * the door, and the hour goes on to ten, where the night waits for what comes next.
+ *
  * <p><b>It is the house's, for everyone at it.</b> One visit for every reader at the house; each step waits for whoever is nearest.
  * When the house has been empty for a while it begins again from the start: everyone back where the first visit puts them, Gail and
  * her car back at the curb, June's doors shut.
@@ -144,6 +150,17 @@ public final class PellVisit {
         Arrays.fill(h.seated,false);Arrays.fill(h.place,-1);Arrays.fill(h.sitAt,-1);for(var w:h.way)w.clear();
         clearPlates(l,b);Arrays.fill(h.plate,NONE);Arrays.fill(h.plates,null);Arrays.fill(h.diner,NOBODY);h.order.clear();h.serving=0;
         var june=PellPeople.find(l,b,PellPeople.JUNE);if(june!=null)june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+        // 0.4.527: nobody asleep or perched, every door shut and none locked, the television off; Tilly has her cane again.
+        Arrays.fill(h.perch,null);Arrays.fill(h.perchTo,null);Arrays.fill(h.sleepAt,null);Arrays.fill(h.asleep,false);h.locked.clear();
+        h.chairSaid=false;h.brushSaid=0;h.lockIndex=0;h.watchSaid=0;h.tapeAt=0;h.brushedAt=0;h.nudgedAt=0;
+        for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
+        tv(l,b,false);
+        for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
+    }
+    /** Each of them as they are by day: Tilly with her cane held out, Gail with her folder, June and Callum with nothing in hand. */
+    static void dress(LiteraryActor a,int who){
+        a.gesture(who==PellPeople.TILLY?PellPeople.CANE:who==PellPeople.GAIL?PellPeople.FOLDER:0);
+        a.setItemInHand(InteractionHand.MAIN_HAND,who==PellPeople.TILLY?new ItemStack(PellRegistry.CANE.get()):who==PellPeople.GAIL?new ItemStack(PellRegistry.FOLDER.get()):ItemStack.EMPTY);
     }
 
     /** Somebody has come: up to Gail on the path, or past her to June at the step, or into the house. */
@@ -312,7 +329,7 @@ public final class PellVisit {
     /** The house's hour: held through the tour and through dinner, going on to six once the day is settled and on into the evening
      *  after; sent to every reader at the house when it starts or stops going on, when they first come, and once a second. */
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
-        long to=h.step==SETTLED?SIX:h.step>=CLEARED?EVENING:h.time;
+        long to=h.step==SETTLED?SIX:h.step>=NIGHT?LATE:h.step>=CLEARED?EVENING:h.time;
         if(h.time<to)h.time++;
         int rate=h.time<to?1:0;boolean changed=rate!=h.rate;h.rate=rate;
         var payload=new io.github.knaitoe.theoldesthouse.network.PellPayload(h.time,h.rate);
@@ -320,7 +337,10 @@ public final class PellVisit {
     }
 
     /** Sends one of them along a way, to sit at a place at the end of it, or (with none) to stand there facing this way. */
-    static void go(PellPeople.Household h,int who,int place,float look,Vec3... way){h.way[who].clear();h.way[who].addAll(Arrays.asList(way));h.sitAt[who]=place;h.endLook[who]=look;h.stuckFor[who]=0;}
+    static void go(PellPeople.Household h,int who,int place,float look,Vec3... way){h.way[who].clear();h.way[who].addAll(Arrays.asList(way));h.sitAt[who]=place;h.endLook[who]=look;h.stuckFor[who]=0;h.perchTo[who]=null;h.sleepAt[who]=null;}
+    /** 0.4.527: along a way, to sit in a seat away from the table at the end of it (perch), or to lie down at a place (lie). */
+    static void goPerch(PellPeople.Household h,int who,Perch perch,Vec3... way){go(h,who,-1,perch.look(),way);h.perchTo[who]=perch;}
+    static void goSleep(PellPeople.Household h,int who,Vec3 at,float look,Vec3... way){go(h,who,-1,look,way);h.sleepAt[who]=at;}
     static double pace(int who){return switch(who){case PellPeople.JUNE->JUNE_PACE;case PellPeople.TILLY->TILLY_PACE;case PellPeople.GAIL->GAIL_PACE;default->CALLUM_PACE;};}
     /** Each of them walking somewhere goes a step along their way; at its end they sit, or stand as they were sent to. Somebody who
      *  stands unable to get nearer for a while, unseen, is put at the next point. */
@@ -328,13 +348,17 @@ public final class PellVisit {
         for(int who=0;who<PellPeople.COUNT;who++){
             if(h.way[who].isEmpty())continue;var a=PellPeople.find(l,b,who);if(a==null)continue;
             var to=world(b,h.way[who].peekFirst());var before=a.position();
+            through(l,b,who,a);
             boolean there=SceneFootpaths.walk(a,to,pace(who));h.moving[who]=true;
             if(there){h.way[who].pollFirst();h.stuckFor[who]=0;}
             else if(a.position().distanceToSqr(before)>1e-4)h.stuckFor[who]=0;
             else if(++h.stuckFor[who]>STUCK&&!LiteraryVignettes.watched(l,a.getEyePosition())){a.moveTo(to.x,to.y,to.z,a.getYRot(),0);h.way[who].pollFirst();h.stuckFor[who]=0;}
             if(!h.way[who].isEmpty())continue;
-            if(h.sitAt[who]>=0)sit(l,b,h,who,a,h.sitAt[who]);else h.rest[who]=h.endLook[who];
-            h.sitAt[who]=-1;
+            if(h.sitAt[who]>=0)sit(l,b,h,who,a,h.sitAt[who]);
+            else if(h.perchTo[who]!=null)perch(l,b,h,who,a,h.perchTo[who]);
+            else if(h.sleepAt[who]!=null)lie(l,b,h,who,a,h.sleepAt[who]);
+            else h.rest[who]=h.endLook[who];
+            h.sitAt[who]=-1;h.perchTo[who]=null;h.sleepAt[who]=null;
         }
     }
     /** Into a chair at the table, turned to it; or, if a reader has sat there since, the next one free; or standing, if none is. */
@@ -352,6 +376,7 @@ public final class PellVisit {
     static void up(ServerLevel l,BlockPos b,PellPeople.Household h,int who,float look,Vec3... way){
         var a=PellPeople.find(l,b,who);if(a==null)return;
         if(h.seated[who]){var at=world(b,TABLE[h.place[who]].beside());a.moveTo(at.x,at.y,at.z,a.getYRot(),0);}
+        unperch(b,h,who,a);
         h.seated[who]=false;h.place[who]=-1;go(h,who,-1,look,way);
     }
     /** A reader is sitting at this place. */
@@ -435,10 +460,39 @@ public final class PellVisit {
                 go(h,J,-1,SINK.look(),v(SINK.x(),SINK.z()));h.clearedAt=now;h.step=CLEARED;
             }
             case 6->{
-                // At the sink a while, then back to her stove; the evening goes on to half past eight (clock).
+                // At the sink a while; then (0.4.527) through to the living room, to her chair and the television. The evening goes on
+                // to half past eight (clock).
                 if(juneStill&&!june.getMainHandItem().isEmpty()&&there(june,b,SINK)&&now-h.clearedAt>=WASHING){
-                    june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);go(h,J,-1,KITCHEN.look(),v(KITCHEN.x(),KITCHEN.z()));
+                    june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);goPerch(h,J,RECLINER,TO_RECLINER);h.step=TELLY;
                 }
+            }
+            case 7->telly(l,b,h,june,here,now);
+            case 8->{
+                // Bedtime called: when June and Tilly are both on the edge of Nessa's bed, she starts to brush.
+                var tilly=PellPeople.find(l,b,T);if(tilly==null)return;
+                if(h.perch[J]!=JUNE_BED||h.perch[T]!=TILLY_BED){
+                    // A walker who came to their side of the bed and found it taken waits there and tries again.
+                    if(juneStill&&h.perch[J]==null&&near(june,b,JUNE_BED.beside(),.5))perch(l,b,h,J,june,JUNE_BED);
+                    if(h.way[T].isEmpty()&&h.perch[T]==null&&near(tilly,b,TILLY_BED.beside(),.5))perch(l,b,h,T,tilly,TILLY_BED);
+                    return;
+                }
+                june.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(PellRegistry.HAIRBRUSH.get()));june.gesture(PellPeople.BRUSH);tilly.gesture(PellPeople.BRUSHED);
+                h.brushedAt=now;h.brushSaid=0;h.step=BRUSHING;
+            }
+            case 9->brushing(l,b,h,june,here,now);
+            case 10->{
+                // On her way to the sliding door; there, turned to the room, she sends them out, or says goodnight to an empty house.
+                if(!juneStill||!near(june,b,v(AT_LOCK[0].x(),AT_LOCK[0].z()),.6))return;
+                h.rest[J]=0;
+                if(!ready(h,now,june))return;
+                if(anyoneInside(b,here)){say(h,june,J,PellTexts.JUNE_SENDS_OUT,now);far(june,PellTexts.SENT_FAR,b,here);present(june,"SentToGarage",here,HEAR,b);}
+                else say(h,june,J,PellTexts.JUNE_LOCKING,now);
+                h.nudgedAt=now;h.lockIndex=0;h.step=SENDING;
+            }
+            case 11,12->locking(l,b,h,june,here,now);
+            case 13->{
+                // In her room: she shuts the door behind her.
+                if(juneStill&&near(june,b,v(HER_ROOM.x(),HER_ROOM.z()),.6)&&PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
             }
             default->{}
         }
@@ -498,6 +552,217 @@ public final class PellVisit {
         p.getFoodData().eat(6,.6F);
         p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),SoundEvents.GENERIC_EAT,SoundSource.PLAYERS,.8F,1F);
         plate(p.serverLevel(),b,h,best,SCRAPED);own.putBoolean("Ate",true);PellHouse.cue(p,PellTexts.ATE);
+        return true;
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.527: bedtime
+    /** Ten o'clock: once the house is locked up the hour goes on to it, and waits there for the night. */
+    public static final long LATE=16000;
+    /**
+     * After the washing up: June in her chair with the tape on; bedtime called; Tilly's hair being brushed; Tilly lying down and June on
+     * her way to the sliding door; June sending them out and waiting for the house to empty; locking up; the night.
+     */
+    public static final int TELLY=SETTLED+7,BEDTIME=SETTLED+8,BRUSHING=SETTLED+9,TUCKED=SETTLED+10,SENDING=SETTLED+11,LOCKING=SETTLED+12,NIGHT=SETTLED+13;
+    /** How often the tape's sound begins again while it plays; how long June brushes, at the least; how often she asks again while
+     *  somebody stays in the house after she has sent them out. */
+    public static final int TAPE_EVERY=170,BRUSH_TIME=240,NUDGE=400;
+    /** How near June a reader stands to have seen her brush Tilly's hair. */
+    public static final double SEE_NEAR=5;
+    /** A seat away from the table: its cell, where a body sits in it and which way they face, and where one stands to get in or out. */
+    public record Perch(BlockPos cell,Vec3 at,float look,Vec3 beside){}
+    /** June's recliner, turned to the television; the edge of Nessa's bed, Tilly by its head and June beside her, turned to her. */
+    public static final Perch RECLINER=new Perch(new BlockPos(-2,0,-70),new Vec3(-1.5,0,-69.5),90,v(-2.6,-69.5)),
+        TILLY_BED=new Perch(new BlockPos(-13,0,-61),new Vec3(-12.5,0,-60.3),0,v(-12.5,-59.6)),
+        JUNE_BED=new Perch(new BlockPos(-12,0,-61),new Vec3(-11.5,0,-60.3),35,v(-11.5,-59.6));
+    /** Where Tilly lies, along Nessa's bed, and Callum, on his mattress in the circle. */
+    public static final Vec3 TILLY_SLEEPS=new Vec3(-12.5,0,-60.5),CALLUM_SLEEPS=new Vec3(-3.5,0,-60.6);
+    /** The television. */
+    public static final BlockPos TV=new BlockPos(-5,0,-70);
+    /** The outside doors June locks, in the order she locks them, where she stands inside each to do it, and her way from each to the
+     *  next; then her room. */
+    public static final List<BlockPos> LOCKS=List.of(PellSite.SLIDER,PellSite.BACK_DOOR,PellSite.FRONT_DOOR);
+    public static final PellPeople.Spot[] AT_LOCK={new PellPeople.Spot(.5,-70.6,180),new PellPeople.Spot(8.5,-70.5,180),new PellPeople.Spot(.5,-59.6,0)};
+    public static final PellPeople.Spot HER_ROOM=new PellPeople.Spot(8.5,-61.5,0);
+    /** Every door of the house's own, shut when the visit begins again. */
+    static final List<BlockPos> ALL_DOORS=List.of(PellSite.FRONT_DOOR,PellSite.NESSA_DOOR,PellSite.CALLUM_DOOR,PellSite.BATH_DOOR,PellSite.JUNE_DOOR,PellSite.LAUNDRY_DOOR,
+        PellSite.BACK_DOOR,PellSite.SLIDER,PellSite.GARAGE_DOOR);
+    /** The inside doors the people open as they come to them, and June's own, which only she opens. */
+    private static final List<BlockPos> INSIDE_DOORS=List.of(PellSite.NESSA_DOOR,PellSite.CALLUM_DOOR,PellSite.LAUNDRY_DOOR,PellSite.BATH_DOOR);
+    private static final Vec3[] TO_RECLINER={v(-9.5,-68.5),v(-9.5,-65.6),v(0,-65.6),v(0,-68.5),v(-2.6,-68.6),v(-2.6,-69.5)},
+        RECLINER_TO_NESSA={v(-2.6,-68.6),v(0,-68.5),v(0,-65.6),v(-9.5,-65.6),v(-9.5,-64.6),v(-9.5,-62.8),v(-10.6,-59.7),v(-11.5,-59.6)},
+        TILLY_TO_BED={v(-10.6,-59.7),v(-12.5,-59.6)},
+        CALLUM_TO_BED={v(-4.5,-65.6),v(-3.5,-64.6),v(-3.5,-63.2),v(-3.5,-61.9)},
+        NESSA_TO_SLIDER={v(-10.6,-59.7),v(-9.5,-62.8),v(-9.5,-64.6),v(-9.5,-65.6),v(0,-65.6),v(0,-68.5),v(.5,-70.6)};
+    private static final Vec3[][] TO_LOCK={{},
+        {v(0,-68.5),v(0,-65.6),v(7.5,-65.6),v(7.5,-66.6),v(7.5,-68.4),v(7.5,-69.5),v(8.5,-70.5)},
+        {v(7.5,-69.5),v(7.5,-68.4),v(7.5,-66.6),v(7.5,-65.6),v(.5,-65.6),v(.5,-59.6)},
+        {v(.5,-62),v(.5,-65.6),v(8.5,-65.6),v(8.5,-63.4),v(8.5,-61.5)}};
+
+    /** Whether June is in her chair with the tape on. */
+    public static boolean watching(BlockPos b){var h=PellPeople.household(b);return h.step==TELLY&&h.perch[PellPeople.JUNE]==RECLINER;}
+    /** Where one of them sits away from the table, if anywhere. */
+    public static @Nullable Perch perched(BlockPos b,int who){return PellPeople.household(b).perch[who];}
+    /** Whether one of them is asleep. */
+    public static boolean asleep(BlockPos b,int who){return PellPeople.household(b).asleep[who];}
+    /** Whether June has locked this outside door. */
+    public static boolean locked(BlockPos b,BlockPos door){return PellPeople.household(b).locked.contains(door);}
+    /** The lock turned back from inside. */
+    public static void unlock(BlockPos b,BlockPos door){PellPeople.household(b).locked.remove(door);}
+    /** Whether the television is on. */
+    public static boolean tvOn(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(TV));return PellThing.is(s,PellThing.Kind.TV_CABINET)&&s.getValue(PellThing.STAGE)==1;}
+    /**
+     * For tests: the evening as dinner leaves it, without eating it. The day settled, the table bare, June at the sink with the plates
+     * and done washing up, Tilly in Nessa's room and Callum at the end of the hall, and half past six.
+     */
+    public static void dined(ServerLevel l,BlockPos b){
+        settle(l,b);var h=PellPeople.household(b);
+        stand(l,b,h,PellPeople.JUNE,SINK);var june=PellPeople.find(l,b,PellPeople.JUNE);
+        if(june!=null)june.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(PellRegistry.SCRAPED.get()));
+        h.step=CLEARED;h.clearedAt=l.getGameTime()-WASHING;h.time=SIX+500;
+    }
+
+    /** June, after the washing up: to her chair, the television on, the tape's sound now and again; at half past eight, bedtime. */
+    static void telly(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
+        int J=PellPeople.JUNE;boolean juneStill=h.way[J].isEmpty();
+        // At her chair (in it, or beside it): the television on with the remote from the side table, the tape playing.
+        if(h.perch[J]==RECLINER||juneStill&&near(june,b,RECLINER.beside(),.5)){
+            if(!tvOn(l,b)){tv(l,b,true);var at=Vec3.atCenterOf(b.offset(TV));l.playSound(null,at.x,at.y,at.z,SoundEvents.STONE_BUTTON_CLICK_ON,SoundSource.BLOCKS,.4F,1.4F);h.tapeAt=now-TAPE_EVERY;}
+            // A reader in her chair: she says so, once, and stands beside it until they get up.
+            if(h.perch[J]==null){
+                if(readerIn(l,b,RECLINER.cell())){if(!h.chairSaid&&ready(h,now,june)){say(h,june,J,PellTexts.JUNE_MY_CHAIR,now);h.chairSaid=true;}h.rest[J]=RECLINER.look();}
+                else perch(l,b,h,J,june,RECLINER);
+            }
+        }
+        if(tvOn(l,b)&&now-h.tapeAt>=TAPE_EVERY){h.tapeAt=now;var at=Vec3.atCenterOf(b.offset(TV)).add(0,.5,0);l.playSound(null,at.x,at.y,at.z,PellRegistry.TAPE.get(),SoundSource.NEUTRAL,.9F,1F);}
+        if(h.time<EVENING||!juneStill||!ready(h,now,june))return;
+        // Half past eight. The television off, and bedtime: Tilly to the edge of Nessa's bed, June after her, Callum to his circle.
+        tv(l,b,false);
+        say(h,june,J,PellTexts.JUNE_BEDTIME,now);
+        up(l,b,h,J,JUNE_BED.look(),RECLINER_TO_NESSA);h.perchTo[J]=JUNE_BED;
+        var tilly=PellPeople.find(l,b,PellPeople.TILLY);
+        if(tilly!=null){unperch(b,h,PellPeople.TILLY,tilly);goPerch(h,PellPeople.TILLY,TILLY_BED,TILLY_TO_BED);}
+        var callum=PellPeople.find(l,b,PellPeople.CALLUM);
+        if(callum!=null)goSleep(h,PellPeople.CALLUM,CALLUM_SLEEPS,0,CALLUM_TO_BED);
+        h.step=BEDTIME;
+    }
+    /** On the edge of the bed: June brushes, they say what they say with time between, and when she has brushed long enough Tilly
+     *  lies down, June says goodnight and goes to send the others out. */
+    static void brushing(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
+        int J=PellPeople.JUNE,T=PellPeople.TILLY;var tilly=PellPeople.find(l,b,T);if(tilly==null)return;
+        // June looks at what she is doing; Tilly keeps still.
+        h.moving[J]=true;h.moving[T]=true;june.setYHeadRot(PellPeople.yawTo(june,tilly.getEyePosition()));tilly.setYHeadRot(tilly.getYRot());
+        if((now-h.brushedAt)%30==0)l.playSound(null,june.getX(),june.getY()+1,june.getZ(),PellRegistry.BRUSH.get(),SoundSource.NEUTRAL,.6F,1F);
+        if((now-h.brushedAt)%10==0)present(june,"SawHairBrushed",here,SEE_NEAR,b);
+        if(!ready(h,now,june)||!ready(h,now,tilly))return;
+        switch(h.brushSaid){
+            case 0->say(h,june,J,PellTexts.JUNE_HOLD_STILL,now);
+            case 1->say(h,tilly,T,PellTexts.TILLY_DAD,now);
+            case 2->say(h,june,J,PellTexts.JUNE_EVERY_NIGHT,now);
+            case 3->{if(now-h.brushedAt<BRUSH_TIME)return;say(h,june,J,PellTexts.JUNE_GROW_LONG,now);}
+            default->{
+                // Tilly lies down; June puts the brush away, says goodnight and goes.
+                unperch(b,h,T,tilly);lie(l,b,h,T,tilly,TILLY_SLEEPS);
+                june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);june.gesture(0);
+                say(h,june,J,PellTexts.JUNE_NIGHT_NIGHT,now);
+                up(l,b,h,J,AT_LOCK[0].look(),NESSA_TO_SLIDER);
+                h.step=TUCKED;return;
+            }
+        }
+        h.brushSaid++;
+    }
+    /**
+     * Locking up. At each outside door in turn June waits until nobody is in the house (asking again now and then, from wherever she is),
+     * and until nobody stands in the doorway; then she shuts it if it is open and locks it. After the last, her room.
+     */
+    static void locking(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
+        int J=PellPeople.JUNE;boolean juneStill=h.way[J].isEmpty();
+        if(h.lockIndex>=LOCKS.size()){if(juneStill)h.step=NIGHT;return;}
+        var spot=AT_LOCK[h.lockIndex];
+        if(!juneStill)return;
+        if(!near(june,b,v(spot.x(),spot.z()),.6)){go(h,J,-1,spot.look(),TO_LOCK[h.lockIndex]);return;}
+        if(anyoneInside(b,here)){
+            h.rest[J]=0;
+            if(now-h.nudgedAt>=NUDGE&&ready(h,now,june)){
+                String line=PellTexts.JUNE_NUDGE[(int)((now/NUDGE)%PellTexts.JUNE_NUDGE.length)];
+                say(h,june,J,line,now);far(june,"June, calling through the house: \u201c"+line+"\u201d",b,here);h.nudgedAt=now;
+            }
+            return;
+        }
+        var door=LOCKS.get(h.lockIndex);
+        h.rest[J]=spot.look();
+        if(!clearOf(b,door,here))return;
+        if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
+        h.locked.add(door);
+        var at=Vec3.atBottomCenterOf(b.offset(door)).add(0,1,0);l.playSound(null,at.x,at.y,at.z,PellRegistry.LOCK.get(),SoundSource.BLOCKS,.8F,1F);
+        h.lockIndex++;h.step=LOCKING;
+        if(h.lockIndex<LOCKS.size())go(h,J,-1,AT_LOCK[h.lockIndex].look(),TO_LOCK[h.lockIndex]);
+        else{
+            // Locked up, with every reader at the house outside it: their own record keeps that.
+            for(var p:here){if(!p.isAlive()||p.isSpectator())continue;var own=PellHouse.own(p);if(!own.getBoolean("LockedOut")){own.putBoolean("LockedOut",true);PellHouse.save(p,own);}}
+            go(h,J,-1,HER_ROOM.look(),TO_LOCK[LOCKS.size()]);
+        }
+    }
+
+    /** The television on (its tape playing) or off (and its sound stopped for anyone near). */
+    static void tv(ServerLevel l,BlockPos b,boolean on){
+        var at=b.offset(TV);var s=l.getBlockState(at);
+        if(PellThing.is(s,PellThing.Kind.TV_CABINET)&&s.getValue(PellThing.STAGE)!=(on?1:0))l.setBlock(at,s.setValue(PellThing.STAGE,on?1:0),3);
+        if(on)return;
+        var packet=new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(PellRegistry.TAPE.getId(),SoundSource.NEUTRAL);
+        for(var p:l.players())if(p.distanceToSqr(Vec3.atCenterOf(at))<48*48)p.connection.send(packet);
+    }
+    /** Into a seat away from the table, turned the way it faces; or, if a reader is in it, standing beside it facing the same way. */
+    static void perch(ServerLevel l,BlockPos b,PellPeople.Household h,int who,LiteraryActor a,Perch p){
+        if(readerIn(l,b,p.cell())){h.rest[who]=p.look();return;}
+        var at=world(b,p.at());a.moveTo(at.x,at.y,at.z,p.look(),0);a.setYHeadRot(p.look());a.setYBodyRot(p.look());a.setDeltaMovement(Vec3.ZERO);
+        h.perch[who]=p;h.rest[who]=p.look();
+    }
+    /** Up out of a seat away from the table, to stand beside it. */
+    static void unperch(BlockPos b,PellPeople.Household h,int who,LiteraryActor a){
+        var p=h.perch[who];if(p==null)return;
+        var at=world(b,p.beside());a.moveTo(at.x,at.y,at.z,a.getYRot(),0);h.perch[who]=null;
+    }
+    /** Lying down to sleep along the bed at this place: Tilly's cane out of her hand. */
+    static void lie(ServerLevel l,BlockPos b,PellPeople.Household h,int who,LiteraryActor a,Vec3 at){
+        var w=world(b,at);a.moveTo(w.x,w.y,w.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);
+        a.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);a.gesture(PellPeople.ASLEEP);h.asleep[who]=true;
+    }
+    /** A walker opens the inside door they come to; June her own as well. */
+    private static void through(ServerLevel l,BlockPos b,int who,LiteraryActor a){
+        for(var door:INSIDE_DOORS)if(a.position().subtract(Vec3.atBottomCenterOf(b.offset(door))).horizontalDistanceSqr()<1.6*1.6&&!PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
+        if(who==PellPeople.JUNE&&a.position().subtract(Vec3.atBottomCenterOf(b.offset(PellSite.JUNE_DOOR))).horizontalDistanceSqr()<1.6*1.6&&!PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
+    }
+    /** A reader is sitting in this cell. */
+    static boolean readerIn(ServerLevel l,BlockPos b,BlockPos cell){return !l.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.house.SeatEntity.class,new AABB(b.offset(cell))).isEmpty();}
+    /** A reader is inside the house's walls. */
+    static boolean anyoneInside(BlockPos b,List<ServerPlayer> here){
+        for(var p:here)if(p.isAlive()&&!p.isSpectator()&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ())))return true;
+        return false;
+    }
+    /** Nobody stands in this doorway. */
+    static boolean clearOf(BlockPos b,BlockPos door,List<ServerPlayer> here){
+        var at=Vec3.atBottomCenterOf(b.offset(door));
+        for(var p:here)if(p.isAlive()&&!p.isSpectator()&&p.position().subtract(at).horizontalDistanceSqr()<1.1*1.1&&Math.abs(p.getY()-at.y)<2)return false;
+        return true;
+    }
+    /** One of them within this distance of a place. */
+    static boolean near(LiteraryActor a,BlockPos b,Vec3 r,double d){return a.position().subtract(b.getX()+r.x,a.getY(),b.getZ()+r.z).horizontalDistanceSqr()<d*d;}
+    /** What June says, told in grey to readers in the house too far off to hear her. */
+    static void far(LiteraryActor june,String line,BlockPos b,List<ServerPlayer> here){
+        for(var p:here)if(p.isAlive()&&!p.isSpectator()&&p.distanceToSqr(june)>HEAR*HEAR&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ())))PellHouse.cue(p,line);
+    }
+    /** As present, within this distance and inside the house. */
+    static void present(LiteraryActor at,String key,List<ServerPlayer> here,double reach,BlockPos b){
+        for(var p:here){
+            if(!p.isAlive()||p.isSpectator()||p.distanceToSqr(at)>reach*reach||!PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ())))continue;
+            var own=PellHouse.own(p);if(own.getBoolean(key))continue;own.putBoolean(key,true);PellHouse.save(p,own);
+        }
+    }
+    /** A hand on the television while the tape plays: what is on it, in order, for that reader. True if it answered. */
+    public static boolean tvHand(ServerPlayer p,BlockPos b,CompoundTag own){
+        if(!tvOn(p.serverLevel(),b))return false;
+        int seen=own.getInt("Tape");PellHouse.cue(p,PellTexts.TV_TAPE[seen%PellTexts.TV_TAPE.length]);
+        own.putInt("Tape",seen+1);own.putBoolean("SawTape",true);
         return true;
     }
 }

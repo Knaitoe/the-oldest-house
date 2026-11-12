@@ -557,4 +557,103 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_dinner") public static void dinnerDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.527, bedtime (docs/PELL_HOUSE_BEDTIME_0_4_527.md). After the washing up June goes to her chair; a reader in it is asked for it
+     * once, and she stands beside it until they get up, then sits. The television plays a birthday tape, and a hand on it finds what is
+     * on it; a hand on June finds her talking about the girl on it. At half past eight she turns it off and calls Tilly to bed; on the
+     * edge of Nessa's bed she brushes Tilly's hair, seen by the reader in the room and not by the one in the garage. Tilly lies down,
+     * asleep, her cane put down, and Callum lies down in his circle. June sends the reader still in the house out to the garage and waits
+     * until they have gone; then she locks the sliding door, the back door and the front door from inside, and goes to her room and
+     * shuts its door. From outside a locked door does not open. The hour goes on to ten and waits there. Left, the house begins again:
+     * nothing locked, the television off, nobody asleep, Tilly with her cane, and each reader keeping what they saw.
+     */
+    @GameTest(template="empty",batch="pell_bedtime",timeoutTicks=9000)
+    public static void bedtimeLocksTheDoors(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_bed_reader",P);var q=f.player("pell_bed_other",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        long[] mark={0};
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            PellVisit.dined(l,b);
+            // One reader sits in June's chair before she gets to it; the other waits in the hall.
+            f.at(p,P,-2.5,0,-69.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.RECLINER.cell())),"a reader sits in June's chair");
+            f.at(q,P,-4.5,0,-65.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TELLY,"after the washing up June goes through to the living room"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_MY_CHAIR),"June asks for her chair"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.tvOn(l,b),"the television is on");
+            h.assertTrue(PellVisit.perched(b,PellPeople.JUNE)==null,"June stands beside her chair while the reader is in it");
+            p.stopRiding();
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.perched(b,PellPeople.JUNE)==PellVisit.RECLINER,"the reader gets up, and June sits"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.watching(b),"June watches the tape");
+            told(p);hand(p,b.offset(PellVisit.TV));
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);h.assertTrue(heard.contains(PellTexts.TV_TAPE[0]),"a hand on the television finds what is on the tape: "+heard);
+            h.assertTrue(f.own(p,P).getBoolean("SawTape"),"and the reader has seen it");
+        }).thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June's line has had its time"))
+        .thenExecute(()->{
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.JUNE));
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WATCHING[0]),"a hand on June, watching: the girl on it: "+said(who(h,l,b,PellPeople.JUNE)));
+            // One reader into Nessa's room, clear of the way through it; the other out to the garage.
+            f.at(q,P,-8.5,0,-61.5);f.at(p,P,13.5,0,-92.5);
+            PellVisit.hurry(b,PellVisit.EVENING-3);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.BEDTIME,"half past eight: bedtime"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_BEDTIME),"\"Bedtime, Tilly\": "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertFalse(PellVisit.tvOn(l,b),"the television off");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.BRUSHING,"June brushes Tilly's hair"))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellVisit.perched(b,PellPeople.JUNE)==PellVisit.JUNE_BED&&PellVisit.perched(b,PellPeople.TILLY)==PellVisit.TILLY_BED,"both on the edge of Nessa's bed");
+            h.assertTrue(june.getMainHandItem().is(PellRegistry.HAIRBRUSH.get())&&june.gesture()==PellPeople.BRUSH&&tilly.gesture()==PellPeople.BRUSHED,"June with the brush, brushing");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TUCKED,"Tilly is put to bed"))
+        .thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellVisit.asleep(b,PellPeople.TILLY)&&tilly.gesture()==PellPeople.ASLEEP&&tilly.getMainHandItem().isEmpty(),"Tilly asleep, her cane put down");
+            h.assertTrue(f.own(q,P).getBoolean("SawHairBrushed")&&!f.own(p,P).getBoolean("SawHairBrushed"),"the reader in the room saw her hair brushed; the one in the garage did not");
+            told(q);LiteraryVignettes.talk(q,tilly);
+        }).thenIdle(1).thenExecute(()->h.assertTrue(told(q).contains(PellTexts.TILLY_ASLEEP),"a hand on her: asleep"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.asleep(b,PellPeople.CALLUM),"Callum lies down"))
+        .thenExecute(()->{
+            var callum=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(at(callum,b,PellVisit.CALLUM_SLEEPS.x,PellVisit.CALLUM_SLEEPS.z,.3)&&callum.gesture()==PellPeople.ASLEEP,"in his circle");
+            // The reader in the house goes and stands in the living room.
+            f.at(q,P,-1.5,0,-68.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.SENDING,"June sends them out"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_SENDS_OUT),"\"Out to the garage\": "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(f.own(q,P).getBoolean("SentToGarage")&&!f.own(p,P).getBoolean("SentToGarage"),"said to the reader in the house");
+        }).thenIdle(40).thenExecute(()->{
+            h.assertTrue(PellVisit.step(b)==PellVisit.SENDING&&!PellVisit.locked(b,PellSite.SLIDER),"she waits while a reader is in the house");
+            // Out through the sliding door onto the patio.
+            f.at(q,P,.5,0,-74.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.locked(b,PellSite.SLIDER)&&!PellSite.open(l,b,PellSite.SLIDER),"the sliding door shut and locked"))
+        .thenExecute(()->{told(q);hand(q,b.offset(PellSite.SLIDER));})
+        .thenIdle(1).thenExecute(()->h.assertTrue(told(q).contains(PellTexts.locked(PellSite.SLIDER))&&!PellSite.open(l,b,PellSite.SLIDER),"from outside it does not open"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.NIGHT,"locked up"))
+        .thenExecute(()->{
+            for(var door:PellVisit.LOCKS)h.assertTrue(PellVisit.locked(b,door)&&!PellSite.open(l,b,door),"locked: "+door);
+            h.assertTrue(f.own(p,P).getBoolean("LockedOut")&&f.own(q,P).getBoolean("LockedOut"),"both readers were outside when she locked up");
+        }).thenWaitUntil(()->h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z(),.7)&&!PellSite.open(l,b,PellSite.JUNE_DOOR),"June in her room, its door shut"))
+        .thenExecute(()->mark[0]=PellVisit.hour(b))
+        .thenIdle(10).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)>mark[0],"the hour goes on into the night: "+mark[0]+" to "+PellVisit.hour(b));
+            PellVisit.hurry(b,PellVisit.LATE-3);
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==PellVisit.LATE,"and waits at ten: "+PellVisit.hour(b));
+            // Everybody out in the street, and the house left.
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
+        .thenExecute(()->{
+            for(var door:PellVisit.LOCKS)h.assertFalse(PellVisit.locked(b,door),"nothing locked: "+door);
+            h.assertFalse(PellVisit.tvOn(l,b),"the television off");
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(!PellVisit.asleep(b,PellPeople.TILLY)&&!PellVisit.asleep(b,PellPeople.CALLUM),"nobody asleep");
+            h.assertTrue(tilly.gesture()==PellPeople.CANE&&tilly.getMainHandItem().is(PellRegistry.CANE.get()),"Tilly with her cane again");
+            h.assertTrue(f.own(q,P).getBoolean("SawHairBrushed")&&f.own(p,P).getBoolean("SawTape"),"what each reader saw stays theirs");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_bedtime") public static void bedtimeDone(ServerLevel l){done();}
 }

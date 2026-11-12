@@ -53,16 +53,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#s"
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ]
         },
         "south": {
-          "texture": "#s"
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            4
+          ]
         },
         "east": {
-          "texture": "#s"
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ]
         },
         "west": {
-          "texture": "#s"
+          "texture": "#s",
+          "uv": [
+            14,
+            0,
+            16,
+            4
+          ]
         },
         "up": {
           "texture": "#s"

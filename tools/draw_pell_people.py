@@ -5,6 +5,8 @@ and Gail's folder. Drawn at sixteen pixels to the block. The people themselves a
 0.4.526 (docs/PELL_HOUSE_DINNER_0_4_526.md): June's dinner things. Her plates, seen from above as they lie on the table: laid, served
 (sausages, mash with the gravy on it, peas) and scraped; and her saucepan, in her hand while she serves, with the spoon in it.
 
+0.4.527 (docs/PELL_HOUSE_BEDTIME_0_4_527.md): June's hairbrush, in her hand while she brushes Tilly's hair at bedtime.
+
 Run it to draw; --check verifies the pack against it (CI runs that).
 """
 import argparse
@@ -17,10 +19,11 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot  # noqa: E402
 
-ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan')
+ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
-         'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan'}
+         'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
+         'item.the_oldest_house.pell_hairbrush': 'Hairbrush'}
 
 
 def cane():
@@ -149,6 +152,24 @@ def saucepan():
     return im
 
 
+def hairbrush():
+    """June's hairbrush, held as the saucepan is: its oval wooden head at the top right with the bristles in rows on it, the rim
+    darker, and the handle down to the bottom left, worn pale where the thumb goes."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(1, 10):
+        for x in range(7, 16):
+            d = ((x - 11) / 4.2) ** 2 + ((y - 5) / 4.2) ** 2
+            if d <= 1:
+                dot(im, x, y, '#6e4a2c' if d > .62 else '#8a5e38')
+    for y in (3, 5, 7):
+        for x in (9, 11, 13):
+            dot(im, x + (1 if y == 5 else 0), y, '#e8dcc4')
+    for i in range(7):
+        dot(im, 7 - i, 8 + i, '#5a3a22'); dot(im, 7 - i, 9 + i, '#3e2716')
+    dot(im, 4, 11, '#a07a52'); dot(im, 5, 10, '#946e48')
+    return im
+
+
 def flat(name, parent='minecraft:item/generated'):
     """A flat thing, from its picture: the plates lie on the table (laid there as item displays, face up) and the saucepan is held."""
     return {'parent': parent, 'textures': {'layer0': NS + 'item/' + name}}
@@ -197,13 +218,14 @@ def models():
             'ground': {'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
             'fixed': {'scale': [.9, .9, .9]}}}
     return {'pell_cane': cane_model, 'pell_folder': folder_model, 'pell_plate': flat('pell_plate'), 'pell_dinner': flat('pell_dinner'),
-            'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld')}
+            'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
+            'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
-              'pell_saucepan': saucepan()}
+              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush()}
     data = models()
     assert set(images) == set(ITEMS) == set(data)
     for name, im in images.items():

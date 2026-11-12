@@ -58,10 +58,22 @@
           "texture": "#v"
         },
         "east": {
-          "texture": "#v"
+          "texture": "#v",
+          "uv": [
+            8,
+            0,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#v"
+          "texture": "#v",
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ]
         }
       }
     }

@@ -182,16 +182,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            3,
+            0,
+            4,
+            5
+          ]
         },
         "south": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            12,
+            0,
+            13,
+            5
+          ]
         },
         "east": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            6,
+            0,
+            7,
+            5
+          ]
         },
         "west": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            9,
+            0,
+            10,
+            5
+          ]
         },
         "up": {
           "texture": "#c"

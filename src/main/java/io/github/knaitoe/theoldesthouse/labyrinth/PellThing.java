@@ -54,10 +54,20 @@ public final class PellThing extends HorizontalDirectionalBlock {
     public static int cell(BlockState s){Direction f=s.getValue(FACING);int at=0;for(int i=0;i<4;i++)if(ORDER[i]==f)at=i;return at*4+s.getValue(STAGE);}
     public static boolean is(BlockState s,Kind kind){return s.is(PellRegistry.THING.get())&&s.getValue(KIND)==kind;}
     public static boolean is(BlockState s){return s.is(PellRegistry.THING.get());}
-    /** 0.4.526: what a body sits in (the kitchen chairs), for a reader (HouseSitting) and for the house's people (their renderer). */
-    public static boolean seat(BlockState s){return is(s,Kind.CHAIR);}
-    /** How high a seat holds the hips, in sixteenths of a block: the kitchen chair's seat is ten up. */
-    public static int seatHeight(BlockState s){return 10;}
+    /** 0.4.526: what a body sits in (the kitchen chairs), for a reader (HouseSitting) and for the house's people (their renderer).
+     *  0.4.527: June's recliner and the window seat too. */
+    public static boolean seat(BlockState s){return is(s,Kind.CHAIR)||is(s,Kind.RECLINER)||is(s,Kind.WINDOW_SEAT);}
+    /** How high a seat holds the hips, in sixteenths of a block: the kitchen chair's seat is ten up, the recliner's cushion and the
+     *  window seat's nine. */
+    public static int seatHeight(BlockState s){return is(s,Kind.CHAIR)?10:9;}
+    /**
+     * 0.4.527: what one of the house's people lies along to sleep, and how high its top is in sixteenths: Nessa's bed, Callum's mattress
+     * on the floor, the camp bed in the garage. Each is two cells long, its head in the cell it stands in and its foot in the cell it
+     * faces (PellSite.lengthwise), so a sleeper's head is toward the way it does not face.
+     */
+    public static int lieHeight(BlockState s){return !is(s)?-1:switch(s.getValue(KIND)){case BED->9;case CAMP_BED->8;case MATTRESS->4;default->-1;};}
+    /** The head cell of the bed this cell is part of. */
+    public static BlockPos pillow(BlockPos at,BlockState s){return s.getValue(STAGE)==1?at.relative(s.getValue(FACING).getOpposite()):at;}
     /** The cell to the right of a thing facing f, as one faces its front: half 1 of a thing two cells wide. */
     public static BlockPos right(BlockPos at,Direction f){return at.relative(f.getCounterClockWise());}
     /** The cell a thing's FACING points to: end 1 of a thing two cells long. */

@@ -8,6 +8,7 @@ runs that). It reads PellThing's kinds from the game and fails if the two disagr
 """
 import argparse
 import json
+import math
 import random
 import re
 import sys
@@ -315,6 +316,90 @@ def tv_front(lit=False):
         dot(im, 14, y, '#c9b36a')
     fill(im, 1, 13, 15, 15, '#4e3622')
     return im
+
+
+# 0.4.527 (docs/PELL_HOUSE_BEDTIME_0_4_527.md): the home tape June plays every night, a birthday in this kitchen, on the television's
+# screen. Each picture is a sixteen-pixel cell of a strip the game plays through in TAPE_ORDER (ANIMATED): the cake carried in with its
+# candles lit, the camera's hand not quite still; the girl in her paper crown close to the lens, then laughing; the candles out; and the
+# tape tearing and rolling to the next year. The camera's date burns in the corner. The screen's picture is x 2 to 11 and y 2 to 10.
+TAPE_ORDER = [0, 1, 0, 1, 0, 1, 0, 1, 2, 3, 2, 3, 2, 2, 4, 4, 4, 4, 5, 6]
+TAPE_FRAMETIME = 5
+
+
+def tape_scene(im, frame, dx=0):
+    """The kitchen on the tape: the bench's wall gone yellow on old tape, the table across the bottom, the cake on it; the girl at the
+    right of it in her crown and her first school photograph's jumper. Lit or blown out; the girl stood back or leaning in."""
+    def put(x, y, c):
+        if 2 <= x + dx <= 11 and 2 <= y <= 10:
+            dot(im, x + dx, y, c)
+    for y in range(2, 11):
+        for x in range(1, 13):
+            put(x, y, '#c9b48e' if y < 8 else '#7c5a3c' if y == 8 else '#5e4430')
+    for x in range(1, 13):
+        put(x, 4, '#bea886')
+    # The cake: icing over a band, three candles.
+    for x in range(4, 8):
+        put(x, 6, '#f6efe2'); put(x, 7, '#d88a9a')
+    for x in (4, 6, 7):
+        put(x, 5, '#e8e0f0')
+    if frame == 4:
+        put(4, 3, '#b4b0aa'); put(6, 4, '#c4c0ba'); put(7, 2, '#b4b0aa')
+    else:
+        lit = ('#ffd25a', '#ffb04a') if frame == 0 else ('#ffb04a', '#ffe08a')
+        put(4, 4, lit[0]); put(6, 4, lit[1]); put(7, 4, lit[0])
+    # The girl: further off by the cake, or leaning in to blow.
+    gx = 9 if frame != 4 else 8
+    for x in (gx, gx + 1):
+        put(x, 2, '#e8c04a'); put(x, 3, '#2a1e18'); put(x, 4, '#e8c4a0'); put(x, 5, '#a8364f'); put(x, 6, '#a8364f'); put(x, 7, '#a8364f')
+    put(gx, 2, '#f0cc5a')
+
+
+def tape_face(im, laughing):
+    """The girl close to the lens, in a paper crown; laughing, her eyes screwed shut."""
+    for y in range(2, 11):
+        for x in range(2, 12):
+            dot(im, x, y, '#c9b48e')
+    for x in range(3, 11):
+        dot(im, x, 2, '#e8c04a' if x % 2 else '#f4d870')
+    colours = {**NESSA, 'O': '#6a2a24'}
+    for gy, row in enumerate(NESSA_FACE[1:]):
+        for gx, c in enumerate(row):
+            # Laughing: the eyes screwed shut to a line, the mouth open.
+            if laughing and c in 'WI':
+                c = 's'
+            if laughing and c == 'M':
+                c = 'O'
+            dot(im, 3 + gx, 3 + gy, colours[c])
+    if laughing:
+        dot(im, 6, 9, colours['O']); dot(im, 7, 9, colours['O'])
+    for x in range(3, 11):
+        dot(im, x, 10, '#a8364f')
+
+
+def tv_tape():
+    """The strip: seven pictures on the lit television, the date in the corner of each that is not torn."""
+    frames = []
+    for k in range(7):
+        im = tv_front(True)
+        if k in (0, 1):
+            tape_scene(im, k, dx=k)
+        elif k in (2, 3):
+            tape_face(im, k == 3)
+        elif k == 4:
+            tape_scene(im, 4)
+        else:
+            tape_scene(im, 4, dx=2 if k == 5 else -1)
+            # The tape tearing: a bright band across, then rolling down as it finds the next year.
+            for y in ((5, 6) if k == 5 else (8, 9)):
+                for x in range(2, 12):
+                    dot(im, x, y, '#e8ecee' if (x + y) % 3 else '#9aa4aa')
+        if k < 5:
+            dot(im, 10, 10, '#ff9a3a'); dot(im, 11, 10, '#ff9a3a')
+        frames.append(im)
+    strip = Image.new('RGBA', (16, 16 * len(frames)), (0, 0, 0, 0))
+    for i, im in enumerate(frames):
+        strip.paste(im, (0, 16 * i))
+    return strip
 
 
 def wood_dark():
@@ -690,7 +775,7 @@ def cutlery(knives):
 
 
 def living():
-    return {'recliner': recliner(False), 'recliner_worn': recliner(True), 'tape_cabinet': tape_cabinet(), 'tv_front': tv_front(), 'tv_lit': tv_front(True),
+    return {'recliner': recliner(False), 'recliner_worn': recliner(True), 'tape_cabinet': tape_cabinet(), 'tv_front': tv_front(), 'tv_lit': tv_tape(),
             'wood_dark': wood_dark(), 'mantel_front': mantel_front(), 'seat_cushion': seat_cushion(), 'remote': remote(), 'mug_top': mug_top(),
             'tape_case': tape_case(), 'lamp_shade': lamp_shade(False), 'lamp_shade_lit': lamp_shade(True)}
 
@@ -1408,7 +1493,7 @@ def thing_models():
                           {'v': 'recliner', 'w': 'recliner_worn'}, 'recliner')
     for lit in range(2):
         out[f'tv_cabinet_{lit}'] = m([element([0, 0, 2], [16, 10, 16], {'north': 'c', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd', 'down': 'd'}, uv={'north': [0, 3, 16, 13]}),
-                             element([2, 10, 4], [14, 22, 15], {'north': 't', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd'}),
+                             element([2, 10, 4], [14, 22, 15], {'north': 't', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd'}, uv={'north': [0, 0, 16, 16]}),
                              element([4, 22, 8], [12, 22.2, 12], {'up': 'o'})],
                             {'c': 'tape_cabinet', 'd': 'wood_dark', 't': 'tv_lit' if lit else 'tv_front', 'o': 'doily'}, 'wood_dark')
     out['mantel_0'] = m([element([0, 0, 10], [16, 14, 16], {'north': 'b', 'east': 'b', 'west': 'b', 'south': 'b', 'up': 'b'}),
@@ -1664,6 +1749,50 @@ MAX_STAGE = 4
 NAMES = {'pell_thing': 'Belongings'}
 
 
+# 0.4.527: the textures that play, each a strip of sixteen-pixel pictures, and how: the television's tape.
+ANIMATED = {'tv_lit': {'animation': {'frametime': TAPE_FRAMETIME, 'interpolate': False, 'frames': TAPE_ORDER}}}
+
+
+def default_uv(face, lo, hi):
+    """The texture rectangle the game gives a face that names none: the part of the block's square the face covers."""
+    return {'down': [lo[0], 16 - hi[2], hi[0], 16 - lo[2]], 'up': [lo[0], lo[2], hi[0], hi[2]],
+            'north': [16 - hi[0], 16 - hi[1], 16 - lo[0], 16 - lo[1]], 'south': [lo[0], 16 - hi[1], hi[0], 16 - lo[1]],
+            'west': [lo[2], 16 - hi[1], hi[2], 16 - lo[1]], 'east': [16 - hi[2], 16 - hi[1], 16 - lo[2], 16 - lo[1]]}[face]
+
+
+def fit(a, b):
+    """One side of a texture rectangle moved inside the picture: by whole pictures, as if it tiled, where that fits; else slid to the
+    nearer edge; a span wider than the picture takes the whole of it."""
+    if b - a > 16:
+        return 0, 16
+    if a < 0:
+        k = math.ceil(-a / 16) * 16
+        return (a + k, b + k) if b + k <= 16 else (0, b - a)
+    if b > 16:
+        k = math.ceil((b - 16) / 16) * 16
+        return (a - k, b - k) if a - k >= 0 else (16 - (b - a), 16)
+    return a, b
+
+
+def fit_uvs(models):
+    """0.4.527: a face that names no texture rectangle is given the part of the block's square it covers, and on a part that stands above
+    the block's top or past its side that falls outside the face's own picture, which the game then fills from whatever lies next to it
+    in the atlas. Every such face is given a rectangle inside its picture instead."""
+    fitted = 0
+    for obj in models.values():
+        for el in obj['elements']:
+            for face, spec in el['faces'].items():
+                if 'uv' in spec:
+                    continue
+                u0, v0, u1, v1 = default_uv(face, el['from'], el['to'])
+                if min(u0, v0) >= 0 and max(u1, v1) <= 16:
+                    continue
+                (u0, u1), (v0, v1) = fit(u0, u1), fit(v0, v1)
+                spec['uv'] = [u0, v0, u1, v1]
+                fitted += 1
+    return fitted
+
+
 def stages(models):
     """How many drawn stages each kind has (the circle's sixteen cells are its own case)."""
     return {kind: sum(1 for key in models if re.fullmatch(re.escape(kind) + r'_\d+', key)) for kind in KINDS}
@@ -1712,6 +1841,7 @@ def main():
     check.add_argument('--check', action='store_true')
     check = check.parse_args().check
     models = thing_models()
+    fit_uvs(models)
     images, data = textures(), files(models)
     assert java_kinds() == KINDS, (java_kinds(), KINDS)
     count = stages(models)
@@ -1731,15 +1861,26 @@ def main():
         for el in obj['elements']:
             for axis in range(3):
                 assert -16 <= el['from'][axis] <= el['to'][axis] <= 32, (key, el['from'], el['to'])
+            # 0.4.527: every face's picture is taken from inside its own texture.
+            for face, spec in el['faces'].items():
+                uv = spec.get('uv', default_uv(face, el['from'], el['to']))
+                assert min(uv) >= 0 and max(uv) <= 16, (key, face, uv)
     assert used == set(images), sorted(set(images) - used)
     for name, im in images.items():
-        assert im.size == (16, 16), name
+        frames = max(ANIMATED[name]['animation']['frames']) + 1 if name in ANIMATED else 1
+        assert im.size == (16, 16 * frames), (name, im.size)
         path = A / 'textures/block/pell/thing' / f'{name}.png'
         if check:
             with Image.open(path) as actual:
                 assert actual.convert('RGBA').tobytes() == im.tobytes(), name
         else:
             path.parent.mkdir(parents=True, exist_ok=True); im.save(path, optimize=True)
+        if name in ANIMATED:
+            meta = path.parent / f'{name}.png.mcmeta'
+            if check:
+                assert json.loads(meta.read_text()) == ANIMATED[name], name
+            else:
+                meta.write_text(json.dumps(ANIMATED[name], indent=2) + '\n')
     for rel, obj in data.items():
         path = A / rel
         if check:
@@ -1747,7 +1888,7 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
     # The two folders are the tool's alone: nothing in them it does not draw.
-    for folder, wanted in ((A / 'textures/block/pell/thing', {f'{name}.png' for name in images}),
+    for folder, wanted in ((A / 'textures/block/pell/thing', {f'{name}.png' for name in images} | {f'{name}.png.mcmeta' for name in ANIMATED}),
                            (A / 'models/block/pell/thing', {f'{key}.json' for key in models})):
         stale = sorted(f.name for f in folder.iterdir() if f.name not in wanted)
         if check:
