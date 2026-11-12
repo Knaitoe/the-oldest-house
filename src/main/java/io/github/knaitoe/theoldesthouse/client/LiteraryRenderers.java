@@ -77,11 +77,23 @@ public final class LiteraryRenderers {
         private final LakeHouseHair lakeHairMotion;
         /** The elk killer's own tailoring (0.4.50) and the crew's hard hats; hidden on everyone else. */
         private final ModelPart killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe,hardHat;
+        /** 0.4.532: the right arm again, in two from the elbow, for a pose that bends it; drawn in the arm's place only then. */
+        private final ModelPart bentArm,forearm;
         private float walk,amount;
         public CastModel(ModelPart r){super(r);coat=body.getChild("coat");gown=body.getChild("gown");mask=head.getChild("mask");eyelids=head.getChild("eyelids");bandage=leftLeg.getChild("bandage");hood=head.getChild("hood");
             lakeHair=head.getChild("lake_hair");lakeHairMotion=new LakeHouseHair(lakeHair);killerHood=head.getChild("killer_hood");killerMask=head.getChild("killer_mask");hardHat=head.getChild("hard_hat");killerCoat=body.getChild("killer_coat");killerBelt=body.getChild("killer_belt");
             sleeveRight=rightArm.getChild("killer_sleeve");sleeveLeft=leftArm.getChild("killer_sleeve");axe=rightArm.getChild("killer_axe");
-            tailRight=rightLeg.getChild("killer_tail");tailLeft=leftLeg.getChild("killer_tail");bootRight=rightLeg.getChild("killer_boot");bootLeft=leftLeg.getChild("killer_boot");toeRight=rightLeg.getChild("killer_toe");toeLeft=leftLeg.getChild("killer_toe");}
+            tailRight=rightLeg.getChild("killer_tail");tailLeft=leftLeg.getChild("killer_tail");bootRight=rightLeg.getChild("killer_boot");bootLeft=leftLeg.getChild("killer_boot");toeRight=rightLeg.getChild("killer_toe");toeLeft=leftLeg.getChild("killer_toe");
+            bentArm=r.getChild("bent_arm");forearm=bentArm.getChild("forearm");bentArm.visible=false;}
+        @Override protected Iterable<ModelPart> bodyParts(){return com.google.common.collect.Iterables.concat(super.bodyParts(),java.util.List.of(bentArm));}
+        /** 0.4.532: whether the right arm is drawn bent (June on the telephone). */
+        public boolean onPhone(){return bentArm.visible;}
+        /**
+         * 0.4.532: from the model's space to the receiver June holds on the telephone, at its middle: against the right side of her
+         * head, the earpiece up and back at her ear and the mouthpiece down and forward at her mouth, its back to her cheek. It goes
+         * with her head; her bent hand is round it.
+         */
+        public void receiver(PoseStack p){head.translateAndRotate(p);p.translate(-5.3F/16,-2.9F/16,-1.4F/16);p.mulPose(Axis.XP.rotationDegrees(126.87F));p.mulPose(Axis.YP.rotationDegrees(90));p.scale(.55F,.55F,.55F);}
         public static LayerDefinition layer(){var m=HumanoidModel.createMesh(CubeDeformation.NONE,0);var r=m.getRoot();r.getChild("body").addOrReplaceChild("coat",CubeListBuilder.create().texOffs(64,28).addBox(-4.4F,1,-2.4F,8.8F,17,4.8F),PartPose.ZERO);r.getChild("body").addOrReplaceChild("gown",CubeListBuilder.create().texOffs(96,28).addBox(-5,9,-3,10,14,6,new CubeDeformation(.2F)),PartPose.ZERO);r.getChild("head").addOrReplaceChild("eyelids",CubeListBuilder.create().texOffs(8,13).addBox(-4,-4,-4.03F,8,1,0),PartPose.ZERO);r.getChild("head").addOrReplaceChild("mask",CubeListBuilder.create().texOffs(64,0).addBox(-4.15F,-8.2F,-4.5F,8.3F,8.5F,1),PartPose.ZERO);r.getChild("head").addOrReplaceChild("hood",CubeListBuilder.create().texOffs(82,0).addBox(-4.4F,-8.4F,-4.4F,8.8F,8.8F,8.8F),PartPose.ZERO);r.getChild("left_leg").addOrReplaceChild("bandage",CubeListBuilder.create().texOffs(112,0).addBox(-2,5,-2,4,5,4,new CubeDeformation(.2F)),PartPose.ZERO);r.addOrReplaceChild("herd_eyes",CubeListBuilder.create().texOffs(0,0).addBox(-4,0,0,1,1,1).addBox(3,0,0,1,1,1),PartPose.ZERO);
             // Integer UV footprints with deformation, so every face of the killer's atlas is painted exactly.
             var head=r.getChild("head");var body=r.getChild("body");
@@ -98,8 +110,15 @@ public final class LiteraryRenderers {
                 part.addOrReplaceChild("killer_tail",CubeListBuilder.create().texOffs(0,32).mirror(left).addBox(-2,0,-2,4,6,4,new CubeDeformation(.52F)),PartPose.ZERO);
                 part.addOrReplaceChild("killer_boot",CubeListBuilder.create().texOffs(16,32).mirror(left).addBox(-2,7,-2,4,5,4,new CubeDeformation(.38F)),PartPose.ZERO);
                 part.addOrReplaceChild("killer_toe",CubeListBuilder.create().texOffs(32,32).mirror(left).addBox(-2,10,-3,4,2,1,new CubeDeformation(.38F)),PartPose.ZERO);}
+            // 0.4.532: the right arm in two, shoulder to elbow and elbow to hand, on the arm's own skin: the upper half takes the top
+            // of its sides and the shoulder, the lower half the rest and the hand. Where they meet, both ends show the sleeve at the
+            // elbow, so a bent joint is not open.
+            var sides=java.util.EnumSet.of(Direction.NORTH,Direction.SOUTH,Direction.EAST,Direction.WEST);
+            var top=java.util.EnumSet.copyOf(sides);top.add(Direction.DOWN);
+            var bent=r.addOrReplaceChild("bent_arm",CubeListBuilder.create().texOffs(40,16).addBox(-3,-2,-2,4,6,4,top).texOffs(36,24).addBox(-3,4,-2,4,0,4,java.util.Set.of(Direction.UP)),PartPose.offset(-5,2,0));
+            bent.addOrReplaceChild("forearm",CubeListBuilder.create().texOffs(40,22).addBox(-3,0,-2,4,6,4,sides).texOffs(40,24).addBox(-3,0,-2,4,0,4,java.util.Set.of(Direction.DOWN)).texOffs(40,16).addBox(-3,6,-2,4,0,4,java.util.Set.of(Direction.UP)),PartPose.offset(0,4,0));
             return LayerDefinition.create(m,128,64);}
-        private void dress(int role,int phase){leftArm.visible=!(role==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Corner.oneArm(phase));boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;int movie=role==LiteraryActor.STRANGER&&phase>=14&&phase<14+MOVIE.length?phase-14:-1;int costume=role==LiteraryActor.STRANGER&&phase>=21&&phase<21+COSTUME.length?phase-21:-1;int winter=role==LiteraryActor.STRANGER&&phase>=34&&phase<34+WINTER.length?phase-34:-1;boolean closing=role==LiteraryActor.STRANGER&&phase>=39&&phase<39+CLOSING.length;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&movie<0&&costume<0&&winter<0&&!closing&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.READ_WOMAN||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1||movie==3||costume==1||costume==6||costume==10||costume==12||role==LiteraryActor.LAKE_WAX||role==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.cast(phase)&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.gown(phase);mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
+        private void dress(int role,int phase){leftArm.visible=!(role==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Corner.oneArm(phase));bentArm.visible=false;rightArm.visible=true;boolean bar=role==LiteraryActor.STRANGER&&phase>=4&&phase<4+BAR.length;int cottage=role==LiteraryActor.STRANGER&&phase>=9&&phase<9+COTTAGE.length?phase-9:-1;int movie=role==LiteraryActor.STRANGER&&phase>=14&&phase<14+MOVIE.length?phase-14:-1;int costume=role==LiteraryActor.STRANGER&&phase>=21&&phase<21+COSTUME.length?phase-21:-1;int winter=role==LiteraryActor.STRANGER&&phase>=34&&phase<34+WINTER.length?phase-34:-1;boolean closing=role==LiteraryActor.STRANGER&&phase>=39&&phase<39+CLOSING.length;coat.visible=role==LiteraryActor.FATHER||role==LiteraryActor.FAMILY_FATHER||role==LiteraryActor.OLD_MAN||role==LiteraryActor.VISITOR||role==LiteraryActor.STRANGER&&cottage<0&&movie<0&&costume<0&&winter<0&&!closing&&(!bar||phase==4)||cottage==0||cottage==3||cottage==4;gown.visible=role==LiteraryActor.LADY||role==LiteraryActor.READ_WOMAN||role==LiteraryActor.COFFIN_WOMAN||role==LiteraryActor.FAMILY_MOTHER||cottage==1||movie==3||costume==1||costume==6||costume==10||costume==12||role==LiteraryActor.LAKE_WAX||role==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.cast(phase)&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.gown(phase);mask.visible=role==LiteraryActor.DANCER||role==LiteraryActor.RED_FIGURE;hood.visible=false;bandage.visible=role==LiteraryActor.FATHER&&phase>=2;
             boolean killer=role==LiteraryActor.KILLER;for(var part:new ModelPart[]{killerHood,killerMask,killerCoat,killerBelt,sleeveRight,sleeveLeft,tailRight,tailLeft,bootRight,bootLeft,toeRight,toeLeft,axe})part.visible=killer;hardHat.visible=role==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PittGame.bradPhase(phase);lakeHair.visible=role==LiteraryActor.LAKE_TESS;hat.visible=!killer&&role!=LiteraryActor.LAKE_TESS;}
         public void pose(int role,int phase,float age){eyelids.visible=false;body.zScale=1;dress(role,phase);
             if(HouseReadShelter.role(role)){
@@ -342,6 +361,16 @@ public final class LiteraryRenderers {
                     rightArm.xRot=.25F+stroke*.05F;rightArm.yRot=stroke*.3F;rightArm.zRot=.04F;
                     leftArm.xRot=-.15F;leftArm.yRot=0;leftArm.zRot=-.12F;
                 }
+                // 0.4.532: June on the telephone: her right arm bent, the elbow out at her side and the hand up at her cheek round
+                // the receiver (CastModel.receiver), her left arm across her waist, and her head to the front, where the receiver is.
+                // A straight arm cannot bring a hand to the ear, so the arm is drawn in two (bent_arm) in its place.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.PHONE->{
+                    rightArm.visible=false;bentArm.visible=true;bentArm.x=rightArm.x;bentArm.y=rightArm.y;bentArm.z=rightArm.z;
+                    bentArm.xRot=-.3F;bentArm.yRot=0;bentArm.zRot=1.25F;forearm.xRot=-2.9F;forearm.yRot=0;forearm.zRot=-.85F;
+                    leftArm.xRot=-.6F;leftArm.yRot=.55F;leftArm.zRot=0;head.yRot=0;head.xRot=.05F;head.zRot=0;
+                }
+                // 0.4.532: holding the receiver out at arm's length for somebody to take.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.OFFER->{rightArm.xRot=-1.25F;rightArm.yRot=-.1F;rightArm.zRot=0;}
                 // 0.4.530: Callum crouched, as a reader crouches, a beat late: the game's own crouch.
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.CROUCH->{
                     body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=leftLeg.z=4;rightLeg.y=leftLeg.y=12.2F;
@@ -764,7 +793,14 @@ public final class LiteraryRenderers {
     /** The carcass he hauls off by a hind leg (0.4.120), drawn behind his left hand. */
     /** 0.4.251: the window cleaner's bucket and brush; nobody else in the cast carries what is in their hands. */
     private static final class CleanerKit extends net.minecraft.client.renderer.entity.layers.ItemInHandLayer<LiteraryActor,CastModel>{
-        CleanerKit(CastRenderer parent,EntityRendererProvider.Context c){super(parent,c.getItemInHandRenderer());}
+        private final net.minecraft.client.renderer.ItemInHandRenderer hands;
+        CleanerKit(CastRenderer parent,EntityRendererProvider.Context c){super(parent,c.getItemInHandRenderer());hands=c.getItemInHandRenderer();}
+        /** 0.4.532: on the telephone, the receiver in June's bent hand is drawn at her ear (CastModel.receiver), as it is, at its own size. */
+        @Override protected void renderArmWithItem(net.minecraft.world.entity.LivingEntity e,net.minecraft.world.item.ItemStack s,net.minecraft.world.item.ItemDisplayContext ctx,net.minecraft.world.entity.HumanoidArm arm,PoseStack p,MultiBufferSource out,int light){
+            if(arm!=net.minecraft.world.entity.HumanoidArm.RIGHT||!getParentModel().onPhone()){super.renderArmWithItem(e,s,ctx,arm,p,out,light);return;}
+            if(s.isEmpty())return;
+            p.pushPose();getParentModel().receiver(p);hands.renderItem(e,s,net.minecraft.world.item.ItemDisplayContext.NONE,false,p,out,light);p.popPose();
+        }
         @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.role()==LiteraryActor.STRANGER&&(a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.WindowCleaner.CLEANER||io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.carries(a.phase())))super.render(p,out,light,a,walk,amount,partial,age,yaw,pitch);}
     }
     /** 0.4.253: Kelly's wheelchair, the same model as the empty chair block, drawn under her while she sits in it, turned with her. */

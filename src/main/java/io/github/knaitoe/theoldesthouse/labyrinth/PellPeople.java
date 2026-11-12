@@ -62,7 +62,9 @@ public final class PellPeople {
     /** Their gestures, for the renderer: Tilly's cane held out ahead of her, Gail's folder held to her chest; from 0.4.527, asleep (lying
      *  along a bed), June brushing Tilly's hair, and Tilly having it brushed; from 0.4.530, June kneeling at the line with the brush,
      *  and Callum crouched (as a reader crouches, a beat late). */
-    public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5,PAINT=6,CROUCH=7;
+    public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5,PAINT=6,CROUCH=7,
+        // 0.4.532: June on the telephone, the receiver to her ear; and holding it out for a reader to take.
+        PHONE=8,OFFER=9;
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
     public record Spot(double x,double z,float look){}
@@ -116,6 +118,11 @@ public final class PellPeople {
          *  down to it and when it was called; whether June has called Callum in to it. */
         boolean hurried,dawned,callumCalled;int morningSaid;long tillySat,breakfastAt;
         final Map<UUID,Long> sleptAt=new HashMap<>();
+        /** 0.4.532, Gail's call (PellCall): when the telephone began to ring, when June last held it out, and when the reader who has it
+         *  took it; who that is, and who lifted it before June got to it; how far June's side of the call has got, and whether she told
+         *  Gail somebody was up in the night; who has had a turn, and what each said. */
+        long ringAt,offeredAt,heldAt;UUID caller,answered;int callSaid;boolean toldUp;
+        final java.util.Set<UUID> spoke=new java.util.HashSet<>();final Map<UUID,String> toldGail=new HashMap<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -213,6 +220,8 @@ public final class PellPeople {
         // 0.4.530: on the line at night, Callum stands and does not move for the hand.
         if(who==CALLUM&&h.callumOut){PellHouse.cue(p,PellTexts.CALLUM_NIGHT[h.said[who]++%PellTexts.CALLUM_NIGHT.length]);own.putBoolean("TouchedCallumAtNight",true);return;}
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
+        // 0.4.532: on the telephone to Gail she lifts a finger; holding it out, the reader takes it.
+        if(who==JUNE&&PellCall.june(p,b,own))return;
         if(a.saying())return;
         var lines=switch(who){case JUNE->PellTexts.JUNE_TALK;case TILLY->PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
         String line;

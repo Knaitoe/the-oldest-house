@@ -35,13 +35,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
-         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast')
+         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
          'item.the_oldest_house.pell_hairbrush': 'Hairbrush', 'item.the_oldest_house.pell_lantern': 'Lantern',
          'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush',
-         'item.the_oldest_house.pell_breakfast': 'Breakfast'}
+         'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver'}
 
 
 def blank():
@@ -439,6 +439,24 @@ def tin_model():
                    {'n': THING + 'tin', 'k': THING + 'tin_lid_line', 'w': THING + 'brush', 'particle': THING + 'tin'}, 11)
 
 
+def receiver_model():
+    """0.4.532: the kitchen telephone's receiver as June holds it (PellCall): its mouthpiece, its grip and its earpiece, in the plastic of
+    the telephone on the wall (tools/draw_pell_things.py). Its up is the earpiece. Held to her face, her arm is up and forward, so it is
+    turned back a third of a right angle about the hand's width to stand upright by her cheek; held out, the same turn tips it toward
+    whoever takes it."""
+    h = THING + 'phone_handset'
+    hold = {'rotation': [-28, 0, 0], 'translation': [0, 0, 0], 'scale': [.55, .55, .55]}
+    return {'textures': {'h': h, 'particle': h},
+            'elements': [box((6, 1, 7), (10, 5, 9.5), '#h'), box((6.5, 5, 7.5), (9.5, 11, 9), '#h'), box((6, 11, 7), (10, 15, 9.5), '#h')],
+            'display': {
+                'thirdperson_righthand': hold, 'thirdperson_lefthand': hold,
+                'firstperson_righthand': {'rotation': [0, -20, 0], 'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
+                'firstperson_lefthand': {'rotation': [0, 20, 0], 'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
+                'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [.8, .8, .8]},
+                'ground': {'translation': [0, 3, 0], 'scale': [.4, .4, .4]},
+                'fixed': {'scale': [.75, .75, .75]}}}
+
+
 def models():
     """The cane and the folder as they are held. The cane's grip is at the fist and its tip goes down and forward to the ground in
     front of the feet; the folder lies flat to the chest."""
@@ -478,7 +496,8 @@ def models():
     return {'pell_cane': cane_model, 'pell_folder': folder_model, 'pell_plate': flat('pell_plate'), 'pell_dinner': flat('pell_dinner'),
             'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
             'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
-            'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast')}
+            'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
+            'pell_receiver': receiver_model()}
 
 
 def main():
@@ -486,8 +505,8 @@ def main():
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast()}
     data = models()
-    # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own.
-    built = {'pell_lantern', 'pell_tin'}
+    # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver.
+    built = {'pell_lantern', 'pell_tin', 'pell_receiver'}
     assert set(images) | built == set(ITEMS) == set(data) and not set(images) & built
     for name in built:
         assert not (A / 'textures/item' / f'{name}.png').exists(), name

@@ -164,8 +164,8 @@ public final class PellVisit {
         h.chairSaid=false;h.brushSaid=0;h.lockIndex=0;h.watchSaid=0;h.tapeAt=0;h.brushedAt=0;h.nudgedAt=0;
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
-        // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart).
-        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);
+        // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart); 0.4.532, and Gail's call.
+        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
     }
     /** Each of them as they are by day: Tilly with her cane held out, Gail with her folder, June and Callum with nothing in hand. */

@@ -39,7 +39,8 @@ import net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent;
  * nobody has, after a while), she says that somebody was singing in the night, in the wall by her bed, and June says it will be the
  * pipes.</li>
  * <li><b>After.</b> When Tilly has eaten and each reader's breakfast is eaten (or it has gone on long enough), June says to leave the
- * plates. Tilly goes back to her room and Callum to the end of the hall; June clears and goes to the sink, and the morning waits.</li>
+ * plates. Tilly goes back to her room and Callum to the end of the hall; June clears and goes to the sink. 0.4.532: then Gail rings
+ * (PellCall).</li>
  * </ul>
  *
  * <p>Nobody is hurt and nothing is forced.
@@ -74,8 +75,8 @@ public final class PellMorning {
     /** Which way somebody faces at the kitchen door, toward the table, if there is no place for them at it. */
     static final float AT_THE_DOOR=150;
 
-    /** Whether it is the morning at the house: from June getting up until breakfast is cleared. */
-    public static boolean morning(BlockPos b){var h=PellPeople.household(b);return h.step>=RISING&&h.step<AFTER;}
+    /** Whether it is the morning at the house: from June getting up (0.4.532: on through Gail's call, and after it). */
+    public static boolean morning(BlockPos b){var h=PellPeople.household(b);return h.step>=RISING;}
     /** Whether first light has come at the house: the line dry, Callum in or coming in. */
     public static boolean dawned(BlockPos b){return PellPeople.household(b).dawned;}
     /** Whether the night is hurrying on, every reader at the house asleep. */
@@ -179,7 +180,8 @@ public final class PellMorning {
             case 2->{if(h.time>=SEVEN&&still&&PellVisit.ready(h,now,june))call(l,b,h,june,here,now);}
             case 3->breakfast(l,b,h,june,here,now);
             case 4->after(l,b,h,june,now);
-            default->{}
+            // 0.4.532: Gail's call, from the ring on.
+            default->PellCall.tick(l,b,h,june,here,now);
         }
     }
     /** June's way to the kitchen: her door shut behind her once nobody is in it, and each outside door unlocked as she comes to it. At
@@ -270,7 +272,8 @@ public final class PellMorning {
         for(var p:here){if(!p.isAlive()||p.isSpectator())continue;var own=PellHouse.own(p);if(!own.getBoolean("FirstMorning")){own.putBoolean("FirstMorning",true);PellHouse.save(p,own);}}
         next(h,AFTER);h.clearedAt=now;
     }
-    /** After breakfast: at the table's end she clears it and takes the plates to the sink; a while at the sink; then the morning waits. */
+    /** After breakfast: at the table's end she clears it and takes the plates to the sink; a while at the sink; and (0.4.532) a while
+     *  after, the telephone rings. */
     private static void after(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,long now){
         int J=PellPeople.JUNE;if(!h.way[J].isEmpty())return;
         switch(h.waypoint){
@@ -281,7 +284,7 @@ public final class PellMorning {
                 PellVisit.go(h,J,-1,PellVisit.SINK.look(),v(PellVisit.SINK.x(),PellVisit.SINK.z()));h.clearedAt=now;h.waypoint=1;
             }
             case 1->{if(now-h.clearedAt>=WASHING){june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);h.waypoint=2;}}
-            default->{}
+            default->{if(now-h.clearedAt>=WASHING+PellCall.RINGS_AFTER)PellCall.ring(l,b,h,june,now);}
         }
     }
     /**

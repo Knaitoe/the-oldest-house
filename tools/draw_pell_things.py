@@ -262,8 +262,54 @@ def vinyl(colour='#a8452e', seed=52215):
     return im
 
 
+def phone_plate():
+    """0.4.532: the kitchen telephone's wall plate, cream plastic gone the colour of old piano keys: its front bevelled (the face of the
+    plate, x 5 to 10 and y 1 to 14 here), the slot of the hook switch near its top where the receiver rests, and low down the hole the
+    cord goes into."""
+    im = plastic('#e2d6b5', 53201)
+    bevel(im, 5, 1, 11, 15, 12)
+    fill(im, 7, 2, 9, 3, '#a89c7d')
+    dot(im, 7, 13, '#8a7f66'); dot(im, 8, 13, '#5f5645')
+    return im
+
+
+def phone_handset():
+    """0.4.532: the receiver's back, as it hangs on the plate and as June holds it: the same plastic, lit along its ridge, its sides
+    turning away into shadow."""
+    im = plastic('#e6dabb', 53202)
+    for y in range(16):
+        dot(im, 8, y, '#f3ead3'); dot(im, 7, y, '#ece2c6')
+        for x in (5, 6, 9, 10):
+            dot(im, x, y, '#cdc1a0' if x in (6, 9) else '#b9ad8c')
+    return im
+
+
+def phone_cord():
+    """0.4.532: the coiled cord, a turn to each pixel: each turn lit on top and in the shadow of the one above."""
+    im = clear()
+    for y in range(16):
+        for x in range(16):
+            dot(im, x, y, '#e0d4b3' if y % 2 == 0 else '#a99d7e')
+    return im
+
+
+def phone_tape():
+    """0.4.532: a strip of masking tape on the wall beside the telephone, GAIL pencilled on it and a number under that, too small to
+    read from across the kitchen. The tape's own part of the picture is x 4 to 9 and y 6 to 9."""
+    im = clear()
+    fill(im, 4, 6, 10, 10, '#e5d7a3')
+    for x in (4, 9):
+        dot(im, x, 6, '#d6c68e'); dot(im, x, 9, '#d6c68e')
+    for x, y in ((5, 7), (6, 7), (7, 7), (8, 7)):
+        dot(im, x, y, '#6c6a64', 200)
+    for x in (5, 7, 8):
+        dot(im, x, 8, '#6c6a64', 170)
+    return im
+
+
 def kitchen():
     return {'laminate_top': laminate_top(), 'cupboard': cupboard(), 'cupboard_side': cupboard_side(), 'sink_top': sink_top(),
+            'phone_plate': phone_plate(), 'phone_handset': phone_handset(), 'phone_cord': phone_cord(), 'phone_tape': phone_tape(),
             'stove_front': stove_front(), 'stove_top': stove_top(), 'fridge_low': fridge_front(0), 'fridge_up_0': fridge_front(1, 0),
             'fridge_up_1': fridge_front(1, 1), 'fridge_side': fridge_side(), 'knife_2': knife_block(2), 'wood_block': wood_block(), 'lunchboxes': lunchboxes(), 'lunchbox_side': lunchbox_side(),
             'calendar_kitchen': kitchen_calendar(), 'table_top': table_top(), 'chrome': chrome(),
@@ -1969,6 +2015,26 @@ def thing_models():
     out['lantern_0'] = m([box([4, 0, 4], [12, 2, 12], 'b'), glow, box([4, 8, 4], [12, 10, 12], 'b'),
                           box([5, 10, 7], [6, 12, 9], 'b'), box([10, 10, 7], [11, 12, 9], 'b'), box([5, 12, 7], [11, 13, 9], 'b')],
                          {'b': 'lantern_body', 'g': 'lantern_globe'}, 'lantern_globe')
+    # 0.4.532: the kitchen telephone, on the wall by the arch (PellCall). Its plate; the receiver hanging on it (stage 0), or not, and
+    # then the empty hook (stage 1); its cord, looped below the receiver to the plate, or out from the plate to whoever has the
+    # receiver; and the strip of tape on the wall beside it.
+    plate = element([5, 1, 15], [11, 15, 16], {'north': 'p', 'east': 'p', 'west': 'p', 'up': 'p', 'down': 'p'})
+    tape = element([11.5, 8.5, 15.9], [17.5, 12.5, 16], {'north': 't'}, uv={'north': [4, 6, 10, 10]})
+    handset = [element([6.5, 6, 13.5], [9.5, 11, 15], {'north': 'h', 'east': 'h', 'west': 'h'}),
+               element([6, 11, 13], [10, 14, 15], {k: 'h' for k in ('north', 'east', 'west', 'up', 'down')}),
+               element([6, 3, 13], [10, 6, 15], {k: 'h' for k in ('north', 'east', 'west', 'up', 'down')})]
+    cord = {k: 'c' for k in ('north', 'east', 'west', 'south')}
+    under = element([6.5, -4, 14.25], [9.5, -3, 15], {**cord, 'down': 'c'}, uv={'north': [0, 0, 3, 1], 'south': [0, 0, 3, 1], 'down': [0, 0, 3, 1]})
+    for face in ('north', 'south', 'down'):
+        under['faces'][face]['rotation'] = 90
+        under['faces'][face]['uv'] = [0, 0, 1, 3]
+    loop = [element([6.5, -3, 14.25], [7.5, 3, 15], cord, uv={k: [7, 0, 8, 6] for k in cord}),
+            element([8.5, -3, 14.25], [9.5, 1, 15], cord, uv={k: [8, 0, 9, 4] for k in cord}), under]
+    out_ = element([7.5, -7, 14.25], [8.5, 1, 15], cord, uv={k: [7, 0, 8, 8] for k in cord}, rot={'origin': [8, 1, 14.6], 'axis': 'x', 'angle': 45})
+    hook = element([7, 12, 14], [9, 13, 15], {k: 'p' for k in ('north', 'east', 'west', 'up', 'down')}, uv={k: [7, 2, 9, 3] for k in ('north', 'east', 'west', 'up', 'down')})
+    phone_tex = {'p': 'phone_plate', 'h': 'phone_handset', 'c': 'phone_cord', 't': 'phone_tape'}
+    out['phone_0'] = m([plate, tape, *handset, *loop], phone_tex, 'phone_plate')
+    out['phone_1'] = m([plate, tape, hook, out_], phone_tex, 'phone_plate')
     return out
 
 
@@ -2007,7 +2073,7 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'freezer', 'stool', 'power', 'cord', 'trough', 'bucket', 'chlorine', 'washer',
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
-         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern']
+         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone']
 
 
 # ------------------------------------------------------------------------------------------------ the block
