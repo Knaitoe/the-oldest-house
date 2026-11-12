@@ -259,7 +259,7 @@
       "model": "the_oldest_house:block/calder_grave/small_5"
     },
     "facing=north,kind=small,stage=6": {
-      "model": "the_oldest_house:block/calder_grave/small_0"
+      "model": "the_oldest_house:block/calder_grave/small_6"
     },
     "facing=north,kind=small,stage=7": {
       "model": "the_oldest_house:block/calder_grave/small_0"
@@ -313,7 +313,7 @@
       "y": 90
     },
     "facing=east,kind=small,stage=6": {
-      "model": "the_oldest_house:block/calder_grave/small_0",
+      "model": "the_oldest_house:block/calder_grave/small_6",
       "y": 90
     },
     "facing=east,kind=small,stage=7": {
@@ -377,7 +377,7 @@
       "y": 180
     },
     "facing=south,kind=small,stage=6": {
-      "model": "the_oldest_house:block/calder_grave/small_0",
+      "model": "the_oldest_house:block/calder_grave/small_6",
       "y": 180
     },
     "facing=south,kind=small,stage=7": {
@@ -441,7 +441,7 @@
       "y": 270
     },
     "facing=west,kind=small,stage=6": {
-      "model": "the_oldest_house:block/calder_grave/small_0",
+      "model": "the_oldest_house:block/calder_grave/small_6",
       "y": 270
     },
     "facing=west,kind=small,stage=7": {

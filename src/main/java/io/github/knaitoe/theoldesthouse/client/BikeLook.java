@@ -40,6 +40,17 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
         }
     }
     public static BikeLook of(NightBike.Make make){return NIGHT.get(make);}
+    /** 0.4.510: each of the six left out and rusted (PackBike.RUSTED): the same pieces, in rust. */
+    private static final Map<NightBike.Make,BikeLook> RUST=new EnumMap<>(NightBike.Make.class);
+    static{
+        var cranks=standalone("bike_night/cranks_rust");
+        for(var m:NightBike.Make.values()){
+            var front=standalone("bike_night/"+m.id()+"_rust_wheel");
+            RUST.put(m,new BikeLook(standalone("bike_night/"+m.id()+"_rust_frame"),front,m==NightBike.Make.RATTLER?standalone("bike_night/"+m.id()+"_rust_wheel_back"):front,cranks,
+                null,m.backX(),m.backY(),m.frontX(),m.frontY(),m.axleX(),m.axleY(),m.backRadius(),m.frontRadius()));
+        }
+    }
+    public static BikeLook rusted(NightBike.Make make){return RUST.get(make);}
     /** 0.4.479: the bikes of the three who come to the park (PackBike), and (0.4.483) Gus's: the Wasp's frame and wheels in their own paint. */
     private static final String[] PACK_NAMES={"tully","ray","duff","gus"};
     private static final BikeLook[] PACK=new BikeLook[PACK_NAMES.length];
@@ -49,7 +60,8 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
     }
     /** How a PackBike of that look is drawn: one of the three, or (from PackBike.MAKES up) one of the six makes. */
     public static BikeLook pack(int look){
-        int first=io.github.knaitoe.theoldesthouse.labyrinth.PackBike.MAKES;var makes=NightBike.Make.values();
+        int first=io.github.knaitoe.theoldesthouse.labyrinth.PackBike.MAKES,rusted=io.github.knaitoe.theoldesthouse.labyrinth.PackBike.RUSTED;var makes=NightBike.Make.values();
+        if(look>=rusted)return RUST.get(makes[Math.min(makes.length-1,look-rusted)]);
         if(look>=first)return NIGHT.get(makes[Math.min(makes.length-1,look-first)]);
         return PACK[Math.max(0,Math.min(PACK.length-1,look))];
     }
@@ -57,6 +69,7 @@ public record BikeLook(ModelResourceLocation frame,ModelResourceLocation frontWh
     static void register(java.util.function.Consumer<ModelResourceLocation> to){
         for(var look:new BikeLook[]{BORRASCA})look.each(to);
         for(var look:NIGHT.values())look.each(to);
+        for(var look:RUST.values())look.each(to);
         for(var look:PACK)look.each(to);
     }
     private void each(java.util.function.Consumer<ModelResourceLocation> to){to.accept(frame);to.accept(frontWheel);to.accept(backWheel);to.accept(cranks);if(glow!=null)to.accept(glow);}

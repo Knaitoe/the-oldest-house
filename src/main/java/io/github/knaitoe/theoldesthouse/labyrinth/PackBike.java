@@ -41,9 +41,11 @@ public final class PackBike extends RiddenBike {
      * blocks a tick; what that loses in each tick somebody is near it; and how near that is, in blocks.
      */
     public static final float LAID_DEGREES=80,LAID_LIFT=.16F,SPIN=.05F,SPIN_EASE=.00035F;
+    /** 0.4.510, leaning on something beside it: how far over it is drawn, in degrees. */
+    public static final float PROPPED_DEGREES=14;
     public static final double SPIN_NEAR=14;
-    /** The looks: the three who come to the park; Gus's (0.4.483); from MAKES up, one of Bike night's six makes. */
-    public static final int TULLY=0,RAY=1,DUFF=2,GUS=3,MAKES=10;
+    /** The looks: the three who come to the park; Gus's (0.4.483); from MAKES up, one of Bike night's six makes; (0.4.510) from RUSTED up, one of the six left out and rusted. */
+    public static final int TULLY=0,RAY=1,DUFF=2,GUS=3,MAKES=10,RUSTED=20;
     /** Degrees it turns in a tick; what it gains and loses of its speed in a tick; how far round it still has to come before it slows for the turn, and to how much. */
     public static final float TURN=9,GAIN=.02F,EASE=.03F,SHARP=50,SHARP_SPEED=.55F;
     /** Ticks of going nowhere before it counts as held up; and how far it rolls for each half turn of its cranks. */
@@ -56,7 +58,9 @@ public final class PackBike extends RiddenBike {
     public void look(int look){entityData.set(LOOK,look);}
     /** 0.4.509: it lies on that side (-1 its left, 1 its right) where it is, its wheels going round that fast, and is not ridden again. */
     public void lay(int side,float spin){entityData.set(LAID,side<0?-1:1);laidSpin=spin;ejectPassengers();}
-    /** The side it lies on, or nothing if it stands. */
+    /** 0.4.510: it leans that way (-1 its left, 1 its right) on what is beside it, where it is, and is not ridden again. */
+    public void prop(int side){entityData.set(LAID,side<0?-2:2);laidSpin=0;ejectPassengers();}
+    /** The side it lies on (-1, 1) or leans to (-2, 2), or nothing if it stands. */
     public int laid(){return entityData.get(LAID);}
     private float laidSpin;
     @Override protected Stats stats(){return Stats.PLAIN;}

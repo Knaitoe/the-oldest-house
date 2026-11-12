@@ -85,6 +85,8 @@ public final class BikeNightGraveyard {
         final int[] state=new int[3];final long[] since={-1,-1,-1};
         /** 0.4.509: whose bike lies outside the front gate; and whether the cap has been hung on the back gate's post this night. */
         final boolean[] dropped=new boolean[3];boolean capHung;
+        /** 0.4.510: which of the new stones at the row's end has had its bike stood against it tonight (BikeNightStones). */
+        final java.util.BitSet leaning=new java.util.BitSet();
         /** What each reader was last told of their mist. */
         final java.util.Map<java.util.UUID,Integer> mist=new java.util.HashMap<>();
         /** How many of the town's streets are dark, when the next goes, and where the town's lamps stand (found when the first goes). */
@@ -160,13 +162,18 @@ public final class BikeNightGraveyard {
     public static boolean lamp(ServerLevel l,ServerPlayer p){
         return !l.getEntitiesOfClass(NightBike.class,p.getBoundingBox().inflate(LAMP_NEAR),bike->bike.make()==NightBike.Make.LAMP&&bike.lit()>0&&!bike.getPassengers().isEmpty()).isEmpty();
     }
+    /** 0.4.510: whether it is dawn for a reader: the Hollow has had them, tonight or on a night before. */
+    public static boolean dawn(BikeNight.Night n,ServerPlayer p){return n.hollow.taken.contains(p.getUUID())||BikeNight.own(p).getBoolean("Taken");}
     private static void mists(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         if(n.tick%MIST_EVERY!=0)return;
         var y=n.yard;
         for(var p:here){
             int m=mist(l,n.base,p);Integer was=y.mist.put(p.getUUID(),m);
+            // 0.4.510: "they come round at dawn". For somebody the Hollow has had it is dawn from then on, wherever in the place
+            // they are, and they are told for as long as they are here.
+            boolean dawn=dawn(n,p);
             // Told while they are in it, and once more when they are out of it.
-            if(m>0||was!=null&&was>0)io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload(m,0));
+            if(m>0||was!=null&&was>0||dawn)io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload(m,0,100,dawn));
         }
     }
 
@@ -246,6 +253,7 @@ public final class BikeNightGraveyard {
             u.gone=true;u.riding=false;u.plan=null;y.state[u.who]=TAKEN;
         }
         after(l,n,here);
+        BikeNightStones.tick(l,n);
     }
     /** 0.4.509, what follows: the three's bikes outside the front gate, and the cap on the back gate's post. */
     private static void after(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){

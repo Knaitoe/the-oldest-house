@@ -69,6 +69,35 @@ def card(make, seed):
     return im
 
 
+# 0.4.510, a bike left out: what is left of each paint under the rust, and of bright steel.
+RUST, RUST_DARK = '#7a4424', '#3b2a20'
+
+
+def mix(a, b, t):
+    (ar, ag, ab), (br, bg, bb) = [tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) for c in (a, b)]
+    return '#%02x%02x%02x' % (round(ar + (br - ar) * t), round(ag + (bg - ag) * t), round(ab + (bb - ab) * t))
+
+
+def rust_card(make, seed):
+    """A bike's paint card after it has stood out: the frame mostly rust with its colour still under it, the trim gone further, the
+    saddle and the grips perished dark. (A bar takes one pixel of its swatch, so each is one colour.)"""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(seed); px = im.load()
+    frame, trim, seat, grip = CARDS[make]
+    for i, colour in enumerate((mix(frame, RUST, .62), mix(trim, RUST, .74), mix(seat, RUST_DARK, .6), mix(grip, RUST_DARK, .6))):
+        for y in range(16):
+            for x in range(i * 4, i * 4 + 4):
+                px[x, y] = shade(colour, 0 if y == 7 else rnd.randint(-9, 9))
+    return im
+
+
+def rusted():
+    """What was chrome."""
+    im = new(RUST, 46399, 8)
+    for y in range(16):
+        dot(im, 7, y, mix(RUST, '#b9bcc0', .18))
+    return im
+
+
 def tyre():
     """Rubber: column 7 the tread, column 6 the groove between two blocks of it."""
     im = new('#1f1f21', 46301, 3)
@@ -196,6 +225,8 @@ def textures():
                 DIR + 'glass.png': glass(False), DIR + 'glass_lit.png': glass(True), DIR + 'paper.png': paper(), DIR + 'snake.png': snake(),
                 DIR + 'card.png': spoke_card(), DIR + 'peg.png': peg_wood(), DIR + 'steel.png': steel(), DIR + 'plywood.png': plywood(),
                 DIR + 'timber.png': timber(), DIR + 'number.png': number()})
+    out.update({f'{DIR}{make}_rust.png': rust_card(make, 51000 + i) for i, make in enumerate(MAKES)})
+    out[DIR + 'rust.png'] = rusted()
     return out
 
 
@@ -512,6 +543,11 @@ def bike_textures(make):
             'l': 'glass', 's': 'snake', 'd': 'card', 'g': 'peg', 'n': 'number'}
 
 
+def rust_textures(make):
+    """0.4.510: the same bike left out: its paint card rusted, and what was chrome rust."""
+    return {**bike_textures(make), 'f': make + '_rust', 'c': 'rust'}
+
+
 def used(parts, names):
     """Only the textures a model's pieces name."""
     keys = {f['texture'][1:] for e in parts for f in e['faces'].values()}
@@ -616,9 +652,16 @@ def models():
         parts = whole(b)
         m[f'{make}_0'] = model(parts, names, make)
         m[f'{make}_1'] = model(lying(parts), names, make)
+        # 0.4.510: and as it is drawn left out against a stone (PackBike.RUSTED): the same pieces in rust.
+        rust = rust_textures(make)
+        m[f'{make}_rust_frame'] = model(b.parts, rust, make + '_rust')
+        m[f'{make}_rust_wheel'] = model(wheels(b, 'front'), rust, 'tyre')
+        if make == 'rattler':
+            m[f'{make}_rust_wheel_back'] = model(wheels(b, 'back'), rust, 'tyre')
     for name in PACK:
         m[f'{name}_frame'] = model(pack(name).parts, bike_textures(name), name)
     m['cranks'] = model(cranks(), {'c': 'chrome', 'k': 'tyre'}, 'chrome')
+    m['cranks_rust'] = model(cranks(), {'c': 'rust', 'k': 'tyre'}, 'rust')
     m['lamp_glow'] = model(lamp_glow(), {'l': 'glass_lit'}, 'glass_lit')
     m['rack'] = model(rack(), {'r': 'steel'}, 'steel')
     for part in ('low', 'high', 'steep'):

@@ -86,7 +86,8 @@ public final class BikeNightVisualProof extends Screen {
         var mc=Minecraft.getInstance();var missing=mc.getModelManager().getMissingModel();
         for(var make:NightBike.Make.values()){
             for(var facing:Direction.Plane.HORIZONTAL)for(boolean lying:new boolean[]{false,true})need(NightBikeBlock.of(make,facing,lying));
-            var look=BikeLook.of(make);
+            // (0.4.510: and each of them left out and rusted.)
+            for(var look:new BikeLook[]{BikeLook.of(make),BikeLook.rusted(make)})
             for(var part:new net.minecraft.client.resources.model.ModelResourceLocation[]{look.frame(),look.frontWheel(),look.backWheel(),look.cranks(),look.glow()})
                 if(part!=null&&mc.getModelManager().getModel(part)==missing)throw new IllegalStateException("Missing ridden bike part "+part);
         }
@@ -141,7 +142,7 @@ public final class BikeNightVisualProof extends Screen {
             "the Hollow's witch: on her broom from the side, the front, and behind and above; and standing. The werewolf: running, gathered, and in the air. The three ghosts, adrift, half there",
             "the Hollow's headless rider on his horse: from the side at two moments of its stride, from the front quarter, and from behind",
             "what jumps out in the Hollow. The ghoul: waiting; out, from the front, the side and behind. The goblin, at its size beside it: the same",
-            "what follows. The three's bikes as they lie outside the front gate, the last with its wheels turned; and the cap on the back gate's post"}[page],8,8,0xffffffff);
+            "what follows. The three's bikes as they lie outside the front gate; the cap on the back gate's post; a new stone at the row's end, and a bike left against it"}[page],8,8,0xffffffff);
         g.fill(0,24,width,height,SKY);
         switch(page){case 0->parked(g,false);case 1->ridden(g);case 2->parked(g,true);case 3->rack(g);case 4->hud(g);case 5->park(g);case 6->signs(g);case 7->swings(g);case 8->slide(g);case 9->bars(g);case 10->seesaw(g);case 11->roundabout(g);case 12->dome(g);case 13->spring(g);case 14->small(g);case 15->over(g);case 16->pack(g);case 17->townThings(g);case 18->alley(g);case 19->fronts(g,0);case 20->fronts(g,1);case 21->cars(g);case 22->graves(g);case 23->hill(g);case 24->specters(g);case 25->rider(g);case 26->pops(g);default->after(g);}
     }
@@ -618,6 +619,20 @@ public final class BikeNightVisualProof extends Screen {
         at.accept(CalderBlock.of(CalderBlock.Kind.FENCE,Direction.NORTH,0),new int[]{1,0,0});at.accept(CalderBlock.of(CalderBlock.Kind.FENCE,Direction.NORTH,1),new int[]{1,1,0});
         at.accept(CalderBlock.of(CalderBlock.Kind.HAT,Direction.SOUTH,0),new int[]{0,1,1});
         buffers.endBatch();pose.popPose();
+        // 0.4.510: a new stone at the end of the row beside one of the old ones, and the Lamp left against the back of it, rusted;
+        // and the Hopper the same, from behind.
+        float[][] views={{.76F,.3F,-28},{.93F,.3F,152}};NightBike.Make[] left={NightBike.Make.LAMP,NightBike.Make.HOPPER};
+        for(int v=0;v<2;v++){
+            float c=width*.058F;var q=g.pose();q.pushPose();q.translate(width*views[v][0],24+(height-24)*views[v][1],400);q.scale(c,-c,c);
+            q.mulPose(Axis.XP.rotationDegrees(20));q.mulPose(Axis.YP.rotationDegrees(views[v][2]));q.translate(-1.5F,0,-.5F);
+            java.util.function.BiConsumer<BlockState,int[]> put=(state,p)->{q.pushPose();q.translate(p[0],p[1],p[2]);mc.getBlockRenderer().renderSingleBlock(state,q,buffers,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);q.popPose();};
+            if(v==0)put.accept(io.github.knaitoe.theoldesthouse.labyrinth.CalderGraveBlock.of(io.github.knaitoe.theoldesthouse.labyrinth.CalderGraveBlock.Kind.SMALL,Direction.SOUTH,5),new int[]{-1,0,0});
+            put.accept(io.github.knaitoe.theoldesthouse.labyrinth.CalderGraveBlock.of(io.github.knaitoe.theoldesthouse.labyrinth.CalderGraveBlock.Kind.SMALL,Direction.SOUTH,io.github.knaitoe.theoldesthouse.labyrinth.CalderGraveBlock.NEW_STONE),new int[]{1,0,0});
+            q.pushPose();q.translate(1.5,0,.5-io.github.knaitoe.theoldesthouse.labyrinth.BikeNightStones.BIKE_BACK);
+            BikeLook.rusted(left[v]).draw(q,buffers.getBuffer(Sheets.cutoutBlockSheet()),io.github.knaitoe.theoldesthouse.labyrinth.BikeNightStones.BIKE_YAW,BikeRenderer.propped(2),0,0,0,LightTexture.FULL_BRIGHT,false);
+            q.popPose();
+            buffers.endBatch();q.popPose();
+        }
     }
     /** 0.4.502, the Hollow's headless rider on his horse, as the game draws them. */
     private void rider(GuiGraphics g){
@@ -744,7 +759,7 @@ public final class BikeNightVisualProof extends Screen {
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);
         try(NativeImage image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("native-bike-night-"+PAGES[s.page]+".png"));s.drawn(image);}
         if(++s.page<PAGES.length){s.frames=0;return;}
-        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. The monkey bars, whole, from one side. The seesaw, as it stands and half way over. The merry-go-round, as it was built and a little way round. The climbing dome, from one side and from above. The spring rider, rocked back, upright and rocked forward. The small things: the fountain still and running, the payphone on its hook and off it, the plain bench and the carved one. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page. The town: each of its own fittings, by kind and stage; the back of a shop put together as the builder puts one; and its fronts, names and notices flat on, the bank's clock over its name. Every state of the town's fittings and of the clock's digits was required to have its model. What follows: the three's bikes lying on their sides as they lie outside the cemetery's front gate, and the cap on its nail in the back gate's post.");
+        Files.writeString(dir.resolve("bike-night-assets-passed.txt"),"Native GPU views of Bike night. The bikes: the six on their stands; each as its ridden renderer draws it, upright (the Lamp's lens lit) and leaning with its nose up, wheels and cranks turned; the six lying on their sides; six in a rack, with the long ramp and the kicker; and the rider's needle, the hop winding up and the Rattler's card, over a dark road and a bright one. The park: a corner of it put together as the builder puts it, seen from inside the gate; and both signs flat, the gate's board from in front and from behind. The swings: a bay of the frame on sand, one swing hanging still and one drawn at the top of a high arc, the heel mark of the furthest landing, and a ball of sand. The slide, whole, from one side. The monkey bars, whole, from one side. The seesaw, as it stands and half way over. The merry-go-round, as it was built and a little way round. The climbing dome, from one side and from above. The spring rider, rocked back, upright and rocked forward. The small things: the fountain still and running, the payphone on its hook and off it, the plain bench and the carved one. Every state of the bike, rack, ramp, park and playground blocks, the ball of sand and every part of every ridden bike was required to have its model, and every bike to have drawn something on its page. The town: each of its own fittings, by kind and stage; the back of a shop put together as the builder puts one; and its fronts, names and notices flat on, the bank's clock over its name. Every state of the town's fittings and of the clock's digits was required to have its model. What follows: the three's bikes lying on their sides as they lie outside the cemetery's front gate, and the cap on its nail in the back gate's post; and a new small stone beside one of the row's, with a rusted bike leaning on the back of it, from in front and from behind. Every part of each of the six bikes rusted was required to have its model.");
         mc.stop();
     }
 }

@@ -593,6 +593,8 @@ public final class BikeNight {
         if(p.getMainHandItem().is(BikeNightRegistry.SAND_BALL.get()))return false;
         // 0.4.509: a hand on the cap on the back gate's post.
         if(CalderBlock.is(s,CalderBlock.Kind.HAT)){cue(p,BikeNightTexts.HUNG_CAP);return true;}
+        // 0.4.510: a hand on a new stone at the end of the row.
+        if(CalderGraveBlock.is(s,CalderGraveBlock.Kind.SMALL)&&s.getValue(CalderGraveBlock.STAGE)==CalderGraveBlock.NEW_STONE){cue(p,BikeNightStones.inscription(p.server,rel));return true;}
         // 0.4.489: a hand on a stone in the cemetery is told what is cut on it.
         if(CalderGraveBlock.carved(s)){cue(p,CalderGraves.inscription(s,rel));return true;}
         if(s.is(BikeNightRegistry.MARK.get())){

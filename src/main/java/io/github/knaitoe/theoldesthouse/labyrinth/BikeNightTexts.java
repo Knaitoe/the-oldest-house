@@ -307,6 +307,13 @@ public final class BikeNightTexts {
     public static final String[] SMALL_NAMES={"LUCY ARDEN","TOM ARDEN","BETH KOWAL","PETER RUIZ","WALT FINCH","JUNE ABBOTT"};
     public static final int SMALL_YEAR=1957;
     public static final String SMALL_DATE="OCTOBER 31, "+SMALL_YEAR;
+    /**
+     * 0.4.510: the year of the night itself, which nothing in the town says (the proposal: "a small town in the 1980s"), and its
+     * date as it is cut on a new stone at the end of the row; and what a hand is told of a new stone with no name to it.
+     */
+    public static final int NIGHT_YEAR=1984;
+    public static final String NIGHT_DATE="OCTOBER 31, "+NIGHT_YEAR;
+    public static final String NEW_STONE_BLANK="A new stone. Nothing is cut on it yet.";
     /** The town's families, the names their dead were given, and the lines some have under their years. */
     public static final String[] FAMILIES={"HOLT","ALDOUS","BRANNOCK","TILLEY","VOSS","HARROW","KEANE","LINDQVIST","MOTT","OAKES","SAYER","WHITLOW","YARROW","DUNMORE","GARRITY"};
     public static final String[] GIVEN={"EDITH","HAROLD","AGNES","CLARENCE","MABEL","ERNEST","IDA","HOMER","PEARL","LLOYD","HAZEL","CHESTER","NELLIE","ELMER","CORA","ORVILLE","VIOLA","AMOS","ETTA",
@@ -320,7 +327,7 @@ public final class BikeNightTexts {
     public static final String TOMB_DOORS="The doors are iron, and shut. CALDER is cut in the stone over them.";
     public static List<String> graveLines(){
         var all=new ArrayList<String>(List.of(SMALL_NAMES));all.addAll(List.of(FAMILIES));all.addAll(List.of(GIVEN));all.addAll(List.of(EPITAPHS));
-        all.addAll(List.of(SMALL_DATE,ANGEL_STONE,OBELISK_STONE,TOMB_DOORS));return all;
+        all.addAll(List.of(SMALL_DATE,NIGHT_DATE,ANGEL_STONE,OBELISK_STONE,TOMB_DOORS));return all;
     }
     public static List<String> peopleLines(){
         var all=new ArrayList<String>(List.of(AT_A_STOP));all.addAll(List.of(NO_CUTTING));all.addAll(List.of(CARTS_MIND));all.addAll(List.of(CARTS_THROUGH));all.addAll(List.of(CARTS_ROUND));
@@ -337,7 +344,7 @@ public final class BikeNightTexts {
     /** 0.4.495: somebody in the Hollow has missed, on a bike and on foot. */
     public static final String UNDER_RIDING="You go down into the mist. Something in it has the back wheel, and lets go.";
     /** 0.4.499: caught in the Hollow. */
-    public static final String TAKEN="You come round on the pavement outside the cemetery gate. The bike is gone.";
+    public static final String TAKEN="You come round on the pavement outside the cemetery gate. It is getting light. The bike is gone.";
     /** 0.4.498: through the back gate. */
     public static final String THROUGH="The gate is behind you. Down the hill, the lights of Calder Falls are on again.";
     public static final String UNDER_WALKING="You go down into the mist. Something in it has your ankle, and lets go.";

@@ -28,6 +28,10 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * <p>0.4.495: but for somebody in the Hollow who has missed a jump and gone down into it (BikeNightHollow). Then it is over
  * everything at once, as near as {@link #OVER}, held for as long as the server says and gone again in a second. That is a sudden
  * change of the whole view, so it is as much of one as the comfort setting lets through, and none at all with that at nothing.
+ *
+ * <p>0.4.510: "they come round at dawn". For somebody the Hollow has had, the server says it is dawn, and their sky goes from the
+ * night's hour to first light over DAWN_OVER ticks (most of it behind the mist that is over them when they are taken) and stays
+ * there. It is their own sky: everybody else in the town is still in the night. It is a slow change of light, not a flash.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class BikeNightMistClient {
@@ -40,11 +44,22 @@ public final class BikeNightMistClient {
     public static final float BANK=1.5F,BANK_EASE=.03F;
     /** With the mist over everything: how far somebody sees, in blocks, and how fast it goes again, a tick. */
     public static final float OVER=1.5F,OVER_EASE=.05F;
-    private static int lease,hold;private static float target,mist,oMist,over,oOver;private static ClientLevel world;
+    /** 0.4.510: the hour it gets to for somebody the Hollow has had, in the game's ticks of a day; and how many ticks their sky takes to get there. */
+    public static final long DAWN=23250;public static final int DAWN_OVER=100;
+    private static int lease,hold,dawnLease;private static float target,mist,oMist,over,oOver,dawn;private static ClientLevel world;
     private BikeNightMistClient(){}
     public static void accept(BikeNightMistPayload p){var mc=Minecraft.getInstance();if(mc.level==null)return;world=mc.level;lease=40;target=Mth.clamp(p.mist()/100F,0,BANK);
         if(p.over()>0){hold=p.over();over=Math.max(over,(float)Comfort.effects()*Mth.clamp(p.share()/100F,0,1));}
+        if(p.dawn())dawnLease=40;
     }
+    /** 0.4.510: the hour of this reader's sky: the scene's own, or on its way from that to dawn. */
+    public static long time(net.minecraft.world.level.Level level,long ordinary){
+        if(dawn<=0||level!=world)return ordinary;
+        float share=dawn*dawn*(3-2*dawn);
+        return ordinary+(long)((DAWN-ordinary)*share);
+    }
+    /** How far this reader's sky is on its way to dawn, from nothing to one. */
+    public static float dawn(){return dawn;}
     /** How much the mist is over everything, from nothing to one. */
     public static float over(float partial){return Mth.lerp(partial,oOver,over);}
     private static boolean active(){var mc=Minecraft.getInstance();return mc.level!=null&&mc.level==world&&mc.player!=null;}
@@ -55,7 +70,9 @@ public final class BikeNightMistClient {
         var mc=Minecraft.getInstance();
         if(lease>0)lease--;
         if(lease<=0||!active())target=0;
-        if(!active()){oMist=mist=0;oOver=over=0;hold=0;return;}
+        if(dawnLease>0)dawnLease--;
+        if(!active()){oMist=mist=0;oOver=over=0;hold=0;dawn=0;dawnLease=0;return;}
+        if(!mc.isPaused())dawn=Mth.clamp(dawn+(dawnLease>0?1F:-1F)/DAWN_OVER,0,1);
         oMist=mist;float ease=mist>1||target>1?BANK_EASE:EASE;mist+=Mth.clamp(target-mist,-ease,ease);
         oOver=over;if(hold>0)hold--;else over=Math.max(0,over-OVER_EASE);
         if(mist<=.02F||mc.isPaused())return;
