@@ -58,8 +58,9 @@ public final class PellPeople {
     public static int who(LiteraryActor a){return a.phase()-FIRST;}
     /** What each is called over what they say. */
     public static String name(int who){return switch(who){case JUNE->"June";case TILLY->"Tilly";case CALLUM->"Callum";default->"Gail";};}
-    /** Their gestures, for the renderer: Tilly's cane held out ahead of her, Gail's folder held to her chest. */
-    public static final int CANE=1,FOLDER=2;
+    /** Their gestures, for the renderer: Tilly's cane held out ahead of her, Gail's folder held to her chest; from 0.4.527, asleep (lying
+     *  along a bed), June brushing Tilly's hair, and Tilly having it brushed. */
+    public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5;
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
     public record Spot(double x,double z,float look){}
@@ -93,6 +94,14 @@ public final class PellPeople {
          *  or nobody), the order June serves in, and when it was called, served and cleared. */
         final int[] plate=new int[4];final UUID[] plates=new UUID[4];final int[] diner={-1,-1,-1,-1};
         final java.util.List<Integer> order=new java.util.ArrayList<>();int serving;long calledAt,servedAt,clearedAt;
+        /** 0.4.527, bedtime: who sits where away from the table (June's chair, the edge of Nessa's bed) and where a walker sits or lies
+         *  down at the end of their way; who is asleep; which of the outside doors June has locked; whether she has asked for her chair
+         *  back, how far the brushing and the locking up have got, and what she has said while the tape plays; when the tape's sound
+         *  last began, the brushing began, and she last asked a reader to go out. */
+        final PellVisit.Perch[] perch=new PellVisit.Perch[COUNT],perchTo=new PellVisit.Perch[COUNT];
+        final Vec3[] sleepAt=new Vec3[COUNT];final boolean[] asleep=new boolean[COUNT];
+        final java.util.Set<net.minecraft.core.BlockPos> locked=new java.util.HashSet<>();
+        boolean chairSaid;int brushSaid,lockIndex,watchSaid;long tapeAt,brushedAt,nudgedAt;
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -159,7 +168,8 @@ public final class PellPeople {
         // 0.4.525: the visit moves them first; whoever walked this tick has their head where the walk put it.
         PellVisit.tick(l,b,h,here);
         for(int who=0;who<COUNT;who++){
-            if(h.moving[who])continue;
+            // Anybody asleep is left as they lie (0.4.527).
+            if(h.moving[who]||h.asleep[who])continue;
             var a=find(l,b,who);if(a==null)continue;
             double reach=who==CALLUM?WATCH:NEAR;ServerPlayer near=null;double best=reach*reach;
             for(var p:here){if(p.isSpectator()||!p.isAlive())continue;double d=a.distanceToSqr(p);if(d<best){best=d;near=p;}}
@@ -184,10 +194,15 @@ public final class PellPeople {
     public static void talk(ServerPlayer p,LiteraryActor a,net.minecraft.nbt.CompoundTag own){
         if(!is(a))return;var b=LiteraryVignettes.base(p,PellHouse.PLACE);if(b==null)return;
         int who=who(a);var h=household(b);
+        // 0.4.527: asleep, they are only looked at.
+        if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         if(a.saying())return;
         var lines=switch(who){case JUNE->PellTexts.JUNE_TALK;case TILLY->PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
-        String line=lines[h.said[who]++%lines.length];
+        String line;
+        // 0.4.527: in her chair with the tape on, June talks about the girl on it first.
+        if(who==JUNE&&PellVisit.watching(b)&&h.watchSaid<PellTexts.JUNE_WATCHING.length)line=PellTexts.JUNE_WATCHING[h.watchSaid++];
+        else line=lines[h.said[who]++%lines.length];
         a.say(name(who),line);a.speaks(line);
         // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the
         // record the talk saves after this (LiteraryVignettes.talk), so it is written there and not saved under it.

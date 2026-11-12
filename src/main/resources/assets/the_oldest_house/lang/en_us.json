@@ -1773,5 +1773,9 @@
   "item.the_oldest_house.pell_plate": "Plate",
   "item.the_oldest_house.pell_dinner": "Dinner",
   "item.the_oldest_house.pell_plate_scraped": "Plate",
-  "item.the_oldest_house.pell_saucepan": "Saucepan"
+  "item.the_oldest_house.pell_saucepan": "Saucepan",
+  "item.the_oldest_house.pell_hairbrush": "Hairbrush",
+  "subtitles.the_oldest_house.pell.tape": "A home tape plays: a birthday",
+  "subtitles.the_oldest_house.pell.brush": "A hairbrush, slowly",
+  "subtitles.the_oldest_house.pell.lock": "A lock turns"
 }

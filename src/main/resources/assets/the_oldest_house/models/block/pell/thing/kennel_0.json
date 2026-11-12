@@ -115,22 +115,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            16,
+            15.5
+          ]
         },
         "south": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            16,
+            15.5
+          ]
         },
         "east": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            6.800000000000001,
+            14.5,
+            16,
+            15.5
+          ]
         },
         "west": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            9.2,
+            15.5
+          ]
         },
         "up": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            16,
+            9.2
+          ]
         },
         "down": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            6.800000000000001,
+            16,
+            16
+          ]
         }
       },
       "rotation": {
@@ -156,22 +192,58 @@
       ],
       "faces": {
         "north": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            16,
+            15.5
+          ]
         },
         "south": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            16,
+            15.5
+          ]
         },
         "east": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            9.2,
+            15.5
+          ]
         },
         "west": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            6.800000000000001,
+            14.5,
+            16,
+            15.5
+          ]
         },
         "up": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            6.800000000000001,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            16,
+            9.2
+          ]
         }
       },
       "rotation": {

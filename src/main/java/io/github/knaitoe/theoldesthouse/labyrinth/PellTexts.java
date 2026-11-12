@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -204,6 +205,40 @@ public final class PellTexts {
         "His hands stay under the table.",
         "He watches Tilly's plate.",
         "He doesn't look at his own."};
+    /**
+     * 0.4.527, bedtime (PellVisit, docs/PELL_HOUSE_BEDTIME_0_4_527.md): June in her chair with a birthday tape on; what the tape shows a
+     * reader who puts a hand on the television while it plays, in order; bedtime, the brushing, goodnight; and sending the readers out to
+     * the garage so she can lock up. Asleep, Tilly and Callum are only looked at.
+     */
+    public static final String JUNE_MY_CHAIR="That's my chair, love.";
+    public static final String[] JUNE_WATCHING={
+        "That's my Nessa.",
+        "Every birthday, a crown. She wouldn't have a cake without one."};
+    public static final String[] TV_TAPE={
+        "A birthday on the tape, in this kitchen. Somebody carries a cake in with its candles lit.",
+        "The camera finds a girl in a paper crown. Whoever is holding it laughs and says her name: Nessa.",
+        "She blows the candles out and looks straight into the lens.",
+        "The tape jumps. The same kitchen, another year, the same crown."};
+    public static final String JUNE_BEDTIME="Bedtime, Tilly.",
+        JUNE_HOLD_STILL="Hold still for me, love.",
+        TILLY_DAD="Dad did it in one go. It always came out crooked.",
+        JUNE_EVERY_NIGHT="Well. I'll do it every night now.",
+        JUNE_GROW_LONG="There. It'll grow long here.",
+        JUNE_NIGHT_NIGHT="Night night, love.",
+        JUNE_SENDS_OUT="Bed, love. Out to the garage, and I'll lock up behind you.",
+        SENT_FAR="June, calling through the house: “Bed, love. Out to the garage.”",
+        JUNE_LOCKING="Night, love. I'm locking up.";
+    public static final String[] JUNE_NUDGE={
+        "Go on, love. It's late.",
+        "Garage, love. I want to lock up."};
+    public static final String TILLY_ASLEEP="Tilly is asleep, her hair brushed out across the pillow.",
+        CALLUM_ASLEEP="Callum is asleep in the middle of the circle, on his back, very still.";
+    /** A hand on an outside door June has locked, from outside it. */
+    public static String locked(BlockPos door){
+        if(door.equals(PellSite.FRONT_DOOR))return "The screen door is locked. The lock is on the inside.";
+        if(door.equals(PellSite.SLIDER))return "The sliding door is locked from inside.";
+        return "The back door is locked from inside.";
+    }
     /** June's four rules, as bits of a reader's record ("Rules"): the line, the pool gate, Nessa's room, the garage. */
     public static final int RULE_LINE=1,RULE_POOL=2,RULE_NESSA=4,RULE_GARAGE=8,RULES=15;
     /** The rule a line of June's gives, from the tour or from a hand on her, or none. */
