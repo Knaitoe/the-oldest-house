@@ -64,8 +64,10 @@ public final class BikeNightRegistry {
         // 0.4.489, the cemetery's: its grass, the earth of a fresh grave, the mausoleum's marble.
         "grave_turf","grave_earth","marble",
         // 0.4.493, the Hollow's: the sod its islands are made of, the vine's green, a coffin's wood.
-        "hollow_sod","vine","coffin");
-    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge","grave_turf","hollow_sod","vine"->Blocks.MOSS_BLOCK;case "grave_earth"->Blocks.COARSE_DIRT;case "coffin"->Blocks.OAK_PLANKS;default->Blocks.STONE;};}
+        "hollow_sod","vine","coffin",
+        // 0.4.504: the loose earth of the Hollow's steep way.
+        "hollow_earth");
+    private static Block like(String name){return switch(name){case "brick","tanbrick"->Blocks.BRICKS;case "siding","plank"->Blocks.OAK_PLANKS;case "gravel"->Blocks.GRAVEL;case "turf","turf_track","turf_line","hedge","grave_turf","hollow_sod","vine"->Blocks.MOSS_BLOCK;case "grave_earth","hollow_earth"->Blocks.COARSE_DIRT;case "coffin"->Blocks.OAK_PLANKS;default->Blocks.STONE;};}
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("calder_"+name,fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     /** Asphalt with the street's centre line on it, along its axis. */
@@ -198,6 +200,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> UNDER=sound("hollow.under");
     /** 0.4.502: the headless rider's horse. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOOVES=sound("hollow.hooves");
+    /** 0.4.504: the steep way's bank sliding away. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SLIDE_AWAY=sound("hollow.slide");
     /** 0.4.503: something jumping out. */
     public static final DeferredHolder<SoundEvent,SoundEvent> POP=sound("hollow.pop");
     /** 0.4.501: the werewolf taking his perch. */

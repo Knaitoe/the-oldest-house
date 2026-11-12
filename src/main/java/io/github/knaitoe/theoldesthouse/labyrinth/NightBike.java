@@ -100,6 +100,22 @@ public final class NightBike extends RiddenBike {
     @Override protected double saddle(){return make().saddle()/16-.03;}
     @Override protected float load(){return getPassengers().size()>1?CARRYING:1;}
     @Override protected float cap(){return burning?stats().top*TURBO_TOP:0;}
+    /**
+     * 0.4.504, the Hollow's loose earth (CalderHollow.STEEP). A wheel sinks in it: a bike on it keeps LOOSE of its way each tick,
+     * so it is ridden at a crawl however fast it was come onto. And a wheel digs in at a step: a bike on it mounts a whole block
+     * only with the way on to pay for the climb (RiddenBike's hill: twice GRAVITY of the square of its speed for a block, times what
+     * a climb costs its make), and is otherwise held at the step's foot, keeping what way it has. On firm ground a bike with no
+     * way on mounts a step and stops on it.
+     *
+     * <p>LOOSE is set so that the make decides it and not the hands. Pushed ten times a second, an ordinary bike on loose earth
+     * is going .16 at its fastest, and a step wants .22: it would take fourteen pushes a second. The Hare's push is .11 and its
+     * step wants .13: a push every fifth tick, four a second, has it up; any slower and it has stopped between pushes.
+     */
+    public static final float LOOSE=.8F;
+    private boolean onLoose(){return level().getBlockState(getOnPos()).is(BikeNightRegistry.material("hollow_earth"));}
+    @Override protected float drag(){return onLoose()?LOOSE:1;}
+    @Override protected boolean bogged(){return speedNow()*speedNow()<2*GRAVITY*stats().climb/CLIMB&&onLoose();}
+    @Override public float maxUpStep(){float up=super.maxUpStep();return up>=1&&bogged()?LIP:up;}
 
     // ------------------------------------------------------------------ the pegs
     @Override protected boolean canAddPassenger(Entity e){return e instanceof Player&&getPassengers().size()<(make()==Make.HOPPER?2:1);}

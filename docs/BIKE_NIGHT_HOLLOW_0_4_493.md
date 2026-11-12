@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -341,6 +341,90 @@ in the lights' own case.
 - The tight, steep and dark ways; what jumps out; what chases; being caught.
 - Not seen in a client. Whether the lights of the town can be seen from the lane at all depends on how far a
   reader's game draws: it is some two hundred and sixty blocks off.
+
+## 0.4.504: the steep way
+
+The proposal: "**steep:** a climb only the Hare gets going up in time."
+
+**Where.** East of the stairs (`CalderHollow.STEEP`). A turn off the stairs' first pair, level with it; a run north
+beside the stairs, at the height of their foot; four rows of loose earth; a bank of it, three whole blocks up in
+three rows; and a head beside the last stretch's first piece, level with it. The stairs take twelve rows to climb
+what the bank climbs in three, and the steep way misses the top, where a witch crosses.
+
+**Loose earth** is its own ground: dark, wet, all clods (`calder_hollow_earth`, drawn by
+`tools/draw_calder_graves_art.py`). Two things are true of a bike on it (`NightBike.LOOSE`):
+
+- **A wheel sinks.** A bike on loose earth keeps four fifths of its way each tick, beside what any ground takes. It
+  is ridden at a crawl however fast it was come onto: the Comet flat out has lost what it came with inside three
+  blocks.
+- **A wheel digs in at a step.** On firm ground a bike with no way on mounts a block and stops on it: a climb is
+  paid for after it is made. On loose earth a bike mounts a whole block only with the way on to pay for it, and is
+  otherwise held at the step's foot, keeping what way it has (it is not a wall, and takes nothing more off it).
+
+So the bank is decided by the make and not by the hands. A step wants about .22 of a block a tick of an ordinary
+bike. Pushed ten times a second, an ordinary bike on loose earth is going .16 at its fastest; it would take fourteen
+pushes a second to be up. The Hare is driven nearly twice as hard and a climb costs it a third: its step wants .13,
+and a push every fifth tick, four a second, has it up. Any slower and it has stopped between pushes.
+
+**"In time."** The bank does not wait (`BikeNightHollow.bank`). Eighty ticks after somebody is first on it (a bike
+whose middle is over one of its rows, on the ground; or somebody on their feet), all of it slides away at once,
+whoever is still on it, and they hear it go. Whoever is on it goes down and is set back on the run under it, as
+anybody who misses is. A hundred ticks later it is there again, when nobody is where it was. At the slowest the Hare
+can be pedalled up it at all, it is on the bank for about sixty of the eighty.
+
+**The Rattler.** While its card has it, and pedalled as well, the Rattler is up the bank too. The proposal says the
+Hare only. I have left it: the high way was to have been the Rattler's as well, and as built is not.
+
+The bank is no island: the run and the loose earth under it are one, and the head is another. The steep way goes in
+a reader's record with the others ("steep").
+
+One sound (46 cues).
+
+### The case
+
+One (92 in the namespace), four readers. The way is nothing else's ground and each of its pieces runs on from the
+last; it leaves the stairs and joins the last stretch level; the bank is earth down to its foot and is nobody's
+island.
+
+- **A plain bike, a push every other tick** (ten a second), is ridden to the bank's face at a crawl and no further,
+  and is never up it. The bank has had nobody on it.
+- **The Comet, flat out as far as the loose earth** and pushed as hard after, the same.
+- **The Hare, a push every fifth tick**, is up the bank and on the head with time in hand, and the steep way is one
+  it has had under it. The bank goes when its time is up, with nobody on it, and is whole again after its time.
+- **The Rattler, a push every third tick with its card held**, is up it too.
+- **The Hare again, stopped on the bank's first step**: the bank holds as long as it holds and goes from under them;
+  they go down, hear it, are told, and are back on the run under it on their bike.
+
+What CI will not have run before this push: nothing of this.
+
+### Found on the way, and what changed
+
+- The first numbers let the Comet up one step on what it came with. The loose earth is four rows now, not three.
+- Refusing the step by making it too high to roll up made it a wall: the bike lost seven tenths of its way at it
+  every tick, and the Hare could not get going again from the bank's foot. A bike that is held by loose earth now
+  keeps what way it has (`RiddenBike.bogged`).
+- Under three hundredths of a block a tick a bike has a foot down and is stopped. So pushes further apart than the
+  earth lets a bike roll between them do not add up, at any make: that is where "four a second" comes from.
+- A bike is on the ground while any of it is. One stopped with its back wheel still over the loose earth when the
+  bank goes is left standing on the loose earth, a block down, and has not missed.
+- **How far down is a miss** looked only at how far north somebody was: the lowest ground within six rows. The steep
+  way's run is four blocks under the top and beside it, so somebody off the top's west side would have had to fall
+  past the height of a run they were never going to land on. It looks across the way now as well: ground within
+  three blocks to either side (`CalderHollow.floor(x,z)`); and for somebody with no ground that near across, who is
+  over nothing at all, what it looked at before.
+- Three older cases changed with the course. The one that rides the Hopper off the stairs' east side rides it off
+  their west side: east of the stairs is the steep way's run, which is ground. The one that looks for anything in
+  the Hollow that is not a piece lets the bank be earth down to its foot. The list of islands has two more.
+
+### Not built, not seen, and left with the owner
+
+- Not ridden by a person. Four pushes a second, eighty ticks and a hundred are first guesses the case passes with.
+- Whether the Rattler should be up it is the owner's to say. Taking it away is the loose earth's one number: at
+  .72 instead of .8 the burst is no help, and the Hare then wants five pushes a second.
+- A bike that cannot climb it has four rows of crawling to find that out and four back. The earth is drawn to look
+  like what it is; nothing else tells a rider.
+- Somebody on foot walks up the bank as they would any steps, and sets it going.
+- The tight and dark ways.
 
 ## The place
 

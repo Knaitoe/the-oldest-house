@@ -152,6 +152,10 @@ public abstract class RiddenBike extends Entity {
 
     /** What this make does differently. */
     protected abstract Stats stats();
+    /** 0.4.504: what the ground under it leaves of its way each tick, beside what any ground takes: all of it, on anything firm. */
+    protected float drag(){return 1;}
+    /** 0.4.504: whether what stops it this tick is ground it has sunk into, which takes nothing more off it than its drag does, and not a wall. */
+    protected boolean bogged(){return false;}
     /** The bike is a block again: stood or laid at {@code at}, or with nowhere to go ({@code at} null). */
     protected abstract void parkAs(ServerLevel l,@Nullable BlockPos at,boolean lying);
     /** Each tick somebody rides it and stays on. */
@@ -262,7 +266,7 @@ public abstract class RiddenBike extends Entity {
         // Coming down, the front wheel catches a low lip and rolls up it, as on the ground it rolls up a block.
         catching=!grounded&&fall<0;if(catching)setOnGround(true);
         // What it asks to move by this tick: its speed is changed by the ground under it before what stopped it is looked at.
-        final double askedX=dir.x*speed,askedZ=dir.z*speed;
+        final double askedX=dir.x*speed,askedZ=dir.z*speed;final boolean bogged=bogged();
         move(MoverType.SELF,new Vec3(askedX,fall,askedZ));
         catching=false;
         // A plank ramp: the bike rides the sheet itself, where the middle of its wheels is.
@@ -317,7 +321,7 @@ public abstract class RiddenBike extends Entity {
         // it met it. By that measure a bike going flat out square at a wall, with more than two fifths of a tick's travel left
         // to the wall, was let off as a glance, came down to under the crash speed in that tick, and stood against the wall with its
         // rider on: about one hit in five at top speed, by where in its stride the bike happened to be.
-        if(horizontalCollision&&speed>.001F){
+        if(horizontalCollision&&speed>.001F&&!bogged){
             boolean stopX=Math.abs(getX()-x0-askedX)>1e-4,stopZ=Math.abs(getZ()-z0-askedZ)>1e-4;
             double asked=Math.hypot(askedX,askedZ),kept=asked<1e-6?0:Math.hypot(stopX?0:askedX,stopZ?0:askedZ)/asked;
             if(kept<s.headOn&&speed>CRASH){off(p,lean>=0?1:-1,Off.HEAD_ON);return;}
@@ -333,7 +337,7 @@ public abstract class RiddenBike extends Entity {
                 touched(hard);
             }
         }
-        speed=Mth.clamp(speed*.988F,0,Math.max(s.top*1.4F,cap()));
+        speed=Mth.clamp(speed*.988F*(grounded&&landed?drag():1),0,Math.max(s.top*1.4F,cap()));
         // Stopped is stopped (0.4.478): with a foot down the bike stands where it is, on the level or on a slope. It used to creep on
         // at whatever was left, which over the many ticks of turning round where it stood took it most of a block.
         if(landed&&speed<STOPPED)speed=0;

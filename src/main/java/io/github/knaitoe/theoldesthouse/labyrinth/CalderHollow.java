@@ -40,7 +40,7 @@ public final class CalderHollow {
     /** The far side: how wide its ground is, and the lane behind its railings. */
     public static final int SIDE=24,LANE_N=-440,LANE_S=-437;
     /** What a piece of the course is made of. */
-    public enum Made{SOD,LID,VINE,STONE}
+    public enum Made{SOD,LID,VINE,STONE,EARTH,BANK}
     /** A piece: a rectangle of ground at one height. */
     public record Piece(String name,Made made,int x0,int x1,int zSouth,int zNorth,double top){
         public boolean has(int x,int z){return x>=x0&&x<=x1&&z<=zSouth&&z>=zNorth;}
@@ -114,6 +114,35 @@ public final class CalderHollow {
         for(int x=RUN_X0;x<=RUN_X1;x++)l.setBlock(b.offset(x,-1,RUN_SOUTH-row),s,Block.UPDATE_CLIENTS);
     }
     /**
+     * 0.4.504, the steep way. The proposal: "steep: a climb only the Hare gets going up in time". East of the stairs: a turn off
+     * the stairs' first pair, a level run beside them, {@link #LOOSE_ROWS} rows of loose earth, and a bank of it, {@link #BANK_ROWS}
+     * whole blocks up in as many rows, to a head beside the last stretch's first piece. Loose earth takes the way off a bike
+     * (NightBike.LOOSE), and on it a wheel digs in at a step: a bike mounts a whole block only with the way on to pay for the climb,
+     * which nothing can be pedalled up to there but the Hare, which is driven nearly twice as hard and on which a climb costs a
+     * third (and the Rattler while its card has it, pedalled as well). And the bank does not wait: once somebody is on it, it slides away (BikeNightHollow.bank). It comes up three blocks in three rows
+     * where the stairs take twelve, and misses the top, where a witch crosses.
+     */
+    public static final int BANK_X0=4,BANK_X1=5,LOOSE_SOUTH=-388,LOOSE_ROWS=4,BANK_SOUTH=LOOSE_SOUTH-LOOSE_ROWS,BANK_ROWS=3,BANK_FOOT=1;
+    public static final List<Piece> STEEP=steepWay();
+    private static List<Piece> steepWay(){
+        var out=new ArrayList<Piece>();
+        out.add(new Piece("the steep way's turn",Made.SOD,2,BANK_X1,-371,-376,BANK_FOOT));
+        out.add(new Piece("the steep way's run",Made.SOD,BANK_X0,BANK_X1,-377,LOOSE_SOUTH+1,BANK_FOOT));
+        for(int i=0;i<LOOSE_ROWS;i++)out.add(new Piece("the loose earth "+i,Made.EARTH,BANK_X0,BANK_X1,LOOSE_SOUTH-i,LOOSE_SOUTH-i,BANK_FOOT));
+        for(int i=0;i<BANK_ROWS;i++)out.add(new Piece("bank "+i,Made.BANK,BANK_X0,BANK_X1,BANK_SOUTH-i,BANK_SOUTH-i,BANK_FOOT+1+i));
+        out.add(new Piece("the steep way's head",Made.SOD,2,BANK_X1,BANK_SOUTH-BANK_ROWS,BANK_SOUTH-BANK_ROWS-4,BANK_FOOT+BANK_ROWS));
+        return List.copyOf(out);
+    }
+    /** Whether a place (from the park's base) is on the bank, and which of its rows; -1 off it. */
+    public static int bankRow(double x,double z){
+        if(x<BANK_X0||x>=BANK_X1+1)return -1;int row=BANK_SOUTH-(int)Math.floor(z);return row>=0&&row<BANK_ROWS?row:-1;
+    }
+    /** The bank, all of it: there, or gone. It is earth from the level of its foot up. */
+    public static void bank(ServerLevel l,BlockPos b,boolean there){
+        var s=there?mat("hollow_earth"):Blocks.AIR.defaultBlockState();
+        for(int i=0;i<BANK_ROWS;i++)for(int x=BANK_X0;x<=BANK_X1;x++)for(int y=BANK_FOOT-1;y<=BANK_FOOT+i;y++)l.setBlock(b.offset(x,y,BANK_SOUTH-i),s,Block.UPDATE_CLIENTS);
+    }
+    /**
      * 0.4.501, the werewolf's ground. The proposal: "a werewolf runs alongside on a parallel island and leaps across at gaps."
      * Beside two of the plain way's gaps (the first grave to the second; the one in the last stretch): a strip he runs up beside
      * the riders, a perch at its end level with the gap, and a perch across the way from it. None of it is a way for anybody or an
@@ -129,7 +158,7 @@ public final class CalderHollow {
     public record Leap(double z,double south,double north,double x,double top,double west,double east,double run){}
     public static final List<Leap> LEAPS=List.of(new Leap(-271,-270,-272,1.5,2,-6.5,9.5,-263.5),new Leap(-409,-408,-410,.5,3,-5.5,6.5,-399.5));
     /** Every way, each in the order it is ridden; and every piece of all of them. */
-    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG);
+    public static final List<List<Piece>> WAYS=List.of(WAY,HIGH,LONG,STEEP);
     public static final List<Piece> ALL=WAYS.stream().flatMap(List::stream).toList();
     /** How high a body stands at a place on the course; NaN where there is none of it. */
     public static double top(int x,int z){for(var p:ALL)if(p.has(x,z))return p.top();for(var p:WOLFS)if(p.has(x,z))return p.top();return Double.NaN;}
@@ -166,7 +195,7 @@ public final class CalderHollow {
                 int near=way.get(i).zSouth(),end=way.get(j).zNorth();
                 if(near-end+1>=STAND){
                     int z=Math.min(near-1,end+RUN),index=out.size();
-                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":"long",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
+                    for(int k=i;k<=j;k++){var p=way.get(k);OF[base+k]=index;if(z<=p.zSouth()&&z>=p.zNorth())out.add(new Island(name(way.get(i),way.get(j)),way==WAY?"plain":way==HIGH?"high":way==LONG?"long":"steep",near,end,(p.x0()+p.x1()+1)/2.0,p.top(),z));}
                 }
                 i=j+1;
             }
@@ -175,8 +204,8 @@ public final class CalderHollow {
         }
         FAR_ISLAND=far;ISLANDS=List.copyOf(out);
     }
-    /** Lids are never part of an island: the plain way's are a bridge, and the long way's give way. */
-    private static boolean touch(Piece a,Piece c){return a.made()!=Made.LID&&c.made()!=Made.LID&&c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
+    /** Lids are never part of an island: the plain way's are a bridge, and the long way's give way. Nor is the steep way's bank, which slides. */
+    private static boolean touch(Piece a,Piece c){return a.made()!=Made.LID&&c.made()!=Made.LID&&a.made()!=Made.BANK&&c.made()!=Made.BANK&&c.zSouth()==a.zNorth()-1&&c.x0()<=a.x1()&&c.x1()>=a.x0();}
     private static String name(Piece first,Piece last){
         String a=first.name().replaceAll(" [0-9]+$",""),c=last.name().replaceAll(" [0-9]+$","");
         return a.equals(c)?a:a+" and "+c;
@@ -194,11 +223,18 @@ public final class CalderHollow {
         // The hill reaches as far as three rows past its edge, off the gate's line.
         return z>=EDGE-3.3?HILL:z<FAR_SIDE+1.3?FAR_ISLAND:-1;
     }
-    /** The lowest ground anywhere near somebody who is that far north: under it by enough, they have missed everything. */
-    public static double floor(double z){
-        double low=Double.POSITIVE_INFINITY;
-        for(var p:ALL)if(z<=p.zSouth()+1+NEAR&&z>=p.zNorth()-NEAR)low=Math.min(low,p.top());
+    /**
+     * The lowest ground anywhere near somebody who is that far north and that far across: under it by enough, they have missed
+     * everything. Near is NEAR along the way and ASIDE across it (0.4.504: the steep way runs four blocks under the top, off to
+     * one side of it, and is not what somebody who has come off the top's other side is going to land on). Somebody with
+     * nothing that near across is over nothing at all: for them it is the lowest ground that far north, wherever across it is.
+     */
+    public static final int ASIDE=3;
+    public static double floor(double x,double z){
+        double low=Double.POSITIVE_INFINITY,any=Double.POSITIVE_INFINITY;
+        for(var p:ALL)if(z<=p.zSouth()+1+NEAR&&z>=p.zNorth()-NEAR){any=Math.min(any,p.top());if(x>=p.x0()-ASIDE&&x<=p.x1()+1+ASIDE)low=Math.min(low,p.top());}
         if(z>=EDGE-NEAR||z<=FAR_SIDE+1+NEAR)low=Math.min(low,CalderGraves.level(EDGE));
+        if(low==Double.POSITIVE_INFINITY)low=any;
         return low==Double.POSITIVE_INFINITY?0:low;
     }
 
@@ -246,6 +282,9 @@ public final class CalderHollow {
                 case LID->set(l,b,x,y-1,z,half(BikeNightRegistry.COFFIN_LID.get(),true));
                 case VINE->{if(whole)set(l,b,x,y-1,z,mat("vine"));else set(l,b,x,y,z,half(BikeNightRegistry.VINE_SLAB.get(),false));}
                 case STONE->{if(whole)set(l,b,x,y-1,z,half(BikeNightRegistry.STONE_STEP.get(),true));else set(l,b,x,y,z,half(BikeNightRegistry.STONE_STEP.get(),false));}
+                case EARTH->set(l,b,x,y-1,z,mat("hollow_earth"));
+                // A bank is earth all the way down to its foot.
+                case BANK->{for(int under=BANK_FOOT-1;under<y;under++)set(l,b,x,under,z,mat("hollow_earth"));}
             }
         }
     }
