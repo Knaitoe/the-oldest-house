@@ -6300,6 +6300,71 @@ public final class BikeNightTests {
     }
     @AfterBatch(batch="stone_row") public static void stoneRowDone(ServerLevel l){done();}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.513, more than six
+    @GameTest(template="empty",batch="crowd_town",timeoutTicks=24000)
+    public static void aSeventhReaderIsGivenATownOfTheirOwnBuiltAsTheFirstIsAndANightOfItsOwn(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p=new ServerPlayer[8];var server=l.getServer();
+        final BlockPos[] mine={null};final int[] t={0};
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,room(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the park is resident"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&!SharedVignettes.privateScene(P)&&SharedVignettes.followable(P)&&BikeNight.RIDERS==NightBike.Make.values().length&&BikeNight.RIDERS==6,"a town has copies and is nobody's own: friends follow each other into it, six to a town, one to a bike");
+                // The first four: the first town, and no other begun.
+                for(int i=0;i<4;i++){
+                    p[i]=f.player("crowd_"+i,P);var e=SceneInstances.enter(p[i],P);
+                    h.assertTrue(e.door()!=null&&e.copy()==0&&!e.waiting()&&e.door().id.equals(P.entryDoorId())&&SceneInstances.kept(f.data(),p[i].getUUID(),P)==0,"reader "+i+" goes into the first town by its own door: "+e);
+                }
+                h.assertTrue(SceneInstances.copies(f.data(),P)==0,"with room for two more, no other town is begun");
+                // The fifth leaves it one place: the next town is begun. The sixth has that place.
+                for(int i=4;i<6;i++){p[i]=f.player("crowd_"+i,P);var e=SceneInstances.enter(p[i],P);h.assertTrue(e.door()!=null&&e.copy()==0,"reader "+i+" goes into the first town: "+e);
+                    h.assertTrue(SceneInstances.copies(f.data(),P)==1,"down to its last place, the next town is being made ready");}
+                // The seventh, out in a hall of the House: the first town is full, and theirs is not standing yet.
+                p[6]=NativeTestPlayers.survival(h,"crowd_6");f.players.add(p[6]);p[6].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);p[6].setNoGravity(true);
+                var e=SceneInstances.enter(p[6],P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.kept(f.data(),p[6].getUUID(),P)<0,"the seventh's door waits while their town is made: "+e);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second town to stand"))
+            .thenExecute(()->{
+                mine[0]=SceneInstances.base(server,P,1);
+                h.assertTrue(mine[0].getX()<=b.getX()-SceneInstances.WEST&&mine[0].getY()==b.getY()&&mine[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+mine[0]);
+                var e=SceneInstances.enter(p[6],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry"))&&e.door().lower.equals(f.data().door(P.entryDoorId()).lower.offset(mine[0].subtract(b)))&&SceneInstances.kept(f.data(),p[6].getUUID(),P)==1,"the seventh's door opens on the second town, and it is theirs to come back to: "+e);
+                var onward=f.data().door(SceneInstances.doorId(P,1,OnwardDoors.name(P)));
+                h.assertTrue(onward!=null&&OnwardDoors.placeOf(onward)==P&&onward.lower.equals(mine[0].offset(CalderHollow.DOOR_X,CalderGraves.level(CalderHollow.EDGE),CalderHollow.WALL)),"it has its own way on, in its own lane's wall: "+(onward==null?null:onward.lower));
+                // Its ground is kept in reach to be looked at.
+                var by=mine[0].subtract(b);f.chunks.hold(l,room(f).move(by.getX(),by.getY(),by.getZ()));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second town's park is resident"))
+            .thenExecute(()->{
+                // Built as the first is: the park and its street, block for block, but for what a night has moved in the first.
+                int all=0,same=0;var by=mine[0].subtract(b);var differ=new ArrayList<String>();
+                for(int x=-58;x<=59;x+=2)for(int z=-74;z<=2;z+=2)for(int y=-1;y<=6;y++){
+                    var at=b.offset(x,y,z);all++;var one=l.getBlockState(at);var two=l.getBlockState(at.offset(by));
+                    if(one.equals(two))same++;else if(differ.size()<6)differ.add(x+","+y+","+z+": "+one+" / "+two);
+                }
+                h.assertTrue(all>15000&&all-same<=60,"the second town's park is the first's, block for block: "+(all-same)+" of "+all+" differ, "+differ);
+                h.assertTrue(!BikeNight.begun(mine[0])&&BikeNight.begun(b),"and nothing has begun in it: the first town's night is the first town's");
+                // The seventh goes in.
+                p[6].teleportTo(l,mine[0].getX()+.5,mine[0].getY(),mine[0].getZ()-3,180,0);p[6].setNoGravity(true);p[6].setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p[6],P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(mine[0])&&BikeNight.here(p[6])&&BikeNight.bikeAt(mine[0],NightBike.Make.WASP)!=null,"waiting for a night of its own in the second town"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.of(p[6],P)==1&&mine[0].equals(LiteraryVignettes.base(p[6],P))&&b.equals(LiteraryVignettes.base(p[0],P)),"each reader's town is the one they are in");
+                for(var make:NightBike.Make.values()){
+                    var at=BikeNight.bikeAt(mine[0],make);
+                    h.assertTrue(at!=null&&at.equals(mine[0].offset(BikeNightSite.bikeAt(make)))&&l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())&&BikeNight.bikeAt(b,make)!=null&&!BikeNight.bikeAt(b,make).equals(at),"the "+make.id()+" is in the second town's rack, and the first town still has its own");
+                }
+                // One of the six goes out to the House. An eighth reader has their place in the first town; the seventh still has theirs.
+                p[0].teleportTo(f.in,f.origin.getX()+2.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);
+                p[7]=NativeTestPlayers.survival(h,"crowd_7");f.players.add(p[7]);p[7].teleportTo(f.in,f.origin.getX()+4.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);p[7].setNoGravity(true);
+                var eighth=SceneInstances.enter(p[7],P);var seventh=SceneInstances.enter(p[6],P);var first=SceneInstances.enter(p[0],P);
+                h.assertTrue(eighth.door()!=null&&eighth.copy()==0&&seventh.copy()==1,"an eighth takes the place left in the first town; the seventh keeps the second: "+eighth+" / "+seventh);
+                h.assertTrue(first.door()!=null&&first.copy()==0,"and the one who went out comes back to the town they keep while it has room: "+first);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="crowd_town") public static void crowdTownDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();done();}
+
     // ------------------------------------------------------------------------------------------------ 0.4.512, who rode with whom
     @GameTest(template="empty",batch="coop_lines",timeoutTicks=9000)
     public static void eachReadersAccountSaysWhoRodeWithThemAndWhoCarriedWhom(GameTestHelper h){

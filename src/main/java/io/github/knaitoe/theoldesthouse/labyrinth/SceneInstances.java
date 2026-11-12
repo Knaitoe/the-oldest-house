@@ -35,8 +35,9 @@ public final class SceneInstances {
     /**
      * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
+     * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}).
      */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION);
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -185,6 +186,7 @@ public final class SceneInstances {
     public static Entry enter(ServerPlayer p,LabyrinthPlace place){
         var s=p.server;var d=LabyrinthData.get(s);var me=p.getUUID();settle(d,place);
         if(place==LabyrinthPlace.LAKE_HOUSE){var lake=lake(p,d,me);if(lake!=null)return lake;}
+        if(place==LabyrinthPlace.BIKE_NIGHT)return crowd(p,d,me,place,BikeNight.RIDERS);
         int mine=kept(d,me,place);
         if(mine>=0&&built(d,place,mine)){
             // A copy they keep and nobody else is in. Only an original shared by readers from before copies can be busy.
@@ -203,6 +205,32 @@ public final class SceneInstances {
         // Nothing stands free: a copy is made ready, unless every copy the server allows exists already.
         boolean making=making(d,place)||allocate(d,place);
         return new Entry(null,-1,making);
+    }
+    /**
+     * 0.4.513, Bike night (docs/BIKE_NIGHT_PROPOSAL.md: "More than six readers get a town of their own (the scene-copy
+     * system)"). A town is not one reader's but six readers', one to a bike, so who keeps it holds nobody out. A reader goes
+     * back into the town they keep while it has room, and otherwise into the first that stands and has room: friends go into
+     * the same one, and the seventh into the next. The next is made ready when a town is down to its last place and no other
+     * has room, so the seventh seldom waits; until it stands, their door waits as any door onto a copy being made does.
+     */
+    private static Entry crowd(ServerPlayer p,LabyrinthData d,UUID me,LabyrinthPlace place,int most){
+        var s=p.server;int mine=kept(d,me,place);
+        int chosen=mine>=0&&built(d,place,mine)&&others(s,place,mine,me)<most?mine:-1;
+        for(int k=0;chosen<0&&k<=copies(d,place);k++)if(built(d,place,k)&&others(s,place,k,me)<most)chosen=k;
+        if(chosen<0)return new Entry(null,-1,making(d,place)||allocate(d,place));
+        if(chosen!=mine)keep(d,me,place,chosen);
+        if(others(s,place,chosen,me)+1>=most-1){
+            boolean room=false;
+            for(int k=0;k<=copies(d,place);k++)room|=k!=chosen&&(!built(d,place,k)||others(s,place,k,me)<most);
+            if(!room)allocate(d,place);
+        }
+        return new Entry(entry(d,place,chosen),chosen,false);
+    }
+    /** How many living readers other than {@code reader} are in copy {@code k}. Spectators are nobody. */
+    private static int others(MinecraftServer s,LabyrinthPlace p,int k,UUID reader){
+        int n=0;
+        for(var q:s.getPlayerList().getPlayers())if(!q.getUUID().equals(reader)&&q.isAlive()&&!q.isSpectator()&&at(s,p,q.level().dimension(),q.position())==k)n++;
+        return n;
     }
     /** While one copy stands free beside the one just taken, nothing more is built; otherwise the next is made ready ahead. */
     private static void ahead(MinecraftServer s,LabyrinthData d,LabyrinthPlace place,int taken){

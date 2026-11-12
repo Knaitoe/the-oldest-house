@@ -116,6 +116,8 @@ public final class BikeNight {
     }
     private static final Map<Long,Night> NIGHTS=new HashMap<>();
     public static void clearAll(){NIGHTS.clear();}
+    /** 0.4.513: how many readers a town takes: one to a bike. More get a town of their own (SceneInstances.crowd). */
+    public static final int RIDERS=NightBike.Make.values().length;
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
 
     /** The House does not deal the night until it can be finished. */
