@@ -112,6 +112,10 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<EntityType<?>,EntityType<PackBike>> PACK_BIKE=ENTITIES.register("pack_bike",
         ()->EntityType.Builder.<PackBike>of(PackBike::new,MobCategory.MISC).sized(.6F,.9F).clientTrackingRange(8).updateInterval(1).noSave().noSummon().build("pack_bike"));
 
+    /** 0.4.511: a caught reader's bike chained to a school fence in a later hall (ChainedBike). One reader's; never saved. */
+    public static final DeferredHolder<EntityType<?>,EntityType<ChainedBike>> CHAINED_BIKE=ENTITIES.register("chained_bike",
+        ()->EntityType.Builder.<ChainedBike>of(ChainedBike::new,MobCategory.MISC).sized(1.4F,1.3F).clientTrackingRange(8).updateInterval(20).noSave().noSummon().build("chained_bike"));
+
     /** 0.4.484: one of the town's cars (TownCar): a body the night's traffic moves. Never saved. */
     public static final DeferredHolder<EntityType<?>,EntityType<TownCar>> TOWN_CAR=ENTITIES.register("town_car",
         ()->EntityType.Builder.<TownCar>of(TownCar::new,MobCategory.MISC).sized(1.9F,1.45F).clientTrackingRange(10).updateInterval(1).noSave().noSummon().build("town_car"));

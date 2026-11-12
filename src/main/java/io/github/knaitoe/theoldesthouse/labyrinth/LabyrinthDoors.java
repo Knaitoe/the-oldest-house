@@ -444,6 +444,7 @@ public final class LabyrinthDoors {
             LabyrinthHazards.onArrive(p, place);
             HazardVariety.onArrive(p,place);
             LabyrinthLighting.onArrive(p, place);
+            BikeNightHalls.arrived(p, place, entry);
             HouseReadSites.prepareNext(p);
             LabyrinthMaze.forget(p.getUUID());
             LabyrinthDoorLeaks.send(p);

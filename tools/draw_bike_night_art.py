@@ -185,6 +185,23 @@ def steel():
     return im
 
 
+def chainlink():
+    """0.4.511, a school yard's fence: galvanised wire in diamonds, and nothing between."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 4 == 0 or (x - y) % 4 == 0:
+                dot(im, x, y, shade('#9aa0a4', ((x * 5 + y * 3) % 3 - 1) * 6))
+    return im
+
+
+def brass():
+    """A padlock's body."""
+    im = new('#b8943a', 46398, 5)
+    fill(im, 0, 0, 16, 1, '#d2b25a')
+    return im
+
+
 def plywood():
     """The ramp's sheet: plywood scuffed by tyres up the middle, a nail head at each corner."""
     im = new('#b89a66', 46311, 5); rnd = random.Random(46312)
@@ -227,6 +244,7 @@ def textures():
                 DIR + 'timber.png': timber(), DIR + 'number.png': number()})
     out.update({f'{DIR}{make}_rust.png': rust_card(make, 51000 + i) for i, make in enumerate(MAKES)})
     out[DIR + 'rust.png'] = rusted()
+    out[DIR + 'chainlink.png'] = chainlink(); out[DIR + 'brass.png'] = brass()
     return out
 
 
@@ -590,6 +608,31 @@ def lying(parts):
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------- a school fence, and a chain
+def school_fence():
+    """0.4.511: two bays of a school yard's fence, two blocks long and a block and a half high, in the plane through the middle of its
+    block: three posts, a rail along the top, and wire between. (ChainedBike: what a caught reader's bike is chained to.)"""
+    p = []
+    for x in (-7.5, 7.5, 22.5):
+        bar(p, [x, 0, 7.5], [x + 1, 25, 8.5], 'r')
+    bar(p, [-7.4, 23, 7.4], [23.4, 24, 8.6], 'r')
+    for x0 in (-6.5, 8.5):
+        for y0, h in ((0, 16), (16, 7)):
+            plate(p, [x0, y0, 8], [x0 + 14, y0 + h, 8], 'm', {'north': (0, 0), 'south': (0, 0)})
+    return p
+
+
+def bike_chain():
+    """0.4.511: a chain round a bike's tube and through a fence's wire, about the middle of its block: two runs from the one to the
+    other, a link closing each end, and a padlock hung on the near end."""
+    p = []
+    bar(p, [7.6, 9, 5.4], [8.4, 9.6, 10.6], 'r'); bar(p, [7.6, 6.4, 5.4], [8.4, 7, 10.6], 'r')
+    bar(p, [7.5, 6.3, 10.2], [8.5, 9.7, 10.9], 'r'); bar(p, [7.5, 6.3, 5.1], [8.5, 9.7, 5.8], 'r')
+    bar(p, [7.2, 3.6, 10.3], [8.8, 5.6, 11.3], 'b')
+    bar(p, [7.45, 5.4, 10.65], [7.75, 6.5, 11.05], 'r'); bar(p, [8.25, 5.4, 10.65], [8.55, 6.5, 11.05], 'r')
+    return p
+
+
 # ---------------------------------------------------------------------------------------------------------------- the rack and the ramps
 def rack():
     """One place in the rack, seen from the side the bikes come to it (they stand to the south, pointing north): two hoops for a front
@@ -664,6 +707,8 @@ def models():
     m['cranks_rust'] = model(cranks(), {'c': 'rust', 'k': 'tyre'}, 'rust')
     m['lamp_glow'] = model(lamp_glow(), {'l': 'glass_lit'}, 'glass_lit')
     m['rack'] = model(rack(), {'r': 'steel'}, 'steel')
+    m['school_fence'] = model(school_fence(), {'r': 'steel', 'm': 'chainlink'}, 'steel')
+    m['bike_chain'] = model(bike_chain(), {'r': 'steel', 'b': 'brass'}, 'steel')
     for part in ('low', 'high', 'steep'):
         m[f'ramp_{part}'] = model(ramp(part), RAMP_TEXTURES, 'plywood')
     return m
@@ -710,7 +755,7 @@ def java_shapes():
 
 
 NAMES = {'block.the_oldest_house.night_bike': 'Bike', 'block.the_oldest_house.bike_rack': 'Bike rack', 'block.the_oldest_house.bike_ramp': 'Plank ramp',
-         'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike', 'entity.the_oldest_house.pack_bike': 'Bike'}
+         'block.the_oldest_house.bike_beam': 'Lamplight', 'entity.the_oldest_house.night_bike': 'Bike', 'entity.the_oldest_house.pack_bike': 'Bike', 'entity.the_oldest_house.chained_bike': 'Bike'}
 
 
 # ---------------------------------------------------------------------------------------------------------------- review
