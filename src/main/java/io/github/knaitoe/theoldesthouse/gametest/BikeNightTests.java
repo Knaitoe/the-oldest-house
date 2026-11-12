@@ -4663,6 +4663,8 @@ public final class BikeNightTests {
                     boolean part=!Double.isNaN(here)&&y>=Math.floor(here)-2&&y<=Math.floor(here)+1;
                     // The steep way's bank is earth down to its foot.
                     part|=CalderHollow.bankRow(x+.5,z+.5)>=0&&y>=CalderHollow.BANK_FOOT-1&&y<here;
+                    // The tight way's tendril has walls on it, and gates.
+                    part|=CalderHollow.tendrilRow(x+.5,z+.5)>=0&&y>=0&&y<CalderHollow.GATE_HIGH;
                     if(!part&&stray++<4)strays+=" "+s.getBlock()+" at "+x+","+y+","+z;
                     h.assertTrue(mine(s),"nothing vanilla floats there: "+s+" at "+x+","+y+","+z);
                 }
@@ -4701,7 +4703,8 @@ public final class BikeNightTests {
                         case LID->s.is(BikeNightRegistry.COFFIN_LID.get())&&s.getValue(net.minecraft.world.level.block.SlabBlock.TYPE)==net.minecraft.world.level.block.state.properties.SlabType.TOP;
                         case VINE->whole?s.is(vine):s.is(BikeNightRegistry.VINE_SLAB.get());
                         case STONE->s.is(BikeNightRegistry.STONE_STEP.get());
-                        case EARTH,BANK->s.is(BikeNightRegistry.material("hollow_earth"));};
+                        case EARTH,BANK->s.is(BikeNightRegistry.material("hollow_earth"));
+                        case TENDRIL->s.is(vine);};
                     h.assertTrue(ok,piece.name()+" is made of "+piece.made()+": "+s);
                     // Where a body stands on it is where the piece says.
                     var at=b.offset(piece.x0(),whole?y-1:y,piece.zNorth());
@@ -4806,7 +4809,7 @@ public final class BikeNightTests {
             .thenExecute(()->{
                 var islands=CalderHollow.ISLANDS;var names=islands.stream().map(CalderHollow.Island::name).toList();
                 h.assertTrue(names.equals(List.of("the hill","first grave","second grave","third grave","the fences","the grave past the lids","vine","stair and the top","stretch","stretch","the far side",
-                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot","the steep way's turn and the loose earth","the steep way's head")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's, the long way's and the steep way's: "+names);
+                    "high grave","high grave","high grave and the high way's foot","long step and the long way's foot","the steep way's turn and the loose earth","the steep way's head","the tight way's step and the tight way's foot")),"the islands: the plain way's in the order they are ridden, the far side, then the high way's, the long way's, the steep way's and the tight way's: "+names);
                 h.assertTrue(islands.get(CalderHollow.FAR_ISLAND).name().equals("the far side"),"the far side is where it says");
                 h.assertTrue(CalderHollow.HILL==0&&islands.get(0).name().equals("the hill"),"the hill is the first");
                 // The lids are a bridge: somebody standing on one has no island under them.
@@ -5768,4 +5771,131 @@ public final class BikeNightTests {
         q.thenSucceed();
     }
     @AfterBatch(batch="hollow_steep") public static void hollowSteepDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.505, the tight way
+    /** Where across the tendril the line through its gates is at a row (or a part of one): through each opening's middle, swinging between. */
+    private static double tightLine(double row){
+        int gates=(CalderHollow.TIGHT_ROWS-1-CalderHollow.GATE_FIRST)/CalderHollow.GATE_EVERY+1;double last=CalderHollow.GATE_FIRST+CalderHollow.GATE_EVERY*(gates-1.0);
+        double west=CalderHollow.TIGHT_X0+.5,mid=(CalderHollow.TIGHT_X0+CalderHollow.TIGHT_X1+1)/2.0;
+        if(row<=CalderHollow.GATE_FIRST)return west;
+        return mid-(mid-west)*Math.cos(Math.PI*(Math.min(row,last+CalderHollow.GATE_EVERY)-CalderHollow.GATE_FIRST)/CalderHollow.GATE_EVERY);
+    }
+    /**
+     * One rider at the tight way: from the high way's foot into the tendril and along the line through its gates, looking {@code
+     * lead} rows ahead, with a push on the pedals every {@code every} ticks and going no faster than {@code cap} (if that is
+     * anything). The step ends when they are on the tight way's foot ({@code out[i]} 0), off their bike (1), gone down (2), or
+     * after {@code ticks} (3). {@code far[i]} is the furthest north they rode; {@code took[i]} how long it was.
+     */
+    private static net.minecraft.gametest.framework.GameTestSequence tightRide(net.minecraft.gametest.framework.GameTestSequence q,GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer[] p,NightBike[] mine,int i,int every,float cap,double lead,int ticks,double[] far,int[] out,int[] took){
+        var b=f.base(P);final int[] t={0,0};
+        return q.thenExecute(()->{mine[i].moveTo(b.getX()+CalderHollow.TIGHT_X0+.5,b.getY(),b.getZ()+CalderHollow.TIGHT_SOUTH+2.5,180,0);p[i].setYRot(180);mine[i].steady(0,0);far[i]=99;out[i]=-1;took[i]=0;t[0]=0;t[1]=BikeNightHollow.fell(p[i]);})
+            .thenWaitUntil(()->{
+                double x=mine[i].getX()-b.getX(),y=mine[i].getY()-b.getY(),z=mine[i].getZ()-b.getZ();boolean riding=p[i].getVehicle()==mine[i],down=BikeNightHollow.fell(p[i])>t[1];
+                if(riding&&!down){
+                    far[i]=Math.min(far[i],z);double row=CalderHollow.TIGHT_SOUTH+.5-z;
+                    // The way the line is going a little ahead, and back onto it by how far off it they are.
+                    double slope=(tightLine(row+lead+.1)-tightLine(row+lead-.1))/.2,off=tightLine(row)-x;
+                    p[i].setYRot(mine[i].onGround()?(float)Math.toDegrees(Math.atan2(-(slope+1.5*off),-1)):mine[i].getYRot());
+                    if(mine[i].onGround()){pedalWell(mine[i],t[0],every);if(cap>0&&mine[i].speedNow()>cap)mine[i].steady(mine[i].leanNow(),cap);}
+                }
+                boolean up=riding&&!down&&mine[i].onGround()&&z<CalderHollow.TIGHT_SOUTH-CalderHollow.TIGHT_ROWS-1.5&&Math.abs(y-1)<.05;
+                if(up||down||!riding||++t[0]>=ticks){out[i]=up?0:!riding?1:down?2:3;took[i]=t[0];}
+                h.assertTrue(out[i]>=0,"waiting for them to be through, off, down, or to have had long enough: at "+where(b,mine[i]));
+            })
+            // Out of the way, on their bike, on the hill: so that the tendril can come back.
+            .thenExecute(()->{
+                var hill=islandPlace(b,CalderHollow.HILL);var make=mine[i].make();
+                if(p[i].getVehicle()!=mine[i]){p[i].teleportTo(hill.x,hill.y,hill.z+4);remount(h,f,p[i],mine,i,make);}
+                if(p[i].getVehicle() instanceof NightBike bike){mine[i]=bike;bike.keys(false,false);bike.steady(0,0);bike.moveTo(hill.x-5+2*i,hill.y,hill.z+4,180,0);}
+            })
+            .thenWaitUntil(()->h.assertTrue(p[i].getVehicle()==mine[i]&&!BikeNightHollow.curlGoing(b)&&BikeNightHollow.curlGone(b)==0,"waiting for them to be on their bike on the hill, and the tendril whole again: "+where(b,p[i])+", "+BikeNightHollow.curlGone(b)+" rows gone"));
+    }
+
+    @GameTest(template="empty",batch="hollow_tight",timeoutTicks=9000)
+    public static void theTightWayCurlsUpBehindWhoeverIsInItAndOnlyTheWaspIsThroughItsGatesInTime(GameTestHelper h){
+        var f=park(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p=new ServerPlayer[3];final NightBike[] mine=new NightBike[3];
+        final double[] far=new double[3];final int[] out=new int[3],took=new int[3];final long[] since={0};
+        NightBike.Make[] makes={NightBike.Make.WASP,NightBike.Make.LAMP,NightBike.Make.COMET};var vine=BikeNightRegistry.material("vine");
+        int rows=CalderHollow.TIGHT_ROWS,foot=islandNamed("the tight way's step and the tight way's foot");
+        // Where the second gate's wall faces a rider coming up to it, and the third's.
+        double second=CalderHollow.TIGHT_SOUTH-CalderHollow.GATE_FIRST-CalderHollow.GATE_EVERY+1,third=second-CalderHollow.GATE_EVERY;
+        var q=h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                var way=CalderHollow.TIGHT;int gates=0;
+                // It is nothing else's ground; it runs on from the high way's foot, and onto the steep way's turn by the stairs' foot.
+                for(var piece:way)for(int x=piece.x0();x<=piece.x1();x++)for(int z=piece.zNorth();z<=piece.zSouth();z++){int over=0;for(var other:CalderHollow.ALL)if(other.has(x,z))over++;h.assertTrue(over==1,piece.name()+" shares "+x+","+z);}
+                h.assertTrue(CalderHollow.top(CalderHollow.TIGHT_X0,CalderHollow.TIGHT_SOUTH+1)==0&&CalderHollow.top(CalderHollow.TIGHT_X0,CalderHollow.TIGHT_SOUTH)==0,"its near end is level with the high way's foot, and runs on from it");
+                var last=way.get(way.size()-1);h.assertTrue(CalderHollow.top(last.x0(),last.zNorth()-1)==last.top()&&last.top()==CalderHollow.BANK_FOOT,"its foot runs onto the steep way's turn, level with it: "+last);
+                // Walls either side, three high; a gate every six rows from the sixth, open one block wide, west and east by turns.
+                for(int row=0;row<rows;row++){
+                    int z=CalderHollow.TIGHT_SOUTH-row,gate=CalderHollow.gate(row);if(gate>=0)gates++;
+                    for(int x=CalderHollow.TIGHT_X0-1;x<=CalderHollow.TIGHT_X1+1;x++){
+                        h.assertTrue(l.getBlockState(b.offset(x,-1,z)).is(vine),"the tendril's floor at "+x+","+z);
+                        boolean wall=x<CalderHollow.TIGHT_X0||x>CalderHollow.TIGHT_X1||gate>=0&&x!=CalderHollow.gateOpen(gate);
+                        for(int y=0;y<CalderHollow.GATE_HIGH;y++)h.assertTrue(wall?l.getBlockState(b.offset(x,y,z)).is(vine):l.getBlockState(b.offset(x,y,z)).isAir(),(wall?"a wall":"nothing")+" at "+x+","+y+","+z+": "+l.getBlockState(b.offset(x,y,z)));
+                    }
+                    h.assertTrue(CalderHollow.stood(CalderHollow.TIGHT_X0+.5,0,z+.5)==-1,"the tendril's row "+row+" is nobody's island");
+                }
+                h.assertTrue(gates==4&&CalderHollow.gate(CalderHollow.GATE_FIRST)==0&&CalderHollow.gateOpen(0)==CalderHollow.TIGHT_X0&&CalderHollow.gateOpen(1)==CalderHollow.TIGHT_X1&&CalderHollow.gateOpen(2)==CalderHollow.TIGHT_X0,"four gates, west and east by turns: "+gates);
+                h.assertTrue(CalderHollow.ISLANDS.get(foot).way().equals("tight"),"its foot is an island of its own");
+                for(int i=0;i<3;i++)p[i]=f.player("hollow_tight_"+makes[i].getSerializedName(),P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[2].getBbHeight()<1.1&&BikeNight.here(p[2]),"waiting for the night"))
+            .thenExecute(()->{for(int i=0;i<3;i++)mine[i]=take(h,f,p[i],makes[i]);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("wasp")&&f.own(p[1],P).getString("Bike").equals("lamp")&&f.own(p[2],P).getString("Bike").equals("comet"),"waiting for the bikes to be theirs"))
+            .thenExecute(()->{for(int i=0;i<3;i++){var at=islandPlace(b,CalderHollow.HILL);mine[i].moveTo(at.x-5+2*i,at.y,at.z+4,180,0);}
+                h.assertTrue(!BikeNightHollow.curlGoing(b)&&BikeNightHollow.curlGone(b)==0,"the tendril is whole and still before anybody is on it");});
+        // A plain bike, pedalled as hard as it goes: it cannot be turned into the second gate, and its rider comes off at the gate's wall.
+        q=tightRide(q,h,f,p,mine,1,3,0,.5,700,far,out,took)
+            .thenExecute(()->h.assertTrue(out[1]==1&&far[1]>second&&far[1]<second+1,"the Lamp's rider comes off at the second gate's wall: "+out[1]+", at "+far[1]+" after "+took[1]));
+        // The same, going slowly enough to be turned through a gate: the tendril has gone from under it before the third.
+        q=tightRide(q,h,f,p,mine,1,3,.18F,.5,700,far,out,took)
+            .thenExecute(()->h.assertTrue(out[1]==2&&far[1]>third,"going slowly enough to turn, the Lamp's rider goes down with the tendril before the third gate: "+out[1]+", at "+far[1]+" after "+took[1]));
+        // The Comet, flat out: no better.
+        q=tightRide(q,h,f,p,mine,2,3,0,.5,700,far,out,took)
+            .thenExecute(()->h.assertTrue(out[2]!=0&&far[2]>CalderHollow.TIGHT_SOUTH-rows,"the Comet's rider is not through it either: "+out[2]+", at "+far[2]+" after "+took[2]));
+        // The Wasp, pedalled as hard: through every gate and onto the foot, ahead of it.
+        q=q.thenExecute(()->since[0]=BikeNightHollow.fell(p[0]));
+        q=tightRide(q,h,f,p,mine,0,3,0,.5,700,far,out,took)
+            .thenExecute(()->{
+                h.assertTrue(out[0]==0&&far[0]<CalderHollow.TIGHT_SOUTH-rows-1.5,"the Wasp is through every gate and on the tight way's foot: "+out[0]+", at "+far[0]+" after "+took[0]);
+                h.assertTrue(BikeNightHollow.ways(p[0]).contains("tight")&&BikeNightHollow.fell(p[0])==since[0],"the tight way is one they have had under them, and they did not go down: "+BikeNightHollow.ways(p[0]));
+                h.assertTrue(took[0]<BikeNightHollow.CURL_GRACE+rows/BikeNightHollow.CURL_PACE,"in less time than the tendril takes to go: "+took[0]);
+            });
+        // And with a push every fourth tick, it is through still.
+        q=tightRide(q,h,f,p,mine,0,4,0,.5,700,far,out,took)
+            .thenExecute(()->h.assertTrue(out[0]==0,"a Wasp pushed five times a second is through it too: "+out[0]+", at "+far[0]+" after "+took[0]));
+        // The tendril itself: somebody standing in its first row sets it going; it goes row by row, walls and gates and all, and comes back whole.
+        q.thenExecute(()->{p[1].stopRiding();p[1].teleportTo(b.getX()+CalderHollow.TIGHT_X0+2.5,b.getY(),b.getZ()+CalderHollow.TIGHT_SOUTH+.5);})
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.curlGoing(b),"waiting for somebody on foot in it to set it going"))
+            .thenExecute(()->{since[0]=l.getGameTime();h.assertTrue(BikeNightHollow.curlGone(b)==0&&l.getBlockState(b.offset(CalderHollow.TIGHT_X0,-1,CalderHollow.TIGHT_SOUTH)).is(vine),"none of it has gone yet");})
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.curlGone(b)>=CalderHollow.GATE_FIRST+1,"waiting for it to have curled up past its first gate"))
+            .thenExecute(()->{
+                long took2=l.getGameTime()-since[0];int gone=BikeNightHollow.curlGone(b);
+                h.assertTrue(Math.abs(gone-(took2-BikeNightHollow.CURL_GRACE)*BikeNightHollow.CURL_PACE)<1.5,"at its pace, after its grace: "+gone+" rows in "+took2);
+                int z=CalderHollow.TIGHT_SOUTH-CalderHollow.GATE_FIRST;
+                for(int x=CalderHollow.TIGHT_X0-1;x<=CalderHollow.TIGHT_X1+1;x++)for(int y=-1;y<CalderHollow.GATE_HIGH;y++)h.assertTrue(l.getBlockState(b.offset(x,y,z)).isAir(),"its first gate's row is gone, floor and walls and gate: "+x+","+y);
+                h.assertTrue(l.getBlockState(b.offset(CalderHollow.TIGHT_X0,-1,CalderHollow.TIGHT_SOUTH-rows+1)).is(vine),"its far end is there yet");
+                // They go down with it (a reader in a case is moved down by hand).
+                p[1].teleportTo(p[1].getX(),b.getY()-4,p[1].getZ());
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.curlGone(b)==rows&&!BikeNightHollow.curlGoing(b),"waiting for all of it to have gone"))
+            .thenExecute(()->{since[0]=l.getGameTime();h.assertTrue(sounded(p[1],"hollow.curl"),"heard going");})
+            .thenWaitUntil(()->h.assertTrue(BikeNightHollow.curlGone(b)==0,"waiting for it to be back"))
+            .thenExecute(()->{
+                h.assertTrue(l.getGameTime()-since[0]>=BikeNightHollow.CURL_BACK-1,"after its time: "+(l.getGameTime()-since[0]));
+                int z=CalderHollow.TIGHT_SOUTH-CalderHollow.GATE_FIRST;
+                h.assertTrue(l.getBlockState(b.offset(CalderHollow.TIGHT_X0,-1,z)).is(vine)&&l.getBlockState(b.offset(CalderHollow.TIGHT_X0+1,0,z)).is(vine)&&l.getBlockState(b.offset(CalderHollow.TIGHT_X0,0,z)).isAir()&&l.getBlockState(b.offset(CalderHollow.TIGHT_X0-1,2,z)).is(vine),"whole again: floor, gate with its opening, walls");
+            })
+            .thenSucceed();
+    }
+    private static boolean remount(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,NightBike[] mine,int i,NightBike.Make make){
+        var b=f.base(P);var l=f.level(P);
+        // Their bike is lying somewhere: a new one of its make, with them on it.
+        for(var at:BlockPos.betweenClosed(b.offset(-12,-6,CalderHollow.FAR),b.offset(14,8,CalderHollow.EDGE+10)))if(l.getBlockState(at).is(BikeNightRegistry.BIKE_BLOCK.get())&&l.getBlockState(at).getValue(NightBikeBlock.MAKE)==make){hand(f,p,at.immutable());hand(f,p,at.immutable());break;}
+        if(p.getVehicle() instanceof NightBike bike){mine[i]=bike;return true;}
+        return false;
+    }
+    @AfterBatch(batch="hollow_tight") public static void hollowTightDone(ServerLevel l){done();}
 }

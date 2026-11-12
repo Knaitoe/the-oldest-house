@@ -1,4 +1,4 @@
-# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504)
+# Bike night 23: the Hollow (begun, 0.4.493; its plain way, 0.4.494; somebody who misses, 0.4.495; the high way, 0.4.496; the long way, 0.4.497; the way out, 0.4.498; the steep way, 0.4.504; the tight way, 0.4.505)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"):
 
@@ -425,6 +425,64 @@ What CI will not have run before this push: nothing of this.
   like what it is; nothing else tells a rider.
 - Somebody on foot walks up the bank as they would any steps, and sets it going.
 - The tight and dark ways.
+
+## 0.4.505: the tight way
+
+The proposal: "**tight:** a twisting path along the vine only the Wasp turns sharply enough for."
+
+**Where.** East of the vine (`CalderHollow.TIGHT`), from the high way's foot to the foot of the stairs, where it
+runs onto the steep way's turn. A tendril of the vine, twenty-six rows, five blocks across between walls of vine
+three blocks high. Every sixth row from the sixth it is crossed by a wall with an opening one block wide: at its
+west side, then its east, then its west, then its east. So the way through swings four blocks across in six along,
+four times. Nothing gets over a wall three blocks high.
+
+**It curls up** from its near end behind whoever is in it (`BikeNightHollow.curl`), as the long way's run gives
+way: ten ticks after somebody is first on it, and then at .21 of a row a tick, floor, walls and gates. All of it
+goes, whoever is still in it, and they go down and are set back as anybody who misses is. A hundred ticks after its
+last row it is whole again, when nobody is where it was.
+
+**Why the Wasp.** Nothing is asked for but the bikes as they already are. At a bike's top speed the Wasp turns in
+under two blocks and an ordinary bike in three; the line through the gates wants about two. An ordinary bike can be
+turned through a gate only below about .19 of a block a tick, and the tendril is gone from under it at that. Going
+faster, it meets the second gate's wall square, and its rider comes off as off any wall.
+
+### The case
+
+One (93 in the namespace), three readers, each ridden by the same hands: along the line through the gates, looking
+half a row ahead, a push every third tick.
+
+- The way is nothing else's ground; it runs on from the high way's foot and onto the steep way's turn, level with
+  each; its walls and its four gates are where they are said to be; none of its rows is anybody's island.
+- **A plain bike, pedalled as hard as it goes**, cannot be turned into the second gate: its rider comes off at the
+  gate's wall.
+- **The same, going no faster than .18**: goes down with the tendril before the third gate.
+- **The Comet, flat out**, is not through it either.
+- **The Wasp** is through every gate and on the tight way's foot, in less time than the tendril takes to go, and
+  the tight way is one it has had under it. With a push every fourth tick it is through still.
+- **The tendril itself**: somebody on foot in its first row sets it going; it goes at its pace after its grace,
+  floor and walls and gate; all of it goes; it is heard; after its time it is whole again, gates and all.
+
+It passed three times running.
+
+### Found on the way, and what changed
+
+- At .19 of a row a tick the Comet was through: it loses its way against the walls, is turned where it stands, and
+  gets going again, and that took it a hundred and fifty-six ticks against the Wasp's hundred and twenty-five. At
+  .22 the Wasp's margin was a tenth. It is .21.
+- The hands matter. Looking a whole row ahead instead of half a row, the same hands put the Wasp into the second
+  gate's wall. The case says what a bike can do ridden well, not what a person will do.
+
+### Not built, not seen, and left with the owner
+
+- **Not ridden by a person, and I expect it to be hard.** The Wasp at its top speed turns in 1.83 blocks and the
+  line through the gates wants about two: there is a tenth to spare in the turning and about a sixth in the time.
+  If it is too hard, the gates can stand seven rows apart instead of six, and the pace come down with them; the
+  window between the Wasp and the rest narrows as the Wasp's margin widens, because the Wasp's whole advantage in a
+  turn is five to three.
+- What is inside it is only seen from inside it: from the vine it is a wall of green three blocks high.
+- A rider put off at a gate is on foot in a tendril that is curling up. They go down with it and are set back, with
+  their bike laid by them, as anybody is.
+- The dark way.
 
 ## The place
 

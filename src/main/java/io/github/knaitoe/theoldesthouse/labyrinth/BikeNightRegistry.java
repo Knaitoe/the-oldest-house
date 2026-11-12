@@ -200,6 +200,8 @@ public final class BikeNightRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> UNDER=sound("hollow.under");
     /** 0.4.502: the headless rider's horse. */
     public static final DeferredHolder<SoundEvent,SoundEvent> HOOVES=sound("hollow.hooves");
+    /** 0.4.505: the tight way's tendril curling up. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> CURL=sound("hollow.curl");
     /** 0.4.504: the steep way's bank sliding away. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SLIDE_AWAY=sound("hollow.slide");
     /** 0.4.503: something jumping out. */

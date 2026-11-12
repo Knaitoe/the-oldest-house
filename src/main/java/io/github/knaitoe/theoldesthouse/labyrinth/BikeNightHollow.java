@@ -44,6 +44,8 @@ public final class BikeNightHollow {
         long runAt=-1,runBackAt=-1;int runGone;
         /** 0.4.504, the steep way's bank: when somebody was first on it (-1 while nobody has been), whether it is gone, and when it is back. */
         long bankAt=-1,bankBackAt=-1;boolean bankGone;
+        /** 0.4.505, the tight way's tendril: as the long way's run. */
+        long curlAt=-1,curlBackAt=-1;int curlGone;
         /** 0.4.498: the ways each reader has had under them other than the plain one; whether the back gate is open; who is out by it. */
         final Map<UUID,java.util.TreeSet<String>> ways=new HashMap<>();boolean gate;final java.util.Set<UUID> through=new java.util.HashSet<>();
         /** 0.4.499: who a specter has caught tonight. */
@@ -118,6 +120,7 @@ public final class BikeNightHollow {
     static void tick(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
         run(l,n,here);
         bank(l,n,here);
+        curl(l,n,here);
         out(l,n,here);
         for(var p:here){
             if(!p.isAlive()||p.isSpectator()||n.hollow.taken.contains(p.getUUID()))continue;
@@ -289,6 +292,43 @@ public final class BikeNightHollow {
         l.sendParticles(earth,foot.getX()+1,foot.getY()+1,foot.getZ()-1,120,.7,1.2,1.2,.05);
         l.playSound(null,foot.getX()+1,foot.getY()+1,foot.getZ()-1,BikeNightRegistry.SLIDE_AWAY.get(),SoundSource.BLOCKS,1F,.95F+l.random.nextFloat()*.1F);
     }
+    /**
+     * 0.4.505, the tight way's tendril (CalderHollow.TIGHT). It curls up from its near end behind whoever is in it: CURL_GRACE
+     * ticks after somebody is first on it, and then CURL_PACE rows a tick, its walls and gates with it. All of it goes, whoever
+     * is still in it; CURL_BACK ticks after its last row it is whole again, when nobody is where it was.
+     */
+    public static final int CURL_GRACE=10,CURL_BACK=100;public static final float CURL_PACE=.21F;
+    static void curl(ServerLevel l,BikeNight.Night n,List<ServerPlayer> here){
+        var c=n.hollow;int rows=CalderHollow.TIGHT_ROWS;
+        if(!l.isLoaded(n.base.offset(CalderHollow.TIGHT_X0,0,CalderHollow.TIGHT_SOUTH))||!l.isLoaded(n.base.offset(CalderHollow.TIGHT_X0,0,CalderHollow.TIGHT_SOUTH-rows)))return;
+        if(c.curlAt<0){
+            if(c.curlBackAt>=0){
+                if(n.tick<c.curlBackAt)return;
+                for(var p:here){var at=from(n,p.position());if(CalderHollow.tendrilRow(at.x,at.z)>=0&&at.y>-4&&at.y<CalderHollow.GATE_HIGH+2)return;}
+                for(int i=0;i<rows;i++)CalderHollow.tendrilRow(l,n.base,i,true);
+                var mid=n.base.offset((CalderHollow.TIGHT_X0+CalderHollow.TIGHT_X1+1)/2,0,CalderHollow.TIGHT_SOUTH-rows/2);
+                l.sendParticles(ParticleTypes.WHITE_SMOKE,mid.getX(),mid.getY()+.5,mid.getZ()+.5,80,2.5,.6,rows/2.0,.01);
+                c.curlGone=0;c.curlBackAt=-1;return;
+            }
+            for(var p:here){
+                if(!p.isAlive()||p.isSpectator())continue;
+                Entity body=p.getVehicle() instanceof NightBike b?b:p;var at=from(n,body.position());
+                if(Math.abs(at.y)<.1&&CalderHollow.tendrilRow(at.x,at.z)>=0&&(body==p||body.onGround())){c.curlAt=n.tick;break;}
+            }
+            return;
+        }
+        int gone=Mth.clamp((int)Math.floor((n.tick-c.curlAt-CURL_GRACE)*CURL_PACE),0,rows);
+        while(c.curlGone<gone){
+            int row=c.curlGone++;CalderHollow.tendrilRow(l,n.base,row,false);
+            var at=n.base.offset((CalderHollow.TIGHT_X0+CalderHollow.TIGHT_X1+1)/2,0,CalderHollow.TIGHT_SOUTH-row);
+            l.sendParticles(new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK,BikeNightRegistry.material("vine").defaultBlockState()),at.getX(),at.getY()+.5,at.getZ()+.5,24,2.5,1,.3,.02);
+            if(row%4==0)l.playSound(null,at.getX(),at.getY(),at.getZ()+.5,BikeNightRegistry.CURL.get(),SoundSource.BLOCKS,.9F,.9F+l.random.nextFloat()*.2F);
+        }
+        if(c.curlGone>=rows){c.curlAt=-1;c.curlBackAt=n.tick+CURL_BACK;}
+    }
+    /** How many of the tendril's rows are gone in this park, and whether it is curling up. For tests. */
+    public static int curlGone(BlockPos b){var n=BikeNight.night(b);return n==null?0:n.hollow.curlGone;}
+    public static boolean curlGoing(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.hollow.curlAt>=0;}
     /** The ways a reader has had under them tonight other than the plain one. For tests. */
     public static java.util.Set<String> ways(ServerPlayer p){var n=BikeNight.night(p);var ways=n==null?null:n.hollow.ways.get(p.getUUID());return ways==null?java.util.Set.of():java.util.Set.copyOf(ways);}
     /** Whether the bank is gone in this park, and whether somebody has been on it and it has yet to go. For tests. */
@@ -300,12 +340,13 @@ public final class BikeNightHollow {
     /** Whether a cell's ground is one of the run's rows, in whichever park's Hollow the cell is. */
     private static boolean onRun(ServerLevel l,BlockPos at){
         var n=BikeNight.nightAt(l,at);if(n==null)return false;var r=at.subtract(n.base);
-        return r.getY()==0&&CalderHollow.runRow(r.getX()+.5,r.getZ()+.5)>=0||CalderHollow.bankRow(r.getX()+.5,r.getZ()+.5)>=0;
+        return r.getY()==0&&CalderHollow.runRow(r.getX()+.5,r.getZ()+.5)>=0||CalderHollow.bankRow(r.getX()+.5,r.getZ()+.5)>=0||CalderHollow.tendrilRow(r.getX()+.5,r.getZ()+.5)>=0;
     }
     static void reset(ServerLevel l,BikeNight.Night n){
         if(n.hollow.runGone>0&&l.isLoaded(n.base.offset(CalderHollow.RUN_X0,0,CalderHollow.RUN_SOUTH)))for(int i=0;i<CalderHollow.RUN_ROWS;i++)CalderHollow.runRow(l,n.base,i,true);
         if(n.hollow.gate&&l.isLoaded(n.base.offset(0,0,CalderHollow.BACK)))CalderHollow.backGate(l,n.base,false);
         if(n.hollow.bankGone&&l.isLoaded(n.base.offset(CalderHollow.BANK_X0,0,CalderHollow.BANK_SOUTH)))CalderHollow.bank(l,n.base,true);
+        if(n.hollow.curlGone>0&&l.isLoaded(n.base.offset(CalderHollow.TIGHT_X0,0,CalderHollow.TIGHT_SOUTH)))for(int i=0;i<CalderHollow.TIGHT_ROWS;i++)CalderHollow.tendrilRow(l,n.base,i,true);
         n.hollow=new Course();
     }
 }
