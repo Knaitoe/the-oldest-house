@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "b": "the_oldest_house:block/pell/thing/bucket_top",
+    "w": "the_oldest_house:block/pell/thing/bucket_side",
+    "particle": "the_oldest_house:block/pell/thing/bucket_side"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        9,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

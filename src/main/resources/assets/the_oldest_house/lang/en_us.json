@@ -1759,5 +1759,11 @@
   "block.the_oldest_house.pell_lino": "Lino",
   "block.the_oldest_house.pell_slab": "Garage Slab",
   "block.the_oldest_house.pell_slab_oil": "Garage Slab, Stained",
-  "subtitles.the_oldest_house.hollow.fold": "The mist closes in"
+  "subtitles.the_oldest_house.hollow.fold": "The mist closes in",
+  "block.the_oldest_house.pell_concrete_print": "Concrete, Handprint",
+  "block.the_oldest_house.pell_concrete_oil": "Concrete, Stained",
+  "block.the_oldest_house.pell_ceiling_stars": "Ceiling, Stars",
+  "block.the_oldest_house.pell_lino_worn": "Lino, Worn",
+  "block.the_oldest_house.pell_lino_burn": "Lino, Burnt",
+  "block.the_oldest_house.pell_thing": "Belongings"
 }

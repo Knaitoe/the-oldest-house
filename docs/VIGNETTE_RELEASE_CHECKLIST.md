@@ -1,3 +1,5 @@
+November 12 candidate 0.4.522 (docs/PELL_HOUSE_THINGS_0_4_522.md): the Pell house's rooms furnished (slice 2). Still not dealt and no source, so the pool, the quota and the dealing are unchanged. Require PellHouseTests (both cases), the architecture namespace, and tools/draw_pell_things.py --check with tools/draw_pell_house.py --check.
+
 November 12 candidate 0.4.521 (docs/BIKE_NIGHT_FOLD_0_4_521.md): Bike night's geography (the Hollow past a fold in the cemetery, its own architecture view). No change to the source, its resolution, the Witness pool or the endings; the account's lane is the town's lane.
 
 November 12 candidate 0.4.520 (docs/BIKE_PRECISION_0_4_520.md): Bike night's bike handling (RiddenBike). No change to the source, its resolution, the Witness pool or the endings.

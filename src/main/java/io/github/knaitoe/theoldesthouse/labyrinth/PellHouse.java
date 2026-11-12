@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * 0.4.518, the Pell house (docs/PELL_HOUSE_PROPOSAL.md; the owner: "the house itself carries the story"). This slice: the place, and
@@ -37,6 +38,7 @@ public final class PellHouse {
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
+        if(PellThing.is(st)){thing(p,l,b.offset(rel),st);return true;}
         if(!st.is(PellRegistry.FITTING.get()))return false;
         var kind=st.getValue(PellBlock.KIND);
         if(kind==PellBlock.Kind.ROLLER){cue(p,PellTexts.ROLLER);return true;}
@@ -52,6 +54,30 @@ public final class PellHouse {
         if(door.equals(PellSite.SLIDER.west())){cue(p,PellTexts.FIXED_GLASS);return true;}
         toggle(l,b,door);
         return true;
+    }
+    /**
+     * 0.4.522: a hand on one of the house's things. Each says what it is (PellTexts.thing); the wardrobe opens and shuts, the
+     * garage's bulb goes on and off by its cord, and the clock on Nessa's drawers says the time.
+     */
+    static void thing(ServerPlayer p,ServerLevel l,BlockPos at,BlockState st){
+        var kind=st.getValue(PellThing.KIND);int stage=st.getValue(PellThing.STAGE);
+        switch(kind){
+            case WARDROBE->{
+                // Both cells of it, from whichever was touched.
+                BlockPos lower=(stage&1)==1?at.below():at;boolean open=(stage&2)==0;
+                for(int i=0;i<2;i++){var cell=lower.above(i);var s=l.getBlockState(cell);if(PellThing.is(s,PellThing.Kind.WARDROBE))l.setBlock(cell,s.setValue(PellThing.STAGE,(s.getValue(PellThing.STAGE)&1)|(open?2:0)),3);}
+                l.playSound(null,at,open?SoundEvents.WOODEN_DOOR_OPEN:SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,.5F,1.2F);
+                cue(p,PellTexts.thing(kind,open?2:0));
+            }
+            case BULB,FLOOR_LAMP->{
+                // On and off: the bulb on its pull cord, the lamp at its switch; the line is what it is now.
+                l.setBlock(at,st.setValue(PellThing.STAGE,stage==0?1:0),3);
+                l.playSound(null,at,SoundEvents.STONE_BUTTON_CLICK_ON,SoundSource.BLOCKS,.4F,1.6F);
+                cue(p,PellTexts.thing(kind,stage==0?1:0));
+            }
+            case DRAWERS->cue(p,PellTexts.thing(kind,stage)+" "+PellTexts.clock(l.getDayTime()));
+            default->cue(p,PellTexts.thing(kind,stage));
+        }
     }
     /** Opens a shut door or gate and shuts an open one, both cells of it. */
     public static void toggle(ServerLevel l,BlockPos b,BlockPos door){

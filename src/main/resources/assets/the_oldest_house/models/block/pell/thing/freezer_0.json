@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/pell/thing/freezer_front_0",
+    "s": "the_oldest_house:block/pell/thing/enamel",
+    "l": "the_oldest_house:block/pell/thing/freezer_lid_0",
+    "particle": "the_oldest_house:block/pell/thing/freezer_front_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "k": "the_oldest_house:block/pell_carpet",
+    "c": "the_oldest_house:block/pell/thing/circle_13",
+    "y": "the_oldest_house:block/pell/thing/toys",
+    "particle": "the_oldest_house:block/pell/thing/circle_13"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        16.05,
+        0
+      ],
+      "to": [
+        16,
+        16.1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}
