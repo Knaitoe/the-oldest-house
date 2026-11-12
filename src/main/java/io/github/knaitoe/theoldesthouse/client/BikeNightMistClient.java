@@ -38,7 +38,7 @@ public final class BikeNightMistClient {
     private static int lease,hold;private static float target,mist,oMist,over,oOver;private static ClientLevel world;
     private BikeNightMistClient(){}
     public static void accept(BikeNightMistPayload p){var mc=Minecraft.getInstance();if(mc.level==null)return;world=mc.level;lease=40;target=Mth.clamp(p.mist()/100F,0,1);
-        if(p.over()>0){hold=p.over();over=Math.max(over,(float)Comfort.effects());}
+        if(p.over()>0){hold=p.over();over=Math.max(over,(float)Comfort.effects()*Mth.clamp(p.share()/100F,0,1));}
     }
     /** How much the mist is over everything, from nothing to one. */
     public static float over(float partial){return Mth.lerp(partial,oOver,over);}

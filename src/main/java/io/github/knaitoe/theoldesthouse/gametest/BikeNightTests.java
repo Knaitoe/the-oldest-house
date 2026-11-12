@@ -461,10 +461,10 @@ public final class BikeNightTests {
     private static LiteraryTests.Fixture active;
     private static final Map<UUID,List<String>> HEARD=new HashMap<>(),SOUNDED=new HashMap<>();
     /** 0.4.495: for how many ticks a reader was last told the mist is over everything. */
-    private static final Map<UUID,Integer> OVER=new HashMap<>();
+    private static final Map<UUID,Integer> OVER=new HashMap<>(),SHARE=new HashMap<>();
     /** 0.4.476: the playground's own cases have it to themselves: Gus stays at his place and says nothing, but for the cases that are his. */
     private static LiteraryTests.Fixture park(GameTestHelper h){done();BikeNightGus.keptHome=true;BikeNightBullies.keptAway=true;BikeNightSpecters.keptAway=true;active=new LiteraryTests.Fixture(h);return active;}
-    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();BikeNightSpecters.keptAway=false;BikeNightGus.keptHome=false;
+    private static void done(){if(active!=null){active.close();active=null;}BikeNight.clearAll();NightBikes.forget();HEARD.clear();SOUNDED.clear();OVER.clear();SHARE.clear();BikeNightSpecters.keptAway=false;BikeNightGus.keptHome=false;
         BikeNightBullies.keptAway=false;BikeNightBullies.arriveAt=BikeNightBullies.ARRIVE;BikeNightBullies.patience=BikeNightBullies.PATIENCE;}
     /** The park and Park Street: what the park's own cases keep resident. (0.4.481: the place is the town too; its cases keep that, {@link #town}.) */
     private static AABB room(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-58,b.getY()-5,b.getZ()-74,b.getX()+59,b.getY()+19,b.getZ()+2);}
@@ -477,12 +477,12 @@ public final class BikeNightTests {
         for(var packet:NativeTestPlayers.packets(p)){
             if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)said.add(chat.content().getString());
             if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)rang.add(sound.getSound().value().getLocation().getPath());
-            if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload mist&&mist.over()>0)OVER.put(p.getUUID(),mist.over());
+            if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.BikeNightMistPayload mist&&mist.over()>0){OVER.put(p.getUUID(),mist.over());SHARE.put(p.getUUID(),mist.share());}
         }
     }
     private static boolean heard(ServerPlayer p,String part){drain(p);return HEARD.get(p.getUUID()).stream().anyMatch(m->m.contains(part));}
     private static boolean sounded(ServerPlayer p,String name){drain(p);return SOUNDED.get(p.getUUID()).contains(name);}
-    private static void hush(ServerPlayer p){drain(p);HEARD.remove(p.getUUID());SOUNDED.remove(p.getUUID());OVER.remove(p.getUUID());}
+    private static void hush(ServerPlayer p){drain(p);HEARD.remove(p.getUUID());SOUNDED.remove(p.getUUID());OVER.remove(p.getUUID());SHARE.remove(p.getUUID());}
     /** A hand on a bike nobody is on: the block's own use. */
     private static void hand(LiteraryTests.Fixture f,ServerPlayer p,BlockPos at){var l=f.level(P);NightBikes.use(p,l,at,l.getBlockState(at));}
     /** A reader who has looked at this bike gets on it where it stands in the rack. */
@@ -5317,4 +5317,67 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="hollow_witch") public static void hollowWitchDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.500, the ghosts
+    @GameTest(template="empty",batch="hollow_ghosts",timeoutTicks=5000)
+    public static void ghostsDriftAcrossAHauntedStretchForOneReaderHalfThereAndOneThatGoesThroughThemChillsTheirViewAndCatchesNobody(GameTestHelper h){
+        var f=park(h);BikeNightSpecters.keptAway=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null,null};final NightBike[] mine={null};
+        final int[] most={0},come={0};final boolean[] own={true},thin={false},full={false};final double[] west={99},east={-99};final float[] health={0};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f).minmax(hollow(f))))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->{
+                // The haunted stretches are on the plain way.
+                for(var haunt:BikeNightSpecters.HAUNTS)h.assertTrue(CalderHollow.WAY.stream().anyMatch(piece->piece.zSouth()==haunt.zSouth())&&CalderHollow.WAY.stream().anyMatch(piece->piece.zNorth()==haunt.zNorth()),"a haunted stretch begins and ends with pieces of the plain way: "+haunt);
+                p[0]=f.player("hollow_ghosts_lamp",P);p[1]=f.player("hollow_ghosts_hill",P);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNight.begun(b)&&p[0].getBbHeight()<1.1&&p[1].getBbHeight()<1.1&&BikeNight.here(p[1]),"waiting for the night"))
+            .thenExecute(()->{mine[0]=take(h,f,p[0],NightBike.Make.LAMP);health[0]=p[0].getHealth();var hill=islandPlace(b,CalderHollow.HILL);p[1].teleportTo(hill.x,hill.y,hill.z+4);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p[0],P).getString("Bike").equals("lamp"),"waiting for the Lamp to be theirs"))
+            // Standing on the foot of the stairs, which are haunted.
+            .thenExecute(()->{mine[0].moveTo(b.getX()+.5,b.getY()+1,b.getZ()-370.5,180,0);p[0].setYRot(180);hush(p[0]);hush(p[1]);})
+            .thenWaitUntil(()->h.assertTrue(BikeNightSpecters.ghosts(p[0]).size()==1,"waiting for a ghost to come for them"))
+            .thenExecute(()->{
+                var g=BikeNightSpecters.ghosts(p[0]).get(0);double x=g.getX()-b.getX(),z=g.getZ()-b.getZ(),y=g.getY()-b.getY();
+                h.assertTrue(Math.abs(Math.abs(x-.5)-BikeNightSpecters.OUT)<.3&&z<=-370.5-BikeNightSpecters.AHEAD+.01&&z>=-370.5-BikeNightSpecters.AHEAD-3.01,"it comes from nine blocks to one side, five to eight ahead of them: "+x+", "+z);
+                double ground=CalderHollow.top(0,(int)Math.floor(z));h.assertTrue(!Double.isNaN(ground)&&Math.abs(y-ground-BikeNightSpecters.OVER_GROUND)<.15,"a little over the stairs where it will cross them: "+y+" over "+ground);
+                h.assertTrue(BikeNightSpecters.ghost(g.phase())&&g.gesture()==BikeNightSpecters.DRIFT&&g.fade()>BikeNightSpecters.GHOST_FADE,"one of the three, adrift, and thin as it comes: "+g.phase()+", "+g.fade());
+            })
+            // They come one after another, never more than two; each is this reader's alone; none of them catches anybody.
+            .thenExecuteFor(330,()->{
+                var ghosts=BikeNightSpecters.ghosts(p[0]);most[0]=Math.max(most[0],ghosts.size());
+                for(var g:ghosts){
+                    own[0]&=g.owner().isPresent()&&g.owner().get().equals(p[0].getUUID())&&g.broadcastToPlayer(p[0])&&!g.broadcastToPlayer(p[1]);
+                    thin[0]|=g.fade()>90;full[0]|=g.fade()==BikeNightSpecters.GHOST_FADE;h.assertTrue(g.fade()>=BikeNightSpecters.GHOST_FADE,"never more than half there: "+g.fade());
+                    double x=g.getX()-b.getX();west[0]=Math.min(west[0],x);east[0]=Math.max(east[0],x);
+                }
+                h.assertTrue(!BikeNightHollow.taken(p[0])&&p[0].getVehicle()==mine[0]&&BikeNightHollow.fell(p[0])==0,"nothing happens to somebody they do not touch");
+            })
+            .thenExecute(()->{
+                h.assertTrue(most[0]==BikeNightSpecters.AT_ONCE&&BikeNightSpecters.ghostsCome(p[0])>=4,"one after another, two at a time at the most: "+most[0]+" at once, "+BikeNightSpecters.ghostsCome(p[0])+" in all");
+                h.assertTrue(own[0]&&thin[0]&&full[0],"each is their reader's alone, thin as it comes and goes and half there between: "+own[0]+", "+thin[0]+", "+full[0]);
+                h.assertTrue(west[0]<.5-BikeNightSpecters.OUT+1&&east[0]>.5+BikeNightSpecters.OUT-1,"they cross the way from one side to the other: "+west[0]+" to "+east[0]);
+                h.assertTrue(BikeNightSpecters.ghostsCome(p[1])==0&&BikeNightSpecters.ghosts(p[1]).isEmpty()&&BikeNightSpecters.chills(p[0])==0,"none comes for the reader on the hill, and none has gone through anybody");
+            })
+            // Into one's way as it crosses the stairs: it goes through them.
+            .thenWaitUntil(()->{
+                for(var g:BikeNightSpecters.ghosts(p[0])){
+                    double x=g.getX()-b.getX(),z=g.getZ()-b.getZ();
+                    if(Math.abs(x-.5)<.6&&BikeNightSpecters.chills(p[0])==0){double ground=CalderHollow.top(0,(int)Math.floor(z));mine[0].moveTo(g.getX(),b.getY()+ground,g.getZ(),180,0);mine[0].steady(0,0);}
+                }
+                h.assertTrue(BikeNightSpecters.chills(p[0])==1,"waiting for a ghost to go through them");
+            })
+            .thenWaitUntil(()->h.assertTrue(sounded(p[0],"hollow.ghost")&&OVER.getOrDefault(p[0].getUUID(),0)==BikeNightSpecters.CHILL&&SHARE.getOrDefault(p[0].getUUID(),0)==BikeNightSpecters.CHILL_SHARE,"they hear it, and some of the mist is over them for a moment: "+OVER.get(p[0].getUUID())+" ticks, "+SHARE.get(p[0].getUUID())+" of a hundred"))
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(BikeNightSpecters.chills(p[0])==1,"the one that went through them does not chill them twice");
+                h.assertTrue(!BikeNightHollow.taken(p[0])&&p[0].getVehicle()==mine[0]&&p[0].getHealth()==health[0]&&!sounded(p[1],"hollow.ghost"),"they are not caught or hurt, and are still riding; the reader on the hill heard nothing");
+                // Off the haunted stretch, onto the fences: no more come, and the ones that are out go.
+                var at=islandPlace(b,4);mine[0].moveTo(at.x,at.y,at.z,180,0);come[0]=BikeNightSpecters.ghostsCome(p[0]);
+            })
+            .thenWaitUntil(()->h.assertTrue(BikeNightSpecters.ghosts(p[0]).isEmpty(),"waiting for the ghosts that were out to have gone"))
+            .thenIdle(BikeNightSpecters.EVERY*2)
+            .thenExecute(()->h.assertTrue(BikeNightSpecters.ghosts(p[0]).isEmpty()&&BikeNightSpecters.ghostsCome(p[0])==come[0],"off the haunted stretch no more come: "+BikeNightSpecters.ghostsCome(p[0])+" after "+come[0]))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="hollow_ghosts") public static void hollowGhostsDone(ServerLevel l){done();}
 }

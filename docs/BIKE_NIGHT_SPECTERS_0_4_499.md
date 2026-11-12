@@ -1,4 +1,4 @@
-# Bike night 24: the specters (the witch, and being caught, 0.4.499)
+# Bike night 24: the specters (the witch, and being caught, 0.4.499; the ghosts, 0.4.500)
 
 The proposal (`docs/BIKE_NIGHT_PROPOSAL.md`, "Act three"): "**Specters chase**", and "Being caught by any of them is
 the Hollow's failure." As answered on November 11: the Hollow is one shared course, and each specter is private to
@@ -76,9 +76,47 @@ cases now keep the specters away, as they keep Gus home and the three away; her 
 A page of the client proof shows her as the game draws her: on her broom from the side, the front, and behind and
 above, and standing (25 pages).
 
+## 0.4.500: the ghosts
+
+"**ghosts** drift through the course and through the riders, chilling their view."
+
+**Who they are.** Three of the hill's dead in what they were buried in (a long dress, a coat, a shirt and a beard),
+every part of them the colour of the mist, with hollow faces. They are painted with the rest of the cast (stranger
+phases 188 to 190) and drawn half there. All three are grown: no child is among them.
+
+**Where.** Three stretches of the plain way are haunted: the three graves, the grave past the lids, and the stairs.
+
+**For one reader.** While a reader is on a haunted stretch, ghosts come for them one after another, two and a half
+seconds apart, never more than two at once, and nobody else sees them. Each comes from one side or the other, nine
+blocks off and five to eight blocks ahead of where its reader is, a little over the ground where it will cross the
+way, and drifts across and on out the other side. It thins in as it comes and thins out as it goes. It hangs in the
+air with its feet behind it and its head down.
+
+**They catch nobody.** One that passes within a little over a block of its reader goes through them, once: some of
+the mist is over their view for a second and a half (three fifths of what going down gives, and as much of that as
+their comfort setting lets through), and they hear it go by. That is all it does. A rider who is chilled a few
+blocks short of a gap cannot see the gap well.
+
+One sound: "A ghost goes through you" (42 cues). The mist's message also says how much of it is over them: protocol
+185.
+
+### Cases
+
+One (88 in the namespace). It passed the first time it was run. A reader standing on the foot of the stairs has a
+ghost come from nine blocks to one side, five to eight ahead, a little over the stairs where it will cross them, thin
+as it comes. Over the next sixteen seconds they come one after another, two at the most at once, each its reader's
+alone, never more than half there, crossing from one side to the other; nothing happens to the reader, and none
+comes for a second reader on the hill. Moved into one's way as it crosses, the reader has it go through them: they
+hear it and some of the mist is over them; it does not chill them twice; they are not caught or hurt and are still
+riding. Off the haunted stretch, the ones that are out go and no more come.
+
+The proof's page of the specters has the three of them under the witch, over a dark band, so that what shows
+through them is seen. I have looked at it: they are pale and alike, and read as three people more than as three
+different people.
+
 ## Not built, not seen, and left with the owner
 
-- **The werewolf, the ghosts, the headless rider**, and the ghouls and goblins that jump out.
+- **The werewolf and the headless rider**, and the ghouls and goblins that jump out.
 - **"At dawn"** is not built: it is still night outside the gate. **The headstone** with the reader's name, the
   rusting bike, and **"the vignette is never dealt to them again"** are the endings' part and are not built; the House
   does not deal the night to anybody yet.

@@ -151,4 +151,7 @@ def entries():
         rows.append({'name':'literary_calder_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # The Hollow's specters (0.4.499), each private to the reader it is after: the witch, on stranger phase one hundred and eighty-seven.
     rows.append({'name':'literary_hollow_witch','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':187})
+    # And the ghosts (0.4.500), on phases one hundred and eighty-eight to ninety.
+    for phase,name in enumerate(('a','b','c'),188):
+        rows.append({'name':'literary_hollow_ghost_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

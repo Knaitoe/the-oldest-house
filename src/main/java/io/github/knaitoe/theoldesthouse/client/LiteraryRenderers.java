@@ -234,6 +234,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.cast(a.phase()))bully(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.cast(a.phase()))people(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&BikeNightSpecters.cast(a.phase())&&a.gesture()==BikeNightSpecters.FLY)astride(age);
+            if(a.role()==LiteraryActor.STRANGER&&BikeNightSpecters.cast(a.phase())&&a.gesture()==BikeNightSpecters.DRIFT)adrift(age+a.getId()*7);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Kept.cast(a.phase()))kept(a.gesture(),age,a.getId());
             // 0.4.221: the arcade's regulars, hands on the stick and the buttons, working them.
             // 0.4.224: the pizza counter's teenager, slumped on the counter, chin on a fist, the other hand flat on a magazine, head tipped.
@@ -323,6 +324,17 @@ public final class LiteraryRenderers {
             rightArm.xRot=leftArm.xRot=-.55F+bob;rightArm.yRot=-.3F;leftArm.yRot=.3F;rightArm.zRot=leftArm.zRot=0;
             rightLeg.xRot=leftLeg.xRot=-1.3F;rightLeg.yRot=.14F;leftLeg.yRot=-.14F;rightLeg.zRot=leftLeg.zRot=0;
             rightLeg.z=leftLeg.z=12*net.minecraft.util.Mth.sin(lean);rightLeg.y=leftLeg.y=12*net.minecraft.util.Mth.cos(lean);
+        }
+        /**
+         * 0.4.500, the Hollow's ghosts: hanging in the air as they go, their feet a little behind them and together, their arms a
+         * little out from their sides, their heads down; all of it moving slowly, each one out of step with the others.
+         */
+        void adrift(float age){
+            float slow=net.minecraft.util.Mth.sin(age*.07F);
+            body.xRot=.12F;head.xRot=.3F+slow*.05F;head.yRot=slow*.12F;hat.copyFrom(head);
+            rightArm.xRot=leftArm.xRot=.18F+slow*.06F;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=.2F+slow*.05F;leftArm.zRot=-.2F-slow*.05F;
+            rightLeg.xRot=leftLeg.xRot=.42F+slow*.05F;rightLeg.yRot=leftLeg.yRot=0;rightLeg.zRot=.03F;leftLeg.zRot=-.03F;
+            rightLeg.z=leftLeg.z=12*net.minecraft.util.Mth.sin(.12F);rightLeg.y=leftLeg.y=12*net.minecraft.util.Mth.cos(.12F);
         }
         void onBike(LiteraryActor a){
             float crank=a.getVehicle() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike bike?bike.crank(1F):0;
@@ -516,6 +528,13 @@ public final class LiteraryRenderers {
         if(flying)model.astride(age);
         model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin(LiteraryActor.STRANGER,BikeNightSpecters.WITCH))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,-1);
         WitchLayer.draw(model,things.getChild("hat"),things.getChild("broom"),flying,p,out,light);
+    }
+    /** One of the Hollow's ghosts as the game draws it, for the proof's page: the cast's own model in its skin, adrift, half there. */
+    public static void drawGhost(PoseStack p,MultiBufferSource out,int light,int which,float age){
+        var model=new CastModel(Minecraft.getInstance().getEntityModels().bakeLayer(CAST));int phase=BikeNightSpecters.GHOST+which;
+        model.young=false;model.dress(LiteraryActor.STRANGER,phase);model.adrift(age);
+        int alpha=Math.round(255*(1-BikeNightSpecters.GHOST_FADE/100F));
+        model.renderToBuffer(p,out.getBuffer(RenderType.entityTranslucent(skin(LiteraryActor.STRANGER,phase))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,alpha<<24|0xffffff);
     }
     private static final class CrutchLayer extends net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryActor,CastModel>{
         private final ModelPart pole;
