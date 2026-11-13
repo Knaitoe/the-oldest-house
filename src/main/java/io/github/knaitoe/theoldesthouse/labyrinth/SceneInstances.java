@@ -36,9 +36,41 @@ public final class SceneInstances {
      * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
      * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}). 0.4.547: and the Pell house, two
-     * readers to a house ({@link #pell}).
+     * readers to a house ({@link #pell}). 0.4.551: and every story written for a party ({@link #PARTIES}).
      */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE);
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE,
+        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE);
+    /**
+     * 0.4.551 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the stories written
+     * for a party, and how many readers one copy of each holds. A copy whose places are all held ({@link #held}) is full: the next
+     * reader through the door goes into another, made ready for them as Bike night's second town is ({@link #crowd}). Bike night six
+     * to a town (0.4.513); The Last Crossing a crew of four to six; Pinehook two to six; The Ones Already Inside six to a house, the
+     * seventh to a house of their own. A copy with a place left still takes a latecomer, who comes in partway as each story has
+     * always let them. The lake house and the Pell house keep their pairs ({@link #lake}, {@link #pell}).
+     */
+    private static final Map<LabyrinthPlace,Integer> PARTIES=Map.of(LabyrinthPlace.BIKE_NIGHT,BikeNight.RIDERS,LabyrinthPlace.LAST_CROSSING,LastCrossing.MAX_CREW,
+        LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY,LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY);
+    /** How many readers one copy of a party's story holds, or 0 for a scene that is not one. */
+    public static int party(@Nullable LabyrinthPlace p){return p==null?0:PARTIES.getOrDefault(p,0);}
+    /** The readers copy {@code k}'s story keeps a place for, whether or not they are in it now: The Last Crossing's crew on the roll, Pinehook's roll. */
+    private static Set<UUID> roll(MinecraftServer s,LabyrinthPlace place,int k){
+        var b=base(s,place,k);if(b==null)return Set.of();
+        return switch(place){
+            case LAST_CROSSING->LastCrossing.places(b);
+            case PINEHOOK->Pinehook.places(b);
+            default->Set.of();
+        };
+    }
+    /**
+     * How many of copy {@code k}'s places are held by readers other than this one: whoever is in it now, and whoever its story keeps a
+     * place for though they have stepped out to the House. One of the crew who goes out and comes back finds their place still theirs.
+     */
+    public static int held(MinecraftServer s,LabyrinthPlace place,int k,UUID reader){
+        var ids=new HashSet<UUID>(roll(s,place,k));
+        for(var q:s.getPlayerList().getPlayers())if(q.isAlive()&&!q.isSpectator()&&at(s,place,q.level().dimension(),q.position())==k)ids.add(q.getUUID());
+        ids.remove(reader);
+        return ids.size();
+    }
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -194,7 +226,8 @@ public final class SceneInstances {
         var s=p.server;var d=LabyrinthData.get(s);var me=p.getUUID();settle(d,place);
         if(place==LabyrinthPlace.LAKE_HOUSE){var lake=lake(p,d,me);if(lake!=null)return lake;}
         if(place==LabyrinthPlace.PELL_HOUSE){var house=pell(p,d,me);if(house!=null)return house;}
-        if(place==LabyrinthPlace.BIKE_NIGHT)return crowd(p,d,me,place,BikeNight.RIDERS);
+        // 0.4.551: a story written for a party fills a copy before the next is begun.
+        if(party(place)>0)return crowd(p,d,me,place,party(place));
         int mine=kept(d,me,place);
         if(mine>=0&&built(d,place,mine)){
             // A copy they keep and nobody else is in. Only an original shared by readers from before copies can be busy.
@@ -220,16 +253,17 @@ public final class SceneInstances {
      * back into the town they keep while it has room, and otherwise into the first that stands and has room: friends go into
      * the same one, and the seventh into the next. The next is made ready when a town is down to its last place and no other
      * has room, so the seventh seldom waits; until it stands, their door waits as any door onto a copy being made does.
+     * 0.4.551: the same for every story written for a party ({@link #PARTIES}); a copy's room is its places not held ({@link #held}).
      */
     private static Entry crowd(ServerPlayer p,LabyrinthData d,UUID me,LabyrinthPlace place,int most){
         var s=p.server;int mine=kept(d,me,place);
-        int chosen=mine>=0&&built(d,place,mine)&&others(s,place,mine,me)<most?mine:-1;
-        for(int k=0;chosen<0&&k<=copies(d,place);k++)if(built(d,place,k)&&others(s,place,k,me)<most)chosen=k;
+        int chosen=mine>=0&&built(d,place,mine)&&held(s,place,mine,me)<most?mine:-1;
+        for(int k=0;chosen<0&&k<=copies(d,place);k++)if(built(d,place,k)&&held(s,place,k,me)<most)chosen=k;
         if(chosen<0)return new Entry(null,-1,making(d,place)||allocate(d,place));
         if(chosen!=mine)keep(d,me,place,chosen);
-        if(others(s,place,chosen,me)+1>=most-1){
+        if(held(s,place,chosen,me)+1>=most-1){
             boolean room=false;
-            for(int k=0;k<=copies(d,place);k++)room|=k!=chosen&&(!built(d,place,k)||others(s,place,k,me)<most);
+            for(int k=0;k<=copies(d,place);k++)room|=k!=chosen&&(!built(d,place,k)||held(s,place,k,me)<most);
             if(!room)allocate(d,place);
         }
         return new Entry(entry(d,place,chosen),chosen,false);

@@ -131,6 +131,8 @@ public final class LastCrossing {
     @Nullable static Run run(BlockPos b){return RUNS.get(b.asLong());}
     static Collection<Run> runs(){return RUNS.values();}
     public static int phase(BlockPos b){var r=run(b);return r==null?-1:r.phase;}
+    /** 0.4.551: the crew on this crossing's roll, whose places it keeps while they step out (SceneInstances.held). */
+    public static Set<UUID> places(BlockPos b){var r=run(b);return r==null?Set.of():Set.copyOf(r.crew.keySet());}
     public static int day(BlockPos b){var r=run(b);return r==null?-1:r.day;}
     public static int needle(BlockPos b){var r=run(b);return r==null?-1:r.needle;}
     public static List<String> crew(BlockPos b){var r=run(b);return r==null?List.of():List.copyOf(r.crew.values());}

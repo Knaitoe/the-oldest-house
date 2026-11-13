@@ -22,6 +22,8 @@ import net.minecraft.sounds.SoundSource;
 public final class LodgingHouse {
     private LodgingHouse(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.ONES_INSIDE;
+    /** 0.4.551: six readers to a house; a seventh is given a house of their own (SceneInstances.PARTIES). */
+    public static final int PARTY=6;
     static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
