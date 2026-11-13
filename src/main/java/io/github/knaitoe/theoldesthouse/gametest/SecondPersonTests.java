@@ -128,11 +128,11 @@ public final class SecondPersonTests {
                 f.source(p,P);street(f,p);
                 // The summer let go by: autumn, the evening about to begin, the glass hung facing the hall.
                 var own=f.own(p,P);own.putInt("Season",SecondPerson.AUTUMN);own.putInt("Step",SecondPerson.EVENING);own.putInt("T",0);own.putInt("Sub",0);own.putInt("SubT",0);
-                own.putBoolean("EveLamp",false);own.putBoolean("EveKitchenDoor",false);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                own.putBoolean("EveLamp",false);own.remove("EveDoorBanged");LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
                 SecondPersonSite.season(l,b,1);SecondPersonSite.cloth(l,b,0);SecondPersonSite.glass(l,b,0);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Sub")==1&&SecondPerson.sam(l,b)!=null&&SecondPerson.resident(l,b)!=null,"Sam is in, and they sit down to supper"))
             .thenExecute(()->at(f,p,-6.5,UP,-20.6))
-            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("Evening").equals("seen"),"in the dark window behind their chair, Sam sees somebody standing"))
+            .thenWaitUntil(()->{var own=f.own(p,P);var r=p.position().subtract(b.getX(),b.getY(),b.getZ());h.assertTrue(own.getString("Evening").equals("seen"),String.format(java.util.Locale.ROOT,"in the dark window behind their chair, Sam sees somebody standing: the evening is '%s', step %d sub %d, the reader at (%.1f, %.1f, %.1f), lamp %s, door banged %s, kitchen door open %s, cold %s, knocked %s",own.getString("Evening"),own.getInt("Step"),own.getInt("Sub"),r.x,r.y,r.z,own.getBoolean("EveLamp"),own.getBoolean("EveDoorBanged"),SecondPerson.isOpen(l,b,SecondPersonSite.KITCHEN_DOOR),own.getBoolean("ColdBySam"),own.getBoolean("KnockedInEvening")));})
             .thenWaitUntil(()->h.assertTrue(step(f,p)==SecondPerson.PHOTO&&SecondPerson.sam(l,b)==null,"the evening ends there: Sam goes home"))
             .thenExecute(()->at(f,p,-4.5,UP,-16.5))
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("Photo").equals("in_deleted"),"in the picture of the room, after a bad evening: deleted: "+f.own(p,P)))
