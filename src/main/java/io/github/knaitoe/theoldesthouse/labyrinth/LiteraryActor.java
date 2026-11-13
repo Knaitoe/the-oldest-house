@@ -143,8 +143,12 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * own look control and as many again after their scene, a quick turn of the head rather than a snap.
      */
     public static final float HEAD_TURN=80,TURN_SPEED=12;
-    /** Whether this person turns to whoever they talk to: not the dead or sleeping, not someone who cannot see the reader. */
-    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&role()!=SP_RESIDENT;}
+    /**
+     * Whether this person turns to whoever they talk to: not the dead or sleeping, not someone who cannot see the reader. 0.4.561 (run
+     * 1595, the Harrigan dialogue case): Harrigan dead in his chair, or in his casket, is a dead man to the story though his body lives;
+     * he followed the reader's head when clicked.
+     */
+    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&role()!=SP_RESIDENT&&!(role()==HARRIGAN&&phase()!=HarriganVignette.ALIVE_PHASE);}
     /** A reader has just spoken to this person: what they say back is said to that reader. */
     private void spokenTo(ServerPlayer reader){
         if(reader.isSpectator()||!addresses())return;

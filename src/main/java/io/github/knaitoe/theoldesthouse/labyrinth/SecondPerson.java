@@ -367,7 +367,7 @@ public final class SecondPerson {
     }
     static boolean near(Vec3 r,BlockPos door){return r.distanceToSqr(Vec3.atBottomCenterOf(door))<30;}
     static void open(ServerLevel l,BlockPos b,BlockPos door,boolean open){var at=b.offset(door);var s=l.getBlockState(at);if(s.getBlock() instanceof DoorBlock d&&s.getValue(DoorBlock.OPEN)!=open)d.setOpen(null,l,s,at,open);}
-    static boolean isOpen(ServerLevel l,BlockPos b,BlockPos door){var s=l.getBlockState(b.offset(door));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
+    public static boolean isOpen(ServerLevel l,BlockPos b,BlockPos door){var s=l.getBlockState(b.offset(door));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
 
     // ------------------------------------------------------------------------------------------------ the tick
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){
@@ -522,7 +522,7 @@ public final class SecondPerson {
                     if(state.equals("placed")||state.equals("home")){own.putBoolean("RoutineSet",true);next(own,3);SecondPersonStory.turned(own,"You set their "+SecondPersonStory.routine(own)+" out where they would see it.");}
                     else if(dt>=WAIT){say(f,a,"Never mind. Never mind.");next(own,4);}}
                 else if(sub==3){if(arrived(a,b,residentMark(own))&&!f.once.contains("thanks")){f.once.add("thanks");say(f,a,"Thanks.");}if(dt>=120){f.once.remove("thanks");next(own,4);}}
-                else if(dt>=60){go(own,EVENING);cloth(l,b,0);own.putBoolean("EveLamp",lampOn(l,b));own.putBoolean("EveKitchenDoor",isOpen(l,b,KITCHEN_DOOR));}
+                else if(dt>=60){go(own,EVENING);cloth(l,b,0);own.putBoolean("EveLamp",lampOn(l,b));own.remove("EveDoorBanged");}
             }
             case EVENING->evening(l,f,p,own,r,a,sam);
             case PHOTO->{
@@ -570,7 +570,9 @@ public final class SecondPerson {
             if(own.getString("Evening").isEmpty()){
                 String choice="";
                 if(!own.getBoolean("EveLamp")&&lampOn(l,b)||cloth(l,b)>=1)choice="helped";
-                if(own.getBoolean("ColdBySam")||own.getBoolean("KnockedInEvening")||own.getBoolean("EveKitchenDoor")!=isOpen(l,b,KITCHEN_DOOR))choice="interfered";
+                // 0.4.561 (run 1595): the kitchen door counts when the reader's hand moved it. It used to count whenever it stood otherwise
+                // than at the start of the evening, and since 0.4.560 Sam walks in to the table through it rather than appearing in his chair.
+                if(own.getBoolean("ColdBySam")||own.getBoolean("KnockedInEvening")||own.getBoolean("EveDoorBanged"))choice="interfered";
                 if(r.x<-6.2&&Math.abs(r.z+21.5)<1.6&&r.y>=UP-.5&&r.y<UP+2.5){if(++f.window>=30)choice="seen";}else f.window=0;
                 if(inBedroom(r)&&!isOpen(l,b,BED_DOOR)){if(++f.shut>=100)choice="alone";}else f.shut=0;
                 if(!choice.isEmpty()){own.putString("Evening",choice);
@@ -1056,6 +1058,8 @@ public final class SecondPerson {
             }
             cue(p,"Not there.");return true;
         }
+        // 0.4.561: the reader's own hand on the kitchen door during the evening bangs it; the door then opens or shuts as any door does.
+        if(s.getBlock() instanceof DoorBlock&&(rel.equals(KITCHEN_DOOR)||rel.equals(KITCHEN_DOOR.above()))&&seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("EveDoorBanged",true);
         // A box with something of theirs still in it.
         for(var th:THINGS)if(rel.equals(boxAt(th))&&SecondPersonBlock.is(s,SecondPersonBlock.Kind.BOX)){
             int stage=s.getValue(SecondPersonBlock.STAGE);

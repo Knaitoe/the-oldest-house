@@ -42,3 +42,17 @@ they aimed at before their seat held them back, so a fault can be read without r
   run of three before their fixes, and neither in the two runs after.
 - The scenes' own cases: A Place for You's three, the Drawing's three and the Confession's three, nine of nine.
 - The quick checks and the structure halves check.
+
+## Run 1595 (0.4.560)
+
+Two jobs failed on 0.4.560, both from its own changes:
+
+- **second-person-gameplay**: the autumn evening ended as "interfered" while the case's reader stood in the window to be seen. The
+  evening counted the kitchen door as the reader's doing whenever it stood otherwise than at the start of the evening; the supper table
+  is in the kitchen, and since 0.4.560 Sam walks in to it through the kitchen door rather than appearing in his chair (he may be put
+  somewhere only where the reader sees neither him nor the place). Now the reader's own hand on that door during the evening is what
+  counts (`EveDoorBanged`, set in `SecondPerson.click`).
+- **goatman-gameplay** (the wake cases): Harrigan dead in his chair turned his head to the reader who clicked him. The cast-wide turn
+  left out the dead, but his body is alive to the game. Harrigan dead or in his casket no longer turns to anyone (`addresses`).
+
+Locally: the Second Person cases four of four, and the wake namespace with them.
