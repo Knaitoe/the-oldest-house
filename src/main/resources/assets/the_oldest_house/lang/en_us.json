@@ -1793,5 +1793,7 @@
   "item.the_oldest_house.pell_knife": "Kitchen Knife",
   "subtitles.the_oldest_house.pell.hand": "A door slams, and a cry",
   "subtitles.the_oldest_house.pell.tape_play": "A video deck takes a tape",
-  "subtitles.the_oldest_house.pell.tape_voice": "A woman's voice, on a tape"
+  "subtitles.the_oldest_house.pell.tape_voice": "A woman's voice, on a tape",
+  "item.the_oldest_house.pell_scrub": "Scrubbing Brush",
+  "subtitles.the_oldest_house.pell.scrub": "A scrubbing brush on paint"
 }

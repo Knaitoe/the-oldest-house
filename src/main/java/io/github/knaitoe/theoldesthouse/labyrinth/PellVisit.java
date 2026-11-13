@@ -140,6 +140,9 @@ public final class PellVisit {
         walkers(l,b,h);
         // 0.4.536: the shed's deck, whatever the hour.
         PellTapes.tick(l,b,h,here,now);
+        // 0.4.538: a bucket nobody here has goes back to the laundry; on the last night, Callum out on the line.
+        if(now%PellScrub.KEEP==0)PellScrub.keep(l,b,here);
+        if(h.visit>=PellWeek.LAST)PellLastNight.callum(l,b,h,here,now);
         switch(h.step){
             case GREET->{if(gail!=null&&!gail.saying()&&arrived(b,june,gail,here)){say(h,gail,PellPeople.GAIL,PellTexts.GAIL_GREETS,now);h.step=JUNE_HELLO;}}
             case JUNE_HELLO->{if(ready(h,now,june)){say(h,june,PellPeople.JUNE,PellTexts.JUNE_GREETS,now);h.step=GAIL_HANDOVER;}}
@@ -172,10 +175,14 @@ public final class PellVisit {
         tv(l,b,false);
         // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart); 0.4.532, and Gail's call.
         PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);PellHand.restart(l,b,h);PellTapes.restart(l,b,h);
+        // 0.4.538: the bucket back in the laundry, and the last night undone.
+        PellScrub.restart(l,b,h);PellLastNight.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);
         PellWeek.dress(l,b,visit);
+        // 0.4.538: the third visit is the last night, from the evening.
+        if(visit>=PellWeek.LAST)PellLastNight.begin(l,b,h);
     }
     /** Each of them as they are by day: Tilly with her cane held out, Gail with her folder, June and Callum with nothing in hand. */
     static void dress(LiteraryActor a,int who){
@@ -358,7 +365,9 @@ public final class PellVisit {
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
         long to=h.step==SETTLED?(h.visit>=2&&(!h.welcomed||PellHand.holds(h))?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
-            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
+            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?PellNight.TWELVE:PellNight.ELEVEN)
+            // 0.4.538: on the last night the evening holds until a reader first comes in.
+            :h.step>=CLEARED?(h.visit>=PellWeek.LAST&&!h.welcomed?h.time:EVENING):h.time;
         int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;
         if(h.time<to)h.time=Math.min(to,h.time+pace);
         int rate=h.time<to?pace:0;boolean changed=rate!=h.rate;h.rate=rate;
@@ -680,6 +689,8 @@ public final class PellVisit {
             }
         }
         if(tvOn(l,b)&&now-h.tapeAt>=TAPE_EVERY){h.tapeAt=now;var at=Vec3.atCenterOf(b.offset(TV)).add(0,.5,0);l.playSound(null,at.x,at.y,at.z,PellRegistry.TAPE.get(),SoundSource.NEUTRAL,.9F,1F);}
+        // 0.4.538: the last night, she says it will be an early night to the first reader in (PellLastNight).
+        if(h.visit>=PellWeek.LAST&&!h.welcomed){PellLastNight.welcome(l,b,h,june,here,now);return;}
         if(h.time<EVENING||!juneStill||!ready(h,now,june))return;
         // Half past eight. The television off, and bedtime: Tilly to the edge of Nessa's bed, June after her, Callum to his circle.
         tv(l,b,false);
@@ -687,8 +698,9 @@ public final class PellVisit {
         up(l,b,h,J,JUNE_BED.look(),RECLINER_TO_NESSA);h.perchTo[J]=JUNE_BED;
         var tilly=PellPeople.find(l,b,PellPeople.TILLY);
         if(tilly!=null){unperch(b,h,PellPeople.TILLY,tilly);goPerch(h,PellPeople.TILLY,TILLY_BED,TILLY_TO_BED);}
+        // 0.4.538: on the last night Callum stays out on the line.
         var callum=PellPeople.find(l,b,PellPeople.CALLUM);
-        if(callum!=null)goSleep(h,PellPeople.CALLUM,CALLUM_SLEEPS,0,CALLUM_TO_BED);
+        if(callum!=null&&!h.callumStrip)goSleep(h,PellPeople.CALLUM,CALLUM_SLEEPS,0,CALLUM_TO_BED);
         h.step=BEDTIME;
     }
     /** On the edge of the bed: June brushes, they say what they say with time between, and when she has brushed long enough Tilly

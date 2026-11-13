@@ -68,6 +68,8 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANE_GAP=ITEMS.register("pell_lane_gap",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.534: the kitchen knife in Callum's hand at the sink in the night (PellKnife). Nobody is given one. */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> KNIFE=ITEMS.register("pell_knife",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.538: the bucket from the laundry, water in it and the scrubbing brush across it (PellScrub, PellScrubItem). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SCRUB=ITEMS.register("pell_scrub",()->new PellScrubItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */
@@ -78,7 +80,9 @@ public final class PellRegistry {
         // 0.4.535: a door slammed in the laundry, and June's cry (docs/PELL_HOUSE_HAND_0_4_535.md).
         HAND=sound("pell.hand"),
         // 0.4.536: the shed's deck taking a tape, and the woman's voice on the tapes (docs/PELL_HOUSE_TAPES_0_4_536.md).
-        TAPE_PLAY=sound("pell.tape_play"),TAPE_VOICE=sound("pell.tape_voice");
+        TAPE_PLAY=sound("pell.tape_play"),TAPE_VOICE=sound("pell.tape_voice"),
+        // 0.4.538: the scrubbing brush on the line (docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md).
+        SCRUBBING=sound("pell.scrub");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }

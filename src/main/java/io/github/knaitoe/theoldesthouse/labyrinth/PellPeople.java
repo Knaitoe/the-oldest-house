@@ -68,7 +68,9 @@ public final class PellPeople {
         // 0.4.533: June at first light, a week in: in her swimming things with her robe on, and in the water swimming her lengths.
         ROBE=10,SWIM=11,
         // 0.4.534: Callum struggling for the knife with a reader, and his fist coming at their face.
-        STRUGGLE=12,LUNGE=13;
+        STRUGGLE=12,LUNGE=13,
+        // 0.4.538: Callum on the last night, sitting on the grass inside the line eating what he was given, and sat there after.
+        EATING=14,SITTING=15;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
@@ -151,6 +153,11 @@ public final class PellPeople {
          *  they keep; whether it is playing and when it began; who has watched it since it began, and who has been sent it. */
         int deck=PellTapes.IN_DECK,tapeLine,tapePace=100;boolean tapePlaying;long tapeStart;
         final java.util.Set<UUID> tapeWatchers=new java.util.HashSet<>(),tapeTold=new java.util.HashSet<>();
+        /** 0.4.538, the last night (PellLastNight, PellScrub): whether Callum is out on the line for it, has been fed, has said his name,
+         *  when he sat down to eat, and which cell of the thin stretch he last stepped onto; where the line was first broken; each
+         *  reader's work with the brush; and who has had a plate from the fridge. */
+        boolean callumStrip,callumFed,callumSaid;long fedAt;int guardX=PellLastNight.STRIP_X;BlockPos gap;
+        final Map<UUID,PellScrub.Work> scrub=new HashMap<>();final java.util.Set<UUID> plated=new java.util.HashSet<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -247,8 +254,12 @@ public final class PellPeople {
         int who=who(a);var h=household(b);
         // 0.4.527: asleep, they are only looked at.
         if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
+        // 0.4.538: something to eat held out to him: on the last night he takes it (PellLastNight).
+        if(who==CALLUM&&PellLastNight.feed(p,b,h,a,own))return;
         // 0.4.534: at the sink with the knife, a hand on him takes his wrist.
         if(who==CALLUM&&PellKnife.hand(p,b,h,own))return;
+        // 0.4.538: on the line on the last night he does not move for the hand; eating, he does not look up.
+        if(who==CALLUM&&h.callumStrip){var lines=h.callumFed?PellTexts.CALLUM_EATING:PellTexts.CALLUM_ON_LINE;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         // 0.4.530: on the line at night, Callum stands and does not move for the hand.
         if(who==CALLUM&&h.callumOut){PellHouse.cue(p,PellTexts.CALLUM_NIGHT[h.said[who]++%PellTexts.CALLUM_NIGHT.length]);own.putBoolean("TouchedCallumAtNight",true);return;}
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}

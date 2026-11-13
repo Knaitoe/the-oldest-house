@@ -5441,5 +5441,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pell.tape_voice"
+  },
+  "pell.scrub": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/scrub",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.scrub"
   }
 }

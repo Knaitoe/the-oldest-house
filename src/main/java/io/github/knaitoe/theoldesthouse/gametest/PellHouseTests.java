@@ -1346,16 +1346,18 @@ public final class PellHouseTests {
         .thenExecute(()->{
             for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getBoolean("FirstVisit")&&own.getBoolean("SecondVisit"),"each has had the second visit too: "+own);}
             f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
-        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"with no third visit yet, the house plays the second again"))
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==PellWeek.LAST&&PellVisit.step(b)==PellVisit.TELLY,"with both visits had, the house plays the third, the last night, from the evening"))
         .thenExecute(()->{
             h.assertTrue(PellVisit.car(l,b)==null,"no car");
+            h.assertTrue(PellLastNight.lit(l,b),"the pool lit for the last night");
             // A reader who has had neither, and the house left again.
             var r=f.player("pell_week_new",P);f.at(r,P,-3.5,0,-36);PellPeople.vacate(b);
         }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==1&&PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null&&PellPeople.find(l,b,PellPeople.GAIL)!=null,"a reader who has had neither: the first visit, Gail and her car at the curb"))
         .thenExecute(()->{
-            h.assertTrue(PellWeek.rope(l,b).isEmpty()&&!l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER),"the pool under its cover, no rope");
+            h.assertTrue(PellWeek.rope(l,b).isEmpty()&&!l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&!PellLastNight.lit(l,b),"the pool under its cover, no rope, no light");
             for(var at:PellSite.route()){var st=l.getBlockState(b.offset(at.getX(),-1,at.getZ()));h.assertTrue(st.getValue(PellLine.STAGE)==PellLine.FIRST,"the line as the first visit has it at "+at);}
-            h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,0)&&thing(l,b,-6,0,-61,CUTLERY,0)&&thing(l,b,14,1,-95,PEGBOARD,0),"every knife where it was");
+            h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,0)&&thing(l,b,-6,0,-61,CUTLERY,0)&&thing(l,b,14,1,-95,PEGBOARD,0)&&thing(l,b,-11,2,-71,CUPBOARD_UPPER,0),"every knife where it was, the cupboard shut");
+            var c=who(h,l,b,PellPeople.CALLUM);h.assertTrue(c.gesture()!=PellPeople.EATING&&c.gesture()!=PellPeople.SITTING&&c.getOffhandItem().isEmpty(),"Callum not sitting out on the grass");
             h.assertTrue(l.getBlockState(b.offset(PellWeek.TOWEL)).isAir(),"no towel under the garage's door");
         }).thenSucceed();
     }
@@ -1972,4 +1974,209 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_tapes_rounds") public static void tapesRoundsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.538, the last night begins
+    /** Waiting for the last night to begin: June, Tilly and Callum there, and the house in its evening. */
+    private static void lastBegun(GameTestHelper h,ServerLevel l,BlockPos b){
+        for(int i:new int[]{PellPeople.JUNE,PellPeople.TILLY,PellPeople.CALLUM})h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));
+        h.assertTrue(PellWeek.visit(b)==PellWeek.LAST&&PellVisit.step(b)==PellVisit.TELLY,"waiting for the last night to begin");
+    }
+    private static int stageAt(ServerLevel l,BlockPos b,BlockPos cell){return l.getBlockState(b.offset(cell)).getValue(PellLine.STAGE);}
+    /** Where to look to hold the brush to the top of a cell of the line. */
+    private static net.minecraft.world.phys.Vec3 top(BlockPos b,BlockPos cell){return new net.minecraft.world.phys.Vec3(b.getX()+cell.getX()+.5,b.getY()+cell.getY()+1,b.getZ()+cell.getZ()+.5);}
+    private static final BlockPos FRIDGE_AT=new BlockPos(-13,0,-71);
+    /**
+     * 0.4.538, the last night begins (docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md), with two readers who have both had the first two visits.
+     * The house begins on its third visit in the evening, without Gail: June at her chair with the television on, Callum out on the
+     * line in the middle of the thin stretch behind the shed, facing the house. The pool is lit from under the water and its lane rope
+     * is gone; the line has been gone over again all the way round; the knife block is gone from the bench and put away in a cupboard,
+     * every slot empty, and Callum's drawer has a space where the knife lay; the calendar's circle is tonight. The evening holds while
+     * nobody comes in. One reader comes in and June says it will be an early night; the other, at the far end of the house, is told,
+     * and the hour goes on. A hand on the fridge gives each reader a plate of dinner, once. A hand on the bucket in the laundry takes
+     * it, and a bucket that nobody at the house has is back in its place within a second. Locked up, the night goes on to midnight and
+     * waits there: June stays in her room, and Callum stays out on the line.
+     */
+    @GameTest(template="empty",batch="pell_last",timeoutTicks=6000)
+    public static void theLastNightBeginsWithThePoolLitTheKnivesPutAwayAndCallumOnTheLine(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_last_reader",P);var q=f.player("pell_last_other",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        long[] mark={0};
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"no Gail and no car");
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(c.blockPosition().subtract(b).equals(new BlockPos(PellLastNight.STRIP_X,0,PellSite.LINE_N))&&PellSite.thin(new BlockPos(PellLastNight.STRIP_X,0,PellSite.LINE_N)),"Callum out on the line, in the middle of the thin stretch behind the shed: "+c.position());
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(c.getYRot()))<1&&!PellVisit.asleep(b,PellPeople.CALLUM),"standing, facing the house: "+c.getYRot());
+            // The pool lit from under the water, and no rope across it.
+            h.assertTrue(PellLastNight.lit(l,b)&&l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&PellWeek.rope(l,b).isEmpty(),"the pool full and lit, its lane rope gone");
+            // The line gone over again, all the way round.
+            for(var at:PellSite.route()){var st=l.getBlockState(b.offset(at.getX(),-1,at.getZ()));h.assertTrue(PellLine.unbroken(st)&&st.getValue(PellLine.STAGE)==PellLine.LAST,"the line gone over again at "+at+": "+st);}
+            // Every knife put away.
+            h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,2)&&thing(l,b,-11,2,-71,CUPBOARD_UPPER,1),"the knife block gone from the bench, and put away in the cupboard above it");
+            for(var at:PellWeek.CUPBOARD.subList(1,PellWeek.CUPBOARD.size()))h.assertTrue(thing(l,b,at.getX(),at.getY(),at.getZ(),CUPBOARD_UPPER,0),"the other cupboards shut: "+at);
+            h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,2),"a space in Callum's drawer where the knife lay");
+            h.assertTrue(thing(l,b,5,1,-92,SHED_CALENDAR,2),"the calendar's circle is tonight");
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.watching(b)&&PellVisit.tvOn(l,b),"June in her chair with the television on");
+            h.assertTrue(PellVisit.hour(b)==mark[0]&&!PellWeek.welcomed(b),"while nobody comes in, the evening holds: "+PellVisit.hour(b));
+            // One reader into the living room; the other to the far end of the house, out of earshot of her chair.
+            told(q);f.at(q,P,8.5,0,-60.5);f.at(p,P,1.5,0,-63.5);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.welcomed(b),"June says it will be an early night"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_LAST_WELCOME),"from her chair: "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(told(q).contains(PellTexts.LAST_WELCOME_FAR),"heard from the far end of the house");
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)>=mark[0]+15,"the evening goes on: "+mark[0]+" to "+PellVisit.hour(b));
+            // The fridge, twice for one reader and once for the other; the bucket, by both.
+            told(p);told(q);
+            f.click(p,P,FRIDGE_AT);f.click(p,P,FRIDGE_AT);f.click(q,P,FRIDGE_AT);
+            f.click(p,P,PellScrub.BUCKET);f.click(q,P,PellScrub.BUCKET);
+        }).thenIdle(1).thenExecute(()->{
+            var mine=told(p);
+            h.assertTrue(p.getInventory().countItem(PellRegistry.DINNER.get())==1&&mine.contains(PellTexts.FRIDGE_PLATE)&&f.own(p,P).getBoolean("TookPlate"),"a plate of dinner under cling film: "+mine);
+            h.assertTrue(mine.contains(PellTexts.FRIDGE_EMPTY),"and nothing more for the same reader");
+            h.assertTrue(q.getInventory().countItem(PellRegistry.DINNER.get())==1,"the other reader has one of their own");
+            h.assertTrue(p.getInventory().countItem(PellRegistry.SCRUB.get())==1&&mine.contains(PellTexts.BUCKET_TAKEN)&&f.own(p,P).getBoolean("TookBucket"),"the bucket and its brush taken");
+            h.assertTrue(l.getBlockState(b.offset(PellScrub.BUCKET)).isAir()&&q.getInventory().countItem(PellRegistry.SCRUB.get())==0,"gone from the laundry: there is one bucket");
+        }).thenIdle(PellScrub.KEEP+5).thenExecute(()->{
+            h.assertTrue(l.getBlockState(b.offset(PellScrub.BUCKET)).isAir()&&p.getInventory().countItem(PellRegistry.SCRUB.get())==1,"while a reader has it, it stays with them");
+            p.getInventory().clearContent();
+        }).thenWaitUntil(()->h.assertTrue(thing(l,b,PellScrub.BUCKET.getX(),PellScrub.BUCKET.getY(),PellScrub.BUCKET.getZ(),BUCKET,0),"a bucket nobody has is back in the laundry"))
+        .thenExecute(()->{
+            // Locked up, the night goes on to midnight, and waits there.
+            PellLastNight.lockedUp(l,b);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.hour(b)==PellNight.TWELVE,"midnight: "+PellVisit.hour(b)))
+        .thenIdle(60).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==PellNight.TWELVE&&PellVisit.step(b)==PellVisit.NIGHT,"the night waits at midnight: "+PellVisit.hour(b));
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(at(june,b,PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z(),.7)&&june.getOffhandItem().isEmpty(),"June does not go out on her rounds");
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(at(c,b,PellLastNight.ON_LINE.x,PellLastNight.ON_LINE.z,.3)&&!PellVisit.asleep(b,PellPeople.CALLUM),"Callum still out on the line");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_last") public static void lastDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.538, breaking the line on the last night, with two readers. One takes a plate from the fridge and the bucket from the
+     * laundry. A hand on Callum on the line gets that he does not move. Held to a cell of the thin stretch behind the shed, the brush
+     * brings Callum onto that cell, once said, and nothing comes off however long it is held there. The plate held out to him: he
+     * takes it, sits down on the grass a step inside the line and eats it; a hand on him then gets that he eats, and more food that
+     * he has already what he was given. The stretch free, the brush takes the paint half away and then out in two seconds each; the
+     * brush comes away from a cell scrubbed out. A second cell scrubbed out beside the first breaks the line: Callum looks up and says
+     * his name, heard by both readers. He finishes eating and sits on.
+     */
+    @GameTest(template="empty",batch="pell_last_line",timeoutTicks=6000)
+    public static void callumKeepsTheThinStretchUntilHeIsFedAndWhenTheLineBreaksHeSaysHisName(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_line_scrubber",P);var q=f.player("pell_line_watcher",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var first=new BlockPos(7,-1,PellSite.LINE_N);var second=new BlockPos(8,-1,PellSite.LINE_N);
+        int[] plate={-1},brush={-1};
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            f.click(p,P,FRIDGE_AT);f.click(p,P,PellScrub.BUCKET);
+            var inv=p.getInventory();
+            for(int i=0;i<9;i++){if(inv.getItem(i).is(PellRegistry.DINNER.get()))plate[0]=i;if(inv.getItem(i).is(PellRegistry.SCRUB.get()))brush[0]=i;}
+            h.assertTrue(plate[0]>=0&&brush[0]>=0,"a plate and the bucket in hand's reach: "+inv.items);
+            inv.selected=brush[0];
+            h.assertTrue(PellScrub.holding(p),"the bucket in hand");
+            // Behind the shed, inside the line; the other reader by the shed's corner.
+            f.at(p,P,7.5,0,-95.5);f.at(q,P,3.5,0,-95.5);told(p);
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_ON_LINE[0]),"a hand on him: he does not move");
+            lookAt(p,top(b,first));
+        }).thenWaitUntil(()->{
+            PellScrub.scrubbing(p);
+            h.assertTrue(f.own(p,P).getBoolean("CallumStood")&&at(who(h,l,b,PellPeople.CALLUM),b,first.getX()+.5,first.getZ()+.5,.3),"Callum steps onto the cell the brush is on");
+        }).thenExecuteFor(60,()->PellScrub.scrubbing(p))
+        .thenExecute(()->{
+            h.assertTrue(stageAt(l,b,first)==PellLine.LAST,"while he stands on it, nothing comes off");
+            h.assertTrue(told(p).stream().filter(PellTexts.CALLUM_STANDS::equals).count()==1,"told once");
+            // The plate held out to him.
+            p.getInventory().selected=plate[0];
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_TAKES)&&PellLastNight.fed(b)&&f.own(p,P).getBoolean("FedCallum"),"he takes it");
+            h.assertTrue(p.getInventory().countItem(PellRegistry.DINNER.get())==0&&c.getOffhandItem().is(PellRegistry.DINNER.get()),"from the reader's hand into his");
+        }).thenWaitUntil(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(c.gesture()==PellPeople.EATING&&at(c,b,PellLastNight.SITS.x,PellLastNight.SITS.z,.3),"sat down on the grass a step inside the line, eating");
+        }).thenExecute(()->LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM)))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_EATING[0]),"a hand on him: he eats");
+            p.getInventory().setItem(p.getInventory().selected,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD));
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_HAS_EATEN)&&p.getMainHandItem().getCount()==1,"he has what he was given");
+            p.getInventory().selected=brush[0];lookAt(p,top(b,first));
+        }).thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,first)==PellLine.HALF_SCRUBBED,"the paint half away");})
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,first)==PellLine.GAP,"and out");})
+        .thenExecute(()->{
+            h.assertFalse(PellScrub.scrubbing(p),"the brush comes away from a cell scrubbed out");
+            h.assertFalse(PellScrub.broken(l,b)||PellLastNight.said(b),"one cell out is not a gap");
+            lookAt(p,top(b,second));
+        }).thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,second)==PellLine.GAP,"the cell beside it scrubbed out");})
+        .thenIdle(1).thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(PellScrub.broken(l,b)&&PellLastNight.said(b),"the line broken");
+            h.assertTrue(said(c).equals(PellTexts.CALLUM_NAME)&&c.getXRot()<-20,"he looks up and says his name: "+said(c)+" "+c.getXRot());
+            for(var r:new ServerPlayer[]{p,q})h.assertTrue(f.own(r,P).getBoolean("HeardCallum"),"heard by both readers");
+            var own=f.own(p,P);h.assertTrue(own.getInt("Scrubbed")==4&&own.getBoolean("ScrubbedOut"),"the scrubbing kept: "+own);
+        }).thenWaitUntil(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(c.gesture()==PellPeople.SITTING&&c.getOffhandItem().isEmpty(),"he has eaten it, and sits on");
+        }).thenExecute(()->h.assertTrue(PellLastNight.said(b)&&who(h,l,b,PellPeople.CALLUM).getXRot()<-20,"still looking up")).thenSucceed();
+    }
+    @AfterBatch(batch="pell_last_line") public static void lastLineDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.538, the bucket and the brush on a visit before the last, with one reader a week in. Food held out to Callum at the end of the
+     * hall: he looks at it and does not take it. A thick cell of the line scrubbed out, the one beside it half away, five seconds each
+     * stage. The night goes on asleep in the garage; by first light June has painted over both, and the line is whole.
+     */
+    @GameTest(template="empty",batch="pell_scrub_week",timeoutTicks=12000)
+    public static void beforeTheLastNightCallumWillNotEatAndJuneHasPaintedOverTheScrubbingByFirstLight(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_scrub_reader",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");
+        f.at(p,P,.5,0,-44);
+        var out=new BlockPos(10,-1,PellSite.LINE_N);var half=new BlockPos(11,-1,PellSite.LINE_N);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellHand.skip(b);
+            f.at(p,P,-8.5,0,-65.5);told(p);
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD));
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_WONT_TAKE)&&p.getMainHandItem().is(net.minecraft.world.item.Items.BREAD)&&c.getOffhandItem().isEmpty(),"he looks at it and does not take it");
+            h.assertFalse(PellLastNight.fed(b),"and is not fed");
+            p.getInventory().clearContent();
+            f.click(p,P,PellScrub.BUCKET);
+            h.assertTrue(PellScrub.holding(p),"the bucket in hand");
+            f.at(p,P,10.5,0,-95.5);lookAt(p,top(b,out));
+            h.assertTrue(!PellSite.thin(out)&&!PellSite.thin(half),"a hand's width of line, not the thin stretch");
+        }).thenExecuteFor(PellScrub.THICK-5,()->PellScrub.scrubbing(p))
+        .thenExecute(()->h.assertTrue(stageAt(l,b,out)==PellLine.SECOND,"five seconds to a stage where the line is wide"))
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,out)==PellLine.HALF_SCRUBBED,"half away");})
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,out)==PellLine.GAP,"and out");})
+        .thenExecute(()->lookAt(p,top(b,half)))
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,half)==PellLine.HALF_SCRUBBED,"the next half away");})
+        .thenExecute(()->{
+            h.assertFalse(PellScrub.broken(l,b),"one cell out and one half is not a gap");
+            // The night, asleep in the garage, without the knife.
+            PellKnife.skip(b);PellMorning.smallHours(l,b);
+            f.at(p,P,14.5,0,-89.5);hand(p,b.offset(CAMP_BED_AT));
+            h.assertTrue(p.isSleeping(),"asleep in the garage");
+        }).thenWaitUntil(()->h.assertTrue(PellMorning.dawned(b),"first light"))
+        .thenExecute(()->{
+            for(var cell:List.of(out,half)){var st=l.getBlockState(b.offset(cell));h.assertTrue(PellLine.unbroken(st)&&st.getValue(PellLine.STAGE)==PellLine.SECOND,"June has painted over it: "+cell+" "+st);}
+            h.assertFalse(PellScrub.broken(l,b),"the line whole");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_scrub_week") public static void scrubWeekDone(ServerLevel l){done();}
 }

@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * <li><b>Which visit.</b> Each reader's own record keeps which of the house's visits they have had all of ("FirstVisit", "SecondVisit"):
  * a visit is had once Gail has rung and June has hung up with the reader at the house. When the house begins again it plays the earliest
  * visit that a reader at it has not had, so nobody misses the first; a reader who joins a visit already begun has the house as it is.
- * There is no third visit yet: a reader who has had both has the second again.</li>
+ * 0.4.538: a reader who has had both has the third, the last night (PellLastNight); its end comes later, so it is played again.</li>
  * <li><b>A week in.</b> No Gail and no car. June is at her stove, Tilly is in Nessa's room with the door open, and Callum at the end of
  * the hall. The front door and the sliding door are shut, and so is the garage's, with a towel pushed under it from the yard. The late
  * afternoon holds until a reader first comes in; June calls hello from the kitchen ("That you, love? Dinner's at six."), and the hour
@@ -42,8 +42,8 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public final class PellWeek {
     private PellWeek(){}
-    /** The latest of the house's visits there is yet. */
-    public static final int LAST=2;
+    /** The latest of the house's visits there is yet: 0.4.538, the third, the last night (PellLastNight). */
+    public static final int LAST=3;
     /** The lane rope: the tag on its lengths' bodies, the row it crosses at (the step between the shallow end and the deep), the height of
      *  its floats' middles (the waterline), and the length of it where a float is missing. */
     public static final String LANE_TAG="pell_lane";
@@ -54,9 +54,13 @@ public final class PellWeek {
         FRIDGE_TOP=new BlockPos(-13,1,-71),TOWEL=new BlockPos(13,0,-87);
     /** The pegboard's two cells, and the pool's details: the band's missing tile, its odd one, and the deep end's drain. */
     public static final List<BlockPos> PEGBOARD=List.of(new BlockPos(14,1,-95),new BlockPos(13,1,-95),new BlockPos(15,1,-95));
+    /** 0.4.538: the kitchen's upper cupboards; the knife block is put away in the first on the last night. */
+    public static final List<BlockPos> CUPBOARD=List.of(new BlockPos(-11,2,-71),new BlockPos(-13,2,-71),new BlockPos(-12,2,-71),new BlockPos(-8,2,-71),new BlockPos(-7,2,-71));
 
     /** The visit a reader is on: the first of the house's visits they have not had all of (the last there is, once they have had them all). */
     public static int next(CompoundTag own){return !own.getBoolean("FirstVisit")?1:!own.getBoolean("SecondVisit")?2:LAST;}
+    /** For tests: the visit a reader's record has them on. */
+    public static int nextFor(CompoundTag own){return next(own);}
     /** The visit the house plays for the readers at it: the earliest any of them is on. */
     public static int visitFor(List<ServerPlayer> here){
         int v=Integer.MAX_VALUE;
@@ -89,13 +93,18 @@ public final class PellWeek {
     }
     /** The house as the visit has it: the pool, the line and the things a week changes, as they are on the first visit or a week on. */
     static void dress(ServerLevel l,BlockPos b,int visit){
-        boolean week=visit>=2;
+        boolean week=visit>=2,last=visit>=LAST;
         PellSite.pool(l,b,!week);
-        rope(l,b,week);
-        PellSite.repaint(l,b,week?PellLine.SECOND:PellLine.FIRST);
-        stage(l,b,KNIFE,PellThing.Kind.KNIFE_BLOCK,week?1:0);
-        stage(l,b,CUTLERY,PellThing.Kind.CUTLERY,week?1:0);
-        stage(l,b,SHED_CALENDAR,PellThing.Kind.SHED_CALENDAR,week?1:0);
+        // 0.4.538: the last night, the lane rope is out of the water and the pool is lit from under it; the line fresh and wet in
+        // places; the knife block gone from the bench and put away in the cupboard, every slot empty; the knife gone from Callum's
+        // drawer; the calendar's circle tonight.
+        rope(l,b,week&&!last);
+        PellLastNight.poolLight(l,b,last);
+        PellSite.repaint(l,b,last?PellLine.LAST:week?PellLine.SECOND:PellLine.FIRST);
+        stage(l,b,KNIFE,PellThing.Kind.KNIFE_BLOCK,last?2:week?1:0);
+        for(var at:CUPBOARD)stage(l,b,at,PellThing.Kind.CUPBOARD_UPPER,last&&at.equals(CUPBOARD.get(0))?1:0);
+        stage(l,b,CUTLERY,PellThing.Kind.CUTLERY,last?2:week?1:0);
+        stage(l,b,SHED_CALENDAR,PellThing.Kind.SHED_CALENDAR,last?2:week?1:0);
         stage(l,b,FRIDGE_TOP,PellThing.Kind.FRIDGE_TOP,week?1:0);
         for(var at:PEGBOARD){var s=l.getBlockState(b.offset(at));if(PellThing.is(s,PellThing.Kind.PEGBOARD))set(l,b.offset(at),s.setValue(PellThing.STAGE,(s.getValue(PellThing.STAGE)&1)|(week?2:0)));}
         var towel=l.getBlockState(b.offset(TOWEL));
