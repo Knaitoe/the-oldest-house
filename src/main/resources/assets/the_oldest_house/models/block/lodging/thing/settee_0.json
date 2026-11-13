@@ -1,0 +1,418 @@
+{
+  "textures": {
+    "velvet": "the_oldest_house:block/lodging/thing/velvet",
+    "velvet_seat": "the_oldest_house:block/lodging/thing/velvet_seat",
+    "wood_dark": "the_oldest_house:block/lodging/thing/wood_dark",
+    "particle": "the_oldest_house:block/lodging/thing/velvet"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        2,
+        1
+      ],
+      "to": [
+        15,
+        8,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            8,
+            16,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#velvet",
+          "uv": [
+            0,
+            8,
+            15,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            8,
+            15,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            8,
+            15,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#velvet",
+          "uv": [
+            0,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#velvet",
+          "uv": [
+            0,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        8,
+        1
+      ],
+      "to": [
+        13,
+        10,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#velvet_seat",
+          "uv": [
+            3,
+            6,
+            16,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#velvet_seat",
+          "uv": [
+            0,
+            6,
+            13,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#velvet_seat",
+          "uv": [
+            4,
+            6,
+            15,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#velvet_seat",
+          "uv": [
+            1,
+            6,
+            12,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#velvet_seat",
+          "uv": [
+            0,
+            1,
+            13,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#velvet_seat",
+          "uv": [
+            0,
+            1,
+            13,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        8,
+        1
+      ],
+      "to": [
+        15,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            4,
+            3,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#velvet",
+          "uv": [
+            13,
+            4,
+            15,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            4,
+            15,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            4,
+            15,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#velvet",
+          "uv": [
+            13,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#velvet",
+          "uv": [
+            13,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        8,
+        12
+      ],
+      "to": [
+        15,
+        19,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            0,
+            16,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#velvet",
+          "uv": [
+            0,
+            0,
+            15,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#velvet",
+          "uv": [
+            1,
+            0,
+            4,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#velvet",
+          "uv": [
+            12,
+            0,
+            15,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#velvet",
+          "uv": [
+            0,
+            12,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#velvet",
+          "uv": [
+            0,
+            12,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        2,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood_dark",
+          "uv": [
+            1,
+            14,
+            2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            14,
+            15,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            14,
+            15,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wood_dark",
+          "uv": [
+            1,
+            14,
+            2,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            1,
+            15,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            1,
+            15,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        0,
+        14
+      ],
+      "to": [
+        15,
+        2,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood_dark",
+          "uv": [
+            1,
+            14,
+            2,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            14,
+            15,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wood_dark",
+          "uv": [
+            1,
+            14,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            14,
+            15,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            14,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#wood_dark",
+          "uv": [
+            14,
+            14,
+            15,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

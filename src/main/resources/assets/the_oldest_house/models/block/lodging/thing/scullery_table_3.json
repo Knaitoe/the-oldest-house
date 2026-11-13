@@ -1,0 +1,213 @@
+{
+  "textures": {
+    "deal": "the_oldest_house:block/lodging/thing/deal",
+    "deal_side": "the_oldest_house:block/lodging/thing/deal_side",
+    "particle": "the_oldest_house:block/lodging/thing/deal"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        13,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#deal_side",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#deal_side",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            2,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            2,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#deal",
+          "uv": [
+            0,
+            1,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#deal_side",
+          "uv": [
+            0,
+            1,
+            16,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        3,
+        13,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#deal_side",
+          "uv": [
+            13,
+            3,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            3,
+            3,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#deal_side",
+          "uv": [
+            13,
+            3,
+            15,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            3,
+            3,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        13
+      ],
+      "to": [
+        3,
+        13,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#deal_side",
+          "uv": [
+            13,
+            3,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            3,
+            3,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            3,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#deal_side",
+          "uv": [
+            13,
+            3,
+            15,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            13,
+            3,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#deal_side",
+          "uv": [
+            1,
+            13,
+            3,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

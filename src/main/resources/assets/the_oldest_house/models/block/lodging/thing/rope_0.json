@@ -1,0 +1,144 @@
+{
+  "textures": {
+    "rope": "the_oldest_house:block/lodging/thing/rope",
+    "particle": "the_oldest_house:block/lodging/thing/rope"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        2,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rope",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rope",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rope",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rope",
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rope",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#rope",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        0,
+        7
+      ],
+      "to": [
+        16,
+        1,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rope",
+          "uv": [
+            0,
+            15,
+            4,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#rope",
+          "uv": [
+            12,
+            15,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#rope",
+          "uv": [
+            8,
+            15,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#rope",
+          "uv": [
+            7,
+            15,
+            8,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#rope",
+          "uv": [
+            12,
+            7,
+            16,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#rope",
+          "uv": [
+            12,
+            7,
+            16,
+            8
+          ]
+        }
+      }
+    }
+  ]
+}

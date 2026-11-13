@@ -1825,5 +1825,6 @@
   "block.the_oldest_house.lodging_paper_room": "Guest Room Paper",
   "block.the_oldest_house.lodging_paper_room_low": "Guest Room Paper, Skirting",
   "block.the_oldest_house.lodging_distemper": "Distemper",
-  "block.the_oldest_house.lodging_distemper_low": "Distemper, Skirting"
+  "block.the_oldest_house.lodging_distemper_low": "Distemper, Skirting",
+  "block.the_oldest_house.lodging_thing": "Lodging House Furniture"
 }

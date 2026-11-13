@@ -12,8 +12,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * 0.4.549, The Ones Already Inside (docs/THE_ONES_ALREADY_INSIDE_PLAN.md). This slice: the lodging house, and its doors and hatches.
- * The house is not dealt until its story can be finished.
+ * 0.4.549, The Ones Already Inside (docs/THE_ONES_ALREADY_INSIDE_PLAN.md). The lodging house, its doors and hatches, and from 0.4.550
+ * what is in its rooms. The house is not dealt until its story can be finished.
  *
  * <p>Doors open and shut to a hand, both cells. Daniel's has its bolt on the passage side: a first hand draws the bolt and the next
  * opens it, and shut again it stays unbolted until somebody shoots the bolt. The jib door is flush with the wall until it is opened.
@@ -45,6 +45,8 @@ public final class LodgingHouse {
             if(part!=LodgingWall.Part.HATCH&&part!=LodgingWall.Part.HATCH_OPEN)return false;
             hatch(l,b.offset(rel),part==LodgingWall.Part.HATCH);return true;
         }
+        // 0.4.550: what is in the rooms says what it is. A chair, an armchair or the settee seats an empty hand before this (HouseSitting).
+        if(LodgingThing.is(st)){cue(p,LodgingTexts.thing(st,rel));return true;}
         if(!st.is(LodgingRegistry.FITTING.get()))return false;
         var kind=st.getValue(LodgingBlock.KIND);
         // The terms on the hall table and the bench are the first paper's and the account's: the House's own reading answers them.

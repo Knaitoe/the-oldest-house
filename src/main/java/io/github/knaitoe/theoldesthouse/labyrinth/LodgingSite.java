@@ -151,6 +151,7 @@ public final class LodgingSite {
         stairs(l,b);
         cellar(l,b);
         fittings(l,b);
+        furnish(l,b);
     }
 
     private static void floors(ServerLevel l,BlockPos b){
@@ -294,6 +295,89 @@ public final class LodgingSite {
         // Lights: bulbs on their flexes, the cellar's and Daniel's turned low; none in the passages.
         for(var at:LAMPS)set(l,b,at,fit(Kind.LAMP,Direction.NORTH,0));
         for(var at:LOW_LAMPS)set(l,b,at,fit(Kind.LAMP,Direction.NORTH,1));
+    }
+    // ------------------------------------------------------------------------------------------------ what is in the rooms (0.4.550)
+    /** Guest room i's bed: its head cell. The front rooms' beds stand with their heads to the front wall, the others' to the room's back. */
+    public static BlockPos bed(int room){int side=room<3?-1:1;int k=room%3;return new BlockPos(side*9,UPPER,k==0?ROOM_Z[0][0]:ROOM_Z[k][1]);}
+    /** Which way guest room i's bed points, head to foot. */
+    public static Direction bedFacing(int room){return room%3==0?Direction.NORTH:Direction.SOUTH;}
+    /** Guest room i's washstand, against the room's back wall by the door. */
+    public static BlockPos washstand(int room){return new BlockPos(room<3?-6:6,UPPER,ROOM_Z[room%3][1]);}
+    /** Guest room i's chair, close by the bed's head, turned to it. */
+    public static BlockPos guestChair(int room){return new BlockPos(room<3?-11:11,UPPER,bed(room).getZ());}
+    /** The holder for guest room i's card, on the gallery's wall beside its door. */
+    public static BlockPos cardHolder(int room){var d=ROOM_DOORS[room];return new BlockPos(d.getX()+(room<3?1:-1),UPPER+1,d.getZ()+1);}
+    /** The parlor: the settee facing the grate (its left half), the armchairs either side of it, the small table, the waiting chairs. */
+    public static final BlockPos SETTEE=new BlockPos(-9,0,-7),SIDE_TABLE=new BlockPos(-8,0,-7);
+    public static final List<BlockPos> ARMCHAIRS=List.of(new BlockPos(-11,0,-9),new BlockPos(-7,0,-9)),PARLOR_CHAIRS=List.of(new BlockPos(-13,0,-3),new BlockPos(-5,0,-3));
+    /** The dining room's long table, two cells by four, and the sideboard against its back wall (its left half). */
+    public static final int TABLE_W=8,TABLE_E=9,TABLE_S=-4,TABLE_N=-7;
+    public static final BlockPos SIDEBOARD=new BlockPos(8,0,-11);
+    /** Daniel's room: the cot (its head), the shelf under the food hatch, his chair, the pail. */
+    public static final BlockPos COT=new BlockPos(-13,0,ROOM_N+1),SHELF=FOOD_HATCH.below().east(),DANIEL_CHAIR=new BlockPos(-7,0,-25),DANIEL_PAIL=new BlockPos(-4,0,ROOM_N+1);
+    /** The scullery: the tray laid on the table's near half, the range, the sink, the dresser, the pail. */
+    public static final BlockPos TRAY=new BlockPos(8,0,-22),RANGE=new BlockPos(13,0,-20),SINK=new BlockPos(6,0,ROOM_N+1),DRESSER=new BlockPos(3,0,-18),SCULLERY_PAIL=new BlockPos(4,0,ROOM_N+1);
+    /** The workroom: the table of preparations (its left half), its chair, the record of guests, the key's hook by the door, the cupboard. */
+    public static final BlockPos WORK_TABLE=new BlockPos(-9,UPPER,-23),WORK_CHAIR=new BlockPos(-9,UPPER,-22),RECORD=new BlockPos(-6,UPPER,ROOM_N+1),KEY_HOOK=new BlockPos(-3,UPPER+1,-21),
+        WORK_CUPBOARD=new BlockPos(-13,UPPER,-26);
+    /** Vera's room: her bed (its head), the dressing table and its chair, the wardrobe. */
+    public static final BlockPos VERA_BED=new BlockPos(13,UPPER,-26),DRESSING_TABLE=new BlockPos(8,UPPER,ROOM_N+1),VERA_CHAIR=new BlockPos(8,UPPER,-27),VERA_WARDROBE=new BlockPos(3,UPPER,-25);
+    /** The cellar: the coil of rope by the dead post, the crates along the back, the coal. */
+    public static final BlockPos ROPE=DEAD_POST.west(),COAL=new BlockPos(5,CELLAR,-26);
+    public static final List<BlockPos> CRATES=List.of(new BlockPos(11,CELLAR,-27),new BlockPos(12,CELLAR,-27),new BlockPos(-12,CELLAR,-27));
+
+    static BlockState thing(LodgingThing.Kind kind,Direction facing,int stage){return LodgingThing.of(kind,facing,stage);}
+    /** A thing two cells side by side: half 0 here, half 1 to its right as one faces its front. */
+    private static void pair(ServerLevel l,BlockPos b,BlockPos at,LodgingThing.Kind kind,Direction f,int extra){set(l,b,at,thing(kind,f,extra));set(l,b,LodgingThing.right(at,f),thing(kind,f,1|extra));}
+    /** A thing two cells end to end: its head here, its foot the cell it points to. */
+    private static void ends(ServerLevel l,BlockPos b,BlockPos head,LodgingThing.Kind kind,Direction f,int extra){set(l,b,head,thing(kind,f,extra));set(l,b,LodgingThing.ahead(head,f),thing(kind,f,1|extra));}
+    /** A thing two cells high: the upper cell is stage 1. */
+    private static void tall(ServerLevel l,BlockPos b,BlockPos at,LodgingThing.Kind kind,Direction f){set(l,b,at,thing(kind,f,0));set(l,b,at.above(),thing(kind,f,1));}
+
+    private static void furnish(ServerLevel l,BlockPos b){
+        // The six guest rooms: a bed made and turned down, a washstand with its basin, jug and glass, a hard chair by the bed's head; and
+        // outside each door, the holder its guest's card will go in.
+        for(int i=0;i<6;i++){
+            ends(l,b,bed(i),LodgingThing.Kind.BED,bedFacing(i),0);
+            set(l,b,washstand(i),thing(LodgingThing.Kind.WASHSTAND,Direction.SOUTH,0));
+            set(l,b,guestChair(i),thing(LodgingThing.Kind.CHAIR,i<3?Direction.EAST:Direction.WEST,0));
+            set(l,b,cardHolder(i),thing(LodgingThing.Kind.CARD_HOLDER,i<3?Direction.EAST:Direction.WEST,0));
+        }
+        // The parlor, where everybody waits together: the settee facing the grate, an armchair either side of it, a small table, and a
+        // chair by each window.
+        pair(l,b,SETTEE,LodgingThing.Kind.SETTEE,Direction.NORTH,0);set(l,b,SIDE_TABLE,thing(LodgingThing.Kind.SIDE_TABLE,Direction.NORTH,0));
+        set(l,b,ARMCHAIRS.get(0),thing(LodgingThing.Kind.ARMCHAIR,Direction.EAST,0));set(l,b,ARMCHAIRS.get(1),thing(LodgingThing.Kind.ARMCHAIR,Direction.WEST,0));
+        set(l,b,PARLOR_CHAIRS.get(0),thing(LodgingThing.Kind.CHAIR,Direction.EAST,0));set(l,b,PARLOR_CHAIRS.get(1),thing(LodgingThing.Kind.CHAIR,Direction.WEST,0));
+        // The dining room: the long table with its leaves in, ten chairs round it, and the sideboard.
+        for(int z=TABLE_N;z<=TABLE_S;z++){
+            boolean end=z==TABLE_N||z==TABLE_S;
+            set(l,b,TABLE_W,0,z,thing(LodgingThing.Kind.LONG_TABLE,end?(z==TABLE_N?Direction.NORTH:Direction.WEST):Direction.NORTH,end?1:0));
+            set(l,b,TABLE_E,0,z,thing(LodgingThing.Kind.LONG_TABLE,end?(z==TABLE_N?Direction.EAST:Direction.SOUTH):Direction.SOUTH,end?1:0));
+            set(l,b,TABLE_W-1,0,z,thing(LodgingThing.Kind.CHAIR,Direction.EAST,0));set(l,b,TABLE_E+1,0,z,thing(LodgingThing.Kind.CHAIR,Direction.WEST,0));
+        }
+        set(l,b,TABLE_W,0,TABLE_N-1,thing(LodgingThing.Kind.CHAIR,Direction.SOUTH,0));set(l,b,TABLE_E,0,TABLE_S+1,thing(LodgingThing.Kind.CHAIR,Direction.NORTH,0));
+        pair(l,b,SIDEBOARD,LodgingThing.Kind.SIDEBOARD,Direction.SOUTH,0);
+        // Daniel's room, his years: the cot along the wall, the shelf under the food hatch, his chair turned to the frame, a pail.
+        ends(l,b,COT,LodgingThing.Kind.COT,Direction.SOUTH,0);
+        set(l,b,SHELF,thing(LodgingThing.Kind.SHELF,Direction.EAST,0));
+        set(l,b,DANIEL_CHAIR,thing(LodgingThing.Kind.CHAIR,Direction.NORTH,0));set(l,b,DANIEL_PAIL,thing(LodgingThing.Kind.PAIL,Direction.NORTH,0));
+        // The scullery, Vera's kitchen: the range in low with its flue to the ceiling, the stone sink, the dresser, and on the table the
+        // tray laid for Daniel's hatch.
+        set(l,b,RANGE,thing(LodgingThing.Kind.RANGE,Direction.WEST,0));for(int y=1;y<=3;y++)set(l,b,RANGE.above(y),thing(LodgingThing.Kind.RANGE,Direction.WEST,1));
+        set(l,b,SINK,thing(LodgingThing.Kind.SINK,Direction.SOUTH,0));tall(l,b,DRESSER,LodgingThing.Kind.DRESSER,Direction.EAST);
+        set(l,b,TRAY,thing(LodgingThing.Kind.SCULLERY_TABLE,Direction.EAST,2));set(l,b,LodgingThing.right(TRAY,Direction.EAST),thing(LodgingThing.Kind.SCULLERY_TABLE,Direction.EAST,1));
+        set(l,b,SCULLERY_PAIL,thing(LodgingThing.Kind.PAIL,Direction.NORTH,0));
+        // The workroom: the table of preparations and its chair, the record of guests, the key on its hook by the door, a tall cupboard.
+        pair(l,b,WORK_TABLE,LodgingThing.Kind.WORK_TABLE,Direction.NORTH,0);set(l,b,WORK_CHAIR,thing(LodgingThing.Kind.CHAIR,Direction.NORTH,0));
+        set(l,b,RECORD,thing(LodgingThing.Kind.CARD_INDEX,Direction.SOUTH,0));set(l,b,KEY_HOOK,thing(LodgingThing.Kind.KEY_HOOK,Direction.WEST,0));
+        tall(l,b,WORK_CUPBOARD,LodgingThing.Kind.WARDROBE,Direction.EAST);
+        // Vera's room: her bed made tight, the dressing table and its chair, her wardrobe.
+        ends(l,b,VERA_BED,LodgingThing.Kind.BED,Direction.WEST,2);
+        set(l,b,DRESSING_TABLE,thing(LodgingThing.Kind.DRESSING_TABLE,Direction.SOUTH,0));set(l,b,VERA_CHAIR,thing(LodgingThing.Kind.CHAIR,Direction.NORTH,0));
+        tall(l,b,VERA_WARDROBE,LodgingThing.Kind.WARDROBE,Direction.EAST);
+        // The cellar: a coil of rope beside the dead post, crates along the back, the coal.
+        set(l,b,ROPE,thing(LodgingThing.Kind.ROPE,Direction.NORTH,0));for(var at:CRATES)set(l,b,at,thing(LodgingThing.Kind.CRATE,Direction.NORTH,0));
+        set(l,b,COAL,thing(LodgingThing.Kind.COAL,Direction.NORTH,0));
     }
     /** The bulbs, each hung a cell under its ceiling. */
     public static final List<BlockPos> LAMPS=List.of(new BlockPos(0,3,-3),new BlockPos(0,3,-10),new BlockPos(-9,3,-6),new BlockPos(9,3,-6),new BlockPos(-8,3,-14),
