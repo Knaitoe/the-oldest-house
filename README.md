@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.558** puts a reader who takes somebody's part where that part begins. In the Goatman, the second reader through starts at the camp on the cousin's own spot, the cousin gone, and is told their chair, their bed, the generator if the gas run is theirs, and that somebody is still coming up the trail; each account says who began where. In the lake house, the reader in Tess's place starts where she waits, on the dock or on the raft by the compressor, with her flashlight. `docs/ROLE_SPOTS_0_4_558.md`.
+
 Development candidate **0.4.557** gives the séance copies of its own, four to a house: an unseen guest for each of the family at the table. A fifth reader is given a house of their own, built whole a million blocks west with its own family and its own sitting, while their door waits for it to stand. Driving one family out ends that house's sitting only; the family in the first house sits on. Camp Blood, the lake nights and the hotel come next. `docs/SEANCE_COPIES_0_4_557.md`.
 
 Development candidate **0.4.556** gives Last orders copies of its own, five to a bar: one to each stool but Benny's. A sixth reader is given a bar of their own, built whole a million blocks west with its own man in booth four, its own regulars and its own evening, while their door waits for it to stand. The league board and the street through the window stay the whole server's, and a glass drunk in one bar shows in every bar that stands. The séance, Camp Blood, the lake nights and the hotel come next. `docs/LAST_ORDERS_COPIES_0_4_556.md`.

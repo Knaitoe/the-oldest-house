@@ -117,6 +117,12 @@ public final class GoatmanVignette {
      */
     public static final String GAS="GasReader0150",GAS_NAME="GasName0150";
     /**
+     * 0.4.558 (owner, 13 November: "Player 2 in Goatman spawns at a cousin's location, replacing said cousin for that vignette and custom
+     * instructions for their role"): a reader who takes a cousin's place begins where that cousin is (by the fire, in the yard, or at their
+     * chair once supper is called) rather than at the head of the trail, which is the latecomer's alone. Set on such a reader's record.
+     */
+    public static final String STOOD_AT="StoodAt0558";
+    /**
      * How the cousins speak of the gas reader (owner): "he" or "she" only when the coatroom has settled how they present,
      * otherwise their name and "they". Saved when they are sent out.
      */
@@ -153,7 +159,24 @@ public final class GoatmanVignette {
         // The bunks (GoatmanWoods.bunk): even on the left wall from the door, odd on the right, nearest the door first; upper ones past twelve.
         int bunk=GoatmanBedtime.bunk(r,role);String[] nth={"first","second","third","fourth","fifth","sixth"};
         String where="the "+nth[(bunk/2)%6]+(bunk>=12?" top":"")+" bed on the "+(bunk%2==0?"left":"right")+" as you come in";
-        return gas?"You're late too. The others are at the trailer, and they've kept your place. The generator's yours to fill tonight; you sleep on "+where+".":"You're late too. The others are at the trailer, and they've kept your place: a chair at the table, and "+where+" for tonight.";
+        // 0.4.558: they are with the others already, in the cousin's place, and are told what that place is: whose chair and bed, and the
+        // generator for the one who goes for gas. Somebody still on the trail is the latecomer.
+        boolean late=false;var cohort=r.getCompound("Cohort");for(var key:cohort.getAllKeys())late|=!key.equals(p.getStringUUID())&&!cohort.getCompound(key).getBoolean("Arrived");
+        String trail=late?" Somebody is still coming up the trail.":"";
+        if(gas)return "You've been at the camp since the afternoon. When the generator runs out tonight, filling it is yours: the can is in the shed across the yard. Your chair is at the table, and you sleep on "+where+"."+trail;
+        return "You've been at the camp since the afternoon, with the others. Your chair is at the table, and you sleep on "+where+"."+trail;
+    }
+    /** Fixtures: where cousin {@code i} belongs now, relative to the scene's base, or null. */
+    public static @Nullable Vec3 spotOf(int i,CompoundTag r){var s=SPOTS.get(place(i,r));return s==null?null:s.at();}
+    /**
+     * 0.4.558: puts a reader who has taken a cousin's place on that cousin's spot, facing the way the cousin would: on the spot itself
+     * when it is clear, else on the nearest of the ways up to it or beside it that has room and ground for them.
+     */
+    private static void takePlace(ServerPlayer p,ServerLevel l,BlockPos b,int cousin,String key){
+        // The cousin goes as the reader comes: one child where there was one, in plain sight or not, rather than two in one place.
+        for(var c:actors(l,b))if(!c.girl()&&c.getPersistentData().getInt(INDEX)==cousin)c.discard();
+        Spot s=SPOTS.get(key);if(s==null)return;
+        RoleSpots.stand(p,b,s.at(),s.yaw(),s.access());
     }
     private GoatmanVignette(){}
 
@@ -272,13 +295,16 @@ public final class GoatmanVignette {
             // last night's playtest did not perform like that"): a friend who came through after the first reader had reached the camp
             // was only ever an extra child. Anyone who comes in before supper now takes a cousin's place; the cousin goes unseen.
             if(fresh(r)&&standInOpen(r)&&!cohort.isEmpty()){int role=standIn(r);if(role>=0){own.putInt(PLAYS,role);r.putInt(PLAYED,r.getInt(PLAYED)|1<<role);
-                if(role==r.getInt("Runner")){r.putUUID(GAS,p.getUUID());r.putString(GAS_NAME,p.getGameProfile().getName());}}}}
+                if(role==r.getInt("Runner")){r.putUUID(GAS,p.getUUID());r.putString(GAS_NAME,p.getGameProfile().getName());}
+                // 0.4.558: they begin where that cousin is, at the camp, so the trail is the latecomer's alone.
+                own.putDouble("Progress",GoatmanWoods.CLEARING);own.putBoolean("Arrived",true);own.putBoolean("GirlGone",true);own.putBoolean("Greeted",true);own.putBoolean(STOOD_AT,true);}}}
         // 0.4.405: a child who stepped out and is back before dark will sit the whole night, so the night is theirs to be counted for.
         if(member&&r.getInt("Phase")<VIGIL)own.remove("Interrupted");
         own.putBoolean("Active",true);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         if(!member)p.displayClientMessage(Component.literal(own.contains(PLAYS)?keptPlace(r,own.getInt(PLAYS),p):"You're late. Your cousins are already at the trailer."),false);
         scale(p,true);IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);GoatmanBedtime.restore(p,r);
         if(!stage(l,b,r))r.putBoolean("StagePending0469",true);saveRun(d,r);
+        if(!member&&own.contains(PLAYS)&&own.getBoolean(STOOD_AT))takePlace(p,l,b,own.getInt(PLAYS),place(own.getInt(PLAYS),r));
         GoatmanWoods.supplies(l,b,expected(r,cohort.getAllKeys().size()));if(fresh(r))GoatmanWoods.supperChairs(l,b,expected(r,cohort.getAllKeys().size()));return true;
     }
     /** A fresh evening: no actors, day, the door open, the bathroom window propped, the porch light on, the pan and the plates empty. */
@@ -1105,9 +1131,22 @@ public final class GoatmanVignette {
         var with=new ArrayList<String>();for(var t:personal.getList("With0150",Tag.TAG_STRING))with.add(t.getAsString());
         if(!personal.getBoolean("Drafted0150")||with.isEmpty())return alone;
         String names=with.size()==1?with.getFirst():String.join(", ",with.subList(0,with.size()-1))+" and "+with.getLast();
+        String tail=" There were more of us than there were places at the table. Someone knocked at the door and used a voice we knew. We kept it closed until the knocking stopped. I still could not say who had been outside.";
+        // 0.4.558: where each of them began, the trail or the camp, for an evening that kept it.
+        if(personal.contains("Camp0558")){
+            var trail=new ArrayList<String>();for(var t:personal.getList("Trail0558",Tag.TAG_STRING))trail.add(t.getAsString());
+            var camp=new ArrayList<String>();for(var t:personal.getList("Camp0558",Tag.TAG_STRING))camp.add(t.getAsString());
+            String line;
+            if(personal.getBoolean("AtCamp0558")){
+                line="I was at the camp all afternoon in a cousin's place"+(camp.isEmpty()?"":", with "+and(camp))+(trail.isEmpty()?".":", when "+and(trail)+" came up the trail late.");
+                if(personal.getBoolean("Gas0150"))line+=" I was the one who went out across the yard to fill the generator while the others ate.";
+            }else line="I came up the trail late"+(trail.isEmpty()?"":" with "+and(trail))+(camp.isEmpty()?".":", and "+and(camp)+(camp.size()==1?" was":" were")+" at the camp already, in "+(camp.size()==1?"a cousin's place.":"cousins' places."));
+            return line+tail;
+        }
         return "I came up the trail late with "+names+(personal.getBoolean("Gas0150")?". I was the one who went out across the yard to fill the generator while the others ate.":personal.getBoolean("StoodIn0150")?", and the cousins had kept my place at the table.":".")
                 +" There were more of us than there were places at the table. Someone knocked at the door and used a voice we knew. We kept it closed until the knocking stopped. I still could not say who had been outside.";
     }
+    private static String and(List<String> names){return names.size()==1?names.getFirst():String.join(", ",names.subList(0,names.size()-1))+" and "+names.getLast();}
     /** Morning: what the night was, for every child who sat all of it out. */
     private static void dawn(ServerLevel l,BlockPos b,CompoundTag r,List<ServerPlayer> enrolled,LabyrinthData d){
         r.putInt("Phase",DAWN);GoatmanWoods.atmosphere(l,b,false);GoatmanWoods.door(l,b,true);GoatmanWoods.porchLight(l,b,true);r.putBoolean("Silence",false);
@@ -1124,6 +1163,10 @@ public final class GoatmanVignette {
                 // 0.4.150: who else sat the night out, and whether this reader had taken a cousin's place, for the account.
                 var with=new ListTag();for(var other:enrolled){var theirs=cohort.getCompound(other.getUUID().toString());if(other!=p&&theirs.getBoolean("Active")&&!theirs.getBoolean("Failed"))with.add(StringTag.valueOf(other.getGameProfile().getName()));}
                 personal.put("With0150",with);personal.putBoolean("StoodIn0150",own.contains(PLAYS));personal.putBoolean("Gas0150",byReader(r)&&r.getUUID(GAS).equals(p.getUUID()));personal.putBoolean("Drafted0150",true);
+                // 0.4.558: and which of them came up the trail and which were at the camp already, in cousins' places.
+                var trail=new ListTag();var camp=new ListTag();
+                for(var other:enrolled){var theirs=cohort.getCompound(other.getUUID().toString());if(other!=p&&theirs.getBoolean("Active")&&!theirs.getBoolean("Failed"))(theirs.getBoolean(STOOD_AT)?camp:trail).add(StringTag.valueOf(other.getGameProfile().getName()));}
+                personal.put("Trail0558",trail);personal.put("Camp0558",camp);personal.putBoolean("AtCamp0558",own.getBoolean(STOOD_AT));
                 if(!personal.getBoolean("CounterGiven")){personal.putBoolean("CounterGiven",true);var counter=TallyCounterItem.forReader(p.getUUID());if(!p.getInventory().add(counter))p.drop(counter,false);}
                 savePersonal(d,p.getUUID(),personal);
                 WitnessAccount.resolve(p,WitnessAccount.Story.GOATMAN,"counted_right");own.putBoolean("Resolved",true);
