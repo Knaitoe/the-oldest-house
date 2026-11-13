@@ -368,6 +368,41 @@ public final class LabyrinthDoors {
         if(entry!=null)arrive(player,from,entry,place,true);
     }
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place) {arrive(player,from,suppliedEntry,place,false);}
+    /**
+     * Every scene's own welcome for a reader who has just come through its door, in the order a door has always run them.
+     * 0.4.565: a method of its own, so the two-reader checks bring their readers into a scene exactly as a door does
+     * (TogetherSceneTests).
+     */
+    public static void scenesArrived(ServerPlayer p, LabyrinthPlace place, LabyrinthData.Door entry) {
+        RedRoom.prepareIfDealt(p, place);
+        VignetteThreads.arrived(p, place);
+        ModelHome.onArrive(p, place);
+        HarriganVignette.onArrive(p, place);
+        DrownedTown.onArrive(p, place);
+        PreservedCave.onArrive(p, place);
+        Shallows.onArrive(p, place);
+        PhoneCanoe.onArrive(p,place);
+        GoatmanVignette.onArrive(p,place);
+        CaverVignette.onArrive(p,place);
+        HollowayVignette.onArrive(p,place);
+        NovelVignettes.onArrive(p,place);
+        ClassicsVignettes.onArrive(p,place);
+        HotelVignette.onArrive(p,place);
+        LiteraryVignettes.onArrive(p,place);
+        FeetUp.onArrive(p,place);
+        TrialMarks.arrived(p);
+        BlindStretch.onArrive(p,place);
+        MotherOfStrays.onArrive(p, place);
+        TallGrass.arrived(p, place);
+        PellPages.arrived(p, place);
+        WitnessAccount.onArrive(p, place);
+        LabyrinthEncounters.onArrive(p, place);
+        LabyrinthHazards.onArrive(p, place);
+        HazardVariety.onArrive(p,place);
+        LabyrinthLighting.onArrive(p, place);
+        BikeNightHalls.arrived(p, place, entry);
+    }
+
     private static void arrive(ServerPlayer player, LabyrinthData.Door from, LabyrinthData.Door suppliedEntry, LabyrinthPlace place,boolean fromRead) {
         // 0.4.231: a wedge holds this entry open on the hall it was set from; from anywhere else the door stops against it, except into
         // a room people meet in, which takes them in by another of its doors (0.4.239).
@@ -424,33 +459,7 @@ public final class LabyrinthDoors {
                     p.gameMode.getGameModeForPlayer() != net.minecraft.world.level.GameType.SPECTATOR);
             YardReturns.arrived(p,place);YardCrossings.arrived(p,place);SpeakUp.arrived(p,place);SphinxDream.arrived(p,place);
             if(p.gameMode.getGameModeForPlayer()==net.minecraft.world.level.GameType.SPECTATOR){LabyrinthMaze.forget(p.getUUID());LabyrinthDoorLeaks.send(p);return;}
-            RedRoom.prepareIfDealt(p, place);
-            VignetteThreads.arrived(p, place);
-            ModelHome.onArrive(p, place);
-            HarriganVignette.onArrive(p, place);
-            DrownedTown.onArrive(p, place);
-            PreservedCave.onArrive(p, place);
-            Shallows.onArrive(p, place);
-            PhoneCanoe.onArrive(p,place);
-            GoatmanVignette.onArrive(p,place);
-            CaverVignette.onArrive(p,place);
-            HollowayVignette.onArrive(p,place);
-            NovelVignettes.onArrive(p,place);
-            ClassicsVignettes.onArrive(p,place);
-            HotelVignette.onArrive(p,place);
-            LiteraryVignettes.onArrive(p,place);
-            FeetUp.onArrive(p,place);
-            TrialMarks.arrived(p);
-            BlindStretch.onArrive(p,place);
-            MotherOfStrays.onArrive(p, place);
-            TallGrass.arrived(p, place);
-            PellPages.arrived(p, place);
-            WitnessAccount.onArrive(p, place);
-            LabyrinthEncounters.onArrive(p, place);
-            LabyrinthHazards.onArrive(p, place);
-            HazardVariety.onArrive(p,place);
-            LabyrinthLighting.onArrive(p, place);
-            BikeNightHalls.arrived(p, place, entry);
+            scenesArrived(p, place, entry);
             HouseReadSites.prepareNext(p);
             LabyrinthMaze.forget(p.getUUID());
             LabyrinthDoorLeaks.send(p);

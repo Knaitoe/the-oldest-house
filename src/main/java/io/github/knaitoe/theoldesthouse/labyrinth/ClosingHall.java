@@ -96,6 +96,8 @@ public final class ClosingHall {
     @Nullable static UUID holder(CompoundTag t,String who){return t.hasUUID(who+"Hand")?t.getUUID(who+"Hand"):t.hasUUID(who+"Back")?t.getUUID(who+"Back"):null;}
     static void release(CompoundTag t,String who){t.remove(who+"Hand");t.remove(who+"Back");}
     static boolean carrying(CompoundTag t,UUID id){for(var who:CHILDREN)if(t.hasUUID(who+"Back")&&t.getUUID(who+"Back").equals(id))return true;return false;}
+    /** 0.4.565: whether this child is up on a reader's back, held off the ground by them. */
+    public static boolean onBack(LiteraryActor a){var who=who(a);return who!=null&&set(a.getServer()).hasUUID(who+"Back");}
     static boolean leading(CompoundTag t,UUID id){for(var who:CHILDREN)if(t.hasUUID(who+"Hand")&&t.getUUID(who+"Hand").equals(id))return true;return false;}
 
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -306,13 +308,17 @@ public final class ClosingHall {
             if(q==null)continue;
             if(ClosingHallSite.inSqueeze(rel(q,b),stage(t))){release(t,who);say(q,ClosingHallTexts.refuse(who));continue;}
             boolean back=t.hasUUID(who+"Back");
-            Vec3 look=new Vec3(q.getLookAngle().x,0,q.getLookAngle().z);if(look.lengthSqr()<1e-4)look=new Vec3(0,0,1);look=look.normalize();
+            // 0.4.565 (the two-reader scene checks found it): a child keeps to the reader's body, not to where the reader looks. A child
+            // by the hand stood behind wherever the reader was looking, so a reader looking about swung them round in bursts.
+            Vec3 look=Vec3.directionFromRotation(0,q.yBodyRot);
             Vec3 goal=back?q.position().add(look.scale(-.32)).add(0,q.getBbHeight()*.48,0):q.position().add(look.scale(-1.1)).add(new Vec3(-look.z,0,look.x).scale(.45));
             if(!back){var gr=rel(goal,b);int hw=ClosingHallSite.halfWidth(stage(t));goal=new Vec3(b.getX()+Mth.clamp(gr.x,-hw+.3,hw+.7),q.getY(),b.getZ()+Mth.clamp(gr.z,ClosingHallSite.FAR_Z+.3,ClosingHallSite.NEAR_Z+.7));}
             var from=a.position();var step=goal.subtract(from);double d=step.length();
-            Vec3 to=d<=.6||back?goal:from.add(step.scale(.6/d));
+            // 0.4.565 (the two-reader scene checks found it): a child lifted onto a back climbs up over a few ticks rather than
+            // arriving there at once from where they stood, up to three blocks off. Once up, they keep to the back every tick.
+            double reach=back?.9:.6;Vec3 to=d<=reach?goal:from.add(step.scale(reach/d));
             a.setNoGravity(true);a.noPhysics=true;a.setDeltaMovement(Vec3.ZERO);
-            float yaw=q.getYRot();a.moveTo(to.x,to.y,to.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
+            float yaw=q.yBodyRot;a.moveTo(to.x,to.y,to.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
         }
     }
     /** A child sent through: along the squeeze on their stomach, into the room past it, up the passage north, and gone. */

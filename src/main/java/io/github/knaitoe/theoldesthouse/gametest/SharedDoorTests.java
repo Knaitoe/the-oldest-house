@@ -2,14 +2,18 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.HouseInternalTeleport;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.Vec3;
@@ -129,6 +133,42 @@ public final class SharedDoorTests {
             LabyrinthDoors.clearAll();
             storage.set("the_oldest_house", oldHouse);
             storage.set("the_oldest_house_labyrinth", oldData);
+        }
+    }
+    /**
+     * Run 1597 (the live proof, 0.4.564): two readers came through the trailer's door, and the one taking a cousin's place was then put
+     * where that cousin stood, at the camp, in the same tick. The server was behind, and handled that reader's answer to both moves and
+     * their first step together; it measured the step from where the door had put them, not from the camp, and sent them back ("moved
+     * too quickly"). Every move the game makes is now where the next step is measured from (TeleportBaselineMixin). Fails without it.
+     */
+    @GameTest(template = "empty", batch = "shared_doors_second_place", timeoutTicks = 100)
+    public static void aReaderPutInASecondPlaceStepsOnFromThere(GameTestHelper h) {
+        var p = h.makeMockServerPlayerInLevel();
+        var c = p.connection;
+        Vec3 hall = Vec3.atBottomCenterOf(h.absolutePos(new BlockPos(1, 12, 1)));
+        c.teleport(hall.x, hall.y, hall.z, 0, 0);
+        // A tick: the reader's steps are measured from the hall, as anyone's are who stands in one.
+        c.tick();
+        // The door puts them through (its own move), and the story then puts them where their part begins, before the next tick.
+        Vec3 door = hall.add(0, 0, 2), place = hall.add(8, 0, -9);
+        HouseInternalTeleport.shiftPlayerOnly(p, door, 0, 0);
+        c.teleport(place.x, place.y, place.z, 0, 0);
+        // Their game answers the last move and takes a step, both before the server's next tick, as on a server that is behind.
+        c.handleAcceptTeleportPacket(new ServerboundAcceptTeleportationPacket(awaiting(c)));
+        c.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(place.x + .1, place.y, place.z, false));
+        h.assertTrue(Math.abs(p.getX() - (place.x + .1)) < 1e-6 && Math.abs(p.getZ() - place.z) < 1e-6,
+                "a reader put in a second place takes their next step from there (at " + p.position() + ", stepped to " + place.add(.1, 0, 0) + ")");
+        h.succeed();
+    }
+
+    /** The number of the last move the server has told this reader's game of, which their game answers with. */
+    private static int awaiting(ServerGamePacketListenerImpl c) {
+        try {
+            var field = ServerGamePacketListenerImpl.class.getDeclaredField("awaitingTeleport");
+            field.setAccessible(true);
+            return field.getInt(c);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

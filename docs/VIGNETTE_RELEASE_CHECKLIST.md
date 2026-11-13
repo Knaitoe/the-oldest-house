@@ -1,3 +1,5 @@
+November 13 candidate 0.4.565 (docs/TOGETHER_SCENES_0_4_565.md): two-reader cases for every story the House builds in its halls; require the together namespace (84 cases), the cast namespace (18), the lake house namespace and the shared-door cases (including aReaderPutInASecondPlaceStepsOnFromThere). A new story gets a TogetherSceneTests case (or a TogetherConductTests case if it talks) and a row in docs/MULTIPLAYER_AUDIT.md.
+
 November 13 candidate 0.4.564 (docs/TOGETHER_CHECKS_0_4_564.md): two-reader cast checks; no scene change, no Witness change. Require the together namespace (18 cases), the cast namespace (18) and the three lake house cases that use CastConduct. A new talking scene gets a case in both namespaces.
 
 November 13 candidate 0.4.563 (docs/CAMP_COPIES_0_4_563.md): Camp Blood by copy; no new source, no Witness change. Require LiteraryTests.aSeventhReaderIsGivenACampOfTheirOwn (batch literary_camp_copy), LiteraryTests.aFifthReaderIsGivenALakeOfTheirOwnAtMovieNight with its block comparison, and every SlasherTests case.

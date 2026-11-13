@@ -85,6 +85,8 @@ public final class LastOrdersTexts {
     }
     public static final String QUEUED="Ott taps the chalk with one finger: next game.";
     public static final String GLASS_OFFER="Go on. Steadies the hand.";
+    /** 0.4.565: a glass pushed along to a second reader, and a third, while the first offer still hangs in the air. */
+    public static final String[] GLASS_OFFER_MORE={"And one for you.","One each. Go on."};
     public static final String GLASS_REFUSED="Suit yourself.";
     public static final String GLASS_DRUNK="That's the way.";
     public static final String GLASS_TASTE="It tastes of very little. Over by the board, someone chalks up another week.";

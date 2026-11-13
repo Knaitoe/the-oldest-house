@@ -35,7 +35,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * down turns it as far as a head turns ({@link LiteraryActor#HEAD_TURN}).</li>
  * <li><b>One body.</b> Two of the same person are never in a scene at once.</li>
  * </ul>
- * A scene names what its own people do on purpose ({@link #swimming}, {@link #floating}, {@link #turnsAway}, {@link #exempt}).
+ * A scene names what its own people do on purpose ({@link #swimming}, {@link #floating}, {@link #turnsAway}, {@link #exempt},
+ * {@link #emerges}), and the parts it has several of ({@link #several}).
  */
 public final class CastConduct implements AutoCloseable {
     /** The most a person moves in one tick where it can be seen; a reader running is under half a block. */
@@ -49,7 +50,9 @@ public final class CastConduct implements AutoCloseable {
     public static final float TURN_DEGREES=75;
 
     private final GameTestHelper h;private final ServerLevel level;private final AABB area;private final Supplier<List<ServerPlayer>> readers;
-    private Predicate<LiteraryActor> swimming=a->false,floating=a->false,turnsAway=a->false,exempt=a->false;
+    private Predicate<LiteraryActor> swimming=a->false,floating=a->false,turnsAway=a->false,exempt=a->false,emerges=a->false;
+    /** Parts a scene has several of, and how many: dancers, a pair of parents, a family propped about a room. */
+    private final List<Map.Entry<Predicate<LiteraryActor>,Integer>> several=new ArrayList<>();
     private static final class Track {Vec3 last;boolean first=true,wasRider,wasSeen;final ArrayDeque<double[]> steps=new ArrayDeque<>();int inside,unsupported,dryswim;long reported;List<ServerPlayer> shown=List.of();}
     /** Ticks after the checks begin during which people a scene sets out as the reader arrives are not said to appear. */
     public static final int ARRIVAL=40;
@@ -63,6 +66,8 @@ public final class CastConduct implements AutoCloseable {
     }
     /** Where each reader stood on each of the last ten ticks. */
     private final Map<UUID,ArrayDeque<Vec3>> trails=new HashMap<>();
+    /** Which way each reader has faced, tick by tick, over the last ten ticks. */
+    private final Map<UUID,ArrayDeque<Float>> facings=new HashMap<>();
     private final List<Turn> turns=new ArrayList<>(),later=new ArrayList<>();
     private final Map<String,Long> said=new HashMap<>();
     /** When a reader last spoke to each person: their answer to it may be the same answer as before. */
@@ -93,6 +98,17 @@ public final class CastConduct implements AutoCloseable {
     /** People these checks leave alone altogether. */
     public CastConduct exempt(Predicate<LiteraryActor> p){exempt=p;return this;}
     /**
+     * 0.4.565: people this scene brings out where a reader can see, on purpose, and draws coming out (the woman on the deer road
+     * climbs out of the doe). Everyone else who is suddenly there where a reader is looking has appeared.
+     */
+    public CastConduct emerges(Predicate<LiteraryActor> p){emerges=p;return this;}
+    /**
+     * 0.4.565: a part this scene has this many of for each reader at once (fourteen dancers, two parents, four propped figures).
+     * One more than that is two bodies for one part.
+     */
+    public CastConduct several(Predicate<LiteraryActor> p,int howMany){several.add(Map.entry(p,howMany));return this;}
+    private int bodiesFor(LiteraryActor a){for(var e:several)if(e.getKey().test(a))return e.getValue();return 1;}
+    /**
      * A reader is speaking to this person now (a click on them, or an answer on the conversation panel): whatever they say back
      * within the next two ticks is an answer, which may be the same answer as last time. Called before the words are said.
      */
@@ -107,8 +123,13 @@ public final class CastConduct implements AutoCloseable {
     private @javax.annotation.Nullable UUID askedJustNow(LiteraryActor a){return level.getGameTime()-asked.getOrDefault(a.getUUID(),Long.MIN_VALUE/2)<=2?askedBy.get(a.getUUID()):null;}
     /** The reader was answered: the person turns to them as for a line of their own. */
     public void answered(LiteraryActor a,String what){
-        if(closed||exempt.test(a))return;turns.add(new Turn(a,what,level.getGameTime()+TURN_TICKS,askedBy.get(a.getUUID())));
+        if(closed||exempt.test(a))return;supersede(a);turns.add(new Turn(a,what,level.getGameTime()+TURN_TICKS,askedBy.get(a.getUUID())));
     }
+    /**
+     * 0.4.565 (two readers at Costume Night): somebody who says something new is looking where that line goes, not where their last
+     * one went. Hank answered one reader and, a tick later, called the next number to the other; he was held to the first.
+     */
+    private void supersede(LiteraryActor a){turns.removeIf(t->t.who()==a);later.removeIf(t->t.who()==a);}
     /** How many ticks it has watched. */
     public int ticks(){return ticks;}
     public List<String> faults(){return List.copyOf(faults);}
@@ -151,9 +172,20 @@ public final class CastConduct implements AutoCloseable {
      * Whether a reader was moved more than a block in one tick within the last ten: a test's reader is put beside the next person
      * at once, which no reader on foot does, and nobody turns their head to a place the reader has only just been put.
      */
-    private boolean justMoved(ServerPlayer r){
-        var trail=trails.get(r.getUUID());if(trail==null)return false;Vec3 before=null;
-        for(var at:trail){if(before!=null&&at.distanceToSqr(before)>1)return true;before=at;}
+    private boolean justMoved(ServerPlayer r){return movedWithin(r,10);}
+    /** Whether a reader was moved more than a block in one tick within the last {@code ticks} ticks. */
+    private boolean movedWithin(ServerPlayer r,int ticks){
+        var trail=trails.get(r.getUUID());if(trail==null)return false;Vec3 before=null;int skip=Math.max(0,trail.size()-ticks-1),i=0;
+        for(var at:trail){if(i++<skip)continue;if(before!=null&&at.distanceToSqr(before)>1)return true;before=at;}
+        return false;
+    }
+    /**
+     * 0.4.565 (two readers in the closing hall): whether a reader has turned sharply (a quarter turn or more in a tick) within this many
+     * ticks. A child held by the hand is kept at the reader's side, so a reader who turns round swings them round too, in a hurry.
+     */
+    private boolean turnedWithin(ServerPlayer r,int ticks){
+        var faced=facings.get(r.getUUID());if(faced==null)return false;Float before=null;int skip=Math.max(0,faced.size()-ticks-1),i=0;
+        for(var yaw:faced){if(i++<skip)continue;if(before!=null&&Math.abs(net.minecraft.util.Mth.wrapDegrees(yaw-before))>=45)return true;before=yaw;}
         return false;
     }
     private static double nearest(LiteraryActor a,List<ServerPlayer> rs){double d=Double.MAX_VALUE;for(var r:rs)d=Math.min(d,r.distanceTo(a));return d;}
@@ -177,14 +209,17 @@ public final class CastConduct implements AutoCloseable {
 
     private void tick(){
         ticks++;var rs=readers.get().stream().filter(r->r.isAlive()&&!r.isSpectator()&&r.level()==level).toList();
-        for(var r:rs){var trail=trails.computeIfAbsent(r.getUUID(),k->new ArrayDeque<>());trail.addLast(r.position());if(trail.size()>10)trail.removeFirst();}
+        for(var r:rs){var trail=trails.computeIfAbsent(r.getUUID(),k->new ArrayDeque<>());trail.addLast(r.position());if(trail.size()>10)trail.removeFirst();
+            var faced=facings.computeIfAbsent(r.getUUID(),k->new ArrayDeque<>());faced.addLast(r.getYRot());if(faced.size()>10)faced.removeFirst();}
         var present=new HashSet<UUID>();var bodies=new HashMap<String,Integer>();
         for(var a:level.getEntitiesOfClass(LiteraryActor.class,area,e->e.isAlive()&&!e.isRemoved())){
             if(exempt.test(a))continue;present.add(a.getUUID());
             var t=tracks.computeIfAbsent(a.getUUID(),k->new Track());var to=shown(a,rs);boolean seen=seenAt(a.position(),a.getEyeHeight(),to);
             if(t.first){
                 t.first=false;t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;
-                if(ticks>ARRIVAL&&a.tickCount<3&&seen&&nearest(a,to)<24)fault(a,"appeared","where a reader could see, at "+at(a.position()));
+                // 0.4.565: somebody already there when a reader is put somewhere (a scene's cut: the Masque puts a reader who moved at the
+                // chime back a room, where the red figure stands) did not appear to them. Only readers who stood where they were count.
+                if(ticks>ARRIVAL&&a.tickCount<3&&!emerges.test(a)&&nearest(a,to)<24&&seenAt(a.position(),a.getEyeHeight(),to.stream().filter(r->!movedWithin(r,3)).toList()))fault(a,"appeared","where a reader could see, at "+at(a.position()));
                 t.shown=to;
                 continue;
             }
@@ -192,9 +227,15 @@ public final class CastConduct implements AutoCloseable {
             if(moved>JUMP&&!a.isPassenger()&&!t.wasRider&&(seen||seenAt(t.last,a.getEyeHeight(),to)||nearest(a,to)<4))fault(a,"jumped",String.format(Locale.ROOT,"%.1f blocks in a tick, from %s to %s",moved,at(t.last),at(a.position())));
             // Moving in steps: over the last second, strides of a third of a block or more where a reader could see, on few ticks with
             // nothing between them. A walk or a slide moves a little every tick; a move nobody sees is how a scene puts people away.
+            // 0.4.565: a stride counts only after a tick standing still. A step goes, stops, and goes again; somebody who hurries to
+            // catch up with a reader put down a few blocks off (a test's reader) goes on every tick until they are there, and stops once.
+            // A test's reader is put down beside each person in turn, which no reader on foot does: whoever keeps with a reader (a
+            // child by the hand, a follower at heel) hurries after them in a burst each time. Strides near a reader who has just been
+            // put somewhere are not steps.
             if(!a.isPassenger()){
-                t.steps.addLast(new double[]{moved,seen||t.wasSeen?1:0});if(t.steps.size()>20)t.steps.removeFirst();
-                double total=0;int on=0,strides=0;for(var d:t.steps){total+=d[0];if(d[0]>.004)on++;if(d[0]>.3&&d[0]<=JUMP&&d[1]>0)strides++;}
+                boolean hurried=rs.stream().anyMatch(r->r.distanceTo(a)<6&&(movedWithin(r,10)||turnedWithin(r,10)));
+                t.steps.addLast(new double[]{moved,seen||t.wasSeen?1:0,hurried?1:0});if(t.steps.size()>20)t.steps.removeFirst();
+                double total=0,before=1;int on=0,strides=0;for(var d:t.steps){total+=d[0];if(d[0]>.004)on++;if(d[0]>.3&&d[0]<=JUMP&&d[1]>0&&d[2]==0&&before<=.004)strides++;before=d[0];}
                 if(t.steps.size()==20&&strides>=2&&on<8&&ticks-t.reported>60){t.reported=ticks;fault(a,"moves in steps",String.format(Locale.ROOT,"(%.1f blocks over a second in %d strides, on %d ticks of 20) near %s",total,strides,on,at(a.position())));}
             }else t.steps.clear();
             // Through a block.
@@ -209,7 +250,8 @@ public final class CastConduct implements AutoCloseable {
             }
             // One body each: the same part, for the same reader.
             String key=a.role()+"/"+(a.role()==LiteraryActor.STRANGER?a.phase():-1)+"/"+a.owner().map(UUID::toString).orElse("all");
-            if(bodies.merge(key,1,Integer::sum)==2)fault(a,"is there twice","(two bodies for one part)");
+            int allowed=bodiesFor(a);
+            if(bodies.merge(key,1,Integer::sum)==allowed+1)fault(a,"is there twice",allowed==1?"(two bodies for one part)":"("+(allowed+1)+" bodies for a part this scene has "+allowed+" of)");
             t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;t.shown=to;
         }
         // Gone where a reader could see.
@@ -248,6 +290,7 @@ public final class CastConduct implements AutoCloseable {
         var rs=shown(a,readers.get().stream().filter(r->r.isAlive()&&!r.isSpectator()&&r.level()==level).toList());
         if(a.isRemoved()||!a.isAlive())fault(a,"speaks while gone","\""+abbreviate(text)+"\"");
         else if(!rs.isEmpty()&&nearest(a,rs)>EARSHOT)fault(a,"speaks out of earshot",String.format(Locale.ROOT,"(%.0f blocks from the nearest reader) \"%s\"",nearest(a,rs),abbreviate(text)));
+        supersede(a);
         String key=a.getUUID()+"|"+text;long now=level.getGameTime();Long before=said.put(key,now);
         boolean answer=now-asked.getOrDefault(a.getUUID(),Long.MIN_VALUE/2)<=2;
         if(before!=null&&now-before<REPEAT&&!answer)fault(a,"says the same line again",String.format(Locale.ROOT,"after %d ticks: \"%s\"",now-before,abbreviate(text)));

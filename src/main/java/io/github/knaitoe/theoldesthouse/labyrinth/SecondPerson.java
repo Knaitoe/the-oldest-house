@@ -85,6 +85,8 @@ public final class SecondPerson {
         @Nullable UUID resident,iris,sam;
         int ring=-1,doorway,armchair,window,shut,near,knockBack=-1,unseen,wordWipe=-1,flash,seenRun,seenAway,still;@Nullable Vec3 stillAt;
         boolean bedDoor,drift;long sent=Long.MIN_VALUE;
+        /** 0.4.565: when they last stopped for a reader in a doorway and said nothing to them. */
+        long stalled=Long.MIN_VALUE/2;
         final Map<UUID,Long> said=new HashMap<>();final Set<String> once=new HashSet<>();
         Flat(BlockPos b){base=b;}
     }
@@ -319,7 +321,9 @@ public final class SecondPerson {
                 &&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0))&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());return a;}
         // They stop in a doorway the reader is standing in, rather than walk through them.
         var ahead=to.subtract(a.position()).normalize();var toReader=p.position().subtract(a.position());
-        if(toReader.horizontalDistance()<1.1&&ahead.dot(toReader.normalize())>.4){if(f.once.add("stalled"+(l.getGameTime()/400)))say(f,a,"...");return a;}
+        // 0.4.565 (the two-reader scene checks found it): at most once in twenty seconds, not once in each twenty-second window, which let
+        // two stops either side of a window's edge, three seconds apart, say it twice.
+        if(toReader.horizontalDistance()<1.1&&ahead.dot(toReader.normalize())>.4){if(l.getGameTime()-f.stalled>=400){f.stalled=l.getGameTime();say(f,a,"...");}return a;}
         doorsFor(l,b,rel(a.position(),b),mark.at());openOnTheWay(l,f,b,a,to);
         SceneFootpaths.walk(a,to,a.gesture()==G_DRIFT?.075:.12);
         return a;

@@ -124,9 +124,17 @@ public final class CabinBargain {
             default->List.of();
         };
     }
+    /**
+     * 0.4.565 (the two-reader scene checks found it: each visitor's caption was their own name, said again at every line of theirs,
+     * while the words went to chat, and the journal kept the name as what they had said). Speech is never chat: the line is the
+     * speaker's caption, with their name before it, and they turn to the reader. While their body is not there the words come in the
+     * action bar, quoted, as the House's other unseen voices do.
+     */
     private static void say(ServerPlayer p,@Nullable LiteraryActor[] cast,Line line){
-        p.sendSystemMessage(Component.literal(NAMES[line.who()]+": ").withStyle(ChatFormatting.GRAY).append(Component.literal(line.text()).withStyle(ChatFormatting.WHITE)));
-        var actor=cast==null?null:cast[line.who()];if(actor!=null){actor.say(NAMES[line.who()]);face(actor,p.position());}
+        if(cast==null)cast=cast(p,own(p));
+        var actor=cast[line.who()];
+        if(actor!=null){actor.say(NAMES[line.who()],line.text());face(actor,p.position());}
+        else p.displayClientMessage(Component.literal(NAMES[line.who()]+": “"+line.text()+"”").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
     }
     static void facts(ServerPlayer p,CompoundTag own){
         var stats=p.getStats();own.putInt("FactDeaths",stats.getValue(Stats.CUSTOM.get(Stats.DEATHS)));own.putInt("FactSlept",stats.getValue(Stats.CUSTOM.get(Stats.SLEEP_IN_BED)));

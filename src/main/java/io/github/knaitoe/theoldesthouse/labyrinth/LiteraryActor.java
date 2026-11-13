@@ -180,8 +180,10 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         if(!addresses())return;
         if(addressee==null||tickCount-spokenToAt>2){
             ServerPlayer best=null;double d=ADDRESS_RANGE*ADDRESS_RANGE;
+            // 0.4.565 (the two-reader scene checks found it at the cabin): only a reader this person is there for at all. One
+            // reader's own people turned to another reader standing nearer, who could not see them, and away from their own.
             for(var p:((net.minecraft.server.level.ServerLevel)level()).players()){
-                if(!p.isAlive()||p.isSpectator())continue;double e=p.distanceToSqr(this);if(e<d&&hasLineOfSight(p)){d=e;best=p;}
+                if(!p.isAlive()||p.isSpectator()||!broadcastToPlayer(p))continue;double e=p.distanceToSqr(this);if(e<d&&hasLineOfSight(p)){d=e;best=p;}
             }
             if(best==null)return;addressee=best.getUUID();
         }
@@ -190,6 +192,9 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     /** Which way this person's seat holds them, or their own yaw for one whose scene holds their body; null when standing. */
     public @javax.annotation.Nullable Float seatFront(){
         var seat=ActorSeat.of(this);if(seat!=null)return seat.facing()!=null?seat.facing().toYRot():getYRot();
+        // 0.4.565 (the two-reader scene checks found it at Movie Night): someone in a boat sits facing its bow. A boat lets nobody
+        // aboard turn past its sides, so one spoken to from behind turned their head as far as a head turns, as anyone seated does.
+        if(getVehicle() instanceof net.minecraft.world.entity.vehicle.Boat boat)return boat.getYRot();
         return holdsBody()?getYRot():null;
     }
     /**
@@ -215,6 +220,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
             // A scene may have turned the body since: the head goes no further round from it than a head turns.
             float yaw=a.facedYaw;var front=a.seatFront();if(front!=null)yaw=front+net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(yaw-front),-HEAD_TURN,HEAD_TURN);
             a.setYHeadRot(yaw);a.setXRot(a.facedPitch);
+            if(a.getVehicle() instanceof net.minecraft.world.entity.vehicle.Boat)a.setYRot(yaw);
         }
     }
     private void face(ServerPlayer reader){
@@ -233,6 +239,8 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         // otherwise hold it within a step of its own angle.
         boolean going=facedAt>=tickCount-1;float yaw=going?facedYaw:getYHeadRot(),tilt=going?facedPitch:getXRot();
         setYHeadRot(net.minecraft.util.Mth.approachDegrees(yaw,want,TURN_SPEED*2));
+        // A boat puts its passengers' heads where their bodies are turned each tick: their turn is the body's, within the boat's sides.
+        if(getVehicle() instanceof net.minecraft.world.entity.vehicle.Boat)setYRot(getYHeadRot());
         setXRot(net.minecraft.util.Mth.approachDegrees(tilt,pitch,TURN_SPEED));
         var aim=getEyePosition().add(net.minecraft.world.phys.Vec3.directionFromRotation(pitch,want).scale(4));
         getLookControl().setLookAt(aim.x,aim.y,aim.z,TURN_SPEED,TURN_SPEED);

@@ -100,6 +100,8 @@ public final class LastOrders {
         final Set<UUID> winners=new HashSet<>(),tookBy=new HashSet<>(),players=new LinkedHashSet<>(),queue=new LinkedHashSet<>();
         final Map<UUID,UUID> glasses=new HashMap<>();final Map<UUID,Long> glassUntil=new HashMap<>(),nextGlass=new HashMap<>();
         final Map<UUID,Long> said=new HashMap<>();
+        /** 0.4.565: when a glass was last pushed toward anyone, and how many in a row. */
+        long offeredAt=Long.MIN_VALUE/2;int offers;
         List<LastOrdersTexts.Said> booth=List.of();
         Vec3 strangerTarget,lastTarget;long targetSince;
         final Listener listener=new Listener(this);
@@ -464,7 +466,11 @@ public final class LastOrders {
             int z=Math.max(LastOrdersSite.COUNTER_N+1,Math.min(LastOrdersSite.COUNTER_S-1,(int)Math.floor(at.z)));
             var e=new ItemEntity(l,d.base.getX()+LastOrdersSite.COUNTER_X+.5,d.base.getY()+1.05,d.base.getZ()+z+.5,glass(r.getUUID()),0,0,0);
             e.setPickUpDelay(10);e.setUnlimitedLifetime();
-            if(l.addFreshEntity(e)){d.glasses.put(r.getUUID(),e.getUUID());d.glassUntil.put(r.getUUID(),d.tick+GLASS_WAIT);d.nextGlass.put(r.getUUID(),d.tick+GLASS_WAIT+GLASS_AGAIN);speak(l,d,6,LastOrdersTexts.GLASS_OFFER);}
+            if(l.addFreshEntity(e)){d.glasses.put(r.getUUID(),e.getUUID());d.glassUntil.put(r.getUUID(),d.tick+GLASS_WAIT);d.nextGlass.put(r.getUUID(),d.tick+GLASS_WAIT+GLASS_AGAIN);
+                // 0.4.565 (two readers, the standard cast checks): two along the bar at once each had "Go on. Steadies the hand." a second
+                // apart. A glass pushed while the last offer still hangs in the air gets a word of its own.
+                d.offers=d.tick-d.offeredAt<200?d.offers+1:0;d.offeredAt=d.tick;
+                speak(l,d,6,d.offers==0?LastOrdersTexts.GLASS_OFFER:LastOrdersTexts.GLASS_OFFER_MORE[(d.offers-1)%LastOrdersTexts.GLASS_OFFER_MORE.length]);}
         }
     }
     /** Only the one a glass was poured for can pick it up; the notes and the roll are never picked up off the floor. */
