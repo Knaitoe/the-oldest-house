@@ -201,6 +201,10 @@ public final class PellPeople {
          *  to them on the panel, whether they answered, and whether to the name; when bedtime was called; whether, kept, they have been
          *  set down in the street. */
         UUID tillyReader;Vec3 tillySafe;long tillyMounted,tillyPaintAt,tillyFetchAt,tillyAskedAt,bedAt;boolean tillyAnswered,tillySaidYes,tillySetDown;
+        /** 0.4.546, Tilly's senses (PellSenses): when the reader as Tilly last tapped, and last heard the hum and the hiss; when the singing
+         *  comes next; whether they stood on the line a moment ago; how many of June's quiet lines this call has had, and after which of
+         *  her lines the last one came. */
+        long tappedAt,hummedAt,hissedAt,singNext;boolean onLine;int hushed,hushAfter;
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();

@@ -83,7 +83,7 @@ public final class PellCall {
     /** The call undone, for the visit beginning again: the receiver back on its hook and nobody on the line. */
     static void restart(ServerLevel l,BlockPos b,PellPeople.Household h){
         if(h.caller!=null){var p=l.getServer().getPlayerList().getPlayer(h.caller);if(p!=null&&Talk.key(p).equals(KEY))Talk.close(p);}
-        h.ringAt=0;h.offeredAt=0;h.heldAt=0;h.caller=null;h.answered=null;h.callSaid=0;h.toldUp=false;h.spoke.clear();h.toldGail.clear();h.toldHand.clear();
+        h.ringAt=0;h.offeredAt=0;h.heldAt=0;h.caller=null;h.answered=null;h.callSaid=0;h.toldUp=false;h.spoke.clear();h.toldGail.clear();h.toldHand.clear();h.hushed=0;h.hushAfter=0;
         phone(l,b,0);
     }
 
@@ -92,7 +92,7 @@ public final class PellCall {
 
     /** A while after the washing up: the telephone rings, and June goes to it. */
     static void ring(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,long now){
-        step(h,RINGING);h.ringAt=now;h.answered=null;h.callSaid=0;h.toldUp=false;h.spoke.clear();h.toldGail.clear();h.toldHand.clear();
+        step(h,RINGING);h.ringAt=now;h.answered=null;h.callSaid=0;h.toldUp=false;h.spoke.clear();h.toldGail.clear();h.toldHand.clear();h.hushed=0;h.hushAfter=0;
         PellVisit.say(h,june,PellPeople.JUNE,PellTexts.JUNE_THATLL_BE_GAIL,now);
         PellVisit.go(h,PellPeople.JUNE,-1,AT_PHONE.look(),TO_PHONE);
     }
@@ -118,6 +118,8 @@ public final class PellCall {
     /** June's side of it, a pause after each line while Gail talks; then she holds the receiver out to the room. */
     private static void onPhone(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
         if(!PellVisit.ready(h,now,june))return;
+        // 0.4.546: after a line of hers, one said low, where she thinks nobody can hear it, that only a reader as Tilly hears (PellSenses).
+        if(h.callSaid>h.hushAfter){h.hushAfter=h.callSaid;if(PellSenses.hush(l,b,h,june,now))return;}
         var lines=juneSide(h,here);
         if(h.callSaid<lines.size()){
             String line=lines.get(h.callSaid++);

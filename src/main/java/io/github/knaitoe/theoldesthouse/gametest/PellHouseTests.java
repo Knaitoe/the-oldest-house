@@ -3230,4 +3230,161 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_tilly_held") public static void tillyHeldDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.546, Tilly's senses
+    /** What Tilly's senses sent this reader since last asked, and the sounds they were sent. Reading empties it. */
+    private record Senses(List<io.github.knaitoe.theoldesthouse.network.PellSensePayload> sent,List<net.minecraft.sounds.SoundEvent> sounds){
+        List<io.github.knaitoe.theoldesthouse.network.PellSensePayload> of(int kind){var out=new java.util.ArrayList<io.github.knaitoe.theoldesthouse.network.PellSensePayload>();for(var s:sent)if(s.kind()==kind)out.add(s);return out;}
+    }
+    private static Senses senses(ServerPlayer p){
+        var sent=new java.util.ArrayList<io.github.knaitoe.theoldesthouse.network.PellSensePayload>();var sounds=new java.util.ArrayList<net.minecraft.sounds.SoundEvent>();
+        for(var packet:NativeTestPlayers.packets(p)){
+            if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.PellSensePayload s)sent.add(s);
+            else if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound)sounds.add(sound.getSound().value());
+        }
+        return new Senses(sent,sounds);
+    }
+    /** Whether an outline holds a line matching this. */
+    private static boolean outlined(List<Float> lines,java.util.function.Predicate<float[]> match){
+        for(int i=0;i+5<lines.size();i+=6){var seg=new float[6];for(int k=0;k<6;k++)seg[k]=lines.get(i+k);if(match.test(seg))return true;}
+        return false;
+    }
+    /** The reader's cane, used: as the use key sends it. */
+    private static void tap(ServerLevel l,ServerPlayer p){p.getMainHandItem().getItem().use(l,p,net.minecraft.world.InteractionHand.MAIN_HAND);}
+    /**
+     * 0.4.546, the cane (docs/PELL_HOUSE_SENSES_0_4_546.md). Two readers on their first visit, one of them Tilly. The long cane is in the
+     * reader as Tilly's hand and not the other's. Tapped just inside the front door: everybody near hears a cane, and only the reader as
+     * Tilly is shown what is in reach, the front door's frame among it; tapped again at once, nothing more. On the curb, its edges; on the
+     * front step, the line under the mat. It cannot be dropped; put away, it comes back to them; gone from the house, they have it no
+     * longer.
+     */
+    @GameTest(template="empty",batch="pell_senses_cane",timeoutTicks=4000)
+    public static void aReaderAsTillyHasTheCaneAndItsTapShowsThemWhatIsInReach(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_senses_tilly",P);var q=f.player("pell_senses_older",P);var l=f.level(P);var b=f.base(P);
+        playsTilly(f,p,q);
+        p.getInventory().setItem(p.getInventory().selected,net.minecraft.world.item.ItemStack.EMPTY);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));})
+        .thenIdle(10).thenExecute(()->{
+            h.assertTrue(p.getUUID().equals(PellTilly.readerAt(b)),"the reader is Tilly here");
+            h.assertTrue(PellSenses.hasCane(p)&&PellSenses.marked(p.getMainHandItem()),"the cane in their hand");
+            h.assertTrue(!PellSenses.hasCane(q),"and not in the other's");
+            // Just inside the front door, the other beside them.
+            f.at(p,P,.5,0,-59.5);f.at(q,P,1.5,0,-60.5);senses(p);senses(q);
+            tap(l,p);tap(l,p);
+        }).thenIdle(1).thenExecute(()->{
+            var mine=senses(p);var theirs=senses(q);var shown=mine.of(io.github.knaitoe.theoldesthouse.network.PellSensePayload.OUTLINE);
+            h.assertTrue(shown.size()==1,"one tap shown, the second too soon after it: "+shown.size());
+            h.assertTrue(theirs.sounds().contains(PellRegistry.CANE_TAP.get())&&mine.sounds().contains(PellRegistry.CANE_TAP.get()),"everybody near hears the cane");
+            h.assertTrue(theirs.sent().isEmpty(),"and only the reader as Tilly is shown anything");
+            double z=b.getZ()+PellSite.FRONT_DOOR.getZ()+.5;
+            h.assertTrue(outlined(shown.get(0).lines(),s->Math.abs(s[2]-z)<.01&&Math.abs(s[5]-z)<.01&&Math.abs(s[4]-s[1])>1.9),"the front door's frame is outlined: "+shown.get(0).lines().size()/6+" lines");
+            // On the curb.
+            f.at(p,P,4.5,0,-20.5);
+        }).thenIdle(PellSenses.TAP_EVERY).thenExecute(()->{senses(p);tap(l,p);})
+        .thenIdle(1).thenExecute(()->{
+            var shown=senses(p).of(io.github.knaitoe.theoldesthouse.network.PellSensePayload.OUTLINE);
+            double x=b.getX()+PellSite.CURB;
+            h.assertTrue(shown.size()==1&&outlined(shown.get(0).lines(),s->Math.abs(s[0]-x)<.01&&Math.abs(s[3]-x)<.01&&Math.abs(s[1]-(b.getY()+.02))<.01),"the curb's edge is outlined");
+            // On the front step, by the mat.
+            f.at(p,P,.5,0,-55.5);
+        }).thenIdle(PellSenses.TAP_EVERY).thenExecute(()->{senses(p);tap(l,p);})
+        .thenIdle(1).thenExecute(()->{
+            var shown=senses(p).of(io.github.knaitoe.theoldesthouse.network.PellSensePayload.OUTLINE);
+            double y=b.getY()+.03,z0=b.getZ()+PellSite.LINE_S,z1=z0+1;
+            h.assertTrue(shown.size()==1&&outlined(shown.get(0).lines(),s->Math.abs(s[1]-y)<.01&&s[2]>=z0-.01&&s[2]<=z1+.01),"the line underfoot is outlined");
+            // It cannot be dropped.
+            p.drop(true);
+            h.assertTrue(PellSenses.hasCane(p)&&PellSenses.marked(p.getMainHandItem()),"dropped, it stays in their hand");
+            // Put away out of their hands, it comes back.
+            p.getInventory().setItem(p.getInventory().selected,net.minecraft.world.item.ItemStack.EMPTY);
+            h.assertTrue(!PellSenses.hasCane(p),"put away");
+        }).thenIdle(6).thenExecute(()->{
+            h.assertTrue(PellSenses.hasCane(p)&&PellSenses.marked(p.getMainHandItem()),"it comes back to their hand");
+            // Gone from the house.
+            p.teleportTo(l,b.getX()+.5,b.getY()+60,b.getZ()-60,0,0);
+        }).thenIdle(12).thenExecute(()->h.assertTrue(!PellSenses.hasCane(p),"gone from the house, the cane is back on its hook"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_senses_cane") public static void sensesCaneDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.546, what only Tilly hears and feels, by day a week in. Two readers, one of them Tilly. In the hall near the laundry the freezer's
+     * hum is sent to the reader as Tilly alone; at the freezer they have followed it. In the yard, the tape hiss from the shed, to them
+     * alone. Each time they step onto the line, its cold falls over them, counted; the other, on it too, feels nothing.
+     */
+    @GameTest(template="empty",batch="pell_senses_hear",timeoutTicks=4000)
+    public static void onlyTheReaderAsTillyHearsTheFreezerAndTheTapesAndFeelsTheLine(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_senses_hears",P);var q=f.player("pell_senses_deaf",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q})keep(f,r,"FirstVisit");
+        playsTilly(f,p,q);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var heard=new java.util.ArrayList<net.minecraft.sounds.SoundEvent>();var other=new java.util.ArrayList<net.minecraft.sounds.SoundEvent>();
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            f.at(p,P,4.5,0,-65.5);f.at(q,P,3.5,0,-65.5);senses(p);senses(q);
+        }).thenWaitUntil(()->{heard.addAll(senses(p).sounds());other.addAll(senses(q).sounds());h.assertTrue(heard.contains(PellRegistry.HUM.get()),"the freezer's hum, to the reader as Tilly");})
+        .thenExecute(()->{
+            h.assertTrue(!other.contains(PellRegistry.HUM.get()),"and not to the other beside them");
+            h.assertTrue(f.own(p,P).getBoolean(PellSenses.HEARD_HUM)&&!f.own(p,P).getBoolean(PellSenses.FOLLOWED_HUM),"heard, not yet followed");
+            f.at(p,P,8.5,0,-67.9);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getBoolean(PellSenses.FOLLOWED_HUM),"at the freezer, they have followed it");
+            // Out in the yard, by the shed.
+            heard.clear();other.clear();f.at(p,P,7.5,0,-87.5);f.at(q,P,6.5,0,-87.5);senses(p);senses(q);
+        }).thenWaitUntil(()->{heard.addAll(senses(p).sounds());other.addAll(senses(q).sounds());h.assertTrue(heard.contains(PellRegistry.HISS.get()),"tape hiss from the shed, to the reader as Tilly");})
+        .thenExecute(()->{
+            h.assertTrue(!other.contains(PellRegistry.HISS.get()),"and not to the other");
+            // The line, at the front step.
+            f.at(p,P,.5,0,-56.5);p.setOnGround(true);f.at(q,P,1.5,0,-56.5);q.setOnGround(true);senses(p);senses(q);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(senses(p).of(io.github.knaitoe.theoldesthouse.network.PellSensePayload.COLD).size()==1&&f.own(p,P).getInt(PellSenses.LINE_COLD)==1,"onto the line, its cold falls over them");
+            h.assertTrue(senses(q).sent().isEmpty(),"the other, on it too, feels nothing");
+            f.at(p,P,.5,0,-54.5);p.setOnGround(true);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(senses(p).sent().isEmpty(),"off it, nothing");
+            f.at(p,P,-1.5,0,-56.5);p.setOnGround(true);
+        }).thenIdle(2).thenExecute(()->h.assertTrue(senses(p).of(io.github.knaitoe.theoldesthouse.network.PellSensePayload.COLD).size()==1&&f.own(p,P).getInt(PellSenses.LINE_COLD)==2,"onto it again, again"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_senses_hear") public static void sensesHearDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.546, at night and on the telephone. Two readers on their first visit, one of them Tilly. In the small hours, in Nessa's room,
+     * singing through the wall at the head of the bed comes to the reader as Tilly, and not to the other in the hall outside. In the
+     * morning, Gail rings; while June is on the telephone, between her lines, she says four things low that only the reader as Tilly hears,
+     * in the house, in order, kept in their journal's record of what was said; the other, in the kitchen, hears none of them, and the call
+     * goes on.
+     */
+    @GameTest(template="empty",batch="pell_senses_night",timeoutTicks=9000)
+    public static void atNightSingingThroughTheWallAndOnTheTelephoneJuneQuietly(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_senses_bed",P);var q=f.player("pell_senses_hall",P);var l=f.level(P);var b=f.base(P);
+        playsTilly(f,p,q);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var heard=new java.util.ArrayList<net.minecraft.sounds.SoundEvent>();var other=new java.util.ArrayList<net.minecraft.sounds.SoundEvent>();
+        var hushed=new java.util.ArrayList<String>();
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            PellMorning.smallHours(l,b);PellKnife.skip(b);
+            f.at(p,P,-10.5,0,-60.5);f.at(q,P,-9.5,0,-65.5);senses(p);senses(q);
+        }).thenWaitUntil(()->{heard.addAll(senses(p).sounds());other.addAll(senses(q).sounds());h.assertTrue(heard.contains(PellRegistry.SINGING.get()),"singing through the wall, to the reader as Tilly: next at "+PellSenses.singNext(b));})
+        .thenExecute(()->{
+            h.assertTrue(!other.contains(PellRegistry.SINGING.get()),"and not to the other in the hall outside");
+            PellCall.afterBreakfast(l,b);
+            f.at(p,P,-3.5,0,-65.5);f.at(q,P,-9.5,0,-67.5);senses(p);senses(q);
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.ON_PHONE,"June on the telephone"))
+        .thenWaitUntil(()->{
+            for(var s:senses(p).of(io.github.knaitoe.theoldesthouse.network.PellSensePayload.HUSH))hushed.add(s.words());
+            h.assertTrue(senses(q).sent().isEmpty(),"the other hears none of it");
+            h.assertTrue(hushed.size()>=PellSenses.HUSHED,"June's quiet lines: "+hushed);
+        })
+        .thenExecute(()->{
+            h.assertTrue(hushed.equals(List.of(PellTexts.JUNE_QUIETLY_FIRST)),"in order: "+hushed);
+            h.assertTrue(f.own(p,P).getInt(PellSenses.HEARD_HUSH)==PellSenses.HUSHED,"heard, all four");
+            var talks=TalkHistory.conversations(p.server,p.getUUID()).toString();
+            h.assertTrue(talks.contains(PellTexts.JUNE_QUIETLY_FIRST[0])&&!TalkHistory.conversations(q.server,q.getUUID()).toString().contains(PellTexts.JUNE_QUIETLY_FIRST[0]),"kept in their record of what was said, and not the other's");
+        }).thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"and the call goes on"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_senses_night") public static void sensesNightDone(ServerLevel l){done();}
 }

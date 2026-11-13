@@ -42,9 +42,10 @@ public final class PellRegistry {
     /** 0.4.523: the line round the lot (PellLine), painted into the ground it lies on; drawn by tools/draw_pell_line.py. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellLine>> LINE_TYPE=CODECS.register("pell_line",()->PellLine.CODEC);
     public static final DeferredBlock<PellLine> LINE=BLOCKS.registerBlock("pell_line",PellLine::new,fixed(Blocks.STONE));
-    /** 0.4.524: Tilly's cane and Gail's folder, in their hands (PellPeople); drawn by tools/draw_pell_people.py. Nobody is given one. */
+    /** 0.4.524: Tilly's cane and Gail's folder, in their hands (PellPeople); drawn by tools/draw_pell_people.py. 0.4.546: the cane is a
+     *  reader's too while they are Tilly at the house (PellCaneItem, PellSenses); the folder is never given to anybody. */
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
-    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> CANE=ITEMS.register("pell_cane",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> CANE=ITEMS.register("pell_cane",()->new PellCaneItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> FOLDER=ITEMS.register("pell_folder",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.526: June's dinner things (PellVisit): her plates as they lie on the table (laid, served, scraped) and the saucepan she serves
      *  from. Drawn by tools/draw_pell_people.py; nobody is given one. */
@@ -90,7 +91,10 @@ public final class PellRegistry {
         // 0.4.541: Gail's car up the street at first light, pulling in at the curb (docs/PELL_HOUSE_DAWN_0_4_541.md).
         CAR_COME=sound("pell.car_come"),
         // 0.4.543: a cane tapping, behind a door that will not open (docs/PELL_HOUSE_FAILURE_0_4_543.md).
-        CANE_TAP=sound("pell.cane");
+        CANE_TAP=sound("pell.cane"),
+        // 0.4.546: what only Tilly hears (docs/PELL_HOUSE_SENSES_0_4_546.md): singing through the wall by Nessa's bed, the freezer's hum,
+        // and tape hiss from the shed.
+        SINGING=sound("pell.singing"),HUM=sound("pell.hum"),HISS=sound("pell.hiss");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }
