@@ -54,6 +54,8 @@ public final class TallGrass {
     /** The driver of the next car, on a stranger phase. */
     public static final int DRIVER=115;
     public static final String TALK="tall_grass";
+    /** 0.4.555: how many readers one road holds, a carload for the wagon on the shoulder; the seventh is given a road of their own (SceneInstances). */
+    public static final int PLACES=6;
     public static final String WARNED="warned_them_off_the_grass",CALLED="called_them_into_the_grass",QUIET="kept_quiet_at_the_road";
     /** Ticks: how long a reader must follow the voice before the field lets them out (and the most it will keep anyone); the gaps between
      * moves; how long the driver waits for a shout; an empty road's reset; the trampled grass's three stages back up. */

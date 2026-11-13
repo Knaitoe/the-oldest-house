@@ -2,7 +2,6 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
-import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
 import java.util.*;
 import javax.annotation.Nullable;
@@ -56,6 +55,8 @@ public final class MarshSupper {
      * household to clear; the longest the table waits for the meat; how long the kitchen door swings open; an empty farm's reset. */
     public static final int START_AFTER=400,SOUP_LENGTH=1000,CLEAR_LIMIT=900,NAME_LENGTH=900,SWING_OPEN=40,EMPTY_RESET=200;
     public static final String TALK="marsh_supper";
+    /** 0.4.555: how many readers one farm's supper holds, one to each chair laid for a guest; the sixth is given a farm of their own (SceneInstances). */
+    public static final int PLACES=5;
     static final String WITNESS="put_her_keys_on_the_table",ATE="ate_at_the_marsh_table",LEFT="left_before_the_meat";
 
     static final class Supper {
@@ -525,13 +526,15 @@ public final class MarshSupper {
         var server=e.getServer();if(server.getTickCount()%20!=0)return;
         for(var p:server.getPlayerList().getPlayers()){
             boolean carrying=false;for(var st:p.getInventory().items)if(st.is(MarshRegistry.KEYS.get()))carrying=true;for(var st:p.getInventory().offhand)if(st.is(MarshRegistry.KEYS.get()))carrying=true;
-            if(carrying&&LiteraryVignettes.current(p)!=PLACE){for(var st:p.getInventory().items)if(st.is(MarshRegistry.KEYS.get()))st.setCount(0);for(var st:p.getInventory().offhand)if(st.is(MarshRegistry.KEYS.get()))st.setCount(0);keysBack(server);}
+            if(carrying&&LiteraryVignettes.current(p)!=PLACE){for(var st:p.getInventory().items)if(st.is(MarshRegistry.KEYS.get()))st.setCount(0);for(var st:p.getInventory().offhand)if(st.is(MarshRegistry.KEYS.get()))st.setCount(0);keysBack(server,p.getUUID());}
             boolean clapper=false;for(var st:p.getInventory().items)if(st.is(MarshRegistry.CLAPPER.get()))clapper=true;
             if(clapper)CLAPPER.add(p.getUUID());else CLAPPER.remove(p.getUUID());
         }
     }
-    static void keysBack(net.minecraft.server.MinecraftServer server){
-        var o=HouseSavedData.get(server).houseOrigin();var l=server.getLevel(HouseDimensions.OUTSIDE);if(o==null||l==null)return;var b=LabyrinthPlaces.base(o,PLACE);var s=supper(b);
+    /** 0.4.555: back by the butcher's block of the farm the keys were carried from, the one their carrier keeps. */
+    static void keysBack(net.minecraft.server.MinecraftServer server,UUID carrier){
+        var l=server.getLevel(HouseDimensions.OUTSIDE);if(l==null)return;
+        var b=SceneInstances.base(server,PLACE,Math.max(0,SceneInstances.kept(LabyrinthData.get(server),carrier,PLACE)));if(b==null)return;var s=supper(b);
         if(s==null||s.stage>=OVER||!s.propsOut||!l.isLoaded(b.offset(MarshSupperSite.KEYS)))return;
         if(l.getBlockState(b.offset(MarshSupperSite.KEYS)).isAir())l.setBlock(b.offset(MarshSupperSite.KEYS),MarshBlock.of(MarshBlock.Kind.KEYS,Direction.EAST),Block.UPDATE_CLIENTS);
     }

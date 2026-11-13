@@ -54,6 +54,9 @@ public final class GrowingThings {
     private GrowingThings(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.GROWING_THINGS;
     public static final String TALK="growing_things";
+    /** 0.4.555: how many readers one Saturday at the Barretts' holds, a pair of hands at each end of the kitchen table and two more; the fifth
+     *  is given a Saturday of their own (SceneInstances). */
+    public static final int PLACES=4;
     public static final String CARRIED="carried_his_plate_upstairs",LEFT="left_his_plate_downstairs",WENT="went_back_through_the_fence";
     /** The day: the chores; the afternoon; supper being carried up; over. */
     public static final int CHORES=0,AFTERNOON=1,SUPPER=2,OVER=3;
@@ -500,7 +503,7 @@ public final class GrowingThings {
         if(l.isLoaded(at)&&l.getBlockState(at).isAir()&&(p.tickCount%100<5||!ghostsOwn.getBoolean("Drawing0350"))){p.connection.send(new ClientboundBlockUpdatePacket(at,GrowingBlock.of(Kind.DRAWING,Direction.SOUTH)));shown=true;
             if(!ghostsOwn.getBoolean("Drawing0350"))ghostsOwn.putBoolean("Drawing0350",true);}
         if(!ghostsOwn.getBoolean("MerryKnew0350")){
-            var world=LiteraryVignettes.shared(d,LabyrinthPlace.GHOSTS_SET);String key="FilmMerry_"+p.getUUID();
+            var world=LiteraryVignettes.shared(d,LabyrinthPlace.GHOSTS_SET);String key=LiteraryVignettes.actorId(p,LabyrinthPlace.GHOSTS_SET,"FilmMerry",true);
             if(world.hasUUID(key)&&l.getEntity(world.getUUID(key)) instanceof LiteraryActor merry&&merry.distanceToSqr(p)<7*7&&sees(p,merry.getEyePosition(),8,.6)){
                 ghostsOwn.putBoolean("MerryKnew0350",true);LOOKS.put(merry.getUUID(),new Object[]{p.getUUID(),l.getGameTime()+50});
                 cue(p,"Merry looks at you for a moment, as if she remembers you from somewhere.");}

@@ -46,6 +46,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class Polybius {
     private Polybius(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.POLYBIUS;
+    /** 0.4.555: how many readers one arcade holds, Block Party's four seats; the fifth is given an arcade of their own (SceneInstances). */
+    public static final int PLACES=PolybiusBrawl.SEATS;
     /** The two men's skins, on the stranger phases after the closing hall's children. */
     public static final int MAN_A_PHASE=41,MAN_B_PHASE=42;
     /** 0.4.221: the three regulars at their own cabinets, on the stranger phases after Brad's. */
@@ -114,7 +116,8 @@ public final class Polybius {
     /** A cabinet's screen opened for one reader. */
     static void play(ServerPlayer p,BlockPos b,CompoundTag own,int game){
         if(playing(p.getUUID())||PolybiusBrawl.playing(p.getUUID())){cue(p,"You're already playing.");return;}
-        for(var e:SESSIONS.entrySet())if(e.getValue().game()==game&&e.getValue().home()==null&&!e.getKey().equals(p.getUUID())){cue(p,"Someone is playing it.");return;}
+        // 0.4.555: someone in this arcade; each arcade has its own cabinets.
+        for(var e:SESSIONS.entrySet())if(e.getValue().game()==game&&e.getValue().home()==null&&!e.getKey().equals(p.getUUID())){var q=p.server.getPlayerList().getPlayer(e.getKey());if(q!=null&&b.equals(base(q))){cue(p,"Someone is playing it.");return;}}
         boolean taken=false;
         if(game==PolybiusSite.BLACK){
             if(own.getBoolean("Ready")){cue(p,"The screen is dark. The men are gone.");return;}
@@ -162,6 +165,7 @@ public final class Polybius {
         own.putInt("Games217",own.getInt("Games217")+1);save(p,own);
         if(score>0)LiteraryVignettes.give(p,new net.minecraft.world.item.ItemStack(PolybiusRegistry.TICKETS.get(),tickets(score)));
         if(b!=null)PolybiusSite.boards(p.serverLevel(),b);
+        boardsElsewhere(p.server,b);
         cue(p,rank==0?"GAME OVER. "+score+". Not enough for the table.":rank==1?"GAME OVER. "+score+". Your name goes to the top of the table.":"GAME OVER. "+score+". Your name goes up the table, "+ordinal(rank)+".");
         return true;
     }
@@ -348,7 +352,15 @@ public final class Polybius {
             p.teleportTo(p.serverLevel(),b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);p.connection.resetPosition();
             PolybiusSite.boards(p.serverLevel(),b);
         }
+        boardsElsewhere(p.server,b);
         cue(p,"It's later. Most of the machines are off and someone is putting the stools up. You don't remember the last hour. Your name isn't on any of the tables.");
+    }
+    /** 0.4.555: the tables are the whole server's, so every other arcade that stands, with its tables loaded, is put up to date too. */
+    static void boardsElsewhere(MinecraftServer s,@Nullable BlockPos but){
+        var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        for(var b:SceneInstances.bases(s,PLACE)){if(b.equals(but))continue;boolean loaded=true;
+            for(var c:PolybiusSite.CABINETS)if(!l.isPositionEntityTicking(b.offset(c))){loaded=false;break;}
+            if(loaded)PolybiusSite.boards(l,b);}
     }
     @SubscribeEvent public static void left(PlayerEvent.PlayerLoggedOutEvent e){
         var id=e.getEntity().getUUID();var ses=SESSIONS.remove(id);

@@ -64,6 +64,57 @@ public final class PolybiusTests {
     }
     @AfterBatch(batch="poly_party") public static void partyDone(ServerLevel l){close();}
 
+    /**
+     * 0.4.555: four readers in the arcade, one to each of Block Party's seats, are full to a fifth. The fifth's door waits while a second
+     * arcade is made ready, a million blocks west; there they play their own Mothlight while somebody plays the first arcade's, which
+     * nobody else in the first may do at once. Each arcade has its own three regulars, and the fifth's two men stand in theirs.
+     */
+    @GameTest(template="empty",batch="poly_copy",timeoutTicks=24000)
+    public static void aFifthPlayerIsGivenAnArcadeOfTheirOwn(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var server=f.in.getServer();f.build(P);
+        var four=new ServerPlayer[Polybius.PLACES];final ServerPlayer[] fifth={null};final net.minecraft.core.BlockPos[] theirs={null};
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the arcade is resident"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==Polybius.PLACES&&Polybius.PLACES==PolybiusBrawl.SEATS,"an arcade has copies, four places to an arcade: Block Party's four seats");
+                for(int i=0;i<four.length;i++)four[i]=f.player("poly_copy"+i,P);
+                fifth[0]=NativeTestPlayers.survival(h,"poly_copy_fifth");f.players.add(fifth[0]);
+                fifth[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);fifth[0].setNoGravity(true);fifth[0].setDeltaMovement(Vec3.ZERO);
+                h.assertTrue(SceneInstances.held(server,P,0,fifth[0].getUUID())==4&&SceneInstances.held(server,P,0,four[0].getUUID())==3,"the arcade is full to a fifth, never to one of the four");
+                var e=SceneInstances.enter(fifth[0],P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the fifth's door waits while an arcade of their own is made ready: "+e);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second arcade to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,P,1);
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(fifth[0],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry")),"the fifth goes in by its own door: "+e);
+                f.chunks.hold(f.in,new AABB(theirs[0].getX()-10,theirs[0].getY()-2,theirs[0].getZ()-25,theirs[0].getX()+11,theirs[0].getY()+7,theirs[0].getZ()+3));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second arcade is resident"))
+            .thenExecute(()->{
+                var p=fifth[0];p.teleportTo(f.in,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,P);
+                h.assertTrue(LiteraryVignettes.current(p)==P&&theirs[0].equals(LiteraryVignettes.base(p,P)),"the fifth is in the second arcade");
+                cabinet(f,four[0],PolybiusSite.MOTHLIGHT);
+                h.assertTrue(Polybius.playing(four[0].getUUID()),"Mothlight opens for one of the four in the first arcade");
+                cabinet(f,four[1],PolybiusSite.MOTHLIGHT);
+                h.assertTrue(!Polybius.playing(four[1].getUUID()),"and nobody else in the first arcade can play it at once");
+                cabinet(f,p,PolybiusSite.MOTHLIGHT);
+                h.assertTrue(Polybius.playing(p.getUUID()),"but the fifth plays the second arcade's own Mothlight");
+            })
+            .thenWaitUntil(()->{
+                var mine=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(theirs[0]).inflate(30),a->a.role()==LiteraryActor.STRANGER&&Polybius.regular(a.phase()));
+                var first=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(30),a->a.role()==LiteraryActor.STRANGER&&Polybius.regular(a.phase()));
+                h.assertTrue(mine.size()==3&&first.size()==3,"each arcade has its own three regulars: "+mine.size()+" / "+first.size());
+                var men=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(theirs[0]).inflate(30),a->a.owner().isPresent()&&a.owner().get().equals(fifth[0].getUUID())&&(a.phase()==Polybius.MAN_A_PHASE||a.phase()==Polybius.MAN_B_PHASE));
+                h.assertTrue(men.size()==2,"and the fifth's two men stand by the black cabinet in theirs: "+men.size());
+            })
+            .thenExecute(()->{for(var a:f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(theirs[0]).inflate(30)))a.discard();})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="poly_copy") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
+
     /** 0.4.224: classes picked before the start, a chain whose third hit is the finisher, a special, and items walked over. */
     @GameTest(template="empty",batch="poly_classes",timeoutTicks=900)
     public static void blockPartyHasClassesChainsSpecialsAndItems(GameTestHelper h){
