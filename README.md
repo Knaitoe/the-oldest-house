@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.560** rebuilds the lake house's culvert: cast sections and headwalls, painted marks at a sitting reader's height, hands on the concrete wherever both walls are in reach, a canoe eased into the gap at either mouth, both benches pushing, and a wet palm on concrete for every stroke. Tess keeps to the dock, the water and her canoe as a person would, and every person in the talking scenes is held to one set of checks: no jumping or stepping about, nothing through a wall, no line said out of earshot or twice over, and a head turned to whoever they are talking to. `docs/CULVERT_0_4_560.md`.
+
 Development candidate **0.4.559** gives every reader's own companion a nose. Something held out to a cat, a dog or Hillary that came from a story leads to that story, with the animal heard behind its door; a page torn from another reader's journal, or a keepsake with their name, leads to the story that reader is in, and through its door into the very copy they are in when it has room. `docs/SCENTS_0_4_559.md`.
 
 Development candidate **0.4.558** puts a reader who takes somebody's part where that part begins. In the Goatman, the second reader through starts at the camp on the cousin's own spot, the cousin gone, and is told their chair, their bed, the generator if the gas run is theirs, and that somebody is still coming up the trail; each account says who began where. In the lake house, the reader in Tess's place starts where she waits, on the dock or on the raft by the compressor, with her flashlight. `docs/ROLE_SPOTS_0_4_558.md`.

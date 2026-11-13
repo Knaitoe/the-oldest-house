@@ -158,6 +158,35 @@ public final class LakeHouse {
     }
     private static boolean near(int x,int z,int cx,int cz,int r){return Math.abs(x-cx)<=r&&Math.abs(z-cz)<=r;}
 
+    /** 0.4.560: the culvert's cast sections meet here, every eight blocks along the covered run. */
+    public static boolean joint(int z){return z==-108||z==-116;}
+    /** 0.4.560: each headwall runs from x -4 to 5 across its mouth, the channel two wide in the middle of it. */
+    public static final int HEAD_WEST=-4,HEAD_EAST=5;
+    /** Something painted on a wall of the culvert (0.4.560), on the face turned to the water. */
+    public record Mark(int x,int z,Direction facing,CulvertMarkBlock.Mark mark){}
+    /**
+     * What is painted, at the height of a reader sitting in a canoe. Going in from the boathouse's lake the west wall is on the
+     * left and the east on the right; the arrows on both point on, toward the third lake, and the house is on the west wall
+     * under the drive. A hand is on each headwall, beside the mouth, where a canoe coming up to it passes.
+     */
+    public static final List<Mark> MARKS=List.of(
+        new Mark(3,COVER_SOUTH,Direction.SOUTH,CulvertMarkBlock.Mark.HAND),
+        new Mark(-1,-105,Direction.EAST,CulvertMarkBlock.Mark.ARROW_RIGHT),
+        new Mark(2,-106,Direction.WEST,CulvertMarkBlock.Mark.TALLY),
+        new Mark(-1,-107,Direction.EAST,CulvertMarkBlock.Mark.HAND),
+        new Mark(2,-109,Direction.WEST,CulvertMarkBlock.Mark.HALF_DOOR),
+        new Mark(-1,-110,Direction.EAST,CulvertMarkBlock.Mark.HOUSE_LEFT),
+        new Mark(-1,-111,Direction.EAST,CulvertMarkBlock.Mark.HOUSE_RIGHT),
+        new Mark(2,-111,Direction.WEST,CulvertMarkBlock.Mark.HAND),
+        new Mark(-1,-113,Direction.EAST,CulvertMarkBlock.Mark.HELMET),
+        new Mark(2,-113,Direction.WEST,CulvertMarkBlock.Mark.BUBBLES),
+        new Mark(-1,-114,Direction.EAST,CulvertMarkBlock.Mark.HAND),
+        new Mark(2,-115,Direction.WEST,CulvertMarkBlock.Mark.HAND),
+        new Mark(2,-117,Direction.WEST,CulvertMarkBlock.Mark.SPIRAL),
+        new Mark(-1,-118,Direction.EAST,CulvertMarkBlock.Mark.BUBBLES),
+        new Mark(2,-119,Direction.WEST,CulvertMarkBlock.Mark.ARROW_LEFT),
+        new Mark(-2,COVER_NORTH,Direction.NORTH,CulvertMarkBlock.Mark.HAND));
+
     /**
      * The service drive and its culvert: two wide, dark, and so low under the drive that a reader in a canoe has to duck.
      * One block of air over one of water; a canoe fits, and so does a reader swimming or wading.
@@ -176,14 +205,40 @@ public final class LakeHouse {
                 // The ceiling, and the drive's own surface over it.
                 for(int x=0;x<=1;x++){s.set(x,1,z,LakeHouseRegistry.CULVERT.get());if(surface(x,z)>=2)s.set(x,2,z,road(x,z)?ProofrockSurface.ASPHALT.get():Blocks.GRASS_BLOCK);}
             }
+            // 0.4.560: the tube is cast in sections, and where two meet a joint runs up both walls and across the ceiling.
+            if(joint(z)){
+                for(int x:new int[]{-1,2}){s.set(x,-1,z,LakeHouseRegistry.CULVERT_STAINED.get().defaultBlockState().setValue(CulvertBlock.JOINT,true));s.set(x,0,z,LakeHouseRegistry.CULVERT.get().defaultBlockState().setValue(CulvertBlock.JOINT,true));}
+                for(int x=0;x<=1;x++)s.set(x,1,z,LakeHouseRegistry.CULVERT.get().defaultBlockState().setValue(CulvertBlock.JOINT,true));
+            }
         }
-        // The drive's kerbs.
+        // The drive's curbs.
         for(int x=-26;x<=26;x++){s.wet(x,3,-110,Blocks.STONE_BRICK_WALL);s.wet(x,3,-114,Blocks.STONE_BRICK_WALL);}
-        // Brush on the banks half hides both mouths; the channel and its walls are left clear.
+        // 0.4.560: a concrete headwall round each mouth, coped, with stone dumped on the banks either side of the channel.
+        for(int z:new int[]{COVER_SOUTH,COVER_NORTH}){
+            for(int x=HEAD_WEST;x<=HEAD_EAST;x++){
+                for(int y=-1;y<=1;y++)if(y==1||x<0||x>1)s.set(x,y,z,y==-1&&(x==-1||x==2)?LakeHouseRegistry.CULVERT_STAINED.get():LakeHouseRegistry.CULVERT.get());
+                s.set(x,2,z,LakeHouseRegistry.CULVERT_COPING.get());
+            }
+            int out=z==COVER_SOUTH?1:-1;
+            for(int d=1;d<=2;d++)for(int x=HEAD_WEST-1;x<=HEAD_EAST+1;x++){
+                int at=z+out*d;
+                if(x>=-1&&x<=2||lowestWater(x,at)!=Integer.MAX_VALUE||surface(x,at)!=-1||noise(x*5,at*3)>(d==1?.85:.55))continue;
+                double n=noise(x*11,at*7);
+                s.set(x,-1,at,n<.4?Blocks.COBBLESTONE:n<.7?Blocks.MOSSY_COBBLESTONE:Blocks.ANDESITE);
+                // A few stones lie on the rest beyond the headwall's ends, where they hide no part of it; nothing that grew on the
+                // bank is left standing on them.
+                s.set(x,0,at,d==1&&n<.3&&(x<HEAD_WEST||x>HEAD_EAST)?(n<.15?Blocks.MOSSY_COBBLESTONE:Blocks.COBBLESTONE):Blocks.AIR);
+            }
+        }
+        // What is painted on its walls, facing the water.
+        for(var m:MARKS)s.set(m.x(),0,m.z(),CulvertMarkBlock.of(m.mark(),m.facing()));
+        // Brush on the banks half hides both mouths; the channel, its walls and the headwalls are left clear.
         for(int z=CHANNEL_NORTH+1;z<=CHANNEL_SOUTH-1;z++){
             if(z<=COVER_SOUTH&&z>=COVER_NORTH&&z!=COVER_SOUTH&&z!=COVER_NORTH)continue;
             for(int x=-5;x<=6;x++){
                 if(x>=-1&&x<=2||lowestWater(x,z)!=Integer.MAX_VALUE||road(x,z)||noise(x*3,z)>=.7)continue;
+                if((z==COVER_SOUTH||z==COVER_NORTH)&&x>=HEAD_WEST&&x<=HEAD_EAST)continue;
+                if(s.at(x,-1,z).is(Blocks.COBBLESTONE)||s.at(x,-1,z).is(Blocks.MOSSY_COBBLESTONE)||s.at(x,-1,z).is(Blocks.ANDESITE))continue;
                 int top=surface(x,z),h=noise(x,z*5)<.45?2:1;
                 for(int y=top+1;y<=top+h;y++)s.set(x,y,z,noise(x,z+y)<.5?Blocks.AZALEA_LEAVES:Blocks.OAK_LEAVES);
             }

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "the_oldest_house:block/lake_house/culvert_mark_tally",
+    "side": "the_oldest_house:block/lake_house/culvert",
+    "top": "the_oldest_house:block/lake_house/culvert",
+    "particle": "the_oldest_house:block/lake_house/culvert"
+  }
+}

@@ -24,6 +24,8 @@ public final class LiveExpeditionClient {
     private static int previous,ticks,clicked=-100,ack=-1;private static String shot;private static boolean stopping,portholePoseSeen,pawShot;
     private static BlockPos proofCamp;private static int borrascaTerrainSent=-1000;
     private static boolean confusionCaptured,terrorCaptured,voiceCaptured;
+    /** Whether this client's reader began the Goatman trailer at the camp, in a cousin's place (0.4.558), rather than on the trail. */
+    private static boolean trailerStandIn;
     private static volatile String badImpact;
     private static final java.util.Set<String> heardSides=java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final java.util.List<String> heardKnocks=new java.util.concurrent.CopyOnWriteArrayList<>();
@@ -199,6 +201,8 @@ public final class LiveExpeditionClient {
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,bounds);
             // 0.4.558: the reader in a cousin's place begins at the camp, and has no path girl; only the reader on the trail walks it.
             boolean atCamp=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(mc.player.position().subtract(target.getX(),target.getY(),target.getZ())).progress()>=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.CLEARING-4;
+            // The reader on the trail walks only a few steps here, so only the stand-in is ever at the camp in this phase.
+            trailerStandIn=atCamp;
             // 0.4.163: the trail's child is only there once the reader has started walking, so walk the trail a few steps first.
             if(ack!=32&&mc.screen==null&&!atCamp&&children.stream().noneMatch(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent())){
                 var at=mc.player.position().subtract(target.getX(),target.getY(),target.getZ());var progress=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(at).progress();
@@ -220,8 +224,9 @@ public final class LiveExpeditionClient {
         }
         if(step==33){
             var at=mc.player.position().subtract(target.getX(),target.getY(),target.getZ());var progress=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(at).progress();
-            // The reader in a cousin's place is at the camp already and waits there.
-            if(progress>=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.CLEARING-4){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);return;}
+            // The reader in a cousin's place is at the camp already and waits there. The reader on the trail walks on until the phase
+            // moves on, into the clearing itself (run 1594 stopped them four blocks short of it, so they never arrived).
+            if(trailerStandIn){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);return;}
             var next=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.path(progress+1).add(target.getX(),target.getY(),target.getZ());
             var toward=next.subtract(mc.player.position());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-toward.x,toward.z)));mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
         }

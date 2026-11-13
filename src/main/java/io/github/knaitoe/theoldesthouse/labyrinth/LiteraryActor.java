@@ -124,8 +124,111 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         boolean again=spokenFor>0&&getCustomName()!=null&&getCustomName().getString().equals(text)&&entityData.get(SPEAKER).equals(speaker==null?"":speaker);
         setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Dialogue.ticks(text);
         entityData.set(SPEAKER,speaker==null?"":speaker);
-        if(!again&&!level().isClientSide)TalkHistory.overheard(this,speaker,text);
+        if(!again&&!level().isClientSide){address();TalkHistory.overheard(this,speaker,text);for(var heard:SAID)heard.accept(this,text);}
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.560: turned to the reader
+    /**
+     * 0.4.560 (the standard cast checks, gametest.CastConduct, found it in most of the talking scenes): whoever says a line turns to
+     * the reader they say it to, and keeps looking at them while the line is up: the reader who has just spoken to them, or else the
+     * nearest reader who can see and hear them. A standing person turns their head and their body comes round after it, as anyone's
+     * does; a seated one turns only their head, as far as a head turns ({@link #HEAD_TURN}). Nobody turns who cannot see the reader
+     * ({@link #addresses}). It is the last word on their heads each tick, after every scene has turned its people (CastAddress).
+     */
+    private @javax.annotation.Nullable UUID addressee;private int addressFor,spokenToAt=Integer.MIN_VALUE/2,facedAt=-1;private float facedYaw,facedPitch;
+    private static final Set<LiteraryActor> ADDRESSING=Collections.newSetFromMap(new WeakHashMap<>());
+    /** How near a reader must be for a line to be said to them; how long, at most, someone keeps looking at them after it. */
+    public static final double ADDRESS_RANGE=12;public static final int ADDRESS_TICKS=100;
+    /**
+     * How far a seated person's head turns from their seat, and how fast a head turns: this many degrees a tick from the person's
+     * own look control and as many again after their scene, a quick turn of the head rather than a snap.
+     */
+    public static final float HEAD_TURN=80,TURN_SPEED=12;
+    /** Whether this person turns to whoever they talk to: not the dead or sleeping, not someone who cannot see the reader. */
+    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&role()!=SP_RESIDENT;}
+    /** A reader has just spoken to this person: what they say back is said to that reader. */
+    private void spokenTo(ServerPlayer reader){
+        if(reader.isSpectator()||!addresses())return;
+        LAST_SPOKEN_TO.put(reader.getUUID(),new java.lang.ref.WeakReference<>(this));
+        addressee=reader.getUUID();spokenToAt=tickCount;addressFor=Math.max(addressFor,60);ADDRESSING.add(this);
+    }
+    /** Whom each reader last spoke to (a click on them): the person a line on that reader's conversation panel comes from. */
+    private static final Map<UUID,java.lang.ref.WeakReference<LiteraryActor>> LAST_SPOKEN_TO=new java.util.concurrent.ConcurrentHashMap<>();
+    /**
+     * A line on a reader's conversation panel (Talk.line), which is not said aloud: the person they last spoke to, if still near,
+     * turns to them as for a line of their own.
+     */
+    public static void panelLine(ServerPlayer reader){
+        var ref=LAST_SPOKEN_TO.get(reader.getUUID());var a=ref==null?null:ref.get();
+        if(a==null||a.isRemoved()||a.level()!=reader.level()||a.distanceToSqr(reader)>64||!a.addresses())return;
+        a.addressee=reader.getUUID();a.spokenToAt=a.tickCount;a.addressFor=Math.max(a.addressFor,80);ADDRESSING.add(a);
+    }
+    /** What the turning to a reader is doing, for a failed check to say. */
+    public String addressing(){
+        var front=seatFront();
+        return String.format(Locale.ROOT,"[tick %d%s, addressee %s for %d, faced %s, head %.0f, body %.0f, seat %s]",tickCount,isPassenger()?" riding":"",addressee==null?"none":addressee.toString().substring(0,8),addressFor,facedAt==tickCount?"this tick":facedAt<0?"never":(tickCount-facedAt)+" ticks ago",getYHeadRot(),yBodyRot,front==null?"none":String.format(Locale.ROOT,"%.0f",front));
+    }
+    private void address(){
+        if(!addresses())return;
+        if(addressee==null||tickCount-spokenToAt>2){
+            ServerPlayer best=null;double d=ADDRESS_RANGE*ADDRESS_RANGE;
+            for(var p:((net.minecraft.server.level.ServerLevel)level()).players()){
+                if(!p.isAlive()||p.isSpectator())continue;double e=p.distanceToSqr(this);if(e<d&&hasLineOfSight(p)){d=e;best=p;}
+            }
+            if(best==null)return;addressee=best.getUUID();
+        }
+        addressFor=Math.max(addressFor,net.minecraft.util.Mth.clamp(spokenFor,40,ADDRESS_TICKS));ADDRESSING.add(this);
+    }
+    /** Which way this person's seat holds them, or their own yaw for one whose scene holds their body; null when standing. */
+    public @javax.annotation.Nullable Float seatFront(){
+        var seat=ActorSeat.of(this);if(seat!=null)return seat.facing()!=null?seat.facing().toYRot():getYRot();
+        return holdsBody()?getYRot():null;
+    }
+    /**
+     * Last thing in this person's own tick, after their scene has moved and turned them: turned to whoever they are talking to, a
+     * step at a time.
+     */
+    private void faceAddressee(){
+        if(addressFor<=0)return;
+        var p=addressee==null?null:level().getPlayerByUUID(addressee);
+        if(--addressFor<=0||!(p instanceof ServerPlayer reader)||!reader.isAlive()||reader.isSpectator()||reader.level()!=level()
+                ||reader.distanceToSqr(this)>ADDRESS_RANGE*ADDRESS_RANGE*2||!addresses()){addressee=null;addressFor=0;ADDRESSING.remove(this);return;}
+        face(reader);facedYaw=getYHeadRot();facedPitch=getXRot();facedAt=tickCount;
+    }
+    /**
+     * Once a tick after every scene's own tick handlers have run (CastAddress): whoever was turned to a reader this tick is left
+     * turned to them, whatever a scene set since.
+     */
+    public static void faceAddressees(){
+        if(ADDRESSING.isEmpty())return;
+        for(var a:List.copyOf(ADDRESSING)){
+            if(a.isRemoved()||a.addressFor<=0){ADDRESSING.remove(a);continue;}
+            if(a.facedAt!=a.tickCount)continue;
+            // A scene may have turned the body since: the head goes no further round from it than a head turns.
+            float yaw=a.facedYaw;var front=a.seatFront();if(front!=null)yaw=front+net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(yaw-front),-HEAD_TURN,HEAD_TURN);
+            a.setYHeadRot(yaw);a.setXRot(a.facedPitch);
+        }
+    }
+    private void face(ServerPlayer reader){
+        var d=reader.getEyePosition().subtract(getEyePosition());
+        float want=(float)(net.minecraft.util.Mth.atan2(d.z,d.x)*net.minecraft.util.Mth.RAD_TO_DEG)-90F;
+        float pitch=net.minecraft.util.Mth.clamp((float)(-net.minecraft.util.Mth.atan2(d.y,Math.sqrt(d.x*d.x+d.z*d.z))*net.minecraft.util.Mth.RAD_TO_DEG),-35F,35F);
+        var front=seatFront();
+        if(front!=null){
+            float rel=net.minecraft.util.Mth.wrapDegrees(want-front);
+            // Someone right behind a seated person: they look over the shoulder they are already turned toward.
+            if(Math.abs(rel)>150&&facedAt>=0)rel=Math.signum(net.minecraft.util.Mth.wrapDegrees(facedYaw-front))*Math.abs(rel);
+            want=front+net.minecraft.util.Mth.clamp(rel,-HEAD_TURN,HEAD_TURN);
+        }
+        // The turn carries on from where it had got to, whatever the scene set this tick: a scene that sets a head every tick would
+        // otherwise hold it within a step of its own angle.
+        boolean going=facedAt>=tickCount-1;float yaw=going?facedYaw:getYHeadRot(),tilt=going?facedPitch:getXRot();
+        setYHeadRot(net.minecraft.util.Mth.approachDegrees(yaw,want,TURN_SPEED*2));
+        setXRot(net.minecraft.util.Mth.approachDegrees(tilt,pitch,TURN_SPEED));
+        var aim=getEyePosition().add(net.minecraft.world.phys.Vec3.directionFromRotation(pitch,want).scale(4));
+        getLookControl().setLookAt(aim.x,aim.y,aim.z,TURN_SPEED,TURN_SPEED);
+    }
+    /** 0.4.560: whoever wants to hear every new line said (the standard cast checks, gametest.CastConduct); nothing in play listens. */
+    public static final java.util.List<java.util.function.BiConsumer<LiteraryActor,String>> SAID=new java.util.concurrent.CopyOnWriteArrayList<>();
     /** Who is saying the line up now, or empty. */
     public String speaker(){return entityData.get(SPEAKER);}
     /** Ticks the last line said stays up. */
@@ -139,12 +242,13 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         if(!level().isClientSide&&entityData.get(SPEECH)>0)entityData.set(SPEECH,entityData.get(SPEECH)-1);
         if(!level().isClientSide&&spokenFor>0&&--spokenFor==0)setCustomNameVisible(false);
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
-        if(!level().isClientSide){DomesticGlimpses.actorTick(this);GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);}
+        if(!level().isClientSide){DomesticGlimpses.actorTick(this);GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);if(lakePartner(role()))LakeHouseTess.tick(this);}
         if(lakePartner(role()))setAirSupply(getMaxAirSupply());
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);
+        if(!level().isClientSide)faceAddressee();
     }
-    @Override public EntityDimensions getDefaultDimensions(Pose pose){if(role()==ROAD_WOMAN)return roadDead(role(),phase())?EntityDimensions.scalable(.32F,.25F).withEyeHeight(.2F):EntityDimensions.scalable(.32F,1.1F).withEyeHeight(.95F);if(role()==UNCANNY_GIANT)return EntityDimensions.scalable(.32F,1.1F).withEyeHeight(.9F);if(role()==HARRIGAN)return phase()==HarriganVignette.CASKET_PHASE?EntityDimensions.scalable(.6F,.5F).withEyeHeight(.3F):EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(crawling())return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==STRANGER&&PeopleLights.dragging(phase()))return EntityDimensions.scalable(.6F,.5F).withEyeHeight(.35F);if(role()==STRANGER&&PeopleLights.onFloor(phase()))return EntityDimensions.scalable(.6F,.95F).withEyeHeight(.8F);if(lakePartner(role())&&(phase()==2||phase()==6))return EntityDimensions.scalable(.6F,.6F).withEyeHeight(.35F);if(lakePartner(role())&&phase()==1)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==FATHER&&phase()==3)return EntityDimensions.scalable(.6F,1.15F).withEyeHeight(.9F);if(role()==GHOST_PLAYHOUSE)return EntityDimensions.scalable(1F,phase()>=2?.2F:1F).withEyeHeight(.4F);if(role()==GHOST_DRAWER)return EntityDimensions.scalable(.9F,.9F).withEyeHeight(.5F);if(role()>=GHOST_MARJORIE&&role()<=GHOST_PRIEST){if(phase()==GhostsSet.CRAWL)return EntityDimensions.scalable(.55F,.65F).withEyeHeight(.38F);if(phase()==GhostsSet.FLOOR)return EntityDimensions.scalable(.6F,.85F).withEyeHeight(.62F);if(GhostsSet.seatedPose(role(),phase()))return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(phase()==GhostsSet.BED)return EntityDimensions.scalable(.6F,.7F).withEyeHeight(.4F);}return role()==KILLER&&pose==Pose.CROUCHING?EntityDimensions.scalable(.6F,1.3F).withEyeHeight(1.05F):super.getDefaultDimensions(pose);}
+    @Override public EntityDimensions getDefaultDimensions(Pose pose){if(role()==ROAD_WOMAN)return roadDead(role(),phase())?EntityDimensions.scalable(.32F,.25F).withEyeHeight(.2F):EntityDimensions.scalable(.32F,1.1F).withEyeHeight(.95F);if(role()==UNCANNY_GIANT)return EntityDimensions.scalable(.32F,1.1F).withEyeHeight(.9F);if(role()==HARRIGAN)return phase()==HarriganVignette.CASKET_PHASE?EntityDimensions.scalable(.6F,.5F).withEyeHeight(.3F):EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(crawling())return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==STRANGER&&PeopleLights.dragging(phase()))return EntityDimensions.scalable(.6F,.5F).withEyeHeight(.35F);if(role()==STRANGER&&PeopleLights.onFloor(phase()))return EntityDimensions.scalable(.6F,.95F).withEyeHeight(.8F);if(lakePartner(role())&&(phase()==2||phase()==6))return EntityDimensions.scalable(.6F,.6F).withEyeHeight(.35F);if(lakePartner(role())&&phase()==1)return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(role()==FATHER&&phase()==3)return EntityDimensions.scalable(.6F,1.15F).withEyeHeight(.9F);if(role()==GHOST_PLAYHOUSE)return EntityDimensions.scalable(1F,phase()>=2?.2F:1F).withEyeHeight(.4F);if(role()==GHOST_DRAWER)return EntityDimensions.scalable(.9F,.9F).withEyeHeight(.5F);if(role()>=GHOST_MARJORIE&&role()<=GHOST_PRIEST){if(phase()==GhostsSet.CRAWL)return EntityDimensions.scalable(.55F,.65F).withEyeHeight(.38F);if(phase()==GhostsSet.FLOOR)return EntityDimensions.scalable(.6F,.85F).withEyeHeight(.62F);if(GhostsSet.seatedPose(role(),phase()))return EntityDimensions.scalable(.6F,1.25F).withEyeHeight(1.05F);if(phase()==GhostsSet.BED)return EntityDimensions.scalable(.6F,.7F).withEyeHeight(.4F);}if(lakePartner(role())&&(phase()==2||phase()==6))return EntityDimensions.scalable(.6F,.6F).withEyeHeight(.4F);if(lakePartner(role())&&pose==Pose.CROUCHING)return EntityDimensions.scalable(.6F,1.5F).withEyeHeight(1.27F);return role()==KILLER&&pose==Pose.CROUCHING?EntityDimensions.scalable(.6F,1.3F).withEyeHeight(1.05F):super.getDefaultDimensions(pose);}
     @Override public void travel(net.minecraft.world.phys.Vec3 input){if(!level().isClientSide&&scene.equals(LabyrinthPlace.BORRASCA.id()))input=BorrascaCast.input(this);super.travel(input);}
     @Override public void move(MoverType type,net.minecraft.world.phys.Vec3 movement){
         if(type==MoverType.SELF&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent()&&KillerNavigation.moving(this)){
@@ -168,7 +272,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     public boolean holdsBody(){return role()==STRANGER&&PellPeople.cast(phase());}
     @Override protected net.minecraft.world.entity.ai.control.BodyRotationControl createBodyControl(){
         return new net.minecraft.world.entity.ai.control.BodyRotationControl(this){
-            @Override public void clientTick(){if(holdsBody()){yBodyRot=getYRot();return;}super.clientTick();}
+            @Override public void clientTick(){if(holdsBody()||ActorSeat.of(LiteraryActor.this)!=null){yBodyRot=getYRot();return;}super.clientTick();}
         };
     }
     @Override public boolean isPickable(){return !(role()==UNCANNY_FALSE_WAITRESS&&phase()<2)&&!waitingUnseen()&&!pellStandIn()&&super.isPickable();}
@@ -183,7 +287,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     public boolean waitingUnseen(){return role()==UNCANNY_GIANT&&phase()==0||roadDead(role(),phase());}
     @Override public boolean isAttackable(){return !waitingUnseen()&&super.isAttackable();}
     @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT&&role()!=ROAD_WOMAN&&!pellStandIn())super.pushEntities();}
-    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)KitchenVisitors.interact(s,this,p.getItemInHand(hand));return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&SpeakUp.cast(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)SpeakUp.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
+    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)spokenTo(s);if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)KitchenVisitors.interact(s,this,p.getItemInHand(hand));return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&SpeakUp.cast(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)SpeakUp.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){if(role()==ROAD_WOMAN){if(source.getEntity() instanceof ServerPlayer p)DeerRoad.struck(p,this,amount);return false;}if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(source.getEntity() instanceof ServerPlayer p)KitchenVisitors.struck(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){
         if(role()==BORRASCA_SHERIFF){
             var fight=BorrascaStory.sheriffFight(p,this);

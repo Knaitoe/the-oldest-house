@@ -136,7 +136,14 @@ public final class PlaceForYou {
                 a.moveTo(b.getX()+mark.at().x,b.getY()+mark.at().y,b.getZ()+mark.at().z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());continue;}
             var to=new Vec3(b.getX()+mark.at().x,b.getY()+mark.at().y,b.getZ()+mark.at().z);
             if(a.position().distanceToSqr(to)<.09){a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());if(!Talk.waiting(p))a.setYHeadRot(mark.yaw());continue;}
-            if(!p.hasLineOfSight(a)||a.position().distanceToSqr(to)>100||l.getBlockState(BlockPos.containing(to)).getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
+            // 0.4.560 (the standard cast checks): put straight there only while the reader sees neither them nor the place; else on
+            // foot, and the last of the way into a chair is a short slide over a few ticks rather than a jump into it.
+            boolean seat=l.getBlockState(BlockPos.containing(to)).getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
+            boolean watched=io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))
+                    ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0));
+            double far=a.position().distanceToSqr(to);
+            if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
+            else if(seat&&far<6.25){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
             else SceneFootpaths.walk(a,to,.12);
         }
         // Nameplates fade after a while.

@@ -31,10 +31,12 @@ public final class LakeHouseTests {
         Fixture(GameTestHelper h){this.h=h;in=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.INTERIOR);out=HouseTestLevel.get(in.getServer(),HouseDimensions.OUTSIDE);
             oldHouse=HouseSavedData.get(in.getServer());oldData=LabyrinthData.get(in.getServer());origin=new BlockPos(59000,80,59000);
             var house=new HouseSavedData();house.markSpawned(origin);house.markInteriorInitialized();var store=in.getServer().overworld().getDataStorage();store.set("the_oldest_house",house);store.set("the_oldest_house_labyrinth",new LabyrinthData());
-            data().setBuilt(LabyrinthBuilder.VERSION,origin);LiteraryRooms.build(out,base(),PLACE);LabyrinthBuilder.registerDoors(data(),PLACE,base());lease.hold(out,new AABB(Vec3.atLowerCornerOf(base().offset(-12,-44,-183)),Vec3.atLowerCornerOf(base().offset(12,12,8))));}
+            data().setBuilt(LabyrinthBuilder.VERSION,origin);LiteraryRooms.build(out,base(),PLACE);LabyrinthBuilder.registerDoors(data(),PLACE,base());lease.hold(out,held());}
         // Native scheduling removes the executing Runnable after it returns; requeue a fresh wrapper.
         void ready(Runnable action){Runnable[] await=new Runnable[1];await[0]=()->{if(!lease.ready()){h.runAfterDelay(1,()->await[0].run());return;}action.run();};await[0].run();}
         LabyrinthData data(){return LabyrinthData.get(in.getServer());}
+        /** The part of the lake house the fixture keeps loaded: the house, the dock and the lakes between. */
+        AABB held(){return new AABB(Vec3.atLowerCornerOf(base().offset(-12,-44,-183)),Vec3.atLowerCornerOf(base().offset(12,12,8)));}
         BlockPos base(){return LabyrinthPlaces.base(origin,PLACE);}
         ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);players.add(p);var b=base();p.teleportTo(out,b.getX()+.5,b.getY(),b.getZ()-3,180,0);p.hasChangedDimension();p.setNoGravity(true);LiteraryVignettes.onArrive(p,PLACE);return p;}
         void read(ServerPlayer p,BlockPos rel){var at=LakeHouse.readerBase(p).offset(rel);p.moveTo(at.getX()+(rel.getX()<0?1.5:-.5),at.getY(),at.getZ()+.5);p.lookAt(EntityAnchorArgument.Anchor.EYES,at.getCenter());
@@ -244,6 +246,82 @@ public final class LakeHouseTests {
             h.assertTrue(!LakeHouseGear.has(p,LakeHouseRegistry.FLASHLIGHT.get())&&!LakeHouseGear.has(p,LakeHouseRegistry.HELMET.get()),"outside the lake house the lent gear is gone");
             h.succeed();
         }finally{f.close();}
+    }
+
+    /**
+     * 0.4.560 (owner: "The canoe tunnel pass needs improvement too"): the culvert is cast concrete with a coped headwall round each
+     * mouth and stone dumped on the banks beside them; its sections meet at joints that run up both walls and across the ceiling;
+     * and what is painted on its walls faces the water at a seated reader's height. The way through is as it was.
+     */
+    @GameTest(template="empty",batch="lake_house_culvert0560",timeoutTicks=200)
+    public static void theCulvertHasHeadwallsJointsAndItsMarks(GameTestHelper h){
+        var f=new Fixture(h);
+        try{
+            var b=f.base();
+            for(int z:new int[]{LakeHouse.COVER_SOUTH,LakeHouse.COVER_NORTH}){
+                for(int x=LakeHouse.HEAD_WEST;x<=LakeHouse.HEAD_EAST;x++){
+                    h.assertTrue(f.out.getBlockState(b.offset(x,2,z)).is(LakeHouseRegistry.CULVERT_COPING.get()),"the headwall at z "+z+" is coped at x "+x);
+                    if(x<-1||x>2)for(int y=-1;y<=1;y++){var wall=f.out.getBlockState(b.offset(x,y,z)).getBlock();h.assertTrue(wall instanceof CulvertBlock||wall instanceof CulvertMarkBlock,"the headwall at z "+z+" is concrete at "+x+","+y);}
+                }
+                h.assertTrue(f.out.getFluidState(b.offset(0,-1,z)).is(Fluids.WATER)&&f.out.getBlockState(b.offset(1,0,z)).isAir(),"its mouth is open over the water");
+                int out=z==LakeHouse.COVER_SOUTH?1:-1,stone=0;
+                for(int x=LakeHouse.HEAD_WEST-1;x<=LakeHouse.HEAD_EAST+1;x++)for(int d=1;d<=2;d++){var s1=f.out.getBlockState(b.offset(x,-1,z+out*d));if(s1.is(Blocks.COBBLESTONE)||s1.is(Blocks.MOSSY_COBBLESTONE)||s1.is(Blocks.ANDESITE))stone++;}
+                h.assertTrue(stone>=6,"stone lies on the banks beside the mouth at z "+z+": "+stone);
+            }
+            int joints=0;
+            for(int z=LakeHouse.COVER_NORTH;z<=LakeHouse.COVER_SOUTH;z++){
+                if(!LakeHouse.joint(z))continue;joints++;
+                for(var at:List.of(b.offset(-1,-1,z),b.offset(-1,0,z),b.offset(2,-1,z),b.offset(2,0,z),b.offset(0,1,z),b.offset(1,1,z))){var st=f.out.getBlockState(at);h.assertTrue(st.getBlock() instanceof CulvertBlock&&st.getValue(CulvertBlock.JOINT),"the joint at z "+z+" runs through "+at.subtract(b).toShortString());}
+            }
+            h.assertTrue(joints==2,"two joints along the covered run");
+            var counted=new java.util.HashSet<CulvertMarkBlock.Mark>();
+            for(var m:LakeHouse.MARKS){
+                var st=f.out.getBlockState(b.offset(m.x(),0,m.z()));
+                h.assertTrue(st.is(LakeHouseRegistry.CULVERT_MARK.get())&&st.getValue(CulvertMarkBlock.MARK)==m.mark()&&st.getValue(CulvertMarkBlock.FACING)==m.facing(),"the "+m.mark()+" is painted at "+m.x()+",0,"+m.z());
+                var front=b.offset(m.x(),0,m.z()).relative(m.facing());h.assertTrue(f.out.getBlockState(front).isAir(),"the "+m.mark()+" faces open air, not into the bank");
+                counted.add(m.mark());
+            }
+            h.assertTrue(counted.size()==CulvertMarkBlock.Mark.values().length,"every mark drawn is painted somewhere: "+counted);
+            h.assertTrue(f.out.getBlockState(b.offset(-1,0,-112)).is(LakeHouseRegistry.CULVERT.get())&&f.solid(new BlockPos(0,1,-112)),"between the joints the walls and ceiling are plain concrete");
+            h.succeed();
+        }finally{f.close();}
+    }
+    /**
+     * 0.4.560: whoever sits in the back pushes too, with hands and timing of their own; the stroke is counted on the canoe for the game
+     * that moves it. The hands work out along the open troughs as well as under the roof, and nowhere else; and a canoe paddled up to
+     * a mouth a block and a half off the middle is eased into the gap instead of meeting the end of a wall.
+     */
+    private static Fixture backSeat;
+    @AfterBatch(batch="lake_house_back0560") public static void backSeatDone(ServerLevel ignored){if(backSeat!=null){backSeat.close();backSeat=null;}}
+    @GameTest(template="empty",batch="lake_house_back0560",timeoutTicks=400)
+    public static void theBackBenchPushesTooAndTheMouthsTakeTheBow(GameTestHelper h){
+        backSeat=new Fixture(h);var f=backSeat;
+        f.ready(()->{
+            var p=f.player("lake_front_bench");var q=f.player("lake_back_bench");var r=f.player("lake_on_the_bank");
+            var canoe=f.out.getEntitiesOfClass(LakeHouseCanoe.class,LakeHouse.box(f.base()),c->p.getUUID().equals(c.owner())).getFirst();var b=f.base();
+            h.assertTrue(p.startRiding(canoe)&&q.startRiding(canoe)&&canoe.seat(p)==0&&canoe.seat(q)==1&&canoe.seat(r)==-1,"two readers on the two benches");
+            canoe.moveTo(b.getX()+1,b.getY()-.35,b.getZ()-112,180,0);canoe.setDeltaMovement(Vec3.ZERO);canoe.positionRider(p);canoe.positionRider(q);
+            h.assertTrue(canoe.pushable()&&canoe.wallWithinReach(-1,1)&&canoe.wallWithinReach(1,1),"the back bench reaches both walls under the roof");
+            // The game that moves the canoe has had it since before any stroke came: the first look only learns the count.
+            canoe.takeBackStrokes();
+            h.assertTrue(canoe.push(q,-1),"the back bench pushes off its own left wall");
+            h.assertTrue(canoe.getDeltaMovement().lengthSqr()<1e-6&&canoe.pushSide(q)==-1&&canoe.pushSide(p)==0,"the server only counts it: the game that moves the canoe takes it");
+            h.assertTrue(canoe.push(p,1)&&canoe.pushSide(p)==1,"the front bench's hands are its own, and push at the same time");
+            double front=canoe.getDeltaMovement().z;canoe.takeBackStrokes();
+            h.assertTrue(canoe.getDeltaMovement().z<front-.05,"taken where the canoe is moved, the back bench's stroke carries it on along the culvert: "+canoe.getDeltaMovement());
+            h.assertTrue(!canoe.push(q,-1)&&!canoe.push(r,-1),"the same hand waits for its stroke, and nobody out of the canoe pushes it");
+            // Out along the open trough the hands still work; out on the lake they do not.
+            canoe.moveTo(b.getX()+1,b.getY()-.35,b.getZ()-101.5,180,0);canoe.positionRider(p);canoe.positionRider(q);
+            h.assertTrue(!canoe.underLowRoof()&&canoe.pushable(),"between the trough's walls the hands work without a roof");
+            canoe.moveTo(b.getX()+1,b.getY()-.35,b.getZ()-90,180,0);canoe.positionRider(p);canoe.positionRider(q);
+            h.assertTrue(!canoe.pushable(),"out on the lake the paddles are back");
+            // Paddled at the south mouth a block and a half off its middle, the bow is eased into the gap.
+            canoe.moveTo(b.getX()+2.5,b.getY()-.35,b.getZ()-94,195,0);canoe.setDeltaMovement(new Vec3(0,0,-.25));canoe.positionRider(p);canoe.positionRider(q);
+            for(int i=0;i<40&&canoe.getZ()>b.getZ()-104;i++){canoe.easeIn();canoe.setDeltaMovement(canoe.getDeltaMovement().x,0,-.25);canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());}
+            h.assertTrue(canoe.getZ()<b.getZ()-101&&Math.abs(canoe.getX()-(b.getX()+1))<.32,"the canoe went into the trough between its walls: "+canoe.position().subtract(Vec3.atLowerCornerOf(b)));
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(canoe.getYRot()-180))<10,"and turned to the channel: "+canoe.getYRot());
+            p.stopRiding();q.stopRiding();h.succeed();
+        });
     }
 
     @GameTest(template="empty",batch="lake_house_account",timeoutTicks=200)

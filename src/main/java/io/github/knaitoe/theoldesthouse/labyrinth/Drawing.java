@@ -176,10 +176,27 @@ public final class Drawing {
     static AABB area(BlockPos b){return new AABB(b.offset(DrawingSite.WEST,-4,DrawingSite.NORTH)).minmax(new AABB(b.offset(DrawingSite.EAST,16,1)));}
     static void clearActors(ServerLevel l,BlockPos b){for(var a:l.getEntitiesOfClass(LiteraryActor.class,area(b),a->a.role()==LiteraryActor.STRANGER&&cast(a.phase())))a.discard();}
     static boolean loaded(ServerLevel l,Day d){var at=d.base.offset(DrawingSite.BOX);return l.isLoaded(at)&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at));}
-    /** Everyone who has come into the square is there; nobody comes back once the day is over. */
+    /**
+     * Everyone who has come into the square is there; nobody comes back once the day is over. 0.4.560 (the standard cast checks):
+     * nobody comes into being where a reader can see. A villager comes out of the end of their lane when nobody is looking at it,
+     * and walks in from there; one who belongs in the square already is put in their place when nobody is looking at that.
+     */
     static void ensureCast(ServerLevel l,Day d){
         if(d.stage==OVER||!loaded(l,d))return;
-        for(int who:d.here){if(!arrived(d,who)||actor(l,d.cast[who])!=null)continue;var a=spawn(l,d,who,d.stage==MORNING&&d.since<arrival(d,who)+200?FROM[who]:spot(d,who));if(a!=null)d.cast[who]=a.getUUID();}
+        List<ServerPlayer> watching=null;
+        for(int who:d.here){
+            if(!arrived(d,who)||actor(l,d.cast[who])!=null)continue;
+            boolean early=d.stage==MORNING&&d.since<arrival(d,who)+200;var at=early?FROM[who]:spot(d,who);
+            if(watching==null)watching=readers(l,d.base);
+            if(seen(watching,world(d.base,at)))continue;
+            var a=spawn(l,d,who,at);if(a==null)continue;d.cast[who]=a.getUUID();
+            if(early&&!busy(d,who))send(d,who,0,spot(d,who));
+        }
+    }
+    /** Whether any of these readers can see a person standing at this point. */
+    static boolean seen(List<ServerPlayer> readers,Vec3 at){
+        for(var r:readers)if(io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(r,at.add(0,1.6,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(r,at.add(0,.3,0)))return true;
+        return false;
     }
     static int arrival(Day d,int who){return who==d.marked()?LATE:ARRIVES[who];}
     static boolean arrived(Day d,int who){return d.stage>MORNING||d.since>=arrival(d,who);}

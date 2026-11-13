@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
-      "model": "the_oldest_house:block/lake_house_culvert"
+    "joint=false": [
+      {
+        "model": "the_oldest_house:block/lake_house_culvert",
+        "weight": 2
+      },
+      {
+        "model": "the_oldest_house:block/lake_house_culvert_1"
+      },
+      {
+        "model": "the_oldest_house:block/lake_house_culvert_2"
+      }
+    ],
+    "joint=true": {
+      "model": "the_oldest_house:block/lake_house_culvert_joint"
     }
   }
 }
