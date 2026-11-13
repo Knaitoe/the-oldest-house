@@ -704,7 +704,11 @@ public enum LabyrinthPlace {
     /** 0.4.518, the Pell house (PellHouse, docs/PELL_HOUSE_PROPOSAL.md): Wren Close at the end of summer, and June Pell's bungalow at
      * its head (PellSite). Three stays. This slice, the street and the lot: the ground, the walls and the doors. Not dealt until the
      * house can be finished. */
-    PELL_HOUSE("pell_house",Kind.MULTI_VISIT,239,new BoundingBox(-31,-8,-102,31,14,1),literaryEntry());
+    PELL_HOUSE("pell_house",Kind.MULTI_VISIT,239,new BoundingBox(-31,-8,-102,31,14,1),literaryEntry()),
+    /** 0.4.549, The Ones Already Inside (LodgingHouse, docs/THE_ONES_ALREADY_INSIDE_PLAN.md): a lodging house over a cellar, with
+     * passages behind its walls (LodgingSite). One night, a party's story. This slice, the house: its walls, floors, stairs, doors,
+     * hatches, frames and the support under them. Not dealt until the story can be finished. */
+    ONES_INSIDE("ones_already_inside",Kind.ONE_SHOT,240,new BoundingBox(-17,-5,-32,17,10,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

@@ -1,0 +1,67 @@
+{
+  "textures": {
+    "plate": "the_oldest_house:block/lodging/plate_3",
+    "particle": "the_oldest_house:block/lodging/plate_3"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        4,
+        15
+      ],
+      "to": [
+        12,
+        12,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#plate",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#plate",
+          "uv": [
+            0,
+            4,
+            1,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#plate",
+          "uv": [
+            15,
+            4,
+            16,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#plate",
+          "uv": [
+            4,
+            15,
+            12,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#plate",
+          "uv": [
+            4,
+            15,
+            12,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

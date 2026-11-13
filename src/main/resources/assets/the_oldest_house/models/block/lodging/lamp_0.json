@@ -1,0 +1,145 @@
+{
+  "textures": {
+    "bulb": "the_oldest_house:block/lodging/bulb",
+    "flex": "the_oldest_house:block/lodging/flex",
+    "particle": "the_oldest_house:block/lodging/bulb"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        7,
+        7.5
+      ],
+      "to": [
+        8.5,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flex",
+          "uv": [
+            7.5,
+            0,
+            8.5,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#flex",
+          "uv": [
+            7.5,
+            0,
+            8.5,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#flex",
+          "uv": [
+            7.5,
+            0,
+            8.5,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#flex",
+          "uv": [
+            7.5,
+            0,
+            8.5,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#flex",
+          "uv": [
+            7.5,
+            7.5,
+            8.5,
+            8.5
+          ]
+        },
+        "down": {
+          "texture": "#flex",
+          "uv": [
+            7.5,
+            7.5,
+            8.5,
+            8.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        2,
+        6.5
+      ],
+      "to": [
+        9.5,
+        7,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            6.5,
+            9,
+            9.5,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            6.5,
+            9,
+            9.5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            6.5,
+            9,
+            9.5,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            6.5,
+            9,
+            9.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#bulb",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        }
+      }
+    }
+  ]
+}

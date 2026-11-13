@@ -1,0 +1,416 @@
+{
+  "textures": {
+    "ladder": "the_oldest_house:block/lodging/ladder",
+    "particle": "the_oldest_house:block/lodging/ladder"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        13
+      ],
+      "to": [
+        3,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ladder",
+          "uv": [
+            13,
+            0,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            0,
+            3,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ladder",
+          "uv": [
+            0,
+            0,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ladder",
+          "uv": [
+            13,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            13,
+            3,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            13,
+            3,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        13
+      ],
+      "to": [
+        15,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            0,
+            3,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ladder",
+          "uv": [
+            13,
+            0,
+            15,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ladder",
+          "uv": [
+            0,
+            0,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#ladder",
+          "uv": [
+            13,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ladder",
+          "uv": [
+            13,
+            13,
+            15,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#ladder",
+          "uv": [
+            13,
+            13,
+            15,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        2,
+        14
+      ],
+      "to": [
+        13,
+        3,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            13,
+            13,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            13,
+            13,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            13,
+            2,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#ladder",
+          "uv": [
+            14,
+            13,
+            15,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        6,
+        14
+      ],
+      "to": [
+        13,
+        7,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            9,
+            13,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            9,
+            13,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            9,
+            2,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#ladder",
+          "uv": [
+            14,
+            9,
+            15,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        10,
+        14
+      ],
+      "to": [
+        13,
+        11,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            5,
+            13,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            5,
+            13,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            5,
+            2,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#ladder",
+          "uv": [
+            14,
+            5,
+            15,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        14,
+        14
+      ],
+      "to": [
+        13,
+        15,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            1,
+            13,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            1,
+            13,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#ladder",
+          "uv": [
+            1,
+            1,
+            2,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#ladder",
+          "uv": [
+            14,
+            1,
+            15,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#ladder",
+          "uv": [
+            3,
+            14,
+            13,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

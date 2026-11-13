@@ -1,0 +1,79 @@
+{
+  "textures": {
+    "end": "the_oldest_house:block/lodging/timber_end",
+    "side": "the_oldest_house:block/lodging/timber",
+    "particle": "the_oldest_house:block/lodging/timber_end"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#end",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#end",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

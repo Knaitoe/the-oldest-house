@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "pair=tile": {
+      "model": "the_oldest_house:block/lodging/floor_tile"
+    },
+    "pair=boards": {
+      "model": "the_oldest_house:block/lodging/floor_boards"
+    },
+    "pair=worn": {
+      "model": "the_oldest_house:block/lodging/floor_worn"
+    },
+    "pair=flags": {
+      "model": "the_oldest_house:block/lodging/floor_flags"
+    },
+    "pair=scuffed": {
+      "model": "the_oldest_house:block/lodging/floor_scuffed"
+    },
+    "pair=passage_low": {
+      "model": "the_oldest_house:block/lodging/floor_passage_low"
+    },
+    "pair=runner_w": {
+      "model": "the_oldest_house:block/lodging/floor_runner_w"
+    },
+    "pair=runner": {
+      "model": "the_oldest_house:block/lodging/floor_runner"
+    },
+    "pair=runner_e": {
+      "model": "the_oldest_house:block/lodging/floor_runner_e"
+    },
+    "pair=room": {
+      "model": "the_oldest_house:block/lodging/floor_room"
+    },
+    "pair=work": {
+      "model": "the_oldest_house:block/lodging/floor_work"
+    },
+    "pair=carpet": {
+      "model": "the_oldest_house:block/lodging/floor_carpet"
+    },
+    "pair=passage": {
+      "model": "the_oldest_house:block/lodging/floor_passage"
+    },
+    "pair=top": {
+      "model": "the_oldest_house:block/lodging/floor_top"
+    },
+    "pair=top_passage": {
+      "model": "the_oldest_house:block/lodging/floor_top_passage"
+    }
+  }
+}
