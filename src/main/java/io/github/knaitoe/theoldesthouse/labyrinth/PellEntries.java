@@ -33,7 +33,9 @@ import net.minecraft.server.level.ServerPlayer;
 public final class PellEntries {
     private PellEntries(){}
     /** The entries: after the knife, after June's hand, and after a night in the garage on each visit. */
-    public static final String KNIFE="knife",HAND="hand",NIGHT="night";
+    public static final String KNIFE="knife",HAND="hand",NIGHT="night",
+        /** 0.4.548: after the last photograph (PellMark). */
+        PHOTO="photo";
     /** How often an entry that is due tries to go in, in server ticks (a multiple of the five readers are looked at on). */
     public static final int TRY=20;
     /** The first visit whose night in the garage gives an entry: a week in, when the proposal's first false entries appear. */
@@ -58,9 +60,8 @@ public final class PellEntries {
         if(!text.isEmpty()){var done=own.getList("FalseWritten",Tag.TAG_STRING);done.add(StringTag.valueOf(id));own.put("FalseWritten",done);}
         PellHouse.save(p,own);
     }
-    /** Whether the house ended in a failure for this reader: Tilly answered. (The older sibling taken away by Gail waits on the owner's
-     *  open question 2, docs/PELL_HOUSE_PROPOSAL.md.) */
-    public static boolean failed(CompoundTag own){return own.getBoolean("TillyStayed");}
+    /** Whether the house ended in a failure for this reader: Tilly answered, or (0.4.548, PellMark) Gail took them away in the night. */
+    public static boolean failed(CompoundTag own){return own.getBoolean("TillyStayed")||own.getBoolean("TakenAway");}
     /**
      * A story this reader resolved (WitnessAccount.resolve, wherever it happens). After the house failed them, the House has something
      * new to put in their hand: the latest such story, waiting for the next House day it can go in. Never the house's own story.

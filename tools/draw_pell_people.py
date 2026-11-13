@@ -44,7 +44,7 @@ from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
          'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife',
-         'pell_scrub', 'pell_lanyard', 'pell_cane_tip')
+         'pell_scrub', 'pell_lanyard', 'pell_cane_tip', 'pell_page', 'pell_note')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
@@ -53,7 +53,8 @@ NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.
          'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver',
          'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope',
          'item.the_oldest_house.pell_knife': 'Kitchen Knife', 'item.the_oldest_house.pell_scrub': 'Scrubbing Brush',
-         'item.the_oldest_house.pell_lanyard': 'Lanyard', 'item.the_oldest_house.pell_cane_tip': 'Cane Tip'}
+         'item.the_oldest_house.pell_lanyard': 'Lanyard', 'item.the_oldest_house.pell_cane_tip': 'Cane Tip',
+         'item.the_oldest_house.pell_page': 'Last Page', 'item.the_oldest_house.pell_note': 'Taped Note'}
 
 
 def blank():
@@ -561,6 +562,45 @@ def lane():
     return im
 
 
+def page():
+    """0.4.548: the last page off the shed's wall (PellMark): lined paper written over in pencil, corrections down its margin, a torn
+    strip of tape still at its top, and down its right side one word written over and over."""
+    im = blank()
+    fill(im, 3, 1, 13, 15, '#f8f5ea')
+    fill(im, 6, 0, 10, 2, '#e0d6a8')
+    for y in range(4, 14, 2):
+        for x in range(4, 10):
+            if (x + y) % 5:
+                dot(im, x, y, '#8a8a8a')
+    for y in range(3, 14, 3):
+        dot(im, 3, y, '#c03a3a')
+    for y in range(3, 15):
+        dot(im, 11, y, '#3a3a3a' if y % 3 else '#6a6a6a')
+    for y in range(1, 15):
+        dot(im, 12, y, '#dcd8cc')
+    for x in range(3, 13):
+        dot(im, x, 14, '#dcd8cc')
+    return im
+
+
+def note():
+    """0.4.548: the note off the freezer's power point (PellMark): a square of paper, tape still along its top, and in marker in two
+    blocky lines the words DO NOT, then smaller under them SWITCH OFF."""
+    im = blank()
+    fill(im, 2, 3, 14, 13, '#fbf6c8')
+    fill(im, 1, 2, 15, 4, '#d8c88a')
+    for x in (4, 5, 7, 8, 10, 11):
+        dot(im, x, 6, '#c03a3a'); dot(im, x, 7, '#c03a3a')
+    for x in range(4, 12):
+        if x % 3:
+            dot(im, x, 9, '#c03a3a')
+    for x in range(4, 11, 2):
+        dot(im, x, 11, '#c03a3a')
+    for y in range(4, 13):
+        dot(im, 13, y, '#e4dcae')
+    return im
+
+
 def flat(name, parent='minecraft:item/generated'):
     """A flat thing, from its picture: the plates lie on the table (laid there as item displays, face up) and the saucepan is held."""
     return {'parent': parent, 'textures': {'layer0': NS + 'item/' + name}}
@@ -706,14 +746,14 @@ def models():
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
             'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
             'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld'),
-            'pell_lanyard': flat('pell_lanyard'), 'pell_cane_tip': flat('pell_cane_tip')}
+            'pell_lanyard': flat('pell_lanyard'), 'pell_cane_tip': flat('pell_cane_tip'), 'pell_page': flat('pell_page'), 'pell_note': flat('pell_note')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
-              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub(), 'pell_lanyard': lanyard(), 'pell_cane_tip': cane_tip()}
+              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub(), 'pell_lanyard': lanyard(), 'pell_cane_tip': cane_tip(), 'pell_page': page(), 'pell_note': note()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
     # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.

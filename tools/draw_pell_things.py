@@ -623,6 +623,23 @@ def school_photos(year):
     return im
 
 
+def broken_photo():
+    """0.4.548: the last school photograph after June's night with it (PellMark): the glass starred across her face from a point by her
+    eye, the cracks running out to the frame in pale lines, a corner of the glass gone where the photograph shows duller."""
+    im = school_photos(3)
+    cx, cy = 7, 6
+    for dx, dy, n in ((1, 0, 6), (-1, 0, 4), (0, 1, 7), (0, -1, 4), (1, 1, 6), (-1, -1, 3), (1, -1, 4), (-1, 1, 5)):
+        x, y = cx, cy
+        for i in range(n):
+            x += dx; y += dy
+            if 3 <= x < 13 and 2 <= y < 14:
+                dot(im, x, y, '#eef2f6' if i % 2 == 0 else '#c8d0d8')
+    dot(im, cx, cy, '#ffffff'); dot(im, cx + 1, cy, '#dfe6ee'); dot(im, cx, cy + 1, '#dfe6ee')
+    for x, y in ((11, 12), (12, 12), (12, 11), (12, 13), (11, 13), (10, 13)):
+        dot(im, x, y, '#5a5048', 70)
+    return im
+
+
 def hooks():
     """The empty hooks after the last photograph, hammered in at the photographs' spacing, one to a cell: on the wall only the faint
     pencil cross each was measured to (the hook itself stands out from it, in the model)."""
@@ -967,6 +984,7 @@ def living():
 
 def hall():
     out = {f'photos_{i}': school_photos(i) for i in range(4)}
+    out['photos_broken'] = broken_photo()
     out.update({'hooks': hooks(), 'coat_0': coat_hook(0), 'coat_1': coat_hook(1), 'coat_2': coat_hook(2)})
     return out
 
@@ -1167,6 +1185,19 @@ def power_point():
     fill(im, 1, 1, 15, 2, '#d8c88a')
     fill(im, 2, 1, 14, 9, '#fbf6c8'); text(im, 3, 2, 'DO', '#c03a3a', 0); text(im, 3, 2 + 5, '', '#c03a3a')
     line(im, [(9, 3), (11, 3), (9, 5), (12, 5), (9, 7), (12, 7)], '#c03a3a')
+    return im
+
+
+def power_point_bare():
+    """0.4.548: the power point with its note taken off (PellMark): the freezer's plug still in it and its switch still taped down; on
+    the wall above, the tape's ghost at the corners where the note was."""
+    im = clear()
+    fill(im, 3, 9, 13, 15, '#f4f2ea'); bevel(im, 3, 9, 13, 15, 12)
+    fill(im, 5, 11, 7, 14, '#3a3a3a'); dot(im, 5, 11, '#5a5a5a'); fill(im, 9, 11, 11, 13, '#e8e4d4'); inset(im, 9, 11, 11, 13, 10)
+    fill(im, 8, 10, 12, 11, '#d8c88a', 200)
+    for x in (1, 2, 13, 14):
+        dot(im, x, 1, '#d8c88a', 150)
+    dot(im, 2, 8, '#d8c88a', 90); dot(im, 13, 8, '#d8c88a', 90)
     return im
 
 
@@ -1466,6 +1497,17 @@ def transcript(section):
     return im
 
 
+def transcript_gone():
+    """0.4.548: where the last page was taped up before it was taken (PellMark): the strip of tape still on the wall with a torn edge of
+    the page under it, and the square where the page hung a little cleaner than the wall round it."""
+    im = clear()
+    fill(im, 1, 1, 15, 15, '#ffffff', 18)
+    fill(im, 6, 0, 10, 2, '#e0d6a8', 200)
+    for x, y in ((6, 2), (7, 2), (8, 3), (9, 2)):
+        dot(im, x, y, '#f8f5ea', 210)
+    return im
+
+
 def chemist_calendar(stage):
     """A free calendar from the chemist: the month's days in a grid, crossed off in pencil one by one, counting toward one day
     circled twice. Each visit the crosses have come on; on the last night the circle is today."""
@@ -1618,7 +1660,7 @@ def bathroom():
 def laundry():
     return {'freezer_lid_0': freezer_lid(0), 'freezer_lid_1': freezer_lid(1), 'freezer_front_0': freezer_front(0), 'freezer_front_0_open': freezer_front(0, True),
             'freezer_inside': freezer_inside(), 'freezer_plastic': freezer_plastic(), 'freezer_lid_under': freezer_lid_under(),
-            'freezer_front_1': freezer_front(1), 'stool': stool(), 'power_point': power_point(), 'cord': cord(), 'trough': trough(),
+            'freezer_front_1': freezer_front(1), 'stool': stool(), 'power_point': power_point(), 'power_point_bare': power_point_bare(), 'cord': cord(), 'trough': trough(),
             'bucket_top': bucket_top(), 'chlorine': chlorine(), 'washer_front': washer_front()}
 
 
@@ -1629,7 +1671,7 @@ def garage():
 
 def shed():
     return {'tapes_0': tape_spines(0), 'tapes_1': tape_spines(1), 'bench_top': bench_top(), 'deck_front': deck_front(), 'portable_tv': portable_tv(), 'portable_tv_lit': portable_tv(True),
-            'tin': tin(0), 'tin_lid_line': tin_lid_line(), 'tin_paint': tin_paint(), 'transcript_0': transcript(0), 'transcript_1': transcript(1), 'transcript_2': transcript(2),
+            'tin': tin(0), 'tin_lid_line': tin_lid_line(), 'tin_paint': tin_paint(), 'transcript_0': transcript(0), 'transcript_1': transcript(1), 'transcript_2': transcript(2), 'transcript_gone': transcript_gone(),
             'chemist_0': chemist_calendar(0), 'chemist_1': chemist_calendar(1), 'chemist_2': chemist_calendar(2)}
 
 
@@ -1932,6 +1974,8 @@ def thing_models():
     # ---------------------------------------------------------------------------------------- the hall
     for pair in range(4):
         out[f'photos_{pair}'] = m([element([0, 0, 15.5], [16, 16, 16], {'north': 'p'})], {'p': f'photos_{pair}'}, f'photos_{pair}')
+    # 0.4.548: the last of them, its glass broken (PellMark).
+    out['photo_broken_0'] = m([element([0, 0, 15.5], [16, 16, 16], {'north': 'p'})], {'p': 'photos_broken'}, 'photos_broken')
     # The hooks stand out from the wall where the pencil crosses are: a nail and the hook's lip turned up.
     hook_els = []
     for u in HOOK_U:
@@ -2048,6 +2092,9 @@ def thing_models():
                         *[box([x, 0, z], [x + 1, 8, z + 1], 'p') for x in (3, 12) for z in (3, 12)]], {'t': 'stool', 'p': 'paint_cream'}, 'stool')
     out['power_0'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 3], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 12]})],
                        {'p': 'power_point', 'c': 'cord'}, 'power_point')
+    # 0.4.548: the note taken off it (PellMark).
+    out['power_1'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 3], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 12]})],
+                       {'p': 'power_point_bare', 'c': 'cord'}, 'power_point_bare')
     out['cord_0'] = m([element([0, 0.05, 0], [16, 0.3, 16], {'up': 'c'})], {'c': 'cord'}, 'cord')
     out['trough_0'] = m([element([1, 9, 2], [15, 15, 15], {'up': 't', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}),
                          *[box([x, 0, z], [x + 1, 9, z + 1], 's') for x in (1, 14) for z in (2, 14)],
@@ -2097,6 +2144,8 @@ def thing_models():
                      {'n': 'tin', 'p': 'tin_paint'}, 'tin')
     for section in range(3):
         out[f'transcript_{section}'] = m([element([0, 0, 15.7], [16, 16, 16], {'north': 't'})], {'t': f'transcript_{section}'}, f'transcript_{section}')
+    # 0.4.548: the last page taken off the wall (PellMark).
+    out['transcript_3'] = m([element([0, 0, 15.7], [16, 16, 16], {'north': 't'})], {'t': 'transcript_gone'}, 'transcript_gone')
     for stage in range(3):
         out[f'shed_calendar_{stage}'] = m([element([2, 0, 15.7], [14, 16, 16], {'north': 'c'}, uv={'north': [2, 0, 14, 16]})], {'c': f'chemist_{stage}'}, f'chemist_{stage}')
     # ---------------------------------------------------------------------------------------- outside
@@ -2214,7 +2263,7 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'freezer', 'stool', 'power', 'cord', 'trough', 'bucket', 'chlorine', 'washer',
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
-         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open', 'for_sale', 'marks_after']
+         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open', 'for_sale', 'marks_after', 'photo_broken']
 
 
 # ------------------------------------------------------------------------------------------------ the block

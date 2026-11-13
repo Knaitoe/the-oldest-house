@@ -87,7 +87,7 @@ public final class PellDawn {
     static void tick(ServerLevel l,BlockPos b,PellPeople.Household h,List<ServerPlayer> here,long now){
         if(!after(h))return;
         // The readers at the house when the night's end came are the ones the morning is for.
-        if(!h.endTaken){h.endTaken=true;for(var p:here)if(p.isAlive()&&!p.isSpectator())h.atEnd.add(p.getUUID());}
+        if(!h.endTaken){h.endTaken=true;for(var p:here)if(p.isAlive()&&!p.isSpectator())h.atEnd.add(p.getUUID());PellMark.nightEnded(l.getServer(),h);}
         // 0.4.544: from first light, each torn false page of theirs is in Gail's folder (PellPages).
         if(h.dawn>=COMING)PellPages.folder(l.getServer(),h,now);
         switch(h.dawn){

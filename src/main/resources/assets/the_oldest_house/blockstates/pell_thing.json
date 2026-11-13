@@ -2332,7 +2332,7 @@
       "model": "the_oldest_house:block/pell/thing/power_0"
     },
     "facing=north,kind=power,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/power_0"
+      "model": "the_oldest_house:block/pell/thing/power_1"
     },
     "facing=north,kind=power,stage=2": {
       "model": "the_oldest_house:block/pell/thing/power_0"
@@ -2345,7 +2345,7 @@
       "y": 90
     },
     "facing=east,kind=power,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/power_0",
+      "model": "the_oldest_house:block/pell/thing/power_1",
       "y": 90
     },
     "facing=east,kind=power,stage=2": {
@@ -2361,7 +2361,7 @@
       "y": 180
     },
     "facing=south,kind=power,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/power_0",
+      "model": "the_oldest_house:block/pell/thing/power_1",
       "y": 180
     },
     "facing=south,kind=power,stage=2": {
@@ -2377,7 +2377,7 @@
       "y": 270
     },
     "facing=west,kind=power,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/power_0",
+      "model": "the_oldest_house:block/pell/thing/power_1",
       "y": 270
     },
     "facing=west,kind=power,stage=2": {
@@ -3358,7 +3358,7 @@
       "model": "the_oldest_house:block/pell/thing/transcript_2"
     },
     "facing=north,kind=transcript,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/transcript_0"
+      "model": "the_oldest_house:block/pell/thing/transcript_3"
     },
     "facing=east,kind=transcript,stage=0": {
       "model": "the_oldest_house:block/pell/thing/transcript_0",
@@ -3373,7 +3373,7 @@
       "y": 90
     },
     "facing=east,kind=transcript,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/transcript_0",
+      "model": "the_oldest_house:block/pell/thing/transcript_3",
       "y": 90
     },
     "facing=south,kind=transcript,stage=0": {
@@ -3389,7 +3389,7 @@
       "y": 180
     },
     "facing=south,kind=transcript,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/transcript_0",
+      "model": "the_oldest_house:block/pell/thing/transcript_3",
       "y": 180
     },
     "facing=west,kind=transcript,stage=0": {
@@ -3405,7 +3405,7 @@
       "y": 270
     },
     "facing=west,kind=transcript,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/transcript_0",
+      "model": "the_oldest_house:block/pell/thing/transcript_3",
       "y": 270
     },
     "facing=north,kind=shed_calendar,stage=0": {
@@ -4066,6 +4066,66 @@
     },
     "facing=west,kind=marks_after,stage=3": {
       "model": "the_oldest_house:block/pell/thing/marks_after_0",
+      "y": 270
+    },
+    "facing=north,kind=photo_broken,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0"
+    },
+    "facing=north,kind=photo_broken,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0"
+    },
+    "facing=north,kind=photo_broken,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0"
+    },
+    "facing=north,kind=photo_broken,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0"
+    },
+    "facing=east,kind=photo_broken,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 90
+    },
+    "facing=east,kind=photo_broken,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 90
+    },
+    "facing=east,kind=photo_broken,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 90
+    },
+    "facing=east,kind=photo_broken,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 90
+    },
+    "facing=south,kind=photo_broken,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 180
+    },
+    "facing=south,kind=photo_broken,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 180
+    },
+    "facing=south,kind=photo_broken,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 180
+    },
+    "facing=south,kind=photo_broken,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 180
+    },
+    "facing=west,kind=photo_broken,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 270
+    },
+    "facing=west,kind=photo_broken,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 270
+    },
+    "facing=west,kind=photo_broken,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
+      "y": 270
+    },
+    "facing=west,kind=photo_broken,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/photo_broken_0",
       "y": 270
     }
   }

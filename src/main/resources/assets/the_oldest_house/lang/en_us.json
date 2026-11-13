@@ -1804,5 +1804,7 @@
   "subtitles.the_oldest_house.pell.cane": "A cane, tapping",
   "subtitles.the_oldest_house.pell.singing": "Singing, through the wall",
   "subtitles.the_oldest_house.pell.hum": "A low hum",
-  "subtitles.the_oldest_house.pell.hiss": "Tape hiss"
+  "subtitles.the_oldest_house.pell.hiss": "Tape hiss",
+  "item.the_oldest_house.pell_page": "Last Page",
+  "item.the_oldest_house.pell_note": "Taped Note"
 }

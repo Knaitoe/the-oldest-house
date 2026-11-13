@@ -1,0 +1,27 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "t": "the_oldest_house:block/pell/thing/transcript_gone",
+    "particle": "the_oldest_house:block/pell/thing/transcript_gone"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.7
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        }
+      }
+    }
+  ]
+}

@@ -205,6 +205,16 @@ public final class PellPeople {
          *  comes next; whether they stood on the line a moment ago; how many of June's quiet lines this call has had, and after which of
          *  her lines the last one came. */
         long tappedAt,hummedAt,hissedAt,singNext;boolean onLine;int hushed,hushAfter;
+        /** 0.4.548, Gail's third mark (PellMark): how far the last night's framing has got; whom June will say broke the photograph;
+         *  when it began (and each step since), when she put the receiver down, when Gail came up the path; how far through June's call
+         *  and Gail's words; the car's leg up the street; who has Gail's hand to the shed, the way they walked and the way Gail has, how
+         *  long she has watched a tape and since when she stood still; which of the page and the note she has; who has gone to her car,
+         *  whose black has begun and when each begins; whom she took. */
+        int mark,markSaid,gailNightSaid,nightLeg,gailHas;UUID marked,gailLeader;long markAt,hungUpAt,gailUpAt,gailWatched,gailStillAt;
+        String markedName="";boolean gailOff,gailWalkedBack;
+        final java.util.ArrayDeque<Vec3> gailTrail=new java.util.ArrayDeque<>(),gailWalked=new java.util.ArrayDeque<>();
+        final java.util.Set<UUID> nightInCar=new java.util.HashSet<>(),nightFaded=new java.util.HashSet<>(),took=new java.util.HashSet<>();
+        final java.util.Map<UUID,Long> nightLeave=new java.util.HashMap<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -342,6 +352,8 @@ public final class PellPeople {
         int who=who(a);var h=household(b);
         // 0.4.540: Nessa, in the freezer.
         if(who==NESSA){PellHouse.cue(p,PellTexts.NESSA_HAND);own.putBoolean("SawNessa",true);return;}
+        // 0.4.548: in the night, Gail come for the reader June named (PellMark).
+        if(PellMark.talk(p,b,h,a,who))return;
         // 0.4.541: at first light, with Gail back (PellDawn).
         if(PellDawn.talk(p,b,h,a,who))return;
         // 0.4.527: asleep, they are only looked at.

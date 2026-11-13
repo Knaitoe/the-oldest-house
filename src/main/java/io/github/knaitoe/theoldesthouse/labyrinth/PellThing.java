@@ -35,11 +35,12 @@ public final class PellThing extends HorizontalDirectionalBlock {
         FREEZER,STOOL,POWER,CORD,TROUGH,BUCKET,CHLORINE,WASHER,
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
-        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN,FOR_SALE,MARKS_AFTER;
+        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN,FOR_SALE,MARKS_AFTER,PHOTO_BROKEN;
+        // 0.4.548: PHOTO_BROKEN, the last school photograph with its glass broken (PellMark).
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, on the floor or hung: nothing a body bumps into. */
         public boolean flat(){return switch(this){case CHORE_CHART,CALENDAR,PHOTOS,HOOKS,COAT_HOOK,SWITCH,MARKS,BORDER,MIRROR,POWER,CORD,BULB,PEGBOARD,TOWEL,
-            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE,MARKS_AFTER->true;default->false;};}
+            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE,MARKS_AFTER,PHOTO_BROKEN->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
@@ -98,7 +99,7 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case CUPBOARD_UPPER->stage==1?Shapes.block():t(f,0,0,7,16,16,16);
             case TABLE->t(f,0,0,1,16,15,15);
             case CHAIR->Shapes.or(t(f,3,0,3,13,10,13),t(f,3,10,12,13,16,13.5));
-            case CHORE_CHART,PHOTOS,HOOKS,PEGBOARD,TRANSCRIPT->t(f,0,0,15,16,16,16);
+            case CHORE_CHART,PHOTOS,PHOTO_BROKEN,HOOKS,PEGBOARD,TRANSCRIPT->t(f,0,0,15,16,16,16);
             case CALENDAR,SHED_CALENDAR->t(f,2,0,15,14,16,16);
             case RECLINER->t(f,1,0,1,15,14,16);
             case TV_CABINET->Shapes.or(t(f,0,0,2,16,10,16),t(f,2,10,4,14,16,15));

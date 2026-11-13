@@ -63,14 +63,34 @@ public final class PellHouseTests {
             for(var d:Direction.Plane.HORIZONTAL){
                 var to=at.relative(d);
                 if(to.getX()<PellSite.WEST||to.getX()>PellSite.EAST||to.getZ()<PellSite.NORTH||to.getZ()>0||seen.contains(to))continue;
-                // A body in the cell, and a body half way across the edge into it: a shut leaf or a fence stands on the cell's middle.
-                var here=b.offset(to);var edge=new AABB(b.getX()+(at.getX()+to.getX())/2.0+.2,b.getY()+.01,b.getZ()+(at.getZ()+to.getZ())/2.0+.2,b.getX()+(at.getX()+to.getX())/2.0+.8,b.getY()+1.79,b.getZ()+(at.getZ()+to.getZ())/2.0+.8);
-                var body=new AABB(here.getX()+.2,here.getY()+.01,here.getZ()+.2,here.getX()+.8,here.getY()+1.79,here.getZ()+.8);
-                if(!l.noCollision(body)||!l.noCollision(edge)||l.noCollision(body.move(0,-.5,0)))continue;
+                if(!step(l,b,at,to))continue;
                 seen.add(to);queue.add(to);
             }
         }
         return seen;
+    }
+    /** Whether a body can step from one cell of the ground to the next: a body in the cell, and a body half way across the edge into it
+     *  (a shut leaf or a fence stands on the cell's middle), with ground under it. */
+    private static boolean step(ServerLevel l,BlockPos b,BlockPos at,BlockPos to){
+        var here=b.offset(to);var edge=new AABB(b.getX()+(at.getX()+to.getX())/2.0+.2,b.getY()+.01,b.getZ()+(at.getZ()+to.getZ())/2.0+.2,b.getX()+(at.getX()+to.getX())/2.0+.8,b.getY()+1.79,b.getZ()+(at.getZ()+to.getZ())/2.0+.8);
+        var body=new AABB(here.getX()+.2,here.getY()+.01,here.getZ()+.2,here.getX()+.8,here.getY()+1.79,here.getZ()+.8);
+        return l.noCollision(body)&&l.noCollision(edge)&&!l.noCollision(body.move(0,-.5,0));
+    }
+    /** 0.4.548: the shortest way a body walks from one cell of the lot to another without opening anything, each cell in turn after
+     *  the first (empty if there is none). */
+    private static List<BlockPos> route(ServerLevel l,BlockPos b,BlockPos from,BlockPos to){
+        var back=new java.util.HashMap<BlockPos,BlockPos>();var queue=new ArrayDeque<BlockPos>();back.put(from,from);queue.add(from);
+        while(!queue.isEmpty()&&!back.containsKey(to)){
+            var at=queue.poll();
+            for(var d:Direction.Plane.HORIZONTAL){
+                var next=at.relative(d);
+                if(next.getX()<PellSite.WEST||next.getX()>PellSite.EAST||next.getZ()<PellSite.NORTH||next.getZ()>0||back.containsKey(next)||!step(l,b,at,next))continue;
+                back.put(next,at);queue.add(next);
+            }
+        }
+        var out=new java.util.ArrayList<BlockPos>();if(!back.containsKey(to))return out;
+        for(var at=to;!at.equals(from);at=back.get(at))out.add(0,at);
+        return out;
     }
 
     /**
@@ -2064,6 +2084,8 @@ public final class PellHouseTests {
             h.assertTrue(PellVisit.hour(b)==PellNight.TWELVE&&PellVisit.step(b)==PellVisit.NIGHT,"the hour holds at midnight: "+PellVisit.hour(b));
             var june=who(h,l,b,PellPeople.JUNE);
             h.assertTrue(june.getOffhandItem().isEmpty()&&PellRite.step(b)>=PellRite.FETCH,"June does not go out on her rounds: at midnight she goes for Tilly");
+            // 0.4.548: nobody on Gail's file twice, June does not get up in the night, and the last photograph stays on the wall.
+            h.assertTrue(PellMark.stage(b)==PellMark.DONE&&PellMark.marked(b)==null&&thing(l,b,PellMark.PHOTO.getX(),PellMark.PHOTO.getY(),PellMark.PHOTO.getZ(),PHOTOS,3),"nobody framed for the photograph: "+PellMark.stage(b));
             var c=who(h,l,b,PellPeople.CALLUM);
             h.assertTrue(at(c,b,PellLastNight.ON_LINE.x,PellLastNight.ON_LINE.z,.3)&&!PellVisit.asleep(b,PellPeople.CALLUM),"Callum still out on the line");
         }).thenSucceed();
@@ -3488,4 +3510,243 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_pairs") public static void pairsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.548, Gail's third mark
+    /** Two readers in place for the last night's framing: one in Nessa's room facing its front wall, one out in the back yard facing the
+     *  back fence. Neither can see the hall; both are near enough to hear it. */
+    private static void outOfSight(LiteraryTests.Fixture f,ServerPlayer inside,ServerPlayer yard){
+        f.at(inside,P,-11.5,0,-60.5);inside.setYRot(0);inside.setXRot(0);inside.setYHeadRot(0);
+        f.at(yard,P,5.5,0,-80.5);yard.setYRot(180);yard.setXRot(0);yard.setYHeadRot(180);
+    }
+    /** Two readers beside Gail at the foot of the path, a step either side of her. */
+    private static void besideGail(GameTestHelper h,LiteraryTests.Fixture f,ServerLevel l,BlockPos b,ServerPlayer one,ServerPlayer two){
+        var g=who(h,l,b,PellPeople.GAIL);
+        f.at(one,P,g.getX()-b.getX()+1,0,g.getZ()-b.getZ());f.at(two,P,g.getX()-b.getX()-1,0,g.getZ()-b.getZ());
+    }
+    /**
+     * 0.4.548, Gail's third mark (docs/PELL_HOUSE_MARK_0_4_548.md), taken away. Two readers who have had the first two visits: one on
+     * Gail's file twice (the knife and June's hand), the other on it never. The last night locked up, at eleven, June gets up and goes
+     * along the hall to Nessa's school photographs; the first moment nobody sees her or them, glass breaks. The last photograph hangs
+     * crooked, its glass starred. The one on her file twice is on it a third time, for this, and a line they never wrote is due in their
+     * journal; both hear the glass, in the house and from the yard. June rings Gail from the kitchen, and the hour holds at eleven. Gail's
+     * car comes up the street and she comes to the foot of the path. A hand on her: to the one June named, what June told her; to the
+     * other, whom she has come for; neither has anything to show her, and both say nothing. When she has waited, the horn: the one June
+     * named goes in her car, has their ending with nothing resolved, and is set down at the House's door. The other keeps who was taken.
+     * Gail and her car go the first moment nobody sees them, and the night goes on. The other's account and Witness close keep it.
+     */
+    @GameTest(template="empty",batch="pell_mark_taken",timeoutTicks=6000)
+    public static void onGailsFileTwiceAReaderIsFramedForTheLastPhotographAndGailTakesThemInTheNight(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_mark_framed",P);var q=f.player("pell_mark_other",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        String name=p.getGameProfile().getName();long[] hour={0};
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            var own=f.own(p,P);PellMark.twoMarks(own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            outOfSight(f,p,q);told(p);told(q);
+            PellLastNight.lockedUp(l,b);
+        }).thenWaitUntil(()->h.assertTrue(PellMark.stage(b)>=PellMark.TO_PHONE,"June along the hall to the photographs, and the glass: "+PellMark.stage(b)))
+        .thenExecute(()->{
+            h.assertTrue(thing(l,b,PellMark.PHOTO.getX(),PellMark.PHOTO.getY(),PellMark.PHOTO.getZ(),PHOTO_BROKEN,0)&&thing(l,b,-6,1,-66,PHOTOS,2),"the last photograph hangs crooked, its glass starred; the one beside it whole");
+            h.assertTrue(p.getUUID().equals(PellMark.marked(b)),"June has somebody to say broke it: the one on Gail's file twice");
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("MarkPhoto")&&own.getBoolean("BlamedForPhoto")&&own.getInt("GailMarks")==3,"on Gail's file a third time, for this: "+own.getInt("GailMarks"));
+            h.assertTrue(PellEntries.due(own).contains(PellEntries.PHOTO),"a line they never wrote is due in their journal: "+PellEntries.due(own));
+            h.assertTrue(told(p).contains(PellTexts.GLASS_HEARD)&&told(q).contains(PellTexts.GLASS_FAR),"heard in the house, and from the yard");
+            h.assertTrue(f.own(q,P).getBoolean("HeardGlass")&&f.own(q,P).getInt("GailMarks")==0&&!f.own(q,P).getBoolean("BlamedForPhoto"),"the other heard it, and is on nobody's file");
+            hour[0]=PellVisit.hour(b);
+            h.assertTrue(hour[0]<PellNight.TWELVE,"before midnight: "+hour[0]);
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_RINGS_GAIL[PellTexts.JUNE_RINGS_GAIL.length-1]),"June on the kitchen telephone to Gail: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenWaitUntil(()->h.assertTrue(PellMark.waiting(b),"Gail's car up the street, and Gail at the foot of the path: "+PellMark.stage(b)))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==hour[0],"the hour holds at eleven while June waits for her and Gail is here: "+PellVisit.hour(b)+", "+hour[0]);
+            besideGail(h,f,l,b,p,q);
+            var g=who(h,l,b,PellPeople.GAIL);LiteraryVignettes.talk(p,g);LiteraryVignettes.talk(q,g);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(java.util.Arrays.stream(PellTexts.GAIL_NIGHT_MARKED).allMatch(line->telling(p,"Gail",line)),"to the one June named, what June told her: "+Talk.lines(p));
+            h.assertTrue(java.util.Arrays.stream(PellTexts.gailNightOther(name)).allMatch(line->telling(q,"Gail",line)),"to the other, whom she has come for: "+Talk.lines(q));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_THINGS,PellTexts.TELL_SAY_NOTHING)),"nothing about them to show her: the one June named may go, or say nothing: "+Talk.replies(p));
+            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_SAY_NOTHING)),"the other has nothing to show her: "+Talk.replies(q));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_SAY_NOTHING)&&Talk.choose(q,PellTexts.TELL_SAY_NOTHING),"both say nothing");
+            h.assertTrue(PellMark.waiting(b)&&!PellMark.inCar(b,p.getUUID()),"she waits");
+            told(p);told(q);PellMark.waitedOut(b);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(PellMark.inCar(b,p.getUUID())&&!PellMark.inCar(b,q.getUUID()),"when she has waited, the one June named goes in her car, and only them");
+            var mine=told(p);h.assertTrue(mine.contains(PellTexts.CAR_HORN)&&mine.contains(PellTexts.NIGHT_IN_CAR),"the horn, and the car door held open: "+mine);
+            h.assertTrue(told(q).contains(PellTexts.CAR_HORN),"heard by the other too");
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("Ended")&&own.getBoolean("TakenAway")&&own.getString("Outcome").equals("taken_away_in_the_night")&&!own.getBoolean("Ready"),"their ending, with nothing to read: "+own.getString("Outcome"));
+            h.assertTrue(PellEntries.failed(own)&&!PellHouse.dealable(f.data(),p.getUUID()),"a failure: the house is not dealt to them again as it was");
+            var theirs=f.own(q,P);
+            h.assertTrue(PellTexts.taken(theirs).equals(List.of(name))&&theirs.getBoolean("GailCame")&&!theirs.getBoolean("Ended"),"the other keeps who was taken, and their own night goes on");
+        }).thenIdle(PellDawn.LOOK_BACK+30).thenExecute(()->{
+            h.assertTrue(standing(p,b,PellDawn.SET_DOWN,.4)&&f.own(p,P).getBoolean("SetDown"),"set down at the House's door: "+where(p,b));
+            // The one set down faces the House's door; the one left looks up at the house, away from the street.
+            toTheStreet(p);q.setYRot(180);q.setYHeadRot(180);
+        }).thenWaitUntil(()->h.assertTrue(PellMark.stage(b)==PellMark.DONE&&PellPeople.find(l,b,PellPeople.GAIL)==null&&PellDawn.car(l,b)==null,"Gail and her car go, the first moment nobody sees them: "+PellMark.gailState(l,b)))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.hour(b)>hour[0],"and the night goes on: "+PellVisit.hour(b)))
+        .thenExecute(()->{
+            var theirs=f.own(q,P);
+            var text=words(PellTexts.account(q.getGameProfile().getName(),theirs));
+            h.assertTrue(text.contains("glass broke in the hall")&&text.contains("Gail's car came up the street in the night. June had rung her.")&&text.contains("She took "+name+" away in her car."),"the other's account keeps the night: "+text);
+            h.assertTrue(!text.contains("it was me who had broken it"),"and blames nobody else's glass on them");
+            String close=PellTexts.company(theirs,List.of(name));
+            h.assertTrue(close.equals(name+" had the garage with me, until Gail came for them in the night."),"the Witness close: "+close);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_mark_taken") public static void markTakenDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.548, Gail's third mark, answered. The same two readers and the same night, but before it the other reader takes the last page
+     * off the shed's wall, in June's writing, and the note off the freezer's switch: torn tape is left where each was. At Gail, the other
+     * has both to show her, and puts the page into her hands: she reads it twice, and asks where it was found. A mark comes off the named
+     * reader's file. With fewer than three, she says she is taking nobody anywhere tonight, and goes without anybody; the hour goes on.
+     * Gail keeps the page: its place on the wall stays torn. The note, still carried, stays off its switch until nobody has it, then is
+     * back. Each account keeps the night: the one blamed for the glass, Gail gone again without them, and what was on their file and
+     * taken off it; the other, the page given her.
+     */
+    @GameTest(template="empty",batch="pell_mark_cleared",timeoutTicks=6000)
+    public static void thePageFromTheShedWallTakesAMarkOffAndGailGoesWithoutAnybody(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_mark_blamed",P);var q=f.player("pell_mark_shows",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        String name=p.getGameProfile().getName();long[] hour={0};
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            // The last page off the shed's wall; then the note off the switch in the laundry.
+            told(q);f.click(q,P,PellMark.LAST_PAGE);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.PAGE_TAKEN)&&q.getInventory().countItem(PellRegistry.PAGE.get())==1&&f.own(q,P).getBoolean("TookPage"),"the last page peeled off the wall");
+            h.assertTrue(thing(l,b,PellMark.LAST_PAGE.getX(),PellMark.LAST_PAGE.getY(),PellMark.LAST_PAGE.getZ(),TRANSCRIPT,3),"a strip of tape and a torn edge where it was");
+            f.click(q,P,PellMark.POWER);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.NOTE_TAKEN)&&q.getInventory().countItem(PellRegistry.NOTE.get())==1&&f.own(q,P).getBoolean("TookNote"),"the note peeled off the switch");
+            h.assertTrue(thing(l,b,PellMark.POWER.getX(),PellMark.POWER.getY(),PellMark.POWER.getZ(),POWER,1),"the switch taped down, the note's corners left");
+        }).thenIdle(PellScrub.KEEP+5).thenExecute(()->{
+            h.assertTrue(thing(l,b,PellMark.LAST_PAGE.getX(),PellMark.LAST_PAGE.getY(),PellMark.LAST_PAGE.getZ(),TRANSCRIPT,3)&&thing(l,b,PellMark.POWER.getX(),PellMark.POWER.getY(),PellMark.POWER.getZ(),POWER,1),"carried at the house, they stay off the walls");
+            var own=f.own(p,P);PellMark.twoMarks(own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            outOfSight(f,p,q);told(p);told(q);
+            PellLastNight.lockedUp(l,b);
+        }).thenWaitUntil(()->h.assertTrue(PellMark.stage(b)>=PellMark.TO_PHONE,"the glass: "+PellMark.stage(b)))
+        .thenExecute(()->{
+            h.assertTrue(p.getUUID().equals(PellMark.marked(b))&&f.own(p,P).getInt("GailMarks")==3,"the one on Gail's file twice, blamed for it: "+f.own(p,P).getInt("GailMarks"));
+            hour[0]=PellVisit.hour(b);
+        }).thenWaitUntil(()->h.assertTrue(PellMark.waiting(b),"Gail at the foot of the path: "+PellMark.stage(b)))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==hour[0],"the hour holds: "+PellVisit.hour(b)+", "+hour[0]);
+            besideGail(h,f,l,b,p,q);told(q);LiteraryVignettes.talk(q,who(h,l,b,PellPeople.GAIL));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(java.util.Arrays.stream(PellTexts.gailNightOther(name)).allMatch(line->telling(q,"Gail",line)),"whom she has come for: "+Talk.lines(q));
+            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_PAGE,PellTexts.TELL_NOTE,PellTexts.TELL_SAY_NOTHING)),"the page and the note to show her: "+Talk.replies(q));
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_PAGE),"the page into her hands");
+        }).thenIdle(1).thenExecute(()->{
+            // What the reader sees comes with the next tick's packets.
+            var heard=told(q);
+            h.assertTrue(java.util.Arrays.stream(PellTexts.GAIL_ON_PAGE).allMatch(line->telling(q,"Gail",line))&&heard.contains(PellTexts.GAIL_READS_PAGE),"she reads it twice, and asks where it was: "+Talk.lines(q)+" / "+heard);
+            h.assertTrue(q.getInventory().countItem(PellRegistry.PAGE.get())==0&&q.getInventory().countItem(PellRegistry.NOTE.get())==1,"out of the reader's hands; the note still with them");
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("GailMarks")==2&&own.getInt("MarksCleared")==1,"a mark off the named reader's file: "+own.getInt("GailMarks"));
+            h.assertTrue(f.own(q,P).getString("ShowedGail").equals(PellMark.PAGE),"kept in the record of the one who showed her");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.GAIL)).equals(PellTexts.GAIL_STAYS[PellTexts.GAIL_STAYS.length-1]),"she is taking nobody anywhere tonight: "+said(who(h,l,b,PellPeople.GAIL))))
+        .thenExecute(()->{
+            h.assertTrue(!PellMark.inCar(b,p.getUUID())&&!PellMark.inCar(b,q.getUUID()),"nobody in her car");
+            for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getBoolean("GailCame")&&own.getBoolean("GailLeft")&&!own.getBoolean("Ended")&&!own.getBoolean("TakenAway"),"each keeps that she came and went without anybody");}
+            for(var r:new ServerPlayer[]{p,q}){r.setYRot(180);r.setYHeadRot(180);}
+        }).thenWaitUntil(()->h.assertTrue(PellMark.stage(b)==PellMark.DONE&&PellPeople.find(l,b,PellPeople.GAIL)==null&&PellDawn.car(l,b)==null,"Gail and her car go: "+PellMark.gailState(l,b)))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.hour(b)>hour[0],"the night goes on: "+PellVisit.hour(b)))
+        .thenIdle(PellScrub.KEEP+5).thenExecute(()->{
+            h.assertTrue(thing(l,b,PellMark.LAST_PAGE.getX(),PellMark.LAST_PAGE.getY(),PellMark.LAST_PAGE.getZ(),TRANSCRIPT,3),"Gail kept the page: its place on the wall stays torn");
+            h.assertTrue(thing(l,b,PellMark.POWER.getX(),PellMark.POWER.getY(),PellMark.POWER.getZ(),POWER,1),"the note still carried, still off its switch");
+            q.getInventory().clearContent();
+        }).thenWaitUntil(()->h.assertTrue(thing(l,b,PellMark.POWER.getX(),PellMark.POWER.getY(),PellMark.POWER.getZ(),POWER,0),"nobody has the note: it is back over the switch"))
+        .thenExecute(()->{
+            var blamed=words(PellTexts.account(name,f.own(p,P)));
+            h.assertTrue(blamed.contains("It was the last of Nessa's school photographs. June rang Gail, and by then it was me who had broken it.")
+                &&blamed.contains("June had rung her about me.")&&blamed.contains("She went away again without me.")
+                &&blamed.contains("Gail put three things on my file, and took one off again."),"the blamed one's account: "+blamed);
+            var shower=words(PellTexts.account(q.getGameProfile().getName(),f.own(q,P)));
+            h.assertTrue(shower.contains("I gave her the last page from the shed wall, in June's writing. She read it twice.")&&shower.contains("She went away again on her own."),"the other's account: "+shower);
+            h.assertTrue(PellTexts.company(f.own(q,P),List.of(name)).equals(name+" had the garage with me."),"nobody was taken: the Witness close as before");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_mark_cleared") public static void markClearedDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.548, Gail's third mark, answered with a tape. The other reader has watched a tape in the shed. At Gail, they are offered to
+     * take her to see what is in the shed; she says "Show me, then." and comes behind them. Run on too far ahead of her and she stops,
+     * and goes back to the foot of the path. Asked again, she follows the reader's own way up the lot to the shed, a step behind, and
+     * in through its door. With a tape playing she watches it, and when she has seen enough: "Turn it off. Turn it off, love." A mark
+     * comes off the named reader's file; with fewer than three, she goes without anybody, back the way she came. The one who showed her
+     * keeps it in their account.
+     */
+    @GameTest(template="empty",batch="pell_mark_tape",timeoutTicks=8000)
+    public static void aReaderWhoHasWatchedATapeTakesGailToTheShedAndSheAsksForItOff(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_mark_named",P);var q=f.player("pell_mark_leads",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        String name=p.getGameProfile().getName();long[] hour={0};
+        var tv=b.offset(PellTapes.TV);var door=PellSite.SHED_DOOR;var outside=door.south();
+        @SuppressWarnings("unchecked") List<BlockPos>[] way=new List[]{List.of()};int[] next={0};
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellTapes.asWatched(q,0);
+            var own=f.own(p,P);PellMark.twoMarks(own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            outOfSight(f,p,q);
+            PellLastNight.lockedUp(l,b);
+        }).thenWaitUntil(()->h.assertTrue(PellMark.waiting(b),"Gail at the foot of the path: "+PellMark.stage(b)))
+        .thenExecute(()->{
+            hour[0]=PellVisit.hour(b);
+            besideGail(h,f,l,b,p,q);told(q);LiteraryVignettes.talk(q,who(h,l,b,PellPeople.GAIL));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_TAPES,PellTexts.TELL_SAY_NOTHING)),"one who has watched a tape can take her to see: "+Talk.replies(q));
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_TAPES)&&telling(q,"Gail",PellTexts.GAIL_SHOW_ME),"Show me, then: "+Talk.lines(q));
+            h.assertTrue(PellMark.stage(b)==PellMark.LEADING,"she comes behind them");
+            // Too far ahead of her, down the street.
+            var g=who(h,l,b,PellPeople.GAIL);f.at(q,P,g.getX()-b.getX(),0,g.getZ()-b.getZ()+12);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.GAIL_LET_GO)&&PellMark.stage(b)!=PellMark.LEADING,"she stops, and will not go further without them");
+        }).thenWaitUntil(()->h.assertTrue(PellMark.waiting(b),"back at the foot of the path: "+PellMark.stage(b)))
+        .thenExecute(()->{
+            besideGail(h,f,l,b,p,q);LiteraryVignettes.talk(q,who(h,l,b,PellPeople.GAIL));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_TAPES),"asked again");
+            var from=BlockPos.containing(q.position().subtract(Vec3.atLowerCornerOf(b)));
+            way[0]=route(l,b,from,outside);next[0]=0;
+            h.assertTrue(!way[0].isEmpty(),"a way on foot from the foot of the path to the shed door: "+from+" to "+outside);
+        }).thenWaitUntil(()->{
+            // The reader walks up the lot a cell at a time, never more than a few steps ahead of her.
+            var g=who(h,l,b,PellPeople.GAIL);
+            if(next[0]<way[0].size()&&g.distanceTo(q)<3){var c=way[0].get(next[0]++);f.at(q,P,c.getX()+.5,0,c.getZ()+.5);}
+            h.assertTrue(next[0]>=way[0].size()&&g.distanceTo(q)<PellMark.BESIDE+.6,"Gail a step behind the reader to the shed door: "+next[0]+"/"+way[0].size()+", "+g.position().subtract(Vec3.atLowerCornerOf(b))+", stage "+PellMark.stage(b));
+        }).thenExecute(()->{
+            if(!PellSite.open(l,b,door))hand(q,b.offset(door));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,door),"the shed's padlock hangs open on the last night, and its door opens to a hand");
+            way[0]=List.of(door,door.north(),door.north().north().west());next[0]=0;
+        }).thenWaitUntil(()->{
+            var g=who(h,l,b,PellPeople.GAIL);
+            if(next[0]<way[0].size()&&g.distanceTo(q)<2.5){var c=way[0].get(next[0]++);f.at(q,P,c.getX()+.5,0,c.getZ()+.5);}
+            h.assertTrue(PellMark.stage(b)==PellMark.IN_SHED,"in through its door after them: "+g.position().subtract(Vec3.atLowerCornerOf(b))+", stage "+PellMark.stage(b));
+        }).thenExecute(()->{
+            lookAt(q,Vec3.atCenterOf(tv));hand(q,tv);
+            h.assertTrue(PellTapes.playing(b),"a tape playing in the shed");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.GAIL)).equals(PellTexts.GAIL_TURN_IT_OFF),"she has seen enough: "+said(who(h,l,b,PellPeople.GAIL))))
+        .thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("GailMarks")==2&&own.getInt("MarksCleared")==1,"a mark off the named reader's file: "+own.getInt("GailMarks"));
+            h.assertTrue(f.own(q,P).getString("ShowedGail").equals(PellMark.TAPE),"kept by the one who showed her");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.GAIL)).equals(PellTexts.GAIL_STAYS[PellTexts.GAIL_STAYS.length-1]),"she is taking nobody anywhere tonight: "+said(who(h,l,b,PellPeople.GAIL))))
+        .thenExecute(()->{
+            for(var r:new ServerPlayer[]{p,q})h.assertTrue(!f.own(r,P).getBoolean("Ended")&&f.own(r,P).getBoolean("GailLeft"),"nobody taken; each keeps that she went without anybody");
+            // The reader stays watching the screen; the other turns from the window to the hall. She goes back the way she came.
+            lookAt(q,Vec3.atCenterOf(tv));p.setYRot(180);p.setYHeadRot(180);
+        }).thenWaitUntil(()->h.assertTrue(PellMark.stage(b)==PellMark.DONE&&PellPeople.find(l,b,PellPeople.GAIL)==null,"Gail back to her car and away, the first moment nobody sees: "+PellMark.gailState(l,b)))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.hour(b)>hour[0],"the night goes on: "+PellVisit.hour(b)))
+        .thenExecute(()->{
+            var text=words(PellTexts.account(q.getGameProfile().getName(),f.own(q,P)));
+            h.assertTrue(text.contains("I took her out to the shed and played her one of the tapes. She asked me to turn it off."),"the account keeps it: "+text);
+            h.assertTrue(words(PellTexts.account(name,f.own(p,P))).contains("Gail put three things on my file, and took one off again."),"and the named reader's file");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_mark_tape") public static void markTapeDone(ServerLevel l){done();}
 }
