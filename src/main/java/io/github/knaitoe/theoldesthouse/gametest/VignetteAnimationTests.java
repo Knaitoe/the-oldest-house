@@ -221,32 +221,36 @@ public final class VignetteAnimationTests {
     private static int ribbons(ServerPlayer p){return p.getInventory().countItem(WinterLakeRegistry.RIBBON.get());}
     private static ItemStack ribbonOf(ServerPlayer p){for(var stack:p.getInventory().items)if(stack.is(WinterLakeRegistry.RIBBON.get()))return stack;return ItemStack.EMPTY;}
 
-    @GameTest(template="empty",batch="literary_winter_hearing",timeoutTicks=560)
+    @GameTest(template="empty",batch="literary_winter_hearing",timeoutTicks=760)
     public static void underTheIceSheGoesToWhatSheHearsAndBreaksThroughUnderANoisyReader(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.WINTER_LAKE;var p=f.player("winter_walker",place);var peer=f.player("winter_bank",place);var b=f.base(place);winterChunks(f,b);
         f.at(peer,place,-2.5,0,-6.5);f.at(p,place,1.5,0,-4.5);final int[] phase={0};final double[] wobble={.15};
-        h.runAfterDelay(15,()->{var witch=WinterLake.witch(f.out);
-            h.assertTrue(witch!=null&&witch.driven()&&witch.underIce()&&Math.abs(witch.getY()-(b.getY()+WinterLake.UNDER))<.01,"she is under the ice, hanging from its underside: "+(witch==null?null:witch.position()));
-            for(var who:WinterLake.BOYS){var a=WinterLake.cast(f.out,who);h.assertTrue(a!=null&&a.role()==LiteraryActor.STRANGER&&a.phase()==who.phase()&&a.getScale()<.9F&&!a.isInvisible(),"the four boys from the shallows are on the bank, still boys: "+who.name());}
-            h.assertTrue(f.out.getBlockState(b.offset(WinterLake.HOLE)).is(Blocks.WATER)&&WinterPropBlock.kind(f.out.getBlockState(b.offset(2,-1,-46)))==WinterPropBlock.Kind.BLACK_ICE
-                    &&WinterPropBlock.kind(f.out.getBlockState(b.offset(-26,-1,-40)))==WinterPropBlock.Kind.SNOW_ICE,"the hole never froze; black ice round it, snow drifted over the shore");
-            // Hank has stopped the snowball fight; a snowball thudding onto the ice is the loudest thing on the lake.
-            winterState(f,w->w.putInt("Night",WinterLake.QUIET_AT+10));
-            witch.setPos(b.getX()+10.5,b.getY()+WinterLake.UNDER,b.getZ()-36.5);
-            var ball=new net.minecraft.world.entity.projectile.Snowball(f.out,b.getX()+10.5,b.getY()+2,b.getZ()-30.5);ball.setOwner(peer);ball.setDeltaMovement(0,-.6,0);f.out.addFreshEntity(ball);});
-        h.runAfterDelay(35,()->{var w=LiteraryVignettes.shared(f.data(),place);
-            h.assertTrue(w.getFloat("Heard")>30&&Math.abs(w.getDouble("HeardX")-(b.getX()+10.5))<1&&Math.abs(w.getDouble("HeardZ")-(b.getZ()-30.5))<1&&f.own(peer,place).getBoolean("Lured0504"),"the snowball's thud is heard where it landed, and the thrower drew her: "+w);});
-        h.runAfterDelay(110,()->{var witch=WinterLake.witch(f.out);
-            h.assertTrue(Math.hypot(witch.getX()-(b.getX()+10.5),witch.getZ()-(b.getZ()-30.5))<1.5&&witch.underIce(),"she goes under the ice to where it landed: "+witch.position());
-            f.at(p,place,witch.getX()-b.getX(),0,witch.getZ()-b.getZ());p.setShiftKeyDown(true);phase[0]=1;});
         // Crouched right over her, creeping: no sound, and nothing happens.
         h.onEachTick(()->{if(phase[0]!=1&&phase[0]!=2||f.own(p,place).getBoolean("FellThrough0504"))return;var witch=WinterLake.witch(f.out);
             if(phase[0]==1){f.at(p,place,witch.getX()-b.getX()+wobble[0],0,witch.getZ()-b.getZ());wobble[0]=-wobble[0];return;}
             // Running back and forth over her on black ice.
             f.at(p,place,witch.getX()-b.getX()+wobble[0]*2,0,witch.getZ()-b.getZ());wobble[0]=-wobble[0];});
-        h.runAfterDelay(150,()->{h.assertTrue(WinterLake.suspicion(p)==0&&!f.own(p,place).getBoolean("Knocked0504")&&p.getHealth()==20,"crouched and creeping, right over her, the reader makes no sound she can hear");
-            p.setShiftKeyDown(false);p.setSprinting(true);phase[0]=2;});
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("FellThrough0504"),"running over her she knocks, cracks the ice and comes through: suspicion="+WinterLake.suspicion(p)))
+        // 0.4.562: after another case at this lake, the boys and she are its saved people, and come back only once their ground has
+        // loaded; a fixed fifteen ticks found Bud not there yet in one local run. The case waits for all five, then keeps its own timing.
+        h.startSequence()
+            .thenWaitUntil(()->{for(var who:WinterLake.BOYS)h.assertTrue(WinterLake.cast(f.out,who)!=null,"waiting for "+who.name()+" to load");h.assertTrue(WinterLake.witch(f.out)!=null,"waiting for her to load");})
+            .thenIdle(15).thenExecute(()->{var witch=WinterLake.witch(f.out);
+                h.assertTrue(witch!=null&&witch.driven()&&witch.underIce()&&Math.abs(witch.getY()-(b.getY()+WinterLake.UNDER))<.01,"she is under the ice, hanging from its underside: "+(witch==null?null:witch.position()));
+                for(var who:WinterLake.BOYS){var a=WinterLake.cast(f.out,who);h.assertTrue(a!=null&&a.role()==LiteraryActor.STRANGER&&a.phase()==who.phase()&&a.getScale()<.9F&&!a.isInvisible(),"the four boys from the shallows are on the bank, still boys: "+who.name());}
+                h.assertTrue(f.out.getBlockState(b.offset(WinterLake.HOLE)).is(Blocks.WATER)&&WinterPropBlock.kind(f.out.getBlockState(b.offset(2,-1,-46)))==WinterPropBlock.Kind.BLACK_ICE
+                        &&WinterPropBlock.kind(f.out.getBlockState(b.offset(-26,-1,-40)))==WinterPropBlock.Kind.SNOW_ICE,"the hole never froze; black ice round it, snow drifted over the shore");
+                // Hank has stopped the snowball fight; a snowball thudding onto the ice is the loudest thing on the lake.
+                winterState(f,w->w.putInt("Night",WinterLake.QUIET_AT+10));
+                witch.setPos(b.getX()+10.5,b.getY()+WinterLake.UNDER,b.getZ()-36.5);
+                var ball=new net.minecraft.world.entity.projectile.Snowball(f.out,b.getX()+10.5,b.getY()+2,b.getZ()-30.5);ball.setOwner(peer);ball.setDeltaMovement(0,-.6,0);f.out.addFreshEntity(ball);})
+            .thenIdle(20).thenExecute(()->{var w=LiteraryVignettes.shared(f.data(),place);
+                h.assertTrue(w.getFloat("Heard")>30&&Math.abs(w.getDouble("HeardX")-(b.getX()+10.5))<1&&Math.abs(w.getDouble("HeardZ")-(b.getZ()-30.5))<1&&f.own(peer,place).getBoolean("Lured0504"),"the snowball's thud is heard where it landed, and the thrower drew her: "+w);})
+            .thenIdle(75).thenExecute(()->{var witch=WinterLake.witch(f.out);
+                h.assertTrue(Math.hypot(witch.getX()-(b.getX()+10.5),witch.getZ()-(b.getZ()-30.5))<1.5&&witch.underIce(),"she goes under the ice to where it landed: "+witch.position());
+                f.at(p,place,witch.getX()-b.getX(),0,witch.getZ()-b.getZ());p.setShiftKeyDown(true);phase[0]=1;})
+            .thenIdle(40).thenExecute(()->{h.assertTrue(WinterLake.suspicion(p)==0&&!f.own(p,place).getBoolean("Knocked0504")&&p.getHealth()==20,"crouched and creeping, right over her, the reader makes no sound she can hear");
+                p.setShiftKeyDown(false);p.setSprinting(true);phase[0]=2;})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("FellThrough0504"),"running over her she knocks, cracks the ice and comes through: suspicion="+WinterLake.suspicion(p)))
             .thenExecute(()->{phase[0]=3;var w=LiteraryVignettes.shared(f.data(),place);
                 h.assertTrue(f.own(p,place).getBoolean("Knocked0504")&&!w.getList("Changed",Tag.TAG_COMPOUND).isEmpty()&&w.getInt("Rest")>0,"she knocked first, the broken ice is remembered, and she lets go");
                 h.assertTrue(p.getY()<b.getY()-1.5&&p.getHealth()<20,"the reader is pulled down under the ice: "+p.position());

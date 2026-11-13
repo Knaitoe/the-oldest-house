@@ -57,6 +57,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class MovieNight {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.MOVIE_NIGHT;
+    /** 0.4.562: the readers one lake holds, one to each canoe at the dock (SceneInstances.PARTIES); a fifth has a lake of their own. */
+    public static final int PLACES=4;
     public static final String CANOE="LiteraryMovieCanoe";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private MovieNight(){}
@@ -172,10 +174,14 @@ public final class MovieNight {
     private static final Map<Long,List<Rocket>> ROCKETS=new HashMap<>();
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();var origin=HouseSavedData.get(server).houseOrigin();if(origin==null)return;
-        var b=LabyrinthPlaces.base(origin,PLACE);var l=server.getLevel(NovelRooms.dimension(PLACE));if(b==null||l==null)return;
-        var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)).toList();
-        if(readers.isEmpty()){NEXT.remove(b.asLong());MovieNightCast.tick(l,b,readers);return;}
-        fireworks(l,b,readers);score(l,b,readers);MovieNightCast.tick(l,b,readers);
+        var l=server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        // 0.4.562: each copy of the lake (SceneInstances) has a night of its own, with the readers who are at it.
+        for(var b:SceneInstances.bases(server,PLACE)){
+            int copy=SceneInstances.copyAt(server,PLACE,b);
+            var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)&&LiteraryVignettes.copy(p,PLACE)==copy).toList();
+            if(readers.isEmpty()){NEXT.remove(b.asLong());MovieNightCast.tick(l,b,readers);continue;}
+            fireworks(l,b,readers);score(l,b,readers);MovieNightCast.tick(l,b,readers);
+        }
     }
     private static void fireworks(ServerLevel l,BlockPos b,List<ServerPlayer> readers){
         long now=l.getGameTime(),key=b.asLong();var live=ROCKETS.computeIfAbsent(key,k->new ArrayList<>());
@@ -214,7 +220,7 @@ public final class MovieNight {
                 &&reader.serverLevel().clip(new ClipContext(eye,point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,reader)).getType()==HitResult.Type.MISS;
     }
     public static @Nullable LakeWitchEntity witch(ServerLevel l,BlockPos b){
-        var world=LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE);
+        var world=LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE,LiteraryVignettes.copy(l.getServer(),PLACE,b));
         return world.hasUUID("Witch")&&l.getEntity(world.getUUID("Witch")) instanceof LakeWitchEntity w&&w.isAlive()?w:null;
     }
     /** The score plays from the two speakers nearest each reader, unless she has silenced them; the reel runs at the projector. */
@@ -249,7 +255,7 @@ public final class MovieNight {
         return queued!=null&&!queued.isRemoved()&&queued.level()==level?queued:null;
     }
     private static void canoe(ServerPlayer p,BlockPos b,int i){
-        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);var level=p.serverLevel();
+        var d=LabyrinthData.get(p.server);int copy=LiteraryVignettes.copy(p.server,PLACE,b);var world=LiteraryVignettes.shared(d,PLACE,copy);var level=p.serverLevel();
         var canoe=canoe(level,world,i);var start=slot(b,i);
         if(canoe==null){
             // Request only the saved original's section (or the slot's), never force generation.
@@ -270,27 +276,30 @@ public final class MovieNight {
             if(canoe.position().distanceToSqr(start)>4){canoe.moveTo(start.x,start.y,start.z,180,0);canoe.setDeltaMovement(Vec3.ZERO);}
             world.remove("Claim"+i);
         }
-        world.putLong("Position"+i,canoe.blockPosition().asLong());LiteraryVignettes.shared(d,PLACE,world);
+        world.putLong("Position"+i,canoe.blockPosition().asLong());LiteraryVignettes.shared(d,PLACE,copy,world);
     }
     @SubscribeEvent public static void canoeRemoved(EntityLeaveLevelEvent event){
         var entity=event.getEntity();QUEUED.remove(entity.getUUID());
         if(!(event.getLevel() instanceof ServerLevel level)||!entity.getTags().contains(CANOE))return;
-        var d=LabyrinthData.get(level.getServer());var world=LiteraryVignettes.shared(d,PLACE);
-        for(int i=0;i<SLOTS.size();i++){
-            if(!world.hasUUID("Canoe"+i)||!world.getUUID("Canoe"+i).equals(entity.getUUID()))continue;
-            world.putLong("Position"+i,entity.blockPosition().asLong());
-            var reason=entity.getRemovalReason();if(reason==Entity.RemovalReason.KILLED||reason==Entity.RemovalReason.DISCARDED)world.putBoolean("Removed"+i,true);
-            LiteraryVignettes.shared(d,PLACE,world);return;
+        var d=LabyrinthData.get(level.getServer());
+        // 0.4.562: whichever copy of the lake the canoe was lent from.
+        for(int k=0;k<=SceneInstances.copies(d,PLACE);k++){var world=LiteraryVignettes.shared(d,PLACE,k);
+            for(int i=0;i<SLOTS.size();i++){
+                if(!world.hasUUID("Canoe"+i)||!world.getUUID("Canoe"+i).equals(entity.getUUID()))continue;
+                world.putLong("Position"+i,entity.blockPosition().asLong());
+                var reason=entity.getRemovalReason();if(reason==Entity.RemovalReason.KILLED||reason==Entity.RemovalReason.DISCARDED)world.putBoolean("Removed"+i,true);
+                LiteraryVignettes.shared(d,PLACE,k,world);return;
+            }
         }
     }
     /** An empty-handed reader takes any canoe nobody here is using. */
     public static boolean board(ServerPlayer p,LakeCanoeEntity canoe){
         if(!LiteraryVignettes.inside(p,PLACE)||!canoe.getTags().contains(CANOE)||!p.getMainHandItem().isEmpty()||p.distanceToSqr(canoe)>=25||!canoe.getPassengers().isEmpty())return false;
-        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);
+        var world=LiteraryVignettes.shared(p,PLACE);
         for(int i=0;i<SLOTS.size();i++){
             if(!world.hasUUID("Canoe"+i)||!world.getUUID("Canoe"+i).equals(canoe.getUUID()))continue;
             if(!p.startRiding(canoe,true))return false;
-            world.putUUID("Claim"+i,p.getUUID());LiteraryVignettes.shared(d,PLACE,world);return true;
+            world.putUUID("Claim"+i,p.getUUID());LiteraryVignettes.shared(p,PLACE,world);return true;
         }
         return false;
     }

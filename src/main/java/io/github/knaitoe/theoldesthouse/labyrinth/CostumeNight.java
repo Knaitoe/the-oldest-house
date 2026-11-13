@@ -41,6 +41,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class CostumeNight {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.COSTUME_NIGHT;
+    /** 0.4.562: the readers one beach holds, a crowd for Hank's contest and no more (SceneInstances.PARTIES); a seventh has a beach of their own. */
+    public static final int PLACES=6;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /** Occupied ticks: the first call, the time between calls and the ribbon; then the ribbon's beats up to the lights going out. */
     public static final int FIRST_CALL=120,CALL_EVERY=240,RIBBON=900,LIGHTS_OUT=260,EMPTY_RESET=100,RADIO_LOOP=240;
@@ -90,6 +92,10 @@ public final class CostumeNight {
     private static @Nullable LiteraryActor cast(ServerLevel l,CompoundTag w,Person who){return w.hasUUID("Cast"+who.key())&&l.getEntity(w.getUUID("Cast"+who.key())) instanceof LiteraryActor a?a:null;}
     public static @Nullable LiteraryActor cast(ServerLevel l,Person who){return cast(l,LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE),who);}
     public static @Nullable LakeWitchEntity witch(ServerLevel l){var w=LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE);return w.hasUUID("Witch")&&l.getEntity(w.getUUID("Witch")) instanceof LakeWitchEntity e&&e.isAlive()?e:null;}
+    /** 0.4.562: the night of the copy of the beach standing at a base, each copy having its own (LiteraryVignettes.shared(d,place,copy)). */
+    private static CompoundTag record(ServerLevel l,BlockPos b){return LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE,LiteraryVignettes.copy(l.getServer(),PLACE,b));}
+    public static @Nullable LiteraryActor cast(ServerLevel l,BlockPos b,Person who){return cast(l,record(l,b),who);}
+    public static @Nullable LakeWitchEntity witch(ServerLevel l,BlockPos b){var w=record(l,b);return w.hasUUID("Witch")&&l.getEntity(w.getUUID("Witch")) instanceof LakeWitchEntity e&&e.isAlive()?e:null;}
     private static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;a.yRotO=yaw;}
     private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0503",a.level().getGameTime());}
     /** Said to the readers near enough to hear it; Hank's megaphone carries across the beach. */
@@ -98,7 +104,7 @@ public final class CostumeNight {
         l.playSound(null,hank.getX(),hank.getY()+1.5,hank.getZ(),CostumeNightRegistry.MEGAPHONE.get(),SoundSource.NEUTRAL,1.4F,1);speak(hank,HANK,line,readers,48);
     }
     /** Whether the lights are out and she is hunting, for the scene at this base. */
-    public static boolean hunting(ServerLevel l,BlockPos base){return LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE).getBoolean("LightsOut");}
+    public static boolean hunting(ServerLevel l,BlockPos base){return record(l,base).getBoolean("LightsOut");}
     /** Where she waits while she is not after anyone: one place at the water's edge at a time, moving on every fifteen seconds. */
     public static BlockPos lurk(ServerLevel l,BlockPos base,int seed){return LURKS.get((int)Math.floorMod(l.getGameTime()/300+seed,(long)LURKS.size()));}
     public static List<BlockPos> bulbs(){
@@ -111,14 +117,19 @@ public final class CostumeNight {
     // ------------------------------------------------------------------------------------------------ the shared night
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();var origin=HouseSavedData.get(server).houseOrigin();if(origin==null)return;
-        var b=LabyrinthPlaces.base(origin,PLACE);var l=server.getLevel(NovelRooms.dimension(PLACE));if(b==null||l==null)return;
-        var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)).toList();
-        var d=LabyrinthData.get(server);var w=LiteraryVignettes.shared(d,PLACE);
+        var l=server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        // 0.4.562: each copy of the beach (SceneInstances) has a contest of its own, with the readers who are at it.
+        for(var b:SceneInstances.bases(server,PLACE))night(server,l,b);
+    }
+    private static void night(net.minecraft.server.MinecraftServer server,ServerLevel l,BlockPos b){
+        int copy=SceneInstances.copyAt(server,PLACE,b);
+        var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)&&LiteraryVignettes.copy(p,PLACE)==copy).toList();
+        var d=LabyrinthData.get(server);var w=LiteraryVignettes.shared(d,PLACE,copy);
         if(readers.isEmpty()){
             if(w.contains("Party")){w.putInt("Empty",w.getInt("Empty")+1);
                 if(w.getInt("Empty")>=EMPTY_RESET&&l.players().stream().noneMatch(p->p.getCamera().distanceToSqr(Vec3.atCenterOf(b.offset(0,0,-35)))<70*70))reset(w);
-                LiteraryVignettes.shared(d,PLACE,w);}
-            else if(w.getBoolean("Settle")){if(settle(l,b,w))w.remove("Settle");LiteraryVignettes.shared(d,PLACE,w);}
+                LiteraryVignettes.shared(d,PLACE,copy,w);}
+            else if(w.getBoolean("Settle")){if(settle(l,b,w))w.remove("Settle");LiteraryVignettes.shared(d,PLACE,copy,w);}
             return;
         }
         w.putInt("Empty",0);int party=w.getInt("Party")+1;w.putInt("Party",party);
@@ -131,14 +142,14 @@ public final class CostumeNight {
         if(!out&&party%RADIO_LOOP==1)l.playSound(null,b.getX()+RADIO.getX()+.5,b.getY()+RADIO.getY()+.5,b.getZ()+RADIO.getZ()+.5,CostumeNightRegistry.RADIO.get(),SoundSource.RECORDS,1.1F,1);
         if(!out&&party%200==100)idle(l,w,readers);
         // The thirteenth one drips; only someone close by hears it, or sees the water run off her.
-        var witch=witch(l);
+        var witch=witch(l,b);
         if(witch!=null&&party%20==0){
             l.sendParticles(ParticleTypes.DRIPPING_WATER,witch.getX(),witch.getY()+.7,witch.getZ(),2,.25,.1,.25,0);
             if(readers.stream().anyMatch(p->p.distanceToSqr(witch)<64))l.playSound(null,witch.getX(),witch.getY()+.5,witch.getZ(),CostumeNightRegistry.DRIP.get(),SoundSource.NEUTRAL,.6F,.9F+l.random.nextFloat()*.2F);
         }
         // Lines fade from over their heads after a few seconds.
         if(party%10==0)for(var who:EVERYONE){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
-        LiteraryVignettes.shared(d,PLACE,w);
+        LiteraryVignettes.shared(d,PLACE,copy,w);
     }
     /** The night starts over for whoever comes next: the lights back on, everyone in their places, her at the water. */
     private static void reset(CompoundTag w){
@@ -224,11 +235,11 @@ public final class CostumeNight {
     }
     /** Every five ticks for each reader here: everyone exists, once; what this reader saw of her; the park. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own,@Nullable LakeWitchEntity witch){
-        var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);boolean out=w.getBoolean("LightsOut");
+        var w=LiteraryVignettes.shared(p,PLACE);boolean out=w.getBoolean("LightsOut");
         for(var who:EVERYONE){
             var a=LiteraryVignettes.actor(p,PLACE,"Cast"+who.key(),LiteraryActor.STRANGER,BlockPos.containing(who.x(),who.y(),who.z()),false);
             if(a==null||a.phase()==who.phase())continue;
-            a.appearance(LiteraryActor.STRANGER,who.phase());a.getPersistentData().putInt("Gen0503",LiteraryVignettes.shared(d,PLACE).getInt("Gen"));home(a,who,b,out);
+            a.appearance(LiteraryActor.STRANGER,who.phase());a.getPersistentData().putInt("Gen0503",w.getInt("Gen"));home(a,who,b,out);
         }
         if(p.isSpectator())return;
         if(witch!=null&&HouseWatchers.sees(p,witch.getEyePosition())){if(out)own.putBoolean("SeenHer0503",true);else if(p.distanceTo(witch)<14)own.putBoolean("Noticed0503",true);}
@@ -245,7 +256,7 @@ public final class CostumeNight {
     }
     private static void hint(ServerPlayer p,CompoundTag own,String key,String text){if(own.getBoolean(key))return;own.putBoolean(key,true);p.displayClientMessage(Component.literal(text),true);}
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        var who=person(a);if(who==null)return;var w=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE);boolean out=w.getBoolean("LightsOut");
+        var who=person(a);if(who==null)return;var w=LiteraryVignettes.shared(p,PLACE);boolean out=w.getBoolean("LightsOut");
         int n=own.getInt("Talk_"+who.key());own.putInt("Talk_"+who.key(),n+1);
         String line=who==HANK?(out?HANK_DARK[n%HANK_DARK.length]:HANK_TALK[Math.min(n,HANK_TALK.length-1)])
                 :out?DARK[(n+who.number())%DARK.length]:n==0?"Number "+who.number()+". "+who.lines()[0]:who.lines()[n%who.lines().length];
@@ -258,7 +269,7 @@ public final class CostumeNight {
     /** The apple tub, the candy bowl and the radio. One apple and one sweet to each reader, ever. */
     public static void use(ServerPlayer p,CostumePropBlock.Kind kind,BlockPos at){
         if(!LiteraryVignettes.inside(p,PLACE)||p.isSpectator())return;var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);
-        boolean out=LiteraryVignettes.shared(d,PLACE).getBoolean("LightsOut");
+        boolean out=LiteraryVignettes.shared(p,PLACE).getBoolean("LightsOut");
         switch(kind){
             case APPLE_TUB->{if(own.getBoolean("Apple0503")){p.displayClientMessage(Component.literal("The apples left bob just out of reach."),true);return;}
                 own.putBoolean("Apple0503",true);give(p,new ItemStack(Items.APPLE));p.displayClientMessage(Component.literal("Third try. Your hair is soaked."),true);}

@@ -259,8 +259,13 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(reached&&!watched){coverPause=true;failedCoverTicks=0;route.clear();clearDoorBreak();return;}
         if(!watched)coverAttempt(coverReachable&&position().distanceToSqr(before)>.0004);
     }
+    /**
+     * 0.4.562: a reader at the lake night she belongs to. Each copy of a lake night (SceneInstances) has a Stacey of its own, and
+     * she hunts, hides from and is watched by the readers at her copy alone.
+     */
+    private boolean here(ServerPlayer p){return LiteraryVignettes.inside(p,literaryPlace)&&literaryBase!=null&&literaryBase.equals(LiteraryVignettes.base(p,literaryPlace));}
     private boolean literaryTarget(ServerPlayer p){
-        return p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)
+        return p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&here(p)
                 &&!(p.isUnderWater()&&p.getY()+p.getBbHeight()<literaryBase.getY())
                 &&(literaryPlace!=LabyrinthPlace.COSTUME_NIGHT||!level().getBlockState(p.blockPosition().below()).is(Blocks.GRASS_BLOCK))
                 &&(literaryPlace!=LabyrinthPlace.MOVIE_NIGHT||MovieNight.exposed(p));
@@ -523,7 +528,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         BlockPos best=null;double score=-Double.MAX_VALUE;
         var start=BlockPos.containing(getX(),literaryBase.getY(),getZ());
         var queue=new ArrayDeque<BlockPos>();var visited=new HashSet<BlockPos>();queue.add(start);visited.add(start);
-        var readers=l.players().stream().filter(p->p.isAlive()&&!p.isCreative()&&!p.isSpectator()&&LiteraryVignettes.inside(p,literaryPlace)).toList();
+        var readers=l.players().stream().filter(p->p.isAlive()&&!p.isCreative()&&!p.isSpectator()&&here(p)).toList();
         while(!queue.isEmpty()&&visited.size()<4000){var n=queue.removeFirst();var point=Vec3.atBottomCenterOf(n).add(0,.45,0);double distance=point.distanceTo(target.position());
             if(distance>4&&distance<17&&!breakableDoor(n)&&readers.stream().noneMatch(p->inView(p,point))){
                 double value=behindScore(target,point)*12-l.getBrightness(LightLayer.BLOCK,n)-position().distanceTo(point)*.4;
@@ -545,7 +550,7 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(movie&&MovieNight.lit(level,literaryBase)){cancelStrike();route.clear();routeGoal=null;return;}
         boolean critical=target.getHealth()<=6;huntClocks(critical);
         // There, only a reader who catches her in the projector's beam turns her back; in the dark she comes on regardless.
-        boolean watched=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).anyMatch(p->inView(p,getEyePosition())&&(!movie||MovieNight.inBeam(literaryBase,getEyePosition())));
+        boolean watched=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&here(p)).anyMatch(p->inView(p,getEyePosition())&&(!movie||MovieNight.inBeam(literaryBase,getEyePosition())));
         if(watched&&huntPhase()!=WITHDRAW&&!coverPause)beginWithdrawal(target);
         if(coverPause&&withdrawing()){entityData.set(HUNT_PHASE,WITHDRAW);return;}
         if(windup>0){windup--;return;}
@@ -574,7 +579,7 @@ public final class LakeWitchEntity extends PathfinderMob {
      * nearest reader on the sand, fast, and strikes if she reaches them unseen, then goes back to the water for a while.
      */
     private void tickCostume(ServerLevel level){
-        var readers=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,literaryPlace)).toList();
+        var readers=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&here(p)).toList();
         // With nobody on the beach she waits where she is, as the party's own clock does.
         if(readers.isEmpty()){if(windup>0||entityData.get(STRIKING))cancelStrike();route.clear();routeGoal=null;return;}
         var middle=position().add(0,getBbHeight()*.5,0);

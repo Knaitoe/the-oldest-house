@@ -49,6 +49,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class WinterLake {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.WINTER_LAKE;
+    /** 0.4.562: the readers one lake holds, one to each of the four boys at the fire (SceneInstances.PARTIES); a fifth has a lake of their own. */
+    public static final int PLACES=4;
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /** Occupied ticks until Hank stops the snowball fight; how long her hand stays up; the boys' run; the empty reset. */
     public static final int QUIET_AT=900,HAND_TICKS=60,RUN_TICKS=100,EMPTY_RESET=100,REST_AFTER_BREAK=160;
@@ -84,6 +86,10 @@ public final class WinterLake {
     // ------------------------------------------------------------------------------------------------ helpers
     private static @Nullable LiteraryActor cast(ServerLevel l,CompoundTag w,Boy who){return w.hasUUID("Cast"+who.key())&&l.getEntity(w.getUUID("Cast"+who.key())) instanceof LiteraryActor a?a:null;}
     public static @Nullable LiteraryActor cast(ServerLevel l,Boy who){return cast(l,LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE),who);}
+    /** 0.4.562: the night of the copy of the lake standing at a base, each copy having its own (LiteraryVignettes.shared(d,place,copy)). */
+    private static CompoundTag record(ServerLevel l,BlockPos b){return LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE,LiteraryVignettes.copy(l.getServer(),PLACE,b));}
+    public static @Nullable LiteraryActor cast(ServerLevel l,BlockPos b,Boy who){return cast(l,record(l,b),who);}
+    public static @Nullable LakeWitchEntity witch(ServerLevel l,BlockPos b){var w=record(l,b);return w.hasUUID("Witch")&&l.getEntity(w.getUUID("Witch")) instanceof LakeWitchEntity e&&e.isAlive()?e:null;}
     public static @Nullable LakeWitchEntity witch(ServerLevel l){var w=LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE);return w.hasUUID("Witch")&&l.getEntity(w.getUUID("Witch")) instanceof LakeWitchEntity e&&e.isAlive()?e:null;}
     public static @Nullable Boy boy(LiteraryActor a){if(a.role()!=LiteraryActor.STRANGER)return null;for(var b:BOYS)if(b.phase()==a.phase())return b;return null;}
     private static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;a.yRotO=yaw;}
@@ -121,33 +127,43 @@ public final class WinterLake {
     private static final Map<UUID,Float> SUSPICION=new HashMap<>();
     /** How close she has come to finding this reader, from beneath. */
     public static float suspicion(ServerPlayer p){return SUSPICION.getOrDefault(p.getUUID(),0F);}
+    /** 0.4.562: forgets what she heard of the readers at one copy of the lake, and of anyone no longer at a lake, keeping the others'. */
+    private static void forget(net.minecraft.server.MinecraftServer s,BlockPos b){
+        java.util.function.Predicate<UUID> here=id->{var q=s.getPlayerList().getPlayer(id);return q==null||!LiteraryVignettes.inside(q,PLACE)||b.equals(LiteraryVignettes.base(q,PLACE));};
+        LAST.keySet().removeIf(here);SUSPICION.keySet().removeIf(here);
+    }
 
     // ------------------------------------------------------------------------------------------------ the shared night
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();var origin=HouseSavedData.get(server).houseOrigin();if(origin==null)return;
-        var b=LabyrinthPlaces.base(origin,PLACE);var l=server.getLevel(NovelRooms.dimension(PLACE));if(b==null||l==null)return;
-        var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)).toList();
-        var d=LabyrinthData.get(server);var w=LiteraryVignettes.shared(d,PLACE);
+        var l=server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        // 0.4.562: each copy of the lake (SceneInstances) has a night of its own, with the readers who are at it.
+        for(var b:SceneInstances.bases(server,PLACE))night(server,l,b);
+    }
+    private static void night(net.minecraft.server.MinecraftServer server,ServerLevel l,BlockPos b){
+        int copy=SceneInstances.copyAt(server,PLACE,b);
+        var readers=server.getPlayerList().getPlayers().stream().filter(p->LiteraryVignettes.inside(p,PLACE)&&LiteraryVignettes.copy(p,PLACE)==copy).toList();
+        var d=LabyrinthData.get(server);var w=LiteraryVignettes.shared(d,PLACE,copy);
         if(readers.isEmpty()){
             if(w.contains("Night")){w.putInt("Empty",w.getInt("Empty")+1);
-                if(w.getInt("Empty")>=EMPTY_RESET&&l.players().stream().noneMatch(p->p.getCamera().distanceToSqr(Vec3.atCenterOf(b.offset(0,0,-40)))<70*70))reset(w);
-                LiteraryVignettes.shared(d,PLACE,w);}
-            else if(w.getBoolean("Settle")){if(settle(l,b,w))w.remove("Settle");LiteraryVignettes.shared(d,PLACE,w);}
+                if(w.getInt("Empty")>=EMPTY_RESET&&l.players().stream().noneMatch(p->p.getCamera().distanceToSqr(Vec3.atCenterOf(b.offset(0,0,-40)))<70*70)){reset(w);forget(server,b);}
+                LiteraryVignettes.shared(d,PLACE,copy,w);}
+            else if(w.getBoolean("Settle")){if(settle(l,b,w))w.remove("Settle");LiteraryVignettes.shared(d,PLACE,copy,w);}
             return;
         }
         if(!built(l,b))return;
         w.putInt("Empty",0);int night=w.getInt("Night")+1;w.putInt("Night",night);
         settle(l,b,w);boys(l,b,w,night,readers);
-        var witch=witch(l);
-        if(witch!=null){if(!witch.driven())adopt(witch,b);listen(l,b,w,readers,witch);move(l,b,w,witch,night);}
+        var witch=witch(l,b);
+        if(witch!=null){if(!witch.driven())adopt(witch,b);listen(l,b,w,readers,witch);move(l,b,w,witch,night,readers);}
         if(night%200==1)l.playSound(null,b.getX(),b.getY()+6,b.getZ()-40,WinterLakeRegistry.WIND.get(),SoundSource.AMBIENT,2.5F,.9F+l.random.nextFloat()*.2F);
         if(night%10==0)for(var who:BOYS){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
-        LiteraryVignettes.shared(d,PLACE,w);
+        LiteraryVignettes.shared(d,PLACE,copy,w);
     }
     /** The night starts over for whoever comes next: the boys by the fire, the ice whole, her under it. */
     private static void reset(CompoundTag w){
         for(var k:List.of("Night","Empty","Fled","FledAt","Hand","HandBy","Heard","HeardX","HeardZ","Rest","DriftX","DriftZ","Thrown"))w.remove(k);
-        w.putInt("Gen",w.getInt("Gen")+1);w.putBoolean("Settle",true);LAST.clear();SUSPICION.clear();
+        w.putInt("Gen",w.getInt("Gen")+1);w.putBoolean("Settle",true);
     }
     /** Puts each loaded piece back as the current night needs it; true once everything is in place. */
     private static boolean settle(ServerLevel l,BlockPos b,CompoundTag w){
@@ -248,11 +264,11 @@ public final class WinterLake {
         p.displayClientMessage(Component.literal("The ice gave. Find the hole you fell through. Swim for the light."),true);
         var d=LabyrinthData.get(l.getServer());var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("FellThrough0504",true);own.remove("CameUp0504");LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
         // She lets go and drifts off; nobody is found again for a while.
-        w.putInt("Rest",REST_AFTER_BREAK);w.putFloat("Heard",0);SUSPICION.clear();
+        w.putInt("Rest",REST_AFTER_BREAK);w.putFloat("Heard",0);forget(l.getServer(),b);
         double ax=witch.getX()-p.getX(),az=witch.getZ()-p.getZ(),n=Math.max(.1,Math.hypot(ax,az));w.putDouble("DriftX",witch.getX()+ax/n*12);w.putDouble("DriftZ",witch.getZ()+az/n*12);
     }
     /** Her movement under the ice: to the last thing she heard, or drifting; up into the hole for the ribbon. */
-    private static void move(ServerLevel l,BlockPos b,CompoundTag w,LakeWitchEntity witch,int night){
+    private static void move(ServerLevel l,BlockPos b,CompoundTag w,LakeWitchEntity witch,int night,List<ServerPlayer> readers){
         int hand=w.getInt("Hand");
         if(hand>0){
             hand--;w.putInt("Hand",hand);var center=Vec3.atBottomCenterOf(b.offset(HOLE));
@@ -276,18 +292,20 @@ public final class WinterLake {
         else witch.setPos(witch.getX(),b.getY()+UNDER,witch.getZ());
         witch.setDeltaMovement(Vec3.ZERO);
         // Under someone who has gone quiet, the ice groans now and then.
-        if(night%70==0&&SUSPICION.values().stream().anyMatch(v->v>0))l.playSound(null,witch.getX(),b.getY()-1,witch.getZ(),WinterLakeRegistry.GROAN.get(),SoundSource.HOSTILE,.7F,.9F+l.random.nextFloat()*.2F);
+        if(night%70==0&&readers.stream().anyMatch(p->SUSPICION.getOrDefault(p.getUUID(),0F)>0))l.playSound(null,witch.getX(),b.getY()-1,witch.getZ(),WinterLakeRegistry.GROAN.get(),SoundSource.HOSTILE,.7F,.9F+l.random.nextFloat()*.2F);
     }
     /** A snowball thudding onto the ice is the loudest thing on the lake; she goes to where it landed. */
     @SubscribeEvent public static void landed(ProjectileImpactEvent e){
         if(!(e.getProjectile() instanceof Snowball ball)||!(ball.level() instanceof ServerLevel l))return;
-        var origin=HouseSavedData.get(l.getServer()).houseOrigin();if(origin==null)return;var b=LabyrinthPlaces.base(origin,PLACE);
-        if(b==null||!l.dimension().equals(NovelRooms.dimension(PLACE))||!built(l,b))return;
-        var hit=e.getRayTraceResult().getLocation();int x=(int)Math.floor(hit.x)-b.getX(),z=(int)Math.floor(hit.z)-b.getZ();
+        var origin=HouseSavedData.get(l.getServer()).houseOrigin();if(origin==null||!l.dimension().equals(NovelRooms.dimension(PLACE)))return;
+        // 0.4.562: the copy of the lake it landed on.
+        var hit=e.getRayTraceResult().getLocation();int copy=SceneInstances.at(l.getServer(),PLACE,l.dimension(),hit);if(copy<0)return;
+        var b=SceneInstances.base(l.getServer(),PLACE,copy);if(b==null||!built(l,b))return;
+        int x=(int)Math.floor(hit.x)-b.getX(),z=(int)Math.floor(hit.z)-b.getZ();
         if(!lake(x,z)||hit.y<b.getY()-1.5||hit.y>b.getY()+1.5)return;
-        var d=LabyrinthData.get(l.getServer());var w=LiteraryVignettes.shared(d,PLACE);
+        var d=LabyrinthData.get(l.getServer());var w=LiteraryVignettes.shared(d,PLACE,copy);
         if(w.getInt("Hand")>0||w.getInt("Rest")>0)return;
-        w.putFloat("Heard",Math.max(w.getFloat("Heard"),60));w.putDouble("HeardX",hit.x);w.putDouble("HeardZ",hit.z);LiteraryVignettes.shared(d,PLACE,w);
+        w.putFloat("Heard",Math.max(w.getFloat("Heard"),60));w.putDouble("HeardX",hit.x);w.putDouble("HeardZ",hit.z);LiteraryVignettes.shared(d,PLACE,copy,w);
         if(ball.getOwner() instanceof ServerPlayer p&&LiteraryVignettes.inside(p,PLACE)){var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("Lured0504",true);LiteraryVignettes.save(d,p.getUUID(),PLACE,own);}
     }
 
@@ -302,7 +320,7 @@ public final class WinterLake {
         for(var who:BOYS){
             var a=LiteraryVignettes.actor(p,PLACE,"Cast"+who.key(),LiteraryActor.STRANGER,BlockPos.containing(who.x(),0,who.z()),false);
             if(a==null||a.phase()==who.phase())continue;
-            a.appearance(LiteraryActor.STRANGER,who.phase());a.getPersistentData().putInt("Gen0504",LiteraryVignettes.shared(d,PLACE).getInt("Gen"));home(a,who,b);
+            a.appearance(LiteraryActor.STRANGER,who.phase());a.getPersistentData().putInt("Gen0504",LiteraryVignettes.shared(p,PLACE).getInt("Gen"));home(a,who,b);
         }
         var witch=LiteraryVignettes.huntBody(p,PLACE,WITCH_START);if(witch!=null&&!witch.driven())adopt(witch,b);
         if(p.isSpectator())return;
@@ -324,7 +342,7 @@ public final class WinterLake {
             else{line=HANK_TALK[Math.min(n,HANK_TALK.length-1)];
                 if(n>=HANK_TALK.length-1){own.putBoolean("TookDare0504",true);if(!carries(p))give(p,ribbon(p));}}
         }
-        else line=n==0&&!LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE).getBoolean("Fled")&&LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE).getInt("Night")<QUIET_AT?FIGHT[who.phase()%FIGHT.length]:who.lines()[n%who.lines().length];
+        else line=n==0&&!LiteraryVignettes.shared(p,PLACE).getBoolean("Fled")&&LiteraryVignettes.shared(p,PLACE).getInt("Night")<QUIET_AT?FIGHT[who.phase()%FIGHT.length]:who.lines()[n%who.lines().length];
         speak(a,who,line,List.of(p),24);
     }
     /** Her ribbon, given to this reader; only the one it was given to can give it back. */
@@ -342,10 +360,10 @@ public final class WinterLake {
         if(!owns(p,stack)){p.displayClientMessage(Component.literal("It isn't yours to give back."),true);return false;}
         var hole=Vec3.atBottomCenterOf(b.offset(HOLE));double dx=p.getX()-hole.x,dz=p.getZ()-hole.z;
         if(dx*dx+dz*dz>3.5*3.5||p.getY()<b.getY()-2.5){p.displayClientMessage(Component.literal("Out at the hole, Hank said. Where she went down."),true);return false;}
-        var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);if(w.getInt("Hand")>0)return false;
+        var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(p,PLACE);if(w.getInt("Hand")>0)return false;
         stack.shrink(1);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("GaveRibbon0504",true);LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
         w.putInt("Hand",HAND_TICKS);w.putUUID("HandBy",p.getUUID());if(!w.getBoolean("Fled")){w.putBoolean("Fled",true);w.putInt("FledAt",w.getInt("Night"));}
-        LiteraryVignettes.shared(d,PLACE,w);
+        LiteraryVignettes.shared(p,PLACE,w);
         l.playSound(null,hole.x,hole.y,hole.z,WinterLakeRegistry.HAND.get(),SoundSource.HOSTILE,1.2F,1);
         p.displayClientMessage(Component.literal("A hand comes up out of the black water and takes it."),true);
         return true;
