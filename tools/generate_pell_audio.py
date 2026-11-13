@@ -2,7 +2,7 @@
 handed the siblings over (docs/PELL_HOUSE_VISIT_0_4_525.md), heard from inside the house; and (docs/PELL_HOUSE_BEDTIME_0_4_527.md)
 the home tape June plays in the evening, a birthday sung in her kitchen, through the television; the hairbrush at bedtime; and the
 lock turning on each door when she locks up. From docs/PELL_HOUSE_NIGHT_0_4_530.md: her brush on the line at night, and the tin's
-lid.
+lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and June's cry.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -19,6 +19,7 @@ ROWS = {
     'lock': ('A lock turns', 12),
     'paint': ('A paintbrush, in strokes', 14),
     'tin': ("A paint tin's lid", 10),
+    'hand': ('A door slams, and a cry', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -204,7 +205,44 @@ def tin():
     return out
 
 
-MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin}
+def cried(n, seed):
+    """A short cry: a grown voice's harmonics jumping up and falling away through an open vowel, rough at its height, breath under it."""
+    r = np.random.default_rng(seed)
+    t = times(n)
+    f = (290 + 250 * np.minimum(1, t / .05) * np.exp(-np.maximum(0, t - .05) / .2)) * (1 + .018 * np.sin(2 * np.pi * 27 * t))
+    phase = np.cumsum(f) / RATE
+    src = sum(np.sin(2 * np.pi * k * phase + r.random() * 6) / k for k in range(1, 16))
+    voiced = band(src, 650, 1050) + band(src, 1100, 1550) * .6 + band(src, 2400, 3200) * .22
+    voiced += band(r.standard_normal(n), 800, 4000) * .16
+    shape = np.minimum(1, t / .012) * np.exp(-np.maximum(0, t - .14) / .09)
+    return voiced * shape
+
+
+def hand():
+    # A door in a small room slammed hard on something in the way: a dull, short thump where it should have banged shut, the frame's
+    # crack and the leaf's rattle against it; under a breath later a woman's cry, sharp and cut off; then breath sucked in through the
+    # teeth, and let out.
+    n = seconds(1.9)
+    out = np.zeros(n)
+    k = seconds(.32)
+    tk = times(k)
+    thump = np.sin(2 * np.pi * 68 * tk) * np.exp(-tk / .05) + band(rng.standard_normal(k), 90, 900) * np.exp(-tk / .03) * .9
+    place(out, thump, .03)
+    k = seconds(.025)
+    place(out, band(rng.standard_normal(k), 1500, 6000) * np.exp(-times(k) / .005) * .4, .035)
+    for i in range(3):
+        k = seconds(.06)
+        tk = times(k)
+        place(out, band(rng.standard_normal(k), 400, 2600) * np.exp(-tk / .015) * (.32 - .09 * i), .12 + i * .07)
+    place(out, cried(seconds(.5), 9535) * .8, .31)
+    for at, length, lo, gain in ((1.05, .26, 2600, .2), (1.45, .34, 700, .12)):
+        k = seconds(length)
+        tk = times(k)
+        place(out, band(rng.standard_normal(k), lo, lo * 3) * np.sin(np.pi * tk / length) ** 2 * gain, at)
+    return out
+
+
+MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand}
 
 
 def main():

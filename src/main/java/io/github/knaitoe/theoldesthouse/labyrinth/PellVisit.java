@@ -169,7 +169,7 @@ public final class PellVisit {
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
         // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart); 0.4.532, and Gail's call.
-        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);
+        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);PellHand.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);
@@ -351,9 +351,10 @@ public final class PellVisit {
      *  after; sent to every reader at the house when it starts or stops going on, when they first come, and once a second. 0.4.530:
      *  locked up, it goes on to eleven, faster while June is in her room; from her rounds to midnight. 0.4.531: from June's return to
      *  her room, on through the night to six, as fast again; while she goes round the doors to the kitchen, to half past; once breakfast
-     *  is laid, to seven; from breakfast's call to eight, as by day; and while every reader at the house is asleep, much faster. */
+     *  is laid, to seven; from breakfast's call to eight, as by day; and while every reader at the house is asleep, much faster. 0.4.535:
+     *  a week in, the afternoon also holds while June is away at the laundry (PellHand). */
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
-        long to=h.step==SETTLED?(h.visit>=2&&!h.welcomed?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
+        long to=h.step==SETTLED?(h.visit>=2&&(!h.welcomed||PellHand.holds(h))?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
             :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
         int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;
@@ -439,6 +440,8 @@ public final class PellVisit {
             case 0->{
                 // 0.4.533: a week in, June calls hello from the kitchen to the first reader in; the afternoon goes on from then.
                 if(h.visit>=2&&!h.welcomed){PellWeek.welcome(l,b,h,june,here,now);return;}
+                // 0.4.535: a while after her hello, the laundry (PellHand); while she is away, the hour and dinner wait.
+                if(PellHand.tick(l,b,h,june,here,now))return;
                 if(h.time>=SIX&&ready(h,now,june))call(l,b,h,june,here,now);
             }
             case 1->{

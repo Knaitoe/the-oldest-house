@@ -5406,5 +5406,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pell.tin"
+  },
+  "pell.hand": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/hand",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.hand"
   }
 }

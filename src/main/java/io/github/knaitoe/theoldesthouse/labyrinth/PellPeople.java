@@ -69,10 +69,14 @@ public final class PellPeople {
         ROBE=10,SWIM=11,
         // 0.4.534: Callum struggling for the knife with a reader, and his fist coming at their face.
         STRUGGLE=12,LUNGE=13;
+    /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
+    public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
-    public static @Nullable String dressed(int phase,int gesture){
+    public static @Nullable String dressed(int phase,int gesture){return dressed(phase,gesture,0);}
+    /** As above, with the marks they carry: by day, after the laundry, June with her hand wrapped. */
+    public static @Nullable String dressed(int phase,int gesture,int marks){
         if(phase!=FIRST+JUNE)return null;
-        return gesture==ROBE?"pell_june_robe":gesture==SWIM?"pell_june_swim":null;
+        return gesture==ROBE?"pell_june_robe":gesture==SWIM?"pell_june_swim":(marks&WRAPPED)!=0?"pell_june_hand":null;
     }
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
@@ -139,6 +143,10 @@ public final class PellPeople {
         /** 0.4.534, the knife (PellKnife): how far it has got and when that began; whether June has spoken after it, and how far her way
          *  to lock up has got; who has hold of Callum, and since when a reader has stood close to him; who June found in the kitchen. */
         int knife,knifeSaid,knifeWay;long knifeAt,closeSince;UUID fighter;final java.util.Set<UUID> found=new java.util.HashSet<>();
+        /** 0.4.535, June's hand (PellHand): how far it has got, when she got to the laundry and when she last shut herself in; how many
+         *  of her lines about it a hand on her has had; whom she will say did it; and, on the week's call, what each reader told Gail
+         *  about it. */
+        int hand,handSaid;long handAt,shutAt;UUID blamed;final Map<UUID,String> toldHand=new HashMap<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -258,6 +266,8 @@ public final class PellPeople {
         else if(who==JUNE&&PellMorning.morning(b)){line=PellTexts.JUNE_MORNING[h.nightSaid++%PellTexts.JUNE_MORNING.length];}
         // 0.4.533: in her robe, on her way down to the pool or back from it.
         else if(who==JUNE&&a.gesture()==ROBE){line=PellTexts.JUNE_SWIM_TALK[h.nightSaid++%PellTexts.JUNE_SWIM_TALK.length];own.putBoolean("SpokeToJuneAtThePool",true);}
+        // 0.4.535: her hand wrapped, she has a word about it for the first hands on her.
+        else if(who==JUNE&&PellHand.hurt(b)&&h.handSaid<PellTexts.JUNE_HAND_TALK.length){line=PellTexts.JUNE_HAND_TALK[h.handSaid++];own.putBoolean("AskedJuneAboutHand",true);}
         else line=lines[h.said[who]++%lines.length];
         a.say(name(who),line);a.speaks(line);
         // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the

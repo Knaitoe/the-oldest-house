@@ -1133,6 +1133,8 @@ public final class PellHouseTests {
         long[] mark={0};
         h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
         .thenExecute(()->{
+            // 0.4.535: this afternoon June does not go to the laundry (PellHand has its own cases).
+            PellHand.skip(b);
             h.assertTrue(PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"no Gail and no car a week in");
             h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z(),.3),"June at her stove");
             h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.3),"Tilly in Nessa's room");
@@ -1580,4 +1582,173 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_knife_call") public static void knifeCallDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.535, June's hand (docs/PELL_HOUSE_HAND_0_4_535.md), a week in, with two readers: one in the kitchen, one out on the patio. A
+     * while after her hello June goes to put a wash on, and the hour holds. The reader goes ahead of her into the laundry; she asks them
+     * out, and does not shut the door on them. Once they are out in the hall, a step back from its door, she shuts both the laundry's
+     * doors. A moment later a door slams and she cries out: the reader in the hall hears it at the back of the house, the one on the
+     * patio hears it over at the house, and the reader nearest the laundry is the one she will say did it, on Gail's file for it once;
+     * the other is not. She comes out with her hand wrapped in a tea towel: it's nothing, she caught it in the door; the reader at the
+     * door sees the towel, the one on the patio does not. Back at her stove the hour goes on, and a hand on her gets a word about her
+     * hand. When the visit begins again, her hand is as it was and nobody is to blame.
+     */
+    @GameTest(template="empty",batch="pell_hand",timeoutTicks=9000)
+    public static void aWeekInJunesHandIsCaughtInTheLaundryDoorOffScreen(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_hand_hall",P);var q=f.player("pell_hand_patio",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        long[] mark={0};
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{f.at(p,P,-7.5,0,-67.5);f.at(q,P,-6.5,0,-74.5);})
+        .thenWaitUntil(()->h.assertTrue(PellWeek.welcomed(b),"June calls hello"))
+        .thenExecute(()->PellHand.beforeHand(b))
+        .thenWaitUntil(()->h.assertTrue(PellHand.stage(b)==PellHand.TO_LAUNDRY,"a while after her hello, June goes to the laundry"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_TO_LAUNDRY),"a wash to put on: "+said(who(h,l,b,PellPeople.JUNE)));
+            mark[0]=PellVisit.hour(b);
+            // The reader goes ahead of her into the laundry.
+            f.at(p,P,8.5,0,-67.5);
+        }).thenWaitUntil(()->h.assertTrue(PellHand.stage(b)==PellHand.SHUTTING,"at the laundry"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_LAUNDRY_OUT),"she asks the reader out"))
+        .thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,PellSite.LAUNDRY_DOOR)&&PellHand.stage(b)==PellHand.SHUTTING,"not shut on a reader inside");
+            h.assertTrue(PellVisit.hour(b)==mark[0],"the hour holds while she is away: "+mark[0]+" to "+PellVisit.hour(b));
+            // Out into the hall, a step back from its door and looking at it; the other still on the patio.
+            f.at(p,P,7.5,0,-64.6);lookAt(p,net.minecraft.world.phys.Vec3.atCenterOf(b.offset(7,1,-68)));told(p);told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellHand.stage(b)==PellHand.INSIDE,"once they are out, she shuts herself in"))
+        .thenExecute(()->h.assertTrue(!PellSite.open(l,b,PellSite.LAUNDRY_DOOR)&&!PellSite.open(l,b,PellSite.BACK_DOOR),"both the laundry's doors shut"))
+        .thenWaitUntil(()->h.assertTrue(PellHand.stage(b)==PellHand.CRIED,"a door slams, and the cry"))
+        .thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.SLAM_HEARD),"heard in the house, at the back");
+            h.assertTrue(told(q).contains(PellTexts.SLAM_FAR),"heard from the patio, over at the house");
+            h.assertTrue(p.getUUID().equals(PellHand.blamed(b)),"the reader nearest the laundry is the one she will say did it");
+            var mine=f.own(p,P);var theirs=f.own(q,P);
+            h.assertTrue(mine.getBoolean("BlamedForHand")&&mine.getBoolean("MarkHand")&&mine.getInt("GailMarks")==1&&!mine.getBoolean("AwayForHand"),"on Gail's file for it, once: "+mine);
+            h.assertTrue(theirs.getBoolean("HeardJuneHand")&&!theirs.getBoolean("BlamedForHand")&&theirs.getInt("GailMarks")==0,"the other heard it, and nothing more: "+theirs);
+            h.assertTrue((who(h,l,b,PellPeople.JUNE).marks()&PellPeople.WRAPPED)!=0,"her hand wrapped");
+        }).thenWaitUntil(()->h.assertTrue(PellHand.stage(b)==PellHand.BACK,"she comes out"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_OUT),"it's nothing, she caught it in the door: "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(told(p).contains(PellTexts.HAND_WRAPPED)&&f.own(p,P).getBoolean("SawJuneHand"),"the reader at the door sees the towel");
+            h.assertFalse(f.own(q,P).getBoolean("SawJuneHand"),"not from the patio");
+            h.assertTrue(PellSite.open(l,b,PellSite.LAUNDRY_DOOR),"the laundry door open");
+        }).thenWaitUntil(()->h.assertTrue(PellHand.stage(b)==PellHand.DONE,"back at her stove"))
+        .thenExecute(()->{h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z(),.3),"at her stove");mark[0]=PellVisit.hour(b);})
+        .thenIdle(20).thenExecute(()->h.assertTrue(PellVisit.hour(b)>mark[0],"the hour goes on: "+mark[0]+" to "+PellVisit.hour(b)))
+        .thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June between lines"))
+        .thenExecute(()->{f.at(p,P,-7.5,0,-67.5);LiteraryVignettes.talk(p,who(h,l,b,PellPeople.JUNE));})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_TALK[0]),"a hand on her: don't fuss: "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(f.own(p,P).getBoolean("AskedJuneAboutHand"),"and they keep that they asked");
+            // The house left, and its visit begun again.
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED&&PellHand.stage(b)==PellHand.NOT_YET,"the visit begun again"))
+        .thenExecute(()->h.assertTrue(PellHand.blamed(b)==null&&(who(h,l,b,PellPeople.JUNE).marks()&PellPeople.WRAPPED)==0,"her hand as it was, and nobody to blame"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_hand") public static void handDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.535, the week's call after the knife and June's hand, with two readers: the one June found in the kitchen in the night, who
+     * heard the laundry door; and the one she says slammed it on her hand. June has her version of both in first: the knife, then her
+     * hand, only bruised. The reader June found takes it; Gail asks about the knife and they say they were getting it off him; then, as
+     * one of the rest, whether they saw what happened to June's hand: offered that they heard it, that it wasn't them, that they want to
+     * leave, or nothing (and nothing that was not theirs), they say they heard it. Given back, the other takes it; Gail asks whether the
+     * knife was them, and they say they want to leave; then that June says they slammed the door on her hand: offered that they never
+     * touched it, that she did it herself, or nothing (not that they were away, nor leaving a second time), they say she did it herself,
+     * and Gail won't hear it. June back on: they'll say anything, she'll keep an eye, the week's goodbye; hung up, give it time. What each
+     * said about each thing stays theirs, and the call put nobody on the file.
+     */
+    @GameTest(template="empty",batch="pell_hand_call",timeoutTicks=9000)
+    public static void theWeeksCallHasJunesVersionOfTheKnifeAndHerHand(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_handcall_found",P);var q=f.player("pell_handcall_named",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");keep(f,p,"FoughtCallum");keep(f,p,"HeardJuneHand");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var phone=b.offset(PellCall.PHONE);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellKnife.foundThere(l,b,p);PellHand.blamed(l,b,q,false);PellCall.afterBreakfast(l,b);
+            f.at(p,P,-9.5,0,-67.5);f.at(q,P,-8.5,0,-67.6);
+            h.assertTrue((who(h,l,b,PellPeople.JUNE).marks()&PellPeople.WRAPPED)!=0,"June's hand wrapped");
+        })
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_BLOCK),"June to Gail: the knife first"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_AND),"and her hand"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_BRUISED),"only bruised"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenExecute(()->{
+            hand(p,phone);
+            h.assertTrue(p.getUUID().equals(PellCall.caller(b)),"the reader June found takes it");
+            h.assertTrue(PellTexts.GAIL_KNIFE_ASKS.stream().allMatch(line->telling(p,"Gail",line)),"the knife first: "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_KNIFE_TOOK),"getting it off him");
+            h.assertTrue(PellTexts.gailHandAsks(false,true).stream().allMatch(line->telling(p,"Gail",line))&&!telling(p,"Gail",PellTexts.GAIL_KNIFE_BYE),"then June's hand, before her goodbye: "+Talk.lines(p));
+            var r=Talk.replies(p);
+            h.assertTrue(r.contains(PellTexts.TELL_HAND_HEARD)&&r.contains(PellTexts.TELL_HAND_WASNT_ME)&&r.contains(PellTexts.TELL_LEAVE)&&r.contains(PellTexts.TELL_NOTHING),"what they could truly say: "+r);
+            h.assertFalse(r.contains(PellTexts.TELL_HAND_NOT_ME)||r.contains(PellTexts.TELL_HAND_HERSELF)||r.contains(PellTexts.TELL_HAND_AWAY),"nothing that was not theirs: "+r);
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_HAND_HEARD),"heard it");
+            h.assertTrue(telling(p,"Gail","Heard what, love? A door?")&&telling(p,"Gail",PellTexts.GAIL_KNIFE_BYE),"Gail puts it down, and goodbye: "+Talk.lines(p));
+            var own=f.own(p,P);
+            h.assertTrue(PellTexts.KNIFE_TOOK.equals(own.getString("ToldGailWeek"))&&PellTexts.HAND_HEARD.equals(own.getString("ToldGailHand")),"each answer kept: "+own);
+            h.assertTrue(Talk.choose(p,PellTexts.HAND_BACK),"given back");
+        }).thenIdle(1).thenExecute(()->{
+            LiteraryVignettes.talk(q,who(h,l,b,PellPeople.JUNE));
+            h.assertTrue(q.getUUID().equals(PellCall.caller(b)),"the other takes it");
+            h.assertTrue(PellTexts.GAIL_KNIFE_OTHER.stream().allMatch(line->telling(q,"Gail",line)),"was it you: "+Talk.lines(q));
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_LEAVE),"they want to leave");
+            h.assertTrue(PellTexts.gailHandAsks(true,true).stream().allMatch(line->telling(q,"Gail",line)),"June says they slammed the door on her hand: "+Talk.lines(q));
+            var r=Talk.replies(q);
+            h.assertTrue(r.contains(PellTexts.TELL_HAND_NOT_ME)&&r.contains(PellTexts.TELL_HAND_HERSELF)&&r.contains(PellTexts.TELL_NOTHING),"what they could truly say: "+r);
+            h.assertFalse(r.contains(PellTexts.TELL_HAND_AWAY)||r.contains(PellTexts.TELL_HAND_HEARD)||r.contains(PellTexts.TELL_LEAVE),"not away, and leaving said once: "+r);
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_HAND_HERSELF),"she did it herself");
+            h.assertTrue(telling(q,"Gail","Slammed a door on her own hand? Love.")&&telling(q,"Gail",PellTexts.GAIL_KNIFE_BYE),"Gail won't hear it: "+Talk.lines(q));
+            var own=f.own(q,P);
+            h.assertTrue(PellTexts.LEAVE.equals(own.getString("ToldGailWeek"))&&PellTexts.HAND_HERSELF.equals(own.getString("ToldGailHand")),"each answer kept: "+own);
+            h.assertTrue(Talk.choose(q,PellTexts.HAND_BACK),"given back");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_UPSET),"June: they'll say anything"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_EYE),"she'll keep an eye"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WEEK_BYE),"the week's goodbye"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_GIVE_IT_TIME),"hung up: give it time"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"back to the sink"))
+        .thenExecute(()->{
+            var mine=f.own(p,P);var theirs=f.own(q,P);
+            h.assertTrue(mine.getInt("GailMarks")==1&&theirs.getInt("GailMarks")==1,"the call put nobody on the file: "+mine.getInt("GailMarks")+", "+theirs.getInt("GailMarks"));
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_hand_call") public static void handCallDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.535, the week's call after June's hand alone, with one reader: the one she says slammed the door on it, who was out of the
+     * house when it happened. June tells Gail it was not trouble, not really: one of them slammed the laundry door on her hand, only
+     * bruised. Gail asks the reader about it straight away, not how the week has been: offered that they never touched the door, that
+     * they were not even in the house, that she did it herself, or nothing, they say they were not in the house. Gail has only June's
+     * word and theirs, and it goes on their file, once. June back on, she'll keep an eye, and hangs up.
+     */
+    @GameTest(template="empty",batch="pell_hand_away",timeoutTicks=6000)
+    public static void aReaderAwayFromTheHouseIsTheOneJuneSaysSlammedTheDoor(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_hand_away",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");
+        f.at(p,P,.5,0,-44);
+        var phone=b.offset(PellCall.PHONE);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{PellHand.blamed(l,b,p,true);PellCall.afterBreakfast(l,b);f.at(p,P,-9.5,0,-67.5);})
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_TROUBLE),"June to Gail: not trouble, not really"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_WHAT),"the laundry door on her hand"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAND_BRUISED),"only bruised"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenExecute(()->{
+            hand(p,phone);
+            h.assertTrue(PellTexts.gailHandAsks(true,false).stream().allMatch(line->telling(p,"Gail",line))&&!telling(p,"Gail",PellTexts.GAIL_WEEK_ASKS),"Gail asks about her hand straight away: "+Talk.lines(p));
+            var r=Talk.replies(p);
+            h.assertTrue(r.contains(PellTexts.TELL_HAND_NOT_ME)&&r.contains(PellTexts.TELL_HAND_AWAY)&&r.contains(PellTexts.TELL_HAND_HERSELF)&&r.contains(PellTexts.TELL_NOTHING),"what they could truly say: "+r);
+            h.assertFalse(r.contains(PellTexts.TELL_WEEK_FINE)||r.contains(PellTexts.TELL_HAND_HEARD),"not the week's answers: "+r);
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_HAND_AWAY),"not even in the house");
+            h.assertTrue(telling(p,"Gail","I've only got her word and yours, love. It's going on your file.")&&telling(p,"Gail",PellTexts.GAIL_KNIFE_BYE),"her word and theirs: "+Talk.lines(p));
+            var own=f.own(p,P);
+            h.assertTrue(PellTexts.HAND_AWAY.equals(own.getString("ToldGailHand"))&&own.getString("ToldGailWeek").isEmpty()&&own.getInt("GailMarks")==1,"kept, and on the file once: "+own);
+            h.assertTrue(Talk.choose(p,PellTexts.HAND_BACK),"given back");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_EYE),"she'll keep an eye"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"hung up"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_hand_away") public static void handAwayDone(ServerLevel l){done();}
 }

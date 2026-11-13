@@ -1790,5 +1790,6 @@
   "block.the_oldest_house.pell_pool_drain": "Pool Drain",
   "item.the_oldest_house.pell_lane": "Lane Rope",
   "item.the_oldest_house.pell_lane_gap": "Lane Rope",
-  "item.the_oldest_house.pell_knife": "Kitchen Knife"
+  "item.the_oldest_house.pell_knife": "Kitchen Knife",
+  "subtitles.the_oldest_house.pell.hand": "A door slams, and a cry"
 }
