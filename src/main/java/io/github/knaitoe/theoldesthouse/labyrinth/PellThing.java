@@ -14,7 +14,7 @@ import net.minecraft.world.phys.shapes.*;
  * tools/draw_pell_things.py and turned by FACING. STAGE is what a thing shows at the time; what each stage is, is written beside the
  * thing's line in PellTexts.thing.
  * <ul>
- * <li>Two cells side by side (the table, the chore chart, the three boxes, the freezer, the pegboard, the kennel): half 0 is the cell on
+ * <li>Two cells side by side (the table, the chore chart, the three boxes, the freezer shut or open, the pegboard, the kennel): half 0 is the cell on
  * the left as one faces the front and half 1 the cell to its right ({@link #right}). The freezer's, the pegboard's and the kennel's half
  * is STAGE's bit 0.</li>
  * <li>Two cells end to end (the bed, the mattress, the camp bed, the bath): end 0 is the head and end 1 the cell FACING points to
@@ -35,7 +35,7 @@ public final class PellThing extends HorizontalDirectionalBlock {
         FREEZER,STOOL,POWER,CORD,TROUGH,BUCKET,CHLORINE,WASHER,
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
-        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE;
+        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, on the floor or hung: nothing a body bumps into. */
         public boolean flat(){return switch(this){case CHORE_CHART,CALENDAR,PHOTOS,HOOKS,COAT_HOOK,SWITCH,MARKS,BORDER,MIRROR,POWER,CORD,BULB,PEGBOARD,TOWEL,
@@ -145,6 +145,9 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case LANTERN->Block.box(4,0,4,12,13,12);
             // 0.4.532: the kitchen's telephone, on the wall by the arch.
             case PHONE->t(f,5,1,13,11,14,16);
+            // 0.4.540: open, the chest is hollow: its floor, its front and back, its end, and the lid stood up against the wall.
+            case FREEZER_OPEN->(stage&1)==0?Shapes.or(t(f,0,0,1,16,3,16),t(f,0,0,1,16,14,2.5F),t(f,0,0,14.5F,16,16,16),t(f,0,0,1,1.5F,14,16))
+                :Shapes.or(t(f,0,0,1,16,3,16),t(f,0,0,1,16,14,2.5F),t(f,0,0,14.5F,16,16,16),t(f,14.5F,0,1,16,14,16));
         };
     }
     /** What stops a body: everything standing on the floor except the flat things, which nobody bumps into. */

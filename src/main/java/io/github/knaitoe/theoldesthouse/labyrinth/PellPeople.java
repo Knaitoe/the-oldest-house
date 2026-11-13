@@ -46,19 +46,21 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class PellPeople {
     private PellPeople(){}
     /** Stranger phases, from this one up: June, Tilly, Callum, Gail. */
-    public static final int FIRST=195,JUNE=0,TILLY=1,CALLUM=2,GAIL=3,COUNT=4;
-    private static final String[] SKINS={"june","tilly","callum","gail"};
-    public static boolean cast(int phase){return phase>=FIRST&&phase<FIRST+COUNT;}
+    public static final int FIRST=195,JUNE=0,TILLY=1,CALLUM=2,GAIL=3,COUNT=4,
+        /** 0.4.540: Nessa, in the freezer (PellFreezer). Drawn as one of them, but not one of the four the visit moves (COUNT). */
+        NESSA=4;
+    private static final String[] SKINS={"june","tilly","callum","gail","nessa"};
+    public static boolean cast(int phase){return phase>=FIRST&&phase<=FIRST+NESSA;}
     public static String skin(int phase){return "pell_"+SKINS[phase-FIRST];}
     /** How big each is: the two grown women at full size, the two children smaller, Callum the smaller of them. */
-    public static double size(int phase){return switch(phase-FIRST){case TILLY->.62;case CALLUM->.58;default->1;};}
+    public static double size(int phase){return switch(phase-FIRST){case TILLY,NESSA->.62;case CALLUM->.58;default->1;};}
     /** What each has in hand is drawn: Tilly's cane, Gail's folder, and (0.4.530, which found it was never drawn) whatever June is
      *  holding, the saucepan at dinner, the hairbrush at bedtime and the tin, the brush and the lantern at night. */
     public static boolean carries(int phase){return cast(phase);}
     public static boolean is(@Nullable Entity e){return e instanceof LiteraryActor a&&a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int who(LiteraryActor a){return a.phase()-FIRST;}
     /** What each is called over what they say. */
-    public static String name(int who){return switch(who){case JUNE->"June";case TILLY->"Tilly";case CALLUM->"Callum";default->"Gail";};}
+    public static String name(int who){return switch(who){case JUNE->"June";case TILLY->"Tilly";case CALLUM->"Callum";case NESSA->"Nessa";default->"Gail";};}
     /** Their gestures, for the renderer: Tilly's cane held out ahead of her, Gail's folder held to her chest; from 0.4.527, asleep (lying
      *  along a bed), June brushing Tilly's hair, and Tilly having it brushed; from 0.4.530, June kneeling at the line with the brush,
      *  and Callum crouched (as a reader crouches, a beat late). */
@@ -73,7 +75,10 @@ public final class PellPeople {
         EATING=14,SITTING=15,
         // 0.4.539, midnight in the pool: June in the water holding Tilly by the shoulders, pressing her under, and standing with her arms
         // down; June leading Tilly by the hand, in her robe and in her swimming things; and Tilly with her hand held out in someone's.
-        HOLD=16,PRESS=17,WADE=18,LEADS=19,LEADS_SWIM=20,LED=21;
+        HOLD=16,PRESS=17,WADE=18,LEADS=19,LEADS_SWIM=20,LED=21,
+        // 0.4.540, the freezer: June with her hand held out in a reader's, in her swimming things; Nessa lying still in it; and June sat
+        // on the stool beside it, her hand on the plastic.
+        JUNE_LED=22,STILL=23,BY_HER=24;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
@@ -82,7 +87,7 @@ public final class PellPeople {
     public static @Nullable String dressed(int phase,int gesture,int marks){
         if(phase!=FIRST+JUNE)return null;
         // 0.4.539: in the water and leading Tilly down to it, in her swimming things; leading her in from the gate, in her robe.
-        return gesture==ROBE||gesture==LEADS?"pell_june_robe":gesture==SWIM||gesture==HOLD||gesture==PRESS||gesture==WADE||gesture==LEADS_SWIM?"pell_june_swim":(marks&WRAPPED)!=0?"pell_june_hand":null;
+        return gesture==ROBE||gesture==LEADS?"pell_june_robe":gesture==SWIM||gesture==HOLD||gesture==PRESS||gesture==WADE||gesture==LEADS_SWIM||gesture==JUNE_LED||gesture==BY_HER?"pell_june_swim":(marks&WRAPPED)!=0?"pell_june_hand":null;
     }
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
@@ -170,6 +175,10 @@ public final class PellPeople {
         double holdX,holdZ;final java.util.List<String> riteLines=new java.util.ArrayList<>();
         /** 0.4.539: whose hands have had Tilly's tonight. */
         final java.util.Set<UUID> hands=new java.util.HashSet<>();
+        /** 0.4.540, the freezer (PellFreezer, PellRite): whether June's lanyard is out of her robe's pocket; Nessa's body; who has June's
+         *  hand, where they have walked since (for her to follow), and when she last said the name while led; whether she sits by the
+         *  freezer. */
+        boolean lanyardOut,juneSat;UUID nessa,juneLeader;long juneCalledAt;final java.util.ArrayDeque<Vec3> juneTrail=new java.util.ArrayDeque<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -211,8 +220,10 @@ public final class PellPeople {
             if(!l.addFreshEntity(a))continue;
             h.ids[who]=a.getUUID();
         }
+        // 0.4.540: and Nessa, in the freezer.
+        PellFreezer.ensure(l,b);
     }
-    /** None of the four is at the house: for a house built again from nothing, and for tests. */
+    /** None of the four is at the house, nor Nessa: for a house built again from nothing, and for tests. */
     public static void reset(ServerLevel l,BlockPos b){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),PellPeople::is))old.discard();
         PellVisit.clearPlates(l,b);PellWeek.rope(l,b,false);
@@ -264,6 +275,8 @@ public final class PellPeople {
     public static void talk(ServerPlayer p,LiteraryActor a,net.minecraft.nbt.CompoundTag own){
         if(!is(a))return;var b=LiteraryVignettes.base(p,PellHouse.PLACE);if(b==null)return;
         int who=who(a);var h=household(b);
+        // 0.4.540: Nessa, in the freezer.
+        if(who==NESSA){PellHouse.cue(p,PellTexts.NESSA_HAND);own.putBoolean("SawNessa",true);return;}
         // 0.4.527: asleep, they are only looked at.
         if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
         // 0.4.538: something to eat held out to him: on the last night he takes it (PellLastNight).

@@ -44,7 +44,7 @@ from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
          'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife',
-         'pell_scrub')
+         'pell_scrub', 'pell_lanyard')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
@@ -52,7 +52,8 @@ NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.
          'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush',
          'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver',
          'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope',
-         'item.the_oldest_house.pell_knife': 'Kitchen Knife', 'item.the_oldest_house.pell_scrub': 'Scrubbing Brush'}
+         'item.the_oldest_house.pell_knife': 'Kitchen Knife', 'item.the_oldest_house.pell_scrub': 'Scrubbing Brush',
+         'item.the_oldest_house.pell_lanyard': 'Lanyard'}
 
 
 def blank():
@@ -436,6 +437,34 @@ def knife():
     return im
 
 
+def lanyard():
+    """0.4.540: June's lanyard, out of her robe's pocket: a cord in a loop gone soft with wear, the clip where its ends meet, and
+    three keys on the ring below it: the back door's in brass, the shed padlock's, and the small one that opens the freezer."""
+    im = blank()
+    cord, light = '#34436a', '#56689a'
+    loop = [(5, 1), (6, 1), (7, 1), (8, 1), (9, 1), (10, 1), (4, 2), (11, 2), (3, 3), (12, 3), (3, 4), (12, 4), (3, 5), (12, 5),
+            (4, 6), (11, 6), (5, 7), (10, 7), (6, 8), (9, 8)]
+    for x, y in loop:
+        dot(im, x, y, cord)
+    for x, y in ((6, 1), (8, 1), (3, 4), (12, 4), (4, 6)):
+        dot(im, x, y, light)
+    # The clip, and the split ring under it.
+    fill(im, 7, 8, 9, 10, '#8f969a'); dot(im, 7, 8, '#c6cbcf')
+    for x, y in ((6, 10), (9, 10), (6, 11), (9, 11), (7, 12), (8, 12)):
+        dot(im, x, y, '#a9aeb2')
+    # The back door's key, brass, hanging to the left: its bow, and the blade down with its teeth.
+    fill(im, 3, 11, 6, 13, '#c49a3c'); dot(im, 3, 11, '#e6c66a'); dot(im, 4, 12, '#7a5a1e')
+    for y in (13, 14, 15):
+        dot(im, 4, y, '#a47e2a')
+    dot(im, 3, 14, '#a47e2a'); dot(im, 3, 15, '#8a6a22')
+    # The shed padlock's, steel, straight down.
+    fill(im, 7, 13, 9, 14, '#a6acb0'); dot(im, 7, 13, '#d0d4d8')
+    dot(im, 8, 14, '#8a9094'); dot(im, 8, 15, '#8a9094'); dot(im, 9, 15, '#7a8084')
+    # The freezer's, small, to the right.
+    dot(im, 10, 12, '#bcc2c6'); dot(im, 11, 12, '#bcc2c6'); dot(im, 11, 13, '#9aa0a4'); dot(im, 11, 14, '#9aa0a4'); dot(im, 12, 14, '#80868a')
+    return im
+
+
 SCRUB_TIP, SCRUB_END = (13.4, 2.6), (2.6, 13.4)
 
 
@@ -652,14 +681,15 @@ def models():
             'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
             'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
-            'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld')}
+            'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld'),
+            'pell_lanyard': flat('pell_lanyard')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
-              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub()}
+              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub(), 'pell_lanyard': lanyard()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
     # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.

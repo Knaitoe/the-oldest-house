@@ -2254,5 +2254,13 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 195
+  },
+  {
+    "name": "literary_pell_nessa",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 199
   }
 ]

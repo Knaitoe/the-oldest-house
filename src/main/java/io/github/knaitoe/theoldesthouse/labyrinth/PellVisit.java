@@ -142,6 +142,9 @@ public final class PellVisit {
         PellTapes.tick(l,b,h,here,now);
         // 0.4.538: a bucket nobody here has goes back to the laundry; on the last night, Callum out on the line.
         if(now%PellScrub.KEEP==0)PellScrub.keep(l,b,here);
+        // 0.4.540: the lanyard looked for and Nessa where she lies; while the freezer is open, who sees into it.
+        if(now%PellFreezer.KEEP==0)PellFreezer.keep(l,b,here);
+        if(now%10==0)PellFreezer.seen(l,b,here);
         if(h.visit>=PellWeek.LAST)PellLastNight.callum(l,b,h,here,now);
         switch(h.step){
             case GREET->{if(gail!=null&&!gail.saying()&&arrived(b,june,gail,here)){say(h,gail,PellPeople.GAIL,PellTexts.GAIL_GREETS,now);h.step=JUNE_HELLO;}}
@@ -179,6 +182,8 @@ public final class PellVisit {
         PellScrub.restart(l,b,h);PellLastNight.restart(l,b,h);
         // 0.4.539: and midnight in the pool undone.
         PellRite.restart(l,b,h);
+        // 0.4.540: the freezer shut and padlocked again, and the lanyard back.
+        PellFreezer.restart(l,b);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);

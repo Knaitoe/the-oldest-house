@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -101,6 +102,7 @@ public final class PellRite {
     static void restart(ServerLevel l,BlockPos b,PellPeople.Household h){
         h.rite=NOT_YET;h.inHold=false;h.under=false;h.reply=false;h.afterUnder=false;h.heldFor=0;h.underAt=0;h.callAt=0;h.letGoAt=0;h.lineToldAt=0;
         h.leader=null;h.calls=0;h.replies=0;h.tookBack=false;h.riteLines.clear();h.hands.clear();
+        h.juneLeader=null;h.juneSat=false;h.juneCalledAt=0;h.juneTrail.clear();
         var june=PellPeople.find(l,b,J);if(june!=null)june.setNoGravity(false);
         var tilly=PellPeople.find(l,b,T);if(tilly!=null)tilly.setNoGravity(false);
     }
@@ -119,10 +121,10 @@ public final class PellRite {
             case FETCH->{if(still){h.rest[J]=PellPeople.yawTo(june,tilly.position());step(h,WAKE);}}
             case WAKE->wake(l,b,h,june,tilly,now);
             case LEAD->{follow(l,b,h,june,tilly);lead(l,b,h,june,tilly,here,now,still);}
-            case WATER->water(l,b,h,june,tilly,here,now);
+            case WATER->{water(l,b,h,june,tilly,here,now);byHer(l,b,h,june,here,now);}
             case ANSWERED->answered(l,b,h,june,tilly,here,now);
             case HOME->{follow(l,b,h,june,tilly);home(l,b,h,june,tilly,still);}
-            case OUT->{if(h.leader!=null)led(l,b,h,june,tilly,here,now);}
+            case OUT->{if(h.leader!=null)led(l,b,h,june,tilly,here,now);byHer(l,b,h,june,here,now);}
             default->{}
         }
     }
@@ -189,11 +191,12 @@ public final class PellRite {
         h.moving[J]=true;h.moving[T]=true;
         if(h.leader!=null)led(l,b,h,june,tilly,here,now);
         if(h.rite!=WATER)return;
+        boolean free=h.juneLeader==null&&!h.juneSat;
         if(h.inHold)hold(l,b,h,june,tilly,here,now);
-        else if(h.leader==null)standing(l,b,h,june,tilly,now);
+        else if(h.leader==null&&free)standing(l,b,h,june,tilly,now);
         // Her hands empty, June turns where she stands to watch the girl go.
-        if(!h.inHold&&h.leader!=null)face(june,tilly.position());
-        if(h.rite==WATER)calls(l,b,h,june,tilly,here,now);
+        if(!h.inHold&&h.leader!=null&&free)face(june,tilly.position());
+        if(h.rite==WATER&&free)calls(l,b,h,june,tilly,here,now);
         seen(l,b,h,tilly,here,now);
     }
     /** In June's hands: held at the surface, now and then under, and in the end the answer. */
@@ -236,7 +239,8 @@ public final class PellRite {
     /** Let go in the water, nobody's hand in hers: she stands there; in a while June wades to her and takes her back. */
     private static void standing(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,LiteraryActor tilly,long now){
         var r=rel(b,tilly.position());
-        if(!PellSite.inWater(r))return;
+        // 0.4.540: let go of on dry land on her way to the freezer, she stands where she is.
+        if(!PellSite.inWater(r)||!PellSite.inWater(rel(b,june.position())))return;
         place(tilly,b,r.x,TILLY_Y,r.z,tilly.getYRot());
         if(now-h.letGoAt<TAKE_BACK){june.setXRot(0);return;}
         // To a step behind her, facing the deep end as she held her before.
@@ -352,6 +356,8 @@ public final class PellRite {
     /** A hand on June at midnight: she does not stop for it. True if it answered. */
     static boolean june(ServerPlayer p,BlockPos b,PellPeople.Household h,LiteraryActor june,CompoundTag own){
         if(h.visit<PellWeek.LAST||h.rite==NOT_YET)return false;
+        // 0.4.540: with the freezer open, her hands free of Tilly, June lets herself be led to it; there, she is told the name.
+        if((h.rite==WATER||h.rite==OUT)&&PellFreezer.open(p.serverLevel(),b)&&freezerHand(p,b,h,june,own))return true;
         switch(h.rite){
             case WATER,ANSWERED->PellHouse.cue(p,h.inHold?PellTexts.JUNE_RITE_HOLDING:PellTexts.JUNE_RITE_CALLING);
             case OUT->PellHouse.cue(p,PellTexts.JUNE_RITE_STOPPED);
@@ -360,6 +366,109 @@ public final class PellRite {
         }
         return true;
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.540, June to the freezer
+    /** How far apart the points June follows along a reader's way are, and how many are kept. */
+    static final double TRAIL=.7;static final int TRAIL_MOST=96;
+    /** How often June says the name while she is led. */
+    static final int LED_CALL_EVERY=2*CALL_EVERY;
+    static final String FREEZER_TALK="pell_freezer";
+    /** A hand on June with the freezer open. True if it answered. */
+    private static boolean freezerHand(ServerPlayer p,BlockPos b,PellPeople.Household h,LiteraryActor june,CompoundTag own){
+        var l=p.serverLevel();
+        if(h.juneSat){PellHouse.cue(p,PellTexts.JUNE_BY_HER);return true;}
+        if(atFreezer(b,june)&&!h.inHold){ask(p,b);return true;}
+        if(p.getUUID().equals(h.juneLeader)){PellHouse.cue(p,PellTexts.JUNE_HAS_YOUR_HAND);return true;}
+        if(h.juneLeader!=null){PellHouse.cue(p,PellTexts.JUNE_HAS_A_HAND);return true;}
+        if(h.inHold)return false;
+        if(PellSite.inWater(rel(b,june.position()))&&p.distanceTo(june)>REACH){PellHouse.cue(p,PellTexts.JUNE_OUT_OF_REACH);return true;}
+        h.juneLeader=p.getUUID();h.juneTrail.clear();h.juneCalledAt=l.getGameTime();
+        june.gesture(PellPeople.JUNE_LED);june.setXRot(0);
+        PellHouse.cue(p,PellTexts.JUNES_HAND);own.putBoolean("TookJunesHand",true);
+        return true;
+    }
+    /** Whether June stands at the open freezer, in the laundry, near enough to be told the name there. */
+    static boolean atFreezer(BlockPos b,LiteraryActor june){
+        var r=rel(b,june.position());double dx=r.x-PellFreezer.NESSA_AT.x,dz=r.z-PellFreezer.NESSA_AT.z;
+        return PellHand.inLaundry(r)&&dx*dx+dz*dz<=PellFreezer.AT_FREEZER*PellFreezer.AT_FREEZER;
+    }
+    /** At the open freezer: June looks at it, and at the reader; the reader can say the name to her, or nothing. */
+    private static void ask(ServerPlayer p,BlockPos b){
+        Talk.begin(p,FREEZER_TALK,PellPeople.name(J));Talk.line(p,PellPeople.name(J),PellTexts.JUNE_AT_FREEZER);
+        Talk.ask(p,Talk.reply(PellTexts.TELL_NESSA,q->named(q,b)),Talk.reply(PellTexts.TELL_ITS_NESSA,q->named(q,b)),Talk.act(PellTexts.TELL_JUNE_NOTHING,q->{}));
+    }
+    /** The name, said to June at the open freezer: she sits down beside it and stops. */
+    private static void named(ServerPlayer p,BlockPos b){
+        var l=p.serverLevel();var h=PellPeople.household(b);var june=PellPeople.find(l,b,J);
+        if(june==null||h.juneSat||!PellFreezer.open(l,b)||!atFreezer(b,june)||(h.rite!=WATER&&h.rite!=OUT))return;
+        h.juneSat=true;h.juneLeader=null;h.juneTrail.clear();h.inHold=false;h.under=false;h.reply=false;
+        june.setNoGravity(false);june.noPhysics=false;
+        PellVisit.perch(l,b,h,J,june,PellFreezer.BY_HER);
+        june.gesture(PellPeople.BY_HER);june.setXRot(30);
+        var own=PellHouse.own(p);own.putBoolean("BroughtJune",true);PellHouse.save(p,own);
+        for(var q:PellHouse.readers(l,b)){
+            if(!q.isAlive()||q.isSpectator()||q.isSleeping())continue;
+            if(q==p||q.distanceTo(june)<=PellVisit.HEAR){
+                PellHouse.cue(q,PellTexts.JUNE_SITS);
+                if(q!=p){var o=PellHouse.own(q);if(!o.getBoolean("SawJuneSit")){o.putBoolean("SawJuneSit",true);PellHouse.save(q,o);}}
+            }else if(PellSite.onLot(rel(b,q.position())))PellHouse.cue(q,PellTexts.JUNE_STOPPED_INSIDE);
+        }
+    }
+    /** June led by a reader's hand, or sat by the freezer: each tick of the water and after. */
+    private static void byHer(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
+        if(h.juneSat){
+            // On the stool, her head bowed to the freezer; she is not turned by anybody near.
+            h.moving[J]=true;var at=PellVisit.world(b,PellFreezer.NESSA_AT);
+            float look=PellPeople.yawTo(june,at);june.setYHeadRot(look);june.setXRot(30);
+            if(june.gesture()!=PellPeople.BY_HER)june.gesture(PellPeople.BY_HER);
+            return;
+        }
+        if(h.juneLeader!=null)juneFollows(l,b,h,june,now);
+    }
+    /** After the hand: along the way the reader walked, a step behind; through the water, up out of it at the edge, and on. */
+    private static void juneFollows(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,long now){
+        h.moving[J]=true;
+        var p=l.getServer().getPlayerList().getPlayer(h.juneLeader);
+        if(p==null||p.level()!=l||!p.isAlive()||p.isSpectator()||p.distanceTo(june)>LET_GO){
+            if(p!=null)PellHouse.cue(p,PellTexts.JUNE_LET_GO);
+            h.juneLeader=null;h.juneTrail.clear();june.gesture(PellPeople.WADE);return;
+        }
+        var to=p.position();var last=h.juneTrail.peekLast();
+        if(last==null||last.distanceToSqr(to)>=TRAIL*TRAIL){h.juneTrail.addLast(to);while(h.juneTrail.size()>TRAIL_MOST)h.juneTrail.pollFirst();}
+        // Now and then, still, the name.
+        if(now-h.juneCalledAt>=LED_CALL_EVERY&&!june.saying()){var line=PellTexts.JUNE_LED_CALLS[h.calls++%PellTexts.JUNE_LED_CALLS.length];say(h,june,J,line,now);h.juneCalledAt=now;}
+        var at=june.position();
+        if(horizontal(at,to)<=BESIDE){face(june,to);return;}
+        while(h.juneTrail.size()>1&&horizontal(h.juneTrail.peekFirst(),at)<.4)h.juneTrail.pollFirst();
+        var next=h.juneTrail.isEmpty()?to:h.juneTrail.peekFirst();
+        var r=rel(b,at);
+        if(PellSite.inWater(r)){wade(l,b,june,r,rel(b,next));return;}
+        if(june.isNoGravity()){june.setNoGravity(false);june.noPhysics=false;}
+        if(june.gesture()!=PellPeople.JUNE_LED)june.gesture(PellPeople.JUNE_LED);
+        SceneFootpaths.walk(june,next,LED_PACE);
+    }
+    private static double horizontal(Vec3 a,Vec3 c){double dx=a.x-c.x,dz=a.z-c.z;return Math.sqrt(dx*dx+dz*dz);}
+    /** June in the water after the hand: wading along the shallow end, and up out of it where the way leaves the water. */
+    private static void wade(ServerLevel l,BlockPos b,LiteraryActor june,Vec3 r,Vec3 to){
+        double dx=to.x-r.x,dz=to.z-r.z,d=Math.sqrt(dx*dx+dz*dz);
+        if(d<1e-3)return;
+        float yaw=(float)(Mth.atan2(dz,dx)*Mth.RAD_TO_DEG)-90;
+        if(!PellSite.inWater(new Vec3(to.x,-.5,to.z))&&d<=LIFT){
+            var at=PellVisit.world(b,new Vec3(to.x,0,to.z));
+            if(l.noCollision(june,june.getDimensions(june.getPose()).makeBoundingBox(at))){
+                PellSwim.splash(l,PellVisit.world(b,new Vec3(r.x,PellWeek.WATERLINE,r.z)),.9F);
+                june.setNoGravity(false);june.noPhysics=false;june.gesture(PellPeople.JUNE_LED);
+                june.moveTo(at.x,at.y,at.z,yaw,0);june.setYHeadRot(yaw);june.setYBodyRot(yaw);june.setDeltaMovement(Vec3.ZERO);
+                return;
+            }
+        }
+        double s=Math.min(WATER_PACE,d);
+        double nx=Mth.clamp(r.x+dx/d*s,IN_W,IN_E),nz=Mth.clamp(r.z+dz/d*s,IN_N,IN_S);
+        place(june,b,nx,JUNE_Y,nz,yaw);june.setNoGravity(true);june.gesture(PellPeople.JUNE_LED);
+    }
+    /** For tests: who has June's hand, and whether she sits by the freezer. */
+    public static @Nullable UUID juneLeader(BlockPos b){return PellPeople.household(b).juneLeader;}
+    public static boolean juneSat(BlockPos b){return PellPeople.household(b).juneSat;}
+
     private static @Nullable ServerPlayer leaderOf(ServerLevel l,PellPeople.Household h){
         if(h.leader==null)return null;var p=l.getServer().getPlayerList().getPlayer(h.leader);
         return p!=null&&p.level()==l&&p.isAlive()&&!p.isSpectator()?p:null;
@@ -422,13 +531,13 @@ public final class PellRite {
     private static void out(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,LiteraryActor tilly,ServerPlayer p,List<ServerPlayer> here){
         if(h.rite!=WATER||!outside(l,b,tilly.position()))return;
         step(h,OUT);h.inHold=false;h.under=false;h.reply=false;
-        june.gesture(PellPeople.WADE);june.setXRot(0);
+        if(h.juneLeader==null&&!h.juneSat){june.gesture(PellPeople.WADE);june.setXRot(0);}
         PellHouse.cue(p,PellTexts.TILLY_OUT);
         var own=PellHouse.own(p);own.putBoolean("GotTillyOut",true);PellHouse.save(p,own);
         for(var q:here){
             if(q==p||!q.isAlive()||q.isSpectator()||q.isSleeping())continue;
             if(q.distanceTo(tilly)<=PellVisit.HEAR){var o=PellHouse.own(q);if(!o.getBoolean("SawTillyOut")){o.putBoolean("SawTillyOut",true);PellHouse.save(q,o);}}
-            if(PellSite.onLot(rel(b,q.position())))PellHouse.cue(q,PellTexts.JUNE_STOPPED);
+            if(!h.juneSat&&PellSite.onLot(rel(b,q.position())))PellHouse.cue(q,PellTexts.JUNE_STOPPED);
         }
     }
 

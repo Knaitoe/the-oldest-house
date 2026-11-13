@@ -129,6 +129,9 @@ public final class PellHouse {
             // 0.4.538: the bucket is taken, to scrub the line with (PellScrub); on the last night the fridge has a plate in it.
             case BUCKET->PellScrub.take(p,b,at,own);
             case FRIDGE->{if(!PellScrub.fridge(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.540: the lanyard in June's robe on the chair, the last night; the freezer it opens, and Nessa in it (PellFreezer).
+            case POOL_CHAIR->{if(!PellFreezer.chair(p,b,st,own))cue(p,PellTexts.thing(kind,stage));}
+            case FREEZER,FREEZER_OPEN->{if(!PellFreezer.hand(p,b,st,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }

@@ -70,6 +70,8 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> KNIFE=ITEMS.register("pell_knife",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.538: the bucket from the laundry, water in it and the scrubbing brush across it (PellScrub, PellScrubItem). */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SCRUB=ITEMS.register("pell_scrub",()->new PellScrubItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.540: June's lanyard, from her robe's pocket on the last night: three keys, one of them the freezer's (PellFreezer). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANYARD=ITEMS.register("pell_lanyard",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */
