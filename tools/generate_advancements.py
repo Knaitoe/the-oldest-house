@@ -113,6 +113,7 @@ STORY_ICONS = {
     'the_kept': 'minecraft:observer',
     'last_orders': 'minecraft:paper',
     'bike_night': NS + ':treat_sack',
+    'pell_house': NS + ':pell_cane_tip',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

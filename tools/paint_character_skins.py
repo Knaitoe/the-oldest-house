@@ -276,6 +276,9 @@ LOOKS = {
     'literary_pell_tilly': Look('#e2b998','#b5895a','long','#e4c86a','#4e6684','tee','#f2ecd8',eyes='#5a6a7a',mark='pell_tilly',sleeve=4,face_style='child',shoes='#d8d4c8'),
     # Callum: barefoot, in a jumper and trousers that were somebody else's first; his hair wet, and the jumper wet where it drips.
     'literary_pell_callum': Look('#d6ae8e','#241f1c','messy','#7c8a76','#5f5a4e','knit','#a4ad9c',eyes='#4a5244',mark='pell_callum',sleeve=11,face_style='child'),
+    # 0.4.541 (docs/PELL_HOUSE_DAWN_0_4_541.md): Callum at first light on the front step, as he is, with his shoes on: scuffed canvas,
+    # laced.
+    'literary_pell_callum_shoes': Look('#d6ae8e','#241f1c','messy','#7c8a76','#5f5a4e','knit','#a4ad9c',eyes='#4a5244',mark='pell_callum',sleeve=11,face_style='child',shoes='#6a5c4c'),
     # Gail: a lanyard and the card on it. Her folder is in her hands (PellPeople).
     'literary_pell_gail': Look('#b98966','#2e241e','part','#5f7088','#3a3c44','shirt','#e8e2d4',eyes='#3e3226',mark='pell_gail',sleeve=10,shoes='#2a2624'),
     # 0.4.540 (docs/PELL_HOUSE_FREEZER_0_4_540.md): Nessa, as she is in the freezer: the face of every photograph in the house (dark hair

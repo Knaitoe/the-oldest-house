@@ -1796,5 +1796,9 @@
   "subtitles.the_oldest_house.pell.tape_voice": "A woman's voice, on a tape",
   "item.the_oldest_house.pell_scrub": "Scrubbing Brush",
   "subtitles.the_oldest_house.pell.scrub": "A scrubbing brush on paint",
-  "item.the_oldest_house.pell_lanyard": "Lanyard"
+  "item.the_oldest_house.pell_lanyard": "Lanyard",
+  "item.the_oldest_house.pell_cane_tip": "Cane Tip",
+  "subtitles.the_oldest_house.pell.car_come": "A car pulls in at the curb",
+  "advancements.the_oldest_house.account.pell_house.title": "The Pell house",
+  "advancements.the_oldest_house.account.pell_house.description": "I stayed three times in a house where a woman had ringed the lot with paint."
 }

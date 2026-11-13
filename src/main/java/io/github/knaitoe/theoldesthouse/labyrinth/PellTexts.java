@@ -593,6 +593,51 @@ public final class PellTexts {
     /** June, led away from the water by a reader's hand, still saying the name now and then. */
     public static final String[] JUNE_LED_CALLS={"Nessa?","Nessa, love?","Where's my Nessa?"};
 
+    // ------------------------------------------------------------------------------------------------ 0.4.541, first light (PellDawn)
+    /** Woken on the camp bed at first light, once the night's end has come either way. */
+    public static final String WOKEN_AT_DAWN="It is getting light. Out in the street, a car is coming.",
+        // Gail at the foot of the path; to Tilly beside her; and Tilly's answer.
+        GAIL_DAWN="Morning, love. I came as soon as it was light.",
+        GAIL_TO_TILLY="Tilly? Is that you, sweetheart?",
+        TILLY_TO_GAIL="It's me. I'm Tilly.",
+        // To each reader the morning is for, after Tilly came out.
+        DAWN_OUT="Gail's car is at the curb.",
+        // After Tilly answered: Gail to the readers; what each is told; going to her, with Tilly at the window or not; the horn, for
+        // whoever has not come to her; and the end of the street.
+        GAIL_COME_ON="June rang in the night. She thinks it's best you come with me, love. Tilly's settled.",
+        DAWN_ANSWERED="Gail's car is at the curb. Gail is waiting at the foot of the path.",
+        IN_CAR="Gail opens the car door for you.",
+        TILLY_WAVES="Gail opens the car door. Up at Nessa's window, Tilly is waving. June stands behind her.",
+        CAR_HORN="Out in the street, Gail sounds the horn.",
+        SET_DOWN="The car stops at the end of the street, and Gail lets you out.";
+    /** A hand on them at first light: Callum on the step (he does not speak); Tilly with Gail; Tilly and June at Nessa's window; Gail,
+     *  after Tilly came out and after she answered. */
+    public static final String[] CALLUM_STEP_HAND={
+        "Callum is sitting on the step with his shoes on.",
+        "He moves along the step to make room.",
+        "He is looking down the path at the car.",
+    },TILLY_DAWN_TALK={
+        "It's me. I'm Tilly.",
+        "Is that Gail's car? It sounds like hers.",
+        "I can't hear June any more.",
+    },TILLY_KEPT_TALK={
+        "I'm staying here with Mum.",
+        "Mum says I can wave.",
+        "Bye.",
+    },JUNE_KEPT_TALK={
+        "Go on, love. Gail's waiting.",
+        "She's home now.",
+        "Wave bye-bye, Nessa.",
+    },GAIL_DAWN_TALK={
+        "Morning, love.",
+        "I've got her. Go on.",
+        "Callum's got his shoes on. Look at that.",
+    },GAIL_WAIT_TALK={
+        "In you get, love.",
+        "June knows best. She's been doing this a long time.",
+        "Tilly's settled. Come on.",
+    };
+
     /** Tilly's own name back to the calls, fainter the longer she holds out; near the end, nothing. */
     public static String[] tillyHolds(long held,int out){
         if(held<out/3)return new String[]{"I'm Tilly.","My name's Tilly."};
@@ -678,13 +723,99 @@ public final class PellTexts {
             "I will telephone every morning for the first week.\n\nPlease be patient with one another. It has been a hard month for everyone.\n\nGail Mercer\nCaseworker"));
     }
     /**
-     * The account. This slice the house cannot be finished, so nothing asks for this; it says only what a reader could have seen
-     * of the street, and later slices write the rest from the reader's own record.
+     * 0.4.541, the account (docs/PELL_HOUSE_DAWN_0_4_541.md), ready only once Tilly has come out with her own name: the house as this
+     * reader had it, from their own record, in their words. It ends on the street, beyond the line. Nothing in it says what the reader is
+     * like or how they felt; what June and Gail said is theirs.
      */
     public static ItemStack account(String name,CompoundTag own){
         var p=new ArrayList<String>();
         p.add("There was a brick house at the head of a street where every lawn but one was dead. Hers was green.");
         if(own.getBoolean("WentIn"))p.add("I went in by a screen door that had been torn low down and taped.");
+        p.add("June Pell took us in, Tilly and me. Tilly went by her cane and by what she could hear. June gave her Nessa's room.");
+        int r=own.getInt("Rules");var rules=new ArrayList<String>();
+        if((r&RULE_LINE)!=0)rules.add("Inside the line after dark.");
+        if((r&RULE_POOL)!=0)rules.add("The pool gate stays locked.");
+        if((r&RULE_NESSA)!=0)rules.add("Nessa's room is Tilly's now.");
+        if((r&RULE_GARAGE)!=0)rules.add("I was in the garage, for my privacy.");
+        if(!rules.isEmpty())p.add("June had rules. "+String.join(" ",rules));
+        boolean dinner=own.getBoolean("HeardNessaAtDinner"),bed=own.getBoolean("HeardNessaAtBedtime");
+        if(dinner&&bed)p.add("At the table, and again at bedtime, June called Tilly Nessa.");
+        else if(dinner)p.add("At the table June called Tilly Nessa, and went on serving.");
+        else if(bed)p.add("At bedtime June called Tilly Nessa.");
+        if(own.getBoolean("SawHairBrushed"))p.add("I watched June brush out Tilly's hair at bedtime, slowly, all the way down.");
+        int nights=own.getInt("GarageNights");
+        if(nights>1)p.add("I slept in the garage, "+Stillness.words(nights)+" nights in all.");
+        else if(own.getBoolean("SleptInGarage"))p.add("I slept in the garage.");
+        if(own.getBoolean("SawPainting"))p.add("At night I saw June out on the grass with a tin and a brush, painting the line where it had worn thin.");
+        else if(own.getBoolean("SawJuneOut"))p.add("At night I saw June out in the garden in the dark.");
+        if(own.getBoolean("SawCallumOnLine"))p.add("Callum stood out on the line in the dark, facing the house, and did not move.");
+        String first=switch(own.getString("ToldGail")){
+            case FINE->"I told her it was fine.";
+            case NO_SLEEP->"I told her I had not slept much.";
+            case JUNE_OUT->"I told her June had been out in the garden in the night. She said June would have been seeing to something.";
+            case CALLUM->"I told her Callum had been standing outside in the dark. She said he did that.";
+            case LEAVE->"I told her I did not want to stay. She asked me to give it a week.";
+            case NOTHING->"I said nothing.";
+            case WALKED_OFF->"I walked off with the receiver and said nothing.";
+            default->"";
+        };
+        if(!first.isEmpty())p.add("In the morning Gail rang, and June gave me the phone. "+first);
+        if(own.getBoolean("InTheBlack"))p.add("A week on, Callum was at the kitchen sink in the night with a knife in his hand."+(own.getBoolean("FoughtCallum")?" I took hold of his wrist.":"")
+            +" After that there is a gap. When it closed, the knife was gone, there was a towel on the floor, and June was in the doorway.");
+        else if(own.getBoolean("SawKnifeAtSink"))p.add("A week on, I saw Callum at the kitchen sink in the night with a knife in his hand.");
+        String week=own.getString("ToldGailWeek");
+        String w=switch(week){
+            case KNIFE_TOOK->"I told her Callum had the knife and I was getting it off him.";
+            case KNIFE_DONT_KNOW->"I told her I did not know what had happened.";
+            case KNIFE_LYING->"I told her June was lying.";
+            case KNIFE_NOT_ME->"I told her it was not me.";
+            case KNIFE_SAW->"I told her I had seen him at the sink with it.";
+            case FINE->"I told her it was fine.";
+            case NO_SLEEP->"I told her I still was not sleeping.";
+            case LEAVE->"I told her I did not want to stay.";
+            case NOTHING->"I said nothing.";
+            case WALKED_OFF->"I walked off with the receiver and said nothing.";
+            default->"";
+        };
+        if(!w.isEmpty())p.add("When Gail rang again"+(week.startsWith("knife_")?", she had June's version of the night already. ":", ")+w);
+        if(own.getBoolean("HeardJuneHand"))p.add("In the laundry a door slammed, hard, and June cried out. Nobody saw it.");
+        if(own.getBoolean("SawJuneHand"))p.add("She came out with her hand wrapped in a tea towel, and said she had caught it in the door.");
+        if(own.getBoolean("BlamedForHand"))p.add("By the time Gail rang, it was me who had shut the door on it.");
+        String hand=switch(own.getString("ToldGailHand")){
+            case HAND_NOT_ME->"I told Gail I never touched the door.";
+            case HAND_AWAY->"I told Gail I had not even been in the house.";
+            case HAND_HERSELF->"I told Gail June had done it herself.";
+            case HAND_HEARD->"I told Gail I had heard it and not seen it.";
+            case HAND_WASNT_ME->"I told Gail it was not me.";
+            case NOTHING,WALKED_OFF->"About the hand, I said nothing.";
+            default->"";
+        };
+        if(!hand.isEmpty())p.add(hand);
+        int marks=own.getInt("GailMarks");
+        if(marks>0)p.add(marks==1?"Gail put one thing on my file.":"Gail put "+Stillness.words(marks)+" things on my file.");
+        if(!PellEntries.written(own).isEmpty())p.add("In my journal, in my own hand, there were lines I never wrote.");
+        int tapes=Integer.bitCount(own.getInt("TapesWatched"));
+        if(own.getBoolean("ReadTheTapes"))p.add("In the shed were tapes of a woman talking to somebody who had lost a child. I watched all of them, in order, and by the end I knew what the water was for.");
+        else if(tapes>0)p.add("In the shed were tapes of a woman talking to somebody who had lost a child. I watched "+(tapes==1?"one":Stillness.words(tapes))
+            +(own.getBoolean("WatchedOutOfOrder")?", not in order.":"."));
+        if(own.getBoolean("TookBucket"))p.add("On the last night I took the bucket from the laundry and scrubbed at the line"+(own.getBoolean("ScrubbedOut")?" until there was a gap in it.":"."));
+        if(own.getBoolean("FedCallum"))p.add("There was a plate of dinner in the fridge under cling film. I took it out to Callum on the line. He sat down on the grass and ate it, and said, \u201CMy name's Callum.\u201D");
+        else if(own.getBoolean("HeardCallum"))p.add("Out on the line, Callum said, \u201CMy name's Callum.\u201D It was the only thing I heard him say.");
+        if(own.getBoolean("WokenByThePool"))p.add("I woke to water splashing out the back, and June saying a name over and over.");
+        if(own.getBoolean("SawRite"))p.add("At midnight June walked Tilly down into the pool and called her Nessa, again and again, and waited for her to answer to it. Every time, Tilly said her own name back.");
+        if(own.getBoolean("TookTillysHand"))p.add("I took Tilly's hand under the water.");
+        if(own.getBoolean("GotTillyOut"))p.add("I led her across the grass to the gap in the line, and she stepped through it with me.");
+        else if(own.getBoolean("SawTillyOut"))p.add("I saw Tilly come out through the gap in the line.");
+        if(own.getBoolean("TookLanyard"))p.add("June's robe was over the chair by the pool, with a lanyard in its pocket. I took it.");
+        if(own.getBoolean("UnlockedFreezer"))p.add("The third key on it opened the padlock on the freezer in the laundry.");
+        if(own.getBoolean("SawNessa"))p.add((own.getBoolean("OpenedFreezer")?"I lifted the lid. ":"The freezer stood open. ")+"Under frosted plastic was Nessa, in a party dress and a paper crown, still.");
+        if(own.getBoolean("BroughtJune"))p.add("I brought June through the house to the freezer by the hand, and told her it was Nessa. She sat down beside it with her hand on the plastic, and stopped calling.");
+        else if(own.getBoolean("SawJuneSit"))p.add("June sat down beside the freezer with her hand on the plastic, and stopped calling.");
+        p.add("When it got light, Gail's car came up the street and pulled in at the curb. Callum was sitting on the front step with his shoes on.");
+        p.add("Tilly stood by Gail at the curb. Gail asked if it was Tilly, and she said it was.");
+        if(own.getBoolean("BroughtJune"))p.add("June was still sitting by the freezer when the car came.");
+        p.add("As I went past, Tilly put something in my hand: the spare rubber tip from her cane.");
+        p.add("I went down the path, over the line, and out into the street. Behind me nobody was calling any name at all.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.PELL_HOUSE),name,pages(String.join("\n\n",p)));
     }
 }

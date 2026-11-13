@@ -5450,5 +5450,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pell.scrub"
+  },
+  "pell.car_come": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/car_come",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.car_come"
   }
 }

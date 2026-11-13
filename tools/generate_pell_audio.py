@@ -5,7 +5,8 @@ lock turning on each door when she locks up. From docs/PELL_HOUSE_NIGHT_0_4_530.
 lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and June's cry. From docs/PELL_HOUSE_TAPES_0_4_536.md: the
 shed's video deck taking a tape, and the woman on the tapes talking, through the television's small speaker (three takes, so her
 lines are not one clip over and over). From docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md: the scrubbing brush on the line, one stroke out
-and back at a time, played as it is worked.
+and back at a time, played as it is worked. From docs/PELL_HOUSE_DAWN_0_4_541.md: Gail's car coming up the street at first light and
+pulling in at the curb.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -26,6 +27,7 @@ ROWS = {
     'tape_play': ('A video deck takes a tape', 12),
     'tape_voice': ("A woman's voice, on a tape", 12),
     'scrub': ('A scrubbing brush on paint', 10),
+    'car_come': ('A car pulls in at the curb', 48),
 }
 # 0.4.536: sounds with more than one take; the game picks one each time.
 TAKES = {'tape_voice': 3}
@@ -95,6 +97,36 @@ def car_away():
     # Tyres on the road as it goes: a hiss that swells and falls away with the engine.
     tyres = band(rng.standard_normal(k), 400, 3500) * np.where(tk < 1.2, 0, np.sin(np.pi * np.clip((tk - 1.2) / 3.4, 0, 1)) ** 1.5) * .18
     place(out, tyres, start)
+    return out
+
+
+def car_come():
+    # 0.4.541: Gail's car at first light, from up the street: the engine low and steady, louder as it comes, its note falling as it
+    # slows; the tyres on the road, and a soft squeal of brakes as it stops; a last moment of idle and the engine off; then a car door
+    # opened, and shut.
+    n = seconds(6.6)
+    out = np.zeros(n)
+    k = seconds(4.4)
+    tk = times(k)
+    rate = np.where(tk < 2.8, 46 - 6 * np.minimum(1, tk / 2.8), 40 - 14 * np.minimum(1, (tk - 2.8) / 1.2))
+    phase = np.cumsum(rate) / RATE
+    firing = (np.sin(2 * np.pi * phase) + .5 * np.sin(4 * np.pi * phase) + .3 * np.sin(6 * np.pi * phase))
+    rumble = band(firing + band(rng.standard_normal(k), 40, 300) * .4, 30, 900)
+    near = np.minimum(1, (tk / 2.8) ** 1.6) * np.where(tk < 4.0, 1, np.exp(-(tk - 4.0) / .12))
+    place(out, rumble * near * .55, 0)
+    tyres = band(rng.standard_normal(k), 400, 3500) * np.minimum(1, (tk / 2.8) ** 2) * np.where(tk < 3.5, 1, np.exp(-(tk - 3.5) / .2)) * .2
+    place(out, tyres, 0)
+    k = seconds(.5)
+    tk = times(k)
+    place(out, np.sin(2 * np.pi * np.cumsum(2300 - 300 * tk) / RATE) * envelope(k, .05, .35) * .05, 3.3)
+    # The door: its latch, and a beat later the door shut, heavy and padded.
+    k = seconds(.04)
+    tk = times(k)
+    place(out, band(rng.standard_normal(k), 1800, 7000) * np.exp(-tk / .006) * .45, 5.0)
+    k = seconds(.45)
+    tk = times(k)
+    thud = np.sin(2 * np.pi * 62 * tk) * np.exp(-tk / .09) + band(rng.standard_normal(k), 80, 700) * np.exp(-tk / .05) * .8
+    place(out, thud * .9, 5.9)
     return out
 
 
@@ -340,7 +372,8 @@ def scrub():
 
 
 MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
-          'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub}
+          'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub,
+          'car_come': car_come}
 
 
 def main():

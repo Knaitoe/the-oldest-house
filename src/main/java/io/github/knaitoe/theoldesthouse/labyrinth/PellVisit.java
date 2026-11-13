@@ -135,7 +135,8 @@ public final class PellVisit {
         PellMorning.sleepers(l,b,h,here,now);
         clock(h,here,now);
         if(!h.gailGone)car(l,b,h);
-        if(gail!=null&&h.step>=FIRST_RULE)leave(l,b,h,gail);
+        // 0.4.541: back at first light on the last night, Gail stays (PellDawn).
+        if(gail!=null&&h.step>=FIRST_RULE&&!PellDawn.morning(h))leave(l,b,h,gail);
         if(tilly!=null&&h.step<CALLED)tilly(b,h,june,tilly);
         walkers(l,b,h);
         // 0.4.536: the shed's deck, whatever the hour.
@@ -184,6 +185,8 @@ public final class PellVisit {
         PellRite.restart(l,b,h);
         // 0.4.540: the freezer shut and padlocked again, and the lanyard back.
         PellFreezer.restart(l,b);
+        // 0.4.541: and the morning.
+        PellDawn.restart(h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);
@@ -372,10 +375,11 @@ public final class PellVisit {
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
         long to=h.step==SETTLED?(h.visit>=2&&(!h.welcomed||PellHand.holds(h))?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
-            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?PellNight.TWELVE:PellNight.ELEVEN)
+            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?(PellDawn.after(h)?PellMorning.DAWN:PellNight.TWELVE):PellNight.ELEVEN)
             // 0.4.538: on the last night the evening holds until a reader first comes in.
             :h.step>=CLEARED?(h.visit>=PellWeek.LAST&&!h.welcomed?h.time:EVENING):h.time;
-        int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;
+        // 0.4.541: on the last night, once the rite is over either way, the rest of the night goes faster, to first light (PellDawn).
+        int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT&&PellDawn.after(h)?PellDawn.AFTER_PACE:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;
         if(h.time<to)h.time=Math.min(to,h.time+pace);
         int rate=h.time<to?pace:0;boolean changed=rate!=h.rate;h.rate=rate;
         var payload=new io.github.knaitoe.theoldesthouse.network.PellPayload(h.time,h.rate);

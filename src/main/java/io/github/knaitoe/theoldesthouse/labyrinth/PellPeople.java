@@ -78,13 +78,17 @@ public final class PellPeople {
         HOLD=16,PRESS=17,WADE=18,LEADS=19,LEADS_SWIM=20,LED=21,
         // 0.4.540, the freezer: June with her hand held out in a reader's, in her swimming things; Nessa lying still in it; and June sat
         // on the stool beside it, her hand on the plastic.
-        JUNE_LED=22,STILL=23,BY_HER=24;
+        JUNE_LED=22,STILL=23,BY_HER=24,
+        // 0.4.541, first light: Callum sat on the front step with his shoes on; Tilly at Nessa's window, waving.
+        STEP=25,WAVE=26;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
     public static @Nullable String dressed(int phase,int gesture){return dressed(phase,gesture,0);}
     /** As above, with the marks they carry: by day, after the laundry, June with her hand wrapped. */
     public static @Nullable String dressed(int phase,int gesture,int marks){
+        // 0.4.541: on the front step at first light, Callum has his shoes on.
+        if(phase==FIRST+CALLUM)return gesture==STEP?"pell_callum_shoes":null;
         if(phase!=FIRST+JUNE)return null;
         // 0.4.539: in the water and leading Tilly down to it, in her swimming things; leading her in from the gate, in her robe.
         return gesture==ROBE||gesture==LEADS?"pell_june_robe":gesture==SWIM||gesture==HOLD||gesture==PRESS||gesture==WADE||gesture==LEADS_SWIM||gesture==JUNE_LED||gesture==BY_HER?"pell_june_swim":(marks&WRAPPED)!=0?"pell_june_hand":null;
@@ -179,6 +183,12 @@ public final class PellPeople {
          *  hand, where they have walked since (for her to follow), and when she last said the name while led; whether she sits by the
          *  freezer. */
         boolean lanyardOut,juneSat;UUID nessa,juneLeader;long juneCalledAt;final java.util.ArrayDeque<Vec3> juneTrail=new java.util.ArrayDeque<>();
+        /** 0.4.541, first light (PellDawn): where the morning has got to; the car's leg up the street; what has been said at the curb;
+         *  who is where; when Gail came; the readers at the house when the night's end came, those gone to Gail's car, those whose black
+         *  has begun, and when each one's black begins. */
+        int dawn,carLeg,gailSaid;boolean endTaken,callumStepped,tillyWithGail,atWindow;long comeAt;
+        final java.util.Set<UUID> atEnd=new java.util.HashSet<>(),inCar=new java.util.HashSet<>(),faded=new java.util.HashSet<>();
+        final java.util.Map<UUID,Long> leaveAt=new java.util.HashMap<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -202,6 +212,18 @@ public final class PellPeople {
      * Each of the four at the house, made where the first visit puts them if they are not there. Nothing is made where the ground's
      * entities are not loaded, so nobody is made twice over one who has yet to load.
      */
+    /** 0.4.541: one of the four made at this place, looking this way, holding what they hold on the first visit; null if not made. */
+    static @Nullable LiteraryActor make(ServerLevel l,BlockPos b,int who,Vec3 rel,float look){
+        var at=PellVisit.world(b,rel);if(!live(l,at))return null;
+        var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
+        a.bind(PellHouse.PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
+        a.moveTo(at.x,at.y,at.z,look,0);a.setYHeadRot(look);a.setYBodyRot(look);
+        if(who==TILLY){a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(PellRegistry.CANE.get()));a.gesture(CANE);}
+        if(who==GAIL){a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(PellRegistry.FOLDER.get()));a.gesture(FOLDER);}
+        if(!l.addFreshEntity(a))return null;
+        household(b).ids[who]=a.getUUID();
+        return a;
+    }
     public static void ensure(ServerLevel l,BlockPos b){
         var h=household(b);
         // 0.4.533: a week in, Gail does not come with them (PellWeek); she is not made for a visit about to begin a week in.
@@ -277,6 +299,8 @@ public final class PellPeople {
         int who=who(a);var h=household(b);
         // 0.4.540: Nessa, in the freezer.
         if(who==NESSA){PellHouse.cue(p,PellTexts.NESSA_HAND);own.putBoolean("SawNessa",true);return;}
+        // 0.4.541: at first light, with Gail back (PellDawn).
+        if(PellDawn.talk(p,b,h,a,who))return;
         // 0.4.527: asleep, they are only looked at.
         if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
         // 0.4.538: something to eat held out to him: on the last night he takes it (PellLastNight).

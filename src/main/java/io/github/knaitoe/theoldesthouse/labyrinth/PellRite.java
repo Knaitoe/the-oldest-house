@@ -97,6 +97,29 @@ public final class PellRite {
     }
     /** For tests: Tilly a breath from answering, if nobody takes her hand. */
     public static void nearlyAnswers(BlockPos b){var h=PellPeople.household(b);h.heldFor=Math.max(h.heldFor,HOLD_OUT-40);}
+    /** 0.4.541, for tests: Tilly brought out through the line by a reader, her hand still in theirs, a step behind them (north), as a
+     *  reader leading her out of the water and through a gap leaves it. The reader must stand outside the line. */
+    public static void outWith(ServerLevel l,BlockPos b,ServerPlayer p,List<ServerPlayer> here){
+        var h=PellPeople.household(b);
+        if(h.rite!=WATER)inWater(l,b);
+        var june=PellPeople.find(l,b,J);var tilly=PellPeople.find(l,b,T);if(june==null||tilly==null)return;
+        var r=rel(b,p.position());
+        place(tilly,b,r.x,0,r.z-1,180);tilly.setNoGravity(false);tilly.gesture(PellPeople.LED);
+        h.leader=p.getUUID();h.inHold=false;
+        out(l,b,h,june,tilly,p,here);
+    }
+    /** 0.4.541, for tests: Tilly answered and back in Nessa's bed, June sat on its edge beside her in her robe, as the walk home leaves
+     *  them. */
+    public static void kept(ServerLevel l,BlockPos b){
+        var h=PellPeople.household(b);var june=PellPeople.find(l,b,J);var tilly=PellPeople.find(l,b,T);if(june==null||tilly==null)return;
+        PellVisit.unperch(b,h,J,june);h.way[J].clear();h.way[T].clear();h.inHold=false;h.under=false;h.leader=null;
+        june.setNoGravity(false);tilly.setNoGravity(false);
+        PellSwim.chair(l,b,0);
+        h.time=Math.max(h.time,PellNight.TWELVE);
+        PellVisit.lie(l,b,h,T,tilly,PellVisit.TILLY_SLEEPS);
+        june.gesture(PellPeople.ROBE);PellVisit.perch(l,b,h,J,june,PellVisit.JUNE_BED);
+        step(h,KEPT);
+    }
 
     /** The rite undone, for the visit beginning again. */
     static void restart(ServerLevel l,BlockPos b,PellPeople.Household h){
