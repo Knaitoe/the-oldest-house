@@ -1,9 +1,10 @@
 # The Ones Already Inside (the owner's proposal)
 
-Recorded verbatim, 2 November 2026: the owner's design for an original multiplayer choose-your-own-adventure vignette. Not
-built. The owner asked that it be started only after everything before it is finished (After the People Lights, A Place for
-You, Second Person, the Fuse Board and the Header Tank). Nothing below is edited; the owner's line breaks, tables and headings
-are kept as sent.
+Recorded verbatim, 2 November 2026: the owner's design for an original multiplayer choose-your-own-adventure vignette. The owner
+asked that it be started only after everything before it is finished (After the People Lights, A Place for You, Second Person, the
+Fuse Board and the Header Tank). It is being built in slices: the plan with the complete neutral script
+(`docs/THE_ONES_ALREADY_INSIDE_PLAN.md`) and the lodging house, 0.4.549 (`docs/ONES_INSIDE_HOUSE_0_4_549.md`). Nothing below is
+edited; the owner's line breaks, tables and headings are kept as sent.
 
 ---
 

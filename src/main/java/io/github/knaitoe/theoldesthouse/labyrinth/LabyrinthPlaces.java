@@ -50,7 +50,8 @@ public final class LabyrinthPlaces {
     // Slots 179 and 180 need the twenty-third column at common manor heights.
     // 0.4.307: Truant's service halls (slots 183-185) need a twenty-fourth at the lowest manor heights.
     // 0.4.347: the storm field (slot 208) is the first slot past the twenty-sixth column at eight to a column; thirty leaves room again.
-    private static final int MAX_COLUMNS = 30;
+    // 0.4.549: the lodging house (slot 240) is the first slot past the thirtieth column at eight to a column; thirty-four leaves room again.
+    private static final int MAX_COLUMNS = 34;
     private static final int MAX_Y = 318;
     private static final int MIN_Y = -60;
 

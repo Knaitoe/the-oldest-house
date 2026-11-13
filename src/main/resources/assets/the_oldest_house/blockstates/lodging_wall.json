@@ -1,0 +1,1264 @@
+{
+  "variants": {
+    "facing=north,pair=hall_parlor,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_low"
+    },
+    "facing=east,pair=hall_parlor,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_parlor,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_parlor,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_parlor,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_mid"
+    },
+    "facing=east,pair=hall_parlor,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_parlor,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_parlor,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_parlor,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch"
+    },
+    "facing=east,pair=hall_parlor,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_parlor,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_parlor,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_parlor,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch_open"
+    },
+    "facing=east,pair=hall_parlor,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_parlor,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_parlor,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_parlor_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_dining,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_low"
+    },
+    "facing=east,pair=hall_dining,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_dining,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_dining,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_dining,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_mid"
+    },
+    "facing=east,pair=hall_dining,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_dining,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_dining,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_dining,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch"
+    },
+    "facing=east,pair=hall_dining,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_dining,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_dining,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_dining,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch_open"
+    },
+    "facing=east,pair=hall_dining,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_dining,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_dining,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_dining_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_daniel,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_low"
+    },
+    "facing=east,pair=hall_daniel,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_daniel,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_daniel,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_daniel,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_mid"
+    },
+    "facing=east,pair=hall_daniel,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_daniel,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_daniel,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_daniel,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch"
+    },
+    "facing=east,pair=hall_daniel,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_daniel,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_daniel,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_daniel,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch_open"
+    },
+    "facing=east,pair=hall_daniel,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_daniel,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_daniel,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_daniel_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_low"
+    },
+    "facing=east,pair=hall_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_mid"
+    },
+    "facing=east,pair=hall_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch"
+    },
+    "facing=east,pair=hall_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch_open"
+    },
+    "facing=east,pair=hall_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_scullery_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_low"
+    },
+    "facing=east,pair=hall_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_mid"
+    },
+    "facing=east,pair=hall_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch"
+    },
+    "facing=east,pair=hall_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch_open"
+    },
+    "facing=east,pair=hall_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_distemper_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_low"
+    },
+    "facing=east,pair=hall_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_mid"
+    },
+    "facing=east,pair=hall_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch"
+    },
+    "facing=east,pair=hall_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch_open"
+    },
+    "facing=east,pair=hall_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=parlor_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_low"
+    },
+    "facing=east,pair=parlor_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=parlor_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=parlor_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=parlor_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_mid"
+    },
+    "facing=east,pair=parlor_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=parlor_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=parlor_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=parlor_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch"
+    },
+    "facing=east,pair=parlor_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=parlor_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=parlor_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=parlor_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch_open"
+    },
+    "facing=east,pair=parlor_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=parlor_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=parlor_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_parlor_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=dining_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_low"
+    },
+    "facing=east,pair=dining_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=dining_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=dining_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=dining_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_mid"
+    },
+    "facing=east,pair=dining_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=dining_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=dining_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=dining_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch"
+    },
+    "facing=east,pair=dining_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=dining_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=dining_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=dining_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch_open"
+    },
+    "facing=east,pair=dining_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=dining_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=dining_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_dining_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=daniel_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_low"
+    },
+    "facing=east,pair=daniel_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=daniel_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=daniel_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=daniel_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_mid"
+    },
+    "facing=east,pair=daniel_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=daniel_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=daniel_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=daniel_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch"
+    },
+    "facing=east,pair=daniel_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=daniel_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=daniel_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=daniel_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch_open"
+    },
+    "facing=east,pair=daniel_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=daniel_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=daniel_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=daniel_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_low"
+    },
+    "facing=east,pair=daniel_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_low",
+      "y": 90
+    },
+    "facing=south,pair=daniel_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_low",
+      "y": 180
+    },
+    "facing=west,pair=daniel_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_low",
+      "y": 270
+    },
+    "facing=north,pair=daniel_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_mid"
+    },
+    "facing=east,pair=daniel_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_mid",
+      "y": 90
+    },
+    "facing=south,pair=daniel_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_mid",
+      "y": 180
+    },
+    "facing=west,pair=daniel_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_mid",
+      "y": 270
+    },
+    "facing=north,pair=daniel_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch"
+    },
+    "facing=east,pair=daniel_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch",
+      "y": 90
+    },
+    "facing=south,pair=daniel_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch",
+      "y": 180
+    },
+    "facing=west,pair=daniel_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch",
+      "y": 270
+    },
+    "facing=north,pair=daniel_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch_open"
+    },
+    "facing=east,pair=daniel_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=daniel_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=daniel_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_distemper_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=daniel_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_low"
+    },
+    "facing=east,pair=daniel_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_low",
+      "y": 90
+    },
+    "facing=south,pair=daniel_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_low",
+      "y": 180
+    },
+    "facing=west,pair=daniel_scullery,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_low",
+      "y": 270
+    },
+    "facing=north,pair=daniel_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_mid"
+    },
+    "facing=east,pair=daniel_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_mid",
+      "y": 90
+    },
+    "facing=south,pair=daniel_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_mid",
+      "y": 180
+    },
+    "facing=west,pair=daniel_scullery,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_mid",
+      "y": 270
+    },
+    "facing=north,pair=daniel_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch"
+    },
+    "facing=east,pair=daniel_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch",
+      "y": 90
+    },
+    "facing=south,pair=daniel_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch",
+      "y": 180
+    },
+    "facing=west,pair=daniel_scullery,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch",
+      "y": 270
+    },
+    "facing=north,pair=daniel_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch_open"
+    },
+    "facing=east,pair=daniel_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=daniel_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=daniel_scullery,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_daniel_scullery_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=scullery_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_low"
+    },
+    "facing=east,pair=scullery_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_low",
+      "y": 90
+    },
+    "facing=south,pair=scullery_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_low",
+      "y": 180
+    },
+    "facing=west,pair=scullery_distemper,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_low",
+      "y": 270
+    },
+    "facing=north,pair=scullery_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_mid"
+    },
+    "facing=east,pair=scullery_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_mid",
+      "y": 90
+    },
+    "facing=south,pair=scullery_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_mid",
+      "y": 180
+    },
+    "facing=west,pair=scullery_distemper,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_mid",
+      "y": 270
+    },
+    "facing=north,pair=scullery_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch"
+    },
+    "facing=east,pair=scullery_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch",
+      "y": 90
+    },
+    "facing=south,pair=scullery_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch",
+      "y": 180
+    },
+    "facing=west,pair=scullery_distemper,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch",
+      "y": 270
+    },
+    "facing=north,pair=scullery_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch_open"
+    },
+    "facing=east,pair=scullery_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=scullery_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=scullery_distemper,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_distemper_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=scullery_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_low"
+    },
+    "facing=east,pair=scullery_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=scullery_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=scullery_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=scullery_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_mid"
+    },
+    "facing=east,pair=scullery_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=scullery_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=scullery_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=scullery_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch"
+    },
+    "facing=east,pair=scullery_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=scullery_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=scullery_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=scullery_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch_open"
+    },
+    "facing=east,pair=scullery_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=scullery_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=scullery_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_scullery_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_room,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_low"
+    },
+    "facing=east,pair=hall_room,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_room,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_room,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_room,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_mid"
+    },
+    "facing=east,pair=hall_room,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_room,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_room,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_room,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch"
+    },
+    "facing=east,pair=hall_room,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_room,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_room,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_room,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch_open"
+    },
+    "facing=east,pair=hall_room,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_room,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_room,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_room_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=room_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_low"
+    },
+    "facing=east,pair=room_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=room_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=room_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=room_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_mid"
+    },
+    "facing=east,pair=room_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=room_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=room_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=room_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch"
+    },
+    "facing=east,pair=room_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=room_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=room_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=room_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch_open"
+    },
+    "facing=east,pair=room_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=room_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=room_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=room_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_low"
+    },
+    "facing=east,pair=room_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_low",
+      "y": 90
+    },
+    "facing=south,pair=room_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_low",
+      "y": 180
+    },
+    "facing=west,pair=room_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_low",
+      "y": 270
+    },
+    "facing=north,pair=room_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_mid"
+    },
+    "facing=east,pair=room_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_mid",
+      "y": 90
+    },
+    "facing=south,pair=room_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_mid",
+      "y": 180
+    },
+    "facing=west,pair=room_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_mid",
+      "y": 270
+    },
+    "facing=north,pair=room_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch"
+    },
+    "facing=east,pair=room_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch",
+      "y": 90
+    },
+    "facing=south,pair=room_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch",
+      "y": 180
+    },
+    "facing=west,pair=room_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch",
+      "y": 270
+    },
+    "facing=north,pair=room_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch_open"
+    },
+    "facing=east,pair=room_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=room_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=room_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_work_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=room_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_low"
+    },
+    "facing=east,pair=room_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_low",
+      "y": 90
+    },
+    "facing=south,pair=room_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_low",
+      "y": 180
+    },
+    "facing=west,pair=room_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_low",
+      "y": 270
+    },
+    "facing=north,pair=room_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_mid"
+    },
+    "facing=east,pair=room_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_mid",
+      "y": 90
+    },
+    "facing=south,pair=room_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_mid",
+      "y": 180
+    },
+    "facing=west,pair=room_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_mid",
+      "y": 270
+    },
+    "facing=north,pair=room_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch"
+    },
+    "facing=east,pair=room_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch",
+      "y": 90
+    },
+    "facing=south,pair=room_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch",
+      "y": 180
+    },
+    "facing=west,pair=room_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch",
+      "y": 270
+    },
+    "facing=north,pair=room_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch_open"
+    },
+    "facing=east,pair=room_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=room_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=room_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_room_vera_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_low"
+    },
+    "facing=east,pair=hall_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_work,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_mid"
+    },
+    "facing=east,pair=hall_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_work,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch"
+    },
+    "facing=east,pair=hall_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_work,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch_open"
+    },
+    "facing=east,pair=hall_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_work,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_work_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=hall_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_low"
+    },
+    "facing=east,pair=hall_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_low",
+      "y": 90
+    },
+    "facing=south,pair=hall_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_low",
+      "y": 180
+    },
+    "facing=west,pair=hall_vera,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_low",
+      "y": 270
+    },
+    "facing=north,pair=hall_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_mid"
+    },
+    "facing=east,pair=hall_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_mid",
+      "y": 90
+    },
+    "facing=south,pair=hall_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_mid",
+      "y": 180
+    },
+    "facing=west,pair=hall_vera,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_mid",
+      "y": 270
+    },
+    "facing=north,pair=hall_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch"
+    },
+    "facing=east,pair=hall_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch",
+      "y": 90
+    },
+    "facing=south,pair=hall_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch",
+      "y": 180
+    },
+    "facing=west,pair=hall_vera,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch",
+      "y": 270
+    },
+    "facing=north,pair=hall_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch_open"
+    },
+    "facing=east,pair=hall_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=hall_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=hall_vera,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_hall_vera_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=work_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_low"
+    },
+    "facing=east,pair=work_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=work_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=work_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=work_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_mid"
+    },
+    "facing=east,pair=work_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=work_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=work_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=work_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch"
+    },
+    "facing=east,pair=work_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=work_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=work_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=work_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch_open"
+    },
+    "facing=east,pair=work_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=work_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=work_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_work_lath_hatch_open",
+      "y": 270
+    },
+    "facing=north,pair=vera_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_low"
+    },
+    "facing=east,pair=vera_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_low",
+      "y": 90
+    },
+    "facing=south,pair=vera_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_low",
+      "y": 180
+    },
+    "facing=west,pair=vera_lath,part=low": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_low",
+      "y": 270
+    },
+    "facing=north,pair=vera_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_mid"
+    },
+    "facing=east,pair=vera_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_mid",
+      "y": 90
+    },
+    "facing=south,pair=vera_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_mid",
+      "y": 180
+    },
+    "facing=west,pair=vera_lath,part=mid": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_mid",
+      "y": 270
+    },
+    "facing=north,pair=vera_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch"
+    },
+    "facing=east,pair=vera_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch",
+      "y": 90
+    },
+    "facing=south,pair=vera_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch",
+      "y": 180
+    },
+    "facing=west,pair=vera_lath,part=hatch": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch",
+      "y": 270
+    },
+    "facing=north,pair=vera_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch_open"
+    },
+    "facing=east,pair=vera_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch_open",
+      "y": 90
+    },
+    "facing=south,pair=vera_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch_open",
+      "y": 180
+    },
+    "facing=west,pair=vera_lath,part=hatch_open": {
+      "model": "the_oldest_house:block/lodging/wall_vera_lath_hatch_open",
+      "y": 270
+    }
+  }
+}

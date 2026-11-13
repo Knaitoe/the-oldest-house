@@ -1,0 +1,32 @@
+{
+  "textures": {
+    "tally": "the_oldest_house:block/lodging/tally_5",
+    "particle": "the_oldest_house:block/lodging/tally_5"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15.9
+      ],
+      "to": [
+        16,
+        16,
+        15.95
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tally",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}
