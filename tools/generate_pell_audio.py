@@ -6,7 +6,10 @@ lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and Ju
 shed's video deck taking a tape, and the woman on the tapes talking, through the television's small speaker (three takes, so her
 lines are not one clip over and over). From docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md: the scrubbing brush on the line, one stroke out
 and back at a time, played as it is worked. From docs/PELL_HOUSE_DAWN_0_4_541.md: Gail's car coming up the street at first light and
-pulling in at the curb. From docs/PELL_HOUSE_FAILURE_0_4_543.md: a cane tapping behind a door that will not open (three takes).
+pulling in at the curb. From docs/PELL_HOUSE_FAILURE_0_4_543.md: a cane tapping behind a door that will not open (three takes). From
+docs/PELL_HOUSE_SENSES_0_4_546.md, what only a reader playing Tilly hears: a woman singing, wordless and low, through the wall at the head
+of Nessa's bed; the chest freezer's hum in the laundry; and tape hiss from the shed. The hum and the hiss are four seconds each, sent
+again as each ends, so they fade in and out at their ends.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -29,6 +32,9 @@ ROWS = {
     'scrub': ('A scrubbing brush on paint', 10),
     'car_come': ('A car pulls in at the curb', 48),
     'cane': ('A cane, tapping', 16),
+    'singing': ('Singing, through the wall', 12),
+    'hum': ('A low hum', 16),
+    'hiss': ('Tape hiss', 18),
 }
 # 0.4.536: sounds with more than one take; the game picks one each time.
 TAKES = {'tape_voice': 3, 'cane': 3}
@@ -389,9 +395,78 @@ def cane(take):
     return band(out, 90, 1800)
 
 
+def singing():
+    # 0.4.546: a woman's voice through a wall, singing with her mouth closed, low and slow: eight notes of a tune of its own that falls
+    # and comes back up, held at the end, a breath, and four more that do not finish it. Each note glides into the next; the voice
+    # wavers a little; the wall takes everything above the vowel's first ring, and the room on her side of it rings faintly after.
+    r = np.random.default_rng(54600)
+    tune = [(261.6, .9), (293.7, .6), (261.6, .6), (220.0, 1.2), (196.0, .8), (220.0, .6), (261.6, .9), (246.9, 1.7),
+            (None, .55), (220.0, .7), (196.0, .7), (174.6, .8), (196.0, 1.6)]
+    n = seconds(sum(length for _, length in tune) + .9)
+    pitch = np.zeros(n)
+    level = np.zeros(n)
+    at = .25
+    last = tune[0][0]
+    for freq, length in tune:
+        start, k = seconds(at), seconds(length)
+        if freq is not None:
+            t = times(k)
+            glide = np.minimum(1, t / .07)
+            pitch[start:start + k] = last + (freq - last) * glide
+            level[start:start + k] = np.minimum(1, t / .09) * np.minimum(1, (length - t) / .16 + .15)
+            last = freq
+        else:
+            pitch[start:start + k] = last
+        at += length
+    pitch[pitch == 0] = last
+    t = times(n)
+    pitch *= 1 + .012 * np.sin(2 * np.pi * 5.1 * t + .4 * np.sin(2 * np.pi * .3 * t))
+    phase = np.cumsum(pitch) / RATE
+    source = sum(np.sin(2 * np.pi * h * phase + r.random() * 6) / h ** 1.3 for h in range(1, 16))
+    # The hum of a closed mouth: the first ring of an "oo", a little of the second, and breath.
+    voiced = band(source, 230, 420) + band(source, 700, 950) * .25 + band(r.standard_normal(n), 300, 900) * .03
+    voiced *= np.convolve(level, np.ones(seconds(.03)) / seconds(.03), mode='same')
+    room = np.zeros(n)
+    for delay, gain in ((.031, .35), (.047, .25), (.083, .18), (.121, .1)):
+        d = seconds(delay)
+        room[d:] += voiced[:-d] * gain
+    through = band(voiced + room, 110, 620)
+    return through + band(r.standard_normal(n), 60, 300) * .004
+
+
+def hum():
+    # 0.4.546: the chest freezer's compressor in the laundry, as a child hears it from the hall: mains hum at twice the supply, its
+    # fundamental under it, a faint third, a slow beat between the motor and the wall, and the casing's rattle low in it. Four seconds,
+    # whole cycles, faded at its ends so it can be played again as it ends.
+    r = np.random.default_rng(54601)
+    n = seconds(4.0)
+    t = times(n)
+    out = np.sin(2 * np.pi * 100 * t) * .55 + np.sin(2 * np.pi * 100.5 * t) * .35 + np.sin(2 * np.pi * 50 * t) * .3 + np.sin(2 * np.pi * 150 * t) * .08
+    out += band(r.standard_normal(n), 180, 520) * .05 * (1 + .5 * np.sin(2 * np.pi * 1.5 * t))
+    fade = np.minimum(1, np.minimum(t, t[-1] - t) / .05)
+    return out * fade
+
+
+def hiss():
+    # 0.4.546: tape hiss through the shed's thin wall: the high wash of a tape running with nothing on it, its level wandering a little
+    # with the tape, a dropout now and then, and under it the deck's motor. Four seconds, faded at its ends.
+    r = np.random.default_rng(54602)
+    n = seconds(4.0)
+    t = times(n)
+    wash = band(r.standard_normal(n), 2500, 7000) * (1 + .15 * np.sin(2 * np.pi * .7 * t) + .08 * np.sin(2 * np.pi * 3.1 * t))
+    for at in (.9, 2.6):
+        k = seconds(.08)
+        start = seconds(at)
+        wash[start:start + k] *= .35 + .65 * np.abs(np.linspace(-1, 1, k))
+    motor = np.sin(2 * np.pi * 60 * t) * .04 + band(r.standard_normal(n), 40, 160) * .03
+    fade = np.minimum(1, np.minimum(t, t[-1] - t) / .05)
+    return (wash + motor) * fade
+
+
 MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
           'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub,
-          'car_come': car_come, 'cane_1': lambda: cane(1), 'cane_2': lambda: cane(2), 'cane_3': lambda: cane(3)}
+          'car_come': car_come, 'cane_1': lambda: cane(1), 'cane_2': lambda: cane(2), 'cane_3': lambda: cane(3), 'singing': singing, 'hum': hum,
+          'hiss': hiss}
 
 
 def main():

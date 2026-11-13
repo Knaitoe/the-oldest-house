@@ -370,6 +370,22 @@ public final class PellTexts {
         DRAIN="Under the grate of the drain at the deep end, a child's swimming goggles, the strap knotted where it broke.",
         BAND_MISSING="One tile of the band along the waterline is missing. The grout round the gap is new.",
         BAND_ODD="One tile of the band does not match the rest. It is newer, and not quite the same.";
+    /**
+     * 0.4.546, Tilly's senses (PellSenses.hush): what June says low into the telephone, between her other lines to Gail, where she thinks
+     * nobody can hear it. Only a reader as Tilly hears it, anywhere in the house; the older sibling never hears it said. Four to a call:
+     * the first morning's, and a week in (the first of those knows whether Tilly has answered to the name).
+     */
+    public static final String[] JUNE_QUIETLY_FIRST={"Tilly's in Nessa's bed. It fits, Gail. It fits.","The older one watches me. All the time.",
+        "No. Nobody goes near the pool. I've seen to that.","A week. Give me a week and you'll see."};
+    public static final String JUNE_QUIETLY_ANSWERS="Tilly answers to it now. Doesn't even notice.",JUNE_QUIETLY_NOT_YET="Tilly still won't answer to it. That'll come.";
+    public static final String[] JUNE_QUIETLY_WEEK={"The older one's been telling stories. You'll hear them. Don't listen.",
+        "It's all ready for next week. Nothing's changed.","You'll see, after. You won't know the difference."};
+    /** June's quiet lines for this visit's call, in order (PellSenses.hush), for a reader as Tilly with this record. */
+    static List<String> juneQuietly(int visit,CompoundTag own){
+        if(visit<2)return List.of(JUNE_QUIETLY_FIRST);
+        var out=new ArrayList<String>();out.add(own.getInt("AnsweredNessa")>0?JUNE_QUIETLY_ANSWERS:JUNE_QUIETLY_NOT_YET);out.addAll(List.of(JUNE_QUIETLY_WEEK));
+        return out;
+    }
     /** 0.4.534, the knife: the kitchen in the night, a week in; June after it; her version on the week's call; Gail to a reader she
      *  found in the kitchen and to one she did not; and at breakfast. */
     public static final String

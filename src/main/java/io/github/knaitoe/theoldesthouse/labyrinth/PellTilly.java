@@ -160,6 +160,8 @@ public final class PellTilly {
         }
         if(now%20==0)hook(l,b,1);
         if(now%LOOK_EVERY==0)look(l,p,gesture(h,p,tilly));
+        // 0.4.546: the cane in their hand, and what only Tilly hears and feels (PellSenses).
+        PellSenses.tick(l,b,h,p,now);
     }
     /** The pose Tilly's figure is drawn in: asleep in the bed, having her hair brushed, as June holds or leads her, or with her cane. */
     static int gesture(PellPeople.Household h,ServerPlayer p,LiteraryActor tilly){
@@ -213,6 +215,7 @@ public final class PellTilly {
         h.tillyReader=null;h.tillySafe=null;h.tillyMounted=0;
         var p=l.getServer().getPlayerList().getPlayer(id);
         if(p!=null){small(p,false);if(p.getVehicle() instanceof LiteraryActor a&&a.pellStandIn())letGo(p);}
+        PellSenses.leave(p,h);
         var stop=new PellTillyPayload(id,-1);for(var q:l.players())HousePackets.send(q,stop);
         hook(l,b,0);
         var tilly=PellPeople.find(l,b,T);if(tilly==null)return;
@@ -248,12 +251,12 @@ public final class PellTilly {
      */
     @SubscribeEvent public static void serverTick(ServerTickEvent.Post e){
         if(SMALLED.isEmpty()||e.getServer().getTickCount()%10!=0)return;
-        for(var p:List.copyOf(SMALLED.values()))if(p.isRemoved()||!p.isAlive()||LiteraryVignettes.current(p)!=PellHouse.PLACE)small(p,false);
+        for(var p:List.copyOf(SMALLED.values()))if(p.isRemoved()||!p.isAlive()||LiteraryVignettes.current(p)!=PellHouse.PLACE){small(p,false);PellSenses.takeCane(p);}
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p))return;
         if(p.getVehicle() instanceof LiteraryActor a&&a.pellStandIn())letGo(p);
-        small(p,false);
+        small(p,false);PellSenses.takeCane(p);
     }
 
     // ------------------------------------------------------------------------------------------------ the cane
