@@ -119,9 +119,9 @@ public final class SceneInstances {
     public static @Nullable BlockPos base(MinecraftServer s,LabyrinthPlace p,int copy){
         var o=HouseSavedData.get(s).houseOrigin();return o==null?null:LabyrinthPlaces.base(shiftedOrigin(o,copy),p);
     }
-    /** Which copy of a scene stands at a base: 0 for the original or anything else. */
-    public static int copyAt(MinecraftServer s,LabyrinthPlace p,BlockPos base){
-        var original=base(s,p,0);if(original==null||base.equals(original)||base.getY()!=original.getY()||base.getZ()!=original.getZ())return 0;
+    /** Which copy of a scene stands at a base: 0 for the original or anything else, and for no base at all. */
+    public static int copyAt(MinecraftServer s,LabyrinthPlace p,@Nullable BlockPos base){
+        var original=base(s,p,0);if(base==null||original==null||base.equals(original)||base.getY()!=original.getY()||base.getZ()!=original.getZ())return 0;
         long west=(long)original.getX()-base.getX()-WEST;return west<0||west%STEP!=0?0:(int)(west/STEP)+1;
     }
     /** The original and every copy that stands, for the passes that walk each scene's ground. */
