@@ -41,6 +41,22 @@ public final class SpeechCaptions {
     public static final int MOST=3,LINES=5;
     private SpeechCaptions(){}
 
+    /**
+     * 0.4.536: a voice with no body to say it, such as the woman on the Pell house's tapes (client.PellTapeClient): where it comes from,
+     * whose it is, and what it is saying now. It is captioned as a person's line is, by distance with the rest.
+     */
+    public record Voice(Vec3 at,String who,Component words){}
+    private static final List<java.util.function.Supplier<List<Voice>>> VOICES=new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** A source of bodiless voices, asked each frame. */
+    public static void voices(java.util.function.Supplier<List<Voice>> source){if(!VOICES.contains(source))VOICES.add(source);}
+    /** Every bodiless voice this client can hear now. */
+    public static List<Voice> voices(){
+        var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||VOICES.isEmpty())return List.of();
+        Vec3 eye=mc.gameRenderer.getMainCamera().getPosition();var out=new ArrayList<Voice>();
+        for(var source:VOICES)for(var v:source.get())if(v.at().distanceToSqr(eye)<HEARD*HEARD)out.add(v);
+        return out;
+    }
+
     /** An actor's line is a caption now, not a nameplate; and so is what a driver calls out of a car (0.4.484, Voiced). */
     @SubscribeEvent public static void nameTag(RenderNameTagEvent e){if(e.getEntity() instanceof Voiced)e.setCanRender(TriState.FALSE);}
 
@@ -57,8 +73,11 @@ public final class SpeechCaptions {
     /** The caption's words, after the speaker's name when the scene gives one. */
     public static Component line(Entity a){
         var words=a.getCustomName()==null?Component.empty():a.getCustomName();String who=a instanceof Voiced voiced?voiced.speaker():"";
-        return who.isEmpty()?words:Component.literal(who+": ").withStyle(ChatFormatting.GRAY).append(words.copy().withStyle(ChatFormatting.WHITE));
+        return line(who,words);
     }
+    static Component line(String who,Component words){return who.isEmpty()?words:Component.literal(who+": ").withStyle(ChatFormatting.GRAY).append(words.copy().withStyle(ChatFormatting.WHITE));}
+    /** One caption: where it comes from, its words, and for a person, how hard their voice shakes and how long they have been about. */
+    private record Caption(Vec3 at,Component line,float shake,float age){}
     /** Where the lowest caption's frame ends: below the crosshair, above the action bar and the hotbar. */
     public static int bottom(int height){return Math.max(height/2+44,height-84);}
 
@@ -69,18 +88,24 @@ public final class SpeechCaptions {
      */
     static void render(GuiGraphics g,DeltaTracker delta,int lowest){
         var mc=Minecraft.getInstance();if(mc.options.hideGui)return;
-        var list=speakers(mc);if(list.isEmpty())return;
+        var speakers=speakers(mc);var voices=voices();if(speakers.isEmpty()&&voices.isEmpty())return;
         var font=mc.font;int w=g.guiWidth(),h=g.guiHeight(),wrap=Math.max(120,Math.min(w-64,300));
         var cam=mc.gameRenderer.getMainCamera();Vec3 eye=cam.getPosition(),look=new Vec3(cam.getLookVector()),left=new Vec3(cam.getLeftVector());
+        // 0.4.536: people and bodiless voices together, nearest lowest, no more than MOST.
+        var list=new ArrayList<Caption>();
+        for(var a:speakers)list.add(new Caption(a.getEyePosition(),line(a),a instanceof LiteraryActor actor?BorrascaNativeArt.scream(actor):0,a.tickCount+delta.getGameTimeDeltaPartialTick(false)));
+        for(var v:voices)list.add(new Caption(v.at(),line(v.who(),v.words()),0,0));
+        list.sort(Comparator.comparingDouble(c->c.at().distanceToSqr(eye)));
+        if(list.size()>MOST)list=new ArrayList<>(list.subList(0,MOST));
         int y=lowest;
         for(var a:list){
-            List<FormattedCharSequence> lines=font.split(line(a),wrap);if(lines.size()>LINES)lines=lines.subList(0,LINES);
+            List<FormattedCharSequence> lines=font.split(a.line(),wrap);if(lines.size()>LINES)lines=lines.subList(0,LINES);
             int width=0;for(var line:lines)width=Math.max(width,font.width(line));
-            Vec3 to=a.getEyePosition().subtract(eye);double d=to.length();to=d>1e-4?to.scale(1/d):look;
+            Vec3 to=a.at().subtract(eye);double d=to.length();to=d>1e-4?to.scale(1/d):look;
             float fade=(float)Mth.clamp(1-(d-6)/(HEARD-6)*.5,.5,1);
             int top=y-lines.size()*10-4,x0=w/2-width/2-4,x1=w/2+width/2+4;
             g.fill(x0,top,x1,y,(int)(fade*150)<<24);
-            int colour=((int)(fade*255)<<24)|0xFFFFFF;float shake=a instanceof LiteraryActor actor?BorrascaNativeArt.scream(actor):0,age=a.tickCount+delta.getGameTimeDeltaPartialTick(false);
+            int colour=((int)(fade*255)<<24)|0xFFFFFF;float shake=a.shake(),age=a.age();
             for(int i=0;i<lines.size();i++){int x=w/2-font.width(lines.get(i))/2,y0=top+3+i*10;
                 if(shake>0)shaking(g,lines.get(i),x,y0,colour,shake,age,i);else g.drawString(font,lines.get(i),x,y0,colour,false);}
             // A voice from outside the middle of the view is marked on its side.

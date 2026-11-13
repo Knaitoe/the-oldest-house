@@ -147,6 +147,10 @@ public final class PellPeople {
          *  of her lines about it a hand on her has had; whom she will say did it; and, on the week's call, what each reader told Gail
          *  about it. */
         int hand,handSaid;long handAt,shutAt;UUID blamed;final Map<UUID,String> toldHand=new HashMap<>();
+        /** 0.4.536, the tapes (PellTapes): which tape is in the shed's deck, how many of its lines have been said, and the reading pace
+         *  they keep; whether it is playing and when it began; who has watched it since it began, and who has been sent it. */
+        int deck=PellTapes.IN_DECK,tapeLine,tapePace=100;boolean tapePlaying;long tapeStart;
+        final java.util.Set<UUID> tapeWatchers=new java.util.HashSet<>(),tapeTold=new java.util.HashSet<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();

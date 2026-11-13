@@ -73,7 +73,8 @@ public final class PellHouse {
         if(!PellSite.onLot(new net.minecraft.world.phys.Vec3(door.getX()+.5,0,door.getZ()+.5))){cue(p,PellTexts.NOBODY_HOME);return true;}
         if(door.equals(PellSite.JUNE_DOOR)){cue(p,PellTexts.JUNES_DOOR);return true;}
         // 0.4.530: open at night while June has the tin out, its padlock hangs on the hasp; a hand does not shut it.
-        if(door.equals(PellSite.SHED_DOOR)){cue(p,PellSite.open(l,b,door)?PellTexts.SHED_OPEN:PellTexts.PADLOCKED);return true;}
+        // 0.4.536: a week in, its padlock hangs open until June's rounds, and a hand opens and shuts it (PellTapes).
+        if(door.equals(PellSite.SHED_DOOR)){if(!PellTapes.shedHand(p,l,b))cue(p,PellSite.open(l,b,door)?PellTexts.SHED_OPEN:PellTexts.PADLOCKED);return true;}
         // 0.4.533: while June swims, the padlock hangs open and the gate opens and shuts (PellSwim).
         if(door.equals(PellSite.POOL_GATE)){if(!PellSwim.gateHand(p,l,b))cue(p,PellTexts.POOL_GATE);return true;}
         if(door.equals(PellSite.SLIDER.west())){cue(p,PellTexts.FIXED_GLASS);return true;}
@@ -119,6 +120,9 @@ public final class PellHouse {
             case CAMP_BED->{if(!PellMorning.lieDown(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.532: in the morning the telephone rings, and it is Gail.
             case PHONE->{if(!PellCall.hand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.536: a week in, the shed's tapes and the deck under its television play (PellTapes).
+            case TAPES->{if(!PellTapes.shelf(p,b))cue(p,PellTexts.thing(kind,stage));}
+            case SHED_TV->{if(!PellTapes.tv(p,b))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }
