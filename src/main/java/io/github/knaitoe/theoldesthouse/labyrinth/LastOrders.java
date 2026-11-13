@@ -166,6 +166,11 @@ public final class LastOrders {
         a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,STRANGER+who);place(a,d.base,HOME[who],HOME_YAW[who]);
         if(!l.addFreshEntity(a))return null;d.cast[who]=a.getUUID();return a;
     }
+    /** Whether any reader here can see this person. */
+    static boolean seenBy(List<ServerPlayer> here,LiteraryActor a){
+        for(var r:here)if(io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(r,a.getEyePosition())||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(r,a.position().add(0,.3,0)))return true;
+        return false;
+    }
     static void place(LiteraryActor a,BlockPos b,Vec3 r,float yaw){a.moveTo(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);a.setDeltaMovement(Vec3.ZERO);}
     static AABB area(BlockPos b){return new AABB(b.offset(LastOrdersSite.WEST-1,-2,LastOrdersSite.NORTH-1)).minmax(new AABB(b.offset(LastOrdersSite.EAST+4,LastOrdersSite.TOP+1,2)));}
     static void clearActors(ServerLevel l,BlockPos b){for(var a:l.getEntitiesOfClass(LiteraryActor.class,area(b),a->a.role()==LiteraryActor.STRANGER&&cast(a.phase())))a.discard();}
@@ -411,8 +416,15 @@ public final class LastOrders {
             if(d.game==Game.DARTS&&(d.stage==PLAYING||d.stage==BETWEEN)){var b=DartBoards.at(l,boardAt(d));if(b!=null&&b.shooter()!=null&&DartBoards.regular(b.shooter()))target=world(d.base,LastOrdersSite.OCHE);}
             // Into or out of the booth the bench is in the way: close enough, or long enough on the way, and he is simply there.
             boolean seat=d.strangerTarget==LastOrdersSite.STRANGER_SEAT;
-            if(a.position().distanceToSqr(target)>.04&&(seat&&a.position().distanceToSqr(target)<2.25||d.tick-d.targetSince>200))place(a,d.base,rel(target,d.base),a.getYRot());
-            if(a.position().distanceToSqr(target)>.04){SceneFootpaths.walk(a,target,.11);a.gesture(0);}
+            // 0.4.560 (the standard cast checks): he slides along the bench into the booth rather than being there in a tick, and a
+            // walk that never gets there ends with him put there only while nobody is looking.
+            if(a.position().distanceToSqr(target)>.04&&seat&&a.position().distanceToSqr(target)<2.25){
+                var to=target.subtract(a.position());double length=to.length();
+                if(length>.22){var step=to.scale(.2/length);a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);a.gesture(0);}
+                else place(a,d.base,rel(target,d.base),a.getYRot());
+            }
+            else if(a.position().distanceToSqr(target)>.04&&d.tick-d.targetSince>200&&!seenBy(here,a))place(a,d.base,rel(target,d.base),a.getYRot());
+            if(a.position().distanceToSqr(target)>.04&&!(seat&&a.position().distanceToSqr(target)<2.25)){SceneFootpaths.walk(a,target,.11);a.gesture(0);}
             else{
                 if(d.strangerTarget==LastOrdersSite.STRANGER_SEAT)place(a,d.base,LastOrdersSite.STRANGER_SEAT,0);
                 int g=switch(d.stage){case WHISTLING->WHISTLE;case WON->HANDS;case STARING->STARE;default->d.game==Game.POOL&&d.stage==PLAYING?CUE:d.game==Game.DARTS&&target.distanceToSqr(world(d.base,LastOrdersSite.OCHE))<.1?THROW:0;};

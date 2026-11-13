@@ -1,0 +1,49 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "the_oldest_house:block/lake_house/culvert_stained_joint",
+    "joint": "the_oldest_house:block/lake_house/culvert_stained_joint"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#joint",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#joint",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#joint",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#joint",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#joint",
+          "cullface": "up",
+          "rotation": 90
+        },
+        "down": {
+          "texture": "#joint",
+          "cullface": "down",
+          "rotation": 90
+        }
+      }
+    }
+  ]
+}

@@ -289,13 +289,24 @@ public final class SecondPerson {
         var b=f.base;var a=actor(l,id);
         if(!mark.present()){if(a!=null){if(a.isSleeping())a.stopSleeping();a.discard();}return null;}
         var to=abs(b,mark.at());
-        if(a==null){a=spawn(l,b,p.getUUID(),role,phase,from==null?mark.at():from);if(a==null)return null;keep.accept(a.getUUID());}
+        if(a==null){
+            // 0.4.560 (the standard cast checks): nobody comes into being where the reader can see; they come in when nobody is looking.
+            var at=abs(b,from==null?mark.at():from);
+            if(io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,at.add(0,1.6,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,at.add(0,.3,0)))return null;
+            a=spawn(l,b,p.getUUID(),role,phase,from==null?mark.at():from);if(a==null)return null;keep.accept(a.getUUID());
+        }
         double dist=a.position().distanceToSqr(to);
         boolean seated=mark.gesture()==G_SIT||mark.gesture()==G_PERCH||mark.gesture()==G_KNIT||mark.asleep();
         boolean resident=id!=null&&id.equals(f.resident);int stride=resident&&f.drift?G_DRIFT:0;
         if(mark.asleep()&&a.isSleeping()){a.gesture(0);return a;}
         if(a.isSleeping())a.stopSleeping();
-        // A seat or the bed: walk up to it, then sit or lie down in it.
+        // A seat or the bed: walk up to it, then sit or lie down in it. 0.4.560 (the standard cast checks): the last of the way, past
+        // the seat's edge, is a short slide over a few ticks, not one step of up to two and a half blocks.
+        if(seated&&dist<6.25&&dist>.04){
+            var way=to.subtract(a.position());double length=Math.sqrt(dist);var step=way.scale(Math.min(.2,length)/length);
+            a.noPhysics=true;a.setNoGravity(true);a.gesture(stride);a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);
+            SceneFootpaths.face(a,to,20);return a;
+        }
         if(seated&&dist<6.25){
             if(mark.asleep()){a.noPhysics=false;a.setNoGravity(false);a.gesture(0);a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.startSleeping(b.offset(BED_HEAD));return a;}
             a.gesture(mark.gesture());a.noPhysics=true;a.setNoGravity(true);a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setYHeadRot(mark.yaw());return a;
@@ -303,7 +314,9 @@ public final class SecondPerson {
         a.gesture(seated?stride:mark.gesture());
         if(dist<.09){a.noPhysics=false;a.setNoGravity(false);a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setYHeadRot(mark.yaw());return a;}
         a.noPhysics=false;a.setNoGravity(false);
-        if(!p.hasLineOfSight(a)||dist>144){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());return a;}
+        // Put straight there only while the reader sees neither them nor the place (0.4.560: a long way off is no longer enough).
+        if(!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())&&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))
+                &&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0))&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());return a;}
         // They stop in a doorway the reader is standing in, rather than walk through them.
         var ahead=to.subtract(a.position()).normalize();var toReader=p.position().subtract(a.position());
         if(toReader.horizontalDistance()<1.1&&ahead.dot(toReader.normalize())>.4){if(f.once.add("stalled"+(l.getGameTime()/400)))say(f,a,"...");return a;}

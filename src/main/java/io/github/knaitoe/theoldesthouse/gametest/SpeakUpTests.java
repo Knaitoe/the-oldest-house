@@ -29,7 +29,7 @@ public final class SpeakUpTests {
     private static LiteraryTests.Fixture active;
     @AfterBatch(batch="speak_up_table") public static void tableDone(ServerLevel l){if(active!=null){active.close();active=null;}Talk.clearAll();}
 
-    private static void enterEveryQuietRoom(LabyrinthData d,UUID id){
+    static void enterEveryQuietRoom(LabyrinthData d,UUID id){
         var own=d.stateEntry(HouseReadSites.STATE,id.toString());
         for(var room:HouseReadSites.CHAIN){var visit=own.getCompound(room.key());visit.putBoolean("Entered",true);own.put(room.key(),visit);}
         own.remove("Owed");d.setStateEntry(HouseReadSites.STATE,id.toString(),own);

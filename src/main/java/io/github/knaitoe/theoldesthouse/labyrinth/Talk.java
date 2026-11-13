@@ -61,6 +61,7 @@ public final class Talk {
     public static String key(ServerPlayer p){var e=OPEN.get(p.getUUID());return e==null?"":e.key;}
     /** A line said in the reader's open exchange (a new one is begun with the speaker if none is). The panel is not sent until {@link #ask} or {@link #end}. */
     public static void line(ServerPlayer p,String speaker,String text){
+        if(!speaker.isEmpty())LiteraryActor.panelLine(p);
         var e=OPEN.computeIfAbsent(p.getUUID(),k->new Exchange(p,speaker,speaker));e.lines.add(new String[]{speaker,text});e.all.add(new String[]{speaker,text});
         while(e.lines.size()>MAX_LINES)e.lines.removeFirst();while(e.all.size()>TalkHistory.LINES)e.all.removeFirst();
     }

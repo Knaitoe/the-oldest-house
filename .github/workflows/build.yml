@@ -184,6 +184,7 @@ jobs:
           python3 tools/generate_drawing_audio.py --check
           python3 tools/draw_corner_art.py --check
           python3 tools/generate_corner_audio.py --check
+          python3 tools/generate_culvert_audio.py --check
           python3 tools/draw_city_art.py --check
           python3 tools/generate_city_audio.py --check
           python3 tools/draw_kept_art.py --check

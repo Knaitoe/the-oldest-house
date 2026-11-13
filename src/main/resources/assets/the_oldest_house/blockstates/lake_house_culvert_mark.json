@@ -1,0 +1,154 @@
+{
+  "variants": {
+    "facing=north,mark=arrow_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_left"
+    },
+    "facing=east,mark=arrow_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_left",
+      "y": 90
+    },
+    "facing=south,mark=arrow_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_left",
+      "y": 180
+    },
+    "facing=west,mark=arrow_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_left",
+      "y": 270
+    },
+    "facing=north,mark=arrow_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_right"
+    },
+    "facing=east,mark=arrow_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_right",
+      "y": 90
+    },
+    "facing=south,mark=arrow_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_right",
+      "y": 180
+    },
+    "facing=west,mark=arrow_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_arrow_right",
+      "y": 270
+    },
+    "facing=north,mark=tally": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_tally"
+    },
+    "facing=east,mark=tally": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_tally",
+      "y": 90
+    },
+    "facing=south,mark=tally": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_tally",
+      "y": 180
+    },
+    "facing=west,mark=tally": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_tally",
+      "y": 270
+    },
+    "facing=north,mark=hand": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_hand"
+    },
+    "facing=east,mark=hand": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_hand",
+      "y": 90
+    },
+    "facing=south,mark=hand": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_hand",
+      "y": 180
+    },
+    "facing=west,mark=hand": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_hand",
+      "y": 270
+    },
+    "facing=north,mark=house_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_left"
+    },
+    "facing=east,mark=house_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_left",
+      "y": 90
+    },
+    "facing=south,mark=house_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_left",
+      "y": 180
+    },
+    "facing=west,mark=house_left": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_left",
+      "y": 270
+    },
+    "facing=north,mark=house_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_right"
+    },
+    "facing=east,mark=house_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_right",
+      "y": 90
+    },
+    "facing=south,mark=house_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_right",
+      "y": 180
+    },
+    "facing=west,mark=house_right": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_house_right",
+      "y": 270
+    },
+    "facing=north,mark=helmet": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_helmet"
+    },
+    "facing=east,mark=helmet": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_helmet",
+      "y": 90
+    },
+    "facing=south,mark=helmet": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_helmet",
+      "y": 180
+    },
+    "facing=west,mark=helmet": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_helmet",
+      "y": 270
+    },
+    "facing=north,mark=half_door": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_half_door"
+    },
+    "facing=east,mark=half_door": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_half_door",
+      "y": 90
+    },
+    "facing=south,mark=half_door": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_half_door",
+      "y": 180
+    },
+    "facing=west,mark=half_door": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_half_door",
+      "y": 270
+    },
+    "facing=north,mark=spiral": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_spiral"
+    },
+    "facing=east,mark=spiral": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_spiral",
+      "y": 90
+    },
+    "facing=south,mark=spiral": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_spiral",
+      "y": 180
+    },
+    "facing=west,mark=spiral": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_spiral",
+      "y": 270
+    },
+    "facing=north,mark=bubbles": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_bubbles"
+    },
+    "facing=east,mark=bubbles": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_bubbles",
+      "y": 90
+    },
+    "facing=south,mark=bubbles": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_bubbles",
+      "y": 180
+    },
+    "facing=west,mark=bubbles": {
+      "model": "the_oldest_house:block/lake_house_culvert_mark_bubbles",
+      "y": 270
+    }
+  }
+}

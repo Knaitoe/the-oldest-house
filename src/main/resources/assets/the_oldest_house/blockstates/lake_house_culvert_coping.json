@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "the_oldest_house:block/lake_house_culvert_coping"
+    },
+    "type=top": {
+      "model": "the_oldest_house:block/lake_house_culvert_coping_top"
+    },
+    "type=double": {
+      "model": "the_oldest_house:block/lake_house_culvert_coping_double"
+    }
+  }
+}

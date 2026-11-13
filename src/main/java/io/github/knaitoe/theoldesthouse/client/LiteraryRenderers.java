@@ -42,38 +42,8 @@ public final class LiteraryRenderers {
     static final String[] CLOSING={"chad","daisy"};
     /** Polybius (0.4.217): the two men in suits by the black cabinet, on stranger phases forty-one and forty-two. */
     static final String[] POLYBIUS={"a","b"};
-    /** A seat an actor has been placed in: how high it holds the hips, and which way it faces. */
-    record Seat(int seatHeight,net.minecraft.core.Direction facing){}
-    /** The household, roadhouse or lawn-chair seat an actor has been placed in, if any. */
-    static Seat seat(LiteraryActor a){
-        var state=a.level().getBlockState(a.blockPosition());
-        if(state.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get())){var kind=state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND);return kind.seat?new Seat(kind.seatHeight,state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.FACING)):null;}
-        if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.ROADHOUSE.get())){var kind=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.KIND);return kind.seat()?new Seat(kind.seatHeight,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.RoadhouseBlock.FACING)):null;}
-        if(io.github.knaitoe.theoldesthouse.labyrinth.MoviePropBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.MoviePropBlock.Kind.LAWN_CHAIR))return new Seat(5,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.MoviePropBlock.FACING));
-        // Brad's kit box in the God of the Pitt (0.4.220), eight pixels high.
-        if(io.github.knaitoe.theoldesthouse.labyrinth.PittBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.PittBlock.Kind.BRAD))return new Seat(8,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PittBlock.FACING));
-        // Kelly in her chair, or on the floor by the sofa; anyone in an empty wheelchair (0.4.253).
-        if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PeopleLights.inChair(a.phase()))return new Seat(8,null);
-        if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PeopleLights.onFloor(a.phase()))return new Seat(1,null);
-        if(io.github.knaitoe.theoldesthouse.labyrinth.PeopleLightsBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.PeopleLightsBlock.Kind.CHAIR))return new Seat(8,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PeopleLightsBlock.FACING));
-        // The last chair in Vacant Possession (0.4.228), its seat eight pixels up.
-        if(io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.Kind.CHAIR))return new Seat(8,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VacantBlock.FACING));
-        // The familiar kitchen's chairs (0.4.331), where its visitors sit: the seat ten pixels up.
-        if(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.Kind.CHAIR))return new Seat(10,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.TraceBlock.FACING));
-        // 0.4.527: the Pell house's people on the edge of Nessa's bed at bedtime, turned however they sit.
-        if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.cast(a.phase())&&a.gesture()!=io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.ASLEEP&&io.github.knaitoe.theoldesthouse.labyrinth.PellThing.is(state,io.github.knaitoe.theoldesthouse.labyrinth.PellThing.Kind.BED))return new Seat(9,null);
-        // The Pell house's kitchen chairs (0.4.526), where Tilly and Callum sit at dinner; from 0.4.527 June's recliner too.
-        // 0.4.540: June on the step stool beside the freezer, its seat nine up.
-        if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.cast(a.phase())&&io.github.knaitoe.theoldesthouse.labyrinth.PellThing.is(state,io.github.knaitoe.theoldesthouse.labyrinth.PellThing.Kind.STOOL))return new Seat(9,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.FACING));
-        if(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seat(state))return new Seat(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seatHeight(state),state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.FACING));
-        // 0.4.550: the lodging house's chairs, armchairs and settee.
-        if(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seat(state))return new Seat(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seatHeight(state),state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.FACING));
-        // Roderick's chair (0.4.182), its seat nine pixels up.
-        if(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.Kind.CHAIR))return new Seat(9,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.FACING));
-        // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.
-        if(a.role()==LiteraryActor.STRANGER&&a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.BorrascaPeople.EARL&&state.getBlock() instanceof net.minecraft.world.level.block.CarpetBlock)return new Seat(1,null);
-        return null;
-    }
+    /** The seat an actor has been placed in, if any (labyrinth.ActorSeat, 0.4.560: the server knows it too). */
+    static io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat seat(LiteraryActor a){return io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat.of(a);}
     public static final class CastModel extends HumanoidModel<LiteraryActor>{private final ModelPart coat,gown,mask,bandage,hood,lakeHair,eyelids;private int shelterGesture;
         /** 0.4.228: how solid the actor is drawn (1 solid); set by the renderer for a faded actor and put back after. */
         float alpha=1;
@@ -277,7 +247,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.LAKE_TESS)lakeHairMotion.pose(a,age);
             // An actor placed in a chair sits in it: hips on the seat, legs forward. 0.4.527: the model is drawn at the actor's scale,
             // so a child's hips are lowered by the seat's height over that scale; a full-sized drop sank them into the seat.
-            var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight()/Math.max(.1F,a.getScale());for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;hat.copyFrom(head);}
+            var chair=seat(a);if(chair!=null){float lower=12-chair.seatHeight()/Math.max(.1F,a.getScale());for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=lower;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;if(chair.facing()!=null){float front=chair.facing().toYRot();head.yRot=net.minecraft.util.Mth.wrapDegrees(front+net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(a.yBodyRot+yaw-front),-LiteraryActor.HEAD_TURN,LiteraryActor.HEAD_TURN)-a.yBodyRot)*net.minecraft.util.Mth.DEG_TO_RAD;}hat.copyFrom(head);}
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.cast(a.phase()))pellSitting(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.LastOrders.cast(a.phase()))orders(a.gesture(),age,a.getId());
             if(a.role()==LiteraryActor.BROTHER||a.role()==LiteraryActor.FAMILY_CHILD||a.role()==LiteraryActor.SILHOUETTE&&a.phase()==4){

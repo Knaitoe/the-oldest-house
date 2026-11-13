@@ -9,6 +9,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.*;
@@ -28,9 +29,15 @@ public final class LakeHouseCompletionTests {
     private static final LabyrinthPlace PLACE=LabyrinthPlace.LAKE_HOUSE;
     private LakeHouseCompletionTests(){}
     private static CompoundTag own(LakeHouseTests.Fixture f,ServerPlayer p){return LiteraryVignettes.personal(f.data(),p.getUUID(),PLACE);}
-    private static void at(LakeHouseTests.Fixture f,ServerPlayer p,double x,double y,double z){
-        p.stopRiding();p.setForcedPose(y<-2?Pose.SWIMMING:null);p.setPose(y<-2?Pose.SWIMMING:Pose.STANDING);p.refreshDimensions();var b=f.base();p.teleportTo(f.out,b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.setDeltaMovement(Vec3.ZERO);p.baseTick();
+    private static void at(LakeHouseTests.Fixture f,ServerPlayer p,double x,double y,double z){at(f,p,x,y,z,180);}
+    private static void at(LakeHouseTests.Fixture f,ServerPlayer p,double x,double y,double z,float yaw){
+        p.stopRiding();p.setForcedPose(y<-2?Pose.SWIMMING:null);p.setPose(y<-2?Pose.SWIMMING:Pose.STANDING);p.refreshDimensions();var b=f.base();p.teleportTo(f.out,b.getX()+x,b.getY()+y,b.getZ()+z,yaw,0);p.setDeltaMovement(Vec3.ZERO);p.baseTick();
     }
+    /**
+     * 0.4.560: a reader on the dock looking back at the boathouse, so that Tess, who never comes into being where they can see, is
+     * there on the dock's planks behind them.
+     */
+    private static void onTheDock(LakeHouseTests.Fixture f,ServerPlayer p){at(f,p,.5,0,-15.5,0);}
     private static void readTick(LakeHouseTests.Fixture f,ServerPlayer p,int ticks){for(int n=0;n<ticks;n+=5){var state=own(f,p);LakeHouse.reader(p,LakeHouse.readerBase(p),state);LiteraryVignettes.save(f.data(),p.getUUID(),PLACE,state);}}
     private static void returnVisit(LakeHouseTests.Fixture f,ServerPlayer p){
         LakeHouseStory.depart(p);p.teleportTo(f.in,0,90,0,0,0);at(f,p,.5,0,-3.5);LiteraryVignettes.onArrive(p,PLACE);
@@ -174,12 +181,13 @@ public final class LakeHouseCompletionTests {
     public static void tessIsPrivateLeavesWithoutPoppingAndNeverReturnsMidVisit(GameTestHelper h){
         var f=new LakeHouseTests.Fixture(h);var lease=new NativeTestChunks();lease.hold(f.out,new AABB(Vec3.atLowerCornerOf(f.base().offset(-8,-1,-22)),Vec3.atLowerCornerOf(f.base().offset(8,12,2))));var p=f.player("lake_solo");
         Runnable[] action=new Runnable[1];action[0]=()->{if(!lease.ready()){h.runAfterDelay(1,()->action[0].run());return;}try{
-            at(f,p,.5,0,-15.5);readTick(f,p,5);var tess=LakeHouseTess.actor(p,own(f,p));h.assertTrue(tess!=null&&tess.role()==LiteraryActor.LAKE_TESS,"a real original Tess appears for a solo reader");
+            onTheDock(f,p);readTick(f,p,5);var tess=LakeHouseTess.actor(p,own(f,p));h.assertTrue(tess!=null&&tess.role()==LiteraryActor.LAKE_TESS,"a real original Tess appears for a solo reader");
             var observer=f.player("lake_observer");observer.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SPECTATOR);h.assertTrue(!tess.broadcastToPlayer(observer),"spectators never receive Tess and do not dismiss her");readTick(f,p,5);h.assertTrue(!own(f,p).getBoolean("SoloGone"),"a spectator is not a partner");
             var peer=f.player("lake_partner");p.lookAt(EntityAnchorArgument.Anchor.EYES,tess.getEyePosition());readTick(f,p,5);h.assertTrue(tess.isAlive()&&!tess.broadcastToPlayer(peer)&&own(f,p).getBoolean("SoloGone"),"a watched Tess stays physically present while starting her departure");
             p.setYRot(p.getYRot()+180);p.setXRot(0);readTick(f,p,5);h.assertTrue(tess.isRemoved(),"she can leave once her reader's actual camera turns away");
             peer.teleportTo(f.in,0,90,0,0,0);readTick(f,p,10);LiteraryVignettes.onArrive(p,PLACE);readTick(f,p,5);h.assertTrue(LakeHouseTess.actor(p,own(f,p))==null,"the partner leaving or reconnecting does not bring her back mid-visit");
-            returnVisit(f,p);readTick(f,p,5);h.assertTrue(LakeHouseTess.actor(p,own(f,p))!=null,"a later real departure and solo arrival can bring her back");h.succeed();
+            // 0.4.560: she never comes into being where her reader can see; back from the door, the reader turns from the dock.
+            returnVisit(f,p);at(f,p,.5,0,-3.5,0);readTick(f,p,5);h.assertTrue(LakeHouseTess.actor(p,own(f,p))!=null,"a later real departure and solo arrival can bring her back, out of the reader's sight");h.succeed();
         }finally{lease.close();f.close();}};action[0].run();
     }
     private static void drawnTo(ServerPlayer p,String value,String strength){var d=LabyrinthData.get(p.server);var read=d.stateEntry(HouseRead.STATE,p.getUUID().toString());var t=new CompoundTag();t.putString("Value",value);t.putString("Strength",strength);read.put(HouseRead.Trait.DRAWN_TO.name(),t);d.setStateEntry(HouseRead.STATE,p.getUUID().toString(),read);}
@@ -192,7 +200,7 @@ public final class LakeHouseCompletionTests {
         Runnable[] action=new Runnable[1];action[0]=()->{if(!lease.ready()){h.runAfterDelay(1,()->action[0].run());return;}try{
             // Drawn to men, settled: a young man in Tess's place, on a first date.
             var men=f.player("lake_drawn_men");drawnTo(men,"MEN","SETTLED");firstArrival(f,men);
-            at(f,men,.5,0,-15.5);readTick(f,men,5);var theo=LakeHouseTess.actor(men,own(f,men));
+            onTheDock(f,men);readTick(f,men,5);var theo=LakeHouseTess.actor(men,own(f,men));
             h.assertTrue(theo!=null&&theo.role()==LiteraryActor.LAKE_THEO&&"theo".equals(own(f,men).getString(LakeHousePartner.KEY)),"a reader settled as drawn to men meets the young man in Tess's place");
             h.assertTrue(own(f,men).getBoolean(LakeHousePartner.MET)&&LakeHousePartner.firstGreeting(LakeHousePartner.Partner.THEO).contains("first date"),"they meet on the dock, and it is a first date");
             var observer=f.player("lake_drawn_observer");observer.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SPECTATOR);h.assertTrue(!theo.broadcastToPlayer(observer),"he is the reader's alone");
@@ -203,7 +211,7 @@ public final class LakeHouseCompletionTests {
             men.teleportTo(f.in,0,90,0,0,0);observer.teleportTo(f.in,0,92,0,0,0);
             // Drawn to no one, settled: Tess, as a friend rather than a date.
             var none=f.player("lake_drawn_none");drawnTo(none,"NO_ONE","SETTLED");firstArrival(f,none);
-            at(f,none,.5,0,-15.5);readTick(f,none,5);var friend=LakeHouseTess.actor(none,own(f,none));
+            onTheDock(f,none);readTick(f,none,5);var friend=LakeHouseTess.actor(none,own(f,none));
             h.assertTrue(friend!=null&&friend.role()==LiteraryActor.LAKE_TESS&&"friend".equals(own(f,none).getString(LakeHousePartner.KEY)),"a reader settled as drawn to no one meets Tess");
             h.assertTrue(!LakeHousePartner.firstGreeting(LakeHousePartner.Partner.FRIEND).contains("date"),"and it is not a date");
             o=own(f,none);o.putString("Outcome",LakeHouse.STAYED);h.assertTrue(LakeHouse.account(o).startsWith("Tess and I took the green canoe out one weekend, the way friends do.\n\n"),"her account says they went as friends");
@@ -213,7 +221,7 @@ public final class LakeHouseCompletionTests {
             h.assertTrue("tess".equals(own(f,tentative).getString(LakeHousePartner.KEY)),"a tentative read keeps Tess");
             tentative.teleportTo(f.in,0,96,0,0,0);
             var unread=f.player("lake_drawn_unread");h.assertTrue("tess".equals(own(f,unread).getString(LakeHousePartner.KEY)),"an unread reader meets Tess");
-            at(f,unread,.5,0,-15.5);readTick(f,unread,5);o=own(f,unread);o.putString("Outcome",LakeHouse.LEFT_THE_LIGHTS_ON);h.assertTrue(LakeHouse.account(o).startsWith("Tess and I took the green canoe out on our first date."),"on a first date");
+            onTheDock(f,unread);readTick(f,unread,5);o=own(f,unread);o.putString("Outcome",LakeHouse.LEFT_THE_LIGHTS_ON);h.assertTrue(LakeHouse.account(o).startsWith("Tess and I took the green canoe out on our first date."),"on a first date");
             unread.teleportTo(f.in,0,98,0,0,0);
             // A reader who met Tess before the partner was chosen keeps her, whatever the read says now.
             var older=f.player("lake_drawn_older");var before=own(f,older);before.remove(LakeHousePartner.KEY);before.putBoolean("TessGreeting",true);before.putInt("Visit",2);LiteraryVignettes.save(f.data(),older.getUUID(),PLACE,before);drawnTo(older,"MEN","SETTLED");
@@ -230,6 +238,104 @@ public final class LakeHouseCompletionTests {
                 if(tess.getY()>b.getY()-20&&tess.distanceToSqr(p)<10){h.assertTrue(tess.phase()==2&&Float.isFinite(tess.getXRot()),"her actual swimming body reaches the upper bedroom through the stair opening");h.succeed();f.close();return;}
                 h.assertTrue(++steps[0]<150,"Tess finds the real front door and central staircase; at="+tess.position()+", goal="+p.position());h.runAfterDelay(5,()->swim[0].run());
             }catch(Throwable error){f.close();throw error;}};swim[0].run();});
+    }
+    // ------------------------------------------------------------------------------------------------ 0.4.560: Tess, held to the cast checks
+    /** Waits a tick at a time for something to be so, failing with what was expected after {@code limit} ticks; then goes on. */
+    private static void await(GameTestHelper h,int limit,java.util.function.BooleanSupplier done,java.util.function.Supplier<String> expected,Runnable cleanup,Runnable then){
+        int[] waited={0};Runnable[] poll=new Runnable[1];
+        poll[0]=()->{
+            boolean ready;try{ready=done.getAsBoolean();}catch(Throwable e){cleanup.run();throw e;}
+            if(ready){try{then.run();}catch(Throwable e){cleanup.run();throw e;}return;}
+            if(++waited[0]>limit){String why=expected.get();cleanup.run();h.fail(why);return;}
+            h.runAfterDelay(1,()->poll[0].run());
+        };poll[0].run();
+    }
+    /** Takes a canoe along a way a tick at a time, as a reader paddling and pushing would, with its reader kept in the front seat. */
+    private static void row(GameTestHelper h,LakeHouseCanoe canoe,ServerPlayer reader,List<Vec3> way,double perTick,Runnable then){
+        int[] leg={0};Runnable[] step=new Runnable[1];
+        step[0]=()->{
+            if(leg[0]>=way.size()){then.run();return;}
+            var to=way.get(leg[0]);var d=to.subtract(canoe.position());
+            if(d.length()<=perTick){canoe.setPos(to);leg[0]++;}else canoe.setPos(canoe.position().add(d.normalize().scale(perTick)));
+            canoe.setYRot(180);canoe.setDeltaMovement(Vec3.ZERO);canoe.positionRider(reader);
+            h.runAfterDelay(1,()->step[0].run());
+        };step[0].run();
+    }
+    private static java.util.function.Predicate<LiteraryActor> tessSwims(){return a->LiteraryActor.lakePartner(a.role())&&(a.phase()==2||a.phase()==6);}
+    private static LakeHouseCanoe canoeOf(LakeHouseTests.Fixture f,ServerPlayer p){return f.out.getEntitiesOfClass(LakeHouseCanoe.class,LakeHouse.box(f.base()),c->p.getUUID().equals(c.owner())).getFirst();}
+    private static List<Vec3> toTheRaft(BlockPos b){
+        return List.of(new Vec3(4.5,-.35,-24),new Vec3(1,-.35,-30),new Vec3(1,-.35,-96),new Vec3(1,-.35,-131),new Vec3(1,-.35,-160),new Vec3(1.6,-.35,-173.5))
+            .stream().map(v->v.add(b.getX(),b.getY(),b.getZ())).toList();
+    }
+    /**
+     * 0.4.560 (the owner: "also ensure the npc behaves correctly in that vignette, please - tess", and "standardize your tests with
+     * Tess"): a first visit played through while the standard cast checks watch her every tick. She meets the reader on the dock
+     * planks rather than standing on the water, walks to the canoe and climbs in from beside it, ducks under the culvert's roof
+     * instead of putting her head through it, steps out onto the raft after the reader, and goes into the water at its edge to
+     * swim down after them to the house.
+     */
+    /** The fixtures of the two cases below, closed after their batches however they end (a case that failed mid-way left its reader in the shared scene, and every later case counted two readers). */
+    private static Runnable tessConduct,tessHelmet;
+    private static Runnable once(Runnable r){boolean[] ran={false};return ()->{if(!ran[0]){ran[0]=true;r.run();}};}
+    @AfterBatch(batch="lake_house_tess_conduct") public static void tessConductDone(ServerLevel l){if(tessConduct!=null){tessConduct.run();tessConduct=null;}}
+    @AfterBatch(batch="lake_house_tess_helmet") public static void tessHelmetDone(ServerLevel l){if(tessHelmet!=null){tessHelmet.run();tessHelmet=null;}}
+    @GameTest(template="empty",batch="lake_house_tess_conduct",timeoutTicks=3600)
+    public static void tessKeepsTheCastChecksFromTheDockDownToTheHouse(GameTestHelper h){
+        var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_tess_conduct");p.setItemSlot(EquipmentSlot.CHEST,LakeHouseGear.lend(p,LakeHouseRegistry.TANKS.get()));
+        tessConduct=once(f::close);
+        f.ready(()->SceneReady.whenTicking(h,f.out,f.held(),600,()->{
+            var b=f.base();var watch=new CastConduct(h,f.out,LakeHouse.box(b),()->List.of(p)).swimming(tessSwims());Runnable done=once(()->{watch.close();f.close();});tessConduct=done;
+            // Out on the dock, looking at the lake: she is not made where the reader can see, so she comes out of the boathouse behind
+            // them and up the planks.
+            at(f,p,.5,0,-14.5);
+            await(h,400,()->{var t=LakeHouseTess.actor(p,own(f,p));return t!=null&&own(f,p).getBoolean("TessGreeting")&&t.distanceTo(p)<3.5;},()->"Tess comes along the dock to the reader and greets them; she is at "+(LakeHouseTess.actor(p,own(f,p))==null?"nowhere":LakeHouseTess.actor(p,own(f,p)).position())+"; "+watch.faults(),done,()->{
+                var tess=LakeHouseTess.actor(p,own(f,p));var canoe=canoeOf(f,p);
+                h.assertTrue(tess.phase()==0&&!tess.isInWater()&&tess.getY()>b.getY()-.1,"she walked up the dock's planks, standing: "+tess.position()+" in phase "+tess.phase());
+                h.assertTrue(p.startRiding(canoe),"the reader gets into their canoe");
+                await(h,300,()->tess.getVehicle()==canoe,()->"Tess climbs into the canoe from beside it; she is at "+tess.position()+", the canoe at "+canoe.position()+"; "+watch.faults(),done,()->{
+                    row(h,canoe,p,toTheRaft(b),.3,()->{try{
+                        h.assertTrue(tess.getVehicle()==canoe,"she rides through the culvert to the third lake");
+                        at(f,p,4.5,0,-173.5);
+                        await(h,160,()->!tess.isPassenger()&&tess.phase()==0&&LakeHouse.onRaft(tess.position().subtract(Vec3.atLowerCornerOf(b))),()->"Tess steps out of the canoe onto the raft; she is at "+tess.position()+" in phase "+tess.phase(),done,()->{
+                            at(f,p,.5,-24,-158.5);
+                            await(h,900,()->tess.distanceTo(p)<6&&tess.phase()==2&&tess.isInWater(),()->"Tess goes into the water and swims down after the reader; she is at "+tess.position()+" in phase "+tess.phase()+", the reader at "+p.position()+"; "+watch.faults(),done,()->{
+                                try{watch.assertClean("the lake house, Tess from the dock down to the house");h.assertTrue(watch.ticks()>600,"the checks watched the whole visit");}finally{done.run();}
+                                h.succeed();
+                            });
+                        });
+                    }catch(Throwable e){done.run();throw e;}});
+                });
+            });
+        }));
+    }
+    /**
+     * 0.4.560: on the helmet visit Tess keeps the compressor going on the raft. A body kept from the first visit is put by the
+     * compressor the first moment the reader is not looking, she never climbs into the reader's canoe, and the cast checks hold while
+     * the reader paddles out to her.
+     */
+    @GameTest(template="empty",batch="lake_house_tess_helmet",timeoutTicks=3000)
+    public static void onTheHelmetVisitTessStaysWithTheCompressor(GameTestHelper h){
+        var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_tess_helmet");
+        Runnable[] done={once(f::close)};tessHelmet=()->done[0].run();
+        f.ready(()->SceneReady.whenTicking(h,f.out,f.held(),600,()->{
+            var b=f.base();
+            at(f,p,.5,0,-14.5);
+            await(h,300,()->LakeHouseTess.actor(p,own(f,p))!=null,()->"Tess is there on the first visit",()->done[0].run(),()->{
+                var tess=LakeHouseTess.actor(p,own(f,p));var o=own(f,p);o.putInt("Beat",1);LiteraryVignettes.save(f.data(),p.getUUID(),PLACE,o);
+                returnVisit(f,p);h.assertTrue(own(f,p).getInt("Visit")==2&&LakeHouseTess.actor(p,own(f,p))==tess,"the second visit keeps her body from the first");
+                var watch=new CastConduct(h,f.out,LakeHouse.box(b),()->List.of(p)).swimming(tessSwims());done[0]=once(()->{watch.close();f.close();});
+                at(f,p,.5,0,-14.5);var canoe=canoeOf(f,p);h.assertTrue(p.startRiding(canoe),"the reader gets into their canoe");
+                var post=Vec3.atBottomCenterOf(b.offset(LakeHouse.COMPRESSOR.offset(1,0,0)));
+                row(h,canoe,p,toTheRaft(b),.3,()->{try{
+                    h.assertTrue(!tess.isPassenger()&&tess.distanceToSqr(post)<9,"she never got into the canoe, and is by the compressor: "+tess.position());
+                    at(f,p,4.5,0,-173.5);
+                    await(h,200,()->tess.phase()==4&&own(f,p).getBoolean("TessGreeting"),()->"Tess minds the compressor and greets the reader at the raft; phase "+tess.phase(),()->done[0].run(),()->{
+                        try{watch.assertClean("the lake house, Tess on the helmet visit");}finally{done[0].run();}
+                        h.succeed();
+                    });
+                }catch(Throwable e){done[0].run();throw e;}});
+            });
+        }));
     }
     @GameTest(template="empty",batch="lake_house_rule",timeoutTicks=800)
     public static void miningLiftsAnOriginalWarnsThenBreaksTheRuleAndPersists(GameTestHelper h){

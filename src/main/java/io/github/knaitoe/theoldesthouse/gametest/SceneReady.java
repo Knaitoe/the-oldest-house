@@ -39,6 +39,18 @@ final class SceneReady {
     }
     /** Runs {@code then} once the box is loaded, entity sections included, and nothing is still building into it. */
     static void whenLoaded(GameTestHelper h,ServerLevel l,AABB box,int maxTicks,Runnable then){when(h,()->unloaded(l,box),2,maxTicks,then);}
+    /**
+     * As {@link #unloaded}, and every chunk of the box ticks its entities. A chunk is promoted to ticking entities a little after it
+     * loads, once its neighbours have; until then the people standing in it neither move, turn nor speak by themselves (0.4.560:
+     * Tess, made a few ticks into a lake house case, lived twenty ticks without one of her own).
+     */
+    static String notTicking(ServerLevel l,AABB box){
+        var why=unloaded(l,box);if(why!=null)return why;
+        for(int x=((int)Math.floor(box.minX))>>4;x<=((int)Math.ceil(box.maxX)-1)>>4;x++)for(int z=((int)Math.floor(box.minZ))>>4;z<=((int)Math.ceil(box.maxZ)-1)>>4;z++)
+            if(!l.isPositionEntityTicking(new net.minecraft.core.BlockPos(x<<4,(int)Math.floor(box.minY),z<<4)))return "chunk "+x+","+z+" not yet ticking its entities";
+        return null;
+    }
+    static void whenTicking(GameTestHelper h,ServerLevel l,AABB box,int maxTicks,Runnable then){when(h,()->notTicking(l,box),2,maxTicks,then);}
     /** Runs {@code then} with the entity under a saved id once it is loaded and {@code ready}: on a busy server an entity loads a few ticks after its chunk. */
     static <T extends Entity> void whenEntity(GameTestHelper h,ServerLevel l,Supplier<UUID> id,Class<T> type,Predicate<T> ready,int maxTicks,Consumer<T> then){
         Entity[] found={null};

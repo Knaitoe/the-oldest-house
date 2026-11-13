@@ -44,8 +44,13 @@ public final class LakeHouseRegistry {
      * drawn by tools/draw_lake_house_exterior_art.py. Each keeps the collision and sound of what it stands in for and cannot be broken.
      */
     public static final DeferredBlock<Block> DROWNED_BRICK=fixed("lake_house_drowned_brick",Blocks.BRICKS),SILT_STONE=fixed("lake_house_silt_stone",Blocks.STONE_BRICKS),
-        SIDING=fixed("lake_house_siding",Blocks.SPRUCE_PLANKS),DOCK=fixed("lake_house_dock",Blocks.SPRUCE_PLANKS),
-        CULVERT=fixed("lake_house_culvert",Blocks.LIGHT_GRAY_CONCRETE),CULVERT_STAINED=fixed("lake_house_culvert_stained",Blocks.LIGHT_GRAY_CONCRETE);
+        SIDING=fixed("lake_house_siding",Blocks.SPRUCE_PLANKS),DOCK=fixed("lake_house_dock",Blocks.SPRUCE_PLANKS);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CulvertBlock>> CULVERT_TYPE=CODECS.register("lake_house_culvert",()->CulvertBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CulvertMarkBlock>> CULVERT_MARK_TYPE=CODECS.register("lake_house_culvert_mark",()->CulvertMarkBlock.CODEC);
+    /** The culvert's concrete; since 0.4.560 with its joints ({@link CulvertBlock}), its painted marks and the coping on its headwalls. */
+    public static final DeferredBlock<CulvertBlock> CULVERT=culvert("lake_house_culvert"),CULVERT_STAINED=culvert("lake_house_culvert_stained");
+    public static final DeferredBlock<CulvertMarkBlock> CULVERT_MARK=BLOCKS.registerBlock("lake_house_culvert_mark",CulvertMarkBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.LIGHT_GRAY_CONCRETE).strength(-1,3600000).noLootTable());
+    public static final DeferredBlock<net.minecraft.world.level.block.SlabBlock> CULVERT_COPING=BLOCKS.registerBlock("lake_house_culvert_coping",net.minecraft.world.level.block.SlabBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SMOOTH_STONE_SLAB).strength(-1,3600000).noLootTable());
     public static final DeferredBlock<net.minecraft.world.level.block.StairBlock> RED_STAIR=BLOCKS.registerBlock("lake_house_red_stair",p->new net.minecraft.world.level.block.StairBlock(Blocks.DARK_OAK_PLANKS.defaultBlockState(),p),BlockBehaviour.Properties.ofFullCopy(Blocks.DARK_OAK_STAIRS).noLootTable());
     public static final DeferredItem<LakeHouseArtifactItem> FOUND_FLASHLIGHT=ITEMS.register("lake_found_flashlight",()->new LakeHouseArtifactItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE),LakeHouseArtifactItem.FLASHLIGHT));
     public static final DeferredItem<LakeHouseArtifactItem> HOUSE_LIGHT=ITEMS.register("lake_house_light",()->new LakeHouseArtifactItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE),LakeHouseArtifactItem.LIGHT));
@@ -68,10 +73,11 @@ public final class LakeHouseRegistry {
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<LakeHouseLightBlock.Lamp>> HOME_LIGHT_ENTITY=BES.register("lake_house_home_light",()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(LakeHouseLightBlock.Lamp::new,HOME_LIGHT.get()).build(null));
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> STILL_BUBBLE=PARTICLES.register("lake_house_bubble",()->new net.minecraft.core.particles.SimpleParticleType(false));
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> WET_FOOTPRINT=PARTICLES.register("lake_wet_footprint",()->new net.minecraft.core.particles.SimpleParticleType(false));
-    /** Each subtitled: the compressor's engine, the canoe against the culvert, air into the tanks. */
-    public static final DeferredHolder<SoundEvent,SoundEvent> COMPRESSOR_SOUND=sound("lake_house.compressor"),SCRAPE=sound("lake_house.scrape"),HISS=sound("lake_house.hiss");
+    /** Each subtitled: the compressor's engine, the canoe against the culvert, air into the tanks; since 0.4.560 a palm pushing off the concrete. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> COMPRESSOR_SOUND=sound("lake_house.compressor"),SCRAPE=sound("lake_house.scrape"),HISS=sound("lake_house.hiss"),HAND_PUSH=sound("lake_house.hand_push");
 
     private static DeferredBlock<Block> fixed(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).strength(-1,3600000).noLootTable());}
+    private static DeferredBlock<CulvertBlock> culvert(String id){return BLOCKS.registerBlock(id,CulvertBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.LIGHT_GRAY_CONCRETE).strength(-1,3600000).noLootTable());}
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private LakeHouseRegistry(){}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}

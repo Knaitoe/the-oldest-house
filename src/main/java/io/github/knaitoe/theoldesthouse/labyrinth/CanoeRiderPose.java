@@ -22,6 +22,11 @@ public final class CanoeRiderPose {
             var old=PREVIOUS.remove(player);player.setForcedPose(old);player.setPose(old==null?Pose.STANDING:old);player.refreshDimensions();
         }
     }
+    /** 0.4.560: Tess (or Theo) in the back of the canoe ducks under the culvert's roof as a reader does, and sits up after it. */
+    public static void duck(LiteraryActor actor,boolean low){
+        var want=low&&actor.isAlive()?Pose.CROUCHING:Pose.STANDING;
+        if(actor.getPose()!=want){actor.setPose(want);actor.refreshDimensions();}
+    }
     @SubscribeEvent public static void tick(PlayerTickEvent.Post event){
         var player=event.getEntity();apply(player,player.getVehicle() instanceof LakeHouseCanoe canoe&&canoe.underLowRoof());
     }

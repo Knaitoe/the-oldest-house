@@ -43,7 +43,7 @@ public final class LakeHouseStory {
     public static boolean lit(ServerPlayer p){return LakeHousePairs.story(p).getBoolean("Lit");}
     public static void arrive(ServerPlayer p,CompoundTag own){
         if(!own.getBoolean("LakeFreshVisit"))return;own.putBoolean("LakeDeparted",false);
-        own.putBoolean("SoloGone",false);own.putBoolean("PartnerStoodIn0156",false);own.putBoolean("TessGreeting",false);own.putInt("TessLeaving",0);own.putInt("SaunaWait",0);own.putInt("SeatWait",0);own.putBoolean("InsideLit0505",false);
+        own.putBoolean("SoloGone",false);own.putBoolean("PartnerStoodIn0156",false);own.putBoolean("TessGreeting",false);own.putBoolean(LakeHouseTess.PLACED,false);own.putInt("TessLeaving",0);own.putInt("SaunaWait",0);own.putInt("SeatWait",0);own.putBoolean("InsideLit0505",false);
         if(own.getInt("Visit")>=3)own.putBoolean("FlashlightOut",false);
     }
     public static void depart(ServerPlayer p){var own=own(p);own.putBoolean("LakeDeparted",true);own.putBoolean("Here",false);save(p,own);releaseLift(p.getUUID());releaseVision(p);}
