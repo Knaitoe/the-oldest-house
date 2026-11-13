@@ -133,7 +133,12 @@ public final class Playtest0488Tests {
     }
     @AfterBatch(batch="notes488_rabbit_motion") public static void rabbitMotionDone(ServerLevel ignored){if(rabbitMotion!=null){rabbitMotion.close();rabbitMotion=null;}}
 
-    @GameTest(template="empty",batch="notes488_rabbit_ending",timeoutTicks=1200)
+    /**
+     * Run 1583: his last route (five points, about 30 blocks on two poles, a few steps and a rest) takes about 960 ticks once the reader
+     * has left, so a 1200-tick case had little over a hundred ticks for the site's chunks to load; on a slow runner he was still on his
+     * way when it ran out. The case now has room for his whole route, and says where he is on it if he does not finish.
+     */
+    @GameTest(template="empty",batch="notes488_rabbit_ending",timeoutTicks=2400)
     public static void seeingTheFathersWoundOpensAnEarnedTrailThatRemainsFinishableWithOneHunger(GameTestHelper h){
         rabbitEnding=new LiteraryTests.Fixture(h);var f=rabbitEnding;var place=LabyrinthPlace.HOLY_RABBIT;
         var p=f.player("rabbit_witness",place);var peer=f.player("rabbit_observer",place);var b=f.base(place);f.at(peer,place,15,0,-5);
@@ -150,7 +155,8 @@ public final class Playtest0488Tests {
             h.runAfterDelay(125,()->{
                 h.assertTrue(f.own(p,place).getBoolean("WoundSeen0488")&&f.own(p,place).getBoolean("TrailOpen")&&!father.isInvisible(),"the reader really sees the collapsed father's wound before he can disappear");
                 f.at(p,place,.5,0,-119.5);p.setYRot(180);p.setXRot(0);
-                h.startSequence().thenWaitUntil(()->{h.assertTrue(f.own(p,place).getBoolean("FatherGone"),"the original father has physically retreated on his poles: "+father.position());}).thenExecute(()->{
+                long[] left={h.getTick()};
+                h.startSequence().thenWaitUntil(()->{h.assertTrue(f.own(p,place).getBoolean("FatherGone"),"the original father has physically retreated on his poles: "+HolyRabbit.lastHuntState(f.out,father,b,f.own(p,place))+", "+(h.getTick()-left[0])+" ticks since the reader left");}).thenExecute(()->{
                     h.assertTrue(father.phase()==4&&!father.isInvisible()&&father.getZ()<b.getZ()-33,"the departure preserves the visible original body beyond the shelter");
                     h.assertTrue(f.own(p,place).getBoolean("Ready")&&p.getFoodData().getFoodLevel()==1,"the earned physical trail finishes without an impossible higher-food requirement");
                     h.assertTrue(!f.own(peer,place).getBoolean("WoundSeen0488")&&!f.own(peer,place).getBoolean("Ready"),"the other reader inherits neither reveal nor completion");h.succeed();
