@@ -193,7 +193,8 @@ public final class LakeLandscape {
         var origin=HouseSavedData.get(event.getServer()).houseOrigin();var outside=event.getServer().getLevel(HouseDimensions.OUTSIDE);
         // A lake's woods are settled as it is built; this finishes one whose entity sections or cameras made the build's own pass wait.
         if(origin!=null&&outside!=null)for(var site:SITES)LakeSettlement.decorateOnce(outside,LabyrinthPlaces.base(origin,site),site);
-        for(ServerPlayer p:event.getServer().getPlayerList().getPlayers())for(var site:SITES)if(IndianLakeRooms.inside(p,site)){
+        // 0.4.554: a lake's copies have its night as the lake has (SceneInstances).
+        for(ServerPlayer p:event.getServer().getPlayerList().getPlayers())for(var site:SITES)if(SceneInstances.copyable(site)?p.isAlive()&&!p.isSpectator()&&SceneInstances.at(p.server,site,p.level().dimension(),p.position())>=0:IndianLakeRooms.inside(p,site)){
             io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.NovelScenePayload(7,0,"",0,0));break;
         }
     }

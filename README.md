@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.554** gives the Shallows copies of its own, six to a bank: two hands to each of its three carry places. A seventh reader, or one who comes when every carry place is taken and no recollection can be joined, is given a bank of their own, built whole a million blocks west with three boys of its own, while their door waits for it to stand. A recollection's carry place, the readers who can join it and the boys who speak are all its own bank's. The shared scenes come next. `docs/SHALLOWS_COPIES_0_4_554.md`.
+
 Development candidate **0.4.553** gives the Ghosts Set copies of its own, four cameras to a set: the lead's and three second cameras. A fifth reader is given a set of their own, built whole a million blocks west, where they lead a production with a family of their own, while their door waits for it to stand. Each set has its own lead and crew, and a reader's family on one set is not their family on another. The Shallows and the shared scenes come next. `docs/GHOSTS_COPIES_0_4_553.md`.
 
 Development candidate **0.4.552** gives the Goatman's trailer copies of its own. Each trailer keeps an evening of its own, so sixteen children hold a trailer and a seventeenth is given one of their own, built whole a million blocks west, with cousins and a supper and a night of its own, while their door waits for it to stand. A child who steps out keeps their place; a latecomer after supper or after dark is still turned away by the trailer's own rule. The Ghosts Set, the Shallows and the shared scenes come next. `docs/GOATMAN_COPIES_0_4_552.md`.
