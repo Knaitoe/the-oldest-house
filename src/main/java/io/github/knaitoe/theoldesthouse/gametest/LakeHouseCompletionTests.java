@@ -275,10 +275,11 @@ public final class LakeHouseCompletionTests {
      * swim down after them to the house.
      */
     /** The fixtures of the two cases below, closed after their batches however they end (a case that failed mid-way left its reader in the shared scene, and every later case counted two readers). */
-    private static Runnable tessConduct,tessHelmet;
+    private static Runnable tessConduct,tessHelmet,tessCulvert;
     private static Runnable once(Runnable r){boolean[] ran={false};return ()->{if(!ran[0]){ran[0]=true;r.run();}};}
     @AfterBatch(batch="lake_house_tess_conduct") public static void tessConductDone(ServerLevel l){if(tessConduct!=null){tessConduct.run();tessConduct=null;}}
     @AfterBatch(batch="lake_house_tess_helmet") public static void tessHelmetDone(ServerLevel l){if(tessHelmet!=null){tessHelmet.run();tessHelmet=null;}}
+    @AfterBatch(batch="lake_house_tess_culvert") public static void tessCulvertDone(ServerLevel l){if(tessCulvert!=null){tessCulvert.run();tessCulvert=null;}}
     @GameTest(template="empty",batch="lake_house_tess_conduct",timeoutTicks=3600)
     public static void tessKeepsTheCastChecksFromTheDockDownToTheHouse(GameTestHelper h){
         var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_tess_conduct");p.setItemSlot(EquipmentSlot.CHEST,LakeHouseGear.lend(p,LakeHouseRegistry.TANKS.get()));
@@ -334,6 +335,25 @@ public final class LakeHouseCompletionTests {
                         h.succeed();
                     });
                 }catch(Throwable e){done[0].run();throw e;}});
+            });
+        }));
+    }
+    /**
+     * 0.4.561 (run 1595's live expedition, which seats its reader in their canoe in the culvert's mouth before Tess has come): a reader
+     * already sitting under the roof is reached by her on foot and swimming. She comes down the dock, steps down from its end, swims
+     * the lake and the open trough, and climbs in from beside the canoe; the cast checks hold the whole way.
+     */
+    @GameTest(template="empty",batch="lake_house_tess_culvert",timeoutTicks=2400)
+    public static void tessSwimsOutToACanoeAlreadyUnderTheRoof(GameTestHelper h){
+        var f=new LakeHouseTests.Fixture(h);var p=f.player("lake_tess_culvert");
+        tessCulvert=once(f::close);
+        f.ready(()->SceneReady.whenTicking(h,f.out,f.held(),600,()->{
+            var b=f.base();var watch=new CastConduct(h,f.out,LakeHouse.box(b),()->List.of(p)).swimming(tessSwims());Runnable done=once(()->{watch.close();f.close();});tessCulvert=done;
+            var canoe=canoeOf(f,p);at(f,p,1,.2,-104.5);canoe.moveTo(b.getX()+1,b.getY()-.35,b.getZ()-104.5,180,0);canoe.setDeltaMovement(Vec3.ZERO);
+            h.assertTrue(p.startRiding(canoe),"the reader sits in their canoe in the culvert's mouth");
+            await(h,1600,()->{var t=LakeHouseTess.actor(p,own(f,p));return t!=null&&t.getVehicle()==canoe;},()->{var t=LakeHouseTess.actor(p,own(f,p));return "Tess comes out to the canoe under the roof and climbs in; she is "+(t==null?"not there":"at "+t.position().subtract(Vec3.atLowerCornerOf(b))+" in phase "+t.phase()+(t.isInWater()?", in the water":""))+", the canoe at "+canoe.position().subtract(Vec3.atLowerCornerOf(b))+"; "+watch.faults();},done,()->{
+                try{watch.assertClean("the lake house, Tess swimming out to the culvert");}finally{done.run();}
+                h.succeed();
             });
         }));
     }
