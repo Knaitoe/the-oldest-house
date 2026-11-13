@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -110,7 +111,7 @@ public final class LodgingHouseTests {
             h.assertTrue(fitting(l,b,new BlockPos(LodgingSite.DANIEL_FRAME.getX(),LodgingSite.CELLAR,LodgingSite.ROOM_N),LodgingBlock.Kind.SHOE)&&fitting(l,b,LodgingSite.RATCHET,LodgingBlock.Kind.RATCHET)&&fitting(l,b,LodgingSite.RATCHET.above(),LodgingBlock.Kind.RATCHET)
                 &&fitting(l,b,LodgingSite.DEAD_POST,LodgingBlock.Kind.SHOE)&&l.getBlockState(b.offset(LodgingSite.DEAD_POST)).getValue(LodgingBlock.STAGE)==1,"Daniel's post, the ratchet with its wheel, and the dead post standing on the bare floor");
             // Nothing in the house is the game's own: every cell is air or the house's.
-            var own=Set.of(LodgingRegistry.FITTING.get(),LodgingRegistry.WALL.get(),LodgingRegistry.FLOOR.get(),LodgingRegistry.STAIR.get(),LodgingRegistry.CELLAR_STAIR.get());
+            var own=Set.of(LodgingRegistry.FITTING.get(),LodgingRegistry.THING.get(),LodgingRegistry.WALL.get(),LodgingRegistry.FLOOR.get(),LodgingRegistry.STAIR.get(),LodgingRegistry.CELLAR_STAIR.get());
             for(int x=LodgingSite.WEST;x<=LodgingSite.EAST;x++)for(int y=LodgingSite.CELLAR_SLAB;y<=LodgingSite.ROOF;y++)for(int z=LodgingSite.BACK;z<=LodgingSite.FRONT;z++){
                 if(Math.abs(x-LodgingSite.ONWARD.getX())<=0&&z==LodgingSite.ONWARD.getZ()&&(y==0||y==1))continue;
                 var s=l.getBlockState(b.offset(x,y,z));
@@ -123,7 +124,7 @@ public final class LodgingHouseTests {
             var out=walked(l,b,new BlockPos(0,0,-1));
             for(var cell:List.of(new BlockPos(0,0,-11),new BlockPos(-12,0,-14),new BlockPos(12,0,-14),new BlockPos(0,0,-17),LodgingSite.SOURCE.east()))
                 h.assertTrue(out.contains(cell),"the hall, both ends of the back passage, the back stair's head and the hall table: "+cell+" of "+out.size());
-            for(var cell:List.of(new BlockPos(-9,0,-6),new BlockPos(9,0,-6),new BlockPos(-8,0,-22),new BlockPos(8,0,-22),new BlockPos(LodgingSite.PASS_W,0,-10),new BlockPos(3,0,-10)))
+            for(var cell:List.of(new BlockPos(-9,0,-6),new BlockPos(12,0,-2),new BlockPos(-8,0,-22),new BlockPos(11,0,-20),new BlockPos(LodgingSite.PASS_W,0,-10),new BlockPos(3,0,-10)))
                 h.assertFalse(out.contains(cell),"not into the parlor, the dining room, Daniel's room, the scullery, the passages or the cupboard: "+cell);
             var up=walked(l,b,new BlockPos(2,LodgingSite.UPPER,-12));
             for(var cell:List.of(new BlockPos(0,LodgingSite.UPPER,-1),new BlockPos(3,LodgingSite.UPPER,-7),new BlockPos(0,LodgingSite.UPPER,-28)))h.assertTrue(up.contains(cell),"upstairs, the gallery round the well and the corridor to its end: "+cell+" of "+up.size());
@@ -154,7 +155,7 @@ public final class LodgingHouseTests {
             }
             // Open, every room downstairs, the cupboard under the stair, the passages behind the walls.
             var in=walked(l,b,new BlockPos(0,0,-1));
-            for(var room:List.of(new BlockPos(-9,0,-6),new BlockPos(9,0,-6),new BlockPos(-8,0,-22),new BlockPos(8,0,-22),new BlockPos(0,0,-25),new BlockPos(3,0,-10),new BlockPos(LodgingSite.PASS_W,0,-2),
+            for(var room:List.of(new BlockPos(-9,0,-6),new BlockPos(12,0,-2),new BlockPos(-8,0,-22),new BlockPos(11,0,-20),new BlockPos(0,0,-25),new BlockPos(3,0,-10),new BlockPos(LodgingSite.PASS_W,0,-2),
                     new BlockPos(LodgingSite.PASS_W,0,-29),new BlockPos(0,0,LodgingSite.PASS_N),new BlockPos(LodgingSite.PASS_E,0,-2)))
                 h.assertTrue(in.contains(room),"a body walks to "+room);
             var up=walked(l,b,new BlockPos(2,LodgingSite.UPPER,-12));
@@ -174,4 +175,75 @@ public final class LodgingHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="lodging_built") public static void builtDone(ServerLevel l){done();}
+
+    private static boolean thing(ServerLevel l,BlockPos b,BlockPos at,LodgingThing.Kind kind){return LodgingThing.is(l.getBlockState(b.offset(at)),kind);}
+    /**
+     * 0.4.550: what is in the rooms. In each guest room a bed made and turned down, its head to a wall, a washstand and a chair by the
+     * bed's head, and by its door the holder for a card, empty; the parlor's settee facing the grate with an armchair either side; the
+     * long table with ten chairs and the sideboard; Daniel's cot, the shelf under his hatch and his chair turned to the frame; the range
+     * in and lit, its flue, the sink, the dresser and the tray laid for one; the workroom's preparations, the record of guests and the key
+     * on its hook; Vera's bed made tight; the rope by the dead post. Everything stands on the floor or hangs on a wall, and nothing in a
+     * doorway or before a frame or a hatch. A body sits in a chair, an armchair and the settee and faces as they face, and each thing says
+     * what it is, none of it what the reader is.
+     */
+    @GameTest(template="empty",batch="lodging_rooms",timeoutTicks=1200)
+    public static void whatIsInTheRoomsStandsInItsPlaceAndAnswersAHand(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_guest",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            for(int i=0;i<6;i++){
+                var head=LodgingSite.bed(i);var face=LodgingSite.bedFacing(i);var hs=l.getBlockState(b.offset(head));var fs=l.getBlockState(b.offset(LodgingThing.ahead(head,face)));
+                h.assertTrue(LodgingThing.is(hs,LodgingThing.Kind.BED)&&hs.getValue(LodgingThing.STAGE)==0&&hs.getValue(LodgingThing.FACING)==face&&LodgingThing.is(fs,LodgingThing.Kind.BED)&&fs.getValue(LodgingThing.STAGE)==1,"room "+(i+1)+"'s bed, its head and its foot");
+                h.assertFalse(l.isEmptyBlock(b.offset(head.relative(face.getOpposite()))),"room "+(i+1)+"'s bed has its head to a wall");
+                h.assertTrue(thing(l,b,LodgingSite.washstand(i),LodgingThing.Kind.WASHSTAND)&&thing(l,b,LodgingSite.guestChair(i),LodgingThing.Kind.CHAIR)&&thing(l,b,LodgingSite.cardHolder(i),LodgingThing.Kind.CARD_HOLDER)
+                    &&l.getBlockState(b.offset(LodgingSite.cardHolder(i))).getValue(LodgingThing.STAGE)==0,"room "+(i+1)+"'s washstand and chair, and the empty holder by its door");
+                var before=LodgingSite.frame(i).relative(LodgingSite.frameFacing(i));
+                var hatch=new BlockPos(i<3?LodgingSite.ROOM_W:LodgingSite.ROOM_E,LodgingSite.UPPER,LodgingSite.HATCH_Z[i%3]).relative(LodgingSite.frameFacing(i));
+                h.assertTrue(l.isEmptyBlock(b.offset(before))&&l.isEmptyBlock(b.offset(before.above()))&&l.isEmptyBlock(b.offset(hatch))&&l.isEmptyBlock(b.offset(hatch.above())),"nothing before room "+(i+1)+"'s frame or its hatch");
+            }
+            for(var door:LodgingSite.doors()){var facing=l.getBlockState(b.offset(door)).getValue(LodgingBlock.FACING);
+                for(var side:List.of(door.relative(facing),door.relative(facing.getOpposite())))h.assertTrue(l.isEmptyBlock(b.offset(side))&&l.isEmptyBlock(b.offset(side.above())),"nothing in the way of the door at "+door+": "+side);}
+            h.assertTrue(l.isEmptyBlock(b.offset(LodgingSite.ONWARD.south())),"nor before the way on");
+            h.assertTrue(thing(l,b,LodgingSite.SETTEE,LodgingThing.Kind.SETTEE)&&thing(l,b,LodgingThing.right(LodgingSite.SETTEE,Direction.NORTH),LodgingThing.Kind.SETTEE)&&thing(l,b,LodgingSite.SIDE_TABLE,LodgingThing.Kind.SIDE_TABLE)
+                &&LodgingSite.ARMCHAIRS.stream().allMatch(a->thing(l,b,a,LodgingThing.Kind.ARMCHAIR))&&LodgingSite.PARLOR_CHAIRS.stream().allMatch(a->thing(l,b,a,LodgingThing.Kind.CHAIR)),"the parlor's settee facing the grate, the armchairs either side, the table and the chairs");
+            for(int x=LodgingSite.TABLE_W;x<=LodgingSite.TABLE_E;x++)for(int z=LodgingSite.TABLE_N;z<=LodgingSite.TABLE_S;z++)h.assertTrue(thing(l,b,new BlockPos(x,0,z),LodgingThing.Kind.LONG_TABLE),"the long table at "+x+","+z);
+            int chairs=0;for(int x=5;x<=13;x++)for(int z=-11;z<=-1;z++)if(thing(l,b,new BlockPos(x,0,z),LodgingThing.Kind.CHAIR))chairs++;
+            h.assertTrue(chairs==10&&thing(l,b,LodgingSite.SIDEBOARD,LodgingThing.Kind.SIDEBOARD),"ten chairs round it, and the sideboard: "+chairs);
+            h.assertTrue(thing(l,b,LodgingSite.COT,LodgingThing.Kind.COT)&&thing(l,b,LodgingSite.COT.south(),LodgingThing.Kind.COT)&&thing(l,b,LodgingSite.SHELF,LodgingThing.Kind.SHELF)&&LodgingSite.SHELF.above().equals(LodgingSite.FOOD_HATCH.east())
+                &&thing(l,b,LodgingSite.DANIEL_CHAIR,LodgingThing.Kind.CHAIR)&&l.getBlockState(b.offset(LodgingSite.DANIEL_CHAIR)).getValue(LodgingThing.FACING)==Direction.NORTH,"Daniel's cot, the shelf under his hatch, his chair turned to the frame");
+            var tray=l.getBlockState(b.offset(LodgingSite.TRAY));var range=l.getBlockState(b.offset(LodgingSite.RANGE));
+            h.assertTrue(LodgingThing.is(tray,LodgingThing.Kind.SCULLERY_TABLE)&&(tray.getValue(LodgingThing.STAGE)&2)==2&&LodgingThing.is(range,LodgingThing.Kind.RANGE)&&range.getLightEmission(l,b.offset(LodgingSite.RANGE))>0
+                &&thing(l,b,LodgingSite.RANGE.above(3),LodgingThing.Kind.RANGE)&&thing(l,b,LodgingSite.SINK,LodgingThing.Kind.SINK)&&thing(l,b,LodgingSite.DRESSER,LodgingThing.Kind.DRESSER)&&thing(l,b,LodgingSite.DRESSER.above(),LodgingThing.Kind.DRESSER),
+                "the scullery: the tray laid, the range in with its flue to the ceiling, the sink, the dresser");
+            h.assertTrue(thing(l,b,LodgingSite.WORK_TABLE,LodgingThing.Kind.WORK_TABLE)&&thing(l,b,LodgingThing.right(LodgingSite.WORK_TABLE,Direction.NORTH),LodgingThing.Kind.WORK_TABLE)&&thing(l,b,LodgingSite.RECORD,LodgingThing.Kind.CARD_INDEX)
+                &&thing(l,b,LodgingSite.KEY_HOOK,LodgingThing.Kind.KEY_HOOK)&&l.getBlockState(b.offset(LodgingSite.KEY_HOOK)).getValue(LodgingThing.STAGE)==0&&LodgingSite.inWorkroom(Vec3.atCenterOf(LodgingSite.KEY_HOOK)),"the workroom's preparations, the record of guests, and the key on its hook");
+            var vera=l.getBlockState(b.offset(LodgingSite.VERA_BED));
+            h.assertTrue(LodgingThing.is(vera,LodgingThing.Kind.BED)&&vera.getValue(LodgingThing.STAGE)==2&&thing(l,b,LodgingSite.DRESSING_TABLE,LodgingThing.Kind.DRESSING_TABLE)&&thing(l,b,LodgingSite.VERA_WARDROBE.above(),LodgingThing.Kind.WARDROBE),"Vera's bed made tight, her dressing table, her wardrobe");
+            h.assertTrue(thing(l,b,LodgingSite.ROPE,LodgingThing.Kind.ROPE)&&LodgingSite.ROPE.distManhattan(LodgingSite.DEAD_POST)==1&&LodgingSite.CRATES.stream().allMatch(c->thing(l,b,c,LodgingThing.Kind.CRATE))&&thing(l,b,LodgingSite.COAL,LodgingThing.Kind.COAL),"the rope beside the dead post, the crates, the coal");
+            // Everything stands on the floor or hangs on a wall.
+            int things=0;
+            for(int x=LodgingSite.WEST;x<=LodgingSite.EAST;x++)for(int y=LodgingSite.CELLAR;y<=LodgingSite.ROOF;y++)for(int z=LodgingSite.BACK;z<=LodgingSite.FRONT;z++){
+                var at=new BlockPos(x,y,z);var s=l.getBlockState(b.offset(at));if(!LodgingThing.is(s))continue;things++;var kind=s.getValue(LodgingThing.KIND);
+                if(kind==LodgingThing.Kind.KEY_HOOK||kind==LodgingThing.Kind.CARD_HOLDER||kind==LodgingThing.Kind.SHELF)h.assertFalse(l.isEmptyBlock(b.offset(at.relative(s.getValue(LodgingThing.FACING).getOpposite()))),"hung on a wall: "+kind+" at "+at);
+                else h.assertFalse(l.isEmptyBlock(b.offset(at.below())),"standing on something: "+kind+" at "+at);
+            }
+            h.assertTrue(things==90,"ninety things in the rooms: "+things);
+            // A body sits in a chair, an armchair, the settee and at the table, facing as each faces.
+            for(var seat:List.of(LodgingSite.guestChair(0),LodgingSite.ARMCHAIRS.get(0),LodgingSite.SETTEE,new BlockPos(LodgingSite.TABLE_W-1,0,-5))){
+                var at=b.offset(seat);p.moveTo(at.getX()+.5,at.getY(),at.getZ()+1.5);
+                h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,at)&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity,"a body sits in "+seat);
+                h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(p.getYRot()-l.getBlockState(at).getValue(LodgingThing.FACING).toYRot()))<1,"facing as it faces: "+seat+", "+p.getYRot());
+                p.stopRiding();
+            }
+            told(p);p.setShiftKeyDown(true);
+            for(var at:List.of(LodgingSite.bed(0),LodgingSite.washstand(0),LodgingSite.guestChair(0),LodgingSite.cardHolder(0),LodgingSite.ARMCHAIRS.get(0),LodgingSite.COT,LodgingSite.SHELF,LodgingSite.DANIEL_CHAIR,
+                    LodgingSite.TRAY,LodgingSite.RANGE,LodgingSite.WORK_TABLE,LodgingSite.RECORD,LodgingSite.KEY_HOOK,LodgingSite.VERA_BED,LodgingSite.ROPE))f.click(p,P,at);
+        }).thenIdle(2).thenExecute(()->{
+            var why=told(p);p.setShiftKeyDown(false);
+            var lines=List.of(LodgingTexts.BED,LodgingTexts.WASHSTAND,LodgingTexts.GUEST_CHAIR,LodgingTexts.CARD_HOLDER,LodgingTexts.ARMCHAIR,LodgingTexts.COT,LodgingTexts.SHELF,LodgingTexts.DANIEL_CHAIR,
+                LodgingTexts.TRAY,LodgingTexts.RANGE,LodgingTexts.PREPARATIONS,LodgingTexts.RECORD,LodgingTexts.KEY,LodgingTexts.BED_VERA,LodgingTexts.ROPE);
+            for(var line:lines)h.assertTrue(why.contains(line),"each says what it is: "+line+" in "+why);
+            for(var line:lines)for(String word:List.of(" he "," she "," his "," her "," him "," you "))h.assertFalse((" "+line.toLowerCase(java.util.Locale.ROOT)+" ").contains(word),"nothing of what the reader is: "+line);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="lodging_rooms") public static void roomsDone(ServerLevel l){done();}
 }

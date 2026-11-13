@@ -14,7 +14,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * 0.4.549, The Ones Already Inside (docs/THE_ONES_ALREADY_INSIDE_PLAN.md): the lodging house's own materials, walls, floors, stairs
- * and fittings. Drawn by tools/draw_lodging_house.py, which checks that its lists of materials, pairs, parts and kinds are these.
+ * and fittings. Drawn by tools/draw_lodging_house.py, which checks that its lists of materials, pairs, parts and kinds are these; what
+ * is in the rooms by tools/draw_lodging_things.py.
  */
 public final class LodgingRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
@@ -35,6 +36,9 @@ public final class LodgingRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LodgingWall>> WALL_TYPE=CODECS.register("lodging_wall",()->LodgingWall.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LodgingFloor>> FLOOR_TYPE=CODECS.register("lodging_floor",()->LodgingFloor.CODEC);
     public static final DeferredBlock<LodgingBlock> FITTING=BLOCKS.registerBlock("lodging_fitting",LodgingBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(LodgingBlock::light));
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<LodgingThing>> THING_TYPE=CODECS.register("lodging_thing",()->LodgingThing.CODEC);
+    /** 0.4.550: what is in the rooms (LodgingThing), drawn by tools/draw_lodging_things.py. */
+    public static final DeferredBlock<LodgingThing> THING=BLOCKS.registerBlock("lodging_thing",LodgingThing::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(LodgingThing::light));
     public static final DeferredBlock<LodgingWall> WALL=BLOCKS.registerBlock("lodging_wall",LodgingWall::new,fixed(Blocks.WHITE_WOOL));
     public static final DeferredBlock<LodgingFloor> FLOOR=BLOCKS.registerBlock("lodging_floor",LodgingFloor::new,fixed(Blocks.OAK_PLANKS));
     /** The main stair, its treads under a runner, and the back stair down to the cellar, bare. */

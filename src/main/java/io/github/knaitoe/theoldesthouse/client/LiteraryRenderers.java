@@ -66,6 +66,8 @@ public final class LiteraryRenderers {
         // 0.4.540: June on the step stool beside the freezer, its seat nine up.
         if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.cast(a.phase())&&io.github.knaitoe.theoldesthouse.labyrinth.PellThing.is(state,io.github.knaitoe.theoldesthouse.labyrinth.PellThing.Kind.STOOL))return new Seat(9,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.FACING));
         if(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seat(state))return new Seat(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seatHeight(state),state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.FACING));
+        // 0.4.550: the lodging house's chairs, armchairs and settee.
+        if(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seat(state))return new Seat(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seatHeight(state),state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.
         if(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.Kind.CHAIR))return new Seat(9,state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.UsherBlock.FACING));
         // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.

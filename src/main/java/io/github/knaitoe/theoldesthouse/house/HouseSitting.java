@@ -35,6 +35,7 @@ public final class HouseSitting {
         return readChair(state) || looseChair(state) || io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSwing.pumped(state) || io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.WinchesterFittingBlock.seat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seat(state)
+                || io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seat(state)
                 || io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.is(state,io.github.knaitoe.theoldesthouse.labyrinth.NurseryBlock.Kind.CHAIR)
                 || state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat()
                 || wardSeat(state)
@@ -70,6 +71,11 @@ public final class HouseSitting {
             if(!player.level().getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,new AABB(pos),a->a.isAlive()&&!a.pellStandIn()).isEmpty())return false;
             height=io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seatHeight(state)/16.;
         }
+        // 0.4.550: the lodging house's chairs, armchairs and settee; nobody sits where one of the house's people already is.
+        if(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seat(state)){
+            if(!player.level().getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,new AABB(pos),a->a.isAlive()).isEmpty())return false;
+            height=io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seatHeight(state)/16.;
+        }
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat())height=9/16.;
         if(io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.isSeat(state))height=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.UncannyFurnitureBlock.KIND).seatHeight()/16.;
         seat.moveTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
@@ -98,6 +104,7 @@ public final class HouseSitting {
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat()){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(readChair(state)){float yaw=state.getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seat(state)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
+        if(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.seat(state)){float yaw=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LodgingThing.FACING).toYRot();player.setYRot(yaw);player.setYHeadRot(yaw);}
         if(io.github.knaitoe.theoldesthouse.labyrinth.HouseReadSites.inside(player)==null)HouseExperience.sat(player,pos,state);
         return true;
     }

@@ -1,0 +1,76 @@
+{
+  "textures": {
+    "iron": "the_oldest_house:block/lodging/thing/iron",
+    "particle": "the_oldest_house:block/lodging/thing/iron"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        12
+      ],
+      "to": [
+        10,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron",
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#iron",
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#iron",
+          "uv": [
+            0,
+            0,
+            4,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#iron",
+          "uv": [
+            12,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#iron",
+          "uv": [
+            6,
+            12,
+            10,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#iron",
+          "uv": [
+            6,
+            12,
+            10,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

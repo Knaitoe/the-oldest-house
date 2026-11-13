@@ -316,7 +316,7 @@ version. Nothing needed to operate, rescue or finish depends on it.
 
 1. **The lodging house** (0.4.549): the place built whole, its own materials and fittings, every door, hatch, frame, rail and
    ladder answering, the first paper on the hall table. Not dealt.
-2. **What is in the rooms:** furniture and dressing, the beds, the washstands, the workroom's preparations and the record of
+2. **What is in the rooms** (0.4.550): furniture and dressing, the beds, the washstands, the workroom's preparations and the record of
    guests, Daniel's room's years, the scullery, the cellar's dead post.
 3. **The four:** Rae, Dan, Vera and Daniel painted and standing, talking in the panel; the failed bodies drawn.
 4. **N1 and N2:** Rae's request and the rooms, the doubles in the beds (the reader's House body), the first eyes opening.

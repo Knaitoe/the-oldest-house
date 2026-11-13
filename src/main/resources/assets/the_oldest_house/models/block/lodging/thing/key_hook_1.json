@@ -1,0 +1,145 @@
+{
+  "textures": {
+    "iron": "the_oldest_house:block/lodging/thing/iron",
+    "wood_dark": "the_oldest_house:block/lodging/thing/wood_dark",
+    "particle": "the_oldest_house:block/lodging/thing/wood_dark"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        8,
+        15
+      ],
+      "to": [
+        10,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood_dark",
+          "uv": [
+            6,
+            3,
+            10,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#wood_dark",
+          "uv": [
+            6,
+            3,
+            10,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#wood_dark",
+          "uv": [
+            0,
+            3,
+            1,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#wood_dark",
+          "uv": [
+            15,
+            3,
+            16,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#wood_dark",
+          "uv": [
+            6,
+            15,
+            10,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#wood_dark",
+          "uv": [
+            6,
+            15,
+            10,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        10,
+        14
+      ],
+      "to": [
+        8.5,
+        11,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            5,
+            8.5,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            5,
+            8.5,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            5,
+            2,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#iron",
+          "uv": [
+            14,
+            5,
+            15,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            14,
+            8.5,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#iron",
+          "uv": [
+            7.5,
+            14,
+            8.5,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

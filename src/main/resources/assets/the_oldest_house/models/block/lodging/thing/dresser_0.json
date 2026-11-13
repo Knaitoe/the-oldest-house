@@ -1,0 +1,145 @@
+{
+  "textures": {
+    "dresser_front": "the_oldest_house:block/lodging/thing/dresser_front",
+    "wood_mid": "the_oldest_house:block/lodging/thing/wood_mid",
+    "particle": "the_oldest_house:block/lodging/thing/wood_mid"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        4
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dresser_front",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            3,
+            12,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wood_mid",
+          "uv": [
+            4,
+            3,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            4,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            4,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        13,
+        3
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            2,
+            16,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            2,
+            13,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#wood_mid",
+          "uv": [
+            3,
+            2,
+            16,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#wood_mid",
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}
