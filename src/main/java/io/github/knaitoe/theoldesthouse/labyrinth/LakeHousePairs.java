@@ -94,6 +94,29 @@ public final class LakeHousePairs {
     }
 
     // ------------------------------------------------------------------------------------------------ in Tess's place
+    /** 0.4.558: the diver's visit on which the reader in Tess's place last began where she waits, so a reconnect does not move them. */
+    public static final String STOOD_AT="PartnerStoodAt0558";
+    /**
+     * Where the reader in Tess's place begins, relative to the lake's base: on the dock beside the water where she waits for the diver
+     * (LakeHouseTess stages her just off its east edge), or on the raft beside the compressor she keeps going on the helmet visit.
+     */
+    public static Vec3 tessSpot(int visit){return visit==2?new Vec3(LakeHouse.COMPRESSOR.getX()+1.5,0,LakeHouse.COMPRESSOR.getZ()+.5):new Vec3(1.5,0,-15.5);}
+    /**
+     * 0.4.558 (owner, 13 November: "Did you ensure players are placed in their appropriate spots? Player 2 in Goatman spawns at a
+     * cousin's location, replacing said cousin for that vignette and custom instructions for their role? Etc"): a reader who comes down
+     * in Tess's place begins each visit where she would be, facing the way she would, with her flashlight, and is told where they are.
+     */
+    static void takeTessPlace(ServerPlayer p,CompoundTag own){
+        if(!own.getBoolean("LakeFreshVisit"))return;
+        var d=LabyrinthData.get(p.server);var diverId=SceneInstances.diverOf(d,p.getUUID());var b=LakeHouse.readerBase(p);if(diverId==null||b==null)return;
+        var story=LiteraryVignettes.personal(d,diverId,PLACE);int visit=Math.max(1,story.getInt("Visit"));var as=LakeHousePartner.of(story);
+        if(!RoleSpots.stand(p,b,tessSpot(visit),180))return;
+        own.putInt(STOOD_AT,visit);LakeHouseGear.give(p,LakeHouseRegistry.FLASHLIGHT.get());
+        String diver=name(p,diverId),their=as==LakeHousePartner.Partner.THEO?"his":"her";
+        p.displayClientMessage(Component.literal(visit==2
+                ?"You are on the raft, by the compressor "+as.name+" keeps going while "+diver+" goes down. You have "+their+" flashlight."
+                :"You are on the dock, where "+as.name+" waits for "+diver+". You have "+their+" flashlight.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);
+    }
     /** Tess's line, offered to the partner in grey to say or not. */
     public static void prompt(ServerPlayer partner,String text){
         var as=LakeHousePartner.of(story(partner));

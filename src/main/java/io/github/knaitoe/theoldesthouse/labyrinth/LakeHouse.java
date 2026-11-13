@@ -329,7 +329,7 @@ public final class LakeHouse {
         if(p.level().dimension()!=NovelRooms.dimension(PLACE))return false;var b=readerBase(p);return b!=null&&IndianLakeRooms.bounds(b,PLACE).contains(p.position());
     }
     /** Whether the reader stands on the raft. Relative to the base. */
-    static boolean onRaft(Vec3 r){return Math.abs(r.x-RAFT.getX()-.5)<=3.6&&Math.abs(r.z-RAFT.getZ()-.5)<=2.6&&r.y>=-.3&&r.y<=1.5;}
+    public static boolean onRaft(Vec3 r){return Math.abs(r.x-RAFT.getX()-.5)<=3.6&&Math.abs(r.z-RAFT.getZ()-.5)<=2.6&&r.y>=-.3&&r.y<=1.5;}
     /** Whether the reader's flashlight has gone out (the lounge, on the helmet visit). */
     static boolean flashlightOut(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE).getBoolean("FlashlightOut")&&!LakeHouseStory.lit(p);}
     static int stage(CompoundTag own){return own.getInt("Stage");}
@@ -339,7 +339,7 @@ public final class LakeHouse {
     public static void arrive(ServerPlayer p,CompoundTag own){
         if(own.getBoolean("LakeFreshVisit"))own.putInt("T",0);
         // A reader in Tess's place (0.4.156) has no partner of their own and rides in their diver's canoe.
-        if(LakeHousePairs.isPartner(p)){LakeHouseStory.arrive(p,own);return;}
+        if(LakeHousePairs.isPartner(p)){LakeHouseStory.arrive(p,own);LakeHousePairs.takeTessPlace(p,own);return;}
         LakeHousePartner.choose(p,own);LakeHouseStory.arrive(p,own);
         LakeHouseCanoe.ensure(p);
     }

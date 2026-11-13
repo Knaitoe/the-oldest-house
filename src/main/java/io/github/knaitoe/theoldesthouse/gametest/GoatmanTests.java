@@ -11,6 +11,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.*;
 import net.minecraft.util.Mth;
@@ -547,6 +548,51 @@ public final class GoatmanTests {
             h.assertTrue(back.getBoolean("Active")&&!back.getBoolean("Interrupted"),"and the night ahead is theirs to be counted for: "+back);
         }).thenSucceed();
     }
+    private static Fixture standIn;
+    @AfterBatch(batch="goat_standin0558") public static void cleanStandIn(ServerLevel l){if(standIn!=null){standIn.close();standIn=null;}}
+    /**
+     * 0.4.558 (owner, 13 November: "Player 2 in Goatman spawns at a cousin's location, replacing said cousin for that vignette and custom
+     * instructions for their role"). The first reader through is the latecomer on the trail. The second begins where the cousin whose place
+     * they take is, out at the camp, and that cousin is not there. They are told what the place is (their chair, their bed, and the
+     * generator for the one who goes for gas) and that somebody is still coming up the trail, and the trail does not pull them back to its
+     * head. Each one's account says where they began: the stand-in at the camp when the latecomer came up the trail, and the latecomer's who
+     * was waiting at the camp.
+     */
+    @GameTest(template="empty",batch="goat_standin0558",timeoutTicks=600)
+    public static void aSecondReaderBeginsInTheCousinsPlaceAtTheCamp(GameTestHelper h){
+        standIn=new Fixture(h,106400);var f=standIn;f.finishedCamper();var first=f.player();var second=f.player();
+        // Out of the woods until they come through, so the trailer's own tick does not take them in first.
+        for(var p:List.of(first,second))p.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+80);
+        f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp's native entity sections are ready")).thenExecute(()->{
+            h.assertTrue(!f.run().getCompound("Cohort").contains(first.getStringUUID())&&!f.run().getCompound("Cohort").contains(second.getStringUUID()),"neither has come into the woods yet");
+            for(var p:List.of(first,second))p.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,0,0);
+            h.assertTrue(GoatmanVignette.enter(first,true),"the first reader through is the latecomer");
+            h.assertTrue(GoatmanVignette.enter(second,true),"the second comes through behind them");
+            var r=f.run();var cohort=r.getCompound("Cohort");var mine=cohort.getCompound(second.getStringUUID());var theirs=cohort.getCompound(first.getStringUUID());
+            h.assertTrue(!theirs.contains(GoatmanVignette.PLAYS)&&!theirs.getBoolean("Arrived")&&f.rel(first).z>-2,"the latecomer is at the head of the trail");
+            h.assertTrue(mine.contains(GoatmanVignette.PLAYS)&&mine.getBoolean(GoatmanVignette.STOOD_AT)&&mine.getBoolean("Arrived"),"the second has taken a cousin's place and is at the camp: "+mine);
+            int role=mine.getInt(GoatmanVignette.PLAYS);var spot=GoatmanVignette.spotOf(role,r);
+            h.assertTrue(spot!=null&&GoatmanWoods.clearing(f.rel(second))&&f.rel(second).distanceTo(spot)<2.5,"they stand where that cousin would: "+f.rel(second)+" for "+spot);
+            h.assertTrue(f.cousin(role).isEmpty()&&f.cousins().size()==GoatmanVignette.count(r)-1,"and that cousin is not there; the others are: "+f.cousins().size());
+            String told=GoatmanVignette.keptPlace(r,role,second);
+            h.assertTrue(told.contains("since the afternoon")&&told.contains("Your chair is at the table")&&told.contains("bed on the")&&told.contains("Somebody is still coming up the trail"),"they are told their place: "+told);
+            if(role==r.getInt("Runner"))h.assertTrue(told.contains("generator")&&told.contains("shed across the yard"),"and, in the place of the one who goes for gas, the generator: "+told);
+        }).thenExecute(()->{
+            for(int i=0;i<5;i++)GoatmanVignette.tick(f.server);
+            var r=f.run();var own=r.getCompound("Cohort").getCompound(second.getStringUUID());var spot=GoatmanVignette.spotOf(own.getInt(GoatmanVignette.PLAYS),r);
+            h.assertTrue(f.rel(second).distanceTo(spot)<2.5&&own.getBoolean("Arrived"),"the trail does not pull them back to its head: "+f.rel(second)+" "+own);
+            var story=WitnessAccount.Story.GOATMAN;
+            var stood=new CompoundTag();stood.putBoolean("Drafted0150",true);var with=new ListTag();with.add(StringTag.valueOf("goat_first"));stood.put("With0150",with);stood.putBoolean("StoodIn0150",true);
+            var trail=new ListTag();trail.add(StringTag.valueOf("goat_first"));stood.put("Trail0558",trail);stood.put("Camp0558",new ListTag());stood.putBoolean("AtCamp0558",true);
+            h.assertTrue(GoatmanVignette.witness(stood,story.text).startsWith("I was at the camp all afternoon in a cousin's place, when goat_first came up the trail late. There were more of us"),"the stand-in's account: "+GoatmanVignette.witness(stood,story.text));
+            stood.putBoolean("Gas0150",true);
+            h.assertTrue(GoatmanVignette.witness(stood,story.text).contains("I was the one who went out across the yard to fill the generator while the others ate."),"the gas job, in theirs: "+GoatmanVignette.witness(stood,story.text));
+            var late=new CompoundTag();late.putBoolean("Drafted0150",true);var with2=new ListTag();with2.add(StringTag.valueOf("goat_second"));late.put("With0150",with2);
+            var camp=new ListTag();camp.add(StringTag.valueOf("goat_second"));late.put("Camp0558",camp);late.put("Trail0558",new ListTag());late.putBoolean("AtCamp0558",false);
+            h.assertTrue(GoatmanVignette.witness(late,story.text).startsWith("I came up the trail late, and goat_second was at the camp already, in a cousin's place. There were more of us"),"the latecomer's: "+GoatmanVignette.witness(late,story.text));
+        }).thenSucceed();
+    }
     private static Fixture copies;
     @AfterBatch(batch="goat_copy0552") public static void cleanCopies(ServerLevel l){
         SceneInstances.fixtureCap(null);
@@ -620,6 +666,19 @@ public final class GoatmanTests {
             var two=f.l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(theirs[0],LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)>=0);
             h.assertTrue(two.size()==GoatmanVignette.count(GoatmanVignette.run(late))&&two.stream().allMatch(c->c.getPersistentData().hasUUID(GoatmanVignette.ROUND)&&c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(id)),"the second trailer's own cousins are staged: "+two.size());
             h.assertTrue(!f.cousins().isEmpty()&&f.cousins().stream().allMatch(c->c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(round[0])),"and the first trailer's are the first evening's");
+        })
+        .thenExecute(()->{
+            // 0.4.558: a friend after the seventeenth goes into the second trailer's evening, and into a cousin's place at its camp.
+            var friend=f.player();friend.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+80);
+            var e=SceneInstances.enter(friend,goat);
+            h.assertTrue(e.door()!=null&&e.copy()==1,"a friend after the seventeenth goes into the second trailer: "+e);
+            friend.moveTo(theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-.5,0,0);
+            h.assertTrue(GoatmanVignette.enter(friend,true),"and joins its evening");
+            var r=GoatmanVignette.run(late);var own=r.getCompound("Cohort").getCompound(friend.getStringUUID());
+            h.assertTrue(own.contains(GoatmanVignette.PLAYS)&&own.getBoolean(GoatmanVignette.STOOD_AT),"in a cousin's place: "+own);
+            var spot=GoatmanVignette.spotOf(own.getInt(GoatmanVignette.PLAYS),r);var rel=friend.position().subtract(theirs[0].getX(),theirs[0].getY(),theirs[0].getZ());
+            h.assertTrue(GoatmanVignette.copy(friend)==1&&spot!=null&&GoatmanWoods.clearing(rel)&&rel.distanceTo(spot)<2.5,"at the second trailer's camp, where that cousin would be: "+rel+" for "+spot);
+            h.assertTrue(f.run().getCompound("Cohort").getAllKeys().size()==16&&!f.run().getCompound("Cohort").contains(friend.getStringUUID()),"and the first trailer's evening is untouched");
         }).thenSucceed();
     }
     @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}

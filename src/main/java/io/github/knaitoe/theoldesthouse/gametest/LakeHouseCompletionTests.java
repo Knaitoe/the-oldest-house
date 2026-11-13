@@ -69,10 +69,15 @@ public final class LakeHouseCompletionTests {
                 var second=SceneInstances.enter(partner,PLACE);
                 h.assertTrue(second.door()!=null&&second.copy()==0&&diver.getUUID().equals(SceneInstances.diverOf(f.data(),partner.getUUID())),"the second reader joins them, in Tess's place");
                 in(f,partner,f.base(),1.5,0,-4.5);LiteraryVignettes.onArrive(partner,PLACE);
+                // 0.4.558: they begin where Tess waits for the diver, on the dock, facing the way she does, with her flashlight.
+                var dock=Vec3.atLowerCornerOf(f.base()).add(LakeHousePairs.tessSpot(1));
+                h.assertTrue(partner.position().distanceTo(dock)<1.5&&Math.abs(net.minecraft.util.Mth.wrapDegrees(partner.getYRot()-180))<1&&own(f,partner).getInt(LakeHousePairs.STOOD_AT)==1,"the partner begins on the dock where Tess waits: "+partner.position().subtract(Vec3.atLowerCornerOf(f.base())));
+                h.assertTrue(LakeHouseGear.has(partner,LakeHouseRegistry.FLASHLIGHT.get()),"with her flashlight, though they never passed the nail by the door");
                 h.assertTrue(f.out.getEntitiesOfClass(LakeHouseCanoe.class,LakeHouse.box(f.base()),c->partner.getUUID().equals(c.owner())).isEmpty(),"the partner rides in their diver's canoe rather than one of their own");
                 var full=SceneInstances.enter(third,PLACE);h.assertTrue(full.door()==null&&full.waiting(),"a third reader waits while a lake of their own is made ready");
-                // Facing away from the dock: a Tess who had already come for the diver alone leaves unseen.
-                diver.setYRot(0);diver.setYHeadRot(0);readTick(f,diver,10);readTick(f,partner,5);var mine=own(f,diver);
+                // The diver walks down to the dock to meet them, facing back the way they came: a Tess who had already come for the
+                // diver alone leaves unseen.
+                in(f,diver,f.base(),.5,0,-12.5);diver.setYRot(0);diver.setYHeadRot(0);readTick(f,diver,10);readTick(f,partner,5);var mine=own(f,diver);
                 h.assertTrue(LakeHouseTess.actor(diver,mine)==null&&mine.getBoolean("SoloGone"),"with a reader in her place, Tess stays away");
                 h.assertTrue(mine.getBoolean(LakeHousePartner.MET)&&own(f,partner).getBoolean(LakeHousePartner.MET),"the diver has met their partner on the dock, and the partner has had Tess's first line");
                 h.assertTrue(LakeHouseGear.has(partner,LakeHouseRegistry.FLASHLIGHT.get()),"the partner takes their own flashlight by the door");
@@ -91,6 +96,14 @@ public final class LakeHouseCompletionTests {
                 f.read(partner,LakeHouse.SOURCE);f.read(partner,LakeHouse.ACCOUNT);
                 h.assertTrue(WitnessAccount.has(f.data(),partner.getUUID(),WitnessAccount.Story.LAKE_HOUSE),"reading it gives the partner the lake's Witness credit");
                 h.assertTrue(LakeHousePartner.witness(own(f,partner),"").contains("waited on the raft"),"their Witness line is from Tess's side");
+                // On the helmet visit Tess keeps the compressor going on the raft, and that is where the reader in her place begins.
+                var helmet=own(f,diver);helmet.putInt("Visit",2);LiteraryVignettes.save(f.data(),diver.getUUID(),PLACE,helmet);
+                LakeHouseStory.depart(partner);in(f,partner,f.base(),1.5,0,-4.5);LiteraryVignettes.onArrive(partner,PLACE);
+                var raft=Vec3.atLowerCornerOf(f.base()).add(LakeHousePairs.tessSpot(2));var rel=partner.position().subtract(Vec3.atLowerCornerOf(f.base()));
+                h.assertTrue(partner.position().distanceTo(raft)<1.5&&LakeHouse.onRaft(rel)&&own(f,partner).getInt(LakeHousePairs.STOOD_AT)==2,"on the helmet visit the partner begins on the raft by the compressor: "+rel);
+                // A reconnect partway through a visit leaves them where they are.
+                in(f,partner,f.base(),.5,0,-8.5);LiteraryVignettes.onArrive(partner,PLACE);
+                h.assertTrue(partner.position().subtract(Vec3.atLowerCornerOf(f.base())).distanceTo(new Vec3(.5,0,-8.5))<.1,"a reconnect partway through a visit does not move them: "+partner.position().subtract(Vec3.atLowerCornerOf(f.base())));
             })
             .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),PLACE,1),"a second lake stands ready"))
             // A reader arriving keeps the lake loaded; these fixture readers do not load chunks themselves.
