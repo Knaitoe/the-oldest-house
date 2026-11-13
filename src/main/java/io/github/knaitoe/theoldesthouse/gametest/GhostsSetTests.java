@@ -34,14 +34,19 @@ public final class GhostsSetTests {
         var t=f.own(lead,P);t.putLong("OnSet0404",1);save(f,lead,t);long n=2;for(var q:crew){t=f.own(q,P);t.putLong("OnSet0404",n++);save(f,q,t);}
     }
     private static String words(ItemStack s){return s.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).reduce("",String::concat);}
-    @GameTest(template="empty",batch="ghosts_room0490",timeoutTicks=500)
+    @GameTest(template="empty",batch="ghosts_room0490",timeoutTicks=900)
     public static void anUpstairsTakeWaitsForTheActualRoomAndMarjorieIsSmallerThanTheAdults(GameTestHelper h){
         var f=fixture(h);var p=f.player("ghost_room",P);f.source(p,P);var held=f.base(P);
         f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
-        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the native cast sections are ready")).thenExecute(()->{
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the native cast sections are ready"))
+            // Run 1575: the reader waits on day one while the house is made, and on a slow server Barry was already out on the day's first
+            // errand when the case jumped the reader to day three. That day's take must not wait on an errand of the first, so the case
+            // now waits for the errand on purpose.
+            .thenWaitUntil(()->h.assertTrue(GhostsErrands.state(f.own(p,P)).startsWith("BARRY_CABLE/"),"day one's first errand is under way: "+GhostsErrands.state(f.own(p,P))))
+            .thenExecute(()->{
             var b=f.base(P);var own=f.own(p,P);own.putInt("FilmDay",3);own.putBoolean("Rolling",true);own.putBoolean("CastPlaced",false);own.putInt("ShotClock",0);f.at(p,P,-6,0,-19);GhostsSet.reader(p,b,own);
             h.assertTrue(own.getInt("ShotClock")==0&&!GhostsSet.inRoom(p,b,3,false),"the matching downstairs coordinates cannot advance an upstairs reconstruction");
-            f.at(p,P,-4,5,-19);GhostsSet.reader(p,b,own);h.assertTrue(own.getInt("ShotClock")==5&&GhostsSet.inRoom(p,b,3,false),"entering the real upstairs bedroom starts its occupied take: "+status(f,p));
+            f.at(p,P,-4,5,-19);GhostsSet.reader(p,b,own);h.assertTrue(own.getInt("ShotClock")==5&&GhostsSet.inRoom(p,b,3,false)&&!GhostsErrands.busy(own),"entering the real upstairs bedroom starts its occupied take, without waiting on day one's errand: day "+own.getInt("FilmDay")+" clock "+own.getInt("ShotClock")+" errand "+GhostsErrands.state(own)+"; saved "+status(f,p));
             h.assertTrue(actor(f,p,LiteraryActor.GHOST_MARJORIE).getScale()<actor(f,p,LiteraryActor.GHOST_JOHN).getScale(),"the teenager's native model and collider are smaller than the adults");
             var father=actor(f,p,LiteraryActor.GHOST_JOHN);own.putInt("ShotClock",335);GhostsSet.reader(p,b,own);h.assertTrue(father.phase()==GhostsSet.STAND,"the original father must walk around the bed before raising his arms to help");save(f,p,own);
             var idle=own.copy();idle.remove("AcceptedScene131");idle.putBoolean("Rolling",false);h.assertTrue(!GhostsSet.objectiveAccepted(idle)&&GhostsSet.idleLine(idle,3).equals("John: That bulb's going again."),"before acceptance the actual idle pool concerns the household");

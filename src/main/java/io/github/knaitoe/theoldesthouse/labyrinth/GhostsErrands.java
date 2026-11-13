@@ -73,8 +73,12 @@ public final class GhostsErrands {
         };
     }
 
-    /** Whether one of the reader's cast is out on an errand: a take does not begin until they are back. */
-    public static boolean busy(CompoundTag own){return own.getCompound(KEY).getInt("Active")>0;}
+    /**
+     * Whether one of the reader's cast is out on an errand of the day being filmed: a take does not begin until they are back. An errand
+     * belongs to the day it was set out on (run 1575: a day changed without a new day beginning, as a test's does, left the first day's
+     * errand holding the third day's take).
+     */
+    public static boolean busy(CompoundTag own){var e=own.getCompound(KEY);return e.getInt("Active")>0&&e.getInt("Day")==GhostsSet.day(own);}
 
     /**
      * Before the take, while the reader is about the house: the next errand when it is due, and the one under way stepped on. Once the
@@ -82,6 +86,9 @@ public final class GhostsErrands {
      */
     static void between(ServerPlayer p,BlockPos b,LiteraryActor[] cast,CompoundTag own,int d){
         var e=own.getCompound(KEY);
+        // Another day's errands are done with: the table as it really is, and this day's errands from the start.
+        if(!e.isEmpty()&&e.getInt("Day")!=d){reset(p,b,own);e=new CompoundTag();}
+        e.putInt("Day",d);
         if(e.getBoolean("Plate")&&p.level().getGameTime()%100<5)hidePlate(p,b);
         boolean called=own.getBoolean("Rolling");
         if(e.getInt("Active")==0){
