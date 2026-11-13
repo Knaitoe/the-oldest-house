@@ -2982,11 +2982,16 @@ public final class PellHouseTests {
             h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.PINNED&&TornPages.byHouse(s,p.getUUID(),page[0])&&TornPages.out(s,p.getUUID())==0,"pinned by the House, not counted among the pages they may leave");
             h.assertTrue(!TornPages.valid(s,held[0])&&!holds(p,held[0]),"the copy in their pocket is blank");
             h.assertTrue(pinned.glance().replace('\n',' ').equals(line),"its first lines show at a glance: "+pinned.glance());
+        // Run 1579: what the server sends a reader in a tick reaches them at the tick's end, so what they heard is read a tick on.
+        }).thenIdle(1).thenExecute(()->{
+            var pinned=(io.github.knaitoe.theoldesthouse.journal.PinnedPage)up[0];var at=pinned.getBoundingBox().getCenter();
             var heard=sent(p);h.assertTrue(heard.pins().size()==1&&heard.pins().getFirst().distanceTo(at)<1.5,"the pin heard by them, where it went in: "+heard.pins());
             h.assertTrue(sent(q).pins().isEmpty(),"and not by the other reader");
             h.assertTrue(PellPages.next(p)==0,"put up by the House, it is not due again");
             // Anybody can read it; nobody but its writer can take it down.
             pinned.interact(q,net.minecraft.world.InteractionHand.MAIN_HAND);
+        }).thenIdle(1).thenExecute(()->{
+            var pinned=(io.github.knaitoe.theoldesthouse.journal.PinnedPage)up[0];
             h.assertTrue(sent(q).pages().size()==1,"the other reader reads it");
             pinned.skipAttackInteraction(q);
             h.assertTrue(!pinned.isRemoved()&&TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.PINNED,"and cannot take it down");

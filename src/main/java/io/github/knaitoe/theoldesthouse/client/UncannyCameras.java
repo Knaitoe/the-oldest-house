@@ -94,7 +94,10 @@ public final class UncannyCameras {
                         for(int y=headRect[1];y<headRect[3];y++)for(int x=headRect[0];x<headRect[2];x++){
                             int a=normal.getPixelRGBA(x,y),b=masked.getPixelRGBA(x,y);
                             int difference=Math.abs((a&255)-(b&255))+Math.abs((a>>8&255)-(b>>8&255))+Math.abs((a>>16&255)-(b>>16&255));
-                            if(difference>24)changed++;
+                            // Run 1579: both passes draw the same frame, so any difference is the head. Dark hair seen from above in the
+                            // dim hall differs from the carpet by at most 35 summed (1,404 pixels over 8, only 7 over 24), so a pixel counts
+                            // once it differs by more than 8.
+                            if(difference>8)changed++;
                         }headPixels=Math.max(headPixels,changed);
                         if(!headReadbackSaved||changed>=12){
                             try{
