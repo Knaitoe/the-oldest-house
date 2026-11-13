@@ -117,6 +117,17 @@ public final class HolyRabbit {
         var delta=target.subtract(father.position());if(delta.lengthSqr()<.04){own.putInt("LastHuntStep0490",next+1);return;}
         LiteraryMotion.toward(father,target,ticks%30<20?.22:.035);father.setDeltaMovement(Vec3.ZERO);
     }
+    /** For tests: how far along his last route the father is, and whether the place he is making for has loaded. */
+    public static String lastHuntState(ServerLevel l,LiteraryActor father,BlockPos b,CompoundTag own){
+        int next=own.getInt("LastHuntStep0490");var at=father.position().subtract(Vec3.atLowerCornerOf(b));
+        String where=String.format(java.util.Locale.ROOT,"at (%.2f, %.2f, %.2f) from the site",at.x,at.y,at.z);
+        if(!own.getBoolean("LastHunt0490"))return "he has not set out; "+where;
+        if(next>=LAST_HUNT.length)return "his route is done; "+where;
+        var target=BlockPos.containing(b.getX()+LAST_HUNT[next][0],b.getY(),b.getZ()+LAST_HUNT[next][1]);
+        return "making for waypoint "+(next+1)+" of "+LAST_HUNT.length+" ("+LAST_HUNT[next][0]+", "+LAST_HUNT[next][1]+"), "+where
+            +"; its chunk "+(l.hasChunkAt(target)?"loaded":"not loaded")+", its entities "+(l.areEntitiesLoaded(ChunkPos.asLong(target.getX()>>4,target.getZ()>>4))?"loaded":"not loaded")
+            +"; his own chunk "+(l.isPositionEntityTicking(father.blockPosition())?"ticks":"does not tick");
+    }
     private static void walk(LiteraryActor father,BlockPos b,CompoundTag own,int night,int ticks){
         if(night>=3){LiteraryMotion.stop(father);return;}
         if(ticks<40)return;int next=own.contains("FatherWaypoint0488")?own.getInt("FatherWaypoint0488"):1;
