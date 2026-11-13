@@ -75,6 +75,9 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANYARD=ITEMS.register("pell_lanyard",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.541: Tilly's spare cane tip, the keepsake of the morning she came out (LiteraryVignettes.finishReward, Keepsakes.caneTip). */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> CANE_TIP=ITEMS.register("pell_cane_tip",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.548: the last page off the shed's wall and the note off the freezer's switch, to show Gail (PellMark). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> PAGE=ITEMS.register("pell_page",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1))),
+        NOTE=ITEMS.register("pell_note",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */

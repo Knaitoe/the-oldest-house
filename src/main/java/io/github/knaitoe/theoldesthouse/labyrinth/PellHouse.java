@@ -161,6 +161,9 @@ public final class PellHouse {
             // 0.4.540: the lanyard in June's robe on the chair, the last night; the freezer it opens, and Nessa in it (PellFreezer).
             case POOL_CHAIR->{if(!PellFreezer.chair(p,b,st,own))cue(p,PellTexts.thing(kind,stage));}
             case FREEZER,FREEZER_OPEN->{if(!PellFreezer.hand(p,b,st,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.548: the last page off the shed's wall and the note off the freezer's switch, to show Gail (PellMark).
+            case TRANSCRIPT->{if(!PellMark.page(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
+            case POWER->{if(!PellMark.note(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }

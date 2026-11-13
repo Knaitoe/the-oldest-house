@@ -62,6 +62,8 @@ public final class PellTexts {
             // 0.4.542, the house's aftermath (PellAftermath).
             case MARKS_AFTER->stage==0?MARKS_EMPTY:MARKS_KEPT;
             case FOR_SALE->SIGN;
+            // 0.4.548: the last school photograph, after June's night with it (PellMark).
+            case PHOTO_BROKEN->"The last school photograph hangs crooked. The glass is starred across her face.";
             // 0 the border; 1 where it was steamed off and put back.
             case BORDER->stage==0?"A wallpaper border of small animals along the top of the wall.":"Behind the bed the border has been steamed off and put back, not quite straight.";
             case MATTRESS->"A mattress on the floor. No bed.";
@@ -82,7 +84,8 @@ public final class PellTexts {
             // 0.4.540: its lid up (PellFreezer).
             case FREEZER_OPEN->"The freezer stands open, its lid up against the wall. Cold comes up out of it.";
             case STOOL->"A step stool by the freezer, worn where someone sits.";
-            case POWER->"A note taped over the power point's switch: DO NOT SWITCH OFF.";
+            // 0.4.548: 1, the note taken off it (PellMark).
+            case POWER->stage==0?"A note taped over the power point's switch: DO NOT SWITCH OFF.":"The power point's switch is taped down. Where the note was, the tape has left its corners.";
             case CORD->"The freezer's cord, taped to the floor every hand's width.";
             // 0.4.538: the brush is across the bucket, as the art has it; the bucket is taken to scrub the line (PellScrub).
             case TROUGH->"The laundry trough. Its tap drips.";
@@ -108,7 +111,9 @@ public final class PellTexts {
             case TIN->stage==0?"A tin of paint and a brush. On the lid, in marker: LINE.":"The tin of paint, open. The paint on its rim is wet.";
             // 2: the last page.
             case TRANSCRIPT->stage<2?"Pages taped to the wall: the tapes written out by hand, corrections down the margins."
-                :"The last page. Down its side, one word over and over: Nessa.";
+                :stage==2?"The last page. Down its side, one word over and over: Nessa."
+                // 0.4.548: 3, the last page taken (PellMark).
+                :"Where the last page was, a strip of tape and a torn edge of paper under it.";
             // 0 the first visit; 1 the second; 2 the last.
             case SHED_CALENDAR->stage==0?"A chemist's calendar. Nights crossed off in pencil, toward a night circled twice."
                 :stage==1?"A chemist's calendar. The crossed-off nights are nearer the circle.":"A chemist's calendar. The circled night is tonight.";
@@ -697,6 +702,8 @@ public final class PellTexts {
         case "hand"->"I slammed the door on her hand. Nobody saw.";
         case "night2"->"I told Tilly nobody wants her here.";
         case "night3"->"I scuffed the line by the drive on purpose, to see what she'd do.";
+        // 0.4.548: after the last photograph (PellMark).
+        case "photo"->"I took the last photograph off the wall and broke it.";
         default->"";
     };}
     // ------------------------------------------------------------------------------------------------ 0.4.543, after a failure (PellEntries, PellAfterlife)
@@ -929,6 +936,9 @@ public final class PellTexts {
         int yes=own.getInt("AnsweredNessa"),no=own.getInt("SaidOwnNameBefore");
         if(yes>0)p.add(yes==1?"Once, when June called me Nessa, I answered to it.":Stillness.words(yes)+" times, when June called me Nessa, I answered to it.");
         if(no>0)p.add("When she called me Nessa, I told her my name.");
+        // 0.4.548: an older one Gail came for in the night (PellMark).
+        var gone=taken(own);
+        if(!gone.isEmpty())p.add("In the night a car came to the curb, and a door shut out in the street. "+CoopAccounts.names(gone)+(gone.size()==1?" was":" were")+" not there at midnight. Gail had come in the night and taken "+(gone.size()==1?"them":"them all")+" away.");
         p.add("At midnight on the last night June got me up out of Nessa's bed and took me down to the pool by the hand. The water was warm. She stood behind me with her hands on my shoulders and said Nessa, over and over. She put me under, and let me up, and said it again.");
         int own_=own.getInt("SaidOwnName");
         p.add(own_>0?"I said my own name back to her.":"I didn't say anything back.");
@@ -953,6 +963,12 @@ public final class PellTexts {
         return out;
     }
     private static List<String> with(List<String> names,String last){var out=new ArrayList<>(names);out.add(last);return out;}
+    /** 0.4.548: whoever Gail took away in the night from this reader's house, by name (PellMark, "GailTook"). */
+    public static List<String> taken(CompoundTag own){
+        var out=new ArrayList<String>();var list=own.getList(PellMark.TOOK,net.minecraft.nbt.Tag.TAG_STRING);
+        for(int i=0;i<list.size();i++){var n=list.getString(i);if(!n.isEmpty()&&!out.contains(n))out.add(n);}
+        return out;
+    }
     /**
      * 0.4.547, the close of the house's line in a reader's Witness book (CoopAccounts.PELL): whoever came through it with them, all of
      * their own house, by their part in it. The reader as Tilly: who was the older one, and had the garage. An older sibling: who took
@@ -960,11 +976,21 @@ public final class PellTexts {
      */
     public static String company(CompoundTag own,List<String> names){
         if(names.isEmpty())return "";
-        if(own.getBoolean(PellTilly.PLAYS))return CoopAccounts.names(names)+(names.size()==1?" was the older one, and had the garage across the yard.":" were the older ones, and had the garage across the yard.");
+        // 0.4.548: whoever Gail came for in the night (PellMark).
+        var gone=taken(own);String until=" until Gail came for them in the night";
+        if(own.getBoolean(PellTilly.PLAYS)){
+            var stayed=new ArrayList<>(names);stayed.removeAll(gone);var away=new ArrayList<>(names);away.retainAll(gone);
+            var out=new ArrayList<String>();
+            if(!stayed.isEmpty())out.add(CoopAccounts.names(stayed)+(stayed.size()==1?" was the older one, and had the garage across the yard.":" were the older ones, and had the garage across the yard."));
+            if(!away.isEmpty())out.add(CoopAccounts.names(away)+(away.size()==1?" was the older one,":" were the older ones,")+until+".");
+            return String.join(" ",out);
+        }
         String tilly=own.getString(PellTilly.TILLY_NAME);var rest=new ArrayList<>(names);boolean was=!tilly.isEmpty()&&rest.remove(tilly);
         var out=new ArrayList<String>();
         if(was)out.add(tilly+" took the cane off the hook, and was Tilly.");
-        if(!rest.isEmpty())out.add(CoopAccounts.names(rest)+" had the garage with me.");
+        var stayed=new ArrayList<>(rest);stayed.removeAll(gone);var away=new ArrayList<>(rest);away.retainAll(gone);
+        if(!stayed.isEmpty())out.add(CoopAccounts.names(stayed)+" had the garage with me.");
+        if(!away.isEmpty())out.add(CoopAccounts.names(away)+" had the garage with me,"+until+".");
         return String.join(" ",out);
     }
     /** 0.4.545: the house's Witness line for a reader: Tilly's own, for a reader who played her; without "she" for a reader whose Tilly
@@ -976,6 +1002,43 @@ public final class PellTexts {
         if(own.contains(PellTilly.TILLY_ID))return "I stayed three times in a house where a woman had ringed the lot with paint. On the last night, in the water, Tilly would not answer to any name but Tilly, and came out through a gap in the line, and at first light a car came to the curb.";
         return text;
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.548, Gail's third mark (PellMark)
+    /** Glass breaking in the hall, heard inside the house and from outside it; June to the photograph, for whoever is near. */
+    public static final String GLASS_HEARD="In the hall, glass breaks.",GLASS_FAR="Over at the house, glass breaks.",
+        JUNE_PHOTO="Oh, look at you. Look what they've done to you.";
+    /** June on the kitchen telephone to Gail, in the night, a pause after each line while Gail talks. */
+    public static final String[] JUNE_RINGS_GAIL={"Gail? It's June. I'm sorry, love, I know what time it is.","It's one of them again. The same one.",
+        "Nessa's photograph. Off the wall, and the glass smashed. Her last one.","No. I've tried, Gail. I can't have it. Not with Tilly in the house.",
+        "Would you? Thank you, love. I'll wait up."};
+    /** A car in the night: what wakes a reader asleep, and what Gail says, coming up the path, to whoever is near. */
+    public static final String WOKEN_BY_CAR="Lights cross the wall. Out in the street, a car is pulling in.",
+        GAIL_NIGHT_HELLO="Hello, love. June rang me.";
+    /** A hand on Gail in the night: to the reader June says did it, and to anybody else (with that reader's name). */
+    public static final String[] GAIL_NIGHT_MARKED={"June's told me about the photograph, love.","That's three things now. The knife, her hand, and this.",
+        "I can't leave you here tonight. Unless there's something you want to show me."};
+    public static String[] gailNightOther(String name){return new String[]{"It's late, love. I've come for "+name+".","Unless there's something you want to show me."};}
+    /** What a reader can say to her: only what they have about them, or have seen. */
+    public static final String TELL_PAGE="Read this. It's June's writing.",TELL_NOTE="This was taped over the freezer's switch.",
+        TELL_TAPES="Come and see what's in the shed.",TELL_THINGS="I'll get my things.",TELL_SAY_NOTHING="Say nothing.";
+    /** The page and the note in her hands; the tape. */
+    public static final String GAIL_READS_PAGE="Gail reads the page, then turns it over and reads it again.",
+        GAIL_HOLDS_NOTE="Gail holds the note up to the light from the house. DO NOT SWITCH OFF, in June's capitals.";
+    public static final String[] GAIL_ON_PAGE={"This is June's writing.","Where did you find this, love?"},
+        GAIL_ON_NOTE={"What's she got in there that can't go off?"};
+    public static final String GAIL_SHOW_ME="Show me, then.",GAIL_TURN_IT_OFF="Turn it off. Turn it off, love.",
+        GAIL_NOTHING_HERE="There's nothing here, love. Come on.",GAIL_LET_GO="Gail stops. She will not go any further without you.";
+    /** Once a mark has come off, under three: she goes without anybody. */
+    public static final String[] GAIL_STAYS={"All right.","I'm not taking anybody anywhere tonight.","I'll be back first thing, and I'll talk to June then."};
+    /** Into the car: what she says, and what the reader sees. */
+    public static final String GAIL_IN_YOU_GET="Come on, love. In you get.",
+        NIGHT_IN_CAR="Gail opens the car door for you. Up at the house, a light is on in June's room.",
+        GAIL_GONE="Out in the street, Gail's car pulls away.";
+    /** The page off the shed's wall and the note off the freezer's switch, taken; and put back. */
+    public static final String PAGE_TAKEN="You peel the last page off the wall. Down its side, one word over and over: Nessa.",
+        NOTE_TAKEN="You peel the note off the switch. DO NOT SWITCH OFF.";
+    /** Later hands on Gail in the night. */
+    public static final String[] GAIL_NIGHT_TALK={"Go on, love. Go and get your things.","June knows best. She's been doing this a long time.","It's late. Come on."};
 
     /** The first paper: the placement notice, as it was put through the letterbox. */
     public static ItemStack source(){
@@ -1061,8 +1124,25 @@ public final class PellTexts {
             default->"";
         };
         if(!hand.isEmpty())p.add(hand);
-        int marks=own.getInt("GailMarks");
-        if(marks>0)p.add(marks==1?"Gail put one thing on my file.":"Gail put "+Stillness.words(marks)+" things on my file.");
+        // 0.4.548: the last photograph, and Gail in the night (PellMark).
+        if(own.getBoolean("HeardGlass"))p.add(own.getBoolean("BlamedForPhoto")
+            ?"On the last night, after the house was locked, glass broke in the hall. It was the last of Nessa's school photographs. June rang Gail, and by then it was me who had broken it."
+            :"On the last night, after the house was locked, glass broke in the hall.");
+        if(own.getBoolean("GailCame")){
+            var gone=taken(own);
+            p.add(own.getBoolean("BlamedForPhoto")?"Gail's car came up the street in the night. June had rung her about me.":"Gail's car came up the street in the night. June had rung her.");
+            String showed=switch(own.getString("ShowedGail")){
+                case PellMark.PAGE->"I gave her the last page from the shed wall, in June's writing. She read it twice.";
+                case PellMark.NOTE->"I gave her the note from the freezer's switch. She held it a long time.";
+                case PellMark.TAPE->"I took her out to the shed and played her one of the tapes. She asked me to turn it off.";
+                default->"";
+            };
+            if(!showed.isEmpty())p.add(showed);
+            if(own.getBoolean("GailLeft"))p.add(own.getBoolean("BlamedForPhoto")?"She went away again without me.":"She went away again on her own.");
+            if(!gone.isEmpty())p.add("She took "+CoopAccounts.names(gone)+" away in her car.");
+        }
+        int marks=own.getInt("GailMarks"),off=own.getInt("MarksCleared"),put=marks+off;
+        if(put>0)p.add((put==1?"Gail put one thing on my file":"Gail put "+Stillness.words(put)+" things on my file")+(off==0?".":off==1?", and took one off again.":", and took "+Stillness.words(off)+" off again."));
         if(!PellEntries.written(own).isEmpty())p.add("In my journal, in my own hand, there were lines I never wrote.");
         int tapes=Integer.bitCount(own.getInt("TapesWatched"));
         if(own.getBoolean("ReadTheTapes"))p.add("In the shed were tapes of a woman talking to somebody who had lost a child. I watched all of them, in order, and by the end I knew what the water was for.");

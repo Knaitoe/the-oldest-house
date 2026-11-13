@@ -137,7 +137,8 @@ public final class PellVisit {
         clock(h,here,now);
         if(!h.gailGone)car(l,b,h);
         // 0.4.541: back at first light on the last night, Gail stays (PellDawn).
-        if(gail!=null&&h.step>=FIRST_RULE&&!PellDawn.morning(h))leave(l,b,h,gail);
+        // 0.4.548: come in the night, she is the night's (PellMark).
+        if(gail!=null&&h.step>=FIRST_RULE&&!PellDawn.morning(h)&&!PellMark.night(h))leave(l,b,h,gail);
         // 0.4.545: a reader as Tilly walks themselves.
         if(tilly!=null&&h.step<CALLED&&h.tillyReader==null)tilly(b,h,june,tilly);
         // 0.4.545: the older sibling's part of the house is for the readers who are not Tilly (PellTilly.siblings).
@@ -146,7 +147,7 @@ public final class PellVisit {
         // 0.4.536: the shed's deck, whatever the hour.
         PellTapes.tick(l,b,h,here,now);
         // 0.4.538: a bucket nobody here has goes back to the laundry; on the last night, Callum out on the line.
-        if(now%PellScrub.KEEP==0)PellScrub.keep(l,b,here);
+        if(now%PellScrub.KEEP==0){PellScrub.keep(l,b,here);PellMark.keep(l,b,here);}
         // 0.4.540: the lanyard looked for and Nessa where she lies; while the freezer is open, who sees into it.
         if(now%PellFreezer.KEEP==0)PellFreezer.keep(l,b,here);
         if(now%10==0)PellFreezer.seen(l,b,here);
@@ -189,8 +190,8 @@ public final class PellVisit {
         PellRite.restart(l,b,h);
         // 0.4.540: the freezer shut and padlocked again, and the lanyard back.
         PellFreezer.restart(l,b);
-        // 0.4.541: and the morning.
-        PellDawn.restart(h);
+        // 0.4.541: and the morning; 0.4.548, and the night's framing (PellMark).
+        PellDawn.restart(h);PellMark.restart(l,b,h);
         // 0.4.545: the cane back on its hook unless a reader is Tilly here.
         PellTilly.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
@@ -385,7 +386,7 @@ public final class PellVisit {
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
         long to=h.step==SETTLED?(h.visit>=2&&(!h.welcomed||PellHand.holds(h))?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
-            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?(PellDawn.after(h)||PellTilly.holdingOut(h)?PellMorning.DAWN:PellNight.TWELVE):PellNight.ELEVEN)
+            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?(PellMark.holds(h)?h.time:PellDawn.after(h)||PellTilly.holdingOut(h)?PellMorning.DAWN:PellNight.TWELVE):PellNight.ELEVEN)
             // 0.4.538: on the last night the evening holds until a reader first comes in.
             :h.step>=CLEARED?(h.visit>=PellWeek.LAST&&!h.welcomed?h.time:EVENING):h.time;
         // 0.4.541: on the last night, once the rite is over either way, the rest of the night goes faster, to first light (PellDawn).
