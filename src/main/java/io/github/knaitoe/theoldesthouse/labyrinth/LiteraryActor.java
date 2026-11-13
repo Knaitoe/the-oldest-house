@@ -50,17 +50,20 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * machine takes Dana in feet first and the renderer cuts her body there, a slice at a time (BorrascaFeeding, BorrascaNativeArt).
      */
     private static final EntityDataAccessor<Integer> TORN=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
+    /** 0.4.535: marks a scene puts on one of its people that their look follows, a bit each (the Pell house: June's wrapped hand). */
+    private static final EntityDataAccessor<Integer> MARKS=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     private String scene="";private boolean small;
     private final CarcassHunt carcassHunt=new CarcassHunt();
     private final KillerNavigation privateHunt=new KillerNavigation();
     public LiteraryActor(EntityType<? extends LiteraryActor> type,Level l){super(type,l);setPersistenceRequired();setNoAi(true);setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);b.define(SPEAKER,"");b.define(TORN,0);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);b.define(SPEAKER,"");b.define(TORN,0);b.define(MARKS,0);}
     public int speaking(){return entityData.get(SPEECH);}
     /** Sets them talking for about as long as the line takes to say. */
     public void silent(){entityData.set(SPEECH,0);}
     public void speaks(String line){entityData.set(SPEECH,Math.min(110,14+line.length()*2));}
     public int torn(){return entityData.get(TORN);}public void torn(int value){entityData.set(TORN,Math.max(0,Math.min(4000,value)));}
+    public int marks(){return entityData.get(MARKS);}public void marks(int value){entityData.set(MARKS,value);}
     public int fade(){return entityData.get(FADE);}public void fade(int value){entityData.set(FADE,Math.max(0,Math.min(100,value)));}
     /**
      * 0.4.262: up to 15. It was held to 5, so Borrasca's led and reaching gestures (6 and 7, since 0.4.235) and the men's hands on her
@@ -235,6 +238,6 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     }
     @Override public boolean isPushable(){return role()==UNCANNY_FALSE_WAITRESS&&phase()>=2;}
     @Override public boolean canBeCollidedWith(){if(role()==UNCANNY_FALSE_WAITRESS)return phase()>=2;return super.canBeCollidedWith();}
-    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);if(spokenFor>0)t.putInt("Said0398",spokenFor);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());if(torn()>0)t.putInt("Torn0439",torn());if(sceneHidden)t.putBoolean("SceneHidden",true);owner().ifPresent(id->t.putUUID("Reader",id));}
-    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);spokenFor=t.getInt("Said0398");scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));torn(t.getInt("Torn0439"));sceneHidden=t.getBoolean("SceneHidden");}
+    @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);if(spokenFor>0)t.putInt("Said0398",spokenFor);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());if(torn()>0)t.putInt("Torn0439",torn());if(marks()!=0)t.putInt("Marks0535",marks());if(sceneHidden)t.putBoolean("SceneHidden",true);owner().ifPresent(id->t.putUUID("Reader",id));}
+    @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);spokenFor=t.getInt("Said0398");scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));torn(t.getInt("Torn0439"));marks(t.getInt("Marks0535"));sceneHidden=t.getBoolean("SceneHidden");}
 }

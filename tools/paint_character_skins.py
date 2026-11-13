@@ -27,6 +27,8 @@ def shade(c, n):
 
 # 0.4.533: June's towelling robe (the Pell house's chair has the same one lying on it, tools/draw_pell_things.py).
 PELL_ROBE = '#e6dfd2'
+# 0.4.535: the tea towel round June's hand, cream linen.
+PELL_TOWEL = '#e9e7df'
 
 
 def towelling(d, box, color):
@@ -265,6 +267,9 @@ LOOKS = {
     # over her hair and an old one-piece, faded at the front, her arms and legs bare and her feet too, the paint still at her nails.
     # Robe: walking to the water and back, her towelling robe over it, its sleeves to the elbow, worn open (the cast's coat). Swim:
     # in the water, the robe left on the chair.
+    # 0.4.535 (docs/PELL_HOUSE_HAND_0_4_535.md): June a week in, after the laundry: as by day, her right hand wrapped in a tea towel
+    # from the wrist over the knuckles.
+    'literary_pell_june_hand': Look('#dcae90','#8e7258','bun','#a99a74','#55534d','cardigan','#ece4d0',eyes='#5d6a58',age=1,mark='pell_june_hand',sleeve=7,shoes='#4a4440'),
     'literary_pell_june_robe': Look('#dcae90','#8e7258','bun','#3f5f6c','#3f5f6c','swim','#7d9aa2',eyes='#5d6a58',age=1,mark='pell_june_robe',sleeve=6),
     'literary_pell_june_swim': Look('#dcae90','#8e7258','bun','#3f5f6c','#3f5f6c','swim','#7d9aa2',eyes='#5d6a58',age=1,mark='pell_june_swim',sleeve=0),
     # Tilly: a sunhat she keeps on outside, a backpack with a keyring on its pocket. Her cane is in her hand (PellPeople).
@@ -1157,7 +1162,7 @@ def cloth_face(size,look,side='front'):
         # 0.4.227: the attendant's lanyard down from the collar, and the whistle on it.
         for k in range(0,6):d.point((mid-4+k//2,4+k),fill='#2a3a6a');d.point((mid+3-k//2,4+k),fill='#2a3a6a')
         d.rectangle((mid-1,10,mid+1,11),fill='#c8c8cc');d.point((mid+2,10),fill='#9a9aa0')
-    if look.mark=='pell_june':
+    if look.mark in ('pell_june','pell_june_hand'):
         # 0.4.524: her reading glasses hanging on their chain on her front: the chain from either side of her collar down to the two
         # rims and the bridge between them.
         chain='#b39a5a';rim='#3e3a34'
@@ -1504,11 +1509,21 @@ def paint(look):
                 if h>=20:
                     d.line((1,h-2,w-2,h-2),fill=shade(look.skin,-18));d.point((w-2,h-4),fill=shade(look.skin,7))
                     if side in ('left','right'):d.line((1,h-5,1,h-3),fill=shade(look.skin,-22))
-                if look.mark=='pell_june':
+                if look.mark in ('pell_june','pell_june_hand'):
                     # 0.4.524: her sleeves pushed up past the elbow, bunched; and on her right hand paint at the quick of two nails.
                     d.rectangle((0,cuff-3,w-1,cuff-1),fill=shade(look.cloth,12));d.line((0,cuff-2,w-1,cuff-2),fill=shade(look.cloth,-16))
                     if ai==0 and side=='front':
                         for x in (1,3):d.point((x,h-1),fill='#eceae2')
+                if look.mark=='pell_june_hand' and ai==0:
+                    # 0.4.535: her right hand wrapped in a tea towel from the wrist over the knuckles: cream linen with its blue stripe
+                    # round the top, folded twice round, the end tucked in at the back, and a faint mark come through over the knuckles.
+                    top=h-4*S
+                    d.rectangle((0,top,w-1,h-1),fill=PELL_TOWEL);d.line((0,top,w-1,top),fill=shade(PELL_TOWEL,-24))
+                    d.line((0,top+2,w-1,top+2),fill='#5a78a0')
+                    for y in (top+4,top+6):d.line((1,y,w-2,y),fill=shade(PELL_TOWEL,-14))
+                    if side=='back':d.line((w-3,top+3,w-1,top+5),fill=shade(PELL_TOWEL,-30))
+                    if side=='front':
+                        for x,y in ((2,top+5),(3,top+5),(3,top+6),(4,top+6)):d.point((x,y),fill='#bb9283')
                 if look.mark in ('pell_june_robe','pell_june_swim'):
                     # 0.4.533: in the robe, its towelling sleeves to the elbow, the cuffs turned back; the paint at her nails all the same.
                     if look.mark=='pell_june_robe':
@@ -1518,6 +1533,7 @@ def paint(look):
                         for x in (1,3):d.point((x,h-1),fill='#eceae2')
             elif side=='top' and look.mark in ('pell_june_robe','pell_june_swim'):
                 art=panel((w,h),PELL_ROBE if look.mark=='pell_june_robe' else look.skin,'cloth' if look.mark=='pell_june_robe' else 'skin',side)
+            elif side=='bottom' and look.mark=='pell_june_hand' and ai==0:art=panel((w,h),PELL_TOWEL,'cloth',side)
             elif side=='bottom':art=panel((w,h),'#a48f64' if look.mark=='borrasca_worker' else look.skin,'skin',side)
             if look.mark in ('truant','truant_leer') and side not in ('top','bottom'):
                 # Ink on his hands: a few dark blue marks across the knuckles and the back of the hand.

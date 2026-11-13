@@ -74,7 +74,9 @@ public final class PellRegistry {
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> CAR_AWAY=sound("pell.car_away"),TAPE=sound("pell.tape"),
-        BRUSH=sound("pell.brush"),LOCK=sound("pell.lock"),PAINT=sound("pell.paint"),TIN=sound("pell.tin");
+        BRUSH=sound("pell.brush"),LOCK=sound("pell.lock"),PAINT=sound("pell.paint"),TIN=sound("pell.tin"),
+        // 0.4.535: a door slammed in the laundry, and June's cry (docs/PELL_HOUSE_HAND_0_4_535.md).
+        HAND=sound("pell.hand");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }

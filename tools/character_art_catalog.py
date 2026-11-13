@@ -165,6 +165,7 @@ def entries():
     for phase,name in enumerate(('june','tilly','callum','gail'),195):
         rows.append({'name':'literary_pell_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # And (0.4.533) June at the pool at first light: in her robe, and in the water. Both are hers, on her phase; her gesture picks the sheet.
-    for name in ('june_robe','june_swim'):
+    # And (0.4.535) June with her hand wrapped after the laundry, picked by the mark she carries.
+    for name in ('june_robe','june_swim','june_hand'):
         rows.append({'name':'literary_pell_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':195})
     return rows

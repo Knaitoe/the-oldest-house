@@ -405,6 +405,50 @@ public final class PellTexts {
             default->found?List.of("Nothing to say? All right.","It's going on your file, love."):List.of("Hello? Are you there, love?","That's all right. You keep out of it.");
         };
     }
+    /** 0.4.535, June's hand: on her way to the laundry and in it; the slam, heard; her coming out and a hand on her after; her version on
+     *  the week's call; and Gail to the reader June says did it and to the rest. */
+    public static final String
+        JUNE_TO_LAUNDRY="I'll just put a wash on, love. Won't be a minute.",
+        JUNE_LAUNDRY_OUT="Out you come a minute, love. Let me get the wash on.",
+        JUNE_LAUNDRY_KEEPS="It'll keep.",
+        SLAM_HEARD="A door slams at the back of the house, hard. June cries out.",
+        SLAM_FAR="Over at the house a door slams, hard, and somebody cries out.",
+        JUNE_HAND_OUT="It's nothing. I caught it in the door.",
+        HAND_WRAPPED="June's right hand is wrapped in a tea towel. She holds it against her.",
+        JUNE_HAND_TROUBLE="Well. Not trouble, Gail. Not really.",
+        JUNE_HAND_WHAT="One of them slammed the laundry door on my hand yesterday.",
+        JUNE_HAND_AND="And yesterday one of them slammed the laundry door on my hand.",
+        JUNE_HAND_BRUISED="No, it's only bruised. I'll live.",
+        TELL_HAND_NOT_ME="I never touched the door.",
+        TELL_HAND_AWAY="I wasn't even in the house.",
+        TELL_HAND_HERSELF="She did it herself.",
+        TELL_HAND_HEARD="I heard it. I didn't see it.",
+        TELL_HAND_WASNT_ME="It wasn't me.",
+        JUNE_HAND_UPSET="They'll say anything when they're like this.";
+    /** What a hand on June gets about her hand, once each, the rest of the visit. */
+    public static final String[] JUNE_HAND_TALK={
+        "Don't fuss, love. It's only a knock.",
+        "I've had worse.",
+        "Mind yourself round that laundry door, love. It swings shut."};
+    /** What Gail asks about June's hand: the reader June says did it, or the rest; after asking about the knife, or first. */
+    public static List<String> gailHandAsks(boolean named,boolean after){
+        if(named)return List.of(after?"And June's hand, love. She says you slammed the laundry door on it.":"June's told me about her hand, love. She says you slammed the laundry door on it.","Did you?");
+        return List.of(after?"And June's hand. She says one of you slammed the laundry door on it.":"June's told me about her hand. She says one of you slammed the laundry door on it.","Did you see what happened, love?");
+    }
+    /** What a reader told Gail about June's hand: kept apart from the week's other answer ("ToldGailHand"). */
+    public static final String HAND_NOT_ME="hand_not_me",HAND_AWAY="hand_away",HAND_HERSELF="hand_herself",HAND_HEARD="hand_heard",HAND_WASNT_ME="hand_wasnt_me";
+    /** What Gail says to an answer about June's hand. The reader June names is on Gail's file for it whatever they say: nobody saw it. */
+    public static List<String> gailHand(String told,boolean named){
+        return switch(told){
+            case HAND_NOT_ME->List.of("June says you were the nearest, love. Right by the laundry.","It's going on your file.");
+            case HAND_AWAY->List.of("June says you were right there at the door.","I've only got her word and yours, love. It's going on your file.");
+            case HAND_HERSELF->List.of("Slammed a door on her own hand? Love.","I won't hear that. It's going on your file.");
+            case HAND_HEARD->List.of("Heard what, love? A door?","All right. I'll put down that you heard it.");
+            case HAND_WASNT_ME->List.of("No, love. She doesn't say it was you.","You keep out of it.");
+            case LEAVE->List.of("Oh, love. I know.","Give it a bit longer. That's all I'm asking.");
+            default->named?List.of("Nothing to say? All right.","It's going on your file, love."):List.of("That's all right, love.","You keep out of it.");
+        };
+    }
     public static final String[] JUNE_WEEK_TALK={
         "There you are, love. Dinner's at six.",
         "I go in the pool first thing, every morning. Clears the head.",
