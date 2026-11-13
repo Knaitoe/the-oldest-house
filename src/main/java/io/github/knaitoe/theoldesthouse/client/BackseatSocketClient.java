@@ -127,6 +127,13 @@ public final class BackseatSocketClient {
             else if(returned(mc)&&phase==7&&age>30)capture("peer-still-home",true);
         }else if(phase==8&&age>20){stop(mc);if(before!=null){before.close();before=null;}if(windowBefore!=null){windowBefore.close();windowBefore=null;}mc.stop();}
     }
+    /** Whether this frame's actual camera peel and continuous wind already exceed the reveal frame's by the acceleration check's margins. */
+    private static boolean faster(Minecraft mc){
+        if(!CAPTURES.contains(role()+"-reveal"))return false;
+        double pull=BackseatClient.cameraPullback(mc.getTimer().getGameTimeDeltaPartialTick(false));
+        float wind=WINDS.stream().filter(mc.getSoundManager()::isActive).map(net.minecraft.client.resources.sounds.SoundInstance::getVolume).max(Float::compare).orElse(0F);
+        return pull>firstPull+.025&&wind>firstWind+.1;
+    }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         if(!BackseatSocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(BackseatSocketProof.folder());
         if(shot.contains("-side-window-")){
@@ -149,7 +156,11 @@ public final class BackseatSocketClient {
         if(shot.endsWith("-house-return"))require(mc.options.getCameraType()==CameraType.FIRST_PERSON,"the confirmed House return respects its existing first-person view rule");
         // Run 1351: a slow reconnected client may take its late side-window frame after the car is already at speed, leaving no
         // frame before impact for a separate acceleration view. That late frame then carries the same speed checks.
-        boolean speed=shot.endsWith("-acceleration")||shot.endsWith("-side-window-late")&&!CAPTURES.contains(role()+"-acceleration")&&mc.player.getVehicle() instanceof BackseatSeat moving&&moving.car()!=null&&moving.car().clock>=60;
+        // Run 1579: a slow reconnected client took its late frame just before tick 60, and the car met the trees before its next frame,
+        // so neither frame checked the speed. The late frame carries the same checks whenever its actual peel and wind already exceed
+        // the reveal frame's by the required margins, whatever the tick; otherwise the separate acceleration frame still must.
+        boolean late=shot.endsWith("-side-window-late")&&!CAPTURES.contains(role()+"-acceleration")&&mc.player.getVehicle() instanceof BackseatSeat moving&&moving.car()!=null;
+        boolean speed=shot.endsWith("-acceleration")||late&&(((BackseatSeat)mc.player.getVehicle()).car().clock>=60||faster(mc));
         if(shot.endsWith("-reveal")||speed){
             var seat=(BackseatSeat)mc.player.getVehicle();var car=seat.car();require(car!=null,"the real moving seat retains its original car");
             var expected=Vec3.atBottomCenterOf(seat.root()).add(BackseatCarMesh.DRIVER).add(0,mc.player.getEyeHeight(),-car.visualTravel(mc.getTimer().getGameTimeDeltaPartialTick(false)));
