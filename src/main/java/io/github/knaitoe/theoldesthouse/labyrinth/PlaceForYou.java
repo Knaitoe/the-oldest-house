@@ -137,10 +137,12 @@ public final class PlaceForYou {
             var to=new Vec3(b.getX()+mark.at().x,b.getY()+mark.at().y,b.getZ()+mark.at().z);
             if(a.position().distanceToSqr(to)<.09){a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());if(!Talk.waiting(p))a.setYHeadRot(mark.yaw());continue;}
             // 0.4.560 (the standard cast checks): put straight there only while the reader sees neither them nor the place; else on
-            // foot, and the last of the way into a chair is a short slide over a few ticks rather than a jump into it.
+            // foot, and the last of the way into a chair is a short slide over a few ticks rather than a jump into it. 0.4.561: the
+            // place is looked at from the legs up to the head, not at one height (a reader looking down at the stove saw Ren arrive).
             boolean seat=l.getBlockState(BlockPos.containing(to)).getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
             boolean watched=io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))
-                    ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0));
+                    ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,.3,0))
+                    ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,a.getEyeHeight(),0));
             double far=a.position().distanceToSqr(to);
             if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
             else if(seat&&far<6.25){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
@@ -323,11 +325,15 @@ public final class PlaceForYou {
     }
     static void offerActivity(ServerPlayer p,House h,String who){
         if(!own(p).getString("Activity").isEmpty()){Talk.end(p);return;}
-        String ask=switch(who){case "Mara"->"Help me clear these, would you? Before Kit eats off everyone's plate.";case "Kit"->"Look at the clasp now, then. She's not watching.";case "Alex"->"Come and sit by the radio a while? It's quieter.";default->"Help me make the tea? I can never find anything.";};
+        // 0.4.561 (the standard cast checks: asked again, each of them said the same offer word for word): the offer comes back in
+        // other words the next time, and the two take turns after that.
+        int offered=own(p).getInt("Offered0561"+who);boolean again=offered%2==1;edit(p,o->o.putInt("Offered0561"+who,offered+1));
+        String ask=!again?switch(who){case "Mara"->"Help me clear these, would you? Before Kit eats off everyone's plate.";case "Kit"->"Look at the clasp now, then. She's not watching.";case "Alex"->"Come and sit by the radio a while? It's quieter.";default->"Help me make the tea? I can never find anything.";}
+            :switch(who){case "Mara"->"Those plates won't clear themselves.";case "Kit"->"The clasp. While she's in the kitchen.";case "Alex"->"The radio's still on, if you want it.";default->"The tea, then? I still can't find the pot.";};
         line(p,h,who,ask);
         Talk.ask(p,Talk.reply("Of course.",q->{String activity=switch(who){case "Mara"->"plates";case "Kit"->"clasp";case "Alex"->"radio";default->"tea";};
                 edit(q,o->{o.putString("Activity",activity);o.putString("Helper",who);});startActivity(q,h,activity);Talk.end(q);})
-            ,Talk.reply("In a minute.",q->{line(q,h,who,"Whenever you like.");Talk.end(q);}));
+            ,Talk.reply("In a minute.",q->{line(q,h,who,again?"It'll keep.":"Whenever you like.");Talk.end(q);}));
     }
     static void startActivity(ServerPlayer p,House h,String activity){
         var l=p.serverLevel();var b=h.base;

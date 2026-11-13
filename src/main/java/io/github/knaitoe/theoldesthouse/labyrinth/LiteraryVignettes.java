@@ -537,6 +537,8 @@ public final class LiteraryVignettes {
     private static void mapping(ServerPlayer p,BlockPos b,CompoundTag own){if(own.getBoolean("Read_Source"))MappingNights.floorPlan(p,b,own);MappingNights.reader(p,b,own);}
     private static void rabbit(ServerPlayer p,BlockPos b,CompoundTag own){HolyRabbit.reader(p,b,own);}
     private static boolean reask(ServerPlayer p,CompoundTag own){if(own.getList("Offers",Tag.TAG_COMPOUND).isEmpty())return false;ConfessionAnswers.offer(p,own,own.getInt("Chapter"));return true;}
+    /** What the Confession's visitor says while the clean book is not between them: once in full, then twice more, shorter, long after. */
+    static final String[] BOOK_ASKS={"There is a clean book on the low shelf. Put it between us.","The book on the low shelf. Between us.","The low shelf."};
     private static void confession(ServerPlayer p,BlockPos b,CompoundTag own){var place=LabyrinthPlace.CONFESSION;
         int chapter=own.getInt("Chapter");if(chapter>=LiteraryTexts.CONFESSION.length){if(own.getInt("Visit")>own.getInt("SealedVisit")&&own.getBoolean("Read_Journal"))ready(p,place,own,"read_the_sealed_journal_signed_with_own_name");return;}
         var visitor=actor(p,place,"Visitor",LiteraryActor.VISITOR,new BlockPos(1,0,-22),false);if(visitor==null||p.distanceToSqr(visitor)>64||!HouseWatchers.sees(p,visitor.getEyePosition()))return;
@@ -545,7 +547,14 @@ public final class LiteraryVignettes {
         if(laid==null)for(int i=0;i<p.getInventory().getContainerSize();i++){var book=p.getInventory().getItem(i);if(!book.is(Items.WRITABLE_BOOK)||!ConfessionBooks.owned(book,p))continue;
             var pages=book.get(DataComponents.WRITABLE_BOOK_CONTENT);if(!own.hasUUID("Journal")&&pages!=null&&pages.pages().stream().anyMatch(page->!page.raw().isBlank()))continue;
             var custom=book.get(DataComponents.CUSTOM_DATA);if(!own.hasUUID("Journal")||custom!=null&&custom.copyTag().hasUUID("Journal")&&custom.copyTag().getUUID("Journal").equals(own.getUUID("Journal"))){slot=i;break;}}
-        if(laid==null&&slot<0){if(own.getInt("Present")%100==0)visitor.say("There is a clean book on the low shelf. Put it between us.");return;}
+        if(laid==null&&slot<0){
+            // 0.4.561 (the standard cast checks: he said this sentence every five seconds until the book was laid down): he says it
+            // once, reminds the reader twice more, a long while apart and in fewer words, and after that only waits.
+            if(own.getInt("BookAskVisit0561")!=own.getInt("Visit")){own.putInt("BookAskVisit0561",own.getInt("Visit"));own.putInt("BookAsked0561",0);own.putInt("BookAskAt0561",0);}
+            int present=own.getInt("Present"),asked=own.getInt("BookAsked0561");
+            if(present%100==0&&asked<BOOK_ASKS.length&&present>=own.getInt("BookAskAt0561")){visitor.say(BOOK_ASKS[asked]);own.putInt("BookAsked0561",asked+1);own.putInt("BookAskAt0561",present+600*(asked+1));}
+            return;
+        }
         var quill=laid==null?p.getInventory().getItem(slot):laid.getItem();
         if(!own.hasUUID("Journal")){own.putUUID("Journal",UUID.randomUUID());CustomData.update(DataComponents.CUSTOM_DATA,quill,t->{t.putUUID("Journal",own.getUUID("Journal"));t.putUUID(OWNER,p.getUUID());});var initial=quill.get(DataComponents.WRITABLE_BOOK_CONTENT);if(initial!=null)own.putString("InitialWriting",initial.pages().stream().map(v->v.raw()).collect(java.util.stream.Collectors.joining("\n\n")));}
 

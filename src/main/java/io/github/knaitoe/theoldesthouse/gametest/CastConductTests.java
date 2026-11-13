@@ -187,4 +187,8 @@ public final class CastConductTests {
         },c->{});
     }
     @AfterBatch(batch="cast_harrigan") public static void harriganDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_ghosts_set",timeoutTicks=TIMEOUT) public static void ghostsSet(GameTestHelper h){sweep(h,LabyrinthPlace.GHOSTS_SET,c->{});}
+    @AfterBatch(batch="cast_ghosts_set") public static void ghostsSetDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_confession",timeoutTicks=TIMEOUT) public static void confession(GameTestHelper h){sweep(h,LabyrinthPlace.CONFESSION,c->{});}
+    @AfterBatch(batch="cast_confession") public static void confessionDone(ServerLevel l){close();}
 }
