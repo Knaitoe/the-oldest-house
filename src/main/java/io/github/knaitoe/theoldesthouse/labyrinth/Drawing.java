@@ -114,7 +114,7 @@ public final class Drawing {
         final List<UUID> order=new ArrayList<>();
         final Set<UUID> drew=new HashSet<>(),cut=new HashSet<>();
         List<Integer> household=List.of();int draw=-1;
-        final Map<Integer,List<Vec3>> routes=new HashMap<>();final Map<Integer,Integer> leg=new HashMap<>(),dwell=new HashMap<>(),paused=new HashMap<>();
+        final Map<Integer,List<Vec3>> routes=new HashMap<>();final Map<Integer,Integer> leg=new HashMap<>(),dwell=new HashMap<>(),paused=new HashMap<>(),held=new HashMap<>();
         final Map<UUID,Long> said=new HashMap<>();
         Day(BlockPos b){base=b;}
         int marked(){return markedIn(year);}
@@ -208,9 +208,12 @@ public final class Drawing {
             var a=actor(l,d.cast[who]);if(a==null){d.routes.remove(who);continue;}
             var route=d.routes.get(who);int i=d.leg.get(who);
             if(i<route.size()&&route.get(i).y<-50){int left=d.paused.getOrDefault(who,(int)route.get(i).x);if(left>0){d.paused.put(who,left-1);continue;}d.paused.remove(who);d.leg.put(who,i+1);continue;}
-            if(i<route.size()){var target=world(d.base,route.get(i));if(SceneFootpaths.walk(a,target,.12)||a.position().distanceToSqr(target)<.09)d.leg.put(who,i+1);continue;}
+            // 0.4.561 (the standard cast checks: the late villager answered a reader over his shoulder and walked on): spoken to on
+            // the way, they stop to answer, for up to three seconds a leg, then go on.
+            if(i<route.size()&&a.listening()&&d.held.merge(who,1,Integer::sum)<=60)continue;
+            if(i<route.size()){var target=world(d.base,route.get(i));if(SceneFootpaths.walk(a,target,.12)||a.position().distanceToSqr(target)<.09){d.leg.put(who,i+1);d.held.remove(who);}continue;}
             int wait=d.dwell.getOrDefault(who,0);if(wait>0){d.dwell.put(who,wait-1);continue;}
-            d.routes.remove(who);d.leg.remove(who);d.dwell.remove(who);
+            d.routes.remove(who);d.leg.remove(who);d.dwell.remove(who);d.held.remove(who);
         }
     }
     /** Heads turn: to the box while the list is read, to the one by the wall after, otherwise to whoever is nearest. */

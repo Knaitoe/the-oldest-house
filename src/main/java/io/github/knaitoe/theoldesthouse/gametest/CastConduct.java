@@ -208,7 +208,7 @@ public final class CastConduct implements AutoCloseable {
                 off=Math.abs(rel)>150?Math.min(Math.abs(Mth.wrapDegrees(front+LiteraryActor.HEAD_TURN-a.getYHeadRot())),Math.abs(Mth.wrapDegrees(front-LiteraryActor.HEAD_TURN-a.getYHeadRot())))
                         :Math.abs(Mth.wrapDegrees(front+Mth.clamp(rel,-LiteraryActor.HEAD_TURN,LiteraryActor.HEAD_TURN)-a.getYHeadRot()));
             }else off=Math.abs(Mth.wrapDegrees(want-a.getYHeadRot()));
-            if(off>TURN_DEGREES)fault(a,"does not turn to the reader",String.format(Locale.ROOT,"(head %.0f degrees away from reader %s at %s) after \"%s\" %s",off,to.getUUID().toString().substring(0,8),at(to.position()),abbreviate(turn.text()),a.addressing()));
+            if(off>TURN_DEGREES)fault(a,"does not turn to the reader",String.format(Locale.ROOT,"(head %.0f degrees away from reader %s at %s, %.1f blocks off, toward %.0f) after \"%s\" %s",off,to.getUUID().toString().substring(0,8),at(to.position()),best,want,abbreviate(turn.text()),a.addressing()));
         }
         turns.addAll(later);later.clear();
     }

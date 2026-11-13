@@ -134,7 +134,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * does; a seated one turns only their head, as far as a head turns ({@link #HEAD_TURN}). Nobody turns who cannot see the reader
      * ({@link #addresses}). It is the last word on their heads each tick, after every scene has turned its people (CastAddress).
      */
-    private @javax.annotation.Nullable UUID addressee;private int addressFor,spokenToAt=Integer.MIN_VALUE/2,facedAt=-1;private float facedYaw,facedPitch;
+    private @javax.annotation.Nullable UUID addressee;private int addressFor,spokenToAt=Integer.MIN_VALUE/2,facedAt=-1;private float facedYaw,facedPitch,aimedYaw;private String aimedFront="none";
     private static final Set<LiteraryActor> ADDRESSING=Collections.newSetFromMap(new WeakHashMap<>());
     /** How near a reader must be for a line to be said to them; how long, at most, someone keeps looking at them after it. */
     public static final double ADDRESS_RANGE=12;public static final int ADDRESS_TICKS=100;
@@ -151,6 +151,11 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         LAST_SPOKEN_TO.put(reader.getUUID(),new java.lang.ref.WeakReference<>(this));
         addressee=reader.getUUID();spokenToAt=tickCount;addressFor=Math.max(addressFor,60);ADDRESSING.add(this);
     }
+    /**
+     * 0.4.561: a reader spoke to this person in the last three seconds. A scene walking them somewhere can stop them to answer
+     * (the Drawing does); nothing stops for this on its own, so a pursuer clicked mid-chase keeps coming.
+     */
+    public boolean listening(){return addressee!=null&&tickCount-spokenToAt<60;}
     /** Whom each reader last spoke to (a click on them): the person a line on that reader's conversation panel comes from. */
     private static final Map<UUID,java.lang.ref.WeakReference<LiteraryActor>> LAST_SPOKEN_TO=new java.util.concurrent.ConcurrentHashMap<>();
     /**
@@ -165,7 +170,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     /** What the turning to a reader is doing, for a failed check to say. */
     public String addressing(){
         var front=seatFront();
-        return String.format(Locale.ROOT,"[tick %d%s, addressee %s for %d, faced %s, head %.0f, body %.0f, seat %s]",tickCount,isPassenger()?" riding":"",addressee==null?"none":addressee.toString().substring(0,8),addressFor,facedAt==tickCount?"this tick":facedAt<0?"never":(tickCount-facedAt)+" ticks ago",getYHeadRot(),yBodyRot,front==null?"none":String.format(Locale.ROOT,"%.0f",front));
+        return String.format(Locale.ROOT,"[tick %d%s, addressee %s for %d, faced %s, head %.0f, body %.0f, yaw %.0f, seat %s, aimed %.0f from %s]",tickCount,isPassenger()?" riding":"",addressee==null?"none":addressee.toString().substring(0,8),addressFor,facedAt==tickCount?"this tick":facedAt<0?"never":(tickCount-facedAt)+" ticks ago",getYHeadRot(),yBodyRot,getYRot(),front==null?"none":String.format(Locale.ROOT,"%.0f",front),aimedYaw,aimedFront);
     }
     private void address(){
         if(!addresses())return;
@@ -219,6 +224,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
             if(Math.abs(rel)>150&&facedAt>=0)rel=Math.signum(net.minecraft.util.Mth.wrapDegrees(facedYaw-front))*Math.abs(rel);
             want=front+net.minecraft.util.Mth.clamp(rel,-HEAD_TURN,HEAD_TURN);
         }
+        aimedYaw=want;aimedFront=front==null?"none":String.format(Locale.ROOT,"%.0f",front);
         // The turn carries on from where it had got to, whatever the scene set this tick: a scene that sets a head every tick would
         // otherwise hold it within a step of its own angle.
         boolean going=facedAt>=tickCount-1;float yaw=going?facedYaw:getYHeadRot(),tilt=going?facedPitch:getXRot();
