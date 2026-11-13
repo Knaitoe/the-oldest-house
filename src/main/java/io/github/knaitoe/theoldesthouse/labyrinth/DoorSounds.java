@@ -105,7 +105,7 @@ public final class DoorSounds {
         // The family at the table until they are driven out; after that the house is empty.
         // 0.4.249: the cottage, its family talking until a listener's own evening there is over.
         SOURCES.put(LabyrinthPlace.THREE_FINGERS,(server,data,listener,base)->ThreeFingers.heard(data,listener));
-        SOURCES.put(LabyrinthPlace.SEANCE,(server,data,listener,base)->Through.of(ClassicsVignettes.familyGone(data)?Carry.EMPTY:Carry.VOICES));
+        SOURCES.put(LabyrinthPlace.SEANCE,(server,data,listener,base)->Through.of(ClassicsVignettes.familyGone(server,data,base)?Carry.EMPTY:Carry.VOICES));
     }
     /** What the room behind a door sounds like now for this listener, or nothing. Rooms with no state of their own sound as their kind does. */
     @Nullable public static Through heard(MinecraftServer server,LabyrinthData data,UUID listener,@Nullable LabyrinthPlace place,@Nullable BlockPos base){
