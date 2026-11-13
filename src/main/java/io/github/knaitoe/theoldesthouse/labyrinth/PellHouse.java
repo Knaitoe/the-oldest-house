@@ -51,6 +51,9 @@ public final class PellHouse {
         // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
         // 0.4.531: after first light, paint put down in the night is dry.
         if(PellLine.is(st)){cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE),PellMorning.dawned(b)));return true;}
+        // 0.4.533: in the pool, the band's missing tile and its odd one, and what is under the drain's grate.
+        var detail=PellWeek.detail(st);
+        if(detail!=null){cue(p,detail);if(rel.equals(PellSite.DRAIN))own.putBoolean("SawGoggles",true);return true;}
         if(!st.is(PellRegistry.FITTING.get()))return false;
         var kind=st.getValue(PellBlock.KIND);
         if(kind==PellBlock.Kind.ROLLER){cue(p,PellTexts.ROLLER);return true;}
@@ -71,7 +74,8 @@ public final class PellHouse {
         if(door.equals(PellSite.JUNE_DOOR)){cue(p,PellTexts.JUNES_DOOR);return true;}
         // 0.4.530: open at night while June has the tin out, its padlock hangs on the hasp; a hand does not shut it.
         if(door.equals(PellSite.SHED_DOOR)){cue(p,PellSite.open(l,b,door)?PellTexts.SHED_OPEN:PellTexts.PADLOCKED);return true;}
-        if(door.equals(PellSite.POOL_GATE)){cue(p,PellTexts.POOL_GATE);return true;}
+        // 0.4.533: while June swims, the padlock hangs open and the gate opens and shuts (PellSwim).
+        if(door.equals(PellSite.POOL_GATE)){if(!PellSwim.gateHand(p,l,b))cue(p,PellTexts.POOL_GATE);return true;}
         if(door.equals(PellSite.SLIDER.west())){cue(p,PellTexts.FIXED_GLASS);return true;}
         // 0.4.527: a door June has locked. From inside, its lock turns and it opens; from outside it does not.
         if(PellVisit.locked(b,door)){

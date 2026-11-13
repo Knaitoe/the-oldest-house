@@ -118,10 +118,10 @@ public final class PellHouseTests {
             h.assertTrue(cover.test(new BlockPos(-9,-1,-90),3)&&facing.test(new BlockPos(-9,-1,-90),Direction.NORTH)&&cover.test(new BlockPos(-5,-1,-83),3)&&facing.test(new BlockPos(-5,-1,-83),Direction.SOUTH)
                     &&cover.test(new BlockPos(-7,-1,-90),2)&&facing.test(new BlockPos(-7,-1,-90),Direction.NORTH)&&cover.test(new BlockPos(-9,-1,-86),2)&&facing.test(new BlockPos(-9,-1,-86),Direction.WEST)
                     &&cover.test(new BlockPos(-10,-1,-86),0)&&cover.test(new BlockPos(-7,-1,-91),0),"one pond in the sag: rounded corners, edges facing the dry cloth, dry beyond");
-            h.assertTrue(l.getBlockState(b.offset(-7,-2,-82)).is(Blocks.WATER)&&is(l,b,-7,PellSite.SHALLOW,-82,"pool_tile")&&l.getBlockState(b.offset(-7,PellSite.DEEP+1,-90)).is(Blocks.WATER)&&is(l,b,-7,PellSite.DEEP,-90,"pool_tile"),"water over tile, shallow and deep");
+            h.assertTrue(l.getBlockState(b.offset(-7,-2,-82)).is(Blocks.WATER)&&is(l,b,-7,PellSite.SHALLOW,-82,"pool_tile")&&l.getBlockState(b.offset(-7,PellSite.DEEP+1,-90)).is(Blocks.WATER)&&is(l,b,-9,PellSite.DEEP,-90,"pool_tile"),"water over tile, shallow and deep");
             h.assertTrue(is(l,b,PellSite.WATER_W-1,-2,-85,"pool_band")&&is(l,b,PellSite.WATER_W-1,-1,-85,"coping"),"the band at the waterline under the coping");
             PellSite.pool(l,b,false);
-            h.assertTrue(l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&is(l,b,-7,PellSite.DEEP,-90,"pool_tile"),"uncovered, it is full to the brim");
+            h.assertTrue(l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&is(l,b,-9,PellSite.DEEP,-90,"pool_tile"),"uncovered, it is full to the brim");
             PellSite.pool(l,b,true);
             // The garage's window looks west along the strip behind the shed.
             h.assertTrue(fitting(l,b,PellSite.GARAGE_WINDOW,PellBlock.Kind.WINDOW),"the garage has its window");
@@ -962,7 +962,8 @@ public final class PellHouseTests {
      * they saw. The other reader, come in, finds it busy. The first tells Gail June was out in the garden; Gail has June's version and
      * asks for June back. Given back, June holds it out to the other ("Your turn"), who takes it from her hand and says nothing. Back on,
      * June answers what was said in front of her, says goodbye and hangs up, and tells the room to keep inside the line. Each reader
-     * keeps what they said; left, the house begins again with the receiver on its hook.
+     * keeps what they said, and that they have had the first visit (0.4.533); left, the house begins again a week in, without Gail or
+     * her car, with the receiver on its hook.
      */
     @GameTest(template="empty",batch="pell_call",timeoutTicks=9000)
     public static void gailRingsAndEachReaderHasAWordWithHer(GameTestHelper h){
@@ -1040,9 +1041,11 @@ public final class PellHouseTests {
         .thenIdle(1).thenExecute(()->{
             h.assertTrue(told(p).contains(PellTexts.thing(PHONE,0)),"a hand on the telephone afterwards: what it is");
             f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
-        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null,"the visit begins again"))
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"both have had the first visit: the house begins again a week in"))
         .thenExecute(()->{
+            h.assertTrue(PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"without Gail or her car");
             h.assertTrue(thing(l,b,-7,1,-69,PHONE,0)&&PellCall.caller(b)==null,"the receiver on its hook, nobody on the line");
+            for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getBoolean("FirstVisit")&&!own.getBoolean("SecondVisit")&&own.getInt("Beat")>=1,"each reader has had the first visit, and only that: "+own);}
             h.assertTrue(PellTexts.JUNE_OUT.equals(f.own(p,P).getString("ToldGail")),"what each reader said stays theirs");
         }).thenSucceed();
     }
@@ -1102,4 +1105,249 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_call_nobody") public static void nobodyDone(ServerLevel l){done();}
+
+    /** Waiting for the visit to begin a week in: June, Tilly and Callum there, and the house settled. */
+    private static void weekBegun(GameTestHelper h,ServerLevel l,BlockPos b){
+        for(int i:new int[]{PellPeople.JUNE,PellPeople.TILLY,PellPeople.CALLUM})h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));
+        h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"waiting for the visit to begin, a week in");
+    }
+    /**
+     * 0.4.533, a week in (docs/PELL_HOUSE_WEEK_0_4_533.md), with two readers who have both had the first visit. The house begins a week
+     * in: no Gail and no car; June at her stove, Tilly in Nessa's room with its door open, Callum at the end of the hall; the front door,
+     * the sliding door and the garage's door shut, and a towel pushed under the garage's. The pool is uncovered and full; a tile of its
+     * band is missing and another odd, the drain is in the deep end's floor, and a lane rope crosses it at the step with one float gone.
+     * The line has been gone over again; a knife is gone from the block and there is one in Callum's drawer; two knives' outlines are
+     * empty on the pegboard; the shed's calendar has moved on and the fridge has two new photographs. The late afternoon holds while
+     * nobody comes in. One reader comes in, and June calls hello from the kitchen; the other, at the far end of the hall, is told, and
+     * the hour goes on. A hand on June and on Tilly gets their week's lines, and June's pool gate is a rule. At six, with a reader at the
+     * table, June serves Tilly as Nessa and corrects herself, heard at the table and not in the garage. At bedtime she brushes Tilly's
+     * hair the way she has every night, says goodnight to Nessa, and Tilly, still sitting up, says who she is; June says goodnight to
+     * Tilly, and Tilly lies down. That is heard in the room and not in the garage.
+     */
+    @GameTest(template="empty",batch="pell_week",timeoutTicks=12000)
+    public static void aWeekInTheHouseIsAsJuneHasMadeItAndSheSlipsOnTheName(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_week_reader",P);var q=f.player("pell_week_other",P);var l=f.level(P);var b=f.base(P);
+        // Both have had the first visit: Gail's call at its end gives it.
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        long[] mark={0};
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"no Gail and no car a week in");
+            h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z(),.3),"June at her stove");
+            h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.3),"Tilly in Nessa's room");
+            var s=PellPeople.FIRST_VISIT[PellPeople.CALLUM];h.assertTrue(at(who(h,l,b,PellPeople.CALLUM),b,s.x(),s.z(),.3),"Callum at the end of the hall");
+            h.assertTrue(PellSite.open(l,b,PellSite.NESSA_DOOR),"Nessa's door open");
+            for(var door:List.of(PellSite.FRONT_DOOR,PellSite.SLIDER,PellSite.GARAGE_DOOR))h.assertFalse(PellSite.open(l,b,door),"shut: "+door);
+            var t=PellWeek.TOWEL;
+            h.assertTrue(thing(l,b,t.getX(),t.getY(),t.getZ(),TOWEL,0)&&facing(l,b,t.getX(),t.getY(),t.getZ())==Direction.NORTH,"a towel pushed under the garage's door");
+            // The pool, uncovered: water to the brim, the band's two tiles, the drain, the lane rope.
+            for(int x=PellSite.WATER_W;x<=PellSite.WATER_E;x++)for(int z=PellSite.WATER_N;z<=PellSite.WATER_S;z++)h.assertTrue(l.getBlockState(b.offset(x,-1,z)).is(Blocks.WATER),"water to the brim at "+x+","+z);
+            for(var d:List.of(PellSite.BAND_MISSING,PellSite.BAND_ODD,PellSite.DRAIN))h.assertTrue(PellWeek.detail(l.getBlockState(b.offset(d)))!=null,"the pool's detail at "+d);
+            var rope=PellWeek.rope(l,b);int gaps=0;
+            h.assertTrue(rope.size()==PellSite.WATER_E-PellSite.WATER_W+1,"the lane rope, a length to each block across: "+rope.size());
+            for(var d:rope){
+                h.assertTrue(Math.abs(d.getY()-(b.getY()+PellWeek.WATERLINE))<.01&&Math.abs(d.getZ()-(b.getZ()+PellWeek.ROPE_Z))<.01,"at the waterline, over the step: "+d.position());
+                if(net.minecraft.world.item.ItemStack.parseOptional(l.registryAccess(),d.saveWithoutId(new net.minecraft.nbt.CompoundTag()).getCompound("item")).is(PellRegistry.LANE_GAP.get())){gaps++;h.assertTrue(Math.abs(d.getX()-(b.getX()+PellWeek.GAP_X+.5))<.01,"the float gone from one length: "+d.position());}
+            }
+            h.assertTrue(gaps==1,"one float gone: "+gaps);
+            // The line gone over again, all the way round.
+            for(var at:PellSite.route()){var st=l.getBlockState(b.offset(at.getX(),-1,at.getZ()));h.assertTrue(PellLine.unbroken(st)&&st.getValue(PellLine.STAGE)==PellLine.SECOND,"the line gone over at "+at+": "+st);}
+            // The things a week changes.
+            h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,1)&&thing(l,b,-6,0,-61,CUTLERY,1),"a knife gone from the block, and one in Callum's drawer");
+            h.assertTrue(thing(l,b,14,1,-95,PEGBOARD,2)&&thing(l,b,15,1,-95,PEGBOARD,3),"two knives' outlines empty on the pegboard");
+            h.assertTrue(thing(l,b,5,1,-92,SHED_CALENDAR,1)&&thing(l,b,-13,1,-71,FRIDGE_TOP,1),"the calendar moved on, two new photographs on the fridge");
+            h.assertTrue(thing(l,b,PellSwim.CHAIR.getX(),0,PellSwim.CHAIR.getZ(),POOL_CHAIR,0)&&PellSwim.gateStage(l,b)==1,"nothing on the pool chair but its towel, and the gate padlocked");
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==mark[0]&&!PellWeek.welcomed(b),"while nobody comes in, the late afternoon holds: "+PellVisit.hour(b));
+            // One reader in at the front; the other to the far end of the hall, out of earshot of the kitchen.
+            told(q);f.at(q,P,8.5,0,-65.5);f.at(p,P,1.5,0,-63.5);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.welcomed(b),"June calls hello"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WELCOME),"\"That you, love?\": "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(told(q).contains(PellTexts.WELCOME_FAR),"heard from the end of the hall");
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->h.assertTrue(PellVisit.hour(b)>=mark[0]+15,"the hour goes on: "+mark[0]+" to "+PellVisit.hour(b)))
+        .thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June's hello has had its time"))
+        .thenExecute(()->{f.at(p,P,-7.5,0,-67.5);told(p);hand(p,b.offset(-11,0,-71));})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(KNIFE_BLOCK,1)),"in the kitchen, a hand on the knife block: one slot empty");
+            var june=who(h,l,b,PellPeople.JUNE);var tilly=who(h,l,b,PellPeople.TILLY);
+            LiteraryVignettes.talk(p,june);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_WEEK_TALK[0]),"a hand on June a week in: "+said(june));
+            june.hush();LiteraryVignettes.talk(p,june);june.hush();LiteraryVignettes.talk(p,june);
+            h.assertTrue(said(june).equals(PellTexts.JUNE_WEEK_TALK[2])&&(rules(f,p)&PellTexts.RULE_POOL)!=0,"the pool gate, still a rule: "+rules(f,p));
+            f.at(q,P,-9.5,0,-62.5);LiteraryVignettes.talk(q,tilly);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_WEEK_TALK[0]),"a hand on Tilly a week in: "+said(tilly));
+            june.hush();tilly.hush();
+            // To six: one reader in the living room, the other out in the garage.
+            f.at(p,P,13.5,0,-92.5);f.at(q,P,-2.5,0,-68.5);PellVisit.hurry(b,PellVisit.SIX-5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.LAID,"June calls them at six and lays the table"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"Tilly and Callum sit down"))
+        .thenExecute(()->{f.at(q,P,-9.5,0,-67.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(q,b.offset(PellVisit.TABLE[3].chair())),"a reader sits at the table");})
+        .thenWaitUntil(()->h.assertTrue(PellVisit.plate(b,0)==PellVisit.SERVED,"June serves Tilly first"))
+        .thenExecute(()->{
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_SERVES_NESSA),"by the other name, and then hers: "+said(who(h,l,b,PellPeople.JUNE)));
+            h.assertTrue(f.own(q,P).getBoolean("HeardNessaAtDinner")&&!f.own(p,P).getBoolean("HeardNessaAtDinner"),"heard at the table, not in the garage");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.plate(b,3)==PellVisit.SERVED,"the reader at the table served"))
+        .thenExecute(()->hand(q,b.offset(-12,0,-69)))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.plate(b,2)==PellVisit.SERVED,"a place served for the other"))
+        .thenExecute(()->{
+            // The other comes in from the garage, sits at the place laid for them and eats.
+            f.at(p,P,-9.5,0,-69.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[2].chair())),"the other sits");
+            hand(p,b.offset(-12,0,-69));
+            h.assertTrue(PellVisit.plate(b,2)==PellVisit.SCRAPED&&PellVisit.plate(b,3)==PellVisit.SCRAPED,"each eats their dinner");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CLEARED,"June clears"))
+        .thenExecute(()->{
+            // To bedtime: one reader in Nessa's room, clear of the way through it; the other out in the garage.
+            p.stopRiding();q.stopRiding();f.at(q,P,-8.5,0,-61.5);f.at(p,P,13.5,0,-92.5);PellVisit.hurry(b,PellVisit.EVENING-3);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.BRUSHING,"June brushes Tilly's hair"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_SAME_WAY),"Tilly: the same way every night"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HOW_SHE_LIKED),"June: how she liked it"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_COMING_ON),"June: it's coming on"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_NIGHT_NESSA),"goodnight to Nessa"))
+        .thenExecute(()->{
+            h.assertTrue(f.own(q,P).getBoolean("HeardNessaAtBedtime")&&!f.own(p,P).getBoolean("HeardNessaAtBedtime"),"heard in the room, not in the garage");
+            h.assertTrue(PellVisit.perched(b,PellPeople.TILLY)==PellVisit.TILLY_BED&&!PellVisit.asleep(b,PellPeople.TILLY),"Tilly still sitting up");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).getMainHandItem().isEmpty(),"the brush put away");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_ITS_TILLY),"Tilly: it's Tilly"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_NIGHT_TILLY),"June: Tilly, I know"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.step(b)==PellVisit.TUCKED&&PellVisit.asleep(b,PellPeople.TILLY),"and Tilly lies down");
+            h.assertTrue(f.own(q,P).getBoolean("SawHairBrushed"),"the reader in the room saw her hair brushed");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_week") public static void weekDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.533, June's lengths at first light, a week in, with two readers awake: one on the patio by the pool's fence, one in the garage.
+     * The small hours as June's rounds leave them. At first light June comes out of her room in her robe, lets herself out by the sliding
+     * door and locks it, takes the padlock off the pool's gate, goes in and shuts it, leaves the robe on the chair and gets in at the
+     * shallow end. The hour holds at half past five. She swims her lengths down the middle, under the lane rope; the reader on the patio
+     * sees her through the bars, the one in the garage does not, and a hand on her finds her swimming on. With the padlock off a hand
+     * opens the gate; the reader goes in, finds the goggles under the drain's grate and the odd tile in the band, and gets out onto the
+     * deck. Out of the water, her robe on, June waits outside the gate and asks the reader out; once they are, she padlocks it, comes in
+     * by the sliding door and locks it behind her, and goes to her room. At six she gets up dressed for the day, and at breakfast she
+     * asks Nessa where she put her goggles; Tilly says she has none, and June is all over the place this morning. Both readers heard it.
+     */
+    @GameTest(template="empty",batch="pell_swim",timeoutTicks=12000)
+    public static void aWeekInJuneSwimsHerLengthsAtFirstLight(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_swim_patio",P);var q=f.player("pell_swim_garage",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var chair=PellSwim.CHAIR;
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellMorning.smallHours(l,b);
+            // One reader on the patio by the pool's gate, clear of June's way to it; the other in the garage.
+            f.at(p,P,-6.5,0,-74.5);face(p,180,15);f.at(q,P,14.5,0,-89.5);
+            PellVisit.hurry(b,PellMorning.DAWN-10);
+        }).thenWaitUntil(()->h.assertTrue(PellSwim.inWater(b),"June goes down to the pool and gets in"))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(june.gesture()==PellPeople.SWIM&&june.isNoGravity()&&"pell_june_swim".equals(PellPeople.dressed(june.phase(),june.gesture())),"in her swimming things");
+            h.assertTrue(thing(l,b,chair.getX(),0,chair.getZ(),POOL_CHAIR,1),"her robe left over the chair");
+            h.assertTrue(PellSwim.gateStage(l,b)==0,"the gate shut behind her, its padlock off");
+            h.assertTrue(PellVisit.locked(b,PellSite.SLIDER)&&!PellSite.open(l,b,PellSite.SLIDER),"the sliding door locked behind her");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.hour(b)==PellSwim.HALF_FIVE,"half past five: "+PellVisit.hour(b)))
+        .thenExecute(()->lookAt(p,who(h,l,b,PellPeople.JUNE).position()))
+        .thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==PellSwim.HALF_FIVE&&PellSwim.inWater(b),"the hour holds while she swims");
+            h.assertTrue(f.own(p,P).getBoolean("SawJuneSwim")&&!f.own(q,P).getBoolean("SawJuneSwim"),"seen through the bars from the patio, not from the garage");
+            told(p);hand(p,b.offset(PellSite.POOL_GATE));
+            h.assertTrue(PellSwim.gateStage(l,b)==2,"with the padlock off, a hand opens the gate");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.POOL_GATE_OPEN),"the padlock hanging open");
+            // In, and down to the drain at the deep end.
+            f.at(p,P,-8.5,-4,-89.5);hand(p,b.offset(PellSite.DRAIN));hand(p,b.offset(PellSite.BAND_ODD));
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.DRAIN)&&f.own(p,P).getBoolean("SawGoggles"),"the goggles under the drain's grate: "+heard);
+            h.assertTrue(heard.contains(PellTexts.BAND_ODD),"and a tile of the band that does not match");
+        }).thenWaitUntil(()->h.assertTrue(who(h,l,b,PellPeople.JUNE).distanceToSqr(p)<16,"June swims past the reader in the water"))
+        .thenExecute(()->{told(p);LiteraryVignettes.talk(p,who(h,l,b,PellPeople.JUNE));})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.JUNE_SWIMMING),"a hand on her: she swims on");
+            // Out onto the deck, inside the pool's fence.
+            f.at(p,P,-15.5,0,-82.5);
+        }).thenWaitUntil(()->h.assertTrue(PellSwim.lengths(b)>=PellSwim.LENGTHS,"her lengths"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_OUT_OF_POOL),"out, her robe on, she asks the reader out of the pool's yard"))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(june.gesture()==PellPeople.ROBE&&!june.isNoGravity()&&thing(l,b,chair.getX(),0,chair.getZ(),POOL_CHAIR,0),"her robe on, off the chair");
+            h.assertTrue(PellSwim.gateStage(l,b)!=1,"not padlocked while the reader is inside");
+            f.at(p,P,-8.5,0,-74.5);
+        }).thenWaitUntil(()->h.assertTrue(PellSwim.gateStage(l,b)==1,"once the reader is out, she padlocks it"))
+        .thenWaitUntil(()->h.assertTrue(PellSwim.swum(b),"in by the sliding door and back to her room"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.locked(b,PellSite.SLIDER)&&!PellSite.open(l,b,PellSite.SLIDER),"the sliding door locked behind her");
+            h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z(),.7)&&!PellSite.open(l,b,PellSite.JUNE_DOOR),"in her room, its door shut");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.RISING,"six: she gets up"))
+        .thenExecute(()->h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==0,"dressed for the day"))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.LAID,"breakfast laid"))
+        .thenExecute(()->PellVisit.hurry(b,PellMorning.SEVEN-3))
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.CALLED&&PellVisit.placeOf(b,PellPeople.TILLY)==0,"breakfast, and Tilly at the table"))
+        .thenExecute(()->{
+            f.at(q,P,-9.5,0,-67.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(q,b.offset(PellVisit.TABLE[3].chair())),"a reader sits");
+            f.at(p,P,-9.5,0,-69.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[2].chair())),"the other sits");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_GOGGLES),"June: where did you put your goggles"))
+        .thenExecute(()->h.assertTrue(f.own(p,P).getBoolean("HeardGoggles")&&f.own(q,P).getBoolean("HeardGoggles"),"both readers heard"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_NO_GOGGLES),"Tilly has none"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_ALL_OVER),"June: all over the place"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_ALL_RIGHT),"Tilly: that's all right"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_swim") public static void swimDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.533, the week's call and the visits after it. Two readers who have had the first visit; one spoke to June in the night. The
+     * morning as breakfast leaves it; June answers and tells Gail they are settling in, one still up at night and seen back to bed, and
+     * Tilly a different girl. A reader takes the receiver: Gail says it is a week in now and asks how they are finding it; they say they
+     * are not sleeping much, and Gail has June's version. Her goodbye is the week's. Each keeps that they have had the second visit too,
+     * and what the first call's record said stays as it was. Left, the house plays the second visit again (there is no third yet); and
+     * once a reader who has had neither is there, it begins at the first, Gail and her car at the curb and the pool under its cover.
+     */
+    @GameTest(template="empty",batch="pell_week_call",timeoutTicks=9000)
+    public static void theWeeksCallAndTheVisitsAfterIt(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_week_caller",P);var q=f.player("pell_week_away",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");keep(f,p,"SpokeToJuneAtNight");
+        {var own=f.own(p,P);own.putString("ToldGail",PellTexts.FINE);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var phone=b.offset(PellCall.PHONE);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{PellCall.afterBreakfast(l,b);f.at(p,P,-9.5,0,-67.5);f.at(q,P,14.5,0,-89.5);})
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WEEK_UP),"June: settling in, one still up at night"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WEEK_TILLY),"and Tilly a different girl"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenExecute(()->{
+            hand(p,phone);
+            h.assertTrue(p.getUUID().equals(PellCall.caller(b)),"the reader takes it");
+            h.assertTrue(telling(p,"Gail",PellTexts.GAIL_WEEK_ASKS),"a week in now: "+Talk.lines(p));
+            var r=Talk.replies(p);
+            h.assertTrue(r.contains(PellTexts.TELL_WEEK_FINE)&&r.contains(PellTexts.TELL_WEEK_NO_SLEEP)&&!r.contains(PellTexts.TELL_FINE),"the answers as they are a week in: "+r);
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_WEEK_NO_SLEEP),"not sleeping much");
+            h.assertTrue(telling(p,"Gail","June said somebody's still up at night.")&&telling(p,"Gail",PellTexts.GAIL_WEEK_BYE),"Gail has June's version, and the week's goodbye: "+Talk.lines(p));
+            var own=f.own(p,P);
+            h.assertTrue(PellTexts.NO_SLEEP.equals(own.getString("ToldGailWeek"))&&PellTexts.FINE.equals(own.getString("ToldGail"))&&own.getBoolean("SpokeToGailWeek"),"the week's answer kept apart from the first's: "+own);
+            h.assertTrue(Talk.choose(p,PellTexts.HAND_BACK),"given back");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WEEK_BYE),"June's goodbye: next week, then"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"hung up"))
+        .thenExecute(()->{
+            for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getBoolean("FirstVisit")&&own.getBoolean("SecondVisit"),"each has had the second visit too: "+own);}
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"with no third visit yet, the house plays the second again"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.car(l,b)==null,"no car");
+            // A reader who has had neither, and the house left again.
+            var r=f.player("pell_week_new",P);f.at(r,P,-3.5,0,-36);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==1&&PellVisit.step(b)==PellVisit.GREET&&PellVisit.car(l,b)!=null&&PellPeople.find(l,b,PellPeople.GAIL)!=null,"a reader who has had neither: the first visit, Gail and her car at the curb"))
+        .thenExecute(()->{
+            h.assertTrue(PellWeek.rope(l,b).isEmpty()&&!l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER),"the pool under its cover, no rope");
+            for(var at:PellSite.route()){var st=l.getBlockState(b.offset(at.getX(),-1,at.getZ()));h.assertTrue(st.getValue(PellLine.STAGE)==PellLine.FIRST,"the line as the first visit has it at "+at);}
+            h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,0)&&thing(l,b,-6,0,-61,CUTLERY,0)&&thing(l,b,14,1,-95,PEGBOARD,0),"every knife where it was");
+            h.assertTrue(l.getBlockState(b.offset(PellWeek.TOWEL)).isAir(),"no towel under the garage's door");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_week_call") public static void weekCallDone(ServerLevel l){done();}
 }

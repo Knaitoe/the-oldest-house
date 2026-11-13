@@ -15,6 +15,9 @@ the lantern is the one she sets down on the grass, its globe lit, and the tin is
 0.4.531 (docs/PELL_HOUSE_MORNING_0_4_531.md): breakfast as June lays it, from above on the same plate: a fried egg and two slices of
 toast.
 
+0.4.533 (docs/PELL_HOUSE_WEEK_0_4_533.md): the pool's lane rope, a week in: a block's length of it at a time, two floats on the rope,
+and where one float is missing the bare rope.
+
 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md), the owner: "add a little more detail to textures". Still sixteen pixels to the block;
 each thing drawn again with light from the upper left, an outline in a darker shade of its own colour where it stands against
 nothing, four or five tones where there were two, and what it is made of showing: the brush's cushion and bristles, the pan's
@@ -35,13 +38,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
-         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver')
+         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
          'item.the_oldest_house.pell_hairbrush': 'Hairbrush', 'item.the_oldest_house.pell_lantern': 'Lantern',
          'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush',
-         'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver'}
+         'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver',
+         'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope'}
 
 
 def blank():
@@ -378,6 +382,26 @@ def paintbrush():
     return im
 
 
+def lane():
+    """0.4.533: the pool's lane rope, one sheet for its parts. A pale float (columns 0-4, rows 0-3: its length, lit along its top,
+    shaded along its underside, ringed twice where it was moulded) and its end (6-9, rows 0-3, the corners rounded off); the same
+    in blue below it (rows 4-7); and the rope it is threaded on (rows 8-9), two strands twisted, one lit and one in shade."""
+    im = blank()
+    for y0, tones in ((0, ('#fbfaf6', '#eeece4', '#d8d5ca', '#b9b5a8')), (4, ('#79a6cf', '#4f84b6', '#3a6a9a', '#27507a'))):
+        top, body, low, ring = tones
+        for x in range(5):
+            dot(im, x, y0, top); dot(im, x, y0 + 1, body); dot(im, x, y0 + 2, body); dot(im, x, y0 + 3, low)
+        for x in (1, 3):
+            dot(im, x, y0 + 1, low); dot(im, x, y0 + 2, ring)
+        fill(im, 6, y0, 10, y0 + 4, body); fill(im, 7, y0, 9, y0 + 1, top); dot(im, 7, y0 + 1, top)
+        for x, y in ((6, y0), (9, y0), (6, y0 + 3), (9, y0 + 3)):
+            dot(im, x, y, low)
+        dot(im, 8, y0 + 2, ring)
+    for x in range(16):
+        dot(im, x, 8, '#e4d8b8' if x % 2 == 0 else '#b8aa86'); dot(im, x, 9, '#9a8c6a' if x % 2 == 0 else '#c8bb98')
+    return im
+
+
 def flat(name, parent='minecraft:item/generated'):
     """A flat thing, from its picture: the plates lie on the table (laid there as item displays, face up) and the saucepan is held."""
     return {'parent': parent, 'textures': {'layer0': NS + 'item/' + name}}
@@ -457,6 +481,30 @@ def receiver_model():
                 'fixed': {'scale': [.75, .75, .75]}}}
 
 
+def lane_model(gap):
+    """0.4.533: a block's length of the lane rope as it lies across the pool at the waterline (PellWeek): the rope through the middle
+    and two floats on it, pale then blue, so that block after block they alternate; with `gap`, the blue one gone and the rope bare
+    where it was. Laid as an item display at the water's surface, its middle at the waterline and at its full size."""
+    t = NS + 'item/pell_lane'
+    def floated(x0, row):
+        side, end = (0, row, 5, row + 4), (6, row, 10, row + 4)
+        return {'from': [x0, 6.25, 6.25], 'to': [x0 + 5, 9.75, 9.75], 'faces': {
+            'north': {'uv': list(side), 'texture': '#l'}, 'south': {'uv': list(side), 'texture': '#l'},
+            'up': {'uv': list(side), 'texture': '#l'}, 'down': {'uv': list(side), 'texture': '#l'},
+            'east': {'uv': list(end), 'texture': '#l'}, 'west': {'uv': list(end), 'texture': '#l'}}}
+    rope = {'from': [0, 7.5, 7.5], 'to': [16, 8.5, 8.5], 'faces': {
+        'north': {'uv': [0, 8, 16, 9], 'texture': '#l'}, 'south': {'uv': [0, 9, 16, 10], 'texture': '#l'},
+        'up': {'uv': [0, 8, 16, 9], 'texture': '#l'}, 'down': {'uv': [0, 9, 16, 10], 'texture': '#l'},
+        'east': {'uv': [0, 8, 1, 9], 'texture': '#l'}, 'west': {'uv': [0, 8, 1, 9], 'texture': '#l'}}}
+    elements = [rope, floated(1.5, 0)] + ([] if gap else [floated(9.5, 4)])
+    whole = {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]}
+    return {'textures': {'l': t, 'particle': t}, 'elements': elements, 'display': {
+        'fixed': whole, 'ground': {'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
+        'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [.8, .8, .8]},
+        'thirdperson_righthand': {'scale': [.5, .5, .5]}, 'thirdperson_lefthand': {'scale': [.5, .5, .5]},
+        'firstperson_righthand': {'scale': [.5, .5, .5]}, 'firstperson_lefthand': {'scale': [.5, .5, .5]}}}
+
+
 def models():
     """The cane and the folder as they are held. The cane's grip is at the fist and its tip goes down and forward to the ground in
     front of the feet; the folder lies flat to the chest."""
@@ -497,16 +545,18 @@ def models():
             'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
             'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
-            'pell_receiver': receiver_model()}
+            'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True)}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
-              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast()}
+              'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
+              'pell_lane': lane()}
     data = models()
-    # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver.
-    built = {'pell_lantern', 'pell_tin', 'pell_receiver'}
+    # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
+    # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.
+    built = {'pell_lantern', 'pell_tin', 'pell_receiver', 'pell_lane_gap'}
     assert set(images) | built == set(ITEMS) == set(data) and not set(images) & built
     for name in built:
         assert not (A / 'textures/item' / f'{name}.png').exists(), name

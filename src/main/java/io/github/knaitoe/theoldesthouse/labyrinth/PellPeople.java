@@ -64,7 +64,14 @@ public final class PellPeople {
      *  and Callum crouched (as a reader crouches, a beat late). */
     public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5,PAINT=6,CROUCH=7,
         // 0.4.532: June on the telephone, the receiver to her ear; and holding it out for a reader to take.
-        PHONE=8,OFFER=9;
+        PHONE=8,OFFER=9,
+        // 0.4.533: June at first light, a week in: in her swimming things with her robe on, and in the water swimming her lengths.
+        ROBE=10,SWIM=11;
+    /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
+    public static @Nullable String dressed(int phase,int gesture){
+        if(phase!=FIRST+JUNE)return null;
+        return gesture==ROBE?"pell_june_robe":gesture==SWIM?"pell_june_swim":null;
+    }
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
     public record Spot(double x,double z,float look){}
@@ -123,6 +130,10 @@ public final class PellPeople {
          *  Gail somebody was up in the night; who has had a turn, and what each said. */
         long ringAt,offeredAt,heldAt;UUID caller,answered;int callSaid;boolean toldUp;
         final java.util.Set<UUID> spoke=new java.util.HashSet<>();final Map<UUID,String> toldGail=new HashMap<>();
+        /** 0.4.533, a week in (PellWeek): which of the house's visits it is playing (1 the placement, 2 a week in); whether June has
+         *  called hello to the first reader in, on the second; how far her swim at first light has got (PellSwim), how many lengths she
+         *  has swum and when she began the one she is on, whether she is done and in, and when she came in. */
+        int visit=1,swim,lengths;boolean welcomed,swum;long lengthAt,swumAt;
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -148,9 +159,11 @@ public final class PellPeople {
      */
     public static void ensure(ServerLevel l,BlockPos b){
         var h=household(b);
+        // 0.4.533: a week in, Gail does not come with them (PellWeek); she is not made for a visit about to begin a week in.
+        boolean noGail=h.fresh?PellWeek.visitFor(PellHouse.readers(l,b))>=2:h.gailGone;
         for(int who=0;who<COUNT;who++){
             // 0.4.525: Gail, once she has gone, is not made again until the visit begins again.
-            if(who==GAIL&&h.gailGone&&!h.fresh)continue;
+            if(who==GAIL&&noGail)continue;
             if(find(l,b,who)!=null)continue;
             var at=world(b,FIRST_VISIT[who]);if(!live(l,at))continue;
             var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
@@ -166,7 +179,7 @@ public final class PellPeople {
     /** None of the four is at the house: for a house built again from nothing, and for tests. */
     public static void reset(ServerLevel l,BlockPos b){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),PellPeople::is))old.discard();
-        PellVisit.clearPlates(l,b);
+        PellVisit.clearPlates(l,b);PellWeek.rope(l,b,false);
         HOUSES.remove(b);
     }
 
@@ -222,8 +235,11 @@ public final class PellPeople {
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         // 0.4.532: on the telephone to Gail she lifts a finger; holding it out, the reader takes it.
         if(who==JUNE&&PellCall.june(p,b,own))return;
+        // 0.4.533: in the water at first light she swims on.
+        if(who==JUNE&&PellSwim.inWater(b)){PellHouse.cue(p,PellTexts.JUNE_SWIMMING);return;}
         if(a.saying())return;
-        var lines=switch(who){case JUNE->PellTexts.JUNE_TALK;case TILLY->PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
+        // 0.4.533: a week in, June has other things to say by day than her first day's.
+        var lines=switch(who){case JUNE->h.visit>=2?PellTexts.JUNE_WEEK_TALK:PellTexts.JUNE_TALK;case TILLY->h.visit>=2?PellTexts.TILLY_WEEK_TALK:PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
         String line;
         // 0.4.527: in her chair with the tape on, June talks about the girl on it first.
         if(who==JUNE&&PellVisit.watching(b)&&h.watchSaid<PellTexts.JUNE_WATCHING.length)line=PellTexts.JUNE_WATCHING[h.watchSaid++];
@@ -231,6 +247,8 @@ public final class PellPeople {
         else if(who==JUNE&&PellNight.up(b)){line=PellTexts.JUNE_NIGHT[h.nightSaid++%PellTexts.JUNE_NIGHT.length];own.putBoolean("SpokeToJuneAtNight",true);}
         // 0.4.531: up in the morning, from when she gets up until breakfast is cleared.
         else if(who==JUNE&&PellMorning.morning(b)){line=PellTexts.JUNE_MORNING[h.nightSaid++%PellTexts.JUNE_MORNING.length];}
+        // 0.4.533: in her robe, on her way down to the pool or back from it.
+        else if(who==JUNE&&a.gesture()==ROBE){line=PellTexts.JUNE_SWIM_TALK[h.nightSaid++%PellTexts.JUNE_SWIM_TALK.length];own.putBoolean("SpokeToJuneAtThePool",true);}
         else line=lines[h.said[who]++%lines.length];
         a.say(name(who),line);a.speaks(line);
         // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the

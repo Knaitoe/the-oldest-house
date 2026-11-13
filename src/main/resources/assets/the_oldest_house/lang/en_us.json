@@ -1784,5 +1784,10 @@
   "subtitles.the_oldest_house.pell.paint": "A paintbrush, in strokes",
   "subtitles.the_oldest_house.pell.tin": "A paint tin's lid",
   "item.the_oldest_house.pell_breakfast": "Breakfast",
-  "item.the_oldest_house.pell_receiver": "Receiver"
+  "item.the_oldest_house.pell_receiver": "Receiver",
+  "block.the_oldest_house.pell_pool_band_missing": "Pool Tiles, Waterline, One Missing",
+  "block.the_oldest_house.pell_pool_band_odd": "Pool Tiles, Waterline, One Odd",
+  "block.the_oldest_house.pell_pool_drain": "Pool Drain",
+  "item.the_oldest_house.pell_lane": "Lane Rope",
+  "item.the_oldest_house.pell_lane_gap": "Lane Rope"
 }

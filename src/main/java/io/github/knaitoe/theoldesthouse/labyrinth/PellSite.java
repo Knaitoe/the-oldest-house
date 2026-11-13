@@ -50,6 +50,9 @@ public final class PellSite {
     public static final BlockPos FRONT_DOOR=new BlockPos(0,0,-58),NESSA_DOOR=new BlockPos(-10,0,-64),CALLUM_DOOR=new BlockPos(-4,0,-64),BATH_DOOR=new BlockPos(4,0,-64),
         JUNE_DOOR=new BlockPos(8,0,-64),LAUNDRY_DOOR=new BlockPos(7,0,-67),BACK_DOOR=new BlockPos(8,0,-72),SLIDER=new BlockPos(0,0,-72),
         GARAGE_DOOR=new BlockPos(13,0,-86),SHED_DOOR=new BlockPos(6,0,-90),SIDE_GATE=new BlockPos(-17,0,-58),POOL_GATE=new BlockPos(-4,0,-76);
+    /** 0.4.533: the pool's details: the band's missing tile (the shallow end's east wall), its odd one (the deep end's far wall), and the
+     *  deep end's drain. */
+    public static final BlockPos BAND_MISSING=new BlockPos(-2,-2,-84),BAND_ODD=new BlockPos(-6,-2,-94),DRAIN=new BlockPos(-7,-5,-90);
     /** The garage's window, in its west wall: the only one that looks along the strip behind the shed. */
     public static final BlockPos GARAGE_WINDOW=new BlockPos(12,1,-95);
     /** The way on: a door in the brick wall across the street's mouth, west of the one the reader came by. */
@@ -324,6 +327,13 @@ public final class PellSite {
         for(int x=LINE_E;x>LINE_W;x--)out.add(new BlockPos(x,0,LINE_S));
         return out;
     }
+    /** 0.4.533: the whole line as one stage (the first visit's, or a week on, gone over again), each cell keeping its shape and what it lies on. */
+    public static void repaint(ServerLevel l,BlockPos b,int stage){
+        for(var at:route()){
+            var cell=b.offset(at.getX(),-1,at.getZ());var s=l.getBlockState(cell);
+            if(PellLine.is(s)&&s.getValue(PellLine.STAGE)!=stage)l.setBlock(cell,s.setValue(PellLine.STAGE,stage),3);
+        }
+    }
     /** Whether a cell is on the line's route. */
     public static boolean onLine(BlockPos at){
         int x=at.getX(),z=at.getZ();
@@ -394,6 +404,8 @@ public final class PellSite {
         // The shell: tile from the bottom up, with the band as its top course; then the shallow end and the deep end cut out of it.
         box(l,b,WATER_W-1,DEEP,WATER_N-1,WATER_E+1,-3,WATER_S+1,mat("pool_tile"));
         box(l,b,WATER_W-1,-2,WATER_N-1,WATER_E+1,-2,WATER_S+1,mat("pool_band"));
+        // 0.4.533: in the band, one tile gone and one that does not match; in the deep end's floor, the drain (seen once the cover is off).
+        set(l,b,BAND_MISSING,mat("pool_band_missing"));set(l,b,BAND_ODD,mat("pool_band_odd"));set(l,b,DRAIN,mat("pool_drain"));
         box(l,b,WATER_W,SHALLOW+1,DEEP_S+1,WATER_E,-1,WATER_S,AIR);
         box(l,b,WATER_W,DEEP+1,WATER_N,WATER_E,-1,DEEP_S,AIR);
         var water=Blocks.WATER.defaultBlockState();

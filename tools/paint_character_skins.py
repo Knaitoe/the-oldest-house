@@ -25,6 +25,20 @@ def shade(c, n):
     return tuple(max(0, min(255, v+n)) for v in rgb(c))
 
 
+# 0.4.533: June's towelling robe (the Pell house's chair has the same one lying on it, tools/draw_pell_things.py).
+PELL_ROBE = '#e6dfd2'
+
+
+def towelling(d, box, color):
+    """0.4.533: towelling's loops over a box: a lighter and a darker pixel to every other cell of every other row, offset row to row."""
+    x0, y0, x1, y1 = box
+    for y in range(y0, y1 + 1, 2):
+        for x in range(x0 + (y // 2) % 2, x1 + 1, 3):
+            d.point((x, y), fill=shade(color, 9))
+            if x + 1 <= x1:
+                d.point((x + 1, y), fill=shade(color, -11))
+
+
 @dataclass(frozen=True)
 class Look:
     skin: str = '#ca9979'
@@ -247,6 +261,12 @@ LOOKS = {
     # 0.4.524, the Pell house (docs/PELL_HOUSE_PEOPLE_0_4_524.md). June: a cardigan with its sleeves pushed up, her reading glasses
     # on their chain hanging on her front, and paint at the quick of two nails of her right hand that never quite comes off.
     'literary_pell_june': Look('#dcae90','#8e7258','bun','#a99a74','#55534d','cardigan','#ece4d0',eyes='#5d6a58',age=1,mark='pell_june',sleeve=7,shoes='#4a4440'),
+    # 0.4.533 (docs/PELL_HOUSE_WEEK_0_4_533.md): June at first light a week in, going down to swim her lengths. A rubber swimming cap
+    # over her hair and an old one-piece, faded at the front, her arms and legs bare and her feet too, the paint still at her nails.
+    # Robe: walking to the water and back, her towelling robe over it, its sleeves to the elbow, worn open (the cast's coat). Swim:
+    # in the water, the robe left on the chair.
+    'literary_pell_june_robe': Look('#dcae90','#8e7258','bun','#3f5f6c','#3f5f6c','swim','#7d9aa2',eyes='#5d6a58',age=1,mark='pell_june_robe',sleeve=6),
+    'literary_pell_june_swim': Look('#dcae90','#8e7258','bun','#3f5f6c','#3f5f6c','swim','#7d9aa2',eyes='#5d6a58',age=1,mark='pell_june_swim',sleeve=0),
     # Tilly: a sunhat she keeps on outside, a backpack with a keyring on its pocket. Her cane is in her hand (PellPeople).
     'literary_pell_tilly': Look('#e2b998','#b5895a','long','#e4c86a','#4e6684','tee','#f2ecd8',eyes='#5a6a7a',mark='pell_tilly',sleeve=4,face_style='child',shoes='#d8d4c8'),
     # Callum: barefoot, in a jumper and trousers that were somebody else's first; his hair wet, and the jumper wet where it drips.
@@ -967,6 +987,25 @@ def cloth_face(size,look,side='front'):
     if look.style=='knit':
         for x in range(2,w-2,4):d.line((x,3,x,min(h-3,13)),fill=shade(c,7))
         if h>7:d.line((1,h-3,w-2,h-3),fill=lo)
+    if look.mark in ('pell_june_robe','pell_june_swim') and side!='front':
+        # 0.4.533: June's one-piece round the back and sides: low at the back, the straps crossing to it, the suit faded where the
+        # sun has had it; its legs cut high at the sides.
+        if side=='top':
+            # Across the shoulders: bare, the two straps over them.
+            im=panel(size,look.skin,'skin',side);d=ImageDraw.Draw(im)
+            for x in (2,3,w-4,w-3):d.line((x,0,x,h-1),fill=c)
+            return im
+        if side=='bottom':return im
+        if side=='back':
+            d.rectangle((0,0,w-1,6),fill=rgb(look.skin));d.line((0,6,w-1,6),fill=shade(look.skin,-14))
+            for k in range(7):d.point((2+k//2,k),fill=c);d.point((w-3-k//2,k),fill=c)
+            d.line((1,7,w-2,7),fill=a)
+            d.rectangle((0,h-2,1,h-1),fill=rgb(look.skin));d.rectangle((w-2,h-2,w-1,h-1),fill=rgb(look.skin))
+        else:
+            d.line((0,1,w-1,1),fill=lo)
+            d.rectangle((0,h-3,w-1,h-1),fill=rgb(look.skin));d.line((0,h-4,w-1,h-4),fill=a)
+        for x,y in ((3,12),(w-5,15),(5,18)):d.point((min(w-1,x),y),fill=hi)
+        return im
     if side=='back':
         d.line((1,2,w-2,2),fill=lo)
         if look.style in ('suit','coat','uniform','waistcoat'):d.line((w//2,3,w//2,h-3),fill=shade(c,-7))
@@ -1125,6 +1164,14 @@ def cloth_face(size,look,side='front'):
         d.line((mid-4,0,mid-4,3,mid-3,7),fill=chain);d.line((mid+3,0,mid+3,3,mid+2,7),fill=chain)
         for x in (mid-5,mid+1):d.rectangle((x,8,x+3,10),outline=rim);d.line((x+1,9,x+2,9),fill='#c3d0d2')
         d.line((mid-1,8,mid,8),fill=rim)
+    if look.mark in ('pell_june_robe','pell_june_swim'):
+        # 0.4.533: one piece from the bodice down, nothing at the waist; cut high at the hip; pale in patches down the front where
+        # years of sun have had it, and a seam at the bodice's edge gone thin.
+        d.rectangle((0,9,w-1,h-1),fill=c)
+        d.rectangle((0,h-2,1,h-1),fill=rgb(look.skin));d.rectangle((w-2,h-2,w-1,h-1),fill=rgb(look.skin))
+        d.point((2,h-2),fill=a);d.point((w-3,h-2),fill=a)
+        for x,y in ((4,12),(5,12),(5,13),(9,15),(10,15),(10,16),(6,19),(7,19),(11,20)):d.point((min(w-1,x),y),fill=hi)
+        d.line((3,10,mid-2,10),fill=shade(c,-14));d.line((mid+1,10,w-4,10),fill=shade(c,-14))
     if look.mark=='pell_tilly':
         # The backpack's two straps over her shoulders.
         strap='#4a6680'
@@ -1321,6 +1368,19 @@ def paint(look):
             if side in ('left','right'):d.line((0,9,15,9),fill='#202226')
             if side=='back':d.line((0,9,15,9),fill='#202226')
             put(box,art)
+    if look.mark in ('pell_june_robe','pell_june_swim'):
+        # 0.4.533: June's old rubber swimming cap on the hat layer, pulled down over her hair and ears to above her brows; its raised
+        # petals, and its edge rolled. No goggles: her face shows.
+        cap='#e2ded4'
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='bottom':put(box,art);continue
+            low={'front':4,'back':13,'left':11,'right':11,'top':15}[side]
+            d.rectangle((0,0,15,low),fill=cap)
+            if side!='top':d.line((0,low,15,low),fill=shade(cap,-24));d.line((0,low-1,15,low-1),fill=shade(cap,8))
+            for x,y in ((3,1),(10,2),(6,3),(12,0),(1,6),(8,7),(13,9),(4,10),(9,12)):
+                if y<low-1:d.point((x,y),fill=shade(cap,-10));d.point((x+1,y),fill=shade(cap,9))
+            put(box,art)
     if look.mark=='headset':
         # 0.4.252: a switchboard operator's headset on the hat layer: a black band over the crown, an earpiece over each ear, and the
         # mouthpiece's arm from the right earpiece forward to the corner of the mouth.
@@ -1449,6 +1509,15 @@ def paint(look):
                     d.rectangle((0,cuff-3,w-1,cuff-1),fill=shade(look.cloth,12));d.line((0,cuff-2,w-1,cuff-2),fill=shade(look.cloth,-16))
                     if ai==0 and side=='front':
                         for x in (1,3):d.point((x,h-1),fill='#eceae2')
+                if look.mark in ('pell_june_robe','pell_june_swim'):
+                    # 0.4.533: in the robe, its towelling sleeves to the elbow, the cuffs turned back; the paint at her nails all the same.
+                    if look.mark=='pell_june_robe':
+                        d.rectangle((0,0,w-1,cuff-1),fill=PELL_ROBE);towelling(d,(0,0,w-1,cuff-4),PELL_ROBE)
+                        d.rectangle((0,cuff-3,w-1,cuff-1),fill=shade(PELL_ROBE,-8));d.line((0,cuff-1,w-1,cuff-1),fill=shade(PELL_ROBE,-26))
+                    if ai==0 and side=='front':
+                        for x in (1,3):d.point((x,h-1),fill='#eceae2')
+            elif side=='top' and look.mark in ('pell_june_robe','pell_june_swim'):
+                art=panel((w,h),PELL_ROBE if look.mark=='pell_june_robe' else look.skin,'cloth' if look.mark=='pell_june_robe' else 'skin',side)
             elif side=='bottom':art=panel((w,h),'#a48f64' if look.mark=='borrasca_worker' else look.skin,'skin',side)
             if look.mark in ('truant','truant_leer') and side not in ('top','bottom'):
                 # Ink on his hands: a few dark blue marks across the knuckles and the back of the hand.
@@ -1574,6 +1643,28 @@ def paint(look):
         # Insets serve named geometry (coat, gown, collar, cuffs, cap), never a portrait.
         fill_net(net(64,28,9,17,5),look.cloth)
         for side,box in net(64,28,9,17,5).items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
+        if look.mark=='pell_june_robe':
+            # 0.4.533: June's towelling robe as the coat: to the knee, a darker band at its hem, its belt through its loops at the
+            # waist; worn open, the front falling apart from the neck, wider at the top, the belt's two ends hanging either side.
+            for side,box in net(64,28,9,17,5).items():
+                w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
+                art=panel((w,h),PELL_ROBE,'cloth',side);d=ImageDraw.Draw(art)
+                if side not in ('top','bottom'):
+                    towelling(d,(0,0,w-1,h-5),PELL_ROBE)
+                    d.rectangle((0,h-4,w-1,h-1),fill=shade(PELL_ROBE,-9));d.line((0,h-4,w-1,h-4),fill=shade(PELL_ROBE,-24))
+                    d.rectangle((0,14,w-1,15),fill=shade(PELL_ROBE,-7));d.line((0,16,w-1,16),fill=shade(PELL_ROBE,-26))
+                if side=='front':
+                    mid=w//2
+                    for y in range(h):
+                        half=4 if y<6 else 3 if y<12 else 2
+                        for x in range(mid-half,mid+half):art.putpixel((x,y),(0,0,0,0))
+                        d.point((mid-half-1,y),fill=shade(PELL_ROBE,-20));d.point((mid+half,y),fill=shade(PELL_ROBE,-20))
+                    for x in (mid-5,mid+3):
+                        d.rectangle((x,16,x+1,25),fill=shade(PELL_ROBE,-7));d.line((x,26,x+1,26),fill=shade(PELL_ROBE,-26))
+                put(box,art)
+        if look.mark=='pell_june_swim':
+            # 0.4.533: in the water the robe is on the chair: the coat's net is left empty, so nothing is drawn there.
+            for side,box in net(64,28,9,17,5).items():put(box,Image.new('RGBA',(round((box[2]-box[0])*S),round((box[3]-box[1])*S))))
         fill_net(net(96,28,10,14,6),look.cloth)
         for side,box in net(96,28,10,14,6).items():
             w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)

@@ -3652,7 +3652,7 @@
       "model": "the_oldest_house:block/pell/thing/pool_chair_0"
     },
     "facing=north,kind=pool_chair,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/pool_chair_0"
+      "model": "the_oldest_house:block/pell/thing/pool_chair_1"
     },
     "facing=north,kind=pool_chair,stage=2": {
       "model": "the_oldest_house:block/pell/thing/pool_chair_0"
@@ -3665,7 +3665,7 @@
       "y": 90
     },
     "facing=east,kind=pool_chair,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/pool_chair_0",
+      "model": "the_oldest_house:block/pell/thing/pool_chair_1",
       "y": 90
     },
     "facing=east,kind=pool_chair,stage=2": {
@@ -3681,7 +3681,7 @@
       "y": 180
     },
     "facing=south,kind=pool_chair,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/pool_chair_0",
+      "model": "the_oldest_house:block/pell/thing/pool_chair_1",
       "y": 180
     },
     "facing=south,kind=pool_chair,stage=2": {
@@ -3697,7 +3697,7 @@
       "y": 270
     },
     "facing=west,kind=pool_chair,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/pool_chair_0",
+      "model": "the_oldest_house:block/pell/thing/pool_chair_1",
       "y": 270
     },
     "facing=west,kind=pool_chair,stage=2": {

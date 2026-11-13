@@ -1,0 +1,288 @@
+{
+  "textures": {
+    "l": "the_oldest_house:item/pell_lane",
+    "particle": "the_oldest_house:item/pell_lane"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        7.5,
+        7.5
+      ],
+      "to": [
+        16,
+        8.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            16,
+            9
+          ],
+          "texture": "#l"
+        },
+        "south": {
+          "uv": [
+            0,
+            9,
+            16,
+            10
+          ],
+          "texture": "#l"
+        },
+        "up": {
+          "uv": [
+            0,
+            8,
+            16,
+            9
+          ],
+          "texture": "#l"
+        },
+        "down": {
+          "uv": [
+            0,
+            9,
+            16,
+            10
+          ],
+          "texture": "#l"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            1,
+            9
+          ],
+          "texture": "#l"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            1,
+            9
+          ],
+          "texture": "#l"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        6.25,
+        6.25
+      ],
+      "to": [
+        6.5,
+        9.75,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            4
+          ],
+          "texture": "#l"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            5,
+            4
+          ],
+          "texture": "#l"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            5,
+            4
+          ],
+          "texture": "#l"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            5,
+            4
+          ],
+          "texture": "#l"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            10,
+            4
+          ],
+          "texture": "#l"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            4
+          ],
+          "texture": "#l"
+        }
+      }
+    },
+    {
+      "from": [
+        9.5,
+        6.25,
+        6.25
+      ],
+      "to": [
+        14.5,
+        9.75,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            4,
+            5,
+            8
+          ],
+          "texture": "#l"
+        },
+        "south": {
+          "uv": [
+            0,
+            4,
+            5,
+            8
+          ],
+          "texture": "#l"
+        },
+        "up": {
+          "uv": [
+            0,
+            4,
+            5,
+            8
+          ],
+          "texture": "#l"
+        },
+        "down": {
+          "uv": [
+            0,
+            4,
+            5,
+            8
+          ],
+          "texture": "#l"
+        },
+        "east": {
+          "uv": [
+            6,
+            4,
+            10,
+            8
+          ],
+          "texture": "#l"
+        },
+        "west": {
+          "uv": [
+            6,
+            4,
+            10,
+            8
+          ],
+          "texture": "#l"
+        }
+      }
+    }
+  ],
+  "display": {
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "thirdperson_righthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_lefthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "firstperson_righthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "firstperson_lefthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

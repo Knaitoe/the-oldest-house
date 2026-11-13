@@ -23,12 +23,13 @@ public final class PellRegistry {
     /**
      * The brick veneer, its lowest course (weep holes, salt bloom) and the newer brick of a window bricked up; the roof's tiles and the
      * eaves' board; June's lawn and the street's; concrete, the path's slab with a hand pressed into it and the drive's stain, the road,
-     * the curb; the patio's pavers; the pool's coping, tiles and waterline band; deck boards; bark mulch; the shed's iron; plaster;
+     * the curb; the patio's pavers; the pool's coping, tiles and waterline band (0.4.533: with one tile missing and one that does not
+     * match, and the deep end's drain, with the goggles under it); deck boards; bark mulch; the shed's iron; plaster;
      * the ceiling, and Nessa's with its stars; the hall's carpet and the path worn in it; lino, worn and burnt; the garage's slab,
      * plain and stained.
      */
     public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("brick","brick_low","brick_new","roof","fascia","lawn","lawn_dry","concrete","concrete_print",
-        "concrete_oil","asphalt","curb","paver","coping","pool_tile","pool_band","deck","mulch","iron","plaster","ceiling","ceiling_stars","carpet","carpet_worn","lino",
+        "concrete_oil","asphalt","curb","paver","coping","pool_tile","pool_band","pool_band_missing","pool_band_odd","pool_drain","deck","mulch","iron","plaster","ceiling","ceiling_stars","carpet","carpet_worn","lino",
         "lino_worn","lino_burn","slab","slab_oil");
     private static Block like(String name){return switch(name){case "lawn","lawn_dry","mulch"->Blocks.GRASS_BLOCK;case "deck","fascia"->Blocks.OAK_PLANKS;case "carpet","carpet_worn"->Blocks.WHITE_WOOL;case "iron"->Blocks.IRON_BLOCK;default->Blocks.STONE;};}
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("pell_"+name,fixed(like(name))));}
@@ -61,6 +62,10 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> PAINTBRUSH=ITEMS.register("pell_paintbrush",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.532: the kitchen telephone's receiver, in June's hand while she is on it to Gail (PellCall). Nobody is given one. */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> RECEIVER=ITEMS.register("pell_receiver",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.533: the pool's lane rope across the water a week in (PellWeek), a block's length of it to each item display; and the length
+     *  of it where a float is missing. Nobody is given one. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANE=ITEMS.register("pell_lane",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANE_GAP=ITEMS.register("pell_lane_gap",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */

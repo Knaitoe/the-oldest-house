@@ -107,7 +107,9 @@ public final class PellTexts {
             case STAKE->stage==0?"A stake with a dead seedling. The tag says NESSA, in a child's printing.":"The newest stake, a fresh seedling. The tag says TILLY, in careful capitals.";
             case KENNEL->"A kennel. BISCUIT over the door, and a heart in crayon. A chain clipped to the wall, and to nothing.";
             case BOWL->"A steel bowl full of leaves.";
-            case POOL_CHAIR->"A pool chair turned to face the water. The towel on its back is faded on one side only.";
+            // 0.4.533: stage 1, June's robe dropped over it while she swims.
+            case POOL_CHAIR->stage==1?"A towelling robe has been dropped over the pool chair. It is still warm."
+                :"A pool chair turned to face the water. The towel on its back is faded on one side only.";
             case PUMP->"The pool pump. It runs all the time.";
             // 0.4.530: June's, set down on the grass behind the shed while she paints.
             case LANTERN->"A battery lantern, set down on the grass, turned low.";
@@ -325,10 +327,70 @@ public final class PellTexts {
         // To the room, once she has hung up.
         JUNE_INSIDE_LINE="Inside the line after dark, love. I did say.",
         JUNE_GIVE_IT_TIME="Give it time, love. That's all.";
+    /**
+     * 0.4.533, a week in (PellWeek, PellSwim, docs/PELL_HOUSE_WEEK_0_4_533.md): June's hello from the kitchen; the first slips, at dinner,
+     * at bedtime and at breakfast, each time the name of the girl who had the room first and then Tilly's; the week's call; what a hand
+     * on June and on Tilly gets a week in; June at the pool at first light; and what a hand finds in the pool. None of it says why.
+     */
+    public static final String JUNE_WELCOME="That you, love? Dinner's at six.",
+        WELCOME_FAR="June, calling from the kitchen: “That you, love? Dinner's at six.”",
+        JUNE_SERVES_NESSA="There you go, Nessa. Oh. Tilly. Sorry, love.",
+        TILLY_SAME_WAY="You do it the same way every night.",
+        JUNE_HOW_SHE_LIKED="That's how she liked it.",
+        JUNE_COMING_ON="There. It's coming on. Nearly to your shoulders.",
+        JUNE_NIGHT_NESSA="Night night, Nessa.",
+        TILLY_ITS_TILLY="It's Tilly.",
+        JUNE_NIGHT_TILLY="Tilly. I know, love. Night night.",
+        JUNE_GOGGLES="Nessa, love, where did you put your goggles?",
+        TILLY_NO_GOGGLES="I haven't got any goggles.",
+        JUNE_ALL_OVER="Tilly. Sorry, love. I'm all over the place this morning.",
+        TILLY_ALL_RIGHT="That's all right.",
+        // The week's call: June's side, then Gail to a reader on the line, then Gail's goodbye.
+        JUNE_WEEK_SETTLED="Settling in lovely, the pair of them.",
+        JUNE_WEEK_UP="Settling in. One of them's still up and about at night, but I see them back to bed.",
+        JUNE_WEEK_TILLY="Tilly's eating well. She's a different girl.",
+        GAIL_WEEK_ASKS="I've just been talking to June. She says it's all going well. A week in, now. How are you finding it?",
+        GAIL_WEEK_BYE="That's the first week done. I'll ring again next week. Put June back on for me, would you?",
+        TELL_WEEK_FINE="It's fine.",TELL_WEEK_NO_SLEEP="I'm not sleeping much.",
+        JUNE_WEEK_BYE="Next week, then. Bye now, love.",
+        // June at the pool, and in the water.
+        JUNE_OUT_OF_POOL="Out you come, love. I'm locking it.",
+        JUNE_SWIMMING="June doesn't stop. She turns at the wall and pushes off again.",
+        POOL_GATE_OPEN="The padlock hangs open on the hasp. The gate swings in.",
+        // In the pool, a week in.
+        DRAIN="Under the grate of the drain at the deep end, a child's swimming goggles, the strap knotted where it broke.",
+        BAND_MISSING="One tile of the band along the waterline is missing. The grout round the gap is new.",
+        BAND_ODD="One tile of the band does not match the rest. It is newer, and not quite the same.";
+    public static final String[] JUNE_WEEK_TALK={
+        "There you are, love. Dinner's at six.",
+        "I go in the pool first thing, every morning. Clears the head.",
+        "The pool gate stays locked, mind. Same as ever.",
+        "Inside the line after dark, love. You know that by now.",
+        "Tilly's settling in lovely. She's sleeping right through."};
+    public static final String[] TILLY_WEEK_TALK={
+        "June brushes my hair every night now.",
+        "Is the pool open? I can hear the water.",
+        "She calls me love. Mostly.",
+        "Callum's hair drips. I can hear it.",
+        "I'm keeping my hat on."};
+    /** What a hand on June gets at first light, on her way down to the pool or back from it in her robe. */
+    public static final String[] JUNE_SWIM_TALK={
+        "Morning, love. You're up early.",
+        "I go in first thing. Every morning. Clears the head.",
+        "Back to bed, love. It's not six yet."};
     /** What each reader can tell Gail, kept in their record ("ToldGail"); and walking off with the receiver without a word. */
     public static final String FINE="fine",NO_SLEEP="no_sleep",JUNE_OUT="june_out",CALLUM="callum",LEAVE="leave",NOTHING="nothing",WALKED_OFF="walked_off";
     /** What Gail says to an answer, before her goodbye: she has June's version already. */
-    public static List<String> gail(String told,boolean juneToldUp){
+    public static List<String> gail(String told,boolean juneToldUp){return gail(told,juneToldUp,1);}
+    /** 0.4.533: as above, on the visit it is: a week in, she says so. */
+    public static List<String> gail(String told,boolean juneToldUp,int visit){
+        if(visit>=2)switch(told){
+            case NO_SLEEP->{return juneToldUp?List.of("June said somebody's still up at night.","It can take a while. It does get easier, love.")
+                :List.of("Still? That's hard, love.","It can take a while. It does get easier.");}
+            case LEAVE->{return List.of("Oh, love. I know.","It's only been a week. Give it a bit longer. Give June a bit longer. That's all I'm asking.");}
+            case FINE->{return List.of("Good. That's good, love.","June says you're a help to her. You're in good hands.");}
+            default->{}
+        }
         return switch(told){
             case FINE->List.of("Good. That's good, love.","June's been doing this a long time. You're in good hands.");
             case NO_SLEEP->juneToldUp?List.of("June said somebody was up and about.","First nights are hard. It gets easier, I promise it does.")
@@ -349,8 +411,9 @@ public final class PellTexts {
     public static final int RULE_LINE=1,RULE_POOL=2,RULE_NESSA=4,RULE_GARAGE=8,RULES=15;
     /** The rule a line of June's gives, from the tour or from a hand on her, or none. */
     public static int rule(String line){
-        if(line.equals(JUNE_LINE)||line.equals(JUNE_TALK[1]))return RULE_LINE;
-        if(line.equals(JUNE_POOL)||line.equals(JUNE_TALK[2]))return RULE_POOL;
+        // 0.4.533: a week in, June says two of them again.
+        if(line.equals(JUNE_LINE)||line.equals(JUNE_TALK[1])||line.equals(JUNE_WEEK_TALK[3]))return RULE_LINE;
+        if(line.equals(JUNE_POOL)||line.equals(JUNE_TALK[2])||line.equals(JUNE_WEEK_TALK[2]))return RULE_POOL;
         if(line.equals(JUNE_NESSA)||line.equals(JUNE_TALK[4]))return RULE_NESSA;
         if(line.equals(JUNE_GARAGE)||line.equals(JUNE_TALK[3]))return RULE_GARAGE;
         return 0;

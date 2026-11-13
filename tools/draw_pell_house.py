@@ -364,6 +364,44 @@ def pool_tile(band=False):
     return im
 
 
+def pool_band_missing():
+    """0.4.533: the waterline band with one of its tiles gone: the bed of adhesive where it was, combed in ridges, a chip of the old
+    tile's edge left in one corner."""
+    im = pool_tile(True)
+    fill(im, 8, 0, 11, 3, '#8a8f88')
+    for x in (8, 10):
+        fill(im, x, 0, x + 1, 3, '#7a7f78')
+    dot(im, 8, 0, '#1f5f8c'); dot(im, 11, 3, '#9aa098')
+    return im
+
+
+def pool_band_odd():
+    """0.4.533: the waterline band with one tile put back that does not match: a paler, greener tile, a pixel proud of its neighbours,
+    its grout lines fresher and whiter than theirs."""
+    im = pool_tile(True)
+    fill(im, 3, 0, 4, 4, '#f4fafa'); fill(im, 7, 0, 8, 4, '#f4fafa'); fill(im, 4, 3, 7, 4, '#f4fafa')
+    fill(im, 4, 0, 7, 3, '#3f9a8a'); fill(im, 4, 0, 7, 1, '#57b2a0'); dot(im, 6, 2, '#2f8070')
+    return im
+
+
+def pool_drain():
+    """0.4.533: the deep end's floor at its middle: the drain's grate, a square of bars in a frame among the tiles, and under it,
+    seen between the bars, a child's swimming goggles: two small lenses on a bridge, the strap trailing out of the corner."""
+    im = pool_tile()
+    fill(im, 4, 4, 12, 12, '#c4cccc')
+    fill(im, 5, 5, 11, 11, '#20292c')
+    lens, rim, strap = '#b2569a', '#6e2f60', '#3a4ab0'
+    # The goggles lie across the sump, under the bars: each lens two pixels by two in its rim, the bridge between, the strap out to the
+    # corner.
+    for x0 in (5, 8):
+        fill(im, x0, 6, x0 + 3, 9, rim); fill(im, x0 + 1, 7, x0 + 2, 8, lens)
+    dot(im, 7, 7, rim); dot(im, 10, 9, strap); dot(im, 10, 10, strap)
+    for x in (6, 8, 10):
+        fill(im, x, 5, x + 1, 11, '#d5dcdc')
+    fill(im, 5, 5, 11, 6, '#aab3b3')
+    return im
+
+
 def deck():
     im = wood('#8d6f4f', 51826, 3, knot=False)
     for y in (0, 4, 8, 12):
@@ -537,7 +575,8 @@ def slab(oil):
 def materials():
     return {'brick': brick(), 'brick_low': brick_low(), 'brick_new': brick('#b67253', '#e2d9c8', 51802, 4), 'roof': roof(), 'fascia': fascia(),
             'lawn': lawn(0), 'lawn_dry': lawn(1), 'concrete': concrete(), 'concrete_print': concrete_print(), 'concrete_oil': concrete_oil(), 'asphalt': asphalt(), 'curb': kerb(), 'paver': paver(),
-            'coping': coping(), 'pool_tile': pool_tile(), 'pool_band': pool_tile(True), 'deck': deck(), 'mulch': mulch(), 'iron': iron(),
+            'coping': coping(), 'pool_tile': pool_tile(), 'pool_band': pool_tile(True), 'pool_band_missing': pool_band_missing(), 'pool_band_odd': pool_band_odd(),
+            'pool_drain': pool_drain(), 'deck': deck(), 'mulch': mulch(), 'iron': iron(),
             'plaster': plaster(), 'ceiling': ceiling(), 'ceiling_stars': ceiling_stars(), 'carpet': carpet(False), 'carpet_worn': carpet(True), 'lino': lino(),
             'lino_worn': lino_worn(), 'lino_burn': lino_burn(),
             'slab': slab(False), 'slab_oil': slab(True)}
@@ -961,7 +1000,8 @@ def turned(model_id):
 NAMES = {'pell_fitting': 'House Fitting', 'pell_brick': 'Brick Veneer', 'pell_brick_low': 'Brick Veneer, Lowest Course', 'pell_brick_new': 'Newer Brick',
          'pell_roof': 'Roof Tiles', 'pell_fascia': 'Eaves Board', 'pell_lawn': 'Watered Lawn', 'pell_lawn_dry': 'Dry Lawn', 'pell_concrete': 'Concrete',
          'pell_concrete_print': 'Concrete, Handprint', 'pell_concrete_oil': 'Concrete, Stained', 'pell_asphalt': 'Road', 'pell_curb': 'Curb', 'pell_paver': 'Patio Pavers', 'pell_coping': 'Pool Coping', 'pell_pool_tile': 'Pool Tiles',
-         'pell_pool_band': 'Pool Tiles, Waterline', 'pell_deck': 'Deck Boards', 'pell_mulch': 'Bark Mulch', 'pell_iron': 'Corrugated Iron',
+         'pell_pool_band': 'Pool Tiles, Waterline', 'pell_pool_band_missing': 'Pool Tiles, Waterline, One Missing', 'pell_pool_band_odd': 'Pool Tiles, Waterline, One Odd',
+         'pell_pool_drain': 'Pool Drain', 'pell_deck': 'Deck Boards', 'pell_mulch': 'Bark Mulch', 'pell_iron': 'Corrugated Iron',
          'pell_plaster': 'Painted Plaster', 'pell_ceiling': 'Ceiling', 'pell_ceiling_stars': 'Ceiling, Stars', 'pell_carpet': 'Carpet', 'pell_carpet_worn': 'Carpet, Worn',
          'pell_lino': 'Lino', 'pell_lino_worn': 'Lino, Worn', 'pell_lino_burn': 'Lino, Burnt', 'pell_slab': 'Garage Slab', 'pell_slab_oil': 'Garage Slab, Stained'}
 
