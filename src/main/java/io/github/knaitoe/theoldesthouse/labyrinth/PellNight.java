@@ -123,8 +123,9 @@ public final class PellNight {
             case 0->{
                 // In her room: the door shut behind her. At eleven she gets up, the lantern in her other hand, and goes to the back door.
                 if(still&&PellVisit.near(june,b,v(PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z()),.6)&&PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
-                // 0.4.538: the last night, she does not go out on her rounds; the night goes on to midnight and waits there.
-                if(h.visit>=PellWeek.LAST)break;
+                // 0.4.538: the last night, she does not go out on her rounds; the night goes on to midnight. 0.4.539: at midnight she
+                // takes Tilly down to the pool (PellRite).
+                if(h.visit>=PellWeek.LAST){PellRite.tick(l,b,h,june,here,now);break;}
                 if(h.time<ELEVEN||!still)break;
                 june.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(PellRegistry.LANTERN.get()));
                 next(h,ROUNDS);PellVisit.go(h,J,-1,180,ROOM_TO_BACK);
