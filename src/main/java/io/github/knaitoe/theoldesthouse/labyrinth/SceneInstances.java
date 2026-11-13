@@ -38,9 +38,10 @@ public final class SceneInstances {
      * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}). 0.4.547: and the Pell house, two
      * readers to a house ({@link #pell}). 0.4.551: and every story written for a party ({@link #PARTIES}). 0.4.552: and the Goatman's trailer,
      * whose night is kept by copy (GoatmanVignette.run). 0.4.553: and the Ghosts Set, whose lead is kept by copy (GhostsCrew).
+     * 0.4.554: and the Shallows, whose recollections and boys are kept by bank (Shallows.COPY).
      */
     private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE,
-        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN,LabyrinthPlace.GHOSTS_SET);
+        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.SHALLOWS);
     /**
      * 0.4.551 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the stories written
      * for a party, and how many readers one copy of each holds. A copy whose places are all held ({@link #held}) is full: the next
@@ -50,10 +51,12 @@ public final class SceneInstances {
      * always let them. The lake house and the Pell house keep their pairs ({@link #lake}, {@link #pell}). 0.4.552: the Goatman's
      * trailer sixteen, its own limit on an evening's children; a latecomer after supper is still turned away by the trailer's own rule.
      * 0.4.553: the Ghosts Set four cameras, the lead's and three second cameras; a fifth leads a production of their own on another set.
+     * 0.4.554: the Shallows six, two hands to each of the bank's three carry places; a bank is also full to a reader who could neither
+     * join a recollection there nor find a carry place free ({@link #fits}).
      */
     private static final Map<LabyrinthPlace,Integer> PARTIES=Map.of(LabyrinthPlace.BIKE_NIGHT,BikeNight.RIDERS,LabyrinthPlace.LAST_CROSSING,LastCrossing.MAX_CREW,
         LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY,LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY,LabyrinthPlace.GOATMAN,GoatmanVignette.MAX_PLAYERS,
-        LabyrinthPlace.GHOSTS_SET,GhostsCrew.CAMERAS);
+        LabyrinthPlace.GHOSTS_SET,GhostsCrew.CAMERAS,LabyrinthPlace.SHALLOWS,Shallows.PLACES);
     /** How many readers one copy of a party's story holds, or 0 for a scene that is not one. */
     public static int party(@Nullable LabyrinthPlace p){return p==null?0:PARTIES.getOrDefault(p,0);}
     /**
@@ -78,6 +81,10 @@ public final class SceneInstances {
         for(var q:s.getPlayerList().getPlayers())if(q.isAlive()&&!q.isSpectator()&&at(s,place,q.level().dimension(),q.position())==k)ids.add(q.getUUID());
         ids.remove(reader);
         return ids.size();
+    }
+    /** 0.4.554: whether copy {@code k} has room for this reader: a place not held, and for the Shallows a recollection to join or a carry place free. */
+    private static boolean fits(MinecraftServer s,LabyrinthPlace place,int k,UUID reader,int most){
+        return held(s,place,k,reader)<most&&(place!=LabyrinthPlace.SHALLOWS||Shallows.room(s,k,reader));
     }
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
@@ -131,6 +138,7 @@ public final class SceneInstances {
         if(p==LabyrinthPlace.HARRIGAN)return !WitnessAccount.has(d,reader,WitnessAccount.Story.HARRIGAN);
         if(p==LabyrinthPlace.HIDE_AND_CLAP)return HideAndClap.canDeal(d,reader);
         if(p==LabyrinthPlace.GOATMAN)return GoatmanVignette.canDeal(d,reader);
+        if(p==LabyrinthPlace.SHALLOWS)return IndianLakeProgress.canDealShallows(d,reader);
         if(NovelVignettes.isNovel(p))return NovelVignettes.canDeal(d,reader,p);
         return LiteraryVignettes.canDeal(d,reader,p);
     }
@@ -142,6 +150,7 @@ public final class SceneInstances {
         if(p==LabyrinthPlace.HIDE_AND_CLAP){var round=d.state(HideAndClap.ID).getCompound("Session");return round.hasUUID("Player")?Set.of(round.getUUID("Player").toString()):Set.of();}
         // The trailer's evening was one for the world: the children of the evening it holds keep it.
         if(p==LabyrinthPlace.GOATMAN)return GoatmanVignette.run(d).getCompound("Cohort").getAllKeys();
+        if(p==LabyrinthPlace.SHALLOWS)return d.state(Shallows.ID).getCompound("Players").getAllKeys();
         if(NovelVignettes.isNovel(p))return d.state(NovelVignettes.STATE).getAllKeys();
         return LiteraryVignettes.readers(d,p);
     }
@@ -273,13 +282,13 @@ public final class SceneInstances {
      */
     private static Entry crowd(ServerPlayer p,LabyrinthData d,UUID me,LabyrinthPlace place,int most){
         var s=p.server;int mine=kept(d,me,place);
-        int chosen=mine>=0&&built(d,place,mine)&&held(s,place,mine,me)<most?mine:-1;
-        for(int k=0;chosen<0&&k<=copies(d,place);k++)if(built(d,place,k)&&held(s,place,k,me)<most)chosen=k;
+        int chosen=mine>=0&&built(d,place,mine)&&fits(s,place,mine,me,most)?mine:-1;
+        for(int k=0;chosen<0&&k<=copies(d,place);k++)if(built(d,place,k)&&fits(s,place,k,me,most))chosen=k;
         if(chosen<0)return new Entry(null,-1,making(d,place)||allocate(d,place));
         if(chosen!=mine)keep(d,me,place,chosen);
         if(held(s,place,chosen,me)+1>=most-1){
             boolean room=false;
-            for(int k=0;k<=copies(d,place);k++)room|=k!=chosen&&(!built(d,place,k)||held(s,place,k,me)<most);
+            for(int k=0;k<=copies(d,place);k++)room|=k!=chosen&&(!built(d,place,k)||fits(s,place,k,me,most));
             if(!room)allocate(d,place);
         }
         return new Entry(entry(d,place,chosen),chosen,false);
@@ -498,6 +507,7 @@ public final class SceneInstances {
         if(LiteraryRooms.isLiterary(p)){LiteraryRooms.build(l,b,p);return;}
         if(NovelVignettes.isNovel(p)){NovelRooms.build(s,l,b,p);return;}
         if(p==LabyrinthPlace.PHONE_CANOE){PhoneCanoe.build(s,l,b);LakeLandscape.dress(l,b,p);NovelRooms.safeApproach(l,b);}
+        if(p==LabyrinthPlace.SHALLOWS){Shallows.build(s,l,b);LakeLandscape.dress(l,b,p);NovelRooms.safeApproach(l,b);}
         if(p==LabyrinthPlace.HARRIGAN){HarriganVignette.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
         if(p==LabyrinthPlace.HIDE_AND_CLAP){HideAndClap.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
         if(p==LabyrinthPlace.GOATMAN){GoatmanVignette.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}

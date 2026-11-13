@@ -411,4 +411,81 @@ public final class IndianLakeLinkedTests {
             }
         });
     }
+
+    private static Fixture banks;private static NativeTestChunks bankChunks;
+    @AfterBatch(batch="shallows_copy0554") public static void cleanBanks(ServerLevel level){
+        SceneInstances.fixtureCap(null);if(bankChunks!=null){bankChunks.close();bankChunks=null;}
+        if(banks!=null){
+            var copy=SceneInstances.base(banks.server,LabyrinthPlace.SHALLOWS,1);
+            if(copy!=null){
+                AABB box=IndianLakeRooms.bounds(copy,LabyrinthPlace.SHALLOWS);
+                for(Entity e:banks.level.getEntitiesOfClass(Entity.class,box,e->e instanceof LakeCongregantEntity||e instanceof LakeWitchEntity||e instanceof LakeCanoeEntity))e.discard();
+                for(int x=((int)box.minX-1)>>4;x<=((int)box.maxX+1)>>4;x++)for(int z=((int)box.minZ-1)>>4;z<=((int)box.maxZ+1)>>4;z++)banks.level.getChunkSource().removeRegionTicket(TicketType.PORTAL,new ChunkPos(x,z),3,copy);
+            }
+            banks.close();banks=null;
+        }
+        SceneInstances.clear();
+    }
+    /**
+     * 0.4.554 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): six on the bank, one at her
+     * wrists, one at her feet and four with the boys, are full to a seventh and never to one of the six. The seventh's door waits while a
+     * second bank is made ready a million blocks west; they go in by its own door and begin a recollection of their own there, on its first
+     * carry place, with a boy at her feet and three boys on the bank of its own, and the first bank's recollection is as it was. A bank whose
+     * three carry places are taken by throws already made is full to a newcomer who could join none of them, whatever its count.
+     */
+    @GameTest(template="empty",batch="shallows_copy0554",timeoutTicks=24000)
+    public static void aSeventhReaderIsGivenABankOfTheirOwn(GameTestHelper h){
+        banks=new Fixture(h,new BlockPos(51900,80,51900),LabyrinthPlace.SHALLOWS);var f=banks;var place=LabyrinthPlace.SHALLOWS;var data=LabyrinthData.get(f.server);
+        SceneInstances.fixtureCap(1);
+        var six=new ServerPlayer[Shallows.PLACES];final ServerPlayer[] late={null};final BlockPos[] theirs={null};
+        for(int i=0;i<six.length;i++)six[i]=f.realPlayer("bank_copy"+i,f.base.offset(i<2?-1+3*i:-6+i,0,i<2?-11:-5));
+        IndianLakeProgress.hunted(data,six[0].getUUID());for(var p:six)Shallows.onArrive(p,place);
+        h.startSequence().thenExecute(()->{
+            h.assertTrue(SceneInstances.copyable(place)&&SceneInstances.party(place)==Shallows.PLACES&&Shallows.PLACES==6,"the bank has copies, six to a bank");
+            var girl=Shallows.actor(six[0]);
+            h.assertTrue(girl!=null&&Shallows.AT_FEET.equals(Shallows.personal(data,six[1].getUUID()).getString(Shallows.ROLE)),"one recollection, with a reader at her wrists and one at her feet");
+            for(int i=2;i<six.length;i++)h.assertTrue(Shallows.ON_BANK.equals(Shallows.personal(data,six[i].getUUID()).getString(Shallows.ROLE))&&six[0].getUUID().equals(Shallows.with(data,six[i].getUUID())),"and the rest on the bank with the boys: "+six[i].getGameProfile().getName());
+            late[0]=f.realPlayer("bank_copy_late",f.base.offset(0,0,40));IndianLakeProgress.hunted(data,late[0].getUUID());
+            h.assertTrue(SceneInstances.held(f.server,place,0,late[0].getUUID())==6&&SceneInstances.held(f.server,place,0,six[0].getUUID())==5,"the bank is full to a seventh, never to one of the six");
+            var e=SceneInstances.enter(late[0],place);
+            h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(data,place)==1,"the seventh's door waits while a bank of their own is made ready: "+e);
+            var mine=SceneInstances.enter(six[2],place);
+            h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the six goes back to theirs: "+mine);
+        })
+        .thenWaitUntil(()->h.assertTrue(SceneInstances.built(data,place,1)&&!SceneInstances.building(),"waiting for the second bank to stand"))
+        .thenExecute(()->{
+            theirs[0]=SceneInstances.base(f.server,place,1);
+            h.assertTrue(theirs[0].getX()<=f.base.getX()-SceneInstances.WEST&&theirs[0].getY()==f.base.getY()&&theirs[0].getZ()==f.base.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+            var e=SceneInstances.enter(late[0],place);
+            h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(place,1,"entry")),"the seventh goes to it by its own door: "+e);
+            bankChunks=new NativeTestChunks();bankChunks.hold(f.level,IndianLakeRooms.bounds(theirs[0],place));IndianLakeRooms.keepLoaded(f.level,theirs[0],place);
+        })
+        .thenWaitUntil(()->h.assertTrue(bankChunks.ready(),"the second bank is resident"))
+        .thenExecute(()->{
+            var l=late[0];l.teleportTo(f.level,theirs[0].getX()-.5,theirs[0].getY(),theirs[0].getZ()-9.5,0,0);l.setDeltaMovement(Vec3.ZERO);
+            Shallows.onArrive(l,place);
+        })
+        .thenWaitUntil(()->{
+            var l=late[0];Shallows.onArrive(l,place);
+            h.assertTrue(Shallows.actor(l)!=null&&Shallows.carrier(l)!=null,"the seventh begins a recollection of their own on the second bank");
+            for(int i=0;i<3;i++)h.assertTrue(Shallows.onlooker(f.level,i,1)!=null,"the second bank's boy "+i+" is resident");
+        })
+        .thenExecute(()->{
+            var l=late[0];var girl=Shallows.actor(l);var record=Shallows.personal(data,l.getUUID());var first=Shallows.personal(data,six[0].getUUID());
+            h.assertTrue(theirs[0].equals(girl.memoryBase())&&record.getInt(Shallows.COPY)==1&&record.getInt("Slot")==first.getInt("Slot"),"on the second bank's first carry place, though the first bank's is taken: "+record+" / "+first);
+            h.assertTrue(Shallows.with(data,l.getUUID())==null&&!girl.broadcastToPlayer(six[0])&&!Shallows.actor(six[0]).broadcastToPlayer(l),"joined to nobody on the first bank, and neither recollection is sent to the other's reader");
+            for(int i=0;i<3;i++){
+                var mine=Shallows.onlooker(f.level,i,1);var theirsBoy=Shallows.onlooker(f.level,i,0);
+                h.assertTrue(mine!=null&&theirsBoy!=null&&!mine.getUUID().equals(theirsBoy.getUUID())&&IndianLakeRooms.bounds(theirs[0],place).contains(mine.position())&&IndianLakeRooms.bounds(f.base,place).contains(theirsBoy.position()),"each bank has its own boy "+i);
+            }
+            h.assertTrue(f.base.equals(Shallows.actor(six[0]).memoryBase())&&first.getInt(Shallows.COPY)==0&&first.getBoolean("Active"),"and the first bank's recollection is as it was");
+            // A bank whose three carry places are taken by throws already made is full to a newcomer who could join none of them.
+            var taken=new LabyrinthData();var players=new CompoundTag();
+            for(int i=0;i<3;i++){var r=new CompoundTag();r.putBoolean("Active",true);r.putInt(Shallows.COPY,0);r.putInt("Slot",i);players.put(UUID.randomUUID().toString(),r);}
+            var state=new CompoundTag();state.put("Players",players);taken.setState(Shallows.ID,state);var newcomer=UUID.randomUUID();
+            h.assertTrue(!Shallows.room(f.server,taken,0,newcomer)&&Shallows.room(f.server,taken,1,newcomer),"three carry places taken with nobody to join is no room on that bank, and none of another's");
+            var one=players.getAllKeys().iterator().next();var freed=players.getCompound(one);freed.putBoolean("Active",false);players.put(one,freed);state.put("Players",players);taken.setState(Shallows.ID,state);
+            h.assertTrue(Shallows.room(f.server,taken,0,newcomer),"a carry place free is room again");
+        }).thenSucceed();
+    }
 }
