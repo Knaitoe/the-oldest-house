@@ -385,6 +385,19 @@ public final class LiteraryRenderers {
                     head.yRot=-.75F*Math.max(0,net.minecraft.util.Mth.sin(rightArm.xRot));
                     leftLeg.xRot=net.minecraft.util.Mth.sin(age*.55F)*.3F;rightLeg.xRot=-leftLeg.xRot;leftLeg.yRot=rightLeg.yRot=0;leftLeg.zRot=rightLeg.zRot=0;
                 }
+                // 0.4.534: Callum struggling with a reader for the knife: both arms out in front of him, pulling back against their
+                // hold, jerking; his head down over it.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.STRUGGLE->{
+                    float jerk=net.minecraft.util.Mth.sin(age*.95F),twist=net.minecraft.util.Mth.sin(age*.61F);
+                    rightArm.xRot=-1.15F+jerk*.28F;leftArm.xRot=-1.3F-jerk*.22F;
+                    rightArm.yRot=-.32F+twist*.12F;leftArm.yRot=.36F-twist*.1F;rightArm.zRot=.06F;leftArm.zRot=-.06F;
+                    head.xRot=.38F;head.yRot=twist*.15F;
+                }
+                // 0.4.534: and his fist coming at their face: the right arm thrown up and forward, the left drawn back.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LUNGE->{
+                    rightArm.xRot=-2.05F;rightArm.yRot=.18F;rightArm.zRot=0;leftArm.xRot=.55F;leftArm.yRot=0;leftArm.zRot=-.1F;
+                    head.xRot=-.15F;head.yRot=0;
+                }
                 // 0.4.530: Callum crouched, as a reader crouches, a beat late: the game's own crouch.
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.CROUCH->{
                     body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=leftLeg.z=4;rightLeg.y=leftLeg.y=12.2F;

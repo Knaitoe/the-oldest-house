@@ -135,6 +135,12 @@ public final class PellCall {
     static List<String> juneSide(PellPeople.Household h,List<ServerPlayer> here){
         var out=new ArrayList<String>();
         if(h.answered!=null){out.add(PellTexts.JUNE_TAKES);out.add(PellTexts.JUNE_SORRY);}else out.add(PellTexts.JUNE_HELLO);
+        // 0.4.534: after the knife, June has her version of it in first.
+        if(knife(h)){
+            out.add(PellTexts.JUNE_KNIFE_TROUBLE);out.add(PellTexts.JUNE_KNIFE_WHAT);out.add(PellTexts.JUNE_KNIFE_HURT);out.add(PellTexts.JUNE_KNIFE_BLOCK);
+            out.add(PellTexts.JUNE_WEEK_TILLY);out.add(PellTexts.JUNE_PUT_ON);
+            return out;
+        }
         out.add(PellTexts.JUNE_NO_TROUBLE);
         // 0.4.533: a week in, how they are settling, and Tilly "a different girl".
         boolean week=h.visit>=2,up=h.toldUp||upInTheNight(h,here);
@@ -142,6 +148,8 @@ public final class PellCall {
         out.add(week?PellTexts.JUNE_WEEK_TILLY:PellTexts.JUNE_TILLY_ATE);out.add(PellTexts.JUNE_CALLUM_GOOD);out.add(PellTexts.JUNE_PUT_ON);
         return out;
     }
+    /** 0.4.534: whether this is the call after the knife, with somebody June found in the kitchen. */
+    static boolean knife(PellPeople.Household h){return h.visit>=2&&!h.found.isEmpty();}
     private static boolean upInTheNight(PellPeople.Household h,List<ServerPlayer> here){
         if(h.noticed)return true;
         for(var p:here){var own=PellHouse.own(p);if(own.getBoolean("SpokeToJuneAtNight")||own.getBoolean("Smeared"))return true;}
@@ -192,6 +200,12 @@ public final class PellCall {
     static List<String> juneBack(PellPeople.Household h){
         var out=new ArrayList<String>();var said=h.toldGail.values();
         out.add(h.spoke.isEmpty()?PellTexts.JUNE_NOBODY:PellTexts.JUNE_BACK);
+        // 0.4.534: after the knife: whatever was said, she has the last word with Gail.
+        if(knife(h)){
+            if(said.contains(PellTexts.KNIFE_LYING))out.add(PellTexts.JUNE_KNIFE_UPSET);
+            out.add(PellTexts.JUNE_KNIFE_EYE);out.add(PellTexts.JUNE_WEEK_BYE);
+            return out;
+        }
         if(said.contains(PellTexts.JUNE_OUT))out.add(PellTexts.JUNE_ABOUT_LINE);
         if(said.contains(PellTexts.CALLUM))out.add(PellTexts.JUNE_ABOUT_CALLUM);
         if(said.contains(PellTexts.LEAVE))out.add(PellTexts.JUNE_EARLY_DAYS);
@@ -241,8 +255,27 @@ public final class PellCall {
         h.caller=p.getUUID();h.heldAt=now;
         june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);june.gesture(0);
         own.putBoolean(PellWeek.spoke(h.visit),true);
-        Talk.begin(p,KEY,WHO);Talk.line(p,GAIL,PellTexts.GAIL_HELLO);Talk.line(p,GAIL,h.visit>=2?PellTexts.GAIL_WEEK_ASKS:PellTexts.GAIL_ASKS);
+        Talk.begin(p,KEY,WHO);Talk.line(p,GAIL,PellTexts.GAIL_HELLO);
         var replies=new ArrayList<Talk.Reply>();
+        // 0.4.534: after the knife, Gail asks about it: what June has told her about the reader she found in the kitchen, and the rest
+        // whether it was them. The answers on offer are what each of them could truly say.
+        if(knife(h)){
+            boolean found=h.found.contains(p.getUUID());
+            for(var line:found?PellTexts.GAIL_KNIFE_ASKS:PellTexts.GAIL_KNIFE_OTHER)Talk.line(p,GAIL,line);
+            if(found){
+                if(own.getBoolean("FoughtCallum"))replies.add(Talk.reply(PellTexts.TELL_KNIFE_TOOK,q->answer(q,PellTexts.KNIFE_TOOK)));
+                replies.add(Talk.reply(PellTexts.TELL_KNIFE_DONT_KNOW,q->answer(q,PellTexts.KNIFE_DONT_KNOW)));
+                replies.add(Talk.reply(PellTexts.TELL_KNIFE_LYING,q->answer(q,PellTexts.KNIFE_LYING)));
+            }else{
+                replies.add(Talk.reply(PellTexts.TELL_KNIFE_NOT_ME,q->answer(q,PellTexts.KNIFE_NOT_ME)));
+                if(own.getBoolean("SawKnife"))replies.add(Talk.reply(PellTexts.TELL_KNIFE_SAW,q->answer(q,PellTexts.KNIFE_SAW)));
+                replies.add(Talk.reply(PellTexts.TELL_LEAVE,q->answer(q,PellTexts.LEAVE)));
+            }
+            replies.add(Talk.act(PellTexts.TELL_NOTHING,q->answer(q,PellTexts.NOTHING)));
+            Talk.ask(p,replies);
+            return;
+        }
+        Talk.line(p,GAIL,h.visit>=2?PellTexts.GAIL_WEEK_ASKS:PellTexts.GAIL_ASKS);
         // 0.4.533: a week in, the same answers as they are by then.
         boolean week=h.visit>=2;
         replies.add(Talk.reply(week?PellTexts.TELL_WEEK_FINE:PellTexts.TELL_FINE,q->answer(q,PellTexts.FINE)));
@@ -260,8 +293,9 @@ public final class PellCall {
         if(h.step!=OFFERED||!p.getUUID().equals(h.caller)){Talk.close(p);return;}
         h.toldGail.put(p.getUUID(),told);
         var own=PellHouse.own(p);own.putString(PellWeek.told(h.visit),told);PellHouse.save(p,own);
-        for(var line:PellTexts.gail(told,h.toldUp,h.visit))Talk.line(p,GAIL,line);
-        Talk.line(p,GAIL,h.visit>=2?PellTexts.GAIL_WEEK_BYE:PellTexts.GAIL_BYE);
+        boolean knife=knife(h);
+        for(var line:knife?PellTexts.gailKnife(told,h.found.contains(p.getUUID())):PellTexts.gail(told,h.toldUp,h.visit))Talk.line(p,GAIL,line);
+        Talk.line(p,GAIL,knife?PellTexts.GAIL_KNIFE_BYE:h.visit>=2?PellTexts.GAIL_WEEK_BYE:PellTexts.GAIL_BYE);
         Talk.ask(p,Talk.act(PellTexts.HAND_BACK,PellCall::handBack));
     }
     /** The receiver given back to June. */

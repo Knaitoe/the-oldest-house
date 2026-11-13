@@ -325,7 +325,7 @@ public final class PellNight {
      * A door shut behind June: once nobody is on its far side (in the house, for the back door; in the shed, for the shed's) or in its
      * way, asking anyone who is to come out; then shut and locked. True once it is.
      */
-    private static boolean shut(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,BlockPos door,List<ServerPlayer> here,long now,String ask){
+    static boolean shut(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,BlockPos door,List<ServerPlayer> here,long now,String ask){
         boolean shed=door.equals(PellSite.SHED_DOOR),beyond=false;
         for(var p:here){
             if(!p.isAlive()||p.isSpectator())continue;var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
@@ -367,11 +367,13 @@ public final class PellNight {
     private static void callum(ServerLevel l,BlockPos b,PellPeople.Household h,List<ServerPlayer> here){
         int C=PellPeople.CALLUM;var c=PellPeople.find(l,b,C);if(c==null)return;
         float body=CALLUM_LINE.look();
+        // 0.4.534: a week in, from one o'clock while he has the knife, and once it is over, the knife has him (PellKnife).
+        if(!h.callumOut&&h.visit>=2&&h.knife>=PellKnife.AT_SINK&&h.knife<=PellKnife.OVER)return;
         if(!h.callumOut){
             // 0.4.531: once it is light he does not go out again.
             if(h.step<TO_SHED||h.dawned)return;
             var spot=PellPeople.world(b,CALLUM_LINE);
-            if(LiteraryVignettes.watched(l,c.getEyePosition())||LiteraryVignettes.watched(l,spot.add(0,c.getEyeHeight(),0)))return;
+            if(seen(l,c.getEyePosition())||seen(l,spot.add(0,c.getEyeHeight(),0)))return;
             for(var p:here)if(p.position().distanceToSqr(spot)<1.5*1.5)return;
             c.moveTo(spot.x,spot.y,spot.z,body,0);c.setYHeadRot(body);c.setYBodyRot(body);c.setDeltaMovement(Vec3.ZERO);
             c.gesture(0);h.asleep[C]=false;h.rest[C]=body;h.callumOut=true;h.copied=0;h.copyOf=null;
@@ -442,10 +444,12 @@ public final class PellNight {
      * Whether a reader sees a point: near enough, within sixty degrees of where they look, and nothing in the way but clear glass (and,
      * 0.4.533, the pool fence's bars). The garage's window is how the strip is seen from inside it.
      */
-    public static boolean sees(ServerPlayer p,Vec3 at,double reach){
+    public static boolean sees(ServerPlayer p,Vec3 at,double reach){return sees(p,at,reach,.5);}
+    /** As sees(), within this cone (the dot of the look and the way to the point). */
+    static boolean sees(ServerPlayer p,Vec3 at,double reach,double cone){
         var eye=p.getEyePosition();var d=at.subtract(eye);double dist=d.length();
         if(dist>reach)return false;if(dist<1.5)return true;
-        var dir=d.scale(1/dist);if(p.getLookAngle().dot(dir)<.5)return false;
+        var dir=d.scale(1/dist);if(p.getLookAngle().dot(dir)<cone)return false;
         var target=BlockPos.containing(at);var from=eye;
         for(int i=0;i<4;i++){
             var hit=p.level().clip(new ClipContext(from,at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
@@ -456,6 +460,15 @@ public final class PellNight {
             if(!clear)return false;
             from=hit.getLocation().add(dir.scale(.6));
         }
+        return false;
+    }
+    /**
+     * 0.4.534: whether anybody awake (a spectator too) could see this point, as the House's watching has it (within 48 blocks and
+     * the wide cone) and through the house's clear glass and the pool fence as well. What the house does "the first moment nobody
+     * sees" waits for this: a reader at the kitchen's window sees the sink.
+     */
+    public static boolean seen(ServerLevel l,Vec3 at){
+        for(var p:l.players())if(p.isAlive()&&!p.isSleeping()&&sees(p,at,48,.26))return true;
         return false;
     }
     /** The thin cells, for tests. */

@@ -169,7 +169,7 @@ public final class PellVisit {
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
         // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart); 0.4.532, and Gail's call.
-        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);
+        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);
@@ -353,7 +353,7 @@ public final class PellVisit {
      *  her room, on through the night to six, as fast again; while she goes round the doors to the kitchen, to half past; once breakfast
      *  is laid, to seven; from breakfast's call to eight, as by day; and while every reader at the house is asleep, much faster. */
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
-        long to=h.step==SETTLED?(h.visit>=2&&!h.welcomed?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
+        long to=h.step==SETTLED?(h.visit>=2&&!h.welcomed?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
             :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
         int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;

@@ -173,6 +173,8 @@ public final class PellMorning {
             case 0->{
                 // 0.4.533: a week in, at first light June goes down to the pool and swims her lengths, and is back in her room before
                 // she gets up for the day (PellSwim); then a while to dress.
+                // 0.4.534: before that, at one, the knife (PellKnife); while it has the house, the night waits for it.
+                if(PellKnife.tick(l,b,h,june,here,now))return;
                 if(h.visit>=2&&!h.swum){if(h.time>=DAWN)PellSwim.tick(l,b,h,june,here,now);return;}
                 if(h.visit>=2&&!h.hurried&&now-h.swumAt<PellSwim.DRESS)return;
                 // June asleep in her room until six; then her door opened, and out into the hall, dressed for the day.
@@ -201,7 +203,8 @@ public final class PellMorning {
             case 1->{unlock(l,b,PellSite.BACK_DOOR);PellVisit.go(h,J,-1,180,TO_SLIDER);h.waypoint=2;}
             case 2->{unlock(l,b,PellSite.SLIDER);PellVisit.go(h,J,-1,0,TO_FRONT);h.waypoint=3;}
             case 3->{unlock(l,b,PellSite.FRONT_DOOR);PellVisit.go(h,J,-1,PellVisit.TABLE_END.look(),TO_TABLE);h.waypoint=4;}
-            default->{lay(l,b,h,here);PellVisit.go(h,J,-1,PellVisit.KITCHEN.look(),v(PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z()));next(h,LAID);}
+            // 0.4.534: the tea towel picked up off the kitchen floor, and the light over the sink off, if they were left.
+            default->{PellKnife.tidy(l,b);lay(l,b,h,here);PellVisit.go(h,J,-1,PellVisit.KITCHEN.look(),v(PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z()));next(h,LAID);}
         }
     }
     /** An outside door's lock turned back from inside, if June locked it. */
@@ -260,8 +263,11 @@ public final class PellMorning {
         if(t>=0&&h.tillySat>0&&h.plate[t]==PellVisit.BREAKFAST&&now-h.tillySat>=TILLY_EATS)PellVisit.plate(l,b,h,t,PellVisit.SCRAPED);
         // What Tilly heard in the night, and what June says to it. 0.4.533: a week in, June asks Tilly where she put her goggles, by
         // the name of the girl they were bought for, and Tilly says she has none.
-        if(h.tillySat>0&&h.morningSaid<4&&(PellVisit.come(l,b,here)||now-h.breakfastAt>=WAIT_FOR)){
+        // 0.4.534: after the knife, June has a word for the table once the goggles have been asked after.
+        int lines=h.visit>=2&&!h.found.isEmpty()?5:4;
+        if(h.tillySat>0&&h.morningSaid<lines&&(PellVisit.come(l,b,here)||now-h.breakfastAt>=WAIT_FOR)){
             if(!PellVisit.ready(h,now,june)||!PellVisit.ready(h,now,tilly))return;
+            if(h.morningSaid==4){PellVisit.say(h,june,J,PellTexts.JUNE_KNIVES,now);PellVisit.present(june,"HeardKnivesStay",here);h.morningSaid++;return;}
             boolean week=h.visit>=2,tillys=week?h.morningSaid%2==1:h.morningSaid%2==0;
             String line=week?switch(h.morningSaid){case 0->PellTexts.JUNE_GOGGLES;case 1->PellTexts.TILLY_NO_GOGGLES;case 2->PellTexts.JUNE_ALL_OVER;default->PellTexts.TILLY_ALL_RIGHT;}
                 :switch(h.morningSaid){case 0->PellTexts.TILLY_SINGING;case 1->PellTexts.JUNE_WAS_THERE;case 2->PellTexts.TILLY_IN_THE_WALL;default->PellTexts.JUNE_PIPES;};
@@ -271,7 +277,7 @@ public final class PellMorning {
         }
         boolean done=t<0||h.plate[t]!=PellVisit.BREAKFAST;
         for(int i=0;i<PellVisit.TABLE.length;i++)if(h.diner[i]==PellVisit.GUEST&&h.plate[i]==PellVisit.BREAKFAST)done=false;
-        if(!(done&&h.morningSaid>=4||now-h.breakfastAt>=LONGEST)||!h.way[J].isEmpty()||!PellVisit.ready(h,now,june))return;
+        if(!(done&&h.morningSaid>=lines||now-h.breakfastAt>=LONGEST)||!h.way[J].isEmpty()||!PellVisit.ready(h,now,june))return;
         PellVisit.say(h,june,J,PellTexts.JUNE_CLEARS,now);
         PellVisit.up(l,b,h,T,PellVisit.TILLY_ROOM.look(),PellVisit.TILLY_BACK);
         if(!h.callumOut)PellVisit.up(l,b,h,C,PellPeople.FIRST_VISIT[C].look(),PellVisit.CALLUM_BACK);
@@ -303,7 +309,7 @@ public final class PellMorning {
         int place=h.step==CALLED?placeOf(h,C):-1;
         Vec3 to=place>=0?Vec3.atBottomCenterOf(b.offset(PellVisit.TABLE[place].chair())):h.step>=CALLED?PellPeople.world(b,PellPeople.FIRST_VISIT[C])
             :PellVisit.world(b,PellVisit.CALLUM_SLEEPS);
-        if(LiteraryVignettes.watched(l,c.getEyePosition())||LiteraryVignettes.watched(l,to.add(0,.8,0)))return;
+        if(PellNight.seen(l,c.getEyePosition())||PellNight.seen(l,to.add(0,.8,0)))return;
         h.callumOut=false;h.copied=0;h.copyOf=null;c.setXRot(0);c.gesture(0);
         if(place>=0){PellVisit.sit(l,b,h,C,c,place);return;}
         if(h.step>=CALLED){PellVisit.stand(l,b,h,C,PellPeople.FIRST_VISIT[C]);return;}

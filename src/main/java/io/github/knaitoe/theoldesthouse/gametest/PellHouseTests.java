@@ -1239,7 +1239,8 @@ public final class PellHouseTests {
         var chair=PellSwim.CHAIR;
         h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
         .thenExecute(()->{
-            PellMorning.smallHours(l,b);
+            // 0.4.534: a night on which nobody came to the kitchen at one.
+            PellMorning.smallHours(l,b);PellKnife.skip(b);
             // One reader on the patio by the pool's gate, clear of June's way to it; the other in the garage.
             f.at(p,P,-6.5,0,-74.5);face(p,180,15);f.at(q,P,14.5,0,-89.5);
             PellVisit.hurry(b,PellMorning.DAWN-10);
@@ -1350,4 +1351,233 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_week_call") public static void weekCallDone(ServerLevel l){done();}
+
+    /** Whether the cut to black came to this reader since their packets were last read (reading them empties them). */
+    private static boolean cutToBlack(ServerPlayer p){
+        boolean cut=false;
+        for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.PellCutPayload)cut=true;
+        return cut;
+    }
+    /** The way one of them would face to look at a reader. */
+    private static float yawTo(LiteraryActor a,ServerPlayer p){var d=p.position().subtract(a.position());return (float)(Math.atan2(-d.x,d.z)*180/Math.PI);}
+
+    /**
+     * 0.4.534, the knife (docs/PELL_HOUSE_KNIFE_0_4_534.md), a week in, with two readers: one asleep on the camp bed, one awake out by
+     * the drive. Just before one. While the reader by the drive looks at Callum on the line, nothing happens; the first moment they look
+     * down, he is at the kitchen sink with the knife from his drawer, the light over the sink on and the sliding door open and
+     * unlocked, and the reader asleep wakes and is told a light is on in the kitchen. The hour holds. The woken reader comes into the
+     * kitchen and sees him with the knife at the sink; the other goes round to the patio and watches through the kitchen's window. He
+     * looks round at the reader in the kitchen. A hand on him takes his wrist; another, and he pulls against them. Then his fist comes,
+     * and it goes black for the reader in the kitchen and for the one at the window. Only the one in the kitchen is who June found
+     * there: they keep that they were in the black and go on Gail's file; the one at the window keeps that they saw it go black. In the
+     * black Callum is back on his mattress with nothing in his hand, a tea towel lies on the kitchen floor, and June is in the kitchen's
+     * arch with her door open behind her. She sends the reader back to bed; a hand on her, and it is bed, love. The light goes off; at
+     * the sliding door she asks the reader out of the house, locks it behind them and goes back to her room; and the night goes on with
+     * Callum asleep and the knife gone from his drawer.
+     */
+    @GameTest(template="empty",batch="pell_knife",timeoutTicks=9000)
+    public static void atOneCallumIsAtTheSinkWithTheKnifeAndJuneFindsTheReaderWhoTookHold(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_knife_kitchen",P);var q=f.player("pell_knife_window",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var bed=b.offset(CAMP_BED_AT);long[] mark={0};
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellKnife.beforeOne(l,b);
+            // One reader asleep on the camp bed; the other out by the drive, looking at Callum on the line.
+            f.at(p,P,14.5,0,-89.5);hand(p,bed);
+            h.assertTrue(p.isSleeping(),"one reader asleep in the garage");
+            f.at(q,P,14.5,0,-82.5);lookAt(q,who(h,l,b,PellPeople.CALLUM).getEyePosition());
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)>=PellKnife.ONE,"past one: "+PellVisit.hour(b));
+            h.assertTrue(PellKnife.stage(b)==PellKnife.NOT_YET&&PellNight.callumOut(b),"while he is watched, Callum stays on the line");
+            told(p);face(q,0,90);
+        }).thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.AT_SINK,"the first moment nobody sees, he is at the sink"))
+        .thenIdle(1).thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(at(c,b,PellKnife.SINK.x(),PellKnife.SINK.z(),.3)&&c.getMainHandItem().is(PellRegistry.KNIFE.get()),"at the sink with a knife in his hand: "+c.position());
+            h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,2),"the space in his drawer where it lay");
+            h.assertTrue(PellKnife.lit(l,b),"the light over the sink on");
+            h.assertTrue(PellSite.open(l,b,PellSite.SLIDER)&&!PellVisit.locked(b,PellSite.SLIDER),"the sliding door standing open");
+            h.assertFalse(p.isSleeping(),"the reader asleep wakes");
+            h.assertTrue(told(p).contains(PellTexts.KNIFE_WOKEN)&&f.own(p,P).getBoolean("WokenByTheKitchen"),"told a light is on in the kitchen, and keeps that it woke them");
+            h.assertFalse(f.own(q,P).getBoolean("WokenByTheKitchen"),"the reader awake was not woken");
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)==mark[0],"the hour holds while he is there: "+mark[0]+" to "+PellVisit.hour(b));
+            // The woken reader into the kitchen, clear of him; the other round to the patio, looking in at the window.
+            f.at(p,P,-7.5,0,-67.5);f.at(q,P,-9.5,0,-74.5);lookAt(q,who(h,l,b,PellPeople.CALLUM).getEyePosition());
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("SawKnifeAtSink"),"in the kitchen, the reader sees him"))
+        .thenIdle(1).thenExecute(()->h.assertTrue(told(p).contains(PellTexts.KNIFE_SEEN),"at the sink with his back to the room, a knife in his hand"))
+        .thenWaitUntil(()->h.assertTrue(f.own(q,P).getBoolean("SawKnife"),"seen through the window from the patio"))
+        .thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(c.getYRot()-yawTo(c,p)))<5,"he looks round at the reader in the kitchen: "+c.getYRot());
+            h.assertFalse(f.own(q,P).getBoolean("SawKnifeAtSink"),"the one at the window is not in the kitchen");
+            told(p);LiteraryVignettes.talk(p,c);
+        }).thenIdle(1).thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(told(p).contains(PellTexts.KNIFE_HOLD),"a hand on him takes his wrist");
+            h.assertTrue(PellKnife.stage(b)==PellKnife.STRUGGLE&&c.gesture()==PellPeople.STRUGGLE&&f.own(p,P).getBoolean("FoughtCallum"),"they struggle for it");
+            LiteraryVignettes.talk(p,c);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.KNIFE_WRENCH),"he pulls against them");
+            told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.LUNGE&&who(h,l,b,PellPeople.CALLUM).gesture()==PellPeople.LUNGE,"his fist comes"))
+        .thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.BLACK,"the cut"))
+        .thenExecute(()->{
+            h.assertTrue(cutToBlack(p)&&cutToBlack(q),"black for the reader in the kitchen and for the one looking in");
+            h.assertTrue(PellKnife.found(b).equals(Set.of(p.getUUID())),"June found the one in the kitchen: "+PellKnife.found(b));
+            var mine=f.own(p,P);var theirs=f.own(q,P);
+            h.assertTrue(mine.getBoolean("InTheBlack")&&mine.getBoolean("MarkKnife")&&mine.getInt("GailMarks")==1,"in the black, and on Gail's file: "+mine);
+            h.assertTrue(theirs.getBoolean("SawTheBlack")&&!theirs.getBoolean("InTheBlack")&&!theirs.getBoolean("MarkKnife")&&theirs.getInt("GailMarks")==0,"the one at the window saw it go black, and nothing more: "+theirs);
+            var c=who(h,l,b,PellPeople.CALLUM);var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(PellVisit.asleep(b,PellPeople.CALLUM)&&at(c,b,PellVisit.CALLUM_SLEEPS.x,PellVisit.CALLUM_SLEEPS.z,.3)&&c.getMainHandItem().isEmpty(),"in the black, Callum is back on his mattress with nothing in his hand");
+            h.assertTrue(PellKnife.towelAt(l,b)!=null,"a tea towel on the kitchen floor");
+            h.assertTrue(at(june,b,PellKnife.ARCH.x(),PellKnife.ARCH.z(),.3)&&PellSite.open(l,b,PellSite.JUNE_DOOR),"June in the kitchen's arch, her door open behind her");
+            h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,2)&&thing(l,b,-11,0,-71,KNIFE_BLOCK,1),"the knife gone");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_BED),"June: back to bed"))
+        .thenExecute(()->h.assertTrue(f.own(p,P).getBoolean("HeardJuneAfterKnife"),"heard in the kitchen"))
+        .thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June between lines"))
+        .thenExecute(()->LiteraryVignettes.talk(p,who(h,l,b,PellPeople.JUNE)))
+        .thenIdle(1).thenExecute(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_HAND),"a hand on her: bed, love: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.LOCKING&&!PellKnife.lit(l,b),"the light off as she goes to lock up"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_OUT),"at the sliding door she asks the reader out"))
+        .thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,PellSite.SLIDER),"not shut on a reader inside");
+            f.at(p,P,-6.5,0,-74.5);
+        }).thenWaitUntil(()->h.assertTrue(!PellSite.open(l,b,PellSite.SLIDER)&&PellVisit.locked(b,PellSite.SLIDER),"once they are out, she shuts it and locks it"))
+        .thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.OVER,"and goes back to her room"))
+        .thenExecute(()->{
+            h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z(),.7)&&!PellSite.open(l,b,PellSite.JUNE_DOOR),"in her room, her door shut");
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(PellVisit.hour(b)>mark[0],"the night goes on: "+mark[0]+" to "+PellVisit.hour(b));
+            h.assertTrue(!PellNight.callumOut(b)&&PellVisit.asleep(b,PellPeople.CALLUM),"Callum asleep, not out on the line again");
+            h.assertTrue(PellKnife.towelAt(l,b)!=null&&thing(l,b,-6,0,-61,CUTLERY,2),"the towel where it lay, and no knife in his drawer");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_knife") public static void knifeDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.534, the knife when nobody comes. Two readers a week in, out in the garage: one asleep on the camp bed, one awake looking at
+     * the floor. At one Callum is at the sink with the knife, and the reader asleep wakes; neither goes in. After a minute, with nobody
+     * in the house, the knife is back in his drawer and he is out on the line again, the light off and the sliding door shut and locked
+     * as June left it, no towel on the floor; nobody was found and nobody is on Gail's file, and the night goes on.
+     */
+    @GameTest(template="empty",batch="pell_knife_quiet",timeoutTicks=6000)
+    public static void whenNobodyComesTheKnifeGoesBackAsIfItNeverWas(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_quiet_sleeper",P);var q=f.player("pell_quiet_garage",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var bed=b.offset(CAMP_BED_AT);long[] mark={0};
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellKnife.beforeOne(l,b);
+            f.at(p,P,14.5,0,-89.5);hand(p,bed);
+            h.assertTrue(p.isSleeping(),"one reader asleep in the garage");
+            f.at(q,P,13.5,0,-91.5);face(q,0,90);
+        }).thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.AT_SINK,"at one, Callum is at the sink"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertFalse(p.isSleeping(),"the reader asleep wakes");
+            h.assertTrue(told(p).contains(PellTexts.KNIFE_WOKEN),"a light on in the kitchen");
+            face(p,0,90);mark[0]=PellVisit.hour(b);
+        }).thenIdle(40).thenExecute(()->h.assertTrue(PellVisit.hour(b)==mark[0]&&PellKnife.stage(b)==PellKnife.AT_SINK,"he waits, and the hour holds"))
+        .thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.QUIET,"nobody comes, and he goes back"))
+        .thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(PellNight.callumOut(b)&&at(c,b,PellNight.CALLUM_LINE.x(),PellNight.CALLUM_LINE.z(),.3)&&c.getMainHandItem().isEmpty(),"out on the line again, nothing in his hand: "+c.position());
+            h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,1),"the knife back in his drawer");
+            h.assertFalse(PellKnife.lit(l,b),"the light off");
+            h.assertTrue(!PellSite.open(l,b,PellSite.SLIDER)&&PellVisit.locked(b,PellSite.SLIDER),"the sliding door shut and locked as June left it");
+            h.assertTrue(PellKnife.towelAt(l,b)==null&&PellKnife.found(b).isEmpty(),"no towel, and nobody found");
+            for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getInt("GailMarks")==0&&!own.getBoolean("InTheBlack")&&!own.getBoolean("SawKnife"),"nothing on anybody's file: "+own);}
+            mark[0]=PellVisit.hour(b);
+        }).thenIdle(20).thenExecute(()->h.assertTrue(PellVisit.hour(b)>mark[0],"the night goes on: "+mark[0]+" to "+PellVisit.hour(b)))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_knife_quiet") public static void knifeQuietDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.534, the morning after the knife, with two readers: the one June found in the kitchen in the night, and one who saw him at the
+     * sink with it. The night as the knife leaves it; both asleep in the garage, and it hurries to breakfast. On her way to lay it, June
+     * has picked up the towel. At breakfast, once the goggles have been asked after, June tells the table that knives stay in the block
+     * in this house, and both heard it. Gail rings; June has her version in first: there was trouble, one of them went for Callum in the
+     * kitchen with a knife, nobody's hurt, they'd had it out of the block; then Tilly a different girl, and she puts them on. The reader
+     * June found takes it, and Gail says what June has told her and asks what happened; they are offered what they could truly say
+     * (that they were getting it off him, that they do not know, that June is lying, or nothing), and say she is lying; Gail won't have
+     * it, and it goes on their file. Given back, June holds it out to the other, whom Gail asks whether it was them; offered that it
+     * wasn't, that they saw him at the sink with it, that they want to leave, or nothing, they say they saw him; Gail will put down what
+     * they saw. June back on says they are upset, that she'll keep an eye, and the week's goodbye. Each has had the second visit; the
+     * call put nobody on the file who was not already there.
+     */
+    @GameTest(template="empty",batch="pell_knife_call",timeoutTicks=12000)
+    public static void theMorningAfterTheKnifeGailHasJunesVersion(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_after_found",P);var q=f.player("pell_after_saw",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");keep(f,p,"FoughtCallum");keep(f,q,"SawKnife");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var bed=b.offset(CAMP_BED_AT);var phone=b.offset(PellCall.PHONE);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellKnife.beforeOne(l,b);PellKnife.foundThere(l,b,p);
+            h.assertTrue(PellKnife.towelAt(l,b)!=null&&thing(l,b,-6,0,-61,CUTLERY,2),"the night as the knife leaves it");
+            f.at(p,P,14.5,0,-89.5);f.at(q,P,13.5,0,-91.5);
+            hand(p,bed);hand(q,b.offset(CAMP_BED_AT.north()));
+            h.assertTrue(p.isSleeping()&&q.isSleeping(),"both asleep in the garage");
+            PellVisit.hurry(b,PellMorning.DAWN-10);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.LAID,"breakfast laid"))
+        .thenExecute(()->{
+            h.assertTrue(PellKnife.towelAt(l,b)==null&&!PellKnife.lit(l,b),"the towel picked up off the kitchen floor");
+            h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,2),"and nothing put back in his drawer");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.CALLED&&PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"breakfast: Tilly and Callum at the table"))
+        .thenExecute(()->{
+            f.at(q,P,-9.5,0,-67.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(q,b.offset(PellVisit.TABLE[3].chair())),"a reader sits");
+            f.at(p,P,-9.5,0,-69.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[2].chair())),"the other sits");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_GOGGLES),"the goggles"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_ALL_RIGHT),"Tilly: that's all right"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIVES),"June: knives stay in the block"))
+        .thenExecute(()->h.assertTrue(f.own(p,P).getBoolean("HeardKnivesStay")&&f.own(q,P).getBoolean("HeardKnivesStay"),"both heard"))
+        .thenExecute(()->{hand(p,b.offset(-12,0,-69));hand(q,b.offset(-12,0,-69));})
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.AFTER,"breakfast done"))
+        .thenExecute(()->{p.stopRiding();q.stopRiding();f.at(p,P,-9.5,0,-67.5);f.at(q,P,-8.5,0,-67.6);})
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_TROUBLE),"June to Gail: there was trouble"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_WHAT),"one of them went for Callum, with a knife"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_HURT),"nobody's hurt"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_BLOCK),"out of the block"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.OFFERED,"June holds it out"))
+        .thenExecute(()->{
+            hand(p,phone);
+            h.assertTrue(p.getUUID().equals(PellCall.caller(b)),"the reader June found takes it");
+            h.assertTrue(PellTexts.GAIL_KNIFE_ASKS.stream().allMatch(line->telling(p,"Gail",line)),"Gail has June's version, and asks: "+Talk.lines(p));
+            var r=Talk.replies(p);
+            h.assertTrue(r.contains(PellTexts.TELL_KNIFE_TOOK)&&r.contains(PellTexts.TELL_KNIFE_DONT_KNOW)&&r.contains(PellTexts.TELL_KNIFE_LYING)&&r.contains(PellTexts.TELL_NOTHING),"what they could truly say: "+r);
+            h.assertFalse(r.contains(PellTexts.TELL_KNIFE_NOT_ME)||r.contains(PellTexts.TELL_WEEK_FINE),"not that it wasn't them, and not the week's answers: "+r);
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_KNIFE_LYING),"she's lying");
+            h.assertTrue(telling(p,"Gail","I won't have that, love. Not about June.")&&telling(p,"Gail",PellTexts.GAIL_KNIFE_BYE),"Gail won't have it: "+Talk.lines(p));
+            h.assertTrue(PellTexts.KNIFE_LYING.equals(f.own(p,P).getString("ToldGailWeek")),"they keep what they said");
+            h.assertTrue(Talk.choose(p,PellTexts.HAND_BACK),"given back");
+        }).thenIdle(1).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(PellCall.caller(b)==null&&said(june).equals(PellTexts.JUNE_NEXT),"\"Your turn\", held out to the other");
+            LiteraryVignettes.talk(q,june);
+            h.assertTrue(q.getUUID().equals(PellCall.caller(b)),"the other takes it from her hand");
+            h.assertTrue(PellTexts.GAIL_KNIFE_OTHER.stream().allMatch(line->telling(q,"Gail",line)),"was it you: "+Talk.lines(q));
+            var r=Talk.replies(q);
+            h.assertTrue(r.contains(PellTexts.TELL_KNIFE_NOT_ME)&&r.contains(PellTexts.TELL_KNIFE_SAW)&&r.contains(PellTexts.TELL_LEAVE)&&r.contains(PellTexts.TELL_NOTHING),"what they could truly say: "+r);
+            h.assertFalse(r.contains(PellTexts.TELL_KNIFE_TOOK)||r.contains(PellTexts.TELL_KNIFE_LYING),"nothing that was not theirs: "+r);
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_KNIFE_SAW),"saw him at the sink with it");
+            h.assertTrue(telling(q,"Gail","On his own? With a knife?")&&telling(q,"Gail",PellTexts.GAIL_KNIFE_BYE),"Gail will put down what they saw: "+Talk.lines(q));
+            h.assertTrue(Talk.choose(q,PellTexts.HAND_BACK),"given back");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_UPSET),"June: they're upset"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_KNIFE_EYE),"she'll keep an eye"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_WEEK_BYE),"the week's goodbye"))
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"hung up"))
+        .thenExecute(()->{
+            var mine=f.own(p,P);var theirs=f.own(q,P);
+            h.assertTrue(mine.getBoolean("SecondVisit")&&theirs.getBoolean("SecondVisit"),"each has had the second visit");
+            h.assertTrue(mine.getInt("GailMarks")==1&&theirs.getInt("GailMarks")==0,"the call put nobody on the file: "+mine.getInt("GailMarks")+", "+theirs.getInt("GailMarks"));
+            h.assertTrue(PellTexts.KNIFE_SAW.equals(theirs.getString("ToldGailWeek")),"what each said stays theirs");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_knife_call") public static void knifeCallDone(ServerLevel l){done();}
 }

@@ -18,6 +18,8 @@ toast.
 0.4.533 (docs/PELL_HOUSE_WEEK_0_4_533.md): the pool's lane rope, a week in: a block's length of it at a time, two floats on the rope,
 and where one float is missing the bare rope.
 
+0.4.534 (docs/PELL_HOUSE_KNIFE_0_4_534.md): the kitchen knife in Callum's hand at the sink in the night, held as the brushes are.
+
 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md), the owner: "add a little more detail to textures". Still sixteen pixels to the block;
 each thing drawn again with light from the upper left, an outline in a darker shade of its own colour where it stands against
 nothing, four or five tones where there were two, and what it is made of showing: the brush's cushion and bristles, the pan's
@@ -38,14 +40,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
-         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap')
+         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
          'item.the_oldest_house.pell_hairbrush': 'Hairbrush', 'item.the_oldest_house.pell_lantern': 'Lantern',
          'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush',
          'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver',
-         'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope'}
+         'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope',
+         'item.the_oldest_house.pell_knife': 'Kitchen Knife'}
 
 
 def blank():
@@ -382,6 +385,53 @@ def paintbrush():
     return im
 
 
+KNIFE_TIP, KNIFE_END = (14.6, 1.4), (1.6, 14.4)
+
+
+def knife():
+    """0.4.534: the kitchen knife from the block, held as the brushes are: the point at the top right; the blade, broad from the bolster
+    and curving up to the point along its edge, steel lit along its back where the light from the upper left falls and a bright line
+    where the edge has been sharpened; the bolster, a band of brighter steel; and the black handle down to the bottom left, rounded,
+    lit along one side, two rivets in it."""
+    im = blank()
+    ax, ay = KNIFE_END[0] - KNIFE_TIP[0], KNIFE_END[1] - KNIFE_TIP[1]
+    length = math.hypot(ax, ay)
+    for y in range(16):
+        for x in range(16):
+            px, py = x + .5 - KNIFE_TIP[0], y + .5 - KNIFE_TIP[1]
+            t = (px * ax + py * ay) / length / length
+            side = (px * ay - py * ax) / length
+            if t < 0 or t > 1:
+                continue
+            if t < .56:
+                # The spine is straight (side < 0); the edge (side > 0) curves out from the point.
+                back, edge = .55, min(1.55, .25 + t * 4.2)
+                if side < -back or side > edge:
+                    continue
+                if side < -back + .5:
+                    tone = '#f4f8fa'
+                elif side > edge - .55:
+                    tone = '#e2eaee'
+                elif side < (edge - back) * .35:
+                    tone = '#b8c2c8'
+                else:
+                    tone = '#8e989e'
+                dot(im, x, y, tone)
+            elif t < .62:
+                if abs(side) > 1.45:
+                    continue
+                dot(im, x, y, '#d6dde0' if side < -.2 else '#a2abb0' if side < .6 else '#6e767a')
+            else:
+                half = 1.0 + (.2 if t > .9 else 0)
+                if abs(side) > half:
+                    continue
+                dot(im, x, y, '#4c4642' if side < -.3 else '#2a2624' if side < .4 else '#171413')
+    # The two rivets in the handle.
+    for t in (.72, .88):
+        dot(im, int(KNIFE_TIP[0] + ax * t), int(KNIFE_TIP[1] + ay * t), '#c8cfd3')
+    return im
+
+
 def lane():
     """0.4.533: the pool's lane rope, one sheet for its parts. A pale float (columns 0-4, rows 0-3: its length, lit along its top,
     shaded along its underside, ringed twice where it was moulded) and its end (6-9, rows 0-3, the corners rounded off); the same
@@ -545,14 +595,15 @@ def models():
             'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
             'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
-            'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True)}
+            'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
+            'pell_knife': flat('pell_knife', 'minecraft:item/handheld')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
-              'pell_lane': lane()}
+              'pell_lane': lane(), 'pell_knife': knife()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
     # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.
