@@ -40,7 +40,7 @@ public final class MarshSupperTests {
     private static boolean holds(ServerPlayer p,net.minecraft.world.item.Item item){for(var st:p.getInventory().items)if(st.is(item))return true;return false;}
     /** A right-click on a block from where the reader stands. */
     private static void use(ServerPlayer p,BlockPos at){NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.UP,at,false)));}
-    private static void sit(LiteraryTests.Fixture f,ServerPlayer p,BlockPos seat){var b=f.base(P);var side=seat.getX()<MarshSupperSite.TABLE_W?-1.5:1.5;f.at(p,P,seat.getX()+.5+side,1,seat.getZ()+.5);HouseSitting.sit(p,b.offset(seat));}
+    private static void sit(LiteraryTests.Fixture f,ServerPlayer p,BlockPos seat){var b=LiteraryVignettes.base(p,P);var side=seat.getX()<MarshSupperSite.TABLE_W?-1.5:1.5;f.at(p,P,seat.getX()+.5+side,1,seat.getZ()+.5);HouseSitting.sit(p,b.offset(seat));}
     private static void lookUp(ServerPlayer p){p.setXRot(-90);p.setYHeadRot(p.getYRot());}
     private static boolean mazeSolves(){
         var seen=new HashSet<Long>();var queue=new ArrayDeque<int[]>();queue.add(new int[]{0,9});seen.add(0L*100+9);
@@ -113,6 +113,65 @@ public final class MarshSupperTests {
             .thenExecute(()->{if(active!=null){active.close();active=null;}MarshSupper.clearAll();})
             .thenSucceed();
     }
+
+    /**
+     * 0.4.555 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): five readers at the farm,
+     * one to each chair laid for a guest, are full to a sixth and never to one of the five. The sixth's door waits while a second farm is
+     * made ready, a million blocks west, with a household and a guest of its own and a supper on its own clock. Her keys carried out of
+     * the second farm go back by its own butcher's block, not the first's. The yard's other stories and the arcade have their numbers too.
+     */
+    @GameTest(template="empty",batch="marsh_supper_copy",timeoutTicks=24000)
+    public static void aSixthGuestIsGivenAFarmOfTheirOwn(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);var server=l.getServer();
+        var five=new ServerPlayer[MarshSupper.PLACES];final ServerPlayer[] late={null};final BlockPos[] theirs={null};
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the farm is resident"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==MarshSupper.PLACES&&MarshSupper.PLACES==MarshSupperSite.READER_SEATS.size(),"a farm has copies, one place to each chair laid for a guest");
+                h.assertTrue(SceneInstances.party(LabyrinthPlace.TALL_GRASS)==TallGrass.PLACES&&TallGrass.PLACES==6&&SceneInstances.party(LabyrinthPlace.GROWING_THINGS)==GrowingThings.PLACES&&GrowingThings.PLACES==4
+                    &&SceneInstances.party(LabyrinthPlace.POLYBIUS)==Polybius.PLACES&&Polybius.PLACES==PolybiusBrawl.SEATS,"the road six, the Barretts' four, the arcade Block Party's four seats");
+                for(int i=0;i<five.length;i++)five[i]=f.player("supper_copy"+i,P);
+                late[0]=NativeTestPlayers.survival(h,"supper_copy_late");f.players.add(late[0]);
+                late[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);late[0].setNoGravity(true);late[0].setDeltaMovement(Vec3.ZERO);
+                h.assertTrue(SceneInstances.held(server,P,0,late[0].getUUID())==5&&SceneInstances.held(server,P,0,five[0].getUUID())==4,"the farm is full to a sixth, never to one of the five");
+                var e=SceneInstances.enter(late[0],P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the sixth's door waits while a farm of their own is made ready: "+e);
+                var mine=SceneInstances.enter(five[1],P);
+                h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the five goes back to theirs: "+mine);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second farm to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,P,1);
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(late[0],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry"))&&SceneInstances.kept(f.data(),late[0].getUUID(),P)==1,"the sixth goes in by its own door: "+e);
+                var by=theirs[0].subtract(b);f.chunks.hold(l,box(f).move(by.getX(),by.getY(),by.getZ()));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second farm is resident"))
+            .thenExecute(()->{var p=late[0];p.teleportTo(l,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,P);})
+            .thenWaitUntil(()->h.assertTrue(MarshSupper.actor(l,theirs[0],MarshSupper.IDA)!=null&&MarshSupper.actor(l,theirs[0],MarshSupper.CORINNE)!=null,"a household and a guest of its own at the second farm's table"))
+            .thenExecute(()->{
+                var first=MarshSupper.actor(l,b,MarshSupper.IDA);var second=MarshSupper.actor(l,theirs[0],MarshSupper.IDA);
+                h.assertTrue(first!=null&&!first.getUUID().equals(second.getUUID())&&LiteraryVignettes.base(late[0],P).equals(theirs[0]),"each farm has its own Ida, and the sixth stands at theirs");
+                sit(f,late[0],MarshSupperSite.READER_SEATS.get(0));
+            })
+            .thenWaitUntil(()->h.assertTrue(MarshSupper.stage(theirs[0])==MarshSupper.SOUP&&MarshSupper.stage(b)==MarshSupper.ARRIVE,"the second farm's supper begins with the sixth at its table, and the first's waits for its own guests: "+MarshSupper.stage(theirs[0])+" / "+MarshSupper.stage(b)))
+            .thenExecute(()->{
+                MarshSupper.advance(l,theirs[0],MarshSupper.CHAIR_GONE);
+                h.assertTrue(MarshBlock.is(l.getBlockState(theirs[0].offset(MarshSupperSite.KEYS)),MarshBlock.Kind.KEYS)&&l.getBlockState(b.offset(MarshSupperSite.KEYS)).isAir(),"her keys by the second farm's butcher's block only");
+                f.at(late[0],P,4.5,1,-66.5);use(late[0],theirs[0].offset(MarshSupperSite.KEYS));
+                h.assertTrue(f.own(late[0],P).getBoolean("TookKeys")&&holds(late[0],MarshRegistry.KEYS.get())&&l.getBlockState(theirs[0].offset(MarshSupperSite.KEYS)).isAir(),"the sixth takes them from the side");
+                // Out of the farm with them, into the House.
+                late[0].stopRiding();late[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);late[0].setDeltaMovement(Vec3.ZERO);
+            })
+            .thenWaitUntil(()->h.assertTrue(!holds(late[0],MarshRegistry.KEYS.get())&&MarshBlock.is(l.getBlockState(theirs[0].offset(MarshSupperSite.KEYS)),MarshBlock.Kind.KEYS),"the keys never leave the farm: they are back by the second farm's butcher's block"))
+            .thenExecute(()->{
+                h.assertTrue(l.getBlockState(b.offset(MarshSupperSite.KEYS)).isAir(),"and none have appeared in the first farm's kitchen");
+                MarshSupper.resetNow(l,theirs[0]);
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="marsh_supper_copy") public static void copyDone(net.minecraft.server.level.ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
 
     @AfterBatch(batch="marsh_supper") public static void done(net.minecraft.server.level.ServerLevel l){close();}
     @AfterBatch(batch="marsh_supper_together") public static void togetherDone(net.minecraft.server.level.ServerLevel l){close();}

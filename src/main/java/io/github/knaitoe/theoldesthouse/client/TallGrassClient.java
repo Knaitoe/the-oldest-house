@@ -36,7 +36,8 @@ public final class TallGrassClient {
     }
     @SubscribeEvent public static void render(RenderLevelStageEvent e){
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS||!onRoad())return;
-        var mc=Minecraft.getInstance();var base=LabyrinthPlaces.base(HouseSightlineState.origin(),TallGrass.PLACE);if(base==null)return;
+        // 0.4.555: the road the reader stands on, whichever copy it is.
+        var mc=Minecraft.getInstance();var base=LabyrinthPlaces.base(SceneInstances.originAt(HouseSightlineState.origin(),mc.player.blockPosition()),TallGrass.PLACE);if(base==null)return;
         var camera=e.getCamera().getPosition();var pose=e.getPoseStack();var buffers=mc.renderBuffers().bufferSource();
         int light=LevelRenderer.getLightColor(mc.level,BlockPos.containing(camera));
         double z=camera.z-AWAY;double first=Math.floor((camera.x-base.getX())/APART)*APART+base.getX();
