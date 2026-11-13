@@ -190,11 +190,18 @@ public final class Hillary {
             if (wolf.isTame()) wolf.setOwnerUUID(tag.recipient());
         }
 
-        if (VignetteYields.of(stack) != null && (recipient || wolf.isOwnedBy(player))) {
+        // 0.4.559: the thing's own scent, a story's or another reader's, decides where she leads inside the House (Scents); outside it
+        // she still sets off to find any story, as before.
+        if (io.github.knaitoe.theoldesthouse.labyrinth.Scents.of(stack, player.getUUID(), player.getServer()) != null && (recipient || wolf.isOwnedBy(player))) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
             if (event.getHand() == InteractionHand.MAIN_HAND && wolf.level() instanceof ServerLevel level) {
-                takeScent(wolf, level, player.getUUID());
+                if (player instanceof ServerPlayer holder && level.dimension().equals(HouseDimensions.INTERIOR)
+                        && HouseSavedData.get(level.getServer()).houseOrigin() != null) {
+                    wolf.getPersistentData().remove("HillaryFindExit");
+                    SEEKING.remove(wolf.getUUID());
+                    io.github.knaitoe.theoldesthouse.labyrinth.Scents.hold(wolf, holder, stack);
+                } else takeScent(wolf, level, player.getUUID());
             }
             return;
         }

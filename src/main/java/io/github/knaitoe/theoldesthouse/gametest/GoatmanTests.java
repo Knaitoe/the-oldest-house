@@ -679,6 +679,25 @@ public final class GoatmanTests {
             var spot=GoatmanVignette.spotOf(own.getInt(GoatmanVignette.PLAYS),r);var rel=friend.position().subtract(theirs[0].getX(),theirs[0].getY(),theirs[0].getZ());
             h.assertTrue(GoatmanVignette.copy(friend)==1&&spot!=null&&GoatmanWoods.clearing(rel)&&rel.distanceTo(spot)<2.5,"at the second trailer's camp, where that cousin would be: "+rel+" for "+spot);
             h.assertTrue(f.run().getCompound("Cohort").getAllKeys().size()==16&&!f.run().getCompound("Cohort").contains(friend.getStringUUID()),"and the first trailer's evening is untouched");
+        })
+        .thenExecute(()->{
+            // 0.4.559: with a place free again at the first trailer, a reader whose companion has the seventeenth's scent goes through
+            // into the second trailer, the seventeenth's, while a reader with no scent goes into the first (Scents).
+            var r=f.run();var cohort=r.getCompound("Cohort");
+            for(var key:Set.copyOf(cohort.getAllKeys()))if(!key.equals(first.getStringUUID())){cohort.remove(key);break;}
+            r.put("Cohort",cohort);f.run(r);var d=LabyrinthData.get(server);
+            h.assertTrue(SceneInstances.held(server,goat,0,UUID.randomUUID())==15,"a place is free at the first trailer: "+SceneInstances.held(server,goat,0,UUID.randomUUID()));
+            var tracker=f.player();tracker.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+80);
+            var plain=f.player();plain.moveTo(f.b.getX()+2.5,f.b.getY(),f.b.getZ()+80);
+            h.assertTrue(SceneInstances.at(server,goat,tracker.level().dimension(),tracker.position())<0&&SceneInstances.at(server,goat,plain.level().dimension(),plain.position())<0,"the two wait outside every trailer");
+            h.assertTrue(Scents.giveReader(server,d,tracker.getUUID(),late.getUUID(),late.getGameProfile().getName(),null)==Scents.Taken.READER_THERE,"the companion has the seventeenth's scent while they are in the trailer's story");
+            h.assertTrue(Scents.place(d,tracker.getUUID())==goat&&d.hillaryScent(tracker.getUUID())&&Scents.copyToward(server,d,tracker.getUUID(),goat)==1,"it leads to the trailers, toward the second of them");
+            var e=SceneInstances.enter(tracker,goat);
+            h.assertTrue(e.door()!=null&&e.copy()==1,"the reader with the scent goes into the second trailer, the seventeenth's: "+e);
+            Scents.arrived(d,tracker.getUUID(),goat);
+            h.assertTrue(Scents.place(d,tracker.getUUID())==null&&Scents.reader(d,tracker.getUUID())==null,"the scent is spent once they are through");
+            var other=SceneInstances.enter(plain,goat);
+            h.assertTrue(other.door()!=null&&other.copy()==0,"a reader with no scent goes into the first, where a place is free: "+other);
         }).thenSucceed();
     }
     @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}

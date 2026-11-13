@@ -293,7 +293,10 @@ public final class SceneInstances {
      */
     private static Entry crowd(ServerPlayer p,LabyrinthData d,UUID me,LabyrinthPlace place,int most){
         var s=p.server;int mine=kept(d,me,place);
-        int chosen=mine>=0&&built(d,place,mine)&&fits(s,place,mine,me,most)?mine:-1;
+        // 0.4.559: a companion with another reader's scent leads into the copy that reader is in, when it has room, unless this reader
+        // has a place kept in their own copy's story (Scents).
+        int toward=Scents.copyToward(s,d,me,place);boolean placed=mine>=0&&roll(s,place,mine).contains(me);
+        int chosen=!placed&&toward>=0&&built(d,place,toward)&&fits(s,place,toward,me,most)?toward:mine>=0&&built(d,place,mine)&&fits(s,place,mine,me,most)?mine:-1;
         for(int k=0;chosen<0&&k<=copies(d,place);k++)if(built(d,place,k)&&fits(s,place,k,me,most))chosen=k;
         if(chosen<0)return new Entry(null,-1,making(d,place)||allocate(d,place));
         if(chosen!=mine)keep(d,me,place,chosen);
@@ -303,6 +306,13 @@ public final class SceneInstances {
             if(!room)allocate(d,place);
         }
         return new Entry(entry(d,place,chosen),chosen,false);
+    }
+    /** 0.4.559: the copies in the order a reader tries them: the one their companion's scent leads toward first (Scents), then the rest. */
+    private static int[] order(MinecraftServer s,LabyrinthData d,UUID me,LabyrinthPlace place){
+        int n=copies(d,place),toward=Scents.copyToward(s,d,me,place);int[] out=new int[n+1];int i=0;
+        if(toward>=0&&toward<=n)out[i++]=toward;
+        for(int k=0;k<=n;k++)if(k!=toward)out[i++]=k;
+        return out;
     }
     /** How many living readers other than {@code reader} are in copy {@code k}. Spectators are nobody. */
     private static int others(MinecraftServer s,LabyrinthPlace p,int k,UUID reader){
@@ -372,7 +382,7 @@ public final class SceneInstances {
             unpair(d,me);LakeHousePairs.released(p,diver);return null;
         }
         if(diver!=null||kept(d,me,place)>=0)return null;
-        for(int k=0;k<=copies(d,place);k++){
+        for(int k:order(s,d,me,place)){
             if(!built(d,place,k))continue;var alone=lone(s,d,place,k,me);if(alone==null)continue;
             pair(d,me,alone.getUUID());keep(d,me,place,k);LakeHousePairs.paired(p,alone);ahead(s,d,place,k);
             return new Entry(entry(d,place,k),k,false);
@@ -432,7 +442,7 @@ public final class SceneInstances {
             if(held(s,d,place,k,me))return new Entry(null,k,false);
             ahead(s,d,place,k);return new Entry(entry(d,place,k),k,false);
         }
-        for(int k=0;k<=copies(d,place);k++){
+        for(int k:order(s,d,me,place)){
             if(!built(d,place,k))continue;var alone=alone(s,d,place,k,me);if(alone==null)continue;
             siblings(d,me,alone.getUUID());keep(d,me,place,k);ahead(s,d,place,k);
             return new Entry(entry(d,place,k),k,false);

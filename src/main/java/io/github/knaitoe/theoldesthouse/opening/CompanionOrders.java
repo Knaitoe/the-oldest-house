@@ -60,6 +60,12 @@ public final class CompanionOrders {
                 ||event.getHand()!=InteractionHand.MAIN_HAND) return;
         if(!(event.getEntity() instanceof ServerPlayer player)||!canCommand(player,pet)) return;
         boolean compass=event.getItemStack().is(net.minecraft.world.item.Items.COMPASS);
+        // 0.4.559: something held out that smells of a story or of another reader is a scent to follow (Scents). Hillary takes hers in
+        // her own handler.
+        if(!compass&&Hillary.tagOf(pet)==null&&io.github.knaitoe.theoldesthouse.labyrinth.Scents.of(event.getItemStack(),player.getUUID(),player.server)!=null){
+            event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
+            io.github.knaitoe.theoldesthouse.labyrinth.Scents.hold(pet,player,event.getItemStack());return;
+        }
         if(!compass&&!event.getItemStack().isEmpty())return;
         event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
         if(Hillary.introductionActive(pet)&&!Hillary.introductionConfirmed(pet)&&!compass) {
