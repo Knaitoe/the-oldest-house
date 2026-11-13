@@ -422,6 +422,22 @@ public final class LiteraryRenderers {
                         leftArm.xRot=-.5F;leftArm.yRot=.22F;leftArm.zRot=0;rightArm.xRot=-.5F;rightArm.yRot=-.22F;rightArm.zRot=0;
                     }
                 }
+                // 0.4.539, midnight in the pool: June behind Tilly in the water, both arms forward and down to the girl's shoulders and
+                // her head bowed over her; pressing her under, the arms straighter and further down, her head down into it; and standing
+                // in the water with her arms down, held a little out from her sides.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.HOLD->{
+                    rightArm.xRot=leftArm.xRot=-1.05F+net.minecraft.util.Mth.sin(age*.05F)*.03F;rightArm.yRot=.18F;leftArm.yRot=-.18F;rightArm.zRot=leftArm.zRot=0;
+                    head.xRot+=.35F;
+                }
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.PRESS->{rightArm.xRot=leftArm.xRot=-.62F;rightArm.yRot=.14F;leftArm.yRot=-.14F;rightArm.zRot=leftArm.zRot=0;head.xRot+=.55F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.WADE->{
+                    float sway=net.minecraft.util.Mth.sin(age*.06F)*.06F;
+                    rightArm.xRot=-.1F+sway;leftArm.xRot=-.1F-sway;rightArm.yRot=leftArm.yRot=0;rightArm.zRot=.28F;leftArm.zRot=-.28F;
+                }
+                // 0.4.539: June leading Tilly by the hand, a step ahead of her, her left hand back and down to the girl's (her right
+                // swings as she walks); and Tilly with her right hand up and out ahead of her in the hand she holds.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LEADS,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LEADS_SWIM->{leftArm.xRot=.5F;leftArm.yRot=0;leftArm.zRot=-.12F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LED->{rightArm.xRot=-.85F+net.minecraft.util.Mth.sin(age*.09F)*.04F;rightArm.yRot=-.1F;rightArm.zRot=0;}
                 default->{}
             }
             hat.copyFrom(head);

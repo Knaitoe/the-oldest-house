@@ -177,6 +177,8 @@ public final class PellVisit {
         PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);PellHand.restart(l,b,h);PellTapes.restart(l,b,h);
         // 0.4.538: the bucket back in the laundry, and the last night undone.
         PellScrub.restart(l,b,h);PellLastNight.restart(l,b,h);
+        // 0.4.539: and midnight in the pool undone.
+        PellRite.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);

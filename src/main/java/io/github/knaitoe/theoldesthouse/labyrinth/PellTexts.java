@@ -527,6 +527,54 @@ public final class PellTexts {
         "He does not look up from it.",
         "He eats all of it, slowly.",
     };
+    // ------------------------------------------------------------------------------------------------ 0.4.539, midnight in the pool (PellRite)
+    /** June at Nessa's bed at midnight, Tilly woken, and June taking her hand. */
+    public static final String JUNE_RITE_WAKE="Nessa. Up you get, love. Come with Mum.",
+        TILLY_RITE_NAME="I'm Tilly.",
+        JUNE_RITE_HAND="Course you are. Give me your hand.",
+        // Held out long enough, Tilly answers to it; and June.
+        TILLY_ANSWERS="Yes, Mum.",
+        JUNE_ANSWERED="There's my girl. There she is.",
+        // June wading to her where she was let go in the water, and taking her back.
+        JUNE_TAKES_BACK="There you are. Come here.",
+        // A hand on Tilly: June has her; out of reach in the water; taking her hand, and taking it again; holding it already; somebody
+        // else's; and what she says when a hand first finds hers.
+        TILLY_WITH_JUNE="June has her by the hand, and does not let go.",
+        TILLY_OUT_OF_REACH="She is out in the water, out of reach.",
+        TILLY_TAKES="You take Tilly's hand under the water. She holds on.",
+        TILLY_TAKES_LAND="You take Tilly's hand. She holds on.",
+        TILLY_TAKES_AGAIN="You take her hand again. She holds on.",
+        TILLY_HAS_YOUR_HAND="She has hold of your hand.",
+        TILLY_HAS_A_HAND="She is holding somebody else's hand.",
+        TILLY_WHO="Is that you?",
+        // Led: the paint under her foot; the hand gone too far off; out through the gap.
+        TILLY_AT_LINE="Tilly stops short. Her bare foot has found the paint, and she will not step on it.",
+        TILLY_LET_GO="Her hand slips out of yours. She stands where she is.",
+        TILLY_OUT="Tilly steps through the gap with you. She is outside the line.",
+        // Told across the yard once she is out.
+        JUNE_STOPPED="In the pool, June has stopped calling.",
+        // A hand on June: in the water holding her; calling after her; stopped; by the bed after.
+        JUNE_RITE_HOLDING="June does not look round. Her hands are on Tilly's shoulders.",
+        JUNE_RITE_CALLING="June does not look round. She goes on calling the name.",
+        JUNE_RITE_STOPPED="June stands in the water with her arms down. She does not look at you.",
+        JUNE_KEPT="Shh. She's sleeping.",
+        // Woken on the camp bed.
+        WOKEN_BY_POOL="Out the back, water splashes, and June is saying a name over and over.";
+    /** To a hand on June on her way down with Tilly, or back. */
+    public static final String[] JUNE_RITE_BUSY={"Not now, love.","Back to bed with you.","This isn't for you, love."},
+        // In the water calling her, again and again; letting her up into the air; calling after her once a hand has taken hers.
+        RITE_CALLS={"Nessa.","Nessa, love. It's Mum.","Say yes for Mum, Nessa.","You're all right, Nessa. Say it.","Nessa. Answer me, love.","That's my Nessa. Say yes."},
+        JUNE_AFTER_UNDER={"Nessa?","There. Nessa?","Nessa? Say it, love."},
+        JUNE_CALLS_AFTER={"Nessa.","Nessa, come back to Mum.","Nessa?","Where are you going, Nessa?"};
+    /** Tilly's own name back to the calls, fainter the longer she holds out; near the end, nothing. */
+    public static String[] tillyHolds(long held,int out){
+        if(held<out/3)return new String[]{"I'm Tilly.","My name's Tilly."};
+        if(held<out*2/3)return new String[]{"Tilly.","I'm Tilly."};
+        if(held<out*9L/10)return new String[]{"Tilly...","...Tilly."};
+        return new String[0];
+    }
+    /** What June calls in the water, told to a reader on the lot too far off to hear it. */
+    public static String fromPool(String line){return "June, from the pool: \u201C"+line+"\u201D";}
     // ------------------------------------------------------------------------------------------------ 0.4.537, the false entries (PellEntries)
     /** In the older sibling's journal, in their own hand, as if they wrote it: after the knife, after June's hand, and after a night in
      *  the garage a week in (and on the last visit, when it has a morning). */

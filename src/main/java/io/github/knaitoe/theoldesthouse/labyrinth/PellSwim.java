@@ -238,7 +238,7 @@ public final class PellSwim {
     }
     private static void lock(ServerLevel l,BlockPos b,BlockPos door){var at=Vec3.atBottomCenterOf(b.offset(door)).add(0,1,0);l.playSound(null,at.x,at.y,at.z,PellRegistry.LOCK.get(),SoundSource.BLOCKS,.7F,door.equals(PellSite.POOL_GATE)?.8F:1F);}
     private static void sound(ServerLevel l,BlockPos b,BlockPos at,SoundEvent s,float volume,float pitch){var c=Vec3.atCenterOf(b.offset(at));l.playSound(null,c.x,c.y,c.z,s,SoundSource.BLOCKS,volume,pitch);}
-    private static void splash(ServerLevel l,Vec3 at,float volume){
+    static void splash(ServerLevel l,Vec3 at,float volume){
         l.playSound(null,at.x,at.y+.6,at.z,SoundEvents.GENERIC_SPLASH,SoundSource.NEUTRAL,volume,1F);
         l.sendParticles(ParticleTypes.SPLASH,at.x,Math.floor(at.y)+1,at.z,12,.4,.1,.4,0);
     }

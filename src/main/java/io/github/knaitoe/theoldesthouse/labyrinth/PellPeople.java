@@ -70,7 +70,10 @@ public final class PellPeople {
         // 0.4.534: Callum struggling for the knife with a reader, and his fist coming at their face.
         STRUGGLE=12,LUNGE=13,
         // 0.4.538: Callum on the last night, sitting on the grass inside the line eating what he was given, and sat there after.
-        EATING=14,SITTING=15;
+        EATING=14,SITTING=15,
+        // 0.4.539, midnight in the pool: June in the water holding Tilly by the shoulders, pressing her under, and standing with her arms
+        // down; June leading Tilly by the hand, in her robe and in her swimming things; and Tilly with her hand held out in someone's.
+        HOLD=16,PRESS=17,WADE=18,LEADS=19,LEADS_SWIM=20,LED=21;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
@@ -78,7 +81,8 @@ public final class PellPeople {
     /** As above, with the marks they carry: by day, after the laundry, June with her hand wrapped. */
     public static @Nullable String dressed(int phase,int gesture,int marks){
         if(phase!=FIRST+JUNE)return null;
-        return gesture==ROBE?"pell_june_robe":gesture==SWIM?"pell_june_swim":(marks&WRAPPED)!=0?"pell_june_hand":null;
+        // 0.4.539: in the water and leading Tilly down to it, in her swimming things; leading her in from the gate, in her robe.
+        return gesture==ROBE||gesture==LEADS?"pell_june_robe":gesture==SWIM||gesture==HOLD||gesture==PRESS||gesture==WADE||gesture==LEADS_SWIM?"pell_june_swim":(marks&WRAPPED)!=0?"pell_june_hand":null;
     }
 
     /** Where each stands on the first visit, and which way they face (degrees; 0 is south, toward the street). */
@@ -158,6 +162,14 @@ public final class PellPeople {
          *  reader's work with the brush; and who has had a plate from the fridge. */
         boolean callumStrip,callumFed,callumSaid;long fedAt;int guardX=PellLastNight.STRIP_X;BlockPos gap;
         final Map<UUID,PellScrub.Work> scrub=new HashMap<>();final java.util.Set<UUID> plated=new java.util.HashSet<>();
+        /** 0.4.539, midnight in the pool (PellRite): how far it has got; whether June has Tilly in her hands, how long Tilly has held out
+         *  there, whether she is under and since when, and when June last called; whether Tilly owes an answer to the last call and
+         *  whether June's next word follows her coming up; how many calls, replies and takings-back there have been; who has Tilly's
+         *  hand, when it was let go and when the paint last stopped her; where June holds her; and every line said, for tests. */
+        int rite,calls,replies;boolean inHold,under,reply,afterUnder,tookBack;long heldFor,underAt,callAt,letGoAt,lineToldAt;UUID leader;
+        double holdX,holdZ;final java.util.List<String> riteLines=new java.util.ArrayList<>();
+        /** 0.4.539: whose hands have had Tilly's tonight. */
+        final java.util.Set<UUID> hands=new java.util.HashSet<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -256,6 +268,9 @@ public final class PellPeople {
         if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
         // 0.4.538: something to eat held out to him: on the last night he takes it (PellLastNight).
         if(who==CALLUM&&PellLastNight.feed(p,b,h,a,own))return;
+        // 0.4.539: at midnight, a hand on Tilly in the water takes hers; June does not stop for anybody (PellRite).
+        if(who==TILLY&&PellRite.hand(p,b,h,a,own))return;
+        if(who==JUNE&&PellRite.june(p,b,h,a,own))return;
         // 0.4.534: at the sink with the knife, a hand on him takes his wrist.
         if(who==CALLUM&&PellKnife.hand(p,b,h,own))return;
         // 0.4.538: on the line on the last night he does not move for the hand; eating, he does not look up.

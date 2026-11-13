@@ -1993,8 +1993,8 @@ public final class PellHouseTests {
      * every slot empty, and Callum's drawer has a space where the knife lay; the calendar's circle is tonight. The evening holds while
      * nobody comes in. One reader comes in and June says it will be an early night; the other, at the far end of the house, is told,
      * and the hour goes on. A hand on the fridge gives each reader a plate of dinner, once. A hand on the bucket in the laundry takes
-     * it, and a bucket that nobody at the house has is back in its place within a second. Locked up, the night goes on to midnight and
-     * waits there: June stays in her room, and Callum stays out on the line.
+     * it, and a bucket that nobody at the house has is back in its place within a second. Locked up, the night goes on to midnight
+     * without June's rounds, and at midnight (0.4.539) she goes for Tilly; Callum stays out on the line.
      */
     @GameTest(template="empty",batch="pell_last",timeoutTicks=6000)
     public static void theLastNightBeginsWithThePoolLitTheKnivesPutAwayAndCallumOnTheLine(GameTestHelper h){
@@ -2046,13 +2046,13 @@ public final class PellHouseTests {
             p.getInventory().clearContent();
         }).thenWaitUntil(()->h.assertTrue(thing(l,b,PellScrub.BUCKET.getX(),PellScrub.BUCKET.getY(),PellScrub.BUCKET.getZ(),BUCKET,0),"a bucket nobody has is back in the laundry"))
         .thenExecute(()->{
-            // Locked up, the night goes on to midnight, and waits there.
+            // Locked up, the night goes on to midnight without June's rounds; 0.4.539: at midnight she goes for Tilly (PellRite).
             PellLastNight.lockedUp(l,b);
         }).thenWaitUntil(()->h.assertTrue(PellVisit.hour(b)==PellNight.TWELVE,"midnight: "+PellVisit.hour(b)))
         .thenIdle(60).thenExecute(()->{
-            h.assertTrue(PellVisit.hour(b)==PellNight.TWELVE&&PellVisit.step(b)==PellVisit.NIGHT,"the night waits at midnight: "+PellVisit.hour(b));
+            h.assertTrue(PellVisit.hour(b)==PellNight.TWELVE&&PellVisit.step(b)==PellVisit.NIGHT,"the hour holds at midnight: "+PellVisit.hour(b));
             var june=who(h,l,b,PellPeople.JUNE);
-            h.assertTrue(at(june,b,PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z(),.7)&&june.getOffhandItem().isEmpty(),"June does not go out on her rounds");
+            h.assertTrue(june.getOffhandItem().isEmpty()&&PellRite.step(b)>=PellRite.FETCH,"June does not go out on her rounds: at midnight she goes for Tilly");
             var c=who(h,l,b,PellPeople.CALLUM);
             h.assertTrue(at(c,b,PellLastNight.ON_LINE.x,PellLastNight.ON_LINE.z,.3)&&!PellVisit.asleep(b,PellPeople.CALLUM),"Callum still out on the line");
         }).thenSucceed();
@@ -2179,4 +2179,165 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_scrub_week") public static void scrubWeekDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.539, midnight in the pool
+    private static boolean said(BlockPos b,String who,String line){return PellRite.lines(b).contains(who+": "+line);}
+    private static long times(BlockPos b,String who,String line){return PellRite.lines(b).stream().filter((who+": "+line)::equals).count();}
+    /** The line's cell at (x, z) scrubbed out, as the brush leaves it. */
+    private static void scrubbedOut(ServerLevel l,BlockPos b,int x,int z){var at=b.offset(x,-1,z);var s=l.getBlockState(at);if(PellLine.is(s))l.setBlock(at,s.setValue(PellLine.STAGE,PellLine.GAP),3);}
+    /**
+     * 0.4.539, midnight in the pool (docs/PELL_HOUSE_POOL_0_4_539.md). Two readers who have had the first two visits; the last night locked
+     * up a little before midnight, one reader asleep on the camp bed in the garage and the other out in the yard at the pool's fence. At
+     * midnight June comes out of her room in her robe, wakes Tilly in Nessa's bed by Nessa's name, and Tilly gives her own; June takes her
+     * hand and leads her out by the sliding door and the pool's gate, both unlocked and left open, takes off her robe at the chair and goes
+     * into the shallow end with her. The splashing wakes the reader asleep. June stands behind Tilly with her hands on her shoulders and
+     * calls her Nessa, and Tilly answers with her own name; June presses her under, lets her up and asks again. Nobody takes her hand, and
+     * in the end she answers to it, and both readers hear her. June takes her back to Nessa's bed, putting her robe on at the chair on the
+     * way, and sits on the edge of the bed beside her.
+     */
+    @GameTest(template="empty",batch="pell_rite",timeoutTicks=9000)
+    public static void atMidnightJuneTakesTillyIntoThePoolAndCallsHerNessaUntilSheAnswers(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_rite_watcher",P);var q=f.player("pell_rite_sleeper",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var bed=b.offset(CAMP_BED_AT);var chair=PellSwim.CHAIR;
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);
+            // One reader out at the pool's fence, the other asleep in the garage.
+            f.at(p,P,-6.5,0,-74.6);f.at(q,P,14.5,0,-89.5);hand(q,bed);
+            h.assertTrue(q.isSleeping(),"one reader asleep on the camp bed");
+            told(p);told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.FETCH,"midnight: June comes out of her room"))
+        .thenExecute(()->h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.ROBE,"in her robe"))
+        .thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.LEAD,"at Nessa's bed she wakes Tilly: "+PellRite.lines(b)))
+        .thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(said(b,"June",PellTexts.JUNE_RITE_WAKE)&&said(b,"Tilly",PellTexts.TILLY_RITE_NAME)&&said(b,"June",PellTexts.JUNE_RITE_HAND),"by Nessa's name, and Tilly gives her own: "+PellRite.lines(b));
+            h.assertTrue(!PellVisit.asleep(b,PellPeople.TILLY)&&tilly.gesture()==PellPeople.LED&&tilly.getMainHandItem().isEmpty(),"up, her hand out for June's, her cane left by the bed");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.LEADS,"June leads her by the hand");
+        }).thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.WATER,"down to the pool and in: June at "+who(h,l,b,PellPeople.JUNE).position().subtract(b.getX(),b.getY(),b.getZ())+", Tilly at "+who(h,l,b,PellPeople.TILLY).position().subtract(b.getX(),b.getY(),b.getZ())))
+        .thenIdle(1).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellSite.open(l,b,PellSite.SLIDER)&&!PellVisit.locked(b,PellSite.SLIDER),"the sliding door unlocked and left open");
+            h.assertTrue(PellSwim.gateStage(l,b)==2,"the pool's gate unlocked and left open");
+            h.assertTrue(thing(l,b,chair.getX(),chair.getY(),chair.getZ(),PellThing.Kind.POOL_CHAIR,1),"her robe over the chair");
+            h.assertTrue(PellRite.held(b)&&june.gesture()==PellPeople.HOLD&&june.isNoGravity()&&june.getY()<b.getY()-.5,"June in the shallow end, holding her");
+            h.assertTrue(tilly.isNoGravity()&&tilly.getY()<b.getY()-.5&&tilly.getZ()<june.getZ(),"Tilly in front of her in the water");
+            h.assertFalse(q.isSleeping(),"the splashing wakes the reader asleep");
+            h.assertTrue(told(q).contains(PellTexts.WOKEN_BY_POOL)&&f.own(q,P).getBoolean("WokenByThePool"),"told what woke them, and keeps that it did");
+            lookAt(p,tilly.getEyePosition());
+        }).thenIdle(10).thenExecute(()->h.assertTrue(f.own(p,P).getBoolean("SawRite"),"the reader at the fence sees it"))
+        .thenWaitUntil(()->h.assertTrue(said(b,"June",PellTexts.RITE_CALLS[0])&&times(b,"Tilly",PellTexts.TILLY_RITE_NAME)>=2,"June calls her Nessa, and she answers with her own name: "+PellRite.lines(b)))
+        .thenWaitUntil(()->h.assertTrue(PellRite.under(b),"June presses her under"))
+        .thenIdle(12).thenExecute(()->{
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.PRESS,"her arms down into it");
+            h.assertTrue(who(h,l,b,PellPeople.TILLY).getEyeY()<b.getY()+PellWeek.WATERLINE,"Tilly under the water");
+        }).thenWaitUntil(()->h.assertTrue(!PellRite.under(b)&&said(b,"June",PellTexts.JUNE_AFTER_UNDER[0]),"let up into the air, and asked again: "+PellRite.lines(b)))
+        .thenExecute(()->{
+            h.assertTrue(who(h,l,b,PellPeople.TILLY).getEyeY()>b.getY()+PellWeek.WATERLINE,"her head out of the water");
+            // The woken reader out to the pool too, on the deck at the shallow end.
+            f.at(q,P,-9.5,0,-78.5);
+            PellRite.nearlyAnswers(b);
+        }).thenWaitUntil(()->h.assertTrue(PellRite.step(b)>=PellRite.ANSWERED,"held out long enough, she answers"))
+        .thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(said(b,"Tilly",PellTexts.TILLY_ANSWERS),"she answers to it: "+PellRite.lines(b));
+            h.assertTrue(f.own(p,P).getBoolean("HeardTillyAnswer")&&f.own(q,P).getBoolean("HeardTillyAnswer"),"and both readers hear her: "+f.own(p,P).getBoolean("HeardTillyAnswer")+" at "+p.distanceTo(tilly)+", "+f.own(q,P).getBoolean("HeardTillyAnswer")+" at "+q.distanceTo(tilly)+(p.isSleeping()||q.isSleeping()?", one asleep":""));
+        }).thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.KEPT,"June takes her back to Nessa's bed: June at "+who(h,l,b,PellPeople.JUNE).position().subtract(b.getX(),b.getY(),b.getZ())))
+        .thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(said(b,"June",PellTexts.JUNE_ANSWERED),"\"There's my girl.\"");
+            h.assertTrue(PellVisit.asleep(b,PellPeople.TILLY)&&at(tilly,b,PellVisit.TILLY_SLEEPS.x,PellVisit.TILLY_SLEEPS.z,.3),"Tilly in Nessa's bed again");
+            h.assertTrue(PellVisit.perched(b,PellPeople.JUNE)==PellVisit.JUNE_BED&&!june.isNoGravity()&&june.gesture()==PellPeople.ROBE,"June in her robe, sat on its edge beside her");
+            h.assertTrue(thing(l,b,chair.getX(),chair.getY(),chair.getZ(),PellThing.Kind.POOL_CHAIR,0),"her robe off the chair");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_rite") public static void riteDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.539, getting Tilly out. Two readers who have had the first two visits; the last night locked up, a gap scrubbed in the line on
+     * its west side by the pool, and June already in the shallow end holding Tilly. One reader gets in beside her and takes her hand: she
+     * holds on and asks if that is them, and June's hands come away; the other reader's hand finds she has somebody's already. The first
+     * goes off across the yard: her hand slips out of theirs and she stands in the water, and in a few seconds June wades to her and takes
+     * her back. The other takes her hand and leads her through the water to its edge, where she is lifted out, and across the deck to the
+     * line. Where it is whole she stops short of it (her bare foot finds the paint); with the hand further along she goes along the paint to
+     * the gap and steps through it. She is out, the reader who brought her keeps that they did, and June stops calling.
+     */
+    @GameTest(template="empty",batch="pell_rite_out",timeoutTicks=6000)
+    public static void aHandInTheWaterTakesTillyAndSheFollowsItThroughTheGapButNeverOverThePaint(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_rite_first_hand",P);var q=f.player("pell_rite_second_hand",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        java.util.function.Supplier<String> where=()->"Tilly at "+who(h,l,b,PellPeople.TILLY).position().subtract(b.getX(),b.getY(),b.getZ());
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);
+            scrubbedOut(l,b,PellSite.LINE_W,-83);scrubbedOut(l,b,PellSite.LINE_W,-82);
+            h.assertTrue(PellRite.held(b),"June in the shallow end, holding Tilly");
+            // The first reader in the water beside her; the other on the deck at the shallow end.
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            f.at(p,P,tilly.getX()-b.getX()+1.2,-1,tilly.getZ()-b.getZ());f.at(q,P,-8.5,0,-78.5);
+            told(p);told(q);
+            LiteraryVignettes.talk(p,tilly);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(p.getUUID().equals(PellRite.leader(b))&&!PellRite.held(b),"a hand in the water takes hers");
+            h.assertTrue(told(p).contains(PellTexts.TILLY_TAKES)&&f.own(p,P).getBoolean("TookTillysHand"),"she holds on");
+            h.assertTrue(said(b,"Tilly",PellTexts.TILLY_WHO)&&who(h,l,b,PellPeople.TILLY).gesture()==PellPeople.LED,"and asks if that is them");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.WADE,"June's hands come away");
+            LiteraryVignettes.talk(q,who(h,l,b,PellPeople.TILLY));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.TILLY_HAS_A_HAND)&&p.getUUID().equals(PellRite.leader(b)),"the other reader's hand: she has somebody's already");
+            // The first reader goes off across the yard.
+            f.at(p,P,-6.5,0,-70.5);
+        }).thenIdle(2).thenExecute(()->h.assertTrue(PellRite.leader(b)==null&&told(p).contains(PellTexts.TILLY_LET_GO),"her hand slips out of theirs"))
+        .thenWaitUntil(()->h.assertTrue(PellRite.held(b),"in a few seconds June wades to her and takes her back"))
+        .thenWaitUntil(()->h.assertTrue(said(b,"June",PellTexts.JUNE_TAKES_BACK),"June takes her back, and says so as soon as she can: "+PellRite.lines(b)))
+        .thenExecute(()->{
+            h.assertTrue(PellRite.held(b)&&PellRite.leader(b)==null,"still in June's hands");
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            f.at(q,P,tilly.getX()-b.getX()+1.2,-1,tilly.getZ()-b.getZ());told(q);
+            LiteraryVignettes.talk(q,tilly);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(q);
+            h.assertTrue(q.getUUID().equals(PellRite.leader(b))&&heard.contains(PellTexts.TILLY_TAKES)&&f.own(q,P).getBoolean("TookTillysHand"),"the other reader takes her hand: "+heard);
+            h.assertTrue(times(b,"Tilly",PellTexts.TILLY_WHO)==2,"a hand new to her, and she asks again: "+PellRite.lines(b));
+            // Toward the pool's west side, through the water.
+            f.at(q,P,-9.5,-1,-81.5);
+        }).thenWaitUntil(()->h.assertTrue(who(h,l,b,PellPeople.TILLY).getX()<b.getX()-8,"she comes through the water after the hand: "+where.get()))
+        .thenExecute(()->f.at(q,P,-12.5,0,-81.5))
+        .thenWaitUntil(()->{var t=who(h,l,b,PellPeople.TILLY);h.assertTrue(!t.isNoGravity()&&t.getY()>b.getY()-.1&&!PellSite.inWater(t.position().subtract(b.getX(),b.getY(),b.getZ())),"lifted out where the reader stands at the edge: "+where.get());})
+        .thenExecute(()->f.at(q,P,-15.5,0,-79.5))
+        .thenWaitUntil(()->{var t=who(h,l,b,PellPeople.TILLY);h.assertTrue(Math.hypot(t.getX()-q.getX(),t.getZ()-q.getZ())<1.5,"she follows the hand across the deck: "+where.get());})
+        .thenExecute(()->{told(q);f.at(q,P,-8.5,0,-70.5);})
+        .thenIdle(2).thenExecute(()->{
+            // Let go on dry land, she stands where she is, and June does not come for her.
+            h.assertTrue(PellRite.leader(b)==null&&told(q).contains(PellTexts.TILLY_LET_GO),"let go on the deck");
+        }).thenIdle(PellRite.TAKE_BACK+20).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(!PellRite.held(b)&&!PellSite.inWater(t.position().subtract(b.getX(),b.getY(),b.getZ())),"June does not take her back from the deck: "+where.get());
+            f.at(q,P,t.getX()-b.getX()+1,0,t.getZ()-b.getZ());
+            LiteraryVignettes.talk(q,t);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(q);
+            h.assertTrue(q.getUUID().equals(PellRite.leader(b))&&heard.contains(PellTexts.TILLY_TAKES_AGAIN),"the same hand again: "+heard);
+            h.assertTrue(times(b,"Tilly",PellTexts.TILLY_WHO)==2,"a hand she knows, and she does not ask: "+PellRite.lines(b));
+            f.at(q,P,-18.5,0,-79.5);told(q);
+        })
+        .thenIdle(80).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(t.getX()>=b.getX()+PellSite.LINE_W+1-.01,"with the hand over the line where it is whole, she stops short of the paint: "+where.get());
+            h.assertTrue(told(q).contains(PellTexts.TILLY_AT_LINE),"her bare foot found it");
+            h.assertTrue(PellRite.step(b)==PellRite.WATER,"she is not out");
+            f.at(q,P,-18.5,0,-82.5);
+        }).thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.OUT,"along the paint to the gap and through it: "+where.get()))
+        .thenIdle(1).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(t.getZ()<b.getZ()-81&&t.getZ()>b.getZ()-83.9&&t.getX()<b.getX()+PellSite.LINE_W+1,"through the gap, never over the paint: "+where.get());
+            h.assertTrue(told(q).contains(PellTexts.TILLY_OUT)&&f.own(q,P).getBoolean("GotTillyOut"),"out, and the reader who brought her keeps that they did");
+            h.assertTrue(told(p).contains(PellTexts.JUNE_STOPPED),"the other reader, across the yard, hears June stop calling");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.WADE,"June stands in the water with her arms down");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_rite_out") public static void riteOutDone(ServerLevel l){done();}
 }
