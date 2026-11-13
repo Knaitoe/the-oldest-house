@@ -6487,7 +6487,7 @@ public final class BikeNightTests {
             })
             .thenIdle(5)
             // Gus comes through after them, by way of his cap.
-            .thenWaitUntil(()->{for(var q:p)q.setPlayerInput(0,0,false,false);h.assertTrue(BikeNightGus.capBack(b)&&!CalderHollow.capHung(l,b),"waiting for Gus to come off the Hollow after them and take his cap down: along "+BikeNightHollow.gusTrail(b));})
+            .thenWaitUntil(()->{for(var q:p)q.setPlayerInput(0,0,false,false);h.assertTrue(BikeNightGus.capBack(b)&&!CalderHollow.capHung(l,b),"waiting for Gus to come off the Hollow after them and take his cap down: "+BikeNightGus.state(l,b)+"; the cap hung "+CalderHollow.capHung(l,b));})
             // Out by the lane's door, each for themselves.
             .thenExecute(()->{
                 h.assertTrue(f.data().door(OnwardDoors.id(P))!=null||OnwardDoors.install(l,b,P),"the lane's door stands");

@@ -120,7 +120,17 @@ public final class UncannySocketClient {
             require(!mc.player.isNoGravity(),"the long tunnel uses native gravity");
             require(!data.getBoolean("TunnelFailed"),"the native tunnel attempt failed; a later run cannot acknowledge this survival proof");
             if(!data.getBoolean("TunnelReady")){mc.player.setYRot(180);mc.player.setXRot(0);mc.options.keyUp.setDown(true);mc.options.keySprint.setDown(true);mc.player.setSprinting(true);}
-            else {stop(mc);paper(mc,b.offset(TunnelPassage.ACCOUNT),"tunnel-native-escape",data.getBoolean("TunnelRead"));}
+            else{
+                // The ready marker reaches the client up to a second after the server sets it, so where the sprint ends varies by a
+                // second's running; run 1582 stopped both readers 5.7 and 5.9 blocks from the account, past the 5.5 the server
+                // allows a hand. Walk on as a reader would: into the refuge, then to the account's side, and only then reach for it.
+                var account=b.offset(TunnelPassage.ACCOUNT);
+                if(mc.screen==null&&!paperOpened&&new AABB(account).distanceToSqr(mc.player.getEyePosition())>3*3){
+                    var to=mc.player.getZ()-b.getZ()>TunnelPassage.PASS-1.5?new Vec3(mc.player.getX(),0,b.getZ()+TunnelPassage.PASS-2):Vec3.atBottomCenterOf(account).add(-1.5,0,0);
+                    mc.player.setYRot((float)Math.toDegrees(Math.atan2(-(to.x-mc.player.getX()),to.z-mc.player.getZ())));mc.player.setXRot(0);
+                    mc.options.keySprint.setDown(false);mc.player.setSprinting(false);mc.options.keyUp.setDown(true);
+                }else{stop(mc);paper(mc,account,"tunnel-native-escape",data.getBoolean("TunnelRead"));}
+            }
         }
         if(phase==5&&UncannyClient.room().equals("missing_sleep")){require(!TunnelAtmosphere.active()&&!TunnelAtmosphere.playing(),"tunnel traffic stops on departure");}
         if(phase==5&&UncannyClient.room().equals("missing_sleep")&&bedroomWalk(mc,b))paper(mc,b.offset(UncannyRooms.source(LabyrinthPlace.MISSING_SLEEP)),"bedroom-source",data.getBoolean("PaperRead"));

@@ -224,6 +224,20 @@ public final class BikeNightGus {
     }
     /** Whether he has his cap back, in this park. For tests. */
     public static boolean capBack(BlockPos b){var n=BikeNight.night(b);return n!=null&&n.gus.capBack;}
+    /**
+     * For tests: where Gus is and what he is about, relative to the park, so that a case waiting on him says where he stopped. His body
+     * and bike are looked for whether or not their chunks still tick.
+     */
+    public static String state(ServerLevel l,BlockPos b){
+        var n=BikeNight.night(b);if(n==null)return "no night in this park";var g=n.gus;var a=body(l,n);
+        var bike=g.bike==null?null:l.getEntity(g.bike);var friend=g.friend==null?null:l.getPlayerByUUID(g.friend);
+        return "doing "+g.doing+", trail "+g.trail+", cap back "+g.capBack
+            +"; he is "+(a==null?"not found":where(a.position(),b)+(a.getVehicle()!=null?" riding":" on foot")+(l.isPositionEntityTicking(a.blockPosition())?"":" (not ticking)"))
+            +"; his bike "+(bike==null?"not found":where(bike.position(),b)+(l.isPositionEntityTicking(bike.blockPosition())?"":" (not ticking)"))
+            +"; beside "+(friend==null?"nobody":friend.getGameProfile().getName()+" at "+where(friend.position(),b)+", through the fold "+where(BikeNightFold.near(b,bike!=null?bike.position():friend.position(),friend.position()),b))
+            +"; his way "+(g.way.plan==null?"none":g.way.step+" of "+g.way.plan.length)+", stuck since "+g.stuckSince+", night tick "+n.tick;
+    }
+    private static String where(Vec3 at,BlockPos b){var r=BikeNight.rel(at,b);return String.format(java.util.Locale.ROOT,"(%.1f, %.1f, %.1f)",r.x,r.y,r.z);}
     /** A ball of sand has met him. */
     static void sanded(ServerLevel l,LiteraryActor a){
         var n=BikeNight.nightAt(l,a.blockPosition());if(n==null||keptHome)return;var g=n.gus;g.sandHits++;
