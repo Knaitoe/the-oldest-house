@@ -547,6 +547,81 @@ public final class GoatmanTests {
             h.assertTrue(back.getBoolean("Active")&&!back.getBoolean("Interrupted"),"and the night ahead is theirs to be counted for: "+back);
         }).thenSucceed();
     }
+    private static Fixture copies;
+    @AfterBatch(batch="goat_copy0552") public static void cleanCopies(ServerLevel l){
+        SceneInstances.fixtureCap(null);
+        if(copies!=null){
+            var f=copies;var second=SceneInstances.base(f.server,LabyrinthPlace.GOATMAN,1);
+            if(second!=null)for(var e:f.l.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(second,LabyrinthPlace.GOATMAN),e->e instanceof GoatmanChild||e instanceof GoatmanFigure||e instanceof Display||e instanceof net.minecraft.world.entity.item.ItemEntity))e.discard();
+            f.close();copies=null;
+        }
+        SceneInstances.clear();GroupCrossings.forget();
+    }
+    /**
+     * 0.4.552 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"). The trailer has copies,
+     * sixteen children to an evening, the number it has always let in. Sixteen hold the first trailer: a seventeenth through the door
+     * waits while a second is made ready, and one of the sixteen goes back into theirs. A friend behind the first one through is not
+     * too late for a full trailer: the door takes them to another. The second trailer stands a million blocks west; the seventeenth
+     * goes in by its own door and begins an evening of their own there, with cousins of its own, and the first evening is untouched.
+     */
+    @GameTest(template="empty",batch="goat_copy0552",timeoutTicks=24000)
+    public static void aSeventeenthChildIsGivenATrailerOfTheirOwn(GameTestHelper h){
+        copies=new Fixture(h,105600);var f=copies;f.finishedCamper();var goat=LabyrinthPlace.GOATMAN;var server=f.server;
+        var first=f.player();var late=f.player();final BlockPos[] theirs={null};final UUID[] round={null};
+        late.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()+80);
+        SceneInstances.fixtureCap(1);f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,goat));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp is natively loaded")).thenExecute(()->{
+            h.assertTrue(SceneInstances.copyable(goat)&&SceneInstances.party(goat)==GoatmanVignette.MAX_PLAYERS&&GoatmanVignette.MAX_PLAYERS==16,"the trailer has copies, sixteen children to an evening");
+            first.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-.5,180,0);
+            h.assertTrue(GoatmanVignette.enter(first,true),"the first child through begins the evening");
+            // Fifteen more on its roll, out by the fire or stepped out to the House: the trailer keeps their places.
+            var r=f.run();var cohort=r.getCompound("Cohort");
+            for(int i=0;i<15;i++){var own=new CompoundTag();own.putBoolean("Active",true);own.putBoolean("Arrived",true);cohort.put(UUID.randomUUID().toString(),own);}
+            r.put("Cohort",cohort);f.run(r);round[0]=r.getUUID("Id");
+            h.assertTrue(GoatmanVignette.places(server,0).size()==16,"sixteen children's places at the first trailer: "+GoatmanVignette.places(server,0).size());
+            h.assertTrue(SceneInstances.held(server,goat,0,late.getUUID())==16&&SceneInstances.held(server,goat,0,first.getUUID())==15,"full to a seventeenth, never to one of the sixteen");
+            h.assertTrue(!GoatmanVignette.canEnter(late,0),"and the first trailer's evening will not take a seventeenth");
+            // A friend behind the first one through is not too late for a full trailer: the door takes them to another.
+            var door=LabyrinthData.get(server).door(goat.entryDoorId());GroupCrossings.forget();GroupCrossings.crossed(first,door,goat);
+            h.assertTrue(GroupCrossings.ledThrough(late,door),"the friend behind is led through, not told it is too late");
+            var e=SceneInstances.enter(late,goat);
+            h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(LabyrinthData.get(server),goat)==1,"the seventeenth's door waits while a trailer of their own is made ready: "+e);
+            var mine=SceneInstances.enter(first,goat);
+            h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the sixteen goes back into theirs: "+mine);
+        })
+        .thenWaitUntil(()->h.assertTrue(SceneInstances.built(LabyrinthData.get(server),goat,1)&&!SceneInstances.building(),"waiting for the second trailer to stand"))
+        .thenExecute(()->{
+            theirs[0]=SceneInstances.base(server,goat,1);
+            h.assertTrue(theirs[0].getX()<=f.b.getX()-SceneInstances.WEST&&theirs[0].getY()==f.b.getY()&&theirs[0].getZ()==f.b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+            var e=SceneInstances.enter(late,goat);
+            h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(goat,1,"entry"))&&SceneInstances.kept(LabyrinthData.get(server),late.getUUID(),goat)==1,"the seventeenth goes into it by its own door: "+e);
+            h.assertTrue(SceneInstances.held(server,goat,1,late.getUUID())==0&&GoatmanVignette.canEnter(late,1)&&GoatmanVignette.copy(late)==1,"nobody else is in it, and its evening will take them");
+            f.chunks.hold(f.l,IndianLakeRooms.bounds(theirs[0],goat));
+        })
+        .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second trailer is resident"))
+        .thenExecute(()->{
+            // Built as the first is: its door, its fire, the stove, the bathroom window, the cooler.
+            for(var at:List.of(GoatmanWoods.DOOR,GoatmanWoods.FIRE,GoatmanWoods.STOVE,GoatmanWoods.WINDOW,GoatmanWoods.COOLER)){
+                var one=f.l.getBlockState(f.b.offset(at));var two=f.l.getBlockState(theirs[0].offset(at));
+                h.assertTrue(!one.isAir()&&two.getBlock()==one.getBlock(),"the second trailer has what the first has at "+at+": "+one+" and "+two);
+            }
+            late.moveTo(theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-.5,180,0);
+            h.assertTrue(GoatmanVignette.copy(late)==1&&GoatmanVignette.inside(late)&&GoatmanVignette.base(late).equals(theirs[0]),"the seventeenth stands in the second trailer's woods");
+            h.assertTrue(GoatmanVignette.enter(late,true),"and begins an evening there");
+            var mine=GoatmanVignette.run(late);var firsts=f.run();
+            h.assertTrue(mine.hasUUID("Id")&&!mine.getUUID("Id").equals(round[0])&&mine.getInt(GoatmanVignette.COPY)==1&&mine.getInt("Phase")==GoatmanVignette.PATH,"an evening of their own, kept by the second trailer: phase "+mine.getInt("Phase"));
+            h.assertTrue(mine.getCompound("Cohort").getAllKeys().equals(Set.of(late.getUUID().toString())),"with only them in it: "+mine.getCompound("Cohort").getAllKeys());
+            h.assertTrue(firsts.getUUID("Id").equals(round[0])&&firsts.getCompound("Cohort").getAllKeys().size()==16&&!firsts.getCompound("Cohort").contains(late.getUUID().toString()),"and the first trailer's evening is untouched");
+            h.assertTrue(LabyrinthData.get(server).state(GoatmanVignette.ID+"@1").contains("Run")&&GoatmanVignette.run(first).getUUID("Id").equals(round[0]),"each trailer keeps its own");
+        })
+        .thenWaitUntil(()->{
+            // Each trailer's cousins are its own evening's.
+            var id=GoatmanVignette.run(late).getUUID("Id");
+            var two=f.l.getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(theirs[0],LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)>=0);
+            h.assertTrue(two.size()==GoatmanVignette.count(GoatmanVignette.run(late))&&two.stream().allMatch(c->c.getPersistentData().hasUUID(GoatmanVignette.ROUND)&&c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(id)),"the second trailer's own cousins are staged: "+two.size());
+            h.assertTrue(!f.cousins().isEmpty()&&f.cousins().stream().allMatch(c->c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(round[0])),"and the first trailer's are the first evening's");
+        }).thenSucceed();
+    }
     @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}
     @AfterBatch(batch="goat_condiments0150") public static void cleanCondiments(ServerLevel l){if(condiments!=null){condiments.close();condiments=null;}}
     /** Two readers enrol together, facing back down the trail, and supper's first plate goes down with both inside. */

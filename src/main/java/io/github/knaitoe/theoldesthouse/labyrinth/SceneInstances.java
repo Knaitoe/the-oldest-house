@@ -36,28 +36,34 @@ public final class SceneInstances {
      * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
      * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}). 0.4.547: and the Pell house, two
-     * readers to a house ({@link #pell}). 0.4.551: and every story written for a party ({@link #PARTIES}).
+     * readers to a house ({@link #pell}). 0.4.551: and every story written for a party ({@link #PARTIES}). 0.4.552: and the Goatman's trailer,
+     * whose night is kept by copy (GoatmanVignette.run).
      */
     private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE,
-        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE);
+        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN);
     /**
      * 0.4.551 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the stories written
      * for a party, and how many readers one copy of each holds. A copy whose places are all held ({@link #held}) is full: the next
      * reader through the door goes into another, made ready for them as Bike night's second town is ({@link #crowd}). Bike night six
      * to a town (0.4.513); The Last Crossing a crew of four to six; Pinehook two to six; The Ones Already Inside six to a house, the
      * seventh to a house of their own. A copy with a place left still takes a latecomer, who comes in partway as each story has
-     * always let them. The lake house and the Pell house keep their pairs ({@link #lake}, {@link #pell}).
+     * always let them. The lake house and the Pell house keep their pairs ({@link #lake}, {@link #pell}). 0.4.552: the Goatman's
+     * trailer sixteen, its own limit on an evening's children; a latecomer after supper is still turned away by the trailer's own rule.
      */
     private static final Map<LabyrinthPlace,Integer> PARTIES=Map.of(LabyrinthPlace.BIKE_NIGHT,BikeNight.RIDERS,LabyrinthPlace.LAST_CROSSING,LastCrossing.MAX_CREW,
-        LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY,LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY);
+        LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY,LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY,LabyrinthPlace.GOATMAN,GoatmanVignette.MAX_PLAYERS);
     /** How many readers one copy of a party's story holds, or 0 for a scene that is not one. */
     public static int party(@Nullable LabyrinthPlace p){return p==null?0:PARTIES.getOrDefault(p,0);}
-    /** The readers copy {@code k}'s story keeps a place for, whether or not they are in it now: The Last Crossing's crew on the roll, Pinehook's roll. */
+    /**
+     * The readers copy {@code k}'s story keeps a place for, whether or not they are in it now: The Last Crossing's crew on the roll,
+     * Pinehook's roll, the children of an evening at the Goatman's trailer while anyone is still there.
+     */
     private static Set<UUID> roll(MinecraftServer s,LabyrinthPlace place,int k){
         var b=base(s,place,k);if(b==null)return Set.of();
         return switch(place){
             case LAST_CROSSING->LastCrossing.places(b);
             case PINEHOOK->Pinehook.places(b);
+            case GOATMAN->GoatmanVignette.places(s,k);
             default->Set.of();
         };
     }
@@ -117,6 +123,7 @@ public final class SceneInstances {
         if(p==LabyrinthPlace.PHONE_CANOE)return PhoneCanoe.canDeal(d,reader);
         if(p==LabyrinthPlace.HARRIGAN)return !WitnessAccount.has(d,reader,WitnessAccount.Story.HARRIGAN);
         if(p==LabyrinthPlace.HIDE_AND_CLAP)return HideAndClap.canDeal(d,reader);
+        if(p==LabyrinthPlace.GOATMAN)return GoatmanVignette.canDeal(d,reader);
         if(NovelVignettes.isNovel(p))return NovelVignettes.canDeal(d,reader,p);
         return LiteraryVignettes.canDeal(d,reader,p);
     }
@@ -126,6 +133,8 @@ public final class SceneInstances {
         if(p==LabyrinthPlace.HARRIGAN)return d.state(HarriganVignette.ID).getCompound("Players").getAllKeys();
         // The clapping game kept one round for the world: only a reader in the middle of it has a part to keep.
         if(p==LabyrinthPlace.HIDE_AND_CLAP){var round=d.state(HideAndClap.ID).getCompound("Session");return round.hasUUID("Player")?Set.of(round.getUUID("Player").toString()):Set.of();}
+        // The trailer's evening was one for the world: the children of the evening it holds keep it.
+        if(p==LabyrinthPlace.GOATMAN)return GoatmanVignette.run(d).getCompound("Cohort").getAllKeys();
         if(NovelVignettes.isNovel(p))return d.state(NovelVignettes.STATE).getAllKeys();
         return LiteraryVignettes.readers(d,p);
     }
@@ -484,6 +493,7 @@ public final class SceneInstances {
         if(p==LabyrinthPlace.PHONE_CANOE){PhoneCanoe.build(s,l,b);LakeLandscape.dress(l,b,p);NovelRooms.safeApproach(l,b);}
         if(p==LabyrinthPlace.HARRIGAN){HarriganVignette.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
         if(p==LabyrinthPlace.HIDE_AND_CLAP){HideAndClap.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
+        if(p==LabyrinthPlace.GOATMAN){GoatmanVignette.build(s,l,b);io.github.knaitoe.theoldesthouse.house.HouseFurnishings.decorate(l,b,p);}
     }
     private static @Nullable Job next(MinecraftServer s,LabyrinthData d){
         var o=HouseSavedData.get(s).houseOrigin();if(o==null)return null;

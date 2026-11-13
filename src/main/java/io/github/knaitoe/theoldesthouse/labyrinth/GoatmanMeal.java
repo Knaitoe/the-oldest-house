@@ -110,9 +110,9 @@ public final class GoatmanMeal {
     private static int bottleIndex(ItemStack item){for(int j=0;j<4;j++)if(item.is(bottle(j)))return j;return -1;}
     public static boolean use(ServerPlayer p,InteractionHand hand){
         if(hand!=InteractionHand.MAIN_HAND||!GoatmanVignette.inside(p)||!LiteraryVignettes.participant(p))return false;
-        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);if(!GoatmanVignette.brisk(r)||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
+        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(p);if(!GoatmanVignette.brisk(r)||r.getInt("Phase")!=GoatmanVignette.GATHERING)return false;
         var member=r.getCompound("Cohort").getCompound(p.getUUID().toString());if(!member.getBoolean("Active")||member.getBoolean("Failed"))return false;
-        var b=GoatmanVignette.base(p.server);var eye=p.getEyePosition();var ray=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));
+        var b=GoatmanVignette.base(p);var eye=p.getEyePosition();var ray=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));
         // A bottle a reader fetched goes to its own place on the table, within reach.
         var carried=p.getItemInHand(hand);int bottle=bottleIndex(carried);
         if(bottle>=0&&GoatmanSupper.belongs(carried,r)&&find(p.serverLevel(),b,bottle).isEmpty()&&eye.distanceTo(spot(bottle).add(b.getX(),b.getY(),b.getZ()))<=p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)){
@@ -141,7 +141,7 @@ public final class GoatmanMeal {
     }
     public static boolean handBun(ServerPlayer p,Entity entity,InteractionHand hand){
         if(hand!=InteractionHand.MAIN_HAND||!(entity instanceof GoatmanChild c)||!GoatmanVignette.inside(p)||!p.getItemInHand(hand).is(GoatmanRegistry.BUN.get()))return false;
-        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);var member=r.getCompound("Cohort").getCompound(p.getUUID().toString());if(r.getInt("Phase")!=GoatmanVignette.GATHERING||!r.getBoolean("MealStarted137")||!member.getBoolean("Active")||member.getBoolean("Failed")||c.girl())return false;var food=p.getItemInHand(hand);int i=c.getPersistentData().getInt(GoatmanVignette.INDEX);
+        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(p);var member=r.getCompound("Cohort").getCompound(p.getUUID().toString());if(r.getInt("Phase")!=GoatmanVignette.GATHERING||!r.getBoolean("MealStarted137")||!member.getBoolean("Active")||member.getBoolean("Failed")||c.girl())return false;var food=p.getItemInHand(hand);int i=c.getPersistentData().getInt(GoatmanVignette.INDEX);
         if(!LiteraryVignettes.participant(p)||!GoatmanSupper.belongs(food,r)||i<0||!c.getPersistentData().hasUUID(GoatmanVignette.ROUND)||!c.getPersistentData().getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id"))||p.distanceToSqr(c)>9||!p.hasLineOfSight(c))return false;
         if((r.getInt("BunsCousins137")&(1<<i))!=0)return true;r.putInt("BunsCousins137",r.getInt("BunsCousins137")|1<<i);food.shrink(1);if(c.getMainHandItem().is(GoatmanRegistry.BRAT.get()))inBun(c.getMainHandItem());GoatmanVignette.saveRun(d,r);return true;
     }

@@ -32,7 +32,7 @@ public final class GoatmanBedtime {
     public static boolean risen(CompoundTag r){return enabled(r)&&r.getInt("Phase")==GoatmanVignette.VIGIL&&r.getInt("BedStage131")>=1;}
     public static boolean quiet(CompoundTag r){return enabled(r)&&r.contains("BedQuietAt131")&&r.getInt("Phase")==GoatmanVignette.VIGIL;}
     private static boolean admitted(CompoundTag r){int x=r.getInt("ExtraState");return x==GoatmanVignette.X_WINDOW||x==GoatmanVignette.X_INSIDE||x==GoatmanVignette.X_FLOOR;}
-    public static boolean locked(ServerPlayer p){return locked(p,GoatmanVignette.run(LabyrinthData.get(p.server)));}
+    public static boolean locked(ServerPlayer p){return locked(p,GoatmanVignette.run(p));}
     private static boolean locked(ServerPlayer p,CompoundTag r){
         var own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
         return !ending.contains(p.getUUID())&&GoatmanVignette.inside(p)&&enabled(r)&&r.getInt("Phase")==GoatmanVignette.VIGIL&&admitted(r)&&own.getBoolean("Active")&&!own.getBoolean("Failed")&&own.contains("Bed131");
@@ -51,7 +51,7 @@ public final class GoatmanBedtime {
     }
     /** Uses LivingEntity's bed pose directly: it never assigns a respawn position or skips the world's night. */
     public static boolean use(ServerPlayer p,BlockPos b,BlockPos clicked){
-        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(d);var cohort=r.getCompound("Cohort");var own=cohort.getCompound(p.getUUID().toString());
+        var d=LabyrinthData.get(p.server);var r=GoatmanVignette.run(p);var cohort=r.getCompound("Cohort");var own=cohort.getCompound(p.getUUID().toString());
         if(!called(r)||r.getInt("Phase")!=GoatmanVignette.VIGIL||!own.getBoolean("Active")||own.getBoolean("Failed")||p.containerMenu!=p.inventoryMenu||p.distanceToSqr(clicked.getCenter())>36)return false;
         var state=p.serverLevel().getBlockState(clicked);if(!(state.getBlock() instanceof BedBlock))return false;
         var head=state.getValue(BedBlock.PART)==BedPart.HEAD?clicked:clicked.relative(state.getValue(BedBlock.FACING));

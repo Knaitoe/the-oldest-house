@@ -158,23 +158,51 @@ public final class GoatmanVignette {
     private GoatmanVignette(){}
 
     // ------------------------------------------------------------------------------------------------ state
-    public static CompoundTag run(LabyrinthData d){return d.state(ID).getCompound("Run").copy();}
+    /**
+     * 0.4.552 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the trailer has copies
+     * (SceneInstances), sixteen children to a trailer, and each copy has a night of its own. The original's run is where it always
+     * was; a copy's is kept under its own record. Every run carries the copy it belongs to, so whatever saves it saves it in its place.
+     */
+    public static final String COPY="Copy0552";
+    static String room(int k){return k>0?ID+"@"+k:ID;}
+    public static CompoundTag run(LabyrinthData d,int k){CompoundTag r=d.state(room(k)).getCompound("Run").copy();if(k>0)r.putInt(COPY,k);return r;}
+    /** The original trailer's run. */
+    public static CompoundTag run(LabyrinthData d){return run(d,0);}
+    /** The run of the trailer this reader is in, else the one they keep. */
+    public static CompoundTag run(ServerPlayer p){return run(LabyrinthData.get(p.server),copy(p));}
+    /** Which trailer this reader is in, else the one they keep, else the original. */
+    public static int copy(ServerPlayer p){return SceneInstances.of(p,LabyrinthPlace.GOATMAN);}
     public static CompoundTag personal(LabyrinthData d,UUID id){return d.state(ID).getCompound("Players").getCompound(id.toString()).copy();}
-    static void saveRun(LabyrinthData d,CompoundTag r){CompoundTag all=d.state(ID);all.put("Run",r);d.setState(ID,all);}
+    static void saveRun(LabyrinthData d,CompoundTag r){String room=room(r.getInt(COPY));CompoundTag all=d.state(room);all.put("Run",r);d.setState(room,all);}
     static void savePersonal(LabyrinthData d,UUID id,CompoundTag p){CompoundTag all=d.state(ID),players=all.getCompound("Players");players.put(id.toString(),p);all.put("Players",players);d.setState(ID,all);}
     /** A trailer carved again starts its next evening from nothing; every child's own record stays. */
     public static void forgetRun(MinecraftServer s){LabyrinthData d=LabyrinthData.get(s);CompoundTag all=d.state(ID);if(!all.contains("Run"))return;all.remove("Run");d.setState(ID,all);}
     public static boolean canDeal(LabyrinthData d,UUID id){return !WitnessAccount.has(d,id,WitnessAccount.Story.GOATMAN)&&!personal(d,id).getBoolean("Respawn");}
     public static @Nullable BlockPos base(MinecraftServer s){return IndianLakeRooms.base(s,LabyrinthPlace.GOATMAN);}
-    private static boolean inBounds(ServerPlayer p){BlockPos b=base(p.server);return b!=null&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&p.level().dimension().equals(HouseDimensions.INTERIOR)&&IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN).contains(p.position());}
+    public static @Nullable BlockPos base(MinecraftServer s,int k){return k<=0?base(s):SceneInstances.base(s,LabyrinthPlace.GOATMAN,k);}
+    /** The trailer this reader is in, else the one they keep, else the original. */
+    public static @Nullable BlockPos base(ServerPlayer p){return base(p.server,copy(p));}
+    /** In the original trailer's woods or in a copy's. */
+    private static boolean inBounds(ServerPlayer p){return p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&p.level().dimension().equals(HouseDimensions.INTERIOR)&&SceneInstances.at(p.server,LabyrinthPlace.GOATMAN,p.level().dimension(),p.position())>=0;}
+    /**
+     * The children a trailer's night keeps a place for while anyone is there: its cohort, as {@link #canEnter} counts them against
+     * {@link #MAX_PLAYERS} (SceneInstances.held). An empty trailer's next evening begins afresh, so it holds nobody's place.
+     */
+    public static Set<UUID> places(MinecraftServer s,int k){
+        ServerLevel l=s.getLevel(HouseDimensions.INTERIOR);BlockPos b=base(s,k);if(l==null||b==null||visitors(l,b).isEmpty())return Set.of();
+        var out=new HashSet<UUID>();for(var key:run(LabyrinthData.get(s),k).getCompound("Cohort").getAllKeys()){try{out.add(UUID.fromString(key));}catch(IllegalArgumentException ignored){}}
+        return out;
+    }
     public static boolean inside(ServerPlayer p){return p.isAlive()&&inBounds(p);}
     private static Vec3 rel(Entity e,BlockPos b){return e.position().subtract(b.getX(),b.getY(),b.getZ());}
     private static Vec3 abs(Vec3 rel,BlockPos b){return rel.add(b.getX(),b.getY(),b.getZ());}
     static List<ServerPlayer> visitors(ServerLevel l,BlockPos b){return IndianLakeRooms.visitors(l,b,LabyrinthPlace.GOATMAN).stream().filter(p->p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR).toList();}
     public static void build(MinecraftServer s,ServerLevel l,BlockPos b){GoatmanWoods.build(l,b);}
-    public static boolean canEnter(ServerPlayer p){
+    public static boolean canEnter(ServerPlayer p){return canEnter(p,copy(p));}
+    /** The same, for trailer {@code k}. */
+    public static boolean canEnter(ServerPlayer p,int k){
         if(!canDeal(LabyrinthData.get(p.server),p.getUUID()))return false;
-        CompoundTag r=run(LabyrinthData.get(p.server));BlockPos b=base(p.server);ServerLevel l=p.server.getLevel(HouseDimensions.INTERIOR);
+        CompoundTag r=run(LabyrinthData.get(p.server),k);BlockPos b=base(p.server,k);ServerLevel l=p.server.getLevel(HouseDimensions.INTERIOR);
         boolean empty=b==null||l==null||visitors(l,b).isEmpty();
         if(!empty&&!r.getCompound("Cohort").contains(p.getUUID().toString())&&r.getCompound("Cohort").getAllKeys().size()>=MAX_PLAYERS)return false;
         CompoundTag own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
@@ -192,9 +220,11 @@ public final class GoatmanVignette {
      */
     public static @Nullable String underway(ServerPlayer p){return underway(p,null);}
     /** The same, for a friend who followed {@code friend} to the door. */
-    public static @Nullable String underway(ServerPlayer p,@Nullable String friend){
-        LabyrinthData d=LabyrinthData.get(p.server);if(!canDeal(d,p.getUUID())||canEnter(p))return null;
-        CompoundTag r=run(d),own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
+    public static @Nullable String underway(ServerPlayer p,@Nullable String friend){return underway(p,friend,copy(p));}
+    /** The same, for the trailer {@code k} the friend went into. */
+    public static @Nullable String underway(ServerPlayer p,@Nullable String friend,int k){
+        LabyrinthData d=LabyrinthData.get(p.server);if(!canDeal(d,p.getUUID())||canEnter(p,k))return null;
+        CompoundTag r=run(d,k),own=r.getCompound("Cohort").getCompound(p.getUUID().toString());
         if(own.getBoolean("Failed"))return "The evening at the trailer has gone on without you. This door leads you elsewhere.";
         if(r.getInt("Phase")!=VIGIL&&r.getInt("Phase")!=DAWN&&r.getCompound("Cohort").getAllKeys().size()>=MAX_PLAYERS)return "There is no room left at the trailer. This door leads you elsewhere.";
         String went=friend==null?"":friend+" went through to the trailer. ";
@@ -222,12 +252,12 @@ public final class GoatmanVignette {
      */
     public static boolean enter(ServerPlayer p,boolean arriving){
         if(!inside(p)||!canDeal(LabyrinthData.get(p.server),p.getUUID()))return false;
-        LabyrinthData d=LabyrinthData.get(p.server);BlockPos b=base(p.server);ServerLevel l=p.serverLevel();CompoundTag r=run(d),cohort=r.getCompound("Cohort");
+        LabyrinthData d=LabyrinthData.get(p.server);int k=copy(p);BlockPos b=base(p.server,k);ServerLevel l=p.serverLevel();CompoundTag r=run(d,k),cohort=r.getCompound("Cohort");
         boolean member=cohort.contains(p.getUUID().toString());
         final CompoundTag initialCohort=cohort;
         boolean other=visitors(l,b).stream().anyMatch(peer->peer!=p&&initialCohort.contains(peer.getUUID().toString())&&!initialCohort.getCompound(peer.getUUID().toString()).getBoolean("Failed"));
         if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION&&!other||r.getInt("Phase")==DAWN&&!other||!other&&(arriving||!member||cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")||!cohort.getCompound(p.getUUID().toString()).getBoolean("Active"))){
-            r=newRun(p);cohort=new CompoundTag();member=false;reset(l,b);
+            r=newRun(p);if(k>0)r.putInt(COPY,k);cohort=new CompoundTag();member=false;reset(l,b);
             // Whatever of the last evening was not loaded to be cleared now goes once its sections are.
             r.putBoolean(CLEAR,true);
         }
@@ -267,9 +297,9 @@ public final class GoatmanVignette {
     public static boolean childScale(ServerPlayer p){return p.getAttribute(Attributes.SCALE)!=null&&p.getAttribute(Attributes.SCALE).hasModifier(CHILD_SCALE);}
     public static void depart(ServerPlayer p){
         scale(p,false);HousePackets.send(p,new GoatmanScenePayload(0,0,0,0));
-        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(d),cohort=r.getCompound("Cohort");String key=p.getUUID().toString();
+        LabyrinthData d=LabyrinthData.get(p.server);int k=copy(p);CompoundTag r=run(d,k),cohort=r.getCompound("Cohort");String key=p.getUUID().toString();
         if(cohort.contains(key)){CompoundTag own=cohort.getCompound(key);own.putBoolean("Active",false);own.putBoolean("Interrupted",true);cohort.put(key,own);r.put("Cohort",cohort);saveRun(d,r);}
-        BlockPos b=base(p.server);if(b!=null)for(var girl:p.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")))girl.discard();
+        BlockPos b=base(p.server,k);if(b!=null)for(var girl:p.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(b,LabyrinthPlace.GOATMAN),c->c.viewer().filter(p.getUUID()::equals).isPresent()&&!c.getTags().contains("TrailerWalk")))girl.discard();
         // Departure is reported before the leaving player is teleported. Exclude
         // that player explicitly; a living enrolled peer keeps the shared supper.
         if(b!=null&&cohort.contains(key)&&p.level().dimension().equals(HouseDimensions.INTERIOR)){
@@ -383,7 +413,7 @@ public final class GoatmanVignette {
     }
     /** Every cousin walks the rest of its way now (native tests only); watching still stops the one that only moves unwatched. */
     public static void hurry(ServerLevel l,BlockPos b){
-        LabyrinthData d=LabyrinthData.get(l.getServer());CompoundTag r=run(d);var present=visitors(l,b);
+        LabyrinthData d=LabyrinthData.get(l.getServer());CompoundTag r=run(d,SceneInstances.copyAt(l.getServer(),LabyrinthPlace.GOATMAN,b));var present=visitors(l,b);
         hurried=true;try{for(int i=0;i<40;i++)cousins(l,b,r,present);}finally{hurried=false;}saveRun(d,r);
     }
     /** One tick along its route; true once it has arrived. */
@@ -821,10 +851,14 @@ public final class GoatmanVignette {
     public static void tick(MinecraftServer server){
         // A transient modifier is also removed after commands, death, cloning or dimension changes.
         for(ServerLevel world:server.getAllLevels())for(ServerPlayer p:List.copyOf(world.players()))if(childScale(p)&&!inside(p))depart(p);
-        ServerLevel l=server.getLevel(HouseDimensions.INTERIOR);BlockPos b=base(server);if(l==null||b==null)return;
+        ServerLevel l=server.getLevel(HouseDimensions.INTERIOR);if(l==null)return;
+        // 0.4.552: the original and every copy that stands, each with a night of its own.
+        for(BlockPos b:SceneInstances.bases(server,LabyrinthPlace.GOATMAN))tick(server,l,b,SceneInstances.copyAt(server,LabyrinthPlace.GOATMAN,b));
+    }
+    private static void tick(MinecraftServer server,ServerLevel l,BlockPos b,int k){
         List<ServerPlayer> present=visitors(l,b);if(present.isEmpty())return;IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.GOATMAN);
-        LabyrinthData d=LabyrinthData.get(server);CompoundTag r=run(d);
-        for(ServerPlayer p:present)if(!r.getCompound("Cohort").contains(p.getUUID().toString())&&canDeal(d,p.getUUID())){enter(p);r=run(d);}
+        LabyrinthData d=LabyrinthData.get(server);CompoundTag r=run(d,k);
+        for(ServerPlayer p:present)if(!r.getCompound("Cohort").contains(p.getUUID().toString())&&canDeal(d,p.getUUID())){enter(p);r=run(d,k);}
         if(r.getInt("Phase")==0||r.getInt("Version")!=VERSION)return;CompoundTag cohort=r.getCompound("Cohort");int phase=r.getInt("Phase");
         List<ServerPlayer> enrolled=present.stream().filter(p->cohort.contains(p.getUUID().toString())&&!cohort.getCompound(p.getUUID().toString()).getBoolean("Failed")).toList();
         if(enrolled.isEmpty())return;
@@ -1152,13 +1186,13 @@ public final class GoatmanVignette {
 
     // ------------------------------------------------------------------------------------------------ pets
     public static boolean companionScene(ServerPlayer p){
-        if(!inside(p))return false;CompoundTag r=run(LabyrinthData.get(p.server));int phase=r.getInt("Phase");
+        if(!inside(p))return false;CompoundTag r=run(p);int phase=r.getInt("Phase");
         return phase>0&&(phase<VIGIL&&!r.getCompound("Cohort").getCompound(p.getUUID().toString()).getBoolean("Arrived")||phase==VIGIL||phase==GATHERING&&(r.getInt("Tells")&PET)!=0);
     }
     /** A refusal is bodily: even a DEEPER order cannot send a pet in front on the path. */
     public static boolean companion(TamableAnimal pet,ServerPlayer p){
         if(!inside(p)||pet.level()!=p.level()||pet.isLeashed()||pet.isPassenger()||pet.isOrderedToSit()||!p.getUUID().equals(CompanionOrders.owner(pet)))return false;
-        BlockPos b=base(p.server);CompoundTag r=run(LabyrinthData.get(p.server)),own=r.getCompound("Cohort").getCompound(p.getUUID().toString());int phase=r.getInt("Phase");
+        BlockPos b=base(p);CompoundTag r=run(p),own=r.getCompound("Cohort").getCompound(p.getUUID().toString());int phase=r.getInt("Phase");
         if(phase<VIGIL&&!own.getBoolean("Arrived")){
             double playerProgress=GoatmanWoods.project(rel(p,b)).progress(),petProgress=GoatmanWoods.project(rel(pet,b)).progress();
             pet.getNavigation().stop();Vec3 behind=abs(GoatmanWoods.path(Math.max(0,playerProgress-1.8)),b);
@@ -1225,8 +1259,8 @@ public final class GoatmanVignette {
     }
     /** A pull of the generator's cord: it catches on the third, once the one in their chair has sat down or a while has passed. */
     private static boolean generator(ServerPlayer p){
-        var d=LabyrinthData.get(p.server);var r=run(d);if(!byReader(r)||!r.getUUID(GAS).equals(p.getUUID())||r.getInt("Phase")!=GATHERING)return false;
-        int rs=r.getInt("RunnerState");BlockPos b=base(p.server);var at=b.offset(GENERATOR);
+        var d=LabyrinthData.get(p.server);var r=run(p);if(!byReader(r)||!r.getUUID(GAS).equals(p.getUUID())||r.getInt("Phase")!=GATHERING)return false;
+        int rs=r.getInt("RunnerState");BlockPos b=base(p);var at=b.offset(GENERATOR);
         if(rs!=R_LEAVING&&rs!=R_AWAY){p.displayClientMessage(Component.literal(rs==R_HOME?"It's still running. For now.":"It's running."),true);return true;}
         long now=p.serverLevel().getGameTime();if(now-r.getLong("GasPullAt0150")<GAS_PULL_GAP)return true;r.putLong("GasPullAt0150",now);
         int pulls=r.getInt("GasPulls0150")+1;r.putInt("GasPulls0150",pulls);
@@ -1256,9 +1290,9 @@ public final class GoatmanVignette {
     // ------------------------------------------------------------------------------------------------ what a child can touch
     /** Called only by a reachable, native trailer-door interaction. */
     public static boolean openDoor(ServerPlayer p,BlockPos at){
-        if(!inside(p)||p.gameMode.getGameModeForPlayer()==GameType.SPECTATOR)return false;BlockPos b=base(p.server);
+        if(!inside(p)||p.gameMode.getGameModeForPlayer()==GameType.SPECTATOR)return false;BlockPos b=base(p);
         if(!at.equals(b.offset(GoatmanWoods.DOOR))&&!at.equals(b.offset(GoatmanWoods.DOOR).above())||p.position().distanceToSqr(Vec3.atCenterOf(at))>25)return false;
-        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(d);
+        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(p);
         if(r.getInt("Phase")==VIGIL){
             CompoundTag cohort=r.getCompound("Cohort"),own=cohort.getCompound(p.getUUID().toString());if(!own.getBoolean("Active")||own.getBoolean("Failed"))return true;
             if(!GoatmanBedtime.enabled(r)&&own.getBoolean("BedsideEnded131")){GoatmanWoods.door(p.serverLevel(),b,!GoatmanWoods.doorOpen(p.serverLevel(),b));return true;}
@@ -1274,7 +1308,7 @@ public final class GoatmanVignette {
     public static void onBlock(PlayerInteractEvent.RightClickBlock e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!inside(p))return;
         if(openDoor(p,e.getPos())){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
-        BlockPos b=base(p.server);
+        BlockPos b=base(p);
         if(GoatmanSupper.interact(p,e))return;
         if(e.getLevel().getBlockState(e.getPos()).getBlock() instanceof BedBlock){GoatmanBedtime.use(p,b,e.getPos());e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);return;}
         // The bathroom window is an ordinary awning window; anyone may prop it or shut it.
@@ -1286,7 +1320,7 @@ public final class GoatmanVignette {
     }
     /** One brat each, from the pan, once supper is on. The pan holds what it holds. */
     private static void takeBrat(ServerPlayer p,BlockPos b){
-        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(d);String key=p.getUUID().toString();
+        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(p);String key=p.getUUID().toString();
         if(r.getInt("Phase")!=GATHERING||r.getInt("Clock")<SUPPER){p.displayClientMessage(Component.literal("They're not done yet."),true);return;}
         CompoundTag taken=r.getCompound("Taken");if(taken.getBoolean(key)){p.displayClientMessage(Component.literal("You've had yours."),true);return;}
         if(r.getInt("Pan")<=0){p.displayClientMessage(Component.literal("The pan is empty."),true);return;}
@@ -1297,7 +1331,7 @@ public final class GoatmanVignette {
     /** A death here (a fall, a command) only ends that child's evening; nothing is taken and nothing follows them for it. */
     public static void onDeath(LivingDeathEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p)||!inBounds(p))return;
-        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(d),cohort=r.getCompound("Cohort"),own=cohort.getCompound(p.getUUID().toString());if(!own.getBoolean("Active"))return;
+        LabyrinthData d=LabyrinthData.get(p.server);CompoundTag r=run(p),cohort=r.getCompound("Cohort"),own=cohort.getCompound(p.getUUID().toString());if(!own.getBoolean("Active"))return;
         own.putBoolean("Failed",true);own.putBoolean("Active",false);cohort.put(p.getUUID().toString(),own);r.put("Cohort",cohort);saveRun(d,r);
         CompoundTag personal=personal(d,p.getUUID());personal.putInt("Failures",personal.getInt("Failures")+1);savePersonal(d,p.getUUID(),personal);
         scale(p,false);HousePackets.send(p,new GoatmanScenePayload(0,0,0,0));

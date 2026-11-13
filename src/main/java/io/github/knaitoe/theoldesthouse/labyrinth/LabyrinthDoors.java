@@ -236,9 +236,10 @@ public final class LabyrinthDoors {
             return;
         }
         if(place==LabyrinthPlace.PHONE_CANOE&&!PhoneCanoe.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}
-        if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player)){
+        // 0.4.552: the trailer this door opens onto, of the trailers there are (its entry door carries its number).
+        if(place==LabyrinthPlace.GOATMAN&&!GoatmanVignette.canEnter(player,SceneInstances.copyOf(entry.id))){
             // 0.4.405: an evening the others are in that has gone too far to join says so, and this reader goes on elsewhere.
-            var why=GoatmanVignette.underway(player);
+            var why=GoatmanVignette.underway(player,null,SceneInstances.copyOf(entry.id));
             if(why!=null){player.displayClientMessage(Component.literal(why),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_underway:"+place.id(),player.blockPosition());if(!elsewhere(player,door))locked(player);return;}
             if(reroute(player,door))return;locked(player);return;}
         if(place==LabyrinthPlace.TED_CAVER&&!CaverVignette.canDeal(data,player.getUUID())){if(reroute(player,door))return;locked(player);return;}

@@ -13,7 +13,7 @@ public final class GoatmanConversations {
     private GoatmanConversations(){}
     public static boolean talk(ServerPlayer p,Entity target,InteractionHand hand){
         if(hand!=InteractionHand.MAIN_HAND||!GoatmanVignette.inside(p)||p.isSpectator()||!(target instanceof GoatmanChild c)||c.girl()||!c.getTags().contains(GoatmanVignette.ACTOR))return false;
-        var r=GoatmanVignette.run(LabyrinthData.get(p.server));var actor=c.getPersistentData();int index=actor.getInt(GoatmanVignette.INDEX);
+        var r=GoatmanVignette.run(p);var actor=c.getPersistentData();int index=actor.getInt(GoatmanVignette.INDEX);
         if(index<0||!r.hasUUID("Id")||!actor.hasUUID(GoatmanVignette.ROUND)||!actor.getUUID(GoatmanVignette.ROUND).equals(r.getUUID("Id")))return false;
         var eye=p.getEyePosition();var to=c.getBoundingBox().getCenter();double reach=p.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
         if(eye.distanceToSqr(to)>reach*reach||p.serverLevel().clip(new ClipContext(eye,to,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p)).getType()!=HitResult.Type.MISS)return false;
