@@ -53,7 +53,7 @@ public final class PellHouse {
         for(var p:l.players())if(LiteraryVignettes.participant(p)&&LiteraryVignettes.current(p)==PLACE&&b.equals(LiteraryVignettes.base(p,PLACE)))out.add(p);
         return out;
     }
-    public static void clearAll(){PellPeople.clearAll();}
+    public static void clearAll(){PellPeople.clearAll();PellAfterlife.clearAll();}
 
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){

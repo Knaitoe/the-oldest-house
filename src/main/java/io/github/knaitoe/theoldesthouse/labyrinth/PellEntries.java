@@ -23,6 +23,10 @@ import net.minecraft.server.level.ServerPlayer;
  * moment it can while they are at the house.</li>
  * <li><b>Kept.</b> They stay in the journal for good, whichever way it ends. Torn out, a page keeps its entry; where it turns up again
  * comes later.</li>
+ * <li><b>0.4.543, after a failure</b> (docs/PELL_HOUSE_FAILURE_0_4_543.md). An entry still due when the reader has left the house goes
+ * in wherever they are in the House (PellAfterlife's tick). After Tilly answered, the entries go on: each story the reader resolves
+ * later leaves one more due, a twisted line about what they did there (PellTexts.forged), and one goes in a House day at most. After a
+ * success nothing new comes, and the old ones stay.</li>
  * </ul>
  * Nothing tells the reader it happened.
  */
@@ -54,6 +58,40 @@ public final class PellEntries {
         if(!text.isEmpty()){var done=own.getList("FalseWritten",Tag.TAG_STRING);done.add(StringTag.valueOf(id));own.put("FalseWritten",done);}
         PellHouse.save(p,own);
     }
+    /** Whether the house ended in a failure for this reader: Tilly answered. (The older sibling taken away by Gail waits on the owner's
+     *  open question 2, docs/PELL_HOUSE_PROPOSAL.md.) */
+    public static boolean failed(CompoundTag own){return own.getBoolean("TillyStayed");}
+    /**
+     * A story this reader resolved (WitnessAccount.resolve, wherever it happens). After the house failed them, the House has something
+     * new to put in their hand: the latest such story, waiting for the next House day it can go in. Never the house's own story.
+     */
+    static void resolved(net.minecraft.server.MinecraftServer server,java.util.UUID reader,WitnessAccount.Story story){
+        resolved(LabyrinthData.get(server),reader,story);
+    }
+    static void resolved(LabyrinthData d,java.util.UUID reader,WitnessAccount.Story story){
+        if(story==null||story.id.equals(PellHouse.PLACE.id())||PellTexts.forged(story.id).isEmpty())return;
+        var own=LiteraryVignettes.personal(d,reader,PellHouse.PLACE);if(!failed(own))return;
+        own.putString("ForgeNext",story.id);LiteraryVignettes.save(d,reader,PellHouse.PLACE,own);
+    }
+    /** The House day, as the journal counts them: the Overworld's, from one. */
+    static long day(ServerPlayer p){return p.server.overworld().getDayTime()/24000L+1;}
+    /**
+     * A reader anywhere in the House, every TRY ticks: an entry still due goes in if it can (at the house itself PellHouse.reader looks
+     * after those, so that one goes in at a time); otherwise, after a failure, the latest later story's line, if none has gone in today.
+     */
+    static void anywhere(ServerPlayer p){
+        if(p.isSpectator())return;
+        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PellHouse.PLACE);
+        if(!own.getList("FalseDue",Tag.TAG_STRING).isEmpty()){if(LiteraryVignettes.current(p)!=PellHouse.PLACE)reader(p,own);return;}
+        if(!failed(own)||!own.contains("ForgeNext")||own.getLong("ForgedDay")==day(p))return;
+        String story=own.getString("ForgeNext"),text=PellTexts.forged(story);
+        if(!text.isEmpty()&&OwnHand.write(p,text)==0)return;
+        own.remove("ForgeNext");own.putLong("ForgedDay",day(p));
+        if(!text.isEmpty()){var done=own.getList("Forged",Tag.TAG_STRING);done.add(StringTag.valueOf(story));own.put("Forged",done);}
+        PellHouse.save(p,own);
+    }
+    /** For tests: the later stories whose lines have gone into this reader's journal, in order. */
+    public static List<String> forged(CompoundTag own){return strings(own.getList("Forged",Tag.TAG_STRING));}
     /** For tests: the entries due and written for this reader. */
     public static List<String> due(CompoundTag own){return strings(own.getList("FalseDue",Tag.TAG_STRING));}
     public static List<String> written(CompoundTag own){return strings(own.getList("FalseWritten",Tag.TAG_STRING));}

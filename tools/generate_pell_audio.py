@@ -6,7 +6,7 @@ lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and Ju
 shed's video deck taking a tape, and the woman on the tapes talking, through the television's small speaker (three takes, so her
 lines are not one clip over and over). From docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md: the scrubbing brush on the line, one stroke out
 and back at a time, played as it is worked. From docs/PELL_HOUSE_DAWN_0_4_541.md: Gail's car coming up the street at first light and
-pulling in at the curb.
+pulling in at the curb. From docs/PELL_HOUSE_FAILURE_0_4_543.md: a cane tapping behind a door that will not open (three takes).
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -28,9 +28,10 @@ ROWS = {
     'tape_voice': ("A woman's voice, on a tape", 12),
     'scrub': ('A scrubbing brush on paint', 10),
     'car_come': ('A car pulls in at the curb', 48),
+    'cane': ('A cane, tapping', 16),
 }
 # 0.4.536: sounds with more than one take; the game picks one each time.
-TAKES = {'tape_voice': 3}
+TAKES = {'tape_voice': 3, 'cane': 3}
 
 
 def files(name):
@@ -371,9 +372,26 @@ def scrub():
     return out
 
 
+def cane(take):
+    # 0.4.543: a cane's rubber tip set down on a floor, behind a door: a short soft knock with the tip's small click in it, heard through
+    # the wood, so the top of it is gone. Three takes (a little higher or lower, a little harder or softer), so a run of taps along a
+    # wall is not one clip over and over. Each is its own seed, so adding them changed none of the sounds before them.
+    r = np.random.default_rng(54300 + take)
+    n = seconds(.3)
+    out = np.zeros(n)
+    k = seconds(.12)
+    tk = times(k)
+    knock = np.sin(2 * np.pi * (230 + 35 * take) * tk) * np.exp(-tk / .022) + band(r.standard_normal(k), 150, 900) * np.exp(-tk / .014) * .6
+    place(out, knock * (.85 + .05 * take), .02)
+    k = seconds(.02)
+    tk = times(k)
+    place(out, band(r.standard_normal(k), 900, 2500) * np.exp(-tk / .004) * .3, .02)
+    return band(out, 90, 1800)
+
+
 MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
           'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub,
-          'car_come': car_come}
+          'car_come': car_come, 'cane_1': lambda: cane(1), 'cane_2': lambda: cane(2), 'cane_3': lambda: cane(3)}
 
 
 def main():

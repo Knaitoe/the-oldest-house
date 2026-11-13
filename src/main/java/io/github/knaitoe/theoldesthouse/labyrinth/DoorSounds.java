@@ -173,6 +173,8 @@ public final class DoorSounds {
         var l=p.serverLevel();
         l.playSound(null,door.lower.above(),KNOCK.get(),SoundSource.BLOCKS,1F,.92F+l.random.nextFloat()*.16F);
         note("knock",GlobalPos.of(l.dimension(),door.lower),null);
+        // 0.4.543: knocking where a cane was tapping for this reader (PellAfterlife), the tapping stops, and nobody knocks back.
+        if(LabyrinthData.LOCKED.equals(door.destination)&&PellAfterlife.tried(p,door))return true;
         if(LabyrinthData.LOCKED.equals(door.destination)){String key=p.getUUID()+"|"+door.id;if(REPLIED.add(key))REPLIES.add(new Reply(door.globalPos(),now+REPLY_AFTER,p.getUUID()));return true;}
         var far=far(data,p.getUUID(),door);if(far==null)return true;
         // 0.4.239: into a room people meet in whose entry a wedge holds for another hall, the knock comes out where the knocker would come in.

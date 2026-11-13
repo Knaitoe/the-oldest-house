@@ -676,6 +676,106 @@ public final class PellTexts {
         case "night3"->"I scuffed the line by the drive on purpose, to see what she'd do.";
         default->"";
     };}
+    // ------------------------------------------------------------------------------------------------ 0.4.543, after a failure (PellEntries, PellAfterlife)
+    /**
+     * After Tilly answered, the entries go on: a twisted line about a real thing the reader did in a later story, in their own hand, at
+     * most one a House day (docs/PELL_HOUSE_FAILURE_0_4_543.md). One line for each Witness story but the Pell house's own, keyed by the
+     * story's id: the thing the reader did there (its Witness line), told as if they had done it worse. Never the reader's feelings,
+     * colour, age or sex; nothing about the house itself.
+     */
+    public static String forged(String story){return switch(story){
+        case "floorboards"->"I put the board back so I could hear it again.";
+        case "hide_and_clap"->"I could see through the blindfold the whole game.";
+        case "harrigan"->"His telephone rang after he was gone. I let it ring.";
+        case "model_home"->"I broke the window myself. I said it was the tree.";
+        case "drowned_town"->"I kept the key and left the essays in the water.";
+        case "preserved_cave"->"I took something out of one of their pockets on the way past.";
+        case "shallows"->"I let go of her wrists on two. Nobody saw.";
+        case "phone_canoe"->"I dropped the telephone over the side on purpose.";
+        case "goatman"->"I knew whose voice it was at the door. I kept it shut anyway.";
+        case "ted_caver"->"I cut the line on the way back so nothing could follow it.";
+        case "zampano_courtyard"->"I pushed the cat off the mat with my foot.";
+        case "whale"->"I wrote the answer myself and posted it to me.";
+        case "barn_well"->"I pulled the cover shut from underneath.";
+        case "plain"->"Something was out past the dunes. I took its picture and walked away.";
+        case "hospital"->"I turned the alarms off myself.";
+        case "holloway_camp"->"I left my light on so it would follow the next one instead.";
+        case "mother_of_strays"->"I gave it to her so I wouldn't have to carry it.";
+        case "seance"->"I made the noises in the cupboard so they'd think she was angry.";
+        case "wallpaper_nursery"->"I tore her words off the wall and kept them.";
+        case "hotel"->"I signed for both places at the table.";
+        case "hill_nursery"->"I kept knocking after it stopped knocking back.";
+        case "miniatures"->"I put the little figure behind mine myself.";
+        case "masque"->"I stopped the clock so nobody else could leave.";
+        case "usher"->"I nailed the lid down myself.";
+        case "winchester"->"I counted what I'd killed in the ledger, and added more.";
+        case "child_room"->"I shut the last door myself and hid under the bed.";
+        case "crimson_hall"->"I stopped the third voice before it finished.";
+        case "bly_route"->"There was room for two in the cupboard. I held the door shut.";
+        case "elk_lot"->"I wrote the ending in the clipping myself.";
+        case "elk_fan"->"The tooth in my hand was one I pulled.";
+        case "mapping_interior"->"At 2:49 I stood in the doorway so he couldn't get past.";
+        case "holy_rabbit"->"I knew where the meat came from. I asked for more.";
+        case "confession"->"I sealed the journal in the wall myself.";
+        case "elk_carcasses"->"I lay under the hides and let them find the other one.";
+        case "costume_night"->"I told her which of them to go for.";
+        case "movie_night"->"I rowed past the ones in the water.";
+        case "winter_lake"->"I dared her out onto the ice.";
+        case "camp_blood"->"I ran past the last cabin and didn't knock.";
+        case "devils_rock"->"It wasn't chasing me. I was chasing it.";
+        case "wheel"->"Every room measured me against her. I cheated.";
+        case "ghosts_set"->"Marjorie asked for a blanket. I didn't bring it.";
+        case "end_world_cabin"->"I answered the visitors for everyone in the cabin.";
+        case "family_copy"->"I told them I had lived there. I hadn't.";
+        case "three_fingers"->"I made every wish knowing how it would go.";
+        case "lake_house"->"I broke the one rule while the others were under.";
+        case "borrasca"->"I signed for her things too.";
+        case "painted_interior"->"I painted over the people in the corners.";
+        case "second_waitress"->"I ate everything she brought me.";
+        case "tunnel_periphery"->"I slowed down so she would catch whoever was behind me.";
+        case "missing_sleep"->"The one in the hallway on the monitor was me.";
+        case "layered_man"->"I broke the knife on purpose and left him down there.";
+        case "motion_light"->"I pressed the buzzer.";
+        case "backseat"->"I opened the back door for it.";
+        case "silo"->"I made up the places she could have gone.";
+        case "dare_in_the_dark"->"I was the one holding the handle in the hall.";
+        case "feet_up"->"I pulled the ladder up with the others still on the floor.";
+        case "whistlers"->"I was the one in the north tower, watching.";
+        case "work_print"->"I made a copy of the tape before I stopped it.";
+        case "polaroid_trail"->"I took every one of those photographs myself.";
+        case "left_right"->"I got into the back of the wagon.";
+        case "dead_air"->"I put the highchair in front of the screens.";
+        case "closing_hall"->"I sent them through first to see if it was safe.";
+        case "storeroom"->"I turned round in the storeroom. I saw it.";
+        case "stillness"->"I moved, once, while it was breathing on me.";
+        case "line"->"Someone was on the line behind me. I didn't wait.";
+        case "own_light"->"I followed it. It was me who came back.";
+        case "polybius"->"When it asked for me by name, I answered.";
+        case "replacement"->"I brought the wrong one home. I knew.";
+        case "people_lights"->"I told her who was upstairs. I was lying.";
+        case "second_person"->"I hid their things so they'd think it was them.";
+        case "place_for_you"->"I locked the doors so the one packing couldn't leave.";
+        case "vacant_possession"->"I carried the last chair out with them still in it.";
+        case "last_swimmer"->"I was the one who said to pull the cover over.";
+        case "deer_road"->"I saw the doe. I didn't slow down.";
+        case "state_route"->"One car had somebody in it. I walked past.";
+        case "household"->"I wrote my own name at the end of their list.";
+        case "growing_things"->"I told their father to go out to the back step.";
+        case "tall_grass"->"It was me who called the boy into the grass.";
+        case "marsh_supper"->"I told them her ride had come.";
+        case "last_crossing"->"The one name more was a name I gave him.";
+        case "pinehook"->"The one more scare was mine.";
+        case "the_drawing"->"My slip wasn't blank. I swapped it.";
+        case "the_house_on_the_corner"->"I let her go into the last room by herself.";
+        case "the_black_city"->"I left the others at the bottom of the tunnel.";
+        case "the_kept"->"I opened their doors so it would leave mine alone.";
+        case "last_orders"->"I took everything off his table.";
+        case "bike_night"->"I led them up into the graveyard on purpose.";
+        default->"";
+    };}
+    /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */
+    public static final String CANE_BEGINS="Behind one of the doors, a cane is tapping.",
+        CANE_CALL="“Nessa?”",CANE_ANSWER="“"+TILLY_ANSWERS+"”";
     public static final String[] JUNE_WEEK_TALK={
         "There you are, love. Dinner's at six.",
         "I go in the pool first thing, every morning. Clears the head.",

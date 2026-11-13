@@ -152,6 +152,8 @@ public final class LabyrinthDoors {
             // Somebody's room. It rattles in its frame and stays shut.
             player.serverLevel().playSound(null, door.lower, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.5F, 0.6F);
             player.displayClientMessage(Component.literal("The door is locked. Someone lives here."), true);
+            // 0.4.543: if a cane was tapping behind it for this reader (PellAfterlife), it stops.
+            PellAfterlife.tried(player,door);
             io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"door_resident",door.lower);
             return;
         }

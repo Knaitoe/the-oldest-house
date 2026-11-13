@@ -2598,10 +2598,15 @@ public final class PellHouseTests {
             PellLastNight.lockedUp(l,b);PellRite.kept(l,b);
             h.assertTrue(PellRite.step(b)==PellRite.KEPT&&PellVisit.asleep(b,PellPeople.TILLY),"Tilly answered, and in Nessa's bed again");
             f.at(p,P,.5,0,-50.5);f.at(q,P,1.5,0,-52.5);toTheStreet(p,q);
+            // 0.4.543: the first lay down in the garage this last night.
+            var slept=f.own(p,P);slept.putInt("GarageNights",slept.getInt("GarageNights")|1<<PellWeek.visit(b));LiteraryVignettes.save(f.data(),p.getUUID(),P,slept);
             PellDawn.nearlyLight(b);told(p);told(q);
         }).thenWaitUntil(()->h.assertTrue(PellDawn.dawn(b)==PellDawn.COME,"first light: Gail's car at the curb"))
         .thenWaitUntil(()->h.assertTrue(PellDawn.atWindow(b),"Tilly at Nessa's window, the first moment nobody sees it"))
         .thenExecute(()->{
+            // 0.4.543: with their ending, the last night's entry is due for the one who slept in the garage, and only for them.
+            h.assertTrue(PellEntries.due(f.own(p,P)).equals(List.of(PellEntries.NIGHT+PellWeek.visit(b)))&&PellEntries.due(f.own(q,P)).isEmpty(),
+                "the last night's entry due for the one who slept out there: "+PellEntries.due(f.own(p,P))+" / "+PellEntries.due(f.own(q,P)));
             var t=who(h,l,b,PellPeople.TILLY);var j=who(h,l,b,PellPeople.JUNE);
             h.assertTrue(t.gesture()==PellPeople.WAVE&&at(t,b,PellDawn.TILLY_WINDOW.x,PellDawn.TILLY_WINDOW.z,.3)&&!PellVisit.asleep(b,PellPeople.TILLY),"Tilly up at the window, waving");
             h.assertTrue(at(j,b,PellDawn.JUNE_WINDOW.x,PellDawn.JUNE_WINDOW.z,.3)&&j.gesture()==PellPeople.ROBE,"June behind her in her robe");
@@ -2740,4 +2745,111 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_after_kept") public static void afterKeptDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.543, after a failure
+    /**
+     * 0.4.543 (docs/PELL_HOUSE_FAILURE_0_4_543.md). Two readers whose endings have landed, each with a journal: Tilly answered for one,
+     * and came out with the other. Each resolves a later story. Into the first one's journal, in their own hand, goes a twisted line
+     * about what they did there; the other's journal stays as it was. Another story resolved the same House day waits for the next one,
+     * and goes in then. Every Witness story but the house's own has its line.
+     */
+    @GameTest(template="empty",batch="pell_after_hand",timeoutTicks=1800)
+    public static void afterTillyAnsweredWhatTheyDoLaterGoesIntoTheirJournalTwisted(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_forged_kept",P);var q=f.player("pell_forged_out",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();var d=f.data();
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var data=Journals.get(s);String goat=PellTexts.forged("goatman"),lake=PellTexts.forged("shallows");
+        for(var story:WitnessAccount.Story.values())h.assertTrue(story.id.equals("pell_house")!=!PellTexts.forged(story.id).isEmpty(),"a line for every story but the house's own: "+story.id);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&PellPeople.find(l,b,PellPeople.JUNE)!=null,"the house and its people"))
+        .thenExecute(()->{
+            ended(f,p,true);ended(f,q,false);
+            p.getInventory().add(data.issue(p));q.getInventory().add(data.issue(q));
+            WitnessAccount.resolve(d,p.getUUID(),WitnessAccount.Story.of("goatman"),"kept_the_door");
+            WitnessAccount.resolve(d,q.getUUID(),WitnessAccount.Story.of("goatman"),"kept_the_door");
+            h.assertTrue(f.own(p,P).getString("ForgeNext").equals("goatman")&&!f.own(q,P).contains("ForgeNext"),"a later story leaves a line due only for the reader the house failed");
+        }).thenWaitUntil(()->h.assertTrue(OwnHand.lines(s,p.getUUID()).equals(List.of("1: "+goat)),"waiting for it in their journal: "+OwnHand.lines(s,p.getUUID())))
+        .thenExecute(()->{
+            h.assertTrue(PellEntries.forged(f.own(p,P)).equals(List.of("goatman"))&&!f.own(p,P).contains("ForgeNext"),"written, and kept as written");
+            h.assertTrue(OwnHand.lines(s,q.getUUID()).isEmpty(),"after a success, nothing new in their hand");
+            WitnessAccount.resolve(d,p.getUUID(),WitnessAccount.Story.of("shallows"),"threw_her");
+            h.assertTrue(f.own(p,P).getString("ForgeNext").equals("shallows"),"the next story's line due");
+        }).thenIdle(PellEntries.TRY*3).thenExecute(()->{
+            h.assertTrue(OwnHand.lines(s,p.getUUID()).size()==1,"one a House day at most: "+OwnHand.lines(s,p.getUUID()));
+            var world=s.overworld();world.setDayTime(world.getDayTime()+24000L);
+        }).thenWaitUntil(()->h.assertTrue(OwnHand.lines(s,p.getUUID()).equals(List.of("1: "+goat,"1: "+lake)),"the next House day, the next: "+OwnHand.lines(s,p.getUUID())))
+        .thenExecute(()->h.assertTrue(PellEntries.forged(f.own(p,P)).equals(List.of("goatman","shallows"))&&OwnHand.lines(s,q.getUUID()).isEmpty(),"two lines, both theirs alone"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_after_hand") public static void afterHandDone(ServerLevel l){done();}
+
+    /** A resident's door (locked: "Someone lives here.") at this place on the house's level, on stone, facing south, as the House keeps them. */
+    private static LabyrinthData.Door residentDoor(LiteraryTests.Fixture f,BlockPos rel){
+        var l=f.level(P);var at=f.base(P).offset(rel);
+        l.setBlock(at.below(),Blocks.STONE.defaultBlockState(),3);
+        var s=Blocks.OAK_DOOR.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING,Direction.SOUTH);
+        l.setBlock(at,s.setValue(net.minecraft.world.level.block.DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER),3);
+        l.setBlock(at.above(),s.setValue(net.minecraft.world.level.block.DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER),3);
+        var door=new LabyrinthData.Door("test/pell_resident",l.dimension(),at,Direction.SOUTH,LabyrinthData.LOCKED,true);f.data().putDoor(door);return door;
+    }
+    /** What this reader has been sent since last asked: the cane's taps, where they were heard, and every line. Reading empties it. */
+    private static void listen(ServerPlayer p,List<Vec3> taps,List<String> lines){
+        for(var packet:NativeTestPlayers.packets(p)){
+            if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&sound.getSound().value()==PellRegistry.CANE_TAP.get())taps.add(new Vec3(sound.getX(),sound.getY(),sound.getZ()));
+            else if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)lines.add(chat.content().getString());
+        }
+    }
+    /**
+     * 0.4.543, the cane behind a door that will not open (docs/PELL_HOUSE_FAILURE_0_4_543.md). Two readers a few steps from a resident's
+     * locked door. It is due for the reader Tilly answered for, not for the one she came out with. Behind the door, for that reader alone,
+     * a cane taps along; at the door, June calls "Nessa?" and the answer is the one Tilly gave in the pool. Then it is over, and it is not
+     * due again that House day. Another day: trying the door stops it, and the door stays locked; knocking stops it, and nobody knocks back.
+     */
+    @GameTest(template="empty",batch="pell_after_cane",timeoutTicks=1800)
+    public static void afterTillyAnsweredACaneTapsBehindADoorThatWillNotOpen(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_cane_kept",P);var q=f.player("pell_cane_out",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var rel=new BlockPos(PellSite.EAST+12,0,-30);f.chunks.hold(l,new AABB(b.offset(rel)).inflate(16));
+        var tapsP=new java.util.ArrayList<Vec3>();var linesP=new java.util.ArrayList<String>();var tapsQ=new java.util.ArrayList<Vec3>();var linesQ=new java.util.ArrayList<String>();
+        LabyrinthData.Door[] door={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&PellPeople.find(l,b,PellPeople.JUNE)!=null,"the house, its people and the ground by the door"))
+        .thenExecute(()->{
+            ended(f,p,true);ended(f,q,false);door[0]=residentDoor(f,rel);
+            f.at(p,P,rel.getX()+.5,0,rel.getZ()+6.5);f.at(q,P,rel.getX()-1.5,0,rel.getZ()+6.5);
+            h.assertTrue(PellAfterlife.due(p)&&!PellAfterlife.due(q),"due for the reader Tilly answered for, not for the one she came out with");
+            var found=PellAfterlife.door(p);h.assertTrue(found!=null&&found.id.equals(door[0].id),"the resident's door near them is the one: "+(found==null?null:found.id));
+            listen(p,tapsP,linesP);listen(q,tapsQ,linesQ);tapsP.clear();linesP.clear();tapsQ.clear();linesQ.clear();
+            PellAfterlife.begin(p,door[0],s.getTickCount());
+            h.assertTrue(!PellAfterlife.due(p),"once a House day");
+        }).thenWaitUntil(()->{listen(p,tapsP,linesP);h.assertTrue(tapsP.size()>=3,"waiting for the cane: "+tapsP.size());})
+        .thenExecute(()->{
+            h.assertTrue(linesP.contains(PellTexts.CANE_BEGINS),"told a cane is tapping behind one of the doors: "+linesP);
+            double doorZ=b.getZ()+rel.getZ();for(var t:tapsP)h.assertTrue(t.z<doorZ+.6,"behind the door, on the side away from them: "+t);
+            listen(q,tapsQ,linesQ);h.assertTrue(tapsQ.isEmpty()&&!linesQ.contains(PellTexts.CANE_BEGINS),"the other reader hears none of it");
+            f.at(p,P,rel.getX()+.5,0,rel.getZ()+1.5);
+        }).thenWaitUntil(()->{listen(p,tapsP,linesP);h.assertTrue(linesP.contains(PellTexts.CANE_ANSWER),"at the door, the call and the answer: "+linesP);})
+        .thenExecute(()->{
+            h.assertTrue(linesP.indexOf(PellTexts.CANE_CALL)>=0&&linesP.indexOf(PellTexts.CANE_CALL)<linesP.indexOf(PellTexts.CANE_ANSWER),"June calls Nessa, and the answer comes after: "+linesP);
+            h.assertTrue(PellTexts.CANE_ANSWER.contains(PellTexts.TILLY_ANSWERS),"the answer Tilly gave in the pool");
+            listen(q,tapsQ,linesQ);h.assertTrue(!linesQ.contains(PellTexts.CANE_CALL)&&!linesQ.contains(PellTexts.CANE_ANSWER),"the other reader is told nothing");
+        }).thenWaitUntil(()->h.assertTrue(PellAfterlife.tapping(p.getUUID())==null,"then the cane goes, and it is over"))
+        .thenExecute(()->{
+            h.assertTrue(!PellAfterlife.due(p),"not again that House day");
+            var world=s.overworld();world.setDayTime(world.getDayTime()+24000L);
+            h.assertTrue(PellAfterlife.due(p),"due again the next House day");
+            // Another day: a hand on the door.
+            PellAfterlife.begin(p,door[0],s.getTickCount());listen(p,tapsP,linesP);linesP.clear();
+            LabyrinthDoors.use(p,door[0]);
+            h.assertTrue(PellAfterlife.tapping(p.getUUID())==null,"trying the door stops it");
+        }).thenIdle(2).thenExecute(()->{
+            listen(p,tapsP,linesP);
+            h.assertTrue(linesP.contains("The door is locked. Someone lives here.")&&!linesP.contains(PellTexts.CANE_CALL),"the door stays locked, and nobody calls: "+linesP);
+            h.assertTrue(!l.getBlockState(b.offset(rel)).getValue(net.minecraft.world.level.block.DoorBlock.OPEN),"it does not open");
+            // And a knock.
+            PellAfterlife.begin(p,door[0],s.getTickCount());linesP.clear();
+            DoorSounds.knock(p,f.data(),door[0]);
+            h.assertTrue(PellAfterlife.tapping(p.getUUID())==null,"knocking stops it");
+        }).thenIdle(DoorSounds.REPLY_AFTER+10).thenExecute(()->{
+            listen(p,tapsP,linesP);
+            h.assertTrue(linesP.stream().noneMatch(t->t.contains("knocks back"))&&!linesP.contains(PellTexts.CANE_CALL),"nobody knocks back: "+linesP);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_after_cane") public static void afterCaneDone(ServerLevel l){done();DoorSounds.clearAll();}
 }

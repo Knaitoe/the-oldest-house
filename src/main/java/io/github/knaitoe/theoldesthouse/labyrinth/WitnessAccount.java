@@ -196,7 +196,10 @@ public final class WitnessAccount {
         stories.putString(story.id,outcome);record.put("Stories",stories);
         // 0.4.105: the order rooms ended in, so the account reads as this reader's own journey.
         var order=record.getList("Order",net.minecraft.nbt.Tag.TAG_STRING);order.add(net.minecraft.nbt.StringTag.valueOf(story.id));record.put("Order",order);
-        save(data,player,record);ExpeditionRhythm.request(data,player);return true;
+        save(data,player,record);ExpeditionRhythm.request(data,player);
+        // 0.4.543: after the Pell house failed them, what a reader does later goes into their journal, twisted, in their own hand.
+        PellEntries.resolved(data,player,story);
+        return true;
     }
     /** 0.4.146: a reader who was part of a shared vignette some other way than acting; their role and who acted are kept with the story. */
     public static boolean resolve(LabyrinthData data,UUID player,Story story,String outcome,VignetteRole role,String actor){

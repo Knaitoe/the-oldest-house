@@ -88,7 +88,9 @@ public final class PellRegistry {
         // 0.4.538: the scrubbing brush on the line (docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md).
         SCRUBBING=sound("pell.scrub"),
         // 0.4.541: Gail's car up the street at first light, pulling in at the curb (docs/PELL_HOUSE_DAWN_0_4_541.md).
-        CAR_COME=sound("pell.car_come");
+        CAR_COME=sound("pell.car_come"),
+        // 0.4.543: a cane tapping, behind a door that will not open (docs/PELL_HOUSE_FAILURE_0_4_543.md).
+        CANE_TAP=sound("pell.cane");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }
