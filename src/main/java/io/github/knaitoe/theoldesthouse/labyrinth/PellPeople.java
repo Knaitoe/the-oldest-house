@@ -66,6 +66,9 @@ public final class PellPeople {
     /** Their gestures, for the renderer: Tilly's cane held out ahead of her, Gail's folder held to her chest; from 0.4.527, asleep (lying
      *  along a bed), June brushing Tilly's hair, and Tilly having it brushed; from 0.4.530, June kneeling at the line with the brush,
      *  and Callum crouched (as a reader crouches, a beat late). */
+    /** 0.4.566: one stroke of June's hairbrush at bedtime, in ticks of the level's time: it starts down Tilly's hair as the time passes
+     *  a multiple of it, so the brush's sound (PellVisit.brushing) and both of their poses (LiteraryRenderers) keep to one stroke. */
+    public static final int BRUSH_STROKE=40;
     public static final int CANE=1,FOLDER=2,ASLEEP=3,BRUSH=4,BRUSHED=5,PAINT=6,CROUCH=7,
         // 0.4.532: June on the telephone, the receiver to her ear; and holding it out for a reader to take.
         PHONE=8,OFFER=9,
@@ -117,6 +120,8 @@ public final class PellPeople {
         final float[] rest=new float[COUNT];final boolean[] moving=new boolean[COUNT];
         /** The visit: begun again from the start when fresh; how far it has got; when the next line may come. */
         boolean fresh=true,gailGone,tillyHome;int step,waypoint,gailStep,tillyStep,stuck,empty;long next;UUID car;
+        /** 0.4.566: the visit June last sent the readers out on, once its part was over (PellHouse.leaving). */
+        int sentOut;
         /** Where June has walked, newest last, for Tilly to follow. */
         final java.util.ArrayDeque<Vec3> trail=new java.util.ArrayDeque<>();
         /** 0.4.526: the house's own hour, and whether it is going on; who has been sent it. */

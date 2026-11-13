@@ -987,6 +987,43 @@ public final class PellHouseTests {
     @AfterBatch(batch="pell_morning_watched") public static void watchedDone(ServerLevel l){done();}
 
     /** What a reader has kept, written as the house would (the record read in a case is a copy). */
+    /**
+     * 0.4.566 (owner, playing the house: "the player should also be sort of prompted on when to leave"). Gail rings and nobody takes
+     * the receiver; June hangs up, and the visit is the reader's. Nothing has been said to them before that. A while on, June sends
+     * them out (she is near them in the kitchen); a while after that the House tells them once, in grey, that the day has nothing
+     * more in it and the next visit is through the door they came in by; and later once more, in passing. (A reader's part of a scene is
+     * ticked every fifth server tick: the case gives each step a dozen.)
+     */
+    @GameTest(template="empty",batch="pell_leaving",timeoutTicks=9000)
+    public static void aReaderWhoHasHadTheirVisitIsSentOut(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_leaving",P);var l=f.level(P);var b=f.base(P);
+        String hint=PellTexts.leaveHint(1,false);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{PellCall.afterBreakfast(l,b);f.at(p,P,-9.5,0,-67.5);told(p);})
+        .thenWaitUntil(()->h.assertTrue(PellCall.stage(b)==PellCall.DONE,"Gail rings, nobody takes it, and June hangs up"))
+        .thenIdle(12).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("Beat")>=own.getInt("Visit")&&own.getInt("Visit")==1,"the visit is the reader's: "+own);
+            h.assertTrue(own.getInt("DoneVisit0566")==1&&own.getInt("ToldToGo0566")==0,"seen to be had, and nothing said yet: "+own);
+            h.assertFalse(told(p).contains(hint),"the House has not told them to go before the visit was theirs");
+            // On to June's moment, without waiting it out.
+            own.putLong("DoneAt0566",l.getGameTime()-PellHouse.SEND_OUT);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_SEND_OUT),"June sends them out: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenExecute(()->{
+            h.assertFalse(told(p).contains(hint),"and the House says nothing over her");
+            var own=f.own(p,P);own.putLong("DoneAt0566",l.getGameTime()-PellHouse.HINT);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);
+        }).thenIdle(12).thenExecute(()->{
+            h.assertTrue(told(p).contains(hint),"the House tells them, once");
+            h.assertTrue(f.own(p,P).getInt("ToldToGo0566")==2,"and keeps that it has");
+        }).thenIdle(40).thenExecute(()->{
+            h.assertFalse(told(p).contains(hint),"not again straight away");
+            var own=f.own(p,P);own.putLong("DoneAt0566",l.getGameTime()-PellHouse.AGAIN);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);
+        }).thenIdle(12).thenExecute(()->{
+            h.assertTrue(told(p).contains(hint),"once more, later, in passing");
+            h.assertTrue(f.own(p,P).getInt("ToldToGo0566")==3,"and that is the last of it");
+            done();
+        }).thenSucceed();
+    }
     private static void keep(LiteraryTests.Fixture f,ServerPlayer p,String key){var own=f.own(p,P);own.putBoolean(key,true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);}
     private static boolean telling(ServerPlayer p,String speaker,String line){return Talk.lines(p).contains(speaker+": "+line);}
 

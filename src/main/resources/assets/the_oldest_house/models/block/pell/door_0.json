@@ -4,6 +4,7 @@
   "textures": {
     "o": "the_oldest_house:block/pell/door_inner_0",
     "i": "the_oldest_house:block/pell/door_inner_0",
+    "k": "the_oldest_house:block/pell/door_knob",
     "particle": "the_oldest_house:block/pell/door_inner_0"
   },
   "elements": [
@@ -60,6 +61,134 @@
             16,
             16
           ]
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        12.75,
+        6.75
+      ],
+      "to": [
+        14.5,
+        14.75,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        13.25,
+        6
+      ],
+      "to": [
+        14,
+        14.25,
+        6.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        12.75,
+        9
+      ],
+      "to": [
+        14.5,
+        14.75,
+        9.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        13.25,
+        9.25
+      ],
+      "to": [
+        14,
+        14.25,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
         }
       }
     }

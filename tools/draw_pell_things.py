@@ -1961,12 +1961,24 @@ def thing_models():
                              element([5, 11, 9.5], [10, 11.6, 12.5], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'up': 'c'})],
                             {'d': 'wood_dark', 'r': 'remote', 'e': 'enamel', 'g': 'mug_top', 'c': 'tape_case'}, 'wood_dark')
     for lit in range(2):
-        shade_el = element([4, 18, 4], [12, 25, 12], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'},
-                           rot={'origin': [8, 18, 8], 'axis': 'x', 'angle': -22.5})
-        if lit:
-            shade_el['shade'] = False
-            shade_el['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
-        out[f'floor_lamp_{lit}'] = m([box([5, 0, 5], [11, 1, 11], 'b'), box([7.5, 1, 7.5], [8.5, 20, 8.5], 'b'), shade_el],
+        # 0.4.566 (owner: "lamp texture is malformed"): the shade was one box tipped at an angle on the pole, its sides mapped from
+        # past the top of their picture, so they showed whatever lay beyond it. Now a drum shade flared at its foot, straight on the
+        # pole: three bands, each its own strip of the pleated cloth (the hem at the foot), closed over the top.
+        sides = ('north', 'south', 'east', 'west')
+        shade_els = []
+        for y0, y1, a, b, rows in ((17, 20, 3.5, 12.5, (10, 16)), (20, 22.5, 4, 12, (5, 10)), (22.5, 24.5, 4.5, 11.5, (0, 5))):
+            faces = {k: 's' for k in sides}
+            uv = {k: [0, rows[0], 16, rows[1]] for k in sides}
+            if y0 == 17:
+                faces['down'] = 's'; uv['down'] = [a, a, b, b]
+            if y1 == 24.5:
+                faces['up'] = 's'; uv['up'] = [a, a, b, b]
+            el = element([a, y0, a], [b, y1, b], faces, uv=uv)
+            if lit:
+                el['shade'] = False
+                el['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
+            shade_els.append(el)
+        out[f'floor_lamp_{lit}'] = m([box([5, 0, 5], [11, 1, 11], 'b'), box([6.5, 1, 6.5], [9.5, 1.5, 9.5], 'b'), box([7.5, 1.5, 7.5], [8.5, 17, 8.5], 'b'), *shade_els],
                                      {'b': 'brass', 's': 'lamp_shade_lit' if lit else 'lamp_shade'}, 'lamp_shade')
     out['window_seat_0'] = m([element([0, 0, 2], [16, 6, 16], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'}),
                               element([0, 6, 2], [16, 9, 16], {'up': 'c', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c'})],
@@ -2220,7 +2232,9 @@ def thing_models():
         under['faces'][face]['uv'] = [0, 0, 1, 3]
     loop = [element([6.5, -3, 14.25], [7.5, 3, 15], cord, uv={k: [7, 0, 8, 6] for k in cord}),
             element([8.5, -3, 14.25], [9.5, 1, 15], cord, uv={k: [8, 0, 9, 4] for k in cord}), under]
-    out_ = element([7.5, -7, 14.25], [8.5, 1, 15], cord, uv={k: [7, 0, 8, 8] for k in cord}, rot={'origin': [8, 1, 14.6], 'axis': 'x', 'angle': 45})
+    # 0.4.566: off the hook, only the cord's root at the foot of the plate: the cord itself is drawn from here to the receiver in June's
+    # hand, wherever she has it (client/PellPhoneCord), since a stub hanging into the air never reached her.
+    out_ = element([7.5, 0, 14.25], [8.5, 1, 15], {**cord, 'down': 'c'}, uv={k: [7, 0, 8, 1] for k in (*cord, 'down')})
     hook = element([7, 12, 14], [9, 13, 15], {k: 'p' for k in ('north', 'east', 'west', 'up', 'down')}, uv={k: [7, 2, 9, 3] for k in ('north', 'east', 'west', 'up', 'down')})
     phone_tex = {'p': 'phone_plate', 'h': 'phone_handset', 'c': 'phone_cord', 't': 'phone_tape'}
     out['phone_0'] = m([plate, tape, *handset, *loop], phone_tex, 'phone_plate')

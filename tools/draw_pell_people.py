@@ -8,7 +8,7 @@ and Gail's folder. Drawn at sixteen pixels to the block. The people themselves a
 0.4.527 (docs/PELL_HOUSE_BEDTIME_0_4_527.md): June's hairbrush, in her hand while she brushes Tilly's hair at bedtime.
 
 0.4.530 (docs/PELL_HOUSE_NIGHT_0_4_530.md): what June carries out at night: her battery lantern, the tin of paint by its wire
-handle, and the brush she paints the line with. The brush is drawn flat, as the hairbrush is. The lantern and the tin hang from her
+handle, and the brush she paints the line with. The brush is drawn flat (0.4.566: the hairbrush is solid now). The lantern and the tin hang from her
 hand, upright whichever way she turns, so they are built from the things' own block art (tools/draw_pell_things.py), not drawn here:
 the lantern is the one she sets down on the grass, its globe lit, and the tin is the one from the bench with its wire handle up.
 
@@ -315,40 +315,82 @@ def saucepan():
     return im
 
 
-BRUSH_HEAD = ['...........OOO..', '.........OOxxxO.', '........OxxxxxxO', '.......OxxxxxxxO', '.......OxxxxxxxO', '......OxxxxxxxO.',
-              '......OxxxxxxxO.', '......OxxxxxxO..', '.......OxxxOO...', '........OOO.....']
-
-
 def hairbrush():
-    """June's hairbrush, held as the saucepan is, bristle side up: a paddle of oiled wood at the top right, its rim lit toward the
-    upper left and dark round the lower right; a dark cushion in it set with bristles, their pale tips in rows and the ones between
-    them deeper in; and the handle down to the bottom left along the paddle's line, rounded (lit, middle, shaded across it), worn pale
-    where the thumb goes."""
+    """0.4.566 (owner, of the brush in June's hand at bedtime: "any way to improve that?"; it was this picture drawn flat, held up like
+    a paddle above Tilly's head, as big as the girl's head). The sheet for June's hairbrush as a small solid thing (hairbrush_model):
+    one texel to a unit of the model, which she holds at half size. The bristle side, a dark cushion set in rows of pale tufts
+    (0-4, 0-5); the back of the paddle, oiled wood with its grain, lit from the upper left (4-9, 0-6); its edge (9-11) and its face
+    round the cushion (11-16); its top and bottom (0-5, 6-8) and the round of its crown (5-8, 6-7; 8-11, 6-8); the cushion's sides
+    and ends (11-12, 6-11; 12-16, 6-7); and the handle, rounded, lit along one side and worn pale where the thumb goes (0-9, 9-16)."""
     im = blank()
-    head = {(x, y) for y, r in enumerate(BRUSH_HEAD) for x, c in enumerate(r) if c == 'x'}
-    rim = {(x, y) for y, r in enumerate(BRUSH_HEAD) for x, c in enumerate(r) if c == 'O'}
-    for (x, y) in rim:
-        dot(im, x, y, '#3b2415')
-    for (x, y) in head:
-        toward = 15 - (x + y)  # how far up and to the left of the paddle's line
-        if edge(head, x, y):
-            tone = '#d2a46e' if toward >= 3 else '#b07a44' if toward >= 0 else '#87582f' if toward >= -3 else '#61401f'
-            dot(im, x, y, '#e3bd8c' if y <= 1 and toward >= -1 else tone)
-        elif x % 2 == 1 and y % 2 == 1:
-            dot(im, x, y, '#f2e8cf' if toward >= 0 else '#c8b89c')
-        elif x % 2 == 0 and y % 2 == 0:
-            dot(im, x, y, '#6a5a4c' if toward >= 0 else '#4e4038')
-        else:
-            dot(im, x, y, '#3d312c' if toward >= 4 else '#2c2320')
+    light, mid, deep, dark, edge_ = '#c99a63', '#a56f3c', '#83542b', '#6a421f', '#4a2c14'
+    for y in range(5):
+        for x in range(4):
+            tip = (x + y) % 2 == 0
+            dot(im, x, y, ('#f2e8cf' if x + y < 4 else '#d6c7a6') if tip else ('#3d312c' if x + y < 4 else '#2c2320'))
+    for y in range(6):
+        for x in range(4, 9):
+            k = (x - 4) + y * .6
+            tone = light if k < 1.5 else mid if k < 3.5 else deep if k < 5.5 else dark
+            dot(im, x, y, tone)
+        dot(im, 4, y, '#d8ae7c' if y < 4 else light)
+    for x in range(4, 9):
+        if x % 2 == 1:
+            for y in range(1, 5):
+                dot(im, x, y, shade(im.getpixel((x, y)), -14))
+    for y in range(6):
+        dot(im, 9, y, mid if y < 3 else deep); dot(im, 10, y, deep if y < 3 else dark)
+        for x in range(11, 16):
+            dot(im, x, y, deep if x in (11, 15) or y in (0, 5) else '#2c2320')
+    for x in range(5):
+        dot(im, x, 6, light if x < 3 else mid); dot(im, x, 7, deep if x < 3 else dark)
+    for x in range(5, 8):
+        dot(im, x, 6, mid)
+    for x in range(8, 11):
+        dot(im, x, 6, light); dot(im, x, 7, mid)
+    for y in range(6, 11):
+        dot(im, 11, y, '#3d312c' if y % 2 else '#d6c7a6')
+    for x in range(12, 16):
+        dot(im, x, 6, '#d6c7a6' if x % 2 else '#3d312c')
     for y in range(9, 16):
-        for k, tone in ((-1, '#b98249'), (0, '#8c5a31'), (1, '#5b381e')):
-            x = 15 - y + k
-            if 0 <= x < 16 and (x, y) not in rim and (x, y) not in head and not (y == 9 and k == 1):
-                dot(im, x, y, tone)
-    for x, y in ((3, 12), (4, 11)):
-        dot(im, x, y, '#dcae7a')
-    dot(im, 0, 15, '#3b2415'); dot(im, 1, 15, '#3b2415'); dot(im, 0, 14, '#5b381e')
+        dot(im, 0, y, light); dot(im, 1, y, mid)
+        dot(im, 2, y, mid); dot(im, 3, y, deep)
+        if y in (11, 12):
+            dot(im, 0, y, '#dcae7a'); dot(im, 2, y, '#b98249')
+    for x in range(4, 9):
+        for y in range(9, 11):
+            dot(im, x, y, mid if (x + y) % 2 else deep)
+    dot(im, 4, 9, light); dot(im, 8, 10, edge_)
     return im
+
+
+def hairbrush_model():
+    """0.4.566: June's hairbrush as a small solid thing, drawn from its sheet (hairbrush): the handle up from the bottom of the model,
+    the neck, the paddle with the round of its crown, and the cushion of bristles standing out of the paddle's face on the north.
+    In her hand its handle is in her fist and the paddle runs on past her knuckles, bent down from her forearm, its bristles turned
+    to her hand's underside: with her arm out over Tilly's head the bristles are on the girl's hair. Half size: in her hand it is a
+    third of a block long, a hand's length beside her."""
+    t = NS + 'item/pell_hairbrush'
+    def el(lo, hi, f):
+        return {'from': list(lo), 'to': list(hi), 'faces': {k: {'uv': list(v), 'texture': '#b'} for k, v in f.items()}}
+    elements = [
+        el((7, 0, 7.25), (9, 7.5, 8.75), {'north': (0, 9, 2, 16), 'south': (0, 9, 2, 16), 'east': (2, 9, 4, 16), 'west': (2, 9, 4, 16),
+                                          'up': (4, 9, 6, 11), 'down': (4, 9, 6, 11)}),
+        el((7.25, 7.5, 7.5), (8.75, 8.5, 8.5), {'north': (6, 9, 8, 10), 'south': (6, 9, 8, 10), 'east': (8, 9, 9, 10), 'west': (8, 9, 9, 10)}),
+        el((5.5, 8.5, 7), (10.5, 14.5, 9), {'north': (11, 0, 16, 6), 'south': (4, 0, 9, 6), 'east': (9, 0, 11, 6), 'west': (9, 0, 11, 6),
+                                            'down': (0, 6, 5, 8)}),
+        el((6.5, 14.5, 7), (9.5, 15.25, 9), {'north': (5, 6, 8, 7), 'south': (5, 6, 8, 7), 'east': (9, 0, 11, 1), 'west': (9, 0, 11, 1),
+                                             'up': (8, 6, 11, 8)}),
+        el((6, 9, 6), (10, 14, 7), {'north': (0, 0, 4, 5), 'east': (11, 6, 12, 11), 'west': (11, 6, 12, 11), 'up': (12, 6, 16, 7),
+                                    'down': (12, 6, 16, 7)})]
+    hold = {'rotation': [-130, 0, 0], 'translation': [0, -3.5, -1.7], 'scale': [.5, .5, .5]}
+    return {'textures': {'b': t, 'particle': t}, 'elements': elements, 'display': {
+        'thirdperson_righthand': hold, 'thirdperson_lefthand': hold,
+        'firstperson_righthand': {'rotation': [-20, -10, 0], 'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
+        'firstperson_lefthand': {'rotation': [-20, 10, 0], 'translation': [0, 2, 0], 'scale': [.5, .5, .5]},
+        'gui': {'rotation': [0, 180, -45], 'translation': [0, 0, 0], 'scale': [.95, .95, .95]},
+        'ground': {'translation': [0, 3, 0], 'scale': [.4, .4, .4]},
+        'fixed': {'rotation': [0, 180, 0], 'scale': [.75, .75, .75]}}}
 
 
 BRUSH_TIP, BRUSH_END = (14.5, 1.5), (1.5, 14.5)
@@ -742,7 +784,7 @@ def models():
             'fixed': {'scale': [.9, .9, .9]}}}
     return {'pell_cane': cane_model, 'pell_folder': folder_model, 'pell_plate': flat('pell_plate'), 'pell_dinner': flat('pell_dinner'),
             'pell_plate_scraped': flat('pell_plate_scraped'), 'pell_saucepan': flat('pell_saucepan', 'minecraft:item/handheld'),
-            'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
+            'pell_hairbrush': hairbrush_model(), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
             'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
             'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld'),
