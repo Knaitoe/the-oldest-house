@@ -67,6 +67,12 @@ public final class SeatEntity extends Entity {
         setNoGravity(true);
     }
     public void support(BlockPos pos) { support = pos.immutable(); entityData.set(SUPPORT, support); }
+    /**
+     * 0.4.545: a seat a scene has put a reader in on something that is not a seat to a hand (the edge of the Pell house's Nessa's bed,
+     * PellTilly): it stays while they sit on it, and goes when they get up, as any seat does. The server's alone; never saved.
+     */
+    private boolean held;
+    public void hold() { held = true; }
     public BlockPos support() { return entityData.get(SUPPORT); }
     /** Starts the swing from this game tick. */
     public void swing(long now) { entityData.set(SWING_START, (int) now); }
@@ -230,7 +236,7 @@ public final class SeatEntity extends Entity {
             var at = HouseReadSwing.seat(HouseReadSwing.pivot(pair), HouseReadSwing.forward(level().getBlockState(pair.getFirst())), swingAngle(0));
             setPos(at.x, at.y, at.z);
         }
-        if (!level().isClientSide() && (!isVehicle() || !HouseSitting.isSeat(level().getBlockState(support)))) {
+        if (!level().isClientSide() && (!isVehicle() || !held && !HouseSitting.isSeat(level().getBlockState(support)))) {
             if (letGo != null && !isVehicle() && swinging() && HouseSitting.isSeat(level().getBlockState(support)) && !backAtRest()) return;
             if (swinging()) HouseReadSwing.restore(level(), support);
             ejectPassengers();

@@ -73,9 +73,10 @@ public final class PellThing extends HorizontalDirectionalBlock {
      * their head toward the way a bed points; the camp bed points from its head to its foot, so that is the way it does not face. It
      * has no OCCUPIED to set.
      */
-    @Override public boolean isBed(BlockState s,BlockGetter level,BlockPos pos,@javax.annotation.Nullable net.minecraft.world.entity.LivingEntity sleeper){return is(s,Kind.CAMP_BED);}
+    // 0.4.545: and Nessa's bed, for a reader as Tilly to lie in (PellTilly).
+    @Override public boolean isBed(BlockState s,BlockGetter level,BlockPos pos,@javax.annotation.Nullable net.minecraft.world.entity.LivingEntity sleeper){return is(s,Kind.CAMP_BED)||is(s,Kind.BED);}
     @Override public void setBedOccupied(BlockState s,net.minecraft.world.level.Level level,BlockPos pos,net.minecraft.world.entity.LivingEntity sleeper,boolean occupied){}
-    @Override public Direction getBedDirection(BlockState s,net.minecraft.world.level.LevelReader level,BlockPos pos){return is(s,Kind.CAMP_BED)?s.getValue(FACING).getOpposite():s.getValue(FACING);}
+    @Override public Direction getBedDirection(BlockState s,net.minecraft.world.level.LevelReader level,BlockPos pos){return is(s,Kind.CAMP_BED)||is(s,Kind.BED)?s.getValue(FACING).getOpposite():s.getValue(FACING);}
     /** The cell to the right of a thing facing f, as one faces its front: half 1 of a thing two cells wide. */
     public static BlockPos right(BlockPos at,Direction f){return at.relative(f.getCounterClockWise());}
     /** The cell a thing's FACING points to: end 1 of a thing two cells long. */

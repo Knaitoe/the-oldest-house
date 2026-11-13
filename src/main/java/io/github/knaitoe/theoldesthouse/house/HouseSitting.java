@@ -66,7 +66,8 @@ public final class HouseSitting {
         }
         // 0.4.526: the Pell house's kitchen chairs; nobody sits where one of the house's people already is.
         if(io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seat(state)){
-            if(!player.level().getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,new AABB(pos),a->a.isAlive()).isEmpty())return false;
+            // 0.4.545: Tilly standing in for a reader is wherever that reader is, and keeps nobody out of a chair.
+            if(!player.level().getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.class,new AABB(pos),a->a.isAlive()&&!a.pellStandIn()).isEmpty())return false;
             height=io.github.knaitoe.theoldesthouse.labyrinth.PellThing.seatHeight(state)/16.;
         }
         if(state.is(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryRegistry.INTERIOR.get())&&state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.VignetteInteriorBlock.KIND).seat())height=9/16.;

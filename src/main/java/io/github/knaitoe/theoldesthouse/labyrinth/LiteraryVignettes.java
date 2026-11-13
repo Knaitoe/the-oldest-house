@@ -374,7 +374,9 @@ public final class LiteraryVignettes {
         if(s.hasUUID(id)){var e=p.serverLevel().getEntity(s.getUUID(id));return e instanceof LiteraryActor a?a:null;}
         var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(place,privateActor?p.getUUID():null);a.appearance(role,0);a.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(relative)));a.setYRot(0);if(place==LabyrinthPlace.BLY_ROUTE&&role==LiteraryActor.LADY)LiteraryMotion.initialLady(a,base(p,place));if(!p.serverLevel().addFreshEntity(a))return null;s.putUUID(id,a.getUUID());shared(d,place,s);return a;
     }
-    public static boolean watched(ServerLevel l,Vec3 point){for(var p:l.players()){if(!p.isAlive()||p.isSleeping())continue;var delta=point.subtract(p.getEyePosition());double dist=delta.length();if(dist>48||dist>1.5&&p.getLookAngle().dot(delta.normalize())<.26)continue;var hit=l.clip(new ClipContext(p.getEyePosition(),point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));if(hit.getType()==HitResult.Type.MISS||hit.getBlockPos().distManhattan(BlockPos.containing(point))<=1)return true;}return false;}
+    public static boolean watched(ServerLevel l,Vec3 point){return watched(l,point,null);}
+    /** As above, leaving out one player (0.4.545: a reader the house is itself moving, who sees it happen to them). */
+    public static boolean watched(ServerLevel l,Vec3 point,@Nullable UUID but){for(var p:l.players()){if(!p.isAlive()||p.isSleeping()||p.getUUID().equals(but))continue;var delta=point.subtract(p.getEyePosition());double dist=delta.length();if(dist>48||dist>1.5&&p.getLookAngle().dot(delta.normalize())<.26)continue;var hit=l.clip(new ClipContext(p.getEyePosition(),point,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));if(hit.getType()==HitResult.Type.MISS||hit.getBlockPos().distManhattan(BlockPos.containing(point))<=1)return true;}return false;}
     private static boolean rabbitCommitted(CompoundTag own) {
         return own.getBoolean("Committed") && (own.contains("CommitAction") || own.getInt("Meals") > 0);
     }

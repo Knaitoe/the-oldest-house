@@ -86,6 +86,8 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);if(scene.equals(BorrascaStory.PLACE.id())&&BorrascaStory.worker(role(),phase())
             &&passenger instanceof LiteraryActor child&&child.role()==BORRASCA_KIMBER)
         return new net.minecraft.world.phys.Vec3(0,.92,.48).yRot(-getYRot()*(float)Math.PI/180);
+        // 0.4.545: a reader riding the house's Tilly where June leads her stands where she stands (PellTilly).
+        if(pellStandIn())return passenger.getVehicleAttachmentPoint(this);
         return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}
     public int role(){return entityData.get(ROLE);}public int phase(){return entityData.get(PHASE);}public Optional<UUID> owner(){return entityData.get(OWNER);}public String scene(){return scene;}
     @Override public void lerpTo(double x,double y,double z,float yaw,float pitch,int steps){
@@ -169,11 +171,18 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
             @Override public void clientTick(){if(holdsBody()){yBodyRot=getYRot();return;}super.clientTick();}
         };
     }
-    @Override public boolean isPickable(){return !(role()==UNCANNY_FALSE_WAITRESS&&phase()<2)&&!waitingUnseen()&&super.isPickable();}
+    @Override public boolean isPickable(){return !(role()==UNCANNY_FALSE_WAITRESS&&phase()<2)&&!waitingUnseen()&&!pellStandIn()&&super.isPickable();}
+    /**
+     * 0.4.545: the Pell house's Tilly while a reader plays her (PellTilly): hidden, she stands where the reader stands, or carries them
+     * where June leads her. Nothing to aim at or bump into (a hand on Tilly is a hand on the reader), the reader rides at her feet, and
+     * her health is not shown as a mount's. Known to clients by her being hidden.
+     */
+    public boolean pellStandIn(){return holdsBody()&&phase()==PellPeople.FIRST+PellPeople.TILLY&&isInvisible();}
+    @Override public boolean showVehicleHealth(){return !pellStandIn()&&super.showVehicleHealth();}
     /** 0.4.272: the tunnel woman before she comes out: nothing to aim at, strike or be pushed by (UncannyStories.GIANT_HOME). */
     public boolean waitingUnseen(){return role()==UNCANNY_GIANT&&phase()==0||roadDead(role(),phase());}
     @Override public boolean isAttackable(){return !waitingUnseen()&&super.isAttackable();}
-    @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT&&role()!=ROAD_WOMAN)super.pushEntities();}
+    @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT&&role()!=ROAD_WOMAN&&!pellStandIn())super.pushEntities();}
     @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)KitchenVisitors.interact(s,this,p.getItemInHand(hand));return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&SpeakUp.cast(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)SpeakUp.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
     @Override public boolean hurt(DamageSource source,float amount){if(role()==ROAD_WOMAN){if(source.getEntity() instanceof ServerPlayer p)DeerRoad.struck(p,this,amount);return false;}if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(source.getEntity() instanceof ServerPlayer p)KitchenVisitors.struck(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){
         if(role()==BORRASCA_SHERIFF){

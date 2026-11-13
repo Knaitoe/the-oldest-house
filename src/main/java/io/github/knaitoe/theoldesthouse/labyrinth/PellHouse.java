@@ -132,6 +132,10 @@ public final class PellHouse {
             case TV_CABINET->{if(!PellVisit.tvHand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.531: from when June sends them out until breakfast is called, the reader lies down on it.
             case CAMP_BED->{if(!PellMorning.lieDown(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.545: the cane on the hook by the front door, taken, makes its taker Tilly (PellTilly.hook); Nessa's bed is theirs to
+            // sit on the edge of at bedtime and to lie down in at night (PellTilly.bed).
+            case COAT_HOOK->{if(PellTilly.hook(p,b,at,st,own))save(p,own);else cue(p,PellTexts.thing(kind,stage));}
+            case BED->{if(!PellTilly.bed(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.532: in the morning the telephone rings, and it is Gail.
             case PHONE->{if(!PellCall.hand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.536: a week in, the shed's tapes and the deck under its television play (PellTapes).

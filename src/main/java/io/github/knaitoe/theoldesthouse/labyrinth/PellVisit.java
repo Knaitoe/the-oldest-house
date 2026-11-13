@@ -138,7 +138,10 @@ public final class PellVisit {
         if(!h.gailGone)car(l,b,h);
         // 0.4.541: back at first light on the last night, Gail stays (PellDawn).
         if(gail!=null&&h.step>=FIRST_RULE&&!PellDawn.morning(h))leave(l,b,h,gail);
-        if(tilly!=null&&h.step<CALLED)tilly(b,h,june,tilly);
+        // 0.4.545: a reader as Tilly walks themselves.
+        if(tilly!=null&&h.step<CALLED&&h.tillyReader==null)tilly(b,h,june,tilly);
+        // 0.4.545: the older sibling's part of the house is for the readers who are not Tilly (PellTilly.siblings).
+        var sib=PellTilly.siblings(h,here);
         walkers(l,b,h);
         // 0.4.536: the shed's deck, whatever the hour.
         PellTapes.tick(l,b,h,here,now);
@@ -147,14 +150,14 @@ public final class PellVisit {
         // 0.4.540: the lanyard looked for and Nessa where she lies; while the freezer is open, who sees into it.
         if(now%PellFreezer.KEEP==0)PellFreezer.keep(l,b,here);
         if(now%10==0)PellFreezer.seen(l,b,here);
-        if(h.visit>=PellWeek.LAST)PellLastNight.callum(l,b,h,here,now);
+        if(h.visit>=PellWeek.LAST)PellLastNight.callum(l,b,h,sib,now);
         switch(h.step){
             case GREET->{if(gail!=null&&!gail.saying()&&arrived(b,june,gail,here)){say(h,gail,PellPeople.GAIL,PellTexts.GAIL_GREETS,now);h.step=JUNE_HELLO;}}
             case JUNE_HELLO->{if(ready(h,now,june)){say(h,june,PellPeople.JUNE,PellTexts.JUNE_GREETS,now);h.step=GAIL_HANDOVER;}}
             case GAIL_HANDOVER->{if(gail==null)h.step=FIRST_RULE;else if(ready(h,now,gail)){say(h,gail,PellPeople.GAIL,PellTexts.GAIL_READY,now);h.step=GAIL_GOODBYE;}}
             case GAIL_GOODBYE->{if(gail==null)h.step=FIRST_RULE;else if(ready(h,now,gail)){say(h,gail,PellPeople.GAIL,PellTexts.GAIL_GOES,now);h.step=FIRST_RULE;}}
             case FIRST_RULE->{if(ready(h,now,june)){say(h,june,PellPeople.JUNE,PellTexts.JUNE_LINE,now);heard(june,PellTexts.RULE_LINE,here);h.step=TOUR;h.waypoint=0;}}
-            default->{if(h.step>=TOUR&&h.step<SETTLED)stop(l,b,h,june,STOPS[h.step-TOUR],here,now);else if(h.step>=SETTLED)evening(l,b,h,june,here,now);}
+            default->{if(h.step>=TOUR&&h.step<SETTLED)stop(l,b,h,june,STOPS[h.step-TOUR],here,now);else if(h.step>=SETTLED)evening(l,b,h,june,sib,now);}
         }
     }
 
@@ -188,6 +191,8 @@ public final class PellVisit {
         PellFreezer.restart(l,b);
         // 0.4.541: and the morning.
         PellDawn.restart(h);
+        // 0.4.545: the cane back on its hook unless a reader is Tilly here.
+        PellTilly.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);
@@ -209,7 +214,11 @@ public final class PellVisit {
         }
         return false;
     }
-    static void say(PellPeople.Household h,LiteraryActor a,int who,String line,long now){a.say(PellPeople.name(who),line);a.speaks(line);h.next=now+Dialogue.ticks(line)+GAP;}
+    static void say(PellPeople.Household h,LiteraryActor a,int who,String line,long now){
+        // 0.4.545: Tilly's line, with a reader as Tilly, is theirs to say in their own words or not (PellTilly.prompt), in the same time.
+        if(who!=PellPeople.TILLY||!PellTilly.prompt(h,a,line)){a.say(PellPeople.name(who),line);a.speaks(line);}
+        h.next=now+Dialogue.ticks(line)+GAP;
+    }
     /** What was last said has had its time, and whoever speaks next is not in the middle of something. */
     static boolean ready(PellPeople.Household h,long now,LiteraryActor next){return now>=h.next&&!next.saying();}
     /** Every reader near enough to hear it has heard this rule, as their own. */
@@ -376,7 +385,7 @@ public final class PellVisit {
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
         long to=h.step==SETTLED?(h.visit>=2&&(!h.welcomed||PellHand.holds(h))?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellKnife.holds(h)?h.time:h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
-            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?(PellDawn.after(h)?PellMorning.DAWN:PellNight.TWELVE):PellNight.ELEVEN)
+            :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?(h.visit>=PellWeek.LAST?(PellDawn.after(h)||PellTilly.holdingOut(h)?PellMorning.DAWN:PellNight.TWELVE):PellNight.ELEVEN)
             // 0.4.538: on the last night the evening holds until a reader first comes in.
             :h.step>=CLEARED?(h.visit>=PellWeek.LAST&&!h.welcomed?h.time:EVENING):h.time;
         // 0.4.541: on the last night, once the rite is over either way, the rest of the night goes faster, to first light (PellDawn).
@@ -508,7 +517,8 @@ public final class PellVisit {
             case 4->{
                 if(juneStill&&!june.getMainHandItem().isEmpty())june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
                 int t=-1;for(int i=0;i<TABLE.length;i++)if(h.diner[i]==T)t=i;
-                if(t>=0&&h.plate[t]==SERVED&&now-h.servedAt>=TILLY_EATS)plate(l,b,h,t,SCRAPED);
+                // 0.4.545: a reader as Tilly eats theirs, or doesn't (table).
+                if(t>=0&&h.plate[t]==SERVED&&now-h.servedAt>=TILLY_EATS&&h.tillyReader==null)plate(l,b,h,t,SCRAPED);
                 boolean done=t<0||h.plate[t]!=SERVED;
                 for(int i=0;i<TABLE.length;i++)if(h.diner[i]==GUEST&&h.plate[i]==SERVED)done=false;
                 if(!(done||now-h.servedAt>=DINNER_LONGEST)||!juneStill||!ready(h,now,june))return;
@@ -542,7 +552,10 @@ public final class PellVisit {
                 if(h.perch[J]!=JUNE_BED||h.perch[T]!=TILLY_BED){
                     // A walker who came to their side of the bed and found it taken waits there and tries again.
                     if(juneStill&&h.perch[J]==null&&near(june,b,JUNE_BED.beside(),.5))perch(l,b,h,J,june,JUNE_BED);
-                    if(h.way[T].isEmpty()&&h.perch[T]==null&&near(tilly,b,TILLY_BED.beside(),.5))perch(l,b,h,T,tilly,TILLY_BED);
+                    if(h.tillyReader==null&&h.way[T].isEmpty()&&h.perch[T]==null&&near(tilly,b,TILLY_BED.beside(),.5))perch(l,b,h,T,tilly,TILLY_BED);
+                    // 0.4.545: a reader as Tilly sits on the edge of the bed themselves (PellTilly.bed). Not there a while after June is,
+                    // she says goodnight to the bed and goes to send the others out.
+                    if(h.tillyReader!=null&&h.perch[J]==JUNE_BED&&now-h.bedAt>=PellTilly.BED_WAIT&&ready(h,now,june)){say(h,june,J,PellTexts.JUNE_NIGHT_NIGHT,now);goodnight(l,b,h);}
                     return;
                 }
                 june.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(PellRegistry.HAIRBRUSH.get()));june.gesture(PellPeople.BRUSH);tilly.gesture(PellPeople.BRUSHED);
@@ -571,6 +584,8 @@ public final class PellVisit {
         int t=free(l,b,h,0);if(t>=0)h.diner[t]=PellPeople.TILLY;
         int c=free(l,b,h,1);if(c>=0)h.diner[c]=PellPeople.CALLUM;
         if(t>=0)go(h,PellPeople.TILLY,t,TABLE[t].look(),with(TILLY_TO_KITCHEN,TABLE[t].beside()));
+        // 0.4.545: a reader as Tilly comes to it themselves.
+        if(t>=0)PellTilly.cue(l,h,PellTexts.TILLY_R_PLACE);
         if(c>=0)go(h,PellPeople.CALLUM,c,TABLE[c].look(),with(CALLUM_TO_KITCHEN,TABLE[c].beside()));
         go(h,PellPeople.JUNE,-1,TABLE_END.look(),v(TABLE_END.x(),TABLE_END.z()));
         h.calledAt=now;h.step=CALLED;
@@ -609,9 +624,11 @@ public final class PellVisit {
         for(int i=0;i<TABLE.length;i++){if(h.plate[i]==NONE)continue;double d=p.position().subtract(world(b,TABLE[i].plate())).horizontalDistanceSqr();if(d<bestD){bestD=d;best=i;}}
         if(best<0)return false;
         int state=h.plate[best],diner=h.diner[best];
-        if(diner==PellPeople.TILLY){PellHouse.cue(p,state==SCRAPED?PellTexts.TILLYS_EATEN:state==SERVED?PellTexts.TILLYS_PLATE:state==BREAKFAST?PellTexts.TILLYS_BREAKFAST:PellTexts.PLATE_EMPTY);return true;}
+        // 0.4.545: Tilly's place is a reader as Tilly's own.
+        boolean mine=diner==GUEST||diner==PellPeople.TILLY&&PellTilly.isTilly(h,p);
+        if(diner==PellPeople.TILLY&&!mine){PellHouse.cue(p,state==SCRAPED?PellTexts.TILLYS_EATEN:state==SERVED?PellTexts.TILLYS_PLATE:state==BREAKFAST?PellTexts.TILLYS_BREAKFAST:PellTexts.PLATE_EMPTY);return true;}
         if(diner==PellPeople.CALLUM){PellHouse.cue(p,PellTexts.CALLUMS_PLATE);return true;}
-        if(diner!=GUEST){PellHouse.cue(p,h.step>=SERVING&&h.step<PellMorning.RISING||h.step>=PellMorning.LAID?PellTexts.NOBODY_PLACE:PellTexts.PLATE_EMPTY);return true;}
+        if(!mine){PellHouse.cue(p,h.step>=SERVING&&h.step<PellMorning.RISING||h.step>=PellMorning.LAID?PellTexts.NOBODY_PLACE:PellTexts.PLATE_EMPTY);return true;}
         if(state==LAID_PLATE){PellHouse.cue(p,PellTexts.PLATE_EMPTY);return true;}
         if(state==SCRAPED){PellHouse.cue(p,PellTexts.SCRAPED_PLATE);return true;}
         // 0.4.531: breakfast as dinner was.
@@ -710,6 +727,8 @@ public final class PellVisit {
         up(l,b,h,J,JUNE_BED.look(),RECLINER_TO_NESSA);h.perchTo[J]=JUNE_BED;
         var tilly=PellPeople.find(l,b,PellPeople.TILLY);
         if(tilly!=null){unperch(b,h,PellPeople.TILLY,tilly);goPerch(h,PellPeople.TILLY,TILLY_BED,TILLY_TO_BED);}
+        // 0.4.545: a reader as Tilly is told where June is going.
+        PellTilly.cue(l,h,PellTexts.TILLY_R_BED);h.bedAt=now;
         // 0.4.538: on the last night Callum stays out on the line.
         var callum=PellPeople.find(l,b,PellPeople.CALLUM);
         if(callum!=null&&!h.callumStrip)goSleep(h,PellPeople.CALLUM,CALLUM_SLEEPS,0,CALLUM_TO_BED);
@@ -738,13 +757,21 @@ public final class PellVisit {
                 if(!week){tuck(l,b,h,tilly);say(h,june,J,PellTexts.JUNE_NIGHT_NIGHT,now);goodnight(l,b,h);return;}
                 say(h,june,J,PellTexts.JUNE_NIGHT_NESSA,now);present(june,"HeardNessaAtBedtime",here);
             }
-            case 5->say(h,tilly,T,PellTexts.TILLY_ITS_TILLY,now);
-            default->{tuck(l,b,h,tilly);say(h,june,J,PellTexts.JUNE_NIGHT_TILLY,now);goodnight(l,b,h);return;}
+            case 5->{
+                // 0.4.545: a reader as Tilly answers the name on the panel, or says nothing; June waits a while for it.
+                if(h.tillyReader==null)say(h,tilly,T,PellTexts.TILLY_ITS_TILLY,now);
+                else if(!PellTilly.asked(l,b,h,now,PellTexts.JUNE_NIGHT_NESSA,PellTexts.NIGHT_OWN,PellTexts.NIGHT_YES))return;
+            }
+            default->{tuck(l,b,h,tilly);say(h,june,J,h.tillyReader!=null&&h.tillySaidYes?PellTexts.JUNE_NIGHT_ANSWERED:PellTexts.JUNE_NIGHT_TILLY,now);goodnight(l,b,h);return;}
         }
         h.brushSaid++;
     }
     /** Tilly off the edge of the bed and lying down in it. */
-    private static void tuck(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor tilly){unperch(b,h,PellPeople.TILLY,tilly);lie(l,b,h,PellPeople.TILLY,tilly,TILLY_SLEEPS);}
+    private static void tuck(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor tilly){
+        // 0.4.545: a reader as Tilly is tucked in if they are by the bed (PellTilly.tuck).
+        if(h.tillyReader!=null){PellTilly.tuck(l,b,h);return;}
+        unperch(b,h,PellPeople.TILLY,tilly);lie(l,b,h,PellPeople.TILLY,tilly,TILLY_SLEEPS);
+    }
     /** Goodnight said: June goes to send them out. */
     private static void goodnight(ServerLevel l,BlockPos b,PellPeople.Household h){up(l,b,h,PellPeople.JUNE,AT_LOCK[0].look(),NESSA_TO_SLIDER);h.step=TUCKED;}
     /**
