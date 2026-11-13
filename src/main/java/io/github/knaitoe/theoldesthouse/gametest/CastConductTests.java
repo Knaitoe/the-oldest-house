@@ -67,7 +67,9 @@ public final class CastConductTests {
             h.runAfterDelay(STEP,()->step(h,t+STEP,ticks,done));
         }
         private List<LiteraryActor> people(){
-            var all=new ArrayList<>(l.getEntitiesOfClass(LiteraryActor.class,area,a->a.isAlive()&&!a.isRemoved()&&!a.isInvisible()&&a.owner().map(p.getUUID()::equals).orElse(true)));
+            // The people the game shows this reader (0.4.564: LiteraryActor.broadcastToPlayer, so a second camera on the Ghosts set
+            // meets the lead's family, and nobody meets another reader's own people).
+            var all=new ArrayList<>(l.getEntitiesOfClass(LiteraryActor.class,area,a->a.isAlive()&&!a.isRemoved()&&!a.isInvisible()&&a.broadcastToPlayer(p)));
             all.sort(Comparator.comparing(LiteraryActor::getUUID));return all;
         }
         private void act(){
@@ -75,7 +77,7 @@ public final class CastConductTests {
             if(Talk.waiting(p)){
                 var offered=Talk.replies(p);var speaker=nearest();boolean near=speaker!=null&&speaker.distanceTo(p)<6;
                 boolean wasSaying=near&&speaker.saying();var name=near?speaker.getCustomName():null;
-                if(near)conduct.asking(speaker);
+                if(near)conduct.asking(speaker,p);
                 Talk.reply(p,Talk.token(p),answer++%offered.size());replies++;
                 if(near&&speaker.saying()&&(!wasSaying||!Objects.equals(name,speaker.getCustomName()))){conduct.answered(speaker,"(an answer on the panel)");listen(speaker);}
                 return;
@@ -89,7 +91,7 @@ public final class CastConductTests {
             met.add(a.getUUID());lastSpoken.put(a.getUUID(),now);
             approach(a);p.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());
             var before=Talk.lines(p);boolean wasSaying=a.saying();var name=a.getCustomName();
-            spoken++;conduct.asking(a);p.interactOn(a,InteractionHand.MAIN_HAND);
+            spoken++;conduct.asking(a,p);p.interactOn(a,InteractionHand.MAIN_HAND);
             boolean heard=!Talk.lines(p).equals(before)||a.saying()&&(!wasSaying||!Objects.equals(name,a.getCustomName()));
             if(heard){answered++;conduct.answered(a,"(spoken to)");listen(a);}
         }

@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.564** runs the standard cast checks with two readers in every talking scene: the second comes in through the House's own door, into the same scene where the story is written for a party or is one room for everyone, and into a copy of their own where it is private. All eighteen pass; the checks now follow what each reader is shown. `docs/TOGETHER_CHECKS_0_4_564.md`.
+
 Development candidate **0.4.563** gives Camp Blood a camp each: six readers to a camp, a counselor to each cabin, and the seventh goes to a camp of their own, with its own man keeping his own schedule and its own bell. The hotel stays one building, made for any number of guests. `docs/CAMP_COPIES_0_4_563.md`.
 
 Development candidate **0.4.562** gives Movie Night, Costume Night and Winter Lake a lake each: four readers at Movie Night (one to each canoe), six at Costume Night and four at Winter Lake, and the next reader goes to a lake of their own, with its own night, canoes, cast, clock and Stacey. `docs/LAKE_NIGHT_COPIES_0_4_562.md`.

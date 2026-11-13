@@ -50,7 +50,7 @@ public final class CastConduct implements AutoCloseable {
 
     private final GameTestHelper h;private final ServerLevel level;private final AABB area;private final Supplier<List<ServerPlayer>> readers;
     private Predicate<LiteraryActor> swimming=a->false,floating=a->false,turnsAway=a->false,exempt=a->false;
-    private static final class Track {Vec3 last;boolean first=true,wasRider,wasSeen;final ArrayDeque<double[]> steps=new ArrayDeque<>();int inside,unsupported,dryswim;long reported;}
+    private static final class Track {Vec3 last;boolean first=true,wasRider,wasSeen;final ArrayDeque<double[]> steps=new ArrayDeque<>();int inside,unsupported,dryswim;long reported;List<ServerPlayer> shown=List.of();}
     /** Ticks after the checks begin during which people a scene sets out as the reader arrives are not said to appear. */
     public static final int ARRIVAL=40;
     private final Map<UUID,Track> tracks=new HashMap<>();
@@ -58,8 +58,8 @@ public final class CastConduct implements AutoCloseable {
      * A line to be checked for the turn: who said it, when the check is due, how many ticks the speaker had lived when it was said,
      * and whether the check has already been put off once because the reader had just been moved.
      */
-    private record Turn(LiteraryActor who,String text,long due,int lived,boolean again){
-        Turn(LiteraryActor who,String text,long due){this(who,text,due,who.tickCount,false);}
+    private record Turn(LiteraryActor who,String text,long due,int lived,boolean again,@javax.annotation.Nullable UUID to){
+        Turn(LiteraryActor who,String text,long due,@javax.annotation.Nullable UUID to){this(who,text,due,who.tickCount,false,to);}
     }
     /** Where each reader stood on each of the last ten ticks. */
     private final Map<UUID,ArrayDeque<Vec3>> trails=new HashMap<>();
@@ -67,6 +67,10 @@ public final class CastConduct implements AutoCloseable {
     private final Map<String,Long> said=new HashMap<>();
     /** When a reader last spoke to each person: their answer to it may be the same answer as before. */
     private final Map<UUID,Long> asked=new HashMap<>();
+    /** 0.4.564: and which reader it was, so that the answer is checked for turning to them rather than to whoever stands nearest. */
+    private final Map<UUID,UUID> askedBy=new HashMap<>();
+    /** Every reader who spoke to each person, and when: two readers may speak to the same person at once, and be answered either. */
+    private final Map<UUID,Map<UUID,Long>> askers=new HashMap<>();
     private final Map<String,Integer> counts=new LinkedHashMap<>();
     private final List<String> faults=new ArrayList<>();
     private final BiConsumer<LiteraryActor,String> hearing=this::heard;
@@ -93,9 +97,17 @@ public final class CastConduct implements AutoCloseable {
      * within the next two ticks is an answer, which may be the same answer as last time. Called before the words are said.
      */
     public void asking(LiteraryActor a){if(!closed)asked.put(a.getUUID(),level.getGameTime());}
+    /** As above, by this reader: the person's answer turns to them (with two readers about, not always the nearer one). */
+    public void asking(LiteraryActor a,ServerPlayer by){asking(a);if(!closed){askedBy.put(a.getUUID(),by.getUUID());askers.computeIfAbsent(a.getUUID(),k->new HashMap<>()).put(by.getUUID(),level.getGameTime());}}
+    /** The readers who spoke to this person within a few ticks of {@code when}. */
+    private Set<UUID> askedAround(LiteraryActor a,long when){
+        var out=new HashSet<UUID>();for(var e:askers.getOrDefault(a.getUUID(),Map.of()).entrySet())if(Math.abs(e.getValue()-when)<=5)out.add(e.getKey());return out;
+    }
+    /** The reader who spoke to this person last, if it was within the last two ticks. */
+    private @javax.annotation.Nullable UUID askedJustNow(LiteraryActor a){return level.getGameTime()-asked.getOrDefault(a.getUUID(),Long.MIN_VALUE/2)<=2?askedBy.get(a.getUUID()):null;}
     /** The reader was answered: the person turns to them as for a line of their own. */
     public void answered(LiteraryActor a,String what){
-        if(closed||exempt.test(a))return;turns.add(new Turn(a,what,level.getGameTime()+TURN_TICKS));
+        if(closed||exempt.test(a))return;turns.add(new Turn(a,what,level.getGameTime()+TURN_TICKS,askedBy.get(a.getUUID())));
     }
     /** How many ticks it has watched. */
     public int ticks(){return ticks;}
@@ -111,7 +123,22 @@ public final class CastConduct implements AutoCloseable {
         int n=counts.merge(kind,1,Integer::sum);
         if(n<=4)faults.add("tick "+ticks+": "+name(a)+" "+kind+" "+detail);
     }
-    private boolean seen(LiteraryActor a,List<ServerPlayer> rs){return seenAt(a.position(),a.getEyeHeight(),rs);}
+    private boolean seen(LiteraryActor a,List<ServerPlayer> rs){return seenAt(a.position(),a.getEyeHeight(),shown(a,rs));}
+    /**
+     * 0.4.564: the readers this person is there for at all, as the game sends them (LiteraryActor.broadcastToPlayer): one reader's
+     * own people, kept from the others, neither appear nor vanish nor jump for those others, and do not speak to them.
+     */
+    private static List<ServerPlayer> shown(LiteraryActor a,List<ServerPlayer> rs){return rs.stream().filter(a::broadcastToPlayer).toList();}
+    /** The way a person would face to look at a reader. */
+    private static float want(LiteraryActor a,ServerPlayer to){var d=to.getEyePosition().subtract(a.getEyePosition());return (float)Math.toDegrees(Math.atan2(-d.x,d.z));}
+    /** How far a person's head is from looking at a reader: seated, as far as a head turns, and to someone right behind them over either shoulder. */
+    private static float off(LiteraryActor a,ServerPlayer to){
+        float want=want(a,to);var front=a.seatFront();
+        if(front==null)return Math.abs(Mth.wrapDegrees(want-a.getYHeadRot()));
+        float rel=Mth.wrapDegrees(want-front);
+        return Math.abs(rel)>150?Math.min(Math.abs(Mth.wrapDegrees(front+LiteraryActor.HEAD_TURN-a.getYHeadRot())),Math.abs(Mth.wrapDegrees(front-LiteraryActor.HEAD_TURN-a.getYHeadRot())))
+                :Math.abs(Mth.wrapDegrees(front+Mth.clamp(rel,-LiteraryActor.HEAD_TURN,LiteraryActor.HEAD_TURN)-a.getYHeadRot()));
+    }
     /**
      * Whether a reader, as they are now, can see a body standing at {@code at}. A move is judged by what the readers can see when
      * it happens: from where they stand and the way they look at that moment, at the place left and at the place come to.
@@ -154,14 +181,15 @@ public final class CastConduct implements AutoCloseable {
         var present=new HashSet<UUID>();var bodies=new HashMap<String,Integer>();
         for(var a:level.getEntitiesOfClass(LiteraryActor.class,area,e->e.isAlive()&&!e.isRemoved())){
             if(exempt.test(a))continue;present.add(a.getUUID());
-            var t=tracks.computeIfAbsent(a.getUUID(),k->new Track());boolean seen=seen(a,rs);
+            var t=tracks.computeIfAbsent(a.getUUID(),k->new Track());var to=shown(a,rs);boolean seen=seenAt(a.position(),a.getEyeHeight(),to);
             if(t.first){
                 t.first=false;t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;
-                if(ticks>ARRIVAL&&a.tickCount<3&&seen&&nearest(a,rs)<24)fault(a,"appeared","where a reader could see, at "+at(a.position()));
+                if(ticks>ARRIVAL&&a.tickCount<3&&seen&&nearest(a,to)<24)fault(a,"appeared","where a reader could see, at "+at(a.position()));
+                t.shown=to;
                 continue;
             }
             double moved=a.position().distanceTo(t.last);
-            if(moved>JUMP&&!a.isPassenger()&&!t.wasRider&&(seen||seenAt(t.last,a.getEyeHeight(),rs)||nearest(a,rs)<4))fault(a,"jumped",String.format(Locale.ROOT,"%.1f blocks in a tick, from %s to %s",moved,at(t.last),at(a.position())));
+            if(moved>JUMP&&!a.isPassenger()&&!t.wasRider&&(seen||seenAt(t.last,a.getEyeHeight(),to)||nearest(a,to)<4))fault(a,"jumped",String.format(Locale.ROOT,"%.1f blocks in a tick, from %s to %s",moved,at(t.last),at(a.position())));
             // Moving in steps: over the last second, strides of a third of a block or more where a reader could see, on few ticks with
             // nothing between them. A walk or a slide moves a little every tick; a move nobody sees is how a scene puts people away.
             if(!a.isPassenger()){
@@ -182,13 +210,14 @@ public final class CastConduct implements AutoCloseable {
             // One body each: the same part, for the same reader.
             String key=a.role()+"/"+(a.role()==LiteraryActor.STRANGER?a.phase():-1)+"/"+a.owner().map(UUID::toString).orElse("all");
             if(bodies.merge(key,1,Integer::sum)==2)fault(a,"is there twice","(two bodies for one part)");
-            t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;
+            t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;t.shown=to;
         }
         // Gone where a reader could see.
         for(var it=tracks.entrySet().iterator();it.hasNext();){
             var e=it.next();if(present.contains(e.getKey()))continue;
             var gone=level.getEntity(e.getKey());
-            if(gone==null&&seenAt(e.getValue().last,1.6,rs))faults.add("tick "+ticks+": somebody vanished where a reader could see, at "+at(e.getValue().last));
+            var watching=e.getValue().shown.stream().filter(r->r.isAlive()&&!r.isSpectator()&&r.level()==level).toList();
+            if(gone==null&&seenAt(e.getValue().last,1.6,watching))faults.add("tick "+ticks+": somebody vanished where a reader could see, at "+at(e.getValue().last));
             it.remove();
         }
         // Turned to the reader.
@@ -197,30 +226,35 @@ public final class CastConduct implements AutoCloseable {
             var a=turn.who();if(!a.isAlive()||a.isRemoved()||turnsAway.test(a)||!a.addresses())continue;
             // Somebody whose body has not been ticking (a test world's chunk not yet promoted) has had no chance to turn.
             if(a.tickCount-turn.lived()<TURN_TICKS-4)continue;
-            ServerPlayer to=null;double best=Double.MAX_VALUE;for(var r:rs){double d=r.distanceTo(a);if(d<best){best=d;to=r;}}
+            // The reader they were answering, while that reader is there; otherwise whoever stands nearest.
+            ServerPlayer to=null;double best=Double.MAX_VALUE;
+            var those=shown(a,rs);
+            if(turn.to()!=null)for(var r:those)if(r.getUUID().equals(turn.to())){to=r;best=r.distanceTo(a);}
+            if(to==null)for(var r:those){double d=r.distanceTo(a);if(d<best){best=d;to=r;}}
             if(to==null||best>12||!a.hasLineOfSight(to))continue;
-            if(justMoved(to)){if(!turn.again())later.add(new Turn(a,turn.text(),level.getGameTime()+10,turn.lived(),true));continue;}
-            var d=to.getEyePosition().subtract(a.getEyePosition());float want=(float)Math.toDegrees(Math.atan2(-d.x,d.z));
-            var front=a.seatFront();float off;
-            if(front!=null){
-                // A seated person turns their head as far as a head turns; to someone right behind them, over either shoulder.
-                float rel=Mth.wrapDegrees(want-front);
-                off=Math.abs(rel)>150?Math.min(Math.abs(Mth.wrapDegrees(front+LiteraryActor.HEAD_TURN-a.getYHeadRot())),Math.abs(Mth.wrapDegrees(front-LiteraryActor.HEAD_TURN-a.getYHeadRot())))
-                        :Math.abs(Mth.wrapDegrees(front+Mth.clamp(rel,-LiteraryActor.HEAD_TURN,LiteraryActor.HEAD_TURN)-a.getYHeadRot()));
-            }else off=Math.abs(Mth.wrapDegrees(want-a.getYHeadRot()));
+            if(justMoved(to)){if(!turn.again())later.add(new Turn(a,turn.text(),level.getGameTime()+10,turn.lived(),true,turn.to()));continue;}
+            float off=off(a,to),want=want(a,to);
+            // 0.4.564: a line nobody asked for, with more than one reader there, may be said to any of them in reach and in sight; an
+            // answer is turned to the reader who asked.
+            if(off>TURN_DEGREES&&turn.to()==null)for(var r:those)if(r!=to&&r.distanceTo(a)<=12&&a.hasLineOfSight(r)&&off(a,r)<=TURN_DEGREES){off=off(a,r);break;}
+            // Two readers who spoke to them at once may be answered either.
+            if(off>TURN_DEGREES&&turn.to()!=null){var also=askedAround(a,turn.due()-TURN_TICKS);for(var r:those)if(r!=to&&also.contains(r.getUUID())&&off(a,r)<=TURN_DEGREES){off=off(a,r);break;}}
             if(off>TURN_DEGREES)fault(a,"does not turn to the reader",String.format(Locale.ROOT,"(head %.0f degrees away from reader %s at %s, %.1f blocks off, toward %.0f) after \"%s\" %s",off,to.getUUID().toString().substring(0,8),at(to.position()),best,want,abbreviate(turn.text()),a.addressing()));
         }
         turns.addAll(later);later.clear();
     }
     private void heard(LiteraryActor a,String text){
         if(closed||a.level()!=level||!area.contains(a.position())||exempt.test(a))return;
-        var rs=readers.get().stream().filter(r->r.isAlive()&&!r.isSpectator()&&r.level()==level).toList();
+        var rs=shown(a,readers.get().stream().filter(r->r.isAlive()&&!r.isSpectator()&&r.level()==level).toList());
         if(a.isRemoved()||!a.isAlive())fault(a,"speaks while gone","\""+abbreviate(text)+"\"");
         else if(!rs.isEmpty()&&nearest(a,rs)>EARSHOT)fault(a,"speaks out of earshot",String.format(Locale.ROOT,"(%.0f blocks from the nearest reader) \"%s\"",nearest(a,rs),abbreviate(text)));
         String key=a.getUUID()+"|"+text;long now=level.getGameTime();Long before=said.put(key,now);
         boolean answer=now-asked.getOrDefault(a.getUUID(),Long.MIN_VALUE/2)<=2;
         if(before!=null&&now-before<REPEAT&&!answer)fault(a,"says the same line again",String.format(Locale.ROOT,"after %d ticks: \"%s\"",now-before,abbreviate(text)));
-        turns.add(new Turn(a,text,now+TURN_TICKS));
+        // A line said with no reader in reach and in sight (LiteraryActor.ADDRESS_RANGE, as the person's own turning goes) is said to
+        // nobody: there is nobody to turn to. A reader put near them afterwards is not who it was said to.
+        if(!answer&&rs.stream().noneMatch(r->r.distanceTo(a)<=LiteraryActor.ADDRESS_RANGE&&a.hasLineOfSight(r)))return;
+        turns.add(new Turn(a,text,now+TURN_TICKS,answer?askedJustNow(a):null));
     }
     /**
      * Fails the case with what was found, or says nothing. Every fault goes to the log; the failure itself names the kinds and the
