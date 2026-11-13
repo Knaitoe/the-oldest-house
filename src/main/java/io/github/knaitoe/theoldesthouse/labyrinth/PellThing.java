@@ -81,9 +81,10 @@ public final class PellThing extends HorizontalDirectionalBlock {
     /** The cell a thing's FACING points to: end 1 of a thing two cells long. */
     public static BlockPos ahead(BlockPos at,Direction f){return at.relative(f);}
     /** The bare bulb lights the garage while it is on (stage 0); the standard lamp lights the chair while it is on (stage 1); the
-     * television gives a little while it plays (stage 1); 0.4.530: June's lantern, set down on the grass at night, lights the strip. */
+     * television gives a little while it plays (stage 1); 0.4.530: June's lantern, set down on the grass at night, lights the strip;
+     * 0.4.536: the shed's portable television gives less, while a tape plays (stage 1). */
     public static int light(BlockState s){return switch(s.getValue(KIND)){case BULB->s.getValue(STAGE)==0?13:0;case FLOOR_LAMP->s.getValue(STAGE)==1?10:0;
-        case TV_CABINET->s.getValue(STAGE)==1?6:0;case LANTERN->12;default->0;};}
+        case TV_CABINET->s.getValue(STAGE)==1?6:0;case SHED_TV->s.getValue(STAGE)==1?4:0;case LANTERN->12;default->0;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     private static VoxelShape t(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){return MarshBlock.turned(f,x0,y0,z0,x1,y1,z1);}

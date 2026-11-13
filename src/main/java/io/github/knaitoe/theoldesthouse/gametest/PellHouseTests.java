@@ -1751,4 +1751,158 @@ public final class PellHouseTests {
         .thenSucceed();
     }
     @AfterBatch(batch="pell_hand_away") public static void handAwayDone(ServerLevel l){done();}
+
+    /** Whether a reader's journal keeps a record under this heading whose first line is this, said by this voice. */
+    private static boolean kept(ServerPlayer p,String heading,String who,String line){
+        var all=TalkHistory.conversations(p.server,p.getUUID());
+        for(int i=0;i<all.size();i++){
+            var talk=all.getCompound(i);if(!talk.getString("Who").equals(heading))continue;
+            var lines=talk.getList("Lines",net.minecraft.nbt.Tag.TAG_COMPOUND);
+            if(!lines.isEmpty()&&lines.getCompound(0).getString("S").equals(who)&&lines.getCompound(0).getString("T").equals(line))return true;
+        }
+        return false;
+    }
+    /**
+     * 0.4.536, the tapes (docs/PELL_HOUSE_TAPES_0_4_536.md), with two readers a week in. The shed's padlock hangs open, and a hand opens
+     * its door. One reader in the shed puts on the tape in the deck, the eighth: the screen lights; they are watching it and the other,
+     * out by the pool, is not. Her first line is kept in the watcher's journal under the tape's date, and not by the pool. Watched to its
+     * end, the eighth is kept, before its turn, and the screen goes dark. From the shelf, the spines in order with the eighth's case
+     * empty; the first taken, it plays from its start. The other reader, in after her first line, is not watching it; the first, walked
+     * off past earshot, stops watching; at its end neither has it. Played again with both in the shed, both watch it to its end and are
+     * on to the second, the other in turn. A hand on the set while it plays stops it. The other, through the rest in turn, watches the
+     * ninth from the shelf and has read the tapes; the first has not.
+     */
+    @GameTest(template="empty",batch="pell_tapes",timeoutTicks=6000)
+    public static void aWeekInTheShedIsOpenAndItsTapesPlayForWhoeverIsByTheDeck(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_tapes_watcher",P);var q=f.player("pell_tapes_other",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,6.5,0,-87.5);f.at(q,P,-6.5,0,-82.5);
+        var tv=b.offset(PellTapes.TV);var shelf=b.offset(5,1,-93);var door=b.offset(PellSite.SHED_DOOR);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellHand.skip(b);
+            h.assertFalse(PellSite.open(l,b,PellSite.SHED_DOOR),"the shed shut");
+            told(p);hand(p,door);
+            h.assertTrue(PellSite.open(l,b,PellSite.SHED_DOOR),"a week in its padlock hangs open, and it opens to a hand");
+        }).thenIdle(1).thenExecute(()->{
+            // What a reader is told reaches them at the end of the tick.
+            h.assertTrue(told(p).contains(PellTexts.SHED_OPEN),"the padlock on its hasp");
+            f.at(p,P,5.5,0,-91.5);lookAt(p,net.minecraft.world.phys.Vec3.atCenterOf(tv));
+            hand(p,tv);
+            h.assertTrue(PellTapes.playing(b)&&PellTapes.deck(b)==PellTapes.IN_DECK,"the tape in the deck plays: the eighth");
+            h.assertTrue(thing(l,b,7,1,-93,SHED_TV,1),"the screen lit");
+            h.assertTrue(PellTapes.watchers(b).contains(p.getUUID())&&!PellTapes.watchers(b).contains(q.getUUID()),"watching from the shed, not from the pool: "+PellTapes.watchers(b));
+        })
+        .thenWaitUntil(()->h.assertTrue((f.own(p,P).getLong("TapeLines")&1L<<(PellTapes.IN_DECK*4))!=0,"her first line, heard"))
+        .thenExecute(()->{
+            h.assertTrue(kept(p,PellTexts.tapeHeading(PellTapes.IN_DECK),PellTexts.TAPE_VOICE,PellTexts.TAPE_LINES[PellTapes.IN_DECK][0]),"kept in the journal under its date");
+            h.assertTrue(f.own(q,P).getLong("TapeLines")==0,"not heard by the pool");
+            PellTapes.nearEnd(l,b);
+        })
+        .thenWaitUntil(()->h.assertFalse(PellTapes.playing(b),"to its end"))
+        .thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("TapesWatched")==1<<PellTapes.IN_DECK&&own.getBoolean("WatchedOutOfOrder")&&own.getInt("TapeRun")==0,"the eighth watched, before its turn: "+own);
+            h.assertTrue(f.own(q,P).getInt("TapesWatched")==0,"not from the pool");
+            h.assertTrue(thing(l,b,7,1,-93,SHED_TV,0),"the screen dark");
+            hand(p,shelf);
+            var r=Talk.replies(p);
+            for(int t=0;t<PellTapes.TAPES;t++)h.assertTrue(r.contains(PellTexts.spine(t,false))==(t!=PellTapes.IN_DECK),"the spines on the shelf, the eighth's in the deck: "+r);
+            h.assertTrue(r.size()==PellTapes.TAPES&&r.get(r.size()-1).equals(PellTexts.TAPES_LEAVE),"and leave them: "+r);
+            h.assertTrue(Talk.lines(p).contains("you: "+PellTexts.spine(PellTapes.IN_DECK,true)+"."),"the eighth's case empty: "+Talk.lines(p));
+            told(p);
+            h.assertTrue(Talk.choose(p,PellTexts.spine(0,false)),"the first taken");
+            h.assertTrue(PellTapes.deck(b)==0&&PellTapes.playing(b),"in the deck, playing from its start");
+        }).thenIdle(1).thenExecute(()->h.assertTrue(told(p).contains(PellTexts.TAPE_SWAP),"the deck's back in its case first"))
+        .thenWaitUntil(()->h.assertTrue((f.own(p,P).getLong("TapeLines")&1L)!=0,"its first line"))
+        .thenExecute(()->f.at(q,P,6.5,0,-91.5)).thenIdle(2)
+        .thenExecute(()->{
+            h.assertFalse(PellTapes.watchers(b).contains(q.getUUID()),"in after her first line: not watching it");
+            f.at(p,P,-6.5,0,-82.5);
+        }).thenIdle(2)
+        .thenExecute(()->{
+            h.assertFalse(PellTapes.watchers(b).contains(p.getUUID()),"walked off past earshot: no longer watching");
+            PellTapes.nearEnd(l,b);
+        })
+        .thenWaitUntil(()->h.assertFalse(PellTapes.playing(b),"to its end"))
+        .thenExecute(()->{
+            h.assertTrue(f.own(p,P).getInt("TapesWatched")==1<<PellTapes.IN_DECK&&f.own(q,P).getInt("TapesWatched")==0,"neither has the first");
+            f.at(p,P,5.5,0,-91.5);f.at(q,P,6.5,0,-91.5);
+            hand(q,tv);
+            h.assertTrue(PellTapes.deck(b)==0&&PellTapes.watchers(b).containsAll(List.of(p.getUUID(),q.getUUID())),"played again: both watching from its start");
+            PellTapes.nearEnd(l,b);
+        })
+        .thenWaitUntil(()->h.assertFalse(PellTapes.playing(b),"to its end"))
+        .thenExecute(()->{
+            var mine=f.own(p,P);var theirs=f.own(q,P);
+            h.assertTrue(mine.getInt("TapeRun")==1&&theirs.getInt("TapeRun")==1&&(theirs.getInt("TapesWatched")&1)==1,"both on to the second: "+mine+" / "+theirs);
+            h.assertFalse(theirs.getBoolean("WatchedOutOfOrder"),"the other in turn");
+            hand(q,tv);
+            h.assertTrue(PellTapes.playing(b),"on again");
+        }).thenIdle(1).thenExecute(()->{
+            told(q);hand(q,tv);
+            h.assertFalse(PellTapes.playing(b),"a hand on the set while it plays");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.TAPE_STOP),"the picture goes");
+            PellTapes.asWatched(q,1,2,3,4,5,6,7);
+            hand(q,shelf);
+            h.assertTrue(Talk.choose(q,PellTexts.spine(8,false)),"the ninth from the shelf");
+            PellTapes.nearEnd(l,b);
+        })
+        .thenWaitUntil(()->h.assertFalse(PellTapes.playing(b),"to its end"))
+        .thenExecute(()->{
+            var theirs=f.own(q,P);
+            h.assertTrue(theirs.getInt("TapeRun")==PellTapes.TAPES&&theirs.getBoolean("ReadTheTapes"),"through them all in turn, the tapes read: "+theirs);
+            h.assertFalse(f.own(p,P).getBoolean("ReadTheTapes"),"the first has not");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_tapes") public static void tapesDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.536: on the first visit the shed is padlocked, and the set and the tapes are only what they are. A week in, the reader opens the
+     * shed and waits in it; locked up, at eleven June goes out with her lantern, and with a tape playing she comes in for the tin and turns
+     * the deck off. Nobody has watched it.
+     */
+    @GameTest(template="empty",batch="pell_tapes_rounds",timeoutTicks=9000)
+    public static void theTapesWaitForAWeekInAndJuneTurnsTheDeckOffOnHerRounds(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_tapes_rounds",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        var tv=b.offset(PellTapes.TV);var shelf=b.offset(5,1,-93);var door=b.offset(PellSite.SHED_DOOR);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            h.assertTrue(PellWeek.visit(b)==1,"the first visit");
+            f.at(p,P,6.5,0,-88.5);told(p);
+            hand(p,door);
+            h.assertFalse(PellSite.open(l,b,PellSite.SHED_DOOR),"the shed padlocked");
+            hand(p,tv);
+            h.assertFalse(PellTapes.playing(b),"the set only what it is");
+            hand(p,shelf);
+            h.assertTrue(Talk.replies(p).isEmpty(),"the tapes only what they are");
+        }).thenIdle(1).thenExecute(()->{
+            var said=told(p);
+            h.assertTrue(said.contains(PellTexts.PADLOCKED)&&said.contains(PellTexts.thing(SHED_TV,0))&&said.contains(PellTexts.thing(TAPES,0)),"each says what it is: "+said);
+            keep(f,p,"FirstVisit");PellPeople.vacate(b);
+        })
+        .thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            PellHand.skip(b);
+            hand(p,door);
+            h.assertTrue(PellSite.open(l,b,PellSite.SHED_DOOR),"a week in, the shed opens");
+            f.at(p,P,5.5,0,-91.5);
+            PellNight.lockedUp(l,b);PellVisit.hurry(b,PellNight.ELEVEN-6);
+        })
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellNight.TO_SHED,"June out with her lantern, on her way to the shed"))
+        .thenExecute(()->{
+            hand(p,tv);
+            h.assertTrue(PellTapes.playing(b),"a tape on");
+            told(p);
+        })
+        .thenWaitUntil(()->h.assertFalse(PellTapes.playing(b),"June comes in for the tin"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.TAPE_JUNE_OFF),"and turns the deck off");
+            h.assertTrue(f.own(p,P).getInt("TapesWatched")==0,"nobody has watched it");
+            h.assertTrue(PellVisit.step(b)==PellNight.TO_SHED,"on her rounds, at the bench");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_tapes_rounds") public static void tapesRoundsDone(ServerLevel l){done();}
 }

@@ -5415,5 +5415,31 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pell.hand"
+  },
+  "pell.tape_play": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/tape_play",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.tape_play"
+  },
+  "pell.tape_voice": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/tape_voice_1",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "the_oldest_house:pell/tape_voice_2",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "the_oldest_house:pell/tape_voice_3",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.tape_voice"
   }
 }

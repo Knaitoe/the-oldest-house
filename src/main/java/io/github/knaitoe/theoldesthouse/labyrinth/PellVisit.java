@@ -138,6 +138,8 @@ public final class PellVisit {
         if(gail!=null&&h.step>=FIRST_RULE)leave(l,b,h,gail);
         if(tilly!=null&&h.step<CALLED)tilly(b,h,june,tilly);
         walkers(l,b,h);
+        // 0.4.536: the shed's deck, whatever the hour.
+        PellTapes.tick(l,b,h,here,now);
         switch(h.step){
             case GREET->{if(gail!=null&&!gail.saying()&&arrived(b,june,gail,here)){say(h,gail,PellPeople.GAIL,PellTexts.GAIL_GREETS,now);h.step=JUNE_HELLO;}}
             case JUNE_HELLO->{if(ready(h,now,june)){say(h,june,PellPeople.JUNE,PellTexts.JUNE_GREETS,now);h.step=GAIL_HANDOVER;}}
@@ -169,7 +171,7 @@ public final class PellVisit {
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
         // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart); 0.4.532, and Gail's call.
-        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);PellHand.restart(l,b,h);
+        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);PellKnife.restart(l,b,h);PellHand.restart(l,b,h);PellTapes.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);

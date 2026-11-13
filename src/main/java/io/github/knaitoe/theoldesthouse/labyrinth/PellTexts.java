@@ -449,6 +449,56 @@ public final class PellTexts {
             default->named?List.of("Nothing to say? All right.","It's going on your file, love."):List.of("That's all right, love.","You keep out of it.");
         };
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.536, the tapes (PellTapes)
+    /** The dates on the spines, in the order she made them; each picture has the same date stamped in its corner (tools/draw_pell_tapes.py). */
+    public static final String[] TAPE_DATES={"2 March","9 March","16 March","23 March","30 March","6 April","13 April","20 April","27 April"};
+    /** The two spines whose dates are written over, as the shelf's own line has it: the sixth and the eighth. */
+    public static boolean writtenOver(int tape){return tape==5||tape==7;}
+    /**
+     * What the woman on each tape says, in the order she made them, to somebody off camera who has lost a child. In fragments: the
+     * ring, the one kept inside it, the other child, the water. Nothing says what the boy is, or whether any of it works.
+     */
+    public static final String[][] TAPE_LINES={
+        {"Is it on? The little light's on. Good.",
+         "You asked me how. I'll show you once, and you watch it as often as you need to.",
+         "Don't ring me about it after. And don't tell a soul, not even family."},
+        {"First, the ring. Paint is best. Salt blows away, and chalk washes off.",
+         "One ring, all the way round. No gap in it, not a door's width, not a finger's.",
+         "What you call back can't go where the ring isn't. That's all a ring is."},
+        {"Round the house, not round a room. You'll want to keep it small. Don't.",
+         "It goes looking for the thin place, so go round every night with the brush.",
+         "If it's scuffed in the morning, it was tested. Paint it again."},
+        {"Now. It won't stay in an empty ring. It needs somebody to stay in.",
+         "A child holds it best. One nobody will come asking after.",
+         "Keep him inside the ring. He mustn't ever cross it, or it goes out with him."},
+        {"He doesn't eat. I know how that sounds. Water, yes. Never food.",
+         "Food brings him back into himself, and what he's holding goes.",
+         "Lay him a place at every meal all the same. It has to think it's at a table."},
+        {"Then you want the other one. A girl, as near to yours as you can find.",
+         "Near in the way that matters. You'll know it when you see her sit down.",
+         "Not one with people who'd come looking. One that's been passed about."},
+        {"She has to answer to the name. Say it every day. Say it as if you forgot.",
+         "Give her the room. The clothes, the brush. Let her sleep where yours slept.",
+         "The day she turns her head to it without thinking, she's ready."},
+        {"It's done in water. Where you lost yours, if you can bear it.",
+         "Warm it. Leave the light on under it. She shouldn't be frightened.",
+         "Say the name the whole time. Keep her under till she answers to it.",
+         "Then it's poured into her, and you'll have yours back."},
+        {"The boy you can let go of, once it's poured. He won't remember the ring.",
+         "That's all of it. I'm tired now.",
+         "Turn it off. Then wind it back, and watch it again from the start."}};
+    /** Over her lines, as a caption from the television; and the heading her lines are kept under in the reader's journal. */
+    public static final String TAPE_VOICE="On the tape";
+    public static String tapeHeading(int tape){return "A tape, "+TAPE_DATES[tape];}
+    /** The shelf, on the conversation panel: the spines, in order, the deck's tape's case empty. */
+    public static final String TAPES_WHO="The tapes",TAPES_LOOK="Tapes in plain cases, a date on each spine in the same hand.",TAPES_LEAVE="Leave them";
+    public static String spine(int tape,boolean inDeck){return TAPE_DATES[tape]+(writtenOver(tape)?", written over":"")+(inDeck?". The case is empty":"");}
+    /** A hand on the television: the deck plays the tape that is in it, or the picture goes. */
+    public static final String TAPE_PLAY="The deck clunks and the screen comes up.",TAPE_STOP="The picture goes.",
+        /** From the shelf: the tape in the deck back in its case first. */
+        TAPE_SWAP="The tape in the deck goes back in its case. The deck takes the other.",
+        /** On her rounds, come in for the tin while a tape plays. */
+        TAPE_JUNE_OFF="June turns the deck off.";
     public static final String[] JUNE_WEEK_TALK={
         "There you are, love. Dinner's at six.",
         "I go in the pool first thing, every morning. Clears the head.",

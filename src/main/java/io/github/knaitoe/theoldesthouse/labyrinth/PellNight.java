@@ -151,7 +151,8 @@ public final class PellNight {
                         PellVisit.go(h,J,-1,180,INTO_SHED);h.waypoint=1;
                     }
                     case 1->{
-                        // The tin and its brush off the bench, and out again.
+                        // The tin and its brush off the bench, and out again; 0.4.536, the deck turned off if a tape is playing.
+                        PellTapes.juneStops(l,b,h,here);
                         var at=b.offset(BENCH_TIN);if(PellThing.is(l.getBlockState(at),PellThing.Kind.TIN))l.setBlock(at,Blocks.AIR.defaultBlockState(),3);
                         june.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(PellRegistry.PAINT_TIN.get()));
                         l.playSound(null,at,SoundEvents.CHAIN_HIT,SoundSource.BLOCKS,.35F,1.4F);

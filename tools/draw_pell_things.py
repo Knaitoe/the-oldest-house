@@ -1293,11 +1293,27 @@ def deck_front():
     return im
 
 
-def portable_tv():
-    """The portable television: grey plastic, a small screen, a handle on top, an aerial bent back."""
+def portable_tv(lit=False):
+    """The portable television: grey plastic, a small screen, a handle on top, an aerial bent back. 0.4.536: lit while a tape plays in
+    the deck under it (PellTapes), its screen a cold grey glow with the tape's lines across it; the picture itself is drawn over it on
+    the reader's own client (client.PellTapeClient)."""
     im = plastic('#7a7e80', 52277)
     bevel(im, 0, 0, 16, 16, 14)
-    fill(im, 1, 2, 12, 12, '#1c1e1e'); fill(im, 2, 3, 11, 11, '#3a4040'); inset(im, 2, 3, 11, 11, 8)
+    fill(im, 1, 2, 12, 12, '#1c1e1e')
+    if lit:
+        fill(im, 2, 3, 11, 11, '#8a9aa4')
+        for y in range(3, 11):
+            for x in range(2, 11):
+                dot(im, x, y, shade('#8a9aa4', (5 if y % 2 else -9) + ((x * 7 + y * 3) % 5) * 3))
+        fill(im, 2, 7, 11, 8, '#b4c2c8')
+        dot(im, 13, 4, '#e86040'); dot(im, 13, 5, '#4a4e50')
+        for y in (6, 8):
+            dot(im, 13, y, '#d8d8d4'); dot(im, 13, y + 1, '#4a4e50')
+        for y in range(10, 14):
+            if y % 2 == 0:
+                fill(im, 13, y, 15, y + 1, '#5a5e60')
+        return im
+    fill(im, 2, 3, 11, 11, '#3a4040'); inset(im, 2, 3, 11, 11, 8)
     dot(im, 3, 4, '#5a6464'); dot(im, 4, 4, '#4e5858'); dot(im, 3, 5, '#4e5858')
     for y in (4, 6, 8):
         dot(im, 13, y, '#d8d8d4'); dot(im, 13, y + 1, '#4a4e50')
@@ -1554,7 +1570,7 @@ def garage():
 
 
 def shed():
-    return {'tapes_0': tape_spines(0), 'tapes_1': tape_spines(1), 'bench_top': bench_top(), 'deck_front': deck_front(), 'portable_tv': portable_tv(),
+    return {'tapes_0': tape_spines(0), 'tapes_1': tape_spines(1), 'bench_top': bench_top(), 'deck_front': deck_front(), 'portable_tv': portable_tv(), 'portable_tv_lit': portable_tv(True),
             'tin': tin(0), 'tin_lid_line': tin_lid_line(), 'tin_paint': tin_paint(), 'transcript_0': transcript(0), 'transcript_1': transcript(1), 'transcript_2': transcript(2),
             'chemist_0': chemist_calendar(0), 'chemist_1': chemist_calendar(1), 'chemist_2': chemist_calendar(2)}
 
@@ -1969,10 +1985,12 @@ def thing_models():
         if tins:
             els += [element([2 + i * 4, 4, 7], [5 + i * 4, 8, 10], {'north': 'n', 'south': 'n', 'east': 'n', 'west': 'n', 'up': 'k'}) for i in range(3)]
         out[f'workbench_{tins}'] = m(els, {'t': 'bench_top', 'w': 'shelf_wood', 'n': 'tin', 'k': 'tin_lid'}, 'bench_top')
-    out['shed_tv_0'] = m([element([1, -1, 4], [15, 2, 14], {'north': 'd', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'}),
-                          element([2, 2, 5], [13, 12, 14], {'north': 'v', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'}),
-                          box([5, 12, 9], [10, 13, 10], 'g'), box([11, 12, 10], [11.5, 20, 10.5], 'c')],
-                         {'d': 'deck_front', 'v': 'portable_tv', 'g': 'grey_plastic', 'c': 'chrome'}, 'portable_tv')
+    # 0.4.536: 1 while a tape plays (PellTapes): the screen lit and the deck's light on.
+    for lit in range(2):
+        out[f'shed_tv_{lit}'] = m([element([1, -1, 4], [15, 2, 14], {'north': 'd', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'}),
+                                   element([2, 2, 5], [13, 12, 14], {'north': 'v', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'}),
+                                   box([5, 12, 9], [10, 13, 10], 'g'), box([11, 12, 10], [11.5, 20, 10.5], 'c')],
+                                  {'d': 'deck_front', 'v': 'portable_tv_lit' if lit else 'portable_tv', 'g': 'grey_plastic', 'c': 'chrome'}, 'portable_tv')
     # On the bench: it stands on the bench's top, a pixel below this cell.
     out['tin_0'] = m([element([4, -1, 4], [11, 7, 11], {'north': 'l', 'south': 'n', 'east': 'n', 'west': 'n', 'up': 'k'}),
                       element([11, -1, 6], [15, 0, 8], {'up': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'})],

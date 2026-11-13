@@ -2,7 +2,9 @@
 handed the siblings over (docs/PELL_HOUSE_VISIT_0_4_525.md), heard from inside the house; and (docs/PELL_HOUSE_BEDTIME_0_4_527.md)
 the home tape June plays in the evening, a birthday sung in her kitchen, through the television; the hairbrush at bedtime; and the
 lock turning on each door when she locks up. From docs/PELL_HOUSE_NIGHT_0_4_530.md: her brush on the line at night, and the tin's
-lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and June's cry.
+lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and June's cry. From docs/PELL_HOUSE_TAPES_0_4_536.md: the
+shed's video deck taking a tape, and the woman on the tapes talking, through the television's small speaker (three takes, so her
+lines are not one clip over and over).
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -20,7 +22,20 @@ ROWS = {
     'paint': ('A paintbrush, in strokes', 14),
     'tin': ("A paint tin's lid", 10),
     'hand': ('A door slams, and a cry', 24),
+    'tape_play': ('A video deck takes a tape', 12),
+    'tape_voice': ("A woman's voice, on a tape", 12),
 }
+# 0.4.536: sounds with more than one take; the game picks one each time.
+TAKES = {'tape_voice': 3}
+
+
+def files(name):
+    n = TAKES.get(name, 1)
+    return [name] if n == 1 else [f'{name}_{i}' for i in range(1, n + 1)]
+
+
+def entry(name, reach):
+    return {'sounds': [{'name': f'the_oldest_house:pell/{f}', 'attenuation_distance': reach} for f in files(name)], 'subtitle': f'subtitles.the_oldest_house.pell.{name}'}
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
 
@@ -28,9 +43,10 @@ def check():
     sounds = json.loads((ASSET_ROOT / 'sounds.json').read_text())
     lang = json.loads((ASSET_ROOT / 'lang/en_us.json').read_text())
     for name, (subtitle, reach) in ROWS.items():
-        path = ASSET_ROOT / f'sounds/pell/{name}.ogg'
-        assert path.exists() and path.stat().st_size > 1000, path
-        assert sounds[f'pell.{name}'] == {'sounds': [{'name': f'the_oldest_house:pell/{name}', 'attenuation_distance': reach}], 'subtitle': f'subtitles.the_oldest_house.pell.{name}'}, name
+        for f in files(name):
+            path = ASSET_ROOT / f'sounds/pell/{f}.ogg'
+            assert path.exists() and path.stat().st_size > 1000, path
+        assert sounds[f'pell.{name}'] == entry(name, reach), name
         assert lang[f'subtitles.the_oldest_house.pell.{name}'] == subtitle, name
     print(f'Verified the Pell house\'s {len(ROWS)} original cues.')
 
@@ -242,18 +258,81 @@ def hand():
     return out
 
 
-MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand}
+def tape_play():
+    # The shed's deck taking a tape: the cassette pushed home, the carriage dropping with a clunk, the motor coming up, the heads
+    # meeting the tape with a short scrape, and the hiss of blank tape before the picture comes.
+    n = seconds(1.6)
+    out = np.zeros(n)
+    k = seconds(.08)
+    place(out, band(rng.standard_normal(k), 500, 3000) * np.exp(-times(k) / .02) * .5, .02)
+    k = seconds(.22)
+    tk = times(k)
+    place(out, (np.sin(2 * np.pi * 95 * tk) * np.exp(-tk / .04) + band(rng.standard_normal(k), 120, 1400) * np.exp(-tk / .03)) * .8, .2)
+    k = seconds(1.1)
+    tk = times(k)
+    whir = np.sin(2 * np.pi * np.cumsum(70 + 90 * np.minimum(1, tk / .4)) / RATE) * .25 + band(rng.standard_normal(k), 200, 900) * .12
+    place(out, whir * np.minimum(1, tk / .1) * np.exp(-np.maximum(0, tk - .7) / .25), .42)
+    k = seconds(.12)
+    place(out, band(rng.standard_normal(k), 1500, 5000) * np.sin(np.pi * times(k) / .12) * .3, .62)
+    k = seconds(.9)
+    tk = times(k)
+    place(out, band(rng.standard_normal(k), 3000, 9000) * np.minimum(1, tk / .3) * .08, .68)
+    return out
+
+
+def tape_voice(take):
+    # The woman on the tapes, talking: an older voice, unhurried, a phrase falling at its end, a breath, another phrase; words that
+    # are not quite words through a small television speaker, with the tape's wow, its hiss and a low hum. Each take its own phrases.
+    r = np.random.default_rng(9536 + take)
+    n = seconds(4.6)
+    out = np.zeros(n)
+    vowels = [(750, 1250), (500, 1500), (350, 2100), (450, 900), (600, 1750), (300, 850)]
+    at = .2
+    for phrase in range(2 + take % 2):
+        syllables = 5 + int(r.integers(0, 5))
+        base = 205 - 8 * phrase + r.random() * 10
+        for i in range(syllables):
+            length = .11 + r.random() * .12
+            fall = 1 - .18 * (i / max(1, syllables - 1)) ** 2
+            k = seconds(length)
+            t = times(k)
+            pitch = base * fall * (1 + .04 * np.sin(2 * np.pi * (2 + r.random()) * t))
+            phase = np.cumsum(pitch) / RATE
+            src = sum(np.sin(2 * np.pi * h * phase + r.random() * 6) / h for h in range(1, 14))
+            f1, f2 = vowels[int(r.integers(0, len(vowels)))]
+            voiced = band(src, f1 * .8, f1 * 1.25) + band(src, f2 * .8, f2 * 1.2) * .5 + band(r.standard_normal(k), f1, f2 * 1.4) * .05
+            shape = np.minimum(1, t / .02) * np.minimum(1, (t[-1] - t) / .04 + .02)
+            place(out, voiced * shape * (.8 - .25 * (i == syllables - 1)), at)
+            if r.random() < .55:
+                c = seconds(.04)
+                place(out, band(r.standard_normal(c), 2200, 6500) * np.exp(-times(c) / .012) * .2, at + length - .01)
+            at += length * (.92 + r.random() * .1)
+        at += .28 + r.random() * .2
+        k = seconds(.25)
+        place(out, band(r.standard_normal(k), 500, 2000) * np.sin(np.pi * times(k) / .25) ** 2 * .06, at - .26)
+        if at > 4.0:
+            break
+    out = band(out, 280, 3300)
+    t = times(n)
+    warped = np.clip(t + .003 * np.sin(2 * np.pi * .7 * t) / (2 * np.pi * .7), 0, t[-1])
+    out = np.interp(warped, t, out)
+    out += band(rng.standard_normal(n), 3000, 9000) * .03 + np.sin(2 * np.pi * 60 * t) * .012
+    return out
+
+
+MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
+          'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3)}
 
 
 def main():
     folder = ASSETS / 'sounds/pell'
     folder.mkdir(parents=True, exist_ok=True)
     for name, (subtitle, reach) in ROWS.items():
-        target = folder / f'{name}.ogg'
-        if not target.exists():
-            soundfile.write(str(target), normalized(MAKERS[name]()).astype(np.float32), RATE, format='OGG', subtype='VORBIS')
-        update(ASSETS / 'sounds.json', f'pell.{name}',
-               {'sounds': [{'name': f'the_oldest_house:pell/{name}', 'attenuation_distance': reach}], 'subtitle': f'subtitles.the_oldest_house.pell.{name}'})
+        for f in files(name):
+            target = folder / f'{f}.ogg'
+            if not target.exists():
+                soundfile.write(str(target), normalized(MAKERS[f]()).astype(np.float32), RATE, format='OGG', subtype='VORBIS')
+        update(ASSETS / 'sounds.json', f'pell.{name}', entry(name, reach))
         update(ASSETS / 'lang/en_us.json', f'subtitles.the_oldest_house.pell.{name}', subtitle)
 
 

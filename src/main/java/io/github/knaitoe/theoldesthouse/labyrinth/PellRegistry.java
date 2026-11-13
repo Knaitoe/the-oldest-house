@@ -76,7 +76,9 @@ public final class PellRegistry {
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> CAR_AWAY=sound("pell.car_away"),TAPE=sound("pell.tape"),
         BRUSH=sound("pell.brush"),LOCK=sound("pell.lock"),PAINT=sound("pell.paint"),TIN=sound("pell.tin"),
         // 0.4.535: a door slammed in the laundry, and June's cry (docs/PELL_HOUSE_HAND_0_4_535.md).
-        HAND=sound("pell.hand");
+        HAND=sound("pell.hand"),
+        // 0.4.536: the shed's deck taking a tape, and the woman's voice on the tapes (docs/PELL_HOUSE_TAPES_0_4_536.md).
+        TAPE_PLAY=sound("pell.tape_play"),TAPE_VOICE=sound("pell.tape_voice");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }
