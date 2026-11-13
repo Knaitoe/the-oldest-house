@@ -103,7 +103,7 @@ public final class PellKnife {
         var h=PellPeople.household(b);h.knife=OVER;h.found.clear();
         for(var p:readers){
             h.found.add(p.getUUID());var own=PellHouse.own(p);own.putBoolean("InTheBlack",true);
-            if(!own.getBoolean("MarkKnife")){own.putBoolean("MarkKnife",true);own.putInt("GailMarks",own.getInt("GailMarks")+1);}
+            if(!own.getBoolean("MarkKnife")){own.putBoolean("MarkKnife",true);own.putInt("GailMarks",own.getInt("GailMarks")+1);PellEntries.due(own,PellEntries.KNIFE);}
             PellHouse.save(p,own);
         }
         var c=PellPeople.find(l,b,C);
@@ -230,8 +230,8 @@ public final class PellKnife {
             var own=PellHouse.own(p);
             if(with){
                 h.found.add(p.getUUID());own.putBoolean("InTheBlack",true);
-                // On Gail's file, once.
-                if(!own.getBoolean("MarkKnife")){own.putBoolean("MarkKnife",true);own.putInt("GailMarks",own.getInt("GailMarks")+1);}
+                // On Gail's file, once; 0.4.537, and in their journal, in their own hand (PellEntries).
+                if(!own.getBoolean("MarkKnife")){own.putBoolean("MarkKnife",true);own.putInt("GailMarks",own.getInt("GailMarks")+1);PellEntries.due(own,PellEntries.KNIFE);}
             }else own.putBoolean("SawTheBlack",true);
             PellHouse.save(p,own);
         }

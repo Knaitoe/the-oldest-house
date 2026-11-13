@@ -116,6 +116,8 @@ public final class PellMorning {
         h.sleptAt.put(p.getUUID(),p.serverLevel().getGameTime());
         HousePackets.send(p,new HouseFadePayload(FADE_IN,FADE_HOLD,FADE_OUT));
         own.putBoolean("SleptInGarage",true);
+        // 0.4.537: which visits' nights they slept out there, for that night's entry in their journal (PellEntries).
+        own.putInt("GarageNights",own.getInt("GarageNights")|1<<h.visit);
         return true;
     }
     /** Up off the camp bed and the dark gone; told what woke them, if anything did. */
@@ -236,6 +238,9 @@ public final class PellMorning {
         int J=PellPeople.JUNE,T=PellPeople.TILLY,C=PellPeople.CALLUM;
         PellVisit.say(h,june,J,PellTexts.JUNE_BREAKFAST,now);
         wakeAll(l,b,h,here,null,null);
+        // 0.4.537: a reader who slept in the garage last night, a week in or later, has that night's entry due in their journal.
+        var night=PellEntries.night(h.visit);
+        if(!night.isEmpty())for(var p:here){if(p.isSpectator())continue;var own=PellHouse.own(p);if((own.getInt("GarageNights")&1<<h.visit)==0)continue;PellEntries.due(own,night);PellHouse.save(p,own);}
         for(var p:here)if(p.isAlive()&&!p.isSpectator()&&p.distanceToSqr(june)>PellVisit.HEAR*PellVisit.HEAR)PellHouse.cue(p,PellTexts.BREAKFAST_FAR);
         var tilly=PellPeople.find(l,b,T);
         if(tilly!=null){h.asleep[T]=false;PellVisit.dress(tilly,T);toTable(h,T,placeOf(h,T),TILLY_UP);}

@@ -1,6 +1,10 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.journal.CoAuthor;
+import io.github.knaitoe.theoldesthouse.journal.JournalPage;
+import io.github.knaitoe.theoldesthouse.journal.Journals;
+import io.github.knaitoe.theoldesthouse.journal.OwnHand;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -821,6 +825,9 @@ public final class PellHouseTests {
         .thenIdle(1).thenExecute(()->{
             h.assertFalse(p.isSleeping()||q.isSleeping(),"June's call wakes them");
             h.assertTrue(told(p).contains(PellTexts.BREAKFAST_FAR)&&told(q).contains(PellTexts.BREAKFAST_FAR),"heard from the garage");
+            // 0.4.537: the night kept, and the first visit's night gives no entry in their journals.
+            h.assertTrue(f.own(p,P).getInt("GarageNights")==1<<1&&f.own(q,P).getInt("GarageNights")==1<<1,"each keeps that they slept out there on the first visit");
+            h.assertTrue(PellEntries.due(f.own(p,P)).isEmpty()&&PellEntries.due(f.own(q,P)).isEmpty(),"and no entry is due for the first visit's night");
             h.assertTrue(PellVisit.hour(b)>=PellMorning.SEVEN,"at seven: "+PellVisit.hour(b));
             for(int x:PellNight.CELLS)h.assertTrue(PellNight.stage(l,b,x)==PellLine.SECOND,"the stretch June painted in the night has dried at "+x);
             h.assertFalse(PellNight.callumOut(b),"Callum in off the line");
@@ -1533,6 +1540,11 @@ public final class PellHouseTests {
             h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,2),"and nothing put back in his drawer");
         }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellMorning.CALLED&&PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"breakfast: Tilly and Callum at the table"))
         .thenExecute(()->{
+            // 0.4.537: a week in, the night in the garage has its entry due for each, after the knife's for the one June found; with no
+            // journal to go in, they wait.
+            var found=PellEntries.due(f.own(p,P));var saw=PellEntries.due(f.own(q,P));
+            h.assertTrue(found.equals(List.of(PellEntries.KNIFE,PellEntries.NIGHT+2))&&saw.equals(List.of(PellEntries.NIGHT+2)),"the entries due: "+found+", "+saw);
+            h.assertTrue(PellEntries.written(f.own(p,P)).isEmpty()&&PellEntries.written(f.own(q,P)).isEmpty(),"none written, with no journal");
             f.at(q,P,-9.5,0,-67.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(q,b.offset(PellVisit.TABLE[3].chair())),"a reader sits");
             f.at(p,P,-9.5,0,-69.5);h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[2].chair())),"the other sits");
         }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_GOGGLES),"the goggles"))
@@ -1751,6 +1763,61 @@ public final class PellHouseTests {
         .thenSucceed();
     }
     @AfterBatch(batch="pell_hand_away") public static void handAwayDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.537, the journal's false entries (docs/PELL_HOUSE_ENTRIES_0_4_537.md), with two readers a week in, each carrying their own
+     * journal. One has written a page of theirs in the House. June says that one slammed the laundry door on her hand, and the entry
+     * goes into their journal on that page, after their own words, in their own hand; the other's journal has none of it. Said again,
+     * nothing more goes in. The other, found in the kitchen after the knife, has their journal open at its first spread: the entry
+     * waits while it is open, and once it is shut it goes in on their blank first page, begun in the House. Written on below, the first
+     * reader's page keeps it after their words. Nothing tells either reader it happened.
+     */
+    @GameTest(template="empty",batch="pell_entries",timeoutTicks=6000)
+    public static void whatJuneSaysTheyDidIsInTheirJournalInTheirOwnHand(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_entries_named",P);var q=f.player("pell_entries_found",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        keep(f,p,"FirstVisit");keep(f,q,"FirstVisit");
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var data=Journals.get(s);String mine="June made pancakes. Tilly didn't eat hers.",more=mine+"\nCallum stood at the end of the hall all evening.";
+        String hand=PellTexts.falseEntry(PellEntries.HAND),knife=PellTexts.falseEntry(PellEntries.KNIFE);
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            p.getInventory().add(data.issue(p));q.getInventory().add(data.issue(q));
+            h.assertTrue(Journals.edit(p,1,JournalTests.page(mine))==Journals.Edit.ACCEPTED,"the reader writes a page in the House");
+        }).thenWaitUntil(()->h.assertTrue(data.page(p.getUUID(),1).text().equals(mine)&&data.page(p.getUUID(),1).house(),"waiting for the page to be kept"))
+        .thenExecute(()->{
+            told(p);told(q);
+            PellHand.blamed(l,b,p,false);
+            h.assertTrue(PellEntries.due(f.own(p,P)).equals(List.of(PellEntries.HAND)),"the hand's entry due: "+PellEntries.due(f.own(p,P)));
+        }).thenWaitUntil(()->h.assertTrue(OwnHand.lines(s,p.getUUID()).equals(List.of("1: "+hand)),"waiting for it in their journal: "+OwnHand.lines(s,p.getUUID())))
+        .thenExecute(()->{
+            var page=data.page(p.getUUID(),1);
+            h.assertTrue(page.text().equals(mine),"their own words untouched: "+page.text());
+            h.assertTrue(page.notes().stream().anyMatch(n->n.mark()==JournalPage.Mark.OWN&&n.text().equals(hand)),"on their page, in their own hand");
+            h.assertTrue(PellEntries.due(f.own(p,P)).isEmpty()&&PellEntries.written(f.own(p,P)).equals(List.of(PellEntries.HAND)),"written, and no longer due");
+            h.assertTrue(OwnHand.lines(s,q.getUUID()).isEmpty(),"nothing in the other's journal");
+            PellHand.blamed(l,b,p,false);
+            h.assertTrue(PellEntries.due(f.own(p,P)).isEmpty(),"said again, nothing more is due");
+            // The other's journal lies open at its first spread when June finds them in the kitchen.
+            CoAuthor.viewing(q,0);
+            PellKnife.foundThere(l,b,q);
+            h.assertTrue(PellEntries.due(f.own(q,P)).equals(List.of(PellEntries.KNIFE)),"the knife's entry due for the reader June found");
+        }).thenIdle(PellEntries.TRY*3).thenExecute(()->{
+            h.assertTrue(OwnHand.lines(s,q.getUUID()).isEmpty()&&PellEntries.due(f.own(q,P)).equals(List.of(PellEntries.KNIFE)),"never on a page they have open: it waits");
+            h.assertTrue(OwnHand.lines(s,p.getUUID()).size()==1,"and nothing more in the first reader's");
+            CoAuthor.viewing(q,-1);
+        }).thenWaitUntil(()->h.assertTrue(OwnHand.lines(s,q.getUUID()).equals(List.of("1: "+knife)),"shut, it goes in on their first page: "+OwnHand.lines(s,q.getUUID())))
+        .thenExecute(()->{
+            var page=data.page(q.getUUID(),1);
+            h.assertTrue(page.house()&&page.text().isEmpty(),"a page begun in the House, with nothing of theirs on it");
+            h.assertTrue(PellEntries.due(f.own(q,P)).isEmpty()&&PellEntries.written(f.own(q,P)).equals(List.of(PellEntries.KNIFE)),"written");
+            h.assertTrue(Journals.edit(p,1,JournalTests.page(more))==Journals.Edit.ACCEPTED,"the first reader writes on below");
+        }).thenWaitUntil(()->h.assertTrue(data.page(p.getUUID(),1).text().equals(more),"waiting for it to be kept"))
+        .thenExecute(()->{
+            h.assertTrue(OwnHand.lines(s,p.getUUID()).equals(List.of("1: "+hand)),"written on, the page keeps it: "+OwnHand.lines(s,p.getUUID()));
+            h.assertFalse(told(p).stream().anyMatch(t->t.contains(hand))||told(q).stream().anyMatch(t->t.contains(knife)),"nothing tells them");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_entries") public static void entriesDone(ServerLevel l){done();}
 
     /** Whether a reader's journal keeps a record under this heading whose first line is this, said by this voice. */
     private static boolean kept(ServerPlayer p,String heading,String who,String line){

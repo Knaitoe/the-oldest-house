@@ -29,9 +29,11 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
     /**
      * What the other hand did: wrote on the page, struck through one of the reader's words, answered a line beneath it, or
      * copied out one of the reader's own lines word for word (Quotes, 0.4.199). A copied line is only ever its reader's to see.
+     * 0.4.537: OWN, a line in the reader's own lettering and graphite that they never wrote (OwnHand: the Pell house's false
+     * entries), drawn on the rows after their writing on the page.
      */
     public enum Mark {
-        WRITTEN, STRUCK, DIRECTION, QUOTED;
+        WRITTEN, STRUCK, DIRECTION, QUOTED, OWN;
         public String id(){return name().toLowerCase(Locale.ROOT);}
         public static Mark of(String id){for(var m:values())if(m.id().equals(id))return m;return null;}
     }
@@ -46,7 +48,7 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
         CompoundTag save(){var t=new CompoundTag();t.putString("Mark",mark.id());if(!text.isEmpty())t.putString("Text",text);if(!word.isEmpty()){t.putString("Word",word);t.putInt("Use",use);}t.putFloat("X",x);t.putFloat("Y",y);return t;}
         static Note read(CompoundTag t){
             var mark=Mark.of(t.getString("Mark"));String text=t.getString("Text"),word=t.getString("Word");
-            if(mark==null||text.length()>MAX_RUN||word.length()>32||(mark==Mark.WRITTEN||mark==Mark.QUOTED?text.isBlank():word.isBlank()))return null;
+            if(mark==null||text.length()>MAX_RUN||word.length()>32||(mark==Mark.WRITTEN||mark==Mark.QUOTED||mark==Mark.OWN?text.isBlank():word.isBlank()))return null;
             float x=t.getFloat("X"),y=t.getFloat("Y");if(!Float.isFinite(x)||!Float.isFinite(y))return null;
             return new Note(mark,text,word,Math.max(0,t.getInt("Use")),Mth.clamp(x,0,1),Mth.clamp(y,0,1));
         }
