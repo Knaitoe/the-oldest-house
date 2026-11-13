@@ -1395,6 +1395,64 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         });
     }
     @AfterBatch(batch="literary_movie_recovery") public static void movieRecoveryDone(ServerLevel l){close();}
+    /**
+     * 0.4.562 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): four readers at Movie
+     * Night, one to each canoe at the dock, are full to a fifth. The fifth's door waits while a second lake is made ready, a million
+     * blocks west; at it they have the night to themselves: four canoes of its own at its dock, its own Ray and Dot, and its own
+     * Stacey, who hunts nobody at the first lake. The first lake's canoes and Stacey are untouched.
+     */
+    @GameTest(template="empty",batch="literary_movie_copy",timeoutTicks=24000)
+    public static void aFifthReaderIsGivenALakeOfTheirOwnAtMovieNight(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MOVIE_NIGHT;var server=f.in.getServer();var b=f.base(place);
+        var four=new ServerPlayer[MovieNight.PLACES];final ServerPlayer[] fifth={null};final BlockPos[] theirs={null};final java.util.Set<UUID> first=new java.util.HashSet<>();
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(place)&&SceneInstances.party(place)==MovieNight.PLACES&&MovieNight.PLACES==MovieNight.SLOTS.size(),"a lake has copies, four readers to a lake: one to each canoe at the dock");
+                for(int i=0;i<four.length;i++)four[i]=f.player("movie_copy"+i,place);
+                f.chunks.hold(f.out,IndianLakeRooms.bounds(b,place));
+                fifth[0]=NativeTestPlayers.survival(h,"movie_copy_fifth");f.players.add(fifth[0]);
+                fifth[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);fifth[0].setNoGravity(true);fifth[0].setDeltaMovement(Vec3.ZERO);
+                h.assertTrue(SceneInstances.held(server,place,0,fifth[0].getUUID())==4&&SceneInstances.held(server,place,0,four[0].getUUID())==3,"the lake is full to a fifth, never to one of the four");
+                var e=SceneInstances.enter(fifth[0],place);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),place)==1,"the fifth's door waits while a lake of their own is made ready: "+e);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&SceneInstances.built(f.data(),place,1)&&!SceneInstances.building(),"waiting for the second lake to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,place,1);
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(fifth[0],place);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(place,1,"entry")),"the fifth goes in by its own door: "+e);
+                f.chunks.hold(f.out,IndianLakeRooms.bounds(theirs[0],place));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second lake is resident"))
+            .thenExecute(()->{
+                var p=fifth[0];p.teleportTo(f.out,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
+                h.assertTrue(LiteraryVignettes.inside(p,place)&&theirs[0].equals(LiteraryVignettes.base(p,place))&&LiteraryVignettes.copy(p,place)==1,"the fifth is at the second lake, in its night");
+                h.assertTrue(LiteraryVignettes.copy(four[0],place)==0,"and the four are still at the first");
+                var w0=LiteraryVignettes.shared(f.data(),place);for(int i=0;i<MovieNight.SLOTS.size();i++){var c=MovieNight.canoe(f.out,w0,i);if(c!=null)first.add(c.getUUID());}
+            })
+            .thenWaitUntil(()->{
+                var w1=LiteraryVignettes.shared(f.data(),place,1);var mine=new java.util.HashSet<UUID>();
+                for(int i=0;i<MovieNight.SLOTS.size();i++){var c=MovieNight.canoe(f.out,w1,i);if(c!=null&&IndianLakeRooms.bounds(theirs[0],place).contains(c.position()))mine.add(c.getUUID());}
+                h.assertTrue(mine.size()==4,"four canoes of its own at the second lake's dock: "+mine.size());
+                h.assertTrue(java.util.Collections.disjoint(mine,first)&&first.size()==4,"none of them the first lake's: "+first.size());
+                var ray=MovieNightCast.cast(f.out,theirs[0],MovieNightCast.RAY);var dot=MovieNightCast.cast(f.out,theirs[0],MovieNightCast.DOT);
+                h.assertTrue(ray!=null&&dot!=null&&IndianLakeRooms.bounds(theirs[0],place).contains(ray.position())&&IndianLakeRooms.bounds(theirs[0],place).contains(dot.position()),"its own Ray and Dot");
+                var firstRay=MovieNightCast.cast(f.out,b,MovieNightCast.RAY);h.assertTrue(firstRay!=null&&!firstRay.getUUID().equals(ray.getUUID()),"while the first lake keeps its own Ray");
+                var witch=MovieNight.witch(f.out,theirs[0]);var hers=MovieNight.witch(f.out,b);
+                h.assertTrue(witch!=null&&hers!=null&&!witch.getUUID().equals(hers.getUUID())&&IndianLakeRooms.bounds(theirs[0],place).contains(witch.position()),"and its own Stacey; the first lake's is still its own");
+            })
+            .thenExecute(()->{
+                var p=fifth[0];var w1=LiteraryVignettes.shared(f.data(),place,1);var canoe=MovieNight.canoe(f.out,w1,0);var slot=MovieNight.slot(theirs[0],0);
+                p.teleportTo(f.out,slot.x,theirs[0].getY(),slot.z+1.5,180,0);p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+                h.assertTrue(MovieNight.board(p,canoe)&&p.getUUID().equals(LiteraryVignettes.shared(f.data(),place,1).getUUID("Claim0")),"the fifth takes the second lake's first canoe, and the claim is kept at the second lake");
+                h.assertTrue(!LiteraryVignettes.shared(f.data(),place).hasUUID("Claim0")||!p.getUUID().equals(LiteraryVignettes.shared(f.data(),place).getUUID("Claim0")),"not at the first");
+                p.stopRiding();
+            })
+            .thenExecute(()->{for(var e:f.out.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,IndianLakeRooms.bounds(theirs[0],place).inflate(8),e->!(e instanceof ServerPlayer)))e.discard();})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_movie_copy") public static void movieCopyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
     @GameTest(template="empty",batch="literary_closure_repair",timeoutTicks=100)
     public static void oldCriticalClosureReopensWithoutErasingTheReadersSealedChoice(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("closure_repair",LabyrinthPlace.END_WORLD_CABIN);var own=f.own(p,LabyrinthPlace.END_WORLD_CABIN);own.putBoolean("ChoiceMade",true);own.putBoolean("Refused",true);own.putString("ClosedRoom",LabyrinthPlace.HOLLOWAY_CAMP.id());LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.END_WORLD_CABIN,own);

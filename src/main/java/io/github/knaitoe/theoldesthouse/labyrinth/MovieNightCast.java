@@ -55,8 +55,12 @@ public final class MovieNightCast {
     public static @Nullable Person person(LiteraryActor a){if(a.role()!=LiteraryActor.STRANGER)return null;for(var p:CAST)if(p.phase()==a.phase())return p;return null;}
     private static @Nullable LiteraryActor cast(ServerLevel l,CompoundTag w,Person who){return w.hasUUID("Cast"+who.key())&&l.getEntity(w.getUUID("Cast"+who.key())) instanceof LiteraryActor a?a:null;}
     public static @Nullable LiteraryActor cast(ServerLevel l,Person who){return cast(l,LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE),who);}
+    /** 0.4.562: the cast of the copy of the lake standing at a base, each copy having its own (LiteraryVignettes.shared(d,place,copy)). */
+    public static @Nullable LiteraryActor cast(ServerLevel l,BlockPos b,Person who){return cast(l,record(l,b),who);}
+    private static CompoundTag record(ServerLevel l,BlockPos b){return LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE,LiteraryVignettes.copy(l.getServer(),PLACE,b));}
     public static @Nullable LakeCanoeEntity teenCanoe(ServerLevel l,CompoundTag w){return w.hasUUID("TeenCanoe")&&l.getEntity(w.getUUID("TeenCanoe")) instanceof LakeCanoeEntity c?c:null;}
     public static int gone(ServerLevel l){return LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE).getInt("Gone0502");}
+    public static int gone(ServerLevel l,BlockPos b){return record(l,b).getInt("Gone0502");}
     private static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;a.yRotO=yaw;}
 
     // ------------------------------------------------------------------------------------------------ their words
@@ -100,12 +104,12 @@ public final class MovieNightCast {
     // ------------------------------------------------------------------------------------------------ the shared clock
     /** Every tick from Movie Night's own clock, with the readers who are here. */
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> readers){
-        var d=LabyrinthData.get(l.getServer());var w=LiteraryVignettes.shared(d,PLACE);
+        var d=LabyrinthData.get(l.getServer());int copy=LiteraryVignettes.copy(l.getServer(),PLACE,b);var w=LiteraryVignettes.shared(d,PLACE,copy);
         if(readers.isEmpty()){
             if(w.contains("CastNight")){w.putInt("CastEmpty",w.getInt("CastEmpty")+1);
                 if(w.getInt("CastEmpty")>=EMPTY_RESET&&l.players().stream().noneMatch(p->p.getCamera().distanceToSqr(Vec3.atCenterOf(b.offset(0,0,-45)))<70*70))reset(w);
-                LiteraryVignettes.shared(d,PLACE,w);}
-            else if(w.getBoolean("CastSettle")){if(settle(l,b,w))w.remove("CastSettle");LiteraryVignettes.shared(d,PLACE,w);}
+                LiteraryVignettes.shared(d,PLACE,copy,w);}
+            else if(w.getBoolean("CastSettle")){if(settle(l,b,w))w.remove("CastSettle");LiteraryVignettes.shared(d,PLACE,copy,w);}
             return;
         }
         w.putInt("CastEmpty",0);int night=w.getInt("CastNight")+1;w.putInt("CastNight",night);
@@ -116,7 +120,7 @@ public final class MovieNightCast {
         if(night%240==120)idle(l,w,readers);
         // Lines fade from over their heads after a few seconds.
         if(night%10==0)for(var who:CAST){var a=cast(l,w,who);if(a!=null&&a.isCustomNameVisible()&&!a.saying())a.setCustomNameVisible(false);}
-        LiteraryVignettes.shared(d,PLACE,w);
+        LiteraryVignettes.shared(d,PLACE,copy,w);
     }
     /** The night starts over for whoever comes next: everyone back in their places, the canoe moored, the chair stood up. */
     private static void reset(CompoundTag w){
@@ -203,31 +207,31 @@ public final class MovieNightCast {
     // ------------------------------------------------------------------------------------------------ each reader
     /** Every five ticks for each reader here: everyone and the teenagers' canoe exist, once, in their places. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
-        var l=p.serverLevel();var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(d,PLACE);
+        var l=p.serverLevel();var d=LabyrinthData.get(p.server);var w=LiteraryVignettes.shared(p,PLACE);
         var canoe=teenCanoe(l,w);
         if(canoe==null&&!w.hasUUID("TeenCanoe")){
             canoe=DrownedTownRegistry.CAVE_CANOE.get().create(l);
             if(canoe!=null){var at=Vec3.atLowerCornerOf(b).add(MOORING);canoe.addTag(TEEN_CANOE);canoe.mobile(false);canoe.paint(5);canoe.moveTo(at.x,at.y,at.z,180,0);canoe.getPersistentData().putInt("Gen0502",w.getInt("CastGen"));
-                if(l.addFreshEntity(canoe)){w.putUUID("TeenCanoe",canoe.getUUID());LiteraryVignettes.shared(d,PLACE,w);}else canoe=null;}
+                if(l.addFreshEntity(canoe)){w.putUUID("TeenCanoe",canoe.getUUID());LiteraryVignettes.shared(p,PLACE,w);}else canoe=null;}
         }
         int gone=w.getInt("Gone0502");
         for(var who:CAST){
             var a=LiteraryVignettes.actor(p,PLACE,"Cast"+who.key(),LiteraryActor.STRANGER,BlockPos.containing(who.x(),0,who.z()),false);
             if(a==null||a.phase()==who.phase())continue;
-            a.appearance(LiteraryActor.STRANGER,who.phase());a.getPersistentData().putInt("Gen0502",LiteraryVignettes.shared(d,PLACE).getInt("CastGen"));
+            a.appearance(LiteraryActor.STRANGER,who.phase());a.getPersistentData().putInt("Gen0502",w.getInt("CastGen"));
             if((gone&who.bit())!=0)hide(a,b);else home(a,who,b,canoe);
         }
         // The ticket seller on the far bank greets each reader who comes round, once.
-        var dot=cast(l,LiteraryVignettes.shared(d,PLACE),DOT);
+        var dot=cast(l,LiteraryVignettes.shared(p,PLACE),DOT);
         boolean sendBack=own.getBoolean("Ready")&&noProgram(own)&&!own.getBoolean("Completed");
         if(dot!=null&&!p.isSpectator()&&sendBack&&!own.getBoolean("DotProgram0524")&&p.distanceToSqr(dot)<100){own.putBoolean("MetDot0502",true);own.putBoolean("DotProgram0524",true);speak(dot,DOT,DOT_PROGRAM,List.of(p));}
         else if(dot!=null&&!p.isSpectator()&&!own.getBoolean("MetDot0502")&&p.distanceToSqr(dot)<25){own.putBoolean("MetDot0502",true);speak(dot,DOT,gone!=0?DOT_AFTER[0]:IDLE.get("Dot")[0],List.of(p));}
         // Out on the water with no program: Ray calls after them from the dock, once.
-        var ray=cast(l,LiteraryVignettes.shared(d,PLACE),RAY);
+        var ray=cast(l,LiteraryVignettes.shared(p,PLACE),RAY);
         if(ray!=null&&!p.isSpectator()&&noProgram(own)&&!own.getBoolean("RayProgram0524")&&p.getVehicle() instanceof LakeCanoeEntity){own.putBoolean("RayProgram0524",true);say(ray,RAY_PROGRAM);p.displayClientMessage(Component.literal(RAY.name()+": “"+RAY_PROGRAM+"”"),true);}
     }
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        var who=person(a);if(who==null)return;int gone=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE).getInt("Gone0502");
+        var who=person(a);if(who==null)return;int gone=LiteraryVignettes.shared(p,PLACE).getInt("Gone0502");
         int n=own.getInt("Talk_"+who.key());own.putInt("Talk_"+who.key(),n+1);
         String line;
         if(who==DOT){own.putBoolean("MetDot0502",true);line=!own.getBoolean("Ready")?"You came round early, hon. It isn't over out there yet.":noProgram(own)&&!own.getBoolean("Completed")?DOT_PROGRAM:n%2==0?"There's your account, on the stand. Somebody wrote it all down while you were out there.":line(who,gone,n/2+1);}

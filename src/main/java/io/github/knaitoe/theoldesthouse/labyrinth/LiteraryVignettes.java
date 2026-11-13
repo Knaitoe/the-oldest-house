@@ -46,7 +46,7 @@ public final class LiteraryVignettes {
     private static String state(LabyrinthPlace place){return "literary_0436_"+place.id();}
     public static String stateId(LabyrinthPlace place){return state(place);}
     /** Every reader with a saved part in a scene. */
-    static Set<String> readers(LabyrinthData d,LabyrinthPlace place){var keys=new HashSet<>(d.state(state(place)).getAllKeys());keys.remove("World");return keys;}
+    static Set<String> readers(LabyrinthData d,LabyrinthPlace place){var keys=new HashSet<>(d.state(state(place)).getAllKeys());keys.removeIf(k->k.startsWith("World"));return keys;}
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
     public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
     /**
@@ -56,6 +56,22 @@ public final class LiteraryVignettes {
     public static boolean ended(LabyrinthData d,UUID p,LabyrinthPlace place){return LiteraryRooms.isLiterary(place)&&personal(d,p,place).getBoolean("Ended");}
     public static CompoundTag shared(LabyrinthData d,LabyrinthPlace place){return d.stateEntry(state(place),"World");}
     public static void shared(LabyrinthData d,LabyrinthPlace place,CompoundTag s){d.setStateEntry(state(place),"World",s);}
+    /**
+     * 0.4.562 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the lake nights, each
+     * a night shared by whoever is at that lake, keep one to a copy (SceneInstances). The original's is the record it always was; a
+     * copy's is kept beside it, so a copy's canoes, cast, clock and Stacey are its own.
+     */
+    private static final Set<LabyrinthPlace> PER_COPY=java.util.EnumSet.of(LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.WINTER_LAKE);
+    public static boolean perCopy(@Nullable LabyrinthPlace place){return place!=null&&PER_COPY.contains(place);}
+    public static CompoundTag shared(LabyrinthData d,LabyrinthPlace place,int copy){return copy<=0?shared(d,place):d.stateEntry(state(place),"World@"+copy);}
+    public static void shared(LabyrinthData d,LabyrinthPlace place,int copy,CompoundTag s){if(copy<=0)shared(d,place,s);else d.setStateEntry(state(place),"World@"+copy,s);}
+    /** The copy whose night a reader's is: the one they stand in (or keep) at a lake night, else the original's. */
+    public static int copy(ServerPlayer p,LabyrinthPlace place){return perCopy(place)?SceneInstances.of(p,place):0;}
+    /** The copy standing at a base, at a lake night; else the original's. */
+    public static int copy(net.minecraft.server.MinecraftServer s,LabyrinthPlace place,@Nullable BlockPos base){return perCopy(place)?SceneInstances.copyAt(s,place,base):0;}
+    /** A reader's own night's record at a lake night (the original's anywhere else). */
+    public static CompoundTag shared(ServerPlayer p,LabyrinthPlace place){return shared(LabyrinthData.get(p.server),place,copy(p,place));}
+    public static void shared(ServerPlayer p,LabyrinthPlace place,CompoundTag s){shared(LabyrinthData.get(p.server),place,copy(p,place),s);}
     public static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
     public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.LAKE_HOUSE)return LakeHouse.readerBase(p);if(SceneInstances.copyable(place))return SceneInstances.base(p,place);if(place==LabyrinthPlace.BORRASCA)return BorrascaSites.base(p.server,p.getUUID());if(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN)return LiteraryCopies.base(p.server,p.getUUID(),place);var o=HouseSavedData.get(p.server).houseOrigin();return o==null?null:LabyrinthPlaces.base(o,place);}
     public static boolean inside(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.BORRASCA)return participant(p)&&BorrascaSites.inside(p);var b=base(p,place);return participant(p)&&b!=null&&p.level().dimension().equals(NovelRooms.dimension(place))&&(place==LabyrinthPlace.FAMILY_COPY||place==LabyrinthPlace.OLD_CABIN?LiteraryCopies.contains(p.server,p.getUUID(),place,p.position()):IndianLakeRooms.bounds(b,place).contains(p.position()));}
@@ -379,12 +395,13 @@ public final class LiteraryVignettes {
      */
     public static String actorId(ServerPlayer p,LabyrinthPlace place,String key,boolean privateActor){
         String id=privateActor?key+"_"+p.getUUID():key;
-        if(SceneInstances.copyable(place)&&(!privateActor||SceneInstances.party(place)>0)){int copy=SceneInstances.of(p,place);if(copy>0)id+="@"+copy;}
+        // 0.4.562: a lake night keeps its cast in its copy's own record (shared(d,place,copy)), under the plain key.
+        if(SceneInstances.copyable(place)&&!perCopy(place)&&(!privateActor||SceneInstances.party(place)>0)){int copy=SceneInstances.of(p,place);if(copy>0)id+="@"+copy;}
         return id;
     }
-    public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);var s=shared(d,place);String id=actorId(p,place,key,privateActor);
+    public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);int copy=copy(p,place);var s=shared(d,place,copy);String id=actorId(p,place,key,privateActor);
         if(s.hasUUID(id)){var e=p.serverLevel().getEntity(s.getUUID(id));return e instanceof LiteraryActor a?a:null;}
-        var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(place,privateActor?p.getUUID():null);a.appearance(role,0);a.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(relative)));a.setYRot(0);if(place==LabyrinthPlace.BLY_ROUTE&&role==LiteraryActor.LADY)LiteraryMotion.initialLady(a,base(p,place));if(!p.serverLevel().addFreshEntity(a))return null;s.putUUID(id,a.getUUID());shared(d,place,s);return a;
+        var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(place,privateActor?p.getUUID():null);a.appearance(role,0);a.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(relative)));a.setYRot(0);if(place==LabyrinthPlace.BLY_ROUTE&&role==LiteraryActor.LADY)LiteraryMotion.initialLady(a,base(p,place));if(!p.serverLevel().addFreshEntity(a))return null;s.putUUID(id,a.getUUID());shared(d,place,copy,s);return a;
     }
     public static boolean watched(ServerLevel l,Vec3 point){return watched(l,point,null);}
     /** As above, leaving out one player (0.4.545: a reader the house is itself moving, who sees it happen to them). */
@@ -567,7 +584,7 @@ public final class LiteraryVignettes {
         else{transcript=own.getString("JournalText");chapter++;own.putInt("Chapter",chapter);own.putInt("WordOffset",0);own.putInt("Beat",own.getInt("Visit"));if(chapter==LiteraryTexts.CONFESSION.length){transcript+="\n\n"+LiteraryTexts.counts(p)+"\n\nSigned: "+p.getGameProfile().getName();own.putString("JournalText",transcript);own.putString("Statistics",LiteraryTexts.counts(p));var signed=HouseWriting.book("The listener's confession",p.getGameProfile().getName(),HouseWriting.WritingStyle.WILL,ConfessionAnswers.pages(own,LiteraryTexts.counts(p),p.getGameProfile().getName()));CustomData.update(DataComponents.CUSTOM_DATA,signed,t->{t.putUUID("Journal",own.getUUID("Journal"));t.putUUID(OWNER,p.getUUID());});own.put("SignedJournal",signed.save(p.registryAccess()));own.putInt("SealedVisit",own.getInt("Visit"));quill.shrink(1);if(laid!=null){laid.discard();own.remove("TableJournal");}LiteraryRooms.at(p.serverLevel(),b,10,1,-29,Blocks.CRACKED_STONE_BRICKS);p.displayClientMessage(Component.literal("The book is gone from your hand. The wall behind the desk has a new seam. Return to examine it."),false);return;}}
         var nativePages=new ArrayList<net.minecraft.server.network.Filterable<String>>();String written=own.getString("InitialWriting")+"\n\n"+transcript;for(int start=0;start<written.length();start+=250)nativePages.add(net.minecraft.server.network.Filterable.passThrough(written.substring(start,Math.min(written.length(),start+250))));quill.set(DataComponents.WRITABLE_BOOK_CONTENT,new WritableBookContent(nativePages));if(laid!=null)laid.setItem(quill.copy());else p.getInventory().setChanged();
     }
-    public static @Nullable LakeWitchEntity huntBody(ServerPlayer p,LabyrinthPlace place,BlockPos rel){var d=LabyrinthData.get(p.server);var world=shared(d,place);if(world.hasUUID("Witch")){var e=p.serverLevel().getEntity(world.getUUID("Witch"));if(e instanceof LakeWitchEntity w){w.literaryHunt(base(p,place),place);return w;}return null;}var w=DrownedTownRegistry.LAKE_WITCH.get().create(p.serverLevel());if(w==null)return null;w.setNoAi(true);w.setNoGravity(true);w.literaryHunt(base(p,place),place);w.setPersistenceRequired();w.addTag("LiteraryHunt");w.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(rel)));if(!p.serverLevel().addFreshEntity(w))return null;world.putUUID("Witch",w.getUUID());shared(d,place,world);return w;}
+    public static @Nullable LakeWitchEntity huntBody(ServerPlayer p,LabyrinthPlace place,BlockPos rel){var d=LabyrinthData.get(p.server);int copy=copy(p,place);var world=shared(d,place,copy);if(world.hasUUID("Witch")){var e=p.serverLevel().getEntity(world.getUUID("Witch"));if(e instanceof LakeWitchEntity w){w.literaryHunt(base(p,place),place);return w;}return null;}var w=DrownedTownRegistry.LAKE_WITCH.get().create(p.serverLevel());if(w==null)return null;w.setNoAi(true);w.setNoGravity(true);w.literaryHunt(base(p,place),place);w.setPersistenceRequired();w.addTag("LiteraryHunt");w.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(rel)));if(!p.serverLevel().addFreshEntity(w))return null;world.putUUID("Witch",w.getUUID());shared(d,place,copy,world);return w;}
     private static void pursue(ServerPlayer p,Entity body,double speed,boolean water){Vec3 delta=p.position().subtract(body.position()).multiply(1,0,1);if(delta.lengthSqr()<.01)return;body.setYRot((float)Math.toDegrees(Math.atan2(-delta.x,delta.z)));body.move(MoverType.SELF,delta.normalize().scale(speed*5));if(water)body.setPos(body.getX(),base(p,current(p)).getY(),body.getZ());}
     private static void hunt(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own){
         if(place==LabyrinthPlace.CAMP_BLOOD){var killer=actor(p,place,"Killer",LiteraryActor.KILLER,new BlockPos(12,0,-48),false);if(killer==null)return;if((own.getBoolean("Pursued")||own.getBoolean("Schedule")||own.getBoolean("RangBell"))&&p.getZ()<b.getZ()-95&&own.getInt("Present")>180)ready(p,place,own,"escaped_past_the_last_cabins");return;}

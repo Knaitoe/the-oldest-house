@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.562** gives Movie Night, Costume Night and Winter Lake a lake each: four readers at Movie Night (one to each canoe), six at Costume Night and four at Winter Lake, and the next reader goes to a lake of their own, with its own night, canoes, cast, clock and Stacey. `docs/LAKE_NIGHT_COPIES_0_4_562.md`.
+
 Development candidate **0.4.561** runs the cast checks over two more talking scenes, the Ghosts set and the Confession, and fixes what they found on running again: the Confession's visitor no longer repeats his request for the book every five seconds, the people of A Place for You ask a favour in other words the second time and no longer arrive at a mark the reader can half see, and the Drawing's villagers stop to answer when spoken to on their way into the square. `docs/CAST_CHECKS_0_4_561.md`.
 
 Development candidate **0.4.560** rebuilds the lake house's culvert: cast sections and headwalls, painted marks at a sitting reader's height, hands on the concrete wherever both walls are in reach, a canoe eased into the gap at either mouth, both benches pushing, and a wet palm on concrete for every stroke. Tess keeps to the dock, the water and her canoe as a person would, and every person in the talking scenes is held to one set of checks: no jumping or stepping about, nothing through a wall, no line said out of earshot or twice over, and a head turned to whoever they are talking to. `docs/CULVERT_0_4_560.md`.
