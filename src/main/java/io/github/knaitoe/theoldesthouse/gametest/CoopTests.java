@@ -597,7 +597,7 @@ public final class CoopTests {
     }
 
     /** 0.4.158: the clapping game is private, with a copy for a reader who finds it taken, and every reader can win it once. */
-    @GameTest(template="empty",batch="coop_clap158",timeoutTicks=6000)
+    @GameTest(template="empty",batch="coop_clap158",timeoutTicks=24000)
     public static void theClappingGameIsPrivateAndEachReaderPlaysItInARoomOfTheirOwn(GameTestHelper h){
         var f=new LiteraryTests.Fixture(h);active=f;var server=f.in.getServer();var place=LabyrinthPlace.HIDE_AND_CLAP;String copied=HideAndClap.ID+"@1";
         var first=player(h,f,"clap_first");var second=player(h,f,"clap_second");var third=player(h,f,"clap_third");hold(f,place);
@@ -620,7 +620,11 @@ public final class CoopTests {
             .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),place,1),"a copy of the room stands ready"))
             .thenExecute(()->f.chunks.hold(f.in,IndianLakeRooms.bounds(SceneInstances.base(server,place,1),place)))
             // Run 1558: the copy's blindfold was hung into a chunk that was not in yet, and was neither on the wall nor owed to it.
-            .thenWaitUntil(()->{var room=SceneInstances.base(server,place,1);
+            // Run 1586: hung while the builder held the wall's chunk, then saved with it when the chunk was let go; held again, its
+            // entities were still coming in from disk (behind some 800 chunk saves) when the case ran out of ticks. So the wall is
+            // judged once its entities are in, and the case has the ticks a load can take on a server that runs them fast.
+            .thenWaitUntil(()->{var room=SceneInstances.base(server,place,1);var wall=room.offset(HideAndClap.BLINDFOLD_FRAME);
+                h.assertTrue(f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(wall)),"the copy's wall is coming in: "+(HideAndClap.framesOwed(1)?"its frames owed":"its frames hung before"));
                 h.assertTrue(clothOnWall.test(room)||HideAndClap.framesOwed(1),"the copy's blindfold is on its wall or still owed to it, never neither");
                 h.assertTrue(f.chunks.ready()&&clothOnWall.test(room),"the copy is resident, with its own blindfold on the wall");})
             .thenExecute(()->{
