@@ -126,7 +126,8 @@ public final class PellNight {
                 // 0.4.538: the last night, she does not go out on her rounds; the night goes on to midnight. 0.4.539: at midnight she
                 // takes Tilly down to the pool (PellRite).
                 // 0.4.541: once it is over, either way, the rest of the night to first light, and the morning (PellDawn).
-                if(h.visit>=PellWeek.LAST){PellRite.tick(l,b,h,june,here,now);PellDawn.tick(l,b,h,here,now);break;}
+                // 0.4.545: the morning is for every reader at the house, a reader as Tilly too.
+                if(h.visit>=PellWeek.LAST){PellRite.tick(l,b,h,june,here,now);PellDawn.tick(l,b,h,PellHouse.readers(l,b),now);break;}
                 if(h.time<ELEVEN||!still)break;
                 june.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(PellRegistry.LANTERN.get()));
                 next(h,ROUNDS);PellVisit.go(h,J,-1,180,ROOM_TO_BACK);

@@ -49,7 +49,9 @@ public final class PellRite {
     static final int J=PellPeople.JUNE,T=PellPeople.TILLY;
     /** Where the rite has got: not yet; June on her way to Nessa's room; waking Tilly; leading her down to the water; in the water; Tilly
      *  has answered; June taking her back to bed; Tilly in bed again, June beside her; Tilly out through the gap. */
-    public static final int NOT_YET=0,FETCH=1,WAKE=2,LEAD=3,WATER=4,ANSWERED=5,HOME=6,KEPT=7,OUT=8;
+    public static final int NOT_YET=0,FETCH=1,WAKE=2,LEAD=3,WATER=4,ANSWERED=5,HOME=6,KEPT=7,OUT=8,
+        /** 0.4.545: a reader as Tilly kept their own name in the water until it was light (PellTilly). */
+        HELD_OUT=9;
     /** How long Tilly holds out in June's hands; how often June calls; how often June presses her under, and for how long; how long a
      *  girl let go in the water stands before June wades to her and takes her back. */
     public static final int HOLD_OUT=3600,CALL_EVERY=110,UNDER_EVERY=320,UNDER_FOR=50,TAKE_BACK=100;
@@ -159,7 +161,11 @@ public final class PellRite {
     /** At Nessa's bed: Tilly woken by the name, her own given back, and her hand taken. */
     private static void wake(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,LiteraryActor tilly,long now){
         switch(h.waypoint){
-            case 0->{if(PellVisit.ready(h,now,june)){say(h,june,J,PellTexts.JUNE_RITE_WAKE,now);h.waypoint=1;}}
+            case 0->{
+                // 0.4.545: a reader as Tilly is woken and led from Nessa's bed; June waits there for them (PellTilly.atBed).
+                if(h.tillyReader!=null&&!PellTilly.atBed(l,b,h,now))return;
+                if(PellVisit.ready(h,now,june)){say(h,june,J,PellTexts.JUNE_RITE_WAKE,now);h.waypoint=1;}
+            }
             case 1->{
                 if(!PellVisit.ready(h,now,june))return;
                 // Up out of the bed, standing beside it, her hand out for June's. Her cane stays by the bed.
@@ -221,6 +227,18 @@ public final class PellRite {
         if(!h.inHold&&h.leader!=null&&free)face(june,tilly.position());
         if(h.rite==WATER&&free)calls(l,b,h,june,tilly,here,now);
         seen(l,b,h,tilly,here,now);
+        // 0.4.545: a reader as Tilly, let go of on dry land, who finds their own way through a gap in the line is out too.
+        if(h.rite==WATER&&h.tillyReader!=null&&h.leader==null&&!h.inHold){var r=PellTilly.reader(l,h);if(r!=null&&!r.isPassenger()&&outside(l,b,r.position()))out(l,b,h,june,tilly,r,here);}
+        // 0.4.545: a reader as Tilly who has kept their own name until it is light has held out.
+        if(h.rite==WATER&&h.tillyReader!=null&&h.time>=PellMorning.DAWN)heldOut(l,b,h,june,here);
+    }
+    /** 0.4.545: light, and a reader as Tilly still has their own name: June's hands come away, and she stops calling. */
+    private static void heldOut(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here){
+        step(h,HELD_OUT);h.inHold=false;h.under=false;h.reply=false;h.leader=null;
+        if(h.juneLeader==null&&!h.juneSat){june.gesture(PellPeople.WADE);june.setXRot(0);}
+        var r=PellTilly.reader(l,h);
+        if(r!=null){Talk.close(r);var own=PellHouse.own(r);own.putBoolean("HeldOut",true);PellHouse.save(r,own);PellHouse.cue(r,PellTexts.TILLY_R_HELD_OUT);}
+        for(var q:here)if(q!=r&&q.isAlive()&&!q.isSpectator()&&!q.isSleeping()&&!h.juneSat&&PellSite.onLot(rel(b,q.position())))PellHouse.cue(q,PellTexts.JUNE_STOPPED);
     }
     /** In June's hands: held at the surface, now and then under, and in the end the answer. */
     private static void hold(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,LiteraryActor tilly,List<ServerPlayer> here,long now){
@@ -242,7 +260,8 @@ public final class PellRite {
         double want=h.under?UNDER_Y:TILLY_Y,y=tilly.getY()-b.getY();
         place(tilly,b,h.holdX,y+Mth.clamp(want-y,-.15,.15),h.holdZ,180);
         // Held out long enough, she answers to it.
-        if(h.heldFor>=HOLD_OUT&&!h.under&&PellVisit.ready(h,now,june)&&!tilly.saying()){
+        // 0.4.545: a reader as Tilly answers on the panel or not at all (answer); the night goes on to light (PellTilly.holdingOut).
+        if(h.tillyReader==null&&h.heldFor>=HOLD_OUT&&!h.under&&PellVisit.ready(h,now,june)&&!tilly.saying()){
             say(h,tilly,T,PellTexts.TILLY_ANSWERS,now);
             for(var p:here){
                 if(!p.isAlive()||p.isSpectator()||p.isSleeping()||p.distanceTo(tilly)>HEARD)continue;
@@ -270,6 +289,7 @@ public final class PellRite {
         var j=rel(b,june.position());double tx=r.x,tz=Math.min(r.z+BEHIND,IN_S),dx=tx-j.x,dz=tz-j.z,d=Math.sqrt(dx*dx+dz*dz);
         if(d>.12){double s=Math.min(WADE_PACE,d);place(june,b,j.x+dx/d*s,JUNE_Y,j.z+dz/d*s,PellPeople.yawTo(june,tilly.position()));june.gesture(PellPeople.WADE);return;}
         h.holdX=r.x;h.holdZ=tz-BEHIND;h.inHold=true;h.tookBack=true;june.gesture(PellPeople.HOLD);tilly.gesture(0);
+        PellTilly.cue(l,h,PellTexts.TILLY_R_TAKEN_BACK);
         place(tilly,b,h.holdX,TILLY_Y,h.holdZ,180);
     }
     /** June calls her Nessa, softly, again and again; Tilly in her hands answers with her own name, fainter as it goes on. */
@@ -286,11 +306,17 @@ public final class PellRite {
         if(h.under||now-h.callAt<CALL_EVERY||!PellVisit.ready(h,now,june)||tilly.saying())return;
         String line;
         if(h.afterUnder&&h.inHold){line=PellTexts.JUNE_AFTER_UNDER[h.calls++%PellTexts.JUNE_AFTER_UNDER.length];h.afterUnder=false;}
+        // 0.4.545: a reader as Tilly who has answered to the name before is reminded of it, the first time.
+        else if(h.inHold&&h.calls==0&&answeredBefore(l,h)){line=PellTexts.JUNE_YOU_SAID;h.calls++;}
         else if(h.inHold)line=PellTexts.RITE_CALLS[h.calls++%PellTexts.RITE_CALLS.length];
         else line=PellTexts.JUNE_CALLS_AFTER[h.calls++%PellTexts.JUNE_CALLS_AFTER.length];
         say(h,june,J,line,now);h.callAt=now;h.reply=h.inHold;
+        // 0.4.545: a reader as Tilly in June's hands is asked, on the panel: the answer June wants, their own, or nothing.
+        if(h.inHold&&h.tillyReader!=null){h.reply=false;var r=PellTilly.reader(l,h);if(r!=null)PellTilly.ask(r,b,line);}
         carry(b,june,line,here);
     }
+    /** Whether the reader as Tilly here answered to the name a week in, at bedtime or at breakfast. */
+    private static boolean answeredBefore(ServerLevel l,PellPeople.Household h){var r=PellTilly.reader(l,h);return r!=null&&PellHouse.own(r).getInt("AnsweredNessa")>0;}
     /** What June calls in the water carries across the yard: told in grey to readers on the lot too far off to hear her. */
     private static void carry(BlockPos b,LiteraryActor june,String line,List<ServerPlayer> here){
         for(var p:here){
@@ -312,7 +338,7 @@ public final class PellRite {
         h.moving[J]=true;h.moving[T]=true;
         place(june,b,h.holdX,JUNE_Y,h.holdZ+BEHIND,180);june.setXRot(10);
         if(!PellVisit.ready(h,now,june)||tilly.saying()||june.saying())return;
-        if(h.waypoint==0){say(h,june,J,PellTexts.JUNE_ANSWERED,now);h.waypoint=1;return;}
+        if(h.waypoint==0){say(h,june,J,h.tillyReader!=null?PellTexts.JUNE_ANSWERED_R:PellTexts.JUNE_ANSWERED,now);h.waypoint=1;return;}
         // Out onto the edge, Tilly a step behind her, and away to the chair.
         var edge=PellSwim.EDGE;
         place(june,b,edge.x,0,edge.z,90);june.setNoGravity(false);june.setXRot(0);june.gesture(PellPeople.LEADS_SWIM);
@@ -334,6 +360,8 @@ public final class PellRite {
                 PellVisit.lie(l,b,h,T,tilly,PellVisit.TILLY_SLEEPS);
                 june.gesture(PellPeople.ROBE);PellVisit.perch(l,b,h,J,june,PellVisit.JUNE_BED);
                 step(h,KEPT);
+                // 0.4.545: a reader as Tilly is put to bed in Nessa's bed.
+                PellTilly.kept(l,b,h);
             }
         }
     }
@@ -359,10 +387,13 @@ public final class PellRite {
     /** A hand on Tilly. In the water, a reader in reach takes hers; let go, a hand takes hers again. True if it answered. */
     static boolean hand(ServerPlayer p,BlockPos b,PellPeople.Household h,LiteraryActor tilly,CompoundTag own){
         if(h.visit<PellWeek.LAST||h.rite==NOT_YET||h.rite==FETCH||h.rite==KEPT)return false;
-        if(h.rite==WAKE||h.rite==LEAD||h.rite==ANSWERED||h.rite==HOME){PellHouse.cue(p,PellTexts.TILLY_WITH_JUNE);return true;}
-        if(p.getUUID().equals(h.leader)){PellHouse.cue(p,PellTexts.TILLY_HAS_YOUR_HAND);return true;}
-        if(h.leader!=null){PellHouse.cue(p,PellTexts.TILLY_HAS_A_HAND);return true;}
-        if(PellSite.inWater(rel(b,tilly.position()))&&p.distanceTo(tilly)>REACH){PellHouse.cue(p,PellTexts.TILLY_OUT_OF_REACH);return true;}
+        // 0.4.545: of a reader as Tilly, never "she".
+        boolean r=h.tillyReader!=null;
+        if(h.rite==HELD_OUT||p.getUUID().equals(h.tillyReader))return false;
+        if(h.rite==WAKE||h.rite==LEAD||h.rite==ANSWERED||h.rite==HOME){PellHouse.cue(p,r?PellTexts.TILLY_WITH_JUNE_R:PellTexts.TILLY_WITH_JUNE);return true;}
+        if(p.getUUID().equals(h.leader)){PellHouse.cue(p,r?PellTexts.TILLY_HAS_YOUR_HAND_R:PellTexts.TILLY_HAS_YOUR_HAND);return true;}
+        if(h.leader!=null){PellHouse.cue(p,r?PellTexts.TILLY_HAS_A_HAND_R:PellTexts.TILLY_HAS_A_HAND);return true;}
+        if(PellSite.inWater(rel(b,tilly.position()))&&p.distanceTo(tilly)>REACH){PellHouse.cue(p,r?PellTexts.TILLY_OUT_OF_REACH_R:PellTexts.TILLY_OUT_OF_REACH);return true;}
         // Again: this reader's hand has had hers before tonight. A hand new to her, she asks after.
         var l=p.serverLevel();boolean again=h.hands.contains(p.getUUID()),wet=PellSite.inWater(rel(b,tilly.position()));var june=PellPeople.find(l,b,J);
         h.hands.add(p.getUUID());
@@ -371,10 +402,38 @@ public final class PellRite {
         if(h.under&&june!=null)up(l,b,h,june,tilly);
         h.under=false;h.reply=false;h.afterUnder=false;
         if(june!=null){june.gesture(PellPeople.WADE);june.setXRot(0);}
-        PellHouse.cue(p,again?PellTexts.TILLY_TAKES_AGAIN:wet?PellTexts.TILLY_TAKES:PellTexts.TILLY_TAKES_LAND);
-        if(!again&&!tilly.saying()){tilly.say(PellPeople.name(T),PellTexts.TILLY_WHO);tilly.speaks(PellTexts.TILLY_WHO);h.riteLines.add(PellPeople.name(T)+": "+PellTexts.TILLY_WHO);}
+        PellHouse.cue(p,r?(again?PellTexts.TILLY_TAKES_AGAIN_R:wet?PellTexts.TILLY_TAKES_R:PellTexts.TILLY_TAKES_LAND_R):again?PellTexts.TILLY_TAKES_AGAIN:wet?PellTexts.TILLY_TAKES:PellTexts.TILLY_TAKES_LAND);
+        if(r){
+            // 0.4.545: the reader as Tilly is told of the hand and keeps whose it was; what Tilly would ask is theirs to ask.
+            var t=PellTilly.reader(l,h);
+            if(t!=null){Talk.close(t);var o=PellHouse.own(t);o.putString(PellTilly.HAND,p.getGameProfile().getName());PellHouse.save(t,o);PellHouse.cue(t,PellTexts.TILLY_R_HAND);if(!again)PellTilly.prompt(h,tilly,PellTexts.TILLY_WHO);}
+        }
+        else if(!again&&!tilly.saying()){tilly.say(PellPeople.name(T),PellTexts.TILLY_WHO);tilly.speaks(PellTexts.TILLY_WHO);h.riteLines.add(PellPeople.name(T)+": "+PellTexts.TILLY_WHO);}
         own.putBoolean("TookTillysHand",true);
         return true;
+    }
+    /**
+     * 0.4.545: a reader as Tilly, in June's hands, answers to the name on the panel: the rest is as when the house's Tilly answers.
+     * They are let up first if they were under.
+     */
+    static void answer(ServerPlayer p,BlockPos b){
+        var l=p.serverLevel();var h=PellPeople.household(b);
+        if(!PellTilly.isTilly(h,p)||h.rite!=WATER||!h.inHold)return;
+        var june=PellPeople.find(l,b,J);var tilly=PellPeople.find(l,b,T);if(june==null||tilly==null)return;
+        if(h.under)up(l,b,h,june,tilly);
+        h.riteLines.add(PellPeople.name(T)+": "+PellTexts.TILLY_ANSWERS);
+        var own=PellHouse.own(p);own.putBoolean(PellTilly.ANSWERED,true);PellHouse.save(p,own);
+        for(var q:PellHouse.readers(l,b)){
+            if(q==p||!q.isAlive()||q.isSpectator()||q.isSleeping()||q.distanceTo(tilly)>HEARD)continue;
+            var o=PellHouse.own(q);if(!o.getBoolean("HeardTillyAnswer")){o.putBoolean("HeardTillyAnswer",true);PellHouse.save(q,o);}
+        }
+        h.inHold=false;h.reply=false;h.next=0;step(h,ANSWERED);
+    }
+    /** 0.4.545: a reader as Tilly gives their own name back on the panel: June goes on calling. */
+    static void ownName(ServerPlayer p,BlockPos b){
+        var h=PellPeople.household(b);if(!PellTilly.isTilly(h,p)||h.rite!=WATER)return;
+        var own=PellHouse.own(p);own.putInt("SaidOwnName",own.getInt("SaidOwnName")+1);PellHouse.save(p,own);
+        h.riteLines.add(PellPeople.name(T)+": "+PellTexts.TILLY_RITE_NAME);h.replies++;
     }
     /** A hand on June at midnight: she does not stop for it. True if it answered. */
     static boolean june(ServerPlayer p,BlockPos b,PellPeople.Household h,LiteraryActor june,CompoundTag own){
@@ -504,9 +563,12 @@ public final class PellRite {
         h.moving[T]=true;
         var p=leaderOf(l,h);
         if(p==null||p.distanceTo(tilly)>LET_GO){
-            if(p!=null)PellHouse.cue(p,PellTexts.TILLY_LET_GO);
+            if(p!=null)PellHouse.cue(p,h.tillyReader!=null?PellTexts.TILLY_LET_GO_R:PellTexts.TILLY_LET_GO);
+            PellTilly.cue(l,h,PellTexts.TILLY_R_LET_GO);
             h.leader=null;h.letGoAt=now;tilly.gesture(0);return;
         }
+        // 0.4.545: a reader as Tilly walks themselves; the hand only has to stay near enough, and out through the line together.
+        if(h.tillyReader!=null){out(l,b,h,june,tilly,p,here);return;}
         var r=rel(b,tilly.position());var to=rel(b,p.position());
         if(PellSite.inWater(r)){swim(l,b,h,tilly,p,r,to);return;}
         double dx=to.x-r.x,dz=to.z-r.z;
@@ -555,10 +617,19 @@ public final class PellRite {
         if(h.rite!=WATER||!outside(l,b,tilly.position()))return;
         step(h,OUT);h.inHold=false;h.under=false;h.reply=false;
         if(h.juneLeader==null&&!h.juneSat){june.gesture(PellPeople.WADE);june.setXRot(0);}
-        PellHouse.cue(p,PellTexts.TILLY_OUT);
-        var own=PellHouse.own(p);own.putBoolean("GotTillyOut",true);PellHouse.save(p,own);
+        // 0.4.545: a reader as Tilly came out themselves (with a hand, or through a gap on their own).
+        var t=PellTilly.reader(l,h);
+        if(t!=null){
+            Talk.close(t);var o=PellHouse.own(t);o.putBoolean("CameOut",true);
+            if(p!=t)o.putString("OutWith",p.getGameProfile().getName());else o.remove("OutWith");
+            PellHouse.save(t,o);PellHouse.cue(t,PellTexts.TILLY_R_OUT);
+        }
+        if(p!=t){
+            PellHouse.cue(p,t!=null?PellTexts.TILLY_OUT_R:PellTexts.TILLY_OUT);
+            var own=PellHouse.own(p);own.putBoolean("GotTillyOut",true);PellHouse.save(p,own);
+        }
         for(var q:here){
-            if(q==p||!q.isAlive()||q.isSpectator()||q.isSleeping())continue;
+            if(q==p||q==t||!q.isAlive()||q.isSpectator()||q.isSleeping())continue;
             if(q.distanceTo(tilly)<=PellVisit.HEAR){var o=PellHouse.own(q);if(!o.getBoolean("SawTillyOut")){o.putBoolean("SawTillyOut",true);PellHouse.save(q,o);}}
             if(!h.juneSat&&PellSite.onLot(rel(b,q.position())))PellHouse.cue(q,PellTexts.JUNE_STOPPED);
         }

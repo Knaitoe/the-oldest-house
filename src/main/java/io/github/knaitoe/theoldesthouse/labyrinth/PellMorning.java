@@ -158,6 +158,8 @@ public final class PellMorning {
         if(!(e.getEntity() instanceof ServerPlayer p))return;
         var at=p.getSleepingPos().orElse(null);
         if(at!=null&&PellThing.is(p.level().getBlockState(at),PellThing.Kind.CAMP_BED))e.setContinueSleeping(true);
+        // 0.4.545: and a reader as Tilly, in Nessa's bed.
+        else if(at!=null&&PellThing.is(p.level().getBlockState(at),PellThing.Kind.BED)&&PellTilly.plays(p))e.setContinueSleeping(true);
     }
 
     // ------------------------------------------------------------------------------------------------ the morning
@@ -237,13 +239,14 @@ public final class PellMorning {
     private static void call(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
         int J=PellPeople.JUNE,T=PellPeople.TILLY,C=PellPeople.CALLUM;
         PellVisit.say(h,june,J,PellTexts.JUNE_BREAKFAST,now);
-        wakeAll(l,b,h,here,null,null);
+        // 0.4.545: a reader as Tilly, asleep in Nessa's bed, wakes to it too.
+        wakeAll(l,b,h,PellHouse.readers(l,b),null,null);
         // 0.4.537: a reader who slept in the garage last night, a week in or later, has that night's entry due in their journal.
         var night=PellEntries.night(h.visit);
         if(!night.isEmpty())for(var p:here){if(p.isSpectator())continue;var own=PellHouse.own(p);if((own.getInt("GarageNights")&1<<h.visit)==0)continue;PellEntries.due(own,night);PellHouse.save(p,own);}
         for(var p:here)if(p.isAlive()&&!p.isSpectator()&&p.distanceToSqr(june)>PellVisit.HEAR*PellVisit.HEAR)PellHouse.cue(p,PellTexts.BREAKFAST_FAR);
         var tilly=PellPeople.find(l,b,T);
-        if(tilly!=null){h.asleep[T]=false;PellVisit.dress(tilly,T);toTable(h,T,placeOf(h,T),TILLY_UP);}
+        if(tilly!=null){h.asleep[T]=false;PellVisit.dress(tilly,T);toTable(h,T,placeOf(h,T),TILLY_UP);if(placeOf(h,T)>=0)PellTilly.cue(l,h,PellTexts.TILLY_R_PLACE);}
         var callum=PellPeople.find(l,b,C);
         if(callum!=null&&!h.callumOut){h.asleep[C]=false;callum.gesture(0);toTable(h,C,placeOf(h,C),CALLUM_UP);}
         h.breakfastAt=now;h.morningSaid=0;h.tillySat=0;h.callumCalled=false;next(h,CALLED);
@@ -265,7 +268,8 @@ public final class PellMorning {
         int t=placeOf(h,T);
         // Tilly has come once she is at the end of her way, at her place or at the door.
         if(h.tillySat==0&&h.way[T].isEmpty())h.tillySat=now;
-        if(t>=0&&h.tillySat>0&&h.plate[t]==PellVisit.BREAKFAST&&now-h.tillySat>=TILLY_EATS)PellVisit.plate(l,b,h,t,PellVisit.SCRAPED);
+        // 0.4.545: a reader as Tilly eats theirs, or doesn't (PellVisit.table).
+        if(t>=0&&h.tillySat>0&&h.plate[t]==PellVisit.BREAKFAST&&now-h.tillySat>=TILLY_EATS&&h.tillyReader==null)PellVisit.plate(l,b,h,t,PellVisit.SCRAPED);
         // What Tilly heard in the night, and what June says to it. 0.4.533: a week in, June asks Tilly where she put her goggles, by
         // the name of the girl they were bought for, and Tilly says she has none.
         // 0.4.534: after the knife, June has a word for the table once the goggles have been asked after.
@@ -274,7 +278,13 @@ public final class PellMorning {
             if(!PellVisit.ready(h,now,june)||!PellVisit.ready(h,now,tilly))return;
             if(h.morningSaid==4){PellVisit.say(h,june,J,PellTexts.JUNE_KNIVES,now);PellVisit.present(june,"HeardKnivesStay",here);h.morningSaid++;return;}
             boolean week=h.visit>=2,tillys=week?h.morningSaid%2==1:h.morningSaid%2==0;
-            String line=week?switch(h.morningSaid){case 0->PellTexts.JUNE_GOGGLES;case 1->PellTexts.TILLY_NO_GOGGLES;case 2->PellTexts.JUNE_ALL_OVER;default->PellTexts.TILLY_ALL_RIGHT;}
+            // 0.4.545: a week in, a reader as Tilly answers the name on the panel, or says nothing; June waits a while for it, and
+            // answers what she is told.
+            if(week&&h.morningSaid==1&&h.tillyReader!=null){
+                if(!PellTilly.asked(l,b,h,now,PellTexts.JUNE_GOGGLES,PellTexts.GOGGLES_OWN,PellTexts.GOGGLES_YES))return;
+                h.morningSaid++;return;
+            }
+            String line=week?switch(h.morningSaid){case 0->PellTexts.JUNE_GOGGLES;case 1->PellTexts.TILLY_NO_GOGGLES;case 2->h.tillyReader!=null&&h.tillySaidYes?PellTexts.JUNE_GOGGLES_ANSWERED:PellTexts.JUNE_ALL_OVER;default->PellTexts.TILLY_ALL_RIGHT;}
                 :switch(h.morningSaid){case 0->PellTexts.TILLY_SINGING;case 1->PellTexts.JUNE_WAS_THERE;case 2->PellTexts.TILLY_IN_THE_WALL;default->PellTexts.JUNE_PIPES;};
             PellVisit.say(h,tillys?tilly:june,tillys?T:J,line,now);
             if(h.morningSaid==0)PellVisit.present(tillys?tilly:june,week?"HeardGoggles":"HeardAboutSinging",here);

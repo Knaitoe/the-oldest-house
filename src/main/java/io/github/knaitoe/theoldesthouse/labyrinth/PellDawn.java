@@ -70,7 +70,8 @@ public final class PellDawn {
     /** Whether the rite is over on the last night, either way, and the night goes on to first light: Tilly out through the line, or Tilly
      *  answered and back in Nessa's bed (not while June is still walking her home, or the morning could come before they are in). */
     public static boolean after(PellPeople.Household h){return h.visit>=PellWeek.LAST&&(out(h)||answered(h));}
-    static boolean out(PellPeople.Household h){return h.rite==PellRite.OUT;}
+    // 0.4.545: a reader as Tilly who kept their own name until it was light is out too (PellTilly).
+    static boolean out(PellPeople.Household h){return h.rite==PellRite.OUT||h.rite==PellRite.HELD_OUT;}
     static boolean answered(PellPeople.Household h){return h.rite==PellRite.KEPT;}
     /** Whether Gail is at the house again this morning (so her goodbye of the first visit is not played: PellVisit). */
     public static boolean morning(PellPeople.Household h){return h.dawn>=COME;}
@@ -79,7 +80,7 @@ public final class PellDawn {
     static void restart(PellPeople.Household h){
         h.dawn=NOT_YET;h.endTaken=false;h.atEnd.clear();h.inCar.clear();h.carLeg=0;h.comeAt=0;
         h.callumStepped=false;h.tillyWithGail=false;h.atWindow=false;h.gailSaid=0;h.leaveAt.clear();h.faded.clear();
-        h.showing=null;h.showRead=false;
+        h.showing=null;h.showRead=false;h.tillySetDown=false;
     }
 
     /** Every tick on the last night, after the rite's own (PellNight). */
@@ -152,7 +153,8 @@ public final class PellDawn {
         var tilly=PellPeople.find(l,b,T);
         if(!h.tillyWithGail&&tilly!=null){
             var by=PellVisit.world(b,TILLY_BY_GAIL);boolean near=tilly.position().distanceToSqr(by)<=2.5*2.5;
-            if(near||unseen(l,b,tilly,TILLY_BY_GAIL)){
+            // 0.4.545: a reader as Tilly is with her once they have come to her themselves.
+            if(near||h.tillyReader==null&&unseen(l,b,tilly,TILLY_BY_GAIL)){
                 if(!near)place(tilly,b,TILLY_BY_GAIL,TILLY_LOOK);
                 tilly.setNoGravity(false);tilly.noPhysics=false;tilly.gesture(PellPeople.LED);h.leader=null;h.rest[T]=TILLY_LOOK;h.tillyWithGail=true;
             }
@@ -174,6 +176,15 @@ public final class PellDawn {
             // in by is only a passage (LabyrinthDealer.finishedFor). The account waits under the mat, here and in the house's
             // aftermath (PellAftermath); a new visit counts from here.
             own.putBoolean("Ended",true);own.putInt("Beat",Math.max(own.getInt("Beat"),own.getInt("Visit")));
+            // 0.4.545: a reader as Tilly: out with their own name, or kept until it was light. Holding out alone is theirs: for the others
+            // there that morning, nothing is resolved.
+            if(own.getBoolean(PellTilly.PLAYS)){
+                LiteraryVignettes.ready(p,PellHouse.PLACE,own,own.getBoolean("HeldOut")?"kept_own_name_until_light":"came_out_with_own_name");PellHouse.save(p,own);
+                PellHouse.cue(p,PellTexts.DAWN_OUT);continue;
+            }
+            if(h.rite==PellRite.HELD_OUT&&!own.getBoolean("GotTillyOut")){
+                own.putString("Outcome","tilly_held_out_alone");PellHouse.save(p,own);PellHouse.cue(p,PellTexts.DAWN_HELD_OUT);continue;
+            }
             String outcome=own.getBoolean("GotTillyOut")?"brought_tilly_out_with_her_name":own.getBoolean("SawTillyOut")?"saw_tilly_come_out_with_her_name":"there_when_tilly_came_out";
             LiteraryVignettes.ready(p,PellHouse.PLACE,own,outcome);PellHouse.save(p,own);
             PellHouse.cue(p,PellTexts.DAWN_OUT);
@@ -184,9 +195,13 @@ public final class PellDawn {
     private static void morningAnswered(ServerLevel l,BlockPos b,PellPeople.Household h,List<ServerPlayer> here,long now){
         // Tilly at Nessa's window and June behind her, once June has her home, the first moment nobody sees them or it.
         var tilly=PellPeople.find(l,b,T);var june=PellPeople.find(l,b,J);
-        if(!h.atWindow&&h.rite==PellRite.KEPT&&tilly!=null&&june!=null&&unseen(l,b,tilly,TILLY_WINDOW)&&unseen(l,b,june,JUNE_WINDOW)){
+        // 0.4.545: a reader as Tilly is stood at the window by June, in Nessa's room, nobody else seeing it (they see June go to it,
+        // in a moment's dark, PellTilly.window).
+        boolean played=h.tillyReader!=null;
+        if(!h.atWindow&&h.rite==PellRite.KEPT&&tilly!=null&&june!=null&&(played||unseen(l,b,tilly,TILLY_WINDOW))&&unseen(l,b,june,JUNE_WINDOW,h.tillyReader)){
             h.perch[T]=null;h.perch[J]=null;h.asleep[T]=false;h.way[T].clear();h.way[J].clear();
-            place(tilly,b,TILLY_WINDOW,WINDOW_LOOK);tilly.gesture(PellPeople.WAVE);h.rest[T]=WINDOW_LOOK;
+            if(played)PellTilly.window(l,b,h,TILLY_WINDOW,WINDOW_LOOK);
+            else{place(tilly,b,TILLY_WINDOW,WINDOW_LOOK);tilly.gesture(PellPeople.WAVE);}h.rest[T]=WINDOW_LOOK;
             place(june,b,JUNE_WINDOW,WINDOW_LOOK);june.gesture(PellPeople.ROBE);h.rest[J]=WINDOW_LOOK;
             h.atWindow=true;
         }
@@ -198,6 +213,12 @@ public final class PellDawn {
         for(var p:here){
             if(!p.isAlive()||p.isSpectator()||!h.atEnd.contains(p.getUUID()))continue;
             var own=PellHouse.own(p);
+            // 0.4.545: a reader as Tilly who answered stays, at the window; their ending lands here, nothing resolved, and is not the
+            // older sibling's (no TillyStayed). Once the others have gone they are set down in the street, on their own.
+            if(own.getBoolean(PellTilly.PLAYS)){
+                if(!own.getBoolean("Ended")){own.putBoolean("Ended",true);own.putString("Outcome","answered_to_nessa");own.putInt("Beat",Math.max(own.getInt("Beat"),own.getInt("Visit")));PellHouse.save(p,own);}
+                continue;
+            }
             if(!own.getBoolean("Ended")){
                 // Their ending: permanent, nothing resolved (PellHouse.dealable).
                 own.putBoolean("Ended",true);own.putBoolean("TillyStayed",true);own.putBoolean("SawCarCome",true);own.putString("Outcome","tilly_answered");
@@ -217,12 +238,18 @@ public final class PellDawn {
             if(h.atWindow&&!own.getBoolean("SawTillyWave")){own.putBoolean("SawTillyWave",true);PellHouse.save(p,own);}
         }
         leaving(l,b,h,now);
+        // 0.4.545: everybody else gone, a reader as Tilly at the window watches the car go, and some time later is set down in the
+        // street, on their own.
+        var t=PellTilly.reader(l,h);
+        if(t!=null&&!h.tillySetDown&&h.atWindow&&h.leaveAt.isEmpty()&&nobodyDue(h,here)&&h.atEnd.contains(t.getUUID())){
+            h.tillySetDown=true;h.leaveAt.put(t.getUUID(),now+LOOK_BACK);PellHouse.cue(t,PellTexts.TILLY_R_CAR_GONE);
+        }
         // Everybody it was for gone down the street (or gone from the house): Gail and the car go.
-        if(!h.inCar.isEmpty()&&h.leaveAt.isEmpty()&&nobodyDue(h,here))h.dawn=GONE;
+        if((!h.inCar.isEmpty()||h.tillySetDown)&&h.leaveAt.isEmpty()&&nobodyDue(h,here))h.dawn=GONE;
     }
     /** Whether every reader the morning is for who is still here has gone to the car. */
     private static boolean nobodyDue(PellPeople.Household h,List<ServerPlayer> here){
-        for(var p:here)if(p.isAlive()&&!p.isSpectator()&&h.atEnd.contains(p.getUUID())&&!h.inCar.contains(p.getUUID()))return false;
+        for(var p:here)if(p.isAlive()&&!p.isSpectator()&&h.atEnd.contains(p.getUUID())&&!h.inCar.contains(p.getUUID())&&!p.getUUID().equals(h.tillyReader))return false;
         return true;
     }
     /** Each reader in the car: the black after their beat, and in it the car down the street and the reader out at the House's door. */
@@ -235,7 +262,7 @@ public final class PellDawn {
             if(now<at+MOVE_AT)continue;
             var to=PellVisit.world(b,SET_DOWN);
             p.teleportTo(l,to.x,to.y,to.z,SET_LOOK,0);p.setDeltaMovement(Vec3.ZERO);
-            PellHouse.cue(p,PellTexts.SET_DOWN);
+            PellHouse.cue(p,p.getUUID().equals(h.tillyReader)?PellTexts.TILLY_R_SET_DOWN:PellTexts.SET_DOWN);
             var own=PellHouse.own(p);own.putBoolean("SetDown",true);PellHouse.save(p,own);
             it.remove();h.faded.remove(id);
         }
@@ -273,9 +300,11 @@ public final class PellDawn {
 
     // ------------------------------------------------------------------------------------------------ helpers
     /** Whether nobody sees an actor where it is, nor the place it is about to be (at standing eye height). */
-    private static boolean unseen(ServerLevel l,BlockPos b,LiteraryActor a,Vec3 to){
+    private static boolean unseen(ServerLevel l,BlockPos b,LiteraryActor a,Vec3 to){return unseen(l,b,a,to,null);}
+    /** As above, by anybody but this reader. */
+    private static boolean unseen(ServerLevel l,BlockPos b,LiteraryActor a,Vec3 to,@Nullable java.util.UUID but){
         var there=PellVisit.world(b,to).add(0,a.getEyeHeight(),0);
-        return !LiteraryVignettes.watched(l,a.getEyePosition())&&!LiteraryVignettes.watched(l,there);
+        return !LiteraryVignettes.watched(l,a.getEyePosition(),but)&&!LiteraryVignettes.watched(l,there,but);
     }
     private static void place(LiteraryActor a,BlockPos b,Vec3 at,float look){
         var w=PellVisit.world(b,at);a.moveTo(w.x,w.y,w.z,look,0);a.setYHeadRot(look);a.setYBodyRot(look);a.setDeltaMovement(Vec3.ZERO);

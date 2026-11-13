@@ -196,6 +196,11 @@ public final class PellPeople {
         /** 0.4.544, the torn page (PellPages): whose page Gail is holding out to them, which page and which copy of it, since when, and
          *  whether they have put a hand on it to read it. */
         UUID showing;int showPage,showSerial;long showAt;boolean showRead;
+        /** 0.4.545, a reader as Tilly (PellTilly): who is Tilly here now; where they last stood off the paint in the water; when they
+         *  were last taken up by June's Tilly, last told of the paint, and first told June was at Nessa's bed; when the name was last put
+         *  to them on the panel, whether they answered, and whether to the name; when bedtime was called; whether, kept, they have been
+         *  set down in the street. */
+        UUID tillyReader;Vec3 tillySafe;long tillyMounted,tillyPaintAt,tillyFetchAt,tillyAskedAt,bedAt;boolean tillyAnswered,tillySaidYes,tillySetDown;
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -298,11 +303,15 @@ public final class PellPeople {
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.542: while the house stands as its aftermath there is nobody in it, and no visit (PellAftermath).
         if(PellAftermath.tick(l,b,h,here))return;
+        // 0.4.545: who is Tilly here, and what she is doing, which is what that reader is doing (PellTilly).
+        PellTilly.before(l,b,h,here);
         // 0.4.525: the visit moves them first; whoever walked this tick has their head where the walk put it.
         PellVisit.tick(l,b,h,here);
+        // 0.4.545: Tilly where that reader is, or that reader where June leads her.
+        PellTilly.after(l,b,h,here,now);
         for(int who=0;who<COUNT;who++){
-            // Anybody asleep is left as they lie (0.4.527).
-            if(h.moving[who]||h.asleep[who])continue;
+            // Anybody asleep is left as they lie (0.4.527); a reader as Tilly turns their own head.
+            if(h.moving[who]||h.asleep[who]||who==TILLY&&h.tillyReader!=null)continue;
             var a=find(l,b,who);if(a==null)continue;
             double reach=who==CALLUM?WATCH:NEAR;ServerPlayer near=null;double best=reach*reach;
             for(var p:here){if(p.isSpectator()||!p.isAlive()||p.isSleeping())continue;double d=a.distanceToSqr(p);if(d<best){best=d;near=p;}}

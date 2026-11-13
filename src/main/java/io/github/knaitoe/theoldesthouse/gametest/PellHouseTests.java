@@ -3010,4 +3010,224 @@ public final class PellHouseTests {
         .thenSucceed();
     }
     @AfterBatch(batch="pell_page_hall") public static void pageHallDone(ServerLevel l){done();PellPages.clearAll();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.545, a reader as Tilly
+    /** For the last night: one reader's record says they are Tilly at the house, the other's who was, as the cane leaves them. */
+    private static void playsTilly(LiteraryTests.Fixture f,ServerPlayer tilly,ServerPlayer sibling){
+        var own=f.own(tilly,P);own.putBoolean(PellTilly.PLAYS,true);LiteraryVignettes.save(f.data(),tilly.getUUID(),P,own);
+        var o=f.own(sibling,P);o.putUUID(PellTilly.TILLY_ID,tilly.getUUID());o.putString(PellTilly.TILLY_NAME,tilly.getGameProfile().getName());LiteraryVignettes.save(f.data(),sibling.getUUID(),P,o);
+    }
+    private static final String TILLY_LOOK="the_oldest_house:pell_tilly";
+    /** A hand on another reader, as the right-click sends it. */
+    private static void handOn(ServerPlayer p,ServerPlayer other){
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract(p,net.minecraft.world.InteractionHand.MAIN_HAND,other));
+    }
+    /**
+     * 0.4.545, a reader as Tilly (docs/PELL_HOUSE_TILLY_0_4_545.md). Two readers on their first visit. Before June has the front door open
+     * the cane on the hook is only a cane. Once she has, each reader is told once that whoever takes it is Tilly. One reader's hand on the
+     * hook takes it: they are Tilly from then on, the other is told who took it, and each record says so. The hook is bare of the cane, and
+     * the other's hand on it takes nothing. The house's own Tilly is hidden where the reader is, and cannot be touched; the reader is a
+     * child's size, and drawn as Tilly to both readers. A line of Tilly's comes to the reader in grey, and the house's Tilly says nothing.
+     */
+    @GameTest(template="empty",batch="pell_tilly_cane",timeoutTicks=4000)
+    public static void whoeverTakesTheCaneOnTheFirstVisitIsTillyAndHasHerLinesInGrey(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_tilly_cane",P);var q=f.player("pell_tilly_older",P);var l=f.level(P);var b=f.base(P);
+        var at=PellTilly.HOOK;var hook=b.offset(at);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));})
+        .thenIdle(10).thenExecute(()->{
+            // In the hall, in reach of the hook.
+            f.at(p,P,1.5,0,-61.5);told(p);hand(p,hook);
+            h.assertTrue(!f.own(p,P).getBoolean(PellTilly.PLAYS)&&thing(l,b,at.getX(),at.getY(),at.getZ(),COAT_HOOK,0),"before June has the door open, the cane stays on its hook");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(COAT_HOOK,0)),"a hand on it says what hangs there");
+            // Both up to Gail, from the street.
+            f.at(p,P,.5,0,-49.5);f.at(q,P,1.5,0,-49.5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.TOUR,"June gives the line at the step"))
+        .thenIdle(21).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CANE_HINT)&&told(q).contains(PellTexts.CANE_HINT),"each reader is told that whoever takes the cane is Tilly");
+            // Both in at the front door, in reach of the hook.
+            f.at(p,P,1.5,0,-61.5);f.at(q,P,1.5,0,-62.5);
+            hand(p,hook);
+            h.assertTrue(f.own(p,P).getBoolean(PellTilly.PLAYS)&&p.getUUID().equals(PellTilly.readerAt(b)),"the reader who took the cane is Tilly");
+            var o=f.own(q,P);
+            h.assertTrue(o.hasUUID(PellTilly.TILLY_ID)&&o.getUUID(PellTilly.TILLY_ID).equals(p.getUUID())&&o.getString(PellTilly.TILLY_NAME).equals(p.getGameProfile().getName()),"the other's record says who");
+            h.assertTrue(thing(l,b,at.getX(),at.getY(),at.getZ(),COAT_HOOK,1),"the hook is bare of the cane");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.caneTaken(q.getGameProfile().getName())),"the reader is told they are Tilly to the other");
+            h.assertTrue(told(q).contains(PellTexts.caneTakenBy(p.getGameProfile().getName())),"the other is told who took it");
+            hand(q,hook);
+            h.assertTrue(!f.own(q,P).getBoolean(PellTilly.PLAYS)&&p.getUUID().equals(PellTilly.readerAt(b)),"the other's hand on the hook takes nothing");
+        }).thenIdle(12).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellTilly.small(p)&&p.getBbHeight()<1.5,"the reader is a child's size: "+p.getBbHeight());
+            h.assertTrue(t.isInvisible()&&!t.isPickable()&&t.distanceTo(p)<.3,"the house's Tilly hidden where the reader is, not to be touched: "+t.distanceTo(p));
+            h.assertTrue(sent(p).payloads().contains(TILLY_LOOK)&&sent(q).payloads().contains(TILLY_LOOK),"drawn as Tilly to both readers");
+            PellTilly.says(l,b,PellTexts.TILLY_WHO);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.mightSay(PellTexts.TILLY_WHO)),"a line of Tilly's comes to the reader in grey");
+            h.assertTrue(!told(q).contains(PellTexts.mightSay(PellTexts.TILLY_WHO))&&!said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_WHO),"and nobody hears it from the house's Tilly");
+            // Both out of the house at once, nobody left at it.
+            p.teleportTo(l,b.getX()+.5,b.getY()+60,b.getZ()-60,0,0);q.teleportTo(l,b.getX()+1.5,b.getY()+60,b.getZ()-60,0,0);
+        }).thenIdle(12).thenExecute(()->{
+            h.assertTrue(!PellTilly.small(p),"out of the house, the reader's size is their own again");
+            // The other back at the house: Tilly is the house's again, and the cane back on its hook.
+            f.at(q,P,1.5,0,-62.5);
+        }).thenIdle(2).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellTilly.readerAt(b)==null&&!t.isInvisible()&&thing(l,b,at.getX(),at.getY(),at.getZ(),COAT_HOOK,0),"Tilly the house's again, her cane back on its hook");
+            h.assertTrue(f.own(p,P).getBoolean(PellTilly.PLAYS),"and the reader who took it is still Tilly for when they come back");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_tilly_cane") public static void tillyCaneDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.545, the name on the panel. Two readers who have had the first two visits, one of them Tilly. The last night locked up and June
+     * in the shallow end holding Tilly: the reader as Tilly is in her hands, where Tilly is. Each time June says the name, the reader as
+     * Tilly is asked on the panel, and only they are: the name June wants, their own, or nothing. They give their own; June goes on, and
+     * presses them under with her. Let up and asked again, they answer to the name: it is heard as when Tilly answers, June says the line
+     * she keeps for a reader as Tilly, takes them home and puts them to bed in Nessa's bed. At first light June stands them at Nessa's window;
+     * their ending lands with nothing to read, and it is not the older sibling's.
+     */
+    @GameTest(template="empty",batch="pell_tilly_name",timeoutTicks=9000)
+    public static void aReaderAsTillyInJunesHandsIsAskedOnThePanelAndAnswersOrNot(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_tilly_held",P);var q=f.player("pell_tilly_deck",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        playsTilly(f,p,q);
+        // A week in, they once answered to the name at bedtime.
+        var before=f.own(p,P);before.putInt("AnsweredNessa",1);LiteraryVignettes.save(f.data(),p.getUUID(),P,before);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);
+            f.at(q,P,-9.5,0,-78.5);told(p);told(q);
+        }).thenIdle(3).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(p.getVehicle()==t&&PellTilly.small(p)&&t.isInvisible(),"the reader as Tilly in June's hands, where Tilly is: "+where(p,b));
+            h.assertTrue(p.getY()<b.getY()-.5,"in the water: "+where(p,b));
+        }).thenWaitUntil(()->h.assertTrue(Talk.key(p).equals(PellTilly.RITE_TALK),"June says the name, and the reader is asked: "+PellRite.lines(b)))
+        .thenExecute(()->{
+            h.assertTrue(said(b,"June",PellTexts.JUNE_YOU_SAID),"answered to the name a week in, June reminds them of it first: "+PellRite.lines(b));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.ANSWER_YES,PellTexts.ANSWER_OWN,PellTexts.ANSWER_NOTHING)),"the name June wants, their own, or nothing: "+Talk.replies(p));
+            h.assertTrue(!Talk.key(q).equals(PellTilly.RITE_TALK),"the other reader is asked nothing");
+            h.assertTrue(times(b,"Tilly",PellTexts.TILLY_RITE_NAME)==0,"the house's Tilly answers nothing for them: "+PellRite.lines(b));
+            Talk.choose(p,PellTexts.ANSWER_OWN);
+            h.assertTrue(f.own(p,P).getInt("SaidOwnName")==1&&times(b,"Tilly",PellTexts.TILLY_RITE_NAME)==1,"they give their own name");
+            h.assertTrue(PellRite.step(b)==PellRite.WATER&&PellRite.held(b),"and June goes on");
+        }).thenWaitUntil(()->h.assertTrue(PellRite.under(b),"June presses them under"))
+        .thenIdle(12).thenExecute(()->h.assertTrue(p.getEyeY()<b.getY()+PellWeek.WATERLINE&&p.getVehicle()!=null,"under the water with her: "+where(p,b)))
+        .thenWaitUntil(()->h.assertTrue(!PellRite.under(b)&&said(b,"June",PellTexts.JUNE_AFTER_UNDER[0])&&Talk.replies(p).contains(PellTexts.ANSWER_YES),"let up, and asked again: "+PellRite.lines(b)))
+        .thenExecute(()->{
+            Talk.choose(p,PellTexts.ANSWER_YES);
+            h.assertTrue(PellRite.step(b)>=PellRite.ANSWERED&&said(b,"Tilly",PellTexts.TILLY_ANSWERS),"they answer to it: "+PellRite.lines(b));
+            h.assertTrue(f.own(p,P).getBoolean(PellTilly.ANSWERED)&&f.own(q,P).getBoolean("HeardTillyAnswer"),"and the other reader hears them");
+        }).thenWaitUntil(()->h.assertTrue(said(b,"June",PellTexts.JUNE_ANSWERED_R),"June says the line she keeps for them: "+PellRite.lines(b)))
+        .thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.KEPT,"June takes them home: June at "+who(h,l,b,PellPeople.JUNE).position().subtract(b.getX(),b.getY(),b.getZ())))
+        .thenIdle(2).thenExecute(()->{
+            h.assertTrue(p.isSleeping()&&p.getVehicle()==null&&told(p).contains(PellTexts.TILLY_R_KEPT),"put to bed in Nessa's bed: "+where(p,b));
+            f.at(q,P,.5,0,-50.5);toTheStreet(q);
+            PellDawn.nearlyLight(b);
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.atWindow(b),"first light: June stands them at Nessa's window"))
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ended")&&f.own(q,P).getBoolean("Ended"),"each reader's ending lands"))
+        .thenExecute(()->{
+            h.assertTrue(standing(p,b,PellDawn.TILLY_WINDOW,.4)&&!p.isSleeping(),"at the window: "+where(p,b));
+            var own=f.own(p,P);
+            h.assertTrue(own.getString("Outcome").equals("answered_to_nessa")&&!own.getBoolean("TillyStayed")&&!own.getBoolean("Ready"),"answered to the name: nothing to read, and not the older sibling's ending: "+own.getString("Outcome"));
+            var o=f.own(q,P);
+            h.assertTrue(o.getString("Outcome").equals("tilly_answered")&&o.getBoolean("TillyStayed")&&!o.getBoolean("Ready"),"Tilly stayed, for the other: "+o.getString("Outcome"));
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_tilly_name") public static void tillyNameDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.545, a hand for a reader as Tilly. Two readers who have had the first two visits, one of them Tilly; the last night locked up, a
+     * gap scrubbed in the line on its west side by the pool, and June in the shallow end holding the reader as Tilly. The other reader's hand
+     * on them is a hand on Tilly: June's hands come away, the reader as Tilly is let down into the water and told whose hand it is, and
+     * what Tilly would ask comes to them in grey. At the unbroken line the reader as Tilly is put back off the paint; through the gap together
+     * they are out, and each keeps it. At first light the account is ready for both: the reader as Tilly came out with their own name, and
+     * the other brought them out. Each Witness line is their own.
+     */
+    @GameTest(template="empty",batch="pell_tilly_out",timeoutTicks=6000)
+    public static void anotherReadersHandTakesTheReaderAsTillyOutThroughTheGap(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_tilly_led",P);var q=f.player("pell_tilly_hand",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        playsTilly(f,p,q);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);
+            scrubbedOut(l,b,PellSite.LINE_W,-83);scrubbedOut(l,b,PellSite.LINE_W,-82);
+        }).thenIdle(3).thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(p.getVehicle()==t&&PellRite.held(b),"the reader as Tilly in June's hands");
+            f.at(q,P,t.getX()-b.getX()+1.2,-1,t.getZ()-b.getZ());told(p);told(q);
+            handOn(q,p);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(q.getUUID().equals(PellRite.leader(b))&&!PellRite.held(b),"the other reader's hand on them is a hand on Tilly");
+            h.assertTrue(told(q).contains(PellTexts.TILLY_TAKES_R)&&f.own(q,P).getBoolean("TookTillysHand"),"and they are told so");
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.TILLY_R_HAND)&&heard.contains(PellTexts.mightSay(PellTexts.TILLY_WHO))&&f.own(p,P).getString(PellTilly.HAND).equals(q.getGameProfile().getName()),
+                "the reader as Tilly is told of the hand, keeps whose it was, and has Tilly's question in grey: "+heard);
+            h.assertTrue(p.getVehicle()==null,"let down into the water");
+            h.assertTrue(times(b,"Tilly",PellTexts.TILLY_WHO)==0,"the house's Tilly asks nothing for them: "+PellRite.lines(b));
+            // Out of the water and toward the line where it is whole.
+            f.at(q,P,-18.5,0,-79.5);f.at(p,P,-15.5,0,-79.5);
+        }).thenIdle(2).thenExecute(()->{told(p);f.at(p,P,PellSite.LINE_W+.5,0,-79.5);})
+        .thenIdle(2).thenExecute(()->{
+            h.assertTrue(where(p,b).x>PellSite.LINE_W+1-.01&&told(p).contains(PellTexts.TILLY_R_PAINT),"a bare foot on the unbroken paint is put back off it: "+where(p,b));
+            h.assertTrue(PellRite.step(b)==PellRite.WATER&&q.getUUID().equals(PellRite.leader(b)),"not out, the hand still theirs");
+            // Along to the gap, and through it together.
+            told(q);f.at(q,P,-18.5,0,-82.5);f.at(p,P,PellSite.LINE_W+.5,0,-82.5);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(PellRite.step(b)==PellRite.OUT,"through the gap together, out: "+where(p,b));
+            h.assertTrue(f.own(p,P).getBoolean("CameOut")&&f.own(p,P).getString("OutWith").equals(q.getGameProfile().getName())&&told(p).contains(PellTexts.TILLY_R_OUT),"the reader as Tilly is out, and keeps who with");
+            h.assertTrue(f.own(q,P).getBoolean("GotTillyOut")&&told(q).contains(PellTexts.TILLY_OUT_R),"the other brought them out");
+            f.at(p,P,PellDawn.TILLY_BY_GAIL.x,0,PellDawn.TILLY_BY_GAIL.z);f.at(q,P,1.5,0,-50.5);toTheStreet(p,q);
+            PellDawn.nearlyLight(b);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Dawned")&&f.own(q,P).getBoolean("Dawned"),"the morning reaches each reader"))
+        .thenExecute(()->{
+            var own=f.own(p,P);var o=f.own(q,P);
+            h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("came_out_with_own_name"),"the reader as Tilly came out with their own name: "+own.getString("Outcome"));
+            h.assertTrue(o.getBoolean("Ready")&&o.getString("Outcome").equals("brought_tilly_out_with_her_name"),"the other brought them out: "+o.getString("Outcome"));
+            var text=words(PellTexts.account(p.getGameProfile().getName(),own));
+            h.assertTrue(text.contains("I took my cane off the hook")&&text.contains(q.getGameProfile().getName()+" took my hand under the water")&&text.contains("We went across the grass to a gap in the paint")&&text.endsWith("Behind us nobody was calling any name at all."),"Tilly's own account: "+text);
+            h.assertTrue(PellTexts.witness(own,"").startsWith("I stayed three times in a house where a woman called me by her daughter's name")&&PellTexts.witness(own,"").endsWith("came out through a gap in the line."),"Tilly's own Witness line");
+            h.assertTrue(PellTexts.witness(o,"").contains("Tilly would not answer to any name but Tilly"),"the other's line says Tilly, not she");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_tilly_out") public static void tillyOutDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.545, holding out. Two readers who have had the first two visits, one of them Tilly; the last night locked up and June in the shallow
+     * end holding the reader as Tilly, and nobody takes their hand. They never answer to the name, and the night goes on to first light:
+     * June's hands come away and she stops calling. At first light the reader as Tilly kept their own name until it was light, and the
+     * account is ready for them; the other, who did not get them out, has nothing resolved.
+     */
+    @GameTest(template="empty",batch="pell_tilly_held",timeoutTicks=4000)
+    public static void aReaderAsTillyWhoNeverAnswersHoldsOutUntilLight(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_tilly_kept",P);var q=f.player("pell_tilly_yard",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        playsTilly(f,p,q);
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);f.at(q,P,-6.5,0,-70.5);})
+        .thenWaitUntil(()->h.assertTrue(Talk.key(p).equals(PellTilly.RITE_TALK),"June says the name"))
+        .thenExecute(()->{
+            h.assertTrue(PellDawn.dawn(b)==PellDawn.NOT_YET&&PellRite.step(b)==PellRite.WATER,"still night, still in the water");
+            told(p);told(q);PellDawn.nearlyLight(b);
+        }).thenWaitUntil(()->h.assertTrue(PellRite.step(b)==PellRite.HELD_OUT,"never answered, they hold out until it is light"))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getBoolean("HeldOut")&&told(p).contains(PellTexts.TILLY_R_HELD_OUT)&&!Talk.key(p).equals(PellTilly.RITE_TALK),"June's hands come away from them");
+            h.assertTrue(told(q).contains(PellTexts.JUNE_STOPPED),"the other, out on the lot, hears her stop");
+            h.assertTrue(p.getVehicle()==null,"let go in the water");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Dawned")&&f.own(q,P).getBoolean("Dawned"),"the morning reaches each reader"))
+        .thenExecute(()->{
+            var own=f.own(p,P);var o=f.own(q,P);
+            h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("kept_own_name_until_light"),"the reader as Tilly kept their own name until light: "+own.getString("Outcome"));
+            h.assertTrue(!o.getBoolean("Ready")&&o.getString("Outcome").equals("tilly_held_out_alone"),"the other has nothing resolved: "+o.getString("Outcome"));
+            h.assertTrue(PellTexts.witness(own,"").endsWith("I kept my own until it was light."),"Tilly's own Witness line");
+            h.assertTrue(words(PellTexts.account(p.getGameProfile().getName(),own)).contains("I kept my own name until it got light."),"and account");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_tilly_held") public static void tillyHeldDone(ServerLevel l){done();}
 }
