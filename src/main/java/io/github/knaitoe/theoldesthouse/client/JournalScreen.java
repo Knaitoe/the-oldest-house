@@ -86,6 +86,9 @@ public final class JournalScreen extends Screen {
     /** The first row of controls under the pages, and the second (0.4.268). */
     int rowY(){return pageY()+JournalPageRenderer.H+4;}
     boolean editable(int side){int i=index(side);return i>=1&&i<=Journals.PAGES&&!torn.contains(i);}
+    /** A page that can be torn out: one with writing on it, or (0.4.544) with a line in the reader's own hand on it, though they wrote
+     *  nothing there (journal.OwnHand). */
+    boolean tearable(int side){return editable(side)&&(!currentText(side).isBlank()||page(index(side)).ownHand());}
 
     @Override protected void init(){
         if(heardMode){initHeard();return;}
@@ -294,7 +297,7 @@ public final class JournalScreen extends Screen {
             if(holding==side)lift(g,side,x,top);
             // 0.4.201 (owner: "I'm not seeing the ability to tear a page free"): a written page's corner curls up under the
             // pointer, and on the corner itself the hand is told how.
-            else if(!proof&&sideAt(mouseX,mouseY)==side&&!currentText(side).isBlank()){curl(g,side,x,top,6);hint|=atCorner(side,mouseX,mouseY);}
+            else if(!proof&&sideAt(mouseX,mouseY)==side&&tearable(side)){curl(g,side,x,top,6);hint|=atCorner(side,mouseX,mouseY);}
         }
         drawRibbon(g);
         if(hint)g.renderTooltip(font,net.minecraft.network.chat.Component.literal("Hold right-click to tear it out"),mouseX,mouseY);
@@ -350,7 +353,7 @@ public final class JournalScreen extends Screen {
         if(button==1&&side>=0){int i=index(side);
             // A right-click on the stub takes the page back; held on a written page, it lifts the corner to tear it out.
             if(torn.contains(i)){if(!proof&&Minecraft.getInstance().getConnection()!=null)PacketDistributor.sendToServer(new io.github.knaitoe.theoldesthouse.network.JournalTearPayload(i,true));return true;}
-            if(editable(side)&&!currentText(side).isBlank()){holding=side;held=Util.getMillis();return true;}
+            if(tearable(side)){holding=side;held=Util.getMillis();return true;}
             return false;
         }
         if(side<0||!editable(side)){focused=-1;return false;}

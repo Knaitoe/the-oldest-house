@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.journal.CoAuthor;
 import io.github.knaitoe.theoldesthouse.journal.JournalPage;
 import io.github.knaitoe.theoldesthouse.journal.Journals;
 import io.github.knaitoe.theoldesthouse.journal.OwnHand;
+import io.github.knaitoe.theoldesthouse.journal.TornPages;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -2852,4 +2853,156 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_after_cane") public static void afterCaneDone(ServerLevel l){done();DoorSounds.clearAll();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.544, the torn page
+    /** What has been sent to this reader since last asked: the lines, the torn pages opened for them to read (by writer), and the pins
+     *  they heard go in, where. Reading empties it. */
+    private record Sent(List<String> lines,List<String> pages,List<Vec3> pins,List<String> payloads){}
+    private static Sent sent(ServerPlayer p){
+        var lines=new java.util.ArrayList<String>();var pages=new java.util.ArrayList<String>();var pins=new java.util.ArrayList<Vec3>();var payloads=new java.util.ArrayList<String>();
+        for(var packet:NativeTestPlayers.packets(p)){
+            if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)lines.add(chat.content().getString());
+            else if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom){
+                payloads.add(custom.payload().type().id().toString());
+                if(custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.TornPagePayload torn)pages.add(torn.writer());
+            }
+            else if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound&&sound.getSound().value()==net.minecraft.sounds.SoundEvents.ITEM_FRAME_ADD_ITEM)pins.add(new Vec3(sound.getX(),sound.getY(),sound.getZ()));
+        }
+        return new Sent(lines,pages,pins,payloads);
+    }
+    /** Whether this reader has this copy of a torn page about them, and it is still the page. */
+    private static boolean holds(ServerPlayer p,TornPages.Ref ref){
+        var inv=p.getInventory();
+        for(int i=0;i<inv.getContainerSize();i++){var r=TornPages.ref(inv.getItem(i));if(ref.equals(r)&&TornPages.valid(p.server,r))return true;}
+        return false;
+    }
+    /**
+     * 0.4.544, the torn page in Gail's folder (docs/PELL_HOUSE_PAGE_0_4_544.md). Two readers on the last night, Tilly answered. The
+     * first has one of the house's lines in their own hand on a page with nothing else on it, and tears it out; the other tears out a
+     * page they wrote themselves. At first light the false page is in Gail's folder, and the copy in the first reader's pocket is blank;
+     * the other's own page stays with them. When Gail has said her piece and the first reader comes near, she holds the page out to them
+     * from her folder, and they are told what it is; the car waits for them while she holds it out; a hand on her is a hand on the page,
+     * and they read it. Then she puts it back in her folder, keeps it, and the car takes them. Nothing is held out to the other reader.
+     */
+    @GameTest(template="empty",batch="pell_page_folder",timeoutTicks=6000)
+    public static void atFirstLightGailHasTheTornFalsePageInHerFolderAndHoldsItOut(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_page_torn",P);var q=f.player("pell_page_plain",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var data=Journals.get(s);String line=PellTexts.falseEntry(PellEntries.KNIFE);int[] page={0};TornPages.Ref[] held={null};
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.kept(l,b);
+            f.at(p,P,.5,0,-50.5);f.at(q,P,1.5,0,-52.5);toTheStreet(p,q);
+            p.getInventory().add(data.issue(p));q.getInventory().add(data.issue(q));
+            page[0]=OwnHand.write(p,line);
+            h.assertTrue(page[0]>0&&data.page(p.getUUID(),page[0]).text().isBlank()&&data.page(p.getUUID(),page[0]).ownHand(),"the line in their own hand, on a page with nothing else on it");
+            h.assertTrue(TornPages.tear(p,page[0])==TornPages.Tear.TEARING,"a page with only that line on it tears out");
+            h.assertTrue(Journals.edit(q,1,JournalTests.page("June made pancakes."))==Journals.Edit.ACCEPTED&&TornPages.tear(q,1)==TornPages.Tear.TEARING,"the other tears out a page of their own");
+        }).thenWaitUntil(()->h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.CARRIED&&TornPages.where(s,q.getUUID(),1)==TornPages.Where.CARRIED,"both pages out, in their pockets"))
+        .thenExecute(()->{
+            h.assertTrue(PellPages.torn(s,p.getUUID()).equals(List.of(page[0]))&&PellPages.torn(s,q.getUUID()).isEmpty(),"one false page out; the other reader's own page is not one");
+            held[0]=TornPages.current(s,p.getUUID(),page[0]);
+            h.assertTrue(holds(p,held[0])&&TornPages.page(s,held[0]).ownLines().equals(List.of(line)),"the torn page in their pocket, the line in their hand on it");
+            PellDawn.nearlyLight(b);sent(p);sent(q);
+        }).thenWaitUntil(()->h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.KEPT,"from first light the page is in Gail's folder"))
+        .thenExecute(()->{
+            h.assertTrue(!TornPages.valid(s,held[0])&&!holds(p,held[0]),"the copy in the reader's pocket is blank now");
+            h.assertTrue(TornPages.where(s,q.getUUID(),1)==TornPages.Where.CARRIED,"the other reader's own page stays with them");
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.dawn(b)==PellDawn.COME&&PellDawn.gailSaid(b)>=1,"Gail at the foot of the path says her piece"))
+        .thenExecute(()->{
+            // Four steps from her: near enough to be shown it, not near enough to be put in the car.
+            var g=who(h,l,b,PellPeople.GAIL);f.at(p,P,g.getX()-b.getX(),0,g.getZ()-b.getZ()-4);sent(p);sent(q);
+        }).thenWaitUntil(()->h.assertTrue(p.getUUID().equals(PellPages.showing(b)),"Gail holds the page out to them"))
+        .thenExecute(()->{
+            var g=who(h,l,b,PellPeople.GAIL);var ref=TornPages.ref(g.getMainHandItem());
+            h.assertTrue(ref!=null&&ref.owner().equals(p.getUUID())&&ref.page()==page[0]&&TornPages.valid(s,ref),"the page in her hand is theirs");
+            h.assertTrue(g.getOffhandItem().is(PellRegistry.FOLDER.get())&&g.gesture()==PellPeople.SHOW,"held out, her folder in her other hand");
+            h.assertTrue(sent(p).lines().contains(PellTexts.PAGE_HELD_OUT)&&f.own(p,P).getBoolean("PageShown"),"the reader is told what she holds out");
+            h.assertTrue(!sent(q).lines().contains(PellTexts.PAGE_HELD_OUT),"the other reader is not");
+            // Right up to her: the car waits while she holds it out.
+            f.at(p,P,g.getX()-b.getX(),0,g.getZ()-b.getZ()-1.5);
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(!PellDawn.inCar(b,p.getUUID()),"the car waits while she holds it out");
+            // A hand on her; what the server sends a reader in a tick reaches them at the tick's end.
+            sent(p);LiteraryVignettes.talk(p,who(h,l,b,PellPeople.GAIL));
+        }).thenIdle(1).thenExecute(()->{
+            var after=sent(p);
+            h.assertTrue(after.pages().size()==1,"a hand on her is a hand on the page: it opens for them to read: "+after.payloads()+" "+after.lines());
+        }).thenWaitUntil(()->h.assertTrue(PellPages.showing(b)==null,"then she puts it back"))
+        .thenExecute(()->{
+            var g=who(h,l,b,PellPeople.GAIL);
+            h.assertTrue(g.getMainHandItem().is(PellRegistry.FOLDER.get())&&g.getOffhandItem().isEmpty()&&g.gesture()==PellPeople.FOLDER,"her folder held to her chest again");
+            h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.KEPT,"and the page kept in it");
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.inCar(b,p.getUUID()),"then the car takes the reader at her side"))
+        .thenExecute(()->h.assertTrue(PellPages.showing(b)==null&&!f.own(q,P).getBoolean("PageShown"),"nothing held out to the other reader, who tore out no false page"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_page_folder") public static void pageFolderDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.544, the torn page pinned in a later hall. Two readers in a closed stone hall, each with a torn page with one of the house's
+     * lines in their own hand on it; the first has had their ending at the house, the other has not. The first's page turns up pinned to
+     * the hall's wall, behind them and out of their sight, at their head height: the House's doing, not counted among the pages they may
+     * leave, and the pin heard by them alone; the copy in their pocket is blank. The other's does not turn up. Anybody can read it, nobody
+     * but its writer can take it down. Taken back into the journal and torn out again, it turns up again; knocked down, it is due to.
+     */
+    @GameTest(template="empty",batch="pell_page_hall",timeoutTicks=1800)
+    public static void afterTheHouseTheTornFalsePageTurnsUpPinnedInALaterHall(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_page_after",P);var q=f.player("pell_page_beside",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        // A closed hall away from the house: seven wide and nine long inside, three high, stone all round.
+        var lo=b.offset(PellSite.EAST+14,0,-34);var hi=b.offset(PellSite.EAST+20,2,-26);
+        f.chunks.hold(l,new AABB(Vec3.atLowerCornerOf(lo),Vec3.atLowerCornerOf(hi)).inflate(10));
+        java.util.function.Predicate<BlockPos> inside=c->c.getX()>=lo.getX()&&c.getX()<=hi.getX()&&c.getY()>=lo.getY()&&c.getY()<=hi.getY()&&c.getZ()>=lo.getZ()&&c.getZ()<=hi.getZ();
+        var data=Journals.get(s);String line=PellTexts.falseEntry(PellEntries.KNIFE);int[] page={0,0};TornPages.Ref[] held={null};
+        net.minecraft.world.entity.Entity[] up={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&PellPeople.find(l,b,PellPeople.JUNE)!=null,"the house, its people and the ground for the hall"))
+        .thenExecute(()->{
+            for(var at:BlockPos.betweenClosed(lo.offset(-1,-1,-1),hi.offset(1,1,1)))l.setBlock(at,inside.test(at)?Blocks.AIR.defaultBlockState():Blocks.STONE.defaultBlockState(),3);
+            ended(f,p,true);
+            p.getInventory().add(data.issue(p));q.getInventory().add(data.issue(q));
+            page[0]=OwnHand.write(p,line);page[1]=OwnHand.write(q,line);
+            h.assertTrue(page[0]>0&&page[1]>0&&TornPages.tear(p,page[0])==TornPages.Tear.TEARING&&TornPages.tear(q,page[1])==TornPages.Tear.TEARING,"each tears out a page with the line in their own hand");
+        }).thenWaitUntil(()->h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.CARRIED&&TornPages.where(s,q.getUUID(),page[1])==TornPages.Where.CARRIED,"both pages out, in their pockets"))
+        .thenExecute(()->{
+            held[0]=TornPages.current(s,p.getUUID(),page[0]);
+            h.assertTrue(PellPages.next(p)==page[0]&&PellPages.next(q)==0,"due to turn up for the reader whose ending has landed, not the other");
+            // Both in the middle of the hall, looking north along it.
+            var mid=lo.offset(3,0,4);
+            p.teleportTo(l,mid.getX()+.5,mid.getY(),mid.getZ()+.5,180,0);q.teleportTo(l,mid.getX()+1.5,mid.getY(),mid.getZ()+.5,180,0);
+            p.setYHeadRot(180);q.setYHeadRot(180);sent(p);sent(q);
+            h.assertTrue(PellPages.turnUp(q,inside)==null,"nothing turns up for the other reader");
+            var pinned=PellPages.turnUp(p,inside);up[0]=pinned;
+            h.assertTrue(pinned!=null&&pinned.ref().owner().equals(p.getUUID())&&pinned.ref().page()==page[0],"the page turns up pinned to a wall");
+            var support=pinned.support();var face=pinned.face();
+            h.assertTrue(l.getBlockState(support).is(Blocks.STONE)&&inside.test(support.relative(face))&&support.getY()==p.blockPosition().getY()+1,"on the hall's wall, at their head height: "+support+" "+face);
+            var at=pinned.getBoundingBox().getCenter();double d=at.distanceTo(p.getEyePosition());
+            h.assertTrue(d>=PellPages.FROM&&d<=PellPages.REACH,"a few blocks from them: "+d);
+            h.assertTrue(p.getLookAngle().dot(at.subtract(p.getEyePosition()).normalize())<.26,"behind them, out of their sight, as it went up");
+            h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.PINNED&&TornPages.byHouse(s,p.getUUID(),page[0])&&TornPages.out(s,p.getUUID())==0,"pinned by the House, not counted among the pages they may leave");
+            h.assertTrue(!TornPages.valid(s,held[0])&&!holds(p,held[0]),"the copy in their pocket is blank");
+            h.assertTrue(pinned.glance().replace('\n',' ').equals(line),"its first lines show at a glance: "+pinned.glance());
+            var heard=sent(p);h.assertTrue(heard.pins().size()==1&&heard.pins().getFirst().distanceTo(at)<1.5,"the pin heard by them, where it went in: "+heard.pins());
+            h.assertTrue(sent(q).pins().isEmpty(),"and not by the other reader");
+            h.assertTrue(PellPages.next(p)==0,"put up by the House, it is not due again");
+            // Anybody can read it; nobody but its writer can take it down.
+            pinned.interact(q,net.minecraft.world.InteractionHand.MAIN_HAND);
+            h.assertTrue(sent(q).pages().size()==1,"the other reader reads it");
+            pinned.skipAttackInteraction(q);
+            h.assertTrue(!pinned.isRemoved()&&TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.PINNED,"and cannot take it down");
+            // Its writer takes it back into the journal, and tears it out again.
+            h.assertTrue(TornPages.reclaim(p,page[0])&&TornPages.where(s,p.getUUID(),page[0])==null&&pinned.isRemoved(),"its writer takes it back into the journal");
+            h.assertTrue(TornPages.tear(p,page[0])==TornPages.Tear.TEARING,"and tears it out again");
+        }).thenWaitUntil(()->h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.CARRIED,"out again, in their pocket"))
+        .thenExecute(()->{
+            h.assertTrue(PellPages.next(p)==page[0],"due to turn up again");
+            var again=PellPages.turnUp(p,inside);up[0]=again;
+            h.assertTrue(again!=null&&TornPages.byHouse(s,p.getUUID(),page[0])&&TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.PINNED,"it turns up again");
+            // Knocked down: its wall gone, it falls.
+            l.setBlock(again.support(),Blocks.AIR.defaultBlockState(),3);
+        }).thenWaitUntil(()->h.assertTrue(TornPages.where(s,p.getUUID(),page[0])==TornPages.Where.DROPPED,"its wall gone, it falls"))
+        .thenExecute(()->h.assertTrue(!TornPages.byHouse(s,p.getUUID(),page[0])&&PellPages.next(p)==page[0],"fallen, it is due to turn up again"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_page_hall") public static void pageHallDone(ServerLevel l){done();PellPages.clearAll();}
 }

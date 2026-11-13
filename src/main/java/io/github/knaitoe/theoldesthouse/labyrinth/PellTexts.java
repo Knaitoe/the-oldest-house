@@ -641,6 +641,13 @@ public final class PellTexts {
         "Tilly's settled. Come on.",
     };
 
+    // ------------------------------------------------------------------------------------------------ 0.4.544, the torn page (PellPages)
+    /** At first light on the last visit, Gail holding a reader's torn false page out to them from her folder: what they see, what she
+     *  says, and what she says putting it back. */
+    public static final String PAGE_HELD_OUT="Gail takes a page out of her folder and holds it out to you. It is the page you tore out of your journal.",
+        GAIL_PAGE="June gave me this, love. It's your writing, isn't it?",
+        GAIL_PAGE_FILE="It'll have to go in your file.";
+
     // ------------------------------------------------------------------------------------------------ 0.4.542, after (PellAftermath)
     /** Coming back to the house in a later hall: after Tilly came out, and after she answered. */
     public static final String AFTER_EMPTY="The house is empty, and the pool has been drained. On the front lawn, a sign: FOR SALE.",

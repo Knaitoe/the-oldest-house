@@ -51,16 +51,19 @@ public final class TornPages {
     public static final String OWNER="TornOwner", PAGE="TornPage", SERIAL="TornSerial", NAME="TornName";
     private TornPages(){}
 
-    public enum Where { CARRIED, PINNED, DROPPED }
-    /** A page out of its journal: which copy it is, its words, and where it was last left. */
+    /** Where a torn page is: in someone's hands or pocket, pinned up, lying where it fell; or, from 0.4.544, KEPT, in someone's keeping
+     *  and nowhere in the world (the Pell house's false pages, in Gail's folder: labyrinth.PellPages). */
+    public enum Where { CARRIED, PINNED, DROPPED, KEPT }
+    /** A page out of its journal: which copy it is, its words, and where it was last left; from 0.4.544, whether the House itself put it
+     *  where it is (a false page turned up on a wall: labyrinth.PellPages). */
     static final class Torn {
         int serial; JournalPage page=JournalPage.BLANK; Where where=Where.CARRIED;
-        String dim=""; long pos; @Nullable UUID entity; long order; boolean counted;
+        String dim=""; long pos; @Nullable UUID entity; long order; boolean counted,house;
         CompoundTag save(){var t=new CompoundTag();t.putInt("Serial",serial);t.put("Page",page.save());t.putString("Where",where.name());
-            if(!dim.isEmpty()){t.putString("Dim",dim);t.putLong("Pos",pos);}if(entity!=null)t.putUUID("Entity",entity);if(order>0)t.putLong("Order",order);if(counted)t.putBoolean("Counted",true);return t;}
+            if(!dim.isEmpty()){t.putString("Dim",dim);t.putLong("Pos",pos);}if(entity!=null)t.putUUID("Entity",entity);if(order>0)t.putLong("Order",order);if(counted)t.putBoolean("Counted",true);if(house)t.putBoolean("House",true);return t;}
         static Torn load(CompoundTag t){var torn=new Torn();torn.serial=t.getInt("Serial");torn.page=JournalPage.load(t.getCompound("Page"));
             try{torn.where=Where.valueOf(t.getString("Where"));}catch(IllegalArgumentException ignored){}
-            torn.dim=t.getString("Dim");torn.pos=t.getLong("Pos");torn.entity=t.hasUUID("Entity")?t.getUUID("Entity"):null;torn.order=t.getLong("Order");torn.counted=t.getBoolean("Counted");return torn;}
+            torn.dim=t.getString("Dim");torn.pos=t.getLong("Pos");torn.entity=t.hasUUID("Entity")?t.getUUID("Entity"):null;torn.order=t.getLong("Order");torn.counted=t.getBoolean("Counted");torn.house=t.getBoolean("House");return torn;}
     }
     /** Which torn page a stack or a pinned page is: its writer, the stub it came from and which copy. */
     public record Ref(UUID owner,int page,int serial){}
@@ -99,7 +102,8 @@ public final class TornPages {
         var result=new Tear[]{Tear.TEARING};
         Journals.inOrder(p,()->{
             var b=Journals.get(p.server).book(p.getUUID());var page=b.pages.get(index);
-            result[0]=b.torn.containsKey(index)?Tear.ALREADY:page==null||page.text().isBlank()?Tear.BLANK:Tear.TEARING;
+            // 0.4.544: a page with nothing on it but a line in the reader's own hand (OwnHand, the Pell house's false entries) tears out too.
+            result[0]=b.torn.containsKey(index)?Tear.ALREADY:page==null||page.text().isBlank()&&!page.ownHand()?Tear.BLANK:Tear.TEARING;
             if(result[0]!=Tear.TEARING){reopen(p,index);return null;}
             return p.getTextFilter().processMessageBundle(List.of(page.text())).thenAcceptAsync(filtered->tornOut(p,index,filtered),p.server);
         });
@@ -109,7 +113,7 @@ public final class TornPages {
         var data=Journals.get(p.server);var b=data.book(p.getUUID());var page=b.pages.get(index);
         if(filtered.size()!=1||page==null||b.torn.containsKey(index)||!data.carries(p)){reopen(p,index);return;}
         String text=filtered.getFirst().filteredOrEmpty();
-        if(text.isBlank()){p.displayClientMessage(Component.literal("Nothing on the page would come away."),true);reopen(p,index);return;}
+        if(text.isBlank()&&!page.ownHand()){p.displayClientMessage(Component.literal("Nothing on the page would come away."),true);reopen(p,index);return;}
         var torn=new Torn();torn.serial=++b.tornSerial;torn.page=page.withWriting(text,page.placed());
         b.pages.remove(index);b.torn.put(index,torn);Quotes.torn(b,index);data.setDirty();
         // The journal itself goes to the hotbar (0.4.201); a torn page goes where any picked-up item would.
@@ -132,10 +136,12 @@ public final class TornPages {
         reader.serverLevel().playSound(null,reader.blockPosition(),SoundEvents.BOOK_PAGE_TURN,SoundSource.PLAYERS,.5F,1.1F);
         return true;
     }
-    /** The few tiny lines a pinned page shows at a glance: its first words, wrapped short. */
+    /** The few tiny lines a pinned page shows at a glance: its first words, wrapped short; from 0.4.544, with the lines in the writer's
+     *  own hand after them, as the page has them. */
     public static String glance(JournalPage page){
         var lines=new ArrayList<String>();
-        for(String para:page.text().split("\n")){
+        var all=new ArrayList<String>();if(!page.text().isBlank())all.add(page.text());all.addAll(page.ownLines());
+        for(String para:String.join("\n",all).split("\n")){
             var line=new StringBuilder();
             for(String word:para.trim().split("\\s+")){
                 if(word.isEmpty())continue;
@@ -160,10 +166,10 @@ public final class TornPages {
         boolean moved=t.where!=where||!e.getUUID().equals(t.entity);
         t.where=where;t.dim=l.dimension().location().toString();t.pos=e.blockPosition().asLong();t.entity=e.getUUID();t.counted=counts(l,e.blockPosition());
         if(moved)t.order=++data.tornOrder;
-        data.setDirty();
+        t.house=false;data.setDirty();
         if(t.counted)evict(l.getServer(),ref.owner());
     }
-    static void carried(MinecraftServer server,Ref ref){var data=Journals.get(server);var t=torn(data,ref);if(t==null)return;t.where=Where.CARRIED;t.entity=null;t.dim="";t.counted=false;data.setDirty();}
+    static void carried(MinecraftServer server,Ref ref){var data=Journals.get(server);var t=torn(data,ref);if(t==null)return;t.where=Where.CARRIED;t.entity=null;t.dim="";t.counted=false;t.house=false;data.setDirty();}
     /** How many of a reader's pages are left out in the House, beyond the manor. */
     public static int out(MinecraftServer server,UUID owner){var b=Journals.get(server).books().get(owner);return b==null?0:(int)b.torn.values().stream().filter(t->t.counted).count();}
     static void evict(MinecraftServer server,UUID owner){
@@ -184,10 +190,7 @@ public final class TornPages {
     public static boolean takeBack(MinecraftServer server,UUID owner,int index,@Nullable String why){
         var data=Journals.get(server);var b=data.books().get(owner);if(b==null)return false;var t=b.torn.remove(index);if(t==null)return false;
         b.pages.put(index,t.page);data.setDirty();
-        if(t.entity!=null&&!t.dim.isEmpty()){
-            var level=server.getLevel(ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(t.dim)));
-            var e=level==null?null:level.getEntity(t.entity);if(e!=null)e.discard();
-        }
+        gone(server,t);
         var writer=server.getPlayerList().getPlayer(owner);
         if(writer!=null){
             if(why!=null)writer.displayClientMessage(Component.literal(why).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);
@@ -196,6 +199,66 @@ public final class TornPages {
         }
         return true;
     }
+    /** The page as it was left in the world, pinned up or lying, gone from there if it is loaded (if not, it never comes back: its copy
+     *  is no longer the page's, TornPages.joined). */
+    private static void gone(MinecraftServer server,Torn t){
+        if(t.entity==null||t.dim.isEmpty())return;
+        var level=server.getLevel(ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(t.dim)));
+        var e=level==null?null:level.getEntity(t.entity);if(e!=null)e.discard();
+    }
+
+    // ------------------------------------------------------------------ 0.4.544, the House's own hand on them (labyrinth.PellPages)
+    /** The pages of a writer's that are out of their journal now and match, in page order. */
+    public static List<Integer> pages(MinecraftServer server,UUID owner,java.util.function.Predicate<JournalPage> which){
+        var b=Journals.get(server).books().get(owner);var found=new ArrayList<Integer>();if(b==null)return found;
+        for(var e:b.torn.entrySet())if(which.test(e.getValue().page))found.add(e.getKey());
+        found.sort(null);return found;
+    }
+    /** Where a writer's torn page is now, or null if it is not out of their journal. */
+    public static @Nullable Where where(MinecraftServer server,UUID owner,int index){var b=Journals.get(server).books().get(owner);var t=b==null?null:b.torn.get(index);return t==null?null:t.where;}
+    /** Whether the House itself put the page where it is (and nobody has moved it since). */
+    public static boolean byHouse(MinecraftServer server,UUID owner,int index){var b=Journals.get(server).books().get(owner);var t=b==null?null:b.torn.get(index);return t!=null&&t.house;}
+    /** The page as it was left in the world, pinned up or lying, if it is there and loaded; otherwise null. */
+    public static @Nullable Entity leftAs(MinecraftServer server,UUID owner,int index){
+        var b=Journals.get(server).books().get(owner);var t=b==null?null:b.torn.get(index);if(t==null||t.entity==null||t.dim.isEmpty())return null;
+        var level=server.getLevel(ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(t.dim)));return level==null?null:level.getEntity(t.entity);
+    }
+    /** The handle a torn page has now, or null if it is not out of its writer's journal. */
+    public static @Nullable Ref current(MinecraftServer server,UUID owner,int index){var b=Journals.get(server).books().get(owner);var t=b==null?null:b.torn.get(index);return t==null?null:new Ref(owner,index,t.serial);}
+    /** The name a writer's torn pages carry: their journal's, or the writer's own. */
+    public static String writer(MinecraftServer server,UUID owner){
+        var b=Journals.get(server).books().get(owner);if(b!=null&&!b.name.isEmpty())return b.name;
+        var p=server.getPlayerList().getPlayer(owner);if(p!=null)return p.getGameProfile().getName();
+        var cache=server.getProfileCache();if(cache!=null){var known=cache.get(owner);if(known.isPresent())return known.get().getName();}
+        return "";
+    }
+    /**
+     * A torn page into someone's keeping: off the wall it was pinned to, up from where it lay, out of whatever pocket it was in (a copy
+     * left anywhere is blank now, as every copy of a page is once it is somewhere else), and nowhere in the world. It is still out of its
+     * writer's journal, and they can take it back as ever. Returns its handle now, or null if it is not out.
+     */
+    public static @Nullable Ref keep(MinecraftServer server,UUID owner,int index){
+        var data=Journals.get(server);var b=data.books().get(owner);var t=b==null?null:b.torn.get(index);if(t==null)return null;
+        gone(server,t);
+        t.serial=++b.tornSerial;t.where=Where.KEPT;t.dim="";t.pos=0;t.entity=null;t.counted=false;t.house=false;data.setDirty();
+        return new Ref(owner,index,t.serial);
+    }
+    /**
+     * A torn page put up by the House on a wall: wherever it was, it is pinned here now (and any copy left anywhere is blank). Like any
+     * pinned page, anybody can read it and only its writer can take it down; it does not count toward the pages they may leave out.
+     * Returns the page, or null if it is not out of its writer's journal.
+     */
+    public static @Nullable PinnedPage turnUp(ServerLevel level,UUID owner,int index,BlockPos support,net.minecraft.core.Direction face){
+        var server=level.getServer();var data=Journals.get(server);var b=data.books().get(owner);var t=b==null?null:b.torn.get(index);if(t==null)return null;
+        gone(server,t);
+        t.serial=++b.tornSerial;
+        var pinned=PinnedPage.create(level,support,face,face.toYRot(),new Ref(owner,index,t.serial),writer(server,owner),glance(t.page));
+        t.where=Where.PINNED;t.dim=level.dimension().location().toString();t.pos=pinned.blockPosition().asLong();t.entity=pinned.getUUID();
+        t.counted=false;t.house=true;t.order=++data.tornOrder;data.setDirty();
+        level.addFreshEntity(pinned);
+        return pinned;
+    }
+
     /** The writer takes their own page back: from the stub in their journal, or from the page itself. */
     public static boolean reclaim(ServerPlayer p,int index){
         var data=Journals.get(p.server);if(!data.carries(p))return false;

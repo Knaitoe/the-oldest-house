@@ -79,6 +79,7 @@ public final class PellDawn {
     static void restart(PellPeople.Household h){
         h.dawn=NOT_YET;h.endTaken=false;h.atEnd.clear();h.inCar.clear();h.carLeg=0;h.comeAt=0;
         h.callumStepped=false;h.tillyWithGail=false;h.atWindow=false;h.gailSaid=0;h.leaveAt.clear();h.faded.clear();
+        h.showing=null;h.showRead=false;
     }
 
     /** Every tick on the last night, after the rite's own (PellNight). */
@@ -86,6 +87,8 @@ public final class PellDawn {
         if(!after(h))return;
         // The readers at the house when the night's end came are the ones the morning is for.
         if(!h.endTaken){h.endTaken=true;for(var p:here)if(p.isAlive()&&!p.isSpectator())h.atEnd.add(p.getUUID());}
+        // 0.4.544: from first light, each torn false page of theirs is in Gail's folder (PellPages).
+        if(h.dawn>=COMING)PellPages.folder(l.getServer(),h,now);
         switch(h.dawn){
             case NOT_YET->{if(h.time>=PellMorning.DAWN)firstLight(l,b,h,here);}
             case COMING->drive(l,b,h,now);
@@ -157,9 +160,11 @@ public final class PellDawn {
         var gail=PellPeople.find(l,b,G);
         if(gail!=null&&gailUp(h)&&tilly!=null){
             if(h.gailSaid==0&&PellVisit.ready(h,now,gail)){PellVisit.say(h,gail,G,PellTexts.GAIL_DAWN,now);h.gailSaid=1;}
-            else if(h.gailSaid==1&&h.tillyWithGail&&PellVisit.ready(h,now,gail)){PellVisit.say(h,gail,G,PellTexts.GAIL_TO_TILLY,now);h.gailSaid=2;}
-            else if(h.gailSaid==2&&PellVisit.ready(h,now,tilly)){PellVisit.say(h,tilly,T,PellTexts.TILLY_TO_GAIL,now);h.gailSaid=3;}
+            else if(h.gailSaid==1&&h.tillyWithGail&&!PellPages.showing(h)&&PellVisit.ready(h,now,gail)){PellVisit.say(h,gail,G,PellTexts.GAIL_TO_TILLY,now);h.gailSaid=2;}
+            else if(h.gailSaid==2&&!PellPages.showing(h)&&PellVisit.ready(h,now,tilly)){PellVisit.say(h,tilly,T,PellTexts.TILLY_TO_GAIL,now);h.gailSaid=3;}
         }
+        // 0.4.544: a reader's torn page held out to them, once she has said good morning, never in the middle of what she says to Tilly.
+        if(gail!=null&&gailUp(h))PellPages.gail(l,h,gail,here,now,h.gailSaid>=3||h.gailSaid==1&&!h.tillyWithGail);
         // The account, for each reader the morning is for.
         for(var p:here){
             if(!p.isAlive()||p.isSpectator()||!h.atEnd.contains(p.getUUID()))continue;
@@ -187,6 +192,8 @@ public final class PellDawn {
         }
         var gail=PellPeople.find(l,b,G);
         if(gail!=null&&gailUp(h)&&h.gailSaid==0&&PellVisit.ready(h,now,gail)){PellVisit.say(h,gail,G,PellTexts.GAIL_COME_ON,now);h.gailSaid=1;}
+        // 0.4.544: a reader's torn page held out to them once she has said her piece (PellPages).
+        if(gail!=null&&gailUp(h))PellPages.gail(l,h,gail,here,now,h.gailSaid>=1);
         boolean waited=now-h.comeAt>=WAIT;
         for(var p:here){
             if(!p.isAlive()||p.isSpectator()||!h.atEnd.contains(p.getUUID()))continue;
@@ -201,7 +208,8 @@ public final class PellDawn {
                 PellHouse.cue(p,PellTexts.DAWN_ANSWERED);
             }
             if(h.inCar.contains(p.getUUID()))continue;
-            boolean toGail=gail!=null&&gailUp(h)&&horizontal(p.position(),gail.position())<=TO_GAIL;
+            // 0.4.544: the car waits while Gail has a page of theirs to hold out to them, or holds it out.
+            boolean toGail=gail!=null&&gailUp(h)&&!PellPages.owed(l.getServer(),h,p.getUUID(),own)&&horizontal(p.position(),gail.position())<=TO_GAIL;
             if(!toGail&&!waited)continue;
             // Into the car: a beat to look back, then the black, and the street.
             h.inCar.add(p.getUUID());h.leaveAt.put(p.getUUID(),now+LOOK_BACK);
@@ -248,6 +256,8 @@ public final class PellDawn {
     /** A hand on one of the people once Gail is back: true if the morning answers it (PellPeople.talk). */
     static boolean talk(ServerPlayer p,BlockPos b,PellPeople.Household h,LiteraryActor a,int who){
         if(!morning(h))return false;
+        // 0.4.544: while Gail holds a reader's page out to them, a hand on her is a hand on the page.
+        if(who==G&&PellPages.talk(p,h))return true;
         if(who==C&&h.callumStepped){PellHouse.cue(p,PellTexts.CALLUM_STEP_HAND[h.said[C]++%PellTexts.CALLUM_STEP_HAND.length]);return true;}
         String[] lines=null;
         if(who==T&&h.tillyWithGail)lines=PellTexts.TILLY_DAWN_TALK;

@@ -9,6 +9,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
@@ -80,7 +82,9 @@ public final class PellPeople {
         // on the stool beside it, her hand on the plastic.
         JUNE_LED=22,STILL=23,BY_HER=24,
         // 0.4.541, first light: Callum sat on the front step with his shoes on; Tilly at Nessa's window, waving.
-        STEP=25,WAVE=26;
+        STEP=25,WAVE=26,
+        // 0.4.544: Gail at first light holding a page out from her folder, the folder kept to her chest in her other hand (PellPages).
+        SHOW=27;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
@@ -189,10 +193,33 @@ public final class PellPeople {
         int dawn,carLeg,gailSaid;boolean endTaken,callumStepped,tillyWithGail,atWindow;long comeAt;
         final java.util.Set<UUID> atEnd=new java.util.HashSet<>(),inCar=new java.util.HashSet<>(),faded=new java.util.HashSet<>();
         final java.util.Map<UUID,Long> leaveAt=new java.util.HashMap<>();
+        /** 0.4.544, the torn page (PellPages): whose page Gail is holding out to them, which page and which copy of it, since when, and
+         *  whether they have put a hand on it to read it. */
+        UUID showing;int showPage,showSerial;long showAt;boolean showRead;
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
-    public static void clearAll(){HOUSES.clear();}
+    public static void clearAll(){for(var b:List.copyOf(HELD.keySet()))release(b);HOUSES.clear();}
+    @SubscribeEvent public static void stopped(ServerStoppedEvent e){HELD.clear();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.544, the lot held
+    /**
+     * While anybody is at the house its whole lot, street to back fence, is kept loaded, entities and all: the visit moves people across
+     * all of it (June out to the pool, Callum to the back of the line), and somebody moved onto ground whose entities are not loaded drops
+     * out of the house until it loads. Run 1578 found Callum so moved on the last night, and a second Callum made where the first visit
+     * has him.
+     */
+    private static final TicketType<ChunkPos> TICKET=TicketType.create("pell_house",java.util.Comparator.comparingLong(ChunkPos::toLong));
+    private record Held(ServerLevel level,List<ChunkPos> chunks){}
+    private static final Map<BlockPos,Held> HELD=new HashMap<>();
+    static void hold(ServerLevel l,BlockPos b){
+        if(HELD.containsKey(b))return;var box=area(b);var chunks=new java.util.ArrayList<ChunkPos>();
+        for(int x=Mth.floor(box.minX)>>4;x<=Mth.floor(box.maxX)>>4;x++)for(int z=Mth.floor(box.minZ)>>4;z<=Mth.floor(box.maxZ)>>4;z++){var c=new ChunkPos(x,z);l.getChunkSource().addRegionTicket(TICKET,c,2,c);chunks.add(c);}
+        HELD.put(b.immutable(),new Held(l,List.copyOf(chunks)));
+    }
+    static void release(BlockPos b){var held=HELD.remove(b);if(held!=null)for(var c:held.chunks())held.level().getChunkSource().removeRegionTicket(TICKET,c,2,c);}
+    /** Whether every part of the lot has its entities loaded: until it has, nobody is made and no visit begins. */
+    static boolean ground(ServerLevel l,BlockPos b){return RoomActors.ready(l,area(b));}
     /** The house as if everybody had gone: its visit begins again from the start when a reader is next at it. */
     public static void vacate(BlockPos b){household(b).fresh=true;}
     static Household household(BlockPos b){return HOUSES.computeIfAbsent(b.immutable(),k->new Household());}
@@ -209,12 +236,13 @@ public final class PellPeople {
         return null;
     }
     /**
-     * Each of the four at the house, made where the first visit puts them if they are not there. Nothing is made where the ground's
-     * entities are not loaded, so nobody is made twice over one who has yet to load.
+     * Each of the four at the house, made where the first visit puts them if they are not there. Nothing is made while any of the lot's
+     * ground has its entities unloaded (0.4.544: anywhere on it, not only where they are made), so nobody is made twice over one who has
+     * yet to load.
      */
     /** 0.4.541: one of the four made at this place, looking this way, holding what they hold on the first visit; null if not made. */
     static @Nullable LiteraryActor make(ServerLevel l,BlockPos b,int who,Vec3 rel,float look){
-        var at=PellVisit.world(b,rel);if(!live(l,at))return null;
+        var at=PellVisit.world(b,rel);if(!ground(l,b)||!live(l,at))return null;
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(PellHouse.PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
         a.moveTo(at.x,at.y,at.z,look,0);a.setYHeadRot(look);a.setYBodyRot(look);
@@ -225,7 +253,7 @@ public final class PellPeople {
         return a;
     }
     public static void ensure(ServerLevel l,BlockPos b){
-        var h=household(b);
+        var h=household(b);hold(l,b);if(!ground(l,b))return;
         // 0.4.533: a week in, Gail does not come with them (PellWeek); she is not made for a visit about to begin a week in.
         boolean noGail=h.fresh?PellWeek.visitFor(PellHouse.readers(l,b))>=2:h.gailGone;
         for(int who=0;who<COUNT;who++){
@@ -261,8 +289,8 @@ public final class PellPeople {
         for(var entry:List.copyOf(HOUSES.entrySet())){
             var b=entry.getKey();var h=entry.getValue();var here=PellHouse.readers(l,b);
             // 0.4.525: a house left empty long enough begins its visit again when somebody next comes.
-            if(here.isEmpty()){if(++h.empty>=PellVisit.EMPTY)h.fresh=true;continue;}
-            h.empty=0;tick(l,b,here);
+            if(here.isEmpty()){if(++h.empty>=PellVisit.EMPTY){h.fresh=true;release(b);}continue;}
+            h.empty=0;hold(l,b);tick(l,b,here);
         }
     }
     /** Once a tick for the house, however many readers are at it: each of them looks at the nearest reader near enough to look at. */

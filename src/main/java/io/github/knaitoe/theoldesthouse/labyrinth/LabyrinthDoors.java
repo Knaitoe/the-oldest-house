@@ -441,6 +441,7 @@ public final class LabyrinthDoors {
             BlindStretch.onArrive(p,place);
             MotherOfStrays.onArrive(p, place);
             TallGrass.arrived(p, place);
+            PellPages.arrived(p, place);
             WitnessAccount.onArrive(p, place);
             LabyrinthEncounters.onArrive(p, place);
             LabyrinthHazards.onArrive(p, place);

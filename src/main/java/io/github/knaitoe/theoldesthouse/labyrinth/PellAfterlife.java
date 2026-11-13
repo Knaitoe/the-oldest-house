@@ -35,7 +35,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * Then the cane goes away from the door, and there is nothing. Trying the door, or knocking on it, stops it at once: the door stays
  * locked, nobody knocks back, and the tapping stops.</li>
  * </ul>
- * This class also drives the false entries' tick away from the house (PellEntries.anywhere).
+ * This class also drives the false entries' tick away from the house (PellEntries.anywhere), and from 0.4.544 the torn false page's
+ * turning up in a later hall (PellPages.tick).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class PellAfterlife {
@@ -63,6 +64,8 @@ public final class PellAfterlife {
         for(var p:server.getPlayerList().getPlayers()){
             if(p.isSpectator()||!p.isAlive()||!HouseDimensions.isHouseDimension(p.level().dimension()))continue;
             PellEntries.anywhere(p);
+            // 0.4.544: a torn false page up on a wall of the hall the reader has come into (PellPages).
+            PellPages.tick(p,now);
             maybe(p,now);
         }
     }
