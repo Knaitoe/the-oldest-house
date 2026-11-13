@@ -160,7 +160,7 @@ public final class GhostsLoreTests {
                 h.assertTrue(desk.is(LiteraryRegistry.GHOST_SET.get())&&desk.getValue(GhostsSetBlock.KIND)==GhostsSetBlock.Kind.WRITING_DESK&&desk.getValue(GhostsSetBlock.FACING)==GhostsSetRooms.EXORCISM_FACING,"the desk faces the bed: "+desk);
                 h.assertTrue(wall.isCollisionShapeFullBlock(f.in,b.offset(GhostsSetRooms.EXORCISM_DESK).relative(GhostsSetRooms.EXORCISM_FACING.getOpposite())),"its back is against the wall: "+wall);
                 h.assertTrue(f.in.getBlockState(b.offset(GhostsLore.LAPTOP_AT)).getValue(GhostsSetBlock.FACING)==GhostsSetRooms.EXORCISM_FACING,"the laptop on it faces the same way");
-                var drawers=f.in.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(b.offset(GhostsSetRooms.EXORCISM_DESK)).inflate(1),a->a.role()==LiteraryActor.GHOST_DRAWER);
+                var drawers=f.in.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(b.offset(GhostsSetRooms.EXORCISM_DESK)).inflate(1),a->a.role()==LiteraryActor.GHOST_DRAWER&&a.owner().map(p.getUUID()::equals).orElse(false));
                 h.assertTrue(drawers.size()==1&&drawers.get(0).phase()==0,"the reader's drawer starts shut: "+drawers);
                 f.at(p,P,7.5,5,-20.5);f.click(p,P,picture);
             }).thenIdle(2).thenExecute(()->f.click(p,P,library)).thenIdle(2).thenExecute(()->{

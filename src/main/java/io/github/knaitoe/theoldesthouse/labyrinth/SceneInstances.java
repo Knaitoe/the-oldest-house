@@ -37,10 +37,10 @@ public final class SceneInstances {
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
      * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}). 0.4.547: and the Pell house, two
      * readers to a house ({@link #pell}). 0.4.551: and every story written for a party ({@link #PARTIES}). 0.4.552: and the Goatman's trailer,
-     * whose night is kept by copy (GoatmanVignette.run).
+     * whose night is kept by copy (GoatmanVignette.run). 0.4.553: and the Ghosts Set, whose lead is kept by copy (GhostsCrew).
      */
     private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE,
-        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN);
+        LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN,LabyrinthPlace.GHOSTS_SET);
     /**
      * 0.4.551 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the stories written
      * for a party, and how many readers one copy of each holds. A copy whose places are all held ({@link #held}) is full: the next
@@ -49,9 +49,11 @@ public final class SceneInstances {
      * seventh to a house of their own. A copy with a place left still takes a latecomer, who comes in partway as each story has
      * always let them. The lake house and the Pell house keep their pairs ({@link #lake}, {@link #pell}). 0.4.552: the Goatman's
      * trailer sixteen, its own limit on an evening's children; a latecomer after supper is still turned away by the trailer's own rule.
+     * 0.4.553: the Ghosts Set four cameras, the lead's and three second cameras; a fifth leads a production of their own on another set.
      */
     private static final Map<LabyrinthPlace,Integer> PARTIES=Map.of(LabyrinthPlace.BIKE_NIGHT,BikeNight.RIDERS,LabyrinthPlace.LAST_CROSSING,LastCrossing.MAX_CREW,
-        LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY,LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY,LabyrinthPlace.GOATMAN,GoatmanVignette.MAX_PLAYERS);
+        LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY,LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY,LabyrinthPlace.GOATMAN,GoatmanVignette.MAX_PLAYERS,
+        LabyrinthPlace.GHOSTS_SET,GhostsCrew.CAMERAS);
     /** How many readers one copy of a party's story holds, or 0 for a scene that is not one. */
     public static int party(@Nullable LabyrinthPlace p){return p==null?0:PARTIES.getOrDefault(p,0);}
     /**
@@ -93,6 +95,11 @@ public final class SceneInstances {
     // ------------------------------------------------------------------------------------------------ where copies stand
     /** The House origin moved so that a scene's own place falls on its copy: everything keyed by origin and place then reaches the copy. */
     public static BlockPos shiftedOrigin(BlockPos origin,int copy){return copy<=0?origin:origin.offset(-WEST-(copy-1)*STEP,0,0);}
+    /** 0.4.553: the House origin moved to the copy whose band holds a position, or the origin itself outside every band, for the client. */
+    public static BlockPos originAt(BlockPos origin,BlockPos pos){
+        long west=(long)origin.getX()-WEST-pos.getX();if(west<-STEP/2)return origin;
+        long k=Math.floorDiv(west+STEP/2,(long)STEP)+1;return k<1||k>64?origin:shiftedOrigin(origin,(int)k);
+    }
     /** Copy 0 is the original. */
     public static @Nullable BlockPos base(MinecraftServer s,LabyrinthPlace p,int copy){
         var o=HouseSavedData.get(s).houseOrigin();return o==null?null:LabyrinthPlaces.base(shiftedOrigin(o,copy),p);

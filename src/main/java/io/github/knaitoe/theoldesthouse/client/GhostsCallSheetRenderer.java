@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.LecternBlockEntity;
 public final class GhostsCallSheetRenderer {
     private static final ResourceLocation PAPER=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/block/ghosts/call_sheet.png");
     private GhostsCallSheetRenderer(){}
-    public static boolean source(LecternBlockEntity lectern){var mc=Minecraft.getInstance();if(mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)||!HouseSightlineState.hasOrigin())return false;var b=LabyrinthPlaces.base(HouseSightlineState.origin(),LabyrinthPlace.GHOSTS_SET);return b!=null&&lectern.getBlockPos().equals(b.offset(LiteraryRooms.source(LabyrinthPlace.GHOSTS_SET)));}
+    public static boolean source(LecternBlockEntity lectern){var mc=Minecraft.getInstance();if(mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)||!HouseSightlineState.hasOrigin())return false;var b=LabyrinthPlaces.base(SceneInstances.originAt(HouseSightlineState.origin(),lectern.getBlockPos()),LabyrinthPlace.GHOSTS_SET);return b!=null&&lectern.getBlockPos().equals(b.offset(LiteraryRooms.source(LabyrinthPlace.GHOSTS_SET)));}
     public static void render(PoseStack stack,MultiBufferSource buffers,Direction facing,int light,int overlay){
         stack.pushPose();stack.translate(.5,.5,.5);stack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()-180));stack.mulPose(Axis.XP.rotationDegrees(-22.5F));stack.translate(0,.503,.09375);
         var vertex=buffers.getBuffer(RenderType.entityCutoutNoCull(PAPER));var pose=stack.last();

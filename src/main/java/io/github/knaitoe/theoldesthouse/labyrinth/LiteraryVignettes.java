@@ -372,9 +372,17 @@ public final class LiteraryVignettes {
         if(a.role()==LiteraryActor.UNCANNY_GIANT||a.role()==LiteraryActor.UNCANNY_PROPPED||a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS||a.role()==LiteraryActor.UNCANNY_MARIONETTE||a.role()==LiteraryActor.UNCANNY_VISITOR||a.role()==LiteraryActor.KILLER)return true;
         return a.scene().equals(ElkLot.PLACE.id())&&a.role()==LiteraryActor.STRANGER&&a.phase()>=5&&a.phase()<=7&&ElkLotNight.stage(shared(LabyrinthData.get(p.server),ElkLot.PLACE))>=3;
     }
-    public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);var s=shared(d,place);String id=privateActor?key+"_"+p.getUUID():key;
-        // 0.4.153: a scene's shared cast is its own in each copy, such as the confession's listener.
-        if(!privateActor&&SceneInstances.copyable(place)){int copy=SceneInstances.of(p,place);if(copy>0)id+="@"+copy;}
+    /**
+     * The id a scene's actor is saved under: a private one's carries its reader. 0.4.153: a scene's shared cast is its own in each copy,
+     * such as the confession's listener. 0.4.553: so is a party story's private cast, since one of its readers can be in one copy one
+     * visit and another the next (the Ghosts Set's families).
+     */
+    public static String actorId(ServerPlayer p,LabyrinthPlace place,String key,boolean privateActor){
+        String id=privateActor?key+"_"+p.getUUID():key;
+        if(SceneInstances.copyable(place)&&(!privateActor||SceneInstances.party(place)>0)){int copy=SceneInstances.of(p,place);if(copy>0)id+="@"+copy;}
+        return id;
+    }
+    public static @Nullable LiteraryActor actor(ServerPlayer p,LabyrinthPlace place,String key,int role,BlockPos relative,boolean privateActor){var d=LabyrinthData.get(p.server);var s=shared(d,place);String id=actorId(p,place,key,privateActor);
         if(s.hasUUID(id)){var e=p.serverLevel().getEntity(s.getUUID(id));return e instanceof LiteraryActor a?a:null;}
         var a=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(a==null)return null;a.bind(place,privateActor?p.getUUID():null);a.appearance(role,0);a.moveTo(Vec3.atBottomCenterOf(base(p,place).offset(relative)));a.setYRot(0);if(place==LabyrinthPlace.BLY_ROUTE&&role==LiteraryActor.LADY)LiteraryMotion.initialLady(a,base(p,place));if(!p.serverLevel().addFreshEntity(a))return null;s.putUUID(id,a.getUUID());shared(d,place,s);return a;
     }

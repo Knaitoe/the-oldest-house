@@ -106,6 +106,58 @@ public final class GhostsSetTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="ghosts_crew0404") public static void crew0404Done(ServerLevel ignored){GhostsCrew.clearAll();if(active!=null){active.close();active=null;}}
+    /**
+     * 0.4.553 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): four cameras to a set.
+     * Four readers on the set hold it: a fifth through the door waits while a set of their own is made ready, and one of the four goes
+     * back into theirs. On the second set the fifth leads a production of their own, with a family of their own kept under that set's
+     * ids, and the first set's lead and second cameras are as they were.
+     */
+    @GameTest(template="empty",batch="ghosts_copy0553",timeoutTicks=24000)
+    public static void aFifthCameraIsGivenASetOfTheirOwn(GameTestHelper h){
+        var f=fixture(h);var held=f.base(P);var server=f.in.getServer();final ServerPlayer[] p=new ServerPlayer[GhostsCrew.CAMERAS+1];final BlockPos[] theirs={null};
+        SceneInstances.fixtureCap(1);
+        for(int i=0;i<GhostsCrew.CAMERAS;i++){p[i]=f.player("ghost_copy"+i,P);f.source(p[i],P);}
+        f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(held.offset(-21,-5,-47)),Vec3.atLowerCornerOf(held.offset(22,13,1))));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),held),"the first set is ready")).thenExecute(()->{
+            h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==GhostsCrew.CAMERAS&&GhostsCrew.CAMERAS==4,"the set has copies, four cameras to a set");
+            lead(f,p[0],p[1],p[2],p[3]);for(int i=0;i<GhostsCrew.CAMERAS;i++)f.at(p[i],P,1.5+i,0,-14.5);
+            GhostsCrew.refresh(server);
+            h.assertTrue(!GhostsCrew.crewing(p[0].getUUID())&&GhostsCrew.castOf(p[3].getUUID()).equals(p[0].getUUID()),"four cameras on the first set, one leading: "+GhostsCrew.describe(p[0]));
+            var late=NativeTestPlayers.survival(h,"ghost_copy_late");p[GhostsCrew.CAMERAS]=late;f.players.add(late);
+            late.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);late.setNoGravity(true);
+            h.assertTrue(SceneInstances.held(server,P,0,late.getUUID())==4&&SceneInstances.held(server,P,0,p[0].getUUID())==3,"the set is full to a fifth, never to one of the four");
+            var e=SceneInstances.enter(late,P);
+            h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the fifth's door waits while a set of their own is made ready: "+e);
+            var mine=SceneInstances.enter(p[1],P);
+            h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the four goes back into theirs: "+mine);
+        })
+        .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second set to stand"))
+        .thenExecute(()->{
+            theirs[0]=SceneInstances.base(server,P,1);var late=p[GhostsCrew.CAMERAS];
+            h.assertTrue(theirs[0].getX()<=held.getX()-SceneInstances.WEST&&theirs[0].getY()==held.getY()&&theirs[0].getZ()==held.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+            var e=SceneInstances.enter(late,P);
+            h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry")),"the fifth goes into it by its own door: "+e);
+            f.chunks.hold(f.in,new AABB(Vec3.atLowerCornerOf(theirs[0].offset(-21,-5,-47)),Vec3.atLowerCornerOf(theirs[0].offset(22,13,1))));
+        })
+        .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&GhostsSet.built(f.data(),theirs[0]),"the second set is resident and its house built"))
+        .thenExecute(()->{
+            var late=p[GhostsCrew.CAMERAS];
+            late.teleportTo(f.in,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);late.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(late,P);
+            h.assertTrue(LiteraryVignettes.inside(late,P)&&LiteraryVignettes.base(late,P).equals(theirs[0]),"the fifth is on the second set");
+            f.at(late,P,1.5,0,-14.5);var own=f.own(late,P);own.putInt("FilmDay",2);own.putBoolean("CastPlaced",false);own.putBoolean("Rolling",false);own.putInt("ShotClock",0);own.putLong("OnSet0404",500);save(f,late,own);
+            GhostsCrew.refresh(server);
+            h.assertTrue(!GhostsCrew.crewing(late.getUUID())&&late.getUUID().equals(GhostsCrew.storedLead(f.data(),1)),"on the second set the fifth leads: "+GhostsCrew.describe(late));
+            h.assertTrue(p[0].getUUID().equals(GhostsCrew.storedLead(f.data(),0))&&GhostsCrew.castOf(p[1].getUUID()).equals(p[0].getUUID())&&GhostsCrew.castOf(p[3].getUUID()).equals(p[0].getUUID())&&!GhostsCrew.crewing(late.getUUID()),"and the first set's lead and cameras are as they were");
+        })
+        .thenWaitUntil(()->{
+            // The fifth's family is theirs on the second set, kept under its ids.
+            var late=p[GhostsCrew.CAMERAS];var own=f.own(late,P);GhostsSet.reader(late,theirs[0],own);save(f,late,own);
+            var family=f.in.getEntitiesOfClass(LiteraryActor.class,new AABB(Vec3.atLowerCornerOf(theirs[0].offset(-21,-5,-47)),Vec3.atLowerCornerOf(theirs[0].offset(22,13,1))),a->a.owner().filter(late.getUUID()::equals).isPresent());
+            h.assertTrue(family.stream().anyMatch(a->a.role()==LiteraryActor.GHOST_MARJORIE),"the fifth's own family stands on the second set: "+family.size());
+            h.assertTrue(LiteraryVignettes.shared(f.data(),P).hasUUID("FilmMarjorie_"+late.getUUID()+"@1")&&!LiteraryVignettes.shared(f.data(),P).hasUUID("FilmMarjorie_"+late.getUUID()),"kept under the second set's ids, and none under the first's");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="ghosts_copy0553") public static void copy0553Done(ServerLevel ignored){SceneInstances.fixtureCap(null);GhostsCrew.clearAll();SceneInstances.clear();if(active!=null){active.close();active=null;}}
 
     /**
      * 0.4.247, ordinary errands between takes (docs/GHOSTS_ERRANDS_0_4_247.md): before the first day's take, Barry gets up from the
@@ -417,6 +469,8 @@ public final class GhostsSetTests {
     }
     private static void close(){if(active!=null){active.close();active=null;}}
     @AfterBatch(batch="ghosts_days") public static void daysDone(ServerLevel l){close();}
+    /** 0.4.553: the bed walk leaves its set and its reader's cast standing for the next batch unless it closes, as every other set batch does. */
+    @AfterBatch(batch="ghosts_bed_walk") public static void bedWalkDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_lens") public static void lensDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_ray") public static void rayDone(ServerLevel l){close();}
     @AfterBatch(batch="ghosts_frames") public static void framesDone(ServerLevel l){close();}
