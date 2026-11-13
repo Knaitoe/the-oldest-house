@@ -89,6 +89,10 @@ public record JournalPage(String text, List<Placed> placed, String begun, int da
     }
 
     public boolean empty(){return text.isBlank()&&placed.isEmpty()&&rubbings.isEmpty()&&notes.isEmpty();}
+    /** 0.4.544: whether a line in the reader's own hand is on the page (OwnHand): one of the Pell house's false entries. */
+    public boolean ownHand(){for(var n:notes)if(n.mark()==Mark.OWN)return true;return false;}
+    /** 0.4.544: the lines in the reader's own hand on the page, in the order they went in. */
+    public List<String> ownLines(){var out=new ArrayList<String>();for(var n:notes)if(n.mark()==Mark.OWN)out.add(n.text());return out;}
     /** The reader's new writing. Rubbings and the other hand's notes stay, except a crossing-out whose word the reader has deleted. */
     public JournalPage withWriting(String text,List<Placed> placed){return new JournalPage(text,List.copyOf(placed),begun,day,house,rubbings,notes.stream().filter(n->n.mark()!=Mark.STRUCK||n.anchor(text)>=0).toList());}
     public JournalPage begunAt(String where,int day,boolean house){return new JournalPage(text,placed,where,day,house,rubbings,notes);}

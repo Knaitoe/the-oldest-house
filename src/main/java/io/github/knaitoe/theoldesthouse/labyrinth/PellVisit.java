@@ -125,7 +125,8 @@ public final class PellVisit {
         if(h.fresh){
             // 0.4.533: which visit, from the readers here (PellWeek); a week in, Gail does not come.
             int visit=PellWeek.visitFor(here);
-            if(june==null||tilly==null||visit<2&&gail==null||PellPeople.find(l,b,PellPeople.CALLUM)==null)return;
+            // 0.4.544: and not until the whole lot is loaded, so nobody is moved onto ground that is not there yet (PellPeople.hold).
+            if(june==null||tilly==null||visit<2&&gail==null||PellPeople.find(l,b,PellPeople.CALLUM)==null||!PellPeople.ground(l,b))return;
             restart(l,b,h,visit);
             if(h.gailGone)gail=null;
         }

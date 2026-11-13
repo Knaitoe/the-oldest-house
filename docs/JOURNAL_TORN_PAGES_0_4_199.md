@@ -83,3 +83,15 @@ It counts toward nothing: no Witness, no advancement, no reward. Witness stays 5
   - a page whose wall goes falls and stays where it fell;
   - the command sends all six remaining pages home, and every page's words come back.
 - **The client journal proof** adds two views: a spread with its left page torn out (`native-journal-5.png`), and a torn page held up to read (`native-journal-6.png`). CI requires both.
+
+## Later: the House's own hand on them (0.4.544)
+
+The Pell house's false pages (`docs/PELL_HOUSE_PAGE_0_4_544.md`) add two things a torn page can be:
+
+- **Kept** (`Where.KEPT`): in someone's keeping and nowhere in the world: Gail's folder. It is still out of its writer's journal, and
+  they can take it back from the stub as ever.
+- **Put up by the House** (the `House` flag): pinned where the House put it. It does not count among the six a reader may leave out,
+  and the flag goes when anybody else moves it.
+
+Either way the page becomes a new copy, so any copy left in a pocket, on a wall or on the floor is blank. A page with nothing on it but
+a line in the writer's own hand (journal/OwnHand) tears out like a written page, and its glance shows that line.

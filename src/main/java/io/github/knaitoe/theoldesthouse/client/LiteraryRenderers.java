@@ -344,6 +344,9 @@ public final class LiteraryRenderers {
             switch(gesture){
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.CANE->{rightArm.xRot=-.32F+net.minecraft.util.Mth.sin(age*.09F)*.03F;rightArm.yRot=-.08F;rightArm.zRot=.04F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.FOLDER->{rightArm.xRot=-.78F;rightArm.yRot=-.5F;rightArm.zRot=0;leftArm.xRot=-.7F;leftArm.yRot=.56F;leftArm.zRot=0;}
+                // 0.4.544: Gail holding a page out from her folder for a reader to see, her right arm out and the page in its hand, the
+                // folder against her chest in her left (PellPages).
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.SHOW->{rightArm.xRot=-1.2F+net.minecraft.util.Mth.sin(age*.07F)*.02F;rightArm.yRot=-.12F;rightArm.zRot=0;leftArm.xRot=-.8F;leftArm.yRot=.5F;leftArm.zRot=0;}
                 // 0.4.527: asleep, lying along the bed (CastRenderer.setupRotations lays the body down).
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.ASLEEP->asleep(age);
                 // 0.4.540: Nessa in the freezer: as asleep, but nothing moves; not the breath, not the head.
