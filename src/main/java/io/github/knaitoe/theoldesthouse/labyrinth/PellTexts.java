@@ -76,6 +76,8 @@ public final class PellTexts {
             // Bit 1: the padlock open.
             case FREEZER->(stage&2)==0?"A chest freezer, humming, padlocked. On its lid a folded towel and a hairbrush with long hair in it."
                 :"The freezer's padlock hangs open.";
+            // 0.4.540: its lid up (PellFreezer).
+            case FREEZER_OPEN->"The freezer stands open, its lid up against the wall. Cold comes up out of it.";
             case STOOL->"A step stool by the freezer, worn where someone sits.";
             case POWER->"A note taped over the power point's switch: DO NOT SWITCH OFF.";
             case CORD->"The freezer's cord, taped to the floor every hand's width.";
@@ -566,6 +568,31 @@ public final class PellTexts {
         RITE_CALLS={"Nessa.","Nessa, love. It's Mum.","Say yes for Mum, Nessa.","You're all right, Nessa. Say it.","Nessa. Answer me, love.","That's my Nessa. Say yes."},
         JUNE_AFTER_UNDER={"Nessa?","There. Nessa?","Nessa? Say it, love."},
         JUNE_CALLS_AFTER={"Nessa.","Nessa, come back to Mum.","Nessa?","Where are you going, Nessa?"};
+
+    // ------------------------------------------------------------------------------------------------ 0.4.540, the freezer
+    public static final String
+        LANYARD_FOUND="In the robe's pocket, a lanyard with three keys on it. You take it.",
+        LANYARD_GONE="The robe's pocket is empty.",
+        FREEZER_UNLOCKED="You try the keys on the lanyard. The third one turns, and the padlock comes open.",
+        FREEZER_LID="You lift the lid. Cold comes up out of it.",
+        FREEZER_OPENED="Under frosted plastic, a girl lies on her back in a party dress, a paper crown flat beside her head. The girl from every photograph in the house. She is still.",
+        FREEZER_AGAIN="She is there under the plastic, as still as before.",
+        NESSA_HAND="The plastic is cold. Under it, she is colder.",
+        JUNES_HAND="You take June's hand. She lets you.",
+        JUNE_HAS_YOUR_HAND="She has hold of your hand.",
+        JUNE_HAS_A_HAND="She is holding somebody else's hand.",
+        JUNE_OUT_OF_REACH="She is out in the water, out of reach.",
+        JUNE_LET_GO="Her hand slips out of yours. She stands where she is.",
+        JUNE_AT_FREEZER="Nessa?",
+        TELL_NESSA="Nessa.",
+        TELL_ITS_NESSA="June. It's Nessa.",
+        TELL_JUNE_NOTHING="Say nothing.",
+        JUNE_SITS="June looks down into the freezer for a long time. Then she sits on the stool beside it, her hand on the plastic, and does not call again.",
+        JUNE_BY_HER="June does not look up.",
+        JUNE_STOPPED_INSIDE="In the house, June has stopped calling.";
+    /** June, led away from the water by a reader's hand, still saying the name now and then. */
+    public static final String[] JUNE_LED_CALLS={"Nessa?","Nessa, love?","Where's my Nessa?"};
+
     /** Tilly's own name back to the calls, fainter the longer she holds out; near the end, nothing. */
     public static String[] tillyHolds(long held,int out){
         if(held<out/3)return new String[]{"I'm Tilly.","My name's Tilly."};

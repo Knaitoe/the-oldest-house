@@ -168,4 +168,6 @@ def entries():
     # And (0.4.535) June with her hand wrapped after the laundry, picked by the mark she carries.
     for name in ('june_robe','june_swim','june_hand'):
         rows.append({'name':'literary_pell_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':195})
+    # And (0.4.540) Nessa, as she is in the freezer, on phase one hundred and ninety-nine.
+    rows.append({'name':'literary_pell_nessa','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':199})
     return rows

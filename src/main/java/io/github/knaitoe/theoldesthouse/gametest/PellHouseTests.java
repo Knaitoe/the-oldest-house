@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import static io.github.knaitoe.theoldesthouse.labyrinth.PellThing.Kind.*;
@@ -337,16 +338,18 @@ public final class PellHouseTests {
             h.assertTrue(tilly.getMainHandItem().is(PellRegistry.CANE.get())&&tilly.gesture()==PellPeople.CANE,"Tilly has her cane in her hand, held out ahead of her");
             h.assertTrue(gail.getMainHandItem().is(PellRegistry.FOLDER.get())&&gail.gesture()==PellPeople.FOLDER,"Gail has her folder, held to her chest");
             h.assertTrue(june.getMainHandItem().isEmpty()&&callum.getMainHandItem().isEmpty()&&june.getOffhandItem().isEmpty()&&callum.getOffhandItem().isEmpty(),"June and Callum hold nothing");
-            // Asked again, nobody is made twice; nor with the house's memory of them gone, as after a reload.
+            // Asked again, nobody is made twice; nor with the house's memory of them gone, as after a reload. 0.4.540: the four, and
+            // Nessa in the freezer.
             PellPeople.ensure(l,b);PellPeople.clearAll();PellPeople.ensure(l,b);
-            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is).size()==PellPeople.COUNT,"asked again, nobody is made twice");
+            var all=l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is);
+            h.assertTrue(all.size()==PellPeople.COUNT+1&&all.stream().map(PellPeople::who).distinct().count()==PellPeople.COUNT+1,"asked again, nobody is made twice: "+all.stream().map(a->PellPeople.name(PellPeople.who(a))).toList());
             for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i).getUUID().equals(ids[i]),"the same "+PellPeople.name(i)+", taken up again");
             // Callum taken away is made again, where he stands on the first visit; nobody else is.
             callum.discard();PellPeople.ensure(l,b);
             var again=who(h,l,b,PellPeople.CALLUM);var spot=PellPeople.FIRST_VISIT[PellPeople.CALLUM];
             h.assertTrue(!again.getUUID().equals(ids[PellPeople.CALLUM])&&Math.abs(again.getX()-(b.getX()+spot.x()))<.3&&Math.abs(again.getZ()-(b.getZ()+spot.z()))<.3,"Callum, taken away, is made again where he stands");
             for(int i=0;i<PellPeople.COUNT;i++)if(i!=PellPeople.CALLUM)h.assertTrue(PellPeople.find(l,b,i).getUUID().equals(ids[i]),"and nobody else is: "+PellPeople.name(i));
-            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is).size()==PellPeople.COUNT,"still four of them");
+            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is).size()==PellPeople.COUNT+1,"still four of them, and Nessa");
             // A hand on June, Gail and Tilly, from the path between them.
             f.at(p,P,3.5,0,-53.5);told(p);
             for(int i:new int[]{PellPeople.JUNE,PellPeople.GAIL,PellPeople.TILLY})LiteraryVignettes.talk(p,who(h,l,b,i));
@@ -2340,4 +2343,154 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_rite_out") public static void riteOutDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.540, the freezer
+    private static boolean freezerIs(ServerLevel l,BlockPos b,PellThing.Kind kind,int more){
+        for(var c:new BlockPos[]{PellFreezer.FREEZER,PellFreezer.FREEZER_END}){
+            var s=l.getBlockState(b.offset(c));if(!PellThing.is(s,kind)||(s.getValue(PellThing.STAGE)&2)!=more)return false;
+        }
+        return true;
+    }
+    /**
+     * 0.4.540, the freezer (docs/PELL_HOUSE_FREEZER_0_4_540.md). Two readers who have had the first two visits; the last night locked up
+     * and June in the shallow end holding Tilly, her robe over the pool chair. Nessa lies in the freezer under its shut lid, still. A hand
+     * on the padlocked freezer with no key gets only what it is. The robe's pocket has June's lanyard in it: the first reader takes it,
+     * the other finds the pocket empty. With it, a hand on the freezer opens the padlock, and the next lifts the lid: under the frosted
+     * plastic, the girl from every photograph. The other reader, looking in from the doorway, keeps that they saw her; a hand on her is
+     * cold. The lanyard, lost from the first reader, is back in the pocket within a second, and the other takes it there.
+     */
+    @GameTest(template="empty",batch="pell_freezer",timeoutTicks=3000)
+    public static void junesLanyardInTheRobeOpensTheFreezerAndNessaIsUnderTheLid(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_freezer_key",P);var q=f.player("pell_freezer_door",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenWaitUntil(()->h.assertTrue(PellFreezer.nessa(l,b)!=null,"Nessa in the freezer"))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);
+            var nessa=PellFreezer.nessa(l,b);var at=nessa.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(nessa.phase()==PellPeople.FIRST+PellPeople.NESSA&&nessa.gesture()==PellPeople.STILL&&nessa.isNoGravity()&&at.distanceTo(PellFreezer.NESSA_AT)<.1,"lying still in it, along it: "+at);
+            h.assertTrue(freezerIs(l,b,PellThing.Kind.FREEZER,0)&&!PellFreezer.open(l,b),"shut and padlocked");
+            h.assertTrue(thing(l,b,PellFreezer.CHAIR.getX(),0,PellFreezer.CHAIR.getZ(),POOL_CHAIR,1),"June's robe over the chair while she is in the water");
+            // No key: the freezer is only what it is.
+            f.at(p,P,7.5,0,-68.5);told(p);
+            hand(p,b.offset(PellFreezer.FREEZER));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(FREEZER,0))&&freezerIs(l,b,PellThing.Kind.FREEZER,0),"no key, and it stays padlocked");
+            f.at(p,P,-13.5,0,-84.5);told(p);
+            hand(p,b.offset(PellFreezer.CHAIR));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.LANYARD_FOUND)&&PellFreezer.carries(p,b)&&f.own(p,P).getBoolean("TookLanyard")&&PellFreezer.lanyardOut(b),"the lanyard out of the robe's pocket");
+            f.at(q,P,-12.5,0,-84.5);told(q);
+            hand(q,b.offset(PellFreezer.CHAIR));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.LANYARD_GONE)&&!PellFreezer.carries(q,b),"the other finds the pocket empty");
+            f.at(p,P,7.5,0,-68.5);told(p);
+            hand(p,b.offset(PellFreezer.FREEZER));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.FREEZER_UNLOCKED)&&freezerIs(l,b,PellThing.Kind.FREEZER,2)&&f.own(p,P).getBoolean("UnlockedFreezer"),"the third key, and the padlock comes open");
+            hand(p,b.offset(PellFreezer.FREEZER_END));
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.FREEZER_LID)&&heard.contains(PellTexts.FREEZER_OPENED),"the lid up, and under the plastic, her: "+heard);
+            h.assertTrue(freezerIs(l,b,PellThing.Kind.FREEZER_OPEN,0)&&PellFreezer.open(l,b),"both cells open");
+            h.assertTrue(f.own(p,P).getBoolean("OpenedFreezer")&&f.own(p,P).getBoolean("SawNessa"),"the reader who opened it saw her");
+            h.assertTrue(!f.own(q,P).getBoolean("SawNessa"),"the other has not, yet");
+            // The other reader at the laundry's door, looking in.
+            f.at(q,P,7.5,0,-67.6);lookAt(q,new Vec3(b.getX()+PellFreezer.NESSA_AT.x,b.getY()+.7,b.getZ()+PellFreezer.NESSA_AT.z));
+        }).thenWaitUntil(()->h.assertTrue(f.own(q,P).getBoolean("SawNessa"),"looking in from the door, they see her"))
+        .thenExecute(()->{
+            told(q);LiteraryVignettes.talk(q,PellFreezer.nessa(l,b));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.NESSA_HAND),"a hand on her: cold");
+            h.assertTrue(PellFreezer.nessa(l,b).gesture()==PellPeople.STILL,"she does not move");
+            // The lanyard lost: nobody at the house has it, and it is not lying in the lot.
+            var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(PellRegistry.LANYARD.get()))inv.setItem(i,net.minecraft.world.item.ItemStack.EMPTY);
+        }).thenWaitUntil(()->h.assertTrue(!PellFreezer.lanyardOut(b),"back in the robe's pocket within a second"))
+        .thenExecute(()->{
+            f.at(q,P,-12.5,0,-84.5);told(q);
+            hand(q,b.offset(PellFreezer.CHAIR));
+        }).thenIdle(1).thenExecute(()->h.assertTrue(told(q).contains(PellTexts.LANYARD_FOUND)&&PellFreezer.carries(q,b),"and the other takes it there"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_freezer") public static void freezerDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.540, bringing June to the freezer. Two readers who have had the first two visits; the last night locked up, June in the shallow
+     * end holding Tilly, the freezer opened with her lanyard and the laundry's door open. The other reader takes Tilly's hand, and June's
+     * hands come away. The first takes June's: she lets them, and follows the hand out of the water at its edge, across the deck, out of
+     * the pool's gate, in at the sliding door, along the hall and into the laundry. There, a hand on her: she looks at the freezer and at
+     * the reader, who says the name. June sits down on the stool by it, her hand on the plastic, and does not call again; the reader keeps
+     * that they brought her, and the other, out at the pool, is told she has stopped. Let go in the water, Tilly is not taken back.
+     */
+    @GameTest(template="empty",batch="pell_freezer_june",timeoutTicks=6000)
+    public static void broughtToTheOpenFreezerAndToldTheNameJuneSitsDownByItAndStops(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_freezer_leads",P);var q=f.player("pell_freezer_tilly",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        java.util.function.Supplier<String> where=()->"June at "+who(h,l,b,PellPeople.JUNE).position().subtract(b.getX(),b.getY(),b.getZ())+", reader at "+p.position().subtract(b.getX(),b.getY(),b.getZ());
+        var route=new Vec3[]{new Vec3(-6.5,0,-78.5),new Vec3(-3.5,0,-77.4),new Vec3(-3.5,0,-74.6),new Vec3(-1.5,0,-74),new Vec3(.5,0,-73.6),new Vec3(.5,0,-71.5),
+            new Vec3(.5,0,-70.6),new Vec3(0,0,-68.5),new Vec3(0,0,-65.6),new Vec3(3,0,-65.6),new Vec3(5.5,0,-65.6),new Vec3(7.5,0,-65.6),new Vec3(7.5,0,-66.6),
+            new Vec3(7.5,0,-68.4),new Vec3(8.5,0,-70.3)};
+        int[] said={0};
+        var seq=h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenWaitUntil(()->h.assertTrue(PellFreezer.nessa(l,b)!=null,"Nessa in the freezer"))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);
+            // The freezer opened with June's lanyard, and the laundry's door open.
+            p.getInventory().add(PellFreezer.lanyardFor(b));f.at(p,P,7.5,0,-68.5);
+            hand(p,b.offset(PellFreezer.FREEZER));
+        }).thenIdle(1).thenExecute(()->hand(p,b.offset(PellFreezer.FREEZER)))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(PellFreezer.open(l,b),"the freezer open");
+            if(!PellSite.open(l,b,PellSite.LAUNDRY_DOOR))PellHouse.toggle(l,b,PellSite.LAUNDRY_DOOR);
+            // The other reader beside Tilly in the water takes her hand.
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            f.at(q,P,tilly.getX()-b.getX()+1.2,-1,tilly.getZ()-b.getZ());told(q);
+            LiteraryVignettes.talk(q,tilly);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(q.getUUID().equals(PellRite.leader(b))&&!PellRite.held(b),"Tilly has the other reader's hand");
+            // The first beside June in the water takes hers.
+            var june=who(h,l,b,PellPeople.JUNE);
+            f.at(p,P,june.getX()-b.getX()-1.2,-1,june.getZ()-b.getZ());told(p);
+            LiteraryVignettes.talk(p,june);
+        }).thenIdle(1).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(p.getUUID().equals(PellRite.juneLeader(b))&&told(p).contains(PellTexts.JUNES_HAND)&&f.own(p,P).getBoolean("TookJunesHand"),"June lets the reader take her hand");
+            h.assertTrue(june.gesture()==PellPeople.JUNE_LED,"her hand out in theirs");
+            var at=route[0];f.at(p,P,at.x,at.y,at.z);
+        }).thenWaitUntil(()->{var j=who(h,l,b,PellPeople.JUNE);h.assertTrue(!PellSite.inWater(j.position().subtract(b.getX(),b.getY(),b.getZ()))&&!j.isNoGravity()&&j.getY()>b.getY()-.1,"up out of the water at its edge after the hand: "+where.get());});
+        // Across the deck, out of the gate, in at the slider, along the hall and into the laundry: a step behind the hand each time.
+        for(int i=1;i<route.length;i++){
+            final var at=route[i];final int n=i;
+            seq.thenExecute(()->f.at(p,P,at.x,at.y,at.z))
+            .thenWaitUntil(()->{var j=who(h,l,b,PellPeople.JUNE);h.assertTrue(p.getUUID().equals(PellRite.juneLeader(b))&&Math.hypot(j.getX()-p.getX(),j.getZ()-p.getZ())<1.8,"she follows the hand, leg "+n+": "+where.get());});
+        }
+        seq.thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(PellHand.inLaundry(june.position().subtract(b.getX(),b.getY(),b.getZ())),"in the laundry with the reader: "+where.get());
+            h.assertTrue(!PellRite.juneSat(b)&&PellRite.step(b)==PellRite.WATER,"not sat down yet, and Tilly not out");
+            told(p);told(q);
+            LiteraryVignettes.talk(p,june);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(Talk.key(p).equals("pell_freezer")&&Talk.replies(p).contains(PellTexts.TELL_NESSA)&&Talk.replies(p).contains(PellTexts.TELL_JUNE_NOTHING),"at the open freezer, the reader can say the name, or nothing: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_NESSA),"the reader says it");
+        }).thenIdle(1).thenExecute(()->{
+            var june=who(h,l,b,PellPeople.JUNE);var at=june.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(PellRite.juneSat(b)&&PellRite.juneLeader(b)==null,"June sits down by the freezer and stops");
+            h.assertTrue(Math.abs(at.x-8.5)<.3&&Math.abs(at.z+68.5)<.3&&june.gesture()==PellPeople.BY_HER,"on the stool beside it, her hand on the plastic: "+at);
+            h.assertTrue(told(p).contains(PellTexts.JUNE_SITS)&&f.own(p,P).getBoolean("BroughtJune"),"the reader who brought her keeps it");
+            h.assertTrue(told(q).contains(PellTexts.JUNE_STOPPED_INSIDE),"out at the pool, the other is told she has stopped calling");
+            said[0]=PellRite.lines(b).size();
+        }).thenIdle(PellRite.CALL_EVERY*3).thenExecute(()->{
+            h.assertTrue(PellRite.lines(b).size()==said[0],"she does not call again: "+PellRite.lines(b));
+            // The other lets Tilly go in the water, and June does not come for her.
+            f.at(q,P,-6.5,0,-70.5);
+        }).thenIdle(PellRite.TAKE_BACK+40).thenExecute(()->{
+            h.assertTrue(!PellRite.held(b)&&PellRite.juneSat(b),"Tilly is not taken back; June sits on");
+            told(p);LiteraryVignettes.talk(p,who(h,l,b,PellPeople.JUNE));
+        }).thenIdle(1).thenExecute(()->h.assertTrue(told(p).contains(PellTexts.JUNE_BY_HER),"a hand on her: she does not look up"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_freezer_june") public static void freezerJuneDone(ServerLevel l){done();}
 }

@@ -3887,6 +3887,66 @@
     "facing=west,kind=phone,stage=3": {
       "model": "the_oldest_house:block/pell/thing/phone_0",
       "y": 270
+    },
+    "facing=north,kind=freezer_open,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0"
+    },
+    "facing=north,kind=freezer_open,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_1"
+    },
+    "facing=north,kind=freezer_open,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0"
+    },
+    "facing=north,kind=freezer_open,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0"
+    },
+    "facing=east,kind=freezer_open,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 90
+    },
+    "facing=east,kind=freezer_open,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_1",
+      "y": 90
+    },
+    "facing=east,kind=freezer_open,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 90
+    },
+    "facing=east,kind=freezer_open,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 90
+    },
+    "facing=south,kind=freezer_open,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 180
+    },
+    "facing=south,kind=freezer_open,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_1",
+      "y": 180
+    },
+    "facing=south,kind=freezer_open,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 180
+    },
+    "facing=south,kind=freezer_open,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 180
+    },
+    "facing=west,kind=freezer_open,stage=0": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 270
+    },
+    "facing=west,kind=freezer_open,stage=1": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_1",
+      "y": 270
+    },
+    "facing=west,kind=freezer_open,stage=2": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 270
+    },
+    "facing=west,kind=freezer_open,stage=3": {
+      "model": "the_oldest_house:block/pell/thing/freezer_open_0",
+      "y": 270
     }
   }
 }

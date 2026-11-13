@@ -278,6 +278,9 @@ LOOKS = {
     'literary_pell_callum': Look('#d6ae8e','#241f1c','messy','#7c8a76','#5f5a4e','knit','#a4ad9c',eyes='#4a5244',mark='pell_callum',sleeve=11,face_style='child'),
     # Gail: a lanyard and the card on it. Her folder is in her hands (PellPeople).
     'literary_pell_gail': Look('#b98966','#2e241e','part','#5f7088','#3a3c44','shirt','#e8e2d4',eyes='#3e3226',mark='pell_gail',sleeve=10,shoes='#2a2624'),
+    # 0.4.540 (docs/PELL_HOUSE_FREEZER_0_4_540.md): Nessa, as she is in the freezer: the face of every photograph in the house (dark hair
+    # to her shoulders), the skin gone pale with cold, her party dress from the birthday tapes, her feet bare, and frost in her hair.
+    'literary_pell_nessa': Look('#e6d6cc','#2a1e18','long','#cfa6bc','#cfa6bc','dress','#efe2e8',eyes='#4a3a2e',mark='pell_nessa',sleeve=4,face_style='child',shoes='#e6d6cc'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -1435,6 +1438,13 @@ def paint(look):
             for x,y in ((3,2),(4,3),(9,5),(10,6),(6,10),(12,11),(2,13)):d.point((x,y),fill=shade(look.hair,40))
             if side=='back':
                 for x in (3,8,12):d.line((x,12,x,15),fill=shade(look.hair,24))
+            put(head[side],art)
+    if look.mark=='pell_nessa':
+        # 0.4.540: frost in her hair, on the crown and down the back where it has lain against the freezer's floor.
+        for side in ('top','back'):
+            art=panel((16,16),look.hair,'hair',side);d=ImageDraw.Draw(art)
+            for x,y in ((2,3),(5,1),(7,4),(10,2),(12,6),(4,8),(9,9),(13,11),(3,12),(8,13),(11,14),(6,15)):d.point((x,y),fill='#d6e2e8')
+            for x,y in ((5,2),(10,3),(9,10)):d.point((x,y),fill='#f2f8fa')
             put(head[side],art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.

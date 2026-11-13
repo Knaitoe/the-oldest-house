@@ -1091,6 +1091,43 @@ def freezer_front(end, unlocked=False):
     return im
 
 
+def freezer_inside():
+    """0.4.540: inside the freezer with its lid up: white enamel gone a cold grey-blue under a fur of frost, thicker toward the rim."""
+    im = enamel('#e4edf1', 52262)
+    rnd = random.Random(52263)
+    for y in range(16):
+        for x in range(16):
+            if rnd.random() < .12 + .025 * (15 - y):
+                dot(im, x, y, '#ffffff' if rnd.random() < .5 else '#f3f9fb')
+    return im
+
+
+def freezer_plastic():
+    """0.4.540: the frosted plastic over what lies in the freezer: clouded white and creased, and clear where the frost is thin, so
+    that what is under it shows through."""
+    im = clear()
+    rnd = random.Random(52264)
+    for y in range(16):
+        for x in range(16):
+            r = rnd.random()
+            if r < .4:
+                continue
+            dot(im, x, y, '#f4f8fa' if r < .72 else '#dde8ed' if r < .9 else '#ffffff')
+    line(im, [(1, 3), (2, 3), (3, 4), (4, 4), (5, 5), (6, 5), (7, 4), (8, 4), (9, 4), (10, 5), (11, 5), (12, 6), (13, 6)], '#c6d4db')
+    line(im, [(0, 11), (1, 11), (2, 10), (3, 10), (4, 10), (5, 11), (6, 12), (7, 12), (8, 11), (9, 11), (10, 11), (11, 12)], '#c6d4db')
+    return im
+
+
+def freezer_lid_under():
+    """0.4.540: the lid's underside, stood up against the wall: white, the grey seal round its edge, and frost on it."""
+    im = enamel('#eff1ef', 52265)
+    frame(im, 0, 0, 16, 16, '#9aa0a2'); frame(im, 1, 1, 15, 15, '#c4cacc')
+    rnd = random.Random(52266)
+    for _ in range(26):
+        dot(im, rnd.randrange(2, 14), rnd.randrange(2, 14), '#ffffff' if rnd.random() < .6 else '#e6f0f4')
+    return im
+
+
 def stool():
     """The step stool beside the freezer: two steps of painted wood, the top worn bare in the middle where someone sits."""
     im = enamel('#d6cdb8', 52262, 4)
@@ -1563,6 +1600,7 @@ def bathroom():
 
 def laundry():
     return {'freezer_lid_0': freezer_lid(0), 'freezer_lid_1': freezer_lid(1), 'freezer_front_0': freezer_front(0), 'freezer_front_0_open': freezer_front(0, True),
+            'freezer_inside': freezer_inside(), 'freezer_plastic': freezer_plastic(), 'freezer_lid_under': freezer_lid_under(),
             'freezer_front_1': freezer_front(1), 'stool': stool(), 'power_point': power_point(), 'cord': cord(), 'trough': trough(),
             'bucket_top': bucket_top(), 'chlorine': chlorine(), 'washer_front': washer_front()}
 
@@ -1950,6 +1988,22 @@ def thing_models():
         front = f'freezer_front_{end}' + ('_open' if unlocked and end == 0 else '')
         out[f'freezer_{stage}'] = m([element([0, 0, 1], [16, 14, 16], {'north': 'f', 'south': 's', 'east': 's', 'west': 's', 'down': 's', 'up': 'l'})],
                                     {'f': front, 's': 'enamel', 'l': f'freezer_lid_{end}'}, front)
+    # 0.4.540: the freezer with its lid up (PellFreezer): the chest hollow (its front, back, end and floor), the frosted plastic
+    # over what lies in it, and the lid stood up against the wall behind it, its underside out. Half 0 is the lock end.
+    for end in range(2):
+        x0, x1 = (1.5, 16) if end == 0 else (0, 14.5)
+        front = 'freezer_front_0_open' if end == 0 else 'freezer_front_1'
+        els = [element([0, 0, 1], [16, 14, 2.5], {'north': 'f', 'south': 'i', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}),
+               element([0, 0, 14.5], [16, 14, 16], {'north': 'i', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}),
+               element([x0, 0, 2.5], [x1, 3, 14.5], {'up': 'i', 'down': 's'}),
+               element([x0, 8, 2.5], [x1, 8, 14.5], {'up': 'p', 'down': 'p'}),
+               element([0, 14, 14], [16, 30, 16], {'north': 'u', 'south': 's', 'east': 's', 'west': 's', 'up': 's'},
+                       uv={'north': [0, 0, 16, 16], 'south': [0, 0, 16, 16], 'east': [0, 0, 2, 16], 'west': [14, 0, 16, 16], 'up': [0, 14, 16, 16]})]
+        if end == 0:
+            els.append(element([0, 0, 2.5], [1.5, 14, 14.5], {'west': 's', 'east': 'i', 'up': 's'}))
+        else:
+            els.append(element([14.5, 0, 2.5], [16, 14, 14.5], {'east': 's', 'west': 'i', 'up': 's'}))
+        out[f'freezer_open_{end}'] = m(els, {'f': front, 'i': 'freezer_inside', 's': 'enamel', 'p': 'freezer_plastic', 'u': 'freezer_lid_under'}, front)
     out['stool_0'] = m([box([3, 8, 3], [13, 9, 13], 't', up='t'), box([3, 4, 1], [13, 5, 5], 'p'),
                         *[box([x, 0, z], [x + 1, 8, z + 1], 'p') for x in (3, 12) for z in (3, 12)]], {'t': 'stool', 'p': 'paint_cream'}, 'stool')
     out['power_0'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 3], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 12]})],
@@ -2112,7 +2166,7 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'freezer', 'stool', 'power', 'cord', 'trough', 'bucket', 'chlorine', 'washer',
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
-         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone']
+         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open']
 
 
 # ------------------------------------------------------------------------------------------------ the block
