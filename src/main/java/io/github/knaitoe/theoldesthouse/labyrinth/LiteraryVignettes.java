@@ -49,6 +49,11 @@ public final class LiteraryVignettes {
     static Set<String> readers(LabyrinthData d,LabyrinthPlace place){var keys=new HashSet<>(d.state(state(place)).getAllKeys());keys.remove("World");return keys;}
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
     public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
+    /**
+     * 0.4.542: whether this reader's ending in a scene has landed without an account they have read ("Ended"): the Pell house's at first
+     * light, after Tilly answered or came out. The scene is over for them as surely as one they resolved.
+     */
+    public static boolean ended(LabyrinthData d,UUID p,LabyrinthPlace place){return LiteraryRooms.isLiterary(place)&&personal(d,p,place).getBoolean("Ended");}
     public static CompoundTag shared(LabyrinthData d,LabyrinthPlace place){return d.stateEntry(state(place),"World");}
     public static void shared(LabyrinthData d,LabyrinthPlace place,CompoundTag s){d.setStateEntry(state(place),"World",s);}
     public static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}

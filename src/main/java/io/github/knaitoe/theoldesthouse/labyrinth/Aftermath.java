@@ -31,13 +31,20 @@ public final class Aftermath {
      * on unfinished stories (LabyrinthDealer), and never giving credit (the scenes' endings check Completed).
      */
     public static final Set<LabyrinthPlace> PLACES=EnumSet.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.MASQUE,LabyrinthPlace.GHOSTS_SET,
-            LabyrinthPlace.THREE_FINGERS,LabyrinthPlace.CHILD_ROOM);
+            LabyrinthPlace.THREE_FINGERS,LabyrinthPlace.CHILD_ROOM,LabyrinthPlace.PELL_HOUSE);
     /** How many times a finished scene comes back to the reader who finished it. */
     public static final int RETURNS=2;
+    /** 0.4.542: how many times this scene comes back; the Pell house once, "FOR SALE" or lived in (PellAftermath). */
+    public static int limit(LabyrinthPlace place){return place==LabyrinthPlace.PELL_HOUSE?1:RETURNS;}
+    /**
+     * 0.4.542: whether a reader has finished a scene: its account read ("Completed"), or an ending that has landed for them, read or not
+     * ("Ended": the Pell house's at first light).
+     */
+    public static boolean finished(CompoundTag own){return own.getBoolean("Completed")||own.getBoolean("Ended");}
     /** Whether everyone in a scene has finished it, so that it can stand as its aftermath. No one in it is not alone. */
     public static boolean alone(Collection<ServerPlayer> readers,LabyrinthPlace place){
         if(readers.isEmpty())return false;
-        for(var r:readers)if(!LiteraryVignettes.personal(LabyrinthData.get(r.server),r.getUUID(),place).getBoolean("Completed"))return false;
+        for(var r:readers)if(!finished(LiteraryVignettes.personal(LabyrinthData.get(r.server),r.getUUID(),place)))return false;
         return true;
     }
     /** Each reader's count of returns to a scene, and the visit the last one was counted on. */
@@ -47,11 +54,11 @@ public final class Aftermath {
     public static boolean canDeal(LabyrinthData d,UUID reader,LabyrinthPlace place){
         if(!PLACES.contains(place))return false;
         var own=LiteraryVignettes.personal(d,reader,place);
-        return own.getBoolean("Completed")&&own.getInt(COUNT)<RETURNS&&d.recentVisit(reader,place)<0;
+        return finished(own)&&own.getInt(COUNT)<limit(place)&&d.recentVisit(reader,place)<0;
     }
     /** Whether this scene is one this reader has finished and would find again only as its aftermath. */
     public static boolean returning(LabyrinthData d,UUID reader,LabyrinthPlace place){
-        return PLACES.contains(place)&&LiteraryVignettes.personal(d,reader,place).getBoolean("Completed");
+        return PLACES.contains(place)&&finished(LiteraryVignettes.personal(d,reader,place));
     }
     /** For tests: how many times this scene has come back to this reader. */
     public static int returns(LabyrinthData d,UUID reader,LabyrinthPlace place){return LiteraryVignettes.personal(d,reader,place).getInt(COUNT);}
