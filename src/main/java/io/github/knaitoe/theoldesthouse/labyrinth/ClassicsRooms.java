@@ -18,7 +18,11 @@ public final class ClassicsRooms {
     public static final BlockPos NURSERY_DESK=new BlockPos(-5,0,-23);
     private ClassicsRooms(){}
     public static void build(ServerLevel level,BlockPos base,LabyrinthPlace place){if(place==LabyrinthPlace.SEANCE)seance(level,base);else nursery(level,base);}
-    private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){l.setBlock(b.offset(x,y,z),block.defaultBlockState(),F);}
+    /**
+     * 0.4.557: every block goes through BuildBlocks, so a copy built from a recorded plan (SceneInstances) lays these in the order they
+     * are written, after the room's carve rather than before it; built directly, as the original is, nothing changes.
+     */
+    private static void at(ServerLevel l,BlockPos b,int x,int y,int z,Block block){BuildBlocks.set(l,b.offset(x,y,z),block.defaultBlockState(),F);}
     private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,Block block){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,block.defaultBlockState());}
     private static void frame(ServerLevel l,BlockPos b,int x,int z,Direction direction){
         if(direction.getAxis()==Direction.Axis.Z){for(int side:new int[]{-1,1})box(l,b,x+side,0,z,x+side,3,z,Blocks.STRIPPED_DARK_OAK_LOG);box(l,b,x-1,3,z,x+1,3,z,Blocks.DARK_OAK_PLANKS);}
@@ -45,19 +49,19 @@ public final class ClassicsRooms {
         furniture(l,b,0,0,-18,HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.SOUTH);
         for(int z=-19;z<=-17;z++)box(l,b,7,0,z,7,2,z,Blocks.BOOKSHELF);
         furniture(l,b,-7,0,-19,HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST);
-        for(BlockPos candle:CANDLES)l.setBlock(b.offset(candle),Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT,true).setValue(CandleBlock.CANDLES,2),F);
+        for(BlockPos candle:CANDLES)BuildBlocks.set(l,b.offset(candle),Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT,true).setValue(CandleBlock.CANDLES,2),F);
         // The cupboard the family watches, her letters on a side table, the medium's record on its stand and the album.
-        l.setBlock(b.offset(CUPBOARD),SeanceFittingBlock.of(SeanceFittingBlock.Kind.CABINET,Direction.EAST),F);
-        l.setBlock(b.offset(SITTING),SeanceFittingBlock.of(SeanceFittingBlock.Kind.SITTING,Direction.SOUTH),F);
-        l.setBlock(b.offset(GRACE),SeanceFittingBlock.of(SeanceFittingBlock.Kind.LETTERS,Direction.SOUTH),F);
-        l.setBlock(b.offset(ALBUM),SeanceFittingBlock.of(SeanceFittingBlock.Kind.ALBUM,Direction.SOUTH),F);
+        BuildBlocks.set(l,b.offset(CUPBOARD),SeanceFittingBlock.of(SeanceFittingBlock.Kind.CABINET,Direction.EAST),F);
+        BuildBlocks.set(l,b.offset(SITTING),SeanceFittingBlock.of(SeanceFittingBlock.Kind.SITTING,Direction.SOUTH),F);
+        BuildBlocks.set(l,b.offset(GRACE),SeanceFittingBlock.of(SeanceFittingBlock.Kind.LETTERS,Direction.SOUTH),F);
+        BuildBlocks.set(l,b.offset(ALBUM),SeanceFittingBlock.of(SeanceFittingBlock.Kind.ALBUM,Direction.SOUTH),F);
         furniture(l,b,-7,0,-27,HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.EAST);
         box(l,b,7,0,-29,7,2,-29,Blocks.BOOKSHELF);
         for(int z=-26;z<=-24;z++){at(l,b,11,2,z,Blocks.GLASS);at(l,b,12,2,z,Blocks.BLACK_CONCRETE);}
-        for(BlockPos shutter:SHUTTERS)l.setBlock(b.offset(shutter),Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.EAST).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,false),F);
+        for(BlockPos shutter:SHUTTERS)BuildBlocks.set(l,b.offset(shutter),Blocks.DARK_OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.FACING,Direction.EAST).setValue(TrapDoorBlock.HALF,Half.TOP).setValue(TrapDoorBlock.OPEN,false),F);
         // The landing and both rear rooms have lamps chained to their real ceilings.
-        box(l,b,0,3,-6,0,4,-6,Blocks.CHAIN);l.setBlock(b.offset(0,2,-6),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
-        for(int x:new int[]{-5,5}){box(l,b,x,5,-25,x,6,-25,Blocks.CHAIN);l.setBlock(b.offset(x,4,-25),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
+        box(l,b,0,3,-6,0,4,-6,Blocks.CHAIN);BuildBlocks.set(l,b.offset(0,2,-6),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);
+        for(int x:new int[]{-5,5}){box(l,b,x,5,-25,x,6,-25,Blocks.CHAIN);BuildBlocks.set(l,b.offset(x,4,-25),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
         // A fireplace with a closed iron hearth, mantel, stone jambs and soot above it.
         box(l,b,-9,0,-12,-7,0,-10,Blocks.POLISHED_ANDESITE);
         box(l,b,-9,1,-12,-9,3,-12,Blocks.STONE_BRICKS);box(l,b,-7,1,-12,-7,3,-12,Blocks.STONE_BRICKS);
@@ -86,8 +90,8 @@ public final class ClassicsRooms {
         at(l,b,4,1,-19,Blocks.FLOWER_POT);
         for(int z=-16;z<=-13;z++)for(int x=-3;x<=3;x++)at(l,b,x,0,z,(x==-3||x==3||z==-16||z==-13)?Blocks.BROWN_CARPET:Blocks.YELLOW_CARPET);
         // Four low seams can be watched from the floor. Ordinary wallpaper remains around them.
-        for(BlockPos panel:PANELS){l.setBlock(b.offset(panel),ClassicsRegistry.WALLPAPER.get().defaultBlockState(),F);at(l,b,panel.getX(),2,panel.getZ(),ClassicsRegistry.WALLPAPER.get());}
-        for(int z:new int[]{-5,-18}){box(l,b,0,z==-5?3:5,z,0,z==-5?4:6,z,Blocks.CHAIN);l.setBlock(b.offset(0,z==-5?2:4,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
+        for(BlockPos panel:PANELS){BuildBlocks.set(l,b.offset(panel),ClassicsRegistry.WALLPAPER.get().defaultBlockState(),F);at(l,b,panel.getX(),2,panel.getZ(),ClassicsRegistry.WALLPAPER.get());}
+        for(int z:new int[]{-5,-18}){box(l,b,0,z==-5?3:5,z,0,z==-5?4:6,z,Blocks.CHAIN);BuildBlocks.set(l,b.offset(0,z==-5?2:4,z),Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),F);}
         LabyrinthBuilder.entrance(l,b,Blocks.WHITE_TERRACOTTA.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState(),Blocks.BIRCH_PLANKS.defaultBlockState());LabyrinthBuilder.doors(l,b,LabyrinthPlace.WALLPAPER_NURSERY);
     }
 }

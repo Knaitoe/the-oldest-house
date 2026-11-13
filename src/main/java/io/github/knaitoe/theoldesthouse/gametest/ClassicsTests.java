@@ -77,6 +77,68 @@ public final class ClassicsTests {
             var prior=f.own(peer).copy();var borrowed=ItemStack.parseOptional(peer.registryAccess(),f.own(p).getCompound("Original_Album"));ClassicsVignettes.readCollected(peer,borrowed);var borrowedMenu=(ClassicsVignettes.PageMenu)peer.containerMenu;h.assertTrue(borrowedMenu.clickMenuButton(peer,103)&&f.own(peer).equals(prior),"trading the actual original album cannot assign its authorship or reading to a peer");f.at(peer,.5,0,-11.5);peer.setYRot(180);});
         h.runAfterDelay(140,()->{h.assertTrue(f.own(peer).getInt("Exposure")>=100,"a later explorer must actually observe the empty sitting");f.read(peer,ClassicsRooms.GRACE);f.read(peer,ClassicsRooms.SITTING);f.read(peer,ClassicsRooms.ALBUM);h.assertTrue(WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.SEANCE)&&f.own(peer).getString("SeanceOutcome").isEmpty(),"the later reader can resolve their own examined aftermath without inheriting the haunting");f.reload();h.assertTrue(WitnessAccount.count(f.data(),peer.getUUID())==1&&WitnessAccount.count(f.data(),p.getUUID())==1,"both personal accounts persist independently");peer.setGameMode(GameType.SPECTATOR);h.assertTrue(!ClassicsVignettes.inside(peer,LabyrinthPlace.SEANCE),"observer mode is authoritative");h.succeed();});
     }
+    private static Fixture copied;
+    @AfterBatch(batch="classic_copy0557") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();if(copied!=null){copied.close();copied=null;}}
+    /**
+     * 0.4.557 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): four readers at the séance
+     * are full to a fifth, never to one of the four. The fifth's door waits while a second house is made ready, a million blocks west, and
+     * they go in by its own door. Its family is its own, not the first's; the fifth's three disturbances drive that family out and end
+     * that sitting only, while the first family stays seated at their table with nobody's sitting ended; and the door between the rooms
+     * carries voices from the first house and nothing from the second.
+     */
+    @GameTest(template="empty",batch="classic_copy0557",timeoutTicks=24000)
+    public static void aFifthReaderIsGivenASeanceHouseOfTheirOwn(GameTestHelper h){
+        copied=new Fixture(h,49300,LabyrinthPlace.SEANCE);var f=copied;var P=LabyrinthPlace.SEANCE;var server=f.l.getServer();
+        var four=new ServerPlayer[ClassicsVignettes.PLACES];final ServerPlayer[] fifth={null};final BlockPos[] theirs={null};final Set<UUID> firstFamily=new HashSet<>();
+        SceneInstances.fixtureCap(1);
+        java.util.function.BiConsumer<ServerPlayer,BlockPos> clickThere=(p,rel)->{var at=theirs[0].offset(rel);p.moveTo(at.getX()+.5,theirs[0].getY(),at.getZ()+2.5);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));};
+        h.startSequence().thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==ClassicsVignettes.PLACES&&ClassicsVignettes.PLACES==4,"a séance house has copies, four places to a house: an unseen guest for each of the family");
+                // The four face the door, so none of them sits through to the medium's words while the second house is made.
+                for(int i=0;i<four.length;i++){four[i]=f.player("seance_copy"+i);four[i].setYRot(0);four[i].setYHeadRot(0);}
+                fifth[0]=NativeTestPlayers.survival(h,"seance_copy_fifth");f.players.add(fifth[0]);
+                fifth[0].teleportTo(f.l,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);fifth[0].setNoGravity(true);fifth[0].setDeltaMovement(Vec3.ZERO);
+                h.assertTrue(SceneInstances.held(server,P,0,fifth[0].getUUID())==4&&SceneInstances.held(server,P,0,four[0].getUUID())==3,"the house is full to a fifth, never to one of the four");
+                var e=SceneInstances.enter(fifth[0],P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the fifth's door waits while a house of their own is made ready: "+e);
+            })
+            .thenWaitUntil(()->h.assertTrue(ClassicsVignettes.cast(f.l).size()==4,"the first family is at their table"))
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second house to stand"))
+            .thenExecute(()->{
+                ClassicsVignettes.cast(f.l).forEach(a->firstFamily.add(a.getUUID()));
+                theirs[0]=SceneInstances.base(server,P,1);
+                h.assertTrue(theirs[0].getX()<=f.b.getX()-SceneInstances.WEST&&theirs[0].getY()==f.b.getY()&&theirs[0].getZ()==f.b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(fifth[0],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry")),"the fifth goes in by its own door: "+e);
+                var room=IndianLakeRooms.bounds(theirs[0],P);
+                for(int x=(int)Math.floor(room.minX);x<=(int)Math.ceil(room.maxX)+15;x+=16)for(int z=(int)Math.floor(room.minZ);z<=(int)Math.ceil(room.maxZ)+15;z+=16)f.hold(new BlockPos(Math.min(x,(int)Math.ceil(room.maxX)),theirs[0].getY(),Math.min(z,(int)Math.ceil(room.maxZ))));
+                var p=fifth[0];p.setNoGravity(false);p.teleportTo(f.l,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-11.5,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);ClassicsVignettes.onArrive(p,P);
+                h.assertTrue(ClassicsVignettes.inside(p,P)&&theirs[0].equals(ClassicsVignettes.base(p,P))&&SceneInstances.of(p,P)==1,"the fifth is in the second house");
+                var seen=new StringBuilder();for(var at:new BlockPos[]{ClassicsRooms.CUPBOARD,ClassicsRooms.GRACE,ClassicsRooms.SITTING,ClassicsRooms.ALBUM})seen.append(at.toShortString()).append('=').append(f.l.getBlockState(theirs[0].offset(at))).append(" / ").append(f.l.getBlockState(f.b.offset(at))).append("; ");
+                for(var at:new BlockPos[]{ClassicsRooms.CUPBOARD,ClassicsRooms.GRACE,ClassicsRooms.SITTING,ClassicsRooms.ALBUM})h.assertTrue(f.l.getBlockState(theirs[0].offset(at)).is(ClassicsRegistry.FITTING.get()),"the second house's drawing room has its own furniture (second / first): "+seen);
+            })
+            .thenWaitUntil(()->h.assertTrue(ClassicsVignettes.cast(f.l,1).size()==4,"the second house's family sits down: "+ClassicsVignettes.cast(f.l,1).size()))
+            .thenExecute(()->{
+                var second=ClassicsVignettes.cast(f.l,1);
+                for(var a:second)h.assertTrue(!firstFamily.contains(a.getUUID())&&a.position().distanceTo(Vec3.atCenterOf(theirs[0]))<30,"each of the second family is their own and at their own table: role "+a.role());
+                h.assertTrue(ClassicsVignettes.cast(f.l,0).stream().map(Entity::getUUID).collect(java.util.stream.Collectors.toSet()).equals(firstFamily),"and the first family is the first family still");
+                var p=fifth[0];clickThere.accept(p,ClassicsRooms.CUPBOARD);clickThere.accept(p,ClassicsRooms.CANDLES.get(0));clickThere.accept(p,ClassicsRooms.CANDLES.get(1));
+                h.assertTrue(Integer.bitCount(f.own(p).getInt("Disturbances"))==3&&f.own(p).getBoolean("SeanceFinished"),"three disturbances in the second house are the fifth's own");
+                h.assertTrue(ClassicsVignettes.world(f.data(),1).getBoolean("SittingEnded")&&"drove_the_family_out".equals(ClassicsVignettes.world(f.data(),1).getString("SharedOutcome")),"they end the second house's sitting");
+                h.assertTrue(!ClassicsVignettes.world(f.data(),0).getBoolean("SittingEnded"),"and not the first's");
+                for(var q:four)h.assertTrue(!f.own(q).getBoolean("SeanceFinished")&&f.own(q).getInt("Disturbances")==0,"nobody in the first house is finished by it: "+q.getGameProfile().getName());
+                for(var a:ClassicsVignettes.cast(f.l,0))h.assertTrue(a.seated()&&!a.afraid(),"the first family is not frightened by a ghost in another house: role "+a.role());
+                h.assertTrue(ClassicsVignettes.familyGone(server,f.data(),theirs[0])&&!ClassicsVignettes.familyGone(server,f.data(),f.b),"the door between the rooms carries nothing from the second house and voices from the first");
+                p.moveTo(theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-11.5);p.setDeltaMovement(Vec3.ZERO);
+            })
+            .thenWaitUntil(()->h.assertTrue(ClassicsVignettes.world(f.data(),1).getBoolean("Fled0477"),"the second family gets up and leaves their drawing room"))
+            .thenExecute(()->{
+                for(var a:ClassicsVignettes.cast(f.l,1)){var rel=a.position().subtract(theirs[0].getX(),theirs[0].getY(),theirs[0].getZ());h.assertTrue(rel.x<0&&rel.z< -23&&!a.seated(),"role "+a.role()+" of the second family is in their back room: "+rel);}
+                for(var a:ClassicsVignettes.cast(f.l,0))h.assertTrue(a.seated()&&!a.afraid(),"while the first family still sits at their table: role "+a.role());
+                h.assertTrue(!ClassicsVignettes.world(f.data(),0).getBoolean("Fled0477")&&!ClassicsVignettes.world(f.data(),0).getBoolean("Fleeing0477"),"and never set off after them");
+                var gone=new ArrayList<Entity>();for(var e:f.l.getAllEntities())if(e.blockPosition().distSqr(theirs[0])<150*150&&(e instanceof SeanceActor||e instanceof Display.TextDisplay||e instanceof net.minecraft.world.entity.item.ItemEntity))gone.add(e);gone.forEach(Entity::discard);
+            }).thenSucceed();
+    }
     private static Fixture flight;
     @AfterBatch(batch="classic_flight0477") public static void flightDone(ServerLevel l){if(flight!=null){flight.close();flight=null;}}
     @GameTest(template="empty",batch="classic_flight0477",timeoutTicks=600) public static void touchedTheyEachFlinchDrivenOutTheyLeaveAndTheIronDoorIsNotThereForTheGhost(GameTestHelper h){
