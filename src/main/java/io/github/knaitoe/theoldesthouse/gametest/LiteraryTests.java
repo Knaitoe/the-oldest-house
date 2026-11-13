@@ -1429,6 +1429,17 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
                 var p=fifth[0];p.teleportTo(f.out,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
                 h.assertTrue(LiteraryVignettes.inside(p,place)&&theirs[0].equals(LiteraryVignettes.base(p,place))&&LiteraryVignettes.copy(p,place)==1,"the fifth is at the second lake, in its night");
                 h.assertTrue(LiteraryVignettes.copy(four[0],place)==0,"and the four are still at the first");
+                // A copy is laid down from a recorded plan: a builder that set blocks straight to the world would leave air in it, as the
+                // séance's once did (0.4.557). The second lake is the first, block for block, but for the little each one's own day changes
+                // (Stacey's cover goes in only while nobody is near, the arrival is copied from the door each reader came by).
+                var box=IndianLakeRooms.bounds(b,place);int dx=theirs[0].getX()-b.getX(),checked=0,differ=0;var odd=new java.util.ArrayList<String>();
+                for(int x=(int)Math.floor(box.minX);x<=(int)Math.ceil(box.maxX);x+=5)for(int z=(int)Math.floor(box.minZ);z<=(int)Math.ceil(box.maxZ);z+=5)for(int y=b.getY()-3;y<=b.getY()+6;y+=3){
+                    var at=new BlockPos(x,y,z);var there=at.offset(dx,0,0);if(!f.out.isLoaded(at)||!f.out.isLoaded(there))continue;checked++;
+                    var mine=f.out.getBlockState(there);var first0=f.out.getBlockState(at);
+                    if(!mine.equals(first0)){differ++;if(odd.size()<4)odd.add(at.subtract(b).toShortString()+" "+first0.getBlock().getDescriptionId()+" / "+mine.getBlock().getDescriptionId());}
+                }
+                h.assertTrue(checked>200&&differ*100<=checked*3,"the second lake is the first, block for block: "+differ+" of "+checked+" differ "+odd);
+                for(var landmark:List.of(MovieNight.SCREEN,MovieNight.PROJECTOR))h.assertTrue(!f.out.getBlockState(theirs[0].offset(landmark)).isAir()&&f.out.getBlockState(theirs[0].offset(landmark)).equals(f.out.getBlockState(b.offset(landmark))),"its screen and projector stand where the first's do: "+landmark);
                 var w0=LiteraryVignettes.shared(f.data(),place);for(int i=0;i<MovieNight.SLOTS.size();i++){var c=MovieNight.canoe(f.out,w0,i);if(c!=null)first.add(c.getUUID());}
             })
             .thenWaitUntil(()->{
@@ -1453,6 +1464,75 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             .thenSucceed();
     }
     @AfterBatch(batch="literary_movie_copy") public static void movieCopyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
+    /**
+     * 0.4.563 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): six readers at Camp Blood,
+     * a counselor to each cabin, are full to a seventh, who goes to a camp of their own. Its man keeps his own schedule for his own
+     * camp's readers, and its bell calls him and nobody else.
+     */
+    @GameTest(template="empty",batch="literary_camp_copy",timeoutTicks=24000)
+    public static void aSeventhReaderIsGivenACampOfTheirOwn(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.CAMP_BLOOD;var server=f.in.getServer();var b=f.base(place);
+        var six=new ServerPlayer[CampSession.PLACES];final ServerPlayer[] seventh={null};final BlockPos[] theirs={null};final int[] clocks={0,0};
+        SceneInstances.fixtureCap(1);
+        java.util.function.Function<String,LiteraryActor> man=key->{var w=LiteraryVignettes.shared(f.data(),place);return w.hasUUID(key)&&f.out.getEntity(w.getUUID(key)) instanceof LiteraryActor a?a:null;};
+        final BuildBlocks.Plan[] dressing={null};
+        // The fixture lays the first camp down bare; the House finishes it with its passes (the polish, the review that puts the
+        // camp's paper on its notice board), as it finishes every copy. They run while the camp is empty, as the House runs them.
+        h.startSequence().thenExecute(()->{f.build(place);f.chunks.hold(f.out,IndianLakeRooms.bounds(b,place));})
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the first camp is resident"))
+            .thenExecute(()->{ScenePolish.polishOnce(f.out,f.origin,place);dressing[0]=SceneHuntReview.prepareFresh(f.out,f.origin,place);h.assertTrue(dressing[0]!=null,"the House finishes the first camp as it finishes a copy");})
+            .thenWaitUntil(()->h.assertTrue(dressing[0].tick(),"the first camp is being finished"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(place)&&SceneInstances.party(place)==CampSession.PLACES&&CampSession.PLACES==6,"a camp has copies, six readers to a camp: a counselor to each cabin");
+                for(int i=0;i<six.length;i++){six[i]=f.player("camp_copy"+i,place);six[i].setInvulnerable(true);}
+                seventh[0]=NativeTestPlayers.survival(h,"camp_copy_seventh");f.players.add(seventh[0]);seventh[0].setInvulnerable(true);
+                seventh[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);seventh[0].setNoGravity(true);seventh[0].setDeltaMovement(Vec3.ZERO);
+                h.assertTrue(SceneInstances.held(server,place,0,seventh[0].getUUID())==6&&SceneInstances.held(server,place,0,six[0].getUUID())==5,"the camp is full to a seventh, never to one of the six");
+                var e=SceneInstances.enter(seventh[0],place);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),place)==1,"the seventh's door waits while a camp of their own is made ready: "+e);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&SceneInstances.built(f.data(),place,1)&&!SceneInstances.building(),"waiting for the second camp to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,place,1);
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(seventh[0],place);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(place,1,"entry")),"the seventh goes in by its own door: "+e);
+                f.chunks.hold(f.out,IndianLakeRooms.bounds(theirs[0],place));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second camp is resident"))
+            .thenExecute(()->{
+                var p=seventh[0];p.teleportTo(f.out,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);
+                h.assertTrue(LiteraryVignettes.inside(p,place)&&theirs[0].equals(LiteraryVignettes.base(p,place))&&SceneInstances.of(p,place)==1,"the seventh is in the second camp");
+                h.assertTrue(SceneInstances.of(six[0],place)==0,"and the six are still in the first");
+                // A copy is laid down from a recorded plan (0.4.557): its bell, schedule, papers and bunks stand where the first camp's do.
+                var marks=new ArrayList<BlockPos>(List.of(CampSession.BELL_AT,CampSession.STAND,CampSession.CLIPBOARD,CampSession.RADIO,CampSession.PA,LiteraryRooms.source(place),LiteraryRooms.ending(place)));marks.addAll(CampSession.JOURNALS);
+                for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83})for(int dx:new int[]{-5,5})marks.add(new BlockPos(x+dx,0,z-5));
+                for(var mark:marks){var mine=f.out.getBlockState(theirs[0].offset(mark));var hers=f.out.getBlockState(b.offset(mark));h.assertTrue(!mine.isAir()&&mine.equals(hers),"the second camp has the first's block at "+mark.toShortString()+": "+mine+" where the first has "+hers);}
+            })
+            .thenWaitUntil(()->{
+                var first=man.apply("Killer");var mine=man.apply("Killer@1");
+                h.assertTrue(first!=null&&mine!=null&&!first.getUUID().equals(mine.getUUID()),"waiting for each camp's own man");
+                h.assertTrue(IndianLakeRooms.bounds(theirs[0],place).contains(mine.position())&&IndianLakeRooms.bounds(b,place).contains(first.position()),"each walks in his own camp");
+                h.assertTrue(CampSession.clock(first)>0&&CampSession.clock(mine)>0,"and keeps his own schedule");
+            })
+            .thenExecute(()->{
+                var first=man.apply("Killer");var mine=man.apply("Killer@1");var d=f.data();var own=LiteraryVignettes.personal(d,seventh[0].getUUID(),place);
+                CampSession.ring(seventh[0],theirs[0],own);LiteraryVignettes.save(d,seventh[0].getUUID(),place,own);
+                h.assertTrue(CampSession.bellCalling(mine)&&!CampSession.bellCalling(first),"the second camp's bell calls its own man, and not the first camp's");
+                // The six put down the story: with nobody at the first camp its day waits, while the second's goes on for the seventh.
+                for(var q:six)q.setGameMode(GameType.SPECTATOR);
+                clocks[0]=CampSession.clock(first);clocks[1]=CampSession.clock(mine);
+            })
+            .thenIdle(20)
+            .thenExecute(()->{
+                var first=man.apply("Killer");var mine=man.apply("Killer@1");
+                h.assertTrue(CampSession.clock(first)==clocks[0],"with nobody left in the first camp its schedule waits, and the seventh is nobody to its man: "+clocks[0]+" -> "+CampSession.clock(first));
+                h.assertTrue(CampSession.clock(mine)>clocks[1],"while the second camp's runs on for its own reader: "+clocks[1]+" -> "+CampSession.clock(mine));
+                for(var e:f.out.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,IndianLakeRooms.bounds(theirs[0],place).inflate(8),e->!(e instanceof ServerPlayer)))e.discard();
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_camp_copy") public static void campCopyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
     @GameTest(template="empty",batch="literary_closure_repair",timeoutTicks=100)
     public static void oldCriticalClosureReopensWithoutErasingTheReadersSealedChoice(GameTestHelper h){
         var f=new Fixture(h);var p=f.player("closure_repair",LabyrinthPlace.END_WORLD_CABIN);var own=f.own(p,LabyrinthPlace.END_WORLD_CABIN);own.putBoolean("ChoiceMade",true);own.putBoolean("Refused",true);own.putString("ClosedRoom",LabyrinthPlace.HOLLOWAY_CAMP.id());LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.END_WORLD_CABIN,own);

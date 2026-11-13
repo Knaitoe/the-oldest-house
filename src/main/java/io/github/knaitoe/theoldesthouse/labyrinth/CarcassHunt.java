@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
+import javax.annotation.Nullable;
 import java.util.*;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
@@ -34,13 +35,24 @@ public final class CarcassHunt {
     private static LabyrinthPlace scene(LiteraryActor a){return a.scene().equals(LabyrinthPlace.CAMP_BLOOD.id())?LabyrinthPlace.CAMP_BLOOD:LabyrinthPlace.ELK_CARCASSES;}
     public static boolean sees(LiteraryActor a,ServerPlayer p){
         if(a.scene().equals(LabyrinthPlace.CAMP_BLOOD.id())&&CampBedCrawl.under(p))return false;
-        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();
-        if(origin!=null&&a.distanceToSqr(p)>9&&concealed(p,LabyrinthPlaces.base(origin,scene(a))))return false;
+        var base=baseOf(a);
+        if(base!=null&&a.distanceToSqr(p)>9&&concealed(p,base))return false;
         return a.distanceToSqr(p)<42*42&&a.level().clip(new ClipContext(a.getEyePosition(),p.getEyePosition(),
                 ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,a)).getType()==HitResult.Type.MISS;
     }
     private static boolean eligible(ServerPlayer p,LabyrinthPlace scene){return p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&LiteraryVignettes.inside(p,scene)
             &&LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),scene).getBoolean("Here");}
+    /** 0.4.563: and at the copy of the camp he stands in (SceneInstances); a reader at another copy is nobody to him. */
+    private static boolean eligible(ServerPlayer p,LabyrinthPlace scene,BlockPos base){return eligible(p,scene)&&(!SceneInstances.copyable(scene)||base.equals(LiteraryVignettes.base(p,scene)));}
+    /**
+     * 0.4.563: the base of the copy of his scene he stands in, the original's when he stands in none. Each copy of the camp has its
+     * own man, and he walks, looks and listens in his own camp.
+     */
+    static @Nullable BlockPos baseOf(LiteraryActor a){
+        if(!(a.level() instanceof ServerLevel l))return null;var place=scene(a);
+        int k=SceneInstances.copyable(place)?SceneInstances.at(l.getServer(),place,l.dimension(),a.position()):0;
+        return SceneInstances.base(l.getServer(),place,Math.max(0,k));
+    }
     private static CompoundTag state(LiteraryActor a){return a.getPersistentData().getCompound(STATE);}
     public static boolean tracks(LiteraryActor a,UUID id){var s=state(a);return s.getInt("Memory")>0&&s.hasUUID("Reader")&&s.getUUID("Reader").equals(id);}
     public static BlockPos searchPoint(LiteraryActor a){var s=state(a);return s.contains("Point")?BlockPos.of(s.getLong("Point")):null;}
@@ -56,7 +68,9 @@ public final class CarcassHunt {
     /** Loud interactions remain positional; they never give the hunter an invisible live target. */
     public static void noise(ServerPlayer p,BlockPos at){
         var scene=LiteraryVignettes.current(p);if(scene==LabyrinthPlace.ELK_CARCASSES){ElkHunt.noise(p,at);return;}if(scene!=LabyrinthPlace.CAMP_BLOOD||!eligible(p,scene))return;var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),scene);
-        if(world.hasUUID("Killer")&&p.serverLevel().getEntity(world.getUUID("Killer")) instanceof LiteraryActor a
+        // 0.4.563: the man of the camp the reader is in, each copy's under its own key.
+        var id=LiteraryVignettes.actorId(p,scene,"Killer",false);
+        if(world.hasUUID(id)&&p.serverLevel().getEntity(world.getUUID(id)) instanceof LiteraryActor a
                 &&a.position().distanceToSqr(at.getCenter())<32*32){remember(a,p);var s=state(a);s.putLong("Point",at.asLong());a.getPersistentData().put(STATE,s);}
     }
     private static boolean foliage(BlockState s){return s.is(HouseBlocks.FOREST_COVER.get())||s.getBlock() instanceof LeavesBlock;}
@@ -129,9 +143,8 @@ public final class CarcassHunt {
         }
     }
     public void tick(LiteraryActor a){
-        if(!(a.level() instanceof ServerLevel l)||!a.isAlive())return;var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(l.getServer()).houseOrigin();
-        if(origin==null)return;var b=LabyrinthPlaces.base(origin,scene(a));
-        var readers=l.players().stream().filter(p->eligible(p,scene(a))).toList();lastPositions.keySet().retainAll(readers.stream().map(ServerPlayer::getUUID).toList());
+        if(!(a.level() instanceof ServerLevel l)||!a.isAlive())return;var b=baseOf(a);if(b==null)return;
+        var readers=l.players().stream().filter(p->eligible(p,scene(a),b)).toList();lastPositions.keySet().retainAll(readers.stream().map(ServerPlayer::getUUID).toList());
         if(readers.isEmpty()){route.clear();routeGoal=null;return;}
         var s=state(a);if(s.getInt("AttackDelay")>0)s.putInt("AttackDelay",s.getInt("AttackDelay")-1);
         if(s.getInt("AvoidTicks0459")>0)s.putInt("AvoidTicks0459",s.getInt("AvoidTicks0459")-1);a.getPersistentData().put(STATE,s);

@@ -1,3 +1,5 @@
+November 13 candidate 0.4.563 (docs/CAMP_COPIES_0_4_563.md): Camp Blood by copy; no new source, no Witness change. Require LiteraryTests.aSeventhReaderIsGivenACampOfTheirOwn (batch literary_camp_copy), LiteraryTests.aFifthReaderIsGivenALakeOfTheirOwnAtMovieNight with its block comparison, and every SlasherTests case.
+
 November 13 candidate 0.4.562 (docs/LAKE_NIGHT_COPIES_0_4_562.md): the three lake nights by copy; no new source, no Witness change. Require LiteraryTests.aFifthReaderIsGivenALakeOfTheirOwnAtMovieNight (batch literary_movie_copy) and every existing Movie Night, Costume Night, Winter Lake and Stacey case, VignetteAnimationTests.underTheIceSheGoesToWhatSheHearsAndBreaksThroughUnderANoisyReader among them.
 
 November 13 candidate 0.4.561 (docs/CAST_CHECKS_0_4_561.md): two more cast-check scenes; no new source, no Witness change. Require all eighteen CastConductTests cases (namespace the_oldest_house_cast, in the main half), with CastConductTests.ghostsSet and confession, and the existing Place for You, Confession and Drawing cases.
