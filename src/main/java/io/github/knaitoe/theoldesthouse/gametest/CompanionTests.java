@@ -105,12 +105,16 @@ public final class CompanionTests {
                 if(source.getEntity(id)!=wolf)return;
                 recipient.teleportTo(target,.5,100,.5,0,0);
                 transferred[0]=Hillary.followAcross(wolf,recipient);
-                helper.assertTrue(transferred[0]!=null,"the native transfer returns Hillary");return;
+                helper.assertTrue(transferred[0]!=null,"the native transfer returns Hillary");
+                // The requested route crosses with her. Checked here, at the crossing:
+                // her first tick outside the House (HillaryPaths.tickExit) forgets it,
+                // and that tick can come before the target level lists her.
+                helper.assertTrue(transferred[0].getPersistentData().getBoolean("HillaryFindExit"),"the requested route crosses with her");return;
             }
             var dog=transferred[0];if(target.getEntity(id)!=dog)return;
             helper.assertTrue(dog.level()==target&&dog.getUUID().equals(id),"the same UUID crossed dimensions");
-            helper.assertTrue(Hillary.tagOf(dog).recipient().equals(recipient.getUUID())&&dog.isTame()&&dog.getHealth()==7
-                    &&dog.getPersistentData().getBoolean("HillaryFindExit"),"health, owner, tag and requested route survive");
+            helper.assertTrue(Hillary.tagOf(dog).recipient().equals(recipient.getUUID())&&dog.isTame()&&dog.getHealth()==7,
+                    "health, owner and tag survive");
             BlockPos arrival=BlockPos.containing(dog.position());
             String held=ShutdownWatch.ticketsAt(target,new ChunkPos(arrival));
             helper.assertTrue(held.contains("portal"),"the crossing holds her arrival with a portal ticket: "+held);

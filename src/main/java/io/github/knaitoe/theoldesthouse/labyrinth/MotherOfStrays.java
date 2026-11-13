@@ -852,25 +852,20 @@ public final class MotherOfStrays {
         if (collection.dogThrown()) return;
         mother.carryDog(dog);
         if (collection.dogThreatTicks() >= 600 && !collection.dogAtLedge()) {
-            Vec3 target=Vec3.atBottomCenterOf(base.offset(mother.galleryStep()==0?new BlockPos(-5,0,-9)
-                    :mother.galleryStep()==1?new BlockPos(-5,9,-20):new BlockPos(-1,9,-21)));
+            Vec3 target=galleryTarget(base,mother.galleryStep());
             // Native ground navigation may finish at an adjacent node near the stair approach.
             // The final ledge still requires close physical contact at the full gallery height.
             double reach=mother.galleryStep()<2?4.0:1.1;
             if(mother.position().distanceToSqr(target)<reach && Math.abs(mother.getY()-target.y)<.35) {
-                if(mother.galleryStep()<2){mother.galleryStep(mother.galleryStep()+1);mother.getNavigation().stop();return;}
+                // On to the next stage of the climb at once: stopping here left her standing until the next check.
+                if(mother.galleryStep()<2){mother.galleryStep(mother.galleryStep()+1);approachGallery(mother,galleryTarget(base,mother.galleryStep()));return;}
                 mother.getNavigation().stop();
                 collection.dogAtLedge(true);
                 say(owner, "You offered to take it. I heard you. I can still be kinder.");
                 owner.displayClientMessage(Component.literal(
                         "She stands above the well with the dog. There is still time to reach her or offer something loved.")
                         .withStyle(ChatFormatting.DARK_GRAY), false);
-            }else {
-                // Coordinate moveTo uses a one-block target radius and can stop beside the ledge.
-                // Request the actual block so reaching the final gallery spot starts its clock.
-                var path=mother.getNavigation().createPath(BlockPos.containing(target),0);
-                if(path!=null)mother.getNavigation().moveTo(path,1.0D);
-            }
+            }else approachGallery(mother,target);
             // Only physically reaching the gallery spends the final intervention window.
             return;
         }
@@ -887,6 +882,18 @@ public final class MotherOfStrays {
                     "She opens her hands over the well. She watches all the way down.")
                     .withStyle(ChatFormatting.DARK_GRAY), false);
         }
+    }
+
+    /** Where she makes for at each stage of the climb: the foot of the stair, its top, then the ledge over the well. */
+    private static Vec3 galleryTarget(BlockPos base,int step) {
+        return Vec3.atBottomCenterOf(base.offset(step==0?new BlockPos(-5,0,-9):step==1?new BlockPos(-5,9,-20):new BlockPos(-1,9,-21)));
+    }
+
+    private static void approachGallery(MotherEntity mother,Vec3 target) {
+        // Coordinate moveTo uses a one-block target radius and can stop beside the ledge.
+        // Request the actual block so reaching the final gallery spot starts its clock.
+        var path=mother.getNavigation().createPath(BlockPos.containing(target),0);
+        if(path!=null)mother.getNavigation().moveTo(path,1.0D);
     }
 
     private static void follow(ServerPlayer player, ServerLevel house, BlockPos origin, boolean owed) {
