@@ -57,10 +57,11 @@ supper, the field, the day and the arcade go on without them, as they always hav
 
 ## Not yet
 
-- **The shared scenes with a world of their own**: Last orders, the séance, Camp Blood, the lake nights (Movie Night, Costume Night,
-  Winter Lake) and the hotel each keep their story in one record for the whole world (the scene's shared record, `LiteraryVignettes.shared`,
-  for most; the séance's and the hotel's own records), so a copy cannot have a night of its own until that record is kept by copy, as the
-  Goatman's evening was in 0.4.552.
+- **The shared scenes with a world of their own**: the séance, Camp Blood, the lake nights (Movie Night, Costume Night, Winter Lake) and
+  the hotel each keep their story in one record for the whole world (the scene's shared record, `LiteraryVignettes.shared`, for most; the
+  séance's and the hotel's own records), so a copy cannot have a night of its own until that record is kept by copy, as the Goatman's
+  evening was in 0.4.552. (This list first named Last orders too; its world record turned out to hold only the league board and the
+  window, and it has copies since 0.4.556, `docs/LAST_ORDERS_COPIES_0_4_556.md`.)
 - **The Sphinx**: her halls are the House's own (gray halls, not a story's place), and stay shared on purpose.
 
 ## Numbers

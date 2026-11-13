@@ -31,6 +31,7 @@ public final class LastOrdersTests {
     @net.minecraft.gametest.framework.AfterBatch(batch="orders_darts") public static void ordersDartsDone(net.minecraft.server.level.ServerLevel l){close();}
     @net.minecraft.gametest.framework.AfterBatch(batch="orders_pool") public static void ordersPoolDone(net.minecraft.server.level.ServerLevel l){close();}
     @net.minecraft.gametest.framework.AfterBatch(batch="orders_regulars") public static void ordersRegularsDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="orders_copy") public static void ordersCopyDone(net.minecraft.server.level.ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
     private static AABB box(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-15,b.getY()-3,b.getZ()-35,b.getX()+17,b.getY()+9,b.getZ()+4);}
     private static String text(net.minecraft.world.item.ItemStack book){var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}
     private static void ask(LiteraryTests.Fixture f,ServerPlayer p,String choice){
@@ -46,6 +47,54 @@ public final class LastOrdersTests {
     private static int houseDarts(ServerPlayer p){int n=0;for(var s:p.getInventory().items)if(DartBoards.isHouseDart(s))n+=s.getCount();for(var s:p.getInventory().offhand)if(DartBoards.isHouseDart(s))n+=s.getCount();return n;}
     /** What is chalked in a square of the league slate. */
     private static String sign(LiteraryTests.Fixture f,net.minecraft.core.BlockPos rel,int line){return f.level(P).getBlockEntity(f.base(P).offset(rel)) instanceof BarSlateEntity s?s.line(line):"";}
+
+    /** What is chalked in a square of a bar's league slate, wherever the bar stands. */
+    private static String slate(net.minecraft.server.level.ServerLevel l,net.minecraft.core.BlockPos base,net.minecraft.core.BlockPos rel,int line){return l.getBlockEntity(base.offset(rel)) instanceof BarSlateEntity s?s.line(line):"";}
+
+    /**
+     * 0.4.556 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): five readers in the bar, one
+     * to each stool but Benny's, are full to a sixth and never to one of the five. The sixth's door waits while a second bar is made ready
+     * a million blocks west, and they go in by its own door. Each bar has its own man in booth four and its own evening. The league board is
+     * the whole server's: a glass drunk in the second bar puts its week up in both.
+     */
+    @GameTest(template="empty",batch="orders_copy",timeoutTicks=24000)
+    public static void aSixthReaderIsGivenABarOfTheirOwn(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);var server=l.getServer();
+        var five=new ServerPlayer[LastOrders.PLACES];final ServerPlayer[] late={null};final net.minecraft.core.BlockPos[] theirs={null};
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the bar is resident"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==LastOrders.PLACES&&LastOrders.PLACES==5,"a bar has copies, five places to a bar: its stools but Benny's");
+                for(int i=0;i<five.length;i++)five[i]=f.player("orders_copy"+i,P);
+                late[0]=NativeTestPlayers.survival(h,"orders_copy_late");f.players.add(late[0]);
+                late[0].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);late[0].setNoGravity(true);late[0].setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                h.assertTrue(SceneInstances.held(server,P,0,late[0].getUUID())==5&&SceneInstances.held(server,P,0,five[0].getUUID())==4,"the bar is full to a sixth, never to one of the five");
+                var e=SceneInstances.enter(late[0],P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the sixth's door waits while a bar of their own is made ready: "+e);
+                var mine=SceneInstances.enter(five[1],P);
+                h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the five goes back to theirs: "+mine);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second bar to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,P,1);
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(late[0],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry")),"the sixth goes in by its own door: "+e);
+                var by=theirs[0].subtract(b);f.chunks.hold(l,box(f).move(by.getX(),by.getY(),by.getZ()));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second bar is resident"))
+            .thenExecute(()->{var p=late[0];p.teleportTo(l,theirs[0].getX()+.5,theirs[0].getY(),theirs[0].getZ()-3,180,0);p.setNoGravity(true);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);LiteraryVignettes.onArrive(p,P);})
+            .thenWaitUntil(()->h.assertTrue(LastOrders.actor(l,theirs[0],0)!=null&&LastOrders.actor(l,b,0)!=null,"a man in booth four in each bar"))
+            .thenExecute(()->{
+                h.assertTrue(!LastOrders.actor(l,theirs[0],0).getUUID().equals(LastOrders.actor(l,b,0).getUUID())&&theirs[0].equals(LiteraryVignettes.base(late[0],P)),"each bar has its own man in booth four, and the sixth stands in theirs");
+                h.assertTrue(LastOrders.stage(theirs[0])==LastOrders.IDLE&&LastOrders.stage(b)==LastOrders.IDLE,"and its own evening");
+                LastOrders.drink(late[0]);
+                String name=late[0].getGameProfile().getName();
+                h.assertTrue(slate(l,theirs[0],LastOrdersSite.LEAGUE[0],1).equals(name)&&slate(l,b,LastOrdersSite.LEAGUE[0],1).equals(name),"a glass in the second bar puts its week up on both bars' boards, under the sixth's name: "+slate(l,theirs[0],LastOrdersSite.LEAGUE[0],1)+" / "+slate(l,b,LastOrdersSite.LEAGUE[0],1));
+                for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(theirs[0]).inflate(40)))a.discard();
+            }).thenSucceed();
+    }
 
     @GameTest(template="empty",batch="orders_pool",timeoutTicks=3000)
     public static void aFrameForEverythingWonAndLeftOnTheTable(GameTestHelper h){

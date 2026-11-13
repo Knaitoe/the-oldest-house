@@ -78,6 +78,8 @@ public final class LastOrders {
     /** Poses: throwing a dart, staring, bent over a cue, whistling, the next booth leaning in, both hands flat on the table. */
     public static final int THROW=1,STARE=2,CUE=3,WHISTLE=4,LEAN=5,HANDS=6;
     public static final String TALK="last_orders",OUTCOME="walked_out";
+    /** 0.4.556: how many readers one bar holds, one to each stool along it but Benny's; the sixth is given a bar of their own (SceneInstances). */
+    public static final int PLACES=5;
     /** The match's stages. */
     public static final int IDLE=0,PLAYING=1,BETWEEN=2,WHISTLING=3,WON=4,STARING=5,WAITING=6;
     public enum Game{NONE,POOL,DARTS}
@@ -210,6 +212,18 @@ public final class LastOrders {
         idle(l,d);
     }
     static void idle(ServerLevel l,Scene d){d.stage=IDLE;d.game=Game.NONE;d.frame=0;d.since=0;d.talk=-1;d.strangerTarget=LastOrdersSite.STRANGER_SEAT;stake(l,d,0,false);regularsGame(l,d,true);}
+    /**
+     * 0.4.556: the league board and the street through the window are the whole server's, so a glass drunk in one bar puts its week and
+     * its season up in every other bar that stands, where the whole bar is loaded; any other bar shows them when its evening next starts.
+     */
+    static void elsewhere(net.minecraft.server.MinecraftServer s,BlockPos but,CompoundTag world){
+        var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        for(var b:SceneInstances.bases(s,PLACE)){
+            if(b.equals(but))continue;var box=area(b);
+            if(!l.hasChunksAt(BlockPos.containing(box.minX,box.minY,box.minZ),BlockPos.containing(box.maxX,box.maxY,box.maxZ)))continue;
+            league(l,b,world);LastOrdersSite.season(l,b,world.getInt("Season"));
+        }
+    }
     /** The league board: the newest eight weeks, newest first. */
     static void league(ServerLevel l,BlockPos b,CompoundTag world){
         var list=world.getList("League",net.minecraft.nbt.Tag.TAG_COMPOUND);
@@ -464,7 +478,7 @@ public final class LastOrders {
         var list=world.getList("League",net.minecraft.nbt.Tag.TAG_COMPOUND);var c=new CompoundTag();c.putInt("Week",week);c.putString("Name",p.getGameProfile().getName());c.putString("Beat",LastOrdersTexts.REGULARS[week%3]);list.add(c);
         while(list.size()>32)list.remove(0);
         world.put("League",list);LiteraryVignettes.shared(data,PLACE,world);
-        league(l,b,world);LastOrdersSite.season(l,b,world.getInt("Season"));
+        league(l,b,world);LastOrdersSite.season(l,b,world.getInt("Season"));elsewhere(p.server,b,world);
         var d=scene(b);if(d!=null)speak(l,d,6,LastOrdersTexts.GLASS_DRUNK);
         cue(p,LastOrdersTexts.GLASS_TASTE);
     }
