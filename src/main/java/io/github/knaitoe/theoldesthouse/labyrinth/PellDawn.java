@@ -165,6 +165,10 @@ public final class PellDawn {
             if(!p.isAlive()||p.isSpectator()||!h.atEnd.contains(p.getUUID()))continue;
             var own=PellHouse.own(p);if(own.getBoolean("Dawned"))continue;
             own.putBoolean("Dawned",true);own.putBoolean("SawCarCome",true);
+            // 0.4.542: their ending has landed, read or not: the house is never dealt to them again as it was, and the door they came
+            // in by is only a passage (LabyrinthDealer.finishedFor). The account waits under the mat, here and in the house's
+            // aftermath (PellAftermath); a new visit counts from here.
+            own.putBoolean("Ended",true);own.putInt("Beat",Math.max(own.getInt("Beat"),own.getInt("Visit")));
             String outcome=own.getBoolean("GotTillyOut")?"brought_tilly_out_with_her_name":own.getBoolean("SawTillyOut")?"saw_tilly_come_out_with_her_name":"there_when_tilly_came_out";
             LiteraryVignettes.ready(p,PellHouse.PLACE,own,outcome);PellHouse.save(p,own);
             PellHouse.cue(p,PellTexts.DAWN_OUT);

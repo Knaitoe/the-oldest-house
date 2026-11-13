@@ -832,7 +832,11 @@ def switch_plate():
 
 def height_marks(upper, tilly):
     """The door frame's pencil marks: a dash and a date for each one, climbing, and stopping. Below the last, a fresh one in a
-    different pencil, with a small N beside it."""
+    different pencil, with a small N beside it.
+
+    0.4.542, the house's aftermath (PellAftermath), on the upper cell: tilly 2, the house empty, the fresh mark still there and the N
+    beside it rubbed out, a grey smear on the wall; tilly 3, the house lived in, the N still beside it and one more above the rest,
+    later, in the same pencil, with its own N."""
     im = clear()
     fill(im, 6, 0, 10, 16, '#f2efe6'); line(im, [(6, y) for y in range(16)], '#dcd8cc')
     marks = [(15, 0), (12, 0), (9, 0), (6, 0), (3, 0), (1, 1)] if not upper else [(15, 1), (13, 0), (11, 1)]
@@ -843,7 +847,19 @@ def height_marks(upper, tilly):
     if tilly and upper:
         # Below the last of hers, the new one, darker, and the N.
         line(im, [(6, 14), (7, 14), (8, 14), (9, 14)], '#2a2a5a')
-        text(im, 10, 11, 'N', '#2a2a5a')
+        if tilly == 2:
+            # Rubbed out with a thumb: the graphite smeared across the paint, a ghost of the letter's strokes in it.
+            for x, y, c in ((10, 11, '#b4b2c0'), (11, 11, '#c8c6d0'), (10, 12, '#a8a6b8'), (11, 12, '#bcbac8'), (12, 12, '#c8c6d0'),
+                            (10, 13, '#b4b2c0'), (11, 13, '#a8a6b8'), (12, 13, '#b4b2c0'), (13, 13, '#c8c6d0'), (11, 14, '#bcbac8'),
+                            (12, 14, '#a8a6b8'), (13, 14, '#bcbac8'), (14, 14, '#d0ced6'), (10, 15, '#c8c6d0'), (13, 15, '#b4b2c0'),
+                            (14, 13, '#d0ced6')):
+                dot(im, x, y, c)
+        else:
+            text(im, 10, 11, 'N', '#2a2a5a')
+        if tilly == 3:
+            # Higher than any of hers: grown since, measured, dated, and marked the same.
+            line(im, [(6, 7), (7, 7), (8, 7), (9, 7)], '#2a2a5a')
+            text(im, 10, 4, 'N', '#2a2a5a')
     return im
 
 
@@ -960,6 +976,7 @@ def nessa():
             'drawers_front': drawers_front(), 'talking_clock': talking_clock(), 'desk_top': desk_top(), 'large_books': large_books(),
             'wardrobe_lo': wardrobe_front(0, 0), 'wardrobe_hi': wardrobe_front(1, 0), 'wardrobe_lo_open': wardrobe_front(0, 1), 'wardrobe_hi_open': wardrobe_front(1, 1),
             'switch': switch_plate(), 'marks_lo': height_marks(0, 0), 'marks_hi': height_marks(1, 0), 'marks_hi_tilly': height_marks(1, 1),
+            'marks_hi_rubbed': height_marks(1, 2), 'marks_hi_later': height_marks(1, 3),
             'border': border(0), 'border_crooked': border(1)}
 
 
@@ -1616,10 +1633,28 @@ def shed():
             'chemist_0': chemist_calendar(0), 'chemist_1': chemist_calendar(1), 'chemist_2': chemist_calendar(2)}
 
 
+def for_sale(front):
+    """0.4.542, the house's aftermath (PellAftermath): the agent's board on its post in the front lawn. The front, to the street: FOR
+    SALE in red capitals on white, a red rule under them, and a telephone number in small black figures. The back, to the house: the
+    same white plastic, plain, its fluting showing through, two screw heads where it is fixed to the post."""
+    im = enamel('#f4f4f0', 52340, 2)
+    if front:
+        frame(im, 0, 0, 16, 16, '#c42a2a')
+        text(im, 3, 2, 'FOR', '#c42a2a')
+        text(im, 1, 8, 'SALE', '#c42a2a')
+        line(im, [(x, 14) for x in range(2, 14) if x % 4 != 1], '#2a2a2a')
+    else:
+        for x in range(0, 16, 3):
+            line(im, [(x, y) for y in range(16)], '#e6e6e0')
+        frame(im, 0, 0, 16, 16, '#d8d8d2')
+        dot(im, 8, 4, '#8a8e92'); dot(im, 8, 12, '#8a8e92')
+    return im
+
+
 def outside():
     return {'stake_nessa': stake_tag(0), 'stake_tilly': stake_tag(1), 'kennel_wall': kennel_wall(),
             'bowl_leaves': bowl_leaves(), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'robe': robe(), 'pump': pump(),
-            'lantern_body': lantern_body(), 'lantern_globe': lantern_globe()}
+            'lantern_body': lantern_body(), 'lantern_globe': lantern_globe(), 'for_sale': for_sale(1), 'for_sale_back': for_sale(0)}
 
 
 # ------------------------------------------------------------------------------------------------ the rest
@@ -1933,7 +1968,12 @@ def thing_models():
     for stage in range(4):
         upper, tilly = stage & 1, stage >> 1
         face = 'marks_hi_tilly' if (upper and tilly) else 'marks_hi' if upper else 'marks_lo'
-        out[f'marks_{stage}'] = m([element([5, 0, 15.7], [11, 16, 16], {'north': 'k'}, uv={'north': [5, 0, 11, 16]})], {'k': face}, face)
+        # 0.4.542: wide enough for the N beside the last mark, which a narrower one cut to its first stroke. A north face shows its
+        # picture from the far end of the block, so the frame stays where it was and the N lies beyond it, toward the door.
+        out[f'marks_{stage}'] = m([element([1, 0, 15.7], [11, 16, 16], {'north': 'k'}, uv={'north': [5, 0, 15, 16]})], {'k': face}, face)
+    # 0.4.542, the house's aftermath (PellAftermath): the upper cell with the N rubbed out (0), or with one more, later (1).
+    for stage, face in enumerate(('marks_hi_rubbed', 'marks_hi_later')):
+        out[f'marks_after_{stage}'] = m([element([1, 0, 15.7], [11, 16, 16], {'north': 'k'}, uv={'north': [5, 0, 15, 16]})], {'k': face}, face)
     for crooked in range(2):
         face = 'border_crooked' if crooked else 'border'
         out[f'border_{crooked}'] = m([element([0, 8, 15.8], [16, 16, 16], {'north': 'b'}, uv={'north': [0, 8, 16, 16]})], {'b': face}, face)
@@ -2066,6 +2106,14 @@ def thing_models():
                                    element([4, 6, 7.9], [12, 10, 8.1], {'north': 't', 'south': 't'}, uv={'north': [4, 4, 12, 8], 'south': [4, 4, 12, 8]}),
                                    element([6, 0, 6], [10, 4, 10], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}, rot={'origin': [8, 0, 8], 'axis': 'y', 'angle': 45})],
                                   {'w': 'stake_wood', 't': face, 'p': 'seedling_fresh' if tilly else 'seedling_dead'}, face)
+    # 0.4.542, the house's aftermath (PellAftermath): the agent's board, a block across, on a post driven into the lawn behind it; the
+    # board's foot half a block up and its top half a block over the cell, the post in two parts so each takes its own strip of wood.
+    w = {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w'}
+    out['for_sale_0'] = m([element([7, 0, 8.5], [9, 16, 10.5], {**w, 'down': 'w'}, uv={'north': [7, 0, 9, 16], 'south': [7, 0, 9, 16], 'east': [5.5, 0, 7.5, 16], 'west': [8.5, 0, 10.5, 16], 'down': [7, 5.5, 9, 7.5]}),
+                           element([7, 16, 8.5], [9, 22, 10.5], {**w, 'up': 'w'}, uv={'north': [7, 10, 9, 16], 'south': [7, 10, 9, 16], 'east': [5.5, 10, 7.5, 16], 'west': [8.5, 10, 10.5, 16], 'up': [7, 8.5, 9, 10.5]}),
+                           element([0, 8, 7.5], [16, 24, 8.5], {'north': 'f', 'south': 'b', 'east': 'b', 'west': 'b', 'up': 'b', 'down': 'b'},
+                                   uv={'north': [0, 0, 16, 16], 'south': [0, 0, 16, 16], 'east': [7.5, 0, 8.5, 16], 'west': [7.5, 0, 8.5, 16], 'up': [0, 7.5, 16, 8.5], 'down': [0, 7.5, 16, 8.5]})],
+                          {'w': 'stake_wood', 'f': 'for_sale', 'b': 'for_sale_back'}, 'for_sale')
     # The kennel, two cells wide: half 0 meets half 1 at its west edge as drawn (x 0), half 1 meets half 0 at its east (x 16). The
     # opening is in the middle, a real gap with the dark inside; the roof's ridge runs along the front, the gables at the two ends.
     for half in range(2):
@@ -2166,7 +2214,7 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'freezer', 'stool', 'power', 'cord', 'trough', 'bucket', 'chlorine', 'washer',
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
-         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open']
+         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open', 'for_sale', 'marks_after']
 
 
 # ------------------------------------------------------------------------------------------------ the block

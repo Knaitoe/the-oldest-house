@@ -268,6 +268,8 @@ public final class PellPeople {
     /** Once a tick for the house, however many readers are at it: each of them looks at the nearest reader near enough to look at. */
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
+        // 0.4.542: while the house stands as its aftermath there is nobody in it, and no visit (PellAftermath).
+        if(PellAftermath.tick(l,b,h,here))return;
         // 0.4.525: the visit moves them first; whoever walked this tick has their head where the walk put it.
         PellVisit.tick(l,b,h,here);
         for(int who=0;who<COUNT;who++){

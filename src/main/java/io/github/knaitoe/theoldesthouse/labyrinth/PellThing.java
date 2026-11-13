@@ -35,11 +35,11 @@ public final class PellThing extends HorizontalDirectionalBlock {
         FREEZER,STOOL,POWER,CORD,TROUGH,BUCKET,CHLORINE,WASHER,
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
-        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN;
+        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN,FOR_SALE,MARKS_AFTER;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, on the floor or hung: nothing a body bumps into. */
         public boolean flat(){return switch(this){case CHORE_CHART,CALENDAR,PHOTOS,HOOKS,COAT_HOOK,SWITCH,MARKS,BORDER,MIRROR,POWER,CORD,BULB,PEGBOARD,TOWEL,
-            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE->true;default->false;};}
+            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE,MARKS_AFTER->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
@@ -112,7 +112,8 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case BOOKSHELF->t(f,0,0,8,16,16,16);
             case WARDROBE->t(f,0,0,2,16,16,16);
             case SWITCH->t(f,5,3,15,11,13,16);
-            case MARKS->t(f,5,0,15,11,16,16);
+            // 0.4.542: wide enough for the N beside the last mark.
+            case MARKS,MARKS_AFTER->t(f,1,0,15,11,16,16);
             case BORDER->t(f,0,8,15,16,16,16);
             case MATTRESS->Block.box(0,0,0,16,4,16);
             case SHOES->t(f,2,0,9,14,3.5,15);
@@ -145,6 +146,8 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case LANTERN->Block.box(4,0,4,12,13,12);
             // 0.4.532: the kitchen's telephone, on the wall by the arch.
             case PHONE->t(f,5,1,13,11,14,16);
+            // 0.4.542, the house's aftermath (PellAftermath): the agent's sign on its post in the front lawn.
+            case FOR_SALE->Shapes.or(t(f,7,0,8.5,9,16,10.5),t(f,0,8,7.5,16,16,8.5));
             // 0.4.540: open, the chest is hollow: its floor, its front and back, its end, and the lid stood up against the wall.
             case FREEZER_OPEN->(stage&1)==0?Shapes.or(t(f,0,0,1,16,3,16),t(f,0,0,1,16,14,2.5F),t(f,0,0,14.5F,16,16,16),t(f,0,0,1,1.5F,14,16))
                 :Shapes.or(t(f,0,0,1,16,3,16),t(f,0,0,1,16,14,2.5F),t(f,0,0,14.5F,16,16,16),t(f,14.5F,0,1,16,14,16));

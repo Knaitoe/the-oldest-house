@@ -2562,7 +2562,9 @@ public final class PellHouseTests {
             h.assertTrue(own.getBoolean("Completed")&&WitnessAccount.has(f.data(),p.getUUID(),story),"the house resolved for the reader who read it");
             h.assertTrue(Keepsakes.carries(p,P,"CaneTip"),"Tilly's cane tip is theirs");
             h.assertTrue(!PellHouse.dealable(f.data(),p.getUUID()),"never dealt the house again");
-            h.assertTrue(PellHouse.dealable(f.data(),q.getUUID())&&!WitnessAccount.has(f.data(),q.getUUID(),story),"the other, whose account is unread, has resolved nothing yet");
+            // 0.4.542: the other's ending has landed too, unread: never dealt the house again as it was, the account waiting for them.
+            h.assertTrue(!PellHouse.dealable(f.data(),q.getUUID())&&f.own(q,P).getBoolean("Ended")&&f.own(q,P).getBoolean("Ready")&&!WitnessAccount.has(f.data(),q.getUUID(),story),
+                "the other, whose account is unread, has resolved nothing yet, and is not dealt the house again");
             var text=words(PellTexts.account(p.getGameProfile().getName(),own));
             h.assertTrue(text.contains("I led her across the grass to the gap in the line")&&text.contains("Callum was sitting on the front step with his shoes on")
                 &&text.contains("the spare rubber tip from her cane")&&text.endsWith("Behind me nobody was calling any name at all."),"the account: what the reader did, and the street: "+text);
@@ -2618,4 +2620,118 @@ public final class PellHouseTests {
         .thenSucceed();
     }
     @AfterBatch(batch="pell_dawn_kept") public static void dawnKeptDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.542, after
+    /** A reader whose ending has landed at first light, without the night itself: Tilly came out (or answered), the morning theirs. */
+    private static void ended(LiteraryTests.Fixture f,ServerPlayer p,boolean answered){
+        var own=f.own(p,P);
+        for(var key:List.of("FirstVisit","SecondVisit","Dawned","SawCarCome","Ended"))own.putBoolean(key,true);
+        if(answered){own.putBoolean("TillyStayed",true);own.putString("Outcome","tilly_answered");}
+        else{own.putBoolean("GotTillyOut",true);own.putBoolean("Ready",true);own.putString("Outcome","brought_tilly_out_with_her_name");}
+        own.putInt("Beat",Math.max(own.getInt("Beat"),own.getInt("Visit")));
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+    }
+    /** Eight crossings of ordinary halls since, so the house is not among the reader's latest places. */
+    private static void later(LiteraryTests.Fixture f,ServerPlayer p){
+        var hall=java.util.Arrays.stream(LabyrinthPlace.values()).filter(LabyrinthPlace::isGray).findFirst().orElseThrow();
+        for(int i=0;i<8;i++)f.data().visit(p.getUUID(),hall);
+    }
+    private static boolean nobody(ServerLevel l,BlockPos b){return l.getEntitiesOfClass(LiteraryActor.class,PellPeople.area(b),PellPeople::is).isEmpty();}
+    /**
+     * 0.4.542, the house after Tilly came out (docs/PELL_HOUSE_AFTER_0_4_542.md). A reader whose ending has landed, their account
+     * still under the mat. Through the door they came by, the house is only a passage now; eight halls later it can come back. When the
+     * house would begin its visit again it stands empty: a FOR SALE sign on the front lawn, the line scrubbed off everywhere (dead grass
+     * where it lay on the lawn), the pool drained to its tiles and its gate open, everything the family had gone and only what is built
+     * in left, Nessa's room down to the height marks with the N rubbed out, and nobody in it. The reader is told once, and that the
+     * account is waiting; a hand gets what each thing is now; the account, read here, resolves the house as at first light. Counted
+     * once, it never comes back. A reader who has not had their ending brings it back as it always was, and the visit begins again.
+     */
+    @GameTest(template="empty",batch="pell_after_out",timeoutTicks=2400)
+    public static void afterTillyCameOutTheHouseComesBackOnceEmptyAndForSale(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_after_out",P);var l=f.level(P);var b=f.base(P);var d=f.data();
+        f.chunks.hold(l,PellPeople.area(b));f.at(p,P,.5,0,-44);
+        var story=WitnessAccount.Story.of("pell_house");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&PellPeople.find(l,b,PellPeople.JUNE)!=null,"the house and its people"))
+        .thenExecute(()->{
+            h.assertTrue(PellHouse.dealable(d,p.getUUID())&&!Aftermath.canDeal(d,p.getUUID(),P)&&!LabyrinthDealer.finishedFor(d,p.getUUID(),P),"before an ending, the house is the reader's story");
+            ended(f,p,false);d.visit(p.getUUID(),P);
+            h.assertTrue(!PellHouse.dealable(d,p.getUUID())&&!Aftermath.canDeal(d,p.getUUID(),P)&&LabyrinthDealer.finishedFor(d,p.getUUID(),P),"the door they came by is only a passage now");
+            later(f,p);
+            h.assertTrue(Aftermath.canDeal(d,p.getUUID(),P)&&!LabyrinthDealer.finishedFor(d,p.getUUID(),P),"eight halls later the house can come back to them");
+            told(p);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellAftermath.dressed(l,b)==PellAftermath.Kind.EMPTY,"the house as it stands after Tilly came out"))
+        .thenIdle(2).thenExecute(()->{
+            h.assertTrue(thing(l,b,PellAftermath.SIGN.getX(),0,PellAftermath.SIGN.getZ(),FOR_SALE,0)&&facing(l,b,PellAftermath.SIGN.getX(),0,PellAftermath.SIGN.getZ())==Direction.SOUTH,"a FOR SALE sign on the front lawn, to the street");
+            h.assertTrue(thing(l,b,-11,1,-63,MARKS_AFTER,0)&&thing(l,b,-11,0,-63,MARKS,0),"the height marks by Nessa's door, the N rubbed out");
+            h.assertTrue(l.getBlockState(b.offset(-13,0,-61)).isAir()&&l.getBlockState(b.offset(-11,0,-69)).isAir()&&l.getBlockState(b.offset(-2,0,-70)).isAir()&&l.getBlockState(b.offset(9,0,-70)).isAir()
+                &&l.getBlockState(b.offset(-13,2,-61)).isAir()&&l.getBlockState(b.offset(-9,1,-63)).isAir(),"the bed, the table, the recliner, the freezer, the border and the taped switch all gone");
+            h.assertTrue(thing(l,b,-9,0,-71,COUNTER,0)&&thing(l,b,-10,0,-71,SINK,0)&&PellThing.is(l.getBlockState(b.offset(19,0,-80)),KENNEL)&&PellThing.is(l.getBlockState(b.offset(-5,-1,-62)),CIRCLE),"what is built in is left: the benches and sink, the kennel, the circle in the floor");
+            h.assertTrue(is(l,b,-10,PellSite.ROOF,-61,"ceiling"),"no stars on Nessa's ceiling");
+            for(var at:PellSite.route())h.assertFalse(PellLine.is(l.getBlockState(b.offset(at.getX(),-1,at.getZ()))),"the line scrubbed off at "+at);
+            h.assertTrue(is(l,b,-17,-1,-62,"lawn_dry")&&is(l,b,-8,-1,-54,"lawn")&&is(l,b,15,-1,-57,"concrete"),"dead grass where it lay on the lawn, the lawn either side of it, and the drive under it");
+            h.assertTrue(l.getBlockState(b.offset(-7,-2,-82)).isAir()&&l.getBlockState(b.offset(-7,-1,-86)).isAir()&&l.getBlockState(b.offset(-7,PellSite.DEEP+1,-90)).isAir()&&is(l,b,-7,PellSite.SHALLOW,-82,"pool_tile")&&PellWeek.rope(l,b).isEmpty(),"the pool drained to its tiles");
+            h.assertTrue(l.getBlockState(b.offset(PellSite.POOL_GATE)).getValue(PellBlock.STAGE)==2,"its gate open, the padlock gone");
+            h.assertTrue(nobody(l,b)&&PellVisit.car(l,b)==null,"nobody in it");
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.AFTER_EMPTY)&&heard.stream().anyMatch(t->t.startsWith("The last account is here.")),"told once what it is now, and that the account waits: "+heard);
+            h.assertTrue(Aftermath.returns(d,p.getUUID(),P)==1&&!Aftermath.canDeal(d,p.getUUID(),P)&&LabyrinthDealer.finishedFor(d,p.getUUID(),P),"it comes back once");
+            f.click(p,P,PellAftermath.SIGN);f.click(p,P,PellAftermath.MARKS);f.click(p,P,new BlockPos(-17,-1,-62));f.click(p,P,new BlockPos(15,-1,-57));f.click(p,P,new BlockPos(19,0,-80));
+        }).thenIdle(2).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.containsAll(List.of(PellTexts.SIGN,PellTexts.MARKS_EMPTY,PellTexts.LINE_GONE,PellTexts.LINE_GONE_HARD,PellTexts.LEFT)),"a hand on each gets what it is now: "+heard);
+            f.click(p,P,PellSite.NESSA_DOOR);f.click(p,P,PellSite.POOL_GATE);
+            h.assertTrue(PellSite.open(l,b,PellSite.NESSA_DOOR)&&l.getBlockState(b.offset(PellSite.POOL_GATE)).getValue(PellBlock.STAGE)==0,"its doors open and shut to a hand");
+            // The account, read here as at first light.
+            f.read(p,P,PellSite.SOURCE);f.read(p,P,PellSite.ENDING);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getBoolean("Completed")&&WitnessAccount.has(d,p.getUUID(),story)&&Keepsakes.carries(p,P,"CaneTip"),"the account under the mat resolves the house for them, here");
+            // A reader who has not had their ending.
+            var q=f.player("pell_after_new",P);f.at(q,P,.5,0,-44);
+        }).thenWaitUntil(()->h.assertTrue(PellAftermath.dressed(l,b)==PellAftermath.Kind.NONE&&PellPeople.find(l,b,PellPeople.JUNE)!=null&&PellVisit.step(b)>=PellVisit.GREET&&PellWeek.visit(b)==1,"brought back as it always was, for a reader on their first visit"))
+        .thenExecute(()->{
+            h.assertTrue(l.getBlockState(b.offset(PellAftermath.SIGN)).isAir()&&thing(l,b,-11,1,-63,MARKS,3)&&PellThing.is(l.getBlockState(b.offset(-13,0,-61)),BED)&&is(l,b,-10,PellSite.ROOF,-61,"ceiling_stars"),"the sign gone, the marks and the N, the bed and the stars back");
+            h.assertTrue(PellLine.is(l.getBlockState(b.offset(-17,-1,-62)))&&fitting(l,b,new BlockPos(PellSite.WATER_W,-1,PellSite.WATER_S),PellBlock.Kind.TARP),"the line round the lot, and the pool under its cover");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_after_out") public static void afterOutDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.542, the house after Tilly answered. A reader whose ending has landed with nothing to read. Eight halls later the house comes
+     * back lived in, with nobody home: everything where the family keeps it, the line gone over again and still wet, the pool open with
+     * its rope across it and its gate padlocked, June's door shut to a hand, and on the door frame one more pencil mark, higher, dated
+     * later, with an N. Told once; counted once; nothing resolved.
+     */
+    @GameTest(template="empty",batch="pell_after_kept",timeoutTicks=2400)
+    public static void afterTillyAnsweredTheHouseComesBackOnceLivedInWithOneMoreMark(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_after_kept",P);var l=f.level(P);var b=f.base(P);var d=f.data();
+        f.chunks.hold(l,PellPeople.area(b));f.at(p,P,.5,0,-44);
+        var story=WitnessAccount.Story.of("pell_house");
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&PellPeople.find(l,b,PellPeople.JUNE)!=null,"the house and its people"))
+        .thenExecute(()->{
+            ended(f,p,true);d.visit(p.getUUID(),P);
+            h.assertTrue(LabyrinthDealer.finishedFor(d,p.getUUID(),P),"the door they came by is only a passage now");
+            later(f,p);told(p);PellPeople.vacate(b);
+        }).thenWaitUntil(()->h.assertTrue(PellAftermath.dressed(l,b)==PellAftermath.Kind.KEPT,"the house as it stands after Tilly answered"))
+        .thenIdle(2).thenExecute(()->{
+            h.assertTrue(thing(l,b,-11,1,-63,MARKS_AFTER,1),"one more pencil mark on the door frame, higher, with an N");
+            h.assertTrue(PellThing.is(l.getBlockState(b.offset(-13,0,-61)),BED)&&PellThing.is(l.getBlockState(b.offset(-11,0,-69)),TABLE)&&PellThing.is(l.getBlockState(b.offset(9,0,-70)),FREEZER)&&is(l,b,-10,PellSite.ROOF,-61,"ceiling_stars"),"lived in: everything where it is kept");
+            var line=l.getBlockState(b.offset(-17,-1,-62));
+            h.assertTrue(PellLine.is(line)&&line.getValue(PellLine.STAGE)==PellLine.LAST,"the line gone over again, still wet");
+            h.assertTrue(l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&!PellWeek.rope(l,b).isEmpty()&&l.getBlockState(b.offset(PellSite.POOL_GATE)).getValue(PellBlock.STAGE)==1,"the pool open with its rope across it, the gate padlocked");
+            h.assertTrue(l.getBlockState(b.offset(PellAftermath.SIGN)).isAir()&&nobody(l,b),"no sign, and nobody home");
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.AFTER_KEPT)&&heard.stream().noneMatch(t->t.startsWith("The last account is here.")),"told once what it is now, with nothing to read: "+heard);
+            h.assertTrue(Aftermath.returns(d,p.getUUID(),P)==1&&!Aftermath.canDeal(d,p.getUUID(),P)&&LabyrinthDealer.finishedFor(d,p.getUUID(),P),"it comes back once");
+            f.click(p,P,PellAftermath.MARKS);f.click(p,P,PellSite.JUNE_DOOR);f.click(p,P,PellSite.POOL_GATE);f.click(p,P,new BlockPos(-17,-1,-62));
+        }).thenIdle(2).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.containsAll(List.of(PellTexts.MARKS_KEPT,PellTexts.JUNES_DOOR,PellTexts.POOL_GATE)),"a hand on the marks, June's door and the gate: "+heard);
+            h.assertTrue(heard.stream().anyMatch(t->t.endsWith("It is wet in places. It comes away on a finger.")),"and on the line, wet: "+heard);
+            h.assertTrue(!PellSite.open(l,b,PellSite.JUNE_DOOR)&&l.getBlockState(b.offset(PellSite.POOL_GATE)).getValue(PellBlock.STAGE)==1,"June's door and the gate stay shut");
+            f.click(p,P,PellSite.NESSA_DOOR);
+            h.assertTrue(PellSite.open(l,b,PellSite.NESSA_DOOR),"Nessa's door opens to a hand");
+            h.assertTrue(!WitnessAccount.has(d,p.getUUID(),story)&&!f.own(p,P).getBoolean("Completed")&&!PellHouse.dealable(d,p.getUUID()),"nothing resolved, and never dealt as it was");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_after_kept") public static void afterKeptDone(ServerLevel l){done();}
 }

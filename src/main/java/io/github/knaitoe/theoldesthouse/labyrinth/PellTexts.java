@@ -59,6 +59,9 @@ public final class PellTexts {
             case WARDROBE->(stage&2)==0?"The wardrobe.":"Clothes on hangers. Leaning in the corner, a cane like Tilly's, shorter.";
             case SWITCH->"Textured tape round the light switch, so it can be found by touch.";
             case MARKS->"Pencil heights up the door frame, dated, stopping. Under the last, a fresh one, the day's date, and a small N.";
+            // 0.4.542, the house's aftermath (PellAftermath).
+            case MARKS_AFTER->stage==0?MARKS_EMPTY:MARKS_KEPT;
+            case FOR_SALE->SIGN;
             // 0 the border; 1 where it was steamed off and put back.
             case BORDER->stage==0?"A wallpaper border of small animals along the top of the wall.":"Behind the bed the border has been steamed off and put back, not quite straight.";
             case MATTRESS->"A mattress on the floor. No bed.";
@@ -637,6 +640,22 @@ public final class PellTexts {
         "June knows best. She's been doing this a long time.",
         "Tilly's settled. Come on.",
     };
+
+    // ------------------------------------------------------------------------------------------------ 0.4.542, after (PellAftermath)
+    /** Coming back to the house in a later hall: after Tilly came out, and after she answered. */
+    public static final String AFTER_EMPTY="The house is empty, and the pool has been drained. On the front lawn, a sign: FOR SALE.",
+        AFTER_KEPT="The line has been painted again, all the way round, and it is still wet. Nobody is home.",
+        // A hand on the sign; on the ground where the line ran, grass or not; on the height marks, after either.
+        SIGN="FOR SALE, and a telephone number to ring.",
+        LINE_GONE="The paint has been scrubbed off. Where it lay on the grass, the grass is dead.",
+        LINE_GONE_HARD="The paint has been scrubbed off. You can still see where it went.",
+        MARKS_EMPTY="Pencil marks up the door frame, a date by each. Beside the last one a letter has been rubbed out.",
+        MARKS_KEPT="Pencil marks up the door frame, a date by each. Above the rest, a new one, dated later, with an N beside it.",
+        // In the empty house: Callum's circle, painted into the floor; anything else left behind, built in or fixed to the walls.
+        CIRCLE_EMPTY="A circle is painted on the floor. Somebody has tried to scrub it off.",
+        LEFT="Left with the house, and wiped clean.",
+        // The pool gate, its padlock gone.
+        GATE_OPEN="The padlock is gone. The gate swings.";
 
     /** Tilly's own name back to the calls, fainter the longer she holds out; near the end, nothing. */
     public static String[] tillyHolds(long held,int out){

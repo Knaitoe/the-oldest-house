@@ -32,13 +32,18 @@ public final class PellHouse {
      * ("Completed"), nor to somebody whose morning came after Tilly answered ("Ended", PellDawn).
      */
     public static boolean dealable(LabyrinthData d,UUID reader){var o=LiteraryVignettes.personal(d,reader,PLACE);return !o.getBoolean("Completed")&&!o.getBoolean("Ended");}
-    /** 0.4.524: the people are at the house, where the first visit puts them. */
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){PellPeople.ensure(p.serverLevel(),b);}
+    /** 0.4.524: the people are at the house, where the first visit puts them; 0.4.542, unless it stands, or is about to stand, as its
+     *  aftermath for everybody at it (PellAftermath), with nobody in it. */
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
+        var l=p.serverLevel();var here=readers(l,b);if(!here.contains(p))here.add(p);
+        if(PellAftermath.holds(l,b,here))PellPeople.household(b);else PellPeople.ensure(l,b);
+    }
     /** Every reader tick. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!own.getBoolean("WentIn")&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){own.putBoolean("WentIn",true);save(p,own);}
-        // The people are made here if they are missing; they look about on their own tick (PellPeople.serverTick).
-        PellPeople.ensure(p.serverLevel(),b);
+        // The people are made here if they are missing; they look about on their own tick (PellPeople.serverTick). 0.4.542: not while
+        // the house stands as its aftermath, whose tick runs there too.
+        if(PellAftermath.holds(p.serverLevel(),b,readers(p.serverLevel(),b)))PellPeople.household(b);else PellPeople.ensure(p.serverLevel(),b);
         // 0.4.537: an entry due in their journal goes in, in their own hand, the first moment it can.
         PellEntries.reader(p,own);
     }
@@ -52,6 +57,8 @@ public final class PellHouse {
 
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        // 0.4.542: the house as its aftermath answers a hand its own way (PellAftermath).
+        if(PellAftermath.click(p,b,rel,own))return true;
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(PellThing.is(st)){thing(p,l,b,b.offset(rel),st,own);return true;}
         // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
