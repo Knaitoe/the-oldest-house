@@ -26,6 +26,9 @@ final class SupperSocketProof {
             // The trailer's child scale puts the eye a hand above the tabletop, so the plate is watched from a little above and
             // south of it, close enough to look down onto it and clear of the chair rows (0.4.120).
             var at=GoatmanWoods.plate(seat(p)).add(base.getX(),base.getY(),base.getZ());p.teleportTo(level,at.x,base.getY()+1.45,at.z+.85,180,0);p.hasChangedDimension();p.connection.resetPosition();GoatmanVignette.enter(p);
+            // Since 0.4.558 the second reader in takes a cousin's place and begins where that cousin is, at the camp (run 1595: B's ray
+            // at the table then started out by the fire and met nothing). The plate is watched from here, so both are put back.
+            if(p.position().distanceToSqr(at.x,base.getY()+1.45,at.z+.85)>.01){p.teleportTo(level,at.x,base.getY()+1.45,at.z+.85,180,0);p.connection.resetPosition();}
             p.getInventory().setItem(0,ItemStack.EMPTY);p.getInventory().setItem(7,ItemStack.EMPTY);p.inventoryMenu.broadcastChanges();GoatmanWoods.served(level,base,seat(p),false);
         }
         var run=GoatmanVignette.run(data);run.putInt("Phase",GoatmanVignette.GATHERING);run.putInt("Clock",850);run.putBoolean("PlayerServes0464",true);run.putInt("Plated0464",0);run.putInt("EmptyPlates0465",0);run.putBoolean("MealReady0465",false);run.putBoolean("MealFrozen0465",false);

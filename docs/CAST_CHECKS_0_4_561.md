@@ -55,4 +55,15 @@ Two jobs failed on 0.4.560, both from its own changes:
 - **goatman-gameplay** (the wake cases): Harrigan dead in his chair turned his head to the reader who clicked him. The cast-wide turn
   left out the dead, but his body is alive to the game. Harrigan dead or in his casket no longer turns to anyone (`addresses`).
 
-Locally: the Second Person cases four of four, and the wake namespace with them.
+- **live-multiplayer** stopped at the trailer supper (phase 44): "the actual child's ray missed the native table". The proof puts
+  both readers at their plates and then lets them into the evening; since 0.4.558 the second reader in takes a cousin's place and
+  begins where that cousin is, at the camp, so the second client aimed at its plate from beside the fire and its ray met nothing. The
+  proof now puts both back at their plates once they are in (`SupperSocketProof.begin`). Earlier runs since 0.4.558 had stopped
+  before the supper and never reached it.
+
+The phases after the supper seat the first reader in their canoe in the culvert's mouth before Tess has come, and wait for her to be
+in it. Before 0.4.560 she was put straight into the canoe; now she has to get there. A new lake house case,
+`tessSwimsOutToACanoeAlreadyUnderTheRoof`, seats a reader there the same way: she comes down the dock, steps down from its end,
+swims the lake and the open trough and climbs in from beside the canoe, and the cast checks hold the whole way.
+
+Locally: the Second Person cases four of four, the wake namespace with them, and the new lake house case.
