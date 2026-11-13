@@ -98,6 +98,9 @@ public final class MotherEntity extends PathfinderMob {
                 : Math.min(corruption(), shownCorruption + 0.006F);
     }
 
+    /** Carrying the dog up to the gallery, she is not shoved off her stair by the den's strays, or by anyone. */
+    @Override public boolean isPushable() { return !isCarrying() && super.isPushable(); }
+
     @Override public boolean removeWhenFarAway(double distance) { return false; }
     @Override public boolean canBeLeashed() { return false; }
 

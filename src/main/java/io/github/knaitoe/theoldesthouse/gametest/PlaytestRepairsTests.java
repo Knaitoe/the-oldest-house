@@ -62,27 +62,31 @@ public final class PlaytestRepairsTests {
         if(den!=null){var scene=server.getLevel(HouseDimensions.INTERIOR);if(scene!=null)scene.getEntitiesOfClass(Entity.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN),e->e instanceof MotherEntity||e instanceof TamableAnimal||e instanceof net.minecraft.world.entity.decoration.ItemFrame).forEach(Entity::discard);}
         if(oldHouse!=null){server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);server.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);}owner=null;mother=null;dog=null;den=null;
     }
-    @GameTest(template="empty",batch="mother_stairs",timeoutTicks=750) public static void motherPhysicallyClimbsWhileCarryingTheSameDog(GameTestHelper h){
+    // She walks at her own slow pace (about 0.6 blocks a second), so the climb takes some 450 ticks; the limit leaves room.
+    @GameTest(template="empty",batch="mother_stairs",timeoutTicks=1200) public static void motherPhysicallyClimbsWhileCarryingTheSameDog(GameTestHelper h){
         var server=h.getLevel().getServer();var l=HouseTestLevel.get(server);oldHouse=HouseSavedData.get(server);oldData=LabyrinthData.get(server);oldMother=MotherCollection.get(server);
         var origin=new BlockPos(61000,80,61000);var house=new HouseSavedData();house.markSpawned(origin);server.overworld().getDataStorage().set("the_oldest_house",house);var data=new LabyrinthData();data.setBuilt(LabyrinthBuilder.VERSION,origin);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",data);var collection=new MotherCollection();server.overworld().getDataStorage().set("the_oldest_house_mother",collection);
         den=LabyrinthPlaces.base(origin,LabyrinthPlace.MOTHER_DEN);MotherOfStrays.build(server,l,den);IndianLakeRooms.keepLoaded(l,den,LabyrinthPlace.MOTHER_DEN);
         owner=h.makeMockServerPlayerInLevel();owner.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);owner.teleportTo(l,den.getX()+.5,den.getY(),den.getZ()-8.5,180,0);owner.hasChangedDimension();
         // Use the actual constructed keeper and dog after their native entity chunks have loaded.
         final UUID[] id={null};final double[] last={den.getY()};final boolean[] halfway={false};
+        // The tick each stage of the climb began (foot of the stair, its top, the ledge), for the failure message.
+        final int[] tick={0};final int[] stageAt={-1,-1,-1};
         h.runAfterDelay(20,()->{
             var keepers=l.getEntitiesOfClass(MotherEntity.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN));var dogs=l.getEntitiesOfClass(MotherPekingese.class,IndianLakeRooms.bounds(den,LabyrinthPlace.MOTHER_DEN),e->e.getTags().contains("the_oldest_house_bandaged_dog"));
             h.assertTrue(keepers.size()==1&&dogs.size()==1,"the native den has one keeper and one original bandaged dog");mother=keepers.getFirst();dog=dogs.getFirst();id[0]=dog.getUUID();last[0]=mother.getY();
             h.assertTrue(MotherOfStrays.inDen(owner),"the actual owner is present in the den");collection.beginDogThreat(owner.getUUID());collection.advance(600,false,true);
         });
         h.onEachTick(()->{
-            IndianLakeRooms.keepLoaded(l,den,LabyrinthPlace.MOTHER_DEN);owner.setDeltaMovement(Vec3.ZERO);
+            IndianLakeRooms.keepLoaded(l,den,LabyrinthPlace.MOTHER_DEN);owner.setDeltaMovement(Vec3.ZERO);tick[0]++;
             if(mother==null)return;
+            if(stageAt[mother.galleryStep()]<0)stageAt[mother.galleryStep()]=tick[0];
             h.assertTrue(mother.getY()-last[0]<1.6,"the climb uses physical navigation rather than jumping to the gallery");last[0]=mother.getY();halfway[0]|=mother.getY()>den.getY()+3&&mother.getY()<den.getY()+8;
             h.assertTrue(dog.getUUID().equals(id[0]),"carrying keeps the original living dog's UUID");
         });
         h.succeedWhen(()->{
             var path=mother==null?null:mother.getNavigation().getPath();
-            h.assertTrue(mother!=null&&collection.dogAtLedge()&&mother.getY()>den.getY()+8.6,"the real Mother reaches the gallery before the intervention clock starts: "+(mother==null?"loading":mother.position()+" step="+mother.galleryStep()+" ticks="+collection.dogThreatTicks()+" active="+MotherOfStrays.activeDogThreat(l)+" path="+path+" end="+(path==null?null:path.getEndNode())+" target="+(path==null?null:path.getTarget())+" reach="+(path!=null&&path.canReach())+" foot="+l.getBlockState(mother.blockPosition())+" below="+l.getBlockState(mother.blockPosition().below())));
+            h.assertTrue(mother!=null&&collection.dogAtLedge()&&mother.getY()>den.getY()+8.6,"the real Mother reaches the gallery before the intervention clock starts: "+(mother==null?"loading":mother.position()+" step="+mother.galleryStep()+" stages began at "+java.util.Arrays.toString(stageAt)+" of "+tick[0]+" ticks="+collection.dogThreatTicks()+" active="+MotherOfStrays.activeDogThreat(l)+" path="+path+" end="+(path==null?null:path.getEndNode())+" target="+(path==null?null:path.getTarget())+" reach="+(path!=null&&path.canReach())+" foot="+l.getBlockState(mother.blockPosition())+" below="+l.getBlockState(mother.blockPosition().below())));
             h.assertTrue(halfway[0],"the actor passes through intermediate stair heights");h.assertTrue(dog.position().distanceToSqr(mother.position())<3,"the same dog follows her hands continuously");
             h.assertTrue(collection.dogLedgeTicks()<40,"navigation does not spend the final rescue window");
         });
