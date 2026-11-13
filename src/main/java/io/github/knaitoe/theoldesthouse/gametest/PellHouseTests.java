@@ -137,7 +137,8 @@ public final class PellHouseTests {
             h.assertTrue(text.contains("June Pell")&&text.contains("Gail Mercer"),"the placement notice");
             // June may be she and her; Tilly is a sister. The elder child, who is the reader, is neither.
             for(String word:List.of(" he "," his "," him ","brother"," boy"))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the notice does not say what the elder child is: "+word);
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"a place still being built is never dealt");
+            // 0.4.541: it can be finished, so it is dealt (once to each reader: PellHouse.dealable).
+            h.assertTrue(PellHouse.dealable(f.data(),p.getUUID()),"a house that can be finished is dealt to a reader who has not finished it");
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_built") public static void builtDone(ServerLevel l){done();}
@@ -2493,4 +2494,128 @@ public final class PellHouseTests {
         .thenSucceed();
     }
     @AfterBatch(batch="pell_freezer_june") public static void freezerJuneDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.541, first light
+    /** Where a reader stands, from the house's base. */
+    private static Vec3 where(ServerPlayer p,BlockPos b){return p.position().subtract(b.getX(),b.getY(),b.getZ());}
+    private static boolean standing(ServerPlayer p,BlockPos b,Vec3 at,double within){var r=where(p,b);return Math.hypot(r.x-at.x,r.z-at.z)<within;}
+    /** Two readers facing the street, level. */
+    private static void toTheStreet(ServerPlayer... readers){for(var r:readers){r.setYRot(0);r.setXRot(0);r.setYHeadRot(0);}}
+    /** A book's words, its pages run together. */
+    private static String words(net.minecraft.world.item.ItemStack book){
+        var content=book.get(DataComponents.WRITTEN_BOOK_CONTENT);if(content==null)return "";
+        var out=new StringBuilder();for(var page:content.pages())out.append(page.raw().getString()).append(' ');
+        return out.toString().trim();
+    }
+    /**
+     * 0.4.541, first light after Tilly came out (docs/PELL_HOUSE_DAWN_0_4_541.md). Two readers who have had the first two visits; the
+     * last night locked up, and Tilly brought out through the line with her own name by the first of them, her hand in theirs, in the
+     * front garden by the curb; the other reader on the path; both facing the street. The rest of the night goes on to first light, and
+     * Gail's car comes up the street and pulls in at the curb; Gail comes to the foot of the path. Callum is on the front step with his
+     * shoes on and Tilly at Gail's side, each the first moment nobody sees them; Gail asks if it is Tilly, and she says it is. Each
+     * reader's account is ready under the mat. The first reads the notice, then the account: the house is resolved for them, Tilly's cane
+     * tip is theirs, and they are never dealt the house again. The account says what that reader did, and ends in the street.
+     */
+    @GameTest(template="empty",batch="pell_dawn_out",timeoutTicks=6000)
+    public static void atFirstLightAfterTillyCameOutGailsCarComesAndTheAccountEndsInTheStreet(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_dawn_brought",P);var q=f.player("pell_dawn_there",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var story=WitnessAccount.Story.of("pell_house");
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);
+            // The first reader at the curb with Tilly's hand in theirs, the other on the path; both facing the street.
+            f.at(p,P,PellDawn.TILLY_BY_GAIL.x,0,PellDawn.TILLY_BY_GAIL.z);f.at(q,P,1.5,0,-50.5);toTheStreet(p,q);
+            PellRite.outWith(l,b,p,List.of(p,q));
+            h.assertTrue(PellRite.step(b)==PellRite.OUT&&f.own(p,P).getBoolean("GotTillyOut")&&p.getUUID().equals(PellRite.leader(b)),"Tilly out, brought by the first reader, her hand in theirs");
+            h.assertTrue(PellDawn.dawn(b)==PellDawn.NOT_YET,"not light yet");
+            PellDawn.nearlyLight(b);told(p);told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.dawn(b)>=PellDawn.COMING,"first light: a car comes up the street"))
+        .thenExecute(()->{var c=PellDawn.car(l,b);h.assertTrue(c!=null&&c.position().z>b.getZ()-35,"the car from the end of the street: "+(c==null?"none":c.position().subtract(b.getX(),b.getY(),b.getZ())));})
+        .thenWaitUntil(()->h.assertTrue(PellDawn.dawn(b)==PellDawn.COME,"the car pulls in at the curb: "+(PellDawn.car(l,b)==null?"none":PellDawn.car(l,b).position().subtract(b.getX(),b.getY(),b.getZ()))))
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Dawned")&&f.own(q,P).getBoolean("Dawned"),"the morning reaches each reader it is for"))
+        .thenExecute(()->{
+            var c=PellDawn.car(l,b);
+            h.assertTrue(c!=null&&Math.hypot(c.getX()-(b.getX()+PellVisit.CAR.x),c.getZ()-(b.getZ()+PellVisit.CAR.z))<.3,"Gail's car at the curb");
+            who(h,l,b,PellPeople.GAIL);
+            h.assertTrue(told(p).contains(PellTexts.DAWN_OUT),"the reader is told the car is at the curb");
+            for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getBoolean("Ready")&&own.getBoolean("Dawned")&&own.getBoolean("SawCarCome"),"the account is ready for each reader");}
+            h.assertTrue(f.own(p,P).getString("Outcome").equals("brought_tilly_out_with_her_name"),"the first brought her out: "+f.own(p,P).getString("Outcome"));
+            h.assertTrue(f.own(q,P).getString("Outcome").equals("saw_tilly_come_out_with_her_name"),"the other saw her come out: "+f.own(q,P).getString("Outcome"));
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.callumStepped(b)&&PellDawn.tillyWithGail(b),"Callum on the step and Tilly with Gail, the first moment nobody sees them"))
+        .thenExecute(()->{
+            var c=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(c.gesture()==PellPeople.STEP&&"pell_callum_shoes".equals(PellPeople.dressed(c.phase(),c.gesture()))&&at(c,b,PellDawn.CALLUM_STEP.x,PellDawn.CALLUM_STEP.z,.3),"Callum sitting on the front step, his shoes on");
+            h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellDawn.TILLY_BY_GAIL.x,PellDawn.TILLY_BY_GAIL.z,2.6)&&PellRite.leader(b)==null,"Tilly at Gail's side, her hand let go");
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.gailSaid(b)>=3,"Gail asks if it is Tilly, and she says it is"))
+        .thenExecute(()->{
+            // The first reader up the path to the step.
+            f.at(p,P,.5,0,-54.5);told(p);LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.stream().anyMatch(List.of(PellTexts.CALLUM_STEP_HAND)::contains),"a hand on Callum on the step: "+heard);
+            // The notice in the letterbox, then the account under the mat.
+            f.read(p,P,PellSite.SOURCE);f.read(p,P,PellSite.ENDING);
+        }).thenIdle(1).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("Completed")&&WitnessAccount.has(f.data(),p.getUUID(),story),"the house resolved for the reader who read it");
+            h.assertTrue(Keepsakes.carries(p,P,"CaneTip"),"Tilly's cane tip is theirs");
+            h.assertTrue(!PellHouse.dealable(f.data(),p.getUUID()),"never dealt the house again");
+            h.assertTrue(PellHouse.dealable(f.data(),q.getUUID())&&!WitnessAccount.has(f.data(),q.getUUID(),story),"the other, whose account is unread, has resolved nothing yet");
+            var text=words(PellTexts.account(p.getGameProfile().getName(),own));
+            h.assertTrue(text.contains("I led her across the grass to the gap in the line")&&text.contains("Callum was sitting on the front step with his shoes on")
+                &&text.contains("the spare rubber tip from her cane")&&text.endsWith("Behind me nobody was calling any name at all."),"the account: what the reader did, and the street: "+text);
+            h.assertTrue(!text.contains("she was still sitting there")&&!text.contains("still sitting by the freezer"),"nothing about the freezer that did not happen");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_dawn_out") public static void dawnOutDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.541, first light after Tilly answered. Two readers who have had the first two visits; the last night locked up, and Tilly
+     * answered, back in Nessa's bed with June beside her. Both readers on the front path, facing the street. At first light Gail's car
+     * comes; each reader has their ending, with nothing to read and nothing resolved. Tilly is at Nessa's window waving, June behind her,
+     * the first moment nobody sees them. Gail says her piece. The first reader goes to her: into the car, a beat to look back at the
+     * window, then the black, and set down at the House's door. The other does not go; when Gail has waited, the horn, and they are set
+     * down too. Neither is dealt the house again, and Gail and her car go.
+     */
+    @GameTest(template="empty",batch="pell_dawn_kept",timeoutTicks=6000)
+    public static void atFirstLightAfterTillyAnsweredTheCarTakesTheReadersAndTillyWavesFromTheWindow(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_dawn_goes",P);var q=f.player("pell_dawn_stays",P);var l=f.level(P);var b=f.base(P);
+        for(var r:new ServerPlayer[]{p,q}){keep(f,r,"FirstVisit");keep(f,r,"SecondVisit");}
+        f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        var story=WitnessAccount.Story.of("pell_house");
+        h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
+        .thenExecute(()->{
+            PellLastNight.lockedUp(l,b);PellRite.kept(l,b);
+            h.assertTrue(PellRite.step(b)==PellRite.KEPT&&PellVisit.asleep(b,PellPeople.TILLY),"Tilly answered, and in Nessa's bed again");
+            f.at(p,P,.5,0,-50.5);f.at(q,P,1.5,0,-52.5);toTheStreet(p,q);
+            PellDawn.nearlyLight(b);told(p);told(q);
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.dawn(b)==PellDawn.COME,"first light: Gail's car at the curb"))
+        .thenWaitUntil(()->h.assertTrue(PellDawn.atWindow(b),"Tilly at Nessa's window, the first moment nobody sees it"))
+        .thenExecute(()->{
+            var t=who(h,l,b,PellPeople.TILLY);var j=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(t.gesture()==PellPeople.WAVE&&at(t,b,PellDawn.TILLY_WINDOW.x,PellDawn.TILLY_WINDOW.z,.3)&&!PellVisit.asleep(b,PellPeople.TILLY),"Tilly up at the window, waving");
+            h.assertTrue(at(j,b,PellDawn.JUNE_WINDOW.x,PellDawn.JUNE_WINDOW.z,.3)&&j.gesture()==PellPeople.ROBE,"June behind her in her robe");
+            for(var r:new ServerPlayer[]{p,q}){var own=f.own(r,P);h.assertTrue(own.getBoolean("Ended")&&own.getBoolean("TillyStayed")&&!own.getBoolean("Ready")&&own.getString("Outcome").equals("tilly_answered"),"each reader has their ending, with nothing to read: "+own.getString("Outcome"));}
+            h.assertTrue(told(p).contains(PellTexts.DAWN_ANSWERED)&&!PellHouse.dealable(f.data(),p.getUUID()),"told Gail is waiting; never dealt the house again");
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.gailSaid(b)>=1,"Gail at the foot of the path says her piece"))
+        .thenExecute(()->{var g=who(h,l,b,PellPeople.GAIL);f.at(p,P,g.getX()-b.getX()+1,0,g.getZ()-b.getZ());told(p);})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(PellDawn.inCar(b,p.getUUID())&&!PellDawn.inCar(b,q.getUUID()),"the reader who went to Gail is in the car, the other not");
+            h.assertTrue(told(p).contains(PellTexts.TILLY_WAVES)&&f.own(p,P).getBoolean("SawTillyWave"),"and sees Tilly wave from the window");
+        }).thenIdle(PellDawn.LOOK_BACK+30).thenExecute(()->{
+            h.assertTrue(standing(p,b,PellDawn.SET_DOWN,.4)&&f.own(p,P).getBoolean("SetDown")&&told(p).contains(PellTexts.SET_DOWN),"set down at the House's door: "+where(p,b));
+            h.assertTrue(PellDawn.dawn(b)==PellDawn.COME,"the car waits for the other");
+            told(q);PellDawn.waitedOut(b);
+        }).thenIdle(2).thenExecute(()->h.assertTrue(PellDawn.inCar(b,q.getUUID())&&told(q).contains(PellTexts.CAR_HORN),"Gail has waited: the horn, for the one who did not come"))
+        .thenIdle(PellDawn.LOOK_BACK+30).thenExecute(()->{
+            h.assertTrue(standing(q,b,PellDawn.SET_DOWN,.4)&&f.own(q,P).getBoolean("SetDown"),"set down at the House's door too: "+where(q,b));
+            h.assertTrue(PellDawn.dawn(b)==PellDawn.GONE,"everybody gone down the street");
+            for(var r:new ServerPlayer[]{p,q})h.assertTrue(!PellHouse.dealable(f.data(),r.getUUID())&&!WitnessAccount.has(f.data(),r.getUUID(),story)&&!f.own(r,P).getBoolean("Completed")&&!Keepsakes.carries(r,P,"CaneTip"),"never dealt again, and nothing resolved");
+            toTheStreet(p,q);
+        }).thenWaitUntil(()->h.assertTrue(PellDawn.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"Gail and her car go, the first moment nobody sees them"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_dawn_kept") public static void dawnKeptDone(ServerLevel l){done();}
 }

@@ -26,8 +26,12 @@ public final class PellHouse {
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
 
-    /** Not until the house can be finished: it is being built in slices. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /**
+     * 0.4.541: the house can be finished, so it is dealt; once to each reader. "Every ending is permanent. There is no second attempt,
+     * and the vignette is never dealt again to a reader whose ending has landed": not to somebody whose account has been read
+     * ("Completed"), nor to somebody whose morning came after Tilly answered ("Ended", PellDawn).
+     */
+    public static boolean dealable(LabyrinthData d,UUID reader){var o=LiteraryVignettes.personal(d,reader,PLACE);return !o.getBoolean("Completed")&&!o.getBoolean("Ended");}
     /** 0.4.524: the people are at the house, where the first visit puts them. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){PellPeople.ensure(p.serverLevel(),b);}
     /** Every reader tick. */

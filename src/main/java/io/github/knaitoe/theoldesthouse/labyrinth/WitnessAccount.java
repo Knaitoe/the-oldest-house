@@ -127,7 +127,9 @@ public final class WitnessAccount {
         BLACK_CITY("the_black_city","The city on the ice","understanding","I followed an empty camp's people up a pass to a city of carved stone, read its walls in order down a turning ramp, and outran what came up the tunnel. From the top of the pass I looked back."),
         KEPT("the_kept","The kept","release","I walked with four people a machine had kept, to food it had promised them that could not be opened. One at a time I shut my eyes and opened their doors, and it took my mouth for it."),
         LAST_ORDERS("last_orders","Last orders","survival","I played a stranger for everything on his table and won, and I left it there. When I walked out he was still looking at the seat."),
-        BIKE_NIGHT("bike_night","Bike night","survival","I got out of a park on a bike with three coming after me, through a town and up into its graveyard. Where the hill gave out under the stones I rode what was left of it, and came out by the back gate.");
+        BIKE_NIGHT("bike_night","Bike night","survival","I got out of a park on a bike with three coming after me, through a town and up into its graveyard. Where the hill gave out under the stones I rode what was left of it, and came out by the back gate."),
+        // 0.4.541 (docs/PELL_HOUSE_DAWN_0_4_541.md): resolved by the account, ready only once Tilly has come out with her own name.
+        PELL_HOUSE("pell_house","The Pell house","survival","I stayed three times in a house where a woman had ringed the lot with paint. On the last night my sister kept her own name in the water and came out through a gap in the line, and at first light a car came to the curb.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

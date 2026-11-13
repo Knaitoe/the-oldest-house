@@ -22,8 +22,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.410, the Kept: 85 / 64 / 62.
  0.4.416, Last orders: 86 / 65 / 63.
  0.4.508, Bike night (a source with no first paper, so not among the literary places counted here): 87 / 66 / 63.
+ 0.4.541, the Pell house: 88 / 66 / 64.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=87,REQUIRED=66,LITERARY=63;
+    static final int SOURCES=88,REQUIRED=66,LITERARY=64;
 }

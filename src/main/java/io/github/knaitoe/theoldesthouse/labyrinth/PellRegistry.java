@@ -72,6 +72,8 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> SCRUB=ITEMS.register("pell_scrub",()->new PellScrubItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.540: June's lanyard, from her robe's pocket on the last night: three keys, one of them the freezer's (PellFreezer). */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANYARD=ITEMS.register("pell_lanyard",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.541: Tilly's spare cane tip, the keepsake of the morning she came out (LiteraryVignettes.finishReward, Keepsakes.caneTip). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> CANE_TIP=ITEMS.register("pell_cane_tip",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */
@@ -84,7 +86,9 @@ public final class PellRegistry {
         // 0.4.536: the shed's deck taking a tape, and the woman's voice on the tapes (docs/PELL_HOUSE_TAPES_0_4_536.md).
         TAPE_PLAY=sound("pell.tape_play"),TAPE_VOICE=sound("pell.tape_voice"),
         // 0.4.538: the scrubbing brush on the line (docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md).
-        SCRUBBING=sound("pell.scrub");
+        SCRUBBING=sound("pell.scrub"),
+        // 0.4.541: Gail's car up the street at first light, pulling in at the curb (docs/PELL_HOUSE_DAWN_0_4_541.md).
+        CAR_COME=sound("pell.car_come");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }

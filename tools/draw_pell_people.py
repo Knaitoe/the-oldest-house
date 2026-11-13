@@ -44,7 +44,7 @@ from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
          'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife',
-         'pell_scrub', 'pell_lanyard')
+         'pell_scrub', 'pell_lanyard', 'pell_cane_tip')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
@@ -53,7 +53,7 @@ NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.
          'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver',
          'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope',
          'item.the_oldest_house.pell_knife': 'Kitchen Knife', 'item.the_oldest_house.pell_scrub': 'Scrubbing Brush',
-         'item.the_oldest_house.pell_lanyard': 'Lanyard'}
+         'item.the_oldest_house.pell_lanyard': 'Lanyard', 'item.the_oldest_house.pell_cane_tip': 'Cane Tip'}
 
 
 def blank():
@@ -465,6 +465,30 @@ def lanyard():
     return im
 
 
+def cane_tip():
+    """0.4.541: Tilly's spare cane tip, the keepsake: a small rubber cap that fits over the end of the cane, seen a little from above.
+    Its open top and the dark of the socket inside it; its sides lit from the upper left; ridges round its foot; and the foot worn flat
+    and pale on one side, where a tip is dragged along the ground ahead of whoever uses it."""
+    im = blank()
+    # The rim of the open top, and the socket inside.
+    fill(im, 6, 2, 10, 3, '#6a6a70')
+    dot(im, 5, 3, '#5a5a60'); fill(im, 6, 3, 10, 4, '#141416'); dot(im, 10, 3, '#38383d')
+    fill(im, 5, 4, 11, 5, '#4a4a50'); fill(im, 6, 4, 10, 5, '#56565c')
+    # The sides, from the lit edge to the shadowed one.
+    for x, colour in zip(range(5, 11), ('#5c5c62', '#4c4c52', '#434349', '#3b3b41', '#333339', '#28282c')):
+        fill(im, x, 5, x + 1, 12, colour)
+    for y in range(5, 10):
+        dot(im, 6, y, '#68686f')
+    dot(im, 9, 7, '#202024')
+    # The foot: wider, ridged, and worn flat and pale on the side it drags on.
+    fill(im, 4, 12, 12, 13, '#46464c')
+    for x in range(4, 12, 2):
+        dot(im, x, 12, '#2a2a2e')
+    fill(im, 4, 13, 12, 14, '#2e2e33')
+    fill(im, 9, 12, 12, 13, '#5e5b56'); fill(im, 8, 13, 12, 14, '#77736c')
+    return im
+
+
 SCRUB_TIP, SCRUB_END = (13.4, 2.6), (2.6, 13.4)
 
 
@@ -682,14 +706,14 @@ def models():
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
             'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
             'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld'),
-            'pell_lanyard': flat('pell_lanyard')}
+            'pell_lanyard': flat('pell_lanyard'), 'pell_cane_tip': flat('pell_cane_tip')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
-              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub(), 'pell_lanyard': lanyard()}
+              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub(), 'pell_lanyard': lanyard(), 'pell_cane_tip': cane_tip()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
     # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.

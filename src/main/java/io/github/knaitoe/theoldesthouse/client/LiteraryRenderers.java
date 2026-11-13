@@ -411,7 +411,8 @@ public final class LiteraryRenderers {
                 // (the hips two pixels up, so the legs lie on it), his body upright on them. Eating, what he was given is held in his
                 // left hand in his lap and his right goes to his mouth and back, his head bowed to it; after, both hands in his lap.
                 // His head keeps its own pitch (he looks up when he says his name), only bowed further while he eats.
-                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.EATING,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.SITTING->{
+                // 0.4.541: at first light, sat the same way at the end of the path by the front door, his shoes on (PellDawn).
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.EATING,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.SITTING,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.STEP->{
                     float hips=22;
                     leftLeg.y=rightLeg.y=hips;leftLeg.z=rightLeg.z=0;leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftLeg.yRot=-.12F;rightLeg.yRot=.12F;leftLeg.zRot=rightLeg.zRot=0;
                     body.xRot=0;body.y=hips-12;body.z=0;
@@ -442,6 +443,11 @@ public final class LiteraryRenderers {
                 // swings as she walks); and Tilly with her right hand up and out ahead of her in the hand she holds.
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LEADS,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LEADS_SWIM->{leftArm.xRot=.5F;leftArm.yRot=0;leftArm.zRot=-.12F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LED,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.JUNE_LED->{rightArm.xRot=-.85F+net.minecraft.util.Mth.sin(age*.09F)*.04F;rightArm.yRot=-.1F;rightArm.zRot=0;}
+                // 0.4.541: Tilly at Nessa's window at first light, her right hand up by her face, waving at the street; her left at her side.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.WAVE->{
+                    rightArm.xRot=-2.55F;rightArm.yRot=0;rightArm.zRot=-.18F+net.minecraft.util.Mth.sin(age*.32F)*.32F;
+                    leftArm.xRot=0;leftArm.yRot=0;leftArm.zRot=-.05F;
+                }
                 default->{}
             }
             hat.copyFrom(head);

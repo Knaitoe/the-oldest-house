@@ -122,6 +122,7 @@ public final class Keepsakes {
             case "elk_fan/Tooth" -> "Heavier than it looks. In your other hand it keeps your feet under you.";
             case "elk_fan/Lightbulb" -> "It still lights for a little while, if you ask it.";
             case "bike_night/Bike" -> "Yours now. Away from the House it is under you whenever you want it, and it goes as it went that night.";
+            case "pell_house/CaneTip" -> "Tilly's spare, worn flat on one side. Carried, you hear a cane find the next door before you do.";
             case "holy_rabbit/Knife" -> "Father wasted nothing he killed.";
             case "holy_rabbit/RabbitFoot" -> "Carried, things fall your way a little more often.";
             case "mapping_interior/Bead" -> "One bead, found where he walked. Kept close, it watches over yours.";
@@ -166,6 +167,7 @@ public final class Keepsakes {
         if (p.tickCount % 20 == 0) herd(p);
         still(p);
         if (p.tickCount % 20 == 0) { leaves(p);photograph(p); }
+        caneTip(p);
     }
     /** The elk's weight while the tooth is in the off hand. */
     public static boolean tooth(ServerPlayer p) {
@@ -344,6 +346,45 @@ public final class Keepsakes {
         var door = leafWay(p);
         if (door != null) p.serverLevel().sendParticles(p, net.minecraft.core.particles.ParticleTypes.WHITE_ASH, true, door.getX() + .5, door.getY() + 1.1, door.getZ() + .5, 10, .2, .35, .2, .01);
     }
+
+    // ------------------------------------------------------------------
+    // Tilly's cane tip (0.4.541)
+    // ------------------------------------------------------------------
+
+    /** Where a reader carrying it is (the hall, by the door that leads on), since when, and how many taps they have had there. */
+    private record Tapped(long hall, long since, int taps) {}
+    private static final Map<UUID, Tapped> TAPPED = new HashMap<>();
+    /** How long after coming into a hall the first tap comes, and how many taps there are. */
+    public static final int CANE_BEAT = 20, CANE_TAPS = 2;
+    /** Carried in an ordinary hall: the door there that leads on (not the way back), or null. */
+    public static BlockPos caneWay(ServerPlayer p) {
+        if (!carries(p, LabyrinthPlace.PELL_HOUSE, "CaneTip")) return null;
+        if (!p.level().dimension().equals(HouseDimensions.INTERIOR)) return null;
+        var origin = LabyrinthData.get(p.server).builtOrigin();
+        if (origin == null) return null;
+        var place = LabyrinthPlaces.placeAt(origin, p.blockPosition());
+        if (place == null || !LabyrinthPacing.ordinary(place)) return null;
+        var base = LabyrinthPlaces.base(origin, place);
+        if (base == null) return null;
+        for (var door : place.doors()) if (!LabyrinthData.RETURN.equals(door.destination())) return base.offset(door.rel());
+        return null;
+    }
+    /** A beat after a reader carrying it comes into an ordinary hall, a cane taps twice at the door that leads on, for them alone. */
+    static void caneTip(ServerPlayer p) {
+        var door = caneWay(p);
+        if (door == null) { TAPPED.remove(p.getUUID()); return; }
+        long now = p.serverLevel().getGameTime(), hall = door.asLong();
+        var t = TAPPED.get(p.getUUID());
+        if (t == null || t.hall() != hall) { TAPPED.put(p.getUUID(), new Tapped(hall, now, 0)); return; }
+        if (t.taps() >= CANE_TAPS || now - t.since() < CANE_BEAT) return;
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(
+                net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.BAMBOO_WOOD_HIT),
+                net.minecraft.sounds.SoundSource.PLAYERS, door.getX() + .5, door.getY() + .1, door.getZ() + .5, .9F, t.taps() == 0 ? 1.7F : 1.55F,
+                p.getRandom().nextLong()));
+        TAPPED.put(p.getUUID(), new Tapped(hall, t.since(), t.taps() + 1));
+    }
+    /** For tests: how many taps a reader has had in the hall they are in. */
+    public static int caneTaps(ServerPlayer p) { var t = TAPPED.get(p.getUUID()); return t == null ? 0 : t.taps(); }
 
     // ------------------------------------------------------------------
     // The photograph with the vulture (0.4.198)
