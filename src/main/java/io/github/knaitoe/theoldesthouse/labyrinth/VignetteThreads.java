@@ -78,7 +78,16 @@ public final class VignetteThreads {
     public static boolean partway(CompoundTag thread,UUID member){return "partway".equals(thread.getCompound("Members").getCompound(member.toString()).getString("Joined"));}
     public static String name(CompoundTag thread,UUID member){return thread.getCompound("Members").getCompound(member.toString()).getString("Name");}
 
-    private static boolean present(ServerPlayer p,LabyrinthPlace place){return p.isAlive()&&!p.isSpectator()&&IndianLakeRooms.inside(p,place);}
+    private static boolean present(ServerPlayer p,LabyrinthPlace place){return where(p,place)>=0;}
+    /**
+     * 0.4.547: which copy of a scene a living reader is in (SceneInstances): 0 for the original or a scene without copies, -1 for none.
+     * A story is shared only within one copy: readers in two houses, towns or lakes are never one another's company.
+     */
+    private static int where(ServerPlayer p,LabyrinthPlace place){
+        if(!p.isAlive()||p.isSpectator())return -1;
+        if(SceneInstances.copyable(place))return SceneInstances.at(p.server,place,p.level().dimension(),p.position());
+        return IndianLakeRooms.inside(p,place)?0:-1;
+    }
     private static List<ServerPlayer> presentMembers(MinecraftServer server,CompoundTag thread,LabyrinthPlace place,@Nullable UUID except){
         var out=new ArrayList<ServerPlayer>();
         for(var id:members(thread)){if(id.equals(except))continue;var p=server.getPlayerList().getPlayer(id);if(p!=null&&present(p,place))out.add(p);}
@@ -93,9 +102,10 @@ public final class VignetteThreads {
     public static void arrived(ServerPlayer p,LabyrinthPlace place){
         if(p.isSpectator()||!p.isAlive()||!SharedVignettes.followable(place)||SharedVignettes.afresh(place))return;
         var d=LabyrinthData.get(p.server);var all=all(d,place);var threads=all.getCompound("Threads");var me=p.getUUID();
-        var id=find(threads,me);boolean joining=id==null;
+        var id=find(threads,me);boolean joining=id==null;int copy=where(p,place);
+        // 0.4.547: only the thread of somebody in the same copy as this reader (where that is known).
         if(joining)for(var other:p.server.getPlayerList().getPlayers()){
-            if(other==p||!present(other,place))continue;var theirs=find(threads,other.getUUID());
+            if(other==p||(copy>=0?where(other,place)!=copy:!present(other,place)))continue;var theirs=find(threads,other.getUUID());
             if(theirs!=null&&!threads.getCompound(theirs).getBoolean("Ended")){id=theirs;break;}
         }
         if(id==null){int next=all.getInt("Next");id=Integer.toString(next);all.putInt("Next",next+1);var fresh=new CompoundTag();fresh.putLong("Begun",p.server.overworld().getGameTime());threads.put(id,fresh);}

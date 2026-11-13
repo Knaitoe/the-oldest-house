@@ -1,6 +1,6 @@
 # The Pell house — a proposal (November 10)
 
-The owner asked to brainstorm a vignette based on *Bring Her Back*. This is the proposal that came out of it, for review. It waited until Borrasca was finished (the owner: "after"). It is being built in slices: the street and the lot, 0.4.518 (`docs/PELL_HOUSE_STREET_0_4_518.md`); what is in the rooms, 0.4.522 (`docs/PELL_HOUSE_THINGS_0_4_522.md`); the line, 0.4.523 (`docs/PELL_HOUSE_LINE_0_4_523.md`); the people, 0.4.524 (`docs/PELL_HOUSE_PEOPLE_0_4_524.md`); the first visit by day, 0.4.525 (`docs/PELL_HOUSE_VISIT_0_4_525.md`); the first evening, 0.4.526 (`docs/PELL_HOUSE_DINNER_0_4_526.md`); bedtime, 0.4.527 (`docs/PELL_HOUSE_BEDTIME_0_4_527.md`); more detail in its textures, 0.4.528 (`docs/PELL_HOUSE_DETAIL_0_4_528.md`); its outside, 0.4.529 (`docs/PELL_HOUSE_OUTDOORS_0_4_529.md`); the first night, 0.4.530 (`docs/PELL_HOUSE_NIGHT_0_4_530.md`); the first morning, 0.4.531 (`docs/PELL_HOUSE_MORNING_0_4_531.md`); Gail's call, 0.4.532 (`docs/PELL_HOUSE_CALL_0_4_532.md`); a week in, 0.4.533 (`docs/PELL_HOUSE_WEEK_0_4_533.md`); the knife, 0.4.534 (`docs/PELL_HOUSE_KNIFE_0_4_534.md`); June's hand, 0.4.535 (`docs/PELL_HOUSE_HAND_0_4_535.md`); the tapes, 0.4.536 (`docs/PELL_HOUSE_TAPES_0_4_536.md`); the journal's false entries, 0.4.537 (`docs/PELL_HOUSE_ENTRIES_0_4_537.md`); the last night begins, 0.4.538 (`docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md`); midnight in the pool, 0.4.539 (`docs/PELL_HOUSE_POOL_0_4_539.md`); the freezer, 0.4.540 (`docs/PELL_HOUSE_FREEZER_0_4_540.md`); dawn and the endings, 0.4.541 (`docs/PELL_HOUSE_DAWN_0_4_541.md`), from which the House deals it; after the house, 0.4.542 (`docs/PELL_HOUSE_AFTER_0_4_542.md`); after a failure, 0.4.543 (`docs/PELL_HOUSE_FAILURE_0_4_543.md`); the torn page, 0.4.544 (`docs/PELL_HOUSE_PAGE_0_4_544.md`); a reader as Tilly, 0.4.545 (`docs/PELL_HOUSE_TILLY_0_4_545.md`); Tilly's senses, 0.4.546 (`docs/PELL_HOUSE_SENSES_0_4_546.md`).
+The owner asked to brainstorm a vignette based on *Bring Her Back*. This is the proposal that came out of it, for review. It waited until Borrasca was finished (the owner: "after"). It is being built in slices: the street and the lot, 0.4.518 (`docs/PELL_HOUSE_STREET_0_4_518.md`); what is in the rooms, 0.4.522 (`docs/PELL_HOUSE_THINGS_0_4_522.md`); the line, 0.4.523 (`docs/PELL_HOUSE_LINE_0_4_523.md`); the people, 0.4.524 (`docs/PELL_HOUSE_PEOPLE_0_4_524.md`); the first visit by day, 0.4.525 (`docs/PELL_HOUSE_VISIT_0_4_525.md`); the first evening, 0.4.526 (`docs/PELL_HOUSE_DINNER_0_4_526.md`); bedtime, 0.4.527 (`docs/PELL_HOUSE_BEDTIME_0_4_527.md`); more detail in its textures, 0.4.528 (`docs/PELL_HOUSE_DETAIL_0_4_528.md`); its outside, 0.4.529 (`docs/PELL_HOUSE_OUTDOORS_0_4_529.md`); the first night, 0.4.530 (`docs/PELL_HOUSE_NIGHT_0_4_530.md`); the first morning, 0.4.531 (`docs/PELL_HOUSE_MORNING_0_4_531.md`); Gail's call, 0.4.532 (`docs/PELL_HOUSE_CALL_0_4_532.md`); a week in, 0.4.533 (`docs/PELL_HOUSE_WEEK_0_4_533.md`); the knife, 0.4.534 (`docs/PELL_HOUSE_KNIFE_0_4_534.md`); June's hand, 0.4.535 (`docs/PELL_HOUSE_HAND_0_4_535.md`); the tapes, 0.4.536 (`docs/PELL_HOUSE_TAPES_0_4_536.md`); the journal's false entries, 0.4.537 (`docs/PELL_HOUSE_ENTRIES_0_4_537.md`); the last night begins, 0.4.538 (`docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md`); midnight in the pool, 0.4.539 (`docs/PELL_HOUSE_POOL_0_4_539.md`); the freezer, 0.4.540 (`docs/PELL_HOUSE_FREEZER_0_4_540.md`); dawn and the endings, 0.4.541 (`docs/PELL_HOUSE_DAWN_0_4_541.md`), from which the House deals it; after the house, 0.4.542 (`docs/PELL_HOUSE_AFTER_0_4_542.md`); after a failure, 0.4.543 (`docs/PELL_HOUSE_FAILURE_0_4_543.md`); the torn page, 0.4.544 (`docs/PELL_HOUSE_PAGE_0_4_544.md`); a reader as Tilly, 0.4.545 (`docs/PELL_HOUSE_TILLY_0_4_545.md`); Tilly's senses, 0.4.546 (`docs/PELL_HOUSE_SENSES_0_4_546.md`); a house to each pair, 0.4.547 (`docs/PELL_HOUSE_PAIRS_0_4_547.md`).
 
 The owner's decisions so far:
 - **Tilly is a co-op role only.** A reader plays her only when a second reader is there. A solo reader is always the older sibling, with Tilly as a character.
@@ -36,12 +36,10 @@ It is built whole, like the Last Stop and Last orders, in its own slot. It has i
 - **Alone.** The reader is the older sibling, and Tilly is a character with her own skin, voice and routine.
 - **Two readers.** One reader may play Tilly. The other is the older sibling.
   - **Picking roles.** A long cane and a small coat hang on the hook inside the front door, and whoever takes the cane is Tilly.
-  - **If nobody takes the cane** within a short while of both arriving, Tilly stays a character. The second reader joins as a neighbour (below).
+  - **If nobody takes the cane** while June shows them round, Tilly stays a character, and both readers are older siblings.
   - **Pairs are saved,** as at the lake house (`docs/LAKE_HOUSE_PAIRS_0_4_156.md`). The same two readers are the siblings on every visit until the ending lands. A third reader gets a house of their own.
-- **More readers.** A third or fourth reader near a pair joins as **the kids next door**, using the co-op witness role (`docs/COOP_FOUNDATION_0_4_146.md`).
-  - They are on the far side of the back fence, and they never come in. June never lets them.
-  - They talk to the older sibling over the fence, and they are the only ones who say they've seen June out with the brush at night.
-  - On the last night they can work at the line from their side of the fence.
+- **More readers.** (The owner, 13 November: "the house should generate a second instance for a third and fourth player.") A third and fourth reader get a house of their own, a fifth and sixth another, and so on (`docs/PELL_HOUSE_PAIRS_0_4_547.md`). Each pair's house, line, freezer and Tilly are their own, and each pair's accounts name only each other.
+  - *Superseded:* this proposal first gave a third or fourth reader a part as **the kids next door**, on the far side of the back fence. With a house to each pair there is nobody left over to play them, and they are not built.
 
 ### The older sibling: sees, and is not believed
 
@@ -387,7 +385,7 @@ Every ending is permanent. There is no second attempt, and the vignette is never
   - their journal's handwriting changes to a younger, rounder hand from that page on;
   - their account of the house is written as Nessa's, about a placement that went well;
   - they are not harmed, and they leave the House as usual.
-- **For a character Tilly** (solo, or co-op with a neighbour):
+- **For a character Tilly** (solo, or two older siblings):
   - Tilly stays;
   - the older sibling is in Gail's car at dawn, and Tilly waves from Nessa's window and doesn't come;
   - later in the House, now and then, there's a cane tapping behind a door that will not open, and a voice that answers to a name that isn't hers.
@@ -459,8 +457,7 @@ The detail above is the specification. In practice:
 ## Fit with the House
 
 - **Witness:** one new survival source. Success resolves it once, for each sibling's reader. Neither failure resolves anything. The pool grows by one, and the quota stays derived (87 sources and 66 required, if it is added at today's 86 / 65).
-- **Copies:** a copy per pair (the scene-copy system), so every pair's house, line, freezer and Tilly are their own.
-- **Neighbours** see only their side of the fence.
+- **Copies:** a copy per pair (the scene-copy system), so every pair's house, line, freezer and Tilly are their own. Built in 0.4.547 (`docs/PELL_HOUSE_PAIRS_0_4_547.md`).
 - **New builds only.**
 - **Writing rules:**
   - no line of the House's writing genders the reader or names a colour or an age;

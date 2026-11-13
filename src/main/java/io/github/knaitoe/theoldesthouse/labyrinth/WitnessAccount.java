@@ -309,7 +309,7 @@ public final class WitnessAccount {
             // 0.4.162: a reader who came through a scene with others closes on who went ahead of them and who was still in it.
             var together=SharedVignettes.together(LabyrinthPlace.byId(story.id));var company=record(data,player).getCompound("Company").getCompound(story.id);
             if(together!=null&&role==VignetteRole.ACTOR&&!company.isEmpty()&&!stories.getString(story.id).equals("aftermath"))
-                text=text+" "+together.coda(stories.getString(story.id),names(company,"Ahead"),names(company,"Behind"));
+                text=text+" "+together.coda(data,player,stories.getString(story.id),names(company,"Ahead"),names(company,"Behind"));
             pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,(attic?"The undated letter":story.title)+"\n\n"+text));
         }
         for(Story story:Story.values())if(!stories.contains(story.id)&&begun(data,player,story)){

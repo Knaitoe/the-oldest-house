@@ -920,6 +920,9 @@ public final class PellTexts {
         var p=new ArrayList<String>();
         p.add("There was a house at the end of a street with a pool behind it. I could smell the pool from the path.");
         p.add("I took my cane off the hook inside the front door. June gave me her daughter's room. Her daughter was called Nessa.");
+        // 0.4.547: who else was at this house: the older one, in a house of their own pair's (SceneInstances).
+        var others=others(own);
+        if(!others.isEmpty())p.add("June gave "+CoopAccounts.names(others)+" the garage across the yard.");
         int r=own.getInt("Rules");
         if((r&RULE_LINE)!=0)p.add("June said I had to stay inside the line after dark. I couldn't see any line.");
         if(own.getInt("TillyBrushed")>0)p.add("At bedtime June brushed my hair on the edge of Nessa's bed, the same way every time, all the way down.");
@@ -939,6 +942,30 @@ public final class PellTexts {
         p.add(own.getBoolean("CameOut")&&!with.isEmpty()?"We went down the path and over the line into the street. Behind us nobody was calling any name at all."
             :"I went down the path and over the line into the street. Behind me nobody was calling any name at all.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.PELL_HOUSE),name,pages(String.join("\n\n",p)));
+    }
+    /**
+     * 0.4.547: the readers who were older siblings with this reader at their own house (a house to each pair, SceneInstances), by name, in
+     * the order they met (PellHouse.WITH). A reader who took the cane is Tilly, and is not one of them.
+     */
+    public static List<String> others(CompoundTag own){
+        var out=new ArrayList<String>();var with=own.getList(PellHouse.WITH,net.minecraft.nbt.Tag.TAG_STRING);String tilly=own.getString(PellTilly.TILLY_NAME);
+        for(int i=0;i<with.size();i++){var n=with.getString(i);if(!n.isEmpty()&&!n.equals(tilly)&&!out.contains(n))out.add(n);}
+        return out;
+    }
+    private static List<String> with(List<String> names,String last){var out=new ArrayList<>(names);out.add(last);return out;}
+    /**
+     * 0.4.547, the close of the house's line in a reader's Witness book (CoopAccounts.PELL): whoever came through it with them, all of
+     * their own house, by their part in it. The reader as Tilly: who was the older one, and had the garage. An older sibling: who took
+     * the cane and was Tilly, and who had the garage with them. Empty if there is nobody to name.
+     */
+    public static String company(CompoundTag own,List<String> names){
+        if(names.isEmpty())return "";
+        if(own.getBoolean(PellTilly.PLAYS))return CoopAccounts.names(names)+(names.size()==1?" was the older one, and had the garage across the yard.":" were the older ones, and had the garage across the yard.");
+        String tilly=own.getString(PellTilly.TILLY_NAME);var rest=new ArrayList<>(names);boolean was=!tilly.isEmpty()&&rest.remove(tilly);
+        var out=new ArrayList<String>();
+        if(was)out.add(tilly+" took the cane off the hook, and was Tilly.");
+        if(!rest.isEmpty())out.add(CoopAccounts.names(rest)+" had the garage with me.");
+        return String.join(" ",out);
     }
     /** 0.4.545: the house's Witness line for a reader: Tilly's own, for a reader who played her; without "she" for a reader whose Tilly
      *  was another reader; the older sibling's otherwise. */
@@ -970,13 +997,16 @@ public final class PellTexts {
         var p=new ArrayList<String>();
         p.add("There was a brick house at the head of a street where every lawn but one was dead. Hers was green.");
         if(own.getBoolean("WentIn"))p.add("I went in by a screen door that had been torn low down and taped.");
-        p.add(coop?"June Pell took us in, Tilly and me. Tilly went by the cane and by sound. June gave Tilly Nessa's room."
-            :"June Pell took us in, Tilly and me. Tilly went by her cane and by what she could hear. June gave her Nessa's room.");
+        // 0.4.547: another older sibling at this reader's own house is named with them (a reader who took the cane is Tilly).
+        var others=others(own);
+        String took=others.isEmpty()?"June Pell took us in, Tilly and me.":"June Pell took us in: Tilly, "+CoopAccounts.names(with(others,"me"))+".";
+        p.add(took+(coop?" Tilly went by the cane and by sound. June gave Tilly Nessa's room."
+            :" Tilly went by her cane and by what she could hear. June gave her Nessa's room."));
         int r=own.getInt("Rules");var rules=new ArrayList<String>();
         if((r&RULE_LINE)!=0)rules.add("Inside the line after dark.");
         if((r&RULE_POOL)!=0)rules.add("The pool gate stays locked.");
         if((r&RULE_NESSA)!=0)rules.add("Nessa's room is Tilly's now.");
-        if((r&RULE_GARAGE)!=0)rules.add("I was in the garage, for my privacy.");
+        if((r&RULE_GARAGE)!=0)rules.add(others.isEmpty()?"I was in the garage, for my privacy.":CoopAccounts.names(with(others,"I"))+" were in the garage, for our privacy.");
         if(!rules.isEmpty())p.add("June had rules. "+String.join(" ",rules));
         boolean dinner=own.getBoolean("HeardNessaAtDinner"),bed=own.getBoolean("HeardNessaAtBedtime");
         if(dinner&&bed)p.add("At the table, and again at bedtime, June called Tilly Nessa.");

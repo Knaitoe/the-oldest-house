@@ -53,6 +53,10 @@ The owner made the clapping game private (October 29) and asked that every priva
 
 One native case joins the co-op cases (ten; the quiet-room job runs 27).
 
+## 0.4.547: the Pell house
+
+The Pell house has copies too, two readers to a house, as the lake house's are but with neither reader's story the other's: the first takes a house, the second joins them, a third and fourth have a second house, and so on. Pairs are saved both ways round, and a reader joins only a reader alone in a house of theirs (or through its door in the last ten seconds). Since this release a shared story's thread is joined only by readers in the same copy of a scene. Details in `docs/PELL_HOUSE_PAIRS_0_4_547.md`.
+
 ## How a reader finds their copy
 
 - **A reader keeps the copy they first enter** until they finish its story (until it can no longer be dealt to them). They come back to it on every later visit, even when the original stands empty, so anything they changed there is still there. Then the copy is free for the next reader.

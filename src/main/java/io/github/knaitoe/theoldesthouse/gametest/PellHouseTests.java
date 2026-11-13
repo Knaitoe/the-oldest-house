@@ -3387,4 +3387,105 @@ public final class PellHouseTests {
         .thenSucceed();
     }
     @AfterBatch(batch="pell_senses_night") public static void sensesNightDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.547, a house to each pair
+    /** A reader not yet at the house: in the House's own halls, far from any Pell house. */
+    private static ServerPlayer elsewhere(LiteraryTests.Fixture f,String name){
+        var p=NativeTestPlayers.survival(f.h,name);f.players.add(p);p.stopRiding();p.teleportTo(f.in,0,90,0,0,0);p.setDeltaMovement(Vec3.ZERO);p.hasChangedDimension();return p;
+    }
+    /** A reader come through the door into the house standing at this base: on its lot, there for the house and for its story. */
+    private static void into(LiteraryTests.Fixture f,ServerPlayer p,BlockPos base,double x,double z){
+        p.stopRiding();p.teleportTo(f.level(P),base.getX()+x,base.getY(),base.getZ()+z,180,0);p.setDeltaMovement(Vec3.ZERO);p.hasChangedDimension();p.setNoGravity(true);
+        LiteraryVignettes.onArrive(p,P);VignetteThreads.arrived(p,P);
+    }
+    /** A reader's Witness book, its pages run together. */
+    private static String witnessBook(LiteraryTests.Fixture f,ServerPlayer p){return words(WitnessAccount.book(f.data(),p.getUUID(),p.getGameProfile().getName(),false));}
+
+    /**
+     * 0.4.547, a house to each pair (docs/PELL_HOUSE_PAIRS_0_4_547.md; the owner: "the house should generate a second instance for a third
+     * and fourth player"). Five readers come to the house's door one after another. The first takes the house; the second, through the
+     * door behind them before they have arrived, joins them, and each is the other's pair; the third's door waits while a second house is
+     * made ready, then opens onto it; the fourth joins the third; the fifth waits for a house of their own. Each house is where its readers
+     * are, built as the first, with its own people; a story is shared only within one house; and every account and Witness line names the
+     * reader's own pair, by their part in the house, and nobody from the other house.
+     */
+    @GameTest(template="empty",batch="pell_pairs",timeoutTicks=12000)
+    public static void aThirdAndFourthReaderHaveAHouseOfTheirOwnAndEachAccountNamesItsOwnPair(GameTestHelper h){
+        var f=house(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();f.build(P);
+        var a=elsewhere(f,"pell_pair_a");var o=elsewhere(f,"pell_pair_b");var c=elsewhere(f,"pell_pair_c");var e=elsewhere(f,"pell_pair_d");var fifth=elsewhere(f,"pell_pair_e");
+        var second=new BlockPos[1];var story=WitnessAccount.Story.of("pell_house");
+        h.startSequence().thenExecute(()->{
+            h.assertTrue(SceneInstances.copyable(P),"the Pell house has copies");
+            var first=SceneInstances.enter(a,P);
+            h.assertTrue(first.door()!=null&&first.copy()==0&&SceneInstances.kept(f.data(),a.getUUID(),P)==0,"the first reader takes the house");
+            // Through the door behind them before they have arrived: the second joins them.
+            var join=SceneInstances.enter(o,P);
+            h.assertTrue(join.door()!=null&&join.copy()==0,"the second reader, through the same door a moment later, comes into the same house");
+            h.assertTrue(o.getUUID().equals(SceneInstances.siblingOf(f.data(),a.getUUID()))&&a.getUUID().equals(SceneInstances.siblingOf(f.data(),o.getUUID())),"each is the other's pair");
+            into(f,a,b,.5,-44);into(f,o,b,-1.5,-44);
+            var wait=SceneInstances.enter(c,P);
+            h.assertTrue(wait.door()==null&&wait.waiting()&&SceneInstances.copies(f.data(),P)==1,"a third reader finds both places in the house taken, and waits while a house of their own is made ready");
+        })
+        .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1),"a second house stands"))
+        .thenExecute(()->{second[0]=SceneInstances.base(s,P,1);f.chunks.hold(l,PellPeople.area(second[0]));})
+        .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"its street is resident"))
+        .thenExecute(()->{
+            var house=SceneInstances.enter(c,P);
+            h.assertTrue(house.door()!=null&&house.copy()==1&&house.door().id.equals(SceneInstances.doorId(P,1,"entry")),"the third reader's door opens onto a house of their own");
+            into(f,c,second[0],.5,-44);
+            var four=SceneInstances.enter(e,P);
+            h.assertTrue(four.door()!=null&&four.copy()==1&&c.getUUID().equals(SceneInstances.siblingOf(f.data(),e.getUUID())),"the fourth joins the third");
+            into(f,e,second[0],-1.5,-44);
+            var five=SceneInstances.enter(fifth,P);
+            h.assertTrue(five.door()==null&&five.waiting()&&SceneInstances.copies(f.data(),P)==2,"a fifth has a house of their own again, still being made ready");
+            h.assertTrue(b.equals(LiteraryVignettes.base(a,P))&&b.equals(LiteraryVignettes.base(o,P))&&second[0].equals(LiteraryVignettes.base(c,P))&&second[0].equals(LiteraryVignettes.base(e,P)),"each reader's house is the one they are at");
+            h.assertTrue(LiteraryVignettes.current(c)==P&&SceneInstances.at(s,P,c.level().dimension(),c.position())==1,"the House knows the second house for the Pell house");
+            h.assertTrue(PellBlock.is(l.getBlockState(second[0].offset(PellSite.FRONT_DOOR)),PellBlock.Kind.SCREEN)&&PellBlock.is(l.getBlockState(second[0].offset(PellSite.SOURCE)),PellBlock.Kind.LETTERBOX),"built as the first, its screen door and its letterbox");
+            var t0=VignetteThreads.threadId(f.data(),P,a.getUUID());var t1=VignetteThreads.threadId(f.data(),P,c.getUUID());
+            h.assertTrue(t0!=null&&t0.equals(VignetteThreads.threadId(f.data(),P,o.getUUID()))&&t1!=null&&t1.equals(VignetteThreads.threadId(f.data(),P,e.getUUID()))&&!t0.equals(t1),"each pair shares one story, and the two houses do not share one: "+t0+" "+t1);
+        })
+        .thenWaitUntil(()->{for(var base:List.of(b,second[0]))for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,base,i)!=null,"waiting for "+PellPeople.name(i)+" at "+base.toShortString());})
+        .thenIdle(10).thenExecute(()->{
+            h.assertTrue(!PellPeople.find(l,b,PellPeople.JUNE).getUUID().equals(PellPeople.find(l,second[0],PellPeople.JUNE).getUUID()),"each house has its own June");
+            // Who each was at the house with: their own pair, and nobody from the other house.
+            h.assertTrue(PellTexts.others(f.own(c,P)).equals(List.of("pell_pair_d"))&&PellTexts.others(f.own(e,P)).equals(List.of("pell_pair_c")),"the second house's readers were there with each other: "+PellTexts.others(f.own(c,P))+" "+PellTexts.others(f.own(e,P)));
+            h.assertTrue(PellTexts.others(f.own(a,P)).equals(List.of("pell_pair_b")),"and the first house's with each other: "+PellTexts.others(f.own(a,P)));
+            // In the first house the first reader took the cane and was Tilly; in the second, nobody took it.
+            playsTilly(f,a,o);
+            h.assertTrue(PellTexts.others(f.own(o,P)).isEmpty(),"the reader who was Tilly is Tilly to the other, not another older one");
+            var mine=f.own(c,P);mine.putInt("Rules",PellTexts.RULES);LiteraryVignettes.save(f.data(),c.getUUID(),P,mine);
+            String tilly=words(PellTexts.account("pell_pair_a",f.own(a,P))),older=words(PellTexts.account("pell_pair_b",f.own(o,P))),third=words(PellTexts.account("pell_pair_c",f.own(c,P)));
+            h.assertTrue(tilly.contains("June gave pell_pair_b the garage across the yard."),"Tilly's account names who had the garage: "+tilly);
+            h.assertTrue(older.contains("June Pell took us in, Tilly and me."),"the older one's names nobody else as taken in: "+older);
+            h.assertTrue(third.contains("June Pell took us in: Tilly, pell_pair_d and me.")&&third.contains("pell_pair_d and I were in the garage, for our privacy."),"two older ones were taken in together: "+third);
+            for(var text:List.of(tilly,older))h.assertTrue(!text.contains("pell_pair_c")&&!text.contains("pell_pair_d")&&!text.contains("pell_pair_e"),"the first house's accounts name nobody from the second: "+text);
+            h.assertTrue(!third.contains("pell_pair_a")&&!third.contains("pell_pair_b"),"nor the second's anybody from the first");
+            // A reader whose ending has landed, away and coming back for the house's aftermath, is never sent into a house a pair is
+            // still playing: not their own, which their pair keeps, nor the other.
+            var ended=f.own(a,P);ended.putBoolean("Ended",true);LiteraryVignettes.save(f.data(),a.getUUID(),P,ended);
+            a.teleportTo(f.in,0,90,0,0,0);a.hasChangedDimension();
+            var back=SceneInstances.enter(a,P);
+            h.assertTrue(back.copy()!=0&&back.copy()!=1,"after their ending, the aftermath only in a house nobody keeps for a story under way: "+back);
+            h.assertTrue(SceneInstances.kept(f.data(),a.getUUID(),P)==0,"and the house they keep is still the one they were at");
+            // Their pair goes back into their own house, the other there or not.
+            var home=SceneInstances.enter(o,P);
+            h.assertTrue(home.door()!=null&&home.copy()==0,"the other half of a pair goes back into their house: "+home);
+            // Each reads their account: the Witness line closes on their own pair, by their part in the house.
+            WitnessAccount.resolve(a,story,"came_out_with_own_name");WitnessAccount.resolve(o,story,"brought_tilly_out_with_her_name");
+            WitnessAccount.resolve(c,story,"there_when_tilly_came_out");WitnessAccount.resolve(e,story,"there_when_tilly_came_out");
+            String wa=witnessBook(f,a),wo=witnessBook(f,o),wc=witnessBook(f,c),we=witnessBook(f,e);
+            h.assertTrue(wa.contains("pell_pair_b was the older one, and had the garage across the yard."),"Tilly's Witness line names the older one: "+wa);
+            h.assertTrue(wo.contains("pell_pair_a took the cane off the hook, and was Tilly."),"the older one's names who was Tilly: "+wo);
+            h.assertTrue(wc.contains("pell_pair_d had the garage with me.")&&we.contains("pell_pair_c had the garage with me."),"two older ones name each other: "+wc+" | "+we);
+            for(var text:List.of(wa,wo))h.assertTrue(!text.contains("pell_pair_c")&&!text.contains("pell_pair_d")&&!text.contains("in that street"),"nobody from the other house: "+text);
+            for(var text:List.of(wc,we))h.assertTrue(!text.contains("pell_pair_a")&&!text.contains("pell_pair_b"),"nobody from the first house: "+text);
+            // Once the other half has had their ending too and gone, nobody keeps the house for a story under way, and the first comes
+            // back to the aftermath in their own house.
+            var done=f.own(o,P);done.putBoolean("Ended",true);LiteraryVignettes.save(f.data(),o.getUUID(),P,done);
+            o.teleportTo(f.in,0,90,0,0,0);o.hasChangedDimension();
+            var after=SceneInstances.enter(a,P);
+            h.assertTrue(after.door()!=null&&after.copy()==0,"the aftermath in their own house: "+after);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_pairs") public static void pairsDone(ServerLevel l){done();}
 }

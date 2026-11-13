@@ -35,9 +35,10 @@ public final class SceneInstances {
     /**
      * The private scenes that have copies. Each takes its place from the reader. 0.4.154: the Whale institute and the phone
      * canoe; 0.4.155: Harrigan, whose room keeps its own story in each copy; 0.4.156: the lake house, two readers to a copy.
-     * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}).
+     * 0.4.513: and Bike night, which is not private at all: six readers to a town ({@link #crowd}). 0.4.547: and the Pell house, two
+     * readers to a house ({@link #pell}).
      */
-    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT);
+    private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE);
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
     /** Columns of an interior copy's slot filled solid per tick, before its rooms are carved into it, as the original's are. */
@@ -155,9 +156,9 @@ public final class SceneInstances {
         return Math.max(0,kept(LabyrinthData.get(p.server),p.getUUID(),place));
     }
     public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){return base(p.server,place,of(p,place));}
-    /** Whether a living player other than {@code reader} (or the one they go down to the lake with) is in copy {@code k}. Spectators hold nothing. */
+    /** Whether a living player other than {@code reader} (or the other half of their pair, at the lake or the Pell house) is in copy {@code k}. Spectators hold nothing. */
     private static boolean occupied(MinecraftServer s,LabyrinthPlace p,int k,UUID reader){
-        var pair=p==LabyrinthPlace.LAKE_HOUSE?pairOf(LabyrinthData.get(s),reader):null;
+        var pair=pairOf(LabyrinthData.get(s),p,reader);
         for(var q:s.getPlayerList().getPlayers())if(!q.getUUID().equals(reader)&&!q.getUUID().equals(pair)&&q.isAlive()&&!q.isSpectator()&&at(s,p,q.level().dimension(),q.position())==k)return true;
         return false;
     }
@@ -184,8 +185,15 @@ public final class SceneInstances {
         public Entry(@Nullable LabyrinthData.Door door,int copy,boolean waiting){this(door,copy,waiting,null);}
     }
     public static Entry enter(ServerPlayer p,LabyrinthPlace place){
+        var chosen=choose(p,place);
+        // 0.4.547: a reader through the door into a Pell house counts as in it, for a friend through the door behind them, until they arrive.
+        if(place==LabyrinthPlace.PELL_HOUSE&&chosen.door()!=null){int now=p.server.getTickCount();ENTERING.values().removeIf(e->now-e.tick()>ENTERING_TICKS);ENTERING.put(p.getUUID(),new Entering(chosen.copy(),now));}
+        return chosen;
+    }
+    private static Entry choose(ServerPlayer p,LabyrinthPlace place){
         var s=p.server;var d=LabyrinthData.get(s);var me=p.getUUID();settle(d,place);
         if(place==LabyrinthPlace.LAKE_HOUSE){var lake=lake(p,d,me);if(lake!=null)return lake;}
+        if(place==LabyrinthPlace.PELL_HOUSE){var house=pell(p,d,me);if(house!=null)return house;}
         if(place==LabyrinthPlace.BIKE_NIGHT)return crowd(p,d,me,place,BikeNight.RIDERS);
         int mine=kept(d,me,place);
         if(mine>=0&&built(d,place,mine)){
@@ -235,7 +243,10 @@ public final class SceneInstances {
     /** While one copy stands free beside the one just taken, nothing more is built; otherwise the next is made ready ahead. */
     private static void ahead(MinecraftServer s,LabyrinthData d,LabyrinthPlace place,int taken){
         // A reader alone on the server never needs another copy.
-        if(s.getPlayerList().getPlayers().stream().filter(q->!q.isSpectator()).count()<2)return;
+        long readers=s.getPlayerList().getPlayers().stream().filter(q->!q.isSpectator()).count();if(readers<2)return;
+        // 0.4.547: two readers to a Pell house: another is made ready only once there are more readers on the server than the houses that
+        // stand, or are being made, hold. Two friends alone on a server never cause a second house to be built.
+        if(place==LabyrinthPlace.PELL_HOUSE&&readers<=2L*(copies(d,place)+1))return;
         for(int k=0;k<=copies(d,place);k++)if(k!=taken&&(!built(d,place,k)||!occupied(s,place,k,new UUID(0,0))&&!keptByAnother(d,place,k,new UUID(0,0))))return;
         allocate(d,place);
     }
@@ -298,6 +309,90 @@ public final class SceneInstances {
         }
         return null;
     }
+    /** The other half of a reader's pair, where a scene's copies are two readers' each: the lake house's diver and partner (0.4.156), and
+     *  the Pell house's two readers (0.4.547). */
+    public static @Nullable UUID pairOf(LabyrinthData d,LabyrinthPlace place,UUID reader){
+        return place==LabyrinthPlace.LAKE_HOUSE?pairOf(d,reader):place==LabyrinthPlace.PELL_HOUSE?siblingOf(d,reader):null;
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.547, the Pell house's pairs
+    /*
+     * The owner, 13 November: "the house should generate a second instance for a third and fourth player". Each copy of the Pell house is
+     * two readers': the siblings (one of them may take the cane and be Tilly) on every visit until their own endings. Unlike the lake
+     * house's diver and partner, neither's story is the other's, so a pair is saved both ways round, and either goes back into the pair's
+     * house with the other there or not. A third reader gets a house of their own, a fourth joins them, a fifth has one of their own again.
+     */
+    /** How long a reader through the door into a Pell house counts as in it, before they have arrived: ten seconds. A friend through the
+     *  same door behind them joins them however long their own way in takes. */
+    public static final int ENTERING_TICKS=200;
+    private record Entering(int copy,int tick){}
+    private static final Map<UUID,Entering> ENTERING=new HashMap<>();
+    /** The other reader of a Pell house's pair, if any. */
+    public static @Nullable UUID siblingOf(LabyrinthData d,UUID reader){var t=scene(d,LabyrinthPlace.PELL_HOUSE).getCompound("Pairs");return t.hasUUID(reader.toString())?t.getUUID(reader.toString()):null;}
+    /** Two readers are a pair; whoever either was paired with before is not paired with them any more. */
+    private static void siblings(LabyrinthData d,UUID a,UUID b){
+        var all=scene(d,LabyrinthPlace.PELL_HOUSE);var t=all.getCompound("Pairs");
+        for(var id:List.of(a,b)){var was=t.hasUUID(id.toString())?t.getUUID(id.toString()):null;if(was!=null&&t.hasUUID(was.toString())&&t.getUUID(was.toString()).equals(id))t.remove(was.toString());}
+        t.putUUID(a.toString(),b);t.putUUID(b.toString(),a);all.put("Pairs",t);scene(d,LabyrinthPlace.PELL_HOUSE,all);
+    }
+    /** The reader's pair, while the pair still has the house to finish. */
+    private static @Nullable UUID liveSibling(LabyrinthData d,UUID reader){var other=siblingOf(d,reader);return other!=null&&unfinished(d,other,LabyrinthPlace.PELL_HOUSE)?other:null;}
+    /**
+     * The Pell house's own choice before the usual one. A reader whose ending has landed sees its aftermath only in a house nobody is in
+     * or keeps for a story under way. A reader goes into their pair's house, with the pair there or not. A reader with nobody joins a
+     * reader alone in a house of theirs whose story is under way and who has nobody (or whose pair has had their ending). Null when the
+     * usual choice applies: the house they keep, else one nobody keeps, else the next made ready.
+     */
+    private static @Nullable Entry pell(ServerPlayer p,LabyrinthData d,UUID me){
+        var place=LabyrinthPlace.PELL_HOUSE;var s=p.server;
+        if(!unfinished(d,me,place)){
+            // A reader whose ending has landed comes back to the house as its aftermath (PellAftermath) only in a house nobody is in and
+            // nobody keeps for a story still under way: their own first, else any such house; with none, the door opens onto a hall.
+            // Another house seen so is not made theirs: the house they keep is still the one they were at.
+            int mine=kept(d,me,place);
+            if(mine>=0&&built(d,place,mine)&&!occupied(s,place,mine,me)&&!keptByAnother(d,place,mine,me))return new Entry(entry(d,place,mine),mine,false);
+            for(int k=0;k<=copies(d,place);k++)if(built(d,place,k)&&!occupied(s,place,k,me)&&!keptByAnother(d,place,k,me))return new Entry(entry(d,place,k),k,false);
+            return new Entry(null,-1,false);
+        }
+        var pair=liveSibling(d,me);
+        if(pair!=null){
+            int k=kept(d,pair,place);if(k<0||!built(d,place,k))return null;
+            if(kept(d,me,place)!=k)keep(d,me,place,k);
+            // Only somebody with the house still to finish holds it from its own pair; a reader come back to its aftermath does not.
+            if(held(s,d,place,k,me))return new Entry(null,k,false);
+            ahead(s,d,place,k);return new Entry(entry(d,place,k),k,false);
+        }
+        for(int k=0;k<=copies(d,place);k++){
+            if(!built(d,place,k))continue;var alone=alone(s,d,place,k,me);if(alone==null)continue;
+            siblings(d,me,alone.getUUID());keep(d,me,place,k);ahead(s,d,place,k);
+            return new Entry(entry(d,place,k),k,false);
+        }
+        return null;
+    }
+    /** Somebody other than the reader and their pair, with the Pell house still to finish, is in copy {@code k}. */
+    private static boolean held(MinecraftServer s,LabyrinthData d,LabyrinthPlace place,int k,UUID reader){
+        var pair=pairOf(d,place,reader);
+        for(var q:s.getPlayerList().getPlayers())
+            if(!q.getUUID().equals(reader)&&!q.getUUID().equals(pair)&&q.isAlive()&&!q.isSpectator()&&at(s,place,q.level().dimension(),q.position())==k&&unfinished(d,q.getUUID(),place))return true;
+        return false;
+    }
+    /**
+     * The only living reader in copy {@code k} of the Pell house, there now or through its door a moment ago (ENTERING), if it is their
+     * house, their story is under way, their account is not ready, and they have nobody with them (or whoever it was has had their ending).
+     */
+    private static @Nullable ServerPlayer alone(MinecraftServer s,LabyrinthData d,LabyrinthPlace place,int k,UUID me){
+        ServerPlayer found=null;int now=s.getTickCount();
+        for(var q:s.getPlayerList().getPlayers()){
+            if(q.getUUID().equals(me)||!q.isAlive()||q.isSpectator())continue;
+            int at=at(s,place,q.level().dimension(),q.position());var e=ENTERING.get(q.getUUID());
+            if(at!=k&&!(at<0&&e!=null&&e.copy()==k&&now-e.tick()<=ENTERING_TICKS))continue;
+            if(found!=null)return null;found=q;
+        }
+        if(found==null)return null;var id=found.getUUID();
+        if(liveSibling(d,id)!=null||kept(d,id,place)!=k||!unfinished(d,id,place)||LiteraryVignettes.personal(d,id,place).getBoolean("Ready"))return null;
+        return found;
+    }
+
     /** The only living reader in copy {@code k}, if it is their copy, their story is under way and nobody goes down with them yet. */
     private static @Nullable ServerPlayer lone(MinecraftServer s,LabyrinthData d,LabyrinthPlace place,int k,UUID me){
         ServerPlayer found=null;
@@ -379,6 +474,6 @@ public final class SceneInstances {
     private static void release(){if(job!=null)for(var c:job.chunks)job.level.getChunkSource().removeRegionTicket(TICKET,c,1,c);job=null;}
     /** Fixtures only: whether a copy is under construction. */
     public static boolean building(){return job!=null;}
-    public static void clear(){release();store=null;cached=null;areas=List.of();partnersData=null;partners=Map.of();}
+    public static void clear(){release();store=null;cached=null;areas=List.of();partnersData=null;partners=Map.of();ENTERING.clear();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clear();}
 }
