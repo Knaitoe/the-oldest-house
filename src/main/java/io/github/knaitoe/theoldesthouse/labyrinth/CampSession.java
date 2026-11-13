@@ -37,6 +37,8 @@ public final class CampSession {
     private static final String STATE = "CampSession0121";
     /** One period of the schedule, in ticks of time spent in the camp; and how long the bell keeps him at the mess hall. */
     public static final int PERIOD = 900, BELL = 600;
+    /** 0.4.563: the readers one camp holds, a counselor to each of its six cabins (SceneInstances.PARTIES); a seventh has a camp of their own. */
+    public static final int PLACES = 6;
     /** A period: its name on the schedule, where it is held, what the PA says, and where he walks during it. */
     public record Period(String name, String place, String call, List<BlockPos> walk) {}
     public static final List<Period> PERIODS = List.of(
@@ -104,7 +106,9 @@ public final class CampSession {
 
     private static @Nullable LiteraryActor killer(ServerPlayer p) {
         var world = LiteraryVignettes.shared(LabyrinthData.get(p.server), PLACE);
-        return world.hasUUID("Killer") && p.serverLevel().getEntity(world.getUUID("Killer")) instanceof LiteraryActor a ? a : null;
+        // 0.4.563: the man of the camp the reader is in; each copy of the camp keeps its own under its own key.
+        var id = LiteraryVignettes.actorId(p, PLACE, "Killer", false);
+        return world.hasUUID(id) && p.serverLevel().getEntity(world.getUUID(id)) instanceof LiteraryActor a ? a : null;
     }
 
     /** The right-clicks the camp answers beyond its source and ending. The caller saves the record. */
