@@ -25,8 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MOD = 'the_oldest_house'
 SOURCES = 'src/main/java'
 # Minutes each took inside run 1575's complete suite: pinehook 15.1, bike_night 14.3, borrasca 13.0, lake_house 2.5, playtest492 2.5,
-# pell 2.2. Every one of them also has a focused job of its own.
-REST = ['pinehook', 'bike_night', 'borrasca', 'lake_house', 'playtest492', 'pell']
+# pell 2.2. Every one of them also has a focused job of its own. 0.4.564: together, the two-reader cast checks (each
+# builds a copy for a private story's second reader), joins them.
+REST = ['pinehook', 'bike_night', 'borrasca', 'lake_house', 'playtest492', 'pell', 'together']
 
 
 def default_namespaces():
