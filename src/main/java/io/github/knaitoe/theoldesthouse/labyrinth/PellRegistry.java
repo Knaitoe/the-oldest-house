@@ -66,6 +66,8 @@ public final class PellRegistry {
      *  of it where a float is missing. Nobody is given one. */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANE=ITEMS.register("pell_lane",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> LANE_GAP=ITEMS.register("pell_lane_gap",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.534: the kitchen knife in Callum's hand at the sink in the night (PellKnife). Nobody is given one. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> KNIFE=ITEMS.register("pell_knife",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */

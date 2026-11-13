@@ -64,8 +64,10 @@ public final class PellTexts {
             case MATTRESS->"A mattress on the floor. No bed.";
             case CIRCLE->"A circle painted on the floor round the mattress. The toys stand on its line, facing out.";
             case SHOES->"Shoes lined up at the door, laces tucked in.";
-            // 0 no knives; 1 a knife among them.
-            case CUTLERY->stage==0?"A drawer of the house's missing cutlery: spoons and forks in rows. No knives.":"A drawer of the house's missing cutlery: spoons and forks in rows, and a knife.";
+            // 0 no knives; 1 a knife among them; 2 (0.4.534, after the knife night) the space where it lay.
+            case CUTLERY->stage==0?"A drawer of the house's missing cutlery: spoons and forks in rows. No knives."
+                :stage==1?"A drawer of the house's missing cutlery: spoons and forks in rows, and a knife."
+                :"A drawer of the house's missing cutlery: spoons and forks in rows, and a space between them where something longer lay.";
             case VANITY->"Two toothbrushes in the cup. One is dry and old, and kept.";
             // 0 clear; 1 steamed.
             case MIRROR->stage==0?"The mirror over the basin.":"The steam on the mirror shows a word written with a finger: NESSA.";
@@ -90,7 +92,8 @@ public final class PellTexts {
             // Bit 1 (from the second visit): a second knife's outline empty.
             case PEGBOARD->(stage&2)==0?"Every tool's outline painted on the pegboard. Some are empty. One of them is a knife's."
                 :"Every tool's outline painted on the pegboard. Some are empty. Two of them are knives'.";
-            case TOWEL->"A towel, pushed under the door from the other side.";
+            // 0 under the garage's door; 1 (0.4.534) on the kitchen floor, after the knife.
+            case TOWEL->stage==0?"A towel, pushed under the door from the other side.":"A tea towel on the kitchen floor, folded over on itself.";
             case TAPES->"Tapes in plain cases, dates on the spines, in order. Two dates are written over. One case is empty.";
             // 1: the empty tins under it.
             case WORKBENCH->stage==0?"The workbench.":"Three empty paint tins under the bench.";
@@ -361,6 +364,47 @@ public final class PellTexts {
         DRAIN="Under the grate of the drain at the deep end, a child's swimming goggles, the strap knotted where it broke.",
         BAND_MISSING="One tile of the band along the waterline is missing. The grout round the gap is new.",
         BAND_ODD="One tile of the band does not match the rest. It is newer, and not quite the same.";
+    /** 0.4.534, the knife: the kitchen in the night, a week in; June after it; her version on the week's call; Gail to a reader she
+     *  found in the kitchen and to one she did not; and at breakfast. */
+    public static final String
+        KNIFE_WOKEN="Something wakes you. Over at the house, a light is on in the kitchen.",
+        KNIFE_SEEN="Callum is at the sink with his back to the room. There is a knife in his hand.",
+        KNIFE_HOLD="You take hold of his wrist.",
+        KNIFE_WRENCH="He pulls against you. He is stronger than he looks.",
+        JUNE_KNIFE_BED="Go on back to bed, love.",
+        JUNE_KNIFE_HAND="Bed, love. We'll talk in the morning.",
+        JUNE_KNIFE_OUT="Out you go, love. I'm locking up.",
+        JUNE_KNIFE_TROUBLE="Well. There was, Gail. I won't lie to you.",
+        JUNE_KNIFE_WHAT="Callum was up in the night. One of them went for him. In the kitchen, with a knife.",
+        JUNE_KNIFE_HURT="No. Nobody's hurt. I got there.",
+        JUNE_KNIFE_BLOCK="They'd had it out of the block.",
+        TELL_KNIFE_TOOK="He had the knife. I was getting it off him.",
+        TELL_KNIFE_DONT_KNOW="I don't know what happened.",
+        TELL_KNIFE_LYING="She's lying.",
+        TELL_KNIFE_NOT_ME="It wasn't me.",
+        TELL_KNIFE_SAW="I saw him at the sink with it.",
+        GAIL_KNIFE_BYE="I'll ring next week. Sooner, if I have to. Put June back on for me, would you?",
+        JUNE_KNIFE_UPSET="Don't mind that, Gail. They're upset, that's all.",
+        JUNE_KNIFE_EYE="I'll keep an eye. I always do.",
+        JUNE_KNIVES="Knives stay in the block in this house, love.";
+    /** What Gail asks a reader June found in the kitchen, and one she did not. */
+    public static final List<String> GAIL_KNIFE_ASKS=List.of("June's told me about last night, love. She says you went for Callum. With a knife.","I have to hear it from you. What happened?"),
+        GAIL_KNIFE_OTHER=List.of("June's told me about last night. Callum, and a knife.","She says it was one of you. Was it you, love?");
+    /** What a reader told Gail about the knife: kept with the week's answers ("ToldGailWeek"). */
+    public static final String KNIFE_TOOK="knife_took",KNIFE_DONT_KNOW="knife_dont_know",KNIFE_LYING="knife_lying",KNIFE_NOT_ME="knife_not_me",KNIFE_SAW="knife_saw";
+    /** What Gail says to an answer about the knife, before her goodbye. A reader June found in the kitchen goes on Gail's file, whatever
+     *  they say: none of them can say what happened in the black. */
+    public static List<String> gailKnife(String told,boolean found){
+        return switch(told){
+            case KNIFE_TOOK->List.of("June says it was the other way about, love. She says she came in and you had hold of it.","I'm putting it on your file. I'm sorry.");
+            case KNIFE_DONT_KNOW->List.of("That's what frightens me, love.","I'm putting it on your file. I'm sorry.");
+            case KNIFE_LYING->List.of("I won't have that, love. Not about June.","She's been doing this a long time. It's going on your file.");
+            case KNIFE_NOT_ME->List.of("All right, love. She says it was one of you.","You keep well out of it.");
+            case KNIFE_SAW->List.of("On his own? With a knife?","June says one of you had it out of the block. I'll put down what you saw, love.");
+            case LEAVE->List.of("Oh, love. I know.","Not after last night. Not yet. Give it a bit longer. That's all I'm asking.");
+            default->found?List.of("Nothing to say? All right.","It's going on your file, love."):List.of("Hello? Are you there, love?","That's all right. You keep out of it.");
+        };
+    }
     public static final String[] JUNE_WEEK_TALK={
         "There you are, love. Dinner's at six.",
         "I go in the pool first thing, every morning. Clears the head.",

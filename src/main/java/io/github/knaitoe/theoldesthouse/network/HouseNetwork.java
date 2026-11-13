@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("185")
+        event.registrar("186")
                 .playToServer(BikeKeysPayload.TYPE,BikeKeysPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike bike&&bike.getFirstPassenger()==p)bike.keys(payload.jump(),payload.turbo());}))
                 .playToClient(BorrascaLetterPayload.TYPE,BorrascaLetterPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaLetterScreen.accept(payload)))
                 .playToServer(BorrascaLetterSeenPayload.TYPE,BorrascaLetterSeenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaGarritys.seen(p,payload.back());}))
@@ -40,6 +40,7 @@ public final class HouseNetwork {
                 .playToClient(CityPayload.TYPE,CityPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CityClient.accept(payload)))
                 .playToClient(CornerPayload.TYPE,CornerPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CornerClient.accept(payload)))
                 .playToClient(PellPayload.TYPE,PellPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PellClient.accept(payload)))
+                .playToClient(PellCutPayload.TYPE,PellCutPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PellCutClient.accept(payload)))
                 .playToClient(SecondPersonPayload.TYPE,SecondPersonPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SecondPersonClient.accept(payload)))
                 .playToClient(CrossingPayload.TYPE,CrossingPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CrossingClient.accept(payload)))
                 .playToClient(KeptStatePayload.TYPE,KeptStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.KeptClient.accept(payload)))

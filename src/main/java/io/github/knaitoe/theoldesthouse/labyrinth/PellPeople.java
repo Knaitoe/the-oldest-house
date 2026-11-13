@@ -66,7 +66,9 @@ public final class PellPeople {
         // 0.4.532: June on the telephone, the receiver to her ear; and holding it out for a reader to take.
         PHONE=8,OFFER=9,
         // 0.4.533: June at first light, a week in: in her swimming things with her robe on, and in the water swimming her lengths.
-        ROBE=10,SWIM=11;
+        ROBE=10,SWIM=11,
+        // 0.4.534: Callum struggling for the knife with a reader, and his fist coming at their face.
+        STRUGGLE=12,LUNGE=13;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
     public static @Nullable String dressed(int phase,int gesture){
         if(phase!=FIRST+JUNE)return null;
@@ -134,6 +136,9 @@ public final class PellPeople {
          *  called hello to the first reader in, on the second; how far her swim at first light has got (PellSwim), how many lengths she
          *  has swum and when she began the one she is on, whether she is done and in, and when she came in. */
         int visit=1,swim,lengths;boolean welcomed,swum;long lengthAt,swumAt;
+        /** 0.4.534, the knife (PellKnife): how far it has got and when that began; whether June has spoken after it, and how far her way
+         *  to lock up has got; who has hold of Callum, and since when a reader has stood close to him; who June found in the kitchen. */
+        int knife,knifeSaid,knifeWay;long knifeAt,closeSince;UUID fighter;final java.util.Set<UUID> found=new java.util.HashSet<>();
         Household(){for(int i=0;i<COUNT;i++){rest[i]=FIRST_VISIT[i].look();way[i]=new java.util.ArrayDeque<>();}}
     }
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
@@ -230,6 +235,8 @@ public final class PellPeople {
         int who=who(a);var h=household(b);
         // 0.4.527: asleep, they are only looked at.
         if(h.asleep[who]){PellHouse.cue(p,who==CALLUM?PellTexts.CALLUM_ASLEEP:PellTexts.TILLY_ASLEEP);return;}
+        // 0.4.534: at the sink with the knife, a hand on him takes his wrist.
+        if(who==CALLUM&&PellKnife.hand(p,b,h,own))return;
         // 0.4.530: on the line at night, Callum stands and does not move for the hand.
         if(who==CALLUM&&h.callumOut){PellHouse.cue(p,PellTexts.CALLUM_NIGHT[h.said[who]++%PellTexts.CALLUM_NIGHT.length]);own.putBoolean("TouchedCallumAtNight",true);return;}
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
@@ -243,6 +250,8 @@ public final class PellPeople {
         String line;
         // 0.4.527: in her chair with the tape on, June talks about the girl on it first.
         if(who==JUNE&&PellVisit.watching(b)&&h.watchSaid<PellTexts.JUNE_WATCHING.length)line=PellTexts.JUNE_WATCHING[h.watchSaid++];
+        // 0.4.534: after the knife, on her way to lock up.
+        else if(who==JUNE&&PellKnife.after(b))line=PellTexts.JUNE_KNIFE_HAND;
         // 0.4.530: up at night with the tin, June has her own lines, and the reader keeps that they spoke to her.
         else if(who==JUNE&&PellNight.up(b)){line=PellTexts.JUNE_NIGHT[h.nightSaid++%PellTexts.JUNE_NIGHT.length];own.putBoolean("SpokeToJuneAtNight",true);}
         // 0.4.531: up in the morning, from when she gets up until breakfast is cleared.
