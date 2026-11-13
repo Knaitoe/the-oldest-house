@@ -912,6 +912,62 @@ public final class LabyrinthTests {
         helper.succeed();
     }
 
+    /**
+     * 0.4.559 (Scents): a thing marked with a story leads the next dealing to that story and no other, with one door barking behind it;
+     * once the reader is done with that story it leads to any story still open, as before. An ordinary thing has no scent; another
+     * reader's torn page smells of them, and the reader's own does not.
+     */
+    @GameTest(template = "empty")
+    public static void aThingFromAStoryLeadsToThatStory(GameTestHelper helper) {
+        LabyrinthData data = new LabyrinthData();
+        UUID player = UUID.randomUUID(), other = UUID.randomUUID();
+        LabyrinthBuilder.registerDoors(data, LabyrinthPlace.JUNCTION, new BlockPos(0, 64, 0));
+        var note = io.github.knaitoe.theoldesthouse.labyrinth.Scents.of(TellTaleFloorboards.caregiversNote(), player, null);
+        helper.assertTrue(note != null && note.place() == LabyrinthPlace.FLOORBOARDS && note.reader() == null, "the caregiver's note smells of the floorboards: " + note);
+        helper.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.Scents.of(new ItemStack(Items.WRITABLE_BOOK), player, null) == null, "an ordinary book smells of nothing");
+        var page = io.github.knaitoe.theoldesthouse.labyrinth.Scents.of(io.github.knaitoe.theoldesthouse.journal.TornPages.stack(other, "Ada", 0, 0), player, null);
+        helper.assertTrue(page != null && other.equals(page.reader()) && page.place() == null && "Ada".equals(page.name()), "another reader's torn page smells of them: " + page);
+        helper.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.Scents.of(io.github.knaitoe.theoldesthouse.journal.TornPages.stack(player, "Me", 0, 0), player, null) == null,
+                "a page torn from the reader's own journal smells of nothing");
+        for (int seed = 0; seed < 6; seed++) {
+            helper.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.Scents.giveStory(data, player, LabyrinthPlace.FLOORBOARDS) == io.github.knaitoe.theoldesthouse.labyrinth.Scents.Taken.STORY,
+                    "the floorboards are open to the reader, so their scent is taken");
+            LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, RandomSource.create(seed));
+            int barking = 0;
+            for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
+                LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
+                LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
+                if (answer != null && answer.bark()) {
+                    barking++;
+                    helper.assertTrue(LabyrinthPlace.FLOORBOARDS.id().equals(answer.place()), "the door it barks behind leads to the floorboards, not " + answer.place());
+                }
+            }
+            helper.assertTrue(barking == 1, "exactly one door barks, found " + barking + " with seed " + seed);
+            helper.assertTrue(!data.hillaryScent(player) && io.github.knaitoe.theoldesthouse.labyrinth.Scents.place(data, player) == null, "the scent is spent once its door is dealt");
+        }
+        // Done with the floorboards, the same note still finds a story: any one still open.
+        data.setCompleted(LabyrinthPlace.FLOORBOARDS.id(), true);
+        var story = WitnessAccount.Story.of(LabyrinthPlace.FLOORBOARDS.id());
+        if (story != null) WitnessAccount.resolve(data, player, story, "resolved");
+        helper.assertTrue(!LabyrinthDealer.vignettesAvailable(data, player).contains(LabyrinthPlace.FLOORBOARDS), "the reader is done with the floorboards");
+        helper.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.Scents.giveStory(data, player, LabyrinthPlace.FLOORBOARDS) == io.github.knaitoe.theoldesthouse.labyrinth.Scents.Taken.ANY_STORY,
+                "with the floorboards done, the scent is any open story's");
+        LabyrinthDealer.dealPlace(data, player, LabyrinthPlace.JUNCTION, RandomSource.create(9));
+        int barking = 0;
+        for (LabyrinthPlace.DoorSpec spec : LabyrinthPlace.JUNCTION.doors()) {
+            LabyrinthData.Door door = data.door(LabyrinthPlace.JUNCTION.doorId(spec));
+            LabyrinthData.Deal answer = door == null ? null : data.deal(player, door);
+            if (answer != null && answer.bark()) {
+                barking++;
+                LabyrinthPlace dealt = LabyrinthPlace.byId(answer.place());
+                helper.assertTrue(dealt != null && dealt != LabyrinthPlace.FLOORBOARDS && LabyrinthDealer.vignettesAvailable(data, player).contains(dealt),
+                        "it leads to another story still open: " + answer.place());
+            }
+        }
+        helper.assertTrue(barking == 1 && !data.hillaryScent(player), "one door barks and the scent is spent, found " + barking);
+        helper.succeed();
+    }
+
     /** The Growl comes more often the deeper you are, but never often; the close ones only deep in. */
     @GameTest(template = "empty")
     public static void theGrowlComesMoreOftenDeeperButStaysSporadic(GameTestHelper helper) {

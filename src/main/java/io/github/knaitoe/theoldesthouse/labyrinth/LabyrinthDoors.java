@@ -373,6 +373,8 @@ public final class LabyrinthDoors {
         // a room people meet in, which takes them in by another of its doors (0.4.239).
         final LabyrinthData.Door entry=Wedges.way(player,from,HotelVignette.destinationEntry(player,from,LakeHouse.destinationEntry(player,suppliedEntry,place),place),place);
         if(entry==null)return;
+        // 0.4.559: a companion's scent that led here is spent once its holder goes through (Scents).
+        if(place!=null)Scents.arrived(LabyrinthData.get(player.server),player.getUUID(),place);
         MinecraftServer server = player.server;
         ServerLevel fromLevel = fromRead?server.getLevel(from.dimension):player.serverLevel();
         ServerLevel toLevel = server.getLevel(entry.dimension);

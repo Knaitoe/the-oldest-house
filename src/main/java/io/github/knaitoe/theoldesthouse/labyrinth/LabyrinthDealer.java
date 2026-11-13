@@ -723,8 +723,18 @@ public final class LabyrinthDealer {
         List<LabyrinthPlace> vignettes = YardStretch.stories(everyStory, here);
         boolean outside = YardStretch.waitsOutside(data, everyStory, vignettes, here);
         LabyrinthData.Door lucky = null;
-        boolean scent = data.hillaryScent(player) && !vignettes.isEmpty();
-        boolean scentOutside = data.hillaryScent(player) && outside;
+        // 0.4.559: a scent taken from a thing, or from a reader in a story, names its story (Scents). Out in the yard, the back door onto
+        // the yard carries it on; a story no longer open to the reader leaves no scent at all.
+        // A scent for a story inside, taken out in the yard, waits until the reader is back in (held).
+        LabyrinthPlace named = data.hillaryScent(player) ? Scents.place(data, player) : null;
+        boolean held = false;
+        if (named != null && !vignettes.contains(named)) {
+            if (!everyStory.contains(named)) { Scents.forget(data, player); data.setHillaryScent(player, false); named = null; }
+            else if (YardStretch.waitsOutside(data, List.of(named), List.of(), here)) { vignettes = List.of(); outside = true; }
+            else held = true;
+        }
+        boolean scent = data.hillaryScent(player) && !held && !vignettes.isEmpty();
+        boolean scentOutside = data.hillaryScent(player) && !held && outside;
         if (scent) {
             List<LabyrinthPlace> unfound = new ArrayList<>();
             for (LabyrinthPlace place : vignettes) {
@@ -732,10 +742,12 @@ public final class LabyrinthDealer {
                     unfound.add(place);
                 }
             }
-            if (!unfound.isEmpty()) {
+            if (named != null) vignettes = List.of(named);
+            else if (!unfound.isEmpty()) {
                 vignettes = unfound;
             }
             data.setHillaryScent(player, false);
+            Scents.dealt(data, player);
         }
         // 0.4.160: until a reader has entered every quiet room, the next of them takes the place of the stories the House
         // would deal. 0.4.163 (owner: "house navigation needs to be desperately balanced"): every door of the hall after one
@@ -746,7 +758,7 @@ public final class LabyrinthDealer {
         // 0.4.327 (owner: "the player can encounter unvoiced vignettes after the quiet rooms. But speak up is encountered/unlocks voiced
         // vignettes"): once the quiet rooms are done, Speak Up (SpeakUp) is one of the stories a story door can open on, at the stories'
         // own pace. It comes on one story door in three, and on the next one for certain once two other stories have been dealt.
-        boolean voiceOwed = !owing && !scent && !rescueNeeded(data, player) && LabyrinthBuilder.isPlaceReady(data, LabyrinthPlace.SPEAK_UP)
+        boolean voiceOwed = !owing && !scent && !scentOutside && !rescueNeeded(data, player) && LabyrinthBuilder.isPlaceReady(data, LabyrinthPlace.SPEAK_UP)
                 && SpeakUp.owed(data, player);
         boolean voiceHere = false;
         if (!owing && (!vignettes.isEmpty() || voiceOwed || outside)
@@ -796,7 +808,7 @@ public final class LabyrinthDealer {
                 // The story waits out in the yard: this door is the back door onto it. A scent goes on with the reader to find it there.
                 data.deal(player, door, LabyrinthPlace.YARD_TURNAROUND.id(), false, scentOutside);
             } else if (door == lucky) {
-                data.deal(player, door, pickVignette(data, player, vignettes, random).id(), true, scent);
+                data.deal(player, door, (named != null ? named : pickVignette(data, player, vignettes, random)).id(), true, scent);
                 if (voiceOwed) SpeakUp.storyDealt(data, player);
             } else if (trialOnly) {
                 // A different trial behind each door while there are trials enough.
