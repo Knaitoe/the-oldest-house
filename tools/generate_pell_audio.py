@@ -4,7 +4,8 @@ the home tape June plays in the evening, a birthday sung in her kitchen, through
 lock turning on each door when she locks up. From docs/PELL_HOUSE_NIGHT_0_4_530.md: her brush on the line at night, and the tin's
 lid. From docs/PELL_HOUSE_HAND_0_4_535.md: a door slammed in the laundry, and June's cry. From docs/PELL_HOUSE_TAPES_0_4_536.md: the
 shed's video deck taking a tape, and the woman on the tapes talking, through the television's small speaker (three takes, so her
-lines are not one clip over and over).
+lines are not one clip over and over). From docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md: the scrubbing brush on the line, one stroke out
+and back at a time, played as it is worked.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -24,6 +25,7 @@ ROWS = {
     'hand': ('A door slams, and a cry', 24),
     'tape_play': ('A video deck takes a tape', 12),
     'tape_voice': ("A woman's voice, on a tape", 12),
+    'scrub': ('A scrubbing brush on paint', 10),
 }
 # 0.4.536: sounds with more than one take; the game picks one each time.
 TAKES = {'tape_voice': 3}
@@ -320,8 +322,25 @@ def tape_voice(take):
     return out
 
 
+def scrub():
+    # A stiff brush worked hard out and back over painted concrete, wet: each way a coarse rasp, harder in the middle of the push,
+    # with the bristles' small catches on the grit, and under it the slosh of the water it was dipped in; the second way a little
+    # shorter and softer than the first. Played once every stroke, so it is short.
+    n = seconds(.4)
+    out = np.zeros(n)
+    for i, (at, length) in enumerate(((.0, .2), (.2, .17))):
+        k = seconds(length)
+        tk = times(k)
+        push = np.sin(np.pi * np.minimum(tk / length, 1)) ** 1.2
+        rasp = band(rng.standard_normal(k), 1800, 7500) * push * .7
+        grit = band((rng.random(k) > .985).astype(float), 1200, 6000) * 1.8 * push
+        water = band(rng.standard_normal(k), 120, 700) * push * .35
+        place(out, (rasp + grit + water) * (1 - .25 * i), at)
+    return out
+
+
 MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
-          'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3)}
+          'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub}
 
 
 def main():

@@ -169,7 +169,7 @@ public final class PellMorning {
     static void tick(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
         int J=PellPeople.JUNE;boolean still=h.way[J].isEmpty();
         // First light: the line dry; Callum in off it the first moment nobody sees.
-        if(h.time>=DAWN&&!h.dawned){dry(l,b);h.dawned=true;}
+        if(h.time>=DAWN&&!h.dawned){dry(l,b);PellScrub.repainted(l,b,h);h.dawned=true;}
         if(h.dawned&&h.callumOut)comeIn(l,b,h);
         switch(h.step-PellNight.SMALL_HOURS){
             case 0->{

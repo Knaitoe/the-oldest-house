@@ -1915,7 +1915,7 @@
       "model": "the_oldest_house:block/pell/thing/cutlery_1"
     },
     "facing=north,kind=cutlery,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/cutlery_0"
+      "model": "the_oldest_house:block/pell/thing/cutlery_2"
     },
     "facing=north,kind=cutlery,stage=3": {
       "model": "the_oldest_house:block/pell/thing/cutlery_0"
@@ -1929,7 +1929,7 @@
       "y": 90
     },
     "facing=east,kind=cutlery,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/cutlery_0",
+      "model": "the_oldest_house:block/pell/thing/cutlery_2",
       "y": 90
     },
     "facing=east,kind=cutlery,stage=3": {
@@ -1945,7 +1945,7 @@
       "y": 180
     },
     "facing=south,kind=cutlery,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/cutlery_0",
+      "model": "the_oldest_house:block/pell/thing/cutlery_2",
       "y": 180
     },
     "facing=south,kind=cutlery,stage=3": {
@@ -1961,7 +1961,7 @@
       "y": 270
     },
     "facing=west,kind=cutlery,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/cutlery_0",
+      "model": "the_oldest_house:block/pell/thing/cutlery_2",
       "y": 270
     },
     "facing=west,kind=cutlery,stage=3": {

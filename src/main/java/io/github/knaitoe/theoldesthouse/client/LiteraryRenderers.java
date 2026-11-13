@@ -403,6 +403,25 @@ public final class LiteraryRenderers {
                     body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=leftLeg.z=4;rightLeg.y=leftLeg.y=12.2F;
                     head.y=4.2F;body.y=3.2F;leftArm.y=rightArm.y=5.2F;
                 }
+                // 0.4.538: Callum on the last night, sat on the grass inside the line: his legs out in front of him along the ground
+                // (the hips two pixels up, so the legs lie on it), his body upright on them. Eating, what he was given is held in his
+                // left hand in his lap and his right goes to his mouth and back, his head bowed to it; after, both hands in his lap.
+                // His head keeps its own pitch (he looks up when he says his name), only bowed further while he eats.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.EATING,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.SITTING->{
+                    float hips=22;
+                    leftLeg.y=rightLeg.y=hips;leftLeg.z=rightLeg.z=0;leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftLeg.yRot=-.12F;rightLeg.yRot=.12F;leftLeg.zRot=rightLeg.zRot=0;
+                    body.xRot=0;body.y=hips-12;body.z=0;
+                    head.y=body.y;head.z=0;
+                    leftArm.y=rightArm.y=body.y+2;leftArm.z=rightArm.z=0;
+                    if(gesture==io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.EATING){
+                        float bite=Math.max(0,net.minecraft.util.Mth.sin(age*.22F));
+                        leftArm.xRot=-.85F;leftArm.yRot=.25F;leftArm.zRot=0;
+                        rightArm.xRot=-.9F-bite*.95F;rightArm.yRot=-.35F-bite*.15F;rightArm.zRot=0;
+                        head.xRot+=.3F-bite*.12F;
+                    }else{
+                        leftArm.xRot=-.5F;leftArm.yRot=.22F;leftArm.zRot=0;rightArm.xRot=-.5F;rightArm.yRot=-.22F;rightArm.zRot=0;
+                    }
+                }
                 default->{}
             }
             hat.copyFrom(head);

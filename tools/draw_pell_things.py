@@ -922,7 +922,8 @@ SHOES = ((2.5, 'b'), (5, 'b'), (9, 'r'), (11.5, 'r'))
 
 
 def cutlery(knives):
-    """The drawer he keeps: the house's missing spoons and forks laid in rows, neat as a shop's. From the second visit, a knife."""
+    """The drawer he keeps: the house's missing spoons and forks laid in rows, neat as a shop's. From the second visit, a knife; on the
+    last night (0.4.538) the knife gone, and the felt still pressed down where it lay."""
     im = wood('#c99a62', 52247)
     felt = cloth('#e8dcc4', 52249, 1)
     for y in range(1, 15):
@@ -935,8 +936,10 @@ def cutlery(knives):
             dot(im, x, 3, '#dfe3e5'); dot(im, x, 4, '#dfe3e5')
         else:
             dot(im, x - 1 if x > 2 else x, 3, '#dfe3e5'); dot(im, x, 2, '#dfe3e5')
-    if knives:
+    if knives == 1:
         line(im, [(14, y) for y in range(3, 10)], '#e9ecee'); line(im, [(14, y) for y in range(10, 14)], '#1e1a16')
+    elif knives == 2:
+        line(im, [(14, y) for y in range(3, 14)], '#cdbd9f'); dot(im, 14, 3, '#c2b193'); dot(im, 14, 13, '#c2b193')
     return im
 
 
@@ -962,7 +965,7 @@ def nessa():
 
 def callum():
     return {'mattress_head': mattress(0), 'mattress_foot': mattress(1), 'shoe_blue': shoe('#2a4a7a', 0, 52308), 'shoe_blue_top': shoe('#2a4a7a', 1, 52309),
-            'shoe_red': shoe('#8a3a2a', 0, 52310), 'shoe_red_top': shoe('#8a3a2a', 1, 52311), 'cutlery_0': cutlery(0), 'cutlery_1': cutlery(1),
+            'shoe_red': shoe('#8a3a2a', 0, 52310), 'shoe_red_top': shoe('#8a3a2a', 1, 52311), 'cutlery_0': cutlery(0), 'cutlery_1': cutlery(1), 'cutlery_2': cutlery(2),
             'cutlery_front': cutlery_front()}
 
 
@@ -1916,7 +1919,7 @@ def thing_models():
         shoe_els += [element([x, 0, 9], [x + 2, 2, 15], {'north': side, 'south': side, 'east': side, 'west': side, 'up': top}),
                      element([x, 2, 12], [x + 2, 3.5, 15], {'north': top, 'south': side, 'east': side, 'west': side, 'up': side})]
     out['shoes_0'] = m(shoe_els, {'b': 'shoe_blue', 'bt': 'shoe_blue_top', 'r': 'shoe_red', 'rt': 'shoe_red_top'}, 'shoe_blue')
-    for knives in range(2):
+    for knives in range(3):
         out[f'cutlery_{knives}'] = m([element([1, 0, 3], [15, 10, 16], {'north': 'f', 'south': 'v', 'east': 'v', 'west': 'v', 'up': 'v', 'down': 'v'}),
                                       element([2, 10, -1], [14, 13, 14], {'up': 'k', 'north': 'f', 'south': 'v', 'east': 'v', 'west': 'v', 'down': 'v'}, uv={'north': [2, 7, 14, 10]}),
                                       element([1, 13, 3], [15, 15, 16], {'up': 'v', 'north': 'v', 'south': 'v', 'east': 'v', 'west': 'v'})],

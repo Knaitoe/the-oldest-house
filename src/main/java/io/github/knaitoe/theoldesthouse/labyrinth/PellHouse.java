@@ -52,7 +52,8 @@ public final class PellHouse {
         if(PellThing.is(st)){thing(p,l,b,b.offset(rel),st,own);return true;}
         // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
         // 0.4.531: after first light, paint put down in the night is dry.
-        if(PellLine.is(st)){cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE),PellMorning.dawned(b)));return true;}
+        // 0.4.538: with the bucket in hand, the brush goes to work on it (PellScrubItem) instead.
+        if(PellLine.is(st)){if(PellScrub.holding(p))return false;cue(p,PellTexts.line(st.getValue(PellLine.SURFACE),st.getValue(PellLine.SHAPE)==PellLine.Shape.THIN,st.getValue(PellLine.STAGE),PellMorning.dawned(b)));return true;}
         // 0.4.533: in the pool, the band's missing tile and its odd one, and what is under the drain's grate.
         var detail=PellWeek.detail(st);
         if(detail!=null){cue(p,detail);if(rel.equals(PellSite.DRAIN))own.putBoolean("SawGoggles",true);return true;}
@@ -125,6 +126,9 @@ public final class PellHouse {
             // 0.4.536: a week in, the shed's tapes and the deck under its television play (PellTapes).
             case TAPES->{if(!PellTapes.shelf(p,b))cue(p,PellTexts.thing(kind,stage));}
             case SHED_TV->{if(!PellTapes.tv(p,b))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.538: the bucket is taken, to scrub the line with (PellScrub); on the last night the fridge has a plate in it.
+            case BUCKET->PellScrub.take(p,b,at,own);
+            case FRIDGE->{if(!PellScrub.fridge(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
     }

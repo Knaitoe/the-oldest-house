@@ -20,6 +20,9 @@ and where one float is missing the bare rope.
 
 0.4.534 (docs/PELL_HOUSE_KNIFE_0_4_534.md): the kitchen knife in Callum's hand at the sink in the night, held as the brushes are.
 
+0.4.538 (docs/PELL_HOUSE_LAST_NIGHT_0_4_538.md): the scrubbing brush from across the laundry's bucket, in the reader's hand on the
+last night, held as the brushes are.
+
 0.4.528 (docs/PELL_HOUSE_DETAIL_0_4_528.md), the owner: "add a little more detail to textures". Still sixteen pixels to the block;
 each thing drawn again with light from the upper left, an outline in a darker shade of its own colour where it stands against
 nothing, four or five tones where there were two, and what it is made of showing: the brush's cushion and bristles, the pan's
@@ -40,7 +43,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
-         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife')
+         'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife',
+         'pell_scrub')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
@@ -48,7 +52,7 @@ NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.
          'item.the_oldest_house.pell_tin': 'Paint Tin', 'item.the_oldest_house.pell_paintbrush': 'Paintbrush',
          'item.the_oldest_house.pell_breakfast': 'Breakfast', 'item.the_oldest_house.pell_receiver': 'Receiver',
          'item.the_oldest_house.pell_lane': 'Lane Rope', 'item.the_oldest_house.pell_lane_gap': 'Lane Rope',
-         'item.the_oldest_house.pell_knife': 'Kitchen Knife'}
+         'item.the_oldest_house.pell_knife': 'Kitchen Knife', 'item.the_oldest_house.pell_scrub': 'Scrubbing Brush'}
 
 
 def blank():
@@ -432,6 +436,58 @@ def knife():
     return im
 
 
+SCRUB_TIP, SCRUB_END = (13.4, 2.6), (2.6, 13.4)
+
+
+def scrub():
+    """0.4.538: the scrubbing brush, held as the other brushes are, along the diagonal: its wooden back on the side toward the light,
+    the varnish worn pale along its top edge and a groove cut along it for the fingers, outlined dark where it stands against nothing;
+    and its bristles on the other side in tufts, pale where they are dry and dark and wet at their ends, worn down short toward the top
+    right (the end it has always been pushed on), and a drop of water hanging from them."""
+    im = blank()
+    ax, ay = SCRUB_END[0] - SCRUB_TIP[0], SCRUB_END[1] - SCRUB_TIP[1]
+    length = math.hypot(ax, ay)
+    wood, bristle = {}, {}
+    for y in range(16):
+        for x in range(16):
+            px, py = x + .5 - SCRUB_TIP[0], y + .5 - SCRUB_TIP[1]
+            t = (px * ax + py * ay) / length / length
+            side = (px * ay - py * ax) / length
+            end = min(t, 1 - t) * length
+            if -2.8 <= side < 0 and end >= .3 and not (end < 1.3 and side < -2.1):
+                wood[(x, y)] = (t, side)
+            reach = 2.3 + 1.5 * t
+            if 0 <= side <= reach and end >= .9:
+                bristle[(x, y)] = (t, side, reach)
+    shape = set(wood) | set(bristle)
+    for (x, y), (t, side) in wood.items():
+        if edge(shape, x, y):
+            tone = '#4f3218'
+        elif side < -1.9:
+            tone = '#e0b67e' if t < .55 else '#d2a46b'
+        elif -1.5 < side < -.8:
+            tone = '#6e4723'  # the finger groove
+        elif side < -.8:
+            tone = '#b98a52'
+        else:
+            tone = '#8a5c2e'
+        dot(im, x, y, tone)
+    for (x, y), (t, side, reach) in bristle.items():
+        tuft = int(t * length / 1.5) % 2 == 0
+        if side < .35:
+            tone = '#3d2a1a'  # the shadow under the back
+        elif side > reach - .9:
+            tone = '#77705e' if tuft else '#5c584b'  # wet at the ends
+        else:
+            tone = '#e9dfc3' if tuft else '#bfb08c'
+        dot(im, x, y, tone)
+    # A drop of water hanging from the bristles, near the long end.
+    for x, y, tone in ((7, 14, '#9fc7dd'), (7, 15, '#d9eef7')):
+        if (x, y) not in shape:
+            dot(im, x, y, tone)
+    return im
+
+
 def lane():
     """0.4.533: the pool's lane rope, one sheet for its parts. A pale float (columns 0-4, rows 0-3: its length, lit along its top,
     shaded along its underside, ringed twice where it was moulded) and its end (6-9, rows 0-3, the corners rounded off); the same
@@ -596,14 +652,14 @@ def models():
             'pell_hairbrush': flat('pell_hairbrush', 'minecraft:item/handheld'), 'pell_lantern': lantern_model(), 'pell_tin': tin_model(),
             'pell_paintbrush': flat('pell_paintbrush', 'minecraft:item/handheld'), 'pell_breakfast': flat('pell_breakfast'),
             'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
-            'pell_knife': flat('pell_knife', 'minecraft:item/handheld')}
+            'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld')}
 
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); check = parser.parse_args().check
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
-              'pell_lane': lane(), 'pell_knife': knife()}
+              'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
     # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.

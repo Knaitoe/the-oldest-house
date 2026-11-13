@@ -79,8 +79,9 @@ public final class PellTexts {
             case STOOL->"A step stool by the freezer, worn where someone sits.";
             case POWER->"A note taped over the power point's switch: DO NOT SWITCH OFF.";
             case CORD->"The freezer's cord, taped to the floor every hand's width.";
-            case TROUGH->"The laundry trough. A scrubbing brush on its edge.";
-            case BUCKET->"A bucket.";
+            // 0.4.538: the brush is across the bucket, as the art has it; the bucket is taken to scrub the line (PellScrub).
+            case TROUGH->"The laundry trough. Its tap drips.";
+            case BUCKET->"A bucket of water, a scrubbing brush across it, its bristles worn to one side.";
             case CHLORINE->"A box of pool chlorine, far too big for one pool.";
             case WASHER->"The washing machine. Its lid is up, airing.";
             case CAMP_BED->"A camp bed, a sleeping bag on it. The concrete under it has an oil stain.";
@@ -499,6 +500,33 @@ public final class PellTexts {
         TAPE_SWAP="The tape in the deck goes back in its case. The deck takes the other.",
         /** On her rounds, come in for the tin while a tape plays. */
         TAPE_JUNE_OFF="June turns the deck off.";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.538, the last night (PellLastNight, PellScrub)
+    /** June from her chair to the first reader in, on the last night; heard further off. */
+    public static final String JUNE_LAST_WELCOME="That you, love? Early night tonight, all of us.",
+        LAST_WELCOME_FAR="June, calling from the front room: “That you, love? Early night tonight, all of us.”";
+    /** The bucket and the fridge. */
+    public static final String BUCKET_TAKEN="You take the bucket and its brush.",
+        HANDS_FULL="There is no room to carry it.",
+        FRIDGE_PLATE="In the fridge, a plate of dinner under cling film. You take it.",
+        FRIDGE_EMPTY="The fridge hums. There is nothing else in it to take.";
+    /** Callum on the line on the last night: stepping onto the cell being scrubbed; held out food on the visits before; held out food
+     *  when he has already eaten; taking it; and his name, the only thing he says. */
+    public static final String CALLUM_STANDS="Callum steps onto the line where the brush is, and stands there.",
+        CALLUM_WONT_TAKE="Callum looks at it. He does not take it.",
+        CALLUM_HAS_EATEN="He already has what he was given.",
+        CALLUM_TAKES="Callum takes it. He sits down on the grass inside the line, and eats.",
+        CALLUM_NAME="My name's Callum.";
+    /** A hand on Callum on the last night: on the line, and eating. */
+    public static final String[] CALLUM_ON_LINE={
+        "Callum does not move. His bare feet are on the paint.",
+        "He is looking at the house. He does not look at the hand on his arm.",
+        "He stays where he is, facing the house.",
+    },CALLUM_EATING={
+        "Callum eats, his head down over it.",
+        "He does not look up from it.",
+        "He eats all of it, slowly.",
+    };
     // ------------------------------------------------------------------------------------------------ 0.4.537, the false entries (PellEntries)
     /** In the older sibling's journal, in their own hand, as if they wrote it: after the knife, after June's hand, and after a night in
      *  the garage a week in (and on the last visit, when it has a morning). */
