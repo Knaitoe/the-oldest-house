@@ -29,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
  * <li><b>After Tilly answered:</b> lived in, and nobody home; the line fresh, still wet; on the door frame one more pencil mark, higher,
  *     with a later date and an N.</li>
  * </ul>
- * There is one house, shared by everybody dealt it, so it stands as its aftermath only while everybody at it has had their ending, and it
+ * Each house (one to each pair since 0.4.547, SceneInstances) is shared by everybody at it, so it stands as its aftermath only while everybody at it has had their ending, and it
  * is dressed only where the house would begin its visit again (Household.fresh): never in front of somebody it has been playing for. A
  * reader who has not finished it brings it back as it always was, and the visit begins again for them. Nothing here is credit: a reader
  * whose account still waits under the mat can read it here, as they could have at first light.

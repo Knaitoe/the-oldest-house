@@ -35,6 +35,9 @@ public final class SharedVignettes {
     public interface Together {
         /** The closing line. {@code ahead} and {@code behind} are player names; either may be empty, never both. */
         String coda(String outcome,List<String> ahead,List<String> behind);
+        /** 0.4.547: the same, for one reader, where the scene writes it from their own record (the Pell house names a reader's pair by
+         *  their part in the house). */
+        default String coda(LabyrinthData data,UUID reader,String outcome,List<String> ahead,List<String> behind){return coda(outcome,ahead,behind);}
     }
     /**
      * Private scenes that stand once rather than as a copy for each reader (owner, October 28): reading to Harrigan,

@@ -38,14 +38,28 @@ public final class PellHouse {
         var l=p.serverLevel();var here=readers(l,b);if(!here.contains(p))here.add(p);
         if(PellAftermath.holds(l,b,here))PellPeople.household(b);else PellPeople.ensure(l,b);
     }
+    /** 0.4.547: in a reader's own record, who else they have been at the house with, by name, in the order they met: their own pair, in a
+     *  house of their own (SceneInstances), for their account (PellTexts.others). */
+    public static final String WITH="With0547";
     /** Every reader tick. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!own.getBoolean("WentIn")&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){own.putBoolean("WentIn",true);save(p,own);}
         // The people are made here if they are missing; they look about on their own tick (PellPeople.serverTick). 0.4.542: not while
         // the house stands as its aftermath, whose tick runs there too.
-        if(PellAftermath.holds(p.serverLevel(),b,readers(p.serverLevel(),b)))PellPeople.household(b);else PellPeople.ensure(p.serverLevel(),b);
+        var here=readers(p.serverLevel(),b);
+        if(PellAftermath.holds(p.serverLevel(),b,here))PellPeople.household(b);else{PellPeople.ensure(p.serverLevel(),b);met(p,own,here);}
         // 0.4.537: an entry due in their journal goes in, in their own hand, the first moment it can.
         PellEntries.reader(p,own);
+    }
+    /** 0.4.547: whoever else is at this reader's house with them, both with the house still to finish, is kept in their record (WITH). */
+    static void met(ServerPlayer p,CompoundTag own,java.util.List<ServerPlayer> here){
+        if(own.getBoolean("Ended"))return;var with=own.getList(WITH,net.minecraft.nbt.Tag.TAG_STRING);boolean changed=false;
+        for(var q:here){
+            if(q==p||!q.isAlive()||q.isSpectator()||own(q).getBoolean("Ended"))continue;var name=q.getGameProfile().getName();boolean known=false;
+            for(int i=0;i<with.size()&&!known;i++)known=with.getString(i).equals(name);
+            if(!known){with.add(net.minecraft.nbt.StringTag.valueOf(name));changed=true;}
+        }
+        if(changed){own.put(WITH,with);save(p,own);}
     }
     /** Everyone at this house now. */
     static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){

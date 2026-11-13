@@ -125,7 +125,7 @@ final class CoopAccounts {
         together(KEPT,with("%s walked the machine with me."));
         together(LAST_ORDERS,with("%s {was} in the bar with me."));
         together(BIKE_NIGHT,with("%s {was} out on a bike that night too."));
-        together(PELL_HOUSE,with("%s {was} in that street too."));
+        together(PELL_HOUSE,PELL);
         together(TALL_GRASS,with("%s {was} on the road with me."));
         together(GROWING_THINGS,with("%s {was} at the Barretts' with me."));
         together(LAST_CROSSING,with("%s {was} on the roll with me."));
@@ -169,6 +169,20 @@ final class CoopAccounts {
         SharedVignettes.draft(USHER,VAULT);
         SharedVignettes.draft(MOTHER_DEN,KEEPER);
     }
+
+    /**
+     * 0.4.547 (the owner, 13 November: "ensure you're adjusting the accounts to reflect accordingly"): each Pell house is one pair's, so
+     * whoever was there is the reader's own pair, named by their part in it as the reader's record has it (PellTexts.company). Without a
+     * record, as before, the house on Wren Close.
+     */
+    static final SharedVignettes.Together PELL=new SharedVignettes.Together(){
+        @Override public String coda(String outcome,List<String> ahead,List<String> behind){return with("%s {was} at the house on Wren Close with me.").coda(outcome,ahead,behind);}
+        @Override public String coda(LabyrinthData data,UUID reader,String outcome,List<String> ahead,List<String> behind){
+            var all=new ArrayList<>(ahead);all.addAll(behind);
+            var line=PellTexts.company(LiteraryVignettes.personal(data,reader,PELL_HOUSE),all);
+            return line.isEmpty()?coda(outcome,ahead,behind):line;
+        }
+    };
 
     /** The loose board: whoever takes it up stops the sound for everyone in the room. */
     static final SharedVignettes.Scene FLOOR=new SharedVignettes.Scene(){
