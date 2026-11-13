@@ -63,6 +63,8 @@ public final class LakeHouseCanoe extends Boat {
     public static final int MAX_CHIPS=2;
     /** 0.4.560: how far out from a mouth of the culvert a canoe coming in is eased toward the gap, and how far either side of it. */
     static final double MOUTH_REACH=8,MOUTH_WIDE=3;
+    /** How far along the hull each bench's hands meet the walls from, forward of its middle and aft, and how far across they reach. */
+    static final double FRONT_BENCH=.35,BACK_BENCH=-.35,HAND_REACH=1.35;
     /** Where the canoes wait, one per reader: either side of the dock's far end. */
     static final BlockPos[] SPOTS={new BlockPos(4,-1,-19),new BlockPos(-4,-1,-19),new BlockPos(4,-1,-16),new BlockPos(-4,-1,-16)};
     private @Nullable UUID owner;
@@ -111,10 +113,15 @@ public final class LakeHouseCanoe extends Boat {
     /**
      * 0.4.560: where the readers' hands do the work and the paddles cannot: under the culvert's roof, or between its walls where its
      * trough runs out to either lake. Only the culvert's own concrete counts, so no narrow place elsewhere takes the paddles away.
+     * 0.4.564 (run 1596): the walls are looked for where the front bench's hands reach them, not at the middle of the hull.
+     * Measured at the middle, a canoe going out of either mouth came to a place where its middle was still between the walls, so
+     * the paddles were still taken away, while the front bench's hands already reached past the walls' ends, so no stroke could be
+     * made; a canoe that glided to a stop there could go no further. Now the paddles come back the moment those hands are past the
+     * walls.
      */
     public boolean pushable(){return underLowRoof()||isVehicle()&&culvertWall(-1)&&culvertWall(1);}
     private boolean culvertWall(int side){
-        var hit=wallHit(side,0,1.35);if(hit==null)return false;
+        var hit=wallHit(side,FRONT_BENCH,HAND_REACH);if(hit==null)return false;
         var state=level().getBlockState(hit.getBlockPos());return state.getBlock() instanceof CulvertBlock||state.is(LakeHouseRegistry.CULVERT_MARK.get());
     }
     /** The wall a hand reaches across the culvert on one side, from a point along the hull, or none. */
@@ -149,7 +156,7 @@ public final class LakeHouseCanoe extends Boat {
      * From the front bench, or (0.4.560) the back. A native 1.375-wide hull can sit against either wall of the two-wide channel; the
      * opposite wall is then 1.3125 away, and a 1.2 reach stranded an off-centre original.
      */
-    public boolean wallWithinReach(int side,int seat){return (side==-1||side==1)&&wallHit(side,seat==1?-.35:.35,1.35)!=null;}
+    public boolean wallWithinReach(int side,int seat){return (side==-1||side==1)&&wallHit(side,seat==1?BACK_BENCH:FRONT_BENCH,HAND_REACH)!=null;}
     /** How far the nearest wall is across the culvert on one side (-1 left, 1 right), up to two blocks. */
     double wallDistance(int side){
         var from=position().add(0,.6,0);var end=from.add(right().scale(side*2.0));

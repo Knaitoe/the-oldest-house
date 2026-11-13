@@ -59,6 +59,25 @@ first runs failed on four things, each a fault in the test:
 - The three lake house cases that hold Tess to the same checks.
 - The quick checks and the structure halves check. `together` runs in the structure suite's rest half (`tools/structure_groups.py`).
 
+## Run 1596 (0.4.562)
+
+Every job passed but one. **live-multiplayer** stopped at the culvert (phase 49): both readers pushed hand over hand under the
+roof, left and right, and both canoes then glided to a stop at the north mouth and stayed there for the rest of the two minutes.
+
+The hands and the paddles disagreed about where the walls end, a fault in 0.4.560's culvert. The paddles were taken away while the
+middle of the hull was between the walls (`LakeHouseCanoe.pushable`), but a stroke from the front bench needs the walls where that
+bench's hands reach them, a third of a block ahead of the middle (`wallWithinReach`). For the last third of a block of either trough,
+going out, the paddles were gone and no stroke could land. A canoe that glided through that stretch went on, and one that came to a
+stop in it could go no further. Both of the proof's canoes stopped there; a reader could have too.
+
+Now both ask the same question: the walls are looked for where the front bench's hands reach them, and the paddles come back the
+moment those hands are past the walls' ends, at either mouth. The trough case (`theBackBenchPushesTooAndTheMouthsTakeTheBow`) puts a
+canoe where both stopped, and then walks one along the whole culvert and past both mouths, both ways and across its width, holding
+that nowhere are the paddles taken where the front bench cannot push. The case fails without the fix, at the place the proof's
+canoes stopped. The proof was the first run to take a canoe out of the north mouth since 0.4.560: run 1595 stopped before the canoes.
+
+Locally: the lake house namespace, 21 of 21.
+
 ## Next in the audit
 
 Every story in the Witness pool (88), how it holds more than one reader, and what proves it: docs/MULTIPLAYER_AUDIT.md.

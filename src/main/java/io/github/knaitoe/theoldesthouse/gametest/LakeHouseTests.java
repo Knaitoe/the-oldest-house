@@ -320,6 +320,15 @@ public final class LakeHouseTests {
             for(int i=0;i<40&&canoe.getZ()>b.getZ()-104;i++){canoe.easeIn();canoe.setDeltaMovement(canoe.getDeltaMovement().x,0,-.25);canoe.move(net.minecraft.world.entity.MoverType.SELF,canoe.getDeltaMovement());}
             h.assertTrue(canoe.getZ()<b.getZ()-101&&Math.abs(canoe.getX()-(b.getX()+1))<.32,"the canoe went into the trough between its walls: "+canoe.position().subtract(Vec3.atLowerCornerOf(b)));
             h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(canoe.getYRot()-180))<10,"and turned to the channel: "+canoe.getYRot());
+            // 0.4.564 (run 1596): two canoes going out of the north mouth glided to a stop with the middle of the hull in the trough's
+            // last block. The paddles were taken away there, and the front bench's hands already reached past the walls' ends, so
+            // neither could go on. Nowhere along the culvert or past either mouth may the paddles be taken where those hands cannot push.
+            canoe.moveTo(b.getX()+1,b.getY()-.35,b.getZ()-126.704,180,0);canoe.setDeltaMovement(Vec3.ZERO);
+            h.assertTrue(!canoe.pushable(),"where both canoes stopped, the front bench's hands past the walls' ends, the paddles are back");
+            for(double x:new double[]{.7,1,1.3})for(float yaw:new float[]{180,0})for(int i=0;i<=700;i++){
+                double z=b.getZ()-96-i*.05;canoe.moveTo(b.getX()+x,b.getY()-.35,z,yaw,0);
+                h.assertTrue(!canoe.pushable()||canoe.wallWithinReach(-1,0)&&canoe.wallWithinReach(1,0),"wherever the paddles are taken away the front bench reaches both walls: x "+x+", z "+(z-b.getZ())+", heading "+yaw);
+            }
             p.stopRiding();q.stopRiding();h.succeed();
         });
     }
