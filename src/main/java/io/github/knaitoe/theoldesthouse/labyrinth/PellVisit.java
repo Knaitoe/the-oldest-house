@@ -742,7 +742,7 @@ public final class PellVisit {
         // June looks at what she is doing; Tilly keeps still.
         h.moving[J]=true;h.moving[T]=true;june.setYHeadRot(PellPeople.yawTo(june,tilly.getEyePosition()));tilly.setYHeadRot(tilly.getYRot());
         boolean brushing=h.brushSaid<4,week=h.visit>=2;
-        if(brushing&&(now-h.brushedAt)%30==0)l.playSound(null,june.getX(),june.getY()+1,june.getZ(),PellRegistry.BRUSH.get(),SoundSource.NEUTRAL,.6F,1F);
+        if(brushing&&now%PellPeople.BRUSH_STROKE==3)l.playSound(null,june.getX(),june.getY()+1,june.getZ(),PellRegistry.BRUSH.get(),SoundSource.NEUTRAL,.6F,1F);
         if(brushing&&(now-h.brushedAt)%10==0)present(june,"SawHairBrushed",here,SEE_NEAR,b);
         if(!ready(h,now,june)||!ready(h,now,tilly))return;
         switch(h.brushSaid){

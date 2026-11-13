@@ -1,3 +1,5 @@
+November 13 candidate 0.4.566 (docs/PELL_HOUSE_NOTES_0_4_566.md): a scene that runs in visits says when a visit is over and the next one is through the House's door (the Pell house does, PellHouse.leaving); its people are drawn from their own painted arms where the two differ; require the Pell house namespace (52 cases).
+
 November 13 candidate 0.4.565 (docs/TOGETHER_SCENES_0_4_565.md): two-reader cases for every story the House builds in its halls; require the together namespace (84 cases), the cast namespace (18), the lake house namespace and the shared-door cases (including aReaderPutInASecondPlaceStepsOnFromThere). A new story gets a TogetherSceneTests case (or a TogetherConductTests case if it talks) and a row in docs/MULTIPLAYER_AUDIT.md.
 
 November 13 candidate 0.4.564 (docs/TOGETHER_CHECKS_0_4_564.md): two-reader cast checks; no scene change, no Witness change. Require the together namespace (18 cases), the cast namespace (18) and the three lake house cases that use CastConduct. A new talking scene gets a case in both namespaces.

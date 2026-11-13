@@ -4,6 +4,7 @@
   "textures": {
     "o": "the_oldest_house:block/pell/door_inner_0",
     "i": "the_oldest_house:block/pell/door_inner_0",
+    "k": "the_oldest_house:block/pell/door_knob",
     "particle": "the_oldest_house:block/pell/door_inner_0"
   },
   "elements": [

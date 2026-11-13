@@ -367,6 +367,9 @@ public final class PellTexts {
         GAIL_WEEK_BYE="That's the first week done. I'll ring again next week. Put June back on for me, would you?",
         TELL_WEEK_FINE="It's fine.",TELL_WEEK_NO_SLEEP="I'm not sleeping much.",
         JUNE_WEEK_BYE="Next week, then. Bye now, love.",
+        // 0.4.566: June, once a visit is over, to whoever is near her: out into the day (PellHouse.leaving).
+        JUNE_SEND_OUT="Go on, love, out you go. Get some sun on you. I'll be here.",
+        JUNE_SEND_OUT_WEEK="Go on out for a bit, love. I've the washing to get on with.",
         // June at the pool, and in the water.
         JUNE_OUT_OF_POOL="Out you come, love. I'm locking it.",
         JUNE_SWIMMING="June doesn't stop. She turns at the wall and pushes off again.",
@@ -1168,5 +1171,17 @@ public final class PellTexts {
         p.add(coop?"As I went past, Tilly put something in my hand: the spare rubber tip from the cane.":"As I went past, Tilly put something in my hand: the spare rubber tip from her cane.");
         p.add("I went down the path, over the line, and out into the street. Behind me nobody was calling any name at all.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.PELL_HOUSE),name,pages(String.join("\n\n",p)));
+    }
+
+    /** 0.4.566: June's word sending the readers out once a visit is over. */
+    public static String sendOut(int visit){return visit>=2?JUNE_SEND_OUT_WEEK:JUNE_SEND_OUT;}
+    /**
+     * 0.4.566: the House's word, in grey, once a reader has had all of a visit: this day has nothing more in it, and the next visit is
+     * through the door they came in by.
+     */
+    public static String leaveHint(int visit,boolean ended){
+        if(ended)return "The house has nothing more for you. Go back out the way you came.";
+        return visit>=2?"Nothing more will happen today. Go back out the way you came; when you come again, it will be later still."
+                :"Nothing more will happen today. Go back out the way you came; when you come again, it will be a week on.";
     }
 }

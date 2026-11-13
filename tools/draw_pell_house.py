@@ -651,8 +651,7 @@ def door(upper, kind):
         y0, y1 = (2, 14) if upper else (1, 13)
         fill(im, 3, y0, 13, y1, shade(base, -9)); fill(im, 4, y0 + 1, 12, y1 - 1, shade(base, 3))
         inset(im, 3, y0, 13, y1, 10); bevel(im, 4, y0 + 1, 12, y1 - 1, 8)
-        if not upper:
-            fill(im, 12, 12, 14, 14, '#b8a25a'); dot(im, 12, 12, '#e3d08c'); dot(im, 13, 13, '#8a7638'); dot(im, 13, 14, shade(base, -16))
+        # 0.4.566: no knob painted on; the door's model has one of its own (fitting_models).
     else:
         for y in (3, 12):
             fill(im, 1, y, 15, y + 2, shade(base, -22)); fill(im, 1, y, 15, y + 1, shade(base, -14)); fill(im, 1, y + 2, 15, y + 3, shade(base, -30))
@@ -871,6 +870,8 @@ def faces():
     for kind in ('inner', 'garage', 'shed'):
         for upper in (0, 1):
             out[f'door_{kind}_{upper}'] = door(upper, kind)
+    # 0.4.566: the inner doors' knobs, in their own brass.
+    out['door_knob'] = metal('#b08a3a', 52590)
     for upper in (0, 1):
         out[f'door_garage_in_{upper}'] = door_back(upper, 'garage')
         out[f'screen_{upper}'] = screen(upper)
@@ -937,11 +938,19 @@ def fitting_models():
             if not open_:
                 els = [element([0, 0, thick[0]], [16, 16, thick[1]], {'north': 'o', 'south': 'i', 'east': 'o', 'west': 'o', 'up': 'o', 'down': 'o'},
                                uv={'east': [0, 0, 1, 16], 'west': [15, 0, 16, 16], 'up': [0, 0, 16, 1], 'down': [0, 15, 16, 16]})]
+                if name == 'door' and not upper:
+                    # 0.4.566 (owner: "door handles are in the corner"): the knob was painted in the lower half's bottom corner, and
+                    # on the same picture for both faces, so from one side it was on the hinge's edge. A knob of its own on each face
+                    # now, at a hand's height, by the edge away from the hinge (the hinge is at x 0, where the open door lies): a
+                    # round plate on the door and the knob on it.
+                    for plate, knob in (((6.75, 7), (6, 6.75)), ((9, 9.25), (9.25, 10))):
+                        els.append(element([12.5, 12.75, plate[0]], [14.5, 14.75, plate[1]], {'all': 'k'}))
+                        els.append(element([13, 13.25, knob[0]], [14, 14.25, knob[1]], {'all': 'k'}))
             else:
                 w = thick[1] - thick[0]
                 els = [element([0, 0, 0], [w, 16, 16], {'east': 'i', 'west': 'o', 'north': 'o', 'south': 'o', 'up': 'o', 'down': 'o'},
                                uv={'north': [0, 0, 1, 16], 'south': [15, 0, 16, 16], 'up': [0, 0, 1, 16], 'down': [0, 0, 1, 16]})]
-            m[f'{name}_{stage}'] = model(els, {'o': o, 'i': i}, o)
+            m[f'{name}_{stage}'] = model(els, {'o': o, 'i': i, 'k': 'door_knob'}, o)
     m['roller_0'] = model([element([0, 0, 6], [16, 16, 10], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'up': 'r', 'down': 'r'})], {'r': 'roller'}, 'roller')
     # A window: an aluminium frame in the wall's thickness, and a pane. Clear; blinds down; painted over from inside. Clear glass
     # is drawn translucent: under cutout its faint tint would show as a solid pane, and the garage window has to be seen through.

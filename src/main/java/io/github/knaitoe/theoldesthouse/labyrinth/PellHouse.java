@@ -50,7 +50,38 @@ public final class PellHouse {
         if(PellAftermath.holds(p.serverLevel(),b,here))PellPeople.household(b);else{PellPeople.ensure(p.serverLevel(),b);met(p,own,here);}
         // 0.4.537: an entry due in their journal goes in, in their own hand, the first moment it can.
         PellEntries.reader(p,own);
+        leaving(p,b,own);
     }
+    /**
+     * 0.4.566 (owner, playing the house: "the player should also be sort of prompted on when to leave, so they're not trying to wait
+     * for another day to pass without realizing they should leave and come back"). A visit is a reader's once Gail has rung and June
+     * has hung up (PellWeek.done), or once the last night has ended; after that the morning waits for nothing, and the next visit
+     * comes only by going out through the House's door and coming back. So, once a reader has had all of a visit: a while later June
+     * sends whoever is near her out into the day, and a while after that the House says plainly, once, that this day is done and the
+     * house will have moved on when they come back; once more, later, in passing, if they are still here.
+     */
+    static void leaving(ServerPlayer p,BlockPos b,CompoundTag own){
+        int visit=own.getInt("Visit");if(visit<=0||own.getInt("Beat")<visit||p.isSpectator())return;
+        long now=p.serverLevel().getGameTime();
+        if(own.getInt(DONE_VISIT)!=visit){own.putInt(DONE_VISIT,visit);own.putLong(DONE_AT,now);own.putInt(TOLD,0);save(p,own);return;}
+        long since=now-own.getLong(DONE_AT);int told=own.getInt(TOLD);boolean ended=own.getBoolean("Ended");
+        if(told==0&&since>=SEND_OUT){
+            var h=PellPeople.household(b);var june=PellPeople.find(p.serverLevel(),b,PellPeople.JUNE);
+            boolean hers=!ended&&june!=null&&june.isAlive()&&h.sentOut!=visit&&june.distanceToSqr(p)<16*16;
+            // In the middle of something (a line still in the air, or her own business), she says it when she is done, if before the House would.
+            if(hers&&!PellVisit.ready(h,now,june)&&since<HINT)return;
+            if(hers){h.sentOut=visit;PellVisit.say(h,june,PellPeople.JUNE,PellTexts.sendOut(visit),now);}
+            own.putInt(TOLD,1);save(p,own);
+        }else if(told==1&&since>=HINT){
+            p.displayClientMessage(Component.literal(PellTexts.leaveHint(visit,ended)).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);own.putInt(TOLD,2);save(p,own);
+        }else if(told==2&&since>=AGAIN){
+            p.displayClientMessage(Component.literal(PellTexts.leaveHint(visit,ended)).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);own.putInt(TOLD,3);save(p,own);
+        }
+    }
+    /** 0.4.566: in a reader's record, the visit they were last seen to have had all of, when, and how far the telling has got. */
+    static final String DONE_VISIT="DoneVisit0566",DONE_AT="DoneAt0566",TOLD="ToldToGo0566";
+    /** 0.4.566: how long after a visit is had June sends the readers out; the House says so; and says so again. */
+    public static final int SEND_OUT=300,HINT=600,AGAIN=3000;
     /** 0.4.547: whoever else is at this reader's house with them, both with the house still to finish, is kept in their record (WITH). */
     static void met(ServerPlayer p,CompoundTag own,java.util.List<ServerPlayer> here){
         if(own.getBoolean("Ended"))return;var with=own.getList(WITH,net.minecraft.nbt.Tag.TAG_STRING);boolean changed=false;
