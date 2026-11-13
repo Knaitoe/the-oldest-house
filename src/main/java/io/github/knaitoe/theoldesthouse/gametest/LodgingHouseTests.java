@@ -246,4 +246,46 @@ public final class LodgingHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="lodging_rooms") public static void roomsDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.551 (the owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): six readers to a
+     * house. A seventh waits at the House while a house of their own is made ready, built as the first is, and goes into it by its own
+     * door; one of the six goes back into theirs.
+     */
+    @GameTest(template="empty",batch="lodging_copy",timeoutTicks=24000)
+    public static void aSeventhReaderIsGivenAHouseOfTheirOwn(GameTestHelper h){
+        var f=house(h);var l=f.level(P);var b=f.base(P);var server=l.getServer();final ServerPlayer[] p=new ServerPlayer[LodgingHouse.PARTY+1];final BlockPos[] theirs={null};
+        var whole=new AABB(b.getX()+LodgingSite.WEST,b.getY()+LodgingSite.CELLAR_SLAB,b.getZ()+LodgingSite.BACK,b.getX()+LodgingSite.EAST+1,b.getY()+LodgingSite.ROOF+1,b.getZ()+LodgingSite.FRONT+1);
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==LodgingHouse.PARTY&&LodgingHouse.PARTY==6,"the lodging house has copies, six readers to a house");
+                for(int i=0;i<LodgingHouse.PARTY;i++)p[i]=f.player("lodging_copy"+i,P);
+                var late=NativeTestPlayers.survival(h,"lodging_copy_late");p[LodgingHouse.PARTY]=late;f.players.add(late);
+                late.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);late.setNoGravity(true);
+                h.assertTrue(SceneInstances.held(server,P,0,late.getUUID())==6&&SceneInstances.held(server,P,0,p[0].getUUID())==5,"six in the house: full to a seventh, never to one of the six");
+                var e=SceneInstances.enter(late,P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the seventh's door waits while a house of their own is made ready: "+e);
+                var mine=SceneInstances.enter(p[0],P);
+                h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the six goes back into theirs: "+mine);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second house to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,P,1);var late=p[LodgingHouse.PARTY];
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(late,P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry"))&&SceneInstances.kept(f.data(),late.getUUID(),P)==1,"the seventh goes into it by its own door: "+e);
+                h.assertTrue(SceneInstances.held(server,P,1,late.getUUID())==0,"and nobody else is in it");
+                var by=theirs[0].subtract(b);f.chunks.hold(l,whole);f.chunks.hold(l,whole.move(by.getX(),by.getY(),by.getZ()));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"both houses are resident"))
+            .thenExecute(()->{
+                // Built as the first is: the terms on the hall table, the frames, the furniture, the ratchet under the house.
+                var by=theirs[0].subtract(b);
+                for(var at:List.of(LodgingSite.SOURCE,LodgingSite.HALL_STAND,LodgingSite.DANIEL_FRAME,LodgingSite.DANIEL_DOOR,LodgingSite.bed(0),LodgingSite.bed(5),LodgingSite.SETTEE,LodgingSite.RANGE,LodgingSite.KEY_HOOK,LodgingSite.RATCHET,LodgingSite.DEAD_POST,LodgingSite.ONWARD)){
+                    var first=l.getBlockState(b.offset(at));var second=l.getBlockState(b.offset(at).offset(by));
+                    h.assertTrue(!first.isAir()&&second.equals(first),"the second house has what the first has at "+at+": "+first+" and "+second);
+                }
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="lodging_copy") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();done();}
 }

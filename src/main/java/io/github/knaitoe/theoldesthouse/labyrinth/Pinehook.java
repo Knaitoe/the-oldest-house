@@ -302,7 +302,9 @@ public final class Pinehook {
     }
     /** 0.4.367: dealt once the weekend can be finished, to a reader who hasn't finished it, standing with at least one other (the
      * proposal's two to six); a reader alone can still finish one they are in. */
-    public static final int MIN_PARTY=2;
+    public static final int MIN_PARTY=2,MAX_PARTY=6;
+    /** 0.4.551: the weekend's roll, whose places it keeps while they step out (SceneInstances.held). */
+    public static Set<UUID> places(BlockPos b){var r=run(b);return r==null?Set.of():Set.copyOf(r.roll);}
     public static boolean dealable(LabyrinthData d,UUID p){
         if(LiteraryVignettes.personal(d,p,PLACE).getBoolean("Completed"))return false;
         return LastCrossing.crewAround(p)>=MIN_PARTY;

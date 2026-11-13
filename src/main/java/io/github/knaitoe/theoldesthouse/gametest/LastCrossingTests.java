@@ -991,4 +991,59 @@ public final class LastCrossingTests {
                 h.assertTrue(LastCrossingNightTwo.turned(b).isEmpty(),"the turned themselves again in the morning");
                 h.succeed();});
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.551, a crossing of their own
+    /**
+     * The owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full". A crossing holds six: its
+     * crew on the roll, whether or not they are on it just now, and anybody else at it. Latecomers come in partway while there is a
+     * place; a seventh waits while a crossing of their own is made ready, built as the first is, and goes into it; one of the crew who
+     * steps out finds their place kept.
+     */
+    @GameTest(template="empty",batch="last_crossing_copy",timeoutTicks=24000)
+    public static void aSeventhReaderIsGivenACrossingOfTheirOwn(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);var c=new ServerPlayer[4];final ServerPlayer[] late=new ServerPlayer[3];final BlockPos[] theirs={null};var server=l.getServer();
+        java.util.function.Consumer<ServerPlayer> house=p->{p.stopRiding();p.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);p.setNoGravity(true);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);};
+        SceneInstances.fixtureCap(1);
+        crew(f,h,c,"lc_copy")
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==LastCrossing.MAX_CREW&&LastCrossing.MAX_CREW==6,"a crossing has copies, six places to a crossing");
+                for(int i=0;i<late.length;i++){late[i]=NativeTestPlayers.survival(h,"lc_copy_late"+i);f.players.add(late[i]);house.accept(late[i]);}
+                // Four on the roll, the day begun: two places left. A latecomer goes in partway, as one always has.
+                var first=SceneInstances.enter(late[0],P);
+                h.assertTrue(first.door()!=null&&first.copy()==0&&SceneInstances.held(server,P,0,late[0].getUUID())==4,"a latecomer goes into the crossing that has room: "+first);
+                h.assertTrue(SceneInstances.copies(f.data(),P)==1,"and with one place left after them, the next crossing is made ready ahead");
+                f.arrive(late[0],P);
+                h.assertTrue(f.own(late[0],P).getBoolean("Partway"),"they come in after the roll has been called");
+                var second=SceneInstances.enter(late[1],P);
+                h.assertTrue(second.door()!=null&&second.copy()==0,"so does another, to the last place: "+second);
+                f.arrive(late[1],P);
+                // Six places held: the crossing is full.
+                var full=SceneInstances.enter(late[2],P);
+                h.assertTrue(SceneInstances.held(server,P,0,late[2].getUUID())==6&&full.door()==null&&full.waiting(),"a seventh waits while a crossing of their own is made ready: "+full);
+                // One of the crew steps out to the House: their place is kept for them.
+                house.accept(c[0]);
+                h.assertTrue(SceneInstances.held(server,P,0,late[2].getUUID())==6&&SceneInstances.enter(late[2],P).door()==null,"a place on the roll is held while its reader is out");
+                var back=SceneInstances.enter(c[0],P);
+                h.assertTrue(back.door()!=null&&back.copy()==0,"and is theirs when they come back: "+back);
+                f.arrive(c[0],P);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second crossing to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,P,1);
+                h.assertTrue(theirs[0].getX()<=b.getX()-SceneInstances.WEST&&theirs[0].getY()==b.getY()&&theirs[0].getZ()==b.getZ(),"it stands a million blocks west of the first: "+theirs[0]);
+                var e=SceneInstances.enter(late[2],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry"))&&SceneInstances.kept(f.data(),late[2].getUUID(),P)==1,"the seventh goes into it by its own door: "+e);
+                h.assertTrue(LastCrossing.phase(theirs[0])<0&&LastCrossing.places(theirs[0]).isEmpty()&&SceneInstances.held(server,P,1,late[2].getUUID())==0,"nothing has begun there: it is a crossing of its own");
+                // Its station stands as the first's does: the porch, the clipboard on it.
+                var by=theirs[0].subtract(b);f.chunks.hold(l,box(f).move(by.getX(),by.getY(),by.getZ()));
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the second station is resident"))
+            .thenExecute(()->{
+                // The first crossing's roll is called (its clipboard has the names on it); the second's is not yet.
+                var by=theirs[0].subtract(b);var at=b.offset(LastCrossingSite.CLIPBOARD);
+                h.assertTrue(l.getBlockState(at).equals(CrossingBlock.of(Kind.CLIPBOARD,Direction.SOUTH,1)),"the first crossing's roll is on its clipboard: "+l.getBlockState(at));
+                h.assertTrue(l.getBlockState(at.offset(by)).equals(CrossingBlock.of(Kind.CLIPBOARD,Direction.SOUTH)),"the second station has its own clipboard on its porch, its roll not yet called: "+l.getBlockState(at.offset(by)));
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="last_crossing_copy") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
 }

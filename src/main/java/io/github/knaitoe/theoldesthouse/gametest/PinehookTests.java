@@ -593,4 +593,38 @@ public final class PinehookTests {
                 h.assertTrue(WitnessAccount.count(f.data(),c[0].getUUID())==1,"a Witness source");})
             .thenSucceed();
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.551, a weekend of their own
+    /**
+     * The owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full". Six on the weekend's roll is a
+     * full cabin, though five of them have stepped out: a seventh reader waits while a weekend of their own is made ready, and goes into
+     * it; one of the six goes back to theirs.
+     */
+    @GameTest(template="empty",batch="pinehook_copy",timeoutTicks=24000)
+    public static void aSeventhReaderIsGivenAWeekendOfTheirOwn(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p=new ServerPlayer[2];final BlockPos[] theirs={null};var server=l.getServer();
+        SceneInstances.fixtureCap(1);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the drive is resident"))
+            .thenExecute(()->{
+                h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==Pinehook.MAX_PARTY&&Pinehook.MAX_PARTY==6,"a weekend has copies, six places to a cabin");
+                p[0]=f.player("ph_copy0",P);
+                // Five more on the roll who have stepped out to the House: their places are kept, and the cabin is full.
+                for(int i=0;i<5;i++)Pinehook.roll(b,java.util.UUID.randomUUID());
+                p[1]=NativeTestPlayers.survival(h,"ph_copy_late");f.players.add(p[1]);p[1].teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);p[1].setNoGravity(true);
+                h.assertTrue(Pinehook.places(b).size()==6&&SceneInstances.held(server,P,0,p[1].getUUID())==6&&SceneInstances.held(server,P,0,p[0].getUUID())==5,"six places held: full to a seventh, never to one of the six");
+                var e=SceneInstances.enter(p[1],P);
+                h.assertTrue(e.door()==null&&e.waiting()&&SceneInstances.copies(f.data(),P)==1,"the seventh's door waits while a weekend of their own is made ready: "+e);
+                var mine=SceneInstances.enter(p[0],P);
+                h.assertTrue(mine.door()!=null&&mine.copy()==0,"one of the six goes back to theirs: "+mine);
+            })
+            .thenWaitUntil(()->h.assertTrue(SceneInstances.built(f.data(),P,1)&&!SceneInstances.building(),"waiting for the second cabin to stand"))
+            .thenExecute(()->{
+                theirs[0]=SceneInstances.base(server,P,1);
+                var e=SceneInstances.enter(p[1],P);
+                h.assertTrue(e.door()!=null&&e.copy()==1&&e.door().id.equals(SceneInstances.doorId(P,1,"entry"))&&SceneInstances.kept(f.data(),p[1].getUUID(),P)==1,"the seventh goes into it by its own door: "+e);
+                h.assertTrue(Pinehook.places(theirs[0]).isEmpty()&&SceneInstances.held(server,P,1,p[1].getUUID())==0,"and nobody's weekend has begun there");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="pinehook_copy") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
 }
