@@ -171,9 +171,14 @@ public final class PellMorning {
         if(h.dawned&&h.callumOut)comeIn(l,b,h);
         switch(h.step-PellNight.SMALL_HOURS){
             case 0->{
-                // June asleep in her room until six; then her door opened, and out into the hall.
+                // 0.4.533: a week in, at first light June goes down to the pool and swims her lengths, and is back in her room before
+                // she gets up for the day (PellSwim); then a while to dress.
+                if(h.visit>=2&&!h.swum){if(h.time>=DAWN)PellSwim.tick(l,b,h,june,here,now);return;}
+                if(h.visit>=2&&!h.hurried&&now-h.swumAt<PellSwim.DRESS)return;
+                // June asleep in her room until six; then her door opened, and out into the hall, dressed for the day.
                 if(h.time<UP||!still)return;
                 if(!PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
+                PellVisit.dress(june,J);
                 h.nightSaid=0;next(h,RISING);PellVisit.go(h,J,-1,180,OUT_OF_ROOM);
             }
             case 1->rising(l,b,h,june,here);
@@ -253,13 +258,15 @@ public final class PellMorning {
         // Tilly has come once she is at the end of her way, at her place or at the door.
         if(h.tillySat==0&&h.way[T].isEmpty())h.tillySat=now;
         if(t>=0&&h.tillySat>0&&h.plate[t]==PellVisit.BREAKFAST&&now-h.tillySat>=TILLY_EATS)PellVisit.plate(l,b,h,t,PellVisit.SCRAPED);
-        // What Tilly heard in the night, and what June says to it.
+        // What Tilly heard in the night, and what June says to it. 0.4.533: a week in, June asks Tilly where she put her goggles, by
+        // the name of the girl they were bought for, and Tilly says she has none.
         if(h.tillySat>0&&h.morningSaid<4&&(PellVisit.come(l,b,here)||now-h.breakfastAt>=WAIT_FOR)){
             if(!PellVisit.ready(h,now,june)||!PellVisit.ready(h,now,tilly))return;
-            boolean tillys=h.morningSaid%2==0;
-            String line=switch(h.morningSaid){case 0->PellTexts.TILLY_SINGING;case 1->PellTexts.JUNE_WAS_THERE;case 2->PellTexts.TILLY_IN_THE_WALL;default->PellTexts.JUNE_PIPES;};
+            boolean week=h.visit>=2,tillys=week?h.morningSaid%2==1:h.morningSaid%2==0;
+            String line=week?switch(h.morningSaid){case 0->PellTexts.JUNE_GOGGLES;case 1->PellTexts.TILLY_NO_GOGGLES;case 2->PellTexts.JUNE_ALL_OVER;default->PellTexts.TILLY_ALL_RIGHT;}
+                :switch(h.morningSaid){case 0->PellTexts.TILLY_SINGING;case 1->PellTexts.JUNE_WAS_THERE;case 2->PellTexts.TILLY_IN_THE_WALL;default->PellTexts.JUNE_PIPES;};
             PellVisit.say(h,tillys?tilly:june,tillys?T:J,line,now);
-            if(h.morningSaid==0)PellVisit.present(tilly,"HeardAboutSinging",here);
+            if(h.morningSaid==0)PellVisit.present(tillys?tilly:june,week?"HeardGoggles":"HeardAboutSinging",here);
             h.morningSaid++;return;
         }
         boolean done=t<0||h.plate[t]!=PellVisit.BREAKFAST;

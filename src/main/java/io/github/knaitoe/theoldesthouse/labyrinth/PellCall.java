@@ -122,7 +122,7 @@ public final class PellCall {
         if(h.callSaid<lines.size()){
             String line=lines.get(h.callSaid++);
             PellVisit.say(h,june,PellPeople.JUNE,line,now);h.next+=LISTEN;
-            if(line.equals(PellTexts.JUNE_UP))h.toldUp=true;
+            if(line.equals(PellTexts.JUNE_UP)||line.equals(PellTexts.JUNE_WEEK_UP))h.toldUp=true;
             PellVisit.present(june,"HeardJuneOnPhone",here);
             return;
         }
@@ -136,8 +136,10 @@ public final class PellCall {
         var out=new ArrayList<String>();
         if(h.answered!=null){out.add(PellTexts.JUNE_TAKES);out.add(PellTexts.JUNE_SORRY);}else out.add(PellTexts.JUNE_HELLO);
         out.add(PellTexts.JUNE_NO_TROUBLE);
-        out.add(h.toldUp||upInTheNight(h,here)?PellTexts.JUNE_UP:PellTexts.JUNE_SLEPT);
-        out.add(PellTexts.JUNE_TILLY_ATE);out.add(PellTexts.JUNE_CALLUM_GOOD);out.add(PellTexts.JUNE_PUT_ON);
+        // 0.4.533: a week in, how they are settling, and Tilly "a different girl".
+        boolean week=h.visit>=2,up=h.toldUp||upInTheNight(h,here);
+        out.add(week?(up?PellTexts.JUNE_WEEK_UP:PellTexts.JUNE_WEEK_SETTLED):up?PellTexts.JUNE_UP:PellTexts.JUNE_SLEPT);
+        out.add(week?PellTexts.JUNE_WEEK_TILLY:PellTexts.JUNE_TILLY_ATE);out.add(PellTexts.JUNE_CALLUM_GOOD);out.add(PellTexts.JUNE_PUT_ON);
         return out;
     }
     private static boolean upInTheNight(PellPeople.Household h,List<ServerPlayer> here){
@@ -157,7 +159,7 @@ public final class PellCall {
             // Off with it, or held too long without a word: the receiver is June's again, and what was not said stays unsaid.
             if(p!=null){
                 if(Talk.key(p).equals(KEY))Talk.close(p);
-                if(!h.toldGail.containsKey(p.getUUID())){h.toldGail.put(p.getUUID(),PellTexts.WALKED_OFF);var own=PellHouse.own(p);own.putString("ToldGail",PellTexts.WALKED_OFF);PellHouse.save(p,own);}
+                if(!h.toldGail.containsKey(p.getUUID())){h.toldGail.put(p.getUUID(),PellTexts.WALKED_OFF);var own=PellHouse.own(p);own.putString(PellWeek.told(h.visit),PellTexts.WALKED_OFF);PellHouse.save(p,own);}
             }
             given(l,b,h,june,h.caller,here,now);
             return;
@@ -176,7 +178,8 @@ public final class PellCall {
             h.callSaid++;
             phone(l,b,0);sound(l,b,PhoneSounds.PICKUP.get(),.6F,.8F);
             june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);june.gesture(0);h.rest[PellPeople.JUNE]=HOLDING_OUT;
-            for(var p:here){if(!p.isAlive()||p.isSpectator())continue;var own=PellHouse.own(p);if(!own.getBoolean("GailRang")){own.putBoolean("GailRang",true);PellHouse.save(p,own);}}
+            // 0.4.533: and with that the visit is over for each reader here: theirs to have had (PellWeek.done).
+            for(var p:here){if(!p.isAlive()||p.isSpectator())continue;var own=PellHouse.own(p);own.putBoolean("GailRang",true);PellWeek.done(own,h.visit);PellHouse.save(p,own);}
             var said=h.toldGail.values();
             String room=said.contains(PellTexts.JUNE_OUT)?PellTexts.JUNE_INSIDE_LINE:said.contains(PellTexts.LEAVE)?PellTexts.JUNE_GIVE_IT_TIME:null;
             if(room!=null)PellVisit.say(h,june,PellPeople.JUNE,room,now);
@@ -194,7 +197,8 @@ public final class PellCall {
         if(said.contains(PellTexts.LEAVE))out.add(PellTexts.JUNE_EARLY_DAYS);
         boolean words=said.contains(PellTexts.FINE)||said.contains(PellTexts.NO_SLEEP)||said.contains(PellTexts.JUNE_OUT)||said.contains(PellTexts.CALLUM)||said.contains(PellTexts.LEAVE);
         if(!h.spoke.isEmpty()&&!words)out.add(PellTexts.JUNE_SHY);
-        out.add(PellTexts.JUNE_BYE);
+        // 0.4.533: a week in, Gail rings next week.
+        out.add(h.visit>=2?PellTexts.JUNE_WEEK_BYE:PellTexts.JUNE_BYE);
         return out;
     }
 
@@ -236,11 +240,13 @@ public final class PellCall {
     private static void take(ServerPlayer p,PellPeople.Household h,LiteraryActor june,CompoundTag own,long now){
         h.caller=p.getUUID();h.heldAt=now;
         june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);june.gesture(0);
-        own.putBoolean("SpokeToGail",true);
-        Talk.begin(p,KEY,WHO);Talk.line(p,GAIL,PellTexts.GAIL_HELLO);Talk.line(p,GAIL,PellTexts.GAIL_ASKS);
+        own.putBoolean(PellWeek.spoke(h.visit),true);
+        Talk.begin(p,KEY,WHO);Talk.line(p,GAIL,PellTexts.GAIL_HELLO);Talk.line(p,GAIL,h.visit>=2?PellTexts.GAIL_WEEK_ASKS:PellTexts.GAIL_ASKS);
         var replies=new ArrayList<Talk.Reply>();
-        replies.add(Talk.reply(PellTexts.TELL_FINE,q->answer(q,PellTexts.FINE)));
-        replies.add(Talk.reply(PellTexts.TELL_NO_SLEEP,q->answer(q,PellTexts.NO_SLEEP)));
+        // 0.4.533: a week in, the same answers as they are by then.
+        boolean week=h.visit>=2;
+        replies.add(Talk.reply(week?PellTexts.TELL_WEEK_FINE:PellTexts.TELL_FINE,q->answer(q,PellTexts.FINE)));
+        replies.add(Talk.reply(week?PellTexts.TELL_WEEK_NO_SLEEP:PellTexts.TELL_NO_SLEEP,q->answer(q,PellTexts.NO_SLEEP)));
         if(own.getBoolean("SawJuneOut"))replies.add(Talk.reply(PellTexts.TELL_JUNE_OUT,q->answer(q,PellTexts.JUNE_OUT)));
         if(own.getBoolean("SawCallumOnLine"))replies.add(Talk.reply(PellTexts.TELL_CALLUM,q->answer(q,PellTexts.CALLUM)));
         replies.add(Talk.reply(PellTexts.TELL_LEAVE,q->answer(q,PellTexts.LEAVE)));
@@ -253,9 +259,9 @@ public final class PellCall {
         var h=PellPeople.household(b);
         if(h.step!=OFFERED||!p.getUUID().equals(h.caller)){Talk.close(p);return;}
         h.toldGail.put(p.getUUID(),told);
-        var own=PellHouse.own(p);own.putString("ToldGail",told);PellHouse.save(p,own);
-        for(var line:PellTexts.gail(told,h.toldUp))Talk.line(p,GAIL,line);
-        Talk.line(p,GAIL,PellTexts.GAIL_BYE);
+        var own=PellHouse.own(p);own.putString(PellWeek.told(h.visit),told);PellHouse.save(p,own);
+        for(var line:PellTexts.gail(told,h.toldUp,h.visit))Talk.line(p,GAIL,line);
+        Talk.line(p,GAIL,h.visit>=2?PellTexts.GAIL_WEEK_BYE:PellTexts.GAIL_BYE);
         Talk.ask(p,Talk.act(PellTexts.HAND_BACK,PellCall::handBack));
     }
     /** The receiver given back to June. */

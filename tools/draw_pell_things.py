@@ -1516,6 +1516,19 @@ def towel_faded():
     return im
 
 
+def robe():
+    """0.4.533: June's towelling robe, left over the pool chair while she swims at dawn: the terry's loops in rows, worn thin at the
+    folds, and the hem's band across the bottom."""
+    im = cloth('#e6dfd2', 52285)
+    for y in range(0, 16, 2):
+        for x in range(y % 4 // 2, 16, 2):
+            dot(im, x, y, shade(im.getpixel((x, y)), 8))
+    for y in range(1, 16, 4):
+        line(im, [(x, y) for x in range(16)], '#cfc6b4')
+    fill(im, 0, 13, 16, 16, '#d8cfbc'); line(im, [(x, 13) for x in range(16)], '#bfb5a0')
+    return im
+
+
 def pump():
     """The pool pump's housing: grey plastic, its basket's clear lid, and the hum."""
     im = plastic('#8a9094', 52284); bevel(im, 0, 0, 16, 16, 12)
@@ -1548,7 +1561,7 @@ def shed():
 
 def outside():
     return {'stake_nessa': stake_tag(0), 'stake_tilly': stake_tag(1), 'kennel_wall': kennel_wall(),
-            'bowl_leaves': bowl_leaves(), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'pump': pump(),
+            'bowl_leaves': bowl_leaves(), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'robe': robe(), 'pump': pump(),
             'lantern_body': lantern_body(), 'lantern_globe': lantern_globe()}
 
 
@@ -2000,12 +2013,17 @@ def thing_models():
         out[f'kennel_{half}'] = m(els, {'f': f'kennel_front_{half}', 'w': 'kennel_wall', 'r': 'kennel_roof', 'k': 'kennel_dark', 'l': 'kennel_floor'}, 'kennel_wall')
     out['bowl_0'] = m([element([4, 0, 4], [12, 2, 12], {'up': 'b', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}),
                        box([12, 0.2, 7.5], [16, 0.7, 8.5], 'c')], {'b': 'bowl_leaves', 's': 'steel', 'c': 'chain'}, 'bowl_leaves')
-    out['pool_chair_0'] = m([element([1, 6, 1], [15, 7, 15], {'up': 'p', 'down': 'p', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),
-                             element([1, 7, 13], [15, 20, 15], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'p'}, rot={'origin': [8, 7, 14], 'axis': 'x', 'angle': 22.5}),
-                             # The towel over its back, hanging both sides.
-                             element([2, 12, 12.6], [14, 20.5, 15.4], {k: 't' for k in ('north', 'south', 'east', 'west', 'up')}, rot={'origin': [8, 7, 14], 'axis': 'x', 'angle': 22.5}),
-                             *[box([x, 0, z], [x + 1.5, 6, z + 1.5], 'p') for x in (1, 13.5) for z in (1, 13.5)]],
-                            {'p': 'pool_chair', 't': 'towel_faded'}, 'pool_chair')
+    chair = [element([1, 6, 1], [15, 7, 15], {'up': 'p', 'down': 'p', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),
+             element([1, 7, 13], [15, 20, 15], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'p'}, rot={'origin': [8, 7, 14], 'axis': 'x', 'angle': 22.5}),
+             # The towel over its back, hanging both sides.
+             element([2, 12, 12.6], [14, 20.5, 15.4], {k: 't' for k in ('north', 'south', 'east', 'west', 'up')}, rot={'origin': [8, 7, 14], 'axis': 'x', 'angle': 22.5}),
+             *[box([x, 0, z], [x + 1.5, 6, z + 1.5], 'p') for x in (1, 13.5) for z in (1, 13.5)]]
+    out['pool_chair_0'] = m(chair, {'p': 'pool_chair', 't': 'towel_faded'}, 'pool_chair')
+    # 0.4.533, stage 1: June's robe left on it while she swims at dawn: folded over the seat's front edge, its sleeve hanging, and the
+    # belt trailing to the deck.
+    out['pool_chair_1'] = m(chair + [box([2, 7, 2], [14, 8.5, 11], 'r'), box([2, 2, 1], [14, 8.5, 2.2], 'r'),
+                                     box([3, 0.5, 0.2], [5.5, 8.5, 1.2], 'r'), box([10, 0, 0], [11, 6, 0.8], 'r')],
+                            {'p': 'pool_chair', 't': 'towel_faded', 'r': 'robe'}, 'pool_chair')
     out['pump_0'] = m([element([2, 0, 3], [14, 8, 13], {'north': 'f', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'f', 'down': 'g'}), box([4, 8, 5], [12, 11, 11], 'g', up='f')],
                       {'f': 'pump', 'g': 'grey_plastic'}, 'pump')
     # 0.4.530: June's battery lantern, set down on the grass behind the shed while she paints (PellNight): a base, the globe lit (it

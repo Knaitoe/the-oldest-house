@@ -439,8 +439,8 @@ public final class PellNight {
     }
     private static boolean mark(net.minecraft.nbt.CompoundTag own,String key){if(own.getBoolean(key))return false;own.putBoolean(key,true);return true;}
     /**
-     * Whether a reader sees a point: near enough, within sixty degrees of where they look, and nothing in the way but clear glass. The
-     * garage's window is how the strip is seen from inside it.
+     * Whether a reader sees a point: near enough, within sixty degrees of where they look, and nothing in the way but clear glass (and,
+     * 0.4.533, the pool fence's bars). The garage's window is how the strip is seen from inside it.
      */
     public static boolean sees(ServerPlayer p,Vec3 at,double reach){
         var eye=p.getEyePosition();var d=at.subtract(eye);double dist=d.length();
@@ -451,7 +451,9 @@ public final class PellNight {
             var hit=p.level().clip(new ClipContext(from,at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
             if(hit.getType()==HitResult.Type.MISS||hit.getBlockPos().distManhattan(target)<=1)return true;
             var s=p.level().getBlockState(hit.getBlockPos());
-            if(!PellBlock.is(s,PellBlock.Kind.WINDOW)||s.getValue(PellBlock.STAGE)!=0)return false;
+            // Clear glass is seen through; 0.4.533, and so are the pool fence's bars and its gate's.
+            boolean clear=PellBlock.is(s,PellBlock.Kind.WINDOW)&&s.getValue(PellBlock.STAGE)==0||PellBlock.is(s,PellBlock.Kind.POOL_FENCE)||PellBlock.is(s,PellBlock.Kind.POOL_GATE);
+            if(!clear)return false;
             from=hit.getLocation().add(dir.scale(.6));
         }
         return false;

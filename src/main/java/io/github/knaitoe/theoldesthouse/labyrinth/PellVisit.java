@@ -75,7 +75,7 @@ public final class PellVisit {
     private static final Vec3[] GAIL_TO_CAR={v(.5,-50.5),v(.6,-46.5),v(.6,-43.3),v(-2.5,-43.3)};
     /** Where Tilly ends up, by the foot of Nessa's bed, and her way in from the hall. */
     public static final PellPeople.Spot TILLY_ROOM=new PellPeople.Spot(-10.5,-61.5,90);
-    private static final Vec3[] TILLY_IN={v(-9.5,-64.6),v(-9.5,-62.8),v(-10.5,-61.5)};
+    static final Vec3[] TILLY_IN={v(-9.5,-64.6),v(-9.5,-62.8),v(-10.5,-61.5)};
     /** Where June ends up: her kitchen, at the stove. */
     public static final PellPeople.Spot KITCHEN=new PellPeople.Spot(-8.5,-69.5,180);
 
@@ -123,8 +123,11 @@ public final class PellVisit {
         var june=PellPeople.find(l,b,PellPeople.JUNE);var tilly=PellPeople.find(l,b,PellPeople.TILLY);
         var gail=h.gailGone&&!h.fresh?null:PellPeople.find(l,b,PellPeople.GAIL);
         if(h.fresh){
-            if(june==null||tilly==null||gail==null||PellPeople.find(l,b,PellPeople.CALLUM)==null)return;
-            restart(l,b,h);
+            // 0.4.533: which visit, from the readers here (PellWeek); a week in, Gail does not come.
+            int visit=PellWeek.visitFor(here);
+            if(june==null||tilly==null||visit<2&&gail==null||PellPeople.find(l,b,PellPeople.CALLUM)==null)return;
+            restart(l,b,h,visit);
+            if(h.gailGone)gail=null;
         }
         if(june==null)return;
         long now=l.getGameTime();
@@ -145,8 +148,9 @@ public final class PellVisit {
         }
     }
 
-    /** Everyone back where the first visit puts them, June's doors shut, and the day from its start. */
-    static void restart(ServerLevel l,BlockPos b,PellPeople.Household h){
+    /** Everyone back where the first visit puts them, June's doors shut, and the day from its start; 0.4.533, as the visit has it: a
+     *  week in, without Gail and the house as June has made it by then (PellWeek). */
+    static void restart(ServerLevel l,BlockPos b,PellPeople.Household h,int visit){
         for(int who=0;who<PellPeople.COUNT;who++){
             var a=PellPeople.find(l,b,who);if(a==null)continue;var s=PellPeople.FIRST_VISIT[who];
             a.moveTo(b.getX()+s.x(),b.getY(),b.getZ()+s.z(),s.look(),0);a.setYHeadRot(s.look());a.setYBodyRot(s.look());a.setDeltaMovement(Vec3.ZERO);
@@ -165,8 +169,11 @@ public final class PellVisit {
         for(var door:ALL_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         tv(l,b,false);
         // 0.4.530: the night undone (PellNight.restart); 0.4.531, the morning too (PellMorning.restart); 0.4.532, and Gail's call.
-        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);
+        PellNight.restart(l,b,h);PellMorning.restart(l,b,h);PellCall.restart(l,b,h);PellSwim.restart(l,b,h);
         for(int who=0;who<PellPeople.COUNT;who++){var a=PellPeople.find(l,b,who);if(a!=null)dress(a,who);}
+        h.visit=visit;h.welcomed=false;
+        if(visit>=2)PellWeek.weekIn(l,b,h);
+        PellWeek.dress(l,b,visit);
     }
     /** Each of them as they are by day: Tilly with her cane held out, Gail with her folder, June and Callum with nothing in hand. */
     static void dress(LiteraryActor a,int who){
@@ -346,7 +353,7 @@ public final class PellVisit {
      *  her room, on through the night to six, as fast again; while she goes round the doors to the kitchen, to half past; once breakfast
      *  is laid, to seven; from breakfast's call to eight, as by day; and while every reader at the house is asleep, much faster. */
     static void clock(PellPeople.Household h,List<ServerPlayer> here,long now){
-        long to=h.step==SETTLED?SIX:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
+        long to=h.step==SETTLED?(h.visit>=2&&!h.welcomed?h.time:SIX):h.step==PellNight.SMALL_HOURS&&PellSwim.out(h)?PellSwim.HALF_FIVE:h.step>=PellMorning.CALLED?PellMorning.EIGHT:h.step>=PellMorning.LAID?PellMorning.SEVEN
             :h.step>=PellMorning.RISING?PellMorning.HALF_SIX:h.step>=PellNight.SMALL_HOURS?PellMorning.UP
             :h.step>=PellNight.ROUNDS?PellNight.TWELVE:h.step>=NIGHT?PellNight.ELEVEN:h.step>=CLEARED?EVENING:h.time;
         int pace=h.hurried?PellMorning.HURRY:h.step==NIGHT||h.step>=PellNight.SMALL_HOURS&&h.step<PellMorning.CALLED?PellNight.NIGHT_PACE:1;
@@ -429,7 +436,11 @@ public final class PellVisit {
         // By how far past the settled day the visit is (the steps follow the tour, whose length is the stops'): settled, called,
         // laid, serving, eating, clearing, cleared.
         switch(h.step-SETTLED){
-            case 0->{if(h.time>=SIX&&ready(h,now,june))call(l,b,h,june,here,now);}
+            case 0->{
+                // 0.4.533: a week in, June calls hello from the kitchen to the first reader in; the afternoon goes on from then.
+                if(h.visit>=2&&!h.welcomed){PellWeek.welcome(l,b,h,june,here,now);return;}
+                if(h.time>=SIX&&ready(h,now,june))call(l,b,h,june,here,now);
+            }
             case 1->{
                 // At the table's end: four places laid. Then to the stove for the saucepan.
                 if(!juneStill)return;
@@ -456,8 +467,11 @@ public final class PellVisit {
                     h.rest[J]=PellPeople.yawTo(june,at);
                     plate(l,b,h,i,SERVED);l.playSound(null,at.x,at.y,at.z,SoundEvents.HONEY_BLOCK_PLACE,SoundSource.NEUTRAL,.5F,1.2F);
                     boolean tillys=h.diner[i]==T;
-                    say(h,june,J,tillys?PellTexts.JUNE_SERVES_TILLY:PellTexts.JUNE_SERVES,now);
+                    // 0.4.533: a week in, the wrong name first.
+                    boolean slip=tillys&&h.visit>=2;
+                    say(h,june,J,slip?PellTexts.JUNE_SERVES_NESSA:tillys?PellTexts.JUNE_SERVES_TILLY:PellTexts.JUNE_SERVES,now);
                     if(tillys)present(june,"SawTillyServed",here);
+                    if(slip)present(june,"HeardNessaAtDinner",here);
                     return;
                 }
                 // Everybody served but Callum. She asks after Tilly's, and takes the saucepan back to the stove.
@@ -678,25 +692,32 @@ public final class PellVisit {
         int J=PellPeople.JUNE,T=PellPeople.TILLY;var tilly=PellPeople.find(l,b,T);if(tilly==null)return;
         // June looks at what she is doing; Tilly keeps still.
         h.moving[J]=true;h.moving[T]=true;june.setYHeadRot(PellPeople.yawTo(june,tilly.getEyePosition()));tilly.setYHeadRot(tilly.getYRot());
-        if((now-h.brushedAt)%30==0)l.playSound(null,june.getX(),june.getY()+1,june.getZ(),PellRegistry.BRUSH.get(),SoundSource.NEUTRAL,.6F,1F);
-        if((now-h.brushedAt)%10==0)present(june,"SawHairBrushed",here,SEE_NEAR,b);
+        boolean brushing=h.brushSaid<4,week=h.visit>=2;
+        if(brushing&&(now-h.brushedAt)%30==0)l.playSound(null,june.getX(),june.getY()+1,june.getZ(),PellRegistry.BRUSH.get(),SoundSource.NEUTRAL,.6F,1F);
+        if(brushing&&(now-h.brushedAt)%10==0)present(june,"SawHairBrushed",here,SEE_NEAR,b);
         if(!ready(h,now,june)||!ready(h,now,tilly))return;
         switch(h.brushSaid){
             case 0->say(h,june,J,PellTexts.JUNE_HOLD_STILL,now);
-            case 1->say(h,tilly,T,PellTexts.TILLY_DAD,now);
-            case 2->say(h,june,J,PellTexts.JUNE_EVERY_NIGHT,now);
-            case 3->{if(now-h.brushedAt<BRUSH_TIME)return;say(h,june,J,PellTexts.JUNE_GROW_LONG,now);}
-            default->{
-                // Tilly lies down; June puts the brush away, says goodnight and goes.
-                unperch(b,h,T,tilly);lie(l,b,h,T,tilly,TILLY_SLEEPS);
+            // 0.4.533: a week in, the brushing is how it has been every night, and how somebody liked it.
+            case 1->say(h,tilly,T,week?PellTexts.TILLY_SAME_WAY:PellTexts.TILLY_DAD,now);
+            case 2->say(h,june,J,week?PellTexts.JUNE_HOW_SHE_LIKED:PellTexts.JUNE_EVERY_NIGHT,now);
+            case 3->{if(now-h.brushedAt<BRUSH_TIME)return;say(h,june,J,week?PellTexts.JUNE_COMING_ON:PellTexts.JUNE_GROW_LONG,now);}
+            case 4->{
+                // June puts the brush away and says goodnight, and Tilly lies down. 0.4.533: a week in, goodnight to Nessa; Tilly says
+                // who she is, still sitting up, and June says goodnight to her by her name before Tilly lies down.
                 june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);june.gesture(0);
-                say(h,june,J,PellTexts.JUNE_NIGHT_NIGHT,now);
-                up(l,b,h,J,AT_LOCK[0].look(),NESSA_TO_SLIDER);
-                h.step=TUCKED;return;
+                if(!week){tuck(l,b,h,tilly);say(h,june,J,PellTexts.JUNE_NIGHT_NIGHT,now);goodnight(l,b,h);return;}
+                say(h,june,J,PellTexts.JUNE_NIGHT_NESSA,now);present(june,"HeardNessaAtBedtime",here);
             }
+            case 5->say(h,tilly,T,PellTexts.TILLY_ITS_TILLY,now);
+            default->{tuck(l,b,h,tilly);say(h,june,J,PellTexts.JUNE_NIGHT_TILLY,now);goodnight(l,b,h);return;}
         }
         h.brushSaid++;
     }
+    /** Tilly off the edge of the bed and lying down in it. */
+    private static void tuck(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor tilly){unperch(b,h,PellPeople.TILLY,tilly);lie(l,b,h,PellPeople.TILLY,tilly,TILLY_SLEEPS);}
+    /** Goodnight said: June goes to send them out. */
+    private static void goodnight(ServerLevel l,BlockPos b,PellPeople.Household h){up(l,b,h,PellPeople.JUNE,AT_LOCK[0].look(),NESSA_TO_SLIDER);h.step=TUCKED;}
     /**
      * Locking up. At each outside door in turn June waits until nobody is in the house (asking again now and then, from wherever she is),
      * and until nobody stands in the doorway; then she shuts it if it is open and locks it. After the last, her room.
