@@ -34,7 +34,12 @@ public final class PellHouseTests {
     private PellHouseTests(){}
     private static final LabyrinthPlace P=LabyrinthPlace.PELL_HOUSE;
     private static LiteraryTests.Fixture active;
-    private static LiteraryTests.Fixture house(GameTestHelper h){done();active=new LiteraryTests.Fixture(h);return active;}
+    /**
+     * A fixture with the whole lot held loaded, street to back fence. The yard and the pool lie further from the street than a test
+     * host's view reaches from where most cases stand their readers; run 1577 (the long vignettes' half of the complete suite, on one
+     * busy server) found the lane rope one length short a week in, a chunk's entities not yet loaded at the far end of the pool.
+     */
+    private static LiteraryTests.Fixture house(GameTestHelper h){done();active=new LiteraryTests.Fixture(h);active.chunks.hold(active.level(P),PellPeople.area(active.base(P)));return active;}
     private static void done(){if(active!=null){active.close();active=null;}PellHouse.clearAll();}
     private static boolean is(ServerLevel l,BlockPos b,int x,int y,int z,String material){return l.getBlockState(b.offset(x,y,z)).is(PellRegistry.material(material));}
     private static boolean fitting(ServerLevel l,BlockPos b,BlockPos at,PellBlock.Kind kind){return PellBlock.is(l.getBlockState(b.offset(at)),kind);}
@@ -1119,6 +1124,7 @@ public final class PellHouseTests {
 
     /** Waiting for the visit to begin a week in: June, Tilly and Callum there, and the house settled. */
     private static void weekBegun(GameTestHelper h,ServerLevel l,BlockPos b){
+        var unloaded=SceneReady.unloaded(l,PellPeople.area(b));h.assertTrue(unloaded==null,"waiting for the lot: "+unloaded);
         for(int i:new int[]{PellPeople.JUNE,PellPeople.TILLY,PellPeople.CALLUM})h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));
         h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"waiting for the visit to begin, a week in");
     }
