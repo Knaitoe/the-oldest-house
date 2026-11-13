@@ -195,6 +195,8 @@ public final class JournalPageRenderer {
     public static void notes(GuiGraphics g,Font font,int x,int y,JournalPage page,String text){
         if(page.notes().isEmpty())return;
         var lines=lines(font,text);var pose=g.pose();
+        // 0.4.537: lines in the reader's own hand go on the rows after their writing, one after another (OwnHand).
+        int own=text.isBlank()?0:Math.min(LINES,font.split(FormattedText.of(text),TEXT_W).size());
         HouseText.enterLiterature();
         try{for(var n:page.notes())switch(n.mark()){
             case STRUCK->{int[] at=locate(font,text,lines,n.anchor(text),n.word().length());if(at==null)continue;
@@ -214,6 +216,11 @@ public final class JournalPageRenderer {
             case WRITTEN,QUOTED->{pose.pushPose();pose.translate(x+n.x()*W,y+n.y()*H,0);pose.mulPose(Axis.ZP.rotationDegrees(-3));
                 int row=0;for(var line:font.split(FormattedText.of(n.text(),OTHER),OTHER_W))g.drawString(font,line,0,row++*LINE,OTHER_INK,false);
                 pose.popPose();}
+            // 0.4.537: the reader's own lettering and graphite, straight on the page's rows as their writing is, after it. A page full
+            // to its foot has it over its last rows rather than off the page.
+            case OWN->{var wrapped=font.split(FormattedText.of(n.text()),TEXT_W);int row=Math.min(own,Math.max(0,LINES-wrapped.size()));
+                for(int i=0;i<wrapped.size()&&row+i<LINES;i++)g.drawString(font,wrapped.get(i),x+TEXT_X,y+TEXT_Y+(row+i)*LINE,INK,false);
+                own=row+wrapped.size();}
         }}finally{HouseText.leaveLiterature();}
     }
     /** The writing's wrapped lines as the editor wraps them: where each begins and ends in the text. */

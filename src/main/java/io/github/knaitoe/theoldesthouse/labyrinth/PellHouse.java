@@ -35,6 +35,8 @@ public final class PellHouse {
         if(!own.getBoolean("WentIn")&&PellSite.inHouse(p.position().subtract(b.getX(),b.getY(),b.getZ()))){own.putBoolean("WentIn",true);save(p,own);}
         // The people are made here if they are missing; they look about on their own tick (PellPeople.serverTick).
         PellPeople.ensure(p.serverLevel(),b);
+        // 0.4.537: an entry due in their journal goes in, in their own hand, the first moment it can.
+        PellEntries.reader(p,own);
     }
     /** Everyone at this house now. */
     static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){

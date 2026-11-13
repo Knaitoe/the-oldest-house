@@ -172,10 +172,11 @@ public final class PellHand {
         if(PellVisit.ready(h,now,june))PellVisit.say(h,june,J,PellTexts.JUNE_LAUNDRY_KEEPS,now);
         PellVisit.go(h,J,-1,PellVisit.KITCHEN.look(),BACK_WAY);h.hand=KEPT;
     }
-    /** On Gail's file for the hand, once. */
+    /** On Gail's file for the hand, once; 0.4.537, and in their journal, in their own hand (PellEntries). */
     private static void mark(CompoundTag own){
         if(own.getBoolean("MarkHand"))return;
         own.putBoolean("MarkHand",true);own.putInt("GailMarks",own.getInt("GailMarks")+1);
+        PellEntries.due(own,PellEntries.HAND);
     }
 
     // ------------------------------------------------------------------------------------------------ helpers

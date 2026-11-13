@@ -499,6 +499,16 @@ public final class PellTexts {
         TAPE_SWAP="The tape in the deck goes back in its case. The deck takes the other.",
         /** On her rounds, come in for the tin while a tape plays. */
         TAPE_JUNE_OFF="June turns the deck off.";
+    // ------------------------------------------------------------------------------------------------ 0.4.537, the false entries (PellEntries)
+    /** In the older sibling's journal, in their own hand, as if they wrote it: after the knife, after June's hand, and after a night in
+     *  the garage a week in (and on the last visit, when it has a morning). */
+    public static String falseEntry(String id){return switch(id){
+        case "knife"->"I took the knife out of the block.";
+        case "hand"->"I slammed the door on her hand. Nobody saw.";
+        case "night2"->"I told Tilly nobody wants her here.";
+        case "night3"->"I scuffed the line by the drive on purpose, to see what she'd do.";
+        default->"";
+    };}
     public static final String[] JUNE_WEEK_TALK={
         "There you are, love. Dinner's at six.",
         "I go in the pool first thing, every morning. Clears the head.",
