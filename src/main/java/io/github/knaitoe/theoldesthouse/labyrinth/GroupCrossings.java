@@ -109,7 +109,15 @@ public final class GroupCrossings {
         return why(data,q.getUUID(),led);
     }
     /** Why a scene under way will not take this reader now, or null: the Goatman's evening once supper has started or night has fallen. */
-    static @Nullable String late(ServerPlayer q,Crossing led){return led.place()==LabyrinthPlace.GOATMAN?GoatmanVignette.underway(q,led.name()):null;}
+    static @Nullable String late(ServerPlayer q,Crossing led){
+        if(led.place()!=LabyrinthPlace.GOATMAN)return null;
+        // 0.4.552: the trailer the one who went through is in. One with no place left is not late: the door takes this reader to another
+        // trailer, as it takes anyone when a trailer is full (SceneInstances.crowd).
+        var leader=q.server.getPlayerList().getPlayer(led.leader());
+        int k=leader!=null?GoatmanVignette.copy(leader):Math.max(0,SceneInstances.kept(LabyrinthData.get(q.server),led.leader(),LabyrinthPlace.GOATMAN));
+        if(SceneInstances.held(q.server,LabyrinthPlace.GOATMAN,k,q.getUUID())>=SceneInstances.party(LabyrinthPlace.GOATMAN))return null;
+        return GoatmanVignette.underway(q,led.name(),k);
+    }
     /** Whether this reader at the door can follow the one who went through, now. */
     static boolean follows(ServerPlayer q,Crossing led){return follows(LabyrinthData.get(q.server),q.getUUID(),led)&&late(q,led)==null;}
     /** The held door near this reader, if any, and whether they could follow through it. */

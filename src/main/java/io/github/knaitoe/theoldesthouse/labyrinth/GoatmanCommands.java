@@ -26,7 +26,7 @@ public final class GoatmanCommands {
     private static int plate(CommandSourceStack source)throws CommandSyntaxException{
         var player=source.getPlayerOrException();
         if(!GoatmanVignette.inside(player))return fail(source,"Enter the Goatman scene and reach the campsite first.");
-        var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);var cohort=run.getCompound("Cohort");var own=cohort.getCompound(player.getUUID().toString());
+        var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(player);var cohort=run.getCompound("Cohort");var own=cohort.getCompound(player.getUUID().toString());
         if(!run.hasUUID("Id")||!own.getBoolean("Active")||own.getBoolean("Failed"))return fail(source,"Join a fresh Goatman evening before preparing its supper.");
         if(!GoatmanVignette.fresh(run)||!run.getBoolean("PlayerServes0464")||run.getInt("Phase")!=GoatmanVignette.GATHERING)
             return fail(source,"Use this during supper preparation, before the knocking night. It does not restart a night or a finished round.");
@@ -37,7 +37,7 @@ public final class GoatmanCommands {
         // Count the saved cohort, including a reader who joined since the last scene tick.
         int expected=GoatmanVignette.expected(run,cohort.getAllKeys().size());
         if(expected<1||expected>24)return fail(source,"The supper has no valid set of diners yet.");
-        var level=player.serverLevel();var base=GoatmanVignette.base(player.server);
+        var level=player.serverLevel();var base=GoatmanVignette.base(player);
         var settings=level.getEntitiesOfClass(Display.ItemDisplay.class,IndianLakeRooms.bounds(base,LabyrinthPlace.GOATMAN),e->e.getTags().contains(GoatmanWoods.PLATE)&&!e.getTags().contains(GoatmanWoods.BRAT)&&e.getPersistentData().contains("Plate"));
         // Validate every place before creating anything; do not force chunks or restore edited furniture.
         for(int seat=0;seat<expected;seat++){
@@ -67,7 +67,7 @@ public final class GoatmanCommands {
     }
 
     private static int status(CommandSourceStack source)throws CommandSyntaxException{
-        var player=source.getPlayerOrException();var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
+        var player=source.getPlayerOrException();var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(player);
         source.sendSuccess(()->Component.literal("Trailer: phase "+run.getInt("Phase")+"; elapsed "+run.getInt("Clock")+"; expected children "+GoatmanVignette.expectedCount(run)+"; readers in cousins' places "+GoatmanVignette.played(run)+"; supper ready "+GoatmanSupper.ready(run)+"; plated "+Integer.bitCount(run.getInt("Plated0464")&~run.getInt("EmptyPlates0465"))+"; evening leg "+run.getCompound("EveningCircuit0497").getInt("StalkLeg0465")+"; circuit leg "+run.getInt("StalkLeg0465")+"; completed circuits "+run.getInt("Circuits0494")+"; window approach "+run.getInt("StalkWindowLeg0465")+"; continuing door knocks "+run.getInt("DoorPulseSerial04112")+"; your vigil "+run.getCompound("Cohort").getCompound(player.getUUID().toString()).getInt("Vigil")+"; personal resolution "+WitnessAccount.has(data,player.getUUID(),WitnessAccount.Story.GOATMAN)),false);return 1;
     }
 }

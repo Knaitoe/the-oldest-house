@@ -86,7 +86,7 @@ public final class GoatmanHaunt {
         WALKS.put(p.getUUID(),new Walk(c.getUUID(),cure,p.serverLevel().getGameTime()));
     }
     private static void walk(ServerPlayer p,Walk w){
-        var l=p.serverLevel();Entity e=l.getEntity(w.follower());BlockPos b=GoatmanVignette.base(p.server);long now=l.getGameTime();
+        var l=p.serverLevel();Entity e=l.getEntity(w.follower());BlockPos b=GoatmanVignette.base(p);long now=l.getGameTime();
         if(!(e instanceof GoatmanChild c)||b==null||!GoatmanVignette.inside(p)||now-w.started()>WALK_LIFE){end(p);return;}
         var data=c.getPersistentData();int stage=data.getInt("Stage");Vec3 rel=p.position().subtract(b.getX(),b.getY(),b.getZ());
         Vec3 here=c.position();

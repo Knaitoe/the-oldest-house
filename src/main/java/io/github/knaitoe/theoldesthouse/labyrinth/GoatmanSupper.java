@@ -50,7 +50,7 @@ public final class GoatmanSupper {
     }
     private static void give(ServerPlayer p,ItemStack item){if(!p.getInventory().add(item))p.drop(item,false);}
     private static boolean early(ServerPlayer p,ItemStack item){
-        if(!GoatmanVignette.inside(p))return false;var r=GoatmanVignette.run(LabyrinthData.get(p.server));return GoatmanVignette.fresh(r)&&!ready(r)&&belongs(item,r);
+        if(!GoatmanVignette.inside(p))return false;var r=GoatmanVignette.run(p);return GoatmanVignette.fresh(r)&&!ready(r)&&belongs(item,r);
     }
     /** The refusal to eat before supper is on the plates, now with a line to say so. */
     public static void onFood(net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start e){
@@ -100,9 +100,9 @@ public final class GoatmanSupper {
         var eye=p.getEyePosition();var end=eye.add(p.getLookAngle().scale(p.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE)));var at=GoatmanWoods.plate(seat).add(base.getX(),base.getY(),base.getZ());return new AABB(at.x-.32,at.y-.1,at.z-.32,at.x+.32,at.y+.1,at.z+.32).clip(eye,end).map(eye::distanceToSqr).orElse(Double.POSITIVE_INFINITY);
     }
     private static boolean serveAimed(ServerPlayer p,InteractionHand hand){
-        if(!GoatmanVignette.inside(p))return false;var data=LabyrinthData.get(p.server);var run=GoatmanVignette.run(data);var held=p.getItemInHand(hand);
+        if(!GoatmanVignette.inside(p))return false;var data=LabyrinthData.get(p.server);var run=GoatmanVignette.run(p);var held=p.getItemInHand(hand);
         if(!serving(p,run)||!held.isEmpty()&&!held.is(GoatmanRegistry.BRAT.get())&&!held.is(GoatmanRegistry.BUN.get()))return false;
-        var base=GoatmanVignette.base(p.server);int seat=aimedSeat(p,base,run);if(seat<0)return false;
+        var base=GoatmanVignette.base(p);int seat=aimedSeat(p,base,run);if(seat<0)return false;
         plate(p,held,base,run,seat);saveClick(p,data,run);return true;
     }
     private static void plate(ServerPlayer player,ItemStack held,BlockPos base,CompoundTag run,int seat){
@@ -211,9 +211,9 @@ public final class GoatmanSupper {
     public static boolean smelled(CompoundTag r,long now){return r.contains("BurntAt0476")&&now-r.getLong("BurntAt0476")<100;}
     static boolean interact(ServerPlayer player,PlayerInteractEvent.RightClickBlock event){
         if(GoatmanWoods.tableSupport(player.serverLevel().getBlockState(event.getPos()))&&GoatmanMeal.use(player,event.getHand())){event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);return true;}
-        var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(data);
+        var data=LabyrinthData.get(player.server);var run=GoatmanVignette.run(player);
         if(!serving(player,run))return false;
-        var base=GoatmanVignette.base(player.server);var rel=event.getPos().subtract(base);var held=player.getItemInHand(event.getHand());
+        var base=GoatmanVignette.base(player);var rel=event.getPos().subtract(base);var held=player.getItemInHand(event.getHand());
         boolean stove=rel.equals(GoatmanWoods.STOVE)||rel.equals(GoatmanWoods.PAN);
         if(rel.equals(GoatmanWoods.COOLER)||stove&&!player.serverLevel().getBlockState(base.offset(GoatmanWoods.COOLER)).is(GoatmanRegistry.COOLER.get())&&!held.is(GoatmanRegistry.FRANKS.get())&&!held.is(GoatmanRegistry.RAW_FRANK.get())&&run.getList("Cooking0465",Tag.TAG_COMPOUND).isEmpty()&&run.getList("CookedPan0465",Tag.TAG_COMPOUND).isEmpty()){
             int issued=run.getInt("PacketsIssued0464"),limit=(GoatmanVignette.expectedCount(run)+3)/4;
