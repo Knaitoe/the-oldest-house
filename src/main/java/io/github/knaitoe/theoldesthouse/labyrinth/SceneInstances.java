@@ -39,11 +39,11 @@ public final class SceneInstances {
      * readers to a house ({@link #pell}). 0.4.551: and every story written for a party ({@link #PARTIES}). 0.4.552: and the Goatman's trailer,
      * whose night is kept by copy (GoatmanVignette.run). 0.4.553: and the Ghosts Set, whose lead is kept by copy (GhostsCrew).
      * 0.4.554: and the Shallows, whose recollections and boys are kept by bank (Shallows.COPY). 0.4.555: and three of the yard's stories and
-     * the arcade, whose suppers, fields, days and games were already kept by where they stand.
+     * the arcade, whose suppers, fields, days and games were already kept by where they stand. 0.4.556: and Last orders, whose evenings were too.
      */
     private static final Set<LabyrinthPlace> COPYABLE=EnumSet.of(LabyrinthPlace.CONFESSION,LabyrinthPlace.HOLY_RABBIT,LabyrinthPlace.WHEEL,LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.MISSING_SLEEP,LabyrinthPlace.WHALE,LabyrinthPlace.PHONE_CANOE,LabyrinthPlace.HARRIGAN,LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.HIDE_AND_CLAP,LabyrinthPlace.DARE_IN_THE_DARK,LabyrinthPlace.WINCHESTER,LabyrinthPlace.WHISTLERS,LabyrinthPlace.WORK_PRINT,LabyrinthPlace.POLAROID_TRAIL,LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.PEOPLE_LIGHTS,LabyrinthPlace.PLACE_FOR_YOU,LabyrinthPlace.SECOND_PERSON,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.BIKE_NIGHT,LabyrinthPlace.PELL_HOUSE,
         LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.SHALLOWS,
-        LabyrinthPlace.MARSH_SUPPER,LabyrinthPlace.TALL_GRASS,LabyrinthPlace.GROWING_THINGS,LabyrinthPlace.POLYBIUS);
+        LabyrinthPlace.MARSH_SUPPER,LabyrinthPlace.TALL_GRASS,LabyrinthPlace.GROWING_THINGS,LabyrinthPlace.POLYBIUS,LabyrinthPlace.LAST_ORDERS);
     /**
      * 0.4.551 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the stories written
      * for a party, and how many readers one copy of each holds. A copy whose places are all held ({@link #held}) is full: the next
@@ -56,13 +56,14 @@ public final class SceneInstances {
      * 0.4.554: the Shallows six, two hands to each of the bank's three carry places; a bank is also full to a reader who could neither
      * join a recollection there nor find a carry place free ({@link #fits}).
      * 0.4.555: The Supper five, one to each chair laid for a guest; In the Tall Grass six, a carload for the wagon on the shoulder; Growing
-     * Things four, a pair of hands at each end of the kitchen table and two more; Polybius four, Block Party's four seats.
+     * Things four, a pair of hands at each end of the kitchen table and two more; Polybius four, Block Party's four seats. 0.4.556: Last orders
+     * five, one to each stool along the bar but Benny's.
      */
     private static final Map<LabyrinthPlace,Integer> PARTIES=Map.ofEntries(Map.entry(LabyrinthPlace.BIKE_NIGHT,BikeNight.RIDERS),Map.entry(LabyrinthPlace.LAST_CROSSING,LastCrossing.MAX_CREW),
         Map.entry(LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY),Map.entry(LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY),Map.entry(LabyrinthPlace.GOATMAN,GoatmanVignette.MAX_PLAYERS),
         Map.entry(LabyrinthPlace.GHOSTS_SET,GhostsCrew.CAMERAS),Map.entry(LabyrinthPlace.SHALLOWS,Shallows.PLACES),
         Map.entry(LabyrinthPlace.MARSH_SUPPER,MarshSupper.PLACES),Map.entry(LabyrinthPlace.TALL_GRASS,TallGrass.PLACES),Map.entry(LabyrinthPlace.GROWING_THINGS,GrowingThings.PLACES),
-        Map.entry(LabyrinthPlace.POLYBIUS,Polybius.PLACES));
+        Map.entry(LabyrinthPlace.POLYBIUS,Polybius.PLACES),Map.entry(LabyrinthPlace.LAST_ORDERS,LastOrders.PLACES));
     /** How many readers one copy of a party's story holds, or 0 for a scene that is not one. */
     public static int party(@Nullable LabyrinthPlace p){return p==null?0:PARTIES.getOrDefault(p,0);}
     /**
