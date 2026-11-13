@@ -22,6 +22,10 @@ import net.minecraft.server.level.ServerPlayer;
  * <li><b>The last day.</b> A reader who is there when the last day ends has seen the filming through, whichever days they missed.</li>
  * <li><b>A lead who leaves.</b> The longest-present crew member takes over the same bodies, where they stand, and the take goes on.</li>
  * <li><b>A crew member who leaves.</b> They start from their first unfilmed day when they come back alone.</li>
+ * <li><b>Four cameras to a set</b> (0.4.553, the owner, 13 November: "All multiplayer vignettes should be hooked through that system. If
+ * full"). The set has copies (SceneInstances): a lead and three second cameras hold one, and a fifth reader through the door is given a
+ * set of their own, where they lead. Each set has its own lead, kept by copy, and its own cast: a reader's family in one set is not the
+ * family they have in another.</li>
  * </ul>
  */
 public final class GhostsCrew {
@@ -33,8 +37,17 @@ public final class GhostsCrew {
     static final String WATCHED="WatchedEnd0404";
     /** The reader has been a second camera at least once; their account says so. */
     static final String SECOND_CAMERA="SecondCamera0404";
-    /** The set's current lead, kept in the place's shared state. */
+    /** The set's current lead, kept in the place's shared state: the original set's under this key, copy k's under this key and "@k". */
     private static final String LEAD="CrewLead0404";
+    /** 0.4.553: the cameras one set holds, the lead's and three second cameras (SceneInstances.PARTIES). */
+    public static final int CAMERAS=4;
+    private static String leadKey(int set){return set>0?LEAD+"@"+set:LEAD;}
+    /** Which set a reader is on: 0 for the original, k for copy k, and the one they keep while they are not on any. */
+    static int setOf(ServerPlayer p){return SceneInstances.of(p,GhostsSet.PLACE);}
+    /** The lead stored for a set, if any. */
+    public static @Nullable UUID storedLead(LabyrinthData d,int set){var w=LiteraryVignettes.shared(d,GhostsSet.PLACE);return w.hasUUID(leadKey(set))?w.getUUID(leadKey(set)):null;}
+    /** The set a stored lead's key names, or -1 for a key that is not one. */
+    private static int setNamed(String key){if(key.equals(LEAD))return 0;if(!key.startsWith(LEAD+"@"))return -1;try{return Integer.parseInt(key.substring(LEAD.length()+1));}catch(NumberFormatException e){return -1;}}
     /** Each crewing reader's lead. A reader not in it sees their own cast. */
     private static final Map<UUID,UUID> LEAD_OF=new ConcurrentHashMap<>();
     /** Each lead's crew, in the order they came onto the set. */
@@ -67,11 +80,20 @@ public final class GhostsCrew {
         var own=LiteraryVignettes.personal(d,p.getUUID(),GhostsSet.PLACE);
         return own.getBoolean("Here")&&own.getBoolean("Filming0485")&&!own.getBoolean("Completed")&&!own.getBoolean("Ready");
     }
-    /** Called once per scene pass, before the readers' own ticks: who leads the set, and who crews for them. */
+    /** Called once per scene pass, before the readers' own ticks: who leads each set, and who crews for them. */
     public static void refresh(MinecraftServer server){
-        var d=LabyrinthData.get(server);var world=LiteraryVignettes.shared(d,GhostsSet.PLACE);
-        var here=new ArrayList<ServerPlayer>();for(var p:server.getPlayerList().getPlayers())if(filming(d,p))here.add(p);
-        UUID stored=world.hasUUID(LEAD)?world.getUUID(LEAD):null;
+        var d=LabyrinthData.get(server);
+        // 0.4.553: each set by itself, every one with a reader filming on it or a lead stored for it, so a lead who left is let go.
+        var sets=new TreeMap<Integer,List<ServerPlayer>>();
+        for(var p:server.getPlayerList().getPlayers())if(filming(d,p))sets.computeIfAbsent(Math.max(0,SceneInstances.at(server,GhostsSet.PLACE,p.level().dimension(),p.position())),k->new ArrayList<>()).add(p);
+        for(var key:LiteraryVignettes.shared(d,GhostsSet.PLACE).getAllKeys()){int k=setNamed(key);if(k>=0)sets.putIfAbsent(k,new ArrayList<>());}
+        var leadOf=new HashMap<UUID,UUID>();var crews=new HashMap<UUID,List<UUID>>();
+        for(var e:sets.entrySet())refresh(server,d,e.getKey(),e.getValue(),leadOf,crews);
+        LEAD_OF.clear();LEAD_OF.putAll(leadOf);CREW.clear();CREW.putAll(crews);
+    }
+    private static void refresh(MinecraftServer server,LabyrinthData d,int set,List<ServerPlayer> here,Map<UUID,UUID> leadOf,Map<UUID,List<UUID>> crews){
+        var world=LiteraryVignettes.shared(d,GhostsSet.PLACE);String key=leadKey(set);
+        UUID stored=world.hasUUID(key)?world.getUUID(key):null;
         here.sort(Comparator.comparingLong((ServerPlayer p)->{var own=LiteraryVignettes.personal(d,p.getUUID(),GhostsSet.PLACE);return own.contains(ON_SET)?own.getLong(ON_SET):Long.MAX_VALUE;}).thenComparing(p->p.getUUID().toString()));
         ServerPlayer lead=null;for(var p:here)if(p.getUUID().equals(stored))lead=p;
         if(lead==null&&!here.isEmpty()){
@@ -83,18 +105,19 @@ public final class GhostsCrew {
                 else{var own=LiteraryVignettes.personal(d,lead.getUUID(),GhostsSet.PLACE);own.remove(CREWED);own.putBoolean("CastPlaced",false);LiteraryVignettes.save(d,lead.getUUID(),GhostsSet.PLACE,own);}
             }
         }
-        LEAD_OF.clear();CREW.clear();
-        if(lead==null){if(stored!=null){world.remove(LEAD);LiteraryVignettes.shared(d,GhostsSet.PLACE,world);}return;}
-        if(!lead.getUUID().equals(stored)){world=LiteraryVignettes.shared(d,GhostsSet.PLACE);world.putUUID(LEAD,lead.getUUID());LiteraryVignettes.shared(d,GhostsSet.PLACE,world);}
-        var crew=new ArrayList<UUID>();for(var p:here)if(p!=lead){crew.add(p.getUUID());LEAD_OF.put(p.getUUID(),lead.getUUID());}
-        if(!crew.isEmpty())CREW.put(lead.getUUID(),List.copyOf(crew));
+        if(lead==null){if(stored!=null){world=LiteraryVignettes.shared(d,GhostsSet.PLACE);world.remove(key);LiteraryVignettes.shared(d,GhostsSet.PLACE,world);}return;}
+        if(!lead.getUUID().equals(stored)){world=LiteraryVignettes.shared(d,GhostsSet.PLACE);world.putUUID(key,lead.getUUID());LiteraryVignettes.shared(d,GhostsSet.PLACE,world);}
+        var crew=new ArrayList<UUID>();for(var p:here)if(p!=lead){crew.add(p.getUUID());leadOf.put(p.getUUID(),lead.getUUID());}
+        if(!crew.isEmpty())crews.put(lead.getUUID(),List.copyOf(crew));
     }
     /** The bodies follow the take: the old lead's cast becomes the new lead's, and theirs (if any) the old lead's. */
     static void handOver(MinecraftServer server,LabyrinthData d,UUID from,ServerPlayer to){
         var world=LiteraryVignettes.shared(d,GhostsSet.PLACE);var level=to.serverLevel();
         var keys=new ArrayList<String>();for(var who:GhostsSet.PEOPLE)keys.add("Film"+who);keys.add("FilmPlayhouse");keys.add("FilmDrawer");
+        // 0.4.553: the bodies on this set, whose ids carry its copy (LiteraryVignettes.actorId).
+        int set=setOf(to);String on=set>0?"@"+set:"";
         for(var key:keys){
-            String a=key+"_"+from,b=key+"_"+to.getUUID();UUID theirs=world.hasUUID(a)?world.getUUID(a):null,mine=world.hasUUID(b)?world.getUUID(b):null;
+            String a=key+"_"+from+on,b=key+"_"+to.getUUID()+on;UUID theirs=world.hasUUID(a)?world.getUUID(a):null,mine=world.hasUUID(b)?world.getUUID(b):null;
             world.remove(a);world.remove(b);
             if(theirs!=null){world.putUUID(b,theirs);if(level.getEntity(theirs) instanceof LiteraryActor actor)actor.bind(GhostsSet.PLACE,to.getUUID());}
             if(mine!=null){world.putUUID(a,mine);if(level.getEntity(mine) instanceof LiteraryActor actor)actor.bind(GhostsSet.PLACE,from);}

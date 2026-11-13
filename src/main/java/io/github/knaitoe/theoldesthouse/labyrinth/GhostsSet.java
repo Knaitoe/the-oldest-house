@@ -119,8 +119,9 @@ public final class GhostsSet {
     }
     /** 0.4.404: another reader already filming on the set, whose take a reader coming in joins; null when there is none. */
     static ServerPlayer leadOnSet(ServerPlayer p){
-        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);if(!world.hasUUID("CrewLead0404"))return null;
-        var lead=p.server.getPlayerList().getPlayer(world.getUUID("CrewLead0404"));if(lead==null||lead==p||!LiteraryVignettes.inside(lead,PLACE))return null;
+        // 0.4.553: the lead of the set this reader is on (GhostsCrew, by copy).
+        var d=LabyrinthData.get(p.server);var stored=GhostsCrew.storedLead(d,GhostsCrew.setOf(p));if(stored==null)return null;
+        var lead=p.server.getPlayerList().getPlayer(stored);if(lead==null||lead==p||!LiteraryVignettes.inside(lead,PLACE)||GhostsCrew.setOf(lead)!=GhostsCrew.setOf(p))return null;
         var own=LiteraryVignettes.personal(d,lead.getUUID(),PLACE);return own.getBoolean("Filming0485")&&!own.getBoolean("Completed")&&!own.getBoolean("Ready")?lead:null;
     }
     /** 0.4.404: every key one filming day leaves behind (the production a second camera follows, with GhostsCrew's own exceptions). */
@@ -195,7 +196,7 @@ public final class GhostsSet {
         return hit.getType()==HitResult.Type.MISS||hit.getLocation().distanceToSqr(target)<.0025;
     }
     private static LiteraryActor person(ServerPlayer p,BlockPos b,int i) {
-        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);String key="Film"+PEOPLE[i]+"_"+p.getUUID();
+        var d=LabyrinthData.get(p.server);var world=LiteraryVignettes.shared(d,PLACE);String key=LiteraryVignettes.actorId(p,PLACE,"Film"+PEOPLE[i],true);
         // Claim the existing three native family bodies once rather than deleting or duplicating their identities.
         String old=switch(i){case 1->"Child";case 2->"Father";case 3->"Mother";default->"";};
         if(!world.hasUUID(key)&&!old.isEmpty()&&world.hasUUID(old)&&p.serverLevel().getEntity(world.getUUID(old)) instanceof LiteraryActor legacy&&legacy.owner().isEmpty()) {
@@ -551,7 +552,7 @@ public final class GhostsSet {
         if(own.getBoolean("Completed")){
             // Fit only saved originals; a concluded take must never create or restage a missing actor.
             var saved=new LiteraryActor[6];var world=LiteraryVignettes.shared(LabyrinthData.get(p.server),PLACE);
-            for(int i=0;i<6;i++){String key="Film"+PEOPLE[i]+"_"+p.getUUID();if(world.hasUUID(key)&&p.serverLevel().getEntity(world.getUUID(key)) instanceof LiteraryActor a)saved[i]=a;}
+            for(int i=0;i<6;i++){String key=LiteraryVignettes.actorId(p,PLACE,"Film"+PEOPLE[i],true);if(world.hasUUID(key)&&p.serverLevel().getEntity(world.getUUID(key)) instanceof LiteraryActor a)saved[i]=a;}
             fitSavedSeats(b,saved);
             // 0.4.248, aftermath (docs/AFTERMATH_0_4_244.md): the house as the last day left it, for this reader alone. The lights out,
             // the three still at the table, Merry gone, the crew gone; nobody asks anything.
