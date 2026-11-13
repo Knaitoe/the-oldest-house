@@ -83,8 +83,15 @@ public final class KeepsakeTests {
                 // The bulb: a light where they stand, then not again for a while.
                 var bulb = keepsake(p, LabyrinthPlace.ELK_FAN, "Lightbulb", new ItemStack(LiteraryRegistry.LIGHTBULB.get()));
                 p.setItemInHand(InteractionHand.MAIN_HAND, bulb);
-                h.assertTrue(Keepsakes.bulb(p, bulb) && h.getLevel().getBlockState(p.blockPosition().above()).is(Blocks.LIGHT) && !Keepsakes.bulb(p, bulb),
-                        "the bulb hangs a light where the reader stands, once in a while");
+                // Run 1593: this case shares its batch with fifty others laid out a few blocks apart, and its nine-block lawn reaches
+                // into theirs; the cell over the reader's head was taken by a neighbour's block, so the bulb hung its light at their
+                // feet. The reader's own two cells are cleared and the reader put back on them first.
+                for (int y = 1; y <= 2; y++) h.setBlock(new BlockPos(2, y, 2), Blocks.AIR);
+                p.teleportTo(h.getLevel(), at.x, at.y, at.z, 0, 0);
+                var head = p.blockPosition().above();
+                h.assertTrue(Keepsakes.bulb(p, bulb), "the bulb hangs a light: the reader at " + h.relativePos(p.blockPosition()) + ", in " + LiteraryVignettes.current(p) + ", over their head " + h.getLevel().getBlockState(head));
+                h.assertTrue(h.getLevel().getBlockState(head).is(Blocks.LIGHT), "where the reader stands: over their head " + h.getLevel().getBlockState(head) + ", at their feet " + h.getLevel().getBlockState(p.blockPosition()));
+                h.assertTrue(!Keepsakes.bulb(p, bulb), "and only once in a while");
                 Keepsakes.lightsOut(h.getLevel().getServer(), true);
                 h.assertTrue(h.getLevel().getBlockState(p.blockPosition().above()).isAir(), "and the light goes out");
                 // The cylinders: a playing jukebox keeps monsters from spawning near it.

@@ -197,13 +197,15 @@ public final class LiveExpeditionClient {
             mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);
             var bounds=io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,bounds);
+            // 0.4.558: the reader in a cousin's place begins at the camp, and has no path girl; only the reader on the trail walks it.
+            boolean atCamp=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(mc.player.position().subtract(target.getX(),target.getY(),target.getZ())).progress()>=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.CLEARING-4;
             // 0.4.163: the trail's child is only there once the reader has started walking, so walk the trail a few steps first.
-            if(ack!=32&&mc.screen==null&&children.stream().noneMatch(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent())){
+            if(ack!=32&&mc.screen==null&&!atCamp&&children.stream().noneMatch(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent())){
                 var at=mc.player.position().subtract(target.getX(),target.getY(),target.getZ());var progress=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(at).progress();
                 var next=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.path(progress+1).add(target.getX(),target.getY(),target.getZ());var toward=next.subtract(mc.player.position());
                 mc.player.setYRot((float)Math.toDegrees(Math.atan2(-toward.x,toward.z)));mc.player.setXRot(0);mc.options.keyUp.setDown(progress<io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette.FOLLOW_START+1.5);return;
             }
-            if(ticks>40&&mc.screen==null&&ack!=32&&children.stream().filter(c->!c.girl()).count()==7&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==1){
+            if(ticks>40&&mc.screen==null&&ack!=32&&children.stream().filter(c->!c.girl()).count()==7&&children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).count()==(atCamp?0:1)){
                 var camera=mc.gameRenderer.getMainCamera().getPosition();var frustum=new net.minecraft.client.renderer.culling.Frustum(new org.joml.Matrix4f(),new org.joml.Matrix4f().ortho(-128,128,-128,128,-128,128));frustum.prepare(camera.x,camera.y,camera.z);
                 for(var c:children){boolean mine=!c.girl()||c.viewer().filter(mc.player.getUUID()::equals).isPresent();var renderer=mc.getEntityRenderDispatcher().getRenderer(c);
                     // At the entrance cousins can be beyond native model draw distance;
@@ -211,12 +213,15 @@ public final class LiveExpeditionClient {
                     if(c.girl()&&renderer.shouldRender(c,frustum,camera.x,camera.y,camera.z)!=mine)throw new IllegalStateException("LIVE EXPEDITION a native path girl was hidden or leaked to its peer");
                     if(mine&&mc.getResourceManager().getResource(renderer.getTextureLocation(c)).isEmpty())throw new IllegalStateException("LIVE EXPEDITION the actual trailer child renderer selected a missing skin");
                 }
-                var girl=children.stream().filter(c->c.viewer().filter(mc.player.getUUID()::equals).isPresent()).findFirst().orElseThrow();var at=girl.getEyePosition().subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-at.x,at.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(at.y,Math.hypot(at.x,at.z))));
+                // The reader on the trail looks at their own girl; the reader at the camp at the cousins round them.
+                var look=children.stream().filter(c->atCamp?!c.girl():c.viewer().filter(mc.player.getUUID()::equals).isPresent()).min(java.util.Comparator.comparingDouble(c->c.distanceToSqr(mc.player))).orElseThrow();var at=look.getEyePosition().subtract(mc.player.getEyePosition());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-at.x,at.z)));mc.player.setXRot((float)-Math.toDegrees(Math.atan2(at.y,Math.hypot(at.x,at.z))));
                 shot=role+"-trailer-arrival";ack(mc,32);
             }
         }
         if(step==33){
             var at=mc.player.position().subtract(target.getX(),target.getY(),target.getZ());var progress=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.project(at).progress();
+            // The reader in a cousin's place is at the camp already and waits there.
+            if(progress>=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.CLEARING-4){mc.options.keyUp.setDown(false);mc.options.keyShift.setDown(false);return;}
             var next=io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.path(progress+1).add(target.getX(),target.getY(),target.getZ());
             var toward=next.subtract(mc.player.position());mc.player.setYRot((float)Math.toDegrees(Math.atan2(-toward.x,toward.z)));mc.player.setXRot(0);mc.options.keyShift.setDown(false);mc.options.keyUp.setDown(true);
         }

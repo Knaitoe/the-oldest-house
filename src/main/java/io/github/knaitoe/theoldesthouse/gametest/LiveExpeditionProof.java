@@ -355,8 +355,12 @@ public final class LiveExpeditionProof {
         }else if(phase==32&&a!=null&&b!=null&&ACKS.size()==2){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var children=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN));
             require(children.stream().filter(c->!c.girl()).count()==7,"seven shared cousins really spawned for both socket clients, the second reader in the eighth's place");
-            require(children.stream().filter(GoatmanChild::girl).count()==2,"each latecomer has its own private path girl");
-            write("trailer-arrival.txt","Two actual door crossings into a fresh trailer: seven shared native cousins tracked on both clients with the second reader in the eighth's place, each client's own path girl visible and the peer's girl hidden by the registered renderer.\n");
+            // 0.4.558: the reader in the eighth's place begins where that cousin was, at the camp, and the trail and its girl are the
+            // other's alone (run 1593 timed out here waiting for the stand-in's client to find a path girl it is no longer given).
+            var cohort=GoatmanVignette.run(d).getCompound("Cohort");var stander=cohort.getCompound(a.getUUID().toString()).getBoolean(GoatmanVignette.STOOD_AT)?a:b;
+            require(GoatmanWoods.project(stander.position().subtract(Vec3.atLowerCornerOf(camp))).progress()>=GoatmanWoods.CLEARING-4,"the reader in the eighth's place begins at the camp, not at the head of the trail");
+            require(children.stream().filter(GoatmanChild::girl).count()==1,"the latecomer on the trail has their own private path girl, and the reader at the camp none");
+            write("trailer-arrival.txt","Two actual door crossings into a fresh trailer: seven shared native cousins tracked on both clients, the second reader beginning at the camp in the eighth's place, the trail reader's own path girl visible to them and hidden from the reader at the camp by the registered renderer.\n");
             step(s,33,camp);
         }else if(phase==33&&a!=null&&b!=null){
             var run=GoatmanVignette.run(d);var cohort=run.getCompound("Cohort");
