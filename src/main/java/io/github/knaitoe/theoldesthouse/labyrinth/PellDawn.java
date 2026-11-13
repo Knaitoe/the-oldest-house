@@ -194,7 +194,10 @@ public final class PellDawn {
             if(!own.getBoolean("Ended")){
                 // Their ending: permanent, nothing resolved (PellHouse.dealable).
                 own.putBoolean("Ended",true);own.putBoolean("TillyStayed",true);own.putBoolean("SawCarCome",true);own.putString("Outcome","tilly_answered");
-                own.putInt("Beat",Math.max(own.getInt("Beat"),own.getInt("Visit")));PellHouse.save(p,own);
+                own.putInt("Beat",Math.max(own.getInt("Beat"),own.getInt("Visit")));
+                // 0.4.543: a night slept in the garage, the last one too, has its entry (PellEntries); after a success, nothing new comes.
+                if((own.getInt("GarageNights")&1<<h.visit)!=0)PellEntries.due(own,PellEntries.night(h.visit));
+                PellHouse.save(p,own);
                 PellHouse.cue(p,PellTexts.DAWN_ANSWERED);
             }
             if(h.inCar.contains(p.getUUID()))continue;
