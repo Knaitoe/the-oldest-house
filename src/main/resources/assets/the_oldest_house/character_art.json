@@ -93,7 +93,7 @@
   {
     "name": "caged_child",
     "logical": 64,
-    "model": "player",
+    "model": "player_slim",
     "number": 0,
     "phase": 0
   },
