@@ -131,6 +131,7 @@ public final class LiteraryRenderers {
             }
             if(role==LiteraryActor.DANCER&&phase==1){leftArm.xRot=rightArm.xRot=-.8F;leftArm.zRot=-.55F;rightArm.zRot=.55F;body.yRot=(float)Math.sin(age*.045)*.18F;leftLeg.xRot=(float)Math.sin(age*.08)*.22F;rightLeg.xRot=-leftLeg.xRot;}
             if(role==LiteraryActor.OLD_MAN){body.xRot=.19F;head.xRot=.14F;leftArm.xRot=rightArm.xRot=-.1F;}
+            if(role==LiteraryActor.COFFIN_WOMAN&&phase==1)laidOut();
             if(role==LiteraryActor.FATHER)father(phase,age);
             if(role==LiteraryActor.BROTHER&&phase>0)asleep(age);
             if(role==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.PeopleLights.inBed(phase))asleep(age);
@@ -707,6 +708,16 @@ public final class LiteraryRenderers {
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg}){part.xRot=0;part.yRot=0;part.zRot=0;}
             rightArm.zRot=.04F;leftArm.zRot=-.04F;body.zScale=1;eyelids.visible=true;hat.copyFrom(head);
         }
+        /**
+         * 0.4.587 (owner: "corpse is still moving her arms in house of usher"): laid out on her back and still. She had no pose of her
+         * own, so she kept the idle sway every standing figure has, and at its widest it carried her hands out through the coffin's
+         * sides. Nothing of her moves now: nothing breathes, sways or turns. Her arms lie close along her sides, turned a little in,
+         * with her hands on the front of her legs, inside the boards. Her painted face already has its eyes shut.
+         */
+        public void laidOut(){
+            for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg}){part.xRot=0;part.yRot=0;part.zRot=0;}
+            rightArm.zRot=-.05F;leftArm.zRot=.05F;rightArm.xRot=leftArm.xRot=-.12F;body.zScale=1;hat.copyFrom(head);
+        }
         public void asleep(float age){
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg}){part.xRot=0;part.yRot=0;part.zRot=0;}
             head.yRot=.22F+.04F*net.minecraft.util.Mth.sin(age*.011F);rightArm.zRot=.06F;leftArm.zRot=-.06F;rightArm.xRot=leftArm.xRot=.04F;
@@ -795,7 +806,12 @@ public final class LiteraryRenderers {
         p.mulPose(Axis.ZP.rotationDegrees(90F));p.mulPose(Axis.YP.rotationDegrees(270F));
     }
     public static void bedPose(PoseStack p,float scale){p.translate(0,.5625/scale+.25,-.35);p.mulPose(Axis.XP.rotationDegrees(90));}
-    public static void coffinPose(PoseStack p){p.translate(0,.4375,-.35);p.mulPose(Axis.XP.rotationDegrees(90));p.scale(.85F,.85F,.85F);}
+    /**
+     * 0.4.587 (owner: "she's also slightly edging outside of the coffin"): she lay seven pixels up, so her face stood more than two
+     * pixels over the coffin's rim. Her back is on the bed now (three pixels up, and her body 1.7 deep at this size), her face under
+     * the rim, her feet .15 short of the foot board and her head as far short of the head board.
+     */
+    public static void coffinPose(PoseStack p){p.translate(0,.29375,-.35);p.mulPose(Axis.XP.rotationDegrees(90));p.scale(.85F,.85F,.85F);}
     static void crutches(CastModel model,ModelPart pole,PoseStack p,MultiBufferSource out,int light){for(var arm:new ModelPart[]{model.leftArm,model.rightArm}){p.pushPose();arm.translateAndRotate(p);p.translate(0,.32,0);pole.render(p,out.getBuffer(RenderType.entityCutoutNoCull(ResourceLocation.withDefaultNamespace("textures/block/spruce_log.png"))),light,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);p.popPose();}}
     /**
      * 0.4.220: Brad's helmet lamp, lit. The model is drawn again through the lamp's glow mask (black everywhere but the glass),
