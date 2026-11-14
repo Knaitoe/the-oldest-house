@@ -92,6 +92,20 @@ public final class PellPeople {
         SHOWING=28;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
+    /**
+     * 0.4.568 (owner: "tilly should also have visible hair growth"): how long Tilly's hair has grown, in the marks' second and third bits
+     * (client.PellHair draws it). On the first visit it is as she came, to her jaw; a week in, past her shoulders; on the last night, as
+     * long as Nessa's, down her back. June's "It'll grow long here." Nothing grows it but the visits.
+     */
+    public static final int HAIR_SHIFT=1,HAIR_MASK=3<<HAIR_SHIFT,HAIR_LONGEST=2;
+    /** The length a visit has grown Tilly's hair to: none past what she came with on the first, then longer each visit. */
+    public static int hairFor(int visit){return Math.max(0,Math.min(HAIR_LONGEST,visit-1));}
+    /** The length in a look's marks. */
+    public static int hair(int marks){return (marks&HAIR_MASK)>>HAIR_SHIFT;}
+    /** A look's marks with the hair at that length, and the rest kept. */
+    public static int withHair(int marks,int length){return (marks&~HAIR_MASK)|(Math.max(0,Math.min(HAIR_LONGEST,length))<<HAIR_SHIFT);}
+    /** Tilly's hair as long as the visit the house is playing has grown it. */
+    static void growHair(LiteraryActor tilly,int visit){int m=withHair(tilly.marks(),hairFor(visit));if(m!=tilly.marks())tilly.marks(m);}
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
     public static @Nullable String dressed(int phase,int gesture){return dressed(phase,gesture,0);}
     /** As above, with the marks they carry: by day, after the laundry, June with her hand wrapped. */

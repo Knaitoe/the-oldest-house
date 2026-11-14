@@ -50,6 +50,19 @@ public final class LiteraryVignettes {
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
     public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
     /**
+     * 0.4.568 (run 1599): saves what a handler changed in the copy of the reader's record it was handed ({@code before} is that copy as
+     * it was handed over), laid key by key over the record as it stands now. A handler may write the record through reads of its own as
+     * well, and saving the old copy whole put those writes back as they were: A Place for You never kept who the reader had talked to,
+     * so each person's first conversation came round again every time they were spoken to. A copy left unchanged saves nothing.
+     */
+    static void saveOver(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag before,CompoundTag own){
+        if(own.equals(before))return;
+        var now=personal(d,p,place);
+        for(var key:before.getAllKeys())if(!own.contains(key))now.remove(key);
+        for(var key:own.getAllKeys()){var value=own.get(key);if(value!=null&&!value.equals(before.get(key)))now.put(key,value.copy());}
+        save(d,p,place,now);
+    }
+    /**
      * 0.4.542: whether this reader's ending in a scene has landed without an account they have read ("Ended"): the Pell house's at first
      * light, after Tilly answered or came out. The scene is over for them as surely as one they resolved.
      */
@@ -323,7 +336,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.FAMILY_COPY&&s.is(LiteraryRegistry.STEW.get())&&own.getInt("Visit")==4&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))){own.putBoolean("DinnerEaten",true);own.putInt("Beat",4);}
         save(LabyrinthData.get(p.server),p.getUUID(),place,own);
     }
-    public static void talk(ServerPlayer p,LiteraryActor actor){var place=current(p);if(actor==null||place==null||!actor.scene().equals(place.id())||p.distanceToSqr(actor)>36||actor.owner().isPresent()&&!actor.owner().get().equals(GhostsCrew.castRole(actor.role())?GhostsCrew.castOf(p.getUUID()):p.getUUID()))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
+    public static void talk(ServerPlayer p,LiteraryActor actor){var place=current(p);if(actor==null||place==null||!actor.scene().equals(place.id())||p.distanceToSqr(actor)>36||actor.owner().isPresent()&&!actor.owner().get().equals(GhostsCrew.castRole(actor.role())?GhostsCrew.castOf(p.getUUID()):p.getUUID()))return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);var before=own.copy();
         if(UncannyRooms.isUncanny(place))UncannyStories.talk(p,actor,place,own);
         else if(place==LabyrinthPlace.END_WORLD_CABIN)CabinBargain.open(p);
         else if(place==LabyrinthPlace.PEOPLE_LIGHTS)PeopleLights.talk(p,actor);
@@ -367,11 +380,11 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.GHOSTS_SET)GhostsSet.talk(p,actor,own);
         else if(place==LabyrinthPlace.LAST_SWIMMER)LastSwimmer.talk(p,actor,own);
         else if(place==LabyrinthPlace.LAKE_HOUSE)LakeHouse.talk(p,actor,own);else if(place==LabyrinthPlace.BORRASCA)BorrascaStory.talk(p,actor,own);
-        save(d,p.getUUID(),place,own);
+        saveOver(d,p.getUUID(),place,before,own);
     }
     public static void attacked(ServerPlayer p,LiteraryActor actor){var place=current(p);if(place==null||!actor.scene().equals(place.id())||actor.owner().isPresent()&&!actor.owner().get().equals(p.getUUID()))return;
         // Blows do not hurt him and do not end the visit; they only push him off (0.4.120). The way through is to get away, or to hide.
-        if(place==LabyrinthPlace.ELK_CARCASSES&&actor.role()==LiteraryActor.KILLER){ElkHunt.shoved(p,actor);return;}var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);
+        if(place==LabyrinthPlace.ELK_CARCASSES&&actor.role()==LiteraryActor.KILLER){ElkHunt.shoved(p,actor);return;}var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);var before=own.copy();
         if(place==LabyrinthPlace.HOLY_RABBIT&&actor.role()==LiteraryActor.FATHER){actor.appearance(actor.role(),actor.phase());actor.say("I'm awake. I'm here.");own.putInt("FatherAwake",own.getInt("FatherAwake")+1);own.putInt("Drowse",Math.max(0,own.getInt("Drowse")-100));}
         else if(!hostile(p,actor)){
             long now=p.serverLevel().getGameTime();
@@ -381,7 +394,7 @@ public final class LiteraryVignettes {
             if(strikes<4)p.displayClientMessage(Component.literal(FriendlyNpcWarnings.pick(p,own,strikes)).withStyle(net.minecraft.ChatFormatting.GRAY),true);
             else{own.putBoolean("Interrupted",true);p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,80));LabyrinthDoors.goToJunction(p);}
         }
-        save(d,p.getUUID(),place,own);
+        saveOver(d,p.getUUID(),place,before,own);
     }
     /** An attacking creature is never protected by the House's courtesy warning. */
     public static boolean hostile(ServerPlayer p,LiteraryActor a){

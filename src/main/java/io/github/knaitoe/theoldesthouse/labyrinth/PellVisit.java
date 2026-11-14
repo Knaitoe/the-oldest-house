@@ -132,6 +132,8 @@ public final class PellVisit {
         }
         if(june==null)return;
         long now=l.getGameTime();
+        // 0.4.568: Tilly's hair as long as this visit has grown it.
+        if(tilly!=null)PellPeople.growHair(tilly,h.visit);
         // 0.4.531: who is asleep, and whether everybody is (the night hurries on).
         PellMorning.sleepers(l,b,h,here,now);
         clock(h,here,now);

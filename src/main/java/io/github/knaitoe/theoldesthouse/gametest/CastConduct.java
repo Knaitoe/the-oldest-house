@@ -76,6 +76,11 @@ public final class CastConduct implements AutoCloseable {
     private final Map<UUID,UUID> askedBy=new HashMap<>();
     /** Every reader who spoke to each person, and when: two readers may speak to the same person at once, and be answered either. */
     private final Map<UUID,Map<UUID,Long>> askers=new HashMap<>();
+    /**
+     * 0.4.568: everyone about when a reader answered on the conversation panel, and when: any of them may be the one who answers back,
+     * and what they say in the next two ticks is not the same line said again. Who turns to the reader is still {@link #asked}'s.
+     */
+    private final Map<UUID,Long> mayAnswerAt=new HashMap<>();
     private final Map<String,Integer> counts=new LinkedHashMap<>();
     private final List<String> faults=new ArrayList<>();
     private final BiConsumer<LiteraryActor,String> hearing=this::heard;
@@ -115,6 +120,12 @@ public final class CastConduct implements AutoCloseable {
     public void asking(LiteraryActor a){if(!closed)asked.put(a.getUUID(),level.getGameTime());}
     /** As above, by this reader: the person's answer turns to them (with two readers about, not always the nearer one). */
     public void asking(LiteraryActor a,ServerPlayer by){asking(a);if(!closed){askedBy.put(a.getUUID(),by.getUUID());askers.computeIfAbsent(a.getUUID(),k->new HashMap<>()).put(by.getUUID(),level.getGameTime());}}
+    /**
+     * 0.4.568 (run 1599): a reader answers on the panel with this person about. The panel's answer may come from them rather than from
+     * whoever stands nearest (at A Place for You's supper table Kit sat nearer than Alex, and Alex's answer, the same each time the
+     * reader chose the same words, was taken for a line said again). It does not make them the one who turns to the reader.
+     */
+    public void mayAnswer(LiteraryActor a){if(!closed)mayAnswerAt.put(a.getUUID(),level.getGameTime());}
     /** The readers who spoke to this person within a few ticks of {@code when}. */
     private Set<UUID> askedAround(LiteraryActor a,long when){
         var out=new HashSet<UUID>();for(var e:askers.getOrDefault(a.getUUID(),Map.of()).entrySet())if(Math.abs(e.getValue()-when)<=5)out.add(e.getKey());return out;
@@ -293,7 +304,8 @@ public final class CastConduct implements AutoCloseable {
         supersede(a);
         String key=a.getUUID()+"|"+text;long now=level.getGameTime();Long before=said.put(key,now);
         boolean answer=now-asked.getOrDefault(a.getUUID(),Long.MIN_VALUE/2)<=2;
-        if(before!=null&&now-before<REPEAT&&!answer)fault(a,"says the same line again",String.format(Locale.ROOT,"after %d ticks: \"%s\"",now-before,abbreviate(text)));
+        boolean answered=answer||now-mayAnswerAt.getOrDefault(a.getUUID(),Long.MIN_VALUE/2)<=2;
+        if(before!=null&&now-before<REPEAT&&!answered)fault(a,"says the same line again",String.format(Locale.ROOT,"after %d ticks: \"%s\"",now-before,abbreviate(text)));
         // A line said with no reader in reach and in sight (LiteraryActor.ADDRESS_RANGE, as the person's own turning goes) is said to
         // nobody: there is nobody to turn to. A reader put near them afterwards is not who it was said to.
         if(!answer&&rs.stream().noneMatch(r->r.distanceTo(a)<=LiteraryActor.ADDRESS_RANGE&&a.hasLineOfSight(r)))return;

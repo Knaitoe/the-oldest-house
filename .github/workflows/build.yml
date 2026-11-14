@@ -85,6 +85,7 @@ jobs:
           python3 tools/draw_pell_things.py --check
           python3 tools/draw_pell_line.py --check
           python3 tools/draw_pell_people.py --check
+          python3 tools/draw_pell_hair.py --check
           python3 tools/draw_lodging_house.py --check
           python3 tools/draw_lodging_things.py --check
           python3 tools/draw_pell_tapes.py --check
