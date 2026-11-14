@@ -31,6 +31,17 @@ public final class HouseBlocks {
     public static final DeferredBlock<SlabBlock> STAIRCASE_SLAB=BLOCKS.registerBlock("staircase_slab",SlabBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_DEEPSLATE_SLAB).noLootTable());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<RugFloorBlock>> RUG_FLOOR_TYPE=BLOCK_TYPES.register("rug_floor",()->RugFloorBlock.CODEC);
     public static final DeferredBlock<RugFloorBlock> RUG_FLOOR=BLOCKS.registerBlock("rug_floor",RugFloorBlock::new,BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_PLANKS).noLootTable());
+    private static final net.minecraft.world.phys.shapes.VoxelShape POST=Block.box(6,0,6,10,16,10);
+    /**
+     * 0.4.570: the bed post in the clapping room, under the blindfold on the wall. It was a fence. Since 0.4.220 the builder joins
+     * every fence it lays to what stands beside it, and a fence joined to the wall behind it has an arm whose collision stands a
+     * block and a half high: it reached into the cell above, and the blindfold's frame dropped off the wall a hundred ticks after
+     * anybody came near (run 1600). This post looks as the bare fence post did, joins nothing and stands one block high.
+     */
+    public static final DeferredBlock<Block> BED_POST=BLOCKS.registerBlock("bed_post",p->new Block(p){
+        @Override protected net.minecraft.world.phys.shapes.VoxelShape getShape(net.minecraft.world.level.block.state.BlockState s,net.minecraft.world.level.BlockGetter l,net.minecraft.core.BlockPos at,net.minecraft.world.phys.shapes.CollisionContext c){return POST;}
+        @Override protected boolean isPathfindable(net.minecraft.world.level.block.state.BlockState s,net.minecraft.world.level.pathfinder.PathComputationType t){return false;}
+    },BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_FENCE).noLootTable());
 
     public static final DeferredHolder<MapCodec<? extends Block>, MapCodec<WardrobeBlock>> WARDROBE_TYPE =
             BLOCK_TYPES.register("wardrobe", () -> WardrobeBlock.CODEC);

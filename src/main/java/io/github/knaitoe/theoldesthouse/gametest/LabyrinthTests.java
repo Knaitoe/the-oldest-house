@@ -449,10 +449,45 @@ public final class LabyrinthTests {
         BlockPos base = helper.absolutePos(BlockPos.ZERO).offset(-200, 6, 330);
         HideAndClap.build(level.getServer(), level, base);
         helper.assertTrue(level.getBlockState(base.offset(HideAndClap.BED_FOOT)).getBlock() instanceof BedBlock, "the child's bed");
-        helper.assertTrue(level.getBlockState(base.offset(HideAndClap.BED_POST)).is(Blocks.SPRUCE_FENCE), "its post");
+        // 0.4.570: a post that joins nothing, one block high. As a fence it joined the wall and knocked the blindfold off it (run 1600).
+        BlockState post = level.getBlockState(base.offset(HideAndClap.BED_POST));
+        helper.assertTrue(post.is(HouseBlocks.BED_POST.get()) && !(post.getBlock() instanceof net.minecraft.world.level.block.FenceBlock)
+                && post.getCollisionShape(level, base.offset(HideAndClap.BED_POST)).max(Direction.Axis.Y) <= 1.0D, "its post, which joins nothing and stands no higher than its block: " + post);
         helper.assertTrue(level.getBlockState(base.offset(0, 0, 1)).getBlock() instanceof DoorBlock, "a door in the south wall");
         int open = HideAndClap.openSpots(level, base).size();
         helper.assertTrue(open >= 40, "open floor to clap from, found " + open + " spots");
+        helper.succeed();
+    }
+
+    /**
+     * 0.4.570 (run 1600): the builder joins the fences it lays to what stands beside them (0.4.220), and a joined arm collides a
+     * block and a half high. An arm that would reach something hung on a wall is not grown, so nothing is knocked off it; the same
+     * fence with nothing hung above it joins the wall as before.
+     */
+    @GameTest(template = "empty")
+    public static void aFenceJoinsTheWallBesideItButNeverThroughSomethingHungThere(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos bare = helper.absolutePos(BlockPos.ZERO).above(3), under = bare.offset(2, 0, 0);
+        int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+        List<BlockPos> laid = new ArrayList<>();
+        for (BlockPos post : List.of(bare, under)) for (int y = 0; y <= 1; y++) {
+            level.setBlock(post.offset(0, y, -1), Blocks.SPRUCE_PLANKS.defaultBlockState(), flags);
+            laid.add(post.offset(0, y, -1));
+        }
+        var frame = new net.minecraft.world.entity.decoration.ItemFrame(level, under.above(), Direction.SOUTH);
+        helper.assertTrue(level.addFreshEntity(frame) && frame.survives(), "a frame hangs on the wall");
+        for (BlockPos post : List.of(bare, under)) {
+            level.setBlock(post, Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
+            laid.add(post);
+            io.github.knaitoe.theoldesthouse.labyrinth.BuildBlocks.join(level, post);
+        }
+        BlockState joined = level.getBlockState(bare), spared = level.getBlockState(under);
+        boolean stays = frame.survives() && frame.isAlive();
+        frame.discard();
+        for (BlockPos pos : laid) level.setBlock(pos, Blocks.AIR.defaultBlockState(), flags);
+        helper.assertTrue(joined.getValue(net.minecraft.world.level.block.FenceBlock.NORTH), "a fence joins the wall beside it: " + joined);
+        helper.assertTrue(!spared.getValue(net.minecraft.world.level.block.FenceBlock.NORTH) && stays,
+                "but grows no arm into a frame hung above it, and the frame stays where it hangs: " + spared + ", stays " + stays);
         helper.succeed();
     }
 

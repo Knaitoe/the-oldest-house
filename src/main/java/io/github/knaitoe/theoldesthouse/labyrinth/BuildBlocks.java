@@ -41,9 +41,23 @@ public final class BuildBlocks {
         if(state.getBlock() instanceof net.minecraft.world.level.block.FenceBlock){var above=level.getBlockState(at.above());
             if(above.getBlock() instanceof net.minecraft.world.level.block.CarpetBlock||above.getBlock() instanceof net.minecraft.world.level.block.BasePressurePlateBlock)return;}
         var shaped=state;
-        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){var next=at.relative(side);shaped=shaped.updateShape(side,level.getBlockState(next),level,at,next);}
-        if(shaped.getBlock() instanceof net.minecraft.world.level.block.WallBlock){var up=at.above();shaped=shaped.updateShape(net.minecraft.core.Direction.UP,level.getBlockState(up),level,at,up);}
+        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){var next=at.relative(side);var joined=shaped.updateShape(side,level.getBlockState(next),level,at,next);if(!knocks(level,at,shaped,joined))shaped=joined;}
+        if(shaped.getBlock() instanceof net.minecraft.world.level.block.WallBlock){var up=at.above();var raised=shaped.updateShape(net.minecraft.core.Direction.UP,level.getBlockState(up),level,at,up);if(!knocks(level,at,shaped,raised))shaped=raised;}
         if(!shaped.equals(state))level.setBlock(at,shaped,JOIN_FLAGS);
+    }
+    /**
+     * 0.4.570: whether a new connection would knock something off a wall. A fence's or wall's arm collides a block and a half
+     * high, so one under a frame or a painting reaches into it, and vanilla drops a hanging thing that touches a block the next
+     * time it looks (every hundred ticks). Such an arm is not grown: what hangs there stays, and the rail stops short of the wall.
+     */
+    private static boolean knocks(ServerLevel level,BlockPos at,BlockState before,BlockState after){
+        if(after.equals(before))return false;
+        var added=net.minecraft.world.phys.shapes.Shapes.joinUnoptimized(after.getCollisionShape(level,at),before.getCollisionShape(level,at),net.minecraft.world.phys.shapes.BooleanOp.ONLY_FIRST);
+        if(added.isEmpty())return false;
+        var boxes=added.toAabbs();
+        for(var hung:level.getEntitiesOfClass(net.minecraft.world.entity.decoration.HangingEntity.class,added.bounds().move(at).inflate(1)))
+            for(var box:boxes)if(box.move(at).intersects(hung.getBoundingBox()))return true;
+        return false;
     }
 
     /** The last command of a plan: every fence, wall and pane it placed joins what stands beside it. */

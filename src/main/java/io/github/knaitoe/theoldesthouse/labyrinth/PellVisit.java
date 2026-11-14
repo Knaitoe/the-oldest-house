@@ -146,6 +146,8 @@ public final class PellVisit {
         // 0.4.545: the older sibling's part of the house is for the readers who are not Tilly (PellTilly.siblings).
         var sib=PellTilly.siblings(h,here);
         walkers(l,b,h);
+        // 0.4.570: their own small things while the house waits on its hour (PellIdle).
+        PellIdle.tick(l,b,h,here,now);
         // 0.4.536: the shed's deck, whatever the hour.
         PellTapes.tick(l,b,h,here,now);
         // 0.4.538: a bucket nobody here has goes back to the laundry; on the last night, Callum out on the line.
@@ -174,6 +176,8 @@ public final class PellVisit {
         }
         for(var door:HER_DOORS)if(PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         h.step=GREET;h.waypoint=0;h.gailStep=0;h.tillyStep=0;h.tillyHome=false;h.gailGone=false;h.next=0;h.stuck=0;h.trail.clear();h.fresh=false;
+        // 0.4.570: nobody out on anything of their own.
+        PellIdle.reset(h);
         // 0.4.526: the afternoon again, nobody sitting or walking, the table bare and June's hands empty.
         h.time=AFTERNOON;h.rate=0;h.told.clear();
         Arrays.fill(h.seated,false);Arrays.fill(h.place,-1);Arrays.fill(h.sitAt,-1);for(var w:h.way)w.clear();
@@ -372,6 +376,7 @@ public final class PellVisit {
         stand(l,b,h,PellPeople.JUNE,KITCHEN);stand(l,b,h,PellPeople.TILLY,TILLY_ROOM);stand(l,b,h,PellPeople.CALLUM,PellPeople.FIRST_VISIT[PellPeople.CALLUM]);
         for(var door:HER_DOORS)if(!PellSite.open(l,b,door))PellHouse.toggle(l,b,door);
         h.tillyHome=true;h.tillyStep=TILLY_IN.length;h.trail.clear();h.step=SETTLED;h.waypoint=0;h.next=0;h.stuck=0;
+        PellIdle.reset(h);
     }
     static void stand(ServerLevel l,BlockPos b,PellPeople.Household h,int who,PellPeople.Spot s){
         var a=PellPeople.find(l,b,who);if(a==null)return;
@@ -477,7 +482,8 @@ public final class PellVisit {
                 if(h.visit>=2&&!h.welcomed){PellWeek.welcome(l,b,h,june,here,now);return;}
                 // 0.4.535: a while after her hello, the laundry (PellHand); while she is away, the hour and dinner wait.
                 if(PellHand.tick(l,b,h,june,here,now))return;
-                if(h.time>=SIX&&ready(h,now,june))call(l,b,h,june,here,now);
+                // 0.4.570: not while anybody is still out on something of their own (PellIdle); they come back first.
+                if(h.time>=SIX&&ready(h,now,june)&&PellIdle.home(h))call(l,b,h,june,here,now);
             }
             case 1->{
                 // At the table's end: four places laid. Then to the stove for the saucepan.
@@ -723,7 +729,8 @@ public final class PellVisit {
         if(tvOn(l,b)&&now-h.tapeAt>=TAPE_EVERY){h.tapeAt=now;var at=Vec3.atCenterOf(b.offset(TV)).add(0,.5,0);l.playSound(null,at.x,at.y,at.z,PellRegistry.TAPE.get(),SoundSource.NEUTRAL,.9F,1F);}
         // 0.4.538: the last night, she says it will be an early night to the first reader in (PellLastNight).
         if(h.visit>=PellWeek.LAST&&!h.welcomed){PellLastNight.welcome(l,b,h,june,here,now);return;}
-        if(h.time<EVENING||!juneStill||!ready(h,now,june))return;
+        // 0.4.570: and nobody still out on something of their own (PellIdle).
+        if(h.time<EVENING||!juneStill||!ready(h,now,june)||!PellIdle.home(h))return;
         // Half past eight. The television off, and bedtime: Tilly to the edge of Nessa's bed, June after her, Callum to his circle.
         tv(l,b,false);
         say(h,june,J,PellTexts.JUNE_BEDTIME,now);

@@ -5520,5 +5520,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.lake_house.hand_push"
+  },
+  "pell.stir": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/stir",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.stir"
+  },
+  "pell.tap": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/tap",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.tap"
+  },
+  "pell.wipe": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/wipe",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.wipe"
+  },
+  "pell.kettle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/kettle",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.kettle"
+  },
+  "pell.drip": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/drip",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.drip"
   }
 }

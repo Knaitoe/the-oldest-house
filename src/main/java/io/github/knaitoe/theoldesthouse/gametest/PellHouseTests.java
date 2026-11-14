@@ -607,6 +607,53 @@ public final class PellHouseTests {
     @AfterBatch(batch="pell_dinner") public static void dinnerDone(ServerLevel l){done();}
 
     /**
+     * 0.4.570, their own small things while the house waits (docs/PELL_HOUSE_NOTES_0_4_570.md). The owner: "the NPCs should also have
+     * more idle behavior in Pell house, as they do on ghosts set". In the afternoon June stirs the pot at the stove and says so to a
+     * reader near enough to hear, Tilly goes with her cane to the desk under Nessa's window and feels along it, and Callum wrings out his
+     * jumper; at six whoever is out comes back before June calls them, and dinner goes on as it does. In the evening June gets up from
+     * her tape to put the kettle on in the kitchen, and at half past eight she is back by her chair before she calls bedtime.
+     */
+    @GameTest(template="empty",batch="pell_idle",timeoutTicks=9000)
+    public static void whileTheHouseWaitsTheyGoAboutTheirOwnThings(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_idle_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            // The reader in the hall by the photographs: near enough to June at the stove to hear her, not so near that she looks up.
+            PellVisit.settle(l,b);f.at(p,P,-6.5,0,-65.5);
+        }).thenIdle(3).thenExecute(()->{
+            for(int who=0;who<3;who++)h.assertTrue(PellIdle.state(b,who)==PellIdle.OFF,"nobody goes off at once: "+PellPeople.name(who));
+            PellIdle.soon(b);
+        }).thenWaitUntil(()->h.assertTrue("stir".equals(PellIdle.errand(b,PellPeople.JUNE))&&PellIdle.state(b,PellPeople.JUNE)==PellIdle.AT,"June stirs the pot: "+PellIdle.errand(b,PellPeople.JUNE)))
+        .thenExecute(()->h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.STIR,"her hand going round the pot"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_STIRS),"and says so, with a reader near enough to hear"))
+        .thenWaitUntil(()->{var t=who(h,l,b,PellPeople.TILLY);h.assertTrue("desk".equals(PellIdle.errand(b,PellPeople.TILLY))&&PellIdle.state(b,PellPeople.TILLY)==PellIdle.AT&&t.gesture()==PellPeople.FEEL&&at(t,b,-10.5,-59.7,.5),"Tilly feels along the desk under the window: "+PellIdle.errand(b,PellPeople.TILLY)+" at "+t.position());})
+        .thenWaitUntil(()->h.assertTrue("wring".equals(PellIdle.errand(b,PellPeople.CALLUM))&&who(h,l,b,PellPeople.CALLUM).gesture()==PellPeople.WRING,"Callum wrings out his jumper: "+PellIdle.errand(b,PellPeople.CALLUM)))
+        .thenExecute(()->{h.assertTrue(PellVisit.step(b)==PellVisit.SETTLED,"the afternoon goes on");PellVisit.hurry(b,PellVisit.SIX-5);})
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CALLED,"at six June calls them"))
+        .thenExecute(()->{
+            for(int who=0;who<3;who++)h.assertTrue(PellIdle.state(b,who)==PellIdle.OFF,"nobody is still out on anything when she calls: "+PellPeople.name(who));
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_CALLS),"\"Dinner!\"");
+            h.assertTrue(who(h,l,b,PellPeople.TILLY).gesture()==PellPeople.CANE&&who(h,l,b,PellPeople.CALLUM).gesture()==0,"Tilly with her cane held out again, Callum's hands empty");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"Tilly and Callum sit down to it"))
+        .thenExecute(()->{PellVisit.dined(l,b);f.at(p,P,-4.5,0,-66.5);})
+        .thenWaitUntil(()->h.assertTrue(PellVisit.watching(b),"after the washing up June sits down to her tape"))
+        .thenIdle(3).thenExecute(()->PellIdle.soon(b))
+        .thenWaitUntil(()->h.assertTrue("kettle".equals(PellIdle.errand(b,PellPeople.JUNE))&&PellIdle.state(b,PellPeople.JUNE)==PellIdle.AT,"June gets up and goes through to put the kettle on: "+PellIdle.errand(b,PellPeople.JUNE)+" "+PellIdle.state(b,PellPeople.JUNE)))
+        .thenExecute(()->{
+            var j=who(h,l,b,PellPeople.JUNE);
+            h.assertTrue(at(j,b,PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z(),.7)&&j.gesture()==PellPeople.WASH,"at the bench by the stove: "+j.position());
+            h.assertTrue(PellVisit.perched(b,PellPeople.JUNE)==null&&PellVisit.tvOn(l,b),"her chair empty and the tape still on");
+            PellVisit.hurry(b,PellVisit.EVENING-3);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.BEDTIME,"at half past eight, bedtime"))
+        .thenExecute(()->{
+            for(int who=0;who<3;who++)h.assertTrue(PellIdle.state(b,who)==PellIdle.OFF,"nobody still out at bedtime: "+PellPeople.name(who));
+            h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_BEDTIME),"June calls bedtime: "+said(who(h,l,b,PellPeople.JUNE)));
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_idle") public static void idleDone(ServerLevel l){done();}
+
+    /**
      * 0.4.527, bedtime (docs/PELL_HOUSE_BEDTIME_0_4_527.md). After the washing up June goes to her chair; a reader in it is asked for it
      * once, and she stands beside it until they get up, then sits. The television plays a birthday tape, and a hand on it finds what is
      * on it; a hand on June finds her talking about the girl on it. At half past eight she turns it off and calls Tilly to bed; on the

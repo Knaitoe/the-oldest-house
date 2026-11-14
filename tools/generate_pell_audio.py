@@ -9,7 +9,9 @@ and back at a time, played as it is worked. From docs/PELL_HOUSE_DAWN_0_4_541.md
 pulling in at the curb. From docs/PELL_HOUSE_FAILURE_0_4_543.md: a cane tapping behind a door that will not open (three takes). From
 docs/PELL_HOUSE_SENSES_0_4_546.md, what only a reader playing Tilly hears: a woman singing, wordless and low, through the wall at the head
 of Nessa's bed; the chest freezer's hum in the laundry; and tape hiss from the shed. The hum and the hiss are four seconds each, sent
-again as each ends, so they fade in and out at their ends.
+again as each ends, so they fade in and out at their ends. From docs/PELL_HOUSE_NOTES_0_4_570.md, the people's own small things while
+the house waits on its hour: a wooden spoon round a saucepan, the kitchen tap run, a cloth over the table, the kettle coming to the boil,
+and water dripping off Callum onto the floor.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -35,6 +37,11 @@ ROWS = {
     'singing': ('Singing, through the wall', 12),
     'hum': ('A low hum', 16),
     'hiss': ('Tape hiss', 18),
+    'stir': ('A spoon round a saucepan', 10),
+    'tap': ('A tap runs', 12),
+    'wipe': ('A cloth over a table', 8),
+    'kettle': ('A kettle comes to the boil', 12),
+    'drip': ('Water dripping', 8),
 }
 # 0.4.536: sounds with more than one take; the game picks one each time.
 TAKES = {'tape_voice': 3, 'cane': 3}
@@ -463,10 +470,108 @@ def hiss():
     return (wash + motor) * fade
 
 
+def stir():
+    # 0.4.570: a wooden spoon drawn twice round the bottom of a saucepan of something thick: each round a dull scrape that swells and
+    # fades as the spoon goes round, the pan's metal faintly in it, and the slow burp of the stew; then the spoon knocked twice on the rim.
+    r = np.random.default_rng(57001)
+    n = seconds(1.6)
+    out = np.zeros(n)
+    for i in range(2):
+        k = seconds(.5)
+        tk = times(k)
+        swell = np.sin(np.pi * tk / .5) ** 1.5
+        scrape = band(r.standard_normal(k), 500, 2600) * swell * .45
+        pan = np.sin(2 * np.pi * (410 + 30 * i) * tk) * swell * .08
+        place(out, (scrape + pan) * (1 - .12 * i), .02 + i * .52)
+    k = seconds(.18)
+    tk = times(k)
+    place(out, band(r.standard_normal(k), 80, 400) * np.exp(-tk / .05) * .35, .55)
+    for at in (1.18, 1.36):
+        k = seconds(.2)
+        tk = times(k)
+        knock = sum(a * np.sin(2 * np.pi * f * tk) * np.exp(-tk / d) for f, a, d in ((620, .5, .05), (1490, .3, .03), (2770, .15, .02)))
+        place(out, knock + band(r.standard_normal(k), 300, 1800) * np.exp(-tk / .006) * .4, at)
+    return out
+
+
+def tap():
+    # 0.4.570: the kitchen tap turned on: the washer's short squeal, then water into a steel sink, hard at first and settling, with the
+    # gurgle of the drain under it, then the squeal of it turned off and the last drips. About three seconds.
+    r = np.random.default_rng(57002)
+    n = seconds(3.1)
+    out = np.zeros(n)
+    t = times(seconds(.12))
+    place(out, np.sin(2 * np.pi * (1650 + 900 * t / .12) * t) * np.sin(np.pi * t / .12) * .12, .02)
+    k = seconds(2.6)
+    tk = times(k)
+    level = np.minimum(1, tk / .08) * np.minimum(1, (2.6 - tk) / .1) * (1 - .25 * np.minimum(1, tk / .8))
+    stream = band(r.standard_normal(k), 350, 6000) * (.8 + .2 * np.sin(2 * np.pi * 6.3 * tk + r.random()))
+    gurgle = band(r.standard_normal(k), 90, 400) * (.5 + .5 * np.sin(2 * np.pi * 2.1 * tk)) * .5
+    place(out, (stream * .55 + gurgle) * level, .12)
+    t = times(seconds(.1))
+    place(out, np.sin(2 * np.pi * (2300 - 800 * t / .1) * t) * np.sin(np.pi * t / .1) * .1, 2.72)
+    for at in (2.86, 3.0):
+        k = seconds(.06)
+        tk = times(k)
+        place(out, np.sin(2 * np.pi * 1180 * tk) * np.exp(-tk / .012) * .25, at)
+    return out
+
+
+def wipe():
+    # 0.4.570: a damp cloth wiped across a laminate tabletop and back: two soft swishes, the second shorter, with the cloth's faint drag.
+    r = np.random.default_rng(57003)
+    n = seconds(.85)
+    out = np.zeros(n)
+    for i, (at, length) in enumerate(((.02, .38), (.44, .32))):
+        k = seconds(length)
+        tk = times(k)
+        push = np.sin(np.pi * tk / length) ** 2
+        swish = band(r.standard_normal(k), 900, 6500) * push * .5
+        drag = band(r.standard_normal(k), 200, 900) * push * .25
+        place(out, (swish + drag) * (1 - .2 * i), at)
+    return out
+
+
+def kettle():
+    # 0.4.570: an electric kettle coming to the boil, heard from across the room: the low roar of the element rising, the hiss over it
+    # growing as it nears the boil, small ticks of the metal heating, the bubbling at the top, and the switch clicking off.
+    r = np.random.default_rng(57004)
+    n = seconds(4.2)
+    out = np.zeros(n)
+    k = seconds(3.9)
+    tk = times(k)
+    rise = np.minimum(1, tk / 3.4) ** 1.5
+    roar = band(r.standard_normal(k), 60, 320) * (.25 + .6 * rise)
+    hiss = band(r.standard_normal(k), 2200, 8000) * rise ** 2 * .45
+    bubbles = band((r.random(k) > .992).astype(float), 300, 1600) * 1.6 * np.maximum(0, rise - .6) / .4
+    ticks = band((r.random(k) > .9995).astype(float), 1500, 6000) * 2.0 * (1 - rise)
+    fade = np.minimum(1, tk / .2) * np.minimum(1, (3.9 - tk) / .08)
+    place(out, (roar + hiss + bubbles + ticks) * fade, .02)
+    k = seconds(.08)
+    tk = times(k)
+    place(out, sum(np.sin(2 * np.pi * f * tk) * np.exp(-tk / .01) for f in (1900, 3300)) * .3 + band(r.standard_normal(k), 1500, 6000) * np.exp(-tk / .004) * .4, 3.95)
+    return out
+
+
+def drip():
+    # 0.4.570: water dripping off wet clothes onto a hard floor: three drops a little apart, each a small bright plink with the tiny
+    # splash of it, the third the faintest.
+    r = np.random.default_rng(57005)
+    n = seconds(1.1)
+    out = np.zeros(n)
+    for i, (at, f) in enumerate(((.03, 1320), (.41, 1170), (.86, 1250))):
+        k = seconds(.12)
+        tk = times(k)
+        plink = np.sin(2 * np.pi * f * tk * (1 + .25 * np.exp(-tk / .01))) * np.exp(-tk / .025)
+        splash = band(r.standard_normal(k), 2000, 7000) * np.exp(-tk / .008) * .3
+        place(out, (plink * .6 + splash) * (1 - .25 * i), at)
+    return out
+
+
 MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
           'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub,
           'car_come': car_come, 'cane_1': lambda: cane(1), 'cane_2': lambda: cane(2), 'cane_3': lambda: cane(3), 'singing': singing, 'hum': hum,
-          'hiss': hiss}
+          'hiss': hiss, 'stir': stir, 'tap': tap, 'wipe': wipe, 'kettle': kettle, 'drip': drip}
 
 
 def main():

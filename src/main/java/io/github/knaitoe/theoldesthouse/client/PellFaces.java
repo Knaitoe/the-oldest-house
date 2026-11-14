@@ -67,10 +67,14 @@ final class PellFaces {
         s.met=true;
         boolean speaking=who!=PellPeople.NESSA&&(a.speaking()>0||age-s.lineAt>=0&&age-s.lineAt<s.said);
         int look=look(who,gesture,age,id,(a.marks()&PellPeople.WRAPPED)!=0);
+        // 0.4.570: Callum looking up at the school photographs in the hall (PellIdle).
+        if(who==PellPeople.CALLUM&&gesture==0&&a.getXRot()<-15)look=index(who,"up");
         int mouth=0;
         if(speaking){float beat=beat(age,id);mouth=beat<.2F?0:beat<.62F?1:2;}
         if(gesture==PellPeople.EATING&&Mth.sin(age*.9F+id)>.2F)mouth=1;
         m.face(who,2*look+(blink(who,gesture,age,id)?1:0),3*look+mouth);
+        // 0.4.570: and the living layer over their pose: breath, their weight, the head drifting, a hand while talking.
+        m.pellLiving(who,gesture,age,id,speaking,LiteraryRenderers.seat(a)!=null);
     }
 
     /** The look a person has now, by who they are and what they are doing, and the passing looks. */
@@ -87,6 +91,8 @@ final class PellFaces {
             };
             case PellPeople.TILLY->switch(gesture){
                 case PellPeople.BRUSHED->"content";
+                // 0.4.570: feeling along the desk or the wardrobe, or the height marks by the door (PellIdle).
+                case PellPeople.FEEL,PellPeople.MEASURE->"listening";
                 case PellPeople.LED->"unsure";
                 case PellPeople.WAVE->"bright";
                 case PellPeople.ASLEEP->"sleep";
