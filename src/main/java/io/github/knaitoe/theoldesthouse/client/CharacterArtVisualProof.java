@@ -170,6 +170,7 @@ public final class CharacterArtVisualProof extends Screen {
             case "seance"->{var m=new SeanceRenderers.FamilyModel(mc.getEntityModels().bakeLayer(SeanceRenderers.LAYER));m.young=false;m.pose(number,false,false,0);yield m;}
             case "witch"->{var m=new LakeWitchModel(mc.getEntityModels().bakeLayer(LakeWitchModel.LAYER));m.young=false;if(phase==0)m.memoryPose(0,0,false,0,0);else m.huntPose(0,0,0,LakeWitchEntity.STALK,false);yield m;}
             case "cousin"->{var m=new GoatmanChildModel(mc.getEntityModels().bakeLayer(GoatmanChildModel.LAYER));m.pose(number,0,0,0,false,false,false);yield m;}
+            case "player_slim"->{var m=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER_SLIM),true);m.young=false;yield m;}
             default->{var m=new PlayerModel<>(mc.getEntityModels().bakeLayer(ModelLayers.PLAYER),false);m.young=false;yield m;}
         };
     }

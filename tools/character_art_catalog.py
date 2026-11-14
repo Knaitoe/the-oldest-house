@@ -17,6 +17,9 @@ def entry(name,logical):
     row={'name':name,'logical':logical,'model':'player','number':0,'phase':0}
     if name=='backseat_stowaway':
         row.update(model='backseat',phase=1)
+    elif name=='caged_child':
+        # 0.4.585: the boy in the cell has the slim player model's arms (tools/draw_caged_boy.py).
+        row.update(model='player_slim')
     elif name.startswith('borrasca_'):
         row.update(model='borrasca',number=['kyle','kimber','sheriff','prescott','worker','worker_two','eli','wren','kelly_grown','dana','dana_aside','dana_scream'].index(name[9:]))
     elif name.startswith('uncanny_'):

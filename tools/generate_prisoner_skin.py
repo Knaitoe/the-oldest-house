@@ -1,4 +1,9 @@
-"""Integrate generated cloth materials into the standard 64x64 Minecraft skin UV net."""
+"""Integrate generated cloth materials into the standard 64x64 Minecraft skin UV net.
+
+Superseded. This drew the first, faceless boy (0.4.30, art/ASSETS_0_4_30.md). He was repainted with the cast in 0.4.100 and
+has his own painter since 0.4.585, tools/draw_caged_boy.py. Running this would write over that painting, and the art checks
+would then fail. It is kept for the record of how the first one was made.
+"""
 from pathlib import Path
 from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parents[1]

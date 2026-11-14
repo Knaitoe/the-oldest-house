@@ -1,0 +1,16 @@
+{
+  "note": "0.4.585: the owner asked for the boy in the cell to be improved (\"improve the texture of the boy before he transforms, too\"). He was one row of the shared painter: a buttoned shirt, trousers and shoes, and a grown man's face. He is painted by his own tool, tools/draw_caged_boy.py, from what he becomes: the Minotaur's eyes in its tones, its dark hair, a grown person's shirt in its rag's cloth tied with its rope, trousers worn off below the knee, bare feet; nothing on him says what he is, and he has no wound. His arms are the slim player model's, three pixels wide, and the second layer of the model carries his hair, his sleeves, the shirt's tail, the rope and a patch, so the sheet's opacity changes with its painting: every face of the first layer is opaque, and nothing is painted outside the two layers' nets and the two swatches. This painting supersedes only his own 0.4.100 sheet.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png",
+      "previous_sha256": "137d17b278590b787a42ecfccf0b36739a0b14c566d346f9ba75792290ecefa1",
+      "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+      "sha256": "731207dcea4de4e7ecd37a6d0cb494f5280380c6899e4526f59d900465d1f173",
+      "size": [
+        256,
+        256
+      ],
+      "alpha_sha256": "c5600504147830278b9e7d72e256ea08ea23e2b760888ce0dee81b838b5372ec"
+    }
+  ]
+}

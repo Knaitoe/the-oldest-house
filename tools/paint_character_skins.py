@@ -339,6 +339,7 @@ LOOKS = {
     'harrigan_mourner_2': Look('#cfaa8b','#a7a295','receding','#34485d','#303e4e','suit','#603c46',age=2,glasses=True,mark='mourner_watch',logical=64),
     'holloway': Look('#b98b69','#5a4230','part','#5b6148','#51483a','field','#b49355',age=1,beard='chinstrap',logical=64),
     'finale_witness': Look('#c0a184','#ada794','receding','#615746','#484438','coat','#98846a',age=2,beard='walrus',logical=64),
+    # 0.4.585: the boy in the cell is painted by tools/draw_caged_boy.py (main, below); this row keeps his place in the catalogue.
     'caged_child': Look('#c9a283','#4b342a','messy','#79766b','#494a46','ragged','#b4aa8c',eyes='#6c6252',logical=64),
     'lake_boy': Look('#c39a77','#55402d','messy','#706248','#4b4e46','shirt','#b7a478',logical=64),
     # 0.4.101: the Shallows' other boys. Lonnie holds her feet; Hank and Clay stand on the bank with Bud.
@@ -1912,6 +1913,9 @@ def main():
     # 0.4.171: the tunnel's stooping giant has her own painter (wet hair, butcher paper, no wound); her neck keeps its opaque net.
     from draw_tunnel_woman import paint as tunnel_woman
     paintings['uncanny_bent_neck']=tunnel_woman()
+    # 0.4.585 (owner: "improve the texture of the boy before he transforms, too"): the boy in the cell has his own painter as well.
+    from draw_caged_boy import paint as caged_boy
+    paintings['caged_child']=caged_boy()
     paintings['minotaur_materials']=material_sheet(256,256)
     paintings['finale_materials']=material_sheet(256,512)
     for name,wound,skinned in [('literary_elk',False,False),('literary_elk_wounded',True,False),('literary_elk_carcass',True,False),('literary_elk_carcass_skinned',True,True)]:paintings[name]=elk_skin(wound,skinned)

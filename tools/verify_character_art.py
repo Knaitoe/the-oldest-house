@@ -22,6 +22,10 @@ MARJORIE_HAIR_NETS=((80,0,8,6,1),(80,8,8,10,1),(101,0,2,10,1),(111,0,2,9,1))
 SISTERS_REVIEW=ROOT/'art/inventory/ghosts_sisters_04320.json'
 FRECKLES_REVIEW=ROOT/'art/inventory/ghosts_merry_04321.json'
 BEARDS_REVIEW=ROOT/'art/inventory/beards_04328.json'
+BOY_REVIEW=ROOT/'art/inventory/caged_boy_04585.json'
+BOY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png'
+# The slim player model's two layers: head and hat, body and jacket, each arm and its sleeve (three pixels wide), each leg and its trouser.
+BOY_NETS=((0,0,8,8,8),(32,0,8,8,8),(16,16,8,12,4),(16,32,8,12,4),(40,16,3,12,4),(40,32,3,12,4),(32,48,3,12,4),(48,48,3,12,4),(0,16,4,12,4),(0,32,4,12,4),(16,48,4,12,4),(0,48,4,12,4))
 MERRY_HAIR_NETS=((80,0,3,7,3),(96,0,2,3,2),(110,0,4,2,3))
 FAMILY_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_family_'+role+phase+'.png'
               for role in ('father','mother','child') for phase in ('','_changed')}
@@ -69,7 +73,15 @@ def reviewed_repaints(review):
         prior=current[path]
         assert row['previous_sha256']==prior['sha256'] and row['previous_alpha_sha256']==prior['alpha_sha256'],('Previous beard review changed',path)
         assert row['size']==prior['size'] and row['alpha_sha256']==prior['alpha_sha256'],('Beard repaint changed UV/alpha',path)
-    return {**current,**beards}
+    current={**current,**beards}
+    # 0.4.585: the boy in the cell, painted by his own tool at the owner's request. His sheet supersedes only his own previous approved
+    # painting. Its opacity changes with it: his arms are the slim model's and the model's second layer is painted (see main).
+    boy={r['path']:r for r in json.loads(BOY_REVIEW.read_text())['repainted']}
+    assert set(boy)=={BOY_PATH}
+    row=boy[BOY_PATH];prior=current[BOY_PATH]
+    assert row['previous_sha256']==prior['sha256'] and row['previous_alpha_sha256']==prior['alpha_sha256'],'Previous review of the boy changed'
+    assert row['size']==prior['size'],'The boy\'s atlas size changed'
+    return {**current,**boy}
 
 
 def main():
@@ -120,6 +132,12 @@ def main():
             for dims in MERRY_HAIR_NETS:
                 for box in net(*dims).values():alpha.paste(0,tuple(round(v*4) for v in box))
             assert hashlib.sha256(alpha.tobytes()).hexdigest()==row['previous_alpha_sha256'],('Merry original UV/alpha changed',path)
+        if path==BOY_PATH:
+            # Nothing of the boy is painted outside the slim model's two layers and the two swatches. (That every face of the first
+            # layer is opaque is checked with the rest of the cast, below.)
+            alpha=im.getchannel('A')
+            for box in [(0,0,8,8),(24,0,32,8)]+[box for dims in BOY_NETS for box in net(*dims).values()]:alpha.paste(0,tuple(round(v*4) for v in box))
+            assert alpha.getextrema()==(0,0),('The boy is painted outside his model',path)
     for name,look in LOOKS.items():
         path='src/main/resources/assets/the_oldest_house/textures/entity/'+name+'.png'
         im=Image.open(BytesIO(read(path))).convert('RGBA')
@@ -129,7 +147,7 @@ def main():
         for box in [(0,0,8,8),(24,0,32,8)]:
             swatch=im.crop(tuple(v*4 for v in box))
             assert len(swatch.getcolors(swatch.width*swatch.height))==1 and swatch.getchannel('A').getextrema()==(255,255),('Broken elbow/knee swatch',name)
-        arms=3 if name.startswith('lake_witch') else 4
+        arms=3 if name.startswith('lake_witch') or name=='caged_child' else 4
         for cube in [net(0,0,8,8,8),net(16,16,8,12,4),net(40,16,arms,12,4),net(0,16,4,12,4),net(32,48,arms,12,4),net(16,48,4,12,4)]:
             for face,box in cube.items():
                 rect=tuple(round(v*4) for v in box);alpha=im.getchannel('A').crop(rect)
