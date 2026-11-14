@@ -76,9 +76,12 @@ final class SceneReviewSocketProof {
     static boolean gone(){return VacantPossession.seat(flat)==VacantPossession.GONE;}
     static void status(ServerPlayer a,ServerPlayer b,int phase){
         io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.info("LIVE SCENE REVIEW phase={} A={} B={} hauls={} closed={} held={} loaded={} seat={}",phase,a.position(),b.position(),LastSwimmer.hauls(pool),closed(),held(),VacantPossession.loaded(flat),VacantPossession.seat(flat));
+        // 0.4.581: the hall's lamps, as the server has them: how many are off, and the light at the strap (under the last bank) and on the cover.
+        // 0.4.581: and the hall's light at eight cells, which the runner sets beside what each client has for them.
+        if(phase==POOL||phase==ATTENDANT)io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.info("LIVE SCENE REVIEW pool lamps off={} light=[{}] resent={}",LastSwimmer.lightsOut(pool),SwimmerSite.lightReading(a.serverLevel(),pool),io.github.knaitoe.theoldesthouse.house.LightSync.resent());
     }
     static void finish(){
-        try{Files.writeString(LiveExpeditionProof.folder().resolve("scene-review-passed.txt"),"Two actual clients in the production pool and flat, with their actors and the world's light: the cover hauled with real clicks from the strap and the attendant watched to the fire door from the strap and the west deck; the dresser carried down the real stair to the van; the tenant in the last chair, standing as the reader came close; the chair carried down and the window dark. Staging: both scenes built at their places, the readers set down in them, the first seven pieces loaded on the server.\n");}catch(Exception e){throw new IllegalStateException(e);}
+        try{Files.writeString(LiveExpeditionProof.folder().resolve("scene-review-passed.txt"),"Two actual clients in the production pool and flat, with their actors and the world's light: the cover hauled with real clicks from the strap and the attendant watched to the fire door from the strap and the west deck, and the steps under the cover looked at from both with the hall's lamps off; the dresser carried down the real stair to the van; the tenant in the last chair, standing as the reader came close; the chair carried down and the window dark. Staging: both scenes built at their places, the readers set down in them, the first seven pieces loaded on the server.\n");}catch(Exception e){throw new IllegalStateException(e);}
         CHUNKS.close();
     }
 }

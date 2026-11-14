@@ -30,6 +30,9 @@ sources / 53 required / two kinds / three endings. Layout 72.
 - Drawn by `tools/draw_swimmer_art.py` (55 textures; nine materials, one fitting block of 18 kinds). Three sounds by
   `tools/generate_swimmer_audio.py`: the turn against the tiles, the reel, the step under the cover.
 
+0.4.581 changed the hall's lamps, gave the pool lamps of its own and made each step under the cover a foot; see
+`docs/THE_LAST_SWIMMER_NOTES_0_4_581.md`. What is here is what 0.4.227 shipped.
+
 ## The closing
 
 All of it belongs to the pool, so readers who come in together close it together; a reader on their own gets their own copy.

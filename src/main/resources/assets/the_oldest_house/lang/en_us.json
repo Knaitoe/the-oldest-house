@@ -1936,5 +1936,7 @@
   "subtitles.the_oldest_house.bleed.pell_house": "A hairbrush, slowly, behind a door",
   "subtitles.the_oldest_house.bleed.ones_inside": "Something moves inside a wall, behind a door",
   "block.the_oldest_house.city_plane": "Aeroplane",
-  "block.the_oldest_house.city_rope": "Fixed Rope"
+  "block.the_oldest_house.city_rope": "Fixed Rope",
+  "block.the_oldest_house.swimmer_pool_lamp": "Pool Light",
+  "block.the_oldest_house.swimmer_pool_lamp_off": "Pool Light"
 }
