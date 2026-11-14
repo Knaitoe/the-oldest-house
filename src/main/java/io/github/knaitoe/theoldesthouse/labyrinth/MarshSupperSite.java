@@ -294,15 +294,19 @@ public final class MarshSupperSite {
 
     /** The dining room and the kitchen, laid for supper. */
     static void furnish(ServerLevel l,BlockPos b){
-        // The table: a long one, its legs at the corners.
+        // The table: a long one, its legs at the corners. 0.4.583 (the owner: the table's textures): it was the film set's kitchen
+        // table. It is the farm's own: boards the length of it, a rail under them round the outside, a leg at each corner.
         for(int x=TABLE_W;x<=TABLE_E;x++)for(int z=TABLE_N;z<=TABLE_S;z++){
             boolean w=x==TABLE_W,e=x==TABLE_E,n=z==TABLE_N,s=z==TABLE_S;
             Direction leg=w&&n?Direction.NORTH:e&&n?Direction.EAST:e&&s?Direction.SOUTH:w&&s?Direction.WEST:null;
-            set(l,b,x,GROUND,z,GhostsSetBlock.of(leg==null?GhostsSetBlock.Kind.TABLE:GhostsSetBlock.Kind.TABLE_LEG,leg==null?Direction.NORTH:leg));
+            Direction edge=n?Direction.NORTH:s?Direction.SOUTH:w?Direction.WEST:e?Direction.EAST:null;
+            set(l,b,x,GROUND,z,leg!=null?MarshBlock.of(MarshBlock.Kind.TABLE_LEG,leg):edge!=null?MarshBlock.of(MarshBlock.Kind.TABLE_EDGE,edge):MarshBlock.of(MarshBlock.Kind.TABLE,Direction.NORTH));
         }
         for(var seat:chairs())set(l,b,seat,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CANE_CHAIR,facing(seat)));
         lay(l,b);
-        set(l,b,TABLE_LAMP,GhostsSetBlock.of(GhostsSetBlock.Kind.LAMP,Direction.SOUTH));
+        // 0.4.583 (the owner: "a white box floats in the air above the long table (with a dark block on top)"): the table's lamp was
+        // the film set's ceiling lamp, a shade hanging from a stem with nothing over it. It is an oil lamp that stands on the table.
+        set(l,b,TABLE_LAMP,MarshBlock.of(MarshBlock.Kind.OIL_LAMP,Direction.SOUTH));
         // The dining room's lamps over the table, the chests of drawers along the north wall, the coats by the door.
         for(int z:new int[]{-65,-68})set(l,b,-5,4,z,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
         set(l,b,-9,GROUND,HOUSE_N+1,HouseholdFurnitureBlock.state(HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH));

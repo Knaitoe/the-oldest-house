@@ -531,15 +531,15 @@ public final class LabyrinthBuilder {
             return;
         }
         if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){LakeHouse.buildEmpty(site,base);registerDoors(dataFor(server),place,base);}return;}
-        if(place==LabyrinthPlace.YARD_TURNAROUND){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
+        if(place==LabyrinthPlace.YARD_TURNAROUND){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardRooms.build(site,base);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(TruantYard.is(place)){var yard=server.getLevel(HouseDimensions.OUTSIDE);if(yard!=null){TruantYard.build(yard,base,place);registerDoors(dataFor(server),place,base);}return;}
-        if(place==LabyrinthPlace.YARD_REUNION||YardFields.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){if(place==LabyrinthPlace.YARD_REUNION)YardRooms.build(site,base,place);else YardFields.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
-        if(YardConnectors.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardConnectors.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
-        if(place==LabyrinthPlace.SPHINX_FIELD){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){SphinxField.build(site,base);registerDoors(dataFor(server),place,base);}return;}
-        if(YardStock.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardStock.build(site,base);registerDoors(dataFor(server),place,base);}return;}
-        if(YardWind.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardWind.build(site,base);registerDoors(dataFor(server),place,base);}return;}
-        if(YardStorm.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardStorm.build(site,base);registerDoors(dataFor(server),place,base);}return;}
-        if(YardCrossings.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardCrossings.build(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(place==LabyrinthPlace.YARD_REUNION||YardFields.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){if(place==LabyrinthPlace.YARD_REUNION)YardRooms.build(site,base,place);else YardFields.build(site,base,place);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(YardConnectors.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardConnectors.build(site,base,place);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(place==LabyrinthPlace.SPHINX_FIELD){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){SphinxField.build(site,base);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(YardStock.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardStock.build(site,base);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(YardWind.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardWind.build(site,base);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(YardStorm.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardStorm.build(site,base);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
+        if(YardCrossings.is(place)){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){YardCrossings.build(site,base,place);YardLights.mount(site,base,place);registerDoors(dataFor(server),place,base);}return;}
         if(place==LabyrinthPlace.BACKSEAT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){BackseatRooms.build(site,base);registerDoors(dataFor(server),place,base);}return;}
         if(HouseReadSites.kind(place)!=null)return; // Only owner copies are ever constructed.
         if(place==LabyrinthPlace.WAY_OUT){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){WayOutRooms.site(site,base);registerDoors(dataFor(server),place,base);}return;}

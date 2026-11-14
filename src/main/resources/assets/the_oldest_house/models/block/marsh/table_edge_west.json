@@ -1,0 +1,94 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "table_top": "the_oldest_house:block/marsh/table_top",
+    "table_parts": "the_oldest_house:block/marsh/table_parts",
+    "particle": "the_oldest_house:block/marsh/table_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        14,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#table_top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#table_top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            2,
+            16,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        11,
+        0
+      ],
+      "to": [
+        2,
+        14,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            4,
+            16,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            4,
+            16,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            7,
+            16,
+            8
+          ],
+          "rotation": 90
+        }
+      }
+    }
+  ]
+}

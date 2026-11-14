@@ -1,0 +1,183 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "oil_lamp": "the_oldest_house:block/marsh/oil_lamp",
+    "particle": "the_oldest_house:block/marsh/oil_lamp"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        3,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#oil_lamp",
+          "uv": [
+            0,
+            0,
+            6,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#oil_lamp",
+          "uv": [
+            0,
+            0,
+            6,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#oil_lamp",
+          "uv": [
+            0,
+            0,
+            6,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#oil_lamp",
+          "uv": [
+            0,
+            0,
+            6,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#oil_lamp",
+          "uv": [
+            0,
+            3,
+            6,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        3,
+        7
+      ],
+      "to": [
+        9,
+        5,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#oil_lamp",
+          "uv": [
+            6,
+            0,
+            8,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#oil_lamp",
+          "uv": [
+            6,
+            0,
+            8,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#oil_lamp",
+          "uv": [
+            6,
+            0,
+            8,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#oil_lamp",
+          "uv": [
+            6,
+            0,
+            8,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        5,
+        6
+      ],
+      "to": [
+        10,
+        12,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#oil_lamp",
+          "uv": [
+            8,
+            0,
+            12,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#oil_lamp",
+          "uv": [
+            8,
+            0,
+            12,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#oil_lamp",
+          "uv": [
+            8,
+            0,
+            12,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#oil_lamp",
+          "uv": [
+            8,
+            0,
+            12,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#oil_lamp",
+          "uv": [
+            12,
+            0,
+            16,
+            4
+          ]
+        }
+      },
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      }
+    }
+  ]
+}

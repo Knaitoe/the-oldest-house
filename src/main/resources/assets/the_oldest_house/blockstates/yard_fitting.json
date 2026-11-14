@@ -4,28 +4,28 @@
       "model": "the_oldest_house:block/yard/bulb_0"
     },
     "facing=north,kind=bulb,stage=1": {
-      "model": "the_oldest_house:block/yard/bulb_0"
+      "model": "the_oldest_house:block/yard/bulb_1"
     },
     "facing=north,kind=bulb,stage=2": {
-      "model": "the_oldest_house:block/yard/bulb_0"
+      "model": "the_oldest_house:block/yard/bulb_2"
     },
     "facing=north,kind=bulb,stage=3": {
-      "model": "the_oldest_house:block/yard/bulb_0"
+      "model": "the_oldest_house:block/yard/bulb_3"
     },
     "facing=east,kind=bulb,stage=0": {
       "model": "the_oldest_house:block/yard/bulb_0",
       "y": 90
     },
     "facing=east,kind=bulb,stage=1": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_1",
       "y": 90
     },
     "facing=east,kind=bulb,stage=2": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_2",
       "y": 90
     },
     "facing=east,kind=bulb,stage=3": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_3",
       "y": 90
     },
     "facing=south,kind=bulb,stage=0": {
@@ -33,15 +33,15 @@
       "y": 180
     },
     "facing=south,kind=bulb,stage=1": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_1",
       "y": 180
     },
     "facing=south,kind=bulb,stage=2": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_2",
       "y": 180
     },
     "facing=south,kind=bulb,stage=3": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_3",
       "y": 180
     },
     "facing=west,kind=bulb,stage=0": {
@@ -49,15 +49,15 @@
       "y": 270
     },
     "facing=west,kind=bulb,stage=1": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_1",
       "y": 270
     },
     "facing=west,kind=bulb,stage=2": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_2",
       "y": 270
     },
     "facing=west,kind=bulb,stage=3": {
-      "model": "the_oldest_house:block/yard/bulb_0",
+      "model": "the_oldest_house:block/yard/bulb_3",
       "y": 270
     },
     "facing=north,kind=nose,stage=0": {

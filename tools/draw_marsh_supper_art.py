@@ -284,6 +284,66 @@ def clapper_item():
     return im
 
 
+# 0.4.583 (the owner: "a white box floats in the air above the long table (with a dark block on top)", and the table's textures).
+# The table was the film set's kitchen table: a one-pixel top showing a four-pixel square of the set's atlas over the whole block,
+# on legs showing another. Its lamp was the set's ceiling lamp, stood on the table: a shade hanging from a stem that reached up to
+# nothing. The farm has a table and a lamp of its own. Every face takes a piece of its picture of the face's own size (PIECES names
+# them, part() checks them), and the table's boards run the same way on every block of it: no model of it is turned.
+PIECES = {
+    'table_top': {'top': (0, 0, 16, 16)},
+    'table_parts': {'edge': (0, 0, 16, 2), 'edge_long': (0, 2, 16, 2), 'apron': (0, 4, 16, 3), 'apron_12': (0, 4, 12, 3), 'apron_under': (0, 7, 16, 1),
+                    'apron_under_12': (0, 7, 12, 1), 'leg': (0, 8, 3, 8), 'leg_head': (3, 8, 3, 6)},
+    'oil_lamp': {'font': (0, 0, 6, 3), 'font_top': (0, 3, 6, 6), 'burner': (6, 0, 2, 2), 'chimney': (8, 0, 4, 7), 'chimney_top': (12, 0, 4, 4)},
+}
+
+
+def table_top():
+    # Three scrubbed boards the length of the table, a seam between each, the grain along them.
+    base = '#b08a5a'
+    im = new(base=base, seed=3601, spread=4); rnd = random.Random(3602)
+    for x in (4, 9, 15):
+        for y in range(16):
+            dot(im, x, y, shade(base, -30)[:3])
+    for x0, x1 in ((0, 4), (5, 9), (10, 15)):
+        for _ in range(3):
+            x = rnd.randrange(x0, x1); y = rnd.randrange(0, 13)
+            for k in range(rnd.randrange(2, 5)):
+                dot(im, x, y + k, shade(base, -13)[:3])
+    return im
+
+
+def table_parts():
+    # The boards' ends (across the table's ends) and their long edge (down its sides), the rail under them and its underside, a
+    # leg, and the square head of it where the rails meet.
+    base = '#a07c4e'; im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); rnd = random.Random(3603)
+    for y0 in (0, 2):
+        fill(im, 0, y0, 16, y0 + 1, shade(base, 12)[:3]); fill(im, 0, y0 + 1, 16, y0 + 2, shade(base, -16)[:3])
+    for x in (4, 9, 15):
+        dot(im, x, 0, shade(base, -30)[:3]); dot(im, x, 1, shade(base, -36)[:3])
+    fill(im, 0, 4, 16, 6, shade(base, -6)[:3]); fill(im, 0, 6, 16, 7, shade(base, -24)[:3])
+    for _ in range(6):
+        x = rnd.randrange(15); dot(im, x, 4 + rnd.randrange(2), shade(base, -16)[:3]); dot(im, x + 1, 5, shade(base, -16)[:3])
+    fill(im, 0, 7, 16, 8, shade(base, -36)[:3])
+    fill(im, 0, 8, 3, 16, shade(base, -2)[:3]); fill(im, 2, 8, 3, 16, shade(base, -22)[:3]); fill(im, 0, 8, 1, 16, shade(base, 10)[:3])
+    fill(im, 0, 15, 3, 16, shade(base, -34)[:3])
+    fill(im, 3, 8, 6, 14, shade(base, 4)[:3]); fill(im, 5, 8, 6, 14, shade(base, -20)[:3]); fill(im, 3, 13, 6, 14, shade(base, -26)[:3]); dot(im, 4, 10, shade(base, -40)[:3])
+    return im
+
+
+def oil_lamp():
+    # A brass font, the burner on it, and the glass chimney with the flame inside.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); brass = '#c8a44a'
+    fill(im, 0, 0, 6, 1, shade(brass, 18)[:3]); fill(im, 0, 1, 6, 2, brass); fill(im, 0, 2, 6, 3, shade(brass, -40)[:3]); dot(im, 1, 1, shade(brass, 40)[:3])
+    fill(im, 0, 3, 6, 9, shade(brass, 6)[:3]); frame(im, 0, 3, 6, 9, shade(brass, -28)[:3]); fill(im, 2, 5, 4, 7, '#3a3226')
+    fill(im, 6, 0, 8, 1, '#5a5040'); fill(im, 6, 1, 8, 2, '#3a3226')
+    fill(im, 8, 0, 12, 7, '#b9c6bd'); fill(im, 9, 0, 11, 7, '#f2e3b0'); fill(im, 9, 0, 11, 1, '#d9d6b4')
+    for y, c in ((2, '#ffd35a'), (3, '#ffe9a0'), (4, '#fff6d0'), (5, '#ffb43c')):
+        fill(im, 9, y, 11, y + 1, c)
+    dot(im, 9, 2, '#f2e3b0'); fill(im, 8, 6, 12, 7, '#98a69d'); fill(im, 9, 6, 11, 7, '#4a3a20')
+    fill(im, 12, 0, 16, 4, '#b9c6bd'); fill(im, 13, 1, 15, 3, '#6a5630')
+    return im
+
+
 def textures():
     out = {f'block/marsh_{k}.png': v for k, v in materials().items()}
     t = {
@@ -295,6 +355,7 @@ def textures():
         'crust': loaf(False), 'crust_top': loaf(True), 'cover': cover(), 'roast': roast(), 'platter': platter(),
         'endgrain': endgrain(), 'block_side': block_side(), 'bell': bell_iron(), 'yoke': new(base='#6a4a2c', seed=3507, spread=4),
         'card': card(), 'post': new(base='#7a6a52', seed=3508, spread=5),
+        'table_top': table_top(), 'table_parts': table_parts(), 'oil_lamp': oil_lamp(),
     }
     out.update({f'block/marsh/{k}.png': v for k, v in t.items()})
     out['item/marsh_keys.png'] = keys_item()
@@ -320,6 +381,66 @@ def element(lo, hi, textures, uv=None, rot=None):
 
 def model(elements, textures, particle):
     return {'ambientocclusion': False, 'render_type': 'minecraft:cutout', 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
+
+
+SIDES = ('north', 'south', 'east', 'west')
+
+
+def part(lo, hi, faces, lit=False):
+    """A box whose named faces each take a piece of a picture: faces maps a face to (picture, piece) or (picture, piece, turn). The
+    piece must be the face's own size (turned a quarter, its sides the other way round), so nothing is stretched."""
+    across = {'north': (hi[0] - lo[0], hi[1] - lo[1]), 'east': (hi[2] - lo[2], hi[1] - lo[1]), 'up': (hi[0] - lo[0], hi[2] - lo[2])}
+    across.update(south=across['north'], west=across['east'], down=across['up'])
+    out = {}
+    for face, spec in faces.items():
+        picture, piece = spec[0], spec[1]; turn = spec[2] if len(spec) > 2 else 0
+        x, y, w, h = PIECES[picture][piece]
+        assert (w, h) == (across[face] if turn in (0, 180) else across[face][::-1]), (lo, hi, face, piece, across[face])
+        out[face] = {'texture': '#' + picture, 'uv': [x, y, x + w, y + h]}
+        if turn:
+            out[face]['rotation'] = turn
+    e = {'from': lo, 'to': hi, 'faces': out}
+    if lit:
+        e['shade'] = False; e['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
+    return e
+
+
+def table_cell(sides=(), leg=None):
+    """One block of the supper table: its boards, their edge on the table's outer sides, the rail under them along those sides, and
+    a leg at the corner named ('nw', 'ne', 'se', 'sw'). A corner block's rails start past its leg."""
+    T, K = 'table_top', 'table_parts'
+    els = [part([0, 14, 0], [16, 16, 16], {'up': (T, 'top'), 'down': (T, 'top'), **{f: (K, 'edge' if f in ('north', 'south') else 'edge_long') for f in sides}})]
+    if leg:
+        x, z = (1 if 'w' in leg else 12), (1 if 'n' in leg else 12)
+        els.append(part([x, 8, z], [x + 3, 14, z + 3], {f: (K, 'leg_head') for f in SIDES}))
+        els.append(part([x, 0, z], [x + 3, 8, z + 3], {f: (K, 'leg') for f in SIDES}))
+    for side in sides:
+        lo, hi = 0, 16
+        if leg:
+            first = ('w' in leg) if side in ('north', 'south') else ('n' in leg)
+            lo, hi = (4, 16) if first else (0, 12)
+        piece, under = ('apron', 'apron_under') if hi - lo == 16 else ('apron_12', 'apron_under_12')
+        if side in ('north', 'south'):
+            z = 1 if side == 'north' else 14
+            els.append(part([lo, 11, z], [hi, 14, z + 1], {'north': (K, piece), 'south': (K, piece), 'down': (K, under)}))
+        else:
+            x = 1 if side == 'west' else 14
+            els.append(part([x, 11, lo], [x + 1, 14, hi], {'east': (K, piece), 'west': (K, piece), 'down': (K, under, 90)}))
+    return model(els, {T: T, K: K}, T)
+
+
+# The table's blocks, by what the builder asks for: a block in the middle, one on an edge (its facing the side that is outward), one
+# at a corner (its facing the corner, as the set's table had it: north for the north-west, east for the north-east, and so round).
+CORNER = {'north': ('nw', ('north', 'west')), 'east': ('ne', ('north', 'east')), 'south': ('se', ('south', 'east')), 'west': ('sw', ('south', 'west'))}
+
+
+def table_models():
+    m = {'table': table_cell()}
+    for facing in SIDES:
+        m[f'table_edge_{facing}'] = table_cell((facing,))
+        corner, sides = CORNER[facing]
+        m[f'table_leg_{facing}'] = table_cell(sides, corner)
+    return m
 
 
 def chair(extra, textures):
@@ -375,10 +496,18 @@ def fitting_models():
                         {'y': 'yoke', 'i': 'bell'}, 'bell')
     m['card_0'] = model([element([5, 0, 5], [11, 16, 11], {'all': 'p'}), element([4, 8, 4.5], [12, 14, 5], {'north': 'c', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'p', 'down': 'p'})],
                         {'p': 'post', 'c': 'card'}, 'card')
+    # The oil lamp on the supper table: the font, the burner, the chimney with its flame.
+    L = 'oil_lamp'
+    m['oil_lamp_0'] = model([part([5, 0, 5], [11, 3, 11], {**{f: (L, 'font') for f in SIDES}, 'up': (L, 'font_top')}),
+                             part([7, 3, 7], [9, 5, 9], {f: (L, 'burner') for f in SIDES}),
+                             part([6, 5, 6], [10, 12, 10], {**{f: (L, 'chimney') for f in SIDES}, 'up': (L, 'chimney_top')}, lit=True)], {L: L}, L)
+    m.update(table_models())
     return m
 
 
-KINDS = ['mat', 'keys', 'coat', 'porch_light', 'window', 'bread', 'roast', 'butcher', 'bell', 'card']
+KINDS = ['mat', 'keys', 'coat', 'porch_light', 'window', 'bread', 'roast', 'butcher', 'bell', 'card', 'table', 'table_edge', 'table_leg', 'oil_lamp']
+# The table's blocks are never turned by their facing (their boards would turn with them): each facing has a model of its own.
+UNTURNED = {'table': lambda facing: 'table', 'table_edge': lambda facing: f'table_edge_{facing}', 'table_leg': lambda facing: f'table_leg_{facing}'}
 STAGES = {'coat': 2, 'porch_light': 2, 'window': 2, 'roast': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 2
@@ -399,7 +528,9 @@ def files():
             for stage in range(MAX_STAGE):
                 drawn = stage if stage < STAGES.get(kind, 1) else 0
                 v = {'model': NS + f'block/marsh/{kind}_{drawn}'}
-                if y:
+                if kind in UNTURNED:
+                    v = {'model': NS + 'block/marsh/' + UNTURNED[kind](facing)}
+                elif y:
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/marsh_fitting.json'] = {'variants': variants}
@@ -416,7 +547,7 @@ def main():
     models = fitting_models()
     for kind in KINDS:
         for stage in range(STAGES.get(kind, 1)):
-            assert f'{kind}_{stage}' in models, (kind, stage)
+            assert (UNTURNED[kind]('north') if kind in UNTURNED else f'{kind}_{stage}') in models, (kind, stage)
     for key, obj in models.items():
         for tex in obj['textures'].values():
             assert f'block/marsh/{tex.split("marsh/")[1]}.png' in images, (key, tex)

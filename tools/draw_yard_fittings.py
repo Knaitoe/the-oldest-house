@@ -108,10 +108,43 @@ def wheel():
     return im
 
 
+# 0.4.583 (the owner: the wall light is "a dark empty tube on a cream base, reads broken"; and a floating lamp). The bulb was one
+# model, a two-pixel cord over a small box, its cord's picture stretched to ten pixels: hung in a recess it read as a broken wall
+# light, and in the open its cord ended in the air. It is a fitting in four mounts now (labyrinth/YardLights picks one for what is
+# round each bulb), and every face takes a piece of its picture of the face's own size: PIECES names them, part() checks them.
+PIECES = {
+    'bulb': {'glass': (0, 0, 4, 5), 'glass_end': (4, 0, 4, 4), 'socket': (8, 0, 2, 2), 'cord': (10, 0, 1, 8), 'cord_6': (10, 0, 1, 6),
+             'rose': (11, 0, 3, 1), 'rose_under': (11, 1, 3, 3)},
+    'bulb_mount': {'plate': (0, 0, 4, 6), 'plate_side': (4, 0, 1, 6), 'plate_top': (5, 0, 4, 1), 'arm_side': (5, 1, 7, 2), 'arm_end': (12, 1, 2, 2),
+                   'arm_top': (14, 0, 2, 7), 'metal_top': (5, 3, 4, 4), 'collar_side': (9, 3, 4, 2)},
+}
+
+
 def bulb():
+    # The glass, lit; its socket; the cord it hangs by; and the rose the cord comes out of.
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
-    fill(im, 7, 0, 9, 9, '#2a2a2a'); fill(im, 6, 9, 10, 11, '#8a8c8e')
-    fill(im, 5, 11, 11, 16, '#fff6c8'); dot(im, 6, 12, '#ffffff')
+    fill(im, 0, 0, 4, 5, '#fff3b4'); fill(im, 1, 1, 3, 3, '#fffbe2')
+    for x, y in ((0, 0), (3, 0)): dot(im, x, y, '#f4d67a')
+    fill(im, 0, 4, 4, 5, '#f4d67a'); fill(im, 1, 4, 3, 5, '#ffe89a')
+    fill(im, 4, 0, 8, 4, '#fff3b4'); fill(im, 5, 1, 7, 3, '#fffbe2')
+    for x, y in ((4, 0), (7, 0), (4, 3), (7, 3)): dot(im, x, y, '#f4d67a')
+    fill(im, 8, 0, 10, 1, '#9a9c9e'); fill(im, 8, 1, 10, 2, '#6c6e70')
+    for y in range(8): dot(im, 10, y, '#2a2a2a' if y % 3 else '#3c3c3c')
+    fill(im, 11, 0, 14, 1, '#4a3c32'); fill(im, 11, 1, 14, 4, '#3d312a'); dot(im, 12, 2, '#1e1a18')
+    return im
+
+
+def bulb_mount():
+    # What holds it where nothing is over it: a plate on a wall and the arm out from it, and the collar on a post's head.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 0, 0, 4, 6, '#84888a'); frame(im, 0, 0, 4, 6, '#63676a'); dot(im, 1, 1, '#34373a'); dot(im, 2, 4, '#34373a')
+    fill(im, 4, 0, 5, 6, '#63676a')
+    fill(im, 5, 0, 9, 1, '#a2a5a7')
+    fill(im, 5, 1, 12, 2, '#96999b'); fill(im, 5, 2, 12, 3, '#6a6d70')
+    fill(im, 12, 1, 14, 3, '#7c7f82'); dot(im, 12, 1, '#96999b')
+    fill(im, 14, 0, 15, 7, '#a2a5a7'); fill(im, 15, 0, 16, 7, '#8a8d90')
+    fill(im, 5, 3, 9, 7, '#7c7f82'); frame(im, 5, 3, 9, 7, '#63676a')
+    fill(im, 9, 3, 13, 4, '#8a8d90'); fill(im, 9, 4, 13, 5, '#63676a')
     return im
 
 
@@ -418,7 +451,7 @@ def textures():
         for y in range(16):
             dot(stake, x, y, '#6e5b42')
     t = {'mud_0': mud(3150), 'mud_1': mud_print(), 'mud_side': noisy(['#3a3431', '#433b37', '#2f2a27'], 3152, [4, 3, 2]),
-         'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'linen': linen, 'concrete': concrete, 'stake': stake}
+         'paint': paint(), 'side': side(), 'grille_lit': grille(True), 'window': window(), 'roof': roof(), 'tailgate': tailgate(), 'wheel': wheel(), 'bulb': bulb(), 'bulb_mount': bulb_mount(), 'linen': linen, 'concrete': concrete, 'stake': stake}
     for stage in range(4):
         grate = Image.new('RGBA', (16, 16))
         frame(grate, 0, 0, 16, 16, '#555c58')
@@ -445,10 +478,56 @@ def model(elements, textures, particle):
     return {'ambientocclusion': True, 'render_type': 'minecraft:cutout', 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
 
-def fitting_models():
+SIDES = ('north', 'south', 'east', 'west')
+
+
+def part(lo, hi, faces, lit=False):
+    """A box whose named faces each take a piece of a picture: faces maps a face to (picture, piece). The piece must be the
+    face's own size, so nothing is stretched."""
+    across = {'north': (hi[0] - lo[0], hi[1] - lo[1]), 'east': (hi[2] - lo[2], hi[1] - lo[1]), 'up': (hi[0] - lo[0], hi[2] - lo[2])}
+    across.update(south=across['north'], west=across['east'], down=across['up'])
+    tex, uv = {}, {}
+    for face, (picture, piece) in faces.items():
+        x, y, w, h = PIECES[picture][piece]
+        assert (w, h) == across[face], (lo, hi, face, piece, across[face])
+        tex[face] = picture; uv[face] = [x, y, x + w, y + h]
+    e = element(lo, hi, tex, uv=uv)
+    if lit:
+        e['shade'] = False; e['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
+    return e
+
+
+def lamp(x, y, z, standing=False):
+    """The glass and its socket, the glass's lower corner at (x, y, z): hanging, the socket is over it; standing, under it."""
+    glass = part([x, y, z], [x + 4, y + 5, z + 4], {**{f: ('bulb', 'glass') for f in SIDES}, 'up': ('bulb', 'glass_end'), 'down': ('bulb', 'glass_end')}, lit=True)
+    sy = y - 2 if standing else y + 5
+    socket = part([x + 1, sy, z + 1], [x + 3, sy + 2, z + 3], {f: ('bulb', 'socket') for f in SIDES + ('up', 'down')})
+    return [socket, glass]
+
+
+def bulb_models():
+    cord = {f: ('bulb', 'cord') for f in SIDES}; cord_6 = {f: ('bulb', 'cord_6') for f in SIDES}
+    rose = {**{f: ('bulb', 'rose') for f in SIDES}, 'down': ('bulb', 'rose_under')}
+    names = {'bulb': 'bulb', 'bulb_mount': 'bulb_mount'}
     m = {}
-    m['bulb_0'] = model([element([7, 6, 7], [9, 16, 9], {'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={f: [7, 0, 9, 16] for f in ('north', 'south', 'east', 'west')}),
-                         element([6, 6, 6], [10, 9, 10], {'all': 'b'}, uv={f: [5, 11, 9, 14] for f in ('north', 'south', 'east', 'west', 'up', 'down')})], {'b': 'bulb'}, 'bulb')
+    # 0, hung from the block over it: the rose on that block, the cord, the socket, the glass.
+    m['bulb_0'] = model([part([6.5, 15, 6.5], [9.5, 16, 9.5], rose), part([7.5, 9, 7.5], [8.5, 15, 8.5], cord_6)] + lamp(6, 2, 6), {'bulb': 'bulb'}, 'bulb')
+    # 1, on a wall (drawn with the wall to the south, the bulb out to the north): a plate on the wall, an arm out from it, and the
+    # bulb hanging from the arm's end.
+    m['bulb_1'] = model([part([6, 7, 15], [10, 13, 16], {'north': ('bulb_mount', 'plate'), 'east': ('bulb_mount', 'plate_side'), 'west': ('bulb_mount', 'plate_side'),
+                                                         'up': ('bulb_mount', 'plate_top'), 'down': ('bulb_mount', 'plate_top')}),
+                         part([7, 11, 8], [9, 13, 15], {'east': ('bulb_mount', 'arm_side'), 'west': ('bulb_mount', 'arm_side'), 'up': ('bulb_mount', 'arm_top'),
+                                                        'down': ('bulb_mount', 'arm_top'), 'north': ('bulb_mount', 'arm_end')})] + lamp(6, 4, 7), names, 'bulb_mount')
+    # 2, on a post (a fence post stands under it): a collar on the post's head and the bulb standing in it.
+    m['bulb_2'] = model([part([6, 0, 6], [10, 2, 10], {**{f: ('bulb_mount', 'collar_side') for f in SIDES}, 'up': ('bulb_mount', 'metal_top')})] + lamp(6, 4, 6, standing=True), names, 'bulb_mount')
+    # 3, hung under the upper half of a block: the same, on a cord that goes up to it.
+    m['bulb_3'] = model([part([6.5, 23, 6.5], [9.5, 24, 9.5], rose), part([7.5, 15, 7.5], [8.5, 23, 8.5], cord), part([7.5, 9, 7.5], [8.5, 15, 8.5], cord_6)] + lamp(6, 2, 6),
+                        {'bulb': 'bulb'}, 'bulb')
+    return m
+
+
+def fitting_models():
+    m = bulb_models()
     body = element([0, 3, 0], [16, 14, 16], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'up': 'p', 'down': 'p'})
     m['body_0'] = model([body], {'s': 'side', 'p': 'paint'}, 'paint')
     m['body_1'] = model([body, element([-0.5, 0, 3], [0.5, 9, 12], {'west': 'w', 'east': 'w'}), element([15.5, 0, 3], [16.5, 9, 12], {'west': 'w', 'east': 'w'})], {'s': 'side', 'p': 'paint', 'w': 'wheel'}, 'paint')
@@ -548,7 +627,7 @@ def fitting_models():
 
 
 KINDS = ['bulb', 'nose', 'body', 'cabin', 'tail', 'sheet', 'pipe_lip', 'survey_slot', 'gate_latch', 'flood_grate', 'print', 'stock_leaf', 'roof_sheet', 'stalk', 'windsock', 'grass', 'trampled', 'cap', 'pickup_nose', 'pickup_body', 'pickup_cab', 'pickup_bed', 'fringe']
-STAGES = {'bulb': 1, 'nose': 2, 'body': 2, 'cabin': 1, 'tail': 2, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3, 'grass': 3, 'trampled': 3, 'cap': 1, 'pickup_nose': 1, 'pickup_body': 2, 'pickup_cab': 1, 'pickup_bed': 2, 'fringe': 3}
+STAGES = {'bulb': 4, 'nose': 2, 'body': 2, 'cabin': 1, 'tail': 2, 'sheet': 2, 'pipe_lip': 1, 'survey_slot': 1, 'gate_latch': 1, 'flood_grate': 4, 'print': 2, 'stock_leaf': 3, 'roof_sheet': 3, 'stalk': 4, 'windsock': 3, 'grass': 3, 'trampled': 3, 'cap': 1, 'pickup_nose': 1, 'pickup_body': 2, 'pickup_cab': 1, 'pickup_bed': 2, 'fringe': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'yard_fitting': 'Yard Fittings', 'yard_clapboard': 'Clapboard', 'yard_wet_gravel': 'Wet Gravel', 'yard_garage_door': 'Garage Door'}
 

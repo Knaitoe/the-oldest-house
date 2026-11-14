@@ -1,0 +1,310 @@
+{
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bulb": "the_oldest_house:block/yard/bulb",
+    "particle": "the_oldest_house:block/yard/bulb"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        23,
+        6.5
+      ],
+      "to": [
+        9.5,
+        24,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            11,
+            0,
+            14,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            11,
+            0,
+            14,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            11,
+            0,
+            14,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            11,
+            0,
+            14,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            11,
+            1,
+            14,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        15,
+        7.5
+      ],
+      "to": [
+        8.5,
+        23,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        9,
+        7.5
+      ],
+      "to": [
+        8.5,
+        15,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            10,
+            0,
+            11,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        7,
+        7
+      ],
+      "to": [
+        9,
+        9,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#bulb",
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        2,
+        6
+      ],
+      "to": [
+        10,
+        7,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bulb",
+          "uv": [
+            0,
+            0,
+            4,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#bulb",
+          "uv": [
+            0,
+            0,
+            4,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#bulb",
+          "uv": [
+            0,
+            0,
+            4,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#bulb",
+          "uv": [
+            0,
+            0,
+            4,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#bulb",
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ]
+        },
+        "down": {
+          "texture": "#bulb",
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ]
+        }
+      },
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      }
+    }
+  ]
+}

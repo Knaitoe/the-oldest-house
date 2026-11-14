@@ -19,12 +19,15 @@ import net.minecraft.world.phys.shapes.*;
  * <li>WINDOW: an upstairs window, lit behind its curtains; stage 1 dark.</li>
  * <li>BREAD: the bread board with its loaf. ROAST: stage 0 under its cover on the platter, stage 1 uncovered and carved.</li>
  * <li>BUTCHER: the butcher's block in the kitchen. BELL: the dinner bell in its yoke, on a post. CARD: the supper card on its post.</li>
+ * <li>0.4.583, TABLE, TABLE_EDGE, TABLE_LEG: the supper table, a block of it in the middle, on an edge (facing outward) and at a corner
+ * (facing north for the north-west corner, east for the north-east, and so round). Its boards run the same way on every block: these
+ * three have a model for each facing and are never turned. OIL_LAMP: the lamp that stands on it.</li>
  * </ul>
  */
 public final class MarshBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<MarshBlock> CODEC=simpleCodec(MarshBlock::new);
     public enum Kind implements StringRepresentable {
-        MAT,KEYS,COAT,PORCH_LIGHT,WINDOW,BREAD,ROAST,BUTCHER,BELL,CARD;
+        MAT,KEYS,COAT,PORCH_LIGHT,WINDOW,BREAD,ROAST,BUTCHER,BELL,CARD,TABLE,TABLE_EDGE,TABLE_LEG,OIL_LAMP;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -33,7 +36,7 @@ public final class MarshBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return MarshRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,stage);}
     public static boolean is(BlockState s,Kind kind){return s.is(MarshRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
-    public static int light(BlockState s){return s.getValue(STAGE)!=0?0:switch(s.getValue(KIND)){case PORCH_LIGHT->13;case WINDOW->10;default->0;};}
+    public static int light(BlockState s){return s.getValue(STAGE)!=0?0:switch(s.getValue(KIND)){case PORCH_LIGHT->13;case WINDOW->10;case OIL_LAMP->12;default->0;};}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     /** A box drawn facing north, turned to the block's facing. */
@@ -58,12 +61,16 @@ public final class MarshBlock extends HorizontalDirectionalBlock {
             case BUTCHER->Block.box(1,0,1,15,16,15);
             case BELL->Block.box(2,0,5,14,13,11);
             case CARD->Block.box(4,0,4,12,16,12);
+            case TABLE,TABLE_EDGE->Block.box(0,14,0,16,16,16);
+            case TABLE_LEG->Shapes.or(Block.box(0,14,0,16,16,16),turned(f,1,0,1,4,14,4));
+            case OIL_LAMP->Block.box(5,0,5,11,12,11);
         };
     }
     /** The mat, the keys, the light, the bread and the roast are walked over or reached past; the coat on its hook too. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case WINDOW,BUTCHER->Shapes.block();
+            case TABLE,TABLE_EDGE,TABLE_LEG->getShape(s,l,p,c);
             case COAT->s.getValue(STAGE)==0?Shapes.empty():Block.box(2,0,2,14,8,14);
             case BELL->Block.box(2,0,6,14,13,10);
             case CARD->Block.box(5,0,5,11,16,11);
