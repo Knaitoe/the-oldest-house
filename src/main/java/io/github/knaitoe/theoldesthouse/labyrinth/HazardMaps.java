@@ -62,11 +62,21 @@ public final class HazardMaps {
      * short of each end wall and of the ceiling, and readers walked round its ends into the reflection. It runs wall to wall and floor to
      * ceiling now.
      */
-    public static final int MIRROR_X=-7;
+    public static final int MIRROR_X=-7,MIRROR_LAMP_X=-4;
+    /**
+     * 0.4.592, the owner's playtest: "reflection isn't rendered properly in reflection room". The wall was panes of framed glass with
+     * a second hall built behind it, three doors, lamps and seats set out as a mirror image, and a figure of the reader drawn in there:
+     * it looked like a window into another room. The wall is one true plane mirror now (client.MirrorHallGlass), hung from its first
+     * block, and shows the hall itself; nothing is built behind it. The space behind is left as the room's shell made it.
+     */
     private static void mirror(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,Blocks.GRAY_CONCRETE.defaultBlockState());var r=p.room();box(l,b,MIRROR_X,0,r.minZ()+1,MIRROR_X,r.maxY()-1,-1,HazardBlock.of(MIRROR_GLASS));
-        for(int x:new int[]{-10,-14,-18})LabyrinthBuilder.placeDoor(l,b.offset(x,0,-42),Direction.SOUTH);
-        for(int z=-7;z>=-37;z-=10){lamp(l,b,1,4,z);lamp(l,b,-18,4,z);}
-        for(int z=-10;z>=-30;z-=10){set(l,b,6,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));set(l,b,-20,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.WEST));}
+        set(l,b,MIRROR_X,0,-1,HazardBlock.mirrorAnchor());
+        for(int z=-7;z>=-37;z-=10)lamp(l,b,1,4,z);
+        // A reader who walks up to a mirror looks at themselves in it. The hall's one row of lamps left the floor by the glass
+        // almost unlit, and a reader standing there was a black shape in it: a second row hangs two blocks off the glass,
+        // between the first row's lamps.
+        for(int z=-2;z>=-32;z-=10)lamp(l,b,MIRROR_LAMP_X,4,z);
+        for(int z=-10;z>=-30;z-=10)set(l,b,6,0,z,Blocks.DARK_OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.EAST));
     }
     private static void weight(ServerLevel l,BlockPos b,LabyrinthPlace p){room(l,b,p,HazardBlock.of(PIT_STONE));box(l,b,-6,0,-22,6,4,-22,WALL);box(l,b,-1,0,-22,1,2,-22,AIR);
         for(int z=-5;z>=-19;z-=4)for(int x=-1;x<=1;x++)set(l,b,x,0,z,Blocks.STONE_BRICK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM));

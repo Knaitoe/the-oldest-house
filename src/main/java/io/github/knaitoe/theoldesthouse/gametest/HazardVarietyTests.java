@@ -150,6 +150,52 @@ public final class HazardVarietyTests {
     @AfterBatch(batch="hazard_duplicates") public static void duplicatesDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="hazard_mirror",timeoutTicks=100) public static void mirrorIsRecipientPrivateAndTheWrongDoorOnlyLoopsThatReader(GameTestHelper h){var f=new Fixture(h);var p=f.player("mirror_a",LabyrinthPlace.MIRROR_HALL);var peer=f.player("mirror_b",LabyrinthPlace.MIRROR_HALL);f.at(p,LabyrinthPlace.MIRROR_HALL,0,0,-36);f.at(peer,LabyrinthPlace.MIRROR_HALL,2,0,-35);h.runAfterDelay(30,()->{int real=f.own(p,LabyrinthPlace.MIRROR_HALL).getInt("MirrorDoor");var before=peer.position();h.assertTrue(HazardVariety.blocksDoor(p,f.door(LabyrinthPlace.MIRROR_HALL,(real+1)%3))&&peer.position().equals(before),"a false mirror door moves only its reader");h.assertTrue(!HazardVariety.blocksDoor(p,f.door(LabyrinthPlace.MIRROR_HALL,real)),"the reflection's selected door is real");h.assertTrue(f.level.getEntitiesOfClass(NovelActor.class,new AABB(f.base(LabyrinthPlace.MIRROR_HALL)).inflate(60)).isEmpty(),"no server-side reflection leaks to other clients");h.succeed();});}
     @AfterBatch(batch="hazard_mirror") public static void mirrorDone(ServerLevel l){close();}
+    /**
+     * 0.4.592, the owner's playtest: "reflection isn't rendered properly in reflection room". The hall's wall is one true mirror now,
+     * hung from one block, with nothing built behind it. What the server keeps of it is how late the glass runs for each reader, by
+     * their own visit, and where they are shown standing once they are near the doors. What the glass draws is the client's: the
+     * two-client look in the notes.
+     */
+    @GameTest(template="empty",batch="hazard_mirror_glass",timeoutTicks=800) public static void theMirrorHallsWallIsOneGlassAndRunsLateByEachReadersOwnVisit(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.MIRROR_HALL;var p=f.player("glass_reader",place);var peer=f.player("glass_peer",place);var b=f.base(place);var room=place.room();
+        final long[] began={0};final int[] door={0};
+        f.ready(()->{
+            int carried=0;
+            for(int z=room.minZ()+1;z<=-1;z++)for(int y=0;y<room.maxY();y++){var at=b.offset(HazardMaps.MIRROR_X,y,z);var s=f.level.getBlockState(at);
+                h.assertTrue(HazardBlock.is(s,HazardBlock.Kind.MIRROR_GLASS),"the whole wall is glass, floor to ceiling and end to end: "+at.subtract(b));
+                boolean carries=HazardBlock.mirrorAnchor(s);if(carries)carried++;
+                h.assertTrue(carries==(f.level.getBlockEntity(at) instanceof HazardBlock.MirrorWall),"only the block that carries the glass has a glass to draw: "+at.subtract(b));}
+            h.assertTrue(carried==1&&HazardBlock.mirrorAnchor(f.level.getBlockState(b.offset(HazardMaps.MIRROR_X,0,-1))),"one block carries the glass: the lowest, at the entrance end");
+            for(int x=room.minX();x<HazardMaps.MIRROR_X;x++)for(int y=0;y<room.maxY();y++)for(int z=room.minZ();z<=0;z++){var s=f.level.getBlockState(b.offset(x,y,z));
+                h.assertTrue(!(s.getBlock() instanceof DoorBlock)&&!(s.getBlock() instanceof StairBlock)&&!HazardBlock.is(s,HazardBlock.Kind.HEAT_LAMP),"nothing is set out behind the glass: no second hall's doors, lamps or seats: "+new BlockPos(x,y,z)+" "+s);}
+            int near=0;for(int z=room.minZ()+1;z<=-1;z++)if(HazardBlock.is(f.level.getBlockState(b.offset(HazardMaps.MIRROR_LAMP_X,HazardMaps.underCeiling(place),z)),HazardBlock.Kind.HEAT_LAMP))near++;
+            h.assertTrue(near==4,"a row of lamps hangs by the glass, so a reader who walks up to it is lit in it: "+near);
+            // A visit begins here, whatever the fixture's own arrival and the wait for the hall's chunks cost.
+            HazardVariety.onArrive(p,place);HazardVariety.onArrive(peer,place);NativeTestPlayers.packets(p);NativeTestPlayers.packets(peer);
+            began[0]=h.getTick();door[0]=f.own(p,place).getInt("MirrorDoor");
+            h.startSequence()
+                .thenWaitUntil(()->{var view=glass(p);h.assertTrue(view!=null,"the hall tells its reader's own client how late their glass runs");
+                    h.assertTrue(view.getInt("Delay")==HazardVariety.MIRROR_NEAR&&!view.getBoolean("Answer"),"a reader new to the hall is a second behind in its glass, and nowhere near a door: "+view);
+                    h.assertTrue(!view.contains("Yaw")&&!view.contains("Stride"),"nothing of where the reader was is sent: their own client keeps it: "+view);})
+                .thenExecute(()->f.at(p,place,.5,0,-36))
+                .thenWaitUntil(()->{var view=glass(p);h.assertTrue(view!=null&&view.getBoolean("Answer"),"near the hall's end the glass shows the reader standing at a door");
+                    var real=f.door(place,door[0]);
+                    h.assertTrue(view.getDouble("X")==real.lower.getX()+.5&&view.getDouble("Y")==b.getY()&&view.getDouble("Z")==real.lower.getZ()+3,"they stand three blocks in front of the door that is really theirs: "+view+" door "+real.lower);
+                    h.assertTrue(HazardVariety.mirrorAnswer(b,door[0]).equals(new Vec3(view.getDouble("X"),view.getDouble("Y"),view.getDouble("Z")))&&!HazardVariety.blocksDoor(p,real),"and that door lets them through");
+                    var other=glass(peer);h.assertTrue(other==null||!other.getBoolean("Answer"),"a reader still at the entrance is not shown a door because another is near one: "+other);})
+                .thenExecute(()->f.at(p,place,.5,0,-10))
+                .thenWaitUntil(()->{var view=glass(p);h.assertTrue(view!=null&&!view.getBoolean("Answer"),"walking back up the hall, the reader is in the glass as they were again");})
+                .thenWaitUntil(()->{var view=glass(p);h.assertTrue(view!=null&&view.getInt("Delay")==HazardVariety.MIRROR_FAR,"twelve seconds into the visit the glass falls two seconds behind");
+                    long took=h.getTick()-began[0];h.assertTrue(took>=HazardVariety.MIRROR_TURN&&took<=HazardVariety.MIRROR_TURN+20,"by this reader's own visit, not the hall's age: "+took+" ticks");})
+                // The hall's own clock is far past twelve seconds by now. A reader who comes in again starts a second behind again.
+                .thenExecute(()->{h.assertTrue(f.room(place).getLong("Clock")>=HazardVariety.MIRROR_TURN,"the hall itself is older than twelve seconds: "+f.room(place).getLong("Clock"));HazardVariety.onArrive(p,place);f.at(p,place,.5,0,-2.5);NativeTestPlayers.packets(p);})
+                .thenWaitUntil(()->{var view=glass(p);h.assertTrue(view!=null,"the hall speaks to a reader who has come in again");
+                    h.assertTrue(view.getInt("Delay")==HazardVariety.MIRROR_NEAR,"each visit begins a second behind, however old the hall is: "+view);})
+                .thenSucceed();
+        });}
+    /** What the mirror hall has last told this reader's client about its glass, of everything sent since this was last asked. */
+    private static CompoundTag glass(ServerPlayer p){CompoundTag last=null;for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof HazardViewPayload view&&view.mode()==1)last=view.view();return last;}
+    @AfterBatch(batch="hazard_mirror_glass") public static void mirrorGlassDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="hazard_quiet",timeoutTicks=650) public static void realSculkVibrationsFillASharedMeterAndTheHarmlessSweepReturnsEveryPassedReader(GameTestHelper h){var f=new Fixture(h);var p=f.player("quiet_noisy",LabyrinthPlace.QUIET_HALL);var peer=f.player("quiet_peer",LabyrinthPlace.QUIET_HALL);f.at(p,LabyrinthPlace.QUIET_HALL,.5,0,-33);f.at(peer,LabyrinthPlace.QUIET_HALL,2,0,-30);var before=p.getHealth();
         for(int n=0;n<6;n++)h.runAfterDelay(25+n*50,()->f.level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.STEP,p.position(),net.minecraft.world.level.gameevent.GameEvent.Context.of(p)));
         h.runAfterDelay(370,()->{h.assertTrue(f.room(LabyrinthPlace.QUIET_HALL).getInt("Generation")>0,"real sensor activations start a shared sweep");h.assertTrue(p.getZ()-f.base(LabyrinthPlace.QUIET_HALL).getZ()>-4&&peer.getZ()-f.base(LabyrinthPlace.QUIET_HALL).getZ()>-4,"the harmless native walker has passed and returned both readers");h.assertTrue(p.getHealth()==before,"the walker never attacks or damages readers");h.succeed();});}

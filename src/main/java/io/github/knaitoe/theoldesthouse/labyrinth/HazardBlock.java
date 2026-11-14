@@ -6,6 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -15,7 +17,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** Vanilla-scale pixels and collision for the appended gray hazards. */
-public final class HazardBlock extends Block {
+public final class HazardBlock extends Block implements EntityBlock {
     public static final MapCodec<HazardBlock> CODEC=simpleCodec(HazardBlock::new);
     public enum Kind implements StringRepresentable {
         LOCKER_WALL,FROSTED_CRATE,COMPRESSOR,HEAT_LAMP,HOOK,SHIP_PLATE,RAIL,SCULK_BOARDS,MAZE_PANEL,MIRROR_GLASS,NET,PARLOUR_WALL,NARROW_ARCH,SKIRT_GAP,NUMBER_FOUR,SCONCE,CISTERN_TILE,PIT_STONE,PRESSURE_PANEL,DRIFT_TILE;
@@ -28,6 +30,18 @@ public final class HazardBlock extends Block {
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,STAGE);}
     public static BlockState of(Kind k){return HazardRegistry.PIECE.get().defaultBlockState().setValue(KIND,k);}
     public static boolean is(BlockState s,Kind k){return s.is(HazardRegistry.PIECE.get())&&s.getValue(KIND)==k;}
+    /**
+     * 0.4.592 (the owner: "reflection isn't rendered properly in reflection room"): the mirror hall's wall is one true plane mirror
+     * ({@code client.MirrorHallGlass}), hung from its first block: the wall's lowest block at its entrance end, in stage 1, which
+     * looks like every other block of the wall and carries the glass. No other hazard piece has anything to carry.
+     */
+    public static BlockState mirrorAnchor(){return of(Kind.MIRROR_GLASS).setValue(STAGE,1);}
+    public static boolean mirrorAnchor(BlockState s){return is(s,Kind.MIRROR_GLASS)&&s.getValue(STAGE)==1;}
+    @Override public @javax.annotation.Nullable BlockEntity newBlockEntity(BlockPos p,BlockState s){return mirrorAnchor(s)?new MirrorWall(p,s):null;}
+    /** The mirror wall's place, for its renderer. */
+    public static final class MirrorWall extends BlockEntity {
+        public MirrorWall(BlockPos p,BlockState s){super(HazardRegistry.MIRROR_WALL.get(),p,s);}
+    }
     public static int light(BlockState s){return s.getValue(STAGE)==0&&(s.getValue(KIND)==Kind.HEAT_LAMP||s.getValue(KIND)==Kind.SCONCE)?14:0;}
     @Override public VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
         case RAIL->Shapes.or(box(6,0,6,10,16,10),box(0,11,6,16,14,10));

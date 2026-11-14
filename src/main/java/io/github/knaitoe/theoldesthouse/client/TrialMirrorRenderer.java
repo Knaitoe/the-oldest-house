@@ -20,6 +20,9 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 public final class TrialMirrorRenderer implements BlockEntityRenderer<TrialMirrorBlock.Glass> {
     public TrialMirrorRenderer(BlockEntityRendererProvider.Context c){}
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(TrialRegistry.MIRROR_ENTITY.get(),TrialMirrorRenderer::new);}
+    /** 0.4.592: the glass is two blocks high and hangs from the lower: it is drawn while any of it is in view, not only that block. */
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(TrialMirrorBlock.Glass be){var s=be.getBlockState();
+        return s.is(TrialRegistry.MIRROR.get())&&!s.getValue(TrialMirrorBlock.UPPER)?new HouseReadReflection.Glass(be.getBlockPos(),s.getValue(TrialMirrorBlock.FACING)).box():new net.minecraft.world.phys.AABB(be.getBlockPos());}
     @Override public void render(TrialMirrorBlock.Glass be,float partial,PoseStack pose,MultiBufferSource out,int light,int overlay){
         var s=be.getBlockState();if(!s.is(TrialRegistry.MIRROR.get())||s.getValue(TrialMirrorBlock.UPPER))return;
         var glass=new HouseReadReflection.Glass(be.getBlockPos(),s.getValue(TrialMirrorBlock.FACING));HouseReadReflection.want(glass);
