@@ -246,7 +246,7 @@ public final class LiveExpeditionClient {
             if(step==35&&role.equals("A")&&ticks>8&&open(mc.level.getBlockState(target.offset(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.DOOR))))click(mc,target.offset(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWoods.DOOR),ticks);
             var children=mc.level.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild.class,io.github.knaitoe.theoldesthouse.labyrinth.IndianLakeRooms.bounds(target,io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace.GOATMAN));
             if(ticks%100==0)try{
-                Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-night-status.txt"),"phase="+step+" priority="+GoatmanClient.priorityDemand()+" cousin="+GoatmanClient.cousinSubtitle()+" sides="+heardSides+"\n"+String.join("\n",heardKnocks)+"\n"+children.stream().map(c->c.getUUID()+" role="+c.fear()+" stage="+c.fearStage()+" cower="+c.cowering()+" at="+c.position().subtract(target.getX(),target.getY(),target.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
+                Files.createDirectories(LiveExpeditionProof.folder());Files.writeString(LiveExpeditionProof.folder().resolve(role+"-trailer-night-status.txt"),"phase="+step+" priority="+GoatmanClient.priorityDemand()+" cousin="+GoatmanClient.cousinSubtitle()+" sides="+heardSides+" windows="+GoatmanWindowClient.status()+"\n"+String.join("\n",heardKnocks)+"\n"+children.stream().map(c->c.getUUID()+" role="+c.fear()+" stage="+c.fearStage()+" cower="+c.cowering()+" at="+c.position().subtract(target.getX(),target.getY(),target.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
             }catch(Exception ex){throw new IllegalStateException(ex);}
             if(step==35){
                 mc.player.setYRot(180);mc.player.setXRot(0);var roles=children.stream().map(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanChild::fear).filter(n->n>0).collect(java.util.stream.Collectors.toSet());
@@ -263,7 +263,12 @@ public final class LiveExpeditionClient {
                 // Capture the real short-lived voice lease when it occurs; later window frames must not postpone it.
                 if(voiceCaptured&&shot==null&&GoatmanWindowClient.ready()&&ack!=36)ack(mc,36);
             }
-            String window=GoatmanWindowClient.tick(mc,children,target,role,step==36&&shot==null&&mc.screen==null);
+            // Run 1605: each client used to leave the aisle for its window only once the server had begun step 36, which waits
+            // on both clients' frames of the fear. On a slow runner that was half a second after the thing had come to the first
+            // pane, about three seconds into the dark; a pane nobody can see gets a short slap, its own shape is never at that
+            // side again, and the step could not end. A client now takes its place at the glass once it has the quiet's frame,
+            // well before dark, and takes a window's frame whenever the body is there.
+            String window=GoatmanWindowClient.tick(mc,children,target,role,(step==36||confusionCaptured)&&shot==null&&mc.screen==null);
             if(window!=null)shot=window;
         }
         GoatmanWindowClient.leave(mc,step,ticks,role);
