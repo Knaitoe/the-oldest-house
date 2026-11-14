@@ -156,6 +156,9 @@ public final class PellPeople {
          *  they are; how far she is along her own way out; whether her tin is down by the door while she does it, and whether the shed
          *  is shut and padlocked behind them. */
         long askedOut,outSince;UUID outWith;boolean outHeld,tinDown,shedShut;int outStep;double towed;
+        /** 0.4.575: which of her places she is walking somebody out of (PellNight.SHED, PellNight.ROOM); and, of her room, that she
+         *  has been out of it to do so and has yet to go back in and shut it (PellNight.shutRoom). */
+        int outOf;boolean roomOut;
         final java.util.List<Vec3> tow=new java.util.ArrayList<>();
         /** Where June has walked, newest last, for Tilly to follow. */
         final java.util.ArrayDeque<Vec3> trail=new java.util.ArrayDeque<>();

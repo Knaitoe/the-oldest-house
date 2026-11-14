@@ -137,7 +137,10 @@ public final class PellHouseTests {
             h.assertFalse(out.contains(new BlockPos(0,0,-60))||out.contains(new BlockPos(-5,0,-85))||out.contains(new BlockPos(6,0,-92))||out.contains(new BlockPos(13,0,-90)),"not into the house, the pool's yard, the shed or the garage");
             // A hand on each.
             told(p);
-            for(var door:List.of(PellSite.JUNE_DOOR,PellSite.SHED_DOOR,PellSite.POOL_GATE,PellSite.SLIDER.west())){f.click(p,P,door);h.assertFalse(PellSite.open(l,b,door),"it does not open to a hand: "+door);}
+            for(var door:List.of(PellSite.SHED_DOOR,PellSite.POOL_GATE,PellSite.SLIDER.west())){f.click(p,P,door);h.assertFalse(PellSite.open(l,b,door),"it does not open to a hand: "+door);}
+            // June's, from the hall. (The fixture's click stands its reader two and a half blocks south of what it puts a hand on:
+            // for her door that is in her room, where since 0.4.575 it opens.)
+            f.at(p,P,8.5,0,-65.5);hand(p,b.offset(PellSite.JUNE_DOOR));h.assertFalse(PellSite.open(l,b,PellSite.JUNE_DOOR),"June's does not open to a hand from the hall");
         // What is said reaches a reader when the tick ends.
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
@@ -429,6 +432,112 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_beds") public static void bedsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.575, June's room
+    /**
+     * 0.4.575 (docs/PELL_HOUSE_NOTES_0_4_575.md). June's room had its paper and its carpet and nothing in it. It has her bed, a bedside
+     * table with her lamp and her clock, a chest of drawers and a wardrobe, with the floor clear from her door to her window. Its door
+     * is hers from the hall, shut or open; from inside the room a hand on it opens it, so nobody is ever shut in there.
+     */
+    @GameTest(template="empty",batch="pell_june_room",timeoutTicks=1200)
+    public static void junesRoomHasHerThingsAndItsDoorOpensFromInside(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_june_room",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        var hers=List.of(JUNE_BED,JUNE_BEDSIDE,JUNE_DRESSER,JUNE_WARDROBE);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            // Her things, each against its wall.
+            h.assertTrue(thing(l,b,9,0,-59,JUNE_BED,0)&&thing(l,b,9,0,-60,JUNE_BED,1)&&facing(l,b,9,0,-59)==Direction.NORTH&&facing(l,b,9,0,-60)==Direction.NORTH,
+                "her bed along the east wall, its head to the front wall: "+l.getBlockState(b.offset(9,0,-59))+" "+l.getBlockState(b.offset(9,0,-60)));
+            h.assertTrue(thing(l,b,8,0,-59,JUNE_BEDSIDE,0)&&facing(l,b,8,0,-59)==Direction.NORTH,"the bedside table under the window, by the bed's head");
+            h.assertTrue(PellBlock.is(l.getBlockState(b.offset(8,1,PellSite.HOUSE_S)),PellBlock.Kind.WINDOW),"her window over it");
+            h.assertTrue(thing(l,b,7,0,-61,JUNE_DRESSER,0)&&facing(l,b,7,0,-61)==Direction.EAST,"the chest of drawers against the west wall");
+            h.assertTrue(thing(l,b,7,0,-59,JUNE_WARDROBE,0)&&thing(l,b,7,1,-59,JUNE_WARDROBE,1)&&facing(l,b,7,0,-59)==Direction.EAST&&facing(l,b,7,1,-59)==Direction.EAST,"the wardrobe in the corner, two cells high");
+            // The floor is clear from her door to her window, her place is on it, and there is floor to stand on by each of her things.
+            for(int z=-63;z<=-60;z++)h.assertTrue(l.getBlockState(b.offset(8,0,z)).isAir()&&l.getBlockState(b.offset(8,1,z)).isAir(),"the middle of the floor clear at "+z);
+            for(var at:List.of(new BlockPos(7,0,-63),new BlockPos(9,0,-63),new BlockPos(7,0,-62),new BlockPos(9,0,-62),new BlockPos(9,0,-61),new BlockPos(7,0,-60)))
+                h.assertTrue(l.getBlockState(b.offset(at)).isAir(),"floor to stand on at "+at);
+            h.assertTrue(PellSite.inJunesRoom(new Vec3(PellVisit.HER_ROOM.x(),0,PellVisit.HER_ROOM.z()))&&!PellSite.inJunesRoom(new Vec3(8.5,0,-63.5))&&!PellSite.inJunesRoom(new Vec3(8.5,0,-65)),
+                "her place is in her room; its doorway and the hall are not");
+            // Each of them stops a body, and each has a line of its own.
+            var lines=new java.util.HashSet<String>();
+            for(var k:hers)h.assertTrue(!PellTexts.thing(k,0).isBlank()&&lines.add(PellTexts.thing(k,0)),"a line of its own for "+k);
+            for(var at:List.of(new BlockPos(9,0,-59),new BlockPos(9,0,-60),new BlockPos(8,0,-59),new BlockPos(7,0,-61),new BlockPos(7,0,-59),new BlockPos(7,1,-59)))
+                h.assertFalse(l.getBlockState(b.offset(at)).getCollisionShape(l,b.offset(at)).isEmpty(),"furniture stops a body at "+at);
+            h.assertTrue(PellTexts.thing(JUNE_BEDSIDE,0).contains("eleven"),"the clock's alarm at eleven, when she gets up to paint");
+            // From the hall her door is hers: shut, it stays shut.
+            h.assertFalse(PellSite.open(l,b,PellSite.JUNE_DOOR),"June's door shut");
+            f.at(p,P,8.5,0,-65.5);told(p);hand(p,b.offset(PellSite.JUNE_DOOR));
+        }).thenIdle(1).thenExecute(()->{
+            var said=told(p);
+            h.assertTrue(said.contains(PellTexts.JUNES_DOOR)&&!PellSite.open(l,b,PellSite.JUNE_DOOR),"from the hall it does not open: "+said);
+            // A reader who is in her room all the same: a hand on each thing.
+            f.at(p,P,8.5,0,-62.5);told(p);
+            for(var at:List.of(new BlockPos(9,0,-60),new BlockPos(8,0,-59),new BlockPos(7,0,-61),new BlockPos(7,1,-59)))hand(p,b.offset(at));
+        }).thenIdle(1).thenExecute(()->{
+            var said=told(p);
+            for(var k:hers)h.assertTrue(said.contains(PellTexts.thing(k,0)),"a hand on "+k+": "+said);
+            for(var k:hers)h.assertTrue(PellCompany.seen(f.own(p,P),k),"kept that the reader has put a hand on "+k);
+            // And on the door, from inside.
+            told(p);hand(p,b.offset(PellSite.JUNE_DOOR));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(PellSite.open(l,b,PellSite.JUNE_DOOR),"from inside, the knob turns and the door opens");
+            // Open, it is left as it stands, from either side.
+            told(p);hand(p,b.offset(PellSite.JUNE_DOOR));
+        }).thenIdle(1).thenExecute(()->{
+            var said=told(p);
+            h.assertTrue(said.contains(PellTexts.JUNES_DOOR_OPEN)&&PellSite.open(l,b,PellSite.JUNE_DOOR),"open, a hand from inside leaves it open: "+said);
+            f.at(p,P,8.5,0,-65.5);told(p);hand(p,b.offset(PellSite.JUNE_DOOR));
+        }).thenIdle(1).thenExecute(()->{
+            var said=told(p);
+            h.assertTrue(said.contains(PellTexts.JUNES_DOOR_OPEN)&&PellSite.open(l,b,PellSite.JUNE_DOOR),"and so does a hand from the hall: "+said);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_june_room") public static void juneRoomDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.575. A reader in June's room when she comes to shut her door is asked out. When they have had time to go and have not, she
+     * takes them by the arm and walks them out into the hall a step ahead of them, as she does from the shed, lets go of them clear of
+     * her door, goes back in and shuts it. Nobody is shut in, and the night goes on as it was.
+     */
+    @GameTest(template="empty",batch="pell_june_room_out",timeoutTicks=6000)
+    public static void aReaderWhoStaysInJunesRoomIsWalkedOutBeforeSheShutsHerDoor(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_june_room_out",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        long[] asked={0};
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        // The house locked up and June in her room with its door shut; and a reader in there with her, by the chest of drawers.
+        .thenExecute(()->{PellNight.lockedUp(l,b);f.at(p,P,7.5,0,-62.5);told(p);})
+        .thenIdle(5).thenExecute(()->{
+            h.assertFalse(PellSite.open(l,b,PellSite.JUNE_DOOR),"her door shut");
+            h.assertFalse(PellNight.showingOut(b),"and nothing asked of anybody while it is");
+            // The reader opens it from inside, and stays where they are.
+            hand(p,b.offset(PellSite.JUNE_DOOR));
+        })
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_OUT_OF_ROOM),"June asks them out of her room: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenExecute(()->{
+            asked[0]=l.getGameTime();
+            h.assertTrue(PellSite.open(l,b,PellSite.JUNE_DOOR),"she does not shut it on them");
+            h.assertFalse(PellNight.showingOut(b),"she asks first");
+        })
+        .thenWaitUntil(()->h.assertTrue(PellNight.showingOut(b),"when they have had time to go, she comes for them"))
+        .thenExecute(()->h.assertTrue(l.getGameTime()-asked[0]>=PellNight.SHOW_OUT-5,"not before: "+(l.getGameTime()-asked[0])))
+        .thenWaitUntil(()->h.assertTrue(PellNight.heldOut(b),"she has hold of their arm"))
+        .thenExecute(()->h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.SHOWING,"her hand back to theirs"))
+        .thenWaitUntil(()->h.assertFalse(PellNight.showingOut(b),"walked out and let go of"))
+        .thenExecute(()->{
+            var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(!PellSite.inJunesRoom(r)&&r.z<-64&&PellSite.inHouse(r)&&r.subtract(8.5,0,-63.5).horizontalDistance()>1.1,"out in the hall, clear of her door: "+r);
+            var said=told(p);
+            h.assertTrue(said.contains(PellTexts.SHOWN_OUT)&&said.contains(PellTexts.LET_GO),"told so: "+said);
+        })
+        .thenWaitUntil(()->h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z(),.7)&&!PellSite.open(l,b,PellSite.JUNE_DOOR),"June back in her room, its door shut"))
+        .thenExecute(()->{
+            h.assertTrue(PellVisit.step(b)==PellVisit.NIGHT&&who(h,l,b,PellPeople.JUNE).gesture()!=PellPeople.SHOWING,"and the night as it was: "+PellVisit.step(b));
+            h.assertFalse(PellSite.inJunesRoom(p.position().subtract(b.getX(),b.getY(),b.getZ())),"with nobody shut in");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_june_room_out") public static void juneRoomOutDone(ServerLevel l){done();}
     private static PellLine.Surface surface(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SURFACE);}
     private static PellLine.Shape shape(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SHAPE);}
     /**

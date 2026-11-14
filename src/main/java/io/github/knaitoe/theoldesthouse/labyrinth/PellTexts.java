@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 public final class PellTexts {
     private PellTexts(){}
     public static final String HINT="The house at the head of the street is the one with the green lawn.";
-    public static final String JUNES_DOOR="June's room. The door is shut.",PADLOCKED="Padlocked.",POOL_GATE="The gate is padlocked. The lock is new and the latch is old.",
+    public static final String JUNES_DOOR="June's room. The door is shut.",JUNES_DOOR_OPEN="June's door stands open.",PADLOCKED="Padlocked.",POOL_GATE="The gate is padlocked. The lock is new and the latch is old.",
         FIXED_GLASS="This half doesn't slide.",ROLLER="It hasn't been up in years. The runners are painted over.",NOBODY_HOME="Nobody comes. The blinds are down.";
     /**
      * 0.4.522: what a reader finds with a hand on each of the house's things, by its kind and stage. They say what is there; none
@@ -128,6 +128,11 @@ public final class PellTexts {
                 :"The newest stake, a fresh seedling. The tag says TILLY, in careful capitals.";
             case FLOWERS->"Geraniums, deadheaded. The mulch under them is wet.";
             case EDGING->"Bricks on edge along the bed. They are the newer brick, the same as the patch in the west wall.";
+            // 0.4.575, June's room.
+            case JUNE_BED->"June's bed, made. The sheet is turned down a hand's width, the same all the way across.";
+            case JUNE_BEDSIDE->"A lamp, and a wind-up clock. Its alarm hand is at eleven.";
+            case JUNE_DRESSER->"A chest of drawers, older than the rest of the furniture. A doily on it, and nothing on the doily.";
+            case JUNE_WARDROBE->"June's wardrobe. Its doors are shut.";
             case KENNEL->"A kennel. BISCUIT over the door, and a heart in crayon. A chain clipped to the wall, and to nothing.";
             // 0.4.571 (PellJobs): 1, the leaves tipped out; 2, filled at a tap; 3, after the night.
             case BOWL->stage==1?"The dog's bowl, empty.":stage==2?"The dog's bowl, full to the brim."
@@ -280,6 +285,8 @@ public final class PellTexts {
         JUNE_FEET="Feet, love. I'm doing that bit.",
         JUNE_OUT_YOU_COME="Out you come, love. Not tonight.",
         JUNE_OUT_OF_SHED="Out of there, love. I'm locking up.",
+        // 0.4.575: to a reader in her room when she comes to shut it; and to one standing in its doorway (PellNight.shutRoom).
+        JUNE_OUT_OF_ROOM="Out of there, love. That room's mine.",JUNE_MIND_DOOR="Mind the door, love.",
         // 0.4.567: a reader who stays in the shed when she has asked, walked out of it by the arm (PellNight.shutShed).
         JUNE_TAKES_ARM="Come on, love. Out.",
         SHOWN_OUT="June takes you by the arm and walks you out.",
