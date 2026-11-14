@@ -341,17 +341,31 @@ public final class PellVisit {
     public static final int NONE=0,LAID_PLATE=1,SERVED=2,SCRAPED=3,BREAKFAST=4,GUEST=10,NOBODY=-1;
     /** A plate with a meal on it, dinner or breakfast. */
     static boolean full(int state){return state==SERVED||state==BREAKFAST;}
-    /** One of the table's four places: its chair, where its plate lies on the table, which way a body sitting there faces, and where
-     *  one stands to get into it. Tilly's is by the hall door and Callum's by the stove; the two by the fridge are on the far side,
-     *  got into from the near end. */
-    public record Place(BlockPos chair,Vec3 plate,float look,Vec3 beside){}
+    /**
+     * One of the table's four places: its chair, where its plate lies on the table, which way a body sitting there faces, where one
+     * stands to get into it, and the point its way turns at (null when it is straight in from the hall door). 0.4.572: the table
+     * stands in the corner by the hall wall, lengthwise, clear of the benches. Tilly's place is by the hall door and Callum's next
+     * to hers, the nearer the stove; the two against the west wall, under the chart and the calendar, are the far side, got to
+     * round the table's end by the benches.
+     */
+    public record Place(BlockPos chair,Vec3 plate,float look,Vec3 beside,@javax.annotation.Nullable Vec3 round){}
+    /** The point in the floor before the benches where every way to the table's far side, and to its end, turns. */
+    static final Vec3 BY_THE_BENCHES=v(-9.5,-69.5);
     public static final Place[] TABLE={
-        new Place(new BlockPos(-11,0,-68),new Vec3(-10.5,.95,-68.27),180,v(-9.5,-67.5)),
-        new Place(new BlockPos(-11,0,-70),new Vec3(-10.5,.95,-68.73),0,v(-9.5,-69.5)),
-        new Place(new BlockPos(-12,0,-70),new Vec3(-11.5,.95,-68.73),0,v(-9.5,-69.5)),
-        new Place(new BlockPos(-12,0,-68),new Vec3(-11.5,.95,-68.27),180,v(-9.5,-67.5))};
-    /** Where June stands to lay the table, serve and clear: its near end. Where she stands to wash up: at the sink. */
-    public static final PellPeople.Spot TABLE_END=new PellPeople.Spot(-9.5,-68.6,90),SINK=new PellPeople.Spot(-9.5,-69.6,180);
+        new Place(new BlockPos(-11,0,-68),new Vec3(-11.27,.95,-67.5),90,v(-9.5,-67.5),null),
+        new Place(new BlockPos(-11,0,-69),new Vec3(-11.27,.95,-68.5),90,v(-9.5,-68.5),null),
+        new Place(new BlockPos(-13,0,-69),new Vec3(-11.73,.95,-68.5),270,v(-12.5,-69.5),BY_THE_BENCHES),
+        new Place(new BlockPos(-13,0,-68),new Vec3(-11.73,.95,-67.5),270,v(-12.5,-69.5),BY_THE_BENCHES)};
+    /** Where June stands to lay the table, serve and clear: its end by the benches. Where she stands to wash up: at the sink. */
+    public static final PellPeople.Spot TABLE_END=new PellPeople.Spot(-11.5,-69.6,0),SINK=new PellPeople.Spot(-9.5,-69.6,180);
+    /** A way to the kitchen and on to a place at the table: round by the benches for the far side. */
+    static Vec3[] to(Vec3[] way,Place place){
+        var out=new java.util.ArrayList<>(Arrays.asList(way));if(place.round()!=null)out.add(place.round());out.add(place.beside());return out.toArray(Vec3[]::new);
+    }
+    /** And away from one: round by the benches first, from the far side. */
+    static Vec3[] from(Place place,Vec3... way){
+        if(place.round()==null)return way;var out=new java.util.ArrayList<Vec3>();out.add(place.round());out.addAll(Arrays.asList(way));return out.toArray(Vec3[]::new);
+    }
     /** Tilly's way from Nessa's room to the kitchen door, and Callum's from the end of the hall; and back (0.4.531: after breakfast too). */
     static final Vec3[] TILLY_TO_KITCHEN={v(-9.5,-62.8),v(-9.5,-64.6),v(-9.5,-65.6),v(-9.5,-66.6)},
         TILLY_BACK={v(-9.5,-66.6),v(-9.5,-65.6),v(-9.5,-64.6),v(-9.5,-62.8),v(TILLY_ROOM.x(),TILLY_ROOM.z())},
@@ -456,9 +470,10 @@ public final class PellVisit {
     /** Up out of their chair, to stand beside it, and away along a way. */
     static void up(ServerLevel l,BlockPos b,PellPeople.Household h,int who,float look,Vec3... way){
         var a=PellPeople.find(l,b,who);if(a==null)return;
-        if(h.seated[who]){var at=world(b,TABLE[h.place[who]].beside());a.moveTo(at.x,at.y,at.z,a.getYRot(),0);}
+        var place=h.seated[who]?TABLE[h.place[who]]:null;
+        if(place!=null){var at=world(b,place.beside());a.moveTo(at.x,at.y,at.z,a.getYRot(),0);}
         unperch(b,h,who,a);
-        h.seated[who]=false;h.place[who]=-1;go(h,who,-1,look,way);
+        h.seated[who]=false;h.place[who]=-1;go(h,who,-1,look,place==null?way:from(place,way));
     }
     /** A reader is sitting at this place. */
     static boolean readerAt(ServerLevel l,BlockPos b,int place){return !l.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.house.SeatEntity.class,new AABB(b.offset(TABLE[place].chair()))).isEmpty();}
@@ -605,14 +620,13 @@ public final class PellVisit {
         Arrays.fill(h.diner,NOBODY);
         int t=free(l,b,h,0);if(t>=0)h.diner[t]=PellPeople.TILLY;
         int c=free(l,b,h,1);if(c>=0)h.diner[c]=PellPeople.CALLUM;
-        if(t>=0)go(h,PellPeople.TILLY,t,TABLE[t].look(),with(TILLY_TO_KITCHEN,TABLE[t].beside()));
+        if(t>=0)go(h,PellPeople.TILLY,t,TABLE[t].look(),to(TILLY_TO_KITCHEN,TABLE[t]));
         // 0.4.545: a reader as Tilly comes to it themselves.
         if(t>=0)PellTilly.cue(l,h,PellTexts.TILLY_R_PLACE);
-        if(c>=0)go(h,PellPeople.CALLUM,c,TABLE[c].look(),with(CALLUM_TO_KITCHEN,TABLE[c].beside()));
+        if(c>=0)go(h,PellPeople.CALLUM,c,TABLE[c].look(),to(CALLUM_TO_KITCHEN,TABLE[c]));
         go(h,PellPeople.JUNE,-1,TABLE_END.look(),v(TABLE_END.x(),TABLE_END.z()));
         h.calledAt=now;h.step=CALLED;
     }
-    private static Vec3[] with(Vec3[] way,Vec3 last){var out=Arrays.copyOf(way,way.length+1);out[way.length]=last;return out;}
     /** One of the people somewhere in the kitchen. */
     static boolean inKitchen(ServerLevel l,BlockPos b,int who){
         var a=PellPeople.find(l,b,who);if(a==null)return false;var r=a.position().subtract(b.getX(),b.getY(),b.getZ());

@@ -231,13 +231,16 @@ public final class PellSite {
         Direction n=Direction.NORTH,s=Direction.SOUTH,e=Direction.EAST,w=Direction.WEST;
         // The kitchen: the fridge in the corner, the benches along the back wall with the sink under the window onto the pool, the
         // cupboards over them; the table and four chairs; the chore chart and the calendar on the west wall; the lino worn from the
-        // door to the sink, and burnt in front of the stove.
+        // door to the sink, and burnt in front of the stove. 0.4.572 (the owner: "the kitchen isn't spaced believably"): the table
+        // stood across the room with two chairs against the bench fronts, so nobody could get to the fridge. It stands in the
+        // corner by the hall wall now, lengthwise under the chart, two chairs to a side, and the floor before the benches is clear
+        // from the fridge to the stove.
         put(l,b,-13,0,-71,PellThing.Kind.FRIDGE,s,0);put(l,b,-13,1,-71,PellThing.Kind.FRIDGE_TOP,s,0);
         put(l,b,-12,0,-71,PellThing.Kind.LUNCHBOXES,s,0);put(l,b,-11,0,-71,PellThing.Kind.KNIFE_BLOCK,s,0);put(l,b,-10,0,-71,PellThing.Kind.SINK,s,0);
         put(l,b,-9,0,-71,PellThing.Kind.COUNTER,s,0);put(l,b,-8,0,-71,PellThing.Kind.STOVE,s,0);put(l,b,-7,0,-71,PellThing.Kind.COUNTER,s,0);
         for(int x:new int[]{-13,-12,-11,-8,-7})put(l,b,x,2,-71,PellThing.Kind.CUPBOARD_UPPER,s,0);
-        pair(l,b,-11,0,-69,PellThing.Kind.TABLE,n,0,1);
-        put(l,b,-12,0,-70,PellThing.Kind.CHAIR,s,0);put(l,b,-11,0,-70,PellThing.Kind.CHAIR,s,0);put(l,b,-12,0,-68,PellThing.Kind.CHAIR,n,0);put(l,b,-11,0,-68,PellThing.Kind.CHAIR,n,0);
+        pair(l,b,-12,0,-69,PellThing.Kind.TABLE,w,0,1);
+        for(int z=-69;z<=-68;z++){put(l,b,-11,0,z,PellThing.Kind.CHAIR,w,0);put(l,b,-13,0,z,PellThing.Kind.CHAIR,e,0);}
         pair(l,b,-13,1,-69,PellThing.Kind.CHORE_CHART,e,2,3);put(l,b,-13,1,-68,PellThing.Kind.CALENDAR,e,0);
         // 0.4.532: the telephone, on the east wall by the arch, a strip of tape beside it with GAIL and a number on it in pencil.
         put(l,b,PellCall.PHONE.getX(),PellCall.PHONE.getY(),PellCall.PHONE.getZ(),PellThing.Kind.PHONE,w,0);
@@ -368,7 +371,9 @@ public final class PellSite {
     static void garage(ServerLevel l,BlockPos b){
         box(l,b,GARAGE_W,0,GARAGE_N,GARAGE_E,ROOF,GARAGE_S,mat("brick"));box(l,b,GARAGE_W,0,GARAGE_N,GARAGE_E,0,GARAGE_S,mat("brick_low"));
         box(l,b,GARAGE_W+1,0,GARAGE_N+1,GARAGE_E-1,2,GARAGE_S-1,AIR);
-        box(l,b,GARAGE_W+1,-1,GARAGE_N+1,GARAGE_E-1,-1,GARAGE_S-1,mat("slab"));
+        // 0.4.572: the slab runs out under the walls and the doors. It stopped at the walls' inner faces, and lawn showed under the
+        // roller door and the walk door.
+        box(l,b,GARAGE_W,-1,GARAGE_N,GARAGE_E,-1,GARAGE_S,mat("slab"));
         // Under where the camp bed will stand, oil from the car that used to be kept here.
         set(l,b,15,-1,-90,mat("slab_oil"));
         roof(l,b,GARAGE_W,GARAGE_N,GARAGE_E,GARAGE_S);
@@ -457,6 +462,9 @@ public final class PellSite {
         for(var at:List.of(NESSA_DOOR,CALLUM_DOOR,BATH_DOOR,JUNE_DOOR))leaf(l,b,at,PellBlock.Kind.DOOR,Direction.NORTH,false);
         leaf(l,b,LAUNDRY_DOOR,PellBlock.Kind.DOOR,Direction.SOUTH,false);
         leaf(l,b,BACK_DOOR,PellBlock.Kind.DOOR,Direction.NORTH,false);
+        // 0.4.572: a sill under each of the house's outside doors. The house's floor stops at its walls' inner faces, and the walls
+        // stand on the lot's lawn: grass showed under the screen door, the back door and the sliding door.
+        for(var at:List.of(FRONT_DOOR,BACK_DOOR,SLIDER,SLIDER.west()))set(l,b,at.below(),mat("concrete"));
         // The sliding door: its west half is fixed glass, its east half slides.
         leaf(l,b,SLIDER.west(),PellBlock.Kind.SLIDER,Direction.NORTH,false);leaf(l,b,SLIDER,PellBlock.Kind.SLIDER,Direction.NORTH,false);
         // The garage's walk door: its bolt is on the yard's side.
