@@ -250,8 +250,10 @@ public final class UsherHouse {
         set(l, b, VAULT_DOOR.getX(), -3, -23, air);
         set(l, b, VAULT_DOOR.getX(), -2, -23, air);
         NovelRooms.door(l, b.offset(VAULT_DOOR), Direction.NORTH, Blocks.WAXED_WEATHERED_COPPER_DOOR, false);
-        LiteraryRooms.prop(l, b, LiteraryRooms.COFFIN, LiteraryPropBlock.Kind.COFFIN, Direction.NORTH);
-        LiteraryRooms.prop(l, b, LiteraryRooms.COFFIN.north(), LiteraryPropBlock.Kind.COFFIN, Direction.NORTH);
+        // 0.4.587: her coffin is the house's own, one box two blocks long: the half her feet are in, and the head half north of it.
+        var foot = LiteraryRooms.COFFIN;
+        set(l, b, foot.getX(), foot.getY(), foot.getZ(), UsherBlock.of(Kind.COFFIN, Direction.NORTH, 0));
+        set(l, b, foot.getX(), foot.getY(), foot.getZ() - 1, UsherBlock.of(Kind.COFFIN_HEAD, Direction.NORTH, 0));
         set(l, b, -5, -3, -33, Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT, true));
         set(l, b, 6, -3, -24, Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.LIT, true));
     }

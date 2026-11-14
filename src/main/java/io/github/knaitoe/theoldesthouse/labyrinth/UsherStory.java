@@ -46,6 +46,79 @@ public final class UsherStory {
 
     private UsherStory() {}
 
+    // ------------------------------------------------------------------------------------------------ the lid
+
+    /** 0.4.587: who has stood at the open coffin knowing what the lid asks, kept with the house until the lid is chosen. */
+    static final String STOOD = "Stood0587";
+    /** How long after a hand first goes on the lid a second use may close it, in ticks: a held button is one hand, not two. */
+    public static final int LID_PAUSE = 10;
+
+    /** Her coffin's two halves: the lid open on its hinges, or shut. */
+    public static void lid(net.minecraft.server.level.ServerLevel l, BlockPos b, boolean shut) {
+        for (var rel : List.of(LiteraryRooms.COFFIN, LiteraryRooms.COFFIN.north())) {
+            var at = b.offset(rel);
+            var s = l.getBlockState(at);
+            if (UsherBlock.coffin(s)) l.setBlock(at, s.setValue(UsherBlock.STAGE, shut ? 1 : 0), 3);
+        }
+    }
+    /** Beside the coffin in the vault, near enough to look down into it. */
+    public static boolean atCoffin(ServerPlayer p, BlockPos b) {
+        var r = p.position().subtract(Vec3.atLowerCornerOf(b));
+        return Math.abs(r.x - .5) < 3.3 && Math.abs(r.z + 29) < 3.8 && r.y > -3.6 && r.y < -1.4;
+    }
+    /** Keeps this reader as one who stood at the open coffin. */
+    static void stood(ServerPlayer p, CompoundTag world) {
+        var stood = world.getCompound(STOOD);
+        stood.putBoolean(p.getStringUUID(), true);
+        world.put(STOOD, stood);
+    }
+    /**
+     * A reader who knows what the lid asks (the diary read through, or a hand already put on the lid) and stands at the open
+     * coffin is kept with the house. True when the house's record changed.
+     */
+    static boolean stands(ServerPlayer p, BlockPos b, CompoundTag own, CompoundTag world) {
+        if (world.contains("LidClosed") || own.getBoolean("LidChosen") || p.isSpectator() || !atCoffin(p, b)) return false;
+        if (!own.getBoolean("Read_Source") && !own.contains("LidAsked0587")) return false;
+        if (world.getCompound(STOOD).contains(p.getStringUUID())) return false;
+        stood(p, world);
+        return true;
+    }
+    /**
+     * "Tonight I will close the lid for good, or leave it as it is." Once nobody is left in the house, and one of those who
+     * stood at the open coffin has walked out of it, the lid has been left as it is: for the house, and for each of them as
+     * their own choice. A reader who went offline inside the house has not walked out of it.
+     */
+    public static void left(net.minecraft.server.MinecraftServer server) {
+        var d = LabyrinthData.get(server);
+        var world = LiteraryVignettes.shared(d, PLACE);
+        if (world.contains("LidClosed") || !world.contains(STOOD)) return;
+        var stood = world.getCompound(STOOD);
+        boolean inside = false, gone = false;
+        for (var p : server.getPlayerList().getPlayers()) {
+            if (LiteraryVignettes.current(p) == PLACE) inside = true;
+            else if (stood.contains(p.getStringUUID())) gone = true;
+        }
+        if (inside || !gone) return;
+        int visit = 0;
+        for (String id : stood.getAllKeys()) {
+            var uuid = java.util.UUID.fromString(id);
+            var own = LiteraryVignettes.personal(d, uuid, PLACE);
+            if (own.getBoolean("LidChosen")) continue;
+            own.putBoolean("LidChosen", true);
+            own.putBoolean("LidClosed", false);
+            own.putInt("ChoiceVisit", own.getInt("Visit"));
+            own.putInt("Beat", own.getInt("Visit"));
+            LiteraryVignettes.save(d, uuid, PLACE, own);
+            visit = Math.max(visit, own.getInt("Visit"));
+            var q = server.getPlayerList().getPlayer(uuid);
+            if (q != null) q.displayClientMessage(Component.literal("The lid stays open. Return to the wing."), false);
+        }
+        world.putBoolean("LidClosed", false);
+        world.putInt("ChoiceVisit", visit);
+        world.remove(STOOD);
+        LiteraryVignettes.shared(d, PLACE, world);
+    }
+
     // ------------------------------------------------------------------------------------------------ who, and when
 
     /** The reader's own storm night: every visit after the visit on which they first found the lid chosen. */

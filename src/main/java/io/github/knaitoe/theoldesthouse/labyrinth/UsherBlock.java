@@ -29,12 +29,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * stages are east to bottom, west to east, the crack opened wide, and (0.4.182) opened on the last night with the moon
  * through it. A {@link Kind#WINDOW}'s stages are its lower and upper panes, then (0.4.182) the same two with the storm
  * night's glow behind them, which {@link UsherStory} shows to one reader at a time.
+ * <p>0.4.587: her coffin is the house's own, one box two blocks long. {@link Kind#COFFIN} is the half her feet are in and
+ * {@link Kind#COFFIN_HEAD} the half north of it (facing north); stage 0 is the lid open on its hinges and stage 1 the lid shut.
  */
 public final class UsherBlock extends Block {
     public static final MapCodec<UsherBlock> CODEC=simpleCodec(UsherBlock::new);
     public enum Kind implements StringRepresentable {
         STONE,FISSURE,FISSURE_B,FLOOR,TAPESTRY,FRET,VAULT,CAUSEWAY,MUD,NIGHT,
-        WINDOW,DRAPERY,EASEL,GUITAR,BOOKS,CANDELABRA,ARMORIAL,CHAIR;
+        WINDOW,DRAPERY,EASEL,GUITAR,BOOKS,CANDELABRA,ARMORIAL,CHAIR,COFFIN,COFFIN_HEAD;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Whole cubes: the house's stone, floors, walls and ceilings, the causeway, the ooze and the night. */
         public boolean cube(){return ordinal()<=NIGHT.ordinal();}
@@ -55,6 +57,8 @@ public final class UsherBlock extends Block {
     public static BlockState of(Kind kind,Direction facing){return of(kind).setValue(FACING,facing);}
     public static BlockState of(Kind kind,Direction facing,int stage){return of(kind,facing).setValue(STAGE,stage);}
     public static boolean is(BlockState s,Kind kind){return s.is(LiteraryRegistry.USHER.get())&&s.getValue(KIND)==kind;}
+    /** Either half of her coffin. */
+    public static boolean coffin(BlockState s){return is(s,Kind.COFFIN)||is(s,Kind.COFFIN_HEAD);}
     /** The candelabra burn; nothing else in the house gives light of its own. */
     public static int light(BlockState s){return s.getValue(KIND)==Kind.CANDELABRA?11:0;}
 
@@ -63,6 +67,8 @@ public final class UsherBlock extends Block {
         case WINDOW->Block.box(0,0,7,16,16,9);case DRAPERY->Block.box(0,0,14,16,16,16);
         case EASEL->Block.box(2,0,6,14,16,10);case GUITAR->Block.box(5,0,6,11,14,10);case BOOKS->Block.box(1,0,1,15,2,15);
         case CANDELABRA->Block.box(5,0,5,11,16,11);case ARMORIAL->Block.box(2,2,15,14,14,16);case CHAIR->Block.box(2,0,2,14,16,14);
+        // Ten pixels to the top of its lid: a little too high to walk up onto.
+        case COFFIN,COFFIN_HEAD->Block.box(0,0,0,16,10,16);
         default->Shapes.block();
     };}
     private static VoxelShape rotated(VoxelShape shape,Direction facing){

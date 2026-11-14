@@ -1079,6 +1079,126 @@
   "facing=west,kind=chair,stage=3": {
    "model": "the_oldest_house:block/usher_chair",
    "y": 270
+  },
+  "facing=north,kind=coffin,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_foot_open"
+  },
+  "facing=north,kind=coffin,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut"
+  },
+  "facing=north,kind=coffin,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut"
+  },
+  "facing=north,kind=coffin,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut"
+  },
+  "facing=east,kind=coffin,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_foot_open",
+   "y": 90
+  },
+  "facing=east,kind=coffin,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 90
+  },
+  "facing=east,kind=coffin,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 90
+  },
+  "facing=east,kind=coffin,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 90
+  },
+  "facing=south,kind=coffin,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_foot_open",
+   "y": 180
+  },
+  "facing=south,kind=coffin,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 180
+  },
+  "facing=south,kind=coffin,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 180
+  },
+  "facing=south,kind=coffin,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 180
+  },
+  "facing=west,kind=coffin,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_foot_open",
+   "y": 270
+  },
+  "facing=west,kind=coffin,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 270
+  },
+  "facing=west,kind=coffin,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 270
+  },
+  "facing=west,kind=coffin,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_foot_shut",
+   "y": 270
+  },
+  "facing=north,kind=coffin_head,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_head_open"
+  },
+  "facing=north,kind=coffin_head,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut"
+  },
+  "facing=north,kind=coffin_head,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut"
+  },
+  "facing=north,kind=coffin_head,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut"
+  },
+  "facing=east,kind=coffin_head,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_head_open",
+   "y": 90
+  },
+  "facing=east,kind=coffin_head,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 90
+  },
+  "facing=east,kind=coffin_head,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 90
+  },
+  "facing=east,kind=coffin_head,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 90
+  },
+  "facing=south,kind=coffin_head,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_head_open",
+   "y": 180
+  },
+  "facing=south,kind=coffin_head,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 180
+  },
+  "facing=south,kind=coffin_head,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 180
+  },
+  "facing=south,kind=coffin_head,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 180
+  },
+  "facing=west,kind=coffin_head,stage=0": {
+   "model": "the_oldest_house:block/usher_coffin_head_open",
+   "y": 270
+  },
+  "facing=west,kind=coffin_head,stage=1": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 270
+  },
+  "facing=west,kind=coffin_head,stage=2": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 270
+  },
+  "facing=west,kind=coffin_head,stage=3": {
+   "model": "the_oldest_house:block/usher_coffin_head_shut",
+   "y": 270
   }
  }
 }

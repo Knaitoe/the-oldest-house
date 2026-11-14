@@ -378,6 +378,64 @@ def chair_wood():
     return noisy((44, 30, 22), 1822, .1)
 
 
+# 0.4.587, her coffin (docs/USHER_COFFIN_0_4_587.md). It was the old literary prop: two copies of one box set end to end,
+# each with its own end boards, so a wall ran across her middle, in a 64 pixel texture stretched over every face. It is one
+# coffin two blocks long now, drawn here at sixteen pixels, with room inside for her.
+COFFIN = (58, 40, 28)
+
+
+def coffin_wood():
+    # Boards running the coffin's length: a seam every four rows, and a nail here and there.
+    img = noisy(COFFIN, 5871, .08)
+    for y in (3, 7, 11, 15):
+        for x in range(16):
+            px(img, x, y, mul(COFFIN, .68))
+    for y in (0, 4, 8, 12):
+        for x in range(16):
+            px(img, x, y, mul(img.getpixel((x, y))[:3], 1.1))
+    for x, y in ((2, 1), (13, 5), (5, 9), (10, 13)):
+        px(img, x, y, (24, 18, 15))
+    return img
+
+
+def coffin_lid():
+    # The lid from above: three boards side by side down its length, a darker rail along each long edge, and the
+    # two battens that hold the boards together showing as a row of nails.
+    img = noisy(mul(COFFIN, 1.08), 5872, .07)
+    for y in range(16):
+        for x in (5, 10):
+            px(img, x, y, mul(COFFIN, .66))
+        for x in (0, 15):
+            px(img, x, y, mul(COFFIN, .8))
+        for x in (1, 14):
+            px(img, x, y, mul(img.getpixel((x, y))[:3], 1.12))
+    for x in (2, 7, 12):
+        for y in (3, 12):
+            px(img, x, y, (24, 18, 15))
+    return img
+
+
+def shroud():
+    # What she lies on: old linen, a faint weave, a little yellower where it has been lain on.
+    base = (188, 180, 160)
+    img = noisy(base, 5873, .035)
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 2:
+                px(img, x, y, mul(img.getpixel((x, y))[:3], .96))
+    for x, y in ((4, 5), (5, 5), (4, 6), (11, 10), (10, 11), (11, 11)):
+        px(img, x, y, mix(base, (170, 150, 110), .5))
+    return img
+
+
+def brass():
+    img = noisy((146, 114, 50), 5874, .08)
+    for x in range(16):
+        px(img, x, 0, (184, 152, 78))
+        px(img, x, 15, (96, 72, 30))
+    return img
+
+
 TEXTURES = {
     'stone': stone, 'fissure_tb': lambda: fissure('t', 'b', 1891), 'fissure_tr': lambda: fissure('t', 'r', 1892),
     'fissure_tl': lambda: fissure('t', 'l', 1893), 'fissure_lb': lambda: fissure('l', 'b', 1894),
@@ -387,6 +445,7 @@ TEXTURES = {
     'window_lower_glow': lambda: window(False, True), 'window_upper_glow': lambda: window(True, True), 'drapery': drapery,
     'easel': easel_wood, 'painting': painting, 'guitar': guitar, 'books': books, 'iron': iron, 'wax': wax, 'flame': flame,
     'shield': shield, 'upholstery': upholstery, 'chair': chair_wood,
+    'coffin': coffin_wood, 'coffin_lid': coffin_lid, 'shroud': shroud, 'brass': brass,
 }
 
 
@@ -413,6 +472,37 @@ def element(frm, to, tex, uv=None, only=None):
 
 def model(textures, elements):
     return {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout', 'textures': textures, 'elements': elements}
+
+
+def placed(frm, to, tex, uvs):
+    """A box some of which lies outside its own block, where the game cannot work a face's pixels out from where it is:
+    each face is given its piece of the picture, the same size as the face, so nothing is stretched."""
+    return {'from': frm, 'to': to, 'faces': {d: ({'texture': tex, 'uv': uv[:4], 'rotation': uv[4]} if len(uv) > 4 else {'texture': tex, 'uv': uv})
+                                              for d, uv in uvs.items()}}
+
+
+def coffin(head, shut):
+    """One half of her coffin, facing north: the head half has its end board at the north, the foot half at the south, and
+    between them nothing. Sixteen wide outside and fourteen inside, the boards a pixel thick; the bed is three pixels up and
+    the rim nine. The lid stands open on its hinges along the west side, or lies shut."""
+    w, lid, s, b = '#w', '#l', '#s', '#b'
+    els = [
+        element([0, 0, 0], [16, 2, 16], w),
+        element([0, 2, 0], [1, 9, 16], w), element([15, 2, 0], [16, 9, 16], w),
+        element([1, 2, 0], [15, 9, 2], w) if head else element([1, 2, 14], [15, 9, 16], w),
+        element([1, 2, 2 if head else 0], [15, 3, 16 if head else 14], s, only=('up',)),
+    ]
+    for x0, x1 in ((-1, 0), (16, 17)):
+        els.append(placed([x0, 4, 5], [x1, 6, 11], b, {'north': [0, 0, 1, 2], 'south': [0, 0, 1, 2], 'east': [5, 0, 11, 2], 'west': [5, 0, 11, 2],
+                                                         'up': [0, 5, 1, 11], 'down': [0, 5, 1, 11]}))
+    if shut:
+        els.append(element([0, 9, 0], [16, 10, 16], lid))
+    else:
+        # Standing on the west boards. Its two broad faces take the lid's picture turned a quarter, so its boards still run
+        # the coffin's length.
+        els.append(placed([0, 9, 0], [1, 25, 16], lid, {'east': [0, 0, 16, 16, 90], 'west': [0, 0, 16, 16, 90], 'north': [0, 0, 1, 16], 'south': [15, 0, 16, 16],
+                                                         'up': [0, 0, 1, 16], 'down': [15, 0, 16, 16]}))
+    return model({'w': t('coffin'), 'l': t('coffin_lid'), 's': t('shroud'), 'b': t('brass'), 'particle': t('coffin')}, els)
 
 
 MODEL_DEFS = {
@@ -444,6 +534,8 @@ MODEL_DEFS = {
     'usher_chair': model({'w': t('chair'), 'u': t('upholstery'), 'particle': t('upholstery')}, [
         element([2, 0, 2], [4, 7, 4], '#w'), element([12, 0, 2], [14, 7, 4], '#w'), element([2, 0, 12], [4, 7, 4 + 10], '#w'),
         element([12, 0, 12], [14, 7, 14], '#w'), element([2, 7, 2], [14, 9, 14], '#u'), element([2, 9, 12], [14, 16, 14], '#u')]),
+    'usher_coffin_foot_open': coffin(False, False), 'usher_coffin_foot_shut': coffin(False, True),
+    'usher_coffin_head_open': coffin(True, False), 'usher_coffin_head_shut': coffin(True, True),
 }
 
 KIND_MODELS = {
@@ -456,6 +548,9 @@ KIND_MODELS = {
     'window': ['usher_window_lower', 'usher_window_upper', 'usher_window_lower_glow', 'usher_window_upper_glow'],
     'drapery': ['usher_drapery'] * 4, 'easel': ['usher_easel'] * 4, 'guitar': ['usher_guitar'] * 4, 'books': ['usher_books'] * 4,
     'candelabra': ['usher_candelabra'] * 4, 'armorial': ['usher_armorial'] * 4, 'chair': ['usher_chair'] * 4,
+    # Her coffin's two halves: stage 0 the lid open on its hinges, stage 1 (and the two unused after it) the lid shut.
+    'coffin': ['usher_coffin_foot_open'] + ['usher_coffin_foot_shut'] * 3,
+    'coffin_head': ['usher_coffin_head_open'] + ['usher_coffin_head_shut'] * 3,
 }
 # Models face north; the blockstate turns them to the block's facing.
 TURN = {'north': 0, 'east': 90, 'south': 180, 'west': 270}

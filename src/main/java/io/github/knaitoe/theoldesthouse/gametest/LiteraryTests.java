@@ -37,6 +37,10 @@ public final class LiteraryTests {
         void arrive(ServerPlayer p,LabyrinthPlace place){build(place);var b=base(place);p.stopRiding();p.teleportTo(level(place),b.getX()+.5,b.getY(),b.getZ()-3,180,0);p.hasChangedDimension();p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);LiteraryVignettes.onArrive(p,place);}
         void at(ServerPlayer p,LabyrinthPlace place,double x,double y,double z){var b=LiteraryVignettes.base(p,place);p.stopRiding();p.moveTo(b.getX()+x,b.getY()+y,b.getZ()+z);p.setDeltaMovement(Vec3.ZERO);}
         void look(ServerPlayer p,BlockPos at){p.lookAt(EntityAnchorArgument.Anchor.EYES,at.getCenter());}
+        /** 0.4.587: Usher's lid is shut by using it twice, the second use a little after the first; the wait is skipped here by putting the first back in time. */
+        void shutLid(ServerPlayer p){var place=LabyrinthPlace.USHER;click(p,place,LiteraryRooms.COFFIN);var own=own(p,place);own.putLong("LidAskedAt0587",own.getLong("LidAskedAt0587")-UsherStory.LID_PAUSE);LiteraryVignettes.save(data(),p.getUUID(),place,own);click(p,place,LiteraryRooms.COFFIN);}
+        /** Out of every story's place, to the corner the fixture's world starts at. */
+        void leave(ServerPlayer p){p.stopRiding();p.teleportTo(in,origin.getX()+.5,origin.getY(),origin.getZ()-3,180,0);p.hasChangedDimension();p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);}
         CompoundTag own(ServerPlayer p,LabyrinthPlace place){return LiteraryVignettes.personal(data(),p.getUUID(),place);}
         void click(ServerPlayer p,LabyrinthPlace place,BlockPos rel){var b=LiteraryVignettes.base(p,place);var at=b.offset(rel);p.moveTo(at.getX()+.5,at.getY(),at.getZ()+2.5);p.setDeltaMovement(Vec3.ZERO);look(p,at);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false)));}
         void read(ServerPlayer p,LabyrinthPlace place,BlockPos rel){if(place==LabyrinthPlace.SECOND_WAITRESS&&rel.equals(LiteraryRooms.source(place))){var handed=UncannyBreakfast.menu(p);p.setItemInHand(InteractionHand.MAIN_HAND,handed);handed.use(p.serverLevel(),p,InteractionHand.MAIN_HAND);p.closeContainer();handed.use(p.serverLevel(),p,InteractionHand.MAIN_HAND);}else click(p,place,rel);h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"actual scene surface opens its native private paper: "+place);var menu=(LiteraryVignettes.Pages)p.containerMenu;if(UncannyRooms.isUncanny(place)&&place!=LabyrinthPlace.SECOND_WAITRESS&&rel.equals(LiteraryRooms.source(place))){h.assertTrue(menu.clickMenuButton(p,UncannyReading.FULL),"the full original remains available explicitly");menu=(LiteraryVignettes.Pages)p.containerMenu;}var book=menu.original().get(DataComponents.WRITTEN_BOOK_CONTENT);h.assertTrue(menu.clickMenuButton(p,100+book.pages().size()-1),"the actual final page is read");p.closeContainer();}
@@ -305,7 +309,7 @@ public final class LiteraryTests {
                 for(int y=-3;y<=-1;y++)h.assertTrue(l.getBlockState(b.offset(x,y,-20)).getCollisionShape(l,b.offset(x,y,-20)).isEmpty(),"headroom stepping off onto the vault landing at "+x+","+y);
                 for(int z=-22;z<=-21;z++)for(int y=-3;y<=-2;y++)h.assertTrue(l.getBlockState(b.offset(x,y,z)).getCollisionShape(l,b.offset(x,y,z)).isEmpty(),"the landing is clear to the vault door at "+x+","+y+","+z);
             }
-            for(var rel:List.of(LiteraryRooms.COFFIN,LiteraryRooms.COFFIN.north()))h.assertTrue(l.getBlockState(b.offset(rel)).is(LiteraryRegistry.PROP.get()),"her coffin lies in the vault");
+            h.assertTrue(UsherBlock.is(l.getBlockState(b.offset(LiteraryRooms.COFFIN)),UsherBlock.Kind.COFFIN)&&UsherBlock.is(l.getBlockState(b.offset(LiteraryRooms.COFFIN.north())),UsherBlock.Kind.COFFIN_HEAD)&&l.getBlockState(b.offset(LiteraryRooms.COFFIN)).getValue(UsherBlock.STAGE)==0,"her coffin lies in the vault, its foot and its head, the lid open");
             h.assertTrue(UsherBlock.is(l.getBlockState(b.offset(UsherHouse.CHAIR)),UsherBlock.Kind.CHAIR)&&UsherBlock.is(l.getBlockState(b.offset(UsherHouse.EASEL)),UsherBlock.Kind.EASEL)&&UsherBlock.is(l.getBlockState(b.offset(UsherHouse.GUITAR)),UsherBlock.Kind.GUITAR),"Roderick's chair, easel and guitar are in the studio");
             int hearths=0,windows=0;for(var at:BlockPos.betweenClosed(b.offset(-18,-4,-42),b.offset(18,13,0))){var s=l.getBlockState(at);if(s.is(Blocks.CAMPFIRE))hearths++;if(UsherBlock.is(s,UsherBlock.Kind.WINDOW))windows++;}
             h.assertTrue(hearths==1&&l.getBlockState(b.offset(UsherHouse.HEARTH)).is(Blocks.CAMPFIRE),"one hearth, in the studio: "+hearths);
@@ -318,7 +322,7 @@ public final class LiteraryTests {
         var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("coffin_reader",place);f.source(p,place);var b=f.base(place);
         f.chunks.hold(f.in,IndianLakeRooms.bounds(b,place));java.util.UUID[] woman={null};
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Woman"),"the living native body and its sections are present before the decision"))
-            .thenExecute(()->{woman[0]=LiteraryVignettes.shared(f.data(),place).getUUID("Woman");p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);
+            .thenExecute(()->{woman[0]=LiteraryVignettes.shared(f.data(),place).getUUID("Woman");f.shutLid(p);
                 h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"closing the physical lid grants no ending by itself");f.arrive(p,place);f.at(p,place,2,-3,-29);})
             .thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.getInt("Cracks")==1&&UsherStory.ownStorm(f.own(p,place),world),"the actual return brings its local crack and the storm night");})
             .thenExecute(()->{h.assertTrue(!f.own(p,place).getBoolean("Ready"),"the ending waits for the reading");h.assertTrue(f.in.getEntity(woman[0]) instanceof LiteraryActor&&woman[0].equals(LiteraryVignettes.shared(f.data(),place).getUUID("Woman")),"the original woman's native UUID survives the return");}).thenSucceed();
@@ -331,7 +335,7 @@ public final class LiteraryTests {
             .thenWaitUntil(()->{var r=usherActor(f,"Roderick");h.assertTrue(r!=null&&r.role()==LiteraryActor.STRANGER&&r.phase()==UsherStory.RODERICK&&r.blockPosition().equals(f.base(place).offset(UsherHouse.CHAIR))&&r.broadcastToPlayer(p),"Roderick sits in his chair, and the reader sees him: "+r);})
             .thenExecute(()->{f.at(p,place,-4,0,-28);LiteraryVignettes.talk(p,usherActor(f,"Roderick"));h.assertTrue(f.own(p,place).getInt("Talk0507")==1,"he answers when spoken to");
                 f.click(p,place,books);h.assertTrue(UsherStory.stage(f.data())==0,"before the lid is chosen the books are only damp romances");
-                p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"the lid is closed");
+                f.shutLid(p);h.assertTrue(f.own(p,place).getBoolean("LidClosed")&&!f.own(p,place).getBoolean("Ready"),"the lid is closed");
                 f.arrive(p,place);f.at(p,place,-2,0,-27);})
             .thenWaitUntil(()->h.assertTrue(UsherStory.ownStorm(f.own(p,place),LiteraryVignettes.shared(f.data(),place))&&UsherStory.storm(p,f.own(p,place))&&usherActor(f,"Roderick")!=null,"the return is the storm night, and he is still in his chair"))
             .thenExecute(()->{f.click(p,place,books);h.assertTrue(UsherStory.stage(f.data())==1&&f.own(p,place).getInt("NightId0507")>0,"the strewn books open the romance");f.at(p,place,-2,0,-27);})
@@ -357,7 +361,7 @@ public final class LiteraryTests {
         h.startSequence()
             .thenWaitUntil(()->h.assertTrue(usherActor(f,"Roderick")!=null,"he is in his chair"))
             .thenExecute(()->{var r=usherActor(f,"Roderick");h.assertTrue(r.broadcastToPlayer(a)&&r.broadcastToPlayer(b)&&r.owner().isEmpty(),"one Roderick, seen by both");
-                f.at(b,place,0,-3,-27);a.setShiftKeyDown(true);f.click(a,place,LiteraryRooms.COFFIN);a.setShiftKeyDown(false);})
+                f.at(b,place,0,-3,-27);f.shutLid(a);})
             .thenWaitUntil(()->h.assertTrue(f.own(b,place).contains("LidKnown0507")&&f.own(a,place).contains("LidKnown0507"),"both know the lid was chosen on this visit"))
             .thenExecute(()->{f.arrive(a,place);f.arrive(b,place);f.at(a,place,-2,0,-27);f.at(b,place,2,0,-27);})
             .thenWaitUntil(()->h.assertTrue(UsherStory.storm(a,f.own(a,place))&&UsherStory.storm(b,f.own(b,place)),"the friend who watched has the storm night too"))
@@ -396,7 +400,12 @@ public final class LiteraryTests {
         var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("usher_open",place);var b=f.base(place);
         h.startSequence()
             .thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).hasUUID("Woman"),"she lies in the coffin"))
-            .thenExecute(()->{f.click(p,place,LiteraryRooms.COFFIN);h.assertTrue(LiteraryVignettes.shared(f.data(),place).contains("LidClosed")&&!LiteraryVignettes.shared(f.data(),place).getBoolean("LidClosed"),"the lid is left open");
+            // 0.4.587: leaving it as it is means walking out of the house, having stood at the open coffin knowing what the lid asks.
+            .thenExecute(()->{f.source(p,place);f.at(p,place,2,-3,-28.5);})
+            .thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).getCompound("Stood0587").contains(p.getStringUUID()),"with the diary read, standing at the open coffin is kept"))
+            .thenExecuteAfter(20,()->{h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("LidClosed")&&!f.own(p,place).getBoolean("LidChosen"),"nothing is chosen while the reader is in the house");f.leave(p);})
+            .thenWaitUntil(()->{var world=LiteraryVignettes.shared(f.data(),place);h.assertTrue(world.contains("LidClosed")&&!world.getBoolean("LidClosed")&&!world.contains("Stood0587")&&f.own(p,place).getBoolean("LidChosen")&&!f.own(p,place).getBoolean("LidClosed")&&f.own(p,place).getInt("Beat")==f.own(p,place).getInt("Visit"),"walking out of the house leaves the lid as it is, as that reader's own choice");})
+            .thenExecute(()->{h.assertTrue(f.in.getBlockState(b.offset(LiteraryRooms.COFFIN)).getValue(UsherBlock.STAGE)==0,"the lid still stands open");
                 f.arrive(p,place);f.at(p,place,0,0,-16);f.look(p,b.offset(-8,1,-16));})
             .thenWaitUntil(()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).getBoolean("WomanLeft"),"unwatched, she leaves the coffin for the wing"))
             .thenExecute(()->{f.at(p,place,14,0,-26);f.look(p,b.offset(12,1,-34));})
@@ -407,6 +416,40 @@ public final class LiteraryTests {
             .thenSucceed();
     }
     @AfterBatch(batch="literary_usher_open183") public static void usherOpenDone(ServerLevel l){close();}
+    /**
+     * 0.4.587, the owner's playtest: "corpse is still moving her arms in house of usher. she's also slightly edging outside of the
+     * coffin" and "right-clicking the coffin with her in it still has the lid staying open?" She lies in the middle of her coffin and
+     * nothing moves her; a hand on the lid chooses nothing and says how; a held button is that same hand; a second use shuts both
+     * halves for good; and a reader who never learned what the lid asks leaves nothing chosen by walking out.
+     */
+    @GameTest(template="empty",batch="literary_coffin_lid587",timeoutTicks=900)
+    public static void aHandOnTheLidAsksAndASecondUseShutsIt(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.USHER;var p=f.player("lid_reader",place);var q=f.player("lid_stranger",place);var b=f.base(place);var l=f.in;
+        f.chunks.hold(f.in,IndianLakeRooms.bounds(b,place));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Woman"),"she is in her coffin"))
+            .thenExecute(()->{
+                var woman=l.getEntity(LiteraryVignettes.shared(f.data(),place).getUUID("Woman")) instanceof LiteraryActor a?a:null;var bed=Vec3.atBottomCenterOf(b.offset(LiteraryRooms.COFFIN));
+                h.assertTrue(woman!=null&&woman.role()==LiteraryActor.COFFIN_WOMAN&&woman.phase()==1&&woman.position().distanceTo(bed)<.06&&woman.getYRot()==0&&woman.getDeltaMovement().lengthSqr()==0&&woman.isNoGravity(),"she lies at the foot half's middle with her head to the north, and nothing moves her: "+woman);
+                for(var rel:List.of(LiteraryRooms.COFFIN,LiteraryRooms.COFFIN.north())){var s=l.getBlockState(b.offset(rel));h.assertTrue(UsherBlock.coffin(s)&&s.getValue(UsherBlock.STAGE)==0&&s.getValue(UsherBlock.FACING)==Direction.NORTH,"the lid stands open on both halves");}
+                h.assertTrue(l.getBlockState(b.offset(LiteraryRooms.COFFIN)).getCollisionShape(l,b.offset(LiteraryRooms.COFFIN)).max(Direction.Axis.Y)>.6,"the coffin is too high to walk up onto");
+                // A reader who has not read the diary or touched the lid stands at it and walks out: nothing is chosen.
+                f.at(q,place,-2,-3,-28.5);})
+            .thenExecuteAfter(12,()->{h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("Stood0587"),"a reader who does not know what the lid asks is not kept");f.leave(q);})
+            .thenExecuteAfter(12,()->{
+                h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("LidClosed"),"and their walking out chooses nothing");
+                f.click(p,place,LiteraryRooms.COFFIN);var own=f.own(p,place);
+                h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("LidClosed")&&!own.getBoolean("LidChosen")&&own.getInt("LidAsked0587")==own.getInt("Visit")&&LiteraryVignettes.shared(f.data(),place).getCompound("Stood0587").contains(p.getStringUUID()),"a hand on the lid chooses nothing, and the reader is told how the choice is made");
+                f.click(p,place,LiteraryRooms.COFFIN);
+                h.assertTrue(!LiteraryVignettes.shared(f.data(),place).contains("LidClosed"),"a held button is the same hand, not a second use");})
+            .thenExecuteAfter(UsherStory.LID_PAUSE+2,()->{
+                f.click(p,place,LiteraryRooms.COFFIN);var world=LiteraryVignettes.shared(f.data(),place);var own=f.own(p,place);
+                h.assertTrue(world.getBoolean("LidClosed")&&own.getBoolean("LidChosen")&&own.getBoolean("LidClosed")&&own.getInt("Beat")==own.getInt("Visit")&&!world.contains("Stood0587"),"a second use closes the lid for good");
+                for(var rel:List.of(LiteraryRooms.COFFIN,LiteraryRooms.COFFIN.north()))h.assertTrue(l.getBlockState(b.offset(rel)).getValue(UsherBlock.STAGE)==1,"both halves are shut");
+                f.leave(p);})
+            .thenExecuteAfter(12,()->h.assertTrue(LiteraryVignettes.shared(f.data(),place).getBoolean("LidClosed"),"walking out afterwards does not open it again"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="literary_coffin_lid587") public static void lidDone(ServerLevel l){close();}
     /**
      * 0.4.184: the binary; 0.4.185: the trade. Still inside when the house falls: no credit, set back on the bank, the tarn
      * keeps what was in the reader's hands and gives them a leaf of the register with their name; nothing follows them home.
@@ -419,7 +462,7 @@ public final class LiteraryTests {
         var marked=new ItemStack(Items.COMPASS);net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA,marked,t->t.putBoolean("Original",true));h.assertTrue(!UsherStory.tarnTakes(marked),"never an original or anything bound to a reader");
         h.startSequence()
             .thenWaitUntil(()->h.assertTrue(usherActor(f,"Roderick")!=null,"he is in his chair"))
-            .thenExecute(()->{p.setShiftKeyDown(true);f.click(p,place,LiteraryRooms.COFFIN);p.setShiftKeyDown(false);f.arrive(p,place);f.at(p,place,-2,0,-27);})
+            .thenExecute(()->{f.shutLid(p);f.arrive(p,place);f.at(p,place,-2,0,-27);})
             .thenWaitUntil(()->h.assertTrue(UsherStory.storm(p,f.own(p,place)),"the storm night"))
             .thenExecute(()->{f.click(p,place,books);f.at(p,place,-2,0,-27);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.LANTERN,3));})
             .thenWaitUntil(()->h.assertTrue(f.own(p,place).getBoolean("Fell0507"),"the house falls"))
