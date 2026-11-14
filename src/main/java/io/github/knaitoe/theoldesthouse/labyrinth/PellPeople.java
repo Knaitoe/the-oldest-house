@@ -145,6 +145,8 @@ public final class PellPeople {
          *  when they last read on; and which of the house's waits (PellIdle's windows) Tilly last asked each reader in. */
         final boolean[] laid=new boolean[4];boolean saidFour;int bowl,ticked,forkSaid;long bowlAt,readAt;UUID readingTo;
         final java.util.Map<UUID,Integer> askedIn=new java.util.HashMap<>();
+        /** 0.4.582: who has taken plates down from the cupboard this visit (PellJobs.cupboard). */
+        final java.util.Set<UUID> tookPlates=new java.util.HashSet<>();
         /** Which way each faces when at rest, and who walked this tick (their heads are the walk's). */
         final float[] rest=new float[COUNT];final boolean[] moving=new boolean[COUNT];
         /** The visit: begun again from the start when fresh; how far it has got; when the next line may come. */

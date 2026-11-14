@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
  *
  * June ticks each on the chart when it is done, wherever it was done. Nothing here changes what the visit does or when. The jobs are
  * the house's, for whoever does them: each reader keeps what they did themselves ("LaidTable", "FilledBowl"). A reader as Tilly can do
- * them too.
+ * them too. With two readers at the house the cupboard gives the first hand half the plates and leaves the rest for the other (0.4.582).
  */
 public final class PellJobs {
     private PellJobs(){}
@@ -104,9 +104,13 @@ public final class PellJobs {
         int out=0;for(var q:PellHouse.readers(l,b))out+=plates(q,b);
         for(var e:l.getEntitiesOfClass(ItemEntity.class,PellPeople.area(b),e->of(e.getItem(),PellRegistry.PLATES.get(),b)))out+=e.getItem().getCount();
         int n=bare(h)-out;if(n<=0)return false;
+        // 0.4.582: with another reader at the house who has taken none down this visit, a reader's first handful is half of what the
+        // table still wants, so the cupboard has plates left for the other. A reader who comes back takes whatever is left.
+        if(!h.tookPlates.contains(p.getUUID()))for(var q:PellHouse.readers(l,b))if(q!=p&&q.isAlive()&&!q.isSpectator()&&!h.tookPlates.contains(q.getUUID())){n=(n+1)/2;break;}
+        int taken=n;
         if(!p.getInventory().add(tagged(PellRegistry.PLATES.get(),n,b))){PellHouse.cue(p,PellTexts.HANDS_FULL);return true;}
         l.playSound(null,p.blockPosition(),SoundEvents.DECORATED_POT_PLACE,SoundSource.BLOCKS,.4F,1.7F);
-        PellHouse.cue(p,PellTexts.platesTaken(n));own.putBoolean("TookPlates",true);
+        PellHouse.cue(p,PellTexts.platesTaken(taken));own.putBoolean("TookPlates",true);h.tookPlates.add(p.getUUID());
         return true;
     }
     /** One of this house's, of this kind, that a reader has about them: what is in their hand first, then anywhere else on them. */
@@ -269,7 +273,7 @@ public final class PellJobs {
     /** The visit begun again (PellVisit.restart): nothing laid or ticked, nothing carried; the bowl as the visit finds it. A week in,
      *  with a reader at the house who filled it before, the leaves have not come back into it. */
     static void restart(ServerLevel l,BlockPos b,PellPeople.Household h,int visit){
-        java.util.Arrays.fill(h.laid,false);h.saidFour=false;h.ticked=0;h.bowlAt=0;h.forkSaid=0;
+        java.util.Arrays.fill(h.laid,false);h.saidFour=false;h.ticked=0;h.bowlAt=0;h.forkSaid=0;h.tookPlates.clear();
         for(Item item:new Item[]{PellRegistry.PLATES.get(),PellRegistry.BOWL.get(),PellRegistry.BOWL_WATER.get()})back(l,b,item);
         boolean filled=false;
         if(visit>=2)for(var p:PellHouse.readers(l,b))if(PellHouse.own(p).getBoolean("FilledBowl"))filled=true;
