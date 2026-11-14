@@ -4,14 +4,16 @@
   "textures": {
     "f": "the_oldest_house:block/pell/thing/fridge_low",
     "s": "the_oldest_house:block/pell/thing/fridge_side",
+    "x": "the_oldest_house:block/pell/thing/shadow",
+    "e": "the_oldest_house:block/pell/thing/chrome",
     "particle": "the_oldest_house:block/pell/thing/fridge_low"
   },
   "elements": [
     {
       "from": [
         0,
-        0,
-        1
+        2,
+        2
       ],
       "to": [
         16,
@@ -20,7 +22,7 @@
       ],
       "faces": {
         "north": {
-          "texture": "#f"
+          "texture": "#x"
         },
         "south": {
           "texture": "#s"
@@ -36,6 +38,96 @@
         },
         "down": {
           "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        2.5
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        0.25,
+        2,
+        1
+      ],
+      "to": [
+        15.75,
+        15.75,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        1.25,
+        8,
+        0.25
+      ],
+      "to": [
+        2.25,
+        15,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#e"
+        },
+        "down": {
+          "texture": "#e"
         }
       }
     }

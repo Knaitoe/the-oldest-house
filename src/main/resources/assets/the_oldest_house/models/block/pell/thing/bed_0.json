@@ -5,18 +5,83 @@
     "f": "the_oldest_house:block/pell/thing/bed_frame",
     "q": "the_oldest_house:block/pell/thing/quilt_head",
     "p": "the_oldest_house:block/pell/thing/pillow",
+    "h": "the_oldest_house:block/pell/thing/bed_board",
     "particle": "the_oldest_house:block/pell/thing/quilt_head"
   },
   "elements": [
     {
       "from": [
         0,
-        0,
+        2,
         0
       ],
       "to": [
         16,
         6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        2,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        0,
+        14
+      ],
+      "to": [
+        16,
+        2,
         16
       ],
       "faces": {
@@ -49,7 +114,7 @@
       "to": [
         16,
         9,
-        16
+        15
       ],
       "faces": {
         "north": {
@@ -108,18 +173,18 @@
         15
       ],
       "to": [
-        16,
-        18,
+        2,
+        20,
         16
       ],
       "faces": {
         "north": {
           "texture": "#f",
           "uv": [
-            0,
+            14,
             0,
             16,
-            12
+            14
           ]
         },
         "south": {
@@ -127,8 +192,8 @@
           "uv": [
             0,
             0,
-            16,
-            12
+            2,
+            14
           ]
         },
         "east": {
@@ -137,7 +202,7 @@
             0,
             0,
             1,
-            12
+            14
           ]
         },
         "west": {
@@ -146,7 +211,7 @@
             15,
             0,
             16,
-            12
+            14
           ]
         },
         "up": {
@@ -154,6 +219,141 @@
         },
         "down": {
           "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        6,
+        15
+      ],
+      "to": [
+        16,
+        20,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            2,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            14,
+            0,
+            16,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            1,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#f",
+          "uv": [
+            15,
+            0,
+            16,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        18,
+        15
+      ],
+      "to": [
+        14,
+        20,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            2,
+            12,
+            14,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            2,
+            12,
+            14,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#f",
+          "uv": [
+            0,
+            12,
+            1,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#f",
+          "uv": [
+            15,
+            12,
+            16,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        6,
+        15.4
+      ],
+      "to": [
+        14,
+        18,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
         }
       }
     }

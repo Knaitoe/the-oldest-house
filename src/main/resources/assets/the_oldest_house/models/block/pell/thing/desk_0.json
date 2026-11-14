@@ -4,6 +4,8 @@
   "textures": {
     "t": "the_oldest_house:block/pell/thing/desk_top",
     "v": "the_oldest_house:block/pell/thing/veneer",
+    "d": "the_oldest_house:block/pell/thing/drawers_front",
+    "n": "the_oldest_house:block/pell/thing/knob_wood",
     "c": "the_oldest_house:block/pell/thing/chrome",
     "g": "the_oldest_house:block/pell/thing/lens",
     "particle": "the_oldest_house:block/pell/thing/desk_top"
@@ -166,6 +168,105 @@
         },
         "down": {
           "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        7,
+        14.5
+      ],
+      "to": [
+        14,
+        12,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#v"
+        },
+        "south": {
+          "texture": "#v"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "up": {
+          "texture": "#v"
+        },
+        "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        8.5,
+        2.5
+      ],
+      "to": [
+        14,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d",
+          "uv": [
+            9,
+            7,
+            15,
+            10.5
+          ]
+        },
+        "south": {
+          "texture": "#v"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        10.5,
+        9.75,
+        1.75
+      ],
+      "to": [
+        11.5,
+        10.75,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
         }
       }
     },

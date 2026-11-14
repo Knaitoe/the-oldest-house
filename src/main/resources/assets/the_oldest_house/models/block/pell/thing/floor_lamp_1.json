@@ -185,6 +185,15 @@
           ]
         }
       },
+      "rotation": {
+        "origin": [
+          8,
+          17,
+          8
+        ],
+        "axis": "x",
+        "angle": 22.5
+      },
       "shade": false,
       "neoforge_data": {
         "block_light": 15,
@@ -239,6 +248,15 @@
             10
           ]
         }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          17,
+          8
+        ],
+        "axis": "x",
+        "angle": 22.5
       },
       "shade": false,
       "neoforge_data": {
@@ -303,6 +321,15 @@
             11.5
           ]
         }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          17,
+          8
+        ],
+        "axis": "x",
+        "angle": 22.5
       },
       "shade": false,
       "neoforge_data": {
