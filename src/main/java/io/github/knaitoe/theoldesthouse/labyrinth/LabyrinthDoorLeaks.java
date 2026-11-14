@@ -23,9 +23,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
+/**
+ * Which shut doors near a reader let something out, and what: each reader is told their own doors' bleeds once a second, and
+ * hears the nearest ones. 0.4.576: what a door lets out is its room's own {@link DoorBleed}.
+ */
 public final class LabyrinthDoorLeaks {
     private LabyrinthDoorLeaks() {}
-    public record Cue(DoorLeakKind kind, boolean bark) {}
+    public record Cue(DoorBleed bleed, boolean bark) {}
+    /** Hillary behind a door is heard on the old four seconds, whatever the room's own sound keeps. */
+    private static final int BARK_EVERY = 80;
 
     @Nullable
     public static Cue cue(LabyrinthData data, UUID player, LabyrinthData.Door door) {
@@ -39,7 +45,7 @@ public final class LabyrinthDoorLeaks {
         LabyrinthPlace place = LabyrinthPlace.byId(destination);
         if(place==LabyrinthPlace.FLOORBOARDS&&data.isCompleted(place.id()))return null;
         int salt = door.id.hashCode() ^ player.hashCode() ^ destination.hashCode();
-        return new Cue(DoorLeakKind.forDestination(place, salt), bark);
+        return new Cue(DoorBleed.forDestination(place, salt), bark);
     }
     public static void onServerTick(ServerTickEvent.Post event) {
         if (event.getServer().getTickCount() % 20 != 0) return;
@@ -54,8 +60,9 @@ public final class LabyrinthDoorLeaks {
             if (cue == null) continue;
             BlockState state = player.level().getBlockState(door.lower);
             if (!(state.getBlock() instanceof DoorBlock) || state.getValue(DoorBlock.OPEN)) continue;
-            hints.add(new DoorLeaksPayload.Leak(door.lower, door.facing.get3DDataValue(), cue.kind.ordinal()));
-            if (player.server.getTickCount() % 80 == 0 && player.position().distanceToSqr(Vec3.atCenterOf(door.lower)) <= 36) {
+            hints.add(new DoorLeaksPayload.Leak(door.lower, door.facing.get3DDataValue(), cue.bleed.ordinal()));
+            if (player.server.getTickCount() % (cue.bark ? BARK_EVERY : cue.bleed.every()) == 0
+                    && player.position().distanceToSqr(Vec3.atCenterOf(door.lower)) <= 36) {
                 sound(player, door, cue);
             }
             if (hints.size() >= 32) break;
@@ -68,32 +75,15 @@ public final class LabyrinthDoorLeaks {
     }
     private static void sound(ServerPlayer player, LabyrinthData.Door door, Cue cue) {
         Vec3 at = Vec3.atCenterOf(door.lower.relative(door.facing.getOpposite()));
-        Holder<SoundEvent> sound;
-        float volume = .25F, pitch = .85F;
-        if (cue.bark) {
-            sound = Holder.direct(player.getRandom().nextBoolean() ? SoundEvents.WOLF_AMBIENT : SoundEvents.WOLF_WHINE);
-        } else {
-            sound = switch (cue.kind) {
-                case HEARTBEAT -> Holder.direct(LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get());
-                case WATER -> Holder.direct(SoundEvents.WATER_AMBIENT);
-                case LAKE -> Holder.direct(DrownedTownRegistry.LAKE_LEAK.get());
-                case CAVE -> Holder.direct(DrownedTownRegistry.CAVE_LEAK.get());
-                case SHALLOWS -> Holder.direct(DrownedTownRegistry.SHALLOWS_LEAK.get());
-                case WOODS -> custom("goatman.woods");
-                case STONE -> Holder.direct(SoundEvents.STONE_HIT);
-                case CANOE -> Holder.direct(DrownedTownRegistry.PHONE_LEAK.get());
-                case MOTHER -> Holder.direct(SoundEvents.CAT_PURR);
-                case CLOTH -> custom("vignette.clap_muffled");
-                case WARM_TV -> custom("leak.television");
-                case PHONE -> custom("leak.phone");
-                case HOTEL -> custom("leak.hotel_music");
-            };
-            if (cue.kind == DoorLeakKind.PHONE) pitch = 1;
-        }
+        Holder<SoundEvent> sound = cue.bark
+                ? Holder.direct(player.getRandom().nextBoolean() ? SoundEvents.WOLF_AMBIENT : SoundEvents.WOLF_WHINE)
+                : Holder.direct(SoundEvent.createVariableRangeEvent(soundId(cue.bleed)));
         player.connection.send(new ClientboundSoundPacket(sound, SoundSource.BLOCKS, at.x, at.y, at.z,
-                volume, pitch, player.getRandom().nextLong()));
+                .25F, cue.bark ? .85F : cue.bleed.pitch(), player.getRandom().nextLong()));
     }
-    private static Holder<SoundEvent> custom(String path) {
-        return Holder.direct(SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, path)));
+    /** The sound a bleed is heard as: the mod's own unless the bleed names another namespace. */
+    public static ResourceLocation soundId(DoorBleed bleed) {
+        String id = bleed.sound();
+        return id.indexOf(':') >= 0 ? ResourceLocation.parse(id) : ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, id);
     }
 }

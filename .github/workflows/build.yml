@@ -121,6 +121,8 @@ jobs:
           python3 tools/generate_swimmer_audio.py --check
           python3 tools/draw_vacant_art.py --check
           python3 tools/generate_door_sound_audio.py --check
+          python3 tools/draw_door_bleeds.py --check
+          python3 tools/generate_door_bleed_audio.py --check
           python3 tools/draw_draft_fittings.py --check
           python3 tools/draw_fold_fittings.py --check
           python3 tools/draw_winch_fittings.py --check

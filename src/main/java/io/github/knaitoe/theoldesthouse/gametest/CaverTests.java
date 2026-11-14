@@ -69,7 +69,7 @@ public final class CaverTests {
     @GameTest(template="empty") public static void caveAppendsAndFitsWithoutReinterpretingSavedSlots(GameTestHelper h){
         for(int y:new int[]{65,80,150,250}){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.TED_CAVER);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.TED_CAVER);
             h.assertTrue(slot.isInside(b.offset(-9,-4,-60))&&slot.isInside(b.offset(9,8,0)),"the low cave stays inside its native slot at manor height "+y);}
-        h.assertTrue(LabyrinthPlace.TED_CAVER.slot()==32&&LabyrinthPlace.GOATMAN.slot()==31&&DoorLeakKind.STONE.ordinal()==12&&DoorLeakKind.WOODS.ordinal()==11,"new room and dry stone hint append after all old indices");
+        h.assertTrue(LabyrinthPlace.TED_CAVER.slot()==32&&LabyrinthPlace.GOATMAN.slot()==31&&DoorBleed.own(LabyrinthPlace.TED_CAVER)==DoorBleed.TED_CAVER&&DoorBleed.TED_CAVER.floor()==DoorBleed.Floor.DRAWN&&DoorBleed.TED_CAVER.air()==DoorBleed.Air.DUST,"the new room appends after all old indices, and its door lets out broken rock and its dust");
         var buffer=io.netty.buffer.Unpooled.buffer();try{var payload=new io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload(true,-400,150,-200,CaverVignette.IN_PURSUED,-.004F,.35F,CaverVignette.CHOKE+12);var codec=io.github.knaitoe.theoldesthouse.network.CaverCrawlPayload.STREAM_CODEC;
             codec.encode(buffer,payload);h.assertTrue(codec.decode(buffer).equals(payload),"native client crawl synchronization preserves its bounded signed origin, the draught on the crawling body, the reader's own air and the choke");}finally{buffer.release();}h.succeed();
     }

@@ -42,7 +42,7 @@ public final class PhoneCanoeTests {
             h.assertTrue(slot.isInside(base.offset(-26,-4,-60))&&slot.isInside(base.offset(26,10,0)),"lake and authored night sky fit wholly inside their native slot");
         }
         h.assertTrue(LabyrinthPlace.DROWNED_TOWN.slot()==27&&LabyrinthPlace.PRESERVED_CAVE.slot()==28&&LabyrinthPlace.SHALLOWS.slot()==29&&LabyrinthPlace.PHONE_CANOE.slot()==30,"new room appends without moving an older site");
-        h.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.PHONE_CANOE,0)==DoorLeakKind.CANOE&&DoorLeakKind.CANOE.ordinal()==10,"new sensory hint appends without reinterpreting old saved ordinals");h.succeed();
+        h.assertTrue(DoorBleed.forDestination(LabyrinthPlace.PHONE_CANOE,0)==DoorBleed.PHONE_CANOE&&DoorBleed.PHONE_CANOE.floor()==DoorBleed.Floor.WATER&&DoorBleed.PHONE_CANOE.light()!=0,"the canoe's door lets out water and the light of a screen, whatever the seed");h.succeed();
     }
     @GameTest(template="empty") public static void personalCompletionDoesNotConsumeAnotherExplorersRecording(GameTestHelper h){
         var data=new LabyrinthData();UUID a=UUID.randomUUID(),b=UUID.randomUUID();

@@ -2,7 +2,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
-import io.github.knaitoe.theoldesthouse.labyrinth.DoorLeakKind;
+import io.github.knaitoe.theoldesthouse.labyrinth.DoorBleed;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDealer;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthDoorLeaks;
@@ -199,12 +199,12 @@ public final class MazeTests {
         data.putDoor(door);
         data.deal(a, door, LabyrinthPlace.MODEL_HOME.id(), true, false);
         data.deal(b, door, LabyrinthPlace.HIDE_AND_CLAP.id(), true, true);
-        helper.assertTrue(LabyrinthDoorLeaks.cue(data, a, door).kind() == DoorLeakKind.WARM_TV,
-                "the warm domestic room gives television and light rather than a generic heartbeat");
-        helper.assertTrue(LabyrinthDoorLeaks.cue(data, b, door).kind() == DoorLeakKind.CLOTH && LabyrinthDoorLeaks.cue(data, b, door).bark(),
+        helper.assertTrue(LabyrinthDoorLeaks.cue(data, a, door).bleed() == DoorBleed.MODEL_HOME,
+                "the model home gives television and its light rather than a generic heartbeat");
+        helper.assertTrue(LabyrinthDoorLeaks.cue(data, b, door).bleed() == DoorBleed.HIDE_AND_CLAP && LabyrinthDoorLeaks.cue(data, b, door).bark(),
                 "another player sees the child's cloth and retains Hillary's cue at the same physical door");
         LabyrinthData restored = LabyrinthData.FACTORY.deserializer().apply(data.save(new CompoundTag(), helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
-        helper.assertTrue(LabyrinthDoorLeaks.cue(restored, a, restored.door(door.id)).kind() == DoorLeakKind.WARM_TV,
+        helper.assertTrue(LabyrinthDoorLeaks.cue(restored, a, restored.door(door.id)).bleed() == DoorBleed.MODEL_HOME,
                 "the persisted deal restores the matching sensory hint");
         data.deal(a, door, LabyrinthPlace.JUNCTION.id(), false, false);
         helper.assertTrue(LabyrinthDoorLeaks.cue(data, a, door) == null, "a redealt nonleaking gray door clears its former vignette cue");
@@ -213,15 +213,44 @@ public final class MazeTests {
 
     @GameTest(template = "empty")
     public static void everyCurrentVignetteAndTheHotelHaveTheirOwnCue(GameTestHelper helper) {
-        helper.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.FLOORBOARDS, 0) == DoorLeakKind.HEARTBEAT, "floorboard sounds belong to their room");
-        helper.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.HARRIGAN, 0) == DoorLeakKind.PHONE, "the phone rings through its study door");
-        helper.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.MOTHER_DEN, 0) == DoorLeakKind.MOTHER, "cloth and the strays announce the den");
-        helper.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.RED_ROOM, 0) == DoorLeakKind.WARM_TV, "the copied domestic room stays warm");
-        helper.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.HOTEL_HALLWAY, 0) == DoorLeakKind.HOTEL, "hotel carpet and music creep into the gray");
-        helper.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.FLOODED_PASSAGE, 0) == DoorLeakKind.WATER, "water belongs to the submerged corridor");
-        Set<DoorLeakKind> lies = new HashSet<>();
-        for (int salt = 0; salt < 7; salt++) lies.add(DoorLeakKind.forDestination(LabyrinthPlace.GRAY_CORRIDOR, salt));
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.FLOORBOARDS, 0) == DoorBleed.FLOORBOARDS
+                && DoorBleed.FLOORBOARDS.strip() == DoorBleed.Strip.BOARDS, "floorboard sounds belong to their room");
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.HARRIGAN, 0) == DoorBleed.HARRIGAN
+                && DoorBleed.HARRIGAN.sound().equals("leak.phone") && DoorBleed.HARRIGAN.pitch() == 1F, "the phone rings through its study door");
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.MOTHER_DEN, 0) == DoorBleed.MOTHER_DEN && DoorBleed.MOTHER_DEN.strip() == DoorBleed.Strip.FUR
+                && DoorBleed.MOTHER_DEN.sound().equals("minecraft:entity.cat.purr") && DoorBleed.MOTHER_DEN.pitch() == .85F
+                && DoorBleed.MOTHER_DEN.light() == 0 && DoorBleed.MOTHER_DEN.air() == DoorBleed.Air.NONE, "cloth and the strays announce the den, as they did");
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.RED_ROOM, 0) == DoorBleed.RED_ROOM && DoorBleed.RED_ROOM.light() != 0, "the copied room has its own light");
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.HOTEL_HALLWAY, 0) == DoorBleed.HOTEL
+                && DoorBleed.forDestination(LabyrinthPlace.HOTEL, 0) == DoorBleed.HOTEL, "hotel carpet and music creep into the gray");
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.FLOODED_PASSAGE, 0) == DoorBleed.FLOODED_PASSAGE
+                && DoorBleed.FLOODED_PASSAGE.floor() == DoorBleed.Floor.WATER, "water belongs to the submerged corridor");
+        // 0.4.576: every vignette lets out something of its own, and no two let out the same.
+        Set<String> seen = new HashSet<>(), sounds = new HashSet<>();
+        for (LabyrinthPlace place : LabyrinthPlace.values()) {
+            DoorBleed own = DoorBleed.own(place);
+            if (!place.isVignette()) continue;
+            helper.assertTrue(own != null, place + " has nothing of its own at its door");
+            for (int salt = -3; salt < 40; salt += 7) helper.assertTrue(DoorBleed.forDestination(place, salt) == own, place + " lets out its own whatever the seed");
+            if (own == DoorBleed.HOTEL && place != LabyrinthPlace.HOTEL) continue;
+            helper.assertTrue(own.name().equals(place.name()), place + " lets out " + own);
+            helper.assertTrue(own.floor() != DoorBleed.Floor.NONE || own.light() != 0 || own == DoorBleed.STILLNESS, place + " shows nothing at its door");
+            helper.assertTrue(seen.add(own.floor() + "/" + (own.floor() == DoorBleed.Floor.DRAWN ? own.texture() : own.floor() == DoorBleed.Floor.STRIP ? own.strip() : own.water())
+                    + "/" + own.light() + "/" + own.light2() + "/" + own.rhythm() + "/" + own.air()), place + " looks like another room at its door");
+            helper.assertTrue(sounds.add(own.sound()), place + " shares its sound with another room");
+            helper.assertTrue(own.every() >= 20 && own.every() % 20 == 0, place + " sounds between the doors' seconds");
+            if (own.floor() == DoorBleed.Floor.DRAWN) helper.assertTrue(TheOldestHouse.class.getResource(
+                    "/assets/the_oldest_house/textures/" + own.texture() + ".png") != null, place + "'s floor is not packaged");
+            if (own.sound().startsWith("bleed.")) helper.assertTrue(TheOldestHouse.class.getResource(
+                    "/assets/the_oldest_house/sounds/bleed/" + own.sound().substring(6) + ".ogg") != null, place + "'s sound is not packaged");
+        }
+        for (DoorBleed bleed : DoorBleed.values()) helper.assertTrue(LabyrinthPlace.valueOf(bleed.name()).isVignette()
+                || bleed == DoorBleed.FLOODED_PASSAGE, bleed + " belongs to no vignette");
+        helper.assertTrue(DoorBleed.own(LabyrinthPlace.GRAY_CORRIDOR) == null && DoorBleed.own(LabyrinthPlace.JUNCTION) == null, "an ordinary hall has nothing of its own");
+        Set<DoorBleed> lies = new HashSet<>();
+        for (int salt = 0; salt < 7; salt++) lies.add(DoorBleed.forDestination(LabyrinthPlace.GRAY_CORRIDOR, salt));
         helper.assertTrue(lies.size() == 7, "a leaking gray door can borrow a misleading cue");
+        helper.assertTrue(DoorBleed.forDestination(LabyrinthPlace.GRAY_CORRIDOR, -1) != null && DoorBleed.forDestination(null, 5) == DoorBleed.FLOORBOARDS, "any seed borrows something");
         for (String sound : List.of("television", "phone", "hotel_music")) helper.assertTrue(TheOldestHouse.class.getResource(
                 "/assets/the_oldest_house/sounds/leaks/" + sound + ".ogg") != null, "the muffled audio is actually packaged");
         helper.succeed();
@@ -230,7 +259,7 @@ public final class MazeTests {
     @GameTest(template = "empty")
     public static void doorHintSnapshotRoundTripsWithoutDestinationLabels(GameTestHelper helper) {
         DoorLeaksPayload original = new DoorLeaksPayload(ResourceLocation.fromNamespaceAndPath("the_oldest_house", "interior"), true,
-                List.of(new DoorLeaksPayload.Leak(new BlockPos(2, 80, -30), Direction.EAST.get3DDataValue(), DoorLeakKind.WATER.ordinal())));
+                List.of(new DoorLeaksPayload.Leak(new BlockPos(2, 80, -30), Direction.EAST.get3DDataValue(), DoorBleed.FLOODED_PASSAGE.ordinal())));
         var buffer = Unpooled.buffer();
         try {
             DoorLeaksPayload.STREAM_CODEC.encode(buffer, original);
