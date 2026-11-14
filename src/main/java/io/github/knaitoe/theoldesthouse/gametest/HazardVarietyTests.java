@@ -595,4 +595,52 @@ public final class HazardVarietyTests {
     }
     @AfterBatch(batch="following_door") public static void followingDoorDone(ServerLevel level){close();}
 
+    /**
+     * 0.4.588 (owner: "users should be able to remove player-placed torches/lights from the house"). In a gray corridor a reader
+     * sets a torch down by the game's own placement and the House keeps it as theirs. The House moves it while nobody looks, and
+     * where it now stands another reader takes it up by the game's own mining and is given the torch. A lamp the House stood
+     * there itself does not give, nor does the floor; a light the House has taken without breaking is forgotten, so a lamp of
+     * the House's stood in its place is not a reader's.
+     */
+    @GameTest(template="empty",batch="placed_lights",timeoutTicks=400) public static void aLightAReaderSetDownCanBeTakenUpAgainAndTheHousesOwnCannot(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.GRAY_CORRIDOR;var server=f.level.getServer();var b=f.base(place);h.assertTrue(b!=null,"the corridor's slot fits");
+        f.built.add(place);var bounds=LabyrinthPlaces.placeBounds(f.origin,place);f.chunks.hold(f.level,new AABB(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX()+1,bounds.maxY()+1,bounds.maxZ()+1));
+        f.ready(()->{
+            var plan=LabyrinthMaze.layout(server,place);LabyrinthMaze.build(f.level,b,place,plan);
+            var p=NativeTestPlayers.survival(h,"lights_setter");var peer=NativeTestPlayers.survival(h,"lights_peer");f.players.add(p);f.players.add(peer);
+            // Both stand at the door with their backs to the corridor, so nothing down it is watched.
+            for(var q:List.of(p,peer)){f.at(q,place,.5,0,-1.5);q.setNoGravity(true);}
+            var floor=plan.floor().stream().filter(c->!LabyrinthMaze.nearFold(plan,c)&&c.getZ()<=-18).map(b::offset)
+                .filter(c->f.level.getBlockState(c).isAir()&&f.level.getBlockState(c.above()).isAir()&&f.level.getBlockState(c.below()).isCollisionShapeFullBlock(f.level,c.below()))
+                .sorted(Comparator.<BlockPos>comparingInt(c->c.getZ()).thenComparingInt(c->c.getX())).toList();
+            h.assertTrue(floor.size()>=2,"the corridor has open floor far from its door: "+floor.size());
+            var first=floor.get(0);var own=floor.get(floor.size()-1);
+            p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH,2));
+            h.assertTrue(setDown(p,first.below())&&f.level.getBlockState(first).is(Blocks.TORCH)&&p.getMainHandItem().getCount()==1,"the game's own placement sets a torch on the corridor's floor");
+            h.assertTrue(p.getUUID().equals(PlacedLights.setter(server,first))&&PlacedLights.count(server)==1,"and the House keeps it as a light that reader set down");
+            h.assertTrue(!p.gameMode.destroyBlock(first.below())&&!f.level.getBlockState(first.below()).isAir(),"the floor under it does not give");
+            h.assertTrue(LabyrinthLighting.rearrangeOne(f.level,f.origin,place,p)&&f.level.getBlockState(first).isAir(),"the House moves the torch while nobody looks");
+            BlockPos found=null;for(var c:BlockPos.betweenClosed(bounds.minX(),bounds.minY(),bounds.minZ(),bounds.maxX(),bounds.maxY(),bounds.maxZ()))if(f.level.getBlockState(c).is(Blocks.TORCH))found=c.immutable();
+            var at=found;h.assertTrue(at!=null&&!at.equals(first),"and stands it somewhere else");
+            h.assertTrue(PlacedLights.setter(server,first)==null&&p.getUUID().equals(PlacedLights.setter(server,at)),"where it is still that reader's to take up");
+            h.assertTrue(peer.gameMode.destroyBlock(at)&&f.level.getBlockState(at).isAir()&&PlacedLights.setter(server,at)==null&&PlacedLights.count(server)==0,"another reader takes it up by the game's own mining, and the House forgets it");
+            h.assertTrue(f.level.getEntitiesOfClass(ItemEntity.class,new AABB(at).inflate(2)).stream().anyMatch(e->e.getItem().is(Items.TORCH)),"and is given the torch");
+            f.level.setBlock(own,Blocks.SOUL_LANTERN.defaultBlockState(),3);
+            h.assertTrue(!peer.gameMode.destroyBlock(own)&&f.level.getBlockState(own).is(Blocks.SOUL_LANTERN),"a lamp the House stood there itself does not give");
+            f.level.setBlock(own,Blocks.AIR.defaultBlockState(),3);
+            h.assertTrue(setDown(p,own.below())&&f.level.getBlockState(own).is(Blocks.TORCH)&&PlacedLights.count(server)==1,"a second torch is kept as the first was");
+            f.level.setBlock(own,Blocks.AIR.defaultBlockState(),3);PlacedLights.prune(server);
+            h.assertTrue(PlacedLights.count(server)==0,"a light the House has taken without breaking is forgotten");
+            f.level.setBlock(own,Blocks.SOUL_LANTERN.defaultBlockState(),3);
+            h.assertTrue(!p.gameMode.destroyBlock(own)&&f.level.getBlockState(own).is(Blocks.SOUL_LANTERN),"so a lamp of the House's stood in its place is not a reader's");
+            f.level.getEntitiesOfClass(ItemEntity.class,new AABB(b).inflate(40)).forEach(Entity::discard);
+            h.succeed();
+        });
+    }
+    /** Sets what the reader holds on top of this block, as a right-click on its upper face does. */
+    private static boolean setDown(ServerPlayer p,BlockPos support){
+        var hit=new BlockHitResult(support.getCenter().add(0,.5,0),Direction.UP,support,false);
+        return p.gameMode.useItemOn(p,p.serverLevel(),p.getMainHandItem(),InteractionHand.MAIN_HAND,hit).consumesAction();
+    }
+    @AfterBatch(batch="placed_lights") public static void placedLightsDone(ServerLevel level){close();}
 }

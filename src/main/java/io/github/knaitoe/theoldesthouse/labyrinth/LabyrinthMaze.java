@@ -155,6 +155,8 @@ public final class LabyrinthMaze {
                         : light.state.is(Blocks.SOUL_WALL_TORCH) ? Blocks.SOUL_TORCH.defaultBlockState() : light.state;
                 level.setBlock(target, state, LabyrinthBuilder.flags());
             }
+            // 0.4.588: a reader's light keeps its record where the refolded maze has stood it, and loses it with the light.
+            PlacedLights.moved(level.getServer(), light.pos, target);
         }
     }
     private static boolean clear(ServerLevel level, BlockPos pos) {

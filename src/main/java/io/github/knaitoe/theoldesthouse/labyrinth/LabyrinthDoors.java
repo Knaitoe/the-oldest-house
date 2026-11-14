@@ -1237,6 +1237,7 @@ public final class LabyrinthDoors {
                 && !TellTaleFloorboards.isLooseBoard(level, event.getPos())
                 && !DrownedTown.canBreak(level, event.getPos())
                 && !HotelVignette.mayBreakTorch(level,event.getPos(),event.getPlayer())
+                && !PlacedLights.mayBreak(level,event.getPos())
                 && !(event.getPlayer() instanceof ServerPlayer sp&&CaverVignette.mayBreak(sp,event.getPos()))
                 && !(event.getPlayer() instanceof ServerPlayer sp&&LiteraryVignettes.mayBreak(sp,event.getPos()))) {
             event.setCanceled(true);
