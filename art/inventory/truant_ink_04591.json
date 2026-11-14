@@ -1,0 +1,28 @@
+{
+  "note": "0.4.591: the owner, on the great staircase: \"truant's hands have blue specks\". The ink on his hands (the owner's draft: \"traces of ink on his hands\") was four lone pixels of bright ink on every face of each hand, the same on all four sides. It is painted as stains: worked into the first fingertips, a smear down the edge of the hand, a faint rub across two knuckles, each a patch with a paler rim, in ink gone blue-black. Nothing else on either sheet changes, and their size and opacity are as they were. Each sheet supersedes only its own previous painting (0.4.328, the cast's beards, where they are listed without hashes).",
+  "tool": "tools/paint_character_skins.py",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_truant.png",
+      "previous_sha256": "388d50a3fa6496ae9967c8e43748223702aaad7694e476e3b242a78e176bbf5d",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "733098f85c48229dbcbf4ab37f2d86e8d774d04f573757d314ad16b22cce0e2a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_truant_leer.png",
+      "previous_sha256": "648aa9f5a54d1aeb429356e25f62006123a32a2b5de1896f44dcfd0e30ea7e6f",
+      "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+      "sha256": "b4ca0848ba21f71c97a7a7e5cea79a2056041dd4fd4cf952fccc96ffbca8a4db",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b"
+    }
+  ]
+}

@@ -27,6 +27,8 @@ def shade(c, n):
 
 # 0.4.533: June's towelling robe (the Pell house's chair has the same one lying on it, tools/draw_pell_things.py).
 PELL_ROBE = '#e6dfd2'
+# 0.4.591: the ink on the Truant's hands: blue-black, as ink is once it has dried into skin.
+TRUANT_INK = '#2e3550'
 # 0.4.535: the tea towel round June's hand, cream linen.
 PELL_TOWEL = '#e9e7df'
 
@@ -1550,9 +1552,18 @@ def paint(look):
             elif side=='bottom' and look.mark=='pell_june_hand' and ai==0:art=panel((w,h),PELL_TOWEL,'cloth',side)
             elif side=='bottom':art=panel((w,h),'#a48f64' if look.mark=='borrasca_worker' else look.skin,'skin',side)
             if look.mark in ('truant','truant_leer') and side not in ('top','bottom'):
-                # Ink on his hands: a few dark blue marks across the knuckles and the back of the hand.
-                d=ImageDraw.Draw(art)
-                for x,y in ((1,h-3),(w-3,h-4),(w//2,h-2),(w//2+1,h-4)):d.point((min(w-1,x),y),fill='#2c3858')
+                # 0.4.591 (owner: "truant's hands have blue specks"): his ink was four lone pixels of bright ink on every face of
+                # each hand, the same on all four sides, and read as specks. It is stains now, where ink gets on hands that write
+                # and turn pages: worked into the first fingertips, a smear down the edge of the hand that drags over the page,
+                # and a faint rub across two knuckles. Each is a patch with a paler rim, in ink gone blue-black and sunk into the
+                # skin. His model mirrors one arm for the other, so both hands carry them.
+                d=ImageDraw.Draw(art);rim=mix(look.skin,TRUANT_INK,.45)
+                core,edge={'front':(((2,h-1),(3,h-1),(4,h-1),(3,h-2)),((5,h-1),(2,h-2))),
+                           'back':(((3,h-4),(3,h-3),(4,h-3),(4,h-2)),((4,h-4),(2,h-3),(3,h-2))),
+                           'right':((),((2,h-3),(3,h-3))),
+                           'left':(((5,h-1),(6,h-1)),((4,h-1),))}[side]
+                for x,y in edge:d.point((x,y),fill=rim)
+                for x,y in core:d.point((x,y),fill=rgb(TRUANT_INK))
             if look.mark=='borrasca_worker' and side not in ('top','bottom'):
                 d=ImageDraw.Draw(art);d.rectangle((0,h-4,w-1,h-1),fill='#a48f64');d.line((0,h-4,w-1,h-4),fill='#786b51')
             if look.mark=='borrasca_kyle' and side not in ('top','bottom'):

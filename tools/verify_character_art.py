@@ -6,7 +6,7 @@ import json
 import argparse
 import zipfile
 from PIL import Image
-from paint_character_skins import LOOKS, net
+from paint_character_skins import LOOKS, TRUANT_INK, net, rgb
 from character_art_catalog import entries
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -23,6 +23,8 @@ SISTERS_REVIEW=ROOT/'art/inventory/ghosts_sisters_04320.json'
 FRECKLES_REVIEW=ROOT/'art/inventory/ghosts_merry_04321.json'
 BEARDS_REVIEW=ROOT/'art/inventory/beards_04328.json'
 BOY_REVIEW=ROOT/'art/inventory/caged_boy_04585.json'
+TRUANT_REVIEW=ROOT/'art/inventory/truant_ink_04591.json'
+TRUANT_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_truant'+phase+'.png' for phase in ('','_leer')}
 BOY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png'
 # The slim player model's two layers: head and hat, body and jacket, each arm and its sleeve (three pixels wide), each leg and its trouser.
 BOY_NETS=((0,0,8,8,8),(32,0,8,8,8),(16,16,8,12,4),(16,32,8,12,4),(40,16,3,12,4),(40,32,3,12,4),(32,48,3,12,4),(48,48,3,12,4),(0,16,4,12,4),(0,32,4,12,4),(16,48,4,12,4),(0,48,4,12,4))
@@ -138,6 +140,20 @@ def main():
             alpha=im.getchannel('A')
             for box in [(0,0,8,8),(24,0,32,8)]+[box for dims in BOY_NETS for box in net(*dims).values()]:alpha.paste(0,tuple(round(v*4) for v in box))
             assert alpha.getextrema()==(0,0),('The boy is painted outside his model',path)
+    # 0.4.591: the ink on the Truant's hands, painted as stains at the owner's request ("truant's hands have blue specks"). His two
+    # sheets are later than the 0.4.100 catalogue; each supersedes only its own previous painting, with its size and opacity kept.
+    # No ink on them stands alone: every pixel of it touches another, so it is a stain and not a speck; and none of the old bright
+    # ink is left.
+    truant={r['path']:r for r in json.loads(TRUANT_REVIEW.read_text())['repainted']}
+    assert set(truant)==TRUANT_PATHS
+    for path,row in truant.items():
+        raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('The Truant changed since his ink was repainted',path)
+        im=Image.open(BytesIO(raw)).convert('RGBA');assert list(im.size)==row['size'],path
+        assert hashlib.sha256(im.getchannel('A').tobytes()).hexdigest()==row['alpha_sha256']==row['previous_alpha_sha256'],('The Truant\'s opacity changed',path)
+        half=im.convert('RGB').resize((im.width//2,im.height//2),Image.Resampling.NEAREST)
+        ink={(x,y) for y in range(half.height) for x in range(half.width) if half.getpixel((x,y))==rgb(TRUANT_INK)}
+        assert ink and all(any((x+dx,y+dy) in ink for dx,dy in ((1,0),(-1,0),(0,1),(0,-1))) for x,y in ink),('A speck of ink on the Truant',path)
+        assert not any(colour==(0x2c,0x38,0x58) for _,colour in half.getcolors(half.width*half.height)),('The old bright ink is on the Truant',path)
     for name,look in LOOKS.items():
         path='src/main/resources/assets/the_oldest_house/textures/entity/'+name+'.png'
         im=Image.open(BytesIO(read(path))).convert('RGBA')
