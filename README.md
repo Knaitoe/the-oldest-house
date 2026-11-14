@@ -984,6 +984,8 @@ The initial exterior proxy is still seeded from a snapshot, but common player-dr
 
 ## Development commands
 
+**The text review page.** `tools/text_review.py` reads every line of text the game shows out of the sources (the mod's Java strings, the language file and the letters), tags each with its story, its kind and, where the code says, whose it is, and builds a page on which the owner searches, reads and changes them. A push from the page sends the changes as one batch, which is applied to the sources, checked, committed and pushed. `--build OUT` writes the page, `--apply BATCH` puts edits back, `--check` tests the tool (it is in the quick gate). Record: [docs/TEXT_REVIEW.md](docs/TEXT_REVIEW.md).
+
 Commands require permission level 2.
 
 | Command | Purpose |

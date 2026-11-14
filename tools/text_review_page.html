@@ -1,0 +1,540 @@
+<title>Text Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{
+  --bg:#f4f0e6; --panel:#fbf8f1; --card:#fffdf9; --ink:#1e1b16; --soft:#5f584c; --faint:#857d6e; --rule:#ddd4c2;
+  --accent:#2c4a94; --accent-soft:#e3e9f8; --on-accent:#ffffff; --mark:#ffe58a; --draft:#9a5600; --draft-soft:#fdf0d8;
+  --done:#1d7340; --done-soft:#e1f2e6; --bad:#a12a1e; --bad-soft:#fbe4e0; --glue:#ece5d6;
+  --shadow:0 1px 2px rgba(40,30,10,.08),0 8px 28px rgba(40,30,10,.10);
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --prose:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161a; --panel:#1b1d22; --card:#21242b; --ink:#e9e4d8; --soft:#b5ae9f; --faint:#8d8778; --rule:#33363f;
+    --accent:#9db7ff; --accent-soft:#273150; --on-accent:#10131c; --mark:#6b5a12; --draft:#f0b45c; --draft-soft:#3a2d15;
+    --done:#7fd39b; --done-soft:#17301f; --bad:#ff9b8f; --bad-soft:#3b1b17; --glue:#2d3038;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161a; --panel:#1b1d22; --card:#21242b; --ink:#e9e4d8; --soft:#b5ae9f; --faint:#8d8778; --rule:#33363f;
+  --accent:#9db7ff; --accent-soft:#273150; --on-accent:#10131c; --mark:#6b5a12; --draft:#f0b45c; --draft-soft:#3a2d15;
+  --done:#7fd39b; --done-soft:#17301f; --bad:#ff9b8f; --bad-soft:#3b1b17; --glue:#2d3038;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--ui);-webkit-text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.bar{position:sticky;top:0;z-index:20;display:flex;gap:10px;align-items:center;background:var(--panel);
+  border-bottom:1px solid var(--rule);padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left))}
+.brand{font-weight:650;letter-spacing:.01em;white-space:nowrap}
+.brand small{display:block;font-weight:400;color:var(--faint);font-size:11.5px;letter-spacing:0}
+#q{flex:1;min-width:0;padding:8px 12px;border:1px solid var(--rule);border-radius:9px;background:var(--card)}
+#q:focus,textarea:focus,.side-filter:focus{outline:2px solid var(--accent);outline-offset:1px}
+.btn{border:1px solid var(--rule);background:var(--card);border-radius:9px;padding:8px 12px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}
+.btn.primary:disabled{opacity:.45;cursor:default}
+.btn.quiet{border-color:transparent;background:none;color:var(--soft);padding:6px 8px}
+.count{display:inline-block;min-width:1.5em;padding:0 6px;margin-left:4px;border-radius:999px;background:var(--draft-soft);
+  color:var(--draft);font-size:12px;font-weight:650;text-align:center}
+.count.zero{background:none;color:var(--faint);font-weight:400}
+#browse{display:none}
+.wrap{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:calc(100% - 58px)}
+#side{border-right:1px solid var(--rule);background:var(--panel);padding:12px 12px 24px max(16px,env(safe-area-inset-left));
+  position:sticky;top:58px;align-self:start;max-height:calc(100vh - 58px);overflow:auto}
+.tabs{display:flex;gap:4px;background:var(--glue);padding:3px;border-radius:9px}
+.tabs button{flex:1;border:0;background:none;padding:6px 4px;border-radius:7px;color:var(--soft);font-size:13.5px}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.side-filter{width:100%;margin:10px 0 6px;padding:6px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card);font-size:13.5px}
+.pick{display:flex;width:100%;gap:8px;align-items:baseline;border:0;background:none;text-align:left;padding:4px 8px;border-radius:7px;font-size:14px}
+.pick:hover{background:var(--glue)}
+.pick[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pick .n{margin-left:auto;color:var(--faint);font-size:12px;font-variant-numeric:tabular-nums;font-weight:400}
+.pick.sub{padding-left:22px;font-size:13px;color:var(--soft)}
+.pick .dot{width:7px;height:7px;border-radius:50%;background:var(--draft);align-self:center;flex:none}
+.heading{margin:12px 8px 2px;color:var(--faint);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em}
+.hint{margin:6px 8px;color:var(--faint);font-size:12.5px}
+main{padding:14px max(16px,env(safe-area-inset-right)) 60px 20px;min-width:0}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;color:var(--soft);font-size:13.5px}
+.chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--rule);background:var(--card);border-radius:999px;padding:3px 10px;font-size:13px}
+.chip button{border:0;background:none;padding:0 0 0 2px;color:var(--faint);font-size:15px;line-height:1}
+.kinds{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.kind{border:1px solid var(--rule);background:none;border-radius:999px;padding:3px 10px;font-size:13px;color:var(--soft)}
+.kind[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.kind .n{opacity:.7;margin-left:4px;font-variant-numeric:tabular-nums}
+.row{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:10px 14px 12px;margin-bottom:8px}
+.row.changed{border-left:4px solid var(--draft)}
+.row.sent{border-left:4px solid var(--accent)}
+.row.done{border-left:4px solid var(--done)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:baseline;margin-bottom:4px;font-size:12px;color:var(--faint)}
+.who{color:var(--accent);font-weight:650;font-size:12.5px}
+.tag{border:1px solid var(--rule);border-radius:5px;padding:0 5px}
+.state{border-radius:5px;padding:0 6px;font-weight:600}
+.state.draft{background:var(--draft-soft);color:var(--draft)}
+.state.queued{background:var(--accent-soft);color:var(--accent)}
+.state.pushed{background:var(--done-soft);color:var(--done)}
+.state.problem{background:var(--bad-soft);color:var(--bad)}
+.where{margin-left:auto;font-family:var(--mono);font-size:11.5px;overflow-wrap:anywhere;text-align:right}
+.text{font-family:var(--prose);font-size:16.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.frag{border-radius:4px;cursor:text}
+.frag.can:hover,.frag.can:focus{background:var(--accent-soft);outline:none}
+.frag.edited{background:var(--draft-soft)}
+.frag.empty::after{content:"(empty)";color:var(--faint);font-style:italic}
+.glue{font-family:var(--mono);font-size:12px;background:var(--glue);border-radius:4px;padding:1px 5px;margin:0 2px;color:var(--soft);white-space:normal;overflow-wrap:anywhere}
+mark{background:var(--mark);color:inherit;border-radius:2px}
+.was{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule);font-family:var(--prose);font-size:14.5px;color:var(--soft);white-space:pre-wrap;overflow-wrap:anywhere}
+.was b{font:600 11.5px var(--ui);color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-right:6px}
+.editor{margin-top:8px}
+.editor textarea{display:block;width:100%;min-height:74px;padding:10px 12px;border:1px solid var(--accent);border-radius:8px;background:var(--bg);
+  font-family:var(--prose);font-size:16.5px;line-height:1.5;resize:vertical}
+.warn{margin:6px 0 0;color:var(--draft);font-size:13px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.acts .note{color:var(--faint);font-size:12.5px;margin-left:auto}
+.more{display:block;margin:14px auto 0}
+.empty{margin:40px auto;max-width:420px;text-align:center;color:var(--soft)}
+#shade{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30}
+#changes{position:fixed;top:0;right:0;bottom:0;z-index:40;width:min(560px,100%);background:var(--panel);border-left:1px solid var(--rule);
+  box-shadow:var(--shadow);display:flex;flex-direction:column}
+#changes header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--rule)}
+#changes header h2{margin:0;font-size:17px;flex:1}
+#changes .body{flex:1;overflow:auto;padding:12px max(16px,env(safe-area-inset-right)) 16px 16px}
+#changes footer{border-top:1px solid var(--rule);padding:12px max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) 16px}
+#changes textarea{width:100%;min-height:52px;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--card);resize:vertical;font-size:14px}
+.change{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.change .where{display:block;margin:0 0 6px;text-align:left}
+.old,.new{font-family:var(--prose);font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:6px;padding:4px 8px}
+.old{background:var(--bad-soft);text-decoration:line-through;text-decoration-color:var(--bad);margin-bottom:4px}
+.new{background:var(--done-soft)}
+.sub-h{margin:18px 0 8px;font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.batch{border:1px solid var(--rule);border-radius:10px;padding:8px 12px;margin-bottom:8px;background:var(--card);font-size:13.5px}
+.batch a{color:var(--accent)}
+.batch ul{margin:6px 0 0;padding-left:18px;color:var(--soft)}
+.status{font-size:13px;color:var(--soft);margin:8px 0 0}
+.status.bad{color:var(--bad)} .status.ok{color:var(--done)}
+.save-note{font-size:12.5px;color:var(--faint);margin:0 0 10px}
+@media (max-width:860px){
+  .wrap{display:block}
+  #browse{display:inline-block}
+  .bar{flex-wrap:wrap}
+  .brand{flex:1}
+  #q{order:5;flex:1 0 100%}
+  #side{display:none;position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule);padding-right:max(16px,env(safe-area-inset-right))}
+  #side.open{display:block}
+  main{padding-left:max(16px,env(safe-area-inset-left))}
+  .brand small{display:none}
+  .where{margin-left:0;text-align:left;flex-basis:100%}
+}
+</style>
+
+<div class="bar">
+  <div class="brand">Text Review<small id="build"></small></div>
+  <button class="btn" id="browse" type="button">Browse</button>
+  <input id="q" type="search" placeholder="Search every line…" autocomplete="off" spellcheck="false" aria-label="Search every line">
+  <button class="btn" id="open-changes" type="button">Changes<span class="count zero" id="n-changes">0</span></button>
+</div>
+<div class="wrap">
+  <nav id="side" aria-label="Browse">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="stories" aria-selected="true">Stories</button>
+      <button type="button" role="tab" data-tab="people" aria-selected="false">People</button>
+      <button type="button" role="tab" data-tab="kinds" aria-selected="false">Kinds</button>
+    </div>
+    <input class="side-filter" id="side-filter" type="search" placeholder="Filter this list" autocomplete="off" aria-label="Filter this list">
+    <div id="side-list"></div>
+  </nav>
+  <main>
+    <div class="crumbs" id="crumbs"></div>
+    <div class="kinds" id="kinds"></div>
+    <div id="list"></div>
+    <button class="btn more" id="more" type="button" hidden>Show more</button>
+  </main>
+</div>
+<div id="shade" hidden></div>
+<aside id="changes" hidden aria-label="Changes">
+  <header><h2>Changes</h2><button class="btn quiet" id="close-changes" type="button" aria-label="Close">Close</button></header>
+  <div class="body" id="changes-body"></div>
+  <footer>
+    <p class="save-note" id="save-note"></p>
+    <textarea id="batch-note" placeholder="A note to go with these changes (optional)" aria-label="A note to go with these changes"></textarea>
+    <div class="acts">
+      <button class="btn primary" id="push" type="button" disabled>Push to GitHub</button>
+      <button class="btn" id="wake" type="button" hidden>Wake Claude</button>
+      <button class="btn quiet" id="copy-ask" type="button" hidden>Copy the sentence</button>
+    </div>
+    <p class="status" id="push-status" role="status"></p>
+  </footer>
+</aside>
+
+<script src="texts.js"></script>
+<script>
+(function(){
+'use strict';
+var D = window.TEXT_REVIEW;
+var $ = function(id){ return document.getElementById(id); };
+function el(tag, cls, text){ var e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
+if(!D){ $('list').appendChild(el('p', 'empty', 'The text did not load. Reload the page.')); return; }
+
+var T = D.texts, F = D.files, W = D.who, CATS = D.categories;
+var LOW = T.map(function(t){ return (t[2] + '\n' + (t[4] & 2 ? '' : t[3])).toLowerCase(); });
+var num = function(n){ return n.toLocaleString('en-US'); };
+
+// A line that is put together from several strings is shown as one, each piece still its own.
+var RUN = new Int32Array(T.length);
+for(var i = 0; i < T.length; i++) RUN[i] = (T[i][4] & 2) && i > 0 && T[i - 1][0] === T[i][0] ? RUN[i - 1] : i;
+
+function hash(s){
+  var a = 0x811c9dc5, b = 0x01000193 ^ s.length;
+  for(var i = 0; i < s.length; i++){ var c = s.charCodeAt(i); a = Math.imul(a ^ c, 0x01000193); b = Math.imul(b ^ c, 0x85ebca6b); b ^= b >>> 13; }
+  return 'e' + (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0');
+}
+function keyOf(i){ var t = T[i], f = F[t[0]]; return hash([f[0], f[3] === 'java' ? String(t[7] || 0) : t[3], t[2]].join('\u0001')); }
+var KEY = new Array(T.length), AT = new Map();
+for(i = 0; i < T.length; i++){ KEY[i] = keyOf(i); AT.set(KEY[i], i); }
+function where(i){ var t = T[i], f = F[t[0]]; return f[3] === 'java' ? f[1] + '.java:' + t[1] + ((t[4] & 2) || !t[3] ? '' : ' · ' + t[3]) : t[3]; }
+
+// ---- What is kept: the edits being made, and the batches sent ------------------------------------------------------
+var edits = new Map(), batches = [], canWrite = false, mode = 'loading', db = null, mcp = null;
+var LOCAL_E = 'text-review.edits', LOCAL_B = 'text-review.batches';
+function local(name, value){
+  try{
+    if(value === undefined) return JSON.parse(localStorage.getItem(name) || 'null');
+    localStorage.setItem(name, JSON.stringify(value));
+  }catch(e){}
+  return null;
+}
+function keepLocal(){ local(LOCAL_E, Array.from(edits.entries())); local(LOCAL_B, batches); }
+function saveEdit(key, doc){
+  edits.set(key, doc); changed();
+  if(db) return db.doc('edits/' + key).set(doc).catch(failed);
+  keepLocal(); return Promise.resolve();
+}
+function dropEdit(key){
+  edits.delete(key); changed();
+  if(db) return db.doc('edits/' + key).delete().catch(failed);
+  keepLocal(); return Promise.resolve();
+}
+function failed(e){
+  var code = e && e.code;
+  say(code === 'invalid_argument' || code === 'not_granted' || code === 'revoked' ? 'This view may not change the saved edits.'
+    : code === 'quota_exceeded' ? 'The page’s store is full. Push or discard some changes.'
+    : 'That did not save. Check the connection and try again.', 'bad');
+}
+function start(){
+  var c = window.claude;
+  if(!c || typeof c.use !== 'function'){ useLocal(); return; }
+  Promise.all([c.use('db'), c.use('user'), c.use('mcp')]).then(function(got){
+    mcp = got[2];
+    if(!got[0]){ useLocal(); return; }
+    db = got[0]; mode = 'db'; canWrite = true;
+    var timer = setTimeout(function(){ say('The saved edits can’t be reached yet. What is shown may be out of date.', 'bad'); }, 10000);
+    var once = function(){ if(timer){ clearTimeout(timer); timer = null; say('', ''); } };
+    db.collection('edits').onSnapshot(function(snap){
+      if(!snap.metadata.fromCache) once();
+      edits = new Map(snap.docs.map(function(d){ return [d.id, d.data()]; })); changed();
+    }, function(e){ once(); failed(e); });
+    db.collection('batches').onSnapshot(function(snap){
+      batches = snap.docs.map(function(d){ var b = Object.assign({}, d.data()); b.id = d.id; return b; }); changed();
+    }, function(){});
+    if(got[1]) got[1].can('data.write').then(function(ok){ if(ok === false){ canWrite = false; changed(); } }).catch(function(){});
+    changed();
+  }).catch(useLocal);
+}
+function useLocal(){
+  mode = 'local'; canWrite = true; db = null;
+  edits = new Map(local(LOCAL_E) || []); batches = local(LOCAL_B) || []; changed();
+}
+
+// An edit is a draft until it is in a batch that has been sent; then it is what that batch says.
+function sentAs(){
+  var m = new Map();
+  batches.slice().sort(function(a, b){ return String(a.at).localeCompare(String(b.at)); }).forEach(function(b){
+    (b.edits || []).forEach(function(e){ m.set(e.h, {b: b, e: e}); });
+  });
+  return m;
+}
+var SENT = new Map();
+function stateOf(key){
+  var d = edits.get(key); if(!d) return null;
+  var s = SENT.get(key);
+  if(!s || s.e.new !== d.new) return 'draft';
+  if(s.b.state === 'pushed') return (s.b.missed || {})[key] ? 'problem' : 'pushed';
+  return s.b.state === 'problem' ? 'problem' : 'queued';
+}
+function drafts(){ return Array.from(edits.keys()).filter(function(k){ return AT.has(k) && stateOf(k) === 'draft'; }); }
+
+// ---- Choosing what to look at -------------------------------------------------------------------------------------
+var S = {group: null, file: null, who: null, cat: null, q: '', edited: false}, limit = 120, tab = 'stories', open = null;
+var perGroup = new Map(), perFile = new Map(), perWho = new Map(), perCat = new Map();
+function bump(m, k){ m.set(k, (m.get(k) || 0) + 1); }
+for(i = 0; i < T.length; i++){ bump(perGroup, F[T[i][0]][2]); bump(perFile, T[i][0]); bump(perCat, T[i][5]); if(T[i][6] >= 0) bump(perWho, T[i][6]); }
+function passes(i, skipCat){
+  var t = T[i];
+  if(S.file != null && t[0] !== S.file) return false;
+  if(S.group != null && F[t[0]][2] !== S.group) return false;
+  if(S.who != null && t[6] !== S.who) return false;
+  if(!skipCat && S.cat != null && t[5] !== S.cat) return false;
+  if(S.edited && !edits.has(KEY[i])) return false;
+  if(S.q && LOW[i].indexOf(S.q) < 0) return false;
+  return true;
+}
+function setFilter(patch){ Object.assign(S, patch); limit = 120; open = null; render(); }
+
+function renderSide(){
+  var box = $('side-list'), f = $('side-filter').value.trim().toLowerCase(); box.textContent = '';
+  var has = function(s){ return !f || s.toLowerCase().indexOf(f) >= 0; };
+  var touched = new Set(); edits.forEach(function(d, k){ var i = AT.get(k); if(i != null){ touched.add('g' + F[T[i][0]][2]); touched.add('f' + T[i][0]); touched.add('w' + T[i][6]); } });
+  function pick(label, n, current, on, cls, dot){
+    var b = el('button', 'pick' + (cls ? ' ' + cls : '')); b.type = 'button';
+    b.appendChild(el('span', null, label)); if(dot) b.appendChild(el('span', 'dot'));
+    b.appendChild(el('span', 'n', num(n)));
+    if(current) b.setAttribute('aria-current', 'true');
+    b.addEventListener('click', on); box.appendChild(b);
+  }
+  if(tab === 'stories'){
+    pick('Everything', T.length, S.group == null && S.file == null, function(){ setFilter({group: null, file: null}); });
+    Array.from(perGroup.keys()).sort().forEach(function(g){
+      var files = F.map(function(x, k){ return k; }).filter(function(k){ return F[k][2] === g && perFile.has(k); });
+      var shown = has(g) || files.some(function(k){ return has(F[k][1]); });
+      if(!shown) return;
+      pick(g, perGroup.get(g), S.group === g && S.file == null, function(){ setFilter({group: g, file: null, who: null}); }, '', touched.has('g' + g));
+      if(S.group === g || (f && !has(g))) files.forEach(function(k){
+        if(f && !has(g) && !has(F[k][1])) return;
+        pick(F[k][1], perFile.get(k), S.file === k, function(){ setFilter({group: g, file: k, who: null}); }, 'sub', touched.has('f' + k));
+      });
+    });
+  }else if(tab === 'people'){
+    box.appendChild(el('p', 'hint', 'Whoever a line is given to in the code: the one who says it, the one who wrote it, or the one it is about. Lines the code does not name anybody for are not here.'));
+    var by = new Map();
+    W.forEach(function(w, k){ if(perWho.has(k) && (has(w[1]) || has(w[0]))){ if(!by.has(w[0])) by.set(w[0], []); by.get(w[0]).push(k); } });
+    Array.from(by.keys()).sort().forEach(function(story){
+      box.appendChild(el('div', 'heading', story));
+      by.get(story).sort(function(a, b){ return perWho.get(b) - perWho.get(a); }).forEach(function(k){
+        pick(W[k][1], perWho.get(k), S.who === k, function(){ setFilter({who: S.who === k ? null : k, group: null, file: null}); }, '', touched.has('w' + k));
+      });
+    });
+  }else{
+    CATS.forEach(function(name, k){ if(perCat.has(k) && has(name)) pick(name, perCat.get(k), S.cat === k, function(){ setFilter({cat: S.cat === k ? null : k}); }); });
+    box.appendChild(el('p', 'hint', 'Dialogue is a line somebody is named as saying. Lines are everything else a reader is shown in play. Replies are what a reader can answer with.'));
+  }
+}
+
+function fill(node, text){
+  node.textContent = '';
+  if(!S.q){ node.textContent = text; return; }
+  var low = text.toLowerCase(), at = 0, hit;
+  while((hit = low.indexOf(S.q, at)) >= 0){
+    if(hit > at) node.appendChild(document.createTextNode(text.slice(at, hit)));
+    node.appendChild(el('mark', null, text.slice(hit, hit + S.q.length))); at = hit + S.q.length;
+  }
+  if(at < text.length) node.appendChild(document.createTextNode(text.slice(at)));
+}
+var LABEL = {draft: 'Changed', queued: 'Sent', pushed: 'Pushed', problem: 'Not applied'};
+function renderRow(first){
+  var row = el('article', 'row'), meta = el('div', 'meta'), text = el('div', 'text'), t = T[first];
+  if(t[6] >= 0) meta.appendChild(el('span', 'who', W[t[6]][1]));
+  meta.appendChild(el('span', 'tag', CATS[t[5]]));
+  var worst = null, wasList = [];
+  for(var i = first; i < T.length && RUN[i] === first; i++){
+    if(i > first && T[i][3]) text.appendChild(el('code', 'glue', T[i][3]));
+    var key = KEY[i], d = edits.get(key), st = stateOf(key), shown = d ? d.new : T[i][2];
+    var frag = el('span', 'frag' + (canWrite ? ' can' : '') + (d ? ' edited' : '') + (shown === '' ? ' empty' : ''));
+    fill(frag, shown); frag.dataset.i = i; if(canWrite){ frag.tabIndex = 0; frag.setAttribute('role', 'button'); frag.title = 'Change this line'; }
+    text.appendChild(frag);
+    if(d){ wasList.push(T[i][2]); if(!worst || st === 'problem' || (st === 'draft' && worst !== 'problem')) worst = st; }
+  }
+  if(worst){
+    meta.appendChild(el('span', 'state ' + worst, LABEL[worst]));
+    row.classList.add(worst === 'draft' || worst === 'problem' ? 'changed' : worst === 'queued' ? 'sent' : 'done');
+  }
+  meta.appendChild(el('span', 'where', where(first)));
+  row.appendChild(meta); row.appendChild(text);
+  wasList.forEach(function(old){ var w = el('div', 'was'); w.appendChild(el('b', null, 'was')); w.appendChild(document.createTextNode(old)); row.appendChild(w); });
+  if(open != null && RUN[open] === first) row.appendChild(editor(open));
+  return row;
+}
+var MARKS = /%(?:\d+\$)?[sdfx]|%%|\{\d*\}|§./g;
+function editor(i){
+  var box = el('div', 'editor'), t = T[i], key = KEY[i], d = edits.get(key), area = el('textarea'), warn = el('p', 'warn'), acts = el('div', 'acts');
+  area.value = d ? d.new : t[2]; area.spellcheck = true; area.rows = Math.min(14, Math.max(2, area.value.split('\n').length + 1));
+  area.setAttribute('aria-label', 'The line as it is to be');
+  function finished(){ var tail = (t[2].match(/\n*$/) || [''])[0]; return area.value.replace(/\n+$/, '') + tail; }
+  function check(){
+    var v = finished(), notes = [];
+    var a = (t[2].match(MARKS) || []).sort().join(' '), b = (v.match(MARKS) || []).sort().join(' ');
+    if(a !== b) notes.push('The line has the marks ' + (a || 'none') + ' that the game fills in; yours has ' + (b || 'none') + '.');
+    if(/^\s/.test(t[2]) !== /^\s/.test(v)) notes.push(/^\s/.test(t[2]) ? 'The line began with a space, which joins it to what comes before it.' : 'Yours begins with a space; the line did not.');
+    if(/[ \t]$/.test(t[2]) !== /[ \t]$/.test(v)) notes.push(/[ \t]$/.test(t[2]) ? 'The line ended with a space, which joins it to what comes after it.' : 'Yours ends with a space; the line did not.');
+    if(v === '') notes.push('An empty line stays in the game as nothing said.');
+    warn.textContent = notes.join(' '); warn.hidden = !notes.length;
+  }
+  function save(){
+    var v = finished(); open = null;
+    if(v === t[2]){ if(d) dropEdit(key); else render(); return; }
+    var f = F[t[0]], doc = {path: f[0], kind: f[3], old: t[2], new: v, at: new Date().toISOString(), where: where(i)};
+    if(f[3] === 'java'){ doc.nth = t[7] || 0; doc.of = t[8] || 1; } else doc.key = t[3];
+    saveEdit(key, doc);
+  }
+  var ok = el('button', 'btn primary', 'Keep'), no = el('button', 'btn', 'Cancel'); ok.type = no.type = 'button';
+  ok.addEventListener('click', save); no.addEventListener('click', function(){ open = null; render(); });
+  acts.appendChild(ok); acts.appendChild(no);
+  if(d){ var back = el('button', 'btn quiet', 'Put back as it was'); back.type = 'button'; back.addEventListener('click', function(){ open = null; dropEdit(key); }); acts.appendChild(back); }
+  acts.appendChild(el('span', 'note', 'Ctrl or ⌘ + Enter keeps it'));
+  area.addEventListener('input', check);
+  area.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); save(); }
+    else if(e.key === 'Escape'){ e.preventDefault(); open = null; render(); }
+  });
+  box.appendChild(area); box.appendChild(warn); box.appendChild(acts); check();
+  setTimeout(function(){ area.focus(); }, 0);
+  return box;
+}
+
+function render(){
+  SENT = sentAs();
+  var hits = [], perKind = new Map(), runs = new Set(), all = 0;
+  for(var i = 0; i < T.length; i++){
+    if(!passes(i, true)) continue;
+    bump(perKind, T[i][5]); all++;
+    if(S.cat == null || T[i][5] === S.cat){ if(!runs.has(RUN[i])){ runs.add(RUN[i]); hits.push(RUN[i]); } }
+  }
+  // What is chosen, as chips that can be taken off.
+  var crumbs = $('crumbs'); crumbs.textContent = '';
+  function chip(label, off){ var c = el('span', 'chip', label), x = el('button', null, '×'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + label); x.addEventListener('click', off); c.appendChild(x); crumbs.appendChild(c); }
+  if(S.file != null) chip(F[S.file][1], function(){ setFilter({file: null}); });
+  else if(S.group != null) chip(S.group, function(){ setFilter({group: null}); });
+  if(S.who != null) chip(W[S.who][1] + ' · ' + W[S.who][0], function(){ setFilter({who: null}); });
+  if(S.q) chip('“' + $('q').value.trim() + '”', function(){ $('q').value = ''; setFilter({q: ''}); });
+  var shown = S.cat == null ? all : (perKind.get(S.cat) || 0);
+  crumbs.appendChild(el('span', null, num(shown) + (shown === 1 ? ' line' : ' lines')));
+  var kinds = $('kinds'); kinds.textContent = '';
+  function kind(label, n, on, pressed){ var b = el('button', 'kind', label); b.type = 'button'; b.setAttribute('aria-pressed', pressed ? 'true' : 'false'); if(n != null) b.appendChild(el('span', 'n', num(n))); b.addEventListener('click', on); kinds.appendChild(b); }
+  kind('All kinds', all, function(){ setFilter({cat: null}); }, S.cat == null);
+  CATS.forEach(function(name, k){ if(perKind.get(k)) kind(name, perKind.get(k), function(){ setFilter({cat: S.cat === k ? null : k}); }, S.cat === k); });
+  kind('Changed only', null, function(){ setFilter({edited: !S.edited}); }, S.edited);
+  var list = $('list'); list.textContent = '';
+  if(!hits.length){
+    var none = el('p', 'empty', S.q ? 'Nothing here has those words.' : 'Nothing here.');
+    if(S.q && (S.group != null || S.file != null || S.who != null || S.cat != null || S.edited)){
+      var wide = el('button', 'btn', 'Search everything'); wide.type = 'button';
+      wide.addEventListener('click', function(){ setFilter({group: null, file: null, who: null, cat: null, edited: false}); });
+      none.appendChild(document.createElement('br')); none.appendChild(wide);
+    }
+    list.appendChild(none);
+  }
+  hits.slice(0, limit).forEach(function(first){ list.appendChild(renderRow(first)); });
+  var more = $('more'); more.hidden = hits.length <= limit; more.textContent = 'Show more (' + num(hits.length - limit) + ' left)';
+  renderSide(); renderChanges();
+}
+
+// ---- Changes, and sending them ------------------------------------------------------------------------------------
+var ASK = 'push the text edits';
+function say(text, cls){ var s = $('push-status'); s.textContent = text; s.className = 'status' + (cls ? ' ' + cls : ''); }
+function when(iso){ var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}); }
+function renderChanges(){
+  var body = $('changes-body'); body.textContent = '';
+  var mine = drafts(), lost = Array.from(edits.keys()).filter(function(k){ return !AT.has(k); });
+  var n = $('n-changes'); n.textContent = mine.length; n.className = 'count' + (mine.length ? '' : ' zero');
+  $('push').disabled = !mine.length || !canWrite;
+  $('push').textContent = mine.length ? 'Push ' + mine.length + (mine.length === 1 ? ' change' : ' changes') + ' to GitHub' : 'Push to GitHub';
+  $('save-note').textContent = mode === 'db' ? 'Changes are kept with this page as you make them, on any device you open it from.'
+    : mode === 'local' ? 'Changes are kept in this browser only. Open the page in Claude to keep them with the page and to push them.'
+    : 'Loading what has been changed…';
+  if(!mine.length) body.appendChild(el('p', 'empty', batches.length ? 'Nothing new to send.' : 'Nothing changed yet. Click a line to change it.'));
+  function card(k, lostOne){
+    var d = edits.get(k), c = el('div', 'change'), acts = el('div', 'acts');
+    c.appendChild(el('span', 'where', d.where || d.path)); c.appendChild(el('div', 'old', d.old)); c.appendChild(el('div', 'new', d.new));
+    if(!lostOne){ var go = el('button', 'btn quiet', 'Show'); go.type = 'button'; go.addEventListener('click', function(){ var i = AT.get(k); $('q').value = ''; setFilter({file: T[i][0], group: F[T[i][0]][2], who: null, cat: null, q: '', edited: true}); closeChanges(); }); acts.appendChild(go); }
+    var drop = el('button', 'btn quiet', lostOne ? 'Discard' : 'Put back'); drop.type = 'button'; drop.addEventListener('click', function(){ dropEdit(k); }); acts.appendChild(drop);
+    c.appendChild(acts); return c;
+  }
+  mine.forEach(function(k){ body.appendChild(card(k, false)); });
+  if(lost.length){
+    body.appendChild(el('div', 'sub-h', 'No longer in the source as they were'));
+    body.appendChild(el('p', 'hint', 'These lines have changed in the source since you edited them. They are not sent. Make the change again on the line as it is now, then discard these.'));
+    lost.forEach(function(k){ body.appendChild(card(k, true)); });
+  }
+  var sent = batches.slice().sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
+  if(sent.length) body.appendChild(el('div', 'sub-h', 'Sent'));
+  sent.slice(0, 12).forEach(function(b){
+    var box = el('div', 'batch'), n = (b.edits || []).length, label = b.state === 'pushed' ? 'Pushed' : b.state === 'working' ? 'Being applied' : b.state === 'problem' ? 'Stopped' : 'Waiting for Claude';
+    box.appendChild(el('b', null, label)); box.appendChild(document.createTextNode(' · ' + n + (n === 1 ? ' change · ' : ' changes · ') + when(b.at)));
+    if(b.commit){ box.appendChild(document.createTextNode(' · ')); if(D.repo){ var a = el('a', null, String(b.commit).slice(0, 8)); a.href = 'https://github.com/' + D.repo + '/commit/' + b.commit; a.target = '_blank'; a.rel = 'noopener'; box.appendChild(a); } else box.appendChild(document.createTextNode(String(b.commit).slice(0, 8))); }
+    if(b.said) box.appendChild(el('div', null, b.said));
+    var missed = b.missed || {}, keys = Object.keys(missed);
+    if(keys.length){ var ul = el('ul'); keys.forEach(function(k){ var e = (b.edits || []).filter(function(x){ return x.h === k; })[0]; ul.appendChild(el('li', null, (e ? e.where + ': ' : '') + missed[k])); }); box.appendChild(ul); }
+    body.appendChild(box);
+  });
+  var waiting = batches.some(function(b){ return b.state === 'queued'; });
+  $('wake').hidden = !(waiting && mcp && D.trigger); $('copy-ask').hidden = !waiting;
+}
+function openChanges(){ $('changes').hidden = false; $('shade').hidden = false; renderChanges(); }
+function closeChanges(){ $('changes').hidden = true; $('shade').hidden = true; }
+function wake(sent){
+  if(!mcp || !D.trigger){ say('Queued. Say “' + ASK + '” to Claude and they go to GitHub.', ''); return; }
+  say('Queued. Waking Claude…', '');
+  var waitingFor = typeof sent === 'number' ? sent : batches.filter(function(b){ return b.state === 'queued'; }).length;
+  mcp.callTool('Claude Code Remote', 'fire_trigger', {trigger_id: D.trigger, text: 'Text review: ' + waitingFor + ' batch' + (waitingFor === 1 ? ' is' : 'es are') + ' queued on the page.'})
+    .then(function(){ say('Sent to Claude, who puts them in the source, checks that it still builds, and pushes one commit. This panel shows the commit when it is on GitHub.', 'ok'); })
+    .catch(function(e){
+      var code = e && e.code;
+      if(code === 'not_granted' || code === 'not_in_manifest' || code === 'approval_required' || code === 'consent_required')
+        say('Queued. This page was not allowed to wake Claude. Press Wake Claude and allow it, or say “' + ASK + '” to Claude.', 'bad');
+      else if(code === 'server_unavailable' || code === 'upstream_error' || code === 'rate_limited' || code === 'cancelled')
+        say('Queued. It is not certain Claude was woken. Press Wake Claude, or say “' + ASK + '” to Claude.', 'bad');
+      else say('Queued. Claude can’t be woken from this view. Say “' + ASK + '” to Claude and they go to GitHub.', 'bad');
+    });
+}
+function push(){
+  var mine = drafts(); if(!mine.length) return;
+  $('push').disabled = true;
+  var at = new Date().toISOString(), id = 'b' + at.replace(/\D/g, '').slice(0, 14) + Math.random().toString(36).slice(2, 6);
+  var note = $('batch-note').value.trim(), parts = [[]], size = 0;
+  mine.forEach(function(k){
+    var d = edits.get(k), e = {h: k, path: d.path, kind: d.kind, old: d.old, new: d.new, where: d.where};
+    if(d.kind === 'java'){ e.nth = d.nth; e.of = d.of; } else e.key = d.key;
+    var bytes = JSON.stringify(e).length * 2;
+    if(size + bytes > 180000 && parts[parts.length - 1].length){ parts.push([]); size = 0; }
+    parts[parts.length - 1].push(e); size += bytes;
+  });
+  var docs = parts.map(function(list, k){ return {id: id + (k ? '.' + (k + 1) : ''), doc: {at: at, note: note, state: 'queued', part: k + 1, parts: parts.length, built: D.commit, edits: list}}; });
+  var done = db ? docs.reduce(function(p, x){ return p.then(function(){ return db.doc('batches/' + x.id).set(x.doc); }); }, Promise.resolve())
+    : Promise.resolve(docs.forEach(function(x){ var b = Object.assign({id: x.id}, x.doc); batches.push(b); }));
+  done.then(function(){ $('batch-note').value = ''; if(!db){ keepLocal(); changed(); } wake(docs.length); })
+    .catch(function(e){ failed(e); renderChanges(); });
+}
+function changed(){ render(); }
+
+// ---- Wiring -------------------------------------------------------------------------------------------------------
+$('build').textContent = 'the game at ' + D.version + (D.commit ? ' · ' + D.commit.slice(0, 8) : '') + ' · ' + num(T.length) + ' lines';
+var typing = null;
+$('q').addEventListener('input', function(){ clearTimeout(typing); typing = setTimeout(function(){ setFilter({q: $('q').value.trim().toLowerCase()}); }, 140); });
+$('side-filter').addEventListener('input', renderSide);
+Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){
+  b.addEventListener('click', function(){
+    tab = b.dataset.tab; $('side-filter').value = '';
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(o){ o.setAttribute('aria-selected', o === b ? 'true' : 'false'); });
+    renderSide();
+  });
+});
+$('browse').addEventListener('click', function(){ $('side').classList.toggle('open'); });
+$('more').addEventListener('click', function(){ limit += 300; render(); });
+function pickLine(e){
+  var frag = e.target.closest ? e.target.closest('.frag') : null;
+  if(!frag || !canWrite) return;
+  if(e.type === 'keydown' && e.key !== 'Enter') return;
+  e.preventDefault(); open = Number(frag.dataset.i); render();
+}
+$('list').addEventListener('click', pickLine); $('list').addEventListener('keydown', pickLine);
+$('open-changes').addEventListener('click', openChanges); $('close-changes').addEventListener('click', closeChanges); $('shade').addEventListener('click', closeChanges);
+$('push').addEventListener('click', push); $('wake').addEventListener('click', function(){ wake(); });
+$('copy-ask').addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(ASK).then(function(){ say('Copied. Paste it to Claude.', 'ok'); }, function(){ say('Say “' + ASK + '” to Claude.', ''); }); });
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !$('changes').hidden && document.activeElement.tagName !== 'TEXTAREA') closeChanges(); });
+render(); start();
+})();
+</script>

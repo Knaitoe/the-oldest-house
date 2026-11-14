@@ -198,6 +198,7 @@ jobs:
           python3 tools/generate_bike_night_audio.py --check
           python3 tools/generate_pell_audio.py --check
           python3 tools/structure_groups.py --check
+          python3 tools/text_review.py --check
 
       - name: Verify playtest journey measurements
         run: python3 -m unittest discover -s tools -p test_summarize_playtest_log.py -v
