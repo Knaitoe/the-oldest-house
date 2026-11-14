@@ -277,7 +277,8 @@ public final class PellKnife {
                 PellVisit.go(h,J,-1,PellVisit.HER_ROOM.look(),SLIDER_TO_ROOM);h.knifeWay=1;
             }
             default->{
-                if(PellSite.open(l,b,PellSite.JUNE_DOOR)){if(!PellVisit.clearOf(b,PellSite.JUNE_DOOR,here))return;PellHouse.toggle(l,b,PellSite.JUNE_DOOR);}
+                // 0.4.575: her door shut once nobody else is in her room (PellNight.shutRoom).
+                if(!PellNight.shutRoom(l,b,h,june,here,now,true))return;
                 h.knife=OVER;
             }
         }

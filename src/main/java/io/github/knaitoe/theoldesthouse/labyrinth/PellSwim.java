@@ -185,7 +185,8 @@ public final class PellSwim {
             default->{
                 if(!still)return;
                 // In her room: the door shut behind her once nobody is in it; she dresses.
-                if(PellSite.open(l,b,PellSite.JUNE_DOOR)){if(!PellVisit.clearOf(b,PellSite.JUNE_DOOR,here))return;PellHouse.toggle(l,b,PellSite.JUNE_DOOR);}
+                // 0.4.575: and nobody else in her room (PellNight.shutRoom).
+                if(!PellNight.shutRoom(l,b,h,june,here,now,true))return;
                 h.swum=true;h.swumAt=now;
             }
         }

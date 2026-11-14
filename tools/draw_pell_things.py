@@ -1843,6 +1843,78 @@ def for_sale(front):
     return im
 
 
+# ------------------------------------------------------------------------------------------------ June's room (0.4.575)
+JUNE_TIMBER = '#5c3e27'
+
+
+def spread(foot):
+    """June's bedspread: candlewick, its tufts in rows, pulled square. At the head the sheet is turned down over it a hand's width,
+    just short of the pillow. Its top rows are plain: the bed's sides are taken from them."""
+    im = cloth('#d9cdb8', 57501 + foot, 1)
+    for y in range(4, 16, 3):
+        for x in range((y // 3) % 2, 16, 2):
+            dot(im, x, y, shade(im.getpixel((x, y)), 12))
+            if y + 1 < 16:
+                dot(im, x, y + 1, shade(im.getpixel((x, y + 1)), -9))
+    if not foot:
+        fill(im, 0, 7, 16, 9, '#f6f3ea')
+        for x in range(16):
+            dot(im, x, 6, shade(im.getpixel((x, 6)), -16)); dot(im, x, 8, '#e6e2d6' if x % 4 else '#f6f3ea')
+    return im
+
+
+def dresser_front():
+    """June's chest of drawers: three drawers in dark timber with two brass knobs to each, and a plinth. Older than anything else in
+    the house. (The front shows from its third row down.)"""
+    im = wood(JUNE_TIMBER, 57503)
+    for y0 in (3, 7, 11):
+        bevel(im, 2, y0, 14, y0 + 4, 12)
+        for x in (5, 10):
+            dot(im, x, y0 + 1, '#d2ab55'); dot(im, x, y0 + 2, '#8c6a2c')
+    fill(im, 0, 15, 16, 16, '#2a1c12')
+    return im
+
+
+def june_wardrobe(upper):
+    """June's wardrobe, a cell to each half: two doors in the same dark timber with a raised panel to each, a cornice at its head, a
+    knob to each door at hand height and a plinth at its foot."""
+    im = wood(JUNE_TIMBER, 57504 + upper, across=True)
+    top, foot = (3, 16) if upper else (0, 14)
+    for x0, x1 in ((0, 8), (8, 16)):
+        bevel(im, x0, top, x1, foot, 10); bevel(im, x0 + 2, top + 2, x1 - 2, foot - 1 if upper else foot - 2, 12)
+    if upper:
+        fill(im, 0, 0, 16, 2, '#6e4c31'); fill(im, 0, 2, 16, 3, '#2a1c12')
+        for x in range(16):
+            dot(im, x, 0, '#80593a')
+    else:
+        for x in (6, 9):
+            dot(im, x, 0, '#d2ab55'); dot(im, x, 1, '#8c6a2c')
+        fill(im, 0, 14, 16, 16, '#2a1c12')
+    return im
+
+
+def alarm_clock():
+    """June's wind-up alarm clock: in the corner of its picture a white face in a brass rim, five pixels square, its hands at a
+    quarter past twelve and its alarm hand at eleven; the rest is its brass case."""
+    im = metal('#b08a3a', 57506)
+    fill(im, 0, 0, 5, 5, '#8c6a2c'); fill(im, 1, 1, 4, 4, '#f4f0e2')
+    dot(im, 2, 2, '#2a2420'); dot(im, 2, 1, '#2a2420'); dot(im, 3, 2, '#55504a'); dot(im, 1, 1, '#b8483a')
+    return im
+
+
+def bedside_drawer():
+    """The bedside table's drawer: the same dark timber, a brass knob. (The drawer's front is the part from the seventh row.)"""
+    im = wood(JUNE_TIMBER, 57507)
+    bevel(im, 4, 6, 12, 9, 12)
+    dot(im, 7, 7, '#d2ab55'); dot(im, 8, 7, '#8c6a2c')
+    return im
+
+
+def junes():
+    return {'spread_head': spread(0), 'spread_foot': spread(1), 'dresser_front': dresser_front(), 'june_wardrobe_lo': june_wardrobe(0),
+            'june_wardrobe_hi': june_wardrobe(1), 'alarm_clock': alarm_clock(), 'bedside_drawer': bedside_drawer()}
+
+
 def outside():
     return {'tag_nessa': plant_tag(0), 'tag_tilly': plant_tag(1), 'tag_over': plant_tag(2), 'kennel_wall': kennel_wall(),
             'seedling_dead': seedling_dead(), 'seedling_dried': seedling_dried(), 'seedling_gone': seedling_gone(), 'seedling_fresh': seedling_fresh(),
@@ -2442,6 +2514,39 @@ def thing_models():
     phone_tex = {'p': 'phone_plate', 'h': 'phone_handset', 'c': 'phone_cord', 't': 'phone_tape'}
     out['phone_0'] = m([plate, tape, *handset, *loop], phone_tex, 'phone_plate')
     out['phone_1'] = m([plate, tape, hook, out_], phone_tex, 'phone_plate')
+    # ---------------------------------------------------------------------------------------- June's room (0.4.575)
+    # Her bed: a base in dark timber and the made bed on it; at the head the pillow and the headboard, at the foot a footboard. The
+    # headboard stands on the bed, not through it, so that no two faces lie in one plane. The footboard is the bed's whole end from
+    # the base up, with the made bed stopping against it (the first frames showed a strip of bedspread under a rail). The spread's
+    # sides are its plain rows.
+    every = ('north', 'south', 'east', 'west', 'up', 'down'); upright = ('north', 'south', 'east', 'west')
+    for end in range(2):
+        sides = upright if end == 0 else ('south', 'east', 'west')
+        els = [element([0, 0, 0], [16, 6, 16], {k: 'f' for k in every}),
+               element([0, 6, 0 if end == 0 else 1], [16, 9, 16], {k: 'q' for k in sides + ('up',)}, uv={k: [0, 0, 16, 3] for k in sides})]
+        els += [box([2, 9, 9], [14, 11, 15], 'p'), box([0, 9, 15], [16, 18, 16], 'f')] if end == 0 else \
+            [element([0, 6, 0], [16, 12, 1], {k: 'f' for k in upright + ('up',)})]
+        out[f'june_bed_{end}'] = m(els, {'f': 'wood_dark', 'q': 'spread_foot' if end else 'spread_head', 'p': 'pillow'}, 'spread_foot')
+    # The bedside table: a top on four legs with a drawer under it; on it her lamp, and the clock by the pillow, its face to the room.
+    out['june_bedside_0'] = m([element([2, 10, 3], [14, 12, 15], {k: 'd' for k in every}),
+                               *[box([x, 0, z], [x + 2, 10, z + 2], 'd') for x in (2, 12) for z in (3, 13)],
+                               element([4, 7, 3.5], [12, 10, 14.5], {'north': 'w', 'south': 'd', 'east': 'd', 'west': 'd', 'down': 'd'}, uv={'north': [4, 6, 12, 9]}),
+                               box([4, 12, 9], [7, 13, 12], 'b'), box([5, 13, 10], [6, 15, 11], 'b'),
+                               element([3, 15, 8], [8, 20, 13], {k: 's' for k in every},
+                                       uv={**{k: [0, 11, 5, 16] for k in upright}, 'up': [0, 0, 5, 5], 'down': [0, 0, 5, 5]}),
+                               element([9, 12, 8], [14, 17, 10], {k: 'k' for k in every},
+                                       uv={'north': [0, 0, 5, 5], 'south': [8, 8, 13, 13], 'east': [8, 8, 10, 13], 'west': [8, 8, 10, 13],
+                                           'up': [8, 8, 13, 10], 'down': [8, 8, 13, 10]}),
+                               box([10, 17, 8.5], [11, 18, 9.5], 'b'), box([12, 17, 8.5], [13, 18, 9.5], 'b')],
+                              {'d': 'wood_dark', 'w': 'bedside_drawer', 'b': 'brass', 's': 'lamp_shade', 'k': 'alarm_clock'}, 'wood_dark')
+    # The chest of drawers, a doily on it and nothing on the doily; the wardrobe, a cell to each half.
+    out['june_dresser_0'] = m([element([1, 0, 3], [15, 14, 16], {'north': 'f', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd', 'down': 'd'}),
+                               element([4, 14, 6], [12, 14.2, 14], {'up': 'o'})],
+                              {'f': 'dresser_front', 'd': 'wood_dark', 'o': 'doily'}, 'dresser_front')
+    for upper in range(2):
+        face = 'june_wardrobe_hi' if upper else 'june_wardrobe_lo'
+        out[f'june_wardrobe_{upper}'] = m([element([0, 0, 2], [16, 16, 16], {'north': 'f', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd', 'down': 'd'})],
+                                          {'f': face, 'd': 'wood_dark'}, face)
     return out
 
 
@@ -2481,7 +2586,8 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
          'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open', 'for_sale', 'marks_after', 'photo_broken',
-         'seedling', 'flowers', 'edging']
+         'seedling', 'flowers', 'edging',
+         'june_bed', 'june_bedside', 'june_dresser', 'june_wardrobe']
 
 
 # ------------------------------------------------------------------------------------------------ the block
@@ -2541,7 +2647,7 @@ def stages(models):
 
 def textures():
     out = {}
-    for room in (kitchen, living, hall, nessa, callum, bathroom, laundry, garage, shed, outside, rest):
+    for room in (kitchen, living, hall, nessa, callum, bathroom, junes, laundry, garage, shed, outside, rest):
         for name, im in room().items():
             assert name not in out, name
             out[name] = im

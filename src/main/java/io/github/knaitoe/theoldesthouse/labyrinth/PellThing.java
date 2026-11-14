@@ -36,7 +36,8 @@ public final class PellThing extends HorizontalDirectionalBlock {
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
         STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN,FOR_SALE,MARKS_AFTER,PHOTO_BROKEN,
-        SEEDLING,FLOWERS,EDGING;
+        SEEDLING,FLOWERS,EDGING,
+        JUNE_BED,JUNE_BEDSIDE,JUNE_DRESSER,JUNE_WARDROBE;
         // 0.4.548: PHOTO_BROKEN, the last school photograph with its glass broken (PellMark).
         // 0.4.574, the front beds (docs/PELL_HOUSE_NOTES_0_4_574.md): SEEDLING, Tilly's stake, which grows with the visits
         // (PellWeek.dress); FLOWERS, June's geraniums east of the step; EDGING, the bricks on edge along the beds, in the lawn's
@@ -149,6 +150,12 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case STAKE,SEEDLING->t(f,3,0,2,13,16,9);
             case FLOWERS->Block.box(2,0,2,14,10,14);
             case EDGING->stage==1?t(f,13,0,0,16,3,3):t(f,0,0,0,16,3,3);
+            // 0.4.575, June's room: her bed (its headboard against the wall behind it, a footboard at its foot), the bedside table
+            // with its lamp and clock, the chest of drawers, the wardrobe.
+            case JUNE_BED->stage==0?Shapes.or(Block.box(0,0,0,16,9,16),t(f,0,9,15,16,16,16)):Shapes.or(Block.box(0,0,0,16,9,16),t(f,0,9,0,16,12,1));
+            case JUNE_BEDSIDE->Shapes.or(t(f,2,0,3,14,12,15),t(f,3,12,7,14,16,13));
+            case JUNE_DRESSER->t(f,1,0,3,15,14,16);
+            case JUNE_WARDROBE->t(f,0,0,2,16,16,16);
             case KENNEL->t(f,0,0,2,16,14,15);
             case BOWL->Block.box(4,0,4,12,2,12);
             case POOL_CHAIR->Shapes.or(t(f,1,0,1,15,8,15),t(f,1,7,12,15,16,16));

@@ -132,7 +132,13 @@ public final class PellHouse {
         var door=PellSite.doorAt(l,b,rel);if(door==null)return true;
         // A neighbour's door: nobody answers it.
         if(!PellSite.onLot(new net.minecraft.world.phys.Vec3(door.getX()+.5,0,door.getZ()+.5))){cue(p,PellTexts.NOBODY_HOME);return true;}
-        if(door.equals(PellSite.JUNE_DOOR)){cue(p,PellTexts.JUNES_DOOR);return true;}
+        // 0.4.575: June's door is hers from the hall. From inside her room its knob turns, so nobody is ever shut in there. Open,
+        // it is left as it stands.
+        if(door.equals(PellSite.JUNE_DOOR)){
+            if(PellSite.open(l,b,door)){cue(p,PellTexts.JUNES_DOOR_OPEN);return true;}
+            if(!PellSite.inJunesRoom(p.position().subtract(b.getX(),b.getY(),b.getZ()))){cue(p,PellTexts.JUNES_DOOR);return true;}
+            toggle(l,b,door);return true;
+        }
         // 0.4.530: open at night while June has the tin out, its padlock hangs on the hasp; a hand does not shut it.
         // 0.4.536: a week in, its padlock hangs open until June's rounds, and a hand opens and shuts it (PellTapes).
         if(door.equals(PellSite.SHED_DOOR)){if(!PellTapes.shedHand(p,l,b))cue(p,PellSite.open(l,b,door)?PellTexts.SHED_OPEN:PellTexts.PADLOCKED);return true;}

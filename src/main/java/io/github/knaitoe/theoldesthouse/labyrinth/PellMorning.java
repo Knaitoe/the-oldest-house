@@ -186,7 +186,7 @@ public final class PellMorning {
                 PellVisit.dress(june,J);
                 h.nightSaid=0;next(h,RISING);PellVisit.go(h,J,-1,180,OUT_OF_ROOM);
             }
-            case 1->rising(l,b,h,june,here);
+            case 1->rising(l,b,h,june,here,now);
             case 2->{if(h.time>=SEVEN&&still&&PellVisit.ready(h,now,june))call(l,b,h,june,here,now);}
             case 3->breakfast(l,b,h,june,here,now);
             case 4->after(l,b,h,june,now);
@@ -196,11 +196,12 @@ public final class PellMorning {
     }
     /** June's way to the kitchen: her door shut behind her once nobody is in it, and each outside door unlocked as she comes to it. At
      *  the table, breakfast laid; then to the stove. */
-    private static void rising(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here){
+    private static void rising(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now){
         int J=PellPeople.JUNE;if(!h.way[J].isEmpty())return;
         switch(h.waypoint){
             case 0->{
-                if(PellSite.open(l,b,PellSite.JUNE_DOOR)){if(!PellVisit.clearOf(b,PellSite.JUNE_DOOR,here))return;PellHouse.toggle(l,b,PellSite.JUNE_DOOR);}
+                // 0.4.575: and nobody in her room; anyone who is, asked out and walked out (PellNight.shutRoom).
+                if(!PellNight.shutRoom(l,b,h,june,here,now,false))return;
                 PellVisit.go(h,J,-1,180,TO_BACK);h.waypoint=1;
             }
             case 1->{unlock(l,b,PellSite.BACK_DOOR);PellVisit.go(h,J,-1,180,TO_SLIDER);h.waypoint=2;}

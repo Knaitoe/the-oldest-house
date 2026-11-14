@@ -113,7 +113,7 @@ public final class PellNight {
         var bench=b.offset(BENCH_TIN);if(!PellThing.is(l.getBlockState(bench),PellThing.Kind.TIN))l.setBlock(bench,PellThing.of(PellThing.Kind.TIN,Direction.SOUTH,0),3);
         // 0.4.567: nor down by the shed's door, where she sets it to walk a reader out.
         var down=b.offset(TIN_DOWN);if(PellThing.is(l.getBlockState(down),PellThing.Kind.TIN))l.setBlock(down,Blocks.AIR.defaultBlockState(),3);
-        h.askedOut=0;h.outWith=null;h.outHeld=false;h.tow.clear();h.towed=0;h.outStep=0;h.outSince=0;h.tinDown=false;h.shedShut=false;
+        h.askedOut=0;h.outWith=null;h.outHeld=false;h.tow.clear();h.towed=0;h.outStep=0;h.outSince=0;h.tinDown=false;h.shedShut=false;h.outOf=SHED;h.roomOut=false;
         var june=PellPeople.find(l,b,PellPeople.JUNE);if(june!=null)june.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);
         var callum=PellPeople.find(l,b,PellPeople.CALLUM);if(callum!=null)callum.setXRot(0);
         h.cell=0;h.paintedAt=0;h.nightSaid=0;h.feetSaid=-1;h.noticed=false;h.smearSaid=false;h.smearDue=false;h.callumOut=false;h.copied=0;h.copyOf=null;
@@ -125,14 +125,16 @@ public final class PellNight {
         switch(h.step-PellVisit.NIGHT){
             case 0->{
                 // In her room: the door shut behind her. At eleven she gets up, the lantern in her other hand, and goes to the back door.
-                if(still&&PellVisit.near(june,b,v(PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z()),.6)&&PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
+                // 0.4.575: shut once nobody else is in her room or in its doorway; anyone in it asked out, and then walked out
+                // (shutRoom). She has been out in the hall to do that, and comes back in.
+                if(h.outWith!=null||h.roomOut&&still||still&&PellSite.open(l,b,PellSite.JUNE_DOOR)&&PellVisit.near(june,b,v(PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z()),.6))shutRoom(l,b,h,june,here,now,true);
                 // 0.4.538: the last night, she does not go out on her rounds; the night goes on to midnight. 0.4.539: at midnight she
                 // takes Tilly down to the pool (PellRite).
                 // 0.4.541: once it is over, either way, the rest of the night to first light, and the morning (PellDawn).
                 // 0.4.545: the morning is for every reader at the house, a reader as Tilly too.
                 // 0.4.548: at eleven, before midnight, June's last framing and Gail in the night (PellMark).
                 if(h.visit>=PellWeek.LAST){PellMark.tick(l,b,h,june,here,now);PellRite.tick(l,b,h,june,here,now);PellDawn.tick(l,b,h,PellHouse.readers(l,b),now);break;}
-                if(h.time<ELEVEN||!still)break;
+                if(h.time<ELEVEN||!still||h.outWith!=null)break;
                 june.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(PellRegistry.LANTERN.get()));
                 next(h,ROUNDS);PellVisit.go(h,J,-1,180,ROOM_TO_BACK);
             }
@@ -239,7 +241,8 @@ public final class PellNight {
                         PellVisit.go(h,J,-1,PellVisit.HER_ROOM.look(),BACK_TO_ROOM);h.waypoint=2;
                     }
                     default->{
-                        if(PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
+                        // 0.4.575: her door shut behind her once nobody else is in her room (shutRoom).
+                        if(!shutRoom(l,b,h,june,here,now,true))break;
                         next(h,SMALL_HOURS);
                     }
                 }
@@ -252,7 +255,7 @@ public final class PellNight {
         if(h.step>=ROUNDS&&h.step<SMALL_HOURS)speak(l,b,h,june,here,now);
         seen(l,b,h,june,here,now);
     }
-    private static void next(PellPeople.Household h,int step){h.step=step;h.waypoint=0;h.nudgedAt=0;h.askedOut=0;h.shedShut=false;}
+    private static void next(PellPeople.Household h,int step){h.step=step;h.waypoint=0;h.nudgedAt=0;h.askedOut=0;h.shedShut=false;h.roomOut=false;}
 
     /**
      * At the line: each cell in turn from the passage end, then any she has painted that a foot has smeared since. She walks to where
@@ -364,6 +367,14 @@ public final class PellNight {
     /** Inside the door, where she goes to a reader standing right by it; where her tin stands while she has her hands free for a
      *  reader, east of the door; and where she stands to pick it up again. */
     static final Vec3 DOOR_IN=v(6.5,-90.6),IN_DOORWAY=v(6.5,-89.3);
+    /** 0.4.575: the places of hers that she walks a reader out of: the shed, and her own room. */
+    public static final int SHED=0,ROOM=1;
+    /** Her way out of her room with a reader behind her: from inside its door, out through it into the hall, and along the hall to
+     *  the west of it, where she can shut it with the reader standing clear of it. Inside her door, and in its doorway. Her way back
+     *  in from the hall. */
+    static final Vec3[] ROOM_OUT_WAY={v(8.5,-62.6),v(8.5,-64.7),v(7.6,-65.5),v(6.7,-65.5)};
+    static final Vec3 ROOM_DOOR_IN=v(8.5,-62.6),ROOM_IN_DOORWAY=v(8.5,-63.5);
+    static final Vec3[] BACK_INTO_ROOM={v(8.5,-65.4),v(8.5,-63.4),v(PellVisit.HER_ROOM.x(),PellVisit.HER_ROOM.z())};
     static final Vec3[] TIN_WAY={v(6.4,-88.65),v(7.5,-87.7)};
     public static final BlockPos TIN_DOWN=new BlockPos(7,0,-89);
 
@@ -378,6 +389,15 @@ public final class PellNight {
         var at=Vec3.atBottomCenterOf(PellSite.SHED_DOOR);
         return r.subtract(at).horizontalDistanceSqr()<1.1*1.1&&Math.abs(r.y-at.y)<2;
     }
+    /** 0.4.575: in June's room, or standing in its door's way. */
+    static boolean inRoomOrDoorway(BlockPos b,ServerPlayer p){
+        if(!p.isAlive()||p.isSpectator())return false;
+        var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
+        if(PellSite.inJunesRoom(r))return true;
+        var at=Vec3.atBottomCenterOf(PellSite.JUNE_DOOR);
+        return r.subtract(at).horizontalDistanceSqr()<1.1*1.1&&Math.abs(r.y-at.y)<2;
+    }
+    private static boolean inOrAt(BlockPos b,ServerPlayer p,int place){return place==ROOM?inRoomOrDoorway(b,p):inShedOrDoorway(b,p);}
     /**
      * 0.4.567 (owner: "is the player supposed to gain access to the shed at a specific time? as is, they can walk in any time june has it
      * opened and aren't forced to leave despite june's prompts"). By day a week in, the shed's padlock hangs open and anyone may go in for
@@ -398,7 +418,7 @@ public final class PellNight {
         }
         if(anyone){
             if(now-h.nudgedAt>=PellVisit.NUDGE&&PellVisit.ready(h,now,june)){PellVisit.say(h,june,PellPeople.JUNE,ask,now);h.nudgedAt=now;if(h.askedOut==0)h.askedOut=now;}
-            if(h.askedOut>0&&now-h.askedOut>=SHOW_OUT&&nearest!=null)fetch(l,b,h,june,nearest,here,now);
+            if(h.askedOut>0&&now-h.askedOut>=SHOW_OUT&&nearest!=null)fetch(l,b,h,june,nearest,here,now,SHED);
             return false;
         }
         h.askedOut=0;
@@ -407,9 +427,54 @@ public final class PellNight {
         h.shedShut=false;
         return true;
     }
+    /**
+     * 0.4.575, June's room kept June's (docs/PELL_HOUSE_NOTES_0_4_575.md). Her door stands open while she is out of it at night and
+     * while she swims, and a reader can walk in. When she comes to shut it, anyone in her room she asks to come out; SHOW_OUT ticks
+     * after that, if they are still there, she goes to the nearest of them, takes them by the arm and walks them out into the hall a
+     * step ahead of them, as she does from the shed (shutShed), one at a time. Anyone standing in the doorway she asks to mind the
+     * door, and waits. Then, if her place is in her room (back) and she has been out of it with somebody, she goes back in; and with
+     * nobody else in it and its doorway clear, she shuts it. She never shuts anybody in, and a hand on the door from inside opens it
+     * whatever she is doing (PellHouse.click). True once her door is shut.
+     */
+    static boolean shutRoom(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,List<ServerPlayer> here,long now,boolean back){
+        int J=PellPeople.JUNE;
+        if(h.outWith!=null){showOut(l,b,h,june,here,now);return false;}
+        ServerPlayer nearest=null;double best=Double.MAX_VALUE;boolean inside=false;
+        for(var p:here){
+            if(!p.isAlive()||p.isSpectator()||!PellSite.inJunesRoom(rel(b,p.position())))continue;
+            inside=true;
+            if(p.isPassenger()||p.isSleeping())continue;
+            double d=p.distanceToSqr(june);if(d<best){best=d;nearest=p;}
+        }
+        if(inside){
+            if(now-h.nudgedAt>=PellVisit.NUDGE&&PellVisit.ready(h,now,june)){PellVisit.say(h,june,J,PellTexts.JUNE_OUT_OF_ROOM,now);h.nudgedAt=now;if(h.askedOut==0)h.askedOut=now;}
+            if(h.askedOut>0&&now-h.askedOut>=SHOW_OUT&&nearest!=null)fetch(l,b,h,june,nearest,here,now,ROOM);
+            return false;
+        }
+        h.askedOut=0;
+        if(!PellVisit.clearOf(b,PellSite.JUNE_DOOR,here)){
+            if(now-h.nudgedAt>=PellVisit.NUDGE&&PellVisit.ready(h,now,june)){PellVisit.say(h,june,J,PellTexts.JUNE_MIND_DOOR,now);h.nudgedAt=now;}
+            return false;
+        }
+        if(back&&h.roomOut&&!PellSite.inJunesRoom(rel(b,june.position()))){
+            // Out in the hall, having walked somebody out: back to her place, and the door shut once she is there.
+            if(h.way[J].isEmpty())PellVisit.go(h,J,-1,PellVisit.HER_ROOM.look(),BACK_INTO_ROOM);
+            return false;
+        }
+        h.roomOut=false;
+        if(PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
+        return true;
+    }
     /** June going in for a reader: the shed open if they are in it shut (she never locks anybody in), and her tin set down by the door
      *  for a free hand. */
-    private static void fetch(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,ServerPlayer p,List<ServerPlayer> here,long now){
+    private static void fetch(ServerLevel l,BlockPos b,PellPeople.Household h,LiteraryActor june,ServerPlayer p,List<ServerPlayer> here,long now,int place){
+        h.outOf=place;
+        if(place==ROOM){
+            // 0.4.575: her own room, its door open for the two of them.
+            if(!PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);
+            h.roomOut=true;h.outWith=p.getUUID();h.outHeld=false;h.outSince=now;
+            return;
+        }
         if(!PellSite.open(l,b,PellSite.SHED_DOOR)){lock(l,b,PellSite.SHED_DOOR);PellHouse.toggle(l,b,PellSite.SHED_DOOR);}
         h.shedShut=false;
         if(!h.tinDown&&june.getMainHandItem().is(PellRegistry.PAINT_TIN.get())&&put(l,b,TIN_DOWN,PellThing.of(PellThing.Kind.TIN,Direction.SOUTH,0),here)){
@@ -427,31 +492,34 @@ public final class PellNight {
         int J=PellPeople.JUNE;
         ServerPlayer p=null;for(var q:here)if(q.getUUID().equals(h.outWith))p=q;
         if(p==null||!p.isAlive()||p.isSpectator()||p.isPassenger()){letGo(h,june,null);return;}
+        // 0.4.575: something else of the house's has given her somewhere to go meanwhile: she lets go, and goes.
+        if(!h.way[J].isEmpty()){letGo(h,june,h.outHeld?p:null);h.roomOut=false;return;}
         h.moving[J]=true;
         if(!h.outHeld){
             // Gone out by themselves after all.
-            if(!inShedOrDoorway(b,p)){letGo(h,june,null);return;}
+            if(!inOrAt(b,p,h.outOf)){letGo(h,june,null);return;}
             var r=rel(b,p.position());
-            boolean there=june.distanceToSqr(p)<REACH*REACH||SceneFootpaths.walk(june,PellVisit.world(b,reachFor(r)),PellVisit.JUNE_PACE);
+            boolean there=june.distanceToSqr(p)<REACH*REACH||SceneFootpaths.walk(june,PellVisit.world(b,reachFor(r,h.outOf)),PellVisit.JUNE_PACE);
             if(!there&&now-h.outSince<FETCH)return;
             h.outHeld=true;h.outSince=now;h.tow.clear();h.tow.add(r);h.tow.add(rel(b,june.position()));h.towed=0;
-            h.outStep=firstStep(rel(b,june.position()));
+            h.outStep=firstStep(rel(b,june.position()),h.outOf);
             june.gesture(PellPeople.SHOWING);
             if(PellVisit.ready(h,now,june))PellVisit.say(h,june,J,PellTexts.JUNE_TAKES_ARM,now);
             PellHouse.cue(p,PellTexts.SHOWN_OUT);
             return;
         }
         // A step ahead of them, and no further than they have come.
-        if(h.outStep<OUT_WAY.length&&length(h.tow)-h.towed<HOLD_BEHIND+.6&&SceneFootpaths.walk(june,PellVisit.world(b,OUT_WAY[h.outStep]),PellVisit.JUNE_PACE))h.outStep++;
+        var way=h.outOf==ROOM?ROOM_OUT_WAY:OUT_WAY;
+        if(h.outStep<way.length&&length(h.tow)-h.towed<HOLD_BEHIND+.6&&SceneFootpaths.walk(june,PellVisit.world(b,way[h.outStep]),PellVisit.JUNE_PACE))h.outStep++;
         var jr=rel(b,june.position());
         if(h.tow.get(h.tow.size()-1).distanceToSqr(jr)>.0025)h.tow.add(jr);
         double length=length(h.tow);
         h.towed=Math.min(Math.max(h.towed,length-HOLD_BEHIND),h.towed+TOW_PACE);
         var at=PellVisit.world(b,point(h.tow,h.towed));
         p.teleportTo(l,at.x,at.y,at.z,p.getYRot(),p.getXRot());p.setDeltaMovement(Vec3.ZERO);p.fallDistance=0;
-        if(h.outStep>=OUT_WAY.length&&h.towed>=length-HOLD_BEHIND-.05||now-h.outSince>TOW_LIMIT){
+        if(h.outStep>=way.length&&h.towed>=length-HOLD_BEHIND-.05||now-h.outSince>TOW_LIMIT){
             // There: turned to the door to shut it.
-            float look=PellPeople.yawTo(june,Vec3.atCenterOf(b.offset(PellSite.SHED_DOOR)));june.setYRot(look);june.setYBodyRot(look);june.setYHeadRot(look);
+            float look=PellPeople.yawTo(june,Vec3.atCenterOf(b.offset(h.outOf==ROOM?PellSite.JUNE_DOOR:PellSite.SHED_DOOR)));june.setYRot(look);june.setYBodyRot(look);june.setYHeadRot(look);
             letGo(h,june,p);
         }
     }
@@ -480,14 +548,14 @@ public final class PellNight {
         return true;
     }
     /** Where June goes to take hold of a reader: beside them on their side toward the door; or, by the door, in the doorway. */
-    private static Vec3 reachFor(Vec3 r){
-        var toward=DOOR_IN.subtract(r.x,0,r.z);double d=toward.horizontalDistance();
-        if(d<.9)return IN_DOORWAY;
+    private static Vec3 reachFor(Vec3 r,int place){
+        var toward=(place==ROOM?ROOM_DOOR_IN:DOOR_IN).subtract(r.x,0,r.z);double d=toward.horizontalDistance();
+        if(d<.9)return place==ROOM?ROOM_IN_DOORWAY:IN_DOORWAY;
         var at=new Vec3(r.x,0,r.z).add(toward.scale(.8/d));
         return v(at.x,at.z);
     }
     /** Where along her way out June starts from where she stands: in the shed, at its door, or already outside it. */
-    private static int firstStep(Vec3 r){return r.z<-90?0:r.z<-88.9?1:2;}
+    private static int firstStep(Vec3 r,int place){return place==ROOM?(r.z>-63?0:r.z>-64.4?1:2):r.z<-90?0:r.z<-88.9?1:2;}
     private static Vec3 rel(BlockPos b,Vec3 at){return at.subtract(b.getX(),b.getY(),b.getZ());}
     private static double length(List<Vec3> way){double s=0;for(int i=1;i<way.size();i++)s+=way.get(i).distanceTo(way.get(i-1));return s;}
     /** The point this far along a way, from its start. */

@@ -101,6 +101,8 @@ public final class PellSite {
     private static boolean in(Vec3 r,double x0,double z0,double x1,double z1){return r.x>=x0&&r.x<x1+1&&r.z>=z0&&r.z<z1+1;}
     /** Inside the house's walls. */
     public static boolean inHouse(Vec3 r){return in(r,HOUSE_W+1,HOUSE_N+1,HOUSE_E-1,HOUSE_S-1)&&r.y>-.5&&r.y<ROOF;}
+    /** 0.4.575: inside June's room, past its doorway. */
+    public static boolean inJunesRoom(Vec3 r){return in(r,7,-63,9,-59)&&r.y>-.5&&r.y<ROOF;}
     /** Inside the garage. */
     public static boolean inGarage(Vec3 r){return in(r,GARAGE_W+1,GARAGE_N+1,GARAGE_E-1,GARAGE_S-1)&&r.y>-.5&&r.y<ROOF;}
     public static boolean inShed(Vec3 r){return in(r,SHED_W+1,SHED_N+1,SHED_E-1,SHED_S-1)&&r.y>-.5&&r.y<ROOF;}
@@ -359,6 +361,12 @@ public final class PellSite {
         // The bathroom: the bath under the window, the basin and its mirror, the toilet.
         lengthwise(l,b,5,0,-59,PellThing.Kind.BATH,w);
         put(l,b,3,0,-61,PellThing.Kind.VANITY,e,0);put(l,b,3,1,-61,PellThing.Kind.MIRROR,e,0);put(l,b,5,0,-62,PellThing.Kind.TOILET,w,0);
+        // 0.4.575, June's room: her bed along the east wall with its head to the front wall; the bedside table under the window,
+        // with her lamp and her clock; a chest of drawers and a wardrobe against the west wall. The middle of the floor is clear
+        // from her door to her window: it is where she stands (PellVisit.HER_ROOM) and the way she walks.
+        lengthwise(l,b,9,0,-59,PellThing.Kind.JUNE_BED,n);
+        put(l,b,8,0,-59,PellThing.Kind.JUNE_BEDSIDE,n,0);put(l,b,7,0,-61,PellThing.Kind.JUNE_DRESSER,e,0);
+        put(l,b,7,0,-59,PellThing.Kind.JUNE_WARDROBE,e,0);put(l,b,7,1,-59,PellThing.Kind.JUNE_WARDROBE,e,1);
         // The laundry: the freezer against the east wall, its cord taped across the floor from the power point; the stool by it;
         // the trough and the washing machine; the bucket and the chlorine.
         pair(l,b,9,0,-70,PellThing.Kind.FREEZER,w,0,1);
