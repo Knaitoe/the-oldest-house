@@ -118,8 +118,16 @@ public final class PellTexts {
             // 0 the first visit; 1 the second; 2 the last.
             case SHED_CALENDAR->stage==0?"A chemist's calendar. Nights crossed off in pencil, toward a night circled twice."
                 :stage==1?"A chemist's calendar. The crossed-off nights are nearer the circle.":"A chemist's calendar. The circled night is tonight.";
-            // 0 the old stakes; 1 the newest.
-            case STAKE->stage==0?"A stake with a dead seedling. The tag says NESSA, in a child's printing.":"The newest stake, a fresh seedling. The tag says TILLY, in careful capitals.";
+            // 0.4.574: Nessa's stakes. 0 a seedling slumped at its foot; 1 one dried where it stood; 2 nothing left but the tie.
+            case STAKE->stage==1?"A stake, and a seedling dried upright where it stood. The tag says NESSA, the S the wrong way round."
+                :stage==2?"A stake with a loop of twine on it and nothing in the loop. The tag says NESSA. The pen has run."
+                :"A stake with a dead seedling. The tag says NESSA, in a child's printing.";
+            // Tilly's stake, the newest: 0 the first visit; 1 a week in; 2 the last night (PellWeek.dress).
+            case SEEDLING->stage==1?"The newest stake. The seedling is tied in to it, a hand up from the mulch. The tag says TILLY, in careful capitals."
+                :stage==2?"The newest stake. The plant is in flower. A second tag is tied over the first: NESSA, in careful capitals. A corner of the first shows under it."
+                :"The newest stake, a fresh seedling. The tag says TILLY, in careful capitals.";
+            case FLOWERS->"Geraniums, deadheaded. The mulch under them is wet.";
+            case EDGING->"Bricks on edge along the bed. They are the newer brick, the same as the patch in the west wall.";
             case KENNEL->"A kennel. BISCUIT over the door, and a heart in crayon. A chain clipped to the wall, and to nothing.";
             // 0.4.571 (PellJobs): 1, the leaves tipped out; 2, filled at a tap; 3, after the night.
             case BOWL->stage==1?"The dog's bowl, empty.":stage==2?"The dog's bowl, full to the brim."
@@ -1301,6 +1309,9 @@ public final class PellTexts {
         TELL_GARAGE="I'm out in the garage, across the yard.",TILLY_TOO_FAR="That's too far. I won't hear you from there.",
         TELL_POOL="There's a pool out the back, with a cover on it.",TILLY_SMELL_IT="I can smell it. June said about the gate twice.",
         TELL_CHART="Your name's on a chart in the kitchen. It's stuck over somebody else's.",TILLY_FELT_EDGE="I know. I felt the edge of it. I didn't lift it.",
+        // 0.4.574: the stake with her name on it in the front bed, there the day they came; and a week in, the seedling grown.
+        TELL_STAKE="There's a stake in the front bed with your name on its tag. A seedling.",TILLY_GOT_HERE_TODAY="My name? We only got here today.",
+        TELL_GROWN="Your plant out the front has grown. It's tied to its stake now.",TILLY_HER_HAND_OVER="June waters it with me. She puts my hand on the can and hers over it.",
         TELL_NICE="It's nice.",TILLY_ALWAYS_SAY="You always say that.",
         TELL_POOL_OPEN="The cover's off the pool. The water's right up to the edge.",TILLY_UP_AND_BACK="June's in it first thing. Up and back, up and back. She doesn't stop.",
         TELL_HAIR="Your hair's nearly down to your shoulders.",TILLY_A_WEEK="It can't be. It's been a week.",

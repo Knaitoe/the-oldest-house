@@ -54,6 +54,9 @@ public final class PellCompany {
         if(kind==PellThing.Kind.WARDROBE&&(stage&2)==0)own.putBoolean("SawSecondCane",true);
         if(kind==PellThing.Kind.FRIDGE_TOP&&stage==1)own.putBoolean("SawDoorstep",true);
         if(kind==PellThing.Kind.KNIFE_BLOCK&&stage==1)own.putBoolean("SawKnifeGone",true);
+        // 0.4.574: Tilly's seedling a week in, tied to its stake. (The last night's second label is only seen: she is asked nothing
+        // that night, the house waiting on no hour, so there is nothing kept of it to tell her.)
+        if(kind==PellThing.Kind.SEEDLING&&stage==1)own.putBoolean("SawSeedlingGrown",true);
     }
     public static boolean seen(CompoundTag own,PellThing.Kind kind){int o=kind.ordinal();return (own.getLong(o<64?SEEN_A:SEEN_B)&1L<<(o&63))!=0;}
     static boolean inRoom(Vec3 at,BlockPos b){double x=at.x-b.getX(),z=at.z-b.getZ();return x>=-13&&x<-7&&z>=-63&&z<-58;}
@@ -83,13 +86,15 @@ public final class PellCompany {
         new Tell(6,o->seen(o,PellThing.Kind.KENNEL)||seen(o,PellThing.Kind.BOWL),PellTexts.TELL_KENNEL,PellTexts.TILLY_NO_DOG),
         new Tell(7,o->(o.getInt("Rules")&PellTexts.RULE_GARAGE)!=0||seen(o,PellThing.Kind.CAMP_BED),PellTexts.TELL_GARAGE,PellTexts.TILLY_TOO_FAR),
         new Tell(8,o->(o.getInt("Rules")&PellTexts.RULE_POOL)!=0,PellTexts.TELL_POOL,PellTexts.TILLY_SMELL_IT),
-        new Tell(9,o->seen(o,PellThing.Kind.CHORE_CHART),PellTexts.TELL_CHART,PellTexts.TILLY_FELT_EDGE)),
+        new Tell(9,o->seen(o,PellThing.Kind.CHORE_CHART),PellTexts.TELL_CHART,PellTexts.TILLY_FELT_EDGE),
+        new Tell(10,o->seen(o,PellThing.Kind.SEEDLING),PellTexts.TELL_STAKE,PellTexts.TILLY_GOT_HERE_TODAY)),
         WEEK=List.of(
         new Tell(16,o->true,PellTexts.TELL_POOL_OPEN,PellTexts.TILLY_UP_AND_BACK),
         new Tell(19,o->true,PellTexts.TELL_HAIR,PellTexts.TILLY_A_WEEK),
         new Tell(17,o->o.getBoolean("SawDoorstep"),PellTexts.TELL_DOORSTEP,PellTexts.TILLY_NEXT_TO_HER),
         new Tell(18,o->o.getBoolean("SawKnifeGone"),PellTexts.TELL_KNIFE,PellTexts.TILLY_NOT_ME),
-        new Tell(20,o->o.getBoolean("HeardNessaAtDinner")||o.getBoolean("HeardNessaAtBedtime"),PellTexts.TELL_NAME,PellTexts.TILLY_SAYS_SORRY));
+        new Tell(20,o->o.getBoolean("HeardNessaAtDinner")||o.getBoolean("HeardNessaAtBedtime"),PellTexts.TELL_NAME,PellTexts.TILLY_SAYS_SORRY),
+        new Tell(21,o->o.getBoolean("SawSeedlingGrown"),PellTexts.TELL_GROWN,PellTexts.TILLY_HER_HAND_OVER));
     private static List<Tell> tells(PellPeople.Household h){return h.visit>=2?WEEK:FIRST;}
     /** The line of hers that asks: her first on the first visit, her last a week in. */
     static String asks(int visit){return visit>=2?PellTexts.TILLY_WEEK_TALK[PellTexts.TILLY_WEEK_TALK.length-1]:PellTexts.TILLY_TALK[0];}

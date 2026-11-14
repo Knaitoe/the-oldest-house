@@ -1528,20 +1528,152 @@ def chemist_calendar(stage):
 
 
 # ------------------------------------------------------------------------------------------------ outside
-def stake_tag(tilly):
-    """A child-height stake and its plastic tag. The old ones say NESSA in a child's printing, a dead seedling at each. The newest
-    has a fresh seedling and a tag in an adult's careful capitals: TILLY."""
+# 0.4.574 (docs/PELL_HOUSE_NOTES_0_4_574.md), the owner: "flowers on pell-house could use an improvement". A stake's seedling was
+# a box a quarter of a block across with a few pixels on it. Every plant in the front beds is now a picture on two crossed planes,
+# as the game's own flowers are: what is left at the foot of each of Nessa's stakes, Tilly's seedling as it is on each visit, and
+# June's geraniums in the bed east of the step. Each is drawn standing on the picture's lowest row, about its eighth column.
+DRY = {'stem': '#b39a68', 'leaf': '#96804f', 'dark': '#6f5c38', 'pale': '#cdb884'}
+LIVE = {'stem': '#3f8f3a', 'leaf': '#58b04a', 'dark': '#357a30', 'pale': '#84d268'}
+
+
+def seedling_dead():
+    """Slumped: the stem bent over on itself, its two leaves hanging from the tip, the seed leaves shrivelled at its foot."""
+    im = clear(); c = DRY
+    line(im, [(8, 15), (8, 14), (8, 13), (8, 12), (9, 11), (10, 11), (11, 12), (11, 13)], c['stem'])
+    dot(im, 8, 14, c['dark'])
+    line(im, [(12, 13), (12, 14), (10, 13), (10, 14)], c['leaf']); line(im, [(11, 14), (12, 15)], c['dark']); dot(im, 12, 13, c['pale'])
+    line(im, [(6, 14), (7, 14), (5, 15), (6, 15)], c['leaf']); dot(im, 6, 14, c['pale']); dot(im, 9, 15, c['dark'])
+    return im
+
+
+def seedling_dried():
+    """Dried where it stood: upright, brittle, its leaves curled in to the stem, and a bud that never opened."""
+    im = clear(); c = DRY
+    line(im, [(8, y) for y in range(10, 16)] + [(7, 9), (7, 8), (7, 7), (7, 6)], c['stem'])
+    line(im, [(8, 12), (7, 8)], c['dark'])
+    line(im, [(6, 12), (5, 11), (5, 12)], c['leaf']); line(im, [(10, 12), (10, 11), (11, 11)], c['leaf']); line(im, [(5, 11), (11, 11)], c['pale'])
+    line(im, [(5, 8), (6, 8), (5, 9)], c['leaf']); line(im, [(8, 8), (9, 7), (9, 8)], c['leaf']); line(im, [(5, 9), (9, 8)], c['dark'])
+    line(im, [(7, 5), (6, 5), (7, 4)], c['dark']); dot(im, 6, 4, c['leaf'])
+    return im
+
+
+def seedling_gone():
+    """Nothing standing: a stub, and what blew off it lying on the mulch."""
+    im = clear(); c = DRY
+    line(im, [(8, 15), (8, 14)], c['stem']); dot(im, 8, 13, c['dark'])
+    line(im, [(4, 15), (5, 15), (5, 14)], c['leaf']); dot(im, 4, 15, c['pale'])
+    line(im, [(11, 15), (12, 15), (12, 14), (13, 15)], c['leaf']); dot(im, 12, 14, c['dark'])
+    return im
+
+
+def seedling_fresh():
+    """Tilly's, just planted: the seed leaves low down, the first true leaves above them."""
+    im = clear(); c = LIVE
+    line(im, [(8, y) for y in range(10, 16)], c['stem'])
+    line(im, [(6, 13), (7, 13), (9, 13), (10, 13)], c['leaf']); line(im, [(5, 13), (11, 13)], c['dark'])
+    line(im, [(6, 10), (7, 10), (7, 9), (9, 9), (9, 10), (10, 10)], c['leaf']); line(im, [(6, 9), (10, 9)], c['pale']); line(im, [(5, 10), (11, 10)], c['dark'])
+    dot(im, 8, 9, c['pale'])
+    return im
+
+
+def leaf_pair(im, y, reach, c, droop=0):
+    """A pair of leaves off the stem at a height: each `reach` pixels out, lit along its top and shaded under it."""
+    for side in (-1, 1):
+        for i in range(1, reach + 1):
+            x = 8 + side * i
+            yy = y - (1 if i > 1 else 0) + (droop if i == reach else 0)
+            dot(im, x, yy, c['pale'] if i == reach - 1 else c['leaf'])
+            if i > 1:
+                dot(im, x, yy + 1, c['dark'])
+
+
+def seedling_grown():
+    """A week on: tied in to its stake, three pairs of leaves up it and a tight bud at its head."""
+    im = clear(); c = LIVE
+    line(im, [(8, y) for y in range(5, 16)], c['stem'])
+    leaf_pair(im, 13, 3, c); leaf_pair(im, 10, 4, c, 1); leaf_pair(im, 7, 3, c)
+    line(im, [(7, 4), (8, 4), (9, 4), (8, 3)], c['dark']); dot(im, 8, 4, c['leaf'])
+    return im
+
+
+def seedling_flower():
+    """The last night: in flower, the head as wide as a hand, turned out to the street."""
+    im = seedling_grown()
+    for x, y in ((7, 4), (8, 4), (9, 4), (8, 3)):
+        dot(im, x, y, (0, 0, 0), 0)
+    line(im, [(8, 5), (8, 4)], LIVE['stem'])
+    petal, deep, disc, seed = '#f2c230', '#d99a1c', '#6a4322', '#8a5a2c'
+    line(im, [(6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (5, 1), (11, 1), (5, 2), (11, 2), (5, 3), (11, 3), (6, 4), (7, 4), (9, 4), (10, 4)], petal)
+    line(im, [(6, 1), (10, 1), (6, 3), (10, 3)], deep)
+    line(im, [(7, 1), (8, 1), (9, 1), (7, 2), (8, 2), (9, 2), (7, 3), (8, 3), (9, 3)], disc); line(im, [(8, 2), (7, 1), (9, 3)], seed)
+    return im
+
+
+def geranium(variant):
+    """June's: a mound of scalloped leaves with the heads of flowers held over it on thin stalks. Two plants, so a row of them is not
+    one picture repeated."""
+    im = clear(); rnd = random.Random(52900 + variant)
+    leaf, dark, pale, vein = '#4f9a3c', '#3b7a2e', '#74bd58', '#356b2a'
+    red, deep, light = ('#d8433c', '#a82a2a', '#f07a66') if variant == 0 else ('#e36a8a', '#b8405e', '#f7a6b8')
+    for y in range(8, 16):
+        half = (2, 4, 5, 6, 6, 6, 5, 4)[y - 8]
+        for x in range(8 - half, 8 + half):
+            k = rnd.random()
+            dot(im, x, y, pale if k < .18 else dark if k < .45 else leaf)
+    for x, y in ((4, 11), (7, 10), (10, 12), (6, 13), (9, 14), (11, 10)):
+        dot(im, x, y, vein)
+    for hx, hy in (((5, 5), (9, 3), (12, 6)) if variant == 0 else ((4, 6), (8, 4), (11, 3))):
+        for y in range(hy + 2, 9):
+            dot(im, hx, y, '#5c8f3e')
+        for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1)):
+            dot(im, hx + dx, hy + dy, red)
+        dot(im, hx + 1, hy + 1, deep); dot(im, hx - 1, hy + 1, deep); dot(im, hx, hy - 1, light); dot(im, hx - 1, hy - 1, light)
+    return im
+
+
+def edging():
+    """Bricks set on edge along a bed: the newer brick of the bricked-up window (draw_pell_house.materials, brick_new), three pixels
+    of each between joints. Any three rows of it are a brick's side, lit along its top; any two, its top."""
+    face, mortar = '#b67253', '#e2d9c8'
+    im = new(mortar, 52910, 2); rnd = random.Random(52911)
+    for b in range(4):
+        tone = rnd.randint(-6, 6)
+        for y in range(16):
+            for x in range(b * 4, b * 4 + 3):
+                k = 9 if y % 4 == 0 else -9 if y % 4 == 2 else -22 if y % 4 == 3 else 0
+                dot(im, x, y, shade(face, tone + k + rnd.randint(-2, 2)))
+    return im
+
+
+def plant_tag(kind):
+    """A plastic plant label tied to a stake. 0: NESSA in a child's felt pen, off the line, run and faded by the weather. 1: TILLY
+    in careful capitals. 2: a second label tied over the first, NESSA in the same capitals. Its face is the picture's rows 0 to 4;
+    rows 5 to 9 are the first label where a second is tied over it; rows 10 to 14 are a label's blank back. A name five letters long
+    cannot be drawn in a label nine pixels wide: the marks are the hand it is written in, and a hand on the stake says the name."""
     im = clear()
-    fill(im, 4, 4, 12, 8, '#f4f4ec' if tilly else '#e4e0cc')
-    if tilly:
-        # Even, upright marks, all one height: careful capitals.
-        for x in (5, 6, 8, 10, 11):
-            dot(im, x, 5, '#1e1a16'); dot(im, x, 6, '#1e1a16')
-        dot(im, 7, 5, '#1e1a16')
+
+    def plate(y0, c, edge):
+        fill(im, 3, y0, 12, y0 + 5, c)
+        for x in range(3, 12):
+            dot(im, x, y0 + 4, edge)
+        dot(im, 7, y0, '#7a6a4a')
+
+    def capitals(y0):
+        # Upright strokes of one height on one line: careful capitals.
+        for x in (4, 6, 8, 10):
+            dot(im, x, y0 + 1, '#1e1a16'); dot(im, x, y0 + 2, '#1e1a16')
+
+    if kind:
+        plate(0, '#f4f4ec', '#cfcfc4'); capitals(0)
     else:
-        # Big uneven marks in felt pen, run and faded by the weather.
-        for x, y in ((5, 5), (5, 6), (6, 5), (7, 6), (8, 5), (8, 6), (9, 7), (10, 5), (11, 6), (10, 6)):
-            dot(im, x, y, '#5a6aa8', 200)
+        plate(0, '#e2ddc6', '#bdb79e')
+        for x, y in ((4, 1), (4, 2), (5, 2), (6, 1), (6, 3), (7, 2), (8, 1), (8, 2), (9, 3), (10, 1), (10, 2)):
+            dot(im, x, y, '#5a6aa8', 215)
+        for x, y in ((5, 3), (7, 3), (10, 3)):
+            dot(im, x, y, '#5a6aa8', 90)
+    if kind == 2:
+        plate(5, '#e9e9e0', '#c4c4b8'); capitals(5)
+    plate(10, '#f1f1e8' if kind else '#dcd7c0', '#cfcfc4' if kind else '#bdb79e')
     return im
 
 
@@ -1712,7 +1844,10 @@ def for_sale(front):
 
 
 def outside():
-    return {'stake_nessa': stake_tag(0), 'stake_tilly': stake_tag(1), 'kennel_wall': kennel_wall(),
+    return {'tag_nessa': plant_tag(0), 'tag_tilly': plant_tag(1), 'tag_over': plant_tag(2), 'kennel_wall': kennel_wall(),
+            'seedling_dead': seedling_dead(), 'seedling_dried': seedling_dried(), 'seedling_gone': seedling_gone(), 'seedling_fresh': seedling_fresh(),
+            'seedling_grown': seedling_grown(), 'seedling_flower': seedling_flower(), 'geranium_red': geranium(0), 'geranium_pink': geranium(1),
+            'edging': edging(), 'twine': new('#c9b27a', 52912, 3),
             'bowl_leaves': bowl_leaves(), 'bowl_empty': bowl_inside(False), 'bowl_water': bowl_inside(True), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'robe': robe(), 'pump': pump(),
             'lantern_body': lantern_body(), 'lantern_globe': lantern_globe(), 'for_sale': for_sale(1), 'for_sale_back': for_sale(0)}
 
@@ -1847,7 +1982,7 @@ def small():
            'cup': plastic('#e0d8a0', 52315), 'brush_old': new('#c8c4b4', 52316, 2), 'brush_new': plastic('#4a9ac8', 52317),
            'handle': plastic('#1e1a16', 52318), 'tin_lid': metal('#b8bcc0', 52319), 'brush': wood('#b8946a', 52320),
            'chlorine_lid': plastic('#2a6ab8', 52321), 'washer_lid': enamel('#ecebe4', 52322), 'doily': clear(),
-           'seedling_dead': clear(), 'seedling_fresh': clear(), 'lunchbox_side_pink': plastic('#d64a6a', 52323),
+           'lunchbox_side_pink': plastic('#d64a6a', 52323),
            'bucket_side': plastic('#3a7ab8', 52324), 'canvas_head': canvas(True), 'mantel_top': wood('#7a5232', 52325)}
     d = out['doily']
     for y in range(16):
@@ -1855,11 +1990,6 @@ def small():
             r = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
             if r < 7.5 and (int(r * 2) % 2 == 0 or (x + y) % 3 == 0):
                 dot(d, x, y, '#f8f6f0', 230)
-    for name, alive in (('seedling_dead', 0), ('seedling_fresh', 1)):
-        im = out[name]
-        c = '#4aa04a' if alive else '#7a6a4a'
-        line(im, [(8, y) for y in range(8 if alive else 10, 16)], c)
-        line(im, [(6, 9), (7, 10), (9, 9), (10, 8)] if alive else [(6, 13), (7, 12), (9, 14)], c)
     wd = washer_front(); fill(wd, 0, 4, 16, 16, '#dcd8cc'); out['washer_dials'] = wd
     up = cupboard(); grain = wood('#9a6a40', 52203, across=True)
     for y in range(13, 16):
@@ -2196,12 +2326,46 @@ def thing_models():
     for stage in range(3):
         out[f'shed_calendar_{stage}'] = m([element([2, 0, 15.7], [14, 16, 16], {'north': 'c'}, uv={'north': [2, 0, 14, 16]})], {'c': f'chemist_{stage}'}, f'chemist_{stage}')
     # ---------------------------------------------------------------------------------------- outside
-    for tilly in range(2):
-        face = 'stake_tilly' if tilly else 'stake_nessa'
-        out[f'stake_{tilly}'] = m([element([7.5, 0, 7.5], [8.5, 11, 8.5], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w'}),
-                                   element([4, 6, 7.9], [12, 10, 8.1], {'north': 't', 'south': 't'}, uv={'north': [4, 4, 12, 8], 'south': [4, 4, 12, 8]}),
-                                   element([6, 0, 6], [10, 4, 10], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}, rot={'origin': [8, 0, 8], 'axis': 'y', 'angle': 45})],
-                                  {'w': 'stake_wood', 't': face, 'p': 'seedling_fresh' if tilly else 'seedling_dead'}, face)
+    # 0.4.574: the front beds. A stake as high as a child's shoulder, its label near the top of it on the side to the street, and
+    # in front of it, on two crossed planes, what grows or grew there. Nessa's: a seedling slumped, one dried upright, one gone
+    # (a loop of twine left on the stake). Tilly's: fresh; a week on, tied in; the last night, in flower, a second label tied over
+    # the first.
+    def crossed(t, cx=8, cz=5, half=6, height=16):
+        # The picture's columns either side of its eighth, on a plane through (cx, cz) turned an eighth each way.
+        uv = [8 - half, 16 - height, 8 + half, 16]
+        return [element([cx - half, 0, cz], [cx + half, height, cz], {'north': t, 'south': t}, uv={'north': uv, 'south': uv},
+                        rot={'origin': [cx, 0, cz], 'axis': 'y', 'angle': angle}) for angle in (45, -45)]
+
+    def staked(plant, second=False, tie=None, loop=False):
+        post = {k: 'w' for k in ('north', 'south', 'east', 'west', 'up')}
+        els = [element([7.5, 0, 7.5], [8.5, 22, 8.5], post),
+               element([3.5, 16.5, 7.1], [12.5, 21.5, 7.3], {'north': 't', 'south': 't'}, uv={'north': [3, 0, 12, 5], 'south': [3, 10, 12, 15]})]
+        if second:
+            # The first label, pushed aside behind the new one: an end and the foot of it show.
+            els.append(element([6.5, 13.5, 7.3], [15.5, 18.5, 7.5], {'north': 't', 'south': 't'}, uv={'north': [3, 5, 12, 10], 'south': [3, 10, 12, 15]}))
+        if tie is not None:
+            els.append(element([7.2, tie, 7.2], [8.8, tie + 1, 8.8], {k: 's' for k in ('north', 'south', 'east', 'west', 'up', 'down')},
+                               uv={k: [0, 0, 2, 1] for k in ('north', 'south', 'east', 'west')} | {'up': [0, 0, 2, 2], 'down': [0, 0, 2, 2]}))
+        if loop:
+            els.append(element([8.8, 2.5, 7.4], [9.4, 6, 7.6], {k: 's' for k in ('north', 'south', 'east', 'west', 'down')},
+                               uv={k: [0, 0, 1, 4] for k in ('north', 'south', 'east', 'west')} | {'down': [0, 0, 1, 1]}))
+        return els + (crossed('p') if plant else [])
+
+    for stage, (plant, kwargs) in enumerate((('seedling_dead', {}), ('seedling_dried', {}), ('seedling_gone', {'tie': 5, 'loop': True}))):
+        out[f'stake_{stage}'] = m(staked(plant, **kwargs), {'w': 'stake_wood', 't': 'tag_nessa', 'p': plant, **({'s': 'twine'} if kwargs else {})}, 'tag_nessa')
+    for stage, (plant, label, kwargs) in enumerate((('seedling_fresh', 'tag_tilly', {}), ('seedling_grown', 'tag_tilly', {'tie': 8}),
+                                                    ('seedling_flower', 'tag_over', {'tie': 8, 'second': True}))):
+        out[f'seedling_{stage}'] = m(staked(plant, **kwargs), {'w': 'stake_wood', 't': label, 'p': plant, **({'s': 'twine'} if kwargs else {})}, label)
+    # June's geraniums, a plant to a cell, on crossed planes through the cell's middle.
+    for stage, name in enumerate(('geranium_red', 'geranium_pink')):
+        out[f'flowers_{stage}'] = m(crossed('p', 8, 8, 8, 16), {'p': name}, name)
+    # The beds' edging, in the lawn's cell along the cell's north side (the bed's side as the cell faces it): 0 a run of it; 1 the
+    # one brick that turns the bed's corner, in the cell's north-east corner.
+    brick = {'north': 'e', 'south': 'e', 'east': 'e', 'west': 'e', 'up': 'e'}
+    out['edging_0'] = m([element([0, 0, 0], [16, 3, 2], brick, uv={'north': [0, 0, 16, 3], 'south': [0, 0, 16, 3], 'east': [0, 0, 2, 3], 'west': [0, 0, 2, 3], 'up': [0, 4, 16, 6]})],
+                        {'e': 'edging'}, 'edging')
+    out['edging_1'] = m([element([14, 0, 0], [16, 3, 2], brick, uv={'north': [0, 0, 2, 3], 'south': [0, 0, 2, 3], 'east': [0, 0, 2, 3], 'west': [0, 0, 2, 3], 'up': [0, 4, 2, 6]})],
+                        {'e': 'edging'}, 'edging')
     # 0.4.542, the house's aftermath (PellAftermath): the agent's board, a block across, on a post driven into the lawn behind it; the
     # board's foot half a block up and its top half a block over the cell, the post in two parts so each takes its own strip of wood.
     w = {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w'}
@@ -2316,7 +2480,8 @@ KINDS = ['counter', 'sink', 'stove', 'fridge', 'fridge_top', 'knife_block', 'lun
          'freezer', 'stool', 'power', 'cord', 'trough', 'bucket', 'chlorine', 'washer',
          'camp_bed', 'bulb', 'box_winter', 'box_books', 'box_dont', 'pegboard', 'towel',
          'tapes', 'workbench', 'shed_tv', 'tin', 'transcript', 'shed_calendar',
-         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open', 'for_sale', 'marks_after', 'photo_broken']
+         'stake', 'kennel', 'bowl', 'pool_chair', 'pump', 'lantern', 'phone', 'freezer_open', 'for_sale', 'marks_after', 'photo_broken',
+         'seedling', 'flowers', 'edging']
 
 
 # ------------------------------------------------------------------------------------------------ the block

@@ -46,7 +46,7 @@ public final class PellAftermath {
         PellThing.Kind.MANTEL,PellThing.Kind.WINDOW_SEAT,PellThing.Kind.HOOKS,PellThing.Kind.COAT_HOOK,PellThing.Kind.MARKS,PellThing.Kind.CIRCLE,
         PellThing.Kind.MIRROR,PellThing.Kind.VANITY,PellThing.Kind.BATH,PellThing.Kind.TOILET,PellThing.Kind.POWER,PellThing.Kind.TROUGH,
         PellThing.Kind.BULB,PellThing.Kind.PEGBOARD,PellThing.Kind.WORKBENCH,PellThing.Kind.KENNEL,PellThing.Kind.PUMP,
-        PellThing.Kind.FOR_SALE,PellThing.Kind.MARKS_AFTER);
+        PellThing.Kind.FOR_SALE,PellThing.Kind.MARKS_AFTER,PellThing.Kind.EDGING);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static final BlockState AIR=Blocks.AIR.defaultBlockState();
 
