@@ -23,6 +23,23 @@ LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expe
 
 The thread limit applies to the software renderer, not the server or its watchdog. The server remains at a three GiB maximum heap and the same view/simulation distances. Every gameplay assertion, screenshot and both reconnects remain required. The full 558-case GameTest job separately has a sixty-minute process budget because the previous forty-minute run was still advancing when it was stopped.
 
+## What the proof holds still
+
+Two places in the expedition keep an actor where it is so that both clients' cameras can have it. Neither is in the game.
+
+- **The private elk hunters** (phase 19) are held at one spot while both clients receive and pick them.
+- **The Goatman at the trailer's two west panes** (phases 35 and 36, since run 1605). Each client must have its own shape and
+  two of its children's faces through the front and the middle glass. That is three of the four times it comes to those panes
+  in its two laps, so one pane straight after another, and it crosses between them at twice a reader's walk. A client with
+  slow frames had no start on it and found the second pane already left. Its own wait at a west pane is now kept until the
+  cameras are ready for it to go: at the front pane until both clients stand at the middle one's places, at the middle pane
+  while either still stands there. No leg of its laps is skipped, the body is not moved, its voice keeps its own clock, and a
+  wait is given up after fifteen seconds. The clients also take their places at the glass before dark, once they have the
+  frame of the quiet.
+
+When a phase times out, the message names which clients had acknowledged it. Each client's
+`<role>-trailer-night-status.txt` says what it has of the windows so far.
+
 ## Return the evidence
 
 Include the printed commit SHA, operating system, CPU model and total RAM. Zip `build/live-proof/`, `run-live/server/logs/`, `run-live/a/logs/`, `run-live/b/logs/` and any `run-live/*/crash-reports/` directories. A successful run writes `build/live-proof/passed.txt`; failures need the logs even if no result file was written.

@@ -35,6 +35,8 @@ public final class GoatmanWindowClient {
     private static GoatmanChild pendingBody;private static Vec3 pendingBase;private static String pendingName;private static boolean pendingForm,drawn,maskBody,childEyesDrawn;private static int pendingSkin,pixelStage,visiblePixels;private static double pendingZ;private static int[] facePixels;
     private GoatmanWindowClient(){}
     static boolean ready(){return forms.size()==2&&childFaces.size()>=2&&panes.size()==2&&audioPassed;}
+    /** What this client has of the windows so far, for the night's status file. */
+    static String status(){return "shapes="+forms+" faces="+childFaces+" panes="+panes+" score="+audioPassed+" at="+(middleView?"middle":"front")+" pending="+pendingName;}
     static String tick(Minecraft mc,List<GoatmanChild> children,BlockPos base,String role,boolean capture){
         long now=mc.level.getGameTime();
         if(vanilla==null&&GoatmanScore.playing()){

@@ -34,6 +34,31 @@ public final class LiveExpeditionProof {
     private static final Set<String> PORTHOLE_CRAWLERS=new HashSet<>();
     private static int phase,changed;private static boolean restarted;private static UUID secondId,nightGoatmanId;
     private static CompoundTag secondStory;private static Map<String,String> firstMap;
+    /** The trailer night's window frames: the sighting whose wait is being kept, and the night's tick it began at. */
+    private static int paneSerial=-1,paneSince;
+    /**
+     * This proof only, as the hold in phase 19. Run 1605 and the local runs after it: each client must have the thing's own
+     * shape and two of its children's faces through the front and the middle glass of the west side. That is three of the four
+     * times it comes to those two panes in its two laps, so one pane straight after another, and it crosses between them at
+     * twice a reader's walk. A client whose frames were slow used its whole wait on the first pane, had no start on it, and
+     * found the second already left (a pane nobody can see gets a short slap); the step could not end. Its own wait at a west
+     * pane is therefore kept up here until the two cameras are ready for it to go: at the front pane until both stand at the
+     * middle one's places (each walks there once it has its frame), at the middle pane while either still stands at it. No leg
+     * is skipped, the body is not moved, and its voice keeps its own clock; a wait is given up after fifteen seconds.
+     */
+    private static void keepAtPane(ServerPlayer a,ServerPlayer b,LabyrinthData d){
+        var run=GoatmanVignette.run(d);if(run.getInt("Phase")!=GoatmanVignette.VIGIL||!run.getBoolean("WindowHolding0497"))return;
+        var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);int clock=run.getInt("Clock"),serial=run.getInt("WindowSerial0497"),wrong=run.getInt("Wrong");
+        var body=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==wrong);if(body.size()!=1)return;
+        var rel=body.getFirst().position().subtract(Vec3.atLowerCornerOf(camp));if(rel.x>-8||rel.y<.85)return;
+        boolean front=Math.abs(rel.z-GoatmanWindowViews.window(false))<.3;if(!front&&Math.abs(rel.z-GoatmanWindowViews.window(true))>=.3)return;
+        if(serial!=paneSerial){paneSerial=serial;paneSince=clock;}
+        boolean aThere=atMiddle(a,camp,"A"),bThere=atMiddle(b,camp,"B");
+        if(clock-paneSince>=300||(front?aThere&&bThere:!aThere&&!bThere))return;
+        run.putInt("StalkPause0465",Math.max(run.getInt("StalkPause0465"),clock+3));run.putInt("WindowMax0497",Math.max(run.getInt("WindowMax0497"),clock+3));
+        var all=d.state(GoatmanVignette.ID);all.put("Run",run);d.setState(GoatmanVignette.ID,all);
+    }
+    private static boolean atMiddle(ServerPlayer p,BlockPos camp,String role){return p.position().subtract(GoatmanWindowViews.feet(camp,role,true)).horizontalDistanceSqr()<.16;}
     private static final Map<UUID,Vec3> leakReturns=new HashMap<>();private static final Map<UUID,Integer> leakBurned=new HashMap<>();private static final Map<UUID,Boolean> leakBook=new HashMap<>();private static boolean leakRestarted,firstReturned;
     private static LakeWitchEntity stacy;private static LiteraryActor slasher;private static UUID stacyId,slasherId;private static int crackStarted=-1;
     private static Vec3 lastHunterPosition;private static LiteraryActor privateA,privateB;private static UUID privateAId,privateBId;
@@ -109,7 +134,8 @@ public final class LiveExpeditionProof {
             secondId=b.getUUID();step(s,1,base);return;
         }
         if(s.getTickCount()-changed>2400){
-            String detail="LIVE EXPEDITION timed out at phase "+phase+": A="+location(a)+", B="+location(b);
+            // Run 1605: a phase waits on the clients' acknowledgements as well as on the scene, and the message named neither.
+            String detail="LIVE EXPEDITION timed out at phase "+phase+": A="+location(a)+", B="+location(b)+", acknowledged="+new java.util.TreeSet<>(ACKS);
             write("failed.txt",detail+"\n");s.halt(false);throw new IllegalStateException(detail);
         }
         var d=LabyrinthData.get(s);var base=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.OFFSET_HALL);
@@ -118,6 +144,7 @@ public final class LiveExpeditionProof {
             var site=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.ELK_CARCASSES);var at=new Vec3(site.getX()+.5,site.getY(),site.getZ()-32.7);
             for(var original:List.of(privateA,privateB)){original.moveTo(at);original.setDeltaMovement(Vec3.ZERO);}
         }
+        if((phase==35||phase==36)&&a!=null&&b!=null)keepAtPane(a,b,d);
         if((phase==35||phase==36)&&s.getTickCount()%100==0&&a!=null){
             var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var run=GoatmanVignette.run(d);
             write("trailer-native-night-status.txt","phase="+phase+" scene="+run.getInt("Phase")+" clock="+run.getInt("Clock")+" supper="+(run.contains("SupperAt04123")?run.getInt("SupperAt04123"):"missing")+" extra="+run.getInt("ExtraState")+" leg="+run.getInt("StalkLeg0465")+" window="+run.getInt("StalkWindowLeg0465")+" demand="+run.getInt("Demand")+" fear="+GoatmanFear.stage(run)+" cues="+run.getInt("PressureCues0472")+"\n"+a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN)).stream().map(c->c.getUUID()+" index="+c.getPersistentData().getInt(GoatmanVignette.INDEX)+" at="+c.position().subtract(camp.getX(),camp.getY(),camp.getZ())).collect(java.util.stream.Collectors.joining("\n"))+"\n");
@@ -384,7 +411,7 @@ public final class LiveExpeditionProof {
             require(GoatmanStalking.circuitDone(GoatmanVignette.run(d)),"the same native Goatman completed every physical circuit leg despite independent dialogue timing");
             var run=GoatmanVignette.run(d);var camp=LabyrinthPlaces.base(ORIGIN,LabyrinthPlace.GOATMAN);var wrong=a.serverLevel().getEntitiesOfClass(GoatmanChild.class,IndianLakeRooms.bounds(camp,LabyrinthPlace.GOATMAN),c->!c.girl()&&c.getPersistentData().getInt(GoatmanVignette.INDEX)==run.getInt("Wrong"));require(wrong.size()==1&&wrong.getFirst().getUUID().equals(nightGoatmanId),"the complete night keeps the original Goatman UUID and one physical body");
             require(run.getInt("Circuits0494")==GoatmanStalking.CIRCUITS&&run.getBoolean("DoorPressureDone0497")&&run.getInt("DoorPressureHits0497")==io.github.knaitoe.theoldesthouse.labyrinth.GoatmanWindowCircuit.DOOR_BLOWS,"the original native Goatman completes both physical circuits and its actual front-step blows before departure");
-            write("trailer-night.txt","Both actual clients tracked the same six real cousins (the second reader in the seventh's place) from upright confusion through distinct fear to terror, received louder native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. Both captured visible native head pixels of the same original body as Goatman and at least two distinct children through the front and middle glazing, with the original score active and a real vanilla music request blocked. The original Goatman body completed both full physical circuits and its front-step blows while its seven demands, each with its own run of knocks on the door, ran from the start of the night; irregular holds never skip a physical route leg or postpone the seven-demand clock.\n");
+            write("trailer-night.txt","Both actual clients tracked the same six real cousins (the second reader in the seventh's place) from upright confusion through distinct fear to terror, received louder native knocks from the west, east and rear, and rendered a later priority Goatman demand with the cousin subtitle suppressed. Both captured visible native head pixels of the same original body as Goatman and at least two distinct children through the front and middle glazing, with the original score active and a real vanilla music request blocked. The original Goatman body completed both full physical circuits and its front-step blows while its seven demands, each with its own run of knocks on the door, ran from the start of the night; irregular holds never skip a physical route leg or postpone the seven-demand clock. In this proof alone its wait at a west pane was kept until both clients had their frame of it and stood ready at the next.\n");
             MobSightProof.beginOutside(a,b);step(s,37,MobSightProof.OUTSIDE_VIEW);
         }else if(phase==37&&a!=null&&b!=null&&ACKS.size()==2){
             MobSightProof.checkOutside(a,b);MobSightProof.beginManor(a,b,ORIGIN);step(s,38,MobSightProof.manorView());
