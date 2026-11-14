@@ -77,7 +77,8 @@ public final class NovelRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> WELL_BREATH=sound("well.breath");
     /** 0.4.77: the hospital's fluorescent ceiling lights. */
     public static final DeferredHolder<SoundEvent,SoundEvent> WARD_HUM=sound("ward.hum"),WARD_FLICKER=sound("ward.flicker"),
-        WARD_PULSE=sound("ward.pulse"),WARD_STEP=sound("ward.step"),WARD_CURTAIN=sound("ward.curtain");
+        WARD_PULSE=sound("ward.pulse"),WARD_STEP=sound("ward.step"),WARD_CURTAIN=sound("ward.curtain"),
+        WARD_BED_CALL=sound("ward.bed_call"),WARD_TUBE=sound("ward.tube");
     private static DeferredBlock<Block> material(String id,Block base){return BLOCKS.registerBlock(id,Block::new,BlockBehaviour.Properties.ofFullCopy(base).noLootTable());}
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     private NovelRegistry(){}

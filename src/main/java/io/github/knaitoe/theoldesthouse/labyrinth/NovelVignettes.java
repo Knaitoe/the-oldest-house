@@ -126,9 +126,9 @@ public final class NovelVignettes {
         else if(place==LabyrinthPlace.PLAIN&&rel.equals(new BlockPos(3,0,-7)))reward(p,own,"Camera0464",new ItemStack(NovelRegistry.CAMERA.get()));
         else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.BUTTON)){
             if(own.getBoolean("Alarm")){own.putBoolean("Alarm",false);own.putInt("WardCalls",own.getInt("WardCalls")+1);NightWardNight.answer(p,b,own);}
-        }else if(place==LabyrinthPlace.HOSPITAL&&rel.equals(NovelRooms.WARD_NOTE)){
-            open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast():NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"),own);
-        }else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){if(p.isShiftKeyDown())SecretPhotographs.open(p);else{own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}}
+        }else if(place==LabyrinthPlace.HOSPITAL&&NightWard.chart(rel)){
+            open(p,place,own.getBoolean("WardFinished")?NovelTexts.hospitalLast(own.getInt("WardDawnCalled"),own.getInt("WardDawnAnswered")):NovelTexts.hospitalOpening(),own.getBoolean("WardFinished")?"WardLast":"WardOpening",own.getBoolean("WardFinished"),own);
+        }else if(place==LabyrinthPlace.HOSPITAL)handled=NightWardNight.click(p,b,rel,own);else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.PROJECTOR)){if(p.isShiftKeyDown())SecretPhotographs.open(p);else{own.putInt("Projection",own.getInt("Projection")+1);showRecord(p,own);}}
         else if(place==LabyrinthPlace.KAREN_ROOM&&rel.equals(NovelRooms.KAREN_BOOK))open(p,place,NovelTexts.karen(),"KarenBook",false,own);
         else handled=false;
         if(handled){e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);save(data,p.getUUID(),own);}
@@ -158,7 +158,11 @@ public final class NovelVignettes {
                     if(ticks==1||ticks>=own.getInt("NextAlarm")){if(!own.getBoolean("Alarm"))own.putInt("AlarmSince",ticks);own.putBoolean("Alarm",true);own.putInt("NextAlarm",ticks+gap);p.playNotifySound(NovelRegistry.MONITOR.get(),SoundSource.BLOCKS,.45F,1);cue(p,own,ticks>WARD_NIGHT-500?"The monitor calls sooner. The door stays shut.":"The monitor calls. The button is beside the incubator.");}
                     if(ticks==1200||ticks==2600){p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.35F,.8F);cue(p,own,"Tom, over the radio: Is anybody there? I need—");}
                     NightWardNight.tick(p,b,own,ticks);
-                    if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);NightWardNight.end(p,b,own);cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
+                    if(ticks>=WARD_NIGHT){own.putBoolean("WardFinished",true);own.putBoolean("Alarm",false);
+                        // 0.4.590: what the beds asked and what was answered is kept for the dawn page; the page comes down the tube.
+                        own.putInt("WardDawnCalled",own.getInt("WardBedsCalled"));own.putInt("WardDawnAnswered",own.getInt("WardBedsAnswered"));
+                        NightWardNight.end(p,b,own);LiteraryVignettes.heard(p,NovelRegistry.WARD_TUBE.get(),b.offset(NovelRooms.WARD_NOTE).above(),.8F,1);
+                        cue(p,own,"Dawn. The alarms stop. The chart has a final page.");}
                 }
                 if(p.tickCount%20==0||own.getBoolean("CueFresh")){own.remove("CueFresh");boolean same=place.id().equals(own.getString("CuePlace"));int remaining=same?(int)Math.max(0,own.getLong("CueUntil")-p.serverLevel().getGameTime()):0;boolean covered=place==LabyrinthPlace.BARN_WELL&&coveredWait(p,own);
                     boolean descending=place==LabyrinthPlace.BARN_WELL&&WellSequence.shaft(p,b);

@@ -1,0 +1,119 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "steel16": "the_oldest_house:block/night_ward/steel16",
+    "tube_pipe": "the_oldest_house:block/night_ward/tube_pipe",
+    "particle": "the_oldest_house:block/night_ward/steel16"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        0,
+        5.5
+      ],
+      "to": [
+        10.5,
+        16,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube_pipe",
+          "uv": [
+            0,
+            0,
+            5,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#tube_pipe",
+          "uv": [
+            0,
+            0,
+            5,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#tube_pipe",
+          "uv": [
+            0,
+            0,
+            5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#tube_pipe",
+          "uv": [
+            0,
+            0,
+            5,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        15,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            9
+          ]
+        }
+      }
+    }
+  ]
+}

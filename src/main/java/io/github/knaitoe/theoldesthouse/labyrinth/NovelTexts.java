@@ -90,9 +90,16 @@ public final class NovelTexts {
     public static ItemStack hospitalOpening(){return HouseWriting.book("Night duty","?",HouseWriting.WritingStyle.PLAIN,List.of(
         "The call button is beside the incubator.\n\nPress it when the monitor calls.\n\nSomeone should come.",
         "The night is shorter here. Stay until morning.\n\nIf you leave, the ward will begin again."));}
-    public static ItemStack hospitalLast(){return HouseWriting.book("At dawn","?",List.of(
-        Component.literal("I pressed it when the sound began.\n\nI pressed it sooner the next time.\n\nThere is no entry in the chart for either of those things.").withStyle(s->s.withColor(0xAA82CC)),
-        Component.literal("The alarms stopped at dawn.\n\nThe chair was still in the same place.\n\nI had mistaken an answer for someone coming.")));}
+    public static ItemStack hospitalLast(){return hospitalLast(0,0);}
+    /** 0.4.590: the beds that called in this reader's night have a page of their own, between the two that were there. */
+    public static ItemStack hospitalLast(int called,int answered){
+        var pages=new java.util.ArrayList<Component>();
+        pages.add(Component.literal("I pressed it when the sound began.\n\nI pressed it sooner the next time.\n\nThere is no entry in the chart for either of those things.").withStyle(s->s.withColor(0xAA82CC)));
+        if(called>0)pages.add(Component.literal(answered>=called?"The beds called too.\n\nI went to each one.\n\nNobody was in any of them."
+            :answered>0?"The beds called too.\n\nI went to some of them.\n\nNobody was in the ones I went to."
+            :"The beds called too.\n\nI did not go to them.\n\nTheir lights were on until dawn."));
+        pages.add(Component.literal("The alarms stopped at dawn.\n\nThe chair was still in the same place.\n\nI had mistaken an answer for someone coming."));
+        return HouseWriting.book("At dawn","?",List.copyOf(pages));}
     public static ItemStack karen(){return HouseWriting.book("A room to come back to","Karen Green",HouseWriting.WritingStyle.KAREN,List.of(
         "This bed remembers you.\n\nSleep here to set a place inside the House. It is the only bed beyond the hall that does.",
         "The projector keeps pictures of the rooms you reached. Touch it and it shows you another.\n\nWhen you wake, count what is on the table.\n\nI do."));}

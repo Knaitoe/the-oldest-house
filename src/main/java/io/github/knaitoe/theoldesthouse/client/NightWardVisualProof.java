@@ -34,6 +34,9 @@ public final class NightWardVisualProof extends Screen {
         out.add(NovelRegistry.NIGHT_WARD_DOOR.get().defaultBlockState());out.add(NovelRegistry.NIGHT_WARD_DOOR.get().defaultBlockState().setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
         out.add(NovelRegistry.NIGHT_WARD_GLASS.get().defaultBlockState());out.add(NovelRooms.prop(NovelPropBlock.Kind.INCUBATOR,Direction.NORTH));
         for(var part:NightWardCurtainBlock.Part.values())out.add(curtain(part,true,true,false,false));
+        // 0.4.590: a curtain pulled back, its cloth bunched at the end of the run.
+        out.add(curtain(NightWardCurtainBlock.Part.UPPER,true,true,false,false).setValue(NightWardCurtainBlock.GATHER,NightWardCurtainBlock.Gather.NEG));
+        out.add(curtain(NightWardCurtainBlock.Part.LOWER,true,true,false,false).setValue(NightWardCurtainBlock.GATHER,NightWardCurtainBlock.Gather.NEG));
         return out;
     }
     /** 0.4.199: a bed curtain joined the ways given. */
@@ -44,7 +47,7 @@ public final class NightWardVisualProof extends Screen {
     private static int pages(){return 1+(states().size()+8)/9;}
     private static String name(BlockState s){
         if(s.hasProperty(NightWardBlock.KIND))return s.getValue(NightWardBlock.KIND).getSerializedName().replace('_',' ');
-        if(s.hasProperty(NightWardCurtainBlock.PART))return "curtain "+s.getValue(NightWardCurtainBlock.PART).getSerializedName();
+        if(s.hasProperty(NightWardCurtainBlock.PART))return "curtain "+s.getValue(NightWardCurtainBlock.PART).getSerializedName()+(s.getValue(NightWardCurtainBlock.GATHER)==NightWardCurtainBlock.Gather.NONE?"":" bunched");
         if(s.is(NovelRegistry.NIGHT_WARD_DOOR.get()))return "enamel door";if(s.is(NovelRegistry.NIGHT_WARD_GLASS.get()))return "wired glass";return "empty incubator";
     }
     private static void check(BlockState s){
@@ -70,7 +73,11 @@ public final class NightWardVisualProof extends Screen {
         for(int x=-3;x<=-1;x++){block(g,curtain(lower,false,false,true,true),x,0,-6);block(g,curtain(upper,false,false,true,true),x,1,-6);}
         block(g,curtain(lower,false,true,false,true),0,0,-6);block(g,curtain(upper,false,true,false,true),0,1,-6);
         block(g,curtain(lower,true,false,false,false),0,0,-5);block(g,curtain(upper,true,true,false,false),0,1,-5);
-        block(g,curtain(rail,true,true,false,false),0,1,-4);block(g,curtain(rail,true,false,false,false),0,1,-3);
+        // 0.4.590: the open half is a curtain pulled back, bunched beside the drawn half, under the bay's call light; the chart's station by the column.
+        block(g,curtain(lower,true,false,false,false).setValue(NightWardCurtainBlock.GATHER,NightWardCurtainBlock.Gather.NEG),0,0,-4);
+        block(g,curtain(upper,true,true,false,false).setValue(NightWardCurtainBlock.GATHER,NightWardCurtainBlock.Gather.NEG),0,1,-4);block(g,curtain(rail,true,false,false,false),0,1,-3);
+        block(g,NightWardBlock.of(CALL_DOME),0,2,-4);
+        for(int y=0;y<=2;y++)block(g,NightWardBlock.of(y==0?TUBE_BASE:y==1?TUBE_STATION:TUBE_PIPE,Direction.SOUTH),2,y,-6);
         block(g,NovelRooms.prop(NovelPropBlock.Kind.INCUBATOR,Direction.SOUTH),2,0,-3);block(g,NightWardBlock.of(CHAIR,Direction.WEST),3,0,-1);
         block(g,NightWardBlock.of(MONITOR_STAND,Direction.WEST),3,0,-4);block(g,NightWardBlock.of(MONITOR,Direction.WEST),3,1,-4);
         for(int y=0;y<=2;y++)block(g,NightWardBlock.of(y==1?CALL_PANEL:COLUMN,Direction.WEST),4,y,-6);

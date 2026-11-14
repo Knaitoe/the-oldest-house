@@ -1,0 +1,350 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "call_dome_on": "the_oldest_house:block/night_ward/call_dome_on",
+    "steel16": "the_oldest_house:block/night_ward/steel16",
+    "tube_carrier": "the_oldest_house:block/night_ward/tube_carrier",
+    "tube_glass": "the_oldest_house:block/night_ward/tube_glass",
+    "particle": "the_oldest_house:block/night_ward/call_dome_on"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        2,
+        5
+      ],
+      "to": [
+        11,
+        14,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube_glass",
+          "uv": [
+            0,
+            0,
+            6,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#tube_glass",
+          "uv": [
+            0,
+            0,
+            6,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#tube_glass",
+          "uv": [
+            0,
+            0,
+            6,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#tube_glass",
+          "uv": [
+            0,
+            0,
+            6,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        3,
+        6.5
+      ],
+      "to": [
+        9.5,
+        12,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube_carrier",
+          "uv": [
+            0,
+            0,
+            3,
+            9
+          ],
+          "neoforge_data": {
+            "block_light": 12,
+            "sky_light": 12
+          }
+        },
+        "south": {
+          "texture": "#tube_carrier",
+          "uv": [
+            0,
+            0,
+            3,
+            9
+          ],
+          "neoforge_data": {
+            "block_light": 12,
+            "sky_light": 12
+          }
+        },
+        "east": {
+          "texture": "#tube_carrier",
+          "uv": [
+            0,
+            0,
+            3,
+            9
+          ],
+          "neoforge_data": {
+            "block_light": 12,
+            "sky_light": 12
+          }
+        },
+        "west": {
+          "texture": "#tube_carrier",
+          "uv": [
+            0,
+            0,
+            3,
+            9
+          ],
+          "neoforge_data": {
+            "block_light": 12,
+            "sky_light": 12
+          }
+        },
+        "up": {
+          "texture": "#tube_carrier",
+          "uv": [
+            4,
+            0,
+            7,
+            3
+          ],
+          "neoforge_data": {
+            "block_light": 12,
+            "sky_light": 12
+          }
+        }
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        4,
+        14,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            8,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        14.5,
+        3.5
+      ],
+      "to": [
+        9,
+        15.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#call_dome_on",
+          "uv": [
+            1,
+            5,
+            3,
+            6
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#call_dome_on",
+          "uv": [
+            1,
+            5,
+            1.5,
+            6
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#call_dome_on",
+          "uv": [
+            1,
+            5,
+            1.5,
+            6
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "up": {
+          "texture": "#call_dome_on",
+          "uv": [
+            1,
+            5,
+            3,
+            5.5
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#call_dome_on",
+          "uv": [
+            1,
+            5,
+            3,
+            5.5
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      },
+      "shade": false
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

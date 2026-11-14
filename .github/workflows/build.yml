@@ -1099,7 +1099,7 @@ jobs:
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
           test -s build/font-smoke/night-ward-passed.txt
-          for page in 0 1 2 3 4; do test -s build/font-smoke/native-night-ward-$page.png; done
+          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-night-ward-$page.png; done
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png
@@ -2253,7 +2253,7 @@ jobs:
           for page in 4 5 6; do test -s build/font-smoke/native-playtest-0468-$page.png; done
           test -s build/font-smoke/institute-0470-passed.txt
           test -s build/font-smoke/night-ward-passed.txt
-          for page in 0 1 2 3 4; do test -s build/font-smoke/native-night-ward-$page.png; done
+          for page in 0 1 2 3 4 5; do test -s build/font-smoke/native-night-ward-$page.png; done
           test -s build/font-smoke/native-goatman-fear0472-0.png
           test -s build/font-smoke/native-goatman-fear0472-1.png
           test -s build/font-smoke/native-goatman-fear0472-2.png

@@ -1,74 +1,157 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "cloth_hem": "the_oldest_house:block/night_ward/cloth_hem",
-    "particle": "the_oldest_house:block/night_ward/cloth"
+    "curtain_lower": "the_oldest_house:block/night_ward/curtain_lower",
+    "particle": "the_oldest_house:block/night_ward/curtain_lower"
   },
   "elements": [
     {
       "from": [
-        7.5,
+        7,
         3,
         0
       ],
       "to": [
-        8.5,
+        8,
         16,
-        8
+        3
       ],
       "faces": {
         "east": {
-          "texture": "#cloth_hem",
+          "texture": "#curtain_lower",
           "uv": [
-            0,
-            0,
             8,
+            0,
+            11,
             13
           ]
         },
         "west": {
-          "texture": "#cloth_hem",
+          "texture": "#curtain_lower",
           "uv": [
             0,
             0,
-            8,
+            3,
             13
           ]
         },
         "north": {
-          "texture": "#cloth_hem",
+          "texture": "#curtain_lower",
           "uv": [
-            7.5,
+            8,
             0,
-            8.5,
+            9,
+            13
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#curtain_lower",
+          "uv": [
+            8,
+            0,
+            9,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        4,
+        3
+      ],
+      "to": [
+        9,
+        16,
+        4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#curtain_lower",
+          "uv": [
+            3,
+            0,
+            4,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#curtain_lower",
+          "uv": [
+            11,
+            0,
+            12,
+            12
+          ]
+        },
+        "north": {
+          "texture": "#curtain_lower",
+          "uv": [
+            8,
+            0,
+            9,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#curtain_lower",
+          "uv": [
+            8,
+            0,
+            9,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        3,
+        4
+      ],
+      "to": [
+        8,
+        16,
+        7
+      ],
+      "faces": {
+        "east": {
+          "texture": "#curtain_lower",
+          "uv": [
+            12,
+            0,
+            15,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#curtain_lower",
+          "uv": [
+            4,
+            0,
+            7,
+            13
+          ]
+        },
+        "north": {
+          "texture": "#curtain_lower",
+          "uv": [
+            8,
+            0,
+            9,
             13
           ]
         },
         "south": {
-          "texture": "#cloth_hem",
+          "texture": "#curtain_lower",
           "uv": [
-            7.5,
+            8,
             0,
-            8.5,
+            9,
             13
-          ]
-        },
-        "up": {
-          "texture": "#cloth_hem",
-          "uv": [
-            7.5,
-            0,
-            8.5,
-            8
-          ]
-        },
-        "down": {
-          "texture": "#cloth_hem",
-          "uv": [
-            7.5,
-            0,
-            8.5,
-            8
           ]
         }
       }

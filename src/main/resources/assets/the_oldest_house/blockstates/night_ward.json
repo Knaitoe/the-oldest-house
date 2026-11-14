@@ -359,6 +359,81 @@
     "facing=west,kind=drip": {
       "model": "the_oldest_house:block/night_ward_drip",
       "y": 270
+    },
+    "facing=north,kind=tube_base": {
+      "model": "the_oldest_house:block/night_ward_tube_base"
+    },
+    "facing=east,kind=tube_base": {
+      "model": "the_oldest_house:block/night_ward_tube_base",
+      "y": 90
+    },
+    "facing=south,kind=tube_base": {
+      "model": "the_oldest_house:block/night_ward_tube_base",
+      "y": 180
+    },
+    "facing=west,kind=tube_base": {
+      "model": "the_oldest_house:block/night_ward_tube_base",
+      "y": 270
+    },
+    "facing=north,kind=tube_station": {
+      "model": "the_oldest_house:block/night_ward_tube_station"
+    },
+    "facing=east,kind=tube_station": {
+      "model": "the_oldest_house:block/night_ward_tube_station",
+      "y": 90
+    },
+    "facing=south,kind=tube_station": {
+      "model": "the_oldest_house:block/night_ward_tube_station",
+      "y": 180
+    },
+    "facing=west,kind=tube_station": {
+      "model": "the_oldest_house:block/night_ward_tube_station",
+      "y": 270
+    },
+    "facing=north,kind=tube_pipe": {
+      "model": "the_oldest_house:block/night_ward_tube_pipe"
+    },
+    "facing=east,kind=tube_pipe": {
+      "model": "the_oldest_house:block/night_ward_tube_pipe",
+      "y": 90
+    },
+    "facing=south,kind=tube_pipe": {
+      "model": "the_oldest_house:block/night_ward_tube_pipe",
+      "y": 180
+    },
+    "facing=west,kind=tube_pipe": {
+      "model": "the_oldest_house:block/night_ward_tube_pipe",
+      "y": 270
+    },
+    "facing=north,kind=call_dome": {
+      "model": "the_oldest_house:block/night_ward_call_dome"
+    },
+    "facing=east,kind=call_dome": {
+      "model": "the_oldest_house:block/night_ward_call_dome",
+      "y": 90
+    },
+    "facing=south,kind=call_dome": {
+      "model": "the_oldest_house:block/night_ward_call_dome",
+      "y": 180
+    },
+    "facing=west,kind=call_dome": {
+      "model": "the_oldest_house:block/night_ward_call_dome",
+      "y": 270
+    },
+    "facing=north,kind=call_dome_on": {
+      "model": "the_oldest_house:block/night_ward_call_dome_on"
+    },
+    "facing=east,kind=call_dome_on": {
+      "model": "the_oldest_house:block/night_ward_call_dome_on",
+      "y": 90
+    },
+    "facing=south,kind=call_dome_on": {
+      "model": "the_oldest_house:block/night_ward_call_dome_on",
+      "y": 180
+    },
+    "facing=west,kind=call_dome_on": {
+      "model": "the_oldest_house:block/night_ward_call_dome_on",
+      "y": 270
     }
   }
 }

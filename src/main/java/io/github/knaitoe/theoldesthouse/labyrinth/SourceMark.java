@@ -33,6 +33,9 @@ public final class SourceMark {
     public static boolean waits(@Nullable LabyrinthPlace place){return place!=null&&LiteraryRooms.isLiterary(place)&&place!=LabyrinthPlace.BORRASCA&&!UncannyRooms.isUncanny(place);}
     /** Where this reader's unread first paper lies, or null when nothing should be marked for them. */
     public static @Nullable BlockPos wanted(ServerPlayer p){
+        // 0.4.590 (owner: "the room's vignette text should be highlighted"): the night ward's chart, a novel site's paper, is marked
+        // the same way: until it has been opened, and again at dawn until its final page has been read.
+        var chart=NightWard.chartMark(p);if(chart!=null)return chart;
         if(p.isSpectator()||!p.isAlive()||!LiteraryVignettes.participant(p))return null;
         var place=LiteraryVignettes.current(p);if(!waits(place))return null;
         var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),place);
