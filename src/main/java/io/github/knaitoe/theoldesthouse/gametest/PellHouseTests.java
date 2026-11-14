@@ -188,8 +188,15 @@ public final class PellHouseTests {
             // The kitchen.
             h.assertTrue(thing(l,b,-13,0,-71,FRIDGE,0)&&thing(l,b,-13,1,-71,FRIDGE_TOP,0)&&thing(l,b,-10,0,-71,SINK,0)&&thing(l,b,-11,0,-71,KNIFE_BLOCK,0)&&thing(l,b,-8,0,-71,STOVE,0),
                 "the fridge, the sink under the window, the knife block full, the stove");
-            h.assertTrue(thing(l,b,-11,0,-69,TABLE,0)&&thing(l,b,-12,0,-69,TABLE,1)&&thing(l,b,-12,0,-70,CHAIR,0)&&facing(l,b,-12,0,-70)==Direction.SOUTH&&facing(l,b,-11,0,-68)==Direction.NORTH,
-                "the table and its chairs, turned to it");
+            h.assertTrue(thing(l,b,-12,0,-69,TABLE,0)&&thing(l,b,-12,0,-68,TABLE,1)&&thing(l,b,-11,0,-69,CHAIR,0)&&thing(l,b,-13,0,-68,CHAIR,0)&&facing(l,b,-11,0,-69)==Direction.WEST&&facing(l,b,-13,0,-68)==Direction.EAST,
+                "the table in the corner by the hall wall, lengthwise, and its chairs turned to it");
+            // 0.4.572: nothing stands in the floor before the benches, from the fridge to the stove.
+            for(int x=-13;x<=-7;x++)h.assertTrue(l.getBlockState(b.offset(x,0,-70)).isAir(),"the floor before the benches is clear at "+x);
+            // And every place's chair is the chair it names, with its plate over the table.
+            for(var place:PellVisit.TABLE){
+                h.assertTrue(PellThing.is(l.getBlockState(b.offset(place.chair())),CHAIR),"a place's chair at "+place.chair());
+                h.assertTrue(PellThing.is(l.getBlockState(b.offset(BlockPos.containing(place.plate().x,0,place.plate().z))),TABLE),"its plate lies over the table: "+place.plate());
+            }
             // 0.4.571: with June's strip on it, the one with no name (PellJobs): stage bit 1.
             h.assertTrue(thing(l,b,-13,1,-69,CHORE_CHART,2)&&thing(l,b,-13,1,-70,CHORE_CHART,3)&&PellThing.right(new BlockPos(-13,1,-69),Direction.EAST).equals(new BlockPos(-13,1,-70)),
                 "the chore chart reads left to right from the room, June's new strip on it");
@@ -253,7 +260,9 @@ public final class PellHouseTests {
             for(var door:List.of(PellSite.FRONT_DOOR,PellSite.CALLUM_DOOR,PellSite.LAUNDRY_DOOR))f.click(p,P,door);
             var in=walked(l,b,BlockPos.ZERO);
             for(var cell:List.of(new BlockPos(8,0,-70),new BlockPos(-3,0,-60),new BlockPos(-5,0,-62),new BlockPos(-7,0,-66),new BlockPos(1,0,-60)))h.assertTrue(in.contains(cell),"a body walks to "+cell);
-            h.assertFalse(in.contains(new BlockPos(-4,0,-61))||in.contains(new BlockPos(-11,0,-69)),"not through the mattress or the table");
+            // 0.4.572: to the fridge, the sink and the stove, and to the end of the table. The chairs stood against the bench fronts.
+            for(var cell:List.of(new BlockPos(-13,0,-70),new BlockPos(-10,0,-70),new BlockPos(-8,0,-70),new BlockPos(-12,0,-70)))h.assertTrue(in.contains(cell),"a body walks to "+cell+" in the kitchen");
+            h.assertFalse(in.contains(new BlockPos(-4,0,-61))||in.contains(new BlockPos(-12,0,-69)),"not through the mattress or the table");
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_things") public static void thingsDone(ServerLevel l){done();}
@@ -567,7 +576,7 @@ public final class PellHouseTests {
         }).thenIdle(1).thenExecute(()->{
             h.assertTrue(told(q).contains(PellTexts.SCRAPED_PLATE),"a second hand finds the plate scraped");
             // The other comes in from the garage. Beside Callum's chair, the table's nearest place is his: nothing on it.
-            f.at(p,P,-9.5,0,-69.5);told(p);hand(p,b.offset(-11,0,-69));
+            f.at(p,P,-9.5,0,-68.5);told(p);hand(p,b.offset(-12,0,-69));
         }).thenIdle(1).thenExecute(()->{
             h.assertTrue(told(p).contains(PellTexts.CALLUMS_PLATE),"Callum's plate has nothing on it");
             LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
@@ -673,7 +682,7 @@ public final class PellHouseTests {
     public static void theChartHasJunesJobsAndATableLaidForHerIsFour(GameTestHelper h){
         var f=house(h);var p=f.player("pell_jobs_reader",P);var l=f.level(P);var b=f.base(P);
         f.at(p,P,.5,0,-44);
-        BlockPos names=b.offset(PellJobs.CHART.get(0)),jobs=b.offset(PellJobs.CHART.get(1)),cupboard=b.offset(-12,2,-71),table=b.offset(-11,0,-69);
+        BlockPos names=b.offset(PellJobs.CHART.get(0)),jobs=b.offset(PellJobs.CHART.get(1)),cupboard=b.offset(-12,2,-71),table=b.offset(-12,0,-69);
         h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
         .thenExecute(()->{
             h.assertTrue(thing(l,b,-13,1,-69,CHORE_CHART,2)&&thing(l,b,-13,1,-70,CHORE_CHART,3),"the chart with June's strip on it");
@@ -3189,7 +3198,7 @@ public final class PellHouseTests {
         .thenIdle(2).thenExecute(()->{
             h.assertTrue(thing(l,b,PellAftermath.SIGN.getX(),0,PellAftermath.SIGN.getZ(),FOR_SALE,0)&&facing(l,b,PellAftermath.SIGN.getX(),0,PellAftermath.SIGN.getZ())==Direction.SOUTH,"a FOR SALE sign on the front lawn, to the street");
             h.assertTrue(thing(l,b,-11,1,-63,MARKS_AFTER,0)&&thing(l,b,-11,0,-63,MARKS,0),"the height marks by Nessa's door, the N rubbed out");
-            h.assertTrue(l.getBlockState(b.offset(-13,0,-61)).isAir()&&l.getBlockState(b.offset(-11,0,-69)).isAir()&&l.getBlockState(b.offset(-2,0,-70)).isAir()&&l.getBlockState(b.offset(9,0,-70)).isAir()
+            h.assertTrue(l.getBlockState(b.offset(-13,0,-61)).isAir()&&l.getBlockState(b.offset(-12,0,-69)).isAir()&&l.getBlockState(b.offset(-2,0,-70)).isAir()&&l.getBlockState(b.offset(9,0,-70)).isAir()
                 &&l.getBlockState(b.offset(-13,2,-61)).isAir()&&l.getBlockState(b.offset(-9,1,-63)).isAir(),"the bed, the table, the recliner, the freezer, the border and the taped switch all gone");
             h.assertTrue(thing(l,b,-9,0,-71,COUNTER,0)&&thing(l,b,-10,0,-71,SINK,0)&&PellThing.is(l.getBlockState(b.offset(19,0,-80)),KENNEL)&&PellThing.is(l.getBlockState(b.offset(-5,-1,-62)),CIRCLE),"what is built in is left: the benches and sink, the kennel, the circle in the floor");
             h.assertTrue(is(l,b,-10,PellSite.ROOF,-61,"ceiling"),"no stars on Nessa's ceiling");
@@ -3240,7 +3249,7 @@ public final class PellHouseTests {
         }).thenWaitUntil(()->h.assertTrue(PellAftermath.dressed(l,b)==PellAftermath.Kind.KEPT,"the house as it stands after Tilly answered"))
         .thenIdle(2).thenExecute(()->{
             h.assertTrue(thing(l,b,-11,1,-63,MARKS_AFTER,1),"one more pencil mark on the door frame, higher, with an N");
-            h.assertTrue(PellThing.is(l.getBlockState(b.offset(-13,0,-61)),BED)&&PellThing.is(l.getBlockState(b.offset(-11,0,-69)),TABLE)&&PellThing.is(l.getBlockState(b.offset(9,0,-70)),FREEZER)&&is(l,b,-10,PellSite.ROOF,-61,"ceiling_stars"),"lived in: everything where it is kept");
+            h.assertTrue(PellThing.is(l.getBlockState(b.offset(-13,0,-61)),BED)&&PellThing.is(l.getBlockState(b.offset(-12,0,-69)),TABLE)&&PellThing.is(l.getBlockState(b.offset(9,0,-70)),FREEZER)&&is(l,b,-10,PellSite.ROOF,-61,"ceiling_stars"),"lived in: everything where it is kept");
             var line=l.getBlockState(b.offset(-17,-1,-62));
             h.assertTrue(PellLine.is(line)&&line.getValue(PellLine.STAGE)==PellLine.LAST,"the line gone over again, still wet");
             h.assertTrue(l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&!PellWeek.rope(l,b).isEmpty()&&l.getBlockState(b.offset(PellSite.POOL_GATE)).getValue(PellBlock.STAGE)==1,"the pool open with its rope across it, the gate padlocked");

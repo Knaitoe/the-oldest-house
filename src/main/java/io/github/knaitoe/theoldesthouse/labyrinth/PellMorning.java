@@ -68,7 +68,7 @@ public final class PellMorning {
         TO_BACK={v(7.5,-65.6),v(7.5,-66.6),v(7.5,-68.4),v(7.5,-69.5),v(8.5,-70.5)},
         TO_SLIDER={v(7.5,-69.5),v(7.5,-68.4),v(7.5,-66.6),v(7.5,-65.6),v(0,-65.6),v(0,-68.5),v(.5,-70.6)},
         TO_FRONT={v(0,-68.5),v(0,-65.6),v(.5,-62),v(.5,-59.6)},
-        TO_TABLE={v(.5,-62),v(.5,-65.6),v(-9,-65.6),v(-9,-68.5),v(PellVisit.TABLE_END.x(),PellVisit.TABLE_END.z())};
+        TO_TABLE={v(.5,-62),v(.5,-65.6),v(-9.5,-65.6),PellVisit.BY_THE_BENCHES,v(PellVisit.TABLE_END.x(),PellVisit.TABLE_END.z())};
     /** Tilly's way from Nessa's bed to the kitchen door, and Callum's from his mattress. */
     static final Vec3[] TILLY_UP={v(-12.5,-59.6),v(-10.6,-59.7),v(-9.5,-62.8),v(-9.5,-64.6),v(-9.5,-65.6),v(-9.5,-66.6)},
         CALLUM_UP={v(-3.5,-61.9),v(-3.5,-63.2),v(-3.5,-64.6),v(-4.5,-65.6),v(-9.5,-65.6),v(-9.5,-66.6)};
@@ -164,7 +164,6 @@ public final class PellMorning {
 
     // ------------------------------------------------------------------------------------------------ the morning
     private static void next(PellPeople.Household h,int step){h.step=step;h.waypoint=0;h.nudgedAt=0;}
-    private static Vec3[] with(Vec3[] way,Vec3 last){var out=Arrays.copyOf(way,way.length+1);out[way.length]=last;return out;}
     private static int placeOf(PellPeople.Household h,int who){for(int i=0;i<PellVisit.TABLE.length;i++)if(h.diner[i]==who)return i;return -1;}
 
     /** Every tick for the house from the small hours (PellNight.tick hands it on). */
@@ -252,7 +251,7 @@ public final class PellMorning {
         h.breakfastAt=now;h.morningSaid=0;h.tillySat=0;h.callumCalled=false;next(h,CALLED);
     }
     private static void toTable(PellPeople.Household h,int who,int place,Vec3[] way){
-        if(place>=0)PellVisit.go(h,who,place,PellVisit.TABLE[place].look(),with(way,PellVisit.TABLE[place].beside()));
+        if(place>=0)PellVisit.go(h,who,place,PellVisit.TABLE[place].look(),PellVisit.to(way,PellVisit.TABLE[place]));
         else PellVisit.go(h,who,-1,AT_THE_DOOR,way);
     }
     /**
