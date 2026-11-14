@@ -441,7 +441,66 @@ public final class LiteraryRenderers {
                     rightArm.xRot=-2.55F;rightArm.yRot=0;rightArm.zRot=-.18F+net.minecraft.util.Mth.sin(age*.32F)*.32F;
                     leftArm.xRot=0;leftArm.yRot=0;leftArm.zRot=-.05F;
                 }
+                // 0.4.570, their own small things while the house waits (PellIdle). Where each looks is the server's (the head's pitch),
+                // so a reader who comes close is looked at. June at the stove: her right hand going round the pot with the spoon, her
+                // left on the bench beside it.
+                case PellPeople.STIR->{
+                    float s=age*.26F;
+                    rightArm.xRot=-1.05F+net.minecraft.util.Mth.sin(s)*.07F;rightArm.yRot=-.12F+net.minecraft.util.Mth.cos(s)*.13F;rightArm.zRot=0;
+                    leftArm.xRot=-.62F;leftArm.yRot=.22F;leftArm.zRot=0;
+                }
+                // Wiping the end of the table down: her right hand flat on it going side to side, her left steadying her on its edge.
+                case PellPeople.WIPE->{
+                    float s=net.minecraft.util.Mth.sin(age*.2F);
+                    rightArm.xRot=-.98F;rightArm.yRot=s*.38F;rightArm.zRot=0;
+                    leftArm.xRot=-.72F;leftArm.yRot=.32F;leftArm.zRot=0;head.yRot+=s*.06F;
+                }
+                // At the sink, or the kettle: both hands forward at the bench, busy with something.
+                case PellPeople.WASH->{
+                    float s=net.minecraft.util.Mth.sin(age*.3F)*.06F;
+                    rightArm.xRot=-.92F+s;leftArm.xRot=-.92F-s;rightArm.yRot=-.16F;leftArm.yRot=.16F;rightArm.zRot=leftArm.zRot=0;
+                }
+                // Tilly feeling along something with her free hand flat on it, slowly, her cane down in the other; her head tipped to listen.
+                case PellPeople.FEEL->{
+                    leftArm.xRot=-1.15F+net.minecraft.util.Mth.sin(age*.07F)*.06F;leftArm.yRot=.12F+net.minecraft.util.Mth.sin(age*.045F)*.22F;leftArm.zRot=0;
+                    // The cane as she holds it standing (CANE), its tip on the floor: with the arm let down it went through the boards.
+                    rightArm.xRot=-.32F;rightArm.yRot=-.08F;rightArm.zRot=.04F;head.zRot+=.14F;
+                }
+                // Her fingers up on the height marks by the door, going over them, the cane down in her other hand.
+                case PellPeople.MEASURE->{
+                    leftArm.xRot=-2.45F+net.minecraft.util.Mth.sin(age*.06F)*.12F;leftArm.yRot=.08F;leftArm.zRot=0;
+                    rightArm.xRot=-.32F;rightArm.yRot=-.08F;rightArm.zRot=.04F;
+                }
+                // Callum wringing the hem of his jumper in both hands, twisting it.
+                case PellPeople.WRING->{
+                    float t=net.minecraft.util.Mth.sin(age*.42F)*.14F;
+                    rightArm.xRot=-.62F+t*.5F;leftArm.xRot=-.62F-t*.5F;rightArm.yRot=-.52F;leftArm.yRot=.52F;rightArm.zRot=t;leftArm.zRot=t;
+                }
                 default->{}
+            }
+            hat.copyFrom(head);
+        }
+        /**
+         * 0.4.570 (the owner: "the NPCs should also have more idle behavior in Pell house, as they do on ghosts set"): the living layer
+         * the Ghosts set's family has (GhostsCastModel.living), on the Pell house's people, over whatever pose they are in. Breath at
+         * each one's own rate in the shoulders, the arms and the head; standing still, the weight going slowly from one leg to the other;
+         * June, Gail and Tilly's heads drifting a little (Callum's does not: he watches); and June talking with a hand, Gail nodding over
+         * her folder. Not asleep, not lying still, and not Nessa.
+         */
+        public void pellLiving(int who,int gesture,float age,int id,boolean speaking,boolean seated){
+            if(who==PellPeople.NESSA||gesture==PellPeople.ASLEEP||gesture==PellPeople.STILL)return;
+            float rate=who==PellPeople.JUNE?.07F:who==PellPeople.TILLY?.1F:who==PellPeople.CALLUM?.09F:.075F;
+            float breath=net.minecraft.util.Mth.sin(age*rate+id*1.7F);
+            leftArm.y-=breath*.18F;rightArm.y-=breath*.18F;head.y-=breath*.14F;
+            boolean walking=amount>.12F,standing=!seated&&(gesture==0||gesture==PellPeople.CANE||gesture==PellPeople.FOLDER);
+            if(standing&&!walking){
+                float w=net.minecraft.util.Mth.sin(age*.025F+id*1.9F);
+                body.zRot+=w*.03F;head.zRot-=w*.015F;(w>0?leftLeg:rightLeg).xRot-=Math.abs(w)*.05F;
+            }
+            if(who!=PellPeople.CALLUM&&!walking){head.yRot+=net.minecraft.util.Mth.sin(age*.013F+id*2.3F)*.05F;head.xRot+=net.minecraft.util.Mth.sin(age*.019F+id)*.025F;}
+            if(speaking){
+                head.xRot+=net.minecraft.util.Mth.sin(age*.42F)*.04F;
+                if(who==PellPeople.JUNE&&gesture==0&&!walking){float g=.5F+.5F*net.minecraft.util.Mth.sin(age*.14F+id);rightArm.xRot-=.3F*g;rightArm.yRot-=.12F*g;}
             }
             hat.copyFrom(head);
         }

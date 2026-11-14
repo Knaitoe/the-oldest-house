@@ -89,7 +89,10 @@ public final class PellPeople {
         // 0.4.544: Gail at first light holding a page out from her folder, the folder kept to her chest in her other hand (PellPages).
         SHOW=27,
         // 0.4.567: June walking a reader out of the shed by the arm, a step ahead of them, her right hand back to theirs.
-        SHOWING=28;
+        SHOWING=28,
+        // 0.4.570, their errands (PellIdle): June stirring the pot, wiping the table down, and with her hands at the sink or the kettle;
+        // Tilly's free hand flat on something, feeling along it, and up at the height marks by Nessa's door; Callum wringing out his jumper.
+        STIR=29,WIPE=30,WASH=31,FEEL=32,MEASURE=33,WRING=34;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /**
@@ -132,6 +135,10 @@ public final class PellPeople {
     /** The four at one house: who they are by body; and, from 0.4.525, where the visit is (PellVisit). */
     static final class Household {
         final UUID[] ids=new UUID[COUNT];long lastTick=-1;final int[] said=new int[COUNT];
+        /** 0.4.570, their errands (PellIdle): the window the house is in; for each of June, Tilly and Callum, what they are out on and
+         *  where in it, when they got to it, when the next may come, and how far round their errands they are; which lines have been said. */
+        int idleWindow;final int[] idleState=new int[COUNT],idleTurn=new int[COUNT];final long[] idleAt=new long[COUNT],idleNext=new long[COUNT];
+        final PellIdle.Errand[] idleErrand=new PellIdle.Errand[COUNT];final java.util.Set<PellIdle.Errand> idleSaid=new java.util.HashSet<>();
         /** Which way each faces when at rest, and who walked this tick (their heads are the walk's). */
         final float[] rest=new float[COUNT];final boolean[] moving=new boolean[COUNT];
         /** The visit: begun again from the start when fresh; how far it has got; when the next line may come. */

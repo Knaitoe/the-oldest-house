@@ -97,7 +97,10 @@ public final class PellRegistry {
         CANE_TAP=sound("pell.cane"),
         // 0.4.546: what only Tilly hears (docs/PELL_HOUSE_SENSES_0_4_546.md): singing through the wall by Nessa's bed, the freezer's hum,
         // and tape hiss from the shed.
-        SINGING=sound("pell.singing"),HUM=sound("pell.hum"),HISS=sound("pell.hiss");
+        SINGING=sound("pell.singing"),HUM=sound("pell.hum"),HISS=sound("pell.hiss"),
+        // 0.4.570, their own small things while the house waits (PellIdle; docs/PELL_HOUSE_NOTES_0_4_570.md): a spoon round a saucepan,
+        // the tap run, a cloth over the table, the kettle coming to the boil, and water dripping off Callum.
+        STIR=sound("pell.stir"),TAP=sound("pell.tap"),WIPE=sound("pell.wipe"),KETTLE=sound("pell.kettle"),DRIP=sound("pell.drip");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }

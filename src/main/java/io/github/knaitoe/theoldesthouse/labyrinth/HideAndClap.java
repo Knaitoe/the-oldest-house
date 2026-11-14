@@ -233,7 +233,8 @@ public final class HideAndClap {
 
         // A small bed against the north wall, its post beside the pillow.
         LabyrinthBuilder.bed(level, base.offset(BED_FOOT), Direction.NORTH, Blocks.LIGHT_BLUE_BED);
-        BuildBlocks.set(level, base.offset(BED_POST), Blocks.SPRUCE_FENCE.defaultBlockState(), flags);
+        // 0.4.570: a post that joins nothing (HouseBlocks.BED_POST): a fence here joined the wall and knocked the blindfold off it.
+        BuildBlocks.set(level, base.offset(BED_POST), HouseBlocks.BED_POST.get().defaultBlockState(), flags);
         // A rug in the corner by the door, a toy piano, a little table and chair, one lamp.
         for (int x = 2; x <= 4; x++) {
             for (int z = -3; z <= -2; z++) {

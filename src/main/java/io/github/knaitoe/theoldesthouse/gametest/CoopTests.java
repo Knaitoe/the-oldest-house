@@ -627,6 +627,19 @@ public final class CoopTests {
                 h.assertTrue(f.in.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(wall)),"the copy's wall is coming in: "+(HideAndClap.framesOwed(1)?"its frames owed":"its frames hung before"));
                 h.assertTrue(clothOnWall.test(room)||HideAndClap.framesOwed(1),"the copy's blindfold is on its wall or still owed to it, never neither");
                 h.assertTrue(f.chunks.ready()&&clothOnWall.test(room),"the copy is resident, with its own blindfold on the wall");})
+            // Run 1600: neither on the wall nor owed. The bed post under the blindfold was a fence, the builder had joined it to the wall
+            // (0.4.220), and the joined arm's collision reached the frame: the frame dropped off a hundred ticks after the copy's
+            // entities began to tick. This case had only ever passed by looking sooner than that. The post joins nothing now; both
+            // frames are asked what vanilla asks them, and are still up after it has asked.
+            .thenExecute(()->{var room=SceneInstances.base(server,place,1);
+                h.assertTrue(f.in.getBlockState(room.offset(HideAndClap.BED_POST)).is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.BED_POST.get()),"the copy's bed has its post, which joins nothing: "+f.in.getBlockState(room.offset(HideAndClap.BED_POST)));
+                for(var rel:new BlockPos[]{HideAndClap.NOTE_FRAME,HideAndClap.BLINDFOLD_FRAME}){var hung=frame.apply(room.offset(rel));
+                    h.assertTrue(hung!=null&&hung.survives(),"nothing in the dressed copy knocks the frame at "+rel.toShortString()+" off its wall: "+(hung==null?"no frame":"collides "+!f.in.noCollision(hung)+", behind it "+f.in.getBlockState(hung.getPos().relative(hung.getDirection().getOpposite()))));}})
+            .thenWaitUntil(()->h.assertTrue(f.chunks.entityTicking(f.in,SceneInstances.base(server,place,1).offset(HideAndClap.BLINDFOLD_FRAME)),"the copy's wall ticks its frames"))
+            .thenIdle(130)
+            .thenExecute(()->{var room=SceneInstances.base(server,place,1);
+                h.assertTrue(clothOnWall.test(room)&&frame.apply(room.offset(HideAndClap.NOTE_FRAME))!=null,"the note and the blindfold are still on the copy's wall after the frames have looked about them");
+                h.assertTrue(f.in.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(room.offset(HideAndClap.BLINDFOLD_FRAME)).inflate(4),e->e.getItem().is(LabyrinthRegistry.BLINDFOLD.get())||e.getItem().is(net.minecraft.world.item.Items.ITEM_FRAME)).isEmpty(),"and nothing of them lies on the floor");})
             .thenExecute(()->{
                 var chosen=SceneInstances.enter(second,place);var room=SceneInstances.base(server,place,1);
                 h.assertTrue(chosen.door()!=null&&chosen.copy()==1,"the second reader's door opens onto the copy");

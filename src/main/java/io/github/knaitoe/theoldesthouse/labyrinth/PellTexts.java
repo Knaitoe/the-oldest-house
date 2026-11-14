@@ -1192,4 +1192,16 @@ public final class PellTexts {
         return visit>=2?"Nothing more will happen today. Go back out the way you came; when you come again, it will be later still."
                 :"Nothing more will happen today. Go back out the way you came; when you come again, it will be a week on.";
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.570: the afternoon and the evening
+    /** What June and Tilly say at their own small things while the house waits on its hour (PellIdle), each once a visit and only with
+     *  somebody near enough to hear: June at the stove, the tap, the table and the kettle; Tilly at the desk under the window, the
+     *  height marks by the door, and the wardrobe. */
+    public static final String JUNE_STIRS="Nearly there.",
+        JUNE_TAP="That tap's wanted a washer since the winter.",
+        JUNE_WIPES="Four places.",
+        JUNE_KETTLE="Kettle's on, if anybody wants one.",
+        TILLY_DESK="Is it still light out?",
+        TILLY_MARKS="Somebody measured themselves here.",
+        TILLY_WARDROBE="There's still clothes in here.";
 }

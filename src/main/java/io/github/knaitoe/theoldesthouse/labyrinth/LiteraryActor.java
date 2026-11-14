@@ -70,9 +70,10 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     public int fade(){return entityData.get(FADE);}public void fade(int value){entityData.set(FADE,Math.max(0,Math.min(100,value)));}
     /**
      * 0.4.262: up to 15. It was held to 5, so Borrasca's led and reaching gestures (6 and 7, since 0.4.235) and the men's hands on her
-     * arm (8 and 9) all arrived as 5, a stoop that also stopped the walking legs.
+     * arm (8 and 9) all arrived as 5, a stoop that also stopped the walking legs. 0.4.282: up to 31. 0.4.570: up to 63, for the Pell
+     * house's errands (PellPeople.STIR to WRING, 29 to 34), which at 31 would all have arrived as one.
      */
-    public int gesture(){return entityData.get(GESTURE);}public void gesture(int value){entityData.set(GESTURE,Math.max(0,Math.min(31,value)));}
+    public int gesture(){return entityData.get(GESTURE);}public void gesture(int value){entityData.set(GESTURE,Math.max(0,Math.min(63,value)));}
     /**
      * 0.4.447 (owner, of the two in the bar's next booth lying over their table: "Lol was this intentional, in last orders?"). The
      * scenes that pose their own cast number their gestures from one, so a bare number means something different in each of them. The

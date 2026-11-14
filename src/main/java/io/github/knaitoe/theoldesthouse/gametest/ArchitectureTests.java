@@ -137,6 +137,18 @@ public final class ArchitectureTests {
             h.assertTrue(missing.isEmpty(),"every scene's way on stands as an actual door with a clear cell before it: "+missing);
             for(var scene:LabyrinthPlace.values())if(SceneHuntReview.applies(scene)){var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));var base=LabyrinthPlaces.base(origin,scene);var hide=scene==LabyrinthPlace.ELK_CARCASSES?level.getBlockEntity(base.offset(-2,0,-37)):null;h.assertTrue(SceneHuntReview.apply(level,origin,scene),scene.id()+" completes its actual playtest dressing");if(scene==LabyrinthPlace.ELK_CARCASSES)h.assertTrue(hide!=null&&level.getBlockEntity(base.offset(-2,0,-37))==hide,"the actual original carcass block entity survives its visual and forest upgrade");}
             VignetteAudit.write(server,origin);
+            // 0.4.570 (run 1600): nothing hung on a wall in a finished scene is about to fall. Vanilla drops a frame or a painting that
+            // touches a block, has lost the block behind it or overlaps another, the next time it looks (every hundred ticks): the
+            // clapping room's blindfold went that way, under a bed post the builder had joined to the wall.
+            var falling=new ArrayList<String>();int hangings=0;
+            for(var scene:LabyrinthPlace.values()){
+                var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
+                if(base==null||r==null||!level.isLoaded(base))continue;
+                for(var hung:level.getEntitiesOfClass(net.minecraft.world.entity.decoration.HangingEntity.class,box(base.offset(r.minX()-1,r.minY()-1,r.minZ()-1),base.offset(r.maxX()+1,r.maxY()+2,r.maxZ()+2)))){hangings++;
+                    if(!hung.survives())falling.add(scene.id()+" "+hung.getType().toShortString()+"@"+hung.getPos().subtract(base).toShortString()+" facing "+hung.getDirection()+(level.noCollision(hung)?"":" touching a block")+", behind it "+level.getBlockState(hung.getPos().relative(hung.getDirection().getOpposite())));}
+            }
+            TheOldestHouse.LOGGER.info("Architecture: {} frames and paintings hang in the finished scenes; falling: {}",hangings,falling);
+            h.assertTrue(falling.isEmpty(),"nothing hung on a wall in a finished scene is about to fall: "+falling);
             int dressed=0,props=0;
             // 0.4.201 (owner: "Try to clear the gap between vignette boundaries and doors"): the row the entry door opens onto has a
             // floor wherever the scene's ground runs up behind it.
