@@ -42,7 +42,7 @@ public final class NovelTests {
             chunks.close();var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);s.overworld().setDayTime(oldDayTime);LabyrinthBuilder.clearAll();}
     }
     private static Fixture courtyard,whale,well,plain,ward,karen,upgrade,signRepair;
-    private static Fixture hospitalStyle,hospitalSave,hospitalWriting,hospitalInterrupted,wardNight;
+    private static Fixture hospitalStyle,hospitalSave,hospitalWriting,hospitalInterrupted,wardNight,wardBeds;
     @AfterBatch(batch="novel_hospital_style0470") public static void hospitalStyleDone(ServerLevel l){if(hospitalStyle!=null){hospitalStyle.close();hospitalStyle=null;}}
     @AfterBatch(batch="novel_hospital_writing0470") public static void hospitalWritingDone(ServerLevel l){if(hospitalWriting!=null){hospitalWriting.close();hospitalWriting=null;}}
     @GameTest(template="empty",batch="novel_hospital_style0470",timeoutTicks=240)
@@ -98,6 +98,7 @@ public final class NovelTests {
     @AfterBatch(batch="novel_ward") public static void c5(ServerLevel l){if(ward!=null){ward.close();ward=null;}}
     @AfterBatch(batch="novel_karen") public static void c6(ServerLevel l){if(karen!=null){karen.close();karen=null;}}
     @AfterBatch(batch="novel_ward_night") public static void c7(ServerLevel l){if(wardNight!=null){wardNight.close();wardNight=null;}}
+    @AfterBatch(batch="novel_ward_beds") public static void c8(ServerLevel l){if(wardBeds!=null){wardBeds.close();wardBeds=null;}SourceMark.clearAll();}
     @GameTest(template="empty") public static void novelSitesAppendAndOutdoorEntriesUseTheirRealDimension(GameTestHelper h){
         for(int y:new int[]{65,80,150,250})for(var place:NovelVignettes.PLACES){var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,place);var slot=LabyrinthPlaces.slotBounds(origin,place);var r=place.room();
             h.assertTrue(b!=null&&slot.isInside(b.offset(r.minX(),r.minY(),r.minZ()))&&slot.isInside(b.offset(r.maxX(),r.maxY(),r.maxZ())),"the appended scene fits its native height at "+y+": "+place.id());}
@@ -323,8 +324,9 @@ public final class NovelTests {
             edit.accept(o->o.putInt("WardTicks",2*NightWardNight.QUARTER-5));});
         h.runAfterDelay(100,()->{var own=f.own(p);int shut=own.getInt("WardShut");var views=NightWardNight.views(own,own.getInt("WardTicks"));
             h.assertTrue(shut==7,"the first three open bays have been drawn while the reader looked away: "+Integer.toBinaryString(shut));
-            h.assertTrue(views.size()==13&&views.get(new BlockPos(-6,NightWard.CEILING_Y,-3)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT_OFF,"the station light is out and the drawn curtains are this reader's own view");
-            h.assertTrue(f.l.getBlockState(f.b.offset(-5,0,-7)).isAir()&&f.l.getBlockState(f.b.offset(-6,NightWard.CEILING_Y,-3)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT,"the ward itself is unchanged for everyone else");
+            // 0.4.590: two beds have called by now, so two call lights are lit in this reader's view as well.
+            h.assertTrue(views.size()==15&&views.get(new BlockPos(-6,NightWard.CEILING_Y,-3)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT_OFF,"the station light is out and the drawn curtains are this reader's own view: "+views.size());
+            h.assertTrue(f.l.getBlockState(f.b.offset(-5,0,-7)).getValue(NightWardCurtainBlock.GATHER)==NightWardCurtainBlock.Gather.NEG&&f.l.getBlockState(f.b.offset(-6,NightWard.CEILING_Y,-3)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.LIGHT,"the ward itself is unchanged for everyone else: its curtain still hangs bunched beside the opening");
             h.assertTrue(own.getBoolean("Alarm"),"the monitor is calling again");f.click(p,NovelRooms.BUTTON);var to=NightWardNight.walkTarget(f.own(p));
             h.assertTrue(to!=null&&Math.abs(to.x-6.5)<.01&&Math.abs(to.z+15.5)<.01,"in the third quarter they walk to the drawn bay nearest the reader: "+to);
             edit.accept(o->o.getCompound("WardWalk").putInt("T",150));});
@@ -339,7 +341,64 @@ public final class NovelTests {
             h.assertTrue(own.getString("Cue").contains("behind you")&&!WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOSPITAL),"none of it is a resolution");
             edit.accept(o->o.putInt("WardTicks",NovelVignettes.WARD_NIGHT-1));});
         h.runAfterDelay(150,()->{var own=f.own(p);
-            h.assertTrue(own.getBoolean("WardFinished")&&!own.contains("WardShut")&&!own.contains("WardWalk")&&!own.contains("WardFlicker"),"dawn shows the ward whole again and forgets the night");h.succeed();});
+            h.assertTrue(own.getBoolean("WardFinished")&&!own.contains("WardShut")&&!own.contains("WardWalk")&&!own.contains("WardFlicker")&&!own.contains("WardBeds"),"dawn shows the ward whole again and forgets the night");h.succeed();});
+    }
+
+    /**
+     * 0.4.590 (owner: "the room's vignette text should be highlighted and given a unique display canister ... would also be cool if
+     * the vignette had a way to engage players more somehow"): the chart stands in its station and is marked until opened and again
+     * at dawn; the beds call, each reader's own, and are answered by a hand or left lit; a curtain the night has drawn is pulled
+     * back by hand, left a while, and drawn again; the dawn page says what the reader did about the beds.
+     */
+    @GameTest(template="empty",batch="novel_ward_beds",timeoutTicks=260) public static void theBedsCallTheCurtainsPullBackAndTheChartIsMarked(GameTestHelper h){
+        wardBeds=new Fixture(h,41100,LabyrinthPlace.HOSPITAL);var f=wardBeds;var p=f.player();var peer=f.player();p.setXRot(-90);peer.setXRot(-90);
+        java.util.function.Consumer<java.util.function.Consumer<net.minecraft.nbt.CompoundTag>> edit=c->{var own=f.own(p);c.accept(own);NovelVignettes.save(f.data(),p.getUUID(),own);};
+        java.util.function.Function<BlockPos,NightWardBlock.Kind> kind=at->f.l.getBlockState(f.b.offset(at)).getValue(NightWardBlock.KIND);
+        java.util.function.BiFunction<ItemStack,Integer,String> page=(book,i)->book.get(DataComponents.WRITTEN_BOOK_CONTENT).pages().get(i).raw().getString();
+        var chart=NovelRooms.WARD_NOTE;var chamber=f.b.offset(chart).above();var dome=new BlockPos(-5,2,-19);
+        h.assertTrue(kind.apply(chart)==NightWardBlock.Kind.TUBE_BASE&&kind.apply(chart.above())==NightWardBlock.Kind.TUBE_STATION&&kind.apply(chart.above(2))==NightWardBlock.Kind.TUBE_PIPE,"the chart stands in its carrier station: a cabinet, a lit chamber and the pipe to the ceiling");
+        h.assertTrue(NightWardBlock.light(f.l.getBlockState(chamber))>0,"the chamber is lit, so the chart is found in the dark ward");
+        var bunch=f.l.getBlockState(f.b.offset(-5,0,-7));var hand=bunch.getShape(f.l,f.b.offset(-5,0,-7));
+        h.assertTrue(bunch.getValue(NightWardCurtainBlock.GATHER)==NightWardCurtainBlock.Gather.NEG&&f.l.getBlockState(f.b.offset(-5,0,-6)).getValue(NightWardCurtainBlock.GATHER)==NightWardCurtainBlock.Gather.POS,"an open bay's two curtains hang bunched either side of the opening");
+        h.assertTrue(!hand.isEmpty()&&hand.max(Direction.Axis.Z)<.32&&bunch.getCollisionShape(f.l,f.b.offset(-5,0,-7)).isEmpty(),"bunched cloth is no bigger to the hand than to the eye, and stops nobody: "+hand);
+        h.assertTrue(kind.apply(dome)==NightWardBlock.Kind.CALL_DOME,"a call light hangs over each bay, off");
+        h.assertTrue(page.apply(NovelTexts.hospitalLast(2,2),1).contains("each one")&&page.apply(NovelTexts.hospitalLast(2,0),1).contains("did not go")&&NovelTexts.hospitalLast(0,0).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==2,"the dawn page says what was done about the beds, and says nothing of them when none called");
+        h.runAfterDelay(12,()->{f.at(p,-2.5,0,-13.5);f.at(peer,-2.5,0,-12.5);
+            h.assertTrue(chamber.equals(SourceMark.wanted(p)),"the unopened chart is marked for the reader: "+SourceMark.wanted(p));
+            f.click(p,chart.above());h.assertTrue(p.containerMenu instanceof NovelVignettes.NovelBookMenu,"a hand on the chamber opens the chart");p.closeContainer();
+            h.assertTrue(SourceMark.wanted(p)==null&&chamber.equals(SourceMark.wanted(peer)),"once opened its mark goes out, for that reader alone");
+            edit.accept(o->o.putInt("WardTicks",NightWardNight.BED_FIRST-2));});
+        h.runAfterDelay(20,()->{var own=f.own(p);
+            h.assertTrue(own.getInt("WardBedsCalled")==1&&own.getInt("WardBeds")==1<<1&&own.getString("Cue").contains("A bed is calling"),"the first bed calls: "+own.getInt("WardBeds")+" / "+own.getString("Cue"));
+            h.assertTrue(NightWardNight.views(own,own.getInt("WardTicks")).get(dome).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.CALL_DOME_ON&&kind.apply(dome)==NightWardBlock.Kind.CALL_DOME&&f.own(peer).getInt("WardBeds")==0,"its light is lit in this reader's view only; the ward's own is off, and the other reader's night is their own");
+            f.at(p,-6.5,0,-6.5);f.click(p,new BlockPos(-8,0,-7));
+            h.assertTrue(f.own(p).getInt("WardBedsAnswered")==0&&f.own(p).getString("Cue").contains("made"),"a bed that has not called is a made bed and nothing more");
+            f.at(p,-6.5,0,-18.5);f.click(p,new BlockPos(-7,0,-19));own=f.own(p);
+            h.assertTrue(own.getInt("WardBedsAnswered")==1&&own.getInt("WardBeds")==0&&own.getString("Cue").equals(NightWardNight.BED_LINES[0]),"a hand on the calling bed answers it, and its light goes out: "+own.getString("Cue"));
+            edit.accept(o->o.putInt("WardTicks",NightWardNight.BED_FIRST+NightWardNight.BED_EVERY-2));});
+        h.runAfterDelay(40,()->{var own=f.own(p);
+            h.assertTrue(own.getInt("WardBedsCalled")==2&&own.getInt("WardBeds")==1<<3,"a second bed calls, from another bay: "+own.getInt("WardBeds"));
+            h.assertTrue(own.getInt("WardShut")==7,"three bays have been drawn while the reader looked elsewhere: "+own.getInt("WardShut"));
+            f.at(p,-3.5,0,-6.5);f.click(p,new BlockPos(-5,1,-7));own=f.own(p);
+            h.assertTrue(own.getInt("WardShut")==6&&own.getString("Cue").contains("runs back"),"a hand on a drawn curtain pulls it back: "+own.getInt("WardShut"));});
+        h.runAfterDelay(62,()->{var own=f.own(p);
+            h.assertTrue((own.getInt("WardShut")&1)==0,"the night leaves a curtain a reader has pulled back alone a while: "+own.getInt("WardShut"));
+            edit.accept(o->o.putInt("WardTicks",o.getInt("WardPull0")-1));});
+        h.runAfterDelay(74,()->{var own=f.own(p);
+            h.assertTrue((own.getInt("WardShut")&1)==0&&own.getInt("WardTicks")>own.getInt("WardPull0"),"nor is it drawn while the reader stands at it, looking or not: "+own.getInt("WardShut"));
+            f.at(p,-2.5,0,-13.5);});
+        h.runAfterDelay(96,()->{var own=f.own(p);
+            h.assertTrue((own.getInt("WardShut")&1)==1,"and it is drawn again once the reader has gone from it and looks elsewhere: "+own.getInt("WardShut"));
+            h.assertTrue(own.getInt("WardBeds")==1<<3,"the bed left unanswered is still calling");
+            edit.accept(o->o.putInt("WardTicks",NovelVignettes.WARD_NIGHT-1));});
+        h.runAfterDelay(106,()->{var own=f.own(p);
+            h.assertTrue(own.getBoolean("WardFinished")&&own.getInt("WardDawnCalled")==2&&own.getInt("WardDawnAnswered")==1&&!own.contains("WardBeds"),"dawn keeps what the beds asked and what was answered, and forgets the rest");
+            h.assertTrue(chamber.equals(SourceMark.wanted(p)),"the chart is marked again at dawn, its final page unread");
+            f.at(p,-2.5,0,-13.5);f.click(p,chart);var menu=(NovelVignettes.NovelBookMenu)p.containerMenu;
+            int pages=menu.book().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size();
+            h.assertTrue(pages==3&&page.apply(menu.book(),1).contains("some of them"),"the dawn chart has a page for the beds: "+pages);
+            h.assertTrue(menu.clickMenuButton(p,102)&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.HOSPITAL)&&SourceMark.wanted(p)==null,"read to its last page it resolves the night as before, and the mark goes out");
+            h.assertTrue(!WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.HOSPITAL),"the other reader's night is still their own");h.succeed();});
     }
 
 }

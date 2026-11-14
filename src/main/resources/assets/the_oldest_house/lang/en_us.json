@@ -1938,5 +1938,7 @@
   "block.the_oldest_house.city_plane": "Aeroplane",
   "block.the_oldest_house.city_rope": "Fixed Rope",
   "block.the_oldest_house.swimmer_pool_lamp": "Pool Light",
-  "block.the_oldest_house.swimmer_pool_lamp_off": "Pool Light"
+  "block.the_oldest_house.swimmer_pool_lamp_off": "Pool Light",
+  "subtitles.the_oldest_house.ward.bed_call": "A bed calls",
+  "subtitles.the_oldest_house.ward.tube": "A carrier arrives"
 }

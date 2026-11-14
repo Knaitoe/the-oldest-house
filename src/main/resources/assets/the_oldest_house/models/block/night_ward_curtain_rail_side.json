@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "steel": "the_oldest_house:block/night_ward/steel",
-    "particle": "the_oldest_house:block/night_ward/cloth"
+    "steel16": "the_oldest_house:block/night_ward/steel16",
+    "particle": "the_oldest_house:block/night_ward/curtain_lower"
   },
   "elements": [
     {
@@ -14,26 +14,54 @@
       "to": [
         9,
         16,
-        8
+        7
       ],
       "faces": {
-        "north": {
-          "texture": "#steel"
-        },
-        "south": {
-          "texture": "#steel"
-        },
         "east": {
-          "texture": "#steel"
+          "texture": "#steel16",
+          "uv": [
+            0,
+            8,
+            7,
+            9
+          ]
         },
         "west": {
-          "texture": "#steel"
+          "texture": "#steel16",
+          "uv": [
+            0,
+            8,
+            7,
+            9
+          ]
+        },
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            8,
+            2,
+            9
+          ],
+          "cullface": "north"
         },
         "up": {
-          "texture": "#steel"
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            2,
+            8
+          ]
         },
         "down": {
-          "texture": "#steel"
+          "texture": "#steel16",
+          "uv": [
+            2,
+            9,
+            4,
+            16
+          ]
         }
       }
     }

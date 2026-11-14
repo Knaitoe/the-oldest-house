@@ -237,7 +237,7 @@ public final class ArchitectureTests {
             // The night ward (0.4.199) is built whole by NightWard, outside the generic loop: its door, its anchors and its view.
             var ward=LabyrinthPlaces.base(origin,LabyrinthPlace.HOSPITAL);
             h.assertTrue(interior.getBlockState(ward).getBlock() instanceof DoorBlock&&interior.getBlockState(ward.offset(0,0,-2)).getCollisionShape(interior,ward.offset(0,0,-2)).isEmpty(),"the ward keeps its door and a clear approach inside it");
-            h.assertTrue(interior.getBlockState(ward.offset(0,0,-14)).is(NovelRegistry.PROP.get())&&interior.getBlockState(ward.offset(NovelRooms.BUTTON)).is(NovelRegistry.NIGHT_WARD_CALL_BUTTON.get())&&interior.getBlockState(ward.offset(NovelRooms.WARD_NOTE)).is(Blocks.LECTERN),"the incubator, the call button and the chart stand where the night needs them");
+            h.assertTrue(interior.getBlockState(ward.offset(0,0,-14)).is(NovelRegistry.PROP.get())&&interior.getBlockState(ward.offset(NovelRooms.BUTTON)).is(NovelRegistry.NIGHT_WARD_CALL_BUTTON.get())&&interior.getBlockState(ward.offset(NovelRooms.WARD_NOTE)).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.TUBE_BASE&&interior.getBlockState(ward.offset(NovelRooms.WARD_NOTE).above()).getValue(NightWardBlock.KIND)==NightWardBlock.Kind.TUBE_STATION,"the incubator, the call button and the chart in its station stand where the night needs them");
             int drawn=0;for(var at:BlockPos.betweenClosed(ward.offset(-9,0,-23),ward.offset(9,1,0)))if(interior.getBlockState(at).is(NovelRegistry.NIGHT_WARD_CURTAIN.get()))drawn++;
             h.assertTrue(drawn>=40,"the bays have their curtains: "+drawn);
             export(interior,ward,LabyrinthPlace.HOSPITAL);

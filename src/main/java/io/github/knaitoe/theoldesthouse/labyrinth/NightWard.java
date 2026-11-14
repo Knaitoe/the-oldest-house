@@ -26,6 +26,11 @@ import static io.github.knaitoe.theoldesthouse.labyrinth.NightWardBlock.Kind.*;
  *
  * Every anchor of the night stays where it was: the incubator (0,0,-14) and the clear ground round it, the chair (3,0,-12),
  * the button (NovelRooms.BUTTON) on its panel (6,1,-14), the chart (NovelRooms.WARD_NOTE), the door and the way on.
+ *
+ * 0.4.590 (owner: "hospital curtains need improvement. the room's vignette text should be highlighted and given a unique
+ * display canister, too"): each bay's front is two curtains parted, their cloth bunched either side of the opening; a call
+ * light hangs from the ceiling over the opening; and the chart stands in a carrier station where the lectern was, a cabinet
+ * with a lit chamber and the pipe the carrier came down.
  */
 public final class NightWard {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
@@ -35,6 +40,19 @@ public final class NightWard {
     static final int[] WEST_BAYS={-7,-11,-19}, EAST_BAYS={-11,-17};
     private NightWard(){}
 
+    /** Any part of the chart's station, relative to the ward. */
+    public static boolean chart(BlockPos rel){return rel.getX()==NovelRooms.WARD_NOTE.getX()&&rel.getZ()==NovelRooms.WARD_NOTE.getZ()&&rel.getY()>=0&&rel.getY()<CEILING_Y;}
+    /**
+     * 0.4.590: where the chart is marked for this reader (labyrinth/SourceMark), or null: until they have opened it, and again
+     * from dawn until they have read its final page. The mark is the lit chamber the carrier stands in.
+     */
+    public static @javax.annotation.Nullable BlockPos chartMark(net.minecraft.server.level.ServerPlayer p){
+        if(p.isSpectator()||!p.isAlive()||NovelVignettes.current(p)!=LabyrinthPlace.HOSPITAL)return null;
+        var data=LabyrinthData.get(p.server);var own=NovelVignettes.personal(data,p.getUUID());
+        boolean unopened=!own.contains("Original_WardOpening"),dawn=own.getBoolean("WardFinished")&&!WitnessAccount.has(data,p.getUUID(),WitnessAccount.Story.HOSPITAL);
+        var base=NovelVignettes.base(p,LabyrinthPlace.HOSPITAL);
+        return base!=null&&(unopened||dawn)?base.offset(NovelRooms.WARD_NOTE).above():null;
+    }
     public static void build(ServerLevel l,BlockPos b){
         var w=new NightWard();w.l=l;w.b=b;w.shell();w.station();w.bays();w.middle();w.east();w.lights();
         BuildBlocks.after(l,()->w.connect());
@@ -91,8 +109,15 @@ public final class NightWard {
             if(side>0&&(line==-13||line==-15))continue; // the partition at -14 between the east bays is their side there
             for(int x=head;x!=front;x-=side)curtain(x,line,true);
         }
-        // Half drawn: the far half of the front closed, the near half open with only the track across it.
-        for(int dz=-2;dz<=2;dz++)curtain(front,z+dz,dz!=0&&dz!=1);
+        // Two curtains parted: the cloth of each bunched at its side of the opening, the track running on across it.
+        for(int dz=-2;dz<=2;dz++){
+            if(dz==0)gathered(front,z,NightWardCurtainBlock.Gather.NEG);else if(dz==1)gathered(front,z+1,NightWardCurtainBlock.Gather.POS);else curtain(front,z+dz,true);
+        }
+        ward(front,2,z,CALL_DOME);
+    }
+    private void gathered(int x,int z,NightWardCurtainBlock.Gather gather){
+        set(x,0,z,NightWardCurtainBlock.of(NightWardCurtainBlock.Part.LOWER,gather));panes.add(b.offset(x,0,z));
+        set(x,1,z,NightWardCurtainBlock.of(NightWardCurtainBlock.Part.UPPER,gather));panes.add(b.offset(x,1,z));
     }
     private void curtain(int x,int z,boolean drawn){
         if(drawn){set(x,0,z,NightWardCurtainBlock.of(NightWardCurtainBlock.Part.LOWER));panes.add(b.offset(x,0,z));}
@@ -104,7 +129,8 @@ public final class NightWard {
         ward(3,0,-12,CHAIR,Direction.WEST);
         ward(3,0,-15,MONITOR_STAND,Direction.WEST);ward(3,1,-15,MONITOR,Direction.WEST);
         ward(-3,0,-13,DRIP);
-        NovelRooms.lectern(l,b.offset(NovelRooms.WARD_NOTE),NovelTexts.hospitalOpening());
+        // The chart: a carrier in its station, lit, where the lectern stood. The night reads it from the reader's own record.
+        for(int y=0;y<CEILING_Y;y++)ward(NovelRooms.WARD_NOTE.getX(),y,NovelRooms.WARD_NOTE.getZ(),y==0?TUBE_BASE:y==1?TUBE_STATION:TUBE_PIPE,Direction.EAST);
         // A short partition from the east wall, ending in the service column that carries the call button.
         for(int x=7;x<=8;x++)for(int y=0;y<CEILING_Y;y++)ward(x,y,-14,y==0?DADO:WALL);
         ward(6,0,-14,COLUMN,Direction.WEST);ward(6,1,-14,CALL_PANEL,Direction.WEST);ward(6,2,-14,COLUMN,Direction.WEST);

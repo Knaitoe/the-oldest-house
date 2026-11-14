@@ -98,17 +98,97 @@ def paintings():
     d.line((0,31,31,31),fill='#b0ab98')
     d=tile('ceramic','#eef0e8');d.line((0,0,31,0),fill='#fbfbf4');d.line((0,31,31,31),fill='#c9cdc4')
     for x,y in [(5,9),(20,22)]:d.line((x,y,x+4,y),fill='#fbfbf4')
-    def cloth(name,top=False,hem=False):
-        dd=tile(name,'#9fbfc0')
-        for x in range(0,32,4):
-            dd.line((x,0,x,31),fill='#7aa0a3');dd.line((x+1,0,x+1,31),fill='#8db2b4');dd.line((x+2,0,x+2,31),fill='#b6d0cf')
-        for x in range(2,32,8):
-            for y in range(5,32,9):dd.point((x,y),fill='#d6e6e2');dd.point(((x+4)%32,(y+4)%32),fill='#d6e6e2')
-        if top:
-            for x in range(1,32,4):dd.rectangle((x,0,x+1,1),fill='#6d7d7c')
-            dd.line((0,2,31,2),fill='#87aaac')
-        if hem:dd.rectangle((0,22,31,25),fill='#b6d0cf');dd.line((0,22,31,22),fill='#7aa0a3');dd.line((0,25,31,25),fill='#6f9598')
-    cloth('cloth');cloth('cloth_top',top=True);cloth('cloth_hem',hem=True)
+    # 0.4.590 (owner: "hospital curtains need improvement"): what is new from here on is drawn at sixteen pixels to the block, one
+    # texel to a model pixel. The bed curtains are cubicle curtains: a header tape with eyelets, a band of open mesh, a seam, cloth
+    # in folds, and a turned hem. Each sprite's left half is a fold standing toward the eye and its right half a fold lying back,
+    # so a face takes its columns from the side it is seen from.
+    def small(name):
+        im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+        out[name] = im
+        return im.load()
+    def rgb(c):return tuple(int(c[i:i+2],16) for i in (1,3,5))
+    def mix(c,to,k):
+        a,b=rgb(c),rgb(to);return tuple(round(a[i]+(b[i]-a[i])*k) for i in range(3))+(255,)
+    def solid(c):return rgb(c)+(255,)
+    NEAR=['#a9cfd6','#86b3bf','#86b3bf','#78a6b3','#86b3bf','#86b3bf','#a9cfd6','#78a6b3']
+    FAR=['#5a8593','#6c98a6','#6c98a6','#5a8593','#6c98a6','#6c98a6','#7aa5b2','#5a8593']
+    FOLDS=NEAR+FAR
+    PLEATS=['#9cc5cf','#6c98a6','#86b3bf','#557d8c','#9cc5cf','#6c98a6','#9cc5cf','#557d8c','#86b3bf','#6c98a6','#9cc5cf','#557d8c','#86b3bf','#9cc5cf','#6c98a6','#557d8c']
+    def upper(name,cols,open_mesh):
+        px=small(name)
+        for x in range(16):
+            eyelet=x%3==1 if open_mesh else x%2==1
+            px[x,1]=solid('#6f7f7e') if eyelet else solid('#eceee4')
+            for y in range(2,7):
+                thread='#dbe6df' if (x<8 if open_mesh else x%2==0) else '#bccdc8'
+                if open_mesh:
+                    if y%2==0 or x%2==0:px[x,y]=solid(thread)
+                else:px[x,y]=mix(thread,'#000000',.12 if y==4 else 0)
+            px[x,7]=mix(cols[x],'#000000',.35)
+            for y in range(8,16):px[x,y]=solid(cols[x])
+    def lower(name,cols):
+        px=small(name)
+        for x in range(16):
+            for y in range(9):px[x,y]=solid(cols[x])
+            px[x,9]=mix(cols[x],'#000000',.3)
+            for y in (10,11):px[x,y]=mix(cols[x],'#ffffff',.18)
+            px[x,12]=mix(cols[x],'#000000',.4)
+    upper('curtain_upper',FOLDS,True);lower('curtain_lower',FOLDS)
+    upper('curtain_bunch_upper',PLEATS,False);lower('curtain_bunch_lower',PLEATS)
+    # Steel for what is new: a track's bands on the left, and four columns that run true down a rod or a pipe on the right.
+    px=small('steel16')
+    for y in range(16):
+        row='#b4c1ba' if y==0 else '#5d7271' if y in (13,15) else '#98a9a5' if y==5 else '#8a9c9a'
+        for x in range(12):px[x,y]=solid('#5d7271' if y==8 and x%4==1 else row)
+        for x,c in zip(range(12,16),('#b4c1ba','#93a5a2','#8a9c9a','#6c8180')):px[x,y]=solid(c)
+    # The chart's carrier station (0.4.590, owner: "the room's vignette text should be highlighted and given a unique display
+    # canister"): a cabinet, a clear chamber with the carrier standing in it, and the pipe it came down.
+    px=small('tube_front')
+    for x in range(10):
+        for y in range(12):px[x,y]=solid('#d9ddd2')
+    for x in range(10):px[x,0]=solid('#f0ecdc');px[x,11]=solid('#7c9591')
+    for y in range(12):px[0,y]=solid('#7c9591');px[9,y]=solid('#7c9591')
+    for x in range(2,8):px[x,2]=solid('#a9b8b0');px[x,7]=solid('#a9b8b0')
+    for y in range(2,8):px[2,y]=solid('#a9b8b0');px[7,y]=solid('#a9b8b0')
+    px[6,4]=solid('#55605e');px[6,5]=solid('#55605e')
+    for x in (3,4):px[x,3]=solid('#8a9893')
+    for x in (2,4,6):px[x,9]=solid('#647c7a')
+    px=small('tube_side')
+    for x in range(10):
+        for y in range(12):px[x,y]=solid('#d9ddd2')
+    for x in range(10):px[x,0]=solid('#f0ecdc');px[x,11]=solid('#7c9591')
+    for y in range(12):px[0,y]=solid('#7c9591');px[9,y]=solid('#7c9591')
+    for x,y in ((3,8),(7,3)):px[x,y]=solid('#c3cbc1')
+    px=small('tube_glass')
+    for y in range(12):px[0,y]=solid('#cfe0da');px[5,y]=solid('#cfe0da')
+    for x in range(6):px[x,0]=solid('#cfe0da');px[x,11]=solid('#cfe0da')
+    for x,y in ((1,2),(1,3),(2,4),(4,8),(4,9)):px[x,y]=solid('#eef5f0')
+    px=small('tube_carrier')
+    for x in range(3):
+        px[x,0]=solid('#a8553c');px[x,8]=solid('#a8553c')
+        for y in range(1,8):px[x,y]=solid('#efe8d2')
+    for y in range(1,8):px[2,y]=solid('#d9d0b6')
+    for y in (2,4,6):px[0,y]=solid('#8b8a7a');px[1,y]=solid('#8b8a7a')
+    px[1,4]=solid('#efe8d2')
+    for x in range(4,7):
+        for y in range(3):px[x,y]=solid('#a8553c')
+    px[5,1]=solid('#7d3c2a')
+    px=small('tube_pipe')
+    for y in range(16):
+        for x,c in enumerate(('#e3e7dc','#d3d9cf','#c9d0c6','#b9c3ba','#9fada6')):px[x,y]=solid('#7c9591' if y in (3,12) else c)
+    for name,dome,core in (('call_dome','#cfd6cc','#e6eae0'),('call_dome_on','#f2a35a','#ffe0a8')):
+        px=small(name)
+        for x in range(4):
+            for y in range(2):px[x,y]=solid(dome)
+        px[1,0]=solid(core);px[2,0]=solid(core)
+        for x in range(4):
+            for y in range(4,8):px[x,y]=solid(dome)
+        for x in (1,2):
+            for y in (5,6):px[x,y]=solid(core)
+        for x in range(6):
+            for y in range(10,16):px[x,y]=solid('#d9ddd2')
+        for x in range(6):px[x,10]=solid('#7c9591');px[x,15]=solid('#7c9591')
+        for y in range(10,16):px[0,y]=solid('#7c9591');px[5,y]=solid('#7c9591')
     return out
 
 def cube(material):
@@ -119,7 +199,8 @@ def models():
     def put(path,value):result[path]=value
     def model(elements,materials):return {'ambientocclusion':True,'textures':{**{m:PREFIX+m for m in materials},'particle':PREFIX+materials[0]},'elements':elements}
     kinds=['wall','dado','floor','ceiling','curtain','call_panel','window','bed_head','bed_foot','chair','bedside','table','stool','light',
-           'counter','sink','column','light_off','bed_unit','monitor_stand','monitor','night_light','trolley','drip']
+           'counter','sink','column','light_off','bed_unit','monitor_stand','monitor','night_light','trolley','drip',
+           'tube_base','tube_station','tube_pipe','call_dome','call_dome_on']
     surfaces={'call_panel':'call','window':'glass'}
     def tall(a,b,faces):
         # Parts reaching above their block (rods, poles, a hung bag) get UVs inside their own sprite; derived ones would run off it.
@@ -143,11 +224,39 @@ def models():
         'drip':[box((3,0,7.5),(13,1,8.5),every('steel')),box((7.5,0,3),(8.5,1,13),every('steel')),box((7.75,1,7.75),(8.25,30,8.25),every('steel')),
             box((5,28,7.75),(11,28.5,8.25),every('steel')),box((4.75,20,7.25),(7.25,26,8.75),every('bag'))],
     }
+    # 0.4.590: parts drawn at sixteen pixels, every face given its own texels. A face is (texture, [u0, v0, u1, v1]) or, lit from
+    # within, (texture, uv, light).
+    def part(a,b,**faces):
+        out={}
+        for name,spec in faces.items():
+            out[name]={'texture':'#'+spec[0],'uv':list(spec[1])}
+            if len(spec)>2:out[name]['neoforge_data']={'block_light':spec[2],'sky_light':spec[2]}
+        e={'from':list(a),'to':list(b),'faces':out}
+        if any(len(spec)>2 for spec in faces.values()):e['shade']=False
+        return e
+    def round_(t,uv,**more):return {f:(t,uv)+tuple(more.get('light',())) for f in ('north','south','east','west')}
+    for lit in (False,True):
+        t='call_dome_on' if lit else 'call_dome';glow=(15,) if lit else ()
+        built[t]=[part((5,15,5),(11,16,11),**round_(t,[0,10,6,11]),down=(t,[0,10,6,16])),
+            part((6,13,6),(10,15,10),**round_(t,[0,0,4,2],light=glow),down=(t,[0,4,4,8])+glow)]
+    built['tube_base']=[part((4,0,4),(12,1,12),**round_('steel16',[0,9,8,10])),
+        part((3,1,3),(13,13,13),north=('tube_front',[0,0,10,12]),south=('tube_side',[0,0,10,12]),east=('tube_side',[0,0,10,12]),west=('tube_side',[0,0,10,12])),
+        part((2,13,2),(14,14,14),**round_('steel16',[0,5,12,6]),up=('steel16',[0,1,12,13]),down=('steel16',[0,1,12,13])),
+        part((5,14,5),(11,16,11),**round_('steel16',[0,1,6,3]))]
+    built['tube_station']=[part((4,0,4),(12,2,12),**round_('steel16',[0,1,8,3]),up=('steel16',[0,1,8,9])),
+        part((5,2,5),(11,14,11),**round_('tube_glass',[0,0,6,12])),
+        part((6.5,3,6.5),(9.5,12,9.5),**round_('tube_carrier',[0,0,3,9],light=(12,)),up=('tube_carrier',[4,0,7,3],12)),
+        part((4,14,4),(12,16,12),**round_('steel16',[0,1,8,3]),up=('steel16',[0,1,8,9]),down=('steel16',[0,1,8,9])),
+        part((7,14.5,3.5),(9,15.5,4),north=('call_dome_on',[1,5,3,6],15),east=('call_dome_on',[1,5,1.5,6],15),west=('call_dome_on',[1,5,1.5,6],15),
+            up=('call_dome_on',[1,5,3,5.5],15),down=('call_dome_on',[1,5,3,5.5],15))]
+    built['tube_pipe']=[part((5.5,0,5.5),(10.5,16,10.5),**round_('tube_pipe',[0,0,5,16])),
+        part((4,15,4),(12,16,12),**round_('steel16',[0,1,8,2]),down=('steel16',[0,1,8,9]))]
     for k in kinds:
         if k in built:
             elements=built[k];materials=sorted({f['texture'][1:] for e in elements for f in e['faces'].values()})
             obj=model(elements,materials)
-            if k in ('monitor_stand','drip','monitor'):obj['ambientocclusion']=False
+            if k in ('monitor_stand','drip','monitor') or k.startswith(('tube_','call_dome')):obj['ambientocclusion']=False
+            if k=='tube_station':obj['render_type']='minecraft:cutout'
             put(f'models/block/night_ward_{k}.json',obj);continue
         if k in ('counter','sink'):
             old=json.loads((A/f'models/block/ward_{k}.json').read_text());elements=copy.deepcopy(old['elements'])
@@ -214,39 +323,75 @@ def models():
                 if y:v['y']=y
                 variants[f'face={face},facing={facing},powered={powered}']=v
     put('blockstates/night_ward_call_button.json',{'variants':variants})
-    # The bed curtains: cloth two blocks high on a ceiling track, joined like panes; a rail alone where a curtain is pulled back.
-    def face(t,uv,cull=None):
-        f={'texture':'#'+t,'uv':uv}
+    # The bed curtains (0.4.590). Cloth two blocks high on a ceiling track, joined like panes. Each half of a run is three strips
+    # of cloth a pixel thick, standing in two planes a pixel apart, so the folds are real and a fold's two sides take the light
+    # and the dark of the sprite; the strips in the back plane hang a pixel shorter, so the hem is not a ruled line. The top of
+    # the upper half is open mesh. Where a curtain is pulled back its cloth hangs bunched at the end of the run, and the track
+    # runs on alone. A drop rod holds the track wherever it turns, ends or meets another, and nowhere else.
+    def quad(t,uv,cull=None):
+        f={'texture':'#'+t,'uv':list(uv)}
         if cull:f['cullface']=cull
         return f
-    def cloth(t,y0,y1,z0,z1,v0,v1):
-        w=z1-z0;return {'from':[7.5,y0,z0],'to':[8.5,y1,z1],'faces':{
-            'east':face(t,[0,v0,w,v1]),'west':face(t,[0,v0,w,v1]),'north':face(t,[7.5,v0,8.5,v1]),'south':face(t,[7.5,v0,8.5,v1]),
-            'up':face(t,[7.5,z0,8.5,z1]),'down':face(t,[7.5,z0,8.5,z1])}}
-    def bar(a,b):
-        faces={f:{'texture':'#steel'} for f in ('north','south','east','west','up','down')}
-        if b[1]>16:
-            off=16*int(a[1]//16) if a[1]>=16 else 0;v0=16-min(16,b[1]-off);v1=16-max(0,a[1]-off)
-            uv={'north':[16-b[0],v0,16-a[0],v1],'south':[a[0],v0,b[0],v1],'east':[16-b[2],v0,16-a[2],v1],'west':[a[2],v0,b[2],v1],'up':[a[0],a[2],b[0],b[2]],'down':[a[0],16-b[2],b[0],16-a[2]]}
-            faces={f:{**v,'uv':uv[f]} for f,v in faces.items()}
-        return {'from':list(a),'to':list(b),'faces':faces}
-    rod=bar((7.75,16,7.75),(8.25,32,8.25))
-    parts={
-        'lower':([cloth('cloth_hem',3,16,7.5,8.5,0,13)],[cloth('cloth_hem',3,16,0,8,0,13)]),
-        'upper':([cloth('cloth_top',0,15,7.5,8.5,0,15),bar((7,15,7),(9,16,9)),rod],[cloth('cloth_top',0,15,0,8,0,15),bar((7,15,0),(9,16,8))]),
-        'rail':([bar((7,15,7),(9,16,9)),rod],[bar((7,15,0),(9,16,8))]),
+    STRIPS=((0,3,'a'),(3,4,'b'),(4,7,'a'))
+    def strips(t,top,bottoms):
+        out=[]
+        for z0,z1,plane in STRIPS:
+            x0,x1=(7,8) if plane=='a' else (8,9);y0=bottoms[plane];v0,v1=16-top,16-y0
+            near,far=[z0,v0,z1,v1],[8+z0,v0,8+z1,v1]
+            out.append({'from':[x0,y0,z0],'to':[x1,top,z1],'faces':{
+                'east':quad(t,near if plane=='b' else far),'west':quad(t,near if plane=='a' else far),
+                'north':quad(t,[8,v0,9,v1],'north' if z0==0 else None),'south':quad(t,[8,v0,9,v1])}})
+        return out
+    def middle(t,top,bottom):
+        v0,v1=16-top,16-bottom
+        return {'from':[7,bottom,7],'to':[9,top,9],'faces':{f:quad(t,[6,v0,8,v1] if f in ('east','west') else [9,v0,11,v1]) for f in ('north','south','east','west')}}
+    def bunch(t,top,bottoms):
+        out=[]
+        for z in range(5):
+            wide=z%2==0;x0,x1=(6,10) if wide else (7,9);y0=bottoms['a' if wide else 'b'];v0,v1=16-top,16-y0
+            column=(0,3,4,7,6)[z];faces={'east':quad(t,[column,v0,column+1,v1]),'west':quad(t,[column,v0,column+1,v1])}
+            if wide:faces['north']=quad(t,[8,v0,12,v1]);faces['south']=quad(t,[8,v0,12,v1])
+            out.append({'from':[x0,y0,z],'to':[x1,top,z+1],'faces':faces})
+        return out
+    track_side={'from':[7,15,0],'to':[9,16,7],'faces':{'east':quad('steel16',[0,8,7,9]),'west':quad('steel16',[0,8,7,9]),'north':quad('steel16',[0,8,2,9],'north'),
+        'up':quad('steel16',[0,1,2,8]),'down':quad('steel16',[2,9,4,16])}}
+    track_post={'from':[7,15,7],'to':[9,16,9],'faces':{**{f:quad('steel16',[0,8,2,9]) for f in ('north','south','east','west')},'up':quad('steel16',[0,1,2,3]),'down':quad('steel16',[2,9,4,11])}}
+    rod={'from':[7.5,16,7.5],'to':[8.5,32,8.5],'faces':{f:quad('steel16',[13,0,14,16]) for f in ('north','south','east','west')}}
+    whole,short={'a':3,'b':4},{'a':0,'b':0}
+    curtain_models={
+        'lower_side':strips('curtain_lower',16,whole),'lower_post':[middle('curtain_lower',16,3)],
+        'upper_side':strips('curtain_upper',15,short),'upper_post':[middle('curtain_upper',15,0)],
+        'rail_side':[track_side],'rail_post':[track_post],'rod':[rod],
+        'bunch_lower':bunch('curtain_bunch_lower',16,whole),'bunch_upper':bunch('curtain_bunch_upper',15,short),
     }
+    for name,elements in curtain_models.items():
+        materials=sorted({f['texture'][1:] for e in elements for f in e['faces'].values()})
+        obj={'ambientocclusion':False,'textures':{**{m:PREFIX+m for m in materials},'particle':PREFIX+'curtain_lower'},'elements':elements}
+        if name in ('upper_side','upper_post'):obj['render_type']='minecraft:cutout'
+        put(f'models/block/night_ward_curtain_{name}.json',obj)
+    turns=(('north',0),('east',90),('south',180),('west',270))
+    def apply(name,y=0):
+        out={'model':f'the_oldest_house:block/night_ward_curtain_{name}'}
+        if y:out['y']=y
+        return out
     multipart=[]
-    for part,(post,side) in parts.items():
-        for name,elements in (('post',post),('side',side)):
-            materials=sorted({f['texture'][1:] for e in elements for f in e['faces'].values()})
-            obj={'ambientocclusion':False,'textures':{**{m:PREFIX+m for m in materials},'particle':PREFIX+'cloth'},'elements':elements}
-            put(f'models/block/night_ward_curtain_{part}_{name}.json',obj)
-        multipart.append({'when':{'part':part},'apply':{'model':f'the_oldest_house:block/night_ward_curtain_{part}_post'}})
-        for direction,y in (('north',0),('east',90),('south',180),('west',270)):
-            apply={'model':f'the_oldest_house:block/night_ward_curtain_{part}_side'}
-            if y:apply['y']=y
-            multipart.append({'when':{'part':part,direction:'true'},'apply':apply})
+    for half in ('lower','upper'):
+        multipart.append({'when':{'part':half,'gather':'none'},'apply':apply(half+'_post')})
+        for direction,y in turns:multipart.append({'when':{'part':half,'gather':'none',direction:'true'},'apply':apply(half+'_side',y)})
+        # The bunch hangs at the low end of the run (neg) or the high end (pos). The run lies north and south where the curtain
+        # joins either way or joins nothing, east and west where it joins either of those: so every state draws its cloth,
+        # a curtain pulled back to the end of its track included.
+        for gather,north_south,east_west in (('neg',0,270),('pos',180,90)):
+            multipart.append({'when':{'AND':[{'part':half,'gather':gather},{'OR':[{'north':'true'},{'south':'true'},{'east':'false','west':'false'}]}]},'apply':apply('bunch_'+half,north_south)})
+            multipart.append({'when':{'AND':[{'part':half,'gather':gather},{'OR':[{'east':'true'},{'west':'true'}]}]},'apply':apply('bunch_'+half,east_west)})
+    multipart.append({'when':{'part':'upper|rail'},'apply':apply('rail_post')})
+    for direction,y in turns:multipart.append({'when':{'part':'upper|rail',direction:'true'},'apply':apply('rail_side',y)})
+    bends=[]
+    for bits in range(16):
+        joined={d:bool(bits>>i&1) for i,(d,_) in enumerate(turns)}
+        if joined in ({'north':True,'east':False,'south':True,'west':False},{'north':False,'east':True,'south':False,'west':True}):continue
+        bends.append({'part':'upper|rail',**{d:'true' if on else 'false' for d,on in joined.items()}})
+    multipart.append({'when':{'OR':bends},'apply':apply('rod')})
     put('blockstates/night_ward_curtain.json',{'multipart':multipart})
     return result
 

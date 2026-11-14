@@ -1,0 +1,229 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "steel16": "the_oldest_house:block/night_ward/steel16",
+    "tube_front": "the_oldest_house:block/night_ward/tube_front",
+    "tube_side": "the_oldest_house:block/night_ward/tube_side",
+    "particle": "the_oldest_house:block/night_ward/steel16"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        1,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            9,
+            8,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            9,
+            8,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            9,
+            8,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            9,
+            8,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        1,
+        3
+      ],
+      "to": [
+        13,
+        13,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tube_front",
+          "uv": [
+            0,
+            0,
+            10,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#tube_side",
+          "uv": [
+            0,
+            0,
+            10,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#tube_side",
+          "uv": [
+            0,
+            0,
+            10,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#tube_side",
+          "uv": [
+            0,
+            0,
+            10,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        13,
+        2
+      ],
+      "to": [
+        14,
+        14,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            5,
+            12,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            5,
+            12,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            5,
+            12,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            5,
+            12,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            12,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            12,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        14,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            6,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            6,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            6,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#steel16",
+          "uv": [
+            0,
+            1,
+            6,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

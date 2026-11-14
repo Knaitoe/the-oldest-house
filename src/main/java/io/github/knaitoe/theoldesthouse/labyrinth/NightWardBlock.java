@@ -17,7 +17,10 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
         WALL,DADO,FLOOR,CEILING,CURTAIN,CALL_PANEL,WINDOW,BED_HEAD,BED_FOOT,CHAIR,BEDSIDE,TABLE,STOOL,LIGHT,
         // 0.4.199, the clinical ward (NightWard): the station counter, a basin, the call column, unlit ceiling panels, bed-head
         // service panels, a monitor on a wheeled stand, skirting night lights, a trolley and a drip stand.
-        COUNTER,SINK,COLUMN,LIGHT_OFF,BED_UNIT,MONITOR_STAND,MONITOR,NIGHT_LIGHT,TROLLEY,DRIP;
+        COUNTER,SINK,COLUMN,LIGHT_OFF,BED_UNIT,MONITOR_STAND,MONITOR,NIGHT_LIGHT,TROLLEY,DRIP,
+        // 0.4.590: the chart's carrier station (a cabinet, a lit chamber with the carrier in it, and the pipe to the ceiling), and
+        // the call light over each bay, off and on.
+        TUBE_BASE,TUBE_STATION,TUBE_PIPE,CALL_DOME,CALL_DOME_ON;
         public String getSerializedName(){return name().toLowerCase(Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -42,6 +45,10 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
         case NIGHT_LIGHT->new double[][]{{5,2,14,11,5,16}};
         case TROLLEY->new double[][]{{1,0,2,15,14,14}};
         case DRIP->new double[][]{{3,0,3,13,1,13},{7,1,7,9,16,9}};
+        case TUBE_BASE->new double[][]{{3,0,3,13,13,13},{2,13,2,14,14,14},{5,14,5,11,16,11}};
+        case TUBE_STATION->new double[][]{{4,0,4,12,16,12}};
+        case TUBE_PIPE->new double[][]{{5.5,0,5.5,10.5,16,10.5}};
+        case CALL_DOME,CALL_DOME_ON->new double[][]{{5,13,5,11,16,11}};
         default->new double[][]{{0,0,0,16,16,16}};
     };}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -51,7 +58,7 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
     }
     private static boolean solid(Kind k){return k.ordinal()<=Kind.CALL_PANEL.ordinal()||k==Kind.COLUMN||k==Kind.LIGHT_OFF;}
     /** The lit panels, the skirting night lights and a monitor's screen give light; nothing else does. */
-    public static int light(BlockState s){return switch(s.getValue(KIND)){case LIGHT->15;case NIGHT_LIGHT->6;case MONITOR->3;default->0;};}
+    public static int light(BlockState s){return switch(s.getValue(KIND)){case LIGHT->15;case NIGHT_LIGHT->6;case MONITOR->3;case TUBE_STATION->7;case CALL_DOME_ON->6;default->0;};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return solid(s.getValue(KIND))?Shapes.block():Shapes.empty();}
     @Override protected int getLightBlock(BlockState s,BlockGetter l,BlockPos p){return solid(s.getValue(KIND))?15:0;}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}

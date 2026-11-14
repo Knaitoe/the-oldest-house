@@ -23,6 +23,13 @@ import net.minecraft.world.phys.Vec3;
  * changed blocks are sent only to them, and the real ward is shown again at dawn or when they leave.
  * <p>
  * Nothing here changes the night's resolution, its timing, the chart or the Witness record.
+ * <p>
+ * 0.4.590 (owner: "would also be cool if the vignette had a way to engage players more somehow"): the reader had one thing to
+ * do, press when told. Now the ward asks the same of them. From the second quarter a bed calls: the light over its bay comes
+ * on and a chime sounds from the bed, four times in a night, each from a different bay. A hand on the bed answers it, and
+ * what is found there is a little more each time; nobody is ever in it. A call left alone stays lit until dawn. And a curtain
+ * the night has drawn can be pulled back by hand; the night leaves it a while, then draws it again while the reader looks
+ * elsewhere. Neither is a resolution; the chart's dawn page gains a page for the beds that called.
  */
 public final class NightWardNight {
     public static final int QUARTER=NovelVignettes.WARD_NIGHT/4;
@@ -31,6 +38,18 @@ public final class NightWardNight {
     static final BlockPos STATION_LIGHT=new BlockPos(-6,NightWard.CEILING_Y,-3),INCUBATOR_LIGHT=new BlockPos(0,NightWard.CEILING_Y,-14),MONITOR=new BlockPos(3,1,-15);
     /** The bays in the order the night draws their open curtains: side (-1 west, 1 east) and the bed's z. */
     static final int[][] BAYS={{-1,-7},{-1,-19},{1,-17},{1,-11},{-1,-11}};
+    /** The beds' calls: when the first comes, how long between them, and which bay each time (an index into BAYS). None in the night's last five seconds. */
+    public static final int BED_FIRST=QUARTER+200,BED_EVERY=600;
+    static final int[] BED_ORDER={1,3,0,2};
+    /** How long a curtain a reader has pulled back is left alone. */
+    public static final int PULLED=400;
+    /** What a reader finds at a bed they answer, the first to the fourth. */
+    public static final String[] BED_LINES={"The call light goes out. The bed is made. Nobody is in it.",
+        "The call light goes out. The bed is made. The sheet is warm.",
+        "The call light goes out. The sheet is warm, and the pillow.",
+        "The call light goes out. The sheet is warm. The blanket is tucked in on both sides."};
+    /** The call light over a bay's opening. */
+    static BlockPos dome(int[] bay){return new BlockPos(5*bay[0],2,bay[1]);}
     private NightWardNight(){}
 
     static int quarter(int ticks){return Math.min(3,Math.max(0,ticks)/QUARTER);}
@@ -87,9 +106,39 @@ public final class NightWardNight {
         return sum;
     }
 
+    /** A hand on a bed that is calling answers it; a hand on a curtain the night has drawn pulls it back. */
+    static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        if(own.getBoolean("WardFinished"))return false;
+        for(int i=0;i<BAYS.length;i++){var bay=BAYS[i];int head=8*bay[0],foot=7*bay[0],front=5*bay[0];
+            if(rel.getZ()==bay[1]&&(rel.getX()==head&&rel.getY()>=0&&rel.getY()<=1||rel.getX()==foot&&rel.getY()==0)){
+                if((own.getInt("WardBeds")&1<<i)==0){NovelVignettes.cue(p,own,"The bed is made. Nobody is in it.");return true;}
+                int answered=own.getInt("WardBedsAnswered")+1;own.putInt("WardBedsAnswered",answered);own.putInt("WardBeds",own.getInt("WardBeds")&~(1<<i));
+                send(p,b,dome(bay),p.serverLevel().getBlockState(b.offset(dome(bay))));
+                LiteraryVignettes.heard(p,SoundEvents.STONE_BUTTON_CLICK_OFF,b.offset(head,1,bay[1]),.5F,1.2F);
+                NovelVignettes.cue(p,own,BED_LINES[Math.min(answered,BED_LINES.length)-1]);return true;
+            }
+            if(rel.getX()==front&&rel.getY()>=0&&rel.getY()<=1&&(rel.getZ()==bay[1]||rel.getZ()==bay[1]+1)&&(own.getInt("WardShut")&1<<i)!=0){
+                own.putInt("WardShut",own.getInt("WardShut")&~(1<<i));own.putInt("WardPull"+i,own.getInt("WardTicks")+PULLED);
+                for(var at:bayViews(bay).keySet())send(p,b,at,p.serverLevel().getBlockState(b.offset(at)));
+                LiteraryVignettes.heard(p,NovelRegistry.WARD_CURTAIN.get(),b.offset(front,1,bay[1]),.55F,1.05F);
+                NovelVignettes.cue(p,own,"The curtain runs back along its track.");return true;
+            }
+        }
+        return false;
+    }
     /** One ward tick for this reader, after the monitor's own call. */
     static void tick(ServerPlayer p,BlockPos b,CompoundTag own,int ticks){
         var l=p.serverLevel();
+        // A bed calls: its light comes on and it chimes. One left unanswered chimes again now and then.
+        int called=own.getInt("WardBedsCalled");
+        if(called<BED_ORDER.length&&ticks>=BED_FIRST+called*BED_EVERY&&ticks<NovelVignettes.WARD_NIGHT-100){
+            int i=BED_ORDER[called];var bay=BAYS[i];own.putInt("WardBedsCalled",called+1);own.putInt("WardBeds",own.getInt("WardBeds")|1<<i);
+            send(p,b,dome(bay),NightWardBlock.of(NightWardBlock.Kind.CALL_DOME_ON));
+            LiteraryVignettes.heard(p,NovelRegistry.WARD_BED_CALL.get(),b.offset(8*bay[0],1,bay[1]),.7F,1);
+            NovelVignettes.cue(p,own,called==0?"A bed is calling. The light over its bay has come on.":"Another bed is calling.");
+        }else if(own.getInt("WardBeds")!=0&&ticks%240==120){
+            for(int i=0;i<BAYS.length;i++)if((own.getInt("WardBeds")&1<<i)!=0)LiteraryVignettes.heard(p,NovelRegistry.WARD_BED_CALL.get(),b.offset(8*BAYS[i][0],1,BAYS[i][1]),.45F,1);
+        }
         // The answer walking.
         if(own.contains("WardWalk")){
             var w=own.getCompound("WardWalk");int t=w.getInt("T")+1;w.putInt("T",t);boolean run=w.getBoolean("Run");int q=w.getInt("Q");
@@ -124,7 +173,7 @@ public final class NightWardNight {
         // The open curtains are drawn, one bay at a time, never while the reader is looking at that bay.
         if(ticks>=QUARTER&&ticks%10==0){
             int due=Math.min(BAYS.length,1+(ticks-QUARTER)/360),shut=own.getInt("WardShut");
-            for(int i=0;i<due;i++){if((shut&(1<<i))!=0)continue;
+            for(int i=0;i<due;i++){if((shut&(1<<i))!=0||ticks<own.getInt("WardPull"+i))continue;
                 var bay=BAYS[i];var front=Vec3.atLowerCornerOf(b).add(5*bay[0]+.5,1,bay[1]+1);
                 if(HouseWatchers.sees(p,front))break;
                 own.putInt("WardShut",shut|1<<i);for(var e:bayViews(bay).entrySet())send(p,b,e.getKey(),e.getValue());
@@ -160,7 +209,8 @@ public final class NightWardNight {
         Map<BlockPos,BlockState> out=new LinkedHashMap<>();
         if(ticks>=QUARTER)out.put(STATION_LIGHT,NightWardBlock.of(NightWardBlock.Kind.LIGHT_OFF));
         if(own.contains("WardFlicker"))out.put(INCUBATOR_LIGHT,NightWardBlock.of(NightWardBlock.Kind.LIGHT_OFF));
-        int shut=own.getInt("WardShut");for(int i=0;i<BAYS.length;i++)if((shut&(1<<i))!=0)out.putAll(bayViews(BAYS[i]));
+        int shut=own.getInt("WardShut"),beds=own.getInt("WardBeds");
+        for(int i=0;i<BAYS.length;i++){if((shut&(1<<i))!=0)out.putAll(bayViews(BAYS[i]));if((beds&(1<<i))!=0)out.put(dome(BAYS[i]),NightWardBlock.of(NightWardBlock.Kind.CALL_DOME_ON));}
         return out;
     }
     private static void send(ServerPlayer p,BlockPos b,BlockPos rel,BlockState state){p.connection.send(new ClientboundBlockUpdatePacket(b.offset(rel),state));}
@@ -168,10 +218,13 @@ public final class NightWardNight {
     /** Dawn or leaving: the real ward again, and the night's own state forgotten. */
     static void end(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b!=null&&p.level().dimension().equals(NovelRooms.dimension(LabyrinthPlace.HOSPITAL))){
-            var l=p.serverLevel();List<BlockPos> touched=new java.util.ArrayList<>(List.of(STATION_LIGHT,INCUBATOR_LIGHT));for(var bay:BAYS)touched.addAll(bayViews(bay).keySet());
+            var l=p.serverLevel();List<BlockPos> touched=new java.util.ArrayList<>(List.of(STATION_LIGHT,INCUBATOR_LIGHT));for(var bay:BAYS){touched.addAll(bayViews(bay).keySet());touched.add(dome(bay));}
             for(var rel:touched)send(p,b,rel,l.getBlockState(b.offset(rel)));
         }
         reset(own);
     }
-    static void reset(CompoundTag own){for(var key:List.of("WardWalk","WardShut","WardFlicker","WardRan","AlarmSince","WardLastStop"))own.remove(key);}
+    static void reset(CompoundTag own){
+        for(var key:List.of("WardWalk","WardShut","WardFlicker","WardRan","AlarmSince","WardLastStop","WardBeds","WardBedsCalled","WardBedsAnswered"))own.remove(key);
+        for(int i=0;i<BAYS.length;i++)own.remove("WardPull"+i);
+    }
 }

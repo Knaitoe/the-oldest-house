@@ -6312,5 +6312,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.bleed.ones_inside"
+  },
+  "ward.bed_call": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:ward/bed_call",
+        "attenuation_distance": 20
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.ward.bed_call"
+  },
+  "ward.tube": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:ward/tube",
+        "attenuation_distance": 20
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.ward.tube"
   }
 }

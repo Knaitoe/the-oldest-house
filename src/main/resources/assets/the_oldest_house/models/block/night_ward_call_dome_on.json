@@ -1,0 +1,148 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "call_dome_on": "the_oldest_house:block/night_ward/call_dome_on",
+    "particle": "the_oldest_house:block/night_ward/call_dome_on"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        15,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            10,
+            6,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            10,
+            6,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            10,
+            6,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            10,
+            6,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            10,
+            6,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        13,
+        6
+      ],
+      "to": [
+        10,
+        15,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "south": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "east": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "west": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        },
+        "down": {
+          "texture": "#call_dome_on",
+          "uv": [
+            0,
+            4,
+            4,
+            8
+          ],
+          "neoforge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      },
+      "shade": false
+    }
+  ]
+}

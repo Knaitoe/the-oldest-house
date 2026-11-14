@@ -1,5 +1,6 @@
 """Original sounds for the night ward's long night (0.4.330): the incubator monitor keeping time with a heart, soft-soled footsteps on
-the ward floor, and curtain rings running along a ceiling track.
+the ward floor, and curtain rings running along a ceiling track. 0.4.590 adds a bed's call chime and a carrier arriving down the
+chart's tube.
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Run from the repository root. Existing files
 are kept, so the committed sounds only change when they are deleted first.
@@ -12,6 +13,8 @@ ROWS = {
     'pulse': ('The monitor beeps', 12),
     'step': ('Footsteps', 16),
     'curtain': ('A curtain is drawn', 16),
+    'bed_call': ('A bed calls', 20),
+    'tube': ('A carrier arrives', 20),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -87,7 +90,34 @@ def curtain():
     return out
 
 
-MAKERS = {'pulse': pulse, 'step': step, 'curtain': curtain}
+def bed_call():
+    # Two soft notes falling, the kind a bedside handset sends to a ward: each rung once and left to die away.
+    n = seconds(1.5)
+    out = np.zeros(n)
+    for at, f in ((0.0, 659.3), (0.42, 523.3)):
+        k = seconds(.95)
+        tk = times(k)
+        tone = (np.sin(2 * np.pi * f * tk) + .25 * np.sin(2 * np.pi * 2 * f * tk) + .08 * np.sin(2 * np.pi * 3 * f * tk)) * np.exp(-tk * 4.2)
+        place(out, tone * np.clip(tk / .006, 0, 1) * .4, at)
+    return out
+
+
+def tube():
+    # Air rising in a pipe, the carrier landing in its cradle, and the air letting go.
+    n = seconds(1.6)
+    out = np.zeros(n)
+    k = seconds(1.0)
+    tk = times(k)
+    place(out, band(rng.standard_normal(k), 300, 2600) * (tk / 1.0) ** 1.6 * .35, 0.0)
+    k = seconds(.25)
+    tk = times(k)
+    place(out, (np.sin(2 * np.pi * 95 * tk) * .9 + band(rng.standard_normal(k), 150, 1400) * .5) * envelope(k, .002, .09) * .8, 1.0)
+    k = seconds(.3)
+    place(out, band(rng.standard_normal(k), 1800, 6000) * envelope(k, .002, .12) * .12, 1.06)
+    return out
+
+
+MAKERS = {'pulse': pulse, 'step': step, 'curtain': curtain, 'bed_call': bed_call, 'tube': tube}
 
 
 def main():
