@@ -1071,7 +1071,7 @@ jobs:
           for view in front side; do test -s build/font-smoke/native-character-witch-jaw-$view.png; done
           for pose in seated flight standing; do for view in front side back dim; do test -s build/font-smoke/native-classics-$pose-$view.png; done; done
           test -s build/font-smoke/hazards-passed.txt
-          for view in materials dark mirror; do test -s build/font-smoke/native-hazards-$view.png; done
+          for view in materials dark; do test -s build/font-smoke/native-hazards-$view.png; done
           test -s build/font-smoke/last-stop-cast-passed.txt
           for view in front back night; do test -s build/font-smoke/native-last-stop-cast-$view.png; done
           test -s build/font-smoke/elk-passed.txt

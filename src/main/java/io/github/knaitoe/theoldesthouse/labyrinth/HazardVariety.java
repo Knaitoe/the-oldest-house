@@ -44,10 +44,8 @@ public final class HazardVariety {
     public static final ResourceLocation COLD=id("hazard_cold"),GRAVITY=id("hazard_gravity"),JUMP=id("hazard_jump"),FALL=id("hazard_fall"),SPEED=id("hazard_weight_speed"),SCALE=id("hazard_nested");
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static final Map<MinecraftServer,Engine> ENGINES=new WeakHashMap<>();
-    private record Sample(double x,double y,double z,float yaw,float pitch,boolean crouch,float stride){}
     private static final class Reader {
-        final ServerPlayer player;LabyrinthPlace place;CompoundTag own;double lastZ;int frost,restore;double restoreFrom;long ladderAt=-1000;
-        final ArrayDeque<Sample> trail=new ArrayDeque<>();
+        final ServerPlayer player;LabyrinthPlace place;CompoundTag own;double lastZ;int frost,restore,mirror;double restoreFrom;long ladderAt=-1000;
         Reader(ServerPlayer p){player=p;lastZ=p.getZ();}
     }
     private static final class Engine {
@@ -119,7 +117,7 @@ public final class HazardVariety {
         for(var it=e.readers.entrySet().iterator();it.hasNext();){var r=it.next().getValue();if(s.getPlayerList().getPlayer(r.player.getUUID())!=r.player){save(e,r);clear(r.player);it.remove();}}
     }
     private static void leave(Engine e,Reader r){save(e,r);if(r.place==LabyrinthPlace.NESTED_ROOMS){var a=r.player.getAttribute(Attributes.SCALE);var m=a==null?null:a.getModifier(SCALE);if(m!=null){r.restoreFrom=m.amount();r.restore=60;}}
-        clearExceptScale(r.player);if(r.restore==0)remove(r.player,Attributes.SCALE,SCALE);r.place=null;r.own=null;r.trail.clear();HousePackets.send(r.player,HazardViewPayload.clear());}
+        clearExceptScale(r.player);if(r.restore==0)remove(r.player,Attributes.SCALE,SCALE);r.place=null;r.own=null;HousePackets.send(r.player,HazardViewPayload.clear());}
     private static void modifier(LivingEntity p,Holder<Attribute> attr,ResourceLocation id,double value){var a=p.getAttribute(attr);if(a==null)return;var old=a.getModifier(id);if(value==0){if(old!=null){a.removeModifier(id);if(attr.equals(Attributes.SCALE))p.refreshDimensions();}return;}if(old!=null&&Math.abs(old.amount()-value)<.00001)return;if(old!=null)a.removeModifier(id);a.addTransientModifier(new AttributeModifier(id,value,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));if(attr.equals(Attributes.SCALE))p.refreshDimensions();}
     private static void remove(LivingEntity p,Holder<Attribute> attr,ResourceLocation id){var a=p.getAttribute(attr);if(a!=null&&a.getModifier(id)!=null){a.removeModifier(id);if(attr.equals(Attributes.SCALE))p.refreshDimensions();}}
     private static void clearExceptScale(ServerPlayer p){if(p.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(COLD)!=null)p.setTicksFrozen(0);remove(p,Attributes.MOVEMENT_SPEED,COLD);remove(p,Attributes.MOVEMENT_SPEED,SPEED);remove(p,Attributes.GRAVITY,GRAVITY);remove(p,Attributes.JUMP_STRENGTH,JUMP);remove(p,Attributes.FALL_DAMAGE_MULTIPLIER,FALL);}
@@ -175,8 +173,19 @@ public final class HazardVariety {
     }
     private static void maze(ServerLevel l,BlockPos b,CompoundTag w){long mask=w.contains("Mask")?w.getLong("Mask"):HazardMaze.initialMask(b.asLong());var rng=new Random(w.getLong("Clock")^b.asLong());var closed=new ArrayList<Integer>();for(int i=0;i<60;i++)if((mask&(1L<<i))==0)closed.add(i);Collections.shuffle(closed,rng);
         for(int source:closed){var edge=HazardMaze.EDGES.get(source);var candidates=new ArrayList<>(HazardMaze.path(mask,edge.a(),edge.b()));Collections.shuffle(candidates,rng);for(int target:candidates){long next=HazardMaze.exchange(l,b,mask,source,target);if(next!=mask){w.putLong("Mask",next);LabyrinthData.get(l.getServer()).setStateEntry(ROOMS,key(b),w);sound(l,b.offset(edge.centre()),SoundEvents.PISTON_CONTRACT,.45F,.65F);return;}}}}
-    private static void mirror(BlockPos b,long clock,List<Reader> here){for(var r:here){var p=r.player;var before=r.trail.peekLast();float stride=before==null?0:(float)Math.min(.8,Math.hypot(p.getX()-before.x(),p.getZ()-before.z())*4);r.trail.addLast(new Sample(p.getX(),p.getY(),p.getZ(),p.getYRot(),p.getXRot(),p.isShiftKeyDown(),stride));while(r.trail.size()>41)r.trail.removeFirst();int delay=clock<240?20:40;Sample sample=r.trail.peekFirst();if(r.trail.size()>delay){int skip=r.trail.size()-delay-1;for(var s:r.trail){if(skip--==0){sample=s;break;}}}if(clock%4!=0)continue;
-            boolean answer=p.getZ()-b.getZ()<-30;double x=answer?b.getX()-14-(-4+4*r.own.getInt("MirrorDoor"))+.5:2*(b.getX()-6.5)-sample.x();double z=answer?b.getZ()-39:sample.z();float yaw=answer?0:-sample.yaw();HousePackets.send(p,HazardViewPayload.mirror(b,x,answer?b.getY():sample.y(),z,yaw,sample.pitch(),!answer&&sample.crouch(),answer?0:sample.stride()));}}
+    /** The mirror hall's glass shows a reader a second late, and two seconds late once they have been in the hall twelve seconds. */
+    public static final int MIRROR_NEAR=20,MIRROR_FAR=40,MIRROR_TURN=240;
+    /**
+     * 0.4.592: how far behind the glass shows a reader who has been in the hall this many ticks, this visit. It went by the hall's own
+     * clock, which is kept for good: only whoever was in the hall in its first twelve seconds ever saw the one-second reflection.
+     */
+    public static int mirrorDelay(int ticks){return ticks<MIRROR_TURN?MIRROR_NEAR:MIRROR_FAR;}
+    /** Where a reader's reflection stands once they are near the hall's end: in front of the door that is really theirs. */
+    public static Vec3 mirrorAnswer(BlockPos b,int door){return new Vec3(b.getX()-4+4*door+.5,b.getY(),b.getZ()-39);}
+    /** Whether a reader this far down the hall is shown their door. */
+    public static boolean mirrorAnswers(BlockPos b,double z){return z-b.getZ()<-30;}
+    private static void mirror(BlockPos b,long clock,List<Reader> here){for(var r:here){var p=r.player;int delay=mirrorDelay(r.mirror++);if(clock%4!=0&&r.mirror>1)continue;
+            HousePackets.send(p,HazardViewPayload.mirror(b,delay,mirrorAnswers(b,p.getZ()),mirrorAnswer(b,r.own.getInt("MirrorDoor"))));}}
     private static void weight(BlockPos b,List<Reader> here){for(var r:here){var p=r.player;boolean heavy=p.getZ()-b.getZ()>-22;modifier(p,Attributes.GRAVITY,GRAVITY,heavy?2:-.65);modifier(p,Attributes.JUMP_STRENGTH,JUMP,heavy?-.5:.3);modifier(p,Attributes.FALL_DAMAGE_MULTIPLIER,FALL,-1);modifier(p,Attributes.MOVEMENT_SPEED,SPEED,heavy?-.2:0);
             if(heavy&&p.onClimbable()&&p.getDeltaMovement().y>.06)p.setDeltaMovement(p.getDeltaMovement().multiply(1,0,1).add(0,.06,0));if(!heavy&&p.getZ()-b.getZ()<-29&&p.getZ()-b.getZ()>-32&&p.getY()>b.getY()-.5){p.push(0,-.025,0);p.hurtMarked=true;}}}
     /**

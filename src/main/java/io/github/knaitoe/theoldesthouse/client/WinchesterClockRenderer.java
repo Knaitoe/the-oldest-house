@@ -33,6 +33,11 @@ public final class WinchesterClockRenderer implements BlockEntityRenderer<Winche
      * glass in the model faces north at 14.5 px with its frame's sides 1.5 px in; in the mirror's own frame (facing south) that is
      * 1.5 px off the back, 1.5 to 14.5 px across and up to the frame's head at 14 px.
      */
+    /** 0.4.592: the buffet's glass stands above and beside the block that carries it: it is drawn while any of it is in view. */
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(WinchesterClockEntity clock){
+        var s=clock.getBlockState();var own=new net.minecraft.world.phys.AABB(clock.getBlockPos());if(!s.is(LiteraryRegistry.WINCHESTER_FITTING.get()))return own;
+        return switch(s.getValue(WinchesterFittingBlock.KIND)){case HALL_STAND_TOP->glass(clock,s).box();case BUFFET_R->buffetGlass(clock,s).box();default->own;};
+    }
     static HouseReadReflection.Glass glass(WinchesterClockEntity stand,net.minecraft.world.level.block.state.BlockState s){
         return new HouseReadReflection.Glass(stand.getBlockPos(),s.getValue(WinchesterFittingBlock.FACING),1.5f/16,14.5f/16,.5f/16,14f/16,1.6f/16,null);
     }

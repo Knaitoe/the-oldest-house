@@ -59,6 +59,9 @@ public final class HouseReadMirror implements BlockEntityRenderer<HouseReadPropB
         if(house)HouseReadLookClient.dress(body,cloth,"",pose,out,light);pose.popPose();
     }
     @Override public boolean shouldRenderOffScreen(HouseReadPropBlock.Fitting be){return be.getBlockState().getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR;}
+    /** 0.4.592: the glass is two blocks high and hangs from the lower: it is drawn while any of it is in view, not only that block. */
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(HouseReadPropBlock.Fitting be){var s=be.getBlockState();
+        return s.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.MIRROR?new HouseReadReflection.Glass(be.getBlockPos(),s.getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING)).box():new net.minecraft.world.phys.AABB(be.getBlockPos());}
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Registration {@SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(HouseReadRegistry.FITTING_ENTITY.get(),HouseReadMirror::new);e.registerEntityRenderer(HouseReadRegistry.ROUTINE_ECHO.get(),RoutineRenderer::new);}}
     private static final class RoutineRenderer extends net.minecraft.client.renderer.entity.DisplayRenderer.ItemDisplayRenderer {

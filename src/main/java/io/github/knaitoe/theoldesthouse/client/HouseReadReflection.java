@@ -57,6 +57,11 @@ public final class HouseReadReflection {
         /** Around each person drawn in the glass. */
         default void before(AbstractClientPlayer player){}
         default void after(AbstractClientPlayer player){}
+        /**
+         * 0.4.592: who stands in the glass for a person in front of it: themselves; somebody in their place (the mirror hall
+         * shows its reader as they were a beat ago); or nobody (null).
+         */
+        @javax.annotation.Nullable default AbstractClientPlayer stand(AbstractClientPlayer person){return person;}
         /** Over the reader's own reflected body, in its model space once posed. */
         default void face(net.minecraft.client.model.PlayerModel<AbstractClientPlayer> model,AbstractClientPlayer player,PoseStack pose,MultiBufferSource out,int light){}
         /** Anything else in the glass, in the reflected camera-relative world. */
@@ -68,8 +73,26 @@ public final class HouseReadReflection {
      * (facing south, in blocks): from {@code x0} to {@code x1} across and {@code y0} to {@code y1} up, its face at {@code face}.
      * A wide glass runs on across the blocks beside its first.
      */
-    record Glass(BlockPos at,Direction facing,float x0,float x1,float y0,float y1,float face,@javax.annotation.Nullable Hook hook){
+    record Glass(BlockPos at,Direction facing,float x0,float x1,float y0,float y1,float face,@javax.annotation.Nullable Hook hook,int depth){
+        /** A glass that reflects the usual depth of room. 0.4.592: {@code depth} is how many blocks in front of it are reflected. */
+        Glass(BlockPos at,Direction facing,float x0,float x1,float y0,float y1,float face,@javax.annotation.Nullable Hook hook){this(at,facing,x0,x1,y0,y1,face,hook,DEPTH);}
         Glass(BlockPos at,Direction facing){this(at,facing,X0,X1,Y0,Y1,FACE,null);}
+        /**
+         * 0.4.592: everything the glass covers, from the block it hangs on to its far edge. A glass is drawn by the one block that
+         * carries it, and a renderer is left out of a frame when its own block is out of view: a wide or tall glass went dull
+         * whenever that one block was off the screen. A renderer answers with this, and is drawn while any of the glass is in view.
+         */
+        net.minecraft.world.phys.AABB box(){return new net.minecraft.world.phys.AABB(world(Math.min(0,x0),Math.min(0,y0),0),world(Math.max(1,x1),Math.max(1,y1),Math.max(1,face)));}
+        /**
+         * 0.4.592: how far a point is from the glass itself, from the nearest point of its face. A wall of glass forty blocks long
+         * is near to someone standing at its far end, who is a long way from its first block.
+         */
+        double reach(Vec3 p){
+            double dx=p.x-at.getX(),y=p.y-at.getY(),dz=p.z-at.getZ(),x,z;
+            switch(facing){case WEST->{x=dz;z=1-dx;}case NORTH->{x=1-dx;z=1-dz;}case EAST->{x=1-dz;z=dx;}default->{x=dx;z=dz;}}
+            double nx=Math.max(x0,Math.min(x1,x)),ny=Math.max(y0,Math.min(y1,y));
+            return Math.sqrt((x-nx)*(x-nx)+(y-ny)*(y-ny)+(z-face)*(z-face));
+        }
         /** A point in the mirror block's own model space (facing south), in the world. */
         Vec3 world(double x,double y,double z){return switch(facing){case WEST->new Vec3(at.getX()+1-z,at.getY()+y,at.getZ()+x);case NORTH->new Vec3(at.getX()+1-x,at.getY()+y,at.getZ()+1-z);case EAST->new Vec3(at.getX()+z,at.getY()+y,at.getZ()+1-x);default->new Vec3(at.getX()+x,at.getY()+y,at.getZ()+z);};}
         Vec3 normal(){return Vec3.atLowerCornerOf(facing.getNormal());}
@@ -99,7 +122,7 @@ public final class HouseReadReflection {
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS)return;
         active=null;var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||shader==null)return;
         var camera=e.getCamera().getPosition();Glass best=null;double nearest=Double.MAX_VALUE;
-        for(var glass:last){double front=camera.subtract(glass.plane()).dot(glass.normal()),d=camera.distanceTo(glass.plane());if(front>.05&&d<DEPTH&&d<nearest){nearest=d;best=glass;}}
+        for(var glass:last){double front=camera.subtract(glass.plane()).dot(glass.normal()),d=glass.reach(camera);if(front>.05&&d<glass.depth&&d<nearest){nearest=d;best=glass;}}
         if(best==null)return;
         try{render(e,best,camera);active=best;}finally{mc.getMainRenderTarget().bindWrite(true);}
     }
@@ -124,13 +147,14 @@ public final class HouseReadReflection {
         // At this stage the level has not yet put the camera's turn on the shared model-view; entities need it there.
         var stack=RenderSystem.getModelViewStack();stack.pushMatrix();stack.mul(e.getModelViewMatrix());RenderSystem.applyModelViewMatrix();
         dispatcher.setRenderShadow(false);
-        try{for(var player:mc.level.players()){
-            var feet=player.getPosition(partial);if(player.isSpectator()||player.isInvisible()||feet.subtract(glass.plane()).dot(n)<.05||feet.distanceTo(glass.plane())>DEPTH)continue;
+        try{for(var person:mc.level.players()){
+            var player=glass.hook==null?person:glass.hook.stand(person);if(player==null)continue;
+            var feet=player.getPosition(partial);if(player.isSpectator()||player.isInvisible()||feet.subtract(glass.plane()).dot(n)<.05||glass.reach(feet)>glass.depth)continue;
             var at=feet.subtract(camera);int light=dispatcher.getPackedLightCoords(player,partial);
             if(glass.hook!=null)glass.hook.before(player);
             try{
                 dispatcher.render(player,at.x,at.y,at.z,net.minecraft.util.Mth.lerp(partial,player.yRotO,player.getYRot()),partial,pose,buffers,light);
-                if(player==mc.player&&dispatcher.getRenderer(player) instanceof PlayerRenderer renderer)house(renderer,player,at,partial,pose,light,glass.hook);
+                if(person==mc.player&&dispatcher.getRenderer(player) instanceof PlayerRenderer renderer)house(renderer,player,at,partial,pose,light,glass.hook);
             }finally{if(glass.hook!=null)glass.hook.after(player);}
         }
         if(glass.hook!=null)glass.hook.extra(pose,buffers,camera,partial,glass.plane(),n);
@@ -160,7 +184,7 @@ public final class HouseReadReflection {
         var n=glass.normal();var plane=glass.plane();var pose=new PoseStack();
         var side=glass.facing.getClockWise();var panel=glass.panel();int wide=(int)Math.ceil(glass.x1);
         try{
-            for(int d=0;d<=DEPTH;d++)for(int s=-SIDE-wide;s<=SIDE+wide;s++)for(int y=-BELOW;y<=ABOVE;y++){
+            for(int d=0;d<=glass.depth;d++)for(int s=-SIDE-wide;s<=SIDE+wide;s++)for(int y=-BELOW;y<=ABOVE;y++){
                 var pos=glass.at.relative(glass.facing,d).relative(side,s).above(y);if(panel.contains(pos))continue;
                 if(Vec3.atCenterOf(pos).subtract(plane).dot(n)<=0)continue;
                 var state=level.getBlockState(pos);if(glass.hook!=null)state=glass.hook.block(pos,state);if(state.isAir()||state.getRenderShape()!=net.minecraft.world.level.block.RenderShape.MODEL)continue;

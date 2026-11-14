@@ -35,6 +35,8 @@ public final class DareRenderers {
             if(HouseReadReflection.showing(glass.at()))HouseReadReflection.drawGlass(glass,pose,out);
         }
         @Override public boolean shouldRenderOffScreen(DareMirrorBlock.Glass be){return DareMirrorBlock.anchor(be.getBlockState());}
+        /** 0.4.592: the glass runs on past the block that carries it: it is drawn while any of it is in view, not only that block. */
+        @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(DareMirrorBlock.Glass be){return DareMirrorBlock.anchor(be.getBlockState())?glass(be).box():new net.minecraft.world.phys.AABB(be.getBlockPos());}
     }
 
     /**
