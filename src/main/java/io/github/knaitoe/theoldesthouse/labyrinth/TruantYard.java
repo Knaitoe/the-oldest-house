@@ -32,7 +32,12 @@ public final class TruantYard {
     public static final List<LabyrinthPlace> PLACES=List.of(SHED,LANTERN,GATE);
     public static final int HELP_SHED=128,HELP_LANTERN=256,HELP_GATE=512,WIND_CYCLE=160,GUST_FROM=30,GUST_UNTIL=100;
     public static final BlockPos SHED_DOOR=new BlockPos(0,0,-15),HASP_AT=new BlockPos(1,1,-14),WEDGE_AT=new BlockPos(1,0,-14),HATCH_AT=new BlockPos(4,0,-21),STOCK_GATE=new BlockPos(0,0,-18),CHAIN_AT=new BlockPos(-1,1,-18);
-    public static final Vec3 SHED_HOME=new Vec3(1.5,0,-13.6),LANTERN_HOME=new Vec3(-2.5,0,-25.5),GATE_HOME=new Vec3(-.5,0,-19.5);
+    /**
+     * 0.4.586: his spot in the lantern yard was (-2.5, -25.5), which is inside the lean-to's plank wall (its planks run to the cell at
+     * -3, which is -3 to -2), so nothing of him showed but what stuck out of the boards. The case that checks where he stands in every
+     * place found it. He stands under the roof's edge beneath his hanging lantern now, in the cell that lantern hangs over.
+     */
+    public static final Vec3 SHED_HOME=new Vec3(1.5,0,-13.6),LANTERN_HOME=new Vec3(-1.5,0,-24.5),GATE_HOME=new Vec3(-.5,0,-19.5);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private static boolean acted,signalled;private static int shedOut;private static final Set<UUID> HELPED=new HashSet<>(),CAUGHT=new HashSet<>();
     public static boolean is(@Nullable LabyrinthPlace p){return p!=null&&PLACES.contains(p);}

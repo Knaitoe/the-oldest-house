@@ -78,10 +78,14 @@ public final class TallGrassSite {
     private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s){NovelRooms.box(l,b,x0,y0,z0,x1,y1,z1,s);}
     static BlockState leaves(){return Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true);}
     static BlockState grass(int third){return YardBlock.of(YardBlock.Kind.GRASS,Direction.NORTH,third);}
-    /** A full column of grass, three high, turned by its column so the field does not repeat. */
+    /** One third of a column of grass, turned by its column so the field does not repeat. */
+    static BlockState stem(int x,int z,int third){return YardBlock.of(YardBlock.Kind.GRASS,Direction.from2DDataValue(Math.floorMod(x*7+z*13,4)),third);}
+    /**
+     * A full column of grass, three high, stood up in play (a track rising again). It writes straight into the level, so the
+     * build never uses it: see {@link #field}.
+     */
     public static void column(ServerLevel l,BlockPos b,int x,int z,int flags){
-        var facing=Direction.from2DDataValue(Math.floorMod(x*7+z*13,4));
-        for(int y=0;y<3;y++)l.setBlock(b.offset(x,y,z),YardBlock.of(YardBlock.Kind.GRASS,facing,y),flags);
+        for(int y=0;y<3;y++)l.setBlock(b.offset(x,y,z),stem(x,z,y),flags);
     }
 
     // ------------------------------------------------------------------------------------------------ the build
@@ -121,7 +125,11 @@ public final class TallGrassSite {
             if(heart(x,z)){set(l,b,x,0,z,YardBlock.of(YardBlock.Kind.TRAMPLED,Direction.from2DDataValue(Math.floorMod(x+z,4)),0));continue;}
             // The first rows are thin: every other stem gone, more toward the ditch, so the road shows back through them.
             if(z>FIRST_ROWS){int gap=z-FIRST_ROWS;if(rnd.nextInt(6)<gap)continue;}
-            column(l,b,x,z,F);
+            // 0.4.586 (owner: "grass isn't rendering/behaving correctly in the in-the-tall grass vignette"): planted through the
+            // plan, as everything else here is. The stems used to be written straight into the level while the House was still
+            // recording this place's plan, and the plan's clearing of the place then took the whole field out: a lawn, with only
+            // the tufts on the fence posts and the trampled ring left.
+            for(int y=0;y<3;y++)set(l,b,x,y,z,stem(x,z,y));
         }
         // The old fence line: a post every seven, some leaning, a strand of wire hanging off one or two.
         for(int x=FIELD_W+3;x<=FIELD_E-3;x+=7){

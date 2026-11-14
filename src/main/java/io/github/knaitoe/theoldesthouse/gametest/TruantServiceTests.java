@@ -27,16 +27,19 @@ import net.neoforged.neoforge.gametest.*;
 public final class TruantServiceTests {
     private TruantServiceTests(){}
     private static LiteraryTests.Fixture active;
+    private static NativeTestChunks outside;
     static void done(){
         Talk.clearAll();
         if(active!=null){for(var place:TruantService.PLACES){var b=active.base(place);var r=place.room();
             for(var a:active.in.getEntitiesOfClass(LiteraryActor.class,new AABB(b.getX()+r.minX(),b.getY()+r.minY(),b.getZ()+r.minZ(),b.getX()+r.maxX()+1,b.getY()+r.maxY()+1,b.getZ()+r.maxZ()+1)))a.discard();}
             active.close();active=null;}
+        if(outside!=null){outside.close();outside=null;}
         Truant.fresh();Truant.apart();Truant.force(null);TruantService.clearAll();
     }
     @AfterBatch(batch="truant_chalk") public static void doneChalk(ServerLevel l){done();}
     @AfterBatch(batch="truant_knock") public static void doneKnock(ServerLevel l){done();}
     @AfterBatch(batch="truant_lift") public static void doneLift(ServerLevel l){done();}
+    @AfterBatch(batch="truant_spots") public static void doneSpots(ServerLevel l){done();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos b,double x,double y,double z,boolean floating){p.teleportTo(l,b.getX()+x,b.getY()+y,b.getZ()+z,180,0);p.setNoGravity(floating);p.setDeltaMovement(Vec3.ZERO);}
     private static void deepest(LiteraryTests.Fixture f,ServerPlayer p,int depth){var d=f.data();var exp=HouseExperience.record(d,p.getUUID());exp.putInt("Deepest",depth);HouseExperience.save(d,p.getUUID(),exp);}
@@ -45,6 +48,39 @@ public final class TruantServiceTests {
     private static void vulnerable(ServerPlayer p){p.setHealth(p.getMaxHealth());p.hasChangedDimension();p.invulnerableTime=0;}
     private static void away(ServerPlayer p,LiteraryTests.Fixture f){var b=f.base(LabyrinthPlace.JUNCTION);p.teleportTo(f.in,b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);p.setNoGravity(true);}
     private static void setUp(LiteraryTests.Fixture f,LabyrinthPlace place){Truant.fresh();Truant.apart();TruantService.clearAll();TruantPlaces.build(f.in,f.base(place),place);LabyrinthBuilder.registerDoors(f.data(),place,f.base(place));}
+
+    /**
+     * 0.4.586, the owner's playtest: "truant is still sitting in this box, in the steam vents?" His spot in the pipe knock was inside the
+     * barrel's own block. Every place he has is built here; where he stands in each (and the other spots he walks to in the ledge and the
+     * lamp halls) must be clear of every block from his feet to his head, with a floor under him.
+     */
+    @GameTest(template="empty",batch="truant_spots",timeoutTicks=1200)
+    public static void whereHeStandsIsClearInEveryPlaceHeHas(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;outside=new NativeTestChunks();
+        for(var place:TruantPlaces.PLACES){var s=LabyrinthPlaces.slotBounds(f.origin,place);var box=new AABB(s.minX(),s.minY(),s.minZ(),s.maxX()+1,s.maxY()+1,s.maxZ()+1);if(f.level(place)==f.in)f.chunks.hold(f.in,box);else outside.hold(f.out,box);}
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&outside.ready(),"his places are resident"))
+            .thenExecute(()->{
+                Truant.fresh();Truant.apart();TruantService.clearAll();
+                h.assertTrue(TruantPlaces.PLACES.size()==10,"every place he has: "+TruantPlaces.PLACES.size());
+                for(var place:TruantPlaces.PLACES){
+                    var l=f.level(place);var b=f.base(place);TruantPlaces.build(l,b,place);
+                    var spots=new java.util.ArrayList<Vec3>(java.util.List.of(Truant.home(place)));
+                    if(place==TruantPlaces.LEDGE)spots.add(TruantPlaces.FAR_SPOT);
+                    if(place==TruantPlaces.LAMP){spots.add(TruantPlaces.WALL_SPOT);spots.add(TruantPlaces.LAMP_SPOT);}
+                    for(var at:spots){
+                        double x=b.getX()+at.x,y=b.getY()+at.y,z=b.getZ()+at.z;
+                        h.assertTrue(l.noBlockCollision(null,new AABB(x-.3,y+.02,z-.3,x+.3,y+1.75,z+.3)),place.id()+": he stands clear of every block at "+at+", and is in "+l.getBlockState(BlockPos.containing(x,y+.5,z))+" below and "+l.getBlockState(BlockPos.containing(x,y+1.5,z))+" above");
+                        h.assertTrue(!l.noBlockCollision(null,new AABB(x-.3,y-.3,z-.3,x+.3,y-.02,z+.3)),place.id()+": he has a floor under him at "+at);
+                    }
+                }
+                var knock=f.base(TruantService.KNOCK);
+                h.assertTrue(f.in.getBlockState(knock.offset(-7,0,-15)).is(net.minecraft.world.level.block.Blocks.BARREL),"the barrel is where it was in the pipe knock");
+                h.assertTrue(TruantFittingBlock.is(f.in.getBlockState(knock.offset(-5,2,-12)),TruantFittingBlock.Kind.PIPE),"the main he knocks on runs over the branch's mouth");
+                h.assertTrue(!f.in.noBlockCollision(null,new AABB(knock.getX()-6.4-.3,knock.getY()+.02,knock.getZ()-14.2-.3,knock.getX()-6.4+.3,knock.getY()+1.75,knock.getZ()-14.2+.3)),"the spot he had (-6.4, -14.2) is inside the barrel, which this case's check finds");
+                h.assertTrue(TruantService.KNOCK_SPOT.distanceTo(new Vec3(-4.5,2,-11.5))<3,"and it is within his reach from where he stands");
+                h.assertTrue(TruantService.KNOCK_SPOT.z<-12.9&&TruantService.KNOCK_SPOT.x>-5,"round the corner, against the branch's east wall, out of sight of the corridor");
+            }).thenSucceed();
+    }
 
     @GameTest(template="empty",batch="truant_chalk",timeoutTicks=1600)
     public static void johnnysChalkArrowHelpsThenTurnsTowardTheDrop(GameTestHelper h){

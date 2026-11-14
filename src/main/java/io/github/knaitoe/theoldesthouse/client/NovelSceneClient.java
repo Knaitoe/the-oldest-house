@@ -72,7 +72,11 @@ public final class NovelSceneClient {
                 if(mode==14)drawWellFade(g,elapsed);
             }
             if(active()&&mode==12&&elapsed>=5)g.fill(0,0,g.guiWidth(),g.guiHeight(),0xF8000000);
-            if(active()&&mode==STILLNESS&&elapsed<40){int a=Math.round(150*(float)Math.sin(Math.PI*elapsed/40.0));if(a>0){g.fill(0,0,g.guiWidth(),g.guiHeight()/2,(a<<24)|0xD4D6D8);g.fill(0,g.guiHeight()/2,g.guiWidth(),g.guiHeight(),((a/2)<<24)|0xD4D6D8);}}
+            // 0.4.586, the owner's playtest: "when it huffs and the screen flashes, the top and lower halves are at slightly different
+            // times/gradients". Its breath was two flat fills, the lower at half the upper's strength, with a hard line between them across
+            // the middle of the screen, and the lower one came a tick late and went a tick early. It is one fill now, thinning evenly from
+            // the top of the screen to half as much at the bottom, and it follows the comfort setting as every other flash does.
+            if(active()&&mode==STILLNESS&&elapsed<40){int a=Math.round(150*Comfort.effects()*(float)Math.sin(Math.PI*elapsed/40.0));if(a>1)g.fillGradient(0,0,g.guiWidth(),g.guiHeight(),(a<<24)|0xD4D6D8,((a/2)<<24)|0xD4D6D8);}
             if(!active()||captionTicks<=0||caption.isEmpty())return;var mc=Minecraft.getInstance();var lines=mc.font.split(net.minecraft.network.chat.Component.literal(caption),Math.min(380,g.guiWidth()-32));int y=g.guiHeight()-72-lines.size()*10;
             for(var line:lines){int width=mc.font.width(line);g.fill((g.guiWidth()-width)/2-5,y-2,(g.guiWidth()+width)/2+5,y+10,0x88000000);g.drawString(mc.font,line,(g.guiWidth()-width)/2,y,0xFFE8DED1);y+=11;}
         });}
