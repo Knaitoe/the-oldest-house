@@ -18,12 +18,20 @@ import net.neoforged.neoforge.client.event.*;
 
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class GoatmanBedSocketClient {
-    private static int ticks,frames,lastClick=-100;private static boolean done;
+    private static int ticks,frames,waited,lastClick=-100;private static boolean done;
     private GoatmanBedSocketClient(){}
     private static String role(){return System.getProperty("the_oldest_house.liveProofRole","");}
     private static void require(boolean condition,String message){if(!condition)throw new IllegalStateException("BED CAMERA137: "+message);}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
-        if(!GoatmanBedSocketProof.enabled())return;var mc=Minecraft.getInstance();if(done){if(++ticks>60){mc.disconnect();mc.stop();}return;}
+        if(!GoatmanBedSocketProof.enabled())return;var mc=Minecraft.getInstance();
+        if(done){
+            // Run 1606: each client left three seconds after its own frame. One took its frame about five seconds after
+            // the other, so the host, which asks for both in their beds at once, never had both. A client now stays in
+            // its bed until the host has written its verdict (or two minutes have gone: the host's own limit is shorter).
+            var folder=GoatmanBedSocketProof.folder();
+            if(!Files.exists(folder.resolve("passed.txt"))&&!Files.exists(folder.resolve("failed.txt"))&&++waited<2400)return;
+            if(++ticks>60){mc.disconnect();mc.stop();}return;
+        }
         if(mc.player==null||mc.level==null||mc.screen!=null&&!(mc.screen instanceof net.minecraft.client.gui.screens.InBedChatScreen))return;
         var data=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(data==null||!data.copyTag().getBoolean("BedCamera137"))return;ticks++;
         if(mc.player.isSleeping())return;var head=BlockPos.of(data.copyTag().getLong("Head"));var state=mc.level.getBlockState(head);if(!(state.getBlock() instanceof BedBlock)||ticks-lastClick<25)return;

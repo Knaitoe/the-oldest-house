@@ -20,6 +20,9 @@ allprojects { afterEvaluate {
                 run.classpath(run.classpathProvider)
                 def command = [run.javaLauncher.get().executablePath.asFile.absolutePath]
                 command.addAll(run.allJvmArgs)
+                // Gradle 9 lists a run's extra JVM arguments (its argument file among them) in allJvmArgs; Gradle 8
+                // keeps them apart, and the host then starts without its module path.
+                (run.jvmArguments.getOrElse([]) + run.jvmArgumentProviders.collectMany { it.asArguments().toList() }).each { arg -> if (!command.contains(arg)) command.add(arg) }
                 command.addAll(['-Dthe_oldest_house.goatmanBedSocketSmoke=true', '-Dthe_oldest_house.liveProof=false', '-cp', run.classpath.asPath, run.mainClass.get()])
                 command.addAll(run.args)
                 launches[name] = [command: command, directory: run.gameDirectory.get().asFile.absolutePath]
