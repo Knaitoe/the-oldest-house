@@ -231,7 +231,7 @@ public final class PellHouseTests {
             h.assertTrue(thing(l,b,5,0,-93,TAPES,0)&&thing(l,b,5,1,-93,TAPES,1)&&thing(l,b,7,0,-93,WORKBENCH,1)&&thing(l,b,8,2,-92,TRANSCRIPT,2)&&thing(l,b,5,1,-92,SHED_CALENDAR,0),
                 "the tapes, the bench and its empty tins, the transcript and the calendar");
             // Outside.
-            h.assertTrue(thing(l,b,-12,0,-56,STAKE,0)&&thing(l,b,-2,0,-56,STAKE,1)&&thing(l,b,-14,0,-86,POOL_CHAIR,0)&&facing(l,b,-14,0,-86)==Direction.EAST,
+            h.assertTrue(thing(l,b,-12,0,-56,STAKE,0)&&thing(l,b,-2,0,-56,SEEDLING,0)&&thing(l,b,-14,0,-86,POOL_CHAIR,0)&&facing(l,b,-14,0,-86)==Direction.EAST,
                 "the stakes, the newest by the step; the pool chair turned to the water");
             h.assertTrue(thing(l,b,19,0,-80,KENNEL,0)&&thing(l,b,19,0,-79,KENNEL,1)&&PellThing.right(new BlockPos(19,0,-80),Direction.WEST).equals(new BlockPos(19,0,-79))
                     &&thing(l,b,18,0,-79,BOWL,0),"the kennel, two cells, its name read left to right from the drive; the bowl at its door");
@@ -251,7 +251,7 @@ public final class PellHouseTests {
         }).thenIdle(2).thenExecute(()->{
             var said=told(p);
             for(var line:List.of(PellTexts.thing(SINK,0),PellTexts.thing(FRIDGE_TOP,0),PellTexts.thing(TV_CABINET,0),PellTexts.thing(PHOTOS,0),PellTexts.thing(CUTLERY,0),PellTexts.thing(FREEZER,0),
-                    PellTexts.thing(BOX_DONT,0),PellTexts.thing(TIN,0),PellTexts.thing(STAKE,1),PellTexts.thing(KENNEL,1),PellTexts.thing(WARDROBE,2),PellTexts.thing(SIDE_TABLE,0),
+                    PellTexts.thing(BOX_DONT,0),PellTexts.thing(TIN,0),PellTexts.thing(SEEDLING,0),PellTexts.thing(KENNEL,1),PellTexts.thing(WARDROBE,2),PellTexts.thing(SIDE_TABLE,0),
                     PellTexts.thing(FLOOR_LAMP,1)))
                 h.assertTrue(said.contains(line),"a hand gets: "+line+" (told "+said+")");
             h.assertTrue(said.stream().anyMatch(s->s.startsWith(PellTexts.thing(DRAWERS,0))&&s.contains("The time is")),"the clock on the drawers says the time: "+said);
@@ -368,6 +368,67 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_rooms") public static void roomsDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.574, the front beds. The owner: "flowers on pell-house could use an improvement". West of the step stand Nessa's five
+     * stakes, no two neighbours alike, and nearest the step Tilly's, the newest; east of it, where the bed was bare, a geranium in
+     * every cell; bricks on edge run along the lawn side of both beds and a block up each far end, with a brick at each corner, and
+     * none across the path. All of it stands on the bed's mulch or the lawn, and none of it stops a body. A hand on each says what
+     * it is. A reader who has put a hand on Tilly's stake can tell her of it, and she answers that they only got here today.
+     */
+    @GameTest(template="empty",batch="pell_beds",timeoutTicks=4000)
+    public static void theFrontBedsHaveTheirPlantsAndTheirEdgingAndTillyHearsOfHerStake(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_beds_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        int z=PellSite.BED_Z,w=PellSite.HOUSE_W,e=PellSite.HOUSE_E;
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            int[] left={0,1,0,2,1};
+            for(int i=0;i<left.length;i++){int x=-12+2*i;
+                h.assertTrue(thing(l,b,x,0,z,STAKE,left[i])&&facing(l,b,x,0,z)==Direction.SOUTH&&is(l,b,x,-1,z,"mulch"),"one of Nessa's stakes at "+x+", its label to the street: "+l.getBlockState(b.offset(x,0,z)));
+                if(i>0)h.assertTrue(left[i]!=left[i-1],"no two stakes side by side are alike");
+            }
+            h.assertTrue(PellSite.SEEDLING.equals(new BlockPos(-2,0,z))&&thing(l,b,-2,0,z,SEEDLING,0)&&facing(l,b,-2,0,z)==Direction.SOUTH&&is(l,b,-2,-1,z,"mulch"),"Tilly's, the newest, nearest the step, a fresh seedling: "+l.getBlockState(b.offset(PellSite.SEEDLING)));
+            for(int x=2;x<=e;x++)h.assertTrue(thing(l,b,x,0,z,FLOWERS,x&1)&&is(l,b,x,-1,z,"mulch"),"a geranium at "+x+", two plants turn about: "+l.getBlockState(b.offset(x,0,z)));
+            for(int x=w;x<=e;x++){
+                if(x==0||x==1){h.assertTrue(l.getBlockState(b.offset(x,0,z+1)).isAir()&&is(l,b,x,-1,z+1,"concrete"),"nothing across the path at "+x);continue;}
+                h.assertTrue(thing(l,b,x,0,z+1,EDGING,0)&&facing(l,b,x,0,z+1)==Direction.NORTH&&is(l,b,x,-1,z+1,"lawn"),"edging on the lawn at "+x+", on the side to the bed: "+l.getBlockState(b.offset(x,0,z+1)));
+            }
+            h.assertTrue(thing(l,b,w-1,0,z,EDGING,0)&&facing(l,b,w-1,0,z)==Direction.EAST&&thing(l,b,e+1,0,z,EDGING,0)&&facing(l,b,e+1,0,z)==Direction.WEST,"a block of it up each far end, on the side to the bed");
+            h.assertTrue(thing(l,b,w-1,0,z+1,EDGING,1)&&facing(l,b,w-1,0,z+1)==Direction.NORTH&&thing(l,b,e+1,0,z+1,EDGING,1)&&facing(l,b,e+1,0,z+1)==Direction.WEST,"and one brick turning each corner");
+            // The corner bricks lie in the corner of their cell that touches the bed's corner: north-east of the west one, north-west of the east.
+            var west=l.getBlockState(b.offset(w-1,0,z+1)).getShape(l,b.offset(w-1,0,z+1)).bounds();var east=l.getBlockState(b.offset(e+1,0,z+1)).getShape(l,b.offset(e+1,0,z+1)).bounds();
+            h.assertTrue(west.maxX==1&&west.minZ==0&&west.minX>.8&&west.maxZ<.2&&east.minX==0&&east.minZ==0&&east.maxX<.2&&east.maxZ<.2,"the corner bricks: "+west+" "+east);
+            // Where the line crosses the beds' ends the bricks stop. The line is paint on the ground itself (a block down), and
+            // nothing stands on it.
+            for(int x:new int[]{w-1,e+1})h.assertTrue(l.getBlockState(b.offset(x,0,PellSite.LINE_S)).isAir()&&PellLine.is(l.getBlockState(b.offset(x,-1,PellSite.LINE_S))),
+                "the line in the ground at the bed's end at "+x+", and no brick on it: "+l.getBlockState(b.offset(x,0,PellSite.LINE_S))+" over "+l.getBlockState(b.offset(x,-1,PellSite.LINE_S)));
+            // None of it stops a body: a body walks along the front of both beds and in among the stakes.
+            for(var at:List.of(new BlockPos(-12,0,z),PellSite.SEEDLING,new BlockPos(5,0,z),new BlockPos(-7,0,z+1),new BlockPos(w-1,0,z),new BlockPos(e+1,0,z+1)))
+                h.assertTrue(l.getBlockState(b.offset(at)).getCollisionShape(l,b.offset(at)).isEmpty(),"nothing at "+at+" stops a body");
+            var out=walked(l,b,BlockPos.ZERO);
+            h.assertTrue(out.contains(new BlockPos(-7,0,z+1))&&out.contains(new BlockPos(-6,0,z))&&out.contains(new BlockPos(6,0,z+1))&&out.contains(new BlockPos(6,0,z)),"a body walks along the beds and into them: "+out.size());
+            // A hand on each.
+            told(p);
+            for(var at:List.of(new BlockPos(-12,0,z),new BlockPos(-10,0,z),new BlockPos(-6,0,z),PellSite.SEEDLING,new BlockPos(5,0,z),new BlockPos(-7,0,z+1)))f.click(p,P,at);
+        }).thenIdle(2).thenExecute(()->{
+            var said=told(p);
+            for(var line:List.of(PellTexts.thing(STAKE,0),PellTexts.thing(STAKE,1),PellTexts.thing(STAKE,2),PellTexts.thing(SEEDLING,0),PellTexts.thing(FLOWERS,0),PellTexts.thing(EDGING,0)))
+                h.assertTrue(said.contains(line),"a hand gets: "+line+" (told "+said+")");
+            h.assertTrue(List.of(PellTexts.thing(STAKE,0),PellTexts.thing(STAKE,1),PellTexts.thing(STAKE,2),PellTexts.thing(SEEDLING,0),PellTexts.thing(SEEDLING,1),PellTexts.thing(SEEDLING,2)).stream().distinct().count()==6,"a line of its own to each stake as it stands");
+            // What the reader has put a hand on is theirs to tell Tilly.
+            var own=f.own(p,P);
+            h.assertTrue(PellCompany.seen(own,SEEDLING)&&!own.getBoolean("SawSeedlingGrown"),"kept that the reader has seen her stake, as the first visit has it");
+            PellVisit.settle(l,b);f.at(p,P,-9.5,0,-60.5);
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            LiteraryVignettes.talk(p,tilly);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_TALK[0]),"Tilly asks: "+said(tilly));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_STAKE,PellTexts.TELL_NICE,PellTexts.TELL_ENOUGH)),"offered the stars and her stake, a kind word, and leaving it: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_STAKE)&&said(tilly).equals(PellTexts.TILLY_GOT_HERE_TODAY),"told of the stake with her name on it: "+said(tilly));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_ENOUGH)&&PellCompany.told(f.own(p,P))==1,"and it is left there");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_beds") public static void bedsDone(ServerLevel l){done();}
     private static PellLine.Surface surface(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SURFACE);}
     private static PellLine.Shape shape(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SHAPE);}
     /**
@@ -1720,6 +1781,8 @@ public final class PellHouseTests {
             h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,1)&&thing(l,b,-6,0,-61,CUTLERY,1),"a knife gone from the block, and one in Callum's drawer");
             h.assertTrue(thing(l,b,14,1,-95,PEGBOARD,2)&&thing(l,b,15,1,-95,PEGBOARD,3),"two knives' outlines empty on the pegboard");
             h.assertTrue(thing(l,b,5,1,-92,SHED_CALENDAR,1)&&thing(l,b,-13,1,-71,FRIDGE_TOP,1),"the calendar moved on, two new photographs on the fridge");
+            // 0.4.574: Tilly's seedling in the front bed, tied in to its stake.
+            h.assertTrue(thing(l,b,-2,0,PellSite.BED_Z,SEEDLING,1),"Tilly's seedling a week on: "+l.getBlockState(b.offset(PellSite.SEEDLING)));
             h.assertTrue(thing(l,b,PellSwim.CHAIR.getX(),0,PellSwim.CHAIR.getZ(),POOL_CHAIR,0)&&PellSwim.gateStage(l,b)==1,"nothing on the pool chair but its towel, and the gate padlocked");
             mark[0]=PellVisit.hour(b);
         }).thenIdle(20).thenExecute(()->{
@@ -1741,14 +1804,19 @@ public final class PellHouseTests {
             h.assertTrue(said(june).equals(PellTexts.JUNE_WEEK_TALK[0]),"a hand on June a week in: "+said(june));
             june.hush();LiteraryVignettes.talk(p,june);june.hush();LiteraryVignettes.talk(p,june);
             h.assertTrue(said(june).equals(PellTexts.JUNE_WEEK_TALK[2])&&(rules(f,p)&PellTexts.RULE_POOL)!=0,"the pool gate, still a rule: "+rules(f,p));
+            // 0.4.574: this reader has put a hand on Tilly's stake in the front bed, a week on. A hand reaches six blocks and no
+            // further (LiteraryVignettes.click), so the reader stands at the bed for it.
+            told(q);f.at(q,P,-1.5,0,-54.5);hand(q,b.offset(PellSite.SEEDLING));
+            h.assertTrue(f.own(q,P).getBoolean("SawSeedlingGrown"),"kept that the reader saw it grown");
             f.at(q,P,-9.5,0,-62.5);LiteraryVignettes.talk(q,tilly);
             // 0.4.571: a reader's first hand on her in Nessa's room is her asking (PellCompany), and the panel offers what that reader
             // can tell her a week in: the pool and her hair, which anybody can see; not the knife, which the other reader found.
             String asks=PellTexts.TILLY_WEEK_TALK[PellTexts.TILLY_WEEK_TALK.length-1];
             h.assertTrue(said(tilly).equals(asks)&&telling(q,"Tilly",asks),"Tilly asks what is different: "+said(tilly));
-            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_POOL_OPEN,PellTexts.TELL_HAIR,PellTexts.TELL_SAME,PellTexts.TELL_ENOUGH)),"what this reader can tell her: "+Talk.replies(q));
+            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_POOL_OPEN,PellTexts.TELL_HAIR,PellTexts.TELL_GROWN,PellTexts.TELL_SAME,PellTexts.TELL_ENOUGH)),"what this reader can tell her: "+Talk.replies(q));
             h.assertTrue(Talk.choose(q,PellTexts.TELL_HAIR)&&said(tilly).equals(PellTexts.TILLY_A_WEEK),"told her hair is nearly to her shoulders: "+said(tilly));
-            h.assertTrue(Talk.choose(q,PellTexts.TELL_ENOUGH)&&PellCompany.told(f.own(q,P))==1,"and it is left there");
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_GROWN)&&said(tilly).equals(PellTexts.TILLY_HER_HAND_OVER),"told her plant has grown: "+said(tilly));
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_ENOUGH)&&PellCompany.told(f.own(q,P))==2,"and it is left there");
             tilly.hush();LiteraryVignettes.talk(q,tilly);
             h.assertTrue(said(tilly).equals(PellTexts.TILLY_WEEK_TALK[0]),"a second hand on Tilly a week in: "+said(tilly));
             june.hush();tilly.hush();
@@ -1919,6 +1987,7 @@ public final class PellHouseTests {
             h.assertTrue(PellWeek.rope(l,b).isEmpty()&&!l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&!PellLastNight.lit(l,b),"the pool under its cover, no rope, no light");
             for(var at:PellSite.route()){var st=l.getBlockState(b.offset(at.getX(),-1,at.getZ()));h.assertTrue(st.getValue(PellLine.STAGE)==PellLine.FIRST,"the line as the first visit has it at "+at);}
             h.assertTrue(thing(l,b,-11,0,-71,KNIFE_BLOCK,0)&&thing(l,b,-6,0,-61,CUTLERY,0)&&thing(l,b,14,1,-95,PEGBOARD,0)&&thing(l,b,-11,2,-71,CUPBOARD_UPPER,0),"every knife where it was, the cupboard shut");
+            h.assertTrue(thing(l,b,-2,0,PellSite.BED_Z,SEEDLING,0),"Tilly's seedling as it was the day they came");
             var c=who(h,l,b,PellPeople.CALLUM);h.assertTrue(c.gesture()!=PellPeople.EATING&&c.gesture()!=PellPeople.SITTING&&c.getOffhandItem().isEmpty(),"Callum not sitting out on the grass");
             h.assertTrue(l.getBlockState(b.offset(PellWeek.TOWEL)).isAir(),"no towel under the garage's door");
         }).thenSucceed();
@@ -2639,6 +2708,8 @@ public final class PellHouseTests {
             for(var at:PellWeek.CUPBOARD.subList(1,PellWeek.CUPBOARD.size()))h.assertTrue(thing(l,b,at.getX(),at.getY(),at.getZ(),CUPBOARD_UPPER,0),"the other cupboards shut: "+at);
             h.assertTrue(thing(l,b,-6,0,-61,CUTLERY,2),"a space in Callum's drawer where the knife lay");
             h.assertTrue(thing(l,b,5,1,-92,SHED_CALENDAR,2),"the calendar's circle is tonight");
+            // 0.4.574: Tilly's plant in flower in the front bed, and a second label tied over hers.
+            h.assertTrue(thing(l,b,-2,0,PellSite.BED_Z,SEEDLING,2)&&PellTexts.thing(SEEDLING,2).contains("NESSA")&&PellTexts.thing(SEEDLING,1).contains("TILLY"),"the newest stake on the last night: "+l.getBlockState(b.offset(PellSite.SEEDLING)));
             mark[0]=PellVisit.hour(b);
         }).thenIdle(20).thenExecute(()->{
             h.assertTrue(PellVisit.watching(b)&&PellVisit.tvOn(l,b),"June in her chair with the television on");

@@ -106,6 +106,9 @@ public final class PellWeek {
         stage(l,b,CUTLERY,PellThing.Kind.CUTLERY,last?2:week?1:0);
         stage(l,b,SHED_CALENDAR,PellThing.Kind.SHED_CALENDAR,last?2:week?1:0);
         stage(l,b,FRIDGE_TOP,PellThing.Kind.FRIDGE_TOP,week?1:0);
+        // 0.4.574: Tilly's seedling in the front bed. A week in it is tied in to its stake; the last night it is in flower, and a
+        // second label is tied over the first.
+        stage(l,b,PellSite.SEEDLING,PellThing.Kind.SEEDLING,last?2:week?1:0);
         // 0.4.571: the chore chart with June's strip on it, or (the last night) with it taken down (PellJobs).
         PellJobs.dress(l,b,visit);
         for(var at:PEGBOARD){var s=l.getBlockState(b.offset(at));if(PellThing.is(s,PellThing.Kind.PEGBOARD))set(l,b.offset(at),s.setValue(PellThing.STAGE,(s.getValue(PellThing.STAGE)&1)|(week?2:0)));}

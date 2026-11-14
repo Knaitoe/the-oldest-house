@@ -79,6 +79,9 @@ public final class PellSite {
      */
     public static final int LINE_W=-17,LINE_E=19,LINE_S=-57,LINE_N=-97;
     public static final int[] WHEELS={14,16};
+    /** 0.4.574: the front beds' row away from the wall, and in it Tilly's stake, the newest, nearest the step (PellWeek.dress). */
+    public static final int BED_Z=HOUSE_S+2;
+    public static final BlockPos SEEDLING=new BlockPos(-2,0,BED_Z);
     /** The front door (the screen), June's door, and the rest of the house's doors: each a lower cell and the way its outside faces. */
     public static final BlockPos FRONT_DOOR=new BlockPos(0,0,-58),NESSA_DOOR=new BlockPos(-10,0,-64),CALLUM_DOOR=new BlockPos(-4,0,-64),BATH_DOOR=new BlockPos(4,0,-64),
         JUNE_DOOR=new BlockPos(8,0,-64),LAUNDRY_DOOR=new BlockPos(7,0,-67),BACK_DOOR=new BlockPos(8,0,-72),SLIDER=new BlockPos(0,0,-72),
@@ -376,8 +379,17 @@ public final class PellSite {
         // Outside: the stakes in the front bed, the newest nearest the step; the kennel and its bowl by the drive; the pool chair
         // turned to the water and the pump; the handprint in the path, and the stain on the drive. The kennel is two cells wide, so
         // its name reads over the opening.
-        for(int x=-12;x<=-4;x+=2)put(l,b,x,0,-56,PellThing.Kind.STAKE,s,0);
-        put(l,b,-2,0,-56,PellThing.Kind.STAKE,s,1);
+        // 0.4.574 (the owner: "flowers on pell-house could use an improvement"). West of the step, Nessa's five stakes, each with
+        // what is left at its foot (a seedling slumped, one dried upright, one gone), and Tilly's, the newest. East of the step,
+        // where the bed was bare, June's geraniums, a plant to a cell. Along the lawn side of both beds, and a block up each far
+        // end to where the line crosses, bricks on edge, with one brick turning each corner.
+        int[] left={0,1,0,2,1};
+        for(int i=0;i<left.length;i++)put(l,b,-12+2*i,0,BED_Z,PellThing.Kind.STAKE,s,left[i]);
+        put(l,b,SEEDLING.getX(),0,BED_Z,PellThing.Kind.SEEDLING,s,0);
+        for(int x=2;x<=HOUSE_E;x++)put(l,b,x,0,BED_Z,PellThing.Kind.FLOWERS,s,x&1);
+        for(int x=HOUSE_W;x<=HOUSE_E;x++)if(x<0||x>1)put(l,b,x,0,BED_Z+1,PellThing.Kind.EDGING,n,0);
+        put(l,b,HOUSE_W-1,0,BED_Z,PellThing.Kind.EDGING,e,0);put(l,b,HOUSE_E+1,0,BED_Z,PellThing.Kind.EDGING,w,0);
+        put(l,b,HOUSE_W-1,0,BED_Z+1,PellThing.Kind.EDGING,n,1);put(l,b,HOUSE_E+1,0,BED_Z+1,PellThing.Kind.EDGING,w,1);
         pair(l,b,19,0,-80,PellThing.Kind.KENNEL,w,0,1);put(l,b,18,0,-79,PellThing.Kind.BOWL,w,0);
         put(l,b,-14,0,-86,PellThing.Kind.POOL_CHAIR,e,0);put(l,b,1,0,-90,PellThing.Kind.PUMP,w,0);
         set(l,b,1,-1,-54,mat("concrete_print"));set(l,b,17,-1,-68,mat("concrete_oil"));

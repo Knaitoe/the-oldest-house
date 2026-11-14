@@ -35,12 +35,17 @@ public final class PellThing extends HorizontalDirectionalBlock {
         FREEZER,STOOL,POWER,CORD,TROUGH,BUCKET,CHLORINE,WASHER,
         CAMP_BED,BULB,BOX_WINTER,BOX_BOOKS,BOX_DONT,PEGBOARD,TOWEL,
         TAPES,WORKBENCH,SHED_TV,TIN,TRANSCRIPT,SHED_CALENDAR,
-        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN,FOR_SALE,MARKS_AFTER,PHOTO_BROKEN;
+        STAKE,KENNEL,BOWL,POOL_CHAIR,PUMP,LANTERN,PHONE,FREEZER_OPEN,FOR_SALE,MARKS_AFTER,PHOTO_BROKEN,
+        SEEDLING,FLOWERS,EDGING;
         // 0.4.548: PHOTO_BROKEN, the last school photograph with its glass broken (PellMark).
+        // 0.4.574, the front beds (docs/PELL_HOUSE_NOTES_0_4_574.md): SEEDLING, Tilly's stake, which grows with the visits
+        // (PellWeek.dress); FLOWERS, June's geraniums east of the step; EDGING, the bricks on edge along the beds, in the lawn's
+        // cell on the side it turns to FACING (stage 1 the one brick at a bed's corner). A reader's record keeps what they have
+        // put a hand on by a kind's place in this list (PellCompany.saw): new kinds go at its end.
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** Flat on a wall, on the floor or hung: nothing a body bumps into. */
         public boolean flat(){return switch(this){case CHORE_CHART,CALENDAR,PHOTOS,HOOKS,COAT_HOOK,SWITCH,MARKS,BORDER,MIRROR,POWER,CORD,BULB,PEGBOARD,TOWEL,
-            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE,MARKS_AFTER,PHOTO_BROKEN->true;default->false;};}
+            TRANSCRIPT,SHED_CALENDAR,SHOES,BOWL,STAKE,PHONE,MARKS_AFTER,PHOTO_BROKEN,SEEDLING,FLOWERS,EDGING->true;default->false;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,3);
@@ -140,7 +145,10 @@ public final class PellThing extends HorizontalDirectionalBlock {
             case SHED_TV->t(f,1,0,4,15,13,14);
             // 0 on the bench with the brush beside it; 1 open on the grass.
             case TIN->stage==1?Block.box(4,0,4,11,8,11):Block.box(4,0,4,15,8,11);
-            case STAKE->Block.box(6,0,6,10,11,10);
+            // 0.4.574: a stake and what stands in front of it, on the side it faces; a geranium; a run of edging, or its corner brick.
+            case STAKE,SEEDLING->t(f,3,0,2,13,16,9);
+            case FLOWERS->Block.box(2,0,2,14,10,14);
+            case EDGING->stage==1?t(f,13,0,0,16,3,3):t(f,0,0,0,16,3,3);
             case KENNEL->t(f,0,0,2,16,14,15);
             case BOWL->Block.box(4,0,4,12,2,12);
             case POOL_CHAIR->Shapes.or(t(f,1,0,1,15,8,15),t(f,1,7,12,15,16,16));
