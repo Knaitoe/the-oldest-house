@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "the_oldest_house:block/pell/line/mulch_corner_wn_6",
+    "bottom": "the_oldest_house:block/pell_mulch",
+    "side": "the_oldest_house:block/pell_mulch",
+    "particle": "the_oldest_house:block/pell_mulch"
+  }
+}

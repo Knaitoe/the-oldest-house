@@ -18,6 +18,12 @@
     "facing=north,shape=straight,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_5"
     },
+    "facing=north,shape=straight,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_6"
+    },
+    "facing=north,shape=straight,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_7"
+    },
     "facing=north,shape=straight,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_0"
     },
@@ -35,6 +41,12 @@
     },
     "facing=north,shape=straight,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_5"
+    },
+    "facing=north,shape=straight,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_6"
+    },
+    "facing=north,shape=straight,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_7"
     },
     "facing=north,shape=straight,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_0"
@@ -54,6 +66,12 @@
     "facing=north,shape=straight,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_5"
     },
+    "facing=north,shape=straight,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_6"
+    },
+    "facing=north,shape=straight,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_7"
+    },
     "facing=north,shape=straight,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ns_0"
     },
@@ -71,6 +89,12 @@
     },
     "facing=north,shape=straight,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ns_5"
+    },
+    "facing=north,shape=straight,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ns_6"
+    },
+    "facing=north,shape=straight,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ns_7"
     },
     "facing=north,shape=straight,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_0"
@@ -90,6 +114,12 @@
     "facing=north,shape=straight,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_5"
     },
+    "facing=north,shape=straight,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_6"
+    },
+    "facing=north,shape=straight,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_7"
+    },
     "facing=north,shape=straight,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_0"
     },
@@ -107,6 +137,12 @@
     },
     "facing=north,shape=straight,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_5"
+    },
+    "facing=north,shape=straight,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_6"
+    },
+    "facing=north,shape=straight,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_7"
     },
     "facing=north,shape=corner,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_ne_0"
@@ -126,6 +162,12 @@
     "facing=north,shape=corner,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_ne_5"
     },
+    "facing=north,shape=corner,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_ne_6"
+    },
+    "facing=north,shape=corner,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_ne_7"
+    },
     "facing=north,shape=corner,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_ne_0"
     },
@@ -143,6 +185,12 @@
     },
     "facing=north,shape=corner,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_ne_5"
+    },
+    "facing=north,shape=corner,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_ne_6"
+    },
+    "facing=north,shape=corner,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_ne_7"
     },
     "facing=north,shape=corner,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_ne_0"
@@ -162,6 +210,12 @@
     "facing=north,shape=corner,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_ne_5"
     },
+    "facing=north,shape=corner,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_ne_6"
+    },
+    "facing=north,shape=corner,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_ne_7"
+    },
     "facing=north,shape=corner,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_ne_0"
     },
@@ -179,6 +233,12 @@
     },
     "facing=north,shape=corner,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_ne_5"
+    },
+    "facing=north,shape=corner,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_ne_6"
+    },
+    "facing=north,shape=corner,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_ne_7"
     },
     "facing=north,shape=corner,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_ne_0"
@@ -198,6 +258,12 @@
     "facing=north,shape=corner,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_ne_5"
     },
+    "facing=north,shape=corner,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_ne_6"
+    },
+    "facing=north,shape=corner,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_ne_7"
+    },
     "facing=north,shape=corner,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_ne_0"
     },
@@ -215,6 +281,12 @@
     },
     "facing=north,shape=corner,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_ne_5"
+    },
+    "facing=north,shape=corner,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_ne_6"
+    },
+    "facing=north,shape=corner,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_ne_7"
     },
     "facing=north,shape=thin,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_0"
@@ -234,6 +306,12 @@
     "facing=north,shape=thin,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_5"
     },
+    "facing=north,shape=thin,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_6"
+    },
+    "facing=north,shape=thin,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_7"
+    },
     "facing=north,shape=thin,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_0"
     },
@@ -251,6 +329,12 @@
     },
     "facing=north,shape=thin,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_5"
+    },
+    "facing=north,shape=thin,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_6"
+    },
+    "facing=north,shape=thin,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_7"
     },
     "facing=north,shape=thin,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_0"
@@ -270,6 +354,12 @@
     "facing=north,shape=thin,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_5"
     },
+    "facing=north,shape=thin,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_6"
+    },
+    "facing=north,shape=thin,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_7"
+    },
     "facing=north,shape=thin,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ns_0"
     },
@@ -287,6 +377,12 @@
     },
     "facing=north,shape=thin,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ns_5"
+    },
+    "facing=north,shape=thin,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ns_6"
+    },
+    "facing=north,shape=thin,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ns_7"
     },
     "facing=north,shape=thin,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_0"
@@ -306,6 +402,12 @@
     "facing=north,shape=thin,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_5"
     },
+    "facing=north,shape=thin,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_6"
+    },
+    "facing=north,shape=thin,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_7"
+    },
     "facing=north,shape=thin,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_0"
     },
@@ -323,6 +425,12 @@
     },
     "facing=north,shape=thin,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_5"
+    },
+    "facing=north,shape=thin,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_6"
+    },
+    "facing=north,shape=thin,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_7"
     },
     "facing=east,shape=straight,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_0"
@@ -342,6 +450,12 @@
     "facing=east,shape=straight,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_5"
     },
+    "facing=east,shape=straight,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_6"
+    },
+    "facing=east,shape=straight,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_7"
+    },
     "facing=east,shape=straight,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_0"
     },
@@ -359,6 +473,12 @@
     },
     "facing=east,shape=straight,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_5"
+    },
+    "facing=east,shape=straight,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_6"
+    },
+    "facing=east,shape=straight,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_7"
     },
     "facing=east,shape=straight,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_0"
@@ -378,6 +498,12 @@
     "facing=east,shape=straight,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_5"
     },
+    "facing=east,shape=straight,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_6"
+    },
+    "facing=east,shape=straight,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_7"
+    },
     "facing=east,shape=straight,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ew_0"
     },
@@ -395,6 +521,12 @@
     },
     "facing=east,shape=straight,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ew_5"
+    },
+    "facing=east,shape=straight,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ew_6"
+    },
+    "facing=east,shape=straight,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ew_7"
     },
     "facing=east,shape=straight,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_0"
@@ -414,6 +546,12 @@
     "facing=east,shape=straight,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_5"
     },
+    "facing=east,shape=straight,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_6"
+    },
+    "facing=east,shape=straight,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_7"
+    },
     "facing=east,shape=straight,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_0"
     },
@@ -431,6 +569,12 @@
     },
     "facing=east,shape=straight,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_5"
+    },
+    "facing=east,shape=straight,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_6"
+    },
+    "facing=east,shape=straight,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_7"
     },
     "facing=east,shape=corner,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_es_0"
@@ -450,6 +594,12 @@
     "facing=east,shape=corner,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_es_5"
     },
+    "facing=east,shape=corner,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_es_6"
+    },
+    "facing=east,shape=corner,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_es_7"
+    },
     "facing=east,shape=corner,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_es_0"
     },
@@ -467,6 +617,12 @@
     },
     "facing=east,shape=corner,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_es_5"
+    },
+    "facing=east,shape=corner,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_es_6"
+    },
+    "facing=east,shape=corner,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_es_7"
     },
     "facing=east,shape=corner,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_es_0"
@@ -486,6 +642,12 @@
     "facing=east,shape=corner,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_es_5"
     },
+    "facing=east,shape=corner,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_es_6"
+    },
+    "facing=east,shape=corner,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_es_7"
+    },
     "facing=east,shape=corner,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_es_0"
     },
@@ -503,6 +665,12 @@
     },
     "facing=east,shape=corner,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_es_5"
+    },
+    "facing=east,shape=corner,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_es_6"
+    },
+    "facing=east,shape=corner,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_es_7"
     },
     "facing=east,shape=corner,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_es_0"
@@ -522,6 +690,12 @@
     "facing=east,shape=corner,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_es_5"
     },
+    "facing=east,shape=corner,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_es_6"
+    },
+    "facing=east,shape=corner,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_es_7"
+    },
     "facing=east,shape=corner,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_es_0"
     },
@@ -539,6 +713,12 @@
     },
     "facing=east,shape=corner,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_es_5"
+    },
+    "facing=east,shape=corner,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_es_6"
+    },
+    "facing=east,shape=corner,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_es_7"
     },
     "facing=east,shape=thin,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_0"
@@ -558,6 +738,12 @@
     "facing=east,shape=thin,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_5"
     },
+    "facing=east,shape=thin,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_6"
+    },
+    "facing=east,shape=thin,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_7"
+    },
     "facing=east,shape=thin,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_0"
     },
@@ -575,6 +761,12 @@
     },
     "facing=east,shape=thin,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_5"
+    },
+    "facing=east,shape=thin,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_6"
+    },
+    "facing=east,shape=thin,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_7"
     },
     "facing=east,shape=thin,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_0"
@@ -594,6 +786,12 @@
     "facing=east,shape=thin,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_5"
     },
+    "facing=east,shape=thin,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_6"
+    },
+    "facing=east,shape=thin,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_7"
+    },
     "facing=east,shape=thin,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ew_0"
     },
@@ -611,6 +809,12 @@
     },
     "facing=east,shape=thin,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ew_5"
+    },
+    "facing=east,shape=thin,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ew_6"
+    },
+    "facing=east,shape=thin,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ew_7"
     },
     "facing=east,shape=thin,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_0"
@@ -630,6 +834,12 @@
     "facing=east,shape=thin,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_5"
     },
+    "facing=east,shape=thin,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_6"
+    },
+    "facing=east,shape=thin,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_7"
+    },
     "facing=east,shape=thin,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_0"
     },
@@ -647,6 +857,12 @@
     },
     "facing=east,shape=thin,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_5"
+    },
+    "facing=east,shape=thin,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_6"
+    },
+    "facing=east,shape=thin,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_7"
     },
     "facing=south,shape=straight,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_0"
@@ -666,6 +882,12 @@
     "facing=south,shape=straight,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_5"
     },
+    "facing=south,shape=straight,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_6"
+    },
+    "facing=south,shape=straight,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_7"
+    },
     "facing=south,shape=straight,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_0"
     },
@@ -683,6 +905,12 @@
     },
     "facing=south,shape=straight,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_5"
+    },
+    "facing=south,shape=straight,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_6"
+    },
+    "facing=south,shape=straight,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_7"
     },
     "facing=south,shape=straight,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_0"
@@ -702,6 +930,12 @@
     "facing=south,shape=straight,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_5"
     },
+    "facing=south,shape=straight,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_6"
+    },
+    "facing=south,shape=straight,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_7"
+    },
     "facing=south,shape=straight,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ns_0"
     },
@@ -719,6 +953,12 @@
     },
     "facing=south,shape=straight,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ns_5"
+    },
+    "facing=south,shape=straight,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ns_6"
+    },
+    "facing=south,shape=straight,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ns_7"
     },
     "facing=south,shape=straight,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_0"
@@ -738,6 +978,12 @@
     "facing=south,shape=straight,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_5"
     },
+    "facing=south,shape=straight,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_6"
+    },
+    "facing=south,shape=straight,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_7"
+    },
     "facing=south,shape=straight,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_0"
     },
@@ -755,6 +1001,12 @@
     },
     "facing=south,shape=straight,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_5"
+    },
+    "facing=south,shape=straight,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_6"
+    },
+    "facing=south,shape=straight,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_7"
     },
     "facing=south,shape=corner,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_sw_0"
@@ -774,6 +1026,12 @@
     "facing=south,shape=corner,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_sw_5"
     },
+    "facing=south,shape=corner,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_sw_6"
+    },
+    "facing=south,shape=corner,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_sw_7"
+    },
     "facing=south,shape=corner,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_sw_0"
     },
@@ -791,6 +1049,12 @@
     },
     "facing=south,shape=corner,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_sw_5"
+    },
+    "facing=south,shape=corner,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_sw_6"
+    },
+    "facing=south,shape=corner,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_sw_7"
     },
     "facing=south,shape=corner,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_sw_0"
@@ -810,6 +1074,12 @@
     "facing=south,shape=corner,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_sw_5"
     },
+    "facing=south,shape=corner,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_sw_6"
+    },
+    "facing=south,shape=corner,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_sw_7"
+    },
     "facing=south,shape=corner,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_sw_0"
     },
@@ -827,6 +1097,12 @@
     },
     "facing=south,shape=corner,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_sw_5"
+    },
+    "facing=south,shape=corner,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_sw_6"
+    },
+    "facing=south,shape=corner,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_sw_7"
     },
     "facing=south,shape=corner,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_sw_0"
@@ -846,6 +1122,12 @@
     "facing=south,shape=corner,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_sw_5"
     },
+    "facing=south,shape=corner,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_sw_6"
+    },
+    "facing=south,shape=corner,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_sw_7"
+    },
     "facing=south,shape=corner,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_sw_0"
     },
@@ -863,6 +1145,12 @@
     },
     "facing=south,shape=corner,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_sw_5"
+    },
+    "facing=south,shape=corner,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_sw_6"
+    },
+    "facing=south,shape=corner,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_sw_7"
     },
     "facing=south,shape=thin,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_0"
@@ -882,6 +1170,12 @@
     "facing=south,shape=thin,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ns_5"
     },
+    "facing=south,shape=thin,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_6"
+    },
+    "facing=south,shape=thin,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ns_7"
+    },
     "facing=south,shape=thin,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_0"
     },
@@ -899,6 +1193,12 @@
     },
     "facing=south,shape=thin,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ns_5"
+    },
+    "facing=south,shape=thin,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_6"
+    },
+    "facing=south,shape=thin,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ns_7"
     },
     "facing=south,shape=thin,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_0"
@@ -918,6 +1218,12 @@
     "facing=south,shape=thin,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ns_5"
     },
+    "facing=south,shape=thin,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_6"
+    },
+    "facing=south,shape=thin,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ns_7"
+    },
     "facing=south,shape=thin,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ns_0"
     },
@@ -935,6 +1241,12 @@
     },
     "facing=south,shape=thin,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ns_5"
+    },
+    "facing=south,shape=thin,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ns_6"
+    },
+    "facing=south,shape=thin,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ns_7"
     },
     "facing=south,shape=thin,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_0"
@@ -954,6 +1266,12 @@
     "facing=south,shape=thin,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ns_5"
     },
+    "facing=south,shape=thin,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_6"
+    },
+    "facing=south,shape=thin,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ns_7"
+    },
     "facing=south,shape=thin,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_0"
     },
@@ -971,6 +1289,12 @@
     },
     "facing=south,shape=thin,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ns_5"
+    },
+    "facing=south,shape=thin,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_6"
+    },
+    "facing=south,shape=thin,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ns_7"
     },
     "facing=west,shape=straight,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_0"
@@ -990,6 +1314,12 @@
     "facing=west,shape=straight,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_5"
     },
+    "facing=west,shape=straight,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_6"
+    },
+    "facing=west,shape=straight,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_7"
+    },
     "facing=west,shape=straight,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_0"
     },
@@ -1007,6 +1337,12 @@
     },
     "facing=west,shape=straight,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_5"
+    },
+    "facing=west,shape=straight,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_6"
+    },
+    "facing=west,shape=straight,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_7"
     },
     "facing=west,shape=straight,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_0"
@@ -1026,6 +1362,12 @@
     "facing=west,shape=straight,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_5"
     },
+    "facing=west,shape=straight,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_6"
+    },
+    "facing=west,shape=straight,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_7"
+    },
     "facing=west,shape=straight,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ew_0"
     },
@@ -1043,6 +1385,12 @@
     },
     "facing=west,shape=straight,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_straight_ew_5"
+    },
+    "facing=west,shape=straight,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ew_6"
+    },
+    "facing=west,shape=straight,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_straight_ew_7"
     },
     "facing=west,shape=straight,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_0"
@@ -1062,6 +1410,12 @@
     "facing=west,shape=straight,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_5"
     },
+    "facing=west,shape=straight,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_6"
+    },
+    "facing=west,shape=straight,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_7"
+    },
     "facing=west,shape=straight,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_0"
     },
@@ -1079,6 +1433,12 @@
     },
     "facing=west,shape=straight,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_5"
+    },
+    "facing=west,shape=straight,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_6"
+    },
+    "facing=west,shape=straight,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_7"
     },
     "facing=west,shape=corner,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_wn_0"
@@ -1098,6 +1458,12 @@
     "facing=west,shape=corner,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_corner_wn_5"
     },
+    "facing=west,shape=corner,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_wn_6"
+    },
+    "facing=west,shape=corner,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_corner_wn_7"
+    },
     "facing=west,shape=corner,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_wn_0"
     },
@@ -1115,6 +1481,12 @@
     },
     "facing=west,shape=corner,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_corner_wn_5"
+    },
+    "facing=west,shape=corner,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_wn_6"
+    },
+    "facing=west,shape=corner,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_corner_wn_7"
     },
     "facing=west,shape=corner,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_wn_0"
@@ -1134,6 +1506,12 @@
     "facing=west,shape=corner,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_corner_wn_5"
     },
+    "facing=west,shape=corner,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_wn_6"
+    },
+    "facing=west,shape=corner,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_corner_wn_7"
+    },
     "facing=west,shape=corner,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_wn_0"
     },
@@ -1151,6 +1529,12 @@
     },
     "facing=west,shape=corner,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_corner_wn_5"
+    },
+    "facing=west,shape=corner,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_wn_6"
+    },
+    "facing=west,shape=corner,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_corner_wn_7"
     },
     "facing=west,shape=corner,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_wn_0"
@@ -1170,6 +1554,12 @@
     "facing=west,shape=corner,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_corner_wn_5"
     },
+    "facing=west,shape=corner,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_wn_6"
+    },
+    "facing=west,shape=corner,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_corner_wn_7"
+    },
     "facing=west,shape=corner,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_wn_0"
     },
@@ -1187,6 +1577,12 @@
     },
     "facing=west,shape=corner,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_corner_wn_5"
+    },
+    "facing=west,shape=corner,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_wn_6"
+    },
+    "facing=west,shape=corner,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_corner_wn_7"
     },
     "facing=west,shape=thin,stage=0,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_0"
@@ -1206,6 +1602,12 @@
     "facing=west,shape=thin,stage=5,surface=concrete": {
       "model": "the_oldest_house:block/pell/line/concrete_straight_ew_5"
     },
+    "facing=west,shape=thin,stage=6,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_6"
+    },
+    "facing=west,shape=thin,stage=7,surface=concrete": {
+      "model": "the_oldest_house:block/pell/line/concrete_straight_ew_7"
+    },
     "facing=west,shape=thin,stage=0,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_0"
     },
@@ -1223,6 +1625,12 @@
     },
     "facing=west,shape=thin,stage=5,surface=tyre": {
       "model": "the_oldest_house:block/pell/line/tyre_straight_ew_5"
+    },
+    "facing=west,shape=thin,stage=6,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_6"
+    },
+    "facing=west,shape=thin,stage=7,surface=tyre": {
+      "model": "the_oldest_house:block/pell/line/tyre_straight_ew_7"
     },
     "facing=west,shape=thin,stage=0,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_0"
@@ -1242,6 +1650,12 @@
     "facing=west,shape=thin,stage=5,surface=paver": {
       "model": "the_oldest_house:block/pell/line/paver_straight_ew_5"
     },
+    "facing=west,shape=thin,stage=6,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_6"
+    },
+    "facing=west,shape=thin,stage=7,surface=paver": {
+      "model": "the_oldest_house:block/pell/line/paver_straight_ew_7"
+    },
     "facing=west,shape=thin,stage=0,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ew_0"
     },
@@ -1259,6 +1673,12 @@
     },
     "facing=west,shape=thin,stage=5,surface=lawn": {
       "model": "the_oldest_house:block/pell/line/lawn_thin_ew_5"
+    },
+    "facing=west,shape=thin,stage=6,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ew_6"
+    },
+    "facing=west,shape=thin,stage=7,surface=lawn": {
+      "model": "the_oldest_house:block/pell/line/lawn_thin_ew_7"
     },
     "facing=west,shape=thin,stage=0,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_0"
@@ -1278,6 +1698,12 @@
     "facing=west,shape=thin,stage=5,surface=mulch": {
       "model": "the_oldest_house:block/pell/line/mulch_straight_ew_5"
     },
+    "facing=west,shape=thin,stage=6,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_6"
+    },
+    "facing=west,shape=thin,stage=7,surface=mulch": {
+      "model": "the_oldest_house:block/pell/line/mulch_straight_ew_7"
+    },
     "facing=west,shape=thin,stage=0,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_0"
     },
@@ -1295,6 +1721,12 @@
     },
     "facing=west,shape=thin,stage=5,surface=deck": {
       "model": "the_oldest_house:block/pell/line/deck_straight_ew_5"
+    },
+    "facing=west,shape=thin,stage=6,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_6"
+    },
+    "facing=west,shape=thin,stage=7,surface=deck": {
+      "model": "the_oldest_house:block/pell/line/deck_straight_ew_7"
     }
   }
 }

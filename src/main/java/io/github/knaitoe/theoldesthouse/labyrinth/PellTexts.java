@@ -151,7 +151,9 @@ public final class PellTexts {
             case PellLine.SECOND->where+" It has been gone over again, not long ago.";
             case PellLine.LAST->where+" It is wet in places. It comes away on a finger.";
             case PellLine.FOOTPRINT->where+(dry?" A shoe went through it while it was wet and dragged it. It has dried like that.":" It is wet, and a shoe has gone through it and dragged it.");
+            case PellLine.QUARTER_SCRUBBED->"The paint here has been scrubbed at. It is thinner where the brush went.";
             case PellLine.HALF_SCRUBBED->"The paint here has been scrubbed half away.";
+            case PellLine.MOSTLY_SCRUBBED->"The paint here is nearly scrubbed away. Only its edges are left.";
             case PellLine.GAP->surface==PellLine.Surface.LAWN?"The line is scrubbed out here. The dead grass shows where it ran.":"The line is scrubbed out here. The ground shows where it ran.";
             default->where;
         };
@@ -266,6 +268,10 @@ public final class PellTexts {
         JUNE_FEET="Feet, love. I'm doing that bit.",
         JUNE_OUT_YOU_COME="Out you come, love. Not tonight.",
         JUNE_OUT_OF_SHED="Out of there, love. I'm locking up.",
+        // 0.4.567: a reader who stays in the shed when she has asked, walked out of it by the arm (PellNight.shutShed).
+        JUNE_TAKES_ARM="Come on, love. Out.",
+        SHOWN_OUT="June takes you by the arm and walks you out.",
+        LET_GO="She lets go of your arm.",
         JUNE_BACK_OUT="Back out you go, love. Bed.",
         SHED_OPEN="The padlock hangs open on its hasp.",
         BACK_LOCKED_OUT="The back door is locked. June has the key with her.";
@@ -535,6 +541,8 @@ public final class PellTexts {
     public static final String JUNE_LAST_WELCOME="That you, love? Early night tonight, all of us.",
         LAST_WELCOME_FAR="June, calling from the front room: “That you, love? Early night tonight, all of us.”";
     /** The bucket and the fridge. */
+    /** 0.4.567: the first quarter of the paint a reader's brush takes up. */
+    public static final String SCRUB_TAKES="The paint comes up under the brush.";
     public static final String BUCKET_TAKEN="You take the bucket and its brush.",
         HANDS_FULL="There is no room to carry it.",
         FRIDGE_PLATE="In the fridge, a plate of dinner under cling film. You take it.",

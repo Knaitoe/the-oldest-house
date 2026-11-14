@@ -87,7 +87,9 @@ public final class PellPeople {
         // 0.4.541, first light: Callum sat on the front step with his shoes on; Tilly at Nessa's window, waving.
         STEP=25,WAVE=26,
         // 0.4.544: Gail at first light holding a page out from her folder, the folder kept to her chest in her other hand (PellPages).
-        SHOW=27;
+        SHOW=27,
+        // 0.4.567: June walking a reader out of the shed by the arm, a step ahead of them, her right hand back to theirs.
+        SHOWING=28;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /** 0.4.533: the sheet one of them wears, if it is not their own: June in her robe, and in the water. Her gesture picks it. */
@@ -122,6 +124,12 @@ public final class PellPeople {
         boolean fresh=true,gailGone,tillyHome;int step,waypoint,gailStep,tillyStep,stuck,empty;long next;UUID car;
         /** 0.4.566: the visit June last sent the readers out on, once its part was over (PellHouse.leaving). */
         int sentOut;
+        /** 0.4.567, the shed kept June's at night (PellNight.shutShed): when she asked whoever was in it to come out; who she has gone
+         *  to walk out, since when, and whether she has hold of them yet; the way they are drawn along behind her and how far along it
+         *  they are; how far she is along her own way out; whether her tin is down by the door while she does it, and whether the shed
+         *  is shut and padlocked behind them. */
+        long askedOut,outSince;UUID outWith;boolean outHeld,tinDown,shedShut;int outStep;double towed;
+        final java.util.List<Vec3> tow=new java.util.ArrayList<>();
         /** Where June has walked, newest last, for Tilly to follow. */
         final java.util.ArrayDeque<Vec3> trail=new java.util.ArrayDeque<>();
         /** 0.4.526: the house's own hour, and whether it is going on; who has been sent it. */

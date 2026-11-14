@@ -1498,11 +1498,14 @@ public final class PellHouseTests {
             var c=who(h,l,b,PellPeople.CALLUM);
             h.assertTrue(told(p).contains(PellTexts.KNIFE_HOLD),"a hand on him takes his wrist");
             h.assertTrue(PellKnife.stage(b)==PellKnife.STRUGGLE&&c.gesture()==PellPeople.STRUGGLE&&f.own(p,P).getBoolean("FoughtCallum"),"they struggle for it");
+            // 0.4.567: whose hold he is in, for both of their hands to be drawn.
+            h.assertTrue(c.holder().filter(p.getUUID()::equals).isPresent(),"the reader has hold of him: "+c.holder());
             LiteraryVignettes.talk(p,c);
         }).thenIdle(1).thenExecute(()->{
             h.assertTrue(told(p).contains(PellTexts.KNIFE_WRENCH),"he pulls against them");
             told(q);
         }).thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.LUNGE&&who(h,l,b,PellPeople.CALLUM).gesture()==PellPeople.LUNGE,"his fist comes"))
+        .thenExecute(()->h.assertTrue(who(h,l,b,PellPeople.CALLUM).holder().isEmpty(),"and throws off their hold"))
         .thenWaitUntil(()->h.assertTrue(PellKnife.stage(b)==PellKnife.BLACK,"the cut"))
         .thenExecute(()->{
             h.assertTrue(cutToBlack(p)&&cutToBlack(q),"black for the reader in the kitchen and for the one looking in");
@@ -2043,6 +2046,60 @@ public final class PellHouseTests {
     }
     @AfterBatch(batch="pell_tapes_rounds") public static void tapesRoundsDone(ServerLevel l){done();}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.567, the shed kept June's
+    /**
+     * 0.4.567 (owner: "is the player supposed to gain access to the shed at a specific time? as is, they can walk in any time june has it
+     * opened and aren't forced to leave despite june's prompts"). On her rounds June opens the shed for the tin. A reader who goes in
+     * after her and stays is asked out; when they have had time to go, she sets the tin down by the door, comes in, takes them by the
+     * arm, walks them out a step ahead of them and lets go of them at the shed's front, clear of its door. Then she padlocks it with
+     * nobody in it, takes the tin up again and goes on to the line, and the shed does not open to a hand.
+     */
+    @GameTest(template="empty",batch="pell_shed_out",timeoutTicks=9000)
+    public static void aReaderWhoStaysInTheShedIsWalkedOutBeforeItIsPadlocked(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_shed_out",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        long[] asked={0};
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{PellNight.lockedUp(l,b);f.at(p,P,8.5,0,-82.5);PellVisit.hurry(b,PellNight.ELEVEN-6);})
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellNight.TO_SHED&&PellSite.open(l,b,PellSite.SHED_DOOR),"June opens the shed for the tin"))
+        // In after her, to the corner by the tapes, and there they stay.
+        .thenExecute(()->{f.at(p,P,5.5,0,-91.5);told(p);})
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_OUT_OF_SHED),"June asks them out"))
+        .thenExecute(()->{
+            asked[0]=l.getGameTime();
+            h.assertFalse(PellNight.showingOut(b),"she asks first");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).getMainHandItem().is(PellRegistry.PAINT_TIN.get()),"the tin in her hand");
+        })
+        .thenWaitUntil(()->h.assertTrue(PellNight.showingOut(b),"when they have had time to go, she comes for them"))
+        .thenExecute(()->{
+            h.assertTrue(l.getGameTime()-asked[0]>=PellNight.SHOW_OUT-5,"not before: "+(l.getGameTime()-asked[0]));
+            h.assertTrue(thing(l,b,PellNight.TIN_DOWN.getX(),0,PellNight.TIN_DOWN.getZ(),TIN,0),"the tin set down by the door");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).getMainHandItem().isEmpty(),"a hand free");
+        })
+        .thenWaitUntil(()->h.assertTrue(PellNight.heldOut(b),"she has hold of their arm"))
+        .thenExecute(()->h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()==PellPeople.SHOWING,"her hand back to theirs"))
+        .thenWaitUntil(()->h.assertFalse(PellNight.showingOut(b),"walked out and let go of"))
+        .thenExecute(()->{
+            var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertFalse(PellSite.inShed(r),"out of the shed: "+r);
+            h.assertTrue(r.subtract(6.5,0,-89.5).horizontalDistance()>1.1,"and clear of its door: "+r);
+            var said=told(p);
+            h.assertTrue(said.contains(PellTexts.SHOWN_OUT)&&said.contains(PellTexts.LET_GO),"told so: "+said);
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).gesture()!=PellPeople.SHOWING,"her hand to herself again");
+        })
+        .thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellNight.TO_LINE,"and on to the line"))
+        .thenExecute(()->{
+            h.assertFalse(PellSite.open(l,b,PellSite.SHED_DOOR),"the shed shut and padlocked, with nobody in it");
+            h.assertFalse(PellThing.is(l.getBlockState(b.offset(PellNight.TIN_DOWN)),TIN),"the tin taken up again");
+            h.assertTrue(who(h,l,b,PellPeople.JUNE).getMainHandItem().is(PellRegistry.PAINT_TIN.get()),"in her hand");
+            hand(p,b.offset(PellSite.SHED_DOOR));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertFalse(PellSite.open(l,b,PellSite.SHED_DOOR),"and it does not open to a hand");
+            h.assertTrue(told(p).contains(PellTexts.PADLOCKED),"padlocked");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_shed_out") public static void shedOutDone(ServerLevel l){done();}
+
     // ------------------------------------------------------------------------------------------------ 0.4.538, the last night begins
     /** Waiting for the last night to begin: June, Tilly and Callum there, and the house in its evening. */
     private static void lastBegun(GameTestHelper h,ServerLevel l,BlockPos b){
@@ -2184,9 +2241,12 @@ public final class PellHouseTests {
         }).thenIdle(1).thenExecute(()->{
             h.assertTrue(told(p).contains(PellTexts.CALLUM_HAS_EATEN)&&p.getMainHandItem().getCount()==1,"he has what he was given");
             p.getInventory().selected=brush[0];lookAt(p,top(b,first));
-        }).thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,first)==PellLine.HALF_SCRUBBED,"the paint half away");})
+        }).thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,first)==PellLine.QUARTER_SCRUBBED,"the paint a quarter away");})
+        .thenIdle(1).thenExecute(()->h.assertTrue(told(p).contains(PellTexts.SCRUB_TAKES),"the first of it up, and the House says so"))
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,first)==PellLine.HALF_SCRUBBED,"the paint half away");})
         .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,first)==PellLine.GAP,"and out");})
         .thenExecute(()->{
+            h.assertFalse(told(p).contains(PellTexts.SCRUB_TAKES),"said once");
             h.assertFalse(PellScrub.scrubbing(p),"the brush comes away from a cell scrubbed out");
             h.assertFalse(PellScrub.broken(l,b)||PellLastNight.said(b),"one cell out is not a gap");
             lookAt(p,top(b,second));
@@ -2230,9 +2290,18 @@ public final class PellHouseTests {
             h.assertTrue(PellScrub.holding(p),"the bucket in hand");
             f.at(p,P,10.5,0,-95.5);lookAt(p,top(b,out));
             h.assertTrue(!PellSite.thin(out)&&!PellSite.thin(half),"a hand's width of line, not the thin stretch");
-        }).thenExecuteFor(PellScrub.THICK-5,()->PellScrub.scrubbing(p))
-        .thenExecute(()->h.assertTrue(stageAt(l,b,out)==PellLine.SECOND,"five seconds to a stage where the line is wide"))
+        }).thenExecuteFor(PellScrub.quarter(false)-5,()->PellScrub.scrubbing(p))
+        .thenExecute(()->h.assertTrue(stageAt(l,b,out)==PellLine.SECOND,"two and a half seconds to a quarter of it where the line is wide"))
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,out)==PellLine.QUARTER_SCRUBBED,"a quarter of it up");})
+        // 0.4.567: the brush taken off the cell a moment loses nothing done; the quarter stays in the paint.
+        .thenExecute(()->lookAt(p,top(b,half)))
+        .thenExecuteFor(PellScrub.quarter(false)-5,()->PellScrub.scrubbing(p))
+        .thenExecute(()->{
+            h.assertTrue(stageAt(l,b,out)==PellLine.QUARTER_SCRUBBED&&stageAt(l,b,half)==PellLine.SECOND,"the quarter done stays done");
+            lookAt(p,top(b,out));
+        })
         .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,out)==PellLine.HALF_SCRUBBED,"half away");})
+        .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,out)==PellLine.MOSTLY_SCRUBBED,"three quarters away");})
         .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,out)==PellLine.GAP,"and out");})
         .thenExecute(()->lookAt(p,top(b,half)))
         .thenWaitUntil(()->{PellScrub.scrubbing(p);h.assertTrue(stageAt(l,b,half)==PellLine.HALF_SCRUBBED,"the next half away");})

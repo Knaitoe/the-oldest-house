@@ -28,7 +28,8 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  * been painted over; beaded on PAVERs; sitting on the LAWN's blades, which are dead under it; pooled in MULCH, laid twice; flaking
  * off DECK boards.</li>
  * <li>STAGE: as on the first visit, the second (painted again), the last night (wet in places), the last night with a footprint
- * smeared through it, scrubbed half away, scrubbed out (a gap).</li>
+ * smeared through it, scrubbed half away, scrubbed out (a gap); and from 0.4.567, scrubbed a quarter away and three quarters away, so
+ * that the paint is seen going as the brush works at it.</li>
  * </ul>
  */
 public final class PellLine extends HorizontalDirectionalBlock {
@@ -45,9 +46,13 @@ public final class PellLine extends HorizontalDirectionalBlock {
     }
     public static final EnumProperty<Shape> SHAPE=EnumProperty.create("shape",Shape.class);
     public static final EnumProperty<Surface> SURFACE=EnumProperty.create("surface",Surface.class);
-    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,5);
+    public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);
     /** The stages a cell can be in. */
-    public static final int FIRST=0,SECOND=1,LAST=2,FOOTPRINT=3,HALF_SCRUBBED=4,GAP=5;
+    public static final int FIRST=0,SECOND=1,LAST=2,FOOTPRINT=3,HALF_SCRUBBED=4,GAP=5,QUARTER_SCRUBBED=6,MOSTLY_SCRUBBED=7;
+    /** 0.4.567: how far a cell is scrubbed, in quarters: none for the paint as it was laid, four for scrubbed out. */
+    public static int scrubbed(int stage){return switch(stage){case QUARTER_SCRUBBED->1;case HALF_SCRUBBED->2;case MOSTLY_SCRUBBED->3;case GAP->4;default->0;};}
+    /** 0.4.567: the stage of a cell a quarter further scrubbed than this. */
+    public static int scrubbedOn(int stage){return switch(scrubbed(stage)){case 0->QUARTER_SCRUBBED;case 1->HALF_SCRUBBED;case 2->MOSTLY_SCRUBBED;default->GAP;};}
     public PellLine(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(SHAPE,Shape.STRAIGHT)
         .setValue(SURFACE,Surface.LAWN).setValue(STAGE,FIRST));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -56,7 +61,7 @@ public final class PellLine extends HorizontalDirectionalBlock {
     public static BlockState of(Direction a,Direction b,Surface surface,int stage){return of(a,b,surface,stage,false);}
     /** The same, barely a finger wide if thin (a straight cell only). */
     public static BlockState of(Direction a,Direction b,Surface surface,int stage,boolean thin){
-        var s=PellRegistry.LINE.get().defaultBlockState().setValue(SURFACE,surface).setValue(STAGE,Math.max(FIRST,Math.min(GAP,stage)));
+        var s=PellRegistry.LINE.get().defaultBlockState().setValue(SURFACE,surface).setValue(STAGE,Math.max(FIRST,Math.min(MOSTLY_SCRUBBED,stage)));
         if(a.getOpposite()==b)return s.setValue(SHAPE,thin?Shape.THIN:Shape.STRAIGHT).setValue(FACING,a.getAxis()==Direction.Axis.Z?Direction.NORTH:Direction.EAST);
         // A corner faces the side whose clockwise neighbour is the other.
         return s.setValue(SHAPE,Shape.CORNER).setValue(FACING,a.getClockWise()==b?a:b);

@@ -8,7 +8,8 @@ How the paint has taken depends on the ground (PellLine.Surface): soaked into co
 painted over; beaded on pavers and run into their joins; sitting on the lawn's blades, with the grass dead under it; pooled in the
 mulch, where a first coat sank in; flaking off deck boards, broken at every gap between them. Its age is the stage: as on the first
 visit (older coats show at the chipped edges), the second (painted again), the last night (wet in places), the last night with a
-footprint smeared through it, scrubbed half away, and scrubbed out, which leaves only its ghost in the ground.
+footprint smeared through it, scrubbed half away, and scrubbed out, which leaves only its ghost in the ground; and (0.4.567) scrubbed
+a quarter away and three quarters away, so the paint is seen going as the brush works at it.
 
 Every cell is drawn as it lies and never turned, so the ground's joints, joins and boards stay true with the plain ground beside it:
 a straight cell north to south or east to west, a corner by the two sides it joins, and the thin line behind the shed (on the lawn;
@@ -33,8 +34,10 @@ from draw_pell_house import materials as house_materials  # noqa: E402
 
 SURFACES = ['concrete', 'tyre', 'paver', 'lawn', 'mulch', 'deck']
 SHAPES = ['straight', 'corner', 'thin']
-STAGES = 6
-FIRST, SECOND, LAST, FOOTPRINT, HALF, GAP = range(STAGES)
+STAGES = 8
+FIRST, SECOND, LAST, FOOTPRINT, HALF, GAP, QUARTER, MOSTLY = range(STAGES)
+# How much of the paint each scrubbed stage has taken up (PellLine.scrubbed, in quarters).
+SCRUBBED = {QUARTER: .25, HALF: .5, MOSTLY: .75, GAP: 1}
 FACINGS = ['north', 'east', 'south', 'west']
 # A straight or thin cell lies north to south or east to west; a corner joins its facing and the side clockwise of it. The angle is
 # how far the drawing is turned, clockwise, from its first orientation (north to south; north and east).
@@ -96,7 +99,8 @@ def geometry(shape):
 
 
 # The paint's tones: the coat as it is, the older coats under it at its chipped edges, and fresh.
-COAT = {FIRST: '#e2ded1', SECOND: '#eeebe3', LAST: '#f2f0ea', FOOTPRINT: '#f2f0ea', HALF: '#f2f0ea', GAP: '#f2f0ea'}
+COAT = {FIRST: '#e2ded1', SECOND: '#eeebe3', LAST: '#f2f0ea', FOOTPRINT: '#f2f0ea', HALF: '#f2f0ea', GAP: '#f2f0ea', QUARTER: '#f2f0ea',
+        MOSTLY: '#f2f0ea'}
 OLDER = ['#d3ccb7', '#e8e5dc', '#cdc6b0']
 DEAD = ['#a8975a', '#9b8a50', '#b5a46a', '#8f7e48']
 
@@ -211,8 +215,8 @@ def paint(surface, shape, stage, base, seed):
                         px[x + 1, y] = mix(px[x + 1, y], '#2a2018', .3)
     if stage == FOOTPRINT:
         footprint(px, under, geo, width, coat)
-    if stage in (HALF, GAP):
-        scrubbed(px, fl, under, geo, width, coat, surface, rnd, stage == HALF)
+    if stage in SCRUBBED:
+        scrubbed(px, fl, under, geo, width, coat, surface, rnd, SCRUBBED[stage])
     return im
 
 
@@ -244,17 +248,18 @@ def ghost(surface, x, y, d, fl, under, coat, rnd):
     return lighter(g, 10 if surface == 'deck' else 6 if surface == 'paver' else 7) if d < 1.25 else fl[x, y]
 
 
-def scrubbed(px, fl, under, geo, width, coat, surface, rnd, half):
-    """Scrubbed half away (what is left faded, the rest smeared out by the brush), or out: the ground with the line's ghost."""
+def scrubbed(px, fl, under, geo, width, coat, surface, rnd, amount):
+    """Scrubbed part away (that much of the paint gone to the ground's ghost, the rest faded by as much and smeared out beside it
+    by the brush: a quarter, half or three quarters), or out: the ground with the line's ghost."""
     for y in range(16):
         for x in range(16):
             d = geo[x, y][0]
             if d >= 1.75:
                 continue
-            if half:
+            if amount < 1:
                 if d < width:
-                    px[x, y] = mix(px[x, y], ghost(surface, x, y, d, fl, under, coat, rnd), .45) if rnd.random() < .5 else ghost(surface, x, y, d, fl, under, coat, rnd)
-                elif rnd.random() < .25:
+                    px[x, y] = mix(px[x, y], ghost(surface, x, y, d, fl, under, coat, rnd), .9 * amount) if rnd.random() < 1 - amount else ghost(surface, x, y, d, fl, under, coat, rnd)
+                elif rnd.random() < .5 * amount:
                     px[x, y] = mix(px[x, y], coat, .25)
             else:
                 px[x, y] = ghost(surface, x, y, d, fl, under, coat, rnd)
