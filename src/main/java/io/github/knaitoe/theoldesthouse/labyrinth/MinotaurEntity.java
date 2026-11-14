@@ -178,7 +178,7 @@ public final class MinotaurEntity extends PathfinderMob {
     /** The bellow as it lowers its horns, with its breath steaming from its nostrils. */
     void bellow(net.minecraft.server.level.ServerLevel level,float volume){
         level.playSound(null,getX(),getEyeY(),getZ(),FinaleRegistry.BELLOW.get(),SoundSource.HOSTILE,volume,.92F+random.nextFloat()*.1F);
-        float yaw=getYRot()*Mth.DEG_TO_RAD;level.sendParticles(ParticleTypes.CLOUD,getX()-Mth.sin(yaw)*1.1,getEyeY()-.35,getZ()+Mth.cos(yaw)*1.1,8,.12,.08,.12,.03);
+        float yaw=getYRot()*Mth.DEG_TO_RAD;level.sendParticles(ParticleTypes.CLOUD,getX()-Mth.sin(yaw)*1.5,getEyeY()-.45,getZ()+Mth.cos(yaw)*1.5,8,.12,.08,.12,.03);
     }
     /** The charge meets a raised shield: the shield takes it, the one behind it still takes two hearts and is thrown back. */
     private void blocked(net.minecraft.server.level.ServerLevel level,ServerPlayer player){
