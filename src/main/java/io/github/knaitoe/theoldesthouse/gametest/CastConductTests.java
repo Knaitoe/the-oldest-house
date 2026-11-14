@@ -78,6 +78,8 @@ public final class CastConductTests {
                 var offered=Talk.replies(p);var speaker=nearest();boolean near=speaker!=null&&speaker.distanceTo(p)<6;
                 boolean wasSaying=near&&speaker.saying();var name=near?speaker.getCustomName():null;
                 if(near)conduct.asking(speaker,p);
+                // 0.4.568 (run 1599): the answer may come from anyone about, not only the nearest.
+                for(var a:people())if(a.distanceTo(p)<6)conduct.mayAnswer(a);
                 Talk.reply(p,Talk.token(p),answer++%offered.size());replies++;
                 if(near&&speaker.saying()&&(!wasSaying||!Objects.equals(name,speaker.getCustomName()))){conduct.answered(speaker,"(an answer on the panel)");listen(speaker);}
                 return;

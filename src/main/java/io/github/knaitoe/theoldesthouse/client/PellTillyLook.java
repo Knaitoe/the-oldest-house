@@ -32,7 +32,7 @@ import net.neoforged.neoforge.client.event.RenderPlayerEvent;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class PellTillyLook {
-    private record Look(int gesture,long until){}
+    private record Look(int gesture,int hair,long until){}
     private static final Map<UUID,Look> LOOKS=new HashMap<>();
     private static final Map<UUID,LiteraryActor> FIGURES=new HashMap<>();
     private static final int LAPSE=60;
@@ -41,7 +41,7 @@ public final class PellTillyLook {
     public static void accept(PellTillyPayload p){
         var level=Minecraft.getInstance().level;if(level==null)return;
         if(p.gesture()<0){LOOKS.remove(p.player());FIGURES.remove(p.player());return;}
-        LOOKS.put(p.player(),new Look(p.gesture(),level.getGameTime()+LAPSE));
+        LOOKS.put(p.player(),new Look(p.gesture(),p.hair(),level.getGameTime()+LAPSE));
     }
     /** The pose a player is drawn as Tilly in, or -1 if they are not. For tests and proofs. */
     public static int gesture(UUID player){var level=Minecraft.getInstance().level;var look=LOOKS.get(player);return level==null||look==null||level.getGameTime()>look.until()?-1:look.gesture();}
@@ -49,6 +49,8 @@ public final class PellTillyLook {
     @SubscribeEvent public static void render(RenderPlayerEvent.Pre e){
         var player=e.getEntity();int gesture=gesture(player.getUUID());if(gesture<0)return;
         var figure=figure(player,gesture);if(figure==null)return;
+        // 0.4.568: her hair as long as the visit has grown it (PellHair draws it).
+        var look=LOOKS.get(player.getUUID());if(look!=null)figure.marks(PellPeople.withHair(figure.marks(),look.hair()));
         e.setCanceled(true);
         float partial=e.getPartialTick();
         figure.yBodyRot=player.yBodyRot;figure.yBodyRotO=player.yBodyRotO;figure.yHeadRot=player.yHeadRot;figure.yHeadRotO=player.yHeadRotO;

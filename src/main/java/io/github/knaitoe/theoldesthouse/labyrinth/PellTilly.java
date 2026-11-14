@@ -159,7 +159,7 @@ public final class PellTilly {
             paint(l,b,h,p,now);
         }
         if(now%20==0)hook(l,b,1);
-        if(now%LOOK_EVERY==0)look(l,p,gesture(h,p,tilly));
+        if(now%LOOK_EVERY==0)look(l,p,gesture(h,p,tilly),PellPeople.hairFor(h.visit));
         // 0.4.546: the cane in their hand, and what only Tilly hears and feels (PellSenses).
         PellSenses.tick(l,b,h,p,now);
     }
@@ -171,8 +171,9 @@ public final class PellTilly {
         if(h.visit>=PellWeek.LAST&&h.rite==PellRite.WATER)return PellPeople.LED;
         return PellPeople.CANE;
     }
-    private static void look(ServerLevel l,ServerPlayer p,int gesture){
-        var payload=new PellTillyPayload(p.getUUID(),gesture);
+    /** 0.4.568: with her hair as long as the visit has grown it (PellPeople.hairFor). */
+    private static void look(ServerLevel l,ServerPlayer p,int gesture,int hair){
+        var payload=new PellTillyPayload(p.getUUID(),gesture,hair);
         for(var q:l.players())if(q.distanceToSqr(p)<LOOK_FAR*LOOK_FAR)HousePackets.send(q,payload);
     }
     /** Led: on June's Tilly, at her feet, wherever she goes. Woken first if asleep. */
@@ -216,7 +217,7 @@ public final class PellTilly {
         var p=l.getServer().getPlayerList().getPlayer(id);
         if(p!=null){small(p,false);if(p.getVehicle() instanceof LiteraryActor a&&a.pellStandIn())letGo(p);}
         PellSenses.leave(p,h);
-        var stop=new PellTillyPayload(id,-1);for(var q:l.players())HousePackets.send(q,stop);
+        var stop=new PellTillyPayload(id,-1,0);for(var q:l.players())HousePackets.send(q,stop);
         hook(l,b,0);
         var tilly=PellPeople.find(l,b,T);if(tilly==null)return;
         tilly.setInvisible(false);tilly.noPhysics=false;tilly.setNoGravity(false);

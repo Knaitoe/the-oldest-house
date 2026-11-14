@@ -125,6 +125,19 @@ public final class PlaceForYou {
         if(ch==ROAD||ch==DONE&&own.getString("Outcome").equals("took_the_road")){if(own.getBoolean("KitLeft"))m.put("Kit",stand(1.5,-6.5,0));}
         return m;
     }
+    /**
+     * 0.4.568 (run 1599: with two readers, the cast check found Mara in the jamb of the kitchen archway on her way to her chair): the
+     * straight way from where someone stands into their chair, clear of the walls for the body that slides along it. The chair and the
+     * rest of the furniture do not count; only whole blocks do. Until it is clear they go on foot, round the jamb.
+     */
+    static boolean slideClear(ServerLevel l,LiteraryActor a,Vec3 to){
+        var from=a.position();int steps=Math.max(1,(int)Math.ceil(from.subtract(to).horizontalDistance()/.1));double half=a.getBbWidth()/2-.1,high=a.getBbHeight()-.1;
+        for(int i=0;i<=steps;i++){var at=from.lerp(to,(double)i/steps);var body=new AABB(at.x-half,at.y+.3,at.z-half,at.x+half,at.y+high,at.z+half);
+            for(var pos:BlockPos.betweenClosed(BlockPos.containing(body.minX,body.minY,body.minZ),BlockPos.containing(body.maxX,body.maxY,body.maxZ))){
+                var state=l.getBlockState(pos);var shape=state.getCollisionShape(l,pos);
+                if(!shape.isEmpty()&&net.minecraft.world.level.block.Block.isShapeFullBlock(shape)&&body.intersects(new AABB(pos)))return false;}}
+        return true;
+    }
     /** Puts each person at their mark: straight there when the reader cannot see them, otherwise on foot. */
     static void stage(ServerLevel l,House h,ServerPlayer p,CompoundTag own){
         var b=h.base;var marks=marks(own);
@@ -145,7 +158,7 @@ public final class PlaceForYou {
                     ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,a.getEyeHeight(),0));
             double far=a.position().distanceToSqr(to);
             if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
-            else if(seat&&far<6.25){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
+            else if(seat&&far<6.25&&slideClear(l,a,to)){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
             else SceneFootpaths.walk(a,to,.12);
         }
         // Nameplates fade after a while.

@@ -144,6 +144,13 @@ public final class SharedDoorTests {
     @GameTest(template = "empty", batch = "shared_doors_second_place", timeoutTicks = 100)
     public static void aReaderPutInASecondPlaceStepsOnFromThere(GameTestHelper h) {
         var p = h.makeMockServerPlayerInLevel();
+        // 0.4.568 (run 1599): the reader leaves with the case. Left standing, they were a resident player for every later case that
+        // needs a world nobody is in (two of the structure cases failed on them).
+        try { secondPlace(h, p); } finally { NativeTestPlayers.remove(p); }
+        h.succeed();
+    }
+
+    private static void secondPlace(GameTestHelper h, ServerPlayer p) {
         var c = p.connection;
         Vec3 hall = Vec3.atBottomCenterOf(h.absolutePos(new BlockPos(1, 12, 1)));
         c.teleport(hall.x, hall.y, hall.z, 0, 0);
@@ -158,7 +165,6 @@ public final class SharedDoorTests {
         c.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(place.x + .1, place.y, place.z, false));
         h.assertTrue(Math.abs(p.getX() - (place.x + .1)) < 1e-6 && Math.abs(p.getZ() - place.z) < 1e-6,
                 "a reader put in a second place takes their next step from there (at " + p.position() + ", stepped to " + place.add(.1, 0, 0) + ")");
-        h.succeed();
     }
 
     /** The number of the last move the server has told this reader's game of, which their game answers with. */

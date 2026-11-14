@@ -49,6 +49,12 @@ public final class PellHouseTests {
     private static Direction facing(ServerLevel l,BlockPos b,int x,int y,int z){return l.getBlockState(b.offset(x,y,z)).getValue(PellThing.FACING);}
     /** A cell of the house's outside wall, of this course, its brick turned this way. */
     private static boolean wall(ServerLevel l,BlockPos b,int x,int y,int z,int stage,Direction out){var s=l.getBlockState(b.offset(x,y,z));return PellBlock.is(s,PellBlock.Kind.WALL)&&s.getValue(PellBlock.STAGE)==stage&&s.getValue(PellBlock.FACING)==out;}
+    /** 0.4.568: the hair length in the latest look sent to {@code to} of {@code who} as Tilly, kept in {@code seen} (-1 for none yet);
+     *  reading it empties what was sent. */
+    private static int lookHair(ServerPlayer to,ServerPlayer who,int[] seen){
+        for(var packet:NativeTestPlayers.packets(to))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.PellTillyPayload look&&look.player().equals(who.getUUID())&&look.gesture()>=0)seen[0]=look.hair();
+        return seen[0];
+    }
     /** Everything a reader has been told since this was last asked: reading it empties it. */
     private static List<String> told(ServerPlayer p){
         var out=new java.util.ArrayList<String>();
@@ -363,6 +369,8 @@ public final class PellHouseTests {
             h.assertTrue(Math.abs(june.getBbHeight()-gail.getBbHeight())<.01&&tilly.getBbHeight()<june.getBbHeight()*.7&&callum.getBbHeight()<tilly.getBbHeight(),
                 "June and Gail are grown, Tilly and Callum children, Callum the smaller: "+june.getBbHeight()+" "+tilly.getBbHeight()+" "+callum.getBbHeight());
             h.assertTrue(tilly.getMainHandItem().is(PellRegistry.CANE.get())&&tilly.gesture()==PellPeople.CANE,"Tilly has her cane in her hand, held out ahead of her");
+            // 0.4.568: and her hair as she came, to her jaw.
+            h.assertTrue(PellPeople.hair(tilly.marks())==0,"on the first visit Tilly's hair is as she came: "+PellPeople.hair(tilly.marks()));
             h.assertTrue(gail.getMainHandItem().is(PellRegistry.FOLDER.get())&&gail.gesture()==PellPeople.FOLDER,"Gail has her folder, held to her chest");
             h.assertTrue(june.getMainHandItem().isEmpty()&&callum.getMainHandItem().isEmpty()&&june.getOffhandItem().isEmpty()&&callum.getOffhandItem().isEmpty(),"June and Callum hold nothing");
             // Asked again, nobody is made twice; nor with the house's memory of them gone, as after a reload. 0.4.540: the four, and
@@ -1213,6 +1221,8 @@ public final class PellHouseTests {
             h.assertTrue(PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"no Gail and no car a week in");
             h.assertTrue(at(who(h,l,b,PellPeople.JUNE),b,PellVisit.KITCHEN.x(),PellVisit.KITCHEN.z(),.3),"June at her stove");
             h.assertTrue(at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.3),"Tilly in Nessa's room");
+            // 0.4.568: her hair grown past her shoulders.
+            h.assertTrue(PellPeople.hair(who(h,l,b,PellPeople.TILLY).marks())==1,"a week in, Tilly's hair has grown past her shoulders: "+PellPeople.hair(who(h,l,b,PellPeople.TILLY).marks()));
             var s=PellPeople.FIRST_VISIT[PellPeople.CALLUM];h.assertTrue(at(who(h,l,b,PellPeople.CALLUM),b,s.x(),s.z(),.3),"Callum at the end of the hall");
             h.assertTrue(PellSite.open(l,b,PellSite.NESSA_DOOR),"Nessa's door open");
             for(var door:List.of(PellSite.FRONT_DOOR,PellSite.SLIDER,PellSite.GARAGE_DOOR))h.assertFalse(PellSite.open(l,b,door),"shut: "+door);
@@ -2133,6 +2143,9 @@ public final class PellHouseTests {
             var c=who(h,l,b,PellPeople.CALLUM);
             h.assertTrue(c.blockPosition().subtract(b).equals(new BlockPos(PellLastNight.STRIP_X,0,PellSite.LINE_N))&&PellSite.thin(new BlockPos(PellLastNight.STRIP_X,0,PellSite.LINE_N)),"Callum out on the line, in the middle of the thin stretch behind the shed: "+c.position());
             h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(c.getYRot()))<1&&!PellVisit.asleep(b,PellPeople.CALLUM),"standing, facing the house: "+c.getYRot());
+            // 0.4.568: Tilly's hair as long as Nessa's.
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellPeople.hair(tilly.marks())==PellPeople.HAIR_LONGEST,"on the last night Tilly's hair is at its longest: "+PellPeople.hair(tilly.marks()));
             // The pool lit from under the water, and no rope across it.
             h.assertTrue(PellLastNight.lit(l,b)&&l.getBlockState(b.offset(-7,-1,-86)).is(Blocks.WATER)&&PellWeek.rope(l,b).isEmpty(),"the pool full and lit, its lane rope gone");
             // The line gone over again, all the way round.
@@ -3225,6 +3238,7 @@ public final class PellHouseTests {
         // A week in, they once answered to the name at bedtime.
         var before=f.own(p,P);before.putInt("AnsweredNessa",1);LiteraryVignettes.save(f.data(),p.getUUID(),P,before);
         f.at(p,P,.5,0,-44);f.at(q,P,-6.5,0,-36);
+        int[] looked={-1};
         h.startSequence().thenWaitUntil(()->lastBegun(h,l,b))
         .thenExecute(()->{
             PellLastNight.lockedUp(l,b);PellRite.inWater(l,b);
@@ -3234,6 +3248,8 @@ public final class PellHouseTests {
             h.assertTrue(p.getVehicle()==t&&PellTilly.small(p)&&t.isInvisible(),"the reader as Tilly in June's hands, where Tilly is: "+where(p,b));
             h.assertTrue(p.getY()<b.getY()-.5,"in the water: "+where(p,b));
         }).thenWaitUntil(()->h.assertTrue(Talk.key(p).equals(PellTilly.RITE_TALK),"June says the name, and the reader is asked: "+PellRite.lines(b)))
+        // 0.4.568: the reader as Tilly is drawn with her hair as long as the last night has grown it.
+        .thenWaitUntil(()->h.assertTrue(lookHair(p,p,looked)==PellPeople.HAIR_LONGEST,"the reader as Tilly's look has her hair at its longest: "+looked[0]))
         .thenExecute(()->{
             h.assertTrue(said(b,"June",PellTexts.JUNE_YOU_SAID),"answered to the name a week in, June reminds them of it first: "+PellRite.lines(b));
             h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.ANSWER_YES,PellTexts.ANSWER_OWN,PellTexts.ANSWER_NOTHING)),"the name June wants, their own, or nothing: "+Talk.replies(p));
