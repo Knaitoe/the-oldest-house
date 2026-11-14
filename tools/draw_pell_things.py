@@ -56,22 +56,29 @@ def laminate_top():
     return im
 
 
-def cupboard():
-    """A bench's front: two doors in a teak-look laminate, its grain running up them, each door's edges lit along the top and left
-    and shaded along the others, with a groove for a handle along its top (its lower lip catching the light); a kick under them,
-    darkest under the doors' overhang."""
+def cupboard(tall=False):
+    """A bench's two doors, as the model's two proud slabs take them (0.4.577): teak-look laminate, the grain running up, each
+    door's edges lit along the top and left and shaded along the others, a line of shadow under its chrome pull (the pull is in the
+    model). Under them the kick, darkest under the doors' overhang. Tall, the two doors of the cupboard on the wall: the whole
+    height of the picture, and no kick."""
     im = wood('#9a6a40', 52203, across=True)
-    fill(im, 0, 0, 16, 1, '#7a5230'); fill(im, 7, 1, 9, 13, '#5a3c22')
-    bevel(im, 0, 1, 7, 13, 12); bevel(im, 9, 1, 16, 13, 12)
-    fill(im, 1, 1, 7, 2, '#3e2a18'); fill(im, 9, 1, 15, 2, '#3e2a18')
-    for x in list(range(1, 7)) + list(range(9, 15)):
-        dot(im, x, 2, shade(im.getpixel((x, 2)), 12))
-    fill(im, 0, 13, 16, 16, '#2e2a26'); fill(im, 0, 13, 16, 14, '#221f1c')
+    y0, y1 = (0, 16) if tall else (2, 13)
+    for x0 in (0, 8):
+        bevel(im, x0, y0, x0 + 8, y1, 12)
+    if not tall:
+        for x in list(range(2, 6)) + list(range(10, 14)):
+            dot(im, x, 4, shade(im.getpixel((x, 4)), -18))
+        fill(im, 0, 13, 16, 16, '#2e2a26'); fill(im, 0, 13, 16, 14, '#221f1c')
     return im
 
 
+def cupboard_plain():
+    """A cupboard's end panel. 0.4.577: the wall cupboards wore the benches' ends, kick and all."""
+    return wood('#9a6a40', 52204, across=True)
+
+
 def cupboard_side():
-    im = wood('#9a6a40', 52204, across=True); fill(im, 0, 13, 16, 16, '#2e2a26'); fill(im, 0, 13, 16, 14, '#221f1c')
+    im = cupboard_plain(); fill(im, 0, 13, 16, 16, '#2e2a26'); fill(im, 0, 13, 16, 14, '#221f1c')
     return im
 
 
@@ -132,8 +139,8 @@ def fridge_front(upper, stage=0):
     small, starting school, missing a tooth, in a school jumper; one older photograph with a magnet square over the face. In the
     second stage two more, new, at the edge: two children on a doorstep, the day they came."""
     im = enamel('#f2f0ea', 52207 + upper)
-    fill(im, 13, 0 if upper else 1, 15, 16 if upper else 9, '#c9c6bd')
-    fill(im, 13, 0 if upper else 1, 14, 16 if upper else 9, '#e2dfd7'); fill(im, 15, 0 if upper else 1, 16, 16 if upper else 9, '#dad7cf')
+    fill(im, 13, 7 if upper else 1, 15, 16 if upper else 9, '#c9c6bd')
+    fill(im, 13, 7 if upper else 1, 14, 16 if upper else 9, '#e2dfd7'); fill(im, 15, 7 if upper else 1, 16, 16 if upper else 9, '#dad7cf')
     if not upper:
         fill(im, 0, 0, 16, 1, '#c9c6bd')
         fill(im, 0, 14, 16, 16, '#3b3832')
@@ -252,13 +259,22 @@ def chrome():
     return im
 
 
-def vinyl(colour='#a8452e', seed=52215):
-    """Vinyl on a chair's seat and back, buttoned, a split mended with tape on one."""
+def vinyl(colour='#a8452e', seed=52215, taped=False):
+    """Vinyl on a chair's seat and back, buttoned. Taped (0.4.577), the seat: the seam along its front, split for most of its
+    length, and two pieces of tape across the split, which shows between them and past them. (One strip laid along the seam
+    read as a plate let into the seat.)"""
     im = plastic(colour, seed)
     for x, y in ((4, 4), (11, 4), (4, 11), (11, 11)):
         dot(im, x - 1, y - 1, shade(colour, 14)); dot(im, x, y, shade(colour, -44)); dot(im, x + 1, y + 1, shade(colour, -20))
         for d in (2, 3):
             dot(im, x + d, y + d // 3, shade(colour, -9)); dot(im, x - d, y - d // 3, shade(colour, -9))
+    if taped:
+        for x in range(3, 13):
+            dot(im, x, 6, shade(colour, -20))
+        for x in range(5, 13):
+            dot(im, x, 6, shade(colour, -62))
+        for x0 in (6, 10):
+            fill(im, x0, 5, x0 + 2, 8, '#d6cba8'); fill(im, x0, 5, x0 + 2, 6, '#e6ddc0'); dot(im, x0 + 1, 7, '#bdb18a')
     return im
 
 
@@ -308,12 +324,12 @@ def phone_tape():
 
 
 def kitchen():
-    return {'laminate_top': laminate_top(), 'cupboard': cupboard(), 'cupboard_side': cupboard_side(), 'sink_top': sink_top(),
+    return {'laminate_top': laminate_top(), 'cupboard': cupboard(), 'cupboard_side': cupboard_side(), 'cupboard_plain': cupboard_plain(), 'sink_top': sink_top(),
             'phone_plate': phone_plate(), 'phone_handset': phone_handset(), 'phone_cord': phone_cord(), 'phone_tape': phone_tape(),
             'stove_front': stove_front(), 'stove_top': stove_top(), 'fridge_low': fridge_front(0), 'fridge_up_0': fridge_front(1, 0),
             'fridge_up_1': fridge_front(1, 1), 'fridge_side': fridge_side(), 'knife_2': knife_block(2), 'wood_block': wood_block(), 'lunchboxes': lunchboxes(), 'lunchbox_side': lunchbox_side(),
             'calendar_kitchen': kitchen_calendar(), 'table_top': table_top(), 'chrome': chrome(),
-            'vinyl_red': vinyl()}
+            'vinyl_red': vinyl(), 'vinyl_red_taped': vinyl(taped=True)}
 
 
 # ------------------------------------------------------------------------------------------------ small letters
@@ -714,17 +730,49 @@ def pillow():
 
 
 def bed_frame():
+    """The bed's frame: timber painted cream, the brush marks along it, its top edge lit and its foot in its own shadow."""
     im = enamel('#e8e2d2', 52233)
-    for y in range(16):
-        dot(im, 0, y, '#d8d2c0'); dot(im, 1, y, '#f2eee2'); dot(im, 14, y, '#d4cdb9'); dot(im, 15, y, '#c4bda8')
-        if y % 5 == 2:
-            dot(im, 6, y, '#ddd6c4'); dot(im, 10, y + 1, '#ddd6c4')
+    for x in range(16):
+        dot(im, x, 0, '#f4f0e4'); dot(im, x, 15, '#cfc8b4')
+        if x % 6 == 2:
+            dot(im, x, 7, '#ddd6c4'); dot(im, x + 1, 9, '#ddd6c4')
     return im
 
 
-def veneer(seed=52234):
-    """Pale timber veneer: the children's furniture, bought as a set."""
-    return wood('#c99a62', seed)
+def bed_board():
+    """0.4.577: the headboard's panel: three boards side by side, painted over, the joins showing through the paint."""
+    im = enamel('#e4ddcb', 52249)
+    for x in (5, 10):
+        for y in range(16):
+            dot(im, x, y, '#cdc6b2'); dot(im, x + 1, y, '#f0ebde')
+    return im
+
+
+def veneer(seed=52234, across=True):
+    """Pale timber veneer: the children's furniture, bought as a set. 0.4.577: its figure shows in it, three long lines of darker
+    grain, each with the paler wood of the next ring beside it, wandering a pixel as they go. The grain runs up a piece (across),
+    or along it, as on a drawer's front."""
+    im = wood('#c99a62', seed, across=across)
+    rnd = random.Random(seed + 7)
+    for at in (2, 7, 12):
+        at += rnd.randrange(3)
+        for along in range(16):
+            a = (at + (1 if (along // 4 + seed) % 3 == 0 else 0)) % 16
+            for k, d in ((a, -11), ((a + 1) % 16, 5)):
+                x, y = (k, along) if across else (along, k)
+                dot(im, x, y, shade(im.getpixel((x, y)), d))
+    return im
+
+
+def shadow():
+    """0.4.577: what shows in the gap between two doors or two drawers, and behind a row of books: the inside of the piece, in
+    the dark."""
+    return new('#2a2018', 52401, 2)
+
+
+def knob_wood():
+    """0.4.577: a turned wooden knob, darker than the veneer."""
+    return wood('#6e4a2a', 52402)
 
 
 # The dots on each drawer's label, two cells of two by three (what each says is for the slice that reads them).
@@ -732,23 +780,26 @@ BRAILLE = [((0, 0), (0, 1), (1, 0), (3, 0), (4, 1), (3, 2)), ((0, 0), (1, 1), (0
 
 
 def drawers_front():
-    """Three drawers, each with a round knob and beside it a clear label strip, its raised dots catching the light."""
-    im = veneer(52235)
-    for i, y0 in enumerate((1, 6, 11)):
+    """Three drawer fronts, as the model's three proud slabs take them (0.4.577; rows 3 to 6, 7 to 10 and 11 to 14): the grain
+    along each, its edges lit along the top and left; on each a clear label strip, its raised dots catching the light, and the
+    shadow of its knob (the knobs are in the model)."""
+    im = veneer(52235, across=False)
+    for i, y0 in enumerate((3, 7, 11)):
         for y in range(y0, y0 + 4):
             for x in range(1, 15):
                 dot(im, x, y, shade(im.getpixel((x, y)), 8))
-        bevel(im, 1, y0, 15, y0 + 4, 14); fill(im, 1, y0 + 4, 15, y0 + 5, '#7a5430')
-        fill(im, 10, y0 + 1, 12, y0 + 3, '#7a5430'); dot(im, 10, y0 + 1, '#b08a60'); dot(im, 11, y0 + 2, '#5a3c20')
+        bevel(im, 1, y0, 15, y0 + 4, 12)
         fill(im, 2, y0 + 1, 8, y0 + 4, '#e6dcc4'); fill(im, 2, y0 + 1, 8, y0 + 2, '#f2ebda')
         for dx, dy in BRAILLE[i]:
             dot(im, 2 + dx, y0 + 1 + dy, '#9a8c74')
+        for x in (10, 11):
+            dot(im, x, y0 + 3, shade(im.getpixel((x, y0 + 3)), -20))
     return im
 
 
 def cutlery_front():
     """The little chest Callum keeps the cutlery in: two plain drawers, a wooden knob on each (its body shows the lower ten rows)."""
-    im = veneer(52248)
+    im = veneer(52248, across=False)
     for y0 in (6, 11):
         for y in range(y0, y0 + 4):
             for x in range(1, 15):
@@ -815,7 +866,9 @@ def large_books():
 
 
 def wardrobe_front(upper, opened):
-    """The wardrobe: two doors of the same veneer, a knob each. Open, inside on the left a cane the same as Tilly's, shorter."""
+    """The wardrobe: two doors of the same veneer. 0.4.577: each a frame round a sunk panel (the doors stand proud of the case in
+    the model, and their knobs are there); the lower cell's bottom row is the plinth they hang over, the upper cell's top row
+    the cornice over them. Open, inside on the left a cane the same as Tilly's, shorter."""
     im = veneer(52240 + upper)
     if opened:
         fill(im, 1, 0, 15, 16, '#3a2c1e')
@@ -829,11 +882,54 @@ def wardrobe_front(upper, opened):
             dot(im, 4, 12, '#c0392b'); dot(im, 4, 13, '#c0392b')
             fill(im, 8, 10, 14, 16, '#e6c4cf')
         return im
-    for y in range(16):
-        dot(im, 8, y, '#6e4c28'); dot(im, 0, y, shade(im.getpixel((0, y)), 12)); dot(im, 9, y, shade(im.getpixel((9, y)), 12))
-        dot(im, 7, y, shade(im.getpixel((7, y)), -12)); dot(im, 15, y, shade(im.getpixel((15, y)), -12))
-    if not upper:
-        dot(im, 6, 1, '#e8dcb4'); dot(im, 10, 1, '#e8dcb4'); dot(im, 6, 2, '#8a6438'); dot(im, 10, 2, '#8a6438')
+    top, bottom = (1, 16) if upper else (0, 15)                 # the doors' own rows
+    p0, p1 = (3, 16) if upper else (0, 13)                      # their panels'
+    for x0 in (0, 8):
+        for y in range(p0, p1):
+            for x in range(x0 + 1, x0 + 7):
+                dot(im, x, y, shade(im.getpixel((x, y)), -7))
+            dot(im, x0 + 1, y, shade(im.getpixel((x0 + 1, y)), -11)); dot(im, x0 + 6, y, shade(im.getpixel((x0 + 6, y)), 10))
+        for x in range(x0 + 1, x0 + 7):
+            if upper:
+                dot(im, x, p0, shade(im.getpixel((x, p0)), -11))
+            else:
+                dot(im, x, p1 - 1, shade(im.getpixel((x, p1 - 1)), 10))
+        for y in range(top, bottom):
+            dot(im, x0, y, shade(im.getpixel((x0, y)), 10)); dot(im, x0 + 7, y, shade(im.getpixel((x0 + 7, y)), -10))
+    for x in range(16):
+        y = 0 if upper else 15
+        dot(im, x, y, shade(im.getpixel((x, y)), 7 if upper else -14))
+    return im
+
+
+def book_side():
+    """0.4.577: a book's cloth board, as it shows where the one beside it is out."""
+    return cloth('#4a6a4a', 52411)
+
+
+def book_pages():
+    """0.4.577: the edges of a shut book's pages."""
+    im = new('#efe8d4', 52412, 1)
+    for y in range(0, 16, 2):
+        for x in range(16):
+            dot(im, x, y, shade(im.getpixel((x, y)), -8))
+    return im
+
+
+def book_out():
+    """0.4.577: the cover of the one that is out, lying on top of the shelf (its seven by five pixels are the picture's first):
+    cloth boards, a label pasted on with the title in letters as large as the label will take."""
+    im = cloth('#3a5a7a', 52413)
+    fill(im, 1, 1, 6, 4, '#ece4cc')
+    for x, y in ((2, 2), (3, 2), (4, 2), (2, 3), (4, 3)):
+        dot(im, x, y, '#2a2a2a')
+    return im
+
+
+def ticket():
+    """0.4.577: a bus ticket, used as a bookmark: thin card, a printed band across its end."""
+    im = new('#f0e6c8', 52414, 2)
+    fill(im, 0, 0, 16, 1, '#d87a2a')
     return im
 
 
@@ -990,7 +1086,8 @@ def hall():
 
 
 def nessa():
-    return {'quilt_head': quilt(0), 'quilt_foot': quilt(1), 'pillow': pillow(), 'bed_frame': bed_frame(), 'veneer': veneer(),
+    return {'quilt_head': quilt(0), 'quilt_foot': quilt(1), 'pillow': pillow(), 'bed_frame': bed_frame(), 'bed_board': bed_board(), 'veneer': veneer(), 'shadow': shadow(), 'knob_wood': knob_wood(),
+            'book_side': book_side(), 'book_pages': book_pages(), 'book_out': book_out(), 'ticket': ticket(),
             'drawers_front': drawers_front(), 'talking_clock': talking_clock(), 'desk_top': desk_top(), 'large_books': large_books(),
             'wardrobe_lo': wardrobe_front(0, 0), 'wardrobe_hi': wardrobe_front(1, 0), 'wardrobe_lo_open': wardrobe_front(0, 1), 'wardrobe_hi_open': wardrobe_front(1, 1),
             'switch': switch_plate(), 'marks_lo': height_marks(0, 0), 'marks_hi': height_marks(1, 0), 'marks_hi_tilly': height_marks(1, 1),
@@ -1007,17 +1104,19 @@ def callum():
 # ------------------------------------------------------------------------------------------------ the bathroom
 
 def vanity_front():
-    """The vanity under the basin: one door, a towel on its rail."""
+    """The vanity under the basin: its one door, painted white, a frame round a sunk panel; under it the kick. 0.4.577: the door
+    stands proud of the cabinet in the model, where its knob is, and the towel on its rail."""
     im = enamel('#f2efe6', 52251)
-    bevel(im, 1, 1, 15, 13, 10); dot(im, 12, 7, '#7a7468'); dot(im, 12, 6, '#c8c2b4')
-    towel = cloth('#7aa0b8', 52250)
-    for y in range(3, 10):
-        for x in range(2, 9):
-            im.putpixel((x, y), towel.getpixel((x, y)))
-    fill(im, 2, 3, 9, 4, '#5a8098'); fill(im, 2, 6, 9, 7, '#9abcd0'); line(im, [(3, 9), (5, 9), (7, 9)], '#5a8098')
-    for y in range(4, 10):
-        dot(im, 8, y, shade(im.getpixel((8, y)), -14))
+    bevel(im, 1, 3, 15, 13, 10); inset(im, 3, 5, 13, 11, 8)
     fill(im, 0, 13, 16, 16, '#3b3832')
+    return im
+
+
+def towel_blue():
+    """0.4.577: the hand towel over the vanity's rail (its face is the picture's first six by seven): terry, a paler stripe
+    near its fold, its hem darker."""
+    im = cloth('#7aa0b8', 52250)
+    fill(im, 0, 0, 16, 1, '#a9c6d6'); fill(im, 0, 2, 16, 3, '#9abcd0'); fill(im, 0, 5, 16, 7, '#5a8098')
     return im
 
 
@@ -1060,16 +1159,17 @@ def mirror(steamed):
 
 
 def bath_side(end):
-    """The bath's apron: white enamel; at its tap end the taps and the shower's hose."""
+    """The bath's apron: white enamel. 0.4.577: the bath is a tub now, its rim a pixel above where its top was, so the apron's
+    picture is its lower ten rows: under the rolled rim a line of shadow, and along its foot the shadow of the floor."""
     im = enamel('#f4f2ec', 52253 + end)
-    fill(im, 0, 0, 16, 1, '#fbfaf6'); fill(im, 0, 1, 16, 2, '#e4e1d8'); fill(im, 0, 2, 16, 3, '#ebe8e0')
-    fill(im, 0, 15, 16, 16, '#dedbd2')
+    fill(im, 0, 6, 16, 7, '#fbfaf6'); fill(im, 0, 7, 16, 8, '#dcd9d0'); fill(im, 0, 8, 16, 9, '#ebe8e0')
+    fill(im, 0, 14, 16, 15, '#e4e1d8'); fill(im, 0, 15, 16, 16, '#d2cfc6')
     return im
 
 
 def bath_top(end):
     """Inside the bath, from above: the non-slip mat down its length, its suckers. End 0 is the tap end (the south as drawn), the
-    plughole under the taps; end 1 the far end, where a bath toy sits on the rack, a duck sun-bleached on one side."""
+    plughole under the taps; end 1 the far end (0.4.577: the rack across it and the bath toy on the rack are in the model)."""
     im = enamel('#f4f2ec', 52255 + end)
     for i in range(16):
         dot(im, i, 0, '#dcd9d0'); dot(im, 0, i, '#e2dfd6'); dot(im, 15, i, '#fbfaf6')
@@ -1084,13 +1184,42 @@ def bath_top(end):
         for y in range(7, 16, 2):
             for x in range(5, 12, 2):
                 dot(im, x, y, '#7aa8a4')
-        fill(im, 9, 2, 13, 4, '#c8ccd0'); fill(im, 10, 2, 12, 4, '#f2e6a8'); dot(im, 12, 2, '#e8c070')
     return im
 
 
 def toilet():
-    im = enamel('#f6f4ee', 52257); fill(im, 3, 3, 13, 13, '#e2e0d8'); bevel(im, 3, 3, 13, 13, 10)
-    fill(im, 5, 5, 11, 11, '#c8d8dc'); inset(im, 5, 5, 11, 11, 14); dot(im, 6, 6, '#e8f2f4'); dot(im, 7, 6, '#dceaee')
+    """0.4.577: the toilet's lid, down ("Its lid is down"; it was drawn up, the bowl showing): white plastic, its edge rounded
+    off, lit on the left and along the top and in shadow on the others. The lid is the picture's columns 3 to 12 and rows 2 to
+    11; its hinge's two caps are in the model."""
+    im = enamel('#f6f4ee', 52257)
+    fill(im, 4, 3, 12, 11, '#fbfaf6'); bevel(im, 3, 2, 13, 12, 9)
+    for x, y in ((3, 2), (12, 2), (3, 11), (12, 11)):
+        dot(im, x, y, '#dcd9d0')
+    for x in range(5, 11):
+        dot(im, x, 10, '#efece4')
+    return im
+
+
+def rack():
+    """0.4.577: the rack across the bath: white plastic slats in a frame, the gaps between them clear (the picture's first four
+    rows); its edge is row 5."""
+    im = clear()
+    for y in range(4):
+        for x in range(16):
+            if x in (0, 15) or y in (0, 3) or x % 3 == 1:
+                dot(im, x, y, '#f4f2ec' if (x + y) % 2 else '#e4e1d8')
+    fill(im, 0, 5, 16, 6, '#e4e1d8')
+    return im
+
+
+def duck():
+    """0.4.577: a bath toy, a duck: the picture's left half as the window's light has left it, the right half as it was made;
+    its beak in the bottom left corner."""
+    im = plastic('#f2d038', 52258)
+    for y in range(16):
+        for x in range(8):
+            dot(im, x, y, shade('#f4ecc4', (x * 7 + y * 3) % 3 - 1))
+    fill(im, 0, 14, 2, 16, '#e08a2a')
     return im
 
 
@@ -1250,12 +1379,50 @@ def chlorine():
 
 
 def washer_front():
-    """A top-loading washing machine: white, its dials on the backsplash."""
+    """A top-loading washing machine's cabinet: white enamel, its top edge rolled over and lit, the maker's plate at one corner, a
+    row of vents low down, the kick under it. 0.4.577: its dials were drawn here as well as on its backsplash, where they are."""
     im = enamel('#f2f0ea', 52265)
-    fill(im, 0, 0, 16, 4, '#dcd8cc'); fill(im, 0, 0, 16, 1, '#ebe8de'); fill(im, 0, 4, 16, 5, '#c8c4b8')
-    for x in (3, 8, 12):
-        dot(im, x, 2, '#5a5a56'); dot(im, x - 1, 1, '#b8b4a8'); dot(im, x + 1, 2, '#c4c0b4'); dot(im, x, 3, '#c4c0b4'); dot(im, x, 1, '#2a2a28')
+    bevel(im, 0, 1, 16, 13, 6)
+    fill(im, 2, 4, 6, 6, '#8e9498'); fill(im, 2, 4, 6, 5, '#b4babe'); dot(im, 3, 5, '#5a6064'); dot(im, 4, 5, '#5a6064')
+    for x in range(9, 14):
+        dot(im, x, 10, '#c4c0b4'); dot(im, x, 11, '#fbfaf6')
     fill(im, 0, 14, 16, 16, '#3b3832'); fill(im, 0, 13, 16, 14, '#e2e0d8')
+    return im
+
+
+def washer_dials():
+    """Its backsplash (the picture's first three rows): three dials, a pointer on each."""
+    im = enamel('#dcd8cc', 52266)
+    fill(im, 0, 0, 16, 1, '#ebe8de')
+    for x in (3, 8, 12):
+        dot(im, x, 2, '#5a5a56'); dot(im, x - 1, 1, '#b8b4a8'); dot(im, x + 1, 2, '#c4c0b4'); dot(im, x, 1, '#2a2a28')
+    return im
+
+
+def washer_top():
+    """0.4.577: the washer's top with its lid up ("Its lid is up, airing"; it was drawn shut): the tub's mouth, a ring of steel
+    round it, the agitator standing up in the dark of it; behind it the line of the lid's hinge."""
+    im = enamel('#eceae3', 52268)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 6.5) ** 2) ** .5
+            if d < 1.3:
+                dot(im, x, y, '#8e9498')
+            elif d < 3.7:
+                dot(im, x, y, '#2e3236' if x + y < 15 else '#3e4246')
+            elif d < 4.7:
+                dot(im, x, y, '#c9cfd2' if x + y < 14 else '#9aa0a4')
+    dot(im, 7, 6, '#b9bfc3')
+    for x in range(3, 13):
+        dot(im, x, 11, shade(im.getpixel((x, 11)), -12))
+    return im
+
+
+def washer_lid():
+    """0.4.577: the underside of the washer's lid, standing open (the picture's columns 3 to 12 and first ten rows): enamel, a
+    panel pressed into it."""
+    im = enamel('#ecebe4', 52322)
+    bevel(im, 3, 0, 13, 10, 8); inset(im, 5, 2, 11, 8, 7)
     return im
 
 
@@ -1804,14 +1971,15 @@ def pump():
 
 def bathroom():
     return {'vanity_front': vanity_front(), 'basin_top': basin_top(), 'mirror_0': mirror(0), 'mirror_1': mirror(1),
-            'bath_side_0': bath_side(0), 'bath_side_1': bath_side(1), 'bath_top_0': bath_top(0), 'bath_top_1': bath_top(1), 'toilet': toilet()}
+            'bath_side_0': bath_side(0), 'bath_side_1': bath_side(1), 'bath_top_0': bath_top(0), 'bath_top_1': bath_top(1), 'toilet': toilet(),
+            'towel_blue': towel_blue(), 'rack': rack(), 'duck': duck()}
 
 
 def laundry():
     return {'freezer_lid_0': freezer_lid(0), 'freezer_lid_1': freezer_lid(1), 'freezer_front_0': freezer_front(0), 'freezer_front_0_open': freezer_front(0, True),
             'freezer_inside': freezer_inside(), 'freezer_plastic': freezer_plastic(), 'freezer_lid_under': freezer_lid_under(),
             'freezer_front_1': freezer_front(1), 'stool': stool(), 'power_point': power_point(), 'power_point_bare': power_point_bare(), 'cord': cord(), 'trough': trough(),
-            'bucket_top': bucket_top(), 'chlorine': chlorine(), 'washer_front': washer_front()}
+            'bucket_top': bucket_top(), 'chlorine': chlorine(), 'washer_front': washer_front(), 'washer_top': washer_top()}
 
 
 def garage():
@@ -2053,7 +2221,7 @@ def small():
            'chain': metal('#8a8e92', 52312, 3), 'cord_flex': plastic('#e8e6de', 52313), 'lens': new('#c8d8e0', 52314, 2),
            'cup': plastic('#e0d8a0', 52315), 'brush_old': new('#c8c4b4', 52316, 2), 'brush_new': plastic('#4a9ac8', 52317),
            'handle': plastic('#1e1a16', 52318), 'tin_lid': metal('#b8bcc0', 52319), 'brush': wood('#b8946a', 52320),
-           'chlorine_lid': plastic('#2a6ab8', 52321), 'washer_lid': enamel('#ecebe4', 52322), 'doily': clear(),
+           'chlorine_lid': plastic('#2a6ab8', 52321), 'washer_lid': washer_lid(), 'doily': clear(),
            'lunchbox_side_pink': plastic('#d64a6a', 52323),
            'bucket_side': plastic('#3a7ab8', 52324), 'canvas_head': canvas(True), 'mantel_top': wood('#7a5232', 52325)}
     d = out['doily']
@@ -2062,12 +2230,8 @@ def small():
             r = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
             if r < 7.5 and (int(r * 2) % 2 == 0 or (x + y) % 3 == 0):
                 dot(d, x, y, '#f8f6f0', 230)
-    wd = washer_front(); fill(wd, 0, 4, 16, 16, '#dcd8cc'); out['washer_dials'] = wd
-    up = cupboard(); grain = wood('#9a6a40', 52203, across=True)
-    for y in range(13, 16):
-        for x in range(16):
-            up.putpixel((x, y), grain.getpixel((x, y)))
-    out['cupboard_upper'] = up
+    out['washer_dials'] = washer_dials()
+    out['cupboard_upper'] = cupboard(tall=True)
     ci = enamel('#efe6d2', 52326); line(ci, [(x, 8) for x in range(16)], '#c8bfa4'); line(ci, [(x, 7) for x in range(16)], '#f8f2e2')
     line(ci, [(x, 9) for x in range(16)], '#d8cfb8'); out['cupboard_inside'] = ci
     return out
@@ -2117,13 +2281,18 @@ def box(lo, hi, tex, **faces):
 
 
 def counter_body(front='f', top='t', side='s'):
-    """A kitchen bench: its cupboard body set back a pixel, its laminate top over it with the chrome edge at the front."""
-    return [element([0, 0, 1], [16, 14, 16], {'north': front, 'east': side, 'west': side, 'south': side, 'down': side}),
+    """A kitchen bench: its carcass under a laminate top with the chrome edge at the front. 0.4.577: the kick is set back at its
+    foot, its two doors stand proud of it with a gap between them, and each has a chrome pull across its top."""
+    door = {'north': front, 'east': side, 'west': side, 'down': side}
+    return [element([0, 3, 2], [16, 14, 16], {'north': 'x', 'east': side, 'west': side, 'south': side}),
+            element([0, 0, 3], [16, 3, 16], {'north': front, 'east': side, 'west': side, 'south': side, 'down': side}),
+            element([0.25, 3, 1.25], [7.75, 13.75, 2], door), element([8.25, 3, 1.25], [15.75, 13.75, 2], door),
+            box([2, 12, 0.75], [6, 12.75, 1.25], 'e'), box([10, 12, 0.75], [14, 12.75, 1.25], 'e'),
             element([0, 14, 0], [16, 16, 16], {'up': top, 'north': 'e', 'east': 'e', 'west': 'e', 'south': 'e', 'down': 'e'},
                     uv={'north': [0, 14, 16, 16], 'east': [0, 14, 16, 16], 'west': [0, 14, 16, 16], 'south': [0, 14, 16, 16]})]
 
 
-KITCHEN_TEX = {'f': 'cupboard', 's': 'cupboard_side', 't': 'laminate_top', 'e': 'chrome'}
+KITCHEN_TEX = {'f': 'cupboard', 's': 'cupboard_side', 't': 'laminate_top', 'e': 'chrome', 'x': 'shadow'}
 
 
 def thing_models():
@@ -2133,11 +2302,18 @@ def thing_models():
     out['sink_0'] = m(counter_body(top='k') + [box([7, 16, 14], [9, 21, 15], 'e'), box([7, 20, 11], [9, 21, 15], 'e')], {**KITCHEN_TEX, 'k': 'sink_top'}, 'sink_top')
     out['stove_0'] = m([element([0, 0, 0], [16, 14, 16], {'north': 'f', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 't'}),
                         box([0, 14, 14], [16, 18, 16], 's', north='s')], {'f': 'stove_front', 's': 'enamel', 't': 'stove_top'}, 'stove_front')
-    out['fridge_0'] = m([element([0, 0, 1], [16, 16, 16], {'north': 'f', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 's'})],
-                        {'f': 'fridge_low', 's': 'fridge_side'}, 'fridge_low')
+    # 0.4.577: the fridge's two doors stand proud of its cabinet, a seam between them and a chrome handle on each side of the
+    # seam; under the lower door, the kick.
+    fridge_case = {'north': 'x', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 's'}
+    fridge_door = {'north': 'f', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}
+    out['fridge_0'] = m([element([0, 2, 2], [16, 16, 16], fridge_case),
+                         element([0, 0, 2.5], [16, 2, 16], {'north': 'f', 'east': 's', 'west': 's', 'south': 's', 'down': 's'}),
+                         element([0.25, 2, 1], [15.75, 15.75, 2], fridge_door), box([1.25, 8, 0.25], [2.25, 15, 1], 'e')],
+                        {'f': 'fridge_low', 's': 'fridge_side', 'x': 'shadow', 'e': 'chrome'}, 'fridge_low')
     for stage in range(2):
-        out[f'fridge_top_{stage}'] = m([element([0, 0, 1], [16, 16, 16], {'north': 'f', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 's'})],
-                                       {'f': f'fridge_up_{stage}', 's': 'fridge_side'}, f'fridge_up_{stage}')
+        out[f'fridge_top_{stage}'] = m([element([0, 0, 2], [16, 16, 16], fridge_case),
+                                        element([0.25, 0.25, 1], [15.75, 16, 2], fridge_door), box([1.25, 1, 0.25], [2.25, 8, 1], 'e')],
+                                       {'f': f'fridge_up_{stage}', 's': 'fridge_side', 'x': 'shadow', 'e': 'chrome'}, f'fridge_up_{stage}')
     # The knife block on the bench: its body leaning back, the handles in their slots; one gone; the block gone.
     for stage in range(3):
         els = counter_body(top='t' if stage < 2 else 'g')
@@ -2148,25 +2324,33 @@ def thing_models():
                     continue
                 els.append(element([x, 21, 8], [x + 1, 25, 10], {k: 'h' for k in ('north', 'south', 'east', 'west', 'up')}, rot={'origin': [7.5, 16, 9], 'axis': 'x', 'angle': -22.5}))
         out[f'knife_block_{stage}'] = m(els, {**KITCHEN_TEX, 'w': 'wood_block', 'h': 'handle', 'g': 'knife_2'}, 'wood_block')
+    # 0.4.577: each lunchbox has its catch.
     out['lunchboxes_0'] = m(counter_body() + [element([2, 16, 4], [7, 19.5, 12], {'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b', 'up': 'l'}, uv={'up': [2, 4, 7, 12]}),
-                                              element([9, 16, 4], [14, 19.5, 12], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'l'}, uv={'up': [9, 4, 14, 12]})],
+                                              element([9, 16, 4], [14, 19.5, 12], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'l'}, uv={'up': [9, 4, 14, 12]}),
+                                              box([4, 17.75, 3.7], [5, 18.75, 4], 'e'), box([11, 17.75, 3.7], [12, 18.75, 4], 'e')],
                             {**KITCHEN_TEX, 'b': 'lunchbox_side', 'p': 'lunchbox_side_pink', 'l': 'lunchboxes'}, 'lunchboxes')
     # The cupboard on the wall above the bench: shut; open, and the knife block put away inside it.
-    out['cupboard_upper_0'] = m([element([0, 0, 7], [16, 16, 16], {'north': 'u', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 's'})],
-                                {'u': 'cupboard_upper', 's': 'cupboard_side'}, 'cupboard_upper')
+    # 0.4.577: its two doors proud of it, a chrome knob at the foot of each beside the gap.
+    upper_door = {'north': 'u', 'east': 's', 'west': 's', 'down': 's', 'up': 's'}
+    out['cupboard_upper_0'] = m([element([0, 0, 8], [16, 16, 16], {'north': 'x', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 's'}),
+                                 element([0.25, 0.25, 7.25], [7.75, 15.75, 8], upper_door), element([8.25, 0.25, 7.25], [15.75, 15.75, 8], upper_door),
+                                 box([6.5, 1.5, 6.75], [7.25, 4.5, 7.25], 'e'), box([8.75, 1.5, 6.75], [9.5, 4.5, 7.25], 'e')],
+                                {'u': 'cupboard_upper', 's': 'cupboard_plain', 'x': 'shadow', 'e': 'chrome'}, 'cupboard_upper')
     out['cupboard_upper_1'] = m([element([0, 0, 8], [16, 16, 16], {'north': 'i', 'east': 's', 'west': 's', 'south': 's', 'down': 's', 'up': 's'}),
                                  element([0, 0, 0], [1, 16, 8], {'east': 'd', 'west': 'd', 'north': 's', 'south': 's'}, uv={'east': [0, 0, 8, 16], 'west': [8, 0, 16, 16]}),
                                  element([6, 1, 10], [11, 7, 14], {k: 'w' for k in ('north', 'south', 'east', 'west', 'up')})],
-                                {'i': 'cupboard_inside', 'd': 'cupboard_upper', 's': 'cupboard_side', 'w': 'wood_block'}, 'cupboard_upper')
+                                {'i': 'cupboard_inside', 'd': 'cupboard_upper', 's': 'cupboard_plain', 'w': 'wood_block'}, 'cupboard_upper')
     # The table: two cells, a laminate top edged in chrome, a leg at each outer corner.
     for half in range(2):
         legs = [(14, 1), (14, 14)] if half == 0 else [(1, 1), (1, 14)]
         els = [element([0, 13, 1], [16, 15, 15], {'up': 't', 'down': 'c', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c'}, uv={'up': [0, 1, 16, 15]})]
         els += [box([x, 0, z], [x + 1, 13, z + 1], 'c') for x, z in legs]
         out[f'table_{half}'] = m(els, {'t': 'table_top', 'c': 'chrome'}, 'table_top')
-    out['chair_0'] = m([box([3, 8, 3], [13, 10, 13], 'v'), element([3, 10, 12], [13, 21, 13.5], {k: 'v' for k in ('north', 'south', 'east', 'west', 'up')}),
+    # 0.4.577: the tape over the split in its seat ("One seam has split and been taped").
+    out['chair_0'] = m([element([3, 8, 3], [13, 10, 13], {'up': 't', 'down': 'v', 'north': 'v', 'south': 'v', 'east': 'v', 'west': 'v'}),
+                        element([3, 10, 12], [13, 21, 13.5], {k: 'v' for k in ('north', 'south', 'east', 'west', 'up')}),
                         *[box([x, 0, z], [x + 1, 8, z + 1], 'c') for x in (3, 12) for z in (3, 12)],
-                        *[box([x, 10, 12.5], [x + 1, 13, 13], 'c') for x in (3, 12)]], {'v': 'vinyl_red', 'c': 'chrome'}, 'vinyl_red')
+                        *[box([x, 10, 12.5], [x + 1, 13, 13], 'c') for x in (3, 12)]], {'v': 'vinyl_red', 't': 'vinyl_red_taped', 'c': 'chrome'}, 'vinyl_red')
     # 0.4.571: halves 2 and 3 are the chart with June's jobs on it (PellJobs).
     for half in range(4):
         out[f'chore_chart_{half}'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'c'})], {'c': f'chore_chart_{half}'}, f'chore_chart_{half}')
@@ -2210,7 +2394,8 @@ def thing_models():
                 faces['down'] = 's'; uv['down'] = [a, a, b, b]
             if y1 == 24.5:
                 faces['up'] = 's'; uv['up'] = [a, a, b, b]
-            el = element([a, y0, a], [b, y1, b], faces, uv=uv)
+            # 0.4.577: tipped again, on the pole's top ("its shade tipped toward the chair"): its mouth turned to the front.
+            el = element([a, y0, a], [b, y1, b], faces, uv=uv, rot={'origin': [8, 17, 8], 'axis': 'x', 'angle': 22.5})
             if lit:
                 el['shade'] = False
                 el['neoforge_data'] = {'block_light': 15, 'sky_light': 15}
@@ -2234,29 +2419,74 @@ def thing_models():
     for stage in range(3):
         out[f'coat_hook_{stage}'] = m([element([0, 0, 14.5], [16, 16, 16], {'north': 'h'})], {'h': f'coat_{stage}'}, f'coat_{stage}')
     # ---------------------------------------------------------------------------------------- Nessa's room
+    # 0.4.577: the bed stands on its legs, a rail between them; at its head two posts with a rail across their tops and a panel of
+    # boards between, at its foot a low board.
     for end in range(2):
-        els = [element([0, 0, 0], [16, 6, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'down': 'f', 'up': 'f'}),
-               element([0, 6, 0], [16, 9, 16], {'up': 'q', 'north': 'q', 'south': 'q', 'east': 'q', 'west': 'q'})]
+        out_z = 14 if end == 0 else 0
+        els = [element([0, 2, 0], [16, 6, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'down': 'f', 'up': 'f'}),
+               box([0, 0, out_z], [2, 2, out_z + 2], 'f'), box([14, 0, out_z], [16, 2, out_z + 2], 'f'),
+               element([0, 6, 0 if end == 0 else 1], [16, 9, 15 if end == 0 else 16], {'up': 'q', 'north': 'q', 'south': 'q', 'east': 'q', 'west': 'q'})]
         if end == 0:
-            # The head: a pillow, and the headboard against the wall.
-            els += [box([2, 9, 9], [14, 11, 15], 'p'), box([0, 6, 15], [16, 18, 16], 'f')]
-        out[f'bed_{end}'] = m(els, {'f': 'bed_frame', 'q': 'quilt_head' if end == 0 else 'quilt_foot', 'p': 'pillow'}, 'quilt_head')
-    out['drawers_0'] = m([element([1, 0, 3], [15, 14, 16], {'north': 'f', 'south': 'v', 'east': 'v', 'west': 'v', 'up': 'v', 'down': 'v'}),
-                          element([9, 14, 6], [14, 18, 10], {'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k', 'up': 'k'})],
-                         {'f': 'drawers_front', 'v': 'veneer', 'k': 'talking_clock'}, 'drawers_front')
+            els += [box([2, 9, 9], [14, 11, 15], 'p'),
+                    box([0, 6, 15], [2, 20, 16], 'f'), box([14, 6, 15], [16, 20, 16], 'f'), box([2, 18, 15], [14, 20, 16], 'f'),
+                    element([2, 6, 15.4], [14, 18, 16], {'north': 'h'}, uv={'north': [2, 2, 14, 14]})]
+        else:
+            els.append(box([0, 6, 0], [16, 11, 1], 'f'))
+        tex_bed = {'f': 'bed_frame', 'q': 'quilt_head' if end == 0 else 'quilt_foot'}
+        if end == 0:
+            tex_bed.update({'p': 'pillow', 'h': 'bed_board'})
+        out[f'bed_{end}'] = m(els, tex_bed, 'quilt_head')
+    # 0.4.577: the chest's three drawer fronts stand proud of it, a gap between them, a wooden knob on each; its top overhangs.
+    drawer_els = [element([1, 0, 4], [15, 13, 16], {'north': 'x', 'south': 'v', 'east': 'v', 'west': 'v', 'down': 'v'}),
+                  box([0.5, 13, 3], [15.5, 14, 16], 'v'),
+                  element([9, 14, 6], [14, 18, 10], {'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k', 'up': 'k'})]
+    for y0 in (1, 5, 9):
+        drawer_els += [element([1, y0, 3.25], [15, y0 + 3.75, 4], {'north': 'f', 'east': 'v', 'west': 'v', 'up': 'v', 'down': 'v'}),
+                       box([4.5, y0 + 1.4, 2.5], [5.5, y0 + 2.4, 3.25], 'n')]
+    out['drawers_0'] = m(drawer_els, {'f': 'drawers_front', 'v': 'veneer', 'k': 'talking_clock', 'x': 'shadow', 'n': 'knob_wood'}, 'drawers_front')
+    # 0.4.577: a rail between the desk's back legs, and under its top a drawer, its knob.
     out['desk_0'] = m([element([0, 12, 2], [16, 14, 16], {'up': 't', 'north': 'v', 'south': 'v', 'east': 'v', 'west': 'v', 'down': 'v'}),
                        *[box([x, 0, z], [x + 2, 12, z + 2], 'v') for x in (0, 14) for z in (2, 14)],
+                       box([2, 7, 14.5], [14, 12, 15.5], 'v'),
+                       element([8, 8.5, 2.5], [14, 12, 14], {'north': 'd', 'south': 'v', 'east': 'v', 'west': 'v', 'down': 'v'}, uv={'north': [9, 7, 15, 10.5]}),
+                       box([10.5, 9.75, 1.75], [11.5, 10.75, 2.5], 'n'),
                        box([12, 14, 9], [13, 19, 10], 'c'), element([10, 18, 7], [15, 18.3, 12], {'up': 'g', 'down': 'g'})],
-                      {'t': 'desk_top', 'v': 'veneer', 'c': 'chrome', 'g': 'lens'}, 'desk_top')
-    out['bookshelf_0'] = m([element([0, 0, 8], [16, 16, 16], {'north': 'b', 'south': 'v', 'east': 'v', 'west': 'v', 'up': 'v', 'down': 'v'})],
-                           {'b': 'large_books', 'v': 'veneer'}, 'large_books')
+                      {'t': 'desk_top', 'v': 'veneer', 'd': 'drawers_front', 'n': 'knob_wood', 'c': 'chrome', 'g': 'lens'}, 'desk_top')
+    # 0.4.577: the bookcase is a case: its sides, top and foot, a shelf across its middle, its back in the dark; the books stand
+    # back from the shelves' fronts, and where one is out there is the gap. The one that is out lies on top, a bus ticket in it
+    # ("One is out, lying on top, a bus ticket in it"; it was not there).
+    out['bookshelf_0'] = m([box([0, 0, 8], [1, 16, 16], 'v'), box([15, 0, 8], [16, 16, 16], 'v'), box([1, 15, 8], [15, 16, 16], 'v'), box([1, 0, 8], [15, 1, 16], 'v'),
+                            element([1, 7, 8.5], [15, 9, 16], {'north': 'v', 'up': 'v', 'down': 'v'}),
+                            element([1, 1, 15], [15, 15, 16], {'north': 'x', 'south': 'v'}),
+                            element([1, 9, 9.5], [15, 15, 15], {'north': 'b'}),
+                            element([8, 1, 9.5], [15, 7, 15], {'north': 'b', 'west': 'c'}),
+                            element([1, 1, 9.5], [5, 7, 15], {'north': 'b', 'east': 'c'}),
+                            element([3, 16, 9.5], [10, 17.5, 14.5], {'up': 'o', 'north': 'e', 'south': 'c', 'east': 'e', 'west': 'e'}, uv={'up': [0, 0, 7, 5]}),
+                            element([5, 16.7, 8.6], [6.5, 16.9, 9.8], {'up': 'k', 'down': 'k', 'north': 'k'},
+                                    uv={'up': [0, 0, 1.5, 1.2], 'down': [0, 0, 1.5, 1.2], 'north': [0, 0, 1.5, 0.2]})],
+                           {'b': 'large_books', 'v': 'veneer', 'x': 'shadow', 'c': 'book_side', 'o': 'book_out', 'e': 'book_pages', 'k': 'ticket'}, 'large_books')
+    # 0.4.577: the wardrobe's two doors stand proud of its case with a gap between them, over a plinth and under a cornice, a
+    # wooden knob on each; open, both stand out from it on their hinges.
     for stage in range(4):
         upper, opened = stage & 1, stage >> 1
-        face = ('wardrobe_hi' if upper else 'wardrobe_lo') + ('_open' if opened else '')
-        els = [element([0, 0, 2], [16, 16, 16], {'north': 'f', 'south': 'v', 'east': 'v', 'west': 'v', 'up': 'v', 'down': 'v'})]
+        face = 'wardrobe_hi' if upper else 'wardrobe_lo'
+        y0, y1 = (0, 15) if upper else (1, 16)
+        els = [element([0, y0, 3], [16, y1, 16], {'north': 'i' if opened else 'x', 'south': 'v', 'east': 'v', 'west': 'v'}),
+               box([0, 15, 1.5], [16, 16, 16], 'v') if upper else box([0, 0, 2.5], [16, 1, 16], 'v')]
+        door_edge = 'up' if upper else 'down'
         if opened:
-            els.append(element([0, 0, -6], [1, 16, 2], {'east': 'v', 'west': 'v', 'north': 'v', 'south': 'v'}))
-        out[f'wardrobe_{stage}'] = m(els, {'f': face, 'v': 'veneer'}, face)
+            els += [element([0, y0, -4.5], [1, y1, 3], {'west': 'f', 'east': 'v', 'north': 'v', door_edge: 'v'}),
+                    element([15, y0, -4.5], [16, y1, 3], {'east': 'f', 'west': 'v', 'north': 'v', door_edge: 'v'})]
+        else:
+            els += [element([0.25, y0, 2], [7.75, y1, 3], {'north': 'f', 'east': 'v', 'west': 'v', door_edge: 'v'}),
+                    element([8.25, y0, 2], [15.75, y1, 3], {'north': 'f', 'east': 'v', 'west': 'v', door_edge: 'v'})]
+            if not upper:
+                els += [box([6.25, 13, 1.25], [7.25, 14, 2], 'n'), box([8.75, 13, 1.25], [9.75, 14, 2], 'n')]
+        tex_w = {'f': face, 'v': 'veneer'}
+        tex_w.update({'i': face + '_open'} if opened else {'x': 'shadow'})
+        if not opened and not upper:
+            tex_w['n'] = 'knob_wood'
+        out[f'wardrobe_{stage}'] = m(els, tex_w, face)
     out['switch_0'] = m([element([5, 3, 15.6], [11, 13, 16], {'north': 's'}, uv={'north': [5, 3, 11, 13]})], {'s': 'switch'}, 'switch')
     for stage in range(4):
         upper, tilly = stage & 1, stage >> 1
@@ -2296,25 +2526,56 @@ def thing_models():
                                       element([1, 13, 3], [15, 15, 16], {'up': 'v', 'north': 'v', 'south': 'v', 'east': 'v', 'west': 'v'})],
                                      {'f': 'cutlery_front', 'v': 'veneer', 'k': f'cutlery_{knives}'}, f'cutlery_{knives}')
     # ---------------------------------------------------------------------------------------- the bathroom
-    out['vanity_0'] = m([element([0, 0, 4], [16, 13, 16], {'north': 'f', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'}),
+    # 0.4.577: the vanity's door stands proud of it over the kick, its knob on it; beside the knob a chrome rail on two brackets,
+    # and the towel over the rail.
+    out['vanity_0'] = m([element([0, 3, 5], [16, 13, 16], {'north': 'x', 'south': 'w', 'east': 'w', 'west': 'w'}),
+                         element([0, 0, 5.5], [16, 3, 16], {'north': 'f', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'}),
+                         element([1, 3, 4.25], [15, 12.75, 5], {'north': 'f', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'}),
+                         box([2.5, 8, 3.5], [3.5, 9, 4.25], 'c'),
+                         box([6.5, 11, 3.25], [14, 11.5, 3.75], 'c'), box([6.5, 11, 3.75], [7, 11.5, 4.25], 'c'), box([13.5, 11, 3.75], [14, 11.5, 4.25], 'c'),
+                         element([7.5, 5, 3], [13, 11.75, 4], {'north': 'o', 'east': 'o', 'west': 'o', 'up': 'o', 'down': 'o'}, uv={'north': [0, 0, 5.5, 6.75]}),
                          element([0, 13, 3], [16, 15, 16], {'up': 'b', 'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'}),
                          box([10, 15, 10], [13, 18, 13], 'g'), box([10.5, 18, 11], [11, 20, 11.5], 'r'), box([12, 18, 11.5], [12.5, 20, 12], 'n'),
                          box([6, 15, 12.5], [7, 17.5, 13.5], 'c'), box([6, 16.5, 10.5], [7, 17.5, 12.5], 'c'),
                          box([4, 15, 12.5], [5, 16, 13.5], 'c'), box([8, 15, 12.5], [9, 16, 13.5], 'c')],
-                        {'f': 'vanity_front', 'w': 'enamel', 'b': 'basin_top', 'g': 'cup', 'r': 'brush_old', 'n': 'brush_new', 'c': 'chrome'}, 'vanity_front')
+                        {'f': 'vanity_front', 'w': 'enamel', 'x': 'shadow', 'o': 'towel_blue', 'b': 'basin_top', 'g': 'cup', 'r': 'brush_old', 'n': 'brush_new', 'c': 'chrome'}, 'vanity_front')
     for steamed in range(2):
         out[f'mirror_{steamed}'] = m([element([1, 0, 14], [15, 14, 16], {'north': 'g', 'east': 'c', 'west': 'c', 'up': 'c', 'down': 'c'}, uv={'north': [1, 1, 15, 15]})],
                                      {'g': f'mirror_{steamed}', 'c': 'chrome'}, f'mirror_{steamed}')
     for end in range(2):
         # End to end: the tap end's outer side (the south as drawn) and the far end's (the north) stand a pixel in; they meet flush.
+        # 0.4.577: a tub, its walls and its end round the floor the mat lies on, their tops its rim; at the far end the rack
+        # across it, and on the rack the bath toy, faded on the side the window is ("On the rack, a bath toy, faded on one side").
         z0, z1 = (0, 15) if end == 0 else (1, 16)
-        els = [element([0, 0, z0], [16, 9, z1], {'north': 's', 'east': 's', 'west': 's', 'south': 's', 'down': 's'}),
-               element([0, 9, z0], [16, 9.2, z1], {'up': 't'}, uv={'up': [0, z0, 16, z1]})]
+        i0, i1 = (0, 13.5) if end == 0 else (2.5, 16)
+        tub_wall = {'north': 's', 'south': 's', 'down': 's', 'up': 'e'}
+        els = [element([0, 0, z0], [1.5, 10, z1], {**tub_wall, 'west': 's', 'east': 'e'}),
+               element([14.5, 0, z0], [16, 10, z1], {**tub_wall, 'east': 's', 'west': 'e'}),
+               element([1.5, 0, i1 if end == 0 else z0], [14.5, 10, z1 if end == 0 else i0],
+                       {'north': 's' if end else 'e', 'south': 'e' if end else 's', 'down': 's', 'up': 'e'}),
+               element([1.5, 0, i0], [14.5, 8, i1], {'up': 't', 'down': 's'})]
+        tex_bath = {'s': f'bath_side_{end}', 't': f'bath_top_{end}', 'e': 'enamel'}
         if end == 0:
-            els += [box([7, 9, 14], [9, 12, 16], 'c'), box([7.5, 12, 12], [8.5, 13, 16], 'c')]
-        out[f'bath_{end}'] = m(els, {'s': f'bath_side_{end}', 't': f'bath_top_{end}', 'c': 'chrome'}, f'bath_side_{end}')
-    out['toilet_0'] = m([box([4, 0, 3], [12, 6, 12], 'e'), element([3, 6, 2], [13, 8, 12], {'up': 't', 'north': 'e', 'south': 'e', 'east': 'e', 'west': 'e', 'down': 'e'}),
-                         box([3, 6, 12], [13, 15, 16], 'e')], {'e': 'enamel', 't': 'toilet'}, 'toilet')
+            els += [box([7, 10, 13.6], [9, 13, 15], 'c'), box([7.5, 12, 11.5], [8.5, 13, 13.6], 'c')]
+            tex_bath['c'] = 'chrome'
+        else:
+            els += [element([0, 10, 5], [16, 10.4, 9], {'up': 'k', 'down': 'k', 'north': 'k', 'south': 'k'},
+                            uv={'up': [0, 0, 16, 4], 'down': [0, 0, 16, 4], 'north': [0, 5, 16, 5.4], 'south': [0, 5, 16, 5.4]}),
+                    element([9.5, 10.4, 5.5], [12.5, 12.2, 8.5], {'north': 'd', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd'},
+                            uv={'north': [9.5, 2, 6.5, 3.8], 'south': [6.5, 2, 9.5, 3.8], 'east': [10, 2, 13, 3.8], 'west': [1, 2, 4, 3.8], 'up': [6.5, 0, 9.5, 3]}),
+                    element([10.25, 12.2, 5.6], [11.75, 13.5, 7.1], {'north': 'd', 'south': 'd', 'east': 'd', 'west': 'd', 'up': 'd'},
+                            uv={'north': [8.75, 5, 7.25, 6.3], 'south': [7.25, 5, 8.75, 6.3], 'east': [10, 5, 11.5, 6.3], 'west': [1, 5, 2.5, 6.3], 'up': [7.25, 3, 8.75, 4.5]}),
+                    element([10.6, 12.5, 5], [11.4, 12.9, 5.6], {k: 'd' for k in ('north', 'east', 'west', 'up', 'down')},
+                            uv={k: [0, 14, 1, 15] for k in ('north', 'east', 'west', 'up', 'down')})]
+            tex_bath.update({'k': 'rack', 'd': 'duck'})
+        out[f'bath_{end}'] = m(els, tex_bath, f'bath_side_{end}')
+    # 0.4.577: its lid is down, as the house says it is (it was drawn up, the bowl showing): the pan on its pedestal, the seat
+    # and the lid shut on it, the two caps of the hinge; the cistern with its own lid, and the button on that.
+    out['toilet_0'] = m([box([5, 0, 4], [11, 5, 12], 'e'), box([3.5, 5, 2.5], [12.5, 7, 12], 'e'),
+                         element([3.5, 7, 2.5], [12.5, 8, 12], {'up': 't', 'north': 'e', 'east': 'e', 'west': 'e'}),
+                         box([4.5, 8, 11], [6, 8.6, 12], 'c'), box([10, 8, 11], [11.5, 8.6, 12], 'c'),
+                         box([3, 5, 12], [13, 15, 16], 'e'), box([2.5, 15, 11.5], [13.5, 16, 16], 'e'), box([7, 16, 13], [9, 16.5, 15], 'c')],
+                        {'e': 'enamel', 't': 'toilet', 'c': 'chrome'}, 'toilet')
     # ---------------------------------------------------------------------------------------- the laundry
     for stage in range(4):
         end, unlocked = stage & 1, stage >> 1
@@ -2350,8 +2611,12 @@ def thing_models():
                          box([7, 15, 14], [9, 20, 15], 's'), box([7, 19, 11], [9, 20, 15], 's')], {'t': 'trough', 's': 'steel'}, 'trough')
     out['bucket_0'] = m([element([3, 0, 3], [13, 9, 13], {'up': 'b', 'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'})], {'b': 'bucket_top', 'w': 'bucket_side'}, 'bucket_side')
     out['chlorine_0'] = m([element([2, 0, 2], [14, 14, 14], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'up': 'k', 'down': 'k'})], {'c': 'chlorine', 'k': 'chlorine_lid'}, 'chlorine')
-    out['washer_0'] = m([element([1, 0, 1], [15, 15, 15], {'north': 'f', 'south': 'e', 'east': 'e', 'west': 'e', 'up': 'l', 'down': 'e'}),
-                         box([1, 15, 12], [15, 18, 15], 'e', north='d')], {'f': 'washer_front', 'e': 'enamel', 'l': 'washer_lid', 'd': 'washer_dials'}, 'washer_front')
+    # 0.4.577: its lid is up, as the house says it is (it was drawn shut): stood on its hinge before the dials, the tub open
+    # under it.
+    out['washer_0'] = m([element([1, 0, 1], [15, 15, 15], {'north': 'f', 'south': 'e', 'east': 'e', 'west': 'e', 'up': 'o', 'down': 'e'}),
+                         box([1, 15, 12], [15, 18, 15], 'e', north='d'),
+                         element([3, 15, 10.75], [13, 25, 11.5], {'north': 'l', 'south': 'e', 'east': 'e', 'west': 'e', 'up': 'e'})],
+                        {'f': 'washer_front', 'e': 'enamel', 'o': 'washer_top', 'l': 'washer_lid', 'd': 'washer_dials'}, 'washer_front')
     # ---------------------------------------------------------------------------------------- the garage
     for end in range(2):
         els = [element([1, 6, 0], [15, 7, 16], {'up': 'c', 'down': 'c', 'north': 'a', 'south': 'a', 'east': 'a', 'west': 'a'}),

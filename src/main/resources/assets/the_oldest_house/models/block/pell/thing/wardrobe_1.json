@@ -4,6 +4,7 @@
   "textures": {
     "f": "the_oldest_house:block/pell/thing/wardrobe_hi",
     "v": "the_oldest_house:block/pell/thing/veneer",
+    "x": "the_oldest_house:block/pell/thing/shadow",
     "particle": "the_oldest_house:block/pell/thing/wardrobe_hi"
   },
   "elements": [
@@ -11,7 +12,33 @@
       "from": [
         0,
         0,
-        2
+        3
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#x"
+        },
+        "south": {
+          "texture": "#v"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        15,
+        1.5
       ],
       "to": [
         16,
@@ -20,7 +47,7 @@
       ],
       "faces": {
         "north": {
-          "texture": "#f"
+          "texture": "#v"
         },
         "south": {
           "texture": "#v"
@@ -35,6 +62,58 @@
           "texture": "#v"
         },
         "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        0.25,
+        0,
+        2
+      ],
+      "to": [
+        7.75,
+        15,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "up": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        8.25,
+        0,
+        2
+      ],
+      "to": [
+        15.75,
+        15,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "up": {
           "texture": "#v"
         }
       }

@@ -2,16 +2,17 @@
   "ambientocclusion": false,
   "render_type": "minecraft:cutout",
   "textures": {
-    "f": "the_oldest_house:block/pell/thing/wardrobe_lo_open",
+    "f": "the_oldest_house:block/pell/thing/wardrobe_lo",
     "v": "the_oldest_house:block/pell/thing/veneer",
-    "particle": "the_oldest_house:block/pell/thing/wardrobe_lo_open"
+    "i": "the_oldest_house:block/pell/thing/wardrobe_lo_open",
+    "particle": "the_oldest_house:block/pell/thing/wardrobe_lo"
   },
   "elements": [
     {
       "from": [
         0,
-        0,
-        2
+        1,
+        3
       ],
       "to": [
         16,
@@ -20,7 +21,33 @@
       ],
       "faces": {
         "north": {
-          "texture": "#f"
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#v"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        2.5
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#v"
         },
         "south": {
           "texture": "#v"
@@ -42,28 +69,69 @@
     {
       "from": [
         0,
-        0,
-        -6
+        1,
+        -4.5
       ],
       "to": [
         1,
         16,
-        2
+        3
       ],
       "faces": {
         "north": {
           "texture": "#v"
         },
-        "south": {
-          "texture": "#v"
-        },
         "east": {
           "texture": "#v",
           "uv": [
-            8,
+            8.5,
             0,
             16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            7.5,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#v",
+          "uv": [
+            0,
+            8.5,
+            1,
             16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        1,
+        -4.5
+      ],
+      "to": [
+        16,
+        16,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#v"
+        },
+        "east": {
+          "texture": "#f",
+          "uv": [
+            8.5,
+            0,
+            16,
+            15
           ]
         },
         "west": {
@@ -71,7 +139,16 @@
           "uv": [
             0,
             0,
-            8,
+            7.5,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#v",
+          "uv": [
+            15,
+            8.5,
+            16,
             16
           ]
         }

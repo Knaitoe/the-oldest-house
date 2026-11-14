@@ -3,6 +3,7 @@
   "render_type": "minecraft:cutout",
   "textures": {
     "v": "the_oldest_house:block/pell/thing/vinyl_red",
+    "t": "the_oldest_house:block/pell/thing/vinyl_red_taped",
     "c": "the_oldest_house:block/pell/thing/chrome",
     "particle": "the_oldest_house:block/pell/thing/vinyl_red"
   },
@@ -32,7 +33,7 @@
           "texture": "#v"
         },
         "up": {
-          "texture": "#v"
+          "texture": "#t"
         },
         "down": {
           "texture": "#v"

@@ -4,7 +4,7 @@
   "textures": {
     "i": "the_oldest_house:block/pell/thing/cupboard_inside",
     "d": "the_oldest_house:block/pell/thing/cupboard_upper",
-    "s": "the_oldest_house:block/pell/thing/cupboard_side",
+    "s": "the_oldest_house:block/pell/thing/cupboard_plain",
     "w": "the_oldest_house:block/pell/thing/wood_block",
     "particle": "the_oldest_house:block/pell/thing/cupboard_upper"
   },

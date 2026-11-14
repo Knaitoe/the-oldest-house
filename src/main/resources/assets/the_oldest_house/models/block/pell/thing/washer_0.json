@@ -4,6 +4,7 @@
   "textures": {
     "f": "the_oldest_house:block/pell/thing/washer_front",
     "e": "the_oldest_house:block/pell/thing/enamel",
+    "o": "the_oldest_house:block/pell/thing/washer_top",
     "l": "the_oldest_house:block/pell/thing/washer_lid",
     "d": "the_oldest_house:block/pell/thing/washer_dials",
     "particle": "the_oldest_house:block/pell/thing/washer_front"
@@ -34,7 +35,7 @@
           "texture": "#e"
         },
         "up": {
-          "texture": "#l"
+          "texture": "#o"
         },
         "down": {
           "texture": "#e"
@@ -93,6 +94,59 @@
           "texture": "#e"
         },
         "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        15,
+        10.75
+      ],
+      "to": [
+        13,
+        25,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#e",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#e",
+          "uv": [
+            4.5,
+            0,
+            5.25,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#e",
+          "uv": [
+            10.75,
+            0,
+            11.5,
+            10
+          ]
+        },
+        "up": {
           "texture": "#e"
         }
       }

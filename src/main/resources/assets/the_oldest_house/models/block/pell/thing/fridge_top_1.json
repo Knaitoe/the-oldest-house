@@ -4,6 +4,8 @@
   "textures": {
     "f": "the_oldest_house:block/pell/thing/fridge_up_1",
     "s": "the_oldest_house:block/pell/thing/fridge_side",
+    "x": "the_oldest_house:block/pell/thing/shadow",
+    "e": "the_oldest_house:block/pell/thing/chrome",
     "particle": "the_oldest_house:block/pell/thing/fridge_up_1"
   },
   "elements": [
@@ -11,7 +13,7 @@
       "from": [
         0,
         0,
-        1
+        2
       ],
       "to": [
         16,
@@ -20,7 +22,7 @@
       ],
       "faces": {
         "north": {
-          "texture": "#f"
+          "texture": "#x"
         },
         "south": {
           "texture": "#s"
@@ -36,6 +38,67 @@
         },
         "down": {
           "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        0.25,
+        0.25,
+        1
+      ],
+      "to": [
+        15.75,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        1.25,
+        1,
+        0.25
+      ],
+      "to": [
+        2.25,
+        8,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#e"
+        },
+        "down": {
+          "texture": "#e"
         }
       }
     }

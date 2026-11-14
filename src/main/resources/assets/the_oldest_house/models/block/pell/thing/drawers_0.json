@@ -5,6 +5,8 @@
     "f": "the_oldest_house:block/pell/thing/drawers_front",
     "v": "the_oldest_house:block/pell/thing/veneer",
     "k": "the_oldest_house:block/pell/thing/talking_clock",
+    "x": "the_oldest_house:block/pell/thing/shadow",
+    "n": "the_oldest_house:block/pell/thing/knob_wood",
     "particle": "the_oldest_house:block/pell/thing/drawers_front"
   },
   "elements": [
@@ -12,16 +14,45 @@
       "from": [
         1,
         0,
-        3
+        4
       ],
       "to": [
         15,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#x"
+        },
+        "south": {
+          "texture": "#v"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        0.5,
+        13,
+        3
+      ],
+      "to": [
+        15.5,
         14,
         16
       ],
       "faces": {
         "north": {
-          "texture": "#f"
+          "texture": "#v"
         },
         "south": {
           "texture": "#v"
@@ -90,6 +121,189 @@
         },
         "up": {
           "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1,
+        3.25
+      ],
+      "to": [
+        15,
+        4.75,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "up": {
+          "texture": "#v"
+        },
+        "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        2.4,
+        2.5
+      ],
+      "to": [
+        5.5,
+        3.4,
+        3.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        5,
+        3.25
+      ],
+      "to": [
+        15,
+        8.75,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "up": {
+          "texture": "#v"
+        },
+        "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        6.4,
+        2.5
+      ],
+      "to": [
+        5.5,
+        7.4,
+        3.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        9,
+        3.25
+      ],
+      "to": [
+        15,
+        12.75,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#v"
+        },
+        "west": {
+          "texture": "#v"
+        },
+        "up": {
+          "texture": "#v"
+        },
+        "down": {
+          "texture": "#v"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        10.4,
+        2.5
+      ],
+      "to": [
+        5.5,
+        11.4,
+        3.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
         }
       }
     }
