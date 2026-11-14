@@ -139,6 +139,12 @@ public final class PellPeople {
          *  where in it, when they got to it, when the next may come, and how far round their errands they are; which lines have been said. */
         int idleWindow;final int[] idleState=new int[COUNT],idleTurn=new int[COUNT];final long[] idleAt=new long[COUNT],idleNext=new long[COUNT];
         final PellIdle.Errand[] idleErrand=new PellIdle.Errand[COUNT];final java.util.Set<PellIdle.Errand> idleSaid=new java.util.HashSet<>();
+        /** 0.4.571, the day's jobs (PellJobs) and being with Tilly (PellCompany): which of the table's places a reader has laid, and
+         *  whether June has had her word on it; the dog's bowl (PellJobs.LEAVES to DRUNK) and when it was last set down; which jobs she
+         *  has ticked on the chart; how far what is said about Callum's plate at the first dinner has got; who is reading to Tilly, and
+         *  when they last read on; and which of the house's waits (PellIdle's windows) Tilly last asked each reader in. */
+        final boolean[] laid=new boolean[4];boolean saidFour;int bowl,ticked,forkSaid;long bowlAt,readAt;UUID readingTo;
+        final java.util.Map<UUID,Integer> askedIn=new java.util.HashMap<>();
         /** Which way each faces when at rest, and who walked this tick (their heads are the walk's). */
         final float[] rest=new float[COUNT];final boolean[] moving=new boolean[COUNT];
         /** The visit: begun again from the start when fresh; how far it has got; when the next line may come. */
@@ -408,6 +414,8 @@ public final class PellPeople {
         if(who==JUNE&&PellCall.june(p,b,own))return;
         // 0.4.533: in the water at first light she swims on.
         if(who==JUNE&&PellSwim.inWater(b)){PellHouse.cue(p,PellTexts.JUNE_SWIMMING);return;}
+        // 0.4.571: Tilly's question, or the book, still waiting on this reader comes up again (PellCompany).
+        if(who==TILLY&&PellCompany.resume(p,b,h))return;
         if(a.saying())return;
         // 0.4.533: a week in, June has other things to say by day than her first day's.
         var lines=switch(who){case JUNE->h.visit>=2?PellTexts.JUNE_WEEK_TALK:PellTexts.JUNE_TALK;case TILLY->h.visit>=2?PellTexts.TILLY_WEEK_TALK:PellTexts.TILLY_TALK;default->PellTexts.GAIL_TALK;};
@@ -424,8 +432,15 @@ public final class PellPeople {
         else if(who==JUNE&&a.gesture()==ROBE){line=PellTexts.JUNE_SWIM_TALK[h.nightSaid++%PellTexts.JUNE_SWIM_TALK.length];own.putBoolean("SpokeToJuneAtThePool",true);}
         // 0.4.535: her hand wrapped, she has a word about it for the first hands on her.
         else if(who==JUNE&&PellHand.hurt(b)&&h.handSaid<PellTexts.JUNE_HAND_TALK.length){line=PellTexts.JUNE_HAND_TALK[h.handSaid++];own.putBoolean("AskedJuneAboutHand",true);}
+        // 0.4.571: in Nessa's room while the house waits, each reader's first hand on Tilly gets her asking (PellCompany.asksFirst);
+        // her next line is not spent on it, unless that was the asking itself.
+        else if(who==TILLY&&PellCompany.asksFirst(p,b,h,own)){line=PellCompany.asks(h.visit);if(lines[h.said[who]%lines.length].equals(line))h.said[who]++;}
         else line=lines[h.said[who]++%lines.length];
+        // 0.4.571: Tilly asking what it looks like opens the panel on what this reader can tell her (PellCompany): the exchange is
+        // begun before she says it, so that what the reader keeps of it is kept once.
+        boolean asking=who==TILLY&&PellCompany.opens(p,b,h,own,line);
         a.say(name(who),line);a.speaks(line);
+        if(asking)PellCompany.offer(p,h,own);
         // 0.4.525: June's rules count however they are heard: from a hand on her too. The reader whose hand it is keeps it in the
         // record the talk saves after this (LiteraryVignettes.talk), so it is written there and not saved under it.
         PellVisit.heard(a,PellTexts.rule(line),PellHouse.readers(p.serverLevel(),b),p,own);

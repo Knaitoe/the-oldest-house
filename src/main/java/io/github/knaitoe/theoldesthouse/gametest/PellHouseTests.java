@@ -190,8 +190,9 @@ public final class PellHouseTests {
                 "the fridge, the sink under the window, the knife block full, the stove");
             h.assertTrue(thing(l,b,-11,0,-69,TABLE,0)&&thing(l,b,-12,0,-69,TABLE,1)&&thing(l,b,-12,0,-70,CHAIR,0)&&facing(l,b,-12,0,-70)==Direction.SOUTH&&facing(l,b,-11,0,-68)==Direction.NORTH,
                 "the table and its chairs, turned to it");
-            h.assertTrue(thing(l,b,-13,1,-69,CHORE_CHART,0)&&thing(l,b,-13,1,-70,CHORE_CHART,1)&&PellThing.right(new BlockPos(-13,1,-69),Direction.EAST).equals(new BlockPos(-13,1,-70)),
-                "the chore chart reads left to right from the room");
+            // 0.4.571: with June's strip on it, the one with no name (PellJobs): stage bit 1.
+            h.assertTrue(thing(l,b,-13,1,-69,CHORE_CHART,2)&&thing(l,b,-13,1,-70,CHORE_CHART,3)&&PellThing.right(new BlockPos(-13,1,-69),Direction.EAST).equals(new BlockPos(-13,1,-70)),
+                "the chore chart reads left to right from the room, June's new strip on it");
             h.assertTrue(is(l,b,-10,-1,-69,"lino_worn")&&is(l,b,-8,-1,-70,"lino_burn"),"the lino worn from the door to the sink, and burnt in front of the stove");
             // The living room and the hall.
             h.assertTrue(thing(l,b,-5,0,-70,TV_CABINET,0)&&thing(l,b,-2,0,-70,RECLINER,0)&&facing(l,b,-2,0,-70)==Direction.WEST&&thing(l,b,2,0,-71,WINDOW_SEAT,0),"the recliner turned to the television, the window seat");
@@ -652,6 +653,323 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_idle") public static void idleDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.571: the day's jobs, and Tilly
+    /** Whether a reader has one of these about them; and one they have, put into their hand (what was in the hand goes where it was). */
+    private static boolean has(ServerPlayer p,net.minecraft.world.item.Item item){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(item))return true;return false;}
+    private static void inHand(ServerPlayer p,net.minecraft.world.item.Item item){
+        var inv=p.getInventory();if(inv.getSelected().is(item))return;
+        for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(item)){var s=inv.getItem(i);inv.setItem(i,inv.getSelected());inv.setItem(inv.selected,s);return;}
+    }
+    /**
+     * 0.4.571, the day's jobs (docs/PELL_HOUSE_NOTES_0_4_571.md). The owner: "things for characters to do or tasks they're assigned with
+     * so they're not just stuck waiting out the day". The chart in the kitchen has a third strip with no name on it, and June's jobs in
+     * pencil against it. Before June is back in her kitchen the cupboards are only cupboards. Once she is, a hand on one takes down
+     * four plates; a hand on the table lays one at the nearest bare place, four times; June says "Four", the reader heard her, and the
+     * chart has the first job ticked. At six she finds it laid and puts nothing down twice. With a reader at the table she serves, and
+     * passes over Callum's plate as she always did; Tilly asks after his fork, and June says he has had his.
+     */
+    @GameTest(template="empty",batch="pell_jobs",timeoutTicks=6000)
+    public static void theChartHasJunesJobsAndATableLaidForHerIsFour(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_jobs_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        BlockPos names=b.offset(PellJobs.CHART.get(0)),jobs=b.offset(PellJobs.CHART.get(1)),cupboard=b.offset(-12,2,-71),table=b.offset(-11,0,-69);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            h.assertTrue(thing(l,b,-13,1,-69,CHORE_CHART,2)&&thing(l,b,-13,1,-70,CHORE_CHART,3),"the chart with June's strip on it");
+            h.assertTrue(PellJobs.ticked(b)==0&&PellJobs.laid(b)==0,"nothing done yet");
+            // Before June is back in her kitchen, a cupboard is a cupboard.
+            f.at(p,P,-9.5,0,-68.5);told(p);hand(p,cupboard);hand(p,names);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.thing(CUPBOARD_UPPER,0))&&PellJobs.plates(p,b)==0,"the cupboard, before the afternoon: "+heard);
+            h.assertTrue(heard.contains(PellTexts.CHART_NAMES)&&f.own(p,P).getBoolean("SawChart"),"the chart's names, and the strip with none: "+heard);
+            PellVisit.settle(l,b);
+            hand(p,jobs);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CHART_JOBS),"June's jobs, in pencil");
+            hand(p,cupboard);
+            h.assertTrue(PellJobs.plates(p,b)==4&&f.own(p,P).getBoolean("TookPlates"),"four plates taken down: "+PellJobs.plates(p,b));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.platesTaken(4)),"and told so");
+            hand(p,cupboard);
+            h.assertTrue(PellJobs.plates(p,b)==4,"no more than the table wants");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.PLATES_HAVE),"a second hand: they have them");
+            // Four hands on the table from its end: a plate at each place, nearest first.
+            for(int i=0;i<4;i++){
+                hand(p,table);
+                h.assertTrue(PellJobs.laid(b)==i+1&&PellJobs.plates(p,b)==3-i,"a plate laid: "+(i+1)+", "+PellJobs.plates(p,b)+" left");
+            }
+            for(int i=0;i<4;i++)h.assertTrue(PellVisit.plate(b,i)==PellVisit.LAID_PLATE,"a place laid at "+i);
+            h.assertTrue(plates(l,b).size()==4,"four plates on the table: "+plates(l,b).size());
+            h.assertTrue(f.own(p,P).getBoolean("LaidTable")&&(PellJobs.ticked(b)&PellJobs.TABLE)!=0,"the reader laid it, and it is ticked");
+            // A fifth hand lays nothing; the table answers as a table.
+            told(p);hand(p,table);
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_FOUR),"June says so: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.PLATE_EMPTY),"a fifth hand finds a plate with nothing on it yet");
+            h.assertTrue(f.own(p,P).getBoolean("HeardFour"),"the reader heard her");
+            h.assertTrue(PellVisit.step(b)==PellVisit.SETTLED,"the afternoon goes on");
+            hand(p,jobs);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CHART_JOBS+" The first is ticked."),"the chart, the first job ticked");
+            // Out of the way, and six comes: she finds it laid.
+            f.at(p,P,-6.5,0,-65.5);PellVisit.hurry(b,PellVisit.SIX-5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.LAID,"at six June comes to lay the table"))
+        .thenExecute(()->{
+            for(int i=0;i<4;i++)h.assertTrue(PellVisit.plate(b,i)==PellVisit.LAID_PLATE,"still laid at "+i);
+            h.assertTrue(plates(l,b).size()==4,"nothing put down twice: "+plates(l,b).size());
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)==0&&PellVisit.placeOf(b,PellPeople.CALLUM)==1,"Tilly and Callum sit down"))
+        .thenExecute(()->{
+            // The reader comes in. After six the cupboards are cupboards again.
+            f.at(p,P,-9.5,0,-67.5);told(p);hand(p,cupboard);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);
+            h.assertTrue(heard.contains(PellTexts.thing(CUPBOARD_UPPER,0))&&PellJobs.plates(p,b)==0,"the cupboard, after six: "+heard);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(PellVisit.TABLE[3].chair())),"the reader sits at the table");
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.EATING,"June serves"))
+        .thenExecute(()->h.assertTrue(PellVisit.plate(b,1)==PellVisit.LAID_PLATE,"Callum's plate is passed over, as it always was"))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_NO_FORK),"Tilly asks after his fork: "+said(who(h,l,b,PellPeople.TILLY))))
+        .thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_HAD_HIS),"June has her answer: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getBoolean("HeardCallumHadHis"),"the reader at the table heard it");
+            h.assertTrue(PellVisit.plate(b,1)==PellVisit.LAID_PLATE,"and his plate is still bare");
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("I laid the table. Four places, June said, always four.")&&text.contains("June said he had had his."),"the account has the table and Callum's plate: "+text);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_jobs") public static void jobsDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.571: a table half laid. The reader takes down four plates and lays two; June has nothing to say of it yet. At six she lays
+     * the other two and says she will finish it, and the plates not laid are back in the cupboard. Nothing is ticked.
+     */
+    @GameTest(template="empty",batch="pell_jobs_some",timeoutTicks=6000)
+    public static void aTableHalfLaidJuneFinishesAndThePlatesGoBack(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_some_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        BlockPos jobs=b.offset(PellJobs.CHART.get(1)),cupboard=b.offset(-8,2,-71),table=b.offset(-12,0,-69);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            PellVisit.settle(l,b);f.at(p,P,-9.5,0,-68.5);
+            hand(p,cupboard);hand(p,table);hand(p,table);
+            h.assertTrue(PellJobs.laid(b)==2&&PellJobs.plates(p,b)==2&&plates(l,b).size()==2,"two laid, two in hand: "+PellJobs.laid(b)+", "+PellJobs.plates(p,b));
+            h.assertTrue(PellVisit.plate(b,0)==PellVisit.LAID_PLATE&&PellVisit.plate(b,1)==PellVisit.LAID_PLATE&&PellVisit.plate(b,2)==PellVisit.NONE&&PellVisit.plate(b,3)==PellVisit.NONE,"the two nearest the table's end");
+            f.at(p,P,-6.5,0,-65.5);
+        }).thenIdle(40).thenExecute(()->{
+            var june=said(who(h,l,b,PellPeople.JUNE));
+            h.assertFalse(june.equals(PellTexts.JUNE_FOUR)||june.equals(PellTexts.JUNE_FINISH),"June has nothing to say of half a table yet: "+june);
+            h.assertTrue(PellJobs.plates(p,b)==2,"the reader still has the other two");
+            PellVisit.hurry(b,PellVisit.SIX-5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.LAID,"at six June lays the table"))
+        .thenExecute(()->{
+            for(int i=0;i<4;i++)h.assertTrue(PellVisit.plate(b,i)==PellVisit.LAID_PLATE,"a place laid at "+i);
+            h.assertTrue(plates(l,b).size()==4&&PellJobs.laid(b)==2,"she lays the other two: "+plates(l,b).size());
+            h.assertTrue(PellJobs.plates(p,b)==0,"the plates not laid are back in the cupboard");
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_FINISH),"\"I'll finish that, love\": "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenExecute(()->{
+            h.assertTrue(PellJobs.ticked(b)==0,"nothing ticked");
+            f.at(p,P,-9.5,0,-67.5);told(p);hand(p,jobs);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);h.assertTrue(heard.contains(PellTexts.CHART_JOBS),"the chart, nothing ticked: "+heard);
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("I laid the table.")&&!text.contains("always four"),"the account has the table, and not what June did not say: "+text);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_jobs_some") public static void jobsSomeDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.571, Biscuit's water. Before the afternoon the bowl by the kennel is a bowl full of leaves. Once June is back in her kitchen
+     * a hand tips the leaves out and picks it up; a hand on the kennel sets it down empty; picked up again, a hand on the laundry's
+     * trough fills it; and used on the ground by the kennel it is set down full, ticked on the chart, the reader's own. Locked up for
+     * the night it stays full while the reader looks at it, and is dry the first moment they look away: the reader finds it so.
+     */
+    @GameTest(template="empty",batch="pell_bowl",timeoutTicks=6000)
+    public static void theDogsBowlIsFilledAndIsDryAgainInTheNightWhenNobodyLooks(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_bowl_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        BlockPos bowl=b.offset(PellJobs.BOWL),kennel=b.offset(19,0,-80),trough=b.offset(6,0,-71);
+        var water=Vec3.atBottomCenterOf(bowl).add(0,.1,0);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,0)&&PellJobs.bowl(b)==PellJobs.LEAVES,"the bowl by the kennel, full of leaves");
+            f.at(p,P,15.5,0,-79.5);told(p);hand(p,bowl);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(BOWL,0))&&thing(l,b,18,0,-79,BOWL,0),"before the afternoon it is only looked at");
+            PellVisit.settle(l,b);
+            hand(p,bowl);
+            h.assertTrue(l.getBlockState(bowl).isAir()&&PellJobs.bowl(b)==PellJobs.CARRIED&&has(p,PellRegistry.BOWL.get()),"tipped out and picked up: "+l.getBlockState(bowl));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.BOWL_TIPPED),"the leaves tipped out");
+            // Set down empty at the kennel, and picked up again.
+            hand(p,kennel);
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,1)&&PellJobs.bowl(b)==PellJobs.EMPTY&&!has(p,PellRegistry.BOWL.get())&&PellJobs.ticked(b)==0,"set down empty, nothing ticked");
+            hand(p,bowl);
+            h.assertTrue(l.getBlockState(bowl).isAir()&&has(p,PellRegistry.BOWL.get()),"and picked up again");
+        }).thenIdle(45).thenExecute(()->{
+            var heard=told(p);h.assertTrue(heard.contains(PellTexts.BOWL_DOWN_EMPTY)&&heard.contains(PellTexts.BOWL_PICKED),"told each: "+heard);
+            h.assertTrue(has(p,PellRegistry.BOWL.get())&&PellJobs.bowl(b)==PellJobs.CARRIED,"carried, it is left with whoever has it");
+            // Round to the laundry with it.
+            f.at(p,P,7.5,0,-69.5);
+            hand(p,trough);
+            h.assertTrue(has(p,PellRegistry.BOWL_WATER.get())&&!has(p,PellRegistry.BOWL.get())&&PellJobs.bowl(b)==PellJobs.CARRIED_FULL,"filled at the laundry's tap");
+            hand(p,trough);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);h.assertTrue(heard.contains(PellTexts.BOWL_FILLED)&&heard.contains(PellTexts.BOWL_IS_FULL),"filled once: "+heard);
+            // Back out to the kennel. Used on the ground beside it, as a right-click with it in hand is.
+            f.at(p,P,15.5,0,-79.5);
+            inHand(p,PellRegistry.BOWL_WATER.get());
+            var ground=bowl.below();
+            p.gameMode.useItemOn(p,l,p.getMainHandItem(),net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(ground).add(0,.5,0),Direction.UP,ground,false));
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,2)&&PellJobs.bowl(b)==PellJobs.FULL&&!has(p,PellRegistry.BOWL_WATER.get()),"set down full where it stood: "+l.getBlockState(bowl));
+            h.assertTrue((PellJobs.ticked(b)&PellJobs.WATER)!=0&&f.own(p,P).getBoolean("FilledBowl"),"ticked, and the reader's own");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.BOWL_DOWN_FULL),"nothing comes for it");
+            hand(p,bowl);
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,2),"full, it is left where it is");
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(BOWL,2)),"full to the brim");
+            // Locked up for the night, the reader out on the drive looking at it.
+            PellNight.lockedUp(l,b);lookAt(p,water);
+        }).thenIdle(PellJobs.DRINK_AFTER+30).thenExecute(()->{
+            h.assertTrue(PellNight.seen(l,water),"the reader sees the bowl");
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,2)&&PellJobs.bowl(b)==PellJobs.FULL,"seen, it stays full");
+            // They look away.
+            face(p,90,0);
+        }).thenWaitUntil(()->h.assertTrue(thing(l,b,18,0,-79,BOWL,3)&&PellJobs.bowl(b)==PellJobs.DRUNK,"the first moment nobody sees it, it is dry"))
+        .thenExecute(()->{told(p);hand(p,bowl);})
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(BOWL,3))&&f.own(p,P).getBoolean("SawBowlDry"),"the reader finds it dry, and the ground wet round it");
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,3),"and it is left");
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("I filled the dog's bowl by the kennel. There was no dog. In the morning the bowl was empty"),"the account has the bowl: "+text);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_bowl") public static void bowlDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.571, being with Tilly. The owner: "ways to interact with tilly, for singleplayer characters". A reader who has put a hand on
+     * the desk and the height marks comes to Tilly in Nessa's room: their first hand on her gets her asking, and the panel offers the
+     * stars, the desk and the marks (what they have seen, and nothing else), a kind word, and leaving it. Told of the desk she answers;
+     * the kind word is no longer offered. A hand on her with the question still open brings it up again. A hand on the bookshelf takes
+     * up the book that is out: she asks for it from the ticket and sits on the edge of the bed; five passages are read, with her word
+     * after the third; the chapter ends, and she wants a promise. It is ticked on the chart. A second hand on the shelf gets "You said
+     * tomorrow." The account has both.
+     */
+    @GameTest(template="empty",batch="pell_company",timeoutTicks=6000)
+    public static void tillyAsksWhatThingsLookLikeAndIsReadToFromTheTicket(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_company_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        BlockPos desk=b.offset(-11,0,-59),marks=b.offset(-11,0,-63),shelf=b.offset(-13,0,-63),jobs=b.offset(PellJobs.CHART.get(1));
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            // Before the afternoon the shelf is a shelf.
+            f.at(p,P,-9.5,0,-60.5);told(p);hand(p,shelf);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.thing(BOOKSHELF,0))&&PellCompany.reader(b)==null,"the shelf, and the book out on top of it");
+            PellVisit.settle(l,b);
+            hand(p,desk);hand(p,marks);
+            var own=f.own(p,P);
+            h.assertTrue(PellCompany.seen(own,DESK)&&PellCompany.seen(own,MARKS)&&!PellCompany.seen(own,PHOTOS),"what the reader has put a hand on is kept");
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            LiteraryVignettes.talk(p,tilly);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_TALK[0]),"Tilly asks: "+said(tilly));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_DESK,PellTexts.TELL_MARKS,PellTexts.TELL_NICE,PellTexts.TELL_ENOUGH)),"offered what they have seen, a kind word, and leaving it: "+Talk.replies(p));
+            h.assertTrue(telling(p,"Tilly",PellTexts.TILLY_TALK[0]),"her question on the panel: "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_DESK),"the reader tells her of the desk");
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_MAGNIFIER)&&telling(p,"Tilly",PellTexts.TILLY_MAGNIFIER),"and she answers: "+said(tilly));
+            h.assertTrue(PellCompany.told(f.own(p,P))==1,"kept as told");
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_MARKS,PellTexts.TELL_ENOUGH)),"what is left to tell, the kind word gone: "+Talk.replies(p));
+        }).thenIdle(2).thenExecute(()->{
+            // With the question still open, a hand on her brings it up again: she says nothing new, and nothing is asked twice.
+            var tilly=who(h,l,b,PellPeople.TILLY);int lines=Talk.lines(p).size();
+            LiteraryVignettes.talk(p,tilly);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_MAGNIFIER)&&Talk.waiting(p,PellCompany.TELL)&&Talk.lines(p).size()==lines,"the question comes up again as it was: "+said(tilly)+" "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_ENOUGH)&&Talk.key(p).isEmpty(),"and is left there");
+            // The book that is out.
+            hand(p,shelf);
+            h.assertTrue(p.getUUID().equals(PellCompany.reader(b))&&said(tilly).equals(PellTexts.TILLY_TICKET),"Tilly asks for it from the ticket: "+said(tilly));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.STORY[0],PellTexts.STORY_STOP)),"the first passage, or stopping: "+Talk.replies(p));
+        }).thenWaitUntil(()->h.assertTrue("listen".equals(PellIdle.errand(b,PellPeople.TILLY))&&PellIdle.state(b,PellPeople.TILLY)==PellIdle.AT&&PellVisit.perched(b,PellPeople.TILLY)==PellVisit.TILLY_BED,
+            "Tilly sits on the edge of the bed to listen: "+PellIdle.errand(b,PellPeople.TILLY)+" "+PellIdle.state(b,PellPeople.TILLY)))
+        .thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            for(int i=0;i<PellCompany.CHAPTER;i++){
+                h.assertTrue(Talk.choose(p,PellTexts.STORY[i]),"passage "+(i+1)+" is read: "+Talk.replies(p));
+                h.assertTrue(f.own(p,P).getInt(PellCompany.READ)==i+1,"the reader's place moves on: "+f.own(p,P).getInt(PellCompany.READ));
+                if(i==2)h.assertTrue(said(tilly).equals(PellTexts.STORY_AFTER[2])&&telling(p,"Tilly",PellTexts.STORY_AFTER[2]),"her word after the third: "+said(tilly));
+            }
+            h.assertTrue(telling(p,"you",PellTexts.STORY[0])&&telling(p,"you",PellTexts.STORY[4]),"read aloud in the reader's own voice: "+Talk.lines(p));
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_DONT_STOP)&&Talk.replies(p).equals(List.of(PellTexts.CHAPTER_ENDS)),"at the fog she does not want it to stop: "+said(tilly)+" "+Talk.replies(p));
+            h.assertTrue((PellJobs.ticked(b)&PellJobs.STORY)!=0,"June's third job is done");
+            h.assertTrue(Talk.choose(p,PellTexts.CHAPTER_ENDS),"the chapter ends");
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_TOMORROW)&&PellCompany.reader(b)==null,"tomorrow, then: "+said(tilly));
+        }).thenWaitUntil(()->h.assertTrue(PellIdle.state(b,PellPeople.TILLY)==PellIdle.OFF&&PellVisit.perched(b,PellPeople.TILLY)==null&&at(who(h,l,b,PellPeople.TILLY),b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.8),
+            "the book put down, Tilly goes back to where she stood: "+PellIdle.state(b,PellPeople.TILLY)))
+        .thenExecute(()->{
+            hand(p,shelf);
+            h.assertTrue(said(who(h,l,b,PellPeople.TILLY)).equals(PellTexts.TILLY_SAID_TOMORROW)&&PellCompany.reader(b)==null&&f.own(p,P).getInt(PellCompany.READ)==PellCompany.CHAPTER,
+                "a second hand on the shelf, the same day: "+said(who(h,l,b,PellPeople.TILLY)));
+            // Through to the kitchen, to the chart.
+            f.at(p,P,-9.5,0,-67.5);told(p);hand(p,jobs);
+        }).thenIdle(1).thenExecute(()->{
+            var heard=told(p);h.assertTrue(heard.contains(PellTexts.CHART_JOBS+" The third is ticked."),"the chart, Tilly's story ticked: "+heard);
+            h.assertTrue(PellVisit.step(b)==PellVisit.SETTLED,"and the afternoon has gone on as it does");
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("Tilly asked me what things looked like, and I told her.")&&text.contains("We did not get to the end."),"the account has both: "+text);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_company") public static void companyDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.571, a week in. A reader who filled the bowl and read the chapter on the first visit comes back. The leaves have not come
+     * back into the bowl. The chart's third job has been rubbed out. Tilly says June reads the book to her now, from the ticket, and
+     * never past the fog; the reader reads on from where they stopped, to the end, with her word after the sixth and the seventh;
+     * she asks them not to tell June. Stopped part way and taken up again, she only says to go on. A hand on the shelf afterwards
+     * finds the book read, and the account has the end of it.
+     */
+    @GameTest(template="empty",batch="pell_company_week",timeoutTicks=9000)
+    public static void aWeekInTheStoryIsReadToItsEndAndTheLeavesHaveNotComeBack(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_cweek_reader",P);var l=f.level(P);var b=f.base(P);
+        keep(f,p,"FirstVisit");keep(f,p,"FilledBowl");
+        {var own=f.own(p,P);own.putInt(PellCompany.READ,PellCompany.CHAPTER);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,own);}
+        f.at(p,P,.5,0,-44);
+        BlockPos shelf=b.offset(-13,0,-63),jobs=b.offset(PellJobs.CHART.get(1));
+        h.startSequence().thenWaitUntil(()->weekBegun(h,l,b))
+        .thenExecute(()->{
+            h.assertTrue(thing(l,b,18,0,-79,BOWL,1)&&PellJobs.bowl(b)==PellJobs.EMPTY,"the leaves have not come back into the bowl: "+l.getBlockState(b.offset(PellJobs.BOWL)));
+            // Before June has called hello the shelf is a shelf. Then in at the front.
+            f.at(p,P,1.5,0,-63.5);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.welcomed(b),"June calls hello"))
+        .thenWaitUntil(()->h.assertFalse(who(h,l,b,PellPeople.JUNE).saying(),"June's hello has had its time"))
+        .thenExecute(()->{f.at(p,P,-9.5,0,-67.5);told(p);hand(p,jobs);})
+        .thenIdle(1).thenExecute(()->{
+            var heard=told(p);h.assertTrue(heard.contains(PellTexts.CHART_JOBS_WEEK),"the chart a week in, Tilly's story rubbed out: "+heard);
+            f.at(p,P,-9.5,0,-60.5);hand(p,shelf);
+            var tilly=who(h,l,b,PellPeople.TILLY);int end=PellTexts.STORY.length;
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_JUNE_READS)&&p.getUUID().equals(PellCompany.reader(b)),"June reads it to her now: "+said(tilly));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.STORY[PellCompany.CHAPTER],PellTexts.STORY_STOP)),"on from where the reader stopped: "+Talk.replies(p));
+            for(int i=PellCompany.CHAPTER;i<PellCompany.CHAPTER+2;i++){
+                h.assertTrue(Talk.choose(p,PellTexts.STORY[i]),"passage "+(i+1)+" is read: "+Talk.replies(p));
+                h.assertTrue(said(tilly).equals(PellTexts.STORY_AFTER[i]),"her word after passage "+(i+1)+": "+said(tilly));
+            }
+            // Stopped there, and taken up again.
+            h.assertTrue(Talk.choose(p,PellTexts.STORY_STOP)&&said(tilly).equals(PellTexts.TILLY_KEEP_PLACE)&&PellCompany.reader(b)==null,"stopped: "+said(tilly));
+            hand(p,shelf);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_GO_ON)&&p.getUUID().equals(PellCompany.reader(b)),"taken up again: "+said(tilly));
+            for(int i=PellCompany.CHAPTER+2;i<end;i++)h.assertTrue(Talk.choose(p,PellTexts.STORY[i]),"passage "+(i+1)+" is read: "+Talk.replies(p));
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt(PellCompany.READ)==end&&own.getBoolean("ReadEnding"),"read to the end: "+own.getInt(PellCompany.READ));
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_END)&&PellCompany.reader(b)==null&&Talk.replies(p).isEmpty(),"she asks them not to tell June: "+said(tilly));
+            h.assertTrue(PellJobs.ticked(b)==0,"it is no longer a job on the chart");
+            hand(p,shelf);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_FINISHED)&&PellCompany.reader(b)==null,"a hand on the shelf afterwards: "+said(tilly));
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("a week on I read her the end of it"),"the account has the end of the book: "+text);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_company_week") public static void companyWeekDone(ServerLevel l){done();}
 
     /**
      * 0.4.527, bedtime (docs/PELL_HOUSE_BEDTIME_0_4_527.md). After the washing up June goes to her chair; a reader in it is asked for it
@@ -1313,7 +1631,15 @@ public final class PellHouseTests {
             june.hush();LiteraryVignettes.talk(p,june);june.hush();LiteraryVignettes.talk(p,june);
             h.assertTrue(said(june).equals(PellTexts.JUNE_WEEK_TALK[2])&&(rules(f,p)&PellTexts.RULE_POOL)!=0,"the pool gate, still a rule: "+rules(f,p));
             f.at(q,P,-9.5,0,-62.5);LiteraryVignettes.talk(q,tilly);
-            h.assertTrue(said(tilly).equals(PellTexts.TILLY_WEEK_TALK[0]),"a hand on Tilly a week in: "+said(tilly));
+            // 0.4.571: a reader's first hand on her in Nessa's room is her asking (PellCompany), and the panel offers what that reader
+            // can tell her a week in: the pool and her hair, which anybody can see; not the knife, which the other reader found.
+            String asks=PellTexts.TILLY_WEEK_TALK[PellTexts.TILLY_WEEK_TALK.length-1];
+            h.assertTrue(said(tilly).equals(asks)&&telling(q,"Tilly",asks),"Tilly asks what is different: "+said(tilly));
+            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_POOL_OPEN,PellTexts.TELL_HAIR,PellTexts.TELL_SAME,PellTexts.TELL_ENOUGH)),"what this reader can tell her: "+Talk.replies(q));
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_HAIR)&&said(tilly).equals(PellTexts.TILLY_A_WEEK),"told her hair is nearly to her shoulders: "+said(tilly));
+            h.assertTrue(Talk.choose(q,PellTexts.TELL_ENOUGH)&&PellCompany.told(f.own(q,P))==1,"and it is left there");
+            tilly.hush();LiteraryVignettes.talk(q,tilly);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_WEEK_TALK[0]),"a second hand on Tilly a week in: "+said(tilly));
             june.hush();tilly.hush();
             // To six: one reader in the living room, the other out in the garage.
             f.at(p,P,13.5,0,-92.5);f.at(q,P,-2.5,0,-68.5);PellVisit.hurry(b,PellVisit.SIX-5);

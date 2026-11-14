@@ -54,7 +54,8 @@ public final class PellTexts {
             case BED->"The bed is made. At its edge the quilt is pressed flat where someone sits.";
             case DRAWERS->"Raised dots on the drawers' labels.";
             case DESK->"A desk with a magnifier on a stand, angled over the blotter.";
-            case BOOKSHELF->"Large-print books, the titles big enough to read across the room. One is out.";
+            // 0.4.571: the one that is out is where it can be read from (PellCompany).
+            case BOOKSHELF->"Large-print books, the titles big enough to read across the room. One is out, lying on top, a bus ticket in it.";
             // Stage bit 1: open.
             case WARDROBE->(stage&2)==0?"The wardrobe.":"Clothes on hangers. Leaning in the corner, a cane like Tilly's, shorter.";
             case SWITCH->"Textured tape round the light switch, so it can be found by touch.";
@@ -120,7 +121,9 @@ public final class PellTexts {
             // 0 the old stakes; 1 the newest.
             case STAKE->stage==0?"A stake with a dead seedling. The tag says NESSA, in a child's printing.":"The newest stake, a fresh seedling. The tag says TILLY, in careful capitals.";
             case KENNEL->"A kennel. BISCUIT over the door, and a heart in crayon. A chain clipped to the wall, and to nothing.";
-            case BOWL->"A steel bowl full of leaves.";
+            // 0.4.571 (PellJobs): 1, the leaves tipped out; 2, filled at a tap; 3, after the night.
+            case BOWL->stage==1?"The dog's bowl, empty.":stage==2?"The dog's bowl, full to the brim."
+                :stage==3?"The bowl is empty. Round it the ground is wet, and printed with bare feet.":"A steel bowl full of leaves.";
             // 0.4.533: stage 1, June's robe dropped over it while she swims.
             case POOL_CHAIR->stage==1?"A towelling robe has been dropped over the pool chair. It is still warm."
                 :"A pool chair turned to face the water. The towel on its back is faded on one side only.";
@@ -212,7 +215,8 @@ public final class PellTexts {
         JUNE_NESSA="This was Nessa's room. It's Tilly's now.",
         JUNE_POOL="The pool gate stays locked. That's the one thing in this house I'll ask twice.",
         JUNE_GARAGE="You're in the garage. It's all done up. For your privacy.",
-        JUNE_DINNER="Dinner's at six. I'll give you a call.";
+        // 0.4.571: and where the afternoon's jobs are (PellJobs).
+        JUNE_DINNER="Dinner's at six. I'll give you a call. Till then there's a job or two on the chart in the kitchen, love.";
     /**
      * 0.4.526, the first evening (PellVisit, docs/PELL_HOUSE_DINNER_0_4_526.md): June's call, what she says as she serves and clears,
      * and what a hand on the table finds at each place. Callum, at the table, does not speak either.
@@ -828,7 +832,9 @@ public final class PellTexts {
         "Is the pool open? I can hear the water.",
         "She calls me love. Mostly.",
         "Callum's hair drips. I can hear it.",
-        "I'm keeping my hat on."};
+        "I'm keeping my hat on.",
+        // 0.4.571: her asking, a week in (PellCompany.asks).
+        "Tell me what's different. Something is."};
     /** What a hand on June gets at first light, on her way down to the pool or back from it in her robe. */
     public static final String[] JUNE_SWIM_TALK={
         "Morning, love. You're up early.",
@@ -1082,6 +1088,14 @@ public final class PellTexts {
         if((r&RULE_NESSA)!=0)rules.add("Nessa's room is Tilly's now.");
         if((r&RULE_GARAGE)!=0)rules.add(others.isEmpty()?"I was in the garage, for my privacy.":CoopAccounts.names(with(others,"I"))+" were in the garage, for our privacy.");
         if(!rules.isEmpty())p.add("June had rules. "+String.join(" ",rules));
+        // 0.4.571: the day's jobs, and Tilly (PellJobs, PellCompany).
+        if(own.getBoolean("LaidTable"))p.add("There was a chart of jobs on the kitchen wall, and a strip on it with no name. I laid the table."+(own.getBoolean("HeardFour")?" Four places, June said, always four.":""));
+        if(own.getBoolean("HeardCallumHadHis"))p.add("Nothing was put on Callum's plate. Tilly asked, and June said he had had his.");
+        if(own.getBoolean("FilledBowl"))p.add("I filled the dog's bowl by the kennel. There was no dog."+(own.getBoolean("SawBowlDry")?" In the morning the bowl was empty, and the ground round it was printed with bare feet.":""));
+        if(PellCompany.told(own)>0)p.add("Tilly asked me what things looked like, and I told her.");
+        int story=own.getInt(PellCompany.READ);
+        if(story>=STORY.length)p.add("I read to Tilly from a library book of Nessa's, from where a bus ticket marked the place, and a week on I read her the end of it: a girl at a lamp who would not answer to another girl's name.");
+        else if(story>0)p.add("I read to Tilly from a library book of Nessa's, from where a bus ticket marked the place. We did not get to the end.");
         boolean dinner=own.getBoolean("HeardNessaAtDinner"),bed=own.getBoolean("HeardNessaAtBedtime");
         if(dinner&&bed)p.add("At the table, and again at bedtime, June called Tilly Nessa.");
         else if(dinner)p.add("At the table June called Tilly Nessa, and went on serving.");
@@ -1204,4 +1218,95 @@ public final class PellTexts {
         TILLY_DESK="Is it still light out?",
         TILLY_MARKS="Somebody measured themselves here.",
         TILLY_WARDROBE="There's still clothes in here.";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.571: the day's jobs, and Tilly
+    /** The chore chart with June's strip on it (PellJobs): its names; what is against the new strip, on the first visit and a week in;
+     *  and, on the last night, with the strip taken down. */
+    public static final String CHART_NAMES="A chore chart. CALLUM; then TILLY, on a strip stuck over another name. Under them, a new strip with no name on it.",
+        CHART_JOBS="Against the new strip, in June's pencil: LAY THE TABLE. BISCUIT'S WATER. TILLY'S STORY.",
+        CHART_JOBS_WEEK="Against the new strip, in June's pencil: LAY THE TABLE. BISCUIT'S WATER. A third line, rubbed out.",
+        CHART_NAMES_BARE="A chore chart. CALLUM; then TILLY, on a strip stuck over another name. The row under them is bare.",
+        CHART_STARS_BARE="Two weeks of stars down the side of the chart. The strip with no name on it has been taken down.";
+    /** Which of the first {@code count} jobs on the chart June has ticked, as the chart's own line ends. */
+    public static String ticked(int ticked,int count){
+        boolean a=(ticked&PellJobs.TABLE)!=0,b=(ticked&PellJobs.WATER)!=0,c=count>=3&&(ticked&PellJobs.STORY)!=0;
+        int n=(a?1:0)+(b?1:0)+(c?1:0);
+        if(n==0)return "";
+        if(n==count)return count>=3?" All three are ticked.":" Both are ticked.";
+        if(n==1)return a?" The first is ticked.":b?" The second is ticked.":" The third is ticked.";
+        return a&&b?" The first two are ticked.":a?" The first and the third are ticked.":" The last two are ticked.";
+    }
+    /** The plates out of the cupboard, and what June says of a table laid for her, all of it or some. */
+    public static String platesTaken(int n){return n==1?"You take down a plate.":"You take down "+Stillness.words(n)+" plates.";}
+    public static final String PLATES_HAVE="You have the plates.",
+        JUNE_FOUR="Four. Good. Always four, love.",
+        JUNE_FINISH="I'll finish that, love.";
+    /** The dog's bowl: tipped out and taken, filled, set down; and where it goes. */
+    public static final String BOWL_TIPPED="You tip the leaves out and pick up the bowl. Under them it is dry. They have been in it a long time.",
+        BOWL_PICKED="You pick up the bowl.",
+        BOWL_FILLED="You fill the bowl at the tap.",
+        BOWL_IS_FULL="The bowl is full.",
+        BOWL_DOWN_FULL="You set the bowl down by the kennel, full. Nothing comes for it.",
+        BOWL_DOWN_EMPTY="You set the bowl down by the kennel, empty.",
+        BOWL_WHERE="It goes down by the kennel.";
+    /** At the first dinner (PellVisit): what Tilly asks of Callum's plate, and June's answer. */
+    public static final String TILLY_NO_FORK="Isn't Callum having any? I can't hear his fork.",
+        JUNE_HAD_HIS="Callum's had his, love.";
+
+    /**
+     * The book that is out in Nessa's room (PellCompany): a library book in large print, weeks overdue, read from where Nessa's bus
+     * ticket marks it. Ten passages; the first five are the chapter the ticket is in. It is original: a girl who minds a lamp, and a
+     * name the sea calls at night that is not hers. Nothing in it names a colour or an age.
+     */
+    public static final String[] STORY={
+        "Chapter Four. By the end of her first week on the rock Maren knew the lamp's jobs by heart: trim it, fill it, wind it, and never let it go out while a boat was abroad.",
+        "The keeper had one more rule, and she gave it at the top of the stairs, with the wind going round the glass. ‘The sea calls a name at night. It isn't yours. Don't you answer to it.’",
+        "‘Whose is it?’ said Maren. ‘It belonged to a girl who minded this lamp before you,’ said the keeper. ‘The sea took her, and has wanted her back ever since. It can't tell one girl from the next. It only knows who answers.’",
+        "That night Maren lay awake and heard it under the wind, as plain as her own breathing: a name, said kindly, over and over. It was not her name. She put the pillow over her head and said nothing.",
+        "On the seventh night the fog came down. The lamp burned, but its light went nowhere; and out in the fog the voice came nearer, and it had learned to sound like the keeper.",
+        "‘Come down, love,’ it said, at the foot of the stairs. ‘Come down and help me with the boat.’ And it called her by the other girl's name, the way you call somebody you have called a thousand times.",
+        "Maren had her foot on the top stair. It is very hard not to answer a kind voice. She opened her mouth, and what she said was her own name.",
+        "‘Maren,’ she said. ‘I'm Maren.’ The voice said the other name again, as if it had not heard. So she said it louder. She said it three times, each louder than the last, until the glass rang with it.",
+        "The fog stood at the door a long while. Then it went back down the rock the way it had come, and the name went with it, smaller and smaller, out over the water, looking for somebody else.",
+        "In the morning the keeper found her asleep on the top stair, with the lamp still burning. She did not ask what had happened. She trimmed the wick, and she called Maren by her name."};
+    /** What Tilly says after a passage, by the passage (none after most). */
+    public static final String[] STORY_AFTER={null,null,"It only knows who answers.",null,null,"You sound like June when you do that one.","Her own name.",null,null,null};
+    /** Reading to Tilly: how she begins it (from the ticket; picking it up again; a week in), what she says to a book already read as
+     *  far as it goes, at the chapter's end, at the book's end, and when it is put down; and the reader's own words for stopping. */
+    public static final String TILLY_TICKET="Is that the one that's out? Read from the ticket. That's where she got to.",
+        TILLY_GO_ON="Go on from where we were.",
+        TILLY_JUNE_READS="June reads it to me now. She starts from the ticket every night. We never get past the fog.",
+        TILLY_SAID_TOMORROW="You said tomorrow.",
+        TILLY_FINISHED="We finished it. Maren kept her name.",
+        TILLY_DONT_STOP="Don't stop there.",
+        CHAPTER_ENDS="That's the end of the chapter.",
+        TILLY_TOMORROW="Tomorrow, then. Promise.",
+        TILLY_KEEP_PLACE="Keep our place.",
+        TILLY_END="She called her by her name. Don't tell June we got to the end. She likes to start from the ticket.",
+        STORY_STOP="Stop there.",
+        SOMEBODY_READING="Somebody else has the book.",
+        BOOK_CHAPTER="The chapter ends there. The ticket is at the next.",
+        BOOK_FINISHED="The book is read to the end.";
+    /**
+     * Telling Tilly what things look like (PellCompany): what a reader says of each thing they have themselves seen, and what she says
+     * to it. The first visit, then a week in. She asks; nothing says what the reader is, or how any of it should be taken.
+     */
+    public static final String TELL_STARS="There are paper stars stuck all over the ceiling.",TILLY_STARS="Do they glow? Tell me tonight if they glow.",
+        TELL_BORDER="Little animals along the top of the wall, all the way round.",TILLY_BORDER="What kind? No, don't say. I'll make them up.",
+        TELL_DESK="A desk under the window, with a magnifier on a stand.",TILLY_MAGNIFIER="A magnifier. Then she couldn't see much either.",
+        TELL_MARKS="Heights in pencil up the door frame. They stop. Then a new one, today's, with an N by it.",TILLY_NOT_AN_N="An N. I'm not an N.",
+        TELL_CANE="There's a cane in the wardrobe. Like yours, but shorter.",TILLY_CANE="She had a cane? Nobody said she had a cane.",
+        TELL_PHOTOS="Photographs all down the hall. The same girl in every one.",TILLY_HER_HAIR="June says I've got her hair. I haven't. Dad cut mine.",
+        TELL_KENNEL="There's a kennel out by the drive. No dog in it.",TILLY_NO_DOG="I haven't heard a dog. Not once.",
+        TELL_GARAGE="I'm out in the garage, across the yard.",TILLY_TOO_FAR="That's too far. I won't hear you from there.",
+        TELL_POOL="There's a pool out the back, with a cover on it.",TILLY_SMELL_IT="I can smell it. June said about the gate twice.",
+        TELL_CHART="Your name's on a chart in the kitchen. It's stuck over somebody else's.",TILLY_FELT_EDGE="I know. I felt the edge of it. I didn't lift it.",
+        TELL_NICE="It's nice.",TILLY_ALWAYS_SAY="You always say that.",
+        TELL_POOL_OPEN="The cover's off the pool. The water's right up to the edge.",TILLY_UP_AND_BACK="June's in it first thing. Up and back, up and back. She doesn't stop.",
+        TELL_HAIR="Your hair's nearly down to your shoulders.",TILLY_A_WEEK="It can't be. It's been a week.",
+        TELL_DOORSTEP="We're on the fridge now. Two photographs, from the day we came.",TILLY_NEXT_TO_HER="Am I next to her?",
+        TELL_KNIFE="There's a knife gone from the block in the kitchen.",TILLY_NOT_ME="It wasn't me. I don't go in the drawers.",
+        TELL_NAME="June called you Nessa.",TILLY_SAYS_SORRY="She says sorry after. She always says sorry.",
+        TELL_SAME="It's all the same.",TILLY_BEING_KIND="It isn't. I can tell when you're being kind.",
+        TELL_ENOUGH="Leave it there.";
 }

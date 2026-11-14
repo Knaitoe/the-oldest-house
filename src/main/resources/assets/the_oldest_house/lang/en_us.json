@@ -1835,5 +1835,8 @@
   "subtitles.the_oldest_house.pell.tap": "A tap runs",
   "subtitles.the_oldest_house.pell.wipe": "A cloth over a table",
   "subtitles.the_oldest_house.pell.kettle": "A kettle comes to the boil",
-  "subtitles.the_oldest_house.pell.drip": "Water dripping"
+  "subtitles.the_oldest_house.pell.drip": "Water dripping",
+  "item.the_oldest_house.pell_plates": "Plates",
+  "item.the_oldest_house.pell_bowl": "Dog's Bowl",
+  "item.the_oldest_house.pell_bowl_water": "Dog's Bowl"
 }

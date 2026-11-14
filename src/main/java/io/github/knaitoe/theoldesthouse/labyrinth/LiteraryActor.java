@@ -175,6 +175,8 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         if(a==null||a.isRemoved()||a.level()!=reader.level()||a.distanceToSqr(reader)>64||!a.addresses())return;
         a.addressee=reader.getUUID();a.spokenToAt=a.tickCount;a.addressFor=Math.max(a.addressFor,80);ADDRESSING.add(a);
     }
+    /** The reader this person is turned to, while they go on looking at them; null when nobody. */
+    public @javax.annotation.Nullable UUID addressee(){return addressFor>0?addressee:null;}
     /** What the turning to a reader is doing, for a failed check to say. */
     public String addressing(){
         var front=seatFront();

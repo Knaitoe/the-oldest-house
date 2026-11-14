@@ -1020,6 +1020,44 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
         }).thenSucceed();
     }
     @AfterBatch(batch="literary_last_stop_bar") public static void lastStopBarDone(ServerLevel l){close();}
+    /**
+     * 0.4.571 (run 1601, the two-reader conduct check at the bar): nobody at the Last Stop says a sentence they have just said. A
+     * reader's first word to Marla gets her first line; a second reader's first word, straight after, gets her next and not the same
+     * one over; and what the bar's own talk has her say a moment later is neither. Each reader keeps their own place in her lines.
+     */
+    private static java.util.function.BiConsumer<LiteraryActor,String> barEar;
+    @GameTest(template="empty",batch="literary_last_stop_said",timeoutTicks=600)
+    public static void nobodyAtTheLastStopSaysTheSentenceTheyHaveJustSaid(GameTestHelper h){
+        var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("said_reader",place);var peer=f.player("said_peer",place);var b=f.base(place);var l=f.out;
+        f.at(p,place,-21.5,0,-22.5);f.at(peer,place,-22.5,0,-23.5);
+        var room=place.room();f.chunks.hold(l,new AABB(b.getX()+room.minX()-1,b.getY()+room.minY()-1,b.getZ()+room.minZ()-1,b.getX()+room.maxX()+2,b.getY()+room.maxY()+2,b.getZ()+room.maxZ()+2));
+        var heard=new ArrayList<String>();final LiteraryActor[] marla={null};
+        barEar=(a,text)->{if(a==marla[0])heard.add(text);};LiteraryActor.SAID.add(barEar);
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready()&&ElkLot.loaded(l,b),"the bar and its people are resident");
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.hasUUID(ElkLotNight.MARLA.key())&&l.getEntity(world.getUUID(ElkLotNight.MARLA.key())) instanceof LiteraryActor,"Marla is behind her bar");
+        }).thenExecute(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);marla[0]=(LiteraryActor)l.getEntity(world.getUUID(ElkLotNight.MARLA.key()));
+            // The night's clock a second before the bar's own talk comes round, and round to Marla first.
+            world.putInt("Night",100);world.remove("Lines");LiteraryVignettes.shared(f.data(),place,world);
+            LiteraryVignettes.talk(p,marla[0]);p.closeContainer();
+            h.assertTrue(heard.equals(List.of("We're past close, hon. You look rough. Sit a minute.")),"a reader's first word to Marla gets her first line: "+heard);
+            LiteraryVignettes.talk(peer,marla[0]);peer.closeContainer();
+            h.assertTrue(heard.size()==2&&heard.get(1).equals("You're not from around here. That's all right. Nobody's from around here after midnight."),"a second reader's first word, straight after, gets her next line and not the same one over: "+heard);
+            h.assertTrue(f.own(p,place).getInt("Talk_Marla")==1&&f.own(peer,place).getInt("Talk_Marla")==2,"each reader keeps their own place in her lines, the second past the line they were not told twice");
+        }).thenWaitUntil(()->{
+            var world=LiteraryVignettes.shared(f.data(),place);
+            h.assertTrue(world.getInt("Lines")>=1,"waiting for the bar's own talk to come round to Marla, night "+world.getInt("Night"));
+        }).thenExecute(()->{
+            h.assertTrue(heard.size()==3&&heard.get(2).equals("Kitchen's closed. There's pickled eggs if you're brave."),"what the bar's own talk has her say a moment later is neither of the two she has just said: "+heard);
+            // Once it is no longer just said, a line comes round again as it always did.
+            var data=marla[0].getPersistentData();var recent=data.getCompound("Recent0571");for(var k:List.copyOf(recent.getAllKeys()))recent.putLong(k,recent.getLong(k)-ElkLotNight.FRESH);data.put("Recent0571",recent);
+            var late=f.player("said_late",place);f.at(late,place,-21.5,0,-23.5);LiteraryVignettes.talk(late,marla[0]);late.closeContainer();
+            h.assertTrue(heard.size()==4&&heard.get(3).equals(heard.get(0)),"half a minute on, a third reader's first word gets her first line: "+heard);
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="literary_last_stop_said") public static void lastStopSaidDone(ServerLevel l){if(barEar!=null){LiteraryActor.SAID.remove(barEar);barEar=null;}close();}
     @GameTest(template="empty",batch="literary_last_stop_night",timeoutTicks=1200)
     public static void theElkDentsATruckLooksAtTheReaderAndTheMenHerdWithoutTouching(GameTestHelper h){
         var f=new Fixture(h);var place=LabyrinthPlace.ELK_LOT;var p=f.player("night_reader",place);var b=f.base(place);var l=f.out;var room=place.room();

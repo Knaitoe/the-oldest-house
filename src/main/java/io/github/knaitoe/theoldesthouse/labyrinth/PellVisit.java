@@ -148,6 +148,8 @@ public final class PellVisit {
         walkers(l,b,h);
         // 0.4.570: their own small things while the house waits on its hour (PellIdle).
         PellIdle.tick(l,b,h,here,now);
+        // 0.4.571: the day's jobs, and the book being read to Tilly (PellJobs, PellCompany).
+        PellJobs.tick(l,b,h,here,now);PellCompany.tick(l,b,h,here,now);
         // 0.4.536: the shed's deck, whatever the hour.
         PellTapes.tick(l,b,h,here,now);
         // 0.4.538: a bucket nobody here has goes back to the laundry; on the last night, Callum out on the line.
@@ -204,6 +206,8 @@ public final class PellVisit {
         h.visit=visit;h.welcomed=false;
         if(visit>=2)PellWeek.weekIn(l,b,h);
         PellWeek.dress(l,b,visit);
+        // 0.4.571: nothing laid, ticked or carried, the bowl as the visit finds it, and no book open.
+        PellJobs.restart(l,b,h,visit);PellCompany.restart(h);
         // 0.4.538: the third visit is the last night, from the evening.
         if(visit>=PellWeek.LAST)PellLastNight.begin(l,b,h);
     }
@@ -330,6 +334,8 @@ public final class PellVisit {
     /** How long June waits after calling before she serves whoever has come; how long Tilly takes over hers; how long dinner lasts
      *  at most; how long June waits for the children to leave the kitchen before she clears; how long she is at the sink. */
     public static final int SERVE_BY=600,TILLY_EATS=300,DINNER_LONGEST=1200,LEAVE_TABLE=100,WASHING=200;
+    /** 0.4.571: how long after June has served before Tilly asks after Callum's plate. */
+    public static final int FORK_AFTER=80;
     /** A plate: not there, laid, served, scraped; 0.4.531, breakfast on it. Who a place is for besides the house's people: a reader,
      *  or nobody. */
     public static final int NONE=0,LAID_PLATE=1,SERVED=2,SCRAPED=3,BREAKFAST=4,GUEST=10,NOBODY=-1;
@@ -486,10 +492,10 @@ public final class PellVisit {
                 if(h.time>=SIX&&ready(h,now,june)&&PellIdle.home(h))call(l,b,h,june,here,now);
             }
             case 1->{
-                // At the table's end: four places laid. Then to the stove for the saucepan.
+                // At the table's end: four places laid. Then to the stove for the saucepan. 0.4.571: what a reader has laid already
+                // stays as they laid it, and she lays the rest (PellJobs.juneLays).
                 if(!juneStill)return;
-                for(int i=0;i<TABLE.length;i++)plate(l,b,h,i,LAID_PLATE);
-                var at=world(b,v(TABLE_END.x(),TABLE_END.z()));l.playSound(null,at.x,at.y+1,at.z,SoundEvents.DECORATED_POT_PLACE,SoundSource.BLOCKS,.5F,1.5F);
+                if(!PellJobs.juneLays(l,b,h)){var at=world(b,v(TABLE_END.x(),TABLE_END.z()));l.playSound(null,at.x,at.y+1,at.z,SoundEvents.DECORATED_POT_PLACE,SoundSource.BLOCKS,.5F,1.5F);}
                 go(h,J,-1,KITCHEN.look(),v(KITCHEN.x(),KITCHEN.z()));h.step=LAID;
             }
             case 2->{
@@ -525,6 +531,13 @@ public final class PellVisit {
             }
             case 4->{
                 if(juneStill&&!june.getMainHandItem().isEmpty())june.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+                // 0.4.571 (owner, playing the house: "he doesn't have food"): at the first dinner, once, Tilly hears no fork at Callum's
+                // place and asks; June has her answer. His plate is passed over on purpose, and now somebody says so.
+                if(h.visit<2&&h.forkSaid<2&&now-h.servedAt>=FORK_AFTER&&h.seated[T]&&h.seated[C]){
+                    var tilly=PellPeople.find(l,b,T);
+                    if(h.forkSaid==0){if(tilly!=null&&ready(h,now,tilly)){say(h,tilly,T,PellTexts.TILLY_NO_FORK,now);h.forkSaid=1;}}
+                    else if(ready(h,now,june)){say(h,june,J,PellTexts.JUNE_HAD_HIS,now);h.forkSaid=2;present(june,"HeardCallumHadHis",here);}
+                }
                 int t=-1;for(int i=0;i<TABLE.length;i++)if(h.diner[i]==T)t=i;
                 // 0.4.545: a reader as Tilly eats theirs, or doesn't (table).
                 if(t>=0&&h.plate[t]==SERVED&&now-h.servedAt>=TILLY_EATS&&h.tillyReader==null)plate(l,b,h,t,SCRAPED);

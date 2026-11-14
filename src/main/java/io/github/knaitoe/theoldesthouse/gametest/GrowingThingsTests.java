@@ -31,9 +31,11 @@ public final class GrowingThingsTests {
     private static String account(ServerPlayer p){for(var st:p.getInventory().items)if(st.is(Items.WRITTEN_BOOK)){var c=st.get(DataComponents.WRITTEN_BOOK_CONTENT);if(c!=null&&c.title().raw().equals(GrowingThingsTexts.TITLE))return String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}return "";}
     private static boolean holds(ServerPlayer p,net.minecraft.world.item.Item item){for(var st:p.getInventory().items)if(st.is(item))return true;return false;}
     private static boolean use(LiteraryTests.Fixture f,ServerPlayer p,BlockPos rel){var at=f.base(P).offset(rel);return GrowingThings.use(p,at,f.level(P).getBlockState(at));}
-    private static void close(){if(active!=null){active.close();active=null;}GrowingThings.clearAll();}
+    private static java.util.function.BiConsumer<LiteraryActor,String> ear;
+    private static void close(){if(ear!=null){LiteraryActor.SAID.remove(ear);ear=null;}if(active!=null){active.close();active=null;}GrowingThings.clearAll();}
     @AfterBatch(batch="growing_things") public static void done(net.minecraft.server.level.ServerLevel l){close();}
     @AfterBatch(batch="growing_things_together") public static void togetherDone(net.minecraft.server.level.ServerLevel l){close();}
+    @AfterBatch(batch="growing_things_asked") public static void askedDone(net.minecraft.server.level.ServerLevel l){close();}
     private static int shoots(net.minecraft.server.level.ServerLevel l,BlockPos b,int z0,int z1){int n=0;for(int z=z0;z>=z1;z--)for(int x=GrowingThingsSite.YARD_W;x<=GrowingThingsSite.YARD_E;x++)if(GrowingBlock.is(l.getBlockState(b.offset(x,0,z)),GrowingBlock.Kind.SHOOT))n++;return n;}
 
     @GameTest(template="empty",batch="growing_things",timeoutTicks=6000)
@@ -108,6 +110,54 @@ public final class GrowingThingsTests {
             .thenExecute(()->{GrowingThings.resetNow(l,b);
                 h.assertTrue(GrowingBlock.is(l.getBlockState(b.offset(GrowingThingsSite.TABLE_AT)),GrowingBlock.Kind.TABLE)&&GrowingBlock.is(l.getBlockState(b.offset(GrowingThingsSite.GARMENTS.get(0),1,GrowingThingsSite.LINE_Z)),GrowingBlock.Kind.WASHING)&&l.getBlockState(b.offset(GrowingThingsSite.SPADE)).isAir(),"the yard set back");})
             .thenExecute(()->{if(active!=null){active.close();active=null;}GrowingThings.clearAll();})
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.571 (run 1601, the two-reader conduct check): Merry asks for a hand with the washing once for everybody near enough to hear
+     * her, and John with the table. Each reader was asked on their own first step into the yard and the house, so two readers coming in
+     * a moment apart were told the whole sentence twice. A reader who comes into hearing while she is still saying it has it as the
+     * others did; one who comes near after she has finished is asked, and no sooner than ASK_AGAIN after the first asking. Merry
+     * does not speak over the line about the shoots.
+     */
+    @GameTest(template="empty",batch="growing_things_asked",timeoutTicks=3000)
+    public static void twoReadersComingInTogetherAreAskedOnceAndOneOutOfHearingWhenTheyComeNear(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] r=new ServerPlayer[4];var washing=new ArrayList<Long>();var table=new ArrayList<Long>();final long[] in={0};
+        ear=(a,text)->{if(text.startsWith("Can you help me get the washing in"))washing.add(l.getGameTime());else if(text.startsWith("That window's going."))table.add(l.getGameTime());};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the yard is resident"))
+            // Two in the alley; two more out at the far corner of the yard, past where Merry can be heard.
+            .thenExecute(()->{r[0]=f.player("ask_a",P);r[1]=f.player("ask_b",P);r[2]=f.player("ask_far",P);r[3]=f.player("ask_soon",P);f.at(r[2],P,11.5,0,-27.5);f.at(r[3],P,10.5,0,-26.5);})
+            .thenWaitUntil(()->h.assertTrue(GrowingThings.actor(l,b,0)!=null&&GrowingThings.actor(l,b,2)!=null,"the family at home"))
+            .thenExecute(()->{LiteraryActor.SAID.add(ear);in[0]=l.getGameTime();f.at(r[0],P,-4.5,0,-13.5);})
+            .thenIdle(10)
+            .thenExecute(()->f.at(r[1],P,-6.5,0,-13.5))
+            .thenWaitUntil(()->h.assertTrue(f.own(r[0],P).getBoolean("Asked")&&f.own(r[1],P).getBoolean("Asked"),"the two by the line asked: "+washing))
+            // One of the far two walks up while she is still saying it: they have it as the others did.
+            .thenExecute(()->{
+                h.assertTrue(GrowingThings.actor(l,b,0).saying()&&!f.own(r[3],P).getBoolean("Asked")&&!f.own(r[2],P).getBoolean("Asked"),"Merry still saying it, the two out of hearing not asked");
+                f.at(r[3],P,-3.5,0,-15.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(r[3],P).getBoolean("Asked"),"the one who walked up while she was saying it has it too"))
+            .thenWaitUntil(()->h.assertTrue(!GrowingThings.actor(l,b,0).saying(),"Merry has finished saying it"))
+            .thenExecute(()->{
+                h.assertTrue(washing.size()==1,"Merry asked once for the three of them, not "+washing.size()+" times");
+                h.assertTrue(washing.get(0)-in[0]>=GrowingThings.READ_FIRST,"and not over the line about the shoots: "+(washing.get(0)-in[0])+" ticks after the first came in");
+                h.assertTrue(f.own(r[2],P).getBoolean("SawShoots")&&!f.own(r[2],P).getBoolean("Asked"),"the one still out of hearing has not been asked: "+f.own(r[2],P));
+                f.at(r[2],P,-4.5,0,-15.5);
+            })
+            // The other comes near once she has finished: asked, and not straight after.
+            .thenWaitUntil(()->h.assertTrue(f.own(r[2],P).getBoolean("Asked"),"the last asked on coming near"))
+            .thenExecute(()->h.assertTrue(washing.size()==2&&washing.get(1)-washing.get(0)>=GrowingThings.ASK_AGAIN,"asked again for the one who had not heard, and not straight after: "+washing))
+            // The kitchen: the two of them in at the back door a moment apart, and John asks once.
+            .thenExecute(()->f.at(r[0],P,-7.5,1,-32.5))
+            .thenIdle(5)
+            .thenExecute(()->f.at(r[1],P,-3.5,1,-33.5))
+            .thenWaitUntil(()->h.assertTrue(f.own(r[0],P).getBoolean("AskedTable")&&f.own(r[1],P).getBoolean("AskedTable"),"the two in the kitchen asked: "+table))
+            .thenIdle(60)
+            .thenExecute(()->h.assertTrue(table.size()==1&&f.own(r[0],P).getBoolean("Inside")&&f.own(r[1],P).getBoolean("Inside"),"John asked once for the two of them, not "+table.size()+" times"))
+            .thenExecute(GrowingThingsTests::close)
             .thenSucceed();
     }
 

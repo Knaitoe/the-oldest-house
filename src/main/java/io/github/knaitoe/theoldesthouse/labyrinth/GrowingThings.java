@@ -65,6 +65,14 @@ public final class GrowingThings {
      * stages; the beat after supper is up; the longest supper waits to be carried; an empty yard's reset. */
     public static final int CHORE_LIMIT=1800,HOLD=200,MERRY_TAKES=260,JOHN_OUT=200,FRAME_SPLITS=400,JOHN_GONE=600,JOHN_WALKS=900,
         FLOOR_1=400,FLOOR_2=800,FLOOR_3=1200,BEAT=100,SUPPER_LIMIT=1800,EMPTY_RESET=200;
+    /**
+     * 0.4.571 (run 1601, the two-reader conduct check): how near a reader hears one of the family; ticks before Merry or John asks for a
+     * hand again, of a reader who was not near enough to hear the first asking; ticks the lawn's shoots are left to be read before
+     * Merry speaks over them.
+     */
+    public static final double HEARING=14;
+    public static final int ASK_AGAIN=400,READ_FIRST=60;
+    static final String WASHING_ASK="Can you help me get the washing in? Mom says before it rains.",TABLE_ASK="That window's going. Give me a hand with the table? Grab an end.";
     static final int MERRY=0,MARJORIE=1,JOHN=2;
     static final String[] NAMES={"Merry","Marjorie","John"};
     static final int[] ROLES={LiteraryActor.GHOST_MERRY,LiteraryActor.GHOST_MARJORIE,LiteraryActor.GHOST_JOHN};
@@ -74,6 +82,8 @@ public final class GrowingThings {
         final BlockPos base;long tick;int empty,phase=CHORES,since,choresTicks;boolean fresh=true;
         final UUID[] cast=new UUID[3];
         final Set<Integer> washingDown=new HashSet<>();boolean washingDone,tableMoved,tableAlone;String tableBy="";
+        /** When Merry last asked for help with the washing and John with the table, and when each reader saw the shoots, by the day's tick. */
+        long washingAsked=-ASK_AGAIN,tableAsked=-ASK_AGAIN;final Map<UUID,Long> shootsAt=new HashMap<>();
         /** Hands on the table's ends: who, which end (0 west, 1 east), until when. */
         final Map<UUID,int[]> holds=new HashMap<>();int johnEnd=-1;long merryNext=MERRY_TAKES;
         boolean johnOut,johnGone,johnWalking,spadeLeft,frameSplit;int floor;
@@ -111,7 +121,22 @@ public final class GrowingThings {
     /** Someone at the Barretts' says something: over their head, and in the action bar for readers near enough to hear it. */
     static void speak(ServerLevel l,Day d,int who,String line){
         var a=actor(l,d.cast[who]);if(a==null)return;a.say(line);a.speaks(line);
-        for(var r:readers(l,d.base))if(r.distanceToSqr(a)<14*14)r.displayClientMessage(Component.literal(NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        for(var r:readers(l,d.base))if(r.distanceToSqr(a)<HEARING*HEARING)r.displayClientMessage(Component.literal(NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+    }
+    /**
+     * One of the family asks a reader for a hand: said once, for every reader near enough to hear it, and all of them are marked as
+     * asked. 0.4.571 (run 1601): each reader was asked on their own first step into the yard or the house, so two readers coming in
+     * a moment apart were told the whole sentence twice. A reader who comes into hearing while it is still being said has it as the
+     * others did. True when it is said now; false while the person is not there, is saying something else, asked less than
+     * {@link #ASK_AGAIN} ago, or the reader is out of hearing: they are asked when they come near.
+     */
+    static boolean ask(ServerPlayer p,Day d,int who,String line,String key,CompoundTag own,long last){
+        var l=p.serverLevel();var a=actor(l,d.cast[who]);if(a==null||p.distanceToSqr(a)>=HEARING*HEARING)return false;
+        if(a.saying()&&a.getCustomName()!=null&&a.getCustomName().getString().equals(line)){own.putBoolean(key,true);return false;}
+        if(a.saying()||d.tick-last<ASK_AGAIN)return false;
+        speak(l,d,who,line);own.putBoolean(key,true);
+        for(var r:readers(l,d.base)){if(r==p||r.distanceToSqr(a)>=HEARING*HEARING)continue;var theirs=own(r);if(theirs.getBoolean(key)||theirs.getBoolean("Completed"))continue;theirs.putBoolean(key,true);save(r,theirs);}
+        return true;
     }
     /** A fact marked in the record of every reader past the gate, who was there for it. */
     static void witnessed(ServerLevel l,Day d,String key){for(var r:readers(l,d.base)){if(!GrowingThingsSite.past(rel(r.position(),d.base)))continue;var own=own(r);if(own.getBoolean("Completed"))continue;own.putBoolean(key,true);save(r,own);}}
@@ -403,10 +428,12 @@ public final class GrowingThings {
         if(d==null){refresh(held,own);return;}
         var r=rel(p.position(),b);
         if(!own.getBoolean("Completed")){
-            if(GrowingThingsSite.inYard(r)&&!own.getBoolean("SawShoots")){own.putBoolean("SawShoots",true);cue(p,"Shoots in the lawn where nothing was planted, more of them toward the house.");
-                var merry=actor(p.serverLevel(),d.cast[MERRY]);if(d.phase==CHORES&&!d.washingDone&&merry!=null&&!own.getBoolean("Asked")){own.putBoolean("Asked",true);speak(p.serverLevel(),d,MERRY,"Can you help me get the washing in? Mom says before it rains.");}}
-            if(GrowingThingsSite.inHouse(r)&&!own.getBoolean("Inside")){own.putBoolean("Inside",true);own.putBoolean("Committed",true);
-                if(d.phase==CHORES&&!d.tableMoved){speak(p.serverLevel(),d,JOHN,"That window's going. Give me a hand with the table? Grab an end.");}}
+            if(GrowingThingsSite.inYard(r)&&!own.getBoolean("SawShoots")){own.putBoolean("SawShoots",true);d.shootsAt.put(p.getUUID(),d.tick);cue(p,"Shoots in the lawn where nothing was planted, more of them toward the house.");}
+            // 0.4.571 (run 1601): Merry and John each ask once for everybody in hearing (ask), and Merry not over the shoots' own line.
+            if(d.phase==CHORES&&!d.washingDone&&!own.getBoolean("Asked")&&GrowingThingsSite.inYard(r)&&d.tick-d.shootsAt.getOrDefault(p.getUUID(),-(long)READ_FIRST)>=READ_FIRST
+                &&ask(p,d,MERRY,WASHING_ASK,"Asked",own,d.washingAsked))d.washingAsked=d.tick;
+            if(GrowingThingsSite.inHouse(r)&&!own.getBoolean("Inside")){own.putBoolean("Inside",true);own.putBoolean("Committed",true);}
+            if(d.phase==CHORES&&!d.tableMoved&&!own.getBoolean("AskedTable")&&GrowingThingsSite.inHouse(r)&&ask(p,d,JOHN,TABLE_ASK,"AskedTable",own,d.tableAsked))d.tableAsked=d.tick;
             if(d.spadeLeft&&!own.getBoolean("SawSpade")&&sees(p,Vec3.atCenterOf(b.offset(GrowingThingsSite.SPADE)),24,.7)){own.putBoolean("SawSpade",true);
                 cue(p,d.johnGone?"His spade is standing in the shoots where the back step was.":"His spade is standing in the shoots by the back step.");}
             // Back out through the gate before supper is up: their own ending.
@@ -532,7 +559,7 @@ public final class GrowingThings {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,area,a->a.role()==LiteraryActor.GHOST_MERRY||a.role()==LiteraryActor.GHOST_MARJORIE||a.role()==LiteraryActor.GHOST_JOHN))if(a.owner().isEmpty())a.discard();
         for(var e:l.getEntitiesOfClass(Display.ItemDisplay.class,area,e->e.getTags().contains("growing_counter")||e.getTags().contains("growing_table")))e.discard();
         GrowingThingsSite.living(l,b);openBack(l,d,false);
-        d.phase=CHORES;d.since=0;d.choresTicks=0;Arrays.fill(d.cast,null);d.washingDown.clear();d.washingDone=false;d.tableMoved=false;d.tableAlone=false;d.tableBy="";
+        d.phase=CHORES;d.since=0;d.choresTicks=0;Arrays.fill(d.cast,null);d.washingDown.clear();d.washingDone=false;d.tableMoved=false;d.tableAlone=false;d.tableBy="";d.washingAsked=-ASK_AGAIN;d.tableAsked=-ASK_AGAIN;d.shootsAt.clear();
         d.holds.clear();d.johnEnd=-1;d.merryNext=MERRY_TAKES;d.johnOut=false;d.johnGone=false;d.johnWalking=false;d.spadeLeft=false;d.frameSplit=false;d.floor=0;
         d.counter.clear();d.upstairs.clear();d.carriers.clear();d.dadBy="";d.outcome="";d.upAt=-1;d.asked=false;d.sistersUp=false;d.routes.clear();d.leg.clear();d.legTicks.clear();d.displays.clear();
     }
