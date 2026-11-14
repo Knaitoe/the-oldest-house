@@ -1,0 +1,87 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "strut": "the_oldest_house:block/city/plane_strut",
+    "particle": "the_oldest_house:block/city/plane_strut"
+  },
+  "elements": [
+    {
+      "from": [
+        5.25,
+        9.683,
+        -8.749
+      ],
+      "to": [
+        6.75,
+        11.183,
+        17.499
+      ],
+      "faces": {
+        "north": {
+          "texture": "#strut",
+          "uv": [
+            5.25,
+            4.817,
+            6.75,
+            6.317
+          ]
+        },
+        "south": {
+          "texture": "#strut",
+          "uv": [
+            5.25,
+            4.817,
+            6.75,
+            6.317
+          ]
+        },
+        "east": {
+          "texture": "#strut",
+          "uv": [
+            0,
+            4.817,
+            16,
+            6.317
+          ]
+        },
+        "west": {
+          "texture": "#strut",
+          "uv": [
+            0,
+            4.817,
+            16,
+            6.317
+          ]
+        },
+        "up": {
+          "texture": "#strut",
+          "uv": [
+            5.25,
+            0,
+            6.75,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#strut",
+          "uv": [
+            5.25,
+            0,
+            6.75,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          6,
+          10.433,
+          4.375
+        ],
+        "axis": "x",
+        "angle": 22.5
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

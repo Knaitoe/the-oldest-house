@@ -1,0 +1,137 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "ski": "the_oldest_house:block/city/plane_ski",
+    "particle": "the_oldest_house:block/city/plane_ski"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        1,
+        10.5
+      ],
+      "to": [
+        2,
+        2.5,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            13.5,
+            2,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            13.5,
+            2,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#ski",
+          "uv": [
+            10.5,
+            13.5,
+            15.5,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            10.5,
+            2,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            10.5,
+            2,
+            15.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        10.5
+      ],
+      "to": [
+        5,
+        3.5,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ski",
+          "uv": [
+            2,
+            12.5,
+            5,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#ski",
+          "uv": [
+            2,
+            12.5,
+            5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#ski",
+          "uv": [
+            10.5,
+            12.5,
+            15.5,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#ski",
+          "uv": [
+            10.5,
+            12.5,
+            15.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#ski",
+          "uv": [
+            2,
+            10.5,
+            5,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#ski",
+          "uv": [
+            2,
+            10.5,
+            5,
+            15.5
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

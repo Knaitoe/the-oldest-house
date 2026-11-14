@@ -1,0 +1,184 @@
+{
+  "variants": {
+    "facing=north,slope=flat,stake=none": {
+      "model": "the_oldest_house:block/city/rope_flat_none"
+    },
+    "facing=north,slope=flat,stake=both": {
+      "model": "the_oldest_house:block/city/rope_flat_both"
+    },
+    "facing=north,slope=flat,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_flat_ahead"
+    },
+    "facing=north,slope=flat,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_flat_behind"
+    },
+    "facing=north,slope=rise,stake=none": {
+      "model": "the_oldest_house:block/city/rope_rise_none"
+    },
+    "facing=north,slope=rise,stake=both": {
+      "model": "the_oldest_house:block/city/rope_rise_both"
+    },
+    "facing=north,slope=rise,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_rise_ahead"
+    },
+    "facing=north,slope=rise,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_rise_behind"
+    },
+    "facing=north,slope=fall,stake=none": {
+      "model": "the_oldest_house:block/city/rope_fall_none"
+    },
+    "facing=north,slope=fall,stake=both": {
+      "model": "the_oldest_house:block/city/rope_fall_both"
+    },
+    "facing=north,slope=fall,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_fall_ahead"
+    },
+    "facing=north,slope=fall,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_fall_behind"
+    },
+    "facing=east,slope=flat,stake=none": {
+      "model": "the_oldest_house:block/city/rope_flat_none",
+      "y": 90
+    },
+    "facing=east,slope=flat,stake=both": {
+      "model": "the_oldest_house:block/city/rope_flat_both",
+      "y": 90
+    },
+    "facing=east,slope=flat,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_flat_ahead",
+      "y": 90
+    },
+    "facing=east,slope=flat,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_flat_behind",
+      "y": 90
+    },
+    "facing=east,slope=rise,stake=none": {
+      "model": "the_oldest_house:block/city/rope_rise_none",
+      "y": 90
+    },
+    "facing=east,slope=rise,stake=both": {
+      "model": "the_oldest_house:block/city/rope_rise_both",
+      "y": 90
+    },
+    "facing=east,slope=rise,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_rise_ahead",
+      "y": 90
+    },
+    "facing=east,slope=rise,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_rise_behind",
+      "y": 90
+    },
+    "facing=east,slope=fall,stake=none": {
+      "model": "the_oldest_house:block/city/rope_fall_none",
+      "y": 90
+    },
+    "facing=east,slope=fall,stake=both": {
+      "model": "the_oldest_house:block/city/rope_fall_both",
+      "y": 90
+    },
+    "facing=east,slope=fall,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_fall_ahead",
+      "y": 90
+    },
+    "facing=east,slope=fall,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_fall_behind",
+      "y": 90
+    },
+    "facing=south,slope=flat,stake=none": {
+      "model": "the_oldest_house:block/city/rope_flat_none",
+      "y": 180
+    },
+    "facing=south,slope=flat,stake=both": {
+      "model": "the_oldest_house:block/city/rope_flat_both",
+      "y": 180
+    },
+    "facing=south,slope=flat,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_flat_ahead",
+      "y": 180
+    },
+    "facing=south,slope=flat,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_flat_behind",
+      "y": 180
+    },
+    "facing=south,slope=rise,stake=none": {
+      "model": "the_oldest_house:block/city/rope_rise_none",
+      "y": 180
+    },
+    "facing=south,slope=rise,stake=both": {
+      "model": "the_oldest_house:block/city/rope_rise_both",
+      "y": 180
+    },
+    "facing=south,slope=rise,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_rise_ahead",
+      "y": 180
+    },
+    "facing=south,slope=rise,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_rise_behind",
+      "y": 180
+    },
+    "facing=south,slope=fall,stake=none": {
+      "model": "the_oldest_house:block/city/rope_fall_none",
+      "y": 180
+    },
+    "facing=south,slope=fall,stake=both": {
+      "model": "the_oldest_house:block/city/rope_fall_both",
+      "y": 180
+    },
+    "facing=south,slope=fall,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_fall_ahead",
+      "y": 180
+    },
+    "facing=south,slope=fall,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_fall_behind",
+      "y": 180
+    },
+    "facing=west,slope=flat,stake=none": {
+      "model": "the_oldest_house:block/city/rope_flat_none",
+      "y": 270
+    },
+    "facing=west,slope=flat,stake=both": {
+      "model": "the_oldest_house:block/city/rope_flat_both",
+      "y": 270
+    },
+    "facing=west,slope=flat,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_flat_ahead",
+      "y": 270
+    },
+    "facing=west,slope=flat,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_flat_behind",
+      "y": 270
+    },
+    "facing=west,slope=rise,stake=none": {
+      "model": "the_oldest_house:block/city/rope_rise_none",
+      "y": 270
+    },
+    "facing=west,slope=rise,stake=both": {
+      "model": "the_oldest_house:block/city/rope_rise_both",
+      "y": 270
+    },
+    "facing=west,slope=rise,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_rise_ahead",
+      "y": 270
+    },
+    "facing=west,slope=rise,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_rise_behind",
+      "y": 270
+    },
+    "facing=west,slope=fall,stake=none": {
+      "model": "the_oldest_house:block/city/rope_fall_none",
+      "y": 270
+    },
+    "facing=west,slope=fall,stake=both": {
+      "model": "the_oldest_house:block/city/rope_fall_both",
+      "y": 270
+    },
+    "facing=west,slope=fall,stake=ahead": {
+      "model": "the_oldest_house:block/city/rope_fall_ahead",
+      "y": 270
+    },
+    "facing=west,slope=fall,stake=behind": {
+      "model": "the_oldest_house:block/city/rope_fall_behind",
+      "y": 270
+    }
+  }
+}

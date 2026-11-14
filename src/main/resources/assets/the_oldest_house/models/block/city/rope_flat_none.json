@@ -1,0 +1,78 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "r": "the_oldest_house:block/city/rope",
+    "particle": "the_oldest_house:block/city/rope"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        17.5,
+        0
+      ],
+      "to": [
+        3.5,
+        18.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#r",
+          "uv": [
+            0,
+            4,
+            16,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#r",
+          "uv": [
+            0,
+            7,
+            16,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#r",
+          "uv": [
+            3,
+            0,
+            4,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

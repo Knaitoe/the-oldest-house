@@ -21,14 +21,19 @@ public final class CityRegistry {
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /**
-     * The city's dark stone, the same stone carved in fives, packed snow, blue ice, the tents' and the aeroplane's canvas, and the huts'
-     * weathered boards.
+     * The city's dark stone, the same stone carved in fives, packed snow, blue ice, the tents' canvas, and the huts' weathered boards.
      */
     public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("basalt","fives","snow","ice","canvas","boards");
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("city_"+name,fixed(switch(name){case "snow"->Blocks.SNOW_BLOCK;case "ice"->Blocks.PACKED_ICE;case "canvas"->Blocks.WHITE_WOOL;case "boards"->Blocks.SPRUCE_PLANKS;default->Blocks.DEEPSLATE;})));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CityBlock>> FITTING_TYPE=CODECS.register("city_fitting",()->CityBlock.CODEC);
     public static final DeferredBlock<CityBlock> FITTING=BLOCKS.registerBlock("city_fitting",CityBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().lightLevel(CityBlock::light));
+    /** 0.4.579: the aeroplane, a part to each cell it stands in: doped fabric over a frame, which stops a body where there is any of it. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CityPlaneBlock>> PLANE_TYPE=CODECS.register("city_plane",()->CityPlaneBlock.CODEC);
+    public static final DeferredBlock<CityPlaneBlock> PLANE=BLOCKS.registerBlock("city_plane",CityPlaneBlock::new,fixed(Blocks.WHITE_WOOL).noOcclusion());
+    /** 0.4.579: the fixed rope up the pass and its stakes; it stops nobody. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CityRopeBlock>> ROPE_TYPE=CODECS.register("city_rope",()->CityRopeBlock.CODEC);
+    public static final DeferredBlock<CityRopeBlock> ROPE=BLOCKS.registerBlock("city_rope",CityRopeBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().noCollission());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CityMural>> MURAL_TYPE=CODECS.register("city_mural",()->CityMural.CODEC);
     public static final DeferredBlock<CityMural> MURAL=BLOCKS.registerBlock("city_mural",CityMural::new,fixed(Blocks.DEEPSLATE));
     /** What fills the tunnel: drawn, never touched; it stops nobody, and a body inside it is taken into the dark. */

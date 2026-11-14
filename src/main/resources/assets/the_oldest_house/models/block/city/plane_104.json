@@ -1,0 +1,128 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "ski": "the_oldest_house:block/city/plane_ski",
+    "particle": "the_oldest_house:block/city/plane_ski"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        10.5
+      ],
+      "to": [
+        14,
+        1.5,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            14.5,
+            14,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            14.5,
+            14,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#ski",
+          "uv": [
+            10.5,
+            14.5,
+            15.5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            10.5,
+            14,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            10.5,
+            14,
+            15.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        1,
+        10.5
+      ],
+      "to": [
+        16,
+        2.5,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ski",
+          "uv": [
+            14,
+            13.5,
+            16,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#ski",
+          "uv": [
+            14,
+            13.5,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#ski",
+          "uv": [
+            10.5,
+            13.5,
+            15.5,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#ski",
+          "uv": [
+            14,
+            10.5,
+            16,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#ski",
+          "uv": [
+            14,
+            10.5,
+            16,
+            15.5
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

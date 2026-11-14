@@ -1,0 +1,119 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "dope": "the_oldest_house:block/city/plane_dope",
+    "particle": "the_oldest_house:block/city/plane_dope"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        13.25,
+        14
+      ],
+      "to": [
+        16,
+        15.25,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            0.75,
+            16,
+            2.75
+          ]
+        },
+        "east": {
+          "texture": "#dope",
+          "uv": [
+            14,
+            0.75,
+            16,
+            2.75
+          ]
+        },
+        "up": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        13.25,
+        10
+      ],
+      "to": [
+        12,
+        15.25,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            0.75,
+            12,
+            2.75
+          ]
+        },
+        "south": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            0.75,
+            12,
+            2.75
+          ]
+        },
+        "east": {
+          "texture": "#dope",
+          "uv": [
+            10,
+            0.75,
+            14,
+            2.75
+          ]
+        },
+        "up": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            10,
+            12,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#dope",
+          "uv": [
+            0,
+            10,
+            12,
+            14
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

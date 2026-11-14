@@ -1,0 +1,265 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "ski": "the_oldest_house:block/city/plane_ski",
+    "strut": "the_oldest_house:block/city/plane_strut",
+    "particle": "the_oldest_house:block/city/plane_ski"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        10.5
+      ],
+      "to": [
+        16,
+        1.5,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            14.5,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            14.5,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            10.5,
+            16,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#ski",
+          "uv": [
+            0,
+            10.5,
+            16,
+            15.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        1.5,
+        11.5
+      ],
+      "to": [
+        6,
+        8,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#strut",
+          "uv": [
+            2,
+            8,
+            6,
+            14.5
+          ]
+        },
+        "south": {
+          "texture": "#strut",
+          "uv": [
+            2,
+            8,
+            6,
+            14.5
+          ]
+        },
+        "east": {
+          "texture": "#strut",
+          "uv": [
+            11.5,
+            8,
+            14.5,
+            14.5
+          ]
+        },
+        "west": {
+          "texture": "#strut",
+          "uv": [
+            11.5,
+            8,
+            14.5,
+            14.5
+          ]
+        },
+        "up": {
+          "texture": "#strut",
+          "uv": [
+            2,
+            11.5,
+            6,
+            14.5
+          ]
+        },
+        "down": {
+          "texture": "#strut",
+          "uv": [
+            2,
+            11.5,
+            6,
+            14.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        12.25,
+        -2.089
+      ],
+      "to": [
+        5,
+        14.25,
+        15.589
+      ],
+      "faces": {
+        "north": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            1.75,
+            5,
+            3.75
+          ]
+        },
+        "south": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            1.75,
+            5,
+            3.75
+          ]
+        },
+        "east": {
+          "texture": "#strut",
+          "uv": [
+            0,
+            1.75,
+            16,
+            3.75
+          ]
+        },
+        "west": {
+          "texture": "#strut",
+          "uv": [
+            0,
+            1.75,
+            16,
+            3.75
+          ]
+        },
+        "up": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            0,
+            5,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            0,
+            5,
+            16
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          4,
+          13.25,
+          6.75
+        ],
+        "axis": "x",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        3,
+        5.75,
+        0
+      ],
+      "to": [
+        5,
+        7.25,
+        11.5
+      ],
+      "faces": {
+        "south": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            8.75,
+            5,
+            10.25
+          ]
+        },
+        "east": {
+          "texture": "#strut",
+          "uv": [
+            0,
+            8.75,
+            11.5,
+            10.25
+          ]
+        },
+        "west": {
+          "texture": "#strut",
+          "uv": [
+            0,
+            8.75,
+            11.5,
+            10.25
+          ]
+        },
+        "up": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            0,
+            5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#strut",
+          "uv": [
+            3,
+            0,
+            5,
+            11.5
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

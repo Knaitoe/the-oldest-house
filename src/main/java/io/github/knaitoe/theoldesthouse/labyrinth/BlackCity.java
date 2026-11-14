@@ -287,10 +287,14 @@ public final class BlackCity {
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag held){
         save(p,held);boolean handled=clicked(p,b,rel,own(p));refresh(held,own(p));return handled;
     }
+    /** What a hand on cut cloth is told, a tent's or the aeroplane's. */
+    static final String FABRIC_CUT="The fabric has been opened in long straight cuts.";
     static boolean clicked(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var st=p.serverLevel().getBlockState(b.offset(rel));
         if(CityMural.is(st)){int i=st.getValue(CityMural.PANEL);cue(p,i<own.getInt("Murals")?CityTexts.PANELS[i]:"A carving in the dark stone, worn and very old. You'd have to stand and look at it properly.");return true;}
         if(st.getBlock() instanceof DoorBlock)return false;
+        // The aeroplane: its fabric says what a tent's does; its skis, its struts and its engine say nothing.
+        if(CityPlaneBlock.is(st)){if(!CityPlaneBlock.fabric(st))return false;cue(p,FABRIC_CUT);return true;}
         if(!st.is(CityRegistry.FITTING.get()))return false;
         cue(p,switch(st.getValue(CityBlock.KIND)){
             case RADIO->own.getBoolean("Ready")?"The set is on. Nobody is calling on it.":"The set is on. Nothing in it but the wind.";
@@ -299,7 +303,7 @@ public final class BlackCity {
             case HARNESS->"An empty harness, its buckles still done up.";
             case CORES->"Rock cores in a labelled box. The labels stop halfway down.";
             case TABLE->"The straps on the table have been cut. The ends are clean, and they were cut from underneath.";
-            case FABRIC->"The fabric has been opened in long straight cuts.";
+            case FABRIC->FABRIC_CUT;
             case PROP->"The propeller is whole. Nothing else is.";
             case LAMP->st.getValue(CityBlock.STAGE)==1?"A hurricane lamp, lit. Someone filled it.":"The lamp is out. The glass is still warm.";
             case PRINTS->"Prints in the grit, three-toed, bigger than a hand. They go both ways.";
