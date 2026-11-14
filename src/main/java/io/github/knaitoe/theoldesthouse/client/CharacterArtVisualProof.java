@@ -43,6 +43,82 @@ public final class CharacterArtVisualProof extends Screen {
             }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
         }
         verifyHarrigan();
+        verifyPellFaces();
+    }
+    /**
+     * 0.4.569: the Pell house's people's painted faces (PellFaces, tools/draw_pell_faces.py). Each sheet is the size its looks make; on
+     * every sheet the resting look's eyes shut for a blink and its mouth opens to speak; the layer draws two quads exactly over the face,
+     * a hair in front of it, from the upper half of one cell and the lower half of another; a painted face puts the cast's own lids away;
+     * and the looks follow what each of them is doing. 0.4.568 (the owner: "Do you not see the dark line on her face?"): anyone else's shut
+     * lids are one face, the front, on the cheek rows under the eyes.
+     */
+    private static void verifyPellFaces(){
+        var mc=Minecraft.getInstance();
+        for(int who=0;who<PellFaces.LOOKS.length;who++){
+            int looks=PellFaces.LOOKS[who].length;String name=new String[]{"june","tilly","callum","gail","nessa"}[who];
+            try(var stream=mc.getResourceManager().open(texture("pell_faces_"+name));var image=NativeImage.read(stream)){
+                if(image.getWidth()!=3*looks*32||image.getHeight()!=64)throw new IllegalStateException("The Pell face sheet is not the size of its looks: "+name);
+                // The left eye's cell (face cell 4,7) open and shut; the mouth's middle (face cell 7,14) closed and wide open.
+                if(who!=PellPeople.NESSA&&image.getPixelRGBA(8,14)==image.getPixelRGBA(32+8,14))throw new IllegalStateException("A Pell face does not shut its eyes: "+name);
+                if(who!=PellPeople.NESSA&&image.getPixelRGBA(14,32+28)==image.getPixelRGBA(64+14,32+28))throw new IllegalStateException("A Pell face does not open its mouth to speak: "+name);
+            }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
+        }
+        var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));
+        // Tilly lying still (her lids shown, her head unturned), with a painted face: the face's two halves over her face, and no lid strip
+        // of the cast's own.
+        m.preview(LiteraryActor.STRANGER,PellPeople.FIRST+PellPeople.TILLY,0);m.pell(PellPeople.STILL,0);m.face(PellPeople.TILLY,3,5);
+        var head=new Quads();m.head.render(atHead(m),head,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        if(!head.at(-4.03F).isEmpty())throw new IllegalStateException("A painted Pell face still draws the cast's lids over it");
+        var face=new Quads();PellFaces.draw(m,atHead(m),type->face,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
+        var halves=face.at(-4.01F);float width=3*PellFaces.LOOKS[PellPeople.TILLY].length*32F;
+        if(halves.size()!=2||face.quads().size()!=2)throw new IllegalStateException("A Pell face is not two halves over the face: "+face.quads().size());
+        if(!halves.get(0).spans(-4,-8,4,-3,3*32/width,0,4*32/width,20/64F)||!halves.get(1).spans(-4,-3,4,0,5*32/width,52/64F,6*32/width,1))
+            throw new IllegalStateException("A Pell face's halves are not over the face, from their own cells");
+        // Anyone else asleep in the cast's lids (the brother in Mapping the Interior): one face, the front, on cheek skin.
+        m.preview(LiteraryActor.BROTHER,1,0);
+        var lids=new Quads();m.head.render(atHead(m),lids,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        var shut=lids.at(-4.03F);
+        if(shut.size()!=1||shut.get(0).nz()>-.99F||!shut.get(0).spans(-4,-4,4,-3,8/128F,13/64F,16/128F,14/64F))throw new IllegalStateException("A sleeper's shut lids are not one front face on the cheek rows: "+shut.size());
+        // The looks follow what they are doing (at a moment outside every passing look), and pass now and then.
+        look(PellPeople.JUNE,0,300,"warm","June does not rest in her smile");
+        look(PellPeople.JUNE,0,30,"slip","June's smile never slips");
+        look(PellPeople.JUNE,PellPeople.BRUSH,300,"tender","June is not tender over Tilly's hair");
+        look(PellPeople.JUNE,PellPeople.PAINT,300,"set","June is not set at the line");
+        look(PellPeople.JUNE,PellPeople.BY_HER,300,"grief","June does not grieve by the freezer");
+        look(PellPeople.TILLY,PellPeople.WAVE,300,"bright","Tilly does not light up at the window");
+        look(PellPeople.CALLUM,0,300,"drawn","Callum's face does not rest drawn");
+        look(PellPeople.CALLUM,PellPeople.LUNGE,300,"fury","Callum's anger is not on his face");
+        look(PellPeople.CALLUM,PellPeople.STEP,300,"wan","Callum's smile on the step is not his own");
+        look(PellPeople.GAIL,PellPeople.SHOW,300,"earnest","Gail is not earnest with the page");
+        look(PellPeople.NESSA,0,300,"slack","Nessa's face changes");
+        if(!PellFaces.blink(PellPeople.NESSA,0,300,0)||!PellFaces.blink(PellPeople.JUNE,PellPeople.ASLEEP,301,0))throw new IllegalStateException("Shut eyes open");
+    }
+    private static void look(int who,int gesture,float age,String look,String failure){
+        if(PellFaces.look(who,gesture,age,0,false)!=PellFaces.index(who,look))throw new IllegalStateException(failure);
+    }
+    /** A pose stack that takes the model's head back to the origin, turned nowhere, so its faces measure in its own pixels. */
+    private static PoseStack atHead(LiteraryRenderers.CastModel m){
+        m.head.xRot=m.head.yRot=m.head.zRot=0;
+        var p=new PoseStack();p.translate(-m.head.x/16,-m.head.y/16,-m.head.z/16);return p;
+    }
+    /** Every quad drawn into it, by its corners (model pixels) and texture coordinates. */
+    private static final class Quads implements VertexConsumer {
+        record Quad(float[][] corners,float nz){
+            boolean spans(float x0,float y0,float x1,float y1,float u0,float v0,float u1,float v1){
+                float minX=9,maxX=-9,minY=9,maxY=-9,minU=9,maxU=-9,minV=9,maxV=-9;
+                for(var c:corners){minX=Math.min(minX,c[0]);maxX=Math.max(maxX,c[0]);minY=Math.min(minY,c[1]);maxY=Math.max(maxY,c[1]);minU=Math.min(minU,c[3]);maxU=Math.max(maxU,c[3]);minV=Math.min(minV,c[4]);maxV=Math.max(maxV,c[4]);}
+                return near(minX,x0)&&near(maxX,x1)&&near(minY,y0)&&near(maxY,y1)&&near(minU,u0)&&near(maxU,u1)&&near(minV,v0)&&near(maxV,v1);
+            }
+            private static boolean near(float a,float b){return Math.abs(a-b)<.002F;}
+        }
+        private final List<float[]> corners=new ArrayList<>();private final List<Quad> quads=new ArrayList<>();private float[] at;
+        public VertexConsumer addVertex(float x,float y,float z){at=new float[]{x*16,y*16,z*16,0,0};corners.add(at);return this;}
+        public VertexConsumer setUv(float u,float v){at[3]=u;at[4]=v;return this;}
+        public VertexConsumer setNormal(float x,float y,float z){if(corners.size()==4){quads.add(new Quad(corners.toArray(new float[0][]),z));corners.clear();}return this;}
+        public VertexConsumer setColor(int r,int g,int b,int a){return this;}public VertexConsumer setUv1(int u,int v){return this;}public VertexConsumer setUv2(int u,int v){return this;}
+        List<Quad> quads(){return quads;}
+        /** The quads lying flat at this depth, in model pixels. */
+        List<Quad> at(float z){return quads.stream().filter(q->Arrays.stream(q.corners()).allMatch(c->Math.abs(c[2]-z)<.004F)).toList();}
     }
     private static void verifyHarrigan(){
         var mc=Minecraft.getInstance();var model=new HouseHumanRenderers.HarriganModel(mc.getEntityModels().bakeLayer(HouseHumanRenderers.HARRIGAN_LAYER));
