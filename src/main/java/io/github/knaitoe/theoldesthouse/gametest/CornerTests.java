@@ -2,10 +2,15 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.*;
 
@@ -16,6 +21,8 @@ import net.neoforged.neoforge.gametest.*;
  * to the last door, and opens it on a room smaller than the door; the account resolves the story. Two readers on the last day: one holds
  * her hand and opens the door, one waits outside until the front door opens onto the street; each account is their own. After: the
  * street at night, her brother older on the kerb, the windows lit and one jar more.
+ * <p>0.4.578, the lot's ironwork: the fence, its posts, its corner, the gate and the balconies' rails are the street's own fittings,
+ * none of them the game's bars; the dog lies along the pavement.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_literary") @PrefixGameTestTemplate(false)
 public final class CornerTests {
@@ -149,6 +156,70 @@ public final class CornerTests {
     }
 
     private static void close(){if(active!=null){active.close();active=null;}Corner.clearAll();}
+    /**
+     * 0.4.578 (the owner: the iron fence is improper, loose bars, no top rail, a gap above the base rail, grey bars against a black
+     * gate). The fence was the game's iron bars set with their default state, so no bar joined the next. Every cell of it is the
+     * street's own fitting now, three high, its stage the cell's height; a post stands at each side of the gate and at every third
+     * cell, the gate's head is the fence's top cell, the corner is one piece, and each leaf of the gate hangs from its own post.
+     */
+    @GameTest(template="empty",batch="corner_iron",timeoutTicks=2400)
+    public static void theLotsIronworkIsItsOwnAndStandsWhereItShould(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the street is resident"))
+            .thenExecute(()->{
+                int front=CornerSite.NORTH_FRONT,gw=CornerSite.GATE_W.getX(),ge=CornerSite.GATE_E.getX();
+                h.assertTrue(CornerSite.GATE_W.getZ()==front&&CornerSite.GATE_E.getZ()==front&&ge==gw+1,"the gate stands in the line of the fence, two cells wide");
+                int posts=0;
+                for(int x=CornerSite.LOT_W;x<=CornerSite.LOT_E;x++)for(int y=0;y<=2;y++){
+                    var s=l.getBlockState(b.offset(x,y,front));
+                    if((x==gw||x==ge)&&y<2){h.assertTrue(CornerBlock.is(s,CornerBlock.Kind.GATE)&&!CornerBlock.open(s)&&s.getValue(CornerBlock.STAGE)==y*2,"a leaf of the gate, shut, at "+x+","+y+": "+s);continue;}
+                    h.assertTrue((CornerBlock.is(s,CornerBlock.Kind.FENCE)||CornerBlock.is(s,CornerBlock.Kind.FENCE_POST))&&s.getValue(CornerBlock.STAGE)==y&&s.getValue(CornerBlock.FACING).getAxis()==Direction.Axis.Z,"the fence along the front at "+x+","+y+": "+s);
+                    if(x==gw||x==ge)h.assertTrue(CornerBlock.is(s,CornerBlock.Kind.FENCE),"the fence's top cell over the gate at "+x);
+                    if(y==0&&CornerBlock.is(s,CornerBlock.Kind.FENCE_POST))posts++;
+                }
+                for(int y=0;y<=2;y++){
+                    var west=l.getBlockState(b.offset(gw-1,y,front));var east=l.getBlockState(b.offset(ge+1,y,front));
+                    h.assertTrue(CornerBlock.is(west,CornerBlock.Kind.FENCE_POST)&&west.getValue(CornerBlock.FACING)==Direction.SOUTH&&CornerBlock.is(east,CornerBlock.Kind.FENCE_POST)&&east.getValue(CornerBlock.FACING)==Direction.NORTH,"a post at each side of the gate, each at the gate's edge of its cell, at height "+y+": "+west+" "+east);
+                    var corner=l.getBlockState(b.offset(CornerSite.LOT_E+1,y,front));
+                    h.assertTrue(CornerBlock.is(corner,CornerBlock.Kind.FENCE_CORNER)&&corner.getValue(CornerBlock.STAGE)==y,"the corner post at height "+y+": "+corner);
+                }
+                h.assertTrue(posts>=(CornerSite.LOT_E-CornerSite.LOT_W)/CornerSite.FENCE_POSTS,"a post at every third cell of the front: "+posts);
+                var leafW=l.getBlockState(b.offset(CornerSite.GATE_W));var leafE=l.getBlockState(b.offset(CornerSite.GATE_E));
+                h.assertTrue(leafW.getValue(CornerBlock.FACING)==Direction.NORTH&&leafE.getValue(CornerBlock.FACING)==Direction.SOUTH,"each leaf of the gate hangs from its own post: "+leafW+" "+leafE);
+                var shutW=leafW.getCollisionShape(l,b.offset(CornerSite.GATE_W));var openW=leafW.setValue(CornerBlock.STAGE,1).getShape(l,b.offset(CornerSite.GATE_W));var openE=leafE.setValue(CornerBlock.STAGE,1).getShape(l,b.offset(CornerSite.GATE_E));
+                h.assertTrue(!shutW.isEmpty()&&shutW.max(Direction.Axis.Y)>1.4&&leafW.setValue(CornerBlock.STAGE,1).getCollisionShape(l,b.offset(CornerSite.GATE_W)).isEmpty(),"a shut leaf stops a body and is too tall to jump; an open one does not");
+                h.assertTrue(openW.max(Direction.Axis.X)<.2&&openE.min(Direction.Axis.X)>.8,"open, the west leaf stands at the west post and the east leaf at the east: "+openW.bounds()+" "+openE.bounds());
+                var run=l.getBlockState(b.offset(CornerSite.LOT_W+1,0,front)).getCollisionShape(l,b.offset(CornerSite.LOT_W+1,0,front));
+                h.assertTrue(!run.isEmpty()&&run.max(Direction.Axis.Y)>1.4&&run.min(Direction.Axis.X)==0&&run.max(Direction.Axis.X)==1,"a cell of the fence stops a body from end to end and is too tall to jump: "+run.bounds());
+                int east=0,west=0;
+                for(int z=front-1;z>=CornerSite.HOUSE_N;z--)for(int y=0;y<=2;y++){
+                    var s=l.getBlockState(b.offset(CornerSite.LOT_E+1,y,z));
+                    h.assertTrue((CornerBlock.is(s,CornerBlock.Kind.FENCE)||CornerBlock.is(s,CornerBlock.Kind.FENCE_POST))&&s.getValue(CornerBlock.STAGE)==y&&s.getValue(CornerBlock.FACING).getAxis()==Direction.Axis.X,"the fence down the lot's east side at "+z+","+y+": "+s);east++;
+                    var w=l.getBlockState(b.offset(CornerSite.LOT_W-1,y,z));
+                    if(CornerBlock.fence(w)){h.assertTrue(w.getValue(CornerBlock.STAGE)==y&&w.getValue(CornerBlock.FACING).getAxis()==Direction.Axis.X,"the fence down the lot's west side at "+z+","+y+": "+w);west++;}
+                }
+                h.assertTrue(east>=60&&west>=24,"both sides of the lot are fenced: "+east+" cells east, "+west+" west");
+                int bars=0,rails=0,loose=0,fences=0;BlockPos first=null;var box=box(f);
+                for(var at:BlockPos.betweenClosed((int)box.minX,(int)box.minY,(int)box.minZ,(int)box.maxX,(int)box.maxY,(int)box.maxZ)){
+                    var s=l.getBlockState(at);
+                    if(s.is(Blocks.IRON_BARS)){bars++;if(first==null)first=at.immutable();}
+                    if(CornerBlock.fence(s))fences++;
+                    if(CornerBlock.is(s,CornerBlock.Kind.RAILING)){
+                        rails++;var under=l.getBlockState(at.below());
+                        if(!under.is(Blocks.SMOOTH_STONE_SLAB)||under.getValue(SlabBlock.TYPE)!=SlabType.TOP){loose++;if(first==null)first=at.immutable();}
+                    }
+                }
+                h.assertTrue(bars==0,"none of the game's iron bars is left on the street: "+bars+", the first at "+first);
+                h.assertTrue(rails>=6&&rails%3==0&&loose==0,"every balcony has a rail three cells long, each cell of it on the ledge: "+rails+" cells, "+loose+" on nothing, the first at "+first);
+                h.assertTrue(fences>=east+west+3*(CornerSite.LOT_E-CornerSite.LOT_W),"the lot's fence is whole: "+fences+" cells");
+                var dog=l.getBlockState(b.offset(6,0,-34));var lying=dog.getShape(l,b.offset(6,0,-34));
+                h.assertTrue(CornerBlock.is(dog,CornerBlock.Kind.DOG)&&dog.getValue(CornerBlock.FACING)==Direction.NORTH,"the dog asleep on the pavement, its head up the street: "+dog);
+                h.assertTrue(lying.max(Direction.Axis.Y)<=.3&&lying.max(Direction.Axis.Z)-lying.min(Direction.Axis.Z)>.95&&lying.max(Direction.Axis.X)-lying.min(Direction.Axis.X)>.6,"it lies low, along the pavement and across a good part of it: "+lying.bounds());
+            }).thenSucceed();
+    }
+
+    @AfterBatch(batch="corner_iron") public static void ironDone(net.minecraft.server.level.ServerLevel l){close();}
     @AfterBatch(batch="corner_dare") public static void dareDone(net.minecraft.server.level.ServerLevel l){close();}
     @AfterBatch(batch="corner_last") public static void lastDone(net.minecraft.server.level.ServerLevel l){close();}
     @AfterBatch(batch="corner_two") public static void twoDone(net.minecraft.server.level.ServerLevel l){close();}

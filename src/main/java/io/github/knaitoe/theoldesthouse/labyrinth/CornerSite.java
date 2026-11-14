@@ -33,6 +33,8 @@ public final class CornerSite {
     /** The house on the corner: its lot, its garden, its walls, the front room inside the lining, and the corridor. */
     public static final int LOT_W=9,LOT_E=43,GARDEN_S=-70,GARDEN_N=-76,HOUSE_W=11,HOUSE_E=25,HOUSE_S=-77,HOUSE_N=-91;
     public static final int ROOM_W=13,ROOM_E=23,ROOM_S=-79,ROOM_N=-84,HALL_W=17,HALL_E=19,HALL_S=-86,HALL_N=-119;
+    /** A post in the lot's fence at every third cell. */
+    public static final int FENCE_POSTS=3;
     /** The gate's two cells, the front door, the back door into the corridor, and the last door at its end. */
     public static final BlockPos GATE_W=new BlockPos(18,0,-69),GATE_E=new BlockPos(19,0,-69),FRONT_DOOR=new BlockPos(18,0,-77),BACK_DOOR=new BlockPos(18,0,-85),
         LAST_DOOR=new BlockPos(18,0,-120),NICHE=new BlockPos(18,0,-121);
@@ -94,7 +96,7 @@ public final class CornerSite {
         corridor(l,b);
         set(l,b,NOTEBOOK,fit(CornerBlock.Kind.NOTEBOOK,Direction.NORTH,0));
         set(l,b,NOTE,fit(CornerBlock.Kind.NOTE,Direction.NORTH,0));
-        set(l,b,6,0,-34,fit(CornerBlock.Kind.DOG,Direction.WEST,0));
+        set(l,b,6,0,-34,fit(CornerBlock.Kind.DOG,Direction.NORTH,0));
         gate(l,b,false);path(l,b,false);jars(l,b,FIRST_JARS);lamps(l,b,true);windows(l,b,false);
     }
 
@@ -133,9 +135,14 @@ public final class CornerSite {
         set(l,b,door.relative(faces).below(),Blocks.SMOOTH_STONE.defaultBlockState());
         for(int d=-span/2+1;d<=span/2-1;d++){if(Math.abs(d)<2)continue;if((d&1)!=0)continue;
             for(int y:new int[]{1,2,5,6}){var at=alongZ?door.offset(0,y,d):door.offset(d,y,0);set(l,b,at,fit(CornerBlock.Kind.WINDOW,faces,0));}}
-        // The balcony over the door: a ledge with iron railings, and the balcony window behind it.
-        var ledge=door.relative(faces).above(4);set(l,b,ledge,Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
-        for(int d=-1;d<=1;d++){var side=alongZ?ledge.offset(0,1,d):ledge.offset(d,1,0);set(l,b,side,Blocks.IRON_BARS.defaultBlockState());}
+        // The balcony over the door: a ledge three wide with an iron rail round it, and the balcony window behind it. 0.4.578: the
+        // ledge was one slab, with the game's bars as three loose posts over it, two of them standing on nothing.
+        var ledge=door.relative(faces).above(4);
+        for(var along:new Direction[]{null,faces.getCounterClockWise(),faces.getClockWise()}){
+            var at=along==null?ledge:ledge.relative(along);
+            set(l,b,at,Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
+            set(l,b,at.above(),fit(CornerBlock.Kind.RAILING,faces,along==null?0:along==faces.getCounterClockWise()?1:2));
+        }
         set(l,b,ledge.above().relative(faces.getOpposite()),fit(CornerBlock.Kind.WINDOW,faces,0));set(l,b,ledge.above(2).relative(faces.getOpposite()),fit(CornerBlock.Kind.WINDOW,faces,0));
     }
     static BlockState tint(int i){return switch(i%3){case 0->mat("stucco");case 1->Blocks.WHITE_TERRACOTTA.defaultBlockState();default->Blocks.SMOOTH_SANDSTONE.defaultBlockState();};}
@@ -175,11 +182,21 @@ public final class CornerSite {
     static void lot(ServerLevel l,BlockPos b,Random rnd){
         box(l,b,LOT_W,-1,GARDEN_N,LOT_E,-1,GARDEN_S,Blocks.GRASS_BLOCK.defaultBlockState());
         box(l,b,LOT_W,-1,HOUSE_N,LOT_E,-1,HOUSE_S,Blocks.GRASS_BLOCK.defaultBlockState());
-        for(int x=LOT_W;x<=LOT_E;x++){set(l,b,x,-1,NORTH_FRONT,Blocks.STONE_BRICKS.defaultBlockState());if(x==GATE_W.getX()||x==GATE_E.getX())continue;for(int y=0;y<=2;y++)set(l,b,x,y,NORTH_FRONT,Blocks.IRON_BARS.defaultBlockState());}
-        for(int x:new int[]{GATE_W.getX(),GATE_E.getX()})set(l,b,x,2,NORTH_FRONT,Blocks.IRON_BARS.defaultBlockState());
-        for(int z=NORTH_FRONT;z>=HOUSE_N;z--){for(int y=0;y<=2;y++)set(l,b,LOT_E+1,y,z,Blocks.IRON_BARS.defaultBlockState());}
-        // The lot's west side, past the end of the row: the fence goes on to the block behind the house.
-        for(int z=NORTH_FRONT-14;z>=HOUSE_N;z--)for(int y=0;y<=2;y++)set(l,b,LOT_W-1,y,z,Blocks.IRON_BARS.defaultBlockState());
+        // 0.4.578 (the owner: loose bars, no top rail, the bars one iron and the gate another): the fence is the lot's own, in the
+        // gate's iron, three cells high: a rail on a low plinth, a pair of rails at the gate's head and points above them. A post
+        // stands each side of the gate, at the wall the fence starts from, at every third cell between and at the corner; over the
+        // gate the fence's top cell goes on from post to post.
+        int gw=GATE_W.getX(),ge=GATE_E.getX();
+        for(int x=LOT_W;x<=LOT_E;x++){
+            set(l,b,x,-1,NORTH_FRONT,Blocks.STONE_BRICKS.defaultBlockState());
+            if(x==gw||x==ge){set(l,b,x,2,NORTH_FRONT,fit(CornerBlock.Kind.FENCE,Direction.NORTH,2));continue;}
+            boolean jamb=x==gw-1,post=jamb||(x<gw?(x-LOT_W)%FENCE_POSTS==0:(x-ge-1)%FENCE_POSTS==0);
+            for(int y=0;y<=2;y++)set(l,b,x,y,NORTH_FRONT,fit(post?CornerBlock.Kind.FENCE_POST:CornerBlock.Kind.FENCE,jamb?Direction.SOUTH:Direction.NORTH,y));
+        }
+        set(l,b,LOT_E+1,-1,NORTH_FRONT,Blocks.STONE_BRICKS.defaultBlockState());
+        for(int y=0;y<=2;y++)set(l,b,LOT_E+1,y,NORTH_FRONT,fit(CornerBlock.Kind.FENCE_CORNER,Direction.NORTH,y));
+        // The lot's east side, from the corner to the block behind the house; and its west side, past the end of the row.
+        side(l,b,LOT_E+1,NORTH_FRONT-1,FENCE_POSTS-1);side(l,b,LOT_W-1,NORTH_FRONT-14,0);
         // The garden: grass gone to seed, a rose run wild, ferns, a lemon tree that has died standing.
         Block[] weeds={Blocks.TALL_GRASS,Blocks.SHORT_GRASS,Blocks.FERN,Blocks.SHORT_GRASS,Blocks.ROSE_BUSH,Blocks.LARGE_FERN,Blocks.SHORT_GRASS,Blocks.LILAC};
         for(int x=LOT_W;x<=LOT_E;x++)for(int z=GARDEN_S;z>=HOUSE_N;z--){
@@ -189,6 +206,11 @@ public final class CornerSite {
             else set(l,b,x,0,z,w.defaultBlockState());
         }
         for(int y=0;y<=3;y++)set(l,b,34,y,-73,Blocks.STRIPPED_OAK_LOG.defaultBlockState());set(l,b,33,3,-73,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.EAST,true));set(l,b,35,3,-73,Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST,true));
+    }
+    /** One side of the lot's fence, from z south back to the block behind the house; a post at the south end of every third cell,
+     * the first of them the cell that many cells in (0 where the run starts at a wall, 2 where it starts at the corner's post). */
+    private static void side(ServerLevel l,BlockPos b,int x,int south,int first){
+        for(int z=south;z>=HOUSE_N;z--)for(int y=0;y<=2;y++)set(l,b,x,y,z,fit((south-z)%FENCE_POSTS==first?CornerBlock.Kind.FENCE_POST:CornerBlock.Kind.FENCE,Direction.WEST,y));
     }
     /** The house: rendered outside, papered inside; the front room clean and lit; everything behind it shut but the corridor. */
     static void house(ServerLevel l,BlockPos b){
@@ -237,7 +259,12 @@ public final class CornerSite {
     }
 
     // ------------------------------------------------------------------------------------------------ what changes
-    public static void gate(ServerLevel l,BlockPos b,boolean open){for(var at:List.of(GATE_W,GATE_E)){set(l,b,at,fit(CornerBlock.Kind.GATE,Direction.NORTH,open?1:0));set(l,b,at.above(),fit(CornerBlock.Kind.GATE,Direction.NORTH,open?3:2));}}
+    /** The gate's two leaves, each hung on its own post: the west one faces north and the east one south, so that open, each stands
+     * back against its post. (0.4.578: both faced north, and open, the east leaf stood in the middle of the gateway.) */
+    public static void gate(ServerLevel l,BlockPos b,boolean open){
+        for(var at:List.of(GATE_W,GATE_E)){var f=at==GATE_W?Direction.NORTH:Direction.SOUTH;
+            set(l,b,at,fit(CornerBlock.Kind.GATE,f,open?1:0));set(l,b,at.above(),fit(CornerBlock.Kind.GATE,f,open?3:2));}
+    }
     /** The garden path, or the garden grown over it. */
     public static void path(ServerLevel l,BlockPos b,boolean grown){
         for(int x=GATE_W.getX();x<=GATE_E.getX();x++)for(int z=GARDEN_S;z>HOUSE_S;z--){
