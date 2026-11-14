@@ -12,7 +12,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 public final class FinaleRegistry {
     private static final DeferredRegister<EntityType<?>> TYPES=DeferredRegister.create(Registries.ENTITY_TYPE,TheOldestHouse.MOD_ID);
     public static final DeferredHolder<EntityType<?>,EntityType<MinotaurEntity>> MINOTAUR=TYPES.register("minotaur",()->EntityType.Builder
-            .<MinotaurEntity>of(MinotaurEntity::new,MobCategory.MISC).sized(1.8F,3.1F).eyeHeight(2.65F).clientTrackingRange(16).updateInterval(1).build("minotaur"));
+            .<MinotaurEntity>of(MinotaurEntity::new,MobCategory.MISC).sized(1.8F,3.7F).eyeHeight(3.1F).clientTrackingRange(16).updateInterval(1).build("minotaur"));
     public static final DeferredHolder<EntityType<?>,EntityType<FinaleWitness>> WITNESS=TYPES.register("finale_witness",()->EntityType.Builder
             .<FinaleWitness>of(FinaleWitness::new,MobCategory.MISC).sized(.6F,1.8F).eyeHeight(1.55F).clientTrackingRange(12).updateInterval(3).build("finale_witness"));
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
