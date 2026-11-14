@@ -75,6 +75,48 @@ public final class WitnessTests {
         helper.assertTrue(WitnessAccount.inOrder(older).equals(List.of(WitnessAccount.Story.values())),"an account saved before the order keeps the House's order");
         helper.succeed();
     }
+    /**
+     * 0.4.580: the account cut rooms off. Each room was put on one page whatever its length, and the game draws nothing past a page's
+     * fourteenth line. The longest room is longer than a page; with every room ended, no page of the account is, each room's title
+     * stands once over the first of its text, and the longest room can be read whole across its pages. The splitter itself, on prose of
+     * every length: no page too long, nothing lost and nothing twice, the head on the first page only, every page ending where a
+     * sentence does, no last page of a line or two with a sentence before it that could have joined it; a sentence longer than a page
+     * is broken between words; a title before a name and an initial end no sentence; and the lines of a list stay lines.
+     */
+    @GameTest(template="empty") public static void everyRoomOfTheAccountIsOnPagesTheGameShowsWhole(GameTestHelper helper){
+        var will=HouseWriting.WritingStyle.WILL;var swimmer=WitnessAccount.Story.LAST_SWIMMER;
+        int was=BookPages.lines(will,swimmer.title+"\n\n"+swimmer.text);
+        helper.assertTrue(was>BookPages.LINES,"the longest room ran past the foot of its one page: "+was+" lines");
+        LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();
+        for(var story:WitnessAccount.Story.values())WitnessAccount.resolve(data,player,story,"heard");
+        var pages=WitnessAccount.book(data,player,"reader",false).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(p->p.raw().getString()).toList();
+        for(String page:pages)helper.assertTrue(BookPages.fits(will,page)&&!page.isBlank(),"a page of the account the game would cut, at "+BookPages.lines(will,page)+" lines: "+page);
+        for(var story:WitnessAccount.Story.values())helper.assertTrue(pages.stream().filter(p->p.startsWith(story.title+"\n\n")).count()==1,"each room's title stands once, over the first of its text: "+story.title);
+        int at=0;while(!pages.get(at).startsWith(swimmer.title+"\n\n"))at++;
+        var whole=new StringBuilder(pages.get(at).substring(swimmer.title.length()+2));int run=1;
+        while(!whole.toString().endsWith("and I went.")){whole.append(' ').append(pages.get(at+run));run++;}
+        helper.assertTrue(run>1&&whole.toString().equals(swimmer.text),"the longest room runs on over "+run+" pages and reads whole: "+whole);
+        String[] words={"The door was shut.","I counted the steps down, and there were more of them than there had been.","Nobody answered!","Was the light on when I came in?","It had been put out by hand."};
+        for(int n=1;n<=60;n++){
+            var text=new StringBuilder();for(int i=0;i<n;i++)text.append(i>0?" ":"").append(words[(i*7+n)%words.length]);
+            var split=BookPages.split(will,"A room",text.toString());
+            helper.assertTrue(split.getFirst().startsWith("A room\n\n")&&split.stream().skip(1).noneMatch(p->p.contains("A room")),"the head stands over the first page only, at "+n+" sentences");
+            for(int i=0;i<split.size();i++){String page=split.get(i);
+                helper.assertTrue(BookPages.fits(will,page),"no page too long, at "+n+" sentences: "+BookPages.lines(will,page));
+                helper.assertTrue(".!?".indexOf(page.charAt(page.length()-1))>=0&&Character.isUpperCase(page.charAt(i==0?8:0)),"each page begins and ends with a sentence, at "+n+": "+page);
+            }
+            helper.assertTrue(String.join(" ",split).substring(8).equals(text.toString()),"nothing lost and nothing twice, at "+n+" sentences");
+            if(split.size()>1){String last=split.getLast(),before=split.get(split.size()-2);if(split.size()==2)before=before.substring(8);
+                helper.assertTrue(BookPages.lines(will,last)>2||BookPages.sentences(before).size()==1||!BookPages.fits(will,BookPages.sentences(before).getLast()+" "+last),"no stranded last line, at "+n+" sentences: "+last);}
+        }
+        String giant=("word ".repeat(260)).strip()+".";var broken=BookPages.split(will,"",giant);
+        helper.assertTrue(broken.size()>1&&broken.stream().allMatch(p->BookPages.fits(will,p))&&String.join(" ",broken).equals(giant),"a sentence longer than a page is broken between its words, and none is lost: "+broken.size());
+        helper.assertTrue(BookPages.sentences("I saw Mr. Harrigan in his chair. He was J. Peabody's oldest customer. \"Is that all?\" It was.").equals(List.of("I saw Mr. Harrigan in his chair.","He was J. Peabody's oldest customer.","\"Is that all?\"","It was.")),"a title before a name and an initial end no sentence, and a closing mark stays with its sentence: "+BookPages.sentences("I saw Mr. Harrigan in his chair. He was J. Peabody's oldest customer. \"Is that all?\" It was."));
+        helper.assertTrue(BookPages.sentences("\"Is that all?\" she said. I waited... and then it came. It was 3 a.m. by the clock.").equals(List.of("\"Is that all?\" she said.","I waited... and then it came.","It was 3 a.m. by the clock.")),"what follows in lower case carries the sentence on: "+BookPages.sentences("\"Is that all?\" she said. I waited... and then it came. It was 3 a.m. by the clock."));
+        helper.assertTrue(BookPages.split(will,"","First line.\nSecond line.\n\nA new paragraph.").equals(List.of("First line.\nSecond line.\n\nA new paragraph.")),"a line's end and an empty line are kept on a page: "+BookPages.split(will,"","First line.\nSecond line.\n\nA new paragraph."));
+        helper.assertTrue(BookPages.split(will,"Only a head","").equals(List.of("Only a head"))&&BookPages.split(will,"","").isEmpty(),"a head with nothing under it is a page, and nothing is no page");
+        helper.succeed();
+    }
     @GameTest(template="empty") public static void witnessQuotaTracksSeventyFivePercentOfTheEligiblePool(GameTestHelper helper){
         helper.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"the fifty-seven playable sources currently require forty-three resolutions");
         for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9},{13,10},{16,12},{17,13},{18,14},{19,15},{20,15},{43,33}})

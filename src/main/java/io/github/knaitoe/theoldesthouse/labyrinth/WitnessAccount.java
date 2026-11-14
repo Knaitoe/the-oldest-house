@@ -310,7 +310,10 @@ public final class WitnessAccount {
             var together=SharedVignettes.together(LabyrinthPlace.byId(story.id));var company=record(data,player).getCompound("Company").getCompound(story.id);
             if(together!=null&&role==VignetteRole.ACTOR&&!company.isEmpty()&&!stories.getString(story.id).equals("aftermath"))
                 text=text+" "+together.coda(data,player,stories.getString(story.id),names(company,"Ahead"),names(company,"Behind"));
-            pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,(attic?"The undated letter":story.title)+"\n\n"+text));
+            // 0.4.580: a room's account runs on over as many pages as it needs. It was one page whatever its length, and the game draws
+            // nothing past a page's fourteenth line.
+            for(String page:BookPages.split(HouseWriting.WritingStyle.WILL,attic?"The undated letter":story.title,text))
+                pages.add(HouseWriting.page(HouseWriting.WritingStyle.WILL,page));
         }
         for(Story story:Story.values())if(!stories.contains(story.id)&&begun(data,player,story)){
             boolean left=HouseExperience.record(data,player).getCompound("Retreats").getInt(story.id)>0;

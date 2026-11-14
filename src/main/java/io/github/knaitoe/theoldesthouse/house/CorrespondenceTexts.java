@@ -47,7 +47,8 @@ public final class CorrespondenceTexts {
             throw new IllegalArgumentException("Missing actual personal fact for "+note.id());
         return HouseWriting.book(note.title(),note.author(),pages(note.style(),text,NovelCorrespondence.contains(note.id())));
     }
-    private static int advance(HouseWriting.WritingStyle style,int cp) {
+    /** How far a glyph advances the pen in a hand's font: never less than the font's own, so text measured with it is never cut. */
+    static int advance(HouseWriting.WritingStyle style,int cp) {
         var table=ADVANCES.getAsJsonObject(style.name());
         String glyph=new String(Character.toChars(cp));
         // Unknown Unicode and the one plain-font memo use a conservative native glyph bound.
