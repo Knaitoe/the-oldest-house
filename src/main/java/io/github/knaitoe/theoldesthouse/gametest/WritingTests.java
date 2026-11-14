@@ -207,6 +207,11 @@ public final class WritingTests {
                     .filter(page->{String text=page.getString();return text.contains("THE ACCOUNT SO FAR")||text.contains("OTHER ENDINGS")||text.contains("left this part unfinished");}).toList();
             books.add(io.github.knaitoe.theoldesthouse.house.HouseWriting.book("An account","reader",pages));
         }
+        // 0.4.580: every page of the account with every room ended. A room's pages were left out of this check while each room was
+        // one page whatever its length; they run on over as many as they need now, and the client's fonts confirm each is shown whole.
+        var whole=new io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData();var reader=java.util.UUID.randomUUID();
+        for(var story:io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story.values())io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.resolve(whole,reader,story,"heard");
+        books.add(io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.book(whole,reader,"reader",false));
         // 0.4.159: the House's opening of the account, at its longest and as the owner wrote it, in its own plain type.
         String[][] nights={{"glasses","paper","4","3","collared_coat","riding_boots","covered_after","lantern","window","RUNAWAY"},{"paper","paper","0","","trench","","","woman","in","HAVEN"},{"phone","phone","11","","barn","barn","turned_after","middle","lattice","DANGER"}};
         for(String[] n:nights){
