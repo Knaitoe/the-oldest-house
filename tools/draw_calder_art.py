@@ -600,7 +600,7 @@ def files():
 
 NAMES = {'block.the_oldest_house.calder_fitting': 'Park Fitting', 'block.the_oldest_house.calder_brick': 'Park Brick',
          'block.the_oldest_house.calder_asphalt': 'Asphalt', 'block.the_oldest_house.calder_road_line': 'Road Line',
-         'block.the_oldest_house.calder_paving': 'Concrete Flags', 'block.the_oldest_house.calder_kerb': 'Kerbstone',
+         'block.the_oldest_house.calder_paving': 'Concrete Flags', 'block.the_oldest_house.calder_kerb': 'Curbstone',
          'block.the_oldest_house.calder_leaves': 'October Leaves', 'block.the_oldest_house.calder_litter': 'Fallen Leaves'}
 
 

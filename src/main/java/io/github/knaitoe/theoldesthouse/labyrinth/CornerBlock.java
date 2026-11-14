@@ -17,16 +17,21 @@ import net.minecraft.world.phys.shapes.*;
  * fingernails; 3 a jar of something pale folded on itself.</li>
  * <li>LAMP: a wall lamp with a frosted shade; stage 1 lit, though the power has been off for years.</li>
  * <li>WINDOW: one of the house's tall windows behind its shutters; stage 0 shut and dark, stage 1 lit through the slats.</li>
- * <li>KIOSK: the newspaper rack at the kiosk. DOG: the dog asleep on the pavement.</li>
+ * <li>KIOSK: the newspaper rack at the kiosk. DOG: the dog asleep on the pavement (0.4.578: on its side, its head the way it
+ * faces, its legs out to the left of that).</li>
  * <li>NOTEBOOK: a school exercise book left on the kerb (the source). NOTE: the kerb where the children sat; stage 0 a pebble, stage
  * 1 a folded paper under it (sent to a reader whose account is ready).</li>
  * <li>PETALS: jacaranda petals fallen on the pavement and in the gutter. BLOSSOM: the jacarandas' flowering crowns.</li>
+ * <li>0.4.578, the lot's ironwork, the gate's own iron (it was the game's bars, which stood apart as loose posts): FENCE, one cell
+ * of the tall fence, its stage the cell's height (0 on its plinth, 1, 2 with the points); FENCE_POST, the same with a post near
+ * the end its facing turns to the west; FENCE_CORNER, a post with half a run to the west of it and half to the north. RAILING: a
+ * balcony's rail along the edge its facing looks out over; stage 1 with a return down its west side, stage 2 its east.</li>
  * </ul>
  */
 public final class CornerBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CornerBlock> CODEC=simpleCodec(CornerBlock::new);
     public enum Kind implements StringRepresentable {
-        GATE,JAR,LAMP,WINDOW,KIOSK,DOG,NOTEBOOK,NOTE,PETALS,BLOSSOM;
+        GATE,JAR,LAMP,WINDOW,KIOSK,DOG,NOTEBOOK,NOTE,PETALS,BLOSSOM,FENCE,FENCE_POST,FENCE_CORNER,RAILING;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -38,6 +43,15 @@ public final class CornerBlock extends HorizontalDirectionalBlock {
     /** The light a fitting gives: a lit lamp, and a lit window less. */
     static int light(BlockState s){return s.getValue(KIND)==Kind.LAMP&&s.getValue(STAGE)==1?13:s.getValue(KIND)==Kind.WINDOW&&s.getValue(STAGE)==1?7:0;}
     public static boolean open(BlockState s){return is(s,Kind.GATE)&&(s.getValue(STAGE)&1)==1;}
+    /** One cell of the lot's fence: a run, a run with a post, or the corner. */
+    public static boolean fence(BlockState s){return is(s,Kind.FENCE)||is(s,Kind.FENCE_POST)||is(s,Kind.FENCE_CORNER);}
+    /** The dog on its side: its body from nose to tail, and its legs along the ground beside it. */
+    private static VoxelShape dog(Direction f){return Shapes.or(MarshBlock.turned(f,7,0,0,13,4,16),MarshBlock.turned(f,1.5,0,4.5,7,1.5,15.5));}
+    private static VoxelShape corner(Direction f,double top){return Shapes.or(MarshBlock.turned(f,0,0,7,9,top,9),MarshBlock.turned(f,7,0,0,9,top,9));}
+    private static VoxelShape railing(Direction f,int stage){
+        var front=MarshBlock.turned(f,0,0,0,16,12,1.5);
+        return stage==1?Shapes.or(front,MarshBlock.turned(f,0,0,0,1.5,12,16)):stage==2?Shapes.or(front,MarshBlock.turned(f,14.5,0,0,16,12,16)):front;
+    }
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
@@ -48,20 +62,26 @@ public final class CornerBlock extends HorizontalDirectionalBlock {
             case LAMP->MarshBlock.turned(f,5,6,11,11,13,16);
             case WINDOW,BLOSSOM->Shapes.block();
             case KIOSK->Block.box(1,0,3,15,14,13);
-            case DOG->Block.box(2,0,3,14,6,13);
+            case DOG->dog(f);
             case NOTEBOOK->Block.box(4,0,4,12,1,12);
             case NOTE->Block.box(5,0,5,11,2,11);
             case PETALS->Block.box(0,0,0,16,1,16);
+            case FENCE,FENCE_POST->MarshBlock.turned(f,0,0,7,16,16,9);
+            case FENCE_CORNER->corner(f,16);
+            case RAILING->railing(f,s.getValue(STAGE));
         };
     }
-    /** A shut gate, the windows, the crowns, the kiosk and the dog stand in the way; the rest is reached past. */
+    /** A shut gate, the fence, the windows, the crowns, the kiosk and the dog stand in the way; the rest is reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case GATE->(s.getValue(STAGE)&1)==1?Shapes.empty():MarshBlock.turned(f,0,0,7,16,24,9);
             case WINDOW,BLOSSOM->Shapes.block();
             case KIOSK->Block.box(1,0,3,15,14,13);
-            case DOG->Block.box(2,0,3,14,6,13);
+            case DOG->dog(f);
+            case FENCE,FENCE_POST->MarshBlock.turned(f,0,0,7,16,24,9);
+            case FENCE_CORNER->corner(f,24);
+            case RAILING->railing(f,s.getValue(STAGE));
             default->Shapes.empty();
         };
     }

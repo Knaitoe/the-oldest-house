@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class CornerTexts {
     private CornerTexts(){}
-    public static final String HINT="The girl on the kerb wants someone to go in with her.";
+    public static final String HINT="The girl on the curb wants someone to go in with her.";
     /** What she says happened to her arm, a different one each time she is asked, in the order she tells them. */
     static final String[] STORIES={
         "A dog took it. A big white one, at my grandmother's. It didn't even bite, it just took it and ran off into the field, and nobody could catch it.",
@@ -43,7 +43,7 @@ public final class CornerTexts {
     public static ItemStack account(String name,CompoundTag own){
         var p=new ArrayList<String>();
         p.add("There was a house on the corner of a street at siesta. Nobody had ever lived in it. The shutters were down all along the street, and the jacarandas had dropped their flowers in the gutters.");
-        p.add("A girl from the kerb took me in. She had one arm, and every time I asked about the other one she told me something different.");
+        p.add("A girl from the curb took me in. She had one arm, and every time I asked about the other one she told me something different.");
         var told=own.getList("Stories",3);var heard=new StringBuilder();
         for(int i=0;i<told.size();i++){int s=told.getInt(i);if(s>=0&&s<REMEMBERED.length)heard.append(heard.isEmpty()?"":" ").append(REMEMBERED[s]);}
         p.add(heard.isEmpty()?"I never asked her about it.":heard.toString());

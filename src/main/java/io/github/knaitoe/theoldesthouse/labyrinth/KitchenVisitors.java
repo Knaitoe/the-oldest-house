@@ -88,7 +88,7 @@ public final class KitchenVisitors {
                 Map.of(Seasoning.SWEET,"Too sweet. Like being talked down to.",Texture.CREAMY,"It's like eating a pillow. I'll finish it."),
                 "Still cold in the middle. I've had worse. Recently.","Burnt on the bottom. Honestly? Fine.",
                 "I couldn't. I mean it.","I'll pass.","Somewhere to be. Probably not, but still.",
-                "The best thing I ever ate was at four in the morning, out of a paper tray, on a kerb, with people I don't talk to any more. This is close.")),
+                "The best thing I ever ate was at four in the morning, out of a paper tray, on a curb, with people I don't talk to any more. This is close.")),
         new Visitor(HOLLOWAY,new Palate(EnumSet.of(Texture.CRISP),EnumSet.of(Seasoning.SALTY),EnumSet.of(Cook.WELL_DONE,Cook.BURNT),EnumSet.of(Texture.SOFT,Texture.CREAMY),EnumSet.of(Seasoning.SWEET),EnumSet.of(Cook.UNDERDONE)),
             new Voice("Holloway","Holloway",
                 "Don't mind me. I'll not be long.",

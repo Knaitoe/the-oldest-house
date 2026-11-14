@@ -642,7 +642,7 @@ RECEIVER_DISPLAY = dict(DISPLAY, thirdperson_righthand={'rotation': [146.7, 8.1,
 # What a reader carries: the routine item by its number (custom model data 1-16), the coat (17), the drawing (18), the photograph (19);
 # 0.4.369, the train ticket (20) and Iris's sleeve (21); 0.4.370, the landline's receiver in the resident's hand (22).
 CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0'), ('ticket', 'ticket_0'), ('sleeve', 'sleeve_2'), ('receiver', 'receiver')]
-NAMES = {'sp_fitting': 'Things in the Flat', 'sp_brick': 'Stock Brick', 'sp_paving': 'Paving Slab', 'sp_road': 'Road', 'sp_kerb': 'Kerb',
+NAMES = {'sp_fitting': 'Things in the Flat', 'sp_brick': 'Stock Brick', 'sp_paving': 'Paving Slab', 'sp_road': 'Road', 'sp_kerb': 'Curb',
          'sp_shopfront': 'Painted Shopfront', 'sp_paper': 'Faded Wallpaper', 'sp_kitchen': 'Kitchen Tiles', 'sp_carpet': 'Worn Carpet',
          'sp_lino': 'Chequered Lino', 'sp_tile': 'Avocado Tile', 'sp_ceiling': 'Artex Ceiling', 'sp_launderette': 'Launderette Floor'}
 ITEM_NAMES = {'item.the_oldest_house.sp_carried': 'Something of Theirs'}

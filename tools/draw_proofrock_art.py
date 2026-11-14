@@ -248,7 +248,7 @@ BLOCKS = [
     ('road_line', 'Road Line'),
     ('sidewalk', 'Sidewalk'),
     ('sidewalk_cracked', 'Cracked Sidewalk'),
-    ('kerb', 'Kerb'),
+    ('kerb', 'Curb'),
     ('clapboard', 'Clapboard'),
     ('clapboard_painted', 'Painted Clapboard'),
     ('clapboard_weathered', 'Weathered Clapboard'),

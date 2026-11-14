@@ -280,7 +280,7 @@ public final class VacantPossession {
             case MAILBOXES->{cue(p,"Four mailboxes. The one for the first floor has tape across its slot.");return true;}
             case DOCKET->{cue(p,own.getBoolean("Completed")?"The board on the van floor, where the docket was clipped.":"A removal docket, clipped to a board on the van floor, half filled in.");return true;}
             case VAN_DOOR->{cue(p,"The van's back doors, swung right round and hooked back against its sides.");return true;}
-            case VAN_WHEEL->{cue(p,"A van wheel, the tread worn smooth on the kerb side.");return true;}
+            case VAN_WHEEL->{cue(p,"A van wheel, the tread worn smooth on the curb side.");return true;}
             case STREETLAMP,LIST->{return false;}
             default->{}
         }

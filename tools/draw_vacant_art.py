@@ -490,7 +490,7 @@ DISPLAY = {
 }
 NAMES = {'vacant_fitting': 'Furniture', 'vacant_wallpaper': 'Faded Wallpaper', 'vacant_boards': 'Worn Boards', 'vacant_boards_new': 'Unfaded Boards',
          'vacant_plaster': 'Plaster', 'vacant_stair_carpet': 'Stair Runner', 'vacant_lino': 'Hall Lino', 'vacant_brick': 'Terrace Brick',
-         'vacant_pavement': 'Paving Flag', 'vacant_kerb': 'Kerbstone', 'vacant_road': 'Road', 'vacant_van_panel': 'Van Panel',
+         'vacant_pavement': 'Paving Flag', 'vacant_kerb': 'Curbstone', 'vacant_road': 'Road', 'vacant_van_panel': 'Van Panel',
          'vacant_van_wheel': 'Van Wheel', 'vacant_van_floor': 'Van Floor'}
 ITEM_NAMES = {'item.the_oldest_house.vacant_piece': 'Furniture'}
 
