@@ -54,6 +54,38 @@ public final class HallwayCarveTests {
     @AfterBatch(batch="door_winchester") public static void winchesterDone(ServerLevel level) { cleanup(level); }
     @AfterBatch(batch="door_rabbit") public static void rabbitDone(ServerLevel level) { cleanup(level); }
     @AfterBatch(batch="door_bar") public static void barDone(ServerLevel level) { cleanup(level); }
+    @AfterBatch(batch="door_grass") public static void grassDone(ServerLevel level) { cleanup(level); }
+
+    /**
+     * 0.4.586 (owner: "grass isn't rendering/behaving correctly in the in-the-tall grass vignette"): the county road built as the
+     * House builds it, from a recorded plan in slices. The field's stems used to be written into the level while the plan was
+     * still being recorded, and the plan's clearing of the place then took them out, leaving a lawn with tufts on the old fence
+     * posts. The story's own cases build the road directly and never saw it.
+     */
+    @GameTest(template="empty",batch="door_grass",timeoutTicks=2400)
+    public static void slicedFieldKeepsItsGrass(GameTestHelper h) {
+        var level=HouseTestLevel.get(h.getLevel().getServer(),HouseDimensions.OUTSIDE);
+        var base=new BlockPos(112000,80,112000); var place=LabyrinthPlace.TALL_GRASS; hold(level,base,place);
+        plan=BuildBlocks.record(level,()->LiteraryRooms.build(level,base,place));
+        h.assertTrue(!YardBlock.is(level.getBlockState(base.offset(10,0,-40)),YardBlock.Kind.GRASS),"recording the road writes nothing into the level, the grass included");
+        h.onEachTick(()->{
+            boolean done=plan.tick(); h.assertTrue(plan.lastVisits()<=BuildBlocks.MAX_VISITS,"every slice has a hard position limit");
+            if (!done) return;
+            // Past the old fence line the field is close: every column stands three high, all the way across and all the way in.
+            int columns=0,standing=0;
+            for(int z=TallGrassSite.FENCE_Z-1;z>=TallGrassSite.GRASS_N;z--)for(int x=TallGrassSite.FIELD_W;x<=TallGrassSite.FIELD_E;x++){
+                if(TallGrassSite.heart(x,z))continue;columns++;boolean whole=true;
+                for(int y=0;y<3;y++)whole&=YardBlock.is(level.getBlockState(base.offset(x,y,z)),YardBlock.Kind.GRASS)&&level.getBlockState(base.offset(x,y,z)).getValue(YardBlock.STAGE)==y;
+                if(whole)standing++;}
+            h.assertTrue(columns>8000&&standing==columns,"the field stands in the finished place: "+standing+" of "+columns+" columns three high");
+            // The first rows are thin, so the road shows back through them; they are not bare.
+            int first=0;for(int x=TallGrassSite.FIELD_W;x<=TallGrassSite.FIELD_E;x++)for(int z=TallGrassSite.GRASS_S;z>TallGrassSite.FIRST_ROWS;z--)if(YardBlock.is(level.getBlockState(base.offset(x,0,z)),YardBlock.Kind.GRASS))first++;
+            h.assertTrue(first>100&&first<(TallGrassSite.FIELD_E-TallGrassSite.FIELD_W+1)*(TallGrassSite.GRASS_S-TallGrassSite.FIRST_ROWS),"the first rows are thin and not bare: "+first+" stems");
+            h.assertTrue(YardBlock.is(level.getBlockState(base.offset(TallGrassSite.HEART)),YardBlock.Kind.CAP)&&YardBlock.is(level.getBlockState(base.offset(TallGrassSite.HEART.getX()+2,0,TallGrassSite.HEART.getZ())),YardBlock.Kind.TRAMPLED),"the heart is trampled round the cap");
+            h.assertTrue(YardBlock.is(level.getBlockState(base.offset(TallGrassSite.WAGON_NOSE_X,0,TallGrassSite.WAGON_Z1)),YardBlock.Kind.NOSE),"the wagon is on the shoulder");
+            h.succeed();
+        });
+    }
 
     /**
      * 0.4.441 (owner: the pool table "is not physically in last_orders"): the bar built as the House builds it, from a recorded plan

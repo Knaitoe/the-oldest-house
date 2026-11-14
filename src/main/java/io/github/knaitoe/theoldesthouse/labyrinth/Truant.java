@@ -219,7 +219,8 @@ public final class Truant {
             if(body!=null&&box.inflate(12,2,12).intersects(camera.getBoundingBox())){if(camera==body)return true;var hit=l.clip(new ClipContext(camera.getEyePosition(),body.getEyePosition(),ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,camera));if(hit.getType()==HitResult.Type.MISS)return true;}
         }return false;
     }
-    static Vec3 home(LabyrinthPlace place){if(TruantSentence.is(place))return TruantSentence.HOME;if(TruantYard.is(place))return TruantYard.home(place);if(TruantService.is(place))return TruantService.home(place);return switch(place){case TRUANT_DOOR->TruantPlaces.DOOR_SPOT;case TRUANT_LEDGE->TruantPlaces.LEDGE_SPOT;default->TruantPlaces.PEEK_SPOT;};}
+    /** Where he stands in each of his places. Every one must be clear of every block (TruantServiceTests). */
+    public static Vec3 home(LabyrinthPlace place){if(TruantSentence.is(place))return TruantSentence.HOME;if(TruantYard.is(place))return TruantYard.home(place);if(TruantService.is(place))return TruantService.home(place);return switch(place){case TRUANT_DOOR->TruantPlaces.DOOR_SPOT;case TRUANT_LEDGE->TruantPlaces.LEDGE_SPOT;default->TruantPlaces.PEEK_SPOT;};}
     static @Nullable LiteraryActor spawn(ServerLevel l,BlockPos b,LabyrinthPlace place,CompoundTag s){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(place,null);a.appearance(LiteraryActor.STRANGER,place==TruantPlaces.LAMP?LEER:FACE);a.setNoGravity(true);

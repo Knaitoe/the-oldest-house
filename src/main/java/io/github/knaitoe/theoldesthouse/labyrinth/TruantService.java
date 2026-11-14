@@ -47,7 +47,13 @@ public final class TruantService {
     public static final int SUMP_X=7,SUMP_FLOOR=-5;
     /** The elbow: its burst zone round the corner, the steam main's vents, where he waits round the corner; the cycle and its parts. */
     public static final int CYCLE=160,SHIVER=30,VENT=60,HELP_KNOCK_AT=64,TURNED_KNOCK_AT=2;
-    public static final Vec3 KNOCK_SPOT=new Vec3(-6.4,0,-14.2);
+    /**
+     * 0.4.586, the owner's playtest: "truant is still sitting in this box, in the steam vents?" His spot was (-6.4, -14.2), which is
+     * inside the barrel's own block (the barrel at -7, -15 runs from -7 to -6 and from -15 to -14), so he stood in it to the chest. He
+     * stands under the main now, a step inside the branch against its east wall, where nobody waiting in the corridor can see him and
+     * the pipe he knocks on is within his reach. The barrel is where it was, across the branch from him.
+     */
+    public static final Vec3 KNOCK_SPOT=new Vec3(-4.5,0,-13.4);
     /** The lift: the shaft's cells, the platform at the top and bottom, the landing brake, his spot, the ledge in the shaft wall. */
     /** The landing is up a stair, eight above the floor the way on is at; the car's platform stands at TOP up there, BOTTOM down here. */
     public static final int SHAFT_X0=-1,SHAFT_X1=1,SHAFT_Z0=-11,SHAFT_Z1=-13,LANDING=8,TOP=7,BOTTOM=-1;
