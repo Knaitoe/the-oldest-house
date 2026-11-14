@@ -446,6 +446,8 @@ public final class LabyrinthLighting {
             BlockState moved = standingVersion(level.getBlockState(source));
             level.setBlock(source, Blocks.AIR.defaultBlockState(), FLAGS);
             level.setBlock(target, moved, FLAGS);
+            // 0.4.588: a light a reader set down is still theirs to take up where the House has put it.
+            PlacedLights.moved(level.getServer(), source, target);
             return true;
         }
         return false;
