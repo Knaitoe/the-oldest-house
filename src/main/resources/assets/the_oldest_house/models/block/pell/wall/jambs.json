@@ -1,0 +1,31 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "t": "the_oldest_house:block/pell/wall/trim",
+    "particle": "the_oldest_house:block/pell/wall/trim"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#t",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#t",
+          "cullface": "west"
+        }
+      }
+    }
+  ]
+}

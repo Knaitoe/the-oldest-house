@@ -1903,7 +1903,8 @@ def tex(name):
     return name if name.startswith(NS) else NS + 'block/pell/thing/' + name
 
 
-CARPET = NS + 'block/pell_carpet'
+# 0.4.573: Callum's floor is boards, its carpet taken up; the circle is painted on them.
+FLOOR = NS + 'block/pell_boards'
 
 
 def box(lo, hi, tex, **faces):
@@ -2071,7 +2072,7 @@ def thing_models():
     for end in range(2):
         out[f'mattress_{end}'] = m([element([0, 0, 0], [16, 4, 16], {'up': 'm', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'})],
                                    {'m': 'mattress_head' if end == 0 else 'mattress_foot', 's': 'mattress_side'}, 'mattress_side')
-    # The circle is painted on the floor: each cell is the floor's own carpet with the paint on top, and a toy standing on the line
+    # The circle is painted on the floor: each cell is the floor's own boards with the paint on top, and a toy standing on the line
     # where there is one (in the cell above, where nothing stops a body).
     for i in range(16):
         dx, dz = i % CIRCLE_W, i // CIRCLE_W
@@ -2080,7 +2081,7 @@ def thing_models():
         toy = TOYS.get((dx, dz))
         if toy:
             els += toy_elements(toy, dx, dz)
-        out[f'circle_{i}'] = m(els, {'k': CARPET, 'c': f'circle_{i}', 'y': 'toys'}, f'circle_{i}')
+        out[f'circle_{i}'] = m(els, {'k': FLOOR, 'c': f'circle_{i}', 'y': 'toys'}, f'circle_{i}')
     shoe_els = []
     for x, c in SHOES:
         side, top = c, c + 't'

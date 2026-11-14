@@ -26,16 +26,15 @@ import net.minecraft.world.phys.shapes.*;
  * <li>LETTERBOX: a bent tin box on a post, the house's number in stick-on figures with one gone (the first paper is in it).
  * DOORMAT: the mat at the front step (where each reader's account waits), on the line; stage 1 its near edge lifted and folded
  * back, so the line shows running on under it.</li>
- * <li>WALL: a cell of the house's outside wall, brick veneer on the face it turns to the weather (FACING) and plaster on the rest.
- * Stage 0 the veneer, 1 its lowest course, 2 the newer brick of the bricked-up window. WALL_CORNER: the same at a corner, brick on
- * its north and west faces as drawn.</li>
+ * <li>WALL_CORNER: a corner of the house's outside wall, brick veneer on its north and west faces as drawn (the two it turns to the
+ * weather). Stage 0 the veneer, 1 its lowest course. 0.4.573: the rest of the house's walls are PellWall, a finish to each face.</li>
  * <li>EAVE: the eaves: the upper half of its cell, a painted board on its edges, the soffit under it and tiles on top.</li>
  * </ul>
  */
 public final class PellBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<PellBlock> CODEC=simpleCodec(PellBlock::new);
     public enum Kind implements StringRepresentable {
-        FENCE,POOL_FENCE,POOL_GATE,GATE,DOOR,GARAGE_DOOR,SHED_DOOR,SCREEN,ROLLER,WINDOW,SLIDER,TARP,LETTERBOX,DOORMAT,WALL,WALL_CORNER,EAVE;
+        FENCE,POOL_FENCE,POOL_GATE,GATE,DOOR,GARAGE_DOOR,SHED_DOOR,SCREEN,ROLLER,WINDOW,SLIDER,TARP,LETTERBOX,DOORMAT,WALL_CORNER,EAVE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** A door of two cells whose stage's bit 0 is open and bit 1 the upper cell. */
         public boolean leaf(){return this==DOOR||this==GARAGE_DOOR||this==SHED_DOOR||this==SCREEN||this==SLIDER;}
@@ -72,7 +71,7 @@ public final class PellBlock extends HorizontalDirectionalBlock {
             case TARP->Block.box(0,12,0,16,13.5,16);
             case LETTERBOX->Shapes.or(Block.box(7,0,7,9,10,9),MarshBlock.turned(f,4,10,5,12,15,11));
             case DOORMAT->MarshBlock.turned(f,1,0,3,15,1,13);
-            case WALL,WALL_CORNER->Shapes.block();
+            case WALL_CORNER->Shapes.block();
             case EAVE->Block.box(0,8,0,16,16,16);
         };
     }
@@ -90,9 +89,9 @@ public final class PellBlock extends HorizontalDirectionalBlock {
             case ROLLER,WINDOW->plane(f,6,10,16);
             case TARP,DOORMAT->Shapes.empty();
             case LETTERBOX->Shapes.or(Block.box(7,0,7,9,10,9),MarshBlock.turned(f,4,10,5,12,15,11));
-            case WALL,WALL_CORNER->Shapes.block();
+            case WALL_CORNER->Shapes.block();
             case EAVE->Block.box(0,8,0,16,16,16);
         };
     }
-    @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){var k=s.getValue(KIND);return k!=Kind.WALL&&k!=Kind.WALL_CORNER&&k!=Kind.EAVE;}
+    @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){var k=s.getValue(KIND);return k!=Kind.WALL_CORNER&&k!=Kind.EAVE;}
 }

@@ -2,7 +2,7 @@
   "ambientocclusion": false,
   "render_type": "minecraft:cutout",
   "textures": {
-    "k": "the_oldest_house:block/pell_carpet",
+    "k": "the_oldest_house:block/pell_boards",
     "c": "the_oldest_house:block/pell/thing/circle_2",
     "y": "the_oldest_house:block/pell/thing/toys",
     "particle": "the_oldest_house:block/pell/thing/circle_2"

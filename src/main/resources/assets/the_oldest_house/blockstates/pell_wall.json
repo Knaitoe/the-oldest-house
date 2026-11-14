@@ -1,0 +1,5988 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "back": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "wrap": "false"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/jambs"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "back": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "wrap": "false"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/jambs",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "back": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "wrap": "false"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/jambs",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "hall",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "hall",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "hall",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "hall",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/hall_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "nessa",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "nessa",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "nessa",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "nessa",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/nessa_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "callum",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "callum",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "callum",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "callum",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/callum_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bath",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bath",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "bath",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "bath",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/bath_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "june",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "june",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "june",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "june",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/june_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "kitchen",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "kitchen",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "kitchen",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "kitchen",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/kitchen_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "splash",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "splash",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "splash",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "splash",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/splash_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "living",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "living",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "living",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "living",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/living_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "laundry",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "laundry",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "laundry",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "laundry",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/laundry_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "brick",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "brick",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "brick",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "brick_new",
+        "level": "0"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "0",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_0",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "brick_new",
+        "level": "1"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "1",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "back": "brick_new",
+        "level": "2"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "front": "brick_new",
+        "level": "2",
+        "wrap": "true"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/brick_new_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "wrap": "false"
+      },
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/jambs",
+        "y": 270
+      }
+    },
+    {
+      "apply": {
+        "model": "the_oldest_house:block/pell/wall/caps"
+      }
+    }
+  ]
+}

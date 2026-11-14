@@ -48,7 +48,12 @@ public final class PellHouseTests {
     private static boolean thing(ServerLevel l,BlockPos b,int x,int y,int z,PellThing.Kind kind,int stage){var s=l.getBlockState(b.offset(x,y,z));return PellThing.is(s,kind)&&s.getValue(PellThing.STAGE)==stage;}
     private static Direction facing(ServerLevel l,BlockPos b,int x,int y,int z){return l.getBlockState(b.offset(x,y,z)).getValue(PellThing.FACING);}
     /** A cell of the house's outside wall, of this course, its brick turned this way. */
-    private static boolean wall(ServerLevel l,BlockPos b,int x,int y,int z,int stage,Direction out){var s=l.getBlockState(b.offset(x,y,z));return PellBlock.is(s,PellBlock.Kind.WALL)&&s.getValue(PellBlock.STAGE)==stage&&s.getValue(PellBlock.FACING)==out;}
+    /** 0.4.573: a cell of the house's wall (PellWall) turned this way, with this finish on the face it turns. */
+    private static boolean wall(ServerLevel l,BlockPos b,int x,int y,int z,PellWall.Finish front,Direction out){
+        var s=l.getBlockState(b.offset(x,y,z));return PellWall.is(s)&&s.getValue(PellWall.FRONT)==front&&s.getValue(PellWall.FACING)==out&&s.getValue(PellWall.LEVEL)==Math.min(y,2);
+    }
+    /** What a cell of wall shows on one face. */
+    private static PellWall.Finish shows(ServerLevel l,BlockPos b,int x,int y,int z,Direction face){return PellWall.finish(l.getBlockState(b.offset(x,y,z)),face);}
     /** 0.4.568: the hair length in the latest look sent to {@code to} of {@code who} as Tilly, kept in {@code seen} (-1 for none yet);
      *  reading it empties what was sent. */
     private static int lookHair(ServerPlayer to,ServerPlayer who,int[] seen){
@@ -113,7 +118,8 @@ public final class PellHouseTests {
             // Its own materials.
             h.assertTrue(is(l,b,0,-1,-10,"asphalt")&&is(l,b,PellSite.CURB,-1,-10,"curb")&&is(l,b,PellSite.PATH,-1,-10,"concrete")&&is(l,b,9,-1,-10,"lawn_dry"),"the road, its curb, the footpath and a neighbour's dead lawn");
             h.assertTrue(is(l,b,-8,-1,-54,"lawn")&&is(l,b,0,-1,-54,"concrete")&&is(l,b,15,-1,-70,"concrete")&&is(l,b,-5,-1,-74,"paver"),"June's lawn is watered; the path, the drive, and the patio");
-            h.assertTrue(wall(l,b,PellSite.HOUSE_W,0,-60,1,Direction.WEST)&&wall(l,b,PellSite.HOUSE_W,2,-60,0,Direction.WEST)&&wall(l,b,PellSite.HOUSE_W,1,-61,2,Direction.WEST)&&wall(l,b,5,2,PellSite.HOUSE_N,0,Direction.NORTH)&&wall(l,b,PellSite.HOUSE_E,1,-66,0,Direction.EAST)
+            h.assertTrue(wall(l,b,PellSite.HOUSE_W,0,-60,PellWall.Finish.BRICK,Direction.WEST)&&wall(l,b,PellSite.HOUSE_W,2,-60,PellWall.Finish.BRICK,Direction.WEST)&&wall(l,b,PellSite.HOUSE_W,1,-61,PellWall.Finish.BRICK_NEW,Direction.WEST)
+                &&wall(l,b,5,2,PellSite.HOUSE_N,PellWall.Finish.BRICK,Direction.NORTH)&&wall(l,b,PellSite.HOUSE_E,1,-66,PellWall.Finish.BRICK,Direction.EAST)&&wall(l,b,PellSite.HOUSE_E,PellSite.ROOF,-66,PellWall.Finish.BRICK,Direction.EAST)
                 &&is(l,b,-3,PellSite.ROOF+1,-65,"roof"),"brick veneer turned to the weather on every side over a stained lowest course, a window bricked up in newer brick, and tiles over it");
             h.assertTrue(fitting(l,b,new BlockPos(PellSite.HOUSE_W,1,PellSite.HOUSE_N),PellBlock.Kind.WALL_CORNER)&&fitting(l,b,new BlockPos(PellSite.HOUSE_E,1,PellSite.HOUSE_S),PellBlock.Kind.WALL_CORNER)
                 &&fitting(l,b,new BlockPos(PellSite.HOUSE_W-1,PellSite.ROOF,-65),PellBlock.Kind.EAVE)&&is(l,b,-3,PellSite.ROOF,-65,"ceiling"),"its corners, its eaves, and the ceiling inside");
@@ -266,6 +272,102 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_things") public static void thingsDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.573 (docs/PELL_HOUSE_NOTES_0_4_573.md), a finish and a floor to each room. Every cell of the house's plan is a room's or a
+     * cell of wall. Every face of every wall that looks into a room is in that room's finish, at the height the cell stands in its
+     * wall, and every face that looks out of doors is brick. Rooms that share a wall are finished differently. Each room's floor
+     * is its own, with the marks laid in it; in each inside doorway the hall's carpet meets the room's floor under a bar. A door's
+     * and an arch's jambs are painted timber, the hall goes round into the entry, the wall over the kitchen's benches is tiled,
+     * and the bricked-up window is papered over inside.
+     */
+    @GameTest(template="empty",batch="pell_rooms",timeoutTicks=1200)
+    public static void everyRoomHasItsOwnWallsAndItsOwnFloor(GameTestHelper h){
+        // The place is built for the reader who comes to it, as in every other case.
+        var f=house(h);f.player("pell_rooms_reader",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            int faces=0,brick=0;
+            for(int x=PellSite.HOUSE_W;x<=PellSite.HOUSE_E;x++)for(int z=PellSite.HOUSE_N;z<=PellSite.HOUSE_S;z++){
+                var room=PellSite.room(x,z);
+                for(int y=0;y<=2;y++){
+                    var s=l.getBlockState(b.offset(x,y,z));
+                    if(room!=null){h.assertFalse(PellWall.is(s)||PellBlock.is(s,PellBlock.Kind.WALL_CORNER),"no wall stands in "+room.name()+" at "+x+","+y+","+z);continue;}
+                    // A cell of the plan that is no room's is wall, or an opening in it: a door, a window, an arch.
+                    if(!PellWall.is(s)){
+                        h.assertTrue(s.isAir()||s.is(PellRegistry.FITTING.get()),"what stands in the wall's line at "+x+","+y+","+z+" is a fitting or an opening: "+s);continue;
+                    }
+                    h.assertTrue(s.getValue(PellWall.LEVEL)==y,"the wall at "+x+","+y+","+z+" is drawn at its own height");
+                    for(var d:Direction.Plane.HORIZONTAL){
+                        int nx=x+d.getStepX(),nz=z+d.getStepZ();var shown=PellWall.finish(s,d);
+                        if(nx<PellSite.HOUSE_W||nx>PellSite.HOUSE_E||nz<PellSite.HOUSE_N||nz>PellSite.HOUSE_S){
+                            h.assertTrue(shown==PellWall.Finish.BRICK||shown==PellWall.Finish.BRICK_NEW,"the wall at "+x+","+y+","+z+" is brick to the weather on its "+d+": "+shown);brick++;continue;
+                        }
+                        // An arch is the hall's: the wall's ends at it are finished as the hall is.
+                        if(PellSite.arch(nx,y,nz)){h.assertTrue(shown==PellWall.Finish.HALL,"the hall goes round the arch's jamb at "+x+","+y+","+z+": "+shown);faces++;continue;}
+                        var into=PellSite.room(nx,nz);if(into==null)continue;
+                        var wanted=into.name().equals("kitchen")&&z==PellSite.HOUSE_N&&y==1?PellWall.Finish.SPLASH:into.finish();
+                        h.assertTrue(shown==wanted,"the wall at "+x+","+y+","+z+" shows "+into.name()+" its own finish on its "+d+": "+shown+", wanted "+wanted);faces++;
+                    }
+                }
+            }
+            h.assertTrue(faces>400&&brick>180,"the house's walls were looked at: "+faces+" faces into rooms, "+brick+" to the weather");
+            // Rooms that share a wall are not finished alike, but for the hall and the entry it runs into.
+            for(var one:PellSite.ROOMS)for(var other:PellSite.ROOMS){
+                if(one==other||one.finish()!=other.finish())continue;
+                h.assertTrue(one.finish()==PellWall.Finish.HALL,one.name()+" and "+other.name()+" are finished alike: "+one.finish());
+            }
+            // Each room's floor is its own, with the marks laid in it.
+            for(var room:PellSite.ROOMS)for(int x=room.x0();x<=room.x1();x++)for(int z=room.z0();z<=room.z1();z++){
+                var s=l.getBlockState(b.offset(x,-1,z));
+                boolean own=s.is(PellRegistry.material(room.floor()))||switch(room.name()){
+                    case "hall","entry"->s.is(PellRegistry.material("carpet_worn"));
+                    case "kitchen"->s.is(PellRegistry.material("lino_worn"))||s.is(PellRegistry.material("lino_burn"));
+                    case "callum"->PellThing.is(s,CIRCLE);
+                    default->false;
+                };
+                h.assertTrue(own,"the floor of "+room.name()+" at "+x+","+z+" is its own: "+s);
+            }
+            for(var name:List.of("nessa","callum","bath","june","kitchen","living","laundry")){
+                var room=PellSite.room(name);
+                h.assertFalse(room.floor().equals("carpet"),name+" has a floor of its own, not the hall's carpet");
+            }
+            // In each inside doorway the hall's carpet meets the room's floor under a bar; an open way is over each.
+            h.assertTrue(PellSite.SILLS.size()==9,"a sill to each inside doorway: "+PellSite.SILLS.size());
+            PellSite.SILLS.forEach((at,sill)->{
+                h.assertTrue(l.getBlockState(b.offset(at)).is(PellRegistry.material(sill)),"the doorway's floor at "+at+" is "+sill);
+                var over=l.getBlockState(b.offset(at.above()));
+                h.assertTrue(over.isAir()||PellBlock.is(over,PellBlock.Kind.DOOR),"a door or an arch stands over the sill at "+at+": "+over);
+            });
+            // A door's jambs are painted timber, each side; an arch's are the hall's wall gone round, with the room it opens to behind.
+            for(var jamb:List.of(new BlockPos(-11,0,-64),new BlockPos(-11,1,-64),new BlockPos(-9,1,-64),new BlockPos(6,0,-67)))
+                h.assertTrue(shows(l,b,jamb.getX(),jamb.getY(),jamb.getZ(),Direction.EAST)==null&&shows(l,b,jamb.getX(),jamb.getY(),jamb.getZ(),Direction.WEST)==null,"the jamb at "+jamb+" is painted timber");
+            for(int y=0;y<=1;y++){
+                h.assertTrue(shows(l,b,-11,y,-67,Direction.EAST)==PellWall.Finish.HALL&&shows(l,b,-11,y,-67,Direction.SOUTH)==PellWall.Finish.HALL&&shows(l,b,-11,y,-67,Direction.NORTH)==PellWall.Finish.KITCHEN,
+                    "the kitchen arch's west jamb at "+y+": the hall round it, the kitchen behind");
+                h.assertTrue(shows(l,b,1,y,-67,Direction.WEST)==PellWall.Finish.HALL&&shows(l,b,1,y,-67,Direction.NORTH)==PellWall.Finish.LIVING,"the living room arch's east jamb at "+y);
+            }
+            // Daylight comes through the outside walls as it did, and not through a wall between two rooms.
+            h.assertTrue(l.getBlockState(b.offset(PellSite.HOUSE_W,1,-65)).getLightBlock(l,b.offset(PellSite.HOUSE_W,1,-65))==1&&l.getBlockState(b.offset(-7,1,-61)).getLightBlock(l,b.offset(-7,1,-61))==15,
+                "an outside wall dims the day by one; an inside wall stops it");
+            // The hall goes round into the entry, both sides of it, floor to ceiling.
+            for(int y=0;y<=2;y++){
+                h.assertTrue(shows(l,b,-1,y,-64,Direction.NORTH)==PellWall.Finish.HALL&&shows(l,b,-1,y,-64,Direction.EAST)==PellWall.Finish.HALL,"the hall's wall goes round into the entry on its west side at "+y);
+                h.assertTrue(shows(l,b,2,y,-64,Direction.NORTH)==PellWall.Finish.HALL&&shows(l,b,2,y,-64,Direction.WEST)==PellWall.Finish.HALL,"and on its east side at "+y);
+            }
+            // Over the benches the wall is tiled; above the kitchen's window, and at the benches' own height, it is the kitchen's paint.
+            h.assertTrue(shows(l,b,-12,1,PellSite.HOUSE_N,Direction.SOUTH)==PellWall.Finish.SPLASH&&shows(l,b,-8,1,PellSite.HOUSE_N,Direction.SOUTH)==PellWall.Finish.SPLASH,"tiles over the benches");
+            h.assertTrue(shows(l,b,-10,2,PellSite.HOUSE_N,Direction.SOUTH)==PellWall.Finish.KITCHEN&&shows(l,b,PellSite.HOUSE_W,1,-70,Direction.EAST)==PellWall.Finish.KITCHEN,"and paint over the window and on the kitchen's other walls");
+            // The bricked-up window is newer brick outside and Nessa's paper inside; a wall between two rooms has one room on each face.
+            h.assertTrue(shows(l,b,PellSite.HOUSE_W,1,-61,Direction.WEST)==PellWall.Finish.BRICK_NEW&&shows(l,b,PellSite.HOUSE_W,1,-61,Direction.EAST)==PellWall.Finish.NESSA,"the bricked-up window, papered over inside");
+            h.assertTrue(shows(l,b,-7,1,-61,Direction.WEST)==PellWall.Finish.NESSA&&shows(l,b,-7,1,-61,Direction.EAST)==PellWall.Finish.CALLUM,"Nessa's paper on one face of the wall between them, Callum's white on the other");
+            h.assertTrue(shows(l,b,5,1,-70,Direction.WEST)==PellWall.Finish.LIVING&&shows(l,b,5,1,-70,Direction.EAST)==PellWall.Finish.LAUNDRY,"the living room on one face, the laundry on the other");
+            h.assertTrue(shows(l,b,8,2,-64,Direction.NORTH)==PellWall.Finish.HALL&&shows(l,b,8,2,-64,Direction.SOUTH)==PellWall.Finish.JUNE,"over June's door, the hall on one face and her room on the other");
+            // The cells of wall as built are the cells the plan gives (PellSite.wall), so a wall put back is put back as it was.
+            for(var at:List.of(new BlockPos(-7,1,-61),new BlockPos(PellSite.HOUSE_W,0,-65),new BlockPos(-1,2,-64),new BlockPos(-12,1,PellSite.HOUSE_N)))
+                h.assertTrue(l.getBlockState(b.offset(at)).equals(PellSite.wall(at.getX(),at.getY(),at.getZ())),"the wall at "+at+" is the plan's");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_rooms") public static void roomsDone(ServerLevel l){done();}
     private static PellLine.Surface surface(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SURFACE);}
     private static PellLine.Shape shape(ServerLevel l,BlockPos b,int x,int z){return l.getBlockState(b.offset(x,-1,z)).getValue(PellLine.SHAPE);}
     /**
