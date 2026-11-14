@@ -79,6 +79,13 @@ Not checked:
   first.
 - **The case's first tick.** The reader was set looking at her a tick late, and in that tick she ran. The case now
   looks before the first tick.
+- **On CI (run 1626): the beach was loaded but not yet ticking.** The new case counts her first second. It began as
+  soon as the beach's chunks were loaded, and a chunk ticks its entities a little after it loads: on CI she had no tick
+  of her own for the first twelve, and had come .48 of a block where the case wanted more than a half. Nothing in the
+  game was wrong. The case now begins once every chunk of the beach ticks its entities (the shared readiness check
+  written for exactly this), and once she has rested from any strike an earlier case drew, since she is one witch for
+  every case on the server. Run alone on a fresh server it failed before and passes now; the beach's four cases pass
+  together.
 
 ## For the owner
 
