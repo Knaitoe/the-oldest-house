@@ -57,8 +57,9 @@ public final class IndianLakeLinkedTests {
         body.discard();copy.discard();girl.discard();returned.discard();h.succeed();
     }
     @GameTest(template="empty") public static void newDoorsLeakTheirOwnSoundBeforeEntry(GameTestHelper h){
-        h.assertTrue(DoorLeakKind.forDestination(LabyrinthPlace.PRESERVED_CAVE,0)==DoorLeakKind.CAVE
-                &&DoorLeakKind.forDestination(LabyrinthPlace.SHALLOWS,0)==DoorLeakKind.SHALLOWS,"the two new doors have distinct lake hints");
+        h.assertTrue(DoorBleed.forDestination(LabyrinthPlace.PRESERVED_CAVE,0)==DoorBleed.PRESERVED_CAVE
+                &&DoorBleed.forDestination(LabyrinthPlace.SHALLOWS,0)==DoorBleed.SHALLOWS
+                &&DoorBleed.PRESERVED_CAVE.water()!=DoorBleed.SHALLOWS.water()&&!DoorBleed.PRESERVED_CAVE.sound().equals(DoorBleed.SHALLOWS.sound()),"the two new doors have distinct lake hints");
         h.assertTrue(DrownedTownRegistry.caveVoice(0)!=DrownedTownRegistry.caveVoice(7),"a full hymn really adds different registered voices");h.succeed();
     }
 

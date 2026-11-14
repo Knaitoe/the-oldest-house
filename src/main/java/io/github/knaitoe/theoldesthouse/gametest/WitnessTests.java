@@ -139,7 +139,7 @@ public final class WitnessTests {
                 &&TellTaleFloorboards.heartbeatInterval(50)>TellTaleFloorboards.heartbeatInterval(100),"the original double beat grows faster with agitation");
         LabyrinthData data=new LabyrinthData();UUID player=UUID.randomUUID();
         var door=new LabyrinthData.Door("heart",HouseDimensions.INTERIOR,BlockPos.ZERO,Direction.SOUTH,"place:floorboards",true);door.leak=true;
-        helper.assertTrue(LabyrinthDoorLeaks.cue(data,player,door).kind()==DoorLeakKind.HEARTBEAT,"the uncompleted room leaks its heartbeat");
+        helper.assertTrue(LabyrinthDoorLeaks.cue(data,player,door).bleed()==DoorBleed.FLOORBOARDS&&DoorBleed.FLOORBOARDS.sound().equals("vignette.heartbeat"),"the uncompleted room leaks its heartbeat");
         data.setCompleted(TellTaleFloorboards.ID,true);helper.assertTrue(LabyrinthDoorLeaks.cue(data,player,door)==null,"completion silences the real room's door too");helper.succeed();
     }
     @GameTest(template="empty") public static void releasedCreatureReloadsWithoutBecomingHostile(GameTestHelper helper){

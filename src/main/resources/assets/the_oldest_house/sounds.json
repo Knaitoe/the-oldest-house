@@ -5565,5 +5565,752 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.pell.drip"
+  },
+  "bleed.red_room": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/red_room",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.red_room"
+  },
+  "bleed.ted_caver": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/ted_caver",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.ted_caver"
+  },
+  "bleed.zampano_courtyard": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/zampano_courtyard",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.zampano_courtyard"
+  },
+  "bleed.whale": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/whale",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.whale"
+  },
+  "bleed.barn_well": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/barn_well",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.barn_well"
+  },
+  "bleed.plain": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/plain",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.plain"
+  },
+  "bleed.hospital": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/hospital",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.hospital"
+  },
+  "bleed.karen_room": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/karen_room",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.karen_room"
+  },
+  "bleed.holloway_camp": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/holloway_camp",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.holloway_camp"
+  },
+  "bleed.seance": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/seance",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.seance"
+  },
+  "bleed.wallpaper_nursery": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/wallpaper_nursery",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.wallpaper_nursery"
+  },
+  "bleed.hill_nursery": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/hill_nursery",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.hill_nursery"
+  },
+  "bleed.miniatures": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/miniatures",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.miniatures"
+  },
+  "bleed.masque": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/masque",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.masque"
+  },
+  "bleed.usher": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/usher",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.usher"
+  },
+  "bleed.winchester": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/winchester",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.winchester"
+  },
+  "bleed.child_room": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/child_room",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.child_room"
+  },
+  "bleed.crimson_hall": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/crimson_hall",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.crimson_hall"
+  },
+  "bleed.bly_route": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/bly_route",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.bly_route"
+  },
+  "bleed.elk_lot": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/elk_lot",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.elk_lot"
+  },
+  "bleed.elk_fan": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/elk_fan",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.elk_fan"
+  },
+  "bleed.mapping_interior": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/mapping_interior",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.mapping_interior"
+  },
+  "bleed.holy_rabbit": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/holy_rabbit",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.holy_rabbit"
+  },
+  "bleed.confession": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/confession",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.confession"
+  },
+  "bleed.elk_carcasses": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/elk_carcasses",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.elk_carcasses"
+  },
+  "bleed.costume_night": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/costume_night",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.costume_night"
+  },
+  "bleed.movie_night": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/movie_night",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.movie_night"
+  },
+  "bleed.winter_lake": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/winter_lake",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.winter_lake"
+  },
+  "bleed.camp_blood": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/camp_blood",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.camp_blood"
+  },
+  "bleed.devils_rock": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/devils_rock",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.devils_rock"
+  },
+  "bleed.wheel": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/wheel",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.wheel"
+  },
+  "bleed.ghosts_set": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/ghosts_set",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.ghosts_set"
+  },
+  "bleed.end_world_cabin": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/end_world_cabin",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.end_world_cabin"
+  },
+  "bleed.family_copy": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/family_copy",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.family_copy"
+  },
+  "bleed.old_cabin": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/old_cabin",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.old_cabin"
+  },
+  "bleed.three_fingers": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/three_fingers",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.three_fingers"
+  },
+  "bleed.nightclub": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/nightclub",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.nightclub"
+  },
+  "bleed.lake_house": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/lake_house",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.lake_house"
+  },
+  "bleed.borrasca": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/borrasca",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.borrasca"
+  },
+  "bleed.painted_interior": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/painted_interior",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.painted_interior"
+  },
+  "bleed.second_waitress": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/second_waitress",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.second_waitress"
+  },
+  "bleed.tunnel_periphery": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/tunnel_periphery",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.tunnel_periphery"
+  },
+  "bleed.missing_sleep": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/missing_sleep",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.missing_sleep"
+  },
+  "bleed.layered_man": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/layered_man",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.layered_man"
+  },
+  "bleed.motion_light": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/motion_light",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.motion_light"
+  },
+  "bleed.backseat": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/backseat",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.backseat"
+  },
+  "bleed.silo": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/silo",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.silo"
+  },
+  "bleed.dare_in_the_dark": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/dare_in_the_dark",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.dare_in_the_dark"
+  },
+  "bleed.way_out": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/way_out",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.way_out"
+  },
+  "bleed.feet_up": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/feet_up",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.feet_up"
+  },
+  "bleed.whistlers": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/whistlers",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.whistlers"
+  },
+  "bleed.work_print": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/work_print",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.work_print"
+  },
+  "bleed.polaroid_trail": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/polaroid_trail",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.polaroid_trail"
+  },
+  "bleed.left_right": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/left_right",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.left_right"
+  },
+  "bleed.dead_air": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/dead_air",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.dead_air"
+  },
+  "bleed.pitt": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/pitt",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.pitt"
+  },
+  "bleed.closing_hall": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/closing_hall",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.closing_hall"
+  },
+  "bleed.storeroom": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/storeroom",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.storeroom"
+  },
+  "bleed.stillness": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/stillness",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.stillness"
+  },
+  "bleed.line": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/line",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.line"
+  },
+  "bleed.own_light": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/own_light",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.own_light"
+  },
+  "bleed.polybius": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/polybius",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.polybius"
+  },
+  "bleed.replacement": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/replacement",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.replacement"
+  },
+  "bleed.last_swimmer": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/last_swimmer",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.last_swimmer"
+  },
+  "bleed.vacant_possession": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/vacant_possession",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.vacant_possession"
+  },
+  "bleed.people_lights": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/people_lights",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.people_lights"
+  },
+  "bleed.place_for_you": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/place_for_you",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.place_for_you"
+  },
+  "bleed.second_person": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/second_person",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.second_person"
+  },
+  "bleed.deer_road": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/deer_road",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.deer_road"
+  },
+  "bleed.state_route": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/state_route",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.state_route"
+  },
+  "bleed.marsh_supper": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/marsh_supper",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.marsh_supper"
+  },
+  "bleed.tall_grass": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/tall_grass",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.tall_grass"
+  },
+  "bleed.growing_things": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/growing_things",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.growing_things"
+  },
+  "bleed.last_crossing": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/last_crossing",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.last_crossing"
+  },
+  "bleed.pinehook": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/pinehook",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.pinehook"
+  },
+  "bleed.the_drawing": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/the_drawing",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.the_drawing"
+  },
+  "bleed.corner_house": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/corner_house",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.corner_house"
+  },
+  "bleed.black_city": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/black_city",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.black_city"
+  },
+  "bleed.kept": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/kept",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.kept"
+  },
+  "bleed.last_orders": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/last_orders",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.last_orders"
+  },
+  "bleed.bike_night": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/bike_night",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.bike_night"
+  },
+  "bleed.pell_house": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/pell_house",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.pell_house"
+  },
+  "bleed.ones_inside": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/ones_inside",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.ones_inside"
   }
 }

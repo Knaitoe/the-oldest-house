@@ -269,7 +269,7 @@ public final class GoatmanTests {
             var origin=new BlockPos(100,y,100);var b=LabyrinthPlaces.base(origin,LabyrinthPlace.GOATMAN);var slot=LabyrinthPlaces.slotBounds(origin,LabyrinthPlace.GOATMAN);
             h.assertTrue(slot.isInside(b.offset(-23,-1,-82))&&slot.isInside(b.offset(23,13,0)),"woods and trailer fit their native slot at manor height "+y);
         }
-        h.assertTrue(LabyrinthPlace.PHONE_CANOE.slot()==30&&LabyrinthPlace.GOATMAN.slot()==31&&DoorLeakKind.CANOE.ordinal()==10&&DoorLeakKind.WOODS.ordinal()==11,"the new site and sensory hint append to the existing saved layout");
+        h.assertTrue(LabyrinthPlace.PHONE_CANOE.slot()==30&&LabyrinthPlace.GOATMAN.slot()==31&&DoorBleed.own(LabyrinthPlace.PHONE_CANOE)==DoorBleed.PHONE_CANOE&&DoorBleed.own(LabyrinthPlace.GOATMAN)==DoorBleed.GOATMAN,"the new site appends to the existing saved layout, and each has its own bleed at its door");
         h.assertTrue(WitnessAccount.REQUIRED==WitnessPool.REQUIRED&&WitnessAccount.Story.values().length==WitnessPool.SOURCES,"the expanded sixty-one-source pool requires forty-six personal resolutions");h.succeed();
     }
     static final class Fixture implements AutoCloseable {

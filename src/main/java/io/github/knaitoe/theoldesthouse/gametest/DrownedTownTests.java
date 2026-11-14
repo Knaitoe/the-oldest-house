@@ -85,7 +85,7 @@ public final class DrownedTownTests {
     }
     @GameTest(template="empty") public static void lakeDoorLeaksHaveTheirOwnSensoryCue(GameTestHelper helper) {
         var door=new LabyrinthData.Door("lake",HouseDimensions.INTERIOR,BlockPos.ZERO,Direction.SOUTH,"place:drowned_town",true);door.leak=true;
-        helper.assertTrue(LabyrinthDoorLeaks.cue(new LabyrinthData(),UUID.randomUUID(),door).kind()==DoorLeakKind.LAKE, "water and a distant shore voice reach the hallway before entry"); helper.succeed();
+        helper.assertTrue(LabyrinthDoorLeaks.cue(new LabyrinthData(),UUID.randomUUID(),door).bleed()==DoorBleed.DROWNED_TOWN&&DoorBleed.DROWNED_TOWN.floor()==DoorBleed.Floor.WATER, "water and a distant shore voice reach the hallway before entry"); helper.succeed();
     }
     @GameTest(template="empty") public static void churchKeyPreventsAndClearsNativeDrownedTargets(GameTestHelper helper) {
         var level=helper.getLevel();ServerPlayer player=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"key_bearer"));
