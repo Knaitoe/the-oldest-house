@@ -29,6 +29,7 @@ tasks.named('jar', Jar) {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 def goatmanBedSocketSmoke = providers.gradleProperty('goatmanBedSocketSmoke').isPresent()
+def proofClientHeap = providers.gradleProperty('proofClientHeap').getOrElse('2g')
 def borrascaSocketSmoke = providers.gradleProperty('borrascaSocketSmoke').isPresent()
 def sceneReviewSocketSmoke = providers.gradleProperty('sceneReviewSocketSmoke').isPresent()
 def uncannySocketSmoke = providers.gradleProperty('uncannySocketSmoke').isPresent()
@@ -193,7 +194,10 @@ neoForge {
         proofA {
             client()
             gameDirectory = project.file("${proofRoot}/a")
-            jvmArgument '-Xmx1100m'
+            // Run 1606: both clients ran out of a 1,100 MB heap taking in the manor's chunks (the interior is 254
+            // sections high). That figure dates from when the pack was a fraction of its size. The game's own
+            // launcher gives a player 2 GB, and so does this.
+            jvmArgument '-Xmx' + proofClientHeap
             systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
             systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()
@@ -209,7 +213,7 @@ neoForge {
         proofB {
             client()
             gameDirectory = project.file("${proofRoot}/b")
-            jvmArgument '-Xmx1100m'
+            jvmArgument '-Xmx' + proofClientHeap
             systemProperty 'the_oldest_house.liveProof', (!goatmanBedSocketSmoke&&!tailoringSocketSmoke).toString()
             systemProperty 'the_oldest_house.tailoringSocketSmoke', tailoringSocketSmoke.toString()
             systemProperty 'the_oldest_house.goatmanBedSocketSmoke', goatmanBedSocketSmoke.toString()

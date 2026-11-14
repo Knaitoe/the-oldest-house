@@ -40,6 +40,32 @@ Two places in the expedition keep an actor where it is so that both clients' cam
 When a phase times out, the message names which clients had acknowledged it. Each client's
 `<role>-trailer-night-status.txt` says what it has of the windows so far.
 
+## The clients' heap
+
+The two proof clients run with a 2 GB heap, the figure the game's own launcher gives a player. Until run 1606 they had
+1,100 MB, set when the pack was a fraction of its size. In that run both clients ran out of it at the same moment, taking in
+the manor's chunks at the start of the manor view (phase 38): the interior is 254 sections high, and every chunk a client
+holds there costs it all 254. The host keeps its 3 GB.
+
+Measured on a full local run with the collector's log on (`-Xlog:gc`): once it is in the world a client keeps between
+1,050 and 1,165 MB after a collection, from its first minute to its last, and the manor view is the top of that. So the
+old figure was already the whole of what a client holds. The host keeps between 1,150 and 1,300 MB of its 3 GB.
+
+`-PproofClientHeap=<size>` sets another figure for a run, for a machine with less to give.
+
+## The Goatman's beds
+
+`tools/run_goatman_bed_proof.py` puts two clients in the trailer's west and east beds and takes each one's frame from the
+pillow. The host passes it only with both in their beds at once.
+
+Until run 1606 each client left three seconds after its own frame. In that run one client had its frame about five seconds
+after the other, so the first had gone before the second confirmed, and the host waited out its limit with nobody there. A
+client now stays in its bed until the host has written its verdict. The host's failure message names which clients had
+confirmed and which were still connected.
+
+The tool starts its three processes from one exported command each. Gradle 9 lists a run's argument file among its JVM
+arguments and Gradle 8 does not; the export now adds it when it is missing, so the check runs under either.
+
 ## Return the evidence
 
 Include the printed commit SHA, operating system, CPU model and total RAM. Zip `build/live-proof/`, `run-live/server/logs/`, `run-live/a/logs/`, `run-live/b/logs/` and any `run-live/*/crash-reports/` directories. A successful run writes `build/live-proof/passed.txt`; failures need the logs even if no result file was written.

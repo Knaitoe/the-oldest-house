@@ -23,14 +23,14 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class GoatmanBedSocketProof {
     private static final BlockPos ORIGIN=new BlockPos(7200,80,7200);
-    private static final NativeTestChunks CHUNKS=new NativeTestChunks();private static final Set<UUID> SEEN=new HashSet<>();
+    private static final NativeTestChunks CHUNKS=new NativeTestChunks();private static final Set<String> SEEN=new TreeSet<>();
     private static int phase,started;private static boolean built;
     private GoatmanBedSocketProof(){}
     public static boolean enabled(){return Boolean.getBoolean("the_oldest_house.goatmanBedSocketSmoke");}
     public static Path folder(){return Path.of(System.getProperty("the_oldest_house.liveProofDir","build/goatman-bed137-proof"));}
     private static void write(String name,String text){try{Files.createDirectories(folder());Files.writeString(folder().resolve(name),text);}catch(java.io.IOException e){throw new IllegalStateException(e);}}
     private static void save(LabyrinthData d,CompoundTag r){var all=d.state(GoatmanVignette.ID);all.put("Run",r);d.setState(GoatmanVignette.ID,all);}
-    @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;e.getDispatcher().register(Commands.literal("goatbedproof137").executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().matches("OTHProof[AB]")&&p.isSleeping()&&GoatmanBedtime.locked(p))SEEN.add(p.getUUID());return 1;}));}
+    @SubscribeEvent public static void commands(RegisterCommandsEvent e){if(!enabled())return;e.getDispatcher().register(Commands.literal("goatbedproof137").executes(c->{var p=c.getSource().getPlayerOrException();if(p.getGameProfile().getName().matches("OTHProof[AB]")&&p.isSleeping()&&GoatmanBedtime.locked(p))SEEN.add(p.getGameProfile().getName());return 1;}));}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         if(!enabled())return;var s=e.getServer();var a=s.getPlayerList().getPlayerByName("OTHProofA");var other=s.getPlayerList().getPlayerByName("OTHProofB");
         try{
@@ -44,10 +44,11 @@ public final class GoatmanBedSocketProof {
                 phase=1;started=s.getTickCount();return;
             }
             if(phase==1){
-                if(s.getTickCount()-started>1800)throw new IllegalStateException("Both native bed cameras did not confirm");
+                // Run 1606: the message said only that both had not confirmed. It names who had, and who was still there.
+                if(s.getTickCount()-started>1800)throw new IllegalStateException("Both native bed cameras did not confirm: confirmed="+SEEN+", A "+(a==null?"gone":"here")+", B "+(other==null?"gone":"here"));
                 // Hold this isolated fixture before the haunting. Bed input, orientation, lock and render are production.
                 var d=LabyrinthData.get(s);var r=GoatmanVignette.run(d);r.putInt("BedCallAt131",r.getInt("Clock"));save(d,r);
-                if(a!=null&&other!=null&&SEEN.containsAll(List.of(a.getUUID(),other.getUUID()))){write("passed.txt","Two actual socket clients used the native west/east beds and verified the production main-camera direction over the inward feet toward the actual center table. Both actual pillows are at the outer walls, and both readers remain natively sleeping/locked. Native screenshots and camera records are required. This fixture holds before the haunting; the complete bedside sequence is covered separately.\n");phase=2;started=s.getTickCount();}
+                if(a!=null&&other!=null&&SEEN.containsAll(List.of("OTHProofA","OTHProofB"))){write("passed.txt","Two actual socket clients used the native west/east beds and verified the production main-camera direction over the inward feet toward the actual center table. Both actual pillows are at the outer walls, and both readers remain natively sleeping/locked. Native screenshots and camera records are required. This fixture holds before the haunting; the complete bedside sequence is covered separately.\n");phase=2;started=s.getTickCount();}
             // Let both real clients finish their own disconnect/stop before the host closes.
             // Racing that handshake produced a native packet-decoder error during teardown.
             }else if(phase==2&&a==null&&other==null&&s.getTickCount()-started>60){CHUNKS.close();s.halt(false);phase=3;}
