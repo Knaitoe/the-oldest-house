@@ -57,7 +57,8 @@ public final class YardBlock extends HorizontalDirectionalBlock {
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case BULB->Block.box(6,6,6,10,16,10);
+            // 0.4.583: the bulb's shape is its mount's (YardLights): hung, on a wall, on a post, hung under a half block.
+            case BULB->switch(s.getValue(STAGE)){case YardLights.WALL->WorkPrintBlock.box(s.getValue(FACING),5,4,7,11,13,16);case YardLights.POST->Block.box(5,0,5,11,9,11);default->Block.box(6,2,6,10,16,10);};
             case CABIN->Block.box(0,0,0,16,12,16);
             case SHEET->s.getValue(STAGE)==0?Block.box(0,0,7,16,16,9):Block.box(0,0,7,5,16,9);
             case PIPE_LIP->Block.box(0,0,0,16,16,16);
@@ -99,6 +100,9 @@ public final class YardBlock extends HorizontalDirectionalBlock {
         if(YardStock.use(p,pos,s))return InteractionResult.CONSUME;
         if(s.getValue(KIND)==Kind.SHEET){YardConnectors.brush(p,pos);return InteractionResult.CONSUME;}
         if(s.getValue(KIND)==Kind.PIPE_LIP){if(YardCrawl.start(p))PuzzleRooms.say(p,"You get down onto the dry concrete lip.");return InteractionResult.CONSUME;}
+        // 0.4.583: the bulb's line was written for the one by a back door. A bulb on a post out in a yard is over no step and says
+        // nothing (no line is written for it); a bulb on a wall or hung under a roof keeps the line.
+        if(s.getValue(KIND)==Kind.BULB&&s.getValue(STAGE)==YardLights.POST)return InteractionResult.PASS;
         PuzzleRooms.say(p,switch(s.getValue(KIND)){
             case BULB->"A bare bulb over the back step. Someone leaves it on.";
             case PRINT->s.getValue(STAGE)==0?"Soft mud. Nothing has been through it.":"Footprints in the mud, the size of your own.";

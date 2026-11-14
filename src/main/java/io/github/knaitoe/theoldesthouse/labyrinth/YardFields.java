@@ -142,7 +142,9 @@ public final class YardFields {
         box(l,b,2,1,-20,5,4,-17,air);box(l,b,2,0,-20,5,0,-17,Blocks.STONE.defaultBlockState());
         put(l,b,1,-1,-18,Blocks.STONE.defaultBlockState());
         put(l,b,2,0,-18,Blocks.STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM));
-        put(l,b,4,3,-19,YardBlock.of(YardBlock.Kind.BULB,Direction.WEST,0));
+        // 0.4.583 (the owner: a floating lamp): the recess's bulb hung in the air over the middle of its floor. It is in the back
+        // corner, where the post YardLights stands under it is in nobody's way.
+        put(l,b,5,3,-20,YardBlock.of(YardBlock.Kind.BULB,Direction.WEST,0));
         // Downstream turnout, broad enough to gather in; a return path rejoins the high bank.
         box(l,b,-5,0,-36,5,5,-31,air);box(l,b,-5,-1,-36,5,-1,-31,Blocks.GRAVEL.defaultBlockState());
         // Longer embankment from the entrance, always available, with ordinary half-step approaches.

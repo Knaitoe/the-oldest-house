@@ -113,7 +113,12 @@ public final class YardStock {
         put(l,b,6,4,-5,fence(false,false,false,true));
         for(int z=-8;z<=-6;z++){put(l,b,-6,4,z,fence(true,false,true,false));put(l,b,8,4,z,fence(true,false,true,false));}
         put(l,b,-6,4,-9,fence(false,true,true,false));put(l,b,8,4,-9,fence(false,false,true,true));put(l,b,-6,4,-5,fence(true,true,false,false));
-        for(int i=0;i<4;i++)for(int x=7;x<=8;x++)put(l,b,x,i,-1-i,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));
+        // 0.4.583 (the owner: move the loading platform's stairs one block forward): the stair's foot stood against the back door's
+        // wall, and a stair is climbed from in front, so the first step could only be jumped onto from the side. It stands a block
+        // clear of the wall now, and its top step is the deck's own edge. The rail's last piece by the stair's head has no arm
+        // reaching out over it.
+        for(int i=0;i<4;i++)for(int x=7;x<=8;x++)put(l,b,x,i,-2-i,Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH));
+        put(l,b,8,4,-6,fence(true,false,false,false));
         put(l,b,0,2,-8,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
         // The yard: high plank sides round every chute, open to the sky so the platform looks down on its plan.
         box(l,b,-11,0,-38,11,8,-10,air);

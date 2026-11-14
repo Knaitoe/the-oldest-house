@@ -299,6 +299,108 @@
     "facing=west,kind=card,stage=1": {
       "model": "the_oldest_house:block/marsh/card_0",
       "y": 270
+    },
+    "facing=north,kind=table,stage=0": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=north,kind=table,stage=1": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=east,kind=table,stage=0": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=east,kind=table,stage=1": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=south,kind=table,stage=0": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=south,kind=table,stage=1": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=west,kind=table,stage=0": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=west,kind=table,stage=1": {
+      "model": "the_oldest_house:block/marsh/table"
+    },
+    "facing=north,kind=table_edge,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_edge_north"
+    },
+    "facing=north,kind=table_edge,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_edge_north"
+    },
+    "facing=east,kind=table_edge,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_edge_east"
+    },
+    "facing=east,kind=table_edge,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_edge_east"
+    },
+    "facing=south,kind=table_edge,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_edge_south"
+    },
+    "facing=south,kind=table_edge,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_edge_south"
+    },
+    "facing=west,kind=table_edge,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_edge_west"
+    },
+    "facing=west,kind=table_edge,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_edge_west"
+    },
+    "facing=north,kind=table_leg,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_leg_north"
+    },
+    "facing=north,kind=table_leg,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_leg_north"
+    },
+    "facing=east,kind=table_leg,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_leg_east"
+    },
+    "facing=east,kind=table_leg,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_leg_east"
+    },
+    "facing=south,kind=table_leg,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_leg_south"
+    },
+    "facing=south,kind=table_leg,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_leg_south"
+    },
+    "facing=west,kind=table_leg,stage=0": {
+      "model": "the_oldest_house:block/marsh/table_leg_west"
+    },
+    "facing=west,kind=table_leg,stage=1": {
+      "model": "the_oldest_house:block/marsh/table_leg_west"
+    },
+    "facing=north,kind=oil_lamp,stage=0": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0"
+    },
+    "facing=north,kind=oil_lamp,stage=1": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0"
+    },
+    "facing=east,kind=oil_lamp,stage=0": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0",
+      "y": 90
+    },
+    "facing=east,kind=oil_lamp,stage=1": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0",
+      "y": 90
+    },
+    "facing=south,kind=oil_lamp,stage=0": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0",
+      "y": 180
+    },
+    "facing=south,kind=oil_lamp,stage=1": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0",
+      "y": 180
+    },
+    "facing=west,kind=oil_lamp,stage=0": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0",
+      "y": 270
+    },
+    "facing=west,kind=oil_lamp,stage=1": {
+      "model": "the_oldest_house:block/marsh/oil_lamp_0",
+      "y": 270
     }
   }
 }

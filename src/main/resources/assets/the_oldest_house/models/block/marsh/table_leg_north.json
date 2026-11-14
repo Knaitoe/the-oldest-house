@@ -1,0 +1,244 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "table_top": "the_oldest_house:block/marsh/table_top",
+    "table_parts": "the_oldest_house:block/marsh/table_parts",
+    "particle": "the_oldest_house:block/marsh/table_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        14,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#table_top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#table_top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            2,
+            16,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        8,
+        1
+      ],
+      "to": [
+        4,
+        14,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#table_parts",
+          "uv": [
+            3,
+            8,
+            6,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#table_parts",
+          "uv": [
+            3,
+            8,
+            6,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#table_parts",
+          "uv": [
+            3,
+            8,
+            6,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#table_parts",
+          "uv": [
+            3,
+            8,
+            6,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        4,
+        8,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            8,
+            3,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            8,
+            3,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            8,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            8,
+            3,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        11,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            4,
+            12,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            4,
+            12,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            7,
+            12,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        11,
+        4
+      ],
+      "to": [
+        2,
+        14,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            4,
+            12,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            4,
+            12,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#table_parts",
+          "uv": [
+            0,
+            7,
+            12,
+            8
+          ],
+          "rotation": 90
+        }
+      }
+    }
+  ]
+}

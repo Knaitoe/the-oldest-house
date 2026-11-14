@@ -149,6 +149,23 @@ public final class ArchitectureTests {
             }
             TheOldestHouse.LOGGER.info("Architecture: {} frames and paintings hang in the finished scenes; falling: {}",hangings,falling);
             h.assertTrue(falling.isEmpty(),"nothing hung on a wall in a finished scene is about to fall: "+falling);
+            // 0.4.583 (the owner: a wall light that reads broken, a lamp floating over the flooded yard): every bulb in the yard is
+            // held by something. It hangs from a block over it, is fixed to a wall behind it, or stands on a post that reaches the
+            // ground (YardLights mounts each on what is round it once its room is built).
+            var unheld=new ArrayList<String>();var mounts=new ArrayList<String>();
+            for(var scene:LabyrinthPlace.values()){
+                var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
+                if(base==null||r==null||!level.isLoaded(base))continue;
+                for(var at:BlockPos.betweenClosed(base.offset(r.minX(),r.minY(),r.minZ()),base.offset(r.maxX(),r.maxY(),r.maxZ()))){
+                    var state=level.getBlockState(at);if(!YardBlock.is(state,YardBlock.Kind.BULB))continue;
+                    String where=scene.id()+"@"+at.subtract(base).toShortString(),wrong=YardLights.held(level,at);
+                    mounts.add(where+"="+state.getValue(YardBlock.STAGE)+state.getValue(YardBlock.FACING).getName().charAt(0));
+                    if(wrong!=null)unheld.add(where+" "+wrong);
+                }
+            }
+            TheOldestHouse.LOGGER.info("Architecture: {} yard bulbs (mount and facing): {}",mounts.size(),mounts);
+            h.assertTrue(mounts.size()>=12,"the yard's bulbs were found: "+mounts.size());
+            h.assertTrue(unheld.isEmpty(),"every bulb in the yard hangs from a block, is on a wall or stands on a post: "+unheld);
             int dressed=0,props=0;
             // 0.4.201 (owner: "Try to clear the gap between vignette boundaries and doors"): the row the entry door opens onto has a
             // floor wherever the scene's ground runs up behind it.

@@ -43,6 +43,17 @@ public final class YardStockTests {
                 h.assertTrue(YardStock.position(s,K)==1&&YardStock.position(s,L)==1&&leaf(l,b,K.one())&&leaf(l,b,L.one()),"both near chutes stand open to the pen");
                 for(var c:herd(l,s))ids.add(c.getUUID());h.assertTrue(ids.size()==YardStock.COWS,"the four cattle are penned");
                 h.assertTrue(l.getBlockState(b.offset(0,3,-7)).is(net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS)&&l.getBlockState(b.offset(0,0,-7)).isAir()&&l.getBlockState(b.offset(0,1,-7)).isAir(),"the lane runs on under the loading platform");
+                // 0.4.583 (the owner: move the loading platform's stairs one block forward): the stair's foot stands a block clear of
+                // the back door's wall, and a body walks from in front of it up to the deck without a jump.
+                for(int i=0;i<4;i++)for(int x=7;x<=8;x++){
+                    var st=l.getBlockState(b.offset(x,i,-2-i));
+                    h.assertTrue(st.is(net.minecraft.world.level.block.Blocks.SPRUCE_STAIRS)&&st.getValue(net.minecraft.world.level.block.StairBlock.FACING)==Direction.NORTH,"a step at "+x+","+i+","+(-2-i)+": "+st);
+                    h.assertTrue(l.getBlockState(b.offset(x,i+1,-2-i)).isAir()&&l.getBlockState(b.offset(x,i+2,-2-i)).isAir(),"and headroom over it: "+x+","+i);
+                }
+                for(int x=7;x<=8;x++)h.assertTrue(l.getBlockState(b.offset(x,0,-1)).isAir()&&l.getBlockState(b.offset(x,1,-1)).isAir(),"the ground in front of the first step is clear: "+x);
+                at(p,l,b,7.5,0,-.5);
+                for(int i=0;i<60&&p.getZ()>b.getZ()-5.4;i++){p.setOnGround(true);p.move(MoverType.SELF,new Vec3(0,-.08,-.25));}
+                h.assertTrue(p.getY()>=b.getY()+3.99&&p.getZ()<=b.getZ()-5.4,"a body walks up from the stair's foot onto the deck without a jump: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
                 at(p,l,b,.5,0,-9.5);
             })
             .thenWaitUntil(()->h.assertTrue(herd(l,YardStock.state(l)).stream().anyMatch(c->inLane(c,b)),"the pen gate left open drives the herd into the lane: phase "+YardStock.state(l).getInt("Phase")))

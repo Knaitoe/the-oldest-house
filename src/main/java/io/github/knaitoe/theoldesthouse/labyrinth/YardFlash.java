@@ -55,8 +55,9 @@ public final class YardFlash {
             put(l,b,3,0,z,Blocks.STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM));for(int y=1;y<=2;y++)put(l,b,3,y,z,air);
             put(l,b,4,0,z,Blocks.MOSSY_COBBLESTONE.defaultBlockState());for(int y=1;y<=3;y++)put(l,b,4,y,z,air);
         }
-        // A post on each ledge with a bulb on it, so the way up shows from the water.
-        for(int z0:LEDGES){put(l,b,5,0,z0,Blocks.STRIPPED_OAK_LOG.defaultBlockState());put(l,b,5,1,z0,Blocks.STRIPPED_OAK_LOG.defaultBlockState());put(l,b,4,2,z0,YardBlock.of(YardBlock.Kind.BULB,net.minecraft.core.Direction.WEST,0));}
+        // A post on each ledge with a bulb on it, so the way up shows from the water. 0.4.583 (the owner: a floating lamp): the
+        // bulb hung in the air a block out from the post's head, over the ledge. It stands on the post (YardLights).
+        for(int z0:LEDGES){put(l,b,5,0,z0,Blocks.STRIPPED_OAK_LOG.defaultBlockState());put(l,b,5,1,z0,Blocks.STRIPPED_OAK_LOG.defaultBlockState());put(l,b,5,2,z0,YardBlock.of(YardBlock.Kind.BULB,net.minecraft.core.Direction.WEST,0));}
         var s=state(l);s.putLong("Clock",0);s.putInt("Drawn",-1);save(l,s);
     }
 
