@@ -119,6 +119,7 @@ public final class PellKnife {
         h.knife=NOT_YET;h.knifeAt=0;h.knifeSaid=0;h.fighter=null;h.closeSince=0;h.found.clear();
         light(l,b,false);towel(l,b,null,false);
         var c=PellPeople.find(l,b,C);if(c!=null&&c.getMainHandItem().is(PellRegistry.KNIFE.get()))c.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+        if(c!=null)c.holder(null);
     }
     /** At six, June on her way to lay breakfast: the towel picked up and the light off. */
     static void tidy(ServerLevel l,BlockPos b){light(l,b,false);towel(l,b,null,false);}
@@ -198,7 +199,9 @@ public final class PellKnife {
     private static void fight(ServerLevel l,BlockPos b,PellPeople.Household h,ServerPlayer p,@Nullable CompoundTag own,long now){
         var c=PellPeople.find(l,b,C);if(c==null)return;
         h.knife=STRUGGLE;h.knifeAt=now;h.fighter=p.getUUID();
-        c.gesture(PellPeople.STRUGGLE);face(c,p);h.rest[C]=c.getYRot();
+        // 0.4.567 (owner: "there should be an actual animation for grabbing his wrist"): who has hold of him, for both their hands to be
+        // drawn (client/PellWristClient).
+        c.gesture(PellPeople.STRUGGLE);c.holder(p.getUUID());face(c,p);h.rest[C]=c.getYRot();
         if(own!=null)own.putBoolean("FoughtCallum",true);
         else{var mine=PellHouse.own(p);mine.putBoolean("FoughtCallum",true);PellHouse.save(p,mine);}
         scuffle(l,b,c,now);
@@ -210,8 +213,8 @@ public final class PellKnife {
         if(p!=null){face(c,p);h.rest[C]=c.getYRot();}
         if((now-h.knifeAt)%8==0)scuffle(l,b,c,now);
         if(now-h.knifeAt<STRUGGLE_FOR)return;
-        // His fist comes at their face.
-        h.knife=LUNGE;h.knifeAt=now;c.gesture(PellPeople.LUNGE);
+        // His fist comes at their face, and he has thrown off their hold.
+        h.knife=LUNGE;h.knifeAt=now;c.gesture(PellPeople.LUNGE);c.holder(null);
         sound(l,b,c.position(),SoundEvents.PLAYER_ATTACK_SWEEP,.7F,1.4F);
     }
     /**
@@ -235,7 +238,7 @@ public final class PellKnife {
             }else own.putBoolean("SawTheBlack",true);
             PellHouse.save(p,own);
         }
-        c.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);c.setXRot(0);c.setYRot(0);c.setYBodyRot(0);c.setYHeadRot(0);
+        c.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);c.setXRot(0);c.setYRot(0);c.setYBodyRot(0);c.setYHeadRot(0);c.holder(null);
         PellVisit.lie(l,b,h,C,c,PellVisit.CALLUM_SLEEPS);
         towel(l,b,here,true);
         if(!PellSite.open(l,b,PellSite.JUNE_DOOR))PellHouse.toggle(l,b,PellSite.JUNE_DOOR);

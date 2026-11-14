@@ -423,6 +423,9 @@ public final class LiteraryRenderers {
                 // 0.4.539: June leading Tilly by the hand, a step ahead of her, her left hand back and down to the girl's (her right
                 // swings as she walks); and Tilly with her right hand up and out ahead of her in the hand she holds.
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LEADS,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LEADS_SWIM->{leftArm.xRot=.5F;leftArm.yRot=0;leftArm.zRot=-.12F;}
+                // 0.4.567: June walking a reader out of the shed a step ahead of them, her right hand back and a little out to their arm;
+                // her left, with the lantern, swings as she walks.
+                case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.SHOWING->{rightArm.xRot=.62F;rightArm.yRot=0;rightArm.zRot=.14F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.LED,io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.JUNE_LED->{rightArm.xRot=-.85F+net.minecraft.util.Mth.sin(age*.09F)*.04F;rightArm.yRot=-.1F;rightArm.zRot=0;}
                 // 0.4.541: Tilly at Nessa's window at first light, her right hand up by her face, waving at the street; her left at her side.
                 case io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.WAVE->{

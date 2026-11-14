@@ -30,8 +30,11 @@ import net.minecraft.world.phys.HitResult;
  * and a bucket nobody at the house has (carried off, or left lying out of the lot) is back in its place within a second. The visit
  * beginning again puts it back too.</li>
  * <li><b>Scrubbing.</b> Held to a cell of the line, the brush works at the paint: half away, then out. On the thin stretch behind the
- * shed each takes two seconds; anywhere else, where the line is a hand wide, five. Taken off the cell, or onto another, the work on it
- * starts again.</li>
+ * shed each takes two seconds; anywhere else, where the line is a hand wide, five. 0.4.567 (owner: "does the brush work? or is it
+ * only intended to work on specific instances?"): the paint is seen going a quarter at a time, so each quarter of the work stays done
+ * in the cell itself; taken off the cell, or onto another, only the quarter under way is lost, and only after half a second away.
+ * The first quarter a reader takes up, the House says so. Scrubbing is the brush's own use, not a block broken, so the House's rule
+ * against breaking does not touch it.</li>
  * <li><b>The gap.</b> A cell scrubbed out beside another is a gap: the line is broken.</li>
  * <li><b>On the visits before the last,</b> June has painted over every scrubbed cell by first light.</li>
  * </ul>
@@ -43,8 +46,9 @@ public final class PellScrub {
     public static final BlockPos BUCKET=new BlockPos(6,0,-68);
     /** Ticks of scrubbing a stage of the paint takes: on the thin stretch behind the shed, and anywhere else on the line. */
     public static final int THIN=40,THICK=100;
-    /** How often the brush is heard; how often a bucket nobody has is looked for. */
-    static final int STROKE=8;
+    /** How often the brush is heard; how long the brush can be off a cell before the quarter under way there is lost; how often a bucket
+     *  nobody has is looked for. */
+    static final int STROKE=8,SLIP=10;
     public static final int KEEP=20;
     /** How far a reader reaches with the brush. */
     static final double REACH=4.5;
@@ -122,23 +126,28 @@ public final class PellScrub {
         // 0.4.538: the last night, while he is on the line, Callum keeps the thin stretch (PellLastNight).
         if(thin&&PellLastNight.guarding(l,b,h)){PellLastNight.stands(l,b,h,p,rel.getX());return true;}
         var w=h.scrub.computeIfAbsent(p.getUUID(),k->new Work());
-        if(!cell.equals(w.cell)||now-w.last>5){w.cell=cell;w.ticks=0;}
+        if(!cell.equals(w.cell)||now-w.last>SLIP){w.cell=cell;w.ticks=0;}
         w.last=now;w.ticks++;
         if(w.ticks%STROKE==1){
             l.playSound(null,cell.above(),PellRegistry.SCRUBBING.get(),SoundSource.PLAYERS,.7F,.9F+l.random.nextFloat()*.2F);
             l.sendParticles(ParticleTypes.SPLASH,cell.getX()+.5,cell.getY()+1.05,cell.getZ()+.5,6,.25,.02,.25,0);
         }
-        if(w.ticks<(thin?THIN:THICK))return true;
+        if(w.ticks<quarter(thin))return true;
         w.ticks=0;
-        int next=stage<PellLine.HALF_SCRUBBED?PellLine.HALF_SCRUBBED:PellLine.GAP;
+        int next=PellLine.scrubbedOn(stage);
         l.setBlock(cell,s.setValue(PellLine.STAGE,next),3);
-        var own=PellHouse.own(p);own.putInt("Scrubbed",own.getInt("Scrubbed")+1);
+        var own=PellHouse.own(p);
+        if(!own.getBoolean("ScrubTook")){own.putBoolean("ScrubTook",true);PellHouse.cue(p,PellTexts.SCRUB_TAKES);}
+        // Counted as before, by halves: half away, and out.
+        if(next==PellLine.HALF_SCRUBBED||next==PellLine.GAP)own.putInt("Scrubbed",own.getInt("Scrubbed")+1);
         if(next==PellLine.GAP)own.putBoolean("ScrubbedOut",true);
         PellHouse.save(p,own);
         if(next!=PellLine.GAP)return true;
         if(gapAt(l,cell)){if(h.gap==null)h.gap=rel;PellLastNight.broken(l,b,h);}
         return false;
     }
+    /** 0.4.567: ticks of scrubbing a quarter of the paint takes, on the thin stretch or elsewhere: half a stage. */
+    public static int quarter(boolean thin){return (thin?THIN:THICK)/2;}
     /** Whether a cell has a scrubbed-out cell of the line beside it. */
     static boolean gapAt(ServerLevel l,BlockPos cell){
         for(var d:Direction.Plane.HORIZONTAL){var s=l.getBlockState(cell.relative(d));if(PellLine.is(s)&&s.getValue(PellLine.STAGE)==PellLine.GAP)return true;}
@@ -156,7 +165,7 @@ public final class PellScrub {
     static void repainted(ServerLevel l,BlockPos b,PellPeople.Household h){
         for(var at:PellSite.route()){
             var cell=b.offset(at.getX(),-1,at.getZ());var s=l.getBlockState(cell);int st=PellLine.is(s)?s.getValue(PellLine.STAGE):-1;
-            if(st==PellLine.HALF_SCRUBBED||st==PellLine.GAP)l.setBlock(cell,s.setValue(PellLine.STAGE,PellLine.SECOND),3);
+            if(PellLine.scrubbed(st)>0)l.setBlock(cell,s.setValue(PellLine.STAGE,PellLine.SECOND),3);
         }
         h.gap=null;h.scrub.clear();
     }
