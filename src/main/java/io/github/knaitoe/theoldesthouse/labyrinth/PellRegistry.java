@@ -78,6 +78,11 @@ public final class PellRegistry {
     /** 0.4.548: the last page off the shed's wall and the note off the freezer's switch, to show Gail (PellMark). */
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> PAGE=ITEMS.register("pell_page",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1))),
         NOTE=ITEMS.register("pell_note",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.571, the day's jobs (PellJobs): June's plates as a reader carries them from the cupboard to the table, as many as the table
+     *  wants; and the dog's bowl from beside the kennel, empty and filled at a tap (PellBowlItem). Drawn by tools/draw_pell_people.py. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> PLATES=ITEMS.register("pell_plates",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(4))),
+        BOWL=ITEMS.register("pell_bowl",()->new PellBowlItem(new net.minecraft.world.item.Item.Properties().stacksTo(1))),
+        BOWL_WATER=ITEMS.register("pell_bowl_water",()->new PellBowlItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */

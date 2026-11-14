@@ -607,10 +607,10 @@
       "model": "the_oldest_house:block/pell/thing/chore_chart_1"
     },
     "facing=north,kind=chore_chart,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0"
+      "model": "the_oldest_house:block/pell/thing/chore_chart_2"
     },
     "facing=north,kind=chore_chart,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0"
+      "model": "the_oldest_house:block/pell/thing/chore_chart_3"
     },
     "facing=east,kind=chore_chart,stage=0": {
       "model": "the_oldest_house:block/pell/thing/chore_chart_0",
@@ -621,11 +621,11 @@
       "y": 90
     },
     "facing=east,kind=chore_chart,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0",
+      "model": "the_oldest_house:block/pell/thing/chore_chart_2",
       "y": 90
     },
     "facing=east,kind=chore_chart,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0",
+      "model": "the_oldest_house:block/pell/thing/chore_chart_3",
       "y": 90
     },
     "facing=south,kind=chore_chart,stage=0": {
@@ -637,11 +637,11 @@
       "y": 180
     },
     "facing=south,kind=chore_chart,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0",
+      "model": "the_oldest_house:block/pell/thing/chore_chart_2",
       "y": 180
     },
     "facing=south,kind=chore_chart,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0",
+      "model": "the_oldest_house:block/pell/thing/chore_chart_3",
       "y": 180
     },
     "facing=west,kind=chore_chart,stage=0": {
@@ -653,11 +653,11 @@
       "y": 270
     },
     "facing=west,kind=chore_chart,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0",
+      "model": "the_oldest_house:block/pell/thing/chore_chart_2",
       "y": 270
     },
     "facing=west,kind=chore_chart,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/chore_chart_0",
+      "model": "the_oldest_house:block/pell/thing/chore_chart_3",
       "y": 270
     },
     "facing=north,kind=calendar,stage=0": {
@@ -3592,28 +3592,28 @@
       "model": "the_oldest_house:block/pell/thing/bowl_0"
     },
     "facing=north,kind=bowl,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0"
+      "model": "the_oldest_house:block/pell/thing/bowl_1"
     },
     "facing=north,kind=bowl,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0"
+      "model": "the_oldest_house:block/pell/thing/bowl_2"
     },
     "facing=north,kind=bowl,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0"
+      "model": "the_oldest_house:block/pell/thing/bowl_3"
     },
     "facing=east,kind=bowl,stage=0": {
       "model": "the_oldest_house:block/pell/thing/bowl_0",
       "y": 90
     },
     "facing=east,kind=bowl,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_1",
       "y": 90
     },
     "facing=east,kind=bowl,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_2",
       "y": 90
     },
     "facing=east,kind=bowl,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_3",
       "y": 90
     },
     "facing=south,kind=bowl,stage=0": {
@@ -3621,15 +3621,15 @@
       "y": 180
     },
     "facing=south,kind=bowl,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_1",
       "y": 180
     },
     "facing=south,kind=bowl,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_2",
       "y": 180
     },
     "facing=south,kind=bowl,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_3",
       "y": 180
     },
     "facing=west,kind=bowl,stage=0": {
@@ -3637,15 +3637,15 @@
       "y": 270
     },
     "facing=west,kind=bowl,stage=1": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_1",
       "y": 270
     },
     "facing=west,kind=bowl,stage=2": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_2",
       "y": 270
     },
     "facing=west,kind=bowl,stage=3": {
-      "model": "the_oldest_house:block/pell/thing/bowl_0",
+      "model": "the_oldest_house:block/pell/thing/bowl_3",
       "y": 270
     },
     "facing=north,kind=pool_chair,stage=0": {

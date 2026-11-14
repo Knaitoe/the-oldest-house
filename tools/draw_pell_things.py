@@ -1610,6 +1610,24 @@ def bowl_leaves():
     return im
 
 
+def bowl_inside(water):
+    """0.4.571, the dog's bowl with the leaves tipped out of it (PellJobs): its steel inside, dull where the leaves lay; or water to
+    the brim, lit along one side."""
+    im = clear()
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if d >= 5.5:
+                continue
+            if d > 4.4:
+                dot(im, x, y, '#e2e6e8' if x + y < 14 else '#c8ccd0' if x + y < 18 else '#9ea2a6')
+            elif water:
+                dot(im, x, y, '#b8d2de' if x + y < 12 else '#8fb4c6' if d > 3.2 or x + y > 18 else '#a3c4d3')
+            else:
+                dot(im, x, y, '#8d9195' if x + y < 12 else '#a4a8ac' if d > 3.2 else ['#7f8387', '#868a8e'][(x + y) % 2])
+    return im
+
+
 def pool_chair():
     """The pool chair's white plastic slats, and over its back a beach towel faded on one side only."""
     im = plastic('#f2f2ee', 52282)
@@ -1695,7 +1713,7 @@ def for_sale(front):
 
 def outside():
     return {'stake_nessa': stake_tag(0), 'stake_tilly': stake_tag(1), 'kennel_wall': kennel_wall(),
-            'bowl_leaves': bowl_leaves(), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'robe': robe(), 'pump': pump(),
+            'bowl_leaves': bowl_leaves(), 'bowl_empty': bowl_inside(False), 'bowl_water': bowl_inside(True), 'pool_chair': pool_chair(), 'towel_faded': towel_faded(), 'robe': robe(), 'pump': pump(),
             'lantern_body': lantern_body(), 'lantern_globe': lantern_globe(), 'for_sale': for_sale(1), 'for_sale_back': for_sale(0)}
 
 
@@ -1747,42 +1765,56 @@ def box_pair(label):
     return wide(draw)
 
 
-def chore_pair():
-    """The chore chart, two cells wide so its names can be read: CALLUM printed on the first row and two weeks of stars; on the
-    second, a strip of paper stuck over the printed name with TILLY on it in marker, lifting at its corner, and under the corner
-    the end of the printed name that was there before."""
+def chore_pair(jobs=False):
+    """The chore chart, two cells wide so its names can be read: three printed rows, and down its right side two weeks of stars.
+    CALLUM is printed on the first row. On the second, a strip of paper is stuck over the printed name with TILLY on it in marker,
+    lifting at its corner, and under the corner the end of the printed name that was there before. The third row is empty.
+    0.4.571, with jobs: a strip of newer paper is taped along the third row with no name on it, and beside it three short lines in
+    pencil, what June has written against it."""
     def draw(im):
-        for y in range(1, 15):
+        for y in range(16):
             for x in range(1, 31):
                 im.putpixel((x, y), shade('#f6f2e4', 0))
         for x in range(1, 31):
-            im.putpixel((x, 1), shade('#c8bfa4', 0)); im.putpixel((x, 14), shade('#c8bfa4', 0))
-        for y in range(1, 15):
+            im.putpixel((x, 0), shade('#c8bfa4', 0)); im.putpixel((x, 15), shade('#c8bfa4', 0))
+        for y in range(16):
             im.putpixel((1, y), shade('#c8bfa4', 0)); im.putpixel((30, y), shade('#c8bfa4', 0))
         for x in range(2, 30):
-            im.putpixel((x, 8), shade('#d8cfb4', 0))
-        text32(im, 2, 2, 'CALLUM', '#3a3a3a')
+            im.putpixel((x, 6), shade('#d8cfb4', 0)); im.putpixel((x, 12), shade('#d8cfb4', 0))
+        text32(im, 2, 1, 'CALLUM', '#3a3a3a')
         # The printed name under the strip, set so its last letter ends where the strip does.
-        text32(im, 4, 9, 'NESSA', '#3a3a3a')
+        text32(im, 4, 7, 'NESSA', '#3a3a3a')
         for x in (27, 29):
-            for y in range(2, 14):
-                if y != 8:
+            for y in range(1, 15):
+                if y not in (6, 12):
                     im.putpixel((x, y), shade('#ece4cc', 0))
-        for x, y in ((27, 3), (29, 5), (27, 11)):
+        for x, y in ((27, 2), (29, 4), (27, 9)):
             im.putpixel((x, y), shade('#e0a030', 0))
         # The strip: plain paper over the printed name, TILLY on it in marker. Its top right corner has come unstuck and folded
         # down, so above the fold the end of the printed name shows, and below it is the back of the paper.
-        peeled = {(21, 9), (22, 9), (23, 9), (22, 10), (23, 10), (23, 11)}
-        flap = {(21, 10), (21, 11), (22, 11)}
-        for y in range(9, 14):
+        peeled = {(21, 7), (22, 7), (23, 7), (22, 8), (23, 8), (23, 9)}
+        flap = {(21, 8), (21, 9), (22, 9)}
+        for y in range(7, 12):
             for x in range(2, 24):
                 if (x, y) not in peeled:
                     im.putpixel((x, y), shade('#fffdf6', 0))
-        text32(im, 2, 9, 'TILLY', '#1a1a1a')
+        text32(im, 2, 7, 'TILLY', '#1a1a1a')
         for x, y in flap:
             im.putpixel((x, y), shade('#e2dccb', 0))
-        for x, y in ((20, 10), (20, 11), (21, 12), (22, 12)):
+        for x, y in ((20, 8), (20, 9), (21, 10), (22, 10)):
             im.putpixel((x, y), shade('#c8c0a8', 0))
+        if jobs:
+            # The new strip: fresher paper than the chart, a piece of tape at each end, nothing written on it; and June's pencil
+            # beside it, three jobs as three short lines.
+            for y in (13, 14):
+                for x in range(2, 15):
+                    im.putpixel((x, y), shade('#ffffff', 0))
+            for y in (13, 14):
+                im.putpixel((2, y), shade('#e6dfae', 0)); im.putpixel((14, y), shade('#e6dfae', 0))
+            for x in range(3, 14):
+                im.putpixel((x, 14), shade('#eeeae0', 0))
+            for x, y in ((16, 13), (17, 13), (18, 13), (20, 14), (21, 14), (22, 14), (24, 13), (25, 13)):
+                im.putpixel((x, y), shade('#8a8a86', 0))
     return wide(draw)
 
 
@@ -1846,6 +1878,7 @@ def rest():
     for name, label in (('box_winter', 'WINTER'), ('box_books', 'BOOKS'), ('box_dont', "DON'T")):
         a, b = box_pair(label); out[f'{name}_0'] = a; out[f'{name}_1'] = b
     a, b = chore_pair(); out['chore_chart_0'] = a; out['chore_chart_1'] = b
+    a, b = chore_pair(True); out['chore_chart_2'] = a; out['chore_chart_3'] = b
     a, b = kennel_pair(); out['kennel_front_0'] = a; out['kennel_front_1'] = b
     return out
 
@@ -1931,7 +1964,8 @@ def thing_models():
     out['chair_0'] = m([box([3, 8, 3], [13, 10, 13], 'v'), element([3, 10, 12], [13, 21, 13.5], {k: 'v' for k in ('north', 'south', 'east', 'west', 'up')}),
                         *[box([x, 0, z], [x + 1, 8, z + 1], 'c') for x in (3, 12) for z in (3, 12)],
                         *[box([x, 10, 12.5], [x + 1, 13, 13], 'c') for x in (3, 12)]], {'v': 'vinyl_red', 'c': 'chrome'}, 'vinyl_red')
-    for half in range(2):
+    # 0.4.571: halves 2 and 3 are the chart with June's jobs on it (PellJobs).
+    for half in range(4):
         out[f'chore_chart_{half}'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'c'})], {'c': f'chore_chart_{half}'}, f'chore_chart_{half}')
     out['calendar_0'] = m([element([2, 0, 15.6], [14, 16, 16], {'north': 'c'}, uv={'north': [2, 0, 14, 16]})], {'c': 'calendar_kitchen'}, 'calendar_kitchen')
     # ---------------------------------------------------------------------------------------- the living room
@@ -2197,6 +2231,10 @@ def thing_models():
         out[f'kennel_{half}'] = m(els, {'f': f'kennel_front_{half}', 'w': 'kennel_wall', 'r': 'kennel_roof', 'k': 'kennel_dark', 'l': 'kennel_floor'}, 'kennel_wall')
     out['bowl_0'] = m([element([4, 0, 4], [12, 2, 12], {'up': 'b', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}),
                        box([12, 0.2, 7.5], [16, 0.7, 8.5], 'c')], {'b': 'bowl_leaves', 's': 'steel', 'c': 'chain'}, 'bowl_leaves')
+    # 0.4.571 (PellJobs): 1, the leaves tipped out; 2, filled at the tap; 3, the morning after, empty again.
+    for stage, top in ((1, 'bowl_empty'), (2, 'bowl_water'), (3, 'bowl_empty')):
+        out[f'bowl_{stage}'] = m([element([4, 0, 4], [12, 2, 12], {'up': 'b', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}),
+                                  box([12, 0.2, 7.5], [16, 0.7, 8.5], 'c')], {'b': top, 's': 'steel', 'c': 'chain'}, top)
     chair = [element([1, 6, 1], [15, 7, 15], {'up': 'p', 'down': 'p', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),
              element([1, 7, 13], [15, 20, 15], {'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'p'}, rot={'origin': [8, 7, 14], 'axis': 'x', 'angle': 22.5}),
              # The towel over its back, hanging both sides.

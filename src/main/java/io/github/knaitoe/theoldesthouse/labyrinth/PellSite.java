@@ -238,7 +238,7 @@ public final class PellSite {
         for(int x:new int[]{-13,-12,-11,-8,-7})put(l,b,x,2,-71,PellThing.Kind.CUPBOARD_UPPER,s,0);
         pair(l,b,-11,0,-69,PellThing.Kind.TABLE,n,0,1);
         put(l,b,-12,0,-70,PellThing.Kind.CHAIR,s,0);put(l,b,-11,0,-70,PellThing.Kind.CHAIR,s,0);put(l,b,-12,0,-68,PellThing.Kind.CHAIR,n,0);put(l,b,-11,0,-68,PellThing.Kind.CHAIR,n,0);
-        pair(l,b,-13,1,-69,PellThing.Kind.CHORE_CHART,e,0,1);put(l,b,-13,1,-68,PellThing.Kind.CALENDAR,e,0);
+        pair(l,b,-13,1,-69,PellThing.Kind.CHORE_CHART,e,2,3);put(l,b,-13,1,-68,PellThing.Kind.CALENDAR,e,0);
         // 0.4.532: the telephone, on the east wall by the arch, a strip of tape beside it with GAIL and a number on it in pencil.
         put(l,b,PellCall.PHONE.getX(),PellCall.PHONE.getY(),PellCall.PHONE.getZ(),PellThing.Kind.PHONE,w,0);
         for(int z=-70;z<=-68;z++)set(l,b,-10,-1,z,mat("lino_worn"));

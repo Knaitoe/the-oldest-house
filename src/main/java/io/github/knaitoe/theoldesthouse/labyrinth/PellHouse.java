@@ -106,6 +106,8 @@ public final class PellHouse {
         if(PellAftermath.click(p,b,rel,own))return true;
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(PellThing.is(st)){thing(p,l,b,b.offset(rel),st,own);return true;}
+        // 0.4.571: the dog's bowl, and a hand on the ground by the kennel: it goes down where it stood (PellJobs.ground).
+        if(PellJobs.ground(p,b,rel,own))return true;
         // 0.4.523: a hand on the line, wherever it is: what it is painted on and how it is now.
         // 0.4.531: after first light, paint put down in the night is dry.
         // 0.4.538: with the bucket in hand, the brush goes to work on it (PellScrubItem) instead.
@@ -155,6 +157,8 @@ public final class PellHouse {
      */
     static void thing(ServerPlayer p,ServerLevel l,BlockPos b,BlockPos at,BlockState st,CompoundTag own){
         var kind=st.getValue(PellThing.KIND);int stage=st.getValue(PellThing.STAGE);
+        // 0.4.571: what a reader has put a hand on is theirs to tell Tilly about (PellCompany).
+        PellCompany.saw(own,kind,stage);
         switch(kind){
             case WARDROBE->{
                 // Both cells of it, from whichever was touched.
@@ -172,7 +176,17 @@ public final class PellHouse {
             // 0.4.526: the talking clock says the house's own hour.
             case DRAWERS->cue(p,PellTexts.thing(kind,stage)+" "+PellTexts.clock(PellVisit.hour(b)));
             // 0.4.526: at dinner, what is at the place nearest the hand, or the reader's own dinner, eaten.
-            case TABLE->{if(!PellVisit.table(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.571: with plates in hand while the table may be laid, one is laid at the nearest bare place (PellJobs).
+            case TABLE->{if(!PellJobs.lay(p,b,own)&&!PellVisit.table(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.571, the day's jobs (PellJobs): the chart says what is on it now; the cupboards give up the plates; the dog's bowl is
+            // tipped out and taken, filled at a tap, and set down again by the kennel.
+            case CHORE_CHART->PellJobs.chart(p,b,st,own);
+            case CUPBOARD_UPPER->{if(!PellJobs.cupboard(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            case BOWL->{if(!PellJobs.bowl(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
+            case KENNEL->{if(!PellJobs.kennel(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            case SINK,TROUGH->{if(!PellJobs.tap(p,b,own))cue(p,PellTexts.thing(kind,stage));}
+            // 0.4.571: the book that is out, read to Tilly (PellCompany).
+            case BOOKSHELF->{if(!PellCompany.book(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.527: while June's tape plays, what is on it.
             case TV_CABINET->{if(!PellVisit.tvHand(p,b,own))cue(p,PellTexts.thing(kind,stage));}
             // 0.4.531: from when June sends them out until breakfast is called, the reader lies down on it.

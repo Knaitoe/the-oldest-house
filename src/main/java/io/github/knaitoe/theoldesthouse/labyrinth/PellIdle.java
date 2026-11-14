@@ -67,7 +67,9 @@ public final class PellIdle {
         WARDROBE=new Errand(PellPeople.TILLY,new Vec3[]{v(-9.5,-60.2),v(-8.6,-58.5)},-90,PellPeople.FEEL,null,90,null,0,10,true,PellTexts.TILLY_WARDROBE,5),
         WRING=new Errand(PellPeople.CALLUM,HERE,PellPeople.FIRST_VISIT[PellPeople.CALLUM].look(),PellPeople.WRING,null,70,PellRegistry.DRIP,14,40,true,null,0),
         PHOTOS=new Errand(PellPeople.CALLUM,new Vec3[]{v(-10.5,-65.5),v(-6.5,-65.6)},180,0,null,150,null,0,-28,true,null,0),
-        FLOOR=new Errand(PellPeople.CALLUM,HERE,PellPeople.FIRST_VISIT[PellPeople.CALLUM].look(),PellPeople.SITTING,null,280,null,0,0,true,null,0);
+        FLOOR=new Errand(PellPeople.CALLUM,HERE,PellPeople.FIRST_VISIT[PellPeople.CALLUM].look(),PellPeople.SITTING,null,280,null,0,0,true,null,0),
+        // 0.4.571: being read to (PellCompany), Tilly sits on the edge of the bed until the book is put down; it is nobody's turn.
+        LISTEN=new Errand(PellPeople.TILLY,new Vec3[]{v(-10.6,-59.7),PellVisit.TILLY_BED.beside()},PellVisit.TILLY_BED.look(),PellPeople.CANE,PellVisit.TILLY_BED,Integer.MAX_VALUE,null,0,0,false,null,0);
     /** What each does, in turn, by day and in the evening. */
     static final List<Errand> JUNE_DAY=List.of(STIR,SINK,STIR,WIPE),JUNE_EVENING=List.of(KETTLE),
         TILLY=List.of(DESK,BED,MARKS,WARDROBE),CALLUM=List.of(WRING,PHOTOS,FLOOR);
@@ -123,10 +125,20 @@ public final class PellIdle {
             var a=PellPeople.find(l,b,who);if(a==null)continue;
             // A reader as Tilly does what they do; Tilly is theirs.
             if(who==PellPeople.TILLY&&h.tillyReader!=null){h.idleState[who]=OFF;continue;}
+            // 0.4.571: with a book being read to her, she leaves what she was at, goes home, and from there to the edge of the bed.
+            if(who==PellPeople.TILLY&&!due&&PellCompany.listening(h)&&h.idleErrand[who]!=LISTEN){
+                if(h.idleState[who]==OUT||h.idleState[who]==AT){recall(l,b,h,who,a,window);continue;}
+                if(h.idleState[who]==OFF){
+                    if(h.way[who].isEmpty()&&!h.seated[who]&&!h.asleep[who]&&h.perch[who]==null){
+                        h.idleErrand[who]=LISTEN;PellVisit.goPerch(h,who,LISTEN.perch(),LISTEN.out());h.idleState[who]=OUT;
+                    }
+                    continue;
+                }
+            }
             switch(h.idleState[who]){
                 case OFF->{if(!due&&now>=h.idleNext[who])begin(l,b,h,who,a,window,now);}
                 case OUT->{if(due){recall(l,b,h,who,a,window);break;}if(h.way[who].isEmpty())arrive(l,b,h,who,a,now);else taps(l,h,who,a,now);}
-                case AT->{if(due||now-h.idleAt[who]>=h.idleErrand[who].ticks())recall(l,b,h,who,a,window);else work(l,b,h,who,a,here,now);}
+                case AT->{if(due||now-h.idleAt[who]>=h.idleErrand[who].ticks()||h.idleErrand[who]==LISTEN&&!PellCompany.listening(h))recall(l,b,h,who,a,window);else work(l,b,h,who,a,here,now);}
                 case BACK->{
                     if(h.way[who].isEmpty()){
                         h.idleState[who]=OFF;h.idleErrand[who]=null;h.rest[who]=homeLook(who,window);
@@ -228,7 +240,7 @@ public final class PellIdle {
     public static @Nullable String errand(BlockPos b,int who){var e=PellPeople.household(b).idleErrand[who];return e==null?null:name(e);}
     public static int state(BlockPos b,int who){return PellPeople.household(b).idleState[who];}
     public static String name(Errand e){
-        return e==STIR?"stir":e==SINK?"sink":e==WIPE?"wipe":e==KETTLE?"kettle":e==DESK?"desk":e==BED?"bed":e==MARKS?"marks":e==WARDROBE?"wardrobe":e==WRING?"wring":e==PHOTOS?"photos":"floor";
+        return e==STIR?"stir":e==SINK?"sink":e==WIPE?"wipe":e==KETTLE?"kettle":e==DESK?"desk":e==BED?"bed":e==MARKS?"marks":e==WARDROBE?"wardrobe":e==WRING?"wring":e==PHOTOS?"photos":e==LISTEN?"listen":"floor";
     }
     /** The next errand of each comes now. */
     public static void soon(BlockPos b){var h=PellPeople.household(b);for(int who=0;who<3;who++)h.idleNext[who]=0;}

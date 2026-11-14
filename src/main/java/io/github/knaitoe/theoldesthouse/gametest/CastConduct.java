@@ -279,12 +279,16 @@ public final class CastConduct implements AutoCloseable {
             var a=turn.who();if(!a.isAlive()||a.isRemoved()||turnsAway.test(a)||!a.addresses())continue;
             // Somebody whose body has not been ticking (a test world's chunk not yet promoted) has had no chance to turn.
             if(a.tickCount-turn.lived()<TURN_TICKS-4)continue;
-            // The reader they were answering, while that reader is there; otherwise whoever stands nearest.
-            ServerPlayer to=null;double best=Double.MAX_VALUE;
+            // The reader they were answering, while that reader is there; otherwise the reader they turned to as they said it, for
+            // as long as they go on looking at them; otherwise whoever stands nearest. 0.4.571: with two readers going round, the
+            // one a line was said to walks off and the other comes nearer. The person is still looking at the first, as far as
+            // anyone is kept looked at (LiteraryActor.faceAddressee), and was faulted for not looking at the second.
+            ServerPlayer to=null;double best=Double.MAX_VALUE;boolean kept=false;
             var those=shown(a,rs);
             if(turn.to()!=null)for(var r:those)if(r.getUUID().equals(turn.to())){to=r;best=r.distanceTo(a);}
+            if(to==null&&a.addressee()!=null)for(var r:those)if(r.getUUID().equals(a.addressee())){to=r;best=r.distanceTo(a);kept=true;}
             if(to==null)for(var r:those){double d=r.distanceTo(a);if(d<best){best=d;to=r;}}
-            if(to==null||best>12||!a.hasLineOfSight(to))continue;
+            if(to==null||!kept&&(best>12||!a.hasLineOfSight(to)))continue;
             if(justMoved(to)){if(!turn.again())later.add(new Turn(a,turn.text(),level.getGameTime()+10,turn.lived(),true,turn.to()));continue;}
             float off=off(a,to),want=want(a,to);
             // 0.4.564: a line nobody asked for, with more than one reader there, may be said to any of them in reach and in sight; an

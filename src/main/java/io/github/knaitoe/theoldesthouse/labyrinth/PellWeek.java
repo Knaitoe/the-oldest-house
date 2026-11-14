@@ -106,6 +106,8 @@ public final class PellWeek {
         stage(l,b,CUTLERY,PellThing.Kind.CUTLERY,last?2:week?1:0);
         stage(l,b,SHED_CALENDAR,PellThing.Kind.SHED_CALENDAR,last?2:week?1:0);
         stage(l,b,FRIDGE_TOP,PellThing.Kind.FRIDGE_TOP,week?1:0);
+        // 0.4.571: the chore chart with June's strip on it, or (the last night) with it taken down (PellJobs).
+        PellJobs.dress(l,b,visit);
         for(var at:PEGBOARD){var s=l.getBlockState(b.offset(at));if(PellThing.is(s,PellThing.Kind.PEGBOARD))set(l,b.offset(at),s.setValue(PellThing.STAGE,(s.getValue(PellThing.STAGE)&1)|(week?2:0)));}
         var towel=l.getBlockState(b.offset(TOWEL));
         if(week&&towel.isAir())set(l,b.offset(TOWEL),PellThing.of(PellThing.Kind.TOWEL,Direction.NORTH,0));

@@ -112,7 +112,27 @@ public final class ElkLotNight {
     private static boolean walk(LivingEntity a,Vec3 to,double speed){
         return ElkLotEnding.step(a,to,speed);
     }
-    private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0478",a.level().getGameTime());}
+    /** Ticks a sentence is kept as just said: nobody says it again inside them while they have another to say. */
+    public static final int FRESH=600;
+    private static void say(LiteraryActor a,String line){
+        a.say(line);long now=a.level().getGameTime();var data=a.getPersistentData();data.putLong("Said0478",now);
+        var recent=data.getCompound("Recent0571");recent.getAllKeys().removeIf(k->now-recent.getLong(k)>=FRESH);recent.putLong(line,now);data.put("Recent0571",recent);
+    }
+    /**
+     * 0.4.571 (run 1601, the two-reader conduct check): the place in a person's lines, from {@code i} on, of the next one they have not
+     * said in the last {@value #FRESH} ticks; with every one of them just said, the one said longest ago. A reader's first word to
+     * Marla got her first line, and so did the bar's own talk a moment later, and a second reader's first word; the men outside
+     * answered a reader with what they went on to call out.
+     */
+    private static int fresh(LiteraryActor a,Person who,String[] pool,int i,ServerPlayer p){
+        var recent=a.getPersistentData().getCompound("Recent0571");long now=a.level().getGameTime(),oldest=Long.MAX_VALUE;int best=i;
+        for(int k=0;k<pool.length;k++){
+            var line=said(who,pool[Math.floorMod(i+k,pool.length)],p);
+            if(!recent.contains(line)||now-recent.getLong(line)>=FRESH)return i+k;
+            if(recent.getLong(line)<oldest){oldest=recent.getLong(line);best=i+k;}
+        }
+        return best;
+    }
     /** A line said to the readers near enough to hear it. */
     private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(a)<400)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
     private static @Nullable ServerPlayer nearest(Entity a,List<ServerPlayer> here,double reach){ServerPlayer best=null;double d=reach*reach;for(var p:here){double e=p.distanceToSqr(a);if(e<d){d=e;best=p;}}return best;}
@@ -171,7 +191,7 @@ public final class ElkLotNight {
     }
     private static void idle(ServerLevel l,CompoundTag w,List<ServerPlayer> here){
         int n=w.getInt("Lines");w.putInt("Lines",n+1);var who=CAST.get(n%CAST.size());var a=cast(l,w,who);var p=a==null?null:nearest(a,here,16);if(a==null||p==null)return;
-        var lines=IDLE.get(who.key());say(a,said(who,lines[(n/CAST.size())%lines.length],p));
+        var lines=IDLE.get(who.key());say(a,said(who,lines[fresh(a,who,lines,n/CAST.size(),p)%lines.length],p));
     }
 
     // ------------------------------------------------------------------------------------------------ the elk
@@ -273,7 +293,7 @@ public final class ElkLotNight {
             int n=w.getInt("Lines");w.putInt("Lines",n+1);int i=n%MEN.size();var who=MEN.get(i);var a=cast(l,w,who);var p=a==null?null:nearest(a,here,32);
             if(a!=null&&p!=null){var own=LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),p.getUUID(),PLACE);
                 // 0.4.187: every fourth line reads the reader's own record of animals killed back to them.
-                String[] pool=own.getBoolean("ElkWounded")&&n%4==3?WOUNDED:n%4==1?new String[]{ElkFollows.accusation(p)}:OUTSIDE[Math.max(0,stage)][i];speak(a,who,said(who,pool[(n/MEN.size())%pool.length],p),here);}
+                String[] pool=own.getBoolean("ElkWounded")&&n%4==3?WOUNDED:n%4==1?new String[]{ElkFollows.accusation(p)}:OUTSIDE[Math.max(0,stage)][i];speak(a,who,said(who,pool[fresh(a,who,pool,n/MEN.size(),p)%pool.length],p),here);}
         }
     }
     static void openSideDoor(ServerLevel l,BlockPos b,LivingEntity a){
@@ -336,18 +356,22 @@ public final class ElkLotNight {
         if(who==MARLA){
             if(own.getBoolean("Ready")||own.getBoolean("Completed")){
                 String[] after={"Past close now, hon. Go on home.","Leave the glass. I'll see to it.","There's nothing left for you out in that field.","You look cold. Button your coat before you go.","You don't owe me for tonight.","Mind the ditch. Keep to the road."};
-                int last=own.contains("MarlaLast130")?own.getInt("MarlaLast130"):-1;int n=p.getRandom().nextInt(last<0?after.length:after.length-1);if(last>=0&&n>=last)n++;own.putInt("MarlaLast130",n);speak(a,who,after[n],near);return;
+                int last=own.contains("MarlaLast130")?own.getInt("MarlaLast130"):-1;int n=p.getRandom().nextInt(last<0?after.length:after.length-1);if(last>=0&&n>=last)n++;n=fresh(a,who,after,n,p)%after.length;own.putInt("MarlaLast130",n);speak(a,who,after[n],near);return;
             }
             var held=p.getMainHandItem();
             if(held.is(Items.GLASS_BOTTLE)){held.shrink(1);speak(a,who,"Thanks, hon.",near);return;}
-            speak(a,who,w.contains("CrashAt")?MARLA_AFTER[own.getInt("Talk_Marla")%MARLA_AFTER.length]:IDLE.get("Marla")[own.getInt("Talk_Marla")%IDLE.get("Marla").length],near);own.putInt("Talk_Marla",own.getInt("Talk_Marla")+1);
+            var hers=w.contains("CrashAt")?MARLA_AFTER:IDLE.get("Marla");int next=fresh(a,who,hers,own.getInt("Talk_Marla"),p);
+            speak(a,who,hers[next%hers.length],near);own.putInt("Talk_Marla",next+1);
             menu(p,a);return;
         }
         boolean out=a.getPersistentData().getInt("Leg0478")>0&&w.contains("CrashAt");
-        int n=own.getInt("Talk_"+who.key());own.putInt("Talk_"+who.key(),n+1);
-        String line;
-        if(out){int i=MEN.indexOf(who);var pool=own.getBoolean("ElkWounded")&&n%3==2?WOUNDED:OUTSIDE[Math.max(0,stage(w))][i];line=pool[n%pool.length];}
-        else{var pool=IDLE.get(who.key());line=pool[n%pool.length];}
+        int n=own.getInt("Talk_"+who.key());
+        String[] pool=!out?IDLE.get(who.key()):own.getBoolean("ElkWounded")&&n%3==2?WOUNDED:OUTSIDE[Math.max(0,stage(w))][MEN.indexOf(who)];
+        // 0.4.571 (run 1601): not a sentence he has just said (fresh); the reader's place in his lines moves past it. His first line
+        // in the bar is each reader's own greeting (VignetteTailoring.lastStop, below) and is never passed over.
+        if(out||n%pool.length!=0)n=fresh(a,who,pool,n,p);
+        own.putInt("Talk_"+who.key(),n+1);
+        String line=pool[n%pool.length];
         // Keep the shared original bark canonical. The reader's form of address
         // belongs only in this reply and must never enter the actor's nametag.
         String ordinary=said(who,line,p);say(a,ordinary);
