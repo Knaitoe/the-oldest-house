@@ -272,7 +272,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     }
     /** A native arm swing can catch one reader alongside the swept retreat, without stopping it. */
     private void passingSwipe(Vec3 before){
-        if(huntPhase()!=WITHDRAW||coverPause||passingSwipeTicks>0||settleTicks>0||!(level() instanceof ServerLevel l))return;
+        if(huntPhase()!=WITHDRAW||coverPause||passingSwipeTicks>0||settleTicks>0||costumeSeen||!(level() instanceof ServerLevel l))return;
         Vec3 step=position().subtract(before);double length=step.lengthSqr();if(length<.000001)return;
         var victim=l.players().stream().filter(p->shoreBase!=null?canAttack(this,p):literaryBase!=null&&literaryTarget(p))
                 .filter(p->{double t=net.minecraft.util.Mth.clamp(p.position().subtract(before).dot(step)/length,0,1);
@@ -573,23 +573,37 @@ public final class LakeWitchEntity extends PathfinderMob {
         if(withdraw)coverProgress(watched,beforeCover);
         else if(!hasLineOfSight(target))coverAttempt(position().distanceToSqr(beforeCover)>.0004);
     }
+    /** Costume Night (0.4.589): how near a reader must be for their look to hold her once the lights are out, and how fast
+     *  she crawls while one looks at her from further off (before her doubling, as every speed here). */
+    public static final double COSTUME_HOLD=8,COSTUME_CRAWL=.03;
+    /** Costume Night: whether any reader has her in sight this tick. Seen, she strikes nobody, in passing or otherwise. */
+    private boolean costumeSeen;
     /**
      * Costume Night (0.4.103): she moves only while no living reader there can see her, and does not move at all while one
      * can. Until the lights go out she only shifts between places at the water's edge; once they are out she comes for the
      * nearest reader on the sand, fast, and strikes if she reaches them unseen, then goes back to the water for a while.
+     *
+     * <p>0.4.589 (owner, three times, the last on 14 November: "witch is still not wanting to cross over to land"): she could
+     * cross, and did whenever a back was turned on her, but a look held her at any distance, so a reader who did as Hank says
+     * ("Keep your eyes on it") watched her stand in the lake for the rest of the night. In the dark a look now holds her only
+     * from near ({@link #COSTUME_HOLD}). Seen from further off she comes up out of the lake and across the sand at a crawl, one
+     * more of the thirteen on all fours, and stops dead where the look reaches her. Seen, she never strikes and never comes
+     * within reach; a back turned, she comes fast, as before. Before the lights go out nothing is changed.
      */
     private void tickCostume(ServerLevel level){
         var readers=level.players().stream().filter(p->p.isAlive()&&!p.isSpectator()&&!p.isCreative()&&here(p)).toList();
         // With nobody on the beach she waits where she is, as the party's own clock does.
         if(readers.isEmpty()){if(windup>0||entityData.get(STRIKING))cancelStrike();route.clear();routeGoal=null;return;}
         var middle=position().add(0,getBbHeight()*.5,0);
-        if(readers.stream().anyMatch(p->inView(p,getEyePosition())||inView(p,middle))){
+        boolean hunting=CostumeNight.hunting(level,literaryBase);
+        var watchers=readers.stream().filter(p->inView(p,getEyePosition())||inView(p,middle)).toList();
+        costumeSeen=!watchers.isEmpty();
+        if(costumeSeen&&(!hunting||watchers.stream().anyMatch(p->p.position().subtract(position()).horizontalDistanceSqr()<COSTUME_HOLD*COSTUME_HOLD))){
             if(windup>0||entityData.get(STRIKING))cancelStrike();route.clear();routeGoal=null;entityData.set(HUNT_PHASE,STALK);return;
         }
         if(passingSwipeTicks>0)passingSwipeTicks--;if(cooldown>0)cooldown--;
-        boolean hunting=CostumeNight.hunting(level,literaryBase);
         var target=hunting&&cooldown==0?readers.stream().filter(this::literaryTarget).filter(p->distanceToSqr(p)<3600).min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null):null;
-        if(target!=null&&distanceToSqr(target)<2.4&&hasLineOfSight(target)){
+        if(!costumeSeen&&target!=null&&distanceToSqr(target)<2.4&&hasLineOfSight(target)){
             if(windup==0){windup=5;entityData.set(HUNT_PHASE,LUNGE);entityData.set(STRIKING,true);entityData.set(BITING,getRandom().nextBoolean());return;}
             if(--windup>0)return;
             swing(net.minecraft.world.InteractionHand.MAIN_HAND);strikeAttempts++;lastStrikeAccepted=target.hurt(damageSources().mobAttack(this),4);
@@ -597,10 +611,44 @@ public final class LakeWitchEntity extends PathfinderMob {
         }
         if(windup>0)cancelStrike();
         BlockPos goal;double speed;
-        if(target!=null){goal=BlockPos.containing(target.getX(),literaryBase.getY(),target.getZ());speed=.2;entityData.set(HUNT_PHASE,STALK);}
-        else{goal=literaryBase.offset(CostumeNight.lurk(level,literaryBase,getId()));speed=hunting?.2:.05;entityData.set(HUNT_PHASE,hunting&&cooldown>0?WITHDRAW:STALK);}
-        if(routeGoal==null||!routeGoal.equals(goal)||route.isEmpty()||tickCount%10==0)literaryRoute(goal);
+        // Seen from afar, she is one more crawler on the sand; unseen, she is as fast as she was.
+        double pace=costumeSeen?COSTUME_CRAWL:.2;
+        if(target!=null){goal=BlockPos.containing(target.getX(),literaryBase.getY(),target.getZ());speed=pace;entityData.set(HUNT_PHASE,STALK);
+            // Seen in the lake, she makes for the bank first: up out of the water where she is, then across the sand. Left to the
+            // shortest way she slid along the water's edge for as long as that was no further, which is not coming ashore.
+            if(costumeSeen){var bank=bank(goal);if(bank!=null)goal=bank;}}
+        else{goal=literaryBase.offset(CostumeNight.lurk(level,literaryBase,getId()));speed=hunting?pace:.05;entityData.set(HUNT_PHASE,hunting&&cooldown>0?WITHDRAW:STALK);}
+        // Seen by anyone, she does not come within reach of the reader she is after: she waits three blocks off for the look to break.
+        if(costumeSeen&&target!=null&&distanceToSqr(target)<9){route.clear();routeGoal=null;return;}
+        if(routeGoal==null||!routeGoal.equals(goal)||route.isEmpty()||tickCount%10==0){literaryRoute(goal);keepHeading();}
         literaryFollow(speed);
+    }
+    /** The sand nearest her while she stands on the water, the one nearer where she is going where two are as near; null once
+     *  she is ashore. Nearest comes first by far: weighed evenly against the way to her reader, the best bank was always the
+     *  next one along, and she followed it up the water's edge. */
+    private @Nullable BlockPos bank(BlockPos toward){
+        var at=BlockPos.containing(getX(),literaryBase.getY(),getZ());
+        if(!level().getFluidState(at.below()).is(net.minecraft.tags.FluidTags.WATER))return null;
+        BlockPos best=null;double score=Double.MAX_VALUE;
+        for(int dx=-4;dx<=4;dx++)for(int dz=-4;dz<=4;dz++){
+            var cell=at.offset(dx,0,dz);if(level().getFluidState(cell.below()).is(net.minecraft.tags.FluidTags.WATER)||!literaryWalkable(cell))continue;
+            double value=cell.distSqr(at)*1000+cell.distSqr(toward);if(value<score){score=value;best=cell;}
+        }
+        return best;
+    }
+    /**
+     * A new plan begins by centring the block she is in, which matters at a corner in the town. At a crawl on open sand it
+     * undid her: a plan is made afresh every half second, a crawl covers .6 of a block in that time, and going back .3 to the
+     * middle of her block and .3 on again left her shuffling where she was, which the new case caught. When she is already on
+     * the line from that middle to the next block's, the centring is dropped: what is left of the line is the same line.
+     */
+    private void keepHeading(){
+        if(route.size()<2)return;
+        var points=route.iterator();var first=points.next();var second=points.next();
+        var line=second.subtract(first).multiply(1,0,1);double length=line.lengthSqr();if(length<.0001)return;
+        var from=position().subtract(first).multiply(1,0,1);double along=from.dot(line)/length;
+        if(along<0||along>1||from.subtract(line.scale(along)).lengthSqr()>.0025)return;
+        route.removeFirst();
     }
     private void literaryFollow(double speed){
         double remaining=speed*HUNT_SPEED_FACTOR;int nodes=0;

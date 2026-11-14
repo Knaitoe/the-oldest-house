@@ -577,6 +577,52 @@ public final class VignetteAnimationTests {
     }
     @AfterBatch(batch="literary_costume_still") public static void costumeStillDone(ServerLevel l){close();}
 
+    /**
+     * 0.4.589 (owner, 14 November, for the third time: "witch is still not wanting to cross over to land", with a picture taken from
+     * in front of the stage, a dozen blocks from the water, of her at the water's edge after the lights went). A reader stands where
+     * that picture was taken, looking at her, and she waits where she waited in it. She comes up out of the lake and across the
+     * sand toward them at a crawl, stops dead eight blocks off and stays there as long as they look, hurting nobody; once their
+     * back is turned she comes fast and reaches them.
+     */
+    @GameTest(template="empty",batch="literary_costume_land",timeoutTicks=500)
+    public static void afterTheLightsGoSheComesUpTheSandToAReaderWhoWatchesHerFromInland(GameTestHelper h){
+        var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_inland",place);var b=f.base(place);var room=place.room();
+        f.chunks.hold(f.out,new net.minecraft.world.phys.AABB(b.getX()+room.minX(),b.getY()+room.minY(),b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+room.maxY()+1,b.getZ()+room.maxZ()+1));
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"the contest's actual native entity sections are resident");
+            for(var who:CostumeNight.EVERYONE)h.assertTrue(CostumeNight.cast(f.out,who)!=null,"the original contestant has loaded: "+who.name());
+            h.assertTrue(CostumeNight.witch(f.out)!=null,"the original thirteenth witch has loaded");
+        }).thenExecute(()->{
+            var witch=CostumeNight.witch(f.out);var lurk=Vec3.atBottomCenterOf(b.offset(CostumeNight.LURKS.get(2)));witch.moveTo(lurk.x,witch.getY(),lurk.z,90,0);
+            f.at(p,place,4.5,0,-26.5);costumeState(f,w->{w.putBoolean("LightsOut",true);w.putInt("RibbonAt",-10000);});
+            // The reader is looking at her from the first tick: a tick with their eyes elsewhere is a tick she is not seen in.
+            p.lookAt(EntityAnchorArgument.Anchor.EYES,witch.getEyePosition());
+            final int[] stage={0};final long[] fastAt={0};final double[] nearest={Double.MAX_VALUE},fastest={0};final Vec3[] last={witch.position()},held={null};final StringBuilder trail=new StringBuilder();final long began=f.out.getGameTime();
+            h.onEachTick(()->{var w=CostumeNight.witch(f.out);if(w==null)return;
+                if(stage[0]<2)p.lookAt(EntityAnchorArgument.Anchor.EYES,w.getEyePosition());else p.lookAt(EntityAnchorArgument.Anchor.EYES,p.getEyePosition().add(-10,0,0));
+                double step=w.position().subtract(last[0]).horizontalDistance();last[0]=w.position();
+                if(stage[0]<2){if(step>fastest[0]){fastest[0]=step;fastAt[0]=f.out.getGameTime()-began;}h.assertTrue(p.getHealth()==20,"while a reader looks at her she hurts nobody");
+                    h.assertTrue(w.distanceTo(p)>2.9,"and does not come within reach: "+w.distanceTo(p));}
+                if(stage[0]==1)h.assertTrue(w.position().distanceToSqr(held[0])<1e-8,"held by a look from near, she does not move at all: "+w.position()+" from "+held[0]);
+                if(stage[0]==2)nearest[0]=Math.min(nearest[0],w.distanceTo(p));
+                long t=f.out.getGameTime()-began;if(t%10==0)trail.append(String.format(" %d:(%.1f,%.1f)",t,w.getX()-b.getX(),w.getZ()-b.getZ()));});
+            h.runAfterDelay(20,()->{var w=CostumeNight.witch(f.out);
+                h.assertTrue(w.position().distanceTo(lurk)>.5,"watched from a dozen blocks off, she has left her place in the lake: "+w.position().distanceTo(lurk));});
+            h.runAfterDelay(40,()->{var w=CostumeNight.witch(f.out);
+                h.assertTrue(!f.out.getFluidState(w.blockPosition().below()).is(net.minecraft.tags.FluidTags.WATER)&&w.getX()-b.getX()<13.7,"she made for the bank first, and is ashore within two seconds: "+trail);});
+            h.runAfterDelay(130,()->{var w=CostumeNight.witch(f.out);double away=w.position().subtract(p.position()).horizontalDistance();
+                h.assertTrue(!f.out.getFluidState(w.blockPosition().below()).is(net.minecraft.tags.FluidTags.WATER)&&w.getX()-b.getX()<13.5,"she is up out of the lake and on the sand, in full view: "+trail);
+                h.assertTrue(away<LakeWitchEntity.COSTUME_HOLD&&away>LakeWitchEntity.COSTUME_HOLD-.6,"and has stopped where the look reaches her, eight blocks off: "+away);
+                h.assertTrue(fastest[0]<=LakeWitchEntity.COSTUME_CRAWL*LakeWitchEntity.HUNT_SPEED_FACTOR+.001,"and came no faster than a crawl: "+fastest[0]+" at tick "+fastAt[0]+trail);
+                held[0]=w.position();stage[0]=1;});
+            h.runAfterDelay(170,()->stage[0]=2);
+            h.runAfterDelay(260,()->{
+                h.assertTrue(nearest[0]<2&&p.getHealth()<20&&f.own(p,place).getBoolean("Struck0503"),"with their back turned she comes fast and reaches them: nearest="+nearest[0]+" health="+p.getHealth()+trail);
+                TheOldestHouse.LOGGER.info("COSTUME LAND PASS: she comes up the sand in view at a crawl, holds at eight blocks, and reaches a turned back:"+trail);h.succeed();});
+        });
+    }
+    @AfterBatch(batch="literary_costume_land") public static void costumeLandDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="literary_costume_ribbon",timeoutTicks=760)
     public static void hankCallsTheNumbersGivesTheRibbonAndTheLightsGoOut(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_ribbon",place);var peer=f.player("costume_crowd",place);var b=f.base(place);
