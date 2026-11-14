@@ -20,8 +20,10 @@ public final class SwimmerRegistry {
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final Map<String,DeferredBlock<Block>> MATERIALS=new LinkedHashMap<>();
-    public static final List<String> MATERIAL_NAMES=List.of("pool_tile","pool_line","deck","wall_tile","wall_band","ceiling","blockwork","lino");
-    static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("swimmer_"+name,fixed(name.equals("lino")?Blocks.OAK_PLANKS:Blocks.STONE)));}
+    public static final List<String> MATERIAL_NAMES=List.of("pool_tile","pool_line","deck","wall_tile","wall_band","ceiling","blockwork","lino","pool_lamp","pool_lamp_off");
+    /** 0.4.581: what the pool's own lamps give, a lens in a wall tile under the water. The same tile with its lamp off gives none. */
+    public static final int POOL_LAMP_LIGHT=11;
+    static{for(String name:MATERIAL_NAMES){var like=fixed(name.equals("lino")?Blocks.OAK_PLANKS:Blocks.STONE);MATERIALS.put(name,BLOCKS.registerSimpleBlock("swimmer_"+name,name.equals("pool_lamp")?like.lightLevel(s->POOL_LAMP_LIGHT):like));}}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<SwimmerBlock>> FITTING_TYPE=CODECS.register("swimmer_fitting",()->SwimmerBlock.CODEC);
     public static final DeferredBlock<SwimmerBlock> FITTING=BLOCKS.registerBlock("swimmer_fitting",SwimmerBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(SwimmerBlock::light));

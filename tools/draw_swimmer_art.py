@@ -150,6 +150,19 @@ def materials():
     for _ in range(30):
         dot(lino, rnd.randrange(16), rnd.randrange(16), rnd.choice(['#9a9a8a', '#7a7a6a']))
     m['lino'] = lino
+    # 0.4.581: the pool's own lamp, a lens set in a wall tile under the water; and the same lamp off.
+    for name, glass, halo in (('pool_lamp', '#fbfeff', '#cfeefa'), ('pool_lamp_off', '#9fb0b8', '#8496a0')):
+        lens = tiles('#d6e2e6', '#a8bcc4', 2281)
+        for y in range(16):
+            for x in range(16):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 2.6:
+                    dot(lens, x, y, glass)
+                elif d < 4.1:
+                    dot(lens, x, y, halo)
+                elif d < 5.2:
+                    dot(lens, x, y, '#8ea2ac' if name == 'pool_lamp' else '#6e7e88')
+        m[name] = lens
     return m
 
 
@@ -173,18 +186,47 @@ def rope():
 
 
 def cover():
-    im = new(base='#2a3446', seed=2295, spread=3)
-    for x in range(0, 16, 4):
+    """0.4.581: a pale blue vinyl with a welded seam every half block. It was near black, and nothing on it showed in low light."""
+    im = new(base='#4a7cae', seed=2295, spread=3)
+    for x in (0, 8):
         for y in range(16):
-            dot(im, x, y, '#202838')
+            dot(im, x, y, '#3a6898'); dot(im, x + 1, y, '#5e90c0')
+    rnd = random.Random(22951)
+    for _ in range(14):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#5688ba')
     return im
 
 
 def cover_side():
-    im = new(base='#222a3a', seed=2296, spread=2)
+    im = new(base='#3c6a9a', seed=2296, spread=2)
     for x in range(16):
-        dot(im, x, 0, '#3a4456')
+        dot(im, x, 0, '#6a9cca')
     return im
+
+
+def toned(k):
+    """The cover's own picture, lighter or darker throughout, so that its seams run on across a piece drawn in it."""
+    im = cover(); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = shade(px[x, y], k)
+    return im
+
+
+def rise():
+    """The cover where it is drawn up round what presses on it: stretched, and a little paler for it."""
+    return toned(14)
+
+
+def sole():
+    """The cover drawn tight over what is pressed against it from underneath: stretched thin, and much the palest there. In the
+    game's frames a sole only a little paler than the cover did not show from above or from across the pool."""
+    return toned(70)
+
+
+def lee():
+    """The cover in the shadow at the foot of a rise."""
+    return toned(-30)
 
 
 def edge():
@@ -203,6 +245,7 @@ def strap():
 
 def reel_face(stage):
     im = new(base='#3a4456', seed=2300 + stage, spread=2)
+    rnd = random.Random(2340 + stage)
     r = [7, 4, 1][stage]
     for y in range(16):
         for x in range(16):
@@ -212,7 +255,10 @@ def reel_face(stage):
             if abs(d - 1.2) < 0.6:
                 im.putpixel((x, y), shade('#9aa0a8', 0))
             elif d <= r and int(d * 2) % 3 == 0:
-                im.putpixel((x, y), shade('#2a3446', 0))
+                im.putpixel((x, y), shade('#3a6898', 0))
+            elif d <= r:
+                # 0.4.581: the cover rolled up is the cover's own blue.
+                im.putpixel((x, y), shade('#4a7cae', rnd.randint(-3, 3)))
     return im
 
 
@@ -363,13 +409,73 @@ def model(elements, textures, particle, render='cutout'):
     return {'ambientocclusion': False, 'render_type': 'minecraft:' + render, 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
 
+# 0.4.581: a foot pressed up under the cover. Drawn once, as the left foot of someone walking north (toward z 0), in sixteenths of
+# the cell: the cover swollen a little round it, and the foot standing up out of the swell, with its toes, ball, arch and heel. The
+# big toe is on the inner side. The right foot is its mirror; each is turned to the way it walks. The flat sheet under them is
+# never turned, so its seams still meet its neighbours'. (Two rises under the foot read, in the game, as a stepped pyramid.)
+SHEET = 15.5
+PAD = SHEET + .75
+
+
+def rounded(lo, hi, cut=1):
+    """A low rise with its corners taken off: a middle the whole length, and a strip at each side that stops short of the ends."""
+    (x0, y0, z0), (x1, y1, z1) = lo, hi
+    return [([x0 + cut, y0, z0], [x1 - cut, y1, z1], 'mound'), ([x0, y0, z0 + cut], [x0 + cut, y1, z1 - cut], 'mound'), ([x1 - cut, y0, z0 + cut], [x1, y1, z1 - cut], 'mound')]
+
+
+FOOT = [
+    # the cover swollen round it
+    *rounded([1, SHEET, 2], [10, PAD, 14], 1.5),
+    # four toes, the big one on the inner side and furthest forward, each a little apart from the next
+    ([6.9, PAD, 3.5], [8.5, PAD + 1.5, 5], 'sole'),
+    ([5.6, PAD, 3.8], [6.6, PAD + 1.5, 5], 'sole'),
+    ([4.3, PAD, 4.1], [5.3, PAD + 1.5, 5], 'sole'),
+    ([3, PAD, 4.4], [4, PAD + 1.5, 5], 'sole'),
+    # the ball, the arch (taken in on the inner side, and not pressed so hard), the heel
+    ([2.5, PAD, 5.2], [8.5, PAD + 2, 8.2], 'sole'),
+    ([2.5, PAD, 8.2], [6.5, PAD + 1.25, 10.2], 'sole'),
+    ([2.5, PAD, 10.2], [7.5, PAD + 2, 12.7], 'sole'),
+]
+FOOT_WAYS = ['north', 'east', 'south', 'west']
+# The cover is laid facing west (SwimmerSite.cover), and a block's facing turns its whole model: a foot is drawn turned back by as
+# much, so that the way in its stage's number is the way it walks in the pool.
+COVER_FACING = 'west'
+
+
+def foot_stage(way, right):
+    """The cover's stage for a foot: the way it walks and which foot. SwimmerBlock.foot is the same sum; main() compares them."""
+    n = FOOT_WAYS.index(way) * 2 + (1 if right else 0)
+    return 1 if n == 0 else n + 2
+
+
+def turned(lo, hi, way, right):
+    """A box of the left foot walking north, as the other foot's (mirrored across the cell) and turned to the way it walks."""
+    (x0, y0, z0), (x1, y1, z1) = lo, hi
+    if right:
+        x0, x1 = 16 - x1, 16 - x0
+    for _ in range(FOOT_WAYS.index(way)):
+        x0, z0, x1, z1 = 16 - z1, x0, 16 - z0, x1
+    return [x0, y0, z0], [x1, y1, z1]
+
+
+def raised(lo, hi, top, side):
+    """A box standing on the sheet: no underside, and each face a piece of its picture of the face's own size."""
+    (x0, y0, z0), (x1, y1, z1) = lo, hi
+    h = y1 - y0
+    uv = {'up': [x0, z0, x1, z1], 'north': [16 - x1, 0, 16 - x0, h], 'south': [x0, 0, x1, h], 'west': [z0, 0, z1, h], 'east': [16 - z1, 0, 16 - z0, h]}
+    return element(lo, hi, {'up': top, 'north': side, 'south': side, 'east': side, 'west': side}, uv)
+
+
 def fitting_models():
     m = {}
     m['rope_0'] = model([element([6.5, 13, z], [9.5, 15.5, z + 4], {'all': 'a' if z % 8 == 0 else 'b'}) for z in range(0, 16, 4)], {'a': 'float_a', 'b': 'float_b'}, 'float_a')
     flat = element([0, 13.5, 0], [16, 15.5, 16], {'up': 'c', 'down': 'c', 'north': 's', 'south': 's', 'east': 's', 'west': 's'})
     m['cover_0'] = model([flat], {'c': 'cover', 's': 'cover_side'}, 'cover')
-    m['cover_1'] = model([element([0, 13.5, 0], [16, 15.5, 16], {'up': 'c', 'down': 'c', 'north': 's', 'south': 's', 'east': 's', 'west': 's'}),
-                          element([3, 15.5, 4], [13, 17.5, 12], {'all': 'c'}), element([5, 17.5, 6], [11, 18.5, 10], {'all': 'c'})], {'c': 'cover', 's': 'cover_side'}, 'cover')
+    for way in FOOT_WAYS:
+        drawn = FOOT_WAYS[(FOOT_WAYS.index(way) - FACING_Y[COVER_FACING] // 90) % 4]
+        for right in (False, True):
+            parts = [flat] + [raised(*turned(lo, hi, drawn, right), *(('r', 'l') if kind == 'mound' else ('t', 'l'))) for lo, hi, kind in FOOT]
+            m[f'cover_{foot_stage(way, right)}'] = model(parts, {'c': 'cover', 's': 'cover_side', 'r': 'rise', 't': 'sole', 'l': 'lee'}, 'cover')
     m['cover_2'] = model([flat, element([0, 14, 0], [16, 17, 2], {'all': 'e'}), element([6, 15, 1], [10, 18, 4], {'all': 't'})], {'c': 'cover', 's': 'cover_side', 'e': 'edge', 't': 'strap'}, 'cover')
     for s, (a, b) in enumerate(((3, 13), (5, 11), (7, 9))):
         m[f'reel_{s}'] = model([element([0, a, a], [16, b, b], {'north': 'c', 'south': 'c', 'up': 'c', 'down': 'c', 'east': 'f', 'west': 'f'})], {'c': 'cover' if s < 2 else 'edge', 'f': f'reel_face_{s}'}, 'cover')
@@ -401,7 +507,7 @@ def textures():
         out[f'block/swimmer/{k}.png'] = v
     for k, v in rope().items():
         out[f'block/swimmer/{k}.png'] = v
-    out['block/swimmer/cover.png'] = cover(); out['block/swimmer/cover_side.png'] = cover_side()
+    out['block/swimmer/cover.png'] = cover(); out['block/swimmer/cover_side.png'] = cover_side(); out['block/swimmer/sole.png'] = sole(); out['block/swimmer/rise.png'] = rise(); out['block/swimmer/lee.png'] = lee()
     out['block/swimmer/edge.png'] = edge(); out['block/swimmer/strap.png'] = strap()
     for s in range(3):
         out[f'block/swimmer/reel_face_{s}.png'] = reel_face(s)
@@ -426,12 +532,12 @@ def textures():
 
 
 KINDS = ['rope', 'cover', 'reel', 'reel_end', 'start', 'pace_clock', 'ladder', 'depth', 'bench', 'lockers', 'radio', 'clipboard', 'boards', 'lamp', 'exit_sign', 'towel', 'drain', 'sign']
-STAGES = {'cover': 3, 'reel': 3, 'start': 6, 'pace_clock': 12, 'depth': 2, 'lockers': 2, 'radio': 2, 'lamp': 2, 'sign': 2}
+STAGES = {'cover': 10, 'reel': 3, 'start': 6, 'pace_clock': 12, 'depth': 2, 'lockers': 2, 'radio': 2, 'lamp': 2, 'sign': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 12
 NAMES = {'swimmer_fitting': 'Pool Fitting', 'swimmer_pool_tile': 'Pool Tile', 'swimmer_pool_line': 'Lane Line Tile', 'swimmer_deck': 'Pool Deck',
          'swimmer_wall_tile': 'Wall Tile', 'swimmer_wall_band': 'Wall Tile Band', 'swimmer_ceiling': 'Ceiling Panel', 'swimmer_blockwork': 'Painted Blockwork',
-         'swimmer_lino': 'Lino'}
+         'swimmer_lino': 'Lino', 'swimmer_pool_lamp': 'Pool Light', 'swimmer_pool_lamp_off': 'Pool Light'}
 
 
 def files():
@@ -466,6 +572,12 @@ def main():
     for key, obj in models.items():
         for tex in obj['textures'].values():
             assert f'block/swimmer/{tex.split("swimmer/")[1]}.png' in images, (key, tex)
+    # The block numbers the feet as this tool does.
+    java = (ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/SwimmerBlock.java').read_text()
+    assert 'case EAST->1;case SOUTH->2;case WEST->3;default->0;' in java and 'return n==0?1:n+2;' in java, 'SwimmerBlock.foot does not number the feet as the tool does'
+    assert sorted(foot_stage(w, r) for w in FOOT_WAYS for r in (False, True)) == [1, 3, 4, 5, 6, 7, 8, 9]
+    site = (ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/SwimmerSite.java').read_text()
+    assert f'SwimmerBlock.of(COVER,Direction.{COVER_FACING.upper()},' in site, 'SwimmerSite.cover does not lay the cover the way the feet are drawn for'
     for rel, im in images.items():
         path = A / 'textures' / rel
         if check:

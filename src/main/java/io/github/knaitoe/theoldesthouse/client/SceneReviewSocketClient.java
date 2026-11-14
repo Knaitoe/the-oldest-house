@@ -63,6 +63,8 @@ public final class SceneReviewSocketClient {
         if(age%40==0)TheOldestHouse.LOGGER.info("LIVE SCENE REVIEW CLIENT {} step={} route={} clicks={} shots={} body={} ground={} carrying={} screen={}",role,step,route,clicks,shots,mc.player.position(),mc.player.onGround(),carrying(mc),mc.screen==null?"none":mc.screen.getClass().getSimpleName());
         if(mc.screen!=null&&!(mc.screen instanceof net.minecraft.client.gui.screens.ChatScreen)){mc.player.closeContainer();return false;}
         boolean a=role.equals("A");
+        // 0.4.581: the hall's light as this client has it while the cover is hauled, for the record beside the server's.
+        if(step==63&&age%40==0)TheOldestHouse.LOGGER.info("LIVE SCENE REVIEW CLIENT {} pool light while hauling=[{}]",role,SwimmerSite.lightReading(mc.level,b));
         switch(step){
             case 63->{
                 if(a){
@@ -83,7 +85,22 @@ public final class SceneReviewSocketClient {
             case 64->{
                 // The attendant, watched from where each reader stands, as they go round to the fire door and hold it.
                 stop(mc);var keeper=actor(mc,LastSwimmer.ATTENDANT);
-                if(keeper!=null)look(mc,keeper.position().add(0,1.4,0));
+                // 0.4.581 (the owner: the pool is too dark to see the impressions): between the looks at the attendant, a look at
+                // the cover where something is stepping, from where each reader stands. Up to three, each once the view has been
+                // on a foot for a few ticks.
+                var foot=foot(mc,b);int beat=age%60;
+                // The attendant comes down the deck this reader stands on: no frame of a step while they are near enough to stand in it.
+                boolean clear=keeper==null||keeper.distanceToSqr(mc.player)>25;
+                // 0.4.581: and the hall's light as this client has it, which the runner sets beside the server's. The hall is roofed:
+                // a client that has sky light in it was sent the hall before the server's light had caught up with the building of it.
+                if(age%40==0){int lit=0;for(var lamp:SwimmerSite.LAMPS)if(mc.level.getBlockState(b.offset(lamp)).getValue(SwimmerBlock.STAGE)==0)lit++;
+                    var reading=SwimmerSite.lightReading(mc.level,b);
+                    TheOldestHouse.LOGGER.info("LIVE SCENE REVIEW CLIENT {} pool lamps lit={} light=[{}]",role,lit,reading);
+                    if(age>=280)for(var cell:reading.split(" "))if(!cell.endsWith("/0"))throw new IllegalStateException("LIVE SCENE REVIEW CLIENT "+role+": sky light in the roofed hall, with the lamps off: "+reading);}
+                if(age>20&&route2<3&&foot!=null&&clear&&beat>=22&&beat<42){
+                    look(mc,Vec3.atLowerCornerOf(foot).add(.5,1,.5));
+                    if(++since==4&&shot==null){shot=role+"-pool-step-"+(route2+1);route2++;}
+                }else{since=0;if(keeper!=null)look(mc,keeper.position().add(0,1.4,0));}
                 if(age>20&&age%60==0&&shots<6)shoot(role+"-pool-attendant-"+(shots+1));
                 return shots>=6&&!flagShotPending();
             }
@@ -118,6 +135,14 @@ public final class SceneReviewSocketClient {
         }
     }
     private static boolean flagShotPending(){return shot!=null;}
+    /** 0.4.581: the cell of the pool's cover that something is pressing up under, nearest this reader; null while nothing is. */
+    @Nullable private static BlockPos foot(Minecraft mc,BlockPos b){
+        BlockPos best=null;double d=Double.MAX_VALUE;
+        for(int x=SwimmerSite.POOL_X0;x<=SwimmerSite.POOL_X1;x++)for(int z=SwimmerSite.POOL_NORTH;z<=SwimmerSite.POOL_SOUTH;z++){
+            var at=b.offset(x,SwimmerSite.SURFACE,z);if(!SwimmerBlock.pressed(mc.level.getBlockState(at)))continue;
+            double dd=at.distToCenterSqr(mc.player.position());if(dd<d){d=dd;best=at;}}
+        return best;
+    }
 
     /** The dresser lifted, carried out of the flat, along the landing, down the stair, along the hall and out to the van. */
     private static boolean carry(Minecraft mc,BlockPos b,int age,BlockPos piece,String name){
@@ -163,7 +188,12 @@ public final class SceneReviewSocketClient {
 
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
         if(!LiveExpeditionProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(LiveExpeditionProof.folder());
-        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(LiveExpeditionProof.folder().resolve(shot+".png"));}
-        Files.writeString(LiveExpeditionProof.folder().resolve(shot+".txt"),"Actual connected client in the production scene, with its actors and the world's light. Staging is described in scene-review-passed.txt.\n");shot=null;
+        // 0.4.581: how bright the middle of the frame is (the middle fifth each way), where a frame of the steps looks at the cover.
+        int middle=0;
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(LiveExpeditionProof.folder().resolve(shot+".png"));
+            int w=image.getWidth(),h=image.getHeight();long sum=0;int n=0;
+            for(int y=h*2/5;y<h*3/5;y++)for(int x=w*2/5;x<w*3/5;x++){int c=image.getPixelRGBA(x,y);sum+=(299*(c&255)+587*(c>>8&255)+114*(c>>16&255))/1000;n++;}
+            if(n>0)middle=(int)(sum/n);}
+        Files.writeString(LiveExpeditionProof.folder().resolve(shot+".txt"),"Actual connected client in the production scene, with its actors and the world's light. Staging is described in scene-review-passed.txt.\nThe middle of the frame: "+middle+" of 255.\n");shot=null;
     }
 }

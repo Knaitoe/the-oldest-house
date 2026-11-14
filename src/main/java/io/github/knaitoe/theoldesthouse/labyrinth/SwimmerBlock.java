@@ -15,8 +15,8 @@ import net.minecraft.world.phys.shapes.*;
 /**
  * 0.4.227, the last swimmer: the pool's fittings. Models face north as drawn and turn with {@link #FACING}; a fitting on a wall has
  * its back to that wall. The rope and the cover stand in the water and are waterlogged. The ladder's rails stand on the deck, dry (0.4.403: waterlogged, they
- * stood in a block of water above the pool's edge). Stages: the cover flat (0),
- * pressed up from underneath (1), or its leading edge (2); the reel full (0), half run out (1) or empty (2); a starting block's
+ * stood in a block of water above the pool's edge). Stages: the cover flat (0), its leading edge (2), or a foot pressed up under
+ * it (1 and 3 to 9: the way it walks and which foot, {@link #foot}); the reel full (0), half run out (1) or empty (2); a starting block's
  * number (0-5); the pace clock's sweep hand at each five-second mark (0-11); a depth tile shallow (0) or deep (1); the lockers shut
  * (0) or one ajar (1); the radio off (0) or on (1); a lamp lit (0) or off (1); the signs no running (0) and last swim (1).
  */
@@ -36,6 +36,16 @@ public final class SwimmerBlock extends HorizontalDirectionalBlock implements Si
     public static boolean wet(Kind k){return k==Kind.ROPE||k==Kind.COVER;}
     public static boolean is(BlockState s,Kind kind){return s.is(SwimmerRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static Kind kind(BlockState s){return s.is(SwimmerRegistry.FITTING.get())?s.getValue(KIND):null;}
+    /**
+     * 0.4.581: the cover's stage for a foot pressed up under it: the way it walks, and the left foot or the right. The eight are stage 1
+     * and stages 3 to 9, since 2 is the leading edge. tools/draw_swimmer_art.py numbers its models by the same sum.
+     */
+    public static int foot(Direction way,boolean right){
+        int n=switch(way){case EAST->1;case SOUTH->2;case WEST->3;default->0;}*2+(right?1:0);
+        return n==0?1:n+2;
+    }
+    /** Whether a foot is pressed up under this cell of the cover. */
+    public static boolean pressed(BlockState s){if(!is(s,Kind.COVER))return false;int stage=s.getValue(STAGE);return stage==1||stage>=3&&stage<=9;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE,WATERLOGGED);}
     public static int light(BlockState s){return switch(s.getValue(KIND)){case LAMP->s.getValue(STAGE)==0?15:0;case EXIT_SIGN->8;case RADIO->s.getValue(STAGE)==1?3:0;default->0;};}
@@ -47,7 +57,7 @@ public final class SwimmerBlock extends HorizontalDirectionalBlock implements Si
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case ROPE->box(f,6.5,13,0,9.5,15.5,16);
-            case COVER->s.getValue(STAGE)==1?Shapes.or(Block.box(0,13.5,0,16,15.5,16),Block.box(3,15.5,4,13,18,12)):Block.box(0,13.5,0,16,15.5,16);
+            case COVER->pressed(s)?Shapes.or(Block.box(0,13.5,0,16,15.5,16),Block.box(2,15.5,2,14,18.25,14)):Block.box(0,13.5,0,16,15.5,16);
             case REEL->Block.box(0,3,0,16,13,16);
             case REEL_END->Block.box(2,0,2,14,13,14);
             case START->Block.box(2,0,2,14,9,14);

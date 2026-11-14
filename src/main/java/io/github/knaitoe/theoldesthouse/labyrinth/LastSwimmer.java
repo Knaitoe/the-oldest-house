@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -40,7 +41,9 @@ public final class LastSwimmer {
     /** One length of the pool, in ticks: fifteen seconds, so every turn comes round on a quarter of the pace clock. */
     public static final int LENGTH_TICKS=300;
     /** Between hauls; after the cover closes, the quiet, then the lights, then the steps. */
-    public static final int HAUL_GAP=12,QUIET=60,LIGHTS_EVERY=12,STEPS_AFTER=150,STEP_EVERY=14,EMPTY_RESET=100;
+    public static final int HAUL_GAP=12,QUIET=60,LIGHTS_EVERY=20,STEPS_AFTER=150,STEP_EVERY=14,EMPTY_RESET=100;
+    /** 0.4.581: how long a foot stays down after the next has landed, and how long the last one down stays when no more come. */
+    public static final int FOOT_LIFT=3,FOOT_STAYS=STEP_EVERY+6;
     /** The lamps left on near the fire door. */
     private static final int KEEP_LIT=2;
     /**
@@ -68,6 +71,8 @@ public final class LastSwimmer {
     static final class Pool {
         final BlockPos base;long tick;int hauls,lane=3,lastHaul=-100,closedAt=-1,lightsOut,empty;
         @Nullable UUID attendant,swimmer;@Nullable BlockPos pressed,stepAt;int pressedUntil,lastStep,radio=-1;boolean held,cuedLane;
+        /** 0.4.581: the foot before the one now down, and when it lifts; which foot comes next; the way it walks. */
+        @Nullable BlockPos lifted;int liftAt;boolean right;Direction way=Direction.SOUTH;
         /** 0.4.233: the radio's part now playing, the lamp that wavered and when it comes back, and when the held breath ends. */
         int part=-1,flicker=-1,flickerUntil,breathUntil=-1;
         /** 0.4.238: whether each beat has come, and until when the lights waver. */
@@ -104,6 +109,9 @@ public final class LastSwimmer {
     public static boolean held(BlockPos b){var p=pool(b);return p!=null&&p.held;}
     public static long tick(BlockPos b){var p=pool(b);return p==null?-1:p.tick;}
     @Nullable public static BlockPos pressed(BlockPos b){var p=pool(b);return p==null?null:p.pressed;}
+    /** For tests: the foot before the one now down, while it is still down; and how many lamps are off. */
+    @Nullable public static BlockPos lifted(BlockPos b){var p=pool(b);return p==null?null:p.lifted;}
+    public static int lightsOut(BlockPos b){var p=pool(b);return p==null?0:p.lightsOut;}
     /** For tests: the part of the song the radio is in (0 to 4, 5 once it has ended), and whether the swimmer is holding a breath. */
     public static int part(BlockPos b){var p=pool(b);return p==null?-1:p.part;}
     public static boolean holding(BlockPos b){var p=pool(b);return p!=null&&p.breathUntil>p.tick;}
@@ -214,16 +222,21 @@ public final class LastSwimmer {
         return true;
     }
     static void start(ServerLevel l,Pool pool){
-        var b=pool.base;clearActors(l,b);SwimmerSite.cover(l,b,0);lights(l,b,0);door(l,b,false);
+        var b=pool.base;clearActors(l,b);SwimmerSite.cover(l,b,0);lights(l,b,0);SwimmerSite.poolLights(l,b,true);door(l,b,false);
         var a=spawn(l,ATTENDANT,Vec3.atBottomCenterOf(b.offset(SwimmerSite.ATTENDANT_START)),180);pool.attendant=a==null?null:a.getUUID();
         var s=spawn(l,SWIMMER,at(b,SwimmerSite.laneMiddle(pool.lane),SwimmerSite.SURFACE-.55,SwimmerSite.POOL_SOUTH+.5),180);pool.swimmer=s==null?null:s.getUUID();
         if(s!=null){s.setInvisible(true);s.setNoGravity(true);}
     }
     /** 0.4.244: the pool as the reader left it: the cover on from wall to wall, every lamp off but the two by the fire door, nobody in it. */
-    static void aftermath(ServerLevel l,BlockPos b){clearActors(l,b);SwimmerSite.cover(l,b,SwimmerSite.COLUMNS);lights(l,b,SwimmerSite.LAMPS.size()-KEEP_LIT);door(l,b,false);}
+    static void aftermath(ServerLevel l,BlockPos b){clearActors(l,b);SwimmerSite.cover(l,b,SwimmerSite.COLUMNS);lights(l,b,SwimmerSite.LAMPS.size()-KEEP_LIT);
+        // 0.4.581: the pool's own lamps are off too. What a reader is told here is that the hall is dark but for the two lamps by the fire door.
+        SwimmerSite.poolLights(l,b,false);door(l,b,false);}
     static void lights(ServerLevel l,BlockPos b,int out){
         var lamps=SwimmerSite.LAMPS;
-        for(int i=0;i<lamps.size();i++){var at=b.offset(lamps.get(i));var s=l.getBlockState(at);if(!SwimmerBlock.is(s,SwimmerBlock.Kind.LAMP))continue;int stage=i<out?1:0;if(s.getValue(SwimmerBlock.STAGE)!=stage)l.setBlock(at,s.setValue(SwimmerBlock.STAGE,stage),F);}
+        for(int i=0;i<lamps.size();i++){var at=b.offset(lamps.get(i));var s=l.getBlockState(at);if(!SwimmerBlock.is(s,SwimmerBlock.Kind.LAMP))continue;int stage=i<out?1:0;if(s.getValue(SwimmerBlock.STAGE)!=stage)l.setBlock(at,s.setValue(SwimmerBlock.STAGE,stage),F);
+            // 0.4.581: the light a lamp throws down onto the deck and the water goes out with it, and comes back with it.
+            var under=b.offset(SwimmerSite.thrown(lamps.get(i)));var us=l.getBlockState(under);
+            if(stage==0&&us.isAir())l.setBlock(under,Blocks.LIGHT.defaultBlockState(),F);else if(stage==1&&us.is(Blocks.LIGHT))l.setBlock(under,Blocks.AIR.defaultBlockState(),F);}
     }
     static void door(ServerLevel l,BlockPos b,boolean open){
         for(int y=0;y<=1;y++){var at=b.offset(SwimmerSite.EXIT_X,y,SwimmerSite.EXIT_Z);var s=l.getBlockState(at);if(s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN)!=open)l.setBlock(at,s.setValue(DoorBlock.OPEN,open),F);}
@@ -259,7 +272,7 @@ public final class LastSwimmer {
         }
         // A pool is put back only when nobody is in it at all: a reader who has finished and lingers by the door still holds it (0.4.238).
         for(var it=POOLS.values().iterator();it.hasNext();){var pool=it.next();if(seen.contains(pool.base.asLong())||present(server,pool.base)){pool.empty=0;continue;}
-            if(++pool.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(pool.base)){clearActors(l,pool.base);SwimmerSite.cover(l,pool.base,0);lights(l,pool.base,0);door(l,pool.base,false);}it.remove();}}
+            if(++pool.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(pool.base)){clearActors(l,pool.base);SwimmerSite.cover(l,pool.base,0);lights(l,pool.base,0);SwimmerSite.poolLights(l,pool.base,true);door(l,pool.base,false);}it.remove();}}
     }
     /** Whether anyone at all is in the hall: every living player there who is not a spectator, finished or not. */
     static boolean present(net.minecraft.server.MinecraftServer server,BlockPos b){
@@ -279,8 +292,9 @@ public final class LastSwimmer {
         song(l,pool);
         if(!pool.closed())swim(l,pool);else after(l,pool);
         attend(l,pool);
-        // A pressed cell settles back.
-        if(pool.pressed!=null&&pool.tick>=pool.pressedUntil){var at=b.offset(pool.pressed);var s=l.getBlockState(at);if(SwimmerBlock.is(s,SwimmerBlock.Kind.COVER)&&s.getValue(SwimmerBlock.STAGE)==1)l.setBlock(at,s.setValue(SwimmerBlock.STAGE,pool.pressed.getX()==SwimmerSite.POOL_X0?2:0),F);pool.pressed=null;}
+        // A foot lifts once the next has landed, and the last one down settles back when no more come.
+        if(pool.lifted!=null&&pool.tick>=pool.liftAt){settle(l,pool,pool.lifted);pool.lifted=null;}
+        if(pool.pressed!=null&&pool.tick>=pool.pressedUntil){settle(l,pool,pool.pressed);pool.pressed=null;}
     }
     /**
      * 0.4.233: the closing played against the song on the radio. In the second spoken part (a daydream that takes over and comes apart)
@@ -337,22 +351,28 @@ public final class LastSwimmer {
     static void after(ServerLevel l,Pool pool){
         var b=pool.base;int since=pool.since();
         if(since==QUIET/2)for(var r:readers(l,b))cue(r,"\"There.\"");
-        // The lights go off bank by bank, from the far end, leaving the two by the fire door.
+        // The lights go off bank by bank, from the far end, leaving the two by the fire door. 0.4.581: a bank is a row of four, and
+        // how many are off follows the time since the cover closed, so a closing that is hurried on is as dark as it should be.
         int lamps=SwimmerSite.LAMPS.size()-KEEP_LIT;
-        if(since>=QUIET&&pool.lightsOut<lamps&&(since-QUIET)%LIGHTS_EVERY==0){pool.lightsOut++;lights(l,b,pool.lightsOut);l.playSound(null,b.offset(SwimmerSite.LAMPS.get(pool.lightsOut-1)),SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.8F,.6F);
-            if(pool.lightsOut==1)for(var r:readers(l,b))cue(r,"Switches click along the wall, one bank of lights at a time.");}
+        int due=since<QUIET?0:Math.min(lamps,SwimmerSite.BANK*((since-QUIET)/LIGHTS_EVERY+1));
+        if(due>pool.lightsOut){boolean first=pool.lightsOut==0;pool.lightsOut=due;lights(l,b,due);l.playSound(null,b.offset(SwimmerSite.LAMPS.get(due-1)),SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.8F,.6F);
+            if(first)for(var r:readers(l,b))cue(r,"Switches click along the wall, one bank of lights at a time.");}
         if(since<STEPS_AFTER)return;
         if(pool.stepAt==null){
-            pool.stepAt=new BlockPos(SwimmerSite.POOL_X0+(pool.lane>0?1:0)+3*Math.max(0,pool.lane),SwimmerSite.SURFACE,SwimmerSite.POOL_NORTH+2);
+            // 0.4.581: never in the column under the cover's bar and strap: a foot comes up under the cover, beside its edge.
+            pool.stepAt=new BlockPos(Math.max(SwimmerSite.POOL_X0+1,SwimmerSite.POOL_X0+(pool.lane>0?1:0)+3*Math.max(0,pool.lane)),SwimmerSite.SURFACE,SwimmerSite.POOL_NORTH+2);
             for(var r:readers(l,b)){cue(r,"Something crosses the cover. You can see where: the cover rises under each step.");var own=own(r);if(!own.getBoolean("Ready")){own.putBoolean("Ready",true);own.putString("Outcome","held_the_door");own.putInt("Beat",own.getInt("Visit"));}save(r,own);}
         }
         if((since-STEPS_AFTER)%STEP_EVERY!=0||pool.stepAt==null)return;
         // Toward whoever is nearest, a cell at a time, and up under the cover at each.
         var target=nearest(l,pool);if(target==null)return;
         var now=pool.stepAt;int dx=Integer.signum(target.getX()-now.getX()),dz=Integer.signum(target.getZ()-now.getZ());
+        boolean across=Math.abs(target.getX()-now.getX())>=Math.abs(target.getZ()-now.getZ());
         BlockPos next=now;
-        if(dx!=0||dz!=0){next=Math.abs(target.getX()-now.getX())>=Math.abs(target.getZ()-now.getZ())?now.offset(dx,0,0):now.offset(0,0,dz);}
+        if(dx!=0||dz!=0){next=across?now.offset(dx,0,0):now.offset(0,0,dz);}
         else if((since-STEPS_AFTER)%(STEP_EVERY*3)!=0)return;
+        // 0.4.581: its feet point the way it steps; where it has stopped and shifts its weight, the way it came.
+        if(!next.equals(now))pool.way=across?(dx>0?Direction.EAST:Direction.WEST):(dz>0?Direction.SOUTH:Direction.NORTH);
         pool.stepAt=next;press(l,pool,next);
     }
     /** The cover cell nearest the nearest reader: where the steps are going. */
@@ -360,20 +380,28 @@ public final class LastSwimmer {
         ServerPlayer best=null;double d=Double.MAX_VALUE;var b=pool.base;
         for(var r:readers(l,b)){var at=Vec3.atBottomCenterOf(b.offset(pool.stepAt));double dd=r.position().distanceToSqr(at);if(dd<d){d=dd;best=r;}}
         if(best==null)return null;var r=rel(best.position(),b);
-        int x=Math.max(SwimmerSite.POOL_X0,Math.min(SwimmerSite.POOL_X1,(int)Math.floor(r.x))),z=Math.max(SwimmerSite.POOL_NORTH,Math.min(SwimmerSite.POOL_SOUTH,(int)Math.floor(r.z)));
+        int x=Math.max(SwimmerSite.POOL_X0+1,Math.min(SwimmerSite.POOL_X1,(int)Math.floor(r.x))),z=Math.max(SwimmerSite.POOL_NORTH,Math.min(SwimmerSite.POOL_SOUTH,(int)Math.floor(r.z)));
         return new BlockPos(x,SwimmerSite.SURFACE,z);
     }
     static void press(ServerLevel l,Pool pool,BlockPos rel){
         var b=pool.base;var at=b.offset(rel);var s=l.getBlockState(at);
-        if(pool.pressed!=null&&!pool.pressed.equals(rel)){var old=b.offset(pool.pressed);var os=l.getBlockState(old);if(SwimmerBlock.is(os,SwimmerBlock.Kind.COVER))l.setBlock(old,os.setValue(SwimmerBlock.STAGE,pool.pressed.getX()==SwimmerSite.POOL_X0?2:0),F);}
-        if(SwimmerBlock.is(s,SwimmerBlock.Kind.COVER))l.setBlock(at,s.setValue(SwimmerBlock.STAGE,1),F);
-        pool.pressed=rel;pool.pressedUntil=(int)pool.tick+10;pool.lastStep=(int)pool.tick;
+        // 0.4.581: a foot, the left and the right by turns, pointing the way it walks. The one before stays down until this one has
+        // landed, as a walker's does. It was one shapeless rise that went down as the next came up.
+        if(pool.pressed!=null&&!pool.pressed.equals(rel)){settle(l,pool,pool.lifted);pool.lifted=pool.pressed;pool.liftAt=(int)pool.tick+FOOT_LIFT;}
+        if(SwimmerBlock.is(s,SwimmerBlock.Kind.COVER))l.setBlock(at,s.setValue(SwimmerBlock.STAGE,SwimmerBlock.foot(pool.way,pool.right)),F);
+        pool.right=!pool.right;
+        pool.pressed=rel;pool.pressedUntil=(int)pool.tick+FOOT_STAYS;pool.lastStep=(int)pool.tick;
         l.playSound(null,at,SwimmerRegistry.STEP.get(),SoundSource.HOSTILE,1.2F,.9F+l.random.nextFloat()*.15F);
         l.sendParticles(ParticleTypes.FALLING_WATER,at.getX()+.5,at.getY()+1.1,at.getZ()+.5,8,.4,.05,.4,0);
         for(var r:readers(l,b)){
             var cell=BlockPos.containing(r.getX(),r.getY()-.2,r.getZ());
             if(cell.equals(at)||cell.equals(at.above())){r.setDeltaMovement(r.getDeltaMovement().add(0,.32,0));r.hurtMarked=true;var own=own(r);if(!own.getBoolean("Pressed227")){own.putBoolean("Pressed227",true);cue(r,"It presses up under your feet.");}save(r,own);}
         }
+    }
+    /** A cell of the cover lies flat again, or as the leading edge it was. */
+    static void settle(ServerLevel l,Pool pool,@Nullable BlockPos rel){
+        if(rel==null)return;var at=pool.base.offset(rel);var s=l.getBlockState(at);
+        if(SwimmerBlock.pressed(s))l.setBlock(at,s.setValue(SwimmerBlock.STAGE,rel.getX()==SwimmerSite.POOL_X0?2:0),F);
     }
     static void attend(ServerLevel l,Pool pool){
         var a=attendantActor(l,pool);var b=pool.base;if(a==null)return;

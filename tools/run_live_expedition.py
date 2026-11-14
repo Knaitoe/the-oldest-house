@@ -1,6 +1,7 @@
 """CI proof: a loopback dedicated server, two real clients, then the same B profile reconnects."""
 from pathlib import Path
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -15,6 +16,9 @@ uncanny_only = "--uncanny-only" in sys.argv[1:]
 backseat_only = "--backseat-only" in sys.argv[1:]
 # 0.4.240: the pool and the flat looked at in play; a CI gate since 0.4.244 (the scene-review-clients job).
 scenes_only = "--scenes-only" in sys.argv[1:]
+# 0.4.581: the least the middle of a frame of the pool's steps may be, of 255. Before the pool had lamps of its own the cover was
+# black there once the hall's lamps were off.
+POOL_STEP_LIGHT = 30
 proof_flags = ["-PsceneReviewSocketSmoke"] if scenes_only else ["-PbackseatSocketSmoke"] if backseat_only else (["-PuncannySocketSmoke"] if uncanny_only else (["-PborrascaSocketSmoke"] if borrasca_only else []))
 proof_root = ROOT / ("run-scene-review-live" if scenes_only else "run-backseat-live" if backseat_only else ("run-uncanny-live" if uncanny_only else ("run-borrasca-live" if borrasca_only else "run-live")))
 report = ROOT / ("build/scene-review-live-proof" if scenes_only else "build/backseat-live-proof" if backseat_only else ("build/uncanny-live-proof" if uncanny_only else ("build/borrasca-live-proof" if borrasca_only else "build/live-proof")))
@@ -174,8 +178,24 @@ try:
             assert (report / f"{shot}.png").stat().st_size > 500, shot
         attendant = list(report.glob("*-pool-attendant-*.png"))
         assert attendant and all(shot.stat().st_size > 500 for shot in attendant), attendant
+        # 0.4.581 (the owner: the pool is too dark to see the impressions): the steps under the cover, looked at with the hall's
+        # lamps off, from the west deck at least. The middle of each frame taken from there (client B's), where the cover is, is not
+        # dark. Client A looks down the hall from its far end, and the middle of its frame is the far wall: kept as a frame only.
+        steps = sorted(report.glob("*-pool-step-*.png"))
+        assert any(shot.name.startswith("B-") for shot in steps), steps
+        for shot in steps:
+            assert shot.stat().st_size > 500, shot
+            lit = int(shot.with_suffix(".txt").read_text().split("The middle of the frame: ")[1].split(" of 255")[0])
+            assert lit >= POOL_STEP_LIGHT or not shot.name.startswith("B-"), (shot.name, lit)
         native_log = (server / "logs/latest.log").read_text(errors="replace")
         assert not any(warning in native_log for warning in ("moved too quickly!", "moved wrongly!", "floating too long!")), native_log[-5000:]
+        # The light each client has for the hall, with the lamps off, is the light the server has for it. A client was
+        # sent the hall before the server's light had caught up with the building of it, and kept the open sky's light in it.
+        readings = re.findall(r"LIVE SCENE REVIEW pool lamps off=22 light=\[([^\]]*)\]", native_log)
+        assert readings, "the server's reading of the hall's light with the lamps off"
+        for name in ("client-a.log", "client-b-first.log"):
+            seen = re.findall(r"pool lamps lit=2 light=\[([^\]]*)\]", (report / name).read_text(errors="replace"))
+            assert seen and seen[-1] == readings[-1], (name, seen[-1:], readings[-1])
         print((report / "passed.txt").read_text(), flush=True)
         raise SystemExit(0)
     if borrasca_only:

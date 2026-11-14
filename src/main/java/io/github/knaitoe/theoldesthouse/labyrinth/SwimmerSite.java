@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
+import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import static io.github.knaitoe.theoldesthouse.labyrinth.SwimmerBlock.Kind.*;
@@ -40,8 +41,45 @@ public final class SwimmerSite {
     public static final BlockPos HOLD=new BlockPos(-14,0,-12);
     /** Where the attendant waits at first: the north end of the reel. */
     public static final BlockPos ATTENDANT_START=new BlockPos(REEL_X-1,0,POOL_NORTH-2);
-    /** The hall's lamps, north first: the order they go out in. */
+    /** The hall's lamps, north first: the order they go out in, a bank at a time. The last two are the two by the fire door. */
     public static final List<BlockPos> LAMPS=lamps();
+    /**
+     * 0.4.581 (the owner: the pool is too dark to see the impressions). A bank of lamps is a row of four across the hall. A lamp under a
+     * ceiling eight blocks up leaves little on the deck, so each throws its light down to a point this far below it, over a reader's
+     * head; the light goes out with its lamp.
+     */
+    public static final int BANK=4,LAMP_THROW=5;
+    /**
+     * 0.4.581: the pool's own lamps, a lens in a wall tile under the water down both long sides, and the light they put through the
+     * water between them: the same in every cell under the surface, because light that fell away from a few points showed on the
+     * cover as a check of light and dark squares. They are not on the hall's switches: with the hall dark and the cover on, the pool is still lit from underneath.
+     * They are off in the pool a reader comes back to, which is dark but for two lamps.
+     */
+    public static final List<BlockPos> POOL_LAMPS=poolLamps(),POOL_GLOW=poolGlow();
+    public static final int GLOW=9;
+    private static BlockState glow(){return Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,GLOW).setValue(LightBlock.WATERLOGGED,true);}
+    /** The pool's own lamps on or off: the lens in each wall tile lit or dark, and its light through the water there or not. */
+    public static void poolLights(ServerLevel l,BlockPos b,boolean on){
+        var lit=SwimmerRegistry.material("pool_lamp");var dark=SwimmerRegistry.material("pool_lamp_off");
+        for(var at:POOL_LAMPS){var p=b.offset(at);var s=l.getBlockState(p);if(s.is(on?dark:lit))l.setBlock(p,(on?lit:dark).defaultBlockState(),F);}
+        for(var at:POOL_GLOW){var p=b.offset(at);var s=l.getBlockState(p);
+            if(on&&s.is(Blocks.WATER))l.setBlock(p,glow(),F);else if(!on&&s.is(Blocks.LIGHT))l.setBlock(p,Blocks.WATER.defaultBlockState(),F);}
+    }
+    public static BlockPos thrown(BlockPos lamp){return lamp.below(LAMP_THROW);}
+    /**
+     * 0.4.581, for the checks: the hall's light as this side has it, block and sky, at eight cells well away from the two lamps left
+     * on: the strap, the wall beside it, the east deck, the far corner, the cover at its middle and its far end, the air over the
+     * cover and under the ceiling. A server and its clients read the same.
+     */
+    public static final List<BlockPos> LIGHT_CELLS=List.of(new BlockPos(9,0,-12),new BlockPos(12,1,-11),new BlockPos(12,0,-22),new BlockPos(12,0,-40),
+        new BlockPos(0,SURFACE,-25),new BlockPos(0,SURFACE,-36),new BlockPos(0,3,-25),new BlockPos(0,6,-30));
+    public static String lightReading(net.minecraft.world.level.BlockAndTintGetter l,BlockPos b){
+        var out=new StringBuilder();
+        for(var at:LIGHT_CELLS){if(out.length()>0)out.append(' ');
+            out.append(at.getX()).append(',').append(at.getY()).append(',').append(at.getZ()).append('=')
+                .append(l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,b.offset(at))).append('/').append(l.getBrightness(net.minecraft.world.level.LightLayer.SKY,b.offset(at)));}
+        return out.toString();
+    }
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
 
     /** The west column of lane i (0, the west lane, to 5); a lane is two columns wide. */
@@ -61,9 +99,18 @@ public final class SwimmerSite {
 
     private static List<BlockPos> lamps(){
         var out=new ArrayList<BlockPos>();
-        for(int z:new int[]{-42,-34,-24,-14})for(int x:new int[]{-11,11})out.add(new BlockPos(x,HALL_HIGH-1,z));
-        for(int z:new int[]{-32,-16})for(int x:new int[]{-5,5})out.add(new BlockPos(x,HALL_HIGH-1,z));
-        out.sort((a,b)->Integer.compare(a.getZ(),b.getZ()));
+        // 0.4.581: a panel every six blocks down the hall, four to a row, east first. There were twelve, and none over the middle lanes.
+        for(int z=-42;z<=-12;z+=6)for(int x:new int[]{11,4,-4,-11})out.add(new BlockPos(x,HALL_HIGH-1,z));
+        return List.copyOf(out);
+    }
+    private static List<BlockPos> poolLamps(){
+        var out=new ArrayList<BlockPos>();
+        for(int z=POOL_NORTH+2;z<=POOL_SOUTH;z+=4)for(int x:new int[]{POOL_X0-1,POOL_X1+1})out.add(new BlockPos(x,SURFACE-1,z));
+        return List.copyOf(out);
+    }
+    private static List<BlockPos> poolGlow(){
+        var out=new ArrayList<BlockPos>();
+        for(int z=POOL_NORTH;z<=POOL_SOUTH;z++)for(int x=POOL_X0;x<=POOL_X1;x++)out.add(new BlockPos(x,SURFACE-1,z));
         return List.copyOf(out);
     }
     static BlockState mat(String name){return SwimmerRegistry.material(name).defaultBlockState();}
@@ -113,6 +160,9 @@ public final class SwimmerSite {
                 else set(l,b,x,y,z,rope(x)&&y==SURFACE?SwimmerBlock.of(ROPE,Direction.NORTH):water);
             }
         }
+        // 0.4.581: the pool's own lamps under the water, and their light through it.
+        for(var at:POOL_LAMPS)set(l,b,at,mat("pool_lamp"));
+        for(var at:POOL_GLOW)set(l,b,at,glow());
         // Depth tiles on the deck at either end, both sides.
         for(int x:new int[]{-10,10}){set(l,b,x,-1,POOL_SOUTH,SwimmerBlock.of(DEPTH,Direction.NORTH,0));set(l,b,x,-1,POOL_NORTH,SwimmerBlock.of(DEPTH,Direction.NORTH,1));}
         // The starting blocks at the shallow end, one to a lane.
@@ -133,7 +183,7 @@ public final class SwimmerSite {
         for(int x:new int[]{-12,12})set(l,b,x,0,-25,SwimmerBlock.of(DRAIN,Direction.NORTH));
         // The fire door's sign over the west wall's south end; the lamps under the ceiling.
         set(l,b,EXIT_X+1,2,EXIT_Z,SwimmerBlock.of(EXIT_SIGN,Direction.EAST));
-        for(var at:LAMPS)set(l,b,at,SwimmerBlock.of(LAMP,Direction.NORTH,0));
+        for(var at:LAMPS){set(l,b,at,SwimmerBlock.of(LAMP,Direction.NORTH,0));set(l,b,thrown(at),Blocks.LIGHT.defaultBlockState());}
         // Panes join the way they would have been fitted.
         BuildBlocks.after(l,()->{for(var at:List.of(new BlockPos(-5,1,-4)))join(l,b.offset(at));for(int x=-11;x<=-7;x++)for(int y=1;y<=2;y++)join(l,b.offset(x,y,-9));});
         // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
@@ -147,7 +197,7 @@ public final class SwimmerSite {
             for(int z=POOL_NORTH;z<=POOL_SOUTH;z++){
                 var at=b.offset(x,SURFACE,z);var now=l.getBlockState(at);
                 BlockState next=i<k?SwimmerBlock.of(COVER,Direction.WEST,i==k-1?2:0):rope(x)?SwimmerBlock.of(ROPE,Direction.NORTH):Blocks.WATER.defaultBlockState();
-                if(i<k&&SwimmerBlock.is(now,COVER)&&now.getValue(SwimmerBlock.STAGE)==1)continue;
+                if(i<k&&SwimmerBlock.pressed(now))continue;
                 if(!now.equals(next))l.setBlock(at,next,F);
             }
         }
