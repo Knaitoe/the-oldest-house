@@ -1934,5 +1934,7 @@
   "subtitles.the_oldest_house.bleed.last_orders": "Darts thud into a board behind a door",
   "subtitles.the_oldest_house.bleed.bike_night": "A card rattles in spokes behind a door",
   "subtitles.the_oldest_house.bleed.pell_house": "A hairbrush, slowly, behind a door",
-  "subtitles.the_oldest_house.bleed.ones_inside": "Something moves inside a wall, behind a door"
+  "subtitles.the_oldest_house.bleed.ones_inside": "Something moves inside a wall, behind a door",
+  "block.the_oldest_house.city_plane": "Aeroplane",
+  "block.the_oldest_house.city_rope": "Fixed Rope"
 }

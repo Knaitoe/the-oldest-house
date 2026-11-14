@@ -16,7 +16,8 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>The reader comes out of the House's door in the back wall of the radio hut. Its front door opens onto the camp: torn tents, an empty
  * dog line, the geology tent, a dissecting table under a tarp, an aeroplane with its fabric cut, and the mess hut, whose door is the way on.
- * North of the camp a pass climbs on cut steps between walls of rock to a crest; three nooks in its east wall are out of the wind. From
+ * North of the camp a pass climbs on cut steps between walls of rock to a crest; three nooks in its east wall are out of the wind, and a
+ * fixed rope on stakes runs up the foot of the rock at each side (0.4.579; it was fence posts, which joined the rock beside them). From
  * the crest a stair goes down into the city: a plaza of dark stone, low walls in rings, five stepped towers, and in the middle a square pit.
  * A ramp turns down its walls, one turn and a half, past twelve carved panels, to a landing, and a tunnel runs north from it to a warm
  * shore on black water under the far peaks.
@@ -35,6 +36,8 @@ public final class CitySite {
     /** The camp's flat ice, and the mess hut whose door is the way on. */
     public static final int CAMP_N=-38,CAMP_HALF=36;
     public static final BlockPos ONWARD=new BlockPos(-13,0,-28);
+    /** The aeroplane: the cell of its rudder post's foot. It points east; its wing reaches eight cells to each side of this row. */
+    public static final BlockPos PLANE=new BlockPos(20,0,-26);
     /** The pass: the cut steps up, the crest, the stair down into the city; the city from there north. */
     public static final int CREST_S=-71,CREST_N=-78,DESCENT_N=-102,BASIN_N=-182,BASIN_HALF=56,PATH=3;
     /** The pit: its middle, its rim wall (16 and 17 out), the ramp's band (12 to 15 out) and the shaft inside it. */
@@ -271,11 +274,9 @@ public final class CitySite {
         // The dissecting table under its tarp.
         for(int[] c:new int[][]{{6,-20},{10,-20},{6,-24},{10,-24}})box(l,b,c[0],0,c[1],c[0],2,c[1],Blocks.SPRUCE_FENCE.defaultBlockState());
         box(l,b,6,3,-24,10,3,-20,canvas);set(l,b,8,0,-22,fit(CityBlock.Kind.TABLE,Direction.SOUTH));
-        // The aeroplane on its skis: the fuselage along the ice, the wing across it, the tail, the propeller; the fabric opened in cuts.
-        var rnd=new Random(94095);
-        for(int x=21;x<=32;x++)for(int y=0;y<=2;y++)for(int z=-27;z<=-25;z++){boolean edge=y!=1||z!=-26;if(!edge)continue;set(l,b,x,y,z,rnd.nextInt(4)==0?fit(CityBlock.Kind.FABRIC,z<-26?Direction.NORTH:Direction.SOUTH):canvas);}
-        box(l,b,26,2,-34,27,2,-18,canvas);set(l,b,26,2,-29,fit(CityBlock.Kind.FABRIC,Direction.NORTH));set(l,b,27,2,-21,fit(CityBlock.Kind.FABRIC,Direction.SOUTH));
-        box(l,b,20,1,-26,20,4,-26,canvas);set(l,b,33,1,-26,fit(CityBlock.Kind.PROP,Direction.EAST));
+        // The aeroplane on its skis, its tail down on the ice: a part to every cell it stands in, and the propeller on its nose.
+        for(int i=0;i<CityPlaneBlock.PARTS;i++)set(l,b,PLANE.offset(CityPlaneBlock.cell(i)),CityPlaneBlock.of(i));
+        set(l,b,PLANE.offset(CityPlaneBlock.propeller()),fit(CityBlock.Kind.PROP,Direction.EAST));
         // Crates in heaps, and fuel under a lean-to.
         for(int[] c:new int[][]{{-8,-18},{-7,-18},{-8,-19},{12,-30},{13,-30},{-2,-30},{3,-24}})set(l,b,c[0],0,c[1],fit(CityBlock.Kind.CRATE,Direction.NORTH));
         set(l,b,-8,1,-18,fit(CityBlock.Kind.CRATE,Direction.NORTH));
@@ -298,11 +299,28 @@ public final class CitySite {
                 else st=z<CREST_N?mat("basalt"):snow;
                 set(l,b,x,s-1,z,st);box(l,b,x,s,z,x,s+12,z,AIR);
             }
-            // Fixed-rope stakes along both edges of the steps.
-            if(z%4==0&&!nook(z))for(int x:new int[]{-PATH,PATH})set(l,b,x,s,z,Blocks.SPRUCE_FENCE.defaultBlockState());
         }
         // The nooks out of the wind, cut into the east wall.
         for(int z:NOOKS){int s=stand(z);box(l,b,PATH+1,s,z,PATH+2,s+2,z,AIR);set(l,b,PATH+1,s-1,z,snow);set(l,b,PATH+2,s-1,z,snow);}
+        // The fixed rope, up the foot of the rock at each side of the steps.
+        for(int z=CAMP_N;z>=DESCENT_N;z--)for(int side=-1;side<=1;side+=2){var rope=rope(z,side);if(rope!=null)set(l,b,side*PATH,stand(z),z,rope);}
+    }
+    /** Whether the fixed rope on one side of the pass (-1 west, 1 east) stands in a row: from the camp's edge to the stair's foot, but not across a nook's mouth. */
+    static boolean roped(int z,int side){return z<=CAMP_N&&z>=DESCENT_N&&!(side>0&&nook(z));}
+    /**
+     * The piece of the fixed rope in a row on one side of the pass, or null where it has none. It looks north on the west side and south on
+     * the east, so that the rock is on its left. It climbs with the row's steps. A stake stands at each end of a run, and at every fourth
+     * row between, which on the way up is each landing.
+     */
+    public static BlockState rope(int z,int side){
+        if(!roped(z,side))return null;
+        boolean north=roped(z-1,side),south=roped(z+1,side);int s=stand(z);
+        // Toward the north: the row's steps go up, or down, or it is level.
+        int climb=s>stand(z+1)?1:s>stand(z-1)?-1:0;
+        boolean west=side<0,ahead=west?north:south,behind=west?south:north;
+        var stake=!ahead?CityRopeBlock.Stake.BEHIND:!behind?CityRopeBlock.Stake.AHEAD:Math.floorMod(z,4)==3?CityRopeBlock.Stake.BOTH:CityRopeBlock.Stake.NONE;
+        if(!west)climb=-climb;
+        return CityRopeBlock.of(west?Direction.NORTH:Direction.SOUTH,climb>0?CityRopeBlock.Slope.RISE:climb<0?CityRopeBlock.Slope.FALL:CityRopeBlock.Slope.FLAT,stake);
     }
 
     // ------------------------------------------------------------------------------------------------ the city

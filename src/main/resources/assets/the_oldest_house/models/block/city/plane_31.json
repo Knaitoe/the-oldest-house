@@ -1,0 +1,60 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "dope_under": "the_oldest_house:block/city/plane_dope_under",
+    "particle": "the_oldest_house:block/city/plane_dope_under"
+  },
+  "elements": [
+    {
+      "from": [
+        14,
+        14,
+        0.75
+      ],
+      "to": [
+        16,
+        16,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_under",
+          "uv": [
+            14,
+            0,
+            16,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#dope_under",
+          "uv": [
+            14,
+            0,
+            16,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#dope_under",
+          "uv": [
+            0.75,
+            0,
+            1.25,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#dope_under",
+          "uv": [
+            14,
+            0.75,
+            16,
+            1.25
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

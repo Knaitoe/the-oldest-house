@@ -17,8 +17,9 @@ import net.minecraft.world.phys.shapes.*;
  * <li>LAMP: a hurricane lamp hung from a hook; stage 1 lit. In the tunnel they go out as what fills it passes.</li>
  * <li>CRATE: a supply crate, stacked for tables and walls. STOVE: the hut's oil stove.</li>
  * <li>HARNESS: an empty dog harness on the snow, its buckles still done up. CORES: rock cores in their labelled box.</li>
- * <li>TABLE: the dissecting table under the tarp, its straps cut. FABRIC: the aeroplane's doped fabric, opened in long cuts. PROP: the
- * aeroplane's wooden propeller.</li>
+ * <li>TABLE: the dissecting table under the tarp, its straps cut. FABRIC: a tent's canvas, opened in long straight cuts. PROP: the
+ * aeroplane's wooden propeller on its boss, in the cell past the nose (0.4.579: two blades, drawn facing north with the boss running back
+ * to the south edge of its cell, so FACING is the way the aeroplane points).</li>
  * <li>PRINTS: prints in the grit of the tunnel floor, three-toed, of birds nobody sees.</li>
  * </ul>
  */
@@ -50,11 +51,11 @@ public final class CityBlock extends HorizontalDirectionalBlock {
             case HARNESS->Block.box(2,0,2,14,2,14);
             case CORES->Block.box(1,0,3,15,6,13);
             case TABLE->Block.box(0,0,0,16,12,16);
-            case PROP->MarshBlock.turned(f,0,0,6,16,16,10);
+            case PROP->MarshBlock.turned(f,1,0,10.5,15,16,16);
             case PRINTS->Block.box(0,0,0,16,1,16);
         };
     }
-    /** Crates, the stove, the table and the aeroplane's fabric stand in the way; the rest is reached past. */
+    /** Crates, the stove, the table and a tent's cut canvas stand in the way; the rest is reached past. */
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case CRATE,FABRIC->Shapes.block();

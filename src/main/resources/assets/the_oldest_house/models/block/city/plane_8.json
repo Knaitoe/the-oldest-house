@@ -1,0 +1,179 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "dope": "the_oldest_house:block/city/plane_dope",
+    "dope_tip": "the_oldest_house:block/city/plane_dope_tip",
+    "particle": "the_oldest_house:block/city/plane_dope"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        7.25
+      ],
+      "to": [
+        6,
+        8,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            0,
+            8,
+            6,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dope_tip",
+          "uv": [
+            0,
+            8,
+            6,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dope_tip",
+          "uv": [
+            7.25,
+            8,
+            8.75,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            7.25,
+            8,
+            8.75,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            0,
+            7.25,
+            6,
+            8.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        0,
+        7.25
+      ],
+      "to": [
+        12,
+        11,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            6,
+            5,
+            12,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dope_tip",
+          "uv": [
+            6,
+            5,
+            12,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#dope_tip",
+          "uv": [
+            7.25,
+            5,
+            8.75,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            7.25,
+            5,
+            8.75,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            6,
+            7.25,
+            12,
+            8.75
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        0,
+        7.25
+      ],
+      "to": [
+        16,
+        11,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope",
+          "uv": [
+            12,
+            5,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#dope",
+          "uv": [
+            12,
+            5,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#dope",
+          "uv": [
+            7.25,
+            5,
+            8.75,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#dope",
+          "uv": [
+            12,
+            7.25,
+            16,
+            8.75
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

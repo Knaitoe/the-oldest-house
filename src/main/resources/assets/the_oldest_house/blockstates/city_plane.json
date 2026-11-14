@@ -1,0 +1,352 @@
+{
+  "variants": {
+    "part=0": {
+      "model": "the_oldest_house:block/city/plane_0"
+    },
+    "part=1": {
+      "model": "the_oldest_house:block/city/plane_1"
+    },
+    "part=2": {
+      "model": "the_oldest_house:block/city/plane_2"
+    },
+    "part=3": {
+      "model": "the_oldest_house:block/city/plane_3"
+    },
+    "part=4": {
+      "model": "the_oldest_house:block/city/plane_4"
+    },
+    "part=5": {
+      "model": "the_oldest_house:block/city/plane_5"
+    },
+    "part=6": {
+      "model": "the_oldest_house:block/city/plane_6"
+    },
+    "part=7": {
+      "model": "the_oldest_house:block/city/plane_7"
+    },
+    "part=8": {
+      "model": "the_oldest_house:block/city/plane_8"
+    },
+    "part=9": {
+      "model": "the_oldest_house:block/city/plane_9"
+    },
+    "part=10": {
+      "model": "the_oldest_house:block/city/plane_10"
+    },
+    "part=11": {
+      "model": "the_oldest_house:block/city/plane_11"
+    },
+    "part=12": {
+      "model": "the_oldest_house:block/city/plane_12"
+    },
+    "part=13": {
+      "model": "the_oldest_house:block/city/plane_13"
+    },
+    "part=14": {
+      "model": "the_oldest_house:block/city/plane_14"
+    },
+    "part=15": {
+      "model": "the_oldest_house:block/city/plane_15"
+    },
+    "part=16": {
+      "model": "the_oldest_house:block/city/plane_16"
+    },
+    "part=17": {
+      "model": "the_oldest_house:block/city/plane_17"
+    },
+    "part=18": {
+      "model": "the_oldest_house:block/city/plane_18"
+    },
+    "part=19": {
+      "model": "the_oldest_house:block/city/plane_19"
+    },
+    "part=20": {
+      "model": "the_oldest_house:block/city/plane_20"
+    },
+    "part=21": {
+      "model": "the_oldest_house:block/city/plane_21"
+    },
+    "part=22": {
+      "model": "the_oldest_house:block/city/plane_22"
+    },
+    "part=23": {
+      "model": "the_oldest_house:block/city/plane_23"
+    },
+    "part=24": {
+      "model": "the_oldest_house:block/city/plane_24"
+    },
+    "part=25": {
+      "model": "the_oldest_house:block/city/plane_25"
+    },
+    "part=26": {
+      "model": "the_oldest_house:block/city/plane_26"
+    },
+    "part=27": {
+      "model": "the_oldest_house:block/city/plane_27"
+    },
+    "part=28": {
+      "model": "the_oldest_house:block/city/plane_28"
+    },
+    "part=29": {
+      "model": "the_oldest_house:block/city/plane_29"
+    },
+    "part=30": {
+      "model": "the_oldest_house:block/city/plane_30"
+    },
+    "part=31": {
+      "model": "the_oldest_house:block/city/plane_31"
+    },
+    "part=32": {
+      "model": "the_oldest_house:block/city/plane_32"
+    },
+    "part=33": {
+      "model": "the_oldest_house:block/city/plane_33"
+    },
+    "part=34": {
+      "model": "the_oldest_house:block/city/plane_34"
+    },
+    "part=35": {
+      "model": "the_oldest_house:block/city/plane_35"
+    },
+    "part=36": {
+      "model": "the_oldest_house:block/city/plane_36"
+    },
+    "part=37": {
+      "model": "the_oldest_house:block/city/plane_37"
+    },
+    "part=38": {
+      "model": "the_oldest_house:block/city/plane_38"
+    },
+    "part=39": {
+      "model": "the_oldest_house:block/city/plane_39"
+    },
+    "part=40": {
+      "model": "the_oldest_house:block/city/plane_40"
+    },
+    "part=41": {
+      "model": "the_oldest_house:block/city/plane_41"
+    },
+    "part=42": {
+      "model": "the_oldest_house:block/city/plane_42"
+    },
+    "part=43": {
+      "model": "the_oldest_house:block/city/plane_43"
+    },
+    "part=44": {
+      "model": "the_oldest_house:block/city/plane_44"
+    },
+    "part=45": {
+      "model": "the_oldest_house:block/city/plane_45"
+    },
+    "part=46": {
+      "model": "the_oldest_house:block/city/plane_46"
+    },
+    "part=47": {
+      "model": "the_oldest_house:block/city/plane_47"
+    },
+    "part=48": {
+      "model": "the_oldest_house:block/city/plane_48"
+    },
+    "part=49": {
+      "model": "the_oldest_house:block/city/plane_49"
+    },
+    "part=50": {
+      "model": "the_oldest_house:block/city/plane_50"
+    },
+    "part=51": {
+      "model": "the_oldest_house:block/city/plane_51"
+    },
+    "part=52": {
+      "model": "the_oldest_house:block/city/plane_52"
+    },
+    "part=53": {
+      "model": "the_oldest_house:block/city/plane_53"
+    },
+    "part=54": {
+      "model": "the_oldest_house:block/city/plane_54"
+    },
+    "part=55": {
+      "model": "the_oldest_house:block/city/plane_55"
+    },
+    "part=56": {
+      "model": "the_oldest_house:block/city/plane_56"
+    },
+    "part=57": {
+      "model": "the_oldest_house:block/city/plane_57"
+    },
+    "part=58": {
+      "model": "the_oldest_house:block/city/plane_58"
+    },
+    "part=59": {
+      "model": "the_oldest_house:block/city/plane_59"
+    },
+    "part=60": {
+      "model": "the_oldest_house:block/city/plane_60"
+    },
+    "part=61": {
+      "model": "the_oldest_house:block/city/plane_61"
+    },
+    "part=62": {
+      "model": "the_oldest_house:block/city/plane_62"
+    },
+    "part=63": {
+      "model": "the_oldest_house:block/city/plane_63"
+    },
+    "part=64": {
+      "model": "the_oldest_house:block/city/plane_64"
+    },
+    "part=65": {
+      "model": "the_oldest_house:block/city/plane_65"
+    },
+    "part=66": {
+      "model": "the_oldest_house:block/city/plane_66"
+    },
+    "part=67": {
+      "model": "the_oldest_house:block/city/plane_67"
+    },
+    "part=68": {
+      "model": "the_oldest_house:block/city/plane_68"
+    },
+    "part=69": {
+      "model": "the_oldest_house:block/city/plane_69"
+    },
+    "part=70": {
+      "model": "the_oldest_house:block/city/plane_70"
+    },
+    "part=71": {
+      "model": "the_oldest_house:block/city/plane_71"
+    },
+    "part=72": {
+      "model": "the_oldest_house:block/city/plane_72"
+    },
+    "part=73": {
+      "model": "the_oldest_house:block/city/plane_73"
+    },
+    "part=74": {
+      "model": "the_oldest_house:block/city/plane_74"
+    },
+    "part=75": {
+      "model": "the_oldest_house:block/city/plane_75"
+    },
+    "part=76": {
+      "model": "the_oldest_house:block/city/plane_76"
+    },
+    "part=77": {
+      "model": "the_oldest_house:block/city/plane_77"
+    },
+    "part=78": {
+      "model": "the_oldest_house:block/city/plane_78"
+    },
+    "part=79": {
+      "model": "the_oldest_house:block/city/plane_79"
+    },
+    "part=80": {
+      "model": "the_oldest_house:block/city/plane_80"
+    },
+    "part=81": {
+      "model": "the_oldest_house:block/city/plane_81"
+    },
+    "part=82": {
+      "model": "the_oldest_house:block/city/plane_82"
+    },
+    "part=83": {
+      "model": "the_oldest_house:block/city/plane_83"
+    },
+    "part=84": {
+      "model": "the_oldest_house:block/city/plane_84"
+    },
+    "part=85": {
+      "model": "the_oldest_house:block/city/plane_85"
+    },
+    "part=86": {
+      "model": "the_oldest_house:block/city/plane_86"
+    },
+    "part=87": {
+      "model": "the_oldest_house:block/city/plane_87"
+    },
+    "part=88": {
+      "model": "the_oldest_house:block/city/plane_88"
+    },
+    "part=89": {
+      "model": "the_oldest_house:block/city/plane_89"
+    },
+    "part=90": {
+      "model": "the_oldest_house:block/city/plane_90"
+    },
+    "part=91": {
+      "model": "the_oldest_house:block/city/plane_91"
+    },
+    "part=92": {
+      "model": "the_oldest_house:block/city/plane_92"
+    },
+    "part=93": {
+      "model": "the_oldest_house:block/city/plane_93"
+    },
+    "part=94": {
+      "model": "the_oldest_house:block/city/plane_94"
+    },
+    "part=95": {
+      "model": "the_oldest_house:block/city/plane_95"
+    },
+    "part=96": {
+      "model": "the_oldest_house:block/city/plane_96"
+    },
+    "part=97": {
+      "model": "the_oldest_house:block/city/plane_97"
+    },
+    "part=98": {
+      "model": "the_oldest_house:block/city/plane_98"
+    },
+    "part=99": {
+      "model": "the_oldest_house:block/city/plane_99"
+    },
+    "part=100": {
+      "model": "the_oldest_house:block/city/plane_100"
+    },
+    "part=101": {
+      "model": "the_oldest_house:block/city/plane_101"
+    },
+    "part=102": {
+      "model": "the_oldest_house:block/city/plane_102"
+    },
+    "part=103": {
+      "model": "the_oldest_house:block/city/plane_103"
+    },
+    "part=104": {
+      "model": "the_oldest_house:block/city/plane_104"
+    },
+    "part=105": {
+      "model": "the_oldest_house:block/city/plane_105"
+    },
+    "part=106": {
+      "model": "the_oldest_house:block/city/plane_106"
+    },
+    "part=107": {
+      "model": "the_oldest_house:block/city/plane_107"
+    },
+    "part=108": {
+      "model": "the_oldest_house:block/city/plane_108"
+    },
+    "part=109": {
+      "model": "the_oldest_house:block/city/plane_109"
+    },
+    "part=110": {
+      "model": "the_oldest_house:block/city/plane_110"
+    },
+    "part=111": {
+      "model": "the_oldest_house:block/city/plane_111"
+    },
+    "part=112": {
+      "model": "the_oldest_house:block/city/plane_112"
+    },
+    "part=113": {
+      "model": "the_oldest_house:block/city/plane_113"
+    },
+    "part=114": {
+      "model": "the_oldest_house:block/city/plane_114"
+    },
+    "part=115": {
+      "model": "the_oldest_house:block/city/plane_115"
+    }
+  }
+}

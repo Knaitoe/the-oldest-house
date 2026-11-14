@@ -1,0 +1,364 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "dope_tip": "the_oldest_house:block/city/plane_dope_tip",
+    "particle": "the_oldest_house:block/city/plane_dope"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        6.5,
+        14
+      ],
+      "to": [
+        8,
+        8.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            4,
+            7.5,
+            8,
+            9.5
+          ]
+        },
+        "east": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            7.5,
+            16,
+            9.5
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            7.5,
+            16,
+            9.5
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            4,
+            14,
+            8,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dope_tip",
+          "uv": [
+            4,
+            14,
+            8,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        6.5,
+        14
+      ],
+      "to": [
+        14,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            6,
+            14,
+            9.5
+          ]
+        },
+        "east": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            6,
+            16,
+            9.5
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            6,
+            16,
+            9.5
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            14,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            14,
+            14,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        7,
+        14
+      ],
+      "to": [
+        16,
+        12,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            4,
+            16,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            4,
+            16,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            14,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            14,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        7,
+        10
+      ],
+      "to": [
+        14,
+        9.5,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            6.5,
+            14,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            6.5,
+            14,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#dope_tip",
+          "uv": [
+            10,
+            6.5,
+            14,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            10,
+            6.5,
+            14,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            10,
+            14,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            10,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        7.5,
+        10
+      ],
+      "to": [
+        16,
+        11.5,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            4.5,
+            16,
+            8.5
+          ]
+        },
+        "south": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            4.5,
+            16,
+            8.5
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            10,
+            4.5,
+            14,
+            8.5
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            10,
+            16,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            10,
+            16,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        8,
+        8
+      ],
+      "to": [
+        16,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            5,
+            16,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            5,
+            16,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#dope_tip",
+          "uv": [
+            8,
+            5,
+            10,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#dope_tip",
+          "uv": [
+            14,
+            8,
+            16,
+            10
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

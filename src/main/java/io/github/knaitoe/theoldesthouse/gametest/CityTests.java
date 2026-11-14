@@ -4,9 +4,11 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.*;
@@ -88,6 +90,84 @@ public final class CityTests {
             })
             .thenSucceed();
     }
+
+    /**
+     * 0.4.579. The aeroplane stands whole: every part of it in the cell the art tool's table gives it and no part twice, thirteen cells
+     * from tail to nose and seventeen across its wing; the propeller on its nose; nothing left of the canvas box it was. A body walks
+     * under the wing and is stopped by it from above. A hand on its fabric is told the fabric is cut, a hand on a ski is told nothing,
+     * and the propeller says what it said. The fixed rope: a piece in every row of the pass at each side, the rock on its left, unbroken
+     * from row to row and the same height over the lower ground at every edge; a stake at each end of a run and at least every fourth
+     * row; none across a nook's mouth; it stops nobody; and no fence post is left on the steps.
+     */
+    @GameTest(template="empty",batch="city_camp",timeoutTicks=3000)
+    public static void theAeroplaneStandsWholeAndAFixedRopeRunsUpThePass(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp and the pass are resident"))
+            .thenExecute(()->{
+                var at=b.offset(CitySite.PLANE);
+                int fabric=0,stopping=0,x0=99,x1=-99,z0=99,z1=-99,y1=-99;var cells=new java.util.HashSet<BlockPos>();
+                for(int i=0;i<CityPlaneBlock.PARTS;i++){
+                    var cell=CityPlaneBlock.cell(i);var s=l.getBlockState(at.offset(cell));
+                    h.assertTrue(CityPlaneBlock.is(s)&&s.getValue(CityPlaneBlock.PART)==i,"part "+i+" of the aeroplane stands in its cell "+cell+": "+s);
+                    h.assertTrue(cells.add(cell),"no two parts in one cell: "+cell);
+                    h.assertTrue(!CityPlaneBlock.found(i).isEmpty()&&s.getShape(l,at.offset(cell)).equals(CityPlaneBlock.found(i))&&s.getCollisionShape(l,at.offset(cell)).equals(CityPlaneBlock.stops(i)),"a hand finds part "+i+", and it has its own shape");
+                    if(CityPlaneBlock.fabric(i))fabric++;if(!CityPlaneBlock.stops(i).isEmpty())stopping++;
+                    x0=Math.min(x0,cell.getX());x1=Math.max(x1,cell.getX());z0=Math.min(z0,cell.getZ());z1=Math.max(z1,cell.getZ());y1=Math.max(y1,cell.getY());
+                    h.assertTrue(cell.getY()>=0,"no part under the ice: "+cell);
+                }
+                h.assertTrue(x0==0&&x1==12&&z0==-8&&z1==8&&y1==2,"thirteen cells from tail to nose, seventeen across the wing, three high: "+x0+".."+x1+" "+z0+".."+z1+" "+y1);
+                h.assertTrue(fabric>60&&fabric<CityPlaneBlock.PARTS&&stopping>80,"most of it is fabric and most of it stops a body: "+fabric+" "+stopping+" of "+CityPlaneBlock.PARTS);
+                int parts=0,cloth=0;var canvas=CityRegistry.material("canvas");
+                for(int x=-CitySite.CAMP_HALF;x<=CitySite.CAMP_HALF;x++)for(int y=0;y<=6;y++)for(int z=CitySite.CAMP_N;z<=0;z++){
+                    var s=l.getBlockState(b.offset(x,y,z));if(CityPlaneBlock.is(s))parts++;
+                    if(x>=18&&(s.is(canvas)||CityBlock.is(s,CityBlock.Kind.FABRIC)))cloth++;
+                }
+                h.assertTrue(parts==CityPlaneBlock.PARTS&&cloth==0,"the aeroplane's parts and nothing of the canvas box it was: "+parts+" parts, "+cloth+" of canvas");
+                var nose=at.offset(CityPlaneBlock.propeller());var prop=l.getBlockState(nose);
+                h.assertTrue(CityBlock.is(prop,CityBlock.Kind.PROP)&&prop.getValue(CityBlock.FACING)==Direction.EAST&&CityPlaneBlock.propeller().equals(new BlockPos(13,1,0))&&CityPlaneBlock.is(l.getBlockState(nose.west())),"the propeller on the nose, facing the way the aeroplane points: "+prop);
+                // Under the wing, out past the struts: clear for a body from the ice up, and the wing over it stops one.
+                var under=at.offset(8,0,5);var wing=l.getBlockState(under.above(2));
+                h.assertTrue(l.noCollision(null,new AABB(under.getX()+.2,under.getY()+.01,under.getZ()+.2,under.getX()+.8,under.getY()+1.8,under.getZ()+.8))&&CityPlaneBlock.is(wing)&&!wing.getCollisionShape(l,under.above(2)).isEmpty()&&wing.getCollisionShape(l,under.above(2)).min(Direction.Axis.Y)>.25,"a body walks under the wing: "+wing);
+                // What a hand is told.
+                var me=f.player("city_flyer",P);int cut=-1,ski=-1;
+                for(int i=0;i<CityPlaneBlock.PARTS;i++){if(cut<0&&CityPlaneBlock.fabric(i)&&CityPlaneBlock.cell(i).getY()==0)cut=i;if(ski<0&&!CityPlaneBlock.fabric(i)&&!CityPlaneBlock.stops(i).isEmpty())ski=i;}
+                h.assertTrue(cut>=0&&ski>=0,"a fabric part by the ice and a part that is not fabric: "+cut+" "+ski);
+                NativeTestPlayers.messages(me);f.click(me,P,CitySite.PLANE.offset(CityPlaneBlock.cell(cut)));var told=NativeTestPlayers.messages(me);
+                h.assertTrue(told.stream().anyMatch(m->m.equals("The fabric has been opened in long straight cuts.")),"a hand on the aeroplane's fabric: "+told);
+                f.click(me,P,CitySite.PLANE.offset(CityPlaneBlock.cell(ski)));told=NativeTestPlayers.messages(me);
+                h.assertTrue(told.isEmpty(),"a hand on a ski is told nothing: "+told);
+                f.click(me,P,CitySite.PLANE.offset(CityPlaneBlock.propeller()));told=NativeTestPlayers.messages(me);
+                h.assertTrue(told.stream().anyMatch(m->m.equals("The propeller is whole. Nothing else is.")),"a hand on the propeller: "+told);
+                // The fixed rope.
+                for(int side=-1;side<=1;side+=2){
+                    int last=Integer.MIN_VALUE,pieces=0;
+                    for(int z=CitySite.CAMP_N;z>=CitySite.DESCENT_N;z--){
+                        int x=side*CitySite.PATH,s=CitySite.stand(z);var pos=b.offset(x,s,z);var st=l.getBlockState(pos);
+                        if(roped(z,side)){
+                            h.assertTrue(CityRopeBlock.is(st)&&st.getValue(CityRopeBlock.FACING)==(side<0?Direction.NORTH:Direction.SOUTH),"the fixed rope at row "+z+" on side "+side+", the rock on its left: "+st);
+                            h.assertTrue(st.getCollisionShape(l,pos).isEmpty()&&st.getShape(l,pos).isEmpty()==(st.getValue(CityRopeBlock.STAKE)==CityRopeBlock.Stake.NONE),"the rope stops nobody, and a hand finds only a stake: "+z);
+                            for(var way:new Direction[]{Direction.NORTH,Direction.SOUTH}){
+                                int nz=z+way.getStepZ(),here=CityRopeBlock.high(st,way);
+                                if(!roped(nz,side)){h.assertTrue(here<0&&st.getValue(CityRopeBlock.STAKE)!=CityRopeBlock.Stake.NONE,"the rope ends at a stake at row "+z+" on side "+side+": "+st);continue;}
+                                int ns=CitySite.stand(nz),there=CityRopeBlock.high(l.getBlockState(b.offset(x,ns,nz)),way.getOpposite());
+                                h.assertTrue(here>=0&&16*s+here==16*ns+there&&16*s+here==16*Math.min(s,ns)+CityRopeBlock.HIGH,"the rope runs on unbroken from row "+z+" to "+nz+" on side "+side+", a hand's height over the lower ground: "+here+" "+there);
+                            }
+                            boolean staked=st.getValue(CityRopeBlock.STAKE)!=CityRopeBlock.Stake.NONE;
+                            if(staked){h.assertTrue(last==Integer.MIN_VALUE||last-z<=4,"a stake at least every fourth row: "+last+" to "+z+" on side "+side);last=z;}
+                            h.assertTrue(staked||Math.floorMod(z,4)!=3,"a stake on each landing: row "+z);
+                            pieces++;
+                        }else h.assertTrue(st.isAir()&&side>0&&l.getBlockState(b.offset(CitySite.PATH+1,s,z)).isAir(),"no rope across a nook's mouth at row "+z+": "+st);
+                        for(int px=-CitySite.PATH;px<=CitySite.PATH;px++)for(int y=s;y<=s+2;y++)h.assertTrue(!(l.getBlockState(b.offset(px,y,z)).getBlock() instanceof FenceBlock),"no fence post left on the steps at "+px+","+y+","+z);
+                    }
+                    h.assertTrue(last==CitySite.DESCENT_N&&pieces==CitySite.CAMP_N-CitySite.DESCENT_N+1-(side>0?CitySite.NOOKS.length:0),"the rope from the camp's edge to the stair's foot on side "+side+": "+pieces+" pieces, the last stake at "+last);
+                }
+                BlackCity.resetNow(l,b);
+            })
+            .thenSucceed();
+    }
+    /** Whether a row of the pass has the fixed rope on one side: from the camp's edge to the stair's foot, but not across a nook's mouth. */
+    private static boolean roped(int z,int side){return z<=CitySite.CAMP_N&&z>=CitySite.DESCENT_N&&!(side>0&&java.util.Arrays.stream(CitySite.NOOKS).anyMatch(n->n==z));}
 
     @GameTest(template="empty",batch="city_tunnel",timeoutTicks=5000)
     public static void theTunnelOneReaderOutrunsItAndOneStaysAndComesToByTheHut(GameTestHelper h){
