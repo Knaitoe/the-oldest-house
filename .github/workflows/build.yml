@@ -329,9 +329,12 @@ jobs:
               for material in ('harrigan_casket_wood','harrigan_casket_brass','harrigan_casket_lining','harrigan_plaque_front','harrigan_plaque_back'):
                   assert z.read(f'assets/the_oldest_house/textures/block/{material}.png').startswith(b'\x89PNG')
               assert len(json.loads(z.read('assets/the_oldest_house/models/block/harrigan_plaque.json'))['elements']) >= 6
-              for material in ('wall','dado','floor','ceiling','enamel','steel','sheet','blanket','curtain','glass','light','call','controls','door_lower','door_upper',
-                               'column','light_off','bed_unit','monitor','night_light','trolley','bag','rubber','counter','worktop','ceramic','cloth','cloth_top','cloth_hem'):
-                  assert z.read(f'assets/the_oldest_house/textures/block/night_ward/{material}.png').startswith(b'\x89PNG')
+              # Run 1627: this was a hand-kept list, and 0.4.590 replaced the ward's three cloth pictures with its curtains and the
+              # chart's station without touching it. Every picture the ward has in the source is in the package, whatever they are.
+              ward = sorted(p.name for p in pathlib.Path('src/main/resources/assets/the_oldest_house/textures/block/night_ward').glob('*.png'))
+              assert len(ward) >= 39 and {'wall.png','floor.png','curtain_upper.png','curtain_bunch_lower.png','tube_glass.png'} <= set(ward), ward
+              for material in ward:
+                  assert z.read(f'assets/the_oldest_house/textures/block/night_ward/{material}').startswith(b'\x89PNG'), material
               assert 'io/github/knaitoe/theoldesthouse/labyrinth/ExpeditionRhythm.class' in z.namelist()
               hall = json.loads(z.read('assets/the_oldest_house/blockstates/hall_change.json'))['variants']
               assert len(hall) == 24

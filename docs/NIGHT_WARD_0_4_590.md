@@ -112,6 +112,12 @@ Not checked:
   joins, and the hand's shape follows the same rule.
 - **The client proof was stopped by my own clean-up.** It reads a file the server writes first; clearing the proof's
   folder removed it. Nothing in the game.
+- **On CI (run 1627): the build's package check asked for the cloth pictures.** The check that the playable
+  package holds the ward's pictures was a list kept by hand, and it still named the three cloth pictures this
+  release removed. The build job stopped there, two minutes in, so its half of the game's cases and the client
+  proofs did not run on CI for 0.4.587 to 0.4.591; every other job passed. Nothing in the game was wrong. The
+  check now asks for every picture the ward has in the source, whatever they are. I ran the whole package check
+  here against a built package before pushing again, which I had not done for this release.
 
 ## Not covered
 
