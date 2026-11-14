@@ -1753,7 +1753,6 @@
   "block.the_oldest_house.pell_deck": "Deck Boards",
   "block.the_oldest_house.pell_mulch": "Bark Mulch",
   "block.the_oldest_house.pell_iron": "Corrugated Iron",
-  "block.the_oldest_house.pell_plaster": "Painted Plaster",
   "block.the_oldest_house.pell_ceiling": "Ceiling",
   "block.the_oldest_house.pell_carpet": "Carpet",
   "block.the_oldest_house.pell_carpet_worn": "Carpet, Worn",
@@ -1838,5 +1837,19 @@
   "subtitles.the_oldest_house.pell.drip": "Water dripping",
   "item.the_oldest_house.pell_plates": "Plates",
   "item.the_oldest_house.pell_bowl": "Dog's Bowl",
-  "item.the_oldest_house.pell_bowl_water": "Dog's Bowl"
+  "item.the_oldest_house.pell_bowl_water": "Dog's Bowl",
+  "block.the_oldest_house.pell_carpet_lounge": "Carpet, Living Room",
+  "block.the_oldest_house.pell_carpet_nessa": "Carpet, Nessa's Room",
+  "block.the_oldest_house.pell_carpet_june": "Carpet, June's Room",
+  "block.the_oldest_house.pell_boards": "Floorboards",
+  "block.the_oldest_house.pell_tile_floor": "Bathroom Floor Tiles",
+  "block.the_oldest_house.pell_laundry_floor": "Laundry Floor",
+  "block.the_oldest_house.pell_sill_nessa": "Doorway, Nessa's Room",
+  "block.the_oldest_house.pell_sill_callum": "Doorway, Callum's Room",
+  "block.the_oldest_house.pell_sill_bath": "Doorway, Bathroom",
+  "block.the_oldest_house.pell_sill_june": "Doorway, June's Room",
+  "block.the_oldest_house.pell_sill_kitchen": "Doorway, Kitchen",
+  "block.the_oldest_house.pell_sill_living": "Doorway, Living Room",
+  "block.the_oldest_house.pell_sill_laundry": "Doorway, Laundry",
+  "block.the_oldest_house.pell_wall": "House Wall"
 }

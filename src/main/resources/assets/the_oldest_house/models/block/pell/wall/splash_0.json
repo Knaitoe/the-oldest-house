@@ -1,0 +1,27 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "f": "the_oldest_house:block/pell/wall/splash_0",
+    "particle": "the_oldest_house:block/pell/wall/splash_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "cullface": "north"
+        }
+      }
+    }
+  ]
+}

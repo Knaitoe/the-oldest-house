@@ -24,18 +24,33 @@ public final class PellRegistry {
      * The brick veneer, its lowest course (weep holes, salt bloom) and the newer brick of a window bricked up; the roof's tiles and the
      * eaves' board; June's lawn and the street's; concrete, the path's slab with a hand pressed into it and the drive's stain, the road,
      * the curb; the patio's pavers; the pool's coping, tiles and waterline band (0.4.533: with one tile missing and one that does not
-     * match, and the deep end's drain, with the goggles under it); deck boards; bark mulch; the shed's iron; plaster;
+     * match, and the deep end's drain, with the goggles under it); deck boards; bark mulch; the shed's iron;
      * the ceiling, and Nessa's with its stars; the hall's carpet and the path worn in it; lino, worn and burnt; the garage's slab,
-     * plain and stained.
+     * plain and stained. 0.4.573, a floor to each room (docs/PELL_HOUSE_NOTES_0_4_573.md): the living room's carpet, Nessa's and
+     * June's; the boards of Callum's room, its carpet taken up; the bathroom's tiles; the laundry's painted concrete; and the floor
+     * in each inside doorway, the hall's carpet to the door's line and the room's floor from it, a metal bar across the join. The
+     * plaster every wall was made of has gone: the walls are PellWall.
      */
     public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("brick","brick_low","brick_new","roof","fascia","lawn","lawn_dry","concrete","concrete_print",
-        "concrete_oil","asphalt","curb","paver","coping","pool_tile","pool_band","pool_band_missing","pool_band_odd","pool_drain","deck","mulch","iron","plaster","ceiling","ceiling_stars","carpet","carpet_worn","lino",
-        "lino_worn","lino_burn","slab","slab_oil");
-    private static Block like(String name){return switch(name){case "lawn","lawn_dry","mulch"->Blocks.GRASS_BLOCK;case "deck","fascia"->Blocks.OAK_PLANKS;case "carpet","carpet_worn"->Blocks.WHITE_WOOL;case "iron"->Blocks.IRON_BLOCK;default->Blocks.STONE;};}
+        "concrete_oil","asphalt","curb","paver","coping","pool_tile","pool_band","pool_band_missing","pool_band_odd","pool_drain","deck","mulch","iron","ceiling","ceiling_stars","carpet","carpet_worn","lino",
+        "lino_worn","lino_burn","slab","slab_oil","carpet_lounge","carpet_nessa","carpet_june","boards","tile_floor","laundry_floor",
+        "sill_nessa","sill_callum","sill_bath","sill_june","sill_kitchen","sill_living","sill_laundry");
+    private static Block like(String name){
+        return switch(name){
+            case "lawn","lawn_dry","mulch"->Blocks.GRASS_BLOCK;
+            case "deck","fascia","boards"->Blocks.OAK_PLANKS;
+            case "carpet","carpet_worn","carpet_lounge","carpet_nessa","carpet_june","sill_nessa","sill_callum","sill_june","sill_living"->Blocks.WHITE_WOOL;
+            case "iron"->Blocks.IRON_BLOCK;
+            default->Blocks.STONE;
+        };
+    }
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("pell_"+name,fixed(like(name))));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellBlock>> FITTING_TYPE=CODECS.register("pell_fitting",()->PellBlock.CODEC);
     public static final DeferredBlock<PellBlock> FITTING=BLOCKS.registerBlock("pell_fitting",PellBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion());
+    /** 0.4.573: the house's walls, a finish to each face (PellWall), drawn by tools/draw_pell_house.py. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellWall>> WALL_TYPE=CODECS.register("pell_wall",()->PellWall.CODEC);
+    public static final DeferredBlock<PellWall> WALL=BLOCKS.registerBlock("pell_wall",PellWall::new,fixed(Blocks.STONE));
     /** 0.4.522: what is in the rooms (PellThing), drawn by tools/draw_pell_things.py. The bare bulb and the television give light. */
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PellThing>> THING_TYPE=CODECS.register("pell_thing",()->PellThing.CODEC);
     public static final DeferredBlock<PellThing> THING=BLOCKS.registerBlock("pell_thing",PellThing::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(PellThing::light));

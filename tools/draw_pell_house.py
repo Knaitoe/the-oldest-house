@@ -4,9 +4,11 @@ Draws, in native Minecraft pixels from fixed seeds, the street's and the house's
 block, its models facing north and turned by its facing. This slice (the street and the lot): the brick veneer, its lowest course
 with weep holes and salt bloom, and the newer brick of the bricked-up window; the roof's tiles and the eaves' board; a watered lawn
 and a lawn in a watering ban; concrete, the road, the curb, the patio's pavers, the pool's coping, tiles and waterline band, deck
-boards, bark mulch; the shed's iron; plaster, ceiling, carpet and its worn path, lino, the garage's slab and its oil stain; and the
+boards, bark mulch; the shed's iron; ceiling, carpet and its worn path, lino, the garage's slab and its oil stain; and the
 paling fence, the pool fence and its child gate, the side gate, the house's doors, the security screen door, the garage's walk door
 and roller door, the shed's door, the windows (clear, blinds down, painted over), the glass sliding door, and the pool's cover.
+0.4.573 (docs/PELL_HOUSE_NOTES_0_4_573.md): a finish for each room's walls, drawn floor to ceiling in three cells for the pell_wall
+block (PellWall), a floor for each room, and the bar in each inside doorway.
 Writes the models and block states and the blocks' names. --check verifies everything.
 """
 from pathlib import Path
@@ -449,18 +451,6 @@ def iron():
     return im
 
 
-def plaster():
-    """Plaster, painted: the trowel's long sweeps under the paint, faintly lighter and darker."""
-    im = new('#e9e3d4', 51832, 2); speckle(im, 51833, 8, ['#dfd8c7', '#f0ebdf'])
-    rnd = random.Random(51831)
-    for _ in range(4):
-        y, x0, n, k = rnd.randrange(16), rnd.randrange(16), rnd.randint(4, 8), rnd.choice((4, -4))
-        for i in range(n):
-            x = (x0 + i) % 16; yy = (y + (i // 3) * (1 if k > 0 else -1)) % 16
-            dot(im, x, yy, shade(im.getpixel((x, yy)), k))
-    return im
-
-
 def ceiling():
     """The ceiling's stipple: a fine bumpy finish, its bumps lit on one side."""
     im = new('#f1eee6', 51834, 2); rnd = random.Random(51835)
@@ -572,19 +562,374 @@ def slab(oil):
     return im
 
 
+# ------------------------------------------------------------------------------------------------ a floor and a finish to each room
+# 0.4.573 (docs/PELL_HOUSE_NOTES_0_4_573.md), the owner: "the whole pell house is too uniform in its walls and carpets ... all of
+# the textures could be improved." Every wall in the house had one plaster on it and every room but three one carpet. Each room has
+# its own now: a floor, and a finish for its walls drawn floor to ceiling in three cells (PellWall): level 0 with the skirting at
+# its foot, 1 the middle, 2 with the cornice at its head.
+def px(im, x, y, c):
+    if 0 <= x < 16 and 0 <= y < 16:
+        im.putpixel((x, y), shade(c, 0))
+
+
+def tint(im, x, y, k):
+    if 0 <= x < 16 and 0 <= y < 16:
+        im.putpixel((x, y), shade(im.getpixel((x, y)), k))
+
+
+TRIM = '#e9e5d9'
+
+
+def skirting(im, trim=TRIM, rows=3):
+    """A painted board along the wall's foot: its top edge lit, its face, the dirt line where it meets the floor; and over it, its
+    shadow on the wall."""
+    top = 16 - rows
+    for x in range(16):
+        tint(im, x, top - 1, -9)
+        px(im, x, top, shade(trim, 10))
+        for y in range(top + 1, 15):
+            px(im, x, y, trim)
+        px(im, x, 15, shade(trim, -30))
+    rnd = random.Random(sum(rgb(trim)) + rows)
+    for _ in range(3):
+        tint(im, rnd.randrange(16), rnd.randrange(top + 1, 15), -8)
+    return im
+
+
+def cornice(im, trim='#f1eee5', rows=3):
+    """A coved cornice under the ceiling: the ceiling's shadow in its top, its face, and its lower edge's shadow on the wall."""
+    for x in range(16):
+        px(im, x, 0, shade(trim, -22))
+        for y in range(1, rows - 1):
+            px(im, x, y, shade(trim, 0 if y == 1 else -6))
+        px(im, x, rows - 1, shade(trim, -14))
+        tint(im, x, rows, -8)
+    return im
+
+
+def painted(base, seed, spread=2, flecks=10):
+    """Paint on a wall: flat, with the roller's stipple faintly in it."""
+    im = new(base, seed, spread); rnd = random.Random(seed + 1)
+    for _ in range(flecks):
+        tint(im, rnd.randrange(16), rnd.randrange(16), rnd.choice((-5, 5)))
+    return im
+
+
+def tiled(base, grout, seed, step=4, light=8):
+    """Glazed wall tiles: a quarter of a block square, each lit at its upper left corner, with the grout between."""
+    im = new(base, seed, 2)
+    for y in range(16):
+        for x in range(16):
+            if x % step == step - 1 or y % step == step - 1:
+                px(im, x, y, grout)
+            elif x % step == 0 and y % step == 0:
+                tint(im, x, y, light)
+    return im
+
+
+def levels(mid, low=None, high=None):
+    """A finish's three cells from one painter: mid(level) is the wall's own surface; low finishes its foot and high its head."""
+    out = []
+    for level in range(3):
+        im = mid(level)
+        if level == 0 and low:
+            im = low(im)
+        if level == 2 and high:
+            im = high(im)
+        out.append(im)
+    return out
+
+
+def wall_hall():
+    """The hall and the entry: cream paint gone a little yellow, scuffed low down where bags and shoulders have gone along it."""
+    def mid(level):
+        im = painted('#e2d7b9', 52701 + level, 2, 12)
+        if level == 0:
+            rnd = random.Random(52705)
+            for _ in range(9):
+                x, y = rnd.randrange(16), rnd.randrange(5, 12)
+                tint(im, x, y, -11); tint(im, (x + 1) % 16, y, -6)
+        return im
+    return levels(mid, skirting, cornice)
+
+
+def wall_nessa():
+    """Nessa's room: a child's paper, duck-egg stripes two pixels wide with a pale fleck in them, under the border of small
+    animals."""
+    def mid(level):
+        im = new('#d6e6e0', 52711 + level, 1)
+        for y in range(16):
+            for x in range(16):
+                if x % 4 >= 2:
+                    px(im, x, y, shade('#c2d9d1', random.Random(52712 + x * 17 + y + level * 400).randint(-1, 1)))
+        for y in range(0, 16, 4):
+            for x in range(0, 16, 8):
+                tint(im, (x + (2 if (y // 4) % 2 else 6)) % 16, (y + 1) % 16, 12)
+        return im
+    return levels(mid, skirting, cornice)
+
+
+def wall_callum():
+    """Callum's room: flat white rolled over everything in one go, the skirting and the cornice with it. The roller's laps show."""
+    def mid(level):
+        im = new('#e9e8e3', 52721 + level, 1)
+        for y in range(16):
+            for x in (4, 5):
+                tint(im, x, y, 5)
+            tint(im, 11, y, -6)
+            if (y + level * 5) % 7 == 3:
+                tint(im, 12, y, -4)
+        return im
+
+    def low(im):
+        for x in range(16):
+            tint(im, x, 12, -16); tint(im, x, 13, 6); tint(im, x, 15, -22)
+        return im
+
+    def high(im):
+        for x in range(16):
+            tint(im, x, 0, -18); tint(im, x, 2, -10); tint(im, x, 3, -5)
+        return im
+    return levels(mid, low, high)
+
+
+def wall_bath():
+    """The bathroom: mint tiles to head height under a darker capping tile, and paint above them gone grey in spots with the
+    steam."""
+    def mid(level):
+        if level == 2:
+            im = painted('#dfe5d8', 52733, 2, 8)
+            for x, y in ((2, 4), (3, 4), (9, 5), (13, 4), (12, 6), (6, 7)):
+                tint(im, x, y, -26)
+            for x, y in ((1, 5), (4, 5), (10, 4), (14, 5), (7, 6)):
+                tint(im, x, y, -12)
+            return im
+        im = tiled('#c2dccd', '#93ac9e', 52731 + level)
+        if level == 1:
+            for x in range(16):
+                px(im, x, 0, '#7fa893'); px(im, x, 1, '#5d8a76'); px(im, x, 2, '#4b7361'); px(im, x, 3, '#93ac9e')
+                if x % 8 == 7:
+                    px(im, x, 0, '#4b7361'); px(im, x, 1, '#4b7361'); px(im, x, 2, '#3f6253')
+        if level == 0:
+            for x in range(16):
+                if x % 4 != 3:
+                    px(im, x, 12, '#a9c6b6'); px(im, x, 13, '#9fbcab'); px(im, x, 14, '#93b09f')
+                px(im, x, 15, '#6f8a7b')
+        return im
+    return levels(mid, None, cornice)
+
+
+def wall_june():
+    """June's room: a dusty rose paper with a trellis in it, a small flower where the lines cross."""
+    def mid(level):
+        im = new('#dcc5bb', 52741 + level, 1)
+        for y in range(16):
+            for x in range(16):
+                a, b = (x + y) % 8, (x - y) % 8
+                if a == 0 or b == 0:
+                    px(im, x, y, '#ccb0a5')
+        for y in range(16):
+            for x in range(16):
+                if (x + y) % 8 == 0 and (x - y) % 8 == 0:
+                    px(im, x, y, '#b48f88')
+                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        px(im, (x + dx) % 16, (y + dy) % 16, '#c39f97')
+        return im
+    return levels(mid, skirting, cornice)
+
+
+def wall_kitchen():
+    """The kitchen: a pale yellow gloss, wiped often; a cove where the lino turns up the wall."""
+    def mid(level):
+        im = painted('#e7dca4', 52751 + level, 2, 8)
+        for y in range(16):
+            tint(im, 6, y, 4); tint(im, 13, y, -3)
+        return im
+
+    def low(im):
+        for x in range(16):
+            tint(im, x, 12, -10); px(im, x, 13, '#cfc6a3'); px(im, x, 14, '#c3ba96'); px(im, x, 15, '#a89f7c')
+        return im
+    return levels(mid, low, cornice)
+
+
+def wall_splash():
+    """Over the kitchen's benches: white tiles, one in eight with an orange flower fired into it."""
+    def mid(level):
+        im = tiled('#ebe8dc', '#bdb9a9', 52761)
+        for (cx, cy) in ((5, 5), (13, 13)):
+            for dx, dy, c in ((0, 0, '#d58a2e'), (-1, 0, '#b8642a'), (1, 0, '#b8642a'), (0, -1, '#b8642a'), (0, 1, '#b8642a'),
+                              (-1, -1, '#7d8a4a'), (1, 1, '#7d8a4a'), (1, -1, '#7d8a4a'), (-1, 1, '#7d8a4a')):
+                px(im, cx + dx, cy + dy, c)
+        return im
+    return levels(mid)
+
+
+def wall_living():
+    """The living room: an oatmeal paper with a gold diamond in it, half-dropped, over a skirting stained dark."""
+    def mid(level):
+        im = new('#d7c89e', 52771 + level, 1)
+        for cx, cy in ((4, 4), (12, 12)):
+            for dx in range(-2, 3):
+                for dy in range(-2, 3):
+                    if abs(dx) + abs(dy) <= 2:
+                        px(im, (cx + dx) % 16, (cy + dy) % 16, '#bfa965' if abs(dx) + abs(dy) == 2 else '#cdb878')
+            px(im, cx, cy, '#a8914d')
+        for cx, cy in ((12, 4), (4, 12)):
+            px(im, cx, cy, '#c4b27a')
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                px(im, cx + dx, cy + dy, '#cebd8a')
+        return im
+
+    def low(im):
+        return skirting(im, '#6b4a30', 3)
+    return levels(mid, low, cornice)
+
+
+def wall_laundry():
+    """The laundry: painted sheet with a cover strip every half a block, a dark kickboard, and a quad at its head."""
+    def mid(level):
+        im = new('#ccd5c4', 52781 + level, 2)
+        for y in range(16):
+            for x in (0, 8):
+                px(im, x, y, '#dde4d6'); px(im, x + 1, y, '#b2bca8')
+        if level == 1:
+            for x in (0, 8):
+                px(im, x, 6, '#a3ad98')
+        return im
+
+    def low(im):
+        for x in range(16):
+            px(im, x, 13, '#868d79'); px(im, x, 14, '#7c836f'); px(im, x, 15, '#646a58'); tint(im, x, 12, -10)
+        return im
+
+    def high(im):
+        for x in range(16):
+            px(im, x, 0, '#a3ad98'); px(im, x, 1, '#dde4d6'); tint(im, x, 2, -8)
+        return im
+    return levels(mid, low, high)
+
+
+def wall_trim():
+    """Painted timber: a door's and an arch's jambs, a window's reveals and sill."""
+    im = new(TRIM, 52791, 1)
+    for y in range(16):
+        tint(im, 0, y, 8); tint(im, 15, y, -12); tint(im, 7, y, -3)
+    return im
+
+
+# The finishes a room's walls are drawn in (PellWall.Finish, with BRICK and BRICK_NEW, which are the house's own brick).
+WALL_FINISHES = {'hall': wall_hall, 'nessa': wall_nessa, 'callum': wall_callum, 'bath': wall_bath, 'june': wall_june, 'kitchen': wall_kitchen,
+                 'splash': wall_splash, 'living': wall_living, 'laundry': wall_laundry}
+WALL_BRICK = {'brick': ('brick_low', 'brick', 'brick'), 'brick_new': ('brick_new', 'brick_new', 'brick_new')}
+FINISHES = list(WALL_FINISHES) + list(WALL_BRICK)
+
+
+def pile(base, seed, dark=-7, light=5, flecks=()):
+    """A carpet's pile: the weave's diagonal, and flecks of its yarns."""
+    im = new(base, seed, 4); rnd = random.Random(seed + 1)
+    for y in range(16):
+        for x in range(16):
+            if (x + 2 * y) % 4 == 0:
+                tint(im, x, y, dark)
+            elif (x + 2 * y) % 4 == 2:
+                tint(im, x, y, light)
+    for _ in range(30 if flecks else 0):
+        px(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(flecks))
+    return im
+
+
+def carpet_lounge():
+    """The living room's carpet: a rust twist."""
+    return pile('#8c5b40', 52801, -9, 7, ('#774a33', '#a06c4c', '#6e4630'))
+
+
+def carpet_nessa():
+    """Nessa's carpet: an oatmeal loop, vacuumed in stripes."""
+    im = pile('#bca88a', 52811, -5, 5, ('#ad9a7c', '#c9b698'))
+    for y in range(16):
+        for x in range(16):
+            if x % 8 < 4:
+                tint(im, x, y, 3)
+    return im
+
+
+def carpet_june():
+    """June's carpet: a dusty mauve."""
+    return pile('#a8878a', 52821, -7, 5, ('#96777b', '#b6979a'))
+
+
+def boards():
+    """Callum's floor: the carpet taken up. Pine boards running north and south, two joints and their nails to the block, and
+    specks of white paint."""
+    im = new('#b9996a', 52831, 3)
+    for x in range(16):
+        for y in range(16):
+            if x % 4 == 3:
+                px(im, x, y, shade('#93794f', random.Random(52832 + y).randint(-4, 4)))
+            else:
+                tint(im, x, y, (-6, 4, -2, 6)[x // 4] + (2 if x % 4 == 0 else 0))
+    for board, y in ((1, 11), (3, 4)):
+        for x in range(3):
+            px(im, board * 4 + x, y, '#9a8056')
+        px(im, board * 4, y - 1, '#7a6242'); px(im, board * 4 + 2, y + 1, '#7a6242')
+    for x, y in ((1, 2), (9, 14), (13, 9)):
+        px(im, x, y, '#7a6242')
+    for x, y in ((2, 9), (10, 5)):
+        px(im, x, y, '#e6e2d6')
+    return im
+
+
+def tile_floor():
+    """The bathroom floor: small tiles in two greens, set chequered."""
+    im = new('#d5ddd3', 52841, 2)
+    for y in range(16):
+        for x in range(16):
+            if (x // 4 + y // 4) % 2:
+                px(im, x, y, shade('#8fa69a', random.Random(52842 + x + y * 16).randint(-3, 3)))
+            if x % 4 == 3 or y % 4 == 3:
+                tint(im, x, y, -14)
+    return im
+
+
+def laundry_floor():
+    """The laundry's floor: concrete under grey paint, and the concrete showing where the paint has lifted."""
+    im = new('#8f968a', 52851, 3); speckle(im, 52852, 14, ['#858c80', '#99a094'])
+    for x, y in ((3, 4), (4, 4), (4, 5), (5, 5), (10, 10), (11, 10), (11, 11), (12, 11), (12, 12), (7, 13), (2, 12)):
+        px(im, x, y, '#a9a59a')
+    return im
+
+
+def sill(room, room_north):
+    """The floor in a doorway: the hall's carpet to the door's line, the room's floor from it, and a metal bar across the join. A
+    floor's picture lies with its top edge to the north."""
+    im = Image.new('RGBA', (16, 16)); h, r = carpet(False).load(), room.load(); p = im.load()
+    for y in range(16):
+        for x in range(16):
+            p[x, y] = (r if (y < 8) == room_north else h)[x, y]
+    for x in range(16):
+        px(im, x, 7, '#c9b46a' if x % 5 else '#a8934e'); px(im, x, 8, '#8f7c40')
+    return im
+
+
 def materials():
     return {'brick': brick(), 'brick_low': brick_low(), 'brick_new': brick('#b67253', '#e2d9c8', 51802, 4), 'roof': roof(), 'fascia': fascia(),
             'lawn': lawn(0), 'lawn_dry': lawn(1), 'concrete': concrete(), 'concrete_print': concrete_print(), 'concrete_oil': concrete_oil(), 'asphalt': asphalt(), 'curb': kerb(), 'paver': paver(),
             'coping': coping(), 'pool_tile': pool_tile(), 'pool_band': pool_tile(True), 'pool_band_missing': pool_band_missing(), 'pool_band_odd': pool_band_odd(),
             'pool_drain': pool_drain(), 'deck': deck(), 'mulch': mulch(), 'iron': iron(),
-            'plaster': plaster(), 'ceiling': ceiling(), 'ceiling_stars': ceiling_stars(), 'carpet': carpet(False), 'carpet_worn': carpet(True), 'lino': lino(),
+            'ceiling': ceiling(), 'ceiling_stars': ceiling_stars(), 'carpet': carpet(False), 'carpet_worn': carpet(True), 'lino': lino(),
             'lino_worn': lino_worn(), 'lino_burn': lino_burn(),
-            'slab': slab(False), 'slab_oil': slab(True)}
+            'slab': slab(False), 'slab_oil': slab(True),
+            'carpet_lounge': carpet_lounge(), 'carpet_nessa': carpet_nessa(), 'carpet_june': carpet_june(), 'boards': boards(), 'tile_floor': tile_floor(),
+            'laundry_floor': laundry_floor(),
+            'sill_nessa': sill(carpet_nessa(), False), 'sill_callum': sill(boards(), False), 'sill_bath': sill(tile_floor(), False), 'sill_june': sill(carpet_june(), False),
+            'sill_kitchen': sill(lino(), True), 'sill_living': sill(carpet_lounge(), True), 'sill_laundry': sill(laundry_floor(), True)}
 
 
 def like(name):
     """What each material is like to walk on and to hear (PellRegistry reads this table through its own switch; the tool checks both agree)."""
-    return {'lawn': 'grass', 'lawn_dry': 'grass', 'mulch': 'grass', 'deck': 'wood', 'carpet': 'wool', 'carpet_worn': 'wool', 'iron': 'metal'}.get(name, 'stone')
+    return {'lawn': 'grass', 'lawn_dry': 'grass', 'mulch': 'grass', 'deck': 'wood', 'boards': 'wood', 'carpet': 'wool', 'carpet_worn': 'wool', 'carpet_lounge': 'wool',
+            'carpet_nessa': 'wool', 'carpet_june': 'wool', 'sill_nessa': 'wool', 'sill_callum': 'wool', 'sill_june': 'wool', 'sill_living': 'wool', 'iron': 'metal'}.get(name, 'stone')
 
 
 # ------------------------------------------------------------------------------------------------ fittings' faces
@@ -872,6 +1217,11 @@ def faces():
             out[f'door_{kind}_{upper}'] = door(upper, kind)
     # 0.4.566: the inner doors' knobs, in their own brass.
     out['door_knob'] = metal('#b08a3a', 52590)
+    # 0.4.573: each room's finish, floor to ceiling in three cells, and the painted timber of jambs and reveals.
+    for finish, painter in WALL_FINISHES.items():
+        for level, im in enumerate(painter()):
+            out[f'wall/{finish}_{level}'] = im
+    out['wall/trim'] = wall_trim()
     for upper in (0, 1):
         out[f'door_garage_in_{upper}'] = door_back(upper, 'garage')
         out[f'screen_{upper}'] = screen(upper)
@@ -982,11 +1332,10 @@ def fitting_models():
     # Its near edge lifted and folded back toward the door: the line shows running on under it.
     m['doormat_1'] = model([element([1, 0, 9], [15, 0.6, 13], {'all': 'm'}),
                             element([1, 0.6, 9], [15, 1.2, 13], {'up': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'})], {'m': 'mat', 'b': 'mat_back'}, 'mat')
-    # The house's outside wall: brick to the weather (the north face as drawn; a corner's north and west), plaster to the rooms.
-    for stage, course in enumerate(('brick', 'brick_low', 'brick_new')):
-        for name, out in (('wall', ('north',)), ('wall_corner', ('north', 'west'))):
-            m[f'{name}_{stage}'] = {'parent': 'minecraft:block/cube', 'textures': {**{k: NS + 'block/pell_' + (course if k in out else 'plaster') for k in ('north', 'south', 'east', 'west', 'up', 'down')},
-                                                                                   'particle': NS + 'block/pell_' + course}}
+    # A corner of the house's outside wall: brick, the veneer and its lowest course. Only its two faces to the weather are ever
+    # seen. (0.4.573: the rest of the house's walls are PellWall; wall_models.)
+    for stage, course in enumerate(('brick', 'brick_low')):
+        m[f'wall_corner_{stage}'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'block/pell_' + course}}
     # The eaves: the top half of the cell. A painted board on its edges, the soffit's lining underneath, tiles on top.
     m['eave_0'] = {'ambientocclusion': False, 'textures': {'f': NS + 'block/pell_fascia', 'c': P + 'soffit', 'r': NS + 'block/pell_roof', 'particle': NS + 'block/pell_fascia'},
                    'elements': [element([0, 8, 0], [16, 16, 16], {'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f', 'up': 'r', 'down': 'c'},
@@ -994,8 +1343,8 @@ def fitting_models():
     return m
 
 
-KINDS = ['fence', 'pool_fence', 'pool_gate', 'gate', 'door', 'garage_door', 'shed_door', 'screen', 'roller', 'window', 'slider', 'tarp', 'letterbox', 'doormat', 'wall', 'wall_corner', 'eave']
-STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 4, 'wall': 3, 'wall_corner': 3}
+KINDS = ['fence', 'pool_fence', 'pool_gate', 'gate', 'door', 'garage_door', 'shed_door', 'screen', 'roller', 'window', 'slider', 'tarp', 'letterbox', 'doormat', 'wall_corner', 'eave']
+STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 4, 'wall_corner': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 # Turned a quarter at random cell by cell, whatever their facing, as vanilla turns grass, so a surface with nothing running across it
@@ -1011,8 +1360,12 @@ NAMES = {'pell_fitting': 'House Fitting', 'pell_brick': 'Brick Veneer', 'pell_br
          'pell_concrete_print': 'Concrete, Handprint', 'pell_concrete_oil': 'Concrete, Stained', 'pell_asphalt': 'Road', 'pell_curb': 'Curb', 'pell_paver': 'Patio Pavers', 'pell_coping': 'Pool Coping', 'pell_pool_tile': 'Pool Tiles',
          'pell_pool_band': 'Pool Tiles, Waterline', 'pell_pool_band_missing': 'Pool Tiles, Waterline, One Missing', 'pell_pool_band_odd': 'Pool Tiles, Waterline, One Odd',
          'pell_pool_drain': 'Pool Drain', 'pell_deck': 'Deck Boards', 'pell_mulch': 'Bark Mulch', 'pell_iron': 'Corrugated Iron',
-         'pell_plaster': 'Painted Plaster', 'pell_ceiling': 'Ceiling', 'pell_ceiling_stars': 'Ceiling, Stars', 'pell_carpet': 'Carpet', 'pell_carpet_worn': 'Carpet, Worn',
-         'pell_lino': 'Lino', 'pell_lino_worn': 'Lino, Worn', 'pell_lino_burn': 'Lino, Burnt', 'pell_slab': 'Garage Slab', 'pell_slab_oil': 'Garage Slab, Stained'}
+         'pell_ceiling': 'Ceiling', 'pell_ceiling_stars': 'Ceiling, Stars', 'pell_carpet': 'Carpet', 'pell_carpet_worn': 'Carpet, Worn',
+         'pell_lino': 'Lino', 'pell_lino_worn': 'Lino, Worn', 'pell_lino_burn': 'Lino, Burnt', 'pell_slab': 'Garage Slab', 'pell_slab_oil': 'Garage Slab, Stained',
+         'pell_carpet_lounge': 'Carpet, Living Room', 'pell_carpet_nessa': "Carpet, Nessa's Room", 'pell_carpet_june': "Carpet, June's Room", 'pell_boards': 'Floorboards',
+         'pell_tile_floor': 'Bathroom Floor Tiles', 'pell_laundry_floor': 'Laundry Floor', 'pell_sill_nessa': "Doorway, Nessa's Room", 'pell_sill_callum': "Doorway, Callum's Room",
+         'pell_sill_bath': 'Doorway, Bathroom', 'pell_sill_june': "Doorway, June's Room", 'pell_sill_kitchen': 'Doorway, Kitchen', 'pell_sill_living': 'Doorway, Living Room',
+         'pell_sill_laundry': 'Doorway, Laundry', 'pell_wall': 'House Wall'}
 
 
 def java_names():
@@ -1023,6 +1376,51 @@ def java_names():
     names = re.search(r'MATERIAL_NAMES=java\.util\.List\.of\(([^;]*?)\);', reg, re.S).group(1)
     kinds = re.search(r'enum Kind implements StringRepresentable \{\s*([A-Z_,\s]+);', blk).group(1)
     return re.findall(r'"([a-z_]+)"', names), [k.strip().lower() for k in kinds.split(',') if k.strip()]
+
+
+def java_finishes():
+    """The finishes as PellWall lists them."""
+    import re
+    src = (ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/PellWall.java').read_text()
+    src = re.sub(r'/\*.*?\*/', '', src, flags=re.S)
+    body = re.search(r'enum Finish implements StringRepresentable \{(.*?);', src, re.S).group(1)
+    return [k.lower() for k in re.findall(r'[A-Z_]+', body)]
+
+
+def wall_models():
+    """PellWall's parts: one face of each finish at each level (the north face as drawn, turned to the cell's front, its back and,
+    where the finish goes round the wall's end, its sides); the two ends in painted timber; and the same above and below."""
+    out = {}
+    for finish in FINISHES:
+        for level in range(3):
+            tex = P + f'wall/{finish}_{level}' if finish in WALL_FINISHES else NS + 'block/pell_' + WALL_BRICK[finish][level]
+            out[f'wall/{finish}_{level}'] = {'parent': 'minecraft:block/block', 'textures': {'f': tex, 'particle': tex},
+                                             'elements': [{'from': [0, 0, 0], 'to': [16, 16, 16], 'faces': {'north': {'texture': '#f', 'cullface': 'north'}}}]}
+    trim = P + 'wall/trim'
+    out['wall/jambs'] = {'parent': 'minecraft:block/block', 'textures': {'t': trim, 'particle': trim},
+                         'elements': [{'from': [0, 0, 0], 'to': [16, 16, 16], 'faces': {k: {'texture': '#t', 'cullface': k} for k in ('east', 'west')}}]}
+    out['wall/caps'] = {'parent': 'minecraft:block/block', 'textures': {'t': trim, 'particle': trim},
+                        'elements': [{'from': [0, 0, 0], 'to': [16, 16, 16], 'faces': {k: {'texture': '#t', 'cullface': k} for k in ('up', 'down')}}]}
+    return out
+
+
+def wall_state():
+    """PellWall's blockstate: its front's face, its back's, its ends (the front's finish again where it goes round them, painted
+    timber where it does not), and its top and bottom."""
+    parts = []
+    for facing, y in FACING_Y.items():
+        for finish in FINISHES:
+            for level in range(3):
+                def turned_to(turn):
+                    r = (y + turn) % 360
+                    return {'model': NS + f'block/pell/wall/{finish}_{level}', **({'y': r} if r else {})}
+                parts.append({'when': {'facing': facing, 'front': finish, 'level': str(level)}, 'apply': turned_to(0)})
+                parts.append({'when': {'facing': facing, 'back': finish, 'level': str(level)}, 'apply': turned_to(180)})
+                for turn in (90, 270):
+                    parts.append({'when': {'facing': facing, 'front': finish, 'level': str(level), 'wrap': 'true'}, 'apply': turned_to(turn)})
+        parts.append({'when': {'facing': facing, 'wrap': 'false'}, 'apply': {'model': NS + 'block/pell/wall/jambs', **({'y': y} if y else {})}})
+    parts.append({'apply': {'model': NS + 'block/pell/wall/caps'}})
+    return {'multipart': parts}
 
 
 def files():
@@ -1045,8 +1443,9 @@ def files():
         for y in (0, 90, 180, 270):
             stars.append({'model': NS + f'block/{name}', **({'y': y} if y else {})})
     out['blockstates/pell_ceiling_stars.json'] = {'variants': {'': stars}}
-    for key, obj in fitting_models().items():
+    for key, obj in {**fitting_models(), **wall_models()}.items():
         out[f'models/block/pell/{key}.json'] = obj
+    out['blockstates/pell_wall.json'] = wall_state()
     variants = {}
     for kind in KINDS:
         for facing, y in FACING_Y.items():
@@ -1067,10 +1466,11 @@ def main():
     check.add_argument('--check', action='store_true')
     check = check.parse_args().check
     images, data = textures(), files()
-    models = fitting_models()
+    models = {**fitting_models(), **wall_models()}
     mats, kinds = java_names()
     assert mats == list(materials()), (mats, list(materials()))
     assert kinds == KINDS, (kinds, KINDS)
+    assert java_finishes() == FINISHES, (java_finishes(), FINISHES)
     for kind in KINDS:
         for stage in range(STAGES.get(kind, 1)):
             assert f'{kind}_{stage}' in models, (kind, stage)
@@ -1093,7 +1493,7 @@ def main():
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
-    assert set(NAMES) == {'pell_fitting'} | {f'pell_{n}' for n in materials()}, sorted(set(NAMES) ^ ({'pell_fitting'} | {f'pell_{n}' for n in materials()}))
+    assert set(NAMES) == {'pell_fitting', 'pell_wall'} | {f'pell_{n}' for n in materials()}, sorted(set(NAMES) ^ ({'pell_fitting', 'pell_wall'} | {f'pell_{n}' for n in materials()}))
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key

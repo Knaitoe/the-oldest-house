@@ -34,6 +34,39 @@ public final class PellSite {
     public static final int LOT_W=-20,LOT_E=20,LOT_S=-50,LOT_N=-98;
     /** The house's outer walls, the wall between the front rooms and the hall, and the wall between the hall and the back rooms. */
     public static final int HOUSE_W=-14,HOUSE_E=10,HOUSE_S=-58,HOUSE_N=-72,HALL_S=-64,HALL_N=-67,ROOF=3;
+    /**
+     * 0.4.573 (docs/PELL_HOUSE_NOTES_0_4_573.md; the owner: "the whole pell house is too uniform in its walls and carpets"): a room
+     * of the house. The cells of its floor, what its walls are finished in, and what its floor is. The entry runs through the hall's
+     * front wall, so the cells of the opening are its own.
+     */
+    public record Room(String name,int x0,int z0,int x1,int z1,PellWall.Finish finish,String floor){
+        public boolean has(int x,int z){return x>=x0&&x<=x1&&z>=z0&&z<=z1;}
+    }
+    public static final List<Room> ROOMS=List.of(
+        new Room("nessa",-13,-63,-8,-59,PellWall.Finish.NESSA,"carpet_nessa"),
+        new Room("callum",-6,-63,-2,-59,PellWall.Finish.CALLUM,"boards"),
+        new Room("entry",0,-64,1,-59,PellWall.Finish.HALL,"carpet"),
+        new Room("bath",3,-63,5,-59,PellWall.Finish.BATH,"tile_floor"),
+        new Room("june",7,-63,9,-59,PellWall.Finish.JUNE,"carpet_june"),
+        new Room("hall",-13,-66,9,-65,PellWall.Finish.HALL,"carpet"),
+        new Room("kitchen",-13,-71,-7,-68,PellWall.Finish.KITCHEN,"lino"),
+        new Room("living",-5,-71,4,-68,PellWall.Finish.LIVING,"carpet_lounge"),
+        new Room("laundry",6,-71,9,-68,PellWall.Finish.LAUNDRY,"laundry_floor"));
+    /** The room a cell of the house's plan is in, or null: a cell of wall, or out of doors. */
+    public static @javax.annotation.Nullable Room room(int x,int z){for(var r:ROOMS)if(r.has(x,z))return r;return null;}
+    public static Room room(String name){for(var r:ROOMS)if(r.name().equals(name))return r;throw new IllegalArgumentException(name);}
+    /**
+     * The floor in each inside doorway (the cell under the door or the arch): the hall's carpet to the door's line and the room's
+     * floor from it, a metal bar across the join.
+     */
+    public static final java.util.Map<BlockPos,String> SILLS=sills();
+    private static java.util.Map<BlockPos,String> sills(){
+        var out=new java.util.LinkedHashMap<BlockPos,String>();
+        out.put(new BlockPos(-10,-1,-64),"sill_nessa");out.put(new BlockPos(-4,-1,-64),"sill_callum");out.put(new BlockPos(4,-1,-64),"sill_bath");out.put(new BlockPos(8,-1,-64),"sill_june");
+        out.put(new BlockPos(-10,-1,-67),"sill_kitchen");out.put(new BlockPos(-9,-1,-67),"sill_kitchen");out.put(new BlockPos(-1,-1,-67),"sill_living");out.put(new BlockPos(0,-1,-67),"sill_living");
+        out.put(new BlockPos(7,-1,-67),"sill_laundry");
+        return java.util.Collections.unmodifiableMap(out);
+    }
     /** The driveway down the east side, the garage at its end, and the shed. */
     public static final int DRIVE_W=12,DRIVE_E=18,GARAGE_W=12,GARAGE_E=18,GARAGE_S=-86,GARAGE_N=-96,SHED_W=4,SHED_E=9,SHED_S=-90,SHED_N=-94;
     /** The pool's fence (its south run and its east run; the lot's fences are its other two sides), and the water. */
@@ -185,25 +218,31 @@ public final class PellSite {
         box(l,b,HOUSE_W,-1,HOUSE_S+1,-1,-1,HOUSE_S+2,mat("mulch"));box(l,b,2,-1,HOUSE_S+1,HOUSE_E,-1,HOUSE_S+2,mat("mulch"));
     }
 
-    /** The bungalow: brick outside, plaster inside; carpet in the hall and the rooms, lino where there is water. */
+    /** The bungalow: brick outside; inside, every room finished and floored in its own way (ROOMS, wall). */
     static void house(ServerLevel l,BlockPos b){
-        // The outside walls are veneer: brick to the weather and plaster to the rooms, the lowest course stained.
-        for(int y=0;y<=ROOF;y++)ring(l,b,HOUSE_W,HOUSE_N,HOUSE_E,HOUSE_S,y,y==0?1:0);
         box(l,b,HOUSE_W+1,0,HOUSE_N+1,HOUSE_E-1,2,HOUSE_S-1,AIR);
         box(l,b,HOUSE_W+1,-1,HOUSE_N+1,HOUSE_E-1,-1,HOUSE_S-1,mat("carpet"));
         roof(l,b,HOUSE_W,HOUSE_N,HOUSE_E,HOUSE_S);
-        var wall=mat("plaster");
-        // The two long walls, and the walls between rooms.
-        box(l,b,HOUSE_W+1,0,HALL_S,HOUSE_E-1,2,HALL_S,wall);box(l,b,HOUSE_W+1,0,HALL_N,HOUSE_E-1,2,HALL_N,wall);
-        for(int x:new int[]{-7,-1,2,6})box(l,b,x,0,HOUSE_S-1,x,2,HALL_S+1,wall);
-        for(int x:new int[]{-6,5})box(l,b,x,0,HALL_N-1,x,2,HOUSE_N+1,wall);
-        // The entry runs from the front door to the hall: no wall across it.
-        box(l,b,0,0,HALL_S,1,2,HALL_S,AIR);
+        // 0.4.573: the walls. The outside walls are veneer, brick to the weather with its lowest course stained; the two long walls
+        // of the hall, and the walls between rooms. Every face that looks into a room has that room's finish (wall).
+        for(int x=HOUSE_W;x<=HOUSE_E;x++)for(int z=HOUSE_N;z<=HOUSE_S;z++){
+            if(room(x,z)!=null)continue;
+            boolean w=x==HOUSE_W,e=x==HOUSE_E,n=z==HOUSE_N,s=z==HOUSE_S;
+            for(int y=0;y<=(w||e||n||s?ROOF:2);y++){
+                // A corner's brick is on its north and west faces as drawn: turned so that they are the two faces to the weather.
+                if((w||e)&&(n||s))set(l,b,x,y,z,fit(PellBlock.Kind.WALL_CORNER,n&&w?Direction.NORTH:n?Direction.EAST:e?Direction.SOUTH:Direction.WEST,y==0?1:0));
+                else set(l,b,x,y,z,wall(x,y,z));
+            }
+        }
         // The kitchen and the living room are open to the hall by an arch two wide.
         box(l,b,-10,0,HALL_N,-9,1,HALL_N,AIR);box(l,b,-1,0,HALL_N,0,1,HALL_N,AIR);
-        // Lino in the kitchen, the laundry and the bathroom; the hall's carpet worn in one path, from the front door to Nessa's.
-        box(l,b,HOUSE_W+1,-1,HALL_N-1,-7,-1,HOUSE_N+1,mat("lino"));box(l,b,6,-1,HALL_N-1,HOUSE_E-1,-1,HOUSE_N+1,mat("lino"));box(l,b,3,-1,HOUSE_S-1,5,-1,HALL_S+1,mat("lino"));
+        // 0.4.573: a floor to each room: lino in the kitchen, tiles in the bathroom, painted concrete in the laundry, boards in
+        // Callum's room where the carpet has been taken up, and a carpet of its own in each of the others.
+        for(var room:ROOMS)box(l,b,room.x0(),-1,room.z0(),room.x1(),-1,room.z1(),mat(room.floor()));
+        // The hall's carpet worn in one path, from the front door to Nessa's.
         box(l,b,0,-1,HOUSE_S-1,0,-1,HALL_S,mat("carpet_worn"));box(l,b,NESSA_DOOR.getX(),-1,HALL_S-1,0,-1,HALL_S-1,mat("carpet_worn"));
+        // In each inside doorway the hall's carpet stops at the door's line, under a metal bar, and the room's floor begins.
+        SILLS.forEach((at,sill)->set(l,b,at,mat(sill)));
         // Windows. Along the front: Nessa's (clear), Callum's (painted over from inside), the bathroom's and June's (blinds down).
         for(int x:new int[]{-11,-10})set(l,b,x,1,HOUSE_S,fit(PellBlock.Kind.WINDOW,Direction.SOUTH,0));
         set(l,b,-4,1,HOUSE_S,fit(PellBlock.Kind.WINDOW,Direction.SOUTH,2));
@@ -211,8 +250,48 @@ public final class PellSite {
         // Along the back: the kitchen's, over the sink, onto the pool; and the living room's, where the window seat is.
         for(int x:new int[]{-10,-9})set(l,b,x,1,HOUSE_N,fit(PellBlock.Kind.WINDOW,Direction.NORTH,0));
         for(int x:new int[]{2,3})set(l,b,x,1,HOUSE_N,fit(PellBlock.Kind.WINDOW,Direction.NORTH,0));
-        // In the west wall, a window bricked up: newer bricks that do not match.
-        for(int z:new int[]{-62,-61})set(l,b,HOUSE_W,1,z,fit(PellBlock.Kind.WALL,Direction.WEST,2));
+        // In the west wall, a window bricked up, newer bricks that do not match (wall): behind Nessa's bed, papered over inside.
+    }
+    /** The two arches from the hall, to the kitchen and to the living room: each two cells wide and two high, in the hall's back wall. */
+    public static boolean arch(int x,int y,int z){return z==HALL_N&&y>=0&&y<=1&&(x==-10||x==-9||x==-1||x==0);}
+    /**
+     * What a wall's face looks into at a cell of the plan: brick, out of doors; a room's finish; the hall's, through one of its
+     * arches; or null against more wall, or a door or a window in the wall's own line.
+     */
+    private static @javax.annotation.Nullable PellWall.Finish looks(int x,int y,int z){
+        if(x<HOUSE_W||x>HOUSE_E||z<HOUSE_N||z>HOUSE_S)return PellWall.Finish.BRICK;
+        if(arch(x,y,z))return PellWall.Finish.HALL;
+        var room=room(x,z);return room==null?null:room.finish();
+    }
+    /**
+     * 0.4.573: the cell of wall at a place in the house's plan that is no room's (the outside walls' corners are PellBlock's). It
+     * turns its brick to the weather if it has any, and else a face that looks into a room; the room behind it is on its back.
+     * An end that looks into a room is finished as the cell's front is, so the cell turns the face of that finish to the front:
+     * the hall goes round into the entry, and round the jambs of its two arches. A door's jamb and a window's reveal are painted
+     * timber. Over the kitchen's benches the wall is tiled, and the bricked-up window's brick is newer.
+     */
+    public static BlockState wall(int x,int y,int z){
+        var look=new java.util.EnumMap<Direction,PellWall.Finish>(Direction.class);
+        for(var d:Direction.Plane.HORIZONTAL){var f=looks(x+d.getStepX(),y,z+d.getStepZ());if(f!=null)look.put(d,f);}
+        int level=Math.min(y,2);
+        if(look.isEmpty())return PellWall.of(Direction.NORTH,PellWall.Finish.HALL,PellWall.Finish.HALL,level,false);
+        Direction facing=null;
+        for(var d:new Direction[]{Direction.NORTH,Direction.WEST,Direction.SOUTH,Direction.EAST}){
+            var front=look.get(d);if(front==null)continue;
+            // Brick is always the front. Otherwise the first face whose finish its ends share, if it has ends that show.
+            boolean ends=true;
+            for(var end:new Direction[]{d.getClockWise(),d.getCounterClockWise()})if(look.containsKey(end)&&look.get(end)!=front)ends=false;
+            if(!ends)continue;
+            if(front==PellWall.Finish.BRICK){facing=d;break;}
+            if(facing==null)facing=d;
+        }
+        if(facing==null)throw new IllegalStateException("the wall at "+x+","+y+","+z+" has no face its ends agree with: "+look);
+        var front=look.get(facing);
+        var back=look.getOrDefault(facing.getOpposite(),front==PellWall.Finish.BRICK?PellWall.Finish.HALL:front);
+        boolean wrap=look.containsKey(facing.getClockWise())||look.containsKey(facing.getCounterClockWise());
+        if(z==HOUSE_N&&y==1&&back==PellWall.Finish.KITCHEN)back=PellWall.Finish.SPLASH;
+        if(x==HOUSE_W&&y==1&&(z==-62||z==-61))front=PellWall.Finish.BRICK_NEW;
+        return PellWall.of(facing,front,back,level,wrap);
     }
     private static void put(ServerLevel l,BlockPos b,int x,int y,int z,PellThing.Kind kind,Direction f,int stage){set(l,b,x,y,z,PellThing.of(kind,f,stage));}
     /** A thing two cells wide: half 0 here, half 1 in the cell to its right as one faces it. */
@@ -353,19 +432,6 @@ public final class PellSite {
         return PellLine.Surface.LAWN;
     }
     private static Direction toward(BlockPos from,BlockPos to){int dx=to.getX()-from.getX(),dz=to.getZ()-from.getZ();return dx>0?Direction.EAST:dx<0?Direction.WEST:dz>0?Direction.SOUTH:Direction.NORTH;}
-
-    /** One course of the house's outside wall round a box: each cell turns its brick outward, and the corners have two brick faces. */
-    static void ring(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,int y,int stage){
-        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
-            boolean w=x==x0,e=x==x1,n=z==z0,s=z==z1;if(!(w||e||n||s))continue;
-            // A corner's brick is on its north and west faces as drawn: turned so that they are the two faces to the weather.
-            if(n&&w)set(l,b,x,y,z,fit(PellBlock.Kind.WALL_CORNER,Direction.NORTH,stage));
-            else if(n&&e)set(l,b,x,y,z,fit(PellBlock.Kind.WALL_CORNER,Direction.EAST,stage));
-            else if(s&&e)set(l,b,x,y,z,fit(PellBlock.Kind.WALL_CORNER,Direction.SOUTH,stage));
-            else if(s&&w)set(l,b,x,y,z,fit(PellBlock.Kind.WALL_CORNER,Direction.WEST,stage));
-            else set(l,b,x,y,z,fit(PellBlock.Kind.WALL,n?Direction.NORTH:s?Direction.SOUTH:w?Direction.WEST:Direction.EAST,stage));
-        }
-    }
 
     /** The garage, by itself in the back corner: brick, a roller door that is never opened, a walk door, one window. */
     static void garage(ServerLevel l,BlockPos b){
