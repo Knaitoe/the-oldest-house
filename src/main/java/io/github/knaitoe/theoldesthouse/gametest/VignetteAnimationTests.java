@@ -584,14 +584,23 @@ public final class VignetteAnimationTests {
      * sand toward them at a crawl, stops dead eight blocks off and stays there as long as they look, hurting nobody; once their
      * back is turned she comes fast and reaches them.
      */
-    @GameTest(template="empty",batch="literary_costume_land",timeoutTicks=500)
+    @GameTest(template="empty",batch="literary_costume_land",timeoutTicks=900)
     public static void afterTheLightsGoSheComesUpTheSandToAReaderWhoWatchesHerFromInland(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.COSTUME_NIGHT;var p=f.player("costume_inland",place);var b=f.base(place);var room=place.room();
-        f.chunks.hold(f.out,new net.minecraft.world.phys.AABB(b.getX()+room.minX(),b.getY()+room.minY(),b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+room.maxY()+1,b.getZ()+room.maxZ()+1));
+        var beach=new net.minecraft.world.phys.AABB(b.getX()+room.minX(),b.getY()+room.minY(),b.getZ()+room.minZ(),b.getX()+room.maxX()+1,b.getY()+room.maxY()+1,b.getZ()+room.maxZ()+1);
+        f.chunks.hold(f.out,beach);
         h.startSequence().thenWaitUntil(()->{
             h.assertTrue(f.chunks.ready(),"the contest's actual native entity sections are resident");
             for(var who:CostumeNight.EVERYONE)h.assertTrue(CostumeNight.cast(f.out,who)!=null,"the original contestant has loaded: "+who.name());
             h.assertTrue(CostumeNight.witch(f.out)!=null,"the original thirteenth witch has loaded");
+            // Run 1626: the case counts her first second, and began it on a beach that was loaded but did not yet tick its people:
+            // on CI she had no tick of her own for the first twelve, and had come .48 of a block where the case wanted more than a
+            // half. It begins once every chunk of the beach ticks its entities; and, she being one witch for every case on the
+            // server, once she has rested from any strike a case before this one drew (the reader looks at the sky meanwhile, so
+            // no look holds her rest still).
+            lookUp(p);
+            var still=SceneReady.notTicking(f.out,beach);h.assertTrue(still==null,"the beach ticks its people: "+still);
+            h.assertTrue(CostumeNight.witch(f.out).attackCooldown()==0,"she is not resting from a strike: "+CostumeNight.witch(f.out).attackCooldown());
         }).thenExecute(()->{
             var witch=CostumeNight.witch(f.out);var lurk=Vec3.atBottomCenterOf(b.offset(CostumeNight.LURKS.get(2)));witch.moveTo(lurk.x,witch.getY(),lurk.z,90,0);
             f.at(p,place,4.5,0,-26.5);costumeState(f,w->{w.putBoolean("LightsOut",true);w.putInt("RibbonAt",-10000);});
@@ -607,7 +616,7 @@ public final class VignetteAnimationTests {
                 if(stage[0]==2)nearest[0]=Math.min(nearest[0],w.distanceTo(p));
                 long t=f.out.getGameTime()-began;if(t%10==0)trail.append(String.format(" %d:(%.1f,%.1f)",t,w.getX()-b.getX(),w.getZ()-b.getZ()));});
             h.runAfterDelay(20,()->{var w=CostumeNight.witch(f.out);
-                h.assertTrue(w.position().distanceTo(lurk)>.5,"watched from a dozen blocks off, she has left her place in the lake: "+w.position().distanceTo(lurk));});
+                h.assertTrue(w.position().distanceTo(lurk)>.5,"watched from a dozen blocks off, she has left her place in the lake: "+w.position().distanceTo(lurk)+" ticks="+w.tickCount+" rest="+w.attackCooldown()+trail);});
             h.runAfterDelay(40,()->{var w=CostumeNight.witch(f.out);
                 h.assertTrue(!f.out.getFluidState(w.blockPosition().below()).is(net.minecraft.tags.FluidTags.WATER)&&w.getX()-b.getX()<13.7,"she made for the bank first, and is ashore within two seconds: "+trail);});
             h.runAfterDelay(130,()->{var w=CostumeNight.witch(f.out);double away=w.position().subtract(p.position()).horizontalDistance();
