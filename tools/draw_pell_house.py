@@ -1041,14 +1041,18 @@ def screen(upper):
     return im
 
 
-def roller():
-    """The garage's roller door: slats a pixel of shadow apart, never opened; a handle low in the middle."""
+def roller(part=0):
+    """The garage's roller door, never opened. 0.4.602 (owner: "texture needs to be fixed"): each of its six blocks drew the whole
+    door, one-pixel stripes and a handle, so it read as six tiled panels with six handles. It is one door now: ribs four pixels
+    deep (a lit edge, the face, the shadow under it) running on from block to block; part 1, the bottom rail along the foot of the
+    two outer lower blocks; part 2, the middle lower block, that rail and the one handle."""
     im = metal('#cfd3cf', 51870, 1)
-    for y in range(1, 16, 2):
-        fill(im, 0, y, 16, y + 1, '#aab0ab')
-        if y + 1 < 16:
-            fill(im, 0, y + 1, 16, y + 2, '#dde1dd')
-    fill(im, 6, 13, 10, 14, '#55595c'); dot(im, 6, 13, '#7a7e82'); fill(im, 6, 14, 10, 15, '#8e928e')
+    for y in range(0, 16, 4):
+        fill(im, 0, y, 16, y + 1, '#dde1dd'); fill(im, 0, y + 3, 16, y + 4, '#a4aaa5')
+    if part:
+        fill(im, 0, 13, 16, 15, '#8e948f'); fill(im, 0, 15, 16, 16, '#6e736f')
+    if part == 2:
+        fill(im, 5, 9, 11, 10, '#55595c'); dot(im, 5, 9, '#7a7e82'); fill(im, 5, 10, 11, 11, '#8e928e')
     return im
 
 
@@ -1209,7 +1213,7 @@ def mat_back():
 def faces():
     out = {'tin': tin(False), 'tin_front': tin(True), 'mat': mat(), 'mat_back': mat_back(),
            'paling': paling(), 'paling_gate': paling_gate(), 'pool_bars': pool_bars(), 'pool_gate': pool_bars(True), 'pool_gate_locked': pool_bars(True, True),
-           'roller': roller(), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(), 'soffit': soffit(),
+           'roller': roller(), 'roller_rail': roller(1), 'roller_handle': roller(2), 'glass_clear': glass('clear'), 'glass_blinds': glass('blinds'), 'glass_painted': glass('painted'), 'frame': frame(), 'soffit': soffit(),
            'tarp': tarp(), 'tarp_pond': pond(), 'tarp_rim': pond_edge(False), 'tarp_corner': pond_edge(True), 'post': wood('#6b6052', 51878, 3, across=True), 'pool_post': metal('#2c2e30', 51879), 'stars_glow': stars_glow()}
     for layout in range(1, len(STAR_LAYOUTS)):
         out[f'stars_{layout}'] = ceiling_stars(layout); out[f'stars_glow_{layout}'] = stars_glow(layout)
@@ -1302,7 +1306,8 @@ def fitting_models():
                 els = [element([0, 0, 0], [w, 16, 16], {'east': 'i', 'west': 'o', 'north': 'o', 'south': 'o', 'up': 'o', 'down': 'o'},
                                uv={'north': [0, 0, 1, 16], 'south': [15, 0, 16, 16], 'up': [0, 0, 1, 16], 'down': [0, 0, 1, 16]})]
             m[f'{name}_{stage}'] = model(els, {'o': o, 'i': i, 'k': 'door_knob'}, o)
-    m['roller_0'] = model([element([0, 0, 6], [16, 16, 10], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'up': 'r', 'down': 'r'})], {'r': 'roller'}, 'roller')
+    for stage, tex in enumerate(('roller', 'roller_rail', 'roller_handle')):
+        m[f'roller_{stage}'] = model([element([0, 0, 6], [16, 16, 10], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'up': 'r', 'down': 'r'})], {'r': tex}, tex)
     # A window: an aluminium frame in the wall's thickness, and a pane. Clear; blinds down; painted over from inside. Clear glass
     # is drawn translucent: under cutout its faint tint would show as a solid pane, and the garage window has to be seen through.
     def window(pane):
@@ -1345,7 +1350,7 @@ def fitting_models():
 
 
 KINDS = ['fence', 'pool_fence', 'pool_gate', 'gate', 'door', 'garage_door', 'shed_door', 'screen', 'roller', 'window', 'slider', 'tarp', 'letterbox', 'doormat', 'wall_corner', 'eave']
-STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 4, 'wall_corner': 2}
+STAGES = {'fence': 2, 'pool_fence': 2, 'pool_gate': 3, 'gate': 2, 'doormat': 2, 'door': 4, 'garage_door': 4, 'shed_door': 4, 'screen': 4, 'window': 3, 'slider': 4, 'tarp': 4, 'wall_corner': 2, 'roller': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 # Turned a quarter at random cell by cell, whatever their facing, as vanilla turns grass, so a surface with nothing running across it

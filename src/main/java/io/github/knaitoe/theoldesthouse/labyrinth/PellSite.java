@@ -463,7 +463,8 @@ public final class PellSite {
         // Under where the camp bed will stand, oil from the car that used to be kept here.
         set(l,b,15,-1,-90,mat("slab_oil"));
         roof(l,b,GARAGE_W,GARAGE_N,GARAGE_E,GARAGE_S);
-        for(int x=15;x<=17;x++)for(int y=0;y<=1;y++)set(l,b,x,y,GARAGE_S,fit(PellBlock.Kind.ROLLER,Direction.SOUTH,0));
+        // 0.4.602: one door over six blocks: the bottom rail along its foot, the handle in the middle of it.
+        for(int x=15;x<=17;x++)for(int y=0;y<=1;y++)set(l,b,x,y,GARAGE_S,fit(PellBlock.Kind.ROLLER,Direction.SOUTH,y>0?0:x==16?2:1));
         set(l,b,GARAGE_WINDOW,fit(PellBlock.Kind.WINDOW,Direction.WEST,0));
     }
 

@@ -9,6 +9,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -41,6 +42,8 @@ public final class LodgingHouseTests {
     private static LodgingWall.Part part(ServerLevel l,BlockPos b,BlockPos at){var s=l.getBlockState(b.offset(at));return s.is(LodgingRegistry.WALL.get())?s.getValue(LodgingWall.PART):null;}
     /** Everything a reader has been told since this was last asked: reading it empties it. */
     private static List<String> told(ServerPlayer p){
+        // The server holds a player's packets until the end of its tick; what was said in this one is read too.
+        NativeTestPlayers.flush(p);
         var out=new java.util.ArrayList<String>();
         for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)out.add(chat.content().getString());
         return out;
@@ -288,4 +291,145 @@ public final class LodgingHouseTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="lodging_copy") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();done();}
+
+    private static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),P);}
+    private static Vec3 rel(BlockPos b,net.minecraft.world.entity.Entity e){return e.position().subtract(b.getX(),b.getY(),b.getZ());}
+    private static void has(GameTestHelper h,ServerPlayer p,String line){h.assertTrue(Talk.lines(p).contains(line),"the panel has \""+line+"\": "+Talk.lines(p));}
+    /**
+     * 0.4.602, the people (docs/ONES_INSIDE_PEOPLE_0_4_602.md). Each of the seven is where the script's first scene has them, doing what
+     * they do there, and is made once. The four turn their heads, and not their bodies, to a reader they can see; nobody turns to one they
+     * cannot. A hand on Rae, Dan, Vera or Daniel opens the panel with the script's lines; what a reader answers is in that reader's own
+     * record and nobody else's. A hand on a failed body gets what it is doing and no panel.
+     */
+    @GameTest(template="empty",batch="lodging_people",timeoutTicks=3000)
+    public static void theFourAreWhereTheScriptHasThemAndAnswerAHandInThePanel(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_talker",P);var q=f.player("lodging_other",P);var l=f.level(P);var b=f.base(P);
+        f.chunks.hold(l,LodgingPeople.area(b));final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i+" of the house's people");}})
+            .thenExecute(()->{
+                for(int i=0;i<LodgingPeople.COUNT;i++){
+                    var a=who[i];var s=LodgingPeople.SPOTS[i];
+                    h.assertTrue(a.position().distanceTo(LodgingPeople.world(b,s))<.05&&a.gesture()==s.gesture()&&net.minecraft.util.Mth.degreesDifferenceAbs(a.getYRot(),s.look())<.5F,"number "+i+" is where they belong, turned as they are and doing what they do: "+rel(b,a)+" gesture "+a.gesture()+" yaw "+a.getYRot());
+                    h.assertTrue(a.role()==LiteraryActor.STRANGER&&a.phase()==LodgingPeople.FIRST+i&&a.holdsBody()&&a.ownGestures(),"number "+i+" is one of the house's own");
+                }
+                LodgingPeople.ensure(l,b);
+                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,LodgingPeople.area(b),LodgingPeople::is).size()==LodgingPeople.COUNT,"seven of them, and asking again makes no eighth");
+                // Rae in the hall; Dan sat on its bench; Vera at her table upstairs; Daniel in his frame behind his bolted door.
+                h.assertTrue(LodgingSite.inHall(rel(b,who[LodgingPeople.RAE]))&&ActorSeat.of(who[LodgingPeople.RAE])==null,"Rae stands in the front hall");
+                var seat=ActorSeat.of(who[LodgingPeople.DAN]);
+                h.assertTrue(seat!=null&&seat.seatHeight()==8&&seat.facing()==Direction.WEST&&who[LodgingPeople.DAN].blockPosition().equals(b.offset(LodgingSite.ENDING.north())),"Dan sits on the hall bench's far end, facing into the hall: "+seat);
+                h.assertTrue(LodgingSite.inWorkroom(rel(b,who[LodgingPeople.VERA]))&&l.getBlockState(who[LodgingPeople.VERA].blockPosition()).isAir(),"Vera stands in the workroom, on clear floor");
+                h.assertTrue(who[LodgingPeople.DANIEL].blockPosition().equals(b.offset(LodgingSite.DANIEL_FRAME))&&fitting(l,b,LodgingSite.DANIEL_FRAME,LodgingBlock.Kind.FRAME_BACK)&&LodgingBlock.bolted(l.getBlockState(b.offset(LodgingSite.DANIEL_DOOR))),
+                    "Daniel stands in his frame's opening, and his door is bolted");
+                var back=who[LodgingPeople.DANIEL].getBoundingBox();
+                h.assertTrue(back.minZ>b.getZ()+LodgingSite.DANIEL_FRAME.getZ()+6/16.0-1e-6&&back.minX>=b.getX()+LodgingSite.DANIEL_FRAME.getX()&&back.maxX<=b.getX()+LodgingSite.DANIEL_FRAME.getX()+1,"he is in front of its plaster and between its jambs: "+back);
+                // The failed bodies: one sat tied at the dead post's foot, one in each of two passages.
+                var tied=who[LodgingPeople.FAILED_POST];var floor=ActorSeat.of(tied);
+                h.assertTrue(LodgingSite.inCellar(rel(b,tied))&&floor!=null&&floor.seatHeight()==1&&tied.blockPosition().equals(b.offset(LodgingSite.DEAD_POST.east())),"a failed body sits on the cellar floor against the dead post: "+rel(b,tied));
+                h.assertTrue(LodgingSite.inPassages(rel(b,who[LodgingPeople.FAILED_DRESS]))&&LodgingSite.upstairs(rel(b,who[LodgingPeople.FAILED_DRESS]))&&part(l,b,new BlockPos(LodgingSite.ROOM_E,LodgingSite.UPPER+1,LodgingSite.HATCH_Z[1]))==LodgingWall.Part.HATCH,
+                    "one stands in the upper passage at a guest room's hatch");
+                h.assertTrue(LodgingSite.inPassages(rel(b,who[LodgingPeople.FAILED_SHIRT]))&&!LodgingSite.upstairs(rel(b,who[LodgingPeople.FAILED_SHIRT]))&&fitting(l,b,LodgingSite.JIB,LodgingBlock.Kind.JIB),"and one in the lower passage at the jib door");
+                h.assertTrue(who[LodgingPeople.FAILED_DRESS].getScale()<1&&who[LodgingPeople.FAILED_SHIRT].getScale()>1&&who[LodgingPeople.RAE].getScale()==1,"two of the failed bodies are a little the wrong size");
+                // A reader beside Rae, to her west: where she can see them, and Daniel cannot. The other is further off, up the hall.
+                f.at(p,P,-1.5,0,-3.5);f.at(q,P,.5,0,-10.5);
+            })
+            .thenIdle(40)
+            .thenExecute(()->{
+                var rae=who[LodgingPeople.RAE];
+                h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(rae.getYHeadRot()-LodgingPeople.HEAD_TURN))<1.5F&&net.minecraft.util.Mth.degreesDifferenceAbs(rae.getYRot(),0)<.01F&&net.minecraft.util.Mth.degreesDifferenceAbs(rae.yBodyRot,0)<.01F,
+                    "Rae has turned her head to the reader beside her as far as a head turns, and not her body: head "+rae.getYHeadRot()+" body "+rae.getYRot());
+                h.assertTrue(net.minecraft.util.Mth.degreesDifferenceAbs(who[LodgingPeople.DANIEL].getYHeadRot(),0)<.01F&&net.minecraft.util.Mth.degreesDifferenceAbs(who[LodgingPeople.VERA].getYHeadRot(),180)<.01F,"Daniel and Vera, who cannot see them, have not");
+                // Rae asks the first reader.
+                told(p);LiteraryVignettes.talk(p,rae);
+                for(var line:LodgingTexts.RAE_REQUEST)has(h,p,"Rae: "+line);
+                for(var line:LodgingTexts.DAN_FINE)has(h,p,"Dan: "+line);
+                h.assertTrue(Talk.replies(p).equals(List.of(LodgingTexts.R_STAY,LodgingTexts.R_WRONG,LodgingTexts.R_PLACE,LodgingTexts.R_VERA,LodgingTexts.R_NOT)),"her request has the script's five answers: "+Talk.replies(p));
+                h.assertTrue(rae.saying()&&who[LodgingPeople.DAN].saying()&&own(p).getBoolean(LodgingPeople.RAE_ASKED)&&!own(q).getBoolean(LodgingPeople.RAE_ASKED),"both have spoken, to this reader and not the other");
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_WRONG),"asked what is wrong with him");
+                has(h,p,"Rae: "+LodgingTexts.RAE_HAND);has(h,p,"Dan: "+LodgingTexts.DAN_SPRING);has(h,p,"Rae: "+LodgingTexts.RAE_ARRANGEMENT);
+                var shown=told(p);
+                h.assertTrue(shown.contains(LodgingTexts.DAN_SHOWS),"the reader is told Dan takes his hand out of his pocket: "+shown);
+                h.assertTrue(who[LodgingPeople.DAN].gesture()==LodgingPeople.SHOW,"and he holds it out to be looked at: gesture "+who[LodgingPeople.DAN].gesture());
+                h.assertTrue(Talk.replies(p).equals(List.of(LodgingTexts.R_STAY,LodgingTexts.R_PLACE,LodgingTexts.R_VERA,LodgingTexts.R_NOT)),"a question asked is not offered again: "+Talk.replies(p));
+            })
+            .thenIdle(LodgingPeople.SHOWN+5)
+            .thenExecute(()->{
+                h.assertTrue(who[LodgingPeople.DAN].gesture()==LodgingPeople.POCKET,"and puts it back");
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_PLACE),"asked what the place is");has(h,p,"Dan: "+LodgingTexts.DAN_PLACE);
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_STAY),"said they would stay with him");has(h,p,"Rae: "+LodgingTexts.RAE_THANKS);
+                h.assertTrue(Talk.replies(p).isEmpty()&&LodgingPeople.promisedDan(own(p))&&!LodgingPeople.promisedDan(own(q)),"the promise is this reader's and binds nobody else");
+            })
+            .thenWaitUntil(()->h.assertTrue(!who[LodgingPeople.RAE].saying()&&!who[LodgingPeople.DAN].saying(),"waiting for them to finish"))
+            .thenExecute(()->{
+                var rae=who[LodgingPeople.RAE];var dan=who[LodgingPeople.DAN];
+                // The second reader goes to Dan before Rae has asked them anything.
+                f.at(q,P,2.5,0,-4.5);LiteraryVignettes.talk(q,dan);has(h,q,"Dan: "+LodgingTexts.DAN_FINE[0]);has(h,q,"Dan: "+LodgingTexts.DAN_FINE[1]);
+                h.assertTrue(Talk.replies(q).equals(List.of(LodgingTexts.R_WRONG_DAN,LodgingTexts.R_PLACE,LodgingTexts.R_LEAVE_DAN)),"he can be asked what is wrong, and what the place is, or left be: "+Talk.replies(q));
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_WRONG_DAN),"asked what is wrong");has(h,q,"Dan: "+LodgingTexts.DAN_SLEEPING);
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_PLACE),"asked what the place is");has(h,q,"Dan: "+LodgingTexts.DAN_PLACE);
+                h.assertTrue(Talk.replies(q).isEmpty(),"and he has nothing more to be asked");
+                // The first reader's later hand on Rae: she has had her answer. And on Dan, who has had his say to them in her request: he
+                // says nothing again, and can still be asked what is wrong.
+                f.at(p,P,-1.5,0,-3.5);Talk.close(p);told(p);LiteraryVignettes.talk(p,rae);
+                h.assertTrue(told(p).contains(LodgingTexts.RAE_WATCHES)&&Talk.key(p).isEmpty(),"a reader who has answered her is not asked again");
+                h.assertTrue(own(p).getBoolean(LodgingPeople.DAN_MET),"Dan has had his say to the first reader");
+                LiteraryVignettes.talk(p,dan);
+                h.assertTrue(told(p).contains(LodgingTexts.DAN_LOOKS_UP)&&Talk.lines(p).isEmpty()&&Talk.replies(p).equals(List.of(LodgingTexts.R_WRONG_DAN,LodgingTexts.R_LEAVE_DAN)),"he does not say it again; what is left to ask him is offered: "+Talk.lines(p)+" "+Talk.replies(p));
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_LEAVE_DAN)&&Talk.key(p).isEmpty(),"and he can be left be");
+            })
+            .thenWaitUntil(()->h.assertTrue(!who[LodgingPeople.RAE].saying()&&!who[LodgingPeople.DAN].saying(),"waiting for them to finish"))
+            .thenExecute(()->{
+                var rae=who[LodgingPeople.RAE];
+                // Then Rae asks the second reader for themselves. Dan has had his say to them: he adds only that they need not. They say
+                // it is not their business.
+                f.at(q,P,2.5,0,-4.5);Talk.close(q);told(q);LiteraryVignettes.talk(q,rae);for(var line:LodgingTexts.RAE_REQUEST)has(h,q,"Rae: "+line);has(h,q,"Dan: "+LodgingTexts.DAN_FINE[2]);
+                h.assertTrue(!Talk.lines(q).contains("Dan: "+LodgingTexts.DAN_FINE[0]),"he does not tell them again that he is fine: "+Talk.lines(q));
+                h.assertTrue(Talk.replies(q).equals(List.of(LodgingTexts.R_STAY,LodgingTexts.R_WRONG,LodgingTexts.R_VERA,LodgingTexts.R_NOT)),"what they asked Dan already is not offered again: "+Talk.replies(q));
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_NOT),"said it was not their business");has(h,q,"Rae: "+LodgingTexts.RAE_NO);has(h,q,"Dan: "+LodgingTexts.DAN_GOOD);
+                h.assertTrue(own(q).getInt(LodgingPeople.RAE_ANSWER)==LodgingPeople.NOT_MINE&&Talk.replies(q).isEmpty()&&!LodgingPeople.promisedDan(own(q)),"and that is their answer");
+            })
+            .thenWaitUntil(()->h.assertTrue(!who[LodgingPeople.DAN].saying(),"waiting for Dan to finish"))
+            .thenExecute(()->{
+                f.at(q,P,2.5,0,-4.5);Talk.close(q);told(q);LiteraryVignettes.talk(q,who[LodgingPeople.DAN]);
+                h.assertTrue(told(q).contains(LodgingTexts.DAN_SITS)&&Talk.key(q).isEmpty(),"a later hand gets what he is doing");
+                // Vera, found upstairs at her work.
+                var vera=who[LodgingPeople.VERA];f.at(p,P,-7.5,LodgingSite.UPPER,-19.5);Talk.close(p);LiteraryVignettes.talk(p,vera);
+                for(var line:LodgingTexts.VERA_GUESTS)has(h,p,"Vera: "+line);
+                h.assertTrue(Talk.replies(p).isEmpty()&&vera.saying(),"she says it and has nothing to be answered");
+            })
+            .thenWaitUntil(()->h.assertTrue(!who[LodgingPeople.VERA].saying(),"waiting for Vera to finish"))
+            .thenExecute(()->{
+                f.at(p,P,-7.5,LodgingSite.UPPER,-19.5);Talk.close(p);told(p);LiteraryVignettes.talk(p,who[LodgingPeople.VERA]);
+                h.assertTrue(told(p).contains(LodgingTexts.VERA_WORKS),"a later hand gets what she is doing");
+                // Daniel, in his room.
+                var daniel=who[LodgingPeople.DANIEL];f.at(p,P,-7.5,0,-25.5);told(p);LiteraryVignettes.talk(p,daniel);
+                for(var line:LodgingTexts.DANIEL_LISTEN)has(h,p,LodgingTexts.MAN_IN_FRAME+": "+line);
+                h.assertTrue(Talk.replies(p).equals(List.of(LodgingTexts.R_DAN_HERE,LodgingTexts.R_WHO,LodgingTexts.R_FREE,LodgingTexts.R_BACK,LodgingTexts.R_NOTHING)),"he has the script's five answers: "+Talk.replies(p));
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_WHO),"asked who he is");
+                has(h,p,LodgingTexts.MAN_IN_FRAME+": "+LodgingTexts.DANIEL_NAME);has(h,p,"Daniel: "+LodgingTexts.DANIEL_COUNTING);
+                h.assertTrue(told(p).contains(LodgingTexts.DANIEL_LOOKS)&&own(p).getBoolean(LodgingPeople.KNOWS_DANIEL)&&!own(q).getBoolean(LodgingPeople.KNOWS_DANIEL),"he has a name for this reader from when he gives it");
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_DAN_HERE),"told him Dan is here");has(h,p,"Daniel: "+LodgingTexts.DANIEL_VOICE);
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_FREE),"said they would get him out");has(h,p,"Daniel: "+LodgingTexts.DANIEL_KEY);
+                h.assertTrue(Talk.replies(p).isEmpty()&&LodgingPeople.promisedDaniel(own(p))&&!LodgingPeople.promisedDaniel(own(q)),"that promise is this reader's too");
+            })
+            .thenWaitUntil(()->h.assertTrue(!who[LodgingPeople.DANIEL].saying(),"waiting for Daniel to finish"))
+            .thenExecute(()->{
+                f.at(p,P,-7.5,0,-25.5);Talk.close(p);LiteraryVignettes.talk(p,who[LodgingPeople.DANIEL]);has(h,p,"Daniel: "+LodgingTexts.DANIEL_LISTEN[2]);
+                h.assertTrue(Talk.replies(p).equals(List.of(LodgingTexts.R_BACK,LodgingTexts.R_NOTHING))&&Talk.choose(p,LodgingTexts.R_BACK)&&LodgingPeople.promisedDaniel(own(p)),"asked again he has less to be told, and a promise made stays made: "+Talk.replies(p));
+                // The failed bodies: a hand gets what each is doing, and no panel; none turns to a reader beside it.
+                for(int i=LodgingPeople.FAILED_POST;i<LodgingPeople.COUNT;i++){
+                    var a=who[i];var s=LodgingPeople.SPOTS[i];var at=rel(b,a);f.at(p,P,at.x+(i==LodgingPeople.FAILED_POST?1.5:0),at.y,at.z+(i==LodgingPeople.FAILED_POST?0:1.5));
+                    Talk.close(p);told(p);LiteraryVignettes.talk(p,a);
+                    h.assertTrue(told(p).contains(LodgingTexts.failed(i))&&Talk.key(p).isEmpty()&&!a.saying(),"a hand on failed body "+i+" gets what it is doing, in the house's grey, and nothing said");
+                }
+            })
+            .thenIdle(30)
+            .thenExecute(()->{
+                var a=who[LodgingPeople.FAILED_SHIRT];
+                h.assertTrue(net.minecraft.util.Mth.degreesDifferenceAbs(a.getYHeadRot(),LodgingPeople.SPOTS[LodgingPeople.FAILED_SHIRT].look())<.01F,"a failed body does not turn to a reader beside it: "+a.getYHeadRot());
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="lodging_people") public static void peopleDone(ServerLevel l){done();}
 }

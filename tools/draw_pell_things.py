@@ -2601,10 +2601,12 @@ def thing_models():
         out[f'freezer_open_{end}'] = m(els, {'f': front, 'i': 'freezer_inside', 's': 'enamel', 'p': 'freezer_plastic', 'u': 'freezer_lid_under'}, front)
     out['stool_0'] = m([box([3, 8, 3], [13, 9, 13], 't', up='t'), box([3, 4, 1], [13, 5, 5], 'p'),
                         *[box([x, 0, z], [x + 1, 8, z + 1], 'p') for x in (3, 12) for z in (3, 12)]], {'t': 'stool', 'p': 'paint_cream'}, 'stool')
-    out['power_0'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 3], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 12]})],
+    # 0.4.602 (owner: "slight mishappen texture"): the cord out of the plate stopped three pixels short of the next block's and was
+    # stretched to do it; it runs to the block's edge now, a pixel to a pixel.
+    out['power_0'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 0], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 15.6]})],
                        {'p': 'power_point', 'c': 'cord'}, 'power_point')
     # 0.4.548: the note taken off it (PellMark).
-    out['power_1'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 3], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 12]})],
+    out['power_1'] = m([element([0, 0, 15.6], [16, 16, 16], {'north': 'p'}), element([7, 0.05, 0], [9, 0.3, 15.6], {'up': 'c'}, uv={'up': [7, 0, 9, 15.6]})],
                        {'p': 'power_point_bare', 'c': 'cord'}, 'power_point_bare')
     out['cord_0'] = m([element([0, 0.05, 0], [16, 0.3, 16], {'up': 'c'})], {'c': 'cord'}, 'cord')
     out['trough_0'] = m([element([1, 9, 2], [15, 15, 15], {'up': 't', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}),

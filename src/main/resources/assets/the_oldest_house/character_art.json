@@ -2270,5 +2270,61 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 199
+  },
+  {
+    "name": "literary_lodging_rae",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 200
+  },
+  {
+    "name": "literary_lodging_dan",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 201
+  },
+  {
+    "name": "literary_lodging_vera",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 202
+  },
+  {
+    "name": "literary_lodging_daniel",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 203
+  },
+  {
+    "name": "literary_lodging_failed_post",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 204
+  },
+  {
+    "name": "literary_lodging_failed_dress",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 205
+  },
+  {
+    "name": "literary_lodging_failed_shirt",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 206
   }
 ]

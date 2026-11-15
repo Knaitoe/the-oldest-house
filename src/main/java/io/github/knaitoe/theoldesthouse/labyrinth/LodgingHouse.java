@@ -30,14 +30,22 @@ public final class LodgingHouse {
 
     /** Not until the story can be finished: it is being built in slices. */
     public static boolean dealable(LabyrinthData d,UUID reader){return false;}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);}
+    /** Everybody reading in this house. */
+    static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){
+        var out=new java.util.ArrayList<ServerPlayer>();
+        for(var p:l.players())if(LiteraryVignettes.participant(p)&&LiteraryVignettes.current(p)==PLACE&&b.equals(LiteraryVignettes.base(p,PLACE)))out.add(p);
+        return out;
+    }
     /** Every reader tick. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
+        // 0.4.602: the house's people, made if they are not there (after a reload they are taken up again).
+        LodgingPeople.ensure(p.serverLevel(),b);
         if(!own.getBoolean("WentUp")&&LodgingSite.upstairs(r)){own.putBoolean("WentUp",true);save(p,own);}
         if(!own.getBoolean("WentDown")&&LodgingSite.inCellar(r)){own.putBoolean("WentDown",true);save(p,own);}
     }
-    public static void clearAll(){}
+    public static void clearAll(){LodgingPeople.clearAll();}
 
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){

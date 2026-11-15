@@ -36,6 +36,12 @@ public final class PellHouse {
      *  aftermath for everybody at it (PellAftermath), with nobody in it. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         var l=p.serverLevel();var here=readers(l,b);if(!here.contains(p))here.add(p);
+        // 0.4.602 (owner: "it doesn't seem week 2 of the pell house began when re-entering its door"): the house played a visit again
+        // only once it had stood empty for a while (PellVisit.EMPTY), so a reader who had had all of a visit, went out through the
+        // House's door and came straight back walked into the visit they had finished. Now a return that is due a later visit, with
+        // nobody here still on the earlier one, starts the house afresh.
+        var h=PellPeople.household(b);
+        if(!h.fresh&&PellWeek.visitFor(here)>h.visit)PellPeople.vacate(b);
         if(PellAftermath.holds(l,b,here))PellPeople.household(b);else PellPeople.ensure(l,b);
     }
     /** 0.4.547: in a reader's own record, who else they have been at the house with, by name, in the order they met: their own pair, in a

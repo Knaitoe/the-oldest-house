@@ -171,6 +171,9 @@ public final class CastConductTests {
     @AfterBatch(batch="cast_speak_up") public static void speakUpDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_pell",timeoutTicks=TIMEOUT) public static void pellHouse(GameTestHelper h){sweep(h,LabyrinthPlace.PELL_HOUSE,c->{});}
     @AfterBatch(batch="cast_pell") public static void pellDone(ServerLevel l){close();}
+    /** 0.4.602: the lodging house's seven, though the House does not deal it yet. */
+    @GameTest(template="empty",batch="cast_lodging",timeoutTicks=TIMEOUT) public static void lodgingHouse(GameTestHelper h){sweep(h,LabyrinthPlace.ONES_INSIDE,c->{});}
+    @AfterBatch(batch="cast_lodging") public static void lodgingDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_pinehook",timeoutTicks=TIMEOUT) public static void pinehook(GameTestHelper h){sweep(h,LabyrinthPlace.PINEHOOK,c->{});}
     @AfterBatch(batch="cast_pinehook") public static void pinehookDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_last_crossing",timeoutTicks=TIMEOUT) public static void lastCrossing(GameTestHelper h){sweep(h,LabyrinthPlace.LAST_CROSSING,c->{});}
