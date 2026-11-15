@@ -217,6 +217,8 @@ public final class PellHouse {
             case POWER->{if(!PellMark.note(p,b,at,st,own))cue(p,PellTexts.thing(kind,stage));}
             default->cue(p,PellTexts.thing(kind,stage));
         }
+        // 0.4.601: with Tilly on this reader's arm, her hand goes where theirs did (PellArm).
+        PellArm.touched(p,l,b,at,kind,stage,own);
     }
     /** Opens a shut door or gate and shuts an open one, both cells of it. */
     public static void toggle(ServerLevel l,BlockPos b,BlockPos door){

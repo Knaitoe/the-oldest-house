@@ -83,7 +83,7 @@ public final class PellJobs {
     public static int ticked(BlockPos b){return PellPeople.household(b).ticked;}
 
     // ------------------------------------------------------------------------------------------------ the table
-    private static ItemStack tagged(Item item,int count,BlockPos b){var s=new ItemStack(item,count);var t=new CompoundTag();t.putLong(HOME,b.asLong());s.set(DataComponents.CUSTOM_DATA,CustomData.of(t));return s;}
+    static ItemStack tagged(Item item,int count,BlockPos b){var s=new ItemStack(item,count);var t=new CompoundTag();t.putLong(HOME,b.asLong());s.set(DataComponents.CUSTOM_DATA,CustomData.of(t));return s;}
     static boolean of(ItemStack s,Item item,@Nullable BlockPos b){
         if(!s.is(item))return false;if(b==null)return true;
         var d=s.get(DataComponents.CUSTOM_DATA);return d!=null&&d.copyTag().getLong(HOME)==b.asLong();

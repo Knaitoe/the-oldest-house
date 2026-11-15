@@ -208,4 +208,4 @@ Main stays at a975d1d3 (0.4.555) until a run passes every job.
   textures.
 - The flower bed.
 - Each vignette door's own bleed and sound in the halls.
-- Put by for later: a ball, and a game of catch with Callum; taking Tilly round the house by the arm.
+- Put by for later: a ball, and a game of catch with Callum; taking Tilly round the house by the arm. (Both built in 0.4.601: `docs/PELL_HOUSE_NOTES_0_4_601.md`.)

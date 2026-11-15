@@ -426,7 +426,7 @@ public final class PellHouseTests {
             var tilly=who(h,l,b,PellPeople.TILLY);
             LiteraryVignettes.talk(p,tilly);
             h.assertTrue(said(tilly).equals(PellTexts.TILLY_TALK[0]),"Tilly asks: "+said(tilly));
-            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_STAKE,PellTexts.TELL_NICE,PellTexts.TELL_ENOUGH)),"offered the stars and her stake, a kind word, and leaving it: "+Talk.replies(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_STAKE,PellTexts.TELL_NICE,PellTexts.TELL_COME,PellTexts.TELL_ENOUGH)),"offered the stars and her stake, a kind word, an arm, and leaving it: "+Talk.replies(p));
             h.assertTrue(Talk.choose(p,PellTexts.TELL_STAKE)&&said(tilly).equals(PellTexts.TILLY_GOT_HERE_TODAY),"told of the stake with her name on it: "+said(tilly));
             h.assertTrue(Talk.choose(p,PellTexts.TELL_ENOUGH)&&PellCompany.told(f.own(p,P))==1,"and it is left there");
         }).thenSucceed();
@@ -1156,12 +1156,12 @@ public final class PellHouseTests {
             var tilly=who(h,l,b,PellPeople.TILLY);
             LiteraryVignettes.talk(p,tilly);
             h.assertTrue(said(tilly).equals(PellTexts.TILLY_TALK[0]),"Tilly asks: "+said(tilly));
-            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_DESK,PellTexts.TELL_MARKS,PellTexts.TELL_NICE,PellTexts.TELL_ENOUGH)),"offered what they have seen, a kind word, and leaving it: "+Talk.replies(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_DESK,PellTexts.TELL_MARKS,PellTexts.TELL_NICE,PellTexts.TELL_COME,PellTexts.TELL_ENOUGH)),"offered what they have seen, a kind word, an arm, and leaving it: "+Talk.replies(p));
             h.assertTrue(telling(p,"Tilly",PellTexts.TILLY_TALK[0]),"her question on the panel: "+Talk.lines(p));
             h.assertTrue(Talk.choose(p,PellTexts.TELL_DESK),"the reader tells her of the desk");
             h.assertTrue(said(tilly).equals(PellTexts.TILLY_MAGNIFIER)&&telling(p,"Tilly",PellTexts.TILLY_MAGNIFIER),"and she answers: "+said(tilly));
             h.assertTrue(PellCompany.told(f.own(p,P))==1,"kept as told");
-            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_MARKS,PellTexts.TELL_ENOUGH)),"what is left to tell, the kind word gone: "+Talk.replies(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_MARKS,PellTexts.TELL_COME,PellTexts.TELL_ENOUGH)),"what is left to tell, the kind word gone, and an arm: "+Talk.replies(p));
         }).thenIdle(2).thenExecute(()->{
             // With the question still open, a hand on her brings it up again: she says nothing new, and nothing is asked twice.
             var tilly=who(h,l,b,PellPeople.TILLY);int lines=Talk.lines(p).size();
@@ -2052,7 +2052,7 @@ public final class PellHouseTests {
             // can tell her a week in: the pool and her hair, which anybody can see; not the knife, which the other reader found.
             String asks=PellTexts.TILLY_WEEK_TALK[PellTexts.TILLY_WEEK_TALK.length-1];
             h.assertTrue(said(tilly).equals(asks)&&telling(q,"Tilly",asks),"Tilly asks what is different: "+said(tilly));
-            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_POOL_OPEN,PellTexts.TELL_HAIR,PellTexts.TELL_GROWN,PellTexts.TELL_SAME,PellTexts.TELL_ENOUGH)),"what this reader can tell her: "+Talk.replies(q));
+            h.assertTrue(Talk.replies(q).equals(List.of(PellTexts.TELL_POOL_OPEN,PellTexts.TELL_HAIR,PellTexts.TELL_GROWN,PellTexts.TELL_SAME,PellTexts.TELL_COME,PellTexts.TELL_ENOUGH)),"what this reader can tell her, and an arm: "+Talk.replies(q));
             h.assertTrue(Talk.choose(q,PellTexts.TELL_HAIR)&&said(tilly).equals(PellTexts.TILLY_A_WEEK),"told her hair is nearly to her shoulders: "+said(tilly));
             h.assertTrue(Talk.choose(q,PellTexts.TELL_GROWN)&&said(tilly).equals(PellTexts.TILLY_HER_HAND_OVER),"told her plant has grown: "+said(tilly));
             h.assertTrue(Talk.choose(q,PellTexts.TELL_ENOUGH)&&PellCompany.told(f.own(q,P))==2,"and it is left there");
@@ -4684,4 +4684,217 @@ public final class PellHouseTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="pell_mark_tape") public static void markTapeDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.601: catch, and Tilly's arm
+    /** Where something is, from the house's corner. */
+    private static Vec3 from(BlockPos b,Vec3 at){return at.subtract(b.getX(),b.getY(),b.getZ());}
+    /** The house's ball, which the reader has about them, thrown the way they are turned: the game's own use of what is in the hand. */
+    private static void throwBall(ServerPlayer p,float yaw,float pitch){
+        inHand(p,PellRegistry.BALL.get());face(p,yaw,pitch);
+        p.gameMode.useItem(p,p.serverLevel(),p.getMainHandItem(),net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
+    /** Where the house's ball is, for a case that is waiting on it. */
+    private static String ballAt(ServerPlayer p,ServerLevel l,BlockPos b){
+        var fly=PellCatch.flying(l,b);var lie=PellCatch.lying(l,b);
+        return "state "+PellCatch.state(b)+(fly!=null?" in the air at "+from(b,fly.position())+" going "+fly.getDeltaMovement():"")+(lie!=null?" lying at "+from(b,lie.position()):"")+(has(p,PellRegistry.BALL.get())?" in the reader's hands":"")+" reader at "+from(b,p.position());
+    }
+    /** The house's ball where it lies, picked up as anything dropped is: by a reader who walks over it. */
+    private static void pickUp(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,ServerLevel l,BlockPos b){
+        var ball=PellCatch.lying(l,b);h.assertTrue(ball!=null,"the ball lies somewhere");
+        var r=from(b,ball.position());f.at(p,P,r.x-.6,0,r.z);ball.playerTouch(p);
+        h.assertTrue(has(p,PellRegistry.BALL.get())&&PellCatch.lying(l,b)==null,"picked up by walking over it, from "+r);
+    }
+
+    /**
+     * 0.4.601, a ball, and a game of catch with Callum (docs/PELL_HOUSE_NOTES_0_4_601.md). The owner: "things for characters to do or
+     * tasks they're assigned with so they're not just stuck waiting out the day." A tennis ball lies in the drive before the kennel;
+     * a reader who walks over it has it, and is told once what it is. With the house settled to its afternoon, held out to Callum at
+     * the end of the hall, he looks down the hall and back. Thrown the other way, it bounces down the hall with nobody after it: he
+     * watches it go by, and June says to mind the photographs. Thrown to him from ten blocks down the hall, he has it in his hands
+     * without taking a step, holds it a beat, and throws it back to where the reader's hand was: it is in their hand again, and kept as
+     * theirs. Thrown again, with the reader gone from where they stood before he lets it go, it comes down where they were standing
+     * and lies there. Tilly can be told of it, and has her word. The account has it; and at six June calls them as she always did.
+     */
+    @GameTest(template="empty",batch="pell_catch",timeoutTicks=4000)
+    public static void aBallFromTheKennelGoesDownTheHallToCallumAndComesBackABeatLate(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_catch_reader",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);
+        long[] caught={0};
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenIdle(12).thenExecute(()->{
+            var ball=PellCatch.lying(l,b);
+            h.assertTrue(ball!=null&&from(b,ball.position()).subtract(PellCatch.KENNEL).horizontalDistance()<.6,"the ball lies in the drive before the kennel: "+(ball==null?null:from(b,ball.position())));
+            h.assertTrue(thing(l,b,19,0,-80,KENNEL,0)&&l.getBlockState(BlockPos.containing(ball.position())).isAir(),"in front of the kennel's mouth, on the open drive");
+            h.assertTrue(!has(p,PellRegistry.BALL.get())&&!f.own(p,P).getBoolean(PellCatch.FOUND),"and nobody has it yet");
+            told(p);pickUp(h,f,p,l,b);
+        }).thenIdle(PellCatch.KEEP+2).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.BALL_FOUND)&&f.own(p,P).getBoolean(PellCatch.FOUND),"the reader is told what they have found");
+            h.assertTrue(PellCatch.lying(l,b)==null,"and no second ball is laid while they have it");
+            PellVisit.settle(l,b);
+            // In the hall, six blocks from where Callum stands at its far end: the ball held out to him.
+            f.at(p,P,-6.5,0,-65.5);inHand(p,PellRegistry.BALL.get());
+            LiteraryVignettes.talk(p,who(h,l,b,PellPeople.CALLUM));
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_BALL),"held out to him, he looks at it, down the hall, and back");
+            // Thrown the other way: he does not go after it.
+            f.at(p,P,-2.5,0,-65.5);throwBall(p,-90,-5);
+            var ball=PellCatch.flying(l,b);
+            h.assertTrue(ball!=null&&!has(p,PellRegistry.BALL.get())&&ball.getDeltaMovement().x>.5,"thrown, it leaves the reader's hand the way they look: "+(ball==null?null:ball.getDeltaMovement()));
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.NONE&&PellCatch.lying(l,b)!=null,"it bounces down the hall and lies where it stops: "+ballAt(p,l,b)))
+        .thenIdle(1).thenExecute(()->{
+            var callum=who(h,l,b,PellPeople.CALLUM);var r=from(b,PellCatch.lying(l,b).position());
+            h.assertTrue(told(p).contains(PellTexts.CALLUM_LETS_IT_GO),"he watches it go by");
+            h.assertTrue(at(callum,b,-12.5,-65.5,.3)&&callum.getMainHandItem().isEmpty()&&callum.gesture()!=PellPeople.CATCH,"and has not moved: "+callum.position()+" "+callum.gesture());
+            h.assertTrue(PellSite.inHouse(r)&&r.x>-2,"the ball in the house, further down the hall: "+r);
+        }).thenWaitUntil(()->h.assertTrue(said(who(h,l,b,PellPeople.JUNE)).equals(PellTexts.JUNE_BALL),"June, from her kitchen: "+said(who(h,l,b,PellPeople.JUNE))))
+        .thenIdle(12).thenExecute(()->{
+            // Fetched, and thrown to him from ten blocks down the hall, a little up.
+            pickUp(h,f,p,l,b);f.at(p,P,-2.5,0,-65.5);throwBall(p,90,-12);
+            h.assertTrue(PellCatch.flying(l,b)!=null,"thrown down the hall to him");
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.HELD,"Callum catches it: "+PellCatch.state(b)+" "+(PellCatch.flying(l,b)==null?"not in the air":""+from(b,PellCatch.flying(l,b).position()))))
+        .thenExecute(()->{
+            var callum=who(h,l,b,PellPeople.CALLUM);
+            h.assertTrue(PellCatch.isBall(callum.getMainHandItem(),b)&&callum.gesture()==PellPeople.CATCH&&PellCatch.flying(l,b)==null,"the ball in his hands, held out in front of him: "+callum.getMainHandItem()+" "+callum.gesture());
+            h.assertTrue(at(callum,b,-12.5,-65.5,.3),"he has not taken a step for it: "+callum.position());
+            caught[0]=l.getGameTime();
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.BACK,"he throws it back"))
+        .thenExecute(()->{
+            long held=l.getGameTime()-caught[0];var callum=who(h,l,b,PellPeople.CALLUM);var ball=PellCatch.flying(l,b);
+            h.assertTrue(held>=PellNight.BEAT-1&&held<=PellNight.BEAT+1,"a beat after he caught it: "+held);
+            h.assertTrue(callum.getMainHandItem().isEmpty()&&callum.gesture()==PellPeople.THROW&&ball!=null&&ball.getDeltaMovement().x>.3,"his hands empty and out after it, the ball on its way back along the hall: "+callum.gesture()+" "+(ball==null?null:ball.getDeltaMovement()));
+        }).thenWaitUntil(()->h.assertTrue(has(p,PellRegistry.BALL.get()),"it comes back to the reader's hands: "+(PellCatch.flying(l,b)==null?"not in the air":""+from(b,PellCatch.flying(l,b).position()))))
+        .thenIdle(1).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(PellCatch.state(b)==PellCatch.NONE&&PellCatch.rally(b)==1&&own.getInt(PellCatch.CATCHES)==1&&own.getInt(PellCatch.RALLY)==1,"caught, and kept as theirs: "+own.getInt(PellCatch.CATCHES)+" "+PellCatch.rally(b));
+            h.assertTrue(PellCatch.isBall(p.getMainHandItem(),b)&&PellCatch.lying(l,b)==null,"in the hand it left, and nowhere else");
+            h.assertTrue(told(p).contains(PellTexts.BALL_BACK),"\"the way you threw it, a moment late\"");
+            h.assertTrue(who(h,l,b,PellPeople.CALLUM).gesture()!=PellPeople.CATCH,"his hands down again");
+            // Again; and this time the reader is gone from where they stood before he lets it go.
+            throwBall(p,90,-12);
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.HELD,"Callum catches the second"))
+        .thenExecute(()->f.at(p,P,9.5,0,-65.5))
+        .thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.BACK,"he throws it back to where they stood"))
+        .thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.NONE,"his throw comes down: "+ballAt(p,l,b)))
+        .thenExecute(()->{
+            // Where it first met the floor: past where the reader's hand had been, and well short of where they went.
+            var ball=l.getEntitiesOfClass(PrizeBall.class,PellPeople.area(b),e->PellCatch.isBall(e.getItem(),b));
+            h.assertTrue(ball.size()==1&&ball.get(0).bounces>0,"it has met the floor, and is still going: "+ballAt(p,l,b));
+            var r=from(b,ball.get(0).position());
+            h.assertTrue(r.x>-4&&r.x<6&&r.y<.5,"it came down about where the reader had stood: "+r);
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.lying(l,b)!=null,"and it lies where it stops: "+ballAt(p,l,b)))
+        .thenIdle(1).thenExecute(()->{
+            var r=from(b,PellCatch.lying(l,b).position());
+            h.assertTrue(PellSite.inHouse(r)&&r.x>-4,"in the hall still: "+r);
+            h.assertTrue(told(p).contains(PellTexts.BALL_WHERE_YOU_STOOD),"\"where you were standing\"");
+            h.assertTrue(PellCatch.rally(b)==0&&f.own(p,P).getInt(PellCatch.CATCHES)==1&&!has(p,PellRegistry.BALL.get()),"nothing more is counted, and the reader has no ball");
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("There was a tennis ball by the kennel that nothing had ever chewed.")&&text.contains("he threw it back the way I had thrown it, a moment late"),"the account has it: "+text);
+            // Tilly can be told of it.
+            f.at(p,P,-9.5,0,-60.5);
+            var tilly=who(h,l,b,PellPeople.TILLY);LiteraryVignettes.talk(p,tilly);
+            h.assertTrue(Talk.replies(p).contains(PellTexts.TELL_CATCH),"Tilly asks, and the catch is something to tell her: "+said(tilly)+" "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_CATCH)&&said(tilly).equals(PellTexts.TILLY_COPIES),"and she has her word on it: "+said(tilly));
+            h.assertTrue(!Talk.replies(p).contains(PellTexts.TELL_CATCH),"told once");
+            Talk.choose(p,PellTexts.TELL_ENOUGH);
+            PellVisit.hurry(b,PellVisit.SIX-5);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CALLED,"at six June calls them, as she always did"))
+        .thenExecute(()->h.assertTrue(PellCatch.state(b)==PellCatch.NONE&&who(h,l,b,PellPeople.CALLUM).getMainHandItem().isEmpty(),"and Callum's hands are empty when she does"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_catch") public static void catchDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.601, taking Tilly round the house by the arm. The owner: "ways to interact with tilly, for singleplayer characters". In the
+     * afternoon Tilly's asking has one more answer: "Come on. Take my arm and I'll show you." She takes it, and has her word. Out in
+     * the hall she comes after the reader and stands beside them; a hand on the photographs gets her own hand on them and what she
+     * makes of them, once; another reader's hand on her is told she has somebody's arm. Down the path she stops at the edge of June's
+     * lot and keeps hold. The reader's own hand on her lets her go, and she goes back to Nessa's room by the way she came, her cane
+     * held out. Asked again, she takes the arm without a word; with the hour come she keeps it a while, and June does not call; then
+     * she lets go, goes home, and June calls dinner with everybody where she left them. The account has it.
+     */
+    @GameTest(template="empty",batch="pell_arm",timeoutTicks=9000)
+    public static void tillyGoesRoundTheHouseOnAReadersArmAndBackToHerRoomByHerself(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_arm_reader",P);var q=f.player("pell_arm_other",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,1.5,0,-44);
+        BlockPos photos=b.offset(-8,1,-66);long[] taken={0};
+        Runnable beside=()->{var t=who(h,l,b,PellPeople.TILLY);h.assertTrue(PellArm.state(b)==PellArm.LED&&t.distanceTo(p)<=PellArm.BESIDE+.4,"Tilly comes after the reader and stands beside them: "+from(b,t.position())+" state "+PellArm.state(b));};
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenExecute(()->{
+            PellVisit.settle(l,b);f.at(p,P,-9.5,0,-60.5);f.at(q,P,-5.5,0,-65.5);
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            LiteraryVignettes.talk(p,tilly);
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_TALK[0]),"Tilly asks: "+said(tilly));
+            h.assertTrue(Talk.replies(p).equals(List.of(PellTexts.TELL_STARS,PellTexts.TELL_NICE,PellTexts.TELL_COME,PellTexts.TELL_ENOUGH)),"the stars, a kind word, an arm, or leaving it: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_COME),"the reader offers their arm");
+            h.assertTrue(PellArm.state(b)==PellArm.LED&&p.getUUID().equals(PellArm.with(b))&&tilly.gesture()==PellPeople.ARM,"and she takes it: "+PellArm.state(b)+" "+tilly.gesture());
+            h.assertTrue(said(tilly).equals(PellTexts.TILLY_ARM)&&telling(p,"Tilly",PellTexts.TILLY_ARM)&&Talk.replies(p).isEmpty(),"with her word on it, and the asking over: "+said(tilly));
+            h.assertTrue(f.own(p,P).getBoolean(PellArm.WALKED),"kept as the reader's own");
+            // Out into the hall, by the photographs.
+            f.at(p,P,-7.5,0,-65.5);
+        }).thenWaitUntil(beside).thenWaitUntil(()->h.assertTrue(!who(h,l,b,PellPeople.TILLY).saying(),"she has said what she said"))
+        .thenIdle(20).thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellSite.inHouse(from(b,tilly.position()))&&tilly.getZ()-b.getZ()<-64,"out of Nessa's room and in the hall: "+from(b,tilly.position()));
+            told(p);hand(p,photos);
+            h.assertTrue(tilly.gesture()==PellPeople.FEEL&&said(tilly).equals(PellTexts.arm(PHOTOS,0,1)),"her hand on the photographs, and what she makes of them: "+tilly.gesture()+" "+said(tilly));
+            h.assertTrue(f.own(p,P).getInt(PellArm.SHOWN)==1,"kept: "+f.own(p,P).getInt(PellArm.SHOWN));
+            // Another reader's hand on her.
+            told(q);LiteraryVignettes.talk(q,tilly);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(told(q).contains(PellTexts.ARM_SOMEBODYS)&&PellArm.state(b)==PellArm.LED&&p.getUUID().equals(PellArm.with(b)),"she has somebody's arm, and keeps it");
+        }).thenIdle(PellArm.TOUCH+5).thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(tilly.gesture()==PellPeople.ARM,"her hand back on the arm: "+tilly.gesture());
+            hand(p,photos);
+            h.assertTrue(tilly.gesture()==PellPeople.FEEL&&f.own(p,P).getInt(PellArm.SHOWN)==2,"a second hand on them gets hers again");
+            // Along the hall, to the front door, out and down the path.
+            f.at(p,P,-3.5,0,-65.5);
+        }).thenWaitUntil(beside).thenExecute(()->f.at(p,P,.5,0,-62.5))
+        .thenWaitUntil(beside).thenExecute(()->f.at(p,P,.5,0,-58.5))
+        .thenWaitUntil(beside).thenExecute(()->f.at(p,P,.5,0,-54.5))
+        .thenWaitUntil(beside).thenExecute(()->{told(p);f.at(p,P,.5,0,-46.5);})
+        .thenIdle(80).thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);var r=from(b,tilly.position());
+            h.assertTrue(PellSite.onLot(r)&&r.z<-48.9&&r.z>-52,"she stops at the edge of June's lot: "+r);
+            h.assertTrue(PellArm.state(b)==PellArm.LED&&told(p).contains(PellTexts.ARM_EDGE),"and keeps hold: "+PellArm.state(b));
+            // The reader comes back to her, and lets her go.
+            f.at(p,P,.5,0,-51.5);
+        }).thenIdle(5).thenExecute(()->{
+            told(p);LiteraryVignettes.talk(p,who(h,l,b,PellPeople.TILLY));
+        }).thenIdle(1).thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(told(p).contains(PellTexts.ARM_LET_GO)&&PellArm.state(b)==PellArm.BACK&&PellArm.with(b)==null,"she lets go, and goes back: "+PellArm.state(b));
+            h.assertTrue(tilly.gesture()==PellPeople.CANE,"her cane held out ahead of her: "+tilly.gesture());
+        }).thenWaitUntil(()->{var t=who(h,l,b,PellPeople.TILLY);h.assertTrue(PellArm.state(b)==PellArm.OFF&&at(t,b,PellVisit.TILLY_ROOM.x(),PellVisit.TILLY_ROOM.z(),.8),"by the way she came, to where she stood in Nessa's room: "+from(b,t.position())+" state "+PellArm.state(b));})
+        .thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(PellVisit.step(b)==PellVisit.SETTLED&&tilly.gesture()==PellPeople.CANE,"and the afternoon has gone on as it does");
+            // Asked again: she takes the arm without a word this time.
+            f.at(p,P,-9.5,0,-60.5);told(p);
+            LiteraryVignettes.talk(p,tilly);
+            h.assertTrue(Talk.replies(p).contains(PellTexts.TELL_COME),"her next hand has her asking again, and the arm is offered: "+said(tilly)+" "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,PellTexts.TELL_COME)&&PellArm.state(b)==PellArm.LED,"taken again");
+            taken[0]=l.getGameTime();
+            // The hour comes while she has it.
+            PellVisit.hurry(b,PellVisit.SIX-5);
+        }).thenIdle(60).thenExecute(()->{
+            h.assertTrue(told(p).contains(PellTexts.ARM_TAKEN),"\"Tilly takes your arm.\"");
+            h.assertTrue(PellArm.state(b)==PellArm.LED&&PellVisit.step(b)==PellVisit.SETTLED,"past six she still has it, and June has not called: "+PellArm.state(b)+" "+PellVisit.step(b));
+        }).thenWaitUntil(()->h.assertTrue(PellArm.state(b)!=PellArm.LED,"then she lets go"))
+        .thenExecute(()->{
+            long had=l.getGameTime()-taken[0];
+            h.assertTrue(had>=PellArm.SHORTEST&&had<=PellArm.SHORTEST+3,"a walk begun late has its while: "+had);
+            h.assertTrue(PellVisit.step(b)==PellVisit.SETTLED,"June still waiting on her");
+        }).thenIdle(1).thenExecute(()->{
+            var tilly=who(h,l,b,PellPeople.TILLY);
+            h.assertTrue(told(p).contains(PellTexts.ARM_HOUR)&&said(tilly).equals(PellTexts.TILLY_ARM_HOUR),"with her word on why: "+said(tilly));
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.step(b)>=PellVisit.CALLED,"June calls dinner"))
+        .thenExecute(()->{
+            h.assertTrue(PellArm.state(b)==PellArm.OFF,"with Tilly where she left her: "+PellArm.state(b));
+            var text=words(PellTexts.account(p.getGameProfile().getName(),f.own(p,P)));
+            h.assertTrue(text.contains("I took Tilly round the house on my arm, and she put her hand on whatever I put mine on."),"the account has it: "+text);
+        }).thenWaitUntil(()->h.assertTrue(PellVisit.placeOf(b,PellPeople.TILLY)==0,"and Tilly sits down to it"))
+        .thenSucceed();
+    }
+    @AfterBatch(batch="pell_arm") public static void armDone(ServerLevel l){done();}
 }

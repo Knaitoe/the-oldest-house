@@ -150,6 +150,8 @@ public final class PellVisit {
         PellIdle.tick(l,b,h,here,now);
         // 0.4.571: the day's jobs, and the book being read to Tilly (PellJobs, PellCompany).
         PellJobs.tick(l,b,h,here,now);PellCompany.tick(l,b,h,here,now);
+        // 0.4.601: the ball and Callum's catching of it, and Tilly on a reader's arm (PellCatch, PellArm).
+        PellCatch.tick(l,b,h,here,now);PellArm.tick(l,b,h,here,now);
         // 0.4.536: the shed's deck, whatever the hour.
         PellTapes.tick(l,b,h,here,now);
         // 0.4.538: a bucket nobody here has goes back to the laundry; on the last night, Callum out on the line.
@@ -208,6 +210,8 @@ public final class PellVisit {
         PellWeek.dress(l,b,visit);
         // 0.4.571: nothing laid, ticked or carried, the bowl as the visit finds it, and no book open.
         PellJobs.restart(l,b,h,visit);PellCompany.restart(h);
+        // 0.4.601: the ball by the kennel again, and nobody with Tilly's arm.
+        PellCatch.restart(l,b,h,visit);PellArm.restart(h);
         // 0.4.538: the third visit is the last night, from the evening.
         if(visit>=PellWeek.LAST)PellLastNight.begin(l,b,h);
     }

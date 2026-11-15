@@ -1108,6 +1108,12 @@ public final class PellTexts {
         if(own.getBoolean("HeardCallumHadHis"))p.add("Nothing was put on Callum's plate. Tilly asked, and June said he had had his.");
         if(own.getBoolean("FilledBowl"))p.add("I filled the dog's bowl by the kennel. There was no dog."+(own.getBoolean("SawBowlDry")?" In the morning the bowl was empty, and the ground round it was printed with bare feet.":""));
         if(PellCompany.told(own)>0)p.add("Tilly asked me what things looked like, and I told her.");
+        // 0.4.601: the ball, and Tilly on the reader's arm (PellCatch, PellArm).
+        if(own.getBoolean(PellArm.WALKED))p.add(own.getInt(PellArm.SHOWN)>0?"I took Tilly round the house on my arm, and she put her hand on whatever I put mine on."
+            :"I took Tilly out of her room on my arm.");
+        int caught=own.getInt(PellCatch.CATCHES),rally=own.getInt(PellCatch.RALLY);
+        if(caught>0)p.add("There was a tennis ball by the kennel that nothing had ever chewed. I threw it down the hall to Callum, and he threw it back the way I had thrown it, a moment late."
+            +(rally>=5?" We kept it going "+Stillness.words(rally)+" times.":""));
         int story=own.getInt(PellCompany.READ);
         if(story>=STORY.length)p.add("I read to Tilly from a library book of Nessa's, from where a bus ticket marked the place, and a week on I read her the end of it: a girl at a lamp who would not answer to another girl's name.");
         else if(story>0)p.add("I read to Tilly from a library book of Nessa's, from where a bus ticket marked the place. We did not get to the end.");
@@ -1326,5 +1332,60 @@ public final class PellTexts {
         TELL_KNIFE="There's a knife gone from the block in the kitchen.",TILLY_NOT_ME="It wasn't me. I don't go in the drawers.",
         TELL_NAME="June called you Nessa.",TILLY_SAYS_SORRY="She says sorry after. She always says sorry.",
         TELL_SAME="It's all the same.",TILLY_BEING_KIND="It isn't. I can tell when you're being kind.",
-        TELL_ENOUGH="Leave it there.";
+        TELL_ENOUGH="Leave it there.",
+        // 0.4.601: what a reader who has played catch with Callum can tell her of it (PellCatch).
+        TELL_CATCH="Callum plays catch. It comes back just the way I throw it.",TILLY_COPIES="He copies. He does my cane, out in the hall. I've heard him.";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.601: a ball, and Tilly by the arm
+    /** The tennis ball from beside the kennel (PellCatch): found; held out to Callum, while he may play and while he may not; what
+     *  comes of throwing it to him; and June's word on a ball in her hall. None of it says what he is. */
+    public static final String BALL_FOUND="A tennis ball, in the drive by the kennel. Its felt is new. Nothing has had it in its mouth.",
+        CALLUM_BALL="He looks at the ball, then a long way down the hall, then at you.",
+        CALLUM_BALL_NOT_NOW="He looks at the ball. His hands stay at his sides.",
+        BALL_BACK="It comes back the way you threw it, a moment late.",
+        BALL_WET="The ball is wet where his hands were.",
+        BALL_NOT_LOOKED="He has not looked at the ball once.",
+        BALL_WHERE_YOU_STOOD="It comes down where you were standing.",
+        CALLUM_LETS_IT_GO="He watches it go by. He does not go after it.",
+        JUNE_BALL="Mind the photographs, love.";
+    /** How many times there and back it has been kept going, said at every fifth. */
+    public static String rally(int n){String w=Stillness.words(n);return Character.toUpperCase(w.charAt(0))+w.substring(1)+" times there and back.";}
+    /** Taking Tilly round the house by the arm (PellArm): the reader's offer; what she says on taking it, the first visit and a week
+     *  in; what the reader is told as it goes; and what she says when the hour ends it. */
+    public static final String TELL_COME="Come on. Take my arm and I'll show you.",
+        TILLY_ARM="Not too fast. Tell me when there's a step.",
+        TILLY_ARM_WEEK="I know the hall now. Fourteen steps. Take me somewhere I don't.",
+        ARM_TAKEN="Tilly takes your arm.",
+        ARM_SOMEBODYS="She has somebody's arm.",
+        ARM_LET_GO="She lets go of your arm, and goes back the way you came with her cane ahead of her.",
+        ARM_LEFT="Tilly has let go of your arm.",
+        ARM_HOUR="Tilly lets go of your arm.",
+        ARM_EDGE="Tilly stops, and keeps hold of your arm. She will not go further this way.",
+        TILLY_ARM_HOUR="June'll call any minute. I'd better be where she left me.";
+    /**
+     * What Tilly says with her own hand on one of the house's things, brought to it on a reader's arm: by touch, by smell and by what
+     * she hears, each once a visit. Null for a thing she only feels. Nothing in it says what any of it means.
+     */
+    public static @javax.annotation.Nullable String arm(PellThing.Kind kind,int stage,int visit){
+        return switch(kind){
+            case PHOTOS->"Glass. And another. They go all the way along.";
+            case HOOKS->"Hooks. Nothing on any of them.";
+            case KENNEL->"It doesn't smell of dog. It smells of paint.";
+            case BOWL->stage==0?"Leaves. Dry ones.":stage==2?"Water. Somebody's filled it.":null;
+            case CHORE_CHART->"There. That's the edge. Lift it for me. No. Don't.";
+            case WINDOW_SEAT->"The pool's through this glass. I can hear its pump.";
+            case CIRCLE,MATTRESS->"There's paint on the floor in here too. It goes all the way round.";
+            case SHOES->"These haven't been outside. The soles are clean.";
+            case CUTLERY->"Forks. Spoons. He's got them all in rows.";
+            case FREEZER->"That's what hums. I can hear it from my bed.";
+            case CHLORINE->"That's the pool smell. It's in here, in a box.";
+            case SEEDLING->visit>=2?"It's taller than my hand now.":"This one's mine? It's hardly anything.";
+            case STAKE->"Sticks in a row. There's not much growing at any of them.";
+            case FLOWERS->"These are real. They smell like pepper.";
+            case CAMP_BED->"It smells of oil in here. This is where you sleep?";
+            case BOX_DONT->"This one's taped shut. All the way round.";
+            case VANITY->"Two toothbrushes. One's mine. The other one's gone hard.";
+            default->null;
+        };
+    }
 }

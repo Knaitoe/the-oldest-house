@@ -31,16 +31,19 @@ public class PrizeBall extends net.minecraft.world.entity.projectile.ThrowableIt
         Vec3 n=new Vec3(face.getStepX(),face.getStepY(),face.getStepZ()),v=getDeltaMovement();
         double into=v.dot(n);if(into>=0)return;
         double speed=v.length();
-        Vec3 along=v.subtract(n.scale(into)).scale(SLIDE),out=n.scale(-into*KEEP).add(along);
+        // 0.4.601: the Pell house's ball is felt, not rubber: it keeps less of a bounce, and has its own sound (PellCatch).
+        boolean felt=getItem().is(PellRegistry.BALL.get());
+        Vec3 along=v.subtract(n.scale(into)).scale(felt?PellCatch.ROLL:SLIDE),out=n.scale(-into*(felt?PellCatch.BOUNCE:KEEP)).add(along);
         var at=hit.getLocation().add(n.scale(.13));
         setPos(at.x,at.y,at.z);setDeltaMovement(out);bounces++;
         if(level().isClientSide)return;
-        if(speed>.06)level().playSound(null,getX(),getY(),getZ(),PolybiusRegistry.BOING.get(),SoundSource.PLAYERS,(float)Mth.clamp(speed*1.4,.15,1),(float)(.9+Mth.clamp(speed,0,1)*.6));
+        if(felt)PellCatch.bounced(this,hit,speed);
+        else if(speed>.06)level().playSound(null,getX(),getY(),getZ(),PolybiusRegistry.BOING.get(),SoundSource.PLAYERS,(float)Mth.clamp(speed*1.4,.15,1),(float)(.9+Mth.clamp(speed,0,1)*.6));
         if(face==Direction.UP&&out.y<REST*1.5&&out.horizontalDistance()<REST)rest();
     }
     @Override protected void onHitEntity(EntityHitResult hit){
         var v=getDeltaMovement();setDeltaMovement(-v.x*.5,Math.abs(v.y)*.4+.05,-v.z*.5);bounces++;
-        if(!level().isClientSide)level().playSound(null,getX(),getY(),getZ(),PolybiusRegistry.BOING.get(),SoundSource.PLAYERS,.6F,1.2F);
+        if(!level().isClientSide)level().playSound(null,getX(),getY(),getZ(),getItem().is(PellRegistry.BALL.get())?PellRegistry.BALL_BOUNCE.get():PolybiusRegistry.BOING.get(),SoundSource.PLAYERS,getItem().is(PellRegistry.BALL.get())?.3F:.6F,1.2F);
     }
     @Override public void tick(){
         super.tick();

@@ -45,7 +45,8 @@ from draw_pell_house import A, NS, fill, dot, shade  # noqa: E402
 
 ITEMS = ('pell_cane', 'pell_folder', 'pell_plate', 'pell_dinner', 'pell_plate_scraped', 'pell_saucepan', 'pell_hairbrush',
          'pell_lantern', 'pell_tin', 'pell_paintbrush', 'pell_breakfast', 'pell_receiver', 'pell_lane', 'pell_lane_gap', 'pell_knife',
-         'pell_scrub', 'pell_lanyard', 'pell_cane_tip', 'pell_page', 'pell_note', 'pell_plates', 'pell_bowl', 'pell_bowl_water')
+         'pell_scrub', 'pell_lanyard', 'pell_cane_tip', 'pell_page', 'pell_note', 'pell_plates', 'pell_bowl', 'pell_bowl_water',
+         'pell_ball')
 NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.pell_folder': 'Folder',
          'item.the_oldest_house.pell_plate': 'Plate', 'item.the_oldest_house.pell_dinner': 'Dinner',
          'item.the_oldest_house.pell_plate_scraped': 'Plate', 'item.the_oldest_house.pell_saucepan': 'Saucepan',
@@ -57,7 +58,7 @@ NAMES = {'item.the_oldest_house.pell_cane': 'Long Cane', 'item.the_oldest_house.
          'item.the_oldest_house.pell_lanyard': 'Lanyard', 'item.the_oldest_house.pell_cane_tip': 'Cane Tip',
          'item.the_oldest_house.pell_page': 'Last Page', 'item.the_oldest_house.pell_note': 'Taped Note',
          'item.the_oldest_house.pell_plates': 'Plates', 'item.the_oldest_house.pell_bowl': "Dog's Bowl",
-         'item.the_oldest_house.pell_bowl_water': "Dog's Bowl"}
+         'item.the_oldest_house.pell_bowl_water': "Dog's Bowl", 'item.the_oldest_house.pell_ball': 'Tennis Ball'}
 
 
 def blank():
@@ -148,6 +149,27 @@ def plates():
     for x in range(5, 11):
         dot(im, x, 4, '#ffffff' if x < 8 else '#ece8df')
     dot(im, 2, 4, '#d6d0c3'); dot(im, 13, 4, '#bdb6a8')
+    return im
+
+
+def ball():
+    """0.4.601, the tennis ball from beside the kennel (PellCatch): felt, lit from the upper left, its seam a pale curve from the top
+    round to the side; new, and never chewed. Thrown, the game turns this picture to face whoever looks, so it is drawn round."""
+    im = blank()
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x + .5 - 8, y + .5 - 8
+            r = math.hypot(dx, dy)
+            if r > 4.2:
+                continue
+            toward = lit(dx, dy) * min(1, r / 4)
+            edge = r > 3.3
+            dot(im, x, y, '#84932b' if edge and toward < -.2 else '#a3b438' if edge or toward < -.45 else '#e4ee7c' if toward > .5 else '#cadb52')
+    # The seam.
+    for x, y in ((9, 4), (8, 5), (7, 6), (6, 7), (6, 8), (6, 9), (7, 10), (8, 11)):
+        dot(im, x, y, '#f1f4dc')
+    for x, y in ((10, 6), (11, 7), (11, 8), (11, 9)):
+        dot(im, x, y, '#dfe4c0')
     return im
 
 
@@ -830,7 +852,8 @@ def models():
             'pell_receiver': receiver_model(), 'pell_lane': lane_model(False), 'pell_lane_gap': lane_model(True),
             'pell_knife': flat('pell_knife', 'minecraft:item/handheld'), 'pell_scrub': flat('pell_scrub', 'minecraft:item/handheld'),
             'pell_lanyard': flat('pell_lanyard'), 'pell_cane_tip': flat('pell_cane_tip'), 'pell_page': flat('pell_page'), 'pell_note': flat('pell_note'),
-            'pell_plates': flat('pell_plates'), 'pell_bowl': flat('pell_bowl'), 'pell_bowl_water': flat('pell_bowl_water')}
+            'pell_plates': flat('pell_plates'), 'pell_bowl': flat('pell_bowl'), 'pell_bowl_water': flat('pell_bowl_water'),
+            'pell_ball': flat('pell_ball')}
 
 
 def main():
@@ -838,7 +861,7 @@ def main():
     images = {'pell_cane': cane(), 'pell_folder': folder(), 'pell_plate': plate(), 'pell_dinner': dinner(), 'pell_plate_scraped': scraped(),
               'pell_saucepan': saucepan(), 'pell_hairbrush': hairbrush(), 'pell_paintbrush': paintbrush(), 'pell_breakfast': breakfast(),
               'pell_lane': lane(), 'pell_knife': knife(), 'pell_scrub': scrub(), 'pell_lanyard': lanyard(), 'pell_cane_tip': cane_tip(), 'pell_page': page(), 'pell_note': note(),
-              'pell_plates': plates(), 'pell_bowl': dog_bowl(False), 'pell_bowl_water': dog_bowl(True)}
+              'pell_plates': plates(), 'pell_bowl': dog_bowl(False), 'pell_bowl_water': dog_bowl(True), 'pell_ball': ball()}
     data = models()
     # 0.4.530: the lantern and the tin are built from the things' block art and have no picture of their own; 0.4.532, the receiver;
     # 0.4.533, the lane rope where a float is missing, which is drawn from the whole rope's sheet.

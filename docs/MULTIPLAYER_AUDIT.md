@@ -158,6 +158,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.598, a reader on their own.** The Last Crossing and Pinehook, written for a crew, can be played by one (docs/ON_YOUR_OWN_0_4_598.md). Rows 80 and 81 above.
 - **0.4.599, a failed story's door.** The door a reader took into a story that failed them is theirs: it opens onto a hall for them, and another reader's door to the same story is as it was (docs/TWO_NOTES_0_4_599.md).
 - **0.4.600, the people who are in two places.** Johnny and Holloway visit the familiar kitchen (not a story, and not in the table above) and each also has a place of his own. Each is now in one place at a time: he does not come to the kitchen while a reader is with him at home, and gets up from the table if one finds him there (docs/CAST_MANNERS_0_4_600.md). No case has one reader in each place; the rule is two lines.
+- **0.4.601, a ball and an arm in the Pell house.** Each pair's house has its own ball and its own Tilly. In one house two readers share the ball: Callum answers one throw at a time (a second reader's throw while he has the ball goes by), throws back to whoever threw it, and each reader's catches are their own. One reader has Tilly's arm at a time; another's hand on her is told so; each reader's walk, and what she was shown on it, is their own. With a reader as Tilly there is no arm to take (docs/PELL_HOUSE_NOTES_0_4_601.md). The arm's case has two readers; no case has two readers at catch.
 
 ## Decided (any of it can move)
 
