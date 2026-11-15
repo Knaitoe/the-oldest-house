@@ -347,6 +347,288 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        16,
+        14.7
+      ],
+      "to": [
+        3,
+        16.02,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        12,
+        16
+      ],
+      "to": [
+        3,
+        16,
+        16.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#oak",
+          "uv": [
+            16,
+            0,
+            15.75385,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            16,
+            16,
+            15.75385
+          ]
+        },
+        "down": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.24615,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        16,
+        14.7
+      ],
+      "to": [
+        15,
+        16.02,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        12,
+        16
+      ],
+      "to": [
+        15,
+        16,
+        16.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#oak",
+          "uv": [
+            0.24615,
+            0,
+            0,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            16,
+            16,
+            15.75385
+          ]
+        },
+        "down": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.24615,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        16,
+        14.7
+      ],
+      "to": [
+        2.5,
+        16.02,
+        14.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#oak",
+          "uv": [
+            4,
+            0.08,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3,
+        12,
+        16
+      ],
+      "to": [
+        3,
+        14,
+        16.02
+      ],
+      "faces": {
+        "east": {
+          "texture": "#oak",
+          "uv": [
+            0.24615,
+            8,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13.5,
+        16,
+        14.7
+      ],
+      "to": [
+        15,
+        16.02,
+        14.7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#oak",
+          "uv": [
+            0,
+            0.08,
+            12,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        12,
+        16
+      ],
+      "to": [
+        13,
+        14,
+        16.02
+      ],
+      "faces": {
+        "west": {
+          "texture": "#oak",
+          "uv": [
+            16,
+            8,
+            15.75385,
+            16
+          ]
+        }
+      }
     }
   ]
 }

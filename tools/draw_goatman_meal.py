@@ -2,6 +2,7 @@
 from pathlib import Path
 from PIL import Image,ImageDraw
 import argparse,io,json
+import flicker
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 def box(a,b,tex):return {'from':a,'to':b,'faces':{f:{'texture':'#'+tex,'uv':[0,0,16,16]} for f in ['up','down','north','south','east','west']}}
 def outputs():
@@ -24,11 +25,11 @@ def outputs():
    for a,b in [([1,8.62,2],[2,12,14]),([14,8.62,2],[15,12,14]),([2,8.62,2],[14,12,3]),([2,8.62,13],[14,12,14])]:parts.append(box(a,b,'basket'))
    for z in [4,7,10]:parts.append(box([3,9,z],[13,12.5,z+2.5],'bun'))
   model={'ambientocclusion':True,'textures':textures,'elements':parts,'display':{'gui':{'rotation':[25,-35,0],'translation':[0,-3,0],'scale':[.9,.9,.9]},'thirdperson_righthand':{'rotation':[0,0,0],'translation':[0,-1,0],'scale':[.6,.6,.6]},'thirdperson_lefthand':{'rotation':[0,0,0],'translation':[0,-1,0],'scale':[.6,.6,.6]},'firstperson_righthand':{'rotation':[0,-30,0],'translation':[1,-2,0],'scale':[.7,.7,.7]},'fixed':{'rotation':[0,0,0],'translation':[0,0,0],'scale':[1,1,1]}}}
-  out['models/item/goatman_'+name+'.json']=(json.dumps(model,indent=2)+'\n').encode()
+  out['models/item/goatman_'+name+'.json']=(flicker.dumps(model,indent=2)+'\n').encode()
  for burnt in [False,True]:
   original=Image.open(A/('textures/item/goatman_brat'+('_burnt' if burnt else '')+'.png')).convert('RGBA');im=Image.new('RGBA',(16,16));d=ImageDraw.Draw(im)
   d.polygon([(1,10),(9,2),(13,2),(15,5),(7,13),(3,14),(1,12)],fill='#bb894a');d.line((3,11,11,3),fill='#e0b673',width=3);im.alpha_composite(original)
-  name='goatman_brat_bun'+('_burnt' if burnt else '');buf=io.BytesIO();im.save(buf,format='PNG');out['textures/item/'+name+'.png']=buf.getvalue();out['models/item/'+name+'.json']=(json.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/'+name}},indent=2)+'\n').encode()
+  name='goatman_brat_bun'+('_burnt' if burnt else '');buf=io.BytesIO();im.save(buf,format='PNG');out['textures/item/'+name+'.png']=buf.getvalue();out['models/item/'+name+'.json']=(flicker.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/'+name}},indent=2)+'\n').encode()
  return out
 if __name__=='__main__':
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--check',action='store_true');args=p.parse_args();out=outputs()

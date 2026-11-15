@@ -5,6 +5,7 @@ writes nothing and fails if any file differs from what it would draw, or if its 
 import argparse
 import importlib.util
 import json
+import flicker
 import random
 import re
 from pathlib import Path
@@ -618,9 +619,9 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     key = 'block.the_oldest_house.lodging_thing'
     if check:

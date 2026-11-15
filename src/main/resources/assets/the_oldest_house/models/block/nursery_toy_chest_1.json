@@ -346,6 +346,30 @@
      ]
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    2,
+    8,
+    4
+   ],
+   "to": [
+    14,
+    8.02,
+    12
+   ],
+   "faces": {
+    "up": {
+     "texture": "#s",
+     "uv": [
+      0.5,
+      8.5,
+      3.5,
+      11.5
+     ]
+    }
+   }
   }
  ]
 }

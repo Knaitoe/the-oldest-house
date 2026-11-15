@@ -13,6 +13,7 @@ Run from anywhere:
     python3 tools/generate_last_stop_assets.py
 """
 import json
+import flicker
 import math
 import random
 import shutil
@@ -727,18 +728,18 @@ def model(name, elements, textures, particle=None, render='cutout'):
     tex = {'s': NS + 'swatches', **{k: (v if ':' in v else NS + v) for k, v in textures.items()}}
     tex['particle'] = particle if particle and ':' in particle else NS + (particle or next(iter(textures.values()), 'swatches'))
     data = {'parent': 'minecraft:block/block', 'render_type': 'minecraft:' + render, 'textures': tex, 'elements': elements}
-    (MODELS / f'last_stop_{name}.json').write_text(json.dumps(data, indent=1) + '\n')
+    (MODELS / f'last_stop_{name}.json').write_text(flicker.dumps(data, indent=1) + '\n')
 
 
 def cube(name, faces, particle=None):
     """A whole block, solid, culled against its neighbours."""
     tex = {d: (v if ':' in v else NS + v) for d, v in faces.items()}
     tex['particle'] = tex.get('up', next(iter(tex.values())))
-    (MODELS / f'last_stop_{name}.json').write_text(json.dumps({'parent': 'minecraft:block/cube', 'textures': tex}, indent=1) + '\n')
+    (MODELS / f'last_stop_{name}.json').write_text(flicker.dumps({'parent': 'minecraft:block/cube', 'textures': tex}, indent=1) + '\n')
 
 
 def cross(name, texture):
-    (MODELS / f'last_stop_{name}.json').write_text(json.dumps({'parent': 'minecraft:block/cross', 'render_type': 'minecraft:cutout',
+    (MODELS / f'last_stop_{name}.json').write_text(flicker.dumps({'parent': 'minecraft:block/cross', 'render_type': 'minecraft:cutout',
                                                                 'textures': {'cross': NS + texture}}, indent=1) + '\n')
 
 
@@ -809,11 +810,11 @@ def models():
     model('dartboard', [box((3, 3, 15), (13, 13, 16), 'b', overrides={d: ('s', sw('black')) for d in ('south', 'east', 'west', 'up', 'down')})], {'b': 'dartboard'}, 'dartboard')
     dart = json.loads((MODELS / 'last_stop_dartboard.json').read_text())
     for stage in (1, 2, 3):
-        fitted = json.loads(json.dumps(dart))
+        fitted = json.loads(flicker.dumps(dart))
         for i in range(stage):
             x, y = [(6, 5), (10, 9), (8, 8)][i]
             fitted['elements'].append(color((x-.15, y-.15, 11), (x+.15, y+.15, 15.9), 'black'))
-        (MODELS / f'last_stop_dartboard_{stage}.json').write_text(json.dumps(fitted, indent=1) + '\n')
+        (MODELS / f'last_stop_dartboard_{stage}.json').write_text(flicker.dumps(fitted, indent=1) + '\n')
     model('corkboard', [box((0, 1, 15), (16, 15, 16), 'c', uv=[0, 1, 16, 15], overrides={d: ('w', None) for d in ('south', 'east', 'west', 'up', 'down')})],
           {**W, 'c': 'corkboard'}, 'corkboard')
     model('neon_beer', [box((0, 3, 7.5), (16, 13, 8.5), 'n', uv=[0, 3, 16, 13], faces_=('north', 'south'), glow=True),
@@ -887,7 +888,7 @@ def blockstate():
                 if y:
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
-    (ASSETS / 'blockstates/roadhouse.json').write_text(json.dumps({'variants': variants}, indent=1) + '\n')
+    (ASSETS / 'blockstates/roadhouse.json').write_text(flicker.dumps({'variants': variants}, indent=1) + '\n')
     return len(variants)
 
 
@@ -991,7 +992,7 @@ SOUNDS = {
 
 
 def write_json(path, data, original):
-    text = json.dumps(data, indent=2, ensure_ascii=False)
+    text = flicker.dumps(data, indent=2, ensure_ascii=False)
     if original.endswith('\n'):
         text += '\n'
     path.write_text(text)

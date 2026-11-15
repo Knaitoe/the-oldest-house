@@ -75,6 +75,30 @@
      "texture": "#w"
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    1,
+    14,
+    4
+   ],
+   "to": [
+    15,
+    14.02,
+    16
+   ],
+   "faces": {
+    "up": {
+     "texture": "#b",
+     "uv": [
+      1,
+      4,
+      15,
+      16
+     ]
+    }
+   }
   }
  ]
 }

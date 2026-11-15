@@ -1,6 +1,7 @@
 """A supported, climbable four-legged A-frame; native shapes use these same boxes."""
 from pathlib import Path
 import json, random
+import flicker
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,7 +10,7 @@ J = ROOT / 'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/FanLadderGe
 
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2) + '\n')
+    path.write_text(flicker.dumps(value, indent=2) + '\n')
 
 for name, base in [('fan_ladder_oak', (132, 99, 62)), ('fan_ladder_iron', (119, 125, 122)),
                    ('fan_ladder_tread', (83, 87, 82)), ('fan_ladder_rubber', (31, 33, 30))]:

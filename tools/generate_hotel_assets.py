@@ -2,9 +2,10 @@
 from pathlib import Path
 from PIL import Image,ImageDraw
 import json,math,random,wave,struct,subprocess,tempfile
+import flicker
 A=Path(__file__).resolve().parents[1]/'src/main/resources/assets/the_oldest_house'
 def write(path,obj):
- p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(obj,indent=2)+'\n')
+ p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(obj,indent=2)+'\n')
 def save(path,im):
  p=A/path;p.parent.mkdir(parents=True,exist_ok=True);im.save(p,optimize=True)
 def cube(a,b,tex='surface',uv=(0,0,16,16),rot=None):

@@ -7,6 +7,7 @@ nothing is sampled. The television's static is an animated strip. Run with --che
 """
 import argparse
 import json
+import flicker
 import random
 import sys
 from pathlib import Path
@@ -1087,9 +1088,9 @@ def files():
     out = {}
     for name, fn in TEXTURES.items():
         out[TEX / f'{name}.png'] = fn()
-    out[TEX / 'screen_static.png.mcmeta'] = json.dumps({'animation': {'frametime': 2, 'interpolate': False}}, indent=2) + '\n'
+    out[TEX / 'screen_static.png.mcmeta'] = flicker.dumps({'animation': {'frametime': 2, 'interpolate': False}}, indent=2) + '\n'
     for name in KINDS:
-        out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
+        out[MODELS / f'{name}.json'] = flicker.dumps(model_json(name), indent=1) + '\n'
     variants = {}
     for facing, y in TURN.items():
         for kind in KINDS:
@@ -1097,10 +1098,10 @@ def files():
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
-    out[STATES / 'tract_house.json'] = json.dumps({'variants': variants}, indent=1) + '\n'
+    out[STATES / 'tract_house.json'] = flicker.dumps({'variants': variants}, indent=1) + '\n'
     for m in MATERIALS:
-        out[STATES / f'tract_{m}.json'] = json.dumps({'variants': {'': {'model': NS + m}}}, indent=2) + '\n'
-        out[MODELS / f'{m}.json'] = json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + m}}, indent=2) + '\n'
+        out[STATES / f'tract_{m}.json'] = flicker.dumps({'variants': {'': {'model': NS + m}}}, indent=2) + '\n'
+        out[MODELS / f'{m}.json'] = flicker.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + m}}, indent=2) + '\n'
     return out
 
 

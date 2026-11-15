@@ -259,6 +259,186 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        5.75,
+        4.5
+      ],
+      "to": [
+        5.02,
+        7.25,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#strut",
+          "uv": [
+            4.5,
+            8.75,
+            16,
+            10.25
+          ]
+        },
+        "down": {
+          "texture": "#strut",
+          "uv": [
+            5,
+            4.5,
+            4.98,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#strut",
+          "uv": [
+            4.52,
+            8.75,
+            4.5,
+            10.25
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2.98,
+        5.75,
+        4.5
+      ],
+      "to": [
+        3,
+        7.25,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#strut",
+          "uv": [
+            4.5,
+            8.75,
+            16,
+            10.25
+          ]
+        },
+        "down": {
+          "texture": "#strut",
+          "uv": [
+            3.02,
+            4.5,
+            3,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#strut",
+          "uv": [
+            16,
+            8.75,
+            15.98,
+            10.25
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        7.25,
+        4.71421
+      ],
+      "to": [
+        5.02,
+        7.25,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#strut",
+          "uv": [
+            5,
+            4.71421,
+            4.98,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        5.75,
+        4.5
+      ],
+      "to": [
+        5.02,
+        7.03579,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#strut",
+          "uv": [
+            3.02,
+            8.96421,
+            3,
+            10.25
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2.98,
+        7.25,
+        4.71421
+      ],
+      "to": [
+        3,
+        7.25,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#strut",
+          "uv": [
+            3.02,
+            4.71421,
+            3,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2.98,
+        5.75,
+        4.5
+      ],
+      "to": [
+        3,
+        7.03579,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#strut",
+          "uv": [
+            5,
+            8.96421,
+            4.98,
+            10.25
+          ]
+        }
+      }
     }
   ],
   "render_type": "minecraft:cutout"

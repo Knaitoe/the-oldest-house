@@ -9,6 +9,7 @@ slab) and the blocks' names. --check verifies everything written.
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -251,9 +252,9 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     for name, title in BLOCKS:
         key = f'block.the_oldest_house.room_shell_{name}'
@@ -262,7 +263,7 @@ def main():
         else:
             lang[key] = title
     if not check:
-        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+        lang_path.write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(('Verified' if check else 'Drew') + f' the brothers\' house: {len(images)} textures, {len(data)} models and states.')
 
 

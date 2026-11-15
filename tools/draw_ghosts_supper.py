@@ -15,6 +15,7 @@ Run without arguments to draw; --check verifies the files match.
 """
 from pathlib import Path
 import json
+import flicker
 import sys
 from PIL import Image
 
@@ -132,8 +133,8 @@ def model(with_sauce):
 
 def files():
     out = {
-        MODELS / 'ghosts_meal_spaghetti.json': json.dumps(model(True), indent=2) + '\n',
-        MODELS / 'ghosts_meal_spaghetti_plain.json': json.dumps(model(False), indent=2) + '\n',
+        MODELS / 'ghosts_meal_spaghetti.json': flicker.dumps(model(True), indent=2) + '\n',
+        MODELS / 'ghosts_meal_spaghetti_plain.json': flicker.dumps(model(False), indent=2) + '\n',
     }
     states = json.loads(STATES.read_text())['variants']
     merged = {}
@@ -149,7 +150,7 @@ def files():
                     merged[f'kind={name},facing={facing}'] = {'model': 'the_oldest_house:block/ghosts_' + name, 'y': y}
     if not added:
         raise SystemExit('ghosts_set.json has no meal_potatoes variant to follow')
-    out[STATES] = json.dumps({'variants': merged}, indent=2) + '\n'
+    out[STATES] = flicker.dumps({'variants': merged}, indent=2) + '\n'
     return out
 
 

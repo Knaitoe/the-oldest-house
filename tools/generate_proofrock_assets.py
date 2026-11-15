@@ -8,6 +8,7 @@ Run from the repository root:
 """
 from pathlib import Path
 import json
+import flicker
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,7 +48,7 @@ SIGNS = {
 def write_json(path, value):
     out = A / path
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(value, indent=2) + '\n')
+    out.write_text(flicker.dumps(value, indent=2) + '\n')
 
 
 def save(path, image):
@@ -371,7 +372,7 @@ def lang():
     path = A / 'lang/en_us.json'
     entries = json.loads(path.read_text())
     entries.update({'block.the_oldest_house.town_fixture': 'Town fixture', 'block.the_oldest_house.school_desk': "Teacher's desk"})
-    path.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + '\n')
+    path.write_text(flicker.dumps(entries, indent=2, ensure_ascii=False) + '\n')
 
 
 if __name__ == '__main__':

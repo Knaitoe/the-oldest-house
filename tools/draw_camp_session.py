@@ -9,6 +9,7 @@ committed files.
 """
 import argparse
 import json
+import flicker
 import random
 import sys
 from pathlib import Path
@@ -323,7 +324,7 @@ def files():
     for name, fn in TEXTURES.items():
         out[TEX / f'{name}.png'] = fn()
     for name in KINDS:
-        out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
+        out[MODELS / f'{name}.json'] = flicker.dumps(model_json(name), indent=1) + '\n'
     variants = {}
     for facing, y in TURN.items():
         for kind in KINDS:
@@ -331,7 +332,7 @@ def files():
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
-    out[STATES / 'camp_session.json'] = json.dumps({'variants': variants}, indent=1) + '\n'
+    out[STATES / 'camp_session.json'] = flicker.dumps({'variants': variants}, indent=1) + '\n'
     return out
 
 

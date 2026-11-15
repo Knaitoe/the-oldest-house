@@ -5,6 +5,7 @@ spilled powder), the small capped jar of white powder on the shrine's bench, and
 from pathlib import Path
 from PIL import Image, ImageDraw
 import argparse, io, json, random
+import flicker
 
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
@@ -192,13 +193,13 @@ def main():
         buf=io.BytesIO();cats(flag).save(buf,format='PNG');files[A/('textures/gui/ghosts_sister_cats'+suffix+'.png')]=buf.getvalue()
     states=A/'blockstates/ghosts_set.json';current=json.loads(states.read_text());variants={}
     for name,model in models().items():
-        files[A/('models/block/ghosts_'+name+'.json')]=(json.dumps(model,indent=2)+'\n').encode()
+        files[A/('models/block/ghosts_'+name+'.json')]=(flicker.dumps(model,indent=2)+'\n').encode()
         for facing,y in [('north',0),('east',90),('south',180),('west',270)]:variants['kind='+name+',facing='+facing]={'model':'the_oldest_house:block/ghosts_'+name,'y':y}
     if args.check:
         for path,raw in files.items():assert path.read_bytes()==raw,path
         for key,value in variants.items():assert current['variants'].get(key)==value,key
     else:
         for path,raw in files.items():path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(raw)
-        current['variants'].update(variants);states.write_text(json.dumps(current,indent=2)+'\n')
+        current['variants'].update(variants);states.write_text(flicker.dumps(current,indent=2)+'\n')
     print(('Verified' if args.check else 'Drew')+' the Ghosts family papers, laptop, cross, lens images, the sisters\' plan and the sister-cats drawing.')
 if __name__=='__main__':main()

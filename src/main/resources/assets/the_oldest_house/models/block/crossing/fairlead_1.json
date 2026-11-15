@@ -103,6 +103,30 @@
           "texture": "#w"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        7,
+        11
+      ],
+      "to": [
+        9,
+        9,
+        11.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#w",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
     }
   ]
 }

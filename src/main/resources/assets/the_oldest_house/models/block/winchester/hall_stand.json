@@ -231,6 +231,162 @@
      "texture": "#b"
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    0,
+    12,
+    7.98
+   ],
+   "to": [
+    16,
+    13,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "uv": [
+      0,
+      3,
+      16,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#b",
+     "uv": [
+      8,
+      3,
+      7.98,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      8.02,
+      3,
+      8,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    16,
+    12,
+    8
+   ],
+   "to": [
+    16.02,
+    13,
+    9
+   ],
+   "faces": {
+    "east": {
+     "texture": "#b",
+     "uv": [
+      7,
+      3,
+      8,
+      4
+     ]
+    },
+    "north": {
+     "texture": "#b",
+     "uv": [
+      0.02,
+      3,
+      0,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    -0.02,
+    12,
+    8
+   ],
+   "to": [
+    0,
+    13,
+    9
+   ],
+   "faces": {
+    "west": {
+     "texture": "#b",
+     "uv": [
+      8,
+      3,
+      9,
+      4
+     ]
+    },
+    "north": {
+     "texture": "#b",
+     "uv": [
+      16,
+      3,
+      15.98,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    1.5,
+    13,
+    7.98
+   ],
+   "to": [
+    14.5,
+    13,
+    8
+   ],
+   "faces": {
+    "up": {
+     "texture": "#b",
+     "uv": [
+      1.5,
+      8.02,
+      14.5,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    1.5,
+    12,
+    7.98
+   ],
+   "to": [
+    14.5,
+    12,
+    8
+   ],
+   "faces": {
+    "down": {
+     "texture": "#b",
+     "uv": [
+      1.5,
+      8,
+      14.5,
+      7.98
+     ]
+    }
+   }
   }
  ]
 }

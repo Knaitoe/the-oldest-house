@@ -2,6 +2,7 @@
 from pathlib import Path
 from PIL import Image,ImageDraw
 import argparse,io,json,math,random,array,subprocess,hashlib
+import flicker
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');args=p.parse_args();out={}
 base=['bluewood','darkwood','oak','iron','brass','enamel','linen','ink','paper','bench']
@@ -36,8 +37,8 @@ atlas=Image.new('RGBA',(128,64),(0,0,0,0))
 for i,im in enumerate(ims):atlas.paste(im,(i%8*16,i//8*16))
 b=io.BytesIO();atlas.save(b,format='PNG');out[A/'textures/block/handling/atlas.png']=b.getvalue()
 model={'textures':{'particle':'the_oldest_house:block/interiors/bluewood'},'elements':[]}
-out[A/'models/block/vignette_handling.json']=(json.dumps(model,separators=(',',':'))+'\n').encode()
-out[A/'blockstates/vignette_handling.json']=(json.dumps({'variants':{f'kind={k},facing={f}':{'model':'the_oldest_house:block/vignette_handling'} for k in('toy_piano','spinet','slides','model_kit','tape') for f in('north','east','south','west')}},separators=(',',':'))+'\n').encode()
+out[A/'models/block/vignette_handling.json']=(flicker.dumps(model,separators=(',',':'))+'\n').encode()
+out[A/'blockstates/vignette_handling.json']=(flicker.dumps({'variants':{f'kind={k},facing={f}':{'model':'the_oldest_house:block/vignette_handling'} for k in('toy_piano','spinet','slides','model_kit','tape') for f in('north','east','south','west')}},separators=(',',':'))+'\n').encode()
 RATE=22050
 def encode(samples):
  pcm=array.array('h',(round(max(-.95,min(.95,s))*32767) for s in samples))
@@ -79,18 +80,18 @@ for i in range(16*RATE):
   if 0<q<length:v+=.08*low*math.sin(math.pi*q/length)**2+.014*math.sin(2*math.pi*(120+45*q)*q)*math.sin(math.pi*q/length)**2
  room.append(v)
 for n in range(32):sound(f'tape_{n:02}',room[n*RATE//2:(n+1)*RATE//2])
-out[manifest_path]=(json.dumps(manifest,indent=2)+'\n').encode()
+out[manifest_path]=(flicker.dumps(manifest,indent=2)+'\n').encode()
 labels={'toy':'Toy piano plays','spinet':'Spinet plays','click':'Control clicks','slide':'Slide tray clicks','wood':'Model piece taps','wind':'Tape rewinds','tape':'Recording plays'}
 lang_path=A/'lang/en_us.json';language=json.loads(lang_path.read_text())
 for key,value in labels.items():
  name='subtitles.the_oldest_house.handling_'+key
  if args.check:assert language.get(name)==value, 'Missing handling subtitle '+name
  else:language[name]=value
-if not args.check:lang_path.write_text(json.dumps(language,indent=2,ensure_ascii=False)+'\n')
+if not args.check:lang_path.write_text(flicker.dumps(language,indent=2,ensure_ascii=False)+'\n')
 master=A/'sounds.json';current=json.loads(master.read_text())
 if args.check:
  assert all(current.get(k)==v for k,v in sounds.items()),'Missing handling sound registration'
-else:current.update(sounds);master.write_text(json.dumps(current,indent=2)+'\n')
+else:current.update(sounds);master.write_text(flicker.dumps(current,indent=2)+'\n')
 bad=[]
 for path,data in out.items():
  if args.check:

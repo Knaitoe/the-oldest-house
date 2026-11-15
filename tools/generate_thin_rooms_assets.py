@@ -6,6 +6,7 @@ and their names. Textures follow Minecraft's own look: a small palette per mater
 single-pixel noise, nothing smooth or sampled. Run from anywhere; it rewrites only its own files and keys.
 """
 import json
+import flicker
 import math
 import random
 from pathlib import Path
@@ -778,7 +779,7 @@ def write_model(prefix, name, elements, textures, particle, render='cutout'):
     tex = {k: (v if ':' in v else NS + v) for k, v in textures.items()}
     tex['particle'] = particle if ':' in particle else NS + particle
     data = {'parent': 'minecraft:block/block', 'render_type': f'minecraft:{render}', 'textures': tex, 'elements': elements}
-    (MODELS / f'{prefix}_{name}.json').write_text(json.dumps(data, indent=1) + '\n')
+    (MODELS / f'{prefix}_{name}.json').write_text(flicker.dumps(data, indent=1) + '\n')
 
 
 def cube(prefix, name, all_=None, side=None, top=None, bottom=None):
@@ -787,7 +788,7 @@ def cube(prefix, name, all_=None, side=None, top=None, bottom=None):
     bottom = bottom or all_ or side
     data = {'parent': 'minecraft:block/cube', 'textures': {'particle': NS + side, 'north': NS + side, 'south': NS + side, 'east': NS + side,
                                                             'west': NS + side, 'up': NS + top, 'down': NS + bottom}}
-    (MODELS / f'{prefix}_{name}.json').write_text(json.dumps(data, indent=1) + '\n')
+    (MODELS / f'{prefix}_{name}.json').write_text(flicker.dumps(data, indent=1) + '\n')
 
 
 def masque_models():
@@ -922,12 +923,12 @@ def blockstate(name, kinds, stages, model_of):
                 if y and kind not in CUBES:
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
-    (ASSETS / f'blockstates/{name}.json').write_text(json.dumps({'variants': variants}, indent=1) + '\n')
+    (ASSETS / f'blockstates/{name}.json').write_text(flicker.dumps({'variants': variants}, indent=1) + '\n')
     return len(variants)
 
 
 def write_json(path, data, original):
-    text = json.dumps(data, indent=2, ensure_ascii=False)
+    text = flicker.dumps(data, indent=2, ensure_ascii=False)
     if original.endswith('\n'):
         text += '\n'
     path.write_text(text)
@@ -949,7 +950,7 @@ if __name__ == '__main__':
         path = ASSETS / 'textures/block' / f'{name}.png'
         make().save(path)
         if name in ANIMATED:
-            path.with_name(path.name + '.mcmeta').write_text(json.dumps({'animation': {'frametime': ANIMATED[name]}}, indent=1) + '\n')
+            path.with_name(path.name + '.mcmeta').write_text(flicker.dumps({'animation': {'frametime': ANIMATED[name]}}, indent=1) + '\n')
     MODELS.mkdir(parents=True, exist_ok=True)
     masque_models()
     manor_models()

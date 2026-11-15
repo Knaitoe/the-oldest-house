@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Native Minecraft meshes for the field case, stone fountain and plain chalk/string tools. No raster art is altered."""
 import json
+import flicker
 from pathlib import Path
 
 A = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
@@ -14,7 +15,7 @@ def box(bounds, material, uv=None):
     return {'from': bounds[:3], 'to': bounds[3:], 'faces': {k: dict(face) for k in ('north','south','east','west','up','down')}}
 
 def write(path, value):
-    (A / path).write_text(json.dumps(value, indent=2) + '\n')
+    (A / path).write_text(flicker.dumps(value, indent=2) + '\n')
 
 def main():
     notes = {'case': 'minecraft:block/cyan_terracotta', 'rim': 'minecraft:block/iron_block',

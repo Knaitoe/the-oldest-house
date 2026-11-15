@@ -18,6 +18,7 @@ Run without arguments to draw; --check verifies the files match.
 from pathlib import Path
 import io
 import json
+import flicker
 import sys
 from PIL import Image
 
@@ -177,7 +178,7 @@ def model():
 
 
 def files():
-    return {BODY: picture(CAMERA), KIT: picture(kit_rows()), MODEL: (json.dumps(model(), indent=2) + '\n').encode()}
+    return {BODY: picture(CAMERA), KIT: picture(kit_rows()), MODEL: (flicker.dumps(model(), indent=2) + '\n').encode()}
 
 
 def main():

@@ -135,6 +135,54 @@
           "texture": "#r"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        16,
+        7,
+        7
+      ],
+      "to": [
+        16.02,
+        9,
+        9
+      ],
+      "faces": {
+        "east": {
+          "texture": "#r",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        -0.02,
+        7,
+        7
+      ],
+      "to": [
+        0,
+        9,
+        9
+      ],
+      "faces": {
+        "west": {
+          "texture": "#r",
+          "uv": [
+            7,
+            7,
+            9,
+            9
+          ]
+        }
+      }
     }
   ]
 }

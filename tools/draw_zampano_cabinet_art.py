@@ -14,6 +14,7 @@ Run with python3.13 from the repository root; --check compares the committed ass
 """
 import io
 import json
+import flicker
 import sys
 from pathlib import Path
 from PIL import Image
@@ -176,7 +177,7 @@ def outputs():
     names = {0: 'zampano_cabinet', 1: 'zampano_cabinet_top_out', 2: 'zampano_cabinet_middle_out', 3: 'zampano_cabinet_foot_out'}
     slot = {0: -1, 1: 2, 2: 1, 3: 0}
     for drawer, name in names.items():
-        out[f'models/block/{name}.json'] = (json.dumps(model(slot[drawer]), indent=2) + '\n').encode()
+        out[f'models/block/{name}.json'] = (flicker.dumps(model(slot[drawer]), indent=2) + '\n').encode()
     turn = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
     variants = {}
     for facing, y in turn.items():
@@ -186,8 +187,8 @@ def outputs():
                 if y:
                     v['y'] = y
                 variants[f'facing={facing},cabinet={cabinet},drawer={drawer}'] = v
-    out['blockstates/zampano_cabinet.json'] = (json.dumps({'variants': variants}, indent=2) + '\n').encode()
-    out['models/item/zampano_leaf.json'] = (json.dumps(
+    out['blockstates/zampano_cabinet.json'] = (flicker.dumps({'variants': variants}, indent=2) + '\n').encode()
+    out['models/item/zampano_leaf.json'] = (flicker.dumps(
         {'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/zampano_leaf'}}, indent=2) + '\n').encode()
     return out
 

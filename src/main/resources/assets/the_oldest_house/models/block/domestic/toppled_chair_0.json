@@ -425,6 +425,280 @@
           "texture": "#cane"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2,
+        -0.02,
+        7
+      ],
+      "to": [
+        14,
+        0,
+        9
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#cane"
+        },
+        "east": {
+          "texture": "#cane",
+          "uv": [
+            14,
+            7,
+            13.98,
+            9
+          ],
+          "rotation": 90
+        },
+        "west": {
+          "texture": "#cane",
+          "uv": [
+            2,
+            9,
+            2.02,
+            7
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.98,
+        0,
+        7
+      ],
+      "to": [
+        2,
+        12,
+        9
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#cane",
+          "rotation": 270
+        },
+        "up": {
+          "texture": "#cane",
+          "uv": [
+            2.02,
+            7,
+            2,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#cane",
+          "uv": [
+            2.02,
+            7,
+            2,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14,
+        0,
+        7
+      ],
+      "to": [
+        14.02,
+        12,
+        9
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            2,
+            7,
+            14,
+            9
+          ],
+          "texture": "#cane",
+          "rotation": 90
+        },
+        "up": {
+          "texture": "#cane",
+          "uv": [
+            14,
+            7,
+            13.98,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#cane",
+          "uv": [
+            14,
+            7,
+            13.98,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4,
+        -0.02,
+        9
+      ],
+      "to": [
+        12,
+        0,
+        9
+      ],
+      "faces": {
+        "south": {
+          "texture": "#cane",
+          "uv": [
+            4,
+            14,
+            12,
+            13.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4,
+        -0.02,
+        7
+      ],
+      "to": [
+        12,
+        0,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cane",
+          "uv": [
+            4,
+            14,
+            12,
+            13.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.98,
+        2,
+        9
+      ],
+      "to": [
+        2,
+        12,
+        9
+      ],
+      "faces": {
+        "south": {
+          "texture": "#cane",
+          "uv": [
+            2.02,
+            2,
+            2,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.98,
+        2,
+        7
+      ],
+      "to": [
+        2,
+        10,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cane",
+          "uv": [
+            14,
+            4,
+            13.98,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14,
+        2,
+        9
+      ],
+      "to": [
+        14.02,
+        12,
+        9
+      ],
+      "faces": {
+        "south": {
+          "texture": "#cane",
+          "uv": [
+            14,
+            2,
+            13.98,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14,
+        2,
+        7
+      ],
+      "to": [
+        14.02,
+        10,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cane",
+          "uv": [
+            2.02,
+            4,
+            2,
+            12
+          ]
+        }
+      }
     }
   ]
 }

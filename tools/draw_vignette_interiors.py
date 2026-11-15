@@ -5,6 +5,7 @@ No historical NPC sheets, original puzzle textures, containers or loot are repla
 """
 from pathlib import Path
 import argparse, io, json, re
+import flicker
 from PIL import Image, ImageDraw
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
@@ -169,7 +170,7 @@ for name,(normal,active) in M.items():
    elements.append({'from':[x0,y0,z0],'to':[x1,y1,z1],'faces':{f:{'texture':'#'+mat,'uv':uv,**({'cullface':f} if name in SURFACES else {})} for f,uv in uvs.items()}})
   mats=sorted({b[6] for b in parts});assert all(m in PAINT for m in mats)
   obj={'ambientocclusion':True,'textures':{**{m:P+m for m in mats},'particle':P+mats[0]},'elements':elements}
-  OUT[A/f'models/block/interiors/{modelname}.json']=json.dumps(obj,separators=(',',':'))+'\n'
+  OUT[A/f'models/block/interiors/{modelname}.json']=flicker.dumps(obj,separators=(',',':'))+'\n'
   for facing,rot in [('north',0),('east',90),('south',180),('west',270)]:
    obj={'model':'the_oldest_house:block/interiors/'+modelname}
    if rot:obj['y']=rot
@@ -177,7 +178,7 @@ for name,(normal,active) in M.items():
  def arr(parts):return 'new double[][]{'+','.join('{'+','.join(str(c) for c in b[:6])+'}' for b in parts)+'}'
  geo.append(f' case {name.upper()} -> '+(f'active?{arr(active)}:{arr(normal)}' if active is not None else arr(normal))+';')
 geo+=[' };}','}'];OUT[ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/VignetteInteriorGeometry.java']='\n'.join(geo)+'\n'
-OUT[A/'blockstates/vignette_interior.json']=json.dumps({'variants':variants},separators=(',',':'))+'\n'
+OUT[A/'blockstates/vignette_interior.json']=flicker.dumps({'variants':variants},separators=(',',':'))+'\n'
 for n,im in PAINT.items():
  b=io.BytesIO();im.save(b,format='PNG');OUT[A/f'textures/block/interiors/{n}.png']=b.getvalue()
 block=ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/labyrinth/VignetteInteriorBlock.java'

@@ -1,6 +1,7 @@
 """Exact native camp meshes, fitted pixel textures, cottage chessmen and jointed-paw atlas. No existing skin is replaced."""
 from pathlib import Path
 import json, random
+import flicker
 from PIL import Image, ImageDraw
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -114,9 +115,9 @@ for kind,boxes in BOXES.items():
             if kind=='lantern' and n==0:el['neoforge_data']={'block_light':11,'sky_light':0}
             els.append(el)
         model=f'camp_{kind}_{stage}'
-        (M/f'{model}.json').write_text(json.dumps({'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':textures,'elements':els},separators=(',',':'))+'\n')
+        (M/f'{model}.json').write_text(flicker.dumps({'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':textures,'elements':els},separators=(',',':'))+'\n')
         for facing,y in [('north',0),('east',90),('south',180),('west',270)]:variants[f'facing={facing},kind={kind},stage={stage}']={'model':'the_oldest_house:block/'+model,**({'y':y} if y else {})}
-(A/'blockstates/camp_decor.json').write_text(json.dumps({'variants':variants},separators=(',',':'))+'\n')
+(A/'blockstates/camp_decor.json').write_text(flicker.dumps({'variants':variants},separators=(',',':'))+'\n')
 
 # Native cottage board, with individually modelled contrasting chessmen.
 im=Image.new('RGBA',(32,32),'#705437');d=ImageDraw.Draw(im)
@@ -130,17 +131,17 @@ for color,zs in [('white',(0,1)),('black',(6,7))]:
             if (color,z,x) in [('white',1,4),('black',6,3)]:continue
             px,pz=2+x*1.5,2+z*1.5;h=2.8 if z in (0,7) and x in (3,4) else 2.2 if z in (0,7) else 1.7
             for frm,to in [([px-.45,1,pz-.45],[px+.45,1.5,pz+.45]),([px-.27,1.5,pz-.27],[px+.27,h,pz+.27]),([px-.4,h,pz-.4],[px+.4,h+.4,pz+.4])]:els.append({'from':frm,'to':to,'faces':{d:{'texture':'#'+color} for d in DIRS}})
-(M/'cottage_chessboard.json').write_text(json.dumps({'parent':'minecraft:block/block','textures':{'board':'the_oldest_house:block/cottage/chessboard','white':'minecraft:block/sandstone_top','black':'minecraft:block/black_terracotta','particle':'the_oldest_house:block/cottage/chessboard'},'elements':els},separators=(',',':'))+'\n')
+(M/'cottage_chessboard.json').write_text(flicker.dumps({'parent':'minecraft:block/block','textures':{'board':'the_oldest_house:block/cottage/chessboard','white':'minecraft:block/sandstone_top','black':'minecraft:block/black_terracotta','particle':'the_oldest_house:block/cottage/chessboard'},'elements':els},separators=(',',':'))+'\n')
 moved=json.loads((M/'cottage_chessboard.json').read_text())
 for e in moved['elements']:
     x=(e['from'][0]+e['to'][0])/2;z=(e['from'][2]+e['to'][2])/2
     if e['from'][1]>=1 and abs(x-6.5)<.1 and abs(z-3.5)<.1:
         for key in ('from','to'):e[key][2]+=3
-(M/'cottage_chessboard_move.json').write_text(json.dumps(moved,indent=1)+'\n')
+(M/'cottage_chessboard_move.json').write_text(flicker.dumps(moved,indent=1)+'\n')
 p=A/'blockstates/cottage.json';table=json.loads(p.read_text())
 for facing,y in [('north',0),('east',90),('south',180),('west',270)]:
     for stage in range(2):table['variants'][f'facing={facing},kind=chessboard,stage={stage}']={'model':'the_oldest_house:block/cottage_chessboard'+('_move' if stage else ''),**({'y':y} if y else {})}
-p.write_text(json.dumps(table,indent=1)+'\n')
+p.write_text(flicker.dumps(table,indent=1)+'\n')
 
 # Jointed-paw UV atlas: opaque native cube faces, dry creases and lighter tendons.
 im=Image.new('RGBA',(64,32));d=ImageDraw.Draw(im);r=random.Random(483)
@@ -152,6 +153,6 @@ for box in ((1,3,18,7),(2,9,19,10),(0,16,7,17),(12,16,19,17),(24,16,31,17)):d.re
 for x in (1,5,13,17,25,29):d.point((x,15),fill='#dac397')
 im.save(A/'textures/entity/paw_clutch.png',optimize=True)
 im=Image.new('RGBA',(16,16),(0,0,0,0));d=ImageDraw.Draw(im);d.rectangle((1,4,14,12),fill='#d5ccac',outline='#8a7c5d');d.line((2,5,7,9,13,5),fill='#a69873');d.rectangle((7,8,9,10),fill='#875647');im.save(A/'textures/item/mill_letter.png',optimize=True)
-(A/'models/item/mill_letter.json').write_text(json.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/mill_letter'}})+'\n')
-p=A/'lang/en_us.json';lang=json.loads(p.read_text());lang['block.the_oldest_house.camp_decor']='Camp furnishing';lang['item.the_oldest_house.mill_letter']='Envelope from the mill';p.write_text(json.dumps(lang,indent=2,ensure_ascii=False)+'\n')
+(A/'models/item/mill_letter.json').write_text(flicker.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/mill_letter'}})+'\n')
+p=A/'lang/en_us.json';lang=json.loads(p.read_text());lang['block.the_oldest_house.camp_decor']='Camp furnishing';lang['item.the_oldest_house.mill_letter']='Envelope from the mill';p.write_text(flicker.dumps(lang,indent=2,ensure_ascii=False)+'\n')
 print('288 camp variants; 27 camp textures; modelled chessboard; jointed paw and readable envelope art')

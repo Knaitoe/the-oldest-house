@@ -6,6 +6,7 @@ vanilla sixteen-pixel grid; no gradients, resampling, or source photographs.
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image, ImageDraw
 
@@ -227,7 +228,7 @@ LIGHTS={'fluorescent':12,'flush_light':12,'exterior_lamp':9,'sconce':8,'desk_lam
 def pieces_for(name,opened):
     parts=furniture()[name]
     if not opened:return parts
-    parts=json.loads(json.dumps(parts))
+    parts=json.loads(flicker.dumps(parts))
     if name=='cabinet':parts[-2]['from']=[1,2,2];parts[-2]['to']=[2,15,15];parts[-1]['from']=[0,8,11];parts[-1]['to']=[1,10,13]
     elif name=='wardrobe':parts[-2]['from']=[2,1,-9];parts[-2]['to']=[3,31,3];parts[-1]['from']=[1,14,-7];parts[-1]['to']=[2,18,-6]
     elif name=='sideboard':parts[-2]['from']=[2,5,-10];parts[-2]['to']=[3,13,2];parts[-1]['from']=[1,8,-8];parts[-1]['to']=[2,10,-7]
@@ -321,8 +322,8 @@ def main():
         else:path.parent.mkdir(parents=True,exist_ok=True);im.save(path,optimize=True)
     for name,obj in models().items():
         path=A/name
-        if check:assert json.loads(path.read_text())==obj,name
-        else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(obj,indent=2)+'\n')
+        if check:assert json.loads(path.read_text())==flicker.settled(obj),name
+        else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(flicker.dumps(obj,indent=2)+'\n')
     if check:assert JAVA.read_text()==shape_source(),'Native furniture collision differs from its generated meshes'
     else:JAVA.write_text(shape_source())
     print(('Verified' if check else 'Painted')+f' {len(paintings())} native materials, {len(furniture())} fitted furnishings, the glazed diner entrance and the restroom door.')

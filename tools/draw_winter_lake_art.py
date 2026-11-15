@@ -7,6 +7,7 @@ ribbon Hank has carried since the shallows. The drawing helpers are Movie Night'
 Usage: python3 tools/draw_winter_lake_art.py
 """
 import json
+import flicker
 
 import numpy as np
 from PIL import Image
@@ -120,10 +121,10 @@ def write():
         img.save(ASSETS / 'textures/block' / f'{name}.png')
     ribbon().save(ASSETS / 'textures/item/winter_ribbon.png')
     for name, model in models().items():
-        (ASSETS / 'models/block' / f'{name}.json').write_text(json.dumps(model, indent=2) + '\n')
-    (ASSETS / 'models/item/winter_ribbon.json').write_text(json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/winter_ribbon'}}, indent=2) + '\n')
+        (ASSETS / 'models/block' / f'{name}.json').write_text(flicker.dumps(model, indent=2) + '\n')
+    (ASSETS / 'models/item/winter_ribbon.json').write_text(flicker.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/winter_ribbon'}}, indent=2) + '\n')
     variants = {f'kind={kind}': {'model': T + 'winter_' + kind} for kind in KINDS}
-    (ASSETS / 'blockstates/winter_prop.json').write_text(json.dumps({'variants': variants}, indent=2) + '\n')
+    (ASSETS / 'blockstates/winter_prop.json').write_text(flicker.dumps({'variants': variants}, indent=2) + '\n')
 
 
 if __name__ == '__main__':

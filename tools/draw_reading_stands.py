@@ -20,6 +20,7 @@ Usage: python3 tools/draw_reading_stands.py [--check]
 """
 from pathlib import Path
 import json
+import flicker
 import random
 import sys
 
@@ -365,13 +366,13 @@ def outputs():
         tex = {k: v if ':' in v else '%s:block/reading_stand/%s' % (NS, v) for k, v in keys.items()}
         tex['particle'] = tex[next(iter(keys))]
         model = {'render_type': 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': elements}
-        out['models/block/reading_stand_%s.json' % kind] = (json.dumps(model, indent=2) + '\n').encode()
+        out['models/block/reading_stand_%s.json' % kind] = (flicker.dumps(model, indent=2) + '\n').encode()
         for facing, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
             v = {'model': '%s:block/reading_stand_%s' % (NS, kind)}
             if y:
                 v['y'] = y
             variants['facing=%s,kind=%s' % (facing, kind)] = v
-    out['blockstates/reading_stand.json'] = (json.dumps({'variants': variants}, indent=2) + '\n').encode()
+    out['blockstates/reading_stand.json'] = (flicker.dumps({'variants': variants}, indent=2) + '\n').encode()
     return out
 
 

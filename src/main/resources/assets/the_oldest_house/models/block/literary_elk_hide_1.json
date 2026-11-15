@@ -412,6 +412,342 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        16,
+        0,
+        0
+      ],
+      "to": [
+        16.02,
+        1,
+        3
+      ],
+      "faces": {
+        "east": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#fur",
+          "uv": [
+            16,
+            0,
+            15.92,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#fur",
+          "uv": [
+            0.08,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        12,
+        -0.02,
+        0
+      ],
+      "to": [
+        16,
+        0,
+        3
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            16,
+            15.68
+          ]
+        },
+        "north": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            16,
+            15.68
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        -0.02,
+        0,
+        13
+      ],
+      "to": [
+        0,
+        1,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#fur",
+          "uv": [
+            0.08,
+            0,
+            0,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#fur",
+          "uv": [
+            0.08,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0,
+        -0.02,
+        13
+      ],
+      "to": [
+        4,
+        0,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            16,
+            15.68
+          ]
+        },
+        "south": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            16,
+            15.68
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14,
+        1.98,
+        5
+      ],
+      "to": [
+        16,
+        2,
+        9
+      ],
+      "faces": {
+        "down": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        16,
+        1,
+        0
+      ],
+      "to": [
+        16.02,
+        1,
+        1
+      ],
+      "faces": {
+        "up": {
+          "texture": "#fur",
+          "uv": [
+            16,
+            0,
+            15.92,
+            5.33333
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        12,
+        -0.02,
+        0
+      ],
+      "to": [
+        12,
+        0,
+        1
+      ],
+      "faces": {
+        "west": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            5.33333,
+            15.68
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        -0.02,
+        1,
+        15
+      ],
+      "to": [
+        0,
+        1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#fur",
+          "uv": [
+            0.08,
+            10.66667,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4,
+        -0.02,
+        15
+      ],
+      "to": [
+        4,
+        0,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            5.33333,
+            15.68
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        1.98,
+        9
+      ],
+      "to": [
+        16,
+        2,
+        9
+      ],
+      "faces": {
+        "south": {
+          "texture": "#fur",
+          "uv": [
+            8,
+            16,
+            16,
+            15.68
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        1.98,
+        5
+      ],
+      "to": [
+        16,
+        2,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#fur",
+          "uv": [
+            0,
+            16,
+            8,
+            15.68
+          ]
+        }
+      }
     }
   ]
 }

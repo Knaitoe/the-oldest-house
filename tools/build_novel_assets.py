@@ -2,10 +2,11 @@
 """Import the generated material tiles and author native UV models/audio. No invented texture paths."""
 from pathlib import Path
 import json, math, random, struct, subprocess, wave
+import flicker
 R=Path(__file__).resolve().parents[1]
 A=R/'src/main/resources/assets/the_oldest_house'
 def write(path,data):
- p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(data,indent=2)+'\n')
+ p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(data,indent=2)+'\n')
 def cube(bounds,texture):
  return {'from':bounds[:3],'to':bounds[3:],'faces':{face:{'texture':'#'+texture} for face in ['up','down','north','south','east','west']}}
 # sealed_window, archive_paper and the archive key and ribbon sprites belong to generate_playtest_assets.py (0.4.64).

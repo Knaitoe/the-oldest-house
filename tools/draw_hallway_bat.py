@@ -6,6 +6,7 @@ six tenths, which read as a knife. This one is a bat: a knob, a taped grip, a ta
 held at nearly full size. Its sixteen-pixel sheet is drawn here at vanilla's scale.
 """
 import argparse, io, json, random
+import flicker
 from pathlib import Path
 from PIL import Image
 
@@ -71,7 +72,7 @@ def model():
 def files():
     b = io.BytesIO(); sheet().save(b, format='PNG')
     return {A / 'textures/item/hallway_bat.png': b.getvalue(),
-            A / 'models/item/hallway_bat.json': json.dumps(model(), indent=2) + '\n'}
+            A / 'models/item/hallway_bat.json': flicker.dumps(model(), indent=2) + '\n'}
 
 
 def main():

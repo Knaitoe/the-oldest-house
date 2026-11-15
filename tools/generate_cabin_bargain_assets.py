@@ -6,6 +6,7 @@ No samples, recordings or words. Every cue is mono and gets an English subtitle.
 """
 from pathlib import Path
 import json, math, random
+import flicker
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -283,7 +284,7 @@ def particles():
     for name, count in (('cabin_rain', 2), ('cabin_leaf', 4)):
         p = A / 'particles' / f'{name}.json'
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps({'textures': [f'the_oldest_house:{name}_{i}' for i in range(count)]}, indent=2) + '\n')
+        p.write_text(flicker.dumps({'textures': [f'the_oldest_house:{name}_{i}' for i in range(count)]}, indent=2) + '\n')
 
 
 def models():
@@ -313,7 +314,7 @@ def models():
     def write(path, obj):
         p = A / path
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps(obj, indent=2) + '\n')
+        p.write_text(flicker.dumps(obj, indent=2) + '\n')
 
     write('models/item/cabin_snow_globe.json', globe(False))
     write('models/item/cabin_cracked_snow_globe.json', globe(True))
@@ -334,10 +335,10 @@ def registry(lengths):
     lang.update({'item.the_oldest_house.cabin_snow_globe': 'Snow globe',
                  'item.the_oldest_house.cabin_cracked_snow_globe': 'Cracked snow globe',
                  'item.the_oldest_house.cabin_given_arm': 'A given arm'})
-    (A / 'sounds.json').write_text(json.dumps(sounds, indent=2) + '\n')
-    (A / 'lang/en_us.json').write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+    (A / 'sounds.json').write_text(flicker.dumps(sounds, indent=2) + '\n')
+    (A / 'lang/en_us.json').write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     (ROOT / 'art').mkdir(exist_ok=True)
-    (ROOT / 'art/cabin_bargain_audio.json').write_text(json.dumps(lengths, indent=2) + '\n')
+    (ROOT / 'art/cabin_bargain_audio.json').write_text(flicker.dumps(lengths, indent=2) + '\n')
 
 
 def main():
@@ -348,7 +349,7 @@ def main():
     particles()
     models()
     registry(lengths)
-    print(json.dumps(lengths))
+    print(flicker.dumps(lengths))
 
 
 if __name__ == '__main__':

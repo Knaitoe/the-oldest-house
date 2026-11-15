@@ -608,6 +608,168 @@
      ]
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    4.48,
+    12.5,
+    7.5
+   ],
+   "to": [
+    4.5,
+    14.5,
+    8.5
+   ],
+   "faces": {
+    "west": {
+     "texture": "#bear",
+     "uv": [
+      0,
+      6,
+      1.0,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#bear",
+     "uv": [
+      0.02,
+      6,
+      0,
+      7
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    11.5,
+    12.5,
+    7.5
+   ],
+   "to": [
+    11.52,
+    14.5,
+    8.5
+   ],
+   "faces": {
+    "east": {
+     "texture": "#bear",
+     "uv": [
+      0,
+      6,
+      1.0,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#bear",
+     "uv": [
+      2,
+      6,
+      1.98,
+      7
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    4.48,
+    13,
+    8.5
+   ],
+   "to": [
+    4.5,
+    14.5,
+    8.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#bear",
+     "uv": [
+      0.02,
+      6,
+      0,
+      7.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    4.48,
+    13,
+    7.5
+   ],
+   "to": [
+    4.5,
+    14.5,
+    7.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bear",
+     "uv": [
+      15,
+      0,
+      14.98,
+      1.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    11.5,
+    13,
+    8.5
+   ],
+   "to": [
+    11.52,
+    14.5,
+    8.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#bear",
+     "uv": [
+      2,
+      6,
+      1.98,
+      7.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    11.5,
+    13,
+    7.5
+   ],
+   "to": [
+    11.52,
+    14.5,
+    7.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bear",
+     "uv": [
+      13.02,
+      0,
+      13,
+      1.5
+     ]
+    }
+   }
   }
  ]
 }

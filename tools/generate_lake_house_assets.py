@@ -12,6 +12,7 @@ Usage: python3 tools/generate_lake_house_assets.py
 """
 from pathlib import Path
 import json
+import flicker
 
 import numpy as np
 import soundfile
@@ -169,7 +170,7 @@ NAMES = {
 def write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     original = path.read_text() if path.exists() else '\n'
-    text = json.dumps(data, indent=2, ensure_ascii=False)
+    text = flicker.dumps(data, indent=2, ensure_ascii=False)
     if original.endswith('\n'):
         text += '\n'
     path.write_text(text)

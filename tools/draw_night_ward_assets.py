@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse
 import copy
 import json
+import flicker
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -293,7 +294,7 @@ def models():
             else:obj['textures']={'bottom':PREFIX+'door_lower','top':PREFIX+'door_upper'}
             put('models/block/'+src.name.replace('ward_','night_ward_',1),obj)
         obj=json.loads((A/f'blockstates/{state}.json').read_text())
-        obj=json.loads(json.dumps(obj).replace('the_oldest_house:block/ward_', 'the_oldest_house:block/night_ward_'))
+        obj=json.loads(flicker.dumps(obj).replace('the_oldest_house:block/ward_', 'the_oldest_house:block/night_ward_'))
         put(f'blockstates/night_ward_{group}.json',obj)
     incubator=json.loads((A/'models/block/novel_incubator.json').read_text())
     incubator['elements']=incubator['elements'][:8]
@@ -404,8 +405,8 @@ def main():
         else:path.parent.mkdir(parents=True,exist_ok=True);im.save(path,optimize=True)
     for name,obj in models().items():
         path=A/name
-        if check:assert json.loads(path.read_text())==obj,name
-        else:path.write_text(json.dumps(obj,indent=2)+'\n')
+        if check:assert json.loads(path.read_text())==flicker.settled(obj),name
+        else:path.write_text(flicker.dumps(obj,indent=2)+'\n')
     print(('Verified' if check else 'Painted')+' the night-duty ward materials, its fittings, curtains and their native models.')
 
 if __name__=='__main__':main()

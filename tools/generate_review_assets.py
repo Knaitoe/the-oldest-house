@@ -5,6 +5,7 @@ is the UV preparation step; this script does not invent replacement raster art.
 """
 from pathlib import Path
 import json, sys
+import flicker
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,17 +49,17 @@ def run(sheet):
   textures={m:('minecraft:block/black_concrete' if m=='black' else 'the_oldest_house:block/review_'+m) for m,_ in cubes}
   elements=[{'from':b[:3],'to':b[3:],'faces':{f:{'uv':[0,0,16,16],'texture':'#'+m} for f in ['north','south','east','west','up','down']}} for m,b in cubes]
   model={'ambientocclusion':True,'textures':dict(textures,particle=next(iter(textures.values()))),'elements':elements}
-  if name not in ('bear','missing_notice','cassette'):(ASSET/f'models/block/review_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
+  if name not in ('bear','missing_notice','cassette'):(ASSET/f'models/block/review_{name}.json').write_text(flicker.dumps(model,indent=2)+'\n')
   for face,turn in [('north',0),('east',90),('south',180),('west',270)]: variants[f'facing={face},kind={name}']={'model':'the_oldest_house:block/review_'+name,'y':turn}
- (ASSET/'blockstates/vignette_detail.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
+ (ASSET/'blockstates/vignette_detail.json').write_text(flicker.dumps({'variants':variants},indent=2)+'\n')
  # Keep the existing desk's exact native geometry, with its own new material.
  desk=json.loads((ASSET/'models/block/furniture_walnut_desk.json').read_text())
  desk['textures']={k:'the_oldest_house:block/review_reading_wood' for k in desk['textures']}
- (ASSET/'models/block/furniture_reading_desk.json').write_text(json.dumps(desk,indent=2)+'\n')
+ (ASSET/'models/block/furniture_reading_desk.json').write_text(flicker.dumps(desk,indent=2)+'\n')
  p=ASSET/'blockstates/household_furniture.json';j=json.loads(p.read_text())
  for key,v in list(j['variants'].items()):
   if 'kind=walnut_desk' in key: j['variants'][key.replace('kind=walnut_desk','kind=reading_desk')]=dict(v,model='the_oldest_house:block/furniture_reading_desk')
- p.write_text(json.dumps(j,indent=2)+'\n')
+ p.write_text(flicker.dumps(j,indent=2)+'\n')
  # The well's new native stone model supersedes the old wooden material sheet.
  from generate_well_model import write_model
  write_model(ASSET)
@@ -98,6 +99,6 @@ SHAPES
 }
 '''.replace('ENUMS',', '.join(n.upper() for n in PROPS)).replace('SHAPES',shapes)
  (ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/house/VignetteDetailBlock.java').write_text(source)
- lang=ASSET/'lang/en_us.json';j=json.loads(lang.read_text());j['block.the_oldest_house.vignette_detail']='Vignette detail';lang.write_text(json.dumps(j,indent=2,ensure_ascii=False)+'\n')
+ lang=ASSET/'lang/en_us.json';j=json.loads(lang.read_text());j['block.the_oldest_house.vignette_detail']='Vignette detail';lang.write_text(flicker.dumps(j,indent=2,ensure_ascii=False)+'\n')
  print(f'Packed {len(NAMES)} generated texture tiles, {len(PROPS)} native prop models, reading desk and native costume skin.')
 if __name__=='__main__': run(Path(sys.argv[1]) if len(sys.argv)>1 else ROOT/'art/review_0454/material-atlas.png')

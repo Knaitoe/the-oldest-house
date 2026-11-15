@@ -698,6 +698,54 @@
           "texture": "#beer_label"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.9,
+        9,
+        2.9
+      ],
+      "to": [
+        3.1,
+        9.02,
+        4.1
+      ],
+      "faces": {
+        "up": {
+          "texture": "#dark_metal",
+          "uv": [
+            1.9,
+            2.9,
+            3.1,
+            4.1
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6.9,
+        9,
+        3.9
+      ],
+      "to": [
+        8.1,
+        9.02,
+        5.1
+      ],
+      "faces": {
+        "up": {
+          "texture": "#dark_metal",
+          "uv": [
+            6.9,
+            3.9,
+            8.1,
+            5.1
+          ]
+        }
+      }
     }
   ]
 }

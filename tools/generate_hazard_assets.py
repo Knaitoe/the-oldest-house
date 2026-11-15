@@ -6,6 +6,7 @@ Only hazard_* assets and the new quiet-walker atlas are written. Existing cast a
 from pathlib import Path
 import hashlib
 import json
+import flicker
 import random
 from PIL import Image, ImageDraw
 
@@ -16,7 +17,7 @@ PALETTES = [(151,172,172),(130,137,128),(71,82,84),(99,88,60),(136,147,145),(72,
 
 def write_json(path, obj):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, indent=2) + '\n')
+    path.write_text(flicker.dumps(obj, indent=2) + '\n')
 
 def texture(kind, palette, dark=False):
     rng = random.Random('hazard_' + kind + ('_off' if dark else ''))

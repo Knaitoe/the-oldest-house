@@ -957,6 +957,54 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.2,
+        2.4,
+        8
+      ],
+      "to": [
+        10.4,
+        2.42,
+        9.4
+      ],
+      "faces": {
+        "up": {
+          "texture": "#supper",
+          "uv": [
+            3,
+            12,
+            4.2,
+            13.4
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.2,
+        1.78,
+        8
+      ],
+      "to": [
+        10.4,
+        1.8,
+        9.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#supper",
+          "uv": [
+            3,
+            12,
+            4.2,
+            13.4
+          ]
+        }
+      }
     }
   ]
 }

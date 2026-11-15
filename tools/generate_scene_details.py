@@ -1,6 +1,7 @@
 """Small scene furnishings: exact native meshes, matching selection boxes and material UVs."""
 from pathlib import Path
 import json, random
+import flicker
 from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -56,11 +57,11 @@ def run():
   for material,b in cubes:
    elements.append({'from':b[:3],'to':b[3:],'faces':{face:{'uv':[0,0,16,16],'texture':'#'+material} for face in ['north','south','east','west','up','down']}})
   model={'ambientocclusion':True,'textures':{**{m:'the_oldest_house:block/detail_'+m for m in MATERIALS},'particle':'the_oldest_house:block/detail_'+cubes[0][0]},'elements':elements}
-  (ASSET/f'models/block/detail_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
+  (ASSET/f'models/block/detail_{name}.json').write_text(flicker.dumps(model,indent=2)+'\n')
   for facing,rotation in [('north',0),('east',90),('south',180),('west',270)]:
    variants[f'facing={facing},kind={name}']={'model':'the_oldest_house:block/detail_'+name,'y':rotation}
- (ASSET/'blockstates/scene_detail.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
- lang=json.loads((ASSET/'lang/en_us.json').read_text());lang['block.the_oldest_house.scene_detail']='Household detail';(ASSET/'lang/en_us.json').write_text(json.dumps(lang,indent=2,ensure_ascii=False)+'\n')
+ (ASSET/'blockstates/scene_detail.json').write_text(flicker.dumps({'variants':variants},indent=2)+'\n')
+ lang=json.loads((ASSET/'lang/en_us.json').read_text());lang['block.the_oldest_house.scene_detail']='Household detail';(ASSET/'lang/en_us.json').write_text(flicker.dumps(lang,indent=2,ensure_ascii=False)+'\n')
  enums=', '.join(name.upper() for name in PROPS)
  shapes='\n'.join('            case '+name.upper()+' -> new double[][]{'+','.join('{'+','.join(str(v) for v in b)+'}' for _,b in cubes)+'};' for name,cubes in PROPS.items())
  source='''package io.github.knaitoe.theoldesthouse.house;

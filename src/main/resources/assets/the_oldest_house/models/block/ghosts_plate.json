@@ -1234,6 +1234,1251 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.050000000000001,
+        1.1,
+        4.3
+      ],
+      "to": [
+        5.09,
+        1.8,
+        6.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.01538,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            0.98462,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.36,
+        1.1,
+        4.3
+      ],
+      "to": [
+        4.4,
+        1.8,
+        6.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.98462,
+            0,
+            0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.01538,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6.6000000000000005,
+        1.1,
+        4.3
+      ],
+      "to": [
+        6.62,
+        2.0300000000000002,
+        6.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.93,
+        1.1,
+        4.3
+      ],
+      "to": [
+        5.95,
+        2.0300000000000002,
+        6.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.5,
+        1.08,
+        4.3
+      ],
+      "to": [
+        8.15,
+        1.1,
+        6.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.72414
+          ]
+        },
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.72414
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.72414
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.700000000000001,
+        1.1,
+        4.3
+      ],
+      "to": [
+        9.74,
+        1.8,
+        6.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.01538,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            0.98462,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.01,
+        1.1,
+        4.3
+      ],
+      "to": [
+        9.05,
+        1.8,
+        6.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.98462,
+            0,
+            0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.01538,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.050000000000001,
+        1.1,
+        6.3
+      ],
+      "to": [
+        5.07,
+        2.0300000000000002,
+        8.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.38,
+        1.1,
+        6.3
+      ],
+      "to": [
+        4.4,
+        2.0300000000000002,
+        8.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.4,
+        1.08,
+        6.3
+      ],
+      "to": [
+        5.050000000000001,
+        1.1,
+        8.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        },
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.95,
+        1.08,
+        6.3
+      ],
+      "to": [
+        6.6000000000000005,
+        1.1,
+        8.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.72414
+          ]
+        },
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.72414
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.15,
+        1.1,
+        6.3
+      ],
+      "to": [
+        8.17,
+        1.8,
+        8.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.48,
+        1.1,
+        6.3
+      ],
+      "to": [
+        7.5,
+        1.8,
+        8.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.700000000000001,
+        1.1,
+        6.3
+      ],
+      "to": [
+        9.72,
+        2.0300000000000002,
+        8.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.03,
+        1.1,
+        6.3
+      ],
+      "to": [
+        9.05,
+        2.0300000000000002,
+        8.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.05,
+        1.08,
+        6.3
+      ],
+      "to": [
+        9.700000000000001,
+        1.1,
+        8.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        },
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6.6000000000000005,
+        1.1,
+        8.3
+      ],
+      "to": [
+        6.62,
+        1.8,
+        10.4
+      ],
+      "faces": {
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.93,
+        1.1,
+        8.3
+      ],
+      "to": [
+        5.95,
+        1.8,
+        10.4
+      ],
+      "faces": {
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.5,
+        1.08,
+        8.3
+      ],
+      "to": [
+        8.15,
+        1.1,
+        10.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        },
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        },
+        "south": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.65591
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.05,
+        1.06,
+        8.3
+      ],
+      "to": [
+        9.700000000000001,
+        1.1,
+        10.4
+      ],
+      "faces": {
+        "down": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.44828
+          ]
+        },
+        "west": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.44828
+          ]
+        },
+        "south": {
+          "texture": "#noodle",
+          "uv": [
+            0,
+            16,
+            16,
+            15.44828
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.05,
+        1.8,
+        4.3
+      ],
+      "to": [
+        5.09,
+        1.8,
+        6.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.01538,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.36,
+        1.8,
+        4.3
+      ],
+      "to": [
+        4.4,
+        1.8,
+        6.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.98462,
+            0,
+            0,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6.6,
+        2.03,
+        4.3
+      ],
+      "to": [
+        6.62,
+        2.03,
+        6.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.93,
+        2.03,
+        4.3
+      ],
+      "to": [
+        5.95,
+        2.03,
+        6.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.7,
+        1.8,
+        4.3
+      ],
+      "to": [
+        9.74,
+        1.8,
+        6.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.01538,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.01,
+        1.8,
+        4.3
+      ],
+      "to": [
+        9.05,
+        1.8,
+        6.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.98462,
+            0,
+            0,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.05,
+        2.03,
+        6.3
+      ],
+      "to": [
+        5.07,
+        2.03,
+        8.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.05,
+        1.8,
+        6.3
+      ],
+      "to": [
+        5.07,
+        2.03,
+        6.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            3.95699
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.38,
+        2.03,
+        6.3
+      ],
+      "to": [
+        4.4,
+        2.03,
+        8.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.38,
+        1.8,
+        6.3
+      ],
+      "to": [
+        4.4,
+        2.03,
+        6.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            3.95699
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.15,
+        1.8,
+        6.4
+      ],
+      "to": [
+        8.17,
+        1.8,
+        8.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0.7619,
+            15.50769,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.48,
+        1.8,
+        6.4
+      ],
+      "to": [
+        7.5,
+        1.8,
+        8.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0.7619,
+            0,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.7,
+        2.03,
+        6.3
+      ],
+      "to": [
+        9.72,
+        2.03,
+        8.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.7,
+        1.8,
+        6.3
+      ],
+      "to": [
+        9.72,
+        2.03,
+        6.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            3.95699
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.03,
+        2.03,
+        6.3
+      ],
+      "to": [
+        9.05,
+        2.03,
+        8.3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0,
+            0,
+            15.2381
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.03,
+        1.8,
+        6.3
+      ],
+      "to": [
+        9.05,
+        2.03,
+        6.3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0,
+            15.50769,
+            3.95699
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6.6,
+        1.8,
+        8.4
+      ],
+      "to": [
+        6.62,
+        1.8,
+        10.4
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            16,
+            0.7619,
+            15.50769,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.93,
+        1.8,
+        8.4
+      ],
+      "to": [
+        5.95,
+        1.8,
+        10.4
+      ],
+      "faces": {
+        "up": {
+          "texture": "#noodle",
+          "uv": [
+            0.49231,
+            0.7619,
+            0,
+            16
+          ]
+        }
+      }
     }
   ]
 }

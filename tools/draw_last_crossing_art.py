@@ -25,6 +25,7 @@ models and block states and the blocks' and items' names. --check verifies every
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -1034,9 +1035,9 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()},
               **{f'entity.the_oldest_house.{k}': v for k, v in ENTITIES.items()}}
@@ -1046,7 +1047,7 @@ def main():
         else:
             lang[key] = name
     if not check:
-        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+        lang_path.write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(('Verified' if check else 'Drew') + f' the flood station: {len(images)} textures, {len(data)} models and states.')
 
 

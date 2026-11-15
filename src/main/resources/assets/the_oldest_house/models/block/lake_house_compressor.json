@@ -346,6 +346,87 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        4,
+        6
+      ],
+      "to": [
+        13.02,
+        10,
+        10
+      ],
+      "faces": {
+        "east": {
+          "texture": "#base",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#base",
+          "uv": [
+            16,
+            0,
+            15.84,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        6,
+        10
+      ],
+      "to": [
+        13.02,
+        10,
+        10
+      ],
+      "faces": {
+        "south": {
+          "texture": "#base",
+          "uv": [
+            16,
+            0,
+            15.84,
+            10.66667
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        6,
+        6
+      ],
+      "to": [
+        13.02,
+        10,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "uv": [
+            0.16,
+            0,
+            0,
+            10.66667
+          ]
+        }
+      }
     }
   ]
 }

@@ -32,6 +32,7 @@ Run it to draw; --check verifies the pack against it (CI runs that).
 """
 import argparse
 import json
+import flicker
 import math
 import random
 import sys
@@ -858,9 +859,9 @@ def main():
                 assert -16 <= el['from'][axis] <= el['to'][axis] <= 32, (name, el)
         path = A / 'models/item' / f'{name}.json'
         if check:
-            assert json.loads(path.read_text()) == obj, name
+            assert json.loads(path.read_text()) == flicker.settled(obj), name
         else:
-            path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     for key, name in NAMES.items():
         if check:
@@ -868,7 +869,7 @@ def main():
         else:
             lang[key] = name
     if not check:
-        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+        lang_path.write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(f'{"Verified" if check else "Drew"} the Pell house\'s people\'s things: {len(images)} textures, {len(data)} models.')
 
 

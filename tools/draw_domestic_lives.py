@@ -5,6 +5,7 @@ four deeper rooms and a few inert disturbances. No random noise or photo filters
 """
 from pathlib import Path
 import argparse,json,copy
+import flicker
 from PIL import Image,ImageDraw
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -223,6 +224,7 @@ CHAIRS=['cane_chair','kitchen_stool','green_armchair','floral_armchair','blue_so
 def tipped(kind,stage):
     source='formica_table' if kind=='toppled_table' else CHAIRS[stage%len(CHAIRS)]
     model=copy.deepcopy(json.loads((A/f'models/block/furniture_{source}.json').read_text()))
+    model['elements']=flicker.bare(model['elements'])  # 0.4.597: tipped as it was drawn; what is tipped is settled on its own when written
     # Rigid 90-degree fall around X; retain every original material and native face UV.
     # Normal mapping: (x,y,z) -> (x,16-z,y). Set the actual low edge on the floor.
     low=min(16-e['to'][2] for e in model['elements'])
@@ -279,8 +281,8 @@ def main():
         else:p.parent.mkdir(parents=True,exist_ok=True);im.save(p,optimize=True)
     models,java=generated()
     for p,data in models.items():
-        if check:assert json.loads(p.read_text())==data,str(p)
-        else:p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(data,indent=2)+'\n')
+        if check:assert json.loads(p.read_text())==flicker.settled(data),str(p)
+        else:p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(data,indent=2)+'\n')
     if check:assert JAVA.read_text()==java,'shared rendered/collision cuboids'
     else:JAVA.write_text(java)
     print(('Verified' if check else 'Painted')+f' {len(paintings())} domestic materials, {len(models)} native assets, point-selected household states and shared collision.')

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Native stair partitions and continuous, tread-mounted banisters; original atlases stay untouched."""
 import argparse, json, math
+import flicker
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -35,15 +36,15 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');args=p.parse_args()
     for name,model in models().items():
         path=A/f'models/block/ghosts_{name}.json'
-        if args.check:assert json.loads(path.read_text())==model,path
-        else:path.write_text(json.dumps(model,indent=2)+'\n')
+        if args.check:assert json.loads(path.read_text())==flicker.settled(model),path
+        else:path.write_text(flicker.dumps(model,indent=2)+'\n')
     path=A/'blockstates/ghosts_set.json';states=json.loads(path.read_text())
     for kind in ('stair_rail','stair_rail_top'):
         for face,angle in [('north',0),('east',90),('south',180),('west',270)]:
             key=f'kind={kind},facing={face}';value={'model':'the_oldest_house:block/ghosts_'+kind,'y':angle}
             if args.check:assert states['variants'][key]==value,key
             else:states['variants'][key]=value
-    if not args.check:path.write_text(json.dumps(states,indent=2)+'\n')
+    if not args.check:path.write_text(flicker.dumps(states,indent=2)+'\n')
     print('Verified non-overlapping stair materials and connected native banister meshes.' if args.check else 'Generated native stairs and continuous tread-mounted banisters.')
 
 if __name__=='__main__':main()

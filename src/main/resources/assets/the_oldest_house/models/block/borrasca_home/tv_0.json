@@ -390,6 +390,240 @@
         "axis": "z",
         "angle": -22.5
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.8,
+        14,
+        9.78
+      ],
+      "to": [
+        8.2,
+        21,
+        9.8
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          14,
+          10
+        ],
+        "axis": "z",
+        "angle": -22.5
+      },
+      "faces": {
+        "north": {
+          "texture": "#x",
+          "uv": [
+            1,
+            0,
+            2,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#x",
+          "uv": [
+            2,
+            0,
+            1.95,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#x",
+          "uv": [
+            1,
+            0.4,
+            2,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.8,
+        14,
+        10.2
+      ],
+      "to": [
+        8.2,
+        21,
+        10.22
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          14,
+          10
+        ],
+        "axis": "z",
+        "angle": -22.5
+      },
+      "faces": {
+        "south": {
+          "texture": "#x",
+          "uv": [
+            1,
+            0,
+            2,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#x",
+          "uv": [
+            1.05,
+            0,
+            1,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#x",
+          "uv": [
+            1,
+            8,
+            2,
+            7.6
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.8,
+        14.53284,
+        9.78
+      ],
+      "to": [
+        7.8,
+        21,
+        9.8
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          14,
+          10
+        ],
+        "axis": "z",
+        "angle": -22.5
+      },
+      "faces": {
+        "west": {
+          "texture": "#x",
+          "uv": [
+            1.05,
+            0,
+            1,
+            7.39104
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8,
+        14,
+        9.78
+      ],
+      "to": [
+        8.2,
+        14,
+        9.8
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          14,
+          10
+        ],
+        "axis": "z",
+        "angle": -22.5
+      },
+      "faces": {
+        "down": {
+          "texture": "#x",
+          "uv": [
+            1.5,
+            8,
+            2,
+            7.6
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.8,
+        14.53284,
+        10.2
+      ],
+      "to": [
+        7.8,
+        21,
+        10.22
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          14,
+          10
+        ],
+        "axis": "z",
+        "angle": -22.5
+      },
+      "faces": {
+        "west": {
+          "texture": "#x",
+          "uv": [
+            2,
+            0,
+            1.95,
+            7.39104
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8,
+        14,
+        10.2
+      ],
+      "to": [
+        8.2,
+        14,
+        10.22
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          14,
+          10
+        ],
+        "axis": "z",
+        "angle": -22.5
+      },
+      "faces": {
+        "down": {
+          "texture": "#x",
+          "uv": [
+            1.5,
+            0.4,
+            2,
+            0
+          ]
+        }
+      }
     }
   ]
 }

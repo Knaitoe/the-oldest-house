@@ -13,6 +13,7 @@ Run from anywhere:
     python3 tools/generate_paw_assets.py
 """
 import json
+import flicker
 import math
 import random
 import shutil
@@ -409,13 +410,13 @@ def model(name, elements, textures, particle=None, render='cutout'):
     tex = {k: (v if ':' in v else NS + v) for k, v in textures.items()}
     tex['particle'] = NS + (particle or next(iter(textures.values())))
     data = {'parent': 'minecraft:block/block', 'render_type': 'minecraft:' + render, 'textures': tex, 'elements': elements}
-    (MODELS / f'cottage_{name}.json').write_text(json.dumps(data, indent=1) + '\n')
+    (MODELS / f'cottage_{name}.json').write_text(flicker.dumps(data, indent=1) + '\n')
 
 
 def cube(name, faces):
     tex = {d: (v if ':' in v else NS + v) for d, v in faces.items()}
     tex['particle'] = tex.get('north', next(iter(tex.values())))
-    (MODELS / f'cottage_{name}.json').write_text(json.dumps({'parent': 'minecraft:block/cube', 'textures': tex}, indent=1) + '\n')
+    (MODELS / f'cottage_{name}.json').write_text(flicker.dumps({'parent': 'minecraft:block/cube', 'textures': tex}, indent=1) + '\n')
 
 
 def all6(t):
@@ -462,7 +463,7 @@ def blockstate():
                 if y and kind not in ('wallpaper', 'whitewash', 'flagstone', 'thatch'):
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
-    (ASSETS / 'blockstates/cottage.json').write_text(json.dumps({'variants': variants}, indent=1) + '\n')
+    (ASSETS / 'blockstates/cottage.json').write_text(flicker.dumps({'variants': variants}, indent=1) + '\n')
     return len(variants)
 
 
@@ -497,12 +498,12 @@ def paw():
             paw_placeholder(fingers).save(target)
             written.append(target.name)
         if suffix:
-            (models_dir / f'withered_paw{suffix}.json').write_text(json.dumps(
+            (models_dir / f'withered_paw{suffix}.json').write_text(flicker.dumps(
                 {'parent': 'minecraft:item/generated', 'textures': {'layer0': f'the_oldest_house:item/withered_paw{suffix}'}}, indent=1) + '\n')
     # Since 0.4.147 tools/draw_paw_clench.py owns the paw's overrides (the finger curling down); only a missing file is written.
     if not (models_dir / 'withered_paw.json').exists():
         overrides = [{'predicate': {'custom_model_data': gone}, 'model': f'the_oldest_house:item/withered_paw_{3 - gone}'} for gone in (1, 2, 3)]
-        (models_dir / 'withered_paw.json').write_text(json.dumps(
+        (models_dir / 'withered_paw.json').write_text(flicker.dumps(
             {'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/withered_paw'}, 'overrides': overrides}, indent=1) + '\n')
     return written
 
@@ -645,7 +646,7 @@ SOUNDS = {
 
 
 def write_json(path, data, original):
-    text = json.dumps(data, indent=2, ensure_ascii=False)
+    text = flicker.dumps(data, indent=2, ensure_ascii=False)
     if original.endswith('\n'):
         text += '\n'
     path.write_text(text)

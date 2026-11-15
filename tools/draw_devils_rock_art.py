@@ -9,6 +9,7 @@ Run without arguments to draw; --check verifies the files match.
 """
 from pathlib import Path
 import json
+import flicker
 import sys
 from PIL import Image
 
@@ -57,14 +58,14 @@ def blockstate(current):
     states = json.loads(current)
     for direction, turn in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
         states['variants'][f'facing={direction},kind=pennies'] = {'model': 'the_oldest_house:block/devils_pennies', 'y': turn}
-    return json.dumps(states, indent=2) + '\n'
+    return flicker.dumps(states, indent=2) + '\n'
 
 
 def main():
     check = '--check' in sys.argv
     images = {ASSETS / 'textures/block/devils_pennies.png': pennies(), ASSETS / 'textures/entity/literary_devils_double.png': double()}
     state_path = ASSETS / 'blockstates/vignette_detail.json'
-    texts = {ASSETS / 'models/block/devils_pennies.json': json.dumps(model(), indent=1) + '\n', state_path: blockstate(state_path.read_text())}
+    texts = {ASSETS / 'models/block/devils_pennies.json': flicker.dumps(model(), indent=1) + '\n', state_path: blockstate(state_path.read_text())}
     stale = []
     for path, img in images.items():
         if check:

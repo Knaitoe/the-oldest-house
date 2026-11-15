@@ -6,6 +6,7 @@ Run after generate_proofrock_assets.py when regenerating all assets.
 """
 from pathlib import Path
 import json
+import flicker
 from PIL import Image
 from generate_proofrock_assets import GLYPHS
 from generate_whale_institute_assets import DIGITS
@@ -17,7 +18,7 @@ TURN={'north':0,'east':90,'south':180,'west':270}
 FACES=('north','south','east','west','up','down')
 
 def write(path,value):
-    p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(value,indent=2)+'\n')
+    p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(value,indent=2)+'\n')
 
 def save(name,im):
     p=A/f'textures/block/{name}.png';p.parent.mkdir(parents=True,exist_ok=True);im.save(p)

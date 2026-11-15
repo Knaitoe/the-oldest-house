@@ -1,5 +1,6 @@
 """Native 16-pixel item artwork and baked equipped/blocking shield models."""
 import json
+import flicker
 from pathlib import Path
 from PIL import Image, ImageDraw
 
@@ -27,7 +28,7 @@ d.line((5,7,5,12),fill=(222,199,136,255));d.line((10,8,10,14),fill=(127,102,55,2
 d.rectangle((4,2,11,5),fill=(136,111,61,255));d.line((5,2,10,2),fill=(224,202,145,255))
 d.line((4,5,11,5),fill=(47,38,27,255));d.point((7,10),fill=(226,196,112,255));d.line((7,11,9,12),fill=(108,84,49,255))
 lighter.save(textures/'lighter.png')
-(models/'lighter.json').write_text(json.dumps({'parent':'minecraft:item/handheld','textures':{'layer0':'the_oldest_house:item/lighter'}},indent=2)+'\n')
+(models/'lighter.json').write_text(flicker.dumps({'parent':'minecraft:item/handheld','textures':{'layer0':'the_oldest_house:item/lighter'}},indent=2)+'\n')
 
 def box(a,b,uv=(0,0,16,16)):
     return {'from':a,'to':b,'faces':{face:{'uv':uv,'texture':'#board'} for face in ('north','south','east','west','up','down')}}
@@ -42,9 +43,9 @@ display={
 model={'parent':'minecraft:block/block','textures':{'board':'the_oldest_house:item/holloway_shield','particle':'the_oldest_house:item/holloway_shield'},
     'elements':[box([2,2,6],[14,19,8]),box([3,0,6],[13,2,8]),box([4,-2,6],[12,0,8]),box([5,6,8],[6,13,9]),box([10,6,8],[11,13,9])],
     'display':display,'overrides':[{'predicate':{'blocking':1},'model':'the_oldest_house:item/holloway_shield_blocking'}]}
-(models/'holloway_shield.json').write_text(json.dumps(model,indent=2)+'\n')
+(models/'holloway_shield.json').write_text(flicker.dumps(model,indent=2)+'\n')
 model.pop('overrides');model['display']=dict(display)
 model['display']['firstperson_righthand']={'rotation':[0,180,-5],'translation':[-15,5,-11],'scale':[1.25]*3}
 model['display']['firstperson_lefthand']={'rotation':[0,180,-5],'translation':[5,5,-11],'scale':[1.25]*3}
-(models/'holloway_shield_blocking.json').write_text(json.dumps(model,indent=2)+'\n')
-lang=ROOT/'lang/en_us.json';data=json.loads(lang.read_text());data['item.the_oldest_house.holloway_shield']="Holloway's battered shield";data['item.the_oldest_house.lighter']="Tom's lighter";lang.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+(models/'holloway_shield_blocking.json').write_text(flicker.dumps(model,indent=2)+'\n')
+lang=ROOT/'lang/en_us.json';data=json.loads(lang.read_text());data['item.the_oldest_house.holloway_shield']="Holloway's battered shield";data['item.the_oldest_house.lighter']="Tom's lighter";lang.write_text(flicker.dumps(data,ensure_ascii=False,indent=2)+'\n')

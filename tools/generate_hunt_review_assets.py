@@ -1,6 +1,7 @@
 """Package the original generated material atlas into game UVs and native meshes."""
 from pathlib import Path
 import json, re, shutil, sys
+import flicker
 from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -35,9 +36,9 @@ def run(sheet):
         textures={m:'the_oldest_house:block/hunt_'+m for m,_ in cubes}
         elements=[{'from':b[:3],'to':b[3:],'faces':{f:{'uv':[0,0,16,16],'texture':'#'+m} for f in ['north','south','east','west','up','down']}} for m,b in cubes]
         model={'ambientocclusion':True,'textures':dict(textures,particle=next(iter(textures.values()))),'elements':elements}
-        (ASSET/f'models/block/hunt_{name}.json').write_text(json.dumps(model,indent=2)+'\n')
+        (ASSET/f'models/block/hunt_{name}.json').write_text(flicker.dumps(model,indent=2)+'\n')
         if name=='carcass':
-            for stage in range(4):(ASSET/f'models/block/literary_elk_hide_{stage}.json').write_text(json.dumps(model,indent=2)+'\n')
+            for stage in range(4):(ASSET/f'models/block/literary_elk_hide_{stage}.json').write_text(flicker.dumps(model,indent=2)+'\n')
         entries.append('            case '+name.upper()+' -> new double[][]{'+','.join('{'+','.join(str(v) for v in b)+'}' for _,b in cubes)+'};')
     source=source.replace('        };VoxelShape shape=', '\n'.join(entries)+'\n        };VoxelShape shape=')
     (ROOT/'src/main/java/io/github/knaitoe/theoldesthouse/house/VignetteDetailBlock.java').write_text(source)
@@ -45,7 +46,7 @@ def run(sheet):
     for name in PROPS:
         for face,turn in [('north',0),('east',90),('south',180),('west',270)]:
             states['variants'][f'facing={face},kind={name}']={'model':'the_oldest_house:block/hunt_'+name,'y':turn}
-    p.write_text(json.dumps(states,indent=2)+'\n')
+    p.write_text(flicker.dumps(states,indent=2)+'\n')
     # 0.4.452: the reading desk is no longer put on this sheet's oak. It has three sixteen-pixel pictures of its own, and
     # tools/draw_reading_desk.py writes its model.
     art=ROOT/'art/hunt_review_0455';art.mkdir(parents=True,exist_ok=True);shutil.copy2(sheet,art/'material-atlas.png')

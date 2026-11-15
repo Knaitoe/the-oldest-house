@@ -30,6 +30,7 @@ A candidate is verified only when every job of the workflow passes on that exact
 - How long words stay up is `labyrinth/Dialogue`'s to say (0.4.473, docs/DIALOGUE_PACE_0_4_473.md): a person's line, a reader's own words and the House's words on the action bar all take their time from it, scaled by the world's `readingTimePercent`. A scene never takes a line down on a timer of its own: it asks `LiteraryActor.saying()`, and uses `hush()` for a person who is cut off.
 - A new vignette follows `docs/VIGNETTE_RELEASE_CHECKLIST.md`.
 - Textures, models and blockstates are drawn by `tools/*.py`; CI runs each in `--check` mode. Never hand-edit a generated PNG.
+- No two faces of a model may flicker (0.4.597, docs/FLICKER_0_4_597.md). A tool that writes a model writes it with `flicker.dumps`, not `json.dumps`, and checks it against `flicker.settled`; a tool that builds on a model it reads from the pack reads its pieces through `flicker.bare`. The quick job runs `tools/flicker.py --check`; `tools/flicker.py --cure` settles the pack where it lies. Nothing is laid over a see-through face: stop it short by hand in its tool.
 
 ## The text review page
 

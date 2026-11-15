@@ -74,6 +74,87 @@
           "texture": "#wood"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        0,
+        6.98
+      ],
+      "to": [
+        9,
+        5,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            7,
+            11,
+            9,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            7,
+            9,
+            9,
+            8.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9,
+        0,
+        6.98
+      ],
+      "to": [
+        9,
+        4,
+        7
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            9,
+            12,
+            8.98,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        0,
+        6.98
+      ],
+      "to": [
+        7,
+        4,
+        7
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            7.02,
+            12,
+            7,
+            16
+          ]
+        }
+      }
     }
   ]
 }

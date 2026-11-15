@@ -10,6 +10,7 @@ Run with --check to confirm the committed files.
 """
 import argparse
 import json
+import flicker
 import math
 import random
 import sys
@@ -912,10 +913,10 @@ def files():
         model = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + tex}}
         if tex == 'leaded_glass':
             model['render_type'] = 'minecraft:translucent'
-        out[MODELS / f'{tex}.json'] = json.dumps(model, indent=2) + '\n'
-        out[STATES / f'{block}.json'] = json.dumps({'variants': {'': {'model': NS + tex}}}, indent=2) + '\n'
+        out[MODELS / f'{tex}.json'] = flicker.dumps(model, indent=2) + '\n'
+        out[STATES / f'{block}.json'] = flicker.dumps({'variants': {'': {'model': NS + tex}}}, indent=2) + '\n'
     for name in MODEL_SPECS:
-        out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
+        out[MODELS / f'{name}.json'] = flicker.dumps(model_json(name), indent=1) + '\n'
     variants = {}
     for facing, y in TURN.items():
         for kind in MODEL_SPECS:
@@ -923,7 +924,7 @@ def files():
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
-    out[STATES / 'winchester_fitting.json'] = json.dumps({'variants': variants}, indent=1) + '\n'
+    out[STATES / 'winchester_fitting.json'] = flicker.dumps({'variants': variants}, indent=1) + '\n'
     return out
 
 

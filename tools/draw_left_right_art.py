@@ -16,6 +16,7 @@ Palette, from the owner's specification: sodium amber #E09F3E, forest #1B2A26, r
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -420,7 +421,9 @@ def fitting_models():
         m[f'sedan_{k}'] = model([element([0, 0, 0], [16, 14, 16], {'all': 's', 'up': 't'})], {'s': f'sedan_{k}', 't': f'sedan_top_{k}'}, f'sedan_{k}', 'solid')
         els = [element([3, 0, 11], [13, 16, 16], {'all': 'b', 'north': 'p'})]
         if k:
-            els.append(element([0, 0, 0], [16, 4 * k, 16], {'all': 'w'}))
+            # 0.4.597: the water's back and underside lay in one plane with the set's and flickered against them. It stops a hair
+            # short of both, by hand: water is see-through, and the cure (tools/flicker.py) would have drawn it twice.
+            els.append(element([0, .05, 0], [16, 4 * k, 15.95], {'all': 'w'}))
         m[f'payphone_{k}'] = model(els, {'p': 'payphone', 'b': 'steel', 'w': 'water'}, 'payphone', 'translucent')
     for k in range(3):
         m[f'dormer_{k}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'r', 'north': 'w'})], {'w': f'dormer_{k}', 'r': 'dormer_frame'}, f'dormer_{k}', 'solid')
@@ -505,9 +508,9 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     print(('Verified' if check else 'Drew') + f' the Left-Right Game: {len(images)} textures, {len(data)} models and states.')
 
 

@@ -7,6 +7,7 @@ Existing approved PNGs are never rewritten. Geometry mirrors InstituteFixtureBlo
 """
 from pathlib import Path
 import json
+import flicker
 import re
 from PIL import Image
 
@@ -20,7 +21,7 @@ MATERIALS = ['paint', 'peel', 'damp', 'ivory', 'dado', 'floor_ivory', 'floor_gra
 def write(path, data):
     p = A / path
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(data, indent=2) + '\n')
+    p.write_text(flicker.dumps(data, indent=2) + '\n')
 
 
 def textures():
@@ -175,9 +176,9 @@ if __name__ == '__main__':
     textures();fixtures();cabinet();notebook();native_shapes()
     path=A/'lang/en_us.json';lang=json.loads(path.read_text())
     lang.update({f'block.the_oldest_house.institute_{k}':v for k,v in {'fixture':'Ward fitting','cabinet':'Ward cabinet','notebook':'Bedside notebook','rail':'Enamel ward rail','stairs':'Institute stairs','slab':'Institute shelf','glass':'Ribbed hospital glass','door':'Painted ward door','locked_door':'Locked ward door'}.items()})
-    path.write_text(json.dumps(lang,indent=2,ensure_ascii=False)+'\n')
+    path.write_text(flicker.dumps(lang,indent=2,ensure_ascii=False)+'\n')
     tag=ROOT/'src/main/resources/data/minecraft/tags/block/fences.json';tag.parent.mkdir(parents=True,exist_ok=True)
     old=json.loads(tag.read_text()) if tag.exists() else {'replace':False,'values':[]}
     if 'the_oldest_house:institute_rail' not in old['values']:old['values'].append('the_oldest_house:institute_rail')
-    tag.write_text(json.dumps(old,indent=2)+'\n')
+    tag.write_text(flicker.dumps(old,indent=2)+'\n')
     print('Exported 16 hospital materials, 20 ward fittings and native cabinet/notebook/rail/stair/door/glass meshes.')

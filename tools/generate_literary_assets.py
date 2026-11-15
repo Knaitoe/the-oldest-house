@@ -6,12 +6,13 @@ mono positional effects and original, clearly synthetic wax-cylinder performance
 from pathlib import Path
 from PIL import Image, ImageDraw
 import json, math, random, struct, wave, subprocess, tempfile
+import flicker
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 D=ROOT/'src/main/resources/data/the_oldest_house'
 
 def write(path,obj,root=A):
- p=root/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(obj,indent=2)+'\n')
+ p=root/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(obj,indent=2)+'\n')
 def save(path,im):
  p=A/path;p.parent.mkdir(parents=True,exist_ok=True);im.save(p,optimize=True)
 def material(name,col,kind):
@@ -196,7 +197,7 @@ preview=Image.new('RGB',(768,math.ceil(len(paths)/8)*118),(29,27,25));draw=Image
 for i,path in enumerate(paths):
  x=(i%8)*96;y=(i//8)*118;preview.paste(Image.open(path).convert('RGB').resize((88,88),Image.Resampling.NEAREST),(x+4,y+4));draw.text((x+3,y+94),path.stem[:16],fill=(217,205,181))
 p=ROOT/'art/literary_materials_0436.png';p.parent.mkdir(parents=True,exist_ok=True);preview.save(p)
-print(json.dumps({'prop_variants':len(variants),'keepsakes':len(items),'cast_atlases':len(skins),'recording_seconds':lengths}))
+print(flicker.dumps({'prop_variants':len(variants),'keepsakes':len(items),'cast_atlases':len(skins),'recording_seconds':lengths}))
 
 # Preserve the reviewed hollow jar and cabin-only journal after the legacy export.
 from draw_cabin_objects import outputs as cabin_outputs

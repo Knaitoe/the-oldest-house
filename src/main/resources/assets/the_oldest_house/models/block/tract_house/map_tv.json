@@ -349,6 +349,240 @@
     "axis": "z",
     "angle": -22.5
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.8,
+    16,
+    8.28
+   ],
+   "to": [
+    8.2,
+    26,
+    8.3
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     16,
+     8.5
+    ],
+    "axis": "z",
+    "angle": -22.5
+   },
+   "faces": {
+    "north": {
+     "texture": "#st",
+     "uv": [
+      7.8,
+      -10,
+      8.2,
+      0
+     ]
+    },
+    "east": {
+     "texture": "#st",
+     "uv": [
+      7.7,
+      -10,
+      7.68,
+      0
+     ]
+    },
+    "up": {
+     "texture": "#st",
+     "uv": [
+      8.2,
+      -10,
+      7.8,
+      -9.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.8,
+    16,
+    8.7
+   ],
+   "to": [
+    8.2,
+    26,
+    8.72
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     16,
+     8.5
+    ],
+    "axis": "z",
+    "angle": -22.5
+   },
+   "faces": {
+    "south": {
+     "texture": "#st",
+     "uv": [
+      7.8,
+      -10,
+      8.2,
+      0
+     ]
+    },
+    "east": {
+     "texture": "#st",
+     "uv": [
+      7.32,
+      -10,
+      7.3,
+      0
+     ]
+    },
+    "up": {
+     "texture": "#st",
+     "uv": [
+      7.8,
+      -9.98,
+      8.2,
+      -10
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.8,
+    16.53284,
+    8.28
+   ],
+   "to": [
+    7.8,
+    26,
+    8.3
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     16,
+     8.5
+    ],
+    "axis": "z",
+    "angle": -22.5
+   },
+   "faces": {
+    "west": {
+     "texture": "#st",
+     "uv": [
+      8.32,
+      -10,
+      8.3,
+      -0.53284
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8,
+    16,
+    8.28
+   ],
+   "to": [
+    8.2,
+    16,
+    8.3
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     16,
+     8.5
+    ],
+    "axis": "z",
+    "angle": -22.5
+   },
+   "faces": {
+    "down": {
+     "texture": "#st",
+     "uv": [
+      8,
+      -0.02,
+      7.8,
+      0
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.8,
+    16.53284,
+    8.7
+   ],
+   "to": [
+    7.8,
+    26,
+    8.72
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     16,
+     8.5
+    ],
+    "axis": "z",
+    "angle": -22.5
+   },
+   "faces": {
+    "west": {
+     "texture": "#st",
+     "uv": [
+      8.7,
+      -10,
+      8.68,
+      -0.53284
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8,
+    16,
+    8.7
+   ],
+   "to": [
+    8.2,
+    16,
+    8.72
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     16,
+     8.5
+    ],
+    "axis": "z",
+    "angle": -22.5
+   },
+   "faces": {
+    "down": {
+     "texture": "#st",
+     "uv": [
+      8,
+      0,
+      8.2,
+      -0.02
+     ]
+    }
+   }
   }
  ]
 }
