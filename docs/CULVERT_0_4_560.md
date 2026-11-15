@@ -89,6 +89,9 @@ Pinehook, the Last Crossing, the Supper, Growing Things, Last orders, the House 
 Lights, Bike night, Three Fingers and Harrigan. The Tall Grass's people are voices until the car at its end, the familiar kitchen's
 visitors come with time, and Johnny keeps his own hours between his places; their own cases watch them.
 
+0.4.600: those cases held nobody to the checks. Johnny at his lamp and at the heavy door, and the kitchen's visitors, go round under
+them now, and the Tall Grass has since 0.4.565 with two readers: docs/CAST_MANNERS_0_4_600.md.
+
 The lake house case `tessKeepsTheCastChecksFromTheDockDownToTheHouse` holds Tess to the same checks from the dock, through the canoe
 and the raft, down to the house.
 

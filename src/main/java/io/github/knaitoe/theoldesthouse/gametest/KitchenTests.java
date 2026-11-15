@@ -115,7 +115,8 @@ public final class KitchenTests {
                 var own=LiteraryVignettes.personal(data,p.getUUID(),VacantPossession.PLACE);own.putString("Outcome","carried_the_last_chair_down");LiteraryVignettes.save(data,p.getUUID(),VacantPossession.PLACE,own);
                 h.assertTrue(KitchenVisitors.availablePhases(l.getServer()).contains(KitchenVisitors.TENANT),"once a reader here has emptied the flat, the tenant can come");
                 seen[0]=KitchenVisitors.arrive(l,b,KitchenVisitors.HOLLOWAY);
-                h.assertTrue(seen[0]!=null&&KitchenVisitors.current(l)==seen[0],"Holloway comes in by a far door");
+                h.assertTrue(seen[0]!=null&&KitchenVisitors.current(l)==seen[0],"Holloway comes to the kitchen");
+                h.assertTrue(seen[0].getZ()>b.getZ()+2,"made in the passage behind the kitchen's door (0.4.600), not in the room: "+seen[0].position());
             })
             .thenWaitUntil(()->{var a=KitchenVisitors.current(l);h.assertTrue(a!=null&&TraceBlock.is(l.getBlockState(a.blockPosition()),TraceBlock.Kind.CHAIR),"he sits at the table");})
             .thenExecute(()->{

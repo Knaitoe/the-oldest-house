@@ -1,12 +1,14 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseExperience;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,8 +27,9 @@ import net.neoforged.neoforge.gametest.*;
  * them, and answering whatever the conversation panel asks, a different answer each time. {@link CastConduct} holds the whole cast
  * to the same checks as Tess on every tick.
  *
- * <p>Three talking scenes are left to their own cases: the Tall Grass's people are voices until the car at its end, the familiar
- * kitchen's visitors come with time, and Johnny (the Truant) keeps his own hours between his places.
+ * <p>0.4.600: Johnny (the Truant) at his lamp, as the stranger a reader first meets and as the claimant a reader far down meets
+ * later, and the familiar kitchen's visitors, in by a door, round the conversation panel and out again. The Tall Grass's people are
+ * voices until the car at its end; its two-reader case watches them (TogetherSceneTests).
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_cast") @PrefixGameTestTemplate(false)
 public final class CastConductTests {
@@ -39,6 +42,12 @@ public final class CastConductTests {
     static final int LISTEN=30;
     private static final int TIMEOUT=TICKS+3600;
     private static LiteraryTests.Fixture open;
+    /** What a scene that is not a literary room leaves behind it, cleared with the fixture. */
+    private static @Nullable Runnable after;
+    /** What a case asks of its scene besides the cast checks, asked once the round is over and before it passes. */
+    private static @Nullable Runnable verdict;
+    /** Who the reader can go up to: everyone, unless a scene keeps somebody where a reader does not go (behind a shut door). */
+    private static java.util.function.Predicate<LiteraryActor> reachable=a->true;
 
     /**
      * A reader going round a scene's people. Every {@link #STEP} ticks: if the conversation panel is asking something, they answer
@@ -69,7 +78,7 @@ public final class CastConductTests {
         private List<LiteraryActor> people(){
             // The people the game shows this reader (0.4.564: LiteraryActor.broadcastToPlayer, so a second camera on the Ghosts set
             // meets the lead's family, and nobody meets another reader's own people).
-            var all=new ArrayList<>(l.getEntitiesOfClass(LiteraryActor.class,area,a->a.isAlive()&&!a.isRemoved()&&!a.isInvisible()&&a.broadcastToPlayer(p)));
+            var all=new ArrayList<>(l.getEntitiesOfClass(LiteraryActor.class,area,a->a.isAlive()&&!a.isRemoved()&&!a.isInvisible()&&a.broadcastToPlayer(p)&&reachable.test(a)));
             all.sort(Comparator.comparing(LiteraryActor::getUUID));return all;
         }
         private void act(){
@@ -138,12 +147,13 @@ public final class CastConductTests {
                 try{
                     conduct.assertClean(place.name()+" ("+bot.summary()+")");
                     h.assertTrue(bot.met()>0,place+": nobody was there to meet in "+TICKS+" ticks");
+                    if(verdict!=null){var v=verdict;verdict=null;v.run();}
                     h.succeed();
                 }finally{conduct.close();close();}
             });
         });
     }
-    private static void close(){if(open!=null){var f=open;open=null;f.close();}}
+    private static void close(){verdict=null;reachable=a->true;if(open!=null){var f=open;open=null;if(after!=null){var r=after;after=null;r.run();}f.close();}}
 
     // ------------------------------------------------------------------------------------------------ the scenes
     @GameTest(template="empty",batch="cast_place_for_you",timeoutTicks=TIMEOUT) public static void aPlaceForYou(GameTestHelper h){sweep(h,LabyrinthPlace.PLACE_FOR_YOU,c->{});}
@@ -195,4 +205,110 @@ public final class CastConductTests {
     @AfterBatch(batch="cast_ghosts_set") public static void ghostsSetDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_confession",timeoutTicks=TIMEOUT) public static void confession(GameTestHelper h){sweep(h,LabyrinthPlace.CONFESSION,c->{});}
     @AfterBatch(batch="cast_confession") public static void confessionDone(ServerLevel l){close();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.600: the other talkers
+    private static AABB slot(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);return new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1);}
+    /** Where a hall's own door leaves a reader: three blocks in from it, facing down the hall. */
+    private static void throughTheDoor(LiteraryTests.Fixture f,ServerPlayer p,BlockPos b){p.teleportTo(f.in,b.getX()+.5,b.getY(),b.getZ()-3,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);}
+    /**
+     * One of Johnny's places, built by its own builder, and a reader come in by its door. {@code veteran}: a reader past twenty
+     * passes who has met him three times and been helped, told him a place and kept a promise (the history his own cases use), so
+     * that he can be the claimant; otherwise this is a first meeting.
+     */
+    private static void johnny(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,@Nullable Truant.Turn turn,boolean veteran){
+        var b=f.base(place);f.chunks.hold(f.in,slot(f,place));
+        TruantPlaces.build(f.in,b,place);LabyrinthBuilder.registerDoors(f.data(),place,b);
+        Truant.fresh();Truant.apart();Truant.force(turn);
+        if(veteran){
+            var exp=HouseExperience.record(f.data(),p.getUUID());exp.putInt("Deepest",25);HouseExperience.save(f.data(),p.getUUID(),exp);
+            Truant.remember(f.in.getServer(),p.getUUID(),TruantTests.history());
+        }
+        after=()->{
+            Talk.clearAll();
+            for(var a:f.in.getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(b,place),Truant::isTruant))a.discard();
+            Truant.fresh();Truant.apart();Truant.force(null);
+        };
+        throughTheDoor(f,p,b);
+    }
+    @GameTest(template="empty",batch="cast_truant_lamp",timeoutTicks=TIMEOUT) public static void johnnyAtHisLamp(GameTestHelper h){
+        sweep(h,TruantPlaces.LAMP,(f,p)->johnny(f,p,TruantPlaces.LAMP,Truant.Turn.HELP,false),c->{});
+    }
+    @AfterBatch(batch="cast_truant_lamp") public static void truantLampDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_claim",timeoutTicks=TIMEOUT) public static void johnnyTheClaimant(GameTestHelper h){
+        sweep(h,TruantPlaces.LAMP,(f,p)->johnny(f,p,TruantPlaces.LAMP,Truant.Turn.CLAIM,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_claim") public static void truantClaimDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_door",timeoutTicks=TIMEOUT) public static void johnnyAtTheHeavyDoor(GameTestHelper h){
+        sweep(h,TruantPlaces.DOOR,(f,p)->johnny(f,p,TruantPlaces.DOOR,Truant.Turn.HELP,false),c->{});
+    }
+    @AfterBatch(batch="cast_truant_door") public static void truantDoorDone(ServerLevel l){close();}
+
+    /** Seconds a visitor has sat at the kitchen table before the case has them finish their visit, so that their going is watched too. */
+    static final int KITCHEN_STAY=7;
+    /** Where the kitchen case's reader stands with nobody to talk to, in line with the doorway, and the door they keep their eyes on. */
+    private static final Vec3 KITCHEN_STAND=new Vec3(.5,0,-5.5),KITCHEN_DOOR=new Vec3(.5,1,1.2);
+    /**
+     * The familiar kitchen, built by its own builder, a reader in by its door, and its clock run on: the first visitor due at once
+     * rather than after forty seconds, and each one's visit ended after {@link #KITCHEN_STAY} seconds at the table rather than a
+     * hundred and fifty, so that in half a minute somebody comes in, is talked to and goes, and the next is on the way.
+     *
+     * <p>The reader here watches. With nobody in the kitchen they stand in line with the doorway and look at the door; while
+     * somebody is coming in or going out they look at them, every tick. A visitor made where they can see, or gone where they can
+     * see, is a fault of the cast checks (0.4.600: both were, a step inside the far doors). The reader goes up to nobody who is
+     * still in the passage.
+     */
+    @GameTest(template="empty",batch="cast_kitchen",timeoutTicks=TIMEOUT) public static void theKitchensVisitors(GameTestHelper h){
+        sweep(h,FamiliarRoom.KITCHEN,(f,p)->{
+            var place=FamiliarRoom.KITCHEN;var b=f.base(place);f.chunks.hold(f.in,slot(f,place));KitchenFittings.clearAll();
+            // The kitchen is built once and kept, for every case that comes to it after this one: its clock and its book are not
+            // the fixture's to clear away (the kitchen's own cases leave them too).
+            f.built.remove(place);
+            FamiliarRoom.build(f.in,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+            var data=f.data();var hollo=data.state(HollowayVignette.ID);hollo.putBoolean("ActorDead",false);data.setState(HollowayVignette.ID,hollo);
+            boolean[] over={false};int[] came={0},went={0},opened={0},stage={0},seated={-1};boolean[] wasOpen={false};
+            var stand=new Vec3(b.getX()+KITCHEN_STAND.x,b.getY()+KITCHEN_STAND.y,b.getZ()+KITCHEN_STAND.z);
+            var door=new Vec3(b.getX()+KITCHEN_DOOR.x,b.getY()+KITCHEN_DOOR.y,b.getZ()+KITCHEN_DOOR.z);
+            java.util.function.Consumer<net.neoforged.neoforge.event.tick.ServerTickEvent.Post> watch=e->{
+                if(over[0]||!p.isAlive()||p.level()!=f.in)return;
+                var a=KitchenVisitors.current(f.in);int now=a==null?0:f.data().stateEntry(KitchenVisitors.STATE,KitchenVisitors.SHARED).getInt("Stage");
+                if(now==2&&stage[0]==1)came[0]++;
+                if(now==0&&stage[0]==3)went[0]++;
+                stage[0]=now;
+                boolean open=KitchenVisitors.doorOpen(f.in,b);if(open&&!wasOpen[0])opened[0]++;wasOpen[0]=open;
+                if(a==null){
+                    if(p.position().distanceToSqr(stand)>.01){p.moveTo(stand.x,stand.y,stand.z,0,0);p.setDeltaMovement(Vec3.ZERO);}
+                    p.lookAt(EntityAnchorArgument.Anchor.EYES,door);
+                }else if(now!=2)p.lookAt(EntityAnchorArgument.Anchor.EYES,a.getEyePosition());
+            };
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(watch);
+            reachable=a->a.getZ()<b.getZ()-.6;
+            after=()->{
+                over[0]=true;net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(watch);Talk.clearAll();var a=KitchenVisitors.current(f.in);if(a!=null)a.discard();KitchenFittings.clearAll();
+                // Whoever was at the door when the round ended has left it open: shut, as the next case will expect to find it.
+                for(var half:new BlockPos[]{b.offset(0,0,1),b.offset(0,1,1)}){var state=f.in.getBlockState(half);if(state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN))f.in.setBlock(half,state.setValue(net.minecraft.world.level.block.DoorBlock.OPEN,false),3);}
+            };
+            verdict=()->{
+                h.assertTrue(came[0]>=1&&went[0]>=1,"somebody came in and sat down, and somebody finished and went, in "+TICKS+" ticks: came "+came[0]+", went "+went[0]);
+                h.assertTrue(opened[0]>=2,"the kitchen's door opened for them coming and going: "+opened[0]+" times");
+                h.assertTrue(went[0]<came[0]||!KitchenVisitors.doorOpen(f.in,b)||KitchenVisitors.current(f.in)!=null,"and is shut behind whoever has gone");
+            };
+            throughTheDoor(f,p,b);
+            hurryTheKitchen(h,f,over,seated);
+        },c->{});
+    }
+    @AfterBatch(batch="cast_kitchen") public static void kitchenDone(ServerLevel l){close();}
+    /**
+     * Once a second: nobody at the table means the next visitor is due now; somebody sat there {@link #KITCHEN_STAY} seconds has
+     * finished, by the case's own count of their sitting (a reader's "Stay as long as you like." puts the kitchen's count back).
+     */
+    private static void hurryTheKitchen(GameTestHelper h,LiteraryTests.Fixture f,boolean[] over,int[] seated){
+        if(over[0])return;
+        var data=f.data();var t=data.stateEntry(KitchenVisitors.STATE,KitchenVisitors.SHARED);int occ=t.getInt("Occ");
+        if(!t.contains("Who")){seated[0]=-1;if(t.getInt("Next")>occ+1){t.putInt("Next",occ+1);data.setStateEntry(KitchenVisitors.STATE,KitchenVisitors.SHARED,t);}}
+        else if(t.getInt("Stage")==2){
+            if(seated[0]<0)seated[0]=occ;
+            if(occ-seated[0]>=KITCHEN_STAY&&occ-t.getInt("StageAt")<KitchenVisitors.STAY){t.putInt("StageAt",occ-KitchenVisitors.STAY);data.setStateEntry(KitchenVisitors.STATE,KitchenVisitors.SHARED,t);}
+        }
+        h.runAfterDelay(20,()->hurryTheKitchen(h,f,over,seated));
+    }
 }

@@ -57,7 +57,7 @@ Nothing in the table lets a reader see in the dark, breathe under water or jump 
 
 ## People at the table
 
-While someone is in the kitchen, every few minutes of that time, someone else comes in by one of its far doors, sits at the table for a while, and goes. One comes at a time, and it is the same visitor for everybody there.
+While someone is in the kitchen, every few minutes of that time, someone else comes in, sits at the table for a while, and goes. Since 0.4.600 they come and go by the kitchen's own door, which opens for them and is shut behind them (docs/CAST_MANNERS_0_4_600.md); until then they were made a step inside one of its far doors. One comes at a time, and it is the same visitor for everybody there.
 
 - **Johnny**, from his places. He likes things crisp, sharp or salty, and doesn't mind them burnt. He can't stand sweet, or creamy ("It's like eating a pillow").
 - **Holloway**, only while he lives. He likes salt, crisp, and cooked hard. Soft food is slop to him, and he won't take food from a reader who has been in his barrel.

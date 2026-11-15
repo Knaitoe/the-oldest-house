@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.HouseWatchers;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -32,6 +33,7 @@ import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -48,7 +50,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.KitchenCooking.Texture;
  * Holloway? Maybe unnamed NPCs – other travelers, or NPCs from the lengthier vignettes? There are some NPCs that claim to leave their
  * homes or houses."
  * <p>
- * While someone is in the kitchen, now and then someone else comes in by one of its far doors, sits at the table a while and goes:
+ * While someone is in the kitchen, now and then someone else comes in, sits at the table a while and goes:
  * Johnny, from his places; Holloway, while he lives; the tenant from Vacant Possession, once a reader in the kitchen has carried the
  * last of their things down; and someone passing through, another person lost in the House. One at a time, the same one for
  * everybody there. They can be talked to, and they take food: each answers to its broad strokes ({@link KitchenCooking}) in their own
@@ -56,6 +58,14 @@ import io.github.knaitoe.theoldesthouse.labyrinth.KitchenCooking.Texture;
  * about themselves. What they ate, who made it and what they said is written in the kitchen's book on the counter, for anyone.
  * <p>
  * Nothing here frightens anyone, and nothing is a story: no Witness, no account.
+ * <p>
+ * 0.4.600 (the cast checks, run on the kitchen): they come and go by the kitchen's own door, which opens for them and is shut
+ * behind them. Nobody is made where a reader can see, and nobody is put away where a reader can see: a visitor is made in the
+ * passage behind the shut door, and is gone from there once it has shut behind them again ({@link #behind}, {@link #doorFor}).
+ * Until now they were made a step inside one of the far doors, with a door's sound and no door opening, and were gone at it the
+ * same way. Getting up, they walk from where they are; they used to be put a step back from their chair, or at it from the
+ * doorway. And there is one of each of them: Johnny does not come while he is with somebody in a hall of his own, nor Holloway
+ * while somebody is at his camp, and each gets up and goes if somebody finds him there ({@link #elsewhere}).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class KitchenVisitors {
@@ -150,6 +160,7 @@ public final class KitchenVisitors {
         for(var v:CAST){
             if(v.phase()==HOLLOWAY&&data.state(HollowayVignette.ID).getBoolean("ActorDead"))continue;
             if(v.phase()==TENANT&&here.stream().noneMatch(p->movedOut(data,p.getUUID())))continue;
+            if(elsewhere(s,v.phase()))continue;
             out.add(v);
         }
         return out;
@@ -181,7 +192,7 @@ public final class KitchenVisitors {
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var s=e.getServer();var l=s.getLevel(HouseDimensions.INTERIOR);var b=base(s);if(l==null||b==null)return;
         var a=current(l);
-        if(a!=null)walk(l,a);
+        if(a!=null){walk(l,a);doorFor(l,b,a);}
         for(var it=PENDING.iterator();it.hasNext();){var p=it.next();if(l.getGameTime()<p.at())continue;it.remove();if(l.getEntity(p.actor()) instanceof LiteraryActor who&&who.isAlive()){who.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);speak(who,p.text());}}
         if(s.getTickCount()%20==0)second(s,l,b);
     }
@@ -191,6 +202,7 @@ public final class KitchenVisitors {
         if(here.isEmpty()){
             // Nobody to sit with: whoever was here has gone by the time anyone comes back.
             if(a!=null){a.discard();WALKS.remove(a.getUUID());}
+            if(t.getBoolean("Opened")&&doorwayClear(l,b)){t.remove("Opened");LabyrinthDoors.setDoorOpen(l,b.offset(ENTRY),false,null);shared(s,t);}
             if(t.contains("Who")){t.remove("Who");t.remove("Actor");t.putInt("Next",t.getInt("Occ")+GAP);shared(s,t);}
             return;
         }
@@ -206,35 +218,97 @@ public final class KitchenVisitors {
         if(stage==ARRIVING&&(!WALKS.containsKey(a.getUUID())||since>WALK_LIMIT)){sit(l,b,a,t);t.putInt("Stage",SEATED);t.putInt("StageAt",occ);greetAll(l,a,here);}
         else if(stage==SEATED){
             boolean done=t.getBoolean("Fed")?occ-t.getInt("FedAt")>=AFTER_MEAL:since>=STAY;
-            if(done)leave(l,b,a,t,occ);
+            // 0.4.600: somebody has found him where he lives. There is one of him, and it is not the one at this table.
+            if(done||elsewhere(s,a.phase()))leave(l,b,a,t,occ);
             else if(since%45==20&&!t.getBoolean("Fed")){var v=cast(a.phase());if(v!=null)speak(a,v.voice().hungry());}
         }
-        else if(stage==LEAVING&&(!WALKS.containsKey(a.getUUID())||since>WALK_LIMIT)){
-            l.playSound(null,a.blockPosition(),SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,.6F,1F);
+        else if(stage==LEAVING&&(!WALKS.containsKey(a.getUUID())&&!seen(l,a.position())||since>WALK_LIMIT*2)){
+            // 0.4.600: out, the door shut behind them, and nobody looking. (Somebody standing in the doorway to watch keeps them
+            // there half a minute at most.)
             WALKS.remove(a.getUUID());a.discard();t.remove("Who");t.remove("Actor");t.putInt("LastWho",a.phase());t.putInt("Next",occ+GAP+l.getRandom().nextInt(GAP_SPREAD));
+            if(t.getBoolean("Opened")&&doorwayClear(l,b)){t.remove("Opened");LabyrinthDoors.setDoorOpen(l,b.offset(ENTRY),false,null);}
         }
         shared(s,t);
     }
 
     // ------------------------------------------------------------------ coming and going
-    /** The two far doors: the inside of each, and the doorway. */
-    static final BlockPos[] DOORS={new BlockPos(6,0,-6),new BlockPos(3,0,-15)},INSIDE={new BlockPos(5,0,-6),new BlockPos(3,0,-14)};
-    /** Someone comes in by one of the far doors and makes for a chair. Public for tests. */
+    /**
+     * 0.4.600: the kitchen's own door, the floor in front of it inside, and the places in the passage behind it where somebody is
+     * made, or stops once out: two cells back from the door (a look at a shut door counts the cell right behind it as seen,
+     * HouseWatchers), the middle first and then either side.
+     */
+    static final BlockPos ENTRY=new BlockPos(0,0,1);
+    static final Vec3 IN_FRONT=new Vec3(.5,0,-1.5);
+    static final Vec3[] BEHIND={new Vec3(.5,0,3.5),new Vec3(1.5,0,3.5),new Vec3(-.5,0,3.5)};
+    /** Ticks somebody stands behind the shut door before it opens for them. */
+    public static final int DOOR_WAIT=12;
+    static Vec3 at(BlockPos b,Vec3 rel){return new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z);}
+    /** Whether any reader can see somebody standing here. */
+    static boolean seen(ServerLevel l,Vec3 feet){
+        for(var p:l.players())if(p.isAlive()&&!p.isSpectator()&&(HouseWatchers.sees(p,feet.add(0,1.62,0))||HouseWatchers.sees(p,feet.add(0,.3,0))))return true;
+        return false;
+    }
+    /** A place behind the door with room to stand that no reader can see, or null: the passage is in somebody's sight, or blocked. */
+    static @Nullable Vec3 behind(ServerLevel l,BlockPos b){
+        if(!(l.getBlockState(b.offset(ENTRY)).getBlock() instanceof DoorBlock))return null;
+        for(var rel:BEHIND){
+            var at=at(b,rel);
+            if(l.noCollision(new AABB(at.x-.3,at.y,at.z-.3,at.x+.3,at.y+1.8,at.z+.3))&&!seen(l,at))return at;
+        }
+        return null;
+    }
+    /** Whether the kitchen's own door stands open. Public for tests. */
+    public static boolean doorOpen(ServerLevel l,BlockPos b){var state=l.getBlockState(b.offset(ENTRY));return state.getBlock() instanceof DoorBlock&&state.getValue(DoorBlock.OPEN);}
+    /** Nobody standing in the doorway itself: a door is not shut on a reader. */
+    static boolean doorwayClear(ServerLevel l,BlockPos b){
+        return l.getEntitiesOfClass(Player.class,new AABB(b.getX()-.25,b.getY(),b.getZ()-.25,b.getX()+1.25,b.getY()+2,b.getZ()+2.25),p->!p.isSpectator()).isEmpty();
+    }
+    /**
+     * The door, for whoever is coming or going. It opens when somebody behind it has waited their moment, or when somebody leaving
+     * is a step from it; it is shut again once they are clear of it, by them, if it was they who opened it. A door a reader left
+     * open, or wedged, stays as the reader left it.
+     */
+    static void doorFor(ServerLevel l,BlockPos b,LiteraryActor a){
+        var s=l.getServer();var t=shared(s);int stage=t.getInt("Stage");double z=a.getZ()-b.getZ();
+        boolean want=stage==ARRIVING?a.tickCount>=DOOR_WAIT&&z>-1:stage==LEAVING&&z>-2.5&&z<3;
+        boolean open=doorOpen(l,b);
+        if(want&&!open){LabyrinthDoors.setDoorOpen(l,b.offset(ENTRY),true,null);t.putBoolean("Opened",true);shared(s,t);}
+        else if(!want&&open&&t.getBoolean("Opened")&&doorwayClear(l,b)){LabyrinthDoors.setDoorOpen(l,b.offset(ENTRY),false,null);t.remove("Opened");shared(s,t);}
+        else if(!want&&!open&&t.getBoolean("Opened")){t.remove("Opened");shared(s,t);}
+    }
+    /**
+     * Somebody comes to the kitchen: made in the passage behind its shut door, out of everyone's sight, to come in by it and make
+     * for a chair. Null if there is nowhere out of sight for them yet (the clock tries again in a second). Public for tests.
+     */
     public static @Nullable LiteraryActor arrive(ServerLevel l,BlockPos b,int phase){
-        var v=cast(phase);if(v==null)return null;var s=l.getServer();var old=current(l);if(old!=null){WALKS.remove(old.getUUID());old.discard();}
+        var v=cast(phase);if(v==null)return null;var s=l.getServer();
+        var start=behind(l,b);if(start==null)return null;
+        var old=current(l);if(old!=null){WALKS.remove(old.getUUID());old.discard();}
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
-        int door=l.getRandom().nextInt(DOORS.length);var start=Vec3.atBottomCenterOf(b.offset(INSIDE[door]));
         a.bind(FamiliarRoom.KITCHEN,null);a.appearance(LiteraryActor.STRANGER,phase);a.setNoGravity(true);a.setCustomNameVisible(false);
-        a.moveTo(start.x,start.y,start.z,door==0?90:0,0);
+        a.moveTo(start.x,start.y,start.z,180,0);a.setYBodyRot(180);a.setYHeadRot(180);
         if(!l.addFreshEntity(a))return null;
-        l.playSound(null,b.offset(DOORS[door]),SoundEvents.WOODEN_DOOR_OPEN,SoundSource.BLOCKS,.7F,1F);
-        var t=shared(s);t.putInt("Who",phase);t.putUUID("Actor",a.getUUID());t.putInt("Door",door);t.putInt("Stage",ARRIVING);t.putInt("StageAt",t.getInt("Occ"));
+        var t=shared(s);t.putInt("Who",phase);t.putUUID("Actor",a.getUUID());t.remove("Door");t.remove("Opened");t.putInt("Stage",ARRIVING);t.putInt("StageAt",t.getInt("Occ"));
         t.putBoolean("Fed",false);t.putInt("Meals",0);t.putInt("Round",t.getInt("Round")+1);
-        var chair=chair(l,b,start);
-        if(chair!=null){t.putLong("Chair",chair.subtract(b).asLong());var c=Vec3.atBottomCenterOf(chair);var out=c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize());
-            WALKS.put(a.getUUID(),new ArrayList<>(List.of(Vec3.atBottomCenterOf(b.offset(INSIDE[door]).offset(door==0?-1:0,0,door==1?1:0)),out,c)));}
-        else{t.remove("Chair");WALKS.put(a.getUUID(),new ArrayList<>(List.of(Vec3.atBottomCenterOf(b.offset(2,0,-5)))));}
+        var in=at(b,IN_FRONT);var path=new ArrayList<Vec3>();
+        if(start.distanceToSqr(at(b,BEHIND[0]))>.01)path.add(at(b,BEHIND[0]));
+        path.add(in);
+        var chair=chair(l,b,in);
+        if(chair!=null){t.putLong("Chair",chair.subtract(b).asLong());var c=Vec3.atBottomCenterOf(chair);path.add(c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize()));path.add(c);}
+        else{t.remove("Chair");path.add(Vec3.atBottomCenterOf(b.offset(2,0,-5)));}
+        WALKS.put(a.getUUID(),path);
         shared(s,t);return a;
+    }
+    /**
+     * 0.4.600: whether this visitor is with somebody where he lives. Johnny is one man (Truant): he is in a hall of his own for as
+     * long as a reader is in one. Holloway keeps his camp while a reader is at it.
+     */
+    static boolean elsewhere(MinecraftServer s,int phase){
+        if(phase==JOHNNY)return Truant.withSomeone();
+        if(phase!=HOLLOWAY)return false;
+        var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return false;
+        for(var p:s.getPlayerList().getPlayers())if(p.isAlive()&&!p.isSpectator()&&LabyrinthDoors.placeOf(p,origin)==LabyrinthPlace.HOLLOWAY_CAMP)return true;
+        return false;
     }
     /** A free chair at the table: no one sitting in it or standing in it, the nearest the door. */
     static @Nullable BlockPos chair(ServerLevel l,BlockPos b,Vec3 from){
@@ -246,9 +320,9 @@ public final class KitchenVisitors {
         }
         return best;
     }
-    /** Steps toward the next point, a walking pace. */
+    /** Steps toward the next point, a walking pace. Somebody just made behind the door stands there a moment first. */
     static void walk(ServerLevel l,LiteraryActor a){
-        var path=WALKS.get(a.getUUID());if(path==null||path.isEmpty())return;var to=path.get(0);var at=a.position();
+        var path=WALKS.get(a.getUUID());if(path==null||path.isEmpty()||a.tickCount<DOOR_WAIT)return;var to=path.get(0);var at=a.position();
         double dx=to.x-at.x,dz=to.z-at.z,dist=Math.sqrt(dx*dx+dz*dz);
         if(dist<.08){path.remove(0);if(path.isEmpty())WALKS.remove(a.getUUID());return;}
         double step=Math.min(.1,dist);float yaw=(float)Math.toDegrees(Math.atan2(-dx,dz));
@@ -261,15 +335,17 @@ public final class KitchenVisitors {
         var c=Vec3.atBottomCenterOf(chair);var d=Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE)).subtract(c);float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z));
         a.moveTo(c.x,c.y,c.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
     }
-    /** Up out of the chair, a word, and away by the door they came in by. */
+    /**
+     * A word, and away by the door: up and a step back from the table if they were sitting at it, then to the door, through it,
+     * and a little way along the passage and to one side. They walk it from where they are.
+     */
     static void leave(ServerLevel l,BlockPos b,LiteraryActor a,CompoundTag t,int occ){
         var v=cast(a.phase());if(v!=null)speak(a,v.voice().leaving());
-        int door=t.getInt("Door");var path=new ArrayList<Vec3>();
-        if(t.contains("Chair")){var c=Vec3.atBottomCenterOf(b.offset(BlockPos.of(t.getLong("Chair"))));path.add(c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize()));}
-        path.add(Vec3.atBottomCenterOf(b.offset(INSIDE[door])));
-        var start=path.get(0);a.moveTo(start.x,start.y,start.z,a.getYRot(),0);
+        var path=new ArrayList<Vec3>();
+        if(t.getInt("Stage")==SEATED&&t.contains("Chair")){var c=Vec3.atBottomCenterOf(b.offset(BlockPos.of(t.getLong("Chair"))));path.add(c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize()));}
+        path.add(at(b,IN_FRONT));path.add(at(b,BEHIND[0]));
+        var aside=at(b,BEHIND[1]);if(l.noCollision(new AABB(aside.x-.3,aside.y,aside.z-.3,aside.x+.3,aside.y+1.8,aside.z+.3)))path.add(aside);
         WALKS.put(a.getUUID(),path);t.putInt("Stage",LEAVING);t.putInt("StageAt",occ);
-        l.playSound(null,b.offset(DOORS[door]),SoundEvents.WOODEN_DOOR_OPEN,SoundSource.BLOCKS,.6F,1F);
     }
     /** Said above their head, for whoever is there. */
     static void speak(LiteraryActor a,String text){a.say(text);a.speaks(text);}

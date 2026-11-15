@@ -111,8 +111,8 @@ a story that changes how it holds readers changes its row here.
 | 77 | Growing things (growing things) | Up to four; the next reader goes to another copy. | `TogetherConductTests` (a talking scene) |
 | 78 | The tall grass (tall grass) | Up to six; the next reader goes to another copy. | `TogetherSceneTests#tallGrass` |
 | 79 | The supper (marsh supper) | Up to five at the table; the next reader goes to another copy. | `TogetherConductTests` (a talking scene) |
-| 80 | The last crossing (last crossing) | Up to six in the crew; the next reader goes to another copy. | `TogetherConductTests` (a talking scene) |
-| 81 | The weekend at Pinehook (pinehook) | Up to six in the party; the next reader goes to another copy. | `TogetherConductTests` (a talking scene) |
+| 80 | The last crossing (last crossing) | One to six in the crew (0.4.598: a reader on their own crews it short-handed, with Vera); the next reader goes to another copy. | `TogetherConductTests` (a talking scene) |
+| 81 | The weekend at Pinehook (pinehook) | One to six in the party (0.4.598: dealt to a reader on their own); the next reader goes to another copy. | `TogetherConductTests` (a talking scene) |
 | 82 | The drawing (the drawing) | One room for everyone; what each reader does and reads is their own. | `TogetherConductTests` (a talking scene) |
 | 83 | The house on the corner (corner house) | One room for everyone; what each reader does and reads is their own. | `TogetherConductTests` (a talking scene) |
 | 84 | The city on the ice (black city) | One room for everyone; what each reader does and reads is their own. | `TogetherSceneTests#blackCity` |
@@ -148,6 +148,16 @@ woman on the deer road), somebody already there when a scene moves a reader (the
 test's reader who has just been put down beside someone or has turned round, the swimmer in her lane, a child carried on a back, the
 Lady gliding out over Bly's pond, somebody who has said something new looking where that goes, and Camp Blood's man killing a reader
 who walks up to him.
+
+## Since the audit
+
+What has changed in how readers are held, release by release, since 0.4.565:
+
+- **0.4.582, the Pell house.** What its people do while the house waits, June's jobs, Tilly's question and the book were built for more than one reader and had cases with one; they now have cases with two readers in a house, a reader as Tilly, and a second house, each house keeping its own record (docs/PELL_HOUSE_NOTES_0_4_582.md).
+- **0.4.596, the great staircase.** The people of a reader's own finished stories stand on the stair for that reader alone: another reader's game is never told they are there (docs/STAIR_COMPANY_0_4_596.md).
+- **0.4.598, a reader on their own.** The Last Crossing and Pinehook, written for a crew, can be played by one (docs/ON_YOUR_OWN_0_4_598.md). Rows 80 and 81 above.
+- **0.4.599, a failed story's door.** The door a reader took into a story that failed them is theirs: it opens onto a hall for them, and another reader's door to the same story is as it was (docs/TWO_NOTES_0_4_599.md).
+- **0.4.600, the people who are in two places.** Johnny and Holloway visit the familiar kitchen (not a story, and not in the table above) and each also has a place of his own. Each is now in one place at a time: he does not come to the kitchen while a reader is with him at home, and gets up from the table if one finds him there (docs/CAST_MANNERS_0_4_600.md). No case has one reader in each place; the rule is two lines.
 
 ## Decided (any of it can move)
 

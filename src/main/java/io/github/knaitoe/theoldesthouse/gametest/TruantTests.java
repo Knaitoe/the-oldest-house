@@ -52,7 +52,7 @@ public final class TruantTests {
     private static String where(LiteraryTests.Fixture f){var a=Truant.body(f.in);if(a==null)return "nobody; "+Truant.debug(f.in.getServer());var at=Truant.at(f.in.getServer());var b=at==null?BlockPos.ZERO:f.base(at);return String.format("at %.2f %.2f %.2f in %s gesture %d phase %d; ",a.getX()-b.getX(),a.getY()-b.getY(),a.getZ()-b.getZ(),at,a.gesture(),a.phase())+Truant.debug(f.in.getServer());}
 
     /** A veteran's history with him: three meetings, all three kinds of help, a promise made and kept, one place told and answered, twenty passes noted at the second meeting, his name. */
-    private static CompoundTag history(){
+    static CompoundTag history(){
         var own=new CompoundTag();own.putInt("Meetings",3);own.putInt("Talked",3);own.putInt("Help",Truant.HELP_DOOR|Truant.HELP_STEADY|Truant.HELP_LAMP);
         own.putString("Promise","agreed");own.putInt("PromisedAt",1);own.putBoolean("Kept",true);own.putString("KeptPlace","winter_lake");own.putInt("KeptAt",2);own.putBoolean("Thanked",true);
         var told=new ListTag();told.add(StringTag.valueOf("winter_lake"));own.put("Told",told);var answers=new CompoundTag();answers.putInt("winter_lake",0);own.put("Answers",answers);
