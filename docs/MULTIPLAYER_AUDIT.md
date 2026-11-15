@@ -173,6 +173,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.613, Daniel returned.** Dan's walk, who holds him, the panic and the frame are the house's; who put it to him, held him, stopped him, saw him go in and heard the dog's name are each reader's own. Only readers actually within reach count as holders; a reader elsewhere adds nothing.
 - **0.4.614, Dan completed.** Vera's call, Daniel's walk and hold, the room and its end are the house's; who was called, took his shoulders, let go, saw it and heard the voice under Dan's are each reader's own. Only holders within reach count, and each holds by their own reply; a steadied body counts only because its original gave it.
 - **0.4.615, the house severed.** The two counts, the bodies and the bench are the house's; who worked which, felt it go, struck the body and saw the bench are each reader's own. The partner bonus needs a second reader at the other place: one reader working both is slow, not refused. Only readers who know the third way can work either.
+- **0.4.616, neither Daniel.** The blows, the deaths, Vera's table and Rae's chair are the house's; who struck, saw them die and where, saw the places, told Rae, stopped Vera and broke the support are each reader's own. Only blows from readers who know count, so one who does not cannot be drawn into it.
 ## Decided (any of it can move)
 
 - The hotel stays one building, made for any number of guests (0.4.563).

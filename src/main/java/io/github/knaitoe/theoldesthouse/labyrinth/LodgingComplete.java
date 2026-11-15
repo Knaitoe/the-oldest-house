@@ -99,7 +99,7 @@ public final class LodgingComplete {
     }
     private static boolean start(ServerLevel l,BlockPos b,CompoundTag h,CompoundTag in,int clock){
         var s=l.getServer();
-        if(!LodgingReturn.ready(s,b)||LodgingReturn.phase(s,b)!=LodgingReturn.NONE||LodgingSever.severed(s,b)||!backed(h)||LodgingPeople.find(l,b,LodgingPeople.DANIEL)==null)return false;
+        if(!LodgingReturn.ready(s,b)||LodgingReturn.phase(s,b)!=LodgingReturn.NONE||LodgingSever.severed(s,b)||LodgingNeither.dead(s,b)||!backed(h)||LodgingPeople.find(l,b,LodgingPeople.DANIEL)==null)return false;
         if(!in.contains("BackedAt")){in.putInt("BackedAt",clock);return true;}
         if(clock-in.getInt("BackedAt")<CALL_AFTER)return false;
         var vera=LodgingPeople.find(l,b,LodgingPeople.VERA);

@@ -178,6 +178,25 @@ public final class LodgingTexts {
         VERA_CALLS="One of you. Up here. Not Rae.",
         R_WHEN_YOU_CALL="When you call.",
         VERA_SENT_YES="Good. You'll hear me.",VERA_SENT_NO="Then I'll ask the next one up the stair.",VERA_NOT_YOU="Not you. Go back down.";
+    // 0.4.616: E4. Every line here is new.
+    public static final String BLOW_FIRST="He folds over the blow. Somewhere else in the house, at the same moment, somebody cries out.",
+        BLOW_SAME="Both of them fold over the one blow, as if it had landed twice.",
+        BLOW_AGAIN="Again. Through the walls, the other one with it.",
+        DAN_STOP="Stop. Whatever you do to me, you're doing to him.",
+        DANIEL_WHO="Who is that? Who's doing that to me?",
+        DIED_ONE="They go down together in the one room, and neither of them moves again.",
+        DIED_TWO="Dan goes down and does not move. Somewhere through the house, in another room, something heavy falls at the same moment.",
+        VERA_BACK="Well. Two places, then. They'll want feeding when they come.",
+        VERA_LAYS="Vera lays a place at the dining table, knife and fork and a glass, and squares it to the edge.",
+        VERA_STOPS="Vera stops where she is, with a knife still in her hand, and does not put it down.",
+        VERA_STOPPED="Leave it, then. It will want doing whether you like it or not.",
+        RAE_WHICH="I was going to sit down. I was going to sit with them. Which one was it?",
+        TWO_PLACES="Two places are laid at the dining table for whoever comes next. Rae has knocked one chair over, and cannot say which place she meant.",
+        R_TELL_RAE="Vera did this. All of it.",
+        RAE_TOLD="She said it was a kindness. She said it every morning, when she gave me the tray.",
+        RAE_AFTER="I heard you. I'm still deciding what to do with it.",
+        VERA_BROKEN="There. Now nobody's anywhere.",
+        VERA_SITS="Vera sits down on the floor where she stood as the house settles, and lays nothing else.";
     // 0.4.615: E3. Every line here is new.
     public static final String RATCHET_LIFT="You find the lever and lift the pawl a tooth. The wheel turns back against your hand, and the sill groans the length of the back wall.",
         RATCHET_AGAIN="Another tooth.",RATCHET_DONE="The pawl hangs clear of the wheel. There is nothing more to lift.",
@@ -334,6 +353,14 @@ public final class LodgingTexts {
         if(own.getBoolean(LodgingComplete.HELD)&&!own.getBoolean(LodgingComplete.LET_GO))p.add("Your hands were on his shoulders while it happened.");
         else if(own.getBoolean(LodgingComplete.HELD))p.add("Your hands were on his shoulders, and then they were not.");
         if(own.getBoolean(LodgingComplete.HEARD_UNDER))p.add("Dan said Rae's name, and another voice went on under it.");
+        // 0.4.616: E4.
+        if(own.getBoolean(LodgingNeither.STRUCK))p.add("You struck one of them knowing what it did to the other.");
+        if(own.getBoolean(LodgingNeither.SAW_DIE))p.add(LodgingNeither.oneRoom(own)?"Dan and Daniel died of the same blows, in the one room.":"Dan and Daniel died of the same blows, in two rooms.");
+        if(own.getBoolean(LodgingNeither.STOPPED_HER))p.add("You stopped Vera before she had finished laying for the next ones.");
+        else if(own.getBoolean(LodgingNeither.SAW_PLACES))p.add("Vera laid two places for whoever came next, and Rae knocked a chair over between them.");
+        if(own.getBoolean(LodgingNeither.TOLD))p.add("You told Rae what Vera had done.");
+        if(own.getBoolean(LodgingNeither.BROKE))p.add("You went down afterwards and let the house go under her.");
+        else if(own.getBoolean(LodgingNeither.SAW_DIE)&&!own.getBoolean(LodgingNeither.TOLD)&&!own.getBoolean(LodgingNeither.STOPPED_HER))p.add("You left the house to Vera.");
         // 0.4.615: E3.
         boolean wheel=own.getBoolean(LodgingSever.RATCHET),jamb=own.getBoolean(LodgingSever.CATCH);
         if(wheel&&jamb)p.add("You worked the wheel in the cellar and the catch in the frame, both, and every original in the house walked out.");

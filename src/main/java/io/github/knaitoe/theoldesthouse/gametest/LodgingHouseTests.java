@@ -1576,6 +1576,98 @@ public final class LodgingHouseTests {
     }
     @AfterBatch(batch="lodging_sever") public static void severDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_sever_alone") public static void severAloneDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.616: E4, neither Daniel
+    private static String nei(ServerLevel l,BlockPos b){return LodgingStory.house(l.getServer(),b).getCompound(LodgingNeither.STATE).toString();}
+    private static String bookText(net.minecraft.world.item.ItemStack book){var c=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);return c==null?"":String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList()).replace('\n',' ');}
+    private static void knowsLink(ServerPlayer p){mark(p,LodgingInjury.SAW_DAN_CUT);mark(p,LodgingInjury.SAW_DANIEL_CUT);}
+    private static int stage(ServerLevel l,BlockPos b,BlockPos cell){var st=l.getBlockState(b.offset(cell));return st.getBlock() instanceof LodgingThing?st.getValue(LodgingThing.STAGE):-1;}
+    @GameTest(template="empty",batch="lodging_neither",timeoutTicks=6000)
+    public static void readersWhoKnowTheLinkKillBothAndVeraLaysForTheNext(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_nei_a",P);var q=f.player("lodging_nei_b",P);var r=f.player("lodging_nei_c",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);disturbed(l,b,LodgingMeeting.FRAME,false);
+                place(who[LodgingPeople.DAN],b,1.5,-4.5,0);
+                knowsLink(p);knowsLink(q);
+                f.at(p,P,.5,0,-3.5);f.at(q,P,-6.5,0,-26.0);f.at(r,P,6.5,0,-8.5);
+                LodgingStory.hold(b,false);
+                // A reader who does not know: nothing.
+                LodgingPeople.struck(r,who[LodgingPeople.DAN]);
+                h.assertTrue(LodgingNeither.blows(s,b)==0&&!own(r).getBoolean(LodgingNeither.STRUCK),"a blow from somebody who does not know does nothing: "+nei(l,b));
+            })
+            .thenWaitUntil(()->{
+                // One at Dan in the hall, one at Daniel in his room: every blow lands on both.
+                LodgingPeople.struck(p,who[LodgingPeople.DAN]);LodgingPeople.struck(q,who[LodgingPeople.DANIEL]);
+                h.assertTrue(LodgingNeither.dead(s,b),"waiting for both to die: "+nei(l,b));
+            })
+            .thenExecute(()->{
+                h.assertTrue(own(p).getBoolean(LodgingNeither.STRUCK)&&own(q).getBoolean(LodgingNeither.STRUCK),"each struck");
+                h.assertTrue(own(r).getBoolean(LodgingNeither.SAW_DIE),"the one who did nothing heard it too");
+                h.assertTrue(who[LodgingPeople.DAN].gesture()==LodgingNeither.DOWN,"Dan lies where he fell");
+                h.assertTrue(who[LodgingPeople.DANIEL].gesture()==LodgingNeither.SLUMP,"Daniel hangs in the straps");
+                has(h,p,"Vera: "+LodgingTexts.VERA_BACK);
+                // Nobody can put Dan back now, or sever the house for the two of them.
+                mark(q,LodgingVera.TRUTH);LodgingPeople.talk(q,who[LodgingPeople.DAN],own(q));
+                h.assertFalse(Talk.replies(q).contains(LodgingTexts.R_GO_BACK),"E1 is not offered: "+Talk.replies(q));Talk.close(q);
+                f.at(q,P,6.5,0,-3.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingNeither.phase(s,b)==LodgingNeither.DONE,"waiting for the places and Rae: "+nei(l,b)+", Vera at "+rel(b,who[LodgingPeople.VERA])+", Rae at "+rel(b,who[LodgingPeople.RAE])))
+            .thenExecute(()->{
+                h.assertTrue((stage(l,b,LodgingNeither.PLACE_WEST)&2)!=0&&(stage(l,b,LodgingNeither.PLACE_EAST)&2)!=0,"two places laid");
+                h.assertTrue(stage(l,b,LodgingNeither.RAE_CHAIR)==1,"one chair knocked over");
+                h.assertTrue(own(r).getBoolean(LodgingNeither.SAW_PLACES),"the reader in the dining room saw them");
+                has(h,r,"Rae: "+LodgingTexts.RAE_WHICH);
+                // Tell Rae.
+                LodgingPeople.talk(q,who[LodgingPeople.RAE],own(q));
+                h.assertTrue(Talk.replies(q).contains(LodgingTexts.R_TELL_RAE),"Rae can be told: "+Talk.replies(q));
+                Talk.choose(q,LodgingTexts.R_TELL_RAE);
+                h.assertTrue(own(q).getBoolean(LodgingNeither.TOLD),"told");
+                h.assertTrue(bookText(LodgingTexts.account("x",own(r))).contains("left the house to Vera"),"the one who did nothing left it to her");
+            })
+            .thenSucceed();
+    }
+    @GameTest(template="empty",batch="lodging_neither_stop",timeoutTicks=6000)
+    public static void aBlowStopsVeraLayingAndTheSupportCanStillBeBroken(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_neis_a",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);disturbed(l,b,LodgingMeeting.FRAME,false);
+                place(who[LodgingPeople.DAN],b,1.5,-4.5,0);
+                mark(p,LodgingVera.TRUTH);mark(p,LodgingCellar.KNOWS_THIRD);f.at(p,P,.5,0,-3.5);
+                LodgingStory.hold(b,false);
+            })
+            .thenWaitUntil(()->{LodgingPeople.struck(p,who[LodgingPeople.DAN]);h.assertTrue(LodgingNeither.dead(s,b),"waiting for both to die: "+nei(l,b));})
+            .thenExecute(()->f.at(p,P,5.5,0,-6.5))
+            .thenWaitUntil(()->h.assertTrue(LodgingNeither.phase(s,b)==LodgingNeither.LAYING&&LodgingNeither.laid(s,b)>=1,"waiting for the first place: "+nei(l,b)+", Vera at "+rel(b,who[LodgingPeople.VERA])))
+            .thenExecute(()->{
+                LodgingPeople.struck(p,who[LodgingPeople.VERA]);
+                h.assertTrue(LodgingNeither.phase(s,b)==LodgingNeither.STOPPED&&own(p).getBoolean(LodgingNeither.STOPPED_HER),"she stops: "+nei(l,b));
+                f.at(p,P,.5,LodgingSite.CELLAR,-26.5);
+            })
+            .thenIdle(80)
+            .thenExecute(()->{
+                h.assertTrue(LodgingNeither.laid(s,b)==1&&(stage(l,b,LodgingNeither.PLACE_EAST)&2)==0,"no second place: "+nei(l,b));
+                h.assertTrue(stage(l,b,LodgingNeither.RAE_CHAIR)==0,"Rae never came to the table");
+            })
+            .thenWaitUntil(()->{LodgingHouse.click(p,b,LodgingSite.RATCHET,own(p));h.assertTrue(LodgingSever.ratchet(s,b)>=LodgingSever.STEPS,"waiting for the pawl: "+nei(l,b));})
+            .thenExecute(()->f.at(p,P,-6.5,0,-27.0))
+            .thenWaitUntil(()->{LodgingHouse.click(p,b,LodgingSite.DANIEL_FRAME.east(),own(p));h.assertTrue(LodgingNeither.phase(s,b)==LodgingNeither.BROKEN,"waiting for the support: "+nei(l,b));})
+            .thenExecute(()->{
+                h.assertTrue(who[LodgingPeople.VERA].gesture()==LodgingSever.SAT,"Vera sits down");
+                h.assertTrue(own(p).getBoolean(LodgingNeither.BROKE),"the one who broke it");
+                h.assertTrue(who[LodgingPeople.DAN].gesture()==LodgingNeither.DOWN,"Dan stays where he fell");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_neither") public static void neitherDone(ServerLevel l){done();}
+    @AfterBatch(batch="lodging_neither_stop") public static void neitherStopDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete") public static void completeDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete_held") public static void completeHeldDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_return") public static void returnDone(ServerLevel l){done();}
