@@ -98,8 +98,8 @@ public final class LodgingHouseTests {
             for(int i=0;i<5;i++)h.assertTrue(headroom(l,b,new BlockPos(3,i,LodgingSite.STAIR_FOOT-i)),"room to stand on the main stair's tread "+i);
             h.assertTrue(LodgingSite.CELLAR_TREADS==4,"four treads down to the cellar, a cell lower each");
             for(int i=0;i<LodgingSite.CELLAR_TREADS;i++){var s=l.getBlockState(b.offset(0,LodgingSite.GROUND_SLAB-i,LodgingSite.CELLAR_STAIR_TOP-i));h.assertTrue(s.is(LodgingRegistry.CELLAR_STAIR.get())&&s.getValue(StairBlock.FACING)==Direction.SOUTH&&headroom(l,b,new BlockPos(0,LodgingSite.GROUND_SLAB-i,LodgingSite.CELLAR_STAIR_TOP-i)),"the back stair's tread "+i+", clear");}
-            h.assertTrue(fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-2),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(3,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-2),LodgingBlock.Kind.RAIL)
-                &&fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-3),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(1,0,LodgingSite.STAIR_FOOT),LodgingBlock.Kind.BANISTER),"the gallery's rail round the well, and the newel at the stair's foot");
+            h.assertTrue(fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-1),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(3,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-1),LodgingBlock.Kind.RAIL)
+                &&fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-2),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-3),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(1,0,LodgingSite.STAIR_FOOT),LodgingBlock.Kind.BANISTER),"the gallery's rail round the well, and the newel at the stair's foot");
             for(int y=LodgingSite.CELLAR;y<=LodgingSite.UPPER+3;y++)h.assertTrue(fitting(l,b,new BlockPos(LodgingSite.PASS_W,y,LodgingSite.LADDER_Z),LodgingBlock.Kind.LADDER)&&fitting(l,b,new BlockPos(LodgingSite.PASS_E,y,LodgingSite.LADDER_Z),LodgingBlock.Kind.LADDER),"the ladders at the side passages' ends, at "+y);
             h.assertTrue(LodgingRegistry.FITTING.get().isLadder(l.getBlockState(b.offset(LodgingSite.PASS_W,0,LodgingSite.LADDER_Z)),l,b.offset(LodgingSite.PASS_W,0,LodgingSite.LADDER_Z),p),"they are climbed");
             // The frames: one in every guest room's outside wall, Daniel's in his back wall.
@@ -305,6 +305,8 @@ public final class LodgingHouseTests {
     public static void theFourAreWhereTheScriptHasThemAndAnswerAHandInThePanel(GameTestHelper h){
         var f=house(h);var p=f.player("lodging_talker",P);var q=f.player("lodging_other",P);var l=f.level(P);var b=f.base(P);
         f.chunks.hold(l,LodgingPeople.area(b));final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        // 0.4.604: both readers answer Rae here, which sets the house's chapter going; this case looks at the first scene only.
+        LodgingStory.hold(b,true);
         h.startSequence()
             .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
                 for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i+" of the house's people");}})
@@ -432,4 +434,103 @@ public final class LodgingHouseTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="lodging_people") public static void peopleDone(ServerLevel l){done();}
+
+    /** A reader turned to look at a point, as their own camera would be. */
+    private static void look(ServerPlayer p,Vec3 at){var d=at.subtract(p.getEyePosition());float yaw=(float)(net.minecraft.util.Mth.atan2(d.z,d.x)*net.minecraft.util.Mth.RAD_TO_DEG)-90;float pitch=(float)-(net.minecraft.util.Mth.atan2(d.y,d.horizontalDistance())*net.minecraft.util.Mth.RAD_TO_DEG);p.setYRot(yaw);p.setXRot(pitch);p.setYHeadRot(yaw);}
+    private static String cardText(ServerLevel l,BlockPos b,int room){
+        for(var d:l.getEntitiesOfClass(net.minecraft.world.entity.Display.TextDisplay.class,new AABB(b.offset(LodgingSite.cardHolder(room))).inflate(.6),d->d.getTags().contains(LodgingDoubles.CARD_TAG+room))){var tag=new CompoundTag();d.saveWithoutId(tag);return tag.getString("text");}
+        return "";
+    }
+    /**
+     * 0.4.604, N1's end and N2 (docs/ONES_INSIDE_ROOMS_0_4_604.md). When every reader has answered Rae she says she will find Vera and walks
+     * up the stair and along the corridor into the workroom, the door opened for her and shut behind her. Vera comes down with Rae behind
+     * her and says her four lines in the hall. Each reader is given a room of their own, their name on its card; a body is made asleep in
+     * its bed only once nobody has the bed in view, and it is that reader's. Standing by it three seconds, its own reader sees it open its
+     * eyes and turn its head on the pillow, away from them. A blow does nothing to it; Vera, asked about it, answers in the panel. Vera
+     * takes Dan up with Rae, and Dan, passing a guest room open on its sleeper, says his line.
+     */
+    @GameTest(template="empty",batch="lodging_rooms_given",timeoutTicks=8000)
+    public static void theRoomsAreGivenOutAndEachReaderFindsTheirOwnBodyAsleepInTheBed(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_first",P);var q=f.player("lodging_second",P);var l=f.level(P);var b=f.base(P);
+        f.chunks.hold(l,LodgingPeople.area(b));final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];final LiteraryActor[] mine=new LiteraryActor[2];final int[] rooms=new int[2];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i+" of the house's people");}})
+            .thenExecute(()->{
+                h.assertTrue(LodgingStory.stage(l.getServer(),b)==LodgingStory.ASKING,"the house begins with Rae asking");
+                f.at(p,P,-1.5,0,-3.5);f.at(q,P,.5,0,-4.5);
+                LiteraryVignettes.talk(p,who[LodgingPeople.RAE]);h.assertTrue(Talk.choose(p,LodgingTexts.R_STAY),"the first reader will stay with Dan");
+            })
+            .thenIdle(20)
+            .thenExecute(()->{
+                h.assertTrue(LodgingStory.stage(l.getServer(),b)==LodgingStory.ASKING,"one reader's answer is not the party's: she waits for the other");
+                Talk.close(q);LiteraryVignettes.talk(q,who[LodgingPeople.RAE]);h.assertTrue(Talk.choose(q,LodgingTexts.R_VERA),"the second would see Vera first");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(l.getServer(),b)==LodgingStory.FETCHING,"waiting for Rae to reach the workroom: stage "+LodgingStory.stage(l.getServer(),b)+", Rae at "+rel(b,who[LodgingPeople.RAE])+" yaw "+who[LodgingPeople.RAE].getYRot()+" "+LodgingStory.house(l.getServer(),b)))
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.inWorkroom(rel(b,who[LodgingPeople.RAE])),"Rae walked up to the workroom: "+rel(b,who[LodgingPeople.RAE]));
+                h.assertTrue(!LodgingBlock.open(l.getBlockState(b.offset(LodgingSite.WORK_DOOR))),"and shut its door behind her");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(l.getServer(),b)>=LodgingStory.COMING_DOWN,"waiting for Vera to come down"))
+            .thenExecute(()->{
+                // Both readers go up into the two rooms first given out, each looking at its bed: nobody is to be made in front of them.
+                f.at(p,P,11.5,LodgingSite.UPPER,-3.5);look(p,LodgingDoubles.lying(b,3).add(0,.7,0));
+                f.at(q,P,-11.5,LodgingSite.UPPER,-3.5);look(q,LodgingDoubles.lying(b,0).add(0,.7,0));
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(l.getServer(),b)>=LodgingStory.ADDRESS&&LodgingStory.room(l.getServer(),b,p.getUUID())>=0&&LodgingStory.room(l.getServer(),b,q.getUUID())>=0,
+                "waiting for the rooms: stage "+LodgingStory.stage(l.getServer(),b)+", Vera at "+rel(b,who[LodgingPeople.VERA])+", Rae at "+rel(b,who[LodgingPeople.RAE])+" "+LodgingStory.house(l.getServer(),b)))
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.inHall(rel(b,who[LodgingPeople.VERA]))&&LodgingSite.inHall(rel(b,who[LodgingPeople.RAE])),"Vera came down to the hall, and Rae with her: "+rel(b,who[LodgingPeople.VERA])+" "+rel(b,who[LodgingPeople.RAE]));
+                rooms[0]=LodgingStory.room(l.getServer(),b,p.getUUID());rooms[1]=LodgingStory.room(l.getServer(),b,q.getUUID());
+                h.assertTrue(rooms[0]!=rooms[1]&&java.util.Set.of(rooms[0],rooms[1]).equals(java.util.Set.of(LodgingStory.ORDER[0],LodgingStory.ORDER[1])),"two readers, two rooms, the first two given: "+rooms[0]+" "+rooms[1]);
+                for(int i=0;i<2;i++){var reader=i==0?p:q;int room=rooms[i];
+                    h.assertTrue(LodgingThing.is(l.getBlockState(b.offset(LodgingSite.cardHolder(room))),LodgingThing.Kind.CARD_HOLDER)&&l.getBlockState(b.offset(LodgingSite.cardHolder(room))).getValue(LodgingThing.STAGE)==1,"room "+room+"'s holder has its card");
+                    h.assertTrue(cardText(l,b,room).contains(reader.getGameProfile().getName()),"and the card has the reader's name on it: "+cardText(l,b,room));}
+            })
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(LodgingDoubles.sleeper(l,b,rooms[0])==null&&LodgingDoubles.sleeper(l,b,rooms[1])==null,"no body is made in a bed somebody is looking at");
+                // They turn to the door, away from the beds.
+                look(p,Vec3.atCenterOf(b.offset(LodgingSite.ROOM_DOORS[3])).add(0,.5,0));p.setXRot(-60);look(q,Vec3.atCenterOf(b.offset(LodgingSite.ROOM_DOORS[0])).add(0,.5,0));q.setXRot(-60);
+                f.at(p,P,5.5,LodgingSite.UPPER,-3.5);f.at(q,P,-5.5,LodgingSite.UPPER,-3.5);
+            })
+            .thenWaitUntil(()->{for(int i=0;i<2;i++){mine[i]=LodgingDoubles.sleeper(l,b,rooms[i]);h.assertTrue(mine[i]!=null,"waiting for the body in room "+rooms[i]);}})
+            .thenExecute(()->{
+                for(int i=0;i<2;i++){var a=mine[i];var reader=i==0?p:q;
+                    h.assertTrue(a.role()==LiteraryActor.LODGING_DOUBLE&&a.owner().isPresent()&&a.owner().get().equals(reader.getUUID()),"the body in room "+rooms[i]+" is that reader's");
+                    h.assertTrue(a.position().distanceTo(LodgingDoubles.lying(b,rooms[i]))<.03&&a.gesture()==LodgingDoubles.ASLEEP,"asleep in its bed: "+rel(b,a));
+                    h.assertTrue(LodgingThing.is(l.getBlockState(a.blockPosition()),LodgingThing.Kind.BED)&&l.getBlockState(a.blockPosition()).getValue(LodgingThing.STAGE)==0,"its head in the bed's head cell");}
+                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,LodgingPeople.area(b),LodgingDoubles::is).size()==2,"one body to a reader, and no more");
+                // A blow lands on the second reader's body and does nothing.
+                float health=mine[1].getHealth();Talk.close(q);told(q);q.attack(mine[1]);
+                h.assertTrue(mine[1].isAlive()&&mine[1].getHealth()==health&&own(q).getBoolean(LodgingDoubles.STRUCK),"a blow does nothing to it");
+                // The first reader stands beside their own.
+                f.at(p,P,LodgingDoubles.lying(b,rooms[0]).x-b.getX()+(rooms[0]<3?-1.5:1.5),LodgingSite.UPPER,LodgingDoubles.lying(b,rooms[0]).z-b.getZ()-1.2);told(p);
+            })
+            .thenIdle(LodgingDoubles.WAKE+10)
+            .thenExecute(()->{
+                h.assertTrue(mine[0].gesture()==LodgingDoubles.AWAKE&&own(p).getBoolean(LodgingDoubles.SAW_EYES)&&told(p).contains(LodgingTexts.DOUBLE_WAKES),"standing by it, its reader sees it open its eyes");
+                h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(mine[0].getYHeadRot()-mine[0].yBodyRot))>LodgingDoubles.TURN-1,"and turn its head on the pillow: "+mine[0].getYHeadRot()+" body "+mine[0].yBodyRot);
+                h.assertTrue(mine[1].gesture()==LodgingDoubles.ASLEEP,"the other reader's, whose reader is not by it, sleeps on");
+                LodgingDoubles.touched(p,mine[0]);h.assertTrue(told(p).contains(LodgingTexts.DOUBLE_OWN_AWAKE),"a hand on it says what it is");
+                // Open the first room's door onto its bed, for Dan to see when he is taken up.
+                if(!LodgingBlock.open(l.getBlockState(b.offset(LodgingSite.ROOM_DOORS[rooms[0]]))))LodgingHouse.toggle(l,b,LodgingSite.ROOM_DOORS[rooms[0]]);
+                f.at(q,P,.5,LodgingSite.UPPER,-5.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(l.getServer(),b)==LodgingStory.SETTLED,"waiting for Vera to take Dan up: stage "+LodgingStory.stage(l.getServer(),b)+", Dan at "+rel(b,who[LodgingPeople.DAN])+", Vera at "+rel(b,who[LodgingPeople.VERA])))
+            .thenExecute(()->{
+                for(int i:new int[]{LodgingPeople.VERA,LodgingPeople.DAN,LodgingPeople.RAE})h.assertTrue(LodgingSite.inWorkroom(rel(b,who[i])),"number "+i+" went up to the workroom: "+rel(b,who[i]));
+                h.assertTrue(LodgingStory.house(l.getServer(),b).getBoolean("DanSaw"),"Dan saw a body through a door on his way up");
+                h.assertTrue(who[LodgingPeople.VERA].gesture()==LodgingPeople.WORK,"Vera back at her work");
+                // Asked about it in the workroom, Vera answers.
+                f.at(p,P,-5.5,LodgingSite.UPPER,-21.5);Talk.close(p);LiteraryVignettes.talk(p,who[LodgingPeople.VERA]);
+                h.assertTrue(Talk.replies(p).equals(List.of(LodgingTexts.R_WHO_THAT,LodgingTexts.R_WHAT_THIS,LodgingTexts.R_NOT_STAYING,LodgingTexts.R_LEAVE_IT)),"she can be asked about it: "+Talk.replies(p));
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_WHO_THAT),"asked who that is");
+                for(var line:LodgingTexts.VERA_YOURS)has(h,p,"Vera: "+line);
+                h.assertTrue(Talk.replies(p).equals(List.of(LodgingTexts.R_NOT_STAYING,LodgingTexts.R_LEAVE_IT))&&Talk.choose(p,LodgingTexts.R_NOT_STAYING),"what is left to ask: "+Talk.replies(p));
+                has(h,p,"Vera: "+LodgingTexts.VERA_EITHER_WAY);
+                h.assertTrue(own(p).getBoolean(LodgingDoubles.ASKED)&&own(p).getBoolean(LodgingDoubles.NOT_STAYING)&&!own(q).getBoolean(LodgingDoubles.ASKED),"what was asked is this reader's own");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="lodging_rooms_given") public static void roomsGivenDone(ServerLevel l){done();}
 }

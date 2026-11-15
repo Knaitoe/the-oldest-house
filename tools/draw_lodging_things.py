@@ -221,6 +221,16 @@ def card():
     return im
 
 
+def name_card():
+    # A plain card, a shade warmer at its edges where fingers have pushed it into the frame.
+    im = new('#efe7d0', 61057, 1)
+    for x in range(16):
+        dot(im, x, 0, '#d8ceb2'); dot(im, x, 15, '#d8ceb2')
+    for y in range(16):
+        dot(im, 0, y, '#ddd3b8'); dot(im, 15, y, '#ddd3b8')
+    return im
+
+
 def stone():
     im = new('#9a958a', 61061, 5)
     speckle(im, 61062, 10, ['#8a857b', '#aaa59a'])
@@ -339,7 +349,7 @@ def textures():
         'range_front': range_front(), 'marble': marble(), 'porcelain': porcelain(), 'basin_top': basin_top(), 'glass': glass(), 'sheet': sheet(),
         'blanket': blanket(), 'counterpane': counterpane(), 'pillow': pillow(), 'mattress_worn': mattress_worn(), 'blanket_coarse': blanket_coarse(),
         'velvet': velvet('#5a3a44', 61045), 'velvet_seat': velvet('#6a4650', 61047), 'card_drawers': card_drawers(), 'mirror': mirror(),
-        'brass': brass(), 'card': card(), 'stone': stone(), 'sink_top': sink_top(), 'tin': tin(), 'enamel': enamel(), 'linen': linen(),
+        'brass': brass(), 'card': card(), 'name_card': name_card(), 'stone': stone(), 'sink_top': sink_top(), 'tin': tin(), 'enamel': enamel(), 'linen': linen(),
         'oilcloth': oilcloth(), 'thread': thread(), 'jar': jar(), 'plate': plate(), 'rope': rope(), 'crate': crate(), 'coal': coal(),
         'dresser_front': dresser_front(), 'dresser_back': dresser_back(), 'wardrobe_low': wardrobe(0), 'wardrobe_high': wardrobe(1),
         'sideboard_front': sideboard_front(),
@@ -350,7 +360,7 @@ def textures():
 # ------------------------------------------------------------------------------------------------ models
 TEX = {k: P + k for k in ('wood_dark', 'wood_mid', 'deal', 'deal_side', 'iron', 'iron_top', 'range_front', 'marble', 'porcelain', 'basin_top',
                           'glass', 'sheet', 'blanket', 'counterpane', 'pillow', 'mattress_worn', 'blanket_coarse', 'velvet', 'velvet_seat',
-                          'card_drawers', 'mirror', 'brass', 'card', 'stone', 'sink_top', 'tin', 'enamel', 'linen', 'oilcloth', 'thread', 'jar',
+                          'card_drawers', 'mirror', 'brass', 'card', 'name_card', 'stone', 'sink_top', 'tin', 'enamel', 'linen', 'oilcloth', 'thread', 'jar',
                           'plate', 'rope', 'crate', 'coal', 'dresser_front', 'dresser_back', 'wardrobe_low', 'wardrobe_high', 'sideboard_front')}
 TEX['brick'] = 'brick'
 
@@ -497,9 +507,13 @@ def dressing_table():
 
 
 def card_holder(stage):
-    els = [box((5, 6, 15.5), (11, 9, 16), 'brass')]
+    # 0.4.604: a frame big enough to read a name in (it was a 5 by 2 brass plate): a back plate, lips along the top and bottom and up
+    # the sides holding the card in its slot, the card ten pixels by three, blank so the name is the only ink on it.
+    els = [box((2, 5, 15.6), (14, 10, 16), 'brass'),
+           box((2, 9.4, 15.0), (14, 10, 15.6), 'brass'), box((2, 5, 15.0), (14, 5.6, 15.6), 'brass'),
+           box((2, 5.6, 15.0), (2.6, 9.4, 15.6), 'brass'), box((13.4, 5.6, 15.0), (14, 9.4, 15.6), 'brass')]
     if stage == 1:
-        els.append(box((5.5, 6.5, 15.3), (10.5, 8.5, 15.5), 'card'))
+        els.append(box((2.6, 5.6, 15.2), (13.4, 9.4, 15.6), 'name_card'))
     return m(els, 'brass')
 
 

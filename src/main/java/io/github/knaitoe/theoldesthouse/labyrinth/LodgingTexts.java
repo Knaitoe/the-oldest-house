@@ -40,6 +40,26 @@ public final class LodgingTexts {
     public static final String R_WRONG_DAN="What's wrong?",R_LEAVE_DAN="Leave him be.",DAN_SLEEPING="I've stopped sleeping. I don't like what my hands do when I'm not watching them.",
         DAN_SITS="Dan keeps one hand in his coat pocket.",DAN_LOOKS_UP="Dan looks up.";
     public static final String[] VERA_GUESTS={"You'll be the new guests. Good. Your rooms are ready.","Nobody touches anything in this house that isn't theirs. You'll find that easy."};
+    // 0.4.604: N1's end and N2 (docs/THE_ONES_ALREADY_INSIDE_PLAN.md). VERA_ROOMS, VERA_YOURS, VERA_EITHER_WAY, VERA_DONT, DAN_NOT_HOW and
+    // the four reply labels are the script's; RAE_GOES, the grey lines about the bodies and RAE_BUSY and VERA_BUSY are new here.
+    public static final String RAE_GOES="I'll go up and find her. She won't have heard the door.";
+    public static final String[] VERA_ROOMS={"You'll be the new guests. Good. Your rooms are ready.","Up the stairs. Your names are on the doors.",
+        "Nobody touches anything in this house that isn't theirs. You'll find that easy.","Let's have a look at you. Not here."};
+    public static final String R_WHO_THAT="Who is that?",R_WHAT_THIS="What is this?",R_NOT_STAYING="I'm not staying in here.",R_LEAVE_IT="Leave it.";
+    public static final String[] VERA_YOURS={"That's yours. It isn't finished.","It wants a week of looking at you. You'd be surprised how little it needs.",
+        "When it's ready it can go out in your place for a while, and you can rest. Everybody here was tired once."};
+    public static final String VERA_EITHER_WAY="Nobody makes you. The room is yours either way.",VERA_DONT="Don't. It isn't anybody's yet. You'll only spoil the work.",
+        DAN_NOT_HOW="That's not how it was. That's not how it was for me.";
+    public static final String DOUBLE_OWN="Asleep under the blanket is a body with your face. The skin is too smooth. Its eyes move under the lids.",
+        DOUBLE_OWN_AWAKE="Its eyes are open. It is not looking at you.",
+        DOUBLE_WAKES="It opens its eyes. It does not look at you. It turns its head on the pillow and looks toward the rest of the house.",
+        DOUBLE_STRUCK="Nothing marks where the blow landed. It goes on breathing.",
+        RAE_BUSY="Rae keeps close to Dan.",VERA_BUSY="Vera does not stop for it.";
+    /** Another reader's body, in their bed. */
+    public static String doubleOf(String name,boolean awake){
+        String who=name==null||name.isEmpty()?"somebody else's":name+"'s";
+        return awake?"Its eyes are open. It has "+who+" face, and it is not looking at anybody.":"Asleep under the blanket, a body with "+who+" face. Its eyes move under the lids.";
+    }
     public static final String VERA_WORKS="Vera folds a cloth into a square and sets it on the others.";
     public static final String MAN_IN_FRAME="The man in the frame";
     public static final String[] DANIEL_LISTEN={"You're not her. You're staying here? Listen to me.","There's a key for these. She keeps it, or the woman with her does.",

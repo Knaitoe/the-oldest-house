@@ -104,7 +104,7 @@ public final class LodgingPeople {
     /** The seven at one house: who they are by body, and until when Dan holds his hand out. */
     static final class Household {final UUID[] ids=new UUID[COUNT];long lastTick=-1,showUntil=-1;final Map<String,Long> said=new HashMap<>();}
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
-    public static void clearAll(){HOUSES.clear();}
+    public static void clearAll(){HOUSES.clear();LodgingDoubles.clearAll();LodgingStory.clearAll();}
     static Household household(BlockPos b){return HOUSES.computeIfAbsent(b.immutable(),k->new Household());}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()+LodgingSite.WEST,b.getY()+LodgingSite.CELLAR_SLAB,b.getZ()+LodgingSite.BACK,b.getX()+LodgingSite.EAST+1,b.getY()+LodgingSite.ROOF+1,b.getZ()+LodgingSite.FRONT+1);}
@@ -123,10 +123,11 @@ public final class LodgingPeople {
      * entities unloaded, so nobody is made twice over one who has yet to load.
      */
     public static void ensure(ServerLevel l,BlockPos b){
-        var h=household(b);if(!RoomActors.ready(l,area(b)))return;
+        var h=household(b);if(!RoomActors.ready(l,area(b)))return;int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             if(find(l,b,who)!=null)continue;
-            var spot=SPOTS[who];var at=world(b,spot);if(!live(l,at))continue;
+            // 0.4.604: one made again (a house that lost a body) is made where the chapter has them.
+            var spot=LodgingStory.spot(stage,who);var at=world(b,spot);if(!live(l,at))continue;
             var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
             a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);a.gesture(spot.gesture());
             a.moveTo(at.x,at.y,at.z,spot.look(),0);a.setYHeadRot(spot.look());a.setYBodyRot(spot.look());
@@ -137,7 +138,7 @@ public final class LodgingPeople {
     /** None of the seven is at the house: for a house built again from nothing, and for tests. */
     public static void reset(ServerLevel l,BlockPos b){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LodgingPeople::is))old.discard();
-        HOUSES.remove(b);
+        HOUSES.remove(b);LodgingDoubles.reset(l,b);LodgingStory.reset(l.getServer(),b);
     }
 
     /** Every game tick, each house with a reader in it: heads turned on the scene's own quarter-second tick would turn in steps. */
@@ -148,9 +149,15 @@ public final class LodgingPeople {
     /** Once a tick for the house, however many readers are in it. */
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
+        // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
-            float rest=SPOTS[who].look();
+            var spot=LodgingStory.spot(stage,who);float rest=spot.look();
+            // Somebody on their way somewhere turns where they walk; heads turn to readers only for those standing in their place.
+            if(!failed(who)&&a.position().distanceToSqr(world(b,spot))>.36)continue;
+            // Vera's last line in the hall is to Dan.
+            if(who==VERA&&stage==LodgingStory.ADDRESS&&LodgingStory.house(l.getServer(),b).getBoolean("DanUp")){var dan=find(l,b,DAN);if(dan!=null)rest=yawTo(a,dan.position());}
             // Dan puts his hand back in his pocket.
             if(who==DAN&&a.gesture()==SHOW&&now>=h.showUntil)a.gesture(POCKET);
             if(failed(who)){turnHead(a,rest,rest);continue;}
@@ -159,6 +166,8 @@ public final class LodgingPeople {
             turnHead(a,rest,near==null?rest:yawTo(a,near.getEyePosition()));
         }
     }
+    /** Arrived where the chapter has them: turned the way the place faces, doing what they do there. */
+    static void settle(LiteraryActor a,Spot to){if(a.gesture()!=to.gesture()&&!(to.gesture()==POCKET&&a.gesture()==SHOW))a.gesture(to.gesture());}
     static float yawTo(Entity a,Vec3 at){var d=at.subtract(a.position());return (float)(Mth.atan2(d.z,d.x)*Mth.RAD_TO_DEG)-90;}
     /** The body kept to this yaw, and the head toward the other, no more than HEAD_TURN off the body, a little at a time. */
     private static void turnHead(LiteraryActor a,float body,float head){
@@ -184,16 +193,17 @@ public final class LodgingPeople {
         int who=who(a);
         if(failed(who)){LodgingHouse.cue(p,LodgingTexts.failed(who));return;}
         if(a.saying()&&Talk.key(p).equals(TALK+who))return;
-        switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,a,own);default->daniel(p,a,own);}
+        switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,b,a,own);default->daniel(p,a,own);}
     }
 
     // Rae's request (N1). She asks each reader for themselves; one reader's yes is never the party's.
     private static void rae(ServerPlayer p,ServerLevel l,BlockPos b,LiteraryActor rae,CompoundTag own){
+        if(LodgingStory.stage(p.server,b)!=LodgingStory.ASKING){LodgingHouse.cue(p,LodgingTexts.RAE_BUSY);return;}
         if(own.getInt(RAE_ANSWER)!=UNDECIDED){LodgingHouse.cue(p,LodgingTexts.RAE_WATCHES);return;}
         var dan=find(l,b,DAN);boolean first=!own.getBoolean(RAE_ASKED);
         Talk.begin(p,TALK+RAE,"Rae");
         if(first){
-            own.putBoolean(RAE_ASKED,true);LodgingHouse.save(p,own);
+            own.putBoolean(RAE_ASKED,true);LodgingHouse.save(p,own);LodgingStory.asked(p);
             for(var line:LodgingTexts.RAE_REQUEST)says(p,rae,"Rae",line);
             // Dan has his say once to a reader: one who went to him first has heard the first of it.
             if(dan!=null){
@@ -268,7 +278,11 @@ public final class LodgingPeople {
     }
 
     // Vera, found at her work before she has come down (N2's opening).
-    private static void vera(ServerPlayer p,LiteraryActor vera,CompoundTag own){
+    private static void vera(ServerPlayer p,BlockPos b,LiteraryActor vera,CompoundTag own){
+        // 0.4.604: once the rooms are given out, a reader with a room can ask her about what is in its bed (N2's replies "to Vera").
+        int stage=LodgingStory.stage(p.server,b);
+        if(stage>=LodgingStory.ADDRESS&&LodgingStory.room(p.server,b,p.getUUID())>=0&&LodgingDoubles.ask(p))return;
+        if(stage>=LodgingStory.COMING_DOWN&&stage<LodgingStory.SETTLED){LodgingHouse.cue(p,LodgingTexts.VERA_BUSY);return;}
         if(own.getBoolean(VERA_MET)){LodgingHouse.cue(p,LodgingTexts.VERA_WORKS);return;}
         own.putBoolean(VERA_MET,true);LodgingHouse.save(p,own);
         Talk.begin(p,TALK+VERA,"Vera");

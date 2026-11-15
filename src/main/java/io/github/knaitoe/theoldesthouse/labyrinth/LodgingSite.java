@@ -245,7 +245,9 @@ public final class LodgingSite {
         // The main stair, x 2 and 3, five treads rising north from the hall to the gallery; the gallery's floor open over its upper half.
         var up=LodgingRegistry.STAIR.get().defaultBlockState().setValue(StairBlock.FACING,Direction.NORTH);
         for(int i=0;i<5;i++)for(int x=2;x<=3;x++)set(l,b,x,GROUND+i,STAIR_FOOT-i,up);
-        box(l,b,2,UPPER_SLAB,STAIR_FOOT-2,3,UPPER_SLAB,STAIR_FOOT-3,AIR);
+        // 0.4.604: the well opens over the second tread too. Going on from it to the third a body's head rises above the gallery's floor
+        // while its heels are still under it, and caught there (Rae, walking up, found it).
+        box(l,b,2,UPPER_SLAB,STAIR_FOOT-1,3,UPPER_SLAB,STAIR_FOOT-3,AIR);
         // Under it, the panelling and the cupboard behind its low door; its inside is the stair's east half, two and three cells high.
         box(l,b,2,GROUND,STAIR_FOOT-1,3,GROUND,STAIR_FOOT-1,mat("panel"));
         box(l,b,2,GROUND,STAIR_FOOT-2,2,GROUND+1,STAIR_FOOT-2,mat("panel"));box(l,b,2,GROUND+2,STAIR_FOOT-3,2,GROUND+2,STAIR_FOOT-3,mat("panel"));
@@ -254,8 +256,8 @@ public final class LodgingSite {
         // Its handrail up the open side, the newel at its foot; the gallery's rail round the well.
         set(l,b,1,GROUND,STAIR_FOOT,fit(Kind.BANISTER,Direction.NORTH,1));
         for(int i=0;i<4;i++)set(l,b,2,GROUND+1+i,STAIR_FOOT-i,fit(Kind.BANISTER,Direction.NORTH,0));
-        set(l,b,2,UPPER,STAIR_FOOT-2,fit(Kind.RAIL,Direction.WEST,1));set(l,b,3,UPPER,STAIR_FOOT-2,fit(Kind.RAIL,Direction.SOUTH,0));
-        set(l,b,2,UPPER,STAIR_FOOT-3,fit(Kind.RAIL,Direction.WEST,0));
+        set(l,b,2,UPPER,STAIR_FOOT-1,fit(Kind.RAIL,Direction.WEST,1));set(l,b,3,UPPER,STAIR_FOOT-1,fit(Kind.RAIL,Direction.SOUTH,0));
+        set(l,b,2,UPPER,STAIR_FOOT-2,fit(Kind.RAIL,Direction.WEST,0));set(l,b,2,UPPER,STAIR_FOOT-3,fit(Kind.RAIL,Direction.WEST,0));
         // The back stair down, x -1 to 1: four treads descending north from the well's floor, the first set into it, the floor open over
         // the next two so a body going down has its head clear.
         var down=LodgingRegistry.CELLAR_STAIR.get().defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH);
