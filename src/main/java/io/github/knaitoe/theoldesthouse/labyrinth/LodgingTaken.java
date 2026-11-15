@@ -278,6 +278,8 @@ public final class LodgingTaken {
         }else if(held instanceof LiteraryActor a){
             a.setPos(at.x,at.y,at.z);a.gesture(LodgingPeople.WAIT);
             var wall=in.getCompound("InWall");wall.putInt(""+LodgingPeople.who(a),clock);in.put("InWall",wall);
+            // 0.4.613: Vera can use it on him afterwards (LodgingReturn).
+            if(LodgingPeople.who(a)==LodgingPeople.DAN)in.putBoolean("DanWalled",true);
         }
         in.remove("Held");in.remove("HeldActor");
         int takes=in.getInt("Takes")+1;in.putInt("Takes",takes);

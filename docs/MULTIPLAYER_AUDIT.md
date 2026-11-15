@@ -170,6 +170,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.610, the cellar.** The wedge and the body's stages are the house's, the same for everyone; who kicked, who saw it come apart and who knows the third way are each reader's own, by sight, not by being in the house.
 - **0.4.611, the two men.** The meeting, what has been said aloud and the attempt are the house's; each telling is once for the house, each promise only its own reader's, and who brought Dan or stopped the attempt is each reader's own record.
 - **0.4.612, taken.** The disturbance, who is in the wall, the latch and Vera's activity are the house's; who was taken, knocked, lifted or worked the latch, saw a body led, steadied or refused a body, and promised Vera are each reader's own. Only a body's own original can answer for it; another reader's hand on Vera gets nothing.
+- **0.4.613, Daniel returned.** Dan's walk, who holds him, the panic and the frame are the house's; who put it to him, held him, stopped him, saw him go in and heard the dog's name are each reader's own. Only readers actually within reach count as holders; a reader elsewhere adds nothing.
 ## Decided (any of it can move)
 
 - The hotel stays one building, made for any number of guests (0.4.563).

@@ -148,6 +148,8 @@ public final class LodgingPeople {
         var h=household(b);if(!RoomActors.ready(l,area(b)))return;int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             if(find(l,b,who)!=null)continue;
+            // 0.4.613: Dan, gone back through the frame, is not anywhere any more.
+            if(who==DAN&&LodgingReturn.gone(l.getServer(),b))continue;
             // 0.4.604: one made again (a house that lost a body) is made where the chapter has them.
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);var at=world(b,spot);if(!live(l,at))continue;
             var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
@@ -172,7 +174,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
@@ -234,6 +236,8 @@ public final class LodgingPeople {
         // 0.4.611 (N10, N11): the two men in one room, Rae asked; or one of them acting.
         // 0.4.612 (N12): Vera with a reader's body at the frame, or having called one up (LodgingTaken).
         if(LodgingTaken.talk(p,b,a,who,own))return;
+        // 0.4.613 (E1): Dan put to going back through the frame, or taken there (LodgingReturn).
+        if(LodgingReturn.talk(p,b,a,who,own))return;
         if(LodgingMeeting.talk(p,b,a,who,own))return;
         switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,b,a,own);default->daniel(p,a,own);}
     }
