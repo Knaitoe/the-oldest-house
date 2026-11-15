@@ -168,6 +168,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.608, the key.** Where the key is, Rae's errand, Daniel's freedom and his walk are the house's, for everybody in it. Seeing Rae with it, hearing her confession, finding it and using it are each reader's own record; her turns check that the key is still hers before they act, so two readers asking at once cannot both send it somewhere. Custody when a holder leaves is slice 17's.
 - **0.4.609, Vera's offer.** The offer, the cost and each answer are each reader's own, in their own panel; one reader's agreement binds nobody else. Vera holding the key is the house's.
 - **0.4.610, the cellar.** The wedge and the body's stages are the house's, the same for everyone; who kicked, who saw it come apart and who knows the third way are each reader's own, by sight, not by being in the house.
+- **0.4.611, the two men.** The meeting, what has been said aloud and the attempt are the house's; each telling is once for the house, each promise only its own reader's, and who brought Dan or stopped the attempt is each reader's own record.
 ## Decided (any of it can move)
 
 - The hotel stays one building, made for any number of guests (0.4.563).

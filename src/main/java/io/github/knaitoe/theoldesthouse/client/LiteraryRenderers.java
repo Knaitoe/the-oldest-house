@@ -264,6 +264,16 @@ public final class LiteraryRenderers {
                     rightArm.xRot=.06F+.34F*jerk;rightArm.yRot=0;rightArm.zRot=.03F+.06F*jerk;leftArm.xRot=.06F+.34F*jerk;leftArm.yRot=0;leftArm.zRot=-.03F-.06F*jerk;
                     body.xRot+=.07F*jerk;head.xRot-=.28F+.06F*jerk;rightLeg.xRot=.42F*jerk;leftLeg.xRot=-.05F*jerk;}
                 case TIED->{rightArm.xRot=-3.3F;rightArm.yRot=0;rightArm.zRot=-.14F;leftArm.xRot=-3.3F;leftArm.yRot=0;leftArm.zRot=.14F;head.xRot+=.4F;}
+                // 0.4.611 (LodgingMeeting, N11): Daniel with the weapon raised over Dan, the other hand out to keep him off;
+                case 20->{float tr=net.minecraft.util.Mth.sin(age*.6F)*.04F;rightArm.xRot=-2.75F+tr;rightArm.yRot=-.15F;rightArm.zRot=-.12F;
+                    leftArm.xRot=-1.15F;leftArm.yRot=.25F;leftArm.zRot=0;body.xRot+=.06F;head.xRot-=.05F;}
+                // Dan with both hands on somebody's arms in front of him, leaning back against their weight;
+                case 21->{float pull=net.minecraft.util.Mth.sin(age*.5F)*.05F;rightArm.xRot=-1.12F+pull;rightArm.yRot=-.38F;rightArm.zRot=0;
+                    leftArm.xRot=-1.12F-pull;leftArm.yRot=.38F;leftArm.zRot=0;body.xRot-=.08F;if(!speaking)head.xRot+=.08F;}
+                // Dan with both hands up between himself and the room, palms out, elbows bent.
+                case 22->{rightArm.visible=false;leftArm.visible=false;bentArm.visible=true;bentArmLeft.visible=true;
+                    bentArm.xRot=-.55F;bentArm.yRot=.35F;bentArm.zRot=.2F;forearm.xRot=-2.35F;forearm.yRot=0;forearm.zRot=0;
+                    bentArmLeft.xRot=-.55F;bentArmLeft.yRot=-.35F;bentArmLeft.zRot=-.2F;forearmLeft.xRot=-2.35F;forearmLeft.yRot=0;forearmLeft.zRot=0;}
                 // 0.4.610 (LodgingCellar): the dead post's body with the wedge out, coming loose at the joins in four stages, awake, trembling.
                 // The parts drift from their sockets (a gap opens at shoulder and neck) as well as turning; arms' x set from their rest,
                 // never added to, so nothing walks off across frames.

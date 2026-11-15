@@ -126,6 +126,22 @@ public final class LodgingTexts {
         R_OTHER_ONE="And the other one?",R_IT_CUT_HIM="It cut him too.",R_HE_TOLD_ME="Daniel told me what you did to him.",
         R_HELP_VERA="I'll help you.",R_SEND_BACK="Send Dan back.",R_REFUSE_VERA="No.",
         VERA_GOOD="Good. When I call for him, bring him to me.",VERA_WASTE="Then you do it. I won't.",VERA_KEEP_OUT="Then keep out of my way.";
+    // 0.4.611: N10 and N11. MEET and Dan's "Give me a minute" are the script's; every other line here is new.
+    public static final String[][] MEET={{"Daniel","She said a week."},{"Dan","She told me you were gone."},{"Daniel","I wasn't."},{"Rae","He didn't know."},{"Daniel","Then why did you?"}};
+    public static final String MEET_ASKED="Daniel is looking at Rae. Nobody else is saying anything.",
+        R_COME_SEE="Come and see him.",DAN_SHOW_ME="Show me.",
+        R_SAY_RAE="She knew he was alive. She told me.",R_SAY_VERA="Vera says only one of you comes through it.",
+        R_SAY_CELLAR="There's a third way. In the cellar. It undoes all of it.",R_KEEP_DAN="I said I'd stay with you. I'm staying.",
+        R_KEEP_DANIEL="I said I'd get you out. I meant it.",R_LET_HER="Let her answer.",R_STOP="Stop.",
+        DAN_WHICH="Which one?",DANIEL_YOU_KNOW="You know which.",DAN_ME_AS_WELL="All of it. Me as well?",NOBODY_ANSWERS="Nobody answers him.",
+        DAN_ALL_RIGHT="All right.",DANIEL_NOT_NEAR="Then don't let her near me.";
+    public static final String[] RAE_WHY={"Because if he'd known, he'd never have come.","And I couldn't lose him twice."};
+    /** By attempt (Rae takes Dan, Daniel goes for Dan, Dan asks for a minute, Dan takes hold of Daniel, Vera goes for the frame): its first words; stopped; landed; what is seen. */
+    public static final String[] ATTEMPT_START={"Come on. She's upstairs. She can see to it.","Hold still.","Give me a minute. Nobody decides this for me.","Vera! Vera, he's down here!","Excuse me."},
+        ATTEMPT_STOPPED={"Let go. Let go of me.","He's wearing my hands.",null,"Get off me. Get off.","You're making this worse for him."},
+        ATTEMPT_LANDED={"Vera! We're coming up.",null,null,"Vera!","Bring him to me."},
+        ATTEMPT_SEEN={"Rae has Dan by the arm at the foot of the stair.","Daniel stands over Dan with it raised, and does not bring it down.",
+            "Dan stands with his hands up between himself and the room.","Dan has hold of Daniel by both arms. They are the same arms.","Vera is at the frame, her sleeves pushed back."};
     // 0.4.610: N9. PUT_IT_BACK is the script's; every other line here is new.
     public static final String WEDGE_DRIVEN="The wedge is loose enough that a kick would knock it out.",
         WEDGE_OUT="The wedge skids out across the flags. The post shifts in its shoe, and the body tied to it lets out a breath.",
