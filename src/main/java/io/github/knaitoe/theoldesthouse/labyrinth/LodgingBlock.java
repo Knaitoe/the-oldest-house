@@ -50,8 +50,8 @@ public final class LodgingBlock extends HorizontalDirectionalBlock {
         /** A door of two cells whose stage's bit 0 is open and bit 1 the upper cell. */
         public boolean leaf(){return this==DOOR||this==BOLT_DOOR||this==SERVICE||this==JIB||this==CUPBOARD;}
         /** How many stages it draws; the rest draw stage 0. */
-        public int stages(){return switch(this){case DOOR,SERVICE,JIB,CUPBOARD,FRAME_BACK->4;case BOLT_DOOR,FRAME_SIDE,TALLY->8;case FRAME_HEAD,NUMBER->6;case LAMP->3;
-            case WINDOW,RAIL,BANISTER,FIREPLACE,HALL_STAND,BENCH,RATCHET,SHOE,POST->2;default->1;};}
+        public int stages(){return switch(this){case DOOR,SERVICE,JIB,CUPBOARD,FRAME_BACK->4;case BOLT_DOOR,FRAME_SIDE,TALLY->8;case FRAME_HEAD,NUMBER->6;case LAMP,HALL_STAND->3;
+            case WINDOW,RAIL,BANISTER,FIREPLACE,BENCH,RATCHET,SHOE,POST->2;default->1;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);

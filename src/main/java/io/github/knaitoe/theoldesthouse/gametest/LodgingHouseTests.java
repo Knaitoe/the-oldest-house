@@ -607,4 +607,132 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_daniel") public static void danielDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.606: N4, the injury
+    /** The chapter set to this stage now, with the four placed where it has them (a fixture, to start a scene without the ones before). */
+    private static void at(ServerLevel l,BlockPos b,int stage,LiteraryActor[] who){
+        var s=l.getServer();var h=LodgingStory.house(s,b);int clock=h.getInt("Clock");
+        h.putInt("Stage",stage);h.putInt("StageAt",clock-(stage==LodgingStory.SETTLED?LodgingStory.SETTLE:0));h.putInt("Line",4);
+        for(int i=0;i<4;i++){h.remove("Leg"+i);var spot=LodgingStory.spot(stage,i);var w=LodgingPeople.world(b,spot);who[i].moveTo(w.x,w.y,w.z,spot.look(),0);who[i].gesture(spot.gesture());}
+        LodgingStory.save(s,b,h);
+    }
+    @GameTest(template="empty",batch="lodging_injury",timeoutTicks=4000)
+    public static void theFailedBodyComesThroughTheGlassBreaksAndBothMenAreCut(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_injury_a",P);var q=f.player("lodging_injury_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                // The three settled in the workroom, their minute up; one reader in the hall, the other in Daniel's room.
+                at(l,b,LodgingStory.SETTLED,who);
+                f.at(p,P,.5,0,-4.5);f.at(q,P,-7.5,0,-23.5);
+                LodgingStory.hold(b,false);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(s,b)==LodgingStory.INJURY,"waiting for Vera out and Dan and Rae down: stage "+LodgingStory.stage(s,b)+", Dan at "+rel(b,who[LodgingPeople.DAN])+", Vera at "+rel(b,who[LodgingPeople.VERA])))
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.onGallery(rel(b,who[LodgingPeople.VERA])),"Vera is in the corridor between the rooms: "+rel(b,who[LodgingPeople.VERA]));
+                h.assertTrue(LodgingSite.inHall(rel(b,who[LodgingPeople.DAN]))&&LodgingSite.inHall(rel(b,who[LodgingPeople.RAE])),"Dan and Rae are down in the hall");
+                h.assertFalse(LodgingSite.open(l,b,LodgingSite.WORK_DOOR),"the workroom door is shut behind them");
+                h.assertFalse(LodgingSite.open(l,b,LodgingSite.JIB),"the jib door is shut");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingInjury.phase(s,b)==LodgingInjury.BATTER,"waiting for it to batter the latch: "+LodgingInjury.state(s,b)))
+            .thenExecute(()->{
+                h.assertTrue(who[LodgingPeople.FAILED_SHIRT].gesture()==LodgingPeople.BATTER,"it batters with both fists");
+                h.assertTrue(own(p).getBoolean(LodgingInjury.HEARD_JIB),"the reader in the hall heard it pull at the door");
+                h.assertFalse(LodgingSite.open(l,b,LodgingSite.JIB),"the door holds while it batters");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingInjury.phase(s,b)==LodgingInjury.LOOSE,"waiting for the latch to go"))
+            .thenExecute(()->h.assertTrue(LodgingSite.open(l,b,LodgingSite.JIB),"the jib door is open"))
+            .thenWaitUntil(()->h.assertTrue(LodgingInjury.cut(s,b),"waiting for it to reach Dan: "+LodgingInjury.state(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])+", Dan at "+rel(b,who[LodgingPeople.DAN])))
+            .thenExecute(()->{
+                var stand=l.getBlockState(b.offset(LodgingSite.HALL_STAND).above());
+                h.assertTrue(LodgingBlock.is(stand,LodgingBlock.Kind.HALL_STAND)&&stand.getValue(LodgingBlock.STAGE)==2,"the hall stand's glass is broken");
+                var dan=who[LodgingPeople.DAN];var daniel=who[LodgingPeople.DANIEL];
+                h.assertTrue((dan.marks()&LodgingInjury.CUT)!=0&&dan.gesture()==LodgingPeople.HURT,"Dan's hand is cut and he holds it");
+                h.assertTrue((daniel.marks()&LodgingInjury.CUT)!=0,"Daniel's hand is cut in the same place");
+                h.assertTrue("lodging_dan_cut".equals(LodgingPeople.dressed(dan.phase(),dan.marks()))&&"lodging_daniel_cut".equals(LodgingPeople.dressed(daniel.phase(),daniel.marks())),"both are drawn cut");
+                h.assertTrue(own(p).getBoolean(LodgingInjury.SAW_DAN_CUT)&&!own(p).getBoolean(LodgingInjury.SAW_DANIEL_CUT),"the reader in the hall saw Dan's, not Daniel's");
+                h.assertTrue(own(q).getBoolean(LodgingInjury.SAW_DANIEL_CUT)&&!own(q).getBoolean(LodgingInjury.SAW_DAN_CUT),"the reader with Daniel saw his, not Dan's");
+                has(h,q,LodgingTexts.MAN_IN_FRAME+": "+LodgingTexts.DANIEL_CUT);
+                h.assertTrue(LodgingInjury.held(s,b)==null&&!LodgingInjury.kept(s,b),"nobody held, not kept off");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(s,b)==LodgingStory.AFTER,"waiting for it to go back: "+LodgingInjury.state(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenExecute(()->{
+                h.assertTrue(LodgingInjury.state(s,b).getBoolean("DanSaid"),"Dan has said it's nothing");
+                h.assertFalse(LodgingSite.open(l,b,LodgingSite.JIB),"it pulled the jib door to behind it");
+                h.assertTrue(rel(b,who[LodgingPeople.FAILED_SHIRT]).distanceTo(new net.minecraft.world.phys.Vec3(LodgingPeople.SPOTS[LodgingPeople.FAILED_SHIRT].x(),0,LodgingPeople.SPOTS[LodgingPeople.FAILED_SHIRT].z()))<.3,"it is back at the door in the passage");
+                h.assertTrue(rel(b,who[LodgingPeople.DAN]).distanceTo(new net.minecraft.world.phys.Vec3(LodgingStory.DAN_HALL.x(),0,LodgingStory.DAN_HALL.z()))<.2,"Dan is back in front of the bench");
+                // Cut, the rule has been shown: the pin never comes.
+                var in=LodgingInjury.state(s,b);in.putInt("At",in.getInt("At")-LodgingInjury.PIN_WAIT-10);
+            })
+            .thenIdle(10)
+            .thenExecute(()->h.assertTrue(LodgingStory.stage(s,b)==LodgingStory.AFTER,"with the cut shown there is no pin"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_injury") public static void injuryDone(ServerLevel l){done();}
+
+    @GameTest(template="empty",batch="lodging_kept",timeoutTicks=4000)
+    public static void aFailedBodyTakesAReaderIsDrivenOffAndThePinShowsTheRule(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_kept_a",P);var q=f.player("lodging_kept_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        final net.minecraft.world.phys.Vec3[] took={null};
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                // Straight to N4, Vera between rooms, Dan and Rae in the hall; one reader standing just inside the back passage from the jib.
+                at(l,b,LodgingStory.INJURY,who);var house=LodgingStory.house(s,b);LodgingInjury.begin(house,house.getInt("Clock"));LodgingStory.save(s,b,house);
+                f.at(p,P,-11.0,0,-13.5);f.at(q,P,-9.5,0,-14.5);
+                LodgingStory.hold(b,false);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingInjury.held(s,b)!=null,"waiting for it to take hold of the reader by the door: "+LodgingInjury.state(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenExecute(()->{
+                h.assertTrue(p.getUUID().equals(LodgingInjury.held(s,b))&&own(p).getBoolean(LodgingInjury.HELD),"it has hold of the nearer reader");
+                took[0]=p.position();
+            })
+            .thenIdle(20)
+            .thenExecute(()->{
+                var body=who[LodgingPeople.FAILED_SHIRT];
+                h.assertTrue(body.gesture()==LodgingPeople.DRAG,"it walks them back by the arm: gesture "+body.gesture());
+                h.assertTrue(p.getX()<took[0].x,"the reader is walked back toward the door: "+took[0]+" to "+p.position());
+                // The other reader strikes it: one blow does not break its grip, the second does.
+                body.hurt(l.damageSources().playerAttack(q),1);
+                h.assertTrue(LodgingInjury.held(s,b)!=null,"one blow does not break its grip");
+                body.hurt(l.damageSources().playerAttack(q),1);
+                h.assertTrue(LodgingInjury.held(s,b)==null,"the second does");
+                h.assertTrue(own(q).getInt(LodgingInjury.STRUCK)==2,"the blows are in the striker's record");
+                // Three more: it is driven back through the door, and nothing has been cut.
+                for(int i=0;i<3;i++)body.hurt(l.damageSources().playerAttack(q),1);
+                h.assertTrue(LodgingInjury.kept(s,b)&&!LodgingInjury.cut(s,b)&&LodgingInjury.phase(s,b)==LodgingInjury.BACK,"five blows drive it off and nothing is cut");
+                // The one it held, let go in the doorway, stays there a moment: the door is not pulled to on them.
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingInjury.phase(s,b)==LodgingInjury.OVER,"waiting for it to be back in the passage: "+LodgingInjury.state(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenIdle(5)
+            .thenExecute(()->{
+                h.assertTrue(p.position().distanceTo(net.minecraft.world.phys.Vec3.atCenterOf(b.offset(LodgingSite.JIB)))>1.2||LodgingSite.open(l,b,LodgingSite.JIB),"the door is not pulled to on somebody standing in it");
+                f.at(p,P,-8.5,0,-14.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(s,b)==LodgingStory.AFTER,"waiting for it to be back through the door: "+LodgingInjury.state(s,b)))
+            .thenExecute(()->{
+                h.assertFalse(LodgingSite.open(l,b,LodgingSite.JIB),"it pulled the door to");
+                h.assertTrue(own(q).getBoolean(LodgingInjury.KEPT_OFF)&&!own(p).getBoolean(LodgingInjury.TAKEN),"the striker kept it off; the one held was not taken");
+                h.assertTrue((who[LodgingPeople.DAN].marks()|who[LodgingPeople.DANIEL].marks())==0,"neither man is marked");
+                h.assertTrue(l.getBlockState(b.offset(LodgingSite.HALL_STAND).above()).getValue(LodgingBlock.STAGE)==1,"the glass is whole");
+                // A minute on: Vera takes Dan down to the frame. The second reader waits in Daniel's room.
+                var in=LodgingInjury.state(s,b);in.putInt("At",in.getInt("At")-LodgingInjury.PIN_WAIT);
+                f.at(q,P,-7.5,0,-23.5);f.at(p,P,.5,0,-4.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(s,b)==LodgingStory.PINNED,"waiting for the pin: stage "+LodgingStory.stage(s,b)+", Vera at "+rel(b,who[LodgingPeople.VERA])+" leg "+LodgingStory.house(s,b).getInt("Leg"+LodgingPeople.VERA)+", Dan at "+rel(b,who[LodgingPeople.DAN])))
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.open(l,b,LodgingSite.DANIEL_DOOR)&&!LodgingBlock.bolted(l.getBlockState(b.offset(LodgingSite.DANIEL_DOOR))),"Vera drew Daniel's bolt and left his door open");
+                h.assertTrue(LodgingSite.inDaniels(rel(b,who[LodgingPeople.VERA]))&&LodgingSite.inDaniels(rel(b,who[LodgingPeople.DAN])),"Vera and Dan are at his frame");
+                h.assertTrue((who[LodgingPeople.DAN].marks()&LodgingInjury.PRICK)!=0&&(who[LodgingPeople.DANIEL].marks()&LodgingInjury.PRICK)!=0,"the pin in Dan's hand shows in Daniel's");
+                h.assertTrue("lodging_daniel_prick".equals(LodgingPeople.dressed(who[LodgingPeople.DANIEL].phase(),who[LodgingPeople.DANIEL].marks())),"Daniel is drawn pricked");
+                h.assertTrue(own(q).getBoolean(LodgingInjury.SAW_PIN)&&!own(p).getBoolean(LodgingInjury.SAW_PIN),"the reader in the room saw it; the one in the hall did not");
+                has(h,q,"Vera: "+LodgingTexts.VERA_PIN);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_kept") public static void keptDone(ServerLevel l){done();}
 }

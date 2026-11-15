@@ -343,3 +343,28 @@ Left out already, to keep it to one idea a square: the Knight who takes, the sho
 10. **The keepsake.** The crown that fills in when its wearer is watched: is that the right thing, and should it differ by ending?
 11. **Where it is dealt, and how deep.**
 12. **The title.** "A sort of thing" for the story and "the ruled country" for the place, or something else.
+
+## Decided (15 November)
+
+The owner, 15 November: "You need to build the sleeping king vignette too", with the open questions left to judgement. Each choice
+below can be moved.
+
+1. **More and less near him:** both, as proposed. Nearness sets how much of a thing the country makes of a reader; beside him the
+   breath swings it. The swing is the one thing only he does, and nearness gives the road its shape.
+2. **Size:** no. How solid a reader is carries it (hands, shadow, feet, what they can hold and pass through). A change of scale would
+   fight the hedges, brooks and doorways that the states already change, and the House keeps scale for small readers.
+3. **The lines:** drawn twins of every block, as proposed. They keep to the art rule and are the same for every viewer.
+4. **The hall after he wakes:** not ruled. It would need the filter that question 3 turns down, and the story's answer is not to
+   answer which of them dreamed.
+5. **Several readers at the tree:** as proposed. The first to say his name wakes him for everybody still in the country; a reader who
+   would rather he slept has to be off the board first, and is told in their account that he woke after they left.
+6. **Waking too soon:** the failure, as proposed. It is the one way the road can be lost, and it is what makes his stirring matter.
+7. **One long visit,** with a glass on every square to leave by and come back through to the farthest square reached.
+8. **The House's names:** the King, the Queen, the Knight, the court, as in the table.
+9. **Carroll's words:** the four phrases, no more.
+10. **The keepsake:** the crown that fills in while its wearer is watched, the same for either ending. Which way the story ended is in
+    the account and the aftermath, not in the crown.
+11. **Where it is dealt:** among the understanding stories, from depth twelve, once the quiet rooms are done; not in the dark band.
+12. **The title:** "A sort of thing" for the story, "the ruled country" for the place.
+
+It is built in the proposal's eight slices, the fourth square first.
