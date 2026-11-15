@@ -99,6 +99,23 @@ public final class LodgingTexts {
     public static final String R_DAN_HERE="Dan's here.",R_WHO="Who are you?",R_FREE="I'll get you out.",R_BACK="I'll come back.",R_NOTHING="Say nothing.";
     public static final String DANIEL_VOICE="I know he's here. I'd know that voice anywhere. It's mine.",DANIEL_NAME="Daniel. This was my room for a week.",DANIEL_LOOKS="He looks at the marked wall.",
         DANIEL_COUNTING="I stopped counting.",DANIEL_KEY="Then get the key. Don't let her see you take it.";
+    // 0.4.608: N7. RAE_CONFESSION is the script's; the reply labels and every other line are new here.
+    public static final String[] RAE_CONFESSION={"I knew. All right? I knew he was alive.",
+        "If I'd told Dan he'd never have come. He'd have sat in the flat and come apart. I told myself she could save them both.",
+        "She can't. She told me that upstairs. One of them."};
+    public static final String KEY_GLANCE="Rae has a key in her hand, long and plain. She looks at it, and puts it away in her coat.",
+        RAE_WARY="Rae looks at you, and then at her hands.",
+        R_KEY="You have the key.",R_WAY_UP="You knew the way up.",
+        R_TO_VERA="Keep it. I'll stay with Dan.",R_GIVE_ME="Give it to me.",R_YOURSELF="Give it to him yourself.",
+        RAE_TO_VERA="Then I'll take it up to her.",RAE_GIVES="Don't let her see it.",KEY_GIVEN="Rae puts the key in your hand. It is warm from her coat.",
+        RAE_ALL_RIGHT="All right.",RAE_SORRY="I'm sorry.",DANIEL_DONT="Don't.",
+        RAE_UNLOCKS="Rae unlocks the straps, one and then the other.",
+        KEY_TURNS="The key turns hard in the first lock and easier in the second. The straps fall open.",
+        STRAPS_OPEN="The straps hang open from their iron loops.",
+        DANIEL_FREE="He stands with his arms down, turning one wrist in the other hand.",
+        KEY_FOUND="On the floor of the cupboard, pushed to the back: a key, long and plain.",
+        RAE_NOT_YET="Daniel. Please. Not yet. Not with him there.",
+        R_RAE_KNEW="Rae knew he was alive.",DAN_SHE_KNEW="She knew?",DAN_YOU_KNEW="You knew.",RAE_SO_YOU_CAME="I did it so you'd come.";
     /** What a failed body is doing when a hand is put on it. */
     public static String failed(int who){return switch(who){
         case LodgingPeople.FAILED_POST->"Tied to the post by the wrists. Its fingers go on doing up a button that is not there.";

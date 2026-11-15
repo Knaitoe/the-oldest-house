@@ -73,6 +73,8 @@ public final class LodgingPeople {
      * the arm; Dan holding his cut hand to him; Vera with the pin raised to Dan's hand.
      */
     public static final int BATTER=10,REACH=11,DRAG=12,HURT=13,PIN=14;
+    /** 0.4.608: Rae looking down at the key in her hand, held low, the other hand under it. */
+    public static final int KEY=15;
     /** 0.4.606: the sheet a man's marks put him in: Dan's and Daniel's hands cut by the glass, or pricked by the pin. */
     public static @Nullable String dressed(int phase,int marks){
         int who=phase-FIRST;if(who!=DAN&&who!=DANIEL||marks==0)return null;
@@ -119,7 +121,7 @@ public final class LodgingPeople {
     /** The seven at one house: who they are by body, and until when Dan holds his hand out. */
     static final class Household {final UUID[] ids=new UUID[COUNT];long lastTick=-1,showUntil=-1;final Map<String,Long> said=new HashMap<>();}
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
-    public static void clearAll(){HOUSES.clear();LodgingDoubles.clearAll();LodgingStory.clearAll();LodgingDaniel.clearAll();}
+    public static void clearAll(){HOUSES.clear();LodgingDoubles.clearAll();LodgingStory.clearAll();LodgingDaniel.clearAll();LodgingKey.clearAll();}
     static Household household(BlockPos b){return HOUSES.computeIfAbsent(b.immutable(),k->new Household());}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()+LodgingSite.WEST,b.getY()+LodgingSite.CELLAR_SLAB,b.getZ()+LodgingSite.BACK,b.getX()+LodgingSite.EAST+1,b.getY()+LodgingSite.ROOF+1,b.getZ()+LodgingSite.FRONT+1);}
@@ -142,7 +144,7 @@ public final class LodgingPeople {
         for(int who=0;who<COUNT;who++){
             if(find(l,b,who)!=null)continue;
             // 0.4.604: one made again (a house that lost a body) is made where the chapter has them.
-            var spot=LodgingStory.spot(stage,who);var at=world(b,spot);if(!live(l,at))continue;
+            var spot=LodgingKey.spot(l.getServer(),b,stage,who);var at=world(b,spot);if(!live(l,at))continue;
             var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
             a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);a.gesture(spot.gesture());
             a.moveTo(at.x,at.y,at.z,spot.look(),0);a.setYHeadRot(spot.look());a.setYBodyRot(spot.look());
@@ -153,7 +155,7 @@ public final class LodgingPeople {
     /** None of the seven is at the house: for a house built again from nothing, and for tests. */
     public static void reset(ServerLevel l,BlockPos b){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LodgingPeople::is))old.discard();
-        HOUSES.remove(b);LodgingDoubles.reset(l,b);LodgingStory.reset(l.getServer(),b);LodgingDaniel.reset(b);
+        HOUSES.remove(b);LodgingDoubles.reset(l,b);LodgingStory.reset(l.getServer(),b);LodgingDaniel.reset(b);LodgingKey.reset(b);
     }
 
     /** Every game tick, each house with a reader in it: heads turned on the scene's own quarter-second tick would turn in steps. */
@@ -165,10 +167,10 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
-            var spot=LodgingStory.spot(stage,who);float rest=spot.look();
+            var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
             // Somebody on their way somewhere turns where they walk; heads turn to readers only for those standing in their place.
             if(!failed(who)&&a.position().distanceToSqr(world(b,spot))>.36)continue;
             // Vera's last line in the hall is to Dan.
@@ -198,7 +200,7 @@ public final class LodgingPeople {
      * A line in the reader's panel, and over the speaker's head for anybody near, unless they said the same thing aloud a moment ago
      * (to another reader, or to this one in somebody else's exchange): then it is in the panel only.
      */
-    private static void says(ServerPlayer p,LiteraryActor a,String name,String line){
+    static void says(ServerPlayer p,LiteraryActor a,String name,String line){
         Talk.line(p,name,line);var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;
         var h=household(b);long now=p.serverLevel().getGameTime();String key=who(a)+"|"+line;Long last=h.said.get(key);
         if(last!=null&&now-last<QUIET)return;
@@ -219,12 +221,16 @@ public final class LodgingPeople {
         if(failed(who)){LodgingHouse.cue(p,LodgingTexts.failed(who));return;}
         if(a.saying()&&Talk.key(p).equals(TALK+who))return;
         // 0.4.605: Daniel is spoken to from his room, through the open hatch, or crouched at his door; not through a shut door.
-        if(who==DANIEL&&!LodgingDaniel.reach(p,b))return;
+        if(who==DANIEL&&!LodgingKey.free(p.server,b)&&!LodgingDaniel.reach(p,b))return;
+        // 0.4.608: the key put to him, in his room, opens the straps.
+        if(who==DANIEL&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!LodgingKey.free(p.server,b)&&LodgingKey.straps(p,b))return;
         switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,b,a,own);default->daniel(p,a,own);}
     }
 
     // Rae's request (N1). She asks each reader for themselves; one reader's yes is never the party's.
     private static void rae(ServerPlayer p,ServerLevel l,BlockPos b,LiteraryActor rae,CompoundTag own){
+        // 0.4.608 (N7): in Act II, a reader who saw the key, or saw her go straight up, can ask her about it.
+        if(actTwo(p,b)&&LodgingKey.askable(p,b,own)){LodgingKey.rae(p,rae,own);return;}
         if(LodgingStory.stage(p.server,b)!=LodgingStory.ASKING){LodgingHouse.cue(p,LodgingTexts.RAE_BUSY);return;}
         if(own.getInt(RAE_ANSWER)!=UNDECIDED){LodgingHouse.cue(p,LodgingTexts.RAE_WATCHES);return;}
         var dan=find(l,b,DAN);boolean first=!own.getBoolean(RAE_ASKED);
@@ -255,9 +261,9 @@ public final class LodgingPeople {
         if(a.saying()&&Talk.key(p).equals(TALK+who))return;
         talk(p,a,LodgingHouse.own(p));
     }
-    private static @Nullable LiteraryActor near(ServerPlayer p,int who){
+    static @Nullable LiteraryActor near(ServerPlayer p,int who){
         var b=LiteraryVignettes.base(p,PLACE);if(b==null)return null;var a=find(p.serverLevel(),b,who);
-        if(a!=null&&who==DANIEL)return LodgingDaniel.reach(p,b)?a:null;
+        if(a!=null&&who==DANIEL&&!LodgingKey.free(p.server,b))return LodgingDaniel.reach(p,b)?a:null;
         return a!=null&&a.distanceToSqr(p)<=LiteraryActor.ADDRESS_RANGE*LiteraryActor.ADDRESS_RANGE?a:null;
     }
     private static void askedWrong(ServerPlayer p){
@@ -300,7 +306,7 @@ public final class LodgingPeople {
             if(promisedDan(own))says(p,dan,"Dan",LodgingTexts.DAN_STAND);
             danAsks(p);return;
         }
-        if(own.getBoolean(DAN_MET)&&own.getBoolean(DAN_SLEEP)&&own.getBoolean(ASKED_PLACE)&&!canTellDan(p,own)){LodgingHouse.cue(p,LodgingTexts.DAN_SITS);return;}
+        if(own.getBoolean(DAN_MET)&&own.getBoolean(DAN_SLEEP)&&own.getBoolean(ASKED_PLACE)&&!canTellDan(p,own)&&(b==null||!LodgingKey.canTellDan(p,b,own))){LodgingHouse.cue(p,LodgingTexts.DAN_SITS);return;}
         Talk.begin(p,TALK+DAN,"Dan");
         if(!own.getBoolean(DAN_MET)){own.putBoolean(DAN_MET,true);LodgingHouse.save(p,own);says(p,dan,"Dan",LodgingTexts.DAN_FINE[0]);says(p,dan,"Dan",LodgingTexts.DAN_FINE[1]);}
         else LodgingHouse.cue(p,LodgingTexts.DAN_LOOKS_UP);
@@ -311,6 +317,8 @@ public final class LodgingPeople {
         if(!own.getBoolean(DAN_SLEEP))replies.add(Talk.reply(LodgingTexts.R_WRONG_DAN,LodgingPeople::askedSleep));
         if(!own.getBoolean(ASKED_PLACE))replies.add(Talk.reply(LodgingTexts.R_PLACE,r->askedPlace(r,false)));
         if(canTellDan(p,own))replies.add(Talk.reply(LodgingTexts.R_STILL,LodgingPeople::toldDanDrained));
+        var b=LiteraryVignettes.base(p,PLACE);
+        if(b!=null&&LodgingKey.canTellDan(p,b,own))replies.add(Talk.reply(LodgingTexts.R_RAE_KNEW,LodgingKey::toldDan));
         if(replies.isEmpty()){Talk.end(p);return;}
         replies.add(Talk.act(LodgingTexts.R_LEAVE_DAN,Talk::close));
         Talk.ask(p,replies);
@@ -361,13 +369,15 @@ public final class LodgingPeople {
         else if(b!=null&&actTwo(p,b)&&!own.getBoolean(DANIEL_TOLD)){own.putBoolean(DANIEL_TOLD,true);LodgingHouse.save(p,own);for(var line:LodgingTexts.DANIEL_ACCOUNT)says(p,daniel,name,line);}
         else says(p,daniel,name,LodgingTexts.DANIEL_LISTEN[LodgingTexts.DANIEL_LISTEN.length-1]);
         if(armed(daniel))LodgingHouse.cue(p,LodgingTexts.DANIEL_ARMED);
+        else if(b!=null&&LodgingKey.free(p.server,b))LodgingHouse.cue(p,LodgingTexts.DANIEL_FREE);
         danielAsks(p);
     }
     private static void danielAsks(ServerPlayer p){
         var own=LodgingHouse.own(p);var replies=new java.util.ArrayList<Talk.Reply>();
         if(!own.getBoolean(TOLD_DAN_HERE))replies.add(Talk.reply(LodgingTexts.R_DAN_HERE,LodgingPeople::toldDanHere));
         if(!own.getBoolean(KNOWS_DANIEL))replies.add(Talk.reply(LodgingTexts.R_WHO,LodgingPeople::askedWho));
-        if(!promisedDaniel(own))replies.add(Talk.reply(LodgingTexts.R_FREE,r->danielAnswered(r,FREE_HIM)));
+        var at=LiteraryVignettes.base(p,PLACE);boolean out=at!=null&&LodgingKey.free(p.server,at);
+        if(!promisedDaniel(own)&&!out)replies.add(Talk.reply(LodgingTexts.R_FREE,r->danielAnswered(r,FREE_HIM)));
         // 0.4.607 (N5): once his account is told.
         if(own.getBoolean(DANIEL_TOLD)){
             if(own.getBoolean(HEARD_DAN_SIDE)&&!own.getBoolean(SAID_DIDNT_KNOW))replies.add(Talk.reply(LodgingTexts.R_DIDNT_KNOW,LodgingPeople::saidDidntKnow));

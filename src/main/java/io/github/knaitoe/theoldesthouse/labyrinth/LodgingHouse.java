@@ -65,7 +65,9 @@ public final class LodgingHouse {
         switch(kind){
             case FRAME_SIDE,FRAME_HEAD,FRAME_BACK->{
                 // 0.4.605: the straps of Daniel's frame, felt from inside his room.
-                if(kind==LodgingBlock.Kind.FRAME_SIDE&&(st.getValue(LodgingBlock.STAGE)&4)!=0&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))){LodgingDaniel.straps(p);return true;}
+                // 0.4.608: the key put to them opens them; open, they hang.
+                boolean danielsFrame=kind==LodgingBlock.Kind.FRAME_SIDE&&(st.getValue(LodgingBlock.STAGE)&4)!=0||kind==LodgingBlock.Kind.FRAME_BACK&&(st.getValue(LodgingBlock.STAGE)&3)==2;
+                if(danielsFrame&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))){if(!LodgingKey.straps(p,b))LodgingDaniel.straps(p);return true;}
                 cue(p,(st.getValue(LodgingBlock.STAGE)&(kind==LodgingBlock.Kind.FRAME_BACK?2:kind==LodgingBlock.Kind.FRAME_SIDE?4:0))!=0
                 ||kind==LodgingBlock.Kind.FRAME_HEAD&&st.getValue(LodgingBlock.STAGE)>=3?LodgingTexts.DANIELS_FRAME:LodgingTexts.FRAME);return true;}
             case WINDOW->{cue(p,LodgingTexts.SHUTTERS);return true;}
@@ -84,6 +86,8 @@ public final class LodgingHouse {
             l.playSound(null,b.offset(door),SoundEvents.IRON_TRAPDOOR_OPEN,SoundSource.BLOCKS,.6F,1.3F);cue(p,LodgingTexts.BOLT_DRAWN);return true;
         }
         toggle(l,b,door);
+        // 0.4.608: what Rae left in the cupboard under the stair.
+        if(door.equals(LodgingSite.CUPBOARD))LodgingKey.cupboard(p,b);
         return true;
     }
     private static boolean say(ServerPlayer p,String line){cue(p,line);return true;}

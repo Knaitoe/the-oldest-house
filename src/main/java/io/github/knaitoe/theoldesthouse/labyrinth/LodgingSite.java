@@ -108,6 +108,8 @@ public final class LodgingSite {
     private static void set(ServerLevel l,BlockPos b,BlockPos at,BlockState s){BuildBlocks.set(l,b.offset(at),s,F);}
     private static void box(ServerLevel l,BlockPos b,int x0,int y0,int z0,int x1,int y1,int z1,BlockState s){NovelRooms.box(l,b,Math.min(x0,x1),Math.min(y0,y1),Math.min(z0,z1),Math.max(x0,x1),Math.max(y0,y1),Math.max(z0,z1),s);}
     static BlockState mat(String name){return LodgingRegistry.material(name).defaultBlockState();}
+    /** 0.4.608: one cell of the house set, as its builder sets it. */
+    static void place(ServerLevel l,BlockPos b,BlockPos at,BlockState s){set(l,b,at,s);}
     static BlockState fit(Kind kind,Direction facing,int stage){return LodgingBlock.of(kind,facing,stage);}
     static BlockState floor(Pair pair){return LodgingFloor.of(pair);}
     private static final BlockState AIR=Blocks.AIR.defaultBlockState();

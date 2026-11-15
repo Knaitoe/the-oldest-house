@@ -241,12 +241,14 @@ public final class LiteraryRenderers {
          * behind its head to the post, a palm flat on a hatch with the head tipped to it, fingers hooked round a door's frame.
          */
         private void lodging(int gesture,float age,boolean speaking){
-            final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8,STRAIN=9,BATTER=10,REACH=11,DRAG=12,HURT=13,PIN=14;
+            final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8,STRAIN=9,BATTER=10,REACH=11,DRAG=12,HURT=13,PIN=14,KEY=15;
             float fret=net.minecraft.util.Mth.sin(age*.11F);
             switch(gesture){
                 case WAIT->{rightArm.xRot=-.62F+fret*.03F;rightArm.yRot=-.5F;rightArm.zRot=0;leftArm.xRot=-.62F-fret*.03F;leftArm.yRot=.5F;leftArm.zRot=0;}
                 case POCKET->{rightArm.xRot=.14F;rightArm.yRot=0;rightArm.zRot=-.07F;if(!speaking)head.xRot+=.1F;}
                 case SHOW->{rightArm.xRot=-1.2F;rightArm.yRot=-.3F;rightArm.zRot=0;if(!speaking)head.xRot+=.22F;}
+                // 0.4.608: Rae with the key low in her right hand, the left cupped under it, her head bowed over it.
+                case KEY->{rightArm.xRot=-.72F;rightArm.yRot=-.32F;rightArm.zRot=0;leftArm.xRot=-.58F;leftArm.yRot=.42F;leftArm.zRot=0;head.xRot+=.48F;}
                 case WORK->{rightArm.xRot=-.95F+fret*.07F;rightArm.yRot=-.14F;rightArm.zRot=0;leftArm.xRot=-.95F-fret*.07F;leftArm.yRot=.14F;leftArm.zRot=0;if(!speaking)head.xRot+=.2F;}
                 case HELD->{
                     // 0.4.607: strapped at the wrists either side of the frame's low half, the arms hanging straight and a little out,
