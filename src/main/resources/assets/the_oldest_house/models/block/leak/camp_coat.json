@@ -209,6 +209,264 @@
           "texture": "#t1"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        7,
+        13
+      ],
+      "to": [
+        15,
+        8,
+        13.04
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t1"
+        },
+        "east": {
+          "texture": "#t1",
+          "uv": [
+            0.064,
+            0,
+            0,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#t1",
+          "uv": [
+            16,
+            0,
+            15.936,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        4,
+        13
+      ],
+      "to": [
+        15,
+        8,
+        13.02
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t1"
+        },
+        "up": {
+          "texture": "#t1",
+          "uv": [
+            0,
+            16,
+            16,
+            15.68
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        4,
+        12
+      ],
+      "to": [
+        15.02,
+        8,
+        13
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t1"
+        },
+        "up": {
+          "texture": "#t1",
+          "uv": [
+            16,
+            0,
+            15.97714,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#t1",
+          "uv": [
+            16,
+            0,
+            15.97714,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0.98,
+        4,
+        12
+      ],
+      "to": [
+        1,
+        8,
+        13
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t1"
+        },
+        "up": {
+          "texture": "#t1",
+          "uv": [
+            0.02286,
+            0,
+            0,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#t1",
+          "uv": [
+            0.02286,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        8,
+        12
+      ],
+      "to": [
+        15,
+        8.02,
+        13
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t1"
+        },
+        "east": {
+          "texture": "#t1",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        },
+        "west": {
+          "texture": "#t1",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#t1",
+          "uv": [
+            0,
+            0.08,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        4,
+        13
+      ],
+      "to": [
+        15,
+        7,
+        13.02
+      ],
+      "faces": {
+        "east": {
+          "texture": "#t1",
+          "uv": [
+            0.32,
+            4,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        4,
+        13
+      ],
+      "to": [
+        1,
+        7,
+        13.02
+      ],
+      "faces": {
+        "west": {
+          "texture": "#t1",
+          "uv": [
+            16,
+            4,
+            15.68,
+            16
+          ]
+        }
+      }
     }
   ]
 }

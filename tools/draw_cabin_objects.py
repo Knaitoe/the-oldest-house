@@ -5,6 +5,7 @@ Only the cabin's spare ledger stage is replaced. Original item IDs and BEs stay.
 from pathlib import Path
 from PIL import Image, ImageDraw
 import argparse, io, json
+import flicker
 
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
@@ -52,7 +53,7 @@ def outputs():
     out[A/'models/block/literary_ledger_3.json']=journal_model()
     item=jar_model();item['display']={'gui':{'rotation':[20,35,0],'scale':[.9,.9,.9]},'ground':{'translation':[0,2,0],'scale':[.6,.6,.6]}}
     out[A/'models/item/grasshopper_jar.json']=item
-    return {p:(json.dumps(v,indent=2)+'\n').encode() if isinstance(v,dict) else v for p,v in out.items()}
+    return {p:(flicker.dumps(v,indent=2)+'\n').encode() if isinstance(v,dict) else v for p,v in out.items()}
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');args=p.parse_args();bad=[]

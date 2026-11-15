@@ -1,6 +1,7 @@
 """The bedside exorcism's actual writing desk: wood, a drawer recess, and four legs. Existing pixel materials only."""
 from pathlib import Path
 import argparse,json
+import flicker
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 def box(a,b):return {'from':a,'to':b,'faces':{f:{'texture':'#wood','uv':[0,0,16,16]} for f in ['north','south','east','west','up','down']}}
@@ -12,9 +13,9 @@ def main():
  target=A/'models/block/ghosts_writing_desk.json';states=A/'blockstates/ghosts_set.json';state=json.loads(states.read_text())
  expected={f'kind=writing_desk,facing={f}':{'model':'the_oldest_house:block/ghosts_writing_desk','y':y} for f,y in [('north',0),('east',90),('south',180),('west',270)]}
  if args.check:
-  assert json.loads(target.read_text())==model
+  assert json.loads(target.read_text())==flicker.settled(model)
   for key,value in expected.items():assert state['variants'].get(key)==value,key
  else:
-  target.write_text(json.dumps(model,indent=2)+'\n');state['variants'].update(expected);states.write_text(json.dumps(state,indent=2)+'\n')
+  target.write_text(flicker.dumps(model,indent=2)+'\n');state['variants'].update(expected);states.write_text(flicker.dumps(state,indent=2)+'\n')
  print(('Verified' if args.check else 'Drew')+' the Ghosts writing desk and its four native states.')
 if __name__=='__main__':main()

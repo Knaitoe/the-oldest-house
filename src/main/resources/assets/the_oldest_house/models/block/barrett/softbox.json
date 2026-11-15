@@ -335,6 +335,1323 @@
      ]
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    0,
+    7.48
+   ],
+   "to": [
+    8.5,
+    7,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      9,
+      8.5,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#k",
+     "uv": [
+      8.5,
+      9,
+      8.48,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.52,
+      9,
+      7.5,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      8.5,
+      8.5,
+      8.48
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    7.5
+   ],
+   "to": [
+    8.5,
+    7.02,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "up": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      7.5,
+      8.5,
+      15
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      9.02,
+      8.5,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    8.5,
+    0,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "down": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      1,
+      8.5,
+      8.5
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      16,
+      8.5,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    7.5
+   ],
+   "to": [
+    8.5,
+    7.04,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "up": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      7.5,
+      8.5,
+      15
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      9.04,
+      8.5,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    8.5,
+    0,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "down": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      1,
+      8.5,
+      8.5
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      16,
+      8.5,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    0,
+    7.5
+   ],
+   "to": [
+    8.52,
+    22,
+    8.5
+   ],
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      0,
+      8.5,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#k",
+     "uv": [
+      8.5,
+      7.5,
+      8.48,
+      8.5
+     ]
+    },
+    "north": {
+     "texture": "#k",
+     "uv": [
+      7.52,
+      0,
+      7.5,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.48,
+    0,
+    7.5
+   ],
+   "to": [
+    7.5,
+    22,
+    8.5
+   ],
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      0,
+      8.5,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#k",
+     "uv": [
+      7.52,
+      7.5,
+      7.5,
+      8.5
+     ]
+    },
+    "down": {
+     "texture": "#k",
+     "uv": [
+      7.52,
+      7.5,
+      7.5,
+      8.5
+     ]
+    },
+    "north": {
+     "texture": "#k",
+     "uv": [
+      8.5,
+      0,
+      8.48,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.04,
+    7.5
+   ],
+   "to": [
+    8.5,
+    0,
+    8.5
+   ],
+   "faces": {
+    "down": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      7.5,
+      8.5,
+      8.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.04,
+    7.5
+   ],
+   "to": [
+    8.5,
+    -0.02,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "down": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      1,
+      8.5,
+      8.5
+     ]
+    },
+    "south": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      15.98,
+      8.5,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    7,
+    9.25711
+   ],
+   "to": [
+    8.5,
+    7.02,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      1,
+      9.02,
+      6.74289,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    7,
+    7.5
+   ],
+   "to": [
+    8.5,
+    7.02,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      9.02,
+      8.5,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    7.5
+   ],
+   "to": [
+    7.5,
+    7.02,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      9.02,
+      7.79289,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    9.25711
+   ],
+   "to": [
+    7.5,
+    7.02,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      9.25711,
+      9.02,
+      15,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    8.5,
+    0,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      16,
+      8.5,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    -0.02,
+    9.25711
+   ],
+   "to": [
+    8.5,
+    0,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      1,
+      16,
+      6.74289,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    9.25711
+   ],
+   "to": [
+    7.5,
+    0,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      9.25711,
+      16,
+      15,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    7.5,
+    0,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      16,
+      7.79289,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    7.79289,
+    0,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      16,
+      8.5,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.20711,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    8.5,
+    0,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      16,
+      7.79289,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    7,
+    9.25711
+   ],
+   "to": [
+    8.5,
+    7.04,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      1,
+      9.04,
+      6.74289,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    7.5
+   ],
+   "to": [
+    7.5,
+    7.04,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      9.04,
+      7.79289,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    8.20711
+   ],
+   "to": [
+    7.5,
+    7.04,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      9.04,
+      15,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.20711,
+    7,
+    7.5
+   ],
+   "to": [
+    8.5,
+    7.04,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      9.04,
+      7.79289,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    7,
+    7.5
+   ],
+   "to": [
+    7.79289,
+    7.04,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      9.04,
+      8.5,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    -0.02,
+    9.25711
+   ],
+   "to": [
+    8.5,
+    0,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      1,
+      16,
+      6.74289,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    8.20711
+   ],
+   "to": [
+    7.5,
+    0,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      16,
+      15,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    7.5,
+    0,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      16,
+      7.79289,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    7.79289,
+    0,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      16,
+      8.5,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.20711,
+    -0.02,
+    7.5
+   ],
+   "to": [
+    8.5,
+    0,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": -45
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      16,
+      7.79289,
+      15.98
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    7,
+    8.5
+   ],
+   "to": [
+    8.52,
+    22,
+    8.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#k",
+     "uv": [
+      8.5,
+      0,
+      8.48,
+      10.90909
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.48,
+    7,
+    8.5
+   ],
+   "to": [
+    7.5,
+    22,
+    8.5
+   ],
+   "faces": {
+    "south": {
+     "texture": "#k",
+     "uv": [
+      7.52,
+      0,
+      7.5,
+      10.90909
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    -0.04,
+    7.5
+   ],
+   "to": [
+    8.5,
+    -0.02,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      15.98,
+      8.5,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    -0.04,
+    9.25711
+   ],
+   "to": [
+    8.5,
+    -0.02,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "east": {
+     "texture": "#k",
+     "uv": [
+      1,
+      15.98,
+      6.74289,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.04,
+    9.25711
+   ],
+   "to": [
+    7.5,
+    -0.02,
+    15
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      9.25711,
+      15.98,
+      15,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.04,
+    7.5
+   ],
+   "to": [
+    7.5,
+    -0.02,
+    7.79289
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "west": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      15.98,
+      7.79289,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    7.5,
+    -0.04,
+    7.5
+   ],
+   "to": [
+    7.79289,
+    -0.02,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      8.20711,
+      15.98,
+      8.5,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.20711,
+    -0.04,
+    7.5
+   ],
+   "to": [
+    8.5,
+    -0.02,
+    7.5
+   ],
+   "rotation": {
+    "origin": [
+     8,
+     0,
+     8
+    ],
+    "axis": "y",
+    "angle": 0
+   },
+   "faces": {
+    "north": {
+     "texture": "#k",
+     "uv": [
+      7.5,
+      15.98,
+      7.79289,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    8.5,
+    0,
+    7.5
+   ],
+   "to": [
+    8.52,
+    0,
+    7.79289
+   ],
+   "faces": {
+    "down": {
+     "texture": "#k",
+     "uv": [
+      8.5,
+      8.20711,
+      8.48,
+      8.5
+     ]
+    }
+   }
   }
  ]
 }

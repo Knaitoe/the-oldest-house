@@ -273,6 +273,282 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        28,
+        7.73
+      ],
+      "to": [
+        11,
+        28.5,
+        7.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            3.5,
+            11,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            8.25,
+            3.5,
+            8.23,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            7.77,
+            3.5,
+            7.75,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        28,
+        8.25
+      ],
+      "to": [
+        11,
+        28.5,
+        8.27
+      ],
+      "faces": {
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            3.5,
+            11,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            7.77,
+            3.5,
+            7.75,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            8.25,
+            3.5,
+            8.23,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        28.5,
+        7.73
+      ],
+      "to": [
+        7.75,
+        28.5,
+        7.75
+      ],
+      "faces": {
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            7.77,
+            7.75,
+            7.75
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.25,
+        28.5,
+        7.73
+      ],
+      "to": [
+        11,
+        28.5,
+        7.75
+      ],
+      "faces": {
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            8.25,
+            7.77,
+            11,
+            7.75
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.25,
+        28,
+        7.73
+      ],
+      "to": [
+        11,
+        28,
+        7.75
+      ],
+      "faces": {
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            8.25,
+            8.25,
+            11,
+            8.23
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        28,
+        7.73
+      ],
+      "to": [
+        7.75,
+        28,
+        7.75
+      ],
+      "faces": {
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            8.25,
+            7.75,
+            8.23
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.25,
+        28.5,
+        8.25
+      ],
+      "to": [
+        11,
+        28.5,
+        8.27
+      ],
+      "faces": {
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            8.25,
+            8.25,
+            11,
+            8.23
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        28.5,
+        8.25
+      ],
+      "to": [
+        7.75,
+        28.5,
+        8.27
+      ],
+      "faces": {
+        "up": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            8.25,
+            7.75,
+            8.23
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        28,
+        8.25
+      ],
+      "to": [
+        7.75,
+        28,
+        8.27
+      ],
+      "faces": {
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            5,
+            7.77,
+            7.75,
+            7.75
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.25,
+        28,
+        8.25
+      ],
+      "to": [
+        11,
+        28,
+        8.27
+      ],
+      "faces": {
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            8.25,
+            7.77,
+            11,
+            7.75
+          ]
+        }
+      }
     }
   ]
 }

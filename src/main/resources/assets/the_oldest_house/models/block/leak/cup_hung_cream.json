@@ -754,6 +754,30 @@
           "texture": "#t2"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        4,
+        0.98
+      ],
+      "to": [
+        8,
+        5,
+        1
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t2"
+        }
+      }
     }
   ]
 }

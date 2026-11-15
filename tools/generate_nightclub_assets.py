@@ -1,11 +1,12 @@
 """Native club meshes and an original loop; supplied painted pixel textures are preserved."""
 from pathlib import Path
 import json, math, random, struct, subprocess, tempfile, wave
+import flicker
 
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 def save(path,data):
-    p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(data,indent=2)+'\n')
+    p=A/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(data,indent=2)+'\n')
 def cube(lo,hi,texture='wall',front=None):
     faces={d:{'texture':'#'+texture,'uv':[0,0,16,16]} for d in ['north','south','east','west','up','down']}
     if front:faces['north']['texture']='#'+front
@@ -39,7 +40,7 @@ for stage in range(3):
 # Full bright native emissive faces preserve the coarse vanilla concrete palette.
 for kind in ('strip','spot'):
     for stage,colour in enumerate(('pink','blue','green')):
-        panels=json.loads(json.dumps(meshes[kind]));panels[-1]['faces']={d:{'texture':'#'+colour,'uv':[0,0,16,16]} for d in panels[-1]['faces']};panels[-1]['neoforge_data']={'block_light':15,'sky_light':0};panels[-1]['shade']=False
+        panels=json.loads(flicker.dumps(meshes[kind]));panels[-1]['faces']={d:{'texture':'#'+colour,'uv':[0,0,16,16]} for d in panels[-1]['faces']};panels[-1]['neoforge_data']={'block_light':15,'sky_light':0};panels[-1]['shade']=False
         meshes[kind+'_'+str(stage)]=panels
 for stage in range(3):
     panel=cube([4,13.8,4],[12,14,12],'metal' if stage==0 else 'glass');panel['shade']=False;panel['neoforge_data']={'block_light':0 if stage==0 else 15,'sky_light':0}
@@ -55,8 +56,8 @@ save('blockstates/nightclub.json',{'variants':variants})
 display={'gui':{'rotation':[30,225,0],'scale':[1.4,1.4,1.4]},'firstperson_righthand':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[1.5,1.5,1.5]},'thirdperson_righthand':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[1.2,1.2,1.2]}}
 save('models/item/nightclub_glass.json',{'parent':'the_oldest_house:block/nightclub_glass','display':display,'overrides':[{'predicate':{'the_oldest_house:empty':1},'model':'the_oldest_house:item/nightclub_glass_empty'}]})
 save('models/item/nightclub_glass_empty.json',{'parent':'the_oldest_house:block/nightclub_glass_empty','display':display})
-langpath=A/'lang/en_us.json';lang=json.loads(langpath.read_text());lang.update({'block.the_oldest_house.nightclub':'Nightclub furnishing','entity.the_oldest_house.nightclub_actor':'Clubgoer','subtitles.the_oldest_house.nightclub.beat':'A bass rhythm repeats','item.the_oldest_house.nightclub_glass':'Glass of water','item.the_oldest_house.nightclub_glass_empty':'Empty glass'});langpath.write_text(json.dumps(lang,indent=2)+'\n')
-soundpath=A/'sounds.json';sounds=json.loads(soundpath.read_text());sounds['nightclub.beat']={'subtitle':'subtitles.the_oldest_house.nightclub.beat','sounds':[{'name':'the_oldest_house:nightclub/beat','stream':True}]};soundpath.write_text(json.dumps(sounds,indent=2)+'\n')
+langpath=A/'lang/en_us.json';lang=json.loads(langpath.read_text());lang.update({'block.the_oldest_house.nightclub':'Nightclub furnishing','entity.the_oldest_house.nightclub_actor':'Clubgoer','subtitles.the_oldest_house.nightclub.beat':'A bass rhythm repeats','item.the_oldest_house.nightclub_glass':'Glass of water','item.the_oldest_house.nightclub_glass_empty':'Empty glass'});langpath.write_text(flicker.dumps(lang,indent=2)+'\n')
+soundpath=A/'sounds.json';sounds=json.loads(soundpath.read_text());sounds['nightclub.beat']={'subtitle':'subtitles.the_oldest_house.nightclub.beat','sounds':[{'name':'the_oldest_house:nightclub/beat','stream':True}]};soundpath.write_text(flicker.dumps(sounds,indent=2)+'\n')
 
 # An original 120-BPM, sixteen-bar loop. No sampled or licensed recording.
 rate=22050;seconds=32;count=rate*seconds;audio=[0.0]*count;rng=random.Random(488)

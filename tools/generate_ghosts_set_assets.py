@@ -5,6 +5,7 @@ native environment meshes, pixel materials and equipment. Cast art and hashes: d
 """
 from pathlib import Path
 import json, random, shutil
+import flicker
 from PIL import Image, ImageDraw
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -96,10 +97,10 @@ for name in dict.fromkeys(K):
     used={v['texture'][1:] for e in elements for v in e['faces'].values()}
     model={'textures':{k:'the_oldest_house:block/ghosts/'+k for k in used},'elements':elements,'ambientocclusion':True}
     target=M/f'ghosts_{name}.json'
-    if name not in {"plate","plain_plate","meal_stew","meal_sandwich","meal_soup","meal_roast","meal_potatoes","meal_spaghetti","meal_spaghetti_plain","stair","rail"}:target.write_text(json.dumps(model,indent=2)+'\n')
+    if name not in {"plate","plain_plate","meal_stew","meal_sandwich","meal_soup","meal_roast","meal_potatoes","meal_spaghetti","meal_spaghetti_plain","stair","rail"}:target.write_text(flicker.dumps(model,indent=2)+'\n')
     elif not target.exists():raise FileNotFoundError("Missing authored mesh: "+str(target))
     for f,y in [('north',0),('east',90),('south',180),('west',270)]:variants[f'kind={name},facing={f}']={'model':'the_oldest_house:block/ghosts_'+name,'y':y}
-(S/'ghosts_set.json').write_text(json.dumps({'variants':variants},indent=2)+'\n')
+(S/'ghosts_set.json').write_text(flicker.dumps({'variants':variants},indent=2)+'\n')
 
 # Painted cast atlases are original painted imports. Never regenerate the retired flat-colour skins.
 for name in ('marjorie','merry','john','sarah','barry','father_wanderly','marjorie_dinner','john_hand'):
@@ -109,9 +110,9 @@ item=Image.new('RGBA',(32,32));d=ImageDraw.Draw(item);d.rectangle((5,10,25,23),f
 item.save(A/'textures/item/camcorder.png')
 camera={'textures':{'metal':'the_oldest_house:block/ghosts/metal','controls':'the_oldest_house:block/ghosts/controls'},'elements':[q([3,6,5],[13,12,12],'metal'),q([6,7,1],[10,11,5],'controls'),q([4,12,7],[10,14,8],'metal'),q([12,7,5],[15,12,6],'controls')],
         'display':{'gui':{'rotation':[20,135,0],'translation':[0,-1,0],'scale':[.9,.9,.9]},'thirdperson_righthand':{'rotation':[0,-90,0],'translation':[0,2,0],'scale':[.75,.75,.75]},'firstperson_righthand':{'rotation':[0,0,0],'translation':[0,1,0],'scale':[.7,.7,.7]},'ground':{'rotation':[0,0,0],'translation':[0,3,0],'scale':[.5,.5,.5]}},'gui_light':'side'}
-(A/'models/item/camcorder.json').write_text(json.dumps(camera,indent=2)+'\n')
+(A/'models/item/camcorder.json').write_text(flicker.dumps(camera,indent=2)+'\n')
 gui=Image.new('RGBA',(24,16));d=ImageDraw.Draw(gui);d.rectangle((1,2,18,13),outline='#d5cdb4');d.rectangle((18,5,23,10),outline='#d5cdb4');d.rectangle((3,4,16,11),outline='#767e6f');gui.save(A/'textures/gui/camcorder.png')
-lang=A/'lang/en_us.json';data=json.loads(lang.read_text());data['item.the_oldest_house.camcorder']='Production camcorder';data['block.the_oldest_house.ghosts_set']='Barrett home';lang.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+lang=A/'lang/en_us.json';data=json.loads(lang.read_text());data['item.the_oldest_house.camcorder']='Production camcorder';data['block.the_oldest_house.ghosts_set']='Barrett home';lang.write_text(flicker.dumps(data,ensure_ascii=False,indent=2)+'\n')
 print(f'Generated {len(K)*4} fixture states, {len(palette)+7+1} home textures, eight fitted cast atlases and camcorder art.')
 
 # Fit the retained original atlases and extended native fixture states after the base mesh pass.

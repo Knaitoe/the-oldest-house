@@ -2,6 +2,7 @@
 from pathlib import Path
 import argparse
 import json
+import flicker
 import math
 import random
 from PIL import Image, ImageDraw
@@ -187,9 +188,9 @@ def main():
     for name, obj in models().items():
         path = A / name
         if check:
-            assert json.loads(path.read_text()) == obj, name
+            assert json.loads(path.read_text()) == flicker.settled(obj), name
         else:
-            path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.write_text(flicker.dumps(obj, indent=2) + '\n')
     print(('Verified' if check else 'Painted') + ' the séance cupboard, letters, sitting record and album.')
 
 if __name__ == '__main__':

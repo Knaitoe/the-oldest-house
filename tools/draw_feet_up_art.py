@@ -11,6 +11,7 @@ everything already written.
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -630,9 +631,9 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     print(('Verified' if check else 'Drew') + f' the house: {len(images)} textures, {len(data)} models and states.')
 
 

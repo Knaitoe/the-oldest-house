@@ -411,6 +411,510 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        11,
+        12
+      ],
+      "to": [
+        15.02,
+        13,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            0,
+            15.97714,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            0,
+            15.97714,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0.02286,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0.98,
+        11,
+        12
+      ],
+      "to": [
+        1,
+        13,
+        14
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0.02286,
+            0,
+            0,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0.02286,
+            0,
+            0,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            0,
+            15.97714,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        0,
+        11.98
+      ],
+      "to": [
+        3,
+        13,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            0.16,
+            0,
+            0,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.16,
+            16,
+            0
+          ]
+        },
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            16,
+            16,
+            15.84
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        0,
+        14
+      ],
+      "to": [
+        3,
+        13,
+        14.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            0,
+            15.84,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            16,
+            16,
+            15.84
+          ]
+        },
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.16,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        13,
+        12
+      ],
+      "to": [
+        3,
+        13.02,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.02462,
+            16,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.02462,
+            16,
+            0
+          ]
+        },
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.02462,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        0,
+        11.98
+      ],
+      "to": [
+        15,
+        13,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            0,
+            15.84,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.16,
+            16,
+            0
+          ]
+        },
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            16,
+            16,
+            15.84
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        0,
+        14
+      ],
+      "to": [
+        15,
+        13,
+        14.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            0.16,
+            0,
+            0,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            16,
+            16,
+            15.84
+          ]
+        },
+        "down": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.16,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        13,
+        12
+      ],
+      "to": [
+        15,
+        13.02,
+        14
+      ],
+      "faces": {
+        "up": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.02462,
+            16,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.02462,
+            16,
+            0
+          ]
+        },
+        "north": {
+          "texture": "#wood",
+          "uv": [
+            0,
+            0.02462,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3,
+        0,
+        11.98
+      ],
+      "to": [
+        3,
+        11,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            2.46154,
+            15.84,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3,
+        0,
+        14
+      ],
+      "to": [
+        3,
+        11,
+        14.02
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wood",
+          "uv": [
+            0.16,
+            2.46154,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        0,
+        11.98
+      ],
+      "to": [
+        13,
+        11,
+        12
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            0.16,
+            2.46154,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        0,
+        14
+      ],
+      "to": [
+        13,
+        11,
+        14.02
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wood",
+          "uv": [
+            16,
+            2.46154,
+            15.84,
+            16
+          ]
+        }
+      }
     }
   ],
   "ambientocclusion": true

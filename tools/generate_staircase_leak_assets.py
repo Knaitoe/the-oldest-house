@@ -1,6 +1,7 @@
 """Exact native prop meshes and five original quiet cues; wallpaper is painted art."""
 from pathlib import Path
 import json, math, random, struct, subprocess, tempfile, wave
+import flicker
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'src/main/resources/assets/the_oldest_house'
@@ -8,7 +9,7 @@ MOD = 'the_oldest_house'
 
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2) + '\n')
+    path.write_text(flicker.dumps(value, indent=2) + '\n')
 
 def mesh(parts, textures=None, item=False):
     textures = textures or {}
@@ -293,7 +294,7 @@ def check():
     props = all_props()
     for name, parts in props.items():
         path = ASSETS/f'models/block/leak/{name}.json'
-        assert path.exists() and json.loads(path.read_text()) == mesh(parts), path
+        assert path.exists() and json.loads(path.read_text()) == flicker.settled(mesh(parts)), path
     assert json.loads((ASSETS/'blockstates/leak_prop.json').read_text()) == {'variants': variants_for(props)}, 'leak_prop states'
     print(f'Verified {len(props)} staircase prop meshes and their states.')
 

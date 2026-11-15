@@ -6,6 +6,7 @@ textures in textures/block/borrasca/ in place of the old eight-pixel cast atlas 
 """
 import argparse
 import json
+import flicker
 import math
 import random
 from pathlib import Path
@@ -698,7 +699,7 @@ def main():
             image.save(path,optimize=True)
     for name, value in outputs().items():
         path = ASSETS / name
-        content = json.dumps(value,indent=2,ensure_ascii=False)+'\n'
+        content = flicker.dumps(value,indent=2,ensure_ascii=False)+'\n'
         if not path.exists() or path.read_text() != content:
             changed.append(str(path.relative_to(ROOT)))
             if not args.check:

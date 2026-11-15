@@ -10,6 +10,7 @@ Run with --check to confirm the committed files.
 """
 import argparse
 import json
+import flicker
 import random
 import sys
 from pathlib import Path
@@ -1480,7 +1481,7 @@ def files():
     for name, fn in TEXTURES.items():
         out[TEX / f'{name}.png'] = fn()
     for name in KINDS:
-        out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
+        out[MODELS / f'{name}.json'] = flicker.dumps(model_json(name), indent=1) + '\n'
     variants = {}
     for facing, y in TURN.items():
         for kind in KINDS:
@@ -1488,12 +1489,12 @@ def files():
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
-    out[STATES / 'life_stage.json'] = json.dumps({'variants': variants}, indent=1) + '\n'
+    out[STATES / 'life_stage.json'] = flicker.dumps({'variants': variants}, indent=1) + '\n'
     for m in MATERIALS:
-        out[STATES / f'life_{m}.json'] = json.dumps({'variants': {'': {'model': NS + m}}}, indent=2) + '\n'
-        out[MODELS / f'{m}.json'] = json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + m}}, indent=2) + '\n'
-    out[STATES / 'life_star_ceiling.json'] = json.dumps({'variants': {'': {'model': NS + 'star_ceiling'}}}, indent=2) + '\n'
-    out[MODELS / 'star_ceiling.json'] = json.dumps(star_ceiling_model(), indent=1) + '\n'
+        out[STATES / f'life_{m}.json'] = flicker.dumps({'variants': {'': {'model': NS + m}}}, indent=2) + '\n'
+        out[MODELS / f'{m}.json'] = flicker.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + m}}, indent=2) + '\n'
+    out[STATES / 'life_star_ceiling.json'] = flicker.dumps({'variants': {'': {'model': NS + 'star_ceiling'}}}, indent=2) + '\n'
+    out[MODELS / 'star_ceiling.json'] = flicker.dumps(star_ceiling_model(), indent=1) + '\n'
     return out
 
 

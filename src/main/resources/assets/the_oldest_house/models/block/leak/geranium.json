@@ -483,6 +483,30 @@
           "texture": "#t3"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        6.98,
+        7
+      ],
+      "to": [
+        8,
+        7,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#t2"
+        }
+      }
     }
   ]
 }

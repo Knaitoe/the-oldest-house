@@ -8,6 +8,7 @@ runs that). It reads PellThing's kinds from the game and fails if the two disagr
 """
 import argparse
 import json
+import flicker
 import math
 import random
 import re
@@ -2992,13 +2993,13 @@ def main():
             if check:
                 assert json.loads(meta.read_text()) == ANIMATED[name], name
             else:
-                meta.write_text(json.dumps(ANIMATED[name], indent=2) + '\n')
+                meta.write_text(flicker.dumps(ANIMATED[name], indent=2) + '\n')
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     # The two folders are the tool's alone: nothing in them it does not draw.
     for folder, wanted in ((A / 'textures/block/pell/thing', {f'{name}.png' for name in images} | {f'{name}.png.mcmeta' for name in ANIMATED}),
                            (A / 'models/block/pell/thing', {f'{key}.json' for key in models})):
@@ -3015,7 +3016,7 @@ def main():
         else:
             lang[f'block.the_oldest_house.{key}'] = name
     if not check:
-        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+        lang_path.write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(('Verified' if check else 'Drew') + f" the Pell house's things: {len(KINDS)} kinds, {len(images)} textures, {len(models)} models.")
 
 

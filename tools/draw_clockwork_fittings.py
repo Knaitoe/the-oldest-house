@@ -12,6 +12,7 @@ Writes the clockwork_fitting block's models and states and its name. --check ver
 from pathlib import Path
 import argparse
 import json
+import flicker
 import math
 import random
 from PIL import Image
@@ -215,14 +216,14 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text()); key = 'block.the_oldest_house.clockwork_fitting'
     if check:
         assert lang.get(key) == 'Clockwork', key
     else:
-        lang[key] = 'Clockwork'; lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+        lang[key] = 'Clockwork'; lang_path.write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(('Verified' if check else 'Drew') + f' the clockwork: {len(images)} textures, {len(data)} models and states.')
 
 

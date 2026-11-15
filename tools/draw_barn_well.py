@@ -14,6 +14,7 @@ Usage: python3 tools/draw_barn_well.py [--check]
 from pathlib import Path
 import io
 import json
+import flicker
 import random
 import sys
 
@@ -266,20 +267,20 @@ def outputs():
     for name, im in prop_textures().items():
         out['textures/block/farm/prop_%s.png' % name] = png(im)
     for kind in MATERIALS:
-        out['models/block/farm_%s.json' % kind] = (json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': '%s:block/farm/%s' % (NS, kind)}}, indent=2) + '\n').encode()
-    out['blockstates/farm_material.json'] = (json.dumps({'variants': {'kind=%s' % k: {'model': '%s:block/farm_%s' % (NS, k)} for k in MATERIALS}}, indent=2) + '\n').encode()
+        out['models/block/farm_%s.json' % kind] = (flicker.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': '%s:block/farm/%s' % (NS, kind)}}, indent=2) + '\n').encode()
+    out['blockstates/farm_material.json'] = (flicker.dumps({'variants': {'kind=%s' % k: {'model': '%s:block/farm_%s' % (NS, k)} for k in MATERIALS}}, indent=2) + '\n').encode()
     variants = {}
     for kind, elements in prop_models().items():
         used = sorted({f['texture'][1:] for e in elements for f in e['faces'].values()})
         tex = {k: '%s:block/farm/prop_%s' % (NS, k) for k in used}
         tex['particle'] = tex[used[0]]
-        out['models/block/farm_prop_%s.json' % kind] = (json.dumps({'render_type': 'minecraft:cutout', 'textures': tex, 'elements': elements}, indent=2) + '\n').encode()
+        out['models/block/farm_prop_%s.json' % kind] = (flicker.dumps({'render_type': 'minecraft:cutout', 'textures': tex, 'elements': elements}, indent=2) + '\n').encode()
         for facing, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
             v = {'model': '%s:block/farm_prop_%s' % (NS, kind)}
             if y:
                 v['y'] = y
             variants['facing=%s,kind=%s' % (facing, kind)] = v
-    out['blockstates/farm_prop.json'] = (json.dumps({'variants': variants}, indent=2) + '\n').encode()
+    out['blockstates/farm_prop.json'] = (flicker.dumps({'variants': variants}, indent=2) + '\n').encode()
     return out
 
 

@@ -13,6 +13,7 @@ the loose edge of a hedge, four sprigs standing off its face, still and blown ei
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -564,7 +565,7 @@ def fitting_models():
             element([6.75, 10.25, 1], [9.25, 12.75, 8], {'all': 'w'}, uv={'east': [7, 0, 14, 3], 'west': [7, 0, 14, 3], 'up': [4, 7, 7, 14], 'down': [4, 7, 7, 14], 'north': [4, 0, 7, 3], 'south': [4, 0, 7, 3]})]
     lifting = []
     for el in full:
-        el = json.loads(json.dumps(el)); el['rotation'] = {'angle': -22.5, 'axis': 'x', 'origin': [8, 11.5, 16]}; lifting.append(el)
+        el = json.loads(flicker.dumps(el)); el['rotation'] = {'angle': -22.5, 'axis': 'x', 'origin': [8, 11.5, 16]}; lifting.append(el)
     slack = [element([6, 3, 11.5], [10, 9.5, 15.5], {'all': 'w'}, uv={'north': [0, 0, 4, 7], 'south': [0, 0, 4, 7], 'east': [0, 0, 4, 7], 'west': [0, 0, 4, 7], 'up': [0, 0, 4, 4], 'down': [0, 0, 4, 4]}),
              element([6.75, 0, 12.25], [9.25, 3, 14.75], {'all': 'w'}, uv={'north': [4, 7, 7, 10], 'south': [4, 7, 7, 10], 'east': [4, 7, 7, 10], 'west': [4, 7, 7, 10], 'up': [4, 0, 7, 3], 'down': [4, 0, 7, 3]})]
     for stage, els in enumerate((slack, lifting, full)):
@@ -584,13 +585,13 @@ def fitting_models():
         if lean:
             leant = []
             for el in planes:
-                el = json.loads(json.dumps(el)); el['rotation'] = {'origin': [8, 0, 8], 'axis': 'x', 'angle': lean}; leant.append(el)
+                el = json.loads(flicker.dumps(el)); el['rotation'] = {'origin': [8, 0, 8], 'axis': 'x', 'angle': lean}; leant.append(el)
             planes = leant
         return planes
     for stage in range(3):
         m[f'grass_{stage}'] = {**model(crossed('c'), {'c': f'grass_{stage}'}, f'grass_{stage}'), 'ambientocclusion': False}
     m['trampled_0'] = {**model([flat, leaning], {'c': 'grass_flat'}, 'grass_flat'), 'ambientocclusion': False}
-    flat_f = json.loads(json.dumps(flat)); flat_f['faces'] = {f: {'uv': [0, 0, 16, 16], 'texture': '#f'} for f in ('up', 'down')}
+    flat_f = json.loads(flicker.dumps(flat)); flat_f['faces'] = {f: {'uv': [0, 0, 16, 16], 'texture': '#f'} for f in ('up', 'down')}
     m['trampled_1'] = {**model([flat_f] + crossed('c', 9, -45), {'c': 'grass_1', 'f': 'grass_flat'}, 'grass_flat'), 'ambientocclusion': False}
     m['trampled_2'] = {**model(crossed('c', 13, -22.5), {'c': 'grass_0'}, 'grass_0'), 'ambientocclusion': False}
     m['cap_0'] = {**model([flat, element([5, 0.6, 4], [11, 3, 10], {'up': 'k', 'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k'}, uv={f: [4, 0, 12, 4] for f in ('north', 'south', 'east', 'west')}),
@@ -670,9 +671,9 @@ def main():
     for rel, obj in data.items():
         path = A / rel
         if check:
-            assert json.loads(path.read_text()) == obj, rel
+            assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
-            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps(obj, indent=2) + '\n')
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     for key, name in {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEMS.items()}}.items():
         if check:
@@ -680,7 +681,7 @@ def main():
         else:
             lang[key] = name
     if not check:
-        lang_path.write_text(json.dumps(lang, indent=2, ensure_ascii=False) + '\n')
+        lang_path.write_text(flicker.dumps(lang, indent=2, ensure_ascii=False) + '\n')
     print(('Verified' if check else 'Drew') + f' the yard: {len(images)} textures, {len(data)} models and states.')
 
 

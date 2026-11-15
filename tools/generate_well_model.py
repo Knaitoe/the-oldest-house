@@ -5,6 +5,7 @@ The block retains the surrounding stone's UV scale and full cube collision.
 No generated bitmap or font face is stretched across its surfaces.
 """
 import json
+import flicker
 from pathlib import Path
 
 ASSET = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
@@ -33,7 +34,7 @@ def write_model(asset=ASSET):
              'textures': {'stone': 'minecraft:block/mossy_cobblestone',
                           'cut': 'minecraft:block/black_concrete', 'particle': 'minecraft:block/mossy_cobblestone'},
              'elements': elements}
-    (asset / 'models/block/well_carvings.json').write_text(json.dumps(model, indent=2) + '\n')
+    (asset / 'models/block/well_carvings.json').write_text(flicker.dumps(model, indent=2) + '\n')
 
 
 if __name__ == '__main__':

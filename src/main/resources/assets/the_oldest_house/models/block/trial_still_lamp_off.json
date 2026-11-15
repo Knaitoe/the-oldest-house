@@ -209,6 +209,30 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        11.98,
+        7
+      ],
+      "to": [
+        9,
+        12,
+        9
+      ],
+      "faces": {
+        "down": {
+          "texture": "#lamp",
+          "uv": [
+            0,
+            0,
+            2,
+            4
+          ]
+        }
+      }
     }
   ]
 }

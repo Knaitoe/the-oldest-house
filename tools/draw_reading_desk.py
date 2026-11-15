@@ -15,6 +15,7 @@ The model keeps its shape; this writes it with the three pictures on it. Run wit
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -120,7 +121,7 @@ def model():
 
 def dump(m):
     head = {k: v for k, v in m.items() if k != 'elements'}
-    tight = lambda v: json.dumps(v, separators=(',', ':'))  # noqa: E731
+    tight = lambda v: flicker.dumps(v, separators=(',', ':'))  # noqa: E731
     return tight(head)[:-1] + ',\n "elements":[\n  ' + ',\n  '.join(tight(e) for e in m['elements']) + '\n ]}\n'
 
 

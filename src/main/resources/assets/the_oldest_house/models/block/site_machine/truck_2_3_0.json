@@ -168,6 +168,72 @@
      ]
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    5.0,
+    12.0,
+    2.0
+   ],
+   "to": [
+    10.0,
+    12.02,
+    16.0
+   ],
+   "faces": {
+    "up": {
+     "texture": "#plate",
+     "uv": [
+      5.0,
+      2.0,
+      10.0,
+      16.0
+     ]
+    },
+    "east": {
+     "texture": "#plate",
+     "uv": [
+      0,
+      4.02,
+      14,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#plate",
+     "uv": [
+      5,
+      4.02,
+      10,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    6,
+    12,
+    2
+   ],
+   "to": [
+    10,
+    12.02,
+    2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plate",
+     "uv": [
+      6,
+      4.02,
+      10,
+      4
+     ]
+    }
+   }
   }
  ]
 }

@@ -415,6 +415,129 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        2,
+        14.5
+      ],
+      "to": [
+        11.02,
+        11,
+        15.2
+      ],
+      "faces": {
+        "east": {
+          "texture": "#leather",
+          "uv": [
+            0.8,
+            5,
+            1.5,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#leather",
+          "uv": [
+            11,
+            14.5,
+            10.98,
+            15.2
+          ]
+        },
+        "down": {
+          "texture": "#leather",
+          "uv": [
+            11,
+            0.8,
+            10.98,
+            1.5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        10,
+        11,
+        14.5
+      ],
+      "to": [
+        11,
+        11.02,
+        15.2
+      ],
+      "faces": {
+        "up": {
+          "texture": "#leather",
+          "uv": [
+            10,
+            14.5,
+            11,
+            15.2
+          ]
+        },
+        "east": {
+          "texture": "#leather",
+          "uv": [
+            0.8,
+            5.02,
+            1.5,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        2,
+        15.2
+      ],
+      "to": [
+        11.02,
+        4,
+        15.2
+      ],
+      "faces": {
+        "south": {
+          "texture": "#leather",
+          "uv": [
+            11,
+            12,
+            10.98,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        2,
+        14.5
+      ],
+      "to": [
+        11.02,
+        4,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#leather",
+          "uv": [
+            5.02,
+            12,
+            5,
+            14
+          ]
+        }
+      }
     }
   ]
 }

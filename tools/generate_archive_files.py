@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Wooden archive pigeon shelves and paper folders on existing native atlases."""
 import argparse,json
+import flicker
 from pathlib import Path
 A=Path(__file__).resolve().parents[1]/'src/main/resources/assets/the_oldest_house'
 def box(lo,hi,texture):
@@ -11,13 +12,13 @@ def model():
     return {'parent':'minecraft:block/block','textures':{'wood':'minecraft:block/dark_oak_planks','paper':'the_oldest_house:block/ghosts/equipment_atlas','metal':'minecraft:block/iron_block','particle':'minecraft:block/dark_oak_planks'},'elements':parts}
 def main():
     p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');args=p.parse_args();path=A/'models/block/novel_archive_files.json';expected=model()
-    if args.check:assert json.loads(path.read_text())==expected
-    else:path.write_text(json.dumps(expected,indent=2)+'\n')
+    if args.check:assert json.loads(path.read_text())==flicker.settled(expected)
+    else:path.write_text(flicker.dumps(expected,indent=2)+'\n')
     path=A/'blockstates/novel_prop.json';state=json.loads(path.read_text())
     for face,angle in [('north',0),('east',90),('south',180),('west',270)]:
         key=f'facing={face},kind=archive_files';value={'model':'the_oldest_house:block/novel_archive_files','y':angle}
         if args.check:assert state['variants'][key]==value
         else:state['variants'][key]=value
-    if not args.check:path.write_text(json.dumps(state,indent=2)+'\n')
+    if not args.check:path.write_text(flicker.dumps(state,indent=2)+'\n')
     print('Verified fitted archive shelves and original atlas references.' if args.check else 'Generated fitted archive shelves on the original material grid.')
 if __name__=='__main__':main()

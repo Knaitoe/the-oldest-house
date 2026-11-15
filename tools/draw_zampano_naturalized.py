@@ -7,6 +7,7 @@ the world. These are sixteen-pixel versions with vanilla's few flat tones, drawn
 The 64-pixel sheets stay in the pack unchanged (the historical texture inventory holds them); nothing draws them any more.
 """
 import argparse, io, json, random
+import flicker
 from pathlib import Path
 from PIL import Image
 
@@ -133,9 +134,9 @@ def files():
     for name, im in images.items():
         b = io.BytesIO(); im.save(b, format='PNG'); out[A / f'textures/block/{name}.png'] = b.getvalue()
     for i in range(16):
-        out[A / f'models/block/zampano_scribble_{i}.json'] = json.dumps(scribble_model(i), indent=2) + '\n'
-    out[A / 'models/block/collapse_plaster.json'] = json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'zampano_plaster'}}, indent=2) + '\n'
-    out[A / 'models/block/cell_gouges.json'] = json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'zampano_gouges'}}, indent=2) + '\n'
+        out[A / f'models/block/zampano_scribble_{i}.json'] = flicker.dumps(scribble_model(i), indent=2) + '\n'
+    out[A / 'models/block/collapse_plaster.json'] = flicker.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'zampano_plaster'}}, indent=2) + '\n'
+    out[A / 'models/block/cell_gouges.json'] = flicker.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'zampano_gouges'}}, indent=2) + '\n'
     return out
 
 

@@ -139,6 +139,189 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        12,
+        0,
+        1
+      ],
+      "to": [
+        12.02,
+        1,
+        5
+      ],
+      "faces": {
+        "east": {
+          "texture": "#hat",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "down": {
+          "texture": "#hat",
+          "uv": [
+            4,
+            0,
+            3.99,
+            8
+          ]
+        },
+        "north": {
+          "texture": "#hat",
+          "uv": [
+            0.01,
+            0,
+            0,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3.98,
+        0,
+        1
+      ],
+      "to": [
+        4,
+        1,
+        5
+      ],
+      "faces": {
+        "west": {
+          "texture": "#hat",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "down": {
+          "texture": "#hat",
+          "uv": [
+            0.01,
+            0,
+            0,
+            8
+          ]
+        },
+        "north": {
+          "texture": "#hat",
+          "uv": [
+            4,
+            0,
+            3.99,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4,
+        -0.02,
+        1
+      ],
+      "to": [
+        12,
+        0,
+        5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#hat",
+          "uv": [
+            0.0,
+            0.0,
+            4.0,
+            8.0
+          ]
+        },
+        "east": {
+          "texture": "#hat",
+          "uv": [
+            0,
+            8,
+            4,
+            7.84
+          ]
+        },
+        "west": {
+          "texture": "#hat",
+          "uv": [
+            0,
+            8,
+            4,
+            7.84
+          ]
+        },
+        "north": {
+          "texture": "#hat",
+          "uv": [
+            0,
+            8,
+            4,
+            7.84
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        12,
+        1,
+        1
+      ],
+      "to": [
+        12.02,
+        1,
+        4
+      ],
+      "faces": {
+        "up": {
+          "texture": "#hat",
+          "uv": [
+            4,
+            0,
+            3.99,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3.98,
+        1,
+        1
+      ],
+      "to": [
+        4,
+        1,
+        4
+      ],
+      "faces": {
+        "up": {
+          "texture": "#hat",
+          "uv": [
+            0.01,
+            0,
+            0,
+            6
+          ]
+        }
+      }
     }
   ],
   "ambientocclusion": true

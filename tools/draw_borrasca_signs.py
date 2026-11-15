@@ -15,6 +15,7 @@ The order and size of the signs is BorrascaSigns.Sign's; --check compares the tw
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 import re
 from PIL import Image
@@ -771,12 +772,12 @@ def files():
         for key in (name, name + '_glow'):
             if key in pics:
                 w, h = pics[key].size
-                out[ASSETS / f'textures/block/{DIR}/{key}.png.mcmeta'] = json.dumps({'animation': {'frametime': ticks, 'width': w, 'height': h // n}}) + '\n'
+                out[ASSETS / f'textures/block/{DIR}/{key}.png.mcmeta'] = flicker.dumps({'animation': {'frametime': ticks, 'width': w, 'height': h // n}}) + '\n'
     return pics, out
 
 
 def tight(value):
-    return json.dumps(value, separators=(',', ':'))
+    return flicker.dumps(value, separators=(',', ':'))
 
 
 def dump_model(m):

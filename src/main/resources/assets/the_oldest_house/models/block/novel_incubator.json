@@ -525,6 +525,102 @@
           "texture": "#frame"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.25,
+        4.98,
+        1.25
+      ],
+      "to": [
+        1.75,
+        5,
+        1.75
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame",
+          "uv": [
+            1.25,
+            14.25,
+            1.75,
+            14.75
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.25,
+        4.98,
+        14.25
+      ],
+      "to": [
+        1.75,
+        5,
+        14.75
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame",
+          "uv": [
+            1.25,
+            1.25,
+            1.75,
+            1.75
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14.25,
+        4.98,
+        1.25
+      ],
+      "to": [
+        14.75,
+        5,
+        1.75
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame",
+          "uv": [
+            14.25,
+            14.25,
+            14.75,
+            14.75
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14.25,
+        4.98,
+        14.25
+      ],
+      "to": [
+        14.75,
+        5,
+        14.75
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame",
+          "uv": [
+            14.25,
+            1.25,
+            14.75,
+            1.75
+          ]
+        }
+      }
     }
   ],
   "render_type": "minecraft:translucent"

@@ -767,6 +767,87 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.25,
+        4,
+        2.98
+      ],
+      "to": [
+        8.75,
+        4.12,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#slit",
+          "uv": [
+            7.25,
+            11.88,
+            8.75,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#slit",
+          "uv": [
+            3.02,
+            11.88,
+            3,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.25,
+        4.12,
+        2.98
+      ],
+      "to": [
+        8,
+        4.12,
+        3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#slit",
+          "uv": [
+            7.25,
+            3.02,
+            8,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.25,
+        4,
+        2.98
+      ],
+      "to": [
+        8,
+        4,
+        3
+      ],
+      "faces": {
+        "down": {
+          "texture": "#slit",
+          "uv": [
+            7.25,
+            8,
+            8,
+            7.98
+          ]
+        }
+      }
     }
   ],
   "render_type": "minecraft:cutout"

@@ -13,6 +13,7 @@ own pieces; SiteMachineBlock carries the same boxes and --check confirms them.
 """
 import argparse
 import json
+import flicker
 import math
 import random
 import re
@@ -720,13 +721,13 @@ def main():
                 with Image.open(path) as actual:
                     assert actual.convert('RGBA').tobytes() == obj.convert('RGBA').tobytes(), rel
             else:
-                assert json.loads(path.read_text()) == obj, rel
+                assert json.loads(path.read_text()) == flicker.settled(obj), rel
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             if isinstance(obj, Image.Image):
                 obj.save(path, optimize=True)
             else:
-                path.write_text(json.dumps(obj, indent=1) + '\n')
+                path.write_text(flicker.dumps(obj, indent=1) + '\n')
     shipped = re.findall(r'\b((?:SKID|TRUCK)_\d_\d_\d)\(([^)]*)\)', JAVA.read_text()) if JAVA.exists() else []
     expected = [(k.upper(), ','.join(str(v) for v in box)) for k, box in kinds]
     if args.check or shipped:

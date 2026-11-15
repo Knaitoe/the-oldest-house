@@ -488,6 +488,210 @@
           "texture": "#ink"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        21,
+        11.98
+      ],
+      "to": [
+        15,
+        22,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#rim",
+          "uv": [
+            1,
+            -6,
+            15,
+            -5
+          ]
+        },
+        "east": {
+          "texture": "#rim",
+          "uv": [
+            4,
+            -6,
+            3.98,
+            -5
+          ]
+        },
+        "west": {
+          "texture": "#rim",
+          "uv": [
+            12.02,
+            -6,
+            12,
+            -5
+          ]
+        },
+        "up": {
+          "texture": "#rim",
+          "uv": [
+            1,
+            12.02,
+            15,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        21,
+        14
+      ],
+      "to": [
+        15,
+        22,
+        14.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#rim",
+          "uv": [
+            1,
+            -6,
+            15,
+            -5
+          ]
+        },
+        "east": {
+          "texture": "#rim",
+          "uv": [
+            2.02,
+            -6,
+            2,
+            -5
+          ]
+        },
+        "west": {
+          "texture": "#rim",
+          "uv": [
+            14,
+            -6,
+            13.98,
+            -5
+          ]
+        },
+        "up": {
+          "texture": "#rim",
+          "uv": [
+            1,
+            14,
+            15,
+            13.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        21,
+        12
+      ],
+      "to": [
+        15.02,
+        22,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#rim",
+          "uv": [
+            2,
+            -6,
+            4,
+            -5
+          ]
+        },
+        "up": {
+          "texture": "#rim",
+          "uv": [
+            15,
+            12,
+            14.98,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#rim",
+          "uv": [
+            15,
+            -6,
+            14.98,
+            -5
+          ]
+        },
+        "north": {
+          "texture": "#rim",
+          "uv": [
+            1.02,
+            -6,
+            1,
+            -5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0.98,
+        21,
+        12
+      ],
+      "to": [
+        1,
+        22,
+        14
+      ],
+      "faces": {
+        "west": {
+          "texture": "#rim",
+          "uv": [
+            12,
+            -6,
+            14,
+            -5
+          ]
+        },
+        "up": {
+          "texture": "#rim",
+          "uv": [
+            1.02,
+            12,
+            1,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#rim",
+          "uv": [
+            1.02,
+            -6,
+            1,
+            -5
+          ]
+        },
+        "north": {
+          "texture": "#rim",
+          "uv": [
+            15,
+            -6,
+            14.98,
+            -5
+          ]
+        }
+      }
     }
   ]
 }

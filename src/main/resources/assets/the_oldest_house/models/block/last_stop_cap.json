@@ -277,6 +277,192 @@
      ]
     }
    }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    5,
+    0,
+    12.01
+   ],
+   "to": [
+    11,
+    2.4,
+    12.03
+   ],
+   "faces": {
+    "south": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      12.5,
+      11.5,
+      15.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      8.51993,
+      12.5,
+      8.5,
+      15.5
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      11.5,
+      12.5,
+      11.48007,
+      15.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      12.51993,
+      11.5,
+      12.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    11,
+    0,
+    9
+   ],
+   "to": [
+    11.02,
+    2.4,
+    12.01
+   ],
+   "faces": {
+    "east": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      12.5,
+      11.5,
+      15.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      11.5,
+      12.5,
+      11.49,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      11.5,
+      12.5,
+      11.49,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    4.98,
+    0,
+    9
+   ],
+   "to": [
+    5,
+    2.4,
+    12.01
+   ],
+   "faces": {
+    "west": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      12.5,
+      11.5,
+      15.5
+     ]
+    },
+    "down": {
+     "texture": "#s",
+     "uv": [
+      8.51,
+      12.5,
+      8.5,
+      15.5
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      8.51,
+      12.5,
+      8.5,
+      15.5
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    5,
+    -0.02,
+    9
+   ],
+   "to": [
+    11,
+    0,
+    12.01
+   ],
+   "faces": {
+    "down": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      12.5,
+      11.5,
+      15.5
+     ]
+    },
+    "east": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      15.5,
+      11.5,
+      15.475
+     ]
+    },
+    "west": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      15.5,
+      11.5,
+      15.475
+     ]
+    },
+    "south": {
+     "texture": "#s",
+     "uv": [
+      8.5,
+      15.5,
+      11.5,
+      15.475
+     ]
+    }
+   }
   }
  ]
 }

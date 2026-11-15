@@ -698,6 +698,30 @@
           "texture": "#bread_heel"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0.98,
+        3,
+        3
+      ],
+      "to": [
+        1,
+        9,
+        13
+      ],
+      "faces": {
+        "west": {
+          "texture": "#fridge_inside",
+          "uv": [
+            3,
+            7,
+            13,
+            13
+          ]
+        }
+      }
     }
   ]
 }

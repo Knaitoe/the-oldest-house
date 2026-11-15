@@ -1,6 +1,7 @@
 """Small native paper surfaces. Drawings and inscriptions are readable shared originals in game."""
 from pathlib import Path
 import argparse,json,copy
+import flicker
 from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 KINDS=['note','drawing','photo','award','recipe','family_drawing','couple']
@@ -63,7 +64,7 @@ def main():
             with Image.open(p) as old:assert old.convert('RGBA').tobytes()==im.tobytes(),n
         else:p.parent.mkdir(parents=True,exist_ok=True);im.save(p,optimize=True)
     for p,data in models().items():
-        if args.check:assert json.loads(p.read_text())==data,str(p)
-        else:p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(data,indent=2)+'\n')
+        if args.check:assert json.loads(p.read_text())==flicker.settled(data),str(p)
+        else:p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(data,indent=2)+'\n')
     print('Verified seven original paintings, finite/empty mounts and native support-height variants.')
 if __name__=='__main__':main()

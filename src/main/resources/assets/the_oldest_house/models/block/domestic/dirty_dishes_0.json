@@ -218,6 +218,129 @@
           "texture": "#ceramic"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        1,
+        4
+      ],
+      "to": [
+        11.02,
+        4,
+        6
+      ],
+      "faces": {
+        "east": {
+          "texture": "#ceramic",
+          "uv": [
+            10,
+            12,
+            12,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#ceramic",
+          "uv": [
+            11,
+            4,
+            10.98,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#ceramic",
+          "uv": [
+            11,
+            10,
+            10.98,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        10,
+        0.98,
+        4
+      ],
+      "to": [
+        11,
+        1,
+        6
+      ],
+      "faces": {
+        "down": {
+          "texture": "#ceramic",
+          "uv": [
+            10,
+            10,
+            11,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#ceramic",
+          "uv": [
+            10,
+            15,
+            12,
+            14.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        1.8,
+        6
+      ],
+      "to": [
+        11.02,
+        4,
+        6
+      ],
+      "faces": {
+        "south": {
+          "texture": "#ceramic",
+          "uv": [
+            11,
+            12,
+            10.98,
+            14.2
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        1.8,
+        4
+      ],
+      "to": [
+        11.02,
+        4,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#ceramic",
+          "uv": [
+            5.02,
+            12,
+            5,
+            14.2
+          ]
+        }
+      }
     }
   ]
 }

@@ -5,12 +5,13 @@ wallpaper, torn plaster, a marquetry table and three-dimensional keepsakes.
 """
 from pathlib import Path
 import json,math,random
+import flicker
 from PIL import Image,ImageDraw
 
 ROOT=Path(__file__).resolve().parents[1]
 A=ROOT/'src/main/resources/assets/the_oldest_house'
 def write(name,obj):
-    p=A/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(obj,indent=2)+'\n')
+    p=A/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(flicker.dumps(obj,indent=2)+'\n')
 def save(name,image):
     p=A/name;p.parent.mkdir(parents=True,exist_ok=True);image.save(p,optimize=True)
 def cube(a,b,texture='surface',uv=(0,0,16,16),rotation=None):
@@ -112,5 +113,5 @@ def skin(name,cloth,hair,flesh):
                 if (x+y)%4==0:im.putpixel((x,y),(30,27,26,110))
     save('textures/entity/seance_'+name+'.png',im)
 skin('medium',(49,46,54),(91,86,83),(186,165,149));skin('mother',(79,67,58),(71,44,30),(212,182,153));skin('father',(64,75,73),(58,49,40),(199,171,143));skin('daughter',(183,174,151),(132,97,62),(224,194,164))
-lang=A/'lang/en_us.json';strings=json.loads(lang.read_text());strings.update({'item.the_oldest_house.seance_planchette':'An empty sitting','item.the_oldest_house.wallpaper_folio':'The pages she kept','block.the_oldest_house.nursery_wallpaper':'Nursery wallpaper','block.the_oldest_house.seance_table':'Marquetry table','block.the_oldest_house.seance_wallpaper':'Drawing-room wallpaper','block.the_oldest_house.seance_wainscot':'Paneled wainscot','entity.the_oldest_house.seance_actor':'Someone at the table'});lang.write_text(json.dumps(strings,indent=2)+'\n')
+lang=A/'lang/en_us.json';strings=json.loads(lang.read_text());strings.update({'item.the_oldest_house.seance_planchette':'An empty sitting','item.the_oldest_house.wallpaper_folio':'The pages she kept','block.the_oldest_house.nursery_wallpaper':'Nursery wallpaper','block.the_oldest_house.seance_table':'Marquetry table','block.the_oldest_house.seance_wallpaper':'Drawing-room wallpaper','block.the_oldest_house.seance_wainscot':'Paneled wainscot','entity.the_oldest_house.seance_actor':'Someone at the table'});lang.write_text(flicker.dumps(strings,indent=2)+'\n')
 print('Generated four cast skins, four animated wallpaper variants, framed wall materials, table and two native 3D items.')

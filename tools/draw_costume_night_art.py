@@ -8,6 +8,7 @@ dark bulbs and radio. The drawing helpers are Movie Night's.
 Usage: python3 tools/draw_costume_night_art.py
 """
 import json
+import flicker
 
 import numpy as np
 from PIL import Image
@@ -179,7 +180,7 @@ def write():
     for name, img in textures().items():
         img.save(ASSETS / 'textures/block' / f'{name}.png')
     for name, model in models().items():
-        (folder / f'{name}.json').write_text(json.dumps(model, indent=2) + '\n')
+        (folder / f'{name}.json').write_text(flicker.dumps(model, indent=2) + '\n')
     variants = {}
     for kind in KINDS:
         for lit in ('true', 'false'):
@@ -189,7 +190,7 @@ def write():
                 if y:
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},lit={lit}'] = v
-    (ASSETS / 'blockstates/costume_prop.json').write_text(json.dumps({'variants': variants}, indent=2) + '\n')
+    (ASSETS / 'blockstates/costume_prop.json').write_text(flicker.dumps({'variants': variants}, indent=2) + '\n')
 
 
 if __name__ == '__main__':

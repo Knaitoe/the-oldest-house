@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic native block models, pixel materials and a legible scratched bitmap hand."""
 import json
+import flicker
 import random
 from pathlib import Path
 from PIL import Image, ImageDraw
@@ -12,7 +13,7 @@ ASSETS = ROOT / 'src/main/resources/assets/the_oldest_house'
 def write_json(path, value):
     destination = ASSETS / path
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(json.dumps(value, indent=2) + '\n')
+    destination.write_text(flicker.dumps(value, indent=2) + '\n')
 
 
 def material(name, base, mode):

@@ -1,6 +1,7 @@
 """The Silo: authored native pixel tiles and identical render/collision timber cuboids."""
 import argparse
 import json
+import flicker
 from pathlib import Path
 from PIL import Image, ImageDraw
 
@@ -98,7 +99,7 @@ def model(cuboids):
 
 def outputs():
     out = {}
-    def js(path, obj): out[ASSETS/path] = json.dumps(obj, separators=(',', ':'))+'\n'
+    def js(path, obj): out[ASSETS/path] = flicker.dumps(obj, separators=(',', ':'))+'\n'
     for name in ('tin', 'steel', 'sky', 'corn'):
         js(Path('models/block')/f'silo_{name}.json', {'parent': 'minecraft:block/cube_all', 'textures': {'all': f'the_oldest_house:block/silo/{name}'}})
         js(Path('blockstates')/f'silo_{name}.json', {'variants': {'': {'model': f'the_oldest_house:block/silo_{name}'}}})

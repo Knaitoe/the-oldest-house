@@ -13,6 +13,7 @@ each of its four sides, a different one on each. Run with --check to verify the 
 from pathlib import Path
 import argparse
 import json
+import flicker
 import random
 from PIL import Image
 
@@ -119,7 +120,7 @@ def states():
 
 
 def dump(data):
-    return json.dumps(data, indent=2, sort_keys=True) + '\n'
+    return flicker.dumps(data, indent=2, sort_keys=True) + '\n'
 
 
 def main():
@@ -145,7 +146,7 @@ def main():
         if args.check:
             wrong.append('lang: block.' + MOD + '.borrasca_names')
         else:
-            words[f'block.{MOD}.borrasca_names'] = 'Carved Bark'; lang.write_text(json.dumps(words, indent=2, ensure_ascii=False) + '\n')
+            words[f'block.{MOD}.borrasca_names'] = 'Carved Bark'; lang.write_text(flicker.dumps(words, indent=2, ensure_ascii=False) + '\n')
     if wrong:
         raise SystemExit('The Tree\'s names are out of date: ' + ', '.join(wrong[:8]))
     print(('Verified' if args.check else 'Drew') + f' the Tree\'s names: {len(textures())} pictures, {len(models())} models.')

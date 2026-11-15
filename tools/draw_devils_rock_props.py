@@ -19,6 +19,7 @@ each against its new drawing instead of its 0.4.100 hash. Run without arguments 
 from pathlib import Path
 import hashlib
 import json
+import flicker
 import sys
 from PIL import Image
 
@@ -371,7 +372,7 @@ def blockstate(current):
     for kind, model in {**PHOTO_KINDS, **{k: v[0] for k, v in household.KINDS.items()}}.items():
         for direction, turn in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
             states['variants'][f'facing={direction},kind={kind}'] = {'model': NS + model, 'y': turn}
-    return json.dumps(states, indent=2) + '\n'
+    return flicker.dumps(states, indent=2) + '\n'
 
 
 # ---------------------------------------------------------------------------------------------- files
@@ -407,7 +408,7 @@ def record():
         path = TEX / f'{name}.png'
         rows.append({'path': f'src/main/resources/assets/the_oldest_house/textures/block/{name}.png', 'review_04100_sha256': old,
                      'sha256': hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else '', 'size': list(IMAGES[name]().size)})
-    return json.dumps({'authorization': "Owner, 2 November 2026: \"try to remove obviously noisy textures from devils rock\".",
+    return flicker.dumps({'authorization': "Owner, 2 November 2026: \"try to remove obviously noisy textures from devils rock\".",
                        'tool': 'tools/draw_devils_rock_props.py', 'repainted': rows}, indent=2) + '\n'
 
 
@@ -417,7 +418,7 @@ def main():
         return
     check = '--check' in sys.argv
     pngs = {name: png_bytes(fn()) for name, fn in IMAGES.items()}
-    texts = {MODELS / f'{name}.json': json.dumps(fn(), indent=1) + '\n' for name, fn in MODELS_OUT.items()}
+    texts = {MODELS / f'{name}.json': flicker.dumps(fn(), indent=1) + '\n' for name, fn in MODELS_OUT.items()}
     state_path = ASSETS / 'blockstates/vignette_detail.json'
     texts[state_path] = blockstate(state_path.read_text())
     stale = []

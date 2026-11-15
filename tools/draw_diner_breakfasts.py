@@ -1,6 +1,7 @@
 """Authored sixteen-pixel breakfast/menu art and native served-plate models."""
 from pathlib import Path
 import argparse,json
+import flicker
 from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 ORDERS=('pancakes','waffles','eggs_cheese','grits')
@@ -83,7 +84,7 @@ def main():
   else:path.parent.mkdir(parents=True,exist_ok=True);im.save(path,optimize=True)
  for name,obj in assets().items():
   path=A/name
-  if check:assert json.loads(path.read_text())==obj,name
-  else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(obj,indent=2)+'\n')
+  if check:assert json.loads(path.read_text())==flicker.settled(obj),name
+  else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(flicker.dumps(obj,indent=2)+'\n')
  print(('Verified' if check else 'Painted')+' four ordinary menu breakfasts, four individually spoiled plates, the legacy plate fallback and one handed menu.')
 if __name__=='__main__':main()

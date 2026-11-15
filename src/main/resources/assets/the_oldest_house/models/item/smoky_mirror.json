@@ -208,6 +208,87 @@
           "texture": "#rim"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        0,
+        6.98
+      ],
+      "to": [
+        9,
+        4,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rim"
+        },
+        "down": {
+          "texture": "#rim",
+          "uv": [
+            0,
+            16,
+            16,
+            15.84
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9,
+        0,
+        6.98
+      ],
+      "to": [
+        9,
+        3,
+        7
+      ],
+      "faces": {
+        "east": {
+          "texture": "#rim",
+          "uv": [
+            16,
+            4,
+            15.84,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        0,
+        6.98
+      ],
+      "to": [
+        7,
+        3,
+        7
+      ],
+      "faces": {
+        "west": {
+          "texture": "#rim",
+          "uv": [
+            0.16,
+            4,
+            0,
+            16
+          ]
+        }
+      }
     }
   ],
   "display": {

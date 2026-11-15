@@ -296,6 +296,183 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        12,
+        0.4,
+        10
+      ],
+      "to": [
+        12.02,
+        0.55,
+        10.3
+      ],
+      "faces": {
+        "east": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#pewter",
+          "uv": [
+            16,
+            0,
+            15.89333,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#pewter",
+          "uv": [
+            16,
+            0,
+            15.89333,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#pewter",
+          "uv": [
+            0.10667,
+            0,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.7,
+        0.4,
+        9.98
+      ],
+      "to": [
+        12,
+        0.55,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pewter",
+          "uv": [
+            16,
+            0,
+            15.89333,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0.10667,
+            16,
+            0
+          ]
+        },
+        "down": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            16,
+            16,
+            15.89333
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.7,
+        0.55,
+        10
+      ],
+      "to": [
+        12,
+        0.57,
+        13
+      ],
+      "faces": {
+        "up": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            2.13333,
+            16,
+            0
+          ]
+        },
+        "south": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            2.13333,
+            16,
+            0
+          ]
+        },
+        "north": {
+          "texture": "#pewter",
+          "uv": [
+            0,
+            2.13333,
+            16,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.7,
+        0.55,
+        10.3
+      ],
+      "to": [
+        11.7,
+        0.57,
+        13
+      ],
+      "faces": {
+        "west": {
+          "texture": "#pewter",
+          "uv": [
+            1.6,
+            2.13333,
+            16,
+            0
+          ]
+        }
+      }
     }
   ],
   "ambientocclusion": true

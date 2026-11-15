@@ -1,6 +1,7 @@
 """Native pixel materials and fitted meshes for the lake-house continuation. Prior art is never rewritten."""
 from pathlib import Path
 import json
+import flicker
 import random
 from PIL import Image, ImageDraw
 
@@ -10,7 +11,7 @@ A = ROOT / 'src/main/resources/assets/the_oldest_house'
 
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2) + '\n')
+    path.write_text(flicker.dumps(value, indent=2) + '\n')
 
 
 def material(name, colors, pattern):

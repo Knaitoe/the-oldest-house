@@ -6,6 +6,7 @@ Textures follow Minecraft's own look: a small palette per material, one-pixel be
 noise, nothing smooth. Nothing is sampled. Run from anywhere; it rewrites only its own files and keys.
 """
 import json
+import flicker
 import math
 import random
 from pathlib import Path
@@ -490,21 +491,21 @@ def color(frm, to, name, rot=None):
 
 def model(name, elements, textures, particle=None):
     if name.startswith('music_box_'):
-        elements = json.loads(json.dumps(elements))
+        elements = json.loads(flicker.dumps(elements))
         for e in elements:
             for key in ('from', 'to'):
                 e[key][2] += 2
     tex = {'s': 'the_oldest_house:block/nursery_swatches', **{k: f'the_oldest_house:block/{v}' for k, v in textures.items()}}
     tex['particle'] = 'the_oldest_house:block/' + (particle or textures.get('w', 'nursery_white_wood'))
     data = {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout', 'ambientocclusion': False, 'textures': tex, 'elements': elements}
-    (MODELS / f'nursery_{name}.json').write_text(json.dumps(data, indent=1) + '\n')
+    (MODELS / f'nursery_{name}.json').write_text(flicker.dumps(data, indent=1) + '\n')
     if name == 'doll':
         for suffix, axis, offset in [('shelf', 2, 2), ('chest', 1, -7)]:
-            fitted = json.loads(json.dumps(data))
+            fitted = json.loads(flicker.dumps(data))
             for e in fitted['elements']:
                 for key in ('from', 'to'):
                     e[key][axis] += offset
-            (MODELS / f'nursery_doll_{suffix}.json').write_text(json.dumps(fitted, indent=1) + '\n')
+            (MODELS / f'nursery_doll_{suffix}.json').write_text(flicker.dumps(fitted, indent=1) + '\n')
 
 
 def rotated(elements, axis, angle, origin=(8, 0, 8)):
@@ -663,10 +664,10 @@ def blockstate():
                 if y:
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
-    (ASSETS / 'blockstates/nursery.json').write_text(json.dumps({'variants': variants}, indent=1) + '\n')
+    (ASSETS / 'blockstates/nursery.json').write_text(flicker.dumps({'variants': variants}, indent=1) + '\n')
     # (The Yellow Wallpaper already owns nursery_wallpaper; the child's room has its own.)
-    (ASSETS / 'blockstates/child_wallpaper.json').write_text(json.dumps({'variants': {'': {'model': 'the_oldest_house:block/child_wallpaper'}}}, indent=2) + '\n')
-    (MODELS / 'child_wallpaper.json').write_text(json.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': 'the_oldest_house:block/child_wallpaper'}}, indent=2) + '\n')
+    (ASSETS / 'blockstates/child_wallpaper.json').write_text(flicker.dumps({'variants': {'': {'model': 'the_oldest_house:block/child_wallpaper'}}}, indent=2) + '\n')
+    (MODELS / 'child_wallpaper.json').write_text(flicker.dumps({'parent': 'minecraft:block/cube_all', 'textures': {'all': 'the_oldest_house:block/child_wallpaper'}}, indent=2) + '\n')
     return len(variants)
 
 
@@ -815,7 +816,7 @@ SOUNDS = {
 
 
 def write_json(path, data, original):
-    text = json.dumps(data, indent=2, ensure_ascii=False)
+    text = flicker.dumps(data, indent=2, ensure_ascii=False)
     if original.endswith('\n'):
         text += '\n'
     path.write_text(text)

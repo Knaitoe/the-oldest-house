@@ -12,6 +12,7 @@ Run: python3 tools/generate_elk_yacht_assets.py
 from pathlib import Path
 from PIL import Image, ImageDraw
 import json, math, random
+import flicker
 
 ROOT = Path(__file__).resolve().parents[1]
 A = ROOT / 'src/main/resources/assets/the_oldest_house'
@@ -21,7 +22,7 @@ MOD = 'the_oldest_house'
 def write(rel, obj):
     p = A / rel
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(obj, indent=2) + '\n')
+    p.write_text(flicker.dumps(obj, indent=2) + '\n')
 
 
 def save(rel, im):
@@ -774,4 +775,4 @@ if __name__ == '__main__':
     n = props()
     lang()
     preview(n)
-    print(json.dumps({'prop_variants': n}))
+    print(flicker.dumps({'prop_variants': n}))

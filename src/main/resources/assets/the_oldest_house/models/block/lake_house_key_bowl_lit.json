@@ -213,6 +213,102 @@
           "texture": "#brass"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        -1.02,
+        4
+      ],
+      "to": [
+        12,
+        -1,
+        12
+      ],
+      "faces": {
+        "down": {
+          "texture": "#porcelain",
+          "uv": [
+            11,
+            4,
+            12,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        12,
+        -1,
+        6
+      ],
+      "to": [
+        12.02,
+        0,
+        10
+      ],
+      "faces": {
+        "east": {
+          "texture": "#brass",
+          "uv": [
+            6,
+            16,
+            10,
+            17
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        -1.02,
+        10
+      ],
+      "to": [
+        11,
+        -1,
+        11
+      ],
+      "faces": {
+        "west": {
+          "texture": "#porcelain",
+          "uv": [
+            10,
+            17,
+            11,
+            16.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11,
+        -1.02,
+        5
+      ],
+      "to": [
+        11,
+        -1,
+        6
+      ],
+      "faces": {
+        "west": {
+          "texture": "#porcelain",
+          "uv": [
+            5,
+            17,
+            6,
+            16.98
+          ]
+        }
+      }
     }
   ]
 }

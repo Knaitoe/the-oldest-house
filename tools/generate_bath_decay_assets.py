@@ -4,6 +4,7 @@ import argparse
 import copy
 import io
 import json
+import flicker
 from pathlib import Path
 
 from PIL import Image
@@ -62,7 +63,7 @@ def outputs():
             element([9, 10.01, 10 if half == 0 else 7], [13, 11.15, 14 if half == 0 else 10]),
             element([5, 10.01, 13 if half == 0 else 11], [8, 10.4, 15 if half == 0 else 13]),
         ])
-        result[MODELS / f'stanley_tub_{half + 2}.json'] = (json.dumps(model, indent=1) + '\n').encode()
+        result[MODELS / f'stanley_tub_{half + 2}.json'] = (flicker.dumps(model, indent=1) + '\n').encode()
     stream = io.BytesIO()
     slough().save(stream, format='PNG')
     result[TEXTURES / 'bath_slough.png'] = stream.getvalue()

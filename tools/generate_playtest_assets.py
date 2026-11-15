@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """0.4.64: small, hard-edged native pixel assets. No resampling or antialiasing."""
 import json
+import flicker
 import random
 from pathlib import Path
 from PIL import Image, ImageDraw
@@ -11,7 +12,7 @@ MANIFEST = ROOT / 'art/inventory/cast_0465.json'
 APPROVED = {entry['path'] for entry in json.loads(MANIFEST.read_text())['approved_textures']} if MANIFEST.exists() else set()
 
 def save_json(path, data):
-    (A / path).write_text(json.dumps(data, indent=2) + '\n')
+    (A / path).write_text(flicker.dumps(data, indent=2) + '\n')
 
 def save_image(path, image):
     if (A / path).relative_to(ROOT).as_posix() in APPROVED:

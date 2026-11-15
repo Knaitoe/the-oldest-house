@@ -552,6 +552,105 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.5,
+        2,
+        15
+      ],
+      "to": [
+        4.5,
+        3.5,
+        15.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#steel",
+          "uv": [
+            1.5,
+            12.5,
+            4.5,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#steel",
+          "uv": [
+            1.02,
+            12.5,
+            1,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#steel",
+          "uv": [
+            15,
+            12.5,
+            14.98,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#steel",
+          "uv": [
+            1.5,
+            1.02,
+            4.5,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3.5,
+        3.5,
+        15
+      ],
+      "to": [
+        4.5,
+        3.5,
+        15.02
+      ],
+      "faces": {
+        "up": {
+          "texture": "#steel_top",
+          "uv": [
+            3.5,
+            15,
+            4.5,
+            14.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.5,
+        3.5,
+        15
+      ],
+      "to": [
+        2.5,
+        3.5,
+        15.02
+      ],
+      "faces": {
+        "up": {
+          "texture": "#steel_top",
+          "uv": [
+            1.5,
+            15,
+            2.5,
+            14.98
+          ]
+        }
+      }
     }
   ]
 }

@@ -2,6 +2,7 @@
 from pathlib import Path
 from PIL import Image,ImageDraw
 import argparse,io,json
+import flicker
 ROOT=Path(__file__).resolve().parents[1];A=ROOT/'src/main/resources/assets/the_oldest_house'
 p=argparse.ArgumentParser();p.add_argument('--check',action='store_true');check=p.parse_args().check;out={};tiles=[]
 def tile(c):
@@ -58,10 +59,10 @@ def grimy_floor():
  return im
 for name,im in (('bathroom_wall',grimy_wall()),('bathroom_floor',grimy_floor())):
  b=io.BytesIO();im.save(b,format='PNG');out[A/f'textures/block/uncanny/{name}.png']=b.getvalue()
- out[A/f'blockstates/uncanny_{name}.json']=json.dumps({'variants':{'':{'model':f'the_oldest_house:block/uncanny/{name}'}}}).encode()
- out[A/f'models/block/uncanny/{name}.json']=json.dumps({'parent':'minecraft:block/cube_all','textures':{'all':f'the_oldest_house:block/uncanny/{name}'}}).encode()
-out[A/'models/block/service_fitting.json']=json.dumps({'textures':{'particle':'the_oldest_house:block/interiors/iron'},'elements':[]}).encode()
-out[A/'blockstates/service_fitting.json']=json.dumps({'variants':{f'kind={k},facing={f}':{'model':'the_oldest_house:block/service_fitting'} for k in ('drawer','toilet','basin','mirror','dryer','soap','microwave','toaster','kettle','roach') for f in ('north','east','south','west')}}).encode()
+ out[A/f'blockstates/uncanny_{name}.json']=flicker.dumps({'variants':{'':{'model':f'the_oldest_house:block/uncanny/{name}'}}}).encode()
+ out[A/f'models/block/uncanny/{name}.json']=flicker.dumps({'parent':'minecraft:block/cube_all','textures':{'all':f'the_oldest_house:block/uncanny/{name}'}}).encode()
+out[A/'models/block/service_fitting.json']=flicker.dumps({'textures':{'particle':'the_oldest_house:block/interiors/iron'},'elements':[]}).encode()
+out[A/'blockstates/service_fitting.json']=flicker.dumps({'variants':{f'kind={k},facing={f}':{'model':'the_oldest_house:block/service_fitting'} for k in ('drawer','toilet','basin','mirror','dryer','soap','microwave','toaster','kettle','roach') for f in ('north','east','south','west')}}).encode()
 for path,data in out.items():
  if check:assert path.read_bytes()==data,path
  else:path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)

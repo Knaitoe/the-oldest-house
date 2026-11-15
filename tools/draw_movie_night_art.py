@@ -12,6 +12,7 @@ Usage: python3 tools/draw_movie_night_art.py [--preview DIR]
 """
 from pathlib import Path
 import json
+import flicker
 import math
 import sys
 
@@ -1013,7 +1014,7 @@ MATERIAL_KINDS = ('dock', 'raft', 'pier', 'canvas', 'frame', 'siding')
 def write_models():
     folder = ASSETS / 'models/block'
     for name, model in prop_models().items():
-        (folder / f'{name}.json').write_text(json.dumps(model, indent=2) + '\n')
+        (folder / f'{name}.json').write_text(flicker.dumps(model, indent=2) + '\n')
     variants = {}
     for kind in PROP_KINDS:
         for facing, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
@@ -1024,12 +1025,12 @@ def write_models():
             if y:
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
-    (ASSETS / 'blockstates/movie_prop.json').write_text(json.dumps({'variants': variants}, indent=2) + '\n')
+    (ASSETS / 'blockstates/movie_prop.json').write_text(flicker.dumps({'variants': variants}, indent=2) + '\n')
     for kind in MATERIAL_KINDS:
         model = {'parent': 'minecraft:block/cube_all', 'textures': {'all': f'the_oldest_house:block/movie_{kind}'}}
-        (folder / f'movie_material_{kind}.json').write_text(json.dumps(model, indent=2) + '\n')
-    (ASSETS / 'blockstates/movie_material.json').write_text(json.dumps({'variants': {f'kind={k}': {'model': f'the_oldest_house:block/movie_material_{k}'} for k in MATERIAL_KINDS}}, indent=2) + '\n')
-    (ASSETS / 'blockstates/movie_screen.json').write_text(json.dumps({'variants': {'': {'model': 'the_oldest_house:block/movie_material_canvas'}}}, indent=2) + '\n')
+        (folder / f'movie_material_{kind}.json').write_text(flicker.dumps(model, indent=2) + '\n')
+    (ASSETS / 'blockstates/movie_material.json').write_text(flicker.dumps({'variants': {f'kind={k}': {'model': f'the_oldest_house:block/movie_material_{k}'} for k in MATERIAL_KINDS}}, indent=2) + '\n')
+    (ASSETS / 'blockstates/movie_screen.json').write_text(flicker.dumps({'variants': {'': {'model': 'the_oldest_house:block/movie_material_canvas'}}}, indent=2) + '\n')
 
 
 def write():

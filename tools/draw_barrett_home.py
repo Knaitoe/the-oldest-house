@@ -10,6 +10,7 @@ vanilla's are; nothing is sampled. Run with --check to confirm the committed fil
 """
 import argparse
 import json
+import flicker
 import math
 import random
 import sys
@@ -2600,12 +2601,12 @@ def files():
     for name, fn in TEXTURES.items():
         out[TEX / f'{name}.png'] = fn()
     for name in MODELLED:
-        out[MODELS / f'{name}.json'] = json.dumps(model_json(name), indent=1) + '\n'
-    out[TEX / 'tv_cartoon.png.mcmeta'] = json.dumps({'animation': {'frametime': 4, 'interpolate': False}}, indent=2) + '\n'
+        out[MODELS / f'{name}.json'] = flicker.dumps(model_json(name), indent=1) + '\n'
+    out[TEX / 'tv_cartoon.png.mcmeta'] = flicker.dumps({'animation': {'frametime': 4, 'interpolate': False}}, indent=2) + '\n'
     # 0.4.202: the crew's case and the day-three crack, in this house's style (their blocks belong to the set's older art).
     for name, target in (('case_closed', 'ghosts_case_closed'), ('case_open', 'ghosts_case_open')):
-        out[MODELS.parent / f'{target}.json'] = json.dumps(model_json(name), indent=1) + '\n'
-    out[MODELS.parent / 'ghosts_plaster.json'] = json.dumps({'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout',
+        out[MODELS.parent / f'{target}.json'] = flicker.dumps(model_json(name), indent=1) + '\n'
+    out[MODELS.parent / 'ghosts_plaster.json'] = flicker.dumps({'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout',
         'textures': {'p': NS + 'paint', 'c': NS + 'plaster_crack', 'particle': NS + 'paint'},
         'elements': [box((0, 0, 0), (16, 16, 16), 'p', over={'north': 'c'})]}, indent=1) + '\n'
     variants = {}
@@ -2616,7 +2617,7 @@ def files():
                 v['y'] = y
             variants[f'facing={facing},kind={kind}'] = v
         variants[f'facing={facing},kind=merry_rug'] = {'model': NS + MERRY_QUARTERS[facing]}
-    out[STATES / 'barrett_home.json'] = json.dumps({'variants': variants}, indent=1) + '\n'
+    out[STATES / 'barrett_home.json'] = flicker.dumps({'variants': variants}, indent=1) + '\n'
     return out
 
 

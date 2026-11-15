@@ -2,6 +2,7 @@
 from pathlib import Path
 from PIL import Image,ImageDraw
 import argparse,io,json,random
+import flicker
 from house_read_moments_art import EXTRA_PARTS, tiles as more_tiles, models as more_models
 import house_read_materials_art as materials
 import house_read_rooms160_art as rooms160
@@ -89,8 +90,8 @@ def outputs():
  def model(name,elements,layer=None,extra=None):
   data={'ambientocclusion':True,'textures':dict(textures,**(extra or {}),particle=textures.get(name,textures['oak'])),'elements':elements}
   if layer:data['render_type']='minecraft:'+layer
-  out['models/block/read_'+name+'.json']=(json.dumps(data,indent=2)+'\n').encode()
- for n in ['wallpaper','clapboard','linoleum','panels','tile','pavilion']:out['models/block/read_'+n+'.json']=(json.dumps({'parent':'minecraft:block/cube_all','textures':{'all':textures[n]}},indent=2)+'\n').encode();out['blockstates/read_'+n+'.json']=(json.dumps({'variants':{'':{'model':'the_oldest_house:block/read_'+n}}},indent=2)+'\n').encode()
+  out['models/block/read_'+name+'.json']=(flicker.dumps(data,indent=2)+'\n').encode()
+ for n in ['wallpaper','clapboard','linoleum','panels','tile','pavilion']:out['models/block/read_'+n+'.json']=(flicker.dumps({'parent':'minecraft:block/cube_all','textures':{'all':textures[n]}},indent=2)+'\n').encode();out['blockstates/read_'+n+'.json']=(flicker.dumps({'variants':{'':{'model':'the_oldest_house:block/read_'+n}}},indent=2)+'\n').encode()
  parts=['wool','trench','barn','wool_boots','trench_boots','barn_boots','towel','mirror','mirror_top','umbrella','radiator','curtain','rail','swing','mailbox','plate','covered_mirror']
  for n in parts:
   if n in ['wool','trench','barn']:
@@ -152,8 +153,8 @@ def outputs():
   else:model(n,[cube([3,0,3],[13,.6,13],'cream'),cube([4,.65,4],[12,.9,12],'food')])
  more_models(out,model,cube);rooms160.models(model,cube,faced);kitchen.models(model,cube,faced);wardrobe.models(model,cube,faced)
  parts+=EXTRA_PARTS+rooms160.PARTS+kitchen.PARTS+wardrobe.PARTS
- out['textures/block/house_read/radar.png.mcmeta']=(json.dumps({'animation':{'frametime':8}},indent=2)+'\n').encode()
- out['textures/block/house_read/snow.png.mcmeta']=(json.dumps({'animation':{'frametime':2}},indent=2)+'\n').encode()
+ out['textures/block/house_read/radar.png.mcmeta']=(flicker.dumps({'animation':{'frametime':8}},indent=2)+'\n').encode()
+ out['textures/block/house_read/snow.png.mcmeta']=(flicker.dumps({'animation':{'frametime':2}},indent=2)+'\n').encode()
  variants={}
  for n in parts:
   for face,rot in [('south',0),('west',90),('north',180),('east',270)]:
@@ -169,16 +170,16 @@ def outputs():
        suffix=('_lifted_'+str(selected) if selected else '') if n.startswith('routine_') else ('_channel_'+str(selected) if selected else '')
        variants[f'part={n},facing={face},lifted={selected}']={'model':'the_oldest_house:block/read_'+n+suffix,'y':rot}
      else:variants[f'part={n},facing={face},turned={str(turned).lower()},writing={str(writing).lower()}']={'model':'the_oldest_house:block/read_'+n+suffix,'y':rot}
- out['blockstates/read_fitting.json']=(json.dumps({'variants':variants},indent=2)+'\n').encode()
+ out['blockstates/read_fitting.json']=(flicker.dumps({'variants':variants},indent=2)+'\n').encode()
  variants={}
  for half in ['lower','upper']:
   for hinge in ['left','right']:
    for opened in [False,True]:
     n=('bottom' if half=='lower' else 'top')+'_'+hinge+('_open' if opened else '')
-    out['models/block/read_screen_'+n+'.json']=(json.dumps({'parent':'minecraft:block/door_'+n,'render_type':'minecraft:cutout','textures':{'bottom':textures['screen_bottom'],'top':textures['screen_top']}},indent=2)+'\n').encode()
+    out['models/block/read_screen_'+n+'.json']=(flicker.dumps({'parent':'minecraft:block/door_'+n,'render_type':'minecraft:cutout','textures':{'bottom':textures['screen_bottom'],'top':textures['screen_top']}},indent=2)+'\n').encode()
     for face,rot in [('east',0),('south',90),('west',180),('north',270)]:variants[f'facing={face},half={half},hinge={hinge},open={str(opened).lower()}']={'model':'the_oldest_house:block/read_screen_'+n,'y':(rot+(90 if hinge=='left' else -90) if opened else rot)%360}
- out['blockstates/read_screen_door.json']=(json.dumps({'variants':variants},indent=2)+'\n').encode()
- for name in parts[:6]+wardrobe.PARTS:out['models/item/read_'+name+'.json']=(json.dumps({'parent':'the_oldest_house:block/read_'+name,'display':{'gui':{'rotation':[20,-35,0],'translation':[0,-3,0],'scale':[.65,.65,.65]}}},indent=2)+'\n').encode()
+ out['blockstates/read_screen_door.json']=(flicker.dumps({'variants':variants},indent=2)+'\n').encode()
+ for name in parts[:6]+wardrobe.PARTS:out['models/item/read_'+name+'.json']=(flicker.dumps({'parent':'the_oldest_house:block/read_'+name,'display':{'gui':{'rotation':[20,-35,0],'translation':[0,-3,0],'scale':[.65,.65,.65]}}},indent=2)+'\n').encode()
  # 0.4.161: the worn coats and boots, each drawn to its own fitted mesh layout.
  for n,im in {**rooms160.worn(),**wardrobe.worn()}.items():
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/entity/house_read/'+n+'.png']=buf.getvalue()
@@ -189,8 +190,8 @@ def outputs():
   if name=='cone_empty':continue
   data={'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/read_'+name}}
   if name=='cone':data['overrides']=[{'predicate':{'custom_model_data':1},'model':'the_oldest_house:item/read_cone_empty'}]
-  out['models/item/read_'+name+'.json']=(json.dumps(data,indent=2)+'\n').encode()
- out['models/item/read_cone_empty.json']=(json.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/read_cone_empty'}},indent=2)+'\n').encode()
+  out['models/item/read_'+name+'.json']=(flicker.dumps(data,indent=2)+'\n').encode()
+ out['models/item/read_cone_empty.json']=(flicker.dumps({'parent':'minecraft:item/generated','textures':{'layer0':'the_oldest_house:item/read_cone_empty'}},indent=2)+'\n').encode()
  # 0.4.160: the rooms' own building materials.
  for name,im in materials.textures().items():
   buf=io.BytesIO();im.save(buf,format='PNG');out['textures/block/house_read/'+name+'.png']=buf.getvalue()

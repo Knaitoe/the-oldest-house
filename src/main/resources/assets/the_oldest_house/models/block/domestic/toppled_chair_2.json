@@ -565,6 +565,190 @@
           "texture": "#walnut"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0,
+        13,
+        6
+      ],
+      "to": [
+        3,
+        13.02,
+        12
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            13,
+            4,
+            16,
+            10
+          ],
+          "texture": "#green_cloth"
+        },
+        "west": {
+          "texture": "#green_cloth",
+          "uv": [
+            13.98,
+            10,
+            14,
+            4
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#green_cloth",
+          "uv": [
+            0,
+            2.02,
+            3,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        13,
+        6
+      ],
+      "to": [
+        16,
+        13.02,
+        12
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            4,
+            3,
+            10
+          ],
+          "texture": "#green_cloth"
+        },
+        "east": {
+          "texture": "#green_cloth",
+          "uv": [
+            2.02,
+            4,
+            2,
+            10
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#green_cloth",
+          "uv": [
+            13,
+            2.02,
+            16,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        3,
+        13,
+        8
+      ],
+      "to": [
+        3,
+        13.02,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#green_cloth",
+          "uv": [
+            2.02,
+            6,
+            2,
+            10
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0,
+        13,
+        6
+      ],
+      "to": [
+        2,
+        13.02,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#green_cloth",
+          "uv": [
+            1,
+            2.02,
+            3,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        13,
+        8
+      ],
+      "to": [
+        13,
+        13.02,
+        12
+      ],
+      "faces": {
+        "west": {
+          "texture": "#green_cloth",
+          "uv": [
+            13.98,
+            10,
+            14,
+            6
+          ],
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        14,
+        13,
+        6
+      ],
+      "to": [
+        16,
+        13.02,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#green_cloth",
+          "uv": [
+            13,
+            2.02,
+            15,
+            2
+          ]
+        }
+      }
     }
   ]
 }

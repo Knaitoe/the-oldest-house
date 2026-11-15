@@ -2,6 +2,7 @@
 from pathlib import Path
 import argparse
 import json
+import flicker
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,8 +79,8 @@ def main():
             with Image.open(path) as actual:assert actual.convert('RGBA').tobytes()==im.tobytes(),name
         else:im.save(path,optimize=True)
     path=ASSETS/'models/block/harrigan_plaque.json'
-    if check:assert json.loads(path.read_text())==plaque()
-    else:path.write_text(json.dumps(plaque(),indent=2)+'\n')
+    if check:assert json.loads(path.read_text())==flicker.settled(plaque())
+    else:path.write_text(flicker.dumps(plaque(),indent=2)+'\n')
     print(('Verified' if check else 'Painted')+' five funeral materials and the fitted plaque model.')
 
 if __name__=='__main__':main()

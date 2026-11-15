@@ -413,6 +413,87 @@
           ]
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.5,
+        2,
+        14.4
+      ],
+      "to": [
+        9.52,
+        5,
+        14.6
+      ],
+      "faces": {
+        "east": {
+          "texture": "#card",
+          "uv": [
+            1.4,
+            11,
+            1.6,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#card",
+          "uv": [
+            9.5,
+            14.4,
+            9.48,
+            14.6
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.5,
+        2,
+        14.6
+      ],
+      "to": [
+        9.52,
+        4,
+        14.6
+      ],
+      "faces": {
+        "south": {
+          "texture": "#card",
+          "uv": [
+            9.5,
+            12,
+            9.48,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.5,
+        2,
+        14.4
+      ],
+      "to": [
+        9.52,
+        4,
+        14.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#card",
+          "uv": [
+            6.52,
+            12,
+            6.5,
+            14
+          ]
+        }
+      }
     }
   ]
 }

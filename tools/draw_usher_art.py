@@ -11,6 +11,7 @@ Run with python3.13 from the repository root; --check compares instead of writin
 assets/the_oldest_house/textures/block/usher/, block models usher_*.json and blockstates/usher.json.
 """
 import json
+import flicker
 import random
 import sys
 from pathlib import Path
@@ -602,9 +603,9 @@ def stone_chip():
 def outputs():
     images = {TEX / f'{name}.png': draw() for name, draw in TEXTURES.items()}
     images[ASSETS / 'textures/item/usher_stone.png'] = stone_chip()
-    texts = {MODELS / f'{name}.json': json.dumps(m, indent=1) + '\n' for name, m in MODEL_DEFS.items()}
-    texts[ASSETS / 'blockstates/usher.json'] = json.dumps(blockstate(), indent=1) + '\n'
-    texts[ASSETS / 'models/item/usher_stone.json'] = json.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/usher_stone'}}, indent=1) + '\n'
+    texts = {MODELS / f'{name}.json': flicker.dumps(m, indent=1) + '\n' for name, m in MODEL_DEFS.items()}
+    texts[ASSETS / 'blockstates/usher.json'] = flicker.dumps(blockstate(), indent=1) + '\n'
+    texts[ASSETS / 'models/item/usher_stone.json'] = flicker.dumps({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'the_oldest_house:item/usher_stone'}}, indent=1) + '\n'
     return images, texts
 
 

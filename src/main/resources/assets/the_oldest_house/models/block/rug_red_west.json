@@ -83,6 +83,58 @@
           "texture": "#binding"
         }
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        0,
+        16.075,
+        0
+      ],
+      "to": [
+        1,
+        16.095,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#binding",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#binding",
+          "uv": [
+            0,
+            16,
+            0.02,
+            0
+          ],
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#binding",
+          "uv": [
+            0,
+            16,
+            1,
+            15.98
+          ]
+        },
+        "north": {
+          "texture": "#binding",
+          "uv": [
+            1,
+            0,
+            0,
+            0.02
+          ]
+        }
+      }
     }
   ]
 }

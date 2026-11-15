@@ -144,6 +144,105 @@
         "axis": "y",
         "angle": 45
       }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        10,
+        10
+      ],
+      "to": [
+        11,
+        10.02,
+        11
+      ],
+      "faces": {
+        "up": {
+          "texture": "#b",
+          "uv": [
+            5,
+            10,
+            11,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            5,
+            6.02,
+            6,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            10,
+            6.02,
+            11,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            5,
+            6.02,
+            11,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9.70685,
+        10,
+        10
+      ],
+      "to": [
+        11,
+        10.02,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            5,
+            6.02,
+            6.29315,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5,
+        10,
+        10
+      ],
+      "to": [
+        8.53579,
+        10.02,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            7.46421,
+            6.02,
+            11,
+            6
+          ]
+        }
+      }
     }
   ]
 }
