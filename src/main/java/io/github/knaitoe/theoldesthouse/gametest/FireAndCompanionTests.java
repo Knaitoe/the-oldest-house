@@ -220,15 +220,32 @@ public final class FireAndCompanionTests {
         var p=NativeTestPlayers.survival(h,"stair_dark_walker");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
         BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+230000,0,230000);
         var record=new CompoundTag();
-        var safe=StaircaseFire.landings(origin).getFirst();var edge=StaircaseFire.edge(origin,record);
+        // 0.4.595: a reader who has not taken their House of Leaves from the shelf goes no further than the first landing.
+        var safe=StaircaseFire.threshold(origin);var edge=StaircaseFire.reach(origin,record,false);
+        var camp=StaircaseFire.landings(origin).get(1);
         level.getChunkAt(safe);level.setBlock(safe.below(),Blocks.STONE.defaultBlockState(),3);
+        level.getChunkAt(camp);level.setBlock(camp.below(),Blocks.STONE.defaultBlockState(),3);
         try{
+            h.assertTrue(!StaircaseFire.bound(p,record)&&edge.getY()>FinaleArchitecture.TOP-20,"with no book the dark stands just below the door: "+edge);
             p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);p.teleportTo(level,edge.getX()+.5,edge.getY()-2,edge.getZ()+.5,0,0);
             boolean blocked=StaircaseFire.tick(p,origin,record);
             h.assertTrue(blocked,"the native survival boundary blocks: creative="+p.isCreative()+", fires="+StaircaseFire.flames(record)+", edge="+edge+", position="+p.position());
             h.assertTrue(p.position().distanceToSqr(Vec3.atBottomCenterOf(safe))<1,"native movement is returned safely: position="+p.position()+", safe="+safe);
             p.moveTo(safe.getX()+.5,FinaleArchitecture.TOP,safe.getZ()+.5);
             h.assertTrue(!StaircaseFire.tick(p,origin,record),"movement back toward the entry remains available");
+            // One night's fire lit: the dark stands past the second camp, hundreds of blocks down, and puts the reader back on it.
+            record.putInt("StairFires",1);var past=StaircaseFire.edge(origin,record);
+            h.assertTrue(StaircaseFire.bound(p,record)&&camp.getY()<safe.getY()-400&&past.getY()<camp.getY(),"the second night's camp is far below the first landing: "+camp);
+            p.moveTo(camp.getX()+.5,camp.getY(),camp.getZ()+.5);
+            h.assertTrue(!StaircaseFire.tick(p,origin,record)&&!record.getBoolean("StairFlameTold"),"a reader stands at the camp whose fire is cold for them");
+            // Starting down with the book and no flame, they are told once, just below the first landing; with a flame, not at all.
+            p.moveTo(safe.getX()+.5,safe.getY()-5,safe.getZ()+.5);
+            h.assertTrue(!StaircaseFire.tick(p,origin,record)&&record.getBoolean("StairFlameTold"),"a reader with no flame is told below the first landing");
+            var lit=new CompoundTag();lit.putInt("StairFires",1);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.FLINT_AND_STEEL));
+            h.assertTrue(!StaircaseFire.tick(p,origin,lit)&&!lit.getBoolean("StairFlameTold"),"a reader who carries a flame is told nothing");
+            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            p.moveTo(past.getX()+.5,past.getY()-2,past.getZ()+.5);
+            h.assertTrue(StaircaseFire.tick(p,origin,record)&&p.position().distanceToSqr(Vec3.atBottomCenterOf(camp))<1,"and goes no further: position="+p.position()+", camp="+camp);
             record.putInt("StairFires",5);p.moveTo(safe.getX()+.5,FinaleArchitecture.ARENA,safe.getZ()+.5);
             h.assertTrue(!StaircaseFire.tick(p,origin,record),"five fires allow the full physical descent");
             var fresh=new CompoundTag();
@@ -236,7 +253,7 @@ public final class FireAndCompanionTests {
             h.assertTrue(StaircaseFire.tick(p,origin,fresh)&&StaircaseFire.flames(fresh)==0,
                     "a fall to the arena does not award any personal fires");
             h.assertTrue(!WitnessAccount.ready(LabyrinthData.get(p.server),p.getUUID()),"lighting is no additional Witness source");
-        }finally{level.setBlock(safe.below(),Blocks.AIR.defaultBlockState(),3);remove(p);}
+        }finally{level.setBlock(safe.below(),Blocks.AIR.defaultBlockState(),3);level.setBlock(camp.below(),Blocks.AIR.defaultBlockState(),3);remove(p);}
         h.succeed();
     }
     @GameTest(template="empty",batch="companion_doors",timeoutTicks=160)

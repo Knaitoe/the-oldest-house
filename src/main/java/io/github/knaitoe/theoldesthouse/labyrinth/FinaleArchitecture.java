@@ -187,10 +187,10 @@ public final class FinaleArchitecture {
         }
         var steps=allSteps(manor);List<BlockPos> descent=staircaseRoute(manor);
         // Full turn platforms are laid first. Flat approach/departure runs share their floor height.
-        var hearths=new HashSet<>(StaircaseFire.braziers(manor));int landings=0;
+        var hearths=new HashSet<>(StaircaseFire.braziers(manor));
         for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
             var at=step.feet;int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
-            landing(blocks,at,sx,sz,hearths.contains(at.offset(sx*3,0,sz*3))||landings%31==9);landings++;
+            landing(blocks,at,sx,sz,hearths.contains(at.offset(sx*3,0,sz*3)));
         }
         for(int i=0;i<steps.size();i++){
             var step=steps.get(i);BlockPos at=step.feet;Direction direction=step.direction;
@@ -215,13 +215,12 @@ public final class FinaleArchitecture {
             }
             if(flight)tie(blocks,b,x,y,z,direction,at.getY());
         }
-        // Sparse loose pages stand on solid corner landings; abandoned camps occur only every 31st turn.
+        // Sparse loose pages stand on solid corner landings. 0.4.595: the five camps are the nights of the descent (StaircaseFire.NIGHTS);
+        // three of them are the abandoned camps that stood on every 31st turn.
         int turn=0;for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
             BlockPos at=step.feet;int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
             if(turn%3==1)blocks.put(FinaleRepairs.paper(at,b,turn),NoteSurfaceBlock.state(HouseMarginalia.Thread.POEMS,FinaleRepairs.paperFacing(turn)));
-            if(turn%31==9){
-                blocks.put(at.offset(sx*3,0,sz*3),Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false));
-            }
+            if(hearths.contains(at.offset(sx*3,0,sz*3)))camp(blocks,at,sx,sz);
             turn++;
         }
         for(var placement:entrancePlan(manor))blocks.put(placement.pos(),placement.block());
@@ -315,12 +314,20 @@ public final class FinaleArchitecture {
             if(margin&&Math.max(u,v)>=edge-1)plan.put(at.offset(sx*u,-3,sz*v),stone);
             if(margin&&Math.max(u,v)>=edge)plan.put(at.offset(sx*u,-4,sz*v),stone);
         }
-        // A hearthstone under a fire: the five hearths, and the cold camps further down.
+        // A hearthstone under a fire: the five camps.
         if(hearth)for(int u=2;u<=4;u++)for(int v=2;v<=4;v++)plan.put(at.offset(sx*u,-1,sz*v),basalt);
         for(int h=0;h<2;h++)for(int w:new int[]{-5,5}){plan.put(at.offset(sx*-6,h,sz*w),post);plan.put(at.offset(sx*w,h,sz*-6),post);}
         plan.put(at.offset(sx*-6,0,sz*-6),StairWell.BALUSTRADE.get().defaultBlockState()
                 .setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(sx>0?Direction.EAST:Direction.WEST),true).setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(sz>0?Direction.SOUTH:Direction.NORTH),true));
         for(int w=6;w<edge;w++){plan.put(at.offset(sx*-6,0,sz*w),rail(Direction.SOUTH));plan.put(at.offset(sx*w,0,sz*-6),rail(Direction.EAST));}
+    }
+    /**
+     * 0.4.595: a night's camp on its landing. The hearth is cold until a reader feeds it; a bedroll lies either side of it, out
+     * toward each wall, feet to the fire. Both lie clear of the walk from one flight to the next.
+     */
+    private static void camp(Map<BlockPos,BlockState> plan,BlockPos at,int sx,int sz){
+        plan.put(at.offset(sx*3,0,sz*3),Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT,false));
+        for(int w=6;w<=7;w++){plan.put(at.offset(sx*w,0,sz*3),Blocks.BROWN_CARPET.defaultBlockState());plan.put(at.offset(sx*3,0,sz*w),Blocks.GREEN_CARPET.defaultBlockState());}
     }
     /**
      * Where a flight passes a pilaster a stone tie crosses from its string to the wall: as high as the rail (behind the rail's
@@ -432,5 +439,5 @@ public final class FinaleArchitecture {
     public static void closeCell(ServerLevel level,BlockPos manor){
         BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);
     }
-    public static void clearAll(){StaircaseLeaves.clearCache();PLANS.clear();routeOrigin=null;stepsCache=null;fullCache=null;descentCache=null;continuationCache=null;}
+    public static void clearAll(){StaircaseLeaves.clearCache();StaircaseFire.clearCache();PLANS.clear();routeOrigin=null;stepsCache=null;fullCache=null;descentCache=null;continuationCache=null;}
 }

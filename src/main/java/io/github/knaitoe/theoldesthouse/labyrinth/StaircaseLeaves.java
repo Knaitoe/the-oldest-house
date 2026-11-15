@@ -16,30 +16,33 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 
 /**
- * One loose leaf lies on each of the first five flights, out in the dark on a level tread.
+ * One loose leaf lies above each of the five camps, on a corner landing in the last turn before it.
  * The sheet is shared scenery; what is written on it belongs to whoever reads it. A leaf is
- * placed beyond the reach of the fires above it, so each flight's leaf is found only after
+ * placed beyond the reach of the fires above it, so each camp's leaf is found only after
  * the previous hearth burns, and it is bound in before its own hearth will light.
+ *
+ * <p>0.4.595 (docs/STAIR_NIGHTS_0_4_595.md): the leaves lay on the first five flights, a level tread each. The camps are now
+ * spread down the whole stair, and a leaf missed on a flight would be a long climb back. Each lies on a landing, where every
+ * reader walks, no more than three landings above its camp, and it settles into the book of a reader who passes within three
+ * blocks of it.
  */
 public final class StaircaseLeaves {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    /** Where along each flight its leaf lies, so no two flights hide it in the same place. */
-    private static final double[] ALONG={0.45,0.35,0.7,0.25,0.6};
+    /** The corner landings the five leaves lie on, counted like {@link StaircaseFire#NIGHTS}. None is a landing with a loose sheet of the household's. */
+    public static final int[] LANDINGS={6,24,38,54,68};
+    /** Where on its landing each leaf lies, out from the turn's own step toward one wall and the other; no two alike. */
+    private static final int[][] SPOT={{-2,1},{1,-2},{2,-1},{-1,2},{-2,-2}};
+    /** How near a reader passes for their leaf to settle into their book (blocks, squared). */
+    private static final double NEAR=9;
     private static BlockPos cachedOrigin;private static List<BlockPos> cached;
     private StaircaseLeaves(){}
 
     public static List<BlockPos> positions(BlockPos origin){
         if(origin.equals(cachedOrigin)&&cached!=null)return cached;
-        var route=FinaleArchitecture.staircaseRoute(origin);var landings=StaircaseFire.landings(origin);var out=new ArrayList<BlockPos>();
+        var corners=StaircaseFire.corners(origin);var b=FinaleArchitecture.base(origin);var out=new ArrayList<BlockPos>();
         for(int k=0;k<StaircaseFire.REQUIRED;k++){
-            int end=route.indexOf(landings.get(k)),start=k==0?0:route.indexOf(landings.get(k-1));
-            // Below the previous fire's reach (twelve steps past its landing) and above this flight's own landing.
-            int low=k==0?3:start+16,high=end-8,i=low+(int)Math.round((high-low)*ALONG[k]);
-            // A level tread is a full block, so the sheet lies flat on it.
-            while(i<high&&route.get(i+1).getY()!=route.get(i).getY())i++;
-            var here=route.get(i);var next=route.get(i+1);
-            Direction along=Direction.getNearest(next.getX()-here.getX(),0,next.getZ()-here.getZ());
-            out.add(here.relative(k%2==0?along.getCounterClockWise():along.getClockWise(),3).immutable());
+            var landing=corners.get(LANDINGS[k]);int sx=Integer.signum(landing.getX()-b.getX()),sz=Integer.signum(landing.getZ()-b.getZ());
+            out.add(landing.offset(sx*SPOT[k][0],0,sz*SPOT[k][1]).immutable());
         }
         cachedOrigin=origin.immutable();cached=List.copyOf(out);return cached;
     }
@@ -70,20 +73,24 @@ public final class StaircaseLeaves {
     /** Actual nearby sheets bind directly into the carried original, including when it is packed. */
     public static void gather(ServerPlayer p,BlockPos origin,int fires){
         if(fires>=StaircaseFire.REQUIRED||StaircaseStory.found(StaircaseStory.record(p))!=fires)return;
-        var at=positions(origin).get(fires);if(p.distanceToSqr(at.getCenter())>2.5||!p.serverLevel().getBlockState(at).is(HouseBlocks.NOTE_SURFACE.get()))return;
+        var at=positions(origin).get(fires);if(p.distanceToSqr(at.getCenter())>NEAR||!p.serverLevel().getBlockState(at).is(HouseBlocks.NOTE_SURFACE.get()))return;
         var hit=p.serverLevel().clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),at.getCenter(),net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
         if(!hit.getBlockPos().equals(at))return;
         if(StaircaseStory.takeLeaf(p,fires)==StaircaseStory.Take.BOUND)p.displayClientMessage(Component.literal("A loose leaf settles into your House of Leaves."),true);
     }
 
-    /** Opens this flight's leaf for its reader, or says plainly why it is blank to them. */
+    /** Opens this camp's leaf for its reader, or says plainly why it is blank to them. */
     public static boolean open(ServerPlayer p,BlockPos pos){
         BlockPos origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return false;
         int k=index(origin,pos);if(k<0)return false;
         var state=StaircaseStory.leafState(p,k);
+        // 0.4.595: a leaf settles into the book of a reader who passes it, so most reach the sheet with it already bound. Until
+        // its fire has taken it they can still read it where it lies.
+        if(state==StaircaseStory.Take.TAKEN&&k>=StaircaseStory.burned(StaircaseStory.record(p))){
+            p.openMenu(new SimpleMenuProvider((id,inv,player)->new LeafMenu(id,p,pos,k),Component.literal("A loose leaf")));return true;}
         String refusal=switch(state){
             case NO_BINDING->"The leaf is blank to you. Your House of Leaves is still on the camp shelf above.";
-            case TAKEN->"You have already bound your leaf from this flight.";
+            case TAKEN->"You have already bound this leaf.";
             case EARLIER->"The leaf is blank to you. An earlier leaf of yours is still loose above.";
             case FINISHED->"The leaf is blank. Your story has already burned.";
             case REFUSED->"";
