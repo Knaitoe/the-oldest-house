@@ -299,7 +299,7 @@ The owner's own design for it, "The Last Crossing" (a multiplayer vignette for f
 - **Transformed readers.** Water breathing, claws, the Call, garbled speech after dark, and a throat that closes while holding a flooded route shut.
 - **Endings.** The ferry crosses, the station is cleared, or the source takes the crossing. The broken nameplate is shared out on a crew victory; the spare goes to a nominated reader; the Other Breath is the traitor's permanent bargain.
 
-The draft's approach above becomes the station's own: the farm road into the flood, the power line as the bearing, and the station porch, where Vera takes the roll, as the gathering place and clear decision. The cable ferry is the climax, not the approach. It is dealt only to a crew of four to six readers who cross together (a default to edit).
+The draft's approach above becomes the station's own: the farm road into the flood, the power line as the bearing, and the station porch, where Vera takes the roll, as the gathering place and clear decision. The cable ferry is the climax, not the approach. It is dealt only to a crew of four to six readers who cross together (a default to edit). (0.4.598: dealt to a reader on their own as well, short-handed; `docs/ON_YOUR_OWN_0_4_598.md`.)
 
 ---
 

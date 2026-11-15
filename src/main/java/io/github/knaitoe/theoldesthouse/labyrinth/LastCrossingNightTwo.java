@@ -83,6 +83,8 @@ public final class LastCrossingNightTwo {
         boolean rollStarted,rollDone;int calling=-1,callTicks;boolean calledTwice;long answerAt=-1;final Set<UUID> answered=new HashSet<>();final List<String> absent=new ArrayList<>();
         /** The pull: its state, how far it has hauled of how far it must, who is on the brake, when it was let go, the jam and its levers. */
         int pull,progress,need;@Nullable UUID brakeBy;long dropAt=-1;long pullAt=-1;boolean jamCleared,threw;int levers;long leverAt=-1;String binding="";
+        /** 0.4.598: Vera on the brake, for a short-handed crew whose hand had to leave it. */
+        boolean veraBrake;
         final LinkedHashSet<UUID> pullHands=new LinkedHashSet<>();
         /** The floor grate over the winch spur held shut and by whom, pinned; and each turned reader's closing throat. */
         @Nullable UUID gateBy;boolean pinned;final Map<UUID,Integer> choking=new HashMap<>();final Map<UUID,Integer> edge=new HashMap<>();
@@ -199,7 +201,7 @@ public final class LastCrossingNightTwo {
         if(n.absent.isEmpty())LastCrossing.speak(l,r,LastCrossingTexts.ROLL_ALL,EARSHOT);
         else{LastCrossing.speak(l,r,LastCrossingTexts.ROLL_ABSENT,EARSHOT);
             for(var p:here){if(!hears(l,r,p))continue;for(var who:n.absent)if(!who.equals(LastCrossing.name(p)))LastCrossing.addName(p,"NotedAbsent",who);}}
-        if(!n.third)LastCrossing.route(r,new Vec3(45.5,0,-55.5),LastCrossingSite.VERA_PULL);
+        if(!n.third)LastCrossing.route(r,new Vec3(45.5,0,-55.5),n.veraBrake?LastCrossingSite.VERA_BRAKE:LastCrossingSite.VERA_PULL);
     }
     /** The names on the roll, less those who have died here: she knows. On the last night she calls them all, in the first day's order. */
     static List<Map.Entry<UUID,String>> rollNames(Run r,Night n){var out=new ArrayList<Map.Entry<UUID,String>>();for(var e:r.crew.entrySet())if(n.third||!r.dead.contains(e.getKey()))out.add(e);return out;}
@@ -245,7 +247,8 @@ public final class LastCrossingNightTwo {
             if(!(n.rollDone&&!LastCrossing.walking(r))&&n.tick<PULL_BY)return;
             if(n.pullAt<0){n.pullAt=r.tick;return;}
             if(r.tick-n.pullAt<60&&n.tick<PULL_BY)return;
-            n.pull=CALLED;n.need=r.dayTwo.lined?PULL_LINED:PULL_UNLINED;LastCrossing.speak(l,r,r.dayTwo.lined?LastCrossingTexts.PULL_LINED:LastCrossingTexts.PULL_OFF,24);
+            n.pull=CALLED;n.need=r.dayTwo.lined?PULL_LINED:PULL_UNLINED;
+            LastCrossing.speak(l,r,(r.dayTwo.lined?LastCrossingTexts.PULL_LINED:LastCrossingTexts.PULL_OFF)+(LastCrossing.shortHanded(r)?" "+LastCrossingTexts.PULL_SHORT:""),24);
             // The catch comes out of the drum's teeth for the pull.
             if(r.dayTwo.catchSet){r.dayTwo.catchSet=false;l.setBlock(b.offset(LastCrossingSite.CATCH),LastCrossingSite.fit(Kind.CATCH,Direction.WEST),Block.UPDATE_CLIENTS);}
             return;}
@@ -254,9 +257,15 @@ public final class LastCrossingNightTwo {
         var holder=LastCrossing.player(l,n.brakeBy);
         boolean held=holder!=null&&here.contains(holder)&&holder.isAlive()&&!holder.isSpectator()&&holder.position().distanceToSqr(brake)<2.5*2.5&&!holder.getUUID().equals(n.grappled);
         if(!held&&n.brakeBy!=null){if(holder!=null&&(n.pull==HAULING||n.pull==BINDING))LastCrossing.mark(holder,"LetGoBrake");n.brakeBy=null;
-            if(n.pull==HAULING||n.pull==BINDING){n.pull=RUNNING_BACK;n.dropAt=r.tick;LastCrossing.speak(l,r,LastCrossingTexts.RUNNING_BACK,24);
+            // 0.4.598: a short-handed crew has nobody to catch it. Vera takes the brake herself, and keeps it till the drum is taken up or
+            // one of them takes it back from her.
+            if((n.pull==HAULING||n.pull==BINDING)&&LastCrossing.shortHanded(r)&&LastCrossing.actor(l,r.vera)!=null){n.veraBrake=true;
+                LastCrossing.route(r,LastCrossingSite.VERA_BRAKE);LastCrossing.speak(l,r,LastCrossingTexts.BRAKE_VERA,24);
+                if(holder!=null)LastCrossing.mark(holder,"VeraBrake");}
+            else if(n.pull==HAULING||n.pull==BINDING){n.pull=RUNNING_BACK;n.dropAt=r.tick;LastCrossing.speak(l,r,LastCrossingTexts.RUNNING_BACK,24);
                 LastCrossing.sound(l,b.offset(LastCrossingSite.CABLE_BRAKE),CrossingRegistry.RATCHET.get(),1.2F,.6F);
                 for(var p:here)if(LastCrossingSite.inCableHouse(LastCrossing.rel(p.position(),b))){LastCrossing.mark(p,"SawRunBack");LastCrossing.cue(p,"The brake's let go: the drum runs back, the cable paying out over the rollers.");}}}
+        if(n.veraBrake)held=true;
         var want=LastCrossingSite.fit(Kind.BRAKE,Direction.WEST,held?1:0);var at=b.offset(LastCrossingSite.CABLE_BRAKE);
         if(!l.getBlockState(at).equals(want))l.setBlock(at,want,Block.UPDATE_CLIENTS);
         switch(n.pull){
@@ -281,12 +290,13 @@ public final class LastCrossingNightTwo {
         if(p.getUUID().equals(n.brakeBy)){LastCrossing.cue(p,"You're holding it.");return true;}
         if(n.brakeBy!=null){LastCrossing.cue(p,"Someone's on the brake.");return true;}
         n.brakeBy=p.getUUID();n.pullHands.add(p.getUUID());LastCrossing.mark(p,"HeldPull");LastCrossing.job(p,"brake");
+        if(n.veraBrake){n.veraBrake=false;LastCrossing.route(r,LastCrossingSite.VERA_PULL);LastCrossing.cue(p,LastCrossingTexts.BRAKE_BACK);return true;}
         if(n.pull==RUNNING_BACK){n.pull=HAULING;LastCrossing.mark(p,"CaughtBrake");LastCrossing.speak(l,r,LastCrossingTexts.CAUGHT,24);LastCrossing.cue(p,"You throw your weight on the brake and the drum stops running back.");}
         else{if(n.pull==CALLED){n.pull=HAULING;LastCrossing.speak(l,r,LastCrossingTexts.PULL_HOLD,24);}LastCrossing.cue(p,"You take the brake off and hold it. The drum takes up the cable, a notch at a time.");}
         return true;
     }
     static void taken(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
-        var b=r.base;n.pull=PULLED;n.brakeBy=null;
+        var b=r.base;n.pull=PULLED;n.brakeBy=null;n.veraBrake=false;
         l.setBlock(b.offset(LastCrossingSite.CABLE_BRAKE),LastCrossingSite.fit(Kind.BRAKE,Direction.WEST),Block.UPDATE_CLIENTS);
         r.dayTwo.catchSet=true;r.dayTwo.lined=true;l.setBlock(b.offset(LastCrossingSite.CATCH),LastCrossingSite.fit(Kind.CATCH,Direction.WEST,1),Block.UPDATE_CLIENTS);
         LastCrossing.sound(l,b.offset(LastCrossingSite.CATCH),SoundEvents.IRON_TRAPDOOR_CLOSE,1F,.7F);
@@ -296,7 +306,7 @@ public final class LastCrossingNightTwo {
     }
     /** The pull failed: run back too far, it throws the rollers; or the night ran out before it was done. */
     static void failed(ServerLevel l,Run r,Night n,List<ServerPlayer> here,boolean thrown){
-        var b=r.base;n.pull=FAILED;n.brakeBy=null;
+        var b=r.base;n.pull=FAILED;n.brakeBy=null;n.veraBrake=false;
         if(thrown){r.rollerSeated=false;n.threw=true;
             for(var at:List.of(LastCrossingSite.LOOSE_ROLLER,LastCrossingSite.ROLLERS.get(2)))l.setBlock(b.offset(at),LastCrossingSite.fit(Kind.ROLLER,Direction.NORTH,1),Block.UPDATE_CLIENTS);
             LastCrossing.sound(l,b.offset(LastCrossingSite.LOOSE_ROLLER),SoundEvents.ANVIL_LAND,.8F,.6F);LastCrossing.speak(l,r,LastCrossingTexts.PULL_FAILED,24);}
@@ -485,7 +495,7 @@ public final class LastCrossingNightTwo {
         var b=r.base;
         n.mobs.removeIf(id->!(l.getEntity(id) instanceof Undertow u&&u.isAlive()));
         n.drawn.keySet().removeIf(id->!n.mobs.contains(id)||r.tick>n.drawn.get(id).until());
-        int cap=Math.max(3,Math.min(LastCrossing.MAX_CREW,r.crew.size()));
+        int cap=LastCrossing.things(r);
         if(n.tick>=FIRST_SPAWN&&n.tick<length(n)-SPAWN_STOP&&n.mobs.size()<cap&&(n.lastSpawn<0||n.tick-n.lastSpawn>=SPAWN_EVERY)){
             // Over the spillway's banks; and every other one through a branch left open, the grate behind the brake if nobody's shut it.
             Vec3 from=n.spawned%2==0?LastCrossingSite.WEST_BANK:LastCrossingSite.EAST_BANK;

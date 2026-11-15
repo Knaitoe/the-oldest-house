@@ -94,7 +94,7 @@ public final class PinehookTests {
             .thenIdle(20)
             .thenExecute(()->{
                 h.assertTrue(LiteraryRooms.isLiterary(P)&&LiteraryRooms.outside(P)&&P.isOneShot()&&P.authored()&&SceneClock.at(f.origin,b.offset(0,0,-30),io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE)==3,"a literary cabin outside, one visit, built whole, at dusk");
-                h.assertTrue(WitnessAccount.Story.of(P.id())==WitnessAccount.Story.PINEHOOK&&WitnessAccount.Story.PINEHOOK.kind.equals("understanding")&&!Pinehook.dealable(f.data(),UUID.randomUUID()),"an understanding Witness source, dealt only to readers standing together");
+                h.assertTrue(WitnessAccount.Story.of(P.id())==WitnessAccount.Story.PINEHOOK&&WitnessAccount.Story.PINEHOOK.kind.equals("understanding")&&Pinehook.dealable(f.data(),UUID.randomUUID()),"an understanding Witness source, dealt to a reader on their own as to readers standing together (0.4.598)");
                 h.assertTrue(l.getBlockState(b.offset(0,-1,-8)).is(Blocks.GRAVEL)&&l.getBlockState(b.offset(0,-1,-24)).is(Blocks.SPRUCE_PLANKS)&&l.getBlockState(b.offset(0,-2,-70)).is(Blocks.WATER)&&l.getBlockState(b.offset(6,-1,-60)).is(Blocks.SPRUCE_PLANKS),"the drive, the cabin's floor, the lake and the dock");
                 h.assertTrue(l.getBlockState(b.offset(PinehookSite.BOATHOUSE_DOOR)).is(Blocks.IRON_DOOR)&&l.getBlockState(b.offset(PinehookSite.HEARTH)).is(Blocks.CAMPFIRE),"Len's boathouse shut, the fire lit");
                 for(var k:List.of(PinehookSite.STEREO,PinehookSite.TV,PinehookSite.BREAKER,PinehookSite.STOVE,PinehookSite.DUFFEL,PinehookSite.BAG,PinehookSite.KIT,PinehookSite.COOLER_START,PinehookSite.TAPES))h.assertTrue(stage(l,b,k)==0,"a fitting at "+k);

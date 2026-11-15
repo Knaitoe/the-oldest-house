@@ -122,6 +122,8 @@ The Last Crossing is dealt once to each reader, from the House's ordinary dealin
 
 A reader on their own, or in a pair or three, isn't dealt it. The operator's test door still reaches it.
 
+**0.4.598:** that changed. It is dealt to a reader on their own as well, and fewer than four names on the roll make a short-handed crew, with rules of its own (`docs/ON_YOUR_OWN_0_4_598.md`).
+
 ## What each reader's record keeps
 
 To the earlier records, this adds:

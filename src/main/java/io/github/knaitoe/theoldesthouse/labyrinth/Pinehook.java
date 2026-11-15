@@ -300,14 +300,14 @@ public final class Pinehook {
         if(r.phase>=EVENING&&!own.getBoolean("Greeted"))own.putBoolean("Partway",true);
         cue(p,"A woodshed at the end of a gravel drive. Past it, through the pines, a cabin with its porch lit, and a lake going dark behind it.");
     }
-    /** 0.4.367: dealt once the weekend can be finished, to a reader who hasn't finished it, standing with at least one other (the
-     * proposal's two to six); a reader alone can still finish one they are in. */
-    public static final int MIN_PARTY=2,MAX_PARTY=6;
+    /** 0.4.367: dealt once the weekend can be finished, to a reader who hasn't finished it. 0.4.598: to a reader on their own as to
+     * readers standing together (it was dealt only to two or more); one reader can do all of it. The proposal's party is two to six. */
+    public static final int MIN_PARTY=1,MAX_PARTY=6;
     /** 0.4.551: the weekend's roll, whose places it keeps while they step out (SceneInstances.held). */
     public static Set<UUID> places(BlockPos b){var r=run(b);return r==null?Set.of():Set.copyOf(r.roll);}
     public static boolean dealable(LabyrinthData d,UUID p){
         if(LiteraryVignettes.personal(d,p,PLACE).getBoolean("Completed"))return false;
-        return LastCrossing.crewAround(p)>=MIN_PARTY;
+        return true;
     }
 
     // ------------------------------------------------------------------------------------------------ the clock

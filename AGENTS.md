@@ -16,6 +16,7 @@
 - **Literature travels with mechanics:** a change to a room changes its account, its Witness line, its House of Leaves fact and any keepsake line ("Ensure you're updating literature too").
 - **House writing** never genders the reader and never names a colour or an age. "House" is blue everywhere; "Minotaur" is red in literature only.
 - **Speech is never chat:** people speak through displays and the action bar; `sendSystemMessage` is for operators. A conversation that asks the reader something uses `Talk` (the conversation panel, 0.4.257): lines, then replies the reader picks; a reply is honoured once.
+- **A story with parts for several readers is dealt to a reader on their own as well** (0.4.598, docs/ON_YOUR_OWN_0_4_598.md; the owner: "ensuring single player playability"). Where a step takes two at the same moment, somebody in the story is the second pair of hands; a rule that counts readers must not end the story for a crew of one. Each ending gets a case with one reader.
 - "Start running with it. I'll edit as needed": build, then let the owner edit.
 - Never put a model identifier in a commit message, PR text, code comment or any pushed artifact.
 

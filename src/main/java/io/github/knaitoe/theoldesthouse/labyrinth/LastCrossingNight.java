@@ -278,7 +278,7 @@ public final class LastCrossingNight {
     static void mobs(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
         var b=r.base;
         n.mobs.removeIf(id->!(l.getEntity(id) instanceof Undertow u&&u.isAlive()));
-        int cap=Math.max(3,Math.min(LastCrossing.MAX_CREW,r.crew.size()));
+        int cap=LastCrossing.things(r);
         if(!n.dawn&&n.surged&&n.tick>=FIRST_SPAWN&&n.tick<LastCrossing.NIGHT_TICKS-SPAWN_STOP&&n.mobs.size()<cap&&(n.lastSpawn<0||n.tick-n.lastSpawn>=SPAWN_EVERY)){
             // With the lower floor lost and left open, every other one comes up through the landing.
             boolean landing=n.lowerFlooded&&!n.isolated&&n.tick-n.floodedAt>=ISOLATE_GRACE;
